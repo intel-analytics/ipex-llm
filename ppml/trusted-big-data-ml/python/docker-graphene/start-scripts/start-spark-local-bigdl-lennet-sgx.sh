@@ -2,7 +2,7 @@
 cd /ppml/trusted-big-data-ml
 
 SGX=1 ./pal_loader bash -c "/opt/jdk8/bin/java -cp \
-  '/ppml/trusted-big-data-ml/work/bigdl-2.1.0-SNAPSHOT/jars/*:/ppml/trusted-big-data-ml/work/spark-3.1.2/conf/:/ppml/trusted-big-data-ml/work/spark-3.1.2/jars/*' \
+  '/ppml/trusted-big-data-ml/work/bigdl-2.1.0/jars/*:/ppml/trusted-big-data-ml/work/spark-3.1.3/conf/:/ppml/trusted-big-data-ml/work/spark-3.1.3/jars/*' \
   -Xmx2g \
   org.apache.spark.deploy.SparkSubmit \
   --master 'local[4]' \
@@ -12,13 +12,13 @@ SGX=1 ./pal_loader bash -c "/opt/jdk8/bin/java -cp \
   --conf spark.rpc.message.maxSize=190 \
   --conf spark.network.timeout=10000000 \
   --conf spark.executor.heartbeatInterval=10000000 \
-  --properties-file /ppml/trusted-big-data-ml/work/bigdl-2.1.0-SNAPSHOT/conf/spark-bigdl.conf \
-  --py-files local://${BIGDL_HOME}/python/bigdl-orca-spark_${SPARK_VERSION}-${BIGDL_VERSION}-python-api.zip,local://${BIGDL_HOME}/python/bigdl-dllib-spark_${SPARK_VERSION}-${BIGDL_VERSION}-python-api.zip,/ppml/trusted-big-data-ml/work/bigdl-2.1.0-SNAPSHOT/examples/dllib/lenet/lenet.py \
+  --properties-file /ppml/trusted-big-data-ml/work/bigdl-2.1.0/conf/spark-bigdl.conf \
+  --py-files local://${BIGDL_HOME}/python/bigdl-orca-spark_${SPARK_VERSION}-${BIGDL_VERSION}-python-api.zip,local://${BIGDL_HOME}/python/bigdl-dllib-spark_${SPARK_VERSION}-${BIGDL_VERSION}-python-api.zip,/ppml/trusted-big-data-ml/work/bigdl-2.1.0/examples/dllib/lenet/lenet.py \
   --driver-cores 2 \
   --total-executor-cores 2 \
   --executor-cores 2 \
   --executor-memory 8g \
-  /ppml/trusted-big-data-ml/work/bigdl-2.1.0-SNAPSHOT/examples/dllib/lenet/lenet.py \
+  /ppml/trusted-big-data-ml/work/bigdl-2.1.0/examples/dllib/lenet/lenet.py \
   --dataPath /ppml/trusted-big-data-ml/work/data/mnist \
   --maxEpoch 2" 2>&1 | tee test-bigdl-lenet-sgx.log && \
   cat test-bigdl-lenet-sgx.log | egrep -a "Accuracy"

@@ -12,4 +12,4 @@ sudo docker build \
     --build-arg HTTPS_PROXY_PORT=$HTTPS_PROXY_PORT \
     --build-arg no_proxy=x.x.x.x \
     --build-arg SPARK_JAR_REPO_URL=$SPARK_JAR_REPO_URL \
-    -t intelanalytics/bigdl-ppml-trusted-big-data-ml-scala-occlum:2.1.0-SNAPSHOT -f ./Dockerfile .
+    -t intelanalytics/bigdl-ppml-trusted-big-data-ml-scala-occlum:2.1.0 -f ./Dockerfile .

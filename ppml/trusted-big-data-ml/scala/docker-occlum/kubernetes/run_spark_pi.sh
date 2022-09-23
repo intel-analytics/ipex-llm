@@ -7,7 +7,7 @@ ${SPARK_HOME}/bin/spark-submit \
     --class org.apache.spark.examples.SparkPi \
     --conf spark.executor.instances=1 \
     --conf spark.rpc.netty.dispatcher.numThreads=32 \
-    --conf spark.kubernetes.container.image=intelanalytics/bigdl-ppml-trusted-big-data-ml-scala-occlum:2.1.0-SNAPSHOT \
+    --conf spark.kubernetes.container.image=intelanalytics/bigdl-ppml-trusted-big-data-ml-scala-occlum:2.1.0 \
     --conf spark.kubernetes.authenticate.driver.serviceAccountName=spark \
     --conf spark.kubernetes.executor.deleteOnTermination=false \
     --conf spark.kubernetes.driver.podTemplateFile=./driver.yaml \
@@ -16,4 +16,4 @@ ${SPARK_HOME}/bin/spark-submit \
     --executor-memory 512m \
     --conf spark.kubernetes.driverEnv.SGX_DRIVER_JVM_MEM_SIZE="512m" \
     --conf spark.executorEnv.SGX_EXECUTOR_JVM_MEM_SIZE="512m" \
-    local:/opt/spark/examples/jars/spark-examples_2.12-3.1.2.jar
+    local:/opt/spark/examples/jars/spark-examples_2.12-3.1.3.jar

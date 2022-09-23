@@ -9,7 +9,7 @@ G_SGX_THREAD_NUM ?= 256
 
 THIS_DIR ?= /ppml/trusted-big-data-ml
 JDK_HOME ?= /opt/jdk8
-SPARK_HOME ?= $(THIS_DIR)/work/spark-3.1.2
+SPARK_HOME ?= $(THIS_DIR)/work/spark-3.1.3
 WORK_DIR ?= $(THIS_DIR)/work
 SPARK_USER ?= root
 SPARK_LOCAL_IP ?= 127.0.0.1

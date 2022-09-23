@@ -7,7 +7,7 @@ driver_host=$SPARK_DRIVER_IP
 driver_block_manager_port=$SPARK_DRIVER_BLOCK_MANAGER_PORT
 export secure_password=`openssl rsautl -inkey /ppml/trusted-big-data-ml/work/password/key.txt -decrypt </ppml/trusted-big-data-ml/work/password/output.bin`
 
-export SPARK_HOME=/ppml/trusted-big-data-ml/work/spark-3.1.2
+export SPARK_HOME=/ppml/trusted-big-data-ml/work/spark-3.1.3
 
 bash bigdl-ppml-submit.sh \
     --master $spark_master \
@@ -24,4 +24,4 @@ bash bigdl-ppml-submit.sh \
     --executor-cores 4 \
     --total-executor-cores 4 \
     --executor-memory 12G \
-    /ppml/trusted-big-data-ml/work/spark-3.1.2/examples/jars/spark-examples_2.12-3.1.2.jar 2>&1 | tee test-scala-spark-pi.log
+    /ppml/trusted-big-data-ml/work/spark-3.1.3/examples/jars/spark-examples_2.12-3.1.3.jar 2>&1 | tee test-scala-spark-pi.log

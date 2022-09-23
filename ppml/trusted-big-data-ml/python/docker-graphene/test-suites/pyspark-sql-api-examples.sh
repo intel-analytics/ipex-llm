@@ -21,7 +21,7 @@ echo "pysaprk sql api example.1 --- DataFrame"
 cd /ppml/trusted-big-data-ml
 ./clean.sh
 /graphene/Tools/argv_serializer bash -c "/opt/jdk8/bin/java \
-  -cp '/ppml/trusted-big-data-ml/work/spark-3.1.2/conf/:/ppml/trusted-big-data-ml/work/spark-3.1.2/jars/*' \
+  -cp '/ppml/trusted-big-data-ml/work/spark-3.1.3/conf/:/ppml/trusted-big-data-ml/work/spark-3.1.3/jars/*' \
   -Xmx1g \
   org.apache.spark.deploy.SparkSubmit \
     --master 'local[4]' \
@@ -39,7 +39,7 @@ echo "pysaprk sql api example.2 --- SQLContext"
 cd /ppml/trusted-big-data-ml
 ./clean.sh
 /graphene/Tools/argv_serializer bash -c "/opt/jdk8/bin/java \
-  -cp '/ppml/trusted-big-data-ml/work/spark-3.1.2/conf/:/ppml/trusted-big-data-ml/work/spark-3.1.2/jars/*' \
+  -cp '/ppml/trusted-big-data-ml/work/spark-3.1.3/conf/:/ppml/trusted-big-data-ml/work/spark-3.1.3/jars/*' \
   -Xmx1g \
   org.apache.spark.deploy.SparkSubmit \
     --master 'local[4]' \
@@ -57,7 +57,7 @@ echo "pysaprk sql api example.3 --- UDFRegistration"
 cd /ppml/trusted-big-data-ml
 ./clean.sh
 /graphene/Tools/argv_serializer bash -c "/opt/jdk8/bin/java \
-  -cp '/ppml/trusted-big-data-ml/work/spark-3.1.2/conf/:/ppml/trusted-big-data-ml/work/spark-3.1.2/jars/*:/ppml/trusted-big-data-ml/work/spark-3.1.2/jars/spark-sql_2.12-3.1.2.jar' \
+  -cp '/ppml/trusted-big-data-ml/work/spark-3.1.3/conf/:/ppml/trusted-big-data-ml/work/spark-3.1.3/jars/*:/ppml/trusted-big-data-ml/work/spark-3.1.3/jars/spark-sql_2.12-3.1.3.jar' \
   -Xmx1g \
     org.apache.spark.deploy.SparkSubmit \
     --master 'local[4]' \
@@ -74,7 +74,7 @@ echo "pysaprk sql api example.4 --- GroupedData"
 cd /ppml/trusted-big-data-ml
 ./clean.sh
 /graphene/Tools/argv_serializer bash -c "/opt/jdk8/bin/java \
-  -cp '/ppml/trusted-big-data-ml/work/spark-3.1.2/conf/:/ppml/trusted-big-data-ml/work/spark-3.1.2/jars/*' \
+  -cp '/ppml/trusted-big-data-ml/work/spark-3.1.3/conf/:/ppml/trusted-big-data-ml/work/spark-3.1.3/jars/*' \
   -Xmx1g \
   org.apache.spark.deploy.SparkSubmit \
     --master 'local[4]' \
@@ -91,7 +91,7 @@ echo "pysaprk sql api example.5 --- Column"
 cd /ppml/trusted-big-data-ml
 ./clean.sh
 /graphene/Tools/argv_serializer bash -c "/opt/jdk8/bin/java \
-  -cp '/ppml/trusted-big-data-ml/work/spark-3.1.2/conf/:/ppml/trusted-big-data-ml/work/spark-3.1.2/jars/*' \
+  -cp '/ppml/trusted-big-data-ml/work/spark-3.1.3/conf/:/ppml/trusted-big-data-ml/work/spark-3.1.3/jars/*' \
   -Xmx1g \
   org.apache.spark.deploy.SparkSubmit \
     --master 'local[4]' \
@@ -108,7 +108,7 @@ echo "pysaprk sql api example.6 --- Row_and_DataFrameNaFunctions"
 cd /ppml/trusted-big-data-ml
 ./clean.sh
 /graphene/Tools/argv_serializer bash -c "/opt/jdk8/bin/java \
-  -cp '/ppml/trusted-big-data-ml/work/spark-3.1.2/conf/:/ppml/trusted-big-data-ml/work/spark-3.1.2/jars/*' \
+  -cp '/ppml/trusted-big-data-ml/work/spark-3.1.3/conf/:/ppml/trusted-big-data-ml/work/spark-3.1.3/jars/*' \
   -Xmx1g \
   org.apache.spark.deploy.SparkSubmit \
     --master 'local[4]' \
@@ -125,7 +125,7 @@ echo "pysaprk sql api example.7 --- Window"
 cd /ppml/trusted-big-data-ml
 ./clean.sh
 /graphene/Tools/argv_serializer bash -c "/opt/jdk8/bin/java \
-  -cp '/ppml/trusted-big-data-ml/work/spark-3.1.2/conf/:/ppml/trusted-big-data-ml/work/spark-3.1.2/jars/*' \
+  -cp '/ppml/trusted-big-data-ml/work/spark-3.1.3/conf/:/ppml/trusted-big-data-ml/work/spark-3.1.3/jars/*' \
   -Xmx1g \
   org.apache.spark.deploy.SparkSubmit \
     --master 'local[4]' \
@@ -142,7 +142,7 @@ echo "pysaprk sql api example.8 --- DataframeReader"
 cd /ppml/trusted-big-data-ml
 ./clean.sh
 /graphene/Tools/argv_serializer bash -c "/opt/jdk8/bin/java \
-  -cp '/ppml/trusted-big-data-ml/work/spark-3.1.2/conf/:/ppml/trusted-big-data-ml/work/spark-3.1.2/jars/*' \
+  -cp '/ppml/trusted-big-data-ml/work/spark-3.1.3/conf/:/ppml/trusted-big-data-ml/work/spark-3.1.3/jars/*' \
   -Xmx1g \
   org.apache.spark.deploy.SparkSubmit \
     --master 'local[4]' \
@@ -159,7 +159,7 @@ echo "pysaprk sql api example.9 --- DataframeWriter"
 cd /ppml/trusted-big-data-ml
 ./clean.sh
 /graphene/Tools/argv_serializer bash -c "/opt/jdk8/bin/java \
-  -cp '/ppml/trusted-big-data-ml/work/spark-3.1.2/conf/:/ppml/trusted-big-data-ml/work/spark-3.1.2/jars/*' \
+  -cp '/ppml/trusted-big-data-ml/work/spark-3.1.3/conf/:/ppml/trusted-big-data-ml/work/spark-3.1.3/jars/*' \
   -Xmx1g \
   org.apache.spark.deploy.SparkSubmit \
     --master 'local[4]' \
@@ -176,7 +176,7 @@ echo "pysaprk sql api example.10 --- HiveContext"
 cd /ppml/trusted-big-data-ml
 ./clean.sh
 /graphene/Tools/argv_serializer bash -c "/opt/jdk8/bin/java \
-  -cp '/ppml/trusted-big-data-ml/work/spark-3.1.2/conf/:/ppml/trusted-big-data-ml/work/spark-3.1.2/jars/*' \
+  -cp '/ppml/trusted-big-data-ml/work/spark-3.1.3/conf/:/ppml/trusted-big-data-ml/work/spark-3.1.3/jars/*' \
   -Xmx1g \
   org.apache.spark.deploy.SparkSubmit \
     --master 'local[4]' \
@@ -193,7 +193,7 @@ echo "pysaprk sql api example.11 --- Catalog"
 cd /ppml/trusted-big-data-ml
 ./clean.sh
 /graphene/Tools/argv_serializer bash -c "/opt/jdk8/bin/java \
-  -cp '/ppml/trusted-big-data-ml/work/spark-3.1.2/conf/:/ppml/trusted-big-data-ml/work/spark-3.1.2/jars/*' \
+  -cp '/ppml/trusted-big-data-ml/work/spark-3.1.3/conf/:/ppml/trusted-big-data-ml/work/spark-3.1.3/jars/*' \
   -Xmx1g \
   org.apache.spark.deploy.SparkSubmit \
     --master 'local[4]' \
@@ -210,7 +210,7 @@ echo "pysaprk sql api example.12 --- types module"
 cd /ppml/trusted-big-data-ml
 ./clean.sh
 /graphene/Tools/argv_serializer bash -c "/opt/jdk8/bin/java \
-  -cp '/ppml/trusted-big-data-ml/work/spark-3.1.2/conf/:/ppml/trusted-big-data-ml/work/spark-3.1.2/jars/*' \
+  -cp '/ppml/trusted-big-data-ml/work/spark-3.1.3/conf/:/ppml/trusted-big-data-ml/work/spark-3.1.3/jars/*' \
   -Xmx1g \
   org.apache.spark.deploy.SparkSubmit \
     --master 'local[4]' \
@@ -229,7 +229,7 @@ echo "pysaprk sql api example.13 --- pyspark api functions"
     cd /ppml/trusted-big-data-ml
 ./clean.sh
 /graphene/Tools/argv_serializer bash -c "/opt/jdk8/bin/java \
-      -cp '/ppml/trusted-big-data-ml/work/spark-3.1.2/conf/:/ppml/trusted-big-data-ml/work/spark-3.1.2/jars/*' \
+      -cp '/ppml/trusted-big-data-ml/work/spark-3.1.3/conf/:/ppml/trusted-big-data-ml/work/spark-3.1.3/jars/*' \
       -Xmx1g \
       org.apache.spark.deploy.SparkSubmit \
         --master 'local[4]' \

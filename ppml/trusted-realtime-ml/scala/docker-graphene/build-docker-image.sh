@@ -14,4 +14,4 @@ sudo docker build \
     --build-arg JDK_VERSION=8u192 \
     --build-arg JDK_URL=$JDK_URL \
     --build-arg no_proxy=x.x.x.x \
-    -t intelanalytics/bigdl-ppml-trusted-realtime-ml-scala-graphene:2.1.0-SNAPSHOT -f ./Dockerfile .
+    -t intelanalytics/bigdl-ppml-trusted-realtime-ml-scala-graphene:2.1.0 -f ./Dockerfile .
