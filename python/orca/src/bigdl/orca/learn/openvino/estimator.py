@@ -27,6 +27,7 @@ from bigdl.dllib.nncontext import init_nncontext
 from openvino.inference_engine import IECore
 import numpy as np
 from bigdl.dllib.utils.log4Error import *
+from bigdl.orca.learn.utils import openvino_output_to_sdf
 
 
 class Estimator(object):
@@ -133,16 +134,22 @@ class OpenvinoEstimator(SparkEstimator):
 
                 infer_request.infer(input_dict)
                 if len(outputs) == 1:
-                    pred = infer_request.output_blobs[outputs[0]].buffer[:elem_num]
-                    pred = [[np.expand_dims(output, axis=0).tolist()] for output in pred]
+                    batch_pred = infer_request.output_blobs[outputs[0]].buffer[:elem_num]
+                    temp_result_list = []
+                    for p in batch_pred:
+                        temp_result_list.append(get_arrow_hex_str([p.flatten()], names=outputs))
                 else:
-                    pred = list(map(lambda output:
-                                    infer_request.output_blobs[output].buffer[:elem_num],
-                                    outputs))
-                    pred = [list(np.expand_dims(output, axis=0).tolist()
-                                 for output in single_result)
-                            for single_result in zip(*pred)]
-                return pred
+                    batch_pred = list(map(lambda output:
+                                          infer_request.output_blobs[output].buffer[:elem_num],
+                                          outputs))
+                    temp_result_list = []
+                    for i in range(elem_num):
+                        single_r = []
+                        for p in batch_pred:
+                            single_r.append([p[i].flatten()])
+                        temp_result_list.append(get_arrow_hex_str(single_r, names=outputs))
+                del batch_pred
+                return temp_result_list
 
             if not is_df:
                 for batch_data in partition:
@@ -168,7 +175,7 @@ class OpenvinoEstimator(SparkEstimator):
                 schema_dict = {col: schema[col].dataType for col in feature_cols}
                 import pyspark.sql.types as df_types
                 from pyspark.ml.linalg import DenseVector
-                from pyspark.sql import Row
+                from bigdl.orca.learn.utils import get_arrow_hex_str
                 for row in partition:
                     cnt += 1
                     batch_row.append(row)
@@ -176,18 +183,16 @@ class OpenvinoEstimator(SparkEstimator):
                         batch_dict[col].append(row[col])
                     if cnt >= batch_size:
                         pred = generate_output_row(batch_dict)
-                        for r, p in zip(batch_row, pred):
-                            row = Row(*([r[col] for col in r.__fields__] + p))
-                            yield row
+                        for p in pred:
+                            yield p
                         del pred
                         batch_dict = {col: [] for col in feature_cols}
                         batch_row = []
                         cnt = 0
                 if cnt > 0:
                     pred = generate_output_row(batch_dict)
-                    for r, p in zip(batch_row, pred):
-                        row = Row(*([r[col] for col in r.__fields__] + p))
-                        yield row
+                    for p in pred:
+                        yield p
                     del pred
             del local_model
             del net
@@ -216,21 +221,10 @@ class OpenvinoEstimator(SparkEstimator):
             return feature_data
 
         if isinstance(data, DataFrame):
-            from pyspark.sql.types import StructType, StructField, FloatType, ArrayType
             is_df = True
             schema = data.schema
             result = data.rdd.mapPartitions(lambda iter: partition_inference(iter))
-
-            # Deal with types
-            result_struct = []
-            for key, shape in self.output_dict.items():
-                struct_type = FloatType()
-                for _ in range(len(shape)):
-                    struct_type = ArrayType(struct_type)
-                result_struct.append(StructField(key, struct_type))
-
-            schema = StructType(schema.fields + result_struct)
-            result_df = result.toDF(schema)
+            result_df = openvino_output_to_sdf(data, result, outputs, list(self.output_dict.values()))
             return result_df
         elif isinstance(data, SparkXShards):
             transformed_data = data.transform_shard(predict_transform, batch_size)
@@ -327,6 +321,8 @@ class OpenvinoEstimator(SparkEstimator):
                               weights=self.weight_bytes, init_from_buffer=True)
         self.inputs = list(net.input_info.keys())
         self.output_dict = {k: v.shape for k, v in net.outputs.items()}
+        del net
+        del ie
 
     def set_tensorboard(self, log_dir, app_name):
         """
