@@ -256,7 +256,7 @@ jobs:
     - name: Build package
       run: |
         export TIMESTAMP=`date '+%Y%m%d'`
-        export PYPI_VERSION=2.1.0
+        export PYPI_VERSION=2.2.0
         nb_version=${PYPI_VERSION}b${TIMESTAMP}
         echo ${nb_version}
 
@@ -306,7 +306,7 @@ jobs:
     - name: Build package
       run: |
         export TIMESTAMP=`date '+%Y%m%d'`
-        export PYPI_VERSION=2.1.0
+        export PYPI_VERSION=2.2.0
         nb_version=${PYPI_VERSION}b${TIMESTAMP}
         echo ${nb_version}
         apt-get update
@@ -358,7 +358,7 @@ jobs:
 
         #spark3
         ## linux ##
-        bash python/dev/release_default_linux_spark312.sh ${nb_version} false false
+        bash python/dev/release_default_linux_spark313.sh ${nb_version} false false
         # upload
         sshpass -p 'abcd1234!@#$QWER' \
         scp ./python/dllib/src/dist/bigdl_dllib*-py3-none-manylinux1_x86_64.whl \
@@ -377,7 +377,7 @@ jobs:
         intelanalytics@frs.sourceforge.net:/home/frs/project/analytics-zoo/chronos-py-spark3
 
         ## mac ##
-        bash python/dev/release_default_mac_spark312.sh ${nb_version} false false
+        bash python/dev/release_default_mac_spark313.sh ${nb_version} false false
         # upload
         sshpass -p 'abcd1234!@#$QWER' \
         scp ./python/dllib/src/dist/bigdl_dllib*-py3-none-macosx_10_11_x86_64.whl \
