@@ -127,6 +127,14 @@
           <include>start-fl-server.py</include>
       </includes>
     </fileSet>
+    <fileSet>
+      <outputDirectory>/python</outputDirectory>
+      <directory>${project.parent.basedir}/../python/ppml/scripts</directory>
+      <includes>
+          <include>start-fgboost-server.py</include>
+      </includes>
+    </fileSet>
+
   </fileSets>
   <dependencySets>
     <dependencySet>
