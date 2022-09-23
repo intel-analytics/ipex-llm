@@ -55,7 +55,12 @@ class _TorchNanoModule(_LiteModule):
         except AttributeError:
             pass
 
+        # When using multi-instance training, self.module will be DistributedDataParallel(DDP),
+        # otherwise, `self.module` will be original module.
         if isinstance(self.module, DistributedDataParallel):
+            # just in case that users try to access an attribute of DDP
+            # or an attribute of both DDP and original model,
+            # we should first try to find it in DDP
             try:
                 return getattr(self.module, name)
             except AttributeError:
