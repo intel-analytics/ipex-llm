@@ -130,10 +130,6 @@ RUN wget https://raw.githubusercontent.com/intel-analytics/analytics-zoo/bigdl-2
     chmod a+x ./download-bigdl.sh
 RUN ./download-bigdl.sh && \
     rm bigdl*.zip
-RUN wget https://raw.githubusercontent.com/intel-analytics/analytics-zoo/bigdl-2.0/docker/hyperzoo/download-ppml.sh && \
-    chmod a+x ./download-ppml.sh && \
-    ./download-ppml.sh
-
 
 
 # Stage.3 PPML
@@ -225,7 +221,7 @@ RUN env DEBIAN_FRONTEND=noninteractive apt-get update && \
     pip install --no-cache-dir ninja meson && \
     pip install --no-cache-dir psutil && \
     pip install --no-cache-dir dill==0.3.4 && \
-    pip install --no-cache-dir pyspark && \
+    pip install --no-cache-dir py4j && \
     python3 -m pip install toml==0.10.2 click jinja2 && \
     python3 -m ipykernel.kernelspec && \
     ln -s /usr/lib/x86_64-linux-gnu/libtinfo.so.6 /usr/lib/x86_64-linux-gnu/libtinfo.so.5 && \
