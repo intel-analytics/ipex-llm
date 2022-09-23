@@ -639,7 +639,7 @@ class InferenceOptimizer:
         invalidInputError(False, "Accelerator {} is invalid.".format(accelerator))
 
     @staticmethod
-    def save(model: pl.LightningModule, path):
+    def save(model: nn.Module, path):
         """
         Save the model to local file.
 
@@ -650,7 +650,7 @@ class InferenceOptimizer:
         save_model(model, path)
 
     @staticmethod
-    def load(path, model: pl.LightningModule = None):
+    def load(path, model: nn.Module = None):
         """
         Load a model from local.
 
