@@ -16,7 +16,7 @@ BigDL seamlessly scales your data analytics & AI applications from laptop to clo
 
 - [DLlib](#dllib): “Equivalent of Spark MLlib” for Deep Learning
 
-- Chronos: Scalable Time Series Analysis using AutoML
+- [Chronos](#chronos): Scalable Time Series Analysis using AutoML
 
 - Friesian: End-to-End Recommendation Systems
 
@@ -152,7 +152,44 @@ val predictions = pipelineModel.transform(validationDF)
 
   See the [NNframes](https://bigdl.readthedocs.io/en/latest/doc/DLlib/Overview/nnframes.html) and [Keras API](https://bigdl.readthedocs.io/en/latest/doc/DLlib/Overview/keras-api.html) user guides for more details.
 
+</details>
+
+### Chronos
+
+The *Chronos* library makes it easy to build end-to-end time series analysis by applying AutoML to extremely large-scale time series prediction.
+
+<details><summary>Show Chronos example</summary>
+<br/>
+
+You can train a time series model using _Chronos_ in 3 simple steps:
+
+To train a time series model with AutoML, first initialize [Orca Context](https://bigdl.readthedocs.io/en/latest/doc/Orca/Overview/orca-context.html):
+
+```python
+# 1. Initialize Orca Context
+from bigdl.orca import init_orca_context
+init_orca_context(cluster_mode="yarn", cores=4, memory="10g", num_nodes=2, init_ray_on_spark=True)
+
+# 2. Create `TSDataset` for your time series data
+from bigdl.chronos.data import TSDataset
+tsdata_train, tsdata_valid, tsdata_test\
+        = TSDataset.from_pandas(df, 
+                                dt_col="dt_col", 
+                                target_col="target_col", 
+                                ...)
+
+# 3. Train time series model using `AutoTSEstimator`
+from bigdl.chronos.autots import AutoTSEstimator
+autotsest = AutoTSEstimator(model='lstm')
+ts_pipeline = autotsest.fit(data=tsdata_train,
+                            validation_data=tsdata_valid)
+ts_pipeline.predict(tsdata_test)
+```
+
+See the Chronos [user guide](https://bigdl.readthedocs.io/en/latest/doc/Chronos/Overview/chronos.html) and [example](https://bigdl.readthedocs.io/en/latest/doc/Chronos/QuickStart/chronos-autotsest-quickstart.html) for more details.
+
 </details>  
+
 
 ## Getting Support
 
