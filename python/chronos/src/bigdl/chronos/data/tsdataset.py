@@ -71,6 +71,7 @@ class TSDataset:
         self._freq_certainty = False
         self._freq = None
         self._is_pd_datetime = pd.api.types.is_datetime64_any_dtype(self.df[self.dt_col].dtypes)
+        self.is_predict = False
         if self._is_pd_datetime:
             if len(self.df[self.dt_col]) < 2:
                 self._freq = None
@@ -629,7 +630,7 @@ class TSDataset:
                                                        dt_col=self.dt_col,
                                                        freq=self._freq,
                                                        horizon_time=horizon_time,
-                                                       is_predict=is_predict,
+                                                       is_predict=self.is_predict,
                                                        lookback=lookback,
                                                        label_len=label_len))
             self.numpy_x_timeenc = np.concatenate([time_enc_arr[i][0]
