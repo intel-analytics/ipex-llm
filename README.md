@@ -10,19 +10,21 @@
 
 BigDL seamlessly scales your data analytics & AI applications from laptop to cloud, with the following libraries:
 
-- Orca: Distributed Big Data & AI (TF & PyTorch) Pipeline on Spark and Ray
+- [Orca](#orca): Distributed Big Data & AI (TF & PyTorch) Pipeline on Spark and Ray
 
 - Nano: Transparent Acceleration of Tensorflow & PyTorch Programs
 
-- DLlib: “Equivalent of Spark MLlib” for Deep Learning
+- [DLlib](#dllib): “Equivalent of Spark MLlib” for Deep Learning
 
 - Chronos: Scalable Time Series Analysis using AutoML
 
 - Friesian: End-to-End Recommendation Systems
 
 - PPML (experimental): Secure Big Data and AI (with SGX Hardware Security)
- 
- ---
+
+For more information, you may [read the docs](https://bigdl.readthedocs.io/).
+
+---
 
 ## Choosing the right BigDL library
 **Decision tree**
@@ -114,6 +116,43 @@ BigDL seamlessly scales your data analytics & AI applications from laptop to clo
   See the RayOnSpark [user guide](https://bigdl.readthedocs.io/en/latest/doc/Ray/Overview/ray.html) and [quickstart](https://bigdl.readthedocs.io/en/latest/doc/Ray/QuickStart/ray-quickstart.html) for more details.
   </details>  
 
+
+### DLlib
+
+With _DLlib_, you can write distributed deep learning applications as standard (**Scala** or **Python**) Spark programs, using the same *Spark Dataframe* and *ML Pipeline* APIs.
+
+<details><summary>Show DLlib example</summary>
+<br/>
+
+You can build distributed deep learning applications for Spark using *DLlib* in 3 simple steps:
+
+```scala
+// 1. Call `initNNContext` at the beginning of the code: 
+import com.intel.analytics.bigdl.dllib.NNContext
+val sc = NNContext.initNNContext()
+
+// 2. Define the Deep Learning model using Keras-style API in DLlib:
+val input = Input[Float](inputShape = Shape(10))  
+val dense = Dense[Float](12).inputs(input)  
+val output = Activation[Float]("softmax").inputs(dense)  
+val model = Model(input, output)
+
+// 3. Use `NNEstimator` to train/predict/evaluate the model 
+// using Spark Dataframe and ML pipeline APIs
+val trainingDF = spark.read.parquet("train_data")
+val validationDF = spark.read.parquet("val_data")
+val scaler = new MinMaxScaler().setInputCol("in").setOutputCol("value")
+val estimator = NNEstimator(model, CrossEntropyCriterion())  
+        .setBatchSize(size).setOptimMethod(new Adam()).setMaxEpoch(epoch)
+val pipeline = new Pipeline().setStages(Array(scaler, estimator))
+
+val pipelineModel = pipeline.fit(trainingDF)  
+val predictions = pipelineModel.transform(validationDF)
+```
+
+  See the [NNframes](https://bigdl.readthedocs.io/en/latest/doc/DLlib/Overview/nnframes.html) and [Keras API](https://bigdl.readthedocs.io/en/latest/doc/DLlib/Overview/keras-api.html) user guides for more details.
+
+</details>  
 
 ## Getting Support
 
