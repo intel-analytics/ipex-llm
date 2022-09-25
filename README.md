@@ -2,7 +2,7 @@
 
 <p align="center"> <img src="docs/readthedocs/image/bigdl_logo.jpg" height="140px"><br></p>
 
-**Fast, Distributed, Secure AI for Big Data**
+_**Fast, Distributed, Secure AI for Big Data**_
 
 </div>
 
@@ -204,7 +204,7 @@ If you've found BigDL useful for your project, you may cite the [paper](https://
 ```
 @inproceedings{dai2022bigdl,
   title={BigDL 2.0: Seamless Scaling of AI Pipelines from Laptops to Distributed Cluster},
-  author={Dai, Jason (Jinquan) and Ding, Ding and Shi, Dongjie and Huang, Shengsheng and Wang, Jiao and Qiu, Xin and Huang, Kai and Song, Guoqiong and Wang, Yang and Gong, Qiyuan and others},
+  author={Dai, Jason (Jinquan) and Ding, Ding and Shi, Dongjie and Huang, Shengsheng and Wang, Jiao and Qiu, Xin and Huang, Kai and Song, Guoqiong and Wang, Yang and Gong, Qiyuan and Song, Jiaming and Yu, Shan and Zheng, Le and Chen, Yina and Deng, Junwei and Song, Ge},
   booktitle={Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition},
   pages={21439--21446},
   year={2022}
