@@ -20,7 +20,7 @@ BigDL seamlessly scales your data analytics & AI applications from laptop to clo
 
 - Friesian: End-to-End Recommendation Systems
 
-- PPML (experimental): Secure Big Data and AI (with SGX Hardware Security)
+- [PPML](#ppml) (experimental): Secure Big Data and AI (with SGX Hardware Security)
 
 For more information, you may [read the docs](https://bigdl.readthedocs.io/).
 
@@ -216,6 +216,9 @@ See the Chronos [user guide](https://bigdl.readthedocs.io/en/latest/doc/Chronos/
 
 </details>  
 
+### PPML
+
+*BigDL PPML* provides a **hardware (Intel SGX) protected** *Trusted Cluster Environment* for running distributed Big Data & AI applications (in a secure fashion on private or public cloud).
 
 ## Getting Support
 
