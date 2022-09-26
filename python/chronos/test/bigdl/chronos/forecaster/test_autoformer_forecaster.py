@@ -392,3 +392,15 @@ class TestChronosModelAutoformerForecaster(TestCase):
                                           seed=0)
         val_loss = forecaster.fit(train_loader, val_loader, epochs=10,
                                   validation_mode='best_epoch')
+
+    def test_autoformer_forecaster_fit_val_tsdataset(self):
+        train, val, test = create_tsdataset(val_ratio=0.1)
+        forecaster = AutoformerForecaster(past_seq_len=24,
+                                          future_seq_len=5,
+                                          input_feature_num=2,
+                                          output_feature_num=2,
+                                          label_len=12,
+                                          freq='s',
+                                          seed=0)
+        forecaster.fit(train, val, epochs=3, batch_size=32)
+        forecaster.predict(test)

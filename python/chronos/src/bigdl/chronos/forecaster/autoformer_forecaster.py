@@ -432,7 +432,7 @@ class AutoformerForecaster(Forecaster):
                     shuffle=False)
             # transform a TSDataset instance to dataloader
             if isinstance(validation_data, TSDataset):
-                _rolled = data.numpy_x is None
+                _rolled = validation_data.numpy_x is None
                 validation_data = validation_data.to_torch_data_loader(
                     batch_size=batch_size,
                     roll=_rolled,
@@ -443,6 +443,7 @@ class AutoformerForecaster(Forecaster):
                     feature_col=validation_data.roll_feature,
                     target_col=validation_data.roll_target,
                     shuffle=False)
+
             self.trainer.fit(self.internal, data, validation_data)
             self.fitted = True
             fit_out = read_csv('./forecaster_tmp_log/version_0/metrics.csv', loss_name='val_loss')
