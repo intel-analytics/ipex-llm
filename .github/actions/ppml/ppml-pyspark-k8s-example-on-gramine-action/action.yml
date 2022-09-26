@@ -1,5 +1,10 @@
 name: 'PPML-PySpark-K8S-Example-on-Gramine'
 description: 'PPML-PySpark-K8S-Example-on-Gramine'
+inputs:
+  image-tag:
+    description: 'image tag'
+    required: true
+    default: 'latest'
 runs:
   using: "composite"
   steps:
@@ -7,7 +12,7 @@ runs:
     - name: Set Variable
       shell: bash
       env:
-        DEFAULT_IMAGE: 10.239.45.10/arda/intelanalytics/bigdl-ppml-trusted-big-data-ml-python-gramine:latest
+        DEFAULT_IMAGE: 10.239.45.10/arda/intelanalytics/bigdl-ppml-trusted-big-data-ml-python-gramine:${{ inputs.image-tag }}
       run: |
         echo "CONTAINER_NAME=pyspark-exmaples-test-gramine" >> $GITHUB_ENV
         echo "SGX_MEM_SIZE=${{ env.DEFAULT_SGX_MEM_SIZE }}" >> $GITHUB_ENV

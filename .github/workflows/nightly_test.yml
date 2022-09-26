@@ -28,6 +28,11 @@ on:
         - PPML-PySpark-K8S-EXAMPLE
         - PPML-Occlum-ExampleTests
         - PPML-spark-Local-Example-Tests-on-Gramine
+      tag:
+        description: 'docker image tag'
+        required: true
+        default: 'latest'
+        type: string
 
 permissions:
   contents: read
@@ -373,9 +378,16 @@ jobs:
       uses: ./.github/actions/jdk-setup-action
     - name: Set up maven
       uses: ./.github/actions/maven-setup-action
+    - name: set env
+      env:
+        DEFAULT_TAG: 'latest'
+      run: |
+        echo "TAG=${{ github.event.inputs.bigdlTag || env.DEFAULT_TAG }} " >> $GITHUB_ENV
     - name: Run test
       uses: ./.github/actions/ppml/ppml-pyspark-k8s-example-on-gramine-action
-
+      with:
+        image-tag: ${TAG}
+        
   create-workflow-badge:
     runs-on: ubuntu-latest
     steps:
@@ -423,8 +435,15 @@ jobs:
       uses: ./.github/actions/jdk-setup-action
     - name: Set up maven
       uses: ./.github/actions/maven-setup-action
+    - name: set env
+      env:
+        DEFAULT_TAG: 'latest'
+      run: |
+        echo "TAG=${{ github.event.inputs.bigdlTag || env.DEFAULT_TAG }} " >> $GITHUB_ENV
     - name: Run test
       uses: ./.github/actions/ppml-spark-local-example-tests-on-gramine-action
+      with:
+        image-tag: ${TAG}
     - name: Create Job Badge
       uses: ./.github/actions/create-job-status-badge
       if: ${{ always() }}
