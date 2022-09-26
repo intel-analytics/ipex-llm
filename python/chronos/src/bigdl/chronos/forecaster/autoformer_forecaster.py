@@ -329,6 +329,7 @@ class AutoformerForecaster(Forecaster):
                     be sure to set label_len > 0 and time_enc = True
                | 2. pytorch dataloader: generate from `TSDataset.to_torch_data_loader`,
                     be sure to set label_len > 0 and time_enc = True
+               | 3. A bigdl.chronos.data.tsdataset.TSDataset instance
 
         :param epochs: Number of epochs you want to train. The value defaults to 1.
         :param batch_size: Number of batch size you want to train. The value defaults to 32.
@@ -417,7 +418,7 @@ class AutoformerForecaster(Forecaster):
                                log_every_n_steps=10)
 
         # fitting
-        if not validation_data:
+        if validation_data is None:
             self.trainer.fit(self.internal, data)
             self.fitted = True
         else:
@@ -428,6 +429,19 @@ class AutoformerForecaster(Forecaster):
                                   torch.from_numpy(validation_data[2]),
                                   torch.from_numpy(validation_data[3])),
                     batch_size=batch_size,
+                    shuffle=False)
+            # transform a TSDataset instance to dataloader
+            if isinstance(validation_data, TSDataset):
+                _rolled = data.numpy_x is None
+                validation_data = validation_data.to_torch_data_loader(
+                    batch_size=batch_size,
+                    roll=_rolled,
+                    lookback=self.data_config['past_seq_len'],
+                    horizon=self.data_config['future_seq_len'],
+                    label_len=self.data_config['label_len'],
+                    time_enc=True,
+                    feature_col=validation_data.roll_feature,
+                    target_col=validation_data.roll_target,
                     shuffle=False)
             self.trainer.fit(self.internal, data, validation_data)
             self.fitted = True
