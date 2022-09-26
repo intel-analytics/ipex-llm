@@ -36,7 +36,8 @@ object AttestationCLI {
                              challenge: String = "",
                              userReport: String = "ppml")
 
-        val cmdParser = new OptionParser[CmdParams]("PPML Attestation Quote Generation Cmd tool") {
+        val cmdParser: OptionParser[CmdParams] = new OptionParser[CmdParams](
+          "PPML Attestation Quote Generation Cmd tool") {
             opt[String]('i', "appID")
               .text("app id for this app")
               .action((x, c) => c.copy(appID = x))
@@ -50,12 +51,11 @@ object AttestationCLI {
               .text("attestation service type, default is EHSMKeyManagementService")
               .action((x, c) => c.copy(asType = x))
             opt[String]('c', "challenge")
-              .text("challenge to attestation service, default is '' which skip bi-attestation")
+              .text("challenge to attestation service, defaultly skip bi-attestation")
               .action((x, c) => c.copy(challenge = x))
             opt[String]('p', "userReport")
               .text("userReportDataPath, default is test")
               .action((x, c) => c.copy(userReport = x))
-
         }
         val params = cmdParser.parse(args, CmdParams()).get
 
@@ -91,7 +91,7 @@ object AttestationCLI {
             }
         }
         val attResult = as.attestWithServer(Base64.getEncoder.encodeToString(quote))
-        // System.out.print(as.attestWithServer(quote))
+
         if (attResult._1) {
             System.out.println("Attestation Success!")
             // Bash success

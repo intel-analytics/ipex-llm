@@ -3,37 +3,145 @@ SGX-based Trusted Big Data ML allows the user to run end-to-end big data analyti
 
 *Please mind the IP and file path settings. They should be changed to the IP/path of your own sgx server on which you are running the programs.*
 ## Before Running code
-#### 1. Build Docker Image
+### 1. Build Docker Images
 
-Before running the following command, please modify the paths in `build-docker-image.sh`. Then build the docker image with the following command.
+#### 1.1 Build BigDL Base Image
+
+The bigdl base image is a public one that does not contain any secrets. You will use the base image to get your own custom image in the following. 
+
+Before running the following command, please modify the paths in `build-docker-image.sh`. Especially, set `IMAGE_MODE` to `bigdl_base_image`. Then build the docker image with the following command.
 
 ```bash
+cd base
 ./build-docker-image.sh
+cd ..
 ```
-#### 2. Prepare key
-##### Prepare the Key
+#### 1.2 Build Customer Image
+
+First, You need to generate your enclave key using the command below, and keep it safely for future remote attestations and to start SGX enclaves more securely.
+
+It will generate a file `enclave-key.pem` in your present working directory, which will be your enclave key. To store the key elsewhere, modify the outputted file path.
+
+```bash
+  openssl genrsa -3 -out enclave-key.pem 3072
+```
+
+Then, use the `enclave-key.pem` and the bigdl base image to build your own custom image. Change the `IMAGE_MODE` to `custom_image` and run `build-docker-image.sh` again. In the process, SGX MREnclave will be made and signed without saving the sensitive encalve key inside the final image, which is safer.
+
+```bash
+cd base
+# modify custom parameters in build-docker-image.sh
+./build-docker-image.sh
+cd ..
+```
+
+The docker build console will also output `mr_enclave` and `mr_signer` like below, which are hash values and used to  register your MREnclave in the following.
+
+````bash
+......
+mr_enclave       : c7a8a42af......
+mr_signer        : 6f0627955......
+````
+
+### 2. Prepare Spark Security key
+
+#### 2.1 Prepare the Key
 
   The ppml in bigdl needs secured keys to enable spark security such as Authentication, RPC Encryption, Local Storage Encryption and TLS, you need to prepare the secure keys and keystores. In this tutorial, you can generate keys and keystores with root permission (test only, need input security password for keys).
 
-  ```bash
+```bash
   sudo bash ../../../scripts/generate-keys.sh
-  ```
+```
 
-  You also need to generate your enclave key using the command below, and keep it safely for future remote attestations and to start SGX enclaves more securely.
-
-  It will generate a file `enclave-key.pem` in your present working directory, which will be your enclave key. To store the key elsewhere, modify the outputted file path.
-
-  ```bash
-  openssl genrsa -3 -out enclave-key.pem 3072
-  ```
-
-##### Prepare the Password
+#### 2.2 Prepare the Password
 
   Next, you need to store the password you used for key generation, i.e., `generate-keys.sh`, in a secured file.
 
-  ```bash
+```bash
   sudo bash ../../../scripts/generate-password.sh used_password_when_generate_keys
-  ```
+```
+
+### 3. Register MREnclave
+
+#### 3.1 Deploy EHSM KMS&AS
+
+KMS (Key Management Service) and AS (Attestation Service) make sure applications of the customer actually run in the SGX MREnclave signed above by customer-self, rather than a fake one fake by an attacker.
+
+Bigdl ppml use EHSM as reference KMS&AS, you can deploy EHSM following a guide [here](https://github.com/intel-analytics/BigDL/tree/main/ppml/services/pccs-ehsm/kubernetes#deploy-bigdl-pccs-ehsm-kms-on-kubernetes-with-helm-charts).
+
+#### 3.2 Enroll yourself on EHSM
+
+Enroll yourself as below, The `<kms_ip>` is your configured-ip of EHSM service in the deployment section:
+
+```bash
+curl -v -k -G "https://<kms_ip>:9000/ehsm?Action=Enroll"
+......
+{"code":200,"message":"successful","result":{"apikey":"E8QKpBB******","appid":"8d5dd3b*******"}}
+```
+
+ You will get a `appid` and `apikey` pair and save it.
+
+#### 3.3 Attest EHSM Server
+
+##### 3.3.1 Start a BigDL client container
+
+First, start a bigdl container, which uses the bigdl base image build before.
+
+```bash
+export SPARK_SECURITY_KEYS_PATH=YOUR_LOCAL_SSL_KEYS_FOLDER_PATH
+export LOCAL_IP=YOUR_LOCAL_IP
+export BIGDL_BASE_IMAGE=YOUR_BIGDL_BASE_IMAGE_BUILT_BEFORE
+export PCCS_URL=YOUR_PCCS_URL # format like https://1.2.3.4:xxxx, obtained from KMS services or a self-deployed one
+
+sudo docker run -itd \
+    --privileged \
+    --net=host \
+    --cpuset-cpus="0-5" \
+    --oom-kill-disable \
+    -v /var/run/aesmd/aesm.socket:/var/run/aesmd/aesm.socket \
+    -v $SPARK_SECURITY_KEYS_PATH:/ppml/trusted-big-data-ml/work/keys \
+    --name=gramine-verify-worker \
+    -e LOCAL_IP=$LOCAL_IP \
+    -e PCCS_URL=$PCCS_URL \
+    $BIGDL_BASE_IMAGE bash
+```
+
+Enter the work environment:
+
+```bash
+sudo docker exec -it gramine-verify-worker bash
+```
+
+##### 3.3.2 Verify  EHSM Quote
+
+You need to first attest the EHSM server and verify the service as trusted before running workloads, to avoid sending your secrets to a fake EHSM service.
+
+In the container, you can use `verify-attestation-service.sh` to verify the attestation service quote. Please set the variables in the script:
+
+```bash
+bash verify-attestation-service.sh
+```
+
+**Parameters in verify-attestation-service.sh:**
+
+**ATTESTATION_URL**: URL of attestation service. Should match the format `<ip_address>:<port>`.
+
+**APP_ID**, **API_KEY**: The appID and apiKey pair generated by your attestation service.
+
+**ATTESTATION_TYPE**: Type of attestation service. Currently support `EHSMAttestationService`.
+
+**CHALLENGE**: Challenge to get quote of attestation service which will be verified by local SGX SDK. Should be a BASE64 string. It can be a casual BASE64 string, for example, it can be generated by the command `echo anystring|base64`.
+
+#### 3.4 Register your MREnclave to EHSM
+
+Upload the metadata of your MREnclave obtained above to EHSM, and then only registerd MREnclave can pass the runtime verification in the following. You can register the MREnclave through running a python script:
+
+```bash
+exit # Exit from container and go back to BigDL/ppml/trusted-big-data-ml/python/docker-gramine on host
+
+python ../../../python/ppml.scripts/register-mrenclave.py --appid <your_appid> --apikey <your_apikey> --url https://<kms_ip>:9000 --mr_enclave <your_mrenclave_hash_value> --mr_signer <your_mrensigner_hash_value>
+```
+
 ## Run Your PySpark Program
 
 #### 1. Start the container to run native python examples
@@ -55,6 +163,7 @@ To run your pyspark program, first you need to prepare your own pyspark program 
 
 When the program finishes, check the results with the log `YOUR_PROGRAM-sgx.log`.
 ## Run Native Python Examples
+
 #### 1. Start the container to run native python examples
 
 Before you run the following commands to start the container, you need to modify the paths in `deploy-local-spark-sgx.sh` and then run the following commands.
@@ -97,7 +206,7 @@ sudo docker exec -it gramine-test bash
 Run the example with SGX spark local mode with the following command in the terminal.
 
 ```bash
-gramine-argv-serializer bash -c "/opt/jdk8/bin/java \
+export spark_commnd="/opt/jdk8/bin/java \
     -cp '/ppml/trusted-big-data-ml/work/spark-3.1.2/conf/:/ppml/trusted-big-data-ml/work/spark-3.1.2/jars/*:/ppml/trusted-big-data-ml/work/spark-3.1.2/examples/jars/*' -Xmx16g \
     org.apache.spark.deploy.SparkSubmit \
     --master local[4] \
@@ -107,8 +216,7 @@ gramine-argv-serializer bash -c "/opt/jdk8/bin/java \
     --conf spark.network.timeout=10000000 \
     --conf spark.executor.heartbeatInterval=10000000 \
     --verbose \
-    local:///ppml/trusted-big-data-ml/work/spark-3.1.2/examples/jars/spark-examples_2.12-3.1.2.jar 100" > /ppml/trusted-big-data-ml/secured_argvs
-./init.sh
+    local:///ppml/trusted-big-data-ml/work/spark-3.1.2/examples/jars/spark-examples_2.12-3.1.2.jar 100"
 gramine-sgx bash 2>&1 | tee local-pi-sgx.log
 ```
 
@@ -150,6 +258,7 @@ kubectl config view --flatten --minify > /YOUR_DIR/kubeconfig
 #### 1.2.3 Create k8s secret
 ```bash
 kubectl create secret generic spark-secret --from-literal secret=YOUR_SECRET
+kubectl create secret generic kms-secret --from-literal=app_id=your-kms-app-id --from-literal=app_key=your-kms-app-key
 ```
 **The secret created (`YOUR_SECRET`) should be the same as the password you specified in section 1.1**
 
@@ -190,10 +299,8 @@ sudo docker run -itd \
     -e RUNTIME_TOTAL_EXECUTOR_CORES=4 \
     -e RUNTIME_DRIVER_CORES=4 \
     -e RUNTIME_DRIVER_MEMORY=10g \
-    -e SGX_MEM_SIZE=64G \
     -e SGX_DRIVER_MEM=64g \
     -e SGX_DRIVER_JVM_MEM=12g \
-    -e SGX_EXECUTOR_MEM=64g \
     -e SGX_EXECUTOR_JVM_MEM=12g \
     -e SGX_ENABLED=true \
     -e SGX_LOG_LEVEL=error \
@@ -215,10 +322,10 @@ Please prepare the following and put them in your NFS directory:
 
 #### 1.4.2 Prepare secured-argvs for client
 
-Note: If you are running this client in trusted env, please skip this step. Then, directly run this command without `gramine-argv-serializer bash -c`.
+Note: If you are running this client in trusted env, please skip this step. Then, directly run this command without `export`.
 
 ```bash
-gramine-argv-serializer bash -c "secure_password=`openssl rsautl -inkey /ppml/trusted-big-data-ml/work/password/key.txt -decrypt </ppml/trusted-big-data-ml/work/password/output.bin` && TF_MKL_ALLOC_MAX_BYTES=10737418240 && \
+export spark_commnd="secure_password=`openssl rsautl -inkey /ppml/trusted-big-data-ml/work/password/key.txt -decrypt </ppml/trusted-big-data-ml/work/password/output.bin` && TF_MKL_ALLOC_MAX_BYTES=10737418240 && \
     SPARK_LOCAL_IP=$LOCAL_IP && \
     /opt/jdk8/bin/java \
         -cp '/ppml/trusted-big-data-ml/work/spark-3.1.2/conf/:/ppml/trusted-big-data-ml/work/spark-3.1.2/jars/*' \
@@ -271,13 +378,7 @@ gramine-argv-serializer bash -c "secure_password=`openssl rsautl -inkey /ppml/tr
         --conf spark.ssl.trustStoreType=JKS \
         --class org.apache.spark.examples.SparkPi \
         --verbose \
-        local:///ppml/trusted-big-data-ml/work/spark-3.1.2/examples/jars/spark-examples_2.12-3.1.2.jar" > /ppml/trusted-big-data-ml/secured_argvs
-```
-
-Init Gramine command.
-
-```bash
-./init.sh
+        local:///ppml/trusted-big-data-ml/work/spark-3.1.2/examples/jars/spark-examples_2.12-3.1.2.jar"
 ```
 
 Note that: you can run your own Spark Appliction after changing `--class` and jar path.
@@ -316,9 +417,7 @@ bash bigdl-ppml-submit.sh \
         --master local[2] \
         --sgx-enabled true \
         --sgx-log-level error \
-        --sgx-driver-memory 64g\
         --sgx-driver-jvm-memory 12g\
-        --sgx-executor-memory 64g\
         --sgx-executor-jvm-memory 12g\
         --driver-memory 32g \
         --driver-cores 8 \
@@ -343,9 +442,7 @@ bash bigdl-ppml-submit.sh \
         --deploy-mode client \
         --sgx-enabled true \
         --sgx-log-level error \
-        --sgx-driver-memory 64g \
         --sgx-driver-jvm-memory 12g\
-        --sgx-executor-memory 64g \
         --sgx-executor-jvm-memory 12g\
         --driver-memory 32g \
         --driver-cores 8 \
@@ -371,9 +468,7 @@ bash bigdl-ppml-submit.sh \
         --deploy-mode cluster \
         --sgx-enabled true \
         --sgx-log-level error \
-        --sgx-driver-memory 64g\
         --sgx-driver-jvm-memory 12g\
-        --sgx-executor-memory 64g\
         --sgx-executor-jvm-memory 12g\
         --driver-memory 32g \
         --driver-cores 8 \
@@ -401,9 +496,7 @@ bigdl-ppml-submit.sh is used to simplify the steps in 1.4
 --executor-cores 8 \
 --sgx-enabled true \
 --sgx-log-level error \
---sgx-driver-memory 64g \
 --sgx-driver-jvm-memory 12g \
---sgx-executor-memory 64g \
 --sgx-executor-jvm-memory 12g \
 --conf spark.kubernetes.container.image=$RUNTIME_K8S_SPARK_IMAGE \
 --num-executors 2 \
@@ -464,9 +557,7 @@ The following parameters enable spark executor running on SGX.
 The following is a recommended configuration in client mode.
 ```bash
     --conf spark.kubernetes.sgx.enabled=true
-    --conf spark.kubernetes.sgx.driver.mem=32g
     --conf spark.kubernetes.sgx.driver.jvm.mem=10g
-    --conf spark.kubernetes.sgx.executor.mem=32g
     --conf spark.kubernetes.sgx.executor.jvm.mem=12g
     --conf spark.kubernetes.sgx.log.level=error
     --conf spark.driver.memory=10g
@@ -475,9 +566,7 @@ The following is a recommended configuration in client mode.
 The following is a recommended configuration in cluster mode.
 ```bash
     --conf spark.kubernetes.sgx.enabled=true
-    --conf spark.kubernetes.sgx.driver.mem=32g
     --conf spark.kubernetes.sgx.driver.jvm.mem=10g
-    --conf spark.kubernetes.sgx.executor.mem=32g
     --conf spark.kubernetes.sgx.executor.jvm.mem=12g
     --conf spark.kubernetes.sgx.log.level=error
     --conf spark.driver.memory=1g

@@ -51,14 +51,8 @@ spec:
             value: !!str {{ .Values.executorInstances }}
           - name: SGX_ENABLED
             value: !!str {{ .Values.sgx }}
-          - name: SGX_LOG_LEVEL
-            value: {{ .Values.sgxLog }}
-          - name: SGX_DRIVER_MEM
-            value: {{ .Values.sgxDriverMem }}
           - name: SGX_DRIVER_JVM_MEM
             value: {{ .Values.sgxDriverJvmMem }}
-          - name: SGX_EXECUTOR_MEM
-            value: {{ .Values.sgxExecutorMem }}
           - name: SGX_EXECUTOR_JVM_MEM
             value: {{ .Values.sgxExecutorJvmMem }}
           #- name: ATTESTATION_ID
@@ -106,9 +100,6 @@ spec:
       - name: aesm-socket
         hostPath:
           path: /var/run/aesmd/aesm.socket
-      - name: enclave-key
-        secret:
-          secretName: enclave-key
       - name: secure-keys
         secret:
           secretName: ssl-keys

@@ -19,8 +19,18 @@ package com.intel.analytics.bigdl.ppml.kms
 
 import org.apache.hadoop.conf.Configuration
 import com.intel.analytics.bigdl.dllib.utils.Log4Error
-import com.intel.analytics.bigdl.ppml.utils.HTTPUtil.postRequest
+import com.intel.analytics.bigdl.ppml.utils.HTTPSUtil.postRequest
 import com.intel.analytics.bigdl.ppml.utils.{EHSMParams, KeyReaderWriter}
+import javax.net.ssl.SSLContext
+import org.apache.http.conn.ssl.AllowAllHostnameVerifier
+import org.apache.http.conn.ssl.SSLConnectionSocketFactory
+import org.apache.http.ssl.SSLContextBuilder
+import org.apache.http.ssl.SSLContexts
+import javax.net.ssl.X509TrustManager
+import java.security.cert.X509Certificate
+import javax.net.ssl.TrustManager
+import org.apache.http.util.EntityUtils
+import java.security.SecureRandom
 
 object EHSM_CONVENTION {
 
@@ -54,6 +64,16 @@ class EHSMKeyManagementService(
 
   Log4Error.invalidInputError(ehsmAPPID != "", s"ehsmAPPID should not be empty string.")
   Log4Error.invalidInputError(ehsmAPIKEY != "", s"ehsmAPIKEY should not be empty string.")
+  val sslConSocFactory = {
+    val sslContext: SSLContext = SSLContext.getInstance("SSL")
+    val trustManager: TrustManager = new X509TrustManager() {
+      override def checkClientTrusted(chain: Array[X509Certificate], authType: String): Unit = {}
+      override def checkServerTrusted(chain: Array[X509Certificate], authType: String): Unit = {}
+      override def getAcceptedIssuers(): Array[X509Certificate] = Array.empty
+    }
+    sslContext.init(null, Array(trustManager), new SecureRandom())
+    new SSLConnectionSocketFactory(sslContext, new AllowAllHostnameVerifier())
+  }
 
   def retrievePrimaryKey(primaryKeySavePath: String, config: Configuration = null): Unit = {
     Log4Error.invalidInputError(primaryKeySavePath != null && primaryKeySavePath != "",
@@ -70,7 +90,7 @@ class EHSMKeyManagementService(
     val primaryKeyCiphertext: String = timing(
       "EHSMKeyManagementService request for primaryKeyCiphertext") {
       val postString: String = ehsmParams.getPostJSONString()
-      val postResult = postRequest(constructUrl(action), postString)
+      val postResult = postRequest(constructUrl(action), sslConSocFactory, postString)
       postResult.getString(EHSM_CONVENTION.PAYLOAD_KEY_ID)
     }
     keyReaderWriter.writeKeyToFile(primaryKeySavePath, primaryKeyCiphertext, config)
@@ -94,7 +114,7 @@ class EHSMKeyManagementService(
     val dataKeyCiphertext: String = timing(
       "EHSMKeyManagementService request for dataKeyCiphertext") {
       val postString: String = ehsmParams.getPostJSONString()
-      val postResult = postRequest(constructUrl(action), postString)
+      val postResult = postRequest(constructUrl(action), sslConSocFactory, postString)
       postResult.getString(EHSM_CONVENTION.PAYLOAD_CIPHER_TEXT)
     }
     keyReaderWriter.writeKeyToFile(dataKeySavePath, dataKeyCiphertext, config)
@@ -119,7 +139,7 @@ class EHSMKeyManagementService(
     val dataKeyPlaintext: String = timing(
       "EHSMKeyManagementService request for dataKeyPlaintext") {
       val postString: String = ehsmParams.getPostJSONString()
-      val postResult = postRequest(constructUrl(action), postString)
+      val postResult = postRequest(constructUrl(action), sslConSocFactory, postString)
       postResult.getString(EHSM_CONVENTION.PAYLOAD_PLAIN_TEXT)
     }
     dataKeyPlaintext
@@ -127,6 +147,6 @@ class EHSMKeyManagementService(
 
 
   private def constructUrl(action: String): String = {
-    s"http://$kmsServerIP:$kmsServerPort/ehsm?Action=$action"
+    s"https://$kmsServerIP:$kmsServerPort/ehsm?Action=$action"
   }
 }
