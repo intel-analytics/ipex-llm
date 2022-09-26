@@ -12,6 +12,11 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+# ==============================================================================
+# Most of the pytorch code is adapted from guoyang9's NCF implementation for
+# ml-1m dataset.
+# guoyang9's source code: https://github.com/guoyang9/NCF
+# MovieLens 1M Dataset: https://grouplens.org/datasets/movielens/1m/
 #
 
 import os
@@ -126,16 +131,6 @@ class NCFData(data.Dataset):
 # prepare the train and test datasets
 train_data, test_data, args.user_num, args.item_num, train_mat = load_all()
 
-# construct the train and test dataloader
-train_dataset = NCFData(
-        train_data, args.item_num, train_mat, num_ng=4, True)
-test_dataset = NCFData(
-        test_data, args.item_num, train_mat, 0, False)
-train_loader = data.DataLoader(train_dataset,
-        batch_size=256, shuffle=True, num_workers=0)
-test_loader = data.DataLoader(test_dataset,
-        batch_size=1, shuffle=False, num_workers=0)
-
 #Step 3: Define the Model
 
 # create the model
@@ -159,11 +154,16 @@ from bigdl.orca.learn.metrics import Accuracy
 # create the estimator
 est = Estimator.from_torch(model=model_creator, optimizer=optimizer_creator,loss=loss_function, metrics=[Accuracy()],backend=args.backend)# backend="ray" or "spark"
 
+# construct the train and test dataloader
 def train_loader_func(config, batch_size):
+    train_dataset = NCFData(train_data, args.item_num, train_mat, num_ng=4, True)
+    train_loader = data.DataLoader(train_dataset, batch_size=256, shuffle=True, num_workers=0)
     train_loader.dataset.ng_sample()# sample negative items for training datasets
     return train_loader
 
 def test_loader_func(config, batch_size):
+    test_dataset = NCFData(test_data, args.item_num, train_mat, 0, False)
+    test_loader = data.DataLoader(test_dataset, batch_size=1, shuffle=False, num_workers=0)
     return test_loader
 
 # fit the estimator
