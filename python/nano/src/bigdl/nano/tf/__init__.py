@@ -16,6 +16,8 @@
 import platform
 import os
 import warnings
+
+
 if platform.system() != "Darwin":
     import tensorflow as tf
     if "NANO_TF_INTER_OP" in os.environ:
@@ -31,3 +33,14 @@ if platform.system() != "Darwin":
                       "please run `source bigdl-nano-init`")
 
     tf.config.set_soft_device_placement(enabled=True)
+
+def patch_tensorflow():
+    from bigdl.nano.tf.keras import Sequential
+    from bigdl.nano.tf.keras import Model
+    from bigdl.nano.tf.optimizers import SparseAdam
+    from bigdl.nano.tf.keras.layers import Embedding
+
+    setattr(tf.keras, "Model", Model)
+    setattr(tf.keras, "Sequential", Sequential)
+    setattr(tf.keras.layers, "Embedding", Embedding)
+    setattr(tf.optimizers, "Adam", SparseAdam)
