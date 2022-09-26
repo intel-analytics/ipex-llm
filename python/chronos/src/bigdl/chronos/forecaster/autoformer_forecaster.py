@@ -18,7 +18,7 @@ import torch
 import numpy as np
 from pandas import Timedelta
 from bigdl.chronos.forecaster.abstract import Forecaster
-from bigdl.chronos.forecaster.utils import *
+from bigdl.chronos.forecaster.utils import read_csv, delete_folder
 from bigdl.chronos.metric.forecast_metrics import Evaluator
 from bigdl.chronos.model.autoformer import model_creator, loss_creator
 from torch.utils.data import TensorDataset, DataLoader
