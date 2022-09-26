@@ -48,7 +48,7 @@ object HTTPSUtil {
   def retrieveResponse(url: String,
                        sslConSocFactory: SSLConnectionSocketFactory,
                        params: String = null): String = {
-    val clientbuilder: HttpClientBuilder = HttpClients.custom().setSSLSocketFactory(sslConSocFactory)
+    val clientbuilder = HttpClients.custom().setSSLSocketFactory(sslConSocFactory)
     val httpsClient: CloseableHttpClient = clientbuilder.build()
     val post = new HttpPost(url)
     post.setHeader(new BasicHeader("Content-Type", "application/json"));
