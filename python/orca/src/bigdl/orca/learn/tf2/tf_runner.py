@@ -35,7 +35,7 @@ import socket
 import shutil
 import tempfile
 import subprocess
-from copy import copy
+import copy
 
 import ray
 import numpy as np
@@ -323,6 +323,8 @@ class TFRunner:
         logger.debug("Creating model with MultiWorkerMirroredStrategy")
         with self.strategy.scope():
             self.model = self.model_creator(self.config)
+            if not self.model._is_compiled:
+                self.model.compile(**self.compile_args_creator(self.config))
 
         # For use in model.evaluate()
         self.local_model = None
@@ -335,7 +337,7 @@ class TFRunner:
              steps_per_epoch=None, validation_steps=None, validation_freq=1,
              data_config=None):
         """Runs a training epoch and updates the model parameters."""
-        config = copy(self.config)
+        config = copy.copy(self.config)
         if data_config is not None:
             config.update(data_config)
         config["batch_size"] = batch_size
@@ -385,7 +387,7 @@ class TFRunner:
     def validate(self, data_creator, batch_size=32, verbose=1, sample_weight=None,
                  steps=None, callbacks=None, data_config=None):
         """Evaluates the model on the validation data set."""
-        config = copy(self.config)
+        config = copy.copy(self.config)
         if data_config is not None:
             config.update(data_config)
         config["batch_size"] = batch_size
@@ -433,7 +435,7 @@ class TFRunner:
         return [stats]
 
     def predict(self, data_creator, batch_size, verbose, steps, callbacks, data_config):
-        config = copy(self.config)
+        config = copy.copy(self.config)
         if data_config is not None:
             config.update(data_config)
 

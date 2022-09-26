@@ -110,3 +110,19 @@ jobs:
           $CONDA/bin/conda remove -n howto-guides-training-pytorch-lightning --all
         env:
           ANALYTICS_ZOO_ROOT: ${{ github.workspace }}
+
+      - name: Run unit tests for Training TensorFlow how-to guides
+        shell: bash
+        run: |
+          $CONDA/bin/conda create -n howto-guides-training-tensorflow -y python==3.7.10 setuptools=58.0.4
+          source $CONDA/bin/activate howto-guides-training-tensorflow
+          $CONDA/bin/conda info
+          bash python/nano/dev/build_and_install.sh linux default false tensorflow
+          source bigdl-nano-init
+          pip install jupyter nbconvert
+          pip install tensorflow-datasets
+          bash python/nano/tutorial/notebook/training/tensorflow/run-nano-howto-guides-training-tensorflow-tests.sh
+          source $CONDA/bin/deactivate
+          $CONDA/bin/conda remove -n howto-guides-training-tensorflow --all
+        env:
+          ANALYTICS_ZOO_ROOT: ${{ github.workspace }}

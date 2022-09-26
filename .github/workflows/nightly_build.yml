@@ -213,7 +213,9 @@ jobs:
         --build-arg no_proxy=${NO_PROXY} \
         --rm --no-cache -t ${IMAGE}-spark-3.1.2:${TAG} .
         docker push ${IMAGE}-spark-3.1.2:${TAG}
-        docker tag ${IMAGE}-spark-3.1.2:${TAG} 10.239.45.10/arda/${IMAGE}-spark-3.1.2:${TAG}
+        docker tag ${IMAGE}-spark-3.1.2:${TAG} ${IMAGE}:${TAG}
+        docker push ${IMAGE}:${TAG}
+        docker tag ${IMAGE}:${TAG} 10.239.45.10/arda/${IMAGE}-spark-3.1.2:${TAG}
         docker push 10.239.45.10/arda/${IMAGE}-spark-3.1.2:${TAG}
         docker rmi -f ${IMAGE}-spark-3.1.2:${TAG}
 
@@ -256,7 +258,7 @@ jobs:
     - name: Build package
       run: |
         export TIMESTAMP=`date '+%Y%m%d'`
-        export PYPI_VERSION=2.1.0
+        export PYPI_VERSION=2.2.0
         nb_version=${PYPI_VERSION}b${TIMESTAMP}
         echo ${nb_version}
 
@@ -306,7 +308,7 @@ jobs:
     - name: Build package
       run: |
         export TIMESTAMP=`date '+%Y%m%d'`
-        export PYPI_VERSION=2.1.0
+        export PYPI_VERSION=2.2.0
         nb_version=${PYPI_VERSION}b${TIMESTAMP}
         echo ${nb_version}
         apt-get update

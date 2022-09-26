@@ -291,6 +291,58 @@ class TestChronosModelTCNForecaster(TestCase):
         q_openvino_yhat = forecaster.predict_with_openvino(test_data[0], quantize=True)
         assert openvino_yhat.shape == q_openvino_yhat.shape == test_data[1].shape
 
+        # test exporting the openvino
+        with tempfile.TemporaryDirectory() as tmp_dir_name:
+            ckpt_name = os.path.join(tmp_dir_name, "fp32_openvino")
+            ckpt_name_q = os.path.join(tmp_dir_name, "int_openvino")
+            forecaster.export_openvino_file(dirname=ckpt_name, quantized_dirname=ckpt_name_q)
+
+    def test_tcn_forecaster_openvino_methods_loader(self):
+        train_loader, val_loader, test_loader = create_data(loader=True)
+        forecaster = TCNForecaster(past_seq_len=24,
+                                   future_seq_len=5,
+                                   input_feature_num=1,
+                                   output_feature_num=1,
+                                   kernel_size=4,
+                                   num_channels=[16, 16],
+                                   lr=0.01)
+        forecaster.fit(train_loader, epochs=2)
+        try:
+            pred = forecaster.predict(test_loader)
+            pred_openvino = forecaster.predict_with_openvino(test_loader)
+            np.testing.assert_almost_equal(pred, pred_openvino, decimal=5)
+        except ImportError:
+            pass
+
+        forecaster.quantize(calib_data=train_loader,
+                            framework="openvino")
+        openvino_yhat = forecaster.predict_with_openvino(test_loader)
+        q_openvino_yhat = forecaster.predict_with_openvino(test_loader, quantize=True)
+        assert openvino_yhat.shape == q_openvino_yhat.shape
+
+    def test_tcn_forecaster_openvino_methods_tsdataset(self):
+        train, test = create_tsdataset(roll=True, horizon=5)
+        forecaster = TCNForecaster(past_seq_len=24,
+                                   future_seq_len=5,
+                                   input_feature_num=2,
+                                   output_feature_num=2,
+                                   kernel_size=4,
+                                   num_channels=[16, 16],
+                                   lr=0.01)
+        forecaster.fit(train, epochs=2)
+        try:
+            pred = forecaster.predict(test)
+            pred_openvino = forecaster.predict_with_openvino(test)
+            np.testing.assert_almost_equal(pred, pred_openvino, decimal=5)
+        except ImportError:
+            pass
+
+        forecaster.quantize(calib_data=train,
+                            framework="openvino")
+        openvino_yhat = forecaster.predict_with_openvino(test)
+        q_openvino_yhat = forecaster.predict_with_openvino(test, quantize=True)
+        assert openvino_yhat.shape == q_openvino_yhat.shape
+
     def test_tcn_forecaster_quantization_dynamic(self):
         train_data, val_data, test_data = create_data()
         forecaster = TCNForecaster(past_seq_len=24,
@@ -381,8 +433,8 @@ class TestChronosModelTCNForecaster(TestCase):
         pred_q = forecaster.predict_with_onnx(test_data[0], quantize=True)
         eval_q = forecaster.evaluate_with_onnx(test_data, quantize=True)
         with tempfile.TemporaryDirectory() as tmp_dir_name:
-            ckpt_name = os.path.join(tmp_dir_name, "ckpt")
-            ckpt_name_q = os.path.join(tmp_dir_name, "ckpt.q")
+            ckpt_name = os.path.join(tmp_dir_name, "fp32_onnx")
+            ckpt_name_q = os.path.join(tmp_dir_name, "int_onnx")
             forecaster.export_onnx_file(dirname=ckpt_name, quantized_dirname=ckpt_name_q)
 
     def test_tcn_forecaster_save_load(self):
@@ -457,6 +509,30 @@ class TestChronosModelTCNForecaster(TestCase):
             forecaster.fit(train_data, epochs=2)
             distributed_pred = forecaster.predict(test_data)
             distributed_eval = forecaster.evaluate(val_data)
+        stop_orca_context()
+
+    def test_tcn_forecaster_xshard_input_of_validation_data(self):
+        from bigdl.orca import init_orca_context, stop_orca_context
+        train_data, val_data, test_data = create_data()
+        init_orca_context(cores=4, memory="2g")
+        from bigdl.orca.data import XShards
+
+        def transform_to_dict(data):
+            return {'x': data[0], 'y': data[1]}
+
+        def transform_to_dict_x(data):
+            return {'x': data[0]}
+        train_data = XShards.partition(train_data).transform_shard(transform_to_dict)
+        val_data = XShards.partition(val_data).transform_shard(transform_to_dict)
+        test_data = XShards.partition(test_data).transform_shard(transform_to_dict_x)
+        forecaster = TCNForecaster(past_seq_len=24,
+                                    future_seq_len=5,
+                                    input_feature_num=1,
+                                    output_feature_num=1,
+                                    kernel_size=3,
+                                    lr=0.01,
+                                    distributed=False)
+        forecaster.fit(train_data, val_data, epochs=2)
         stop_orca_context()
 
     @op_all
@@ -702,9 +778,9 @@ class TestChronosModelTCNForecaster(TestCase):
                                    metrics=["mse"],
                                    lr=0.01)
         forecaster.fit(train_data, epochs=2)
-        # only the first time needs val_data
+        # only the first time needs validation_data
         y_pred, std = forecaster.predict_interval(data=test_data[0],
-                                                  val_data=val_data,
+                                                  validation_data=val_data,
                                                   repetition_times=5)
         assert y_pred.shape == test_data[1].shape
         assert y_pred.shape == std.shape
@@ -722,9 +798,9 @@ class TestChronosModelTCNForecaster(TestCase):
                                    metrics=["mse"],
                                    lr=0.01)
         forecaster.fit(train_loader, epochs=2)
-        # only the first time needs val_data
+        # only the first time needs validation_data
         y_pred, std = forecaster.predict_interval(data=test_loader,
-                                                  val_data=val_loader,
+                                                  validation_data=val_loader,
                                                   repetition_times=5)
         assert y_pred.shape == std.shape
         y_pred, std = forecaster.predict_interval(data=test_loader)
@@ -734,9 +810,9 @@ class TestChronosModelTCNForecaster(TestCase):
         forecaster = TCNForecaster.from_tsdataset(train,
                                            num_channels=[16]*3)
         forecaster.fit(train, epochs=2, batch_size=32)
-        # only the first time needs val_data
+        # only the first time needs validation_data
         y_pred, std = forecaster.predict_interval(data=test,
-                                                  val_data=val,
+                                                  validation_data=val,
                                                   repetition_times=5)
         assert y_pred.shape == std.shape
         y_pred, std = forecaster.predict_interval(data=test)
@@ -756,3 +832,31 @@ class TestChronosModelTCNForecaster(TestCase):
         with pytest.raises(RuntimeError):
             y_pred, std = forecaster.predict_interval(data=test_data[0],
                                                       repetition_times=5)
+    def test_forecaster_fit_val_from_tsdataset(self):
+        train, val, test = create_tsdataset(val_ratio=0.1)
+        tcn = TCNForecaster.from_tsdataset(train,
+                                           num_channels=[16]*3)
+        tcn.fit(train, val,
+                epochs=2,
+                batch_size=32)
+        yhat = tcn.predict(test, batch_size=32)
+        test.roll(lookback=tcn.data_config['past_seq_len'],
+                  horizon=tcn.data_config['future_seq_len'])
+        _, y_test = test.to_numpy()
+        assert yhat.shape == y_test.shape
+
+        del tcn
+        train, val, test = create_tsdataset(roll=False, horizon=[1, 3, 5],
+                                            val_ratio=0.1)
+        tcn = TCNForecaster.from_tsdataset(train,
+                                           past_seq_len=24,
+                                           future_seq_len=5,
+                                           num_channels=[16]*3)
+        tcn.fit(train, val,
+                epochs=2,
+                batch_size=32)
+        yhat = tcn.predict(test, batch_size=None)
+        test.roll(lookback=tcn.data_config['past_seq_len'],
+                  horizon=tcn.data_config['future_seq_len'])
+        _, y_test = test.to_numpy()
+        assert yhat.shape == y_test.shape

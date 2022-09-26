@@ -42,35 +42,48 @@ def create_data():
 @pytest.mark.skipif(tf.__version__ < '2.0.0', reason="Run only when tf>2.0.0.")
 class TestTcnKeras(TestCase):
 
-    train_data, test_data = create_data()
-    model = model_creator(config={
-        "past_seq_len": 20,
-        "future_seq_len": 10,
-        "input_feature_num": 10,
-        "output_feature_num": 2
-    })
+    def setUp(self):
+        pass
+
+    def tearDown(self):
+        pass
 
     def test_tcn_fit_predict_evaluate(self):
-        self.model.fit(self.train_data[0],
-                       self.train_data[1],
-                       epochs=2,
-                       validation_data=self.test_data)
-        yhat = self.model.predict(self.test_data[0])
-        self.model.evaluate(self.test_data[0], self.test_data[1])
-        assert yhat.shape == self.test_data[1].shape
+        train_data, test_data = create_data()
+        model = model_creator(config={
+            "past_seq_len": 20,
+            "future_seq_len": 10,
+            "input_feature_num": 10,
+            "output_feature_num": 2
+        })
+
+        model.fit(train_data[0],
+                  train_data[1],
+                  epochs=2,
+                  validation_data=test_data)
+        yhat = model.predict(test_data[0])
+        model.evaluate(test_data[0], test_data[1])
+        assert yhat.shape == test_data[1].shape
 
     def test_tcn_save_load(self):
-        self.model.fit(self.train_data[0],
-                       self.train_data[1],
+        train_data, test_data = create_data()
+        model = model_creator(config={
+            "past_seq_len": 20,
+            "future_seq_len": 10,
+            "input_feature_num": 10,
+            "output_feature_num": 2
+        })
+        model.fit(train_data[0],
+                       train_data[1],
                        epochs=2,
-                       validation_data=self.test_data)
+                       validation_data=test_data)
         with tempfile.TemporaryDirectory() as tmp_dir_name:
-            self.model.save(tmp_dir_name)
+            model.save(tmp_dir_name)
             restore_model = tf.keras.models.load_model(tmp_dir_name,
                                                        custom_objects={"TemporalConvNet": TemporalConvNet,
                                                                        "TemporalBlock": TemporalBlock})
-        model_res = self.model.evaluate(self.test_data[0], self.test_data[1])
-        restore_model_res = restore_model.evaluate(self.test_data[0], self.test_data[1])
+        model_res = model.evaluate(test_data[0], test_data[1])
+        restore_model_res = restore_model.evaluate(test_data[0], test_data[1])
         np.testing.assert_almost_equal(model_res, restore_model_res, decimal=5)
         assert isinstance(restore_model, TemporalConvNet)
 

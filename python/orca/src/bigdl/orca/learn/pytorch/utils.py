@@ -280,3 +280,12 @@ def get_filesystem(filepath):
     from fsspec.core import url_to_fs
     fs, _ = url_to_fs(str(filepath))
     return fs
+
+
+def get_batchsize(input):
+    if isinstance(input, (list, tuple)):
+        return get_batchsize(input[0])
+    elif isinstance(input, dict):
+        return get_batchsize(list(input.values())[0])
+    else:
+        return input.size(0)

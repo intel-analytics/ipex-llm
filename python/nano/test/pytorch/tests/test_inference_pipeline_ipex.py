@@ -91,7 +91,7 @@ class TestInferencePipeline(TestCase):
         acc_model, option = inference_opt.get_best_model(accelerator="onnxruntime")
         assert option == "" or "onnxruntime" in option
         acc_model, option = inference_opt.get_best_model(precision="int8")
-        assert option == "" or "inc" in option or "pot" in option
+        assert option == "" or "inc" in option or "int8" in option
         acc_model, option = inference_opt.get_best_model(accuracy_criterion=0.1)
         acc_model(next(iter(self.train_loader))[0])
 
@@ -105,7 +105,7 @@ class TestInferencePipeline(TestCase):
         acc_model, option = inference_opt.get_best_model(accelerator="onnxruntime")
         assert option == "" or "onnxruntime" in option
         acc_model, option = inference_opt.get_best_model(precision="int8")
-        assert option == "" or "inc" in option or "pot" in option
+        assert option == "" or "inc" in option or "int8" in option
         with pytest.raises(RuntimeError) as e:
             acc_model, option = inference_opt.get_best_model(accuracy_criterion=0.1)
         error_msg = e.value.args[0]

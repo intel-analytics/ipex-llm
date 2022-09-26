@@ -13,10 +13,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-import os
-import numpy as np
-import pandas as pd
-
 
 from bigdl.dllib.utils.file_utils import get_file_list, callZooFunc
 from bigdl.dllib.utils.utils import convert_row_to_numpy
