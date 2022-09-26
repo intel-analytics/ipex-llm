@@ -40,9 +40,6 @@ class Embedding(TFEmbedding):
         """
         Create a slightly modified version of tf.keras.Embedding layer.
 
-        This embedding layer only applies regularizer to the output of the embedding
-        layer, so that the gradient to embeddings is sparse.
-
         :param input_sample: torch.Tensor or a list for the model tracing.
         :param file_path: The path to save onnx model file.
         :param sess_options: ortsess options in ort.SessionOptions type
@@ -69,7 +66,7 @@ class Embedding(TFEmbedding):
             If mask_zero is set to True, as a consequence, index 0 cannot be
             used in the vocabulary (input_dim should equal size of
             vocabulary + 1).
-        param: input_length: Length of input sequences, when it is constant.
+        :param input_length: Length of input sequences, when it is constant.
             This argument is required if you are going to connect
             `Flatten` then `Dense` layers upstream
             (without it, the shape of the dense outputs cannot be computed).
