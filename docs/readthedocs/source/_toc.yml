@@ -10,6 +10,7 @@ subtrees:
 
   - caption: User Guide
     entries:
+      - file: doc/UserGuide/win
       - file: doc/UserGuide/python
       - file: doc/UserGuide/scala
       - file: doc/UserGuide/colab
