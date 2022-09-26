@@ -1,4 +1,4 @@
-ARG BIGDL_VERSION=2.1.0-SNAPSHOT
+ARG BIGDL_VERSION=2.2.0-SNAPSHOT
 ARG SPARK_VERSION=3.1.2
 ARG TINI_VERSION=v0.18.0
 ARG JDK_VERSION=8u192
@@ -130,6 +130,7 @@ RUN wget https://raw.githubusercontent.com/intel-analytics/analytics-zoo/bigdl-2
     chmod a+x ./download-bigdl.sh
 RUN ./download-bigdl.sh && \
     rm bigdl*.zip
+
 
 
 # Stage.3 PPML

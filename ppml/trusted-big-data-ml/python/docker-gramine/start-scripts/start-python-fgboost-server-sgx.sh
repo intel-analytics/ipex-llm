@@ -16,7 +16,7 @@ done
 cd /ppml/trusted-big-data-ml
 ./clean.sh
 gramine-argv-serializer bash -c "/opt/jdk8/bin/java\
-        -cp '/ppml/trusted-big-data-ml/work/bigdl-2.1.0-SNAPSHOT/jars/bigdl-ppml-spark_3.1.2-2.1.0-SNAPSHOT.jar:/ppml/trusted-big-data-ml/work/spark-3.1.2/jars/commons-lang3-3.10.jar:/ppml/trusted-big-data-ml/work/bigdl-2.1.0-SNAPSHOT/jars/*:/ppml/trusted-big-data-ml/work/spark-3.1.2/conf/:/ppml/trusted-big-data-ml/work/spark-3.1.2/jars/*'\
+        -cp '/ppml/trusted-big-data-ml/work/bigdl-${BIGDL_VERSION}/jars/bigdl-ppml-spark_${SPARK_VERSION}-${BIGDL_VERSION}.jar:/ppml/trusted-big-data-ml/work/spark-${SPARK_VERSION}/jars/commons-lang3-3.10.jar:/ppml/trusted-big-data-ml/work/bigdl-${BIGDL_VERSION}/jars/*:/ppml/trusted-big-data-ml/work/spark-${SPARK_VERSION}/conf/:/ppml/trusted-big-data-ml/work/spark-${SPARK_VERSION}/jars/*'\
         -Xmx10g org.apache.spark.deploy.SparkSubmit\
         --master 'local[4]'\
         /ppml/trusted-big-data-ml/fl/start-fgboost-server.py --port $port --client_num $client_num" > secured_argvs
