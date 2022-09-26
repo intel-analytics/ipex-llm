@@ -41,7 +41,7 @@ if __name__ == "__main__":
 
     # Save Optimized Model
     # The model files will be saved at "./optimized_model_ov" directory
-    # There are 3 files in optimized_model_ov:
+    # There are 3 files in optimized_model_ov, users only need to take ".bin" and ".xml" file for further usage:
     #   nano_model_meta.yml: meta information of the saved model checkpoint
     #   ov_saved_model.bin: contains the weights and biases binary data of model
     #   ov_saved_model.xml: model checkpoint for general use, describes model structure
