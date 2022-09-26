@@ -81,7 +81,7 @@ def load_all():
 
 class NCFData(data.Dataset):
     def __init__(self, features, 
-                num_item, train_mat=None, num_ng=0, is_training=None):
+                num_item, train_mat=None, num_ng=4, is_training=None):
         super(NCFData, self).__init__()
         """ Note that the labels are only useful when training, we thus 
             add them in the ng_sample() function.
@@ -128,7 +128,7 @@ train_data, test_data, args.user_num, args.item_num, train_mat = load_all()
 
 # construct the train and test dataloader
 train_dataset = NCFData(
-        train_data, args.item_num, train_mat,args.num_ng, True)
+        train_data, args.item_num, train_mat, num_ng=4, True)
 test_dataset = NCFData(
         test_data, args.item_num, train_mat, 0, False)
 train_loader = data.DataLoader(train_dataset,
