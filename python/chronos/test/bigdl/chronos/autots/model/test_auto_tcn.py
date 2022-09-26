@@ -13,10 +13,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+
 from bigdl.chronos.utils import LazyImport
 torch = LazyImport('torch')
-train_dataloader_creator = LazyImport('bigdl.chronos.autots.model.utils.train_dataloader_creator')
-valid_dataloader_creator = LazyImport('bigdl.chronos.autots.model.utils.valid_dataloader_creator')
 import tensorflow as tf
 import numpy as np
 from unittest import TestCase
@@ -38,6 +37,41 @@ def get_x_y(size):
     x = np.random.randn(size, past_seq_len, input_feature_dim)
     y = np.random.randn(size, future_seq_len, output_feature_dim)
     return x.astype(np.float32), y.astype(np.float32)
+
+
+def gen_RandomDataset():
+    import torch
+    from torch.utils.data import Dataset
+    class RandomDataset(Dataset):
+        def __init__(self, size=1000):
+            x, y = get_x_y(size)
+            self.x = torch.from_numpy(x).float()
+            self.y = torch.from_numpy(y).float()
+
+        def __len__(self):
+            return self.x.shape[0]
+
+        def __getitem__(self, idx):
+            return self.x[idx], self.y[idx]
+    return RandomDataset
+
+
+def train_dataloader_creator(config):
+    import torch
+    from torch.utils.data import DataLoader
+    RandomDataset = gen_RandomDataset()
+    return DataLoader(RandomDataset(size=1000),
+                      batch_size=config["batch_size"],
+                      shuffle=True)
+
+
+def valid_dataloader_creator(config):
+    import torch
+    from torch.utils.data import DataLoader
+    RandomDataset = gen_RandomDataset()
+    return DataLoader(RandomDataset(size=400),
+                      batch_size=config["batch_size"],
+                      shuffle=True)
 
 
 def get_auto_estimator(backend='torch'):
@@ -112,8 +146,6 @@ class TestAutoTCN(TestCase):
         assert 1 <= best_config['levels'] < 3
 
     def test_fit_data_creator(self):
-        from bigdl.chronos.autots.model.utils import train_dataloader_creator
-        from bigdl.chronos.autots.model.utils import valid_dataloader_creator
         auto_tcn = get_auto_estimator()
         auto_tcn.fit(data=train_dataloader_creator,
                      epochs=1,
@@ -128,8 +160,6 @@ class TestAutoTCN(TestCase):
         assert 1 <= best_config['levels'] < 3
 
     def test_num_channels(self):
-        from bigdl.chronos.autots.model.utils import train_dataloader_creator
-        from bigdl.chronos.autots.model.utils import valid_dataloader_creator
         auto_tcn = AutoTCN(input_feature_num=input_feature_dim,
                            output_target_num=output_feature_dim,
                            past_seq_len=past_seq_len,

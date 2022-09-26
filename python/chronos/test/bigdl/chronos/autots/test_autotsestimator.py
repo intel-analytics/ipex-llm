@@ -19,7 +19,6 @@ import pytest
 
 from bigdl.chronos.utils import LazyImport
 torch = LazyImport('torch')
-model_creator_pytorch = LazyImport('bigdl.chronos.autots.model.utils.model_creator_pytorch')
 import numpy as np
 from bigdl.chronos.autots import AutoTSEstimator, TSPipeline
 from bigdl.chronos.data import TSDataset
@@ -70,6 +69,51 @@ def get_data_creator(backend="torch"):
         return data_creator
 
 
+def gen_CustomizedNet():
+    import torch
+    import torch.nn as nn
+    class CustomizedNet(nn.Module):
+        def __init__(self,
+                     dropout,
+                     input_size,
+                     input_feature_num,
+                     hidden_dim,
+                     output_size):
+            '''
+            Simply use linear layers for multi-variate single-step forecasting.
+            '''
+            super().__init__()
+            self.fc1 = nn.Linear(input_size*input_feature_num, hidden_dim)
+            self.dropout = nn.Dropout(dropout)
+            self.relu1 = nn.ReLU()
+            self.fc2 = nn.Linear(hidden_dim, output_size)
+
+        def forward(self, x):
+            # x.shape = (num_sample, input_size, input_feature_num)
+            x = x.view(-1, x.shape[1]*x.shape[2])
+            x = self.fc1(x)
+            x = self.dropout(x)
+            x = self.relu1(x)
+            x = self.fc2(x)
+            # x.shape = (num_sample, output_size)
+            x = torch.unsqueeze(x, 1)
+            # x.shape = (num_sample, 1, output_size)
+            return x
+    return CustomizedNet
+
+
+def model_creator_pytorch(config):
+    '''
+    Pytorch customized model creator
+    '''
+    CustomizedNet = gen_CustomizedNet()
+    return CustomizedNet(dropout=config["dropout"],
+                         input_size=config["past_seq_len"],
+                         input_feature_num=config["input_feature_num"],
+                         hidden_dim=config["hidden_dim"],
+                         output_size=config["output_feature_num"])
+
+
 def model_creator_keras(config):
     '''
     Keras(tf2) customized model creator
@@ -99,7 +143,6 @@ class TestAutoTrainer(TestCase):
         stop_orca_context()
 
     def test_fit_third_party_feature(self):
-        from bigdl.chronos.autots.model.utils import model_creator_pytorch
         from sklearn.preprocessing import StandardScaler
         scaler = StandardScaler()
         tsdata_train = get_tsdataset().gen_dt_feature().scale(scaler, fit=True)
@@ -184,7 +227,6 @@ class TestAutoTrainer(TestCase):
         assert config["past_seq_len"] == 7
 
     def test_fit_third_party_data_creator(self):
-        from bigdl.chronos.autots.model.utils import model_creator_pytorch
         input_feature_dim = 4
         output_feature_dim = 2  # 2 targets are generated in get_tsdataset
 
@@ -239,8 +281,8 @@ class TestAutoTrainer(TestCase):
         assert config["past_seq_len"] == 7
 
     def test_fit_customized_metrics(self):
-        import torch
         from sklearn.preprocessing import StandardScaler
+        import torch
         from torchmetrics.functional import mean_squared_error
         import random
 
