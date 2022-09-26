@@ -12,12 +12,13 @@ runs:
       run: |
         export TIMESTAMP=`date '+%Y%m%d'`
         export IMAGE=intelanalytics/friesian-serving
+        export FTP_URI=http://10.239.45.10:8081/repository/raw
         echo "################################################"
         echo "################# friesian serving 2.4.6 #######"
         echo "################################################"
         cd docker/friesian-serving
-        wget ${FTP_URI}/analytics-zoo-data/faiss-lib.zip
-        wget ${FTP_URI}/analytics-zoo-data/jersey.tar.gz
+        wget $FTP_URI/analytics-zoo-data/faiss-lib.zip
+        wget $FTP_URI/analytics-zoo-data/jersey.tar.gz
         unzip -o faiss-lib.zip -d lib
         tar xzvf jersey.tar.gz
         #--no-cache \
