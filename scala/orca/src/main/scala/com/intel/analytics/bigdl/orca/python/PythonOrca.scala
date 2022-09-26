@@ -18,12 +18,10 @@ package com.intel.analytics.bigdl.orca.python
 
 import com.intel.analytics.bigdl.orca.inference.InferenceModel
 import org.apache.spark.api.java.{JavaRDD, JavaSparkContext}
-
 import java.util.{List => JList}
+
 import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.dllib.common.PythonZoo
-import org.apache.arrow.memory.RootAllocator
-import org.apache.arrow.vector.ipc.ArrowStreamReader
 
 import scala.reflect.ClassTag
 import scala.collection.JavaConverters._
@@ -33,10 +31,6 @@ import org.apache.spark.sql.expressions.Window
 import org.apache.spark.sql.types._
 import org.apache.spark.sql.functions._
 import org.apache.spark.sql.functions.{col, rand, row_number, spark_partition_id, udf, log => sqllog}
-
-import java.io.ByteArrayInputStream
-import javax.xml.bind.DatatypeConverter
-import scala.collection.mutable.ArrayBuffer
 
 object PythonOrca {
 
@@ -59,73 +53,6 @@ class PythonOrca[T: ClassTag](implicit ev: TensorNumeric[T]) extends PythonZoo[T
         activityToList(outputActivity)
       })
     })
-  }
-
-  def OpenVINOOutputToSDF(df: DataFrame,
-                          outputRDD: JavaRDD[String],
-                          outputNames: JList[String],
-                          outShapes: JList[JList[Int]]): DataFrame = {
-    val spark = SparkSession.builder.config(outputRDD.sparkContext.getConf).getOrCreate()
-    val outputNamesScala = outputNames.asScala
-    val outputShapesScala = outShapes.asScala.map(_.asScala.toArray[Int]).toArray
-    val outputShapeReverseArr = outputShapesScala.map(_.reverse.dropRight(1))
-    val outputRowRDD = outputRDD.rdd.flatMap(hexStr => {
-      val allocator = new RootAllocator()
-      val in = new ByteArrayInputStream(DatatypeConverter.parseHexBinary(hexStr))
-      val stream = new ArrowStreamReader(in, allocator)
-      val vsr = stream.getVectorSchemaRoot
-      val outputVectorReaders = outputNamesScala.map(name => {
-        vsr.getVector(name).getReader
-      })
-      // Only one batch in stream
-      stream.loadNextBatch()
-      val rowCount = vsr.getRowCount
-      val outputRowSeq = (0 until rowCount).map(i => {
-        val row_vector = (outputVectorReaders zip outputShapeReverseArr).map(readerShapeTuple => {
-          val reader = readerShapeTuple._1
-          reader.setPosition(i)
-          val shape = readerShapeTuple._2
-          val dataArr = ArrayBuffer[Float]()
-          while (reader.next()) {
-            val floatReader = reader.reader()
-            if (floatReader.isSet) {
-              dataArr += floatReader.readFloat()
-            }
-          }
-          // OpenVINO output dim >= 1
-          if (shape.length == 0) {
-            dataArr.toArray
-          } else {
-            // Reshape if dim >= 2
-            var groupedArr: Array[Any] = dataArr.toArray
-            for (s <- shape) {
-              groupedArr = groupedArr.grouped(s).toArray
-            }
-            groupedArr
-          }
-        })
-        Row.fromSeq(row_vector)
-      })
-      stream.close()
-      in.close()
-      allocator.close()
-      outputRowSeq
-    })
-
-    val mergedRDD = df.rdd.zip(outputRowRDD).map(originOutputRowTuple => {
-      Row.fromSeq(originOutputRowTuple._1.toSeq ++ originOutputRowTuple._2.toSeq)
-    })
-
-    val originSchema = df.schema
-    val resultStruct = (outputNamesScala zip outputShapesScala).map(nameShape => {
-      var structType: DataType = FloatType
-      for (_ <- nameShape._2.indices) {
-        structType = ArrayType(structType)
-      }
-      StructField(nameShape._1, structType, true)
-    }).toArray
-    val schema = StructType(originSchema.fields ++: resultStruct)
-    spark.createDataFrame(mergedRDD, schema)
   }
 
   def generateStringIdx(df: DataFrame, columns: JList[String], frequencyLimit: String = null,

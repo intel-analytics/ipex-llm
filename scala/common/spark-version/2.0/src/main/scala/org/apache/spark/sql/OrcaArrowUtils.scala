@@ -18,6 +18,7 @@ package org.apache.spark.sql
 
 import org.apache.spark.api.java.JavaRDD
 import org.apache.spark.rdd.RDD
+import java.util.{List => JList}
 
 
 class OrcaArrowUtils() {
@@ -28,5 +29,12 @@ class OrcaArrowUtils() {
 
   def sparkdfTopdf(sdf: DataFrame, sqlContext: SQLContext, batchSize: Int = -1): RDD[String] = {
     null.asInstanceOf[RDD[String]]
+  }
+
+  def OpenVINOOutputToSDF(df: DataFrame,
+                          outputRDD: JavaRDD[String],
+                          outputNames: JList[String],
+                          outShapes: JList[JList[Int]]): DataFrame = {
+    null.asInstanceOf[DataFrame]
   }
 }
