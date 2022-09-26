@@ -121,7 +121,7 @@ class OrcaArrowUtils() {
     }
   }
 
-  def OpenVINOOutputToSDF(df: DataFrame,
+  def openVINOOutputToSDF(df: DataFrame,
                           outputRDD: JavaRDD[String],
                           outputNames: JList[String],
                           outShapes: JList[JList[Int]]): DataFrame = {
