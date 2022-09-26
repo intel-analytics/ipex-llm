@@ -20,28 +20,40 @@ runs:
         set -x
         docker pull ${IMAGE}
         docker rm -f ${CONTAINER_NAME}
-        docker run -id --privileged --net=host --name ${CONTAINER_NAME} \
-        --cpuset-cpus=$CPUSET \
+        docker run -id \
+        --privileged \
+        --net=host \
+        --name ${CONTAINER_NAME} \
+        --cpuset-cpus=12-16 \
         --oom-kill-disable \
         --device=/dev/sgx/enclave \
         --device=/dev/sgx/provision \
-        -v ~/glorysdj/kuberconfig:/root/.kube/config \
         -v /var/run/aesmd/aesm.socket:/var/run/aesmd/aesm.socket \
         -v $ENCLAVE_KEY:/root/.config/gramine/enclave-key.pem \
-        -v $DATA_PATH:/ppml/trusted-big-data-ml/work/data \
         -v $KEYS_PATH:/ppml/trusted-big-data-ml/work/keys \
-        -e LOCAL_IP=$LOCAL_IP \
-        -e SGX_MEM_SIZE=$SGX_MEM_SIZE \
+        -v $SECURE_PASSWORD_PATH:/ppml/trusted-big-data-ml/work/password \
+        -v $KUBECONFIG_PATH:/root/.kube/config \
+        -v $NFS_INPUT_PATH:/ppml/trusted-big-data-ml/work/data \
+        -e RUNTIME_SPARK_MASTER=k8s://https://$LOCAL_IP:6443 \
         -e RUNTIME_K8S_SERVICE_ACCOUNT=spark \
+        -e LOCAL_IP=$LOCAL_IP \
+        -e SGX_MEM_SIZE=32G \
         -e RUNTIME_K8S_SPARK_IMAGE=$IMAGE \
         -e RUNTIME_DRIVER_HOST=$LOCAL_IP \
         -e RUNTIME_DRIVER_PORT=54321 \
-        -e RUNTIME_EXECUTOR_INSTANCES=1 \
+        -e RUNTIME_EXECUTOR_INSTANCES=2 \
         -e RUNTIME_EXECUTOR_CORES=4 \
-        -e RUNTIME_EXECUTOR_MEMORY=80g \
+        -e RUNTIME_EXECUTOR_MEMORY=20g \
         -e RUNTIME_TOTAL_EXECUTOR_CORES=4 \
         -e RUNTIME_DRIVER_CORES=4 \
         -e RUNTIME_DRIVER_MEMORY=10g \
+        -e SGX_MEM_SIZE=64G \
+        -e SGX_DRIVER_MEM=64g \
+        -e SGX_DRIVER_JVM_MEM=12g \
+        -e SGX_EXECUTOR_MEM=64g \
+        -e SGX_EXECUTOR_JVM_MEM=12g \
+        -e SGX_ENABLED=true \
+        -e SGX_LOG_LEVEL=error \
         $IMAGE bash
     - name: Spark K8S Examples Test
       shell: bash
