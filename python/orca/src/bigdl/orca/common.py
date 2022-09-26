@@ -188,7 +188,7 @@ def init_orca_context(cluster_mode=None, runtime="spark", cores=None, memory="2g
            Default to be None and in this case there is supposed to be an existing
            SparkContext in your application from `spark-submit` and you need to set the Spark
            configurations through command line options or the properties file. To make things
-           easier, you are recommended to use `spark-submit-with-bigdl` after pip install bigdl.
+           easier, you are recommended to use `bigdl-submit` after pip install bigdl.
 
            For "yarn-client" and "yarn-cluster", you are supposed to use conda environment
            and set the environment variable HADOOP_CONF_DIR.
