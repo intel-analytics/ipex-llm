@@ -29,7 +29,7 @@ For more information, you may [read the docs](https://bigdl.readthedocs.io/).
 ## Choosing the right BigDL library
 ```mermaid
 flowchart TD;
-    Feature1[Secure AI?];
+    Feature1[Secure Big Data & AI?];
     Feature1-- No -->Feature2[Python vs. Scala/Java];
     Feature1-- "Yes (HW Security & FL)"  -->ReferPPML([<em><strong>PPML</strong></em>]);
     Feature2-- Python -->Feature3[Application Senario?];
@@ -163,8 +163,7 @@ val dense = Dense[Float](12).inputs(input)
 val output = Activation[Float]("softmax").inputs(dense)  
 val model = Model(input, output)
 
-// 3. Use `NNEstimator` to train/predict/evaluate the model 
-// using Spark Dataframe and ML pipeline APIs
+// 3. Use `NNEstimator` to train/predict/evaluate the model using Spark Dataframe and ML pipeline APIs
 val trainingDF = spark.read.parquet("train_data")
 val validationDF = spark.read.parquet("val_data")
 val scaler = new MinMaxScaler().setInputCol("in").setOutputCol("value")
@@ -188,8 +187,6 @@ The *Chronos* library makes it easy to build end-to-end time series analysis by 
 <br/>
 
 You can train a time series model using _Chronos_ in 3 simple steps:
-
-To train a time series model with AutoML, first initialize [Orca Context](https://bigdl.readthedocs.io/en/latest/doc/Orca/Overview/orca-context.html):
 
 ```python
 # 1. Initialize Orca Context
