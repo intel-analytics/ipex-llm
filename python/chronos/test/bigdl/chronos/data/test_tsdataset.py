@@ -1099,18 +1099,12 @@ class TestTSDataset(TestCase):
         tsdata = TSDataset.from_pandas(df, dt_col="datetime", target_col="value",
                                        extra_feature_col=["extra feature"], id_col="id")
 
-        with pytest.raises(RuntimeError):
-            tsdata.to_torch_data_loader(roll=False)
-
         # for BaseForecaster
         data = tsdata.roll(lookback=lookback, horizon=horizon, is_predict=True).to_numpy()
         assert not isinstance(data, (list, tuple))
 
         tsdata = TSDataset.from_pandas(df, dt_col="datetime", target_col="value",
                                        extra_feature_col=["extra feature"], id_col="id")
-
-        with pytest.raises(RuntimeError):
-            tsdata.to_torch_data_loader(roll=False)
 
         # for AutoformerForecaster
         data = tsdata.roll(lookback=lookback, horizon=horizon, time_enc=True, is_predict=True).to_numpy()
@@ -1126,9 +1120,6 @@ class TestTSDataset(TestCase):
         tsdata = TSDataset.from_pandas(df, dt_col="datetime", target_col="value",
                                        extra_feature_col=["extra feature"], id_col="id")
 
-        with pytest.raises(RuntimeError):
-            tsdata.to_torch_data_loader(roll=False)
-
         # for BaseForecaster
         tsdata.roll(lookback=lookback, horizon=horizon, is_predict=True)
         loader = tsdata.to_torch_data_loader(batch_size=32,
@@ -1138,9 +1129,6 @@ class TestTSDataset(TestCase):
 
         tsdata = TSDataset.from_pandas(df, dt_col="datetime", target_col="value",
                                        extra_feature_col=["extra feature"], id_col="id")
-
-        with pytest.raises(RuntimeError):
-            tsdata.to_torch_data_loader(roll=False)
 
         # for AutoformerForecaster
         tsdata.roll(lookback=lookback, horizon=horizon, time_enc=True, is_predict=True)
@@ -1160,9 +1148,6 @@ class TestTSDataset(TestCase):
         tsdata = TSDataset.from_pandas(df, dt_col="datetime", target_col="value",
                                        extra_feature_col=["extra feature"], id_col="id")
 
-        with pytest.raises(RuntimeError):
-            tsdata.to_torch_data_loader(roll=False)
-
         # for BaseForecaster
         loader = tsdata.to_torch_data_loader(lookback=lookback,
                                              horizon=horizon,
@@ -1173,9 +1158,6 @@ class TestTSDataset(TestCase):
 
         tsdata = TSDataset.from_pandas(df, dt_col="datetime", target_col="value",
                                        extra_feature_col=["extra feature"], id_col="id")
-
-        with pytest.raises(RuntimeError):
-            tsdata.to_torch_data_loader(roll=False)
 
         # for AutoformerForecaster
         loader = tsdata.to_torch_data_loader(lookback=lookback,

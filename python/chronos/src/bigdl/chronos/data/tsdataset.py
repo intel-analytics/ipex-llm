@@ -703,10 +703,17 @@ class TSDataset:
                indicates the length of overlap area of output(y) and input(x) on time axis.
         :param is_predict: bool,
                This parameter should be set to True only when you are processing test data without
-               accuracy evaluation for Autoformer model. This indicates if the dataset will be
-               sampled as a prediction dataset(without groud truth).
+               accuracy evaluation. This indicates if the dataset will be sampled as a prediction
+               dataset(without groud truth).
 
-        :return: A pytorch DataLoader instance.
+        :return: A pytorch DataLoader instance. The data returned from dataloader is in the
+                 following form:
+                1. a 3d numpy ndarray when is_predict=True or horizon=0
+                and time_enc=False
+                2. a 2-dim tuple of 3d numpy ndarray (x, y) when is_predict=False
+                and horizon != 0 and time_enc=False
+                3. a 4-dim tuple of 3d numpy ndarray (x, y, x_enc, y_enc) when
+                time_enc=True
 
         to_torch_data_loader() can be called by:
 
@@ -837,11 +844,20 @@ class TSDataset:
 
     def to_numpy(self):
         '''
-        Export rolling result in form of a numpy ndarray or a tuple of numpy ndarray (x, y)
-        or (x, y, x_enc, y_enc).
+        Export rolling result in form of :
+            1. a 3d numpy ndarray when is_predict=True or horizon=0
+               and time_enc=False
+            2. a 2-dim tuple of 3d numpy ndarray (x, y) when is_predict=False
+               and horizon != 0 and time_enc=False
+            3. a 4-dim tuple of 3d numpy ndarray (x, y, x_enc, y_enc) when
+               time_enc=True
 
-        :return: a 3d numpy ndarray or 2-dim or 4-dim tuple.
-                 each item of tuple is a 3d numpy ndarray.
+        :return: a 3d numpy ndarray when is_predict=True or horizon=0
+                 and time_enc=False.
+                 or a 2-dim tuple of 3d numpy ndarray (x, y) when is_predict=False
+                 and horizon != 0 and time_enc=False
+                 or a 4-dim tuple of 3d numpy ndarray (x, y, x_enc, y_enc)
+                 when time_enc=True.
                  The ndarray is casted to float32.
         '''
         from bigdl.nano.utils.log4Error import invalidInputError
@@ -849,7 +865,7 @@ class TSDataset:
             invalidInputError(False,
                               "Please call 'roll' method "
                               "before transform a TSDataset to numpy ndarray!")
-        if self.numpy_y is None:
+        if self.numpy_y is None and self.numpy_x_timeenc is None:
             return self.numpy_x
         elif self.numpy_x_timeenc is None:
             return self.numpy_x, self.numpy_y
