@@ -243,4 +243,86 @@ RUN chmod a+x /opt/entrypoint.sh && \
     sed -i '/aesm/d' /root/.bashrc && \
     rm -rf /var/run/aesmd
 
+
+# init occlum instance and prepare config
+Run cd /opt && \
+    [[ -d occlum_spark ]] || mkdir occlum_spark && \
+    cd occlum_spark && \
+    occlum init && \
+    new_json="$(jq '.resource_limits.user_space_size = "SGX_MEM_SIZE" | && \
+            .resource_limits.max_num_of_threads = "SGX_THREAD" | && \
+            .process.default_heap_size = "SGX_HEAP" | && \
+            .metadata.debuggable = "ENABLE_SGX_DEBUG" | && \
+            .resource_limits.kernel_space_heap_size="SGX_KERNEL_HEAP" | && \
+            .entry_points = [ "/usr/lib/jvm/java-8-openjdk-amd64/bin" ] | && \
+            .env.untrusted = [ "DMLC_TRACKER_URI", "SPARK_DRIVER_URL", "SPARK_TESTING" , "_SPARK_AUTH_SECRET" ] | && \
+            .env.default = [ "LD_LIBRARY_PATH=/usr/lib/jvm/java-8-openjdk-amd64/lib/server:/usr/lib/jvm/java-8-openjdk-amd64/lib:/usr/lib/jvm/java-8-openjdk-amd64/../lib:/lib","SPARK_CONF_DIR=/opt/spark/conf","SPARK_ENV_LOADED=1","PYTHONHASHSEED=0","SPARK_HOME=/opt/spark","SPARK_SCALA_VERSION=2.12","SPARK_JARS_DIR=/opt/spark/jars","LAUNCH_CLASSPATH=/bin/jars/*",""]' Occlum.json)" && \
+    echo "${new_json}" > Occlum.json && \
+    echo "SGX_MEM_SIZE ${SGX_MEM_SIZE}" && \
+    # enable tmp hostfs
+    # --conf spark.executorEnv.USING_TMP_HOSTFS=true \
+    if [[ $USING_TMP_HOSTFS == "true" ]]; then && \
+        echo "use tmp hostfs" && \
+        mkdir ./shuffle && \
+        edit_json="$(cat Occlum.json | jq '.mount+=[{"target": "/tmp","type": "hostfs","source": "./shuffle"}]')" && \
+        echo "${edit_json}" > Occlum.json && \
+    fi && \
+    if [[ -z "$META_SPACE" ]]; then && \
+        echo "META_SPACE not set, using default value 512m" && \
+        META_SPACE=512m && \
+    else && \
+        echo "META_SPACE=$META_SPACE" && \
+    fi && \
+    if [[ -z "$SGX_MEM_SIZE" ]]; then && \
+        sed -i "s/SGX_MEM_SIZE/20GB/g" Occlum.json && \
+    else && \
+        sed -i "s/SGX_MEM_SIZE/${SGX_MEM_SIZE}/g" Occlum.json && \
+    fi && \
+    if [[ -z "$SGX_THREAD" ]]; then && \
+        sed -i "s/\"SGX_THREAD\"/1024/g" Occlum.json && \
+    else && \
+        sed -i "s/\"SGX_THREAD\"/${SGX_THREAD}/g" Occlum.json && \
+    fi && \
+    if [[ -z "$SGX_HEAP" ]]; then && \
+        sed -i "s/SGX_HEAP/1GB/g" Occlum.json && \
+    else && \
+        sed -i "s/SGX_HEAP/${SGX_HEAP}/g" Occlum.json && \
+    fi && \
+    if [[ -z "$SGX_KERNEL_HEAP" ]]; then && \
+        sed -i "s/SGX_KERNEL_HEAP/1GB/g" Occlum.json && \
+    else && \
+        sed -i "s/SGX_KERNEL_HEAP/${SGX_KERNEL_HEAP}/g" Occlum.json && \
+    fi && \
+    # check attestation setting
+    if [ -z "$ATTESTATION" ]; then && \
+        echo "[INFO] Attestation is disabled!" && \
+        ATTESTATION="false" && \
+    fi && \
+    if [[ $ATTESTATION == "true" ]]; then && \
+        if [[ $PCCS_URL == "" ]]; then && \
+           echo "[ERROR] Attestation set to true but NO PCCS" && \
+           exit 1 && \
+        else && \
+           export ENABLE_SGX_DEBUG=false && \
+           sed -i "s#https://localhost:8081/sgx/certification/v3/#${PCCS_URL}#g" /etc/sgx_default_qcnl.conf && \
+        fi && \
+    fi && \
+    # check occlum log level for docker
+    export ENABLE_SGX_DEBUG=false && \
+    export OCCLUM_LOG_LEVEL=off && \
+    if [[ -z "$SGX_LOG_LEVEL" ]]; then && \
+        echo "No SGX_LOG_LEVEL specified, set to off." && \
+    else && \
+        echo "Set SGX_LOG_LEVEL to $SGX_LOG_LEVEL" && \
+        if [[ $SGX_LOG_LEVEL == "debug" ]] || [[ $SGX_LOG_LEVEL == "trace" ]]; then && \
+            export ENABLE_SGX_DEBUG=true && \
+            export OCCLUM_LOG_LEVEL=$SGX_LOG_LEVEL && \
+        fi && \
+    fi && \
+    sed -i "s/\"ENABLE_SGX_DEBUG\"/$ENABLE_SGX_DEBUG/g" Occlum.json && \
+    sed -i "s/#USE_SECURE_CERT=FALSE/USE_SECURE_CERT=FALSE/g" /etc/sgx_default_qcnl.conf
+
+#occlum build
+Run
+
 ENTRYPOINT [ "/opt/entrypoint.sh" ]
