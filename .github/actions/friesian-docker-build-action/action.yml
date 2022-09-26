@@ -1,0 +1,37 @@
+name: 'Deploy Friesian Serving Docker Image'
+description: 'Deploy friesian serving docker image on hub'
+runs:
+  using: "composite"
+  steps:
+    - name: docker login
+      shell: bash
+      run: |
+        docker login -u ${DOCKERHUB_USERNAME} -p ${DOCKERHUB_PASSWORD}
+    - name: docker deploy friesian-serving
+      shell: bash
+      run: |
+        export TIMESTAMP=`date '+%Y%m%d'`
+        export IMAGE=intelanalytics/friesian-serving
+        echo "################################################"
+        echo "################# friesian serving 2.4.6 #######"
+        echo "################################################"
+        cd docker/friesian-serving
+        wget ${FTP_URI}/analytics-zoo-data/faiss-lib.zip
+        wget ${FTP_URI}/analytics-zoo-data/jersey.tar.gz
+        unzip -o faiss-lib.zip -d lib
+        tar xzvf jersey.tar.gz
+        #--no-cache \
+        docker build \
+        --build-arg http_proxy=${HTTP_PROXY} \
+        --build-arg https_proxy=${HTTPS_PROXY} \
+        --build-arg SPARK_VERSION=3.1.2 \
+        --build-arg BIGDL_VERSION=2.2.0-SNAPSHOT \
+        --build-arg no_proxy=${NO_PROXY} \
+        --rm --no-cache -t $IMAGE:${TAG} .
+        docker push $IMAGE:${TAG}
+        docker tag $IMAGE:${TAG} 10.239.45.10/arda/$IMAGE:${TAG}-${TIMESTAMP}
+        docker push 10.239.45.10/arda/$IMAGE:${TAG}-${TIMESTAMP}
+        docker rmi -f $IMAGE:${TAG} 10.239.45.10/arda/$IMAGE:${TAG}-${TIMESTAMP}
+        rm -rf lib faiss-lib.zip
+        rm -rf jersey jersey.tar.gz
+

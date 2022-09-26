@@ -1,0 +1,54 @@
+name: Friesian Docker Build
+
+on:
+  push:
+    paths:
+      - 'scala/friesian/**'
+      - '.github/actions/friesian-docker-build-action/action.yml'
+  pull_request:
+    branches: [ main ]
+    paths:
+      - 'scala/friesian/**'
+      - '.github/actions/friesian-docker-build-action/action.yml'
+  #  schedule:
+  #    - cron: '0 12 * * *' # GMT time, 12:00 GMT == 20:00 China
+  workflow_dispatch:
+    inputs:
+      #      artifact:
+      #        description: 'select which job to run("all" will make all jobs run)'
+      #        required: true
+      #        default: 'all'
+      #        type: choice
+      #        options:
+      #          - all
+      #          - scala-build
+      #          - python-build
+      #          - python-sourceforge-build
+      #          - docker-bigdl-build
+      tag:
+        description: 'docker image tag (e.g. 2.1.0-SNAPSHOT)'
+        required: true
+        default: 'latest'
+        type: string
+
+permissions:
+  contents: read
+  packages: write
+
+jobs:
+  #  preflight:
+  #    runs-on: [ self-hosted, Shire ]
+  #    steps:
+  #      - uses: actions/checkout@v3
+  #
+  #      - name: Set up JDK8
+  #        uses: ./.github/actions/jdk-setup-action
+  friesian-docker-build:
+    runs-on: [ self-hosted, Shire ]
+    steps:
+      - uses: actions/checkout@v3
+      - name: Set up JDK8
+        uses: ./.github/actions/jdk-setup-action
+      - name: Build docker
+        uses: ./.github/actions/friesian-docker-build-action
+
