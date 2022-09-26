@@ -795,11 +795,20 @@ class TSDataset:
                 invalidInputError(False,
                                   "Please call 'roll' method before transforming a TSDataset to "
                                   "torch DataLoader if roll is False!")
-            x, y = self.to_numpy()
-            return DataLoader(TensorDataset(torch.from_numpy(x).float(),
-                                            torch.from_numpy(y).float()),
-                              batch_size=batch_size,
-                              shuffle=shuffle)
+            if self.numpy_x_timeenc is None:
+                x, y = self.to_numpy()
+                return DataLoader(TensorDataset(torch.from_numpy(x).float(),
+                                                torch.from_numpy(y).float()),
+                                  batch_size=batch_size,
+                                  shuffle=shuffle)
+            else:
+                x, y, x_enc, y_enc = self.to_numpy()
+                return DataLoader(TensorDataset(torch.from_numpy(x).float(),
+                                                torch.from_numpy(y).float(),
+                                                torch.from_numpy(x_enc).float(),
+                                                torch.from_numpy(y_enc).float()),
+                                  batch_size=batch_size,
+                                  shuffle=shuffle)
 
     def to_tf_dataset(self, batch_size=32, shuffle=False):
         """

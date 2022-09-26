@@ -53,8 +53,7 @@ class TestEstimatorForOpenVINO(TestCase):
         pass
 
     def tearDown(self):
-        # shutil.rmtree(local_path)
-        pass
+        shutil.rmtree(local_path)
 
     def check_result(self, result, length=0):
         if length == 0:
@@ -172,8 +171,9 @@ class TestEstimatorForOpenVINO(TestCase):
         self.load_multi_output_model()
         sc = init_nncontext()
         spark = SparkSession(sc)
+        data = np.random.rand(3, 550, 550)
         rdd = sc.range(0, 2, numSlices=1)
-        df = rdd.map(lambda x: [np.random.rand(3, 550, 550).tolist()]).toDF(["input"])
+        df = rdd.map(lambda x: [data.tolist()]).toDF(["input"])
         result_df = self.est.predict(df, feature_cols=["input"])
         df_c = result_df.rdd.map(lambda row: [row[1], row[2], row[3], row[4]]).collect()
         df_c = [np.concatenate((np.array(df_c[0][i]), np.array(df_c[1][i]))) for i in range(4)]

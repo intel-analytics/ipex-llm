@@ -137,7 +137,7 @@ class OpenvinoEstimator(SparkEstimator):
                     batch_pred = infer_request.output_blobs[outputs[0]].buffer[:elem_num]
                     temp_result_list = []
                     for p in batch_pred:
-                        temp_result_list.append(get_arrow_hex_str([p.flatten()], names=outputs))
+                        temp_result_list.append(get_arrow_hex_str([[p.flatten()]], names=outputs))
                 else:
                     batch_pred = list(map(lambda output:
                                           infer_request.output_blobs[output].buffer[:elem_num],
@@ -224,7 +224,8 @@ class OpenvinoEstimator(SparkEstimator):
             is_df = True
             schema = data.schema
             result = data.rdd.mapPartitions(lambda iter: partition_inference(iter))
-            result_df = openvino_output_to_sdf(data, result, outputs, list(self.output_dict.values()))
+            result_df = openvino_output_to_sdf(data, result, outputs,
+                                               list(self.output_dict.values()))
             return result_df
         elif isinstance(data, SparkXShards):
             transformed_data = data.transform_shard(predict_transform, batch_size)
