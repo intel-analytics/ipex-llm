@@ -64,13 +64,12 @@ class EHSMKeyManagementService(
 
   Log4Error.invalidInputError(ehsmAPPID != "", s"ehsmAPPID should not be empty string.")
   Log4Error.invalidInputError(ehsmAPIKEY != "", s"ehsmAPIKEY should not be empty string.")
-  
   val sslConSocFactory = {
     val sslContext: SSLContext = SSLContext.getInstance("SSL")
     val trustManager: TrustManager = new X509TrustManager() {
-            override def checkClientTrusted(chain: Array[X509Certificate], authType: String): Unit = {}
-            override def checkServerTrusted(chain: Array[X509Certificate], authType: String): Unit = {}
-            override def getAcceptedIssuers(): Array[X509Certificate] = Array.empty
+      override def checkClientTrusted(chain: Array[X509Certificate], authType: String): Unit = {}
+      override def checkServerTrusted(chain: Array[X509Certificate], authType: String): Unit = {}
+      override def getAcceptedIssuers(): Array[X509Certificate] = Array.empty
     }
     sslContext.init(null, Array(trustManager), new SecureRandom())
     new SSLConnectionSocketFactory(sslContext, new AllowAllHostnameVerifier())

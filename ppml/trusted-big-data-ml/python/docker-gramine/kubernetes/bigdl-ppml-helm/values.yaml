@@ -13,7 +13,6 @@ executorCores: "8"
 executorMem: "1g"
 executorInstances: "2"
 sgx: "true"
-sgxLog: "error"
 sgxDriverJvmMem: "8g"
 sgxExecutorJvmMem: "12g"
 
@@ -23,7 +22,6 @@ entrypoint: >
         --master $RUNTIME_SPARK_MASTER
         --deploy-mode {{ .Values.deployMode }}
         --sgx-enabled {{ .Values.sgx }}
-        --sgx-log-level {{ .Values.sgxLog }}
         --sgx-driver-jvm-memory {{ .Values.sgxDriverJvmMem }}
         --sgx-executor-jvm-memory {{ .Values.sgxExecutorJvmMem }}
         --driver-cores {{ .Values.driverCores }}

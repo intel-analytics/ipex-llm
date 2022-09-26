@@ -36,14 +36,18 @@ import org.apache.http.util.EntityUtils
 import org.json.JSONObject
 
 object HTTPSUtil {
-  def postRequest(url: String, sslConSocFactory: SSLConnectionSocketFactory, postString: String): JSONObject = {
+  def postRequest(url: String,
+                  sslConSocFactory: SSLConnectionSocketFactory,
+                  postString: String): JSONObject = {
     val response: String = retrieveResponse(url, sslConSocFactory, postString)
     val jsonObj: JSONObject = new JSONObject(response)
     val result: JSONObject = jsonObj.getJSONObject("result")
     result
   }
 
-  def retrieveResponse(url: String, sslConSocFactory: SSLConnectionSocketFactory, params: String = null): String = {
+  def retrieveResponse(url: String,
+                       sslConSocFactory: SSLConnectionSocketFactory,
+                       params: String = null): String = {
     val clientbuilder: HttpClientBuilder = HttpClients.custom().setSSLSocketFactory(sslConSocFactory)
     val httpsClient: CloseableHttpClient = clientbuilder.build()
     val post = new HttpPost(url)
@@ -54,5 +58,4 @@ object HTTPSUtil {
     val response = httpsClient.execute(post)
     EntityUtils.toString(response.getEntity, "UTF-8")
   }
-
 }

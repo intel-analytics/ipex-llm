@@ -12,7 +12,9 @@ The bigdl base image is a public one that does not contain any secrets. You will
 Before running the following command, please modify the paths in `build-docker-image.sh`. Especially, set `IMAGE_MODE` to `bigdl_base_image`. Then build the docker image with the following command.
 
 ```bash
+cd base
 ./build-docker-image.sh
+cd ..
 ```
 #### 1.2 Build Customer Image
 
@@ -25,6 +27,13 @@ It will generate a file `enclave-key.pem` in your present working directory, whi
 ```
 
 Then, use the `enclave-key.pem` and the bigdl base image to build your own custom image. Change the `IMAGE_MODE` to `custom_image` and run `build-docker-image.sh` again. In the process, SGX MREnclave will be made and signed without saving the sensitive encalve key inside the final image, which is safer.
+
+```bash
+cd base
+# modify custom parameters in build-docker-image.sh
+./build-docker-image.sh
+cd ..
+```
 
 The docker build console will also output `mr_enclave` and `mr_signer` like below, which are hash values and used to  register your MREnclave in the following.
 

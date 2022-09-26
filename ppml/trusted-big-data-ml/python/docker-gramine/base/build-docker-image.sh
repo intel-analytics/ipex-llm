@@ -58,7 +58,9 @@ then
         then
             echo "Please specific name and version of your bigdl base name, tag of your user image to use."
         else
-            sudo docker build \
+	    cp ../bigdl-gramine/CustomImageDockerfile .
+
+            Proxy_Modified="sudo docker build \
                     --build-arg BIGDL_IMAGE_NAME=${BIGDL_IMAGE_NAME} \
                     --build-arg BIGDL_IMAGE_VERSION=${BIGDL_IMAGE_VERSION} \
                     --build-arg LOCAL_IP=${LOCAL_IP} \
@@ -66,7 +68,24 @@ then
                     --build-arg https_proxy=http://${HTTPS_PROXY_HOST}:${HTTPS_PROXY_PORT} \
 		    --build-arg SGX_MEM_SIZE=${SGX_MEM_SIZE} \
 		    --build-arg SGX_LOG_LEVEL=${SGX_LOG_LEVEL} \
-                    -t $CUSTOM_IMAGE_TAG -f ./CustomImageDockerfile .
+                    -t $CUSTOM_IMAGE_TAG -f ./CustomImageDockerfile ."
+
+	    No_Proxy_Modified="sudo docker build \
+		    --build-arg BIGDL_IMAGE_NAME=${BIGDL_IMAGE_NAME} \
+                    --build-arg BIGDL_IMAGE_VERSION=${BIGDL_IMAGE_VERSION} \
+                    --build-arg LOCAL_IP=${LOCAL_IP} \
+		    --build-arg SGX_MEM_SIZE=${SGX_MEM_SIZE} \
+                    --build-arg SGX_LOG_LEVEL=${SGX_LOG_LEVEL} \
+                    -t $CUSTOM_IMAGE_TAG -f ./CustomImageDockerfile ."
+	     if [[ "$HTTP_PROXY_HOST" == "your_http_proxy_host" ]] || [[ "$HTTP_PROXY_PORT" == "your_http_proxy_port" ]] || [[ "$HTTPS_PROXY_HOST" == "your_https_proxy_host" ]] || [[ "$HTTPS_PROXY_PORT" == "your_https_proxy_port" ]]
+            then
+                echo "If your environment don't need to set proxy, please ignore this notice information; if your environment need to set proxy, please delet the image just created and modify the proxy in the script, then rerun this script."
+                $No_Proxy_Modified
+                echo "If your environment don't need to set proxy, please ignore this notice information; if your environment need to set proxy, please delet the image just created and modify the proxy in the script, then rerun this script."
+            else
+                $Proxy_Modified
+            fi
+	    rm CustomImageDockerfile
         fi
      fi
   fi
