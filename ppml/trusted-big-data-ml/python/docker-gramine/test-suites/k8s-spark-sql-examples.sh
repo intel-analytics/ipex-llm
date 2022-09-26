@@ -1,8 +1,8 @@
 #!/bin/bash
-status_4_k8s_spark_sql_example=1
+status_2_k8s_spark_sql_example=1
 
 SPARK_LOCAL_IP=$LOCAL_IP
-if [ $status_4_k8s_spark_sql_example -ne 0 ]; then
+if [ $status_2_k8s_spark_sql_example -ne 0 ]; then
 cd /ppml/trusted-big-data-ml
 ./clean.sh
 gramine-argv-serializer bash -c "export TF_MKL_ALLOC_MAX_BYTES=10737418240 && \
@@ -39,7 +39,7 @@ gramine-argv-serializer bash -c "export TF_MKL_ALLOC_MAX_BYTES=10737418240 && \
 ./init.sh
 gramine-sgx bash 2>&1 | tee k8s-spark-sql-example-sgx.log
 fi
-status_4_k8s_spark_sql_example=$(echo $?)
+status_2_k8s_spark_sql_example=$(echo $?)
 
 echo "#### example.2 Excepted result(k8s-spark-sql-example): 10"
 echo "---- example.2 Actual result: "
