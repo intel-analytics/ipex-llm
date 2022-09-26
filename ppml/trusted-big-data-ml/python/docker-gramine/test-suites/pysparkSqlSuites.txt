@@ -1,4 +1,3 @@
-test_arrow.py
 test_catalog.py
 test_column.py
 test_conf.py
