@@ -151,7 +151,6 @@ class InferenceOptimizer:
         :param latency_sample_num: (optional) a int represents the number of repetitions
                to calculate the average latency. The default value is 100.
         '''
-        # TODO: may support accuracy_criterion
 
         # check if model is a nn.Module or inherited from a nn.Module
         invalidInputError(isinstance(model, nn.Module), "model should be a nn module.")
@@ -461,6 +460,8 @@ class InferenceOptimizer:
         :param sample_size: (optional) a int represents how many samples will be used for
                             Post-training Optimization Tools (POT) from OpenVINO toolkit,
                             only valid for accelerator='openvino'. default to 100.
+                            The larger the value, the more accurate the conversion,
+                            the lower the performance degradation, but the longer the time.
         :param logging: whether to log detailed information of model conversion, only valid when
                         accelerator='openvino', otherwise will be ignored. default: True.
         :param **export_kwargs: will be passed to torch.onnx.export function.
@@ -739,8 +740,8 @@ def _throughput_calculate_helper(iterrun, baseline_time, func, *args):
         if i == 2 and end - start_time > 12 * baseline_time:
             return np.mean(time_list) * 1000, False
         # at least need 10 iters and try to control calculation
-        # time less than 2 min
-        if i + 1 >= min(iterrun, 10) and (end - start_time) > 2:
+        # time less than 10s
+        if i + 1 >= min(iterrun, 10) and (end - start_time) > 10:
             iterrun = i + 1
             break
     time_list.sort()

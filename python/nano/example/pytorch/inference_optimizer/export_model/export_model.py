@@ -63,23 +63,35 @@ if __name__ == "__main__":
 
     # 4. Save (export) the accelerated model
     # The saved model files will be saved at "./best_model" directory
-    InferenceOptimizer.save(acc_model, "best_model")
+    save_dir = "./best_model"
+    InferenceOptimizer.save(acc_model, save_dir)
 
+    # 5. Users only need to take file in exported_files for further usage.
     if "openvino" in option:
         # You will see "ov_saved_model.bin" and "ov_saved_model.xml" under "best_model" directory
         # which contain all the required information to perform inference
         #   ov_saved_model.bin: contains the weights and biases binary data of model
         #   ov_saved_model.xml: model checkpoint for general use, describes model structure
-        exported_files = ["best_model/ov_saved_model.bin", "best_model/ov_saved_model.xml"]
+        exported_files = [f"{save_dir}/ov_saved_model.bin", f"{save_dir}/ov_saved_model.xml"]
     elif "onnxruntime" in option:
         # You will see "onnx_saved_model.onnx" under "best_model" directory
         # which represents model checkpoint for general use, describes model structure
-        exported_files = ["best_model/onnx_saved_model.onnx"]
+        exported_files = [f"{save_dir}/onnx_saved_model.onnx"]
     elif "int8" in option:
-        # TODO:
-        pass
+        # You will see "best_model.pt" under "best_model" directory
+        # which represents model optimized by Intel® Neural Compressor
+        # If the model is fully quantified, the model weights obtained are all int8
+        # Otherwise, if some operations are kept at fp32, the stored weights will be mixed precision
+        exported_files = [f"{save_dir}/best_model.pt"]
     elif "jit" in option:
-        # TODO:
-        pass
+        # You will see "ckpt.pt" under "best_model" directory
+        # which stores model optimized using just-in-time compilation
+        exported_files = [f"{save_dir}/ckpt.pt"]
+    elif "ipex" in option or "channels_last" in option:
+        # You will see "ckpt.pt" under "best_model" directory
+        # saved by torch.save(model.state_dict())
+        exported_files = [f"{save_dir}/ckpt.pt"]
     else:
-        exported_files = ["best_model/saved_weight.pt"]
+        # typically for models of nn.Module, pl.LightningModule type
+        # saved by torch.save(model.state_dict())
+        exported_files = [f"{save_dir}/saved_weight.pt"]
