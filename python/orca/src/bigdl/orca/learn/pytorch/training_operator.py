@@ -37,7 +37,7 @@ import numpy as np
 
 from bigdl.orca.learn.metrics import Metric
 from bigdl.orca.learn.pytorch.utils import (TimerCollection, AverageMeterCollection,
-                                            NUM_SAMPLES)
+                                            NUM_SAMPLES, get_batchsize)
 from bigdl.orca.learn.pytorch.constants import (SCHEDULER_STEP_EPOCH, NUM_STEPS,
                                                 SCHEDULER_STEP_BATCH, SCHEDULER_STEP)
 from torch.nn.parallel import DistributedDataParallel as DDP
@@ -268,15 +268,21 @@ class TrainingOperator:
 
         """
         # unpack features into list to support multiple inputs model
-        *features, target = batch
-        # If features is already a tuple, we don't give it an extra list dimension.
-        already_list = (isinstance(features[0], tuple) or isinstance(features[0], list))
-        if len(features) == 1 and already_list:
-            features = features[0]
+        features, target = batch
 
         # Compute output.
         with self.timers.record("fwd"):
-            output = self.model(*features)
+            if torch.is_tensor(features):
+                output = self.model(features)
+            elif isinstance(features, dict):
+                output = self.model(**features)
+            elif isinstance(features, (tuple, list)):
+                output = self.model(*features)
+            else:
+                invalidInputError(False,
+                                  "Features should be tensor, list/tuple or dict, "
+                                  "but got {}".format(type(features)))
+
             if isinstance(output, tuple) or isinstance(output, list):
                 # Then target is also assumed to be a tuple or list.
                 loss = self.criterion(*output, *target)
@@ -292,7 +298,7 @@ class TrainingOperator:
         with self.timers.record("apply"):
             self.optimizer.step()
 
-        return {"train_loss": loss.item(), NUM_SAMPLES: features[0].size(0)}
+        return {"train_loss": loss.item(), NUM_SAMPLES: get_batchsize(features)}
 
     def validate(self, val_iterator, info, metrics, num_steps=None):
         """Runs one standard validation pass over the val_iterator.
@@ -329,7 +335,7 @@ class TrainingOperator:
                 batch_info = {"batch_idx": batch_idx}
                 batch_info.update(info)
                 output, target, loss = self.forward_batch(batch, batch_info)
-                num_samples = target.size(0)
+                num_samples = get_batchsize(target)
                 total_samples += num_samples
                 losses.append(loss.item() * num_samples)
                 for metric in metrics.values():
@@ -394,15 +400,21 @@ class TrainingOperator:
                 calculate averages.
         """
         # unpack features into list to support multiple inputs model
-        *features, target = batch
-        # If features is already a tuple, we don't give it an extra list dimension.
-        already_list = (isinstance(features[0], tuple) or isinstance(features[0], list))
-        if len(features) == 1 and already_list:
-            features = features[0]
+        features, target = batch
 
         # compute output
         with self.timers.record("eval_fwd"):
-            output = self.model(*features)
+            if torch.is_tensor(features):
+                output = self.model(features)
+            elif isinstance(features, dict):
+                output = self.model(**features)
+            elif isinstance(features, (tuple, list)):
+                output = self.model(*features)
+            else:
+                invalidInputError(False,
+                                  "Features should be tensor, list/tuple or dict, "
+                                  "but got {}".format(type(features)))
+
             loss = self.criterion(output, target)
 
         return output, target, loss

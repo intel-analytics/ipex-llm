@@ -64,7 +64,7 @@ def create_data(loader=False, extra_feature=False):
         return train_data, val_data, test_data
 
 
-def create_tsdataset():
+def create_tsdataset(val_ratio=0):
     from bigdl.chronos.data import TSDataset
     import pandas as pd
     timeserious = pd.date_range(start='2020-01-01', freq='s', periods=1000)
@@ -74,16 +74,25 @@ def create_tsdataset():
                       dtype=np.float32)
     df.reset_index(inplace=True)
     df.rename(columns={'index': 'timeserious'}, inplace=True)
-    train, _, test = TSDataset.from_pandas(df=df,
+    train, val, test = TSDataset.from_pandas(df=df,
                                            dt_col='timeserious',
                                            target_col=['value1', 'value2'],
-                                           with_split=True)
-    for tsdata in [train, test]:
-        tsdata.roll(lookback=24,
-                    horizon=5,
-                    time_enc=True,
-                    label_len=12)
-    return train, test
+                                           with_split=True,
+                                           val_ratio=val_ratio)
+    if val_ratio == 0:
+        for tsdata in [train, test]:
+            tsdata.roll(lookback=24,
+                        horizon=5,
+                        time_enc=True,
+                        label_len=12)
+        return train, test
+    else:
+        for tsdata in [train, val, test]:
+            tsdata.roll(lookback=24,
+                        horizon=5,
+                        time_enc=True,
+                        label_len=12)
+        return train, val, test
 
 
 class TestChronosModelAutoformerForecaster(TestCase):
@@ -117,7 +126,19 @@ class TestChronosModelAutoformerForecaster(TestCase):
         forecaster.fit(train_data, epochs=3, batch_size=32)
         evaluate = forecaster.evaluate(val_data)
         pred = forecaster.predict(test_data)
-    
+
+    def test_autoformer_forecaster_fit_eval_pred_tsdataset(self):
+        train, val, test = create_tsdataset(val_ratio=0.1)
+        forecaster = AutoformerForecaster(past_seq_len=24,
+                                          future_seq_len=5,
+                                          input_feature_num=2,
+                                          output_feature_num=2,
+                                          label_len=12,
+                                          freq='s')
+        forecaster.fit(train, epochs=3, batch_size=32)
+        evaluate = forecaster.evaluate(val)
+        pred = forecaster.predict(test)
+
     def test_autoformer_forecaster_tune(self):
         import bigdl.nano.automl.hpo.space as space
         train_data, val_data, test_data = create_data(loader=False)
@@ -207,28 +228,28 @@ class TestChronosModelAutoformerForecaster(TestCase):
         assert evaluate[0]['val_loss'] == evaluate2[0]['val_loss']
 
     def test_autoformer_forecaster_tune_save_load(self):
-            import bigdl.nano.automl.hpo.space as space
-            train_data, val_data, _ = create_data(loader=False)
-            forecaster = AutoformerForecaster(past_seq_len=24,
-                                            future_seq_len=5,
-                                            input_feature_num=2,
-                                            output_feature_num=2,
-                                            label_len=12,
-                                            d_model=space.Categorical(128, 10),
-                                            freq='s',
-                                            loss="mse",
-                                            metrics=['mae', 'mse', 'mape'],
-                                            seed=1,
-                                            lr=0.01)
-            forecaster.tune(train_data, validation_data=val_data, n_trials=2)
-            forecaster.fit(train_data, epochs=3, batch_size=32)
-            evaluate1 = forecaster.evaluate(val_data)
-            with tempfile.TemporaryDirectory() as tmp_dir_name:
-                ckpt_name = os.path.join(tmp_dir_name, "tune.ckpt")
-                forecaster.save(ckpt_name)
-                forecaster.load(ckpt_name)
-                evaluate2 = forecaster.evaluate(val_data)
-            assert evaluate1[0]['val/loss'] == evaluate2[0]['val_loss']
+        import bigdl.nano.automl.hpo.space as space
+        train_data, val_data, _ = create_data(loader=False)
+        forecaster = AutoformerForecaster(past_seq_len=24,
+                                        future_seq_len=5,
+                                        input_feature_num=2,
+                                        output_feature_num=2,
+                                        label_len=12,
+                                        d_model=space.Categorical(128, 10),
+                                        freq='s',
+                                        loss="mse",
+                                        metrics=['mae', 'mse', 'mape'],
+                                        seed=1,
+                                        lr=0.01)
+        forecaster.tune(train_data, validation_data=val_data, n_trials=2)
+        forecaster.fit(train_data, epochs=3, batch_size=32)
+        evaluate1 = forecaster.evaluate(val_data)
+        with tempfile.TemporaryDirectory() as tmp_dir_name:
+            ckpt_name = os.path.join(tmp_dir_name, "tune.ckpt")
+            forecaster.save(ckpt_name)
+            forecaster.load(ckpt_name)
+            evaluate2 = forecaster.evaluate(val_data)
+        assert evaluate1[0]['val/loss'] == evaluate2[0]['val_loss']
 
     def test_autoformer_forecaster_even_kernel(self):
         train_loader, val_loader, test_loader = create_data(loader=True)
@@ -275,7 +296,7 @@ class TestChronosModelAutoformerForecaster(TestCase):
         forecaster.fit(train_loader, epochs=3, batch_size=32)
         # only the first time needs val_data
         y_pred, std = forecaster.predict_interval(data=test_loader,
-                                                  val_data=val_loader,
+                                                  validation_data=val_loader,
                                                   repetition_times=5)
         assert y_pred.shape == std.shape
         y_pred, std = forecaster.predict_interval(data=test_loader)
@@ -293,10 +314,28 @@ class TestChronosModelAutoformerForecaster(TestCase):
         forecaster.fit(train_data, epochs=3, batch_size=32)
         # only the first time needs val_data
         y_pred, std = forecaster.predict_interval(data=test_data,
-                                                  val_data=val_data,
+                                                  validation_data=val_data,
                                                   repetition_times=5)
         assert y_pred.shape == std.shape
         y_pred, std = forecaster.predict_interval(data=test_data)
+
+    def test_autoformer_forecaster_confidence_interval_with_tsdataset(self):
+        train, val, test = create_tsdataset(val_ratio=0.1)
+        forecaster = AutoformerForecaster(past_seq_len=24,
+                                          future_seq_len=5,
+                                          input_feature_num=2,
+                                          output_feature_num=2,
+                                          label_len=12,
+                                          freq='s',
+                                          seed=0,
+                                          moving_avg=20) # even
+        forecaster.fit(train, epochs=3, batch_size=32)
+        # only the first time needs val_data
+        y_pred, std = forecaster.predict_interval(data=test,
+                                                  validation_data=val,
+                                                  repetition_times=5)
+        assert y_pred.shape == std.shape
+        y_pred, std = forecaster.predict_interval(data=test)
 
     def test_autoformer_forecaster_from_tsdataset(self):
         df = get_ts_df()

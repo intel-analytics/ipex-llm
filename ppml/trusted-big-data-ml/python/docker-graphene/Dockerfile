@@ -238,6 +238,7 @@ RUN apt-get update --fix-missing && \
     mkdir -p /ppml/trusted-big-data-ml/fl
 
 COPY --from=bigdl /bigdl-${BIGDL_VERSION}/python/start-fl-server.py /ppml/trusted-big-data-ml/fl
+COPY --from=bigdl /bigdl-${BIGDL_VERSION}/python/start-fgboost-server.py /ppml/trusted-big-data-ml/fl
 
 #python
 RUN apt install software-properties-common -y && \
@@ -263,6 +264,7 @@ RUN apt install software-properties-common -y && \
     pip install --no-cache-dir ninja meson && \
     pip install --no-cache-dir psutil && \
     pip install --no-cache-dir dill==0.3.4 && \
+    pip install --no-cache-dir py4j && \
     python3 -m pip install toml==0.10.2 click jinja2 && \
     python3 -m ipykernel.kernelspec && \
     ln -s /usr/lib/x86_64-linux-gnu/libtinfo.so.6 /usr/lib/x86_64-linux-gnu/libtinfo.so.5 && \

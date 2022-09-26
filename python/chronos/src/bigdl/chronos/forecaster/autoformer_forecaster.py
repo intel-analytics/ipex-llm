@@ -314,6 +314,7 @@ class AutoformerForecaster(Forecaster):
                     be sure to set label_len > 0 and time_enc = True
                | 2. pytorch dataloader: generate from `TSDataset.to_torch_data_loader`,
                     be sure to set label_len > 0 and time_enc = True
+               | 3. A bigdl.chronos.data.tsdataset.TSDataset instance
 
         :param epochs: Number of epochs you want to train. The value defaults to 1.
         :param batch_size: Number of batch size you want to train. The value defaults to 32.
@@ -334,6 +335,18 @@ class AutoformerForecaster(Forecaster):
                                             torch.from_numpy(data[3]),),
                               batch_size=batch_size,
                               shuffle=True)
+        # transform a TSDataset instance to dataloader
+        if isinstance(data, TSDataset):
+            _rolled = data.numpy_x is None
+            data = data.to_torch_data_loader(batch_size=batch_size,
+                                             roll=_rolled,
+                                             lookback=self.data_config['past_seq_len'],
+                                             horizon=self.data_config['future_seq_len'],
+                                             label_len=self.data_config['label_len'],
+                                             time_enc=True,
+                                             feature_col=data.roll_feature,
+                                             target_col=data.roll_target,
+                                             shuffle=True)
 
         from bigdl.chronos.pytorch import TSTrainer as Trainer
         # Trainer init and fitting
@@ -368,6 +381,7 @@ class AutoformerForecaster(Forecaster):
                     be sure to set label_len > 0 and time_enc = True
                | 2. pytorch dataloader: generate from `TSDataset.to_torch_data_loader`,
                     be sure to set label_len > 0, time_enc = True and is_predict = True
+               | 3. A bigdl.chronos.data.tsdataset.TSDataset instance
 
         :param batch_size: predict batch size. The value will not affect predict
                result but will affect resources cost(e.g. memory and time).
@@ -376,6 +390,18 @@ class AutoformerForecaster(Forecaster):
         """
         if self.distributed:
             invalidInputError(False, "distributed is not support in Autoformer")
+        # transform a TSDataset instance to dataloader
+        if isinstance(data, TSDataset):
+            _rolled = data.numpy_x is None
+            data = data.to_torch_data_loader(batch_size=batch_size,
+                                             roll=_rolled,
+                                             lookback=self.data_config['past_seq_len'],
+                                             horizon=self.data_config['future_seq_len'],
+                                             label_len=self.data_config['label_len'],
+                                             time_enc=True,
+                                             feature_col=data.roll_feature,
+                                             target_col=data.roll_target,
+                                             shuffle=False)
         invalidInputError(isinstance(data, tuple) or isinstance(data, DataLoader),
                           "The input data to predict() support formats: numpy ndarray tuple"
                           f" and pytorch dataloader, but found {type(data)}.")
@@ -398,6 +424,7 @@ class AutoformerForecaster(Forecaster):
                     be sure to set label_len > 0 and time_enc = True
                | 2. pytorch dataloader: generate from `TSDataset.to_torch_data_loader`,
                     be sure to set label_len > 0 and time_enc = True
+               | 3. A bigdl.chronos.data.tsdataset.TSDataset instance
 
         :param batch_size: predict batch size. The value will not affect predict
                result but will affect resources cost(e.g. memory and time).
@@ -407,6 +434,21 @@ class AutoformerForecaster(Forecaster):
         # TODO: use metrics here
         if self.distributed:
             invalidInputError(False, "distributed is not support in Autoformer")
+        # transform a TSDataset instance to dataloader
+        if isinstance(data, TSDataset):
+            _rolled = data.numpy_x is None
+            data = data.to_torch_data_loader(batch_size=batch_size,
+                                             roll=_rolled,
+                                             lookback=self.data_config['past_seq_len'],
+                                             horizon=self.data_config['future_seq_len'],
+                                             label_len=self.data_config['label_len'],
+                                             time_enc=True,
+                                             feature_col=data.roll_feature,
+                                             target_col=data.roll_target,
+                                             shuffle=False)
+        invalidInputError(isinstance(data, tuple) or isinstance(data, DataLoader),
+                          "The input data to predict() support formats: numpy ndarray tuple"
+                          f" and pytorch dataloader, but found {type(data)}.")
         if isinstance(data, tuple):
             data = DataLoader(TensorDataset(torch.from_numpy(data[0]),
                                             torch.from_numpy(data[1]),
@@ -414,10 +456,10 @@ class AutoformerForecaster(Forecaster):
                                             torch.from_numpy(data[3]),),
                               batch_size=batch_size,
                               shuffle=False)
-
         return self.trainer.validate(self.internal, data)
 
-    def predict_interval(self, data, val_data=None, batch_size=32, repetition_times=5):
+    def predict_interval(self, data, validation_data=None, batch_size=32,
+                         repetition_times=5):
         """
         Calculate confidence interval of data based on Monte Carlo dropout(MC dropout).
         Related paper : https://arxiv.org/abs/1709.01907
@@ -427,14 +469,16 @@ class AutoformerForecaster(Forecaster):
                | 1. numpy ndarrays: generate from `TSDataset.roll`,
                     be sure to set label_len > 0 and time_enc = True
                | 2. pytorch dataloader: generate from `TSDataset.to_torch_data_loader`,
-                    be sure to set label_len > 0, time_enc = True and is_predict = True
+                    be sure to set label_len > 0, time_enc = True
+               | 3. A bigdl.chronos.data.tsdataset.TSDataset instance
 
-        :param val_data: The val_data support following formats:
+        :param validation_data: The validation_data support following formats:
 
                | 1. numpy ndarrays: generate from `TSDataset.roll`,
                     be sure to set label_len > 0 and time_enc = True
                | 2. pytorch dataloader: generate from `TSDataset.to_torch_data_loader`,
                     be sure to set label_len > 0, time_enc = True
+               | 3. A bigdl.chronos.data.tsdataset.TSDataset instance
 
         :param batch_size: predict batch size. The value will not affect predict
                result but will affect resources cost(e.g. memory and time).
@@ -454,18 +498,33 @@ class AutoformerForecaster(Forecaster):
         # step1, according to validation dataset, calculate inherent noise
         # which should be done during fit
         if not hasattr(self, "data_noise"):
-            invalidInputError(val_data is not None,
+            invalidInputError(validation_data is not None,
                               "When call predict_interval for the first time, you must pass in "
-                              "validation data to calculate data noise.")
+                              "validation_data to calculate data noise.")
+            # transform a TSDataset instance to dataloader
+            if isinstance(validation_data, TSDataset):
+                _rolled = validation_data.numpy_x is None
+                validation_data = validation_data.to_torch_data_loader(
+                    batch_size=batch_size,
+                    roll=_rolled,
+                    lookback=self.data_config['past_seq_len'],
+                    horizon=self.data_config['future_seq_len'],
+                    label_len=self.data_config['label_len'],
+                    time_enc=True,
+                    feature_col=data.roll_feature,
+                    target_col=data.roll_target,
+                    shuffle=False
+                )
             # data transform
-            if isinstance(val_data, DataLoader):
-                target = np.concatenate(tuple(val[1] for val in val_data), axis=0)
+            if isinstance(validation_data, DataLoader):
+                target = np.concatenate(tuple(val[1] for val in validation_data),
+                                        axis=0)
             else:
-                x, target, x_enc, y_enc = val_data
+                _, target, _, _ = validation_data
 
-            target = target[:, -self.internal.pred_len:, :]
+            target = target[:, -self.data_config['future_seq_len']:, :]
 
-            _yhat = self.predict(val_data)
+            _yhat = self.predict(validation_data)
             val_yhat = np.concatenate(_yhat, axis=0)
             self.data_noise = Evaluator.evaluate(["mse"], target,
                                                  val_yhat, aggregate=None)[0]  # 2d array
@@ -477,6 +536,19 @@ class AutoformerForecaster(Forecaster):
 
         # turn on dropout
         self.internal.apply(apply_dropout)
+
+        # transform a TSDataset instance to dataloader
+        if isinstance(data, TSDataset):
+            _rolled = data.numpy_x is None
+            data = data.to_torch_data_loader(batch_size=batch_size,
+                                             roll=_rolled,
+                                             lookback=self.data_config['past_seq_len'],
+                                             horizon=self.data_config['future_seq_len'],
+                                             label_len=self.data_config['label_len'],
+                                             time_enc=True,
+                                             feature_col=data.roll_feature,
+                                             target_col=data.roll_target,
+                                             shuffle=False)
 
         def predict(data, model):
             # manually implement predict to avoid .eval() in trainer.predict()
