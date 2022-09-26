@@ -196,6 +196,21 @@ class TestChronosModelLSTMForecaster(TestCase):
             ckpt_name_q = os.path.join(tmp_dir_name, "int_openvino")
             forecaster.export_openvino_file(dirname=ckpt_name, quantized_dirname=ckpt_name_q)
 
+    def test_lstm_forecaster_openvino_methods_loader(self):
+        train_data, _, test_data = create_data(loader=True)
+        forecaster = LSTMForecaster(past_seq_len=24,
+                                    input_feature_num=2,
+                                    output_feature_num=2,
+                                    loss="mae",
+                                    lr=0.01)
+        forecaster.fit(train_data, epochs=2)
+        try:
+            pred = forecaster.predict(test_data)
+            pred_openvino = forecaster.predict_with_openvino(test_data)
+            np.testing.assert_almost_equal(pred, pred_openvino, decimal=5)
+        except ImportError:
+            pass
+
     def test_lstm_forecaster_quantization(self):
         train_data, val_data, test_data = create_data()
         forecaster = LSTMForecaster(past_seq_len=24,
@@ -568,7 +583,7 @@ class TestChronosModelLSTMForecaster(TestCase):
                                     lr=0.01)
         forecaster.fit(train_data, epochs=2)
         y_pred, std = forecaster.predict_interval(data=test_data[0],
-                                                  val_data=val_data,
+                                                  validation_data=val_data,
                                                   repetition_times=5)
         assert y_pred.shape == test_data[1].shape
         assert y_pred.shape == std.shape

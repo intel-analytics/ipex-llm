@@ -170,20 +170,25 @@ if [ -z "${LD_PRELOAD:-}" ]; then
 	fi
 	if [[ $JEMALLOC -eq 1 && ! -z "${ENABLE_JEMALLOC_VAR:-}" ]]; then
 	    DISABLE_TCMALLOC_VAR=1
-		if [ -z "${LD_PRELOAD:-}" ]; then
-			export LD_PRELOAD="${LIB_DIR}/libjemalloc.so"
-		else
-			export LD_PRELOAD="${LD_PRELOAD} ${NANO_DIR}/libs/libjemalloc.so"
+		if [ -f "${NANO_DIR}/libs/libjemalloc.so" ]; then
+			JEMALLOC_PATH="${NANO_DIR}/libs/libjemalloc.so"
+		elif [ -f "${LIB_DIR}/libjemalloc.so" ]; then
+			JEMALLOC_PATH="${LIB_DIR}/libjemalloc.so"
 		fi
+		# if `LD_PRELOAD` or `JEMLLOC_PATH` is empty, there will be
+		# extra space on the left or right sides, use echo to remove them
+		export LD_PRELOAD=$(echo ${LD_PRELOAD} ${JEMALLOC_PATH})
 	fi
 
 	# Set TCMALLOC lib path
 	if [[ $TCMALLOC -eq 1 && -z "${DISABLE_TCMALLOC_VAR:-}" ]]; then
-		if [ -z "${LD_PRELOAD:-}" ]; then
-			export LD_PRELOAD="${LIB_DIR}/libtcmalloc.so"
-		else
-			export LD_PRELOAD="${LD_PRELOAD} ${NANO_DIR}/libs/libtcmalloc.so"
+		if [ -f "${NANO_DIR}/libs/libtcmalloc.so" ]; then
+			TCMALLOC_PATH="${NANO_DIR}/libs/libtcmalloc.so"
+		elif [ -f "${LIB_DIR}/libtcmalloc.so" ]; then
+			TCMALLOC_PATH="${LIB_DIR}/libtcmalloc.so"
 		fi
+		# the same as above
+		export LD_PRELOAD=$(echo ${LD_PRELOAD} ${TCMALLOC_PATH})
 	fi
 fi
 
@@ -223,7 +228,7 @@ else
 
         # bigdl-nano-init
         echo "if [ -f '${CONDA_PREFIX}/bin/bigdl-nano-init' ]; then" > $ACTIVATED_PATH/nano_vars.sh
-        echo "    source bigdl-nano-init" >> $ACTIVATED_PATH/nano_vars.sh
+        echo "    source ${CONDA_PREFIX}/bin/bigdl-nano-init" >> $ACTIVATED_PATH/nano_vars.sh
         echo "else" >> $ACTIVATED_PATH/nano_vars.sh
         echo "    echo 'Cannot find bigdl-nano-init, if you have uninstalled bigdl-nano, you may want to delete $ACTIVATED_PATH/nano_vars.sh and $DEACTIVATED_PATH/nano_vars.sh'" >> $ACTIVATED_PATH/nano_vars.sh
         echo "fi" >> $ACTIVATED_PATH/nano_vars.sh
