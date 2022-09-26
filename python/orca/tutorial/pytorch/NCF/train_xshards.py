@@ -39,58 +39,6 @@ parser.add_argument("--model",
     type=str, 
     default="NeuMF-end", 
     help="model name")
-parser.add_argument("--main_path", 
-    type=str, 
-    default="./NCF-Data/", 
-    help="main path")
-parser.add_argument("--model_path", 
-    type=str, 
-    default="./models/", 
-    help="model path")
-parser.add_argument("--out", 
-    type=bool, 
-    default=True, 
-    help="save model or not")
-parser.add_argument("--cluster_mode", 
-    type=str, 
-    default="local", 
-    help="")
-parser.add_argument("--lr", 
-    type=float, 
-    default=0.001, 
-    help="learning rate")
-parser.add_argument("--dropout", 
-    type=float, 
-    default=0.0, 
-    help="dropout rate")
-parser.add_argument("--batch_size", 
-    type=int, 
-    default=256, 
-    help="batch size for training")
-parser.add_argument("--epochs", 
-    type=int, 
-    default=20, 
-    help="training epoches")
-parser.add_argument("--top_k", 
-    type=int, 
-    default=10, 
-    help="compute metrics@top_k")
-parser.add_argument("--factor_num", 
-    type=int, 
-    default=32, 
-    help="predictive factors numbers in the model")
-parser.add_argument("--num_layers", 
-    type=int, 
-    default=3, 
-    help="number of layers in MLP model")
-parser.add_argument("--num_ng", 
-    type=int, 
-    default=4, 
-    help="sample negative items for training")
-parser.add_argument("--test_num_ng", 
-    type=int, 
-    default=0, 
-    help="sample part of negative items for testing")
 parser.add_argument("--backend", 
     type=str, 
     default="spark", 
@@ -121,7 +69,7 @@ def preprocess_data():
         args.dataset+"/ratings.dat", 
         sep="::", header=None, names=['user', 'item'], 
         usecols=[0, 1], dtype={0: np.int32, 1: np.int32})  
-    data_X = data_X.partition_by("user",5)#num_partitions=5 
+    data_X = data_X.partition_by("user", 5)#num_partitions=5 
     return data_X
 
 # prepare the train and test datasets
@@ -143,7 +91,7 @@ def transform_to_dict(data):
     features_ng = []
     for x in features_ps:
         u = x[0]
-        for t in range(args.num_ng):
+        for t in range(4):#sample 4 negative items for training
             j = np.random.randint(args.item_num)
             while (u, j) in train_mat:
                 j = np.random.randint(args.item_num)
@@ -154,7 +102,7 @@ def transform_to_dict(data):
 
     features_fill = features_ps + features_ng
     labels_fill = labels_ps + labels_ng      
-    data_XY = pd.DataFrame(data=features_fill,columns=["user","item"])
+    data_XY = pd.DataFrame(data=features_fill, columns=["user", "item"])
     data_XY["y"] = labels_fill
 
     #split training set and testing set
@@ -163,7 +111,7 @@ def transform_to_dict(data):
     #transform dataset into dict
     train_data, test_data = train_data.to_numpy(), test_data.to_numpy()
     train_data, test_data = {"x": train_data[:,:2].astype(np.int64), "y": train_data[:,2].astype(np.float)}, {"x": test_data[:,:2].astype(np.int64), "y": test_data[:,2].astype(np.float)}  
-    return train_data,test_data
+    return train_data, test_data
 
 train_shards, test_shards = data_X.transform_shard(transform_to_dict).split()
 
@@ -171,13 +119,13 @@ train_shards, test_shards = data_X.transform_shard(transform_to_dict).split()
 
 # create the model
 def model_creator(config):
-    model = NCF(args.user_num, args.item_num, args.factor_num, args.num_layers, args.dropout, args.model) # a torch.nn.Module
+    model = NCF(args.user_num, args.item_num, factor_num=32, num_layers=3, dropout=0.0, args.model) # a torch.nn.Module
     model.train()
     return model
 
 #create the optimizer
 def optimizer_creator(model, config):
-    return optim.Adam(model.parameters(), lr=args.lr)
+    return optim.Adam(model.parameters(), lr=0.001)
 
 #define the loss function
 loss_function = nn.BCEWithLogitsLoss()
@@ -188,10 +136,10 @@ from bigdl.orca.learn.pytorch import Estimator
 from bigdl.orca.learn.metrics import Accuracy,AUC
 
 # create the estimator
-est = Estimator.from_torch(model=model_creator, optimizer=optimizer_creator, loss=loss_function, metrics=[Accuracy(),AUC()], backend=args.backend)# backend="ray" or "spark"
+est = Estimator.from_torch(model=model_creator, optimizer=optimizer_creator, loss=loss_function, metrics=[Accuracy(), AUC()], backend=args.backend)# backend="ray" or "spark"
 
 # fit the estimator
-est.fit(data=train_shards, epochs=5, batch_size=args.batch_size, feature_cols=["x"], label_cols =["y"])
+est.fit(data=train_shards, epochs=20, batch_size=256, feature_cols=["x"], label_cols =["y"])
 
 #Step 5: Evaluate and save the Model
 
@@ -205,6 +153,3 @@ est.save("NCF_model")
 
 # stop orca context when program finishes
 stop_orca_context()
-
-
-
