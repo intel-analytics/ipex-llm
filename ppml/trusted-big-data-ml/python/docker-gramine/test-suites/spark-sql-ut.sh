@@ -8,6 +8,7 @@ cd /ppml/trusted-big-data-ml
 for suite in `cat /ppml/trusted-big-data-ml/work/test-suites/sparkSqlSuites.txt`
 do
     while true
+    do
         gramine-argv-serializer bash -c "/opt/jdk8/bin/java -cp '$SPARK_HOME/conf/:$SPARK_HOME/jars/*:$SPARK_HOME/test-jars/*:$SPARK_HOME/test-classes/' \
                                         -Xmx8g -Dspark.testing=true -Djdk.lang.Process.launchMechanism=posix_spawn -XX:MaxMetaspaceSize=256m -Dos.name='Linux' \
                                         -Dspark.test.home=/ppml/trusted-big-data-ml/work/spark-3.1.2 -Dspark.python.use.daemon=false -Dspark.python.worker.reuse=false \

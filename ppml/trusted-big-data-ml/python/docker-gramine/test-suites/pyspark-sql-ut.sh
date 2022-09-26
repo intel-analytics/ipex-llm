@@ -7,6 +7,7 @@ cd /ppml/trusted-big-data-ml
 for suite in `cat /ppml/trusted-big-data-ml/work/test-suites/pysparkSqlSuites.txt`
 do
     while true
+    do
         gramine-argv-serializer bash -c "/opt/jdk8/bin/java -cp \
                                         '/ppml/trusted-big-data-ml/work/spark-3.1.2/conf/:/ppml/trusted-big-data-ml/work/spark-3.1.2/jars/*' \
                                         -Xmx1g org.apache.spark.deploy.SparkSubmit --master 'local[4]' --conf spark.network.timeout=10000000 \
