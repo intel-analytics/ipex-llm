@@ -898,16 +898,15 @@ class TestTSDataset(TestCase):
         tsdata_train, tsdata_valid, tsdata_test =\
             TSDataset.from_pandas(df, dt_col="datetime", target_col="value",
                                   extra_feature_col=["extra feature"], id_col="id",
-                                  with_split=True, val_ratio=0.1, test_ratio=0.1,
-                                  largest_look_back=5, largest_horizon=2)
+                                  with_split=True, val_ratio=0.1, test_ratio=0.1)
 
         assert set(np.unique(tsdata_train.to_pandas()["id"])) == {"00"}
         assert set(np.unique(tsdata_valid.to_pandas()["id"])) == {"00"}
         assert set(np.unique(tsdata_test.to_pandas()["id"])) == {"00"}
 
         assert len(tsdata_train.to_pandas()) == df[:-(int(df.shape[0]*0.1)*2)].shape[0]
-        assert len(tsdata_valid.to_pandas()) == int(df.shape[0] * 0.1 + 5 + 2 - 1)
-        assert len(tsdata_test.to_pandas()) == int(df.shape[0] * 0.1 + 5 + 2 - 1)
+        assert len(tsdata_valid.to_pandas()) == int(df.shape[0] * 0.1)
+        assert len(tsdata_test.to_pandas()) == int(df.shape[0] * 0.1)
         tsdata_train.feature_col.append("new extra feature")
         assert len(tsdata_train.feature_col) == 2
         assert len(tsdata_valid.feature_col) == 1
@@ -923,16 +922,15 @@ class TestTSDataset(TestCase):
         tsdata_train, tsdata_valid, tsdata_test =\
             TSDataset.from_pandas(df, dt_col="datetime", target_col="value",
                                   extra_feature_col=["extra feature"], id_col="id",
-                                  with_split=True, val_ratio=0.1, test_ratio=0.1,
-                                  largest_look_back=5, largest_horizon=2)
+                                  with_split=True, val_ratio=0.1, test_ratio=0.1)
 
         assert set(np.unique(tsdata_train.to_pandas()["id"])) == {"00", "01"}
         assert set(np.unique(tsdata_valid.to_pandas()["id"])) == {"00", "01"}
         assert set(np.unique(tsdata_test.to_pandas()["id"])) == {"00", "01"}
 
         assert len(tsdata_train.to_pandas()) == (50 * 0.8)*2
-        assert len(tsdata_valid.to_pandas()) == (50 * 0.1 + 5 + 2 - 1)*2
-        assert len(tsdata_test.to_pandas()) == (50 * 0.1 + 5 + 2 - 1)*2
+        assert len(tsdata_valid.to_pandas()) == (50 * 0.1)*2
+        assert len(tsdata_test.to_pandas()) == (50 * 0.1)*2
 
         assert tsdata_train.feature_col is not tsdata_valid.feature_col
         assert tsdata_train.feature_col is not tsdata_test.feature_col

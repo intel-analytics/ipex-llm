@@ -182,6 +182,12 @@ class TestChronosModelSeq2SeqForecaster(TestCase):
         except ImportError:
             pass
 
+        # test exporting the openvino
+        with tempfile.TemporaryDirectory() as tmp_dir_name:
+            ckpt_name = os.path.join(tmp_dir_name, "fp32_openvino")
+            ckpt_name_q = os.path.join(tmp_dir_name, "int_openvino")
+            forecaster.export_openvino_file(dirname=ckpt_name, quantized_dirname=ckpt_name_q)
+
     def test_s2s_forecaster_quantization(self):
         train_data, val_data, test_data = create_data()
         forecaster = Seq2SeqForecaster(past_seq_len=24,
@@ -487,7 +493,7 @@ class TestChronosModelSeq2SeqForecaster(TestCase):
                                        lr=0.01)
         forecaster.fit(train_data, epochs=2)
         y_pred, std = forecaster.predict_interval(data=test_data[0],
-                                                  val_data=val_data,
+                                                  validation_data=val_data,
                                                   repetition_times=5)
         assert y_pred.shape == test_data[1].shape
         assert y_pred.shape == std.shape

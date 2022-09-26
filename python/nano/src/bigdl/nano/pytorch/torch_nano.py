@@ -23,6 +23,7 @@ import torch
 from torch import nn
 from torch.optim import Optimizer
 from torch.utils.data import DataLoader
+from torch.nn.parallel.distributed import DistributedDataParallel
 from pytorch_lightning.lite import LightningLite
 from pytorch_lightning.lite.wrappers import _LiteModule, _LiteOptimizer
 
@@ -36,17 +37,36 @@ from bigdl.nano.pytorch.strategies import create_IPEXStrategy, DDPSpawnStrategy,
 
 class _TorchNanoModule(_LiteModule):
     def state_dict(self, *args, **kwargs):
-        return self._module.state_dict(*args, **kwargs)
+        if isinstance(self.module, DistributedDataParallel):
+            return self.module.module.state_dict(*args, **kwargs)
+        else:
+            return self.module.state_dict(*args, **kwargs)
 
     def load_state_dict(self, *args, **kwargs):
         invalidInputError(False, "TorchNano doesn't support loading state dict, "
                           "please load it using original pytorch model")
 
     def __getattr__(self, name: str):
-        # automatically unwrap attributes access of _LiteModule
+        # automatically unwrap attributes access of _LiteModule,
+        # always throw a single-level exception when the attribute doesn't exist
+        # for a more user-friendly exception message
         try:
             return super().__getattr__(name)
         except AttributeError:
+            pass
+
+        # When using multi-instance training, self.module will be DistributedDataParallel(DDP),
+        # otherwise, `self.module` will be original module.
+        if isinstance(self.module, DistributedDataParallel):
+            # just in case that users try to access an attribute of DDP
+            # or an attribute of both DDP and original model,
+            # we should first try to find it in DDP
+            try:
+                return getattr(self.module, name)
+            except AttributeError:
+                pass
+            return getattr(self.module.module, name)
+        else:
             return getattr(self.module, name)
 
 

@@ -31,7 +31,7 @@ echo $DEV_DIR
 
 if (( $# < 3)); then
   echo "Usage: release_default_spark.sh platform version upload spark_version suffix"
-  echo "Usage example: bash release_default_spark.sh linux default true 3.1.2 true"
+  echo "Usage example: bash release_default_spark.sh linux default true 3.1.3 true"
   echo "Usage example: bash release_default_spark.sh mac 0.14.0.dev1 false 2.4.6 false"
   exit -1
 fi
@@ -47,7 +47,7 @@ spark_first_version=${version_array[0]}
 
 re='^[2-3]+$'
 if ! [[ $spark_first_version =~ $re ]] ; then
-   echo "error: Spark version is not a number like 3.1.2"
+   echo "error: Spark version is not a number like 3.1.3"
    exit 1
 fi
 

@@ -88,25 +88,15 @@ result = loaded.predict(df_test, feature_columns=df_test.columns)
 FL Server is required before running any federated applications. Check [Start FL Server]() section for details.
 
 ### 3.1 Start FL Server in SGX
-// TODO: Add SGX section
-
-Copy the configuration file `ppml/scripts/ppml-conf.yaml` to the current directory, and modify the config
-```yaml
-# the port server gRPC uses
-serverPort: 8980
-
-# the path server uses to save server model checkpoints
-fgBoostServerModelPath: /tmp/fgboost_server_model
-
-# the number of clients in this federated learning application
-clientNum: 2
+#### 3.1.1 Start the container
+Before running FL Server in SGX, please prepare keys and start the BigDL PPML container first. Check  [3.1 BigDL PPML Hello World](https://github.com/intel-analytics/BigDL/tree/main/ppml#31-bigdl-ppml-hello-world) for details.
+#### 3.1.2 Run Fgboost Server in SGX
+You can run Fgboost Server in SGX with the following command:
+```bash
+docker exec -it YOUR_DOCKER bash /ppml/trusted-big-data-ml/work/start-scripts/start-python-fgboost-server-sgx.sh -p 8980 -c 2
 ```
-Note that we also set `fgBoostServerModelPath` which will be used in incremental training in [Section 3.4](#34-incremental-training)
+You can set port with `-p` and set client number with `-c` while the default settings are `port=8980` and `client-num=2`.
 
-Then start the FL Server
-```
-./ppml/scripts/start-fl-server.sh 
-```
 ### 3.2 Start FGBoost Clients
 Copy the configuration file `ppml/scripts/ppml-conf.yaml` to the current directory, and modify the config
 ```yaml
