@@ -6,5 +6,5 @@ export NANO_TUTORIAL_TEST_DIR=${ANALYTICS_ZOO_ROOT}/python/nano/tutorial/inferen
 
 set -e
 
-sed -i s/epochs = 20/epochs = 1/g $NANO_TUTORIAL_TEST_DIR/pytorch_quantization.py
+sed -i 's/epochs = 20/epochs = 1/g' $NANO_TUTORIAL_TEST_DIR/cifar10.py
 python $NANO_TUTORIAL_TEST_DIR/cifar10.py
