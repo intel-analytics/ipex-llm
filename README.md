@@ -218,7 +218,7 @@ See the Chronos [user guide](https://bigdl.readthedocs.io/en/latest/doc/Chronos/
 
 ### PPML
 
-*BigDL PPML* provides a **hardware (Intel SGX) protected** *Trusted Cluster Environment* for running distributed Big Data & AI applications (in a secure fashion on private or public cloud).
+*BigDL PPML* provides a **hardware (Intel SGX) protected** *Trusted Cluster Environment* for running distributed Big Data & AI applications (in a secure fashion on private or public cloud). See the PPML [tutorial](https://github.com/intel-analytics/BigDL/blob/main/ppml/README.md) and [user guide](https://bigdl.readthedocs.io/en/latest/doc/PPML/Overview/ppml.html) for more details. 
 
 ## Getting Support
 
