@@ -19,7 +19,7 @@ echo 'Start testing'
 start=$(date "+%s")
 
 # use nbconvert to test here; nbmake may cause some errors
-jupyter nbconvert --ExecutePreprocessor.timeout=600 --to notebook --execute ${NANO_HOWTO_GUIDES_TEST_DIR}/*.ipynb
+jupyter nbconvert --ExecutePreprocessor.timeout=700 --to notebook --execute ${NANO_HOWTO_GUIDES_TEST_DIR}/*.ipynb
 
 now=$(date "+%s")
 time=$((now-start))
