@@ -16,10 +16,11 @@
 
 package org.apache.spark.sql
 
-import java.io.{DataOutputStream, FileInputStream, FileOutputStream}
+import org.apache.arrow.memory.{AllocationListener, RootAllocator}
 
+import java.io.{DataOutputStream, FileInputStream, FileOutputStream}
 import org.apache.arrow.vector.VectorSchemaRoot
-import org.apache.arrow.vector.ipc.ArrowStreamWriter
+import org.apache.arrow.vector.ipc.{ArrowStreamReader, ArrowStreamWriter}
 import org.apache.spark.{SparkEnv, TaskContext}
 import org.apache.spark.api.java.JavaRDD
 import org.apache.spark.rdd.RDD
@@ -27,13 +28,16 @@ import org.apache.spark.sql.api.python.PythonSQLUtils
 import org.apache.spark.sql.catalyst.{CatalystTypeConverters, InternalRow}
 import org.apache.spark.sql.execution.arrow.{ArrowConverters, ArrowWriter}
 import org.apache.spark.sql.execution.python.BatchIterator
-import org.apache.spark.sql.types.{DataType, StructType}
+import org.apache.spark.sql.types.{ArrayType, DataType, FloatType, StructField, StructType}
 import org.apache.spark.sql.util.ArrowUtils
 import org.apache.spark.util.Utils
-
 import org.apache.spark.util.{ShutdownHookManager, Utils}
 
 import java.io._
+import javax.xml.bind.DatatypeConverter
+import scala.collection.mutable.ArrayBuffer
+import java.util.{List => JList}
+import scala.collection.JavaConverters._
 
 
 class OrcaArrowUtils() {
@@ -115,5 +119,72 @@ class OrcaArrowUtils() {
       }
       Iterator(filename)
     }
+  }
+
+  def openVINOOutputToSDF(df: DataFrame,
+                          outputRDD: JavaRDD[String],
+                          outputNames: JList[String],
+                          outShapes: JList[JList[Int]]): DataFrame = {
+    val spark = SparkSession.builder.config(outputRDD.sparkContext.getConf).getOrCreate()
+    val outputNamesScala = outputNames.asScala
+    val outputShapesScala = outShapes.asScala.map(_.asScala.toArray[Int]).toArray
+    val outputShapeReverseArr = outputShapesScala.map(_.reverse.dropRight(1))
+    val outputRowRDD = outputRDD.rdd.flatMap(hexStr => {
+      val allocator = new RootAllocator()
+      val in = new ByteArrayInputStream(DatatypeConverter.parseHexBinary(hexStr))
+      val stream = new ArrowStreamReader(in, allocator)
+      val vsr = stream.getVectorSchemaRoot
+      val outputVectorReaders = outputNamesScala.map(name => {
+        vsr.getVector(name).getReader
+      })
+      // Only one batch in stream
+      stream.loadNextBatch()
+      val rowCount = vsr.getRowCount
+      val outputRowSeq = (0 until rowCount).map(i => {
+        val row_vector = (outputVectorReaders zip outputShapeReverseArr).map(readerShapeTuple => {
+          val reader = readerShapeTuple._1
+          reader.setPosition(i)
+          val shape = readerShapeTuple._2
+          val dataArr = ArrayBuffer[Float]()
+          while (reader.next()) {
+            val floatReader = reader.reader()
+            if (floatReader.isSet) {
+              dataArr += floatReader.readFloat()
+            }
+          }
+          // OpenVINO output dim >= 1
+          if (shape.length == 0) {
+            dataArr.toArray
+          } else {
+            // Reshape if dim >= 2
+            var groupedArr: Array[Any] = dataArr.toArray
+            for (s <- shape) {
+              groupedArr = groupedArr.grouped(s).toArray
+            }
+            groupedArr
+          }
+        })
+        Row.fromSeq(row_vector)
+      })
+      stream.close()
+      in.close()
+      allocator.close()
+      outputRowSeq
+    })
+
+    val mergedRDD = df.rdd.zip(outputRowRDD).map(originOutputRowTuple => {
+      Row.fromSeq(originOutputRowTuple._1.toSeq ++ originOutputRowTuple._2.toSeq)
+    })
+
+    val originSchema = df.schema
+    val resultStruct = (outputNamesScala zip outputShapesScala).map(nameShape => {
+      var structType: DataType = FloatType
+      for (_ <- nameShape._2.indices) {
+        structType = ArrayType(structType)
+      }
+      StructField(nameShape._1, structType, true)
+    }).toArray
+    val schema = StructType(originSchema.fields ++: resultStruct)
+    spark.createDataFrame(mergedRDD, schema)
   }
 }
