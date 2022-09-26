@@ -629,7 +629,7 @@ class TestChronosModelTCNForecaster(TestCase):
         np.testing.assert_almost_equal(test_pred_save, test_pred_load)
    
     def test_tcn_forecaster_fit_val(self):
-        train_data, val_data, _ = create_data()
+        train_data, val_data, test_data = create_data()
         forecaster = TCNForecaster(past_seq_len=24,
                                    future_seq_len=5,
                                    input_feature_num=1,
@@ -639,6 +639,7 @@ class TestChronosModelTCNForecaster(TestCase):
                                    loss="mae",
                                    lr=0.01)
         val_loss = forecaster.fit(train_data, val_data, epochs=10)
+        _ = forecaster.predict(test_data[0])
 
     def test_tcn_forecaster_fit_loader_val(self):
         train_loader, val_loader, _ = create_data(loader=True)

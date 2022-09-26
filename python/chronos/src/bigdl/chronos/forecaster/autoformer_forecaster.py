@@ -451,6 +451,11 @@ class AutoformerForecaster(Forecaster):
             if validation_mode == 'best_epoch':
                 self.load('validation/best.ckpt')
                 delete_folder("./validation")
+            # modify logger attr in trainer, otherwise predict will report error
+            self.trainer._logger_connector.on_trainer_init(False,
+                                                           self.trainer.flush_logs_every_n_steps,
+                                                           self.trainer.log_every_n_steps,
+                                                           self.trainer.move_metrics_to_cpu)
             return fit_out
 
     def predict(self, data, batch_size=32):
