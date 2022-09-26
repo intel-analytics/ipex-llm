@@ -1,7 +1,8 @@
 name: Nightly Test
 
 on:
-  #pull_request:
+  pull_request:
+     branchs: [ main ]
   schedule:
     - cron: '0 13 * * *' # GMT time, 13:00 GMT == 21:00 China
   workflow_dispatch:
@@ -28,6 +29,7 @@ on:
         - PPML-PySpark-K8S-EXAMPLE
         - PPML-Occlum-ExampleTests
         - PPML-spark-Local-Example-Tests-on-Gramine
+        - PPML-Spark-K8S-Example-On-Gramine
 
 permissions:
   contents: read
@@ -436,4 +438,16 @@ jobs:
         type: job
         job-name: PPML-spark-Local-Example-Tests-on-Gramine
         runner-hosted-on: 'Shanghai'
-      
+
+  PPML-Spark-K8S-Example-On-Gramine:
+          #if: ${{ github.event.schedule || github.event.inputs.artifact == 'PPML-Spark-K8S-Example-On-Gramine' || github.event.inputs.artifact == 'all' }}
+    runs-on: [self-hosted, Vilvarin]
+
+    steps:
+    - uses: actions/checkout@v3
+    - name: Set up JDK8
+      uses: ./.github/actions/jdk-setup-action
+    - name: Set up maven
+      uses: ./.github/actions/maven-setup-action
+    - name: Run test
+      uses: ./.github/actions/ppml-spark-k8s-example-on-gramine-action
