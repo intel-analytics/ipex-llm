@@ -459,12 +459,18 @@ def make_data_creator(refs):
     return data_creator
 
 
-def make_dataloader_list_wrapper(func):
+def empty_recollate_fn(batch):
+    return batch
+
+
+def collate_dataloader_wrapper(func, recollate_fn):
     import torch
 
     def make_feature_list(batch):
         if func is not None:
             batch = func(batch)
+        if recollate_fn is not None:
+            batch = recollate_fn(batch)
         *features, target = batch
         if len(features) == 1 and torch.is_tensor(features[0]):
             features = features[0]
@@ -473,10 +479,11 @@ def make_dataloader_list_wrapper(func):
     return make_feature_list
 
 
-def reload_dataloader_creator(dataloader_func):
+def reload_dataloader_creator(dataloader_func, recollate_fn=empty_recollate_fn):
     def reload_dataloader(config, batch_size):
         dataloader = dataloader_func(config, batch_size)
-        dataloader.collate_fn = make_dataloader_list_wrapper(dataloader.collate_fn)
+        dataloader.collate_fn = collate_dataloader_wrapper(dataloader.collate_fn,
+                                                           recollate_fn)
         return dataloader
 
     return reload_dataloader if dataloader_func else None

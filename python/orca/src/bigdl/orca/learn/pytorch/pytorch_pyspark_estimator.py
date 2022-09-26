@@ -25,7 +25,7 @@ from bigdl.orca.learn.pytorch.training_operator import TrainingOperator
 from bigdl.orca.learn.pytorch.pytorch_pyspark_worker import PytorchPysparkWorker
 from bigdl.orca.learn.utils import maybe_dataframe_to_xshards, dataframe_to_xshards, \
     convert_predict_xshards_to_dataframe, make_data_creator, update_predict_xshards, \
-    reload_dataloader_creator
+    reload_dataloader_creator, empty_recollate_fn
 from bigdl.orca.data import SparkXShards
 from bigdl.orca import OrcaContext
 from bigdl.orca.learn.base_estimator import BaseEstimator
@@ -39,7 +39,7 @@ from bigdl.dllib.utils.utils import get_node_ip
 from bigdl.dllib.utils.log4Error import *
 
 
-def partition_to_creator(partition):
+def partition_to_creator(partition, collate_fn=empty_recollate_fn):
 
     def data_creator(config, batch_size):
         from bigdl.orca.data.utils import ray_partition_get_data_label, index_data, get_size
@@ -67,7 +67,7 @@ def partition_to_creator(partition):
                                                    allow_list=False)
         print("Data size on worker: ", len(label))
         dataset = NDArrayDataset(data, label)
-        data_loader = DataLoader(dataset, **params)
+        data_loader = DataLoader(dataset, **params, collate_fn=collate_fn)
         return data_loader
 
     return data_creator
@@ -186,7 +186,8 @@ class PyTorchPySparkEstimator(BaseEstimator):
             feature_cols=None,
             label_cols=None,
             validation_data=None,
-            callbacks=[]):
+            callbacks=[],
+            recollate_fn=empty_recollate_fn):
         """
         Trains a PyTorch model given training data for several epochs.
         Calls `TrainingOperator.train_epoch()` on N parallel workers simultaneously
@@ -253,7 +254,8 @@ class PyTorchPySparkEstimator(BaseEstimator):
             if validation_data is None:
                 def transform_func(iter, init_params, param):
                     partition_data = list(iter)
-                    param["data_creator"] = partition_to_creator(partition_data)
+                    param["data_creator"] = partition_to_creator(partition_data,
+                                                                 collate_fn=recollate_fn)
                     runner = PytorchPysparkWorker(**init_params)
                     result = runner.train_epochs(**param)
                     runner.shutdown()
@@ -268,8 +270,10 @@ class PyTorchPySparkEstimator(BaseEstimator):
                     data_tuple_list = list(iter)
                     data_list = [x for data_tuple in data_tuple_list for x in data_tuple[0]]
                     valid_list = [x for data_tuple in data_tuple_list for x in data_tuple[1]]
-                    param["data_creator"] = partition_to_creator(data_list)
-                    param["validation_data_creator"] = partition_to_creator(valid_list)
+                    param["data_creator"] = partition_to_creator(data_list,
+                                                                 collate_fn=recollate_fn)
+                    param["validation_data_creator"] = partition_to_creator(valid_list,
+                                                                            collate_fn=recollate_fn)
                     runner = PytorchPysparkWorker(**init_params)
                     result = runner.train_epochs(**param)
                     runner.shutdown()
@@ -287,8 +291,9 @@ class PyTorchPySparkEstimator(BaseEstimator):
                                   "data should be either an instance of SparkXShards or a "
                                   "callable  function, but got type: {}".format(type(data)))
 
-            params["data_creator"] = reload_dataloader_creator(data)
-            params["validation_data_creator"] = reload_dataloader_creator(validation_data)
+            params["data_creator"] = reload_dataloader_creator(data, recollate_fn)
+            params["validation_data_creator"] = reload_dataloader_creator(validation_data,
+                                                                          recollate_fn)
 
             def transform_func(iter, init_param, param):
                 return PytorchPysparkWorker(**init_param).train_epochs(**param)
@@ -413,7 +418,8 @@ class PyTorchPySparkEstimator(BaseEstimator):
                  profile=False,
                  info=None,
                  feature_cols=None,
-                 label_cols=None):
+                 label_cols=None,
+                 recollate_fn=empty_recollate_fn):
         """
         Evaluates a PyTorch model given validation data.
         Note that only accuracy for classification with zero-based label is supported by
@@ -468,13 +474,15 @@ class PyTorchPySparkEstimator(BaseEstimator):
             # set train/validation data
             def transform_func(iter, init_param, param):
                 partition_data = list(iter)
-                param["data_creator"] = partition_to_creator(partition_data)
+                param["data_creator"] = partition_to_creator(partition_data,
+                                                             collate_fn=recollate_fn)
                 return PytorchPysparkWorker(**init_param).validate(**param)
 
             res = data.rdd.repartition(self.num_workers).barrier() \
                 .mapPartitions(lambda iter: transform_func(iter, init_params, params)).collect()
         else:
-            params["data_creator"] = reload_dataloader_creator(data)
+            params["data_creator"] = reload_dataloader_creator(data,
+                                                               collate_fn=recollate_fn)
 
             def transform_func(iter, init_param, param):
                 return PytorchPysparkWorker(**init_param).validate(**param)
