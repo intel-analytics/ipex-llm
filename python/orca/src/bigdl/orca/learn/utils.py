@@ -461,7 +461,7 @@ def make_data_creator(refs):
 
 
 def openvino_output_to_sdf(df, rdd, names, shapes):
-    return callBigDlFunc("float", "OpenVINOOutputToSDF", df, rdd, names, shapes)
+    return callBigDlFunc("float", "openVINOOutputToSDF", df, rdd, names, shapes)
 
 
 def get_arrow_hex_str(batched_data, names):
