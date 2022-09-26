@@ -55,7 +55,7 @@ args = parser.parse_args()
 
 #Step 1: Init Orca Context
 
-from bigdl.orca import init_orca_context, stop_orca_context, OrcaContext
+from bigdl.orca import init_orca_context, stop_orca_context
 init_orca_context(cores=1, memory="8g")
 
 #Step 2: Define Dataset
