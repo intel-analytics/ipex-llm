@@ -9,29 +9,31 @@ SGX-based Trusted Big Data ML allows the user to run end-to-end big data analyti
 
 The bigdl base image is a public one that does not contain any secrets. You will use the base image to get your own custom image in the following. 
 
-Before running the following command, please modify the paths in `build-docker-image.sh`. Especially, set `IMAGE_MODE` to `bigdl_base_image`. Then build the docker image with the following command.
+Before running the following command, please modify the paths in `./base/build-base-image.sh`. Especially, set `IMAGE_MODE` to `bigdl_base_image`. Then build the docker image with the following command.
 
 ```bash
 cd base
-./build-docker-image.sh
+# configure parameters in build-base-image.sh please
+./build-base-image.sh
 cd ..
 ```
 #### 1.2 Build Customer Image
 
 First, You need to generate your enclave key using the command below, and keep it safely for future remote attestations and to start SGX enclaves more securely.
 
-It will generate a file `enclave-key.pem` in your present working directory, which will be your enclave key. To store the key elsewhere, modify the outputted file path.
+It will generate a file `enclave-key.pem` in `./bigdl-gramine`  directory, which will be your enclave key. To store the key elsewhere, modify the outputted file path.
 
 ```bash
-  openssl genrsa -3 -out enclave-key.pem 3072
+cd bigdl-gramine
+openssl genrsa -3 -out enclave-key.pem 3072
 ```
 
-Then, use the `enclave-key.pem` and the bigdl base image to build your own custom image. Change the `IMAGE_MODE` to `custom_image` and run `build-docker-image.sh` again. In the process, SGX MREnclave will be made and signed without saving the sensitive encalve key inside the final image, which is safer.
+Then, use the `enclave-key.pem` and the bigdl base image to build your own custom image. Change the `IMAGE_MODE` to `custom_image` and run `build-custom-image.sh`. In the process, SGX MREnclave will be made and signed without saving the sensitive encalve key inside the final image, which is safer.
 
 ```bash
-cd base
-# modify custom parameters in build-docker-image.sh
-./build-docker-image.sh
+# under bigdl-gramine dir
+# modify custom parameters in build-custom-image.sh
+./build-custom-image.sh
 cd ..
 ```
 
