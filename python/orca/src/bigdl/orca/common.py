@@ -262,11 +262,12 @@ def init_orca_context(cluster_mode=None, runtime="spark", cores=None, memory="2g
                     spark_args["python_location"] = kwargs["python_location"]
                 from bigdl.dllib.nncontext import init_spark_on_local
                 sc = init_spark_on_local(cores, **spark_args)
-            elif cluster_mode == "spark-submit":
+            elif cluster_mode == "spark-submit" or cluster_mode == "bigdl-submit":
                 from bigdl.dllib.nncontext import init_nncontext
                 if "conf" in spark_args and spark_args["conf"] is not None:
-                    warnings.warn("For spark-submit cluster_mode, all conf should be "
-                                  + "specified in the spark-submit command, but got "
+                    warnings.warn("For spark-submit and bigdl-submit cluster_mode, "
+                                  + "all conf should be specified in the spark-submit "
+                                  + "or bigdl-submit command, but got "
                                   + repr(spark_args["conf"]) + ", ignored", Warning)
                     spark_args["conf"] = None
                 sc = init_nncontext(**spark_args)
