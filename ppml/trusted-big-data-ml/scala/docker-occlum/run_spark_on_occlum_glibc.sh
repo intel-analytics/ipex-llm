@@ -354,7 +354,7 @@ run_spark_xgboost() {
                 --executor-cores 2 \
                 --executor-memory 9G \
                 --driver-memory 10G \
-                /bin/jars/bigdl-dllib-spark_3.1.2-2.1.0-SNAPSHOT.jar \
+                /bin/jars/bigdl-dllib-spark_3.1.2-2.1.0.jar \
                 -i /host/data -s /host/data/model -t 2 -r 100 -d 2 -w 1
 }
 
@@ -376,7 +376,7 @@ run_spark_gbt() {
                 --executor-cores 2 \
                 --executor-memory 9G \
                 --driver-memory 10G \
-                /bin/jars/bigdl-dllib-spark_3.1.2-2.1.0-SNAPSHOT.jar \
+                /bin/jars/bigdl-dllib-spark_3.1.2-2.1.0.jar \
                 -i /host/data -s /host/data/model -I 100 -d 5
 }
 

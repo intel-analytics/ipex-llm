@@ -16,14 +16,14 @@ Proxy_Modified="sudo docker build \
     --build-arg JDK_URL=${JDK_URL} \
     --build-arg SPARK_JAR_REPO_URL=${SPARK_JAR_REPO_URL} \
     --build-arg no_proxy=x.x.x.x \
-    -t intelanalytics/bigdl-ppml-trusted-big-data-ml-python-graphene:2.1.0-SNAPSHOT -f ./Dockerfile ."
+    -t intelanalytics/bigdl-ppml-trusted-big-data-ml-python-graphene:2.1.0 -f ./Dockerfile ."
 
 No_Proxy_Modified="sudo docker build \
     --build-arg JDK_VERSION=8u192 \
     --build-arg JDK_URL=${JDK_URL} \
     --build-arg SPARK_JAR_REPO_URL=${SPARK_JAR_REPO_URL} \
     --build-arg no_proxy=x.x.x.x \
-    -t intelanalytics/bigdl-ppml-trusted-big-data-ml-python-graphene:2.1.0-SNAPSHOT -f ./Dockerfile ."
+    -t intelanalytics/bigdl-ppml-trusted-big-data-ml-python-graphene:2.1.0 -f ./Dockerfile ."
 
 if [[ "$JDK_URL" == "http://your-http-url-to-download-jdk" ]] || [[ "$SPARK_JAR_REPO_URL" == "http://your_spark_jar_repo_url" ]]
 then

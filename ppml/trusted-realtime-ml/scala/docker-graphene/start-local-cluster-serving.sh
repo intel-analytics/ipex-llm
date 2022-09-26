@@ -21,7 +21,7 @@ sudo docker run -itd \
     --name=trusted-cluster-serving-local \
     -e LOCAL_IP=$LOCAL_IP \
     -e CORE_NUM=30 \
-    intelanalytics/bigdl-ppml-trusted-realtime-ml-scala-graphene:2.1.0-SNAPSHOT \
+    intelanalytics/bigdl-ppml-trusted-realtime-ml-scala-graphene:2.1.0 \
     bash  -c "cd /ppml/trusted-realtime-ml/ && ./start-all.sh && tail -f /dev/null"
 
 sudo docker exec -i trusted-cluster-serving-local bash -c "mkdir /dev/sgx && \
