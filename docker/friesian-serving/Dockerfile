@@ -15,12 +15,12 @@
 #
 
 
-ARG SPARK_VERSION=3.1.3
+ARG SPARK_VERSION=3.1.2
 ARG BIGDL_VERSION=2.2.0-SNAPSHOT
 
 # stage.1 spark
 FROM ubuntu:20.04 as spark
-ARG SPARK_VERSION=3.1.3
+ARG SPARK_VERSION=3.1.2
 ARG SPARK_HOME=/opt/spark
 
 RUN apt-get update --fix-missing && \
@@ -47,7 +47,7 @@ RUN apt-get update --fix-missing && \
 # stage.2 friesian-serving-docker
 FROM ubuntu:20.04
 
-ARG SPARK_VERSION=3.1.3
+ARG SPARK_VERSION=3.1.2
 ARG BIGDL_VERSION=2.2.0-SNAPSHOT
 
 ENV SPARK_HOME                      /opt/work/spark-${SPARK_VERSION}
