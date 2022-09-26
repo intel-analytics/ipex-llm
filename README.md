@@ -85,7 +85,7 @@ flowchart TD;
   from bigdl.orca import init_orca_context, OrcaContext
   sc = init_orca_context(cluster_mode="k8s", cores=4, memory="10g", num_nodes=2) 
 
-  # 2. Perform distribtued data processing (supporting Spark Dataframes,
+  # 2. Perform distribtued data processing (supporting Spark DataFrames,
   # TensorFlow Dataset, PyTorch DataLoader, Ray Dataset, Pandas, Pillow, etc.)
   spark = OrcaContext.get_spark_session()
   df = spark.read.parquet(file_path)
@@ -102,8 +102,8 @@ flowchart TD;
   # 4. Use Orca Estimator for distributed training/inference
   from bigdl.orca.learn.tf.estimator import Estimator
   est = Estimator.from_keras(keras_model=model)  
-  est.fit(data=df,  
-          feature_cols=['user', 'item'],  
+  est.fit(data=df,
+          feature_cols=['user', 'item'],
           label_cols=['label'],
           ...)
   ```
@@ -120,23 +120,27 @@ flowchart TD;
   You can directly run Ray program on Spark cluster, and write Ray code inline with Spark code (so as to process the in-memory Spark RDDs or DataFrames) using _RayOnSpark_ in Orca.
  
   ```python
-  from bigdl.orca import init_orca_context
-
+  # 1. Initilize Orca Context (to run your program on K8s, YARN or local laptop)
+  from bigdl.orca import init_orca_context, OrcaContext
   sc = init_orca_context(cluster_mode="yarn", cores=4, memory="10g", num_nodes=2, init_ray_on_spark=True) 
 
+  # 2. Convert Spark DataFrames to Ray Datasets
+  spark = OrcaContext.get_spark_session()
+  df = spark.read.parquet(file_path)
+  from bigdl.orca.data import spark_df_to_ray_dataset
+  dataset = spark_df_to_ray_dataset(df)
+  
+  # 3. Use Ray to operate on Ray Datasets
   import ray
 
   @ray.remote
-  class Counter(object):
-      def __init__(self):
-          self.n = 0
+  def consume(data) -> int:
+     num_batches = 0
+     for batch in data.iter_batches(batch_size=10):
+         num_batches += 1
+     return num_batches
 
-      def increment(self):
-          self.n += 1
-          return self.n
-
-  counters = [Counter.remote() for i in range(5)]
-  print(ray.get([c.increment.remote() for c in counters]))
+  print(ray.get(consume.remote(dataset)))
   ```
 
   See the RayOnSpark [user guide](https://bigdl.readthedocs.io/en/latest/doc/Ray/Overview/ray.html) and [quickstart](https://bigdl.readthedocs.io/en/latest/doc/Ray/QuickStart/ray-quickstart.html) for more details.
@@ -145,7 +149,7 @@ flowchart TD;
 
 ### DLlib
 
-With _DLlib_, you can write distributed deep learning applications as standard (**Scala** or **Python**) Spark programs, using the same *Spark Dataframe* and *ML Pipeline* APIs.
+With _DLlib_, you can write distributed deep learning applications as standard (**Scala** or **Python**) Spark programs, using the same *Spark DataFrame* and *ML Pipeline* APIs.
 
 <details><summary>Show DLlib example</summary>
 <br/>
