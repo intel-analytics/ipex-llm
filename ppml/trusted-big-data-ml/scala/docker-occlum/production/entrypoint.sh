@@ -18,18 +18,6 @@ if [ -z "$uidentry" ] ; then
     fi
 fi
 
-# check occlum log level for k8s
-export ENABLE_SGX_DEBUG=false
-export OCCLUM_LOG_LEVEL=off
-if [[ -z "$SGX_LOG_LEVEL" ]]; then
-    echo "No SGX_LOG_LEVEL specified, set to off."
-else
-    echo "Set SGX_LOG_LEVEL to $SGX_LOG_LEVEL"
-    if [[ $SGX_LOG_LEVEL == "debug" ]] || [[ $SGX_LOG_LEVEL == "trace" ]]; then
-        export ENABLE_SGX_DEBUG=true
-        export OCCLUM_LOG_LEVEL=$SGX_LOG_LEVEL
-    fi
-fi
 
 # check the NETTY_THREAD
 if [[ -z "$NETTY_THREAD" ]]; then
@@ -80,7 +68,6 @@ case "$SPARK_K8S_CMD" in
     else
         echo "DRIVER_MEMORY=$DRIVER_MEMORY"
     fi
-    /opt/run_spark_on_occlum_glibc.sh init
     cd /opt/occlum_spark
     DMLC_TRACKER_URI=$SPARK_DRIVER_BIND_ADDRESS
 
