@@ -39,58 +39,10 @@ parser.add_argument("--model",
     type=str, 
     default="NeuMF-end", 
     help="model name")
-parser.add_argument("--main_path", 
-    type=str, 
-    default="./NCF-Data/", 
-    help="main path")
-parser.add_argument("--model_path", 
-    type=str, 
-    default="./models/", 
-    help="model path")
-parser.add_argument("--out", 
-    type=bool, 
-    default=True, 
-    help="save model or not")
-parser.add_argument("--cluster_mode", 
-    type=str, 
-    default="local", 
-    help="")
-parser.add_argument("--lr", 
-    type=float, 
-    default=0.001, 
-    help="learning rate")
-parser.add_argument("--dropout", 
-    type=float, 
-    default=0.0, 
-    help="dropout rate")
-parser.add_argument("--batch_size", 
-    type=int, 
-    default=256, 
-    help="batch size for training")
-parser.add_argument("--epochs", 
-    type=int, 
-    default=20, 
-    help="training epoches")
-parser.add_argument("--top_k", 
-    type=int, 
-    default=10, 
-    help="compute metrics@top_k")
-parser.add_argument("--factor_num", 
-    type=int, 
-    default=32, 
-    help="predictive factors numbers in the model")
-parser.add_argument("--num_layers", 
-    type=int, 
-    default=3, 
-    help="number of layers in MLP model")
 parser.add_argument("--num_ng", 
     type=int, 
     default=4, 
     help="sample negative items for training")
-parser.add_argument("--test_num_ng", 
-    type=int, 
-    default=0, 
-    help="sample part of negative items for testing")
 parser.add_argument("--backend", 
     type=str, 
     default="ray", 
@@ -99,7 +51,7 @@ args = parser.parse_args()
 
 #Step 1: Init Orca Context
 
-from bigdl.orca import init_orca_context, stop_orca_context, OrcaContext
+from bigdl.orca import init_orca_context, stop_orca_context
 init_orca_context(cores=1, memory="8g") # 1 cpu core
 
 #Step 2: Define Train Dataset
@@ -180,21 +132,21 @@ train_dataset = NCFData(
 test_dataset = NCFData(
         test_data, args.item_num, train_mat, 0, False)
 train_loader = data.DataLoader(train_dataset,
-        batch_size=args.batch_size, shuffle=True, num_workers=0)
+        batch_size=256, shuffle=True, num_workers=0)
 test_loader = data.DataLoader(test_dataset,
-        batch_size=args.test_num_ng+1, shuffle=False, num_workers=0)
+        batch_size=1, shuffle=False, num_workers=0)
 
 #Step 3: Define the Model
 
 # create the model
 def model_creator(config):
-    model = NCF(args.user_num, args.item_num,args.factor_num, args.num_layers, args.dropout, args.model) # a torch.nn.Module
+    model = NCF(args.user_num, args.item_num, factor_num=32, num_layers=3, dropout=0.0, args.model) # a torch.nn.Module
     model.train()
     return model
 
 #create the optimizer
 def optimizer_creator(model, config):
-    return optim.Adam(model.parameters(), lr= args.lr)
+    return optim.Adam(model.parameters(), lr=0.001)
 
 #define the loss function
 loss_function = nn.BCEWithLogitsLoss()
@@ -215,7 +167,7 @@ def test_loader_func(config, batch_size):
     return test_loader
 
 # fit the estimator
-est.fit(data=train_loader_func, epochs=1)
+est.fit(data=train_loader_func, epochs=20)
 
 #Step 5: Save and Load the Model
 
@@ -232,6 +184,3 @@ for r in result:
 
 # stop orca context when program finishes
 stop_orca_context()
-
-
-
