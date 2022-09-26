@@ -12,6 +12,11 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+# ==============================================================================
+# Most of the pytorch code is adapted from guoyang9's NCF implementation for
+# ml-1m dataset.
+# guoyang9's source code: https://github.com/guoyang9/NCF
+# MovieLens 1M Dataset: https://grouplens.org/datasets/movielens/1m/
 #
 
 import os
@@ -64,21 +69,21 @@ from bigdl.orca.data import XShards
 from bigdl.orca.data.pandas import read_csv
 from sklearn.model_selection import train_test_split
 
+# prepare the train and test datasets
 def preprocess_data():   
     data_X = read_csv(
         args.dataset+"/ratings.dat", 
         sep="::", header=None, names=['user', 'item'], 
         usecols=[0, 1], dtype={0: np.int32, 1: np.int32})  
-    data_X = data_X.partition_by("user", 5)#num_partitions=5 
+    data_X = data_X.partition_by("user", data_X.num_partitions())
     return data_X
 
-# prepare the train and test datasets
 data_X = preprocess_data()
 
 # construct the train and test xshards
-def transform_to_dict(data):
-    data["user"] = data["user"]-1
-    data["item"] = data["item"]-1
+def ng_sampling(data):
+    data["user"] = data["user"] - 1
+    data["item"] = data["item"] - 1
     data_X = data.values.tolist()
     
     #calculate a dok matrix
@@ -91,7 +96,7 @@ def transform_to_dict(data):
     features_ng = []
     for x in features_ps:
         u = x[0]
-        for t in range(4):#sample 4 negative items for training
+        for t in range(4):# sample 4 negative items for training
             j = np.random.randint(args.item_num)
             while (u, j) in train_mat:
                 j = np.random.randint(args.item_num)
@@ -104,15 +109,20 @@ def transform_to_dict(data):
     labels_fill = labels_ps + labels_ng      
     data_XY = pd.DataFrame(data=features_fill, columns=["user", "item"])
     data_XY["y"] = labels_fill
+    return data_XY
 
+def transform_to_dict(data):
     #split training set and testing set
-    train_data, test_data = train_test_split(data_XY, test_size=0.2, random_state=100)
+    train_data, test_data = train_test_split(data, test_size=0.2, random_state=100)
 
     #transform dataset into dict
-    train_data, test_data = train_data.to_numpy(), test_data.to_numpy()
-    train_data, test_data = {"x": train_data[:,:2].astype(np.int64), "y": train_data[:,2].astype(np.float)}, {"x": test_data[:,:2].astype(np.int64), "y": test_data[:,2].astype(np.float)}  
+    train_data = train_data.to_numpy()
+    test_data = test_data.to_numpy()
+    train_data = {"x": train_data[:, :-1].astype(np.int64), "y": train_data[:, -1].astype(np.float)}
+    test_data = {"x": test_data[:, :-1].astype(np.int64), "y": test_data[:, -1].astype(np.float)}  
     return train_data, test_data
 
+data_X = data_X.transform_shard(ng_sampling)
 train_shards, test_shards = data_X.transform_shard(transform_to_dict).split()
 
 #Step 3: Define the Model
@@ -133,7 +143,7 @@ loss_function = nn.BCEWithLogitsLoss()
 #Step 4: Fit with Orca Estimator
 
 from bigdl.orca.learn.pytorch import Estimator 
-from bigdl.orca.learn.metrics import Accuracy,AUC
+from bigdl.orca.learn.metrics import Accuracy, AUC
 
 # create the estimator
 est = Estimator.from_torch(model=model_creator, optimizer=optimizer_creator, loss=loss_function, metrics=[Accuracy(), AUC()], backend=args.backend)# backend="ray" or "spark"
