@@ -904,7 +904,6 @@ class BasePytorchForecaster(Forecaster):
                               "You must call fit or restore first before calling predict_interval!")
 
         # step1, according to validation dataset, calculate inherent noise
-        # which should be done during fit
         if not hasattr(self, "data_noise"):
             invalidInputError(validation_data is not None,
                               "When call predict_interval for the first time, you must pass in "
@@ -934,7 +933,7 @@ class BasePytorchForecaster(Forecaster):
             self.data_noise = Evaluator.evaluate(["mse"], target,
                                                  val_yhat, aggregate=None)[0]  # 2d array
 
-        # step2: data preprocess
+        # data preprocess
         if isinstance(data, TSDataset):
             _rolled = data.numpy_x is None
             data = data.to_torch_data_loader(batch_size=batch_size,
@@ -945,7 +944,7 @@ class BasePytorchForecaster(Forecaster):
                                              target_col=data.roll_target,
                                              shuffle=False)
 
-        # step3: calculate model uncertainty based MC Dropout
+        # step2: calculate model uncertainty based MC Dropout
         def apply_dropout(m):
             if type(m) == torch.nn.Dropout:
                 m.train()
