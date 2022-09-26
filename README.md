@@ -18,7 +18,7 @@ BigDL seamlessly scales your data analytics & AI applications from laptop to clo
 
 - [Chronos](#chronos): Scalable Time Series Analysis using AutoML
 
-- Friesian: End-to-End Recommendation Systems
+- [Friesian](#friesian): End-to-End Recommendation Systems
 
 - [PPML](#ppml) (experimental): Secure Big Data and AI (with SGX Hardware Security)
 
@@ -117,20 +117,22 @@ flowchart TD;
   <details><summary>Show RayOnSpark example</summary>
   <br/>
   
-  You can directly run Ray program on Spark cluster, and write Ray code inline with Spark code (so as to process the in-memory Spark RDDs or DataFrames) using _RayOnSpark_ in Orca.
+  You can not only run Ray program on Spark cluster, but also write Ray code inline with Spark code (so as to process the in-memory Spark RDDs or DataFrames) using _RayOnSpark_ in Orca.
  
   ```python
   # 1. Initilize Orca Context (to run your program on K8s, YARN or local laptop)
   from bigdl.orca import init_orca_context, OrcaContext
   sc = init_orca_context(cluster_mode="yarn", cores=4, memory="10g", num_nodes=2, init_ray_on_spark=True) 
 
-  # 2. Convert Spark DataFrames to Ray Datasets
+  # 2. Distribtued data processing using Spark
   spark = OrcaContext.get_spark_session()
-  df = spark.read.parquet(file_path)
+  df = spark.read.parquet(file_path).withColumn(...)
+  
+  # 3. Convert Spark DataFrame to Ray Dataset
   from bigdl.orca.data import spark_df_to_ray_dataset
   dataset = spark_df_to_ray_dataset(df)
   
-  # 3. Use Ray to operate on Ray Datasets
+  # 4. Use Ray to operate on Ray Datasets
   import ray
 
   @ray.remote
@@ -185,7 +187,7 @@ val predictions = pipelineModel.transform(validationDF)
 
 ### Chronos
 
-The *Chronos* library makes it easy to build end-to-end time series analysis by applying AutoML to extremely large-scale time series prediction.
+The *Chronos* library makes it easy to build end-to-end **time series analysis** by applying AutoML to extremely large-scale time series prediction.
 
 <details><summary>Show Chronos example</summary>
 <br/>
@@ -216,6 +218,10 @@ ts_pipeline.predict(tsdata_test)
 See the Chronos [user guide](https://bigdl.readthedocs.io/en/latest/doc/Chronos/Overview/chronos.html) and [example](https://bigdl.readthedocs.io/en/latest/doc/Chronos/QuickStart/chronos-autotsest-quickstart.html) for more details.
 
 </details>  
+
+### Friesian
+The *Chronos* library makes it easy to build end-to-end, large-scale **recommedation system** (including *offline* feature transformation and traning, *near-line* feature and model update, and *online* serving pipeline). See the Freisian [readme](https://github.com/intel-analytics/BigDL/blob/main/python/friesian/README.md) for more details. 
+
 
 ### PPML
 
