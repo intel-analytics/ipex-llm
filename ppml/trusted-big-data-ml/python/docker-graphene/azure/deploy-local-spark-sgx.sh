@@ -1,7 +1,7 @@
 #!/bin/bash
 
 export LOCAL_IP=YOUR_LOCAL_IP
-export DOCKER_IMAGE=intelanalytics/bigdl-ppml-trusted-big-data-ml-python-graphene:2.1.0-SNAPSHOT
+export DOCKER_IMAGE=intelanalytics/bigdl-ppml-trusted-big-data-ml-python-graphene:2.1.0
 
 sudo docker pull $DOCKER_IMAGE
 
