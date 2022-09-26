@@ -61,6 +61,7 @@ jobs:
           --build-arg no_proxy=${NO_PROXY} \
           --build-arg SPARK_JAR_REPO_URL=${SPARK_JAR_REPO_URL} \
           -t ${image}:${TAG} -f ./Dockerfile .
+        sudo docker push ${image}:${TAG}
         sudo docker tag ${image}:${TAG} 10.239.45.10/arda/${image}:${TAG}
         sudo docker push 10.239.45.10/arda/${image}:${TAG}
         sudo docker rmi -f ${image}:${TAG}
@@ -95,6 +96,7 @@ jobs:
           --build-arg no_proxy=${NO_PROXY} \
           --build-arg SPARK_JAR_REPO_URL=${SPARK_JAR_REPO_URL} \
           -t ${image}:${TAG} -f ./Dockerfile .
+        sudo docker push ${image}:${TAG}
         sudo docker tag ${image}:${TAG} 10.239.45.10/arda/${image}:${TAG}
         sudo docker push 10.239.45.10/arda/${image}:${TAG}
         sudo docker rmi -f ${image}:${TAG}
@@ -130,6 +132,7 @@ jobs:
           --build-arg no_proxy=${NO_PROXY} \
           --build-arg SPARK_JAR_REPO_URL=${SPARK_JAR_REPO_URL} \
           -t ${image}:${TAG} -f ./Dockerfile .
+        docker push ${image}:${TAG}
         docker tag ${image}:${TAG} 10.239.45.10/arda/${image}:${TAG}
         docker push 10.239.45.10/arda/${image}:${TAG}
         docker rmi -f ${image}:${TAG}
@@ -165,6 +168,7 @@ jobs:
           --build-arg no_proxy=${NO_PROXY} \
           --build-arg SPARK_JAR_REPO_URL=${SPARK_JAR_REPO_URL} \
           -t ${image}:${TAG} -f ./Dockerfile .
+        docker push ${image}:${TAG}
         docker tag ${image}:${TAG} 10.239.45.10/arda/${image}:${TAG}
         docker push 10.239.45.10/arda/${image}:${TAG}
         docker rmi -f ${image}:${TAG}
@@ -200,6 +204,7 @@ jobs:
           --build-arg no_proxy=${NO_PROXY} \
           --build-arg SPARK_JAR_REPO_URL=${SPARK_JAR_REPO_URL} \
           -t ${image}:${TAG} -f ./Dockerfile .
+        docker push ${image}:${TAG}
         docker tag ${image}:${TAG} 10.239.45.10/arda/${image}:${TAG}
         docker push 10.239.45.10/arda/${image}:${TAG}
         docker rmi -f ${image}:${TAG}
@@ -224,6 +229,7 @@ jobs:
           --build-arg https_proxy=${HTTPS_PROXY} \
           --build-arg JDK_URL=${JDK_URL} \
           -t $IMAGE:$TAG -f ./Dockerfile .
+        docker push ${image}:${TAG}
         docker tag ${IMAGE}:${TAG} 10.239.45.10/arda/${IMAGE}:${TAG}
         docker push 10.239.45.10/arda/${IMAGE}:${TAG}
         docker rmi -f ${IMAGE}:${TAG} 10.239.45.10/arda/${IMAGE}:${TAG}
@@ -247,6 +253,7 @@ jobs:
           --build-arg http_proxy=${HTTP_PROXY} \
           --build-arg https_proxy=${HTTPS_PROXY} \
           -t $IMAGE:$TAG -f ./Dockerfile .
+        docker push ${image}:${TAG}
         docker tag ${IMAGE}:${TAG} 10.239.45.10/arda/${IMAGE}:${TAG}
         docker push 10.239.45.10/arda/${IMAGE}:${TAG}
         docker rmi -f ${IMAGE}:${TAG} 10.239.45.10/arda/${IMAGE}:${TAG}
