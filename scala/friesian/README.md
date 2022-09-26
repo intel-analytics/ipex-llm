@@ -8,7 +8,7 @@ The diagram below demonstrates the components of the friesian serving system, wh
 - Nearline: Retrieve user/item profiles and keep them in the Key-Value store. Retrieve item embedding vectors and build the faiss index. Make updates to the profiles from time to time.
 - Online: Trigger the recommendation process whenever a user comes. Recall service generate candidates from millions of items based on embeddings and the deep learning model ranks the candidates for the final recommendation results.
 
-![Architecture](./src/main/resources/images/architecture.png "The Architecture of the Friesian serving pipeline")
+<img src="./src/main/resources/images/architecture.png" width="800" />
 
 ### Services and APIs
 The friesian serving system consists of 4 types of services:
