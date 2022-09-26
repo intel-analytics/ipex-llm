@@ -56,9 +56,7 @@ class XShardsTSDataset:
                      extra_feature_col=None,
                      with_split=False,
                      val_ratio=0,
-                     test_ratio=0.1,
-                     largest_look_back=0,
-                     largest_horizon=1):
+                     test_ratio=0.1):
         '''
         Initialize xshardtsdataset(s) from xshard pandas dataframe.
 
@@ -78,11 +76,6 @@ class XShardsTSDataset:
                with_split is set to True. The value defaults to 0.
         :param test_ratio: (optional) float, test ratio. Only effective when with_split
                is set to True. The value defaults to 0.1.
-        :param largest_look_back: (optional) int, the largest length to look back.
-               Only effective when with_split is set to True. The value defaults to 0.
-        :param largest_horizon: (optional) int, the largest num of steps to look
-               forward. Only effective when with_split is set to True. The value defaults
-               to 1.
 
         :return: a XShardTSDataset instance when with_split is set to False,
                  three XShardTSDataset instances when with_split is set to True.
@@ -121,8 +114,7 @@ class XShardsTSDataset:
         if with_split:
             tsdataset_shards\
                 = shards.transform_shard(split_timeseries_dataframe,
-                                         id_col, val_ratio, test_ratio,
-                                         largest_look_back, largest_horizon).split()
+                                         id_col, val_ratio, test_ratio).split()
             return [XShardsTSDataset(shards=tsdataset_shards[i],
                                      id_col=id_col,
                                      dt_col=dt_col,
@@ -143,9 +135,7 @@ class XShardsTSDataset:
                      extra_feature_col=None,
                      with_split=False,
                      val_ratio=0,
-                     test_ratio=0.1,
-                     largest_look_back=0,
-                     largest_horizon=1):
+                     test_ratio=0.1):
         '''
         Initialize xshardtsdataset(s) from Spark Dataframe.
 
@@ -165,11 +155,6 @@ class XShardsTSDataset:
                with_split is set to True. The value defaults to 0.
         :param test_ratio: (optional) float, test ratio. Only effective when with_split
                is set to True. The value defaults to 0.1.
-        :param largest_look_back: (optional) int, the largest length to look back.
-               Only effective when with_split is set to True. The value defaults to 0.
-        :param largest_horizon: (optional) int, the largest num of steps to look
-               forward. Only effective when with_split is set to True. The value defaults
-               to 1.
 
         :return: a XShardTSDataset instance when with_split is set to False,
                  three XShardTSDataset instances when with_split is set to True.
@@ -214,8 +199,7 @@ class XShardsTSDataset:
         if with_split:
             tsdataset_shards\
                 = shards.transform_shard(split_timeseries_dataframe,
-                                         id_col, val_ratio, test_ratio,
-                                         largest_look_back, largest_horizon).split()
+                                         id_col, val_ratio, test_ratio).split()
             return [XShardsTSDataset(shards=tsdataset_shards[i],
                                      id_col=id_col,
                                      dt_col=dt_col,

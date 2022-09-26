@@ -18,7 +18,7 @@ import logging
 import os
 import tempfile
 import shutil
-from copy import copy
+import copy
 
 import tensorflow as tf
 
@@ -280,6 +280,9 @@ class SparkRunner:
                 if self.model_weights:
                     model.set_weights(self.model_weights.value)
 
+            if not model._is_compiled:
+                model.compile(**self.compile_args_creator(config))
+
             dataset_handler = DatasetHandler.get_handler(self.backend, self.rank, self.size)
             train_dataset, test_dataset = dataset_handler \
                 .handle_datasets_train(data_creator=data_creator,
@@ -319,7 +322,7 @@ class SparkRunner:
         """
         Get model training results and new model.
         """
-        config = copy(self.config)
+        config = copy.copy(self.config)
         if data_config is not None:
             config.update(data_config)
         config["batch_size"] = batch_size
@@ -373,7 +376,7 @@ class SparkRunner:
         """
         Evaluates the model on the validation data set.
         """
-        config = copy(self.config)
+        config = copy.copy(self.config)
         if data_config is not None:
             config.update(data_config)
         config["batch_size"] = batch_size
@@ -431,7 +434,7 @@ class SparkRunner:
             return []
 
     def predict(self, data_creator, batch_size, verbose, steps, callbacks, data_config):
-        config = copy(self.config)
+        config = copy.copy(self.config)
         if data_config is not None:
             config.update(data_config)
 

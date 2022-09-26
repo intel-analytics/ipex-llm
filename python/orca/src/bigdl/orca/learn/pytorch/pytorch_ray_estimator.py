@@ -20,14 +20,14 @@ import logging
 import numbers
 import torch
 import numpy as np
-from copy import copy
+import copy
 
 from bigdl.orca.data.ray_xshards import RayXShards
 from bigdl.orca.learn.pytorch.training_operator import TrainingOperator
 from bigdl.orca.learn.pytorch.pytorch_ray_worker import PytorchRayWorker
 from bigdl.orca.learn.utils import maybe_dataframe_to_xshards, dataframe_to_xshards, \
     convert_predict_xshards_to_dataframe, update_predict_xshards, \
-    process_xshards_of_pandas_dataframe
+    process_xshards_of_pandas_dataframe, reload_dataloader_creator
 from bigdl.orca.ray import OrcaRayContext
 from bigdl.orca.learn.ray_estimator import Estimator as OrcaRayEstimator
 from bigdl.dllib.utils.file_utils import enable_multi_fs_load, enable_multi_fs_save
@@ -149,7 +149,7 @@ class PyTorchRayEstimator(OrcaRayEstimator):
 
         self.initialization_hook = initialization_hook
         self.config = {} if config is None else config
-        worker_config = copy(self.config)
+        worker_config = copy.copy(self.config)
         params = dict(
             model_creator=self.model_creator,
             optimizer_creator=self.optimizer_creator,
@@ -360,8 +360,8 @@ class PyTorchRayEstimator(OrcaRayEstimator):
                               " Ray Dataset or a callable function, but"
                               " got type: {}".format(type(data)))
 
-            params["data_creator"] = data
-            params["validation_data_creator"] = validation_data
+            params["data_creator"] = reload_dataloader_creator(data)
+            params["validation_data_creator"] = reload_dataloader_creator(validation_data)
             success, worker_stats = self._train_epochs(**params)
 
         epoch_stats = list(map(list, zip(*worker_stats)))
@@ -504,7 +504,8 @@ class PyTorchRayEstimator(OrcaRayEstimator):
                               "data should be either an instance of SparkXShards or a callable"
                               " function, but got type: {}".format(type(data)))
 
-            params = dict(data_creator=data, batch_size=batch_size, num_steps=num_steps,
+            params = dict(data_creator=reload_dataloader_creator(data),
+                          batch_size=batch_size, num_steps=num_steps,
                           profile=profile, info=info)
 
             worker_stats = ray.get([w.validate.remote(**params) for w in self.remote_workers])

@@ -44,7 +44,7 @@ class TCNForecaster(BasePytorchForecaster):
                  future_seq_len,
                  input_feature_num,
                  output_feature_num,
-                 num_channels=[30]*7,
+                 num_channels=[16]*3,
                  kernel_size=3,
                  repo_initialization=True,
                  dropout=0.1,
@@ -68,7 +68,7 @@ class TCNForecaster(BasePytorchForecaster):
         :param input_feature_num: Specify the feature dimension.
         :param output_feature_num: Specify the output dimension.
         :param num_channels: Specify the convolutional layer filter number in
-               TCN's encoder. This value defaults to [30]*7.
+               TCN's encoder. This value defaults to [16]*3.
         :param kernel_size: Specify convolutional layer filter height in TCN's
                encoder. This value defaults to 3.
         :param repo_initialization: if to use framework default initialization,

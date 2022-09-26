@@ -8,7 +8,7 @@ runs:
       run: |
         source activate py37
         export SPARK_LOCAL_HOSTNAME=localhost
-        sed -i "s/'bigdl-core=='+VERSION/'bigdl-core==2.1.0b20220811'/g" python/dllib/src/setup.py
+        #sed -i "s/'bigdl-core=='+VERSION/'bigdl-core==2.1.0b20220811'/g" python/dllib/src/setup.py
         bash python/dev/release_default_linux_spark312.sh default false false false -Ddata-store-url=$HTTP_URI -U
         
         # install dllib

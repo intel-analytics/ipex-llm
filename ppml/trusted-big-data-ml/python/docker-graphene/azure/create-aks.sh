@@ -133,7 +133,6 @@ az aks create \
     --name $AKSClusterName \
     --node-count $NodeCount \
     --node-vm-size $ConfVMSize \
-    --vm-set-type AvailabilitySet \
     --network-plugin azure \
     --generate-ssh-keys \
     --vnet-subnet-id $SUBNET_ID \
