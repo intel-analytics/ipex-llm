@@ -237,6 +237,16 @@ ADD ./log4j2.xml /opt/spark/conf/log4j2.xml
 
 COPY ./entrypoint.sh /opt/
 
+#set
+ARG occlum_glibc=/opt/occlum/glibc/lib
+ENV ATTESTATION=false
+ENV SGX_MEM_SIZE=30GB
+ENV SGX_THREAD=1024
+ENV SGX_HEAP=1GB
+ENV SGX_KERNEL_HEAP=1GB
+ENV META_SPACE=1024m
+ENV SGX_LOG_LEVEL=off
+
 RUN chmod a+x /opt/entrypoint.sh && \
     chmod a+x /opt/run_spark_on_occlum_glibc.sh && \
     chmod a+x /root/demos/remote_attestation/init_ra_flow/run_attestation_server.sh && \
@@ -322,7 +332,64 @@ Run cd /opt && \
     sed -i "s/\"ENABLE_SGX_DEBUG\"/$ENABLE_SGX_DEBUG/g" Occlum.json && \
     sed -i "s/#USE_SECURE_CERT=FALSE/USE_SECURE_CERT=FALSE/g" /etc/sgx_default_qcnl.conf
 
-#occlum build
-Run
+#prepare libs and build occlum runable instance
+# Copy into Occlum instance and build
+Run cd /opt/occlum_spark && \
+    mkdir -p image/usr/lib/jvm && \
+    cp -r /usr/lib/jvm/java-8-openjdk-amd64 image/usr/lib/jvm && \
+    rm -rf /usr/lib/jvm/java-8-openjdk-amd64 && \
+    cp -rf /etc/java-8-openjdk image/etc/ && \
+    rm -rf /etc/java-8-openjdk && \
+    # Copy K8s secret and remove
+    mkdir -p image/var/run/secrets/ && \
+    cp -r /var/run/secrets/* image/var/run/secrets/ && \
+    rm -rf /var/run/secrets/* && \
+    ls image/var/run/secrets/kubernetes.io/serviceaccount/ && \
+    # Copy libs
+    cp /lib/x86_64-linux-gnu/libz.so.1 image/lib && \
+    cp /lib/x86_64-linux-gnu/libz.so.1 image/$occlum_glibc && \
+    cp /lib/x86_64-linux-gnu/libtinfo.so.5 image/$occlum_glibc && \
+    cp /lib/x86_64-linux-gnu/libnss*.so.2 image/$occlum_glibc && \
+    cp /lib/x86_64-linux-gnu/libresolv.so.2 image/$occlum_glibc && \
+    cp $occlum_glibc/libdl.so.2 image/$occlum_glibc && \
+    cp $occlum_glibc/librt.so.1 image/$occlum_glibc && \
+    cp $occlum_glibc/libm.so.6 image/$occlum_glibc && \
+    # remove libs
+    rm -rf /lib/x86_64-linux-gnu/libz.so.1 && \
+    rm -rf /lib/x86_64-linux-gnu/libtinfo.so.5 && \
+    rm -rf /lib/x86_64-linux-gnu/libnss*.so.2 && \
+    rm -rf /lib/x86_64-linux-gnu/libresolv.so.2 && \
+    rm -rf $occlum_glibc/libdl.so.2 && \
+    rm -rf $occlum_glibc/librt.so.1 && \
+    rm -rf $occlum_glibc/libm.so.6 && \
+    # Copy libhadoop
+    cp /opt/libhadoop.so image/lib && \
+    rm -rf /opt/libhadoop.so && \
+    # Prepare Spark and remove
+    mkdir -p image/opt/spark && \
+    cp -rf $SPARK_HOME/* image/opt/spark/ && \
+    rm -rf $SPARK_HOME/* && \
+    # Copy etc files
+    cp -rf /etc/hosts image/etc/ && \
+    echo "$HOST_IP occlum-node" >> image/etc/hosts && \
+    # cat image/etc/hosts
+    cp -rf /etc/hostname image/etc/ && \
+    cp -rf /etc/ssl image/etc/ && \
+    cp -rf /etc/passwd image/etc/ && \
+    cp -rf /etc/group image/etc/ && \
+    cp -rf /etc/nsswitch.conf image/etc/ && \
+    # Prepare BigDL and remove
+    mkdir -p image/bin/jars && \
+    cp -f $BIGDL_HOME/jars/* image/bin/jars && \
+    cp -rf /opt/spark-source image/opt/ && \
+    rm -rf $BIGDL_HOME/jars/* && \
+    rm -rf /opt/spark-source && \
+    # Build no enable attestation
+    if [[ $ATTESTATION == "true" ]]; then && \
+       occlum build --image-key /opt/occlum_spark/data/image_key && \
+       build_initfs && \
+    else && \
+       occlum build && \
+    fi \
 
 ENTRYPOINT [ "/opt/entrypoint.sh" ]
