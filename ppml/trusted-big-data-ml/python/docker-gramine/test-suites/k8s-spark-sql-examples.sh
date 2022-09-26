@@ -41,7 +41,7 @@ gramine-sgx bash 2>&1 | tee k8s-spark-sql-example-sgx.log
 fi
 status_4_k8s_spark_sql_example=$(echo $?)
 
-echo "#### example.4 Excepted result(k8s-spark-sql-example): 10"
-echo "---- example.4 Actual result: "
+echo "#### example.2 Excepted result(k8s-spark-sql-example): 10"
+echo "---- example.2 Actual result: "
 cat k8s-spark-sql-example-sgx.log | egrep -a 'Justin' | wc -l
 
