@@ -46,7 +46,7 @@ Estimator.from_torch(*,
 * `scheduler_creator`: parameter for `horovod` and `ray` backends. a learning rate scheduler wrapping the optimizer. You will need to set ``scheduler_step_freq="epoch"`` for the scheduler to be incremented correctly.
 * `training_operator_cls`: parameter for `horovod` and `ray` backends. Custom training operator class that subclasses the TrainingOperator class. This class will be copied onto all remote workers and used to specify custom training and validation operations. Defaults to TrainingOperator.
 * `initialization_hook`: parameter for `horovod` and `ray` backends.
-* `config`: parameter for `horovod` and `ray` backends. Config dict to create model, optimizer loss and data.
+* `config`: parameter for `horovod` and `ray` backends. Config dict, CfgNode or any class plays a role of configuration to create model, optimizer loss and data.
 * `scheduler_step_freq`: parameter for `horovod` and `ray` backends. "batch", "epoch" or None. This will determine when ``scheduler.step`` is called. If "batch", ``step`` will be called after every optimizer step. If "epoch", ``step`` will be called after one pass of the DataLoader. If a scheduler is passed in, this value is expected to not be None.
 * `use_tqdm`: parameter for `horovod` and `ray` backends. You can monitor training progress if use_tqdm=True.
 * `workers_per_node`: parameter for `horovod` and `ray` backends. worker number on each node. default: 1.
@@ -59,7 +59,7 @@ After an Estimator is created, you can call estimator API to train PyTorch model
 ```
 fit(self, data, epochs=1, profile=False, reduce_results=True, info=None)
 ```
-* `data`: (callable) a funtion that takes a config dict and `batch_size` as input and return a data loader containing the training data.
+* `data`: (callable) a funtion that takes a config object and `batch_size` as input and return a data loader containing the training data.
 * `epochs`: (int) Number of epochs to train the model
 * `profile`: (bool) Returns time stats for the training procedure.
 * `reduce_results`: (bool) Whether to average all metrics across all workers into one dict. If a metric is a non-numerical value (or nested dictionaries), one value will be randomly selected among the workers. If False, returns a list of dicts.
@@ -70,7 +70,7 @@ After Training, you can call estimator API to evaluate PyTorch model:
 ```
 evaluate(self, data, num_steps=None, profile=False, info=None)
 ```
-* `data`: (callable) a funtion that takes a config dict and `batch_size` as input and return a data loader containing the validation data.
+* `data`: (callable) a funtion that takes a config object and `batch_size` as input and return a data loader containing the validation data.
 * `num_steps`: (int) Number of batches to compute update steps on. This corresponds also to the number of times ``TrainingOperator.validate_batch`` is called.
 * `profile`: (bool) Returns time stats for the evaluation procedure.
 * `info`: (dict) Optional dictionary passed to the training operator for `validate` and `validate_batch`.
