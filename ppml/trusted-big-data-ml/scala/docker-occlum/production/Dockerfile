@@ -279,7 +279,18 @@ Run cd /opt/occlum_spark && \
         META_SPACE=512m \
     else \
         echo "META_SPACE=$META_SPACE" \
-    fi && \
+    fi \
+Run cd /opt/occlum_spark && \
+    if [[ $ATTESTATION == "true" ]]; then \
+        if [[ $PCCS_URL == "" ]]; then \
+           echo "[ERROR] Attestation set to true but NO PCCS" && \
+           exit 1 \
+        else \
+           export ENABLE_SGX_DEBUG=false && \
+           sed -i "s#https://localhost:8081/sgx/certification/v3/#${PCCS_URL}#g" /etc/sgx_default_qcnl.conf \
+        fi \
+    fi \
+Run cd /opt/occlum_spark && \
     if [[ -z "$SGX_MEM_SIZE" ]]; then \
         sed -i "s/SGX_MEM_SIZE/20GB/g" Occlum.json \
     else \
@@ -304,15 +315,6 @@ Run cd /opt/occlum_spark && \
     if [ -z "$ATTESTATION" ]; then \
         echo "[INFO] Attestation is disabled!" && \
         ATTESTATION="false" \
-    fi && \
-    if [[ $ATTESTATION == "true" ]]; then \
-        if [[ $PCCS_URL == "" ]]; then \
-           echo "[ERROR] Attestation set to true but NO PCCS" && \
-           exit 1 \
-        else \
-           export ENABLE_SGX_DEBUG=false && \
-           sed -i "s#https://localhost:8081/sgx/certification/v3/#${PCCS_URL}#g" /etc/sgx_default_qcnl.conf \
-        fi \
     fi && \
     # check occlum log level for docker
     export ENABLE_SGX_DEBUG=false && \
