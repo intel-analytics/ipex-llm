@@ -253,20 +253,15 @@ RUN chmod a+x /opt/entrypoint.sh && \
     sed -i '/aesm/d' /root/.bashrc && \
     rm -rf /var/run/aesmd
 
-RUN ln -fs /bin/bash /bin/sh \
+RUN ln -fs /bin/bash /bin/sh && \
+    apt-get install jq
+
 # init occlum instance and prepare config
 Run cd /opt && \
     mkdir occlum_spark && \
     cd occlum_spark && \
     occlum init && \
-    new_json="$(jq '.resource_limits.user_space_size = "SGX_MEM_SIZE" | && \
-            .resource_limits.max_num_of_threads = "SGX_THREAD" | && \
-            .process.default_heap_size = "SGX_HEAP" | && \
-            .metadata.debuggable = "ENABLE_SGX_DEBUG" | && \
-            .resource_limits.kernel_space_heap_size="SGX_KERNEL_HEAP" | && \
-            .entry_points = [ "/usr/lib/jvm/java-8-openjdk-amd64/bin" ] | && \
-            .env.untrusted = [ "DMLC_TRACKER_URI", "SPARK_DRIVER_URL", "SPARK_TESTING" , "_SPARK_AUTH_SECRET" ] | && \
-            .env.default = [ "LD_LIBRARY_PATH=/usr/lib/jvm/java-8-openjdk-amd64/lib/server:/usr/lib/jvm/java-8-openjdk-amd64/lib:/usr/lib/jvm/java-8-openjdk-amd64/../lib:/lib","SPARK_CONF_DIR=/opt/spark/conf","SPARK_ENV_LOADED=1","PYTHONHASHSEED=0","SPARK_HOME=/opt/spark","SPARK_SCALA_VERSION=2.12","SPARK_JARS_DIR=/opt/spark/jars","LAUNCH_CLASSPATH=/bin/jars/*",""]' Occlum.json)" && \
+    new_json="$(jq '.resource_limits.user_space_size = "SGX_MEM_SIZE" | .resource_limits.max_num_of_threads = "SGX_THREAD" | .process.default_heap_size = "SGX_HEAP" | .metadata.debuggable = "ENABLE_SGX_DEBUG" | .resource_limits.kernel_space_heap_size="SGX_KERNEL_HEAP" | .entry_points = [ "/usr/lib/jvm/java-8-openjdk-amd64/bin" ] | .env.untrusted = [ "DMLC_TRACKER_URI", "SPARK_DRIVER_URL", "SPARK_TESTING" , "_SPARK_AUTH_SECRET" ] | .env.default = [ "LD_LIBRARY_PATH=/usr/lib/jvm/java-8-openjdk-amd64/lib/server:/usr/lib/jvm/java-8-openjdk-amd64/lib:/usr/lib/jvm/java-8-openjdk-amd64/../lib:/lib","SPARK_CONF_DIR=/opt/spark/conf","SPARK_ENV_LOADED=1","PYTHONHASHSEED=0","SPARK_HOME=/opt/spark","SPARK_SCALA_VERSION=2.12","SPARK_JARS_DIR=/opt/spark/jars","LAUNCH_CLASSPATH=/bin/jars/*",""]' Occlum.json)" && \
     echo "${new_json}" > Occlum.json && \
     echo "SGX_MEM_SIZE ${SGX_MEM_SIZE}"
 
