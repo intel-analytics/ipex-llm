@@ -327,7 +327,7 @@ Run cd /opt/occlum_spark && \
         fi \
     fi && \
     sed -i "s/\"ENABLE_SGX_DEBUG\"/$ENABLE_SGX_DEBUG/g" Occlum.json && \
-    sed -i "s/#USE_SECURE_CERT=FALSE/USE_SECURE_CERT=FALSE/g" /etc/sgx_default_qcnl.conf
+    sed -i "s/#USE_SECURE_CERT=FALSE/USE_SECURE_CERT=FALSE/g" /etc/sgx_default_qcnl.confsecrets
 
 #prepare libs and build occlum runable instance
 # Copy into Occlum instance and build
@@ -338,14 +338,14 @@ Run cd /opt/occlum_spark && \
     cp -rf /etc/java-8-openjdk image/etc/ && \
     rm -rf /etc/java-8-openjdk && \
     # Copy K8s secret and remove
-    mkdir -p image/var/run/secrets/ && \
-    cp -r /var/run/secrets/* image/var/run/secrets/ && \
-    rm -rf /var/run/secrets/* && \
-    ls image/var/run/secrets/kubernetes.io/serviceaccount/ && \
+    #mkdir -p image/var/run/secrets/ && \
+    #cp -r /var/run/secrets/* image/var/run/secrets/ && \
+    #rm -rf /var/run/secrets/* && \
+    #ls image/var/run/secrets/kubernetes.io/serviceaccount/ && \
     # Copy libs
     cp /lib/x86_64-linux-gnu/libz.so.1 image/lib && \
     cp /lib/x86_64-linux-gnu/libz.so.1 image/$occlum_glibc && \
-    cp /lib/x86_64-linux-gnu/libtinfo.so.5 image/$occlum_glibc && \
+    #cp /lib/x86_64-linux-gnu/libtinfo.so.5 image/$occlum_glibc && \
     cp /lib/x86_64-linux-gnu/libnss*.so.2 image/$occlum_glibc && \
     cp /lib/x86_64-linux-gnu/libresolv.so.2 image/$occlum_glibc && \
     cp $occlum_glibc/libdl.so.2 image/$occlum_glibc && \
@@ -353,7 +353,7 @@ Run cd /opt/occlum_spark && \
     cp $occlum_glibc/libm.so.6 image/$occlum_glibc && \
     # remove libs
     rm -rf /lib/x86_64-linux-gnu/libz.so.1 && \
-    rm -rf /lib/x86_64-linux-gnu/libtinfo.so.5 && \
+    #rm -rf /lib/x86_64-linux-gnu/libtinfo.so.5 && \
     rm -rf /lib/x86_64-linux-gnu/libnss*.so.2 && \
     rm -rf /lib/x86_64-linux-gnu/libresolv.so.2 && \
     rm -rf $occlum_glibc/libdl.so.2 && \
@@ -368,7 +368,7 @@ Run cd /opt/occlum_spark && \
     rm -rf $SPARK_HOME/* && \
     # Copy etc files
     cp -rf /etc/hosts image/etc/ && \
-    echo "$HOST_IP occlum-node" >> image/etc/hosts && \
+    #echo "$HOST_IP occlum-node" >> image/etc/hosts && \  nosure after build can success
     # cat image/etc/hosts
     cp -rf /etc/hostname image/etc/ && \
     cp -rf /etc/ssl image/etc/ && \
