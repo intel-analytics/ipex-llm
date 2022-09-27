@@ -382,11 +382,11 @@ Run cd /opt/occlum_spark && \
     rm -rf $BIGDL_HOME/jars/* && \
     rm -rf /opt/spark-source && \
     # Build no enable attestation
-    if [[ $ATTESTATION == "true" ]]; then && \
-       occlum build --image-key /opt/occlum_spark/data/image_key && \
-       build_initfs && \
-    else && \
-       occlum build && \
+    if [[ $ATTESTATION == "true" ]]; then \
+       occlum build --image-key /opt/occlum_spark/data/image_key; \
+       build_initfs; \
+    else \
+       occlum build; \
     fi \
 
 ENTRYPOINT [ "/opt/entrypoint.sh" ]
