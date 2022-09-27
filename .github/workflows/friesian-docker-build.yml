@@ -36,13 +36,6 @@ permissions:
   packages: write
 
 jobs:
-  #  preflight:
-  #    runs-on: [ self-hosted, Shire ]
-  #    steps:
-  #      - uses: actions/checkout@v3
-  #
-  #      - name: Set up JDK8
-  #        uses: ./.github/actions/jdk-setup-action
   friesian-docker-build:
     runs-on: [ self-hosted, Shire ]
     steps:
