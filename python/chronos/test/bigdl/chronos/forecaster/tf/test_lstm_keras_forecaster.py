@@ -39,6 +39,7 @@ def create_data(tf_data=False, batch_size=32):
         return x, y
     
     train_data = get_x_y(train_num_samples)
+    val_data = get_x_y(test_num_samples)
     test_data = get_x_y(test_num_samples)
 
     if tf_data:
@@ -47,10 +48,13 @@ def create_data(tf_data=False, batch_size=32):
                                                    .shuffle(train_num_samples)\
                                                    .batch(batch_size)\
                                                    .prefetch(tf.data.AUTOTUNE)
-        test_data = from_tensor_slices(test_data).cache()\
-                                                 .batch(batch_size)\
+        val_data = from_tensor_slices(val_data).batch(batch_size)\
+                                               .cache()\
+                                               .prefetch(tf.data.AUTOTUNE)
+        test_data = from_tensor_slices(test_data).batch(batch_size)\
+                                                 .cache()\
                                                  .prefetch(tf.data.AUTOTUNE)
-    return train_data, test_data
+    return train_data, val_data, test_data
 
 
 def create_tsdataset(roll=True):
@@ -63,14 +67,15 @@ def create_tsdataset(roll=True):
                       dtype=np.float32)
     df.reset_index(inplace=True)
     df.rename(columns={'index': 'timeseries'}, inplace=True)
-    train, _, test = TSDataset.from_pandas(df=df,
-                                           dt_col='timeseries',
-                                           target_col=['value1', 'value2'],
-                                           with_split=True)
+    train, valid, test = TSDataset.from_pandas(df=df,
+                                               dt_col='timeseries',
+                                               target_col=['value1', 'value2'],
+                                               val_ratio=0.1,
+                                               with_split=True)
     if roll:
-        for tsdata in [train, test]:
+        for tsdata in [train, valid, test]:
             tsdata.roll(lookback=24, horizon=1)
-    return train, test
+    return train, valid, test
 
 
 @op_all
@@ -86,7 +91,7 @@ class TestLSTMForecaster(TestCase):
         del self.forecaster
 
     def test_lstm_forecaster_fit_predict_evaluate(self):
-        train_data, test_data = create_data()
+        train_data, _, test_data = create_data()
         self.forecaster.fit(train_data,
                             epochs=2,
                             batch_size=32)
@@ -99,7 +104,7 @@ class TestLSTMForecaster(TestCase):
         assert mse[0].shape == test_data[1].shape[1:]
 
     def test_lstm_forecaster_fit_tf_data(self):
-        train_data, test_data = create_data(tf_data=True)
+        train_data, _, test_data = create_data(tf_data=True)
         self.forecaster.fit(train_data,
                             epochs=2,
                             batch_size=32)
@@ -107,7 +112,7 @@ class TestLSTMForecaster(TestCase):
         assert yhat.shape == (400, 1, 2)
 
     def test_lstm_forecaster_save_load(self):
-        train_data, test_data = create_data()
+        train_data, _, test_data = create_data()
         self.forecaster.fit(train_data, epochs=2)
         yhat = self.forecaster.predict(test_data[0])
         with tempfile.TemporaryDirectory() as tmp_dir_file:
@@ -121,11 +126,11 @@ class TestLSTMForecaster(TestCase):
         np.testing.assert_almost_equal(yhat, load_model_yhat, decimal=5)
     
     def test_lstm_customized_loss_metric(self):
-        train_data, test_data = create_data(tf_data=True)
+        train_data, _, test_data = create_data(tf_data=True)
         loss = tf.keras.losses.MeanSquaredError()
         def customized_metric(y_true, y_pred):
             return tf.keras.losses.MeanSquaredError(tf.convert_to_tensor(y_pred),
-                                      tf.convert_to_tensor(y_true)).numpy()
+                                                    tf.convert_to_tensor(y_true)).numpy()
         from bigdl.chronos.forecaster.tf.lstm_forecaster import LSTMForecaster
         self.forecaster = LSTMForecaster(past_seq_len=10,
                                     input_feature_num=10,
@@ -146,7 +151,7 @@ class TestLSTMForecaster(TestCase):
         np.testing.assert_almost_equal(yhat, load_model_yhat, decimal=5)
 
     def test_lstm_from_tsdataset(self):
-        train, test = create_tsdataset(roll=True)
+        train, _, test = create_tsdataset(roll=True)
         lstm = LSTMForecaster.from_tsdataset(train,
                                              hidden_dim=16,
                                              layer_num=2)
@@ -161,7 +166,7 @@ class TestLSTMForecaster(TestCase):
 
         del lstm
 
-        train, test = create_tsdataset(roll=False)
+        train, _, test = create_tsdataset(roll=False)
         lstm = LSTMForecaster.from_tsdataset(train,
                                              past_seq_len=24,
                                              hidden_dim=16,
@@ -174,6 +179,33 @@ class TestLSTMForecaster(TestCase):
                   horizon=lstm.model_config['future_seq_len'])
         _, y_test = test.to_numpy()
         assert yhat.shape == y_test.shape
+
+    def test_lstm_forecaster_distributed(self):
+        from bigdl.orca import init_orca_context, stop_orca_context
+        init_orca_context(cores=2, memory="2g")
+        train_data, val_data, test_data = create_data()
+
+        forecaster = LSTMForecaster(past_seq_len=10,
+                                    input_feature_num=10,
+                                    output_feature_num=2,
+                                    loss="mae",
+                                    distributed=True)
+
+        forecaster.fit(train_data, epochs=2)
+        distributed_pred = forecaster.predict(test_data[0])
+        distributed_eval = forecaster.evaluate(val_data)
+
+        model = forecaster.get_model()
+        from bigdl.chronos.model.tf2.VanillaLSTM_keras import LSTMModel
+        assert isinstance(model, LSTMModel)
+
+        forecaster.to_local()
+        local_pred = forecaster.predict(test_data[0])
+        local_eval = forecaster.evaluate(val_data)
+
+        np.testing.assert_array_almost_equal(distributed_pred, local_pred, decimal=5)
+        stop_orca_context()
+
 
 if __name__ == '__main__':
     pytest.main([__file__])

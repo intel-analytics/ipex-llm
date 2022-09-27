@@ -14,22 +14,22 @@
 # limitations under the License.
 #
 
-from bigdl.chronos.forecaster.abstract import Forecaster
-from bigdl.chronos.data import TSDataset
-from bigdl.chronos.metric.forecast_metrics import Evaluator
 import keras
 import tensorflow as tf
 import numpy as np
-import types
+from bigdl.chronos.forecaster.abstract import Forecaster
+from bigdl.chronos.data import TSDataset
+from bigdl.chronos.metric.forecast_metrics import Evaluator
+from bigdl.nano.utils.log4Error import invalidInputError
+from bigdl.chronos.forecaster.tf.utils import *
 
 
 class BaseTF2Forecaster(Forecaster):
     def __init__(self, **kwargs):
-        # TF seed can't be set to None, just to be consistent with torch.
         if self.seed:
+            # TF seed can't be set to None, just to be consistent with torch.
             from tensorflow.keras.utils import set_random_seed
             set_random_seed(seed=self.seed)
-
         if self.distributed:
             from bigdl.orca.learn.tf2.estimator import Estimator
             self.internal = Estimator.from_keras(model_creator=self.model_creator,
@@ -70,21 +70,26 @@ class BaseTF2Forecaster(Forecaster):
         if isinstance(data, TSDataset):
             if data.lookback is None:
                 data.roll(lookback=self.model_config['past_seq_len'],
-                          horizon=self.model_config['future_seq_len'])
-            data = data.to_tf_dataset(shuffle=True, batch_size=batch_size)
-
-        from bigdl.chronos.forecaster.tf.utils import np_to_data_creator, rollback_tf_dataset
-
+                          horizon=self.model_config['future_seq_len'],
+                          feature_col=data.roll_feature,
+                          target_col=data.roll_target)
 
         if self.distributed:
             if isinstance(data, tuple):
                 data = np_to_data_creator(data)
+            if isinstance(data, TSDataset):
+                data = tsdata_to_data_creator(data, shuffle=True)
+            invalidInputError(not isinstance(data, tf.data.Dataset),
+                              "tf.data.Dataset is not supported, "
+                              "please replace with numpy.ndarray or TSDataset instance.")
             self.internal.fit(data, epochs=epochs, batch_size=batch_size)
         else:
             if isinstance(data, tuple):
                 self.internal.fit(x=data[0], y=data[1], epochs=epochs, batch_size=batch_size)
             else:
-                self.internal.fit(x=data, epochs=epochs)
+                if isinstance(data, TSDataset):
+                    data = data.to_tf_dataset(shuffle=True, batch_size=batch_size)
+                self.internal.fit(data, epochs=epochs)
         self.fitted = True
 
     def predict(self, data, batch_size=32):
@@ -115,19 +120,35 @@ class BaseTF2Forecaster(Forecaster):
         :return: A numpy array with shape (num_samples, horizon, target_dim).
         """
         from bigdl.nano.utils.log4Error import invalidInputError
-        if not self.fitted:
-            invalidInputError(False,
-                              "You must call fit or restore first before calling predict!")
         if isinstance(data, TSDataset):
             if data.lookback is None:
                 data.roll(lookback=self.model_config['past_seq_len'],
-                          horizon=self.model_config['future_seq_len'])
-            data = data.to_tf_dataset(shuffle=False, batch_size=batch_size)
+                          horizon=self.model_config['future_seq_len'],
+                          target_col=data.roll_target,
+                          feature_col=data.roll_feature)
 
-        if batch_size or isinstance(data, tf.data.Dataset):
+        if self.distributed:
+            if isinstance(data, np.ndarray):
+                data = np_to_xshards(data)
+            if isinstance(data, TSDataset):
+                input_data, _ = data.to_numpy()
+                data = np_to_xshards(input_data)
+            invalidInputError(not isinstance(data, tf.data.Dataset),
+                              "Will support in the future.")
             yhat = self.internal.predict(data, batch_size=batch_size)
+
+            expand_dim = []
+            yhat = xshard_to_np(yhat, mode="yhat", expand_dim=expand_dim)
         else:
-            yhat = self.internal(data, training=False).numpy()
+            if not self.fitted:
+                invalidInputError(False,
+                                "You must call fit or restore first before calling predict!")
+            if isinstance(data, TSDataset):
+                data = data.to_tf_dataset(batch_size, batch_size)
+            if batch_size or isinstance(data, tf.data.Dataset):
+                yhat = self.internal.predict(data)
+            else:
+                yhat = self.internal(data, training=False).numpy()
         return yhat
 
     def evaluate(self, data, batch_size=32, multioutput="raw_values"):
@@ -176,17 +197,56 @@ class BaseTF2Forecaster(Forecaster):
             if data.lookback is None:
                 data.roll(lookback=self.model_config['past_seq_len'],
                           horizon=self.model_config['future_seq_len'])
-            data = data.to_tf_dataset(shuffle=False, batch_size=batch_size)
 
-        if isinstance(data, tuple):
-            input_data, target = data
+        if self.distributed:
+            if isinstance(data, tuple):
+                data = np_to_data_creator(data)
+            if isinstance(data, TSDataset):
+                data = tsdata_to_data_creator(data)
+            invalidInputError(not isinstance(data, tf.data.Dataset),
+                              "tf.data.Dataset is not supported, "
+                              "please replace with numpy.ndarray or TSDataset instance.")
+            return self.internal.evaluate(data, batch_size=batch_size)
         else:
-            input_data = data
-            target = np.asarray(tuple(map(lambda x: x[1], data.as_numpy_iterator())))
-        yhat = self.internal.predict(input_data, batch_size=batch_size)
+            if isinstance(data, tuple):
+                input_data, target = data
+            else:
+                input_data = data
+                target = np.asarray(tuple(map(lambda x: x[1], data.as_numpy_iterator())))
+            yhat = self.internal.predict(input_data, batch_size=batch_size)
 
-        aggregate = 'mean' if multioutput == 'uniform_average' else None
-        return Evaluator.evaluate(self.metrics, y_true=target, y_pred=yhat, aggregate=aggregate)
+            aggregate = 'mean' if multioutput == 'uniform_average' else None
+            return Evaluator.evaluate(self.metrics, y_true=target, y_pred=yhat, aggregate=aggregate)
+
+    def to_local(self):
+        """
+        Transform a distributed forecaster to a local (non-distributed) one.
+
+        you need to call .to_local() and transform the forecaster to a non-
+        distributed one.
+
+        :return: a forecaster instance.
+        """
+        if not self.distributed:
+            invalidInputError(False, "The forecaster has become local.")
+        model = self.internal.get_model()
+        self.internal.shutdown()
+        self.internal = model
+
+        self.distributed = False
+        self.fitted = True
+        return self
+
+    def get_model(self):
+        """
+        Returns the learned Keras model.
+
+        :return: a keras model instance
+        """
+        if self.distributed:
+            return self.internal.get_model()
+        else:
+            return self.internal.model
 
     def save(self, checkpoint_file):
         """
