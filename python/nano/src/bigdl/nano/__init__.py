@@ -40,6 +40,7 @@ def _check_nano_envs():
 # disable env check for now, as it does not work for tf and windows
 # _check_nano_envs()
 
+
 def patch_nano(patch_tf=None, patch_torch=None):
     '''
     This patching function is used to patch optimized class to replace original ones.
@@ -47,7 +48,7 @@ def patch_nano(patch_tf=None, patch_torch=None):
     1. tf.keras.Model/keras.Model -> bigdl.nano.tf.keras.Model
     2. tf.keras.Model/keras.Sequential -> bigdl.nano.tf.keras.Sequential
     3. tf.keras.layers.Embedding/keras.layers.Embedding -> bigdl.nano.tf.keras.layers.Embedding
-    4. tf.optimizers.SparseAdam -> bigdl.nano.tf.optimizers.SparseAdam
+    4. tf.optimizers.Adam -> bigdl.nano.tf.optimizers.SparseAdam
     5. pytorch_lightning.Trainer -> bigdl.nano.pytorch.Trainer
 
     :param patch_tf: bool, if patch tensorflow related classes, will patch defaultly if tensorflow

@@ -16,8 +16,6 @@
 import platform
 import os
 import warnings
-
-
 if platform.system() != "Darwin":
     import tensorflow as tf
     if "NANO_TF_INTER_OP" in os.environ:
