@@ -19,43 +19,42 @@ import time
 import os
 
 import tensorflow as tf
-from tensorflow import keras
 
-from bigdl.orca import OrcaContext, init_orca_context, stop_orca_context
+from bigdl.orca import init_orca_context, stop_orca_context, OrcaContext
 from bigdl.orca.learn.tf2 import Estimator
 
 
 def model_creator(config):
     embedding_size=16
-    user = keras.layers.Input(dtype=tf.int32, shape=(None,))
-    item = keras.layers.Input(dtype=tf.int32, shape=(None,))
-    label = keras.layers.Input(dtype=tf.int32, shape=(None,))
+    user = tf.keras.layers.Input(dtype=tf.int32, shape=(None,))
+    item = tf.keras.layers.Input(dtype=tf.int32, shape=(None,))
+    label = tf.keras.layers.Input(dtype=tf.int32, shape=(None,))
 
     with tf.name_scope("GMF"):
-        user_embed_GMF = keras.layers.Embedding(max_user_id + 1, embedding_size)(user)
-        item_embed_GMF = keras.layers.Embedding(max_item_id + 1, embedding_size)(item)
-        GMF = keras.layers.Multiply()([user_embed_GMF, item_embed_GMF])
+        user_embed_GMF = tf.keras.layers.Embedding(max_user_id + 1, embedding_size)(user)
+        item_embed_GMF = tf.keras.layers.Embedding(max_item_id + 1, embedding_size)(item)
+        GMF = tf.keras.layers.Multiply()([user_embed_GMF, item_embed_GMF])
 
     with tf.name_scope("MLP"):
-        user_embed_MLP = keras.layers.Embedding(max_user_id + 1, embedding_size)(user)
-        item_embed_MLP = keras.layers.Embedding(max_item_id + 1, embedding_size)(item)
+        user_embed_MLP = tf.keras.layers.Embedding(max_user_id + 1, embedding_size)(user)
+        item_embed_MLP = tf.keras.layers.Embedding(max_item_id + 1, embedding_size)(item)
         interaction = tf.concat([user_embed_MLP, item_embed_MLP], axis=-1)
-        layer1_MLP = keras.layers.Dense(units=embedding_size * 2, activation='relu')(interaction)
-        layer1_MLP = keras.layers.Dropout(rate=0.2)(layer1_MLP)
-        layer2_MLP = keras.layers.Dense(units=embedding_size, activation='relu')(layer1_MLP)
-        layer2_MLP = keras.layers.Dropout(rate=0.2)(layer2_MLP)
-        layer3_MLP = keras.layers.Dense(units=embedding_size // 2, activation='relu')(layer2_MLP)
-        layer3_MLP = keras.layers.Dropout(rate=0.2)(layer3_MLP)
+        layer1_MLP = tf.keras.layers.Dense(units=embedding_size * 2, activation='relu')(interaction)
+        layer1_MLP = tf.keras.layers.Dropout(rate=0.2)(layer1_MLP)
+        layer2_MLP = tf.keras.layers.Dense(units=embedding_size, activation='relu')(layer1_MLP)
+        layer2_MLP = tf.keras.layers.Dropout(rate=0.2)(layer2_MLP)
+        layer3_MLP = tf.keras.layers.Dense(units=embedding_size // 2, activation='relu')(layer2_MLP)
+        layer3_MLP = tf.keras.layers.Dropout(rate=0.2)(layer3_MLP)
 
     # Concate the two parts together
     with tf.name_scope("concatenation"):
         concatenation = tf.concat([GMF, layer3_MLP], axis=-1)
-        outputs = keras.layers.Dense(1, activation='sigmoid')(concatenation)
+        outputs = tf.keras.layers.Dense(1, activation='sigmoid')(concatenation)
 
-    model = keras.Model(inputs=[user, item], outputs=outputs)
-    model.compile(optimizer= "adam",
-                  loss= "binary_crossentropy",
-                  metrics=['accuracy'])
+    model = tf.keras.Model(inputs=[user, item], outputs=outputs)
+    model.compile(optimizer=tf.keras.optimizers.Adam(learning_rate=0.01),
+                  loss=tf.keras.losses.BinaryCrossentropy(),
+                  metrics=[tf.keras.metrics.BinaryAccuracy()])
     return model
 
 cluster_mode = str(sys.argv[1])
@@ -81,27 +80,24 @@ elif cluster_mode == "spark-submit":  # To test k8s using spark-submit
 data_path = "./bigdl2.0/data"
 data_type = "ml-1m"
 # Need spark3 to support delimiter with more than one character.
-start = time.time()
 spark= OrcaContext.get_spark_session()
 from pyspark.sql.types import StructField, StructType, IntegerType
 
 schema = StructType(
     [
-        StructField('_c0', IntegerType(), True),
-        StructField('_c1', IntegerType(), True)
+        StructField('user', IntegerType(), True),
+        StructField('item', IntegerType(), True)
     ]
 )
-df0 = spark.read.csv("{}/{}/ratings.csv".format(data_path, data_type), sep="::",schema=schema,
+df = spark.read.csv("{}/{}/ratings.csv".format(data_path, data_type), sep="::",schema=schema,
                      header=False)
-df0 = df0.withColumnRenamed('_c0','user').withColumnRenamed('_c1','item')
-#print(int(df.describe("item").filter("summary = 'max'").select("item").first().asDict()['item']))
-min_user_id = df0.agg({"user": "min"}).collect()[0]["min(user)"]
-max_user_id = df0.agg({"user": "max"}).collect()[0]["max(user)"]
-min_item_id = df0.agg({"item": "min"}).collect()[0]["min(item)"]
-max_item_id = df0.agg({"item": "max"}).collect()[0]["max(item)"]
+min_user_id = df.agg({"user": "min"}).collect()[0]["min(user)"]
+max_user_id = df.agg({"user": "max"}).collect()[0]["max(user)"]
+min_item_id = df.agg({"item": "min"}).collect()[0]["min(item)"]
+max_item_id = df.agg({"item": "max"}).collect()[0]["max(item)"]
 print(min_user_id, max_user_id, min_item_id, max_item_id)
 from pyspark.sql import functions
-df = df0.withColumn('label', functions.lit(1))
+df = df.withColumn('label', functions.lit(1))
 
 from pyspark.sql import functions as F
 from pyspark.sql import types as T
@@ -125,7 +121,7 @@ train_df, test_df = df.randomSplit([0.8, 0.2],100)
 
 
 batch_size=1280
-epochs=2
+epochs=5
 model_dir='./'
 
 # create an Estimator
@@ -138,23 +134,22 @@ stats = est.fit(train_df,
                 batch_size=batch_size,
                 feature_cols=['user', 'item'],
                 label_cols=['label'],
-                steps_per_epoch=int(0.8*num_sample // batch_size),
-                validation_data=test_df,
-                validation_steps =int(0.2*num_sample // batch_size))
+                steps_per_epoch=int(train_df.count() // batch_size),
+                validation_data=train_df,
+                validation_steps =int(train_df.count() // batch_size))
 
 checkpoint_path = os.path.join(model_dir, "NCF.ckpt")
 est.save_checkpoint(checkpoint_path)
 
 
 # evaluate with Estimator
-stats = est.evaluate(test_df, 
+stats = est.evaluate(train_df, 
                      feature_cols=['user', 'item'],
                      label_cols=['label'],
-                     num_steps=int(0.2*num_sample // batch_size))
+                     batch_size=batch_size,
+                     num_steps=int(epochs*train_df.count() // batch_size))
 
 print(stats)
 est.shutdown()
-end = time.time()
-print("Time used: ", end - start)
 
 stop_orca_context()
