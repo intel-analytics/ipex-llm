@@ -48,10 +48,8 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - name: set env
-        env:
-          DEFAULT_TAG: 'PR'
         run: |
-          echo "TAG=${{ github.event.inputs.tag || env.DEFAULT_TAG }} " >> $GITHUB_ENV
+          echo "TAG=${{ github.event.inputs.tag || 'PR' }} " >> $GITHUB_ENV
       - name: Set up JDK8
         uses: ./.github/actions/jdk-setup-action
       - name: Build docker

@@ -38,7 +38,7 @@ runs:
 
     - name: timestamp image deploy
       shell: bash
-      if: ${TAG} != 'latest'
+      if: ${{ github.env.TAG != 'latest' }}
       run: |
         export TIMESTAMP=`date '+%Y%m%d'`
         export IMAGE=intelanalytics/friesian-serving
