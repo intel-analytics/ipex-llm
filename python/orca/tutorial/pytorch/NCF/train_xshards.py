@@ -149,7 +149,7 @@ from bigdl.orca.learn.metrics import Accuracy, AUC
 est = Estimator.from_torch(model=model_creator, optimizer=optimizer_creator, loss=loss_function, metrics=[Accuracy(), AUC()], backend=args.backend)# backend="ray" or "spark"
 
 # fit the estimator
-est.fit(data=train_shards, epochs=20, batch_size=256, feature_cols=["x"], label_cols =["y"])
+est.fit(data=train_shards, epochs=5, batch_size=256, feature_cols=["x"], label_cols =["y"])
 
 #Step 5: Evaluate and save the Model
 
