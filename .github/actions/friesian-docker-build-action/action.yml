@@ -43,9 +43,9 @@ runs:
         export TIMESTAMP=`date '+%Y%m%d'`
         export IMAGE=intelanalytics/friesian-serving
         cd docker/friesian-serving
-        docker tag $IMAGE:${TAG} 10.239.45.10/arda/$IMAGE:${TAG}-$TIMESTAMP
-        docker push 10.239.45.10/arda/$IMAGE:${TAG}-$TIMESTAMP
-        docker rmi -f 10.239.45.10/arda/$IMAGE:${TAG}-$TIMESTAMP
+        docker tag "${IMAGE}:${TAG}" "10.239.45.10/arda/$IMAGE:${TAG}-${TIMESTAMP}"
+        docker push "10.239.45.10/arda/$IMAGE:${TAG}-${TIMESTAMP}"
+        docker rmi -f "10.239.45.10/arda/$IMAGE:${TAG}-${TIMESTAMP}"
 
     - name: remove resources
       shell: bash
