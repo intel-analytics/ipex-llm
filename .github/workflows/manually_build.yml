@@ -155,6 +155,7 @@ jobs:
           echo "####### big-data-ml-scala-occlum-production  ######"
           echo "########################################"
           cd ppml/trusted-big-data-ml/scala/docker-occlum/production
+          ls -lh
           export image=intelanalytics/bigdl-ppml-trusted-big-data-ml-scala-occlum-production
           pwd
           docker build \
