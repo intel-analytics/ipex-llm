@@ -7,10 +7,9 @@ runs:
       shell: bash
       run: |
         docker login -u ${DOCKERHUB_USERNAME} -p ${DOCKERHUB_PASSWORD}
-    - name: docker deploy friesian-serving
+    - name: docker build
       shell: bash
       run: |
-        export TIMESTAMP=`date '+%Y%m%d'`
         export IMAGE=intelanalytics/friesian-serving
         export FTP_URI=http://10.239.45.10:8081/repository/raw
         echo "################################################"
@@ -29,10 +28,29 @@ runs:
         --build-arg BIGDL_VERSION=2.2.0-SNAPSHOT \
         --build-arg no_proxy=${NO_PROXY} \
         --rm --no-cache -t $IMAGE:${TAG} .
+
+    - name: image deploy
+      shell: bash
+      run: |
+        export IMAGE=intelanalytics/friesian-serving
+        cd docker/friesian-serving
         docker push $IMAGE:${TAG}
-        docker tag $IMAGE:${TAG} 10.239.45.10/arda/$IMAGE:$TIMESTAMP
-        docker push 10.239.45.10/arda/$IMAGE:$TIMESTAMP
-        docker rmi -f $IMAGE:${TAG} 10.239.45.10/arda/$IMAGE:$TIMESTAMP
+
+    - name: timestamp image deploy
+      shell: bash
+      if: ${TAG} != 'latest'
+      run: |
+        export TIMESTAMP=`date '+%Y%m%d'`
+        export IMAGE=intelanalytics/friesian-serving
+        cd docker/friesian-serving
+        docker tag $IMAGE:${TAG} 10.239.45.10/arda/$IMAGE:${TAG}-$TIMESTAMP
+        docker push 10.239.45.10/arda/$IMAGE:${TAG}-$TIMESTAMP
+        docker rmi -f 10.239.45.10/arda/$IMAGE:${TAG}-$TIMESTAMP
+
+    - name: remove resources
+      shell: bash
+      run:
+        cd docker/friesian-serving
+        docker rmi -f $IMAGE:${TAG}
         rm -rf lib faiss-lib.zip
         rm -rf jersey jersey.tar.gz
-
