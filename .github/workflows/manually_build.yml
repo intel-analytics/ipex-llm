@@ -140,7 +140,7 @@ jobs:
         docker push 10.239.45.10/arda/${image}:${TAG}
         docker rmi -f ${image}:${TAG}
 
-  bigdl-ppml-trusted-big-data-ml-scala-occlum1:
+  bigdl-ppml-trusted-big-data-ml-scala-occlum-production:
     #if: ${{ github.event.inputs.artifact == 'bigdl-ppml-trusted-big-data-ml-scala-occlum-production' || github.event.inputs.artifact == 'all' }}
     runs-on: [ self-hosted, Shire ]
 
@@ -149,14 +149,15 @@ jobs:
       - name: docker login
         run: |
           docker login -u ${DOCKERHUB_USERNAME} -p ${DOCKERHUB_PASSWORD}
-      - name: bigdl-ppml-trusted-big-data-ml-scala-occlum1
+      - name: bigdl-ppml-trusted-big-data-ml-scala-occlum-production
         run: |
           echo "########################################"
           echo "####### big-data-ml-scala-occlum-production  ######"
           echo "########################################"
           cd ppml/trusted-big-data-ml/scala/docker-occlum/production
           ls -lh
-          export image=intelanalytics/bigdl-ppml-trusted-big-data-ml-scala-occlum1
+          export image=intelanalytics/bigdl-ppml-trusted-big-data-ml-scala-occlum-production
+          export TAG=test
           pwd
           docker build \
             --no-cache=true \
