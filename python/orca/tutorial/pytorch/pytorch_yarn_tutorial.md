@@ -457,10 +457,9 @@ __Note:__
 
 
 ### 5.3.2 Yarn-Cluster
-On the __Client Node__ (where you submit applications), please download jars files from [BigDL Assembly Jars](https://oss.sonatype.org/content/repositories/snapshots/com/intel/analytics/bigdl/bigdl-assembly-spark_3.1.2/2.1.0-SNAPSHOT/bigdl-assembly-spark_3.1.2-2.1.0-20220912.135611-231-jar-with-dependencies.jar), and put it under `${BIGDL_HOME}`.
 
 __Note:__
-* Please register downloaded BigDL jars through `--jars` option in the `spark-submit` script.
+* Please register BigDL jars through `--jars` option in the `spark-submit` script.
 
 Submit and run the program on `yarn-cluster` mode following `spark-submit` script below:
 ```bash
