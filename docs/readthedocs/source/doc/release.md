@@ -1,6 +1,6 @@
 # Release Download
 
-- **Release 2.1.0 nightly build**
+- **Release 2.1.0**
 <table border="1"
 cellpadding="10"
 >
