@@ -387,6 +387,6 @@ Run cd /opt/occlum_spark && \
        build_initfs; \
     else \
        occlum build; \
-    fi \
+    fi
 
 ENTRYPOINT [ "/opt/entrypoint.sh" ]
