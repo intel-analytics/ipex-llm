@@ -135,19 +135,19 @@ stats = est.fit(train_df,
                 feature_cols=['user', 'item'],
                 label_cols=['label'],
                 steps_per_epoch=int(train_df.count() // batch_size),
-                validation_data=train_df,
-                validation_steps =int(train_df.count() // batch_size))
+                validation_data=test_df,
+                validation_steps =int(test_df.count() // batch_size))
 
 checkpoint_path = os.path.join(model_dir, "NCF.ckpt")
 est.save_checkpoint(checkpoint_path)
 
 
 # evaluate with Estimator
-stats = est.evaluate(train_df, 
+stats = est.evaluate(test_df, 
                      feature_cols=['user', 'item'],
                      label_cols=['label'],
                      batch_size=batch_size,
-                     num_steps=int(epochs*train_df.count() // batch_size))
+                     num_steps=int(epochs*test_df.count() // batch_size))
 
 print(stats)
 est.shutdown()
