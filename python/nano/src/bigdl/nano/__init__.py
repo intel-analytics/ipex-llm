@@ -50,16 +50,18 @@ def patch_nano(patch_tf=None, patch_torch=None):
     3. tf.keras.layers.Embedding/keras.layers.Embedding -> bigdl.nano.tf.keras.layers.Embedding
     4. tf.optimizers.Adam -> bigdl.nano.tf.optimizers.SparseAdam
     5. pytorch_lightning.Trainer -> bigdl.nano.pytorch.Trainer
+    6. torchvision.transforms -> bigdl.nano.pytorch.vision.transforms
+    7. torchvision.datasets -> bigdl.nano.pytorch.vision.datasets
 
     :param patch_tf: bool, if patch tensorflow related classes, will patch defaultly if tensorflow
            is installed
     :param patch_torch: bool, if patch pytorch related classes, will patch defaultly if pytorch
            is installed
     '''
-    if find_spec("tensorflow") is not None and patch_tf is None:
-        patch_tf = True
-    if find_spec("pytorch_lightning") is not None and patch_torch is None:
-        patch_torch = True
+    if patch_tf is None:
+        patch_tf = find_spec("tensorflow") is not None
+    if patch_torch is None:
+        patch_torch = find_spec("pytorch_lightning") is not None
 
     if patch_tf:
         import keras
