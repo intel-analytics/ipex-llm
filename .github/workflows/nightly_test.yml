@@ -382,7 +382,7 @@ jobs:
       env:
         DEFAULT_TAG: 'latest'
       run: |
-        echo "TAG=${{ github.event.inputs.bigdlTag || env.DEFAULT_TAG }} " >> $GITHUB_ENV
+        echo "TAG=${{ github.event.inputs.tag || env.DEFAULT_TAG }} " >> $GITHUB_ENV
     - name: Run test
       uses: ./.github/actions/ppml/ppml-pyspark-k8s-example-on-gramine-action
       with:
@@ -439,7 +439,7 @@ jobs:
       env:
         DEFAULT_TAG: 'latest'
       run: |
-        echo "TAG=${{ github.event.inputs.bigdlTag || env.DEFAULT_TAG }} " >> $GITHUB_ENV
+        echo "TAG=${{ github.event.inputs.tag || env.DEFAULT_TAG }} " >> $GITHUB_ENV
     - name: Run test
       uses: ./.github/actions/ppml-spark-local-example-tests-on-gramine-action
       with:
