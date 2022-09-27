@@ -51,6 +51,9 @@ class PytorchONNXRuntimeModel(ONNXRuntimeModel, AcceleratedLightningModule):
             export_to_onnx(model, input_sample=input_sample, onnx_path='tmp.onnx',
                            **export_kwargs)
             onnx_path = 'tmp.onnx'
+            # simplify model
+            from bigdl.nano.deps.onnxsim.onnxsim_api import onnx_simplify
+            onnx_simplify(onnx_path)
         AcceleratedLightningModule.__init__(self, None)
         ONNXRuntimeModel.__init__(self, onnx_path, session_options=onnxruntime_session_options)
         if os.path.exists('tmp.onnx'):

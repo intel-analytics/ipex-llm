@@ -62,6 +62,7 @@ jobs:
           pip install onnxruntime==1.11.1
           pip install onnx==1.11.0
           pip install onnxruntime-extensions==0.4.2
+          pip install onnxsim==0.4.8
           pip install scipy==1.5.4
           pip install cloudpickle
           apt-get update

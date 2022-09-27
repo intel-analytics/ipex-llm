@@ -19,7 +19,6 @@ import inspect
 from torch.utils.data import DataLoader
 import torch
 from bigdl.nano.utils.log4Error import invalidInputError
-from bigdl.nano.deps.onnxsim import onnx_simplify
 
 
 def get_forward_args(model):
@@ -107,4 +106,3 @@ def export_to_onnx(model, input_sample=None, onnx_path="model.onnx", dynamic_axe
                                 }
     default_onnx_export_args.update(kwargs)
     torch.onnx.export(model, input_sample, onnx_path, **default_onnx_export_args)
-    onnx_simplify(onnx_path)
