@@ -1,6 +1,8 @@
 name: Manually Build
 
 on:
+  pull_request:
+    branchs: [ main ]
   workflow_dispatch:
     inputs:
       artifact:
@@ -139,7 +141,7 @@ jobs:
         docker rmi -f ${image}:${TAG}
 
   bigdl-ppml-trusted-big-data-ml-scala-occlum-production:
-    if: ${{ github.event.inputs.artifact == 'bigdl-ppml-trusted-big-data-ml-scala-occlum-production' || github.event.inputs.artifact == 'all' }}
+    #if: ${{ github.event.inputs.artifact == 'bigdl-ppml-trusted-big-data-ml-scala-occlum-production' || github.event.inputs.artifact == 'all' }}
     runs-on: [ self-hosted, Shire ]
 
     steps:
