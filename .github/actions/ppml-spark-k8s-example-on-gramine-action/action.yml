@@ -8,7 +8,7 @@ runs:
       shell: bash
       env:
         DEFAULT_SGX_MEM_SIZE: 32G
-        DEFAULT_IMAGE: 10.239.45.10/arda/intelanalytics/bigdl-ppml-trusted-big-data-ml-python-gramine:latest
+        DEFAULT_IMAGE: 10.239.45.10/arda/intelanalytics/bigdl-ppml-trusted-big-data-ml-python-gramine:2.2.0-SNAPSHOT
       run: |
         echo "CONTAINER_NAME=spark-k8s-exmaples-test-gramine" >> $GITHUB_ENV
         echo "SGX_MEM_SIZE=${{ env.DEFAULT_SGX_MEM_SIZE }}" >> $GITHUB_ENV
