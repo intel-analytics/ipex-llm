@@ -249,7 +249,7 @@ Run the example following command below:
 python train.py --cluster_mode yarn-client --remote_dir hdfs://path/to/remote/data
 ```
 * `--cluster_mode`: set the cluster_mode in `init_orca_context`.
-* `--remote_dir`: directory on a distributed storage for the dataset (see __[Section 3](#3-prepare-dataset)__) and saving the model.
+* `--remote_dir`: directory on a distributed storage for the dataset (see __[Section 3](#3-prepare-dataset)__).
 
 __Note__:
 * Please refer to __[Section 4](#4-prepare-custom-modules)__ for the description of `extra_python_lib`.
@@ -337,7 +337,7 @@ In the `bigdl-submit` script:
 * `--num_executors`: set the number of executors;
 * `--py-files`: upload extra Python dependency files to YARN;
 * `--archives`: upload the Conda archive to YARN;
-* `--conf spark.pyspark.driver.python`: set the activate Python location on __Client Node__ as driver's Python environment #`which python`;
+* `--conf spark.pyspark.driver.python`: set the activate Python location on __Client Node__ as driver's Python environment (get the location by running `which python`);
 * `--conf spark.pyspark.python`: set the Python location in Conda archive as executors' Python environment;
 
 __Note:__
@@ -372,11 +372,11 @@ In the `bigdl-submit` script:
 * `--py-files`: upload extra Python dependency files to YARN;
 * `--archives`: upload the Conda archive to YARN;
 * `--conf spark.yarn.appMasterEnv.PYSPARK_PYTHON`: set the Python location in Conda archive as Python environment of Application Master process;
-* `--conf spark.executorEnv.PYSPARK_PYTHON`: set the Python location in Conda archive as Python environment of executors.
+* `--conf spark.executorEnv.PYSPARK_PYTHON`: set the Python location in Conda archive as Python environment of executors, the Application Master and executor will all use the archive for Python environment;
 
 __Note:__
 * `--cluster_mode`: set the cluster_mode in `init_orca_context`;
-* `--remote_dir`: directory on a distributed storage for the dataset (see __[Section 3](#3-prepare-dataset)__) and saving the model.
+* `--remote_dir`: directory on a distributed storage for the dataset (see __[Section 3](#3-prepare-dataset)__).
 * Please refer to __[Section 4](#4-prepare-custom-modules)__ for the description of extra Python dependencies.
 
 
@@ -445,14 +445,14 @@ In the `spark-submit` script:
 * `--archives`: upload the Conda archive to YARN;
 * `--properties-file`: upload the BigDL configuration properties to YARN;
 * `--py-files`: upload extra Python dependency files to YARN;
-* `--conf spark.pyspark.driver.python`: set the Python location in Conda archive as driver's Python environment;
+* `--conf spark.pyspark.driver.python`: set the Python location in Conda archive as driver's Python environment (get the location by running `which python`);
 * `--conf spark.pyspark.python`: set the Python location in Conda archive as executors' Python environment;
 * `--conf spark.driver.extraClassPath`: upload and register the BigDL jars files to the driver's classpath;
 * `--conf spark.executor.extraClassPath`: upload and register the BigDL jars files to the executors' classpath;
 
 __Note:__
 * `--cluster_mode`: set the cluster_mode in `init_orca_context`;
-* `--remote_dir`: directory on a distributed storage for the dataset (see __[Section 3](#3-prepare-dataset)__) and saving the model.
+* `--remote_dir`: directory on a distributed storage for the dataset (see __[Section 3](#3-prepare-dataset)__).
 * Please refer to __[Section 4](#4-prepare-custom-modules)__ for the description of extra Python dependencies.
 
 
@@ -486,11 +486,11 @@ In the `spark-submit` script:
 * `--num_executors`: set the number of executors;
 * `--archives`: upload the Conda archive to YARN;
 * `--conf spark.yarn.appMasterEnv.PYSPARK_PYTHON`: set the Python location in Conda archive as Python environment of Application Master process; 
-* `--conf spark.executorEnv.PYSPARK_PYTHON`: set the Python location in Conda archive as  executors' Python environment;
+* `--conf spark.executorEnv.PYSPARK_PYTHON`: set the Python location in Conda archive as  executors' Python environment, the Application Master and executor will all use the archive for Python environment;
 * `--py-files`: upload extra Python dependency files to YARN;
 * `--jars`: upload and register BigDL dependency jars files to YARN;
 
 __Note:__
 * `--cluster_mode`: set the cluster_mode in `init_orca_context`;
-* `--remote_dir`: directory on a distributed storage for the dataset (see __[Section 3](#3-prepare-dataset)__) and saving the model.
+* `--remote_dir`: directory on a distributed storage for the dataset (see __[Section 3](#3-prepare-dataset)__).
 * Please refer to __[Section 4](#4-prepare-custom-modules)__ for the description of extra Python dependencies.
