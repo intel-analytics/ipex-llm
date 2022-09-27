@@ -23,10 +23,9 @@ init_script = """
 #!/bin/bash
 
 # install bigdl-orca, add other bigdl modules if you need
-/databricks/python/bin/pip install pip install --pre --upgrade bigdl-orca-spark3
+/databricks/python/bin/pip install pip install --pre --upgrade bigdl-orca-spark3[ray]
 
 # install other necessary libraries, here we install libraries needed in this tutorial
-/databricks/python/bin/pip install ray[default]
 /databricks/python/bin/pip install tensorflow==2.9.1
 /databricks/python/bin/pip install pyarrow==8.0.0
 /databricks/python/bin/pip install psutil
@@ -51,10 +50,9 @@ Create a file **init.sh**(or any other filename) in your computer, the file cont
 #!/bin/bash
 
 # install bigdl-orca, add other bigdl modules if you need
-/databricks/python/bin/pip install pip install --pre --upgrade bigdl-orca-spark3
+/databricks/python/bin/pip install pip install --pre --upgrade bigdl-orca-spark3[ray]
 
 # install other necessary libraries, here we install libraries needed in this tutorial
-/databricks/python/bin/pip install ray[default]
 /databricks/python/bin/pip install tensorflow==2.9.1
 /databricks/python/bin/pip install pyarrow==8.0.0
 /databricks/python/bin/pip install psutil
@@ -73,9 +71,9 @@ Now the init script is in DBFS, right click the init.sh and choose **Copy path**
 
 ### 3. Set Spark configuration
 
-On the cluster configuration page, click the **Advanced Options** toggle. Click the **Spark** tab. You can provide custom [Spark configuration properties](https://spark.apache.org/docs/latest/configuration.html) in a cluster configuration. Please set it according to your cluster resource and program needs.
+In the left panel, click **Compute > Choose your cluster > edit > Advanced options > Spark > Confirm **. You can provide custom [Spark configuration properties](https://spark.apache.org/docs/latest/configuration.html) in a cluster configuration. Please set it according to your cluster resource and program needs.
 
-![](images/Databricks5.PNG)
+![](images/spark-config.PNG)
 
 See below for an example of Spark config setting **needed** by BigDL. Here it sets 2 core per executor. Note that "spark.cores.max" needs to be properly set below.
 
@@ -86,11 +84,11 @@ spark.cores.max 4
 
 ### 4. Install BigDL Libraries
 
-Use init script from [step 2](#2-generate-initialization-script) to install BigDL libraries. In the left panel, click **Compute > Choose your cluster > edit > Advanced options > Init Scripts > Paste init script path > Add > Restart cluster**.
+Use the init script from [step 2](#2-generate-initialization-script) to install BigDL libraries. In the left panel, click **Compute > Choose your cluster > edit > Advanced options > Init Scripts > Paste init script path > Add > Confirm**.
 
 ![](images/config-init-script.png)
 
-After restart the cluster, the needed libraries is all installed.
+Then start or restart the cluster. After starting/restarting the cluster, the libraries specified in the init script are all installed.
 
 ### **5. Run BigDL on Databricks**
 
@@ -107,15 +105,18 @@ Output on Databricks:
 
 **Run ncf_train example on Databricks**
 
-create a notebook and run the following example.
+Create a notebook and run the following example. Note that to make things simple, we are just generating some dummy data for this example.
 
 ```python
 import math
 import argparse
 import os
+import random
 
 from bigdl.orca import init_orca_context, stop_orca_context
 from bigdl.orca.learn.tf2.estimator import Estimator
+from pyspark.sql.types import StructType, StructField, IntegerType
+from bigdl.orca import OrcaContext
 
 
 def build_model(num_users, num_items, class_num, layers=[20, 10], include_mf=True, mf_embed=20):
@@ -166,10 +167,10 @@ if __name__ == '__main__':
     epochs = 5
     batch_size = 8000
     model_dir = "/dbfs/FileStore/model/ncf/"
-    backend = "spark" # ray or spark
+    backend = "ray" # ray or spark
     data_dir = './'
     
-    sc = init_orca_context(cluster_mode="spark-submit",extra_params={"dashboard-port": "11280", "min-worker-port": "30000", "max-worker-port": "33333", "metrics-export-port": "10010"}, verbose=True)
+    sc = init_orca_context(cluster_mode="spark-submit")
 
     if backend == "ray":
         save_path = model_dir + "ncf.ckpt"
@@ -177,10 +178,6 @@ if __name__ == '__main__':
         save_path = model_dir + "ncf.h5"
     else:
         raise Exception("backend should be either 'tf2' or 'spark', but got " + backend)
-
-    import random
-    from pyspark.sql.types import StructType, StructField, IntegerType
-    from bigdl.orca import OrcaContext
 
     spark = OrcaContext.get_spark_session()
 
@@ -235,7 +232,7 @@ if __name__ == '__main__':
     print("Saving model to: ", save_path)
     estimator.save(save_path)
 
-    # load with estimator.load(args.save_path)
+    # load with estimator.load(save_path)
 
     stop_orca_context()
 ```
@@ -252,7 +249,7 @@ If there is no DBFS in your panel,  go to **User profile > Admin Console > Works
 
 ### Appendix B
 
-Use **Databricks CLI** to upload file to DBFS. When you upload a large file to DBFS, using Databricks CLI could be faster than using UI.
+Use **Databricks CLI** to upload file to DBFS. When you upload a large file to DBFS, using Databricks CLI could be faster than using the Databricks web UI.
 
 **Install and config Azure Databricks CLI**
 
