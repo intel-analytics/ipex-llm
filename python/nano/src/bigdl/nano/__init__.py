@@ -79,6 +79,11 @@ def patch_nano(patch_tf=None, patch_torch=None):
 
     if patch_torch:
         import pytorch_lightning
+        import torchvision
         from bigdl.nano.pytorch import Trainer
+        from bigdl.nano.pytorch.vision import transforms
+        from bigdl.nano.pytorch.vision import datasets
 
         setattr(pytorch_lightning, "Trainer", Trainer)
+        setattr(torchvision, "transforms", transforms)
+        setattr(torchvision, "datasets", datasets)
