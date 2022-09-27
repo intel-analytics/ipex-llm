@@ -122,7 +122,7 @@ def gen_synthetic_data(len=10000, **kwargs):
     endtime = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime())
     df.insert(0, "datetime", pd.date_range(end=endtime, periods=len, freq="T"))
 
-    if 'with_split' not in kwargs or kwargs['with_split']==False:
+    if not 'with_split' in kwargs or kwargs['with_split'] == False:
         tsdata = TSDataset.from_pandas(df, dt_col="datetime", target_col="target")
         return tsdata
     else:
