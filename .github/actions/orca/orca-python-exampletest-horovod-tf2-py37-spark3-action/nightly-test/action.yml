@@ -8,14 +8,14 @@ runs:
       run: |
         source activate py37
         export SPARK_LOCAL_HOSTNAME=localhost
-        bash python/dev/release_default_linux_spark313.sh default false false
+        #bash python/dev/release_default_linux_spark313.sh default false false
         
         # install dllib
-        pip install python/dllib/src/dist/bigdl_dllib*-py3-none-manylinux1_x86_64.whl
+        #pip install python/dllib/src/dist/bigdl_dllib*-py3-none-manylinux1_x86_64.whl
 
         # install orca
-        pip install python/orca/src/dist/bigdl_orca*-py3-none-manylinux1_x86_64.whl
-
+        #pip install python/orca/src/dist/bigdl_orca*-py3-none-manylinux1_x86_64.whl
+        pip install --pre --upgrade bigdl-orca-spark3
         chmod a+x python/orca/dev/example/run-example-test-ray-horovod-tf.sh
         python/orca/dev/example/run-example-test-ray-horovod-tf.sh
         ray stop
