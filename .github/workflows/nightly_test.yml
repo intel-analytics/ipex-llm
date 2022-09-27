@@ -443,7 +443,7 @@ jobs:
     - name: Run test
       uses: ./.github/actions/ppml-spark-local-example-tests-on-gramine-action
       with:
-        image-tag: ${TAG}
+        image-tag: ${{env.TAG}}
     - name: Create Job Badge
       uses: ./.github/actions/create-job-status-badge
       if: ${{ always() }}
