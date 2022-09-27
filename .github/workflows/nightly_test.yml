@@ -174,7 +174,7 @@ jobs:
       if: ${{ always() }}
       with:
         secret: ${{ secrets.GIST_SECRET}}
-        gist-id: 
+        gist-id: aecdcf0cacc4caca7859a4cb1d60c70a
         is-self-hosted-runner: true
         file-name: Orca-Python-Horovod-Tf2-Py37-Spark3.json
         type: job
