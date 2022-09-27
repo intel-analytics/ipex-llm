@@ -20,11 +20,16 @@ def create_ray_multiprocessing_backend():
     return RayBackend()
 
 
-def create_ray_envbase(world_size):
-    from bigdl.nano.deps.ray.ray_envbase import RayEnvironment
-    return RayEnvironment(world_size)
+def create_RayStrategy(*args, **kwargs):
+    """Create ray strategy."""
+    from .ray_distributed import RayStrategy
+    return RayStrategy(*args, **kwargs)
 
 
+# this method is only for API compatibility when using pl 1.4,
+# and will be removed soon
 def distributed_ray(*args, **kwargs):
-    from .ray_distributed import RayPlugin
-    return RayPlugin(*args, **kwargs)
+    from bigdl.nano.utils.log4Error import invalidInputError
+    invalidInputError(False, "bigdl-nano no longer support ray backend "
+                      "when using pytorch lightning 1.4, please upgrade your "
+                      "pytorch lightning to 1.6.4")

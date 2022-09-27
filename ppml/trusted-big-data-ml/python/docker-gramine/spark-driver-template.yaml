@@ -1,0 +1,66 @@
+apiVersion: v1
+kind: Pod
+spec:
+  containers:
+  - name: spark-driver
+    securityContext:
+      privileged: true
+    env:
+      - name: ATTESTATION
+        value: false
+      - name: ATTESTATION_URL
+        value: your_attestation_url
+      #- name: ATTESTATION_ID
+      #  valueFrom:
+      #    secretKeyRef:
+      #      name: kms-secret
+      #      key: app_id
+      #- name: ATTESTATION_KEY
+      #  valueFrom:
+      #    secretKeyRef:
+      #      name: kms-secret
+      #      key: app_key
+    volumeMounts:
+      - name: enclave-key
+        mountPath: /root/.config/gramine/enclave-key.pem
+        subPath: enclave-key.pem
+      - name: device-plugin
+        mountPath: /var/lib/kubelet/device-plugins
+      - name: aesm-socket
+        mountPath: /var/run/aesmd/aesm.socket
+      - name: nfs-storage
+        mountPath: /ppml/trusted-big-data-ml/work/data
+      - name: secure-keys
+        mountPath: /ppml/trusted-big-data-ml/work/keys
+      - name: nfs-storage
+        mountPath: /root/.kube/config
+        subPath: kubeconfig
+     #resources:
+      #requests:
+        #cpu: 16
+        #memory: 128Gi
+        #sgx.intel.com/epc: 133258905600
+        #sgx.intel.com/enclave: 10
+        #sgx.intel.com/provision: 10
+      #limits:
+        #cpu: 16
+        #memory: 128Gi
+        #sgx.intel.com/epc: 133258905600
+        #sgx.intel.com/enclave: 10
+        #sgx.intel.com/provision: 10
+  volumes:
+    - name: enclave-key
+      secret:
+        secretName: enclave-key
+    - name: device-plugin
+      hostPath:
+        path: /var/lib/kubelet/device-plugins
+    - name: aesm-socket
+      hostPath:
+        path: /var/run/aesmd/aesm.socket
+    - name: secure-keys
+      secret:
+        secretName: ssl-keys
+    - name: nfs-storage
+      persistentVolumeClaim:
+        claimName: nfsvolumeclaim

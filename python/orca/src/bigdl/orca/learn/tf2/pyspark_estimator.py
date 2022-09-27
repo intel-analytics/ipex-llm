@@ -28,22 +28,29 @@ import tensorflow as tf
 
 from bigdl.dllib.utils.common import get_node_and_core_number
 from bigdl.dllib.utils.file_utils import enable_multi_fs_load, enable_multi_fs_save, \
-    get_remote_file_to_local, is_local_path, get_remote_files_with_prefix_to_local, \
-    append_suffix, put_local_file_to_remote, put_local_files_with_prefix_to_remote
-
+    is_local_path, append_suffix
 from bigdl.dllib.utils.utils import get_node_ip
-from bigdl.orca.data.file import is_file, exists
+
+from bigdl.orca.data.file import is_file, exists, get_remote_file_to_local, \
+    get_remote_files_with_prefix_to_local, put_local_file_to_remote, \
+    put_local_files_with_prefix_to_remote
 from bigdl.orca.learn.tf2.spark_runner import SparkRunner
 from bigdl.orca.learn.utils import find_free_port, find_ip_and_free_port
 from bigdl.orca.learn.utils import maybe_dataframe_to_xshards, dataframe_to_xshards, \
     convert_predict_xshards_to_dataframe, make_data_creator, load_model, \
     save_model, process_xshards_of_pandas_dataframe
-from bigdl.orca.learn.log_monitor import start_log_server
+from bigdl.orca.learn.log_monitor import start_log_server, stop_log_server
 from bigdl.orca.data.shard import SparkXShards
 from bigdl.orca import OrcaContext
 from bigdl.dllib.utils.log4Error import invalidInputError
 
 logger = logging.getLogger(__name__)
+
+
+def parse_model_dir(model_dir):
+    if model_dir and model_dir.startswith("dbfs:/"):
+        model_dir = "/dbfs/" + model_dir[len("dbfs:/"):]
+    return model_dir
 
 
 class SparkTFEstimator():
@@ -82,7 +89,7 @@ class SparkTFEstimator():
             invalidInputError(False,
                               "Please do not specify batch_size in config. Input batch_size in the"
                               " fit/evaluate function of the estimator instead.")
-        self.model_dir = model_dir
+        self.model_dir = parse_model_dir(model_dir)
         master = sc.getConf().get("spark.master")
         if not master.startswith("local"):
             logger.info("For cluster mode, make sure to use shared filesystem path "
@@ -94,7 +101,7 @@ class SparkTFEstimator():
         is_local = sc.master.startswith("local")
         self.need_to_log_to_driver = (not is_local) and log_to_driver
         if self.need_to_log_to_driver:
-            start_log_server(self.ip, self.port)
+            self.log_server_thread = start_log_server(self.ip, self.port)
 
     def _get_cluster_info(self, sc):
         cluster_info = self.workerRDD.barrier().mapPartitions(find_ip_and_free_port).collect()
@@ -125,7 +132,14 @@ class SparkTFEstimator():
         """
         sc = OrcaContext.get_spark_context()
 
-        # dataframe change to xshard, num_partition >= num_workers
+        # Data partition should be equal to num workers.
+        # Repartition Spark DataFrame before converting to SparkXShards.
+        # Repartition on SparkXShards will result in empty partitions.
+        if isinstance(data, DataFrame) or isinstance(data, SparkXShards):
+            if data.rdd.getNumPartitions() != self.num_workers:
+                data = data.repartition(self.num_workers)
+            if validation_data and validation_data.rdd.getNumPartitions() != self.num_workers:
+                validation_data = validation_data.repartition(self.num_workers)
         data, validation_data = maybe_dataframe_to_xshards(data, validation_data,
                                                            feature_cols, label_cols,
                                                            mode="fit",
@@ -181,8 +195,7 @@ class SparkTFEstimator():
                     param["data_creator"] = make_data_creator(partition_data)
                     return SparkRunner(**init_param).step(**param)
 
-                res = data.rdd.repartition(self.num_workers).barrier() \
-                    .mapPartitions(
+                res = data.rdd.barrier().mapPartitions(
                     lambda iter: transform_func(iter, init_params, params)).collect()
             else:
                 def transform_func(iter, init_param, param):
@@ -195,8 +208,7 @@ class SparkTFEstimator():
 
                 train_rdd = data.rdd.mapPartitions(lambda iter: [list(iter)])
                 val_rdd = validation_data.rdd.mapPartitions(lambda iter: [list(iter)])
-                res = train_rdd.zip(val_rdd).repartition(self.num_workers).barrier()\
-                    .mapPartitions(
+                res = train_rdd.zip(val_rdd).barrier().mapPartitions(
                     lambda iter: transform_func(iter, init_params, params)).collect()
         else:
             params["data_creator"] = data
@@ -208,20 +220,23 @@ class SparkTFEstimator():
             res = self.workerRDD.barrier().mapPartitions(
                 lambda iter: transform_func(iter, init_params, params)).collect()
 
-        if self.model_dir:
+        if self.model_dir is not None:
+            result = res
             try:
                 temp_dir = tempfile.mkdtemp()
                 get_remote_file_to_local(os.path.join(self.model_dir, "state.pkl"),
-                                         os.path.join(temp_dir, "state.pkl"),
-                                         over_write=True)
+                                         os.path.join(temp_dir, "state.pkl"))
                 import pickle
                 with open(os.path.join(temp_dir, "state.pkl"), 'rb') as f:
                     state = pickle.load(f)
                     self.model_weights = state['weights']
             finally:
                 shutil.rmtree(temp_dir)
+        else:
+            result = res[0]
+            self.model_weights = res[1]
 
-        return res[0]
+        return result[0]
 
     def evaluate(self, data, batch_size=32, num_steps=None, verbose=1,
                  sample_weight=None, callbacks=None, data_config=None,
@@ -246,7 +261,9 @@ class SparkTFEstimator():
         sc = OrcaContext.get_spark_context()
         logger.info("Starting validation step.")
 
-        # dataframe change to xshard, num_partition >= num_workers
+        if isinstance(data, DataFrame) or isinstance(data, SparkXShards):
+            if data.rdd.getNumPartitions() != self.num_workers:
+                data = data.repartition(self.num_workers)
         data, _ = maybe_dataframe_to_xshards(data, validation_data=None,
                                              feature_cols=feature_cols,
                                              label_cols=label_cols,
@@ -294,8 +311,8 @@ class SparkTFEstimator():
                 param["data_creator"] = make_data_creator(partition_data)
                 return SparkRunner(**init_param).validate(**param)
 
-            res = data.rdd.repartition(self.num_workers).barrier() \
-                .mapPartitions(lambda iter: transform_func(iter, init_params, params)).collect()
+            res = data.rdd.barrier().mapPartitions(
+                lambda iter: transform_func(iter, init_params, params)).collect()
         else:
             params["data_creator"] = data
 
@@ -410,12 +427,11 @@ class SparkTFEstimator():
                 model.save_weights(temp_path, overwrite, save_format)
                 if save_format == 'h5' or filepath.endswith('.h5') or filepath.endswith('.keras'):
                     # hdf5 format
-                    put_local_file_to_remote(temp_path, filepath, over_write=overwrite)
+                    put_local_file_to_remote(temp_path, filepath)
                 else:
                     # tf format
                     remote_dir = os.path.dirname(filepath)
-                    put_local_files_with_prefix_to_remote(temp_path, remote_dir,
-                                                          over_write=overwrite)
+                    put_local_files_with_prefix_to_remote(temp_path, remote_dir)
             finally:
                 shutil.rmtree(temp_dir)
 
@@ -482,10 +498,10 @@ class SparkTFEstimator():
             saving to SavedModel.
         """
         # get current model
-        if exists(self._model_saved_path):
+        if self.model_dir is not None and exists(self._model_saved_path):
             model = load_model(self._model_saved_path)
         else:
-            model = self.model_creator(self.config)
+            model = self.get_model()
         # save model
         save_model(model, filepath, overwrite=overwrite, include_optimizer=include_optimizer,
                    save_format=save_format, signatures=signatures, options=options)
@@ -506,7 +522,8 @@ class SparkTFEstimator():
         model = load_model(filepath, custom_objects=custom_objects, compile=compile)
         self.model_weights = model.get_weights()
         # update remote model
-        save_model(model, self._model_saved_path, save_format="h5", filemode=0o666)
+        if self.model_dir is not None:
+            save_model(model, self._model_saved_path, save_format="h5", filemode=0o666)
 
     def get_model(self):
         """
@@ -521,3 +538,10 @@ class SparkTFEstimator():
     @property
     def _model_saved_path(self):
         return os.path.join(self.model_dir, "{}_model.h5".format(self.application_id))
+
+    def shutdown(self):
+        """
+        Shutdown estimator and release resources.
+        """
+        if self.need_to_log_to_driver:
+            stop_log_server(self.log_server_thread, self.ip, self.port)

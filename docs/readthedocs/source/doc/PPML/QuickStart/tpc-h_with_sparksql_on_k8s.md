@@ -2,14 +2,14 @@
 
 ### Prerequisites ###
 - Hardware that supports SGX
-- A fully configured Kubernetes cluster 
+- A fully configured Kubernetes cluster
 - Intel SGX Device Plugin to use SGX in K8S cluster (install following instructions [here](https://bigdl.readthedocs.io/en/latest/doc/PPML/QuickStart/deploy_intel_sgx_device_plugin_for_kubernetes.html "here"))
 
 ### Prepare TPC-H kit and data ###
 1. Generate data
 
-Go to [TPC Download](https://www.tpc.org/tpc_documents_current_versions/current_specifications5.asp) site, choose `TPC-H` source code, then download the TPC-H toolkits.
-After you download the tpc-h tools zip and uncompressed the zip file. Go to `dbgen` directory, and create a makefile based on `makefile.suite`, and run `make`.
+Go to [TPC Download](https://www.tpc.org/tpc_documents_current_versions/current_specifications5.asp) site, choose `TPC-H` source code, then download the TPC-H toolkits. **Follow the download instructions carefully.**
+After you download the tpc-h tools zip and uncompressed the zip file. Go to `dbgen` directory, and create `makefile` based on `makefile.suite`, and modify `makefile` according to the prompts inside, and run `make`.
 
 This should generate an executable called `dbgen`
 ```
@@ -26,18 +26,26 @@ which generates tables with extension `.tbl` with scale 1 (default) for a total 
 ```
 will generate roughly 10GB of input data.
 
+You need to move all .tbl files to a new directory as raw data.
+
 You can then either upload your data to remote file system or read them locally.
 
 2. Encrypt Data
-Encrypt data with specified Key Management Service (`SimpleKeyManagementService`, or `EHSMKeyManagementService` , or `AzureKeyManagementService`)
+
+Encrypt data with specified Key Management Service (`SimpleKeyManagementService`, or `EHSMKeyManagementService` , or `AzureKeyManagementService`). Details can be found here: https://github.com/intel-analytics/BigDL/tree/main/ppml/services/kms-utils/docker
 
 The example code of encrypt data with `SimpleKeyManagementService` is like below:
 ```
-java -cp '/ppml/trusted-big-data-ml/work/bigdl-2.1.0-SNAPSHOT/lib/bigdl-ppml-spark_3.1.2-2.1.0-SNAPSHOT-jar-with-dependencies.jar:/ppml/trusted-big-data-ml/work/spark-3.1.2/conf/:/ppml/trusted-big-data-ml/work/spark-3.1.2/jars/* \
+java -cp "$BIGDL_HOME/jars/bigdl-ppml-spark_3.1.2-2.1.0-SNAPSHOT.jar:$SPARK_HOME/conf/:$SPARK_HOME/jars/*:$BIGDL_HOME/jars/*"  \
    -Xmx10g \
    com.intel.analytics.bigdl.ppml.examples.tpch.EncryptFiles \
-   --inputPath xxx/dbgen \
+   --inputPath xxx/dbgen-input \
    --outputPath xxx/dbgen-encrypted
+   --kmsType SimpleKeyManagementService
+   --simpleAPPID xxxxxxxxxxxx \
+   --simpleAPPKEY xxxxxxxxxxxx \
+   --primaryKeyPath /path/to/simple_encrypted_primary_key \
+   --dataKeyPath /path/to/simple_encrypted_data_key
 ```
 
 ### Deploy PPML TPC-H on Kubernetes ###
@@ -48,10 +56,11 @@ sudo docker pull intelanalytics/bigdl-ppml-trusted-big-data-ml-python-graphene:2
 2. Prepare SGX keys (following instructions [here](https://github.com/intel-analytics/BigDL/tree/main/ppml/trusted-big-data-ml/python/docker-graphene#11-prepare-the-keyspassworddataenclave-keypem "here")), make sure keys and tpch-spark can be accessed on each K8S node
 3. Start a bigdl-ppml enabled Spark K8S client container with configured local IP, key, tpch and kuberconfig path
 ```
-export ENCLAVE_KEY=/root/keys/enclave-key.pem
-export DATA_PATH=/root/zoo-tutorials/tpch-spark
-export KEYS_PATH=/root/keys
-export KUBERCONFIG_PATH=/root/kuberconfig
+export ENCLAVE_KEY=/path/to/enclave-key.pem
+export SECURE_PASSWORD_PATH=/path/to/password
+export DATA_PATH=/path/to/data
+export KEYS_PATH=/path/to/keys
+export KUBERCONFIG_PATH=/path/to/kuberconfig
 export LOCAL_IP=$local_ip
 export DOCKER_IMAGE=intelanalytics/bigdl-ppml-trusted-big-data-ml-python-graphene:2.1.0-SNAPSHOT
 sudo docker run -itd \
@@ -62,8 +71,9 @@ sudo docker run -itd \
         --device=/dev/sgx/enclave \
         --device=/dev/sgx/provision \
         -v /var/run/aesmd/aesm.socket:/var/run/aesmd/aesm.socket \
+        -v $SECURE_PASSWORD_PATH:/ppml/trusted-big-data-ml/work/password \
         -v $ENCLAVE_KEY:/graphene/Pal/src/host/Linux-SGX/signer/enclave-key.pem \
-        -v $DATA_PATH:/ppml/trusted-big-data-ml/work/tpch-spark \
+        -v $DATA_PATH:/ppml/trusted-big-data-ml/work/data \
         -v $KEYS_PATH:/ppml/trusted-big-data-ml/work/keys \
         -v $KUBERCONFIG_PATH:/root/.kube/config \
         -e RUNTIME_SPARK_MASTER=k8s://https://$LOCAL_IP:6443 \
@@ -114,12 +124,12 @@ spec:
         path: /path/to/kuberconfig
 ```
 6. Run PPML TPC-H
-bash```
+```bash
 secure_password=`openssl rsautl -inkey /ppml/trusted-big-data-ml/work/password/key.txt -decrypt </ppml/trusted-big-data-ml/work/password/output.bin` && \
 export TF_MKL_ALLOC_MAX_BYTES=10737418240 && \
 export SPARK_LOCAL_IP=$LOCAL_IP && \
-export INPUT_DIR=xxx/dbgen \
-export OUTPUT_DIR=xxx/output \
+export INPUT_DIR=xxx/dbgen-encrypted && \
+export OUTPUT_DIR=xxx/dbgen-output && \
   /opt/jdk8/bin/java \
     -cp '/ppml/trusted-big-data-ml/work/bigdl-2.1.0-SNAPSHOT/lib/bigdl-ppml-spark_3.1.2-2.1.0-SNAPSHOT-jar-with-dependencies.jar:/ppml/trusted-big-data-ml/work/spark-3.1.2/conf/:/ppml/trusted-big-data-ml/work/spark-3.1.2/jars/*' \
     -Xmx10g \
@@ -181,11 +191,15 @@ export OUTPUT_DIR=xxx/output \
     --conf spark.ssl.trustStoreType=JKS \
     --conf spark.bigdl.kms.type=SimpleKeyManagementService \
     --conf spark.bigdl.kms.simple.id=simpleAPPID \
-    --conf spark.bigdl.kms.simple.key=simpleAPPKEY \
+    --conf spark.bigdl.kms.simple.key=simpleAPIKEY \
     --conf spark.bigdl.kms.key.primary=xxxx/primaryKey \
     --conf spark.bigdl.kms.key.data=xxxx/dataKey \
     --class com.intel.analytics.bigdl.ppml.examples.tpch.TpchQuery \
     --verbose \
     /ppml/trusted-big-data-ml/work/bigdl-2.1.0-SNAPSHOT/lib/bigdl-ppml-spark_3.1.2-2.1.0-SNAPSHOT-jar-with-dependencies.jar \
-    $INPUT_DIR $OUTPUT_DIR aes_cbc_pkcs5padding plain_text [QUERY]
+    $INPUT_DIR $OUTPUT_DIR aes/cbc/pkcs5padding plain_text [QUERY]
 ```
+The optional parameter [QUERY] is the number of the query to run e.g 1, 2, ..., 22.
+
+The result is in OUTPUT_DIR. There should be a file called TIMES.TXT with content formatted like:
+>Q01     39.80204010

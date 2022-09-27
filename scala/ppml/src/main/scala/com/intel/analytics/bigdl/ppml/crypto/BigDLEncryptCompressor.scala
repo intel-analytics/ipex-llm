@@ -55,7 +55,11 @@ class BigDLEncryptCompressor(cryptoMode: CryptoMode, dataKeyPlaintext: String) e
   }
 
   override def finish(): Unit = {
-    tryFinished = true
+    if (lv2Len == 0 && len == 0) {
+      isFinished = true
+    } else {
+      tryFinished = true
+    }
   }
 
   override def finished(): Boolean = {

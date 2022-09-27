@@ -18,10 +18,10 @@ import pytest
 import pandas as pd
 import numpy as np
 
-from bigdl.orca.test_zoo_utils import ZooTestCase
+from unittest import TestCase
 from bigdl.chronos.data.utils.cycle_detection import cycle_length_est
 
-class TestCycleDetectionTimeSeries(ZooTestCase):
+class TestCycleDetectionTimeSeries(TestCase):
     def setup_method(self, method):
         pass
 

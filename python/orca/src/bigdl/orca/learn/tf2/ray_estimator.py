@@ -13,15 +13,19 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+import os
 import itertools
 import logging
 import pickle
+import shutil
+import tempfile
 
 import numpy as np
 import ray
 
 from bigdl.dllib.utils import log4Error
-from bigdl.dllib.utils.file_utils import enable_multi_fs_load, enable_multi_fs_save
+from bigdl.dllib.utils.file_utils import enable_multi_fs_load, enable_multi_fs_save, \
+    is_local_path
 
 from bigdl.orca.data.ray_xshards import RayXShards
 from bigdl.orca.learn.dl_cluster import RayDLCluster
@@ -30,6 +34,8 @@ from bigdl.orca.learn.ray_estimator import Estimator as OrcaRayEstimator
 from bigdl.orca.learn.utils import maybe_dataframe_to_xshards, dataframe_to_xshards, \
     convert_predict_xshards_to_dataframe, update_predict_xshards, \
     process_xshards_of_pandas_dataframe, make_data_creator
+from bigdl.orca.data.file import put_local_file_to_remote, put_local_dir_tree_to_remote, \
+    put_local_files_with_prefix_to_remote
 from bigdl.orca.data.utils import process_spark_xshards
 from bigdl.dllib.utils.log4Error import *
 from bigdl.orca.ray import OrcaRayContext
@@ -482,7 +488,7 @@ class TensorFlow2Estimator(OrcaRayEstimator):
         return self._get_model_from_state(state, sample_input=sample_input)
 
     @enable_multi_fs_save
-    def save(self, checkpoint):
+    def save_checkpoint(self, checkpoint):
         """
         Saves the model at the provided checkpoint.
 
@@ -504,7 +510,7 @@ class TensorFlow2Estimator(OrcaRayEstimator):
         return checkpoint
 
     @enable_multi_fs_load
-    def load(self, checkpoint, **kwargs):
+    def load_checkpoint(self, checkpoint, **kwargs):
         """
         Loads the model from the provided checkpoint.
 
@@ -516,6 +522,146 @@ class TensorFlow2Estimator(OrcaRayEstimator):
 
         state_id = ray.put(state)
         ray.get([worker.set_state.remote(state_id, **kwargs) for worker in self.remote_workers])
+
+    def save(self,
+             filepath,
+             overwrite=True,
+             include_optimizer=True,
+             save_format=None,
+             signatures=None,
+             options=None):
+        """
+        Saves the model to Tensorflow SavedModel or a single HDF5 file.
+
+        :param filepath: String, PathLike, path to SavedModel or H5 file to save the
+               model. It can be local/hdfs/s3 filepath
+        :param overwrite: Whether to silently overwrite any existing file at the
+               target location, or provide the user with a manual prompt.
+        :param include_optimizer: If True, save optimizer's state together.
+        :param save_format: Either `'tf'` or `'h5'`, indicating whether to save the
+               model to Tensorflow SavedModel or HDF5. Defaults to 'tf' in TF 2.X,
+               and 'h5' in TF 1.X.
+        :param signatures: Signatures to save with the SavedModel. Applicable to the
+               'tf' format only. Please see the `signatures` argument in
+               `tf.saved_model.save` for details.
+        :param options: (only applies to SavedModel format)
+               `tf.saved_model.SaveOptions` object that specifies options for
+               saving to SavedModel.
+        """
+        # get current trained model
+        model = self.get_model()
+
+        if is_local_path(filepath):
+            model.save(filepath, overwrite, include_optimizer, save_format, signatures, options)
+        else:
+            file_name = os.path.basename(filepath)
+            temp_dir = tempfile.mkdtemp()
+            temp_path = os.path.join(temp_dir, file_name)
+            try:
+                model.save(temp_path, overwrite, include_optimizer, save_format, signatures,
+                           options)
+                if save_format == 'h5' or filepath.endswith('.h5') or filepath.endswith('.keras'):
+                    # hdf5 format
+                    put_local_file_to_remote(temp_path, filepath)
+                else:
+                    # tf format
+                    put_local_dir_tree_to_remote(temp_path, filepath)
+            finally:
+                shutil.rmtree(temp_dir)
+
+    def load(self,
+             filepath,
+             custom_objects=None,
+             compile=True,
+             options=None):
+        """
+        Loads a model saved via `estimator.save()
+
+        :param filepath: (str) Path of saved model (SavedModel or H5 file).
+               It can be local/hdfs filepath
+        :param custom_objects: Optional dictionary mapping names (strings) to
+               custom classes or functions to be considered during deserialization.
+        :param compile: Boolean, whether to compile the model after loading.
+        :param options: Optional `tf.saved_model.LoadOptions` object that specifies
+               options for loading from SavedModel.
+
+        """
+        params = dict(
+            filepath=filepath,
+            custom_objects=custom_objects,
+            compile=compile,
+            options=options
+        )
+        if is_local_path(filepath):
+            ray.get([worker.load_model.remote(**params)
+                     for worker in self.remote_workers])
+        else:
+            ray.get([worker.load_remote_model.remote(**params)
+                     for worker in self.remote_workers])
+
+    def save_weights(self, filepath, overwrite=True, save_format=None, options=None):
+        """
+        Save the model weights at the provided filepath.
+        param filepath: String or PathLike, path to the file to save the weights to.
+              When saving in TensorFlow format, this is the prefix used for checkpoint files
+              (multiple files are generated). Note that the '.h5' suffix causes weights to be
+              saved in HDF5 format.
+        param overwrite: Whether to silently overwrite any existing file at the target location,
+              or provide the user with a manual prompt.
+        param save_format: Either 'tf' or 'h5'.
+              A filepath ending in '.h5' or '.keras' will default to HDF5 if save_format is None.
+              Otherwise None defaults to 'tf'.
+        param options: Optional tf.train.CheckpointOptions object that specifies options for saving
+              weights.
+        :return:
+        """
+        model = self.get_model()
+
+        if is_local_path(filepath):
+            model.save_weights(filepath, overwrite, save_format, options)
+        else:
+            file_name = os.path.basename(filepath)
+            temp_dir = tempfile.mkdtemp()
+            temp_path = os.path.join(temp_dir, file_name)
+            try:
+                model.save_weights(temp_path, overwrite, save_format, options)
+                if save_format == 'h5' or filepath.endswith('.h5') or filepath.endswith('.keras'):
+                    # hdf5 format
+                    put_local_file_to_remote(temp_path, filepath)
+                else:
+                    # tf format
+                    remote_dir = os.path.dirname(filepath)
+                    put_local_files_with_prefix_to_remote(temp_path, remote_dir)
+            finally:
+                shutil.rmtree(temp_dir)
+
+    def load_weights(self, filepath, by_name=False, skip_mismatch=False, options=None):
+        """
+        Load tensorflow keras model weights from the provided path.
+        param filepath: String, path to the weights file to load. For weight files in TensorFlow
+              format, this is the file prefix (the same as was passed to save_weights). This can
+              also be a path to a SavedModel saved from model.save.
+        param by_name: Boolean, whether to load weights by name or by topological order.
+              Only topological loading is supported for weight files in TensorFlow format.
+        param skip_mismatch: Boolean, whether to skip loading of layers where there is a mismatch
+              in the number of weights, or a mismatch in the shape of the weight
+              (only valid when by_name=True).
+        param options: Optional tf.train.CheckpointOptions object that specifies options for loading
+              weights.
+        :return:
+        """
+        params = dict(
+            filepath=filepath,
+            by_name=by_name,
+            skip_mismatch=skip_mismatch,
+            options=options
+        )
+        if is_local_path(filepath):
+            ray.get([worker.load_weights.remote(**params)
+                     for worker in self.remote_workers])
+        else:
+            ray.get([worker.load_remote_weights.remote(**params)
+                     for worker in self.remote_workers])
 
     def shutdown(self):
         """

@@ -26,6 +26,7 @@ from bigdl.dllib.feature.image.imageset import *
 from bigdl.orca.tfpark import TFDataset, TFEstimator
 from bigdl.orca.tfpark import ZooOptimizer
 from bigdl.dllib.utils.common import *
+from bigdl.dllib.utils.log4Error import invalidInputError
 
 
 def main(option):
@@ -33,8 +34,10 @@ def main(option):
     cluster_mode = options.cluster_mode
     if cluster_mode.startswith("yarn"):
         hadoop_conf = os.environ.get("HADOOP_CONF_DIR")
-        assert hadoop_conf, "Directory path to hadoop conf not found for yarn-client mode. Please " \
-                "set the environment variable HADOOP_CONF_DIR"
+        invalidInputError(
+            hadoop_conf is not None,
+            "Directory path to hadoop conf not found for yarn-client mode. Please "
+            "set the environment variable HADOOP_CONF_DIR")
         spark_conf = create_spark_conf().set("spark.executor.memory", "5g") \
             .set("spark.executor.cores", 2) \
             .set("spark.executor.instances", 2) \
@@ -69,7 +72,7 @@ def main(option):
                                                  features=(tf.float32, [224, 224, 3]),
                                                  labels=(tf.int32, [1]), batch_size=batch_size)
         else:
-            raise NotImplementedError
+            invalidInputError(False, "Unsupported mode")
 
         return dataset
 
@@ -89,7 +92,7 @@ def main(option):
             return tf.estimator.EstimatorSpec(mode, train_op=train_op,
                                               predictions=logits, loss=loss)
         else:
-            raise NotImplementedError
+            invalidInputError(False, "Unsupported mode")
 
     estimator = TFEstimator.from_model_fn(model_fn,
                                           params={"image_path": option.image_path,
@@ -106,7 +109,7 @@ if __name__ == '__main__':
     parser.add_option("--num-classes", dest="num_classes")
     parser.add_option("--batch_size", dest="batch_size")
     parser.add_option('--cluster_mode', type=str, default="local",
-                    help='The mode for the Spark cluster. local, yarn or spark-submit.')
+                      help='The mode for the Spark cluster. local, yarn or spark-submit.')
 
     (options, args) = parser.parse_args(sys.argv)
     main(options)

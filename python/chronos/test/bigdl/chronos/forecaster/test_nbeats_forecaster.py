@@ -22,11 +22,7 @@ from unittest import TestCase
 import pytest
 
 from bigdl.chronos.forecaster.nbeats_forecaster import NBeatsForecaster
-import onnxruntime
-
-_onnxrt_ver = onnxruntime.__version__ != '1.6.0' #  Jenkins requires 1.6.0(chronos)
-skip_onnxrt = pytest.mark.skipif(_onnxrt_ver, reason="Only runs when onnxrt is 1.6.0")
-
+from .. import op_all, op_onnxrt16
 
 def create_data(loader=False):
     num_train_samples = 1000
@@ -60,6 +56,45 @@ def create_data(loader=False):
         return train_data, val_data, test_data
 
 
+def create_tsdataset(roll=True, horizon=5):
+    from bigdl.chronos.data import TSDataset
+    import pandas as pd
+    timeseries = pd.date_range(start='2020-01-01', freq='D', periods=1000)
+    df = pd.DataFrame(np.random.rand(1000, 1),
+                      columns=['value1'],
+                      index=timeseries)
+    df.reset_index(inplace=True)
+    df.rename(columns={'index': 'timeseries'}, inplace=True)
+    train, _, test = TSDataset.from_pandas(df=df,
+                                           dt_col='timeseries',
+                                           target_col=['value1'],
+                                           with_split=True)
+    if roll:
+        for tsdata in [train, test]:
+            tsdata.roll(lookback=24, horizon=horizon)
+    return train, test
+
+
+def create_tsdataset_val(roll=True, horizon=5):
+    from bigdl.chronos.data import TSDataset
+    import pandas as pd
+    timeseries = pd.date_range(start='2020-01-01', freq='D', periods=1000)
+    df = pd.DataFrame(np.random.rand(1000, 1),
+                      columns=['value1'],
+                      index=timeseries)
+    df.reset_index(inplace=True)
+    df.rename(columns={'index': 'timeseries'}, inplace=True)
+    train, val, test = TSDataset.from_pandas(df=df,
+                                             dt_col='timeseries',
+                                             target_col=['value1'],
+                                             with_split=True,
+                                             val_ratio = 0.1)
+    if roll:
+        for tsdata in [train, test]:
+            tsdata.roll(lookback=24, horizon=horizon)
+    return train, val, test
+
+
 class TestChronosNBeatsForecaster(TestCase):
     def setUp(self):
         pass
@@ -83,7 +118,8 @@ class TestChronosNBeatsForecaster(TestCase):
         eva = forecaster.evaluate(test_data)
         assert eva[0].shape == test_data[1].shape[1:]
 
-    @skip_onnxrt
+    @op_all
+    @op_onnxrt16
     def test_nbeats_forecaster_fit_loader(self):
         train_loader, val_loader, test_loader = create_data(loader=True)
         forecaster = NBeatsForecaster(past_seq_len=24,
@@ -104,7 +140,8 @@ class TestChronosNBeatsForecaster(TestCase):
         forecaster.evaluate_with_onnx(test_loader)
         forecaster.evaluate_with_onnx(test_loader, batch_size=32, quantize=True)
 
-    @skip_onnxrt
+    @op_all
+    @op_onnxrt16
     def test_nbeats_forecaster_onnx_methods(self):
         train_data, val_data, test_data = create_data()
         forecaster = NBeatsForecaster(past_seq_len=24,
@@ -145,6 +182,12 @@ class TestChronosNBeatsForecaster(TestCase):
         except ImportError:
             pass
 
+        # test exporting the openvino
+        with tempfile.TemporaryDirectory() as tmp_dir_name:
+            ckpt_name = os.path.join(tmp_dir_name, "fp32_openvino")
+            ckpt_name_q = os.path.join(tmp_dir_name, "int_openvino")
+            forecaster.export_openvino_file(dirname=ckpt_name, quantized_dirname=ckpt_name_q)
+
     def test_nbeats_forecaster_quantization(self):
         train_data, val_data, test_data = create_data()
         forecaster = NBeatsForecaster(past_seq_len=24,
@@ -180,7 +223,8 @@ class TestChronosNBeatsForecaster(TestCase):
         np.testing.assert_almost_equal(test_pred_save, test_pred_load)
         np.testing.assert_almost_equal(test_pred_save_q, test_pred_load_q)
 
-    @skip_onnxrt
+    @op_all
+    @op_onnxrt16
     def test_nbeats_forecaster_quantization_onnx(self):
         train_data, val_data, test_data = create_data()
         forecaster = NBeatsForecaster(past_seq_len=24,
@@ -193,7 +237,8 @@ class TestChronosNBeatsForecaster(TestCase):
         pred_q = forecaster.predict_with_onnx(test_data[0], quantize=True)
         eval_q = forecaster.evaluate_with_onnx(test_data, quantize=True)
 
-    @skip_onnxrt
+    @op_all
+    @op_onnxrt16
     def test_nbeats_forecaster_quantization_onnx_tuning(self):
         train_data, val_data, test_data = create_data()
         forecaster = NBeatsForecaster(past_seq_len=24,
@@ -208,8 +253,8 @@ class TestChronosNBeatsForecaster(TestCase):
         pred_q = forecaster.predict_with_onnx(test_data[0], quantize=True)
         eval_q = forecaster.evaluate_with_onnx(test_data, quantize=True)
         with tempfile.TemporaryDirectory() as tmp_dir_name:
-            ckpt_name = os.path.join(tmp_dir_name, "ckpt")
-            ckpt_name_q = os.path.join(tmp_dir_name, "ckpt.q")
+            ckpt_name = os.path.join(tmp_dir_name, "fp32_onnx")
+            ckpt_name_q = os.path.join(tmp_dir_name, "int_onnx")
             forecaster.export_onnx_file(dirname=ckpt_name, quantized_dirname=ckpt_name_q)
 
     def test_nbeats_forecaster_save_load(self):
@@ -270,7 +315,8 @@ class TestChronosNBeatsForecaster(TestCase):
             distributed_eval = forecaster.evaluate(val_data)
         stop_orca_context()
 
-    @skip_onnxrt
+    @op_all
+    @op_onnxrt16
     def test_nbeats_forecaster_distributed(self):
         train_data, val_data, test_data = create_data()
         _train_loader, _, _test_loader = create_data(loader=True)
@@ -363,3 +409,163 @@ class TestChronosNBeatsForecaster(TestCase):
             forecaster.load(ckpt_name)
             test_pred_load = forecaster.predict(test_data[0])
         np.testing.assert_almost_equal(test_pred_save, test_pred_load)
+
+    def test_nbeats_forecaster_fit_val(self):
+        train_data, val_data, _ = create_data()
+        forecaster = NBeatsForecaster(past_seq_len=24,
+                                      future_seq_len=5,
+                                      stack_types=('generic', 'generic'),
+                                      nb_blocks_per_stack=3,
+                                      hidden_layer_units=256,
+                                      metrics=['mae'],
+                                      lr=0.01)
+        val_loss = forecaster.fit((train_data[0], train_data[1]), val_data, epochs=10)
+
+    def test_nbeats_forecaster_fit_loader_val(self):
+        train_loader, val_loader, _ = create_data(loader=True)
+        forecater = NBeatsForecaster(past_seq_len=24,
+                                     future_seq_len=5,
+                                     loss='mae',
+                                     lr=0.01)
+        val_loss = forecater.fit(train_loader, val_loader, epochs=10)
+
+    def test_forecaster_from_tsdataset(self):
+        train, test = create_tsdataset()
+        nbeats = NBeatsForecaster.from_tsdataset(train,
+                                                 stack_types=("generic", "seasnoality"),
+                                                 share_weights_in_stack=True,
+                                                 hidden_layer_units=32)
+        nbeats.fit(train,
+                   epochs=2,
+                   batch_size=32)
+        yhat = nbeats.predict(test, batch_size=32)
+        test.roll(lookback=nbeats.data_config['past_seq_len'],
+                  horizon=nbeats.data_config['future_seq_len'])
+        _, y_test = test.to_numpy()
+        assert yhat.shape == y_test.shape
+
+        del nbeats
+        train, test = create_tsdataset(roll=False, horizon=[1, 3, 5])
+        nbeats = NBeatsForecaster.from_tsdataset(train,
+                                                 past_seq_len=24,
+                                                 future_seq_len=2,
+                                                 stack_types=("generic", "seasnoality"),
+                                                 share_weights_in_stack=True,
+                                                 hidden_layer_units=32)
+        nbeats.fit(train,
+                   epochs=2,
+                   batch_size=32)
+        yhat = nbeats.predict(test, batch_size=None)
+        test.roll(lookback=nbeats.data_config['past_seq_len'],
+                  horizon=nbeats.data_config['future_seq_len'])
+        _, y_test = test.to_numpy()
+        assert yhat.shape == y_test.shape
+
+    @op_all
+    @op_onnxrt16
+    def test_forecaster_from_tsdataset_data_loader_onnx(self):
+        train, test = create_tsdataset(roll=False)
+        loader = train.to_torch_data_loader(lookback=24,
+                                            horizon=5)
+        test_loader = test.to_torch_data_loader(lookback=24,
+                                                horizon=5)
+        nbeats = NBeatsForecaster.from_tsdataset(train)
+        nbeats.fit(loader, epochs=2)
+        yhat = nbeats.predict(test)
+        nbeats.quantize(calib_data=loader,
+                        metric='mse',
+                        framework=['pytorch_fx','onnxrt_qlinearops'])
+        onnx_yhat = nbeats.predict_with_onnx(test)
+        q_yhat = nbeats.predict(test)
+        q_onnx_yhat = nbeats.predict_with_onnx(test, quantize=True)
+        assert onnx_yhat.shape == q_yhat.shape == yhat.shape == q_onnx_yhat.shape
+
+        res = nbeats.evaluate(test_loader)
+        q_res = nbeats.evaluate(test_loader, quantize=True)
+        onnx_res = nbeats.evaluate_with_onnx(test_loader)
+        q_onnx_res = nbeats.evaluate_with_onnx(test_loader, quantize=True)
+
+    def test_nbeats_forecaster_fit_earlystop(self):
+        train_data, val_data, _ = create_data()
+        forecaster = NBeatsForecaster(past_seq_len=24,
+                                      future_seq_len=5,
+                                      stack_types=('generic', 'generic'),
+                                      nb_blocks_per_stack=3,
+                                      hidden_layer_units=256,
+                                      metrics=['mae'],
+                                      lr=0.01)
+        val_loss = forecaster.fit((train_data[0], train_data[1]), val_data,
+                                  validation_mode='earlystop', epochs=10)
+
+    def test_nbeats_forecaster_fit_earlystop_patience(self):
+        train_data, val_data, _ = create_data()
+        forecaster = NBeatsForecaster(past_seq_len=24,
+                                      future_seq_len=5,
+                                      stack_types=('generic', 'generic'),
+                                      nb_blocks_per_stack=3,
+                                      hidden_layer_units=256,
+                                      metrics=['mae'],
+                                      lr=0.01)
+        val_loss = forecaster.fit((train_data[0], train_data[1]), val_data,
+                                  validation_mode='earlystop', earlystop_patience=6,
+                                  epochs=10)
+
+    def test_nbeats_forecaster_fit_best_val(self):
+        train_data, val_data, _ = create_data()
+        forecaster = NBeatsForecaster(past_seq_len=24,
+                                      future_seq_len=5,
+                                      stack_types=('generic', 'generic'),
+                                      nb_blocks_per_stack=3,
+                                      hidden_layer_units=256,
+                                      metrics=['mae'],
+                                      lr=0.01)
+        val_loss = forecaster.fit((train_data[0], train_data[1]), val_data,
+                                  validation_mode='best_epoch', epochs=10)
+
+    def test_predict_interval(self):
+        train_data, val_data, test_data = create_data()
+        forecaster = NBeatsForecaster(past_seq_len=24,
+                                      future_seq_len=5,
+                                      stack_types=('generic', 'generic'),
+                                      nb_blocks_per_stack=3,
+                                      hidden_layer_units=256,
+                                      metrics=['mse'],
+                                      lr=0.01)
+        forecaster.fit(train_data, epochs=2)
+        y_pred, std = forecaster.predict_interval(data=test_data[0],
+                                                  validation_data=val_data,
+                                                  repetition_times=5)
+        assert y_pred.shape == test_data[1].shape
+        assert y_pred.shape == std.shape
+
+    def test_forecaster_fit_val_from_tsdataset(self):
+        train, val, test = create_tsdataset_val()
+        nbeats = NBeatsForecaster.from_tsdataset(train,
+                                                 stack_types=("generic", "seasnoality"),
+                                                 share_weights_in_stack=True,
+                                                 hidden_layer_units=32)
+        nbeats.fit(train, val,
+                   epochs=2,
+                   batch_size=32)
+        yhat = nbeats.predict(test, batch_size=32)
+        test.roll(lookback=nbeats.data_config['past_seq_len'],
+                  horizon=nbeats.data_config['future_seq_len'])
+        _, y_test = test.to_numpy()
+        assert yhat.shape == y_test.shape
+
+        del nbeats
+        train, val, test = create_tsdataset_val(roll=False, horizon=[1, 3, 5])
+        nbeats = NBeatsForecaster.from_tsdataset(train,
+                                                 past_seq_len=24,
+                                                 future_seq_len=2,
+                                                 stack_types=("generic", "seasnoality"),
+                                                 share_weights_in_stack=True,
+                                                 hidden_layer_units=32)
+        nbeats.fit(train, val,
+                   epochs=2,
+                   batch_size=32)
+        yhat = nbeats.predict(test, batch_size=None)
+        test.roll(lookback=nbeats.data_config['past_seq_len'],
+                  horizon=nbeats.data_config['future_seq_len'])
+        _, y_test = test.to_numpy()
+        assert yhat.shape == y_test.shape

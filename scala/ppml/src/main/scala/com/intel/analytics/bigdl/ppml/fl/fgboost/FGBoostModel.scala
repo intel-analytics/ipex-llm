@@ -38,7 +38,8 @@ abstract class FGBoostModel(continuous: Boolean,
                             learningRate: Float = 0.005f,
                             maxDepth: Int = 6,
                             minChildSize: Int = 1,
-                            validationMethods: Array[ValidationMethod[Float]] = null)
+                            validationMethods: Array[ValidationMethod[Float]] = null,
+                            serverModelPath: String = null)
   extends FLClientClosable {
   val logger = LogManager.getLogger(getClass)
   var splitVersion = 0
@@ -49,12 +50,21 @@ abstract class FGBoostModel(continuous: Boolean,
   var xTrainBuffer: ArrayBuffer[Tensor[Float]] = new ArrayBuffer[Tensor[Float]]()
   val trees = new mutable.Queue[RegressionTree]()
   var curLoss: Float = Float.MaxValue
+
+  def loadServerModel(modelPath: String): Unit = {
+    flClient.fgbostStub.loadServerModel(modelPath)
+  }
   def fit(feature: Array[Tensor[Float]],
           label: Array[Float],
           boostRound: Int): Unit = {
     val sortedIndexByFeature = TreeUtils.sortByFeature(feature)
     // TODO Load model from file
     initFGBoost(label)
+    if (trees.nonEmpty) {
+      logger.info(s"This is incremental training, evaluating using existed trees..")
+      (0 until trees.size).foreach(i => uploadResidual(feature, i))
+
+    }
 
     if (continuous) {
       trainRegressionTree(feature, sortedIndexByFeature, boostRound)
@@ -72,7 +82,10 @@ abstract class FGBoostModel(continuous: Boolean,
     logger.info(s"sort index end")
     // TODO Load model from file
     initFGBoost(yTrain)
-
+    if (trees.nonEmpty) {
+      logger.info(s"This is incremental training, evaluating using existed trees..")
+      (0 until trees.size).foreach(i => uploadResidual(xTrain, i))
+    }
     if (continuous) {
       trainRegressionTree(xTrain, sortedIndexByFeature, boostRound)
     } else {
@@ -109,13 +122,13 @@ abstract class FGBoostModel(continuous: Boolean,
     }
     val booleanOnePredict = localPredicts.head.values.map(_.length).sum
     // message may be too large, split by group to send to FLServer
-//    val messageSize = 2 * 1e6
-//    val groupedSize = Math.ceil(messageSize / booleanOnePredict).toInt
-//    val result = localPredicts.grouped(groupedSize).flatMap{ groupedPredicts =>
-//      val boostEvals = toBoostEvals(groupedPredicts)
-//      val response = flClient.fgbostStub.predict(boostEvals.asJava)
-//      toArrayFloat(response)
-//    }.toArray
+    //    val messageSize = 2 * 1e6
+    //    val groupedSize = Math.ceil(messageSize / booleanOnePredict).toInt
+    //    val result = localPredicts.grouped(groupedSize).flatMap{ groupedPredicts =>
+    //      val boostEvals = toBoostEvals(groupedPredicts)
+    //      val response = flClient.fgbostStub.predict(boostEvals.asJava)
+    //      toArrayFloat(response)
+    //    }.toArray
 
     val boostEvals = toBoostEvals(localPredicts)
     val response = flClient.fgbostStub.predict(boostEvals.asJava, predictVersion)
@@ -136,7 +149,7 @@ abstract class FGBoostModel(continuous: Boolean,
     buildTree(currTree, continuous = continuous)
     currTree.cleanup()
     // Add this tree into tree list
-//    logger.info(s"Built Tree_${i}" + currTree.toString)
+    //    logger.info(s"Built Tree_${i}" + currTree.toString)
     if (currTree.leaves.isEmpty) {
       logger.info("No leaves could be expanded, early Stop boosting.")
       return false
@@ -150,6 +163,9 @@ abstract class FGBoostModel(continuous: Boolean,
     trees.enqueue(currTree)
     // Evaluate tree and update residual and grads (g and h)
     uploadResidual(tree.dataset)
+    if (serverModelPath != null) {
+      flClient.fgbostStub.saveServerModel(serverModelPath)
+    }
     true
   }
 
@@ -158,11 +174,14 @@ abstract class FGBoostModel(continuous: Boolean,
    * @param data the input data to predict
    * @return
    */
-  def uploadResidual(data: Array[Tensor[Float]]): Unit = {
-    val lastTreePredict = data.map { record =>
-      Map(trees.last.treeID -> trees.last.predict(record))
+  def uploadResidual(data: Array[Tensor[Float]], idx: Int = trees.size - 1): Unit = {
+    logger.info(s"Uploading tree $idx ...")
+    val predictToUpload = data.map { record =>
+      val tree = trees.get(idx).get
+      Map(tree.treeID -> tree.predict(record))
     }
-    val boostEvals = toBoostEvals(lastTreePredict)
+
+    val boostEvals = toBoostEvals(predictToUpload)
     // TODO: add grouped sending message
 
     val perMsgSize = ObjectSizeCalculator.getObjectSize(boostEvals.head)
@@ -180,15 +199,15 @@ abstract class FGBoostModel(continuous: Boolean,
     })
 
 
-//    flClient.fgbostStub.evaluate(boostEvals.asJava, evaluateVersion)
+    //    flClient.fgbostStub.evaluate(boostEvals.asJava, evaluateVersion)
   }
 
 
   def trainRegressionTree(dataSet: Array[Tensor[Float]],
                           indices: Array[Array[Int]], totalRound: Int): Unit = {
     for (i <- 0 until totalRound) {
-      logger.info(s"Round: $i/$totalRound, loss: $curLoss")
       val grads = downloadGrad(i)
+      logger.info(s"Round: $i/$totalRound, loss: $curLoss")
       val currTree = RegressionTree(dataSet, indices, grads, i.toString)
       currTree.init()
       currTree.setLearningRate(learningRate).setMinChildSize(minChildSize)
@@ -234,9 +253,6 @@ abstract class FGBoostModel(continuous: Boolean,
       } else bestSplit.featureID == -1
       if (updateCondition) {
         logger.debug(s"Set ${bestSplit.nodeID} as leaf")
-//        logger.info(s"Set Leaf gain = ${bestSplit.gain}")
-        // Add current node to leaf
-//        logger.info(s"Tree node size: ${tree.nodes.size}, bestSplit at node ${bestSplit.nodeID}")
         tree.setLeaf(tree.nodes(bestSplit.nodeID))
       } else {
         // update bestSplit from server to local tree
@@ -311,5 +327,4 @@ abstract class FGBoostModel(continuous: Boolean,
   }
 
 }
-
 

@@ -61,8 +61,7 @@ public abstract class Aggregator {
 
     public abstract void aggregate(FLPhase flPhase);
 
-    public void putClientData(FLPhase flPhase,
-                                  String clientUUID, int version, DataHolder dataHolder)
+    public void putClientData(FLPhase flPhase, int clientUUID, int version, DataHolder dataHolder)
             throws IllegalArgumentException, InterruptedException {
         StorageHolder storageHolder = aggregateTypeMap.get(flPhase);
         synchronized (this) {

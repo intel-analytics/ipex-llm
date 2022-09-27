@@ -65,7 +65,6 @@ class PreProcessingSpec extends FlatSpec with Matchers {
       """{
         |"instances": [
         |   {
-        |     "tag": "foo",
         |     "signal": [1, 2, 3, 4, 5],
         |     "sensor": [[1, 2], [3, 4]]
         |   }
@@ -78,7 +77,7 @@ class PreProcessingSpec extends FlatSpec with Matchers {
     val arrowInstance = Instances.fromArrow(arrowBytes)
     val pre = new PreProcessing()
     val t = pre.getInputFromInstance(arrowInstance)
-    AssertUtils.conditionFailTest(t.head.toTable.keySet.size == 3)
+    AssertUtils.conditionFailTest(t.head.toTable.keySet.size == 2)
 
   }
 }

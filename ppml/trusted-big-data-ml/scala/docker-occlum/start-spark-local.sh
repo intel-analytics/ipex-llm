@@ -15,11 +15,10 @@ sudo docker run -it \
 	-e SGX_THREAD=512 \
 	-e SGX_HEAP=512MB \
 	-e SGX_KERNEL_HEAP=1GB \
-	-e SGX_MMAP=10GB \
 	-e PCCS_URL=$PCCS_URL \
 	-e ATTESTATION=false \
 	-e ATTESTATION_SERVER_IP=$ATTESTATION_SERVER_IP \
 	-e ATTESTATION_SERVER_PORT=$ATTESTATION_SERVER_PORT \
 	-e SGX_LOG_LEVEL=off \
 	intelanalytics/bigdl-ppml-trusted-big-data-ml-scala-occlum:2.1.0-SNAPSHOT \
-	bash /opt/run_spark_on_occlum_glibc.sh $1 && tail -f /dev/null
+	bash /opt/run_spark_on_occlum_glibc.sh $1

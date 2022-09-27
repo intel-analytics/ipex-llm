@@ -1,0 +1,91 @@
+name: PR Validation
+
+on:
+  push:
+    paths:
+      - 'scala/friesian/**'
+      - '.github/actions/friesian-scala-ut-action/action.yml'
+      - 'scala/dllib/**'
+      - '.github/actions/dllib-scala-ut-action/action.yml'
+      - 'python/orca/**'
+      - '.github/actions/orca-ray-ctx-example-action/action.yml'
+  pull_request:
+    branches: [ main ]
+    paths:
+      - 'scala/friesian/**'
+      - '.github/actions/friesian-scala-ut-action/action.yml'
+      - 'scala/dllib/**'
+      - '.github/actions/dllib-scala-ut-action/action.yml'
+      - 'python/orca/**'
+      - '.github/actions/orca-ray-ctx-example-action/action.yml'
+
+permissions:
+  contents: read
+  packages: write
+
+jobs:
+  changes:
+    name: Paths filter
+    runs-on: [self-hosted, Gondolin, ubuntu-20.04-lts]
+    outputs:
+      friesian: ${{ steps.filter.outputs.friesian }}
+      dllib: ${{ steps.filter.outputs.dllib }}
+      orca: ${{ steps.filter.outputs.orca }}
+    steps:
+      - uses: actions/checkout@v3
+      - uses: dorny/paths-filter@v2
+        id: filter
+        with:
+          filters: |
+            friesian:
+              - 'scala/friesian/**'
+              - '.github/actions/friesian-scala-ut-action/action.yml'
+            dllib:
+              - 'scala/dllib/**'
+              - '.github/actions/dllib-scala-ut-action/action.yml'
+            orca:
+              - 'python/orca/**'
+              - '.github/actions/orca-ray-ctx-example-action/action.yml'
+
+  
+  Friesian-Scala-UT:
+    needs: changes
+    if: ${{ needs.changes.outputs.friesian == 'true' }}
+    runs-on: [ self-hosted, ubuntu-20.04-lts, CLX, AVX512, Ettenmoors ]
+
+    steps:
+      - uses: actions/checkout@v3
+      - name: Set up JDK8
+        uses: ./.github/actions/jdk-setup-action
+      - name: Set up maven
+        uses: ./.github/actions/maven-setup-action
+      - name: Run test
+        uses: ./.github/actions/friesian-scala-ut-action
+
+  Dllib-Scala-UT:
+    needs: changes
+    if: ${{ needs.changes.outputs.dllib == 'true' }}
+    runs-on: [ self-hosted, Gondolin, ubuntu-20.04-lts ]
+
+    steps:
+      - uses: actions/checkout@v3
+      - name: Set up JDK8
+        uses: ./.github/actions/jdk-setup-action
+      - name: Set up maven
+        uses: ./.github/actions/maven-setup-action
+      - name: Run test
+        uses: ./.github/actions/dllib-scala-ut-action
+
+  Orca-Ray-Ctx-Example:
+    needs: changes
+    if: ${{ needs.changes.outputs.orca == 'true' }}
+    runs-on: [self-hosted, Gondolin-resources, ubuntu-20.04-lts]
+
+    steps:
+    - uses: actions/checkout@v3
+    - name: Set up JDK8
+      uses: ./.github/actions/jdk-setup-action
+    - name: Set up maven
+      uses: ./.github/actions/maven-setup-action
+    - name: Run test
+      uses: ./.github/actions/orca-ray-ctx-example-action

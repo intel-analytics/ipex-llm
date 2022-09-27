@@ -19,16 +19,10 @@ public final class NNServiceProto {
       com.google.protobuf.MessageOrBuilder {
 
     /**
-     * <code>string clientuuid = 1;</code>
+     * <code>int32 clientuuid = 1;</code>
      * @return The clientuuid.
      */
-    String getClientuuid();
-    /**
-     * <code>string clientuuid = 1;</code>
-     * @return The bytes for clientuuid.
-     */
-    com.google.protobuf.ByteString
-        getClientuuidBytes();
+    int getClientuuid();
 
     /**
      * <code>.TensorMap data = 2;</code>
@@ -39,17 +33,17 @@ public final class NNServiceProto {
      * <code>.TensorMap data = 2;</code>
      * @return The data.
      */
-    FlBaseProto.TensorMap getData();
+    com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.TensorMap getData();
     /**
      * <code>.TensorMap data = 2;</code>
      */
-    FlBaseProto.TensorMapOrBuilder getDataOrBuilder();
+    com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.TensorMapOrBuilder getDataOrBuilder();
 
     /**
      * <code>string algorithm = 3;</code>
      * @return The algorithm.
      */
-    String getAlgorithm();
+    java.lang.String getAlgorithm();
     /**
      * <code>string algorithm = 3;</code>
      * @return The bytes for algorithm.
@@ -70,18 +64,17 @@ public final class NNServiceProto {
       super(builder);
     }
     private TrainRequest() {
-      clientuuid_ = "";
       algorithm_ = "";
     }
 
-    @Override
+    @java.lang.Override
     @SuppressWarnings({"unused"})
-    protected Object newInstance(
+    protected java.lang.Object newInstance(
         UnusedPrivateParameter unused) {
       return new TrainRequest();
     }
 
-    @Override
+    @java.lang.Override
     public final com.google.protobuf.UnknownFieldSet
     getUnknownFields() {
       return this.unknownFields;
@@ -92,7 +85,7 @@ public final class NNServiceProto {
         throws com.google.protobuf.InvalidProtocolBufferException {
       this();
       if (extensionRegistry == null) {
-        throw new NullPointerException();
+        throw new java.lang.NullPointerException();
       }
       com.google.protobuf.UnknownFieldSet.Builder unknownFields =
           com.google.protobuf.UnknownFieldSet.newBuilder();
@@ -104,18 +97,17 @@ public final class NNServiceProto {
             case 0:
               done = true;
               break;
-            case 10: {
-              String s = input.readStringRequireUtf8();
+            case 8: {
 
-              clientuuid_ = s;
+              clientuuid_ = input.readInt32();
               break;
             }
             case 18: {
-              FlBaseProto.TensorMap.Builder subBuilder = null;
+              com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.TensorMap.Builder subBuilder = null;
               if (data_ != null) {
                 subBuilder = data_.toBuilder();
               }
-              data_ = input.readMessage(FlBaseProto.TensorMap.parser(), extensionRegistry);
+              data_ = input.readMessage(com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.TensorMap.parser(), extensionRegistry);
               if (subBuilder != null) {
                 subBuilder.mergeFrom(data_);
                 data_ = subBuilder.buildPartial();
@@ -124,7 +116,7 @@ public final class NNServiceProto {
               break;
             }
             case 26: {
-              String s = input.readStringRequireUtf8();
+              java.lang.String s = input.readStringRequireUtf8();
 
               algorithm_ = s;
               break;
@@ -150,62 +142,35 @@ public final class NNServiceProto {
     }
     public static final com.google.protobuf.Descriptors.Descriptor
         getDescriptor() {
-      return NNServiceProto.internal_static_nn_TrainRequest_descriptor;
+      return com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.internal_static_nn_TrainRequest_descriptor;
     }
 
-    @Override
-    protected FieldAccessorTable
+    @java.lang.Override
+    protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
         internalGetFieldAccessorTable() {
-      return NNServiceProto.internal_static_nn_TrainRequest_fieldAccessorTable
+      return com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.internal_static_nn_TrainRequest_fieldAccessorTable
           .ensureFieldAccessorsInitialized(
-              TrainRequest.class, Builder.class);
+              com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.TrainRequest.class, com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.TrainRequest.Builder.class);
     }
 
     public static final int CLIENTUUID_FIELD_NUMBER = 1;
-    private volatile Object clientuuid_;
+    private int clientuuid_;
     /**
-     * <code>string clientuuid = 1;</code>
+     * <code>int32 clientuuid = 1;</code>
      * @return The clientuuid.
      */
-    @Override
-    public String getClientuuid() {
-      Object ref = clientuuid_;
-      if (ref instanceof String) {
-        return (String) ref;
-      } else {
-        com.google.protobuf.ByteString bs = 
-            (com.google.protobuf.ByteString) ref;
-        String s = bs.toStringUtf8();
-        clientuuid_ = s;
-        return s;
-      }
-    }
-    /**
-     * <code>string clientuuid = 1;</code>
-     * @return The bytes for clientuuid.
-     */
-    @Override
-    public com.google.protobuf.ByteString
-        getClientuuidBytes() {
-      Object ref = clientuuid_;
-      if (ref instanceof String) {
-        com.google.protobuf.ByteString b = 
-            com.google.protobuf.ByteString.copyFromUtf8(
-                (String) ref);
-        clientuuid_ = b;
-        return b;
-      } else {
-        return (com.google.protobuf.ByteString) ref;
-      }
+    @java.lang.Override
+    public int getClientuuid() {
+      return clientuuid_;
     }
 
     public static final int DATA_FIELD_NUMBER = 2;
-    private FlBaseProto.TensorMap data_;
+    private com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.TensorMap data_;
     /**
      * <code>.TensorMap data = 2;</code>
      * @return Whether the data field is set.
      */
-    @Override
+    @java.lang.Override
     public boolean hasData() {
       return data_ != null;
     }
@@ -213,33 +178,33 @@ public final class NNServiceProto {
      * <code>.TensorMap data = 2;</code>
      * @return The data.
      */
-    @Override
-    public FlBaseProto.TensorMap getData() {
-      return data_ == null ? FlBaseProto.TensorMap.getDefaultInstance() : data_;
+    @java.lang.Override
+    public com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.TensorMap getData() {
+      return data_ == null ? com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.TensorMap.getDefaultInstance() : data_;
     }
     /**
      * <code>.TensorMap data = 2;</code>
      */
-    @Override
-    public FlBaseProto.TensorMapOrBuilder getDataOrBuilder() {
+    @java.lang.Override
+    public com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.TensorMapOrBuilder getDataOrBuilder() {
       return getData();
     }
 
     public static final int ALGORITHM_FIELD_NUMBER = 3;
-    private volatile Object algorithm_;
+    private volatile java.lang.Object algorithm_;
     /**
      * <code>string algorithm = 3;</code>
      * @return The algorithm.
      */
-    @Override
-    public String getAlgorithm() {
-      Object ref = algorithm_;
-      if (ref instanceof String) {
-        return (String) ref;
+    @java.lang.Override
+    public java.lang.String getAlgorithm() {
+      java.lang.Object ref = algorithm_;
+      if (ref instanceof java.lang.String) {
+        return (java.lang.String) ref;
       } else {
         com.google.protobuf.ByteString bs = 
             (com.google.protobuf.ByteString) ref;
-        String s = bs.toStringUtf8();
+        java.lang.String s = bs.toStringUtf8();
         algorithm_ = s;
         return s;
       }
@@ -248,14 +213,14 @@ public final class NNServiceProto {
      * <code>string algorithm = 3;</code>
      * @return The bytes for algorithm.
      */
-    @Override
+    @java.lang.Override
     public com.google.protobuf.ByteString
         getAlgorithmBytes() {
-      Object ref = algorithm_;
-      if (ref instanceof String) {
+      java.lang.Object ref = algorithm_;
+      if (ref instanceof java.lang.String) {
         com.google.protobuf.ByteString b = 
             com.google.protobuf.ByteString.copyFromUtf8(
-                (String) ref);
+                (java.lang.String) ref);
         algorithm_ = b;
         return b;
       } else {
@@ -264,7 +229,7 @@ public final class NNServiceProto {
     }
 
     private byte memoizedIsInitialized = -1;
-    @Override
+    @java.lang.Override
     public final boolean isInitialized() {
       byte isInitialized = memoizedIsInitialized;
       if (isInitialized == 1) return true;
@@ -274,11 +239,11 @@ public final class NNServiceProto {
       return true;
     }
 
-    @Override
+    @java.lang.Override
     public void writeTo(com.google.protobuf.CodedOutputStream output)
                         throws java.io.IOException {
-      if (!getClientuuidBytes().isEmpty()) {
-        com.google.protobuf.GeneratedMessageV3.writeString(output, 1, clientuuid_);
+      if (clientuuid_ != 0) {
+        output.writeInt32(1, clientuuid_);
       }
       if (data_ != null) {
         output.writeMessage(2, getData());
@@ -289,14 +254,15 @@ public final class NNServiceProto {
       unknownFields.writeTo(output);
     }
 
-    @Override
+    @java.lang.Override
     public int getSerializedSize() {
       int size = memoizedSize;
       if (size != -1) return size;
 
       size = 0;
-      if (!getClientuuidBytes().isEmpty()) {
-        size += com.google.protobuf.GeneratedMessageV3.computeStringSize(1, clientuuid_);
+      if (clientuuid_ != 0) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeInt32Size(1, clientuuid_);
       }
       if (data_ != null) {
         size += com.google.protobuf.CodedOutputStream
@@ -310,18 +276,18 @@ public final class NNServiceProto {
       return size;
     }
 
-    @Override
-    public boolean equals(final Object obj) {
+    @java.lang.Override
+    public boolean equals(final java.lang.Object obj) {
       if (obj == this) {
        return true;
       }
-      if (!(obj instanceof TrainRequest)) {
+      if (!(obj instanceof com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.TrainRequest)) {
         return super.equals(obj);
       }
-      TrainRequest other = (TrainRequest) obj;
+      com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.TrainRequest other = (com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.TrainRequest) obj;
 
-      if (!getClientuuid()
-          .equals(other.getClientuuid())) return false;
+      if (getClientuuid()
+          != other.getClientuuid()) return false;
       if (hasData() != other.hasData()) return false;
       if (hasData()) {
         if (!getData()
@@ -333,7 +299,7 @@ public final class NNServiceProto {
       return true;
     }
 
-    @Override
+    @java.lang.Override
     public int hashCode() {
       if (memoizedHashCode != 0) {
         return memoizedHashCode;
@@ -341,7 +307,7 @@ public final class NNServiceProto {
       int hash = 41;
       hash = (19 * hash) + getDescriptor().hashCode();
       hash = (37 * hash) + CLIENTUUID_FIELD_NUMBER;
-      hash = (53 * hash) + getClientuuid().hashCode();
+      hash = (53 * hash) + getClientuuid();
       if (hasData()) {
         hash = (37 * hash) + DATA_FIELD_NUMBER;
         hash = (53 * hash) + getData().hashCode();
@@ -353,69 +319,69 @@ public final class NNServiceProto {
       return hash;
     }
 
-    public static TrainRequest parseFrom(
+    public static com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.TrainRequest parseFrom(
         java.nio.ByteBuffer data)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data);
     }
-    public static TrainRequest parseFrom(
+    public static com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.TrainRequest parseFrom(
         java.nio.ByteBuffer data,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data, extensionRegistry);
     }
-    public static TrainRequest parseFrom(
+    public static com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.TrainRequest parseFrom(
         com.google.protobuf.ByteString data)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data);
     }
-    public static TrainRequest parseFrom(
+    public static com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.TrainRequest parseFrom(
         com.google.protobuf.ByteString data,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data, extensionRegistry);
     }
-    public static TrainRequest parseFrom(byte[] data)
+    public static com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.TrainRequest parseFrom(byte[] data)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data);
     }
-    public static TrainRequest parseFrom(
+    public static com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.TrainRequest parseFrom(
         byte[] data,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data, extensionRegistry);
     }
-    public static TrainRequest parseFrom(java.io.InputStream input)
+    public static com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.TrainRequest parseFrom(java.io.InputStream input)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseWithIOException(PARSER, input);
     }
-    public static TrainRequest parseFrom(
+    public static com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.TrainRequest parseFrom(
         java.io.InputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseWithIOException(PARSER, input, extensionRegistry);
     }
-    public static TrainRequest parseDelimitedFrom(java.io.InputStream input)
+    public static com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.TrainRequest parseDelimitedFrom(java.io.InputStream input)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseDelimitedWithIOException(PARSER, input);
     }
-    public static TrainRequest parseDelimitedFrom(
+    public static com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.TrainRequest parseDelimitedFrom(
         java.io.InputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseDelimitedWithIOException(PARSER, input, extensionRegistry);
     }
-    public static TrainRequest parseFrom(
+    public static com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.TrainRequest parseFrom(
         com.google.protobuf.CodedInputStream input)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseWithIOException(PARSER, input);
     }
-    public static TrainRequest parseFrom(
+    public static com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.TrainRequest parseFrom(
         com.google.protobuf.CodedInputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
@@ -423,23 +389,23 @@ public final class NNServiceProto {
           .parseWithIOException(PARSER, input, extensionRegistry);
     }
 
-    @Override
+    @java.lang.Override
     public Builder newBuilderForType() { return newBuilder(); }
     public static Builder newBuilder() {
       return DEFAULT_INSTANCE.toBuilder();
     }
-    public static Builder newBuilder(TrainRequest prototype) {
+    public static Builder newBuilder(com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.TrainRequest prototype) {
       return DEFAULT_INSTANCE.toBuilder().mergeFrom(prototype);
     }
-    @Override
+    @java.lang.Override
     public Builder toBuilder() {
       return this == DEFAULT_INSTANCE
           ? new Builder() : new Builder().mergeFrom(this);
     }
 
-    @Override
+    @java.lang.Override
     protected Builder newBuilderForType(
-        BuilderParent parent) {
+        com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
       Builder builder = new Builder(parent);
       return builder;
     }
@@ -449,18 +415,18 @@ public final class NNServiceProto {
     public static final class Builder extends
         com.google.protobuf.GeneratedMessageV3.Builder<Builder> implements
         // @@protoc_insertion_point(builder_implements:nn.TrainRequest)
-        TrainRequestOrBuilder {
+        com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.TrainRequestOrBuilder {
       public static final com.google.protobuf.Descriptors.Descriptor
           getDescriptor() {
-        return NNServiceProto.internal_static_nn_TrainRequest_descriptor;
+        return com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.internal_static_nn_TrainRequest_descriptor;
       }
 
-      @Override
-      protected FieldAccessorTable
+      @java.lang.Override
+      protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
           internalGetFieldAccessorTable() {
-        return NNServiceProto.internal_static_nn_TrainRequest_fieldAccessorTable
+        return com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.internal_static_nn_TrainRequest_fieldAccessorTable
             .ensureFieldAccessorsInitialized(
-                TrainRequest.class, Builder.class);
+                com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.TrainRequest.class, com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.TrainRequest.Builder.class);
       }
 
       // Construct using com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.TrainRequest.newBuilder()
@@ -469,7 +435,7 @@ public final class NNServiceProto {
       }
 
       private Builder(
-          BuilderParent parent) {
+          com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
         super(parent);
         maybeForceBuilderInitialization();
       }
@@ -478,10 +444,10 @@ public final class NNServiceProto {
                 .alwaysUseFieldBuilders) {
         }
       }
-      @Override
+      @java.lang.Override
       public Builder clear() {
         super.clear();
-        clientuuid_ = "";
+        clientuuid_ = 0;
 
         if (dataBuilder_ == null) {
           data_ = null;
@@ -494,29 +460,29 @@ public final class NNServiceProto {
         return this;
       }
 
-      @Override
+      @java.lang.Override
       public com.google.protobuf.Descriptors.Descriptor
           getDescriptorForType() {
-        return NNServiceProto.internal_static_nn_TrainRequest_descriptor;
+        return com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.internal_static_nn_TrainRequest_descriptor;
       }
 
-      @Override
-      public TrainRequest getDefaultInstanceForType() {
-        return TrainRequest.getDefaultInstance();
+      @java.lang.Override
+      public com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.TrainRequest getDefaultInstanceForType() {
+        return com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.TrainRequest.getDefaultInstance();
       }
 
-      @Override
-      public TrainRequest build() {
-        TrainRequest result = buildPartial();
+      @java.lang.Override
+      public com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.TrainRequest build() {
+        com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.TrainRequest result = buildPartial();
         if (!result.isInitialized()) {
           throw newUninitializedMessageException(result);
         }
         return result;
       }
 
-      @Override
-      public TrainRequest buildPartial() {
-        TrainRequest result = new TrainRequest(this);
+      @java.lang.Override
+      public com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.TrainRequest buildPartial() {
+        com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.TrainRequest result = new com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.TrainRequest(this);
         result.clientuuid_ = clientuuid_;
         if (dataBuilder_ == null) {
           result.data_ = data_;
@@ -528,53 +494,52 @@ public final class NNServiceProto {
         return result;
       }
 
-      @Override
+      @java.lang.Override
       public Builder clone() {
         return super.clone();
       }
-      @Override
+      @java.lang.Override
       public Builder setField(
           com.google.protobuf.Descriptors.FieldDescriptor field,
-          Object value) {
+          java.lang.Object value) {
         return super.setField(field, value);
       }
-      @Override
+      @java.lang.Override
       public Builder clearField(
           com.google.protobuf.Descriptors.FieldDescriptor field) {
         return super.clearField(field);
       }
-      @Override
+      @java.lang.Override
       public Builder clearOneof(
           com.google.protobuf.Descriptors.OneofDescriptor oneof) {
         return super.clearOneof(oneof);
       }
-      @Override
+      @java.lang.Override
       public Builder setRepeatedField(
           com.google.protobuf.Descriptors.FieldDescriptor field,
-          int index, Object value) {
+          int index, java.lang.Object value) {
         return super.setRepeatedField(field, index, value);
       }
-      @Override
+      @java.lang.Override
       public Builder addRepeatedField(
           com.google.protobuf.Descriptors.FieldDescriptor field,
-          Object value) {
+          java.lang.Object value) {
         return super.addRepeatedField(field, value);
       }
-      @Override
+      @java.lang.Override
       public Builder mergeFrom(com.google.protobuf.Message other) {
-        if (other instanceof TrainRequest) {
-          return mergeFrom((TrainRequest)other);
+        if (other instanceof com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.TrainRequest) {
+          return mergeFrom((com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.TrainRequest)other);
         } else {
           super.mergeFrom(other);
           return this;
         }
       }
 
-      public Builder mergeFrom(TrainRequest other) {
-        if (other == TrainRequest.getDefaultInstance()) return this;
-        if (!other.getClientuuid().isEmpty()) {
-          clientuuid_ = other.clientuuid_;
-          onChanged();
+      public Builder mergeFrom(com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.TrainRequest other) {
+        if (other == com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.TrainRequest.getDefaultInstance()) return this;
+        if (other.getClientuuid() != 0) {
+          setClientuuid(other.getClientuuid());
         }
         if (other.hasData()) {
           mergeData(other.getData());
@@ -588,21 +553,21 @@ public final class NNServiceProto {
         return this;
       }
 
-      @Override
+      @java.lang.Override
       public final boolean isInitialized() {
         return true;
       }
 
-      @Override
+      @java.lang.Override
       public Builder mergeFrom(
           com.google.protobuf.CodedInputStream input,
           com.google.protobuf.ExtensionRegistryLite extensionRegistry)
           throws java.io.IOException {
-        TrainRequest parsedMessage = null;
+        com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.TrainRequest parsedMessage = null;
         try {
           parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
         } catch (com.google.protobuf.InvalidProtocolBufferException e) {
-          parsedMessage = (TrainRequest) e.getUnfinishedMessage();
+          parsedMessage = (com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.TrainRequest) e.getUnfinishedMessage();
           throw e.unwrapIOException();
         } finally {
           if (parsedMessage != null) {
@@ -612,85 +577,40 @@ public final class NNServiceProto {
         return this;
       }
 
-      private Object clientuuid_ = "";
+      private int clientuuid_ ;
       /**
-       * <code>string clientuuid = 1;</code>
+       * <code>int32 clientuuid = 1;</code>
        * @return The clientuuid.
        */
-      public String getClientuuid() {
-        Object ref = clientuuid_;
-        if (!(ref instanceof String)) {
-          com.google.protobuf.ByteString bs =
-              (com.google.protobuf.ByteString) ref;
-          String s = bs.toStringUtf8();
-          clientuuid_ = s;
-          return s;
-        } else {
-          return (String) ref;
-        }
+      @java.lang.Override
+      public int getClientuuid() {
+        return clientuuid_;
       }
       /**
-       * <code>string clientuuid = 1;</code>
-       * @return The bytes for clientuuid.
-       */
-      public com.google.protobuf.ByteString
-          getClientuuidBytes() {
-        Object ref = clientuuid_;
-        if (ref instanceof String) {
-          com.google.protobuf.ByteString b = 
-              com.google.protobuf.ByteString.copyFromUtf8(
-                  (String) ref);
-          clientuuid_ = b;
-          return b;
-        } else {
-          return (com.google.protobuf.ByteString) ref;
-        }
-      }
-      /**
-       * <code>string clientuuid = 1;</code>
+       * <code>int32 clientuuid = 1;</code>
        * @param value The clientuuid to set.
        * @return This builder for chaining.
        */
-      public Builder setClientuuid(
-          String value) {
-        if (value == null) {
-    throw new NullPointerException();
-  }
-  
+      public Builder setClientuuid(int value) {
+        
         clientuuid_ = value;
         onChanged();
         return this;
       }
       /**
-       * <code>string clientuuid = 1;</code>
+       * <code>int32 clientuuid = 1;</code>
        * @return This builder for chaining.
        */
       public Builder clearClientuuid() {
         
-        clientuuid_ = getDefaultInstance().getClientuuid();
-        onChanged();
-        return this;
-      }
-      /**
-       * <code>string clientuuid = 1;</code>
-       * @param value The bytes for clientuuid to set.
-       * @return This builder for chaining.
-       */
-      public Builder setClientuuidBytes(
-          com.google.protobuf.ByteString value) {
-        if (value == null) {
-    throw new NullPointerException();
-  }
-  checkByteStringIsUtf8(value);
-        
-        clientuuid_ = value;
+        clientuuid_ = 0;
         onChanged();
         return this;
       }
 
-      private FlBaseProto.TensorMap data_;
+      private com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.TensorMap data_;
       private com.google.protobuf.SingleFieldBuilderV3<
-          FlBaseProto.TensorMap, FlBaseProto.TensorMap.Builder, FlBaseProto.TensorMapOrBuilder> dataBuilder_;
+          com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.TensorMap, com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.TensorMap.Builder, com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.TensorMapOrBuilder> dataBuilder_;
       /**
        * <code>.TensorMap data = 2;</code>
        * @return Whether the data field is set.
@@ -702,9 +622,9 @@ public final class NNServiceProto {
        * <code>.TensorMap data = 2;</code>
        * @return The data.
        */
-      public FlBaseProto.TensorMap getData() {
+      public com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.TensorMap getData() {
         if (dataBuilder_ == null) {
-          return data_ == null ? FlBaseProto.TensorMap.getDefaultInstance() : data_;
+          return data_ == null ? com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.TensorMap.getDefaultInstance() : data_;
         } else {
           return dataBuilder_.getMessage();
         }
@@ -712,7 +632,7 @@ public final class NNServiceProto {
       /**
        * <code>.TensorMap data = 2;</code>
        */
-      public Builder setData(FlBaseProto.TensorMap value) {
+      public Builder setData(com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.TensorMap value) {
         if (dataBuilder_ == null) {
           if (value == null) {
             throw new NullPointerException();
@@ -729,7 +649,7 @@ public final class NNServiceProto {
        * <code>.TensorMap data = 2;</code>
        */
       public Builder setData(
-          FlBaseProto.TensorMap.Builder builderForValue) {
+          com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.TensorMap.Builder builderForValue) {
         if (dataBuilder_ == null) {
           data_ = builderForValue.build();
           onChanged();
@@ -742,11 +662,11 @@ public final class NNServiceProto {
       /**
        * <code>.TensorMap data = 2;</code>
        */
-      public Builder mergeData(FlBaseProto.TensorMap value) {
+      public Builder mergeData(com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.TensorMap value) {
         if (dataBuilder_ == null) {
           if (data_ != null) {
             data_ =
-              FlBaseProto.TensorMap.newBuilder(data_).mergeFrom(value).buildPartial();
+              com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.TensorMap.newBuilder(data_).mergeFrom(value).buildPartial();
           } else {
             data_ = value;
           }
@@ -774,7 +694,7 @@ public final class NNServiceProto {
       /**
        * <code>.TensorMap data = 2;</code>
        */
-      public FlBaseProto.TensorMap.Builder getDataBuilder() {
+      public com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.TensorMap.Builder getDataBuilder() {
         
         onChanged();
         return getDataFieldBuilder().getBuilder();
@@ -782,23 +702,23 @@ public final class NNServiceProto {
       /**
        * <code>.TensorMap data = 2;</code>
        */
-      public FlBaseProto.TensorMapOrBuilder getDataOrBuilder() {
+      public com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.TensorMapOrBuilder getDataOrBuilder() {
         if (dataBuilder_ != null) {
           return dataBuilder_.getMessageOrBuilder();
         } else {
           return data_ == null ?
-              FlBaseProto.TensorMap.getDefaultInstance() : data_;
+              com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.TensorMap.getDefaultInstance() : data_;
         }
       }
       /**
        * <code>.TensorMap data = 2;</code>
        */
       private com.google.protobuf.SingleFieldBuilderV3<
-          FlBaseProto.TensorMap, FlBaseProto.TensorMap.Builder, FlBaseProto.TensorMapOrBuilder>
+          com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.TensorMap, com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.TensorMap.Builder, com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.TensorMapOrBuilder> 
           getDataFieldBuilder() {
         if (dataBuilder_ == null) {
           dataBuilder_ = new com.google.protobuf.SingleFieldBuilderV3<
-              FlBaseProto.TensorMap, FlBaseProto.TensorMap.Builder, FlBaseProto.TensorMapOrBuilder>(
+              com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.TensorMap, com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.TensorMap.Builder, com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.TensorMapOrBuilder>(
                   getData(),
                   getParentForChildren(),
                   isClean());
@@ -807,21 +727,21 @@ public final class NNServiceProto {
         return dataBuilder_;
       }
 
-      private Object algorithm_ = "";
+      private java.lang.Object algorithm_ = "";
       /**
        * <code>string algorithm = 3;</code>
        * @return The algorithm.
        */
-      public String getAlgorithm() {
-        Object ref = algorithm_;
-        if (!(ref instanceof String)) {
+      public java.lang.String getAlgorithm() {
+        java.lang.Object ref = algorithm_;
+        if (!(ref instanceof java.lang.String)) {
           com.google.protobuf.ByteString bs =
               (com.google.protobuf.ByteString) ref;
-          String s = bs.toStringUtf8();
+          java.lang.String s = bs.toStringUtf8();
           algorithm_ = s;
           return s;
         } else {
-          return (String) ref;
+          return (java.lang.String) ref;
         }
       }
       /**
@@ -830,11 +750,11 @@ public final class NNServiceProto {
        */
       public com.google.protobuf.ByteString
           getAlgorithmBytes() {
-        Object ref = algorithm_;
+        java.lang.Object ref = algorithm_;
         if (ref instanceof String) {
           com.google.protobuf.ByteString b = 
               com.google.protobuf.ByteString.copyFromUtf8(
-                  (String) ref);
+                  (java.lang.String) ref);
           algorithm_ = b;
           return b;
         } else {
@@ -847,7 +767,7 @@ public final class NNServiceProto {
        * @return This builder for chaining.
        */
       public Builder setAlgorithm(
-          String value) {
+          java.lang.String value) {
         if (value == null) {
     throw new NullPointerException();
   }
@@ -882,13 +802,13 @@ public final class NNServiceProto {
         onChanged();
         return this;
       }
-      @Override
+      @java.lang.Override
       public final Builder setUnknownFields(
           final com.google.protobuf.UnknownFieldSet unknownFields) {
         return super.setUnknownFields(unknownFields);
       }
 
-      @Override
+      @java.lang.Override
       public final Builder mergeUnknownFields(
           final com.google.protobuf.UnknownFieldSet unknownFields) {
         return super.mergeUnknownFields(unknownFields);
@@ -899,18 +819,18 @@ public final class NNServiceProto {
     }
 
     // @@protoc_insertion_point(class_scope:nn.TrainRequest)
-    private static final TrainRequest DEFAULT_INSTANCE;
+    private static final com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.TrainRequest DEFAULT_INSTANCE;
     static {
-      DEFAULT_INSTANCE = new TrainRequest();
+      DEFAULT_INSTANCE = new com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.TrainRequest();
     }
 
-    public static TrainRequest getDefaultInstance() {
+    public static com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.TrainRequest getDefaultInstance() {
       return DEFAULT_INSTANCE;
     }
 
     private static final com.google.protobuf.Parser<TrainRequest>
         PARSER = new com.google.protobuf.AbstractParser<TrainRequest>() {
-      @Override
+      @java.lang.Override
       public TrainRequest parsePartialFrom(
           com.google.protobuf.CodedInputStream input,
           com.google.protobuf.ExtensionRegistryLite extensionRegistry)
@@ -923,13 +843,13 @@ public final class NNServiceProto {
       return PARSER;
     }
 
-    @Override
+    @java.lang.Override
     public com.google.protobuf.Parser<TrainRequest> getParserForType() {
       return PARSER;
     }
 
-    @Override
-    public TrainRequest getDefaultInstanceForType() {
+    @java.lang.Override
+    public com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.TrainRequest getDefaultInstanceForType() {
       return DEFAULT_INSTANCE;
     }
 
@@ -943,7 +863,7 @@ public final class NNServiceProto {
      * <code>string response = 1;</code>
      * @return The response.
      */
-    String getResponse();
+    java.lang.String getResponse();
     /**
      * <code>string response = 1;</code>
      * @return The bytes for response.
@@ -960,11 +880,11 @@ public final class NNServiceProto {
      * <code>.TensorMap data = 2;</code>
      * @return The data.
      */
-    FlBaseProto.TensorMap getData();
+    com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.TensorMap getData();
     /**
      * <code>.TensorMap data = 2;</code>
      */
-    FlBaseProto.TensorMapOrBuilder getDataOrBuilder();
+    com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.TensorMapOrBuilder getDataOrBuilder();
 
     /**
      * <code>int32 code = 3;</code>
@@ -988,14 +908,14 @@ public final class NNServiceProto {
       response_ = "";
     }
 
-    @Override
+    @java.lang.Override
     @SuppressWarnings({"unused"})
-    protected Object newInstance(
+    protected java.lang.Object newInstance(
         UnusedPrivateParameter unused) {
       return new TrainResponse();
     }
 
-    @Override
+    @java.lang.Override
     public final com.google.protobuf.UnknownFieldSet
     getUnknownFields() {
       return this.unknownFields;
@@ -1006,7 +926,7 @@ public final class NNServiceProto {
         throws com.google.protobuf.InvalidProtocolBufferException {
       this();
       if (extensionRegistry == null) {
-        throw new NullPointerException();
+        throw new java.lang.NullPointerException();
       }
       com.google.protobuf.UnknownFieldSet.Builder unknownFields =
           com.google.protobuf.UnknownFieldSet.newBuilder();
@@ -1019,17 +939,17 @@ public final class NNServiceProto {
               done = true;
               break;
             case 10: {
-              String s = input.readStringRequireUtf8();
+              java.lang.String s = input.readStringRequireUtf8();
 
               response_ = s;
               break;
             }
             case 18: {
-              FlBaseProto.TensorMap.Builder subBuilder = null;
+              com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.TensorMap.Builder subBuilder = null;
               if (data_ != null) {
                 subBuilder = data_.toBuilder();
               }
-              data_ = input.readMessage(FlBaseProto.TensorMap.parser(), extensionRegistry);
+              data_ = input.readMessage(com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.TensorMap.parser(), extensionRegistry);
               if (subBuilder != null) {
                 subBuilder.mergeFrom(data_);
                 data_ = subBuilder.buildPartial();
@@ -1063,32 +983,32 @@ public final class NNServiceProto {
     }
     public static final com.google.protobuf.Descriptors.Descriptor
         getDescriptor() {
-      return NNServiceProto.internal_static_nn_TrainResponse_descriptor;
+      return com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.internal_static_nn_TrainResponse_descriptor;
     }
 
-    @Override
-    protected FieldAccessorTable
+    @java.lang.Override
+    protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
         internalGetFieldAccessorTable() {
-      return NNServiceProto.internal_static_nn_TrainResponse_fieldAccessorTable
+      return com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.internal_static_nn_TrainResponse_fieldAccessorTable
           .ensureFieldAccessorsInitialized(
-              TrainResponse.class, Builder.class);
+              com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.TrainResponse.class, com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.TrainResponse.Builder.class);
     }
 
     public static final int RESPONSE_FIELD_NUMBER = 1;
-    private volatile Object response_;
+    private volatile java.lang.Object response_;
     /**
      * <code>string response = 1;</code>
      * @return The response.
      */
-    @Override
-    public String getResponse() {
-      Object ref = response_;
-      if (ref instanceof String) {
-        return (String) ref;
+    @java.lang.Override
+    public java.lang.String getResponse() {
+      java.lang.Object ref = response_;
+      if (ref instanceof java.lang.String) {
+        return (java.lang.String) ref;
       } else {
         com.google.protobuf.ByteString bs = 
             (com.google.protobuf.ByteString) ref;
-        String s = bs.toStringUtf8();
+        java.lang.String s = bs.toStringUtf8();
         response_ = s;
         return s;
       }
@@ -1097,14 +1017,14 @@ public final class NNServiceProto {
      * <code>string response = 1;</code>
      * @return The bytes for response.
      */
-    @Override
+    @java.lang.Override
     public com.google.protobuf.ByteString
         getResponseBytes() {
-      Object ref = response_;
-      if (ref instanceof String) {
+      java.lang.Object ref = response_;
+      if (ref instanceof java.lang.String) {
         com.google.protobuf.ByteString b = 
             com.google.protobuf.ByteString.copyFromUtf8(
-                (String) ref);
+                (java.lang.String) ref);
         response_ = b;
         return b;
       } else {
@@ -1113,12 +1033,12 @@ public final class NNServiceProto {
     }
 
     public static final int DATA_FIELD_NUMBER = 2;
-    private FlBaseProto.TensorMap data_;
+    private com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.TensorMap data_;
     /**
      * <code>.TensorMap data = 2;</code>
      * @return Whether the data field is set.
      */
-    @Override
+    @java.lang.Override
     public boolean hasData() {
       return data_ != null;
     }
@@ -1126,15 +1046,15 @@ public final class NNServiceProto {
      * <code>.TensorMap data = 2;</code>
      * @return The data.
      */
-    @Override
-    public FlBaseProto.TensorMap getData() {
-      return data_ == null ? FlBaseProto.TensorMap.getDefaultInstance() : data_;
+    @java.lang.Override
+    public com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.TensorMap getData() {
+      return data_ == null ? com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.TensorMap.getDefaultInstance() : data_;
     }
     /**
      * <code>.TensorMap data = 2;</code>
      */
-    @Override
-    public FlBaseProto.TensorMapOrBuilder getDataOrBuilder() {
+    @java.lang.Override
+    public com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.TensorMapOrBuilder getDataOrBuilder() {
       return getData();
     }
 
@@ -1144,13 +1064,13 @@ public final class NNServiceProto {
      * <code>int32 code = 3;</code>
      * @return The code.
      */
-    @Override
+    @java.lang.Override
     public int getCode() {
       return code_;
     }
 
     private byte memoizedIsInitialized = -1;
-    @Override
+    @java.lang.Override
     public final boolean isInitialized() {
       byte isInitialized = memoizedIsInitialized;
       if (isInitialized == 1) return true;
@@ -1160,7 +1080,7 @@ public final class NNServiceProto {
       return true;
     }
 
-    @Override
+    @java.lang.Override
     public void writeTo(com.google.protobuf.CodedOutputStream output)
                         throws java.io.IOException {
       if (!getResponseBytes().isEmpty()) {
@@ -1175,7 +1095,7 @@ public final class NNServiceProto {
       unknownFields.writeTo(output);
     }
 
-    @Override
+    @java.lang.Override
     public int getSerializedSize() {
       int size = memoizedSize;
       if (size != -1) return size;
@@ -1197,15 +1117,15 @@ public final class NNServiceProto {
       return size;
     }
 
-    @Override
-    public boolean equals(final Object obj) {
+    @java.lang.Override
+    public boolean equals(final java.lang.Object obj) {
       if (obj == this) {
        return true;
       }
-      if (!(obj instanceof TrainResponse)) {
+      if (!(obj instanceof com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.TrainResponse)) {
         return super.equals(obj);
       }
-      TrainResponse other = (TrainResponse) obj;
+      com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.TrainResponse other = (com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.TrainResponse) obj;
 
       if (!getResponse()
           .equals(other.getResponse())) return false;
@@ -1220,7 +1140,7 @@ public final class NNServiceProto {
       return true;
     }
 
-    @Override
+    @java.lang.Override
     public int hashCode() {
       if (memoizedHashCode != 0) {
         return memoizedHashCode;
@@ -1240,69 +1160,69 @@ public final class NNServiceProto {
       return hash;
     }
 
-    public static TrainResponse parseFrom(
+    public static com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.TrainResponse parseFrom(
         java.nio.ByteBuffer data)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data);
     }
-    public static TrainResponse parseFrom(
+    public static com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.TrainResponse parseFrom(
         java.nio.ByteBuffer data,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data, extensionRegistry);
     }
-    public static TrainResponse parseFrom(
+    public static com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.TrainResponse parseFrom(
         com.google.protobuf.ByteString data)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data);
     }
-    public static TrainResponse parseFrom(
+    public static com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.TrainResponse parseFrom(
         com.google.protobuf.ByteString data,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data, extensionRegistry);
     }
-    public static TrainResponse parseFrom(byte[] data)
+    public static com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.TrainResponse parseFrom(byte[] data)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data);
     }
-    public static TrainResponse parseFrom(
+    public static com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.TrainResponse parseFrom(
         byte[] data,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data, extensionRegistry);
     }
-    public static TrainResponse parseFrom(java.io.InputStream input)
+    public static com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.TrainResponse parseFrom(java.io.InputStream input)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseWithIOException(PARSER, input);
     }
-    public static TrainResponse parseFrom(
+    public static com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.TrainResponse parseFrom(
         java.io.InputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseWithIOException(PARSER, input, extensionRegistry);
     }
-    public static TrainResponse parseDelimitedFrom(java.io.InputStream input)
+    public static com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.TrainResponse parseDelimitedFrom(java.io.InputStream input)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseDelimitedWithIOException(PARSER, input);
     }
-    public static TrainResponse parseDelimitedFrom(
+    public static com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.TrainResponse parseDelimitedFrom(
         java.io.InputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseDelimitedWithIOException(PARSER, input, extensionRegistry);
     }
-    public static TrainResponse parseFrom(
+    public static com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.TrainResponse parseFrom(
         com.google.protobuf.CodedInputStream input)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseWithIOException(PARSER, input);
     }
-    public static TrainResponse parseFrom(
+    public static com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.TrainResponse parseFrom(
         com.google.protobuf.CodedInputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
@@ -1310,23 +1230,23 @@ public final class NNServiceProto {
           .parseWithIOException(PARSER, input, extensionRegistry);
     }
 
-    @Override
+    @java.lang.Override
     public Builder newBuilderForType() { return newBuilder(); }
     public static Builder newBuilder() {
       return DEFAULT_INSTANCE.toBuilder();
     }
-    public static Builder newBuilder(TrainResponse prototype) {
+    public static Builder newBuilder(com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.TrainResponse prototype) {
       return DEFAULT_INSTANCE.toBuilder().mergeFrom(prototype);
     }
-    @Override
+    @java.lang.Override
     public Builder toBuilder() {
       return this == DEFAULT_INSTANCE
           ? new Builder() : new Builder().mergeFrom(this);
     }
 
-    @Override
+    @java.lang.Override
     protected Builder newBuilderForType(
-        BuilderParent parent) {
+        com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
       Builder builder = new Builder(parent);
       return builder;
     }
@@ -1336,18 +1256,18 @@ public final class NNServiceProto {
     public static final class Builder extends
         com.google.protobuf.GeneratedMessageV3.Builder<Builder> implements
         // @@protoc_insertion_point(builder_implements:nn.TrainResponse)
-        TrainResponseOrBuilder {
+        com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.TrainResponseOrBuilder {
       public static final com.google.protobuf.Descriptors.Descriptor
           getDescriptor() {
-        return NNServiceProto.internal_static_nn_TrainResponse_descriptor;
+        return com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.internal_static_nn_TrainResponse_descriptor;
       }
 
-      @Override
-      protected FieldAccessorTable
+      @java.lang.Override
+      protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
           internalGetFieldAccessorTable() {
-        return NNServiceProto.internal_static_nn_TrainResponse_fieldAccessorTable
+        return com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.internal_static_nn_TrainResponse_fieldAccessorTable
             .ensureFieldAccessorsInitialized(
-                TrainResponse.class, Builder.class);
+                com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.TrainResponse.class, com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.TrainResponse.Builder.class);
       }
 
       // Construct using com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.TrainResponse.newBuilder()
@@ -1356,7 +1276,7 @@ public final class NNServiceProto {
       }
 
       private Builder(
-          BuilderParent parent) {
+          com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
         super(parent);
         maybeForceBuilderInitialization();
       }
@@ -1365,7 +1285,7 @@ public final class NNServiceProto {
                 .alwaysUseFieldBuilders) {
         }
       }
-      @Override
+      @java.lang.Override
       public Builder clear() {
         super.clear();
         response_ = "";
@@ -1381,29 +1301,29 @@ public final class NNServiceProto {
         return this;
       }
 
-      @Override
+      @java.lang.Override
       public com.google.protobuf.Descriptors.Descriptor
           getDescriptorForType() {
-        return NNServiceProto.internal_static_nn_TrainResponse_descriptor;
+        return com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.internal_static_nn_TrainResponse_descriptor;
       }
 
-      @Override
-      public TrainResponse getDefaultInstanceForType() {
-        return TrainResponse.getDefaultInstance();
+      @java.lang.Override
+      public com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.TrainResponse getDefaultInstanceForType() {
+        return com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.TrainResponse.getDefaultInstance();
       }
 
-      @Override
-      public TrainResponse build() {
-        TrainResponse result = buildPartial();
+      @java.lang.Override
+      public com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.TrainResponse build() {
+        com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.TrainResponse result = buildPartial();
         if (!result.isInitialized()) {
           throw newUninitializedMessageException(result);
         }
         return result;
       }
 
-      @Override
-      public TrainResponse buildPartial() {
-        TrainResponse result = new TrainResponse(this);
+      @java.lang.Override
+      public com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.TrainResponse buildPartial() {
+        com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.TrainResponse result = new com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.TrainResponse(this);
         result.response_ = response_;
         if (dataBuilder_ == null) {
           result.data_ = data_;
@@ -1415,50 +1335,50 @@ public final class NNServiceProto {
         return result;
       }
 
-      @Override
+      @java.lang.Override
       public Builder clone() {
         return super.clone();
       }
-      @Override
+      @java.lang.Override
       public Builder setField(
           com.google.protobuf.Descriptors.FieldDescriptor field,
-          Object value) {
+          java.lang.Object value) {
         return super.setField(field, value);
       }
-      @Override
+      @java.lang.Override
       public Builder clearField(
           com.google.protobuf.Descriptors.FieldDescriptor field) {
         return super.clearField(field);
       }
-      @Override
+      @java.lang.Override
       public Builder clearOneof(
           com.google.protobuf.Descriptors.OneofDescriptor oneof) {
         return super.clearOneof(oneof);
       }
-      @Override
+      @java.lang.Override
       public Builder setRepeatedField(
           com.google.protobuf.Descriptors.FieldDescriptor field,
-          int index, Object value) {
+          int index, java.lang.Object value) {
         return super.setRepeatedField(field, index, value);
       }
-      @Override
+      @java.lang.Override
       public Builder addRepeatedField(
           com.google.protobuf.Descriptors.FieldDescriptor field,
-          Object value) {
+          java.lang.Object value) {
         return super.addRepeatedField(field, value);
       }
-      @Override
+      @java.lang.Override
       public Builder mergeFrom(com.google.protobuf.Message other) {
-        if (other instanceof TrainResponse) {
-          return mergeFrom((TrainResponse)other);
+        if (other instanceof com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.TrainResponse) {
+          return mergeFrom((com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.TrainResponse)other);
         } else {
           super.mergeFrom(other);
           return this;
         }
       }
 
-      public Builder mergeFrom(TrainResponse other) {
-        if (other == TrainResponse.getDefaultInstance()) return this;
+      public Builder mergeFrom(com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.TrainResponse other) {
+        if (other == com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.TrainResponse.getDefaultInstance()) return this;
         if (!other.getResponse().isEmpty()) {
           response_ = other.response_;
           onChanged();
@@ -1474,21 +1394,21 @@ public final class NNServiceProto {
         return this;
       }
 
-      @Override
+      @java.lang.Override
       public final boolean isInitialized() {
         return true;
       }
 
-      @Override
+      @java.lang.Override
       public Builder mergeFrom(
           com.google.protobuf.CodedInputStream input,
           com.google.protobuf.ExtensionRegistryLite extensionRegistry)
           throws java.io.IOException {
-        TrainResponse parsedMessage = null;
+        com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.TrainResponse parsedMessage = null;
         try {
           parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
         } catch (com.google.protobuf.InvalidProtocolBufferException e) {
-          parsedMessage = (TrainResponse) e.getUnfinishedMessage();
+          parsedMessage = (com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.TrainResponse) e.getUnfinishedMessage();
           throw e.unwrapIOException();
         } finally {
           if (parsedMessage != null) {
@@ -1498,21 +1418,21 @@ public final class NNServiceProto {
         return this;
       }
 
-      private Object response_ = "";
+      private java.lang.Object response_ = "";
       /**
        * <code>string response = 1;</code>
        * @return The response.
        */
-      public String getResponse() {
-        Object ref = response_;
-        if (!(ref instanceof String)) {
+      public java.lang.String getResponse() {
+        java.lang.Object ref = response_;
+        if (!(ref instanceof java.lang.String)) {
           com.google.protobuf.ByteString bs =
               (com.google.protobuf.ByteString) ref;
-          String s = bs.toStringUtf8();
+          java.lang.String s = bs.toStringUtf8();
           response_ = s;
           return s;
         } else {
-          return (String) ref;
+          return (java.lang.String) ref;
         }
       }
       /**
@@ -1521,11 +1441,11 @@ public final class NNServiceProto {
        */
       public com.google.protobuf.ByteString
           getResponseBytes() {
-        Object ref = response_;
+        java.lang.Object ref = response_;
         if (ref instanceof String) {
           com.google.protobuf.ByteString b = 
               com.google.protobuf.ByteString.copyFromUtf8(
-                  (String) ref);
+                  (java.lang.String) ref);
           response_ = b;
           return b;
         } else {
@@ -1538,7 +1458,7 @@ public final class NNServiceProto {
        * @return This builder for chaining.
        */
       public Builder setResponse(
-          String value) {
+          java.lang.String value) {
         if (value == null) {
     throw new NullPointerException();
   }
@@ -1574,9 +1494,9 @@ public final class NNServiceProto {
         return this;
       }
 
-      private FlBaseProto.TensorMap data_;
+      private com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.TensorMap data_;
       private com.google.protobuf.SingleFieldBuilderV3<
-          FlBaseProto.TensorMap, FlBaseProto.TensorMap.Builder, FlBaseProto.TensorMapOrBuilder> dataBuilder_;
+          com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.TensorMap, com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.TensorMap.Builder, com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.TensorMapOrBuilder> dataBuilder_;
       /**
        * <code>.TensorMap data = 2;</code>
        * @return Whether the data field is set.
@@ -1588,9 +1508,9 @@ public final class NNServiceProto {
        * <code>.TensorMap data = 2;</code>
        * @return The data.
        */
-      public FlBaseProto.TensorMap getData() {
+      public com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.TensorMap getData() {
         if (dataBuilder_ == null) {
-          return data_ == null ? FlBaseProto.TensorMap.getDefaultInstance() : data_;
+          return data_ == null ? com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.TensorMap.getDefaultInstance() : data_;
         } else {
           return dataBuilder_.getMessage();
         }
@@ -1598,7 +1518,7 @@ public final class NNServiceProto {
       /**
        * <code>.TensorMap data = 2;</code>
        */
-      public Builder setData(FlBaseProto.TensorMap value) {
+      public Builder setData(com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.TensorMap value) {
         if (dataBuilder_ == null) {
           if (value == null) {
             throw new NullPointerException();
@@ -1615,7 +1535,7 @@ public final class NNServiceProto {
        * <code>.TensorMap data = 2;</code>
        */
       public Builder setData(
-          FlBaseProto.TensorMap.Builder builderForValue) {
+          com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.TensorMap.Builder builderForValue) {
         if (dataBuilder_ == null) {
           data_ = builderForValue.build();
           onChanged();
@@ -1628,11 +1548,11 @@ public final class NNServiceProto {
       /**
        * <code>.TensorMap data = 2;</code>
        */
-      public Builder mergeData(FlBaseProto.TensorMap value) {
+      public Builder mergeData(com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.TensorMap value) {
         if (dataBuilder_ == null) {
           if (data_ != null) {
             data_ =
-              FlBaseProto.TensorMap.newBuilder(data_).mergeFrom(value).buildPartial();
+              com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.TensorMap.newBuilder(data_).mergeFrom(value).buildPartial();
           } else {
             data_ = value;
           }
@@ -1660,7 +1580,7 @@ public final class NNServiceProto {
       /**
        * <code>.TensorMap data = 2;</code>
        */
-      public FlBaseProto.TensorMap.Builder getDataBuilder() {
+      public com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.TensorMap.Builder getDataBuilder() {
         
         onChanged();
         return getDataFieldBuilder().getBuilder();
@@ -1668,23 +1588,23 @@ public final class NNServiceProto {
       /**
        * <code>.TensorMap data = 2;</code>
        */
-      public FlBaseProto.TensorMapOrBuilder getDataOrBuilder() {
+      public com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.TensorMapOrBuilder getDataOrBuilder() {
         if (dataBuilder_ != null) {
           return dataBuilder_.getMessageOrBuilder();
         } else {
           return data_ == null ?
-              FlBaseProto.TensorMap.getDefaultInstance() : data_;
+              com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.TensorMap.getDefaultInstance() : data_;
         }
       }
       /**
        * <code>.TensorMap data = 2;</code>
        */
       private com.google.protobuf.SingleFieldBuilderV3<
-          FlBaseProto.TensorMap, FlBaseProto.TensorMap.Builder, FlBaseProto.TensorMapOrBuilder>
+          com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.TensorMap, com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.TensorMap.Builder, com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.TensorMapOrBuilder> 
           getDataFieldBuilder() {
         if (dataBuilder_ == null) {
           dataBuilder_ = new com.google.protobuf.SingleFieldBuilderV3<
-              FlBaseProto.TensorMap, FlBaseProto.TensorMap.Builder, FlBaseProto.TensorMapOrBuilder>(
+              com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.TensorMap, com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.TensorMap.Builder, com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.TensorMapOrBuilder>(
                   getData(),
                   getParentForChildren(),
                   isClean());
@@ -1698,7 +1618,7 @@ public final class NNServiceProto {
        * <code>int32 code = 3;</code>
        * @return The code.
        */
-      @Override
+      @java.lang.Override
       public int getCode() {
         return code_;
       }
@@ -1723,13 +1643,13 @@ public final class NNServiceProto {
         onChanged();
         return this;
       }
-      @Override
+      @java.lang.Override
       public final Builder setUnknownFields(
           final com.google.protobuf.UnknownFieldSet unknownFields) {
         return super.setUnknownFields(unknownFields);
       }
 
-      @Override
+      @java.lang.Override
       public final Builder mergeUnknownFields(
           final com.google.protobuf.UnknownFieldSet unknownFields) {
         return super.mergeUnknownFields(unknownFields);
@@ -1740,18 +1660,18 @@ public final class NNServiceProto {
     }
 
     // @@protoc_insertion_point(class_scope:nn.TrainResponse)
-    private static final TrainResponse DEFAULT_INSTANCE;
+    private static final com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.TrainResponse DEFAULT_INSTANCE;
     static {
-      DEFAULT_INSTANCE = new TrainResponse();
+      DEFAULT_INSTANCE = new com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.TrainResponse();
     }
 
-    public static TrainResponse getDefaultInstance() {
+    public static com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.TrainResponse getDefaultInstance() {
       return DEFAULT_INSTANCE;
     }
 
     private static final com.google.protobuf.Parser<TrainResponse>
         PARSER = new com.google.protobuf.AbstractParser<TrainResponse>() {
-      @Override
+      @java.lang.Override
       public TrainResponse parsePartialFrom(
           com.google.protobuf.CodedInputStream input,
           com.google.protobuf.ExtensionRegistryLite extensionRegistry)
@@ -1764,13 +1684,13 @@ public final class NNServiceProto {
       return PARSER;
     }
 
-    @Override
+    @java.lang.Override
     public com.google.protobuf.Parser<TrainResponse> getParserForType() {
       return PARSER;
     }
 
-    @Override
-    public TrainResponse getDefaultInstanceForType() {
+    @java.lang.Override
+    public com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.TrainResponse getDefaultInstanceForType() {
       return DEFAULT_INSTANCE;
     }
 
@@ -1781,16 +1701,10 @@ public final class NNServiceProto {
       com.google.protobuf.MessageOrBuilder {
 
     /**
-     * <code>string clientuuid = 1;</code>
+     * <code>int32 clientuuid = 1;</code>
      * @return The clientuuid.
      */
-    String getClientuuid();
-    /**
-     * <code>string clientuuid = 1;</code>
-     * @return The bytes for clientuuid.
-     */
-    com.google.protobuf.ByteString
-        getClientuuidBytes();
+    int getClientuuid();
 
     /**
      * <code>.TensorMap data = 2;</code>
@@ -1801,17 +1715,17 @@ public final class NNServiceProto {
      * <code>.TensorMap data = 2;</code>
      * @return The data.
      */
-    FlBaseProto.TensorMap getData();
+    com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.TensorMap getData();
     /**
      * <code>.TensorMap data = 2;</code>
      */
-    FlBaseProto.TensorMapOrBuilder getDataOrBuilder();
+    com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.TensorMapOrBuilder getDataOrBuilder();
 
     /**
      * <code>string algorithm = 3;</code>
      * @return The algorithm.
      */
-    String getAlgorithm();
+    java.lang.String getAlgorithm();
     /**
      * <code>string algorithm = 3;</code>
      * @return The bytes for algorithm.
@@ -1838,18 +1752,17 @@ public final class NNServiceProto {
       super(builder);
     }
     private EvaluateRequest() {
-      clientuuid_ = "";
       algorithm_ = "";
     }
 
-    @Override
+    @java.lang.Override
     @SuppressWarnings({"unused"})
-    protected Object newInstance(
+    protected java.lang.Object newInstance(
         UnusedPrivateParameter unused) {
       return new EvaluateRequest();
     }
 
-    @Override
+    @java.lang.Override
     public final com.google.protobuf.UnknownFieldSet
     getUnknownFields() {
       return this.unknownFields;
@@ -1860,7 +1773,7 @@ public final class NNServiceProto {
         throws com.google.protobuf.InvalidProtocolBufferException {
       this();
       if (extensionRegistry == null) {
-        throw new NullPointerException();
+        throw new java.lang.NullPointerException();
       }
       com.google.protobuf.UnknownFieldSet.Builder unknownFields =
           com.google.protobuf.UnknownFieldSet.newBuilder();
@@ -1872,18 +1785,17 @@ public final class NNServiceProto {
             case 0:
               done = true;
               break;
-            case 10: {
-              String s = input.readStringRequireUtf8();
+            case 8: {
 
-              clientuuid_ = s;
+              clientuuid_ = input.readInt32();
               break;
             }
             case 18: {
-              FlBaseProto.TensorMap.Builder subBuilder = null;
+              com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.TensorMap.Builder subBuilder = null;
               if (data_ != null) {
                 subBuilder = data_.toBuilder();
               }
-              data_ = input.readMessage(FlBaseProto.TensorMap.parser(), extensionRegistry);
+              data_ = input.readMessage(com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.TensorMap.parser(), extensionRegistry);
               if (subBuilder != null) {
                 subBuilder.mergeFrom(data_);
                 data_ = subBuilder.buildPartial();
@@ -1892,7 +1804,7 @@ public final class NNServiceProto {
               break;
             }
             case 26: {
-              String s = input.readStringRequireUtf8();
+              java.lang.String s = input.readStringRequireUtf8();
 
               algorithm_ = s;
               break;
@@ -1923,62 +1835,35 @@ public final class NNServiceProto {
     }
     public static final com.google.protobuf.Descriptors.Descriptor
         getDescriptor() {
-      return NNServiceProto.internal_static_nn_EvaluateRequest_descriptor;
+      return com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.internal_static_nn_EvaluateRequest_descriptor;
     }
 
-    @Override
-    protected FieldAccessorTable
+    @java.lang.Override
+    protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
         internalGetFieldAccessorTable() {
-      return NNServiceProto.internal_static_nn_EvaluateRequest_fieldAccessorTable
+      return com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.internal_static_nn_EvaluateRequest_fieldAccessorTable
           .ensureFieldAccessorsInitialized(
-              EvaluateRequest.class, Builder.class);
+              com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.EvaluateRequest.class, com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.EvaluateRequest.Builder.class);
     }
 
     public static final int CLIENTUUID_FIELD_NUMBER = 1;
-    private volatile Object clientuuid_;
+    private int clientuuid_;
     /**
-     * <code>string clientuuid = 1;</code>
+     * <code>int32 clientuuid = 1;</code>
      * @return The clientuuid.
      */
-    @Override
-    public String getClientuuid() {
-      Object ref = clientuuid_;
-      if (ref instanceof String) {
-        return (String) ref;
-      } else {
-        com.google.protobuf.ByteString bs = 
-            (com.google.protobuf.ByteString) ref;
-        String s = bs.toStringUtf8();
-        clientuuid_ = s;
-        return s;
-      }
-    }
-    /**
-     * <code>string clientuuid = 1;</code>
-     * @return The bytes for clientuuid.
-     */
-    @Override
-    public com.google.protobuf.ByteString
-        getClientuuidBytes() {
-      Object ref = clientuuid_;
-      if (ref instanceof String) {
-        com.google.protobuf.ByteString b = 
-            com.google.protobuf.ByteString.copyFromUtf8(
-                (String) ref);
-        clientuuid_ = b;
-        return b;
-      } else {
-        return (com.google.protobuf.ByteString) ref;
-      }
+    @java.lang.Override
+    public int getClientuuid() {
+      return clientuuid_;
     }
 
     public static final int DATA_FIELD_NUMBER = 2;
-    private FlBaseProto.TensorMap data_;
+    private com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.TensorMap data_;
     /**
      * <code>.TensorMap data = 2;</code>
      * @return Whether the data field is set.
      */
-    @Override
+    @java.lang.Override
     public boolean hasData() {
       return data_ != null;
     }
@@ -1986,33 +1871,33 @@ public final class NNServiceProto {
      * <code>.TensorMap data = 2;</code>
      * @return The data.
      */
-    @Override
-    public FlBaseProto.TensorMap getData() {
-      return data_ == null ? FlBaseProto.TensorMap.getDefaultInstance() : data_;
+    @java.lang.Override
+    public com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.TensorMap getData() {
+      return data_ == null ? com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.TensorMap.getDefaultInstance() : data_;
     }
     /**
      * <code>.TensorMap data = 2;</code>
      */
-    @Override
-    public FlBaseProto.TensorMapOrBuilder getDataOrBuilder() {
+    @java.lang.Override
+    public com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.TensorMapOrBuilder getDataOrBuilder() {
       return getData();
     }
 
     public static final int ALGORITHM_FIELD_NUMBER = 3;
-    private volatile Object algorithm_;
+    private volatile java.lang.Object algorithm_;
     /**
      * <code>string algorithm = 3;</code>
      * @return The algorithm.
      */
-    @Override
-    public String getAlgorithm() {
-      Object ref = algorithm_;
-      if (ref instanceof String) {
-        return (String) ref;
+    @java.lang.Override
+    public java.lang.String getAlgorithm() {
+      java.lang.Object ref = algorithm_;
+      if (ref instanceof java.lang.String) {
+        return (java.lang.String) ref;
       } else {
         com.google.protobuf.ByteString bs = 
             (com.google.protobuf.ByteString) ref;
-        String s = bs.toStringUtf8();
+        java.lang.String s = bs.toStringUtf8();
         algorithm_ = s;
         return s;
       }
@@ -2021,14 +1906,14 @@ public final class NNServiceProto {
      * <code>string algorithm = 3;</code>
      * @return The bytes for algorithm.
      */
-    @Override
+    @java.lang.Override
     public com.google.protobuf.ByteString
         getAlgorithmBytes() {
-      Object ref = algorithm_;
-      if (ref instanceof String) {
+      java.lang.Object ref = algorithm_;
+      if (ref instanceof java.lang.String) {
         com.google.protobuf.ByteString b = 
             com.google.protobuf.ByteString.copyFromUtf8(
-                (String) ref);
+                (java.lang.String) ref);
         algorithm_ = b;
         return b;
       } else {
@@ -2042,13 +1927,13 @@ public final class NNServiceProto {
      * <code>bool return = 4;</code>
      * @return The return.
      */
-    @Override
+    @java.lang.Override
     public boolean getReturn() {
       return return_;
     }
 
     private byte memoizedIsInitialized = -1;
-    @Override
+    @java.lang.Override
     public final boolean isInitialized() {
       byte isInitialized = memoizedIsInitialized;
       if (isInitialized == 1) return true;
@@ -2058,11 +1943,11 @@ public final class NNServiceProto {
       return true;
     }
 
-    @Override
+    @java.lang.Override
     public void writeTo(com.google.protobuf.CodedOutputStream output)
                         throws java.io.IOException {
-      if (!getClientuuidBytes().isEmpty()) {
-        com.google.protobuf.GeneratedMessageV3.writeString(output, 1, clientuuid_);
+      if (clientuuid_ != 0) {
+        output.writeInt32(1, clientuuid_);
       }
       if (data_ != null) {
         output.writeMessage(2, getData());
@@ -2076,14 +1961,15 @@ public final class NNServiceProto {
       unknownFields.writeTo(output);
     }
 
-    @Override
+    @java.lang.Override
     public int getSerializedSize() {
       int size = memoizedSize;
       if (size != -1) return size;
 
       size = 0;
-      if (!getClientuuidBytes().isEmpty()) {
-        size += com.google.protobuf.GeneratedMessageV3.computeStringSize(1, clientuuid_);
+      if (clientuuid_ != 0) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeInt32Size(1, clientuuid_);
       }
       if (data_ != null) {
         size += com.google.protobuf.CodedOutputStream
@@ -2101,18 +1987,18 @@ public final class NNServiceProto {
       return size;
     }
 
-    @Override
-    public boolean equals(final Object obj) {
+    @java.lang.Override
+    public boolean equals(final java.lang.Object obj) {
       if (obj == this) {
        return true;
       }
-      if (!(obj instanceof EvaluateRequest)) {
+      if (!(obj instanceof com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.EvaluateRequest)) {
         return super.equals(obj);
       }
-      EvaluateRequest other = (EvaluateRequest) obj;
+      com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.EvaluateRequest other = (com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.EvaluateRequest) obj;
 
-      if (!getClientuuid()
-          .equals(other.getClientuuid())) return false;
+      if (getClientuuid()
+          != other.getClientuuid()) return false;
       if (hasData() != other.hasData()) return false;
       if (hasData()) {
         if (!getData()
@@ -2126,7 +2012,7 @@ public final class NNServiceProto {
       return true;
     }
 
-    @Override
+    @java.lang.Override
     public int hashCode() {
       if (memoizedHashCode != 0) {
         return memoizedHashCode;
@@ -2134,7 +2020,7 @@ public final class NNServiceProto {
       int hash = 41;
       hash = (19 * hash) + getDescriptor().hashCode();
       hash = (37 * hash) + CLIENTUUID_FIELD_NUMBER;
-      hash = (53 * hash) + getClientuuid().hashCode();
+      hash = (53 * hash) + getClientuuid();
       if (hasData()) {
         hash = (37 * hash) + DATA_FIELD_NUMBER;
         hash = (53 * hash) + getData().hashCode();
@@ -2149,69 +2035,69 @@ public final class NNServiceProto {
       return hash;
     }
 
-    public static EvaluateRequest parseFrom(
+    public static com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.EvaluateRequest parseFrom(
         java.nio.ByteBuffer data)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data);
     }
-    public static EvaluateRequest parseFrom(
+    public static com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.EvaluateRequest parseFrom(
         java.nio.ByteBuffer data,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data, extensionRegistry);
     }
-    public static EvaluateRequest parseFrom(
+    public static com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.EvaluateRequest parseFrom(
         com.google.protobuf.ByteString data)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data);
     }
-    public static EvaluateRequest parseFrom(
+    public static com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.EvaluateRequest parseFrom(
         com.google.protobuf.ByteString data,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data, extensionRegistry);
     }
-    public static EvaluateRequest parseFrom(byte[] data)
+    public static com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.EvaluateRequest parseFrom(byte[] data)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data);
     }
-    public static EvaluateRequest parseFrom(
+    public static com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.EvaluateRequest parseFrom(
         byte[] data,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data, extensionRegistry);
     }
-    public static EvaluateRequest parseFrom(java.io.InputStream input)
+    public static com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.EvaluateRequest parseFrom(java.io.InputStream input)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseWithIOException(PARSER, input);
     }
-    public static EvaluateRequest parseFrom(
+    public static com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.EvaluateRequest parseFrom(
         java.io.InputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseWithIOException(PARSER, input, extensionRegistry);
     }
-    public static EvaluateRequest parseDelimitedFrom(java.io.InputStream input)
+    public static com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.EvaluateRequest parseDelimitedFrom(java.io.InputStream input)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseDelimitedWithIOException(PARSER, input);
     }
-    public static EvaluateRequest parseDelimitedFrom(
+    public static com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.EvaluateRequest parseDelimitedFrom(
         java.io.InputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseDelimitedWithIOException(PARSER, input, extensionRegistry);
     }
-    public static EvaluateRequest parseFrom(
+    public static com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.EvaluateRequest parseFrom(
         com.google.protobuf.CodedInputStream input)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseWithIOException(PARSER, input);
     }
-    public static EvaluateRequest parseFrom(
+    public static com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.EvaluateRequest parseFrom(
         com.google.protobuf.CodedInputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
@@ -2219,23 +2105,23 @@ public final class NNServiceProto {
           .parseWithIOException(PARSER, input, extensionRegistry);
     }
 
-    @Override
+    @java.lang.Override
     public Builder newBuilderForType() { return newBuilder(); }
     public static Builder newBuilder() {
       return DEFAULT_INSTANCE.toBuilder();
     }
-    public static Builder newBuilder(EvaluateRequest prototype) {
+    public static Builder newBuilder(com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.EvaluateRequest prototype) {
       return DEFAULT_INSTANCE.toBuilder().mergeFrom(prototype);
     }
-    @Override
+    @java.lang.Override
     public Builder toBuilder() {
       return this == DEFAULT_INSTANCE
           ? new Builder() : new Builder().mergeFrom(this);
     }
 
-    @Override
+    @java.lang.Override
     protected Builder newBuilderForType(
-        BuilderParent parent) {
+        com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
       Builder builder = new Builder(parent);
       return builder;
     }
@@ -2245,18 +2131,18 @@ public final class NNServiceProto {
     public static final class Builder extends
         com.google.protobuf.GeneratedMessageV3.Builder<Builder> implements
         // @@protoc_insertion_point(builder_implements:nn.EvaluateRequest)
-        EvaluateRequestOrBuilder {
+        com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.EvaluateRequestOrBuilder {
       public static final com.google.protobuf.Descriptors.Descriptor
           getDescriptor() {
-        return NNServiceProto.internal_static_nn_EvaluateRequest_descriptor;
+        return com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.internal_static_nn_EvaluateRequest_descriptor;
       }
 
-      @Override
-      protected FieldAccessorTable
+      @java.lang.Override
+      protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
           internalGetFieldAccessorTable() {
-        return NNServiceProto.internal_static_nn_EvaluateRequest_fieldAccessorTable
+        return com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.internal_static_nn_EvaluateRequest_fieldAccessorTable
             .ensureFieldAccessorsInitialized(
-                EvaluateRequest.class, Builder.class);
+                com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.EvaluateRequest.class, com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.EvaluateRequest.Builder.class);
       }
 
       // Construct using com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.EvaluateRequest.newBuilder()
@@ -2265,7 +2151,7 @@ public final class NNServiceProto {
       }
 
       private Builder(
-          BuilderParent parent) {
+          com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
         super(parent);
         maybeForceBuilderInitialization();
       }
@@ -2274,10 +2160,10 @@ public final class NNServiceProto {
                 .alwaysUseFieldBuilders) {
         }
       }
-      @Override
+      @java.lang.Override
       public Builder clear() {
         super.clear();
-        clientuuid_ = "";
+        clientuuid_ = 0;
 
         if (dataBuilder_ == null) {
           data_ = null;
@@ -2292,29 +2178,29 @@ public final class NNServiceProto {
         return this;
       }
 
-      @Override
+      @java.lang.Override
       public com.google.protobuf.Descriptors.Descriptor
           getDescriptorForType() {
-        return NNServiceProto.internal_static_nn_EvaluateRequest_descriptor;
+        return com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.internal_static_nn_EvaluateRequest_descriptor;
       }
 
-      @Override
-      public EvaluateRequest getDefaultInstanceForType() {
-        return EvaluateRequest.getDefaultInstance();
+      @java.lang.Override
+      public com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.EvaluateRequest getDefaultInstanceForType() {
+        return com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.EvaluateRequest.getDefaultInstance();
       }
 
-      @Override
-      public EvaluateRequest build() {
-        EvaluateRequest result = buildPartial();
+      @java.lang.Override
+      public com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.EvaluateRequest build() {
+        com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.EvaluateRequest result = buildPartial();
         if (!result.isInitialized()) {
           throw newUninitializedMessageException(result);
         }
         return result;
       }
 
-      @Override
-      public EvaluateRequest buildPartial() {
-        EvaluateRequest result = new EvaluateRequest(this);
+      @java.lang.Override
+      public com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.EvaluateRequest buildPartial() {
+        com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.EvaluateRequest result = new com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.EvaluateRequest(this);
         result.clientuuid_ = clientuuid_;
         if (dataBuilder_ == null) {
           result.data_ = data_;
@@ -2327,53 +2213,52 @@ public final class NNServiceProto {
         return result;
       }
 
-      @Override
+      @java.lang.Override
       public Builder clone() {
         return super.clone();
       }
-      @Override
+      @java.lang.Override
       public Builder setField(
           com.google.protobuf.Descriptors.FieldDescriptor field,
-          Object value) {
+          java.lang.Object value) {
         return super.setField(field, value);
       }
-      @Override
+      @java.lang.Override
       public Builder clearField(
           com.google.protobuf.Descriptors.FieldDescriptor field) {
         return super.clearField(field);
       }
-      @Override
+      @java.lang.Override
       public Builder clearOneof(
           com.google.protobuf.Descriptors.OneofDescriptor oneof) {
         return super.clearOneof(oneof);
       }
-      @Override
+      @java.lang.Override
       public Builder setRepeatedField(
           com.google.protobuf.Descriptors.FieldDescriptor field,
-          int index, Object value) {
+          int index, java.lang.Object value) {
         return super.setRepeatedField(field, index, value);
       }
-      @Override
+      @java.lang.Override
       public Builder addRepeatedField(
           com.google.protobuf.Descriptors.FieldDescriptor field,
-          Object value) {
+          java.lang.Object value) {
         return super.addRepeatedField(field, value);
       }
-      @Override
+      @java.lang.Override
       public Builder mergeFrom(com.google.protobuf.Message other) {
-        if (other instanceof EvaluateRequest) {
-          return mergeFrom((EvaluateRequest)other);
+        if (other instanceof com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.EvaluateRequest) {
+          return mergeFrom((com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.EvaluateRequest)other);
         } else {
           super.mergeFrom(other);
           return this;
         }
       }
 
-      public Builder mergeFrom(EvaluateRequest other) {
-        if (other == EvaluateRequest.getDefaultInstance()) return this;
-        if (!other.getClientuuid().isEmpty()) {
-          clientuuid_ = other.clientuuid_;
-          onChanged();
+      public Builder mergeFrom(com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.EvaluateRequest other) {
+        if (other == com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.EvaluateRequest.getDefaultInstance()) return this;
+        if (other.getClientuuid() != 0) {
+          setClientuuid(other.getClientuuid());
         }
         if (other.hasData()) {
           mergeData(other.getData());
@@ -2390,21 +2275,21 @@ public final class NNServiceProto {
         return this;
       }
 
-      @Override
+      @java.lang.Override
       public final boolean isInitialized() {
         return true;
       }
 
-      @Override
+      @java.lang.Override
       public Builder mergeFrom(
           com.google.protobuf.CodedInputStream input,
           com.google.protobuf.ExtensionRegistryLite extensionRegistry)
           throws java.io.IOException {
-        EvaluateRequest parsedMessage = null;
+        com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.EvaluateRequest parsedMessage = null;
         try {
           parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
         } catch (com.google.protobuf.InvalidProtocolBufferException e) {
-          parsedMessage = (EvaluateRequest) e.getUnfinishedMessage();
+          parsedMessage = (com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.EvaluateRequest) e.getUnfinishedMessage();
           throw e.unwrapIOException();
         } finally {
           if (parsedMessage != null) {
@@ -2414,85 +2299,40 @@ public final class NNServiceProto {
         return this;
       }
 
-      private Object clientuuid_ = "";
+      private int clientuuid_ ;
       /**
-       * <code>string clientuuid = 1;</code>
+       * <code>int32 clientuuid = 1;</code>
        * @return The clientuuid.
        */
-      public String getClientuuid() {
-        Object ref = clientuuid_;
-        if (!(ref instanceof String)) {
-          com.google.protobuf.ByteString bs =
-              (com.google.protobuf.ByteString) ref;
-          String s = bs.toStringUtf8();
-          clientuuid_ = s;
-          return s;
-        } else {
-          return (String) ref;
-        }
+      @java.lang.Override
+      public int getClientuuid() {
+        return clientuuid_;
       }
       /**
-       * <code>string clientuuid = 1;</code>
-       * @return The bytes for clientuuid.
-       */
-      public com.google.protobuf.ByteString
-          getClientuuidBytes() {
-        Object ref = clientuuid_;
-        if (ref instanceof String) {
-          com.google.protobuf.ByteString b = 
-              com.google.protobuf.ByteString.copyFromUtf8(
-                  (String) ref);
-          clientuuid_ = b;
-          return b;
-        } else {
-          return (com.google.protobuf.ByteString) ref;
-        }
-      }
-      /**
-       * <code>string clientuuid = 1;</code>
+       * <code>int32 clientuuid = 1;</code>
        * @param value The clientuuid to set.
        * @return This builder for chaining.
        */
-      public Builder setClientuuid(
-          String value) {
-        if (value == null) {
-    throw new NullPointerException();
-  }
-  
+      public Builder setClientuuid(int value) {
+        
         clientuuid_ = value;
         onChanged();
         return this;
       }
       /**
-       * <code>string clientuuid = 1;</code>
+       * <code>int32 clientuuid = 1;</code>
        * @return This builder for chaining.
        */
       public Builder clearClientuuid() {
         
-        clientuuid_ = getDefaultInstance().getClientuuid();
-        onChanged();
-        return this;
-      }
-      /**
-       * <code>string clientuuid = 1;</code>
-       * @param value The bytes for clientuuid to set.
-       * @return This builder for chaining.
-       */
-      public Builder setClientuuidBytes(
-          com.google.protobuf.ByteString value) {
-        if (value == null) {
-    throw new NullPointerException();
-  }
-  checkByteStringIsUtf8(value);
-        
-        clientuuid_ = value;
+        clientuuid_ = 0;
         onChanged();
         return this;
       }
 
-      private FlBaseProto.TensorMap data_;
+      private com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.TensorMap data_;
       private com.google.protobuf.SingleFieldBuilderV3<
-          FlBaseProto.TensorMap, FlBaseProto.TensorMap.Builder, FlBaseProto.TensorMapOrBuilder> dataBuilder_;
+          com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.TensorMap, com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.TensorMap.Builder, com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.TensorMapOrBuilder> dataBuilder_;
       /**
        * <code>.TensorMap data = 2;</code>
        * @return Whether the data field is set.
@@ -2504,9 +2344,9 @@ public final class NNServiceProto {
        * <code>.TensorMap data = 2;</code>
        * @return The data.
        */
-      public FlBaseProto.TensorMap getData() {
+      public com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.TensorMap getData() {
         if (dataBuilder_ == null) {
-          return data_ == null ? FlBaseProto.TensorMap.getDefaultInstance() : data_;
+          return data_ == null ? com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.TensorMap.getDefaultInstance() : data_;
         } else {
           return dataBuilder_.getMessage();
         }
@@ -2514,7 +2354,7 @@ public final class NNServiceProto {
       /**
        * <code>.TensorMap data = 2;</code>
        */
-      public Builder setData(FlBaseProto.TensorMap value) {
+      public Builder setData(com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.TensorMap value) {
         if (dataBuilder_ == null) {
           if (value == null) {
             throw new NullPointerException();
@@ -2531,7 +2371,7 @@ public final class NNServiceProto {
        * <code>.TensorMap data = 2;</code>
        */
       public Builder setData(
-          FlBaseProto.TensorMap.Builder builderForValue) {
+          com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.TensorMap.Builder builderForValue) {
         if (dataBuilder_ == null) {
           data_ = builderForValue.build();
           onChanged();
@@ -2544,11 +2384,11 @@ public final class NNServiceProto {
       /**
        * <code>.TensorMap data = 2;</code>
        */
-      public Builder mergeData(FlBaseProto.TensorMap value) {
+      public Builder mergeData(com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.TensorMap value) {
         if (dataBuilder_ == null) {
           if (data_ != null) {
             data_ =
-              FlBaseProto.TensorMap.newBuilder(data_).mergeFrom(value).buildPartial();
+              com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.TensorMap.newBuilder(data_).mergeFrom(value).buildPartial();
           } else {
             data_ = value;
           }
@@ -2576,7 +2416,7 @@ public final class NNServiceProto {
       /**
        * <code>.TensorMap data = 2;</code>
        */
-      public FlBaseProto.TensorMap.Builder getDataBuilder() {
+      public com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.TensorMap.Builder getDataBuilder() {
         
         onChanged();
         return getDataFieldBuilder().getBuilder();
@@ -2584,23 +2424,23 @@ public final class NNServiceProto {
       /**
        * <code>.TensorMap data = 2;</code>
        */
-      public FlBaseProto.TensorMapOrBuilder getDataOrBuilder() {
+      public com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.TensorMapOrBuilder getDataOrBuilder() {
         if (dataBuilder_ != null) {
           return dataBuilder_.getMessageOrBuilder();
         } else {
           return data_ == null ?
-              FlBaseProto.TensorMap.getDefaultInstance() : data_;
+              com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.TensorMap.getDefaultInstance() : data_;
         }
       }
       /**
        * <code>.TensorMap data = 2;</code>
        */
       private com.google.protobuf.SingleFieldBuilderV3<
-          FlBaseProto.TensorMap, FlBaseProto.TensorMap.Builder, FlBaseProto.TensorMapOrBuilder>
+          com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.TensorMap, com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.TensorMap.Builder, com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.TensorMapOrBuilder> 
           getDataFieldBuilder() {
         if (dataBuilder_ == null) {
           dataBuilder_ = new com.google.protobuf.SingleFieldBuilderV3<
-              FlBaseProto.TensorMap, FlBaseProto.TensorMap.Builder, FlBaseProto.TensorMapOrBuilder>(
+              com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.TensorMap, com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.TensorMap.Builder, com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.TensorMapOrBuilder>(
                   getData(),
                   getParentForChildren(),
                   isClean());
@@ -2609,21 +2449,21 @@ public final class NNServiceProto {
         return dataBuilder_;
       }
 
-      private Object algorithm_ = "";
+      private java.lang.Object algorithm_ = "";
       /**
        * <code>string algorithm = 3;</code>
        * @return The algorithm.
        */
-      public String getAlgorithm() {
-        Object ref = algorithm_;
-        if (!(ref instanceof String)) {
+      public java.lang.String getAlgorithm() {
+        java.lang.Object ref = algorithm_;
+        if (!(ref instanceof java.lang.String)) {
           com.google.protobuf.ByteString bs =
               (com.google.protobuf.ByteString) ref;
-          String s = bs.toStringUtf8();
+          java.lang.String s = bs.toStringUtf8();
           algorithm_ = s;
           return s;
         } else {
-          return (String) ref;
+          return (java.lang.String) ref;
         }
       }
       /**
@@ -2632,11 +2472,11 @@ public final class NNServiceProto {
        */
       public com.google.protobuf.ByteString
           getAlgorithmBytes() {
-        Object ref = algorithm_;
+        java.lang.Object ref = algorithm_;
         if (ref instanceof String) {
           com.google.protobuf.ByteString b = 
               com.google.protobuf.ByteString.copyFromUtf8(
-                  (String) ref);
+                  (java.lang.String) ref);
           algorithm_ = b;
           return b;
         } else {
@@ -2649,7 +2489,7 @@ public final class NNServiceProto {
        * @return This builder for chaining.
        */
       public Builder setAlgorithm(
-          String value) {
+          java.lang.String value) {
         if (value == null) {
     throw new NullPointerException();
   }
@@ -2690,7 +2530,7 @@ public final class NNServiceProto {
        * <code>bool return = 4;</code>
        * @return The return.
        */
-      @Override
+      @java.lang.Override
       public boolean getReturn() {
         return return_;
       }
@@ -2715,13 +2555,13 @@ public final class NNServiceProto {
         onChanged();
         return this;
       }
-      @Override
+      @java.lang.Override
       public final Builder setUnknownFields(
           final com.google.protobuf.UnknownFieldSet unknownFields) {
         return super.setUnknownFields(unknownFields);
       }
 
-      @Override
+      @java.lang.Override
       public final Builder mergeUnknownFields(
           final com.google.protobuf.UnknownFieldSet unknownFields) {
         return super.mergeUnknownFields(unknownFields);
@@ -2732,18 +2572,18 @@ public final class NNServiceProto {
     }
 
     // @@protoc_insertion_point(class_scope:nn.EvaluateRequest)
-    private static final EvaluateRequest DEFAULT_INSTANCE;
+    private static final com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.EvaluateRequest DEFAULT_INSTANCE;
     static {
-      DEFAULT_INSTANCE = new EvaluateRequest();
+      DEFAULT_INSTANCE = new com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.EvaluateRequest();
     }
 
-    public static EvaluateRequest getDefaultInstance() {
+    public static com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.EvaluateRequest getDefaultInstance() {
       return DEFAULT_INSTANCE;
     }
 
     private static final com.google.protobuf.Parser<EvaluateRequest>
         PARSER = new com.google.protobuf.AbstractParser<EvaluateRequest>() {
-      @Override
+      @java.lang.Override
       public EvaluateRequest parsePartialFrom(
           com.google.protobuf.CodedInputStream input,
           com.google.protobuf.ExtensionRegistryLite extensionRegistry)
@@ -2756,13 +2596,13 @@ public final class NNServiceProto {
       return PARSER;
     }
 
-    @Override
+    @java.lang.Override
     public com.google.protobuf.Parser<EvaluateRequest> getParserForType() {
       return PARSER;
     }
 
-    @Override
-    public EvaluateRequest getDefaultInstanceForType() {
+    @java.lang.Override
+    public com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.EvaluateRequest getDefaultInstanceForType() {
       return DEFAULT_INSTANCE;
     }
 
@@ -2776,7 +2616,7 @@ public final class NNServiceProto {
      * <code>string response = 1;</code>
      * @return The response.
      */
-    String getResponse();
+    java.lang.String getResponse();
     /**
      * <code>string response = 1;</code>
      * @return The bytes for response.
@@ -2793,11 +2633,11 @@ public final class NNServiceProto {
      * <code>.TensorMap data = 2;</code>
      * @return The data.
      */
-    FlBaseProto.TensorMap getData();
+    com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.TensorMap getData();
     /**
      * <code>.TensorMap data = 2;</code>
      */
-    FlBaseProto.TensorMapOrBuilder getDataOrBuilder();
+    com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.TensorMapOrBuilder getDataOrBuilder();
 
     /**
      * <code>int32 code = 3;</code>
@@ -2809,7 +2649,7 @@ public final class NNServiceProto {
      * <code>string message = 4;</code>
      * @return The message.
      */
-    String getMessage();
+    java.lang.String getMessage();
     /**
      * <code>string message = 4;</code>
      * @return The bytes for message.
@@ -2834,14 +2674,14 @@ public final class NNServiceProto {
       message_ = "";
     }
 
-    @Override
+    @java.lang.Override
     @SuppressWarnings({"unused"})
-    protected Object newInstance(
+    protected java.lang.Object newInstance(
         UnusedPrivateParameter unused) {
       return new EvaluateResponse();
     }
 
-    @Override
+    @java.lang.Override
     public final com.google.protobuf.UnknownFieldSet
     getUnknownFields() {
       return this.unknownFields;
@@ -2852,7 +2692,7 @@ public final class NNServiceProto {
         throws com.google.protobuf.InvalidProtocolBufferException {
       this();
       if (extensionRegistry == null) {
-        throw new NullPointerException();
+        throw new java.lang.NullPointerException();
       }
       com.google.protobuf.UnknownFieldSet.Builder unknownFields =
           com.google.protobuf.UnknownFieldSet.newBuilder();
@@ -2865,17 +2705,17 @@ public final class NNServiceProto {
               done = true;
               break;
             case 10: {
-              String s = input.readStringRequireUtf8();
+              java.lang.String s = input.readStringRequireUtf8();
 
               response_ = s;
               break;
             }
             case 18: {
-              FlBaseProto.TensorMap.Builder subBuilder = null;
+              com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.TensorMap.Builder subBuilder = null;
               if (data_ != null) {
                 subBuilder = data_.toBuilder();
               }
-              data_ = input.readMessage(FlBaseProto.TensorMap.parser(), extensionRegistry);
+              data_ = input.readMessage(com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.TensorMap.parser(), extensionRegistry);
               if (subBuilder != null) {
                 subBuilder.mergeFrom(data_);
                 data_ = subBuilder.buildPartial();
@@ -2889,7 +2729,7 @@ public final class NNServiceProto {
               break;
             }
             case 34: {
-              String s = input.readStringRequireUtf8();
+              java.lang.String s = input.readStringRequireUtf8();
 
               message_ = s;
               break;
@@ -2915,32 +2755,32 @@ public final class NNServiceProto {
     }
     public static final com.google.protobuf.Descriptors.Descriptor
         getDescriptor() {
-      return NNServiceProto.internal_static_nn_EvaluateResponse_descriptor;
+      return com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.internal_static_nn_EvaluateResponse_descriptor;
     }
 
-    @Override
-    protected FieldAccessorTable
+    @java.lang.Override
+    protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
         internalGetFieldAccessorTable() {
-      return NNServiceProto.internal_static_nn_EvaluateResponse_fieldAccessorTable
+      return com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.internal_static_nn_EvaluateResponse_fieldAccessorTable
           .ensureFieldAccessorsInitialized(
-              EvaluateResponse.class, Builder.class);
+              com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.EvaluateResponse.class, com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.EvaluateResponse.Builder.class);
     }
 
     public static final int RESPONSE_FIELD_NUMBER = 1;
-    private volatile Object response_;
+    private volatile java.lang.Object response_;
     /**
      * <code>string response = 1;</code>
      * @return The response.
      */
-    @Override
-    public String getResponse() {
-      Object ref = response_;
-      if (ref instanceof String) {
-        return (String) ref;
+    @java.lang.Override
+    public java.lang.String getResponse() {
+      java.lang.Object ref = response_;
+      if (ref instanceof java.lang.String) {
+        return (java.lang.String) ref;
       } else {
         com.google.protobuf.ByteString bs = 
             (com.google.protobuf.ByteString) ref;
-        String s = bs.toStringUtf8();
+        java.lang.String s = bs.toStringUtf8();
         response_ = s;
         return s;
       }
@@ -2949,14 +2789,14 @@ public final class NNServiceProto {
      * <code>string response = 1;</code>
      * @return The bytes for response.
      */
-    @Override
+    @java.lang.Override
     public com.google.protobuf.ByteString
         getResponseBytes() {
-      Object ref = response_;
-      if (ref instanceof String) {
+      java.lang.Object ref = response_;
+      if (ref instanceof java.lang.String) {
         com.google.protobuf.ByteString b = 
             com.google.protobuf.ByteString.copyFromUtf8(
-                (String) ref);
+                (java.lang.String) ref);
         response_ = b;
         return b;
       } else {
@@ -2965,12 +2805,12 @@ public final class NNServiceProto {
     }
 
     public static final int DATA_FIELD_NUMBER = 2;
-    private FlBaseProto.TensorMap data_;
+    private com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.TensorMap data_;
     /**
      * <code>.TensorMap data = 2;</code>
      * @return Whether the data field is set.
      */
-    @Override
+    @java.lang.Override
     public boolean hasData() {
       return data_ != null;
     }
@@ -2978,15 +2818,15 @@ public final class NNServiceProto {
      * <code>.TensorMap data = 2;</code>
      * @return The data.
      */
-    @Override
-    public FlBaseProto.TensorMap getData() {
-      return data_ == null ? FlBaseProto.TensorMap.getDefaultInstance() : data_;
+    @java.lang.Override
+    public com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.TensorMap getData() {
+      return data_ == null ? com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.TensorMap.getDefaultInstance() : data_;
     }
     /**
      * <code>.TensorMap data = 2;</code>
      */
-    @Override
-    public FlBaseProto.TensorMapOrBuilder getDataOrBuilder() {
+    @java.lang.Override
+    public com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.TensorMapOrBuilder getDataOrBuilder() {
       return getData();
     }
 
@@ -2996,26 +2836,26 @@ public final class NNServiceProto {
      * <code>int32 code = 3;</code>
      * @return The code.
      */
-    @Override
+    @java.lang.Override
     public int getCode() {
       return code_;
     }
 
     public static final int MESSAGE_FIELD_NUMBER = 4;
-    private volatile Object message_;
+    private volatile java.lang.Object message_;
     /**
      * <code>string message = 4;</code>
      * @return The message.
      */
-    @Override
-    public String getMessage() {
-      Object ref = message_;
-      if (ref instanceof String) {
-        return (String) ref;
+    @java.lang.Override
+    public java.lang.String getMessage() {
+      java.lang.Object ref = message_;
+      if (ref instanceof java.lang.String) {
+        return (java.lang.String) ref;
       } else {
         com.google.protobuf.ByteString bs = 
             (com.google.protobuf.ByteString) ref;
-        String s = bs.toStringUtf8();
+        java.lang.String s = bs.toStringUtf8();
         message_ = s;
         return s;
       }
@@ -3024,14 +2864,14 @@ public final class NNServiceProto {
      * <code>string message = 4;</code>
      * @return The bytes for message.
      */
-    @Override
+    @java.lang.Override
     public com.google.protobuf.ByteString
         getMessageBytes() {
-      Object ref = message_;
-      if (ref instanceof String) {
+      java.lang.Object ref = message_;
+      if (ref instanceof java.lang.String) {
         com.google.protobuf.ByteString b = 
             com.google.protobuf.ByteString.copyFromUtf8(
-                (String) ref);
+                (java.lang.String) ref);
         message_ = b;
         return b;
       } else {
@@ -3040,7 +2880,7 @@ public final class NNServiceProto {
     }
 
     private byte memoizedIsInitialized = -1;
-    @Override
+    @java.lang.Override
     public final boolean isInitialized() {
       byte isInitialized = memoizedIsInitialized;
       if (isInitialized == 1) return true;
@@ -3050,7 +2890,7 @@ public final class NNServiceProto {
       return true;
     }
 
-    @Override
+    @java.lang.Override
     public void writeTo(com.google.protobuf.CodedOutputStream output)
                         throws java.io.IOException {
       if (!getResponseBytes().isEmpty()) {
@@ -3068,7 +2908,7 @@ public final class NNServiceProto {
       unknownFields.writeTo(output);
     }
 
-    @Override
+    @java.lang.Override
     public int getSerializedSize() {
       int size = memoizedSize;
       if (size != -1) return size;
@@ -3093,15 +2933,15 @@ public final class NNServiceProto {
       return size;
     }
 
-    @Override
-    public boolean equals(final Object obj) {
+    @java.lang.Override
+    public boolean equals(final java.lang.Object obj) {
       if (obj == this) {
        return true;
       }
-      if (!(obj instanceof EvaluateResponse)) {
+      if (!(obj instanceof com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.EvaluateResponse)) {
         return super.equals(obj);
       }
-      EvaluateResponse other = (EvaluateResponse) obj;
+      com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.EvaluateResponse other = (com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.EvaluateResponse) obj;
 
       if (!getResponse()
           .equals(other.getResponse())) return false;
@@ -3118,7 +2958,7 @@ public final class NNServiceProto {
       return true;
     }
 
-    @Override
+    @java.lang.Override
     public int hashCode() {
       if (memoizedHashCode != 0) {
         return memoizedHashCode;
@@ -3140,69 +2980,69 @@ public final class NNServiceProto {
       return hash;
     }
 
-    public static EvaluateResponse parseFrom(
+    public static com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.EvaluateResponse parseFrom(
         java.nio.ByteBuffer data)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data);
     }
-    public static EvaluateResponse parseFrom(
+    public static com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.EvaluateResponse parseFrom(
         java.nio.ByteBuffer data,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data, extensionRegistry);
     }
-    public static EvaluateResponse parseFrom(
+    public static com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.EvaluateResponse parseFrom(
         com.google.protobuf.ByteString data)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data);
     }
-    public static EvaluateResponse parseFrom(
+    public static com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.EvaluateResponse parseFrom(
         com.google.protobuf.ByteString data,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data, extensionRegistry);
     }
-    public static EvaluateResponse parseFrom(byte[] data)
+    public static com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.EvaluateResponse parseFrom(byte[] data)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data);
     }
-    public static EvaluateResponse parseFrom(
+    public static com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.EvaluateResponse parseFrom(
         byte[] data,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data, extensionRegistry);
     }
-    public static EvaluateResponse parseFrom(java.io.InputStream input)
+    public static com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.EvaluateResponse parseFrom(java.io.InputStream input)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseWithIOException(PARSER, input);
     }
-    public static EvaluateResponse parseFrom(
+    public static com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.EvaluateResponse parseFrom(
         java.io.InputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseWithIOException(PARSER, input, extensionRegistry);
     }
-    public static EvaluateResponse parseDelimitedFrom(java.io.InputStream input)
+    public static com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.EvaluateResponse parseDelimitedFrom(java.io.InputStream input)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseDelimitedWithIOException(PARSER, input);
     }
-    public static EvaluateResponse parseDelimitedFrom(
+    public static com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.EvaluateResponse parseDelimitedFrom(
         java.io.InputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseDelimitedWithIOException(PARSER, input, extensionRegistry);
     }
-    public static EvaluateResponse parseFrom(
+    public static com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.EvaluateResponse parseFrom(
         com.google.protobuf.CodedInputStream input)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseWithIOException(PARSER, input);
     }
-    public static EvaluateResponse parseFrom(
+    public static com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.EvaluateResponse parseFrom(
         com.google.protobuf.CodedInputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
@@ -3210,23 +3050,23 @@ public final class NNServiceProto {
           .parseWithIOException(PARSER, input, extensionRegistry);
     }
 
-    @Override
+    @java.lang.Override
     public Builder newBuilderForType() { return newBuilder(); }
     public static Builder newBuilder() {
       return DEFAULT_INSTANCE.toBuilder();
     }
-    public static Builder newBuilder(EvaluateResponse prototype) {
+    public static Builder newBuilder(com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.EvaluateResponse prototype) {
       return DEFAULT_INSTANCE.toBuilder().mergeFrom(prototype);
     }
-    @Override
+    @java.lang.Override
     public Builder toBuilder() {
       return this == DEFAULT_INSTANCE
           ? new Builder() : new Builder().mergeFrom(this);
     }
 
-    @Override
+    @java.lang.Override
     protected Builder newBuilderForType(
-        BuilderParent parent) {
+        com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
       Builder builder = new Builder(parent);
       return builder;
     }
@@ -3236,18 +3076,18 @@ public final class NNServiceProto {
     public static final class Builder extends
         com.google.protobuf.GeneratedMessageV3.Builder<Builder> implements
         // @@protoc_insertion_point(builder_implements:nn.EvaluateResponse)
-        EvaluateResponseOrBuilder {
+        com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.EvaluateResponseOrBuilder {
       public static final com.google.protobuf.Descriptors.Descriptor
           getDescriptor() {
-        return NNServiceProto.internal_static_nn_EvaluateResponse_descriptor;
+        return com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.internal_static_nn_EvaluateResponse_descriptor;
       }
 
-      @Override
-      protected FieldAccessorTable
+      @java.lang.Override
+      protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
           internalGetFieldAccessorTable() {
-        return NNServiceProto.internal_static_nn_EvaluateResponse_fieldAccessorTable
+        return com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.internal_static_nn_EvaluateResponse_fieldAccessorTable
             .ensureFieldAccessorsInitialized(
-                EvaluateResponse.class, Builder.class);
+                com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.EvaluateResponse.class, com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.EvaluateResponse.Builder.class);
       }
 
       // Construct using com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.EvaluateResponse.newBuilder()
@@ -3256,7 +3096,7 @@ public final class NNServiceProto {
       }
 
       private Builder(
-          BuilderParent parent) {
+          com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
         super(parent);
         maybeForceBuilderInitialization();
       }
@@ -3265,7 +3105,7 @@ public final class NNServiceProto {
                 .alwaysUseFieldBuilders) {
         }
       }
-      @Override
+      @java.lang.Override
       public Builder clear() {
         super.clear();
         response_ = "";
@@ -3283,29 +3123,29 @@ public final class NNServiceProto {
         return this;
       }
 
-      @Override
+      @java.lang.Override
       public com.google.protobuf.Descriptors.Descriptor
           getDescriptorForType() {
-        return NNServiceProto.internal_static_nn_EvaluateResponse_descriptor;
+        return com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.internal_static_nn_EvaluateResponse_descriptor;
       }
 
-      @Override
-      public EvaluateResponse getDefaultInstanceForType() {
-        return EvaluateResponse.getDefaultInstance();
+      @java.lang.Override
+      public com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.EvaluateResponse getDefaultInstanceForType() {
+        return com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.EvaluateResponse.getDefaultInstance();
       }
 
-      @Override
-      public EvaluateResponse build() {
-        EvaluateResponse result = buildPartial();
+      @java.lang.Override
+      public com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.EvaluateResponse build() {
+        com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.EvaluateResponse result = buildPartial();
         if (!result.isInitialized()) {
           throw newUninitializedMessageException(result);
         }
         return result;
       }
 
-      @Override
-      public EvaluateResponse buildPartial() {
-        EvaluateResponse result = new EvaluateResponse(this);
+      @java.lang.Override
+      public com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.EvaluateResponse buildPartial() {
+        com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.EvaluateResponse result = new com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.EvaluateResponse(this);
         result.response_ = response_;
         if (dataBuilder_ == null) {
           result.data_ = data_;
@@ -3318,50 +3158,50 @@ public final class NNServiceProto {
         return result;
       }
 
-      @Override
+      @java.lang.Override
       public Builder clone() {
         return super.clone();
       }
-      @Override
+      @java.lang.Override
       public Builder setField(
           com.google.protobuf.Descriptors.FieldDescriptor field,
-          Object value) {
+          java.lang.Object value) {
         return super.setField(field, value);
       }
-      @Override
+      @java.lang.Override
       public Builder clearField(
           com.google.protobuf.Descriptors.FieldDescriptor field) {
         return super.clearField(field);
       }
-      @Override
+      @java.lang.Override
       public Builder clearOneof(
           com.google.protobuf.Descriptors.OneofDescriptor oneof) {
         return super.clearOneof(oneof);
       }
-      @Override
+      @java.lang.Override
       public Builder setRepeatedField(
           com.google.protobuf.Descriptors.FieldDescriptor field,
-          int index, Object value) {
+          int index, java.lang.Object value) {
         return super.setRepeatedField(field, index, value);
       }
-      @Override
+      @java.lang.Override
       public Builder addRepeatedField(
           com.google.protobuf.Descriptors.FieldDescriptor field,
-          Object value) {
+          java.lang.Object value) {
         return super.addRepeatedField(field, value);
       }
-      @Override
+      @java.lang.Override
       public Builder mergeFrom(com.google.protobuf.Message other) {
-        if (other instanceof EvaluateResponse) {
-          return mergeFrom((EvaluateResponse)other);
+        if (other instanceof com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.EvaluateResponse) {
+          return mergeFrom((com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.EvaluateResponse)other);
         } else {
           super.mergeFrom(other);
           return this;
         }
       }
 
-      public Builder mergeFrom(EvaluateResponse other) {
-        if (other == EvaluateResponse.getDefaultInstance()) return this;
+      public Builder mergeFrom(com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.EvaluateResponse other) {
+        if (other == com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.EvaluateResponse.getDefaultInstance()) return this;
         if (!other.getResponse().isEmpty()) {
           response_ = other.response_;
           onChanged();
@@ -3381,21 +3221,21 @@ public final class NNServiceProto {
         return this;
       }
 
-      @Override
+      @java.lang.Override
       public final boolean isInitialized() {
         return true;
       }
 
-      @Override
+      @java.lang.Override
       public Builder mergeFrom(
           com.google.protobuf.CodedInputStream input,
           com.google.protobuf.ExtensionRegistryLite extensionRegistry)
           throws java.io.IOException {
-        EvaluateResponse parsedMessage = null;
+        com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.EvaluateResponse parsedMessage = null;
         try {
           parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
         } catch (com.google.protobuf.InvalidProtocolBufferException e) {
-          parsedMessage = (EvaluateResponse) e.getUnfinishedMessage();
+          parsedMessage = (com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.EvaluateResponse) e.getUnfinishedMessage();
           throw e.unwrapIOException();
         } finally {
           if (parsedMessage != null) {
@@ -3405,21 +3245,21 @@ public final class NNServiceProto {
         return this;
       }
 
-      private Object response_ = "";
+      private java.lang.Object response_ = "";
       /**
        * <code>string response = 1;</code>
        * @return The response.
        */
-      public String getResponse() {
-        Object ref = response_;
-        if (!(ref instanceof String)) {
+      public java.lang.String getResponse() {
+        java.lang.Object ref = response_;
+        if (!(ref instanceof java.lang.String)) {
           com.google.protobuf.ByteString bs =
               (com.google.protobuf.ByteString) ref;
-          String s = bs.toStringUtf8();
+          java.lang.String s = bs.toStringUtf8();
           response_ = s;
           return s;
         } else {
-          return (String) ref;
+          return (java.lang.String) ref;
         }
       }
       /**
@@ -3428,11 +3268,11 @@ public final class NNServiceProto {
        */
       public com.google.protobuf.ByteString
           getResponseBytes() {
-        Object ref = response_;
+        java.lang.Object ref = response_;
         if (ref instanceof String) {
           com.google.protobuf.ByteString b = 
               com.google.protobuf.ByteString.copyFromUtf8(
-                  (String) ref);
+                  (java.lang.String) ref);
           response_ = b;
           return b;
         } else {
@@ -3445,7 +3285,7 @@ public final class NNServiceProto {
        * @return This builder for chaining.
        */
       public Builder setResponse(
-          String value) {
+          java.lang.String value) {
         if (value == null) {
     throw new NullPointerException();
   }
@@ -3481,9 +3321,9 @@ public final class NNServiceProto {
         return this;
       }
 
-      private FlBaseProto.TensorMap data_;
+      private com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.TensorMap data_;
       private com.google.protobuf.SingleFieldBuilderV3<
-          FlBaseProto.TensorMap, FlBaseProto.TensorMap.Builder, FlBaseProto.TensorMapOrBuilder> dataBuilder_;
+          com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.TensorMap, com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.TensorMap.Builder, com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.TensorMapOrBuilder> dataBuilder_;
       /**
        * <code>.TensorMap data = 2;</code>
        * @return Whether the data field is set.
@@ -3495,9 +3335,9 @@ public final class NNServiceProto {
        * <code>.TensorMap data = 2;</code>
        * @return The data.
        */
-      public FlBaseProto.TensorMap getData() {
+      public com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.TensorMap getData() {
         if (dataBuilder_ == null) {
-          return data_ == null ? FlBaseProto.TensorMap.getDefaultInstance() : data_;
+          return data_ == null ? com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.TensorMap.getDefaultInstance() : data_;
         } else {
           return dataBuilder_.getMessage();
         }
@@ -3505,7 +3345,7 @@ public final class NNServiceProto {
       /**
        * <code>.TensorMap data = 2;</code>
        */
-      public Builder setData(FlBaseProto.TensorMap value) {
+      public Builder setData(com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.TensorMap value) {
         if (dataBuilder_ == null) {
           if (value == null) {
             throw new NullPointerException();
@@ -3522,7 +3362,7 @@ public final class NNServiceProto {
        * <code>.TensorMap data = 2;</code>
        */
       public Builder setData(
-          FlBaseProto.TensorMap.Builder builderForValue) {
+          com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.TensorMap.Builder builderForValue) {
         if (dataBuilder_ == null) {
           data_ = builderForValue.build();
           onChanged();
@@ -3535,11 +3375,11 @@ public final class NNServiceProto {
       /**
        * <code>.TensorMap data = 2;</code>
        */
-      public Builder mergeData(FlBaseProto.TensorMap value) {
+      public Builder mergeData(com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.TensorMap value) {
         if (dataBuilder_ == null) {
           if (data_ != null) {
             data_ =
-              FlBaseProto.TensorMap.newBuilder(data_).mergeFrom(value).buildPartial();
+              com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.TensorMap.newBuilder(data_).mergeFrom(value).buildPartial();
           } else {
             data_ = value;
           }
@@ -3567,7 +3407,7 @@ public final class NNServiceProto {
       /**
        * <code>.TensorMap data = 2;</code>
        */
-      public FlBaseProto.TensorMap.Builder getDataBuilder() {
+      public com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.TensorMap.Builder getDataBuilder() {
         
         onChanged();
         return getDataFieldBuilder().getBuilder();
@@ -3575,23 +3415,23 @@ public final class NNServiceProto {
       /**
        * <code>.TensorMap data = 2;</code>
        */
-      public FlBaseProto.TensorMapOrBuilder getDataOrBuilder() {
+      public com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.TensorMapOrBuilder getDataOrBuilder() {
         if (dataBuilder_ != null) {
           return dataBuilder_.getMessageOrBuilder();
         } else {
           return data_ == null ?
-              FlBaseProto.TensorMap.getDefaultInstance() : data_;
+              com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.TensorMap.getDefaultInstance() : data_;
         }
       }
       /**
        * <code>.TensorMap data = 2;</code>
        */
       private com.google.protobuf.SingleFieldBuilderV3<
-          FlBaseProto.TensorMap, FlBaseProto.TensorMap.Builder, FlBaseProto.TensorMapOrBuilder>
+          com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.TensorMap, com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.TensorMap.Builder, com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.TensorMapOrBuilder> 
           getDataFieldBuilder() {
         if (dataBuilder_ == null) {
           dataBuilder_ = new com.google.protobuf.SingleFieldBuilderV3<
-              FlBaseProto.TensorMap, FlBaseProto.TensorMap.Builder, FlBaseProto.TensorMapOrBuilder>(
+              com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.TensorMap, com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.TensorMap.Builder, com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.TensorMapOrBuilder>(
                   getData(),
                   getParentForChildren(),
                   isClean());
@@ -3605,7 +3445,7 @@ public final class NNServiceProto {
        * <code>int32 code = 3;</code>
        * @return The code.
        */
-      @Override
+      @java.lang.Override
       public int getCode() {
         return code_;
       }
@@ -3631,21 +3471,21 @@ public final class NNServiceProto {
         return this;
       }
 
-      private Object message_ = "";
+      private java.lang.Object message_ = "";
       /**
        * <code>string message = 4;</code>
        * @return The message.
        */
-      public String getMessage() {
-        Object ref = message_;
-        if (!(ref instanceof String)) {
+      public java.lang.String getMessage() {
+        java.lang.Object ref = message_;
+        if (!(ref instanceof java.lang.String)) {
           com.google.protobuf.ByteString bs =
               (com.google.protobuf.ByteString) ref;
-          String s = bs.toStringUtf8();
+          java.lang.String s = bs.toStringUtf8();
           message_ = s;
           return s;
         } else {
-          return (String) ref;
+          return (java.lang.String) ref;
         }
       }
       /**
@@ -3654,11 +3494,11 @@ public final class NNServiceProto {
        */
       public com.google.protobuf.ByteString
           getMessageBytes() {
-        Object ref = message_;
+        java.lang.Object ref = message_;
         if (ref instanceof String) {
           com.google.protobuf.ByteString b = 
               com.google.protobuf.ByteString.copyFromUtf8(
-                  (String) ref);
+                  (java.lang.String) ref);
           message_ = b;
           return b;
         } else {
@@ -3671,7 +3511,7 @@ public final class NNServiceProto {
        * @return This builder for chaining.
        */
       public Builder setMessage(
-          String value) {
+          java.lang.String value) {
         if (value == null) {
     throw new NullPointerException();
   }
@@ -3706,13 +3546,13 @@ public final class NNServiceProto {
         onChanged();
         return this;
       }
-      @Override
+      @java.lang.Override
       public final Builder setUnknownFields(
           final com.google.protobuf.UnknownFieldSet unknownFields) {
         return super.setUnknownFields(unknownFields);
       }
 
-      @Override
+      @java.lang.Override
       public final Builder mergeUnknownFields(
           final com.google.protobuf.UnknownFieldSet unknownFields) {
         return super.mergeUnknownFields(unknownFields);
@@ -3723,18 +3563,18 @@ public final class NNServiceProto {
     }
 
     // @@protoc_insertion_point(class_scope:nn.EvaluateResponse)
-    private static final EvaluateResponse DEFAULT_INSTANCE;
+    private static final com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.EvaluateResponse DEFAULT_INSTANCE;
     static {
-      DEFAULT_INSTANCE = new EvaluateResponse();
+      DEFAULT_INSTANCE = new com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.EvaluateResponse();
     }
 
-    public static EvaluateResponse getDefaultInstance() {
+    public static com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.EvaluateResponse getDefaultInstance() {
       return DEFAULT_INSTANCE;
     }
 
     private static final com.google.protobuf.Parser<EvaluateResponse>
         PARSER = new com.google.protobuf.AbstractParser<EvaluateResponse>() {
-      @Override
+      @java.lang.Override
       public EvaluateResponse parsePartialFrom(
           com.google.protobuf.CodedInputStream input,
           com.google.protobuf.ExtensionRegistryLite extensionRegistry)
@@ -3747,13 +3587,13 @@ public final class NNServiceProto {
       return PARSER;
     }
 
-    @Override
+    @java.lang.Override
     public com.google.protobuf.Parser<EvaluateResponse> getParserForType() {
       return PARSER;
     }
 
-    @Override
-    public EvaluateResponse getDefaultInstanceForType() {
+    @java.lang.Override
+    public com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.EvaluateResponse getDefaultInstanceForType() {
       return DEFAULT_INSTANCE;
     }
 
@@ -3764,16 +3604,10 @@ public final class NNServiceProto {
       com.google.protobuf.MessageOrBuilder {
 
     /**
-     * <code>string clientuuid = 1;</code>
+     * <code>int32 clientuuid = 1;</code>
      * @return The clientuuid.
      */
-    String getClientuuid();
-    /**
-     * <code>string clientuuid = 1;</code>
-     * @return The bytes for clientuuid.
-     */
-    com.google.protobuf.ByteString
-        getClientuuidBytes();
+    int getClientuuid();
 
     /**
      * <code>.TensorMap data = 2;</code>
@@ -3784,17 +3618,17 @@ public final class NNServiceProto {
      * <code>.TensorMap data = 2;</code>
      * @return The data.
      */
-    FlBaseProto.TensorMap getData();
+    com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.TensorMap getData();
     /**
      * <code>.TensorMap data = 2;</code>
      */
-    FlBaseProto.TensorMapOrBuilder getDataOrBuilder();
+    com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.TensorMapOrBuilder getDataOrBuilder();
 
     /**
      * <code>string algorithm = 3;</code>
      * @return The algorithm.
      */
-    String getAlgorithm();
+    java.lang.String getAlgorithm();
     /**
      * <code>string algorithm = 3;</code>
      * @return The bytes for algorithm.
@@ -3815,18 +3649,17 @@ public final class NNServiceProto {
       super(builder);
     }
     private PredictRequest() {
-      clientuuid_ = "";
       algorithm_ = "";
     }
 
-    @Override
+    @java.lang.Override
     @SuppressWarnings({"unused"})
-    protected Object newInstance(
+    protected java.lang.Object newInstance(
         UnusedPrivateParameter unused) {
       return new PredictRequest();
     }
 
-    @Override
+    @java.lang.Override
     public final com.google.protobuf.UnknownFieldSet
     getUnknownFields() {
       return this.unknownFields;
@@ -3837,7 +3670,7 @@ public final class NNServiceProto {
         throws com.google.protobuf.InvalidProtocolBufferException {
       this();
       if (extensionRegistry == null) {
-        throw new NullPointerException();
+        throw new java.lang.NullPointerException();
       }
       com.google.protobuf.UnknownFieldSet.Builder unknownFields =
           com.google.protobuf.UnknownFieldSet.newBuilder();
@@ -3849,18 +3682,17 @@ public final class NNServiceProto {
             case 0:
               done = true;
               break;
-            case 10: {
-              String s = input.readStringRequireUtf8();
+            case 8: {
 
-              clientuuid_ = s;
+              clientuuid_ = input.readInt32();
               break;
             }
             case 18: {
-              FlBaseProto.TensorMap.Builder subBuilder = null;
+              com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.TensorMap.Builder subBuilder = null;
               if (data_ != null) {
                 subBuilder = data_.toBuilder();
               }
-              data_ = input.readMessage(FlBaseProto.TensorMap.parser(), extensionRegistry);
+              data_ = input.readMessage(com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.TensorMap.parser(), extensionRegistry);
               if (subBuilder != null) {
                 subBuilder.mergeFrom(data_);
                 data_ = subBuilder.buildPartial();
@@ -3869,7 +3701,7 @@ public final class NNServiceProto {
               break;
             }
             case 26: {
-              String s = input.readStringRequireUtf8();
+              java.lang.String s = input.readStringRequireUtf8();
 
               algorithm_ = s;
               break;
@@ -3895,62 +3727,35 @@ public final class NNServiceProto {
     }
     public static final com.google.protobuf.Descriptors.Descriptor
         getDescriptor() {
-      return NNServiceProto.internal_static_nn_PredictRequest_descriptor;
+      return com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.internal_static_nn_PredictRequest_descriptor;
     }
 
-    @Override
-    protected FieldAccessorTable
+    @java.lang.Override
+    protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
         internalGetFieldAccessorTable() {
-      return NNServiceProto.internal_static_nn_PredictRequest_fieldAccessorTable
+      return com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.internal_static_nn_PredictRequest_fieldAccessorTable
           .ensureFieldAccessorsInitialized(
-              PredictRequest.class, Builder.class);
+              com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.PredictRequest.class, com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.PredictRequest.Builder.class);
     }
 
     public static final int CLIENTUUID_FIELD_NUMBER = 1;
-    private volatile Object clientuuid_;
+    private int clientuuid_;
     /**
-     * <code>string clientuuid = 1;</code>
+     * <code>int32 clientuuid = 1;</code>
      * @return The clientuuid.
      */
-    @Override
-    public String getClientuuid() {
-      Object ref = clientuuid_;
-      if (ref instanceof String) {
-        return (String) ref;
-      } else {
-        com.google.protobuf.ByteString bs = 
-            (com.google.protobuf.ByteString) ref;
-        String s = bs.toStringUtf8();
-        clientuuid_ = s;
-        return s;
-      }
-    }
-    /**
-     * <code>string clientuuid = 1;</code>
-     * @return The bytes for clientuuid.
-     */
-    @Override
-    public com.google.protobuf.ByteString
-        getClientuuidBytes() {
-      Object ref = clientuuid_;
-      if (ref instanceof String) {
-        com.google.protobuf.ByteString b = 
-            com.google.protobuf.ByteString.copyFromUtf8(
-                (String) ref);
-        clientuuid_ = b;
-        return b;
-      } else {
-        return (com.google.protobuf.ByteString) ref;
-      }
+    @java.lang.Override
+    public int getClientuuid() {
+      return clientuuid_;
     }
 
     public static final int DATA_FIELD_NUMBER = 2;
-    private FlBaseProto.TensorMap data_;
+    private com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.TensorMap data_;
     /**
      * <code>.TensorMap data = 2;</code>
      * @return Whether the data field is set.
      */
-    @Override
+    @java.lang.Override
     public boolean hasData() {
       return data_ != null;
     }
@@ -3958,33 +3763,33 @@ public final class NNServiceProto {
      * <code>.TensorMap data = 2;</code>
      * @return The data.
      */
-    @Override
-    public FlBaseProto.TensorMap getData() {
-      return data_ == null ? FlBaseProto.TensorMap.getDefaultInstance() : data_;
+    @java.lang.Override
+    public com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.TensorMap getData() {
+      return data_ == null ? com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.TensorMap.getDefaultInstance() : data_;
     }
     /**
      * <code>.TensorMap data = 2;</code>
      */
-    @Override
-    public FlBaseProto.TensorMapOrBuilder getDataOrBuilder() {
+    @java.lang.Override
+    public com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.TensorMapOrBuilder getDataOrBuilder() {
       return getData();
     }
 
     public static final int ALGORITHM_FIELD_NUMBER = 3;
-    private volatile Object algorithm_;
+    private volatile java.lang.Object algorithm_;
     /**
      * <code>string algorithm = 3;</code>
      * @return The algorithm.
      */
-    @Override
-    public String getAlgorithm() {
-      Object ref = algorithm_;
-      if (ref instanceof String) {
-        return (String) ref;
+    @java.lang.Override
+    public java.lang.String getAlgorithm() {
+      java.lang.Object ref = algorithm_;
+      if (ref instanceof java.lang.String) {
+        return (java.lang.String) ref;
       } else {
         com.google.protobuf.ByteString bs = 
             (com.google.protobuf.ByteString) ref;
-        String s = bs.toStringUtf8();
+        java.lang.String s = bs.toStringUtf8();
         algorithm_ = s;
         return s;
       }
@@ -3993,14 +3798,14 @@ public final class NNServiceProto {
      * <code>string algorithm = 3;</code>
      * @return The bytes for algorithm.
      */
-    @Override
+    @java.lang.Override
     public com.google.protobuf.ByteString
         getAlgorithmBytes() {
-      Object ref = algorithm_;
-      if (ref instanceof String) {
+      java.lang.Object ref = algorithm_;
+      if (ref instanceof java.lang.String) {
         com.google.protobuf.ByteString b = 
             com.google.protobuf.ByteString.copyFromUtf8(
-                (String) ref);
+                (java.lang.String) ref);
         algorithm_ = b;
         return b;
       } else {
@@ -4009,7 +3814,7 @@ public final class NNServiceProto {
     }
 
     private byte memoizedIsInitialized = -1;
-    @Override
+    @java.lang.Override
     public final boolean isInitialized() {
       byte isInitialized = memoizedIsInitialized;
       if (isInitialized == 1) return true;
@@ -4019,11 +3824,11 @@ public final class NNServiceProto {
       return true;
     }
 
-    @Override
+    @java.lang.Override
     public void writeTo(com.google.protobuf.CodedOutputStream output)
                         throws java.io.IOException {
-      if (!getClientuuidBytes().isEmpty()) {
-        com.google.protobuf.GeneratedMessageV3.writeString(output, 1, clientuuid_);
+      if (clientuuid_ != 0) {
+        output.writeInt32(1, clientuuid_);
       }
       if (data_ != null) {
         output.writeMessage(2, getData());
@@ -4034,14 +3839,15 @@ public final class NNServiceProto {
       unknownFields.writeTo(output);
     }
 
-    @Override
+    @java.lang.Override
     public int getSerializedSize() {
       int size = memoizedSize;
       if (size != -1) return size;
 
       size = 0;
-      if (!getClientuuidBytes().isEmpty()) {
-        size += com.google.protobuf.GeneratedMessageV3.computeStringSize(1, clientuuid_);
+      if (clientuuid_ != 0) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeInt32Size(1, clientuuid_);
       }
       if (data_ != null) {
         size += com.google.protobuf.CodedOutputStream
@@ -4055,18 +3861,18 @@ public final class NNServiceProto {
       return size;
     }
 
-    @Override
-    public boolean equals(final Object obj) {
+    @java.lang.Override
+    public boolean equals(final java.lang.Object obj) {
       if (obj == this) {
        return true;
       }
-      if (!(obj instanceof PredictRequest)) {
+      if (!(obj instanceof com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.PredictRequest)) {
         return super.equals(obj);
       }
-      PredictRequest other = (PredictRequest) obj;
+      com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.PredictRequest other = (com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.PredictRequest) obj;
 
-      if (!getClientuuid()
-          .equals(other.getClientuuid())) return false;
+      if (getClientuuid()
+          != other.getClientuuid()) return false;
       if (hasData() != other.hasData()) return false;
       if (hasData()) {
         if (!getData()
@@ -4078,7 +3884,7 @@ public final class NNServiceProto {
       return true;
     }
 
-    @Override
+    @java.lang.Override
     public int hashCode() {
       if (memoizedHashCode != 0) {
         return memoizedHashCode;
@@ -4086,7 +3892,7 @@ public final class NNServiceProto {
       int hash = 41;
       hash = (19 * hash) + getDescriptor().hashCode();
       hash = (37 * hash) + CLIENTUUID_FIELD_NUMBER;
-      hash = (53 * hash) + getClientuuid().hashCode();
+      hash = (53 * hash) + getClientuuid();
       if (hasData()) {
         hash = (37 * hash) + DATA_FIELD_NUMBER;
         hash = (53 * hash) + getData().hashCode();
@@ -4098,69 +3904,69 @@ public final class NNServiceProto {
       return hash;
     }
 
-    public static PredictRequest parseFrom(
+    public static com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.PredictRequest parseFrom(
         java.nio.ByteBuffer data)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data);
     }
-    public static PredictRequest parseFrom(
+    public static com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.PredictRequest parseFrom(
         java.nio.ByteBuffer data,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data, extensionRegistry);
     }
-    public static PredictRequest parseFrom(
+    public static com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.PredictRequest parseFrom(
         com.google.protobuf.ByteString data)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data);
     }
-    public static PredictRequest parseFrom(
+    public static com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.PredictRequest parseFrom(
         com.google.protobuf.ByteString data,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data, extensionRegistry);
     }
-    public static PredictRequest parseFrom(byte[] data)
+    public static com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.PredictRequest parseFrom(byte[] data)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data);
     }
-    public static PredictRequest parseFrom(
+    public static com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.PredictRequest parseFrom(
         byte[] data,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data, extensionRegistry);
     }
-    public static PredictRequest parseFrom(java.io.InputStream input)
+    public static com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.PredictRequest parseFrom(java.io.InputStream input)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseWithIOException(PARSER, input);
     }
-    public static PredictRequest parseFrom(
+    public static com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.PredictRequest parseFrom(
         java.io.InputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseWithIOException(PARSER, input, extensionRegistry);
     }
-    public static PredictRequest parseDelimitedFrom(java.io.InputStream input)
+    public static com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.PredictRequest parseDelimitedFrom(java.io.InputStream input)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseDelimitedWithIOException(PARSER, input);
     }
-    public static PredictRequest parseDelimitedFrom(
+    public static com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.PredictRequest parseDelimitedFrom(
         java.io.InputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseDelimitedWithIOException(PARSER, input, extensionRegistry);
     }
-    public static PredictRequest parseFrom(
+    public static com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.PredictRequest parseFrom(
         com.google.protobuf.CodedInputStream input)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseWithIOException(PARSER, input);
     }
-    public static PredictRequest parseFrom(
+    public static com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.PredictRequest parseFrom(
         com.google.protobuf.CodedInputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
@@ -4168,23 +3974,23 @@ public final class NNServiceProto {
           .parseWithIOException(PARSER, input, extensionRegistry);
     }
 
-    @Override
+    @java.lang.Override
     public Builder newBuilderForType() { return newBuilder(); }
     public static Builder newBuilder() {
       return DEFAULT_INSTANCE.toBuilder();
     }
-    public static Builder newBuilder(PredictRequest prototype) {
+    public static Builder newBuilder(com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.PredictRequest prototype) {
       return DEFAULT_INSTANCE.toBuilder().mergeFrom(prototype);
     }
-    @Override
+    @java.lang.Override
     public Builder toBuilder() {
       return this == DEFAULT_INSTANCE
           ? new Builder() : new Builder().mergeFrom(this);
     }
 
-    @Override
+    @java.lang.Override
     protected Builder newBuilderForType(
-        BuilderParent parent) {
+        com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
       Builder builder = new Builder(parent);
       return builder;
     }
@@ -4194,18 +4000,18 @@ public final class NNServiceProto {
     public static final class Builder extends
         com.google.protobuf.GeneratedMessageV3.Builder<Builder> implements
         // @@protoc_insertion_point(builder_implements:nn.PredictRequest)
-        PredictRequestOrBuilder {
+        com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.PredictRequestOrBuilder {
       public static final com.google.protobuf.Descriptors.Descriptor
           getDescriptor() {
-        return NNServiceProto.internal_static_nn_PredictRequest_descriptor;
+        return com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.internal_static_nn_PredictRequest_descriptor;
       }
 
-      @Override
-      protected FieldAccessorTable
+      @java.lang.Override
+      protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
           internalGetFieldAccessorTable() {
-        return NNServiceProto.internal_static_nn_PredictRequest_fieldAccessorTable
+        return com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.internal_static_nn_PredictRequest_fieldAccessorTable
             .ensureFieldAccessorsInitialized(
-                PredictRequest.class, Builder.class);
+                com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.PredictRequest.class, com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.PredictRequest.Builder.class);
       }
 
       // Construct using com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.PredictRequest.newBuilder()
@@ -4214,7 +4020,7 @@ public final class NNServiceProto {
       }
 
       private Builder(
-          BuilderParent parent) {
+          com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
         super(parent);
         maybeForceBuilderInitialization();
       }
@@ -4223,10 +4029,10 @@ public final class NNServiceProto {
                 .alwaysUseFieldBuilders) {
         }
       }
-      @Override
+      @java.lang.Override
       public Builder clear() {
         super.clear();
-        clientuuid_ = "";
+        clientuuid_ = 0;
 
         if (dataBuilder_ == null) {
           data_ = null;
@@ -4239,29 +4045,29 @@ public final class NNServiceProto {
         return this;
       }
 
-      @Override
+      @java.lang.Override
       public com.google.protobuf.Descriptors.Descriptor
           getDescriptorForType() {
-        return NNServiceProto.internal_static_nn_PredictRequest_descriptor;
+        return com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.internal_static_nn_PredictRequest_descriptor;
       }
 
-      @Override
-      public PredictRequest getDefaultInstanceForType() {
-        return PredictRequest.getDefaultInstance();
+      @java.lang.Override
+      public com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.PredictRequest getDefaultInstanceForType() {
+        return com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.PredictRequest.getDefaultInstance();
       }
 
-      @Override
-      public PredictRequest build() {
-        PredictRequest result = buildPartial();
+      @java.lang.Override
+      public com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.PredictRequest build() {
+        com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.PredictRequest result = buildPartial();
         if (!result.isInitialized()) {
           throw newUninitializedMessageException(result);
         }
         return result;
       }
 
-      @Override
-      public PredictRequest buildPartial() {
-        PredictRequest result = new PredictRequest(this);
+      @java.lang.Override
+      public com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.PredictRequest buildPartial() {
+        com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.PredictRequest result = new com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.PredictRequest(this);
         result.clientuuid_ = clientuuid_;
         if (dataBuilder_ == null) {
           result.data_ = data_;
@@ -4273,53 +4079,52 @@ public final class NNServiceProto {
         return result;
       }
 
-      @Override
+      @java.lang.Override
       public Builder clone() {
         return super.clone();
       }
-      @Override
+      @java.lang.Override
       public Builder setField(
           com.google.protobuf.Descriptors.FieldDescriptor field,
-          Object value) {
+          java.lang.Object value) {
         return super.setField(field, value);
       }
-      @Override
+      @java.lang.Override
       public Builder clearField(
           com.google.protobuf.Descriptors.FieldDescriptor field) {
         return super.clearField(field);
       }
-      @Override
+      @java.lang.Override
       public Builder clearOneof(
           com.google.protobuf.Descriptors.OneofDescriptor oneof) {
         return super.clearOneof(oneof);
       }
-      @Override
+      @java.lang.Override
       public Builder setRepeatedField(
           com.google.protobuf.Descriptors.FieldDescriptor field,
-          int index, Object value) {
+          int index, java.lang.Object value) {
         return super.setRepeatedField(field, index, value);
       }
-      @Override
+      @java.lang.Override
       public Builder addRepeatedField(
           com.google.protobuf.Descriptors.FieldDescriptor field,
-          Object value) {
+          java.lang.Object value) {
         return super.addRepeatedField(field, value);
       }
-      @Override
+      @java.lang.Override
       public Builder mergeFrom(com.google.protobuf.Message other) {
-        if (other instanceof PredictRequest) {
-          return mergeFrom((PredictRequest)other);
+        if (other instanceof com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.PredictRequest) {
+          return mergeFrom((com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.PredictRequest)other);
         } else {
           super.mergeFrom(other);
           return this;
         }
       }
 
-      public Builder mergeFrom(PredictRequest other) {
-        if (other == PredictRequest.getDefaultInstance()) return this;
-        if (!other.getClientuuid().isEmpty()) {
-          clientuuid_ = other.clientuuid_;
-          onChanged();
+      public Builder mergeFrom(com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.PredictRequest other) {
+        if (other == com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.PredictRequest.getDefaultInstance()) return this;
+        if (other.getClientuuid() != 0) {
+          setClientuuid(other.getClientuuid());
         }
         if (other.hasData()) {
           mergeData(other.getData());
@@ -4333,21 +4138,21 @@ public final class NNServiceProto {
         return this;
       }
 
-      @Override
+      @java.lang.Override
       public final boolean isInitialized() {
         return true;
       }
 
-      @Override
+      @java.lang.Override
       public Builder mergeFrom(
           com.google.protobuf.CodedInputStream input,
           com.google.protobuf.ExtensionRegistryLite extensionRegistry)
           throws java.io.IOException {
-        PredictRequest parsedMessage = null;
+        com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.PredictRequest parsedMessage = null;
         try {
           parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
         } catch (com.google.protobuf.InvalidProtocolBufferException e) {
-          parsedMessage = (PredictRequest) e.getUnfinishedMessage();
+          parsedMessage = (com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.PredictRequest) e.getUnfinishedMessage();
           throw e.unwrapIOException();
         } finally {
           if (parsedMessage != null) {
@@ -4357,85 +4162,40 @@ public final class NNServiceProto {
         return this;
       }
 
-      private Object clientuuid_ = "";
+      private int clientuuid_ ;
       /**
-       * <code>string clientuuid = 1;</code>
+       * <code>int32 clientuuid = 1;</code>
        * @return The clientuuid.
        */
-      public String getClientuuid() {
-        Object ref = clientuuid_;
-        if (!(ref instanceof String)) {
-          com.google.protobuf.ByteString bs =
-              (com.google.protobuf.ByteString) ref;
-          String s = bs.toStringUtf8();
-          clientuuid_ = s;
-          return s;
-        } else {
-          return (String) ref;
-        }
+      @java.lang.Override
+      public int getClientuuid() {
+        return clientuuid_;
       }
       /**
-       * <code>string clientuuid = 1;</code>
-       * @return The bytes for clientuuid.
-       */
-      public com.google.protobuf.ByteString
-          getClientuuidBytes() {
-        Object ref = clientuuid_;
-        if (ref instanceof String) {
-          com.google.protobuf.ByteString b = 
-              com.google.protobuf.ByteString.copyFromUtf8(
-                  (String) ref);
-          clientuuid_ = b;
-          return b;
-        } else {
-          return (com.google.protobuf.ByteString) ref;
-        }
-      }
-      /**
-       * <code>string clientuuid = 1;</code>
+       * <code>int32 clientuuid = 1;</code>
        * @param value The clientuuid to set.
        * @return This builder for chaining.
        */
-      public Builder setClientuuid(
-          String value) {
-        if (value == null) {
-    throw new NullPointerException();
-  }
-  
+      public Builder setClientuuid(int value) {
+        
         clientuuid_ = value;
         onChanged();
         return this;
       }
       /**
-       * <code>string clientuuid = 1;</code>
+       * <code>int32 clientuuid = 1;</code>
        * @return This builder for chaining.
        */
       public Builder clearClientuuid() {
         
-        clientuuid_ = getDefaultInstance().getClientuuid();
-        onChanged();
-        return this;
-      }
-      /**
-       * <code>string clientuuid = 1;</code>
-       * @param value The bytes for clientuuid to set.
-       * @return This builder for chaining.
-       */
-      public Builder setClientuuidBytes(
-          com.google.protobuf.ByteString value) {
-        if (value == null) {
-    throw new NullPointerException();
-  }
-  checkByteStringIsUtf8(value);
-        
-        clientuuid_ = value;
+        clientuuid_ = 0;
         onChanged();
         return this;
       }
 
-      private FlBaseProto.TensorMap data_;
+      private com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.TensorMap data_;
       private com.google.protobuf.SingleFieldBuilderV3<
-          FlBaseProto.TensorMap, FlBaseProto.TensorMap.Builder, FlBaseProto.TensorMapOrBuilder> dataBuilder_;
+          com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.TensorMap, com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.TensorMap.Builder, com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.TensorMapOrBuilder> dataBuilder_;
       /**
        * <code>.TensorMap data = 2;</code>
        * @return Whether the data field is set.
@@ -4447,9 +4207,9 @@ public final class NNServiceProto {
        * <code>.TensorMap data = 2;</code>
        * @return The data.
        */
-      public FlBaseProto.TensorMap getData() {
+      public com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.TensorMap getData() {
         if (dataBuilder_ == null) {
-          return data_ == null ? FlBaseProto.TensorMap.getDefaultInstance() : data_;
+          return data_ == null ? com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.TensorMap.getDefaultInstance() : data_;
         } else {
           return dataBuilder_.getMessage();
         }
@@ -4457,7 +4217,7 @@ public final class NNServiceProto {
       /**
        * <code>.TensorMap data = 2;</code>
        */
-      public Builder setData(FlBaseProto.TensorMap value) {
+      public Builder setData(com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.TensorMap value) {
         if (dataBuilder_ == null) {
           if (value == null) {
             throw new NullPointerException();
@@ -4474,7 +4234,7 @@ public final class NNServiceProto {
        * <code>.TensorMap data = 2;</code>
        */
       public Builder setData(
-          FlBaseProto.TensorMap.Builder builderForValue) {
+          com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.TensorMap.Builder builderForValue) {
         if (dataBuilder_ == null) {
           data_ = builderForValue.build();
           onChanged();
@@ -4487,11 +4247,11 @@ public final class NNServiceProto {
       /**
        * <code>.TensorMap data = 2;</code>
        */
-      public Builder mergeData(FlBaseProto.TensorMap value) {
+      public Builder mergeData(com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.TensorMap value) {
         if (dataBuilder_ == null) {
           if (data_ != null) {
             data_ =
-              FlBaseProto.TensorMap.newBuilder(data_).mergeFrom(value).buildPartial();
+              com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.TensorMap.newBuilder(data_).mergeFrom(value).buildPartial();
           } else {
             data_ = value;
           }
@@ -4519,7 +4279,7 @@ public final class NNServiceProto {
       /**
        * <code>.TensorMap data = 2;</code>
        */
-      public FlBaseProto.TensorMap.Builder getDataBuilder() {
+      public com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.TensorMap.Builder getDataBuilder() {
         
         onChanged();
         return getDataFieldBuilder().getBuilder();
@@ -4527,23 +4287,23 @@ public final class NNServiceProto {
       /**
        * <code>.TensorMap data = 2;</code>
        */
-      public FlBaseProto.TensorMapOrBuilder getDataOrBuilder() {
+      public com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.TensorMapOrBuilder getDataOrBuilder() {
         if (dataBuilder_ != null) {
           return dataBuilder_.getMessageOrBuilder();
         } else {
           return data_ == null ?
-              FlBaseProto.TensorMap.getDefaultInstance() : data_;
+              com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.TensorMap.getDefaultInstance() : data_;
         }
       }
       /**
        * <code>.TensorMap data = 2;</code>
        */
       private com.google.protobuf.SingleFieldBuilderV3<
-          FlBaseProto.TensorMap, FlBaseProto.TensorMap.Builder, FlBaseProto.TensorMapOrBuilder>
+          com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.TensorMap, com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.TensorMap.Builder, com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.TensorMapOrBuilder> 
           getDataFieldBuilder() {
         if (dataBuilder_ == null) {
           dataBuilder_ = new com.google.protobuf.SingleFieldBuilderV3<
-              FlBaseProto.TensorMap, FlBaseProto.TensorMap.Builder, FlBaseProto.TensorMapOrBuilder>(
+              com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.TensorMap, com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.TensorMap.Builder, com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.TensorMapOrBuilder>(
                   getData(),
                   getParentForChildren(),
                   isClean());
@@ -4552,21 +4312,21 @@ public final class NNServiceProto {
         return dataBuilder_;
       }
 
-      private Object algorithm_ = "";
+      private java.lang.Object algorithm_ = "";
       /**
        * <code>string algorithm = 3;</code>
        * @return The algorithm.
        */
-      public String getAlgorithm() {
-        Object ref = algorithm_;
-        if (!(ref instanceof String)) {
+      public java.lang.String getAlgorithm() {
+        java.lang.Object ref = algorithm_;
+        if (!(ref instanceof java.lang.String)) {
           com.google.protobuf.ByteString bs =
               (com.google.protobuf.ByteString) ref;
-          String s = bs.toStringUtf8();
+          java.lang.String s = bs.toStringUtf8();
           algorithm_ = s;
           return s;
         } else {
-          return (String) ref;
+          return (java.lang.String) ref;
         }
       }
       /**
@@ -4575,11 +4335,11 @@ public final class NNServiceProto {
        */
       public com.google.protobuf.ByteString
           getAlgorithmBytes() {
-        Object ref = algorithm_;
+        java.lang.Object ref = algorithm_;
         if (ref instanceof String) {
           com.google.protobuf.ByteString b = 
               com.google.protobuf.ByteString.copyFromUtf8(
-                  (String) ref);
+                  (java.lang.String) ref);
           algorithm_ = b;
           return b;
         } else {
@@ -4592,7 +4352,7 @@ public final class NNServiceProto {
        * @return This builder for chaining.
        */
       public Builder setAlgorithm(
-          String value) {
+          java.lang.String value) {
         if (value == null) {
     throw new NullPointerException();
   }
@@ -4627,13 +4387,13 @@ public final class NNServiceProto {
         onChanged();
         return this;
       }
-      @Override
+      @java.lang.Override
       public final Builder setUnknownFields(
           final com.google.protobuf.UnknownFieldSet unknownFields) {
         return super.setUnknownFields(unknownFields);
       }
 
-      @Override
+      @java.lang.Override
       public final Builder mergeUnknownFields(
           final com.google.protobuf.UnknownFieldSet unknownFields) {
         return super.mergeUnknownFields(unknownFields);
@@ -4644,18 +4404,18 @@ public final class NNServiceProto {
     }
 
     // @@protoc_insertion_point(class_scope:nn.PredictRequest)
-    private static final PredictRequest DEFAULT_INSTANCE;
+    private static final com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.PredictRequest DEFAULT_INSTANCE;
     static {
-      DEFAULT_INSTANCE = new PredictRequest();
+      DEFAULT_INSTANCE = new com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.PredictRequest();
     }
 
-    public static PredictRequest getDefaultInstance() {
+    public static com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.PredictRequest getDefaultInstance() {
       return DEFAULT_INSTANCE;
     }
 
     private static final com.google.protobuf.Parser<PredictRequest>
         PARSER = new com.google.protobuf.AbstractParser<PredictRequest>() {
-      @Override
+      @java.lang.Override
       public PredictRequest parsePartialFrom(
           com.google.protobuf.CodedInputStream input,
           com.google.protobuf.ExtensionRegistryLite extensionRegistry)
@@ -4668,13 +4428,13 @@ public final class NNServiceProto {
       return PARSER;
     }
 
-    @Override
+    @java.lang.Override
     public com.google.protobuf.Parser<PredictRequest> getParserForType() {
       return PARSER;
     }
 
-    @Override
-    public PredictRequest getDefaultInstanceForType() {
+    @java.lang.Override
+    public com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.PredictRequest getDefaultInstanceForType() {
       return DEFAULT_INSTANCE;
     }
 
@@ -4688,7 +4448,7 @@ public final class NNServiceProto {
      * <code>string response = 1;</code>
      * @return The response.
      */
-    String getResponse();
+    java.lang.String getResponse();
     /**
      * <code>string response = 1;</code>
      * @return The bytes for response.
@@ -4705,11 +4465,11 @@ public final class NNServiceProto {
      * <code>.TensorMap data = 2;</code>
      * @return The data.
      */
-    FlBaseProto.TensorMap getData();
+    com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.TensorMap getData();
     /**
      * <code>.TensorMap data = 2;</code>
      */
-    FlBaseProto.TensorMapOrBuilder getDataOrBuilder();
+    com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.TensorMapOrBuilder getDataOrBuilder();
 
     /**
      * <code>int32 code = 3;</code>
@@ -4733,14 +4493,14 @@ public final class NNServiceProto {
       response_ = "";
     }
 
-    @Override
+    @java.lang.Override
     @SuppressWarnings({"unused"})
-    protected Object newInstance(
+    protected java.lang.Object newInstance(
         UnusedPrivateParameter unused) {
       return new PredictResponse();
     }
 
-    @Override
+    @java.lang.Override
     public final com.google.protobuf.UnknownFieldSet
     getUnknownFields() {
       return this.unknownFields;
@@ -4751,7 +4511,7 @@ public final class NNServiceProto {
         throws com.google.protobuf.InvalidProtocolBufferException {
       this();
       if (extensionRegistry == null) {
-        throw new NullPointerException();
+        throw new java.lang.NullPointerException();
       }
       com.google.protobuf.UnknownFieldSet.Builder unknownFields =
           com.google.protobuf.UnknownFieldSet.newBuilder();
@@ -4764,17 +4524,17 @@ public final class NNServiceProto {
               done = true;
               break;
             case 10: {
-              String s = input.readStringRequireUtf8();
+              java.lang.String s = input.readStringRequireUtf8();
 
               response_ = s;
               break;
             }
             case 18: {
-              FlBaseProto.TensorMap.Builder subBuilder = null;
+              com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.TensorMap.Builder subBuilder = null;
               if (data_ != null) {
                 subBuilder = data_.toBuilder();
               }
-              data_ = input.readMessage(FlBaseProto.TensorMap.parser(), extensionRegistry);
+              data_ = input.readMessage(com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.TensorMap.parser(), extensionRegistry);
               if (subBuilder != null) {
                 subBuilder.mergeFrom(data_);
                 data_ = subBuilder.buildPartial();
@@ -4808,32 +4568,32 @@ public final class NNServiceProto {
     }
     public static final com.google.protobuf.Descriptors.Descriptor
         getDescriptor() {
-      return NNServiceProto.internal_static_nn_PredictResponse_descriptor;
+      return com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.internal_static_nn_PredictResponse_descriptor;
     }
 
-    @Override
-    protected FieldAccessorTable
+    @java.lang.Override
+    protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
         internalGetFieldAccessorTable() {
-      return NNServiceProto.internal_static_nn_PredictResponse_fieldAccessorTable
+      return com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.internal_static_nn_PredictResponse_fieldAccessorTable
           .ensureFieldAccessorsInitialized(
-              PredictResponse.class, Builder.class);
+              com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.PredictResponse.class, com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.PredictResponse.Builder.class);
     }
 
     public static final int RESPONSE_FIELD_NUMBER = 1;
-    private volatile Object response_;
+    private volatile java.lang.Object response_;
     /**
      * <code>string response = 1;</code>
      * @return The response.
      */
-    @Override
-    public String getResponse() {
-      Object ref = response_;
-      if (ref instanceof String) {
-        return (String) ref;
+    @java.lang.Override
+    public java.lang.String getResponse() {
+      java.lang.Object ref = response_;
+      if (ref instanceof java.lang.String) {
+        return (java.lang.String) ref;
       } else {
         com.google.protobuf.ByteString bs = 
             (com.google.protobuf.ByteString) ref;
-        String s = bs.toStringUtf8();
+        java.lang.String s = bs.toStringUtf8();
         response_ = s;
         return s;
       }
@@ -4842,14 +4602,14 @@ public final class NNServiceProto {
      * <code>string response = 1;</code>
      * @return The bytes for response.
      */
-    @Override
+    @java.lang.Override
     public com.google.protobuf.ByteString
         getResponseBytes() {
-      Object ref = response_;
-      if (ref instanceof String) {
+      java.lang.Object ref = response_;
+      if (ref instanceof java.lang.String) {
         com.google.protobuf.ByteString b = 
             com.google.protobuf.ByteString.copyFromUtf8(
-                (String) ref);
+                (java.lang.String) ref);
         response_ = b;
         return b;
       } else {
@@ -4858,12 +4618,12 @@ public final class NNServiceProto {
     }
 
     public static final int DATA_FIELD_NUMBER = 2;
-    private FlBaseProto.TensorMap data_;
+    private com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.TensorMap data_;
     /**
      * <code>.TensorMap data = 2;</code>
      * @return Whether the data field is set.
      */
-    @Override
+    @java.lang.Override
     public boolean hasData() {
       return data_ != null;
     }
@@ -4871,15 +4631,15 @@ public final class NNServiceProto {
      * <code>.TensorMap data = 2;</code>
      * @return The data.
      */
-    @Override
-    public FlBaseProto.TensorMap getData() {
-      return data_ == null ? FlBaseProto.TensorMap.getDefaultInstance() : data_;
+    @java.lang.Override
+    public com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.TensorMap getData() {
+      return data_ == null ? com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.TensorMap.getDefaultInstance() : data_;
     }
     /**
      * <code>.TensorMap data = 2;</code>
      */
-    @Override
-    public FlBaseProto.TensorMapOrBuilder getDataOrBuilder() {
+    @java.lang.Override
+    public com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.TensorMapOrBuilder getDataOrBuilder() {
       return getData();
     }
 
@@ -4889,13 +4649,13 @@ public final class NNServiceProto {
      * <code>int32 code = 3;</code>
      * @return The code.
      */
-    @Override
+    @java.lang.Override
     public int getCode() {
       return code_;
     }
 
     private byte memoizedIsInitialized = -1;
-    @Override
+    @java.lang.Override
     public final boolean isInitialized() {
       byte isInitialized = memoizedIsInitialized;
       if (isInitialized == 1) return true;
@@ -4905,7 +4665,7 @@ public final class NNServiceProto {
       return true;
     }
 
-    @Override
+    @java.lang.Override
     public void writeTo(com.google.protobuf.CodedOutputStream output)
                         throws java.io.IOException {
       if (!getResponseBytes().isEmpty()) {
@@ -4920,7 +4680,7 @@ public final class NNServiceProto {
       unknownFields.writeTo(output);
     }
 
-    @Override
+    @java.lang.Override
     public int getSerializedSize() {
       int size = memoizedSize;
       if (size != -1) return size;
@@ -4942,15 +4702,15 @@ public final class NNServiceProto {
       return size;
     }
 
-    @Override
-    public boolean equals(final Object obj) {
+    @java.lang.Override
+    public boolean equals(final java.lang.Object obj) {
       if (obj == this) {
        return true;
       }
-      if (!(obj instanceof PredictResponse)) {
+      if (!(obj instanceof com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.PredictResponse)) {
         return super.equals(obj);
       }
-      PredictResponse other = (PredictResponse) obj;
+      com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.PredictResponse other = (com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.PredictResponse) obj;
 
       if (!getResponse()
           .equals(other.getResponse())) return false;
@@ -4965,7 +4725,7 @@ public final class NNServiceProto {
       return true;
     }
 
-    @Override
+    @java.lang.Override
     public int hashCode() {
       if (memoizedHashCode != 0) {
         return memoizedHashCode;
@@ -4985,69 +4745,69 @@ public final class NNServiceProto {
       return hash;
     }
 
-    public static PredictResponse parseFrom(
+    public static com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.PredictResponse parseFrom(
         java.nio.ByteBuffer data)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data);
     }
-    public static PredictResponse parseFrom(
+    public static com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.PredictResponse parseFrom(
         java.nio.ByteBuffer data,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data, extensionRegistry);
     }
-    public static PredictResponse parseFrom(
+    public static com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.PredictResponse parseFrom(
         com.google.protobuf.ByteString data)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data);
     }
-    public static PredictResponse parseFrom(
+    public static com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.PredictResponse parseFrom(
         com.google.protobuf.ByteString data,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data, extensionRegistry);
     }
-    public static PredictResponse parseFrom(byte[] data)
+    public static com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.PredictResponse parseFrom(byte[] data)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data);
     }
-    public static PredictResponse parseFrom(
+    public static com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.PredictResponse parseFrom(
         byte[] data,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data, extensionRegistry);
     }
-    public static PredictResponse parseFrom(java.io.InputStream input)
+    public static com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.PredictResponse parseFrom(java.io.InputStream input)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseWithIOException(PARSER, input);
     }
-    public static PredictResponse parseFrom(
+    public static com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.PredictResponse parseFrom(
         java.io.InputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseWithIOException(PARSER, input, extensionRegistry);
     }
-    public static PredictResponse parseDelimitedFrom(java.io.InputStream input)
+    public static com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.PredictResponse parseDelimitedFrom(java.io.InputStream input)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseDelimitedWithIOException(PARSER, input);
     }
-    public static PredictResponse parseDelimitedFrom(
+    public static com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.PredictResponse parseDelimitedFrom(
         java.io.InputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseDelimitedWithIOException(PARSER, input, extensionRegistry);
     }
-    public static PredictResponse parseFrom(
+    public static com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.PredictResponse parseFrom(
         com.google.protobuf.CodedInputStream input)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseWithIOException(PARSER, input);
     }
-    public static PredictResponse parseFrom(
+    public static com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.PredictResponse parseFrom(
         com.google.protobuf.CodedInputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
@@ -5055,23 +4815,23 @@ public final class NNServiceProto {
           .parseWithIOException(PARSER, input, extensionRegistry);
     }
 
-    @Override
+    @java.lang.Override
     public Builder newBuilderForType() { return newBuilder(); }
     public static Builder newBuilder() {
       return DEFAULT_INSTANCE.toBuilder();
     }
-    public static Builder newBuilder(PredictResponse prototype) {
+    public static Builder newBuilder(com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.PredictResponse prototype) {
       return DEFAULT_INSTANCE.toBuilder().mergeFrom(prototype);
     }
-    @Override
+    @java.lang.Override
     public Builder toBuilder() {
       return this == DEFAULT_INSTANCE
           ? new Builder() : new Builder().mergeFrom(this);
     }
 
-    @Override
+    @java.lang.Override
     protected Builder newBuilderForType(
-        BuilderParent parent) {
+        com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
       Builder builder = new Builder(parent);
       return builder;
     }
@@ -5081,18 +4841,18 @@ public final class NNServiceProto {
     public static final class Builder extends
         com.google.protobuf.GeneratedMessageV3.Builder<Builder> implements
         // @@protoc_insertion_point(builder_implements:nn.PredictResponse)
-        PredictResponseOrBuilder {
+        com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.PredictResponseOrBuilder {
       public static final com.google.protobuf.Descriptors.Descriptor
           getDescriptor() {
-        return NNServiceProto.internal_static_nn_PredictResponse_descriptor;
+        return com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.internal_static_nn_PredictResponse_descriptor;
       }
 
-      @Override
-      protected FieldAccessorTable
+      @java.lang.Override
+      protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
           internalGetFieldAccessorTable() {
-        return NNServiceProto.internal_static_nn_PredictResponse_fieldAccessorTable
+        return com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.internal_static_nn_PredictResponse_fieldAccessorTable
             .ensureFieldAccessorsInitialized(
-                PredictResponse.class, Builder.class);
+                com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.PredictResponse.class, com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.PredictResponse.Builder.class);
       }
 
       // Construct using com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.PredictResponse.newBuilder()
@@ -5101,7 +4861,7 @@ public final class NNServiceProto {
       }
 
       private Builder(
-          BuilderParent parent) {
+          com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
         super(parent);
         maybeForceBuilderInitialization();
       }
@@ -5110,7 +4870,7 @@ public final class NNServiceProto {
                 .alwaysUseFieldBuilders) {
         }
       }
-      @Override
+      @java.lang.Override
       public Builder clear() {
         super.clear();
         response_ = "";
@@ -5126,29 +4886,29 @@ public final class NNServiceProto {
         return this;
       }
 
-      @Override
+      @java.lang.Override
       public com.google.protobuf.Descriptors.Descriptor
           getDescriptorForType() {
-        return NNServiceProto.internal_static_nn_PredictResponse_descriptor;
+        return com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.internal_static_nn_PredictResponse_descriptor;
       }
 
-      @Override
-      public PredictResponse getDefaultInstanceForType() {
-        return PredictResponse.getDefaultInstance();
+      @java.lang.Override
+      public com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.PredictResponse getDefaultInstanceForType() {
+        return com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.PredictResponse.getDefaultInstance();
       }
 
-      @Override
-      public PredictResponse build() {
-        PredictResponse result = buildPartial();
+      @java.lang.Override
+      public com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.PredictResponse build() {
+        com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.PredictResponse result = buildPartial();
         if (!result.isInitialized()) {
           throw newUninitializedMessageException(result);
         }
         return result;
       }
 
-      @Override
-      public PredictResponse buildPartial() {
-        PredictResponse result = new PredictResponse(this);
+      @java.lang.Override
+      public com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.PredictResponse buildPartial() {
+        com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.PredictResponse result = new com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.PredictResponse(this);
         result.response_ = response_;
         if (dataBuilder_ == null) {
           result.data_ = data_;
@@ -5160,50 +4920,50 @@ public final class NNServiceProto {
         return result;
       }
 
-      @Override
+      @java.lang.Override
       public Builder clone() {
         return super.clone();
       }
-      @Override
+      @java.lang.Override
       public Builder setField(
           com.google.protobuf.Descriptors.FieldDescriptor field,
-          Object value) {
+          java.lang.Object value) {
         return super.setField(field, value);
       }
-      @Override
+      @java.lang.Override
       public Builder clearField(
           com.google.protobuf.Descriptors.FieldDescriptor field) {
         return super.clearField(field);
       }
-      @Override
+      @java.lang.Override
       public Builder clearOneof(
           com.google.protobuf.Descriptors.OneofDescriptor oneof) {
         return super.clearOneof(oneof);
       }
-      @Override
+      @java.lang.Override
       public Builder setRepeatedField(
           com.google.protobuf.Descriptors.FieldDescriptor field,
-          int index, Object value) {
+          int index, java.lang.Object value) {
         return super.setRepeatedField(field, index, value);
       }
-      @Override
+      @java.lang.Override
       public Builder addRepeatedField(
           com.google.protobuf.Descriptors.FieldDescriptor field,
-          Object value) {
+          java.lang.Object value) {
         return super.addRepeatedField(field, value);
       }
-      @Override
+      @java.lang.Override
       public Builder mergeFrom(com.google.protobuf.Message other) {
-        if (other instanceof PredictResponse) {
-          return mergeFrom((PredictResponse)other);
+        if (other instanceof com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.PredictResponse) {
+          return mergeFrom((com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.PredictResponse)other);
         } else {
           super.mergeFrom(other);
           return this;
         }
       }
 
-      public Builder mergeFrom(PredictResponse other) {
-        if (other == PredictResponse.getDefaultInstance()) return this;
+      public Builder mergeFrom(com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.PredictResponse other) {
+        if (other == com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.PredictResponse.getDefaultInstance()) return this;
         if (!other.getResponse().isEmpty()) {
           response_ = other.response_;
           onChanged();
@@ -5219,21 +4979,21 @@ public final class NNServiceProto {
         return this;
       }
 
-      @Override
+      @java.lang.Override
       public final boolean isInitialized() {
         return true;
       }
 
-      @Override
+      @java.lang.Override
       public Builder mergeFrom(
           com.google.protobuf.CodedInputStream input,
           com.google.protobuf.ExtensionRegistryLite extensionRegistry)
           throws java.io.IOException {
-        PredictResponse parsedMessage = null;
+        com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.PredictResponse parsedMessage = null;
         try {
           parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
         } catch (com.google.protobuf.InvalidProtocolBufferException e) {
-          parsedMessage = (PredictResponse) e.getUnfinishedMessage();
+          parsedMessage = (com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.PredictResponse) e.getUnfinishedMessage();
           throw e.unwrapIOException();
         } finally {
           if (parsedMessage != null) {
@@ -5243,21 +5003,21 @@ public final class NNServiceProto {
         return this;
       }
 
-      private Object response_ = "";
+      private java.lang.Object response_ = "";
       /**
        * <code>string response = 1;</code>
        * @return The response.
        */
-      public String getResponse() {
-        Object ref = response_;
-        if (!(ref instanceof String)) {
+      public java.lang.String getResponse() {
+        java.lang.Object ref = response_;
+        if (!(ref instanceof java.lang.String)) {
           com.google.protobuf.ByteString bs =
               (com.google.protobuf.ByteString) ref;
-          String s = bs.toStringUtf8();
+          java.lang.String s = bs.toStringUtf8();
           response_ = s;
           return s;
         } else {
-          return (String) ref;
+          return (java.lang.String) ref;
         }
       }
       /**
@@ -5266,11 +5026,11 @@ public final class NNServiceProto {
        */
       public com.google.protobuf.ByteString
           getResponseBytes() {
-        Object ref = response_;
+        java.lang.Object ref = response_;
         if (ref instanceof String) {
           com.google.protobuf.ByteString b = 
               com.google.protobuf.ByteString.copyFromUtf8(
-                  (String) ref);
+                  (java.lang.String) ref);
           response_ = b;
           return b;
         } else {
@@ -5283,7 +5043,7 @@ public final class NNServiceProto {
        * @return This builder for chaining.
        */
       public Builder setResponse(
-          String value) {
+          java.lang.String value) {
         if (value == null) {
     throw new NullPointerException();
   }
@@ -5319,9 +5079,9 @@ public final class NNServiceProto {
         return this;
       }
 
-      private FlBaseProto.TensorMap data_;
+      private com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.TensorMap data_;
       private com.google.protobuf.SingleFieldBuilderV3<
-          FlBaseProto.TensorMap, FlBaseProto.TensorMap.Builder, FlBaseProto.TensorMapOrBuilder> dataBuilder_;
+          com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.TensorMap, com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.TensorMap.Builder, com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.TensorMapOrBuilder> dataBuilder_;
       /**
        * <code>.TensorMap data = 2;</code>
        * @return Whether the data field is set.
@@ -5333,9 +5093,9 @@ public final class NNServiceProto {
        * <code>.TensorMap data = 2;</code>
        * @return The data.
        */
-      public FlBaseProto.TensorMap getData() {
+      public com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.TensorMap getData() {
         if (dataBuilder_ == null) {
-          return data_ == null ? FlBaseProto.TensorMap.getDefaultInstance() : data_;
+          return data_ == null ? com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.TensorMap.getDefaultInstance() : data_;
         } else {
           return dataBuilder_.getMessage();
         }
@@ -5343,7 +5103,7 @@ public final class NNServiceProto {
       /**
        * <code>.TensorMap data = 2;</code>
        */
-      public Builder setData(FlBaseProto.TensorMap value) {
+      public Builder setData(com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.TensorMap value) {
         if (dataBuilder_ == null) {
           if (value == null) {
             throw new NullPointerException();
@@ -5360,7 +5120,7 @@ public final class NNServiceProto {
        * <code>.TensorMap data = 2;</code>
        */
       public Builder setData(
-          FlBaseProto.TensorMap.Builder builderForValue) {
+          com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.TensorMap.Builder builderForValue) {
         if (dataBuilder_ == null) {
           data_ = builderForValue.build();
           onChanged();
@@ -5373,11 +5133,11 @@ public final class NNServiceProto {
       /**
        * <code>.TensorMap data = 2;</code>
        */
-      public Builder mergeData(FlBaseProto.TensorMap value) {
+      public Builder mergeData(com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.TensorMap value) {
         if (dataBuilder_ == null) {
           if (data_ != null) {
             data_ =
-              FlBaseProto.TensorMap.newBuilder(data_).mergeFrom(value).buildPartial();
+              com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.TensorMap.newBuilder(data_).mergeFrom(value).buildPartial();
           } else {
             data_ = value;
           }
@@ -5405,7 +5165,7 @@ public final class NNServiceProto {
       /**
        * <code>.TensorMap data = 2;</code>
        */
-      public FlBaseProto.TensorMap.Builder getDataBuilder() {
+      public com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.TensorMap.Builder getDataBuilder() {
         
         onChanged();
         return getDataFieldBuilder().getBuilder();
@@ -5413,23 +5173,23 @@ public final class NNServiceProto {
       /**
        * <code>.TensorMap data = 2;</code>
        */
-      public FlBaseProto.TensorMapOrBuilder getDataOrBuilder() {
+      public com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.TensorMapOrBuilder getDataOrBuilder() {
         if (dataBuilder_ != null) {
           return dataBuilder_.getMessageOrBuilder();
         } else {
           return data_ == null ?
-              FlBaseProto.TensorMap.getDefaultInstance() : data_;
+              com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.TensorMap.getDefaultInstance() : data_;
         }
       }
       /**
        * <code>.TensorMap data = 2;</code>
        */
       private com.google.protobuf.SingleFieldBuilderV3<
-          FlBaseProto.TensorMap, FlBaseProto.TensorMap.Builder, FlBaseProto.TensorMapOrBuilder>
+          com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.TensorMap, com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.TensorMap.Builder, com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.TensorMapOrBuilder> 
           getDataFieldBuilder() {
         if (dataBuilder_ == null) {
           dataBuilder_ = new com.google.protobuf.SingleFieldBuilderV3<
-              FlBaseProto.TensorMap, FlBaseProto.TensorMap.Builder, FlBaseProto.TensorMapOrBuilder>(
+              com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.TensorMap, com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.TensorMap.Builder, com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.TensorMapOrBuilder>(
                   getData(),
                   getParentForChildren(),
                   isClean());
@@ -5443,7 +5203,7 @@ public final class NNServiceProto {
        * <code>int32 code = 3;</code>
        * @return The code.
        */
-      @Override
+      @java.lang.Override
       public int getCode() {
         return code_;
       }
@@ -5468,13 +5228,13 @@ public final class NNServiceProto {
         onChanged();
         return this;
       }
-      @Override
+      @java.lang.Override
       public final Builder setUnknownFields(
           final com.google.protobuf.UnknownFieldSet unknownFields) {
         return super.setUnknownFields(unknownFields);
       }
 
-      @Override
+      @java.lang.Override
       public final Builder mergeUnknownFields(
           final com.google.protobuf.UnknownFieldSet unknownFields) {
         return super.mergeUnknownFields(unknownFields);
@@ -5485,18 +5245,18 @@ public final class NNServiceProto {
     }
 
     // @@protoc_insertion_point(class_scope:nn.PredictResponse)
-    private static final PredictResponse DEFAULT_INSTANCE;
+    private static final com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.PredictResponse DEFAULT_INSTANCE;
     static {
-      DEFAULT_INSTANCE = new PredictResponse();
+      DEFAULT_INSTANCE = new com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.PredictResponse();
     }
 
-    public static PredictResponse getDefaultInstance() {
+    public static com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.PredictResponse getDefaultInstance() {
       return DEFAULT_INSTANCE;
     }
 
     private static final com.google.protobuf.Parser<PredictResponse>
         PARSER = new com.google.protobuf.AbstractParser<PredictResponse>() {
-      @Override
+      @java.lang.Override
       public PredictResponse parsePartialFrom(
           com.google.protobuf.CodedInputStream input,
           com.google.protobuf.ExtensionRegistryLite extensionRegistry)
@@ -5509,13 +5269,5406 @@ public final class NNServiceProto {
       return PARSER;
     }
 
-    @Override
+    @java.lang.Override
     public com.google.protobuf.Parser<PredictResponse> getParserForType() {
       return PARSER;
     }
 
-    @Override
-    public PredictResponse getDefaultInstanceForType() {
+    @java.lang.Override
+    public com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.PredictResponse getDefaultInstanceForType() {
+      return DEFAULT_INSTANCE;
+    }
+
+  }
+
+  public interface UploadMetaRequestOrBuilder extends
+      // @@protoc_insertion_point(interface_extends:nn.UploadMetaRequest)
+      com.google.protobuf.MessageOrBuilder {
+
+    /**
+     * <code>int32 client_uuid = 1;</code>
+     * @return The clientUuid.
+     */
+    int getClientUuid();
+
+    /**
+     * <code>bytes loss_fn = 2;</code>
+     * @return The lossFn.
+     */
+    com.google.protobuf.ByteString getLossFn();
+
+    /**
+     * <code>.nn.ClassAndArgs optimizer = 3;</code>
+     * @return Whether the optimizer field is set.
+     */
+    boolean hasOptimizer();
+    /**
+     * <code>.nn.ClassAndArgs optimizer = 3;</code>
+     * @return The optimizer.
+     */
+    com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.ClassAndArgs getOptimizer();
+    /**
+     * <code>.nn.ClassAndArgs optimizer = 3;</code>
+     */
+    com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.ClassAndArgsOrBuilder getOptimizerOrBuilder();
+
+    /**
+     * <code>string aggregator = 4;</code>
+     * @return The aggregator.
+     */
+    java.lang.String getAggregator();
+    /**
+     * <code>string aggregator = 4;</code>
+     * @return The bytes for aggregator.
+     */
+    com.google.protobuf.ByteString
+        getAggregatorBytes();
+  }
+  /**
+   * Protobuf type {@code nn.UploadMetaRequest}
+   */
+  public static final class UploadMetaRequest extends
+      com.google.protobuf.GeneratedMessageV3 implements
+      // @@protoc_insertion_point(message_implements:nn.UploadMetaRequest)
+      UploadMetaRequestOrBuilder {
+  private static final long serialVersionUID = 0L;
+    // Use UploadMetaRequest.newBuilder() to construct.
+    private UploadMetaRequest(com.google.protobuf.GeneratedMessageV3.Builder<?> builder) {
+      super(builder);
+    }
+    private UploadMetaRequest() {
+      lossFn_ = com.google.protobuf.ByteString.EMPTY;
+      aggregator_ = "";
+    }
+
+    @java.lang.Override
+    @SuppressWarnings({"unused"})
+    protected java.lang.Object newInstance(
+        UnusedPrivateParameter unused) {
+      return new UploadMetaRequest();
+    }
+
+    @java.lang.Override
+    public final com.google.protobuf.UnknownFieldSet
+    getUnknownFields() {
+      return this.unknownFields;
+    }
+    private UploadMetaRequest(
+        com.google.protobuf.CodedInputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      this();
+      if (extensionRegistry == null) {
+        throw new java.lang.NullPointerException();
+      }
+      com.google.protobuf.UnknownFieldSet.Builder unknownFields =
+          com.google.protobuf.UnknownFieldSet.newBuilder();
+      try {
+        boolean done = false;
+        while (!done) {
+          int tag = input.readTag();
+          switch (tag) {
+            case 0:
+              done = true;
+              break;
+            case 8: {
+
+              clientUuid_ = input.readInt32();
+              break;
+            }
+            case 18: {
+
+              lossFn_ = input.readBytes();
+              break;
+            }
+            case 26: {
+              com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.ClassAndArgs.Builder subBuilder = null;
+              if (optimizer_ != null) {
+                subBuilder = optimizer_.toBuilder();
+              }
+              optimizer_ = input.readMessage(com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.ClassAndArgs.parser(), extensionRegistry);
+              if (subBuilder != null) {
+                subBuilder.mergeFrom(optimizer_);
+                optimizer_ = subBuilder.buildPartial();
+              }
+
+              break;
+            }
+            case 34: {
+              java.lang.String s = input.readStringRequireUtf8();
+
+              aggregator_ = s;
+              break;
+            }
+            default: {
+              if (!parseUnknownField(
+                  input, unknownFields, extensionRegistry, tag)) {
+                done = true;
+              }
+              break;
+            }
+          }
+        }
+      } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+        throw e.setUnfinishedMessage(this);
+      } catch (java.io.IOException e) {
+        throw new com.google.protobuf.InvalidProtocolBufferException(
+            e).setUnfinishedMessage(this);
+      } finally {
+        this.unknownFields = unknownFields.build();
+        makeExtensionsImmutable();
+      }
+    }
+    public static final com.google.protobuf.Descriptors.Descriptor
+        getDescriptor() {
+      return com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.internal_static_nn_UploadMetaRequest_descriptor;
+    }
+
+    @java.lang.Override
+    protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+        internalGetFieldAccessorTable() {
+      return com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.internal_static_nn_UploadMetaRequest_fieldAccessorTable
+          .ensureFieldAccessorsInitialized(
+              com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.UploadMetaRequest.class, com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.UploadMetaRequest.Builder.class);
+    }
+
+    public static final int CLIENT_UUID_FIELD_NUMBER = 1;
+    private int clientUuid_;
+    /**
+     * <code>int32 client_uuid = 1;</code>
+     * @return The clientUuid.
+     */
+    @java.lang.Override
+    public int getClientUuid() {
+      return clientUuid_;
+    }
+
+    public static final int LOSS_FN_FIELD_NUMBER = 2;
+    private com.google.protobuf.ByteString lossFn_;
+    /**
+     * <code>bytes loss_fn = 2;</code>
+     * @return The lossFn.
+     */
+    @java.lang.Override
+    public com.google.protobuf.ByteString getLossFn() {
+      return lossFn_;
+    }
+
+    public static final int OPTIMIZER_FIELD_NUMBER = 3;
+    private com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.ClassAndArgs optimizer_;
+    /**
+     * <code>.nn.ClassAndArgs optimizer = 3;</code>
+     * @return Whether the optimizer field is set.
+     */
+    @java.lang.Override
+    public boolean hasOptimizer() {
+      return optimizer_ != null;
+    }
+    /**
+     * <code>.nn.ClassAndArgs optimizer = 3;</code>
+     * @return The optimizer.
+     */
+    @java.lang.Override
+    public com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.ClassAndArgs getOptimizer() {
+      return optimizer_ == null ? com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.ClassAndArgs.getDefaultInstance() : optimizer_;
+    }
+    /**
+     * <code>.nn.ClassAndArgs optimizer = 3;</code>
+     */
+    @java.lang.Override
+    public com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.ClassAndArgsOrBuilder getOptimizerOrBuilder() {
+      return getOptimizer();
+    }
+
+    public static final int AGGREGATOR_FIELD_NUMBER = 4;
+    private volatile java.lang.Object aggregator_;
+    /**
+     * <code>string aggregator = 4;</code>
+     * @return The aggregator.
+     */
+    @java.lang.Override
+    public java.lang.String getAggregator() {
+      java.lang.Object ref = aggregator_;
+      if (ref instanceof java.lang.String) {
+        return (java.lang.String) ref;
+      } else {
+        com.google.protobuf.ByteString bs = 
+            (com.google.protobuf.ByteString) ref;
+        java.lang.String s = bs.toStringUtf8();
+        aggregator_ = s;
+        return s;
+      }
+    }
+    /**
+     * <code>string aggregator = 4;</code>
+     * @return The bytes for aggregator.
+     */
+    @java.lang.Override
+    public com.google.protobuf.ByteString
+        getAggregatorBytes() {
+      java.lang.Object ref = aggregator_;
+      if (ref instanceof java.lang.String) {
+        com.google.protobuf.ByteString b = 
+            com.google.protobuf.ByteString.copyFromUtf8(
+                (java.lang.String) ref);
+        aggregator_ = b;
+        return b;
+      } else {
+        return (com.google.protobuf.ByteString) ref;
+      }
+    }
+
+    private byte memoizedIsInitialized = -1;
+    @java.lang.Override
+    public final boolean isInitialized() {
+      byte isInitialized = memoizedIsInitialized;
+      if (isInitialized == 1) return true;
+      if (isInitialized == 0) return false;
+
+      memoizedIsInitialized = 1;
+      return true;
+    }
+
+    @java.lang.Override
+    public void writeTo(com.google.protobuf.CodedOutputStream output)
+                        throws java.io.IOException {
+      if (clientUuid_ != 0) {
+        output.writeInt32(1, clientUuid_);
+      }
+      if (!lossFn_.isEmpty()) {
+        output.writeBytes(2, lossFn_);
+      }
+      if (optimizer_ != null) {
+        output.writeMessage(3, getOptimizer());
+      }
+      if (!getAggregatorBytes().isEmpty()) {
+        com.google.protobuf.GeneratedMessageV3.writeString(output, 4, aggregator_);
+      }
+      unknownFields.writeTo(output);
+    }
+
+    @java.lang.Override
+    public int getSerializedSize() {
+      int size = memoizedSize;
+      if (size != -1) return size;
+
+      size = 0;
+      if (clientUuid_ != 0) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeInt32Size(1, clientUuid_);
+      }
+      if (!lossFn_.isEmpty()) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeBytesSize(2, lossFn_);
+      }
+      if (optimizer_ != null) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeMessageSize(3, getOptimizer());
+      }
+      if (!getAggregatorBytes().isEmpty()) {
+        size += com.google.protobuf.GeneratedMessageV3.computeStringSize(4, aggregator_);
+      }
+      size += unknownFields.getSerializedSize();
+      memoizedSize = size;
+      return size;
+    }
+
+    @java.lang.Override
+    public boolean equals(final java.lang.Object obj) {
+      if (obj == this) {
+       return true;
+      }
+      if (!(obj instanceof com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.UploadMetaRequest)) {
+        return super.equals(obj);
+      }
+      com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.UploadMetaRequest other = (com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.UploadMetaRequest) obj;
+
+      if (getClientUuid()
+          != other.getClientUuid()) return false;
+      if (!getLossFn()
+          .equals(other.getLossFn())) return false;
+      if (hasOptimizer() != other.hasOptimizer()) return false;
+      if (hasOptimizer()) {
+        if (!getOptimizer()
+            .equals(other.getOptimizer())) return false;
+      }
+      if (!getAggregator()
+          .equals(other.getAggregator())) return false;
+      if (!unknownFields.equals(other.unknownFields)) return false;
+      return true;
+    }
+
+    @java.lang.Override
+    public int hashCode() {
+      if (memoizedHashCode != 0) {
+        return memoizedHashCode;
+      }
+      int hash = 41;
+      hash = (19 * hash) + getDescriptor().hashCode();
+      hash = (37 * hash) + CLIENT_UUID_FIELD_NUMBER;
+      hash = (53 * hash) + getClientUuid();
+      hash = (37 * hash) + LOSS_FN_FIELD_NUMBER;
+      hash = (53 * hash) + getLossFn().hashCode();
+      if (hasOptimizer()) {
+        hash = (37 * hash) + OPTIMIZER_FIELD_NUMBER;
+        hash = (53 * hash) + getOptimizer().hashCode();
+      }
+      hash = (37 * hash) + AGGREGATOR_FIELD_NUMBER;
+      hash = (53 * hash) + getAggregator().hashCode();
+      hash = (29 * hash) + unknownFields.hashCode();
+      memoizedHashCode = hash;
+      return hash;
+    }
+
+    public static com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.UploadMetaRequest parseFrom(
+        java.nio.ByteBuffer data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data);
+    }
+    public static com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.UploadMetaRequest parseFrom(
+        java.nio.ByteBuffer data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data, extensionRegistry);
+    }
+    public static com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.UploadMetaRequest parseFrom(
+        com.google.protobuf.ByteString data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data);
+    }
+    public static com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.UploadMetaRequest parseFrom(
+        com.google.protobuf.ByteString data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data, extensionRegistry);
+    }
+    public static com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.UploadMetaRequest parseFrom(byte[] data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data);
+    }
+    public static com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.UploadMetaRequest parseFrom(
+        byte[] data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data, extensionRegistry);
+    }
+    public static com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.UploadMetaRequest parseFrom(java.io.InputStream input)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseWithIOException(PARSER, input);
+    }
+    public static com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.UploadMetaRequest parseFrom(
+        java.io.InputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseWithIOException(PARSER, input, extensionRegistry);
+    }
+    public static com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.UploadMetaRequest parseDelimitedFrom(java.io.InputStream input)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseDelimitedWithIOException(PARSER, input);
+    }
+    public static com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.UploadMetaRequest parseDelimitedFrom(
+        java.io.InputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseDelimitedWithIOException(PARSER, input, extensionRegistry);
+    }
+    public static com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.UploadMetaRequest parseFrom(
+        com.google.protobuf.CodedInputStream input)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseWithIOException(PARSER, input);
+    }
+    public static com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.UploadMetaRequest parseFrom(
+        com.google.protobuf.CodedInputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseWithIOException(PARSER, input, extensionRegistry);
+    }
+
+    @java.lang.Override
+    public Builder newBuilderForType() { return newBuilder(); }
+    public static Builder newBuilder() {
+      return DEFAULT_INSTANCE.toBuilder();
+    }
+    public static Builder newBuilder(com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.UploadMetaRequest prototype) {
+      return DEFAULT_INSTANCE.toBuilder().mergeFrom(prototype);
+    }
+    @java.lang.Override
+    public Builder toBuilder() {
+      return this == DEFAULT_INSTANCE
+          ? new Builder() : new Builder().mergeFrom(this);
+    }
+
+    @java.lang.Override
+    protected Builder newBuilderForType(
+        com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
+      Builder builder = new Builder(parent);
+      return builder;
+    }
+    /**
+     * Protobuf type {@code nn.UploadMetaRequest}
+     */
+    public static final class Builder extends
+        com.google.protobuf.GeneratedMessageV3.Builder<Builder> implements
+        // @@protoc_insertion_point(builder_implements:nn.UploadMetaRequest)
+        com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.UploadMetaRequestOrBuilder {
+      public static final com.google.protobuf.Descriptors.Descriptor
+          getDescriptor() {
+        return com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.internal_static_nn_UploadMetaRequest_descriptor;
+      }
+
+      @java.lang.Override
+      protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+          internalGetFieldAccessorTable() {
+        return com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.internal_static_nn_UploadMetaRequest_fieldAccessorTable
+            .ensureFieldAccessorsInitialized(
+                com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.UploadMetaRequest.class, com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.UploadMetaRequest.Builder.class);
+      }
+
+      // Construct using com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.UploadMetaRequest.newBuilder()
+      private Builder() {
+        maybeForceBuilderInitialization();
+      }
+
+      private Builder(
+          com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
+        super(parent);
+        maybeForceBuilderInitialization();
+      }
+      private void maybeForceBuilderInitialization() {
+        if (com.google.protobuf.GeneratedMessageV3
+                .alwaysUseFieldBuilders) {
+        }
+      }
+      @java.lang.Override
+      public Builder clear() {
+        super.clear();
+        clientUuid_ = 0;
+
+        lossFn_ = com.google.protobuf.ByteString.EMPTY;
+
+        if (optimizerBuilder_ == null) {
+          optimizer_ = null;
+        } else {
+          optimizer_ = null;
+          optimizerBuilder_ = null;
+        }
+        aggregator_ = "";
+
+        return this;
+      }
+
+      @java.lang.Override
+      public com.google.protobuf.Descriptors.Descriptor
+          getDescriptorForType() {
+        return com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.internal_static_nn_UploadMetaRequest_descriptor;
+      }
+
+      @java.lang.Override
+      public com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.UploadMetaRequest getDefaultInstanceForType() {
+        return com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.UploadMetaRequest.getDefaultInstance();
+      }
+
+      @java.lang.Override
+      public com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.UploadMetaRequest build() {
+        com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.UploadMetaRequest result = buildPartial();
+        if (!result.isInitialized()) {
+          throw newUninitializedMessageException(result);
+        }
+        return result;
+      }
+
+      @java.lang.Override
+      public com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.UploadMetaRequest buildPartial() {
+        com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.UploadMetaRequest result = new com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.UploadMetaRequest(this);
+        result.clientUuid_ = clientUuid_;
+        result.lossFn_ = lossFn_;
+        if (optimizerBuilder_ == null) {
+          result.optimizer_ = optimizer_;
+        } else {
+          result.optimizer_ = optimizerBuilder_.build();
+        }
+        result.aggregator_ = aggregator_;
+        onBuilt();
+        return result;
+      }
+
+      @java.lang.Override
+      public Builder clone() {
+        return super.clone();
+      }
+      @java.lang.Override
+      public Builder setField(
+          com.google.protobuf.Descriptors.FieldDescriptor field,
+          java.lang.Object value) {
+        return super.setField(field, value);
+      }
+      @java.lang.Override
+      public Builder clearField(
+          com.google.protobuf.Descriptors.FieldDescriptor field) {
+        return super.clearField(field);
+      }
+      @java.lang.Override
+      public Builder clearOneof(
+          com.google.protobuf.Descriptors.OneofDescriptor oneof) {
+        return super.clearOneof(oneof);
+      }
+      @java.lang.Override
+      public Builder setRepeatedField(
+          com.google.protobuf.Descriptors.FieldDescriptor field,
+          int index, java.lang.Object value) {
+        return super.setRepeatedField(field, index, value);
+      }
+      @java.lang.Override
+      public Builder addRepeatedField(
+          com.google.protobuf.Descriptors.FieldDescriptor field,
+          java.lang.Object value) {
+        return super.addRepeatedField(field, value);
+      }
+      @java.lang.Override
+      public Builder mergeFrom(com.google.protobuf.Message other) {
+        if (other instanceof com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.UploadMetaRequest) {
+          return mergeFrom((com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.UploadMetaRequest)other);
+        } else {
+          super.mergeFrom(other);
+          return this;
+        }
+      }
+
+      public Builder mergeFrom(com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.UploadMetaRequest other) {
+        if (other == com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.UploadMetaRequest.getDefaultInstance()) return this;
+        if (other.getClientUuid() != 0) {
+          setClientUuid(other.getClientUuid());
+        }
+        if (other.getLossFn() != com.google.protobuf.ByteString.EMPTY) {
+          setLossFn(other.getLossFn());
+        }
+        if (other.hasOptimizer()) {
+          mergeOptimizer(other.getOptimizer());
+        }
+        if (!other.getAggregator().isEmpty()) {
+          aggregator_ = other.aggregator_;
+          onChanged();
+        }
+        this.mergeUnknownFields(other.unknownFields);
+        onChanged();
+        return this;
+      }
+
+      @java.lang.Override
+      public final boolean isInitialized() {
+        return true;
+      }
+
+      @java.lang.Override
+      public Builder mergeFrom(
+          com.google.protobuf.CodedInputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws java.io.IOException {
+        com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.UploadMetaRequest parsedMessage = null;
+        try {
+          parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
+        } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+          parsedMessage = (com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.UploadMetaRequest) e.getUnfinishedMessage();
+          throw e.unwrapIOException();
+        } finally {
+          if (parsedMessage != null) {
+            mergeFrom(parsedMessage);
+          }
+        }
+        return this;
+      }
+
+      private int clientUuid_ ;
+      /**
+       * <code>int32 client_uuid = 1;</code>
+       * @return The clientUuid.
+       */
+      @java.lang.Override
+      public int getClientUuid() {
+        return clientUuid_;
+      }
+      /**
+       * <code>int32 client_uuid = 1;</code>
+       * @param value The clientUuid to set.
+       * @return This builder for chaining.
+       */
+      public Builder setClientUuid(int value) {
+        
+        clientUuid_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>int32 client_uuid = 1;</code>
+       * @return This builder for chaining.
+       */
+      public Builder clearClientUuid() {
+        
+        clientUuid_ = 0;
+        onChanged();
+        return this;
+      }
+
+      private com.google.protobuf.ByteString lossFn_ = com.google.protobuf.ByteString.EMPTY;
+      /**
+       * <code>bytes loss_fn = 2;</code>
+       * @return The lossFn.
+       */
+      @java.lang.Override
+      public com.google.protobuf.ByteString getLossFn() {
+        return lossFn_;
+      }
+      /**
+       * <code>bytes loss_fn = 2;</code>
+       * @param value The lossFn to set.
+       * @return This builder for chaining.
+       */
+      public Builder setLossFn(com.google.protobuf.ByteString value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  
+        lossFn_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>bytes loss_fn = 2;</code>
+       * @return This builder for chaining.
+       */
+      public Builder clearLossFn() {
+        
+        lossFn_ = getDefaultInstance().getLossFn();
+        onChanged();
+        return this;
+      }
+
+      private com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.ClassAndArgs optimizer_;
+      private com.google.protobuf.SingleFieldBuilderV3<
+          com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.ClassAndArgs, com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.ClassAndArgs.Builder, com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.ClassAndArgsOrBuilder> optimizerBuilder_;
+      /**
+       * <code>.nn.ClassAndArgs optimizer = 3;</code>
+       * @return Whether the optimizer field is set.
+       */
+      public boolean hasOptimizer() {
+        return optimizerBuilder_ != null || optimizer_ != null;
+      }
+      /**
+       * <code>.nn.ClassAndArgs optimizer = 3;</code>
+       * @return The optimizer.
+       */
+      public com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.ClassAndArgs getOptimizer() {
+        if (optimizerBuilder_ == null) {
+          return optimizer_ == null ? com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.ClassAndArgs.getDefaultInstance() : optimizer_;
+        } else {
+          return optimizerBuilder_.getMessage();
+        }
+      }
+      /**
+       * <code>.nn.ClassAndArgs optimizer = 3;</code>
+       */
+      public Builder setOptimizer(com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.ClassAndArgs value) {
+        if (optimizerBuilder_ == null) {
+          if (value == null) {
+            throw new NullPointerException();
+          }
+          optimizer_ = value;
+          onChanged();
+        } else {
+          optimizerBuilder_.setMessage(value);
+        }
+
+        return this;
+      }
+      /**
+       * <code>.nn.ClassAndArgs optimizer = 3;</code>
+       */
+      public Builder setOptimizer(
+          com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.ClassAndArgs.Builder builderForValue) {
+        if (optimizerBuilder_ == null) {
+          optimizer_ = builderForValue.build();
+          onChanged();
+        } else {
+          optimizerBuilder_.setMessage(builderForValue.build());
+        }
+
+        return this;
+      }
+      /**
+       * <code>.nn.ClassAndArgs optimizer = 3;</code>
+       */
+      public Builder mergeOptimizer(com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.ClassAndArgs value) {
+        if (optimizerBuilder_ == null) {
+          if (optimizer_ != null) {
+            optimizer_ =
+              com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.ClassAndArgs.newBuilder(optimizer_).mergeFrom(value).buildPartial();
+          } else {
+            optimizer_ = value;
+          }
+          onChanged();
+        } else {
+          optimizerBuilder_.mergeFrom(value);
+        }
+
+        return this;
+      }
+      /**
+       * <code>.nn.ClassAndArgs optimizer = 3;</code>
+       */
+      public Builder clearOptimizer() {
+        if (optimizerBuilder_ == null) {
+          optimizer_ = null;
+          onChanged();
+        } else {
+          optimizer_ = null;
+          optimizerBuilder_ = null;
+        }
+
+        return this;
+      }
+      /**
+       * <code>.nn.ClassAndArgs optimizer = 3;</code>
+       */
+      public com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.ClassAndArgs.Builder getOptimizerBuilder() {
+        
+        onChanged();
+        return getOptimizerFieldBuilder().getBuilder();
+      }
+      /**
+       * <code>.nn.ClassAndArgs optimizer = 3;</code>
+       */
+      public com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.ClassAndArgsOrBuilder getOptimizerOrBuilder() {
+        if (optimizerBuilder_ != null) {
+          return optimizerBuilder_.getMessageOrBuilder();
+        } else {
+          return optimizer_ == null ?
+              com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.ClassAndArgs.getDefaultInstance() : optimizer_;
+        }
+      }
+      /**
+       * <code>.nn.ClassAndArgs optimizer = 3;</code>
+       */
+      private com.google.protobuf.SingleFieldBuilderV3<
+          com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.ClassAndArgs, com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.ClassAndArgs.Builder, com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.ClassAndArgsOrBuilder> 
+          getOptimizerFieldBuilder() {
+        if (optimizerBuilder_ == null) {
+          optimizerBuilder_ = new com.google.protobuf.SingleFieldBuilderV3<
+              com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.ClassAndArgs, com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.ClassAndArgs.Builder, com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.ClassAndArgsOrBuilder>(
+                  getOptimizer(),
+                  getParentForChildren(),
+                  isClean());
+          optimizer_ = null;
+        }
+        return optimizerBuilder_;
+      }
+
+      private java.lang.Object aggregator_ = "";
+      /**
+       * <code>string aggregator = 4;</code>
+       * @return The aggregator.
+       */
+      public java.lang.String getAggregator() {
+        java.lang.Object ref = aggregator_;
+        if (!(ref instanceof java.lang.String)) {
+          com.google.protobuf.ByteString bs =
+              (com.google.protobuf.ByteString) ref;
+          java.lang.String s = bs.toStringUtf8();
+          aggregator_ = s;
+          return s;
+        } else {
+          return (java.lang.String) ref;
+        }
+      }
+      /**
+       * <code>string aggregator = 4;</code>
+       * @return The bytes for aggregator.
+       */
+      public com.google.protobuf.ByteString
+          getAggregatorBytes() {
+        java.lang.Object ref = aggregator_;
+        if (ref instanceof String) {
+          com.google.protobuf.ByteString b = 
+              com.google.protobuf.ByteString.copyFromUtf8(
+                  (java.lang.String) ref);
+          aggregator_ = b;
+          return b;
+        } else {
+          return (com.google.protobuf.ByteString) ref;
+        }
+      }
+      /**
+       * <code>string aggregator = 4;</code>
+       * @param value The aggregator to set.
+       * @return This builder for chaining.
+       */
+      public Builder setAggregator(
+          java.lang.String value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  
+        aggregator_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>string aggregator = 4;</code>
+       * @return This builder for chaining.
+       */
+      public Builder clearAggregator() {
+        
+        aggregator_ = getDefaultInstance().getAggregator();
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>string aggregator = 4;</code>
+       * @param value The bytes for aggregator to set.
+       * @return This builder for chaining.
+       */
+      public Builder setAggregatorBytes(
+          com.google.protobuf.ByteString value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  checkByteStringIsUtf8(value);
+        
+        aggregator_ = value;
+        onChanged();
+        return this;
+      }
+      @java.lang.Override
+      public final Builder setUnknownFields(
+          final com.google.protobuf.UnknownFieldSet unknownFields) {
+        return super.setUnknownFields(unknownFields);
+      }
+
+      @java.lang.Override
+      public final Builder mergeUnknownFields(
+          final com.google.protobuf.UnknownFieldSet unknownFields) {
+        return super.mergeUnknownFields(unknownFields);
+      }
+
+
+      // @@protoc_insertion_point(builder_scope:nn.UploadMetaRequest)
+    }
+
+    // @@protoc_insertion_point(class_scope:nn.UploadMetaRequest)
+    private static final com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.UploadMetaRequest DEFAULT_INSTANCE;
+    static {
+      DEFAULT_INSTANCE = new com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.UploadMetaRequest();
+    }
+
+    public static com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.UploadMetaRequest getDefaultInstance() {
+      return DEFAULT_INSTANCE;
+    }
+
+    private static final com.google.protobuf.Parser<UploadMetaRequest>
+        PARSER = new com.google.protobuf.AbstractParser<UploadMetaRequest>() {
+      @java.lang.Override
+      public UploadMetaRequest parsePartialFrom(
+          com.google.protobuf.CodedInputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws com.google.protobuf.InvalidProtocolBufferException {
+        return new UploadMetaRequest(input, extensionRegistry);
+      }
+    };
+
+    public static com.google.protobuf.Parser<UploadMetaRequest> parser() {
+      return PARSER;
+    }
+
+    @java.lang.Override
+    public com.google.protobuf.Parser<UploadMetaRequest> getParserForType() {
+      return PARSER;
+    }
+
+    @java.lang.Override
+    public com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.UploadMetaRequest getDefaultInstanceForType() {
+      return DEFAULT_INSTANCE;
+    }
+
+  }
+
+  public interface ByteChunkOrBuilder extends
+      // @@protoc_insertion_point(interface_extends:nn.ByteChunk)
+      com.google.protobuf.MessageOrBuilder {
+
+    /**
+     * <code>bytes buffer = 1;</code>
+     * @return The buffer.
+     */
+    com.google.protobuf.ByteString getBuffer();
+  }
+  /**
+   * Protobuf type {@code nn.ByteChunk}
+   */
+  public static final class ByteChunk extends
+      com.google.protobuf.GeneratedMessageV3 implements
+      // @@protoc_insertion_point(message_implements:nn.ByteChunk)
+      ByteChunkOrBuilder {
+  private static final long serialVersionUID = 0L;
+    // Use ByteChunk.newBuilder() to construct.
+    private ByteChunk(com.google.protobuf.GeneratedMessageV3.Builder<?> builder) {
+      super(builder);
+    }
+    private ByteChunk() {
+      buffer_ = com.google.protobuf.ByteString.EMPTY;
+    }
+
+    @java.lang.Override
+    @SuppressWarnings({"unused"})
+    protected java.lang.Object newInstance(
+        UnusedPrivateParameter unused) {
+      return new ByteChunk();
+    }
+
+    @java.lang.Override
+    public final com.google.protobuf.UnknownFieldSet
+    getUnknownFields() {
+      return this.unknownFields;
+    }
+    private ByteChunk(
+        com.google.protobuf.CodedInputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      this();
+      if (extensionRegistry == null) {
+        throw new java.lang.NullPointerException();
+      }
+      com.google.protobuf.UnknownFieldSet.Builder unknownFields =
+          com.google.protobuf.UnknownFieldSet.newBuilder();
+      try {
+        boolean done = false;
+        while (!done) {
+          int tag = input.readTag();
+          switch (tag) {
+            case 0:
+              done = true;
+              break;
+            case 10: {
+
+              buffer_ = input.readBytes();
+              break;
+            }
+            default: {
+              if (!parseUnknownField(
+                  input, unknownFields, extensionRegistry, tag)) {
+                done = true;
+              }
+              break;
+            }
+          }
+        }
+      } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+        throw e.setUnfinishedMessage(this);
+      } catch (java.io.IOException e) {
+        throw new com.google.protobuf.InvalidProtocolBufferException(
+            e).setUnfinishedMessage(this);
+      } finally {
+        this.unknownFields = unknownFields.build();
+        makeExtensionsImmutable();
+      }
+    }
+    public static final com.google.protobuf.Descriptors.Descriptor
+        getDescriptor() {
+      return com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.internal_static_nn_ByteChunk_descriptor;
+    }
+
+    @java.lang.Override
+    protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+        internalGetFieldAccessorTable() {
+      return com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.internal_static_nn_ByteChunk_fieldAccessorTable
+          .ensureFieldAccessorsInitialized(
+              com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.ByteChunk.class, com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.ByteChunk.Builder.class);
+    }
+
+    public static final int BUFFER_FIELD_NUMBER = 1;
+    private com.google.protobuf.ByteString buffer_;
+    /**
+     * <code>bytes buffer = 1;</code>
+     * @return The buffer.
+     */
+    @java.lang.Override
+    public com.google.protobuf.ByteString getBuffer() {
+      return buffer_;
+    }
+
+    private byte memoizedIsInitialized = -1;
+    @java.lang.Override
+    public final boolean isInitialized() {
+      byte isInitialized = memoizedIsInitialized;
+      if (isInitialized == 1) return true;
+      if (isInitialized == 0) return false;
+
+      memoizedIsInitialized = 1;
+      return true;
+    }
+
+    @java.lang.Override
+    public void writeTo(com.google.protobuf.CodedOutputStream output)
+                        throws java.io.IOException {
+      if (!buffer_.isEmpty()) {
+        output.writeBytes(1, buffer_);
+      }
+      unknownFields.writeTo(output);
+    }
+
+    @java.lang.Override
+    public int getSerializedSize() {
+      int size = memoizedSize;
+      if (size != -1) return size;
+
+      size = 0;
+      if (!buffer_.isEmpty()) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeBytesSize(1, buffer_);
+      }
+      size += unknownFields.getSerializedSize();
+      memoizedSize = size;
+      return size;
+    }
+
+    @java.lang.Override
+    public boolean equals(final java.lang.Object obj) {
+      if (obj == this) {
+       return true;
+      }
+      if (!(obj instanceof com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.ByteChunk)) {
+        return super.equals(obj);
+      }
+      com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.ByteChunk other = (com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.ByteChunk) obj;
+
+      if (!getBuffer()
+          .equals(other.getBuffer())) return false;
+      if (!unknownFields.equals(other.unknownFields)) return false;
+      return true;
+    }
+
+    @java.lang.Override
+    public int hashCode() {
+      if (memoizedHashCode != 0) {
+        return memoizedHashCode;
+      }
+      int hash = 41;
+      hash = (19 * hash) + getDescriptor().hashCode();
+      hash = (37 * hash) + BUFFER_FIELD_NUMBER;
+      hash = (53 * hash) + getBuffer().hashCode();
+      hash = (29 * hash) + unknownFields.hashCode();
+      memoizedHashCode = hash;
+      return hash;
+    }
+
+    public static com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.ByteChunk parseFrom(
+        java.nio.ByteBuffer data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data);
+    }
+    public static com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.ByteChunk parseFrom(
+        java.nio.ByteBuffer data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data, extensionRegistry);
+    }
+    public static com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.ByteChunk parseFrom(
+        com.google.protobuf.ByteString data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data);
+    }
+    public static com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.ByteChunk parseFrom(
+        com.google.protobuf.ByteString data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data, extensionRegistry);
+    }
+    public static com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.ByteChunk parseFrom(byte[] data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data);
+    }
+    public static com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.ByteChunk parseFrom(
+        byte[] data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data, extensionRegistry);
+    }
+    public static com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.ByteChunk parseFrom(java.io.InputStream input)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseWithIOException(PARSER, input);
+    }
+    public static com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.ByteChunk parseFrom(
+        java.io.InputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseWithIOException(PARSER, input, extensionRegistry);
+    }
+    public static com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.ByteChunk parseDelimitedFrom(java.io.InputStream input)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseDelimitedWithIOException(PARSER, input);
+    }
+    public static com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.ByteChunk parseDelimitedFrom(
+        java.io.InputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseDelimitedWithIOException(PARSER, input, extensionRegistry);
+    }
+    public static com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.ByteChunk parseFrom(
+        com.google.protobuf.CodedInputStream input)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseWithIOException(PARSER, input);
+    }
+    public static com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.ByteChunk parseFrom(
+        com.google.protobuf.CodedInputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseWithIOException(PARSER, input, extensionRegistry);
+    }
+
+    @java.lang.Override
+    public Builder newBuilderForType() { return newBuilder(); }
+    public static Builder newBuilder() {
+      return DEFAULT_INSTANCE.toBuilder();
+    }
+    public static Builder newBuilder(com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.ByteChunk prototype) {
+      return DEFAULT_INSTANCE.toBuilder().mergeFrom(prototype);
+    }
+    @java.lang.Override
+    public Builder toBuilder() {
+      return this == DEFAULT_INSTANCE
+          ? new Builder() : new Builder().mergeFrom(this);
+    }
+
+    @java.lang.Override
+    protected Builder newBuilderForType(
+        com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
+      Builder builder = new Builder(parent);
+      return builder;
+    }
+    /**
+     * Protobuf type {@code nn.ByteChunk}
+     */
+    public static final class Builder extends
+        com.google.protobuf.GeneratedMessageV3.Builder<Builder> implements
+        // @@protoc_insertion_point(builder_implements:nn.ByteChunk)
+        com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.ByteChunkOrBuilder {
+      public static final com.google.protobuf.Descriptors.Descriptor
+          getDescriptor() {
+        return com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.internal_static_nn_ByteChunk_descriptor;
+      }
+
+      @java.lang.Override
+      protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+          internalGetFieldAccessorTable() {
+        return com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.internal_static_nn_ByteChunk_fieldAccessorTable
+            .ensureFieldAccessorsInitialized(
+                com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.ByteChunk.class, com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.ByteChunk.Builder.class);
+      }
+
+      // Construct using com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.ByteChunk.newBuilder()
+      private Builder() {
+        maybeForceBuilderInitialization();
+      }
+
+      private Builder(
+          com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
+        super(parent);
+        maybeForceBuilderInitialization();
+      }
+      private void maybeForceBuilderInitialization() {
+        if (com.google.protobuf.GeneratedMessageV3
+                .alwaysUseFieldBuilders) {
+        }
+      }
+      @java.lang.Override
+      public Builder clear() {
+        super.clear();
+        buffer_ = com.google.protobuf.ByteString.EMPTY;
+
+        return this;
+      }
+
+      @java.lang.Override
+      public com.google.protobuf.Descriptors.Descriptor
+          getDescriptorForType() {
+        return com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.internal_static_nn_ByteChunk_descriptor;
+      }
+
+      @java.lang.Override
+      public com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.ByteChunk getDefaultInstanceForType() {
+        return com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.ByteChunk.getDefaultInstance();
+      }
+
+      @java.lang.Override
+      public com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.ByteChunk build() {
+        com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.ByteChunk result = buildPartial();
+        if (!result.isInitialized()) {
+          throw newUninitializedMessageException(result);
+        }
+        return result;
+      }
+
+      @java.lang.Override
+      public com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.ByteChunk buildPartial() {
+        com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.ByteChunk result = new com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.ByteChunk(this);
+        result.buffer_ = buffer_;
+        onBuilt();
+        return result;
+      }
+
+      @java.lang.Override
+      public Builder clone() {
+        return super.clone();
+      }
+      @java.lang.Override
+      public Builder setField(
+          com.google.protobuf.Descriptors.FieldDescriptor field,
+          java.lang.Object value) {
+        return super.setField(field, value);
+      }
+      @java.lang.Override
+      public Builder clearField(
+          com.google.protobuf.Descriptors.FieldDescriptor field) {
+        return super.clearField(field);
+      }
+      @java.lang.Override
+      public Builder clearOneof(
+          com.google.protobuf.Descriptors.OneofDescriptor oneof) {
+        return super.clearOneof(oneof);
+      }
+      @java.lang.Override
+      public Builder setRepeatedField(
+          com.google.protobuf.Descriptors.FieldDescriptor field,
+          int index, java.lang.Object value) {
+        return super.setRepeatedField(field, index, value);
+      }
+      @java.lang.Override
+      public Builder addRepeatedField(
+          com.google.protobuf.Descriptors.FieldDescriptor field,
+          java.lang.Object value) {
+        return super.addRepeatedField(field, value);
+      }
+      @java.lang.Override
+      public Builder mergeFrom(com.google.protobuf.Message other) {
+        if (other instanceof com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.ByteChunk) {
+          return mergeFrom((com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.ByteChunk)other);
+        } else {
+          super.mergeFrom(other);
+          return this;
+        }
+      }
+
+      public Builder mergeFrom(com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.ByteChunk other) {
+        if (other == com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.ByteChunk.getDefaultInstance()) return this;
+        if (other.getBuffer() != com.google.protobuf.ByteString.EMPTY) {
+          setBuffer(other.getBuffer());
+        }
+        this.mergeUnknownFields(other.unknownFields);
+        onChanged();
+        return this;
+      }
+
+      @java.lang.Override
+      public final boolean isInitialized() {
+        return true;
+      }
+
+      @java.lang.Override
+      public Builder mergeFrom(
+          com.google.protobuf.CodedInputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws java.io.IOException {
+        com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.ByteChunk parsedMessage = null;
+        try {
+          parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
+        } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+          parsedMessage = (com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.ByteChunk) e.getUnfinishedMessage();
+          throw e.unwrapIOException();
+        } finally {
+          if (parsedMessage != null) {
+            mergeFrom(parsedMessage);
+          }
+        }
+        return this;
+      }
+
+      private com.google.protobuf.ByteString buffer_ = com.google.protobuf.ByteString.EMPTY;
+      /**
+       * <code>bytes buffer = 1;</code>
+       * @return The buffer.
+       */
+      @java.lang.Override
+      public com.google.protobuf.ByteString getBuffer() {
+        return buffer_;
+      }
+      /**
+       * <code>bytes buffer = 1;</code>
+       * @param value The buffer to set.
+       * @return This builder for chaining.
+       */
+      public Builder setBuffer(com.google.protobuf.ByteString value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  
+        buffer_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>bytes buffer = 1;</code>
+       * @return This builder for chaining.
+       */
+      public Builder clearBuffer() {
+        
+        buffer_ = getDefaultInstance().getBuffer();
+        onChanged();
+        return this;
+      }
+      @java.lang.Override
+      public final Builder setUnknownFields(
+          final com.google.protobuf.UnknownFieldSet unknownFields) {
+        return super.setUnknownFields(unknownFields);
+      }
+
+      @java.lang.Override
+      public final Builder mergeUnknownFields(
+          final com.google.protobuf.UnknownFieldSet unknownFields) {
+        return super.mergeUnknownFields(unknownFields);
+      }
+
+
+      // @@protoc_insertion_point(builder_scope:nn.ByteChunk)
+    }
+
+    // @@protoc_insertion_point(class_scope:nn.ByteChunk)
+    private static final com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.ByteChunk DEFAULT_INSTANCE;
+    static {
+      DEFAULT_INSTANCE = new com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.ByteChunk();
+    }
+
+    public static com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.ByteChunk getDefaultInstance() {
+      return DEFAULT_INSTANCE;
+    }
+
+    private static final com.google.protobuf.Parser<ByteChunk>
+        PARSER = new com.google.protobuf.AbstractParser<ByteChunk>() {
+      @java.lang.Override
+      public ByteChunk parsePartialFrom(
+          com.google.protobuf.CodedInputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws com.google.protobuf.InvalidProtocolBufferException {
+        return new ByteChunk(input, extensionRegistry);
+      }
+    };
+
+    public static com.google.protobuf.Parser<ByteChunk> parser() {
+      return PARSER;
+    }
+
+    @java.lang.Override
+    public com.google.protobuf.Parser<ByteChunk> getParserForType() {
+      return PARSER;
+    }
+
+    @java.lang.Override
+    public com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.ByteChunk getDefaultInstanceForType() {
+      return DEFAULT_INSTANCE;
+    }
+
+  }
+
+  public interface ClassAndArgsOrBuilder extends
+      // @@protoc_insertion_point(interface_extends:nn.ClassAndArgs)
+      com.google.protobuf.MessageOrBuilder {
+
+    /**
+     * <code>bytes cls = 1;</code>
+     * @return The cls.
+     */
+    com.google.protobuf.ByteString getCls();
+
+    /**
+     * <code>bytes args = 2;</code>
+     * @return The args.
+     */
+    com.google.protobuf.ByteString getArgs();
+  }
+  /**
+   * Protobuf type {@code nn.ClassAndArgs}
+   */
+  public static final class ClassAndArgs extends
+      com.google.protobuf.GeneratedMessageV3 implements
+      // @@protoc_insertion_point(message_implements:nn.ClassAndArgs)
+      ClassAndArgsOrBuilder {
+  private static final long serialVersionUID = 0L;
+    // Use ClassAndArgs.newBuilder() to construct.
+    private ClassAndArgs(com.google.protobuf.GeneratedMessageV3.Builder<?> builder) {
+      super(builder);
+    }
+    private ClassAndArgs() {
+      cls_ = com.google.protobuf.ByteString.EMPTY;
+      args_ = com.google.protobuf.ByteString.EMPTY;
+    }
+
+    @java.lang.Override
+    @SuppressWarnings({"unused"})
+    protected java.lang.Object newInstance(
+        UnusedPrivateParameter unused) {
+      return new ClassAndArgs();
+    }
+
+    @java.lang.Override
+    public final com.google.protobuf.UnknownFieldSet
+    getUnknownFields() {
+      return this.unknownFields;
+    }
+    private ClassAndArgs(
+        com.google.protobuf.CodedInputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      this();
+      if (extensionRegistry == null) {
+        throw new java.lang.NullPointerException();
+      }
+      com.google.protobuf.UnknownFieldSet.Builder unknownFields =
+          com.google.protobuf.UnknownFieldSet.newBuilder();
+      try {
+        boolean done = false;
+        while (!done) {
+          int tag = input.readTag();
+          switch (tag) {
+            case 0:
+              done = true;
+              break;
+            case 10: {
+
+              cls_ = input.readBytes();
+              break;
+            }
+            case 18: {
+
+              args_ = input.readBytes();
+              break;
+            }
+            default: {
+              if (!parseUnknownField(
+                  input, unknownFields, extensionRegistry, tag)) {
+                done = true;
+              }
+              break;
+            }
+          }
+        }
+      } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+        throw e.setUnfinishedMessage(this);
+      } catch (java.io.IOException e) {
+        throw new com.google.protobuf.InvalidProtocolBufferException(
+            e).setUnfinishedMessage(this);
+      } finally {
+        this.unknownFields = unknownFields.build();
+        makeExtensionsImmutable();
+      }
+    }
+    public static final com.google.protobuf.Descriptors.Descriptor
+        getDescriptor() {
+      return com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.internal_static_nn_ClassAndArgs_descriptor;
+    }
+
+    @java.lang.Override
+    protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+        internalGetFieldAccessorTable() {
+      return com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.internal_static_nn_ClassAndArgs_fieldAccessorTable
+          .ensureFieldAccessorsInitialized(
+              com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.ClassAndArgs.class, com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.ClassAndArgs.Builder.class);
+    }
+
+    public static final int CLS_FIELD_NUMBER = 1;
+    private com.google.protobuf.ByteString cls_;
+    /**
+     * <code>bytes cls = 1;</code>
+     * @return The cls.
+     */
+    @java.lang.Override
+    public com.google.protobuf.ByteString getCls() {
+      return cls_;
+    }
+
+    public static final int ARGS_FIELD_NUMBER = 2;
+    private com.google.protobuf.ByteString args_;
+    /**
+     * <code>bytes args = 2;</code>
+     * @return The args.
+     */
+    @java.lang.Override
+    public com.google.protobuf.ByteString getArgs() {
+      return args_;
+    }
+
+    private byte memoizedIsInitialized = -1;
+    @java.lang.Override
+    public final boolean isInitialized() {
+      byte isInitialized = memoizedIsInitialized;
+      if (isInitialized == 1) return true;
+      if (isInitialized == 0) return false;
+
+      memoizedIsInitialized = 1;
+      return true;
+    }
+
+    @java.lang.Override
+    public void writeTo(com.google.protobuf.CodedOutputStream output)
+                        throws java.io.IOException {
+      if (!cls_.isEmpty()) {
+        output.writeBytes(1, cls_);
+      }
+      if (!args_.isEmpty()) {
+        output.writeBytes(2, args_);
+      }
+      unknownFields.writeTo(output);
+    }
+
+    @java.lang.Override
+    public int getSerializedSize() {
+      int size = memoizedSize;
+      if (size != -1) return size;
+
+      size = 0;
+      if (!cls_.isEmpty()) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeBytesSize(1, cls_);
+      }
+      if (!args_.isEmpty()) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeBytesSize(2, args_);
+      }
+      size += unknownFields.getSerializedSize();
+      memoizedSize = size;
+      return size;
+    }
+
+    @java.lang.Override
+    public boolean equals(final java.lang.Object obj) {
+      if (obj == this) {
+       return true;
+      }
+      if (!(obj instanceof com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.ClassAndArgs)) {
+        return super.equals(obj);
+      }
+      com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.ClassAndArgs other = (com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.ClassAndArgs) obj;
+
+      if (!getCls()
+          .equals(other.getCls())) return false;
+      if (!getArgs()
+          .equals(other.getArgs())) return false;
+      if (!unknownFields.equals(other.unknownFields)) return false;
+      return true;
+    }
+
+    @java.lang.Override
+    public int hashCode() {
+      if (memoizedHashCode != 0) {
+        return memoizedHashCode;
+      }
+      int hash = 41;
+      hash = (19 * hash) + getDescriptor().hashCode();
+      hash = (37 * hash) + CLS_FIELD_NUMBER;
+      hash = (53 * hash) + getCls().hashCode();
+      hash = (37 * hash) + ARGS_FIELD_NUMBER;
+      hash = (53 * hash) + getArgs().hashCode();
+      hash = (29 * hash) + unknownFields.hashCode();
+      memoizedHashCode = hash;
+      return hash;
+    }
+
+    public static com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.ClassAndArgs parseFrom(
+        java.nio.ByteBuffer data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data);
+    }
+    public static com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.ClassAndArgs parseFrom(
+        java.nio.ByteBuffer data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data, extensionRegistry);
+    }
+    public static com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.ClassAndArgs parseFrom(
+        com.google.protobuf.ByteString data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data);
+    }
+    public static com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.ClassAndArgs parseFrom(
+        com.google.protobuf.ByteString data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data, extensionRegistry);
+    }
+    public static com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.ClassAndArgs parseFrom(byte[] data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data);
+    }
+    public static com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.ClassAndArgs parseFrom(
+        byte[] data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data, extensionRegistry);
+    }
+    public static com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.ClassAndArgs parseFrom(java.io.InputStream input)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseWithIOException(PARSER, input);
+    }
+    public static com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.ClassAndArgs parseFrom(
+        java.io.InputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseWithIOException(PARSER, input, extensionRegistry);
+    }
+    public static com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.ClassAndArgs parseDelimitedFrom(java.io.InputStream input)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseDelimitedWithIOException(PARSER, input);
+    }
+    public static com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.ClassAndArgs parseDelimitedFrom(
+        java.io.InputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseDelimitedWithIOException(PARSER, input, extensionRegistry);
+    }
+    public static com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.ClassAndArgs parseFrom(
+        com.google.protobuf.CodedInputStream input)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseWithIOException(PARSER, input);
+    }
+    public static com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.ClassAndArgs parseFrom(
+        com.google.protobuf.CodedInputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseWithIOException(PARSER, input, extensionRegistry);
+    }
+
+    @java.lang.Override
+    public Builder newBuilderForType() { return newBuilder(); }
+    public static Builder newBuilder() {
+      return DEFAULT_INSTANCE.toBuilder();
+    }
+    public static Builder newBuilder(com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.ClassAndArgs prototype) {
+      return DEFAULT_INSTANCE.toBuilder().mergeFrom(prototype);
+    }
+    @java.lang.Override
+    public Builder toBuilder() {
+      return this == DEFAULT_INSTANCE
+          ? new Builder() : new Builder().mergeFrom(this);
+    }
+
+    @java.lang.Override
+    protected Builder newBuilderForType(
+        com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
+      Builder builder = new Builder(parent);
+      return builder;
+    }
+    /**
+     * Protobuf type {@code nn.ClassAndArgs}
+     */
+    public static final class Builder extends
+        com.google.protobuf.GeneratedMessageV3.Builder<Builder> implements
+        // @@protoc_insertion_point(builder_implements:nn.ClassAndArgs)
+        com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.ClassAndArgsOrBuilder {
+      public static final com.google.protobuf.Descriptors.Descriptor
+          getDescriptor() {
+        return com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.internal_static_nn_ClassAndArgs_descriptor;
+      }
+
+      @java.lang.Override
+      protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+          internalGetFieldAccessorTable() {
+        return com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.internal_static_nn_ClassAndArgs_fieldAccessorTable
+            .ensureFieldAccessorsInitialized(
+                com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.ClassAndArgs.class, com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.ClassAndArgs.Builder.class);
+      }
+
+      // Construct using com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.ClassAndArgs.newBuilder()
+      private Builder() {
+        maybeForceBuilderInitialization();
+      }
+
+      private Builder(
+          com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
+        super(parent);
+        maybeForceBuilderInitialization();
+      }
+      private void maybeForceBuilderInitialization() {
+        if (com.google.protobuf.GeneratedMessageV3
+                .alwaysUseFieldBuilders) {
+        }
+      }
+      @java.lang.Override
+      public Builder clear() {
+        super.clear();
+        cls_ = com.google.protobuf.ByteString.EMPTY;
+
+        args_ = com.google.protobuf.ByteString.EMPTY;
+
+        return this;
+      }
+
+      @java.lang.Override
+      public com.google.protobuf.Descriptors.Descriptor
+          getDescriptorForType() {
+        return com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.internal_static_nn_ClassAndArgs_descriptor;
+      }
+
+      @java.lang.Override
+      public com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.ClassAndArgs getDefaultInstanceForType() {
+        return com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.ClassAndArgs.getDefaultInstance();
+      }
+
+      @java.lang.Override
+      public com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.ClassAndArgs build() {
+        com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.ClassAndArgs result = buildPartial();
+        if (!result.isInitialized()) {
+          throw newUninitializedMessageException(result);
+        }
+        return result;
+      }
+
+      @java.lang.Override
+      public com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.ClassAndArgs buildPartial() {
+        com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.ClassAndArgs result = new com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.ClassAndArgs(this);
+        result.cls_ = cls_;
+        result.args_ = args_;
+        onBuilt();
+        return result;
+      }
+
+      @java.lang.Override
+      public Builder clone() {
+        return super.clone();
+      }
+      @java.lang.Override
+      public Builder setField(
+          com.google.protobuf.Descriptors.FieldDescriptor field,
+          java.lang.Object value) {
+        return super.setField(field, value);
+      }
+      @java.lang.Override
+      public Builder clearField(
+          com.google.protobuf.Descriptors.FieldDescriptor field) {
+        return super.clearField(field);
+      }
+      @java.lang.Override
+      public Builder clearOneof(
+          com.google.protobuf.Descriptors.OneofDescriptor oneof) {
+        return super.clearOneof(oneof);
+      }
+      @java.lang.Override
+      public Builder setRepeatedField(
+          com.google.protobuf.Descriptors.FieldDescriptor field,
+          int index, java.lang.Object value) {
+        return super.setRepeatedField(field, index, value);
+      }
+      @java.lang.Override
+      public Builder addRepeatedField(
+          com.google.protobuf.Descriptors.FieldDescriptor field,
+          java.lang.Object value) {
+        return super.addRepeatedField(field, value);
+      }
+      @java.lang.Override
+      public Builder mergeFrom(com.google.protobuf.Message other) {
+        if (other instanceof com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.ClassAndArgs) {
+          return mergeFrom((com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.ClassAndArgs)other);
+        } else {
+          super.mergeFrom(other);
+          return this;
+        }
+      }
+
+      public Builder mergeFrom(com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.ClassAndArgs other) {
+        if (other == com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.ClassAndArgs.getDefaultInstance()) return this;
+        if (other.getCls() != com.google.protobuf.ByteString.EMPTY) {
+          setCls(other.getCls());
+        }
+        if (other.getArgs() != com.google.protobuf.ByteString.EMPTY) {
+          setArgs(other.getArgs());
+        }
+        this.mergeUnknownFields(other.unknownFields);
+        onChanged();
+        return this;
+      }
+
+      @java.lang.Override
+      public final boolean isInitialized() {
+        return true;
+      }
+
+      @java.lang.Override
+      public Builder mergeFrom(
+          com.google.protobuf.CodedInputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws java.io.IOException {
+        com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.ClassAndArgs parsedMessage = null;
+        try {
+          parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
+        } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+          parsedMessage = (com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.ClassAndArgs) e.getUnfinishedMessage();
+          throw e.unwrapIOException();
+        } finally {
+          if (parsedMessage != null) {
+            mergeFrom(parsedMessage);
+          }
+        }
+        return this;
+      }
+
+      private com.google.protobuf.ByteString cls_ = com.google.protobuf.ByteString.EMPTY;
+      /**
+       * <code>bytes cls = 1;</code>
+       * @return The cls.
+       */
+      @java.lang.Override
+      public com.google.protobuf.ByteString getCls() {
+        return cls_;
+      }
+      /**
+       * <code>bytes cls = 1;</code>
+       * @param value The cls to set.
+       * @return This builder for chaining.
+       */
+      public Builder setCls(com.google.protobuf.ByteString value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  
+        cls_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>bytes cls = 1;</code>
+       * @return This builder for chaining.
+       */
+      public Builder clearCls() {
+        
+        cls_ = getDefaultInstance().getCls();
+        onChanged();
+        return this;
+      }
+
+      private com.google.protobuf.ByteString args_ = com.google.protobuf.ByteString.EMPTY;
+      /**
+       * <code>bytes args = 2;</code>
+       * @return The args.
+       */
+      @java.lang.Override
+      public com.google.protobuf.ByteString getArgs() {
+        return args_;
+      }
+      /**
+       * <code>bytes args = 2;</code>
+       * @param value The args to set.
+       * @return This builder for chaining.
+       */
+      public Builder setArgs(com.google.protobuf.ByteString value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  
+        args_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>bytes args = 2;</code>
+       * @return This builder for chaining.
+       */
+      public Builder clearArgs() {
+        
+        args_ = getDefaultInstance().getArgs();
+        onChanged();
+        return this;
+      }
+      @java.lang.Override
+      public final Builder setUnknownFields(
+          final com.google.protobuf.UnknownFieldSet unknownFields) {
+        return super.setUnknownFields(unknownFields);
+      }
+
+      @java.lang.Override
+      public final Builder mergeUnknownFields(
+          final com.google.protobuf.UnknownFieldSet unknownFields) {
+        return super.mergeUnknownFields(unknownFields);
+      }
+
+
+      // @@protoc_insertion_point(builder_scope:nn.ClassAndArgs)
+    }
+
+    // @@protoc_insertion_point(class_scope:nn.ClassAndArgs)
+    private static final com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.ClassAndArgs DEFAULT_INSTANCE;
+    static {
+      DEFAULT_INSTANCE = new com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.ClassAndArgs();
+    }
+
+    public static com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.ClassAndArgs getDefaultInstance() {
+      return DEFAULT_INSTANCE;
+    }
+
+    private static final com.google.protobuf.Parser<ClassAndArgs>
+        PARSER = new com.google.protobuf.AbstractParser<ClassAndArgs>() {
+      @java.lang.Override
+      public ClassAndArgs parsePartialFrom(
+          com.google.protobuf.CodedInputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws com.google.protobuf.InvalidProtocolBufferException {
+        return new ClassAndArgs(input, extensionRegistry);
+      }
+    };
+
+    public static com.google.protobuf.Parser<ClassAndArgs> parser() {
+      return PARSER;
+    }
+
+    @java.lang.Override
+    public com.google.protobuf.Parser<ClassAndArgs> getParserForType() {
+      return PARSER;
+    }
+
+    @java.lang.Override
+    public com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.ClassAndArgs getDefaultInstanceForType() {
+      return DEFAULT_INSTANCE;
+    }
+
+  }
+
+  public interface UploadMetaResponseOrBuilder extends
+      // @@protoc_insertion_point(interface_extends:nn.UploadMetaResponse)
+      com.google.protobuf.MessageOrBuilder {
+
+    /**
+     * <code>string message = 1;</code>
+     * @return The message.
+     */
+    java.lang.String getMessage();
+    /**
+     * <code>string message = 1;</code>
+     * @return The bytes for message.
+     */
+    com.google.protobuf.ByteString
+        getMessageBytes();
+
+    /**
+     * <code>int32 code = 2;</code>
+     * @return The code.
+     */
+    int getCode();
+  }
+  /**
+   * Protobuf type {@code nn.UploadMetaResponse}
+   */
+  public static final class UploadMetaResponse extends
+      com.google.protobuf.GeneratedMessageV3 implements
+      // @@protoc_insertion_point(message_implements:nn.UploadMetaResponse)
+      UploadMetaResponseOrBuilder {
+  private static final long serialVersionUID = 0L;
+    // Use UploadMetaResponse.newBuilder() to construct.
+    private UploadMetaResponse(com.google.protobuf.GeneratedMessageV3.Builder<?> builder) {
+      super(builder);
+    }
+    private UploadMetaResponse() {
+      message_ = "";
+    }
+
+    @java.lang.Override
+    @SuppressWarnings({"unused"})
+    protected java.lang.Object newInstance(
+        UnusedPrivateParameter unused) {
+      return new UploadMetaResponse();
+    }
+
+    @java.lang.Override
+    public final com.google.protobuf.UnknownFieldSet
+    getUnknownFields() {
+      return this.unknownFields;
+    }
+    private UploadMetaResponse(
+        com.google.protobuf.CodedInputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      this();
+      if (extensionRegistry == null) {
+        throw new java.lang.NullPointerException();
+      }
+      com.google.protobuf.UnknownFieldSet.Builder unknownFields =
+          com.google.protobuf.UnknownFieldSet.newBuilder();
+      try {
+        boolean done = false;
+        while (!done) {
+          int tag = input.readTag();
+          switch (tag) {
+            case 0:
+              done = true;
+              break;
+            case 10: {
+              java.lang.String s = input.readStringRequireUtf8();
+
+              message_ = s;
+              break;
+            }
+            case 16: {
+
+              code_ = input.readInt32();
+              break;
+            }
+            default: {
+              if (!parseUnknownField(
+                  input, unknownFields, extensionRegistry, tag)) {
+                done = true;
+              }
+              break;
+            }
+          }
+        }
+      } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+        throw e.setUnfinishedMessage(this);
+      } catch (java.io.IOException e) {
+        throw new com.google.protobuf.InvalidProtocolBufferException(
+            e).setUnfinishedMessage(this);
+      } finally {
+        this.unknownFields = unknownFields.build();
+        makeExtensionsImmutable();
+      }
+    }
+    public static final com.google.protobuf.Descriptors.Descriptor
+        getDescriptor() {
+      return com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.internal_static_nn_UploadMetaResponse_descriptor;
+    }
+
+    @java.lang.Override
+    protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+        internalGetFieldAccessorTable() {
+      return com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.internal_static_nn_UploadMetaResponse_fieldAccessorTable
+          .ensureFieldAccessorsInitialized(
+              com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.UploadMetaResponse.class, com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.UploadMetaResponse.Builder.class);
+    }
+
+    public static final int MESSAGE_FIELD_NUMBER = 1;
+    private volatile java.lang.Object message_;
+    /**
+     * <code>string message = 1;</code>
+     * @return The message.
+     */
+    @java.lang.Override
+    public java.lang.String getMessage() {
+      java.lang.Object ref = message_;
+      if (ref instanceof java.lang.String) {
+        return (java.lang.String) ref;
+      } else {
+        com.google.protobuf.ByteString bs = 
+            (com.google.protobuf.ByteString) ref;
+        java.lang.String s = bs.toStringUtf8();
+        message_ = s;
+        return s;
+      }
+    }
+    /**
+     * <code>string message = 1;</code>
+     * @return The bytes for message.
+     */
+    @java.lang.Override
+    public com.google.protobuf.ByteString
+        getMessageBytes() {
+      java.lang.Object ref = message_;
+      if (ref instanceof java.lang.String) {
+        com.google.protobuf.ByteString b = 
+            com.google.protobuf.ByteString.copyFromUtf8(
+                (java.lang.String) ref);
+        message_ = b;
+        return b;
+      } else {
+        return (com.google.protobuf.ByteString) ref;
+      }
+    }
+
+    public static final int CODE_FIELD_NUMBER = 2;
+    private int code_;
+    /**
+     * <code>int32 code = 2;</code>
+     * @return The code.
+     */
+    @java.lang.Override
+    public int getCode() {
+      return code_;
+    }
+
+    private byte memoizedIsInitialized = -1;
+    @java.lang.Override
+    public final boolean isInitialized() {
+      byte isInitialized = memoizedIsInitialized;
+      if (isInitialized == 1) return true;
+      if (isInitialized == 0) return false;
+
+      memoizedIsInitialized = 1;
+      return true;
+    }
+
+    @java.lang.Override
+    public void writeTo(com.google.protobuf.CodedOutputStream output)
+                        throws java.io.IOException {
+      if (!getMessageBytes().isEmpty()) {
+        com.google.protobuf.GeneratedMessageV3.writeString(output, 1, message_);
+      }
+      if (code_ != 0) {
+        output.writeInt32(2, code_);
+      }
+      unknownFields.writeTo(output);
+    }
+
+    @java.lang.Override
+    public int getSerializedSize() {
+      int size = memoizedSize;
+      if (size != -1) return size;
+
+      size = 0;
+      if (!getMessageBytes().isEmpty()) {
+        size += com.google.protobuf.GeneratedMessageV3.computeStringSize(1, message_);
+      }
+      if (code_ != 0) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeInt32Size(2, code_);
+      }
+      size += unknownFields.getSerializedSize();
+      memoizedSize = size;
+      return size;
+    }
+
+    @java.lang.Override
+    public boolean equals(final java.lang.Object obj) {
+      if (obj == this) {
+       return true;
+      }
+      if (!(obj instanceof com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.UploadMetaResponse)) {
+        return super.equals(obj);
+      }
+      com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.UploadMetaResponse other = (com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.UploadMetaResponse) obj;
+
+      if (!getMessage()
+          .equals(other.getMessage())) return false;
+      if (getCode()
+          != other.getCode()) return false;
+      if (!unknownFields.equals(other.unknownFields)) return false;
+      return true;
+    }
+
+    @java.lang.Override
+    public int hashCode() {
+      if (memoizedHashCode != 0) {
+        return memoizedHashCode;
+      }
+      int hash = 41;
+      hash = (19 * hash) + getDescriptor().hashCode();
+      hash = (37 * hash) + MESSAGE_FIELD_NUMBER;
+      hash = (53 * hash) + getMessage().hashCode();
+      hash = (37 * hash) + CODE_FIELD_NUMBER;
+      hash = (53 * hash) + getCode();
+      hash = (29 * hash) + unknownFields.hashCode();
+      memoizedHashCode = hash;
+      return hash;
+    }
+
+    public static com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.UploadMetaResponse parseFrom(
+        java.nio.ByteBuffer data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data);
+    }
+    public static com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.UploadMetaResponse parseFrom(
+        java.nio.ByteBuffer data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data, extensionRegistry);
+    }
+    public static com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.UploadMetaResponse parseFrom(
+        com.google.protobuf.ByteString data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data);
+    }
+    public static com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.UploadMetaResponse parseFrom(
+        com.google.protobuf.ByteString data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data, extensionRegistry);
+    }
+    public static com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.UploadMetaResponse parseFrom(byte[] data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data);
+    }
+    public static com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.UploadMetaResponse parseFrom(
+        byte[] data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data, extensionRegistry);
+    }
+    public static com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.UploadMetaResponse parseFrom(java.io.InputStream input)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseWithIOException(PARSER, input);
+    }
+    public static com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.UploadMetaResponse parseFrom(
+        java.io.InputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseWithIOException(PARSER, input, extensionRegistry);
+    }
+    public static com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.UploadMetaResponse parseDelimitedFrom(java.io.InputStream input)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseDelimitedWithIOException(PARSER, input);
+    }
+    public static com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.UploadMetaResponse parseDelimitedFrom(
+        java.io.InputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseDelimitedWithIOException(PARSER, input, extensionRegistry);
+    }
+    public static com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.UploadMetaResponse parseFrom(
+        com.google.protobuf.CodedInputStream input)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseWithIOException(PARSER, input);
+    }
+    public static com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.UploadMetaResponse parseFrom(
+        com.google.protobuf.CodedInputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseWithIOException(PARSER, input, extensionRegistry);
+    }
+
+    @java.lang.Override
+    public Builder newBuilderForType() { return newBuilder(); }
+    public static Builder newBuilder() {
+      return DEFAULT_INSTANCE.toBuilder();
+    }
+    public static Builder newBuilder(com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.UploadMetaResponse prototype) {
+      return DEFAULT_INSTANCE.toBuilder().mergeFrom(prototype);
+    }
+    @java.lang.Override
+    public Builder toBuilder() {
+      return this == DEFAULT_INSTANCE
+          ? new Builder() : new Builder().mergeFrom(this);
+    }
+
+    @java.lang.Override
+    protected Builder newBuilderForType(
+        com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
+      Builder builder = new Builder(parent);
+      return builder;
+    }
+    /**
+     * Protobuf type {@code nn.UploadMetaResponse}
+     */
+    public static final class Builder extends
+        com.google.protobuf.GeneratedMessageV3.Builder<Builder> implements
+        // @@protoc_insertion_point(builder_implements:nn.UploadMetaResponse)
+        com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.UploadMetaResponseOrBuilder {
+      public static final com.google.protobuf.Descriptors.Descriptor
+          getDescriptor() {
+        return com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.internal_static_nn_UploadMetaResponse_descriptor;
+      }
+
+      @java.lang.Override
+      protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+          internalGetFieldAccessorTable() {
+        return com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.internal_static_nn_UploadMetaResponse_fieldAccessorTable
+            .ensureFieldAccessorsInitialized(
+                com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.UploadMetaResponse.class, com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.UploadMetaResponse.Builder.class);
+      }
+
+      // Construct using com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.UploadMetaResponse.newBuilder()
+      private Builder() {
+        maybeForceBuilderInitialization();
+      }
+
+      private Builder(
+          com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
+        super(parent);
+        maybeForceBuilderInitialization();
+      }
+      private void maybeForceBuilderInitialization() {
+        if (com.google.protobuf.GeneratedMessageV3
+                .alwaysUseFieldBuilders) {
+        }
+      }
+      @java.lang.Override
+      public Builder clear() {
+        super.clear();
+        message_ = "";
+
+        code_ = 0;
+
+        return this;
+      }
+
+      @java.lang.Override
+      public com.google.protobuf.Descriptors.Descriptor
+          getDescriptorForType() {
+        return com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.internal_static_nn_UploadMetaResponse_descriptor;
+      }
+
+      @java.lang.Override
+      public com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.UploadMetaResponse getDefaultInstanceForType() {
+        return com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.UploadMetaResponse.getDefaultInstance();
+      }
+
+      @java.lang.Override
+      public com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.UploadMetaResponse build() {
+        com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.UploadMetaResponse result = buildPartial();
+        if (!result.isInitialized()) {
+          throw newUninitializedMessageException(result);
+        }
+        return result;
+      }
+
+      @java.lang.Override
+      public com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.UploadMetaResponse buildPartial() {
+        com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.UploadMetaResponse result = new com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.UploadMetaResponse(this);
+        result.message_ = message_;
+        result.code_ = code_;
+        onBuilt();
+        return result;
+      }
+
+      @java.lang.Override
+      public Builder clone() {
+        return super.clone();
+      }
+      @java.lang.Override
+      public Builder setField(
+          com.google.protobuf.Descriptors.FieldDescriptor field,
+          java.lang.Object value) {
+        return super.setField(field, value);
+      }
+      @java.lang.Override
+      public Builder clearField(
+          com.google.protobuf.Descriptors.FieldDescriptor field) {
+        return super.clearField(field);
+      }
+      @java.lang.Override
+      public Builder clearOneof(
+          com.google.protobuf.Descriptors.OneofDescriptor oneof) {
+        return super.clearOneof(oneof);
+      }
+      @java.lang.Override
+      public Builder setRepeatedField(
+          com.google.protobuf.Descriptors.FieldDescriptor field,
+          int index, java.lang.Object value) {
+        return super.setRepeatedField(field, index, value);
+      }
+      @java.lang.Override
+      public Builder addRepeatedField(
+          com.google.protobuf.Descriptors.FieldDescriptor field,
+          java.lang.Object value) {
+        return super.addRepeatedField(field, value);
+      }
+      @java.lang.Override
+      public Builder mergeFrom(com.google.protobuf.Message other) {
+        if (other instanceof com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.UploadMetaResponse) {
+          return mergeFrom((com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.UploadMetaResponse)other);
+        } else {
+          super.mergeFrom(other);
+          return this;
+        }
+      }
+
+      public Builder mergeFrom(com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.UploadMetaResponse other) {
+        if (other == com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.UploadMetaResponse.getDefaultInstance()) return this;
+        if (!other.getMessage().isEmpty()) {
+          message_ = other.message_;
+          onChanged();
+        }
+        if (other.getCode() != 0) {
+          setCode(other.getCode());
+        }
+        this.mergeUnknownFields(other.unknownFields);
+        onChanged();
+        return this;
+      }
+
+      @java.lang.Override
+      public final boolean isInitialized() {
+        return true;
+      }
+
+      @java.lang.Override
+      public Builder mergeFrom(
+          com.google.protobuf.CodedInputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws java.io.IOException {
+        com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.UploadMetaResponse parsedMessage = null;
+        try {
+          parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
+        } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+          parsedMessage = (com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.UploadMetaResponse) e.getUnfinishedMessage();
+          throw e.unwrapIOException();
+        } finally {
+          if (parsedMessage != null) {
+            mergeFrom(parsedMessage);
+          }
+        }
+        return this;
+      }
+
+      private java.lang.Object message_ = "";
+      /**
+       * <code>string message = 1;</code>
+       * @return The message.
+       */
+      public java.lang.String getMessage() {
+        java.lang.Object ref = message_;
+        if (!(ref instanceof java.lang.String)) {
+          com.google.protobuf.ByteString bs =
+              (com.google.protobuf.ByteString) ref;
+          java.lang.String s = bs.toStringUtf8();
+          message_ = s;
+          return s;
+        } else {
+          return (java.lang.String) ref;
+        }
+      }
+      /**
+       * <code>string message = 1;</code>
+       * @return The bytes for message.
+       */
+      public com.google.protobuf.ByteString
+          getMessageBytes() {
+        java.lang.Object ref = message_;
+        if (ref instanceof String) {
+          com.google.protobuf.ByteString b = 
+              com.google.protobuf.ByteString.copyFromUtf8(
+                  (java.lang.String) ref);
+          message_ = b;
+          return b;
+        } else {
+          return (com.google.protobuf.ByteString) ref;
+        }
+      }
+      /**
+       * <code>string message = 1;</code>
+       * @param value The message to set.
+       * @return This builder for chaining.
+       */
+      public Builder setMessage(
+          java.lang.String value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  
+        message_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>string message = 1;</code>
+       * @return This builder for chaining.
+       */
+      public Builder clearMessage() {
+        
+        message_ = getDefaultInstance().getMessage();
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>string message = 1;</code>
+       * @param value The bytes for message to set.
+       * @return This builder for chaining.
+       */
+      public Builder setMessageBytes(
+          com.google.protobuf.ByteString value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  checkByteStringIsUtf8(value);
+        
+        message_ = value;
+        onChanged();
+        return this;
+      }
+
+      private int code_ ;
+      /**
+       * <code>int32 code = 2;</code>
+       * @return The code.
+       */
+      @java.lang.Override
+      public int getCode() {
+        return code_;
+      }
+      /**
+       * <code>int32 code = 2;</code>
+       * @param value The code to set.
+       * @return This builder for chaining.
+       */
+      public Builder setCode(int value) {
+        
+        code_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>int32 code = 2;</code>
+       * @return This builder for chaining.
+       */
+      public Builder clearCode() {
+        
+        code_ = 0;
+        onChanged();
+        return this;
+      }
+      @java.lang.Override
+      public final Builder setUnknownFields(
+          final com.google.protobuf.UnknownFieldSet unknownFields) {
+        return super.setUnknownFields(unknownFields);
+      }
+
+      @java.lang.Override
+      public final Builder mergeUnknownFields(
+          final com.google.protobuf.UnknownFieldSet unknownFields) {
+        return super.mergeUnknownFields(unknownFields);
+      }
+
+
+      // @@protoc_insertion_point(builder_scope:nn.UploadMetaResponse)
+    }
+
+    // @@protoc_insertion_point(class_scope:nn.UploadMetaResponse)
+    private static final com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.UploadMetaResponse DEFAULT_INSTANCE;
+    static {
+      DEFAULT_INSTANCE = new com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.UploadMetaResponse();
+    }
+
+    public static com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.UploadMetaResponse getDefaultInstance() {
+      return DEFAULT_INSTANCE;
+    }
+
+    private static final com.google.protobuf.Parser<UploadMetaResponse>
+        PARSER = new com.google.protobuf.AbstractParser<UploadMetaResponse>() {
+      @java.lang.Override
+      public UploadMetaResponse parsePartialFrom(
+          com.google.protobuf.CodedInputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws com.google.protobuf.InvalidProtocolBufferException {
+        return new UploadMetaResponse(input, extensionRegistry);
+      }
+    };
+
+    public static com.google.protobuf.Parser<UploadMetaResponse> parser() {
+      return PARSER;
+    }
+
+    @java.lang.Override
+    public com.google.protobuf.Parser<UploadMetaResponse> getParserForType() {
+      return PARSER;
+    }
+
+    @java.lang.Override
+    public com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.UploadMetaResponse getDefaultInstanceForType() {
+      return DEFAULT_INSTANCE;
+    }
+
+  }
+
+  public interface LoadModelRequestOrBuilder extends
+      // @@protoc_insertion_point(interface_extends:nn.LoadModelRequest)
+      com.google.protobuf.MessageOrBuilder {
+
+    /**
+     * <code>int32 client_id = 1;</code>
+     * @return The clientId.
+     */
+    int getClientId();
+
+    /**
+     * <code>string backend = 2;</code>
+     * @return The backend.
+     */
+    java.lang.String getBackend();
+    /**
+     * <code>string backend = 2;</code>
+     * @return The bytes for backend.
+     */
+    com.google.protobuf.ByteString
+        getBackendBytes();
+
+    /**
+     * <code>string model_path = 3;</code>
+     * @return The modelPath.
+     */
+    java.lang.String getModelPath();
+    /**
+     * <code>string model_path = 3;</code>
+     * @return The bytes for modelPath.
+     */
+    com.google.protobuf.ByteString
+        getModelPathBytes();
+  }
+  /**
+   * Protobuf type {@code nn.LoadModelRequest}
+   */
+  public static final class LoadModelRequest extends
+      com.google.protobuf.GeneratedMessageV3 implements
+      // @@protoc_insertion_point(message_implements:nn.LoadModelRequest)
+      LoadModelRequestOrBuilder {
+  private static final long serialVersionUID = 0L;
+    // Use LoadModelRequest.newBuilder() to construct.
+    private LoadModelRequest(com.google.protobuf.GeneratedMessageV3.Builder<?> builder) {
+      super(builder);
+    }
+    private LoadModelRequest() {
+      backend_ = "";
+      modelPath_ = "";
+    }
+
+    @java.lang.Override
+    @SuppressWarnings({"unused"})
+    protected java.lang.Object newInstance(
+        UnusedPrivateParameter unused) {
+      return new LoadModelRequest();
+    }
+
+    @java.lang.Override
+    public final com.google.protobuf.UnknownFieldSet
+    getUnknownFields() {
+      return this.unknownFields;
+    }
+    private LoadModelRequest(
+        com.google.protobuf.CodedInputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      this();
+      if (extensionRegistry == null) {
+        throw new java.lang.NullPointerException();
+      }
+      com.google.protobuf.UnknownFieldSet.Builder unknownFields =
+          com.google.protobuf.UnknownFieldSet.newBuilder();
+      try {
+        boolean done = false;
+        while (!done) {
+          int tag = input.readTag();
+          switch (tag) {
+            case 0:
+              done = true;
+              break;
+            case 8: {
+
+              clientId_ = input.readInt32();
+              break;
+            }
+            case 18: {
+              java.lang.String s = input.readStringRequireUtf8();
+
+              backend_ = s;
+              break;
+            }
+            case 26: {
+              java.lang.String s = input.readStringRequireUtf8();
+
+              modelPath_ = s;
+              break;
+            }
+            default: {
+              if (!parseUnknownField(
+                  input, unknownFields, extensionRegistry, tag)) {
+                done = true;
+              }
+              break;
+            }
+          }
+        }
+      } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+        throw e.setUnfinishedMessage(this);
+      } catch (java.io.IOException e) {
+        throw new com.google.protobuf.InvalidProtocolBufferException(
+            e).setUnfinishedMessage(this);
+      } finally {
+        this.unknownFields = unknownFields.build();
+        makeExtensionsImmutable();
+      }
+    }
+    public static final com.google.protobuf.Descriptors.Descriptor
+        getDescriptor() {
+      return com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.internal_static_nn_LoadModelRequest_descriptor;
+    }
+
+    @java.lang.Override
+    protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+        internalGetFieldAccessorTable() {
+      return com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.internal_static_nn_LoadModelRequest_fieldAccessorTable
+          .ensureFieldAccessorsInitialized(
+              com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.LoadModelRequest.class, com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.LoadModelRequest.Builder.class);
+    }
+
+    public static final int CLIENT_ID_FIELD_NUMBER = 1;
+    private int clientId_;
+    /**
+     * <code>int32 client_id = 1;</code>
+     * @return The clientId.
+     */
+    @java.lang.Override
+    public int getClientId() {
+      return clientId_;
+    }
+
+    public static final int BACKEND_FIELD_NUMBER = 2;
+    private volatile java.lang.Object backend_;
+    /**
+     * <code>string backend = 2;</code>
+     * @return The backend.
+     */
+    @java.lang.Override
+    public java.lang.String getBackend() {
+      java.lang.Object ref = backend_;
+      if (ref instanceof java.lang.String) {
+        return (java.lang.String) ref;
+      } else {
+        com.google.protobuf.ByteString bs = 
+            (com.google.protobuf.ByteString) ref;
+        java.lang.String s = bs.toStringUtf8();
+        backend_ = s;
+        return s;
+      }
+    }
+    /**
+     * <code>string backend = 2;</code>
+     * @return The bytes for backend.
+     */
+    @java.lang.Override
+    public com.google.protobuf.ByteString
+        getBackendBytes() {
+      java.lang.Object ref = backend_;
+      if (ref instanceof java.lang.String) {
+        com.google.protobuf.ByteString b = 
+            com.google.protobuf.ByteString.copyFromUtf8(
+                (java.lang.String) ref);
+        backend_ = b;
+        return b;
+      } else {
+        return (com.google.protobuf.ByteString) ref;
+      }
+    }
+
+    public static final int MODEL_PATH_FIELD_NUMBER = 3;
+    private volatile java.lang.Object modelPath_;
+    /**
+     * <code>string model_path = 3;</code>
+     * @return The modelPath.
+     */
+    @java.lang.Override
+    public java.lang.String getModelPath() {
+      java.lang.Object ref = modelPath_;
+      if (ref instanceof java.lang.String) {
+        return (java.lang.String) ref;
+      } else {
+        com.google.protobuf.ByteString bs = 
+            (com.google.protobuf.ByteString) ref;
+        java.lang.String s = bs.toStringUtf8();
+        modelPath_ = s;
+        return s;
+      }
+    }
+    /**
+     * <code>string model_path = 3;</code>
+     * @return The bytes for modelPath.
+     */
+    @java.lang.Override
+    public com.google.protobuf.ByteString
+        getModelPathBytes() {
+      java.lang.Object ref = modelPath_;
+      if (ref instanceof java.lang.String) {
+        com.google.protobuf.ByteString b = 
+            com.google.protobuf.ByteString.copyFromUtf8(
+                (java.lang.String) ref);
+        modelPath_ = b;
+        return b;
+      } else {
+        return (com.google.protobuf.ByteString) ref;
+      }
+    }
+
+    private byte memoizedIsInitialized = -1;
+    @java.lang.Override
+    public final boolean isInitialized() {
+      byte isInitialized = memoizedIsInitialized;
+      if (isInitialized == 1) return true;
+      if (isInitialized == 0) return false;
+
+      memoizedIsInitialized = 1;
+      return true;
+    }
+
+    @java.lang.Override
+    public void writeTo(com.google.protobuf.CodedOutputStream output)
+                        throws java.io.IOException {
+      if (clientId_ != 0) {
+        output.writeInt32(1, clientId_);
+      }
+      if (!getBackendBytes().isEmpty()) {
+        com.google.protobuf.GeneratedMessageV3.writeString(output, 2, backend_);
+      }
+      if (!getModelPathBytes().isEmpty()) {
+        com.google.protobuf.GeneratedMessageV3.writeString(output, 3, modelPath_);
+      }
+      unknownFields.writeTo(output);
+    }
+
+    @java.lang.Override
+    public int getSerializedSize() {
+      int size = memoizedSize;
+      if (size != -1) return size;
+
+      size = 0;
+      if (clientId_ != 0) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeInt32Size(1, clientId_);
+      }
+      if (!getBackendBytes().isEmpty()) {
+        size += com.google.protobuf.GeneratedMessageV3.computeStringSize(2, backend_);
+      }
+      if (!getModelPathBytes().isEmpty()) {
+        size += com.google.protobuf.GeneratedMessageV3.computeStringSize(3, modelPath_);
+      }
+      size += unknownFields.getSerializedSize();
+      memoizedSize = size;
+      return size;
+    }
+
+    @java.lang.Override
+    public boolean equals(final java.lang.Object obj) {
+      if (obj == this) {
+       return true;
+      }
+      if (!(obj instanceof com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.LoadModelRequest)) {
+        return super.equals(obj);
+      }
+      com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.LoadModelRequest other = (com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.LoadModelRequest) obj;
+
+      if (getClientId()
+          != other.getClientId()) return false;
+      if (!getBackend()
+          .equals(other.getBackend())) return false;
+      if (!getModelPath()
+          .equals(other.getModelPath())) return false;
+      if (!unknownFields.equals(other.unknownFields)) return false;
+      return true;
+    }
+
+    @java.lang.Override
+    public int hashCode() {
+      if (memoizedHashCode != 0) {
+        return memoizedHashCode;
+      }
+      int hash = 41;
+      hash = (19 * hash) + getDescriptor().hashCode();
+      hash = (37 * hash) + CLIENT_ID_FIELD_NUMBER;
+      hash = (53 * hash) + getClientId();
+      hash = (37 * hash) + BACKEND_FIELD_NUMBER;
+      hash = (53 * hash) + getBackend().hashCode();
+      hash = (37 * hash) + MODEL_PATH_FIELD_NUMBER;
+      hash = (53 * hash) + getModelPath().hashCode();
+      hash = (29 * hash) + unknownFields.hashCode();
+      memoizedHashCode = hash;
+      return hash;
+    }
+
+    public static com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.LoadModelRequest parseFrom(
+        java.nio.ByteBuffer data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data);
+    }
+    public static com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.LoadModelRequest parseFrom(
+        java.nio.ByteBuffer data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data, extensionRegistry);
+    }
+    public static com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.LoadModelRequest parseFrom(
+        com.google.protobuf.ByteString data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data);
+    }
+    public static com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.LoadModelRequest parseFrom(
+        com.google.protobuf.ByteString data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data, extensionRegistry);
+    }
+    public static com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.LoadModelRequest parseFrom(byte[] data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data);
+    }
+    public static com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.LoadModelRequest parseFrom(
+        byte[] data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data, extensionRegistry);
+    }
+    public static com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.LoadModelRequest parseFrom(java.io.InputStream input)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseWithIOException(PARSER, input);
+    }
+    public static com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.LoadModelRequest parseFrom(
+        java.io.InputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseWithIOException(PARSER, input, extensionRegistry);
+    }
+    public static com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.LoadModelRequest parseDelimitedFrom(java.io.InputStream input)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseDelimitedWithIOException(PARSER, input);
+    }
+    public static com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.LoadModelRequest parseDelimitedFrom(
+        java.io.InputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseDelimitedWithIOException(PARSER, input, extensionRegistry);
+    }
+    public static com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.LoadModelRequest parseFrom(
+        com.google.protobuf.CodedInputStream input)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseWithIOException(PARSER, input);
+    }
+    public static com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.LoadModelRequest parseFrom(
+        com.google.protobuf.CodedInputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseWithIOException(PARSER, input, extensionRegistry);
+    }
+
+    @java.lang.Override
+    public Builder newBuilderForType() { return newBuilder(); }
+    public static Builder newBuilder() {
+      return DEFAULT_INSTANCE.toBuilder();
+    }
+    public static Builder newBuilder(com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.LoadModelRequest prototype) {
+      return DEFAULT_INSTANCE.toBuilder().mergeFrom(prototype);
+    }
+    @java.lang.Override
+    public Builder toBuilder() {
+      return this == DEFAULT_INSTANCE
+          ? new Builder() : new Builder().mergeFrom(this);
+    }
+
+    @java.lang.Override
+    protected Builder newBuilderForType(
+        com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
+      Builder builder = new Builder(parent);
+      return builder;
+    }
+    /**
+     * Protobuf type {@code nn.LoadModelRequest}
+     */
+    public static final class Builder extends
+        com.google.protobuf.GeneratedMessageV3.Builder<Builder> implements
+        // @@protoc_insertion_point(builder_implements:nn.LoadModelRequest)
+        com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.LoadModelRequestOrBuilder {
+      public static final com.google.protobuf.Descriptors.Descriptor
+          getDescriptor() {
+        return com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.internal_static_nn_LoadModelRequest_descriptor;
+      }
+
+      @java.lang.Override
+      protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+          internalGetFieldAccessorTable() {
+        return com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.internal_static_nn_LoadModelRequest_fieldAccessorTable
+            .ensureFieldAccessorsInitialized(
+                com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.LoadModelRequest.class, com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.LoadModelRequest.Builder.class);
+      }
+
+      // Construct using com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.LoadModelRequest.newBuilder()
+      private Builder() {
+        maybeForceBuilderInitialization();
+      }
+
+      private Builder(
+          com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
+        super(parent);
+        maybeForceBuilderInitialization();
+      }
+      private void maybeForceBuilderInitialization() {
+        if (com.google.protobuf.GeneratedMessageV3
+                .alwaysUseFieldBuilders) {
+        }
+      }
+      @java.lang.Override
+      public Builder clear() {
+        super.clear();
+        clientId_ = 0;
+
+        backend_ = "";
+
+        modelPath_ = "";
+
+        return this;
+      }
+
+      @java.lang.Override
+      public com.google.protobuf.Descriptors.Descriptor
+          getDescriptorForType() {
+        return com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.internal_static_nn_LoadModelRequest_descriptor;
+      }
+
+      @java.lang.Override
+      public com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.LoadModelRequest getDefaultInstanceForType() {
+        return com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.LoadModelRequest.getDefaultInstance();
+      }
+
+      @java.lang.Override
+      public com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.LoadModelRequest build() {
+        com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.LoadModelRequest result = buildPartial();
+        if (!result.isInitialized()) {
+          throw newUninitializedMessageException(result);
+        }
+        return result;
+      }
+
+      @java.lang.Override
+      public com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.LoadModelRequest buildPartial() {
+        com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.LoadModelRequest result = new com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.LoadModelRequest(this);
+        result.clientId_ = clientId_;
+        result.backend_ = backend_;
+        result.modelPath_ = modelPath_;
+        onBuilt();
+        return result;
+      }
+
+      @java.lang.Override
+      public Builder clone() {
+        return super.clone();
+      }
+      @java.lang.Override
+      public Builder setField(
+          com.google.protobuf.Descriptors.FieldDescriptor field,
+          java.lang.Object value) {
+        return super.setField(field, value);
+      }
+      @java.lang.Override
+      public Builder clearField(
+          com.google.protobuf.Descriptors.FieldDescriptor field) {
+        return super.clearField(field);
+      }
+      @java.lang.Override
+      public Builder clearOneof(
+          com.google.protobuf.Descriptors.OneofDescriptor oneof) {
+        return super.clearOneof(oneof);
+      }
+      @java.lang.Override
+      public Builder setRepeatedField(
+          com.google.protobuf.Descriptors.FieldDescriptor field,
+          int index, java.lang.Object value) {
+        return super.setRepeatedField(field, index, value);
+      }
+      @java.lang.Override
+      public Builder addRepeatedField(
+          com.google.protobuf.Descriptors.FieldDescriptor field,
+          java.lang.Object value) {
+        return super.addRepeatedField(field, value);
+      }
+      @java.lang.Override
+      public Builder mergeFrom(com.google.protobuf.Message other) {
+        if (other instanceof com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.LoadModelRequest) {
+          return mergeFrom((com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.LoadModelRequest)other);
+        } else {
+          super.mergeFrom(other);
+          return this;
+        }
+      }
+
+      public Builder mergeFrom(com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.LoadModelRequest other) {
+        if (other == com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.LoadModelRequest.getDefaultInstance()) return this;
+        if (other.getClientId() != 0) {
+          setClientId(other.getClientId());
+        }
+        if (!other.getBackend().isEmpty()) {
+          backend_ = other.backend_;
+          onChanged();
+        }
+        if (!other.getModelPath().isEmpty()) {
+          modelPath_ = other.modelPath_;
+          onChanged();
+        }
+        this.mergeUnknownFields(other.unknownFields);
+        onChanged();
+        return this;
+      }
+
+      @java.lang.Override
+      public final boolean isInitialized() {
+        return true;
+      }
+
+      @java.lang.Override
+      public Builder mergeFrom(
+          com.google.protobuf.CodedInputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws java.io.IOException {
+        com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.LoadModelRequest parsedMessage = null;
+        try {
+          parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
+        } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+          parsedMessage = (com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.LoadModelRequest) e.getUnfinishedMessage();
+          throw e.unwrapIOException();
+        } finally {
+          if (parsedMessage != null) {
+            mergeFrom(parsedMessage);
+          }
+        }
+        return this;
+      }
+
+      private int clientId_ ;
+      /**
+       * <code>int32 client_id = 1;</code>
+       * @return The clientId.
+       */
+      @java.lang.Override
+      public int getClientId() {
+        return clientId_;
+      }
+      /**
+       * <code>int32 client_id = 1;</code>
+       * @param value The clientId to set.
+       * @return This builder for chaining.
+       */
+      public Builder setClientId(int value) {
+        
+        clientId_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>int32 client_id = 1;</code>
+       * @return This builder for chaining.
+       */
+      public Builder clearClientId() {
+        
+        clientId_ = 0;
+        onChanged();
+        return this;
+      }
+
+      private java.lang.Object backend_ = "";
+      /**
+       * <code>string backend = 2;</code>
+       * @return The backend.
+       */
+      public java.lang.String getBackend() {
+        java.lang.Object ref = backend_;
+        if (!(ref instanceof java.lang.String)) {
+          com.google.protobuf.ByteString bs =
+              (com.google.protobuf.ByteString) ref;
+          java.lang.String s = bs.toStringUtf8();
+          backend_ = s;
+          return s;
+        } else {
+          return (java.lang.String) ref;
+        }
+      }
+      /**
+       * <code>string backend = 2;</code>
+       * @return The bytes for backend.
+       */
+      public com.google.protobuf.ByteString
+          getBackendBytes() {
+        java.lang.Object ref = backend_;
+        if (ref instanceof String) {
+          com.google.protobuf.ByteString b = 
+              com.google.protobuf.ByteString.copyFromUtf8(
+                  (java.lang.String) ref);
+          backend_ = b;
+          return b;
+        } else {
+          return (com.google.protobuf.ByteString) ref;
+        }
+      }
+      /**
+       * <code>string backend = 2;</code>
+       * @param value The backend to set.
+       * @return This builder for chaining.
+       */
+      public Builder setBackend(
+          java.lang.String value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  
+        backend_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>string backend = 2;</code>
+       * @return This builder for chaining.
+       */
+      public Builder clearBackend() {
+        
+        backend_ = getDefaultInstance().getBackend();
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>string backend = 2;</code>
+       * @param value The bytes for backend to set.
+       * @return This builder for chaining.
+       */
+      public Builder setBackendBytes(
+          com.google.protobuf.ByteString value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  checkByteStringIsUtf8(value);
+        
+        backend_ = value;
+        onChanged();
+        return this;
+      }
+
+      private java.lang.Object modelPath_ = "";
+      /**
+       * <code>string model_path = 3;</code>
+       * @return The modelPath.
+       */
+      public java.lang.String getModelPath() {
+        java.lang.Object ref = modelPath_;
+        if (!(ref instanceof java.lang.String)) {
+          com.google.protobuf.ByteString bs =
+              (com.google.protobuf.ByteString) ref;
+          java.lang.String s = bs.toStringUtf8();
+          modelPath_ = s;
+          return s;
+        } else {
+          return (java.lang.String) ref;
+        }
+      }
+      /**
+       * <code>string model_path = 3;</code>
+       * @return The bytes for modelPath.
+       */
+      public com.google.protobuf.ByteString
+          getModelPathBytes() {
+        java.lang.Object ref = modelPath_;
+        if (ref instanceof String) {
+          com.google.protobuf.ByteString b = 
+              com.google.protobuf.ByteString.copyFromUtf8(
+                  (java.lang.String) ref);
+          modelPath_ = b;
+          return b;
+        } else {
+          return (com.google.protobuf.ByteString) ref;
+        }
+      }
+      /**
+       * <code>string model_path = 3;</code>
+       * @param value The modelPath to set.
+       * @return This builder for chaining.
+       */
+      public Builder setModelPath(
+          java.lang.String value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  
+        modelPath_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>string model_path = 3;</code>
+       * @return This builder for chaining.
+       */
+      public Builder clearModelPath() {
+        
+        modelPath_ = getDefaultInstance().getModelPath();
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>string model_path = 3;</code>
+       * @param value The bytes for modelPath to set.
+       * @return This builder for chaining.
+       */
+      public Builder setModelPathBytes(
+          com.google.protobuf.ByteString value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  checkByteStringIsUtf8(value);
+        
+        modelPath_ = value;
+        onChanged();
+        return this;
+      }
+      @java.lang.Override
+      public final Builder setUnknownFields(
+          final com.google.protobuf.UnknownFieldSet unknownFields) {
+        return super.setUnknownFields(unknownFields);
+      }
+
+      @java.lang.Override
+      public final Builder mergeUnknownFields(
+          final com.google.protobuf.UnknownFieldSet unknownFields) {
+        return super.mergeUnknownFields(unknownFields);
+      }
+
+
+      // @@protoc_insertion_point(builder_scope:nn.LoadModelRequest)
+    }
+
+    // @@protoc_insertion_point(class_scope:nn.LoadModelRequest)
+    private static final com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.LoadModelRequest DEFAULT_INSTANCE;
+    static {
+      DEFAULT_INSTANCE = new com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.LoadModelRequest();
+    }
+
+    public static com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.LoadModelRequest getDefaultInstance() {
+      return DEFAULT_INSTANCE;
+    }
+
+    private static final com.google.protobuf.Parser<LoadModelRequest>
+        PARSER = new com.google.protobuf.AbstractParser<LoadModelRequest>() {
+      @java.lang.Override
+      public LoadModelRequest parsePartialFrom(
+          com.google.protobuf.CodedInputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws com.google.protobuf.InvalidProtocolBufferException {
+        return new LoadModelRequest(input, extensionRegistry);
+      }
+    };
+
+    public static com.google.protobuf.Parser<LoadModelRequest> parser() {
+      return PARSER;
+    }
+
+    @java.lang.Override
+    public com.google.protobuf.Parser<LoadModelRequest> getParserForType() {
+      return PARSER;
+    }
+
+    @java.lang.Override
+    public com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.LoadModelRequest getDefaultInstanceForType() {
+      return DEFAULT_INSTANCE;
+    }
+
+  }
+
+  public interface LoadModelResponseOrBuilder extends
+      // @@protoc_insertion_point(interface_extends:nn.LoadModelResponse)
+      com.google.protobuf.MessageOrBuilder {
+
+    /**
+     * <code>string message = 1;</code>
+     * @return The message.
+     */
+    java.lang.String getMessage();
+    /**
+     * <code>string message = 1;</code>
+     * @return The bytes for message.
+     */
+    com.google.protobuf.ByteString
+        getMessageBytes();
+
+    /**
+     * <code>int32 code = 2;</code>
+     * @return The code.
+     */
+    int getCode();
+  }
+  /**
+   * Protobuf type {@code nn.LoadModelResponse}
+   */
+  public static final class LoadModelResponse extends
+      com.google.protobuf.GeneratedMessageV3 implements
+      // @@protoc_insertion_point(message_implements:nn.LoadModelResponse)
+      LoadModelResponseOrBuilder {
+  private static final long serialVersionUID = 0L;
+    // Use LoadModelResponse.newBuilder() to construct.
+    private LoadModelResponse(com.google.protobuf.GeneratedMessageV3.Builder<?> builder) {
+      super(builder);
+    }
+    private LoadModelResponse() {
+      message_ = "";
+    }
+
+    @java.lang.Override
+    @SuppressWarnings({"unused"})
+    protected java.lang.Object newInstance(
+        UnusedPrivateParameter unused) {
+      return new LoadModelResponse();
+    }
+
+    @java.lang.Override
+    public final com.google.protobuf.UnknownFieldSet
+    getUnknownFields() {
+      return this.unknownFields;
+    }
+    private LoadModelResponse(
+        com.google.protobuf.CodedInputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      this();
+      if (extensionRegistry == null) {
+        throw new java.lang.NullPointerException();
+      }
+      com.google.protobuf.UnknownFieldSet.Builder unknownFields =
+          com.google.protobuf.UnknownFieldSet.newBuilder();
+      try {
+        boolean done = false;
+        while (!done) {
+          int tag = input.readTag();
+          switch (tag) {
+            case 0:
+              done = true;
+              break;
+            case 10: {
+              java.lang.String s = input.readStringRequireUtf8();
+
+              message_ = s;
+              break;
+            }
+            case 16: {
+
+              code_ = input.readInt32();
+              break;
+            }
+            default: {
+              if (!parseUnknownField(
+                  input, unknownFields, extensionRegistry, tag)) {
+                done = true;
+              }
+              break;
+            }
+          }
+        }
+      } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+        throw e.setUnfinishedMessage(this);
+      } catch (java.io.IOException e) {
+        throw new com.google.protobuf.InvalidProtocolBufferException(
+            e).setUnfinishedMessage(this);
+      } finally {
+        this.unknownFields = unknownFields.build();
+        makeExtensionsImmutable();
+      }
+    }
+    public static final com.google.protobuf.Descriptors.Descriptor
+        getDescriptor() {
+      return com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.internal_static_nn_LoadModelResponse_descriptor;
+    }
+
+    @java.lang.Override
+    protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+        internalGetFieldAccessorTable() {
+      return com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.internal_static_nn_LoadModelResponse_fieldAccessorTable
+          .ensureFieldAccessorsInitialized(
+              com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.LoadModelResponse.class, com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.LoadModelResponse.Builder.class);
+    }
+
+    public static final int MESSAGE_FIELD_NUMBER = 1;
+    private volatile java.lang.Object message_;
+    /**
+     * <code>string message = 1;</code>
+     * @return The message.
+     */
+    @java.lang.Override
+    public java.lang.String getMessage() {
+      java.lang.Object ref = message_;
+      if (ref instanceof java.lang.String) {
+        return (java.lang.String) ref;
+      } else {
+        com.google.protobuf.ByteString bs = 
+            (com.google.protobuf.ByteString) ref;
+        java.lang.String s = bs.toStringUtf8();
+        message_ = s;
+        return s;
+      }
+    }
+    /**
+     * <code>string message = 1;</code>
+     * @return The bytes for message.
+     */
+    @java.lang.Override
+    public com.google.protobuf.ByteString
+        getMessageBytes() {
+      java.lang.Object ref = message_;
+      if (ref instanceof java.lang.String) {
+        com.google.protobuf.ByteString b = 
+            com.google.protobuf.ByteString.copyFromUtf8(
+                (java.lang.String) ref);
+        message_ = b;
+        return b;
+      } else {
+        return (com.google.protobuf.ByteString) ref;
+      }
+    }
+
+    public static final int CODE_FIELD_NUMBER = 2;
+    private int code_;
+    /**
+     * <code>int32 code = 2;</code>
+     * @return The code.
+     */
+    @java.lang.Override
+    public int getCode() {
+      return code_;
+    }
+
+    private byte memoizedIsInitialized = -1;
+    @java.lang.Override
+    public final boolean isInitialized() {
+      byte isInitialized = memoizedIsInitialized;
+      if (isInitialized == 1) return true;
+      if (isInitialized == 0) return false;
+
+      memoizedIsInitialized = 1;
+      return true;
+    }
+
+    @java.lang.Override
+    public void writeTo(com.google.protobuf.CodedOutputStream output)
+                        throws java.io.IOException {
+      if (!getMessageBytes().isEmpty()) {
+        com.google.protobuf.GeneratedMessageV3.writeString(output, 1, message_);
+      }
+      if (code_ != 0) {
+        output.writeInt32(2, code_);
+      }
+      unknownFields.writeTo(output);
+    }
+
+    @java.lang.Override
+    public int getSerializedSize() {
+      int size = memoizedSize;
+      if (size != -1) return size;
+
+      size = 0;
+      if (!getMessageBytes().isEmpty()) {
+        size += com.google.protobuf.GeneratedMessageV3.computeStringSize(1, message_);
+      }
+      if (code_ != 0) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeInt32Size(2, code_);
+      }
+      size += unknownFields.getSerializedSize();
+      memoizedSize = size;
+      return size;
+    }
+
+    @java.lang.Override
+    public boolean equals(final java.lang.Object obj) {
+      if (obj == this) {
+       return true;
+      }
+      if (!(obj instanceof com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.LoadModelResponse)) {
+        return super.equals(obj);
+      }
+      com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.LoadModelResponse other = (com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.LoadModelResponse) obj;
+
+      if (!getMessage()
+          .equals(other.getMessage())) return false;
+      if (getCode()
+          != other.getCode()) return false;
+      if (!unknownFields.equals(other.unknownFields)) return false;
+      return true;
+    }
+
+    @java.lang.Override
+    public int hashCode() {
+      if (memoizedHashCode != 0) {
+        return memoizedHashCode;
+      }
+      int hash = 41;
+      hash = (19 * hash) + getDescriptor().hashCode();
+      hash = (37 * hash) + MESSAGE_FIELD_NUMBER;
+      hash = (53 * hash) + getMessage().hashCode();
+      hash = (37 * hash) + CODE_FIELD_NUMBER;
+      hash = (53 * hash) + getCode();
+      hash = (29 * hash) + unknownFields.hashCode();
+      memoizedHashCode = hash;
+      return hash;
+    }
+
+    public static com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.LoadModelResponse parseFrom(
+        java.nio.ByteBuffer data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data);
+    }
+    public static com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.LoadModelResponse parseFrom(
+        java.nio.ByteBuffer data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data, extensionRegistry);
+    }
+    public static com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.LoadModelResponse parseFrom(
+        com.google.protobuf.ByteString data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data);
+    }
+    public static com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.LoadModelResponse parseFrom(
+        com.google.protobuf.ByteString data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data, extensionRegistry);
+    }
+    public static com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.LoadModelResponse parseFrom(byte[] data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data);
+    }
+    public static com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.LoadModelResponse parseFrom(
+        byte[] data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data, extensionRegistry);
+    }
+    public static com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.LoadModelResponse parseFrom(java.io.InputStream input)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseWithIOException(PARSER, input);
+    }
+    public static com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.LoadModelResponse parseFrom(
+        java.io.InputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseWithIOException(PARSER, input, extensionRegistry);
+    }
+    public static com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.LoadModelResponse parseDelimitedFrom(java.io.InputStream input)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseDelimitedWithIOException(PARSER, input);
+    }
+    public static com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.LoadModelResponse parseDelimitedFrom(
+        java.io.InputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseDelimitedWithIOException(PARSER, input, extensionRegistry);
+    }
+    public static com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.LoadModelResponse parseFrom(
+        com.google.protobuf.CodedInputStream input)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseWithIOException(PARSER, input);
+    }
+    public static com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.LoadModelResponse parseFrom(
+        com.google.protobuf.CodedInputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseWithIOException(PARSER, input, extensionRegistry);
+    }
+
+    @java.lang.Override
+    public Builder newBuilderForType() { return newBuilder(); }
+    public static Builder newBuilder() {
+      return DEFAULT_INSTANCE.toBuilder();
+    }
+    public static Builder newBuilder(com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.LoadModelResponse prototype) {
+      return DEFAULT_INSTANCE.toBuilder().mergeFrom(prototype);
+    }
+    @java.lang.Override
+    public Builder toBuilder() {
+      return this == DEFAULT_INSTANCE
+          ? new Builder() : new Builder().mergeFrom(this);
+    }
+
+    @java.lang.Override
+    protected Builder newBuilderForType(
+        com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
+      Builder builder = new Builder(parent);
+      return builder;
+    }
+    /**
+     * Protobuf type {@code nn.LoadModelResponse}
+     */
+    public static final class Builder extends
+        com.google.protobuf.GeneratedMessageV3.Builder<Builder> implements
+        // @@protoc_insertion_point(builder_implements:nn.LoadModelResponse)
+        com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.LoadModelResponseOrBuilder {
+      public static final com.google.protobuf.Descriptors.Descriptor
+          getDescriptor() {
+        return com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.internal_static_nn_LoadModelResponse_descriptor;
+      }
+
+      @java.lang.Override
+      protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+          internalGetFieldAccessorTable() {
+        return com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.internal_static_nn_LoadModelResponse_fieldAccessorTable
+            .ensureFieldAccessorsInitialized(
+                com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.LoadModelResponse.class, com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.LoadModelResponse.Builder.class);
+      }
+
+      // Construct using com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.LoadModelResponse.newBuilder()
+      private Builder() {
+        maybeForceBuilderInitialization();
+      }
+
+      private Builder(
+          com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
+        super(parent);
+        maybeForceBuilderInitialization();
+      }
+      private void maybeForceBuilderInitialization() {
+        if (com.google.protobuf.GeneratedMessageV3
+                .alwaysUseFieldBuilders) {
+        }
+      }
+      @java.lang.Override
+      public Builder clear() {
+        super.clear();
+        message_ = "";
+
+        code_ = 0;
+
+        return this;
+      }
+
+      @java.lang.Override
+      public com.google.protobuf.Descriptors.Descriptor
+          getDescriptorForType() {
+        return com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.internal_static_nn_LoadModelResponse_descriptor;
+      }
+
+      @java.lang.Override
+      public com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.LoadModelResponse getDefaultInstanceForType() {
+        return com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.LoadModelResponse.getDefaultInstance();
+      }
+
+      @java.lang.Override
+      public com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.LoadModelResponse build() {
+        com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.LoadModelResponse result = buildPartial();
+        if (!result.isInitialized()) {
+          throw newUninitializedMessageException(result);
+        }
+        return result;
+      }
+
+      @java.lang.Override
+      public com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.LoadModelResponse buildPartial() {
+        com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.LoadModelResponse result = new com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.LoadModelResponse(this);
+        result.message_ = message_;
+        result.code_ = code_;
+        onBuilt();
+        return result;
+      }
+
+      @java.lang.Override
+      public Builder clone() {
+        return super.clone();
+      }
+      @java.lang.Override
+      public Builder setField(
+          com.google.protobuf.Descriptors.FieldDescriptor field,
+          java.lang.Object value) {
+        return super.setField(field, value);
+      }
+      @java.lang.Override
+      public Builder clearField(
+          com.google.protobuf.Descriptors.FieldDescriptor field) {
+        return super.clearField(field);
+      }
+      @java.lang.Override
+      public Builder clearOneof(
+          com.google.protobuf.Descriptors.OneofDescriptor oneof) {
+        return super.clearOneof(oneof);
+      }
+      @java.lang.Override
+      public Builder setRepeatedField(
+          com.google.protobuf.Descriptors.FieldDescriptor field,
+          int index, java.lang.Object value) {
+        return super.setRepeatedField(field, index, value);
+      }
+      @java.lang.Override
+      public Builder addRepeatedField(
+          com.google.protobuf.Descriptors.FieldDescriptor field,
+          java.lang.Object value) {
+        return super.addRepeatedField(field, value);
+      }
+      @java.lang.Override
+      public Builder mergeFrom(com.google.protobuf.Message other) {
+        if (other instanceof com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.LoadModelResponse) {
+          return mergeFrom((com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.LoadModelResponse)other);
+        } else {
+          super.mergeFrom(other);
+          return this;
+        }
+      }
+
+      public Builder mergeFrom(com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.LoadModelResponse other) {
+        if (other == com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.LoadModelResponse.getDefaultInstance()) return this;
+        if (!other.getMessage().isEmpty()) {
+          message_ = other.message_;
+          onChanged();
+        }
+        if (other.getCode() != 0) {
+          setCode(other.getCode());
+        }
+        this.mergeUnknownFields(other.unknownFields);
+        onChanged();
+        return this;
+      }
+
+      @java.lang.Override
+      public final boolean isInitialized() {
+        return true;
+      }
+
+      @java.lang.Override
+      public Builder mergeFrom(
+          com.google.protobuf.CodedInputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws java.io.IOException {
+        com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.LoadModelResponse parsedMessage = null;
+        try {
+          parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
+        } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+          parsedMessage = (com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.LoadModelResponse) e.getUnfinishedMessage();
+          throw e.unwrapIOException();
+        } finally {
+          if (parsedMessage != null) {
+            mergeFrom(parsedMessage);
+          }
+        }
+        return this;
+      }
+
+      private java.lang.Object message_ = "";
+      /**
+       * <code>string message = 1;</code>
+       * @return The message.
+       */
+      public java.lang.String getMessage() {
+        java.lang.Object ref = message_;
+        if (!(ref instanceof java.lang.String)) {
+          com.google.protobuf.ByteString bs =
+              (com.google.protobuf.ByteString) ref;
+          java.lang.String s = bs.toStringUtf8();
+          message_ = s;
+          return s;
+        } else {
+          return (java.lang.String) ref;
+        }
+      }
+      /**
+       * <code>string message = 1;</code>
+       * @return The bytes for message.
+       */
+      public com.google.protobuf.ByteString
+          getMessageBytes() {
+        java.lang.Object ref = message_;
+        if (ref instanceof String) {
+          com.google.protobuf.ByteString b = 
+              com.google.protobuf.ByteString.copyFromUtf8(
+                  (java.lang.String) ref);
+          message_ = b;
+          return b;
+        } else {
+          return (com.google.protobuf.ByteString) ref;
+        }
+      }
+      /**
+       * <code>string message = 1;</code>
+       * @param value The message to set.
+       * @return This builder for chaining.
+       */
+      public Builder setMessage(
+          java.lang.String value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  
+        message_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>string message = 1;</code>
+       * @return This builder for chaining.
+       */
+      public Builder clearMessage() {
+        
+        message_ = getDefaultInstance().getMessage();
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>string message = 1;</code>
+       * @param value The bytes for message to set.
+       * @return This builder for chaining.
+       */
+      public Builder setMessageBytes(
+          com.google.protobuf.ByteString value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  checkByteStringIsUtf8(value);
+        
+        message_ = value;
+        onChanged();
+        return this;
+      }
+
+      private int code_ ;
+      /**
+       * <code>int32 code = 2;</code>
+       * @return The code.
+       */
+      @java.lang.Override
+      public int getCode() {
+        return code_;
+      }
+      /**
+       * <code>int32 code = 2;</code>
+       * @param value The code to set.
+       * @return This builder for chaining.
+       */
+      public Builder setCode(int value) {
+        
+        code_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>int32 code = 2;</code>
+       * @return This builder for chaining.
+       */
+      public Builder clearCode() {
+        
+        code_ = 0;
+        onChanged();
+        return this;
+      }
+      @java.lang.Override
+      public final Builder setUnknownFields(
+          final com.google.protobuf.UnknownFieldSet unknownFields) {
+        return super.setUnknownFields(unknownFields);
+      }
+
+      @java.lang.Override
+      public final Builder mergeUnknownFields(
+          final com.google.protobuf.UnknownFieldSet unknownFields) {
+        return super.mergeUnknownFields(unknownFields);
+      }
+
+
+      // @@protoc_insertion_point(builder_scope:nn.LoadModelResponse)
+    }
+
+    // @@protoc_insertion_point(class_scope:nn.LoadModelResponse)
+    private static final com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.LoadModelResponse DEFAULT_INSTANCE;
+    static {
+      DEFAULT_INSTANCE = new com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.LoadModelResponse();
+    }
+
+    public static com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.LoadModelResponse getDefaultInstance() {
+      return DEFAULT_INSTANCE;
+    }
+
+    private static final com.google.protobuf.Parser<LoadModelResponse>
+        PARSER = new com.google.protobuf.AbstractParser<LoadModelResponse>() {
+      @java.lang.Override
+      public LoadModelResponse parsePartialFrom(
+          com.google.protobuf.CodedInputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws com.google.protobuf.InvalidProtocolBufferException {
+        return new LoadModelResponse(input, extensionRegistry);
+      }
+    };
+
+    public static com.google.protobuf.Parser<LoadModelResponse> parser() {
+      return PARSER;
+    }
+
+    @java.lang.Override
+    public com.google.protobuf.Parser<LoadModelResponse> getParserForType() {
+      return PARSER;
+    }
+
+    @java.lang.Override
+    public com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.LoadModelResponse getDefaultInstanceForType() {
+      return DEFAULT_INSTANCE;
+    }
+
+  }
+
+  public interface SaveModelRequestOrBuilder extends
+      // @@protoc_insertion_point(interface_extends:nn.SaveModelRequest)
+      com.google.protobuf.MessageOrBuilder {
+
+    /**
+     * <code>int32 client_id = 1;</code>
+     * @return The clientId.
+     */
+    int getClientId();
+
+    /**
+     * <code>string backend = 2;</code>
+     * @return The backend.
+     */
+    java.lang.String getBackend();
+    /**
+     * <code>string backend = 2;</code>
+     * @return The bytes for backend.
+     */
+    com.google.protobuf.ByteString
+        getBackendBytes();
+
+    /**
+     * <code>string model_path = 3;</code>
+     * @return The modelPath.
+     */
+    java.lang.String getModelPath();
+    /**
+     * <code>string model_path = 3;</code>
+     * @return The bytes for modelPath.
+     */
+    com.google.protobuf.ByteString
+        getModelPathBytes();
+  }
+  /**
+   * Protobuf type {@code nn.SaveModelRequest}
+   */
+  public static final class SaveModelRequest extends
+      com.google.protobuf.GeneratedMessageV3 implements
+      // @@protoc_insertion_point(message_implements:nn.SaveModelRequest)
+      SaveModelRequestOrBuilder {
+  private static final long serialVersionUID = 0L;
+    // Use SaveModelRequest.newBuilder() to construct.
+    private SaveModelRequest(com.google.protobuf.GeneratedMessageV3.Builder<?> builder) {
+      super(builder);
+    }
+    private SaveModelRequest() {
+      backend_ = "";
+      modelPath_ = "";
+    }
+
+    @java.lang.Override
+    @SuppressWarnings({"unused"})
+    protected java.lang.Object newInstance(
+        UnusedPrivateParameter unused) {
+      return new SaveModelRequest();
+    }
+
+    @java.lang.Override
+    public final com.google.protobuf.UnknownFieldSet
+    getUnknownFields() {
+      return this.unknownFields;
+    }
+    private SaveModelRequest(
+        com.google.protobuf.CodedInputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      this();
+      if (extensionRegistry == null) {
+        throw new java.lang.NullPointerException();
+      }
+      com.google.protobuf.UnknownFieldSet.Builder unknownFields =
+          com.google.protobuf.UnknownFieldSet.newBuilder();
+      try {
+        boolean done = false;
+        while (!done) {
+          int tag = input.readTag();
+          switch (tag) {
+            case 0:
+              done = true;
+              break;
+            case 8: {
+
+              clientId_ = input.readInt32();
+              break;
+            }
+            case 18: {
+              java.lang.String s = input.readStringRequireUtf8();
+
+              backend_ = s;
+              break;
+            }
+            case 26: {
+              java.lang.String s = input.readStringRequireUtf8();
+
+              modelPath_ = s;
+              break;
+            }
+            default: {
+              if (!parseUnknownField(
+                  input, unknownFields, extensionRegistry, tag)) {
+                done = true;
+              }
+              break;
+            }
+          }
+        }
+      } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+        throw e.setUnfinishedMessage(this);
+      } catch (java.io.IOException e) {
+        throw new com.google.protobuf.InvalidProtocolBufferException(
+            e).setUnfinishedMessage(this);
+      } finally {
+        this.unknownFields = unknownFields.build();
+        makeExtensionsImmutable();
+      }
+    }
+    public static final com.google.protobuf.Descriptors.Descriptor
+        getDescriptor() {
+      return com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.internal_static_nn_SaveModelRequest_descriptor;
+    }
+
+    @java.lang.Override
+    protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+        internalGetFieldAccessorTable() {
+      return com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.internal_static_nn_SaveModelRequest_fieldAccessorTable
+          .ensureFieldAccessorsInitialized(
+              com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.SaveModelRequest.class, com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.SaveModelRequest.Builder.class);
+    }
+
+    public static final int CLIENT_ID_FIELD_NUMBER = 1;
+    private int clientId_;
+    /**
+     * <code>int32 client_id = 1;</code>
+     * @return The clientId.
+     */
+    @java.lang.Override
+    public int getClientId() {
+      return clientId_;
+    }
+
+    public static final int BACKEND_FIELD_NUMBER = 2;
+    private volatile java.lang.Object backend_;
+    /**
+     * <code>string backend = 2;</code>
+     * @return The backend.
+     */
+    @java.lang.Override
+    public java.lang.String getBackend() {
+      java.lang.Object ref = backend_;
+      if (ref instanceof java.lang.String) {
+        return (java.lang.String) ref;
+      } else {
+        com.google.protobuf.ByteString bs = 
+            (com.google.protobuf.ByteString) ref;
+        java.lang.String s = bs.toStringUtf8();
+        backend_ = s;
+        return s;
+      }
+    }
+    /**
+     * <code>string backend = 2;</code>
+     * @return The bytes for backend.
+     */
+    @java.lang.Override
+    public com.google.protobuf.ByteString
+        getBackendBytes() {
+      java.lang.Object ref = backend_;
+      if (ref instanceof java.lang.String) {
+        com.google.protobuf.ByteString b = 
+            com.google.protobuf.ByteString.copyFromUtf8(
+                (java.lang.String) ref);
+        backend_ = b;
+        return b;
+      } else {
+        return (com.google.protobuf.ByteString) ref;
+      }
+    }
+
+    public static final int MODEL_PATH_FIELD_NUMBER = 3;
+    private volatile java.lang.Object modelPath_;
+    /**
+     * <code>string model_path = 3;</code>
+     * @return The modelPath.
+     */
+    @java.lang.Override
+    public java.lang.String getModelPath() {
+      java.lang.Object ref = modelPath_;
+      if (ref instanceof java.lang.String) {
+        return (java.lang.String) ref;
+      } else {
+        com.google.protobuf.ByteString bs = 
+            (com.google.protobuf.ByteString) ref;
+        java.lang.String s = bs.toStringUtf8();
+        modelPath_ = s;
+        return s;
+      }
+    }
+    /**
+     * <code>string model_path = 3;</code>
+     * @return The bytes for modelPath.
+     */
+    @java.lang.Override
+    public com.google.protobuf.ByteString
+        getModelPathBytes() {
+      java.lang.Object ref = modelPath_;
+      if (ref instanceof java.lang.String) {
+        com.google.protobuf.ByteString b = 
+            com.google.protobuf.ByteString.copyFromUtf8(
+                (java.lang.String) ref);
+        modelPath_ = b;
+        return b;
+      } else {
+        return (com.google.protobuf.ByteString) ref;
+      }
+    }
+
+    private byte memoizedIsInitialized = -1;
+    @java.lang.Override
+    public final boolean isInitialized() {
+      byte isInitialized = memoizedIsInitialized;
+      if (isInitialized == 1) return true;
+      if (isInitialized == 0) return false;
+
+      memoizedIsInitialized = 1;
+      return true;
+    }
+
+    @java.lang.Override
+    public void writeTo(com.google.protobuf.CodedOutputStream output)
+                        throws java.io.IOException {
+      if (clientId_ != 0) {
+        output.writeInt32(1, clientId_);
+      }
+      if (!getBackendBytes().isEmpty()) {
+        com.google.protobuf.GeneratedMessageV3.writeString(output, 2, backend_);
+      }
+      if (!getModelPathBytes().isEmpty()) {
+        com.google.protobuf.GeneratedMessageV3.writeString(output, 3, modelPath_);
+      }
+      unknownFields.writeTo(output);
+    }
+
+    @java.lang.Override
+    public int getSerializedSize() {
+      int size = memoizedSize;
+      if (size != -1) return size;
+
+      size = 0;
+      if (clientId_ != 0) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeInt32Size(1, clientId_);
+      }
+      if (!getBackendBytes().isEmpty()) {
+        size += com.google.protobuf.GeneratedMessageV3.computeStringSize(2, backend_);
+      }
+      if (!getModelPathBytes().isEmpty()) {
+        size += com.google.protobuf.GeneratedMessageV3.computeStringSize(3, modelPath_);
+      }
+      size += unknownFields.getSerializedSize();
+      memoizedSize = size;
+      return size;
+    }
+
+    @java.lang.Override
+    public boolean equals(final java.lang.Object obj) {
+      if (obj == this) {
+       return true;
+      }
+      if (!(obj instanceof com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.SaveModelRequest)) {
+        return super.equals(obj);
+      }
+      com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.SaveModelRequest other = (com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.SaveModelRequest) obj;
+
+      if (getClientId()
+          != other.getClientId()) return false;
+      if (!getBackend()
+          .equals(other.getBackend())) return false;
+      if (!getModelPath()
+          .equals(other.getModelPath())) return false;
+      if (!unknownFields.equals(other.unknownFields)) return false;
+      return true;
+    }
+
+    @java.lang.Override
+    public int hashCode() {
+      if (memoizedHashCode != 0) {
+        return memoizedHashCode;
+      }
+      int hash = 41;
+      hash = (19 * hash) + getDescriptor().hashCode();
+      hash = (37 * hash) + CLIENT_ID_FIELD_NUMBER;
+      hash = (53 * hash) + getClientId();
+      hash = (37 * hash) + BACKEND_FIELD_NUMBER;
+      hash = (53 * hash) + getBackend().hashCode();
+      hash = (37 * hash) + MODEL_PATH_FIELD_NUMBER;
+      hash = (53 * hash) + getModelPath().hashCode();
+      hash = (29 * hash) + unknownFields.hashCode();
+      memoizedHashCode = hash;
+      return hash;
+    }
+
+    public static com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.SaveModelRequest parseFrom(
+        java.nio.ByteBuffer data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data);
+    }
+    public static com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.SaveModelRequest parseFrom(
+        java.nio.ByteBuffer data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data, extensionRegistry);
+    }
+    public static com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.SaveModelRequest parseFrom(
+        com.google.protobuf.ByteString data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data);
+    }
+    public static com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.SaveModelRequest parseFrom(
+        com.google.protobuf.ByteString data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data, extensionRegistry);
+    }
+    public static com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.SaveModelRequest parseFrom(byte[] data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data);
+    }
+    public static com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.SaveModelRequest parseFrom(
+        byte[] data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data, extensionRegistry);
+    }
+    public static com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.SaveModelRequest parseFrom(java.io.InputStream input)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseWithIOException(PARSER, input);
+    }
+    public static com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.SaveModelRequest parseFrom(
+        java.io.InputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseWithIOException(PARSER, input, extensionRegistry);
+    }
+    public static com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.SaveModelRequest parseDelimitedFrom(java.io.InputStream input)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseDelimitedWithIOException(PARSER, input);
+    }
+    public static com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.SaveModelRequest parseDelimitedFrom(
+        java.io.InputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseDelimitedWithIOException(PARSER, input, extensionRegistry);
+    }
+    public static com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.SaveModelRequest parseFrom(
+        com.google.protobuf.CodedInputStream input)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseWithIOException(PARSER, input);
+    }
+    public static com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.SaveModelRequest parseFrom(
+        com.google.protobuf.CodedInputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseWithIOException(PARSER, input, extensionRegistry);
+    }
+
+    @java.lang.Override
+    public Builder newBuilderForType() { return newBuilder(); }
+    public static Builder newBuilder() {
+      return DEFAULT_INSTANCE.toBuilder();
+    }
+    public static Builder newBuilder(com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.SaveModelRequest prototype) {
+      return DEFAULT_INSTANCE.toBuilder().mergeFrom(prototype);
+    }
+    @java.lang.Override
+    public Builder toBuilder() {
+      return this == DEFAULT_INSTANCE
+          ? new Builder() : new Builder().mergeFrom(this);
+    }
+
+    @java.lang.Override
+    protected Builder newBuilderForType(
+        com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
+      Builder builder = new Builder(parent);
+      return builder;
+    }
+    /**
+     * Protobuf type {@code nn.SaveModelRequest}
+     */
+    public static final class Builder extends
+        com.google.protobuf.GeneratedMessageV3.Builder<Builder> implements
+        // @@protoc_insertion_point(builder_implements:nn.SaveModelRequest)
+        com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.SaveModelRequestOrBuilder {
+      public static final com.google.protobuf.Descriptors.Descriptor
+          getDescriptor() {
+        return com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.internal_static_nn_SaveModelRequest_descriptor;
+      }
+
+      @java.lang.Override
+      protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+          internalGetFieldAccessorTable() {
+        return com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.internal_static_nn_SaveModelRequest_fieldAccessorTable
+            .ensureFieldAccessorsInitialized(
+                com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.SaveModelRequest.class, com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.SaveModelRequest.Builder.class);
+      }
+
+      // Construct using com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.SaveModelRequest.newBuilder()
+      private Builder() {
+        maybeForceBuilderInitialization();
+      }
+
+      private Builder(
+          com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
+        super(parent);
+        maybeForceBuilderInitialization();
+      }
+      private void maybeForceBuilderInitialization() {
+        if (com.google.protobuf.GeneratedMessageV3
+                .alwaysUseFieldBuilders) {
+        }
+      }
+      @java.lang.Override
+      public Builder clear() {
+        super.clear();
+        clientId_ = 0;
+
+        backend_ = "";
+
+        modelPath_ = "";
+
+        return this;
+      }
+
+      @java.lang.Override
+      public com.google.protobuf.Descriptors.Descriptor
+          getDescriptorForType() {
+        return com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.internal_static_nn_SaveModelRequest_descriptor;
+      }
+
+      @java.lang.Override
+      public com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.SaveModelRequest getDefaultInstanceForType() {
+        return com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.SaveModelRequest.getDefaultInstance();
+      }
+
+      @java.lang.Override
+      public com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.SaveModelRequest build() {
+        com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.SaveModelRequest result = buildPartial();
+        if (!result.isInitialized()) {
+          throw newUninitializedMessageException(result);
+        }
+        return result;
+      }
+
+      @java.lang.Override
+      public com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.SaveModelRequest buildPartial() {
+        com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.SaveModelRequest result = new com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.SaveModelRequest(this);
+        result.clientId_ = clientId_;
+        result.backend_ = backend_;
+        result.modelPath_ = modelPath_;
+        onBuilt();
+        return result;
+      }
+
+      @java.lang.Override
+      public Builder clone() {
+        return super.clone();
+      }
+      @java.lang.Override
+      public Builder setField(
+          com.google.protobuf.Descriptors.FieldDescriptor field,
+          java.lang.Object value) {
+        return super.setField(field, value);
+      }
+      @java.lang.Override
+      public Builder clearField(
+          com.google.protobuf.Descriptors.FieldDescriptor field) {
+        return super.clearField(field);
+      }
+      @java.lang.Override
+      public Builder clearOneof(
+          com.google.protobuf.Descriptors.OneofDescriptor oneof) {
+        return super.clearOneof(oneof);
+      }
+      @java.lang.Override
+      public Builder setRepeatedField(
+          com.google.protobuf.Descriptors.FieldDescriptor field,
+          int index, java.lang.Object value) {
+        return super.setRepeatedField(field, index, value);
+      }
+      @java.lang.Override
+      public Builder addRepeatedField(
+          com.google.protobuf.Descriptors.FieldDescriptor field,
+          java.lang.Object value) {
+        return super.addRepeatedField(field, value);
+      }
+      @java.lang.Override
+      public Builder mergeFrom(com.google.protobuf.Message other) {
+        if (other instanceof com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.SaveModelRequest) {
+          return mergeFrom((com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.SaveModelRequest)other);
+        } else {
+          super.mergeFrom(other);
+          return this;
+        }
+      }
+
+      public Builder mergeFrom(com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.SaveModelRequest other) {
+        if (other == com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.SaveModelRequest.getDefaultInstance()) return this;
+        if (other.getClientId() != 0) {
+          setClientId(other.getClientId());
+        }
+        if (!other.getBackend().isEmpty()) {
+          backend_ = other.backend_;
+          onChanged();
+        }
+        if (!other.getModelPath().isEmpty()) {
+          modelPath_ = other.modelPath_;
+          onChanged();
+        }
+        this.mergeUnknownFields(other.unknownFields);
+        onChanged();
+        return this;
+      }
+
+      @java.lang.Override
+      public final boolean isInitialized() {
+        return true;
+      }
+
+      @java.lang.Override
+      public Builder mergeFrom(
+          com.google.protobuf.CodedInputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws java.io.IOException {
+        com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.SaveModelRequest parsedMessage = null;
+        try {
+          parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
+        } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+          parsedMessage = (com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.SaveModelRequest) e.getUnfinishedMessage();
+          throw e.unwrapIOException();
+        } finally {
+          if (parsedMessage != null) {
+            mergeFrom(parsedMessage);
+          }
+        }
+        return this;
+      }
+
+      private int clientId_ ;
+      /**
+       * <code>int32 client_id = 1;</code>
+       * @return The clientId.
+       */
+      @java.lang.Override
+      public int getClientId() {
+        return clientId_;
+      }
+      /**
+       * <code>int32 client_id = 1;</code>
+       * @param value The clientId to set.
+       * @return This builder for chaining.
+       */
+      public Builder setClientId(int value) {
+        
+        clientId_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>int32 client_id = 1;</code>
+       * @return This builder for chaining.
+       */
+      public Builder clearClientId() {
+        
+        clientId_ = 0;
+        onChanged();
+        return this;
+      }
+
+      private java.lang.Object backend_ = "";
+      /**
+       * <code>string backend = 2;</code>
+       * @return The backend.
+       */
+      public java.lang.String getBackend() {
+        java.lang.Object ref = backend_;
+        if (!(ref instanceof java.lang.String)) {
+          com.google.protobuf.ByteString bs =
+              (com.google.protobuf.ByteString) ref;
+          java.lang.String s = bs.toStringUtf8();
+          backend_ = s;
+          return s;
+        } else {
+          return (java.lang.String) ref;
+        }
+      }
+      /**
+       * <code>string backend = 2;</code>
+       * @return The bytes for backend.
+       */
+      public com.google.protobuf.ByteString
+          getBackendBytes() {
+        java.lang.Object ref = backend_;
+        if (ref instanceof String) {
+          com.google.protobuf.ByteString b = 
+              com.google.protobuf.ByteString.copyFromUtf8(
+                  (java.lang.String) ref);
+          backend_ = b;
+          return b;
+        } else {
+          return (com.google.protobuf.ByteString) ref;
+        }
+      }
+      /**
+       * <code>string backend = 2;</code>
+       * @param value The backend to set.
+       * @return This builder for chaining.
+       */
+      public Builder setBackend(
+          java.lang.String value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  
+        backend_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>string backend = 2;</code>
+       * @return This builder for chaining.
+       */
+      public Builder clearBackend() {
+        
+        backend_ = getDefaultInstance().getBackend();
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>string backend = 2;</code>
+       * @param value The bytes for backend to set.
+       * @return This builder for chaining.
+       */
+      public Builder setBackendBytes(
+          com.google.protobuf.ByteString value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  checkByteStringIsUtf8(value);
+        
+        backend_ = value;
+        onChanged();
+        return this;
+      }
+
+      private java.lang.Object modelPath_ = "";
+      /**
+       * <code>string model_path = 3;</code>
+       * @return The modelPath.
+       */
+      public java.lang.String getModelPath() {
+        java.lang.Object ref = modelPath_;
+        if (!(ref instanceof java.lang.String)) {
+          com.google.protobuf.ByteString bs =
+              (com.google.protobuf.ByteString) ref;
+          java.lang.String s = bs.toStringUtf8();
+          modelPath_ = s;
+          return s;
+        } else {
+          return (java.lang.String) ref;
+        }
+      }
+      /**
+       * <code>string model_path = 3;</code>
+       * @return The bytes for modelPath.
+       */
+      public com.google.protobuf.ByteString
+          getModelPathBytes() {
+        java.lang.Object ref = modelPath_;
+        if (ref instanceof String) {
+          com.google.protobuf.ByteString b = 
+              com.google.protobuf.ByteString.copyFromUtf8(
+                  (java.lang.String) ref);
+          modelPath_ = b;
+          return b;
+        } else {
+          return (com.google.protobuf.ByteString) ref;
+        }
+      }
+      /**
+       * <code>string model_path = 3;</code>
+       * @param value The modelPath to set.
+       * @return This builder for chaining.
+       */
+      public Builder setModelPath(
+          java.lang.String value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  
+        modelPath_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>string model_path = 3;</code>
+       * @return This builder for chaining.
+       */
+      public Builder clearModelPath() {
+        
+        modelPath_ = getDefaultInstance().getModelPath();
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>string model_path = 3;</code>
+       * @param value The bytes for modelPath to set.
+       * @return This builder for chaining.
+       */
+      public Builder setModelPathBytes(
+          com.google.protobuf.ByteString value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  checkByteStringIsUtf8(value);
+        
+        modelPath_ = value;
+        onChanged();
+        return this;
+      }
+      @java.lang.Override
+      public final Builder setUnknownFields(
+          final com.google.protobuf.UnknownFieldSet unknownFields) {
+        return super.setUnknownFields(unknownFields);
+      }
+
+      @java.lang.Override
+      public final Builder mergeUnknownFields(
+          final com.google.protobuf.UnknownFieldSet unknownFields) {
+        return super.mergeUnknownFields(unknownFields);
+      }
+
+
+      // @@protoc_insertion_point(builder_scope:nn.SaveModelRequest)
+    }
+
+    // @@protoc_insertion_point(class_scope:nn.SaveModelRequest)
+    private static final com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.SaveModelRequest DEFAULT_INSTANCE;
+    static {
+      DEFAULT_INSTANCE = new com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.SaveModelRequest();
+    }
+
+    public static com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.SaveModelRequest getDefaultInstance() {
+      return DEFAULT_INSTANCE;
+    }
+
+    private static final com.google.protobuf.Parser<SaveModelRequest>
+        PARSER = new com.google.protobuf.AbstractParser<SaveModelRequest>() {
+      @java.lang.Override
+      public SaveModelRequest parsePartialFrom(
+          com.google.protobuf.CodedInputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws com.google.protobuf.InvalidProtocolBufferException {
+        return new SaveModelRequest(input, extensionRegistry);
+      }
+    };
+
+    public static com.google.protobuf.Parser<SaveModelRequest> parser() {
+      return PARSER;
+    }
+
+    @java.lang.Override
+    public com.google.protobuf.Parser<SaveModelRequest> getParserForType() {
+      return PARSER;
+    }
+
+    @java.lang.Override
+    public com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.SaveModelRequest getDefaultInstanceForType() {
+      return DEFAULT_INSTANCE;
+    }
+
+  }
+
+  public interface SaveModelResponseOrBuilder extends
+      // @@protoc_insertion_point(interface_extends:nn.SaveModelResponse)
+      com.google.protobuf.MessageOrBuilder {
+
+    /**
+     * <code>string message = 1;</code>
+     * @return The message.
+     */
+    java.lang.String getMessage();
+    /**
+     * <code>string message = 1;</code>
+     * @return The bytes for message.
+     */
+    com.google.protobuf.ByteString
+        getMessageBytes();
+  }
+  /**
+   * Protobuf type {@code nn.SaveModelResponse}
+   */
+  public static final class SaveModelResponse extends
+      com.google.protobuf.GeneratedMessageV3 implements
+      // @@protoc_insertion_point(message_implements:nn.SaveModelResponse)
+      SaveModelResponseOrBuilder {
+  private static final long serialVersionUID = 0L;
+    // Use SaveModelResponse.newBuilder() to construct.
+    private SaveModelResponse(com.google.protobuf.GeneratedMessageV3.Builder<?> builder) {
+      super(builder);
+    }
+    private SaveModelResponse() {
+      message_ = "";
+    }
+
+    @java.lang.Override
+    @SuppressWarnings({"unused"})
+    protected java.lang.Object newInstance(
+        UnusedPrivateParameter unused) {
+      return new SaveModelResponse();
+    }
+
+    @java.lang.Override
+    public final com.google.protobuf.UnknownFieldSet
+    getUnknownFields() {
+      return this.unknownFields;
+    }
+    private SaveModelResponse(
+        com.google.protobuf.CodedInputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      this();
+      if (extensionRegistry == null) {
+        throw new java.lang.NullPointerException();
+      }
+      com.google.protobuf.UnknownFieldSet.Builder unknownFields =
+          com.google.protobuf.UnknownFieldSet.newBuilder();
+      try {
+        boolean done = false;
+        while (!done) {
+          int tag = input.readTag();
+          switch (tag) {
+            case 0:
+              done = true;
+              break;
+            case 10: {
+              java.lang.String s = input.readStringRequireUtf8();
+
+              message_ = s;
+              break;
+            }
+            default: {
+              if (!parseUnknownField(
+                  input, unknownFields, extensionRegistry, tag)) {
+                done = true;
+              }
+              break;
+            }
+          }
+        }
+      } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+        throw e.setUnfinishedMessage(this);
+      } catch (java.io.IOException e) {
+        throw new com.google.protobuf.InvalidProtocolBufferException(
+            e).setUnfinishedMessage(this);
+      } finally {
+        this.unknownFields = unknownFields.build();
+        makeExtensionsImmutable();
+      }
+    }
+    public static final com.google.protobuf.Descriptors.Descriptor
+        getDescriptor() {
+      return com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.internal_static_nn_SaveModelResponse_descriptor;
+    }
+
+    @java.lang.Override
+    protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+        internalGetFieldAccessorTable() {
+      return com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.internal_static_nn_SaveModelResponse_fieldAccessorTable
+          .ensureFieldAccessorsInitialized(
+              com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.SaveModelResponse.class, com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.SaveModelResponse.Builder.class);
+    }
+
+    public static final int MESSAGE_FIELD_NUMBER = 1;
+    private volatile java.lang.Object message_;
+    /**
+     * <code>string message = 1;</code>
+     * @return The message.
+     */
+    @java.lang.Override
+    public java.lang.String getMessage() {
+      java.lang.Object ref = message_;
+      if (ref instanceof java.lang.String) {
+        return (java.lang.String) ref;
+      } else {
+        com.google.protobuf.ByteString bs = 
+            (com.google.protobuf.ByteString) ref;
+        java.lang.String s = bs.toStringUtf8();
+        message_ = s;
+        return s;
+      }
+    }
+    /**
+     * <code>string message = 1;</code>
+     * @return The bytes for message.
+     */
+    @java.lang.Override
+    public com.google.protobuf.ByteString
+        getMessageBytes() {
+      java.lang.Object ref = message_;
+      if (ref instanceof java.lang.String) {
+        com.google.protobuf.ByteString b = 
+            com.google.protobuf.ByteString.copyFromUtf8(
+                (java.lang.String) ref);
+        message_ = b;
+        return b;
+      } else {
+        return (com.google.protobuf.ByteString) ref;
+      }
+    }
+
+    private byte memoizedIsInitialized = -1;
+    @java.lang.Override
+    public final boolean isInitialized() {
+      byte isInitialized = memoizedIsInitialized;
+      if (isInitialized == 1) return true;
+      if (isInitialized == 0) return false;
+
+      memoizedIsInitialized = 1;
+      return true;
+    }
+
+    @java.lang.Override
+    public void writeTo(com.google.protobuf.CodedOutputStream output)
+                        throws java.io.IOException {
+      if (!getMessageBytes().isEmpty()) {
+        com.google.protobuf.GeneratedMessageV3.writeString(output, 1, message_);
+      }
+      unknownFields.writeTo(output);
+    }
+
+    @java.lang.Override
+    public int getSerializedSize() {
+      int size = memoizedSize;
+      if (size != -1) return size;
+
+      size = 0;
+      if (!getMessageBytes().isEmpty()) {
+        size += com.google.protobuf.GeneratedMessageV3.computeStringSize(1, message_);
+      }
+      size += unknownFields.getSerializedSize();
+      memoizedSize = size;
+      return size;
+    }
+
+    @java.lang.Override
+    public boolean equals(final java.lang.Object obj) {
+      if (obj == this) {
+       return true;
+      }
+      if (!(obj instanceof com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.SaveModelResponse)) {
+        return super.equals(obj);
+      }
+      com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.SaveModelResponse other = (com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.SaveModelResponse) obj;
+
+      if (!getMessage()
+          .equals(other.getMessage())) return false;
+      if (!unknownFields.equals(other.unknownFields)) return false;
+      return true;
+    }
+
+    @java.lang.Override
+    public int hashCode() {
+      if (memoizedHashCode != 0) {
+        return memoizedHashCode;
+      }
+      int hash = 41;
+      hash = (19 * hash) + getDescriptor().hashCode();
+      hash = (37 * hash) + MESSAGE_FIELD_NUMBER;
+      hash = (53 * hash) + getMessage().hashCode();
+      hash = (29 * hash) + unknownFields.hashCode();
+      memoizedHashCode = hash;
+      return hash;
+    }
+
+    public static com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.SaveModelResponse parseFrom(
+        java.nio.ByteBuffer data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data);
+    }
+    public static com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.SaveModelResponse parseFrom(
+        java.nio.ByteBuffer data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data, extensionRegistry);
+    }
+    public static com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.SaveModelResponse parseFrom(
+        com.google.protobuf.ByteString data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data);
+    }
+    public static com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.SaveModelResponse parseFrom(
+        com.google.protobuf.ByteString data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data, extensionRegistry);
+    }
+    public static com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.SaveModelResponse parseFrom(byte[] data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data);
+    }
+    public static com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.SaveModelResponse parseFrom(
+        byte[] data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data, extensionRegistry);
+    }
+    public static com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.SaveModelResponse parseFrom(java.io.InputStream input)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseWithIOException(PARSER, input);
+    }
+    public static com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.SaveModelResponse parseFrom(
+        java.io.InputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseWithIOException(PARSER, input, extensionRegistry);
+    }
+    public static com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.SaveModelResponse parseDelimitedFrom(java.io.InputStream input)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseDelimitedWithIOException(PARSER, input);
+    }
+    public static com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.SaveModelResponse parseDelimitedFrom(
+        java.io.InputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseDelimitedWithIOException(PARSER, input, extensionRegistry);
+    }
+    public static com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.SaveModelResponse parseFrom(
+        com.google.protobuf.CodedInputStream input)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseWithIOException(PARSER, input);
+    }
+    public static com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.SaveModelResponse parseFrom(
+        com.google.protobuf.CodedInputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseWithIOException(PARSER, input, extensionRegistry);
+    }
+
+    @java.lang.Override
+    public Builder newBuilderForType() { return newBuilder(); }
+    public static Builder newBuilder() {
+      return DEFAULT_INSTANCE.toBuilder();
+    }
+    public static Builder newBuilder(com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.SaveModelResponse prototype) {
+      return DEFAULT_INSTANCE.toBuilder().mergeFrom(prototype);
+    }
+    @java.lang.Override
+    public Builder toBuilder() {
+      return this == DEFAULT_INSTANCE
+          ? new Builder() : new Builder().mergeFrom(this);
+    }
+
+    @java.lang.Override
+    protected Builder newBuilderForType(
+        com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
+      Builder builder = new Builder(parent);
+      return builder;
+    }
+    /**
+     * Protobuf type {@code nn.SaveModelResponse}
+     */
+    public static final class Builder extends
+        com.google.protobuf.GeneratedMessageV3.Builder<Builder> implements
+        // @@protoc_insertion_point(builder_implements:nn.SaveModelResponse)
+        com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.SaveModelResponseOrBuilder {
+      public static final com.google.protobuf.Descriptors.Descriptor
+          getDescriptor() {
+        return com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.internal_static_nn_SaveModelResponse_descriptor;
+      }
+
+      @java.lang.Override
+      protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+          internalGetFieldAccessorTable() {
+        return com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.internal_static_nn_SaveModelResponse_fieldAccessorTable
+            .ensureFieldAccessorsInitialized(
+                com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.SaveModelResponse.class, com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.SaveModelResponse.Builder.class);
+      }
+
+      // Construct using com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.SaveModelResponse.newBuilder()
+      private Builder() {
+        maybeForceBuilderInitialization();
+      }
+
+      private Builder(
+          com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
+        super(parent);
+        maybeForceBuilderInitialization();
+      }
+      private void maybeForceBuilderInitialization() {
+        if (com.google.protobuf.GeneratedMessageV3
+                .alwaysUseFieldBuilders) {
+        }
+      }
+      @java.lang.Override
+      public Builder clear() {
+        super.clear();
+        message_ = "";
+
+        return this;
+      }
+
+      @java.lang.Override
+      public com.google.protobuf.Descriptors.Descriptor
+          getDescriptorForType() {
+        return com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.internal_static_nn_SaveModelResponse_descriptor;
+      }
+
+      @java.lang.Override
+      public com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.SaveModelResponse getDefaultInstanceForType() {
+        return com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.SaveModelResponse.getDefaultInstance();
+      }
+
+      @java.lang.Override
+      public com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.SaveModelResponse build() {
+        com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.SaveModelResponse result = buildPartial();
+        if (!result.isInitialized()) {
+          throw newUninitializedMessageException(result);
+        }
+        return result;
+      }
+
+      @java.lang.Override
+      public com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.SaveModelResponse buildPartial() {
+        com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.SaveModelResponse result = new com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.SaveModelResponse(this);
+        result.message_ = message_;
+        onBuilt();
+        return result;
+      }
+
+      @java.lang.Override
+      public Builder clone() {
+        return super.clone();
+      }
+      @java.lang.Override
+      public Builder setField(
+          com.google.protobuf.Descriptors.FieldDescriptor field,
+          java.lang.Object value) {
+        return super.setField(field, value);
+      }
+      @java.lang.Override
+      public Builder clearField(
+          com.google.protobuf.Descriptors.FieldDescriptor field) {
+        return super.clearField(field);
+      }
+      @java.lang.Override
+      public Builder clearOneof(
+          com.google.protobuf.Descriptors.OneofDescriptor oneof) {
+        return super.clearOneof(oneof);
+      }
+      @java.lang.Override
+      public Builder setRepeatedField(
+          com.google.protobuf.Descriptors.FieldDescriptor field,
+          int index, java.lang.Object value) {
+        return super.setRepeatedField(field, index, value);
+      }
+      @java.lang.Override
+      public Builder addRepeatedField(
+          com.google.protobuf.Descriptors.FieldDescriptor field,
+          java.lang.Object value) {
+        return super.addRepeatedField(field, value);
+      }
+      @java.lang.Override
+      public Builder mergeFrom(com.google.protobuf.Message other) {
+        if (other instanceof com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.SaveModelResponse) {
+          return mergeFrom((com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.SaveModelResponse)other);
+        } else {
+          super.mergeFrom(other);
+          return this;
+        }
+      }
+
+      public Builder mergeFrom(com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.SaveModelResponse other) {
+        if (other == com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.SaveModelResponse.getDefaultInstance()) return this;
+        if (!other.getMessage().isEmpty()) {
+          message_ = other.message_;
+          onChanged();
+        }
+        this.mergeUnknownFields(other.unknownFields);
+        onChanged();
+        return this;
+      }
+
+      @java.lang.Override
+      public final boolean isInitialized() {
+        return true;
+      }
+
+      @java.lang.Override
+      public Builder mergeFrom(
+          com.google.protobuf.CodedInputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws java.io.IOException {
+        com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.SaveModelResponse parsedMessage = null;
+        try {
+          parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
+        } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+          parsedMessage = (com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.SaveModelResponse) e.getUnfinishedMessage();
+          throw e.unwrapIOException();
+        } finally {
+          if (parsedMessage != null) {
+            mergeFrom(parsedMessage);
+          }
+        }
+        return this;
+      }
+
+      private java.lang.Object message_ = "";
+      /**
+       * <code>string message = 1;</code>
+       * @return The message.
+       */
+      public java.lang.String getMessage() {
+        java.lang.Object ref = message_;
+        if (!(ref instanceof java.lang.String)) {
+          com.google.protobuf.ByteString bs =
+              (com.google.protobuf.ByteString) ref;
+          java.lang.String s = bs.toStringUtf8();
+          message_ = s;
+          return s;
+        } else {
+          return (java.lang.String) ref;
+        }
+      }
+      /**
+       * <code>string message = 1;</code>
+       * @return The bytes for message.
+       */
+      public com.google.protobuf.ByteString
+          getMessageBytes() {
+        java.lang.Object ref = message_;
+        if (ref instanceof String) {
+          com.google.protobuf.ByteString b = 
+              com.google.protobuf.ByteString.copyFromUtf8(
+                  (java.lang.String) ref);
+          message_ = b;
+          return b;
+        } else {
+          return (com.google.protobuf.ByteString) ref;
+        }
+      }
+      /**
+       * <code>string message = 1;</code>
+       * @param value The message to set.
+       * @return This builder for chaining.
+       */
+      public Builder setMessage(
+          java.lang.String value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  
+        message_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>string message = 1;</code>
+       * @return This builder for chaining.
+       */
+      public Builder clearMessage() {
+        
+        message_ = getDefaultInstance().getMessage();
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>string message = 1;</code>
+       * @param value The bytes for message to set.
+       * @return This builder for chaining.
+       */
+      public Builder setMessageBytes(
+          com.google.protobuf.ByteString value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  checkByteStringIsUtf8(value);
+        
+        message_ = value;
+        onChanged();
+        return this;
+      }
+      @java.lang.Override
+      public final Builder setUnknownFields(
+          final com.google.protobuf.UnknownFieldSet unknownFields) {
+        return super.setUnknownFields(unknownFields);
+      }
+
+      @java.lang.Override
+      public final Builder mergeUnknownFields(
+          final com.google.protobuf.UnknownFieldSet unknownFields) {
+        return super.mergeUnknownFields(unknownFields);
+      }
+
+
+      // @@protoc_insertion_point(builder_scope:nn.SaveModelResponse)
+    }
+
+    // @@protoc_insertion_point(class_scope:nn.SaveModelResponse)
+    private static final com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.SaveModelResponse DEFAULT_INSTANCE;
+    static {
+      DEFAULT_INSTANCE = new com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.SaveModelResponse();
+    }
+
+    public static com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.SaveModelResponse getDefaultInstance() {
+      return DEFAULT_INSTANCE;
+    }
+
+    private static final com.google.protobuf.Parser<SaveModelResponse>
+        PARSER = new com.google.protobuf.AbstractParser<SaveModelResponse>() {
+      @java.lang.Override
+      public SaveModelResponse parsePartialFrom(
+          com.google.protobuf.CodedInputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws com.google.protobuf.InvalidProtocolBufferException {
+        return new SaveModelResponse(input, extensionRegistry);
+      }
+    };
+
+    public static com.google.protobuf.Parser<SaveModelResponse> parser() {
+      return PARSER;
+    }
+
+    @java.lang.Override
+    public com.google.protobuf.Parser<SaveModelResponse> getParserForType() {
+      return PARSER;
+    }
+
+    @java.lang.Override
+    public com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.SaveModelResponse getDefaultInstanceForType() {
       return DEFAULT_INSTANCE;
     }
 
@@ -5551,6 +10704,46 @@ public final class NNServiceProto {
   private static final 
     com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
       internal_static_nn_PredictResponse_fieldAccessorTable;
+  private static final com.google.protobuf.Descriptors.Descriptor
+    internal_static_nn_UploadMetaRequest_descriptor;
+  private static final 
+    com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+      internal_static_nn_UploadMetaRequest_fieldAccessorTable;
+  private static final com.google.protobuf.Descriptors.Descriptor
+    internal_static_nn_ByteChunk_descriptor;
+  private static final 
+    com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+      internal_static_nn_ByteChunk_fieldAccessorTable;
+  private static final com.google.protobuf.Descriptors.Descriptor
+    internal_static_nn_ClassAndArgs_descriptor;
+  private static final 
+    com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+      internal_static_nn_ClassAndArgs_fieldAccessorTable;
+  private static final com.google.protobuf.Descriptors.Descriptor
+    internal_static_nn_UploadMetaResponse_descriptor;
+  private static final 
+    com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+      internal_static_nn_UploadMetaResponse_fieldAccessorTable;
+  private static final com.google.protobuf.Descriptors.Descriptor
+    internal_static_nn_LoadModelRequest_descriptor;
+  private static final 
+    com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+      internal_static_nn_LoadModelRequest_fieldAccessorTable;
+  private static final com.google.protobuf.Descriptors.Descriptor
+    internal_static_nn_LoadModelResponse_descriptor;
+  private static final 
+    com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+      internal_static_nn_LoadModelResponse_fieldAccessorTable;
+  private static final com.google.protobuf.Descriptors.Descriptor
+    internal_static_nn_SaveModelRequest_descriptor;
+  private static final 
+    com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+      internal_static_nn_SaveModelRequest_fieldAccessorTable;
+  private static final com.google.protobuf.Descriptors.Descriptor
+    internal_static_nn_SaveModelResponse_descriptor;
+  private static final 
+    com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+      internal_static_nn_SaveModelResponse_fieldAccessorTable;
 
   public static com.google.protobuf.Descriptors.FileDescriptor
       getDescriptor() {
@@ -5559,70 +10752,137 @@ public final class NNServiceProto {
   private static  com.google.protobuf.Descriptors.FileDescriptor
       descriptor;
   static {
-    String[] descriptorData = {
+    java.lang.String[] descriptorData = {
       "\n\020nn_service.proto\022\002nn\032\rfl_base.proto\"O\n" +
-      "\014TrainRequest\022\022\n\nclientuuid\030\001 \001(\t\022\030\n\004dat" +
+      "\014TrainRequest\022\022\n\nclientuuid\030\001 \001(\005\022\030\n\004dat" +
       "a\030\002 \001(\0132\n.TensorMap\022\021\n\talgorithm\030\003 \001(\t\"I" +
       "\n\rTrainResponse\022\020\n\010response\030\001 \001(\t\022\030\n\004dat" +
       "a\030\002 \001(\0132\n.TensorMap\022\014\n\004code\030\003 \001(\005\"b\n\017Eva" +
-      "luateRequest\022\022\n\nclientuuid\030\001 \001(\t\022\030\n\004data" +
+      "luateRequest\022\022\n\nclientuuid\030\001 \001(\005\022\030\n\004data" +
       "\030\002 \001(\0132\n.TensorMap\022\021\n\talgorithm\030\003 \001(\t\022\016\n" +
       "\006return\030\004 \001(\010\"]\n\020EvaluateResponse\022\020\n\010res" +
       "ponse\030\001 \001(\t\022\030\n\004data\030\002 \001(\0132\n.TensorMap\022\014\n" +
       "\004code\030\003 \001(\005\022\017\n\007message\030\004 \001(\t\"Q\n\016PredictR" +
-      "equest\022\022\n\nclientuuid\030\001 \001(\t\022\030\n\004data\030\002 \001(\013" +
+      "equest\022\022\n\nclientuuid\030\001 \001(\005\022\030\n\004data\030\002 \001(\013" +
       "2\n.TensorMap\022\021\n\talgorithm\030\003 \001(\t\"K\n\017Predi" +
       "ctResponse\022\020\n\010response\030\001 \001(\t\022\030\n\004data\030\002 \001" +
-      "(\0132\n.TensorMap\022\014\n\004code\030\003 \001(\0052\252\001\n\tNNServi" +
-      "ce\022.\n\005train\022\020.nn.TrainRequest\032\021.nn.Train" +
-      "Response\"\000\0227\n\010evaluate\022\023.nn.EvaluateRequ" +
-      "est\032\024.nn.EvaluateResponse\"\000\0224\n\007predict\022\022" +
-      ".nn.PredictRequest\032\023.nn.PredictResponse\"" +
-      "\000B=\n+com.intel.analytics.bigdl.ppml.fl.g" +
-      "eneratedB\016NNServiceProtob\006proto3"
+      "(\0132\n.TensorMap\022\014\n\004code\030\003 \001(\005\"r\n\021UploadMe" +
+      "taRequest\022\023\n\013client_uuid\030\001 \001(\005\022\017\n\007loss_f" +
+      "n\030\002 \001(\014\022#\n\toptimizer\030\003 \001(\0132\020.nn.ClassAnd" +
+      "Args\022\022\n\naggregator\030\004 \001(\t\"\033\n\tByteChunk\022\016\n" +
+      "\006buffer\030\001 \001(\014\")\n\014ClassAndArgs\022\013\n\003cls\030\001 \001" +
+      "(\014\022\014\n\004args\030\002 \001(\014\"3\n\022UploadMetaResponse\022\017" +
+      "\n\007message\030\001 \001(\t\022\014\n\004code\030\002 \001(\005\"J\n\020LoadMod" +
+      "elRequest\022\021\n\tclient_id\030\001 \001(\005\022\017\n\007backend\030" +
+      "\002 \001(\t\022\022\n\nmodel_path\030\003 \001(\t\"2\n\021LoadModelRe" +
+      "sponse\022\017\n\007message\030\001 \001(\t\022\014\n\004code\030\002 \001(\005\"J\n" +
+      "\020SaveModelRequest\022\021\n\tclient_id\030\001 \001(\005\022\017\n\007" +
+      "backend\030\002 \001(\t\022\022\n\nmodel_path\030\003 \001(\t\"$\n\021Sav" +
+      "eModelResponse\022\017\n\007message\030\001 \001(\t2\254\003\n\tNNSe" +
+      "rvice\022.\n\005train\022\020.nn.TrainRequest\032\021.nn.Tr" +
+      "ainResponse\"\000\0227\n\010evaluate\022\023.nn.EvaluateR" +
+      "equest\032\024.nn.EvaluateResponse\"\000\0224\n\007predic" +
+      "t\022\022.nn.PredictRequest\032\023.nn.PredictRespon" +
+      "se\"\000\022>\n\013upload_meta\022\025.nn.UploadMetaReque" +
+      "st\032\026.nn.UploadMetaResponse\"\000\0228\n\013upload_f" +
+      "ile\022\r.nn.ByteChunk\032\026.nn.UploadMetaRespon" +
+      "se\"\000(\001\022B\n\021save_server_model\022\024.nn.SaveMod" +
+      "elRequest\032\025.nn.SaveModelResponse\"\000\022B\n\021lo" +
+      "ad_server_model\022\024.nn.LoadModelRequest\032\025." +
+      "nn.LoadModelResponse\"\000B=\n+com.intel.anal" +
+      "ytics.bigdl.ppml.fl.generatedB\016NNService" +
+      "Protob\006proto3"
     };
     descriptor = com.google.protobuf.Descriptors.FileDescriptor
       .internalBuildGeneratedFileFrom(descriptorData,
         new com.google.protobuf.Descriptors.FileDescriptor[] {
-          FlBaseProto.getDescriptor(),
+          com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.getDescriptor(),
         });
     internal_static_nn_TrainRequest_descriptor =
       getDescriptor().getMessageTypes().get(0);
     internal_static_nn_TrainRequest_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_nn_TrainRequest_descriptor,
-        new String[] { "Clientuuid", "Data", "Algorithm", });
+        new java.lang.String[] { "Clientuuid", "Data", "Algorithm", });
     internal_static_nn_TrainResponse_descriptor =
       getDescriptor().getMessageTypes().get(1);
     internal_static_nn_TrainResponse_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_nn_TrainResponse_descriptor,
-        new String[] { "Response", "Data", "Code", });
+        new java.lang.String[] { "Response", "Data", "Code", });
     internal_static_nn_EvaluateRequest_descriptor =
       getDescriptor().getMessageTypes().get(2);
     internal_static_nn_EvaluateRequest_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_nn_EvaluateRequest_descriptor,
-        new String[] { "Clientuuid", "Data", "Algorithm", "Return", });
+        new java.lang.String[] { "Clientuuid", "Data", "Algorithm", "Return", });
     internal_static_nn_EvaluateResponse_descriptor =
       getDescriptor().getMessageTypes().get(3);
     internal_static_nn_EvaluateResponse_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_nn_EvaluateResponse_descriptor,
-        new String[] { "Response", "Data", "Code", "Message", });
+        new java.lang.String[] { "Response", "Data", "Code", "Message", });
     internal_static_nn_PredictRequest_descriptor =
       getDescriptor().getMessageTypes().get(4);
     internal_static_nn_PredictRequest_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_nn_PredictRequest_descriptor,
-        new String[] { "Clientuuid", "Data", "Algorithm", });
+        new java.lang.String[] { "Clientuuid", "Data", "Algorithm", });
     internal_static_nn_PredictResponse_descriptor =
       getDescriptor().getMessageTypes().get(5);
     internal_static_nn_PredictResponse_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_nn_PredictResponse_descriptor,
-        new String[] { "Response", "Data", "Code", });
-    FlBaseProto.getDescriptor();
+        new java.lang.String[] { "Response", "Data", "Code", });
+    internal_static_nn_UploadMetaRequest_descriptor =
+      getDescriptor().getMessageTypes().get(6);
+    internal_static_nn_UploadMetaRequest_fieldAccessorTable = new
+      com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
+        internal_static_nn_UploadMetaRequest_descriptor,
+        new java.lang.String[] { "ClientUuid", "LossFn", "Optimizer", "Aggregator", });
+    internal_static_nn_ByteChunk_descriptor =
+      getDescriptor().getMessageTypes().get(7);
+    internal_static_nn_ByteChunk_fieldAccessorTable = new
+      com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
+        internal_static_nn_ByteChunk_descriptor,
+        new java.lang.String[] { "Buffer", });
+    internal_static_nn_ClassAndArgs_descriptor =
+      getDescriptor().getMessageTypes().get(8);
+    internal_static_nn_ClassAndArgs_fieldAccessorTable = new
+      com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
+        internal_static_nn_ClassAndArgs_descriptor,
+        new java.lang.String[] { "Cls", "Args", });
+    internal_static_nn_UploadMetaResponse_descriptor =
+      getDescriptor().getMessageTypes().get(9);
+    internal_static_nn_UploadMetaResponse_fieldAccessorTable = new
+      com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
+        internal_static_nn_UploadMetaResponse_descriptor,
+        new java.lang.String[] { "Message", "Code", });
+    internal_static_nn_LoadModelRequest_descriptor =
+      getDescriptor().getMessageTypes().get(10);
+    internal_static_nn_LoadModelRequest_fieldAccessorTable = new
+      com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
+        internal_static_nn_LoadModelRequest_descriptor,
+        new java.lang.String[] { "ClientId", "Backend", "ModelPath", });
+    internal_static_nn_LoadModelResponse_descriptor =
+      getDescriptor().getMessageTypes().get(11);
+    internal_static_nn_LoadModelResponse_fieldAccessorTable = new
+      com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
+        internal_static_nn_LoadModelResponse_descriptor,
+        new java.lang.String[] { "Message", "Code", });
+    internal_static_nn_SaveModelRequest_descriptor =
+      getDescriptor().getMessageTypes().get(12);
+    internal_static_nn_SaveModelRequest_fieldAccessorTable = new
+      com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
+        internal_static_nn_SaveModelRequest_descriptor,
+        new java.lang.String[] { "ClientId", "Backend", "ModelPath", });
+    internal_static_nn_SaveModelResponse_descriptor =
+      getDescriptor().getMessageTypes().get(13);
+    internal_static_nn_SaveModelResponse_fieldAccessorTable = new
+      com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
+        internal_static_nn_SaveModelResponse_descriptor,
+        new java.lang.String[] { "Message", });
+    com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.getDescriptor();
   }
 
   // @@protoc_insertion_point(outer_class_scope)

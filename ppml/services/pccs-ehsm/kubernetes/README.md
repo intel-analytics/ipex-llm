@@ -18,9 +18,10 @@
 ## Prerequests
 
 - Please make sure you have a workable **Kubernetes cluster/machine**.
+- Please make sure you have a usable https proxy.
 - Please make sure your **CPU** is able to run PCCS service, which generate and verify quotes.
 - Please make sure you have a reachable **NFS**.
-- Please make sure you have already installed **helm**.
+- Please make sure you have already installed **[helm](https://helm.sh/)**.
 - Please make sure you have an usable PCCS ApiKey for your platform. The PCCS uses this API key to request collaterals from Intel's Provisioning Certificate Service. User needs to subscribe first to obtain an API key. For how to subscribe to Intel Provisioning Certificate Service and receive an API key, goto https://api.portal.trustedservices.intel.com/provisioning-certification and click on 'Subscribe'.
 
 ## 1. Pull/Build the PCCS Image
@@ -30,7 +31,7 @@ We encapsulate host PCCS service into a docker image, which enables a user-frien
 Download image as below:
 
 ```bash
-docker pull intelanalytics/pccs:0.3.0 # 0.3.0 is the latest version when writting (to do)
+docker pull intelanalytics/pccs:0.3.0-SNAPSHOT
 ```
 
 Or you are allowed to build the image manually:
@@ -70,9 +71,10 @@ organizaitonName: your_organizaition_name
 commonName: server_fqdn_or_your_name
 ```
 
-Then, deploy BigDL-PCCS-eHSM-KMS on kubernetes with a single command:
+Then, deploy BigDL-PCCS-eHSM-KMS on kubernetes:
 
 ```bash
+kubectl create namespace bigdl-pccs-ehsm-kms
 helm install kms . # kms can be modified to any name as you like
 ```
 
@@ -89,11 +91,11 @@ pod/dkeycache-86f8b5456b-8ml57                        1/1     Running   0       
 pod/dkeyserver-0                                      1/1     Running   0          4h57m
 pod/pccs-0                                            1/1     Running   0          4h57m
 
-NAME                                  TYPE           CLUSTER-IP       EXTERNAL-IP   PORT(S)          AGE
-service/bigdl-pccs-ehsm-kms-service   LoadBalancer   10.103.155.211   <pending>     9000:30000/TCP   4h57m
-service/couchdb                       ClusterIP      10.97.91.172     <none>        5984/TCP         4h57m
-service/dkeyserver                    ClusterIP      10.98.66.45      1.2.4.114     8888/TCP         4h57m
-service/pccs                          ClusterIP      10.98.213.70     1.2.4.115     18081/TCP        4h57m
+NAME                                  TYPE           CLUSTER-IP       EXTERNAL-IP           PORT(S)          AGE
+service/bigdl-pccs-ehsm-kms-service   LoadBalancer   10.103.155.211   <kms_external_ip>     9000:30000/TCP   4h57m
+service/couchdb                       ClusterIP      10.97.91.172     <none>                5984/TCP         4h57m
+service/dkeyserver                    ClusterIP      10.98.66.45      1.2.4.114             8888/TCP         4h57m
+service/pccs                          ClusterIP      10.98.213.70     1.2.4.115             18081/TCP        4h57m
 
 NAME                                             READY   UP-TO-DATE   AVAILABLE   AGE
 deployment.apps/bigdl-pccs-ehsm-kms-deployment   1/1     1            1           4h57m
@@ -109,7 +111,7 @@ statefulset.apps/dkeyserver   1/1     4h57m
 statefulset.apps/pccs         1/1     4h57m
 
 # Check the status of KMS
-curl http://<external_kms_ip>:9000/ehsm/?Action=GetVersion
+curl -v -k -G "https://<external_kms_ip>:9000/ehsm/?Action=GetVersion"
 
 {"code":200,"message":"success!","result":{"git_sha":"5c91d6d","version":"0.2.1"}}
 
@@ -121,8 +123,7 @@ curl http://<external_kms_ip>:9000/ehsm/?Action=GetVersion
 We encapsulate eHSM enroll into a docker image, you can pull it or build by yourself like below:
 
 ```bash
-docker pull intelanalytics/kms-utils:0.3.0 # 0.3.0 is the latest version when writting (to do)
-tod
+docker pull intelanalytics/kms-utils:0.3.0-SNAPSHOT
 # OR
 
 cd ../kms-utils
@@ -130,7 +131,7 @@ cd ../kms-utils
 bash build-docker-image.sh
 ```
 
-If image is ready, you can run the container and enroll by using `run-docker-container.sh` in order to get a appid and appkey pair like below:
+If image is ready, you can run the container and enroll by using `run-docker-container.sh` in order to get a appid and apikey pair like below:
 
 ```bash
 export KMS_TYPE=an_optional_kms_type # KMS_TYPE can be (1) ehsm, (2) simple
@@ -196,10 +197,10 @@ ls ehsm-kms_enroll_app
 
 Then, you will find a new target file `ehsm-kms_enroll_app` generated.
 
-Now, you can enroll your app through command below, and you will receive a appid-appkey pair from the server:
+Now, you can enroll your app through command below, and you will receive a appid-apikey pair from the server:
 
 ```bash
-./ehsm-kms_enroll_app http://<your_kms_external_ipaddr>:9000/ehsm/
+./ehsm-kms_enroll_app -a http://<your_kms_external_ipaddr>:9000/ehsm/
 
 
 INFO [main.cpp(45) -> main]: ehsm-kms enroll app start.
@@ -213,6 +214,16 @@ apikey: TKLJ9ZqL1gusW7FnGBGh9apk5iJZFVkB
 INFO [main.cpp(138) -> main]: decrypt APP ID and API Key success.
 INFO [main.cpp(139) -> main]: Third handle success.
 INFO [main.cpp(142) -> main]: ehsm-kms enroll app end.
+```
+
+### Scheme 3: through RestAPI
+
+```bash
+curl -v -k -G "https://<kms_ip>:9000/ehsm?Action=Enroll"
+
+......
+
+{"code":200,"message":"successful","result":{"apikey":"E8QKpBBapaknprx44FaaTY20rptg54Sg","appid":"8d5dd3b8-3996-40f5-9785-dcb8265981ba"}}
 ```
 
 ## 4. Test BigDL-PCCS-eHSM-KMS with SimpleQuerySparkExample

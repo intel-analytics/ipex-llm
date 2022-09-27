@@ -30,8 +30,14 @@ import org.apache.logging.log4j.LogManager
 import scala.collection.JavaConverters._
 import scala.collection.mutable.ArrayBuffer
 import com.intel.analytics.bigdl.dllib.utils.Log4Error
+import com.intel.analytics.bigdl.ppml.fl.FLConfig
+import org.json4s.FileInput
 
-class FGBoostAggregator(validationMethods: Array[ValidationMethod[Float]] = null)
+import java.io.{File, FileInputStream, FileOutputStream, ObjectInputStream, ObjectOutputStream}
+import java.nio.file.Files
+
+class FGBoostAggregator(config: FLConfig,
+                        validationMethods: Array[ValidationMethod[Float]] = null)
   extends Aggregator {
 
   val logger = LogManager.getLogger(this.getClass)
@@ -39,7 +45,7 @@ class FGBoostAggregator(validationMethods: Array[ValidationMethod[Float]] = null
   var obj: TreeObjective = new RMSEObjective
   var nLabel = 1
 
-  val serverTreeLeaf = new ArrayBuffer[Map[Int, Float]]()
+  var serverTreeLeaf = new ArrayBuffer[Map[Int, Float]]()
   var validationSize = -1
   var basePrediction: Array[Float] = null
   val bestSplit = new java.util.HashMap[String, DataSplit]()
@@ -58,6 +64,24 @@ class FGBoostAggregator(validationMethods: Array[ValidationMethod[Float]] = null
     aggregateTypeMap.get(FLPhase.PREDICT).getTreeEvalStorage()
   def getResultStorage(): Storage[TensorMap] =
     aggregateTypeMap.get(FLPhase.RESULT).getTensorMapStorage()
+
+  def loadModel(modelPath: String): Unit = {
+    if (new File(modelPath).exists()) {
+      val is = new ObjectInputStream(new FileInputStream(modelPath))
+      serverTreeLeaf = is.readObject().asInstanceOf[ArrayBuffer[Map[Int, Float]]]
+    } else {
+      logger.warn(s"$modelPath does not exist, will create new model")
+    }
+  }
+
+  def saveModel(modelPath: String): Unit = {
+    if (modelPath != null) {
+      logger.info(s"Saving FGBoostAggregator model to ${modelPath}")
+      val os = new ObjectOutputStream(new FileOutputStream(modelPath))
+      os.writeObject(serverTreeLeaf)
+      os.close()
+    }
+  }
 
   override def initStorage(): Unit = {
     aggregateTypeMap.put(FLPhase.LABEL, new StorageHolder(FLDataType.TENSOR_MAP))

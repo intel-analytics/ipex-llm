@@ -20,7 +20,7 @@ import torch
 import pandas as pd
 
 from bigdl.chronos.data.utils.utils import _check_cols_no_na, _to_list
-from bigdl.chronos.data.utils.time_feature import time_features
+from bigdl.chronos.data.utils.time_feature import time_features, gen_time_enc_arr
 
 
 def get_roll_start_idx(df, id_col, window_size):

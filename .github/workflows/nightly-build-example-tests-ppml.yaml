@@ -1,0 +1,100 @@
+name: Nightly Build Example Tests PPML Spark Local on Graphene
+
+on:
+  schedule:
+    - cron: '0 17 * * *'
+  workflow_dispatch:
+    inputs:
+      select_running_example:
+        description: 'select which example to run'
+        required: true
+        default: 'all'
+        type: choice
+        options:
+        - all
+        - spark_arrow
+      sgx_mem_size:
+        description: 'memeory size limit'
+        required: true
+        default: 32G
+        type: choice
+        options:
+        - 16G
+        - 32G
+        - 64G
+        - 128G
+      image:
+        description: 'docker image version'
+        required: true
+        default: 10.239.45.10/arda/intelanalytics/bigdl-ppml-trusted-big-data-ml-python-graphene:latest
+        type: string
+
+  
+jobs:
+  example-tests-ppml:
+    runs-on: [self-hosted, SGX, Wilwarin]
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+    - uses: actions/checkout@v3
+    - name: set variable
+      env:
+        DEFAULT_EXAMPLE: 'ALL'
+        DEFAULT_SGX_MEM_SIZE: 32G
+        DEFAULT_IMAGE: 10.239.45.10/arda/intelanalytics/bigdl-ppml-trusted-big-data-ml-python-graphene:latest
+      run: |
+        echo "SELECT_RUNNING_EXAMPLE=${{ github.event.inputs.select_running_example || env.DEFAULT_EXAMPLE }} " >> $GITHUB_ENV
+        echo "SGX_MEM_SIZE=${{ github.event.inputs.sgx_mem_size || env.DEFAULT_MEM_SIZE }}" >> $GITHUB_ENV
+        echo "IMAGE=${{ github.event.inputs.image || env.DEFAULT_IMAGE }}" >>$GITHUB_ENV
+    - name: start container
+      run: |
+        set -x
+        docker pull ${IMAGE}
+        docker rm -f ${CONTAINER_NAME}
+        docker run -id --privileged --net=host --name ${CONTAINER_NAME} \
+        --cpuset-cpus=$CPUSET \
+        --oom-kill-disable \
+        --device=/dev/sgx/enclave \
+        --device=/dev/sgx/provision \
+        -v ~/glorysdj/kuberconfig:/root/.kube/config \
+        -v /var/run/aesmd/aesm.socket:/var/run/aesmd/aesm.socket \
+        -v $ENCLAVE_KEY:/graphene/Pal/src/host/Linux-SGX/signer/enclave-key.pem \
+        -v $DATA_PATH:/ppml/trusted-big-data-ml/work/data \
+        -v $KEYS_PATH:/ppml/trusted-big-data-ml/work/keys \
+        -e LOCAL_IP=$LOCAL_IP \
+        -e SGX_MEM_SIZE=$SGX_MEM_SIZE \
+        -e RUNTIME_SPARK_MASTER=k8s://https://192.168.0.112:6443 \
+        -e RUNTIME_K8S_SERVICE_ACCOUNT=spark \
+        -e RUNTIME_K8S_SPARK_IMAGE=$IMAGE \
+        -e RUNTIME_DRIVER_HOST=$LOCAL_IP \
+        -e RUNTIME_DRIVER_PORT=54321 \
+        -e RUNTIME_EXECUTOR_INSTANCES=1 \
+        -e RUNTIME_EXECUTOR_CORES=4 \
+        -e RUNTIME_EXECUTOR_MEMORY=80g \
+        -e RUNTIME_TOTAL_EXECUTOR_CORES=4 \
+        -e RUNTIME_DRIVER_CORES=4 \
+        -e RUNTIME_DRIVER_MEMORY=10g \
+        -e http_proxy=$HTTP_PROXY \
+        -e https_proxy=$HTTPS_PROXY \
+        $IMAGE bash
+    - name: spark arrow test
+      run: |
+        if [ ${SECELT_RUNNING_EXAMPLE} = "spark_arrow" ]; then
+        docker exec -i $CONTAINER_NAME bash -c " cd /ppml/trusted-big-data-ml && \
+        /graphene/Tools/argv_serializer bash -c "export PYSPARK_PYTHON=/usr/bin/python && \
+        export ARROW_PRE_0_15_IPC_FORMAT=0 && \
+        /opt/jdk8/bin/java \
+        -cp '/ppml/trusted-big-data-ml/work/spark-3.1.2/conf/:/ppml/trusted-big-data-ml/work/spark-3.1.2/jars/*' \
+        -Xmx2g org.apache.spark.deploy.SparkSubmit \
+        --master 'local[4]' \
+        --conf spark.python.use.daemon=false \
+        --conf spark.python.worker.reuse=false \
+        --conf spark.sql.execution.arrow.enabled=true \
+        --conf spark.driver.memory=2g \
+        --executor-memory 2g \
+        /ppml/trusted-big-data-ml/work/spark-3.1.2/examples/src/main/python/sql/arrow.py "> /ppml/trusted-big-data-ml/secured-argvs \
+        ./init.sh \
+        SGX=1 ./pal_loader bash 2>&1 > test-sql-arrow-sgx.log"
+        fi

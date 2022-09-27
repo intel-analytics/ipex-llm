@@ -325,7 +325,7 @@ if __name__ == "__main__":
     df = full_tbl.df.repartition(num_tasks)
     df = df.sortWithinPartitions("item_hist_seq_len", ascending=False)
 
-    config = yaml.load(open("config_runtime.yaml", "r"), Loader=yaml.FullLoader)
+    config = yaml.safe_load(open("config_runtime.yaml", "r"))
     rdd = df.rdd
     eval_res = rdd.mapPartitions(lambda iter: infer_main(iter, config)).collect()
     data_size = 0

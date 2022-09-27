@@ -13,25 +13,26 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+import os
 import shutil
+import tempfile
 from unittest import TestCase
 
 import numpy as np
 import pytest
 import tensorflow as tf
-
-from bigdl.dllib.nncontext import init_nncontext
-from bigdl.orca.data import XShards
+import ray
 
 import bigdl.orca.data.pandas
+from bigdl.dllib.nncontext import init_nncontext
+from bigdl.orca.data import XShards
 from bigdl.orca.learn.tf2 import Estimator
 from bigdl.orca.ray import OrcaRayContext
-import ray
+from bigdl.orca import OrcaContext
+
 
 NUM_TRAIN_SAMPLES = 1000
 NUM_TEST_SAMPLES = 400
-
-import os
 
 resource_path = os.path.join(
     os.path.realpath(os.path.dirname(__file__)), "../../../resources")
@@ -347,6 +348,35 @@ class TestTFRayEstimator(TestCase):
                          label_cols=["label"])
         trainer.predict(df, feature_cols=["feature"]).collect()
 
+    def test_dataframe_decimal_input(self):
+
+        from pyspark.sql.types import StructType, StructField, IntegerType, FloatType
+        from pyspark.sql.functions import col
+        from bigdl.orca import OrcaContext
+
+        spark = OrcaContext.get_spark_session()
+        schema = StructType([
+            StructField("feature", FloatType(), True),
+            StructField("label", IntegerType(), True)
+        ])
+        data = [(30.2222, 1), (40.0, 0), (15.1, 1),
+                (-2.456, 1), (3.21, 0), (11.28, 1)]
+        df = spark.createDataFrame(data=data, schema=schema)
+        df = df.withColumn("feature", col("feature").cast("decimal(38,2)"))
+
+        config = {
+            "lr": 0.8
+        }
+        trainer = Estimator.from_keras(
+            model_creator=model_creator,
+            verbose=True,
+            config=config,
+            workers_per_node=2)
+
+        trainer.fit(df, epochs=1, batch_size=4, steps_per_epoch=25,
+                    feature_cols=["feature"],
+                    label_cols=["label"])
+
     def test_dataframe_with_empty_partition(self):
         from bigdl.orca import OrcaContext
         sc = OrcaContext.get_spark_context()
@@ -567,7 +597,7 @@ class TestTFRayEstimator(TestCase):
 
         assert np.allclose(expected, result)
 
-    def test_save_and_load(self):
+    def test_save_and_load_checkpoint(self):
         def model_creator(config):
             import tensorflow as tf
             model = tf.keras.Sequential([
@@ -603,11 +633,203 @@ class TestTFRayEstimator(TestCase):
                               batch_size=batch_size,
                               steps_per_epoch=5)
             print("start saving")
-            est.save("/tmp/cifar10_keras.ckpt")
-            est.load("/tmp/cifar10_keras.ckpt")
+            est.save_checkpoint("/tmp/cifar10_keras.ckpt")
+            est.load_checkpoint("/tmp/cifar10_keras.ckpt")
             print("save success")
         finally:
             os.remove("/tmp/cifar10_keras.ckpt")
+    
+    def test_save_load_model_h5(self):
+        sc = OrcaContext.get_spark_context()
+        rdd = sc.range(0, 100)
+        spark = OrcaContext.get_spark_session()
+
+        from pyspark.ml.linalg import DenseVector
+        df = rdd.map(lambda x: (DenseVector(np.random.randn(1, ).astype(np.float)),
+                                int(np.random.randint(0, 2, size=())))).toDF(["feature", "label"])
+
+        config = {
+            "lr": 0.2
+        }
+
+        try:
+            temp_dir = tempfile.mkdtemp()
+
+            trainer = Estimator.from_keras(
+                model_creator=model_creator,
+                verbose=True,
+                config=config,
+                workers_per_node=3,
+                backend="ray")
+
+            res = trainer.fit(df, epochs=5, batch_size=4, steps_per_epoch=25,
+                              feature_cols=["feature"],
+                              label_cols=["label"],
+                              validation_data=df,
+                              validation_steps=1)
+
+            print("start saving")
+            trainer.save(os.path.join(temp_dir, "cifar10.h5"))
+
+            res = trainer.evaluate(df, batch_size=4, num_steps=25, feature_cols=["feature"],
+                                   label_cols=["label"])
+            print("validation result: ", res)
+
+            before_res = trainer.predict(df, feature_cols=["feature"]).collect()
+            expect_res = np.concatenate([part["prediction"] for part in before_res])
+
+            trainer.load(os.path.join(temp_dir, "cifar10.h5"))
+            
+            # continous predicting
+            after_res = trainer.predict(df, feature_cols=["feature"]).collect()
+            pred_res = np.concatenate([part["prediction"] for part in after_res])
+
+            assert np.array_equal(expect_res, pred_res)
+        finally:
+            shutil.rmtree(temp_dir)
+
+    def test_save_load_model_savemodel(self):
+        sc = OrcaContext.get_spark_context()
+        rdd = sc.range(0, 100)
+        spark = OrcaContext.get_spark_session()
+
+        from pyspark.ml.linalg import DenseVector
+        df = rdd.map(lambda x: (DenseVector(np.random.randn(1, ).astype(np.float)),
+                                int(np.random.randint(0, 2, size=())))).toDF(["feature", "label"])
+
+        config = {
+            "lr": 0.2
+        }
+
+        try:
+            temp_dir = tempfile.mkdtemp()
+
+            trainer = Estimator.from_keras(
+                model_creator=model_creator,
+                verbose=True,
+                config=config,
+                workers_per_node=3,
+                backend="ray")
+
+            res = trainer.fit(df, epochs=5, batch_size=4, steps_per_epoch=25,
+                              feature_cols=["feature"],
+                              label_cols=["label"],
+                              validation_data=df,
+                              validation_steps=1)
+
+            print("start saving")
+            trainer.save(os.path.join(temp_dir, "cifar10_savemodel"))
+
+            res = trainer.evaluate(df, batch_size=4, num_steps=25, feature_cols=["feature"],
+                                   label_cols=["label"])
+            print("validation result: ", res)
+
+            before_res = trainer.predict(df, feature_cols=["feature"]).collect()
+            expect_res = np.concatenate([part["prediction"] for part in before_res])
+
+            trainer.load(os.path.join(temp_dir, "cifar10_savemodel"))
+            
+            # continous predicting
+            after_res = trainer.predict(df, feature_cols=["feature"]).collect()
+            pred_res = np.concatenate([part["prediction"] for part in after_res])
+
+            assert np.array_equal(expect_res, pred_res)
+        finally:
+            shutil.rmtree(temp_dir)
+
+    def test_save_load_model_weights_h5(self):
+        sc = OrcaContext.get_spark_context()
+        rdd = sc.range(0, 100)
+        spark = OrcaContext.get_spark_session()
+
+        from pyspark.ml.linalg import DenseVector
+        df = rdd.map(lambda x: (DenseVector(np.random.randn(1, ).astype(np.float)),
+                                int(np.random.randint(0, 2, size=())))).toDF(["feature", "label"])
+
+        config = {
+            "lr": 0.2
+        }
+
+        try:
+            temp_dir = tempfile.mkdtemp()
+
+            trainer = Estimator.from_keras(
+                model_creator=model_creator,
+                verbose=True,
+                config=config,
+                workers_per_node=3,
+                backend="ray")
+
+            res = trainer.fit(df, epochs=5, batch_size=4, steps_per_epoch=25,
+                              feature_cols=["feature"],
+                              label_cols=["label"],
+                              validation_data=df,
+                              validation_steps=1)
+
+            print("start saving")
+            trainer.save_weights(os.path.join(temp_dir,"model_weights.h5"))
+            res = trainer.evaluate(df, batch_size=4, num_steps=25, feature_cols=["feature"],
+                                   label_cols=["label"])
+            print("validation result: ", res)
+
+            before_res = trainer.predict(df, feature_cols=["feature"]).collect()
+            expect_res = np.concatenate([part["prediction"] for part in before_res])
+            
+            trainer.load_weights(os.path.join(temp_dir,"model_weights.h5"))
+            # continous predicting
+            after_res = trainer.predict(df, feature_cols=["feature"]).collect()
+            pred_res = np.concatenate([part["prediction"] for part in after_res])
+
+            assert np.array_equal(expect_res, pred_res)
+        finally:
+            shutil.rmtree(temp_dir)
+
+    def test_save_load_model_weights_tf(self):
+        sc = OrcaContext.get_spark_context()
+        rdd = sc.range(0, 100)
+        spark = OrcaContext.get_spark_session()
+
+        from pyspark.ml.linalg import DenseVector
+        df = rdd.map(lambda x: (DenseVector(np.random.randn(1, ).astype(np.float)),
+                                int(np.random.randint(0, 2, size=())))).toDF(["feature", "label"])
+
+        config = {
+            "lr": 0.2
+        }
+
+        try:
+            temp_dir = tempfile.mkdtemp()
+
+            trainer = Estimator.from_keras(
+                model_creator=model_creator,
+                verbose=True,
+                config=config,
+                workers_per_node=3,
+                backend="ray")
+
+            res = trainer.fit(df, epochs=5, batch_size=4, steps_per_epoch=25,
+                              feature_cols=["feature"],
+                              label_cols=["label"],
+                              validation_data=df,
+                              validation_steps=1)
+
+            print("start saving")
+            trainer.save_weights(os.path.join(temp_dir,"model_weights"))
+            res = trainer.evaluate(df, batch_size=4, num_steps=25, feature_cols=["feature"],
+                                   label_cols=["label"])
+            print("validation result: ", res)
+
+            before_res = trainer.predict(df, feature_cols=["feature"]).collect()
+            expect_res = np.concatenate([part["prediction"] for part in before_res])
+            
+            trainer.load_weights(os.path.join(temp_dir,"model_weights"))
+            # continous predicting
+            after_res = trainer.predict(df, feature_cols=["feature"]).collect()
+            pred_res = np.concatenate([part["prediction"] for part in after_res])
+
+            assert np.array_equal(expect_res, pred_res)
+        finally:
+            shutil.rmtree(temp_dir)
 
     def test_string_input(self):
 

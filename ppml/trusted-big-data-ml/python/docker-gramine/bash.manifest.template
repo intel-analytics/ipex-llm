@@ -1,0 +1,87 @@
+libos.entrypoint = "{{ execdir }}/bash"
+loader.entrypoint = "file:{{ gramine.libos }}"
+loader.pal_internal_mem_size = "512M"
+loader.log_level = "{{ log_level }}"
+
+#loader.insecure__use_cmdline_argv = true
+loader.insecure_disable_aslr = true
+loader.argv_src_file = "file:/ppml/trusted-big-data-ml/secured_argvs"
+
+sgx.allow_file_creation = true
+sgx.debug = false
+sgx.nonpie_binary = true
+sgx.enclave_size = "{{ g_sgx_size }}"
+sgx.thread_num = {{ g_sgx_thread_num }}
+sgx.file_check_policy = "allow_all_but_log"
+sgx.static_address = 1
+sgx.isvprodid = 1
+sgx.isvsvn = 3
+
+loader.env.LD_LIBRARY_PATH = "/lib:{{ arch_libdir }}:/usr{{ arch_libdir }}:/usr/lib/python3.7/lib:/usr/lib:{{ jdk_home }}:{{ jdk_home }}/lib/amd64/jli:/ppml/trusted-big-data-ml/work/lib"
+loader.env.PATH = "{{ execdir }}:/usr/lib/python3.7/bin:/:/usr/sbin:/usr/bin:/sbin:/bin:{{ jdk_home }}/bin"
+loader.env.PYTHONHOME = "/usr/lib/python3.7"
+loader.env.PYTHONPATH = "/usr/lib/python3.7:/usr/lib/python3.7/lib-dynload:/usr/local/lib/python3.7/dist-packages:/usr/lib/python3/dist-packages"
+loader.env.JAVA_HOME = "{{ jdk_home }}"
+loader.env.JAVA_OPTS = "'-Djava.library.path={{ jdk_home }}/lib -Dsun.boot.library.path={{ jdk_home }}/lib'"
+loader.env.SPARK_LOCAL_IP = "{{ spark_local_ip }}"
+loader.env.SPARK_USER = "{{ spark_user }}"
+loader.env.SPARK_SCALA_VERSION = "2.12"
+loader.env.SPARK_HOME = "{{ spark_home }}"
+loader.env.SPARK_MASTER_OPTS = "'-Dspark.worker.timeout=60'"
+
+sgx.ioctl_structs.ifconf  =  [ {name = "ifc_len",size = 4, align = 4, type= "inout" }, {size = 4, type= "inout"}, { ptr=[ {name="ifcu_req", size= "ifc_len", type="in"} ] } ]
+sgx.allowed_ioctls.io1.request = 0x8912
+sgx.allowed_ioctls.io1.struct = "ifconf"
+
+sgx.ioctl_structs.ifreq = [ {  name ="ifreq", size=40, type="inout"} ]
+sgx.allowed_ioctls.io2.request = 0x8927
+sgx.allowed_ioctls.io2.struct = "ifreq"
+
+
+fs.mounts = [
+  { path = "{{ arch_libdir }}", uri = "file:{{ arch_libdir }}" },
+  { path = "/usr{{ arch_libdir }}", uri = "file:/usr{{ arch_libdir }}" },
+  { path = "{{ execdir }}", uri = "file:{{ execdir }}" },
+  { path = "/usr/lib", uri = "file:/usr/lib" },
+  { path = "/lib", uri = "file:{{ gramine.runtimedir() }}" },
+  { path = "/usr/local", uri = "file:/usr/local" },
+  { path = "/etc", uri = "file:/etc" },
+  { path = "/usr/local/etc", uri = "file:/etc" },
+  { path = "/opt", uri = "file:/opt" },
+  { path = "/bin", uri = "file:/bin" },
+  { path = "/tmp", uri = "file:/tmp" },
+  { path = "/usr/lib/python3.7", uri = "file:/usr/lib/python3.7" },
+  { path = "/usr/lib/python3/dist-packages", uri = "file:/usr/lib/python3/dist-packages" },
+  { path = "/root/.kube/", uri = "file:/root/.kube/" },
+  { path = "/root/.keras", uri = "file:/root/.keras" },
+  { path = "/root/.m2", uri = "file:/root/.m2" },
+  { path = "/root/.zinc", uri = "file:/root/.zinc" },
+  { path = "/usr/lib/gcc", uri = "file:/usr/lib/gcc" },
+  { path = "/ppml/trusted-big-data-ml", uri = "file:/ppml/trusted-big-data-ml" },
+]
+#  { path = "{{ gramine.runtimedir() }}/etc/localtime", uri = "file:/etc" },
+
+sgx.trusted_files = [
+  "file:{{ gramine.libos }}",
+  "file:{{ gramine.runtimedir() }}/",
+  "file:{{ arch_libdir }}/",
+  "file:/usr/{{ arch_libdir }}/",
+  "file:{{ execdir }}/",
+  "file:/ppml/trusted-big-data-ml/secured_argvs",
+]
+
+sgx.allowed_files = [
+  "file:scripts/",
+  "file:/etc",
+  "file:/tmp",
+  "file:{{ jdk_home }}",
+  "file:/ppml/trusted-big-data-ml",
+  "file:{{ python_home }}",
+  "file:/usr/local/lib/python3.7/dist-packages",
+  "file:/root/.keras",
+  "file:/root/.m2",
+  "file:/root/.zinc",
+  "file:/usr/lib/gcc",
+  "file:/root/.kube/config",
+  "file:/etc/localtime",
+]

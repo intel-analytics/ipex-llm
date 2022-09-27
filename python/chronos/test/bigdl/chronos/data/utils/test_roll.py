@@ -19,11 +19,11 @@ import pandas as pd
 import numpy as np
 import random
 
-from bigdl.orca.test_zoo_utils import ZooTestCase
+from unittest import TestCase
 from bigdl.chronos.data.utils.roll import roll_timeseries_dataframe
 
 
-class TestRollTimeSeries(ZooTestCase):
+class TestRollTimeSeries(TestCase):
     def setup_method(self, method):
         self.easy_data = pd.DataFrame({"A": np.random.randn(10),
                                        "B": np.random.randn(10),

@@ -22,9 +22,6 @@ import faiss
 import sys
 import random
 import argparse
-from bigdl.orca import init_orca_context, OrcaContext, stop_orca_context
-from pyspark.sql.types import Row
-from pyspark.sql.types import StructType, StructField, IntegerType, ArrayType, FloatType
 
 
 def create_dummy_data(row_nums, vec_dim, verbose, rnd_seed=42, HEADER_LEN=8, only_item=False):
@@ -70,31 +67,31 @@ def gen_vector(x, vec_dim):
 
 def generate_data(args):
     print("create emb_vecs and item_dict data >>>>>>")
-    if args.use_spark:
-        print('>>>>>> using spark >>>>>>')
-        sc = init_orca_context(cores="*", memory="125g", conf={"spark.driver.maxResultSize": "10g"})
-        spark = OrcaContext.get_spark_session()
-        rdd = sc.parallelize(range(args.row_nums))
-        rdd = rdd.map(lambda row: gen_vector(row, args.vec_dim))
-        rdd.cache()  # If not cache, will run random generation again when saving to parquet.
-        data = rdd.collect()
-        emb_vecs = np.array([row[1] for row in data], dtype=np.float32)
-        print('vector shape: ', emb_vecs.shape)
-        # np.save("data.npy", vectors)
-        schema = StructType([
-            StructField('id', IntegerType(), False),
-            StructField('embedding', ArrayType(FloatType()), False)
-        ])
-        df = spark.createDataFrame(rdd.map(lambda x: Row(x[0], x[1].tolist())), schema=schema)
-        df.write.mode("overwrite").parquet(args.parquet_path)
-        print("Finished")
-        stop_orca_context()
-        item_dict = create_dummy_data(args.row_nums, args.vec_dim, args.verbose, rnd_seed=42,
-                                      HEADER_LEN=args.header_len, only_item=True)
-    else:
-        emb_vecs, item_dict = create_dummy_data(args.row_num, args.vec_dim,
-                                                args.verbose, rnd_seed=42,
-                                                HEADER_LEN=args.header_len)
+    from bigdl.orca import init_orca_context, OrcaContext, stop_orca_context
+    from pyspark.sql.types import Row
+    from pyspark.sql.types import StructType, StructField, IntegerType, ArrayType, FloatType
+
+    print('>>>>>> using spark >>>>>>')
+    sc = init_orca_context(cores="*", memory="16g", conf={"spark.driver.maxResultSize": "10g"})
+    spark = OrcaContext.get_spark_session()
+    rdd = sc.parallelize(range(args.row_nums))
+    rdd = rdd.map(lambda row: gen_vector(row, args.vec_dim))
+    rdd.cache()  # If not cache, will run random generation again when saving to parquet.
+    data = rdd.collect()
+    emb_vecs = np.array([row[1] for row in data], dtype=np.float32)
+    print('vector shape: ', emb_vecs.shape)
+    # np.save("data.npy", vectors)
+    schema = StructType([
+        StructField('id', IntegerType(), False),
+        StructField('embedding', ArrayType(FloatType()), False)
+    ])
+    df = spark.createDataFrame(rdd.map(lambda x: Row(x[0], x[1].tolist())), schema=schema)
+    df.write.mode("overwrite").parquet(args.parquet_path)
+    print("Finished")
+    stop_orca_context()
+    item_dict = create_dummy_data(args.row_nums, args.vec_dim, args.verbose, rnd_seed=42,
+                                  HEADER_LEN=args.header_len, only_item=True)
+
     print("create index for faiss >>>>>>")
     if args.index_type == 'FlatL2':
         print('index_type: ', "# FlatL2")
@@ -122,7 +119,7 @@ def generate_data(args):
     search_sample(index_faiss, q_vec)
 
     print("saving created data and index >>>>>>")
-    for file, obj in [(args.emb_path, emb_vecs), (args.dict_path, item_dict)]:
+    for file, obj in [(args.dict_path, item_dict)]:
         with open(file, "wb") as f:
             print('saving to: {}'.format(file))
             pickle.dump(obj, f)
@@ -143,19 +140,14 @@ def generate_data(args):
         print(item_dict.shape)
         print(item_dict[:10])
 
-        print(f"loading {args.emb_path}, {args.dict_path}")
-
-        with open(args.emb_path, "rb") as f:
-            emb_vecs_loaded = pickle.load(f)
-        print(emb_vecs_loaded.shape)
-        print(emb_vecs_loaded[0, :10])
+        print(f"loading {args.dict_path}")
 
         with open(args.dict_path, "rb") as f:
             item_dict_loaded = pickle.load(f)
         print(item_dict_loaded.shape)
         print(item_dict_loaded[:10])
 
-        q_vec = emb_vecs_loaded[[0, ]]
+        q_vec = emb_vecs[[0, ]]
         print(q_vec.shape)
 
         with open(args.index_save_path, "rb") as f:
@@ -173,20 +165,15 @@ if __name__ == '__main__':
     parser.add_argument('--header_len', type=int, default=8,
                         help='The length of the unique item header')
 
-    parser.add_argument('--verbose', type=bool, default=True,
-                        help='whether print more detail information')
-    parser.add_argument('--use_spark', type=bool, default=True,
-                        help='whether to use spark to generate vector embeddings')
+    parser.add_argument('--verbose', action='store_true',
+                        help='Print more detailed information')
 
-    parser.add_argument('--emb_path', type=str, default='./emb_vecs.pkl',
-                        help='the path to save vector embeddings')
     parser.add_argument('--dict_path', type=str, default='./item_dict.pkl',
                         help='the path to save item_dict')
     parser.add_argument('--index_save_path', type=str, default='./index_FlatL2.pkl',
                         help='the path to save faiss index data')
     parser.add_argument('--parquet_path', type=str, default='./data.parquet/',
-                        help='the path to save vector embeddings with spark, '
-                             'only work when use_spark is True')
+                        help='the path to save vector embeddings with spark')
 
     parser.add_argument('--index_type', type=str, default='FlatL2',
                         help='index_type: FlatL2 or IVFFlatL2')

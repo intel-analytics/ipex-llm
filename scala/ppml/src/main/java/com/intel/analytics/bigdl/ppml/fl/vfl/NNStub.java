@@ -26,8 +26,8 @@ import org.slf4j.LoggerFactory;
 public class NNStub {
     private static final Logger logger = LoggerFactory.getLogger(NNStub.class);
     private static NNServiceGrpc.NNServiceBlockingStub stub;
-    String clientID;
-    public NNStub(Channel channel, String clientID) {
+    Integer clientID;
+    public NNStub(Channel channel, Integer clientID) {
         this.clientID = clientID;
         stub = NNServiceGrpc.newBlockingStub(channel);
     }

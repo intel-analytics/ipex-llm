@@ -14,15 +14,18 @@
 # limitations under the License.
 #
 
+from turtle import Turtle
 import tensorflow as tf
 import warnings
 import tensorflow_recommenders as tfrs
 from tensorflow_recommenders.tasks import base
 from bigdl.dllib.utils import log4Error
 
+from typing import Dict
+
 
 class TFRSModel(tf.keras.Model):
-    def __init__(self, tfrs_model):
+    def __init__(self, tfrs_model: tfrs.Model) -> None:
         super().__init__()
         log4Error.invalidInputError(isinstance(tfrs_model, tfrs.Model),
                                     "FriesianTFRSModel only support tfrs.Model, but got " +
@@ -49,8 +52,17 @@ class TFRSModel(tf.keras.Model):
     def call(self, features):
         return self.model.call(features)
 
-    def train_step(self, inputs):
-        """Custom train step using the `compute_loss` method."""
+    def train_step(self, inputs) -> Dict[str, tf.Tensor]:
+        """
+        Custom train step using the `compute_loss` method.
+
+        Args:
+        inputs: A data structure of tensors: raw inputs to the model. These will
+            usually contain labels and weights as well as features.
+
+        Returns:
+        metrics: A dict of loss tensors of metrics names.
+        """
 
         with tf.GradientTape() as tape:
             loss = self.model.compute_loss(inputs, training=True)
@@ -74,8 +86,17 @@ class TFRSModel(tf.keras.Model):
 
         return metrics
 
-    def test_step(self, inputs):
-        """Custom test step using the `compute_loss` method."""
+    def test_step(self, inputs) -> Dict[str, tf.Tensor]:
+        """
+        Custom test step using the `compute_loss` method.
+
+        Args:
+        inputs: A data structure of tensors: raw inputs to the model. These will
+            usually contain labels and weights as well as features.
+
+        Returns:
+        metrics: A dict of loss tensors of metrics names.
+        """
 
         # unscaled test loss
         loss = self.model.compute_loss(inputs, training=False)

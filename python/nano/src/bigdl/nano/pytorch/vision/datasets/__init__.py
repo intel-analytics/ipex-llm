@@ -14,8 +14,11 @@
 # limitations under the License.
 #
 
+from bigdl.nano.pytorch.utils import TORCHVISION_VERSION_LESS_1_12
 from torchvision.datasets import *
 del ImageFolder
-
+if not TORCHVISION_VERSION_LESS_1_12:
+    del OxfordIIITPet
+    from .oxfordpet_datasets import OxfordIIITPet
 
 from .datasets import ImageFolder, SegmentationImageFolder

@@ -78,7 +78,6 @@ public class GrpcClientBase extends AbstractGrpcBase {
     }
 
     public void build() throws IOException {
-        parseConfig();
         if (channel == null) {
             if(privateKeyFilePath == null) {
                 channel = ManagedChannelBuilder.forTarget(target)

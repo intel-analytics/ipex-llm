@@ -100,6 +100,7 @@ public class FeatureServer extends GrpcServerBase {
      */
     public static void main(String[] args) throws Exception {
         FeatureServer featureServer = new FeatureServer(args);
+        featureServer.parseConfig();
         featureServer.build();
         if (Utils.runMonitor()) {
             new HTTPServer.Builder()
@@ -127,8 +128,10 @@ public class FeatureServer extends GrpcServerBase {
             colNamesMap = new HashMap<>();
             parseServiceType();
             if (serviceType.contains(ServiceType.KV)) {
-                redis = LettuceUtils.getInstance(Utils.helper().redisTypeEnum(), Utils.helper().redisHostPort(),
-                        Utils.helper().getRedisKeyPrefix(), Utils.helper().redisSentinelMasterURL(),
+                redis = LettuceUtils.getInstance(Utils.helper().redisTypeEnum(),
+                        Utils.helper().redisHostPort(),
+                        Utils.helper().getRedisKeyPrefix(),
+                        Utils.helper().redisSentinelMasterURL(),
                         Utils.helper().redisSentinelMasterName(), Utils.helper().itemSlotType());
             }
 

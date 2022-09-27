@@ -43,6 +43,7 @@ import warnings
 import torch
 import torch.nn as nn
 from .utils import PYTORCH_REGRESSION_LOSS_MAP
+from pytorch_lightning import seed_everything
 
 
 class Chomp1d(nn.Module):
@@ -100,9 +101,10 @@ class TemporalConvNet(nn.Module):
                  num_channels,
                  kernel_size=3,
                  dropout=0.1,
-                 repo_initialization=True):
+                 repo_initialization=True,
+                 seed=None):
         super(TemporalConvNet, self).__init__()
-
+        seed_everything(seed, workers=True)
         num_channels.append(output_feature_num)
 
         layers = []
@@ -149,7 +151,8 @@ def model_creator(config):
                            num_channels=num_channels.copy(),
                            kernel_size=config.get("kernel_size", 7),
                            dropout=config.get("dropout", 0.2),
-                           repo_initialization=config.get("repo_initialization", True))
+                           repo_initialization=config.get("repo_initialization", True),
+                           seed=config.get("seed", None))
 
 
 def optimizer_creator(model, config):

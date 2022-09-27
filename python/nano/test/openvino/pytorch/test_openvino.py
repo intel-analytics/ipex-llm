@@ -50,6 +50,10 @@ class TestOpenVINO(TestCase):
         y_hat = openvino_model(x)
         assert y_hat.shape == (10, 10)
 
+        trainer.validate(openvino_model, dataloader)
+        trainer.test(openvino_model, dataloader)
+        trainer.predict(openvino_model, dataloader)
+
     def test_trainer_save_openvino(self):
         trainer = Trainer(max_epochs=1)
         model = mobilenet_v3_small(num_classes=10)
@@ -65,3 +69,25 @@ class TestOpenVINO(TestCase):
             assert y_hat.shape == (3, 10)
             y_hat = loaded_openvino_model(x)
             assert y_hat.shape == (10, 10)
+
+    def test_pytorch_openvino_model_async_predict(self):
+        trainer = Trainer(max_epochs=1)
+        model = mobilenet_v3_small(num_classes=10)
+
+        x = torch.rand((10, 3, 256, 256))
+        y = torch.ones((10, ), dtype=torch.long)
+
+        openvino_model = trainer.trace(model, input_sample=x, accelerator='openvino')
+        ds = TensorDataset(x, y)
+        dataloader = DataLoader(ds, batch_size=2)
+
+        # do async_predict use dataloader as input
+        result = openvino_model.async_predict(dataloader, num_requests=3)
+        for res in result:
+            assert res.shape == (2, 10)
+
+        # do async_predict use List of Tensor as input
+        x = [torch.rand((10, 3, 256, 256)) for i in range(3)]
+        result = openvino_model.async_predict(x, num_requests=3)
+        for res in result:
+            assert res.shape == (10, 10)

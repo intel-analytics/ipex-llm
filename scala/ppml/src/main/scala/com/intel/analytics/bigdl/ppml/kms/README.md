@@ -143,7 +143,7 @@ ls ehsm-kms_enroll_app
 
 Then, you will find a new target file `ehsm-kms_enroll_app` generated.
 
-Now, you can enroll your app through command below, and you will receive a appid-appkey pair from the server:
+Now, you can enroll your app through command below, and you will receive a appid-apikey pair from the server:
 
 ```bash
 ./ehsm-kms_enroll_app http://<your_kms_external_ipaddr>:9000/ehsm/
@@ -175,6 +175,6 @@ java -cp target/spark-encrypt-io-0.2-SNAPSHOT-jar-with-dependencies.jar \
   --kmsServerIP /the/kms/external/ip/prementioned \
   --kmsServerPort 9000 \
   --ehsmAPPID /the/appid/obtained/through/enroll \
-  --ehsmAPPKEY /the/appkey/obtained/through/enroll \
+  --ehsmAPIKEY /the/apikey/obtained/through/enroll \
   --kmsType EHSMKeyManagementService
 ```

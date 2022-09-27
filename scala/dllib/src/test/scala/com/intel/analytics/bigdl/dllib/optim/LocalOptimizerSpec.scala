@@ -81,7 +81,7 @@ object DummyDataSet extends LocalDataSet[MiniBatch[Float]] {
     size = Array(4)
   )
 
-  override def size(): Long = totalSize
+  override def size(): Long = totalSize * 4
 
   override def shuffle(): Unit = {}
 
@@ -267,7 +267,7 @@ class LocalOptimizerSpec extends FlatSpec with Matchers with BeforeAndAfter{
     val modelRef = optimizerRef.optimize()
     val weightRef = modelRef.getParameters()._1
 
-    weight should be(weightRef)
+    weight should be (weightRef)
 
   }
 
@@ -407,7 +407,10 @@ class LocalOptimizerSpec extends FlatSpec with Matchers with BeforeAndAfter{
     ).setOptimMethod(new LBFGS[Float]())
     val modelRef = optimizerRef.optimize()
     val weightRef = modelRef.getParameters()._1
-    weight should be(weightRef)
+    // weight should be(weightRef)
+    weight.storage().array().zip(weightRef.storage().array()).foreach{ v =>
+      v._1 should be (v._2 +- 1e-2f)
+    }
   }
 
   "Train model with CrossEntropy and SGD" should "be good with constant clipping" in {

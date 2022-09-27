@@ -17,11 +17,11 @@ import os
 import pandas as pd
 import pytest
 
-from bigdl.orca.test_zoo_utils import ZooTestCase
+from unittest import TestCase
 from bigdl.chronos.data.utils.public_dataset import PublicDataset
 
 
-class TestPublicDataset(ZooTestCase):
+class TestPublicDataset(TestCase):
     def setup_method(self, method):
         pass
 

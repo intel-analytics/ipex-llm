@@ -21,15 +21,17 @@ import numpy as np
 from bigdl.dllib.nncontext import init_nncontext
 from bigdl.orca.tfpark import KerasModel, TFDataset
 from bigdl.dllib.utils.common import *
+from bigdl.dllib.utils.log4Error import invalidInputError
 
 parser = argparse.ArgumentParser(description="Run the tfpark keras "
                                              "dataset example.")
 parser.add_argument('--data_path', type=str, default='/tmp/mnist',
-                    help='training data path.')                                             
+                    help='training data path.')
 parser.add_argument('--max_epoch', type=int, default=5,
                     help='Set max_epoch for training, it should be integer.')
 parser.add_argument('--cluster_mode', type=str, default="local",
                     help='The mode for the Spark cluster. local, yarn or spark-submit.')
+
 
 def get_data_rdd(dataset, sc):
     data_path = args.data_path
@@ -42,13 +44,16 @@ def get_data_rdd(dataset, sc):
                                 np.array(rec_tuple[1])))
     return rdd
 
+
 def main(max_epoch):
     args = parser.parse_args()
     cluster_mode = args.cluster_mode
     if cluster_mode.startswith("yarn"):
         hadoop_conf = os.environ.get("HADOOP_CONF_DIR")
-        assert hadoop_conf, "Directory path to hadoop conf not found for yarn-client mode. Please " \
-                "set the environment variable HADOOP_CONF_DIR"
+        invalidInputError(
+            hadoop_conf is not None,
+            "Directory path to hadoop conf not found for yarn-client mode. Please "
+            "set the environment variable HADOOP_CONF_DIR")
         spark_conf = create_spark_conf().set("spark.executor.memory", "5g") \
             .set("spark.executor.cores", 2) \
             .set("spark.executor.instances", 2) \
@@ -98,8 +103,8 @@ def main(max_epoch):
     print(result)
     # >> [0.08865142822265625, 0.9722]
 
-    # the following assert is used for internal testing
-    assert result['acc Top1Accuracy'] > 0.95
+    # the following is used for internal testing
+    invalidInputError(result['acc Top1Accuracy'] > 0.95, "accuracy not reached 0.95")
 
     model.save_weights("/tmp/mnist_keras.h5")
 

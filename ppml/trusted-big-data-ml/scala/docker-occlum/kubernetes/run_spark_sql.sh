@@ -14,6 +14,10 @@ ${SPARK_HOME}/bin/spark-submit \
     --conf spark.kubernetes.driver.podTemplateFile=./driver.yaml \
     --conf spark.kubernetes.executor.podTemplateFile=./executor.yaml \
     --conf spark.kubernetes.sgx.log.level=off \
+    --executor-memory 1024m \
+    --executor-cores 6 \
+    --conf spark.kubernetes.driverEnv.SGX_DRIVER_JVM_MEM_SIZE="2G" \
+    --conf spark.executorEnv.SGX_EXECUTOR_JVM_MEM_SIZE="1G" \
     --jars local:/opt/spark/examples/jars/scopt_2.12-3.7.1.jar \
     local:/opt/spark/examples/jars/spark-examples_2.12-3.1.2.jar
 

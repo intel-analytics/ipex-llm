@@ -2,7 +2,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: bigdl-notebook
-  namespace: default
+  namespace: bigdl
 spec:
   replicas: 1
   selector:
@@ -16,7 +16,7 @@ spec:
         appType: bigdl
     spec:
       containers:
-        - image: intelanalytics/bigdl:default
+        - image: intelanalytics/bigdl-spark-3.1.2:latest
           ports:
             - name: jupyter-address
               containerPort: 8888
@@ -25,7 +25,7 @@ spec:
             - name: CONTAINER_NAME
               value: bigdl-notebook
             - name: NOTEBOOK_TOKEN
-              value: "1234qwer"
+              value: ""  # To specific the token value
           volumeMounts:
             - name: bigdl-notebook-volume
               mountPath: /data/jupyter
@@ -47,7 +47,7 @@ apiVersion: v1
 kind: Service
 metadata:
   name: bigdl-notebook
-  namespace: default
+  namespace: bigdl
   labels:
     app: bigdl-notebook
 spec:

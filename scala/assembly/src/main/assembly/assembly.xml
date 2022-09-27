@@ -113,6 +113,28 @@
           <include>/**</include>
       </includes>
     </fileSet>
+    <fileSet>
+      <outputDirectory>/</outputDirectory>
+      <directory>${project.parent.basedir}/tpp</directory>
+      <includes>
+          <include>/**</include>
+      </includes>
+    </fileSet>
+    <fileSet>
+      <outputDirectory>/python</outputDirectory>
+      <directory>${project.parent.basedir}/../python/ppml/scripts</directory>
+      <includes>
+          <include>start-fl-server.py</include>
+      </includes>
+    </fileSet>
+    <fileSet>
+      <outputDirectory>/python</outputDirectory>
+      <directory>${project.parent.basedir}/../python/ppml/scripts</directory>
+      <includes>
+          <include>start-fgboost-server.py</include>
+      </includes>
+    </fileSet>
+
   </fileSets>
   <dependencySets>
     <dependencySet>
@@ -141,3 +163,4 @@
     </dependencySet>
   </dependencySets>
 </assembly>
+

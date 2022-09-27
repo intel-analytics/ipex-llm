@@ -20,7 +20,7 @@
 SCRIPT_DIR="$( cd "$( dirname "$0" )" && pwd )"
 PYTHON_ROOT_DIR="$SCRIPT_DIR/.."
 echo $PYTHON_ROOT_DIR
-PATHS_TO_CHECK="$SCRIPT_DIR/../../src"
+PATHS_TO_CHECK="$SCRIPT_DIR/../.."
 PEP8_REPORT_PATH="$PYTHON_ROOT_DIR/test/pep8-report.txt"
 PYLINT_REPORT_PATH="$PYTHON_ROOT_DIR/test/pylint-report.txt"
 PYLINT_INSTALL_INFO="$PYTHON_ROOT_DIR/test/pylint-info.txt"
@@ -36,6 +36,7 @@ compile_status="${PIPESTATUS[0]}"
 PEP8_VERSION="1.7.0"
 PEP8_SCRIPT_PATH="$PYTHON_ROOT_DIR/test/pep8-$PEP8_VERSION.py"
 PEP8_SCRIPT_REMOTE_PATH="https://raw.githubusercontent.com/jcrocholl/pep8/$PEP8_VERSION/pep8.py"
+PATHS_TO_EXCLUDE="$PATHS_TO_CHECK/example/learn/tf/bert,$PATHS_TO_CHECK/test"
 
 echo "PEP8_SCRIPT_PATH" "$PEP8_SCRIPT_PATH"
 
@@ -52,7 +53,7 @@ export "PATH=$PYTHONPATH:$PATH"
 #+ first, but we do so so that the check status can
 #+ be output before the report, like with the
 #+ scalastyle and RAT checks.
-python "$PEP8_SCRIPT_PATH" --ignore=E402,E731,E241,W503,E226 --exclude=__init__.py,setup.py --config=dev/tox.ini $PATHS_TO_CHECK >> "$PEP8_REPORT_PATH"
+python "$PEP8_SCRIPT_PATH" --ignore=E402,E731,E241,W503,E226 --exclude=$PEP8_SCRIPT_PATH,$PATHS_TO_EXCLUDE,__init__.py,setup.py --config=dev/tox.ini $PATHS_TO_CHECK >> "$PEP8_REPORT_PATH"
 pep8_status="${PIPESTATUS[0]}"
 
 if [ "$compile_status" -eq 0 -a "$pep8_status" -eq 0 ]; then

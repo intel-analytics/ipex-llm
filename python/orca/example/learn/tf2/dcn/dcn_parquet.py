@@ -18,11 +18,13 @@ import sys
 from optparse import OptionParser
 import math
 import tensorflow as tf
-from bigdl.friesian.feature import FeatureTable
-from bigdl.orca import init_orca_context
 import tensorflow_recommenders as tfrs
+
+from bigdl.dllib.utils.log4Error import invalidInputError
+from bigdl.orca import init_orca_context
 from bigdl.orca.learn.tf2.estimator import Estimator
 from bigdl.orca.data.tf.data import Dataset
+from bigdl.friesian.feature import FeatureTable
 
 
 class DCN(tfrs.Model):
@@ -46,8 +48,7 @@ class DCN(tfrs.Model):
                 [tf.keras.layers.StringLookup(
                     vocabulary=vocabulary, mask_token=None),
                     tf.keras.layers.Embedding(len(vocabulary) + 1,
-                                              self.embedding_dimension)
-                ])
+                                              self.embedding_dimension)])
 
         # Compute embeddings for int features.
         for feature_name in int_features:
@@ -56,8 +57,7 @@ class DCN(tfrs.Model):
                 [tf.keras.layers.IntegerLookup(
                     vocabulary=vocabulary, mask_value=None),
                     tf.keras.layers.Embedding(len(vocabulary) + 1,
-                                              self.embedding_dimension)
-                ])
+                                              self.embedding_dimension)])
 
         if use_cross_layer:
             self._cross_layer = tfrs.layers.dcn.Cross(
@@ -135,7 +135,8 @@ if __name__ == "__main__":
                           driver_cores=options.driver_cores, driver_memory=options.driver_memory,
                           init_ray_on_spark=True)
     else:
-        raise ValueError("cluster_mode should be 'local' or 'yarn', but got " + args.cluster_mode)
+        invalidInputError(False,
+                          "cluster_mode should be 'local' or 'yarn', but got " + args.cluster_mode)
 
     cols = ["movie_id", "user_id", "gender", "age", "occupation", "zip_code", "rating"]
     str_features = ["movie_id", "user_id", "zip_code", "occupation"]
@@ -170,7 +171,6 @@ if __name__ == "__main__":
     config = {
         "lr": 0.01
     }
-
 
     def model_creator(config):
         model = DCN(use_cross_layer=True, deep_layer_sizes=[192, 192])

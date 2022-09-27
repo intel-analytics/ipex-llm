@@ -15,8 +15,20 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+#set -x
+port=${port:-12345}
+token=${token:-""}
 
-set -x
+while [ $# -gt 0 ]; do
+
+   if [[ $1 == *"--"* ]]; then
+        param="${1/--/}"
+        declare $param="$2"
+   fi
+
+  shift
+done
 
 echo $BIGDL_HOME
-jupyter-lab --notebook-dir=$BIGDL_HOME/apps --ip=0.0.0.0 --port=$NOTEBOOK_PORT --no-browser --NotebookApp.token=$NOTEBOOK_TOKEN --allow-root
+jupyter-lab --notebook-dir=$BIGDL_HOME/apps --ip=0.0.0.0 --port=$port --no-browser --NotebookApp.token=$token --allow-root
+

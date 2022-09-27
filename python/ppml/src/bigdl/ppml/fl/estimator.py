@@ -30,34 +30,30 @@ from tensorflow.keras.models import Model
 class Estimator:
     @staticmethod
     def from_torch(client_model: nn.Module,
-                   client_id,
                    loss_fn,
                    optimizer_cls,
-                   optimizer_args={},                   
-                   target="localhost:8980",
-                   server_model=None):
+                   optimizer_args={},
+                   server_model=None,
+                   client_model_path=None,
+                   server_model_path=None):
         estimator = PytorchEstimator(model=client_model, 
-                                     loss_fn=loss_fn, 
+                                     loss_fn=loss_fn,
                                      optimizer_cls=optimizer_cls,
                                      optimizer_args=optimizer_args,
-                                     client_id=client_id,
-                                     target=target,
-                                     server_model=server_model)
+                                     server_model=server_model,
+                                     client_model_path=client_model_path,
+                                     server_model_path=server_model_path)
         return estimator
 
     @staticmethod
     def from_keras(client_model: Model,
-                   client_id,
                    loss_fn,
                    optimizer_cls,
                    optimizer_args={},
-                   target="localhost:8980",
                    server_model=None):
         estimator = TensorflowEstimator(model=client_model, 
                                         loss_fn=loss_fn, 
                                         optimizer_cls=optimizer_cls,
                                         optimizer_args=optimizer_args,
-                                        client_id=client_id,
-                                        target=target,
                                         server_model=server_model)        
         return estimator

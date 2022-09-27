@@ -16,13 +16,13 @@
 
 package com.intel.analytics.bigdl.friesian.nearline.recall
 
+import com.intel.analytics.bigdl.dllib.utils.Log4Error
 import com.intel.analytics.bigdl.friesian.nearline.utils.NearlineUtils
 import com.intel.analytics.bigdl.friesian.serving.recall.IndexService
 import org.apache.logging.log4j.{LogManager, Logger}
 import org.apache.spark.ml.linalg.DenseVector
 import org.apache.spark.sql.SparkSession
 import org.apache.spark.sql.functions.col
-import com.intel.analytics.bigdl.dllib.utils.Log4Error
 
 object RecallNearlineUtils {
   private val logger: Logger = LogManager.getLogger(classOf[RecallInitializer].getName)
@@ -31,7 +31,7 @@ object RecallNearlineUtils {
     val spark = SparkSession.builder.getOrCreate
     Log4Error.invalidOperationError(NearlineUtils.helper.itemIDColumn != null,
       "itemIdColumn should be provided if " +
-      "loadSavedIndex=false")
+        "loadSavedIndex=false")
     Log4Error.invalidOperationError(NearlineUtils.helper.indexPath != null,
       "indexPath should be provided.")
 

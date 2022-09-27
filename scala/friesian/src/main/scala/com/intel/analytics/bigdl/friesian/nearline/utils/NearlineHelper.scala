@@ -16,6 +16,9 @@
 
 package com.intel.analytics.bigdl.friesian.nearline.utils
 
+import com.intel.analytics.bigdl.dllib.utils.Log4Error
+import com.intel.analytics.bigdl.friesian.serving.feature.utils.RedisType
+
 import scala.beans.BeanProperty
 
 class NearlineHelper extends Serializable {
@@ -28,6 +31,9 @@ class NearlineHelper extends Serializable {
   @BeanProperty var redisKeyPrefix: String = _
   @BeanProperty var redisClusterItemSlotType = 0
   @BeanProperty var redisUrl = "localhost:6379"
+  @BeanProperty var redisType = "standalone"
+  @BeanProperty var redisSentinelMasterName: String = _
+  @BeanProperty var redisSentinelMasterURL = "localhost:26379"
 
   // recall service attributes
   @BeanProperty var indexPath: String = _
@@ -46,6 +52,7 @@ class NearlineHelper extends Serializable {
   var itemSlotType: Int = 0
   var userFeatureColArr: Array[String] = _
   var itemFeatureColArr: Array[String] = _
+  var redisTypeEnum: RedisType = RedisType.STANDALONE
 
   def parseConfigStrings(): Unit = {
     redisUrl.split("\\s*,\\s*").foreach(url => {
@@ -69,6 +76,16 @@ class NearlineHelper extends Serializable {
       0
     } else {
       redisClusterItemSlotType
+    }
+
+    Log4Error.unKnowExceptionError(redisType != null, "redisType should not be null")
+    redisType = redisType.toLowerCase.trim
+    if (redisType == "sentinel") {
+      Log4Error.unKnowExceptionError(redisSentinelMasterName != null,
+        "redisSentinelMasterName should not be null when redisType=sentinel")
+      redisTypeEnum = RedisType.SENTINEL
+    } else if (redisType == "cluster") {
+      redisTypeEnum = RedisType.CLUSTER
     }
   }
 }

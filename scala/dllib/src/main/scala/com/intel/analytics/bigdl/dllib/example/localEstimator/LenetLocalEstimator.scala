@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.intel.analytics.bigdl.dllib.examples.localEstimator
+package com.intel.analytics.bigdl.dllib.example.localEstimator
 
 import com.intel.analytics.bigdl.Module
 import com.intel.analytics.bigdl.dllib.models.lenet.LeNet5

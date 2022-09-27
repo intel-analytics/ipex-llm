@@ -14,17 +14,15 @@
 # limitations under the License.
 #
 
-from typing import Any, Dict, Optional, Union
+from typing import Any
 import pytorch_lightning as pl
 import copy
 import math
 from pytorch_lightning.trainer.states import TrainerFn, TrainerStatus
-from pytorch_lightning.loops.epoch import TrainingEpochLoop
-from pytorch_lightning.loops.fit_loop import FitLoop
 from bigdl.nano.utils.log4Error import invalidInputError
-from bigdl.nano.pytorch.utils import LIGHTNING_VERSION_LESS_1_6
-from bigdl.nano.automl.hpo.backend import create_hpo_backend
+from bigdl.nano.automl.hpo.backend import create_hpo_backend, SamplerType
 from .objective import Objective
+from ._helper import ResetCallback, CustomEvaluationLoop
 from bigdl.nano.automl.utils.parallel import run_parallel
 from bigdl.nano.automl.hpo.search import (
     _search_summary,
@@ -47,13 +45,19 @@ class HPOSearcher:
     TUNE_RUN_KEYS = {'n_trials', 'timeout', 'n_jobs', 'catch', 'tune_callbacks',
                      'gc_after_trial', 'show_progress_bar'}
 
-    def __init__(self, trainer: "pl.Trainer") -> None:
+    def __init__(self, trainer: "pl.Trainer", num_processes: int = 1) -> None:
         """
         Init a HPO Searcher.
 
         :param trainer: The pl.Trainer object.
         """
         self.trainer = trainer
+        self.num_process = num_processes
+        if num_processes == 1:
+            callbacks = self.trainer.callbacks or []
+            callbacks.append(ResetCallback())
+            self.trainer.callbacks = callbacks
+
         self.model_class = pl.LightningModule
         self.study = None
         self.objective = None
@@ -64,7 +68,8 @@ class HPOSearcher:
         self.run_kwargs = None
         self.fit_kwargs = None
 
-    def _create_objective(self, model, target_metric, create_kwargs, fit_kwargs):
+    def _create_objective(self, model, target_metric, create_kwargs, acceleration,
+                          input_sample, fit_kwargs):
         # target_metric = self._fix_target_metric(target_metric, search_kwargs)
         isprune = True if create_kwargs.get('pruner', None) else False
         self.objective = Objective(
@@ -72,6 +77,8 @@ class HPOSearcher:
             model=model._model_build,
             target_metric=target_metric,
             pruning=isprune,
+            acceleration=acceleration,
+            input_sample=input_sample,
             **fit_kwargs,
         )
 
@@ -108,6 +115,8 @@ class HPOSearcher:
                resume=False,
                target_metric=None,
                n_parallels=1,
+               acceleration=False,
+               input_sample=None,
                **kwargs):
         """
         Run HPO Searcher. It will be called in Trainer.search().
@@ -117,6 +126,11 @@ class HPOSearcher:
             defaults to False.
         :param target_metric: the object metric to optimize,
             defaults to None.
+        :param acceleration: Whether to automatically consider the model after
+            inference acceleration in the search process. It will only take
+            effect if target_metric contains "latency". Default value is False.
+        :param input_sample: A set of inputs for trace, defaults to None if you have
+            trace before or model is a LightningModule with any dataloader attached.
         :param return: the model with study meta info attached.
         """
         search_kwargs = kwargs or {}
@@ -128,6 +142,12 @@ class HPOSearcher:
                                    HPOSearcher.EXTRA_FIT_KEYS,
                                    HPOSearcher.TUNE_CREATE_KEYS,
                                    HPOSearcher.TUNE_RUN_KEYS])
+
+        _sampler_kwargs = model._lazyobj.sampler_kwargs
+        user_sampler_kwargs = kwargs.get("sampler_kwargs", {})
+        _sampler_kwargs.update(user_sampler_kwargs)
+        if "sampler" in kwargs and kwargs["sampler"] in [SamplerType.Grid]:
+            search_kwargs["sampler_kwargs"] = _sampler_kwargs
 
         (self.create_kwargs, self.run_kwargs, self.fit_kwargs) \
             = _prepare_args(search_kwargs,
@@ -141,7 +161,8 @@ class HPOSearcher:
             self.study = _create_study(resume, self.create_kwargs, self.backend)
 
         if self.objective is None:
-            self._create_objective(model, self.target_metric, self.create_kwargs, self.fit_kwargs)
+            self._create_objective(model, self.target_metric, self.create_kwargs, acceleration,
+                                   input_sample, self.fit_kwargs)
 
         if n_parallels and n_parallels > 1:
             invalidInputError(self.create_kwargs.get('storage', "").strip() != "",
@@ -153,11 +174,15 @@ class HPOSearcher:
             self._run_search()
 
         # it is not possible to know the best trial before runing search,
-        # so just apply the best trial at end of each search
-        self._lazymodel = _end_search(study=self.study,
-                                      model_builder=model._model_build,
-                                      use_trial_id=-1)
-        return self._lazymodel
+        # so just apply the best trial at end of each search.
+        # a single best trial cannot be retrieved from a multi-objective study.
+        if not self.objective.mo_hpo:
+            self._lazymodel = _end_search(study=self.study,
+                                          model_builder=model._model_build,
+                                          use_trial_id=-1)
+            return self._lazymodel
+        else:
+            return self.study.best_trials
 
     def search_summary(self):
         """
@@ -191,11 +216,17 @@ class HPOSearcher:
         # last `_run` call might have set it to `FINISHED`
         self.trainer.state.status = TrainerStatus.RUNNING
         self.trainer.training = True
-        self.trainer._run(*args, **kwargs)
-        if not LIGHTNING_VERSION_LESS_1_6:
-            training_epoch_loop = TrainingEpochLoop(self.trainer.min_steps,  # type: ignore
-                                                    self.trainer.max_steps)  # type: ignore
-            fit_loop = FitLoop(self.trainer.min_epochs, self.trainer.max_epochs)
-            fit_loop.connect(training_epoch_loop)
-            self.trainer.fit_loop = fit_loop
+        if self.num_process > 1:
+            self.trainer.state.fn = TrainerFn.FITTING  # add in lightning 1.6
+            self.trainer.fit(*args, **kwargs)
+        else:
+            self.trainer._run(*args, **kwargs)
         self.trainer.tuning = True
+
+    def _validate(self, *args: Any, **kwargs: Any) -> None:
+        """A wrapper to test optimization latency multiple times after training."""
+        self.trainer.validate_loop = CustomEvaluationLoop()
+        self.trainer.state.fn = TrainerFn.VALIDATING
+        self.trainer.training = False
+        self.trainer.testing = False
+        self.trainer.validate(*args, **kwargs)

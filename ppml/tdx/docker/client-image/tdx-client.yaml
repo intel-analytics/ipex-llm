@@ -1,0 +1,69 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: bigdl-tdx-client
+spec:
+  runtimeClassName: kata-cc
+  containers:
+  - name: spark-local-k8s-client-kata-cc
+    image: intelanalytics/bigdl-tdx-client-spark-3.1.2:2.1.0-SNAPSHOT
+    imagePullPolicy: Always
+    securityContext:
+       privileged: true
+    resources:
+      limits:
+        cpu: "2"
+        memory: "2G"
+      requests:
+        cpu: "2"
+        memory: "2G"
+    command:
+    - sh
+    - "-c"
+    - |
+        sleep 10000
+    volumeMounts:
+    - name: kubeconfig
+      mountPath: /root/.kube/config
+    - name: nfs-pvc
+      mountPath: "/ppml/trusted-big-data-ml/work"
+    env:
+    - name: RUNTIME_SPARK_MASTER
+      value: "k8s://https://x.x.x.x:6443"
+    - name: RUNTIME_K8S_SERVICE_ACCOUNT
+      value: "spark"
+    - name: RUNTIME_K8S_SPARK_IMAGE
+      value: "intelanalytics/bigdl-tdx-client-spark-3.1.2:2.1.0-SNAPSHOT"
+    - name: RUNTIME_DRIVER_HOST
+      value: "x.x.x.x"
+    - name: RUNTIME_DRIVER_PORT
+      value: "54321"
+    - name: RUNTIME_EXECUTOR_INSTANCES
+      value: "1"
+    - name: RUNTIME_EXECUTOR_CORES
+      value: "16"
+    - name: RUNTIME_EXECUTOR_MEMORY
+      value: "32g"
+    - name: RUNTIME_TOTAL_EXECUTOR_CORES
+      value: "16"
+    - name: RUNTIME_DRIVER_CORES
+      value: "16"
+    - name: RUNTIME_DRIVER_MEMORY
+      value: "32g"
+    - name: LOCAL_IP
+      value: "x.x.x.x"
+    - name: http_proxy
+      value: http://..
+    - name: https_proxy
+      value: http://..
+    - name: JAVA_HOME
+      value: /opt/jdk
+    - name: SPARK_HOME
+      value: /opt/spark
+  volumes:
+  - name: kubeconfig
+    hostPath:
+      path: /root/.kube/config
+  - name: nfs-pvc
+    persistentVolumeClaim:
+        claimName: nfsvolumeclaim

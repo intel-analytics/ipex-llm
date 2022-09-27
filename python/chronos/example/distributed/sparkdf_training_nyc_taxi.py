@@ -21,7 +21,10 @@ from pyspark.sql.types import StructType, StructField, FloatType, TimestampType
 from bigdl.orca.common import init_orca_context, stop_orca_context, OrcaContext
 from bigdl.chronos.data.experimental import XShardsTSDataset
 from bigdl.chronos.forecaster import TCNForecaster
+from bigdl.chronos.metric.forecast_metrics import Evaluator
 import numpy as np
+from sklearn.preprocessing import StandardScaler
+
 
 def generate_spark_df(dataset_path):
     spark = OrcaContext.get_spark_session()
@@ -38,8 +41,10 @@ def generate_spark_df(dataset_path):
                                                with_split=True,
                                                val_ratio=0,
                                                test_ratio=0.1)
+    scaler = {"0": StandardScaler()}  # "0" is default id
     for tsdata in [tsdata_train, tsdata_test]:
-        tsdata.roll(lookback=100, horizon=10)
+        tsdata.scale(scaler, fit=tsdata is tsdata_train)\
+              .roll(lookback=100, horizon=1)
     return tsdata_train, tsdata_test
 
 
@@ -68,7 +73,7 @@ if __name__ == '__main__':
                         "You can change it depending on your own cluster setting.")
     parser.add_argument('--cluster_mode', type=str, default='local',
                         help="The mode for the Spark cluster.")
-    parser.add_argument('--num_workers', type=int, default=1,
+    parser.add_argument('--num_nodes', type=int, default=1,
                         help="The number of nodes to be used in the cluster"
                         "You can change it depending on your own cluster setting.")
 
@@ -85,7 +90,7 @@ if __name__ == '__main__':
                         help="Download link of dataset.")
 
     args = parser.parse_args()
-    num_nodes = 1 if args.cluster_mode == 'local' else args.num_workers
+    num_nodes = 1 if args.cluster_mode == 'local' else args.num_nodes
     init_orca_context(cluster_mode=args.cluster_mode, cores=args.cores,
                       memory=args.memory, num_nodes=num_nodes)
     dataset_path = get_csv(args)
@@ -95,7 +100,7 @@ if __name__ == '__main__':
     data_test = tsdata_test.to_xshards()
 
     forecaster = TCNForecaster(past_seq_len=100,
-                               future_seq_len=10,
+                               future_seq_len=1,
                                input_feature_num=1,
                                output_feature_num=1,
                                metrics=['mse', 'mae'],
@@ -105,7 +110,12 @@ if __name__ == '__main__':
 
     forecaster.fit(data_train, epochs=args.epochs)
 
-    evaluate_result = forecaster.evaluate(data_test, multioutput="uniform_average")
-    print(evaluate_result)
+    yhat = forecaster.predict(data_test)
+    yhat_unscaled = tsdata_test.unscale_xshards(yhat, key="prediction").collect()
+    y_unscaled = tsdata_test.unscale_xshards(data_test, key="y").collect()
+
+    print("mae for test dataset:", Evaluator.evaluate(["mae"],
+                                   np.concatenate([y_unscaled[i] for i in range(len(y_unscaled))], axis=0),
+                                   np.concatenate([yhat_unscaled[i] for i in range(len(yhat_unscaled))], axis=0)))
 
     stop_orca_context()

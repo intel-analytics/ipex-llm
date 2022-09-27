@@ -24,3 +24,12 @@ itemFeatureColumns: present_media, language, tweet_type, engaged_with_user_follo
 ### Redis Configuration
 # default: localhost:6379
 # redisUrl: 10.239.158.177:12000,10.239.158.177:12001,10.239.158.177:12002
+
+# default: standalone, redis server type, can be "standalone", "sentinel", or "cluster"
+# redisType:
+
+# default: null, must be provided if redisType=sentinel
+# redisSentinelMasterName:
+
+# default: localhost:26379
+# redisSentinelMasterURL:

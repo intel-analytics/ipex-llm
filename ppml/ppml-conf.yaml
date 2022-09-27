@@ -5,6 +5,7 @@ certChainFilePath:  /ppml/trusted-big-data-ml/work/keys/server.crt
 # serverPort:
 
 ##### Client property
+# psiSalt:
 # clientTarget:
 # taskID:
 

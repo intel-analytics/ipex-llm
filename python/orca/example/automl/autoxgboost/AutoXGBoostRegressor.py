@@ -17,6 +17,7 @@
 import argparse
 import os
 from sklearn.model_selection import train_test_split
+from bigdl.dllib.utils.log4Error import invalidInputError
 from bigdl.orca import init_orca_context, stop_orca_context
 from bigdl.orca.automl.xgboost import AutoXGBRegressor
 from bigdl.orca.automl import hp
@@ -49,7 +50,7 @@ if __name__ == '__main__':
                           cores=opt.cores,
                           init_ray_on_spark=True)
     else:
-        init_orca_context(cluster_mode=opt.cluster_mode,cores=opt.cores, init_ray_on_spark=True)
+        init_orca_context(cluster_mode=opt.cluster_mode, cores=opt.cores, init_ray_on_spark=True)
 
     import pandas as pd
     df = pd.read_csv(opt.path, encoding='latin-1')
@@ -117,7 +118,7 @@ if __name__ == '__main__':
         )
     elif opt.mode == 'sigopt':
         if "SIGOPT_KEY" not in os.environ:
-            raise RuntimeError("Environment Variable 'SIGOPT_KEY' is not set")
+            invalidInputError(False, "Environment Variable 'SIGOPT_KEY' is not set")
         space = [
             {
                 "name": "n_estimators",

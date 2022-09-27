@@ -38,6 +38,7 @@ import torch.nn.init as init
 from torch.utils.data import DataLoader
 from torchvision.transforms import Compose, CenterCrop, ToTensor, Resize
 
+from bigdl.dllib.utils.log4Error import invalidInputError
 from bigdl.orca import init_orca_context, stop_orca_context
 from bigdl.orca.learn.pytorch import Estimator
 from bigdl.orca.learn.metrics import MSE
@@ -75,17 +76,19 @@ else:
         init_orca_context()
     elif opt.cluster_mode.startswith("yarn"):
         hadoop_conf = os.environ.get("HADOOP_CONF_DIR")
-        assert hadoop_conf, "Directory path to hadoop conf not found for yarn-client mode. Please " \
-                "set the environment variable HADOOP_CONF_DIR"
+        invalidInputError(
+            hadoop_conf is not None,
+            "Directory path to hadoop conf not found for yarn-client mode. Please "
+            "set the environment variable HADOOP_CONF_DIR")
         additional = None if not exists("dataset/BSDS300.zip") else "dataset/BSDS300.zip#dataset"
-        init_orca_context(cluster_mode=opt.cluster_mode, cores=4, num_nodes=2, hadoop_conf=hadoop_conf,
-                        additional_archive=additional)
+        init_orca_context(cluster_mode=opt.cluster_mode, cores=4,
+                          num_nodes=2, hadoop_conf=hadoop_conf, additional_archive=additional)
     elif opt.cluster_mode == "spark-submit":
         init_orca_context(cluster_mode="spark-submit")
     else:
-        print("init_orca_context failed. cluster_mode should be one of 'local', 'yarn' and 'spark-submit' but got "
-            + opt.cluster_mode)
-          
+        print("init_orca_context failed. cluster_mode should be one of 'local', "
+              "'yarn' and 'spark-submit' but got " + opt.cluster_mode)
+
 
 def download_report(count, block_size, total_size):
     downloaded = count * block_size
@@ -315,8 +318,7 @@ elif opt.backend in ["ray", "spark"]:
         torch.save(model, model_out_path)
         print("Checkpoint saved to {}".format(model_out_path))
 else:
-    raise NotImplementedError("Only bigdl, ray, and spark are supported as the backend, "
-                              "but got {}".format(opt.backend))
+    invalidInputError(False, "Only bigdl, ray, and spark are supported as the backend, "
+                      "but got {}".format(opt.backend))
 
 stop_orca_context()
-

@@ -1,15 +1,15 @@
 # Orca Ray Pong example
 
 We demonstrate how to easily run [pong](https://gist.github.com/karpathy/a4166c7fe253700972fcbc77e4ea32c5) example
-provided by [Ray](https://github.com/ray-project/ray) using Analytics Zoo API. See [here](https://analytics-zoo.github.io/master/#ProgrammingGuide/rayonspark/) for more details for RayOnSpark support in Analytics Zoo.
+provided by [Ray](https://github.com/ray-project/ray) using BigDL API. See [here](https://bigdl.readthedocs.io/en/latest/doc/Ray/Overview/ray.html) for more details for RayOnSpark support in BigDL.
 
 ## Prepare environments
 We recommend you to use [Anaconda](https://www.anaconda.com/distribution/#linux) to prepare the environments, especially if you want to run on a yarn cluster(yarn-client mode only).
 ```
-conda create -n zoo python=3.7 #zoo is conda enviroment name, you can set another name you like.
-conda activate zoo
+conda create -n bigdl python=3.7 #bigdl is conda enviroment name, you can set another name you like.
+conda activate bigdl
 pip install gym gym[atari]
-pip install analytics-zoo[ray]
+pip install bigdl-orca[ray]
 ```
 
 ## Run example

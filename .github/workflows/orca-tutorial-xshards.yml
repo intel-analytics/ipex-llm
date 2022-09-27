@@ -1,0 +1,105 @@
+# This workflow will upload a Python Package using Twine when a release is created
+# For more information see: https://help.github.com/en/actions/language-and-framework-guides/using-python-with-github-actions#publishing-to-package-registries
+
+# This workflow uses actions that are not certified by GitHub.
+# They are provided by a third-party and are governed by
+# separate terms of service, privacy policy, and support
+# documentation.
+
+name: Orca Tutorial Xshards
+
+on:
+  #release:
+   # types: [published]
+  pull_request:
+    branches: [ "main" ]
+    paths:
+      - 'python/orca/src/bigdl/**'
+      - 'python/orca/tutorial/**'
+      - '.github/workflows/orca-tutorial-xshards.yml'
+  schedule:
+    - cron: '0 15 * * *'
+  # Allows you to run this workflow manually from the Actions tab
+  workflow_dispatch:
+
+jobs:
+  build:
+
+    runs-on: [self-hosted, Gondolin, ubuntu-20.04-lts]
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+    - uses: actions/checkout@v3
+    - name: Set up JDK 8
+      uses: actions/setup-java@v3
+      with:
+        java-version: '8'
+        distribution: 'temurin'
+        #server-id: github # Value of the distributionManagement/repository/id field of the pom.xml
+        settings-path: ${{ github.workspace }} # location for the settings.xml file
+
+    - name: Set up Maven
+      uses: stCarolas/setup-maven@v4.4
+      with:
+        maven-version: 3.8.2
+
+    - name: Set up Maven Settings
+      uses: s4u/maven-settings-action@v2.6.0
+      with:
+        sonatypeSnapshots: true
+        apacheSnapshots: true
+        servers: |
+          [{
+            "id": "central",
+            "configuration": {
+              "httpConfiguration": {
+                "all": {
+                  "connectionTimeout": "3600000",
+                  "readTimeout": "3600000"
+                  }
+                }
+              }
+          }]
+        mirrors: '[{"id": "ardaNexus", "name": "ardaNexus", "mirrorOf": "*", "url": "${NEXUS_URL}" }]'
+
+    - name: Setup Env
+      run: |
+        apt-get update
+        apt-get install wget
+    - name: Set up Python
+      uses: actions/setup-python@v2
+      with:
+        python-version: '3.7'
+    - name: Install dependencies
+      shell: bash
+      run: |
+        python -m pip install --upgrade pip
+        python -m pip install --upgrade setuptools==58.0.4
+        
+    - name: Run Test
+      run: |
+        conda remove -n orca-tutorial-xshards-py37 -y --all
+        conda create -n orca-tutorial-xshards-py37 -y python==3.7.10 setuptools==58.0.4
+        conda info -e
+        source activate orca-tutorial-xshards-py37
+        pip uninstall -y bigdl-friesian bigdl-friesian-spark3 bigdl-dllib bigdl-dllib-spark3 bigdl-orca pyspark bigdl-orca-spark3 bigdl-chronos bigdl-chronos-spark3 bigdl-friesian bigdl-friesian-spark3
+        pip uninstall -y intel-tensorflow
+        pip uninstall -y tensorflow
+        pip install -i https://pypi.org/simple --pre --upgrade bigdl-orca-spark3[ray]
+        pip install tensorflow==1.15.0
+        pip install sklearn
+        pip install pandas
+        pip install jep==3.9.0
+        pip install cloudpickle
+        pip install -i https://pypi.tuna.tsinghua.edu.cn/simple -r python/orca/dev/example/requirements-ray.txt 
+        export SPARK_LOCAL_HOSTNAME=localhost
+        export FTP_URI=${FTP_URI}
+        chmod a+x python/orca/dev/test/run-tutorial-xshards.sh
+        python/orca/dev/test/run-tutorial-xshards.sh
+
+        source deactivate
+        conda remove -n orca-tutorial-xshards-py37 -y --all
+      env:
+        BIGDL_ROOT: ${{ github.workspace }}

@@ -39,11 +39,12 @@ import errno
 
 def Processdata(filepath, demo):
     '''
-         preProcess the data read from filepath
+    preProcess the data read from filepath
     :param filepath:
     :return: assembledf:
     '''
-    sparkConf = init_spark_conf().setMaster("local[1]").setAppName("testNNClassifer")
+    sparkConf = init_spark_conf().setAppName("testNNClassifer")
+    sparkConf = sparkConf.set("xgboost.spark.ignoreSsl", True)
     sc = init_nncontext(sparkConf)
     sqlContext = SQLContext(sc)
     if demo:

@@ -123,6 +123,145 @@ The result should be similar to
 
 > numpy.dot: 0.034211914986371994 sec
 
+## Run Python code with dependencies
+
+It usually happens that your code needs to depend on some other packages. In this section, we will show how to install python dependencies within the ppml running environment without changing the Dockerfile by using **conda** or python **eggs**.
+
+
+### Install python dependencies using Conda
+
+The code used in this example can be found [here](https://spark.apache.org/docs/latest/api/python/user_guide/python_packaging.html).
+
+#### 1. Prepare conda environment and pacakge
+
+##### Prepare conda environment
+Run the following command in the terminal with **conda installed**.
+
+```bash
+conda create -y -n pyspark_conda_env -c conda-forge pyarrow pandas conda-pack
+```
+
+At this step, please add any dependencies you need when creating the conda environment. We use pyarrow and pandas here because our example code only needs these two packages.
+
+##### Pack the conda environment
+Run the following command in the terminal to pack the environment
+
+```bash
+conda activate pyspark_conda_env # activate the conda environment
+conda pack -f -o pyspark_conda_env.tar.gz
+```
+
+#### 2. Start the client container
+The detailed instructions on how to build/start the client container can be found [here](https://github.com/intel-analytics/BigDL/blob/main/ppml/docs/prepare_environment.md#start-bigdl-ppml-client-container).
+
+After you have booted up the client container, you can load your app.py and pyspark_conda_env.tar.gz into the container by putting them into the **$DATA_PATH**.
+
+Please be noted that we have mapped **$DATA_PATH** to path **/ppml/trusted-big-data-ml/work/data** within the container.
+
+Alternatively, you can use the **docker cp** command if you only want to try this feature.
+
+
+#### 3. Submit the task and watch the result
+##### Get into the client container
+You can get into your container and acquire a terminal by the following command:
+```bash
+docker exec -it bigdl-ppml-client-k8s /bin/bash
+```
+
+
+##### Submit your task
+The following bash command shows an example on how to submit task in cluster mode with sgx enabled. Plsase be noted that this example is only for test purpose, and you should configure the parameters accordingly when using it in your environment.
+
+For detailed explaination of the following command, please check [here](https://github.com/intel-analytics/BigDL/blob/main/ppml/docs/submit_job.md#ppml-cli).
+
+```bash
+#!/bin/bash
+export secure_password=`openssl rsautl -inkey /ppml/trusted-big-data-ml/work/password/key.txt -decrypt </ppml/trusted-big-data-ml/work/password/output.bin`
+bash bigdl-ppml-submit.sh \
+        --master $RUNTIME_SPARK_MASTER \
+        --deploy-mode cluster \
+        --sgx-enabled true \
+        --sgx-log-level error \
+        --sgx-driver-memory 64g \
+        --sgx-driver-jvm-memory 12g \
+        --sgx-executor-memory 64g \
+        --sgx-executor-jvm-memory 12g \
+        --driver-memory 32g \
+        --driver-cores 8 \
+        --executor-memory 32g \
+        --executor-cores 8 \
+        --conf spark.kubernetes.container.image=$RUNTIME_K8S_SPARK_IMAGE \
+        --num-executors 2 \
+        --name spark-test \
+        --verbose \
+        --archives local:///ppml/trusted-big-data-ml/work/pyspark_conda_env.tar.gz#pyspark_conda_env \
+        local:///ppml/trusted-big-data-ml/work/data/app.py
+```
+
+We can get the result of the command by either checking the driver pod's log or using the **tee** command to store the output into a file.
+
+
+```bash
+kubectl logs $(kubectl get pods | grep spark-test | grep driver | awk '{print $1}') | egrep "^\[Row"
+```
+
+The result should be
+
+>[Row(id=1, mean_udf(v)=1.5), Row(id=2, mean_udf(v)=6.0)]
+
+which, indicates that the dependency **pyarrow** and **pandas** has been successfully loaded into the running environment.
+
+
+### Install python dependencies using egg
+
+Although the use of eggs is deprecated, the **spark-submit** command allow users to pass dependencies to the executors through python eggs and the `--py-files` option.
+
+In this section, we will show how to use python eggs to install a `demo` package into spark executors.
+
+#### Prepare your Python eggs
+You can prepare the eggs you need by either searching [PyPI](https://pypi.org/) or packaging the source code with the [Setuptools](https://setuptools.pypa.io/en/latest/setuptools.html#develop-deploy-the-project-source-in-development-mode).
+
+Here, we will use a very simple egg file for demonstration purpose. The egg named `demo` only contains a function `test()` whose function is to print "Hello World" to the terminal.
+
+
+#### Submit the task and watch result
+Please refer to the above subsections for starting the container and transferring the egg file into the container.
+
+The following bash command shows an example on how to install dependencies within the spark executors running in kubernetes clusters.
+
+```bash
+export secure_password=`openssl rsautl -inkey /ppml/trusted-big-data-ml/work/password/key.txt -decrypt </ppml/trusted-big-data-ml/work/password/output.bin`
+bash bigdl-ppml-submit.sh \
+        --master $RUNTIME_SPARK_MASTER \
+        --deploy-mode cluster \
+        --sgx-enabled true \
+        --sgx-log-level error \
+        --sgx-driver-memory 64g \
+        --sgx-driver-jvm-memory 12g \
+        --sgx-executor-memory 64g \
+        --sgx-executor-jvm-memory 12g \
+        --driver-memory 32g \
+        --driver-cores 8 \
+        --executor-memory 32g \
+        --executor-cores 8 \
+        --conf spark.kubernetes.container.image=$RUNTIME_K8S_SPARK_IMAGE \
+        --num-executors 2 \
+        --name spark-test \
+        --verbose \
+        --py-files local:///ppml/trusted-big-data-ml/work/demo-0.1.0-py3.7.egg \
+        local:///ppml/trusted-big-data-ml/work/data/app.py
+```
+
+The result can be obtained by running the following bash command:
+
+```bash
+kubectl logs $(kubectl get pods | grep spark-test | grep driver | awk '{print $1}') | egrep "^Hello"
+```
+
+The result should be
+>Hello World
+
+which, indicates that the dependency `demo` package has been successfully loaded into the running environment.
 ## Run as Spark Local Mode
 
 #### 1. Start the container to run spark applications in spark local mode
@@ -281,12 +420,27 @@ The result should be similar to
 >
 >2021-06-18 01:46:20 INFO DistriOptimizer$:180 - [Epoch 2 60032/60000][Iteration 938][Wall Clock 845.747782s] Top1Accuracy is Accuracy(correct: 9696, count: 10000, accuracy: 0.9696)
 
-##### Example 5: XGBoost Regressor
+##### (Deprecated) Example 5: XGBoost Regressor
 
-Before running the example, make sure that `Boston_Housing.csv` is under `work/data` directory or the same path in the command. Run the example with SGX spark local mode with the following command in the terminal. Replace `your_IP_address` with your IP address and `path_of_boston_housing_csv` with your path of `Boston_Housing.csv`.
+Please be noted that the xgboost example listed here is **deprecated** due to the fact that Rabit's network (contains gradient, split and env) is not protected.
+
+The data source `Boston_Housing.csv` can be found at [here](https://github.com/selva86/datasets/blob/master/BostonHousing.csv).
+
+Before running the example, make sure that `Boston_Housing.csv` is under `work/data` directory or the same path in the command. Run the example with SGX spark local mode with the following command in the terminal. Replace `path_of_boston_housing_csv` with your path of `Boston_Housing.csv`.
+
+
+Note that data in `Boston_Housing.csv` needs to be pre-processed, before training with `xgboost_example.py`.
+
+The data for column "chas" is in type "string" and we need to delete all the **quotation marks(")** so that the `xgboost_example.py` can successfully load the data.
+
+Before changing:
+> 0.00632,18,2.31,**"0"**,0.538,6.575,65.2,4.09,1,296,15.3,396.9,4.98,24
+
+After changing:
+> 0.00632,18,2.31,**0**,0.538,6.575,65.2,4.09,1,296,15.3,396.9,4.98,24
 
 ```bash
-/graphene/Tools/argv_serializer bash -c "export RABIT_TRACKER_IP=your_IP_address && /opt/jdk8/bin/java -cp \
+/graphene/Tools/argv_serializer bash -c "/opt/jdk8/bin/java -cp \
     '/ppml/trusted-big-data-ml/work/bigdl-2.1.0-SNAPSHOT/jars/*:/ppml/trusted-big-data-ml/work/spark-3.1.2/conf/:/ppml/trusted-big-data-ml/work/spark-3.1.2/jars/*' \
   -Xmx2g \
   org.apache.spark.deploy.SparkSubmit \
@@ -295,10 +449,9 @@ Before running the example, make sure that `Boston_Housing.csv` is under `work/d
   --conf spark.executor.extraClassPath=/ppml/trusted-big-data-ml/work/bigdl-2.1.0-SNAPSHOT/jars/* \
   --conf spark.driver.extraClassPath=/ppml/trusted-big-data-ml/work/bigdl-2.1.0-SNAPSHOT/jars/* \
   --properties-file /ppml/trusted-big-data-ml/work/bigdl-2.1.0-SNAPSHOT/conf/spark-bigdl.conf \
-  --jars /ppml/trusted-big-data-ml/work/bigdl-2.1.0-SNAPSHOT/jars/* \
   --py-files /ppml/trusted-big-data-ml/work/bigdl-2.1.0-SNAPSHOT/python/bigdl-orca-spark_3.1.2-2.1.0-SNAPSHOT-python-api.zip \
   --executor-memory 2g \
-  /ppml/trusted-big-data-ml/work/examples/pyzoo/xgboost/xgboost_example.py \
+  /ppml/trusted-big-data-ml/work/bigdl-2.1.0-SNAPSHOT/examples/dllib/nnframes/xgboost/xgboost_example.py \
   --file-path path_of_boston_housing_csv" > /ppml/trusted-big-data-ml/secured-argvs
 ./init.sh
 SGX=1 ./pal_loader bash 2>&1 | tee test-zoo-xgboost-regressor-sgx.log
@@ -352,7 +505,9 @@ The result should be similar to
 >
 >|[7.02259,0.0,18.1...| 14.2| 13.38729190826416|
 
-##### Example 6: XGBoost Classifier
+##### (Deprecated) Example 6: XGBoost Classifier
+
+Please be noted that the xgboost example listed here is **deprecated** due to the fact that Rabit's network (contains gradient, split and env) is not protected.
 
 Before running the example, download the sample dataset from [pima-indians-diabetes](https://raw.githubusercontent.com/jbrownlee/Datasets/master/pima-indians-diabetes.data.csv) dataset manually or with following command.
 
@@ -360,10 +515,10 @@ Before running the example, download the sample dataset from [pima-indians-diabe
 wget https://raw.githubusercontent.com/jbrownlee/Datasets/master/pima-indians-diabetes.data.csv
 ```
 
-After downloading the dataset, make sure that `pima-indians-diabetes.data.csv` is under `work/data` directory or the same path in the command. Run the example with SGX spark local mode with the following command in the terminal. Replace `your_IP_address` with your IP address and `path_of_pima_indians_diabetes_csv` with your path of `pima-indians-diabetes.data.csv`.
+After downloading the dataset, make sure that `pima-indians-diabetes.data.csv` is under `work/data` directory or the same path in the command. Run the example with SGX spark local mode with the following command in the terminal. Replace `path_of_pima_indians_diabetes_csv` with your path of `pima-indians-diabetes.data.csv`.
 
 ```bash
-/graphene/Tools/argv_serializer bash -c "export RABIT_TRACKER_IP=your_IP_address && /opt/jdk8/bin/java -cp \
+/graphene/Tools/argv_serializer bash -c "/opt/jdk8/bin/java -cp \
   '/ppml/trusted-big-data-ml/work/bigdl-2.1.0-SNAPSHOT/jars/*:/ppml/trusted-big-data-ml/work/spark-3.1.2/conf/:/ppml/trusted-big-data-ml/work/spark-3.1.2/jars/*' \
   -Xmx2g \
   org.apache.spark.deploy.SparkSubmit \
@@ -372,10 +527,9 @@ After downloading the dataset, make sure that `pima-indians-diabetes.data.csv` i
   --conf spark.executor.extraClassPath=/ppml/trusted-big-data-ml/work/bigdl-2.1.0-SNAPSHOT/jars/* \
   --conf spark.driver.extraClassPath=/ppml/trusted-big-data-ml/work/bigdl-2.1.0-SNAPSHOT/jars/* \
   --properties-file /ppml/trusted-big-data-ml/work/bigdl-2.1.0-SNAPSHOT/conf/spark-bigdl.conf \
-  --jars /ppml/trusted-big-data-ml/work/bigdl-2.1.0-SNAPSHOT/jars/* \
   --py-files /ppml/trusted-big-data-ml/work/bigdl-2.1.0-SNAPSHOT/python/bigdl-orca-spark_3.1.2-2.1.0-SNAPSHOT-python-api.zip \
   --executor-memory 2g \
-  /ppml/trusted-big-data-ml/work/examples/pyzoo/xgboost/xgboost_classifier.py \
+  /ppml/trusted-big-data-ml/work/bigdl-2.1.0-SNAPSHOT/examples/dllib/nnframes/xgboost/xgboost_classifier.py \
   -f path_of_pima_indians_diabetes_csv" > /ppml/trusted-big-data-ml/secured-argvs
 ./init.sh
 SGX=1 ./pal_loader bash 2>&1 | tee test-xgboost-classifier-sgx.log

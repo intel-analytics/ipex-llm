@@ -1,0 +1,16 @@
+name: 'Run Orca Python ExampleTest Ray'
+description: 'Run Orca Python ExampleTest Ray'
+runs:
+  using: "composite"
+  steps:
+    - name: Run Test
+      shell: bash
+      run: |
+        source activate py37
+        export SPARK_LOCAL_HOSTNAME=localhost
+        chmod a+x python/orca/dev/example/run-example-test-ray.sh
+        python/orca/dev/example/run-example-test-ray.sh
+        source deactivate
+      env:
+        BIGDL_ROOT: ${{ github.workspace }}
+        ANALYTICS_ZOO_ROOT: ${{ github.workspace }}

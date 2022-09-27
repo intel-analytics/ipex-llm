@@ -2,7 +2,7 @@
 
 ---
 
-![](../../../../image/colab_logo_32px.png)[Run in Google Colab](https://colab.research.google.com/github/intel-analytics/BigDL/blob/branch-2.0/python/orca/colab-notebook/quickstart/pytorch_distributed_lenet_mnist.ipynb) &nbsp;![](../../../../image/GitHub-Mark-32px.png)[View source on GitHub](https://github.com/intel-analytics/BigDL/blob/branch-2.0/python/orca/colab-notebook/quickstart/pytorch_distributed_lenet_mnist.ipynb)
+![](../../../../image/colab_logo_32px.png)[Run in Google Colab](https://colab.research.google.com/github/intel-analytics/BigDL/blob/main/python/orca/colab-notebook/quickstart/pytorch_distributed_lenet_mnist.ipynb) &nbsp;![](../../../../image/GitHub-Mark-32px.png)[View source on GitHub](https://github.com/intel-analytics/BigDL/blob/main/python/orca/colab-notebook/quickstart/pytorch_distributed_lenet_mnist.ipynb)
 
 ---
 
@@ -128,6 +128,20 @@ est.fit(data=train_loader_creator, epochs=1, batch_size=batch_size)
 result = est.evaluate(data=test_loader_creator, batch_size=test_batch_size)
 for r in result:
     print(r, ":", result[r])
+```
+
+### **Step 5: Save and Load the Model**
+
+Save the Estimator states (including model and optimizer) to the provided model path.
+
+```python
+est.save("mnist_model")
+```
+
+Load the Estimator states (model and possibly with optimizer) from provided model path. 
+
+```python
+est.load("mnist_model") 
 ```
 
 **Note:** You should call `stop_orca_context()` when your application finishes.
