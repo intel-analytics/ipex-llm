@@ -20,7 +20,7 @@ tensorboard-data-server==0.6.1
 tensorboard-plugin-wit==1.7.0
 tensorboardX==2.1
 tensorflow==2.6.0
-tensorflow-estimator==2.3.0
+tensorflow-estimator==2.6
 xgboost_ray
 argparse
 Pillow
