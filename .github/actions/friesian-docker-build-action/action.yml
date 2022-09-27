@@ -30,9 +30,9 @@ runs:
         --build-arg no_proxy=${NO_PROXY} \
         --rm --no-cache -t $IMAGE:${TAG} .
         docker push $IMAGE:${TAG}
-        docker tag $IMAGE:${TAG} 10.239.45.10/arda/$IMAGE:${TAG}-$TIMESTAMP
-        docker push 10.239.45.10/arda/$IMAGE:${TAG}-$TIMESTAMP
-        docker rmi -f $IMAGE:${TAG} 10.239.45.10/arda/$IMAGE:${TAG}-$TIMESTAMP
+        docker tag $IMAGE:${TAG} 10.239.45.10/arda/$IMAGE:$TIMESTAMP
+        docker push 10.239.45.10/arda/$IMAGE:$TIMESTAMP
+        docker rmi -f $IMAGE:${TAG} 10.239.45.10/arda/$IMAGE:$TIMESTAMP
         rm -rf lib faiss-lib.zip
         rm -rf jersey jersey.tar.gz
 
