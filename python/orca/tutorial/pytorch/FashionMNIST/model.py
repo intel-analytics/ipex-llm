@@ -23,6 +23,7 @@ import torch.nn as nn
 import torch.optim as optim
 import torch.nn.functional as F
 
+
 class Net(nn.Module):
     def __init__(self):
         super(Net, self).__init__()
@@ -42,9 +43,11 @@ class Net(nn.Module):
         x = self.fc3(x)
         return x
 
+
 def model_creator(config):
     model = Net()
     return model
+
 
 def optimizer_creator(model, config):
     optimizer = optim.SGD(model.parameters(), lr=0.001, momentum=0.9)

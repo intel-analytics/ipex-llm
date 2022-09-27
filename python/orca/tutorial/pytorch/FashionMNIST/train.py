@@ -40,6 +40,7 @@ parser.add_argument('--cluster_mode', type=str, default="spark-submit",
 parser.add_argument('--remote_dir', type=str, help='The path to load data from remote resources')
 args = parser.parse_args()
 
+
 def train_data_creator(config, batch_size):
     transform = transforms.Compose([transforms.ToTensor(),
                                     transforms.Normalize((0.5,), (0.5,))])
@@ -53,6 +54,7 @@ def train_data_creator(config, batch_size):
     else:
         print("Please specify the dataset path on a network file system.")
     return trainloader
+
 
 def main():
     if args.cluster_mode.startswith("yarn"):
