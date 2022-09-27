@@ -327,7 +327,7 @@ Run cd /opt/occlum_spark && \
         fi \
     fi && \
     sed -i "s/\"ENABLE_SGX_DEBUG\"/$ENABLE_SGX_DEBUG/g" Occlum.json && \
-    sed -i "s/#USE_SECURE_CERT=FALSE/USE_SECURE_CERT=FALSE/g" /etc/sgx_default_qcnl.confsecrets
+    sed -i "s/#USE_SECURE_CERT=FALSE/USE_SECURE_CERT=FALSE/g" /etc/sgx_default_qcnl.conf
 
 #prepare libs and build occlum runable instance
 # Copy into Occlum instance and build
