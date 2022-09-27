@@ -174,7 +174,7 @@ jobs:
       env:
         DEFAULT_TAG: 'latest'
       run: |
-        echo "TAG=${{ github.event.inputs.bigdlTag || env.DEFAULT_TAG }} " >> $GITHUB_ENV
+        echo "TAG=${{ github.event.inputs.bigdlTag || env.DEFAULT_TAG }}" >> $GITHUB_ENV
     - name: docker login
       run: |
         docker login -u ${DOCKERHUB_USERNAME} -p ${DOCKERHUB_PASSWORD}
