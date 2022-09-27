@@ -71,9 +71,9 @@ Now the init script is in DBFS, right click the init.sh and choose **Copy path**
 
 ### 3. Set Spark configuration
 
-In the left panel, click **Compute > Choose your cluster > edit > Advanced options > Spark > Confirm **. You can provide custom [Spark configuration properties](https://spark.apache.org/docs/latest/configuration.html) in a cluster configuration. Please set it according to your cluster resource and program needs.
+In the left panel, click **Compute > Choose your cluster > edit > Advanced options > Spark > Confirm**. You can provide custom [Spark configuration properties](https://spark.apache.org/docs/latest/configuration.html) in a cluster configuration. Please set it according to your cluster resource and program needs.
 
-![](images/spark-config.PNG)
+![](images/spark-config.png)
 
 See below for an example of Spark config setting **needed** by BigDL. Here it sets 2 core per executor. Note that "spark.cores.max" needs to be properly set below.
 
