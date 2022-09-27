@@ -241,8 +241,8 @@ Please call `init_orca_context` at the very beginning of each Orca program.
 from bigdl.orca import init_orca_context
 
 init_orca_context(cluster_mode="yarn-client", cores=4, memory="10g", num_nodes=2, 
-                    driver_cores=2, driver_memory="4g",
-                    extra_python_lib="model.py")
+                  driver_cores=2, driver_memory="4g",
+                  extra_python_lib="model.py")
 ``` 
 Run the example following command below:
 ```bash
@@ -261,8 +261,8 @@ Please call `init_orca_context` at the very beginning of each Orca program.
 from bigdl.orca import init_orca_context
 
 init_orca_context(cluster_mode="yarn-cluster", cores=4, memory="10g", num_nodes=2,
-                    driver_cores=2, driver_memory="4g",
-                    extra_python_lib="model.py")
+                  driver_cores=2, driver_memory="4g",
+                  extra_python_lib="model.py")
 ```
 Run the example following command below:
 ```bash
@@ -388,8 +388,7 @@ Please call `init_orca_context` at the very beginning of the program.
 from bigdl.orca import init_orca_context
 
 # Please set cluster_mode to "spark-submit".
-if args.cluster_mode == "spark-submit":
-    init_orca_context(cluster_mode="spark-submit")
+init_orca_context(cluster_mode="spark-submit")
 ```
 
 Before submitting application, you need:
