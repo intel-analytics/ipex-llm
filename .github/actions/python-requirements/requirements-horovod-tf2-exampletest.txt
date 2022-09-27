@@ -19,7 +19,7 @@ tensorboard==2.3.0
 tensorboard-data-server==0.6.1
 tensorboard-plugin-wit==1.7.0
 tensorboardX==2.1
-tensorflow==2.8.0
+tensorflow==2.3.0
 tensorflow-estimator==2.3.0
 xgboost_ray
 argparse
@@ -31,4 +31,4 @@ scikit-optimize==0.8.1
 pandas==1.1.5
 Keras-Applications==1.0.8
 Keras-Preprocessing==1.1.2
-numpy==1.19.5
+numpy==1.18.5
