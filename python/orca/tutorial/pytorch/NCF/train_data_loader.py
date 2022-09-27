@@ -69,7 +69,7 @@ def load_all():
         args.dataset+"/ratings.dat", 
         sep="::", header=None, names=['user', 'item'], 
         usecols=[0, 1], dtype={0: np.int32, 1: np.int32})
-    
+
     user_num = data_X['user'].max() + 1
     item_num = data_X['item'].max() + 1
 
@@ -79,9 +79,9 @@ def load_all():
     train_mat = sp.dok_matrix((user_num, item_num), dtype=np.float32)
     for x in data_X:
         train_mat[x[0], x[1]] = 1.0
-        
+
     train_data, test_data = train_test_split(data_X, test_size=0.1, random_state=100)
-    
+
     return train_data, test_data, user_num, item_num, train_mat
 
 class NCFData(data.Dataset):
@@ -118,7 +118,7 @@ class NCFData(data.Dataset):
 
     def __len__(self):
         return (self.num_ng + 1) * len(self.labels)
-    
+
     def __getitem__(self, idx):
         features =  self.features_fill if self.is_training else self.features_ps
         labels =  self.labels_fill if self.is_training else self.labels
@@ -135,7 +135,7 @@ train_data, test_data, args.user_num, args.item_num, train_mat = load_all()
 
 # create the model
 def model_creator(config):
-    model = NCF(args.user_num, args.item_num, factor_num=32, num_layers=3, dropout=0.0, args.model) # a torch.nn.Module
+    model = NCF(args.user_num, args.item_num, factor_num=32, num_layers=3, dropout=0.0, model=args.model) # a torch.nn.Module
     model.train()
     return model
 
