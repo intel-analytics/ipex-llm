@@ -169,15 +169,9 @@ if __name__ == '__main__':
     model_dir = "/dbfs/FileStore/model/ncf/"
     backend = "ray" # ray or spark
     data_dir = './'
+    save_path = model_dir + "ncf.h5"
     
     sc = init_orca_context(cluster_mode="spark-submit")
-
-    if backend == "ray":
-        save_path = model_dir + "ncf.ckpt"
-    elif backend == "spark":
-        save_path = model_dir + "ncf.h5"
-    else:
-        raise Exception("backend should be either 'tf2' or 'spark', but got " + backend)
 
     spark = OrcaContext.get_spark_session()
 
