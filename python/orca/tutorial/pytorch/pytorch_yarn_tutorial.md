@@ -1,6 +1,6 @@
 # Running BigDL-Orca Program on YARN
 
-This tutorial provides a step-by-step guide on how to run BigDL-Orca programs on Apache Hadoop/YARN clusters, using a [PyTorch Fashin-MNIST program](https://github.com/intel-analytics/BigDL/tree/main/docs/docs/tutorials/tutorial_example/Fashion_MNIST/) as a working example.
+This tutorial provides a step-by-step guide on how to run BigDL-Orca programs on Apache Hadoop/YARN clusters, using a [PyTorch Fashin-MNIST program](https://github.com/intel-analytics/BigDL/blob/main/python/orca/tutorial/pytorch/FashionMNIST/) as a working example.
 
 # 1. Key Concepts
 ## 1.1 Init_orca_context
@@ -410,7 +410,7 @@ Before submitting application, you need:
         export SPARK_HOME=/path/to/spark # the folder path where you extract the Spark package
         export SPARK_VERSION="your spark version"
         ```
-    2. Download and unzip a BigDL assembly package from [BigDL Release Page](https://bigdl.readthedocs.io/en/latest/doc/release.html) (which could match `${SPARK_VERSION}`), then setup `${BIGDL_HOME}` and `${BIGDL_VERSION}`.
+    2. Download and unzip a BigDL assembly package from [BigDL Assembly Spark 2.4.6](https://repo1.maven.org/maven2/com/intel/analytics/bigdl/bigdl-assembly-spark_2.4.6/2.1.0/bigdl-assembly-spark_2.4.6-2.1.0-fat-jars.zip) or [BigDL Assembly Spark 3.1.2](https://repo1.maven.org/maven2/com/intel/analytics/bigdl/bigdl-assembly-spark_3.1.2/2.1.0/bigdl-assembly-spark_3.1.2-2.1.0-fat-jars.zip) (according to your Spark version), then setup `${BIGDL_HOME}` and `${BIGDL_VERSION}`.
         ```bash
         export BIGDL_HOME=path/to/unzipped/BigDL
         export BIGDL_VERSION="download BigDL version"
@@ -475,7 +475,7 @@ ${SPARK_HOME}/bin/spark-submit \
     --conf spark.yarn.appMasterEnv.PYSPARK_PYTHON=environment/bin/python \
     --conf spark.executorEnv.PYSPARK_PYTHON=environment/bin/python \
     --py-files ${BIGDL_HOME}/python/bigdl-spark_${SPARK_VERSION}-${BIGDL_VERSION}-python-api.zip,model.py \
-    --jars ${BIGDL_HOME}/bigdl-assembly-spark_${SPARK_VERSION}-${BIGDL_VERSION}-20220912.135611-231-jar-with-dependencies.jar \
+    --jars ${BIGDL_HOME}/jars/* \
     train.py --cluster_mode spark-submit --remote_dir hdfs://path/to/remote/data
 ```
 In the `spark-submit` script:
