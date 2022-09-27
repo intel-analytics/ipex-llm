@@ -69,7 +69,7 @@ def load_all():
         args.dataset+"/ratings.dat", 
         sep="::", header=None, names=['user', 'item'], 
         usecols=[0, 1], dtype={0: np.int32, 1: np.int32})
-
+    
     user_num = data_X['user'].max() + 1
     item_num = data_X['item'].max() + 1
 
@@ -79,9 +79,9 @@ def load_all():
     train_mat = sp.dok_matrix((user_num, item_num), dtype=np.float32)
     for x in data_X:
         train_mat[x[0], x[1]] = 1.0
-
+        
     train_data, test_data = train_test_split(data_X, test_size=0.1, random_state=100)
-
+    
     return train_data, test_data, user_num, item_num, train_mat
 
 class NCFData(data.Dataset):
@@ -118,7 +118,7 @@ class NCFData(data.Dataset):
 
     def __len__(self):
         return (self.num_ng + 1) * len(self.labels)
-
+    
     def __getitem__(self, idx):
         features =  self.features_fill if self.is_training else self.features_ps
         labels =  self.labels_fill if self.is_training else self.labels
@@ -156,18 +156,18 @@ est = Estimator.from_torch(model=model_creator, optimizer=optimizer_creator,loss
 
 # construct the train and test dataloader
 def train_loader_func(config, batch_size):
-    train_dataset = NCFData(train_data, args.item_num, train_mat, num_ng=4, True)
+    train_dataset = NCFData(train_data, args.item_num, train_mat, num_ng=4, is_training=True)
     train_loader = data.DataLoader(train_dataset, batch_size=256, shuffle=True, num_workers=0)
     train_loader.dataset.ng_sample()# sample negative items for training datasets
     return train_loader
 
 def test_loader_func(config, batch_size):
-    test_dataset = NCFData(test_data, args.item_num, train_mat, 0, False)
+    test_dataset = NCFData(test_data, args.item_num, train_mat, num_ng=0, is_training=False)
     test_loader = data.DataLoader(test_dataset, batch_size=1, shuffle=False, num_workers=0)
     return test_loader
 
 # fit the estimator
-est.fit(data=train_loader_func, epochs=20)
+est.fit(data=train_loader_func, epochs=5)
 
 #Step 5: Save and Load the Model
 
