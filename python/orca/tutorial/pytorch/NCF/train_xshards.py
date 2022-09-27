@@ -85,7 +85,7 @@ def ng_sampling(data):
     data["user"] = data["user"] - 1
     data["item"] = data["item"] - 1
     data_X = data.values.tolist()
-    
+
     #calculate a dok matrix
     train_mat = sp.dok_matrix((args.user_num, args.item_num), dtype=np.int64)
     for row in data_X:
@@ -129,7 +129,7 @@ train_shards, test_shards = data_X.transform_shard(transform_to_dict).split()
 
 # create the model
 def model_creator(config):
-    model = NCF(args.user_num, args.item_num, factor_num=32, num_layers=3, dropout=0.0, args.model) # a torch.nn.Module
+    model = NCF(args.user_num, args.item_num, factor_num=32, num_layers=3, dropout=0.0, model=args.model) # a torch.nn.Module
     model.train()
     return model
 
