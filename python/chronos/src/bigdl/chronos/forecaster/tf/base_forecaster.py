@@ -142,7 +142,7 @@ class BaseTF2Forecaster(Forecaster):
         else:
             if not self.fitted:
                 invalidInputError(False,
-                                "You must call fit or restore first before calling predict!")
+                                  "You must call fit or restore first before calling predict!")
             if isinstance(data, TSDataset):
                 data = data.to_tf_dataset(batch_size, batch_size)
             if batch_size or isinstance(data, tf.data.Dataset):
@@ -207,7 +207,7 @@ class BaseTF2Forecaster(Forecaster):
         else:
             if not self.fitted:
                 invalidInputError(False,
-                                "You must call fit or restore first before calling evaluate!")
+                                  "You must call fit or restore first before calling evaluate!")
             if isinstance(data, tuple):
                 input_data, target = data
             else:
