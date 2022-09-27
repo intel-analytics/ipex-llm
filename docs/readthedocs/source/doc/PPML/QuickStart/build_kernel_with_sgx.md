@@ -1,16 +1,16 @@
 # Building Linux Kernel from Source with SGX Enabled
 
-SGX driver is merged to Linux Kernel from 5.11+. After enable SGX feature during kernel building, we don't have to install SGX driver anymore.
+SGX driver is merged to Linux Kernel from 5.11+. After enabling SGX feature during kernel building, we don't have to install SGX driver anymore.
 
-In this guide, we show how to build Kernel 5.14 from souce and enable SGX feature on Ubuntu 18.04. You can change kernel version, i.e., 5.14 if necessary.
+In this guide, we show how to build Kernel 5.14 from source code and enable SGX feature on Ubuntu 18.04. You can change the kernel version, i.e., 5.14 if necessary.
 
 
 ## Prerequisite
 
-Install prerequites for kernel build. Please follow your distro instruction or your favorite way to build kernel.
+Install prerequisites for kernel build. Please follow your distro instruction or your favorite way to build the kernel.
 
 ```
-sudo apt-get install flex bison git build-essential kernel-package fakeroot libncurses5-dev libssl-dev ccache
+sudo apt-get install flex bison git build-essential kernel-package fakeroot libncurses5-dev libssl-dev ccache libelf-dev
 
 ```
 
@@ -46,7 +46,7 @@ sudo dpkg -i linux-headers-5.14.0_5.14.0-1_amd64.deb linux-image-5.14.0_5.14.0-1
 sudo reboot
 ```
 
-Check if kernel was installed correctly and the SGX driver is working
+Check if Kernel was installed correctly and the SGX driver is working
 
 ```bash
 $ uname -r
@@ -55,7 +55,7 @@ $ ls -l /dev/ | grep sgx
 
 ## Uninstall this kernel
 
-Uninstall kernel with dpkg (if you want to change back to previous kernel)
+Uninstall kernel with dpkg (if you want to change back to the previous kernel)
 
 ```bash
 sudo dpkg --purge linux-image-5.14.0 linux-headers-5.14.0
@@ -64,6 +64,9 @@ sudo reboot
 
 ### Trouble Shooting
 
-* Building on Ubuntu 5.4.X may encounter "make[2]: *** No rule to make target 'debian/certs/benh@debian.org.cert.pem', needed by 'certs/x509_certificate_list'.  Stop.". Pls refer to [CONFIG_SYSTEM_TRUSTED_KEYS](https://askubuntu.com/questions/1329538/compiling-the-kernel-5-11-11).
+* Building on Ubuntu 5.4.X may encounter
+	* "make[2]: *** No rule to make target 'debian/certs/benh@debian.org.cert.pem', needed by 'certs/x509_certificate_list'.  Stop.". Please disable `SYSTEM_TRUSTED_KEYS`. Refer to [CONFIG_SYSTEM_TRUSTED_KEYS](https://askubuntu.com/questions/1329538/compiling-the-kernel-5-11-11).
+	* "make[4]: *** No rule to make target 'debian/canonical-revoked-certs.pem', needed by 'certs/x509_revocation_list'.  Stop.". Please disable `SYSTEM_REVOCATION_KEYS`.
 * In some kernels, SGX option is `CONFIG_INTEL_SGX`.
 * 5.13 Kernel may encounter nfs problem [Can't mount NFS-shares from Linux-5.13.0](https://forums.gentoo.org/viewtopic-p-8629887.html?sid=f7359b869fb71849d64f3e69bb48503a)
+* [Mellanox interface may be disabled on 5.14.0](https://bugzilla.redhat.com/show_bug.cgi?id=2014094). Changes to 5.15.5 will fix this issue.
