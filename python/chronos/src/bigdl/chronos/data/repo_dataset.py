@@ -13,14 +13,18 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+import numpy as np
+import pandas as pd
+import time
 from bigdl.chronos.data.utils.public_dataset import PublicDataset
+from bigdl.chronos.data.tsdataset import TSDataset
 
 
 def get_public_dataset(name, path='~/.chronos/dataset', redownload=False, **kwargs):
     """
     Get public dataset.
 
-    >>> from bigdl.chronos.data.repo_dataset import get_public_dataset
+    >>> from bigdl.chronos.data import get_public_dataset
     >>> tsdata_network_traffic = get_public_dataset(name="network_traffic")
 
     :param name: str, public dataset name, e.g. "network_traffic".
@@ -92,3 +96,36 @@ def get_public_dataset(name, path='~/.chronos/dataset', redownload=False, **kwar
                           "Only network_traffic, AIOps, fsi, nyc_taxi, uci_electricity"
                           " uci_electricity_wide "
                           f"are supported in Chronos built-in dataset, while get {name}.")
+
+
+def gen_synthetic_data(len=10000, **kwargs):
+    """
+    Generate dataset according to sine function y=10*sin(PI*x/1000).
+
+    >>> from bigdl.chronos.data import gen_synthetic_data
+    >>> tsdata_gen = gen_synthetic_data()
+
+    :param len: int, the number indicates the dataset size. Default to 10000.
+    :param kwargs: extra arguments passed to initialize the tsdataset,
+           including with_split, val_ratio and test_ratio.
+
+    :return: a TSDataset instance when with_split is set to False,
+             three TSDataset instances when with_split is set to True.
+    """
+    from bigdl.nano.utils.log4Error import invalidInputError
+    invalidInputError(isinstance(len, int),
+                      f"The parameter len must be int, but found {type(len)}.")
+
+    gen_x = np.linspace(0, (len/1000)*np.pi, len)
+    gen_y = 10 * np.sin(gen_x)
+    df = pd.DataFrame(gen_y, columns=["target"])
+    endtime = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime())
+    df.insert(0, "datetime", pd.date_range(end=endtime, periods=len, freq="T"))
+
+    if 'with_split' not in kwargs or kwargs['with_split']==False:
+        tsdata = TSDataset.from_pandas(df, dt_col="datetime", target_col="target")
+        return tsdata
+    else:
+        tsdata_train, tsdata_val, tsdata_test = TSDataset.from_pandas(df, dt_col="datetime",
+                                                                      target_col="target", **kwargs)
+        return tsdata_train, tsdata_val, tsdata_test
