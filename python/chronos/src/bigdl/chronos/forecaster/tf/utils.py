@@ -35,8 +35,7 @@ def np_to_data_creator(tuple_data):
 
 def tsdata_to_data_creator(tf_data, shuffle=True):
     def data_creator(config, batch_size):
-        data = tf_data.to_tf_dataset(shuffle=shuffle, batch_size=batch_size)
-        return data
+        return tf_data.to_tf_dataset(shuffle=shuffle, batch_size=batch_size)
     return data_creator
 
 

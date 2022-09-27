@@ -68,10 +68,10 @@ def create_tsdataset(roll=True):
     df.reset_index(inplace=True)
     df.rename(columns={'index': 'timeseries'}, inplace=True)
     train, valid, test = TSDataset.from_pandas(df=df,
-                                           dt_col='timeseries',
-                                           target_col=['value1', 'value2'],
-                                           val_ratio=0.1,
-                                           with_split=True)
+                                               dt_col='timeseries',
+                                               target_col=['value1', 'value2'],
+                                               val_ratio=0.1,
+                                               with_split=True)
     if roll:
         for tsdata in [train, valid, test]:
             tsdata.roll(lookback=24, horizon=2)
@@ -208,6 +208,34 @@ class TestSeq2SeqForecaster(TestCase):
 
         np.testing.assert_almost_equal(distributed_pred, local_pred, decimal=5)
         stop_orca_context()
+
+    def test_s2s_forecaster_distributed_illegal_input(self):
+        from bigdl.orca import init_orca_context, stop_orca_context
+
+        init_orca_context(cores=4, memory="4g")
+        forecaster = Seq2SeqForecaster(past_seq_len=10,
+                                       future_seq_len=2,
+                                       input_feature_num=2,
+                                       output_feature_num=2,
+                                       loss="mae",
+                                       distributed=True)
+
+        train_data, _, test_data = create_data(tf_data=True)
+        ts_train, _, ts_test = create_tsdataset(roll=False)
+        _, y_test = ts_test.roll(lookback=10, horizon=2).to_numpy()
+
+        forecaster.fit(ts_train, epochs=2)
+        yhat = forecaster.predict(ts_test)
+        assert yhat.shape == y_test.shape
+        res = forecaster.evaluate(ts_test)
+
+        # illegal input
+        with pytest.raises(RuntimeError):
+            forecaster.fit(train_data)
+        with pytest.raises(RuntimeError):
+            forecaster.evaluate(test_data)
+        stop_orca_context()
+
 
 if __name__ == '__main__':
     pytest.main([__file__])

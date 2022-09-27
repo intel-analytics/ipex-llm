@@ -190,9 +190,6 @@ class BaseTF2Forecaster(Forecaster):
         :return: A list of evaluation results. Each item represents a metric.
         """
         from bigdl.nano.utils.log4Error import invalidInputError
-        if not self.fitted:
-            invalidInputError(False,
-                              "You must call fit or restore first before calling evaluate!")
         if isinstance(data, TSDataset):
             if data.lookback is None:
                 data.roll(lookback=self.model_config['past_seq_len'],
@@ -208,6 +205,9 @@ class BaseTF2Forecaster(Forecaster):
                               "please replace with numpy.ndarray or TSDataset instance.")
             return self.internal.evaluate(data, batch_size=batch_size)
         else:
+            if not self.fitted:
+                invalidInputError(False,
+                                "You must call fit or restore first before calling evaluate!")
             if isinstance(data, tuple):
                 input_data, target = data
             else:

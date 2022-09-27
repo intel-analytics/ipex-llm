@@ -215,6 +215,34 @@ class TestTCNForecaster(TestCase):
         np.testing.assert_almost_equal(distributed_pred, local_pred, decimal=5)
         stop_orca_context()
 
+    def test_tcn_forecaster_distributed_illegal_input(self):
+        from bigdl.orca import init_orca_context, stop_orca_context
+
+        init_orca_context(cores=4, memory="4g")
+        forecaster = TCNForecaster(past_seq_len=10,
+                                   future_seq_len=2,
+                                   input_feature_num=2,
+                                   output_feature_num=2,
+                                   kernel_size=3,
+                                   lr=1e-3,
+                                   distributed=True)
+
+        train_data, _, test_data = create_data(tf_data=True)
+        ts_train, _, ts_test = create_tsdataset(roll=False)
+        _, y_test = ts_test.roll(lookback=10, horizon=2).to_numpy()
+
+        forecaster.fit(ts_train, epochs=2)
+        yhat = forecaster.predict(ts_test)
+        assert yhat.shape == y_test.shape
+        res = forecaster.evaluate(ts_test)
+
+        # illegal input
+        with pytest.raises(RuntimeError):
+            forecaster.fit(train_data)
+        with pytest.raises(RuntimeError):
+            forecaster.evaluate(test_data)
+
+        stop_orca_context()
 
 if __name__ == '__main__':
     pytest.main([__file__])
