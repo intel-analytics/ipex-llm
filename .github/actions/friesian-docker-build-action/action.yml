@@ -28,15 +28,9 @@ runs:
         --build-arg BIGDL_VERSION=2.2.0-SNAPSHOT \
         --build-arg no_proxy=${NO_PROXY} \
         --rm --no-cache -t $IMAGE:${TAG} .
-
-    - name: image deploy
-      shell: bash
-      run: |
-        export IMAGE=intelanalytics/friesian-serving
-        cd docker/friesian-serving
         docker push $IMAGE:${TAG}
 
-    - name: timestamp image deploy
+    - name: push tagged image
       shell: bash
       if: ${{ github.env.TAG != 'latest' }}
       run: |

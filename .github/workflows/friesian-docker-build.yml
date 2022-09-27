@@ -1,34 +1,22 @@
 name: Friesian Docker Build
 
 on:
-  push:
-    paths:
-      - 'scala/friesian/**'
-      - '.github/actions/friesian-docker-build-action/action.yml'
-  pull_request:
-    branches: [ main ]
-    paths:
-      - 'scala/friesian/**'
-      - '.github/actions/friesian-docker-build-action/action.yml'
+  #  push:
+  #    paths:
+  #      - 'scala/friesian/**'
+  #      - '.github/actions/friesian-docker-build-action/action.yml'
+  #  pull_request:
+  #    branches: [ main ]
+  #    paths:
+  #      - 'scala/friesian/**'
+  #      - '.github/actions/friesian-docker-build-action/action.yml'
   #  schedule:
   #    - cron: '0 12 * * *' # GMT time, 12:00 GMT == 20:00 China
   workflow_dispatch:
     inputs:
-      #      artifact:
-      #        description: 'select which job to run("all" will make all jobs run)'
-      #        required: true
-      #        default: 'all'
-      #        type: choice
-      #        options:
-      #          - all
-      #          - scala-build
-      #          - python-build
-      #          - python-sourceforge-build
-      #          - docker-bigdl-build
       tag:
         description: 'docker image tag (e.g. 2.1.0-SNAPSHOT)'
         required: true
-        default: 'PR'
         type: string
 
 permissions:
@@ -42,7 +30,7 @@ jobs:
       - uses: actions/checkout@v3
       - name: set env
         run: |
-          echo "TAG=${{github.event.inputs.tag||'PR'}}" >> $GITHUB_ENV
+          echo "TAG=${{github.event.inputs.tag||'latest'}}" >> $GITHUB_ENV
       - name: Set up JDK8
         uses: ./.github/actions/jdk-setup-action
       - name: Build docker
