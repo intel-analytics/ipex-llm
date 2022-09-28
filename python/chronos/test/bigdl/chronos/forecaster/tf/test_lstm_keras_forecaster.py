@@ -199,6 +199,14 @@ class TestLSTMForecaster(TestCase):
         from bigdl.chronos.model.tf2.VanillaLSTM_keras import LSTMModel
         assert isinstance(model, LSTMModel)
 
+        with tempfile.TemporaryDirectory() as tmp_file_name:
+            name = os.path.join(tmp_file_name, "lstm.ckpt")
+            test_pred_save = forecaster.predict(test_data[0])
+            forecaster.save(name)
+            forecaster.load(name)
+            test_pred_load = forecaster.predict(test_data[0])
+        np.testing.assert_almost_equal(test_pred_save, test_pred_load)
+
         forecaster.to_local()
         local_pred = forecaster.predict(test_data[0])
         local_eval = forecaster.evaluate(val_data)
