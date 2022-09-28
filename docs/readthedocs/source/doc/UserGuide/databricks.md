@@ -113,10 +113,9 @@ import argparse
 import os
 import random
 
-from bigdl.orca import init_orca_context, stop_orca_context
+from bigdl.orca import init_orca_context, stop_orca_context, OrcaContext
 from bigdl.orca.learn.tf2.estimator import Estimator
 from pyspark.sql.types import StructType, StructField, IntegerType
-from bigdl.orca import OrcaContext
 
 
 def build_model(num_users, num_items, class_num, layers=[20, 10], include_mf=True, mf_embed=20):
