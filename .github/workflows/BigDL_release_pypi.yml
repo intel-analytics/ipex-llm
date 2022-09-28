@@ -1,10 +1,11 @@
 name: BigDL Release Pypi
 
 on:
-  pull_request:
+  #pull_request:
   workflow_dispatch:
+    artifact:
     inputs:
-      tag:
+      artifact:
         description: 'pypi version (e.g. 2.1.0, 2.2.0b20220927)'
         required: true
         default: '2.2.0'
