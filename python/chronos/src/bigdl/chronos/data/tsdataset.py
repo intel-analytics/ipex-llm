@@ -526,9 +526,8 @@ class TSDataset:
                This parameter should be set to True only when you are using Autoformer model. This
                indicates the length of overlap area of output(y) and input(x) on time axis.
         :param is_predict: bool.
-               This parameter should be set to True only when you are processing test data without
-               accuracy evaluation for Autoformer model. This indicates if the dataset will be
-               sampled as a prediction dataset(without groud truth).
+               This parameter indicates if the dataset will be sampled as a prediction dataset
+               (without groud truth).
 
         :return: the tsdataset instance.
 
