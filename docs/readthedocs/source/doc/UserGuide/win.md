@@ -101,7 +101,7 @@ sudo apt-get install libgomp1
 
 ### Extremely slow training when BF16 is on
 
-Using BFloat16 mixed precision in PyTorch or PyTorch-Lightning training may result in around 150x slower per step than the traditional way.
+Using BFloat16 mixed precision in PyTorch or PyTorch-Lightning training may result in around 150x slower than the traditional way.
 
 ### WARNING:root:avx512 disabled, fall back to non-ipex mode.
 
@@ -113,4 +113,12 @@ This error is usually caused by lacking GCC library to build pycocotools, which 
 
 ```bash
 sudo apt-get install gcc
+```
+
+### ValueError: After taking into account object store and redis memory usage, the amount of memory on this node available for tasks and actors is less than -75% of total.
+
+Setting the memory limit of ray too large will raise this error. Fix it by decreasing the memory settings, for example (on a laptop with 8G memory):
+
+```bash
+python yoloV3.py --memory 2g --object_store_memory 1g
 ```
