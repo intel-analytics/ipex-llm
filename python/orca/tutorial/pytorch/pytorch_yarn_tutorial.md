@@ -337,7 +337,7 @@ In the `bigdl-submit` script:
 * `--num_executors`: set the number of executors;
 * `--py-files`: upload extra Python dependency files to YARN;
 * `--archives`: upload the Conda archive to YARN;
-* `--conf spark.pyspark.driver.python`: set the activate Python location on __Client Node__ as driver's Python environment (get the location by running `which python`);
+* `--conf spark.pyspark.driver.python`: set the activate Python location on __Client Node__ as driver's Python environment (find the location by running `which python`);
 * `--conf spark.pyspark.python`: set the Python location in Conda archive as executors' Python environment;
 
 __Note:__
@@ -411,7 +411,7 @@ Before submitting application, you need:
         ```
     2. Download and unzip a BigDL assembly package from [BigDL Assembly Spark 2.4.6](https://repo1.maven.org/maven2/com/intel/analytics/bigdl/bigdl-assembly-spark_2.4.6/2.1.0/bigdl-assembly-spark_2.4.6-2.1.0-fat-jars.zip) or [BigDL Assembly Spark 3.1.2](https://repo1.maven.org/maven2/com/intel/analytics/bigdl/bigdl-assembly-spark_3.1.2/2.1.0/bigdl-assembly-spark_3.1.2-2.1.0-fat-jars.zip) (according to your Spark version), then setup `${BIGDL_HOME}` and `${BIGDL_VERSION}`.
         ```bash
-        export BIGDL_HOME=path/to/unzipped/BigDL
+        export BIGDL_HOME=/path/to/unzipped_BigDL
         export BIGDL_VERSION="download BigDL version"
         ```
 
@@ -444,7 +444,7 @@ In the `spark-submit` script:
 * `--archives`: upload the Conda archive to YARN;
 * `--properties-file`: upload the BigDL configuration properties to YARN;
 * `--py-files`: upload extra Python dependency files to YARN;
-* `--conf spark.pyspark.driver.python`: set the Python location in Conda archive as driver's Python environment (get the location by running `which python`);
+* `--conf spark.pyspark.driver.python`: set the Python location in Conda archive as driver's Python environment (find the location by running `which python`);
 * `--conf spark.pyspark.python`: set the Python location in Conda archive as executors' Python environment;
 * `--conf spark.driver.extraClassPath`: upload and register the BigDL jars files to the driver's classpath;
 * `--conf spark.executor.extraClassPath`: upload and register the BigDL jars files to the executors' classpath;
