@@ -226,9 +226,9 @@ RUN apt-get update && \
     apt-get clean
 
 # prepare Spark
-COPY --from=bigdl /opt/spark /opt/spark
-COPY --from=bigdl /opt/libhadoop.so /opt/libhadoop.so
-COPY --from=bigdl /opt/spark-source /opt/spark-source
+#COPY --from=bigdl /opt/spark /opt/spark
+#COPY --from=bigdl /opt/libhadoop.so /opt/libhadoop.so
+#COPY --from=bigdl /opt/spark-source /opt/spark-source
 
 # Prepare BigDL
 RUN cd /opt && \
@@ -243,7 +243,7 @@ ADD ./run_attestation_server.sh /root/demos/remote_attestation/init_ra_flow/
 RUN cd /root/demos/remote_attestation/init_ra_flow/ && \
     bash build_content.sh build_ra_tls
 # Prepare Tpc-H
-COPY --from=bigdl /opt/zoo-tutorials/tpch-spark/target/scala-2.12/spark-tpc-h-queries_2.12-1.0.jar $SPARK_HOME/jars
+RUN cp /opt/zoo-tutorials/tpch-spark/target/scala-2.12/spark-tpc-h-queries_2.12-1.0.jar $SPARK_HOME/jars
 
 # Copy scripts & other files
 ADD ./run_spark_on_occlum_glibc.sh /opt/run_spark_on_occlum_glibc.sh
