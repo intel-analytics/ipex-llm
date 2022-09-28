@@ -106,7 +106,7 @@
       securityContext:
         privileged: true
       volumeMounts:
-    ...
+        ...
         - name: tpch
           mountPath: /ppml/trusted-big-data-ml/work/tpch-spark
         - name: kubeconf
@@ -115,7 +115,7 @@
       - name: enclave-key
         hostPath:
           path:  /root/keys/enclave-key.pem
-    ...
+        ...
       - name: tpch
         hostPath:
           path: /path/to/tpch-spark
