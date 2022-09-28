@@ -14,21 +14,15 @@
 # limitations under the License.
 #
 
-import logging
 import os
-
-from pyspark.sql.dataframe import DataFrame
+import logging
 import tempfile
 import shutil
-import glob
 
-import pickle
-
-import tensorflow as tf
+from pyspark.sql.dataframe import DataFrame
 
 from bigdl.dllib.utils.common import get_node_and_core_number
-from bigdl.dllib.utils.file_utils import enable_multi_fs_load, enable_multi_fs_save, \
-    is_local_path, append_suffix
+from bigdl.dllib.utils.file_utils import is_local_path
 from bigdl.dllib.utils.utils import get_node_ip
 
 from bigdl.orca.data.file import is_file, exists, get_remote_file_to_local, \
