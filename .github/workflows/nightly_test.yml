@@ -417,20 +417,7 @@ jobs:
       uses: ./.github/actions/ppml/ppml-pyspark-k8s-example-on-gramine-action
       with:
         image-tag: ${TAG}
-        
-  create-workflow-badge:
-    runs-on: ubuntu-latest
-    steps:
-    - uses: actions/checkout@v3
-    - name: create workflow badge
-      if: ${{ always() }}
-      uses: ./.github/actions/create-job-status-badge
-      with:
-        secret: ${{ secrets.GIST_SECRET }}
-        gist-id: bc8a699b455bced4a1aef138ad5df07e
-        file-name: nightly-test.json
-        type: workflow
-  
+
   PPML-Occlum-ExampleTests:
     if: ${{ github.event.schedule || github.event.inputs.artifact == 'PPML-Occlum-ExampleTests' || github.event.inputs.artifact == 'all' }} 
     runs-on: [self-hosted, Wilwarin, ubuntu-20.04-lts]
@@ -485,4 +472,17 @@ jobs:
         type: job
         job-name: PPML-spark-Local-Example-Tests-on-Gramine
         runner-hosted-on: 'Shanghai'
-      
+     
+  # please put your test before the create-workflow-badge to make sure the badge can be displayed on the github page.
+  create-workflow-badge:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+    - name: create workflow badge
+      if: ${{ always() }}
+      uses: ./.github/actions/create-job-status-badge
+      with:
+        secret: ${{ secrets.GIST_SECRET }}
+        gist-id: bc8a699b455bced4a1aef138ad5df07e
+        file-name: nightly-test.json
+        type: workflow 
