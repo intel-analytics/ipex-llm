@@ -121,7 +121,7 @@ jobs:
         echo "########################################"
         cd ppml/trusted-big-data-ml/scala/docker-occlum/
         export image=intelanalytics/bigdl-ppml-trusted-big-data-ml-scala-occlum
-        export tag=test
+        export TAG=test
         pwd
         docker build \
           --no-cache=true \
