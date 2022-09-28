@@ -31,6 +31,7 @@ import torch
 import types
 from bigdl.dllib.utils.log4Error import *
 
+
 def dataloader_collate_wrapper(func, recollate_fn):
 
     def new_collate_fn(batch):
