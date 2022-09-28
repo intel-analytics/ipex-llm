@@ -15,7 +15,8 @@
 #
 
 import os
-import torch
+from bigdl.chronos.utils import LazyImport
+torch = LazyImport('torch')
 import types
 import numpy as np
 
