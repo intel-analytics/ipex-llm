@@ -83,15 +83,14 @@ if __name__ == "__main__":
         # If the model is fully quantified, the model weights obtained are all int8
         # Otherwise, if some operations are kept at fp32, the stored weights will be mixed precision
         exported_files = [f"{save_dir}/best_model.pt"]
-    elif "jit" in option:
+    elif "ipex" in option or "channels_last" in option or "jit" in option:
         # You will see "ckpt.pt" under "best_model" directory
-        # which stores model optimized using just-in-time compilation
-        exported_files = [f"{save_dir}/ckpt.pt"]
-    elif "ipex" in option or "channels_last" in option:
-        # You will see "ckpt.pt" under "best_model" directory
-        # saved by torch.save(model.state_dict())
+        # if "jit" in option, "ckpt.pt" stores model optimized using just-in-time compilation
+        # otherwise, it stores original model weight by torch.save(model.state_dict())
         exported_files = [f"{save_dir}/ckpt.pt"]
     else:
-        # typically for models of nn.Module, pl.LightningModule type
+        # You will see "save_weight.pt" under "best_model" directory
         # saved by torch.save(model.state_dict())
+        # if "bf16" in option, the model weights obtained are bf16 dtype
+        # otherwise, the model weights obtained are fp32 dtype
         exported_files = [f"{save_dir}/saved_weight.pt"]
