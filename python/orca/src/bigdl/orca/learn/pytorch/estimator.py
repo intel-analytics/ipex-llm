@@ -51,7 +51,7 @@ class Estimator(object):
         :param scheduler_creator: parameter for `horovod` and `ray` backends. a
                learning rate scheduler wrapping the optimizer. You will need to set
                ``scheduler_step_freq="epoch"`` for the scheduler to be incremented correctly.
-        :param config: parameter config dict, CfgNode or any class plays a role of configuration
+        :param config: parameter config dict, CfgNode or any class that plays a role of configuration
                to create model, optimizer loss and data.
         :param scheduler_step_freq: parameter for `horovod` and `ray` backends.
                "batch", "epoch" or None. This will determine when ``scheduler.step`` is called. If
