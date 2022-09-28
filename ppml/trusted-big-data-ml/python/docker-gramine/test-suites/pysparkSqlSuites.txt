@@ -1,5 +1,2 @@
 test_context.py
-test_dataframe.py
-test_group.py
-test_serde.py
 test_types.py

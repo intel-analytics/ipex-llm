@@ -1,8 +1,4 @@
 org.apache.spark.status.api.v1.sql.SqlResourceSuite
 org.apache.spark.sql.UnsafeRowSuite
-org.apache.spark.sql.execution.bucketing.CoalesceBucketsInJoinSuite
-org.apache.spark.sql.execution.exchange.EnsureRequirementsSuite
-org.apache.spark.sql.execution.joins.InnerJoinSuite
 org.apache.spark.sql.TPCDSQueryWithStatsSuite
-org.apache.spark.sql.test.TestSparkSessionSuite
 org.apache.spark.sql.api.python.PythonSQLUtilsSuite

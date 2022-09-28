@@ -1,10 +1,14 @@
 #!/bin/bash
+
+pysparkSqlSuites=("test_context.py" \
+                "test_types.py")
+
 mkdir -p /ppml/trusted-big-data-ml/logs/pyspark/sql
 
 cd /ppml/trusted-big-data-ml
 
 ./clean.sh
-for suite in `cat /ppml/trusted-big-data-ml/work/test-suites/pysparkSqlSuites.txt`
+for suite in "${pysparkSqlSuites[@]}"
 do
     while true
     do
