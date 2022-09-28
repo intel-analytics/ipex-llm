@@ -19,9 +19,6 @@ RUN cd /ppml/trusted-big-data-ml && \
 FROM $BIGDL_IMAGE_NAME:$BIGDL_IMAGE_VERSION
 
 # 2.1 copy sign etc. secrets from temp into target image
-ARG http_proxy
-ARG https_proxy
-
 COPY --from=temp /ppml/trusted-big-data-ml/bash.manifest.sgx /ppml/trusted-big-data-ml/bash.manifest.sgx
 COPY --from=temp /ppml/trusted-big-data-ml/bash.sig /ppml/trusted-big-data-ml/bash.sig
 COPY --from=temp /ppml/trusted-big-data-ml/bash.manifest /ppml/trusted-big-data-ml/bash.manifest
