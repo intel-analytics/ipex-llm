@@ -217,7 +217,8 @@ RUN echo 'deb [arch=amd64] https://occlum.io/occlum-package-repos/debian focal m
 RUN apt-get update && apt-cache policy occlum
 RUN apt-get install -y occlum
 RUN apt-get install -y libsgx-uae-service libsgx-dcap-ql
-
+# glibc
+RUN apt install -y occlum-toolchains-glibc
 RUN echo "source /etc/profile" >> $HOME/.bashrc
 
 RUN apt-get update && \
