@@ -181,9 +181,9 @@ jobs:
         secret: ${{ secrets.GIST_SECRET}}
         gist-id: aecdcf0cacc4caca7859a4cb1d60c70a
         is-self-hosted-runner: true
-        file-name: Orca-Python-Horovod-Tf2-Py37-Spark3.json
+        file-name: Orca-Python-ExampleTest-Horovod-Tf-Py37-Spark3.json
         type: job
-        job-name: Orca-Python-Horovod-Tf2-Py37-Spark3
+        job-name: Orca-Python-ExampleTest-Horovod-Tf-Py37-Spark3
         runner-hosted-on: 'Shanghai'
 
   Orca-Python-Ray-Py37-Spark3:
