@@ -367,7 +367,7 @@ jobs:
         runner-hosted-on: 'Shanghai'
         
   PPML-Spark-PySpark-Local-Sql-UT-On-Gramine:
-    if: ${{ github.event.schedule || github.event.inputs.artifact == 'PPML-Spark-PySpark-Local-Sql-UT-On-Gramine' || github.event.inputs.artifact == 'all' }}
+    # if: ${{ github.event.schedule || github.event.inputs.artifact == 'PPML-Spark-PySpark-Local-Sql-UT-On-Gramine' || github.event.inputs.artifact == 'all' }}
     runs-on: [self-hosted, SGX, Wilwarin]
     steps:
     - uses: actions/checkout@v3
