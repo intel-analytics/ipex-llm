@@ -139,8 +139,15 @@ class InferenceOptimizer:
                if you would like to use the accelerated model in an online service.
         :param validation_data: (optional) A pytorch dataloader for accuracy evaluation
                This is only needed when users care about the possible accuracy drop.
-        :param metric: (optional) A callable object takes prediction and target
-               and returns a accuracy value in this calling method `metric(pred, target)`
+        :param metric: (optional) A callable object which is used for calculating accuracy.
+               1. If validation_data is composed of (input_data, target), metric could be
+               a torchmetrics.metric.Metric or similar object or function which takes
+               prediction and target then returns an accuracy value in this
+               calling method `accuracy = metric(pred, target)`.
+               2. Otherwise you can define a custom metric in this calling
+               method `accuracy = metric(model, batch_data)`.
+               3. Metric can even only recieve model as input in this calling
+               method `accuracy = metric(model)`, like coco_evaluator.
         :param direction: (optional) A string that indicates the higher/lower
                better for the metric, "min" for the lower the better and "max" for the
                higher the better. Default value is "max".
@@ -162,10 +169,11 @@ class InferenceOptimizer:
 
         self._direction: str = direction  # save direction as attr
         # record whether calculate accuracy in optimize by this attr
-        if validation_data is not None and metric is not None:
-            self._calculate_accuracy = True
-        else:
+        if validation_data is None and metric is None:
             self._calculate_accuracy = False
+        else:
+            # test whether accuracy calculation works later
+            self._calculate_accuracy = True
 
         default_threads: int = torch.get_num_threads()
         thread_num: int = default_threads if thread_num is None else int(thread_num)
@@ -285,9 +293,18 @@ class InferenceOptimizer:
                     if precision == "fp32" and method != "original":
                         result_map[method]["accuracy"] = "not recomputed"
                     else:
-                        result_map[method]["accuracy"] =\
-                            _accuracy_calculate_helper(acce_model,
-                                                       metric, validation_data)
+                        if method == "original":
+                            # test whether metric works
+                            try:
+                                result_map[method]["accuracy"] =\
+                                    _accuracy_calculate_helper(acce_model, metric,
+                                                               validation_data)
+                            except Exception:
+                                self._calculate_accuracy = False
+                        else:
+                            result_map[method]["accuracy"] =\
+                                _accuracy_calculate_helper(acce_model, metric,
+                                                           validation_data)
                 else:
                     result_map[method]["accuracy"] = None
 
@@ -754,13 +771,23 @@ def _accuracy_calculate_helper(model, metric, data):
     '''
     A quick helper to calculate accuracy
     '''
-    metric_list = []
-    sample_num = 0
     with torch.no_grad():
-        for i, (data_input, target) in enumerate(data):
-            metric_list.append(metric(model(data_input), target).numpy() * data_input.shape[0])
-            sample_num += data_input.shape[0]
-    return np.sum(metric_list) / sample_num
+        if data is not None:
+            try:
+                # for normal cases, assume validation data is composed of input_data and target
+                metric_list = []
+                sample_num = 0
+                for i, (data_input, target) in enumerate(data):
+                    metric_list.append(
+                        metric(model(data_input), target).numpy() * data_input.shape[0])
+                    sample_num += data_input.shape[0]
+                return np.sum(metric_list) / sample_num
+            except Exception:
+                # metric itself defines how to calculate accuracy
+                return metric(model, data)
+        else:
+            # special cases, i.g. coco_evaluator, which only recieves model as input
+            return metric(model)
 
 
 def _format_acceleration_option(method_name: str) -> str:
