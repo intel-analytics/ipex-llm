@@ -71,8 +71,46 @@ pip install bigdl
 
 ### Setup Jupyter Notebook Environment
 
+Install JupyterLab with pip:
+
+```bash
+pip install jupyterlab
+```
+Once installed, launch JupyterLab with:
+
+```bash
+jupyter lab --no-browser
+```
+Note that the default workspace of jupyter is located at the directory where you ran this command.
+
+Then you can copy and paste the full URL listed in the terminal to open the GUI interface.
+
 
 ## Developer Guide
 
 
 ## Tips and Known Issues
+
+### ImportError: libgomp.so.1: cannot open shared object file: No such file or directory
+
+This error may appear when you try to import torch, which is due to Ubuntu 14.04 or later does not install libgomp1 by default. Fix it by running:
+
+```bash
+sudo apt-get install libgomp1
+```
+
+### Extremely slow training when BF16 is on
+
+Using BFloat16 mixed precision in PyTorch or PyTorch-Lightning training may result in around 150x slower per step than the traditional way.
+
+### WARNING:root:avx512 disabled, fall back to non-ipex mode.
+
+The IPEX extension delivers optimizations for PyTorch on Intel hardware which has AVX-512 Vector Neural Network Instructions. Devices whose CPU does not support AVX-512 will fall back to non-ipex mode.
+
+### ERROR: Could not build wheels for pycocotools, which is required to install pyproject.toml-based projects
+
+This error is usually caused by lacking GCC library to build pycocotools, which is a dependency of neural-compressor for quantization inference, which can be solved by:
+
+```bash
+sudo apt-get install gcc
+```
