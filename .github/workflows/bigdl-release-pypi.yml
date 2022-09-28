@@ -16,7 +16,7 @@ on:
     paths:
       - 'python/orca/src/bigdl/**'
       - 'python/orca/tutorial/**'
-      - '.github/workflows/orca-tutorial-xshards.yml'
+      - '.github/workflows/bigdl-release-pypi.yml'
   schedule:
     - cron: '0 15 * * *'
   # Allows you to run this workflow manually from the Actions tab
