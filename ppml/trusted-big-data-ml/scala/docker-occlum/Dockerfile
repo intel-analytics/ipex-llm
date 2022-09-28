@@ -216,7 +216,7 @@ RUN echo 'deb [arch=amd64] https://occlum.io/occlum-package-repos/debian focal m
 #Install sgx dependencies and occlum
 RUN apt-get update && apt-cache policy occlum
 RUN apt-get install -y occlum
-RUN apt-get install libsgx-uae-service libsgx-dcap-ql
+RUN apt-get install -y libsgx-uae-service libsgx-dcap-ql
 
 RUN echo "source /etc/profile" >> $HOME/.bashrc
 
