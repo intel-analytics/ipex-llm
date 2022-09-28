@@ -14,6 +14,7 @@
 # limitations under the License.
 #
 
+import warnings
 import keras
 import tensorflow as tf
 import numpy as np
@@ -21,7 +22,8 @@ from bigdl.chronos.forecaster.abstract import Forecaster
 from bigdl.chronos.data import TSDataset
 from bigdl.chronos.metric.forecast_metrics import Evaluator
 from bigdl.nano.utils.log4Error import invalidInputError
-from bigdl.chronos.forecaster.tf.utils import *
+from bigdl.chronos.forecaster.tf.utils import np_to_data_creator, tsdata_to_data_creator,\
+    np_to_xshards, xshard_to_np, np_to_tfdataset
 
 
 class BaseTF2Forecaster(Forecaster):
@@ -37,20 +39,13 @@ class BaseTF2Forecaster(Forecaster):
                                                  workers_per_node=self.workers_per_node,
                                                  backend=self.remote_distributed_backend)
         else:
-            self.fitted = False
             self.internal = self.model_creator({**self.model_config})
+
+        self.fitted = False
 
     def fit(self, data, epochs=1, batch_size=32):
         """
         Fit(Train) the forecaster.
-
-        Example:
-            >>> # Usage when distributed is True and tf.data.Dataset is used as input
-            >>> def train_tf_dataset(config, batch_size):
-            >>>     data = tf.data.Dataset.from_tensor_slice((train_data))
-            >>>     data = ...
-            >>>     return data
-            >>> forecaster.fit(train_tf_dataset, ...)
 
         :param data: The data support following formats:
 
@@ -64,10 +59,8 @@ class BaseTF2Forecaster(Forecaster):
                | A TFDataset instance which contains x and y with same shape as the tuple.
                | x's shape is (num_samples, lookback, feature_dim),
                | y's shape is (num_samples, horizon, target_dim).
-               | If set distributed to True, the tf.data.Dataset should not be used as
-               | input directly, a function name with tf.data.Dataset as return value
-               | should be input, and the function should contain two parameters
-               | config and batch_size.
+               | If set distributed to True, we do not recommend using tf.data.Dataset,
+               | please replace with tsdataset or numpy.ndarray.
                |
                | 3. A bigdl.chronos.data.tsdataset.TSDataset instance.
                | Forecaster will automatically process the TSDataset.
@@ -88,7 +81,7 @@ class BaseTF2Forecaster(Forecaster):
 
         if self.distributed:
             if isinstance(data, tuple):
-                data = np_to_data_creator(data)
+                data = np_to_data_creator(data, shuffle=True)
             if isinstance(data, TSDataset):
                 data = tsdata_to_data_creator(data, shuffle=True)
             invalidInputError(not isinstance(data, tf.data.Dataset),
@@ -140,6 +133,9 @@ class BaseTF2Forecaster(Forecaster):
                           target_col=data.roll_target,
                           feature_col=data.roll_feature)
 
+        invalidInputError(self.fitted,
+                          "You must call fit or restore first before calling predict!")
+
         if self.distributed:
             if isinstance(data, np.ndarray):
                 data = np_to_xshards(data)
@@ -153,9 +149,6 @@ class BaseTF2Forecaster(Forecaster):
             expand_dim = []
             yhat = xshard_to_np(yhat, mode="yhat", expand_dim=expand_dim)
         else:
-            if not self.fitted:
-                invalidInputError(False,
-                                  "You must call fit or restore first before calling predict!")
             if isinstance(data, TSDataset):
                 data = data.to_tf_dataset(batch_size, batch_size)
             if batch_size or isinstance(data, tf.data.Dataset):
@@ -188,10 +181,8 @@ class BaseTF2Forecaster(Forecaster):
                 | A TFDataset instance which contains x and y with same shape as the tuple.
                 | x's shape is (num_samples, lookback, feature_dim),
                 | y's shape is (num_samples, horizon, target_dim).
-                | If set distributed to True, the tf.data.Dataset should not be used as
-                | input directly, a function name with tf.data.Dataset as return value
-                | should be input, and the function should contain two parameters
-                | config and batch_size.
+                | If set distributed to True, we do not recommend using tf.data.Dataset,
+                | please replace with tsdataset or numpy.ndarray.
                 |
                 | 3. A bigdl.chronos.data.tsdataset.TSDataset instance:
                 | Forecaster will automatically process the TSDataset.
@@ -213,19 +204,19 @@ class BaseTF2Forecaster(Forecaster):
                 data.roll(lookback=self.model_config['past_seq_len'],
                           horizon=self.model_config['future_seq_len'])
 
+        invalidInputError(self.fitted,
+                          "You must call fit or restore first before calling evaluate!")
+
         if self.distributed:
             if isinstance(data, tuple):
-                data = np_to_data_creator(data)
+                data = np_to_data_creator(data, shuffle=False)
             if isinstance(data, TSDataset):
-                data = tsdata_to_data_creator(data)
+                data = tsdata_to_data_creator(data, shuffle=False)
             invalidInputError(not isinstance(data, tf.data.Dataset),
                               "tf.data.Dataset is not supported, "
                               "please replace with numpy.ndarray or TSDataset instance.")
             return self.internal.evaluate(data, batch_size=batch_size)
         else:
-            if not self.fitted:
-                invalidInputError(False,
-                                  "You must call fit or restore first before calling evaluate!")
             if isinstance(data, tuple):
                 input_data, target = data
             else:
@@ -243,17 +234,15 @@ class BaseTF2Forecaster(Forecaster):
         you need to call .to_local() and transform the forecaster to a non-
         distributed one.
 
-        :return: a forecaster instance.
         """
         if not self.distributed:
-            invalidInputError(False, "The forecaster has become local.")
+            warnings.warn("The forecaster has become local.")
+
         model = self.internal.get_model()
         self.internal.shutdown()
         self.internal = model
 
         self.distributed = False
-        self.fitted = True
-        return self
 
     def get_model(self):
         """
@@ -264,7 +253,7 @@ class BaseTF2Forecaster(Forecaster):
         if self.distributed:
             return self.internal.get_model()
         else:
-            return self.internal.model
+            return self.internal
 
     def save(self, checkpoint_file):
         """
@@ -272,6 +261,9 @@ class BaseTF2Forecaster(Forecaster):
 
         :params checkpoint_file: The location you want to save the forecaster.
         """
+        invalidInputError(self.fitted,
+                          "You must call fit or restore first before calling save!")
+
         if self.distributed:
             # TODO: can't save and load, temporarily use save_weight instead, will fix later.
             from bigdl.dllib.utils.file_utils import is_local_path
@@ -280,9 +272,6 @@ class BaseTF2Forecaster(Forecaster):
             else:
                 self.internal.save(checkpoint_file)
         else:
-            if not self.fitted:
-                invalidInputError(False,
-                                  "You must call fit or restore first before calling save!")
             self.internal.save(checkpoint_file)
 
     def load(self, checkpoint_file):
@@ -301,7 +290,7 @@ class BaseTF2Forecaster(Forecaster):
         else:
             self.internal = keras.models.load_model(checkpoint_file,
                                                     custom_objects=self.custom_objects_config)
-            self.fitted = True
+        self.fitted = True
 
     @classmethod
     def from_tsdataset(cls, tsdataset, past_seq_len=None, future_seq_len=None, **kwargs):

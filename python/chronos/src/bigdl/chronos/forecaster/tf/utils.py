@@ -17,18 +17,14 @@ import tensorflow as tf
 import numpy as np
 
 
-__all__ = ['np_to_data_creator',
-           'tsdata_to_data_creator',
-           'np_to_tfdataset',
-           'np_to_xshards',
-           'xshard_to_np']
-
-
-def np_to_data_creator(tuple_data):
+def np_to_data_creator(tuple_data, shuffle=False):
     def data_creator(config, batch_size):
         data_len = tuple_data[0].shape[0]
         data = tf.data.Dataset.from_tensor_slices((tuple_data))
-        data = data.cache().shuffle(data_len).batch(batch_size)
+        if shuffle:
+            data = data.cache().shuffle(data_len).batch(batch_size)
+        else:
+            data = data.bactch(batch_size).cache()
         return data.prefetch(tf.data.AUTOTUNE)
     return data_creator
 
