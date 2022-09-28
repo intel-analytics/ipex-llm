@@ -37,7 +37,7 @@ intersection = psi.get_intersection(list(df_train['ID']))
 df_train = df_train[df_train['ID'].isin(intersection)]
 ```
 
-## 3 Run PSI
+## 3 Run PSI Application
 FL Server is required before running any federated applications. Check [Start FL Server]() section for details.
 ### 3.1 Start FL Server in SGX
 
