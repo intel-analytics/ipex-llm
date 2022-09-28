@@ -371,7 +371,6 @@ class TestChronosModelTCNForecaster(TestCase):
         q_openvino_yhat = forecaster.predict_with_openvino(test, quantize=True)
         assert openvino_yhat.shape == q_openvino_yhat.shape
 
-    @op_all
     @op_diff_set_all
     def test_tcn_forecaster_quantization_dynamic(self):
         train_data, val_data, test_data = create_data()
@@ -567,7 +566,6 @@ class TestChronosModelTCNForecaster(TestCase):
         forecaster.fit(train_data, val_data, epochs=2)
         stop_orca_context()
 
-    @op_all
     @op_distributed
     @op_diff_set_all
     @op_onnxrt16

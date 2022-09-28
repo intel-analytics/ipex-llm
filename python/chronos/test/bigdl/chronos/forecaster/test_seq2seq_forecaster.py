@@ -191,7 +191,6 @@ class TestChronosModelSeq2SeqForecaster(TestCase):
             ckpt_name_q = os.path.join(tmp_dir_name, "int_openvino")
             forecaster.export_openvino_file(dirname=ckpt_name, quantized_dirname=ckpt_name_q)
 
-    @op_all
     @op_diff_set_all
     def test_s2s_forecaster_quantization(self):
         train_data, val_data, test_data = create_data()
