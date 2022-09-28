@@ -27,7 +27,7 @@ on:
         - Dllib-Scala-UT
         - Friesian-Scala-UT
         - PPML-Scala-UT
-        - PPML-Spark-PySpark-Sql-UT
+        - PPML-Spark-PySpark-Local-Sql-UT-On-Gramine
         - PPML-PySpark-K8S-EXAMPLE
         - PPML-Occlum-ExampleTests
         - PPML-spark-Local-Example-Tests-on-Gramine
@@ -366,8 +366,8 @@ jobs:
         job-name: Orca-Ray-Ctx-Example
         runner-hosted-on: 'Shanghai'
         
-  PPML-Spark-PySpark-Sql-UT:
-    # if: ${{ github.event.schedule || github.event.inputs.artifact == 'PPML-Spark-PySpark-Sql-UT' || github.event.inputs.artifact == 'all' }} 
+  PPML-Spark-PySpark-Local-Sql-UT-On-Gramine:
+    # if: ${{ github.event.schedule || github.event.inputs.artifact == 'PPML-Spark-PySpark-Local-Sql-UT-On-Gramine' || github.event.inputs.artifact == 'all' }} 
     runs-on: [self-hosted, SGX, Wilwarin]
     steps:
     - uses: actions/checkout@v3
@@ -377,6 +377,17 @@ jobs:
       uses: ./.github/actions/maven-setup-action
     - name: Run test
       uses: ./.github/actions/ppml/ppml-spark-pyspark-sql-ut-on-gramine-action
+    - name: Create Job Badge
+      uses: ./.github/actions/create-job-status-badge
+      if: ${{ always() }}
+      with:
+        secret: ${{ secrets.GIST_SECRET}}
+        gist-id: 98707847d2ca0e2aff40547673e9f7ab
+        is-self-hosted-runner: true
+        file-name: Orca-Ray-Ctx-Example.json
+        type: job
+        job-name: Orca-Ray-Ctx-Example
+        runner-hosted-on: 'Shanghai'
 
 
   PPML-PySpark-K8S-EXAMPLE:

@@ -1,5 +1,5 @@
-name: 'PPML-Spark-PySpark-UT-Tests-on-Gramine'
-description: 'PPML-Spark-PySpark-UT-Tests-on-Gramine'
+name: 'PPML-Spark-PySpark-Local-Sql-UT-On-Gramine'
+description: 'PPML-Spark-PySpark-Local-Sql-UT-On-Gramine'
 runs:
   using: "composite"
   steps:
