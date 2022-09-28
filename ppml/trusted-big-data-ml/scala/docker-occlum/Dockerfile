@@ -208,7 +208,7 @@ COPY --from=tini /usr/local/bin/tini /sbin/tini
 # Configure sgx and occlum deb repo
 RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends ca-certificates gnupg2 jq make gdb wget libfuse-dev libtool tzdata; \
                 echo 'deb [arch=amd64] https://download.01.org/intel-sgx/sgx_repo/ubuntu focal main' | tee /etc/apt/sources.list.d/intel-sgx.list; \
-                wget -qO - https://download.01.org/intel-sgx/sgx_repo/ubuntu/intel-sgx-deb.key | apt-key add -;
+                wget -qO - https://download.01.org/intel-sgx/sgx_repo/ubuntu/intel-sgx-deb.key | apt-key add -; \
 RUN echo 'deb [arch=amd64] https://occlum.io/occlum-package-repos/debian focal main' | tee /etc/apt/sources.list.d/occlum.list; \
                 wget -qO - https://occlum.io/occlum-package-repos/debian/public.key | apt-key add -; \
 #Install sgx dependencies and occlum
