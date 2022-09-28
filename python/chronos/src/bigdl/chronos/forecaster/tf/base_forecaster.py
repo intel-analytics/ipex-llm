@@ -44,18 +44,30 @@ class BaseTF2Forecaster(Forecaster):
         """
         Fit(Train) the forecaster.
 
+        Example:
+            >>> # Usage when distributed is True and tf.data.Dataset is used as input
+            >>> def train_tf_dataset(config, batch_size):
+            >>>     data = tf.data.Dataset.from_tensor_slice((train_data))
+            >>>     data = ...
+            >>>     return data
+            >>> forecaster.fit(train_tf_dataset, ...)
+
         :param data: The data support following formats:
 
-               | 1. a numpy ndarray tuple (x, y):
+               | 1. A numpy ndarray tuple (x, y):
                | x's shape is (num_samples, lookback, feature_dim) where lookback and feature_dim
                | should be the same as past_seq_len and input_feature_num.
                | y's shape is (num_samples, horizon, target_dim), where horizon and target_dim
                | should be the same as future_seq_len and output_feature_num.
                |
-               | 2. a tf.data.Dataset:
+               | 2. A tf.data.Dataset:
                | A TFDataset instance which contains x and y with same shape as the tuple.
                | x's shape is (num_samples, lookback, feature_dim),
                | y's shape is (num_samples, horizon, target_dim).
+               | If set distributed to True, the tf.data.Dataset should not be used as
+               | input directly, a function name with tf.data.Dataset as return value
+               | should be input, and the function should contain two parameters
+               | config and batch_size.
                |
                | 3. A bigdl.chronos.data.tsdataset.TSDataset instance.
                | Forecaster will automatically process the TSDataset.
@@ -96,16 +108,18 @@ class BaseTF2Forecaster(Forecaster):
         """
         :params data: The data support following formats:
 
-                | 1. a numpy ndarray x:
+                | 1. A numpy ndarray x:
                 | x's shape is (num_samples, lookback, feature_dim) where lookback and feature_dim
                 | should be the same as past_seq_len and input_feature_num.
-                | 2. a tfdataset
+                |
+                | 2. A tfdataset
                 | A TFDataset instance which contains x and y with same shape as the tuple.
                 | the tfdataset needs to return at least x in each iteration
                 | with the shape as following:
                 | x's shape is (num_samples, lookback, feature_dim) where lookback and feature_dim
                 | should be the same as past_seq_len and input_feature_num.
                 | If returns x and y only get x.
+                |
                 | 3. A bigdl.chronos.data.tsdataset.TSDataset instance
                 | Forecaster will automatically process the TSDataset.
                 | By default, TSDataset will be transformed to a tfdataset,
@@ -119,7 +133,6 @@ class BaseTF2Forecaster(Forecaster):
 
         :return: A numpy array with shape (num_samples, horizon, target_dim).
         """
-        from bigdl.nano.utils.log4Error import invalidInputError
         if isinstance(data, TSDataset):
             if data.lookback is None:
                 data.roll(lookback=self.model_config['past_seq_len'],
@@ -165,16 +178,22 @@ class BaseTF2Forecaster(Forecaster):
 
         :params data: The data support following formats:
 
-                | 1. a numpy ndarray tuple (x, y):
+                | 1. A numpy ndarray tuple (x, y):
                 | x's shape is (num_samples, lookback, feature_dim) where lookback and feature_dim
                 | should be the same as past_seq_len and input_feature_num.
                 | y's shape is (num_samples, horizon, target_dim), where horizon and target_dim
                 | should be the same as future_seq_len and output_feature_num.
-                | 2. a tfdataset
+                |
+                | 2. A tf.data.Dataset:
                 | A TFDataset instance which contains x and y with same shape as the tuple.
                 | x's shape is (num_samples, lookback, feature_dim),
                 | y's shape is (num_samples, horizon, target_dim).
-                | 3. A bigdl.chronos.data.tsdataset.TSDataset instance
+                | If set distributed to True, the tf.data.Dataset should not be used as
+                | input directly, a function name with tf.data.Dataset as return value
+                | should be input, and the function should contain two parameters
+                | config and batch_size.
+                |
+                | 3. A bigdl.chronos.data.tsdataset.TSDataset instance:
                 | Forecaster will automatically process the TSDataset.
                 | By default, TSDataset will be transformed to a tfdataset,
                 | Users may call `roll` on the TSDataset before calling `fit`
@@ -189,7 +208,6 @@ class BaseTF2Forecaster(Forecaster):
 
         :return: A list of evaluation results. Each item represents a metric.
         """
-        from bigdl.nano.utils.log4Error import invalidInputError
         if isinstance(data, TSDataset):
             if data.lookback is None:
                 data.roll(lookback=self.model_config['past_seq_len'],
@@ -254,11 +272,13 @@ class BaseTF2Forecaster(Forecaster):
 
         :params checkpoint_file: The location you want to save the forecaster.
         """
-        from bigdl.nano.utils.log4Error import invalidInputError
-        if not self.fitted:
-            invalidInputError(False,
-                              "You must call fit or restore first before calling save!")
-        self.internal.save(checkpoint_file)
+        if self.distributed:
+            self.internal.save(checkpoint_file)
+        else:
+            if not self.fitted:
+                invalidInputError(False,
+                                  "You must call fit or restore first before calling save!")
+            self.internal.save(checkpoint_file)
 
     def load(self, checkpoint_file):
         """
@@ -266,9 +286,12 @@ class BaseTF2Forecaster(Forecaster):
 
         :params checkpoint_file: The checkpoint file location you want to load the forecaster.
         """
-        self.internal = keras.models.load_model(checkpoint_file,
-                                                custom_objects=self.custom_objects_config)
-        self.fitted = True
+        if self.distributed:
+            self.internal.load(checkpoint_file)
+        else:
+            self.internal = keras.models.load_model(checkpoint_file,
+                                                    custom_objects=self.custom_objects_config)
+            self.fitted = True
 
     @classmethod
     def from_tsdataset(cls, tsdataset, past_seq_len=None, future_seq_len=None, **kwargs):
@@ -288,7 +311,6 @@ class BaseTF2Forecaster(Forecaster):
 
         :return: A Forecaster Model
         """
-        from bigdl.nano.utils.log4Error import invalidInputError
 
         def check_time_steps(tsdataset, past_seq_len, future_seq_len):
             if tsdataset.lookback and past_seq_len:
