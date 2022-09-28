@@ -12,8 +12,6 @@ on:
   #release:
    # types: [published]
   pull_request:
-    paths:
-      - '.github/workflows/bigdl-release-pypi.yml'
   
   workflow_dispatch:
     inputs:
