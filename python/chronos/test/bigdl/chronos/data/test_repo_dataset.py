@@ -47,6 +47,14 @@ class TestRepoDataset(TestCase):
     def test_gen_synthetic_data(self):
         with pytest.raises(RuntimeError):
             gen_synthetic_data(len="10000")
+        with pytest.raises(RuntimeError):
+            gen_synthetic_data(amplitude="10")
+        with pytest.raises(RuntimeError):
+            gen_synthetic_data(angular_freq="0.01")
+        with pytest.raises(RuntimeError):
+            gen_synthetic_data(scale="1.0")
+        with pytest.raises(RuntimeError):
+            gen_synthetic_data(time_freq=1)
 
         tsdata = gen_synthetic_data()
         assert tsdata._id_list == ['0']

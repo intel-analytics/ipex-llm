@@ -98,34 +98,41 @@ def get_public_dataset(name, path='~/.chronos/dataset', redownload=False, **kwar
                           f"are supported in Chronos built-in dataset, while get {name}.")
 
 
-def gen_synthetic_data(len=10000, **kwargs):
+def gen_synthetic_data(len=10000, amplitude=10.0, angular_freq=0.01, scale=1.0, time_freq="D", **kwargs):
     """
-    Generate dataset according to sine function y=10*sin(PI*x/1000).
+    Generate dataset according to sine function with a Gaussian noise.
+    Datetime is generated according to `time_freq` with the current time as endtime.
 
     >>> from bigdl.chronos.data import gen_synthetic_data
     >>> tsdata_gen = gen_synthetic_data()
 
     :param len: int, the number indicates the dataset size. Default to 10000.
+    :param amplitude: float, the number indicates amplitude of the sine function.
+           Default to 10.0.
+    :param angular_freq: float, the number indicates angular frequency of the sine function.
+           Default to 0.01.
+    :param scale: float, the number indicates the standard deviation of the Gaussian noise
+           while the mean is set to 0. Default to 1.0.
+    :param time_freq: str, the frequency of the generated dataframe, default to 'D'(calendar day
+           frequency). The frequency can be anything from the pandas list of frequency strings here:
+           https://pandas.pydata.org/docs/user_guide/timeseries.html#timeseries-offset-aliases
     :param kwargs: extra arguments passed to initialize the tsdataset,
            including with_split, val_ratio and test_ratio.
 
     :return: a TSDataset instance when with_split is set to False,
              three TSDataset instances when with_split is set to True.
     """
-    from bigdl.nano.utils.log4Error import invalidInputError
-    invalidInputError(isinstance(len, int),
-                      f"The parameter len must be int, but found {type(len)}.")
+    from bigdl.chronos.data.utils.utils import _check_type
+    _check_type(len, "len", int)
+    _check_type(amplitude, "amplitude", float)
+    _check_type(angular_freq, "angular_freq", float)
+    _check_type(scale, "scale", float)
+    _check_type(time_freq, "time_freq", str)
 
-    gen_x = np.linspace(0, (len/1000)*np.pi, len)
-    gen_y = 10 * np.sin(gen_x)
+    gen_x = np.linspace(0, len*angular_freq, len)
+    gen_y = amplitude * np.sin(gen_x) + np.random.normal(0, scale, len)
     df = pd.DataFrame(gen_y, columns=["target"])
     endtime = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime())
-    df.insert(0, "datetime", pd.date_range(end=endtime, periods=len, freq="T"))
+    df.insert(0, "datetime", pd.date_range(end=endtime, periods=len, freq=time_freq))
 
-    if 'with_split' not in kwargs or not kwargs['with_split']:
-        tsdata = TSDataset.from_pandas(df, dt_col="datetime", target_col="target")
-        return tsdata
-    else:
-        tsdata_train, tsdata_val, tsdata_test = TSDataset.from_pandas(df, dt_col="datetime",
-                                                                      target_col="target", **kwargs)
-        return tsdata_train, tsdata_val, tsdata_test
+    return TSDataset.from_pandas(df, dt_col="datetime", target_col="target", **kwargs)
