@@ -52,9 +52,9 @@ def model_creator(config):
         outputs = tf.keras.layers.Dense(1, activation='sigmoid')(concatenation)
 
     model = tf.keras.Model(inputs=[user, item], outputs=outputs)
-    model.compile(optimizer=tf.keras.optimizers.Adam(learning_rate=0.01),
-                  loss=tf.keras.losses.BinaryCrossentropy(),
-                  metrics=[tf.keras.metrics.BinaryAccuracy()])
+    model.compile(optimizer= "adam",
+                  loss= "binary_crossentropy",
+                  metrics=['accuracy'])
     return model
 
 cluster_mode = str(sys.argv[1])
@@ -66,7 +66,7 @@ elif cluster_mode == "standalone":
 elif cluster_mode == "yarn":
     sc = init_orca_context("yarn", cores=int(sys.argv[3]), num_nodes=int(sys.argv[4]), memory=str(sys.argv[2]))
 elif cluster_mode == "k8s":
-    sc = init_orca_context(cluster_mode="k8s", cores=int(sys.argv[3]), num_nodes=int(sys.argv[4]), memory=str(sys.argv[2]),
+    sc = init_orca_context(cluster_mode="k8s", cores=8, num_nodes=4, memory="20g",
                            master="k8s://https://172.16.0.200:6443",
                            container_image="10.239.45.10/arda/intelanalytics/bigdl-k8s-spark-3.1.2:0.14.0-SNAPSHOT",
                            conf={"spark.kubernetes.driver.volumes.persistentVolumeClaim.nfsvolumeclaim.options.claimName": "nfsvolumeclaim",
@@ -89,7 +89,7 @@ schema = StructType(
         StructField('item', IntegerType(), True)
     ]
 )
-df0 = spark.read.csv("{}/{}/ratings.csv".format(data_path, data_type), sep="::",schema=schema,
+df = spark.read.csv("{}/{}/ratings.csv".format(data_path, data_type), sep="::",schema=schema,
                      header=False)
 min_user_id = df.agg({"user": "min"}).collect()[0]["min(user)"]
 max_user_id = df.agg({"user": "max"}).collect()[0]["max(user)"]
@@ -97,14 +97,15 @@ min_item_id = df.agg({"item": "min"}).collect()[0]["min(item)"]
 max_item_id = df.agg({"item": "max"}).collect()[0]["max(item)"]
 print(min_user_id, max_user_id, min_item_id, max_item_id)
 from pyspark.sql import functions
-df = df0.withColumn('label', functions.lit(1))
+df = df.withColumn('label', functions.lit(1))
 
 from pyspark.sql import functions as F
 from pyspark.sql import types as T
 import random
 
+neg_scale = 4
 def neg_sample(x):
-    item_count = len(x) * 4
+    item_count = len(x) * neg_scale
     max_count = max_item_id - len(set(x))
     neg_item = random.sample(set(range(min_item_id, max_item_id+1)) - set(x), min(item_count,max_count))
     return neg_item
@@ -125,8 +126,8 @@ epochs=5
 model_dir='./'
 
 # create an Estimator
-# backend = 'spark'
-# est = Estimator.from_keras(model_creator=model_creator, workers_per_node=1, backend=backend, model_dir=model_dir)
+backend = 'spark'
+# est = Estimator.from_keras(model_creator=model_creator, workers_per_node=1, backend=backend)
 est = Estimator.from_keras(model_creator=model_creator, workers_per_node=1)
 
 stats = est.fit(train_df,
@@ -138,9 +139,8 @@ stats = est.fit(train_df,
                 validation_data=test_df,
                 validation_steps =int(10000 // batch_size))
 
-checkpoint_path = os.path.join(model_dir, "NCF.ckpt")
-est.save_checkpoint(checkpoint_path)
-
+# save model in H5 format
+est.save("/tmp/cifar10_model.h5", save_format='h5')
 
 # evaluate with Estimator
 stats = est.evaluate(test_df, 
