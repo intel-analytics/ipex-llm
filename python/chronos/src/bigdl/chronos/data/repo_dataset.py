@@ -98,7 +98,8 @@ def get_public_dataset(name, path='~/.chronos/dataset', redownload=False, **kwar
                           f"are supported in Chronos built-in dataset, while get {name}.")
 
 
-def gen_synthetic_data(len=10000, amplitude=10.0, angular_freq=0.01, scale=1.0, time_freq="D", **kwargs):
+def gen_synthetic_data(len=10000, amplitude=10.0, angular_freq=0.01, scale=1.0,
+                       time_freq="D", **kwargs):
     """
     Generate dataset according to sine function with a Gaussian noise.
     Datetime is generated according to `time_freq` with the current time as endtime.
