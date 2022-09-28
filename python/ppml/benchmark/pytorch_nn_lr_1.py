@@ -29,6 +29,7 @@ from bigdl.ppml.fl.psi.psi_client import PSI
 fmt = '%(asctime)s %(levelname)s {%(module)s:%(lineno)d} - %(message)s'
 logging.basicConfig(format=fmt, level=logging.INFO)
 
+
 class LocalModel(nn.Module):
     def __init__(self, num_feature) -> None:
         super().__init__()
@@ -37,7 +38,9 @@ class LocalModel(nn.Module):
 
     def forward(self, x):
         x = self.dense(x)
+        print(x.shape)
         x = self.ReLU(x)
+        print(x.shape)
         return x
 
 
@@ -54,7 +57,7 @@ class ServerModel(nn.Module):
         x[0] = self.dense1(x[0])
         x[1] = self.dense2(x[1])
 
-        x = torch.stack(x)
+        x = torch.stack(x, dim = 2)
         #x = torch.sum(x, dim=0) # above two act as interactive layer, CAddTable
         x = self.dense3(x)
 
@@ -65,7 +68,7 @@ class ServerModel(nn.Module):
 
 @click.command()
 @click.option('--load_model', default=False)
-@click.option('--data_path', default="./data/diabetes-vfl-1.csv")
+@click.option('--data_path', default="../example/pytorch_nn_lr/data/diabetes-vfl-1.csv")
 def run_client(load_model, data_path):
     init_fl_context(1)
     df_train = pd.read_csv(data_path)   

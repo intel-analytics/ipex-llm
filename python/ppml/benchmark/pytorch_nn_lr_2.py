@@ -42,7 +42,7 @@ class LocalModel(nn.Module):
 
 @click.command()
 @click.option('--load_model', default=False)
-@click.option('--data_path', default="./data/diabetes-vfl-2.csv")
+@click.option('--data_path', default="./example/pytorch_nn_lr/data/diabetes-vfl-2.csv")
 def run_client(load_model, data_path):
     init_fl_context(2)
     df_train = pd.read_csv(data_path)
@@ -64,7 +64,7 @@ def run_client(load_model, data_path):
                                    optimizer_cls=torch.optim.SGD,
                                    optimizer_args={'lr':1e-4},
                                    client_model_path='/tmp/pytorch_client_model_2.pt')
-        response = ppl.fit(x, y, 5)
+        response = ppl.fit(x, y, 100)
     else:
         model = LocalModel(len(df_x.columns))
         ppl = Estimator.from_torch(client_model=model,
@@ -72,7 +72,7 @@ def run_client(load_model, data_path):
                                    optimizer_cls=torch.optim.SGD,
                                    optimizer_args={'lr':1e-4},
                                    client_model_path='/tmp/pytorch_client_model_2.pt')
-        response = ppl.fit(x, y, 5)
+        response = ppl.fit(x, y, 100)
     result = ppl.predict(x)
     print(result[:5])
 
