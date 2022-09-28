@@ -704,7 +704,6 @@ class TSDataset:
                accuracy evaluation. This indicates if the dataset will be sampled as a prediction
                dataset(without groud truth).
 
-<<<<<<< HEAD
         :return: A pytorch DataLoader instance. The data returned from dataloader is in the
                  following form:
                 1. a 3d numpy ndarray when is_predict=True or horizon=0
@@ -713,9 +712,6 @@ class TSDataset:
                 and horizon != 0 and time_enc=False
                 3. a 4-dim tuple of 3d numpy ndarray (x, y, x_enc, y_enc) when
                 time_enc=True
-=======
-        :return: a pytorch DataLoader instance.
->>>>>>> 95c35d0b1 (firest commit)
 
         to_torch_data_loader() can be called by:
 
