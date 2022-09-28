@@ -90,5 +90,5 @@ def get_public_dataset(name, path='~/.chronos/dataset', redownload=False, **kwar
     else:
         invalidInputError(False,
                           "Only network_traffic, AIOps, fsi, nyc_taxi, uci_electricity"
-                          " uci_electricity_wide"
+                          " uci_electricity_wide "
                           f"are supported in Chronos built-in dataset, while get {name}.")
