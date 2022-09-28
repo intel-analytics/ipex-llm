@@ -1,28 +1,18 @@
-# This workflow will upload a Python Package using Twine when a release is created
-# For more information see: https://help.github.com/en/actions/language-and-framework-guides/using-python-with-github-actions#publishing-to-package-registries
-
-# This workflow uses actions that are not certified by GitHub.
-# They are provided by a third-party and are governed by
-# separate terms of service, privacy policy, and support
-# documentation.
-
 name: BigDL Release Pypi
 
 on:
-  #release:
-   # types: [published]
   pull_request:
   
   workflow_dispatch:
     inputs:
-      artifact:
+      version:
         description: 'pypi version (e.g. 2.1.0, 2.2.0b20220927)'
         required: true
         default: '2.2.0'
         type: string
 
 env:
-  PYPI_VERSION: ${{ github.event.inputs.artifact }}
+  PYPI_VERSION: ${{ github.event.inputs.version }}
 
 permissions:
   contents: read
@@ -55,6 +45,7 @@ jobs:
       run: |
         export TIMESTAMP=`date '+%Y%m%d'`
         #export PYPI_VERSION=2.2.0
+        echo ${PYPI_VERSION}
         nb_version=${PYPI_VERSION}b${TIMESTAMP}1
         echo ${nb_version}
 
