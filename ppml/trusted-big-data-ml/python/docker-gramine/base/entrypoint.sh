@@ -143,7 +143,7 @@ case "$SPARK_K8S_CMD" in
         if [ "$ATTESTATION" = "true" ]; then
           echo $ATTESTATION_COMMAND > temp_commnd_file
           echo $spark_commnd >> temp_commnd_file
-          spark_commnd="bash temp_commnd_file"
+          spark_commnd="bash temp_commnd_file && rm temp_commnd_file"
         fi
         echo $spark_commnd && \
         ./init.sh && \
@@ -195,7 +195,7 @@ case "$SPARK_K8S_CMD" in
       if [ "$ATTESTATION" = "true" ]; then
 	echo $ATTESTATION_COMMAND > temp_commnd_file
 	echo $spark_commnd >> temp_commnd_file
-	spark_commnd="bash temp_commnd_file"
+	spark_commnd="bash temp_commnd_file && rm temp_commnd_file"
       fi
       echo $spark_commnd && \
       ./init.sh && \
