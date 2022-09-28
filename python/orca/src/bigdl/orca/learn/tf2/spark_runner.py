@@ -280,7 +280,7 @@ class SparkRunner:
                 if self.model_weights:
                     model.set_weights(self.model_weights.value)
 
-            if not model._is_compiled:
+            if not model._is_compiled and self.compile_args_creator:
                 model.compile(**self.compile_args_creator(config))
 
             dataset_handler = DatasetHandler.get_handler(self.backend, self.rank, self.size)
