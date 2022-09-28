@@ -96,7 +96,7 @@ jobs:
   
   Orca-Python-Py37-Spark3:
     needs: changes
-    if: ${{ needs.changes.outputs.orca == 'true' }}
+    #if: ${{ needs.changes.outputs.orca == 'true' }}
     runs-on: [self-hosted, Gondolin, ubuntu-20.04-lts]
 
     steps:
