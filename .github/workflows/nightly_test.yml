@@ -417,6 +417,17 @@ jobs:
       uses: ./.github/actions/ppml/ppml-pyspark-k8s-example-on-gramine-action
       with:
         image-tag: ${TAG}
+    - name: Create Job Badge
+      uses: ./.github/actions/create-job-status-badge
+      if: ${{ always() }}
+      with:
+        secret: ${{ secrets.GIST_SECRET}}
+        gist-id: 6938e848b13dc9f021692b099c57f7af
+        is-self-hosted-runner: true
+        file-name: PPML-PySpark-K8s-Example.json
+        type: job
+        job-name: PPML-PySpark-K8s-Example
+        runner-hosted-on: 'Shanghai'
 
   PPML-Occlum-ExampleTests:
     if: ${{ github.event.schedule || github.event.inputs.artifact == 'PPML-Occlum-ExampleTests' || github.event.inputs.artifact == 'all' }} 
