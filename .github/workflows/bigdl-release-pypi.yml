@@ -29,8 +29,7 @@ permissions:
   packages: write
 
 jobs:
-  build:
-
+  bigdl-release-python-pypi:
     runs-on: [self-hosted, ubuntu-20.04-lts, Bree]
 
     steps:
