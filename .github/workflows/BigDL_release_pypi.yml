@@ -1,7 +1,7 @@
 name: BigDL Release Pypi
 
 on:
-  #pull_request:
+  pull_request:
   workflow_dispatch:
     artifact:
     inputs:
