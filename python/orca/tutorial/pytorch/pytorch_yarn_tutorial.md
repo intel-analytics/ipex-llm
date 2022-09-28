@@ -125,7 +125,7 @@ You can install the latest nightly build of BigDL as follows:
 pip install --pre --upgrade bigdl
 ```
 
-__Note:__ 
+__Notes:__ 
 * Using Conda to install BigDL will automatically install libraries including `conda-pack`, `pyspark==2.4.6`, and other related dependencies.
 * You can install BigDL built on top of Spark 3.1.2 as follows:
     
@@ -340,7 +340,7 @@ In the `bigdl-submit` script:
 * `--conf spark.pyspark.driver.python`: set the activate Python location on __Client Node__ as driver's Python environment (find the location by running `which python`);
 * `--conf spark.pyspark.python`: set the Python location in Conda archive as executors' Python environment;
 
-__Note:__
+__Notes:__
 * `--cluster_mode`: set the cluster_mode in `init_orca_context`.
 * `--remote_dir`: directory on a distributed storage for the dataset (see __[Section 3](#3-prepare-dataset)__).
 * Please refer to __[Section 4](#4-prepare-custom-modules)__ for the description of extra Python dependencies.
@@ -374,7 +374,7 @@ In the `bigdl-submit` script:
 * `--conf spark.yarn.appMasterEnv.PYSPARK_PYTHON`: set the Python location in Conda archive as Python environment of Application Master process;
 * `--conf spark.executorEnv.PYSPARK_PYTHON`: set the Python location in Conda archive as Python environment of executors, the Application Master and executor will all use the archive for Python environment;
 
-__Note:__
+__Notes:__
 * `--cluster_mode`: set the cluster_mode in `init_orca_context`;
 * `--remote_dir`: directory on a distributed storage for the dataset (see __[Section 3](#3-prepare-dataset)__).
 * Please refer to __[Section 4](#4-prepare-custom-modules)__ for the description of extra Python dependencies.
@@ -449,7 +449,7 @@ In the `spark-submit` script:
 * `--conf spark.driver.extraClassPath`: upload and register the BigDL jars files to the driver's classpath;
 * `--conf spark.executor.extraClassPath`: upload and register the BigDL jars files to the executors' classpath;
 
-__Note:__
+__Notes:__
 * `--cluster_mode`: set the cluster_mode in `init_orca_context`;
 * `--remote_dir`: directory on a distributed storage for the dataset (see __[Section 3](#3-prepare-dataset)__).
 * Please refer to __[Section 4](#4-prepare-custom-modules)__ for the description of extra Python dependencies.
@@ -489,7 +489,7 @@ In the `spark-submit` script:
 * `--py-files`: upload extra Python dependency files to YARN;
 * `--jars`: upload and register BigDL dependency jars files to YARN;
 
-__Note:__
+__Notes:__
 * `--cluster_mode`: set the cluster_mode in `init_orca_context`;
 * `--remote_dir`: directory on a distributed storage for the dataset (see __[Section 3](#3-prepare-dataset)__).
 * Please refer to __[Section 4](#4-prepare-custom-modules)__ for the description of extra Python dependencies.
