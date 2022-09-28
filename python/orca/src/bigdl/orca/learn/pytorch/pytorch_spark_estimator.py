@@ -17,7 +17,7 @@
 from bigdl.dllib.utils.file_utils import enable_multi_fs_load, enable_multi_fs_save
 from bigdl.orca.data.utils import row_to_sample, xshard_to_sample
 from bigdl.orca.learn.utils import convert_predict_rdd_to_dataframe, bigdl_metric_results_to_dict, \
-    process_xshards_of_pandas_dataframe
+    process_xshards_of_pandas_dataframe, empty_recollate_fn
 from bigdl.dllib.estimator.estimator import Estimator as SparkEstimator
 from bigdl.orca.learn.spark_estimator import Estimator as OrcaSparkEstimator
 from bigdl.orca.learn.optimizers import Optimizer as OrcaOptimizer, SGD
@@ -30,6 +30,17 @@ from pyspark.sql import DataFrame
 import torch
 import types
 from bigdl.dllib.utils.log4Error import *
+
+def dataloader_collate_wrapper(func, recollate_fn):
+
+    def new_collate_fn(batch):
+        if func is not None:
+            batch = func(batch)
+        if recollate_fn is not None:
+            batch = recollate_fn(batch)
+        return batch
+
+    return new_collate_fn
 
 
 class PyTorchSparkEstimator(OrcaSparkEstimator):
@@ -92,7 +103,8 @@ class PyTorchSparkEstimator(OrcaSparkEstimator):
             val_feature_set = FeatureSet.sample_rdd(validation_data.rdd.flatMap(xshard_to_sample))
         return train_feature_set, val_feature_set
 
-    def _handle_data_loader(self, data, validation_data):
+    def _handle_data_loader(self, data, validation_data, recollate_fn=empty_recollate_fn):
+        data.collate_fn = dataloader_collate_wrapper(data.collate_fn, recollate_fn)
         train_feature_set = FeatureSet.pytorch_dataloader(data, "", "")
         if validation_data is None:
             val_feature_set = None
@@ -100,12 +112,14 @@ class PyTorchSparkEstimator(OrcaSparkEstimator):
             invalidInputError(isinstance(validation_data, DataLoader) or callable(data),
                               "validation_data should be a pytorch DataLoader or a"
                               " callable data_creator")
+            validation_data.collate_fn = dataloader_collate_wrapper(validation_data.collate_fn,
+                                                                    recollate_fn)
             val_feature_set = FeatureSet.pytorch_dataloader(validation_data)
 
         return train_feature_set, val_feature_set
 
     def fit(self, data, epochs=1, batch_size=None, feature_cols=None, label_cols=None,
-            validation_data=None, checkpoint_trigger=None):
+            validation_data=None, checkpoint_trigger=None, recollate_fn=empty_recollate_fn):
         """
         Train this torch model with train data.
 
