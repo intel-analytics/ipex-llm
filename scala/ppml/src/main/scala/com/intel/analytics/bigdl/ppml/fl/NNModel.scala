@@ -46,6 +46,11 @@ abstract class NNModel() {
       VFLTensorUtils.featureLabelToMiniBatch(xTrain, yTrain, batchSize),
       VFLTensorUtils.featureLabelToMiniBatch(xValidate, yValidate, batchSize))
   }
+
+  def trainStep(xTrain: Activity,
+                yTrain: Activity): Unit = {
+    estimator.trainStep(xTrain, yTrain)
+  }
   /**
    *
    * @param trainData DataFrame of training data
@@ -116,6 +121,10 @@ abstract class NNModel() {
    */
   def predict(x: Tensor[Float], batchSize: Int = 4): Array[Activity] = {
     estimator.predict(VFLTensorUtils.featureLabelToMiniBatch(x, null, batchSize))
+  }
+
+  def predictStep(x: Activity): Activity = {
+    estimator.predict(x)
   }
   /**
    *

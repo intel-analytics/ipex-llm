@@ -36,6 +36,11 @@ def vfl_split_dataset(file_name, num_pieces, has_rowkey_index):
         print(f"data has {len(sample)} columns")
         csv_reader = reader(read_obj)
 
+        # use following lines if you want to explicitly specify some columns
+        # col_list = []
+        # col_list.append([i for i in range(7)])
+        # col_list.append([i for i in range(7, 15)])
+
         writer_list = []
         col_idx_list = []
         for i in range(num_pieces):
@@ -43,11 +48,15 @@ def vfl_split_dataset(file_name, num_pieces, has_rowkey_index):
             writer_list.append(writer(open(f"{piece_file_name}-{i}.csv", "w"), delimiter=','))
             if has_rowkey_index:
                 col_idx_list.append([0] + [i for i in range(1 + i, len(sample), num_pieces)])
+                # col_idx_list.append([0] + col_list[i])
             else:
                 col_idx_list.append([i for i in range(i, len(sample), num_pieces)])
+                # col_idx_list.append(col_list[i])
 
-        for i, row in enumerate(csv_reader):
+        for i, row in enumerate(csv_reader):            
             row = np.array(row)
+            if len(row) == 0:
+                continue
             for j in range(num_pieces):
                 writer_list[j].writerow(row[np.array(col_idx_list[j])])   
 

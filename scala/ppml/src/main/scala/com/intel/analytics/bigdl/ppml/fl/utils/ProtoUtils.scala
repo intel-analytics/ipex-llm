@@ -16,6 +16,7 @@
 
 package com.intel.analytics.bigdl.ppml.fl.utils
 
+import com.google.protobuf.ByteString
 import com.intel.analytics.bigdl.Module
 import com.intel.analytics.bigdl.dllib.nn.abstractnn.Activity
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
@@ -34,6 +35,8 @@ import scala.collection.JavaConverters._
 import com.intel.analytics.bigdl.dllib.utils.Log4Error
 import com.intel.analytics.bigdl.ppml.fl.FLClient
 import com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto
+
+import scala.collection.mutable.ArrayBuffer
 
 object ProtoUtils {
   private val logger = LogManager.getLogger(getClass)
@@ -54,6 +57,31 @@ object ProtoUtils {
     }
     builder.build()
   }
+  def ckksProtoToBytes(storage: Storage[TensorMap]): (Array[Array[Byte]], Array[Byte], Array[Int], Array[Int]) = {
+    // TODO: impl
+    val arrayBuffer = new ArrayBuffer[Array[Byte]](storage.clientData.size())
+    var targetBytes: Array[Byte] = null
+    var shapeGrad: Array[Int] = null
+    var shapeLoss: Array[Int] = null
+    storage.clientData.values().asScala.foreach(clientMap => {
+      val tensorMap = clientMap.getEncryptedTensorMapMap().asScala
+      if (tensorMap.contains("target")) {
+        Log4Error.invalidOperationError(targetBytes == null, "Target already exists")
+        targetBytes = tensorMap.get("target").get.getTensor.toByteArray
+      }
+      if (shapeGrad == null) {
+        shapeGrad = tensorMap.get("output").get.getShapeList.asScala.toArray.map(_.toInt)
+        shapeLoss = Array(shapeGrad(0))
+      }
+      arrayBuffer.append(tensorMap.get("output").get.getTensor.toByteArray)
+    })
+    (arrayBuffer.toArray, targetBytes, shapeGrad, shapeLoss)
+  }
+  def bytesToCkksProto(bytes: Array[Byte], shape: Array[Int]) = {
+    EncryptedTensor.newBuilder().setTensor(ByteString.copyFrom(bytes))
+      .addAllShape(shape.map(new Integer(_)).toIterable.asJava).build()
+  }
+
   def tableProtoToOutputTarget(storage: Storage[TensorMap]): (DllibTable, Tensor[Float]) = {
     val aggData = protoTableMapToTensorIterableMap(storage.clientData)
     val target = Tensor[Float]()
@@ -133,7 +161,9 @@ object ProtoUtils {
     val dataMap = modelData.getTensorMapMap.get(name)
     val data = dataMap.getTensorList.asScala.map(Float2float).toArray
     val shape = dataMap.getShapeList.asScala.map(Integer2int).toArray
-    Tensor[Float](data, shape)
+    var totalSize = 1
+    shape.foreach(dimSize => totalSize *= dimSize)
+    Tensor[Float](data.slice(0, totalSize), shape)
   }
 
 

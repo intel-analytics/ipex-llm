@@ -159,6 +159,8 @@ object File {
       objFile = new ValidatingObjectInputStream(new ByteArrayInputStream(byteArrayOut))
       objFile.accept(classTag[T].runtimeClass)
       val result = objFile.readObject()
+      classOf[String]
+      val a = classTag[T].runtimeClass
       objFile.close()
       result.asInstanceOf[T]
     } finally {

@@ -51,6 +51,7 @@ class FLServer private[ppml](val _args: Array[String] = null) extends GrpcServer
   configPath = "ppml-conf.yaml"
   var clientNum: Int = 1
   val fgBoostConfig = new FLConfig()
+  var nnService: NNServiceImpl = null
   parseConfig()
 
   def setClientNum(clientNum: Int): Unit = {
@@ -80,7 +81,16 @@ class FLServer private[ppml](val _args: Array[String] = null) extends GrpcServer
   }
   def addService(): Unit = {
     serverServices.add(new PSIServiceImpl(clientNum))
-    serverServices.add(new NNServiceImpl(clientNum))
+    if (nnService == null) {
+      nnService = new NNServiceImpl(clientNum)
+    }
+    serverServices.add(nnService)
     serverServices.add(new FGBoostServiceImpl(clientNum, fgBoostConfig))
+  }
+  def setCkksAggregator(secret: Array[Array[Byte]]): Unit = {
+    if (nnService == null) {
+      nnService = new NNServiceImpl(clientNum)
+    }
+    nnService.initCkksAggregator(secret)
   }
 }
