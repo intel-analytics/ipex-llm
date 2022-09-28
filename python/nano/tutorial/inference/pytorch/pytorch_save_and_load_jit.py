@@ -42,23 +42,3 @@ if __name__ == "__main__":
     y_hat = loaded_model(x)
     predictions = y_hat.argmax(dim=1)
     print(predictions)
-
-    # Accelerated Inference Using IPEX
-    jit_model = InferenceOptimizer.trace(model_ft,
-                                         use_ipex=True,
-                                         input_sample=torch.rand(1, 3, 224, 224))
-
-    # Save Optimized IPEX Model
-    # The saved model files will be saved at "./optimized_model_ipex" directory
-    # There are 2 files in optimized_model_ipex, users only need to take "ckpt.pth" file for further usage:
-    #   nano_model_meta.yml: meta information of the saved model checkpoint
-    #   ckpt.pth: pytorch state dict checkpoint for general use, describes model structure
-    InferenceOptimizer.save(jit_model, "./optimized_model_ipex")
-
-    # Load the Optimized Model
-    loaded_model = InferenceOptimizer.load("./optimized_model_ipex", model=model_ft)
-
-    # Inference with the Loaded Model
-    y_hat = loaded_model(x)
-    predictions = y_hat.argmax(dim=1)
-    print(predictions)
