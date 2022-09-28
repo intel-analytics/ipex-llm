@@ -473,7 +473,7 @@ ${SPARK_HOME}/bin/spark-submit \
     --conf spark.yarn.appMasterEnv.PYSPARK_PYTHON=environment/bin/python \
     --conf spark.executorEnv.PYSPARK_PYTHON=environment/bin/python \
     --py-files ${BIGDL_HOME}/python/bigdl-spark_${SPARK_VERSION}-${BIGDL_VERSION}-python-api.zip,model.py \
-    --jars ${BIGDL_HOME}/jars/* \
+    --jars ${BIGDL_HOME}/jars/bigdl-assembly-spark_${SPARK_VERSION}-${BIGDL_VERSION}-jar-with-dependencies.jar \
     train.py --cluster_mode spark-submit --remote_dir hdfs://path/to/remote/data
 ```
 In the `spark-submit` script:
