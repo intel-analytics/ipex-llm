@@ -27,7 +27,8 @@ from bigdl.orca.learn.pytorch.training_operator import TrainingOperator
 from bigdl.orca.learn.pytorch.pytorch_ray_worker import PytorchRayWorker
 from bigdl.orca.learn.utils import maybe_dataframe_to_xshards, dataframe_to_xshards, \
     convert_predict_xshards_to_dataframe, update_predict_xshards, \
-    process_xshards_of_pandas_dataframe, reload_dataloader_creator
+    process_xshards_of_pandas_dataframe, reload_dataloader_creator, empty_recollate_fn, \
+    reload_raydataset_generator
 from bigdl.orca.ray import OrcaRayContext
 from bigdl.orca.learn.ray_estimator import Estimator as OrcaRayEstimator
 from bigdl.dllib.utils.file_utils import enable_multi_fs_load, enable_multi_fs_save
@@ -59,7 +60,7 @@ def check_for_failure(remote_values):
     return False
 
 
-def partition_refs_to_creator(partition_refs):
+def partition_refs_to_creator(partition_refs, collate_fn=empty_recollate_fn):
     def data_creator(config, batch_size):
         from bigdl.orca.data.utils import ray_partitions_get_data_label, index_data, get_size
         from torch.utils.data import Dataset, DataLoader
@@ -75,7 +76,7 @@ def partition_refs_to_creator(partition_refs):
             def __getitem__(self, i):
                 return index_data(self.x, i), index_data(self.y, i)
 
-        params = {"batch_size": batch_size, "shuffle": True}
+        params = {"batch_size": batch_size, "shuffle": True, "collate_fn": collate_fn}
         for arg in ["shuffle", "sampler", "batch_sampler", "num_workers", "collate_fn",
                     "pin_memory", "drop_last", "timeout", "worker_init_fn",
                     "multiprocessing_context"]:
@@ -222,7 +223,8 @@ class PyTorchRayEstimator(OrcaRayEstimator):
             feature_cols=None,
             label_cols=None,
             validation_data=None,
-            callbacks=[]):
+            callbacks=[],
+            recollate_fn=empty_recollate_fn):
         """
         Trains a PyTorch model given training data for several epochs.
         Calls `TrainingOperator.train_epoch()` on N parallel workers simultaneously
@@ -287,7 +289,8 @@ class PyTorchRayEstimator(OrcaRayEstimator):
 
             if validation_data is None:
                 def transform_func(worker, partition_refs):
-                    data_creator = partition_refs_to_creator(partition_refs)
+                    data_creator = partition_refs_to_creator(partition_refs,
+                                                             collate_fn=recollate_fn)
                     params["data_creator"] = data_creator
                     return worker.train_epochs.remote(**params)
 
@@ -301,9 +304,10 @@ class PyTorchRayEstimator(OrcaRayEstimator):
                 val_ray_xshards = process_spark_xshards(validation_data, self.num_workers)
 
                 def zip_func(worker, this_partition_refs, that_partition_refs):
-                    params["data_creator"] = partition_refs_to_creator(this_partition_refs)
+                    params["data_creator"] = partition_refs_to_creator(this_partition_refs,
+                                                                       collate_fn=recollate_fn)
                     params["validation_data_creator"] = \
-                        partition_refs_to_creator(that_partition_refs)
+                        partition_refs_to_creator(that_partition_refs, collate_fn=recollate_fn)
                     return worker.train_epochs.remote(**params)
 
                 worker_stats = ray_xshards.zip_reduce_shards_with_actors(val_ray_xshards,
@@ -314,18 +318,25 @@ class PyTorchRayEstimator(OrcaRayEstimator):
             params["wrap_dataloader"] = False
             shards = data.split(n=self.num_workers, locality_hints=self.remote_workers)
 
-            def make_data_creator(shard, feature_cols, label_cols):
+            def make_data_creator(shard, feature_cols, label_cols, collate_fn=empty_recollate_fn):
                 def data_creator(config, batch_size):
                     torch_datashard = shard.to_torch(label_column=label_cols,
                                                      feature_columns=feature_cols,
                                                      batch_size=batch_size)
+                    torch_datashard.generator_func = reload_raydataset_generator(
+                        torch_datashard.generator_func,
+                        collate_fn)
                     return torch_datashard
                 return data_creator
 
             remote_worker_stats = []
             if validation_data is None:
                 for shard, worker in zip(shards, self.remote_workers):
-                    params["data_creator"] = make_data_creator(shard, feature_cols, label_cols)
+                    params["data_creator"] = make_data_creator(
+                        shard,
+                        feature_cols,
+                        label_cols,
+                        recollate_fn)
                     stats = worker.train_epochs.remote(**params)
                     remote_worker_stats.append(stats)
             else:
@@ -341,11 +352,15 @@ class PyTorchRayEstimator(OrcaRayEstimator):
                 val_shards = validation_data.split(n=self.num_workers,
                                                    locality_hints=self.remote_workers)
                 for shard, val_shard, worker in zip(shards, val_shards, self.num_workers):
-                    params["data_creator"] = make_data_creator(shard, feature_cols, label_cols)
+                    params["data_creator"] = make_data_creator(shard,
+                                                               feature_cols,
+                                                               label_cols,
+                                                               recollate_fn)
 
                     params["validation_data_creator"] = make_data_creator(val_shard,
                                                                           feature_cols,
-                                                                          label_cols)
+                                                                          label_cols,
+                                                                          recollate_fn)
                     stats = worker.train_epochs.remote(**params)
                     remote_worker_stats.append(stats)
 
@@ -360,8 +375,9 @@ class PyTorchRayEstimator(OrcaRayEstimator):
                               " Ray Dataset or a callable function, but"
                               " got type: {}".format(type(data)))
 
-            params["data_creator"] = reload_dataloader_creator(data)
-            params["validation_data_creator"] = reload_dataloader_creator(validation_data)
+            params["data_creator"] = reload_dataloader_creator(data, recollate_fn)
+            params["validation_data_creator"] = reload_dataloader_creator(validation_data,
+                                                                          recollate_fn)
             success, worker_stats = self._train_epochs(**params)
 
         epoch_stats = list(map(list, zip(*worker_stats)))
@@ -435,7 +451,8 @@ class PyTorchRayEstimator(OrcaRayEstimator):
                  profile=False,
                  info=None,
                  feature_cols=None,
-                 label_cols=None):
+                 label_cols=None,
+                 recollate_fn=empty_recollate_fn):
         """
         Evaluates a PyTorch model given validation data.
         Note that only accuracy for classification with zero-based label is supported by
@@ -477,7 +494,7 @@ class PyTorchRayEstimator(OrcaRayEstimator):
             ray_xshards = process_spark_xshards(data, self.num_workers)
 
             def transform_func(worker, partition_refs):
-                data_creator = partition_refs_to_creator(partition_refs)
+                data_creator = partition_refs_to_creator(partition_refs, recollate_fn)
                 # Should not wrap DistributedSampler on DataLoader for SparkXShards input.
                 return worker.validate.remote(
                     data_creator, batch_size, num_steps, profile, info, False)
@@ -491,6 +508,9 @@ class PyTorchRayEstimator(OrcaRayEstimator):
                 torch_datashard = shard.to_torch(label_column=label_cols,
                                                  feature_columns=feature_cols,
                                                  batch_size=batch_size)
+                torch_datashard.generator_func = reload_raydataset_generator(
+                    torch_datashard.generator_func,
+                    recollate_fn)
                 return torch_datashard
 
             remote_worker_stats = []
@@ -504,7 +524,7 @@ class PyTorchRayEstimator(OrcaRayEstimator):
                               "data should be either an instance of SparkXShards or a callable"
                               " function, but got type: {}".format(type(data)))
 
-            params = dict(data_creator=reload_dataloader_creator(data),
+            params = dict(data_creator=reload_dataloader_creator(data, recollate_fn),
                           batch_size=batch_size, num_steps=num_steps,
                           profile=profile, info=info)
 

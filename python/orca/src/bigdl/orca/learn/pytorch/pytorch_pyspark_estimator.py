@@ -56,7 +56,7 @@ def partition_to_creator(partition, collate_fn=empty_recollate_fn):
             def __getitem__(self, i):
                 return index_data(self.x, i), index_data(self.y, i)
 
-        params = {"batch_size": batch_size, "shuffle": True}
+        params = {"batch_size": batch_size, "shuffle": True, "collate_fn": collate_fn}
         for arg in ["shuffle", "sampler", "batch_sampler", "num_workers", "collate_fn",
                     "pin_memory", "drop_last", "timeout", "worker_init_fn",
                     "multiprocessing_context"]:
@@ -67,7 +67,7 @@ def partition_to_creator(partition, collate_fn=empty_recollate_fn):
                                                    allow_list=False)
         print("Data size on worker: ", len(label))
         dataset = NDArrayDataset(data, label)
-        data_loader = DataLoader(dataset, **params, collate_fn=collate_fn)
+        data_loader = DataLoader(dataset, **params)
         return data_loader
 
     return data_creator

@@ -489,6 +489,13 @@ def reload_dataloader_creator(dataloader_func, recollate_fn=empty_recollate_fn):
     return reload_dataloader if dataloader_func else None
 
 
+def reload_raydataset_generator(generator, recollate_fn=empty_recollate_fn):
+    def reload_dataset():
+        for batch in generator():
+            yield recollate_fn(batch)
+    return reload_dataset
+
+
 def data_length(data):
     x = data["x"]
     if isinstance(x, np.ndarray):
