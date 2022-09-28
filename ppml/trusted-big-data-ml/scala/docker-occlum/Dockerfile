@@ -2,7 +2,7 @@ ARG SPARK_VERSION=3.1.2
 ARG HADOOP_VERSION=3.2.0
 
 FROM krallin/ubuntu-tini AS tini
-
+FROM occlum/occlum:0.28.1-ubuntu20.04 as ppml
 FROM ubuntu:20.04 as bigdl
 
 ARG SPARK_VERSION
@@ -238,6 +238,7 @@ RUN cd /opt && \
     rm bigdl*.zip
 
 # Prepare Attestation
+COPY --from=ppml /root/demos/remote_attestation/init_ra_flow/ /root/demos/remote_attestation/init_ra_flow/
 ADD ./build_content.sh /root/demos/remote_attestation/init_ra_flow/
 ADD ./run_attestation_server.sh /root/demos/remote_attestation/init_ra_flow/
 RUN cd /root/demos/remote_attestation/init_ra_flow/ && \
