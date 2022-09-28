@@ -88,6 +88,8 @@ class TestLSTMForecaster(TestCase):
                                          output_feature_num=2)
 
     def tearDown(self):
+        from bigdl.orca import stop_orca_context
+        stop_orca_context()
         del self.forecaster
 
     def test_lstm_forecaster_fit_predict_evaluate(self):

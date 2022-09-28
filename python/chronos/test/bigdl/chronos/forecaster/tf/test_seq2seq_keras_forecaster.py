@@ -90,6 +90,8 @@ class TestSeq2SeqForecaster(TestCase):
                                             output_feature_num=2)
 
     def tearDown(self):
+        from bigdl.orca import stop_orca_context
+        stop_orca_context()
         del self.forecaster
 
     def test_seq2seq_fit_predict_evaluate(self):

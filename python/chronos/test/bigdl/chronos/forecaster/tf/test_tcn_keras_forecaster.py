@@ -93,6 +93,8 @@ class TestTCNForecaster(TestCase):
                                         num_channels=[15]*7)
 
     def tearDown(self):
+        from bigdl.orca import stop_orca_context
+        stop_orca_context()
         del self.forecaster
 
     def test_tcn_forecaster_fit_predict_evaluate(self):
