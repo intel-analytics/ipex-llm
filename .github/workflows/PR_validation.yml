@@ -20,6 +20,8 @@ on:
       - 'python/orca/**'
       - '.github/actions/orca-ray-ctx-example-action/action.yml'
       - '.github/actions/orca-python-py37-spark3-action/action.yml'
+      - '.github/workflows/PR_validation.yml'
+
 
 permissions:
   contents: read
