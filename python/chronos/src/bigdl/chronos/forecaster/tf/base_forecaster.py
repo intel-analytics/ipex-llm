@@ -146,6 +146,8 @@ class BaseTF2Forecaster(Forecaster):
                               "Will support in the future.")
             yhat = self.internal.predict(data, batch_size=batch_size)
 
+            # pytorch and tf2 have different behavior, when `future_seq_len` and
+            # `output_feature_num` are equal to 1, they will not squeeze data.
             expand_dim = []
             yhat = xshard_to_np(yhat, mode="yhat", expand_dim=expand_dim)
         else:
