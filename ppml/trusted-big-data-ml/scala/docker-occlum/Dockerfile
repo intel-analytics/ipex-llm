@@ -214,7 +214,7 @@ RUN echo 'deb [arch=amd64] https://occlum.io/occlum-package-repos/debian focal m
                 wget -qO - https://occlum.io/occlum-package-repos/debian/public.key | apt-key add -
 
 #Install sgx dependencies and occlum
-RUN apt-get update && apt-cache policy occlum | grep -n5 0.28.1
+RUN apt-get update && apt-cache policy occlum
 RUN apt-get install -y occlum
 RUN apt-get install libsgx-uae-service libsgx-dcap-ql
 
