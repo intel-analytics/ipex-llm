@@ -30,9 +30,10 @@ class OrcaRayContext(object):
                  cores=2,
                  num_nodes=1,
                  **kwargs):
-        # Add sys.stdout.fileno for Databricks. In Databricks notebook, sys.stdout is redirected to a ConsoleBuffer
-        # object, this object has no attribute fileno, and cause ray init crash. Normally, sys.stdout should have
-        # attribute fileno and is set to 1. So set sys.stdout.fileno to 1 when this attribute is missing.
+        # Add sys.stdout.fileno for Databricks. In Databricks notebook, sys.stdout is redirected to
+        # a ConsoleBuffer object, this object has no attribute fileno, and cause ray init crash.
+        # Normally, sys.stdout should have attribute fileno and is set to 1.
+        # So set sys.stdout.fileno to 1 when this attribute is missing.
         import sys
         if not hasattr(sys.stdout, 'fileno'):
             sys.stdout.fileno = lambda: 1
