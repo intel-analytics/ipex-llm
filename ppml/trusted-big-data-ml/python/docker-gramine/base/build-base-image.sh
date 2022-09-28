@@ -4,9 +4,9 @@ export HTTPS_PROXY_HOST=your_https_proxy_host
 export HTTPS_PROXY_PORT=your_https_proxy_port
 export JDK_URL=http://your-http-url-to-download-jdk
 export SPARK_JAR_REPO_URL=http://your_spark_jar_repo_url
-export BIGDL_IMAGE_NAME=your_bigdl_base_image_name_used_to_build_custom_image
-export BIGDL_IMAGE_VERSION=your_bigdl_base_image_version_used_to_build_customer_image
-export LOCAL_IP=your_local_IP
+export LOCAL_IP=your_local_ip
+export BIGDL_IMAGE_NAME=bigdl-ppml-trusted-big-data-ml-python-gramine-base
+export BIGDL_IMAGE_VERSION=2.1.0-SNAPSHOT
 
 if [[ "$BIGDL_IMAGE_NAME" == "your_bigdl_base_image_name_used_to_build_custom_image" ]] || [[ "$BIGDL_IMAGE_VERSION" == "your_bigdl_base_image_version_used_to_build_custom_image" ]]
 then

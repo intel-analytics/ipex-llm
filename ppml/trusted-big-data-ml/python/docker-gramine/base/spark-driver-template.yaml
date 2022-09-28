@@ -10,6 +10,8 @@ spec:
         value: false
       - name: ATTESTATION_URL
         value: your_attestation_url
+      #- name: PCCS_URL
+      #  value: your_pccs_url
       #- name: ATTESTATION_ID
       #  valueFrom:
       #    secretKeyRef:
