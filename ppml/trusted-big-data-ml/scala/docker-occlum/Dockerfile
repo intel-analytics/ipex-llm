@@ -238,6 +238,7 @@ RUN cd /opt && \
     rm bigdl*.zip
 
 # Prepare Attestation
+COPY --from=ppml /root/demos/ra_tls /root/demos/ra_tls
 COPY --from=ppml /root/demos/remote_attestation/init_ra_flow/ /root/demos/remote_attestation/init_ra_flow/
 ADD ./build_content.sh /root/demos/remote_attestation/init_ra_flow/
 ADD ./run_attestation_server.sh /root/demos/remote_attestation/init_ra_flow/
