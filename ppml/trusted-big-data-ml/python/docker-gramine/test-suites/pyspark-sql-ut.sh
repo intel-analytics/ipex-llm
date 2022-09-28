@@ -1,7 +1,6 @@
 #!/bin/bash
 
-pysparkSqlSuites=("test_context.py" \
-                "test_types.py")
+pysparkSqlSuites=("test_context.py")
 
 mkdir -p /ppml/trusted-big-data-ml/logs/pyspark/sql
 
