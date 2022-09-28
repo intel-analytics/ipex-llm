@@ -3,15 +3,15 @@ name: BigDL Release Pypi
 on:
   pull_request:
   workflow_dispatch:
-    inputs:
-      artifact:
-        description: 'pypi version (e.g. 2.1.0, 2.2.0b20220927)'
-        required: true
-        default: '2.2.0'
-        type: string
+    #inputs:
+      #artifact:
+        #description: 'pypi version (e.g. 2.1.0, 2.2.0b20220927)'
+        #required: true
+        #default: '2.2.0'
+        #type: string
 
-env:
-  PYPI_VERSION: ${{ github.event.inputs.artifact }}
+#env:
+  #PYPI_VERSION: ${{ github.event.inputs.artifact }}
 
 permissions:
   contents: read
