@@ -1,3 +1,5 @@
+#!/usr/bin/env bash
+
 #
 # Copyright 2016 The BigDL Authors.
 #
@@ -13,18 +15,28 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-import pytest
 
-# framework
-op_torch = pytest.mark.torch
-op_tf2 = pytest.mark.tf2
+cd "`dirname $0`"
+cd ../..
 
-# distribution and automl
-op_automl = pytest.mark.automl
-op_distributed = pytest.mark.distributed
+export PYSPARK_PYTHON=python
+export PYSPARK_DRIVER_PYTHON=python
+if [ -z "${OMP_NUM_THREADS}" ]; then
+    export OMP_NUM_THREADS=1
+fi
 
-# other mark
-op_all = pytest.mark.all # Universe set, including all denpendencies.
-# The difference set in all, excluding dependencies of installation options such as torch and tf2.
-op_diff_set_all = pytest.mark.diff_set_all
-op_onnxrt16 = pytest.mark.onnxrt16
+ray stop -f
+
+MOPTIONS=$1
+
+echo "Running chronos tests TF1 and Deprecated API"
+echo $MOPTIONS
+python -m pytest -v -m "${MOPTIONS}" test/bigdl/chronos/forecaster
+
+exit_status_0=$?
+if [ $exit_status_0 -ne 0 ];
+then
+    exit $exit_status_0
+fi
+
+ray stop -f
