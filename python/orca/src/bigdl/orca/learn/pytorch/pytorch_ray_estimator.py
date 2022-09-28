@@ -37,6 +37,7 @@ import ray
 from ray.exceptions import RayActorError
 from bigdl.dllib.utils.log4Error import *
 
+import pytorch_lightning as pl
 
 logger = logging.getLogger(__name__)
 
@@ -106,7 +107,7 @@ class PyTorchRayEstimator(OrcaRayEstimator):
             self,
             *,
             model_creator,
-            optimizer_creator,
+            optimizer_creator=None,
             loss_creator=None,
             metrics=None,
             scheduler_creator=None,
@@ -127,7 +128,7 @@ class PyTorchRayEstimator(OrcaRayEstimator):
         # todo remove ray_ctx to run on workers
         ray_ctx = OrcaRayContext.get()
         if not (isinstance(model_creator, types.FunctionType) and
-                isinstance(optimizer_creator, types.FunctionType)):  # Torch model is also callable.
+                (isinstance(optimizer_creator, types.FunctionType) or isinstance(model_creator(config), pl.LightningModule))):  # Torch model is also callable.
             invalidInputError(False,
                               "Must provide a function for both model_creator and"
                               " optimizer_creator")
@@ -435,7 +436,8 @@ class PyTorchRayEstimator(OrcaRayEstimator):
                  profile=False,
                  info=None,
                  feature_cols=None,
-                 label_cols=None):
+                 label_cols=None,
+                 callbacks=[]):
         """
         Evaluates a PyTorch model given validation data.
         Note that only accuracy for classification with zero-based label is supported by
@@ -480,7 +482,7 @@ class PyTorchRayEstimator(OrcaRayEstimator):
                 data_creator = partition_refs_to_creator(partition_refs)
                 # Should not wrap DistributedSampler on DataLoader for SparkXShards input.
                 return worker.validate.remote(
-                    data_creator, batch_size, num_steps, profile, info, False)
+                    data_creator, batch_size, num_steps, profile, info, False, callbacks)
 
             worker_stats = ray_xshards.reduce_partitions_for_actors(self.remote_workers,
                                                                     transform_func)
