@@ -252,6 +252,29 @@ class TestPyTorchEstimator(TestCase):
         val_stats = estimator.evaluate(val_xshards, batch_size=128)
         print(val_stats)
 
+    def test_spark_xshards_collate(self):
+        from bigdl.dllib.nncontext import init_nncontext
+        from bigdl.orca.data import SparkXShards
+        def combine_collate_fn(batch):
+            x1_x2, y = batch['x'], batch['y']
+            return [x1_x2['input1'], x1_x2['input2']], y
+        estimator = get_estimator(workers_per_node=1,
+                                  model_fn=lambda config: MultiInputNet())
+        sc = init_nncontext()
+        x1_rdd = sc.parallelize(np.random.rand(4000, 1, 25).astype(np.float32))
+        x2_rdd = sc.parallelize(np.random.rand(4000, 1, 25).astype(np.float32))
+        # torch 1.7.1+ requires target size same as output size, which is (batch, 1)
+        y_rdd = sc.parallelize(np.random.randint(0, 2, size=(4000, 1, 1)).astype(np.float32))
+        rdd = x1_rdd.zip(x2_rdd).zip(y_rdd).map(lambda x_y: {'x': {"input1":x_y[0][0], "input2":x_y[0][1]}, 'y': x_y[1]})
+        train_rdd, val_rdd = rdd.randomSplit([0.9, 0.1])
+        train_xshards = SparkXShards(train_rdd)
+        val_xshards = SparkXShards(val_rdd)
+        train_stats = estimator.fit(train_xshards, validation_data=val_xshards,
+                                    batch_size=256, epochs=2, recollate_fn=combine_collate_fn)
+        print(train_stats)
+        val_stats = estimator.evaluate(val_xshards, batch_size=128, recollate_fn=combine_collate_fn)
+        print(val_stats)
+
     def test_dataframe_train_eval(self):
 
         sc = init_nncontext()

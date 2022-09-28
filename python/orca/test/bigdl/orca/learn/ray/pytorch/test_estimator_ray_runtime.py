@@ -215,6 +215,10 @@ def get_model(config):
 def get_optimizer(model, config):
     return torch.optim.SGD(model.parameters(), lr=config.get("lr", 1e-2))
 
+def collate_list_input(batch):
+    feature, target = batch
+    return feature[0], feature[1], target
+
 class TestPytorchEstimator(TestCase):
     def setUp(self):
         init_orca_context(runtime="ray", address="localhost:6379")
@@ -269,6 +273,43 @@ class TestPytorchEstimator(TestCase):
         print(train_stats)
 
         end_val_stats = estimator.evaluate(val_data_loader, batch_size=32)
+        print(end_val_stats)
+
+        assert 0 < end_val_stats["Accuracy"] < 1
+        assert estimator.get_model()
+
+        # sanity check that training worked
+        dloss = end_val_stats["val_loss"] - start_val_stats["val_loss"]
+        dacc = (end_val_stats["Accuracy"] - start_val_stats["Accuracy"])
+        print(f"dLoss: {dloss}, dAcc: {dacc}")
+        assert dloss < 0 < dacc, "training sanity check failed. loss increased!"
+
+    def test_collate_fn(self):
+        estimator = Estimator.from_torch(model=get_model,
+                                        optimizer=get_optimizer,
+                                        loss=nn.BCELoss(),
+                                        metrics=Accuracy(),
+                                        config={"lr": 1e-2,
+                                                "model": "MultiInputModel",
+                                                "dataset": "SingleListDataset",
+                                                "nested_input": True},
+                                        workers_per_node=2,
+                                        backend="ray",
+                                        sync_stats=True)
+        start_val_stats = estimator.evaluate(val_data_loader,
+                                             batch_size=32,
+                                             recollate_fn=collate_list_input)
+        print(start_val_stats)
+        
+        train_stats = estimator.fit(train_data_loader,
+                                    epochs=1,
+                                    batch_size=32,
+                                    recollate_fn=collate_list_input)
+        print(train_stats)
+
+        end_val_stats = estimator.evaluate(val_data_loader,
+                                           batch_size=32,
+                                           recollate_fn=collate_list_input)
         print(end_val_stats)
 
         assert 0 < end_val_stats["Accuracy"] < 1
