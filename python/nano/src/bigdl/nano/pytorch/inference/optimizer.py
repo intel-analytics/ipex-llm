@@ -143,11 +143,13 @@ class InferenceOptimizer:
                This is only needed when users care about the possible accuracy drop.
         :param metric: (optional) A callable object which is used for calculating accuracy.
                It supports two kinds of callable object:
-               1. A torchmetrics.Metric object takes prediction and target and returns
-               an accuracy value in this calling method `metric(pred, target)`
-               2. A callable object that takes model and data_loader as input and returns
-               an accuracy value in this calling method
-               `accuracy = metric(model, validation_data)`.
+               1. A torchmetrics.Metric object or similar callable object which takes
+               prediction and target than returns an accuracy value in this calling
+               method `metric(pred, target)`. This requires data in validation_data
+               is composed of (input_data, target).
+               2. A callable object that takes model and validation_data(which could
+               be None) as input and returns an accuracy value in this calling method
+               `accuracy = metric(model, data_loader)`.
         :param direction: (optional) A string that indicates the higher/lower
                better for the metric, "min" for the lower the better and "max" for the
                higher the better. Default value is "max".
@@ -301,6 +303,10 @@ class InferenceOptimizer:
                                                                validation_data)
                             except Exception:
                                 self._calculate_accuracy = False
+                                invalidInputError(False,
+                                                  "Your metric is incompatible with "
+                                                  "validation_data or don't follow "
+                                                  "our given pattern.")
                         else:
                             result_map[method]["accuracy"] =\
                                 _accuracy_calculate_helper(acce_model, metric,
@@ -770,13 +776,35 @@ def _throughput_calculate_helper(iterrun, baseline_time, func, *args):
     return np.mean(time_list) * 1000, True
 
 
+def _signature_check(function):
+    '''
+    A quick helper to judge whether input function is following this calling
+    method `metric(pred, target)`.
+    '''
+    import inspect
+    sig = inspect.signature(function)
+    if len(sig.parameters.values()) != 2:
+        return False
+    param1_name = list(sig.parameters.values())[0].name
+    param2_name = list(sig.parameters.values())[0].name
+    if "pred" in param1_name or "pred" in param2_name:
+        return True
+    if "target" in param2_name or "target" in param2_name:
+        return True
+    return False
+
+
 def _accuracy_calculate_helper(model, metric, data):
     '''
     A quick helper to calculate accuracy
     '''
-    if isinstance(metric, Metric):
+    if isinstance(metric, Metric) or _signature_check(metric) is True:
         metric = NanoMetric(metric)
-    return metric(model, data)
+        return metric(model, data)
+    if data is None:
+        return metric(model)
+    else:
+        return metric(model, data)
 
 
 def _format_acceleration_option(method_name: str) -> str:
