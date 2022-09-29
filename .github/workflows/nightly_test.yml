@@ -521,7 +521,7 @@ jobs:
         runner-hosted-on: 'Shanghai'
 
   PPML-Occlum-k8s-ExampleTests:
-    if: ${{ github.event.schedule || github.event.inputs.artifact == 'PPML-Occlum-k8s-ExampleTests' || github.event.inputs.artifact == 'all' }}
+    #if: ${{ github.event.schedule || github.event.inputs.artifact == 'PPML-Occlum-k8s-ExampleTests' || github.event.inputs.artifact == 'all' }}
     runs-on: [self-hosted, Vilvarin, ubuntu-20.04-lts]
 
     steps:
