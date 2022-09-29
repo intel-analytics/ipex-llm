@@ -15,6 +15,7 @@
 #
 import tensorflow as tf
 import numpy as np
+from collections import Iterable
 
 
 def np_to_data_creator(tuple_data, shuffle=False):
@@ -24,7 +25,7 @@ def np_to_data_creator(tuple_data, shuffle=False):
         if shuffle:
             data = data.cache().shuffle(data_len).batch(batch_size)
         else:
-            data = data.bactch(batch_size).cache()
+            data = data.batch(batch_size).cache()
         return data.prefetch(tf.data.AUTOTUNE)
     return data_creator
 
@@ -49,11 +50,12 @@ def np_to_xshards(data):
     _shards = XShards.partition(data)
 
     def transform_to_dict(data):
+        data = data[0] if isinstance(data, Iterable) else data
         return {"x": data}
     return _shards.transform_shard(transform_to_dict)
 
 
-def xshard_to_np(shard, mode="fit", expand_dim=None):
+def xshard_to_np(shard, mode="fit"):
     if mode == "fit":
         data_local = shard.collect()
         return (np.concatenate([data_local[i]['x'] for i
@@ -67,6 +69,4 @@ def xshard_to_np(shard, mode="fit", expand_dim=None):
     if mode == "yhat":
         yhat = shard.collect()
         yhat = np.concatenate([yhat[i]['prediction'] for i in range(len(yhat))], axis=0)
-        if len(expand_dim) >= 1:
-            yhat = np.expand_dims(yhat, axis=expand_dim)
         return yhat

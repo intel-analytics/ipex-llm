@@ -148,8 +148,7 @@ class BaseTF2Forecaster(Forecaster):
 
             # pytorch and tf2 have different behavior, when `future_seq_len` and
             # `output_feature_num` are equal to 1, they will not squeeze data.
-            expand_dim = []
-            yhat = xshard_to_np(yhat, mode="yhat", expand_dim=expand_dim)
+            yhat = xshard_to_np(yhat, mode="yhat")
         else:
             if isinstance(data, TSDataset):
                 data = data.to_tf_dataset(batch_size, batch_size)
