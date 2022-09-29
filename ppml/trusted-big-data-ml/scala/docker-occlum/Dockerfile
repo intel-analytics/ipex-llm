@@ -2,7 +2,6 @@ ARG SPARK_VERSION=3.1.2
 ARG HADOOP_VERSION=3.2.0
 
 FROM krallin/ubuntu-tini AS tini
-#FROM occlum/occlum:0.28.1-ubuntu20.04 as ppml
 FROM ubuntu:20.04 as bigdl
 
 ARG SPARK_VERSION
@@ -182,28 +181,6 @@ RUN echo "auth required pam_wheel.so use_uid" >> /etc/pam.d/su && \
 COPY --from=tini /usr/local/bin/tini /sbin/tini
 
 # Install occlum from package
-#RUN apt-get update && \
-#    DEBIAN_FRONTEND="noninteractive" apt-get install -y --no-install-recommends \
-#        build-essential ca-certificates openjdk-8-jdk \
-#        curl tzdata wget netcat gnupg2 jq make gdb libfuse-dev libtool \
-#        libprotobuf-c-dev protobuf-c-compiler libcurl4-openssl-dev libprotobuf-dev unzip
-## Add 01.org & key
-#RUN echo 'deb [arch=amd64] https://download.01.org/intel-sgx/sgx_repo/ubuntu bionic main' | tee /etc/apt/sources.list.d/intelsgx.list && \
-#     wget -qO - https://download.01.org/intel-sgx/sgx_repo/ubuntu/intel-sgx-deb.key | apt-key add -
-#
-#RUN echo 'deb [arch=amd64] https://occlum.io/occlum-package-repos/debian bionic main' | tee /etc/apt/sources.list.d/occlum.list && \
-#    wget -qO - https://occlum.io/occlum-package-repos/debian/public.key | apt-key add -
-#
-#RUN apt-get update && \
-#    DEBIAN_FRONTEND="noninteractive" apt-get install -y --no-install-recommends \
-#        build-essential ca-certificates openjdk-8-jdk curl wget netcat net-tools \
-#        gnupg2 vim jq make gdb libfuse-dev libtool \
-#        libsgx-dcap-ql libsgx-epid libsgx-urts libsgx-quote-ex libsgx-uae-service \
-#        libsgx-dcap-quote-verify-dev \
-#        occlum && \
-#    apt-get clean
-#
-#RUN echo "source /etc/profile" >> $HOME/.bashrc
 
 # Configure sgx and occlum deb repo
 RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends vim ca-certificates gnupg2 jq make gdb wget libfuse-dev libtool tzdata && \
@@ -238,14 +215,6 @@ RUN cd /opt && \
     ./download-bigdl.sh && \
     rm bigdl*.zip
 
-# Prepare Attestation
-#COPY --from=ppml /root/demos/ra_tls /root/demos/ra_tls
-#COPY --from=ppml /root/demos/remote_attestation/init_ra_flow/ /root/demos/remote_attestation/init_ra_flow/
-ADD ./build_content.sh /root/demos/remote_attestation/init_ra_flow/
-ADD ./run_attestation_server.sh /root/demos/remote_attestation/init_ra_flow/
-# skip this step
-#RUN cd /root/demos/remote_attestation/init_ra_flow/ && \
-    #bash build_content.sh build_ra_tls
 # Prepare Tpc-H
 RUN cp /opt/zoo-tutorials/tpch-spark/target/scala-2.12/spark-tpc-h-queries_2.12-1.0.jar $SPARK_HOME/jars
 
@@ -258,7 +227,6 @@ COPY ./entrypoint.sh /opt/
 
 RUN chmod a+x /opt/entrypoint.sh && \
     chmod a+x /opt/run_spark_on_occlum_glibc.sh && \
-    chmod a+x /root/demos/remote_attestation/init_ra_flow/run_attestation_server.sh && \
     sed -i '/aesm/d' /root/.bashrc && \
     rm -rf /var/run/aesmd
 

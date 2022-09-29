@@ -165,12 +165,7 @@ build_spark() {
     cp -rf /opt/spark-source image/opt/
 
     # Build
-    if [[ $ATTESTATION == "true" ]]; then
-       occlum build --image-key /opt/occlum_spark/data/image_key
-       build_initfs
-    else
-       occlum build
-    fi
+    occlum build
 }
 
 build_initfs() {
