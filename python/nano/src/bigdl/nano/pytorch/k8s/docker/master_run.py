@@ -45,24 +45,32 @@ def main():
 
     cmd = [sys.executable] + cmd[1:]
 
-    local_ip = os.environ["MASTER_ADDR"]
+    master_ip = os.environ["MASTER_ADDR"]
+    master_port = os.environ["MASTER_PORT"]
+    
 
     process = subprocess.Popen(cmd,
-                               env={"WORLD_SIZE":f"{args.nnodes}", "RANK":"0", "MASTER_ADDR":local_ip, "MASTER_PORT":"12345"},
-                               stdout=subprocess.PIPE)
+                               env={"WORLD_SIZE": f"{args.nnodes}",
+                                    "RANK": "0",
+                                    "MASTER_ADDR": master_ip,
+                                    "MASTER_PORT": master_port})
 
-    # config.load_incluster_config()
     config.load_incluster_config()
 
     v1 = client.CoreV1Api()
 
+    app_id = os.environ["APP_ID"]
+
     for i in range(args.nnodes - 1):
-        metadata = client.V1ObjectMeta(name=f'nano-run-worker-{i}')
+        pod_name = f'bigdl-{app_id}-worker-{i + 1}'
+        metadata = client.V1ObjectMeta(name=pod_name,
+                                       labels={"bigdl-app": app_id,
+                                               "bigdl-app-type": "worker"})
         envs = [
             client.V1EnvVar(name="WORLD_SIZE", value=f"{args.nnodes}"),
             client.V1EnvVar(name="RANK", value=f"{i + 1}"),
-            client.V1EnvVar(name="MASTER_ADDR", value=local_ip),
-            client.V1EnvVar(name="MASTER_PORT", value="12345")
+            client.V1EnvVar(name="MASTER_ADDR", value=master_ip),
+            client.V1EnvVar(name="MASTER_PORT", value=master_port)
         ]
         container = client.V1Container(name="pytorch",
                                        image=args.image,
@@ -72,9 +80,9 @@ def main():
         pod_spec = client.V1PodSpec(containers=[container], restart_policy="Never")
         pod_body = client.V1Pod(metadata=metadata, spec=pod_spec, kind='Pod', api_version='v1')
         pod = v1.create_namespaced_pod(namespace="default", body=pod_body)
+        print(f"Created Rank {i + 1} Pod: {pod_name}")
     
     process.wait()
-    print(process.stdout.read().decode("utf-8"))
 
 if __name__ == '__main__':
     main()
