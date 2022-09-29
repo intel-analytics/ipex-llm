@@ -29,8 +29,7 @@ from bigdl.orca.learn.utils import maybe_dataframe_to_xshards, dataframe_to_xsha
 from bigdl.orca.data import SparkXShards
 from bigdl.orca import OrcaContext
 from bigdl.orca.learn.base_estimator import BaseEstimator
-from bigdl.dllib.utils.file_utils import enable_multi_fs_load, enable_multi_fs_save
-from bigdl.orca.data.file import get_remote_file_to_local
+from bigdl.orca.data.file import get_remote_file_to_local, enable_multi_fs_save, enable_multi_fs_load
 from bigdl.dllib.utils.common import get_node_and_core_number
 from bigdl.orca.learn.log_monitor import start_log_server, stop_log_server
 

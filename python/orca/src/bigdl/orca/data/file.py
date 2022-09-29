@@ -221,7 +221,7 @@ def write_text(path, text):
             result = f.write(text.encode('utf-8'))
             f.close()
             return result
-    elif path.startswith("s3"):   # s3://bucket/file_path
+    elif path.startswith("s3"):  # s3://bucket/file_path
         access_key_id = os.environ["AWS_ACCESS_KEY_ID"]
         secret_access_key = os.environ["AWS_SECRET_ACCESS_KEY"]
         import boto3
@@ -313,7 +313,7 @@ def put_local_dir_to_remote(local_dir, remote_dir):
         prefix = "/".join(path_parts)
         for file in os.listdir(local_dir):
             with open(os.path.join(local_dir, file), "rb") as f:
-                s3_client.upload_fileobj(f, Bucket=bucket, Key=prefix+'/'+file)
+                s3_client.upload_fileobj(f, Bucket=bucket, Key=prefix + '/' + file)
     else:
         if remote_dir.startswith("file://"):
             remote_dir = remote_dir[len("file://"):]
@@ -358,7 +358,7 @@ def put_local_dir_tree_to_remote(local_dir, remote_dir):
             try:
                 with open(file, "rb") as f:
                     s3_client.upload_fileobj(f, Bucket=bucket,
-                                             Key=prefix+'/'+file[len(local_dir)+1:])
+                                             Key=prefix + '/' + file[len(local_dir) + 1:])
             except Exception as e:
                 logger.error('cannot upload file to s3: {}'.format(str(e)))
                 return -1
@@ -461,7 +461,7 @@ def get_remote_file_to_local(remote_path, local_path):
         cmd = 'hdfs dfs -get {} {}'.format(remote_path, local_path)
         process = subprocess.Popen(cmd, shell=True)
         return process.wait()
-    elif remote_path.startswith("s3"):   # s3://bucket/file_path
+    elif remote_path.startswith("s3"):  # s3://bucket/file_path
         access_key_id = os.environ["AWS_ACCESS_KEY_ID"]
         secret_access_key = os.environ["AWS_SECRET_ACCESS_KEY"]
         import boto3
@@ -489,7 +489,7 @@ def get_remote_dir_to_local(remote_dir, local_dir):
         cmd = 'hdfs dfs -get {} {}'.format(remote_dir, local_dir)
         process = subprocess.Popen(cmd, shell=True)
         return process.wait()
-    elif remote_dir.startswith("s3"):   # s3://bucket/file_path
+    elif remote_dir.startswith("s3"):  # s3://bucket/file_path
         access_key_id = os.environ["AWS_ACCESS_KEY_ID"]
         secret_access_key = os.environ["AWS_SECRET_ACCESS_KEY"]
         import boto3
@@ -500,7 +500,7 @@ def get_remote_dir_to_local(remote_dir, local_dir):
         bucket = path_parts.pop(0)
         prefix = "/".join(path_parts)
         try:
-            response = s3_client.list_objects_v2(Bucket=bucket, Prefix=prefix+"/")
+            response = s3_client.list_objects_v2(Bucket=bucket, Prefix=prefix + "/")
             keys = [item['Key'] for item in response['Contents']]
             [s3_client.download_file(bucket, key, os.path.join(local_dir, os.path.basename(keys)))
              for key in keys]
@@ -520,7 +520,7 @@ def get_remote_files_with_prefix_to_local(remote_path_prefix, local_dir):
         cmd = 'hdfs dfs -get {}* {}'.format(remote_path_prefix, local_dir)
         process = subprocess.Popen(cmd, shell=True)
         return process.wait()
-    elif remote_path_prefix.startswith("s3"):   # s3://bucket/file_path
+    elif remote_path_prefix.startswith("s3"):  # s3://bucket/file_path
         access_key_id = os.environ["AWS_ACCESS_KEY_ID"]
         secret_access_key = os.environ["AWS_SECRET_ACCESS_KEY"]
         import boto3
@@ -576,5 +576,53 @@ def multi_fs_load(load_func):
                     shutil.rmtree(temp_path)
                 else:
                     os.remove(temp_path)
+
+    return fs_load
+
+
+def enable_multi_fs_save(save_func):
+
+    @functools.wraps(save_func)
+    def fs_save(obj, path, *args, **kwargs):
+        from bigdl.dllib.utils.file_utils import is_local_path
+        if is_local_path(path):
+            return save_func(obj, path, *args, **kwargs)
+        else:
+            import uuid
+            import tempfile
+            from bigdl.dllib.utils.file_utils import append_suffix
+            file_name = str(uuid.uuid1())
+            file_name = append_suffix(file_name, path)
+            temp_path = os.path.join(tempfile.gettempdir(), file_name)
+
+            try:
+                result = save_func(obj, temp_path, *args, **kwargs)
+                put_local_file_to_remote(temp_path, path)
+            finally:
+                os.remove(temp_path)
+            return result
+
+    return fs_save
+
+
+def enable_multi_fs_load(load_func):
+
+    @functools.wraps(load_func)
+    def fs_load(obj, path, *args, **kwargs):
+        from bigdl.dllib.utils.file_utils import is_local_path
+        if is_local_path(path):
+            return load_func(obj, path, *args, **kwargs)
+        else:
+            import uuid
+            import tempfile
+            from bigdl.dllib.utils.file_utils import append_suffix
+            file_name = str(uuid.uuid1())
+            file_name = append_suffix(file_name, path)
+            temp_path = os.path.join(tempfile.gettempdir(), file_name)
+            get_remote_file_to_local(path, temp_path)
+            try:
+                return load_func(obj, temp_path, *args, **kwargs)
+            finally:
+                os.remove(temp_path)
 
     return fs_load
