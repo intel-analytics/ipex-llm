@@ -540,12 +540,11 @@ def get_remote_files_with_prefix_to_local(remote_path_prefix, local_dir):
     return os.path.join(local_dir, prefix)
 
 
-def multi_fs_load(load_func):
+def enable_multi_fs_load_static(load_func):
     """
-
     Enable loading file or directory in multiple file systems.
     It supports local, hdfs, s3 file systems.
-    Note: this decorator is different from dllib decorator @enable_multi_fs_load.
+    Note: this decorator is different from dllib decorator @enable_multi_fs_load_static.
     This decorator can load on each worker while @enable_multi_fs_load can only load on driver.
 
     :param load_func: load file or directory function
