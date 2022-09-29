@@ -40,11 +40,6 @@ class Embedding(TFEmbedding):
         """
         Create a slightly modified version of tf.keras.Embedding layer.
 
-        :param input_sample: torch.Tensor or a list for the model tracing.
-        :param file_path: The path to save onnx model file.
-        :param sess_options: ortsess options in ort.SessionOptions type
-        :param **kwargs: will be passed to torch.onnx.export function.
-
         :param input_dim: Integer. Size of the vocabulary,
             i.e. maximum integer index + 1.
         :param output_dim: Integer. Dimension of the dense embedding.
