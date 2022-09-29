@@ -21,11 +21,11 @@ import tempfile
 from bigdl.chronos.utils import LazyImport
 torch = LazyImport('torch')
 tf = LazyImport('tensorflow')
+
 AutoLSTM = LazyImport('bigdl.chronos.autots.model.auto_lstm.AutoLSTM')
 hp = LazyImport('bigdl.orca.automl.hp')
-DataLoader = LazyImport('torch.utils.data.DataLoader')
-from torch.utils.data import Dataset
-from ... import op_all, op_distributed, op_onnxrt16, op_tf2, op_torch
+from ... import op_all, op_distributed, op_onnxrt16, op_tf2, op_torch, op_diff_set_all
+
 
 input_feature_dim = 10
 output_feature_dim = 2
@@ -37,18 +37,6 @@ def get_x_y(size):
     x = np.random.randn(size, past_seq_len, input_feature_dim)
     y = np.random.randn(size, future_seq_len, output_feature_dim)
     return x.astype(np.float32), y.astype(np.float32)
-
-class RandomDataset(Dataset):
-    def __init__(self, size=1000):
-        x, y = get_x_y(size)
-        self.x = torch.from_numpy(x).float()
-        self.y = torch.from_numpy(y).float()
-
-    def __len__(self):
-        return self.x.shape[0]
-
-    def __getitem__(self, idx):
-        return self.x[idx], self.y[idx]
 
 def gen_RandomDataset():
     import torch
@@ -68,42 +56,15 @@ def gen_RandomDataset():
 
 
 def train_dataloader_creator(config):
-    import torch
     from torch.utils.data import DataLoader
     RandomDataset = gen_RandomDataset()
-
-def train_dataloader_creator(config):
-    from torch.utils.data import DataLoader, Dataset
-    class RandomDataset(Dataset):
-        def __init__(self, size=1000):
-            x, y = get_x_y(size)
-            self.x = torch.from_numpy(x).float()
-            self.y = torch.from_numpy(y).float()
-
-        def __len__(self):
-            return self.x.shape[0]
-    
-        def __getitem__(self, idx):
-            return self.x[idx], self.y[idx]
-
+    return DataLoader(RandomDataset(size=1000),
+                      batch_size=config["batch_size"],
+                      shuffle=True)
 
 def valid_dataloader_creator(config):
-    import torch
     from torch.utils.data import DataLoader
     RandomDataset = gen_RandomDataset()
-    from torch.utils.data import DataLoader, Dataset
-    class RandomDataset(Dataset):
-        def __init__(self, size=1000):
-            x, y = get_x_y(size)
-            self.x = torch.from_numpy(x).float()
-            self.y = torch.from_numpy(y).float()
-
-        def __len__(self):
-            return self.x.shape[0]
-    
-        def __getitem__(self, idx):
-            return self.x[idx], self.y[idx]
-
     return DataLoader(RandomDataset(size=400),
                       batch_size=config["batch_size"],
                       shuffle=True)
@@ -129,6 +90,7 @@ def get_auto_estimator(backend='torch'):
 
 
 @op_distributed
+@op_all
 class TestAutoLSTM(TestCase):
     def setUp(self) -> None:
         from bigdl.orca import init_orca_context
@@ -194,7 +156,7 @@ class TestAutoLSTM(TestCase):
         auto_lstm.predict(test_data_x)
         auto_lstm.evaluate((test_data_x, test_data_y))
 
-    @op_all
+    @op_diff_set_all
     @op_onnxrt16
     def test_onnx_methods(self):
         auto_lstm = get_auto_estimator()
@@ -215,7 +177,7 @@ class TestAutoLSTM(TestCase):
         except ImportError:
             pass
 
-    @op_all
+    @op_diff_set_all
     @op_onnxrt16
     def test_save_load(self):
         auto_lstm = get_auto_estimator()

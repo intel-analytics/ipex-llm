@@ -13,33 +13,19 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-<<<<<<< HEAD
 
 from bigdl.chronos.utils import LazyImport
 torch = LazyImport('torch')
-import tensorflow as tf
-=======
-from bigdl.chronos.utils import LazyImport
-DataLoader = LazyImport('torch.utils.data.DataLoader')
-torch = LazyImport('torch')
 tf = LazyImport('tensorflow')
-AutoSeq2Seq = LazyImport('bigdl.chronos.autots.model.auto_seq2seq.AutoSeq2Seq')
-hp = LazyImport('bigdl.orca.automl.hp')
->>>>>>> installation options autots
 import numpy as np
 from unittest import TestCase
 import pytest
 import tempfile
-from torch.utils.data import Dataset
 
-<<<<<<< HEAD
-from ... import op_all, op_onnxrt16
+from ... import op_all, op_distributed, op_onnxrt16, op_tf2, op_torch, op_diff_set_all
 
-from bigdl.chronos.autots.model.auto_seq2seq import AutoSeq2Seq
-from bigdl.orca.automl import hp
-=======
-from ... import op_all, op_distributed, op_onnxrt16, op_tf2, op_torch
->>>>>>> installation options autots
+AutoSeq2Seq = LazyImport('bigdl.chronos.autots.model.auto_seq2seq.AutoSeq2Seq')
+hp = LazyImport('bigdl.orca.automl.hp')
 
 input_feature_dim = 10
 output_feature_dim = 2
@@ -70,7 +56,6 @@ def gen_RandomDataset():
     return RandomDataset
 
 def train_dataloader_creator(config):
-    import torch
     from torch.utils.data import DataLoader
     RandomDataset = gen_RandomDataset()
     return DataLoader(RandomDataset(size=1000),
@@ -79,7 +64,6 @@ def train_dataloader_creator(config):
 
 
 def valid_dataloader_creator(config):
-    import torch
     from torch.utils.data import DataLoader
     RandomDataset = gen_RandomDataset()
     return DataLoader(RandomDataset(size=400),
@@ -109,6 +93,7 @@ def get_auto_estimator(backend='torch'):
 
 
 @op_distributed
+@op_all
 class TestAutoSeq2Seq(TestCase):
     def setUp(self) -> None:
         from bigdl.orca import init_orca_context
@@ -178,11 +163,7 @@ class TestAutoSeq2Seq(TestCase):
         auto_seq2seq.predict(test_data_x)
         auto_seq2seq.evaluate((test_data_x, test_data_y))
 
-<<<<<<< HEAD
-=======
-    @op_torch
->>>>>>> installation options autots
-    @op_all
+    @op_diff_set_all
     @op_onnxrt16
     def test_onnx_methods(self):
         auto_seq2seq = get_auto_estimator()
@@ -203,11 +184,7 @@ class TestAutoSeq2Seq(TestCase):
         except ImportError:
             pass
 
-<<<<<<< HEAD
-=======
-    @op_torch
->>>>>>> installation options autots
-    @op_all
+    @op_diff_set_all
     @op_onnxrt16
     def test_save_load(self):
         auto_seq2seq = get_auto_estimator()

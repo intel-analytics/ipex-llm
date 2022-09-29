@@ -26,8 +26,8 @@ import numpy as np
 from bigdl.chronos.autots import AutoTSEstimator, TSPipeline
 from bigdl.chronos.data import TSDataset
 import pandas as pd
-import tensorflow as tf
-from .. import op_all, op_distributed, op_tf2, op_torch, op_onnxrt16
+
+from .. import op_all, op_distributed, op_tf2, op_torch, op_onnxrt16, op_diff_set_all
 
 
 def get_ts_df():
@@ -118,7 +118,6 @@ def model_creator_pytorch(config):
                          output_size=config["output_feature_num"])
 
 
-@op_tf2
 def model_creator_keras(config):
     '''
     Keras(tf2) customized model creator
@@ -139,6 +138,7 @@ def model_creator_keras(config):
 
 
 @op_distributed
+@op_all
 class TestAutoTrainer(TestCase):
     def setUp(self) -> None:
         from bigdl.orca import init_orca_context
@@ -325,7 +325,7 @@ class TestAutoTrainer(TestCase):
         best_model = auto_estimator._get_best_automl_model()
         assert 4 <= best_config["past_seq_len"] <= 6
 
-    @op_all
+    @op_diff_set_all
     @op_onnxrt16
     def test_fit_lstm_feature(self):
         from sklearn.preprocessing import StandardScaler
@@ -393,7 +393,7 @@ class TestAutoTrainer(TestCase):
         # use tspipeline to incrementally train
         new_ts_pipeline.fit(tsdata_valid)
 
-    @op_all
+    @op_diff_set_all
     @op_onnxrt16
     def test_fit_tcn_feature(self):
         from sklearn.preprocessing import StandardScaler
@@ -462,7 +462,7 @@ class TestAutoTrainer(TestCase):
         # use tspipeline to incrementally train
         new_ts_pipeline.fit(tsdata_valid)
 
-    @op_all
+    @op_diff_set_all
     @op_onnxrt16
     def test_fit_seq2seq_feature(self):
         from sklearn.preprocessing import StandardScaler
@@ -638,8 +638,8 @@ class TestAutoTrainer(TestCase):
         assert config['future_seq_len'] == 2
         assert auto_estimator._future_seq_len == [1, 3]
 
+    @op_diff_set_all
     @op_torch
-    @op_all
     def test_autogener_best_cycle_length(self):
         sample_num = 100
         df = pd.DataFrame({"datetime": pd.date_range('1/1/2019', periods=sample_num),

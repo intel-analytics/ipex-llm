@@ -16,13 +16,16 @@
 
 from bigdl.chronos.utils import LazyImport
 torch = LazyImport('torch')
-import tensorflow as tf
+tf = LazyImport('tensorflow')
 import numpy as np
 from unittest import TestCase
 import pytest
 import tempfile
 
-from ... import op_all, op_torch, op_tf2, op_distributed, op_onnxrt16
+from ... import op_all, op_torch, op_tf2, op_distributed, op_onnxrt16, op_diff_set_all
+
+AutoTCN = LazyImport('bigdl.chronos.autots.model.auto_tcn.AutoTCN')
+hp = LazyImport('bigdl.orca.automl.hp')
 
 input_feature_dim = 10
 output_feature_dim = 2
@@ -54,7 +57,6 @@ def gen_RandomDataset():
 
 
 def train_dataloader_creator(config):
-    import torch
     from torch.utils.data import DataLoader
     RandomDataset = gen_RandomDataset()
     return DataLoader(RandomDataset(size=1000),
@@ -63,7 +65,6 @@ def train_dataloader_creator(config):
 
 
 def valid_dataloader_creator(config):
-    import torch
     from torch.utils.data import DataLoader
     RandomDataset = gen_RandomDataset()
     return DataLoader(RandomDataset(size=400),
@@ -94,6 +95,7 @@ def get_auto_estimator(backend='torch'):
 
 
 @op_distributed
+@op_all
 class TestAutoTCN(TestCase):
     def setUp(self) -> None:
         from bigdl.orca import init_orca_context
@@ -201,7 +203,7 @@ class TestAutoTCN(TestCase):
         auto_tcn.predict(test_data_x)
         auto_tcn.evaluate((test_data_x, test_data_y))
 
-    @op_all
+    @op_diff_set_all
     @op_onnxrt16
     def test_onnx_methods(self):
         auto_tcn = get_auto_estimator()
@@ -224,7 +226,7 @@ class TestAutoTCN(TestCase):
         except ImportError:
             pass
 
-    @op_all
+    @op_diff_set_all
     @op_onnxrt16
     def test_save_load(self):
         auto_tcn = get_auto_estimator()

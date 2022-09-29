@@ -23,9 +23,8 @@ import numpy as np
 import pandas as pd
 import tempfile
 from unittest import TestCase
-from bigdl.orca.automl import hp
 from ... import op_tmp_skip
-from ... import op_all, op_distributed, op_torch
+from ... import op_all, op_distributed, op_torch, op_diff_set_all
 
 
 def get_data():
@@ -39,6 +38,7 @@ def get_data():
 @op_tmp_skip
 @op_distributed
 @op_all
+@op_diff_set_all
 class TestAutoProphet(TestCase):
     def setUp(self) -> None:
         from bigdl.orca import init_orca_context

@@ -20,7 +20,7 @@ hp = LazyImport('bigdl.orca.automl.hp')
 
 import numpy as np
 from unittest import TestCase
-from ... import op_all, op_torch, op_distributed
+from ... import op_all, op_torch, op_distributed, op_diff_set_all
 
 
 def get_data():
@@ -34,6 +34,7 @@ def get_data():
 
 @op_distributed
 @op_all
+@op_diff_set_all
 class TestAutoARIMA(TestCase):
     def setUp(self) -> None:
         from bigdl.orca import init_orca_context
@@ -62,7 +63,6 @@ class TestAutoARIMA(TestCase):
 
     @op_torch
     def test_fit_metric(self):
-        # TODO op_all
         data, validation_data = get_data()
         from torchmetrics.functional import mean_squared_error
         import torch
