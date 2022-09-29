@@ -128,7 +128,7 @@ def to_pandas(data: dict) -> Union[Matrix, Vector, Scalar, String]:
 def metric_name(metric: dict) -> str:
     """Convert metric labels to standard form."""
     name = metric.get('__name__', '')
-    labels = ','.join(('{}={}'.format(k, json.dumps(v)) for k, v in metric.items() \
+    labels = ','.join(('{}={}'.format(k, json.dumps(v)) for k, v in metric.items()
                       if k != '__name__'))
     return '{0}{{{1}}}'.format(name, labels)
 
