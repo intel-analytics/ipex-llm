@@ -12,7 +12,7 @@ The recommended windows version is Windows 10 version 2004 or higher (Build 1904
 
 ### Install WSL2
 
-To install WSL2, simply open a PowerShell or Windows Command Prompt as **administrator** and enter the below command. Remember to restart your machine after the command completes.
+To install WSL2, simply open a PowerShell or Windows Command Prompt as **administrator** and enter the below command. Restart your machine and wait till WSL2 is successfully installed.
 
 ```powershell
 wsl --install
@@ -27,15 +27,12 @@ By default, the command installs the latest required components for WSL2 and ins
 
 ## Installation Guide
 
-You can treat WSL2 shell window as a nomral Linux shell and follow BigDL Linux guides to install BigDL.
+You can treat WSL2 shell window as a normal Linux shell and run commands in it. If you're using WSL2 shell for the first time, it may require you to set up some user information.
 
 
 ### Install Conda
 
-Fist, start a new WSL2 shell. If you're using WSL2 shell for the first time, it may require you to set up some user information.
-
-Then, download and install conda (conda is the recommend way to manage the BigDL environment). On WSL, you need to use a conda Linux version as shown in the example command below. For more available conda versions, refer to [conda install](https://conda.io/projects/conda/en/latest/user-guide/install/index.html), or [miniconda install](https://docs.conda.io/en/main/miniconda.html).
-
+Conda is the recommend way to manage the BigDL environment. Download and install conda using below commands.
 
 ```bash
 wget https://repo.continuum.io/miniconda/Miniconda3-4.5.4-Linux-x86_64.sh
@@ -43,6 +40,10 @@ chmod +x Miniconda3-4.5.4-Linux-x86_64.sh
 ./Miniconda3-4.5.4-Linux-x86_64.sh
 ```
 
+```eval_rst
+.. note::
+    On WSL, you need to use a conda Linux version intead of a Windows version. For more available conda versions, refer to `conda install <https://conda.io/projects/conda/en/latest/user-guide/install/index.html>`_, or `miniconda install <https://docs.conda.io/en/main/miniconda.html>`_.
+```
 ### Install BigDL
 
 After installing conda, create and activate an environment for bigdl.
@@ -58,7 +59,6 @@ Then install BigDL, or BigDL-Nano, BigDL-Chronos, etc.
 pip install bigdl
 ```
 
-
 ```eval_rst
 .. card::
 
@@ -66,7 +66,7 @@ pip install bigdl
     ^^^
     * `BigDL Installation Guide <../UserGuide/python>`_
     * `Nano Installation Guide <../Nano/Overview/nano.html#install>`_
-    * `Chronos Installation Guide` <../Chronos/Overview/chronos.html#install>
+    * `Chronos Installation Guide <../Chronos/Overview/chronos.html#install>`_
 ```
 
 ### Setup Jupyter Notebook Environment
@@ -83,33 +83,27 @@ jupyter lab --no-browser
 ```
 Note that the default workspace of jupyter is located at the directory where you ran this command.
 
-Then you can copy and paste the full URL listed in the terminal to open the GUI interface.
-
-
-## Developer Guide
+Then you can copy and paste the full URL shown on the terminal to open the Jupyter GUI.
 
 
 ## Tips and Known Issues
 
-### ImportError: libgomp.so.1: cannot open shared object file: No such file or directory
+### `ImportError: libgomp.so.1: cannot open shared object file: No such file or directory`
 
-This error may appear when you try to import torch, which is due to Ubuntu 14.04 or later does not install libgomp1 by default. Fix it by running:
+This error may appear when you try to import torch. This is caused by Ubuntu 14.04 or later not installing libgomp1 by default. Just install libgomp1 to resolve it:
 
 ```bash
 sudo apt-get install libgomp1
 ```
 
-### Extremely slow training when BF16 is on
+### Slow PyTorch training with BF16
 
-Using BFloat16 mixed precision in PyTorch or PyTorch-Lightning training may result in around 150x slower than the traditional way.
+Using BFloat16 mixed precision in PyTorch or PyTorch-Lightning training may be much slower than FP32. (Results on a laptop with i5-8350U and 8G memory)
 
-### WARNING:root:avx512 disabled, fall back to non-ipex mode.
-
-The IPEX extension delivers optimizations for PyTorch on Intel hardware which has AVX-512 Vector Neural Network Instructions. Devices whose CPU does not support AVX-512 will fall back to non-ipex mode.
 
 ### ERROR: Could not build wheels for pycocotools, which is required to install pyproject.toml-based projects
 
-This error is usually caused by lacking GCC library to build pycocotools, which is a dependency of neural-compressor for quantization inference, which can be solved by:
+pycocotools is a dependency of Intel neural-compressor which is used for inference quantization in BigDL-Nano. This error is usually caused by GCC library not installed in system.  Just install gcc to resolve it:
 
 ```bash
 sudo apt-get install gcc
@@ -117,7 +111,7 @@ sudo apt-get install gcc
 
 ### ValueError: After taking into account object store and redis memory usage, the amount of memory on this node available for tasks and actors is less than -75% of total.
 
-Setting the memory limit of ray too large will raise this error. Fix it by decreasing the memory settings, for example (on a laptop with 8G memory):
+When running ray applications, you need to set the `memory` and `object_store_memory` properly according to your system memory capacity. This error indicates you have used too large memory configurations and you need to decrease them. For example on a laptop with 8G memory, you may set the memory configurations as below:
 
 ```bash
 python yoloV3.py --memory 2g --object_store_memory 1g
