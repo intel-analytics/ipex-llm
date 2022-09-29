@@ -98,7 +98,7 @@ sudo apt-get install libgomp1
 
 ### Slow PyTorch training with BF16
 
-Using BFloat16 mixed precision in PyTorch or PyTorch-Lightning training may be much slower than FP32. (Results on a laptop with i5-8350U and 8G memory)
+Using BFloat16 mixed precision in PyTorch or PyTorch-Lightning training may be much slower than FP32.
 
 
 ### ERROR: Could not build wheels for pycocotools, which is required to install pyproject.toml-based projects
