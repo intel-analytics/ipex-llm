@@ -1,4 +1,4 @@
-name: BigDL Deploy Pypi Release More Than Once Per Day
+name: BigDL Release Pypi More Than Once Per Day
 
 on:
   workflow_dispatch:
