@@ -461,7 +461,7 @@ class RandomResizedCrop(object):
                 "Argument interpolation should be of type InterpolationMode instead of int."
                 "Please, use InterpolationMode enum."
             )
-            # note: the RandomResizedCrop class only accepts a single number as size, 
+            # note: the RandomResizedCrop class only accepts a single number as size,
             # and uses self.size = (size, size) as the target size
             # this maybe a bug of opencv_transforms, but we have to change our code for now
             self.cv_F = cv_t.RandomResizedCrop(self.size[0], self.scale, self.ratio, interpolation)
