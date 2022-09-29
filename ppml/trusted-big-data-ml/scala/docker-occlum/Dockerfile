@@ -176,6 +176,11 @@ ARG HTTP_PROXY_PORT
 ARG HTTPS_PROXY_HOST
 ARG HTTPS_PROXY_PORT
 
+RUN apt-get update && DEBIAN_FRONTEND="noninteractive" apt-get install -y --no-install-recommends \
+    unzip && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/*
+
 RUN echo "auth required pam_wheel.so use_uid" >> /etc/pam.d/su && \
     chgrp root /etc/passwd && chmod ug+rw /etc/passwd 
 
