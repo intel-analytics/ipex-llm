@@ -66,7 +66,7 @@ def _time_interval_check(df_column):
 
 
 def _missing_value_check(df, dt_col, threshold=0.2):
-    for column in df.columns():
+    for column in df.columns:
         if column == dt_col:
             continue
         df_col = df[column]

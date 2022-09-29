@@ -64,15 +64,15 @@ class TestImputeTimeSeries(TestCase):
 
     def test_missing_check(self):
         df = get_missing_df()
-        with pytest.raises(RuntimeError):
-            quality_check_timeseries_dataframe(df, "datetime")
+        flag = quality_check_timeseries_dataframe(df, "datetime")
+        assert flag is False
 
     def test_time_interval_check(self):
         df = get_multi_interval_df()
-        with pytest.raises(RuntimeError):
-            quality_check_timeseries_dataframe(df, "datetime")
+        flag = quality_check_timeseries_dataframe(df, "datetime")
+        assert flag is False
 
     def test_non_dt_type_check(self):
         df = get_non_dt_df()
-        with pytest.raises(RuntimeError):
-            quality_check_timeseries_dataframe(df, "datetime")
+        flag = quality_check_timeseries_dataframe(df, "datetime")
+        assert flag is False
