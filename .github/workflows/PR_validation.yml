@@ -112,7 +112,7 @@ jobs:
 
   Orca-Python-ExampleTest-Py37-Spark3:
     needs: changes
-    #if: ${{ needs.changes.outputs.orca == 'true' }}
+    if: ${{ needs.changes.outputs.orca == 'true' }}
     runs-on: [self-hosted, Gondolin, ubuntu-20.04-lts]
 
     steps:
@@ -131,7 +131,7 @@ jobs:
 
   Orca-Python-ExampleTest-Ray-Py37-Spark3:
     needs: changes
-    #if: ${{ needs.changes.outputs.orca == 'true' }}
+    if: ${{ needs.changes.outputs.orca == 'true' }}
     runs-on: [self-hosted, Gondolin, ubuntu-20.04-lts]
 
     steps:
@@ -150,7 +150,7 @@ jobs:
 
   Orca-Python-ExampleTest-Horovod-Pytorch-Py37-Spark3:
     needs: changes
-    #if: ${{ needs.changes.outputs.orca == 'true' }}
+    if: ${{ needs.changes.outputs.orca == 'true' }}
     runs-on: [self-hosted, Gondolin, ubuntu-20.04-lts]
 
     steps:
@@ -169,7 +169,7 @@ jobs:
 
   Orca-Python-ExampleTest-Horovod-Tf-Py37-Spark3:
     needs: changes
-    #if: ${{ needs.changes.outputs.orca == 'true' }}
+    if: ${{ needs.changes.outputs.orca == 'true' }}
     runs-on: [self-hosted, Gondolin, ubuntu-20.04-lts]
 
     steps:
@@ -226,7 +226,7 @@ jobs:
   
   Orca-Python-Ray-Py37-Spark3:
     needs: changes
-    #if: ${{ needs.changes.outputs.orca == 'true' }}
+    if: ${{ needs.changes.outputs.orca == 'true' }}
     runs-on: [self-hosted, Gondolin, ubuntu-20.04-lts]
 
     steps:
@@ -245,7 +245,7 @@ jobs:
 
   Orca-Python-Horovod-Tf2-Py37-Spark3:
     needs: changes
-    #if: ${{ needs.changes.outputs.orca == 'true' }}
+    if: ${{ needs.changes.outputs.orca == 'true' }}
     runs-on: [self-hosted, Gondolin, ubuntu-20.04-lts]
 
     steps:
@@ -264,7 +264,7 @@ jobs:
 
   Orca-Python-Horovod-Pytorch-Py37-Spark3:
     needs: changes
-    #if: ${{ needs.changes.outputs.orca == 'true' }}
+    if: ${{ needs.changes.outputs.orca == 'true' }}
     runs-on: [self-hosted, Gondolin, ubuntu-20.04-lts]
 
     steps:
