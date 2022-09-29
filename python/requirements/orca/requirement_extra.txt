@@ -6,7 +6,6 @@ numpy
 onnx
 onnxruntime
 Pillow
-psutil
 py4j
 pyarrow
 pyspark
