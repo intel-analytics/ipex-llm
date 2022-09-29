@@ -46,7 +46,7 @@ import requests
 
 from bigdl.nano.utils.log4Error import invalidInputError
 
-Timestamp = Union[str, float, datetime.datetime]  # RFC-3339 string or as a Unix timestamp in seconds
+Timestamp = Union[str, float, datetime.datetime]  # RFC-3339 string or a Unix timestamp in seconds
 Duration = Union[str, datetime.timedelta]  # Prometheus duration string
 Matrix = pd.DataFrame
 Vector = pd.Series
@@ -71,7 +71,8 @@ class Prometheus:
     def __exit__(self, exc_type, exc_val, exc_tb):
         self.http.close()
 
-    def query_range(self, query: str, start: Timestamp, end: Timestamp, step: Union[Duration, float],
+    def query_range(self, query: str, start: Timestamp, end: Timestamp,
+                    step: Union[Duration, float],
                     timeout: Optional[Duration] = None) -> Matrix:
         """
         Evaluates an expression query over a range of time.
@@ -83,7 +84,8 @@ class Prometheus:
         :param timeout: Evaluation timeout. Optional.
         :return: Pandas DataFrame.
         """
-        params = {'query': query, 'start': _timestamp(start), 'end': _timestamp(end), 'step': _duration(step)}
+        params = {'query': query, 'start': _timestamp(start), 'end': _timestamp(end),
+                  'step': _duration(step)}
 
         if timeout is not None:
             params['timeout'] = _duration(timeout)
@@ -126,7 +128,8 @@ def to_pandas(data: dict) -> Union[Matrix, Vector, Scalar, String]:
 def metric_name(metric: dict) -> str:
     """Convert metric labels to standard form."""
     name = metric.get('__name__', '')
-    labels = ','.join(('{}={}'.format(k, json.dumps(v)) for k, v in metric.items() if k != '__name__'))
+    labels = ','.join(('{}={}'.format(k, json.dumps(v)) for k, v in metric.items() \
+                      if k != '__name__'))
     return '{0}{{{1}}}'.format(name, labels)
 
 
@@ -177,7 +180,7 @@ def GetRangeDataframe(prometheus_url, query, starttime, endtime, step, columns, 
                           "The input " + col + " is not found in collected Prometheus data.")
         if columns[col] != []:
             if len(columns[col]) == 1:
-                output_columns[col] = columns[col][0] # id_col is str
+                output_columns[col] = columns[col][0]  # id_col is str
             else:
                 output_columns[col] = columns[col]
         if output_columns[col] is not None:
