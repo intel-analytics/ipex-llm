@@ -373,8 +373,15 @@ jobs:
       uses: ./.github/actions/jdk-setup-action
     - name: Set up maven
       uses: ./.github/actions/maven-setup-action
+    - name: set env
+      env:
+        DEFAULT_TAG: 'latest'
+      run: |
+        echo "TAG=${{ github.event.inputs.tag || env.DEFAULT_TAG }} " >> $GITHUB_ENV
     - name: Run test
       uses: ./.github/actions/ppml/ppml-spark-pyspark-sql-ut-on-gramine-action
+      with:
+        image-tag: ${{env.TAG}}
     - name: Create Job Badge
       uses: ./.github/actions/create-job-status-badge
       if: ${{ always() }}
