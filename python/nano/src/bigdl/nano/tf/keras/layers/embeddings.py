@@ -21,7 +21,7 @@ from tensorflow.keras.layers import Embedding as TFEmbedding
 
 class Embedding(TFEmbedding):
     """
-    A slightly modified version of tf.keras.Embedding layer.
+    A slightly modified version of tf.keras Embedding layer.
 
     This embedding layer only apply regularizer to the output of the embedding
     layers, so that the gradient to embeddings is sparse.
@@ -38,7 +38,7 @@ class Embedding(TFEmbedding):
                  input_length=None,
                  **kwargs):
         """
-        Create a slightly modified version of tf.keras.Embedding layer.
+        Create a slightly modified version of tf.keras Embedding layer.
 
         :param input_dim: Integer. Size of the vocabulary,
             i.e. maximum integer index + 1.
@@ -65,6 +65,7 @@ class Embedding(TFEmbedding):
             This argument is required if you are going to connect
             `Flatten` then `Dense` layers upstream
             (without it, the shape of the dense outputs cannot be computed).
+        :param kwargs: Keyword arguments passed to tf.keras.layers.Embedding
         """
         if embeddings_regularizer is not None and activity_regularizer is None:
             warnings.warn(
