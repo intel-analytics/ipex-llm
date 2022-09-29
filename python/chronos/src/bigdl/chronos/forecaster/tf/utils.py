@@ -50,7 +50,6 @@ def np_to_xshards(data):
     _shards = XShards.partition(data)
 
     def transform_to_dict(data):
-        data = data[0] if isinstance(data, Iterable) else data
         return {"x": data}
     return _shards.transform_shard(transform_to_dict)
 
