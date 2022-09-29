@@ -21,7 +21,7 @@ permissions:
 jobs:
   bigdl-release-python-pypi:
     runs-on: [self-hosted, ubuntu-20.04-lts, Bree]
-
+    if: ${{ github.actor == 'Le-Zheng' }}
     steps:
     - uses: actions/checkout@v3
     - name: Set up JDK8
