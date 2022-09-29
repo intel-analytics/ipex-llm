@@ -35,7 +35,7 @@ def get_args_parser() -> ArgumentParser:
     parser.add_argument(
         "--image",
         type=str,
-        default="10.239.45.10/arda/nano-run",
+        default="yangw1234/bigdl-submit-demo:latest",
         help="Rank of the node for multi-node distributed training.",
     )
 
