@@ -7,7 +7,7 @@ runs:
     - name: Set Variable
       shell: bash
       env:
-        DEFAULT_IMAGE: 10.239.45.10/arda/intelanalytics/bigdl-ppml-trusted-big-data-ml-python-gramine:devel
+        DEFAULT_IMAGE: 10.239.45.10/arda/intelanalytics/bigdl-ppml-trusted-big-data-ml-python-gramine:latest
       run: |
         echo "CONTAINER_NAME=spark-pyspark-ut-test-gramine" >> $GITHUB_ENV
         echo "IMAGE=${{ env.DEFAULT_IMAGE }}" >> $GITHUB_ENV
