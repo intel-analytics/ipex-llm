@@ -158,6 +158,7 @@ RUN cd /opt && \
     sbt package
 
 #FROM occlum/occlum:0.28.1-ubuntu20.04 as ppml
+FROM ubuntu:20.04
 
 ARG BIGDL_VERSION=2.1.0-SNAPSHOT
 ARG SPARK_VERSION
@@ -204,9 +205,9 @@ RUN apt-get update && \
     apt-get clean
 
 # prepare Spark
-#COPY --from=bigdl /opt/spark /opt/spark
-#COPY --from=bigdl /opt/libhadoop.so /opt/libhadoop.so
-#COPY --from=bigdl /opt/spark-source /opt/spark-source
+COPY --from=bigdl /opt/spark /opt/spark
+COPY --from=bigdl /opt/libhadoop.so /opt/libhadoop.so
+COPY --from=bigdl /opt/spark-source /opt/spark-source
 
 # Prepare BigDL
 RUN cd /opt && \
@@ -216,7 +217,7 @@ RUN cd /opt && \
     rm bigdl*.zip
 
 # Prepare Tpc-H
-RUN cp /opt/zoo-tutorials/tpch-spark/target/scala-2.12/spark-tpc-h-queries_2.12-1.0.jar $SPARK_HOME/jars
+COPY --from=bigdl /opt/zoo-tutorials/tpch-spark/target/scala-2.12/spark-tpc-h-queries_2.12-1.0.jar $SPARK_HOME/jars
 
 # Copy scripts & other files
 ADD ./run_spark_on_occlum_glibc.sh /opt/run_spark_on_occlum_glibc.sh
