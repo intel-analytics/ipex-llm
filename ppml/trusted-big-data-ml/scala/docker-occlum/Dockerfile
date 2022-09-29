@@ -230,4 +230,6 @@ RUN chmod a+x /opt/entrypoint.sh && \
     sed -i '/aesm/d' /root/.bashrc && \
     rm -rf /var/run/aesmd
 
+ENV PATH="/opt/occlum/build/bin:/usr/local/occlum/bin:$PATH"
+
 ENTRYPOINT [ "/opt/entrypoint.sh" ]
