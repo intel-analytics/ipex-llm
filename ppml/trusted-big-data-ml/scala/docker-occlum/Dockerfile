@@ -225,8 +225,8 @@ RUN cd /opt && \
 # Prepare Attestation
 ADD ./build_content.sh /root/demos/remote_attestation/init_ra_flow/
 ADD ./run_attestation_server.sh /root/demos/remote_attestation/init_ra_flow/
-RUN cd /root/demos/remote_attestation/init_ra_flow/ && \
-    bash build_content.sh build_ra_tls
+#RUN cd /root/demos/remote_attestation/init_ra_flow/ && \
+#    bash build_content.sh build_ra_tls
 # Prepare Tpc-H
 COPY --from=bigdl /opt/zoo-tutorials/tpch-spark/target/scala-2.12/spark-tpc-h-queries_2.12-1.0.jar $SPARK_HOME/jars
 
