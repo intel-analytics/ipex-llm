@@ -494,10 +494,6 @@ jobs:
 
     steps:
     - uses: actions/checkout@v3
-    - name: Set up JDK8
-      uses: ./.github/actions/jdk-setup-action
-    - name: Set up maven
-      uses: ./.github/actions/maven-setup-action
     - name: Run Test
       uses: ./.github/actions/ppml-occlum-k8s-exampletests-action
     - name: Create Job Badge
