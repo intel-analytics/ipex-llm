@@ -11,8 +11,8 @@ py4j
 pyarrow
 pyspark
 six
-tensorflow~=2.9.1
-tensorflow_estimator~=2.9.0
+tensorflow
+tensorflow_estimator
 torch
 torchmetrics
 tqdm
