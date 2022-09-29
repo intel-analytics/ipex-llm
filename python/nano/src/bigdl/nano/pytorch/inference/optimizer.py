@@ -34,7 +34,9 @@ from bigdl.nano.deps.onnxruntime.onnxruntime_api import PytorchONNXRuntimeModel
 from bigdl.nano.deps.neural_compressor.inc_api import quantize as inc_quantize
 from bigdl.nano.utils.inference.pytorch.model import AcceleratedLightningModule
 from bigdl.nano.utils.inference.pytorch.model_utils import get_forward_args, get_input_example
+from bigdl.nano.utils.inference.pytorch.metrics import NanoMetric
 from bigdl.nano.pytorch.utils import TORCH_VERSION_LESS_1_10, save_model, load_model
+from torchmetrics import Metric
 import warnings
 # Filter out useless Userwarnings
 warnings.filterwarnings('ignore', category=UserWarning, module='pytorch_lightning')
@@ -140,14 +142,12 @@ class InferenceOptimizer:
         :param validation_data: (optional) A pytorch dataloader for accuracy evaluation
                This is only needed when users care about the possible accuracy drop.
         :param metric: (optional) A callable object which is used for calculating accuracy.
-               1. If validation_data is composed of (input_data, target), metric could be
-               a torchmetrics.metric.Metric or similar object or function which takes
-               prediction and target then returns an accuracy value in this
-               calling method `accuracy = metric(pred, target)`.
-               2. Otherwise you can define a custom metric in this calling
-               method `accuracy = metric(model, batch_data)`.
-               3. Metric can even only recieve model as input in this calling
-               method `accuracy = metric(model)`, like coco_evaluator.
+               It supports two kinds of callable object:
+               1. A torchmetrics.Metric object takes prediction and target and returns
+               an accuracy value in this calling method `metric(pred, target)`
+               2. A callable object that takes model and data_loader as input and returns
+               an accuracy value in this calling method
+               `accuracy = metric(model, validation_data)`.
         :param direction: (optional) A string that indicates the higher/lower
                better for the metric, "min" for the lower the better and "max" for the
                higher the better. Default value is "max".
@@ -339,6 +339,9 @@ class InferenceOptimizer:
                        use_ipex: bool = None,
                        accuracy_criterion: float = None) -> Tuple[nn.Module, str]:
         '''
+        According to results of `optimize`, obtain the model with minimum latency under
+        specific restrictions or without restrictions.
+
         :param accelerator: (optional) Use accelerator 'None', 'onnxruntime',
                'openvino', 'jit', defaults to None. If not None, then will only find the
                model with this specific accelerator.
@@ -771,23 +774,9 @@ def _accuracy_calculate_helper(model, metric, data):
     '''
     A quick helper to calculate accuracy
     '''
-    with torch.no_grad():
-        if data is not None:
-            try:
-                # for normal cases, assume validation data is composed of input_data and target
-                metric_list = []
-                sample_num = 0
-                for i, (data_input, target) in enumerate(data):
-                    metric_list.append(
-                        metric(model(data_input), target).numpy() * data_input.shape[0])
-                    sample_num += data_input.shape[0]
-                return np.sum(metric_list) / sample_num
-            except Exception:
-                # metric itself defines how to calculate accuracy
-                return metric(model, data)
-        else:
-            # special cases, i.g. coco_evaluator, which only recieves model as input
-            return metric(model)
+    if isinstance(metric, Metric):
+        metric = NanoMetric(metric)
+    return metric(model, data)
 
 
 def _format_acceleration_option(method_name: str) -> str:
