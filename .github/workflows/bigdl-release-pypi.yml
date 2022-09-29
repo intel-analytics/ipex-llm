@@ -45,8 +45,8 @@ jobs:
       run: |
         export TIMESTAMP=`date '+%Y%m%d'`
         echo ${PYPI_VERSION}
-        #nb_version=${PYPI_VERSION}
-        nb_version=${PYPI_VERSION}b${TIMESTAMP}1
+        nb_version=${PYPI_VERSION}
+        #nb_version=${PYPI_VERSION}b${TIMESTAMP}1
         echo ${nb_version}
 
         ## windows ##
