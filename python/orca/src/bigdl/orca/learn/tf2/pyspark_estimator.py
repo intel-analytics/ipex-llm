@@ -350,7 +350,7 @@ class SparkTFEstimator():
             size=self.num_workers,
             model_weights=weights,
             mode="predict",
-            cluster_info=None,
+            cluster_info=None,  # cluster_info is not needed for predict
             model_dir=self.model_dir,
             application_id=self.application_id,
             need_to_log_to_driver=self.need_to_log_to_driver,
