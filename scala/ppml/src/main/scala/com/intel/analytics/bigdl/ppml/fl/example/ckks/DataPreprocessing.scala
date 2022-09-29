@@ -100,38 +100,6 @@ class DataPreprocessing(spark: SparkSession,
 
   def loadCensusData():
     (DataSet[MiniBatch[Float]], DataSet[MiniBatch[Float]]) = {
-//    val training = spark.sparkContext
-//      .textFile(trainDataPath)
-//      .map(_.split(",").map(_.trim))
-//      .map(array => {
-//        val castedArray = new Array[Any](array.size)
-//        array.indices.foreach(i => {
-//          if (array(i).forall(Character.isDigit(_))) {
-//            castedArray(i) = array(i).toInt
-//          } else {
-//            castedArray(i) = array(i)
-//          }
-//        })
-//        val r = Row(castedArray: _*)
-//        r
-//      })
-//
-//    val validation = spark.sparkContext
-//      .textFile(testDataPath)
-//      .map(_.dropRight(1)) // remove dot at the end of each line in adult.test
-//      .map(_.split(",").map(_.trim))
-//      .map(array => {
-//        val castedArray = new Array[Any](array.size)
-//        array.indices.foreach(i => {
-//          if (array(i) != "" && array(i).forall(Character.isDigit(_))) {
-//            castedArray(i) = array(i).toInt
-//          } else {
-//            castedArray(i) = array(i)
-//          }
-//        })
-//        Row(castedArray: _*)
-//      })
-
       val training = spark.sparkContext
         .textFile(trainDataPath)
         .map(_.split(",").map(_.trim))
@@ -186,13 +154,9 @@ class DataPreprocessing(spark: SparkSession,
     val trainpairFeatureRdds =
       assemblyFeature(isImplicit, trainDf, localColumnInfo, modelType)
 
-    val sample1 = trainpairFeatureRdds.take(10)
-
     val validationpairFeatureRdds =
       assemblyFeature(isImplicit, valDf, localColumnInfo, modelType)
 
-
-    val sample2batch = SampleToMiniBatch[Float](batchSize)
     val trainDataset = DataSet.array(
       trainpairFeatureRdds.map(_.sample).collect()) -> SampleToMiniBatch[Float](batchSize)
     val validationDataset = DataSet.array(
