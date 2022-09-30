@@ -16,47 +16,19 @@
 # Most of the pytorch code is adapted from guoyang9's NCF implementation for
 # ml-1m dataset.
 # guoyang9's source code: https://github.com/guoyang9/NCF
-# MovieLens 1M Dataset: https://grouplens.org/datasets/movielens/1m/
 #
 
 import os
 import time
-import argparse
 import numpy as np
 import pandas as pd 
 import scipy.sparse as sp
-
 import torch
 import torch.nn as nn
 import torch.optim as optim
 import torch.utils.data as data
 import torch.nn.functional as F 
 from model import NCF
-
-#Step 0: Parameters And Configuration
-
-parser = argparse.ArgumentParser()
-parser.add_argument("--dataset", 
-    type=str, 
-    default="ml-1m", 
-    help="dataset name")
-parser.add_argument("--model", 
-    type=str, 
-    default="NeuMF-end", 
-    help="model name")
-parser.add_argument("--backend", 
-    type=str, 
-    default="spark", 
-    help="backend used in estimator, ray or spark are supported")
-parser.add_argument("--user_num", 
-    type=int, 
-    default=6040, 
-    help="total user num in the ml-1m dataset")
-parser.add_argument("--item_num", 
-    type=int, 
-    default=3952, 
-    help="total item num in the ml-1m dataset")
-args = parser.parse_args()
 
 #Step 1: Init Orca Context
 
@@ -70,9 +42,12 @@ from bigdl.orca.data.pandas import read_csv
 from sklearn.model_selection import train_test_split
 
 # prepare the train and test datasets
+user_num = 6040
+item_num = 3952
+
 def preprocess_data():   
     data_X = read_csv(
-        args.dataset+"/ratings.dat", 
+        "ml-1m/ratings.dat", 
         sep="::", header=None, names=['user', 'item'], 
         usecols=[0, 1], dtype={0: np.int32, 1: np.int32})  
     data_X = data_X.partition_by("user", data_X.num_partitions())
@@ -87,7 +62,7 @@ def ng_sampling(data):
     data_X = data.values.tolist()
 
     #calculate a dok matrix
-    train_mat = sp.dok_matrix((args.user_num, args.item_num), dtype=np.int64)
+    train_mat = sp.dok_matrix((user_num, item_num), dtype=np.int64)
     for row in data_X:
         train_mat[row[0], row[1]] = 1
 
@@ -97,9 +72,9 @@ def ng_sampling(data):
     for x in features_ps:
         u = x[0]
         for t in range(4):# sample 4 negative items for training
-            j = np.random.randint(args.item_num)
+            j = np.random.randint(item_num)
             while (u, j) in train_mat:
-                j = np.random.randint(args.item_num)
+                j = np.random.randint(item_num)
             features_ng.append([u, j])
 
     labels_ps = [1 for _ in range(len(features_ps))]
@@ -129,7 +104,7 @@ train_shards, test_shards = data_X.transform_shard(transform_to_dict).split()
 
 # create the model
 def model_creator(config):
-    model = NCF(args.user_num, args.item_num, factor_num=32, num_layers=3, dropout=0.0, model=args.model) # a torch.nn.Module
+    model = NCF(user_num, item_num, factor_num=32, num_layers=3, dropout=0.0, model="NeuMF-end") # a torch.nn.Module
     model.train()
     return model
 
@@ -146,7 +121,7 @@ from bigdl.orca.learn.pytorch import Estimator
 from bigdl.orca.learn.metrics import Accuracy, AUC
 
 # create the estimator
-est = Estimator.from_torch(model=model_creator, optimizer=optimizer_creator, loss=loss_function, metrics=[Accuracy(), AUC()], backend=args.backend)# backend="ray" or "spark"
+est = Estimator.from_torch(model=model_creator, optimizer=optimizer_creator, loss=loss_function, metrics=[Accuracy(), AUC()], backend="spark")# backend="ray" or "spark"
 
 # fit the estimator
 est.fit(data=train_shards, epochs=5, batch_size=256, feature_cols=["x"], label_cols =["y"])
