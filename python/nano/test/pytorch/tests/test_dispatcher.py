@@ -17,7 +17,7 @@
 from unittest import TestCase
 
 
-class TestChannelsLast(TestCase):
+class TestDispatcherPytorch(TestCase):
 
     def test_dispatch_pytorch(self):
         from bigdl.nano import patch_nano, unpatch_nano

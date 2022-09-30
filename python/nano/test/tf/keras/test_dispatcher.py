@@ -17,7 +17,7 @@
 from unittest import TestCase
 
 
-class TestChannelsLast(TestCase):
+class TestDispatcherKeras(TestCase):
 
     def test_dispatch_keras(self):
         from bigdl.nano import patch_nano, unpatch_nano
