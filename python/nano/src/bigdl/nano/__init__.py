@@ -60,14 +60,14 @@ def _get_patch_map():
         from bigdl.nano.tf.optimizers import SparseAdam
         from bigdl.nano.tf.keras.layers import Embedding
         mapping_tf += [
-                        [tensorflow.keras, "Model", Model, None],
-                        [tensorflow.keras, "Sequential", Sequential, None],
-                        [tensorflow.keras.optimizers, "Adam", SparseAdam, None],
-                        [tensorflow.keras.layers, "Embedding", Embedding, None],
-                        [keras, "Model", Model, None],
-                        [keras, "Sequential", Sequential, None],
-                        [keras.layers, "Embedding", Embedding, None]
-                      ]
+            [tensorflow.keras, "Model", Model, None],
+            [tensorflow.keras, "Sequential", Sequential, None],
+            [tensorflow.keras.optimizers, "Adam", SparseAdam, None],
+            [tensorflow.keras.layers, "Embedding", Embedding, None],
+            [keras, "Model", Model, None],
+            [keras, "Sequential", Sequential, None],
+            [keras.layers, "Embedding", Embedding, None]
+        ]
 
     if patch_torch:
         import pytorch_lightning
@@ -76,10 +76,10 @@ def _get_patch_map():
         from bigdl.nano.pytorch.vision import transforms
         from bigdl.nano.pytorch.vision import datasets
         mapping_torch += [
-                            [pytorch_lightning, "Trainer", Trainer, None],
-                            [torchvision, "transforms", transforms, None],
-                            [torchvision, "datasets", datasets, None],
-                         ]
+            [pytorch_lightning, "Trainer", Trainer, None],
+            [torchvision, "transforms", transforms, None],
+            [torchvision, "datasets", datasets, None],
+        ]
 
     return mapping_tf, mapping_torch
 
@@ -112,7 +112,7 @@ def patch_nano(patch_tf=None, patch_torch=None):
         for mapping_iter in mapping_tf:
             mapping_iter[3] = getattr(mapping_iter[0], mapping_iter[1], None)
             setattr(mapping_iter[0], mapping_iter[1], mapping_iter[2])
-    
+
     if patch_torch:
         for mapping_iter in mapping_torch:
             mapping_iter[3] = getattr(mapping_iter[0], mapping_iter[1], None)
@@ -138,7 +138,7 @@ def unpatch_nano(unpatch_tf=None, unpatch_torch=None):
     if unpatch_tf:
         for mapping_iter in mapping_tf:
             setattr(mapping_iter[0], mapping_iter[1], mapping_iter[3])
-    
+
     if unpatch_torch:
         for mapping_iter in mapping_torch:
             setattr(mapping_iter[0], mapping_iter[1], mapping_iter[3])
