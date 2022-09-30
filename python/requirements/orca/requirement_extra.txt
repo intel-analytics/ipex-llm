@@ -2,14 +2,11 @@ bert
 boto3
 cloudpickle
 fsspec
-numpy
 onnx
 onnxruntime
 Pillow
 py4j
 pyarrow
-pyspark
-six
 tensorflow
 tensorflow_estimator
 torch

@@ -1,3 +1,6 @@
 packaging
 filelock
 pyzmq
+numpy>=1.19.5
+conda-pack==0.3.1
+six>=1.10.0
