@@ -14,7 +14,7 @@ The two new configs 'spark.kubernetes.driverEnv.SGX_DRIVER_JVM_MEM_SIZE' and 'sp
 docker pull intelanalytics/bigdl-ppml-trusted-big-data-ml-scala-occlum:2.1.0-SNAPSHOT
 ```
 
-If Dockerhub is not accessable, we can build docker image with Dockerfile and modify the path in the build-docker-image.sh firstly.
+If Dockerhub is not accessible, we can build a docker image with Dockerfile and modify the path in the build-docker-image.sh firstly.
 
 ``` bash
 cd ..
@@ -22,9 +22,9 @@ bash build-docker-image.sh
 ```
 
 2. Download [Spark 3.1.2](https://archive.apache.org/dist/spark/spark-3.1.2/spark-3.1.2-bin-hadoop2.7.tgz), and setup `SPARK_HOME`.
-3. `export kubernetes_master_url=your_k8s_master` or replace `${kubernetes_master_url}` with your k8s master url in `run_spark_xxx.sh`.
+3. `export kubernetes_master_url=your_k8s_master` or replace `${kubernetes_master_url}` with your k8s master URL in `run_spark_xxx.sh`.
 4. Modify `driver.yaml` and `executor.yaml` for your applications.
-   In our demo example, we mount SGX devices into container or pod. Mount device requires privileged: true. In production deployment, please use K8S SGX device plugin with device-plugin setting in yaml.
+   In our demo example, we mount SGX devices into a container or pod. Mount device requires privileged: true. In a production deployment, please use K8S SGX device plugin with the device-plugin setting in yaml.
 
 ## Examples
 
@@ -122,15 +122,15 @@ Parameters:
 
 * -I means max_Iter : Int
 * -d means max_depth: Int.
-We recommend to use hdfs to read input-data and write output-result instead of mouting data.
+We recommend using hdfs to read input-data and write output-result instead of mouting data.
 
 #### Source code
-You can find source code [here](https://github.com/intel-analytics/BigDL/tree/main/scala/dllib/src/main/scala/com/intel/analytics/bigdl/dllib/example/nnframes/gbt/gbtClassifierTrainingExampleOnCriteoClickLogsDataset).
+You can find the source code [here](https://github.com/intel-analytics/BigDL/tree/main/scala/dllib/src/main/scala/com/intel/analytics/bigdl/dllib/example/nnframes/gbt/gbtClassifierTrainingExampleOnCriteoClickLogsDataset).
 
 ### Run Spark TPC-H example
 
-Generate 1g Data like [this](https://github.com/intel-analytics/BigDL/tree/main/ppml/trusted-big-data-ml/scala/docker-occlum#generate-data), and you can use hdfs to replace the mount way, and you can just excute one query by adding [query_number] from 1 to 22 behind output_dir.For example:
-"hdfs:///input/dbgen hdfs:///output/dbgen 13" means excute query 13.
+Generate 1g Data like [this](https://github.com/intel-analytics/BigDL/tree/main/ppml/trusted-big-data-ml/scala/docker-occlum#generate-data), and you can use hdfs to replace the mount way, and you can just execute one query by adding [query_number] from 1 to 22 behind output_dir.For example:
+"hdfs:///input/dbgen hdfs:///output/dbgen 13" means execute query 13.
 
 Modify the following configuration in 'driver.yaml' and 'executor.yaml' and 'run_spark_tpch.sh'.
 
@@ -199,7 +199,7 @@ Then run the script.
 
 ### [Deprecated] Spark XGBoost example
 
-> Warning: Running XGBoost in distributed mode is not safe due to the fact that Rabit's network (contains gradient, split, and env) is not protected.
+> Warning: Running XGBoost in distributed mode is not safe due to the fact that Rabit's network (which contains gradient, split, and env) is not protected.
 
 #### UCI dataset [iris.data](https://archive.ics.uci.edu/ml/machine-learning-databases/iris/iris.data)
 
