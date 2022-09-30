@@ -93,7 +93,7 @@ def get_bigdl_packages():
 
 # The requirement list contains the main dependencies for users of orca. This list
 # should be carefully curated. If you change it, please reflect
-# the change in the matching file of requirements/orca.
+# the change in the matching file of python/requirements/orca.
 def setup_package():
     metadata = dict(
         name='bigdl-orca',
