@@ -14,7 +14,6 @@ runs:
         cd /home/icx/BigDL/ppml/trusted-big-data-ml/scala/docker-occlum/kubernetes
         ls
         cat run_spark_pi.sh
-        telnet 172.168.0.205 6443
 
         status_1_spark_pi=1
         status_2_spark_lr=1
