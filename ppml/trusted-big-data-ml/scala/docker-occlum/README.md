@@ -22,7 +22,7 @@ Pull image from dockerhub.
 docker pull intelanalytics/bigdl-ppml-trusted-big-data-ml-scala-occlum:2.1.0-SNAPSHOT
 ```
 
-Also, you can build image with `build-docker-image.sh`. Configure environment variables in `Dockerfile` and `build-docker-image.sh`.
+Also, you can build the image with `build-docker-image.sh`. Configure environment variables in `Dockerfile` and `build-docker-image.sh`.
 
 Build the docker image:
 
@@ -30,10 +30,10 @@ Build the docker image:
 bash build-docker-image.sh
 ```
 
-## Before run example
+## Before running the example
 
 ### Check Device
-Before run any example, please make sure you have correctly set the --device option in the start-spark-local.sh according to your machine.
+Before running any example, please make sure you have correctly set the --device option in the start-spark-local.sh according to your machine.
 
 For example:
 ```
@@ -72,7 +72,7 @@ Pi is roughly 3.1436957184785923
 
 To train a model with PPML in BigDL, you need to prepare the data first. You can download the MNIST Data from [here](http://yann.lecun.com/exdb/mnist/). There are 5 files in total. `train-images-idx3-ubyte` contains train images; `train-labels-idx1-ubyte` is the train label file; `t10k-images-idx3-ubyte` has validation images; `t10k-labels-idx1-ubyte` contains validation labels. Unzip all the files and put them in a new directory `data`.
 
-**By default, `data` dir will be mounted to `/opt/occlum_spark/data` in container (become `/host/data` in occlum). You can change data path in `start-spark-local.sh`.**
+**By default, `data` dir will be mounted to `/opt/occlum_spark/data` in container (become `/host/data` in occlum). You can change the data path in `start-spark-local.sh`.**
 
 You can enlarge the configuration in [start-spark-local.sh](https://github.com/intel-analytics/BigDL/blob/main/ppml/trusted-big-data-ml/scala/docker-occlum/start-spark-local.sh)
 ``` bash
@@ -92,8 +92,8 @@ bash start-spark-local.sh lenet -b 4 -e 1
 The examples are run in the docker container. Attach it and see the results (`docker attach logs -f bigdl-ppml-trusted-big-data-ml-scala-occlum`). `-b 4 -e 1` means batch size 4 and epoch 1.
 
 ```bash
-2021-10-29 01:57:48 INFO  DistriOptimizer$:431 - [Epoch 1 40/60000][Iteration 10][Wall Clock 14.768519551s] Trained 4.0 records in 0.348563287 seconds. Throughput is 11.475678 records/second. Loss is 2.4064577. Sequentialc3a85127s hyper parameters: Current learning rate is 0.05. Current dampening is 1.7976931348623157E308.
-2021-10-29 01:57:48 WARN  DistriOptimizer$:238 - Warning: for better training speed, total batch size is recommended to be at least two times of core number4, please tune your batch size accordingly
+2021-10-29 01:57:48 INFO  DistriOptimizer$:431 - [Epoch 1 40/60000][Iteration 10][Wall Clock 14.768519551s] Trained 4.0 records in 0.348563287 seconds. Throughput is 11.475678 records/second. Loss is 2.4064577. Sequentialc3a85127s hyperparameters: Current learning rate is 0.05. Current dampening is 1.7976931348623157E308.
+2021-10-29 01:57:48 WARN  DistriOptimizer$:238 - Warning: for better training speed, the total batch size is recommended to be at least two times of core number4, please tune your batch size accordingly
 ```
 
 ## BigDL Resnet Cifar-10 Example
@@ -119,9 +119,9 @@ The examples are run in the docker container. Attach it and see the results (`do
 
 
 ```bash
-2021-10-29 02:32:24 INFO  DistriOptimizer$:431 - [Epoch 5 400/50000][Iteration 501][Wall Clock 957.374866852s] Trained 400.0 records in 1.772934817 seconds. Throughput is 225.61461 records/second. Loss is 0.72196096. Sequentialf702431bs hyper parameters: Current learning rate is 0.1. Current weight decay is 1.0E-4. Current momentum is 0.9. Current nesterov is true.
-2021-10-29 02:32:25 INFO  DistriOptimizer$:431 - [Epoch 5 800/50000][Iteration 502][Wall Clock 959.109945609s] Trained 400.0 records in 1.735078757 seconds. Throughput is 230.53708 records/second. Loss is 0.8222007. Sequentialf702431bs hyper parameters: Current learning rate is 0.1. Current weight decay is 1.0E-4. Current momentum is 0.9. Current nesterov is true.
-2021-10-29 02:32:27 INFO  DistriOptimizer$:431 - [Epoch 5 1200/50000][Iteration 503][Wall Clock 960.971331791s] Trained 400.0 records in 1.861386182 seconds. Throughput is 214.89362 records/second. Loss is 0.5886179. Sequentialf702431bs hyper parameters: Current learning rate is 0.1. Current weight decay is 1.0E-4. Current momentum is 0.9. Current nesterov is true.
+2021-10-29 02:32:24 INFO  DistriOptimizer$:431 - [Epoch 5 400/50000][Iteration 501][Wall Clock 957.374866852s] Trained 400.0 records in 1.772934817 seconds. Throughput is 225.61461 records/second. Loss is 0.72196096. Sequentialf702431bs hyperparameters: Current learning rate is 0.1. Current weight decay is 1.0E-4. The current momentum is 0.9. Current nesterov is true.
+2021-10-29 02:32:25 INFO  DistriOptimizer$:431 - [Epoch 5 800/50000][Iteration 502][Wall Clock 959.109945609s] Trained 400.0 records in 1.735078757 seconds. Throughput is 230.53708 records/second. Loss is 0.8222007. Sequentialf702431bs hyperparameters: Current learning rate is 0.1. Current weight decay is 1.0E-4. The current momentum is 0.9. Current nesterov is true.
+2021-10-29 02:32:27 INFO  DistriOptimizer$:431 - [Epoch 5 1200/50000][Iteration 503][Wall Clock 960.971331791s] Trained 400.0 records in 1.861386182 seconds. Throughput is 214.89362 records/second. Loss is 0.5886179. Sequentialf702431bs hyperparameters: Current learning rate is 0.1. Current weight decay is 1.0E-4. The current momentum is 0.9. Current nesterov is true.
 ```
 
 ## Spark TPC-H example
@@ -209,7 +209,7 @@ And the log files will be saved to `data/olog` folder.
 ## BigDL XGBoost Example
 
 ### Download data
-You can download the criteo-1tb-click-logs-dataset from [here](https://ailab.criteo.com/download-criteo-1tb-click-logs-dataset/). Split 1g data from the dataset and put it into a folder. Then mount `/path/to/data/1g_data` to container's `/opt/occlum_spark/data` in `start-spark-local.sh` via:
+You can download the criteo-1tb-click-logs-dataset from [here](https://ailab.criteo.com/download-criteo-1tb-click-logs-dataset/). Split 1g of data from the dataset and put it into a folder. Then mount `/path/to/data/1g_data` to container's `/opt/occlum_spark/data` in `start-spark-local.sh` via:
 ```
 -v /path/to/data/1g_data:/opt/occlum_spark/data
 ```
@@ -239,14 +239,14 @@ Start run BigDL Spark XGBoost example:
 bash start-spark-local.sh xgboost
 ```
 
-The console output looks like:
+The console output looks like this:
 ```
 [INFO] [02/10/2022 14:57:04.244] [RabitTracker-akka.actor.default-dispatcher-3] [akka://RabitTracker/user/Handler] [0]  train-merror:0.030477   eval1-merror:0.030473   eval2-merror:0.030350
 [INFO] [02/10/2022 14:57:07.296] [RabitTracker-akka.actor.default-dispatcher-3] [akka://RabitTracker/user/Handler] [1]  train-merror:0.030477   eval1-merror:0.030473   eval2-merror:0.030350
 [INFO] [02/10/2022 14:57:10.071] [RabitTracker-akka.actor.default-dispatcher-7] [akka://RabitTracker/user/Handler] [2]  train-merror:0.030477   eval1-merror:0.030473   eval2-merror:0.030350
 ```
 
-You can find XGBoost model under folder `/path/to/data/`.
+You can find XGBoost model under the folder `/path/to/data/`.
 ```
 /path/to/data/
 ├── data
@@ -259,7 +259,7 @@ You can find XGBoost model under folder `/path/to/data/`.
 ## BigDL GBT Example
 
 ### Download data
-You can download the criteo-1tb-click-logs-dataset from [here](https://ailab.criteo.com/download-criteo-1tb-click-logs-dataset/). Split 1g data from the dataset and put it into a folder. Then mount `/path/to/data/1g_data` to container's `/opt/occlum_spark/data` in `start-spark-local.sh` via:
+You can download the criteo-1tb-click-logs-dataset from [here](https://ailab.criteo.com/download-criteo-1tb-click-logs-dataset/). Split 1g of data from the dataset and put it into a folder. Then mount `/path/to/data/1g_data` to container's `/opt/occlum_spark/data` in `start-spark-local.sh` via:
 ```
 -v /path/to/data/1g_data:/opt/occlum_spark/data
 ```
