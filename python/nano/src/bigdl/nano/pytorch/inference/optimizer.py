@@ -144,12 +144,13 @@ class InferenceOptimizer:
         :param metric: (optional) A callable object which is used for calculating accuracy.
                It supports two kinds of callable object:
                1. A torchmetrics.Metric object or similar callable object which takes
-               prediction and target than returns an accuracy value in this calling
+               prediction and target then returns an accuracy value in this calling
                method `metric(pred, target)`. This requires data in validation_data
                is composed of (input_data, target).
-               2. A callable object that takes model and validation_data(which could
-               be None) as input and returns an accuracy value in this calling method
-               `accuracy = metric(model, data_loader)`.
+               2. A callable object that takes model and validation_data (if
+               validation_data is not None) as input, and returns an accuracy value in
+               this calling method metric(model, data_loader) (or metric(model) if
+               validation_data is None).
         :param direction: (optional) A string that indicates the higher/lower
                better for the metric, "min" for the lower the better and "max" for the
                higher the better. Default value is "max".
@@ -303,10 +304,17 @@ class InferenceOptimizer:
                                                                validation_data)
                             except Exception:
                                 self._calculate_accuracy = False
-                                invalidInputError(False,
-                                                  "Your metric is incompatible with "
-                                                  "validation_data or don't follow "
-                                                  "our given pattern.")
+                                invalidInputError(
+                                    False,
+                                    "Your metric is incompatible with validation_data or don't "
+                                    "follow our given pattern. Our expected metric pattern is "
+                                    "as follows:\n1. a torchmetrics.Metric object\n2. a callable "
+                                    "object which takes prediction and target then returns a value"
+                                    " in this calling method `metric(pred, target)`\n3. a callable"
+                                    " object that takes model and validation_data (if "
+                                    "validation_data is not None) as input, and returns an accuracy"
+                                    " value in this calling method metric(model, data_loader) "
+                                    "(or metric(model) if validation_data is None).")
                         else:
                             result_map[method]["accuracy"] =\
                                 _accuracy_calculate_helper(acce_model, metric,
