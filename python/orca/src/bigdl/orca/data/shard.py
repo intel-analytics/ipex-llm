@@ -535,7 +535,12 @@ class SparkXShards(XShards):
 
     def _to_spark_df_without_arrow(self):
         def f(iter):
-            for pdf in iter:
+            from bigdl.dllib.utils.log4Error import invalidInputError
+            pdf_list = list(iter)
+            invalidInputError(len(pdf_list) == 1,
+                              f"For XShards of pandas dataframe, expects there is only 1"
+                              f" pandas dataframe for each partition, but got {len(pdf_list)}")
+            for pdf in pdf_list:
                 np_records = pdf.to_records(index=False)
                 return [r.tolist() for r in np_records]
 
@@ -559,7 +564,12 @@ class SparkXShards(XShards):
             timezone = sqlContext._conf.sessionLocalTimeZone()
 
             def f(iter):
-                for pdf in iter:
+                from bigdl.dllib.utils.log4Error import invalidInputError
+                pdf_list = list(iter)
+                invalidInputError(len(pdf_list) == 1,
+                                  f"For XShards of pandas dataframe, expects there is only 1"
+                                  f" pandas dataframe for each partition, but got {len(pdf_list)}")
+                for pdf in pdf_list:
                     import os
                     import uuid
                     from pyspark.sql.pandas.types import to_arrow_type
