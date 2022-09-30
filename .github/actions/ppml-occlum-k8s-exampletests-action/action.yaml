@@ -10,7 +10,7 @@ runs:
         docker pull 10.239.45.10/arda/intelanalytics/bigdl-ppml-trusted-big-data-ml-scala-occlum:2.1.0-SNAPSHOT
         docker tag 10.239.45.10/arda/intelanalytics/bigdl-ppml-trusted-big-data-ml-scala-occlum:2.1.0-SNAPSHOT intelanalytics/bigdl-ppml-trusted-big-data-ml-scala-occlum:2.1.0-SNAPSHOT
         export no_proxy=172.168.0.205
-
+        export kubernetes_master_url=172.168.0.205
         cd /home/icx/BigDL/ppml/trusted-big-data-ml/scala/docker-occlum/kubernetes
         ls
         cat run_spark_pi.sh

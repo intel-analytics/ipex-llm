@@ -18,7 +18,7 @@ runs:
         export SECURE_PASSWORD_PATH=/home/icx/glorysdj/password
         export SGX_MEM_SIZE=60GB
         export IMAGE=10.239.45.10/arda/intelanalytics/bigdl-ppml-trusted-big-data-ml-scala-occlum:2.1.0-SNAPSHOT
-        
+
         docker pull $IMAGE
 
         docker rm -f $CONTAINER_NAME
