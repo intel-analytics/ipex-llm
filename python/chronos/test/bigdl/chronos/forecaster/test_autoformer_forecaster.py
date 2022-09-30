@@ -365,7 +365,28 @@ class TestChronosModelAutoformerForecaster(TestCase):
                                                          past_seq_len=24,
                                                          future_seq_len=5)
         forecaster.fit(train_loader, epochs=1, batch_size=32)
-        
+
+    def test_autoformer_forecaster_lookback_equals_to_one(self):
+        # from tsdataset
+        df = get_ts_df()
+        target = ["value", "extra feature"]
+        tsdata_train, tsdata_val, tsdata_test =\
+            TSDataset.from_pandas(df, dt_col="datetime", target_col=target,
+                                with_split=True, test_ratio=0.1, val_ratio=0.1)
+        with pytest.raises(RuntimeError):
+            forecaster = AutoformerForecaster.from_tsdataset(tsdata_train,
+                                                             past_seq_len=1,
+                                                             future_seq_len=5)
+
+        # normal definition
+        with pytest.raises(RuntimeError):
+            forecaster = AutoformerForecaster(past_seq_len=1,
+                                            future_seq_len=5,
+                                            input_feature_num=2,
+                                            output_feature_num=2,
+                                            label_len=12,
+                                            freq='s')
+
     def test_autoformer_forecaster_fit_val(self):
         train_data, val_data, _ = create_data()
         forecaster = AutoformerForecaster(past_seq_len=24,
