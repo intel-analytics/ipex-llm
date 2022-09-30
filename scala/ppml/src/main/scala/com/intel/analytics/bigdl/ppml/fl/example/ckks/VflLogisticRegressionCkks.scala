@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.intel.analytics.bigdl.ppml.fl.example
+package com.intel.analytics.bigdl.ppml.fl.example.ckks
 
 import com.intel.analytics.bigdl.ckks.CKKS
 import com.intel.analytics.bigdl.dllib.NNContext

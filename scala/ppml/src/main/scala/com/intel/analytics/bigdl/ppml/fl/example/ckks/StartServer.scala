@@ -22,13 +22,16 @@ object StartServer {
   def main(args: Array[String]): Unit = {
     val flServer = new FLServer()
     //TODO delete
-    val javaHome = System.getProperty("java.home")
-    System.load(javaHome + "/lib/amd64/libjawt.so")
+//    val javaHome = System.getProperty("java.home")
+//    System.load(javaHome + "/lib/amd64/libjawt.so")
 //    System.load(javaHome + "/lib/amd64/server/libjvm.so")
 
     flServer.setClientNum(2)
-    flServer.setCkksAggregator(
-      CKKS.loadSecret("ppml/src/main/scala/com/intel/analytics/bigdl/ppml/fl/example/ckks/ckksSecret"))
+    if (args.length > 0) {
+      val secretsPath = args(0)
+      flServer.setCkksAggregator(
+        CKKS.loadSecret(secretsPath))
+    }
     flServer.build()
     flServer.start()
     flServer.blockUntilShutdown()

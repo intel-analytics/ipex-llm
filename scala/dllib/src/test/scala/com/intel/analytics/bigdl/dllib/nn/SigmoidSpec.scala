@@ -390,9 +390,10 @@ class SigmoidSpec extends FlatSpec {
      * Features is a Vector of doubles.  These are all the values like patient age, etc. that
      * we extracted above.  The label indicated whether the patient has cancer.
      */
-    val featureCols = Array("STR", "OBS", "AGMT", "HIGD", "DEG", "CHK", "AGP1", "AGMN", "NLV", "LIV", "WT", "AGLP", "MST")
-//    val featureCols = Array("STR", "OBS", "HIGD", "DEG", "CHK", "AGP1", "AGMN", "NLV", "LIV", "MST")
-    val assembler = new VectorAssembler().setInputCols(featureCols).setOutputCol("features")
+    val featureCols = Array("STR", "OBS", "AGMT", "HIGD", "DEG", "CHK",
+      "AGP1", "AGMN", "NLV", "LIV", "WT", "AGLP", "MST")
+    val assembler = new VectorAssembler()
+      .setInputCols(featureCols).setOutputCol("features")
     val df2 = assembler.transform(cleanDF)
     /**
      * Then we use the StringIndexer to take the column FNDX and make that the label.

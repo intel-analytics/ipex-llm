@@ -18,7 +18,7 @@ package com.intel.analytics.bigdl.ppml.fl.nn
 
 import com.intel.analytics.bigdl.ckks.CKKS
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
-import com.intel.analytics.bigdl.ppml.fl.algorithms.{PSI, VFLLinearRegression, VFLLogisticRegression, VFLLogisticRegressionCkks}
+import com.intel.analytics.bigdl.ppml.fl.algorithms.{PSI, VFLLinearRegression, VFLLogisticRegression}
 import com.intel.analytics.bigdl.ppml.fl.example.VFLLogisticRegression
 import com.intel.analytics.bigdl.ppml.fl.utils.ProtoUtils.{getTensor, outputTargetToTableProto}
 import com.intel.analytics.bigdl.ppml.fl.vfl.NNStub
@@ -42,7 +42,7 @@ class VFLCkksSpec extends FLSpec {
     val decrypted = stub.decrypt(encrypted)
     val inputDecrypted = getTensor("output", decrypted)
     val targetDecrypted = getTensor("target", decrypted)
-    require(input.almostEqual(inputDecrypted, 1e-5), "decrypted data not consistent")
+    input.almostEqual(inputDecrypted, 1e-5) should be (true)
   }
   "CKKS VFL LR" should "work" in {
     val secret = new CKKS().createSecrets()
@@ -54,7 +54,7 @@ class VFLCkksSpec extends FLSpec {
 
     FLContext.initFLContext(1, target)
     FLContext.flClient.initCkks(secret)
-    val lr = new VFLLogisticRegressionCkks(4)
+    val lr = new VFLLogisticRegression(4)
     val input = Tensor(Array(0.063364277360961f,
       0.90631252736785f,
       0.22275671223179f,

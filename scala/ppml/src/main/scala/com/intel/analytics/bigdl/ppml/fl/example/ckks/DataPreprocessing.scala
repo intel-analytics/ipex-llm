@@ -52,28 +52,6 @@ class DataPreprocessing(spark: SparkSession,
                    )
   val batchSize = 8192
   val modelType = "wide"
-//  val recordSchema = if (clientId == 1) {
-//    StructType(Array(
-//      StructField("age", IntegerType, false),
-//      StructField("workclass", StringType, false),
-//      StructField("fnlwgt", IntegerType, false),
-//      StructField("education", StringType, false),
-//      StructField("education_num", IntegerType, false),
-//      StructField("marital_status", StringType, false),
-//      StructField("occupation", StringType, false)
-//      ))
-//    } else {
-//    StructType(Array(
-//        StructField("relationship", StringType, false),
-//        StructField("race", StringType, false),
-//        StructField("gender", StringType, false),
-//        StructField("capital_gain", IntegerType, false),
-//        StructField("capital_loss", IntegerType, false),
-//        StructField("hours_per_week", IntegerType, false),
-//        StructField("native_country", StringType, false),
-//        StructField("income_bracket", StringType, false)
-//      ))
-//    }
 
   val recordSchema = StructType(Array(
     StructField("age", IntegerType, false),
@@ -344,21 +322,6 @@ class DataPreprocessing(spark: SparkSession,
 
     val incomeUdf = udf((income: String) => if (income == ">50K" || income == ">50K.") 1 else 0)
 
-//    val data = if (clientId == 1) {
-//      dataDf
-//        .withColumn("edu_occ", bucket2Udf(col("education"), col("occupation")))
-//        .withColumn("age_edu_occ", bucket3Udf(col("age_bucket"), col("education"),
-//          col("occupation")))
-//        .withColumn("edu", educationVocabUdf(col("education")))
-//        .withColumn("mari", maritalStatusVocabUdf(col("marital_status")))
-//        .withColumn("work", workclassVocabUdf(col("workclass")))
-//    } else {
-//      dataDf
-//        .withColumn("rela", relationshipVocabUdf(col("relationship")))
-//        .withColumn("occ", bucket1Udf(col("occupation")))
-//        .withColumn("age_bucket", ageBucketUdf(col("age")))
-//        .withColumn("label", incomeUdf(col("income_bracket")))
-//    }
     val data = dataDf
       .withColumn("age_bucket", ageBucketUdf(col("age")))
       .withColumn("edu_occ", bucket2Udf(col("education"), col("occupation")))
