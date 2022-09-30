@@ -15,8 +15,6 @@
 #
 import os
 from logging import warning
-from importlib.util import find_spec
-from functools import lru_cache
 
 
 envs_checklist = ["LD_PRELOAD", "OMP_NUM_THREADS", "KMP_AFFINITY",
@@ -43,102 +41,4 @@ def _check_nano_envs():
 # _check_nano_envs()
 
 
-@lru_cache(maxsize=None)
-def _get_patch_map():
-
-    patch_tf = find_spec("tensorflow") is not None
-    patch_torch = find_spec("pytorch_lightning") is not None
-    mapping_tf = []
-    mapping_torch = []
-
-    # 4-dim list, where, what, which, legancy
-    if patch_tf:
-        import keras
-        import tensorflow
-        from bigdl.nano.tf.keras import Sequential
-        from bigdl.nano.tf.keras import Model
-        from bigdl.nano.tf.optimizers import SparseAdam
-        from bigdl.nano.tf.keras.layers import Embedding
-        mapping_tf += [
-            [tensorflow.keras, "Model", Model, None],
-            [tensorflow.keras, "Sequential", Sequential, None],
-            [tensorflow.keras.optimizers, "Adam", SparseAdam, None],
-            [tensorflow.keras.layers, "Embedding", Embedding, None],
-            [keras, "Model", Model, None],
-            [keras, "Sequential", Sequential, None],
-            [keras.layers, "Embedding", Embedding, None]
-        ]
-
-    if patch_torch:
-        import pytorch_lightning
-        import torchvision
-        from bigdl.nano.pytorch import Trainer
-        from bigdl.nano.pytorch.vision import transforms
-        from bigdl.nano.pytorch.vision import datasets
-        mapping_torch += [
-            [pytorch_lightning, "Trainer", Trainer, None],
-            [torchvision, "transforms", transforms, None],
-            [torchvision, "datasets", datasets, None],
-        ]
-
-    return mapping_tf, mapping_torch
-
-
-def patch_nano(patch_tf=None, patch_torch=None):
-    '''
-    This patching function is used to patch optimized class to replace original ones.
-    Optimized classes include:
-    1. tf.keras.Model/keras.Model -> bigdl.nano.tf.keras.Model
-    2. tf.keras.Model/keras.Sequential -> bigdl.nano.tf.keras.Sequential
-    3. tf.keras.layers.Embedding/keras.layers.Embedding -> bigdl.nano.tf.keras.layers.Embedding
-    4. tf.optimizers.Adam -> bigdl.nano.tf.optimizers.SparseAdam
-    5. pytorch_lightning.Trainer -> bigdl.nano.pytorch.Trainer
-    6. torchvision.transforms -> bigdl.nano.pytorch.vision.transforms
-    7. torchvision.datasets -> bigdl.nano.pytorch.vision.datasets
-
-    :param patch_tf: bool, if patch tensorflow related classes, will patch defaultly if tensorflow
-           is installed
-    :param patch_torch: bool, if patch pytorch related classes, will patch defaultly if pytorch
-           is installed
-    '''
-    if patch_tf is None:
-        patch_tf = find_spec("tensorflow") is not None
-    if patch_torch is None:
-        patch_torch = find_spec("pytorch_lightning") is not None
-
-    mapping_tf, mapping_torch = _get_patch_map()
-
-    if patch_tf:
-        for mapping_iter in mapping_tf:
-            mapping_iter[3] = getattr(mapping_iter[0], mapping_iter[1], None)
-            setattr(mapping_iter[0], mapping_iter[1], mapping_iter[2])
-
-    if patch_torch:
-        for mapping_iter in mapping_torch:
-            mapping_iter[3] = getattr(mapping_iter[0], mapping_iter[1], None)
-            setattr(mapping_iter[0], mapping_iter[1], mapping_iter[2])
-
-
-def unpatch_nano(unpatch_tf=None, unpatch_torch=None):
-    '''
-    This unpatching function is used to unpatch optimized class to original ones.
-
-    :param unpatch_tf: bool, if unpatch tensorflow related classes,
-           will unpatch defaultly if tensorflow is installed
-    :param unpatch_torch: bool, if unpatch pytorch related classes,
-           will unpatch defaultly if pytorch is installed
-    '''
-    if unpatch_tf is None:
-        unpatch_tf = find_spec("tensorflow") is not None
-    if unpatch_torch is None:
-        unpatch_torch = find_spec("pytorch_lightning") is not None
-
-    mapping_tf, mapping_torch = _get_patch_map()
-
-    if unpatch_tf:
-        for mapping_iter in mapping_tf:
-            setattr(mapping_iter[0], mapping_iter[1], mapping_iter[3])
-
-    if unpatch_torch:
-        for mapping_iter in mapping_torch:
-            setattr(mapping_iter[0], mapping_iter[1], mapping_iter[3])
+from .dispatcher import patch_nano, unpatch_nano
