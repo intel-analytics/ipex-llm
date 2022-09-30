@@ -302,7 +302,8 @@ class InferenceOptimizer:
                                 result_map[method]["accuracy"] =\
                                     _accuracy_calculate_helper(acce_model, metric,
                                                                validation_data)
-                            except Exception:
+                            except Exception as e:
+                                print(e)
                                 self._calculate_accuracy = False
                                 invalidInputError(
                                     False,
@@ -794,10 +795,8 @@ def _signature_check(function):
     if len(sig.parameters.values()) != 2:
         return False
     param1_name = list(sig.parameters.values())[0].name
-    param2_name = list(sig.parameters.values())[0].name
-    if "pred" in param1_name:
-        return True
-    if "target" in param2_name:
+    param2_name = list(sig.parameters.values())[1].name
+    if "pred" in param1_name and "target" in param2_name:
         return True
     return False
 
@@ -807,12 +806,17 @@ def _accuracy_calculate_helper(model, metric, data):
     A quick helper to calculate accuracy
     '''
     if isinstance(metric, Metric) or _signature_check(metric) is True:
+        invalidInputError(data is not None,
+                          "Validation data can't be None when you pass a "
+                          "torchmetrics.Metric object or similar callable "
+                          "object which takes prediction and target as input.")
         metric = NanoMetric(metric)
         return metric(model, data)
-    if data is None:
-        return metric(model)
     else:
-        return metric(model, data)
+        if data is None:
+            return metric(model)
+        else:
+            return metric(model, data)
 
 
 def _format_acceleration_option(method_name: str) -> str:

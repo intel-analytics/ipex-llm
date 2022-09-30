@@ -152,6 +152,20 @@ class TestInferencePipeline(TestCase):
                                metric=metric,
                                direction="max",
                                thread_num=1)
+    
+    def test_pipeline_with_custom_function_metric_without_data(self):
+        inference_opt = InferenceOptimizer()
+
+        def metric(pred, target):
+            return self.metric(pred, target)
+
+        with pytest.raises(RuntimeError):
+            inference_opt.optimize(model=self.model,
+                                training_data=self.train_loader,
+                                validation_data=None,
+                                metric=metric,
+                                direction="max",
+                                thread_num=1)
 
     def test_pipeline_with_wrong_custom_function_metric(self):
         inference_opt = InferenceOptimizer()
