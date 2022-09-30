@@ -795,9 +795,9 @@ def _signature_check(function):
         return False
     param1_name = list(sig.parameters.values())[0].name
     param2_name = list(sig.parameters.values())[0].name
-    if "pred" in param1_name or "pred" in param2_name:
+    if "pred" in param1_name:
         return True
-    if "target" in param2_name or "target" in param2_name:
+    if "target" in param2_name:
         return True
     return False
 
