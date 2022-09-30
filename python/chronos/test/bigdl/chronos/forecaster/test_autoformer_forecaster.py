@@ -411,3 +411,31 @@ class TestChronosModelAutoformerForecaster(TestCase):
                                           seed=0)
         forecaster.fit(train, val, epochs=3, batch_size=32)
         forecaster.predict(test)
+
+    @op_automl
+    def test_autoformer_forecaster_tune_multi_processes(self):
+        name = "parallel-example-torch"
+        storage = "sqlite:///example_autoformer.db"  # take sqlite for test, recommand to use mysql
+        import bigdl.nano.automl.hpo.space as space
+        train_data, val_data, test_data = create_data(loader=False)
+        forecaster = AutoformerForecaster(past_seq_len=24,
+                                          future_seq_len=5,
+                                          input_feature_num=2,
+                                          output_feature_num=2,
+                                          label_len=12,
+                                          d_model=space.Categorical(32, 64, 128, 256, 512, 1024),
+                                          freq='s',
+                                          loss="mse",
+                                          metrics=['mae', 'mse', 'mape'],
+                                          lr=0.001)
+        from bigdl.nano.automl.hpo.backend import SamplerType
+        forecaster.tune(train_data, validation_data=val_data, n_trials=5,
+                        study_name=name, sampler=SamplerType.Grid,
+                        storage=storage, n_parallels=2)
+        forecaster.fit(train_data, epochs=3, batch_size=32)
+        evaluate = forecaster.evaluate(val_data)
+        os.remove("./example_autoformer.db")
+        # test remove
+        forecaster.tune(train_data, validation_data=val_data, n_trials=2,
+                        study_name=name, sampler=SamplerType.Grid,
+                        storage=storage, n_parallels=2)
