@@ -105,6 +105,8 @@ class AutoformerForecaster(Forecaster):
         :param kwargs: other hyperparameter please refer to
                https://github.com/zhouhaoyi/Informer2020#usage
         """
+        invalidInputError(past_seq_len > 1,
+                          "past_seq_len of Autoformer must exceeds one.")
 
         # config setting
         self.data_config = {
@@ -759,7 +761,7 @@ class AutoformerForecaster(Forecaster):
                               "the history time step and output time step.")
 
         if label_len is None:
-            label_len = past_seq_len//2
+            label_len = max(past_seq_len//2, 1)
 
         invalidInputError(tsdataset.label_len == label_len or tsdataset.label_len is None,
                           f"Expected label_len to be {tsdataset.label_len}, "
