@@ -584,7 +584,7 @@ class TSDataset:
             else self.roll_feature_df[additional_feature_col]
 
         if time_enc and label_len == 0:
-            label_len = lookback // 2
+            label_len = max(lookback // 2, 1)
 
         self.lookback, self.horizon, self.label_len = lookback, horizon, label_len
         # horizon_time is only for time_enc, the time_enc numpy ndarray won't have any
@@ -752,7 +752,7 @@ class TSDataset:
                 else self.target_col
 
             if time_enc and label_len == 0:
-                label_len = lookback // 2
+                label_len = max(lookback // 2, 1)
 
             # set scaler index for unscale_numpy
             self.scaler_index = [self.target_col.index(t) for t in target_col]

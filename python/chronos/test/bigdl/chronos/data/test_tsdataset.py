@@ -1091,6 +1091,27 @@ class TestTSDataset(TestCase):
         with pytest.raises(RuntimeError):
             tsdata.get_cycle_length(aggregate='min', top_k=3)
 
+    def test_lookback_equal_to_one(self):
+        df = get_ts_df()
+        horizon = random.randint(1, 10)
+        lookback = 1
+
+        tsdata = TSDataset.from_pandas(df, dt_col="datetime", target_col="value",
+                                       extra_feature_col=["extra feature"], id_col="id")
+
+        # for BaseForecaster
+        data = tsdata.roll(lookback=lookback, horizon=horizon, is_predict=True).to_numpy()
+        assert not isinstance(data, (list, tuple))
+
+        tsdata = TSDataset.from_pandas(df, dt_col="datetime", target_col="value",
+                                       extra_feature_col=["extra feature"], id_col="id")
+
+        # for AutoformerForecaster
+        data = tsdata.roll(lookback=lookback, horizon=horizon, time_enc=True, is_predict=True).to_numpy()
+        assert len(data) == 4
+        assert data[1].shape[1] == max(lookback // 2, 1)
+        assert data[3].shape[1] == max(lookback // 2, 1) + horizon
+
     def test_is_predict_for_roll_and_numpy(self):
         df = get_ts_df()
         horizon = random.randint(1, 10)
@@ -1109,8 +1130,8 @@ class TestTSDataset(TestCase):
         # for AutoformerForecaster
         data = tsdata.roll(lookback=lookback, horizon=horizon, time_enc=True, is_predict=True).to_numpy()
         assert len(data) == 4
-        assert data[1].shape[1] == lookback // 2
-        assert data[3].shape[1] == lookback // 2 + horizon
+        assert data[1].shape[1] == max(lookback // 2, 1)
+        assert data[3].shape[1] == max(lookback // 2, 1) + horizon
 
     def test_is_predict_for_roll_and_to_loader(self):
         df = get_ts_df()
@@ -1136,8 +1157,8 @@ class TestTSDataset(TestCase):
                                              roll=False)
         data = next(iter(loader))
         assert len(data) == 4
-        assert data[1].shape[1] == lookback // 2
-        assert data[3].shape[1] == lookback // 2 + horizon
+        assert data[1].shape[1] == max(lookback // 2, 1)
+        assert data[3].shape[1] == max(lookback // 2, 1) + horizon
 
 
     def test_is_predict_for_to_loader(self):
@@ -1167,6 +1188,6 @@ class TestTSDataset(TestCase):
                                              is_predict=True)
         data = next(iter(loader))
         assert len(data) == 4
-        assert data[1].shape[1] == lookback // 2
-        assert data[3].shape[1] == lookback // 2 + horizon
+        assert data[1].shape[1] == max(lookback // 2, 1)
+        assert data[3].shape[1] == max(lookback // 2, 1) + horizon
 
