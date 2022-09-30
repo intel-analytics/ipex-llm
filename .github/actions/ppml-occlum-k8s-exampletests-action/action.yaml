@@ -23,7 +23,7 @@ runs:
         if [ $status_1_spark_pi -ne 0 ]; then
         echo "################## start spark pi"
         echo "example.1 spark pi"
-        #sed -i '/--name/a --conf spark.kubernetes.driver.pod.name=spark-pi-driver' run_spark_pi.shAB
+        #sed -i '/--name/a --conf spark.kubernetes.driver.pod.name=spark-pi-driver' run_spark_pi.sh
         bash run_spark_pi.sh | grep "phase: Succeeded"
         kubectl delete pods `kubectl get pods | grep spark-pi | awk '{print $1}'`
         status_1_spark_pi=$(echo $?)
