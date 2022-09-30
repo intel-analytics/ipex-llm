@@ -4,7 +4,7 @@ Common API
 Common API
 ---------------------------
 
-.. autoclass:: bigdl.nano.dispatcher
+.. automodule:: bigdl.nano.dispatcher
     :members:
     :undoc-members:
-    :exclude-members: 
+    :show-inheritance:

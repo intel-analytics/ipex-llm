@@ -60,8 +60,8 @@ def _get_patch_map():
 
 
 def patch_nano(patch_tf=None, patch_torch=None):
-    '''
-    This patching function is used to patch optimized class to replace original ones.
+    """
+    patch_nano is used to patch optimized class to replace original ones.
     Optimized classes include:
     1. tf.keras.Model/keras.Model -> bigdl.nano.tf.keras.Model
     2. tf.keras.Sequential/keras.Sequential -> bigdl.nano.tf.keras.Sequential
@@ -75,13 +75,7 @@ def patch_nano(patch_tf=None, patch_torch=None):
            is installed
     :param patch_torch: bool, if patch pytorch related classes, will patch defaultly if pytorch
            is installed
-
-    Example:
-
-    >>> from bigdl.nano import patch_nano
-    >>> patch_nano()
-    >>> # The classes/modules that can be optimized is optimized
-    '''
+    """
     if patch_tf is None:
         patch_tf = find_spec("tensorflow") is not None
     if patch_torch is None:
@@ -101,20 +95,14 @@ def patch_nano(patch_tf=None, patch_torch=None):
 
 
 def unpatch_nano(unpatch_tf=None, unpatch_torch=None):
-    '''
-    This unpatching function is used to unpatch optimized class to original ones.
+    """
+    unpatch_nano is used to unpatch optimized class to original ones.
 
     :param unpatch_tf: bool, if unpatch tensorflow related classes,
            will unpatch defaultly if tensorflow is installed
     :param unpatch_torch: bool, if unpatch pytorch related classes,
            will unpatch defaultly if pytorch is installed
-
-    Example:
-
-    >>> from bigdl.nano import unpatch_nano
-    >>> unpatch_nano()
-    >>> # The classes/modules that are optimized is changed back to original ones.
-    '''
+    """
     if unpatch_tf is None:
         unpatch_tf = find_spec("tensorflow") is not None
     if unpatch_torch is None:
