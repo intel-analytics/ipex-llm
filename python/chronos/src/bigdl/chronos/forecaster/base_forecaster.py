@@ -203,9 +203,9 @@ class BasePytorchForecaster(Forecaster):
 
         if self.tune_trainer.hposearcher.objective.mo_hpo:
             return self.internal
-        else:
+        # else:
             # reset train and validation datasets
-            self.tune_trainer.reset_train_val_dataloaders(self.internal)
+            # self.tune_trainer.reset_train_val_dataloaders(self.internal)
 
     def search_summary(self):
         """
@@ -217,7 +217,6 @@ class BasePytorchForecaster(Forecaster):
 
     def fit(self, data, validation_data=None, epochs=1, batch_size=32, validation_mode='output',
             earlystop_patience=1, use_trial_id=None):
-        # TODO: give an option to close validation during fit to save time.
         """
         Fit(Train) the forecaster.
 
