@@ -12,6 +12,8 @@ runs:
         export kubernetes_master_url=172.168.0.205
 
         cd /home/icx/BigDL/ppml/trusted-big-data-ml/scala/docker-occlum/kubernetes
+        ls
+        cat run_spark_pi.sh
 
         status_1_spark_pi=1
         status_2_spark_lr=1
