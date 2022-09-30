@@ -23,7 +23,7 @@ class Embedding(TFEmbedding):
     """
     A slightly modified version of tf.keras Embedding layer.
 
-    This embedding layer only apply regularizer to the output of the embedding
+    This embedding layer only applies regularizer to the output of the embedding
     layers, so that the gradient to embeddings is sparse.
     """
 
