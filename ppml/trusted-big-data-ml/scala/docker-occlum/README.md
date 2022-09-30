@@ -22,7 +22,7 @@ Pull image from dockerhub.
 docker pull intelanalytics/bigdl-ppml-trusted-big-data-ml-scala-occlum:2.1.0-SNAPSHOT
 ```
 
-Also, you can build image with `build-docker-image.sh`. Configure environment variables in `Dockerfile` and `build-docker-image.sh`.
+Also, you can build the image with `build-docker-image.sh`. Configure environment variables in `Dockerfile` and `build-docker-image.sh`.
 
 Build the docker image:
 
@@ -30,10 +30,10 @@ Build the docker image:
 bash build-docker-image.sh
 ```
 
-## Before run example
+## Before running the example
 
 ### Check Device
-Before run any example, please make sure you have correctly set the --device option in the start-spark-local.sh according to your machine.
+Before running any example, please make sure you have correctly set the --device option in the start-spark-local.sh according to your machine.
 
 For example:
 ```
@@ -72,7 +72,7 @@ Pi is roughly 3.1436957184785923
 
 To train a model with PPML in BigDL, you need to prepare the data first. You can download the MNIST Data from [here](http://yann.lecun.com/exdb/mnist/). There are 5 files in total. `train-images-idx3-ubyte` contains train images; `train-labels-idx1-ubyte` is the train label file; `t10k-images-idx3-ubyte` has validation images; `t10k-labels-idx1-ubyte` contains validation labels. Unzip all the files and put them in a new directory `data`.
 
-**By default, `data` dir will be mounted to `/opt/occlum_spark/data` in container (become `/host/data` in occlum). You can change data path in `start-spark-local.sh`.**
+**By default, `data` dir will be mounted to `/opt/occlum_spark/data` in container (become `/host/data` in occlum). You can change the data path in `start-spark-local.sh`.**
 
 You can enlarge the configuration in [start-spark-local.sh](https://github.com/intel-analytics/BigDL/blob/main/ppml/trusted-big-data-ml/scala/docker-occlum/start-spark-local.sh)
 ``` bash
@@ -209,7 +209,7 @@ And the log files will be saved to `data/olog` folder.
 ## BigDL XGBoost Example
 
 ### Download data
-You can download the criteo-1tb-click-logs-dataset from [here](https://ailab.criteo.com/download-criteo-1tb-click-logs-dataset/). Split 1g data from the dataset and put it into a folder. Then mount `/path/to/data/1g_data` to container's `/opt/occlum_spark/data` in `start-spark-local.sh` via:
+You can download the criteo-1tb-click-logs-dataset from [here](https://ailab.criteo.com/download-criteo-1tb-click-logs-dataset/). Split 1g of data from the dataset and put it into a folder. Then mount `/path/to/data/1g_data` to container's `/opt/occlum_spark/data` in `start-spark-local.sh` via:
 ```
 -v /path/to/data/1g_data:/opt/occlum_spark/data
 ```
@@ -239,14 +239,14 @@ Start run BigDL Spark XGBoost example:
 bash start-spark-local.sh xgboost
 ```
 
-The console output looks like:
+The console output looks like this:
 ```
 [INFO] [02/10/2022 14:57:04.244] [RabitTracker-akka.actor.default-dispatcher-3] [akka://RabitTracker/user/Handler] [0]  train-merror:0.030477   eval1-merror:0.030473   eval2-merror:0.030350
 [INFO] [02/10/2022 14:57:07.296] [RabitTracker-akka.actor.default-dispatcher-3] [akka://RabitTracker/user/Handler] [1]  train-merror:0.030477   eval1-merror:0.030473   eval2-merror:0.030350
 [INFO] [02/10/2022 14:57:10.071] [RabitTracker-akka.actor.default-dispatcher-7] [akka://RabitTracker/user/Handler] [2]  train-merror:0.030477   eval1-merror:0.030473   eval2-merror:0.030350
 ```
 
-You can find XGBoost model under folder `/path/to/data/`.
+You can find XGBoost model under the folder `/path/to/data/`.
 ```
 /path/to/data/
 ├── data
@@ -259,7 +259,7 @@ You can find XGBoost model under folder `/path/to/data/`.
 ## BigDL GBT Example
 
 ### Download data
-You can download the criteo-1tb-click-logs-dataset from [here](https://ailab.criteo.com/download-criteo-1tb-click-logs-dataset/). Split 1g data from the dataset and put it into a folder. Then mount `/path/to/data/1g_data` to container's `/opt/occlum_spark/data` in `start-spark-local.sh` via:
+You can download the criteo-1tb-click-logs-dataset from [here](https://ailab.criteo.com/download-criteo-1tb-click-logs-dataset/). Split 1g of data from the dataset and put it into a folder. Then mount `/path/to/data/1g_data` to container's `/opt/occlum_spark/data` in `start-spark-local.sh` via:
 ```
 -v /path/to/data/1g_data:/opt/occlum_spark/data
 ```
