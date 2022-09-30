@@ -123,10 +123,10 @@ def unpatch_nano(unpatch_tf=None, unpatch_torch=None):
     '''
     This unpatching function is used to unpatch optimized class to original ones.
 
-    :param unpatch_tf: bool, if patch tensorflow related classes, will patch defaultly if tensorflow
-           is installed
-    :param unpatch_torch: bool, if patch pytorch related classes, will patch defaultly if pytorch
-           is installed
+    :param unpatch_tf: bool, if unpatch tensorflow related classes,
+           will unpatch defaultly if tensorflow is installed
+    :param unpatch_torch: bool, if unpatch pytorch related classes,
+           will unpatch defaultly if pytorch is installed
     '''
     if unpatch_tf is None:
         unpatch_tf = find_spec("tensorflow") is not None
