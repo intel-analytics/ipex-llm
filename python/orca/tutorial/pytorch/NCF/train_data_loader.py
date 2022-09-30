@@ -16,43 +16,19 @@
 # Most of the pytorch code is adapted from guoyang9's NCF implementation for
 # ml-1m dataset.
 # guoyang9's source code: https://github.com/guoyang9/NCF
-# MovieLens 1M Dataset: https://grouplens.org/datasets/movielens/1m/
 #
 
 import os
 import time
-import argparse
 import numpy as np
 import pandas as pd 
 import scipy.sparse as sp
-
 import torch
 import torch.nn as nn
 import torch.optim as optim
 import torch.utils.data as data
 import torch.nn.functional as F 
 from model import NCF
-
-#Step 0: Parameters And Configuration
-
-parser = argparse.ArgumentParser()
-parser.add_argument("--dataset", 
-    type=str, 
-    default="ml-1m", 
-    help="dataset name")
-parser.add_argument("--model", 
-    type=str, 
-    default="NeuMF-end", 
-    help="model name")
-parser.add_argument("--num_ng", 
-    type=int, 
-    default=4, 
-    help="sample negative items for training")
-parser.add_argument("--backend", 
-    type=str, 
-    default="ray", 
-    help="backend used in estimator, ray or spark are supported")
-args = parser.parse_args()
 
 #Step 1: Init Orca Context
 
@@ -66,7 +42,7 @@ from sklearn.model_selection import train_test_split
 def load_all():
     """ We load all the files here to save time in each epoch. """
     data_X = pd.read_csv(
-        args.dataset+"/ratings.dat", 
+        "ml-1m/ratings.dat", 
         sep="::", header=None, names=['user', 'item'], 
         usecols=[0, 1], dtype={0: np.int32, 1: np.int32})
     
@@ -129,13 +105,13 @@ class NCFData(data.Dataset):
         return [user, item] ,label
 
 # prepare the train and test datasets
-train_data, test_data, args.user_num, args.item_num, train_mat = load_all()
+train_data, test_data, user_num, item_num, train_mat = load_all()
 
 #Step 3: Define the Model
 
 # create the model
 def model_creator(config):
-    model = NCF(args.user_num, args.item_num, factor_num=32, num_layers=3, dropout=0.0, model=args.model) # a torch.nn.Module
+    model = NCF(user_num, item_num, factor_num=32, num_layers=3, dropout=0.0, model="NeuMF-end") # a torch.nn.Module
     model.train()
     return model
 
@@ -152,17 +128,17 @@ from bigdl.orca.learn.pytorch import Estimator
 from bigdl.orca.learn.metrics import Accuracy
 
 # create the estimator
-est = Estimator.from_torch(model=model_creator, optimizer=optimizer_creator,loss=loss_function, metrics=[Accuracy()],backend=args.backend)# backend="ray" or "spark"
+est = Estimator.from_torch(model=model_creator, optimizer=optimizer_creator,loss=loss_function, metrics=[Accuracy()],backend="ray")# backend="ray" or "spark"
 
 # construct the train and test dataloader
 def train_loader_func(config, batch_size):
-    train_dataset = NCFData(train_data, args.item_num, train_mat, num_ng=4, is_training=True)
+    train_dataset = NCFData(train_data, item_num, train_mat, num_ng=4, is_training=True)
     train_loader = data.DataLoader(train_dataset, batch_size=256, shuffle=True, num_workers=0)
     train_loader.dataset.ng_sample()# sample negative items for training datasets
     return train_loader
 
 def test_loader_func(config, batch_size):
-    test_dataset = NCFData(test_data, args.item_num, train_mat, num_ng=0, is_training=False)
+    test_dataset = NCFData(test_data, item_num, train_mat, num_ng=0, is_training=False)
     test_loader = data.DataLoader(test_dataset, batch_size=1, shuffle=False, num_workers=0)
     return test_loader
 
