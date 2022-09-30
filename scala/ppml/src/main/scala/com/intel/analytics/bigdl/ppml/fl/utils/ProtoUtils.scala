@@ -57,7 +57,9 @@ object ProtoUtils {
     }
     builder.build()
   }
-  def ckksProtoToBytes(storage: Storage[TensorMap]): (Array[Array[Byte]], Array[Byte], Array[Int], Array[Int]) = {
+
+  def ckksProtoToBytes(storage: Storage[TensorMap]): (
+        Array[Array[Byte]], Array[Byte], Array[Int], Array[Int]) = {
     // TODO: impl
     val arrayBuffer = new ArrayBuffer[Array[Byte]](storage.clientData.size())
     var targetBytes: Array[Byte] = null
@@ -77,7 +79,10 @@ object ProtoUtils {
     })
     (arrayBuffer.toArray, targetBytes, shapeGrad, shapeLoss)
   }
-  def bytesToCkksProto(bytes: Array[Byte], shape: Array[Int]) = {
+
+  def bytesToCkksProto(
+        bytes: Array[Byte],
+        shape: Array[Int]): EncryptedTensor = {
     EncryptedTensor.newBuilder().setTensor(ByteString.copyFrom(bytes))
       .addAllShape(shape.map(new Integer(_)).toIterable.asJava).build()
   }

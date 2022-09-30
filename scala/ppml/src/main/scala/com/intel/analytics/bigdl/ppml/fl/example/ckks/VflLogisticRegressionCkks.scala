@@ -18,8 +18,9 @@ package com.intel.analytics.bigdl.ppml.fl.example
 import com.intel.analytics.bigdl.ckks.CKKS
 import com.intel.analytics.bigdl.dllib.NNContext
 import com.intel.analytics.bigdl.dllib.feature.dataset.{DataSet, Sample, SampleToMiniBatch, TensorSample}
+import com.intel.analytics.bigdl.dllib.keras.metrics.BinaryAccuracy
 import com.intel.analytics.bigdl.dllib.nn.{BCECriterion, Sigmoid, SparseLinear}
-import com.intel.analytics.bigdl.dllib.optim.{Adagrad, Ftrl, SGD}
+import com.intel.analytics.bigdl.dllib.optim.{Adagrad, Ftrl, SGD, Top1Accuracy}
 import com.intel.analytics.bigdl.dllib.tensor.{Storage, Tensor}
 import com.intel.analytics.bigdl.dllib.utils.{Engine, RandomGenerator, T}
 import com.intel.analytics.bigdl.ppml.fl.algorithms.VFLLogisticRegression
@@ -58,10 +59,10 @@ object VflLogisticRegressionCkks {
 
 
   def main(args: Array[String]): Unit = {
-    parser.parse(args, CmdArgs()).map { param =>
-      //TODO delete
-      val javaHome = System.getProperty("java.home")
-      System.load(javaHome + "/lib/amd64/libjawt.so")
+    parser.parse(args, CmdArgs()).foreach { param =>
+//      //TODO delete
+//      val javaHome = System.getProperty("java.home")
+//      System.load(javaHome + "/lib/amd64/libjawt.so")
 
       val inputDir = param.dataPath
       val clientId = param.clientId
@@ -96,38 +97,20 @@ object VflLogisticRegressionCkks {
           new VFLLogisticRegression(numFeature, 0.005f, linear, "vfl_logistic_regression_ckks")
         case _ => throw new Error()
       }
-      lr.estimator.train(1, trainDataset.toLocal()
-        , null)
-//        , validationDataset.toLocal())
+      lr.estimator.train(40, trainDataset.toLocal(), null)
 
-      linear.evaluate()
-      val evalData = validationDataset.toLocal().data(false)
-      var accCorrect = 0
-      while (evalData.hasNext) {
-        val miniBatch = evalData.next()
-        val input = miniBatch.getInput()
-        val currentBs = input.toTensor[Float].size(1)
-        val targets = miniBatch.getTarget()
-        val predict = lr.predictStep(input)
-        println(s"Predicting $mode")
-        if (targets != null) {
-          val target = targets.toTensor[Float]
-          (0 until currentBs).foreach { i =>
-            val dllibPre = predict.toTensor[Float].valueAt(i + 1, 1)
-            val t = target.valueAt(i + 1, 1)
-            if (t == 0) {
-              if (dllibPre <= 0.5) {
-                accCorrect += 1
-              }
-            } else {
-              if (dllibPre > 0.5) {
-                accCorrect += 1
-              }
-            }
-          }
-        }
+      val validationMethod = new BinaryAccuracy[Float]()
+      val preditions = lr.estimator.predict(validationDataset.toLocal())
+
+      if (clientId == 2) {
+        // client2 has target
+        val evalData = validationDataset.toLocal().data(false)
+        val result = preditions.toIterator.zip(evalData).map{datas =>
+          validationMethod.apply(datas._1, datas._2.getTarget())
+        }.reduce(_ + _)
+
+        println(result.toString())
       }
-      println(s"$mode predict correct: $accCorrect")
 
     }
   }
