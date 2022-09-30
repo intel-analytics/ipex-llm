@@ -16,7 +16,6 @@
 # Most of the pytorch code is adapted from guoyang9's NCF implementation for
 # ml-1m dataset.
 # guoyang9's source code: https://github.com/guoyang9/NCF
-# MovieLens 1M Dataset: https://grouplens.org/datasets/movielens/1m/
 #
 
 import torch
