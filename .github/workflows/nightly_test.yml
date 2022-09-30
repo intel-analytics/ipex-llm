@@ -1,7 +1,7 @@
 name: Nightly Test
 
 on:
-  pull_request:
+  #pull_request:
   schedule:
     - cron: '0 13 * * *' # GMT time, 13:00 GMT == 21:00 China
   workflow_dispatch:
@@ -305,7 +305,7 @@ jobs:
         runner-hosted-on: 'Shanghai'
 
   Orca-Python-Rayonspark-Tf2-Py37:
-    #if: ${{ github.event.schedule || github.event.inputs.artifact == 'Orca-Python-Rayonspark-Tf2-Py37' || github.event.inputs.artifact == 'all' }}
+    if: ${{ github.event.schedule || github.event.inputs.artifact == 'Orca-Python-Rayonspark-Tf2-Py37' || github.event.inputs.artifact == 'all' }}
     runs-on: [self-hosted, Gondolin, ubuntu-20.04-lts]
 
     steps:
@@ -334,7 +334,7 @@ jobs:
         runner-hosted-on: 'Shanghai'
 
   Orca-Jep-Python-Py37-Spark2:
-    #if: ${{ github.event.schedule || github.event.inputs.artifact == 'Orca-Jep-Python-Py37-Spark2' || github.event.inputs.artifact == 'all' }} 
+    if: ${{ github.event.schedule || github.event.inputs.artifact == 'Orca-Jep-Python-Py37-Spark2' || github.event.inputs.artifact == 'all' }} 
     runs-on: [self-hosted, Gondolin, ubuntu-20.04-lts]
 
     steps:
