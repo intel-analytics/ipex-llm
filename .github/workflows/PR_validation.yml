@@ -287,7 +287,7 @@ jobs:
 
   Orca-Jep-Python-Py37-Spark2:
     needs: changes
-    #if: ${{ needs.changes.outputs.orca == 'true' }}
+    if: ${{ needs.changes.outputs.orca == 'true' }}
     runs-on: [self-hosted, Gondolin, ubuntu-20.04-lts]
 
     steps:
@@ -306,7 +306,7 @@ jobs:
 
   Orca-Python-Rayonspark-Tf2-Py37:
     needs: changes
-    #if: ${{ needs.changes.outputs.orca == 'true' }}
+    if: ${{ needs.changes.outputs.orca == 'true' }}
     runs-on: [self-hosted, Gondolin, ubuntu-20.04-lts]
 
     steps:
