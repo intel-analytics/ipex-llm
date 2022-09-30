@@ -54,19 +54,19 @@ def _get_patch_map():
     # 4-dim list, where, what, which, legancy
     if patch_tf:
         import keras
-        import tensorflow as tf
+        import tensorflow
         from bigdl.nano.tf.keras import Sequential
         from bigdl.nano.tf.keras import Model
         from bigdl.nano.tf.optimizers import SparseAdam
         from bigdl.nano.tf.keras.layers import Embedding
         mapping_tf += [
-                        [tf.keras, "Model", Model, None],
-                        [tf.keras, "Sequential", Sequential, None],
-                        [tf.keras.layers, "Embedding", Embedding, None],
+                        [tensorflow.keras, "Model", Model, None],
+                        [tensorflow.keras, "Sequential", Sequential, None],
+                        [tensorflow.keras.optimizers, "Adam", SparseAdam, None],
+                        [tensorflow.keras.layers, "Embedding", Embedding, None],
                         [keras, "Model", Model, None],
                         [keras, "Sequential", Sequential, None],
-                        [keras.layers, "Embedding", Embedding, None],
-                        [tf.optimizers, "Adam", SparseAdam, None]
+                        [keras.layers, "Embedding", Embedding, None]
                       ]
 
     if patch_torch:
