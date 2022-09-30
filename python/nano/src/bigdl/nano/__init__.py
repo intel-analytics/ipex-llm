@@ -44,7 +44,7 @@ def _check_nano_envs():
 
 
 @lru_cache(maxsize=None)
-def get_patch_map():
+def _get_patch_map():
 
     patch_tf = find_spec("tensorflow") is not None
     patch_torch = find_spec("pytorch_lightning") is not None
@@ -106,7 +106,7 @@ def patch_nano(patch_tf=None, patch_torch=None):
     if patch_torch is None:
         patch_torch = find_spec("pytorch_lightning") is not None
 
-    mapping_tf, mapping_torch = get_patch_map()
+    mapping_tf, mapping_torch = _get_patch_map()
 
     if patch_tf:
         for mapping_iter in mapping_tf:
@@ -119,26 +119,26 @@ def patch_nano(patch_tf=None, patch_torch=None):
             setattr(mapping_iter[0], mapping_iter[1], mapping_iter[2])
 
 
-def unpatch_nano(patch_tf=None, patch_torch=None):
+def unpatch_nano(unpatch_tf=None, unpatch_torch=None):
     '''
     This unpatching function is used to unpatch optimized class to original ones.
 
-    :param patch_tf: bool, if patch tensorflow related classes, will patch defaultly if tensorflow
+    :param unpatch_tf: bool, if patch tensorflow related classes, will patch defaultly if tensorflow
            is installed
-    :param patch_torch: bool, if patch pytorch related classes, will patch defaultly if pytorch
+    :param unpatch_torch: bool, if patch pytorch related classes, will patch defaultly if pytorch
            is installed
     '''
-    if patch_tf is None:
-        patch_tf = find_spec("tensorflow") is not None
-    if patch_torch is None:
-        patch_torch = find_spec("pytorch_lightning") is not None
+    if unpatch_tf is None:
+        unpatch_tf = find_spec("tensorflow") is not None
+    if unpatch_torch is None:
+        unpatch_torch = find_spec("pytorch_lightning") is not None
 
-    mapping_tf, mapping_torch = get_patch_map()
+    mapping_tf, mapping_torch = _get_patch_map()
 
-    if patch_tf:
+    if unpatch_tf:
         for mapping_iter in mapping_tf:
             setattr(mapping_iter[0], mapping_iter[1], mapping_iter[3])
     
-    if patch_torch:
+    if unpatch_torch:
         for mapping_iter in mapping_torch:
             setattr(mapping_iter[0], mapping_iter[1], mapping_iter[3])
