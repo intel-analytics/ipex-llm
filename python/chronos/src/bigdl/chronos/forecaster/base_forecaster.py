@@ -450,15 +450,18 @@ class BasePytorchForecaster(Forecaster):
                | 1. a numpy ndarray x:
                | x's shape is (num_samples, lookback, feature_dim) where lookback and feature_dim
                | should be the same as past_seq_len and input_feature_num.
+               |
                | 2. a xshard item:
                | each partition can be a dictionary of {'x': x}, where x's shape
                | should follow the shape stated before.
+               |
                | 3. pytorch dataloader:
                | the dataloader needs to return at least x in each iteration
                | with the shape as following:
                | x's shape is (num_samples, lookback, feature_dim) where lookback and feature_dim
                | should be the same as past_seq_len and input_feature_num.
                | If returns x and y only get x.
+               |
                | 4. A bigdl.chronos.data.tsdataset.TSDataset instance:
                | Forecaster will automatically process the TSDataset.
                | By default, TSDataset will be transformed to a pytorch dataloader,
@@ -541,12 +544,14 @@ class BasePytorchForecaster(Forecaster):
                | 1. a numpy ndarray x:
                | x's shape is (num_samples, lookback, feature_dim) where lookback and feature_dim
                | should be the same as past_seq_len and input_feature_num.
+               |
                | 2. pytorch dataloader:
                | the dataloader needs to return at least x in each iteration
                | with the shape as following:
                | x's shape is (num_samples, lookback, feature_dim) where lookback and feature_dim
                | should be the same as past_seq_len and input_feature_num.
                | If returns x and y only get x.
+               |
                | 3. A bigdl.chronos.data.tsdataset.TSDataset instance:
                | Forecaster will automatically process the TSDataset.
                | By default, TSDataset will be transformed to a pytorch dataloader,
@@ -604,12 +609,14 @@ class BasePytorchForecaster(Forecaster):
                | 1. a numpy ndarray x:
                | x's shape is (num_samples, lookback, feature_dim) where lookback and feature_dim
                | should be the same as past_seq_len and input_feature_num.
+               |
                | 2. pytorch dataloader:
                | the dataloader needs to return at least x in each iteration
                | with the shape as following:
                | x's shape is (num_samples, lookback, feature_dim) where lookback and feature_dim
                | should be the same as past_seq_len and input_feature_num.
                | If returns x and y only get x.
+               |
                | 3. A bigdl.chronos.data.tsdataset.TSDataset instance:
                | Forecaster will automatically process the TSDataset.
                | By default, TSDataset will be transformed to a pytorch dataloader,
@@ -681,15 +688,18 @@ class BasePytorchForecaster(Forecaster):
                | should be the same as past_seq_len and input_feature_num.
                | y's shape is (num_samples, horizon, target_dim), where horizon and target_dim
                | should be the same as future_seq_len and output_feature_num.
+               |
                | 2. a xshard item:
                | each partition can be a dictionary of {'x': x, 'y': y}, where x and y's shape
                | should follow the shape stated before.
+               |
                | 3. pytorch dataloader:
                | the dataloader should return x, y in each iteration with the shape as following:
                | x's shape is (num_samples, lookback, feature_dim) where lookback and feature_dim
                | should be the same as past_seq_len and input_feature_num.
                | y's shape is (num_samples, horizon, target_dim), where horizon and target_dim
                | should be the same as future_seq_len and output_feature_num.
+               |
                | 4. A bigdl.chronos.data.tsdataset.TSDataset instance:
                | Forecaster will automatically process the TSDataset.
                | By default, TSDataset will be transformed to a pytorch dataloader,
@@ -778,12 +788,14 @@ class BasePytorchForecaster(Forecaster):
                | should be the same as past_seq_len and input_feature_num.
                | y's shape is (num_samples, horizon, target_dim), where horizon and target_dim
                | should be the same as future_seq_len and output_feature_num.
+               |
                | 2. pytorch dataloader:
                | should be the same as future_seq_len and output_feature_num.
                | the dataloader should return x, y in each iteration with the shape as following:
                | x's shape is (num_samples, lookback, feature_dim) where lookback and feature_dim
                | should be the same as past_seq_len and input_feature_num.
                | y's shape is (num_samples, horizon, target_dim), where horizon and target_dim
+               |
                | 3. A bigdl.chronos.data.tsdataset.TSDataset instance:
                | Forecaster will automatically process the TSDataset.
                | By default, TSDataset will be transformed to a pytorch dataloader,
@@ -849,12 +861,14 @@ class BasePytorchForecaster(Forecaster):
                | 1. a numpy ndarray x:
                | x's shape is (num_samples, lookback, feature_dim) where lookback and feature_dim
                | should be the same as past_seq_len and input_feature_num.
+               |
                | 2. pytorch dataloader:
                | the dataloader needs to return at least x in each iteration
                | with the shape as following:
                | x's shape is (num_samples, lookback, feature_dim) where lookback and feature_dim
                | should be the same as past_seq_len and input_feature_num.
                | If returns x and y only get x.
+               |
                | 3. A bigdl.chronos.data.tsdataset.TSDataset instance:
                | Forecaster will automatically process the TSDataset.
                | By default, TSDataset will be transformed to a pytorch dataloader,
@@ -869,12 +883,14 @@ class BasePytorchForecaster(Forecaster):
                | should be the same as past_seq_len and input_feature_num.
                | y's shape is (num_samples, horizon, target_dim), where horizon and target_dim
                | should be the same as future_seq_len and output_feature_num.
+               |
                | 2. pytorch dataloader:
                | the dataloader should return x, y in each iteration with the shape as following:
                | x's shape is (num_samples, lookback, feature_dim) where lookback and feature_dim
                | should be the same as past_seq_len and input_feature_num.
                | y's shape is (num_samples, horizon, target_dim), where horizon and target_dim
                | should be the same as future_seq_len and output_feature_num.
+               |
                | 3. A bigdl.chronos.data.tsdataset.TSDataset instance:
                | Forecaster will automatically process the TSDataset.
                | By default, TSDataset will be transformed to a pytorch dataloader,
@@ -884,8 +900,8 @@ class BasePytorchForecaster(Forecaster):
 
         :param batch_size: predict batch size. The value will not affect predict
                result but will affect resources cost(e.g. memory and time).
-        :param repetition_times : Defines repeate how many times to calculate model
-                                  uncertainty based on MC Dropout.
+        :param repetition_times: Defines repeate how many times to calculate model
+                                 uncertainty based on MC Dropout.
 
         :return: prediction and standard deviation which are both numpy array
                  with shape (num_samples, horizon, target_dim)
@@ -1229,17 +1245,20 @@ class BasePytorchForecaster(Forecaster):
         Quantize the forecaster.
 
         :param calib_data: Required for static quantization. Support following formats:
+
                | 1. a numpy ndarray tuple (x, y):
                | x's shape is (num_samples, lookback, feature_dim) where lookback and feature_dim
                | should be the same as past_seq_len and input_feature_num.
                | y's shape is (num_samples, horizon, target_dim), where horizon and target_dim
                | should be the same as future_seq_len and output_feature_num.
+               |
                | 2. pytorch dataloader:
                | the dataloader should return x, y in each iteration with the shape as following:
                | x's shape is (num_samples, lookback, feature_dim) where lookback and feature_dim
                | should be the same as past_seq_len and input_feature_num.
                | y's shape is (num_samples, horizon, target_dim), where horizon and target_dim
                | should be the same as future_seq_len and output_feature_num.
+               |
                | 3. A bigdl.chronos.data.tsdataset.TSDataset instance:
                | Forecaster will automatically process the TSDataset.
                | By default, TSDataset will be transformed to a pytorch dataloader,
@@ -1248,17 +1267,20 @@ class BasePytorchForecaster(Forecaster):
                | Then the training speed will be faster but will consume more memory.
 
         :param val_data: for evaluation. Support following formats:
+
                | 1. a numpy ndarray tuple (x, y):
                | x's shape is (num_samples, lookback, feature_dim) where lookback and feature_dim
                | should be the same as past_seq_len and input_feature_num.
                | y's shape is (num_samples, horizon, target_dim), where horizon and target_dim
                | should be the same as future_seq_len and output_feature_num.
+               |
                | 2. pytorch dataloader:
                | the dataloader should return x, y in each iteration with the shape as following:
                | x's shape is (num_samples, lookback, feature_dim) where lookback and feature_dim
                | should be the same as past_seq_len and input_feature_num.
                | y's shape is (num_samples, horizon, target_dim), where horizon and target_dim
                | should be the same as future_seq_len and output_feature_num.
+               |
                | 3. A bigdl.chronos.data.tsdataset.TSDataset instance:
                | Forecaster will automatically process the TSDataset.
                | By default, TSDataset will be transformed to a pytorch dataloader,
