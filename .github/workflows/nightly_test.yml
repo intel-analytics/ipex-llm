@@ -30,6 +30,7 @@ on:
         - PPML-Scala-UT
         - PPML-PySpark-K8S-EXAMPLE
         - PPML-Occlum-ExampleTests
+        - PPML-Occlum-k8s-ExampleTests
         - PPML-spark-Local-Example-Tests-on-Gramine
       tag:
         description: 'docker image tag'
@@ -545,4 +546,25 @@ jobs:
         secret: ${{ secrets.GIST_SECRET }}
         gist-id: bc8a699b455bced4a1aef138ad5df07e
         file-name: nightly-test.json
-        type: workflow 
+        type: workflow
+  
+  PPML-Occlum-k8s-ExampleTests:
+    if: ${{ github.event.schedule || github.event.inputs.artifact == 'PPML-Occlum-k8s-ExampleTests' || github.event.inputs.artifact == 'all' }}
+    runs-on: [self-hosted, Vilvarin]
+
+    steps:
+    - uses: actions/checkout@v3
+    - name: Run Test
+      uses: ./.github/actions/ppml-occlum-k8s-exampletests-action
+    - name: Create Job Badge
+      uses: ./.github/actions/create-job-status-badge
+      if: ${{ always() }}
+      with:
+        secret: ${{ secrets.GIST_SECRET}}
+        gist-id: 
+        is-self-hosted-runner: true
+        file-name: PPML-Occlum-ExampleTests.json
+        type: job
+        job-name: PPML-Occlum-ExampleTests
+        runner-hosted-on: 'Shanghai'
+
