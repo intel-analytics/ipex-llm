@@ -108,9 +108,9 @@ flowchart TD;
           ...)
   ```
 
-  See [TensorFlow](https://bigdl.readthedocs.io/en/latest/doc/Orca/QuickStart/orca-tf-quickstart.html) and [PyTorch](https://bigdl.readthedocs.io/en/latest/doc/Orca/QuickStart/orca-pytorch-quickstart.html) quickstart, as well as the [document website](https://bigdl.readthedocs.io/), for more details.
+  </details> 
 
-  </details>  
+  *See Orca [user guide](https://bigdl.readthedocs.io/en/latest/doc/Orca/Overview/orca.html), as well as [TensorFlow](https://bigdl.readthedocs.io/en/latest/doc/Orca/QuickStart/orca-tf-quickstart.html) and [PyTorch](https://bigdl.readthedocs.io/en/latest/doc/Orca/QuickStart/orca-pytorch-quickstart.html) quickstart, for more details.*
 
 - In addition, you can also run standard **Ray** programs on Spark cluster using _**RayOnSpark**_ in Orca.
 
@@ -145,8 +145,9 @@ flowchart TD;
   print(ray.get(consume.remote(dataset)))
   ```
 
-  See the RayOnSpark [user guide](https://bigdl.readthedocs.io/en/latest/doc/Ray/Overview/ray.html) and [quickstart](https://bigdl.readthedocs.io/en/latest/doc/Ray/QuickStart/ray-quickstart.html) for more details.
   </details>  
+  
+  *See RayOnSpark [user guide](https://bigdl.readthedocs.io/en/latest/doc/Ray/Overview/ray.html) and [quickstart](https://bigdl.readthedocs.io/en/latest/doc/Ray/QuickStart/ray-quickstart.html) for more details.*
 
 ### Nano
 You can transparently accelerate your TensorFlow or PyTorch programs on your laptop or server using *Nano*. With minimum code changes, *Nano* automatically applies modern CPU optimizations (e.g., SIMD,  multiprocessing, low precision, etc.) to standard TensorFlow and PyTorch code, with up-to 10x speedup.
@@ -196,7 +197,6 @@ The output of `optimizer.summary()` will be something like:
 Optimization cost 64.3s in total.
 ```
 
-See the Nano [user guide](https://bigdl.readthedocs.io/en/latest/doc/Nano/Overview/nano.html) and [tutotial](https://github.com/intel-analytics/BigDL/tree/main/python/nano/tutorial) for more details.
 </details>
 
 <details><summary>Show Nano Training example</summary>
@@ -232,9 +232,9 @@ class Trainer(TorchNano):
 Trainer(use_ipex=True, precision='bf16', num_processes=2).train()
 ```
 
-See the Nano [user guide](https://bigdl.readthedocs.io/en/latest/doc/Nano/Overview/nano.html) and [tutotial](https://github.com/intel-analytics/BigDL/tree/main/python/nano/tutorial) for more details.
-
 </details>  
+
+*See Nano [user guide](https://bigdl.readthedocs.io/en/latest/doc/Nano/Overview/nano.html) and [tutotial](https://github.com/intel-analytics/BigDL/tree/main/python/nano/tutorial) for more details.*
     
 ### DLlib
 
@@ -268,9 +268,9 @@ val pipelineModel = pipeline.fit(trainingDF)
 val predictions = pipelineModel.transform(validationDF)
 ```
 
-  See the [NNframes](https://bigdl.readthedocs.io/en/latest/doc/DLlib/Overview/nnframes.html) and [Keras API](https://bigdl.readthedocs.io/en/latest/doc/DLlib/Overview/keras-api.html) user guides for more details.
-
 </details>
+
+*See [NNframes](https://bigdl.readthedocs.io/en/latest/doc/DLlib/Overview/nnframes.html) and [Keras API](https://bigdl.readthedocs.io/en/latest/doc/DLlib/Overview/keras-api.html) user guides for more details.*
 
 ### Chronos
 
@@ -302,17 +302,20 @@ ts_pipeline = autotsest.fit(data=tsdata_train,
 ts_pipeline.predict(tsdata_test)
 ```
 
-See the Chronos [user guide](https://bigdl.readthedocs.io/en/latest/doc/Chronos/Overview/chronos.html) and [example](https://bigdl.readthedocs.io/en/latest/doc/Chronos/QuickStart/chronos-autotsest-quickstart.html) for more details.
-
 </details>  
 
-### Friesian
-The *Chronos* library makes it easy to build end-to-end, large-scale **recommedation system** (including *offline* feature transformation and traning, *near-line* feature and model update, and *online* serving pipeline). See the Freisian [readme](https://github.com/intel-analytics/BigDL/blob/main/python/friesian/README.md) for more details. 
+*See Chronos [user guide](https://bigdl.readthedocs.io/en/latest/doc/Chronos/Overview/chronos.html) and [quick start](https://bigdl.readthedocs.io/en/latest/doc/Chronos/QuickStart/chronos-autotsest-quickstart.html) for more details.*
 
+### Friesian
+The *Chronos* library makes it easy to build end-to-end, large-scale **recommedation system** (including *offline* feature transformation and traning, *near-line* feature and model update, and *online* serving pipeline). 
+
+*See Freisian [readme](https://github.com/intel-analytics/BigDL/blob/main/python/friesian/README.md) for more details.* 
 
 ### PPML
 
-*BigDL PPML* provides a **hardware (Intel SGX) protected** *Trusted Cluster Environment* for running distributed Big Data & AI applications (in a secure fashion on private or public cloud). See the PPML [tutorial](https://github.com/intel-analytics/BigDL/blob/main/ppml/README.md) and [user guide](https://bigdl.readthedocs.io/en/latest/doc/PPML/Overview/ppml.html) for more details. 
+*BigDL PPML* provides a **hardware (Intel SGX) protected** *Trusted Cluster Environment* for running distributed Big Data & AI applications (in a secure fashion on private or public cloud). 
+
+*See PPML [tutorial](https://github.com/intel-analytics/BigDL/blob/main/ppml/README.md) and [user guide](https://bigdl.readthedocs.io/en/latest/doc/PPML/Overview/ppml.html) for more details.* 
 
 ## Getting Support
 
@@ -320,6 +323,7 @@ The *Chronos* library makes it easy to build end-to-end, large-scale **recommeda
 - [User Group](https://groups.google.com/forum/#!forum/bigdl-user-group)
 - [Github Issues](https://github.com/intel-analytics/BigDL/issues)
 ---
+
 ## Citation
 
 If you've found BigDL useful for your project, you may cite the [paper](https://arxiv.org/abs/2204.01715) as follows:
