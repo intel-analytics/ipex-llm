@@ -42,12 +42,12 @@ flowchart TD;
     Feature4-- Recommendation System -->ReferFriesian([<em><strong>Friesian</strong></em>]);
     
     click ReferNano "https://github.com/jason-dai/BigDL/tree/readme#nano"
-    click ReferOrca "README.md#orca"
-    click ReferDLlib "README.md#dllib"
-    click ReferDLlib2 "README.md#dllib"
-    click ReferChronos "README.md#chronos"
-    click ReferFriesian "README.md#friesian"
-    click ReferPPML "README.md#ppml"
+    click ReferOrca "https://github.com/jason-dai/BigDL/tree/readme#orca"
+    click ReferDLlib "https://github.com/jason-dai/BigDL/tree/readme#dllib"
+    click ReferDLlib2 "https://github.com/jason-dai/BigDL/tree/readme#dllib"
+    click ReferChronos "https://github.com/jason-dai/BigDL/tree/readme#chronos"
+    click ReferFriesian "https://github.com/jason-dai/BigDL/tree/readme#friesian"
+    click ReferPPML "https://github.com/jason-dai/BigDL/tree/readme#ppml"
     
     classDef ReferStyle1 fill:#f96;
     classDef Feature fill:#FFF,stroke:#0f29ba,stroke-width:1px;
