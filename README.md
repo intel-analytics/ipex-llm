@@ -240,10 +240,10 @@ Trainer(use_ipex=True, precision='bf16', num_processes=2).train()
 
 With _DLlib_, you can write distributed deep learning applications as standard (**Scala** or **Python**) Spark programs, using the same *Spark DataFrame* and *ML Pipeline* APIs.
 
-<details><summary>Show DLlib example</summary>
+<details><summary>Show DLlib Scala example</summary>
 <br/>
 
-You can build distributed deep learning applications for Spark using *DLlib* in 3 simple steps:
+You can build distributed deep learning applications for Spark using *DLlib* Scala APIs in 3 simple steps:
 
 ```scala
 // 1. Call `initNNContext` at the beginning of the code: 
