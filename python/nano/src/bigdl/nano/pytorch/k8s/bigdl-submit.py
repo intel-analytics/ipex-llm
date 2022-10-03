@@ -52,6 +52,12 @@ def get_args_parser() -> ArgumentParser:
         default="default"
     )
 
+    parser.add_argument(
+        "--namespace",
+        type=str,
+        default="default"
+    )
+
     #
     # Positional arguments.
     #
@@ -64,13 +70,11 @@ def parse_args():
     parser = get_args_parser()
     return parser.parse_args()
 
-def create_master_pod(app_id, command, image, master_port, world_size, service_account_name):
-    config.load_config()
-    v1 = client.CoreV1Api()
+def create_master_pod(v1_api, namespace, app_id, command, image, master_port, world_size):
     pod_name = f'bigdl-{app_id}-master'
+    pod_labels = {"bigdl-app": app_id, "bigdl-app-type": "master"}
     metadata = client.V1ObjectMeta(name=pod_name,
-                                   labels={"bigdl-app": app_id,
-                                           "bigdl-app-type": "master"})
+                                   labels=pod_labels)
     client.V1EnvVarSource()
     envs = [
         client.V1EnvVar(name="WORLD_SIZE", value=f"{world_size}"),
@@ -87,14 +91,60 @@ def create_master_pod(app_id, command, image, master_port, world_size, service_a
                                    command=command)
 
     pod_spec = client.V1PodSpec(containers=[container],
-                                restart_policy="Never",
-                                service_account_name=service_account_name)
+                                restart_policy="Never")
     pod_body = client.V1Pod(api_version='v1',
                             metadata=metadata,
                             kind='Pod',
                             spec=pod_spec)
-    pod = v1.create_namespaced_pod(namespace="default", body=pod_body)
+    pod = v1_api.create_namespaced_pod(namespace=namespace, body=pod_body)
     print(f"Created Master Pod: {pod_name}")
+    return pod_name, pod_labels
+
+def create_master_service(v1_api, namespace,
+                          master_pod_name, master_pod_labels, master_port):
+    v1_api = client.CoreV1Api()
+    service_name = f'{master_pod_name}-service'
+    metadata = client.V1ObjectMeta(name=service_name)
+    port = client.V1ServicePort(protocol="TCP",
+                                port=int(master_port),
+                                target_port=int(master_port))
+
+    service_spec = client.V1ServiceSpec(selector=master_pod_labels,
+                                        ports=[port])
+
+    service = client.V1Service(api_version="v1",
+                               kind="Service",
+                               metadata=metadata,
+                               spec=service_spec)
+
+    service = v1_api.create_namespaced_service(namespace=namespace, body=service)
+    print(f"Created Master Service: {service_name}")
+    return service_name, master_port
+
+def create_worker_pods(v1_api, world_size, app_id,
+                       master_service_name, master_service_port,
+                       image, command):
+
+    for i in range(world_size - 1):
+        pod_name = f'bigdl-{app_id}-worker-{i + 1}'
+        metadata = client.V1ObjectMeta(name=pod_name,
+                                       labels={"bigdl-app": app_id,
+                                               "bigdl-app-type": "worker"})
+        envs = [
+            client.V1EnvVar(name="WORLD_SIZE", value=f"{world_size}"),
+            client.V1EnvVar(name="RANK", value=f"{i + 1}"),
+            client.V1EnvVar(name="MASTER_ADDR", value=master_service_name),
+            client.V1EnvVar(name="MASTER_PORT", value=master_service_port)
+        ]
+        container = client.V1Container(name="pytorch",
+                                       image=image,
+                                       env=envs,
+                                       command=command)
+
+        pod_spec = client.V1PodSpec(containers=[container], restart_policy="Never")
+        pod_body = client.V1Pod(metadata=metadata, spec=pod_spec, kind='Pod', api_version='v1')
+        pod = v1_api.create_namespaced_pod(namespace="default", body=pod_body)
+        print(f"Created Rank {i + 1} Pod: {pod_name}")
 
 def main():
 
@@ -103,22 +153,38 @@ def main():
 
     run_command = args.run_command
 
-    command_prefix = ["python",
-                      "/workspace/master_run.py",
-                      "--nnodes",
-                      str(args.nnodes),
-                      "--image",
-                      args.image,
-                      ]
+    command = ["python"] + run_command
 
     app_id = str(uuid4())[:7]
 
-    create_master_pod(app_id=app_id,
-                      command=command_prefix + run_command,
-                      image=args.image,
-                      master_port=args.master_port,
-                      world_size=args.nnodes,
-                      service_account_name=args.service_account_name)
+    config.load_config()
+
+    v1 = client.CoreV1Api()
+
+    master_pod_name, master_pod_labels = create_master_pod(v1_api=v1,
+                                                           namespace=args.namespace,
+                                                           app_id=app_id,
+                                                           command=command,
+                                                           image=args.image,
+                                                           master_port=args.master_port,
+                                                           world_size=args.nnodes)
+    service_name, service_port = create_master_service(v1_api=v1,
+                                                       namespace=args.namespace,
+                                                       master_pod_name=master_pod_name,
+                                                       master_pod_labels=master_pod_labels,
+                                                       master_port=args.master_port)
+    create_worker_pods(v1_api=v1,
+                       world_size=args.nnodes,
+                       app_id=app_id,
+                       master_service_name=service_name,
+                       master_service_port=service_port,
+                       image=args.image,
+                       command=command)
+
+    print("You can use the following commands to check out the pods status and logs.")
+    print(f"**** kubectl get pods -l bigdl-app={app_id} ****")
+    print(f"**** kubectl logs {master_pod_name} ****")
+    
 
 if __name__ == '__main__':
     main()
