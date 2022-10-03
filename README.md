@@ -30,12 +30,12 @@ For more information, you may [read the docs](https://bigdl.readthedocs.io/).
 ```mermaid
 flowchart TD;
     Feature1[Secure Big Data & AI?];
-    Feature1-- No -->Feature2[Python vs. Scala/Java];
+    Feature1-- No -->Feature2[Python vs. Scala/Java?];
     Feature1-- "Yes (HW Security & FL)"  -->ReferPPML([<em><strong>PPML</strong></em>]);
-    Feature2-- Python -->Feature3[Application Senario?];
+    Feature2-- Python -->Feature3[What type of application?];
     Feature2-- Scala/Java -->ReferDLlib([<em><strong>DLlib</strong></em>]);
-    Feature3-- Accelerated TensorFlow / PyTorch -->ReferNano([<em><strong>Nano</strong></em>]);
-    Feature3-- "Distributed Big Data + AI (TF/PT)" -->ReferOrca([<em><strong>Orca</strong></em>]);
+    Feature3-- "Distributed Big Data + AI (TF/PyTorch)" -->ReferOrca([<em><strong>Orca</strong></em>]);
+    Feature3-- Accelerating TensorFlow / PyTorch -->ReferNano([<em><strong>Nano</strong></em>]);
     Feature3-- DL for Spark MLlib -->ReferDLlib2([<em><strong>DLlib</strong></em>]);
     Feature3-- High Level App Framework -->Feature4[Domain?];
     Feature4-- Time Series -->ReferChronos([<em><strong>Chronos</strong></em>]);
