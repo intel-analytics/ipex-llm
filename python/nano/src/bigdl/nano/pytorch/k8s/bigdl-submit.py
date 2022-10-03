@@ -58,6 +58,12 @@ def get_args_parser() -> ArgumentParser:
         default="default"
     )
 
+    parser.add_argument(
+        '--env',
+        nargs=2,
+        action='append'
+    )
+
     #
     # Positional arguments.
     #
@@ -70,7 +76,7 @@ def parse_args():
     parser = get_args_parser()
     return parser.parse_args()
 
-def create_master_pod(v1_api, namespace, app_id, command, image, master_port, world_size):
+def create_master_pod(v1_api, namespace, app_id, command, image, master_port, world_size, extra_envs):
     pod_name = f'bigdl-{app_id}-master'
     pod_labels = {"bigdl-app": app_id, "bigdl-app-type": "master"}
     metadata = client.V1ObjectMeta(name=pod_name,
@@ -85,6 +91,11 @@ def create_master_pod(v1_api, namespace, app_id, command, image, master_port, wo
         client.V1EnvVar(name="MASTER_PORT", value=master_port), # random selection？
         client.V1EnvVar(name="APP_ID", value=app_id)
     ]
+
+    for env in extra_envs:
+        envs.append(
+            client.V1EnvVar(name=env[0], value=env[1]),
+        )
     container = client.V1Container(name="pytorch",
                                    image=image,
                                    env=envs,
@@ -123,7 +134,7 @@ def create_master_service(v1_api, namespace,
 
 def create_worker_pods(v1_api, world_size, app_id,
                        master_service_name, master_service_port,
-                       image, command):
+                       image, command, extra_envs):
 
     for i in range(world_size - 1):
         pod_name = f'bigdl-{app_id}-worker-{i + 1}'
@@ -136,6 +147,11 @@ def create_worker_pods(v1_api, world_size, app_id,
             client.V1EnvVar(name="MASTER_ADDR", value=master_service_name),
             client.V1EnvVar(name="MASTER_PORT", value=master_service_port)
         ]
+
+        for env in extra_envs:
+            envs.append(
+                client.V1EnvVar(name=env[0], value=env[1]),
+            )
         container = client.V1Container(name="pytorch",
                                        image=image,
                                        env=envs,
@@ -149,7 +165,6 @@ def create_worker_pods(v1_api, world_size, app_id,
 def main():
 
     args = parse_args()
-
 
     run_command = args.run_command
 
@@ -167,7 +182,8 @@ def main():
                                                            command=command,
                                                            image=args.image,
                                                            master_port=args.master_port,
-                                                           world_size=args.nnodes)
+                                                           world_size=args.nnodes,
+                                                           extra_envs=args.env)
     service_name, service_port = create_master_service(v1_api=v1,
                                                        namespace=args.namespace,
                                                        master_pod_name=master_pod_name,
@@ -179,7 +195,8 @@ def main():
                        master_service_name=service_name,
                        master_service_port=service_port,
                        image=args.image,
-                       command=command)
+                       command=command,
+                       extra_envs=args.env)
 
     print("You can use the following commands to check out the pods status and logs.")
     print(f"**** kubectl get pods -l bigdl-app={app_id} ****")
