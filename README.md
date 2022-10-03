@@ -12,7 +12,7 @@ BigDL seamlessly scales your data analytics & AI applications from laptop to clo
 
 - [Orca](#orca): Distributed Big Data & AI (TF & PyTorch) Pipeline on Spark and Ray
 
-- Nano: Transparent Acceleration of Tensorflow & PyTorch Programs
+- [Nano](#nano): Transparent Acceleration of Tensorflow & PyTorch Programs
 
 - [DLlib](#dllib): “Equivalent of Spark MLlib” for Deep Learning
 
@@ -148,7 +148,94 @@ flowchart TD;
   See the RayOnSpark [user guide](https://bigdl.readthedocs.io/en/latest/doc/Ray/Overview/ray.html) and [quickstart](https://bigdl.readthedocs.io/en/latest/doc/Ray/QuickStart/ray-quickstart.html) for more details.
   </details>  
 
+### Nano
+You can transparently accelerate your TensorFlow or PyTorch programs on your laptop or server using *Nano*. With minimum code changes, *Nano* automatically applies modern CPU optimizations (e.g., SIMD,  multiprocessing, low precision, etc.) to standard TensorFlow and PyTorch code, with up-to 10x speedup.
 
+<details><summary>Show Nano inference example</summary>
+<br/>
+
+You can automatically optimize a trained PyTorch model for inference or deployment using _Nano_:
+
+```python
+model = ResNet18().load_state_dict(...)
+train_dataloader = ...
+val_dataloader = ...
+def accuracy (pred, target):
+  ... 
+
+from bigdl.nano.pytorch import InferenceOptimizer
+optimizer = InferenceOptimizer()
+optimizer.optimize(model,
+                   training_data=train_dataloader,
+                   validation_data=val_dataloader,
+                   metric=accuracy)
+new_model, config = optimizer.get_best_model()
+
+optimizer.summary()
+```
+The output of `optimizer.summary()` will be something like:
+```
+ -------------------------------- ---------------------- -------------- ----------------------
+|             method             |        status        | latency(ms)  |       accuracy       |
+ -------------------------------- ---------------------- -------------- ----------------------
+|            original            |      successful      |    43.688    |        0.969         |
+|           fp32_ipex            |      successful      |    33.383    |    not recomputed    |
+|              bf16              |   fail to forward    |     None     |         None         |
+|           bf16_ipex            |    early stopped     |   203.897    |         None         |
+|              int8              |      successful      |    10.74     |        0.969         |
+|            jit_fp32            |      successful      |    38.732    |    not recomputed    |
+|         jit_fp32_ipex          |      successful      |    35.205    |    not recomputed    |
+|  jit_fp32_ipex_channels_last   |      successful      |    19.327    |    not recomputed    |
+|         openvino_fp32          |      successful      |    10.215    |    not recomputed    |
+|         openvino_int8          |      successful      |    8.192     |        0.969         |
+|        onnxruntime_fp32        |      successful      |    20.931    |    not recomputed    |
+|    onnxruntime_int8_qlinear    |      successful      |    8.274     |        0.969         |
+|    onnxruntime_int8_integer    |   fail to convert    |     None     |         None         |
+ -------------------------------- ---------------------- -------------- ----------------------
+
+Optimization cost 64.3s in total.
+```
+
+See the Nano [user guide](https://bigdl.readthedocs.io/en/latest/doc/Nano/Overview/nano.html) and [tutotial](https://github.com/intel-analytics/BigDL/tree/main/python/nano/tutorial) for more details.
+</details>
+
+<details><summary>Show Nano Training example</summary>
+<br/>
+You may easily accelerate PyTorch training (e.g., IPEX, BF16, Multi-Instance Training, etc.) using Nano:
+
+```python
+model = ResNet18()
+optimizer = torch.optim.SGD(...)
+train_loader = ...
+val_loader = ...
+
+from bigdl.nano.pytorch import TorchNano
+
+# Define your training loop inside `TorchNano.train`
+class Trainer(TorchNano):
+	def train(self):
+	# call `setup` to prepare for model, optimizer(s) and dataloader(s) for accelerated training
+	model, optimizer, (train_loader, val_loader) = self.setup(model, optimizer,
+  train_loader, val_loader)
+  
+    for epoch in range(num_epochs):  
+      model.train()  
+      for data, target in train_loader:  
+        optimizer.zero_grad()  
+        output = model(data)  
+        # replace the loss.backward() with self.backward(loss)  
+        loss = loss_fuc(output, target)  
+        self.backward(loss)  
+        optimizer.step()   
+
+# Accelerated training (IPEX, BF16 and Multi-Instance Training)
+Trainer(use_ipex=True, precision='bf16', num_processes=2).train()
+```
+
+See the Nano [user guide](https://bigdl.readthedocs.io/en/latest/doc/Nano/Overview/nano.html) and [tutotial](https://github.com/intel-analytics/BigDL/tree/main/python/nano/tutorial) for more details.
+
+</details>  
+    
 ### DLlib
 
 With _DLlib_, you can write distributed deep learning applications as standard (**Scala** or **Python**) Spark programs, using the same *Spark DataFrame* and *ML Pipeline* APIs.
