@@ -49,8 +49,8 @@ flowchart TD;
     click ReferFriesian "https://github.com/jason-dai/BigDL/tree/readme#friesian"
     click ReferPPML "https://github.com/jason-dai/BigDL/tree/readme#ppml"
     
-    classDef ReferStyle1 fill:#f96;
-    classDef Feature fill:#FFF,stroke:#0f29ba,stroke-width:1px;
+    classDef ReferStyle1 fill:#5099ce,stroke:#5099ce;
+    classDef Feature fill:#FFF,stroke:#08409c,stroke-width:1px;
     class ReferNano,ReferOrca,ReferDLlib,ReferDLlib2,ReferChronos,ReferFriesian,ReferPPML ReferStyle1;
     class Feature1,Feature2,Feature3,Feature4,Feature5,Feature6,Feature7 Feature;
     
