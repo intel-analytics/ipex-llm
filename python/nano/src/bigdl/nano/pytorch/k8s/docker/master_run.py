@@ -58,7 +58,7 @@ def main():
 
     cmd = args.cmd
 
-    cmd = [sys.executable] + cmd[1:]
+    cmd = [sys.executable] + cmd
 
     master_ip = os.environ["MASTER_ADDR"]
     master_port = os.environ["MASTER_PORT"]
