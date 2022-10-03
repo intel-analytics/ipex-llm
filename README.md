@@ -41,13 +41,13 @@ flowchart TD;
     Feature4-- Time Series -->ReferChronos([<em><strong>Chronos</strong></em>]);
     Feature4-- Recommendation System -->ReferFriesian([<em><strong>Friesian</strong></em>]);
     
-    click ReferNano "https://bigdl.readthedocs.io/en/latest/doc/Nano/Overview/nano.html" "Refer to Nano" _parent
-    click ReferOrca "https://bigdl.readthedocs.io/en/latest/doc/Orca/Overview/orca.html"
-    click ReferDLlib "https://bigdl.readthedocs.io/en/latest/doc/DLlib/Overview/dllib.html"
-    click ReferDLlib2 "https://bigdl.readthedocs.io/en/latest/doc/DLlib/Overview/dllib.html"
-    click ReferChronos "https://bigdl.readthedocs.io/en/latest/doc/Chronos/Overview/chronos.html"
-    click ReferFriesian "https://bigdl.readthedocs.io/en/latest/doc/Chronos/Overview/chronos.html"
-    click ReferPPML "https://bigdl.readthedocs.io/en/latest/doc/PPML/Overview/ppml.html"
+    click ReferNano "https://github.com/jason-dai/BigDL/edit/readme/README.md#nano"
+    click ReferOrca "https://github.com/jason-dai/BigDL/edit/readme/README.md#orca"
+    click ReferDLlib "https://github.com/jason-dai/BigDL/edit/readme/README.md#dllib"
+    click ReferDLlib2 "https://github.com/jason-dai/BigDL/edit/readme/README.md#dllib"
+    click ReferChronos "https://github.com/jason-dai/BigDL/edit/readme/README.md#chronos"
+    click ReferFriesian "https://github.com/jason-dai/BigDL/edit/readme/README.md#friesian"
+    click ReferPPML "https://github.com/jason-dai/BigDL/edit/readme/README.md#ppml"
     
     classDef ReferStyle1 fill:#f96;
     classDef Feature fill:#FFF,stroke:#0f29ba,stroke-width:1px;
