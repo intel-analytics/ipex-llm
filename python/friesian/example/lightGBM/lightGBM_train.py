@@ -34,37 +34,29 @@ num_cols = ["enaging_user_follower_count", 'enaging_user_following_count',
             "engaged_with_user_follower_count", "engaged_with_user_following_count",
             "len_hashtags", "len_domains", "len_links"]
 cat_cols = ["engaged_with_user_is_verified", "enaging_user_is_verified", "present_media",
-            "tweet_type", "language", 'present_media_language', "hashtags", "present_links",
-            "present_domains"]
+            "tweet_type", "language", 'present_media_language', "enaging_user_id",
+            "engaged_with_user_id", "hashtags", "present_links", "present_domains"]
 
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser(description='NCF Training')
+    parser = argparse.ArgumentParser(description='LightGBM Training')
     parser.add_argument('--cluster_mode', type=str, default="local",
-                        help='The cluster mode, such as local, yarn, standalone or spark-submit.')
+                        help='The cluster mode, such as local, yarn or standalone.')
     parser.add_argument('--master', type=str, default=None,
                         help='The master url, only used when cluster mode is standalone.')
-    parser.add_argument('--executor_cores', type=int, default=8,
-                        help='The number of cores to use on each executor.')
-    parser.add_argument('--executor_memory', type=str, default="4g",
-                        help='The amount of memory to allocate on each executor.')
-    parser.add_argument('--num_executors', type=int, default=2,
-                        help='The number of executors to use in the cluster.')
+    parser.add_argument('--executor_cores', type=int, default=4,
+                        help='The executor core number.')
+    parser.add_argument('--executor_memory', type=str, default="160g",
+                        help='The executor memory.')
+    parser.add_argument('--num_executor', type=int, default=4,
+                        help='The number of executor.')
     parser.add_argument('--driver_cores', type=int, default=4,
-                        help='The number of cores to use for the driver.')
-    parser.add_argument('--driver_memory', type=str, default="4g",
-                        help='The amount of memory to allocate for the driver.')
-    parser.add_argument('--backend', type=str, default="ray",
-                        help='The backend of TF2 Estimator, either ray or spark.')
-    parser.add_argument('--lr', default=0.001, type=float,
-                        help='The learning rate to train the model.')
-    parser.add_argument('--epochs', default=5, type=int,
-                        help='The number of epochs to train the model.')
-    parser.add_argument('--batch_size', default=8000, type=int,
-                        help='The batch size to train the model.')
-    parser.add_argument('--model_dir', default='./', type=str,
-                        help='The directory to save the trained model.')
-    parser.add_argument('--data_dir', type=str, default="./movielens",
-                        help='The directory for the movielens data.')
+                        help='The driver core number.')
+    parser.add_argument('--driver_memory', type=str, default="36g",
+                        help='The driver memory.')
+    parser.add_argument('--model_dir', default='snapshot', type=str,
+                        help='nativeModel directory name (default: nativeModel)')
+    parser.add_argument('--data_dir', type=str, help='data directory')
+
     args = parser.parse_args()
 
     if args.cluster_mode == "local":
@@ -92,62 +84,92 @@ if __name__ == '__main__':
 
     features = num_cols + [col + "_te_label" for col in cat_cols]
     begin = time.time()
-    train_tbl = FeatureTable.read_parquet(args.data_dir + "/train_parquet") \
-        .drop("tweet_timestamp", "enaging_user_account_creation", "reply_timestamp", "text_tokens",
-              "retweet_timestamp", "retweet_with_comment_timestamp", "like_timestamp")
-    test_tbl = FeatureTable.read_parquet(args.data_dir + "/test_parquet") \
-        .drop("tweet_timestamp", "enaging_user_account_creation", "reply_timestamp", "text_tokens",
-              "retweet_timestamp", "retweet_with_comment_timestamp", "like_timestamp")
+    # train_tbl = FeatureTable.read_parquet(args.data_dir + "/train_parquet") \
+    #     .drop("tweet_timestamp", "enaging_user_account_creation", "reply_timestamp", "text_tokens",
+    #           "retweet_timestamp", "retweet_with_comment_timestamp", "like_timestamp")
+    # test_tbl = FeatureTable.read_parquet(args.data_dir + "/test_parquet") \
+    #     .drop("tweet_timestamp", "enaging_user_account_creation", "reply_timestamp", "text_tokens",
+    #           "retweet_timestamp", "retweet_with_comment_timestamp", "like_timestamp")
+    #
+    # train_tbl.cache()
+    # test_tbl.cache()
+    # full = train_tbl.concat(test_tbl)
+    # full, target_codes = full.target_encode(cat_cols=cat_cols, target_cols=["label"])
+    # print(full.size())
+    # for code in target_codes:
+    #     code.cache()
+    #
+    # train = train_tbl \
+    #     .encode_target(target_cols="label", targets=target_codes) \
+    #     .merge_cols(features, "features") \
+    #     .select(["label", "features"]) \
+    #     .apply("features", "features", lambda x: DenseVector(x), VectorUDT()) \
+    #     .repartition(args.num_executor * args.executor_cores)
+    #
+    # train.show(5, False)
+    #
+    # test = test_tbl \
+    #     .encode_target(target_cols="label", targets=target_codes) \
+    #     .merge_cols(features, "features") \
+    #     .select(["label", "features"]) \
+    #     .apply("features", "features", lambda x: DenseVector(x), VectorUDT()) \
+    #     .repartition(args.num_executor * args.executor_cores)
 
-    train_tbl.cache()
-    test_tbl.cache()
-    full = train_tbl.concat(test_tbl)
-    full, target_codes = full.target_encode(cat_cols=cat_cols, target_cols=["label"])
-    print(full.size())
-    for code in target_codes:
-        code.cache()
-
-    train = train_tbl \
-        .encode_target(target_cols="label", targets=target_codes) \
-        .merge_cols(features, "features") \
-        .select(["label", "features"]) \
-        .apply("features", "features", lambda x: DenseVector(x), VectorUDT()) \
-        .repartition(20)
-
-    train.show(5, False)
-
-    test = test_tbl \
-        .encode_target(target_cols="label", targets=target_codes) \
-        .merge_cols(features, "features") \
-        .select(["label", "features"]) \
-        .apply("features", "features", lambda x: DenseVector(x), VectorUDT()) \
-        .repartition(20)
+    input_path = "/Users/guoqiong/intelWork/data/tweet/xgb_processed"
+    # input_path = "hdfs://172.16.0.105:8020/user/root/guoqiong/recsys2021/xgb_processed"
+    spark = OrcaContext.get_spark_session()
+    train = FeatureTable.read_parquet(input_path + "/train").repartition(args.num_executor * args.executor_cores)
+    test = FeatureTable.read_parquet(input_path + "/test").repartition(args.num_executor * args.executor_cores)
 
     test.show(5, False)
     train = train.cache()
     test = test.cache()
     print("training size:", train.size())
     print("test size:", test.size())
+    #
+    # train_tbl.uncache()
+    # test_tbl.uncache()
+    preprocess = time.time()
+    print("feature preprocessing time: %.2f" % (preprocess - begin))
 
-    train_tbl.uncache()
-    test_tbl.uncache()
+    params = {"boosting_type": "gbdt", "num_leaves": 70, "learning_rate": 0.3,
+              "min_data_in_leaf": 20, "objective": "binary",
+              'num_iterations': 10000,
+              'max_depth': 14,
+              'lambda_l1': 0.01,
+              'lambda_l2': 0.01,
+              'bagging_freq': 5,
+              'max_bin': 255,
+              'early_stopping_round': 20
+              }
 
-    model = LightGBMClassifier()
+    params = {"objective": "binary"}
+    for learning_rate in [0.1]:
+        for max_depth in [14]:
+            for num_iterations in [10000]:
+                # params.update({"learning_rate": learning_rate, "max_depth": max_depth, "num_iterations": num_iterations})
 
-    model = model.fit(train.df)
-    predictions = model.transform(test.df)
-    predictions.show(50)
-    print(predictions.count())
+                model = LightGBMClassifier(params)
+                # model = LightGBMClassifier()
 
-    evaluator = BinaryClassificationEvaluator(labelCol="label",
-                                              rawPredictionCol="rawPrediction")
-    auc = evaluator.evaluate(predictions, {evaluator.metricName: "areaUnderROC"})
+                model = model.fit(train.df)
+                predictions = model.transform(test.df)
+                predictions.cache()
+                predictions.show(5, False)
+                evaluator = BinaryClassificationEvaluator(labelCol="label",
+                                                          rawPredictionCol="rawPrediction")
+                auc = evaluator.evaluate(predictions, {evaluator.metricName: "areaUnderROC"})
 
-    evaluator2 = MulticlassClassificationEvaluator(labelCol="label",
-                                                   predictionCol="prediction")
-    acc = evaluator2.evaluate(predictions, {evaluator2.metricName: "accuracy"})
+                evaluator2 = MulticlassClassificationEvaluator(labelCol="label",
+                                                               predictionCol="prediction")
+                acc = evaluator2.evaluate(predictions, {evaluator2.metricName: "accuracy"})
+                print(params)
+                print("AUC: %.2f" % (auc * 100.0))
+                print("Accuracy: %.2f" % (acc * 100.0))
 
-    print("AUC: %.2f" % (auc * 100.0))
-    print("Accuracy: %.2f" % (acc * 100.0))
+                predictions.unpersist(blocking=True)
 
+    end = time.time()
+    print("training time: %.2f" % (end - preprocess))
+    print(end - begin)
     stop_orca_context()
