@@ -14,12 +14,10 @@
 # limitations under the License.
 #
 
-import subprocess
-import sys
-import os
 from uuid import uuid4
 from kubernetes import client, config
 from argparse import REMAINDER, ArgumentParser
+
 
 def get_args_parser() -> ArgumentParser:
     """Helper function parsing the command line options."""
@@ -64,6 +62,18 @@ def get_args_parser() -> ArgumentParser:
         action='append'
     )
 
+    parser.add_argument(
+        '--pod_cpu',
+        type=str,
+        default="2",
+    )
+
+    parser.add_argument(
+        '--pod_memory',
+        type=str,
+        default="1G"
+    )
+
     #
     # Positional arguments.
     #
@@ -76,7 +86,9 @@ def parse_args():
     parser = get_args_parser()
     return parser.parse_args()
 
-def create_master_pod(v1_api, namespace, app_id, command, image, master_port, world_size, extra_envs):
+def create_master_pod(v1_api, namespace, app_id, command,
+                      image, master_port, world_size, extra_envs,
+                      pod_cpu, pod_memory):
     pod_name = f'bigdl-{app_id}-master'
     pod_labels = {"bigdl-app": app_id, "bigdl-app-type": "master"}
     metadata = client.V1ObjectMeta(name=pod_name,
@@ -96,10 +108,15 @@ def create_master_pod(v1_api, namespace, app_id, command, image, master_port, wo
         envs.append(
             client.V1EnvVar(name=env[0], value=env[1]),
         )
+    resource = client.V1ResourceRequirements(limits={"cpu": pod_cpu,
+                                                     "memory": pod_memory},
+                                             requests={"cpu": pod_cpu,
+                                                       "memory": pod_memory})
     container = client.V1Container(name="pytorch",
                                    image=image,
                                    env=envs,
-                                   command=command)
+                                   command=command,
+                                   resources=resource)
 
     pod_spec = client.V1PodSpec(containers=[container],
                                 restart_policy="Never")
@@ -129,12 +146,14 @@ def create_master_service(v1_api, namespace,
                                spec=service_spec)
 
     service = v1_api.create_namespaced_service(namespace=namespace, body=service)
+
     print(f"Created Master Service: {service_name}")
     return service_name, master_port
 
 def create_worker_pods(v1_api, world_size, app_id,
                        master_service_name, master_service_port,
-                       image, command, extra_envs):
+                       image, command, extra_envs,
+                       pod_cpu, pod_memory):
 
     for i in range(world_size - 1):
         pod_name = f'bigdl-{app_id}-worker-{i + 1}'
@@ -152,13 +171,19 @@ def create_worker_pods(v1_api, world_size, app_id,
             envs.append(
                 client.V1EnvVar(name=env[0], value=env[1]),
             )
+        resource = client.V1ResourceRequirements(limits={"cpu": pod_cpu,
+                                                         "memory": pod_memory},
+                                                 requests={"cpu": pod_cpu,
+                                                           "memory": pod_memory})
         container = client.V1Container(name="pytorch",
                                        image=image,
                                        env=envs,
-                                       command=command)
+                                       command=command,
+                                       resources=resource)
 
         pod_spec = client.V1PodSpec(containers=[container], restart_policy="Never")
         pod_body = client.V1Pod(metadata=metadata, spec=pod_spec, kind='Pod', api_version='v1')
+
         pod = v1_api.create_namespaced_pod(namespace="default", body=pod_body)
         print(f"Created Rank {i + 1} Pod: {pod_name}")
 
@@ -183,7 +208,9 @@ def main():
                                                            image=args.image,
                                                            master_port=args.master_port,
                                                            world_size=args.nnodes,
-                                                           extra_envs=args.env)
+                                                           extra_envs=args.env,
+                                                           pod_cpu=args.pod_cpu,
+                                                           pod_memory=args.pod_memory)
     service_name, service_port = create_master_service(v1_api=v1,
                                                        namespace=args.namespace,
                                                        master_pod_name=master_pod_name,
@@ -196,7 +223,9 @@ def main():
                        master_service_port=service_port,
                        image=args.image,
                        command=command,
-                       extra_envs=args.env)
+                       extra_envs=args.env,
+                       pod_cpu=args.pod_cpu,
+                       pod_memory=args.pod_memory)
 
     print("You can use the following commands to check out the pods status and logs.")
     print(f"**** kubectl get pods -l bigdl-app={app_id} ****")
