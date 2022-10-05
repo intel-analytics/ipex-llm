@@ -16,8 +16,8 @@
 
 from uuid import uuid4
 from kubernetes import client, config
-from argparse import ONE_OR_MORE, REMAINDER, ArgumentParser
-
+from argparse import REMAINDER, ArgumentParser
+import functools
 
 def get_args_parser() -> ArgumentParser:
     """Helper function parsing the command line options."""
@@ -81,24 +81,31 @@ def get_args_parser() -> ArgumentParser:
 
     return parser
 
+
 def parse_args():
     parser = get_args_parser()
     return parser.parse_args()
 
-def create_master_pod(v1_api, namespace, app_id, command,
-                      image, master_port, world_size, extra_envs,
-                      pod_cpu, pod_memory):
-    pod_name = f'bigdl-{app_id}-master'
-    pod_labels = {"bigdl-app": app_id, "bigdl-app-type": "master"}
+
+def create_pod(pod_name,
+               pod_labels,
+               rank,
+               world_size,
+               master_addr,
+               master_port,
+               app_id,
+               extra_envs,
+               pod_cpu,
+               pod_memory,
+               image,
+               command):
     metadata = client.V1ObjectMeta(name=pod_name,
                                    labels=pod_labels)
     client.V1EnvVarSource()
     envs = [
         client.V1EnvVar(name="WORLD_SIZE", value=f"{world_size}"),
-        client.V1EnvVar(name="RANK", value=f"0"),
-        client.V1EnvVar(name="MASTER_ADDR",
-                        value_from=client.V1EnvVarSource(
-                            field_ref=client.V1ObjectFieldSelector(field_path="status.podIP"))),
+        client.V1EnvVar(name="RANK", value=rank),
+        client.V1EnvVar(name="MASTER_ADDR", value=master_addr),
         client.V1EnvVar(name="MASTER_PORT", value=master_port), # random selection？
         client.V1EnvVar(name="APP_ID", value=app_id)
     ]
@@ -123,9 +130,8 @@ def create_master_pod(v1_api, namespace, app_id, command,
                             metadata=metadata,
                             kind='Pod',
                             spec=pod_spec)
-    pod = v1_api.create_namespaced_pod(namespace=namespace, body=pod_body)
-    print(f"Created Master Pod: {pod_name}")
-    return pod_name, pod_labels
+    return pod_body
+
 
 def create_master_service(v1_api, namespace,
                           master_pod_name, master_pod_labels, master_port):
@@ -149,42 +155,23 @@ def create_master_service(v1_api, namespace,
     print(f"Created Master Service: {service_name}")
     return service_name, master_port
 
-def create_worker_pods(v1_api, world_size, app_id,
-                       master_service_name, master_service_port,
-                       image, command, extra_envs,
-                       pod_cpu, pod_memory):
+
+def create_master_pod(v1_api, namespace, pod_name, pod_labels, create_pod_fn):
+    pod_body = create_pod_fn(rank="0", pod_name=pod_name, pod_labels=pod_labels)
+    pod = v1_api.create_namespaced_pod(namespace=namespace, body=pod_body)
+    print(f"Created Master Pod: {pod_name}")
+
+
+def create_worker_pods(v1_api, namespace, world_size, app_id, create_pod_fn):
 
     for i in range(world_size - 1):
         pod_name = f'bigdl-{app_id}-worker-{i + 1}'
-        metadata = client.V1ObjectMeta(name=pod_name,
-                                       labels={"bigdl-app": app_id,
-                                               "bigdl-app-type": "worker"})
-        envs = [
-            client.V1EnvVar(name="WORLD_SIZE", value=f"{world_size}"),
-            client.V1EnvVar(name="RANK", value=f"{i + 1}"),
-            client.V1EnvVar(name="MASTER_ADDR", value=master_service_name),
-            client.V1EnvVar(name="MASTER_PORT", value=master_service_port)
-        ]
-
-        for env in extra_envs:
-            envs.append(
-                client.V1EnvVar(name=env[0], value=env[1]),
-            )
-        resource = client.V1ResourceRequirements(limits={"cpu": pod_cpu,
-                                                         "memory": pod_memory},
-                                                 requests={"cpu": pod_cpu,
-                                                           "memory": pod_memory})
-        container = client.V1Container(name="pytorch",
-                                       image=image,
-                                       env=envs,
-                                       command=command,
-                                       resources=resource)
-
-        pod_spec = client.V1PodSpec(containers=[container], restart_policy="Never")
-        pod_body = client.V1Pod(metadata=metadata, spec=pod_spec, kind='Pod', api_version='v1')
-
-        pod = v1_api.create_namespaced_pod(namespace="default", body=pod_body)
+        pod_labels = {"bigdl-app": app_id,
+                      "bigdl-app-type": "worker"}
+        pod_body = create_pod_fn(rank=str(i + 1), pod_name=pod_name, pod_labels=pod_labels)
+        pod = v1_api.create_namespaced_pod(namespace=namespace, body=pod_body)
         print(f"Created Rank {i + 1} Pod: {pod_name}")
+
 
 def main():
 
@@ -198,31 +185,38 @@ def main():
 
     v1 = client.CoreV1Api()
 
-    master_pod_name, master_pod_labels = create_master_pod(v1_api=v1,
-                                                           namespace=args.namespace,
-                                                           app_id=app_id,
-                                                           command=command,
-                                                           image=args.image,
-                                                           master_port=args.master_port,
-                                                           world_size=args.nnodes,
-                                                           extra_envs=args.env,
-                                                           pod_cpu=args.pod_cpu,
-                                                           pod_memory=args.pod_memory)
+    master_pod_name = f'bigdl-{app_id}-master'
+    master_pod_labels = {"bigdl-app": app_id, "bigdl-app-type": "master"}
+
     service_name, service_port = create_master_service(v1_api=v1,
                                                        namespace=args.namespace,
                                                        master_pod_name=master_pod_name,
                                                        master_pod_labels=master_pod_labels,
                                                        master_port=args.master_port)
+
+
+    create_pod_fn = functools.partial(create_pod,
+                                      world_size=args.nnodes,
+                                      master_addr=service_name,
+                                      master_port=service_port,
+                                      app_id=app_id,
+                                      extra_envs=args.env,
+                                      pod_cpu=args.pod_cpu,
+                                      pod_memory=args.pod_memory,
+                                      image=args.image,
+                                      command=command)
+
+    create_master_pod(v1_api=v1,
+                      namespace=args.namespace,
+                      pod_name=master_pod_name,
+                      pod_labels=master_pod_labels,
+                      create_pod_fn=create_pod_fn)
+
     create_worker_pods(v1_api=v1,
+                       namespace=args.namespace,
                        world_size=args.nnodes,
                        app_id=app_id,
-                       master_service_name=service_name,
-                       master_service_port=service_port,
-                       image=args.image,
-                       command=command,
-                       extra_envs=args.env,
-                       pod_cpu=args.pod_cpu,
-                       pod_memory=args.pod_memory)
+                       create_pod_fn=create_pod_fn)
 
     print("You can use the following commands to check out the pods status and logs.")
     print(f"**** kubectl get pods -l bigdl-app={app_id} ****")
