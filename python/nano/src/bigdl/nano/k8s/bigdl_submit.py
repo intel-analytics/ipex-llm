@@ -16,13 +16,13 @@
 
 from uuid import uuid4
 from kubernetes import client, config
-from argparse import REMAINDER, ArgumentParser
+from argparse import ONE_OR_MORE, REMAINDER, ArgumentParser
 
 
 def get_args_parser() -> ArgumentParser:
     """Helper function parsing the command line options."""
 
-    parser = ArgumentParser(description="Nano Training Launcher")
+    parser = ArgumentParser(description="BigDL Training Launcher")
 
     parser.add_argument(
         "--nnodes",
@@ -45,12 +45,6 @@ def get_args_parser() -> ArgumentParser:
     )
 
     parser.add_argument(
-        "--service_account_name",
-        type=str,
-        default="default"
-    )
-
-    parser.add_argument(
         "--namespace",
         type=str,
         default="default"
@@ -59,7 +53,10 @@ def get_args_parser() -> ArgumentParser:
     parser.add_argument(
         '--env',
         nargs=2,
-        action='append'
+        action='append',
+        default=[],
+        help="pass environment variable to be set in all pods, "
+             "such as --env http_proxy http://host:port"
     )
 
     parser.add_argument(
@@ -78,7 +75,9 @@ def get_args_parser() -> ArgumentParser:
     # Positional arguments.
     #
 
-    parser.add_argument("run_command", nargs=REMAINDER)
+    parser.add_argument("main_script", type=str)
+
+    parser.add_argument("main_script_args", nargs=REMAINDER)
 
     return parser
 
@@ -191,9 +190,7 @@ def main():
 
     args = parse_args()
 
-    run_command = args.run_command
-
-    command = ["python"] + run_command
+    command = ["python", args.main_script] + args.main_script_args
 
     app_id = str(uuid4())[:7]
 
@@ -232,5 +229,5 @@ def main():
     print(f"**** kubectl logs {master_pod_name} ****")
     
 
-if __name__ == '__main__':
-    main()
+# if __name__ == '__main__':
+#     main()
