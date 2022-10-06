@@ -16,8 +16,11 @@
 
 from uuid import uuid4
 from kubernetes import client, config
+from kubernetes.client import ApiClient
 from argparse import REMAINDER, ArgumentParser
 import functools
+from typing import Dict, List, Callable
+
 
 def get_args_parser() -> ArgumentParser:
     """Helper function parsing the command line options."""
@@ -105,34 +108,34 @@ def parse_args():
 
 
 class FakeKubeResponse:
-    def __init__(self, json_str):
+    def __init__(self, json_str: str):
         self.data = json_str
 
 
-def deserialize_volume_object(json_str, api_client):
+def deserialize_volume_object(json_str: str, api_client: ApiClient) -> object:
     res = FakeKubeResponse(json_str)
     return api_client.deserialize(res,'V1Volume')
 
 
-def deserialize_volume_mounts_object(json_str, api_client):
+def deserialize_volume_mounts_object(json_str: str, api_client: ApiClient) -> object:
     res = FakeKubeResponse(json_str)
     return api_client.deserialize(res,'V1VolumeMount')
 
 
-def create_pod(pod_name,
-               pod_labels,
-               rank,
-               world_size,
-               master_addr,
-               master_port,
-               app_id,
-               extra_envs,
-               pod_cpu,
-               pod_memory,
-               image,
-               command,
-               volume_strs,
-               volume_mount_strs):
+def create_pod(pod_name: str,
+               pod_labels: Dict[str, str],
+               rank: str,
+               world_size: int,
+               master_addr: str,
+               master_port: str,
+               app_id: str,
+               extra_envs: List[List[str, str]],
+               pod_cpu: str,
+               pod_memory: str,
+               image: str,
+               command: str,
+               volume_strs: List[str],
+               volume_mount_strs: List[str]) -> client.V1Pod:
     api_cliet = client.ApiClient()
     metadata = client.V1ObjectMeta(name=pod_name,
                                    labels=pod_labels)
@@ -141,7 +144,7 @@ def create_pod(pod_name,
         client.V1EnvVar(name="WORLD_SIZE", value=f"{world_size}"),
         client.V1EnvVar(name="RANK", value=rank),
         client.V1EnvVar(name="MASTER_ADDR", value=master_addr),
-        client.V1EnvVar(name="MASTER_PORT", value=master_port), # random selection？
+        client.V1EnvVar(name="MASTER_PORT", value=master_port),
         client.V1EnvVar(name="APP_ID", value=app_id)
     ]
 
@@ -174,9 +177,11 @@ def create_pod(pod_name,
     return pod_body
 
 
-def create_master_service(v1_api, namespace,
-                          master_pod_name, master_pod_labels, master_port):
-    v1_api = client.CoreV1Api()
+def create_master_service(v1_api: client.CoreApi,
+                          namespace: str,
+                          master_pod_name: str,
+                          master_pod_labels: str,
+                          master_port: str):
     service_name = f'{master_pod_name}-service'
     metadata = client.V1ObjectMeta(name=service_name)
     port = client.V1ServicePort(protocol="TCP",
@@ -197,13 +202,21 @@ def create_master_service(v1_api, namespace,
     return service_name, master_port
 
 
-def create_master_pod(v1_api, namespace, pod_name, pod_labels, create_pod_fn):
+def create_master_pod(v1_api: client.CoreApi,
+                      namespace: str,
+                      pod_name: str,
+                      pod_labels: Dict[str, str],
+                      create_pod_fn: Callable):
     pod_body = create_pod_fn(rank="0", pod_name=pod_name, pod_labels=pod_labels)
     pod = v1_api.create_namespaced_pod(namespace=namespace, body=pod_body)
     print(f"Created Master Pod: {pod_name}")
 
 
-def create_worker_pods(v1_api, namespace, world_size, app_id, create_pod_fn):
+def create_worker_pods(v1_api: client.CoreApi,
+                       namespace: str,
+                       world_size: int,
+                       app_id: str,
+                       create_pod_fn: Callable):
 
     for i in range(world_size - 1):
         pod_name = f'bigdl-{app_id}-worker-{i + 1}'
@@ -264,7 +277,3 @@ def main():
     print("You can use the following commands to check out the pods status and logs.")
     print(f"**** kubectl get pods -l bigdl-app={app_id} ****")
     print(f"**** kubectl logs {master_pod_name} ****")
-    
-
-# if __name__ == '__main__':
-#     main()
