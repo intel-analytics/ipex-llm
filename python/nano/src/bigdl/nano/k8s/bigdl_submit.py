@@ -71,6 +71,23 @@ def get_args_parser() -> ArgumentParser:
         default="1G"
     )
 
+    parser.add_argument(
+        '--volume',
+        type=str,
+        action='append',
+        default=[],
+        help="A Json string defining one volume in all pods"
+    )
+
+    parser.add_argument(
+        '--volume_mount',
+        type=str,
+        action='append',
+        default=[],
+        help='A Json string specifying one volumeMount in all containers'
+    )
+
+
     #
     # Positional arguments.
     #
@@ -87,6 +104,21 @@ def parse_args():
     return parser.parse_args()
 
 
+class FakeKubeResponse:
+    def __init__(self, json_str):
+        self.data = json_str
+
+
+def deserialize_volume_object(json_str, api_client):
+    res = FakeKubeResponse(json_str)
+    return api_client.deserialize(res,'V1Volume')
+
+
+def deserialize_volume_mounts_object(json_str, api_client):
+    res = FakeKubeResponse(json_str)
+    return api_client.deserialize(res,'V1VolumeMount')
+
+
 def create_pod(pod_name,
                pod_labels,
                rank,
@@ -98,7 +130,10 @@ def create_pod(pod_name,
                pod_cpu,
                pod_memory,
                image,
-               command):
+               command,
+               volume_strs,
+               volume_mount_strs):
+    api_cliet = client.ApiClient()
     metadata = client.V1ObjectMeta(name=pod_name,
                                    labels=pod_labels)
     client.V1EnvVarSource()
@@ -118,14 +153,20 @@ def create_pod(pod_name,
                                                      "memory": pod_memory},
                                              requests={"cpu": pod_cpu,
                                                        "memory": pod_memory})
+    volumn_mounts = [deserialize_volume_mounts_object(json_str, api_cliet)
+                 for json_str in volume_mount_strs]
     container = client.V1Container(name="pytorch",
                                    image=image,
                                    env=envs,
                                    command=command,
-                                   resources=resource)
+                                   resources=resource,
+                                   volume_mounts=volumn_mounts)
+
+    volumes = [deserialize_volume_object(json_str, api_cliet) for json_str in volume_strs]
 
     pod_spec = client.V1PodSpec(containers=[container],
-                                restart_policy="Never")
+                                restart_policy="Never",
+                                volumes=volumes)
     pod_body = client.V1Pod(api_version='v1',
                             metadata=metadata,
                             kind='Pod',
@@ -204,7 +245,9 @@ def main():
                                       pod_cpu=args.pod_cpu,
                                       pod_memory=args.pod_memory,
                                       image=args.image,
-                                      command=command)
+                                      command=command,
+                                      volume_strs=args.volume,
+                                      volume_mount_strs=args.volume_mount)
 
     create_master_pod(v1_api=v1,
                       namespace=args.namespace,
