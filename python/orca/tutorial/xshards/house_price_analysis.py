@@ -55,9 +55,3 @@ def generate_HasBsmt(df):
     df.loc[df['TotalBsmtSF'] > 0, 'HasBsmt'] = 1
     return df
 new_shards5 = new_shards4.transform_shard(generate_HasBsmt)
-
-#transform data
-def generate_HasBsmt(df):
-    df.loc[df['HasBsmt'] == 1, 'TotalBsmtSF'] = np.log(df['TotalBsmtSF'])
-    return df
-new_shards6 = new_shards5.transform_shard(generate_HasBsmt)

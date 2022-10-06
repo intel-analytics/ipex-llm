@@ -407,7 +407,6 @@ class SparkXShards(XShards):
                                                                               axis=0)))
             return result
         else:
-            # we may support numpy or other types later
             invalidInputError(False,
                               "Currently only support unique() on XShards of Pandas Series")
 
@@ -419,33 +418,43 @@ class SparkXShards(XShards):
             data_shards = spark_df_to_pd_sparkxshards(distinctDF)
             return data_shards
         else:
-            # we may support numpy or other types later
             invalidInputError(False,
                               "Currently only support dedup() on XShards of Pandas DataFrame")
 
-    def sort_values(self, col_names=None, ascending=True, colease_into_one_partition=True):
+    def sort_values(self, col_names=None, ascending=True):
+        """
+        Sort the value of shards. This is only applicable for SparkXShards of Pandas Series.
+        
+        :param col_names list of column or column naames to sort by
+        :param ascending bool, default True. Specify sort orders
+        :return: a new SparkXShards sorted by the specified columns.
+        """
         if self._get_class_name() == 'pandas.core.frame.DataFrame':
             import pandas as pd
             df = self.to_spark_df()
             sort_df = df.sort(col_names, ascending=ascending)
-            if colease_into_one_partition:
-                sort_df = sort_df.coalesce(1)
+            sort_df = sort_df.coalesce(1)
             data_shards = spark_df_to_pd_sparkxshards(sort_df)
             return data_shards
         else:
-            # we may support numpy or other types later
             invalidInputError(False,
                               "Currently only support sort() on XShards of Pandas DataFrame")
 
-    def max_values(self, col_names):
+    def max_values(self, col_name):
+        """
+        Get the max values of the column name. This is only applicable for SparkXShards
+         of Pandas Series.
+
+        :param col_name column name that need return the max value
+        :return: maximum for the specified columns.
+        """
         if self._get_class_name() == 'pandas.core.frame.DataFrame':
             import pandas as pd
             df = self.to_spark_df()
             from pyspark.sql.functions import max
-            max_value = df.select(max(col_names)).collect()
+            max_value = df.select(max(col_name)).collect()
             return max_value
         else:
-            # we may support numpy or other types later
             invalidInputError(False,
                               "Currently only support max() on XShards of Pandas DataFrame")
 
@@ -477,6 +486,12 @@ class SparkXShards(XShards):
         return sum_shards
 
     def drop_missing_value(self):
+        """
+        With SparkXShards of pandas data frame, the api will drop null values in shards.
+         For other type of SparkXShards, it will throw exception
+
+       :return: a new SparkXShards without null values
+        """
         if self._get_class_name() != 'pandas.core.frame.DataFrame':
             invalidInputError(False,
                               "Currently only support assembleFeatureLabelCols() on"
