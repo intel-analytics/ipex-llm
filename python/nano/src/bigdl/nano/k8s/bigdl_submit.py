@@ -22,8 +22,7 @@ import functools
 from typing import Dict, List, Callable
 
 
-def get_args_parser() -> ArgumentParser:
-    """Helper function parsing the command line options."""
+def _get_args_parser() -> ArgumentParser:
 
     parser = ArgumentParser(description="BigDL Training Launcher")
 
@@ -90,7 +89,6 @@ def get_args_parser() -> ArgumentParser:
         help='A Json string specifying one volumeMount in all containers'
     )
 
-
     #
     # Positional arguments.
     #
@@ -102,40 +100,40 @@ def get_args_parser() -> ArgumentParser:
     return parser
 
 
-def parse_args():
-    parser = get_args_parser()
+def _parse_args():
+    parser = _get_args_parser()
     return parser.parse_args()
 
 
-class FakeKubeResponse:
+class _FakeKubeResponse:
     def __init__(self, json_str: str):
         self.data = json_str
 
 
-def deserialize_volume_object(json_str: str, api_client: ApiClient) -> object:
-    res = FakeKubeResponse(json_str)
-    return api_client.deserialize(res,'V1Volume')
+def _deserialize_volume_object(json_str: str, api_client: ApiClient) -> object:
+    res = _FakeKubeResponse(json_str)
+    return api_client.deserialize(res, 'V1Volume')
 
 
-def deserialize_volume_mounts_object(json_str: str, api_client: ApiClient) -> object:
-    res = FakeKubeResponse(json_str)
-    return api_client.deserialize(res,'V1VolumeMount')
+def _deserialize_volume_mounts_object(json_str: str, api_client: ApiClient) -> object:
+    res = _FakeKubeResponse(json_str)
+    return api_client.deserialize(res, 'V1VolumeMount')
 
 
-def create_pod(pod_name: str,
-               pod_labels: Dict[str, str],
-               rank: str,
-               world_size: int,
-               master_addr: str,
-               master_port: str,
-               app_id: str,
-               extra_envs: List[List[str, str]],
-               pod_cpu: str,
-               pod_memory: str,
-               image: str,
-               command: str,
-               volume_strs: List[str],
-               volume_mount_strs: List[str]) -> client.V1Pod:
+def _create_pod(pod_name: str,
+                pod_labels: Dict[str, str],
+                rank: str,
+                world_size: int,
+                master_addr: str,
+                master_port: str,
+                app_id: str,
+                extra_envs: List[List[str, str]],
+                pod_cpu: str,
+                pod_memory: str,
+                image: str,
+                command: str,
+                volume_strs: List[str],
+                volume_mount_strs: List[str]) -> client.V1Pod:
     api_cliet = client.ApiClient()
     metadata = client.V1ObjectMeta(name=pod_name,
                                    labels=pod_labels)
@@ -156,8 +154,8 @@ def create_pod(pod_name: str,
                                                      "memory": pod_memory},
                                              requests={"cpu": pod_cpu,
                                                        "memory": pod_memory})
-    volumn_mounts = [deserialize_volume_mounts_object(json_str, api_cliet)
-                 for json_str in volume_mount_strs]
+    volumn_mounts = [_deserialize_volume_mounts_object(json_str, api_cliet)
+                     for json_str in volume_mount_strs]
     container = client.V1Container(name="pytorch",
                                    image=image,
                                    env=envs,
@@ -165,7 +163,7 @@ def create_pod(pod_name: str,
                                    resources=resource,
                                    volume_mounts=volumn_mounts)
 
-    volumes = [deserialize_volume_object(json_str, api_cliet) for json_str in volume_strs]
+    volumes = [_deserialize_volume_object(json_str, api_cliet) for json_str in volume_strs]
 
     pod_spec = client.V1PodSpec(containers=[container],
                                 restart_policy="Never",
@@ -177,11 +175,11 @@ def create_pod(pod_name: str,
     return pod_body
 
 
-def create_master_service(v1_api: client.CoreApi,
-                          namespace: str,
-                          master_pod_name: str,
-                          master_pod_labels: str,
-                          master_port: str):
+def _create_master_service(v1_api: client.CoreApi,
+                           namespace: str,
+                           master_pod_name: str,
+                           master_pod_labels: str,
+                           master_port: str):
     service_name = f'{master_pod_name}-service'
     metadata = client.V1ObjectMeta(name=service_name)
     port = client.V1ServicePort(protocol="TCP",
@@ -202,21 +200,21 @@ def create_master_service(v1_api: client.CoreApi,
     return service_name, master_port
 
 
-def create_master_pod(v1_api: client.CoreApi,
-                      namespace: str,
-                      pod_name: str,
-                      pod_labels: Dict[str, str],
-                      create_pod_fn: Callable):
+def _create_master_pod(v1_api: client.CoreApi,
+                       namespace: str,
+                       pod_name: str,
+                       pod_labels: Dict[str, str],
+                       create_pod_fn: Callable):
     pod_body = create_pod_fn(rank="0", pod_name=pod_name, pod_labels=pod_labels)
     pod = v1_api.create_namespaced_pod(namespace=namespace, body=pod_body)
     print(f"Created Master Pod: {pod_name}")
 
 
-def create_worker_pods(v1_api: client.CoreApi,
-                       namespace: str,
-                       world_size: int,
-                       app_id: str,
-                       create_pod_fn: Callable):
+def _create_worker_pods(v1_api: client.CoreApi,
+                        namespace: str,
+                        world_size: int,
+                        app_id: str,
+                        create_pod_fn: Callable):
 
     for i in range(world_size - 1):
         pod_name = f'bigdl-{app_id}-worker-{i + 1}'
@@ -228,8 +226,8 @@ def create_worker_pods(v1_api: client.CoreApi,
 
 
 def main():
-
-    args = parse_args()
+    """Entry point of bigdl-submit command line tool."""
+    args = _parse_args()
 
     command = ["python", args.main_script] + args.main_script_args
 
@@ -242,14 +240,13 @@ def main():
     master_pod_name = f'bigdl-{app_id}-master'
     master_pod_labels = {"bigdl-app": app_id, "bigdl-app-type": "master"}
 
-    service_name, service_port = create_master_service(v1_api=v1,
-                                                       namespace=args.namespace,
-                                                       master_pod_name=master_pod_name,
-                                                       master_pod_labels=master_pod_labels,
-                                                       master_port=args.master_port)
+    service_name, service_port = _create_master_service(v1_api=v1,
+                                                        namespace=args.namespace,
+                                                        master_pod_name=master_pod_name,
+                                                        master_pod_labels=master_pod_labels,
+                                                        master_port=args.master_port)
 
-
-    create_pod_fn = functools.partial(create_pod,
+    create_pod_fn = functools.partial(_create_pod,
                                       world_size=args.nnodes,
                                       master_addr=service_name,
                                       master_port=service_port,
@@ -262,17 +259,17 @@ def main():
                                       volume_strs=args.volume,
                                       volume_mount_strs=args.volume_mount)
 
-    create_master_pod(v1_api=v1,
-                      namespace=args.namespace,
-                      pod_name=master_pod_name,
-                      pod_labels=master_pod_labels,
-                      create_pod_fn=create_pod_fn)
-
-    create_worker_pods(v1_api=v1,
+    _create_master_pod(v1_api=v1,
                        namespace=args.namespace,
-                       world_size=args.nnodes,
-                       app_id=app_id,
+                       pod_name=master_pod_name,
+                       pod_labels=master_pod_labels,
                        create_pod_fn=create_pod_fn)
+
+    _create_worker_pods(v1_api=v1,
+                        namespace=args.namespace,
+                        world_size=args.nnodes,
+                        app_id=app_id,
+                        create_pod_fn=create_pod_fn)
 
     print("You can use the following commands to check out the pods status and logs.")
     print(f"**** kubectl get pods -l bigdl-app={app_id} ****")
