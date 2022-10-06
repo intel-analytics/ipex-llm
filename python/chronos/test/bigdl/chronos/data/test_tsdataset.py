@@ -266,14 +266,12 @@ class TestTSDataset(TestCase):
         lookback = random.randint(1, 20)
 
         tsdata.roll(lookback=lookback, horizon=horizon)
-        x, y = tsdata.to_numpy()
+        x = tsdata.to_numpy()
         assert x.shape == (len(df)-lookback-horizon+1, lookback, 2)
-        assert y is None
 
         tsdata.roll(lookback=lookback, horizon=horizon, id_sensitive=True)
-        x, y = tsdata.to_numpy()
+        x = tsdata.to_numpy()
         assert x.shape == (len(df)-lookback-horizon+1, lookback, 2)
-        assert y is None
         tsdata._check_basic_invariants()
 
     def test_tsdataset_roll_multi_id(self):
@@ -355,16 +353,31 @@ class TestTSDataset(TestCase):
     def test_tsdata_roll_timeenc(self):
         horizon = random.randint(1, 9)
         lookback = random.randint(10, 20)
+
+        # single-id test
         for freq in ["D", "2D"]:
             df = get_int_target_df(freq=freq)
+            expected_sample_num = len(df) - horizon - lookback + 1
             tsdata = TSDataset.from_pandas(df, dt_col='datetime', target_col='value', id_col="id")
             x, y, x_time, y_time =\
                 tsdata.roll(lookback=lookback, horizon=horizon,
                             time_enc=True, label_len=lookback-horizon).to_numpy()
-            assert x.shape[1:] == (lookback, 1)
-            assert y.shape[1:] == (lookback, 1)
-            assert x_time.shape[1:] == (lookback, 3)
-            assert y_time.shape[1:] == (lookback, 3)
+            assert x.shape == (expected_sample_num, lookback, 1)
+            assert y.shape == (expected_sample_num, lookback, 1)
+            assert x_time.shape == (expected_sample_num, lookback, 3)
+            assert y_time.shape == (expected_sample_num, lookback, 3)
+
+        # multi-id test
+        df = get_multi_id_ts_df()
+        tsdata = TSDataset.from_pandas(df, dt_col='datetime', target_col='value', id_col="id")
+        x, y, x_time, y_time =\
+            tsdata.roll(lookback=lookback, horizon=horizon,
+                        time_enc=True, label_len=lookback-horizon).to_numpy()
+        assert x.shape[1:] == (lookback, 1)
+        assert y.shape[1:] == (lookback, 1)
+        assert x_time.shape[1:] == (lookback, 3)
+        assert y_time.shape[1:] == (lookback, 3)
+        assert x.shape[0] == y.shape[0] == x_time.shape[0] == y_time.shape[0]
 
     def test_tsdata_roll_timeenc_predict(self):
         horizon = 10
@@ -384,7 +397,9 @@ class TestTSDataset(TestCase):
     def test_tsdata_roll_timeenc_to_torch_data_loader(self):
         horizon = random.randint(1, 9)
         lookback = random.randint(10, 20)
-        df = get_int_target_df()
+
+        # single-id test
+        df = get_multi_id_ts_df()
         tsdata = TSDataset.from_pandas(df, dt_col='datetime', target_col='value', id_col="id")
         dataloader =\
             tsdata.to_torch_data_loader(lookback=lookback, horizon=horizon,
@@ -394,7 +409,23 @@ class TestTSDataset(TestCase):
         assert y.shape[1:] == (lookback, 1)
         assert x_time.shape[1:] == (lookback, 3)
         assert y_time.shape[1:] == (lookback, 3)
-    
+        # white box check
+        assert dataloader.dataset.data_stamp_arr.shape[0] == dataloader.dataset.arr.shape[0]
+
+        # multiple-id test
+        df = get_multi_id_ts_df()
+        tsdata = TSDataset.from_pandas(df, dt_col='datetime', target_col='value', id_col="id")
+        dataloader =\
+            tsdata.to_torch_data_loader(lookback=lookback, horizon=horizon,
+                        time_enc=True, label_len=lookback-horizon)
+        x, y, x_time, y_time = next(iter(dataloader))
+        assert x.shape[1:] == (lookback, 1)
+        assert y.shape[1:] == (lookback, 1)
+        assert x_time.shape[1:] == (lookback, 3)
+        assert y_time.shape[1:] == (lookback, 3)
+        # white box check
+        assert dataloader.dataset.data_stamp_arr.shape[0] == dataloader.dataset.arr.shape[0]
+
     def test_tsdata_roll_timeenc_to_torch_data_loader_predict(self):
         horizon = 10
         lookback = random.randint(10, 20)
@@ -865,16 +896,15 @@ class TestTSDataset(TestCase):
         tsdata_train, tsdata_valid, tsdata_test =\
             TSDataset.from_pandas(df, dt_col="datetime", target_col="value",
                                   extra_feature_col=["extra feature"], id_col="id",
-                                  with_split=True, val_ratio=0.1, test_ratio=0.1,
-                                  largest_look_back=5, largest_horizon=2)
+                                  with_split=True, val_ratio=0.1, test_ratio=0.1)
 
         assert set(np.unique(tsdata_train.to_pandas()["id"])) == {"00"}
         assert set(np.unique(tsdata_valid.to_pandas()["id"])) == {"00"}
         assert set(np.unique(tsdata_test.to_pandas()["id"])) == {"00"}
 
         assert len(tsdata_train.to_pandas()) == df[:-(int(df.shape[0]*0.1)*2)].shape[0]
-        assert len(tsdata_valid.to_pandas()) == int(df.shape[0] * 0.1 + 5 + 2 - 1)
-        assert len(tsdata_test.to_pandas()) == int(df.shape[0] * 0.1 + 5 + 2 - 1)
+        assert len(tsdata_valid.to_pandas()) == int(df.shape[0] * 0.1)
+        assert len(tsdata_test.to_pandas()) == int(df.shape[0] * 0.1)
         tsdata_train.feature_col.append("new extra feature")
         assert len(tsdata_train.feature_col) == 2
         assert len(tsdata_valid.feature_col) == 1
@@ -890,16 +920,15 @@ class TestTSDataset(TestCase):
         tsdata_train, tsdata_valid, tsdata_test =\
             TSDataset.from_pandas(df, dt_col="datetime", target_col="value",
                                   extra_feature_col=["extra feature"], id_col="id",
-                                  with_split=True, val_ratio=0.1, test_ratio=0.1,
-                                  largest_look_back=5, largest_horizon=2)
+                                  with_split=True, val_ratio=0.1, test_ratio=0.1)
 
         assert set(np.unique(tsdata_train.to_pandas()["id"])) == {"00", "01"}
         assert set(np.unique(tsdata_valid.to_pandas()["id"])) == {"00", "01"}
         assert set(np.unique(tsdata_test.to_pandas()["id"])) == {"00", "01"}
 
         assert len(tsdata_train.to_pandas()) == (50 * 0.8)*2
-        assert len(tsdata_valid.to_pandas()) == (50 * 0.1 + 5 + 2 - 1)*2
-        assert len(tsdata_test.to_pandas()) == (50 * 0.1 + 5 + 2 - 1)*2
+        assert len(tsdata_valid.to_pandas()) == (50 * 0.1)*2
+        assert len(tsdata_test.to_pandas()) == (50 * 0.1)*2
 
         assert tsdata_train.feature_col is not tsdata_valid.feature_col
         assert tsdata_train.feature_col is not tsdata_test.feature_col
@@ -1061,3 +1090,104 @@ class TestTSDataset(TestCase):
                                        dt_col='datetime')
         with pytest.raises(RuntimeError):
             tsdata.get_cycle_length(aggregate='min', top_k=3)
+
+    def test_lookback_equal_to_one(self):
+        df = get_ts_df()
+        horizon = random.randint(1, 10)
+        lookback = 1
+
+        tsdata = TSDataset.from_pandas(df, dt_col="datetime", target_col="value",
+                                       extra_feature_col=["extra feature"], id_col="id")
+
+        # for BaseForecaster
+        data = tsdata.roll(lookback=lookback, horizon=horizon, is_predict=True).to_numpy()
+        assert not isinstance(data, (list, tuple))
+
+        tsdata = TSDataset.from_pandas(df, dt_col="datetime", target_col="value",
+                                       extra_feature_col=["extra feature"], id_col="id")
+
+        # for AutoformerForecaster
+        data = tsdata.roll(lookback=lookback, horizon=horizon, time_enc=True, is_predict=True).to_numpy()
+        assert len(data) == 4
+        assert data[1].shape[1] == max(lookback // 2, 1)
+        assert data[3].shape[1] == max(lookback // 2, 1) + horizon
+
+    def test_is_predict_for_roll_and_numpy(self):
+        df = get_ts_df()
+        horizon = random.randint(1, 10)
+        lookback = random.randint(1, 20)
+
+        tsdata = TSDataset.from_pandas(df, dt_col="datetime", target_col="value",
+                                       extra_feature_col=["extra feature"], id_col="id")
+
+        # for BaseForecaster
+        data = tsdata.roll(lookback=lookback, horizon=horizon, is_predict=True).to_numpy()
+        assert not isinstance(data, (list, tuple))
+
+        tsdata = TSDataset.from_pandas(df, dt_col="datetime", target_col="value",
+                                       extra_feature_col=["extra feature"], id_col="id")
+
+        # for AutoformerForecaster
+        data = tsdata.roll(lookback=lookback, horizon=horizon, time_enc=True, is_predict=True).to_numpy()
+        assert len(data) == 4
+        assert data[1].shape[1] == max(lookback // 2, 1)
+        assert data[3].shape[1] == max(lookback // 2, 1) + horizon
+
+    def test_is_predict_for_roll_and_to_loader(self):
+        df = get_ts_df()
+        horizon = random.randint(1, 10)
+        lookback = random.randint(1, 20)
+
+        tsdata = TSDataset.from_pandas(df, dt_col="datetime", target_col="value",
+                                       extra_feature_col=["extra feature"], id_col="id")
+
+        # for BaseForecaster
+        tsdata.roll(lookback=lookback, horizon=horizon, is_predict=True)
+        loader = tsdata.to_torch_data_loader(batch_size=32,
+                                             roll=False,)
+        data = next(iter(loader))
+        assert len(data) == 1
+
+        tsdata = TSDataset.from_pandas(df, dt_col="datetime", target_col="value",
+                                       extra_feature_col=["extra feature"], id_col="id")
+
+        # for AutoformerForecaster
+        tsdata.roll(lookback=lookback, horizon=horizon, time_enc=True, is_predict=True)
+        loader = tsdata.to_torch_data_loader(batch_size=32,
+                                             roll=False)
+        data = next(iter(loader))
+        assert len(data) == 4
+        assert data[1].shape[1] == max(lookback // 2, 1)
+        assert data[3].shape[1] == max(lookback // 2, 1) + horizon
+
+
+    def test_is_predict_for_to_loader(self):
+        df = get_ts_df()
+        horizon = random.randint(1, 10)
+        lookback = random.randint(1, 20)
+
+        tsdata = TSDataset.from_pandas(df, dt_col="datetime", target_col="value",
+                                       extra_feature_col=["extra feature"], id_col="id")
+
+        # for BaseForecaster
+        loader = tsdata.to_torch_data_loader(lookback=lookback,
+                                             horizon=horizon,
+                                             roll=True,
+                                             is_predict=True)
+        data = next(iter(loader))
+        assert not isinstance(data, (list, tuple))
+
+        tsdata = TSDataset.from_pandas(df, dt_col="datetime", target_col="value",
+                                       extra_feature_col=["extra feature"], id_col="id")
+
+        # for AutoformerForecaster
+        loader = tsdata.to_torch_data_loader(lookback=lookback,
+                                             horizon=horizon,
+                                             roll=True,
+                                             time_enc=True,
+                                             is_predict=True)
+        data = next(iter(loader))
+        assert len(data) == 4
+        assert data[1].shape[1] == max(lookback // 2, 1)
+        assert data[3].shape[1] == max(lookback // 2, 1) + horizon
+

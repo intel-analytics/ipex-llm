@@ -1,12 +1,12 @@
-# Run Examples
+## End to end Spark GBT Example On CriteoClickLogsDataset
 
-#### 1.xgbClassifierTrainingExampleOnCriteoClickLogsDataset
+### Usage
 
 Run this example in spark local mode:
 
 1.select a KeyManagementService(`SimpleKeyManagementService` or `EHSMKeyManagementService`)
 
-2.prepare a primaryKey and a dataKey(refer to [this](https://github.com/intel-analytics/BigDL/blob/main/ppml/services/kms-utils/docker/README.md))
+2.prepare 1g [dataset](https://ailab.criteo.com/download-criteo-1tb-click-logs-dataset/) and a primaryKey and a dataKey(refer to [this](https://github.com/intel-analytics/BigDL/blob/main/ppml/services/kms-utils/docker/README.md))
 
 3.prepare a BigDL PPML Client Container(refer to PPML tutorial)
 
@@ -38,8 +38,9 @@ Run this example in spark local mode:
       --dataKeyPath /your/data/key/path/dataKey \
       --kmsType SimpleKeyManagementService \
       --simpleAPPID your_app_id \
-      --simpleAPPKEY your_app_key \
-      --numThreads 1
+      --simpleAPIKEY your_api_key \
+      --maxDepth 5 \
+      --maxIter 100
   ```
 
 - for `EHSMKeyManagementService`
@@ -66,8 +67,9 @@ Run this example in spark local mode:
       --kmsServerIP you_kms_server_ip \
       --kmsServerPort you_kms_server_port \
       --ehsmAPPID your_app_id \
-      --ehsmAPPKEY your_app_key \
-      --numThreads 1
+      --ehsmAPIKEY your_api_key \
+      --maxDepth 5 \
+      --maxIter 100
   ```
 
   

@@ -9,6 +9,17 @@ on:
       - '.github/actions/dllib-scala-ut-action/action.yml'
       - 'python/orca/**'
       - '.github/actions/orca-ray-ctx-example-action/action.yml'
+      - '.github/actions/orca/orca-python-exampletest-action/pr-test/action.yml'
+      - '.github/actions/orca/orca-python-exampletest-ray-action/pr-test/action.yml'
+      - '.github/actions/orca/orca-python-exampletest-horovod-pytorch-py37-spark3-action/pr-test/action.yml'
+      - '.github/actions/orca/orca-python-exampletest-horovod-tf2-py37-spark3-action/pr-test/action.yml'
+      - '.github/actions/orca/orca-jep-exampletest-action/pr-test/action.yml'
+      - '.github/actions/orca/orca-python-py37-spark3-action/pr-test/action.yml'
+      - '.github/actions/orca/orca-python-ray-py37-spark3-action/pr-test/action.yml'
+      - '.github/actions/orca/orca-python-horovod-tf2-py37-spark3-action/pr-test/action.yml'
+      - '.github/actions/orca/orca-python-horovod-pytorch-py37-spark3-action/pr-test/action.yml'
+      - '.github/actions/orca/orca-jep-python-py37-spark2-action/pr-test/action.yml'
+      - '.github/actions/orca/orca-rayonspark-tf2-action/pr-test/action.yml'
   pull_request:
     branches: [ main ]
     paths:
@@ -18,6 +29,19 @@ on:
       - '.github/actions/dllib-scala-ut-action/action.yml'
       - 'python/orca/**'
       - '.github/actions/orca-ray-ctx-example-action/action.yml'
+      - '.github/actions/orca/orca-python-exampletest-action/pr-test/action.yml'
+      - '.github/actions/orca/orca-python-exampletest-ray-action/pr-test/action.yml'
+      - '.github/actions/orca/orca-python-exampletest-horovod-pytorch-py37-spark3-action/pr-test/action.yml'
+      - '.github/actions/orca/orca-python-exampletest-horovod-tf2-py37-spark3-action/pr-test/action.yml'
+      - '.github/actions/orca/orca-jep-exampletest-action/pr-test/action.yml'
+      - '.github/actions/orca/orca-python-py37-spark3-action/pr-test/action.yml'
+      - '.github/actions/orca/orca-python-ray-py37-spark3-action/pr-test/action.yml'
+      - '.github/actions/orca/orca-python-horovod-tf2-py37-spark3-action/pr-test/action.yml'
+      - '.github/actions/orca/orca-python-horovod-pytorch-py37-spark3-action/pr-test/action.yml'
+      - '.github/actions/orca/orca-jep-python-py37-spark2-action/pr-test/action.yml'
+      - '.github/actions/orca/orca-rayonspark-tf2-action/pr-test/action.yml'
+      - '.github/workflows/PR_validation.yml'
+
 
 permissions:
   contents: read
@@ -60,8 +84,7 @@ jobs:
       - name: Set up maven
         uses: ./.github/actions/maven-setup-action
       - name: Run test
-        uses: ./.github/actions/dllib-scala-ut-action
-
+        uses: ./.github/actions/friesian-scala-ut-action
 
   Dllib-Scala-UT:
     needs: changes
@@ -77,7 +100,6 @@ jobs:
       - name: Run test
         uses: ./.github/actions/dllib-scala-ut-action
 
-
   Orca-Ray-Ctx-Example:
     needs: changes
     if: ${{ needs.changes.outputs.orca == 'true' }}
@@ -91,3 +113,212 @@ jobs:
       uses: ./.github/actions/maven-setup-action
     - name: Run test
       uses: ./.github/actions/orca-ray-ctx-example-action
+
+  Orca-Python-ExampleTest-Py37-Spark3:
+    needs: changes
+    if: ${{ needs.changes.outputs.orca == 'true' }}
+    runs-on: [self-hosted, Gondolin, ubuntu-20.04-lts]
+
+    steps:
+    - uses: actions/checkout@v3
+    - name: Set up JDK8
+      uses: ./.github/actions/jdk-setup-action
+    - name: Set up maven
+      uses: ./.github/actions/maven-setup-action
+    - name: Setup env
+      uses: ./.github/actions/orca/setup-env/setup-orca-python-py37-spark3
+    - name: Run Test
+      uses: ./.github/actions/orca/orca-python-exampletest-action/pr-test
+    - name: Remove Env
+      if: ${{ always() }}
+      uses: ./.github/actions/remove-env
+
+  Orca-Python-ExampleTest-Ray-Py37-Spark3:
+    needs: changes
+    if: ${{ needs.changes.outputs.orca == 'true' }}
+    runs-on: [self-hosted, Gondolin, ubuntu-20.04-lts]
+
+    steps:
+    - uses: actions/checkout@v3
+    - name: Set up JDK8
+      uses: ./.github/actions/jdk-setup-action
+    - name: Set up maven
+      uses: ./.github/actions/maven-setup-action
+    - name: Setup env
+      uses: ./.github/actions/orca/setup-env/setup-orca-python-py37-spark3
+    - name: Run Test
+      uses: ./.github/actions/orca/orca-python-exampletest-ray-action/pr-test
+    - name: Remove Env
+      if: ${{ always() }}
+      uses: ./.github/actions/remove-env
+
+  Orca-Python-ExampleTest-Horovod-Pytorch-Py37-Spark3:
+    needs: changes
+    if: ${{ needs.changes.outputs.orca == 'true' }}
+    runs-on: [self-hosted, Gondolin, ubuntu-20.04-lts]
+
+    steps:
+    - uses: actions/checkout@v3
+    - name: Set up JDK8
+      uses: ./.github/actions/jdk-setup-action
+    - name: Set up maven
+      uses: ./.github/actions/maven-setup-action 
+    - name: Setup env
+      uses: ./.github/actions/orca/setup-env/setup-orca-horovod-pytorch-py37
+    - name: Run Test
+      uses: ./.github/actions/orca/orca-python-exampletest-horovod-pytorch-py37-spark3-action/pr-test
+    - name: Remove Env
+      if: ${{ always() }}
+      uses: ./.github/actions/remove-env
+
+  Orca-Python-ExampleTest-Horovod-Tf-Py37-Spark3:
+    needs: changes
+    if: ${{ needs.changes.outputs.orca == 'true' }}
+    runs-on: [self-hosted, Gondolin, ubuntu-20.04-lts]
+
+    steps:
+    - uses: actions/checkout@v3
+    - name: Set up JDK8
+      uses: ./.github/actions/jdk-setup-action
+    - name: Set up maven
+      uses: ./.github/actions/maven-setup-action 
+    - name: Setup env
+      uses: ./.github/actions/orca/setup-env/setup-horovod-tf2-py37
+    - name: Run Test
+      uses: ./.github/actions/orca/orca-python-exampletest-horovod-tf2-py37-spark3-action/pr-test
+    - name: Remove Env
+      if: ${{ always() }}
+      uses: ./.github/actions/remove-env
+
+  Orca-Jep-ExampleTest-Py37-Spark2:
+    needs: changes
+    if: ${{ needs.changes.outputs.orca == 'true' }}
+    runs-on: [self-hosted, Gondolin, ubuntu-20.04-lts]
+
+    steps:
+    - uses: actions/checkout@v3
+    - name: Set up JDK8
+      uses: ./.github/actions/jdk-setup-action
+    - name: Set up maven
+      uses: ./.github/actions/maven-setup-action
+    - name: Setup env
+      uses: ./.github/actions/orca/setup-env/setup-jep-exampletest-py37
+    - name: Run Test
+      uses: ./.github/actions/orca/orca-jep-exampletest-action/pr-test
+    - name: Remove Env
+      if: ${{ always() }}
+      uses: ./.github/actions/remove-env
+  
+  Orca-Python-Py37-Spark3:
+    needs: changes
+    if: ${{ needs.changes.outputs.orca == 'true' }}
+    runs-on: [self-hosted, Gondolin, ubuntu-20.04-lts]
+
+    steps:
+    - uses: actions/checkout@v3
+    - name: Set up JDK8
+      uses: ./.github/actions/jdk-setup-action
+    - name: Set up maven
+      uses: ./.github/actions/maven-setup-action
+    - name: Setup env
+      uses: ./.github/actions/orca/setup-env/setup-orca-python-py37-spark3
+    - name: Run Test
+      uses: ./.github/actions/orca/orca-python-py37-spark3-action/pr-test
+    - name: Remove Env
+      if: ${{ always() }}
+      uses: ./.github/actions/remove-env
+  
+  Orca-Python-Ray-Py37-Spark3:
+    needs: changes
+    if: ${{ needs.changes.outputs.orca == 'true' }}
+    runs-on: [self-hosted, Gondolin, ubuntu-20.04-lts]
+
+    steps:
+    - uses: actions/checkout@v3
+    - name: Set up JDK8
+      uses: ./.github/actions/jdk-setup-action
+    - name: Set up maven
+      uses: ./.github/actions/maven-setup-action
+    - name: Setup env
+      uses: ./.github/actions/orca/setup-env/setup-orca-python-py37-spark3
+    - name: Run Test
+      uses: ./.github/actions/orca/orca-python-ray-py37-spark3-action/pr-test
+    - name: Remove Env
+      if: ${{ always() }}
+      uses: ./.github/actions/remove-env
+
+  Orca-Python-Horovod-Tf2-Py37-Spark3:
+    needs: changes
+    if: ${{ needs.changes.outputs.orca == 'true' }}
+    runs-on: [self-hosted, Gondolin, ubuntu-20.04-lts]
+
+    steps:
+    - uses: actions/checkout@v3
+    - name: Set up JDK8
+      uses: ./.github/actions/jdk-setup-action
+    - name: Set up maven
+      uses: ./.github/actions/maven-setup-action 
+    - name: Setup env
+      uses: ./.github/actions/orca/setup-env/setup-horovod-tf2-py37
+    - name: Run Test
+      uses: ./.github/actions/orca/orca-python-horovod-tf2-py37-spark3-action/pr-test
+    - name: Remove Env
+      if: ${{ always() }}
+      uses: ./.github/actions/remove-env
+
+  Orca-Python-Horovod-Pytorch-Py37-Spark3:
+    needs: changes
+    if: ${{ needs.changes.outputs.orca == 'true' }}
+    runs-on: [self-hosted, Gondolin, ubuntu-20.04-lts]
+
+    steps:
+    - uses: actions/checkout@v3
+    - name: Set up JDK8
+      uses: ./.github/actions/jdk-setup-action
+    - name: Set up maven
+      uses: ./.github/actions/maven-setup-action 
+    - name: Setup env
+      uses: ./.github/actions/orca/setup-env/setup-orca-horovod-pytorch-py37
+    - name: Run Test
+      uses: ./.github/actions/orca/orca-python-horovod-pytorch-py37-spark3-action/pr-test
+    - name: Remove Env
+      if: ${{ always() }}
+      uses: ./.github/actions/remove-env
+
+  Orca-Jep-Python-Py37-Spark2:
+    needs: changes
+    if: ${{ needs.changes.outputs.orca == 'true' }}
+    runs-on: [self-hosted, Gondolin, ubuntu-20.04-lts]
+
+    steps:
+    - uses: actions/checkout@v3
+    - name: Set up JDK8
+      uses: ./.github/actions/jdk-setup-action
+    - name: Set up maven
+      uses: ./.github/actions/maven-setup-action
+    - name: Setup env
+      uses: ./.github/actions/orca/setup-env/setup-jep-exampletest-py37
+    - name: Run Test
+      uses: ./.github/actions/orca/orca-jep-python-py37-spark2-action/pr-test
+    - name: Remove Env
+      if: ${{ always() }}
+      uses: ./.github/actions/remove-env
+
+  Orca-Python-Rayonspark-Tf2-Py37:
+    needs: changes
+    if: ${{ needs.changes.outputs.orca == 'true' }}
+    runs-on: [self-hosted, Gondolin, ubuntu-20.04-lts]
+
+    steps:
+    - uses: actions/checkout@v3
+    - name: Set up JDK8
+      uses: ./.github/actions/jdk-setup-action
+    - name: Set up maven
+      uses: ./.github/actions/maven-setup-action 
+    - name: Setup env
+      uses: ./.github/actions/orca/setup-env/setup-rayonspark-tf2-py37
+    - name: Run Test
+      uses: ./.github/actions/orca/orca-rayonspark-tf2-action/pr-test
+    - name: Remove Env
+      if: ${{ always() }}
+      uses: ./.github/actions/remove-env

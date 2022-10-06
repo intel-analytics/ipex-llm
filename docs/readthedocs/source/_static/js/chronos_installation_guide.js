@@ -85,7 +85,7 @@ function refresh_cmd(){
         disable(packages);
         disable(hardwares);
         disable(automls);
-        cmd="Please refer to <a href='https://bigdl.readthedocs.io/en/latest/doc/Chronos/Overview/windows_guide.html'>windows_guide.</a>";
+        cmd="Please refer to <a href='https://bigdl.readthedocs.io/en/latest/doc/Chronos/Howto/windows_guide.html'>windows_guide.</a>";
     }else{
         enable(functionalities);
         enable(models);

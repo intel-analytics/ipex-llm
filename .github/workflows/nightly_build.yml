@@ -161,6 +161,7 @@ jobs:
         file-name: nb-scala-build.json
         type: job
         job-name: scala-build
+        runner-hosted-on: 'America'
 
   docker-build-bigdl:
     needs: scala-build
@@ -173,7 +174,7 @@ jobs:
       env:
         DEFAULT_TAG: 'latest'
       run: |
-        echo "TAG=${{ github.event.inputs.bigdlTag || env.DEFAULT_TAG }} " >> $GITHUB_ENV
+        echo "TAG=${{ github.event.inputs.bigdlTag || env.DEFAULT_TAG }}" >> $GITHUB_ENV
     - name: docker login
       run: |
         docker login -u ${DOCKERHUB_USERNAME} -p ${DOCKERHUB_PASSWORD}
@@ -212,7 +213,9 @@ jobs:
         --build-arg no_proxy=${NO_PROXY} \
         --rm --no-cache -t ${IMAGE}-spark-3.1.2:${TAG} .
         docker push ${IMAGE}-spark-3.1.2:${TAG}
-        docker tag ${IMAGE}-spark-3.1.2:${TAG} 10.239.45.10/arda/${IMAGE}-spark-3.1.2:${TAG}
+        docker tag ${IMAGE}-spark-3.1.2:${TAG} ${IMAGE}:${TAG}
+        docker push ${IMAGE}:${TAG}
+        docker tag ${IMAGE}:${TAG} 10.239.45.10/arda/${IMAGE}-spark-3.1.2:${TAG}
         docker push 10.239.45.10/arda/${IMAGE}-spark-3.1.2:${TAG}
         docker rmi -f ${IMAGE}-spark-3.1.2:${TAG}
 
@@ -226,6 +229,7 @@ jobs:
         file-name: nb-docker-build-bigdl.json
         type: job
         job-name: docker-build-bigdl
+        runner-hosted-on: 'America'
   
     
   python-build:
@@ -254,7 +258,7 @@ jobs:
     - name: Build package
       run: |
         export TIMESTAMP=`date '+%Y%m%d'`
-        export PYPI_VERSION=2.1.0
+        export PYPI_VERSION=2.2.0
         nb_version=${PYPI_VERSION}b${TIMESTAMP}
         echo ${nb_version}
 
@@ -277,6 +281,7 @@ jobs:
         file-name: nb-python-build.json
         type: job
         job-name: python-build
+        runner-hosted-on: 'America'
 
   python-sourceforge-build:
     if: ${{ github.event.schedule || github.event.inputs.artifact == 'python-sourceforge-build' || github.event.inputs.artifact == 'all' }} 
@@ -303,7 +308,7 @@ jobs:
     - name: Build package
       run: |
         export TIMESTAMP=`date '+%Y%m%d'`
-        export PYPI_VERSION=2.1.0
+        export PYPI_VERSION=2.2.0
         nb_version=${PYPI_VERSION}b${TIMESTAMP}
         echo ${nb_version}
         apt-get update
@@ -402,6 +407,7 @@ jobs:
         file-name: nb-python-sourceforge-build.json
         type: job
         job-name: python-build-sourceforge
+        runner-hosted-on: 'America'
 
   create-workflow-badge:
     runs-on: ubuntu-latest

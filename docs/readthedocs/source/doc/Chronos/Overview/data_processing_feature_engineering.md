@@ -251,7 +251,7 @@ Built-in Dataset supports the function of data downloading, preprocessing, and r
 
 Specify the `name`, the raw data file will be saved in the specified `path` (defaults to ~/.chronos/dataset). `redownload` can help you re-download the files you need.
 
-When `with_split` is set to True, the length of the data set will be divided according to the specified `val_ratio` and `test_ratio`, and three `TSDataset` will be returned. `with_split` defaults to False, that is, only one `TSDataset` is returned.
+When `with_split` is set to True, the length of the data set will be divided according to the specified `val_ratio` and `test_ratio`, and three `TSDataset` will be returned. `with_split` defaults to True, `val_ratio` and `test_ratio` defaults to **0.1**. If you need only one `TSDataset`, just specify `with_split` to False.
 About `TSDataset`, more details, please refer to [here](../../PythonAPI/Chronos/tsdataset.html).
 
 ```python

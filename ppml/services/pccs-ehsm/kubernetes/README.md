@@ -131,7 +131,7 @@ cd ../kms-utils
 bash build-docker-image.sh
 ```
 
-If image is ready, you can run the container and enroll by using `run-docker-container.sh` in order to get a appid and appkey pair like below:
+If image is ready, you can run the container and enroll by using `run-docker-container.sh` in order to get a appid and apikey pair like below:
 
 ```bash
 export KMS_TYPE=an_optional_kms_type # KMS_TYPE can be (1) ehsm, (2) simple
@@ -197,7 +197,7 @@ ls ehsm-kms_enroll_app
 
 Then, you will find a new target file `ehsm-kms_enroll_app` generated.
 
-Now, you can enroll your app through command below, and you will receive a appid-appkey pair from the server:
+Now, you can enroll your app through command below, and you will receive a appid-apikey pair from the server:
 
 ```bash
 ./ehsm-kms_enroll_app -a http://<your_kms_external_ipaddr>:9000/ehsm/

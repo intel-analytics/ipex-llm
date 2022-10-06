@@ -41,7 +41,7 @@ class KerasOpenVINOModel(AcceleratedKerasModel):
                 export(model, str(dir / 'tmp.xml'))
                 ov_model_path = dir / 'tmp.xml'
             self.ov_model = OpenVINOModel(ov_model_path)
-            super().__init__(self.ov_model)
+            super().__init__(None)
 
     def forward_step(self, *inputs):
         return self.ov_model.forward_step(*inputs)

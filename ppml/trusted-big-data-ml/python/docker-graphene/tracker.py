@@ -455,16 +455,12 @@ def start_rabit_tracker(args):
 
 def main():
     """Main function if tracker is executed in standalone mode."""
-    host_ip = os.environ.get("RABIT_TRACKER_IP")
-    if host_ip == None:
-        sys.stdout.write("###PYTHONWARN### RABIT_TRACKER_IP not set in env")
-
     parser = argparse.ArgumentParser(description='Rabit Tracker start.')
     parser.add_argument('--num-workers', required=True, type=int,
                         help='Number of worker proccess to be launched.')
     parser.add_argument('--num-servers', default=0, type=int,
                         help='Number of server process to be launched. Only used in PS jobs.')
-    parser.add_argument('--host-ip', default=host_ip, type=str,
+    parser.add_argument('--host-ip', default=None, type=str,
                         help=('Host IP addressed, this is only needed ' +
                               'if the host IP cannot be automatically guessed.'))
     parser.add_argument('--log-level', default='INFO', type=str,
@@ -473,6 +469,10 @@ def main():
     args = parser.parse_args()
     sys.stdout.write("###PYTHONWARN### args for tracker: " + str(args))
 
+    # Open a file and prepare to set the hostname
+    with open("/etc/hostname", 'r') as f:
+        hostname = f.readline().strip()
+        socket.sethostname(hostname)
     fmt = '%(asctime)s %(levelname)s %(message)s'
     if args.log_level == 'INFO':
         level = logging.INFO

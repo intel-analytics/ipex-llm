@@ -23,6 +23,7 @@ import torch
 from torch import nn
 from torch.optim import Optimizer
 from torch.utils.data import DataLoader
+from torch.nn.parallel.distributed import DistributedDataParallel
 from pytorch_lightning.lite import LightningLite
 from pytorch_lightning.lite.wrappers import _LiteModule, _LiteOptimizer
 
@@ -35,11 +36,37 @@ from bigdl.nano.pytorch.strategies import create_IPEXStrategy, DDPSpawnStrategy,
 
 
 class _TorchNanoModule(_LiteModule):
+    def state_dict(self, *args, **kwargs):
+        if isinstance(self.module, DistributedDataParallel):
+            return self.module.module.state_dict(*args, **kwargs)
+        else:
+            return self.module.state_dict(*args, **kwargs)
+
+    def load_state_dict(self, *args, **kwargs):
+        invalidInputError(False, "TorchNano doesn't support loading state dict, "
+                          "please load it using original pytorch model")
+
     def __getattr__(self, name: str):
-        # automatically unwrap attributes access of _LiteModule
+        # automatically unwrap attributes access of _LiteModule,
+        # always throw a single-level exception when the attribute doesn't exist
+        # for a more user-friendly exception message
         try:
             return super().__getattr__(name)
         except AttributeError:
+            pass
+
+        # When using multi-instance training, self.module will be DistributedDataParallel(DDP),
+        # otherwise, `self.module` will be original module.
+        if isinstance(self.module, DistributedDataParallel):
+            # just in case that users try to access an attribute of DDP
+            # or an attribute of both DDP and original model,
+            # we should first try to find it in DDP
+            try:
+                return getattr(self.module, name)
+            except AttributeError:
+                pass
+            return getattr(self.module.module, name)
+        else:
             return getattr(self.module, name)
 
 
@@ -145,12 +172,18 @@ class TorchNano(LightningLite):
         # which is not supported by ddp currently,
         # so add IPEX 1.11's optimization after `_setup_model`
         if self.use_ipex and not TORCH_VERSION_LESS_1_10:
+            training = model.training
             if len(optimizers) == 0:
-                ipex_optimize(model, inplace=True, dtype=self.dtype)
+                model.eval()
+                model = ipex_optimize(model, inplace=False, dtype=self.dtype)
             elif len(optimizers) == 1:
-                ipex_optimize(model, optimizer=optimizers[0], inplace=True, dtype=self.dtype)
+                model.train()
+                model, optimizer = ipex_optimize(model, optimizer=optimizers[0],
+                                                 inplace=False, dtype=self.dtype)
+                optimizers = [optimizer]
             else:
                 invalidInputError(False, "Ipex does not support more than one optimizers.")
+            model.train(training)
 
         if move_to_device:
             model = self._move_model_to_device(model=model, optimizers=optimizers)
@@ -158,7 +191,7 @@ class TorchNano(LightningLite):
         optimizers = [_LiteOptimizer(optimizer=optimizer, strategy=self._strategy)  # type: ignore
                       for optimizer in optimizers]
         self._models_setup += 1
-        if optimizers:
+        if optimizers is not None:
             # join both types in a list for API convenience
             return model, optimizers  # type: ignore
         return model
@@ -185,7 +218,10 @@ class TorchNano(LightningLite):
                                              move_to_device=move_to_device)
         # convert optimizer list to single optimizer
         optimizer = optimizers[0] if isinstance(optimizer, Optimizer) else optimizers
-        return model, optimizer, dataloaders
+        if len(dataloaders) == 0:
+            return model, optimizer
+        else:
+            return model, optimizer, dataloaders
 
     @abstractmethod
     def train(self, *args: Any, **kwargs: Any) -> Any:

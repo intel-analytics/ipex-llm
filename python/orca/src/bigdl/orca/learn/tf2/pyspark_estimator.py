@@ -14,21 +14,15 @@
 # limitations under the License.
 #
 
-import logging
 import os
-
-from pyspark.sql.dataframe import DataFrame
+import logging
 import tempfile
 import shutil
-import glob
 
-import pickle
-
-import tensorflow as tf
+from pyspark.sql.dataframe import DataFrame
 
 from bigdl.dllib.utils.common import get_node_and_core_number
-from bigdl.dllib.utils.file_utils import enable_multi_fs_load, enable_multi_fs_save, \
-    is_local_path, append_suffix
+from bigdl.dllib.utils.file_utils import is_local_path
 from bigdl.dllib.utils.utils import get_node_ip
 
 from bigdl.orca.data.file import is_file, exists, get_remote_file_to_local, \
@@ -356,7 +350,7 @@ class SparkTFEstimator():
             size=self.num_workers,
             model_weights=weights,
             mode="predict",
-            cluster_info=self._get_cluster_info(sc),
+            cluster_info=None,  # cluster_info is not needed for predict
             model_dir=self.model_dir,
             application_id=self.application_id,
             need_to_log_to_driver=self.need_to_log_to_driver,
@@ -427,12 +421,11 @@ class SparkTFEstimator():
                 model.save_weights(temp_path, overwrite, save_format)
                 if save_format == 'h5' or filepath.endswith('.h5') or filepath.endswith('.keras'):
                     # hdf5 format
-                    put_local_file_to_remote(temp_path, filepath, over_write=overwrite)
+                    put_local_file_to_remote(temp_path, filepath)
                 else:
                     # tf format
                     remote_dir = os.path.dirname(filepath)
-                    put_local_files_with_prefix_to_remote(temp_path, remote_dir,
-                                                          over_write=overwrite)
+                    put_local_files_with_prefix_to_remote(temp_path, remote_dir)
             finally:
                 shutil.rmtree(temp_dir)
 

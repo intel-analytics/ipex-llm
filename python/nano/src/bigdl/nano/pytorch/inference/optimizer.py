@@ -16,6 +16,7 @@
 
 from collections import namedtuple
 import torch
+import pytorch_lightning as pl
 from torch import nn
 import subprocess
 from importlib.util import find_spec
@@ -27,14 +28,21 @@ from torch.utils.data import DataLoader
 from torchmetrics.metric import Metric
 from bigdl.nano.utils.log4Error import invalidInputError, invalidOperationError
 from bigdl.nano.pytorch.amp import BF16Model
-from bigdl.nano.deps.openvino.openvino_api import PytorchOpenVINOModel, load_openvino_model
-from bigdl.nano.deps.ipex.ipex_api import create_IPEXAccelerator, create_IPEXAccelerator_1_9, \
-    PytorchIPEXJITModel, PytorchIPEXJITBF16Model, load_ipexjit_model
-from bigdl.nano.deps.onnxruntime.onnxruntime_api import PytorchONNXRuntimeModel, \
-    load_onnxruntime_model
-from bigdl.nano.deps.neural_compressor.inc_api import load_inc_model, quantize as inc_quantize
+from bigdl.nano.deps.openvino.openvino_api import PytorchOpenVINOModel
+from bigdl.nano.deps.ipex.ipex_api import PytorchIPEXJITModel, PytorchIPEXJITBF16Model
+from bigdl.nano.deps.onnxruntime.onnxruntime_api import PytorchONNXRuntimeModel
+from bigdl.nano.deps.neural_compressor.inc_api import quantize as inc_quantize
 from bigdl.nano.utils.inference.pytorch.model import AcceleratedLightningModule
-from bigdl.nano.pytorch.utils import TORCH_VERSION_LESS_1_10
+from bigdl.nano.utils.inference.pytorch.model_utils import get_forward_args, get_input_example
+from bigdl.nano.utils.inference.pytorch.metrics import NanoMetric
+from bigdl.nano.pytorch.utils import TORCH_VERSION_LESS_1_10, save_model, load_model
+from torchmetrics import Metric
+import warnings
+# Filter out useless Userwarnings
+warnings.filterwarnings('ignore', category=UserWarning, module='pytorch_lightning')
+warnings.filterwarnings('ignore', category=DeprecationWarning, module='pytorch_lightning')
+warnings.filterwarnings('ignore', category=UserWarning, module='torch')
+warnings.filterwarnings('ignore', category=DeprecationWarning, module='torch')
 
 import os
 os.environ['LOGLEVEL'] = 'ERROR'  # remove parital output of inc
@@ -85,11 +93,11 @@ ALL_INFERENCE_ACCELERATION_METHOD = \
         "int8": AccelerationOption(inc=True),
         "jit_fp32": AccelerationOption(jit=True),
         "jit_fp32_ipex": AccelerationOption(jit=True, ipex=True),
-        "jit_fp32_ipex_clast": AccelerationOption(jit=True, ipex=True,
-                                                  channels_last=True),
+        "jit_fp32_ipex_channels_last": AccelerationOption(jit=True, ipex=True,
+                                                          channels_last=True),
         "openvino_fp32": AccelerationOption(openvino=True),
         "openvino_int8": AccelerationOption(openvino=True, pot=True),
-        "onnxruntime_fp32": AccelerationOption(onnxtunrime=True),
+        "onnxruntime_fp32": AccelerationOption(onnxruntime=True),
         "onnxruntime_int8_qlinear": AccelerationOption(onnxruntime=True, inc=True,
                                                        method="qlinear"),
         "onnxruntime_int8_integer": AccelerationOption(onnxruntime=True, inc=True,
@@ -101,18 +109,21 @@ class InferenceOptimizer:
 
     def __init__(self):
         '''
-        initialize an optimizer
+        InferenceOptimizer for Pytorch Model.
+
+        It can be used to accelerate inference pipeline with very few code changes.
         '''
         # optimized_model_dict handles the optimized model and some metadata
         # in {"method_name": {"latency": ..., "accuracy": ..., "model": ...}}
         self.optimized_model_dict = {}
+        self._optimize_result = None
 
     def optimize(self, model: nn.Module,
                  training_data: DataLoader,
                  validation_data: DataLoader = None,
                  metric: Callable = None,
                  direction: str = "max",
-                 cpu_num: int = None,
+                 thread_num: int = None,
                  logging: bool = False,
                  latency_sample_num: int = 100) -> None:
         '''
@@ -130,19 +141,26 @@ class InferenceOptimizer:
                if you would like to use the accelerated model in an online service.
         :param validation_data: (optional) A pytorch dataloader for accuracy evaluation
                This is only needed when users care about the possible accuracy drop.
-        :param metric: (optional) A callable object takes prediction and target
-               and returns a accuracy value in this calling method `metric(pred, target)`
+        :param metric: (optional) A callable object which is used for calculating accuracy.
+               It supports two kinds of callable object:
+               1. A torchmetrics.Metric object or similar callable object which takes
+               prediction and target then returns an accuracy value in this calling
+               method `metric(pred, target)`. This requires data in validation_data
+               is composed of (input_data, target).
+               2. A callable object that takes model and validation_data (if
+               validation_data is not None) as input, and returns an accuracy value in
+               this calling method metric(model, data_loader) (or metric(model) if
+               validation_data is None).
         :param direction: (optional) A string that indicates the higher/lower
                better for the metric, "min" for the lower the better and "max" for the
                higher the better. Default value is "max".
-        :param cpu_num: (optional) a int represents how many cores is needed for
+        :param thread_num: (optional) a int represents how many threads(cores) is needed for
                inference.
         :param logging: whether to log detailed information of model conversion.
                default: False.
         :param latency_sample_num: (optional) a int represents the number of repetitions
                to calculate the average latency. The default value is 100.
         '''
-        # TODO: may support accuracy_criterion
 
         # check if model is a nn.Module or inherited from a nn.Module
         invalidInputError(isinstance(model, nn.Module), "model should be a nn module.")
@@ -154,30 +172,46 @@ class InferenceOptimizer:
 
         self._direction: str = direction  # save direction as attr
         # record whether calculate accuracy in optimize by this attr
-        if validation_data is not None and metric is not None:
-            self._calculate_accuracy = True
-        else:
+        if validation_data is None and metric is None:
             self._calculate_accuracy = False
+        else:
+            # test whether accuracy calculation works later
+            self._calculate_accuracy = True
 
         default_threads: int = torch.get_num_threads()
-        cpu_num: int = default_threads if cpu_num is None else int(cpu_num)
-
-        # set cpu num for onnxruntime
-        if _onnxruntime_checker():
-            import onnxruntime
-            sessoption = onnxruntime.SessionOptions()
-            sessoption.intra_op_num_threads = cpu_num
-            sessoption.inter_op_num_threads = cpu_num
-        else:
-            sessoption = None
-        # TODO: set cpu num for openvino
+        thread_num: int = default_threads if thread_num is None else int(thread_num)
 
         result_map: Dict[str, Dict] = {}
 
-        model.eval()  # change model to eval state
+        model.eval()  # change model to eval mode
 
-        for method, available in available_dict.items():
-            if available:
+        forward_args = get_forward_args(model)
+        input_sample = get_input_example(model, training_data, forward_args)
+        st = time.perf_counter()
+        try:
+            with torch.no_grad():
+                if isinstance(input_sample, Dict):
+                    model(input_sample)
+                else:
+                    model(*input_sample)
+        except Exception:
+            invalidInputError(False,
+                              "training_data is incompatible with your model input.")
+        baseline_time = time.perf_counter() - st
+        if baseline_time > 0.1:  # 100ms
+            sample_size_for_pot = 15
+        else:
+            sample_size_for_pot = 100
+
+        print("==========================Start Optimization==========================")
+        start_time = time.perf_counter()
+        for idx, (method, available) in enumerate(available_dict.items()):
+            result_map[method] = {}
+            if available is False:
+                result_map[method]["status"] = "lack dependency"
+            else:
+                print(f"----------Start test {method} model "
+                      f"({idx+1}/{len(ALL_INFERENCE_ACCELERATION_METHOD)})----------")
                 option: AccelerationOption = ALL_INFERENCE_ACCELERATION_METHOD[method]
                 use_ipex: bool = option.ipex
                 use_channels_last: bool = option.channels_last
@@ -185,7 +219,6 @@ class InferenceOptimizer:
                 precision: str = option.get_precision()
                 # if precision is fp32, then we will use trace method
                 if precision == "fp32":
-                    input_sample = tuple(next(iter(training_data))[:-1])
                     try:
                         if accelerator is None and use_ipex is False:
                             acce_model = model
@@ -203,11 +236,13 @@ class InferenceOptimizer:
                                     InferenceOptimizer.trace(model=model,
                                                              accelerator=accelerator,
                                                              input_sample=input_sample,
-                                                             onnxruntime_session_options=sessoption,
+                                                             thread_num=thread_num,
                                                              # remove output of openvino
                                                              logging=logging)
                     except Exception as e:
                         print(e)
+                        result_map[method]["status"] = "fail to convert"
+                        print(f"----------Failed to convert to {method}----------")
                         continue
 
                 # if precision is int8 or bf16, then we will use quantize method
@@ -221,50 +256,97 @@ class InferenceOptimizer:
                                                         use_ipex=use_ipex,
                                                         calib_dataloader=training_data,
                                                         method=ort_method,
-                                                        onnxruntime_session_options=sessoption,
+                                                        thread_num=thread_num,
+                                                        sample_size=sample_size_for_pot,
                                                         # remove output of openvino
                                                         logging=logging)
                     except Exception as e:
                         print(e)
+                        result_map[method]["status"] = "fail to convert"
+                        print(f"----------Failed to convert to {method}----------")
                         continue
 
-                result_map[method] = {}
+                result_map[method]["status"] = "successful"
 
                 def func_test(model, input_sample):
-                    model(*input_sample)
+                    with torch.no_grad():
+                        if isinstance(input_sample, Dict):
+                            model(input_sample)
+                        else:
+                            model(*input_sample)
 
-                torch.set_num_threads(cpu_num)
+                torch.set_num_threads(thread_num)
                 try:
-                    result_map[method]["latency"] =\
-                        _throughput_calculate_helper(latency_sample_num, func_test,
-                                                     acce_model, input_sample)
+                    result_map[method]["latency"], status =\
+                        _throughput_calculate_helper(latency_sample_num, baseline_time,
+                                                     func_test, acce_model, input_sample)
+                    if status is False and method != "original":
+                        result_map[method]["status"] = "early stopped"
+                        torch.set_num_threads(default_threads)
+                        continue
                 except Exception as e:
-                    result_map.pop(method)
+                    result_map[method]["status"] = "fail to forward"
                     torch.set_num_threads(default_threads)
                     continue
 
                 torch.set_num_threads(default_threads)
                 if self._calculate_accuracy:
-                    result_map[method]["accuracy"] =\
-                        _accuracy_calculate_helper(acce_model,
-                                                   metric, validation_data)
+                    # here we suppose trace don't change accuracy,
+                    # so we jump it to reduce time cost of optimize
+                    if precision == "fp32" and method != "original":
+                        result_map[method]["accuracy"] = "not recomputed"
+                    else:
+                        if method == "original":
+                            # test whether metric works
+                            try:
+                                result_map[method]["accuracy"] =\
+                                    _accuracy_calculate_helper(acce_model, metric,
+                                                               validation_data)
+                            except Exception as e:
+                                print(e)
+                                self._calculate_accuracy = False
+                                invalidInputError(
+                                    False,
+                                    "Your metric is incompatible with validation_data or don't "
+                                    "follow our given pattern. Our expected metric pattern is "
+                                    "as follows:\n1. a torchmetrics.Metric object\n2. a callable "
+                                    "object which takes prediction and target then returns a value"
+                                    " in this calling method `metric(pred, target)`\n3. a callable"
+                                    " object that takes model and validation_data (if "
+                                    "validation_data is not None) as input, and returns an accuracy"
+                                    " value in this calling method metric(model, data_loader) "
+                                    "(or metric(model) if validation_data is None).")
+                        else:
+                            result_map[method]["accuracy"] =\
+                                _accuracy_calculate_helper(acce_model, metric,
+                                                           validation_data)
                 else:
                     result_map[method]["accuracy"] = None
 
                 result_map[method]["model"] = acce_model
-            else:
-                pass
+                print(f"----------Finish test {method} model "
+                      f"({idx+1}/{len(ALL_INFERENCE_ACCELERATION_METHOD)})----------")
 
         self.optimized_model_dict: Dict = result_map
-        print("==========================Optimization Results==========================")
-        if self._calculate_accuracy:
-            for key, value in self.optimized_model_dict.items():
-                print("accleration option: {}, latency: {:.4f}ms, accuracy : {:.4f}"
-                      .format(key, value["latency"], value["accuracy"]))
-        else:
-            for key, value in self.optimized_model_dict.items():
-                print("accleration option: {}, latency: {:.4f}ms :"
-                      .format(key, value["latency"]))
+        print("\n\n==========================Optimization Results==========================")
+
+        self._optimize_result = _format_optimize_result(self.optimized_model_dict,
+                                                        self._calculate_accuracy)
+        # save time cost to self._optimize_result
+        time_cost = time.perf_counter() - start_time
+        time_cost_str = f"Optimization cost {time_cost:.1f}s in total."
+        self._optimize_result += time_cost_str
+        print(self._optimize_result)
+        print("===========================Stop Optimization===========================")
+
+    def summary(self):
+        '''
+        Print format string representation for optimization result
+        '''
+        invalidOperationError(len(self.optimized_model_dict) > 0,
+                              "There is no optimization result. You should call .optimize() "
+                              "before summary()")
+        print(self._optimize_result)
 
     def get_best_model(self,
                        accelerator: str = None,
@@ -272,6 +354,9 @@ class InferenceOptimizer:
                        use_ipex: bool = None,
                        accuracy_criterion: float = None) -> Tuple[nn.Module, str]:
         '''
+        According to results of `optimize`, obtain the model with minimum latency under
+        specific restrictions or without restrictions.
+
         :param accelerator: (optional) Use accelerator 'None', 'onnxruntime',
                'openvino', 'jit', defaults to None. If not None, then will only find the
                model with this specific accelerator.
@@ -302,7 +387,7 @@ class InferenceOptimizer:
                                     self.optimized_model_dict["original"]["accuracy"])
 
         for method in self.optimized_model_dict.keys():
-            if method == "original":
+            if method == "original" or self.optimized_model_dict[method]["status"] != "successful":
                 continue
             option: AccelerationOption = ALL_INFERENCE_ACCELERATION_METHOD[method]
             result: Dict = self.optimized_model_dict[method]
@@ -319,9 +404,11 @@ class InferenceOptimizer:
                     continue
 
             if accuracy_criterion is not None:
-                accuracy: float = result["accuracy"]
+                accuracy = result["accuracy"]
                 compare_acc: float = best_metric.accuracy
-                if self._direction == "min":
+                if accuracy == "not recomputed":
+                    pass
+                elif self._direction == "min":
                     if (accuracy - compare_acc) / compare_acc > accuracy_criterion:
                         continue
                 else:
@@ -331,9 +418,13 @@ class InferenceOptimizer:
             # After the above conditions are met, the latency comparison is performed
             if result["latency"] < best_metric.latency:
                 best_model = result["model"]
-                best_metric = CompareMetric(method, result["latency"], result["accuracy"])
+                if result["accuracy"] != "not recomputed":
+                    accuracy = result["accuracy"]
+                else:
+                    accuracy = self.optimized_model_dict["original"]["accuracy"]
+                best_metric = CompareMetric(method, result["latency"], accuracy)
 
-        return best_model, _format_acceleration_info(best_metric.method_name)
+        return best_model, _format_acceleration_option(best_metric.method_name)
 
     @staticmethod
     def quantize(model: nn.Module,
@@ -350,7 +441,9 @@ class InferenceOptimizer:
                  timeout: int = None,
                  max_trials: int = None,
                  input_sample=None,
+                 thread_num: int = None,
                  onnxruntime_session_options=None,
+                 sample_size: int = 100,
                  logging: bool = True,
                  **export_kwargs):
         """
@@ -394,8 +487,16 @@ class InferenceOptimizer:
                             "timeout=0, max_trials=1" means it will try quantization only once and
                             return satisfying best model.
         :param input_sample:      An input example to convert pytorch model into ONNX/OpenVINO.
+        :param thread_num: (optional) a int represents how many threads(cores) is needed for
+                           inference, only valid for accelerator='onnxruntime'
+                           or accelerator='openvino'.
         :param onnxruntime_session_options: The session option for onnxruntime, only valid when
                                             accelerator='onnxruntime', otherwise will be ignored.
+        :param sample_size: (optional) a int represents how many samples will be used for
+                            Post-training Optimization Tools (POT) from OpenVINO toolkit,
+                            only valid for accelerator='openvino'. default to 100.
+                            The larger the value, the more accurate the conversion,
+                            the lower the performance degradation, but the longer the time.
         :param logging: whether to log detailed information of model conversion, only valid when
                         accelerator='openvino', otherwise will be ignored. default: True.
         :param **export_kwargs: will be passed to torch.onnx.export function.
@@ -439,10 +540,17 @@ class InferenceOptimizer:
                         if input_sample is None:
                             # input_sample can be a dataloader
                             input_sample = calib_dataloader
+                        if onnxruntime_session_options is None:
+                            import onnxruntime
+                            onnxruntime_session_options = onnxruntime.SessionOptions()
+                            if thread_num is not None:
+                                onnxruntime_session_options.intra_op_num_threads = thread_num
+                                onnxruntime_session_options.inter_op_num_threads = thread_num
                         model = InferenceOptimizer.trace(
                             model,
                             input_sample=input_sample,
                             accelerator='onnxruntime',
+                            onnxruntime_session_options=onnxruntime_session_options,
                             **export_kwargs)
                 """
                 If accelerator==None, quantized model returned should be an object of PytorchModel
@@ -470,6 +578,7 @@ class InferenceOptimizer:
                     model = InferenceOptimizer.trace(model,
                                                      input_sample=input_sample,
                                                      accelerator='openvino',
+                                                     thread_num=thread_num,
                                                      logging=logging,
                                                      **export_kwargs)
                 invalidInputError(type(model).__name__ == 'PytorchOpenVINOModel',
@@ -494,7 +603,7 @@ class InferenceOptimizer:
                     "max_iter_num": max_trials,
                     # TODO following two keys are optional, if there is need, we can add them
                     # "n_requests": None,
-                    # "sample_size": 300
+                    "sample_size": sample_size
                 }
                 return model.pot(calib_dataloader, **kwargs)
             else:
@@ -508,6 +617,7 @@ class InferenceOptimizer:
               input_sample=None,
               accelerator: str = None,
               use_ipex: bool = False,
+              thread_num: int = None,
               onnxruntime_session_options=None,
               logging: bool = True,
               **export_kwargs):
@@ -522,6 +632,9 @@ class InferenceOptimizer:
         :param accelerator: The accelerator to use, defaults to None meaning staying in Pytorch
                             backend. 'openvino', 'onnxruntime' and 'jit' are supported for now.
         :param use_ipex: whether we use ipex as accelerator for inferencing. default: False.
+        :param thread_num: (optional) a int represents how many threads(cores) is needed for
+                           inference, only valid for accelerator='onnxruntime'
+                           or accelerator='openvino'.
         :param onnxruntime_session_options: The session option for onnxruntime, only valid when
                                             accelerator='onnxruntime', otherwise will be ignored.
         :param logging: whether to log detailed information of model conversion, only valid when
@@ -540,8 +653,14 @@ class InferenceOptimizer:
             "but got type {}".format(type(model))
         )
         if accelerator == 'openvino':  # openvino backend will not care about ipex usage
-            return PytorchOpenVINOModel(model, input_sample, logging, **export_kwargs)
+            return PytorchOpenVINOModel(model, input_sample, thread_num, logging, **export_kwargs)
         if accelerator == 'onnxruntime':  # onnxruntime backend will not care about ipex usage
+            if onnxruntime_session_options is None:
+                import onnxruntime
+                onnxruntime_session_options = onnxruntime.SessionOptions()
+                if thread_num is not None:
+                    onnxruntime_session_options.intra_op_num_threads = thread_num
+                    onnxruntime_session_options.inter_op_num_threads = thread_num
             return PytorchONNXRuntimeModel(model, input_sample, onnxruntime_session_options,
                                            **export_kwargs)
         if accelerator == 'jit' or use_ipex:
@@ -554,6 +673,31 @@ class InferenceOptimizer:
             return PytorchIPEXJITModel(model, input_sample=input_sample, use_ipex=use_ipex,
                                        use_jit=use_jit, channels_last=channels_last)
         invalidInputError(False, "Accelerator {} is invalid.".format(accelerator))
+
+    @staticmethod
+    def save(model: nn.Module, path):
+        """
+        Save the model to local file.
+
+        :param model: Any model of torch.nn.Module, including all models accelareted by
+               Trainer.trace/Trainer.quantize.
+        :param path: Path to saved model. Path should be a directory.
+        """
+        save_model(model, path)
+
+    @staticmethod
+    def load(path, model: nn.Module = None):
+        """
+        Load a model from local.
+
+        :param path: Path to model to be loaded. Path should be a directory.
+        :param model: Required FP32 model to load pytorch model, it is needed if you accelerated
+               the model with accelerator=None by Trainer.trace/Trainer.quantize. model
+               should be set to None if you choose accelerator="onnxruntime"/"openvino"/"jit".
+        :return: Model with different acceleration(None/OpenVINO/ONNX Runtime/JIT) or
+                 precision(FP32/FP16/BF16/INT8).
+        """
+        return load_model(path, model)
 
 
 def _inc_checker():
@@ -583,7 +727,7 @@ def _openvino_checker():
     '''
     check if openvino-dev is installed
     '''
-    return not find_spec("openvino-dev") is None
+    return not find_spec("openvino") is None
 
 
 def _bf16_checker():
@@ -615,7 +759,7 @@ def _available_acceleration_combination():
     return available_dict
 
 
-def _throughput_calculate_helper(iterrun, func, *args):
+def _throughput_calculate_helper(iterrun, baseline_time, func, *args):
     '''
     A simple helper to calculate average latency
     '''
@@ -623,33 +767,59 @@ def _throughput_calculate_helper(iterrun, func, *args):
     time_list = []
     for i in range(iterrun):
         st = time.perf_counter()
-        func(*args)
+        with torch.no_grad():
+            func(*args)
         end = time.perf_counter()
         time_list.append(end - st)
+        # if three samples cost more than 4x time than baseline model, prune it
+        if i == 2 and end - start_time > 12 * baseline_time:
+            return np.mean(time_list) * 1000, False
         # at least need 10 iters and try to control calculation
-        # time less than 2 min
-        if i + 1 >= min(iterrun, 10) and (end - start_time) > 2:
+        # time less than 10s
+        if i + 1 >= min(iterrun, 10) and (end - start_time) > 10:
             iterrun = i + 1
             break
     time_list.sort()
     # remove top and least 10% data
     time_list = time_list[int(0.1 * iterrun): int(0.9 * iterrun)]
-    return np.mean(time_list) * 1000
+    return np.mean(time_list) * 1000, True
+
+
+def _signature_check(function):
+    '''
+    A quick helper to judge whether input function is following this calling
+    method `metric(pred, target)`.
+    '''
+    import inspect
+    sig = inspect.signature(function)
+    if len(sig.parameters.values()) != 2:
+        return False
+    param1_name = list(sig.parameters.values())[0].name
+    param2_name = list(sig.parameters.values())[1].name
+    if "pred" in param1_name and "target" in param2_name:
+        return True
+    return False
 
 
 def _accuracy_calculate_helper(model, metric, data):
     '''
     A quick helper to calculate accuracy
     '''
-    metric_list = []
-    sample_num = 0
-    for i, (data_input, target) in enumerate(data):
-        metric_list.append(metric(model(data_input), target).numpy() * data_input.shape[0])
-        sample_num += data_input.shape[0]
-    return np.sum(metric_list) / sample_num
+    if isinstance(metric, Metric) or _signature_check(metric) is True:
+        invalidInputError(data is not None,
+                          "Validation data can't be None when you pass a "
+                          "torchmetrics.Metric object or similar callable "
+                          "object which takes prediction and target as input.")
+        metric = NanoMetric(metric)
+        return metric(model, data)
+    else:
+        if data is None:
+            return metric(model)
+        else:
+            return metric(model, data)
 
 
-def _format_acceleration_info(method_name):
+def _format_acceleration_option(method_name: str) -> str:
     '''
     Get a string represation for current method's acceleration option
     '''
@@ -657,9 +827,54 @@ def _format_acceleration_info(method_name):
     repr_str = ""
     for key, value in option.__dict__.items():
         if value is True:
-            repr_str = repr_str + key + " + "
+            if key == "pot":
+                repr_str = repr_str + "int8" + " + "
+            else:
+                repr_str = repr_str + key + " + "
         elif isinstance(value, str):
             repr_str = repr_str + value + " + "
     if len(repr_str) > 0:
         repr_str = repr_str[:-2]
+    return repr_str
+
+
+def _format_optimize_result(optimize_result_dict: dict,
+                            calculate_accuracy: bool) -> str:
+    '''
+    Get a format string represation for optimization result
+    '''
+    if calculate_accuracy is True:
+        horizontal_line = " {0} {1} {2} {3}\n" \
+            .format("-" * 32, "-" * 22, "-" * 14, "-" * 22)
+        repr_str = horizontal_line
+        repr_str += "| {0:^30} | {1:^20} | {2:^12} | {3:^20} |\n" \
+            .format("method", "status", "latency(ms)", "accuracy")
+        repr_str += horizontal_line
+        for method, result in optimize_result_dict.items():
+            status = result["status"]
+            latency = result.get("latency", "None")
+            if latency != "None":
+                latency = round(latency, 3)
+            accuracy = result.get("accuracy", "None")
+            if accuracy != "None" and isinstance(accuracy, float):
+                accuracy = round(accuracy, 3)
+            method_str = f"| {method:^30} | {status:^20} | " \
+                         f"{latency:^12} | {accuracy:^20} |\n"
+            repr_str += method_str
+        repr_str += horizontal_line
+    else:
+        horizontal_line = " {0} {1} {2}\n" \
+            .format("-" * 32, "-" * 22, "-" * 14)
+        repr_str = horizontal_line
+        repr_str += "| {0:^30} | {1:^20} | {2:^12} |\n" \
+            .format("method", "status", "latency(ms)")
+        repr_str += horizontal_line
+        for method, result in optimize_result_dict.items():
+            status = result["status"]
+            latency = result.get("latency", "None")
+            if latency != "None":
+                latency = round(latency, 3)
+            method_str = f"| {method:^30} | {status:^20} | {latency:^12} |\n"
+            repr_str += method_str
+        repr_str += horizontal_line
     return repr_str

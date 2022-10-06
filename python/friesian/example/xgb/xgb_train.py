@@ -18,7 +18,7 @@ from bigdl.orca import init_orca_context, stop_orca_context
 from bigdl.friesian.feature import FeatureTable
 from pyspark.ml.linalg import DenseVector, VectorUDT
 from pyspark.ml.evaluation import BinaryClassificationEvaluator, MulticlassClassificationEvaluator
-from bigdl.dllib.nnframes.nn_classifier import *
+from bigdl.dllib.nnframes.tree_model import *
 import argparse
 import time
 from bigdl.dllib.utils.log4Error import *

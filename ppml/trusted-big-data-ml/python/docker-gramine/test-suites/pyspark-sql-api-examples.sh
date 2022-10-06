@@ -236,9 +236,9 @@ echo "#### pyspark api example.2 Excepted result(SQLContext): Finish running SQL
 echo "---- pyspark api example.2 Actual result: "
 cat  test-sql-context-sgx.log | egrep -a 'Finish running SQL context API'
 
-echo "#### pyspark api example.3 Excepted result(UDFRegistration): Finish running SQL UDFRegistration API"
-echo "---- pyspark api example.3 Actual result: "
-cat test-sql-UDFRegistration.log | egrep -a 'Finish running SQL UDFRegistration API'
+#echo "#### pyspark api example.3 Excepted result(UDFRegistration): Finish running SQL UDFRegistration API"
+#echo "---- pyspark api example.3 Actual result: "
+#cat test-sql-UDFRegistration.log | egrep -a 'Finish running SQL UDFRegistration API'
 
 echo "#### pyspark api example.4 Excepted result(GroupedData): Finish running SQL GroupedData API"
 echo "---- pyspark api example.4 Actual result: "
@@ -260,9 +260,9 @@ echo "#### pyspark api example.8 Excepted result(DataframeReader): Finish runnin
 echo "---- pyspark api example.8 Actual result: "
 cat test-dataframe-reader-sgx.log | egrep -a 'Finish running dataframe reader API'
 
-echo "#### pyspark api example.9 Excepted result(DataframeWriter): Finish running dataframe writer API"
-echo "---- pyspark api example.9 Actual result: "
-cat test-dataframe-writer-sgx.log | egrep -a 'Finish running dataframe writer API'
+#echo "#### pyspark api example.9 Excepted result(DataframeWriter): Finish running dataframe writer API"
+#echo "---- pyspark api example.9 Actual result: "
+#cat test-dataframe-writer-sgx.log | egrep -a 'Finish running dataframe writer API'
 
 echo "#### pyspark api example.10 Excepted result(HiveContext): Finish running HiveContext API"
 echo "---- pyspark api example.10 Actual result: "

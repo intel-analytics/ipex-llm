@@ -24,7 +24,6 @@ import torch
 from torchvision import transforms
 from torchvision.datasets import OxfordIIITPet
 from torch.utils.data.dataloader import DataLoader
-import torch
 from torchvision.models import resnet18
 from bigdl.nano.pytorch import Trainer
 from torchmetrics import Accuracy
@@ -93,7 +92,9 @@ if __name__ == "__main__":
     print(predictions)
 
     # Static Quantization for PyTorch
-    q_model = Trainer.quantize(model, calib_dataloader=DataLoader(train_dataset, batch_size=32))
+    from bigdl.nano.pytorch import InferenceOptimizer
+    q_model = InferenceOptimizer.quantize(model, 
+                                          calib_dataloader=DataLoader(train_dataset, batch_size=32))
 
     # Inference with Quantized Model
     y_hat = q_model(x)

@@ -24,16 +24,16 @@ import org.apache.spark.sql.types.{DoubleType, StringType, StructField, StructTy
 object xgbClassifierPredictExample {
   def main(args: Array[String]): Unit = {
     if (args.length < 2) {
-      println("Usage: program input_path model_path")
+      println("Usage: program inputPath modelPath")
       sys.exit(1)
     }
-    val input_path = args(0)
-    val model_path = args(1)
+    val inputPath = args(0)
+    val modelPath = args(1)
 
     val sc = NNContext.initNNContext()
     val spark = SQLContext.getOrCreate(sc)
 
-    val model = XGBClassifierModel.load(model_path)
+    val model = XGBClassifierModel.load(modelPath)
 
     val schema = new StructType(Array(
     StructField("sepal length", DoubleType, true),
@@ -41,7 +41,7 @@ object xgbClassifierPredictExample {
     StructField("petal length", DoubleType, true),
     StructField("petal width", DoubleType, true),
     StructField("class", StringType, true)))
-    val df = spark.read.schema(schema).csv(input_path)
+    val df = spark.read.schema(schema).csv(inputPath)
     val featureVectorAssembler = new VectorAssembler()
       .setInputCols(Array("sepal length", "sepal width", "petal length", "petal width"))
       .setOutputCol("featureAssembledVector")

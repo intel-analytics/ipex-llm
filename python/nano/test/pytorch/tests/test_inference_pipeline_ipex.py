@@ -58,7 +58,7 @@ class TestInferencePipeline(TestCase):
     num_workers = 0
     data_dir = os.path.join(os.path.dirname(__file__), "data")
     metric = torchmetrics.Accuracy(num_classes=10, top_k=1)
-    max_epochs = 10
+    max_epochs = 5
 
     model = Net()
     test_loader = create_data_loader(data_dir, 1, num_workers, data_transform, subset=10, shuffle=False)
@@ -85,13 +85,13 @@ class TestInferencePipeline(TestCase):
                                validation_data=self.test_loader,
                                metric=self.metric,
                                direction="max",
-                               cpu_num=1)
+                               thread_num=1)
 
         acc_model, option = inference_opt.get_best_model()
         acc_model, option = inference_opt.get_best_model(accelerator="onnxruntime")
         assert option == "" or "onnxruntime" in option
         acc_model, option = inference_opt.get_best_model(precision="int8")
-        assert option == "" or "inc" in option or "pot" in option
+        assert option == "" or "inc" in option or "int8" in option
         acc_model, option = inference_opt.get_best_model(accuracy_criterion=0.1)
         acc_model(next(iter(self.train_loader))[0])
 
@@ -99,15 +99,102 @@ class TestInferencePipeline(TestCase):
         inference_opt = InferenceOptimizer()
         inference_opt.optimize(model=self.model,
                                training_data=self.train_loader,
-                               cpu_num=1)
+                               thread_num=1)
 
         acc_model, option = inference_opt.get_best_model()
         acc_model, option = inference_opt.get_best_model(accelerator="onnxruntime")
         assert option == "" or "onnxruntime" in option
         acc_model, option = inference_opt.get_best_model(precision="int8")
-        assert option == "" or "inc" in option or "pot" in option
+        assert option == "" or "inc" in option or "int8" in option
         with pytest.raises(RuntimeError) as e:
             acc_model, option = inference_opt.get_best_model(accuracy_criterion=0.1)
         error_msg = e.value.args[0]
         assert error_msg == "If you want to specify accuracy_criterion, you need "\
                             "to set metric and validation_data when call 'optimize'."
+
+    def test_summary(self):
+        inference_opt = InferenceOptimizer()
+        with pytest.raises(RuntimeError) as e:
+            inference_opt.summary()
+        error_msg = e.value.args[0]
+        assert error_msg == "There is no optimization result. You should call .optimize() "\
+                            "before summary()"
+        inference_opt.optimize(model=self.model,
+                               training_data=self.train_loader,
+                               thread_num=1)
+        inference_opt.summary()
+
+    def test_wrong_data_loader(self):
+        fake_transform = transforms.Compose([
+            transforms.ToTensor(),
+            transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5)),
+            transforms.Resize(64),
+        ])
+        fake_train_loader = create_data_loader(self.data_dir, 32, self.num_workers,
+                                               fake_transform, subset=10, shuffle=True)
+        inference_opt = InferenceOptimizer()
+        with pytest.raises(RuntimeError) as e:
+            inference_opt.optimize(model=self.model,
+                                   training_data=fake_train_loader,
+                                   thread_num=1)
+        error_msg = e.value.args[0]
+        assert error_msg == "training_data is incompatible with your model input."
+
+    def test_pipeline_with_custom_function_metric(self):
+        inference_opt = InferenceOptimizer()
+
+        def metric(pred, target):
+            return self.metric(pred, target)
+
+        inference_opt.optimize(model=self.model,
+                               training_data=self.train_loader,
+                               validation_data=self.test_loader,
+                               metric=metric,
+                               direction="max",
+                               thread_num=1)
+    
+    def test_pipeline_with_custom_function_metric_without_data(self):
+        inference_opt = InferenceOptimizer()
+
+        def metric(pred, target):
+            return self.metric(pred, target)
+
+        with pytest.raises(RuntimeError):
+            inference_opt.optimize(model=self.model,
+                                training_data=self.train_loader,
+                                validation_data=None,
+                                metric=metric,
+                                direction="max",
+                                thread_num=1)
+
+    def test_pipeline_with_wrong_custom_function_metric(self):
+        inference_opt = InferenceOptimizer()
+
+        def metric(x, y):
+            return self.metric(x, y)
+
+        with pytest.raises(RuntimeError):
+            inference_opt.optimize(model=self.model,
+                                training_data=self.train_loader,
+                                validation_data=self.test_loader,
+                                metric=metric,
+                                direction="max",
+                                thread_num=1)
+
+    def test_pipeline_with_custom_function_metric_with_data_loader(self):
+        inference_opt = InferenceOptimizer()
+        import numpy as np
+        def metric(model, data_loader):
+            metrics = []
+            for input_data, target in data_loader:
+                pred = model(input_data)
+                metric = self.metric(pred, target)
+                metrics.append(metric)
+            return np.mean(metrics)
+
+        inference_opt.optimize(model=self.model,
+                               training_data=self.train_loader,
+                               validation_data=self.test_loader,
+                               metric=metric,
+                               direction="max",
+                               thread_num=1)

@@ -171,7 +171,7 @@ you can use [generate_people_csv.py](https://github.com/analytics-zoo/ppml-e2e-e
 
 2. Encrypt `people.csv`
     ```
-    docker exec -i $KMSUTIL_CONTAINER_NAME bash -c "bash /home/entrypoint.sh encrypt $appid $appkey $input_file_path"
+    docker exec -i $KMSUTIL_CONTAINER_NAME bash -c "bash /home/entrypoint.sh encrypt $appid $apikey $input_file_path"
     ```
 #### Step 2. Build Big Data & AI applications
 To build your own Big Data & AI applications, refer to [develop your own Big Data & AI applications with BigDL PPML](#4-develop-your-own-big-data--ai-applications-with-bigdl-ppml). The code of SimpleQuery is in [here](https://github.com/intel-analytics/BigDL/blob/main/scala/ppml/src/main/scala/com/intel/analytics/bigdl/ppml/examples/SimpleQuerySparkExample.scala), it is already built into bigdl-ppml-spark_3.1.2-2.1.0-SNAPSHOT.jar, and the jar is put into PPML image.
@@ -287,7 +287,7 @@ Here we use **k8s client mode** and **PPML CLI** to run SimpleQuery. Check other
               --kmsServerIP your_ehsm_kms_server_ip \
               --kmsServerPort your_ehsm_kms_server_port \
               --ehsmAPPID your_ehsm_kms_appid \
-              --ehsmAPPKEY your_ehsm_kms_appkey
+              --ehsmAPIKEY your_ehsm_kms_apikey
       ```
 
 
@@ -313,7 +313,7 @@ Here we use **k8s client mode** and **PPML CLI** to run SimpleQuery. Check other
 When the job is done, you can decrypt and read result of the job. More details in [Decrypt Job Result](./services/kms-utils/docker/README.md#3-enroll-generate-key-encrypt-and-decrypt).
 
   ```
-  docker exec -i $KMSUTIL_CONTAINER_NAME bash -c "bash /home/entrypoint.sh decrypt $appid $appkey $input_path"
+  docker exec -i $KMSUTIL_CONTAINER_NAME bash -c "bash /home/entrypoint.sh decrypt $appid $apikey $input_path"
   ```
 
 https://user-images.githubusercontent.com/61072813/184758643-821026c3-40e0-4d4c-bcd3-8a516c55fc01.mp4
