@@ -43,11 +43,21 @@ object LgbmClassifierTrain {
       val classifier = new LightGBMClassifier()
       classifier.setObjective("binary")
       classifier.setNumIterations(params.numIterations)
+      classifier.setIsUnbalance(true)
+      classifier.setMaxDepth(14)
+
+
       val model = classifier.fit(train_df)
       val predictions = model.transform(test_df)
 
       val mclassifier = new MLightGBMClassifier()
-      mclassifier.setObjective("binary")
+      mclassifier.setObjective("binary").setIsUnbalance(true)
+      mclassifier.setNumLeaves(params.numLeaves)
+      mclassifier.setMaxDepth(params.maxDepth)
+      mclassifier.setLambdaL1(params.lamda1)
+      mclassifier.setLambdaL2(params.lamda2)
+      mclassifier.setBaggingFreq(params.bagFreq)
+      mclassifier.setMaxBin(params.maxBin)
       mclassifier.setNumIterations(params.numIterations)
       val mmodel = mclassifier.fit(train_df)
       val mpredictions = mmodel.transform(test_df)
@@ -81,6 +91,13 @@ private object Utils {
 
   case class LGBMParams(
     inputPath: String = "/Users/guoqiong/intelWork/data/tweet/xgb_processed",
+    numLeaves: Int = 31,
+    maxDepth: Int = 14,
+    lamda1: Double = 0.01,
+    lamda2: Double = 0.01,
+    bagFreq: Int = 5,
+    minDataInLeaf: Int = 20,
+    maxBin: Int = 255,
     numIterations: Int = 100,
     modelSavePath: String = "/tmp/lgbm/classifier")
 
@@ -88,6 +105,27 @@ private object Utils {
     opt[String]("inputPath")
       .text(s"inputPath")
       .action((x, c) => c.copy(inputPath = x))
+    opt[Int]("numLeaves")
+      .text(s"numLeaves")
+      .action((x, c) => c.copy(numLeaves = x))
+    opt[Int]("maxDepth")
+      .text(s"maxDepth")
+      .action((x, c) => c.copy(maxDepth = x))
+    opt[Double]("lamda1")
+      .text(s"lamda1")
+      .action((x, c) => c.copy(lamda1 = x))
+    opt[Double]("lamda2")
+      .text(s"lamda2")
+      .action((x, c) => c.copy(lamda2 = x))
+    opt[Int]("bagFreq")
+      .text(s"bagFreq")
+      .action((x, c) => c.copy(bagFreq = x))
+    opt[Int]("minDataInLeaf")
+      .text(s"minDataInLeaf")
+      .action((x, c) => c.copy(minDataInLeaf = x))
+    opt[Int]("maxBin")
+      .text(s"maxBin")
+      .action((x, c) => c.copy(maxBin = x))
     opt[Int]('n', "numIterations")
       .text(s"numIterations")
       .action((x, c) => c.copy(numIterations = x))

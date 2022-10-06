@@ -25,9 +25,6 @@ from bigdl.dllib.nnframes.tree_model import LightGBMClassifier
 from pyspark.ml.evaluation import BinaryClassificationEvaluator, MulticlassClassificationEvaluator
 
 # Please use 0.10.0 version for Spark3.2 and 0.9.5-13-d1b51517-SNAPSHOT version for Spark3.1
-spark_conf = {"spark.app.name": "recsys-lightGBM",
-              "spark.serializer": "org.apache.spark.serializer.KryoSerializer",
-              "spark.driver.memoryOverhead": "8G"}
 
 model_dir = "./lightgbm"
 num_cols = ["enaging_user_follower_count", 'enaging_user_following_count',
@@ -61,18 +58,16 @@ if __name__ == '__main__':
 
     if args.cluster_mode == "local":
         sc = init_orca_context("local", cores=args.executor_cores,
-                               memory=args.executor_memory, conf=spark_conf)
+                               memory=args.executor_memory)
     elif args.cluster_mode == "standalone":
         sc = init_orca_context("standalone", master=args.master,
                                cores=args.executor_cores, num_nodes=args.num_executors,
                                memory=args.executor_memory,
-                               driver_cores=args.driver_cores, driver_memory=args.driver_memory,
-                               conf=spark_conf)
+                               driver_cores=args.driver_cores, driver_memory=args.driver_memory)
     elif args.cluster_mode == "yarn":
         sc = init_orca_context("yarn-client", cores=args.executor_cores,
                                num_nodes=args.num_executors, memory=args.executor_memory,
-                               driver_cores=args.driver_cores, driver_memory=args.driver_memory,
-                               conf=spark_conf)
+                               driver_cores=args.driver_cores, driver_memory=args.driver_memory)
     elif args.cluster_mode == "spark-submit":
         sc = init_orca_context("spark-submit")
     else:
@@ -134,7 +129,7 @@ if __name__ == '__main__':
 
     params = {"boosting_type": "gbdt", "num_leaves": 70, "learning_rate": 0.3,
               "min_data_in_leaf": 20, "objective": "binary",
-              'num_iterations': 10000,
+              'num_iterations': 1000,
               'max_depth': 14,
               'lambda_l1': 0.01,
               'lambda_l2': 0.01,
@@ -143,16 +138,16 @@ if __name__ == '__main__':
               'early_stopping_round': 20
               }
 
-    params = {"objective": "binary"}
+    params = {"objective": "binary", 'num_iterations': 100}
     for learning_rate in [0.1]:
         for max_depth in [14]:
             for num_iterations in [10000]:
                 # params.update({"learning_rate": learning_rate, "max_depth": max_depth, "num_iterations": num_iterations})
 
-                model = LightGBMClassifier(params)
+                estimator = LightGBMClassifier(params)
                 # model = LightGBMClassifier()
 
-                model = model.fit(train.df)
+                model = estimator.fit(train.df)
                 predictions = model.transform(test.df)
                 predictions.cache()
                 predictions.show(5, False)
