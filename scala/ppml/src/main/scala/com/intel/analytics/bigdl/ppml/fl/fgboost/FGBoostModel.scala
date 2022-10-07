@@ -24,7 +24,7 @@ import com.intel.analytics.bigdl.ppml.fl.FLContext
 import com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.{MetaData, TensorMap}
 import com.intel.analytics.bigdl.ppml.fl.utils.{DataFrameUtils, FLClientClosable}
 import com.intel.analytics.bigdl.ppml.fl.utils.ProtoUtils.{getTensor, toArrayFloat, toBoostEvals, toFloatTensor}
-import jdk.nashorn.internal.ir.debug.ObjectSizeCalculator
+
 import com.intel.analytics.bigdl.ppml.fl.utils.Conventions._
 import org.apache.logging.log4j.LogManager
 
@@ -184,10 +184,8 @@ abstract class FGBoostModel(continuous: Boolean,
     val boostEvals = toBoostEvals(predictToUpload)
     // TODO: add grouped sending message
 
-    val perMsgSize = ObjectSizeCalculator.getObjectSize(boostEvals.head)
-    val dataPerGroup = MAX_MSG_SIZE / perMsgSize
-    logger.debug(s"data num: ${boostEvals.size}," +
-      s" per msg size: $perMsgSize, data per group: $dataPerGroup")
+    val dataPerGroup = MAX_MSG_SIZE / MAX_REC_NUM
+    logger.debug(s"data num: ${boostEvals.size}, data per group: $dataPerGroup")
     var sended = 0
     var lastBatch = false
     boostEvals.grouped(dataPerGroup.toInt).foreach(l => {
