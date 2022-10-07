@@ -22,7 +22,6 @@ jobs:
     - name: Debug
       run: |
         mvn --version
-        mvn clean deploy -DskipTests -Dspark.version=3.1.2 -DSPARK_PLATFORM=SPARK_3.1 -P spark_3.x -P sign -X -DstagingProgressTimeoutMinutes=20 -Dgpg.passphrase=BigDL2017 --file scala/pom.xml
     - name: Maven clean deploy
       run: |
         set -x
