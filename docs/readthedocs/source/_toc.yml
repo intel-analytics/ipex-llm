@@ -1,7 +1,7 @@
 root: index
 subtrees:
 
-  - caption: Overview
+  - caption:  Get Started
     entries:
       - file: doc/Orca/QuickStart/orca-pytorch-distributed-quickstart
       - file: doc/UseCase/spark-dataframe
@@ -9,7 +9,7 @@ subtrees:
       - file: doc/Orca/QuickStart/orca-autoestimator-pytorch-quickstart
       - file: doc/Orca/QuickStart/orca-autoxgboost-quickstart
 
-  - caption: Platforms
+  - caption: User Guide
     entries:
       - file: doc/UserGuide/python
       - file: doc/UserGuide/scala
@@ -74,7 +74,8 @@ subtrees:
         title: "API Reference"
       - file: doc/Chronos/Overview/chronos_known_issue
 
-  - caption: Friesian
+  - caption: BigDL-Friesian
+    entries:
       - file: doc/PythonAPI/Friesian/feature
         title: "API Reference"
 
