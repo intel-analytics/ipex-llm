@@ -382,7 +382,15 @@ class SigmoidSpec extends FlatSpec {
     /**
      *  Create a new dataframe dropping all of those with missing values.
      */
-    var cleanDF = readingsDF.filter(readingsDF("STR") > -1 && readingsDF("OBS") > -1 && readingsDF("AGMT")  > -1  && readingsDF("FNDX") > -1 && readingsDF("HIGD") > -1  && readingsDF("DEG") > -1 && readingsDF("CHK") > -1 && readingsDF("AGP1") > -1  && readingsDF("AGMN") > -1  && readingsDF("NLV") > -1  && readingsDF("LIV") > -1 && readingsDF("WT") > -1 && readingsDF("AGLP") > -1 && readingsDF("MST") > -1)
+    var cleanDF = readingsDF.filter(readingsDF("STR") > -1 &&
+      readingsDF("OBS") > -1 && readingsDF("AGMT")  > -1  &&
+      readingsDF("FNDX") > -1 && readingsDF("HIGD") > -1  &&
+      readingsDF("DEG") > -1 && readingsDF("CHK") > -1 &&
+      readingsDF("AGP1") > -1  && readingsDF("AGMN") > -1 &&
+      readingsDF("NLV") > -1  && readingsDF("LIV") > -1 &&
+      readingsDF("WT") > -1 && readingsDF("AGLP") > -1 &&
+      readingsDF("MST") > -1)
+
     /**
      *  Now comes something more complicated.  Our dataframe has the column headings
      *  we created with the schema.  But we need a column called “label” and one called

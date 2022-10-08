@@ -21,7 +21,7 @@ import com.intel.analytics.bigdl.ppml.fl.FLServer
 object StartServer {
   def main(args: Array[String]): Unit = {
     val flServer = new FLServer()
-    //TODO delete
+    // TODO: delete
 //    val javaHome = System.getProperty("java.home")
 //    System.load(javaHome + "/lib/amd64/libjawt.so")
 //    System.load(javaHome + "/lib/amd64/server/libjvm.so")

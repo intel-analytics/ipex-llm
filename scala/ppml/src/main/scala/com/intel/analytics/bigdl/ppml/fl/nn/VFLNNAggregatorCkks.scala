@@ -19,14 +19,10 @@ package com.intel.analytics.bigdl.ppml.fl.nn
 
 import com.intel.analytics.bigdl.dllib.nn.ckks.{CAddTable, FusedBCECriterion}
 import com.intel.analytics.bigdl.dllib.optim.{OptimMethod, ValidationMethod, ValidationResult}
-import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.dllib.utils.{Log4Error, T}
 import com.intel.analytics.bigdl.ppml.fl.common.FLPhase
 import com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto._
 import com.intel.analytics.bigdl.ppml.fl.utils.ProtoUtils
-import com.intel.analytics.bigdl.ppml.fl.utils.ProtoUtils.toFloatTensor
-import com.intel.analytics.bigdl.{Criterion, Module}
-import org.apache.logging.log4j.LogManager
 
 
 /**
@@ -34,9 +30,11 @@ import org.apache.logging.log4j.LogManager
  * @param optimMethod
  * @param validationMethods
  */
-class VFLNNAggregatorCkks(ckksCommon: Long,
-                          optimMethod: OptimMethod[Float] = null,
-                          validationMethods: Array[ValidationMethod[Float]] = null) extends NNAggregator{
+class VFLNNAggregatorCkks(
+      ckksCommon: Long,
+      optimMethod: OptimMethod[Float] = null,
+      validationMethods: Array[ValidationMethod[Float]] = null
+      ) extends NNAggregator{
   val m1 = CAddTable(ckksCommon)
   val criterion = FusedBCECriterion(ckksCommon)
 
