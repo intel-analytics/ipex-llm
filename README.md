@@ -386,11 +386,13 @@ The *Chronos* library makes it easy to build end-to-end, large-scale **recommeda
 If you've found BigDL useful for your project, you may cite the [paper](https://arxiv.org/abs/2204.01715) as follows:
 
 ```
-@inproceedings{dai2022bigdl,
-  title={BigDL 2.0: Seamless Scaling of AI Pipelines from Laptops to Distributed Cluster},
-  author={Dai, Jason (Jinquan) and Ding, Ding and Shi, Dongjie and Huang, Shengsheng and Wang, Jiao and Qiu, Xin and Huang, Kai and Song, Guoqiong and Wang, Yang and Gong, Qiyuan and Song, Jiaming and Yu, Shan and Zheng, Le and Chen, Yina and Deng, Junwei and Song, Ge},
-  booktitle={Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition},
-  pages={21439--21446},
-  year={2022}
-}
+@INPROCEEDINGS{9880257,
+  author={Dai, Jason Jinquan and Ding, Ding and Shi, Dongjie and Huang, Shengsheng and Wang, Jiao and Qiu, Xin and Huang, Kai and Song, Guoqiong and Wang, Yang and Gong, Qiyuan and Song, Jiaming and Yu, Shan and Zheng, Le and Chen, Yina and Deng, Junwei and Song, Ge},
+  booktitle={2022 IEEE/CVF Conference on Computer Vision and Pattern Recognition (CVPR)}, 
+  title={BigDL 2.0: Seamless Scaling of AI Pipelines from Laptops to Distributed Cluster}, 
+  year={2022},
+  volume={},
+  number={},
+  pages={21407-21414},
+  doi={10.1109/CVPR52688.2022.02076}}
 ```
