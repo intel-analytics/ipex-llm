@@ -2,6 +2,7 @@ name: Nightly Test
 
 on:
   #pull_request:
+  #   branchs: [ main ]
   schedule:
     - cron: '0 13 * * *' # GMT time, 13:00 GMT == 21:00 China
   workflow_dispatch:
@@ -33,6 +34,7 @@ on:
         - PPML-Occlum-ExampleTests
         - PPML-Occlum-k8s-ExampleTests
         - PPML-spark-Local-Example-Tests-on-Gramine
+        - PPML-Spark-K8S-Example-On-Gramine
       tag:
         description: 'docker image tag'
         required: true
@@ -576,21 +578,7 @@ jobs:
         type: job
         job-name: PPML-spark-Local-Example-Tests-on-Gramine
         runner-hosted-on: 'Shanghai'
-     
-  # please put your test before the create-workflow-badge to make sure the badge can be displayed on the github page.
-  create-workflow-badge:
-    runs-on: ubuntu-latest
-    steps:
-    - uses: actions/checkout@v3
-    - name: create workflow badge
-      if: ${{ always() }}
-      uses: ./.github/actions/create-job-status-badge
-      with:
-        secret: ${{ secrets.GIST_SECRET }}
-        gist-id: bc8a699b455bced4a1aef138ad5df07e
-        file-name: nightly-test.json
-        type: workflow
-  
+
   PPML-Occlum-k8s-ExampleTests:
     if: ${{ github.event.schedule || github.event.inputs.artifact == 'PPML-Occlum-k8s-ExampleTests' || github.event.inputs.artifact == 'all' }}
     runs-on: [self-hosted, Vilvarin]
@@ -610,4 +598,45 @@ jobs:
         type: job
         job-name: PPML-Occlum-ExampleTests
         runner-hosted-on: 'Shanghai'
+
+
+  PPML-Spark-K8S-Example-On-Gramine:
+    if: ${{ github.event.schedule || github.event.inputs.artifact == 'PPML-Spark-K8S-Example-On-Gramine' || github.event.inputs.artifact == 'all' }}
+    runs-on: [self-hosted, Vilvarin]
+
+    steps:
+    - uses: actions/checkout@v3
+    - name: Set up JDK8
+      uses: ./.github/actions/jdk-setup-action
+    - name: Set up maven
+      uses: ./.github/actions/maven-setup-action
+    - name: Run test
+      uses: ./.github/actions/ppml-spark-k8s-example-on-gramine-action
+    - name: Create Job Badge
+      uses: ./.github/actions/create-job-status-badge
+      if: ${{ always() }}
+      with:
+        secret: ${{ secrets.GIST_SECRET}}
+        gist-id: c2880dec16d825fb689b5227938a44bc
+        is-self-hosted-runner: true
+        file-name: PPML-Spark-K8S-Example-On-Gramine.json
+        type: job
+        job-name: PPML-Spark-K8S-Example-On-Gramine
+        runner-hosted-on: 'Shanghai'
+
+  # please put your test before the create-workflow-badge to make sure the badge can be displayed on the github page.
+  create-workflow-badge:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+    - name: create workflow badge
+      if: ${{ always() }}
+      uses: ./.github/actions/create-job-status-badge
+      with:
+        secret: ${{ secrets.GIST_SECRET }}
+        gist-id: bc8a699b455bced4a1aef138ad5df07e
+        file-name: nightly-test.json
+        type: workflow
+  
+
 
