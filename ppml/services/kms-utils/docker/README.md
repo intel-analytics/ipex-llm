@@ -48,22 +48,11 @@ sudo docker run -itd \
 ## 3. enroll, generate key, encrypt and decrypt
 ```
 # Enroll
-docker exec -i $ENROLL_CONTAINER_NAME bash -c "bash /home/entrypoint.sh enroll"
+curl -v -k -G "https://<kms_ip>:9000/ehsm?Action=Enroll"
 
-INFO [main.cpp(46) -> main]: ehsm-kms enroll app start.
-INFO [main.cpp(86) -> main]: First handle:  send msg0 and get msg1.
-INFO [main.cpp(99) -> main]: First handle success.
-INFO [main.cpp(101) -> main]: Second handle:  send msg2 and get msg3.
-INFO [main.cpp(118) -> main]: Second handle success.
-INFO [main.cpp(120) -> main]: Third handle:  send att_result_msg and get ciphertext of the APP ID and API Key.
+......
 
-appid: d792478c-f590-4073-8ed6-2d15e714da78
-
-apikey: bSMN3dAQGEwgx297Ff1H2umBzwzv6W34
-
-INFO [main.cpp(155) -> main]: decrypt APP ID and API Key success.
-INFO [main.cpp(156) -> main]: Third handle success.
-INFO [main.cpp(159) -> main]: ehsm-kms enroll app end.
+{"code":200,"message":"successful","result":{"apikey":"E8QKpBBapaknprx44FaaTY20rptg54Sg","appid":"8d5dd3b8-3996-40f5-9785-dcb8265981ba"}}
 
 
 export appid=your_appid
