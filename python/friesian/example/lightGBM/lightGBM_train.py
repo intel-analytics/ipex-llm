@@ -135,7 +135,8 @@ if __name__ == '__main__':
     for learning_rate in [0.1, 0.2]:
         for max_depth in [7, 14]:
             for num_iterations in [100, 200, 400, 800, 10000]:
-                params.update({"learning_rate": learning_rate, "max_depth": max_depth, "num_iterations": num_iterations})
+                params.update({"learning_rate": learning_rate, "max_depth": max_depth,
+                               "num_iterations": num_iterations})
 
                 estimator = LightGBMClassifier(params)
                 model = estimator.fit(train.df)
