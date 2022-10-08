@@ -28,8 +28,8 @@ on:
         - Dllib-Scala-UT
         - Friesian-Scala-UT
         - PPML-Scala-UT
+        - PPML-PySpark-K8s-Example
         - PPML-Spark-PySpark-Local-Sql-UT-On-Gramine
-        - PPML-PySpark-K8S-EXAMPLE
         - PPML-Occlum-ExampleTests
         - PPML-Occlum-k8s-ExampleTests
         - PPML-spark-Local-Example-Tests-on-Gramine
@@ -460,6 +460,7 @@ jobs:
         job-name: Orca-Ray-Ctx-Example
         runner-hosted-on: 'Shanghai'
         
+        
   PPML-Spark-PySpark-Local-Sql-UT-On-Gramine:
     if: ${{ github.event.schedule || github.event.inputs.artifact == 'PPML-Spark-PySpark-Local-Sql-UT-On-Gramine' || github.event.inputs.artifact == 'all' }}
     runs-on: [self-hosted, SGX, Wilwarin]
@@ -490,9 +491,8 @@ jobs:
         job-name: PPML-Spark-PySpark-Local-Sql-UT-On-Gramine
         runner-hosted-on: 'Shanghai'
 
-
-  PPML-PySpark-K8S-EXAMPLE:
-    if: ${{ github.event.schedule || github.event.inputs.artifact == 'PPML-PySpark-K8S-EXAMPLE' || github.event.inputs.artifact == 'all' }} 
+  PPML-PySpark-K8s-Example:
+    if: ${{ github.event.schedule || github.event.inputs.artifact == 'PPML-PySpark-K8s-Example' || github.event.inputs.artifact == 'all' }} 
     runs-on: [self-hosted, Vilvarin]
 
     steps:
@@ -510,6 +510,17 @@ jobs:
       uses: ./.github/actions/ppml/ppml-pyspark-k8s-example-on-gramine-action
       with:
         image-tag: ${TAG}
+    - name: Create Job Badge
+      uses: ./.github/actions/create-job-status-badge
+      if: ${{ always() }}
+      with:
+        secret: ${{ secrets.GIST_SECRET}}
+        gist-id: 6938e848b13dc9f021692b099c57f7af
+        is-self-hosted-runner: true
+        file-name: PPML-PySpark-K8s-Example.json
+        type: job
+        job-name: PPML-PySpark-K8s-Example
+        runner-hosted-on: 'Shanghai'
 
   PPML-Occlum-ExampleTests:
     if: ${{ github.event.schedule || github.event.inputs.artifact == 'PPML-Occlum-ExampleTests' || github.event.inputs.artifact == 'all' }} 
