@@ -47,7 +47,8 @@ resource_path = os.path.join(
 class LinearDataset(torch.utils.data.Dataset):
     """y = a * x + b"""
 
-    def __init__(self, size=1000):
+    def __init__(self, size=1000, nested_input=False):
+        self.nested_input = nested_input
         X1 = torch.randn(size // 2, 50)
         X2 = torch.randn(size // 2, 50) + 1.5
         self.x = torch.cat([X1, X2], dim=0)
@@ -56,7 +57,10 @@ class LinearDataset(torch.utils.data.Dataset):
         self.y = torch.cat([Y1, Y2], dim=0)
 
     def __getitem__(self, index):
-        return self.x[index, None], self.y[index, None]
+        if self.nested_input:
+            return self.x[index, None][:25], self.x[index, None][25:], self.y[index, None]
+        else:
+            return self.x[index, None], self.y[index, None]
 
     def __len__(self):
         return len(self.x)
@@ -147,7 +151,8 @@ class CustomCallback(Callback):
 
 
 def train_data_loader(config, batch_size):
-    train_dataset = LinearDataset(size=config.get("data_size", 1000))
+    train_dataset = LinearDataset(size=config.get("data_size", 1000),
+                                  nested_input=config.get("nested_input", False))
     train_loader = torch.utils.data.DataLoader(
         train_dataset,
         batch_size=batch_size
@@ -156,7 +161,8 @@ def train_data_loader(config, batch_size):
 
 
 def val_data_loader(config, batch_size):
-    val_dataset = LinearDataset(size=config.get("val_size", 400))
+    val_dataset = LinearDataset(size=config.get("val_size", 400),
+                                nested_input=config.get("nested_input", False))
     validation_loader = torch.utils.data.DataLoader(
         val_dataset,
         batch_size=batch_size
@@ -174,12 +180,13 @@ def get_optimizer(model, config):
 
 
 def get_estimator(workers_per_node=1, model_fn=get_model, sync_stats=False,
-                  log_level=logging.INFO):
+                  log_level=logging.INFO, nest_input=False):
     estimator = Estimator.from_torch(model=model_fn,
                                      optimizer=get_optimizer,
                                      loss=nn.BCELoss(),
                                      metrics=Accuracy(),
-                                     config={"lr": 1e-2},
+                                     config={"lr": 1e-2,
+                                             "nest_input": nest_input},
                                      workers_per_node=workers_per_node,
                                      backend="spark",
                                      sync_stats=sync_stats,
@@ -213,6 +220,37 @@ class TestPyTorchEstimator(TestCase):
         print(f"dLoss: {dloss}, dAcc: {dacc}")
 
         assert dloss < 0 < dacc, "training sanity check failed. loss increased!"
+
+
+    def test_data_creator_collate(self):
+
+        def combine_collate_fn(batch):
+            *inputs, target = batch
+            return torch.cat(inputs, dim=1), target
+
+        estimator = get_estimator(workers_per_node=2, nest_input=True)
+        start_val_stats = estimator.evaluate(val_data_loader,
+                                             batch_size=64,
+                                             recollate_fn=combine_collate_fn)
+        print(start_val_stats)
+        train_stats = estimator.fit(train_data_loader, epochs=4, batch_size=128,
+                                    validation_data=val_data_loader,
+                                    recollate_fn=combine_collate_fn)
+        print(train_stats)
+        end_val_stats = estimator.evaluate(val_data_loader, batch_size=64,
+                                           recollate_fn=combine_collate_fn)
+        print(end_val_stats)
+        assert 0 < end_val_stats["Accuracy"] < 1
+        assert estimator.get_model()
+
+        # sanity check that training worked
+        dloss = end_val_stats["val_loss"] - start_val_stats["val_loss"]
+        dacc = (end_val_stats["Accuracy"] -
+                start_val_stats["Accuracy"])
+        print(f"dLoss: {dloss}, dAcc: {dacc}")
+
+        assert dloss < 0 < dacc, "training sanity check failed. loss increased!"
+
 
     def test_spark_xshards(self):
         from bigdl.dllib.nncontext import init_nncontext

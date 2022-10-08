@@ -478,7 +478,7 @@ class PyTorchPySparkEstimator(BaseEstimator):
                 .mapPartitions(lambda iter: transform_func(iter, init_params, params)).collect()
         else:
             params["data_creator"] = reload_dataloader_creator(data,
-                                                               collate_fn=recollate_fn)
+                                                               recollate_fn=recollate_fn)
 
             def transform_func(iter, init_param, param):
                 return PytorchPysparkWorker(**init_param).validate(**param)
