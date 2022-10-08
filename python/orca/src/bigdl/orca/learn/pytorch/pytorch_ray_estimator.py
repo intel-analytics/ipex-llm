@@ -60,7 +60,7 @@ def check_for_failure(remote_values):
     return False
 
 
-def partition_refs_to_creator(partition_refs, collate_fn=None):
+def partition_refs_to_creator(partition_refs):
     def data_creator(config, batch_size):
         from bigdl.orca.data.utils import ray_partitions_get_data_label, index_data, get_size
         from torch.utils.data import Dataset, DataLoader
@@ -329,10 +329,7 @@ class PyTorchRayEstimator(OrcaRayEstimator):
             remote_worker_stats = []
             if validation_data is None:
                 for shard, worker in zip(shards, self.remote_workers):
-                    params["data_creator"] = make_data_creator(
-                        shard,
-                        feature_cols,
-                        label_cols)
+                    params["data_creator"] = make_data_creator(shard, feature_cols, label_cols)
                     stats = worker.train_epochs.remote(**params)
                     remote_worker_stats.append(stats)
             else:
@@ -502,8 +499,6 @@ class PyTorchRayEstimator(OrcaRayEstimator):
                 torch_datashard = shard.to_torch(label_column=label_cols,
                                                  feature_columns=feature_cols,
                                                  batch_size=batch_size)
-                torch_datashard.generator_func = reload_raydataset_generator(
-                    torch_datashard.generator_func)
                 return torch_datashard
 
             remote_worker_stats = []

@@ -277,6 +277,7 @@ class PyTorchSparkEstimator(OrcaSparkEstimator):
         elif isinstance(data, DataLoader) or callable(data) or isinstance(data, types.FunctionType):
             if isinstance(data, types.FunctionType):
                 data = data(self.config, batch_size)
+            data.collate_fn = dataloader_collate_wrapper(data.collate_fn, recollate_fn)
             val_feature_set = FeatureSet.pytorch_dataloader(data)
             result = self.estimator.evaluate_minibatch(val_feature_set, self.metrics)
         else:
