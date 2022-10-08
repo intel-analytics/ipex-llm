@@ -279,27 +279,34 @@ The *Chronos* library makes it easy to build end-to-end **time series analysis**
 <details><summary>Show Chronos example</summary>
 <br/>
 
-You can train a time series model using _Chronos_ in 3 simple steps:
+You can train a time series forecaster using _Chronos_ in 3 simple steps:
 
 ```python
-# 1. Initialize Orca Context
-from bigdl.orca import init_orca_context
-init_orca_context(cluster_mode="yarn", cores=4, memory="10g", num_nodes=2, init_ray_on_spark=True)
+from bigdl.chronos.forecaster import TCNForecaster 
+from bigdl.chronos.data.repo_dataset import get_public_dataset
 
-# 2. Create `TSDataset` for your time series data
-from bigdl.chronos.data import TSDataset
-tsdata_train, tsdata_valid, tsdata_test\
-        = TSDataset.from_pandas(df, 
-                                dt_col="dt_col", 
-                                target_col="target_col", 
-                                ...)
+# 1. Process time series data using `TSDataset`
+tsdata_train, tsdata_val, tsdata_test = get_public_dataset(name='nyc_taxi')
+for tsdata in [tsdata_train, tsdata_val, tsdata_test]:
+    data.roll(lookback=100, horizon=1)
 
-# 3. Train time series model using `AutoTSEstimator`
+# 2. Create a `TCNForecaster` (automatically configured based on train_data)
+forecaster = TCNForecaster.from_tsdataset(train_data)
+
+# 3. Train the forecaster for prediction
+forecaster.fit(train_data)
+
+pred = forecaster.predict(test_data)
+```
+
+To apply AutoML, use `AutoTSEstimator` instead of normal forecasters.
+```python
+# Create and fit an `AutoTSEstimator`
 from bigdl.chronos.autots import AutoTSEstimator
-autotsest = AutoTSEstimator(model='lstm')
-ts_pipeline = autotsest.fit(data=tsdata_train,
-                            validation_data=tsdata_valid)
-ts_pipeline.predict(tsdata_test)
+autotsest = AutoTSEstimator(model="tcn", future_seq_len=10)
+
+tsppl = autotsest.fit(data=tsdata_train, validation_data=tsdata_val)
+pred = tsppl.predict(tsdata_test)
 ```
 
 </details>  
