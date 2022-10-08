@@ -135,8 +135,6 @@ df_item = df_item.drop('title', 'genres')
 df_feat = df.join(df_user, df.user == df_user.user_u, "inner")
 df_feat = df_feat.join(df_item, df_feat.item == df_item.item_i, "inner")
 df_feat = df_feat.drop('user_u', 'item_i')
-df.show()
-df_feat.show()
 
 from pyspark.sql import functions as F
 from pyspark.sql import types as T
