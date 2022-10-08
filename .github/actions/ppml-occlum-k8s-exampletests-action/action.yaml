@@ -41,7 +41,7 @@ runs:
         fi
 
         if [ $status_3_spark_sql -ne 0 ]; then
-          echo "################## start spark sqlasdf"
+          echo "################## start spark sql"
           echo "example.3 spark sql"
           bash run_spark_sql.sh
           if [ "`kubectl get pods | grep sparksql | awk '{print $1}'`" != "" ]; then
