@@ -321,8 +321,6 @@ class PyTorchRayEstimator(OrcaRayEstimator):
                     torch_datashard = shard.to_torch(label_column=label_cols,
                                                      feature_columns=feature_cols,
                                                      batch_size=batch_size)
-                    torch_datashard.generator_func = reload_raydataset_generator(
-                        torch_datashard.generator_func)
                     return torch_datashard
                 return data_creator
 

@@ -215,9 +215,6 @@ def get_model(config):
 def get_optimizer(model, config):
     return torch.optim.SGD(model.parameters(), lr=config.get("lr", 1e-2))
 
-def collate_list_input(batch):
-    feature, target = batch
-    return feature[0], feature[1], target
 
 class TestPytorchEstimator(TestCase):
     def setUp(self):
