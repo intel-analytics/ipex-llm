@@ -101,7 +101,7 @@ sudo apt-get install libgomp1
 Using BFloat16 mixed precision in PyTorch or PyTorch-Lightning training may be much slower than FP32.
 
 
-### ERROR: Could not build wheels for pycocotools, which is required to install pyproject.toml-based projects
+### `ERROR: Could not build wheels for pycocotools, which is required to install pyproject.toml-based projects`
 
 pycocotools is a dependency of Intel neural-compressor which is used for inference quantization in BigDL-Nano. This error is usually caused by GCC library not installed in system.  Just install gcc to resolve it:
 
@@ -109,7 +109,7 @@ pycocotools is a dependency of Intel neural-compressor which is used for inferen
 sudo apt-get install gcc
 ```
 
-### ValueError: After taking into account object store and redis memory usage, the amount of memory on this node available for tasks and actors is less than -75% of total.
+### `ValueError: After taking into account object store and redis memory usage, the amount of memory on this node available for tasks and actors is less than -75% of total.`
 
 When running ray applications, you need to set the `memory` and `object_store_memory` properly according to your system memory capacity. This error indicates you have used too large memory configurations and you need to decrease them. For example on a laptop with 8G memory, you may set the memory configurations as below:
 
