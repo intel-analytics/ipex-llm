@@ -17,7 +17,7 @@
 package com.intel.analytics.bigdl.ppml.fl.nn
 
 
-import com.intel.analytics.bigdl.dllib.nn.ckks.{CAddTable, FusedBCECriterion}
+import com.intel.analytics.bigdl.ppml.fl.nn.ckks.{CAddTable, FusedBCECriterion}
 import com.intel.analytics.bigdl.dllib.optim.{OptimMethod, ValidationMethod, ValidationResult}
 import com.intel.analytics.bigdl.dllib.utils.{Log4Error, T}
 import com.intel.analytics.bigdl.ppml.fl.common.FLPhase
