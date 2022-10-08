@@ -26,7 +26,6 @@ from pyspark.ml.evaluation import BinaryClassificationEvaluator, MulticlassClass
 
 # Please use 0.10.0 version for Spark3.2 and 0.9.5-13-d1b51517-SNAPSHOT version for Spark3.1
 
-model_dir = "./lightgbm"
 num_cols = ["enaging_user_follower_count", 'enaging_user_following_count',
             "engaged_with_user_follower_count", "engaged_with_user_following_count",
             "len_hashtags", "len_domains", "len_links"]
@@ -50,7 +49,7 @@ if __name__ == '__main__':
                         help='The driver core number.')
     parser.add_argument('--driver_memory', type=str, default="36g",
                         help='The driver memory.')
-    parser.add_argument('--model_dir', default='snapshot', type=str,
+    parser.add_argument('--model_dir', default='./lightgbm', type=str,
                         help='nativeModel directory name (default: nativeModel)')
     parser.add_argument('--data_dir', type=str, help='data directory')
 
@@ -156,6 +155,7 @@ if __name__ == '__main__':
 
                 predictions.unpersist(blocking=True)
 
+    model.saveModel(args.model_dir)
     end = time.time()
     print("training time: %.2f" % (end - preprocess))
     print(end - begin)
