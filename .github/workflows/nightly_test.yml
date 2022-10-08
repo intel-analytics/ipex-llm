@@ -580,7 +580,7 @@ jobs:
         runner-hosted-on: 'Shanghai'
 
   PPML-Occlum-k8s-ExampleTests:
-    if: ${{ github.event.schedule || github.event.inputs.artifact == 'PPML-Occlum-k8s-ExampleTests' || github.event.inputs.artifact == 'all' }}
+    #if: ${{ github.event.schedule || github.event.inputs.artifact == 'PPML-Occlum-k8s-ExampleTests' || github.event.inputs.artifact == 'all' }}
     runs-on: [self-hosted, Vilvarin]
 
     steps:
@@ -592,11 +592,11 @@ jobs:
       if: ${{ always() }}
       with:
         secret: ${{ secrets.GIST_SECRET}}
-        gist-id: 
+        gist-id: 0c2d950a4315443fd98ca73afb7c7f8c
         is-self-hosted-runner: true
-        file-name: PPML-Occlum-ExampleTests.json
+        file-name: PPML-Occlum-k8s-ExampleTests.json
         type: job
-        job-name: PPML-Occlum-ExampleTests
+        job-name: PPML-Occlum-k8s-ExampleTests
         runner-hosted-on: 'Shanghai'
 
 
