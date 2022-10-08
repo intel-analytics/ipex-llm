@@ -250,22 +250,72 @@ You can build distributed deep learning applications for Spark using *DLlib* Sca
 import com.intel.analytics.bigdl.dllib.NNContext
 val sc = NNContext.initNNContext()
 
-// 2. Define the Deep Learning model using Keras-style API in DLlib:
+// 2. Define the deep learning model using Keras-style API in DLlib:
+import com.intel.analytics.bigdl.dllib.keras.layers._
+import com.intel.analytics.bigdl.dllib.keras.Model
 val input = Input[Float](inputShape = Shape(10))  
 val dense = Dense[Float](12).inputs(input)  
 val output = Activation[Float]("softmax").inputs(dense)  
 val model = Model(input, output)
 
-// 3. Use `NNEstimator` to train/predict/evaluate the model using Spark Dataframe and ML pipeline APIs
-val trainingDF = spark.read.parquet("train_data")
+// 3. Use `NNEstimator` to train/predict/evaluate the model using Spark DataFrame and ML pipeline APIs
+import org.apache.spark.sql.SparkSession
+import org.apache.spark.ml.feature.MinMaxScaler
+import org.apache.spark.ml.Pipeline
+import com.intel.analytics.bigdl.dllib.nnframes.NNEstimator
+import com.intel.analytics.bigdl.dllib.nn.CrossEntropyCriterion
+import com.intel.analytics.bigdl.dllib.optim.Adam
+val spark = SparkSession.builder().getOrCreate()
+val trainDF = spark.read.parquet("train_data")
 val validationDF = spark.read.parquet("val_data")
 val scaler = new MinMaxScaler().setInputCol("in").setOutputCol("value")
 val estimator = NNEstimator(model, CrossEntropyCriterion())  
-        .setBatchSize(size).setOptimMethod(new Adam()).setMaxEpoch(epoch)
+        .setBatchSize(128).setOptimMethod(new Adam()).setMaxEpoch(5)
 val pipeline = new Pipeline().setStages(Array(scaler, estimator))
 
-val pipelineModel = pipeline.fit(trainingDF)  
+val pipelineModel = pipeline.fit(trainDF)  
 val predictions = pipelineModel.transform(validationDF)
+```
+
+</details>
+
+<details><summary>Show DLlib Python example</summary>
+<br/>
+
+Similarly, you can build distributed deep learning applications for Spark using *DLlib* Python APIs as follows:
+
+```python
+# 1. Call `init_nncontext` at the beginning of the code:
+from bigdl.dllib.nncontext import init_nncontext
+sc = init_nncontext()
+
+# 2. Define the deep learning model using Keras-style API in DLlib:
+from bigdl.dllib.keras.layers import Input, Dense, Activation
+from bigdl.dllib.keras.models import Model
+input = Input(shape=(10,))
+dense = Dense(12)(input)
+output = Activation("softmax")(dense)
+model = Model(input, output)
+
+# 3. Use `NNEstimator` to train/predict/evaluate the model using Spark DataFrame and ML pipeline APIs
+from pyspark.sql import SparkSession
+from pyspark.ml.feature import MinMaxScaler
+from pyspark.ml import Pipeline
+from bigdl.dllib.nnframes import NNEstimator
+from bigdl.dllib.nn.criterion import CrossEntropyCriterion
+from bigdl.dllib.optim.optimizer import Adam
+spark = SparkSession.builder.getOrCreate()
+train_df = spark.read.parquet("train_data")
+validation_df = spark.read.parquet("val_data")
+scaler = MinMaxScaler().setInputCol("in").setOutputCol("value")
+estimator = NNEstimator(model, CrossEntropyCriterion())\
+    .setBatchSize(128)\
+    .setOptimMethod(Adam())\
+    .setMaxEpoch(5)
+pipeline = Pipeline(stages=[scaler, estimator])
+
+pipelineModel = pipeline.fit(train_df)
+predictions = pipelineModel.transform(validation_df)
 ```
 
 </details>
