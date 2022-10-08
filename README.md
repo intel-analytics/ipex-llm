@@ -282,7 +282,7 @@ val predictions = pipelineModel.transform(validationDF)
 <details><summary>Show DLlib Python example</summary>
 <br/>
 
-Similarly, you can build distributed deep learning applications for Spark using *DLlib* Python APIs as follows:
+You can build distributed deep learning applications for Spark using *DLlib* Python APIs in 3 simple steps:
 
 ```python
 # 1. Call `init_nncontext` at the beginning of the code:
@@ -320,7 +320,7 @@ predictions = pipelineModel.transform(validation_df)
 
 </details>
 
-*See [NNframes](https://bigdl.readthedocs.io/en/latest/doc/DLlib/Overview/nnframes.html) and [Keras API](https://bigdl.readthedocs.io/en/latest/doc/DLlib/Overview/keras-api.html) user guides for more details.*
+*See DLlib [NNFrames](https://bigdl.readthedocs.io/en/latest/doc/DLlib/Overview/nnframes.html) and [Keras API](https://bigdl.readthedocs.io/en/latest/doc/DLlib/Overview/keras-api.html) user guides for more details.*
 
 ### Chronos
 
