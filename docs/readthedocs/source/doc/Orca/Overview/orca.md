@@ -13,7 +13,7 @@ pip install bigdl-orca
 ```
 
 When installing bigdl-orca with pip, you can specify the extras key `[ray]` to additionally install the additional dependencies
-essential for running [RayOnSpark](../../Ray/Overview/ray.md)
+essential for running [RayOnSpark](ray.md)
 ```bash
 pip install bigdl-orca[ray]
 ```
@@ -37,7 +37,7 @@ First, initialize [Orca Context](orca-context.md):
 from bigdl.orca import init_orca_context, OrcaContext
 
 # cluster_mode can be "local", "k8s" or "yarn"
-sc = init_orca_context(cluster_mode="local", cores=4, memory="10g", num_nodes=1) 
+sc = init_orca_context(cluster_mode="local", cores=4, memory="10g", num_nodes=1)
 ```
 
 Next, perform [data-parallel processing in Orca](data-parallel-processing.md) (supporting standard Spark Dataframes, TensorFlow Dataset, PyTorch DataLoader, Pandas, etc.):
@@ -47,7 +47,7 @@ from pyspark.sql.functions import array
 
 spark = OrcaContext.get_spark_session()
 df = spark.read.parquet(file_path)
-df = df.withColumn('user', array('user')) \  
+df = df.withColumn('user', array('user')) \
        .withColumn('item', array('item'))
 ```
 
@@ -57,20 +57,20 @@ Finally, use [sklearn-style Estimator APIs in Orca](distributed-training-inferen
 from tensorflow import keras
 from bigdl.orca.learn.tf.estimator import Estimator
 
-user = keras.layers.Input(shape=[1])  
-item = keras.layers.Input(shape=[1])  
-feat = keras.layers.concatenate([user, item], axis=1)  
-predictions = keras.layers.Dense(2, activation='softmax')(feat)  
-model = keras.models.Model(inputs=[user, item], outputs=predictions)  
-model.compile(optimizer='rmsprop',  
-              loss='sparse_categorical_crossentropy',  
+user = keras.layers.Input(shape=[1])
+item = keras.layers.Input(shape=[1])
+feat = keras.layers.concatenate([user, item], axis=1)
+predictions = keras.layers.Dense(2, activation='softmax')(feat)
+model = keras.models.Model(inputs=[user, item], outputs=predictions)
+model.compile(optimizer='rmsprop',
+              loss='sparse_categorical_crossentropy',
               metrics=['accuracy'])
 
-est = Estimator.from_keras(keras_model=model)  
-est.fit(data=df,  
-        batch_size=64,  
-        epochs=4,  
-        feature_cols=['user', 'item'],  
+est = Estimator.from_keras(keras_model=model)
+est.fit(data=df,
+        batch_size=64,
+        epochs=4,
+        feature_cols=['user', 'item'],
         label_cols=['label'])
 ```
 

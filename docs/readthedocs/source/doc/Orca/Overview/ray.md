@@ -2,9 +2,9 @@
 
 ---
 
-[Ray](https://github.com/ray-project/ray) is an open source distributed framework for emerging AI applications. 
-With the _**RayOnSpark**_ support packaged in [BigDL Orca](../../Orca/Overview/orca.md), 
-Users can seamlessly integrate Ray applications into the big data processing pipeline on the underlying Big Data cluster 
+[Ray](https://github.com/ray-project/ray) is an open source distributed framework for emerging AI applications.
+With the _**RayOnSpark**_ support packaged in [BigDL Orca](../Overview/orca.md),
+Users can seamlessly integrate Ray applications into the big data processing pipeline on the underlying Big Data cluster
 (such as [Hadoop/YARN](../../UserGuide/hadoop.md) or [K8s](../../UserGuide/k8s.md)).
 
 _**Note:** BigDL has been tested on Ray 1.9.2 and you are highly recommended to use this tested version._
@@ -12,8 +12,8 @@ _**Note:** BigDL has been tested on Ray 1.9.2 and you are highly recommended to 
 
 ### **1. Install**
 
-We recommend using [conda](https://docs.conda.io/projects/conda/en/latest/user-guide/install/) to prepare the Python environment. 
-When installing bigdl-orca with pip, you can specify the extras key `[ray]` to install the additional dependencies 
+We recommend using [conda](https://docs.conda.io/projects/conda/en/latest/user-guide/install/) to prepare the Python environment.
+When installing bigdl-orca with pip, you can specify the extras key `[ray]` to install the additional dependencies
 for running Ray (i.e. `ray==1.9.2`, `psutil`, `aiohttp==3.7.0`, `aioredis==1.1.0`, `setproctitle`, `hiredis==1.1.0`, `async-timeout==3.0.1`):
 
 ```bash
@@ -23,7 +23,7 @@ conda activate py37
 pip install bigdl-orca[ray]
 ```
 
-View [Python User Guide](../../UserGuide/python.html#install) and [Orca User Guide](../../Orca/Overview/orca.md) for more installation instructions.
+View [Python User Guide](../../UserGuide/python.html#install) and [Orca User Guide](../Overview/orca.md) for more installation instructions.
 
 ---
 ### **2. Initialize**
@@ -45,9 +45,9 @@ You can input the following RayOnSpark related arguments when you `init_orca_con
 - `extra_params`: The key value dict for extra options to launch ray. For example, `extra_params={"dashboard-port": "11281", "temp-dir": "/tmp/ray/"}`.
 - `include_webui`: Default is True for including web ui when starting ray.
 - `system_config`: The key value dict for overriding RayConfig defaults. Mainly for testing purposes. An example for system_config could be: `{"object_spilling_config":"{\"type\":\"filesystem\", \"params\":{\"directory_path\":\"/tmp/spill\"}}"}`.
-- `num_ray_nodes`: The number of ray processes to start across the cluster. For Spark local mode, you don't need to specify this value. 
+- `num_ray_nodes`: The number of ray processes to start across the cluster. For Spark local mode, you don't need to specify this value.
 For Spark cluster mode, it is default to be the number of Spark executors. If spark.executor.instances can't be detected in your SparkContext, you need to explicitly specify this. It is recommended that num_ray_nodes is not larger than the number of Spark executors to make sure there are enough resources in your cluster.
-- `ray_node_cpu_cores`: The number of available cores for each ray process. For Spark local mode, it is default to be the number of Spark local cores. 
+- `ray_node_cpu_cores`: The number of available cores for each ray process. For Spark local mode, it is default to be the number of Spark local cores.
 For Spark cluster mode, it is default to be the number of cores for each Spark executor. If spark.executor.cores or spark.cores.max can't be detected in your SparkContext, you need to explicitly specify this. It is recommended that ray_node_cpu_cores is not larger than the number of cores for each Spark executor to make sure there are enough resources in your cluster.
 
 By default, the Ray cluster would be launched using Spark barrier execution mode, you can turn it off via the configurations of `OrcaContext`:
@@ -58,7 +58,7 @@ from bigdl.orca import OrcaContext
 OrcaContext.barrier_mode = False
 ```
 
-View [Orca Context](../../Orca/Overview/orca-context.md) for more details.
+View [Orca Context](../Overview/orca-context.md) for more details.
 
 ---
 ### **3. Run**
@@ -72,7 +72,7 @@ View [Orca Context](../../Orca/Overview/orca-context.md) for more details.
   class Counter(object):
         def __init__(self):
             self.n = 0
-  
+
         def increment(self):
             self.n += 1
             return self.n
@@ -82,11 +82,11 @@ View [Orca Context](../../Orca/Overview/orca-context.md) for more details.
   print(ray.get([c.increment.remote() for c in counters]))
   ```
 
-- You can retrieve the information of the Ray cluster via [`OrcaContext`](../../Orca/Overview/orca-context.md):
+- You can retrieve the information of the Ray cluster via [`OrcaContext`](../Overview/orca-context.md):
 
   ```python
   from bigdl.orca import OrcaContext
-  
+
   ray_ctx = OrcaContext.get_ray_context()
   address_info = ray_ctx.address_info  # The dictionary information of the ray cluster, including node_ip_address, object_store_address, webui_url, etc.
   redis_address = ray_ctx.redis_address  # The redis address of the ray cluster.
@@ -96,7 +96,7 @@ View [Orca Context](../../Orca/Overview/orca-context.md) for more details.
 
   ```python
   from bigdl.orca import stop_orca_context
-  
+
   stop_orca_context()
   ```
 
