@@ -23,7 +23,8 @@ import com.intel.analytics.bigdl.dllib.nn._
 import com.intel.analytics.bigdl.dllib.optim.{Adagrad, Ftrl, SGD}
 import com.intel.analytics.bigdl.dllib.tensor.{Storage, Tensor}
 import com.intel.analytics.bigdl.dllib.utils.{Engine, RandomGenerator, T}
-import com.intel.analytics.bigdl.ppml.fl.nn.ckks.{Encryptor, FusedBCECriterion}
+import com.intel.analytics.bigdl.ppml.BigDLSpecHelper
+import com.intel.analytics.bigdl.ppml.fl.nn.ckks.{Encryptor, FusedBCECriterion, CAddTable => CkksAddTable}
 import org.apache.spark.ml.linalg.DenseVector
 import org.apache.spark.sql.{Row, SparkSession}
 import org.apache.spark.{SparkConf, SparkContext}
@@ -33,7 +34,28 @@ import java.util
 import scala.math.abs
 import scala.util.Random
 
-class CkksSpec extends FlatSpec {
+class CkksSpec extends BigDLSpecHelper {
+  "ckks add" should "return right result" in {
+
+    val ckks = new CKKS()
+    val secrets = ckks.createSecrets()
+    val encryptorPtr = ckks.createCkksEncryptor(secrets)
+    val ckksRunnerPtr = ckks.createCkksCommonInstance(secrets)
+
+    val input1 = Array(0.1f, 0.2f, 1.1f, -1f)
+    val input2 = Array(-0.1f, 1.2f, 2.1f, 1f)
+    val enInput1 = ckks.ckksEncrypt(encryptorPtr, input1)
+    val enInput2 = ckks.ckksEncrypt(encryptorPtr, input2)
+
+    val cadd = CkksAddTable(ckksRunnerPtr)
+
+    val enOutput = cadd.updateOutput(enInput1, enInput2)
+    val output = ckks.ckksDecrypt(encryptorPtr, enOutput)
+    (0 until 4).foreach{i =>
+      output(i) should be (input1(i) + input2(i) +- 1e-5f)
+    }
+  }
+
   "ckks layer" should "generate correct output and grad" in {
     val eps = 1e-12f
     val module = new Sigmoid[Float]
@@ -77,12 +99,15 @@ class CkksSpec extends FlatSpec {
     val enLoss = ckks.ckksDecrypt(encryptorPtr, loss2.storage().array)
     gradInput2.div(4)
     val loss = enLoss.slice(0, 4).sum / 4
-    println(loss + "  "  + exceptedLoss)
-    println(gradInput2)
-    println(exceptedGradInput)
+    loss should be (exceptedLoss +- 0.02f)
+    (1 to 2).foreach{i =>
+      (1 to 2).foreach{j =>
+        gradInput2.valueAt(i, j) should be (exceptedGradInput.valueAt(i, j) +- 0.02f)
+      }
+    }
   }
 
-  "ckks" should "generate correct output and grad" in {
+  "ckks jni api" should "generate correct output and grad" in {
     val eps = 1e-12f
     val module = new Sigmoid[Float]
     val criterion = new BCECriterion[Float]()
@@ -97,28 +122,11 @@ class CkksSpec extends FlatSpec {
     target(Array(2, 1)) = 0
     target(Array(2, 2)) = 1
 
-//    val manuO = new Array[Float](8)
-//    (0 until 8).foreach{i =>
-//      val in = input.storage().array()(i)
-//      val tar = target.storage().array()(i)
-//      manuO(i) = (- tar * math.log(in) + (tar - 1) * math.log(1 - in)).toFloat
-//    }
-
-//    val oo = target.clone().add(input.clone().log()) +
-//    target.clone().mul(-1).add(1).cmul(input.clone().mul(-1).add(1).log())
-
     val exceptedOutput = module.forward(input)
 
-    val ooo = target.clone().cmul(exceptedOutput.clone().add(eps).log()).add(
-      target.clone().mul(-1).add(1).cmul(exceptedOutput.clone().mul(-1).add(1).add(eps).log()))
-    ooo.mul(-1)
-    val eo = ooo.sum() / 4
-
-
     val exceptedLoss = criterion.forward(exceptedOutput, target)
-    val exceptedGradInput1 = criterion.backward(exceptedOutput, target)
-    val exceptedGradInput2 = module.backward(input, exceptedGradInput1)
-
+    val exceptedGradOutput = criterion.backward(exceptedOutput, target)
+    val exceptedGradInput = module.backward(input, exceptedGradOutput)
 
     val ckks = new CKKS()
     val secrets = ckks.createSecrets()
@@ -132,22 +140,26 @@ class CkksSpec extends FlatSpec {
     val gradInput2 = Tensor[Float](enGradInput2.slice(0, 4), Array(2, 2))
     gradInput2.div(4)
     val loss = enLoss.slice(0, 4).sum / 4
-    println(loss + "  "  + exceptedLoss)
-    println(gradInput2)
-    println()
+    loss should be (exceptedLoss +- 0.02f)
+    (1 to 2).foreach{i =>
+      (1 to 2).foreach{j =>
+        gradInput2.valueAt(i, j) should be (exceptedGradInput.valueAt(i, j) +- 0.02f)
+      }
+
+    }
   }
 
   "ckks forward" should "generate correct output" in {
     val module = new Sigmoid[Float]
-    val input = Tensor[Float](2, 2, 2)
-    input(Array(1, 1, 1)) = 0.063364277360961f
-    input(Array(1, 1, 2)) = 0.90631252736785f
-    input(Array(1, 2, 1)) = 0.22275671223179f
-    input(Array(1, 2, 2)) = 0.37516756891273f
-    input(Array(2, 1, 1)) = 0.99284988618456f
-    input(Array(2, 1, 2)) = 0.97488326719031f
-    input(Array(2, 2, 1)) = 0.94414822547697f
-    input(Array(2, 2, 2)) = 0.68123375508003f
+    val input = Tensor[Float](2, 4)
+    input(Array(1, 1)) = 0.063364277360961f
+    input(Array(1, 2)) = 0.90631252736785f
+    input(Array(1, 3)) = 0.22275671223179f
+    input(Array(1, 4)) = 0.37516756891273f
+    input(Array(2, 1)) = 0.99284988618456f
+    input(Array(2, 2)) = 0.97488326719031f
+    input(Array(2, 3)) = 0.94414822547697f
+    input(Array(2, 4)) = 0.68123375508003f
     val exceptedOutput = module.forward(input)
 
     val ckks = new CKKS()
@@ -157,13 +169,17 @@ class CkksSpec extends FlatSpec {
     val enInput = ckks.ckksEncrypt(encryptorPtr, input.storage().array())
     val enOutput = ckks.sigmoidForward(ckksRunnerPtr, enInput)
     val outputArray = ckks.ckksDecrypt(encryptorPtr, enOutput(0))
-    val output = Tensor[Float](outputArray.slice(0, 8), Array(2, 2, 2))
+    val output = Tensor[Float](outputArray.slice(0, 8), Array(2, 4))
     println(output)
     println(exceptedOutput)
+    (1 to 2).foreach{i =>
+      (1 to 4).foreach{j =>
+        output.valueAt(i, j) should be (exceptedOutput.valueAt(i, j) +- 0.03f)
+      }
+    }
   }
 
   "ckks train" should "converge" in {
-    Engine.init(1, 1, false)
     val random = new Random()
     random.setSeed(10)
     val featureLen = 10
@@ -176,7 +192,8 @@ class CkksSpec extends FlatSpec {
         Sample[Float](Tensor[Float](features, Array(featureLen)), label)
       }
     )
-    val dataset = DataSet.array(dummyData) -> SampleToMiniBatch[Float](bs)
+    val dataset = DataSet.array(dummyData) ->
+      SampleToMiniBatch[Float](bs, parallelizing = false)
 
     val module = Sequential[Float]()
     module.add(Linear[Float](10, 1))
@@ -385,7 +402,7 @@ class CkksSpec extends FlatSpec {
     val ckksRunnerPtr = ckks.createCkksCommonInstance(secrets)
 
     var a = 0
-    val epochNum = 40
+    val epochNum = 10
     val lossArray = new Array[Float](epochNum)
     val loss2Array = new Array[Float](epochNum)
     (0 until epochNum).foreach{epoch =>
