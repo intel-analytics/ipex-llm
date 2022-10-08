@@ -27,8 +27,7 @@ from bigdl.orca.learn.pytorch.training_operator import TrainingOperator
 from bigdl.orca.learn.pytorch.pytorch_ray_worker import PytorchRayWorker
 from bigdl.orca.learn.utils import maybe_dataframe_to_xshards, dataframe_to_xshards, \
     convert_predict_xshards_to_dataframe, update_predict_xshards, \
-    process_xshards_of_pandas_dataframe, reload_dataloader_creator, \
-    reload_raydataset_generator
+    process_xshards_of_pandas_dataframe, reload_dataloader_creator
 from bigdl.orca.ray import OrcaRayContext
 from bigdl.orca.learn.ray_estimator import Estimator as OrcaRayEstimator
 from bigdl.dllib.utils.file_utils import enable_multi_fs_load, enable_multi_fs_save
@@ -343,9 +342,7 @@ class PyTorchRayEstimator(OrcaRayEstimator):
                 val_shards = validation_data.split(n=self.num_workers,
                                                    locality_hints=self.remote_workers)
                 for shard, val_shard, worker in zip(shards, val_shards, self.num_workers):
-                    params["data_creator"] = make_data_creator(shard,
-                                                               feature_cols,
-                                                               label_cols)
+                    params["data_creator"] = make_data_creator(shard, feature_cols, label_cols)
 
                     params["validation_data_creator"] = make_data_creator(val_shard,
                                                                           feature_cols,
