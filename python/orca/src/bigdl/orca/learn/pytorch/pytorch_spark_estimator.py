@@ -17,7 +17,7 @@
 from bigdl.dllib.utils.file_utils import enable_multi_fs_load, enable_multi_fs_save
 from bigdl.orca.data.utils import row_to_sample, xshard_to_sample
 from bigdl.orca.learn.utils import convert_predict_rdd_to_dataframe, bigdl_metric_results_to_dict, \
-    process_xshards_of_pandas_dataframe, empty_recollate_fn
+    process_xshards_of_pandas_dataframe
 from bigdl.dllib.estimator.estimator import Estimator as SparkEstimator
 from bigdl.orca.learn.spark_estimator import Estimator as OrcaSparkEstimator
 from bigdl.orca.learn.optimizers import Optimizer as OrcaOptimizer, SGD
@@ -104,7 +104,7 @@ class PyTorchSparkEstimator(OrcaSparkEstimator):
             val_feature_set = FeatureSet.sample_rdd(validation_data.rdd.flatMap(xshard_to_sample))
         return train_feature_set, val_feature_set
 
-    def _handle_data_loader(self, data, validation_data, recollate_fn=empty_recollate_fn):
+    def _handle_data_loader(self, data, validation_data, recollate_fn=None):
         data.collate_fn = dataloader_collate_wrapper(data.collate_fn, recollate_fn)
         train_feature_set = FeatureSet.pytorch_dataloader(data, "", "")
         if validation_data is None:
@@ -120,7 +120,7 @@ class PyTorchSparkEstimator(OrcaSparkEstimator):
         return train_feature_set, val_feature_set
 
     def fit(self, data, epochs=1, batch_size=None, feature_cols=None, label_cols=None,
-            validation_data=None, checkpoint_trigger=None, recollate_fn=empty_recollate_fn):
+            validation_data=None, checkpoint_trigger=None, recollate_fn=None):
         """
         Train this torch model with train data.
 
@@ -184,7 +184,7 @@ class PyTorchSparkEstimator(OrcaSparkEstimator):
             if isinstance(data, types.FunctionType):
                 data, validation_data = data(self.config, batch_size), validation_data(self.config,
                                                                                        batch_size)
-            train_fset, val_fset = self._handle_data_loader(data, validation_data)
+            train_fset, val_fset = self._handle_data_loader(data, validation_data, recollate_fn)
             self.estimator.train_minibatch(train_fset, self.loss, end_trigger,
                                            checkpoint_trigger, val_fset, self.metrics)
         else:
@@ -232,7 +232,7 @@ class PyTorchSparkEstimator(OrcaSparkEstimator):
         return result
 
     def evaluate(self, data, batch_size=None, feature_cols=None, label_cols=None,
-                 validation_metrics=None):
+                 validation_metrics=None, recollate_fn=None):
         """
         Evaluate model.
 

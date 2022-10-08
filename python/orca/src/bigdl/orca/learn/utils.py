@@ -459,10 +459,6 @@ def make_data_creator(refs):
     return data_creator
 
 
-def empty_recollate_fn(batch):
-    return batch
-
-
 def collate_dataloader_wrapper(func, recollate_fn):
     import torch
 

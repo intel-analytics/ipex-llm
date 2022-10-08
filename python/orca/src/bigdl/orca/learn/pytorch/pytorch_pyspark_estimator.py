@@ -25,7 +25,7 @@ from bigdl.orca.learn.pytorch.training_operator import TrainingOperator
 from bigdl.orca.learn.pytorch.pytorch_pyspark_worker import PytorchPysparkWorker
 from bigdl.orca.learn.utils import maybe_dataframe_to_xshards, dataframe_to_xshards, \
     convert_predict_xshards_to_dataframe, make_data_creator, update_predict_xshards, \
-    reload_dataloader_creator, empty_recollate_fn
+    reload_dataloader_creator
 from bigdl.orca.data import SparkXShards
 from bigdl.orca import OrcaContext
 from bigdl.orca.learn.base_estimator import BaseEstimator
@@ -39,7 +39,7 @@ from bigdl.dllib.utils.utils import get_node_ip
 from bigdl.dllib.utils.log4Error import *
 
 
-def partition_to_creator(partition, collate_fn=empty_recollate_fn):
+def partition_to_creator(partition):
 
     def data_creator(config, batch_size):
         from bigdl.orca.data.utils import ray_partition_get_data_label, index_data, get_size
@@ -56,7 +56,7 @@ def partition_to_creator(partition, collate_fn=empty_recollate_fn):
             def __getitem__(self, i):
                 return index_data(self.x, i), index_data(self.y, i)
 
-        params = {"batch_size": batch_size, "shuffle": True, "collate_fn": collate_fn}
+        params = {"batch_size": batch_size, "shuffle": True}
         for arg in ["shuffle", "sampler", "batch_sampler", "num_workers", "collate_fn",
                     "pin_memory", "drop_last", "timeout", "worker_init_fn",
                     "multiprocessing_context"]:
@@ -187,7 +187,7 @@ class PyTorchPySparkEstimator(BaseEstimator):
             label_cols=None,
             validation_data=None,
             callbacks=[],
-            recollate_fn=empty_recollate_fn):
+            recollate_fn=None):
         """
         Trains a PyTorch model given training data for several epochs.
         Calls `TrainingOperator.train_epoch()` on N parallel workers simultaneously
@@ -254,8 +254,7 @@ class PyTorchPySparkEstimator(BaseEstimator):
             if validation_data is None:
                 def transform_func(iter, init_params, param):
                     partition_data = list(iter)
-                    param["data_creator"] = partition_to_creator(partition_data,
-                                                                 collate_fn=recollate_fn)
+                    param["data_creator"] = partition_to_creator(partition_data)
                     runner = PytorchPysparkWorker(**init_params)
                     result = runner.train_epochs(**param)
                     runner.shutdown()
@@ -270,10 +269,8 @@ class PyTorchPySparkEstimator(BaseEstimator):
                     data_tuple_list = list(iter)
                     data_list = [x for data_tuple in data_tuple_list for x in data_tuple[0]]
                     valid_list = [x for data_tuple in data_tuple_list for x in data_tuple[1]]
-                    param["data_creator"] = partition_to_creator(data_list,
-                                                                 collate_fn=recollate_fn)
-                    param["validation_data_creator"] = partition_to_creator(valid_list,
-                                                                            collate_fn=recollate_fn)
+                    param["data_creator"] = partition_to_creator(data_list)
+                    param["validation_data_creator"] = partition_to_creator(valid_list)
                     runner = PytorchPysparkWorker(**init_params)
                     result = runner.train_epochs(**param)
                     runner.shutdown()
@@ -419,7 +416,7 @@ class PyTorchPySparkEstimator(BaseEstimator):
                  info=None,
                  feature_cols=None,
                  label_cols=None,
-                 recollate_fn=empty_recollate_fn):
+                 recollate_fn=None):
         """
         Evaluates a PyTorch model given validation data.
         Note that only accuracy for classification with zero-based label is supported by
@@ -474,8 +471,7 @@ class PyTorchPySparkEstimator(BaseEstimator):
             # set train/validation data
             def transform_func(iter, init_param, param):
                 partition_data = list(iter)
-                param["data_creator"] = partition_to_creator(partition_data,
-                                                             collate_fn=recollate_fn)
+                param["data_creator"] = partition_to_creator(partition_data)
                 return PytorchPysparkWorker(**init_param).validate(**param)
 
             res = data.rdd.repartition(self.num_workers).barrier() \
