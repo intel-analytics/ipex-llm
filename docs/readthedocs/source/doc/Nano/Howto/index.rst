@@ -26,6 +26,32 @@ PyTorch Lightning
     Training/PyTorchLightning/pytorch_lightning_training_bf16
     Training/PyTorchLightning/pytorch_lightning_cv_data_pipeline
 
+TensorFlow
+~~~~~~~~~~~~~~~~~~~~~~~~~
+* `How to accelerate a TensorFlow Keras application on training workloads through multiple instances <Training/TensorFlow/accelerate_tensorflow_training_multi_instance.html>`_
+* |tensorflow_training_embedding_sparseadam_link|_
+
+.. |tensorflow_training_embedding_sparseadam_link| replace:: How to optimize your model with a sparse ``Embedding`` layer and ``SparseAdam`` optimizer
+.. _tensorflow_training_embedding_sparseadam_link: Training/TensorFlow/tensorflow_training_embedding_sparseadam.html
+
+.. toctree::
+    :maxdepth: 1
+    :hidden:
+
+    Training/TensorFlow/accelerate_tensorflow_training_multi_instance
+    Training/TensorFlow/tensorflow_training_embedding_sparseadam
+
+General
+~~~~~~~~~~~~~~~~~~~~~~~~~
+* `How to choose the number of processes for multi-instance training <Training/General/choose_num_processes_training.html>`_
+
+.. toctree::
+    :maxdepth: 1
+    :hidden:
+
+    Training/General/choose_num_processes_training
+
+
 Inference Optimization
 -------------------------
 

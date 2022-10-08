@@ -33,7 +33,6 @@ def check_avx512():
         subprocess.check_output(cmd, shell=True)
         return True
     except subprocess.CalledProcessError:
-        logging.warning("avx512 disabled, fall back to non-ipex mode.")
         return False
 
 

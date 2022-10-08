@@ -84,7 +84,7 @@ loaded = FGBoostRegression.load_model(model_path)
 df_test = pd.read_csv(data_test)
 result = loaded.predict(df_test, feature_columns=df_test.columns)
 ```
-## 3 Run FGBoost
+## 3 Run FGBoost Application
 FL Server is required before running any federated applications. Check [Start FL Server]() section for details.
 
 ### 3.1 Start FL Server in SGX

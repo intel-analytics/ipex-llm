@@ -13,8 +13,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-from torch.utils.data import Dataset, DataLoader
-import torch
+
+from bigdl.chronos.utils import LazyImport
+torch = LazyImport('torch')
 import tensorflow as tf
 import numpy as np
 from unittest import TestCase
@@ -38,26 +39,36 @@ def get_x_y(size):
     return x.astype(np.float32), y.astype(np.float32)
 
 
-class RandomDataset(Dataset):
-    def __init__(self, size=1000):
-        x, y = get_x_y(size)
-        self.x = torch.from_numpy(x).float()
-        self.y = torch.from_numpy(y).float()
+def gen_RandomDataset():
+    import torch
+    from torch.utils.data import Dataset
+    class RandomDataset(Dataset):
+        def __init__(self, size=1000):
+            x, y = get_x_y(size)
+            self.x = torch.from_numpy(x).float()
+            self.y = torch.from_numpy(y).float()
 
-    def __len__(self):
-        return self.x.shape[0]
+        def __len__(self):
+            return self.x.shape[0]
 
-    def __getitem__(self, idx):
-        return self.x[idx], self.y[idx]
+        def __getitem__(self, idx):
+            return self.x[idx], self.y[idx]
+    return RandomDataset
 
 
 def train_dataloader_creator(config):
+    import torch
+    from torch.utils.data import DataLoader
+    RandomDataset = gen_RandomDataset()
     return DataLoader(RandomDataset(size=1000),
                       batch_size=config["batch_size"],
                       shuffle=True)
 
 
 def valid_dataloader_creator(config):
+    import torch
+    from torch.utils.data import DataLoader
+    RandomDataset = gen_RandomDataset()
     return DataLoader(RandomDataset(size=400),
                       batch_size=config["batch_size"],
                       shuffle=True)

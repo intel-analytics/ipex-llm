@@ -51,6 +51,6 @@ bash ${RUN_SCRIPT_DIR}/release_default_linux_spark246.sh ${version} false ${uplo
 bash ${RUN_SCRIPT_DIR}/release_default_linux_spark246.sh ${version} true ${upload} true
 
 # Release bigdl-spark3
-bash ${RUN_SCRIPT_DIR}/release_default_linux_spark313.sh ${version} false ${upload} true
+bash ${RUN_SCRIPT_DIR}/release_default_linux_spark312.sh ${version} false ${upload} true
 
 # TODO: may need to upload all whls in the very end at the same time in case any build fails?

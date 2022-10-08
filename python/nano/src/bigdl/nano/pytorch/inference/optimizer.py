@@ -34,7 +34,9 @@ from bigdl.nano.deps.onnxruntime.onnxruntime_api import PytorchONNXRuntimeModel
 from bigdl.nano.deps.neural_compressor.inc_api import quantize as inc_quantize
 from bigdl.nano.utils.inference.pytorch.model import AcceleratedLightningModule
 from bigdl.nano.utils.inference.pytorch.model_utils import get_forward_args, get_input_example
+from bigdl.nano.utils.inference.pytorch.metrics import NanoMetric
 from bigdl.nano.pytorch.utils import TORCH_VERSION_LESS_1_10, save_model, load_model
+from torchmetrics import Metric
 import warnings
 # Filter out useless Userwarnings
 warnings.filterwarnings('ignore', category=UserWarning, module='pytorch_lightning')
@@ -139,8 +141,16 @@ class InferenceOptimizer:
                if you would like to use the accelerated model in an online service.
         :param validation_data: (optional) A pytorch dataloader for accuracy evaluation
                This is only needed when users care about the possible accuracy drop.
-        :param metric: (optional) A callable object takes prediction and target
-               and returns a accuracy value in this calling method `metric(pred, target)`
+        :param metric: (optional) A callable object which is used for calculating accuracy.
+               It supports two kinds of callable object:
+               1. A torchmetrics.Metric object or similar callable object which takes
+               prediction and target then returns an accuracy value in this calling
+               method `metric(pred, target)`. This requires data in validation_data
+               is composed of (input_data, target).
+               2. A callable object that takes model and validation_data (if
+               validation_data is not None) as input, and returns an accuracy value in
+               this calling method metric(model, data_loader) (or metric(model) if
+               validation_data is None).
         :param direction: (optional) A string that indicates the higher/lower
                better for the metric, "min" for the lower the better and "max" for the
                higher the better. Default value is "max".
@@ -151,7 +161,6 @@ class InferenceOptimizer:
         :param latency_sample_num: (optional) a int represents the number of repetitions
                to calculate the average latency. The default value is 100.
         '''
-        # TODO: may support accuracy_criterion
 
         # check if model is a nn.Module or inherited from a nn.Module
         invalidInputError(isinstance(model, nn.Module), "model should be a nn module.")
@@ -163,10 +172,11 @@ class InferenceOptimizer:
 
         self._direction: str = direction  # save direction as attr
         # record whether calculate accuracy in optimize by this attr
-        if validation_data is not None and metric is not None:
-            self._calculate_accuracy = True
-        else:
+        if validation_data is None and metric is None:
             self._calculate_accuracy = False
+        else:
+            # test whether accuracy calculation works later
+            self._calculate_accuracy = True
 
         default_threads: int = torch.get_num_threads()
         thread_num: int = default_threads if thread_num is None else int(thread_num)
@@ -286,9 +296,30 @@ class InferenceOptimizer:
                     if precision == "fp32" and method != "original":
                         result_map[method]["accuracy"] = "not recomputed"
                     else:
-                        result_map[method]["accuracy"] =\
-                            _accuracy_calculate_helper(acce_model,
-                                                       metric, validation_data)
+                        if method == "original":
+                            # test whether metric works
+                            try:
+                                result_map[method]["accuracy"] =\
+                                    _accuracy_calculate_helper(acce_model, metric,
+                                                               validation_data)
+                            except Exception as e:
+                                print(e)
+                                self._calculate_accuracy = False
+                                invalidInputError(
+                                    False,
+                                    "Your metric is incompatible with validation_data or don't "
+                                    "follow our given pattern. Our expected metric pattern is "
+                                    "as follows:\n1. a torchmetrics.Metric object\n2. a callable "
+                                    "object which takes prediction and target then returns a value"
+                                    " in this calling method `metric(pred, target)`\n3. a callable"
+                                    " object that takes model and validation_data (if "
+                                    "validation_data is not None) as input, and returns an accuracy"
+                                    " value in this calling method metric(model, data_loader) "
+                                    "(or metric(model) if validation_data is None).")
+                        else:
+                            result_map[method]["accuracy"] =\
+                                _accuracy_calculate_helper(acce_model, metric,
+                                                           validation_data)
                 else:
                     result_map[method]["accuracy"] = None
 
@@ -323,6 +354,9 @@ class InferenceOptimizer:
                        use_ipex: bool = None,
                        accuracy_criterion: float = None) -> Tuple[nn.Module, str]:
         '''
+        According to results of `optimize`, obtain the model with minimum latency under
+        specific restrictions or without restrictions.
+
         :param accelerator: (optional) Use accelerator 'None', 'onnxruntime',
                'openvino', 'jit', defaults to None. If not None, then will only find the
                model with this specific accelerator.
@@ -461,6 +495,8 @@ class InferenceOptimizer:
         :param sample_size: (optional) a int represents how many samples will be used for
                             Post-training Optimization Tools (POT) from OpenVINO toolkit,
                             only valid for accelerator='openvino'. default to 100.
+                            The larger the value, the more accurate the conversion,
+                            the lower the performance degradation, but the longer the time.
         :param logging: whether to log detailed information of model conversion, only valid when
                         accelerator='openvino', otherwise will be ignored. default: True.
         :param **export_kwargs: will be passed to torch.onnx.export function.
@@ -639,7 +675,7 @@ class InferenceOptimizer:
         invalidInputError(False, "Accelerator {} is invalid.".format(accelerator))
 
     @staticmethod
-    def save(model: pl.LightningModule, path):
+    def save(model: nn.Module, path):
         """
         Save the model to local file.
 
@@ -650,7 +686,7 @@ class InferenceOptimizer:
         save_model(model, path)
 
     @staticmethod
-    def load(path, model: pl.LightningModule = None):
+    def load(path, model: nn.Module = None):
         """
         Load a model from local.
 
@@ -739,8 +775,8 @@ def _throughput_calculate_helper(iterrun, baseline_time, func, *args):
         if i == 2 and end - start_time > 12 * baseline_time:
             return np.mean(time_list) * 1000, False
         # at least need 10 iters and try to control calculation
-        # time less than 2 min
-        if i + 1 >= min(iterrun, 10) and (end - start_time) > 2:
+        # time less than 10s
+        if i + 1 >= min(iterrun, 10) and (end - start_time) > 10:
             iterrun = i + 1
             break
     time_list.sort()
@@ -749,17 +785,38 @@ def _throughput_calculate_helper(iterrun, baseline_time, func, *args):
     return np.mean(time_list) * 1000, True
 
 
+def _signature_check(function):
+    '''
+    A quick helper to judge whether input function is following this calling
+    method `metric(pred, target)`.
+    '''
+    import inspect
+    sig = inspect.signature(function)
+    if len(sig.parameters.values()) != 2:
+        return False
+    param1_name = list(sig.parameters.values())[0].name
+    param2_name = list(sig.parameters.values())[1].name
+    if "pred" in param1_name and "target" in param2_name:
+        return True
+    return False
+
+
 def _accuracy_calculate_helper(model, metric, data):
     '''
     A quick helper to calculate accuracy
     '''
-    metric_list = []
-    sample_num = 0
-    with torch.no_grad():
-        for i, (data_input, target) in enumerate(data):
-            metric_list.append(metric(model(data_input), target).numpy() * data_input.shape[0])
-            sample_num += data_input.shape[0]
-    return np.sum(metric_list) / sample_num
+    if isinstance(metric, Metric) or _signature_check(metric) is True:
+        invalidInputError(data is not None,
+                          "Validation data can't be None when you pass a "
+                          "torchmetrics.Metric object or similar callable "
+                          "object which takes prediction and target as input.")
+        metric = NanoMetric(metric)
+        return metric(model, data)
+    else:
+        if data is None:
+            return metric(model)
+        else:
+            return metric(model, data)
 
 
 def _format_acceleration_option(method_name: str) -> str:

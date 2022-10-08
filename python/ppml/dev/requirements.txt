@@ -1,5 +1,5 @@
 pypandoc
-pyspark==3.1.3
+pyspark==3.1.2
 psutil
 numpy
 pandas

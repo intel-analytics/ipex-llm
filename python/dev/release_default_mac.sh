@@ -48,4 +48,4 @@ bash ${RUN_SCRIPT_DIR}/release_default_mac_spark246.sh ${version} false ${upload
 bash ${RUN_SCRIPT_DIR}/release_default_mac_spark246.sh ${version} true ${upload} true
 
 # Release bigdl-spark3
-bash ${RUN_SCRIPT_DIR}/release_default_mac_spark313.sh ${version} false ${upload} true
+bash ${RUN_SCRIPT_DIR}/release_default_mac_spark312.sh ${version} false ${upload} true

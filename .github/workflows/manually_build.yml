@@ -13,6 +13,7 @@ on:
         - bigdl-ppml-trusted-big-data-ml-python-gramine
         - bigdl-ppml-trusted-big-data-ml-python-graphene
         - bigdl-ppml-trusted-big-data-ml-scala-occlum
+        - bigdl-ppml-trusted-big-data-ml-scala-occlum-production
         - bigdl-ppml-trusted-realtime-ml-scala-graphene
         - bigdl-ppml-trusted-realtime-ml-scala-occlum
         - bigdl-ppml-kmsutil
@@ -61,6 +62,7 @@ jobs:
           --build-arg no_proxy=${NO_PROXY} \
           --build-arg SPARK_JAR_REPO_URL=${SPARK_JAR_REPO_URL} \
           -t ${image}:${TAG} -f ./Dockerfile .
+        sudo docker push ${image}:${TAG}
         sudo docker tag ${image}:${TAG} 10.239.45.10/arda/${image}:${TAG}
         sudo docker push 10.239.45.10/arda/${image}:${TAG}
         sudo docker rmi -f ${image}:${TAG}
@@ -95,6 +97,7 @@ jobs:
           --build-arg no_proxy=${NO_PROXY} \
           --build-arg SPARK_JAR_REPO_URL=${SPARK_JAR_REPO_URL} \
           -t ${image}:${TAG} -f ./Dockerfile .
+        sudo docker push ${image}:${TAG}
         sudo docker tag ${image}:${TAG} 10.239.45.10/arda/${image}:${TAG}
         sudo docker push 10.239.45.10/arda/${image}:${TAG}
         sudo docker rmi -f ${image}:${TAG}
@@ -130,9 +133,45 @@ jobs:
           --build-arg no_proxy=${NO_PROXY} \
           --build-arg SPARK_JAR_REPO_URL=${SPARK_JAR_REPO_URL} \
           -t ${image}:${TAG} -f ./Dockerfile .
+        sudo docker push ${image}:${TAG}
         docker tag ${image}:${TAG} 10.239.45.10/arda/${image}:${TAG}
         docker push 10.239.45.10/arda/${image}:${TAG}
         docker rmi -f ${image}:${TAG}
+
+  bigdl-ppml-trusted-big-data-ml-scala-occlum-production:
+    if: ${{ github.event.inputs.artifact == 'bigdl-ppml-trusted-big-data-ml-scala-occlum-production' || github.event.inputs.artifact == 'all' }}
+    runs-on: [ self-hosted, Shire ]
+
+    steps:
+      - uses: actions/checkout@v3
+      - name: docker login
+        run: |
+          docker login -u ${DOCKERHUB_USERNAME} -p ${DOCKERHUB_PASSWORD}
+      - name: bigdl-ppml-trusted-big-data-ml-scala-occlum-production
+        run: |
+          echo "########################################"
+          echo "####### big-data-ml-scala-occlum-production  ######"
+          echo "########################################"
+          cd ppml/trusted-big-data-ml/scala/docker-occlum/production
+          export image=intelanalytics/bigdl-ppml-trusted-big-data-ml-scala-occlum-production
+          pwd
+          docker build \
+            --no-cache=true \
+            --build-arg http_proxy=${HTTP_PROXY} \
+            --build-arg https_proxy=${HTTPS_PROXY} \
+            --build-arg HTTP_PROXY_HOST=${HTTP_PROXY_HOST_2} \
+            --build-arg HTTP_PROXY_PORT=${HTTP_PROXY_PORT_2} \
+            --build-arg HTTPS_PROXY_HOST=${HTTP_PROXY_HOST_2} \
+            --build-arg HTTPS_PROXY_PORT=${HTTP_PROXY_PORT_3} \
+            --build-arg JDK_VERSION=8u192 \
+            --build-arg JDK_URL=${JDK_URL} \
+            --build-arg no_proxy=${NO_PROXY} \
+            --build-arg SPARK_JAR_REPO_URL=${SPARK_JAR_REPO_URL} \
+            -t ${image}:${TAG} -f ./Dockerfile .
+          sudo docker push ${image}:${TAG}
+          docker tag ${image}:${TAG} 10.239.45.10/arda/${image}:${TAG}
+          docker push 10.239.45.10/arda/${image}:${TAG}
+          docker rmi -f ${image}:${TAG}
 
 
   bigdl-ppml-trusted-realtime-ml-scala-graphene:
@@ -165,6 +204,7 @@ jobs:
           --build-arg no_proxy=${NO_PROXY} \
           --build-arg SPARK_JAR_REPO_URL=${SPARK_JAR_REPO_URL} \
           -t ${image}:${TAG} -f ./Dockerfile .
+        docker push ${image}:${TAG}
         docker tag ${image}:${TAG} 10.239.45.10/arda/${image}:${TAG}
         docker push 10.239.45.10/arda/${image}:${TAG}
         docker rmi -f ${image}:${TAG}
@@ -200,6 +240,7 @@ jobs:
           --build-arg no_proxy=${NO_PROXY} \
           --build-arg SPARK_JAR_REPO_URL=${SPARK_JAR_REPO_URL} \
           -t ${image}:${TAG} -f ./Dockerfile .
+        sudo docker push ${image}:${TAG}
         docker tag ${image}:${TAG} 10.239.45.10/arda/${image}:${TAG}
         docker push 10.239.45.10/arda/${image}:${TAG}
         docker rmi -f ${image}:${TAG}
@@ -224,6 +265,7 @@ jobs:
           --build-arg https_proxy=${HTTPS_PROXY} \
           --build-arg JDK_URL=${JDK_URL} \
           -t $IMAGE:$TAG -f ./Dockerfile .
+        docker push ${image}:${TAG}
         docker tag ${IMAGE}:${TAG} 10.239.45.10/arda/${IMAGE}:${TAG}
         docker push 10.239.45.10/arda/${IMAGE}:${TAG}
         docker rmi -f ${IMAGE}:${TAG} 10.239.45.10/arda/${IMAGE}:${TAG}
@@ -247,6 +289,7 @@ jobs:
           --build-arg http_proxy=${HTTP_PROXY} \
           --build-arg https_proxy=${HTTPS_PROXY} \
           -t $IMAGE:$TAG -f ./Dockerfile .
+        docker push ${image}:${TAG}
         docker tag ${IMAGE}:${TAG} 10.239.45.10/arda/${IMAGE}:${TAG}
         docker push 10.239.45.10/arda/${IMAGE}:${TAG}
         docker rmi -f ${IMAGE}:${TAG} 10.239.45.10/arda/${IMAGE}:${TAG}
