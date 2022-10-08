@@ -20,6 +20,13 @@ WORKDIR /opt/work
 ARG DEBIAN_FRONTEND=noninteractive
 ENV TZ=Asia/Shanghai
 
+# model: select from pytorch, tensorflow, prophet, arima
+ARG model
+# auto_tuning: y (for yes) or n (for no)
+ARG auto_tuning
+# hardware: single or cluster
+ARG hardware
+
 ADD ./docker/chronos-nightly/install-python-env.sh /opt
 ADD ./python/chronos/colab-notebook /opt/work/colab-notebook
 RUN chmod a+x /opt/install-python-env.sh
@@ -39,7 +46,7 @@ RUN apt-get update --fix-missing && \
     ./Miniconda3-py37_4.12.0-Linux-x86_64.sh -b -f -p /usr/local && \
     rm Miniconda3-py37_4.12.0-Linux-x86_64.sh && \
 # python
-    /opt/install-python-env.sh
+    /opt/install-python-env.sh ${model} ${auto_tuning} ${hardware}
 
 RUN echo "source activate chronos" > ~/.bashrc
 RUN echo "export JAVA_HOME=/usr/lib/jvm/java-8-openjdk-amd64/" >> ~/.bashrc
