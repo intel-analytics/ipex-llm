@@ -6,7 +6,7 @@ subtrees:
       subtrees:
         - entries:
           - file: doc/GetStarted/quicktour
-            title: "Quick Tour"
+            title: "Common Use Cases"
             subtrees:
               - entries:
                 - file: doc/Orca/QuickStart/orca-pytorch-distributed-quickstart
@@ -20,6 +20,9 @@ subtrees:
               - entries:
                 - file: doc/UserGuide/python
                 - file: doc/UserGuide/scala
+          - file: doc/GetStarted/video
+          - file: doc/GetStarted/paper
+
 
   - entries:
     - file: doc/UserGuide/index
