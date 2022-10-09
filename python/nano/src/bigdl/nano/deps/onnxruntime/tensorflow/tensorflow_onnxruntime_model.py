@@ -36,7 +36,7 @@ class KerasONNXRuntimeModel(ONNXRuntimeModel, AcceleratedKerasModel):
 
         :param model: 1. Keras model to be converted to ONNXRuntime for inference
                       2. Path to ONNXRuntime saved model
-        :param input_sample: (a tuple or list of) tf.TensorSpec or numpy array defining
+        :param input_sample: a (tuple or list of) tf.TensorSpec or numpy array defining
             the shape/dtype of the input
         :param onnxruntime_session_options: will be passed to tf2onnx.convert.from_keras function
         """
