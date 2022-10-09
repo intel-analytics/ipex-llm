@@ -303,7 +303,12 @@ class Evaluator(object):
                None, indicates no output file is needed.
         :param **kwargs: other paramters will be passed to matplotlib.pyplot.
         '''
-        import matplotlib.pyplot as plt
+        try:
+            import matplotlib.pyplot as plt
+        except ImportError:
+            invalidInputError(False,
+                              "To enable visualization, you need to install matplotlib by:\n"
+                              "\t\t pip install matplotlib\n")
 
         # shape check
         if std is not None:
@@ -335,7 +340,7 @@ class Evaluator(object):
                     except e:
                         # nothing to plot, skip following grids
                         continue
-                ax = plt.subplot(row_num*100 + col_num*10 + iter_num)
+                ax = plt.subplot(row_num * 100 + col_num * 10 + iter_num)
                 ax.plot(y_index, y[instance_index, :, feature_index], color="royalblue")
                 if ground_truth is not None:
                     ax.plot(y_index, ground_truth[instance_index, :, feature_index],
@@ -344,21 +349,24 @@ class Evaluator(object):
                     ax.plot(x_index, x[instance_index, :, feature_index], color="black")
                     ax.plot([x_index[-1], y_index[0]],
                             np.array([x[instance_index, -1, feature_index],
-                                    y[instance_index, 0, feature_index]]),
+                                      y[instance_index, 0, feature_index]]),
                             color="royalblue")
                     if ground_truth is not None:
                         ax.plot([x_index[-1], y_index[0]],
                                 np.array([x[instance_index, -1, feature_index],
-                                        ground_truth[instance_index, 0, feature_index]]),
+                                          ground_truth[instance_index, 0, feature_index]]),
                                 color="limegreen")
                 if std is not None:
                     import scipy.stats
                     ppf_value = scipy.stats.norm.ppf(prediction_interval)
                     ax.fill_between(y_index,
-                                    y[instance_index, :, feature_index] - \
-                                        std[instance_index, :, feature_index]*ppf_value,
-                                    y[instance_index, :, feature_index] + \
-                                        std[instance_index, :, feature_index]*ppf_value, alpha=0.2)
+                                    y[instance_index, :,
+                                      feature_index] - std[instance_index, :,
+                                                           feature_index] * ppf_value,
+                                    y[instance_index, :,
+                                      feature_index] + std[instance_index, :,
+                                                           feature_index] * ppf_value,
+                                    alpha=0.2)
                 if ground_truth is not None:
                     ax.legend(["prediction", "ground truth"])
                 else:
