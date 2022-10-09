@@ -27,7 +27,7 @@ from ..core.onnxruntime_model import ONNXRuntimeModel
 
 class KerasONNXRuntimeModel(ONNXRuntimeModel, AcceleratedKerasModel):
     '''
-        This is the accelerated model for pytorch and onnxruntime.
+        This is the accelerated model for tensorflow and onnxruntime.
     '''
     def __init__(self, model, input_sample, onnxruntime_session_options=None,
                  **export_kwargs):

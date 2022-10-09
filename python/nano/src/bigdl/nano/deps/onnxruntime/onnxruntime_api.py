@@ -21,7 +21,7 @@ def PytorchONNXRuntimeModel(model, input_sample=None,
     """
         Create a ONNX Runtime model from pytorch.
 
-        :param model: 1. Pytorch model to be converted to ONNXRuntime for inference
+        :param model: 1. Pytorch model to be converted to ONNXRuntime for inference.
                       2. Path to ONNXRuntime saved model.
         :param input_sample: A set of inputs for trace, defaults to None if you have trace before or
                              model is a LightningModule with any dataloader attached,
