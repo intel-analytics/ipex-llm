@@ -1,0 +1,11 @@
+# These are mirrored in python/orca/src/setup.py and python/dllib/src/setup.py 
+# as install_requires, which is what the users of the orca package will install.
+#
+# In short, if you change it here, PLEASE also change it in setup.py.
+
+packaging
+filelock
+pyzmq
+numpy>=1.19.5
+conda-pack==0.3.1
+six>=1.10.0
