@@ -4,6 +4,9 @@ export HTTPS_PROXY_HOST=your_https_proxy_host
 export HTTPS_PROXY_PORT=your_https_proxy_port
 export JDK_URL=http://your-http-url-to-download-jdk
 export SPARK_JAR_REPO_URL=http://your_spark_jar_repo_url
+export LOCAL_IP=your_local_ip
+export BIGDL_IMAGE_NAME=bigdl-ppml-trusted-big-data-ml-python-gramine-base
+export BIGDL_IMAGE_VERSION=2.1.0-SNAPSHOT
 
 Proxy_Modified="sudo docker build \
     --build-arg http_proxy=http://${HTTP_PROXY_HOST}:${HTTP_PROXY_PORT} \
@@ -15,15 +18,15 @@ Proxy_Modified="sudo docker build \
     --build-arg JDK_VERSION=8u192 \
     --build-arg JDK_URL=${JDK_URL} \
     --build-arg SPARK_JAR_REPO_URL=${SPARK_JAR_REPO_URL} \
-    --build-arg no_proxy=x.x.x.x \
-    -t intelanalytics/bigdl-ppml-trusted-big-data-ml-python-gramine:2.1.0-SNAPSHOT -f ./Dockerfile ."
+    --build-arg no_proxy=${LOCAL_IP} \
+    -t ${BIGDL_IMAGE_NAME}:${BIGDL_IMAGE_VERSION} -f ./Dockerfile ."
 
 No_Proxy_Modified="sudo docker build \
     --build-arg JDK_VERSION=8u192 \
     --build-arg JDK_URL=${JDK_URL} \
     --build-arg SPARK_JAR_REPO_URL=${SPARK_JAR_REPO_URL} \
-    --build-arg no_proxy=x.x.x.x \
-    -t intelanalytics/bigdl-ppml-trusted-big-data-ml-python-gramine:2.1.0-SNAPSHOT -f ./Dockerfile ."
+    --build-arg no_proxy=${LOCAL_IP} \
+    -t ${BIGDL_IMAGE_NAME}:${BIGDL_IMAGE_VERSION} -f ./Dockerfile ."
 
 if [[ "$JDK_URL" == "http://your-http-url-to-download-jdk" ]] || [[ "$SPARK_JAR_REPO_URL" == "http://your_spark_jar_repo_url" ]]
 then
@@ -31,10 +34,9 @@ then
 else
     if [[ "$HTTP_PROXY_HOST" == "your_http_proxy_host" ]] || [[ "$HTTP_PROXY_PORT" == "your_http_proxy_port" ]] || [[ "$HTTPS_PROXY_HOST" == "your_https_proxy_host" ]] || [[ "$HTTPS_PROXY_PORT" == "your_https_proxy_port" ]]
     then
-        echo "If your environment don't need to set proxy, please ignore this notice information; if your environment need to set proxy, please delet the image just created and modify the proxy in the script, then rerun this script."
-        $No_Proxy_Modified
-        echo "If your environment don't need to set proxy, please ignore this notice information; if your environment need to set proxy, please delet the image just created and modify the proxy in the script, then rerun this script."
+       echo "If your environment don't need to set proxy, please ignore this notice information; if your environment need to set proxy, please delet the image just created and modify the proxy in the script, then rerun this script."
+       $No_Proxy_Modified
     else
-        $Proxy_Modified
+       $Proxy_Modified
     fi
 fi

@@ -8,16 +8,14 @@ cd /ppml/trusted-big-data-ml
 
 if [ $status_5_local_spark_basic_sql -ne 0 ]; then
 echo "example.5 local spark, Basic SQL"
-./clean.sh
-gramine-argv-serializer bash -c "export PYSPARK_PYTHON=/usr/bin/python && \
+export spark_commnd="export PYSPARK_PYTHON=/usr/bin/python && \
   /opt/jdk8/bin/java \
   -cp '/ppml/trusted-big-data-ml/work/spark-3.1.2/conf/:/ppml/trusted-big-data-ml/work/spark-3.1.2/jars/*' \
   -Xmx1g org.apache.spark.deploy.SparkSubmit \
   --master 'local[4]' \
   --conf spark.python.use.daemon=false \
   --conf spark.python.worker.reuse=false \
-  /ppml/trusted-big-data-ml/work/spark-3.1.2/examples/src/main/python/sql/basic.py" > secured_argvs
-./init.sh
+  /ppml/trusted-big-data-ml/work/spark-3.1.2/examples/src/main/python/sql/basic.py"
 gramine-sgx bash 2>&1 | tee test-sql-basic-sgx.log && \
   cat test-sql-basic-sgx.log | egrep '\+\-|Name:' -A10
 status_5_local_spark_basic_sql=$(echo $?)
@@ -25,8 +23,7 @@ fi
 
 if [ $status_6_local_spark_arrow -ne 0 ]; then
 echo "example.6 local spark, Arrow"
-./clean.sh
-gramine-argv-serializer bash -c "export PYSPARK_PYTHON=/usr/bin/python && \
+export spark_commnd="export PYSPARK_PYTHON=/usr/bin/python && \
   export ARROW_PRE_0_15_IPC_FORMAT=0 && \
   /opt/jdk8/bin/java \
   -cp '/ppml/trusted-big-data-ml/work/spark-3.1.2/conf/:/ppml/trusted-big-data-ml/work/spark-3.1.2/jars/*' \
@@ -37,16 +34,14 @@ gramine-argv-serializer bash -c "export PYSPARK_PYTHON=/usr/bin/python && \
   --conf spark.sql.execution.arrow.enabled=true \
   --conf spark.driver.memory=2g \
   --executor-memory 2g \
-  /ppml/trusted-big-data-ml/work/spark-3.1.2/examples/src/main/python/sql/arrow.py" > secured_argvs
-./init.sh
+  /ppml/trusted-big-data-ml/work/spark-3.1.2/examples/src/main/python/sql/arrow.py"
 gramine-sgx bash 2>&1 | tee test-sql-arrow-sgx.log
 status_6_local_spark_arrow=$(echo $?)
 fi
 
 if [ $status_7_local_spark_hive -ne 0 ]; then
 echo "example.7 local spark, Hive"
-./clean.sh
-gramine-argv-serializer bash -c "export PYSPARK_PYTHON=/usr/bin/python && \
+export spark_commnd="export PYSPARK_PYTHON=/usr/bin/python && \
   /opt/jdk8/bin/java \
   -cp '/ppml/trusted-big-data-ml/work/spark-3.1.2/conf/:/ppml/trusted-big-data-ml/work/spark-3.1.2/jars/*' \
   -Xmx2g org.apache.spark.deploy.SparkSubmit \
@@ -56,8 +51,7 @@ gramine-argv-serializer bash -c "export PYSPARK_PYTHON=/usr/bin/python && \
   --conf spark.driver.memory=2g \
   --conf spark.sql.broadcastTimeout=30000 \
   --executor-memory 2g \
-  /ppml/trusted-big-data-ml/work/spark-3.1.2/examples/src/main/python/sql/hive.py" > secured_argvs
-./init.sh
+  /ppml/trusted-big-data-ml/work/spark-3.1.2/examples/src/main/python/sql/hive.py"
 gramine-sgx bash 2>&1 | tee test-sql-hive-sgx.log
 status_7_local_spark_hive=$(echo $?)
 fi

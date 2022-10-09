@@ -13,23 +13,20 @@ status_8_scala_sql_SparkHiveExample=0
 LOCAL_IP=$LOCAL_IP
 
 if [ $status_2_scala_sql_example -ne 0 ]; then
-./clean.sh
-gramine-argv-serializer bash -c "/opt/jdk8/bin/java \
+export spark_commnd="/opt/jdk8/bin/java \
   -cp '/ppml/trusted-big-data-ml/work/spark-3.1.2/conf/:/ppml/trusted-big-data-ml/work/spark-3.1.2/jars/*' \
   -Xmx10g \
   -XX:ActiveProcessorCount=24 \
   org.apache.spark.deploy.SparkSubmit \
   --master 'local[4]' \
   --class org.apache.spark.examples.sql.SparkSQLExample \
-  /ppml/trusted-big-data-ml/work/spark-3.1.2/examples/jars/spark-examples_2.12-3.1.2.jar" > secured_argvs
-./init.sh
+  /ppml/trusted-big-data-ml/work/spark-3.1.2/examples/jars/spark-examples_2.12-3.1.2.jar"
 gramine-sgx bash 2>&1 | tee test-scala-spark-sql-example-sgx.log
 fi
 status_2_scala_sql_example=$(echo $?)
 
 if [ $status_3_scala_sql_RDDRelation -ne 0 ]; then
-./clean.sh
-gramine-argv-serializer bash -c "rm -rf pair.parquet && \
+export spark_commnd="rm -rf pair.parquet && \
     /opt/jdk8/bin/java \
     -cp '/ppml/trusted-big-data-ml/work/spark-3.1.2/conf/:/ppml/trusted-big-data-ml/work/spark-3.1.2/jars/*' \
     -Xmx10g \
@@ -37,15 +34,13 @@ gramine-argv-serializer bash -c "rm -rf pair.parquet && \
     org.apache.spark.deploy.SparkSubmit \
     --master 'local[4]' \
     --class org.apache.spark.examples.sql.RDDRelation \
-    /ppml/trusted-big-data-ml/work/spark-3.1.2/examples/jars/spark-examples_2.12-3.1.2.jar" > secured_argvs
-./init.sh
+    /ppml/trusted-big-data-ml/work/spark-3.1.2/examples/jars/spark-examples_2.12-3.1.2.jar"
 gramine-sgx bash 2>&1 | tee test-scala-spark-sql-RDDRelation-sgx.log
 fi
 status_3_scala_sql_RDDRelation=$(echo $?)
 
 if [ $status_4_scala_sql_SimpleTypedAggregator -ne 0 ]; then
-./clean.sh
-gramine-argv-serializer bash -c "rm -rf pair.parquet && \
+export spark_commnd="rm -rf pair.parquet && \
   /opt/jdk8/bin/java \
   -cp '/ppml/trusted-big-data-ml/work/spark-3.1.2/conf/:/ppml/trusted-big-data-ml/work/spark-3.1.2/jars/*' \
   -Xmx10g \
@@ -53,15 +48,13 @@ gramine-argv-serializer bash -c "rm -rf pair.parquet && \
   org.apache.spark.deploy.SparkSubmit \
   --master 'local[4]' \
   --class org.apache.spark.examples.sql.SimpleTypedAggregator \
-  /ppml/trusted-big-data-ml/work/spark-3.1.2/examples/jars/spark-examples_2.12-3.1.2.jar" > secured_argvs
-./init.sh
+  /ppml/trusted-big-data-ml/work/spark-3.1.2/examples/jars/spark-examples_2.12-3.1.2.jar"
 gramine-sgx bash 2>&1 | tee test-scala-spark-sql-SimpleTypedAggregator-sgx.log
 fi
 status_4_scala_sql_SimpleTypedAggregator=$(echo $?)
 
 if [ $status_5_scala_sql_UserDefinedScalar -ne 0 ]; then
-./clean.sh
-gramine-argv-serializer bash -c "rm -rf pair.parquet && \
+export spark_commnd="rm -rf pair.parquet && \
   /opt/jdk8/bin/java \
   -cp '/ppml/trusted-big-data-ml/work/spark-3.1.2/conf/:/ppml/trusted-big-data-ml/work/spark-3.1.2/jars/*' \
   -Xmx10g \
@@ -69,15 +62,13 @@ gramine-argv-serializer bash -c "rm -rf pair.parquet && \
   org.apache.spark.deploy.SparkSubmit \
   --master 'local[4]' \
   --class org.apache.spark.examples.sql.UserDefinedScalar \
-  /ppml/trusted-big-data-ml/work/spark-3.1.2/examples/jars/spark-examples_2.12-3.1.2.jar" > secured_argvs
-./init.sh
+  /ppml/trusted-big-data-ml/work/spark-3.1.2/examples/jars/spark-examples_2.12-3.1.2.jar"
 gramine-sgx bash 2>&1 | tee test-scala-spark-sql-UserDefinedScalar-sgx.log
 fi
 status_5_scala_sql_UserDefinedScalar=$(echo $?)
 
 if [ $status_6_scala_sql_UserDefinedTypedAggregation -ne 0 ]; then
-./clean.sh
-gramine-argv-serializer bash -c "rm -rf pair.parquet && \
+export spark_commnd="rm -rf pair.parquet && \
   /opt/jdk8/bin/java \
   -cp '/ppml/trusted-big-data-ml/work/spark-3.1.2/conf/:/ppml/trusted-big-data-ml/work/spark-3.1.2/jars/*' \
   -Xmx10g \
@@ -85,15 +76,13 @@ gramine-argv-serializer bash -c "rm -rf pair.parquet && \
   org.apache.spark.deploy.SparkSubmit \
   --master 'local[4]' \
   --class org.apache.spark.examples.sql.UserDefinedTypedAggregation \
-  /ppml/trusted-big-data-ml/work/spark-3.1.2/examples/jars/spark-examples_2.12-3.1.2.jar" > secured_argvs
-./init.sh
+  /ppml/trusted-big-data-ml/work/spark-3.1.2/examples/jars/spark-examples_2.12-3.1.2.jar"
 gramine-sgx bash 2>&1 | tee test-scala-spark-sql-UserDefinedTypedAggregation-sgx.log
 fi
 status_6_scala_sql_UserDefinedTypedAggregation=$(echo $?)
 
 if [ $status_7_scala_sql_UserDefinedUntypedAggregation -ne 0 ]; then
-./clean.sh
-gramine-argv-serializer bash -c "rm -rf pair.parquet && \
+export spark_commnd="rm -rf pair.parquet && \
   /opt/jdk8/bin/java \
   -cp '/ppml/trusted-big-data-ml/work/spark-3.1.2/conf/:/ppml/trusted-big-data-ml/work/spark-3.1.2/jars/*' \
   -Xmx10g \
@@ -101,8 +90,7 @@ gramine-argv-serializer bash -c "rm -rf pair.parquet && \
   org.apache.spark.deploy.SparkSubmit \
   --master 'local[4]' \
   --class org.apache.spark.examples.sql.UserDefinedUntypedAggregation \
-  /ppml/trusted-big-data-ml/work/spark-3.1.2/examples/jars/spark-examples_2.12-3.1.2.jar" > secured_argvs
-./init.sh
+  /ppml/trusted-big-data-ml/work/spark-3.1.2/examples/jars/spark-examples_2.12-3.1.2.jar"
 gramine-sgx bash 2>&1 | tee test-scala-spark-sql-UserDefinedUntypedAggregation-sgx.log
 fi
 status_7_scala_sql_UserDefinedUntypedAggregation=$(echo $?)

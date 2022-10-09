@@ -95,9 +95,12 @@ To enable attestation in BigDL PPML, you need to ensure you have correct access 
 
 ### 3.2 Attestation Configurations
 
-1. Set APP_ID and APP_KEY in [kms-secret.yaml](https://github.com/intel-analytics/BigDL/blob/main/ppml/trusted-big-data-ml/python/docker-gramine/kubernetes/kms-secret.yaml). Apply this secret.
+1. Base64 encode and fill APP_ID and APP_KEY in [kms-secret.yaml](https://github.com/intel-analytics/BigDL/blob/main/ppml/trusted-big-data-ml/python/docker-gramine/kubernetes/kms-secret.yaml). Apply this secret. Or create the secret directly through `kubectl` with the below command:
+``` bash
+kubectl create secret generic kms-secret --from-literal=app_id=your-kms-app-id --from-literal=app_key=your-kms-app-key # app-id and app-key are plaintext here
+```
 2. Mount APP_ID and APP_KEY in [spark-driver-template.yaml](https://github.com/intel-analytics/BigDL/blob/main/ppml/trusted-big-data-ml/python/docker-gramine/spark-driver-template.yaml#L13) and [spark-executor-template.yaml](https://github.com/intel-analytics/BigDL/blob/main/ppml/trusted-big-data-ml/python/docker-gramine/spark-executor-template.yaml#L13).
-3. Change ATTESTATION to `true` in [spark-driver-template.yaml](https://github.com/intel-analytics/BigDL/blob/main/ppml/trusted-big-data-ml/python/docker-gramine/spark-driver-template.yaml#L10) and [spark-executor-template.yaml](https://github.com/intel-analytics/BigDL/blob/main/ppml/trusted-big-data-ml/python/docker-gramine/spark-executor-template.yaml#L10), and set ATTESTATION_URL, e.g., `http://192.168.0.8:9000`.
+3. Change ATTESTATION to `true` in [spark-driver-template.yaml](https://github.com/intel-analytics/BigDL/blob/main/ppml/trusted-big-data-ml/python/docker-gramine/spark-driver-template.yaml#L10) and [spark-executor-template.yaml](https://github.com/intel-analytics/BigDL/blob/main/ppml/trusted-big-data-ml/python/docker-gramine/spark-executor-template.yaml#L10), and set ATTESTATION_URL, e.g., `192.168.0.8:9000`.
 
 ### 3.2 Test with examples
 

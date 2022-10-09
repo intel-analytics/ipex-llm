@@ -3,9 +3,15 @@ loader.entrypoint = "file:{{ gramine.libos }}"
 loader.pal_internal_mem_size = "512M"
 loader.log_level = "{{ log_level }}"
 
+loader.insecure__use_host_env = true
+loader.env.LD_PRELOAD  = ""
+
 #loader.insecure__use_cmdline_argv = true
 loader.insecure_disable_aslr = true
 loader.argv_src_file = "file:/ppml/trusted-big-data-ml/secured_argvs"
+
+sgx.remote_attestation = true
+sgx.ra_client_spid = ""
 
 sgx.allow_file_creation = true
 sgx.debug = false
@@ -23,7 +29,6 @@ loader.env.PYTHONHOME = "/usr/lib/python3.7"
 loader.env.PYTHONPATH = "/usr/lib/python3.7:/usr/lib/python3.7/lib-dynload:/usr/local/lib/python3.7/dist-packages:/usr/lib/python3/dist-packages"
 loader.env.JAVA_HOME = "{{ jdk_home }}"
 loader.env.JAVA_OPTS = "'-Djava.library.path={{ jdk_home }}/lib -Dsun.boot.library.path={{ jdk_home }}/lib'"
-loader.env.SPARK_LOCAL_IP = "{{ spark_local_ip }}"
 loader.env.SPARK_USER = "{{ spark_user }}"
 loader.env.SPARK_SCALA_VERSION = "2.12"
 loader.env.SPARK_HOME = "{{ spark_home }}"
