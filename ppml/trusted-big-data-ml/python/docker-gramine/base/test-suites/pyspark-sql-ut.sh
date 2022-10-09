@@ -11,14 +11,12 @@ for suite in "${pysparkSqlSuites[@]}"
 do
     while true
     do
-        gramine-argv-serializer bash -c "/opt/jdk8/bin/java -cp \
+        export spark_commnd="/opt/jdk8/bin/java -cp \
                                         '/ppml/trusted-big-data-ml/work/spark-3.1.2/conf/:/ppml/trusted-big-data-ml/work/spark-3.1.2/jars/*' \
                                         -Xmx1g org.apache.spark.deploy.SparkSubmit --master 'local[4]' --conf spark.network.timeout=10000000 \
                                         --conf spark.executor.heartbeatInterval=10000000 --conf spark.python.use.daemon=false \
                                         --conf spark.python.worker.reuse=false \
-                                        /ppml/trusted-big-data-ml/work/spark-3.1.2/python/pyspark/sql/tests/$suite" \
-                                        > secured_argvs
-        ./init.sh
+                                        /ppml/trusted-big-data-ml/work/spark-3.1.2/python/pyspark/sql/tests/$suite"
         gramine-sgx bash 2>&1 | tee /ppml/trusted-big-data-ml/logs/pyspark/sql/$suite.log
         echo "##########$suite Test:"
         if [ -n "$(grep "FAILED" /ppml/trusted-big-data-ml/logs/pyspark/sql/$suite.log -H -o)" ]
