@@ -274,13 +274,14 @@ class Evaluator(object):
              ground_truth=None,
              x=None,
              feature_index=0,
-             layout=(4,2),
+             instance_index=None,
+             layout=(1, 1),
              prediction_interval=0.95,
-             figsize=(16,16),
+             figsize=(16, 16),
              output_file=None,
              **kwargs):
         '''
-        `Evalutor.plot` function helps users to visualize their forecasting result.
+        `Evaluator.plot` function helps users to visualize their forecasting result.
 
         :param y: predict result, a 3-dim numpy ndarray with shape represented as
                (batch_size, predict_length, feature_dim).
@@ -292,12 +293,13 @@ class Evaluator(object):
                as (batch_size, lookback_length, feature_dim).
         :param feature_index: a tuple/int, the instance index (along first dim) to plot.
                Default to the first index.
-        :param layout: a 2-dim tuple, indicate the row_num and col_num to plot. Default to
-               automatically row_num and col_num. 
+        :param instance_index: int/tuple/list, the instance index to show. Default to None
+               which represents random number.
+        :param layout: a 2-dim tuple, indicate the row_num and col_num to plot.
         :param prediction_internval: a float, indicates the confidence percentile. Default to
                0.95 refer to 95% confidence. This only effective when `std` is not None.
         :param figsize: figure size to be inputed to pyplot. Default to (16,16).
-        :param output_file: a path, indeicates the save path of the output plot. Default to
+        :param output_file: a path, indicates the save path of the output plot. Default to
                None, indicates no output file is needed.
         :param **kwargs: other paramters will be passed to matplotlib.pyplot.
         '''
@@ -308,26 +310,36 @@ class Evaluator(object):
             _check_shape(y, std, "y", "std")
         if ground_truth is not None:
             _check_shape(y, ground_truth, "y", "ground_truth")
-        
+
         batch_num = y.shape[0]
         horizon = y.shape[1]
         lookback = 0 if x is None else x.shape[1]
         row_num = 1 if layout is None else layout[0]
         col_num = 1 if layout is None else layout[1]
 
-        y_index = list(range(lookback, horizon+lookback))
+        y_index = list(range(lookback, horizon + lookback))
         x_index = list(range(0, lookback))
         iter_num = 1
+        instance_index_iter = iter(instance_index) if instance_index is not None else None
 
         plt.figure(figsize=figsize, **kwargs)
 
-        for row_iter in range(1, row_num+1):
-            for col_iter in range(1, col_num+1):
-                instance_index = random.randint(0, y.shape[0])
+        for row_iter in range(1, row_num + 1):
+            for col_iter in range(1, col_num + 1):
+                # generate the index
+                if instance_index_iter is None:
+                    instance_index = random.randint(0, y.shape[0])
+                else:
+                    try:
+                        instance_index = next(instance_index_iter)
+                    except e:
+                        # nothing to plot, skip following grids
+                        continue
                 ax = plt.subplot(row_num*100 + col_num*10 + iter_num)
                 ax.plot(y_index, y[instance_index, :, feature_index], color="royalblue")
                 if ground_truth is not None:
-                    ax.plot(y_index, ground_truth[instance_index, :, feature_index], color="limegreen")
+                    ax.plot(y_index, ground_truth[instance_index, :, feature_index],
+                            color="limegreen")
                 if x is not None:
                     ax.plot(x_index, x[instance_index, :, feature_index], color="black")
                     ax.plot([x_index[-1], y_index[0]],
@@ -347,7 +359,10 @@ class Evaluator(object):
                                         std[instance_index, :, feature_index]*ppf_value,
                                     y[instance_index, :, feature_index] + \
                                         std[instance_index, :, feature_index]*ppf_value, alpha=0.2)
-                ax.legend(["prediction", "ground truth"])
+                if ground_truth is not None:
+                    ax.legend(["prediction", "ground truth"])
+                else:
+                    ax.legend(["prediction"])
                 ax.set_title(f"index {instance_index}")
                 iter_num += 1
 
