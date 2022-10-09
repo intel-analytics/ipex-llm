@@ -161,7 +161,7 @@ jobs:
           pip install pytest
           pip install onnx onnxruntime tf2onnx
           source bigdl-nano-init
-          bash python/nano/test/run-nano-tf-onnx.tests.sh
+          bash python/nano/test/run-nano-tf-onnx-tests.sh
           source $CONDA/bin/deactivate
           $CONDA/bin/conda remove -n onnx-tensorflow --all
         env:
