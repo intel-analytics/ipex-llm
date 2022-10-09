@@ -8,7 +8,6 @@ Pillow
 py4j
 pyarrow
 tensorflow
-tensorflow_estimator
 torch
 torchmetrics
 tqdm
