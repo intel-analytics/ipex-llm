@@ -160,7 +160,6 @@ jobs:
           fi
           pip install pytest
           pip install onnx onnxruntime tf2onnx
-          pip install numpy==1.21.6
           source bigdl-nano-init
           bash python/nano/test/run-nano-tf-onnx.tests.sh
           source $CONDA/bin/deactivate
