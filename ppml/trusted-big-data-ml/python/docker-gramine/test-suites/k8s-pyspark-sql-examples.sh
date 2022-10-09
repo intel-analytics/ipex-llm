@@ -1,10 +1,10 @@
 #!/bin/bash
-status_1_k8s_spark_pi=1
-SPARK_LOCAL_IP=$LOCAL_IP
+status_2_k8s_pyspark_sql_basic=1
 
-if [ $status_1_k8s_spark_pi -ne 0 ]; then
+if [ $status_2_k8s_pyspark_sql_basic -ne 0 ]; then
 cd /ppml/trusted-big-data-ml
-export spark_commnd="export TF_MKL_ALLOC_MAX_BYTES=10737418240 && \
+./clean.sh
+gramine-argv-serializer bash -c "export TF_MKL_ALLOC_MAX_BYTES=10737418240 && \
   export SPARK_LOCAL_IP=$SPARK_LOCAL_IP && \
   /opt/jdk8/bin/java \
     -cp '/ppml/trusted-big-data-ml/work/spark-3.1.2/conf/:/ppml/trusted-big-data-ml/work/spark-3.1.2/jars/*' \
@@ -12,7 +12,7 @@ export spark_commnd="export TF_MKL_ALLOC_MAX_BYTES=10737418240 && \
     org.apache.spark.deploy.SparkSubmit \
     --master $RUNTIME_SPARK_MASTER \
     --deploy-mode client \
-    --name spark-pi-sgx \
+    --name pyspark-sql-basic-sgx \
     --conf spark.driver.host=$SPARK_LOCAL_IP \
     --conf spark.driver.port=54321 \
     --conf spark.driver.memory=10g \
@@ -33,13 +33,13 @@ export spark_commnd="export TF_MKL_ALLOC_MAX_BYTES=10737418240 && \
     --conf spark.kubernetes.sgx.enabled=true \
     --conf spark.kubernetes.sgx.mem=32g \
     --conf spark.kubernetes.sgx.jvm.mem=16g \
-    --class org.apache.spark.examples.SparkPi \
     --verbose \
-    local:///ppml/trusted-big-data-ml/work/spark-3.1.2/examples/jars/spark-examples_2.12-3.1.2.jar"
-gramine-sgx bash 2>&1 | tee k8s-spark-pi-sgx.log
+    /ppml/trusted-big-data-ml/work/spark-3.1.2/examples/src/main/python/sql/basic.py" > /ppml/trusted-big-data-ml/secured_argvs
+./init.sh
+gramine-sgx bash 2>&1 | tee k8s-pyspark-sql-basic-sgx.log
 fi
-status_1_k8s_spark_pi=$(echo $?)
+status_2_k8s_pyspark_sql_basic=$(echo $?)
 
-echo "#### example.1 Excepted result(k8s-spark-pi): Pi is roughly XXX"
-echo "---- example.1 Actual result: "
-cat k8s-spark-pi-sgx.log | egrep -a "roughly"
+echo "##### example.2 Excepted result(k8s-pyspark-sql-basic): 8"
+echo "---- example.2 Actual result: "
+cat k8s-pyspark-sql-basic-sgx.log | egrep -a 'Justin' | wc -l

@@ -4,8 +4,7 @@ status_2_k8s_spark_sql_example=1
 SPARK_LOCAL_IP=$LOCAL_IP
 if [ $status_2_k8s_spark_sql_example -ne 0 ]; then
 cd /ppml/trusted-big-data-ml
-./clean.sh
-gramine-argv-serializer bash -c "export TF_MKL_ALLOC_MAX_BYTES=10737418240 && \
+export spark_commnd="export TF_MKL_ALLOC_MAX_BYTES=10737418240 && \
   export SPARK_LOCAL_IP=$SPARK_LOCAL_IP && \
   /opt/jdk8/bin/java \
     -cp '/ppml/trusted-big-data-ml/work/spark-3.1.2/conf/:/ppml/trusted-big-data-ml/work/spark-3.1.2/jars/*' \
@@ -35,8 +34,7 @@ gramine-argv-serializer bash -c "export TF_MKL_ALLOC_MAX_BYTES=10737418240 && \
     --conf spark.kubernetes.sgx.mem=32g \
     --conf spark.kubernetes.sgx.jvm.mem=16g \
     --class org.apache.spark.examples.sql.SparkSQLExample \
-    /ppml/trusted-big-data-ml/work/spark-3.1.2/examples/jars/spark-examples_2.12-3.1.2.jar" > secured_argvs
-./init.sh
+    /ppml/trusted-big-data-ml/work/spark-3.1.2/examples/jars/spark-examples_2.12-3.1.2.jar"
 gramine-sgx bash 2>&1 | tee k8s-spark-sql-example-sgx.log
 fi
 status_2_k8s_spark_sql_example=$(echo $?)

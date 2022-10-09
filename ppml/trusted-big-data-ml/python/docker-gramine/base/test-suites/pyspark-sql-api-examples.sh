@@ -18,8 +18,7 @@ cd /ppml/trusted-big-data-ml
 
 if [ $status_1_pyspark_sql_api_DataFrame -ne 0 ]; then
 echo "pysaprk sql api example.1 --- DataFrame"
-./clean.sh
-gramine-argv-serializer bash -c "/opt/jdk8/bin/java \
+export spark_commnd="/opt/jdk8/bin/java \
   -cp '/ppml/trusted-big-data-ml/work/spark-3.1.2/conf/:/ppml/trusted-big-data-ml/work/spark-3.1.2/jars/*' \
   -Xmx1g \
   org.apache.spark.deploy.SparkSubmit \
@@ -27,8 +26,7 @@ gramine-argv-serializer bash -c "/opt/jdk8/bin/java \
     --conf spark.sql.broadcastTimeout=3000 \
     --conf spark.python.use.daemon=false \
     --conf spark.python.worker.reuse=false \
-    /ppml/trusted-big-data-ml/work/examples/sql_example.py" > secured_argvs
-./init.sh
+    /ppml/trusted-big-data-ml/work/examples/sql_example.py"
 gramine-sgx bash 2>&1 | tee test-sql-dataframe-sgx.log
 status_1_pyspark_sql_api_DataFrame=$(echo $?)
 fi
