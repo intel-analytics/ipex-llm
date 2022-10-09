@@ -32,6 +32,9 @@ sys.path.insert(0, os.path.abspath("../../../python/nano/src/"))
 
 # -- Project information -----------------------------------------------------
 html_theme = "pydata_sphinx_theme"
+html_theme_options = {
+  "header_links_before_dropdown": 4
+}
 
 # The suffix of source filenames.
 from recommonmark.parser import CommonMarkParser

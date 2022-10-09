@@ -1,105 +1,122 @@
 root: index
 subtrees:
+  - entries:
+    - file: doc/GetStarted/index
+      subtrees:
+        - entries:
+          - file: doc/Orca/QuickStart/orca-pytorch-distributed-quickstart
+          - file: doc/UseCase/spark-dataframe
+          - file: doc/UseCase/xshards-pandas
+          - file: doc/Orca/QuickStart/orca-autoestimator-pytorch-quickstart
+          - file: doc/Orca/QuickStart/orca-autoxgboost-quickstart
 
-  - caption:  Get Started
-    entries:
-      - file: doc/Orca/QuickStart/orca-pytorch-distributed-quickstart
-      - file: doc/UseCase/spark-dataframe
-      - file: doc/UseCase/xshards-pandas
-      - file: doc/Orca/QuickStart/orca-autoestimator-pytorch-quickstart
-      - file: doc/Orca/QuickStart/orca-autoxgboost-quickstart
+  - entries:
+    - file: doc/UserGuide/index
+      subtrees:
+        - entries:
+          - file: doc/UserGuide/python
+          - file: doc/UserGuide/scala
+          - file: doc/UserGuide/win
+          - file: doc/UserGuide/colab
+          - file: doc/UserGuide/docker
+          - file: doc/UserGuide/hadoop
+          - file: doc/UserGuide/k8s
+          - file: doc/UserGuide/databricks
+          - file: doc/UserGuide/develop
+          - file: doc/UserGuide/known_issues
 
-  - caption: User Guide
-    entries:
-      - file: doc/UserGuide/python
-      - file: doc/UserGuide/scala
-      - file: doc/UserGuide/win
-      - file: doc/UserGuide/colab
-      - file: doc/UserGuide/docker
-      - file: doc/UserGuide/hadoop
-      - file: doc/UserGuide/k8s
-      - file: doc/UserGuide/databricks
-      - file: doc/UserGuide/develop
-      - file: doc/UserGuide/known_issues
+  - entries:
+    - file: doc/Application/index
+      subtrees:
+        - entries:
+          - file: doc/Application/presentations
+          - file: doc/Application/blogs
+          - file: doc/Application/powered-by
 
-  - caption: Real-World Application
-    entries:
-      - file: doc/Application/presentations
-      - file: doc/Application/blogs
-      - file: doc/Application/powered-by
+  - entries:
+      - file: doc/Serving/index
+        subtrees:
+          - entries:
+            - file: doc/Serving/Overview/serving.md
+            - file: doc/Serving/QuickStart/serving-quickstart
+            - file: doc/Serving/ProgrammingGuide/serving-installation
+            - file: doc/Serving/ProgrammingGuide/serving-start
+            - file: doc/Serving/ProgrammingGuide/serving-inference
+            - file: doc/Serving/Example/example
+            - file: doc/Serving/FAQ/faq
+            - file: doc/Serving/FAQ/contribute-guide
 
+  - entries:
+      - file: doc/Nano/index
+        subtrees:
+          - entries:
+            - file: doc/Nano/Overview/nano
+            - file: doc/Nano/QuickStart/pytorch_train
+            - file: doc/Nano/QuickStart/pytorch_inference
+            - file: doc/Nano/QuickStart/tensorflow_train
+            - file: doc/Nano/QuickStart/tensorflow_inference
+            - file: doc/Nano/QuickStart/hpo
+            - file: doc/Nano/QuickStart/index
+            - file: doc/Nano/Howto/index
+            - file: doc/PythonAPI/Nano/index
+              title: "API Reference"
+            - file: doc/Nano/Overview/known_issues
 
-  - caption: BigDL-Nano
-    entries:
-      - file: doc/Nano/Overview/nano
-      - file: doc/Nano/QuickStart/pytorch_train
-      - file: doc/Nano/QuickStart/pytorch_inference
-      - file: doc/Nano/QuickStart/tensorflow_train
-      - file: doc/Nano/QuickStart/tensorflow_inference
-      - file: doc/Nano/QuickStart/hpo
-      - file: doc/Nano/QuickStart/index
-      - file: doc/Nano/Howto/index
-      - file: doc/PythonAPI/Nano/index
-        title: "API Reference"
-      - file: doc/Nano/Overview/known_issues
+  - entries:
+    - file: doc/DLlib/index
+      subtrees:
+        - entries:
+          - file: doc/DLlib/Overview/dllib
+          - file: doc/DLlib/Overview/keras-api
+          - file: doc/DLlib/Overview/nnframes
 
-  - caption: BigDL-DLlib
-    entries:
-      - file: doc/DLlib/Overview/dllib
-      - file: doc/DLlib/Overview/keras-api
-      - file: doc/DLlib/Overview/nnframes
+  - entries:
+    - file: doc/Orca/index
+      subtrees:
+        - entries:
+          - file: doc/Orca/Overview/orca
+            title: "User Guide"
+          - file: doc/Orca/Overview/orca-context
+          - file: doc/Orca/Overview/data-parallel-processing
+          - file: doc/Orca/Overview/distributed-training-inference
+          - file: doc/Orca/Overview/distributed-tuning
+          - file: doc/Ray/Overview/ray
+          - file: doc/Orca/QuickStart/index
+          - file: doc/PythonAPI/Orca/orca
+            title: "API Reference"
+          - file: doc/Orca/Overview/known_issues
 
-  - caption: BigDL-Orca
-    entries:
-      - file: doc/Orca/Overview/orca
-        title: "User Guide"
-      - file: doc/Orca/Overview/orca-context
-      - file: doc/Orca/Overview/data-parallel-processing
-      - file: doc/Orca/Overview/distributed-training-inference
-      - file: doc/Orca/Overview/distributed-tuning
-      - file: doc/Ray/Overview/ray
-      - file: doc/Orca/QuickStart/index
-      - file: doc/PythonAPI/Orca/orca
-        title: "API Reference"
-      - file: doc/Orca/Overview/known_issues
+  - entries:
+    - file: doc/Chronos/index
+      subtrees:
+        - entries:
+          - file: doc/Chronos/Overview/chronos
+          - file: doc/Chronos/Overview/quick-tour
+          - file: doc/Chronos/Howto/index
+          - file: doc/Chronos/QuickStart/index
+          - file: doc/Chronos/Overview/deep_dive
+          - file: doc/PythonAPI/Chronos/index
+            title: "API Reference"
+          - file: doc/Chronos/Overview/chronos_known_issue
 
-  - caption: BigDL-Chronos
-    entries:
-      - file: doc/Chronos/Overview/chronos
-      - file: doc/Chronos/Overview/quick-tour
-      - file: doc/Chronos/Howto/index
-      - file: doc/Chronos/QuickStart/index
-      - file: doc/Chronos/Overview/deep_dive
-      - file: doc/PythonAPI/Chronos/index
-        title: "API Reference"
-      - file: doc/Chronos/Overview/chronos_known_issue
+  - entries:
+    - file: doc/Friesian/index
+      subtrees:
+        - entries:
+          - file: doc/PythonAPI/Friesian/feature
+            title: "API Reference"
 
-  - caption: BigDL-Friesian
-    entries:
-      - file: doc/PythonAPI/Friesian/feature
-        title: "API Reference"
-
-  - caption: BigDL-PPML
-    entries:
-      - file: doc/PPML/Overview/ppml
-      - file: doc/PPML/Overview/trusted_big_data_analytics_and_ml
-      - file: doc/PPML/Overview/trusted_fl
-      - file: doc/PPML/QuickStart/secure_your_services
-      - file: doc/PPML/QuickStart/build_kernel_with_sgx
-      - file: doc/PPML/QuickStart/deploy_intel_sgx_device_plugin_for_kubernetes
-      - file: doc/PPML/QuickStart/trusted-serving-on-k8s-guide
-      - file: doc/PPML/QuickStart/tpc-h_with_sparksql_on_k8s
-      - file: doc/PPML/QuickStart/tpc-ds_with_sparksql_on_k8s
-      - file: doc/PPML/Overview/azure_ppml
-
-  - caption: Serving
-    entries:
-      - file: doc/Serving/Overview/serving.md
-      - file: doc/Serving/QuickStart/serving-quickstart
-      - file: doc/Serving/ProgrammingGuide/serving-installation
-      - file: doc/Serving/ProgrammingGuide/serving-start
-      - file: doc/Serving/ProgrammingGuide/serving-inference
-      - file: doc/Serving/Example/example
-      - file: doc/Serving/FAQ/faq
-      - file: doc/Serving/FAQ/contribute-guide
-
+  - entries:
+    - file: doc/PPML/index
+      subtrees:
+        - entries:
+          - file: doc/PPML/Overview/ppml
+          - file: doc/PPML/Overview/trusted_big_data_analytics_and_ml
+          - file: doc/PPML/Overview/trusted_fl
+          - file: doc/PPML/QuickStart/secure_your_services
+          - file: doc/PPML/QuickStart/build_kernel_with_sgx
+          - file: doc/PPML/QuickStart/deploy_intel_sgx_device_plugin_for_kubernetes
+          - file: doc/PPML/QuickStart/trusted-serving-on-k8s-guide
+          - file: doc/PPML/QuickStart/tpc-h_with_sparksql_on_k8s
+          - file: doc/PPML/QuickStart/tpc-ds_with_sparksql_on_k8s
+          - file: doc/PPML/Overview/azure_ppml
