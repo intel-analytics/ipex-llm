@@ -35,6 +35,12 @@ html_theme = "pydata_sphinx_theme"
 html_theme_options = {
   "header_links_before_dropdown": 4
 }
+html_logo = "../image/bigdl_logo.png"
+
+# add search bar to side bar
+html_sidebars = {
+    "**": ["search-field.html", "sidebar-nav-bs.html"]
+}
 
 # The suffix of source filenames.
 from recommonmark.parser import CommonMarkParser
