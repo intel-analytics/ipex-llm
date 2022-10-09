@@ -159,7 +159,7 @@ jobs:
             pip install ${{matrix.tf-version}}
           fi
           pip install pytest
-          pip install onnx onnxruntime tf2onnx
+          pip install onnx onnxruntime tf2onnx pyyaml
           source bigdl-nano-init
           bash python/nano/test/run-nano-tf-onnx-tests.sh
           source $CONDA/bin/deactivate
