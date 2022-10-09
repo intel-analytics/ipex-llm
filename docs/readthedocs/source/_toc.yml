@@ -1,11 +1,12 @@
 root: index
 subtrees:
   - entries:
-    - file: doc/overview
+    - file: doc/GetStarted/index
+      title: "Get Started"
       subtrees:
         - entries:
-          - file: doc/GetStarted/index
-            title: "Get Started"
+          - file: doc/GetStarted/quicktour
+            title: "Quick Tour"
             subtrees:
               - entries:
                 - file: doc/Orca/QuickStart/orca-pytorch-distributed-quickstart
@@ -13,9 +14,19 @@ subtrees:
                 - file: doc/UseCase/xshards-pandas
                 - file: doc/Orca/QuickStart/orca-autoestimator-pytorch-quickstart
                 - file: doc/Orca/QuickStart/orca-autoxgboost-quickstart
-          - file: doc/UserGuide/python
-          - file: doc/UserGuide/scala
-          - file: doc/UserGuide/index
+          - file: doc/GetStarted/install
+            title: "Install"
+            subtrees:
+              - entries:
+                - file: doc/UserGuide/python
+                - file: doc/UserGuide/scala
+
+  - entries:
+    - file: doc/UserGuide/index
+      title: "User Guide"
+      subtrees:
+        - entries:
+          - file: doc/UserGuide/platform_idx
             title: "Platforms Guide"
             subtrees:
               - entries:
@@ -28,6 +39,7 @@ subtrees:
             title: "Developer Guide"
           - file: doc/UserGuide/known_issues
             title: "Tips and Known Issue"
+
 
   - entries:
     - file: doc/Application/index
