@@ -19,6 +19,7 @@ import tensorflow as tf
 from tensorflow.keras.metrics import Metric
 from bigdl.nano.utils.log4Error import invalidInputError
 from bigdl.nano.deps.openvino.openvino_api import KerasOpenVINOModel
+from bigdl.nano.deps.onnxruntime.onnxruntime_api import KerasONNXRuntimeModel
 
 
 class InferenceUtils:
@@ -115,3 +116,5 @@ class InferenceUtils:
         """
         if accelerator == 'openvino':
             return KerasOpenVINOModel(self, input_sample)
+        elif accelerator == 'onnxruntime':
+            return KerasONNXRuntimeModel(self, input_sample, onnxruntime_session_options)

@@ -44,3 +44,8 @@ class AcceleratedKerasModel(AcceleratedModel, tf.keras.Model):
     @staticmethod
     def tensors_to_numpy(tensors):
         return tuple(map(lambda x: x.numpy(), tensors))
+
+    @staticmethod
+    def numpy_to_tensors(np_arrays):
+        tensors = tuple(map(lambda x: tf.convert_to_tensor(x), np_arrays))
+        return tensors[0] if len(tensors) == 1 else tensors
