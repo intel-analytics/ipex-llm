@@ -2,6 +2,7 @@ root: index
 subtrees:
   - entries:
     - file: doc/GetStarted/index
+      title: "Overview"
       subtrees:
         - entries:
           - file: doc/Orca/QuickStart/orca-pytorch-distributed-quickstart
@@ -9,9 +10,8 @@ subtrees:
           - file: doc/UseCase/xshards-pandas
           - file: doc/Orca/QuickStart/orca-autoestimator-pytorch-quickstart
           - file: doc/Orca/QuickStart/orca-autoxgboost-quickstart
-
-  - entries:
     - file: doc/UserGuide/index
+      title: "Clusters"
       subtrees:
         - entries:
           - file: doc/UserGuide/python
@@ -33,18 +33,6 @@ subtrees:
           - file: doc/Application/blogs
           - file: doc/Application/powered-by
 
-  - entries:
-      - file: doc/Serving/index
-        subtrees:
-          - entries:
-            - file: doc/Serving/Overview/serving.md
-            - file: doc/Serving/QuickStart/serving-quickstart
-            - file: doc/Serving/ProgrammingGuide/serving-installation
-            - file: doc/Serving/ProgrammingGuide/serving-start
-            - file: doc/Serving/ProgrammingGuide/serving-inference
-            - file: doc/Serving/Example/example
-            - file: doc/Serving/FAQ/faq
-            - file: doc/Serving/FAQ/contribute-guide
 
   - entries:
       - file: doc/Nano/index
@@ -120,3 +108,17 @@ subtrees:
           - file: doc/PPML/QuickStart/tpc-h_with_sparksql_on_k8s
           - file: doc/PPML/QuickStart/tpc-ds_with_sparksql_on_k8s
           - file: doc/PPML/Overview/azure_ppml
+
+
+  - entries:
+    - file: doc/Serving/index
+      subtrees:
+        - entries:
+          - file: doc/Serving/Overview/serving.md
+          - file: doc/Serving/QuickStart/serving-quickstart
+          - file: doc/Serving/ProgrammingGuide/serving-installation
+          - file: doc/Serving/ProgrammingGuide/serving-start
+          - file: doc/Serving/ProgrammingGuide/serving-inference
+          - file: doc/Serving/Example/example
+          - file: doc/Serving/FAQ/faq
+          - file: doc/Serving/FAQ/contribute-guide
