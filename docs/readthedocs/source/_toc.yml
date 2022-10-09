@@ -20,7 +20,7 @@ subtrees:
               - entries:
                 - file: doc/UserGuide/python
                 - file: doc/UserGuide/scala
-          - file: doc/GetStarted/video
+          - file: doc/GetStarted/videos
           - file: doc/GetStarted/paper
 
 
