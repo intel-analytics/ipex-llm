@@ -3,8 +3,7 @@ status_2_k8s_pyspark_sql_basic=1
 
 if [ $status_2_k8s_pyspark_sql_basic -ne 0 ]; then
 cd /ppml/trusted-big-data-ml
-./clean.sh
-gramine-argv-serializer bash -c "export TF_MKL_ALLOC_MAX_BYTES=10737418240 && \
+export spark_commnd="export TF_MKL_ALLOC_MAX_BYTES=10737418240 && \
   export SPARK_LOCAL_IP=$SPARK_LOCAL_IP && \
   /opt/jdk8/bin/java \
     -cp '/ppml/trusted-big-data-ml/work/spark-3.1.2/conf/:/ppml/trusted-big-data-ml/work/spark-3.1.2/jars/*' \
@@ -34,8 +33,7 @@ gramine-argv-serializer bash -c "export TF_MKL_ALLOC_MAX_BYTES=10737418240 && \
     --conf spark.kubernetes.sgx.mem=32g \
     --conf spark.kubernetes.sgx.jvm.mem=16g \
     --verbose \
-    /ppml/trusted-big-data-ml/work/spark-3.1.2/examples/src/main/python/sql/basic.py" > /ppml/trusted-big-data-ml/secured_argvs
-./init.sh
+    /ppml/trusted-big-data-ml/work/spark-3.1.2/examples/src/main/python/sql/basic.py"
 gramine-sgx bash 2>&1 | tee k8s-pyspark-sql-basic-sgx.log
 fi
 status_2_k8s_pyspark_sql_basic=$(echo $?)
