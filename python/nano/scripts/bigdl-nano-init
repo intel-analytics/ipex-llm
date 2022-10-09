@@ -100,12 +100,12 @@ JEMALLOC=0
 TCMALLOC=0
 
 # Find conda dir
-if [ $0 != $BASH_SOURCE ]; then
-        # this script is being sourced
-        BASE_DIR="$(dirname "$BASH_SOURCE")/.."
+if [ ! -z $BASH_SOURCE ]; then
+	# using bash
+	BASE_DIR="$(dirname $BASH_SOURCE)/.."
 else
-        # this script is being executed
-        BASE_DIR="$(dirname "$0")/../"
+	# using zsh
+	BASE_DIR="$(dirname ${(%):-%N})/.."
 fi
 echo "conda dir found: $BASE_DIR"
 LIB_DIR=$BASE_DIR/lib
@@ -122,10 +122,12 @@ if [ -f "${LIB_DIR}/libiomp5.so" ]; then
 
 	# detect number of physical cores
 	cpu_infos=($(lscpu -p=CPU,Socket,Core | grep -P '^(\d*),(\d*),(\d*)$'))
-	max_cpu_info=($(echo ${cpu_infos[-1]} | sed 's/,/\ /g')) 
-	let cpu_=${max_cpu_info[0]}+1
-	let sockets_=${max_cpu_info[1]}+1
-	let core_=${max_cpu_info[2]}+1
+	max_cpu_info=($(echo ${cpu_infos[-1]} | sed 's/,/\ /g'))
+	# bash's array index starts from 0, while zsh's array index starts from 1,
+	# so we use -1, -2, -3 as index here for consistency
+	let cpu_=${max_cpu_info[-3]}+1
+	let sockets_=${max_cpu_info[-2]}+1
+	let core_=${max_cpu_info[-1]}+1
 	let threads_per_core=$cpu_/$core_
 	let cores_per_socket=$core_/$sockets_
 
@@ -257,6 +259,6 @@ echo "NANO_TF_INTER_OP"=${NANO_TF_INTER_OP}
 echo "+++++++++++++++++++++++++"
 # Run the commands after bigdl-nano-init
 echo "Complete."
-if [ ! $1 == "activate" ];then
+if [ ! $1 = "activate" ];then
     ${@:1}
 fi
