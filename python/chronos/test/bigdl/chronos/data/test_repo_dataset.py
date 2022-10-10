@@ -48,11 +48,15 @@ class TestRepoDataset(TestCase):
         with pytest.raises(RuntimeError):
             gen_synthetic_data(len="10000")
         with pytest.raises(RuntimeError):
-            gen_synthetic_data(amplitude="10")
+            gen_synthetic_data(sine_amplitude="10")
         with pytest.raises(RuntimeError):
             gen_synthetic_data(angular_freq="0.01")
         with pytest.raises(RuntimeError):
-            gen_synthetic_data(scale="1.0")
+            gen_synthetic_data(noise_amplitude="0.01")
+        with pytest.raises(RuntimeError):
+            gen_synthetic_data(noise_scale="1.0")
+        with pytest.raises(RuntimeError):
+            gen_synthetic_data(seed=0.01)
         with pytest.raises(RuntimeError):
             gen_synthetic_data(time_freq=1)
 

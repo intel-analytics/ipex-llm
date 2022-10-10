@@ -98,7 +98,8 @@ def get_public_dataset(name, path='~/.chronos/dataset', redownload=False, **kwar
                           f"are supported in Chronos built-in dataset, while get {name}.")
 
 
-def gen_synthetic_data(len=10000, amplitude=10.0, angular_freq=0.01, scale=1.0,
+def gen_synthetic_data(len=10000, sine_amplitude=10.0, angular_freq=0.01,
+                       noise_amplitude=0.01, noise_scale=1.0, seed=1,
                        time_freq="D", **kwargs):
     """
     Generate dataset according to sine function with a Gaussian noise.
@@ -108,12 +109,15 @@ def gen_synthetic_data(len=10000, amplitude=10.0, angular_freq=0.01, scale=1.0,
     >>> tsdata_gen = gen_synthetic_data()
 
     :param len: int, the number indicates the dataset size. Default to 10000.
-    :param amplitude: float, the number indicates amplitude of the sine function.
+    :param sine_amplitude: float, the number indicates amplitude of the sine function.
            Default to 10.0.
     :param angular_freq: float, the number indicates angular frequency of the sine function.
            Default to 0.01.
-    :param scale: float, the number indicates the standard deviation of the Gaussian noise
+    :param noise_amplitude: float, the number indicates amplitude of the Gaussian noise.
+           Default to 0.01.
+    :param noise_scale: float, the number indicates the standard deviation of the Gaussian noise
            while the mean is set to 0. Default to 1.0.
+    :param seed: int, random seed for generating Gaussian noise. Default to 1.
     :param time_freq: str, the frequency of the generated dataframe, default to 'D'(calendar day
            frequency). The frequency can be anything from the pandas list of frequency strings here:
            https://pandas.pydata.org/docs/user_guide/timeseries.html#timeseries-offset-aliases
@@ -125,13 +129,17 @@ def gen_synthetic_data(len=10000, amplitude=10.0, angular_freq=0.01, scale=1.0,
     """
     from bigdl.chronos.data.utils.utils import _check_type
     _check_type(len, "len", int)
-    _check_type(amplitude, "amplitude", float)
+    _check_type(sine_amplitude, "sine_amplitude", float)
     _check_type(angular_freq, "angular_freq", float)
-    _check_type(scale, "scale", float)
+    _check_type(noise_amplitude, "noise_amplitude", float)
+    _check_type(noise_scale, "noise_scale", float)
+    _check_type(seed, "seed", int)
     _check_type(time_freq, "time_freq", str)
 
     gen_x = np.linspace(0, len*angular_freq, len)
-    gen_y = amplitude * np.sin(gen_x) + np.random.normal(0, scale, len)
+    np.random.seed(seed)
+    gen_y = sine_amplitude * np.sin(gen_x) + \
+            noise_amplitude * np.random.normal(0, noise_scale, len)
     df = pd.DataFrame(gen_y, columns=["target"])
     endtime = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime())
     df.insert(0, "datetime", pd.date_range(end=endtime, periods=len, freq=time_freq))
