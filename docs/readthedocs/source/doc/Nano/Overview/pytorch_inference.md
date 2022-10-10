@@ -1,4 +1,4 @@
-# BigDL-Nano PyTorch Inference Overview
+# PyTorch Inference
 
 BigDL-Nano provides several APIs which can help users easily apply optimizations on inference pipelines to improve latency and throughput. Currently, performance accelerations are achieved by integrating extra runtimes as inference backend engines or using quantization methods on full-precision trained models to reduce computation during inference. InferenceOptimizer (`bigdl.nano.pytorch.InferenceOptimizer`) provides the APIs for all optimizations that you need for inference.
 
@@ -70,7 +70,7 @@ y_hat = ort_model(x)
 trainer.validate(ort_model, dataloader)
 trainer.test(ort_model, dataloader)
 trainer.predict(ort_model, dataloader)
-# note that `ort_model` is not trainable any more, so you can't use like 
+# note that `ort_model` is not trainable any more, so you can't use like
 # trainer.fit(ort_model, dataloader) # this is illegal
 ```
 ### OpenVINO Acceleration
@@ -93,7 +93,7 @@ trainer = Trainer()
 trainer.validate(ort_model, dataloader)
 trainer.test(ort_model, dataloader)
 trainer.predict(ort_model, dataloader)
-# note that `ort_model` is not trainable any more, so you can't use like 
+# note that `ort_model` is not trainable any more, so you can't use like
 # trainer.fit(ort_model, dataloader) # this is illegal
 ```
 
@@ -122,7 +122,7 @@ trainer.validate(q_model, dataloader)
 trainer.test(q_model, dataloader)
 trainer.predict(q_model, dataloader)
 ```
-This is a most basic usage to quantize a model with defaults, INT8 precision, and without search tuning space to control accuracy drop.  
+This is a most basic usage to quantize a model with defaults, INT8 precision, and without search tuning space to control accuracy drop.
 
 **Quantization with ONNXRuntime accelerator**
 
@@ -146,7 +146,7 @@ Using `accelerator='onnxruntime'` actually equals to converting the model from P
 ort_model = InferenceOptimizer.trace(model, accelerator='onnruntime', input_sample=x):
 ort_q_model = InferenceOptimizer.quantize(ort_model, accelerator='onnxruntime', calib_dataloader=dataloader)
 
-# run inference with transparent acceleration 
+# run inference with transparent acceleration
 y_hat = ort_q_model(x)
 trainer.validate(ort_q_model, dataloader)
 trainer.test(ort_q_model, dataloader)
@@ -174,7 +174,7 @@ Same as using ONNXRuntime accelerator, it equals to converting the model from Py
 ov_model = InferenceOptimizer.trace(model, accelerator='openvino', input_sample=x):
 ov_q_model = InferenceOptimizer.quantize(ov_model, accelerator='onnxruntime', calib_dataloader=dataloader)
 
-# run inference with transparent acceleration 
+# run inference with transparent acceleration
 y_hat = ov_q_model(x)
 trainer.validate(ov_q_model, dataloader)
 trainer.test(ov_q_model, dataloader)

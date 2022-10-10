@@ -1,11 +1,12 @@
 # Orca in 5 minutes
 
-## 1. Overview
+### Overview
 
 Most AI projects start with a Python notebook running on a single laptop; however, one usually needs to go through a mountain of pains to scale it to handle larger data set in a distributed fashion. The  _**Orca**_ library seamlessly scales out your single node Python notebook across large clusters (so as to process distributed Big Data).
 
+---
 
-## 3. Short Example
+### **Tensorflow Bite-sized Example**
 
 This section uses TensorFlow 1.15, and you should install TensorFlow before running this example:
 ```bash

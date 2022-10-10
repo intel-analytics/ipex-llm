@@ -1,4 +1,4 @@
-AutoML Overview
+AutoML
 ***************
 
 Nano provides built-in AutoML support through hyperparameter optimization.

@@ -1,6 +1,5 @@
-# Nano User Guide
+# Nano in 5 minutes
 
-## **1. Overview**
 
 BigDL Nano is a Python package to transparently accelerate PyTorch and TensorFlow applications on Intel hardware. It provides a unified and easy-to-use API for several optimization techniques and tools, so that users can only apply a few lines of code changes to make their PyTorch or TensorFlow code run faster.
 
@@ -38,12 +37,14 @@ The `bigdl-nano-init` scripts will export a few environment variable according t
 In a conda environment, `source bigdl-nano-init` will also be added to `$CONDA_PREFIX/etc/conda/activate.d/`, which will automaticly run when you activate your current environment.
 
 In a pure pip environment, you need to run `source bigdl-nano-init` every time you open a new shell to get optimal performance and run `source bigdl-nano-unset-env` if you want to unset these environment variables.
+## Overview
+
+BigDL Nano is a Python package to transparently accelerate PyTorch and TensorFlow applications on Intel hardware. It provides a unified and easy-to-use API for several optimization techniques and tools, so that users can only apply a few lines of code changes to make their PyTorch or TensorFlow code run faster.
 
 ---
 
-## **3. Get Started**
 
-#### **3.1 PyTorch**
+### **PyTorch Bite-sized Example**
 
 BigDL-Nano supports both PyTorch and PyTorch Lightning models and most optimizations require only changing a few "import" lines in your code and adding a few flags.
 
@@ -74,7 +75,9 @@ MyNano(use_ipex=True, num_processes=2).train()
 
 For more details on the BigDL-Nano's PyTorch usage, please refer to the [PyTorch Training](../QuickStart/pytorch_train.md) and [PyTorch Inference](../QuickStart/pytorch_inference.md) page.
 
-### **3.2 TensorFlow**
+
+
+### **TensorFlow Bite-sized Example**
 
 BigDL-Nano supports `tensorflow.keras` API and most optimizations require only changing a few "import" lines in your code and adding a few flags.
 

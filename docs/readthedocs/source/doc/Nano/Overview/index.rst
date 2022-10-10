@@ -1,4 +1,4 @@
-Nano User Guide
+Nano Key Features
 ================================
 
 .. toctree::
