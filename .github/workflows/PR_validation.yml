@@ -75,6 +75,7 @@ jobs:
             ppml:
             - 'scala/ppml/**'
             - '.github/actions/ppml-scala-ut-action/action.yml'
+            - '.github/workflows/PR_validation.yml'
             orca:
               - 'python/orca/**'
               - '.github/actions/orca-ray-ctx-example-action/action.yml'
