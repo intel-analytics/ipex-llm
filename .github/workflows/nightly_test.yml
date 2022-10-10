@@ -1,8 +1,8 @@
 name: Nightly Test
 
 on:
-  pull_request:
-     branchs: [ main ]
+  #pull_request:
+     #branchs: [ main ]
   schedule:
     - cron: '0 13 * * *' # GMT time, 13:00 GMT == 21:00 China
   workflow_dispatch:
@@ -42,7 +42,7 @@ on:
         type: string
 
 env:
-  gist_id: bc8a699b455bced4a1aef138ad5df07e
+  GIST_ID: bc8a699b455bced4a1aef138ad5df07e
 
 permissions:
   contents: read
@@ -71,7 +71,7 @@ jobs:
       if: ${{ always() }}
       with:
         secret: ${{ secrets.GIST_SECRET}}
-        gist-id: ${gist_id}
+        gist-id: ${{env.GIST_ID}}
         is-self-hosted-runner: true
         file-name: Orca-Python-ExampleTest-Py37-Spark3.json
         type: job
@@ -101,7 +101,7 @@ jobs:
       if: ${{ always() }}
       with:
         secret: ${{ secrets.GIST_SECRET}}
-        gist-id: ${gist_id}
+        gist-id: ${{env.GIST_ID}}
         is-self-hosted-runner: true
         file-name: Orca-Python-ExampleTest-Ray-Py37-Spark3.json
         type: job
@@ -130,7 +130,7 @@ jobs:
       if: ${{ always() }}
       with:
         secret: ${{ secrets.GIST_SECRET}}
-        gist-id: ${gist_id}
+        gist-id: ${{env.GIST_ID}}
         is-self-hosted-runner: true
         file-name: Orca-Jep-ExampleTest-Py37-Spark2.json
         type: job
@@ -159,7 +159,7 @@ jobs:
       if: ${{ always() }}
       with:
         secret: ${{ secrets.GIST_SECRET}}
-        gist-id: ${gist_id}
+        gist-id: ${{env.GIST_ID}}
         is-self-hosted-runner: true
         file-name: Orca-Python-ExampleTest-Horovod-Pytorch-Py37-Spark3.json
         type: job
@@ -188,7 +188,7 @@ jobs:
       if: ${{ always() }}
       with:
         secret: ${{ secrets.GIST_SECRET}}
-        gist-id: ${gist_id}
+        gist-id: ${{env.GIST_ID}}
         is-self-hosted-runner: true
         file-name: Orca-Python-ExampleTest-Horovod-Tf-Py37-Spark3.json
         type: job
@@ -217,7 +217,7 @@ jobs:
       if: ${{ always() }}
       with:
         secret: ${{ secrets.GIST_SECRET}}
-        gist-id: ${gist_id}
+        gist-id: ${{env.GIST_ID}}
         is-self-hosted-runner: true
         file-name: Orca-Python-Ray-Py37-Spark3.json
         type: job
@@ -246,7 +246,7 @@ jobs:
       if: ${{ always() }}
       with:
         secret: ${{ secrets.GIST_SECRET}}
-        gist-id: ${gist_id}
+        gist-id: ${{env.GIST_ID}}
         is-self-hosted-runner: true
         file-name: Orca-Python-Py37-Spark3.json
         type: job
@@ -275,7 +275,7 @@ jobs:
       if: ${{ always() }}
       with:
         secret: ${{ secrets.GIST_SECRET}}
-        gist-id: ${gist_id}
+        gist-id: ${{env.GIST_ID}}
         is-self-hosted-runner: true
         file-name: Orca-Python-Horovod-Tf2-Py37-Spark3.json
         type: job
@@ -304,7 +304,7 @@ jobs:
       if: ${{ always() }}
       with:
         secret: ${{ secrets.GIST_SECRET}}
-        gist-id: ${gist_id}
+        gist-id: ${{env.GIST_ID}}
         is-self-hosted-runner: true
         file-name: Orca-Python-Horovod-Pytorch-Py37-Spark3.json
         type: job
@@ -333,7 +333,7 @@ jobs:
       if: ${{ always() }}
       with:
         secret: ${{ secrets.GIST_SECRET}}
-        gist-id: ${gist_id}
+        gist-id: ${{env.GIST_ID}}
         is-self-hosted-runner: true
         file-name: Orca-Python-Rayonspark-Tf2-Py37.json
         type: job
@@ -362,7 +362,7 @@ jobs:
       if: ${{ always() }}
       with:
         secret: ${{ secrets.GIST_SECRET}}
-        gist-id: ${gist_id}
+        gist-id: ${{env.GIST_ID}}
         is-self-hosted-runner: true
         file-name: Orca-Jep-Python-Py37-Spark2.json
         type: job
@@ -386,7 +386,7 @@ jobs:
       if: ${{ always() }}
       with:
         secret: ${{ secrets.GIST_SECRET}}
-        gist-id: ${gist_id}
+        gist-id: ${{env.GIST_ID}}
         is-self-hosted-runner: true
         file-name: Dllib-Scala-UT.json
         type: job
@@ -410,7 +410,7 @@ jobs:
       if: ${{ always() }}
       with:
         secret: ${{ secrets.GIST_SECRET}}
-        gist-id: ${gist_id}
+        gist-id: ${{env.GIST_ID}}
         is-self-hosted-runner: true
         file-name: Friesian-Scala-UT.json
         type: job
@@ -418,7 +418,7 @@ jobs:
         runner-hosted-on: 'Shanghai'
       
   PPML-Scala-UT:
-   #if: ${{ github.event.schedule || github.event.inputs.artifact == 'PPML-Scala-UT' || github.event.inputs.artifact == 'all' }} 
+   if: ${{ github.event.schedule || github.event.inputs.artifact == 'PPML-Scala-UT' || github.event.inputs.artifact == 'all' }} 
     runs-on: [ self-hosted, Gondolin, ubuntu-20.04-lts ]
 
     steps:
@@ -434,7 +434,7 @@ jobs:
       if: ${{ always() }}
       with:
         secret: ${{ secrets.GIST_SECRET}}
-        gist-id: ${gist_id}
+        gist-id: ${{env.GIST_ID}}
         is-self-hosted-runner: true
         file-name: PPML-Scala-UT.json
         type: job
@@ -458,7 +458,7 @@ jobs:
       if: ${{ always() }}
       with:
         secret: ${{ secrets.GIST_SECRET}}
-        gist-id: ${gist_id}
+        gist-id: ${{env.GIST_ID}}
         is-self-hosted-runner: true
         file-name: Orca-Ray-Ctx-Example.json
         type: job
@@ -489,7 +489,7 @@ jobs:
       if: ${{ always() }}
       with:
         secret: ${{ secrets.GIST_SECRET}}
-        gist-id: ${gist_id}
+        gist-id: ${{env.GIST_ID}}
         is-self-hosted-runner: true
         file-name: PPML-Spark-PySpark-Local-Sql-UT-On-Gramine.json
         type: job
@@ -520,7 +520,7 @@ jobs:
       if: ${{ always() }}
       with:
         secret: ${{ secrets.GIST_SECRET}}
-        gist-id: ${gist_id}
+        gist-id: ${{env.GIST_ID}}
         is-self-hosted-runner: true
         file-name: PPML-PySpark-K8s-Example.json
         type: job
@@ -544,7 +544,7 @@ jobs:
       if: ${{ always() }}
       with:
         secret: ${{ secrets.GIST_SECRET}}
-        gist-id: ${gist_id}
+        gist-id: ${{env.GIST_ID}}
         is-self-hosted-runner: true
         file-name: PPML-Occlum-ExampleTests.json
         type: job
@@ -575,7 +575,7 @@ jobs:
       if: ${{ always() }}
       with:
         secret: ${{ secrets.GIST_SECRET}}
-        gist-id: ${gist_id}
+        gist-id: ${{env.GIST_ID}}
         is-self-hosted-runner: true
         file-name: PPML-spark-Local-Example-Tests-on-Gramine.json
         type: job
@@ -595,7 +595,7 @@ jobs:
       if: ${{ always() }}
       with:
         secret: ${{ secrets.GIST_SECRET}}
-        gist-id: ${gist_id}
+        gist-id: ${{env.GIST_ID}}
         is-self-hosted-runner: true
         file-name: PPML-Occlum-k8s-ExampleTests.json
         type: job
@@ -620,7 +620,7 @@ jobs:
       if: ${{ always() }}
       with:
         secret: ${{ secrets.GIST_SECRET}}
-        gist-id: ${gist_id}
+        gist-id: ${{env.GIST_ID}}
         is-self-hosted-runner: true
         file-name: PPML-Spark-K8S-Example-On-Gramine.json
         type: job
@@ -637,7 +637,7 @@ jobs:
       uses: ./.github/actions/create-job-status-badge
       with:
         secret: ${{ secrets.GIST_SECRET }}
-        gist-id: ${gist_id}
+        gist-id: ${{env.GIST_ID}}
         file-name: nightly-test.json
         type: workflow
   
