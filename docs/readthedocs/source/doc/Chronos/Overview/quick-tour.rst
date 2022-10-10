@@ -1,5 +1,5 @@
 Chronos Quick Tour
-======================
+=================================
 Welcome to Chronos for building a fast, accurate and scalable time series analysis application🎉! Start with our quick tour to understand some critical concepts and how to use them to tackle your tasks.
 
 .. grid:: 1 1 1 1
@@ -42,7 +42,7 @@ Welcome to Chronos for building a fast, accurate and scalable time series analys
 
             Get Started
 
-    .. grid-item-card:: 
+    .. grid-item-card::
         :text-align: center
         :shadow: none
         :class-header: sd-bg-light
@@ -60,7 +60,7 @@ Welcome to Chronos for building a fast, accurate and scalable time series analys
 
             Get Started
 
-    .. grid-item-card:: 
+    .. grid-item-card::
         :text-align: center
         :shadow: none
         :class-header: sd-bg-light

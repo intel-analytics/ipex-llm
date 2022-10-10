@@ -2,67 +2,33 @@ root: index
 subtrees:
   - entries:
     - file: doc/GetStarted/index
-      title: "Get Started"
+      title: "Install"
       subtrees:
         - entries:
-          - file: doc/GetStarted/quicktour
-            title: "Common Use Cases"
-            subtrees:
-              - entries:
-                - file: doc/Orca/QuickStart/orca-pytorch-distributed-quickstart
-                - file: doc/UseCase/spark-dataframe
-                - file: doc/UseCase/xshards-pandas
-                - file: doc/Orca/QuickStart/orca-autoestimator-pytorch-quickstart
-                - file: doc/Orca/QuickStart/orca-autoxgboost-quickstart
           - file: doc/GetStarted/install
             title: "Install"
             subtrees:
               - entries:
                 - file: doc/UserGuide/python
                 - file: doc/UserGuide/scala
-          - file: doc/GetStarted/videos
-          - file: doc/GetStarted/paper
-
-
-  - entries:
-    - file: doc/UserGuide/index
-      title: "User Guide"
-      subtrees:
-        - entries:
-          - file: doc/UserGuide/platform_idx
-            title: "Platforms Guide"
-            subtrees:
-              - entries:
-                - file: doc/UserGuide/colab
-                - file: doc/UserGuide/docker
-                - file: doc/UserGuide/hadoop
-                - file: doc/UserGuide/k8s
-                - file: doc/UserGuide/databricks
-          - file: doc/UserGuide/develop
-            title: "Developer Guide"
-          - file: doc/UserGuide/known_issues
-            title: "Tips and Known Issue"
-
-
-  - entries:
-    - file: doc/Application/index
-      subtrees:
-        - entries:
-          - file: doc/Application/presentations
-          - file: doc/Application/blogs
-          - file: doc/Application/powered-by
 
 
   - entries:
       - file: doc/Nano/index
+        title: "Nano"
         subtrees:
           - entries:
-            - file: doc/Nano/Overview/nano
-            - file: doc/Nano/QuickStart/pytorch_train
-            - file: doc/Nano/QuickStart/pytorch_inference
-            - file: doc/Nano/QuickStart/tensorflow_train
-            - file: doc/Nano/QuickStart/tensorflow_inference
-            - file: doc/Nano/QuickStart/hpo
+            - file: doc/Nano/Overview/index
+              title: "Nano Overview"
+              subtrees:
+                - entries:
+                  - file: doc/Nano/Overview/nano
+                  - file: doc/Nano/Overview/windows_guide
+                  - file: doc/Nano/QuickStart/pytorch_train
+                  - file: doc/Nano/QuickStart/pytorch_inference
+                  - file: doc/Nano/QuickStart/tensorflow_train
+                  - file: doc/Nano/QuickStart/tensorflow_inference
+                  - file: doc/Nano/QuickStart/hpo
             - file: doc/Nano/QuickStart/index
             - file: doc/Nano/Howto/index
             - file: doc/PythonAPI/Nano/index
@@ -70,7 +36,8 @@ subtrees:
             - file: doc/Nano/Overview/known_issues
 
   - entries:
-    - file: doc/DLlib/index
+    - file: doc/Orca/index
+      title: "Orca"
       subtrees:
         - entries:
           - file: doc/DLlib/Overview/dllib
@@ -79,42 +46,78 @@ subtrees:
 
   - entries:
     - file: doc/Orca/index
+      title: "Orca"
       subtrees:
         - entries:
           - file: doc/Orca/Overview/orca
-            title: "User Guide"
-          - file: doc/Orca/Overview/orca-context
-          - file: doc/Orca/Overview/data-parallel-processing
-          - file: doc/Orca/Overview/distributed-training-inference
-          - file: doc/Orca/Overview/distributed-tuning
-          - file: doc/Ray/Overview/ray
+            title: "Orca in 5 miniutes"
+          - file: doc/Orca/Overview/install
+            title: "Installation"
+          - file: doc/Orca/Overview/userguide
+            title: "Key Features"
+            subtrees:
+              - entries:
+                - file: doc/Orca/Overview/orca-context
+                - file: doc/Orca/Overview/data-parallel-processing
+                - file: doc/Orca/Overview/distributed-training-inference
+                - file: doc/Orca/Overview/distributed-tuning
+                - file: doc/Ray/Overview/ray
           - file: doc/Orca/QuickStart/index
-          - file: doc/PythonAPI/Orca/orca
+            title: "Tutorials"
+            subtrees:
+              - entries:
+                - file: doc/UseCase/spark-dataframe
+                - file: doc/UseCase/xshards-pandas
+                - file: doc/Orca/QuickStart/ray-quickstart
+                - file: doc/Orca/QuickStart/orca-pytorch-distributed-quickstart
+                - file: doc/Orca/QuickStart/orca-autoestimator-pytorch-quickstart
+                - file: doc/Orca/QuickStart/orca-autoxgboost-quickstart
+          - file: doc/PythonAPI/Orca/index
             title: "API Reference"
           - file: doc/Orca/Overview/known_issues
+            title: "Tips and Known Issues"
+
 
   - entries:
-    - file: doc/Chronos/index
+    - file: doc/DLlib/index
+      title: "Dllib"
       subtrees:
         - entries:
-          - file: doc/Chronos/Overview/chronos
+          - file: doc/DLlib/Overview/dllib
+          - file: doc/DLlib/Overview/keras-api
+          - file: doc/DLlib/Overview/nnframes
+
+  - entries:
+    - file: doc/Chronos/Overview/chronos
+      title: "Chronos"
+      subtrees:
+        - entries:
           - file: doc/Chronos/Overview/quick-tour
-          - file: doc/Chronos/Howto/index
-          - file: doc/Chronos/QuickStart/index
+            title: "Chronos in 5 minutes"
+          - file: doc/Chronos/Overview/install
+            title: "Installation"
           - file: doc/Chronos/Overview/deep_dive
+            title: "Key Features"
+          - file: doc/Chronos/Howto/index
+            title: "How-to Guides"
+          - file: doc/Chronos/QuickStart/index
+            title: "Tutorials"
+          - file: doc/Chronos/Overview/chronos_known_issue
+            title: "Tips and Known Issues"
           - file: doc/PythonAPI/Chronos/index
             title: "API Reference"
-          - file: doc/Chronos/Overview/chronos_known_issue
 
   - entries:
     - file: doc/Friesian/index
+      title: "Friesian"
       subtrees:
         - entries:
-          - file: doc/PythonAPI/Friesian/feature
+          - file: doc/PythonAPI/Friesian/index
             title: "API Reference"
 
   - entries:
     - file: doc/PPML/index
+      title: "PPML"
       subtrees:
         - entries:
           - file: doc/PPML/Overview/ppml
@@ -130,6 +133,22 @@ subtrees:
 
 
   - entries:
+    - file: doc/UserGuide/platform_idx
+      title: "Platform Guide"
+      subtrees:
+        - entries:
+          - file: doc/UserGuide/colab
+          - file: doc/UserGuide/docker
+          - file: doc/UserGuide/hadoop
+          - file: doc/UserGuide/k8s
+          - file: doc/UserGuide/databricks
+
+  - entries:
+    - file: doc/UserGuide/develop
+      title: "Developer Guide"
+
+
+  - entries:
     - file: doc/Serving/index
       subtrees:
         - entries:
@@ -141,3 +160,13 @@ subtrees:
           - file: doc/Serving/Example/example
           - file: doc/Serving/FAQ/faq
           - file: doc/Serving/FAQ/contribute-guide
+
+
+  - entries:
+    - file: doc/Application/presentations
+
+  - entries:
+    - file: doc/Application/blogs
+
+  - entries:
+    - file: doc/Application/powered-by

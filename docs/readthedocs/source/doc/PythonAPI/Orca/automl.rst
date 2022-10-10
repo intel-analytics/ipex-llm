@@ -1,3 +1,6 @@
+Orca AutoML
+============================
+
 orca.automl.auto_estimator
 ---------------------------
 
@@ -11,7 +14,7 @@ A general estimator supports automatic model tuning. It allows users to fit and 
 orca.automl.hp
 ----------------------------------------
 
-Sampling specs to be used in search space configuration. 
+Sampling specs to be used in search space configuration.
 
 .. automodule:: bigdl.orca.automl.hp
     :members:

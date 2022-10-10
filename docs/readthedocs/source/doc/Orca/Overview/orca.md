@@ -1,30 +1,11 @@
-# The Orca Library
+# Orca in 5 minutes
 
 ## 1. Overview
 
 Most AI projects start with a Python notebook running on a single laptop; however, one usually needs to go through a mountain of pains to scale it to handle larger data set in a distributed fashion. The  _**Orca**_ library seamlessly scales out your single node Python notebook across large clusters (so as to process distributed Big Data).
 
-## 2. Install
-We recommend using [conda](https://docs.conda.io/projects/conda/en/latest/user-guide/install/) to prepare the Python environment.
-```bash
-conda create -n py37 python=3.7  # "py37" is conda environment name, you can use any name you like.
-conda activate py37
-pip install bigdl-orca
-```
 
-When installing bigdl-orca with pip, you can specify the extras key `[ray]` to additionally install the additional dependencies
-essential for running [RayOnSpark](ray.md)
-```bash
-pip install bigdl-orca[ray]
-```
-
-You can install bigdl-orca nightly release version using
-```bash
-pip install --pre --upgrade bigdl-orca
-pip install --pre --upgrade bigdl-orca[ray]
-```
-
-## 3. Run
+## 3. Short Example
 
 This section uses TensorFlow 1.15, and you should install TensorFlow before running this example:
 ```bash
@@ -73,8 +54,3 @@ est.fit(data=df,
         feature_cols=['user', 'item'],
         label_cols=['label'])
 ```
-
-## Get Started
-
-See [TensorFlow](../QuickStart/orca-tf-quickstart.md) and [PyTorch](../QuickStart/orca-pytorch-quickstart.md) quickstart for more details.
-

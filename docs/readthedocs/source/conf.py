@@ -33,7 +33,7 @@ sys.path.insert(0, os.path.abspath("../../../python/nano/src/"))
 # -- Project information -----------------------------------------------------
 html_theme = "pydata_sphinx_theme"
 html_theme_options = {
-  "header_links_before_dropdown": 3,
+  "header_links_before_dropdown": 7,
   "icon_links": [
         {
             "name": "GitHub Repository for BigDL",
