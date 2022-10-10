@@ -14,7 +14,6 @@
 # limitations under the License.
 #
 import warnings
-from bigdl.chronos.utils import LazyImport
 import os
 
 
@@ -25,7 +24,7 @@ if os.getenv("LD_PRELOAD", "null") != "null":
                   "in your bash terminal")
 
 try:
-    TSPipeline = LazyImport('bigdl.chronos.autots.tspipeline.TSPipeline')
-    AutoTSEstimator = LazyImport('bigdl.chronos.autots.autotsestimator.AutoTSEstimator')
+    from .tspipeline import TSPipeline
+    from .autotsestimator import AutoTSEstimator
 except:
     pass
