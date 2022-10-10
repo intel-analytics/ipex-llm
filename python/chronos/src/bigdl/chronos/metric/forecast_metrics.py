@@ -284,15 +284,15 @@ class Evaluator(object):
         `Evaluator.plot` function helps users to visualize their forecasting result.
 
         :param y: predict result, a 3-dim numpy ndarray with shape represented as
-               (batch_size, predict_length, feature_dim).
+               (batch_size, predict_length, output_feature_dim).
         :param std: standard deviation, a 3-dim numpy ndarray with shape represented
-               as (batch_size, predict_length, feature_dim). Same shape as `y`.
+               as (batch_size, predict_length, output_feature_dim). Same shape as `y`.
         :param ground_truth: ground truth, a 3-dim numpy ndarray with shape represented as
-               (batch_size, predict_length, feature_dim). Same shape as `y`.
+               (batch_size, predict_length, output_feature_dim). Same shape as `y`.
         :param x: input numpy array, a 3-dim numpy ndarray with shape represented
-               as (batch_size, lookback_length, feature_dim).
-        :param feature_index: a tuple/int, the instance index (along first dim) to plot.
-               Default to the first index.
+               as (batch_size, lookback_length, input_feature_dim).
+        :param feature_index: int, the feature index (along last dim) to plot.
+               Default to the first feature.
         :param instance_index: int/tuple/list, the instance index to show. Default to None
                which represents random number.
         :param layout: a 2-dim tuple, indicate the row_num and col_num to plot.
@@ -315,6 +315,7 @@ class Evaluator(object):
             _check_shape(y, std, "y", "std")
         if ground_truth is not None:
             _check_shape(y, ground_truth, "y", "ground_truth")
+        invalidInputError(len(layout) == 2, f"len of `layout` should be 2 while get {len(layout)}")
 
         batch_num = y.shape[0]
         horizon = y.shape[1]
