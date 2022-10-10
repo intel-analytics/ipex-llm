@@ -30,7 +30,7 @@ def _get_patch_map():
     patch_torch = find_spec("pytorch_lightning") is not None
 
     # 4-dim list, where, what, which, legancy
-    if _mapping_tf is None:
+    if patch_tf and _mapping_tf is None:
         _mapping_tf = []
         import keras
         import tensorflow
@@ -48,7 +48,7 @@ def _get_patch_map():
             [keras.layers, "Embedding", Embedding, None]
         ]
 
-    if _mapping_torch is None:
+    if patch_torch and _mapping_torch is None:
         _mapping_torch = []
         import pytorch_lightning
         import torchvision
