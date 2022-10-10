@@ -50,7 +50,7 @@ html_sidebars = {
     "index": [
         "sidebar_releases.html"
     ],
-    "**": ["search-field.html", "sidebar-nav-bs.html"]
+    "**": ["sidebar-nav-bs.html"]
 }
 
 # The suffix of source filenames.
