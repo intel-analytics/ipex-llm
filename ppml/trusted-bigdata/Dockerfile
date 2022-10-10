@@ -15,9 +15,17 @@ ARG SPARK_VERSION
 ARG JDK_VERSION
 ARG JDK_URL
 ARG SPARK_JAR_REPO_URL
+ARG FLINK_VERSION=1.11.3
+ARG SCALA_VERSION=2.12
+ARG SCALA_SUB_VERSION_NUM=10
+
 ENV SPARK_VERSION       ${SPARK_VERSION}
 ENV JAVA_HOME           /opt/jdk$JDK_VERSION
 ENV PATH                ${JAVA_HOME}/bin:${PATH}
+ENV FLINK_VERSION ${FLINK_VERSION}
+ENV SCALA_VERSION ${SCALA_VERSION}
+ENV SCALA_SUB_VERSION_NUM ${SCALA_SUB_VERSION_NUM}
+
 RUN apt-get update --fix-missing && \
     env DEBIAN_FRONTEND=noninteractive TZ=Etc/UTC apt-get install -y tzdata apt-utils wget unzip patch zip git maven nasm
 # java
@@ -28,9 +36,9 @@ RUN wget $JDK_URL && \
     mv /opt/jdk* /opt/jdk$JDK_VERSION && \
     ln -s /opt/jdk$JDK_VERSION /opt/jdk
 # scala
-RUN cd / && wget -c https://downloads.lightbend.com/scala/2.11.8/scala-2.11.8.tgz && \
-    (cd / && gunzip < scala-2.11.8.tgz)|(cd /opt && tar -xvf -) && \
-    rm /scala-2.11.8.tgz
+RUN cd / && wget -c https://downloads.lightbend.com/scala/${SCALA_VERSION}.${SCALA_SUB_VERSION_NUM}/scala-${SCALA_VERSION}.${SCALA_SUB_VERSION_NUM}.tgz && \
+    (cd / && gunzip < scala-${SCALA_VERSION}.${SCALA_SUB_VERSION_NUM}.tgz)|(cd /opt && tar -xvf -) && \
+    rm /scala-${SCALA_VERSION}.${SCALA_SUB_VERSION_NUM}.tgz
 
 # spark
 RUN cd /opt && \
