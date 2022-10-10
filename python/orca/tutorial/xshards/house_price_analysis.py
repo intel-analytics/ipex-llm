@@ -30,12 +30,13 @@ print(null_cnt_shard.collect())
 missing_data_shards = null_cnt_shard.sort_values(col_names="total", ascending=False)
 print(missing_data_shards.collect())
 
-#dealing with missing data
+# dealing with missing data
 new_shards = data_shard.drop_missing_value()
 
 # verify missing value has been removed
 new_shards3 = new_shards.get_null_sum()
 max_value = new_shards3.max_values('total')
+
 
 def drop_data(df):
     df = df.drop(df[df['Id'] == 0].index)
@@ -43,13 +44,15 @@ def drop_data(df):
     return df
 new_shards3 = new_shards.transform_shard(drop_data)
 
-#applying log transformation
+
+# applying log transformation
 def generate_new_sale_price(df):
     df['SalePrice'] = np.log(df['SalePrice'])
     return df
 new_shards4 = new_shards3.transform_shard(generate_new_sale_price)
 
-#create column for new variable (one is enough because it's a binary categorical feature)
+
+# create column for new variable (one is enough because it's a binary categorical feature)
 def generate_HasBsmt(df):
     df['HasBsmt'] = 0
     df.loc[df['TotalBsmtSF'] > 0, 'HasBsmt'] = 1
