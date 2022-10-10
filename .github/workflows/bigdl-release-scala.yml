@@ -15,10 +15,39 @@ jobs:
     runs-on: [self-hosted,  Shire]
     steps:
     - uses: actions/checkout@v3
+    - uses: actions/cache@v2
+      with:
+        path: ~/.m2/repository
+        key: maven-${{ hashFiles('**/pom.xml') }}
+        restore-keys: maven-
     - name: Set up JDK8
       uses: ./.github/actions/jdk-setup-action
     - name: Set up maven
       uses: ./.github/actions/maven-setup-action
+    - name: Set up Maven Settings
+      uses: s4u/maven-settings-action@v2.6.0
+      with:
+        sonatypeSnapshots: true
+        apacheSnapshots: true
+        servers: |
+          [{
+            "id": "central",
+            "configuration": {
+              "httpConfiguration": {
+                "all": {
+                  "connectionTimeout": "3600000",
+                  "readTimeout": "3600000"
+                  }    
+                }
+              }
+          },{
+            "id": "ossrh",
+            "username": "${{ secrets.OSSRH_USERNAME }}",
+            "password": "${{ secrets.OSSRH_PASSWORD }}",
+            "configuration": {
+              "timeout": "3600000"
+            }
+          }]
     - name: Maven clean deploy
       run: |
         set -x
