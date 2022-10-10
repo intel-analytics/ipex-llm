@@ -176,13 +176,18 @@ def GetRangeDataframe(prometheus_url, query, starttime, endtime, step, columns, 
                       "extra_feature_col": None}
     output_col_list = ["datetime"]
     for col in ["target_col", "id_col", "extra_feature_col"]:
-        invalidInputError(columns[col] == [] or set(columns[col]).issubset(df.columns.tolist()),
+        # Check whether columns specified by user exist
+        invalidInputError(len(columns[col]) == 0 or
+                          set(columns[col]).issubset(df.columns.tolist()),
                           "The input " + col + " is not found in collected Prometheus data.")
-        if columns[col] != []:
-            if len(columns[col]) == 1:
-                output_columns[col] = columns[col][0]  # id_col is str
-            else:
-                output_columns[col] = columns[col]
+
+        # If users specify target_col/id_col/extra_feature_col, update values in output_columns[]
+        if len(columns[col]) == 1:
+            output_columns[col] = columns[col][0]  # id_col must be str
+        elif len(columns[col]) > 1:
+            output_columns[col] = columns[col]
+
+        # According to output_columns, confirm columns to be remained in df
         if output_columns[col] is not None:
             if isinstance(output_columns[col], list):
                 output_col_list = output_col_list + output_columns[col]
