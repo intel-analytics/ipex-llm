@@ -29,8 +29,6 @@ def quality_check_timeseries_dataframe(df,
             column in the input data frame, the dt_col must be sorted
             from past to latest respectively for each id.
     '''
-    invalidInputError(dt_col in df.columns, f"dt_col {dt_col} can not be found in df.")
-    invalidInputError(pd.isna(df[dt_col]).sum() == 0, "There is N/A in datetime col")
     flag = True
     # 1. timestamp check
     flag = flag and _timestamp_type_check(df[dt_col])
@@ -48,6 +46,10 @@ def quality_check_timeseries_dataframe(df,
 
 
 def _timestamp_type_check(df_column):
+    '''
+    This check is used to make datetime column is datetime64 stype to facilitate our
+    access to freq.
+    '''
     _is_pd_datetime = pd.api.types.is_datetime64_any_dtype(df_column.dtypes)
     if _is_pd_datetime is not True:
         logging.warning("Datetime colomn should be datetime64 dtype.")
@@ -56,11 +58,13 @@ def _timestamp_type_check(df_column):
 
 
 def _time_interval_check(df_column):
+    
     interval = df_column.shift(-1) - df_column
     intervals = interval[:-1].unique()
     if len(intervals) > 1:
         logging.warning("There are irregular interval(more than one interval length)"
-                        " among the data")
+                        " among the data, please call .resample(interval).impute() "
+                        "first to clean the data.")
         return False
     return True
 
