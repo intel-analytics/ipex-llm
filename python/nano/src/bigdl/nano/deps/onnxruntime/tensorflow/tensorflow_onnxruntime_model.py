@@ -17,15 +17,15 @@
 
 import os
 import tensorflow as tf
-try:
-    import tf2onnx
-except ImportError:
-    invalidInputError(False, "Failed to import 'tf2onnx', you should install it first.")
-
 from bigdl.nano.utils.inference.tf.model import AcceleratedKerasModel
 from bigdl.nano.utils.log4Error import invalidInputError
 
 from ..core.onnxruntime_model import ONNXRuntimeModel
+
+try:
+    import tf2onnx
+except ImportError:
+    invalidInputError(False, "Failed to import 'tf2onnx', you should install it first.")
 
 
 class KerasONNXRuntimeModel(ONNXRuntimeModel, AcceleratedKerasModel):
