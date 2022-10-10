@@ -115,10 +115,10 @@ You can use _Chronos_ to:
                 <tr>
                     <td colspan="1">Version</td>
                     <td colspan="2"><button id="nightly"
-                            title="For users would like to try chronos's latest feature">Nightly (2.1.0b)</button>
+                            title="For users would like to try chronos's latest feature">Nightly (2.2.0b)</button>
                     </td>
                     <td colspan="2"><button id="stable"
-                            title="For users would like to deploy chronos in their production">Stable (2.0.0)</button></td>
+                            title="For users would like to deploy chronos in their production">Stable (2.1.0)</button></td>
                 </tr>
 
                 <tr>
@@ -146,14 +146,7 @@ pip install --pre --upgrade bigdl-chronos[pytorch]  # or other options you may w
 source bigdl-nano-init  # accelerate the conda env
 ```
 
-#### **2.2 Tensorflow backend**
-Tensorflow is one of the supported backend of Chronos in nightly release version, while it can not work alone without pytorch in Chronos for now. We will fix it soon. If you want to use tensorflow backend, please
-```bash
-pip install --pre --upgrade bigdl-nano[tensorflow]
-```
-**after you install the pytorch backend chronos.**
-
-#### **2.3 OS and Python version requirement**
+#### **2.2 OS and Python version requirement**
 
 ```eval_rst
 .. note:: 
