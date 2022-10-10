@@ -15,11 +15,11 @@ jobs:
     runs-on: [self-hosted, Linux, Bree]
     steps:
     - uses: actions/checkout@v3
-    - uses: actions/cache@v2
-      with:
-        path: ~/.m2/repository
-        key: maven-${{ hashFiles('**/pom.xml') }}
-        restore-keys: maven-
+    # - uses: actions/cache@v2
+    #   with:
+    #     path: ~/.m2/repository
+    #     key: maven-${{ hashFiles('**/pom.xml') }}
+    #     restore-keys: maven-
     - name: Set up JDK8
       uses: ./.github/actions/jdk-setup-action
     - name: Set up maven
