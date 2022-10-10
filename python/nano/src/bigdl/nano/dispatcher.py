@@ -66,6 +66,7 @@ def _get_patch_map():
 
 def patch_nano(patch_tf=None, patch_torch=None):
     """
+
     patch_nano is used to patch optimized class to replace original ones.
     Optimized classes include:
     1. tf.keras.Model/keras.Model -> bigdl.nano.tf.keras.Model
