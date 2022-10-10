@@ -38,18 +38,29 @@ class TensorflowEstimator:
                  optimizer_args,
                  bigdl_type="float", 
                  fl_client=None,
-                 server_model=None):
+                 server_model=None,
+                 client_model_path=None,
+                 server_model_path=None):
         self.bigdl_type = bigdl_type
         self.model = model
         self.loss_fn = loss_fn
         self.optimizer = optimizer_cls(**optimizer_args)
         self.version = 0
+        self.client_model_path = client_model_path
+        self.server_model_path = server_model_path
         self.fl_client = fl_client if fl_client is not None \
             else NNClient(aggregator='tf')
         self.loss_history = []
         if server_model is not None:
             self.__add_server_model(server_model, loss_fn, optimizer_cls, optimizer_args)
 
+    def save_server_model(self, model_path):
+        self.fl_client.nn_stub.save_server_model(
+        SaveModelRequest(model_path=model_path, backend='pt'))
+
+    def load_server_model(self, model_path):
+        self.fl_client.nn_stub.load_server_model(
+            LoadModelRequest(model_path=model_path, backend='pt'))
     
     @staticmethod
     def load_model_as_bytes(model):
@@ -126,6 +137,10 @@ class TensorflowEstimator:
             else:
                 invalidInputError(False, f'got unsupported data input type: {type(x)}')
             
+            if self.server_model_path is not None:
+                self.save_server_model(self.server_model_path)
+            if self.client_model_path is not None:
+                self.model.save(self.client_model_path)
 
     def predict(self, x):
         y_pred_local = self.model(x)
