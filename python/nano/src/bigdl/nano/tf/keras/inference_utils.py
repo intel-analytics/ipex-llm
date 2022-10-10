@@ -103,12 +103,10 @@ class InferenceUtils:
         """
         Trace a Keras model and convert it into an accelerated module for inference.
 
-        For example, this function returns a KerasOpenVINOModel when accelerator=='openvino'.
-
-        :param model: An torch.nn.Module model, including pl.LightningModule.
         :param input_sample: A set of inputs for trace, defaults to None. It should be a
             (tuple or list of) tf.TensorSpec or numpy array defining the shape/dtype of the input
-            when using 'onnxruntime' accelerator
+            when using 'onnxruntime' accelerator. The parameter will be ignored if accelerator
+            is 'openvino'.
         :param accelerator: The accelerator to use, defaults to None meaning staying in Keras
                             backend. 'openvino' and 'onnxruntime' are supported for now.
         :param onnxruntime_session_options: The session option for onnxruntime, only valid when
@@ -119,3 +117,4 @@ class InferenceUtils:
             return KerasOpenVINOModel(self, input_sample)
         elif accelerator == 'onnxruntime':
             return KerasONNXRuntimeModel(self, input_sample, onnxruntime_session_options)
+        return self
