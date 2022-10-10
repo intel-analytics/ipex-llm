@@ -324,7 +324,7 @@ predictions = pipelineModel.transform(validation_df)
 
 ### Chronos
 
-The *Chronos* library makes it easy to build end-to-end **time series analysis** by applying AutoML to extremely large-scale time series prediction.
+The *Chronos* library makes it easy to build fast, accurate and scalable **time series analysis** applications (with AutoML).
 
 <details><summary>Show Chronos example</summary>
 <br/>
