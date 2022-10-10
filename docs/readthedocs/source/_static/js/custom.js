@@ -5,7 +5,7 @@ $(document).ready(function(){
         "transform":"scale(0.3)",
         "position":"absolute",
         "top":"-75px",
-        "left":"15px",
+        "left":"-110px",
         "opacity":"0.3"
     });
     $('#ethical-ad-placement').parent().css({
