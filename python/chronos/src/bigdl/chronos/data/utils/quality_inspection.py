@@ -58,7 +58,10 @@ def _timestamp_type_check(df_column):
 
 
 def _time_interval_check(df_column):
-    
+    '''
+    This check is used to verify whether all the time intervals of datetime column
+    are consistent.
+    '''
     interval = df_column.shift(-1) - df_column
     intervals = interval[:-1].unique()
     if len(intervals) > 1:
@@ -69,7 +72,10 @@ def _time_interval_check(df_column):
     return True
 
 
-def _missing_value_check(df, dt_col, threshold=0.2):
+def _missing_value_check(df, dt_col, threshold=0):
+    '''
+    This check is used to determine whether there are missing values in the data.
+    '''
     for column in df.columns:
         if column == dt_col:
             continue
