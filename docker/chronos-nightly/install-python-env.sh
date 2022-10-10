@@ -86,10 +86,8 @@ if [ ${#options[@]} == 0 ];
 then
     pip install --no-cache-dir --pre --upgrade bigdl-chronos
 else
-    echo $options
     str=${options[*]}
     opts=`echo $str | tr ' ' ','`
-    echo $opts
     pip install --no-cache-dir --pre --upgrade bigdl-chronos[$opts]
 fi
 
