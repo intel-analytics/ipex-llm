@@ -2,10 +2,12 @@
 
 set -x
 
-local_ip=$LOCAL_IP
-sgx_mem_size=$SGX_MEM_SIZE
-sgx_log_level=$SGX_LOG_LEVEL
-
+if [ -f "/ppml/bash.sig" ]; then
+    echo "/ppml/bash.sig is ready"
+else
+    echo "/ppml/bash.sig is not ready, please generate it through building CustomerImageDockfile"
+    exit 1
+fi
 if [ -c "/dev/sgx/enclave" ]; then
     echo "/dev/sgx/enclave is ready"
 elif [ -c "/dev/sgx_enclave" ]; then
@@ -28,13 +30,9 @@ else
     exit 1
 fi
 
-if [ -f "/ppml/secured_argvs" ]; then
-    echo "/ppml/secured_argvs is ready"
-else
-    echo "/ppml/secured_argvs is not ready, please generate it before init.sh"
-    exit 1
-fi
 
 ls -al /dev/sgx
 
-make SGX=1 DEBUG=1 THIS_DIR=/ppml  SPARK_LOCAL_IP=$local_ip SPARK_USER=root G_SGX_SIZE=$sgx_mem_size G_LOG_LEVEL=$sgx_log_level
+gramine-sgx-get-token --output /ppml/bash.token --sig /ppml/bash.sig
+
+chmod +x /ppml/bash.token

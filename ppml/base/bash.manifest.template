@@ -2,12 +2,18 @@ libos.entrypoint = "{{ execdir }}/bash"
 loader.entrypoint = "file:{{ gramine.libos }}"
 loader.pal_internal_mem_size = "512M"
 loader.log_level = "{{ log_level }}"
+loader.insecure__use_host_env = true
+loader.env.LD_PRELOAD  = ""
+
+sys.enable_extra_runtime_domain_names_conf = true
 
 #loader.insecure__use_cmdline_argv = true
 loader.insecure_disable_aslr = true
 #loader.argv_src_file = "file:/ppml/trusted-big-data-ml/secured_argvs"
 loader.argv_src_file = "file:/ppml/secured_argvs"
 
+sgx.remote_attestation = "dcap"
+sgx.ra_client_spid = ""
 sgx.allow_file_creation = true
 sgx.debug = false
 sgx.nonpie_binary = true

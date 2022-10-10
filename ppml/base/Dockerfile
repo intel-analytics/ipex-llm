@@ -5,6 +5,7 @@ ARG http_proxy
 ARG https_proxy
 ARG no_proxy
 ARG BIGDL_VERSION
+
 ENV BIGDL_VERSION                       ${BIGDL_VERSION}
 ENV LOCAL_IP                            127.0.0.1
 ENV SGX_MEM_SIZE                        32G
@@ -18,6 +19,10 @@ ADD ./bash.manifest.template /ppml/bash.manifest.template
 ADD ./Makefile /ppml/Makefile
 ADD ./init.sh /ppml/init.sh
 ADD ./clean.sh /ppml/clean.sh
+
+# These files ared used for attestation service and register MREnclave
+ADD ./register-mrenclave.py /ppml/register-mrenclave.py
+ADD ./verify-attestation-service.sh /ppml/verify-attestation-service.sh
 
 ADD ./_dill.py.patch /_dill.py.patch
 ADD ./python-uuid.patch /python-uuid.patch
@@ -61,7 +66,24 @@ RUN env DEBIAN_FRONTEND=noninteractive apt-get update && \
     patch /usr/local/lib/python3.7/dist-packages/psutil/_pslinux.py /python-pslinux.patch && \
     cp /usr/lib/x86_64-linux-gnu/libpython3.7m.so.1 /usr/lib/libpython3.7m.so.1 && \
     chmod a+x /ppml/init.sh && \
-    chmod a+x /ppml/clean.sh
+    chmod a+x /ppml/clean.sh && \
+    chmod +x /ppml/verify-attestation-service.sh && \
+# Install sgxsdk and dcap, which is used for remote attestation
+    mkdir -p /opt/intel/ && \
+    cd /opt/intel && \
+    wget https://download.01.org/intel-sgx/sgx-dcap/1.13/linux/distro/ubuntu20.04-server/sgx_linux_x64_sdk_2.16.100.4.bin && \
+    chmod a+x ./sgx_linux_x64_sdk_2.16.100.4.bin && \
+    printf "no\n/opt/intel\n"|./sgx_linux_x64_sdk_2.16.100.4.bin && \
+    . /opt/intel/sgxsdk/environment && \
+    cd /opt/intel && \
+    wget https://download.01.org/intel-sgx/sgx-dcap/1.13/linux/distro/ubuntu20.04-server/sgx_debian_local_repo.tgz && \
+    tar xzf sgx_debian_local_repo.tgz && \
+    echo 'deb [trusted=yes arch=amd64] file:///opt/intel/sgx_debian_local_repo focal main' | tee /etc/apt/sources.list.d/intel-sgx.list && \
+    wget -qO - https://download.01.org/intel-sgx/sgx_repo/ubuntu/intel-sgx-deb.key | apt-key add - && \
+    apt-get update && \
+    apt-get install -y libsgx-enclave-common-dev  libsgx-ae-qe3 libsgx-ae-qve libsgx-urts libsgx-dcap-ql libsgx-dcap-default-qpl libsgx-dcap-quote-verify-dev libsgx-dcap-ql-dev libsgx-dcap-default-qpl-dev libsgx-quote-ex-dev libsgx-uae-service libsgx-ra-network libsgx-ra-uefi
+
+
 
 ENV PYTHONPATH                          /usr/lib/python3.7:/usr/lib/python3.7/lib-dynload:/usr/local/lib/python3.7/dist-packages:/usr/lib/python3/dist-packages
 WORKDIR /ppml
