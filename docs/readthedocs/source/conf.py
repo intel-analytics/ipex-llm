@@ -51,7 +51,7 @@ html_sidebars = {
         "sidebar_releases.html",
         "sidebar_handouts.html"
     ],
-    "**": ["sidebar-nav-bs.html"]
+    "**": ["sidebar_backbutton.html","sidebar-nav-bs.html"]
 }
 
 # The suffix of source filenames.
