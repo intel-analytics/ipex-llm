@@ -12,7 +12,7 @@ permissions:
 
 jobs:
   bigdl-release-scala:
-    runs-on: [self-hosted,  Shire]
+    runs-on: [self-hosted, Linux, Bree]
     steps:
     - uses: actions/checkout@v3
     - uses: actions/cache@v2
