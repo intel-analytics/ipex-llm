@@ -1,4 +1,4 @@
-# Speed up Chronos built-in models/customized time-series models
+# Accelerated Training and Inference
 
 Chronos provides transparent acceleration for Chronos built-in models and customized time-series models. In this deep-dive page, we will introduce how to enable/disable them.
 
@@ -16,7 +16,7 @@ Time series model, especially those deep learning models, often suffers slow tra
 ### **2. Training Acceleration**
 Training Acceleration is transparent in Chronos's API. Transparentness means that Chronos users will enjoy the acceleration without changing their code(unless some expert users want to set some advanced settings).
 ```eval_rst
-.. note:: 
+.. note::
     **Write your script under** ``if __name__=="__main__":``:
 
      Chronos will automatically utilize the computation resources on the hardware. This may include multi-process training on a single node. Use this header will prevent many strange behavior.
@@ -65,7 +65,7 @@ We have examples adapted from `pytorch-forecasting`'s examples to show the signi
 We are working on the acceleration of `AutoModel` and `AutoTSEstimator`. Please unset the environment by:
 ```bash
 source bigdl-nano-unset-env
-``` 
+```
 
 ### **3. Inference Acceleration**
 Inference has become a critical part for time series model's performance. This may be divided to two parts:
@@ -77,7 +77,7 @@ Typically, throughput and latency is a trade-off pair. We have three optimizatio
 - **ONNX Runtime**: Users may export their trained(w/wo auto tuning) model to ONNX file and deploy it on other service. Chronos also provides an internal onnxruntime inference support for those users who pursue low latency and higher throughput during inference on a single node.
 - **Quantization**: Quantization refers to processes that enable lower precision inference. In Chronos, post-training quantization is supported relied on [Intel® Neural Compressor](https://intel.github.io/neural-compressor/README.html).
 ```eval_rst
-.. note:: 
+.. note::
     **Additional Dependencies**:
 
     You need to install `neural-compressor` to enable quantization related methods.
