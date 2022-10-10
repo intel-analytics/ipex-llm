@@ -6,12 +6,10 @@ $(document).ready(function(){
         "position":"absolute",      // modify its position
         "top":"-75px",
         "left":"-110px",
-        "opacity":"0.3"             // modify its opacity
+        "opacity":"0.7"             // modify its opacity
     });
     $('#ethical-ad-placement').parent().css({
         "position":"relative",      // modify ads position
         "height":"60px"             // give it a default height to prevent wrong display
     })
 })
-
-// #ethical-ad-placement: transform:scale(0.3) position:absolute(前一个设置成relative height 60px) top:-75px left: -15px opacity:0.3
