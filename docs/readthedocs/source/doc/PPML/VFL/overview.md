@@ -10,6 +10,7 @@ VFL is supported in BigDL PPML. It allows users to train a federated machine lea
 For each scenario, an quick start example is available in following links.
 * [Private Set Intersection](https://github.com/intel-analytics/BigDL/blob/main/python/ppml/example/psi/psi-tutorial.md): A PSI example of getting intersection of two parties
 * [Pytorch Neural Network Model](https://github.com/intel-analytics/BigDL/blob/main/python/ppml/example/pytorch_nn_lr/pytorch-nn-lr-tutorial.md): An Pytorch based Logistic Regression application by two parties
+* [Tensorflow Neural Network Model](https://github.com/intel-analytics/BigDL/blob/main/python/ppml/example/tensorflow_nn_lr/tensorflow-nn-lr-tutorial.md): An Tensorflow based Logistic Regression application by two parties
 * [FGBoost Model](https://github.com/intel-analytics/BigDL/blob/main/python/ppml/example/fgboost_regression/fgboost-tutorial.md): An federated Gradient Boosted Regression Tree application by two parties
 
 ## System Architecture
