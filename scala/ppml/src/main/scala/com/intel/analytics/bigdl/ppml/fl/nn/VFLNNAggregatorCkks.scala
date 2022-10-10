@@ -55,8 +55,6 @@ class VFLNNAggregatorCkks(
     var aggregatedTable: TensorMap = null
     flPhase match {
       case FLPhase.TRAIN =>
-        println("train agg")
-
         val loss = criterion.forward(output, target)
         val grad = criterion.backward(output, target)
         val meta = metaBuilder.setName("gradInput").setVersion(storage.version).build()

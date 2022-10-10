@@ -54,7 +54,7 @@ class VFLCkksSpec extends FLSpec {
 
     FLContext.initFLContext(1, target)
     FLContext.flClient.initCkks(secret)
-    val lr = new VFLLogisticRegression(4)
+    val lr = new VFLLogisticRegression(4, algorithm = "vfl_logistic_regression_ckks")
     val input = Tensor(Array(0.063364277360961f,
       0.90631252736785f,
       0.22275671223179f,
