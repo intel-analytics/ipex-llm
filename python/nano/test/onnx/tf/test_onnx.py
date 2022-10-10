@@ -25,19 +25,18 @@ class TestONNX(TestCase):
     def test_model_trace_onnx(self):
         model = ResNet50(weights=None, input_shape=[224, 224, 3], classes=10)
         model = Model(inputs=model.inputs, outputs=model.outputs)
-        train_examples = np.random.random((100, 224, 224, 3))
-        train_labels = np.random.randint(0, 10, size=(100,))
-        train_dataset = tf.data.Dataset.from_tensor_slices((train_examples, train_labels)).batch(2)
+        input_examples = np.random.random((100, 224, 224, 3))
 
         # trace a Keras model
         spec = tf.TensorSpec((None, 224, 224, 3), tf.float32)
         onnx_model = model.trace(accelerator='onnxruntime', input_sample=spec)
 
-        y_hat = onnx_model(train_examples[:10])
+        y_hat = onnx_model(input_examples[:10])
         assert y_hat.shape == (10, 10)
 
-        y_hat = onnx_model.predict(train_examples, batch_size=5)
+        y_hat = onnx_model.predict(input_examples, batch_size=5)
         assert y_hat.shape == (100, 10)
 
-        onnx_model.compile(metrics=[tf.keras.metrics.CategoricalAccuracy()])
-        acc = onnx_model.evaluate(train_dataset, return_dict=True)['categorical_accuracy']
+        preds = model.predict(input_examples)
+        onnx_preds = onnx_model.predict(input_examples)
+        np.testing.assert_allclose(preds, onnx_preds, rtol=1e-5)
