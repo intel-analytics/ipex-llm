@@ -12,7 +12,7 @@
     <packaging>jar</packaging>
 
     <properties>
-        <grpc.version>1.37.0</grpc.version>
+        <grpc.version>1.47.0</grpc.version>
         <bigdl.basedir>${project.parent.basedir}</bigdl.basedir>
         <parquet.version>1.12.2</parquet.version>
     </properties>

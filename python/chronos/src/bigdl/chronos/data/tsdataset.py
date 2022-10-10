@@ -344,8 +344,6 @@ class TSDataset:
         This method will be implemented by tsfresh.
         Make sure that the specified column name does not contain '__'.
 
-        TODO: relationship with scale should be figured out.
-
         :param settings: str or dict. If a string is set, then it must be one of "comprehensive"
                "minimal" and "efficient". If a dict is set, then it should follow the instruction
                for default_fc_parameters in tsfresh. The value is defaulted to "comprehensive".
@@ -355,6 +353,7 @@ class TSDataset:
 
         :return: the tsdataset instance.
         '''
+        # TODO: relationship with scale should be figured out.
         from bigdl.nano.utils.log4Error import invalidInputError
         try:
             from tsfresh import extract_features
@@ -413,8 +412,6 @@ class TSDataset:
         This method will be implemented by tsfresh.
         Make sure that the specified column name does not contain '__'.
 
-        TODO: relationship with scale should be figured out.
-
         :param window_size: int, generate feature according to the rolling result.
         :param settings: str or dict. If a string is set, then it must be one of "comprehensive"
                "minimal" and "efficient". If a dict is set, then it should follow the instruction
@@ -425,6 +422,7 @@ class TSDataset:
 
         :return: the tsdataset instance.
         '''
+        # TODO: relationship with scale should be figured out.
         from bigdl.nano.utils.log4Error import invalidInputError
         try:
             from tsfresh.utilities.dataframe_functions import roll_time_series
@@ -493,41 +491,41 @@ class TSDataset:
 
         :param lookback: int, lookback value. Default to 'auto',
                if 'auto', the mode of time series' cycle length will be taken as the lookback.
-        :param horizon: int or list,
-               if `horizon` is an int, we will sample `horizon` step
+        :param horizon: int or list.
+               If `horizon` is an int, we will sample `horizon` step
                continuously after the forecasting point.
-               if `horizon` is a list, we will sample discretely according
+               If `horizon` is a list, we will sample discretely according
                to the input list. 1 means the timestamp just after the observed data.
                specially, when `horizon` is set to 0, ground truth will be generated as None.
         :param feature_col: str or list, indicates the feature col name. Default to None,
                where we will take all available feature in rolling.
         :param target_col: str or list, indicates the target col name. Default to None,
-               where we will take all target in rolling. it should be a subset of target_col
+               where we will take all target in rolling. It should be a subset of target_col
                you used to initialize the tsdataset.
-        :param id_sensitive: bool,
-               if `id_sensitive` is False, we will rolling on each id's sub dataframe
+        :param id_sensitive: bool.
+               If `id_sensitive` is False, we will rolling on each id's sub dataframe
                and fuse the sampings.
                The shape of rolling will be
                x: (num_sample, lookback, num_feature_col + num_target_col)
-               y: (num_sample, horizon+label_len, num_target_col)
-               where num_sample is the summation of sample number of each dataframe
+               y: (num_sample, horizon + label_len, num_target_col)
+               where num_sample is the summation of sample number of each dataframe.
 
-               if `id_sensitive` is True, we will rolling on the wide dataframe whose
-               columns are cartesian product of id_col and feature_col
+               If `id_sensitive` is True, we will rolling on the wide dataframe whose
+               columns are cartesian product of id_col and feature_col.
                The shape of rolling will be
                x: (num_sample, lookback, new_num_feature_col + new_num_target_col)
-               y: (num_sample, horizon+label_len, new_num_target_col)
+               y: (num_sample, horizon + label_len, new_num_target_col)
                where num_sample is the sample number of the wide dataframe,
-               new_num_feature_col is the product of the number of id and the number of feature_col.
+               new_num_feature_col is the product of the number of id and the number of feature_col,
                new_num_target_col is the product of the number of id and the number of target_col.
-        :param time_enc: bool,
+        :param time_enc: bool.
                This parameter should be set to True only when you are using Autoformer model. With
                time_enc to be true, 2 additional numpy ndarray will be returned when you call
                `.to_numpy()`. Be sure to have a time type for dt_col if you set time_enc to True.
-        :param label_len: int,
+        :param label_len: int.
                This parameter should be set to True only when you are using Autoformer model. This
                indicates the length of overlap area of output(y) and input(x) on time axis.
-        :param is_predict: bool,
+        :param is_predict: bool.
                This parameter indicates if the dataset will be sampled as a prediction dataset
                (without groud truth).
 
