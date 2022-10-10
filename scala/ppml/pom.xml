@@ -71,6 +71,12 @@
             </exclusions>
         </dependency>
         <dependency>
+            <groupId>org.scala-lang</groupId>
+            <artifactId>scala-compiler</artifactId>
+            <version>${scala.version}</version>
+            <scope>${spark-scope}</scope>
+        </dependency>
+        <dependency>
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-compress</artifactId>
             <version>1.21</version>
@@ -416,6 +422,18 @@
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-assembly-plugin</artifactId>
                 <executions>
+                    <execution>
+                        <id>with-all-in-one</id>
+                        <configuration>
+                            <descriptors>
+                                <descriptor>${project.basedir}/src/assembly/all-in-one.xml</descriptor>
+                            </descriptors>
+                        </configuration>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>single</goal>
+                        </goals>
+                    </execution>
                     <execution>
                         <id>python</id>
                         <inherited>false</inherited>
