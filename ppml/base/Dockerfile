@@ -12,29 +12,8 @@ ENV SGX_LOG_LEVEL                       error
 ENV LC_ALL                              C.UTF-8
 ENV LANG                                C.UTF-8
 
-
-
-# TODO: remove these directories
-# RUN mkdir -p /ppml/trusted-big-data-ml/work && \
-#     mkdir -p /ppml/trusted-big-data-ml/work/lib && \
-#     mkdir -p /ppml/trusted-big-data-ml/work/keys && \
-#     mkdir -p /ppml/trusted-big-data-ml/work/password && \
-#     mkdir -p /ppml/trusted-big-data-ml/work/data && \
-#     mkdir -p /ppml/trusted-big-data-ml/work/models && \
-#     mkdir -p /ppml/trusted-big-data-ml/work/apps && \
-#     mkdir -p /ppml/trusted-big-data-ml/work/examples/bigdl && \
-#     mkdir -p /root/.keras/datasets && \
-#     mkdir -p /root/.zinc && \
-#     mkdir -p /root/.m2 && \
-#     mkdir -p /root/.kube/
-#     mkdir -p /ppml/trusted-big-data-ml/fl
-
-# SOLVED: change to use /ppml
 RUN mkdir -p /ppml/
 
-# /ppml/work/lib is the folder for gramine to load libraries, check loader.env.LD_LIBRARY_PATH
-
-# SOLVED: check these four files, resolve any bad paths
 ADD ./bash.manifest.template /ppml/bash.manifest.template
 ADD ./Makefile /ppml/Makefile
 ADD ./init.sh /ppml/init.sh
@@ -84,8 +63,6 @@ RUN env DEBIAN_FRONTEND=noninteractive apt-get update && \
     chmod a+x /ppml/init.sh && \
     chmod a+x /ppml/clean.sh
 
-
 ENV PYTHONPATH                          /usr/lib/python3.7:/usr/lib/python3.7/lib-dynload:/usr/local/lib/python3.7/dist-packages:/usr/lib/python3/dist-packages
-# Change WORKDIR to /ppml/ later images can overwrite this
 WORKDIR /ppml
 ENTRYPOINT [ "/bin/bash" ]
