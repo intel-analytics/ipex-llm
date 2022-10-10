@@ -18,23 +18,27 @@ from functools import lru_cache
 from importlib.util import find_spec
 
 
-@lru_cache(maxsize=None)
+_mapping_tf = None
+_mapping_torch = None
+
+
 def _get_patch_map():
+    global _mapping_tf
+    global _mapping_torch
 
     patch_tf = find_spec("tensorflow") is not None
     patch_torch = find_spec("pytorch_lightning") is not None
-    mapping_tf = []
-    mapping_torch = []
 
     # 4-dim list, where, what, which, legancy
-    if patch_tf:
+    if patch_tf and _mapping_tf is None:
+        _mapping_tf = []
         import keras
         import tensorflow
         from bigdl.nano.tf.keras import Sequential
         from bigdl.nano.tf.keras import Model
         from bigdl.nano.tf.optimizers import SparseAdam
         from bigdl.nano.tf.keras.layers import Embedding
-        mapping_tf += [
+        _mapping_tf += [
             [tensorflow.keras, "Model", Model, None],
             [tensorflow.keras, "Sequential", Sequential, None],
             [tensorflow.keras.optimizers, "Adam", SparseAdam, None],
@@ -44,19 +48,20 @@ def _get_patch_map():
             [keras.layers, "Embedding", Embedding, None]
         ]
 
-    if patch_torch:
+    if patch_torch and _mapping_torch is None:
+        _mapping_torch = []
         import pytorch_lightning
         import torchvision
         from bigdl.nano.pytorch import Trainer
         from bigdl.nano.pytorch.vision import transforms
         from bigdl.nano.pytorch.vision import datasets
-        mapping_torch += [
+        _mapping_torch += [
             [pytorch_lightning, "Trainer", Trainer, None],
             [torchvision, "transforms", transforms, None],
             [torchvision, "datasets", datasets, None],
         ]
 
-    return mapping_tf, mapping_torch
+    return _mapping_tf, _mapping_torch
 
 
 def patch_nano(patch_tf=None, patch_torch=None):
