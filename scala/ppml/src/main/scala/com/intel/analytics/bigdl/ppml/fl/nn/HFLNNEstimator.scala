@@ -81,11 +81,4 @@ class HFLNNEstimator(algorithm: String,
   def predict(dataSet: LocalDataSet[MiniBatch[Float]]): Array[Activity] = {
     localPredictor.predict(dataSet)
   }
-
-  override def trainStep(input: Activity, target: Activity): Unit = {
-    throw new NotImplementedError()
-  }
-  override def predict(input: Activity): Activity = {
-    throw new NotImplementedError()
-  }
 }

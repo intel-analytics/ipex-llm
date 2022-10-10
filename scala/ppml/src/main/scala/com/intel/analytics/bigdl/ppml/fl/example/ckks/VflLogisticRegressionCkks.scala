@@ -60,9 +60,6 @@ object VflLogisticRegressionCkks {
 
   def main(args: Array[String]): Unit = {
     parser.parse(args, CmdArgs()).foreach { param =>
-//      //TODO delete
-//      val javaHome = System.getProperty("java.home")
-//      System.load(javaHome + "/lib/amd64/libjawt.so")
 
       val inputDir = param.dataPath
       val clientId = param.clientId

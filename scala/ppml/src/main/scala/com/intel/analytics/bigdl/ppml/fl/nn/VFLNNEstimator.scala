@@ -84,14 +84,11 @@ class VFLNNEstimator(algorithm: String,
 
     model
   }
-  def trainStep(input: Activity,
+  protected def trainStep(input: Activity,
                 target: Activity): Unit = {
     model.training()
     model.zeroGradParameters()
     val output = model.forward(input)
-    println(output.toTensor[Float].mean())
-    println(output.toTensor[Float].min())
-    println(output.toTensor[Float].max())
 
     // Upload to PS
     val metadata = MetaData.newBuilder
@@ -170,7 +167,7 @@ class VFLNNEstimator(algorithm: String,
     resultSeq.toArray
   }
 
-  override def predict(input: Activity): Activity = {
+  protected def predict(input: Activity): Activity = {
     val output = model.forward(input)
     val metadata = MetaData.newBuilder
       .setName(s"${model.getName()}_output").setVersion(iteration).build

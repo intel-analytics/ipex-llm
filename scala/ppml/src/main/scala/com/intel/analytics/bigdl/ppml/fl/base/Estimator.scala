@@ -28,8 +28,6 @@ trait Estimator {
   def getEvaluateResults(): Map[String, Array[Float]] = {
     evaluateResults.map(v => (v._1, v._2.toArray)).toMap
   }
-  def trainStep(input: Activity,
-                target: Activity): Unit
 
   def train(endEpoch: Int,
             trainDataSet: LocalDataSet[MiniBatch[Float]],
@@ -37,6 +35,5 @@ trait Estimator {
 
   def evaluate(dataSet: LocalDataSet[MiniBatch[Float]])
 
-  def predict(input: Activity): Activity
   def predict(dataSet: LocalDataSet[MiniBatch[Float]]): Array[Activity]
 }

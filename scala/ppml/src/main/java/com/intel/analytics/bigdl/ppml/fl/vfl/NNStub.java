@@ -128,9 +128,11 @@ public class NNStub {
                 .setClientuuid(clientID)
                 .setAlgorithm(algorithm);
         if (null != ckks) {
-            TensorMap encryptedData = encrypt(data);
-            evaluateRequestBuilder.setData(encryptedData);
-            logDebugMessage(encryptedData);
+// TODO: evaluate with CKKS
+//            TensorMap encryptedData = encrypt(data);
+//            evaluateRequestBuilder.setData(encryptedData);
+//            logDebugMessage(encryptedData);
+            throw new UnsupportedOperationException("evaluate with CKKS is unspported.");
         } else {
             evaluateRequestBuilder.setData(data);
             logDebugMessage(data);
