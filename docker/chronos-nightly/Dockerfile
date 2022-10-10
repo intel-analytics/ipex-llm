@@ -26,6 +26,9 @@ ARG model
 ARG auto_tuning
 # hardware: single or cluster
 ARG hardware
+# extra_dep: install extra dependencies(e.g. onnxruntime, jupyter, ...)
+#            y (for yes) or n (for no)
+ARG extra_dep 
 
 ADD ./docker/chronos-nightly/install-python-env.sh /opt
 ADD ./python/chronos/colab-notebook /opt/work/colab-notebook
@@ -46,7 +49,7 @@ RUN apt-get update --fix-missing && \
     ./Miniconda3-py37_4.12.0-Linux-x86_64.sh -b -f -p /usr/local && \
     rm Miniconda3-py37_4.12.0-Linux-x86_64.sh && \
 # python
-    /opt/install-python-env.sh ${model} ${auto_tuning} ${hardware}
+    /opt/install-python-env.sh ${model} ${auto_tuning} ${hardware} ${extra_dep}
 
 RUN echo "source activate chronos" > ~/.bashrc
 RUN echo "export JAVA_HOME=/usr/lib/jvm/java-8-openjdk-amd64/" >> ~/.bashrc

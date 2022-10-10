@@ -1,22 +1,19 @@
+if (( $# < 4)); then
+    echo "Usage: install-python-env.sh model auto_tuning hardware extra_dep"
+    echo "       model: pytorch|tensorflow|prophet|arima"
+    echo "       auto_tuning: y|n"
+    echo "       hardware: single|cluster"
+    echo "       extra_dep: y|n"
+    exit -1
+fi
+
 conda create -y -n chronos python=3.7 setuptools=58.0.4
 source activate chronos
-pip install --no-cache-dir neural_compressor==1.8.1 && \
-pip install --no-cache-dir onnxruntime==1.6.0 && \
-pip install --no-cache-dir tsfresh==0.17.0 && \
-pip install --no-cache-dir numpy==1.19.5 && \
-pip install --no-cache-dir ray==1.9.2 ray[tune]==1.9.2 ray[default]==1.9.2 && \
-pip install --no-cache-dir pyarrow==6.0.1 && \
-pip install --no-cache-dir --pre bigdl-nano[pytorch] && \
-pip install --no-cache-dir --pre bigdl-nano[tensorflow] && \
-pip install --no-cache-dir torchmetrics==0.7.2 && \
-pip install --no-cache-dir scipy==1.5.4 && \
-pip install --no-cache-dir prometheus_pandas==0.3.1 && \
-pip install --no-cache-dir xgboost==1.2.0 && \
-pip install --no-cache-dir jupyter==1.0.0
 
 model=$1
 auto_tuning=$2
 hardware=$3
+extra_dep=$4
 options=()
 
 if [ $model == "pytorch" ] || [ $model == "tensorflow" ];
@@ -30,7 +27,7 @@ then
     then
         # invalid args
         echo "Invalid argument."
-        echo "Argument auto_tuning can be y (for yes)|n (for no), please check."
+        echo "Argument auto_tuning can be y (for yes) or n (for no), please check."
         exit -1
     fi
 
@@ -41,7 +38,7 @@ then
     then
         # invalid args
         echo "Invalid argument."
-        echo "Argument hardware can be single|cluster, please check."
+        echo "Argument hardware can be single or cluster, please check."
         exit -1
     fi
 elif [ $model == "prophet" ] || [ $model == "arima" ];
@@ -53,7 +50,7 @@ then
     then
         # invalid args
         echo "Invalid argument."
-        echo "Argument auto_tuning can be y (for yes)|n (for no), please check."
+        echo "Argument auto_tuning can be y (for yes) or n (for no), please check."
         exit -1
     fi
 
@@ -67,7 +64,7 @@ then
     then
         # invalid args
         echo "Invalid argument."
-        echo "Argument hardware can be single|cluster, please check."
+        echo "Argument hardware can be single or cluster, please check."
         exit -1
     fi
 
@@ -81,7 +78,7 @@ then
 else
     # invalid args
     echo "Invalid argument."
-    echo "Argument model can be pytorch|tensorflow|prophet|arima, please check."
+    echo "Argument model can be pytorch, tensorflow, prophet, or arima, please check."
     exit -1
 fi
 
@@ -96,5 +93,22 @@ else
     pip install --no-cache-dir --pre --upgrade bigdl-chronos[$opts]
 fi
 
+if [ $extra_dep == "y" ];
+then
+    pip install --no-cache-dir neural_compressor==1.8.1 && \
+    pip install --no-cache-dir onnxruntime==1.6.0 && \
+    pip install --no-cache-dir onnx==1.8.0 && \
+    pip install --no-cache-dir tsfresh==0.17.0 && \
+
+    pip install --no-cache-dir prometheus_pandas==0.3.1 && \
+    pip install --no-cache-dir xgboost==1.2.0 && \
+    pip install --no-cache-dir jupyter==1.0.0
+elif [ $extra_dep != "n" ];
+then
+    # invalid args
+    echo "Invalid argument."
+    echo "Argument extra_dep can be y (for yes) or n (for no), please check."
+    exit -1
+fi
 
 
