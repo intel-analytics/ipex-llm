@@ -61,20 +61,6 @@ cluster_mode = str(sys.argv[1])
 # cluster_mode = "k8s"
 if cluster_mode == "local":
     sc = init_orca_context(memory=str(sys.argv[2]))
-elif cluster_mode == "standalone":
-    sc = init_orca_context("standalone", cores=int(sys.argv[3]), num_nodes=int(sys.argv[4]), memory=str(sys.argv[2]))
-elif cluster_mode == "yarn":
-    sc = init_orca_context("yarn", cores=int(sys.argv[3]), num_nodes=int(sys.argv[4]), memory=str(sys.argv[2]))
-elif cluster_mode == "k8s":
-    sc = init_orca_context(cluster_mode="k8s", cores=8, num_nodes=4, memory="20g",
-                           master="k8s://https://172.16.0.200:6443",
-                           container_image="10.239.45.10/arda/intelanalytics/bigdl-k8s-spark-3.1.2:0.14.0-SNAPSHOT",
-                           conf={"spark.kubernetes.driver.volumes.persistentVolumeClaim.nfsvolumeclaim.options.claimName": "nfsvolumeclaim",
-                                 "spark.kubernetes.driver.volumes.persistentVolumeClaim.nfsvolumeclaim.mount.path": "/bigdl2.0/data",
-                                 "spark.kubernetes.executor.volumes.persistentVolumeClaim.nfsvolumeclaim.options.claimName": "nfsvolumeclaim",
-                                 "spark.kubernetes.executor.volumes.persistentVolumeClaim.nfsvolumeclaim.mount.path": "/bigdl2.0/data"})
-elif cluster_mode == "spark-submit":  # To test k8s using spark-submit
-    sc = init_orca_context(cluster_mode="spark-submit")
 
 
 data_path = "./bigdl2.0/data"
@@ -89,7 +75,7 @@ schema = StructType(
         StructField('item', IntegerType(), True)
     ]
 )
-df = spark.read.csv("{}/{}/ratings.csv".format(data_path, data_type), sep="::",schema=schema,
+df = spark.read.csv("{}/{}/ratings.dat".format(data_path, data_type), sep="::",schema=schema,
                      header=False)
 min_user_id = df.agg({"user": "min"}).collect()[0]["min(user)"]
 max_user_id = df.agg({"user": "max"}).collect()[0]["max(user)"]
@@ -99,8 +85,8 @@ print(min_user_id, max_user_id, min_item_id, max_item_id)
 from pyspark.sql import functions
 df = df.withColumn('label', functions.lit(1))
 
-from pyspark.sql import functions as F
-from pyspark.sql import types as T
+from pyspark.sql.functions import udf, collect_list
+from pyspark.sql.types import ArrayType
 import random
 
 neg_scale = 4
@@ -110,9 +96,9 @@ def neg_sample(x):
     neg_item = random.sample(set(range(min_item_id, max_item_id+1)) - set(x), min(item_count,max_count))
     return neg_item
 
-neg_sample_udf = F.udf(neg_sample, T.ArrayType(IntegerType(), False))
+neg_sample_udf = udf(neg_sample, ArrayType(IntegerType(), False))
 
-df_neg= df.groupBy('user').agg(neg_sample_udf(F.collect_list('item')).alias('item_list'))
+df_neg= df.groupBy('user').agg(neg_sample_udf(collect_list('item')).alias('item_list'))
 from pyspark.sql.functions import *
 df_neg = df_neg.select(df_neg.user, explode(df_neg.item_list))
 df_neg = df_neg.withColumn('label', functions.lit(0))
@@ -123,7 +109,6 @@ train_df, test_df = df.randomSplit([0.8, 0.2],100)
 
 batch_size=256
 epochs=5
-model_dir='./'
 
 # create an Estimator
 backend = 'spark'
@@ -140,7 +125,7 @@ stats = est.fit(train_df,
                 validation_steps =int(10000 // batch_size))
 
 # save model in H5 format
-est.save("/tmp/cifar10_model.h5", save_format='h5')
+est.save("./ncf_tf_model.h5")
 
 # evaluate with Estimator
 stats = est.evaluate(test_df, 
