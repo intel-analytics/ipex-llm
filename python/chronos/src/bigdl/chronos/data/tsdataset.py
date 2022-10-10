@@ -27,6 +27,7 @@ from bigdl.chronos.data.utils.scale import unscale_timeseries_numpy
 from bigdl.chronos.data.utils.resample import resample_timeseries_dataframe
 from bigdl.chronos.data.utils.split import split_timeseries_dataframe
 from bigdl.chronos.data.utils.cycle_detection import cycle_length_est
+from bigdl.chronos.data.utils.quality_inspection import quality_check_timeseries_dataframe
 from bigdl.chronos.data.utils.utils import _to_list, _check_type,\
     _check_col_within, _check_col_no_na, _check_is_aligned, _check_dt_is_sorted
 
@@ -36,12 +37,15 @@ _DEFAULT_ID_PLACEHOLDER = "0"
 
 
 class TSDataset:
-    def __init__(self, data, **schema):
+    def __init__(self, data, repair=True, **schema):
         '''
         TSDataset is an abstract of time series dataset.
         Cascade call is supported for most of the transform methods.
         '''
         self.df = data
+        # detect low-quality data and automatic repair (optional)
+        quality_check_timeseries_dataframe(df=self.df, dt_col=schema["dt_col"],
+                                           repair=repair)
         self.id_col = schema["id_col"]
         self.dt_col = schema["dt_col"]
         self.feature_col = schema["feature_col"].copy()
@@ -80,7 +84,8 @@ class TSDataset:
                     extra_feature_col=None,
                     with_split=False,
                     val_ratio=0,
-                    test_ratio=0.1):
+                    test_ratio=0.1,
+                    repair=True):
         '''
         Initialize tsdataset(s) from pandas dataframe.
 
@@ -101,6 +106,8 @@ class TSDataset:
                with_split is set to True. The value defaults to 0.
         :param test_ratio: (optional) float, test ratio. Only effective when with_split
                is set to True. The value defaults to 0.1.
+        :param repair: a bool indicates whether automaticly repair low quality data,
+               which may call .impute()/.resample() or modify datetime column on dataframe.
 
         :return: a TSDataset instance when with_split is set to False,
                  three TSDataset instances when with_split is set to True.
@@ -135,12 +142,14 @@ class TSDataset:
                                                        val_ratio=val_ratio,
                                                        test_ratio=test_ratio)
             return [TSDataset(data=tsdataset_dfs[i],
+                              repair=repair,
                               id_col=id_col,
                               dt_col=dt_col,
                               target_col=target_col,
                               feature_col=feature_col) for i in range(3)]
 
         return TSDataset(data=tsdataset_df,
+                         repair=repair,
                          id_col=id_col,
                          dt_col=dt_col,
                          target_col=target_col,
@@ -155,6 +164,7 @@ class TSDataset:
                      with_split=False,
                      val_ratio=0,
                      test_ratio=0.1,
+                     repair=True,
                      **kwargs):
         """
         Initialize tsdataset(s) from path of parquet file.
@@ -179,6 +189,8 @@ class TSDataset:
                with_split is set to True. The value defaults to 0.
         :param test_ratio: (optional) float, test ratio. Only effective when with_split
                is set to True. The value defaults to 0.1.
+        :param repair: a bool indicates whether automaticly repair low quality data,
+               which may call .impute()/.resample() or modify datetime column on dataframe.
         :param kwargs: Any additional kwargs are passed to the pd.read_parquet
                and pyarrow.parquet.read_table.
 
@@ -205,6 +217,7 @@ class TSDataset:
             _to_list(extra_feature_col, name="extra_feature_col")
         df = parquet2pd(path, columns=columns, **kwargs)
         return TSDataset.from_pandas(df,
+                                     repair=repair,
                                      dt_col=dt_col,
                                      target_col=target_col,
                                      id_col=id_col,

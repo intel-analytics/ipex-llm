@@ -19,8 +19,7 @@ from bigdl.nano.utils.log4Error import invalidInputError
 import logging
 
 
-def quality_check_timeseries_dataframe(df,
-                                       dt_col):
+def quality_check_timeseries_dataframe(df, dt_col, repair=True):
     '''
     detect the low-quality data and provide suggestion (e.g. call .impute or .resample).
 
@@ -28,16 +27,31 @@ def quality_check_timeseries_dataframe(df,
     :param dt_col: a str indicates the col name of datetime
             column in the input data frame, the dt_col must be sorted
             from past to latest respectively for each id.
+    :param repair: a bool indicates whether automaticly repair low quality data.
+
+    :return: a bool indicates df whether contains low-quality data.
     '''
     flag = True
     # 1. timestamp check
-    flag = flag and _timestamp_type_check(df[dt_col])
+    if _timestamp_type_check(df[dt_col]) is False:
+        if repair is True:
+            flag = flag and _timestamp_type_repair(df, dt_col)
+        else:
+            flag = False
 
     # 2. irregular interval check
-    flag = flag and _time_interval_check(df[dt_col])
+    if _time_interval_check(df[dt_col]) is False:
+        if repair is True:
+            flag = flag and _time_interval_repair(df, dt_col)
+        else:
+            flag = False
 
     # 3. missing value check
-    flag = flag and _missing_value_check(df, dt_col)
+    if _missing_value_check(df, dt_col) is False:
+        if repair is True:
+            flag = flag and _missing_value_repair(df)
+        else:
+            flag = False
 
     # 4. pattern check and noise check
     # TODO:
@@ -57,6 +71,10 @@ def _timestamp_type_check(df_column):
     return True
 
 
+def _timestamp_type_repair(df, dt_col):
+    pass
+
+
 def _time_interval_check(df_column):
     '''
     This check is used to verify whether all the time intervals of datetime column
@@ -70,6 +88,10 @@ def _time_interval_check(df_column):
                         "first to clean the data.")
         return False
     return True
+
+
+def _time_interval_repair(df, dt_col):
+    pass
 
 
 def _missing_value_check(df, dt_col, threshold=0):
@@ -87,3 +109,7 @@ def _missing_value_check(df, dt_col, threshold=0):
                             f"please call .impute() fisrt to remove N/A number")
             return False
     return True
+
+
+def _missing_value_repair(df):
+    pass
