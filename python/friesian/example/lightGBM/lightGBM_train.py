@@ -14,32 +14,27 @@
 # limitations under the License.
 #
 
-from bigdl.orca import init_orca_context, stop_orca_context
+from bigdl.orca import init_orca_context, stop_orca_context, OrcaContext
 from bigdl.friesian.feature import FeatureTable
 from pyspark.ml.linalg import DenseVector, VectorUDT
-from pyspark.ml.evaluation import BinaryClassificationEvaluator, MulticlassClassificationEvaluator
-from bigdl.dllib.nnframes.tree_model import *
-import argparse
 import time
+import os
+import argparse
 from bigdl.dllib.utils.log4Error import *
+from bigdl.dllib.nnframes.tree_model import LightGBMClassifier
+from pyspark.ml.evaluation import BinaryClassificationEvaluator, MulticlassClassificationEvaluator
 
+# Please use 0.10.0 version for Spark3.2 and 0.9.5-13-d1b51517-SNAPSHOT version for Spark3.1
 
-spark_conf = {"spark.network.timeout": "10000000",
-              "spark.sql.broadcastTimeout": "7200",
-              "spark.sql.shuffle.partitions": "500",
-              "spark.locality.wait": "0s",
-              "spark.sql.hive.filesourcePartitionFileCacheSize": "4096000000",
-              "spark.sql.crossJoin.enabled": "true",
-              "spark.serializer": "org.apache.spark.serializer.KryoSerializer",
-              "spark.kryo.unsafe": "true",
-              "spark.kryoserializer.buffer.max": "1024m",
-              "spark.task.cpus": "4",
-              "spark.executor.heartbeatInterval": "200s",
-              "spark.driver.maxResultSize": "40G",
-              "spark.app.name": "recsys-xgb"}
+num_cols = ["enaging_user_follower_count", 'enaging_user_following_count',
+            "engaged_with_user_follower_count", "engaged_with_user_following_count",
+            "len_hashtags", "len_domains", "len_links"]
+cat_cols = ["engaged_with_user_is_verified", "enaging_user_is_verified", "present_media",
+            "tweet_type", "language", 'present_media_language', "enaging_user_id",
+            "engaged_with_user_id", "hashtags", "present_links", "present_domains"]
 
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser(description='XGBoost Training')
+    parser = argparse.ArgumentParser(description='LightGBM Training')
     parser.add_argument('--cluster_mode', type=str, default="local",
                         help='The cluster mode, such as local, yarn or standalone.')
     parser.add_argument('--master', type=str, default=None,
@@ -54,7 +49,7 @@ if __name__ == '__main__':
                         help='The driver core number.')
     parser.add_argument('--driver_memory', type=str, default="36g",
                         help='The driver memory.')
-    parser.add_argument('--model_dir', default='snapshot', type=str,
+    parser.add_argument('--model_dir', default='./lightgbm', type=str,
                         help='nativeModel directory name (default: nativeModel)')
     parser.add_argument('--data_dir', type=str, help='data directory')
 
@@ -62,100 +57,106 @@ if __name__ == '__main__':
 
     if args.cluster_mode == "local":
         sc = init_orca_context("local", cores=args.executor_cores,
-                               memory=args.executor_memory, conf=spark_conf)
+                               memory=args.executor_memory)
+    elif args.cluster_mode == "standalone":
+        sc = init_orca_context("standalone", master=args.master,
+                               cores=args.executor_cores, num_nodes=args.num_executors,
+                               memory=args.executor_memory,
+                               driver_cores=args.driver_cores, driver_memory=args.driver_memory)
     elif args.cluster_mode == "yarn":
         sc = init_orca_context("yarn-client", cores=args.executor_cores,
-                               num_nodes=args.num_executor, memory=args.executor_memory,
-                               driver_cores=args.driver_cores, driver_memory=args.driver_memory,
-                               conf=spark_conf)
+                               num_nodes=args.num_executors, memory=args.executor_memory,
+                               driver_cores=args.driver_cores, driver_memory=args.driver_memory)
     elif args.cluster_mode == "spark-submit":
         sc = init_orca_context("spark-submit")
     else:
         invalidInputError(False,
-                          "cluster_mode should be one of 'local', 'yarn' and"
+                          "cluster_mode should be one of 'local', 'yarn', 'standalone' and"
                           " 'spark-submit', but got " + args.cluster_mode)
 
-    num_cols = ["enaging_user_follower_count", 'enaging_user_following_count',
-                "engaged_with_user_follower_count", "engaged_with_user_following_count",
-                "len_hashtags", "len_domains", "len_links"]
-    cat_cols = ["engaged_with_user_is_verified", "enaging_user_is_verified", "present_media",
-                "tweet_type", "language", 'present_media_language']
-    embed_cols = ["enaging_user_id", "engaged_with_user_id", "hashtags", "present_links",
-                  "present_domains"]
+    save_path = args.model_dir + "lightgbm"
 
-    features = num_cols + [col + "_te_label" for col in cat_cols] + \
-        [col + "_te_label" for col in embed_cols]
+    features = num_cols + [col + "_te_label" for col in cat_cols]
     begin = time.time()
-    train_tbl = FeatureTable.read_parquet(args.data_dir + "/train_parquet")\
+    train_tbl = FeatureTable.read_parquet(args.data_dir + "/train_parquet") \
         .drop("tweet_timestamp", "enaging_user_account_creation", "reply_timestamp", "text_tokens",
               "retweet_timestamp", "retweet_with_comment_timestamp", "like_timestamp")
-    test_tbl = FeatureTable.read_parquet(args.data_dir + "/test_parquet")\
+    test_tbl = FeatureTable.read_parquet(args.data_dir + "/test_parquet") \
         .drop("tweet_timestamp", "enaging_user_account_creation", "reply_timestamp", "text_tokens",
               "retweet_timestamp", "retweet_with_comment_timestamp", "like_timestamp")
 
     train_tbl.cache()
     test_tbl.cache()
     full = train_tbl.concat(test_tbl)
-    full, target_codes = full.target_encode(cat_cols=cat_cols + embed_cols, target_cols=["label"])
+    full, target_codes = full.target_encode(cat_cols=cat_cols, target_cols=["label"])
+    print(full.size())
     for code in target_codes:
         code.cache()
 
-    train = train_tbl\
-        .encode_target(target_cols="label", targets=target_codes)\
-        .merge_cols(features, "features") \
-        .select(["label", "features"])\
-        .apply("features", "features", lambda x: DenseVector(x), VectorUDT())
-    train.show(5, False)
-
-    test = test_tbl\
+    train = train_tbl \
         .encode_target(target_cols="label", targets=target_codes) \
         .merge_cols(features, "features") \
         .select(["label", "features"]) \
-        .apply("features", "features", lambda x: DenseVector(x), VectorUDT())
+        .apply("features", "features", lambda x: DenseVector(x), VectorUDT()) \
+        .repartition(args.num_executor * args.executor_cores)
+
+    train.show(5, False)
+
+    test = test_tbl \
+        .encode_target(target_cols="label", targets=target_codes) \
+        .merge_cols(features, "features") \
+        .select(["label", "features"]) \
+        .apply("features", "features", lambda x: DenseVector(x), VectorUDT()) \
+        .repartition(args.num_executor * args.executor_cores)
 
     test.show(5, False)
     train = train.cache()
     test = test.cache()
     print("training size:", train.size())
     print("test size:", test.size())
+    #
     train_tbl.uncache()
     test_tbl.uncache()
-    for code in target_codes:
-        code.uncache()
-
     preprocess = time.time()
     print("feature preprocessing time: %.2f" % (preprocess - begin))
 
-    params = {"tree_method": 'hist', "eta": 0.1, "gamma": 0.1,
-              "min_child_weight": 30, "reg_lambda": 1, "scale_pos_weight": 2,
-              "subsample": 1, "objective": "binary:logistic"}
+    params = {"boosting_type": "gbdt", "num_leaves": 70, "learning_rate": 0.3,
+              "min_data_in_leaf": 20, "objective": "binary",
+              'num_iterations': 1000,
+              'max_depth': 14,
+              'lambda_l1': 0.01,
+              'lambda_l2': 0.01,
+              'bagging_freq': 5,
+              'max_bin': 255,
+              'early_stopping_round': 20
+              }
 
-    for eta in [0.1]:
-        for max_depth in [6]:
-            for num_round in [200]:
-                params.update({"eta": eta, "max_depth": max_depth, "num_round": num_round})
-                classifier = XGBClassifier(params)
-                xgbmodel = classifier.fit(train.df)
-                xgbmodel.saveModel(args.model_dir)
-                xgbmodel = XGBClassifierModel.loadModel(args.model_dir, 2)
-                xgbmodel.setFeaturesCol("features")
-                predicts = xgbmodel.transform(test.df).drop("features")
-                predicts.cache()
-                predicts.show(5, False)
+    params = {"objective": "binary", 'num_iterations': 100}
+    for learning_rate in [0.1, 0.2]:
+        for max_depth in [7, 14]:
+            for num_iterations in [100, 200, 400, 800, 10000]:
+                params.update({"learning_rate": learning_rate, "max_depth": max_depth,
+                               "num_iterations": num_iterations})
 
+                estimator = LightGBMClassifier(params)
+                model = estimator.fit(train.df)
+                predictions = model.transform(test.df)
+                predictions.cache()
+                predictions.show(5, False)
                 evaluator = BinaryClassificationEvaluator(labelCol="label",
                                                           rawPredictionCol="rawPrediction")
-                auc = evaluator.evaluate(predicts, {evaluator.metricName: "areaUnderROC"})
+                auc = evaluator.evaluate(predictions, {evaluator.metricName: "areaUnderROC"})
 
                 evaluator2 = MulticlassClassificationEvaluator(labelCol="label",
                                                                predictionCol="prediction")
-                acc = evaluator2.evaluate(predicts, {evaluator2.metricName: "accuracy"})
+                acc = evaluator2.evaluate(predictions, {evaluator2.metricName: "accuracy"})
                 print(params)
                 print("AUC: %.2f" % (auc * 100.0))
                 print("Accuracy: %.2f" % (acc * 100.0))
 
-                predicts.unpersist(blocking=True)
+                predictions.unpersist(blocking=True)
 
+    model.saveModel(args.model_dir)
     end = time.time()
     print("training time: %.2f" % (end - preprocess))
     print(end - begin)
