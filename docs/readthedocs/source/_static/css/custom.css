@@ -1,0 +1,13 @@
+/* align items in the left part of header to the ground*/
+.bd-header #navbar-start {
+    align-items: end;
+}
+
+/* for version badge, possible for other badges*/
+.version-badge{
+    border: 1px solid var(--pst-color-primary);
+    border-radius: 0.25rem;
+    color: var(--pst-color-primary);
+    padding: 0.1rem 0.25rem;
+    font-size: var(--pst-font-size-milli);
+}

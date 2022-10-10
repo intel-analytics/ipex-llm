@@ -41,7 +41,8 @@ html_theme_options = {
             "icon": "fa-brands fa-square-github",
             "type": "fontawesome",
         }
-   ]
+   ],
+   "navbar_start": ["navbar-logo.html", "version_badge.html"]
 }
 html_logo = "../image/bigdl_logo.png"
 
@@ -53,6 +54,8 @@ html_sidebars = {
     ],
     "**": ["sidebar_backbutton.html","sidebar-nav-bs.html"]
 }
+# hard code it for now, may change it to read from installed bigdl
+release = "latest"
 
 # The suffix of source filenames.
 from recommonmark.parser import CommonMarkParser
