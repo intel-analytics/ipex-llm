@@ -30,14 +30,10 @@ from bigdl.ppml.fl.psi.psi_client import PSI
 fmt = '%(asctime)s %(levelname)s {%(module)s:%(lineno)d} - %(message)s'
 logging.basicConfig(format=fmt, level=logging.INFO)
 
-class LocalModel(Model):
-    def __init__(self) -> None:
-        super().__init__()
-        self.dense = Dense(1)
-
-    def call(self, x):
-        x = self.dense(x)
-        return x
+def build_client_model(feature_num):
+    inputs = Input(shape=(feature_num))
+    outputs = Dense(1)(inputs)
+    return Model(inputs=inputs, outputs=outputs, name="vfl_client_model")
 
 
 @click.command()
@@ -51,7 +47,7 @@ def run_client(load_model, data_path):
     intersection = psi.get_intersection(list(df_train['ID']))
     df_train = df_train[df_train['ID'].isin(intersection)]
     
-    df_x = df_train
+    df_x = df_train.drop('ID', 1)
     x = df_x.to_numpy(dtype="float32")
     y = None    
     
@@ -66,7 +62,7 @@ def run_client(load_model, data_path):
                                    client_model_path='/tmp/tensorflow_client_model_2.pt')
         response = ppl.fit(x, y, 5)
     else:
-        model = LocalModel()
+        model = build_client_model(4)
         ppl = Estimator.from_keras(client_model=model,
                                    loss_fn=loss_fn,
                                    optimizer_cls=tf.keras.optimizers.SGD,
