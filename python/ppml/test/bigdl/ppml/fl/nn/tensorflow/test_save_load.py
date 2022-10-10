@@ -32,17 +32,19 @@ print("TensorFlow version:", tf.__version__)
 from tensorflow.keras.layers import Dense, Flatten, Conv2D, InputLayer
 from tensorflow.keras import Model, Input
 
-
+import shutil
 
 
 resource_path = os.path.join(os.path.dirname(__file__), "../../resources")
 
 
-class TestCorrectness(FLTest):
+class TestSaveLoad(FLTest):
     fmt = '%(asctime)s %(levelname)s {%(module)s:%(lineno)d} - %(message)s'
     logging.basicConfig(format=fmt, level=logging.INFO)
+    server_model_path = '/tmp/vfl_server_model'
+    client_model_path = '/tmp/vfl_client_model.h5'
     tf.config.run_functions_eagerly(True) # enable step-by-step debug
-    def setUp(self) -> None:
+    def setUp(self) -> None:        
         self.fl_server = FLServer()
         self.fl_server.set_port(self.port)
         self.fl_server.build()
@@ -50,6 +52,10 @@ class TestCorrectness(FLTest):
     
     def tearDown(self) -> None:
         self.fl_server.stop()
+        if os.path.exists(TestSaveLoad.server_model_path):
+            shutil.rmtree(TestSaveLoad.server_model_path)
+        if os.path.exists(TestSaveLoad.client_model_path):
+            os.remove(TestSaveLoad.client_model_path)
 
     def test_mnist(self) -> None:
         """
@@ -68,83 +74,36 @@ class TestCorrectness(FLTest):
         (x_train[:5000], y_train[:5000])).batch(32)
         test_ds = tf.data.Dataset.from_tensor_slices((x_test, y_test)).batch(32)
 
-
         model = build_whole_model()
         set_one_like_parameter(model)
         
         
         loss_object = tf.keras.losses.SparseCategoricalCrossentropy(from_logits=True)
-        optimizer = tf.keras.optimizers.Adam()
-        train_loss = tf.keras.metrics.Mean(name='train_loss')
-        train_accuracy = tf.keras.metrics.SparseCategoricalAccuracy(name='train_accuracy')
-
-        test_loss = tf.keras.metrics.Mean(name='test_loss')
-        test_accuracy = tf.keras.metrics.SparseCategoricalAccuracy(name='test_accuracy')
-        @tf.function
-        def train_step(images, labels):
-            with tf.GradientTape() as tape:
-                # training=True is only needed if there are layers with different
-                # behavior during training versus inference (e.g. Dropout).
-                predictions = model(images, training=True)
-                loss = loss_object(labels, predictions)
-            gradients = tape.gradient(loss, model.trainable_variables)
-            optimizer.apply_gradients(zip(gradients, model.trainable_variables))
-
-            train_loss(loss)
-            train_accuracy(labels, predictions)
-            return loss
-
-        @tf.function
-        def test_step(images, labels):
-            # training=False is only needed if there are layers with different
-            # behavior during training versus inference (e.g. Dropout).
-            predictions = model(images, training=False)
-            t_loss = loss_object(labels, predictions)
-
-            test_loss(t_loss)
-            test_accuracy(labels, predictions)
         
-        tensorflow_loss_history = []
-        EPOCHS = 1
-        for epoch in range(EPOCHS):
-            # Reset the metrics at the start of the next epoch
-            train_loss.reset_states()
-            train_accuracy.reset_states()
-            test_loss.reset_states()
-            test_accuracy.reset_states()
-            size = len(train_ds)
-            for batch, (images, labels) in enumerate(train_ds):
-                loss = train_step(images, labels)                
-                if batch % 10 == 0:
-                    tensorflow_loss_history.append(np.array(loss))
-                    logging.info(f"loss: {loss:>7f}  [{batch:>5d}/{size:>5d}]  \
-                            epoch {epoch}/{EPOCHS}")
-
-            for test_images, test_labels in test_ds:
-                test_step(test_images, test_labels)
-            print(
-                f'Epoch {epoch + 1}, '
-                f'Loss: {train_loss.result()}, '
-                f'Accuracy: {train_accuracy.result() * 100}, '
-                f'Test Loss: {test_loss.result()}, '
-                f'Test Accuracy: {test_accuracy.result() * 100}'
-            )
-        
-        # TODO: set fixed parameters
         init_fl_context(1, self.target)
         vfl_model_1 = build_client_model()
-        set_one_like_parameter(vfl_model_1)
         vfl_model_2 = build_server_model()
-        set_one_like_parameter(vfl_model_2)
         vfl_client_ppl = Estimator.from_keras(client_model=vfl_model_1,
                                               loss_fn=loss_object,
-                                              optimizer_cls=tf.keras.optimizers.Adam,
-                                              optimizer_args={},
-                                              server_model=vfl_model_2)
+                                              optimizer_cls=tf.keras.optimizers.SGD,
+                                              optimizer_args={'lr':1e-3},
+                                              server_model=vfl_model_2,
+                                              server_model_path=TestSaveLoad.server_model_path,
+                                              client_model_path=TestSaveLoad.client_model_path)
         
         vfl_client_ppl.fit(train_ds)
-        assert np.allclose(tensorflow_loss_history, vfl_client_ppl.loss_history), \
-            "Validation failed, correctness of PPML and native Pytorch not the same"
+        self.fl_server.stop()
+        self.setUp()
+        client_model_loaded = tf.keras.models.load_model(TestSaveLoad.client_model_path)
+        ppl_from_file = Estimator.from_keras(client_model=client_model_loaded,
+                                             loss_fn=loss_object,
+                                             optimizer_cls=tf.keras.optimizers.SGD,
+                                             optimizer_args={'lr':1e-3})
+        ppl_from_file.load_server_model(TestSaveLoad.server_model_path)
+        ppl_from_file.fit(train_ds)
+        assert ppl_from_file.loss_history[-1] < 2, \
+            f"Validation failed, incremental training loss does not meet requirement, \
+            required < 2, current {ppl_from_file.loss_history[-1]}"
 
 def build_client_model():
     inputs = Input(shape=(28, 28, 1))

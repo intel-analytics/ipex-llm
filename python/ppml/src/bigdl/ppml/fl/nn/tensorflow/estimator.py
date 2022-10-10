@@ -29,6 +29,7 @@ import tensorflow as tf
 from tensorflow.keras.layers import Dense, Flatten, Conv2D
 from tensorflow.keras import Model
 from bigdl.ppml.fl.nn.generated.nn_service_pb2 import ByteChunk
+from nn_service_pb2 import LoadModelRequest, SaveModelRequest
 
 class TensorflowEstimator:
     def __init__(self, 
@@ -56,11 +57,11 @@ class TensorflowEstimator:
 
     def save_server_model(self, model_path):
         self.fl_client.nn_stub.save_server_model(
-        SaveModelRequest(model_path=model_path, backend='pt'))
+        SaveModelRequest(model_path=model_path, backend='tf'))
 
     def load_server_model(self, model_path):
         self.fl_client.nn_stub.load_server_model(
-            LoadModelRequest(model_path=model_path, backend='pt'))
+            LoadModelRequest(model_path=model_path, backend='tf'))
     
     @staticmethod
     def load_model_as_bytes(model):
