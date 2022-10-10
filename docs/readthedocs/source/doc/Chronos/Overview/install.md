@@ -1,4 +1,4 @@
-# Chronos User Guide
+# Chronos Installation
 
 ---
 ### **Install**
@@ -84,13 +84,16 @@
 
 </br>
 
-#### **2.1 Pypi**
-When you install `bigdl-chronos` from PyPI. We recommend to install with a conda virtual environment. To install Conda, please refer to [here](https://docs.conda.io/en/latest/miniconda.html#).
+
 ```bash
+# create a conda environment for chronos
 conda create -n my_env python=3.7 setuptools=58.0.4
 conda activate my_env
-# click the installation panel above to find which installation option to use
-pip install --pre --upgrade bigdl-chronos[pytorch]  # or other options you may want to use
+
+# select your preference in above panel to find the proper command to replace the below command
+pip install --pre --upgrade bigdl-chronos[pytorch]
+
+# init bigdl-nano to enable local accelerations
 source bigdl-nano-init  # accelerate the conda env
 ```
 
