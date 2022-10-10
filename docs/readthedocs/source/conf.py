@@ -47,6 +47,9 @@ html_logo = "../image/bigdl_logo.png"
 
 # add search bar to side bar
 html_sidebars = {
+    "index": [
+        "sidebar_releases.html"
+    ],
     "**": ["search-field.html", "sidebar-nav-bs.html"]
 }
 
