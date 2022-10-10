@@ -139,7 +139,7 @@ def gen_synthetic_data(len=10000, sine_amplitude=10.0, angular_freq=0.01,
     gen_x = np.linspace(0, len*angular_freq, len)
     np.random.seed(seed)
     gen_y = sine_amplitude * np.sin(gen_x) + \
-              noise_amplitude * np.random.normal(0, noise_scale, len)
+noise_amplitude * np.random.normal(0, noise_scale, len)
     df = pd.DataFrame(gen_y, columns=["target"])
     endtime = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime())
     df.insert(0, "datetime", pd.date_range(end=endtime, periods=len, freq=time_freq))
