@@ -291,8 +291,7 @@ class SparkXShards(XShards):
                         .repartition(num_partitions)
 
                     repartitioned_shard = SparkXShards(rdd.mapPartitions(
-                        lambda iter: np.stack([list(iter)], axis=0)
-                            .astype(dtype)))
+                        lambda iter: np.stack([list(iter)], axis=0).astype(dtype)))
                 else:
                     rdd = self.rdd.coalesce(num_partitions)
                     from functools import reduce
@@ -369,8 +368,8 @@ class SparkXShards(XShards):
                                       "The partition column is not in the DataFrame")
                 # change data to key value pairs
                 rdd = self.rdd.flatMap(
-                    lambda df: df.apply(lambda row: (row[cols], row.values.tolist()), axis=1)
-                        .values.tolist())
+                    lambda df: df.apply(
+                        lambda row: (row[cols], row.values.tolist()), axis=1).values.tolist())
 
                 partition_num = self.rdd.getNumPartitions() if not num_partitions \
                     else num_partitions
@@ -586,8 +585,9 @@ class SparkXShards(XShards):
                 list or tuple, return list of input SparkDataShards.
         """
         # get number of splits
-        list_split_length = self.rdd.map(lambda data: len(data) if isinstance(data, list) or
-                                                                   isinstance(data, tuple) else 1).collect()
+        list_split_length = self.rdd.map(
+            lambda data: len(data) if isinstance(data, list) or isinstance(data, tuple) else 1)\
+            .collect()
         # check if each element has same splits
         if list_split_length.count(list_split_length[0]) != len(list_split_length):
             invalidInputError(False,
