@@ -56,6 +56,8 @@ object LgbmClassifierTrain {
 
       val Array(train, test) = dfinput.randomSplit(Array(0.8, 0.2))
       val classifier = new LightGBMClassifier()
+      classifier.setFeaturesCol("features")
+      classifier.setLabelCol("classIndex")
       classifier.setNumIterations(params.numIterations)
       classifier.setNumLeaves(params.numLeaves)
       classifier.setMaxDepth(params.maxDepth)
@@ -71,7 +73,7 @@ object LgbmClassifierTrain {
       predictions.show(10)
 
       val evaluatorMulti = new MulticlassClassificationEvaluator()
-        .setLabelCol("label")
+        .setLabelCol("classIndex")
         .setMetricName("accuracy")
 
       val acc = evaluatorMulti.evaluate(predictions)
@@ -84,7 +86,7 @@ object LgbmClassifierTrain {
 private object Utils {
 
   case class LGBMParams(
-    inputPath: String = "/Users/guoqiong/intelWork/data/tweet/xgb_processed",
+    inputPath: String = "iris/iris.data",
     numLeaves: Int = 10,
     maxDepth: Int = 6,
     lamda1: Double = 0.01,
