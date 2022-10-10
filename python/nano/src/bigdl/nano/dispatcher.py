@@ -68,14 +68,16 @@ def patch_nano(patch_tf=None, patch_torch=None):
     """
 
     patch_nano is used to patch optimized class to replace original ones.
+
     Optimized classes include:
-    1. tf.keras.Model/keras.Model -> bigdl.nano.tf.keras.Model
-    2. tf.keras.Sequential/keras.Sequential -> bigdl.nano.tf.keras.Sequential
-    3. tf.keras.layers.Embedding/keras.layers.Embedding -> bigdl.nano.tf.keras.layers.Embedding
-    4. tf.optimizers.Adam -> bigdl.nano.tf.optimizers.SparseAdam
-    5. pytorch_lightning.Trainer -> bigdl.nano.pytorch.Trainer
-    6. torchvision.transforms -> bigdl.nano.pytorch.vision.transforms
-    7. torchvision.datasets -> bigdl.nano.pytorch.vision.datasets
+
+    | 1. tf.keras.Model/keras.Model -> bigdl.nano.tf.keras.Model
+    | 2. tf.keras.Sequential/keras.Sequential -> bigdl.nano.tf.keras.Sequential
+    | 3. tf.keras.layers.Embedding/keras.layers.Embedding -> bigdl.nano.tf.keras.layers.Embedding
+    | 4. tf.optimizers.Adam -> bigdl.nano.tf.optimizers.SparseAdam
+    | 5. pytorch_lightning.Trainer -> bigdl.nano.pytorch.Trainer
+    | 6. torchvision.transforms -> bigdl.nano.pytorch.vision.transforms
+    | 7. torchvision.datasets -> bigdl.nano.pytorch.vision.datasets
 
     :param patch_tf: bool, if patch tensorflow related classes, will patch defaultly if tensorflow
            is installed
