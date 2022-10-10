@@ -1,9 +1,10 @@
 if (( $# < 4)); then
-    echo "Usage: install-python-env.sh model auto_tuning hardware extra_dep"
-    echo "       model: pytorch|tensorflow|prophet|arima"
-    echo "       auto_tuning: y|n"
-    echo "       hardware: single|cluster"
-    echo "       extra_dep: y|n"
+    echo "You need to specify four build args when building the image:"
+    echo "model: pytorch|tensorflow|prophet|arima"
+    echo "auto_tuning: y|n"
+    echo "hardware: single|cluster"
+    echo "extra_dep: y|n"
+    echo "Visit https://github.com/intel-analytics/BigDL/blob/main/docker/chronos-nightly/README.md for more information."
     exit -1
 fi
 
@@ -108,5 +109,3 @@ then
     echo "Argument extra_dep can be y (for yes) or n (for no), please check."
     exit -1
 fi
-
-

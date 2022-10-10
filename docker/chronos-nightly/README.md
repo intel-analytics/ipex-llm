@@ -13,7 +13,31 @@ cp docker/chronos-nightly/Dockerfile ./Dockerfile
 ```
 Then build your docker image with Dockerfile:
 ```bash
-sudo docker build -t chronos-nightly:b1 . # You may choose any NAME:TAG you want.
+sudo docker build \
+    --build-arg model=pytorch \
+    --build-arg auto_tuning=y \
+    --build-arg hardware=single \
+    --build-arg extra_dep=n \
+     -t chronos-nightly:b1 . # You may choose any NAME:TAG you want.
+```
+You may specify some build args to install chronos with necessary dependencies according to your own needs.
+The build args are similar to the install options in [Chronos documentation](https://bigdl.readthedocs.io/en/latest/doc/Chronos/Overview/chronos.html#install).
+
+```
+model: which model or framework you want. 
+       value: pytorch or tensorflow or prophet or arima.
+
+auto_tuning: whether to enable auto tuning.
+             value: y (for yes) or n (for no).
+
+hardware: run chronos on a single machine or a cluster.
+          value: single or cluster
+
+extra_dep: whether to install some extra dependencies like onnx and jupyter.
+           value: y (for yes) or n (for no).
+           if specified to y, the following dependencies will be installed:
+           neural_compressor, onnxruntime, onnx, tsfresh, 
+           prometheus_pandas, xgboost, jupyter
 ```
 (Optional) Or build with a proxy:
 ```bash
@@ -21,6 +45,10 @@ sudo docker build -t chronos-nightly:b1 . # You may choose any NAME:TAG you want
 sudo docker build \
     --build-arg http_proxy=http://<your_proxy_ip>:<your_proxy_port> \ #optional
     --build-arg https_proxy=http://<your_proxy_ip>:<your_proxy_port> \ #optional
+    --build-arg model=pytorch \
+    --build-arg auto_tuning=y \
+    --build-arg hardware=single \
+    --build-arg extra_dep=n \
     -t chronos-nightly:b1 . # You may choose any NAME:TAG you want.
 ```
 According to your network status, this building will cost **15-30 mins**. 
@@ -33,12 +61,14 @@ sudo docker run -it --rm --net=host chronos-nightly:b1 bash
 ```
 
 ## Use Chronos
-A conda environment is created for you automatically. `bigdl-chronos` and all of its depenencies are installed inside this environment.
+A conda environment is created for you automatically. `bigdl-chronos` and the necessary depenencies (based on the build args) are installed inside this environment.
 ```bash
 (chronos) root@cpx-3:/opt/work#
 ```
 
 ## Run unitest examples on Jupyter Notebook for a quick use
+>To use jupyter notebook, you need to specify the build arg `extra_dep` to `y`.
+
 You can run these on Jupyter Notebook on single node server if you pursue a quick use on Chronos.
 ```bash
 (chronos) root@cpx-3:/opt/work# cd /opt/work/colab-notebook #Unitest examples are here.
