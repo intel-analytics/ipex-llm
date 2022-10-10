@@ -11,17 +11,8 @@ on:
       - '.github/actions/ppml-scala-ut-action/action.yml'
       - 'python/orca/**'
       - '.github/actions/orca-ray-ctx-example-action/action.yml'
-      - '.github/actions/orca/orca-python-exampletest-action/pr-test/action.yml'
-      - '.github/actions/orca/orca-python-exampletest-ray-action/pr-test/action.yml'
-      - '.github/actions/orca/orca-python-exampletest-horovod-pytorch-py37-spark3-action/pr-test/action.yml'
-      - '.github/actions/orca/orca-python-exampletest-horovod-tf2-py37-spark3-action/pr-test/action.yml'
-      - '.github/actions/orca/orca-jep-exampletest-action/pr-test/action.yml'
-      - '.github/actions/orca/orca-python-py37-spark3-action/pr-test/action.yml'
-      - '.github/actions/orca/orca-python-ray-py37-spark3-action/pr-test/action.yml'
-      - '.github/actions/orca/orca-python-horovod-tf2-py37-spark3-action/pr-test/action.yml'
-      - '.github/actions/orca/orca-python-horovod-pytorch-py37-spark3-action/pr-test/action.yml'
-      - '.github/actions/orca/orca-jep-python-py37-spark2-action/pr-test/action.yml'
-      - '.github/actions/orca/orca-rayonspark-tf2-action/pr-test/action.yml'
+      - '.github/actions/orca/*'
+      
   pull_request:
     branches: [ main ]
     paths:
@@ -33,17 +24,7 @@ on:
       - '.github/actions/ppml-scala-ut-action/action.yml'
       - 'python/orca/**'
       - '.github/actions/orca-ray-ctx-example-action/action.yml'
-      - '.github/actions/orca/orca-python-exampletest-action/pr-test/action.yml'
-      - '.github/actions/orca/orca-python-exampletest-ray-action/pr-test/action.yml'
-      - '.github/actions/orca/orca-python-exampletest-horovod-pytorch-py37-spark3-action/pr-test/action.yml'
-      - '.github/actions/orca/orca-python-exampletest-horovod-tf2-py37-spark3-action/pr-test/action.yml'
-      - '.github/actions/orca/orca-jep-exampletest-action/pr-test/action.yml'
-      - '.github/actions/orca/orca-python-py37-spark3-action/pr-test/action.yml'
-      - '.github/actions/orca/orca-python-ray-py37-spark3-action/pr-test/action.yml'
-      - '.github/actions/orca/orca-python-horovod-tf2-py37-spark3-action/pr-test/action.yml'
-      - '.github/actions/orca/orca-python-horovod-pytorch-py37-spark3-action/pr-test/action.yml'
-      - '.github/actions/orca/orca-jep-python-py37-spark2-action/pr-test/action.yml'
-      - '.github/actions/orca/orca-rayonspark-tf2-action/pr-test/action.yml'
+      - '.github/actions/orca/*'
       - '.github/workflows/PR_validation.yml'
 
 
@@ -79,17 +60,7 @@ jobs:
             orca:
               - 'python/orca/**'
               - '.github/actions/orca-ray-ctx-example-action/action.yml'
-              - '.github/actions/orca/orca-python-exampletest-action/pr-test/action.yml'
-              - '.github/actions/orca/orca-python-exampletest-ray-action/pr-test/action.yml'
-              - '.github/actions/orca/orca-python-exampletest-horovod-pytorch-py37-spark3-action/pr-test/action.yml'
-              - '.github/actions/orca/orca-python-exampletest-horovod-tf2-py37-spark3-action/pr-test/action.yml'
-              - '.github/actions/orca/orca-jep-exampletest-action/pr-test/action.yml'
-              - '.github/actions/orca/orca-python-py37-spark3-action/pr-test/action.yml'
-              - '.github/actions/orca/orca-python-ray-py37-spark3-action/pr-test/action.yml'
-              - '.github/actions/orca/orca-python-horovod-tf2-py37-spark3-action/pr-test/action.yml'
-              - '.github/actions/orca/orca-python-horovod-pytorch-py37-spark3-action/pr-test/action.yml'
-              - '.github/actions/orca/orca-jep-python-py37-spark2-action/pr-test/action.yml'
-              - '.github/actions/orca/orca-rayonspark-tf2-action/pr-test/action.yml'
+              - '.github/actions/orca/*'
               - '.github/workflows/PR_validation.yml'
            
   Friesian-Scala-UT:
