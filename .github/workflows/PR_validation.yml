@@ -7,6 +7,8 @@ on:
       - '.github/actions/friesian-scala-ut-action/action.yml'
       - 'scala/dllib/**'
       - '.github/actions/dllib-scala-ut-action/action.yml'
+      - 'scala/ppml/**'
+      - '.github/actions/ppml-scala-ut-action/action.yml'
       - 'python/orca/**'
       - '.github/actions/orca-ray-ctx-example-action/action.yml'
       - '.github/actions/orca/orca-python-exampletest-action/pr-test/action.yml'
@@ -27,6 +29,8 @@ on:
       - '.github/actions/friesian-scala-ut-action/action.yml'
       - 'scala/dllib/**'
       - '.github/actions/dllib-scala-ut-action/action.yml'
+      - 'scala/ppml/**'
+      - '.github/actions/ppml-scala-ut-action/action.yml'
       - 'python/orca/**'
       - '.github/actions/orca-ray-ctx-example-action/action.yml'
       - '.github/actions/orca/orca-python-exampletest-action/pr-test/action.yml'
@@ -55,6 +59,7 @@ jobs:
       friesian: ${{ steps.filter.outputs.friesian }}
       dllib: ${{ steps.filter.outputs.dllib }}
       orca: ${{ steps.filter.outputs.orca }}
+      ppml: ${{ steps.filter.outputs.ppml }}
     steps:
       - uses: actions/checkout@v3
       - uses: dorny/paths-filter@v2
@@ -67,11 +72,25 @@ jobs:
             dllib:
               - 'scala/dllib/**'
               - '.github/actions/dllib-scala-ut-action/action.yml'
+            ppml:
+            - 'scala/ppml/**'
+            - '.github/actions/ppml-scala-ut-action/action.yml'
             orca:
               - 'python/orca/**'
               - '.github/actions/orca-ray-ctx-example-action/action.yml'
-
-  
+              - '.github/actions/orca/orca-python-exampletest-action/pr-test/action.yml'
+              - '.github/actions/orca/orca-python-exampletest-ray-action/pr-test/action.yml'
+              - '.github/actions/orca/orca-python-exampletest-horovod-pytorch-py37-spark3-action/pr-test/action.yml'
+              - '.github/actions/orca/orca-python-exampletest-horovod-tf2-py37-spark3-action/pr-test/action.yml'
+              - '.github/actions/orca/orca-jep-exampletest-action/pr-test/action.yml'
+              - '.github/actions/orca/orca-python-py37-spark3-action/pr-test/action.yml'
+              - '.github/actions/orca/orca-python-ray-py37-spark3-action/pr-test/action.yml'
+              - '.github/actions/orca/orca-python-horovod-tf2-py37-spark3-action/pr-test/action.yml'
+              - '.github/actions/orca/orca-python-horovod-pytorch-py37-spark3-action/pr-test/action.yml'
+              - '.github/actions/orca/orca-jep-python-py37-spark2-action/pr-test/action.yml'
+              - '.github/actions/orca/orca-rayonspark-tf2-action/pr-test/action.yml'
+              - '.github/workflows/PR_validation.yml'
+           
   Friesian-Scala-UT:
     needs: changes
     if: ${{ needs.changes.outputs.friesian == 'true' }}
@@ -99,6 +118,20 @@ jobs:
         uses: ./.github/actions/maven-setup-action
       - name: Run test
         uses: ./.github/actions/dllib-scala-ut-action
+
+  PPML-Scala-UT:
+    needs: changes
+    if: ${{ needs.changes.outputs.ppml == 'true' }}
+    runs-on: [ self-hosted, Gondolin, ubuntu-20.04-lts ]
+
+    steps:
+      - uses: actions/checkout@v3
+      - name: Set up JDK8
+        uses: ./.github/actions/jdk-setup-action
+      - name: Set up maven
+        uses: ./.github/actions/maven-setup-action
+      - name: Run test
+        uses: ./.github/actions/ppml-scala-ut-action
 
   Orca-Ray-Ctx-Example:
     needs: changes
