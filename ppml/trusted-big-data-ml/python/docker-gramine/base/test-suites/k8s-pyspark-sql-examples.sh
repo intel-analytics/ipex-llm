@@ -1,5 +1,6 @@
 #!/bin/bash
 status_2_k8s_pyspark_sql_basic=1
+SPARK_LOCAL_IP=$LOCAL_IP
 
 if [ $status_2_k8s_pyspark_sql_basic -ne 0 ]; then
 cd /ppml/trusted-big-data-ml
