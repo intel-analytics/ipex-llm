@@ -8,7 +8,7 @@ cd /ppml/trusted-big-data-ml
 
 if [ $status_5_local_spark_basic_sql -ne 0 ]; then
 echo "example.5 local spark, Basic SQL"
-export spark_commnd="export PYSPARK_PYTHON=/usr/bin/python && \
+export sgx_command="export PYSPARK_PYTHON=/usr/bin/python && \
   /opt/jdk8/bin/java \
   -cp '/ppml/trusted-big-data-ml/work/spark-3.1.2/conf/:/ppml/trusted-big-data-ml/work/spark-3.1.2/jars/*' \
   -Xmx1g org.apache.spark.deploy.SparkSubmit \
@@ -23,7 +23,7 @@ fi
 
 if [ $status_6_local_spark_arrow -ne 0 ]; then
 echo "example.6 local spark, Arrow"
-export spark_commnd="export PYSPARK_PYTHON=/usr/bin/python && \
+export sgx_command="export PYSPARK_PYTHON=/usr/bin/python && \
   export ARROW_PRE_0_15_IPC_FORMAT=0 && \
   /opt/jdk8/bin/java \
   -cp '/ppml/trusted-big-data-ml/work/spark-3.1.2/conf/:/ppml/trusted-big-data-ml/work/spark-3.1.2/jars/*' \
@@ -41,7 +41,7 @@ fi
 
 if [ $status_7_local_spark_hive -ne 0 ]; then
 echo "example.7 local spark, Hive"
-export spark_commnd="export PYSPARK_PYTHON=/usr/bin/python && \
+export sgx_command="export PYSPARK_PYTHON=/usr/bin/python && \
   /opt/jdk8/bin/java \
   -cp '/ppml/trusted-big-data-ml/work/spark-3.1.2/conf/:/ppml/trusted-big-data-ml/work/spark-3.1.2/jars/*' \
   -Xmx2g org.apache.spark.deploy.SparkSubmit \

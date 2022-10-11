@@ -9,7 +9,7 @@ SGX-based Trusted Big Data ML allows the user to run end-to-end big data analyti
 
 The bigdl base image is a public one that does not contain any secrets. You will use the base image to get your own custom image in the following. 
 
-Before running the following command, please modify the paths in `./base/build-base-image.sh`. Especially, set `IMAGE_MODE` to `bigdl_base_image`. Then build the docker image with the following command.
+Before running the following command, please modify the paths in `./base/build-base-image.sh`. Then build the docker image with the following command.
 
 ```bash
 cd base
@@ -89,7 +89,7 @@ curl -v -k -G "https://<kms_ip>:9000/ehsm?Action=Enroll"
 
 ##### 3.3.1 Start a BigDL client container
 
-First, start a bigdl container, which uses the bigdl base image build before.
+First, start a bigdl container, which uses the custom image build before.
 
 ```bash
 export KEYS_PATH=YOUR_LOCAL_SPARK_SSL_KEYS_FOLDER_PATH
@@ -212,7 +212,7 @@ sudo docker exec -it gramine-test bash
 Run the example with SGX spark local mode with the following command in the terminal.
 
 ```bash
-export spark_commnd="/opt/jdk8/bin/java \
+export sgx_command="/opt/jdk8/bin/java \
     -cp '/ppml/trusted-big-data-ml/work/spark-3.1.2/conf/:/ppml/trusted-big-data-ml/work/spark-3.1.2/jars/*:/ppml/trusted-big-data-ml/work/spark-3.1.2/examples/jars/*' -Xmx16g \
     org.apache.spark.deploy.SparkSubmit \
     --master local[4] \
@@ -332,7 +332,7 @@ Note: If you are running this client in trusted env, please skip this step. Then
 secure_password=`openssl rsautl -inkey /ppml/trusted-big-data-ml/work/password/key.txt -decrypt </ppml/trusted-big-data-ml/work/password/output.bin`
 TF_MKL_ALLOC_MAX_BYTES=10737418240
 SPARK_LOCAL_IP=$LOCAL_IP
-export spark_commnd="/opt/jdk8/bin/java \
+export sgx_command="/opt/jdk8/bin/java \
         -cp '/ppml/trusted-big-data-ml/work/spark-3.1.2/conf/:/ppml/trusted-big-data-ml/work/spark-3.1.2/jars/*:ppml/trusted-big-data-ml/work/spark-3.1.2/examples/jars/*' \
         -Xmx8g \
         org.apache.spark.deploy.SparkSubmit \

@@ -4,7 +4,7 @@ export mode=client && \
 secure_password=`openssl rsautl -inkey /ppml/trusted-big-data-ml/work/password/key.txt -decrypt </ppml/trusted-big-data-ml/work/password/output.bin` && \
 TF_MKL_ALLOC_MAX_BYTES=10737418240 && \
 SPARK_LOCAL_IP=$LOCAL_IP && \
-export spark_commnd="/opt/jdk8/bin/java \
+export sgx_command="/opt/jdk8/bin/java \
   -cp '/ppml/trusted-big-data-ml/work/spark-3.1.2/conf/:/ppml/trusted-big-data-ml/work/spark-3.1.2/jars/*:ppml/trusted-big-data-ml/work/spark-3.1.2/examples/jars/*' \
     -Xmx8g \
     org.apache.spark.deploy.SparkSubmit \
