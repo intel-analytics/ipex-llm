@@ -75,6 +75,7 @@ jobs:
         sudo docker tag ${image}:${TAG} 10.239.45.10/arda/${image}:${TAG}
         sudo docker push 10.239.45.10/arda/${image}:${TAG}
         sudo docker rmi -f ${image}:${TAG}
+        rm enclave-key.pem
 
 
   bigdl-ppml-trusted-big-data-ml-python-graphene:
