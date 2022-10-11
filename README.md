@@ -29,9 +29,9 @@ For more information, you may [read the docs](https://bigdl.readthedocs.io/).
 ## Choosing the right BigDL library
 ```mermaid
 flowchart TD;
-    Feature1{{Secure Big Data & AI?}};
+    Feature1{{HW Secured Big Data & AI?}};
     Feature1-- No -->Feature2{{Python vs. Scala/Java?}};
-    Feature1-- "Yes (HW Security & FL)"  -->ReferPPML([<em><strong>PPML</strong></em>]);
+    Feature1-- "Yes"  -->ReferPPML([<em><strong>PPML</strong></em>]);
     Feature2-- Python -->Feature3{{What type of application?}};
     Feature2-- Scala/Java -->ReferDLlib([<em><strong>DLlib</strong></em>]);
     Feature3-- "Distributed Big Data + AI (TF/PyTorch)" -->ReferOrca([<em><strong>Orca</strong></em>]);
