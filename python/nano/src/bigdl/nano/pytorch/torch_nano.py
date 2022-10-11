@@ -32,7 +32,7 @@ from bigdl.nano.utils.log4Error import invalidInputError
 from bigdl.nano.pytorch.utils import TORCH_VERSION_LESS_1_10, TORCH_VERSION_LESS_1_11
 from bigdl.nano.pytorch.strategies.ipex.ipex_api import ipex_optimize
 from bigdl.nano.pytorch.strategies import create_IPEXStrategy, DDPSpawnStrategy, \
-    DDPSubprocessStrategy, create_ray_strategy
+    DDPSubprocessStrategy, create_ray_strategy, DDPK8sStrategy
 
 
 class _TorchNanoModule(_LiteModule):
@@ -69,6 +69,15 @@ class _TorchNanoModule(_LiteModule):
         else:
             return getattr(self.module, name)
 
+
+distributed_backends = ["spawn", "ray", "subprocess", "k8s"]
+
+backends_class_map = {
+    "spawn": DDPSpawnStrategy,
+    "subprocess": DDPSubprocessStrategy,
+    "ray": create_ray_strategy,
+    "k8s": DDPK8sStrategy
+}
 
 class TorchNano(LightningLite):
     """
@@ -121,18 +130,11 @@ class TorchNano(LightningLite):
                 strategy = create_IPEXStrategy(dtype=self.dtype)
             else:
                 strategy = None     # type: ignore
-        elif strategy == "spawn":
-            strategy = DDPSpawnStrategy(num_processes=self.num_processes,   # type: ignore
-                                        use_ipex=self.use_ipex,
-                                        dtype=self.dtype)
-        elif strategy == "subprocess":
-            strategy = DDPSubprocessStrategy(num_processes=self.num_processes,  # type: ignore
-                                             use_ipex=self.use_ipex,
-                                             dtype=self.dtype)
-        elif strategy == "ray":
-            strategy = create_ray_strategy(num_workers=self.num_processes,
-                                          use_ipex=self.use_ipex,
-                                          dtype=self.dtype)
+        elif strategy in backends_class_map:
+            cls = backends_class_map["strategy"]
+            strategy = cls(num_processes=self.num_processes,   # type: ignore
+                           use_ipex=self.use_ipex,
+                           dtype=self.dtype)
         else:
             warning(f"Bigdl-nano doesn't support '{strategy}' strategy now, "
                     f"'{strategy}' strategy of pytorch_lightning will be used. "
