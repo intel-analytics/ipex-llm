@@ -29,12 +29,9 @@ on:
         - Dllib-Scala-UT
         - Friesian-Scala-UT
         - PPML-Scala-UT
-        - PPML-PySpark-K8s-Example
         - PPML-Spark-PySpark-Local-Sql-UT-On-Gramine
         - PPML-Occlum-ExampleTests
-        - PPML-Occlum-k8s-ExampleTests
         - PPML-spark-Local-Example-Tests-on-Gramine
-        - PPML-Spark-K8S-Example-On-Gramine
       tag:
         description: 'docker image tag'
         required: true
