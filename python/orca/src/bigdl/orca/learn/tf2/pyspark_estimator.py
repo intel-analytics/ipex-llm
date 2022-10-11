@@ -382,7 +382,7 @@ class SparkTFEstimator():
                 return SparkRunner(**init_param).predict(**param)
 
             pred_shards = SparkXShards(xshards.rdd.mapPartitions(
-                lambda iter: transform_func(iter, init_params, params)))
+                lambda iter: transform_func(iter, init_params, params)), transient=True)
             result = convert_predict_xshards_to_dataframe(pre_predict_data, pred_shards)
         else:
             invalidInputError(False,

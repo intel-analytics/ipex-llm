@@ -194,7 +194,7 @@ def convert_predict_rdd_to_dataframe(df, prediction_rdd):
                 row = Row(*([pair[0][col] for col in pair[0].__fields__] + [pair[1].tolist()]))
                 return row, structType
 
-    combined_rdd = df.rdd.zip(prediction_rdd).map(combine)
+    combined_rdd = df.rdd.zip(prediction_rdd).map(combine).cache()
     type = combined_rdd.map(lambda data: data[1]).first()
     result_rdd = combined_rdd.map(lambda data: data[0])
     schema = StructType(df.schema.fields + [StructField('prediction', type)])
