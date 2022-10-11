@@ -1,35 +1,46 @@
 User Guide
 =========================
 
-.. grid:: 1 2 2 3
+.. grid:: 1 2 2 2
     :gutter: 2
 
-    .. grid-item-card:: :fas:`running` Register
-        :link: setup/register.html
+    .. grid-item-card:: :fab:`python` Python User Guide
+        :link: python.html
 
-        Complete begginer with SEPAL ? start registering yourself to the platfrorm and start the fantastic journey of producing Earth Observation data from everywhere! It contains everything you need to start an account, download and get the basics of the platform.
+        Python Environment Setup Guide (Linux), applicable to Orca, Nano, DLlib, Chronos, Friesian.
 
-    .. grid-item-card:: :fas:`plug` Connect to Earth Engine
-        :link: setup/gee.html
+    .. grid-item-card:: :fas:`plug` Scala User Guide
+        :link: scala.html
 
-        SEPAL uses the best of Google Earth Engine (GEE) and make it available for users without coding experience. To get the best of the platform you should connect your own free account. This page contains all you need to know to create a GEE account and how to link it with SEPAL.
+        Scala Environment Setup Guide (Linux), applicable to DLLib.
 
-    .. grid-item-card:: :fas:`book-open` Start a recipe
-        :link: cookbook/index.html
+    .. grid-item-card:: :fab:`windows` Windows User Guide
+        :link: win.html
 
-        To run analysis SEPAL uses recipes. these recipes are the founding blocks of our processes. To learn how to use them and learn more about the different functionalities of the platform, follow this tutorials.
+        Use BigDL on Windows.
 
-    .. grid-item-card:: :fas:`book-open` Start a modules
-        :link: modules/index.html
+    .. grid-item-card:: :fas:`cloud-arrow-up` Colab User Guide
+        :link: colab.html
 
-        To run integrated workflows SEPAL uses applications. These modules are designed by the SEPAL team or other organization. To run specific tasks without relying on coding experience. To learn how to use them and learn more about the different functionalities follow this tutorials.
+        Use BigDL in Google Colab Environment.
 
-    .. grid-item-card:: :fas:`plug` Connect to NICFI PlanetLab imagery
-        :link: setup/nicfi.html
+    .. grid-item-card:: :fas:`cloud-arrow-up` Databricks User Guide
+        :link: databricks.html
 
-        Through our partnership with NICFI and PlanetLab, SEPAL can use the very high resolution imagery from PlanetLab for its recipes and module. To use these images SEPAL need to be connected to your PLanet account. Follow these step to link our platform to the VHR imagery.
+        Use BigDL in Databricks Environment.
 
-    .. grid-item-card:: :fas:`desktop` Use se.plan module
-        :link: modules/dwn/seplan.html
+    .. grid-item-card:: :fas:`cloud` Hadoop/YARN User Guide
+        :link: hadoop.html
 
-        **se.plan** is a spatially explicit online tool designed to support forest restoration planning decisions by restoration stakeholders. if you're interested in using the application to compute your restoration index, follow our documentation.
+        Use BigDL in Hadoop/YARN Environment.
+
+    .. grid-item-card:: :fas:`server` k8s User Guide
+        :link: k8s.html
+
+        Use BigDL in K8s Environment.
+
+
+    .. grid-item-card:: :fas:`server` Docker User Guide
+        :link: docker.html
+
+        Use BigDL in docker Environment.
