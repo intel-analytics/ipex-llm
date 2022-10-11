@@ -204,7 +204,8 @@ class TestTSDataset(TestCase):
         df = get_multi_id_ts_df()
         # legal input
         tsdata = TSDataset.from_pandas(df, dt_col="datetime", target_col="value",
-                                       extra_feature_col=["extra feature"], id_col="id")
+                                       extra_feature_col=["extra feature"],
+                                       id_col="id", repair=False)
         assert tsdata._id_list == ['00', '01']
         assert tsdata.feature_col == ["extra feature"]
         assert tsdata.target_col == ["value"]
@@ -212,7 +213,8 @@ class TestTSDataset(TestCase):
         assert tsdata._is_pd_datetime
 
         tsdata = TSDataset.from_pandas(df, dt_col="datetime", target_col=["value"],
-                                       extra_feature_col="extra feature", id_col="id")
+                                       extra_feature_col="extra feature",
+                                       id_col="id", repair=False)
         assert tsdata._id_list == ['00', '01']
         assert tsdata.feature_col == ["extra feature"]
         assert tsdata.target_col == ["value"]
@@ -220,7 +222,8 @@ class TestTSDataset(TestCase):
         assert tsdata._is_pd_datetime
 
         tsdata = TSDataset.from_pandas(df.drop(columns=["id"]), dt_col="datetime",
-                                       target_col=["value"], extra_feature_col="extra feature")
+                                       target_col=["value"],
+                                       extra_feature_col="extra feature", repair=False)
         assert tsdata._id_list == ['0']
         assert tsdata.feature_col == ["extra feature"]
         assert tsdata.target_col == ["value"]
@@ -230,19 +233,24 @@ class TestTSDataset(TestCase):
         # illegael input
         with pytest.raises(RuntimeError):
             tsdata = TSDataset.from_pandas(df, dt_col="datetime", target_col=["value"],
-                                           extra_feature_col="extra feature", id_col=0)
+                                           extra_feature_col="extra feature",
+                                           id_col=0, repair=False)
         with pytest.raises(RuntimeError):
             tsdata = TSDataset.from_pandas(df, dt_col=0, target_col=["value"],
-                                           extra_feature_col="extra feature", id_col="id")
+                                           extra_feature_col="extra feature",
+                                           id_col="id", repair=False)
         with pytest.raises(RuntimeError):
             tsdata = TSDataset.from_pandas(df, dt_col="datetime", target_col=0,
-                                           extra_feature_col="extra feature", id_col="id")
+                                           extra_feature_col="extra feature",
+                                           id_col="id", repair=False)
         with pytest.raises(RuntimeError):
             tsdata = TSDataset.from_pandas(0, dt_col="datetime", target_col=["value"],
-                                           extra_feature_col="extra feature", id_col="id")
+                                           extra_feature_col="extra feature",
+                                           id_col="id", repair=False)
         with pytest.raises(RuntimeError):
             tsdata = TSDataset.from_pandas(df, dt_col="datetime", target_col=["value1"],
-                                           extra_feature_col="extra feature", id_col="id")
+                                           extra_feature_col="extra feature",
+                                           id_col="id", repair=False)
 
     def test_tsdataset_roll_single_id(self):
         df = get_ts_df()
@@ -310,7 +318,8 @@ class TestTSDataset(TestCase):
         lookback = random.randint(1, 20)
 
         tsdata = TSDataset.from_pandas(df, dt_col="datetime", target_col="value",
-                                       extra_feature_col=["extra feature"], id_col="id")
+                                       extra_feature_col=["extra feature"],
+                                       id_col="id", repair=False)
 
         # test train
         tsdata.roll(lookback=lookback, horizon=horizon, id_sensitive=True)
@@ -340,7 +349,8 @@ class TestTSDataset(TestCase):
         tsdata = TSDataset.from_pandas(df,
                                        dt_col="datetime",
                                        target_col=["value", "extra feature"],
-                                       id_col="id")
+                                       id_col="id",
+                                       repair=False)
         tsdata.roll(lookback=lookback, horizon=horizon, id_sensitive=False)
         x, y = tsdata.to_numpy()
         assert x.shape == ((50-lookback-horizon+1)*2, lookback, 2)
@@ -631,7 +641,8 @@ class TestTSDataset(TestCase):
         for val in ["last", "const", "linear"]:
             df = get_ugly_ts_df()
             tsdata = TSDataset.from_pandas(df, dt_col="datetime", target_col="e",
-                                           extra_feature_col=["a", "b", "c", "d"], id_col="id")
+                                           extra_feature_col=["a", "b", "c", "d"],
+                                           id_col="id", repair=False)
             tsdata.impute(mode=val)
             assert tsdata.to_pandas().isna().sum().sum() == 0
             assert len(tsdata.to_pandas()) == 100
@@ -643,7 +654,8 @@ class TestTSDataset(TestCase):
             df.loc[len(df)] = df.loc[np.random.randint(0, 99)]
         assert len(df) == 120
         tsdata = TSDataset.from_pandas(df, dt_col="datetime", target_col="e",
-                                       extra_feature_col=["a", "b", "c", "d"], id_col="id")
+                                       extra_feature_col=["a", "b", "c", "d"],
+                                       id_col="id", repair=False)
         tsdata.deduplicate()
         assert len(tsdata.to_pandas()) == 100
         tsdata._check_basic_invariants()
@@ -882,12 +894,14 @@ class TestTSDataset(TestCase):
     def test_tsdataset_resample_multiple(self):
         df = get_multi_id_ts_df()
         tsdata = TSDataset.from_pandas(df, dt_col="datetime", target_col="value",
-                                       extra_feature_col=["extra feature"], id_col="id")
+                                       extra_feature_col=["extra feature"],
+                                       id_col="id", repair=False)
         tsdata.resample('2D', df["datetime"][0], df["datetime"][df.shape[0]-1])
         assert len(tsdata.to_pandas()) == df.shape[0] // 2
         tsdata._check_basic_invariants()
         tsdata = TSDataset.from_pandas(df, dt_col="datetime", target_col="value",
-                                       extra_feature_col=["extra feature"], id_col="id")
+                                       extra_feature_col=["extra feature"],
+                                       id_col="id", repair=False)
         tsdata.resample('2D')
         assert len(tsdata.to_pandas()) == 50
         tsdata._check_basic_invariants()
@@ -899,7 +913,8 @@ class TestTSDataset(TestCase):
         df["datetime"] = pd.date_range('1/1/2019', periods=100)
         df.loc[50:100, "datetime"] = pd.date_range('1/1/2019', periods=50)
         tsdata = TSDataset.from_pandas(df, dt_col="datetime", target_col="value",
-                                       extra_feature_col=["extra feature"], id_col="id")
+                                       extra_feature_col=["extra feature"],
+                                       id_col="id", repair=False)
         with pytest.raises(RuntimeError):
             tsdata.resample('2S', df.datetime[0], df.datetime[df.shape[0]-1])
         tsdata._check_basic_invariants()
@@ -909,7 +924,8 @@ class TestTSDataset(TestCase):
         df.value = df.value.astype(np.object)
         df['extra feature'] = df['extra feature'].astype(np.object)
         tsdata = TSDataset.from_pandas(df, dt_col="datetime", target_col="value",
-                                       extra_feature_col=["extra feature"], id_col="id")
+                                       extra_feature_col=["extra feature"],
+                                       id_col="id", repair=False)
         before_sampling = tsdata.df.columns
         tsdata.resample('2S', df.datetime[0], df.datetime[df.shape[0]-1])
         assert set(before_sampling) == set(tsdata.df.columns)
@@ -950,7 +966,8 @@ class TestTSDataset(TestCase):
         tsdata_train, tsdata_valid, tsdata_test =\
             TSDataset.from_pandas(df, dt_col="datetime", target_col="value",
                                   extra_feature_col=["extra feature"], id_col="id",
-                                  with_split=True, val_ratio=0.1, test_ratio=0.1)
+                                  with_split=True, val_ratio=0.1, test_ratio=0.1,
+                                  repair=False)
 
         assert set(np.unique(tsdata_train.to_pandas()["id"])) == {"00", "01"}
         assert set(np.unique(tsdata_valid.to_pandas()["id"])) == {"00", "01"}
@@ -999,11 +1016,13 @@ class TestTSDataset(TestCase):
         horizon = random.randint(2, 10)
         lookback = random.randint(2, 20)
         tsdata = TSDataset.from_pandas(df, dt_col="datetime", target_col="value",
-                                       extra_feature_col=["extra feature"], id_col="id")
+                                       extra_feature_col=["extra feature"],
+                                       id_col="id", repair=False)
         tsdata.gen_rolling_feature(settings="minimal", window_size=lookback)
         tsdata._check_basic_invariants()
         tsdata = TSDataset.from_pandas(df, dt_col="datetime", target_col="value",
-                                       extra_feature_col=["extra feature"], id_col="id")
+                                       extra_feature_col=["extra feature"],
+                                       id_col="id", repair=False)
         tsdata.gen_rolling_feature(settings="minimal", window_size=lookback, n_jobs=2)
         tsdata._check_basic_invariants()
 
@@ -1065,7 +1084,8 @@ class TestTSDataset(TestCase):
         tsdata = TSDataset.from_pandas(df, target_col="value",
                                        dt_col="datetime",
                                        extra_feature_col="extra feature",
-                                       id_col="id")
+                                       id_col="id",
+                                       repair=False)
         with pytest.raises(RuntimeError):
             tsdata.roll(lookback=5, horizon=2, id_sensitive=True)
         tsdata._check_basic_invariants()
@@ -1227,7 +1247,7 @@ class TestTSDataset(TestCase):
                                        target_col=['a', 'b', 'c', 'd', 'e'],
                                        extra_feature_col=None,
                                        repair=True)
-        missing_value = tsdata.df.isna().sum()
+        missing_value = tsdata.df.isna().sum().sum()
         assert missing_value == 0
     
     def test_tsdataset_non_std_dt_check_and_repair(self):
@@ -1240,7 +1260,7 @@ class TestTSDataset(TestCase):
         assert _is_pd_datetime is True
 
     def test_tsdataset_interval_check_and_repair(self):
-        df = get_multi_id_ts_df()
+        df = get_multi_interval_df()
         tsdata = TSDataset.from_pandas(df, dt_col="datetime",
                                        target_col=['a', 'b', 'c', 'd', 'e'],
                                        extra_feature_col=None,
@@ -1248,4 +1268,4 @@ class TestTSDataset(TestCase):
         dt_col = tsdata.df["datetime"]
         interval = dt_col.shift(-1) - dt_col
         unique_intervals = interval[:-1].unique()
-        assert unique_intervals == 1
+        assert len(unique_intervals) == 1

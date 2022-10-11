@@ -52,7 +52,8 @@ class TestRollDataset:
         # get results rolled by tsdata.roll
         extra_feature_col = None if feature_num == 0 else ["extra feature"]
         tsdata = TSDataset.from_pandas(df, dt_col="datetime", target_col="value",
-                                       extra_feature_col=extra_feature_col, id_col="id")
+                                       extra_feature_col=extra_feature_col,
+                                       id_col="id", repair=False)
         tsdata.roll(lookback=lookback, horizon=horizon)
         if horizon == 0:
             x = tsdata.to_numpy()
