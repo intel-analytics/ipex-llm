@@ -41,7 +41,7 @@ def _get_args_parser() -> ArgumentParser:
     )
 
     parser.add_argument(
-        "--master_port",
+        "--driver_port",
         type=str,
         default="12345",
     )
@@ -124,8 +124,8 @@ def _create_pod(pod_name: str,
                 pod_labels: Dict[str, str],
                 rank: str,
                 world_size: int,
-                master_addr: str,
-                master_port: str,
+                driver_addr: str,
+                driver_port: str,
                 app_id: str,
                 extra_envs: List[List[str]],
                 pod_cpu: str,
@@ -141,8 +141,8 @@ def _create_pod(pod_name: str,
     envs = [
         client.V1EnvVar(name="WORLD_SIZE", value=f"{world_size}"),
         client.V1EnvVar(name="RANK", value=rank),
-        client.V1EnvVar(name="MASTER_ADDR", value=master_addr),
-        client.V1EnvVar(name="MASTER_PORT", value=master_port),
+        client.V1EnvVar(name="MASTER_ADDR", value=driver_addr),
+        client.V1EnvVar(name="MASTER_PORT", value=driver_port),
         client.V1EnvVar(name="APP_ID", value=app_id)
     ]
 
@@ -175,18 +175,18 @@ def _create_pod(pod_name: str,
     return pod_body
 
 
-def _create_master_service(v1_api: client.CoreApi,
+def _create_driver_service(v1_api: client.CoreApi,
                            namespace: str,
-                           master_pod_name: str,
-                           master_pod_labels: str,
-                           master_port: str):
-    service_name = f'{master_pod_name}-service'
+                           driver_pod_name: str,
+                           driver_pod_labels: str,
+                           driver_port: str):
+    service_name = f'{driver_pod_name}-service'
     metadata = client.V1ObjectMeta(name=service_name)
     port = client.V1ServicePort(protocol="TCP",
-                                port=int(master_port),
-                                target_port=int(master_port))
+                                port=int(driver_port),
+                                target_port=int(driver_port))
 
-    service_spec = client.V1ServiceSpec(selector=master_pod_labels,
+    service_spec = client.V1ServiceSpec(selector=driver_pod_labels,
                                         ports=[port])
 
     service = client.V1Service(api_version="v1",
@@ -196,18 +196,18 @@ def _create_master_service(v1_api: client.CoreApi,
 
     service = v1_api.create_namespaced_service(namespace=namespace, body=service)
 
-    print(f"Created Master Service: {service_name}")
-    return service_name, master_port
+    print(f"Created Driver Service: {service_name}")
+    return service_name, driver_port
 
 
-def _create_master_pod(v1_api: client.CoreApi,
+def _create_driver_pod(v1_api: client.CoreApi,
                        namespace: str,
                        pod_name: str,
                        pod_labels: Dict[str, str],
                        create_pod_fn: Callable):
     pod_body = create_pod_fn(rank="0", pod_name=pod_name, pod_labels=pod_labels)
     pod = v1_api.create_namespaced_pod(namespace=namespace, body=pod_body)
-    print(f"Created Master Pod: {pod_name}")
+    print(f"Created Driver Pod: {pod_name}")
 
 
 def _create_worker_pods(v1_api: client.CoreApi,
@@ -237,19 +237,19 @@ def main():
 
     v1 = client.CoreV1Api()
 
-    master_pod_name = f'bigdl-{app_id}-master'
-    master_pod_labels = {"bigdl-app": app_id, "bigdl-app-type": "master"}
+    driver_pod_name = f'bigdl-{app_id}-driver'
+    driver_pod_labels = {"bigdl-app": app_id, "bigdl-app-type": "driver"}
 
-    service_name, service_port = _create_master_service(v1_api=v1,
+    service_name, service_port = _create_driver_service(v1_api=v1,
                                                         namespace=args.namespace,
-                                                        master_pod_name=master_pod_name,
-                                                        master_pod_labels=master_pod_labels,
-                                                        master_port=args.master_port)
+                                                        driver_pod_name=driver_pod_name,
+                                                        driver_pod_labels=driver_pod_labels,
+                                                        driver_port=args.driver_port)
 
     create_pod_fn = functools.partial(_create_pod,
                                       world_size=args.nnodes,
-                                      master_addr=service_name,
-                                      master_port=service_port,
+                                      driver_addr=service_name,
+                                      driver_port=service_port,
                                       app_id=app_id,
                                       extra_envs=args.env,
                                       pod_cpu=args.pod_cpu,
@@ -259,10 +259,10 @@ def main():
                                       volume_strs=args.volume,
                                       volume_mount_strs=args.volume_mount)
 
-    _create_master_pod(v1_api=v1,
+    _create_driver_pod(v1_api=v1,
                        namespace=args.namespace,
-                       pod_name=master_pod_name,
-                       pod_labels=master_pod_labels,
+                       pod_name=driver_pod_name,
+                       pod_labels=driver_pod_labels,
                        create_pod_fn=create_pod_fn)
 
     _create_worker_pods(v1_api=v1,
@@ -273,4 +273,4 @@ def main():
 
     print("You can use the following commands to check out the pods status and logs.")
     print(f"**** kubectl get pods -l bigdl-app={app_id} ****")
-    print(f"**** kubectl logs {master_pod_name} ****")
+    print(f"**** kubectl logs {driver_pod_name} ****")
