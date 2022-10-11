@@ -15,14 +15,16 @@
 # ==============================================================================
 # Most of the pytorch code is adapted from guoyang9's NCF implementation for
 # ml-1m dataset.
-# guoyang9's source code: https://github.com/guoyang9/NCF
+# https://github.com/guoyang9/NCF
 #
 
 import torch
 import torch.nn as nn
 
+
 class NCF(nn.Module):
-    def __init__(self, user_num, item_num, factor_num, num_layers, dropout, model, GMF_model=None, MLP_model=None):
+    def __init__(self, user_num, item_num, factor_num, num_layers, dropout,
+        model, GMF_model=None, MLP_model=None):
         super(NCF, self).__init__()
         """
         user_num: number of users;
@@ -33,7 +35,7 @@ class NCF(nn.Module):
         model: 'MLP', 'GMF', 'NeuMF-end', and 'NeuMF-pre';
         GMF_model: pre-trained GMF weights;
         MLP_model: pre-trained MLP weights.
-        """    
+        """
         self.dropout = dropout
         self.model = model
         self.GMF_model = GMF_model
@@ -41,10 +43,10 @@ class NCF(nn.Module):
 
         self.embed_user_GMF = nn.Embedding(user_num, factor_num)
         self.embed_item_GMF = nn.Embedding(item_num, factor_num)
-        self.embed_user_MLP = nn.Embedding(
-                user_num, factor_num * (2 ** (num_layers - 1)))
-        self.embed_item_MLP = nn.Embedding(
-                item_num, factor_num * (2 ** (num_layers - 1)))
+        self.embed_user_MLP = nn.Embedding(user_num, \
+            factor_num * (2 ** (num_layers - 1)))
+        self.embed_item_MLP = nn.Embedding(item_num, \
+            factor_num * (2 ** (num_layers - 1)))
 
         MLP_modules = []
         for i in range(num_layers):
@@ -55,10 +57,10 @@ class NCF(nn.Module):
         self.MLP_layers = nn.Sequential(*MLP_modules)
 
         if self.model in ['MLP', 'GMF']:
-            predict_size = factor_num 
+            predict_size = factor_num
         else:
             predict_size = factor_num * 2
-        output_modules=[]
+        output_modules = []
         output_modules.append(nn.Linear(predict_size, 1))
         output_modules.append(nn.Sigmoid())
         self.predict_layer = nn.Sequential(*output_modules)
@@ -95,20 +97,20 @@ class NCF(nn.Module):
 
             # predict layers
             predict_weight = torch.cat([
-                self.GMF_model.predict_layer.weight, 
+                self.GMF_model.predict_layer.weight,
                 self.MLP_model.predict_layer.weight], dim=1)
             precit_bias = self.GMF_model.predict_layer.bias + \
-                        self.MLP_model.predict_layer.bias
+                self.MLP_model.predict_layer.bias
 
             self.predict_layer.weight.data.copy_(0.5 * predict_weight)
             self.predict_layer.bias.data.copy_(0.5 * precit_bias)
 
-    def forward(self,*args):
-        if(len(args)==2):# args=user,item
-            user,item=args[0],args[1]
-        else:# args=user_item
-            user,item=args[0][:,0],args[0][:,1]
-            
+    def forward(self, *args):
+        if(len(args) == 2):  # args=user,item
+            user, item = args[0], args[1]
+        else:  # args=user_item
+            user, item = args[0][:, 0], args[0][:, 1]
+
         if not self.model == 'MLP':
             embed_user_GMF = self.embed_user_GMF(user)
             embed_item_GMF = self.embed_item_GMF(item)
