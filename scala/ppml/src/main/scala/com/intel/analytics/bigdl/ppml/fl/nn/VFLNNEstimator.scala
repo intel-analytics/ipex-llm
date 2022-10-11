@@ -41,7 +41,6 @@ class VFLNNEstimator(algorithm: String,
                      threadNum: Int = 1) extends Estimator with FLClientClosable {
   val logger = LogManager.getLogger(getClass)
   val (weight, grad) = getParametersFromModel(model)
-  var iteration = 0
   protected val evaluateResults = mutable.Map[String, ArrayBuffer[Float]]()
 
   /**
@@ -58,7 +57,7 @@ class VFLNNEstimator(algorithm: String,
             valDataSet: LocalDataSet[MiniBatch[Float]]): Module[Float] = {
     val clientUUID = flClient.getClientUUID()
     val size = trainDataSet.size()
-    iteration = 0
+    var iteration = 0
     (0 until endEpoch).foreach { epoch =>
       val dataSet = trainDataSet.data(true)
       var count = 0
@@ -72,20 +71,22 @@ class VFLNNEstimator(algorithm: String,
           .update("neval", iteration + 1)
         val input = miniBatch.getInput()
         val target = miniBatch.getTarget()
-        trainStep(input, target)
+        trainStep(input, target, iteration)
+        iteration += 1
         count += miniBatch.size()
       }
       if (valDataSet != null) {
         model.evaluate()
         evaluate(valDataSet)
       }
-
     }
-
     model
   }
-  protected def trainStep(input: Activity,
-                target: Activity): Unit = {
+
+  protected def trainStep(
+        input: Activity,
+        target: Activity,
+        iteration: Int): Unit = {
     model.training()
     model.zeroGradParameters()
     val output = model.forward(input)
@@ -103,8 +104,6 @@ class VFLNNEstimator(algorithm: String,
     model.backward(input, errors)
     logger.debug(s"Model doing backward, version: $iteration")
     optimMethod.optimize(_ => (loss, grad), weight)
-
-    iteration += 1
   }
 
   /**
@@ -159,7 +158,7 @@ class VFLNNEstimator(algorithm: String,
       model.evaluate()
       val miniBatch = data.next()
       val input = miniBatch.getInput()
-      val result = predict(input)
+      val result = predict(input, iteration)
       resultSeq = resultSeq :+ result.toTensor[Float]
       iteration += 1
       count += miniBatch.size()
@@ -167,7 +166,7 @@ class VFLNNEstimator(algorithm: String,
     resultSeq.toArray
   }
 
-  protected def predict(input: Activity): Activity = {
+  protected def predict(input: Activity, iteration: Int): Activity = {
     val output = model.forward(input)
     val metadata = MetaData.newBuilder
       .setName(s"${model.getName()}_output").setVersion(iteration).build
