@@ -27,6 +27,8 @@ import os
 import tempfile
 
 from nn_service_pb2 import LoadModelRequest, SaveModelRequest
+from torch.utils.data.dataloader import DataLoader
+from typing import Optional, Union
 
 
 
@@ -54,11 +56,11 @@ class PytorchEstimator:
         if server_model is not None:
             self.__add_server_model(server_model, loss_fn, optimizer_cls, optimizer_args)
     
-    def save_server_model(self, model_path):
+    def save_server_model(self, model_path: str) -> None:
         self.fl_client.nn_stub.save_server_model(
             SaveModelRequest(model_path=model_path, backend='pt'))
 
-    def load_server_model(self, model_path):
+    def load_server_model(self, model_path: str) -> None:
         self.fl_client.nn_stub.load_server_model(
             LoadModelRequest(model_path=model_path, backend='pt'))
 
@@ -73,11 +75,13 @@ class PytorchEstimator:
         return file_chunk_generator
 
 
-    def __add_server_model(self, 
-                         model: nn.Module,
-                         loss_fn=None,
-                         optimizer_cls=None,
-                         optimizer_args={}):
+    def __add_server_model(
+        self, 
+        model: nn.Module,
+        loss_fn=None,
+        optimizer_cls=None,
+        optimizer_args={}
+        ):
         # add model and pickle to server
         if loss_fn is None:
             logging.info(f'loss_fn on FLServer not specified, \
@@ -94,7 +98,7 @@ class PytorchEstimator:
         response = self.fl_client.upload_meta(loss_fn, optimizer_cls, optimizer_args)
         invalidOperationError(response.code == 0, response.message)
 
-    def train_step(self, x, y):
+    def train_step(self, x:torch.Tensor, y:torch.Tensor) -> ndarray:
         """
         Get the loss data from FLServer and construct the identical Pytorch Tensor
         """
@@ -113,7 +117,13 @@ class PytorchEstimator:
         self.optimizer.step()
         return response_map['loss']
 
-    def fit(self, x, y=None, epoch=1, batch_size=4):
+    def fit(
+        self, 
+        x: Union[DataLoader, ndarray], 
+        y: Optional[ndarray]=None, 
+        epoch: int=1, 
+        batch_size: int=4
+        ) -> None:
         for e in range(epoch):
             self.model.train()
             if isinstance(x, DataLoader):
@@ -147,7 +157,7 @@ class PytorchEstimator:
                 torch.save(self.model, self.client_model_path)
             
 
-    def predict(self, x):
+    def predict(self, x: Union[DataLoader, ndarray]) -> ndarray:
         if isinstance(x, DataLoader):
             pass
         elif isinstance(x, ndarray):
