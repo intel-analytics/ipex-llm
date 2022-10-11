@@ -116,6 +116,7 @@ class DDPK8sStrategy(DDPStrategy):
             else:
                 warnings.warn(f"IPEX currently only support single optimizers, "
                               f"but got {num_optimizers}. Skip IPEX")
+
     def on_train_start(self):
         """Setup warmup lr_schedulers after resetting the train dataloaders."""
         # LightnigModule.train_dataloader() generate the training dataloaders after setup,
