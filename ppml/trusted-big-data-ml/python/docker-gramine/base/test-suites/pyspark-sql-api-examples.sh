@@ -18,7 +18,7 @@ cd /ppml/trusted-big-data-ml
 
 if [ $status_1_pyspark_sql_api_DataFrame -ne 0 ]; then
 echo "pysaprk sql api example.1 --- DataFrame"
-export spark_commnd="/opt/jdk8/bin/java \
+export sgx_command="/opt/jdk8/bin/java \
   -cp '/ppml/trusted-big-data-ml/work/spark-3.1.2/conf/:/ppml/trusted-big-data-ml/work/spark-3.1.2/jars/*' \
   -Xmx1g \
   org.apache.spark.deploy.SparkSubmit \
@@ -33,7 +33,7 @@ fi
 
 if [ $status_2_pyspark_sql_api_SQLContext -ne 0 ]; then
 echo "pysaprk sql api example.2 --- SQLContext"
-export spark_commnd="/opt/jdk8/bin/java \
+export sgx_command="/opt/jdk8/bin/java \
   -cp '/ppml/trusted-big-data-ml/work/spark-3.1.2/conf/:/ppml/trusted-big-data-ml/work/spark-3.1.2/jars/*' \
   -Xmx1g \
   org.apache.spark.deploy.SparkSubmit \
@@ -48,7 +48,7 @@ fi
 
 if [ $status_3_pyspark_sql_api_UDFRegistration -ne 0 ]; then
 echo "pysaprk sql api example.3 --- UDFRegistration"
-export spark_commnd="/opt/jdk8/bin/java \
+export sgx_command="/opt/jdk8/bin/java \
   -cp '/ppml/trusted-big-data-ml/work/spark-3.1.2/conf/:/ppml/trusted-big-data-ml/work/spark-3.1.2/jars/*:/ppml/trusted-big-data-ml/work/spark-3.1.2/jars/spark-sql_2.12-3.1.2.jar' \
   -Xmx1g \
     org.apache.spark.deploy.SparkSubmit \
@@ -62,7 +62,7 @@ fi
 
 if [ $status_4_pyspark_sql_api_GroupedData -ne 0 ]; then
 echo "pysaprk sql api example.4 --- GroupedData"
-export spark_commnd="/opt/jdk8/bin/java \
+export sgx_command="/opt/jdk8/bin/java \
   -cp '/ppml/trusted-big-data-ml/work/spark-3.1.2/conf/:/ppml/trusted-big-data-ml/work/spark-3.1.2/jars/*' \
   -Xmx1g \
   org.apache.spark.deploy.SparkSubmit \
@@ -76,7 +76,7 @@ fi
 
 if [ $status_5_pyspark_sql_api_Column -ne 0 ]; then
 echo "pysaprk sql api example.5 --- Column"
-export spark_commnd="/opt/jdk8/bin/java \
+export sgx_command="/opt/jdk8/bin/java \
   -cp '/ppml/trusted-big-data-ml/work/spark-3.1.2/conf/:/ppml/trusted-big-data-ml/work/spark-3.1.2/jars/*' \
   -Xmx1g \
   org.apache.spark.deploy.SparkSubmit \
@@ -90,7 +90,7 @@ fi
 
 if [ $status_6_pyspark_sql_api_Row_and_DataFrameNaFunctions -ne 0 ]; then
 echo "pysaprk sql api example.6 --- Row_and_DataFrameNaFunctions"
-export spark_commnd="/opt/jdk8/bin/java \
+export sgx_command="/opt/jdk8/bin/java \
   -cp '/ppml/trusted-big-data-ml/work/spark-3.1.2/conf/:/ppml/trusted-big-data-ml/work/spark-3.1.2/jars/*' \
   -Xmx1g \
   org.apache.spark.deploy.SparkSubmit \
@@ -104,7 +104,7 @@ fi
 
 if [ $status_7_pyspark_sql_api_Window -ne 0 ]; then
 echo "pysaprk sql api example.7 --- Window"
-export spark_commnd="/opt/jdk8/bin/java \
+export sgx_command="/opt/jdk8/bin/java \
   -cp '/ppml/trusted-big-data-ml/work/spark-3.1.2/conf/:/ppml/trusted-big-data-ml/work/spark-3.1.2/jars/*' \
   -Xmx1g \
   org.apache.spark.deploy.SparkSubmit \
@@ -118,7 +118,7 @@ fi
 
 if [ $status_8_pyspark_sql_api_DataframeReader -ne 0 ]; then
 echo "pysaprk sql api example.8 --- DataframeReader"
-export spark_commnd="/opt/jdk8/bin/java \
+export sgx_command="/opt/jdk8/bin/java \
   -cp '/ppml/trusted-big-data-ml/work/spark-3.1.2/conf/:/ppml/trusted-big-data-ml/work/spark-3.1.2/jars/*' \
   -Xmx1g \
   org.apache.spark.deploy.SparkSubmit \
@@ -132,7 +132,7 @@ fi
 
 if [ $status_9_pyspark_sql_api_DataframeWriter -ne 0 ]; then
 echo "pysaprk sql api example.9 --- DataframeWriter"
-export spark_commnd="/opt/jdk8/bin/java \
+export sgx_command="/opt/jdk8/bin/java \
   -cp '/ppml/trusted-big-data-ml/work/spark-3.1.2/conf/:/ppml/trusted-big-data-ml/work/spark-3.1.2/jars/*' \
   -Xmx1g \
   org.apache.spark.deploy.SparkSubmit \
@@ -146,7 +146,7 @@ fi
 
 if [ $status_10_pyspark_sql_api_HiveContext -ne 0 ]; then
 echo "pysaprk sql api example.10 --- HiveContext"
-export spark_commnd="/opt/jdk8/bin/java \
+export sgx_command="/opt/jdk8/bin/java \
   -cp '/ppml/trusted-big-data-ml/work/spark-3.1.2/conf/:/ppml/trusted-big-data-ml/work/spark-3.1.2/jars/*' \
   -Xmx1g \
   org.apache.spark.deploy.SparkSubmit \
@@ -160,7 +160,7 @@ fi
 
 if [ $status_11_pyspark_sql_api_Catalog -ne 0 ]; then
 echo "pysaprk sql api example.11 --- Catalog"
-export spark_commnd="/opt/jdk8/bin/java \
+export sgx_command="/opt/jdk8/bin/java \
   -cp '/ppml/trusted-big-data-ml/work/spark-3.1.2/conf/:/ppml/trusted-big-data-ml/work/spark-3.1.2/jars/*' \
   -Xmx1g \
   org.apache.spark.deploy.SparkSubmit \
@@ -174,7 +174,7 @@ fi
 
 if [ $status_12_pyspark_sql_types_module -ne 0 ]; then
 echo "pysaprk sql api example.12 --- types module"
-export spark_commnd="/opt/jdk8/bin/java \
+export sgx_command="/opt/jdk8/bin/java \
   -cp '/ppml/trusted-big-data-ml/work/spark-3.1.2/conf/:/ppml/trusted-big-data-ml/work/spark-3.1.2/jars/*' \
   -Xmx1g \
   org.apache.spark.deploy.SparkSubmit \
@@ -190,7 +190,7 @@ if [ $status_13_pyspark_sql_functions_module -ne 0 ]; then
 echo "pysaprk sql api example.13 --- pyspark api functions"
   for f_num in {a..g}
   do
-export spark_commnd="/opt/jdk8/bin/java \
+export sgx_command="/opt/jdk8/bin/java \
       -cp '/ppml/trusted-big-data-ml/work/spark-3.1.2/conf/:/ppml/trusted-big-data-ml/work/spark-3.1.2/jars/*' \
       -Xmx1g \
       org.apache.spark.deploy.SparkSubmit \

@@ -139,13 +139,13 @@ case "$SPARK_K8S_CMD" in
 	export driverExtraClassPath=`cat /opt/spark/conf/spark.properties | grep -P -o "(?<=spark.driver.extraClassPath=).*"` && \
         echo $driverExtraClassPath && \
         export SGX_MEM_SIZE=$SGX_DRIVER_MEM_SIZE && \
-        export spark_commnd="/opt/jdk8/bin/java -Dlog4j.configurationFile=/ppml/trusted-big-data-ml/work/spark-3.1.2/conf/log4j2.xml -Xms1G -Xmx$SGX_DRIVER_JVM_MEM_SIZE -cp "$SPARK_CLASSPATH:$driverExtraClassPath" org.apache.spark.deploy.SparkSubmit --conf spark.driver.bindAddress=$SPARK_DRIVER_BIND_ADDRESS --deploy-mode client "$@"" && \
+        export sgx_command="/opt/jdk8/bin/java -Dlog4j.configurationFile=/ppml/trusted-big-data-ml/work/spark-3.1.2/conf/log4j2.xml -Xms1G -Xmx$SGX_DRIVER_JVM_MEM_SIZE -cp "$SPARK_CLASSPATH:$driverExtraClassPath" org.apache.spark.deploy.SparkSubmit --conf spark.driver.bindAddress=$SPARK_DRIVER_BIND_ADDRESS --deploy-mode client "$@"" && \
         if [ "$ATTESTATION" = "true" ]; then
           echo $ATTESTATION_COMMAND > temp_commnd_file
-          echo $spark_commnd >> temp_commnd_file
-          spark_commnd="bash temp_commnd_file && rm temp_commnd_file"
+          echo $sgx_command >> temp_commnd_file
+          sgx_command="bash temp_commnd_file && rm temp_commnd_file"
         fi
-        echo $spark_commnd && \
+        echo $sgx_command && \
         ./init.sh && \
 	gramine-sgx bash  1>&2
     fi
@@ -191,13 +191,13 @@ case "$SPARK_K8S_CMD" in
         --resourceProfileId $SPARK_RESOURCE_PROFILE_ID
     elif [ "$SGX_ENABLED" == "true" ]; then
       export SGX_MEM_SIZE=$SGX_EXECUTOR_MEM_SIZE && \
-      export spark_commnd="/opt/jdk8/bin/java -Dlog4j.configurationFile=/ppml/trusted-big-data-ml/work/spark-3.1.2/conf/log4j2.xml -Xms1G -Xmx$SGX_EXECUTOR_JVM_MEM_SIZE "${SPARK_EXECUTOR_JAVA_OPTS[@]}" -cp "$SPARK_CLASSPATH" org.apache.spark.executor.CoarseGrainedExecutorBackend --driver-url $SPARK_DRIVER_URL --executor-id $SPARK_EXECUTOR_ID --cores $SPARK_EXECUTOR_CORES --app-id $SPARK_APPLICATION_ID --hostname $SPARK_EXECUTOR_POD_IP --resourceProfileId $SPARK_RESOURCE_PROFILE_ID" && \
+      export sgx_command="/opt/jdk8/bin/java -Dlog4j.configurationFile=/ppml/trusted-big-data-ml/work/spark-3.1.2/conf/log4j2.xml -Xms1G -Xmx$SGX_EXECUTOR_JVM_MEM_SIZE "${SPARK_EXECUTOR_JAVA_OPTS[@]}" -cp "$SPARK_CLASSPATH" org.apache.spark.executor.CoarseGrainedExecutorBackend --driver-url $SPARK_DRIVER_URL --executor-id $SPARK_EXECUTOR_ID --cores $SPARK_EXECUTOR_CORES --app-id $SPARK_APPLICATION_ID --hostname $SPARK_EXECUTOR_POD_IP --resourceProfileId $SPARK_RESOURCE_PROFILE_ID" && \
       if [ "$ATTESTATION" = "true" ]; then
 	echo $ATTESTATION_COMMAND > temp_commnd_file
-	echo $spark_commnd >> temp_commnd_file
-	spark_commnd="bash temp_commnd_file && rm temp_commnd_file"
+	echo $sgx_command >> temp_commnd_file
+	sgx_command="bash temp_commnd_file && rm temp_commnd_file"
       fi
-      echo $spark_commnd && \
+      echo $sgx_command && \
       ./init.sh && \
       gramine-sgx bash  1>&2
     fi

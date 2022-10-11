@@ -4,7 +4,7 @@ status_4_local_spark_wordcount=1
 
 if [ $status_3_local_spark_pi -ne 0 ]; then
 echo "example.3 local spark, pi"
-export spark_commnd="/opt/jdk8/bin/java \
+export sgx_command="/opt/jdk8/bin/java \
    -cp '/ppml/trusted-big-data-ml/work/spark-3.1.2/conf/:/ppml/trusted-big-data-ml/work/spark-3.1.2/jars/*' \
    -Xmx1g org.apache.spark.deploy.SparkSubmit \
    --master 'local[4]' \
@@ -19,7 +19,8 @@ fi
 
 if [ $status_4_local_spark_wordcount -ne 0 ]; then
 echo "example.4 local spark, test-wordcount"
-export spark_commnd="export PYSPARK_PYTHON=/usr/bin/python && /opt/jdk8/bin/java \
+export PYSPARK_PYTHON=/usr/bin/python
+export sgx_command="/opt/jdk8/bin/java \
    -cp '/ppml/trusted-big-data-ml/work/spark-3.1.2/conf/:/ppml/trusted-big-data-ml/work/spark-3.1.2/jars/*' \
    -Xmx1g org.apache.spark.deploy.SparkSubmit \
    --master 'local[4]' \

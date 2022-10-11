@@ -3,7 +3,7 @@ cd /ppml/trusted-big-data-ml
 status_1_scala_spark_pi=1
 
 if [ $status_1_scala_spark_pi -ne 0 ]; then
-export spark_commnd="/opt/jdk8/bin/java \
+export sgx_command="/opt/jdk8/bin/java \
   -cp '/ppml/trusted-big-data-ml/work/spark-3.1.2/conf/:/ppml/trusted-big-data-ml/work/spark-3.1.2/jars/*' \
   -Xmx10g \
   -XX:ActiveProcessorCount=24 \

@@ -13,7 +13,7 @@ status_8_scala_sql_SparkHiveExample=0
 LOCAL_IP=$LOCAL_IP
 
 if [ $status_2_scala_sql_example -ne 0 ]; then
-export spark_commnd="/opt/jdk8/bin/java \
+export sgx_command="/opt/jdk8/bin/java \
   -cp '/ppml/trusted-big-data-ml/work/spark-3.1.2/conf/:/ppml/trusted-big-data-ml/work/spark-3.1.2/jars/*' \
   -Xmx10g \
   -XX:ActiveProcessorCount=24 \
@@ -26,7 +26,7 @@ fi
 status_2_scala_sql_example=$(echo $?)
 
 if [ $status_3_scala_sql_RDDRelation -ne 0 ]; then
-export spark_commnd="rm -rf pair.parquet && \
+export sgx_command="rm -rf pair.parquet && \
     /opt/jdk8/bin/java \
     -cp '/ppml/trusted-big-data-ml/work/spark-3.1.2/conf/:/ppml/trusted-big-data-ml/work/spark-3.1.2/jars/*' \
     -Xmx10g \
@@ -40,7 +40,7 @@ fi
 status_3_scala_sql_RDDRelation=$(echo $?)
 
 if [ $status_4_scala_sql_SimpleTypedAggregator -ne 0 ]; then
-export spark_commnd="rm -rf pair.parquet && \
+export sgx_command="rm -rf pair.parquet && \
   /opt/jdk8/bin/java \
   -cp '/ppml/trusted-big-data-ml/work/spark-3.1.2/conf/:/ppml/trusted-big-data-ml/work/spark-3.1.2/jars/*' \
   -Xmx10g \
@@ -54,7 +54,7 @@ fi
 status_4_scala_sql_SimpleTypedAggregator=$(echo $?)
 
 if [ $status_5_scala_sql_UserDefinedScalar -ne 0 ]; then
-export spark_commnd="rm -rf pair.parquet && \
+export sgx_command="rm -rf pair.parquet && \
   /opt/jdk8/bin/java \
   -cp '/ppml/trusted-big-data-ml/work/spark-3.1.2/conf/:/ppml/trusted-big-data-ml/work/spark-3.1.2/jars/*' \
   -Xmx10g \
@@ -68,7 +68,7 @@ fi
 status_5_scala_sql_UserDefinedScalar=$(echo $?)
 
 if [ $status_6_scala_sql_UserDefinedTypedAggregation -ne 0 ]; then
-export spark_commnd="rm -rf pair.parquet && \
+export sgx_command="rm -rf pair.parquet && \
   /opt/jdk8/bin/java \
   -cp '/ppml/trusted-big-data-ml/work/spark-3.1.2/conf/:/ppml/trusted-big-data-ml/work/spark-3.1.2/jars/*' \
   -Xmx10g \
@@ -82,7 +82,7 @@ fi
 status_6_scala_sql_UserDefinedTypedAggregation=$(echo $?)
 
 if [ $status_7_scala_sql_UserDefinedUntypedAggregation -ne 0 ]; then
-export spark_commnd="rm -rf pair.parquet && \
+export sgx_command="rm -rf pair.parquet && \
   /opt/jdk8/bin/java \
   -cp '/ppml/trusted-big-data-ml/work/spark-3.1.2/conf/:/ppml/trusted-big-data-ml/work/spark-3.1.2/jars/*' \
   -Xmx10g \
