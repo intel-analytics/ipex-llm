@@ -1,8 +1,70 @@
 BigDL-DLlib
 =========================
 
-Overview
+**BigDL-DLlib** (or **DLlib** for short) is a distributed deep learning library for Apache Spark; with DLlib, users can write their deep learning applications as standard Spark programs (using either Scala or Python APIs).
 
--------------------------------
+-------
 
-DLlib is a distributed deep learning library for Apache Spark; with DLlib, users can write their deep learning applications as standard Spark programs (using either Scala or Python APIs).
+
+.. grid:: 2
+    :gutter: 1
+
+    .. grid-item-card::
+        :class-footer: sd-bg-light
+
+        **Get Started**
+        ^^^
+
+        Documents in these sections helps you getting started quickly with DLLib.
+
+        +++
+        `DLlib in 5 minutes <./Overview/dllib.html>`_ /
+        `Installation <./Overview/install.html>`_ /
+
+    .. grid-item-card::
+        :class-footer: sd-bg-light
+
+        **Key Features Guide**
+        ^^^
+
+        Each guide in this section provides you with in-depth information, concepts and knowledges about Nano key features.
+
+        +++
+
+        `Keras-Like API <./Overview/keras-api.html>`_ /
+        `Spark ML Pipeline <./Overview/nnframes.html>`_ /
+
+.. grid:: 2
+    :gutter: 1
+
+    .. grid-item-card::
+        :class-footer: sd-bg-light
+
+        **Examples**
+        ^^^
+
+        How-to Guide provides bite-sized, actionable examples of how to use specific Nano features, different from our tutorials
+        which are full-length examples each implementing a full usage scenario.
+
+        +++
+
+        `Tutorials <./QuickStart/index.html>`_
+
+    .. grid-item-card::
+        :class-footer: sd-bg-light
+
+        **API Document**
+        ^^^
+
+        API Document provides detailed description of Nano APIs.
+
+        +++
+
+        `API Document <../../PythonAPI/DLlib/index.html>`_
+
+
+..  toctree::
+    :hidden:
+
+    BigDL-DLlib Document <self>
+

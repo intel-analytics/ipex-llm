@@ -107,11 +107,16 @@ subtrees:
               - entries:
                 - file: doc/DLlib/Overview/keras-api
                 - file: doc/DLlib/Overview/nnframes
+          - file: doc/DLlib/QuickStart/index
+            title: "Tutorials"
+            subtrees:
+              - entries:
+                - file: doc/DLlib/QuickStart/dllib-quickstart
           - file: doc/PythonAPI/DLlib/index
             title: "API Reference"
 
   - entries:
-    - file: doc/Chronos/Overview/chronos
+    - file: doc/Chronos/index
       title: "Chronos"
       subtrees:
         - entries:

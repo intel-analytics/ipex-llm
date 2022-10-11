@@ -1,7 +1,7 @@
 BigDL-Orca
 =========================
 
-Most AI projects start with a Python notebook running on a single laptop; however, one usually needs to go through a mountain of pains to scale it to handle larger data set in a distributed fashion. The  _**Orca**_ library seamlessly scales out your single node Python notebook across large clusters (so as to process distributed Big Data).
+Most AI projects start with a Python notebook running on a single laptop; however, one usually needs to go through a mountain of pains to scale it to handle larger data set in a distributed fashion. The  **BigDL-Orca** (or **Orca** for short) library seamlessly scales out your single node Python notebook across large clusters (so as to process distributed Big Data).
 
 
 -------
@@ -67,3 +67,7 @@ Most AI projects start with a Python notebook running on a single laptop; howeve
         `API Document <../PythonAPI/Orca/index.html>`_
 
 
+..  toctree::
+    :hidden:
+
+    BigDL-Orca Document <self>
