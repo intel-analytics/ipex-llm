@@ -41,13 +41,13 @@ flowchart TD;
     Feature4-- Time Series -->ReferChronos([<em><strong>Chronos</strong></em>]);
     Feature4-- Recommendation System -->ReferFriesian([<em><strong>Friesian</strong></em>]);
     
-    click ReferNano "https://github.com/jason-dai/BigDL/tree/readme#nano"
-    click ReferOrca "https://github.com/jason-dai/BigDL/tree/readme#orca"
-    click ReferDLlib "https://github.com/jason-dai/BigDL/tree/readme#dllib"
-    click ReferDLlib2 "https://github.com/jason-dai/BigDL/tree/readme#dllib"
-    click ReferChronos "https://github.com/jason-dai/BigDL/tree/readme#chronos"
-    click ReferFriesian "https://github.com/jason-dai/BigDL/tree/readme#friesian"
-    click ReferPPML "https://github.com/jason-dai/BigDL/tree/readme#ppml"
+    click ReferNano "https://github.com/intel-analytics/bigdl#nano"
+    click ReferOrca "https://github.com/intel-analytics/bigdl#orca"
+    click ReferDLlib "https://github.com/intel-analytics/bigdl#dllib"
+    click ReferDLlib2 "https://github.com/intel-analytics/bigdl#dllib"
+    click ReferChronos "https://github.com/intel-analytics/bigdl#chronos"
+    click ReferFriesian "https://github.com/intel-analytics/bigdl#friesian"
+    click ReferPPML "https://github.com/intel-analytics/bigdl#ppml"
     
     classDef ReferStyle1 fill:#5099ce,stroke:#5099ce;
     classDef Feature fill:#FFF,stroke:#08409c,stroke-width:1px;
