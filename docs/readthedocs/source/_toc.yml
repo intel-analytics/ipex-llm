@@ -12,6 +12,7 @@ subtrees:
     entries:
       - file: doc/UserGuide/python
       - file: doc/UserGuide/scala
+      - file: doc/UserGuide/win
       - file: doc/UserGuide/colab
       - file: doc/UserGuide/docker
       - file: doc/UserGuide/hadoop
@@ -23,7 +24,6 @@ subtrees:
   - caption: Nano
     entries:
       - file: doc/Nano/Overview/nano
-      - file: doc/Nano/Overview/windows_guide
       - file: doc/Nano/QuickStart/pytorch_train
       - file: doc/Nano/QuickStart/pytorch_inference
       - file: doc/Nano/QuickStart/tensorflow_train
