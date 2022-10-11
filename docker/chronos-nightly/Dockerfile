@@ -20,7 +20,7 @@ WORKDIR /opt/work
 ARG DEBIAN_FRONTEND=noninteractive
 ENV TZ=Asia/Shanghai
 
-# model: select from pytorch, tensorflow, prophet, arima
+# model: select from pytorch, tensorflow, prophet, arima, ml
 ARG model
 # auto_tuning: y (for yes) or n (for no)
 ARG auto_tuning

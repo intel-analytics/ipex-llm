@@ -25,16 +25,23 @@ The build args are similar to the install options in [Chronos documentation](htt
 
 ```
 model: which model or framework you want. 
-       value: pytorch or tensorflow or prophet or arima.
+       value: pytorch
+              tensorflow
+              prophet
+              arima
+              ml (for machine learning models).
 
 auto_tuning: whether to enable auto tuning.
-             value: y (for yes) or n (for no).
+             value: y (for yes)
+                    n (for no).
 
 hardware: run chronos on a single machine or a cluster.
-          value: single or cluster
+          value: single
+                 cluster
 
 extra_dep: whether to install some extra dependencies like onnx and jupyter.
-           value: y (for yes) or n (for no).
+           value: y (for yes)
+                  n (for no)
            if specified to y, the following dependencies will be installed:
            neural_compressor, onnxruntime, onnx, tsfresh, 
            prometheus_pandas, xgboost, jupyter

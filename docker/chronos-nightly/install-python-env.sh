@@ -1,6 +1,6 @@
 if (( $# < 4)); then
     echo "You need to specify four build args when building the image:"
-    echo "model: pytorch|tensorflow|prophet|arima"
+    echo "model: pytorch|tensorflow|prophet|arima|ml"
     echo "auto_tuning: y|n"
     echo "hardware: single|cluster"
     echo "extra_dep: y|n"
@@ -76,10 +76,11 @@ then
         # ARIMA
         pip install --no-cache-dir pmdarima==1.8.5
     fi
-else
+elif [ $model != "ml" ];
+then
     # invalid args
     echo "Invalid argument."
-    echo "Argument model can be pytorch, tensorflow, prophet, or arima, please check."
+    echo "Argument model can be pytorch, tensorflow, prophet, arima or ml, please check."
     exit -1
 fi
 
