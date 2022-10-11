@@ -24,7 +24,7 @@ on:
         type: string
 
 env:
-  GIST_ID: bc8a699b455bced4a1aef138ad5df07e
+  GIST_ID: 5c25555055d45e2de7849bca1618f53c
 
 permissions:
   contents: read
