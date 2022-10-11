@@ -117,5 +117,5 @@ jobs:
       with:
         secret: ${{ secrets.GIST_SECRET }}
         gist-id: ${{env.GIST_ID}}
-        file-name: nightly-test.json
+        file-name: weekly-test.json
         type: workflow
