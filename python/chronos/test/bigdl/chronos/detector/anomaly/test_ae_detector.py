@@ -19,9 +19,10 @@ import numpy as np
 from unittest import TestCase
 
 from bigdl.chronos.detector.anomaly.ae_detector import AEDetector
-from ... import op_torch, op_tf2
+from ... import op_torch, op_tf2, op_all
 
 
+@op_all
 class TestAEDetector(TestCase):
 
     def setUp(self):

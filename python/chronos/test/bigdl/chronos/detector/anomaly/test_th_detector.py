@@ -21,9 +21,10 @@ from unittest import TestCase
 
 from bigdl.chronos.forecaster import LSTMForecaster
 from bigdl.chronos.detector.anomaly import ThresholdDetector
-from ... import op_torch
+from ... import op_torch, op_all
 
 
+@op_all
 class TestThresholdDetector(TestCase):
 
     def setUp(self):

@@ -19,8 +19,10 @@ import numpy as np
 from unittest import TestCase
 
 from bigdl.chronos.detector.anomaly.dbscan_detector import DBScanDetector
+from ... import op_all
 
 
+@op_all
 class TestDBScanDetector(TestCase):
 
     def setUp(self):
