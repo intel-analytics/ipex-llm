@@ -87,7 +87,7 @@ class TorchNano(LightningLite):
     It can be used to accelerate custom pytorch training loops with very few code changes.
     """
 
-    def __init__(self, num_processes: int = 1,
+    def __init__(self, num_processes: Optional[int] = None,
                  use_ipex: bool = False,
                  strategy: str = "subprocess",
                  precision: Union[str, int] = 32,
@@ -126,6 +126,9 @@ class TorchNano(LightningLite):
 
         kwargs['precision'] = precision
 
+        if num_processes is None and strategy != "k8s":
+            num_processes = 1
+
         if self.num_processes == 1:
             if self.use_ipex:
                 strategy = create_IPEXStrategy(dtype=self.dtype)
@@ -137,7 +140,7 @@ class TorchNano(LightningLite):
                            use_ipex=self.use_ipex,
                            dtype=self.dtype)
         else:
-            warning(f"Bigdl-nano doesn't support '{strategy}' strategy now, "
+            warning(f"BigDL-Nano doesn't support '{strategy}' strategy now, "
                     f"'{strategy}' strategy of pytorch_lightning will be used. "
                     f"Supported strategies are 'spawn', 'subprocess' and 'ray'.")
 

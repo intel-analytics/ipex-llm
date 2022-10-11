@@ -53,7 +53,7 @@ class Trainer(pl.Trainer):
     various options to accelerate pytorch training.
     """
 
-    def __init__(self, num_processes: int = 1,
+    def __init__(self, num_processes: Optional[int] = None,
                  use_ipex: bool = False,
                  distributed_backend="subprocess",
                  cpu_for_each_process: Optional[List[List[int]]] = None,
@@ -125,6 +125,9 @@ class Trainer(pl.Trainer):
                 dtype = None
 
         kwargs['precision'] = precision
+
+        if num_processes is None and distributed_backend != "k8s":
+            num_processes = 1
 
         if num_processes == 1:
             from bigdl.nano.pytorch.strategies import create_IPEXStrategy

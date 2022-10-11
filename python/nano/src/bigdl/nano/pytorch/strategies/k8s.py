@@ -17,6 +17,7 @@
 from pytorch_lightning.strategies import DDPStrategy
 from typing import Any, List, Optional, Union, Dict
 import torch
+import os
 import warnings
 from torch import nn
 from torch.nn.parallel.distributed import DistributedDataParallel
@@ -35,23 +36,24 @@ from bigdl.nano.pytorch.strategies.ipex.ipex_api import ipex_optimize
 
 
 class DDPK8sStrategy(DDPStrategy):
-    """Extending DDPStrategy to support IPEX and auto_lr on k8s"""
+    """Extending DDPStrategy to support IPEX and auto_lr on k8s."""
 
     strategy_name = "ddp_k8s"
 
     def __init__(
         self,
-        num_processes: int = 1,
+        num_processes: Optional[int] = None,
         cpu_for_each_process: Optional[List[List[int]]] = None,
         use_ipex=False,
         dtype=None,
         auto_lr=False,
         **kwargs: Any
     ):
-
+        
+        if num_processes is None:
+            num_processes == os.environ["WORLD_SIZE"]
         """Create a DDPK8sStrategy."""
-
-        invalidInputError(use_ipex and TORCH_VERSION_LESS_1_10,
+        invalidInputError(not (use_ipex and TORCH_VERSION_LESS_1_10),
                           "currently ipex with torch version under 1.10 is not supported.")
 
         device = 'cpu'
@@ -66,7 +68,6 @@ class DDPK8sStrategy(DDPStrategy):
             super().__init__(parallel_devices=parallel_devices,
                              cluster_environment=cluster_environment, **kwargs)
         self.cpu_for_each_process = cpu_for_each_process
-        self.is_distributed = True
         self.use_ipex = use_ipex
         self.dtype = dtype
         self.auto_lr = auto_lr
@@ -77,7 +78,7 @@ class DDPK8sStrategy(DDPStrategy):
         """Setup the distributed environment of sub processes, we add ipex optimization here."""
         invalidInputError(self.model is not None, "You must specify the model.")
 
-        super.setup(trainer)
+        super().setup(trainer)
         # `configure_ddp` will create a `DistributedDataParallel`, which has no
         # `test_step` method in pytorch_lightning 1.6, which causes error when
         # calling `trainer.test()`, so we call `configure_ddp` only when fitting
