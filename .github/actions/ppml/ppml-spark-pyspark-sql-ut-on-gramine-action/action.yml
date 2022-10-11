@@ -1,6 +1,10 @@
 name: 'PPML-Spark-PySpark-Local-Sql-UT-On-Gramine'
 description: 'PPML-Spark-PySpark-Local-Sql-UT-On-Gramine'
 inputs:
+  image:
+    description: 'image'
+    required: true
+    default: '10.239.45.10/arda/intelanalytics/bigdl-ppml-trusted-big-data-ml-python-gramine'
   image-tag:
     description: 'image tag'
     required: true
@@ -12,7 +16,7 @@ runs:
     - name: Set Variable
       shell: bash
       env:
-        DEFAULT_IMAGE: 10.239.45.10/arda/intelanalytics/bigdl-ppml-trusted-big-data-ml-python-gramine:${{ inputs.image-tag }}
+        DEFAULT_IMAGE: ${{ inputs.image }}:${{ inputs.image-tag }}
       run: |
         echo "CONTAINER_NAME=spark-pyspark-ut-test-gramine" >> $GITHUB_ENV
         echo "IMAGE=${{ env.DEFAULT_IMAGE }}" >> $GITHUB_ENV
