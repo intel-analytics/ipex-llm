@@ -394,6 +394,84 @@ class TestChronosModelTCNForecaster(TestCase):
         assert openvino_yhat.shape == q_openvino_yhat.shape
 
     @op_diff_set_all
+    def test_tcn_forecaster_jit_methods(self):
+        train_data, val_data, test_data = create_data()
+        forecaster = TCNForecaster(past_seq_len=24,
+                                   future_seq_len=5,
+                                   input_feature_num=1,
+                                   output_feature_num=1,
+                                   kernel_size=4,
+                                   num_channels=[16, 16],
+                                   lr=0.01)
+        forecaster.fit(train_data, epochs=2)
+        try:
+            pred = forecaster.predict(test_data[0])
+            pred_jit = forecaster.predict_with_jit(test_data[0])
+            np.testing.assert_almost_equal(pred, pred_jit, decimal=5)
+        except ImportError:
+            pass
+
+        forecaster.quantize(calib_data=train_data,
+                            framework="jit")
+        jit_yhat = forecaster.predict_with_jit(test_data[0])
+        q_jit_yhat = forecaster.predict_with_jit(test_data[0], quantize=True)
+        assert jit_yhat.shape == q_jit_yhat.shape == test_data[1].shape
+
+        # test exporting the openvino
+        with tempfile.TemporaryDirectory() as tmp_dir_name:
+            ckpt_name = os.path.join(tmp_dir_name, "fp32_jit")
+            ckpt_name_q = os.path.join(tmp_dir_name, "int_jit")
+            forecaster.export_jit_file(dirname=ckpt_name, quantized_dirname=ckpt_name_q)
+
+    @op_diff_set_all
+    def test_tcn_forecaster_jit_methods_loader(self):
+        train_loader, val_loader, test_loader = create_data(loader=True)
+        forecaster = TCNForecaster(past_seq_len=24,
+                                   future_seq_len=5,
+                                   input_feature_num=1,
+                                   output_feature_num=1,
+                                   kernel_size=4,
+                                   num_channels=[16, 16],
+                                   lr=0.01)
+        forecaster.fit(train_loader, epochs=2)
+        try:
+            pred = forecaster.predict(test_loader)
+            pred_jit = forecaster.predict_with_jit(test_loader)
+            np.testing.assert_almost_equal(pred, pred_jit, decimal=5)
+        except ImportError:
+            pass
+
+        forecaster.quantize(calib_data=train_loader,
+                            framework="jit")
+        jit_yhat = forecaster.predict_with_jit(test_loader)
+        q_jit_yhat = forecaster.predict_with_jit(test_loader, quantize=True)
+        assert jit_yhat.shape == q_jit_yhat.shape
+
+    @op_diff_set_all
+    def test_tcn_forecaster_jit_methods_tsdataset(self):
+        train, test = create_tsdataset(roll=True, horizon=5)
+        forecaster = TCNForecaster(past_seq_len=24,
+                                   future_seq_len=5,
+                                   input_feature_num=2,
+                                   output_feature_num=2,
+                                   kernel_size=4,
+                                   num_channels=[16, 16],
+                                   lr=0.01)
+        forecaster.fit(train, epochs=2)
+        try:
+            pred = forecaster.predict(test)
+            pred_jit = forecaster.predict_with_jit(test)
+            np.testing.assert_almost_equal(pred, pred_jit, decimal=5)
+        except ImportError:
+            pass
+
+        forecaster.quantize(calib_data=train,
+                            framework="jit")
+        jit_yhat = forecaster.predict_with_jit(test)
+        q_jit_yhat = forecaster.predict_with_jit(test, quantize=True)
+        assert jit_yhat.shape == q_jit_yhat.shape
+
+    @op_diff_set_all
     def test_tcn_forecaster_quantization_dynamic(self):
         train_data, val_data, test_data = create_data()
         forecaster = TCNForecaster(past_seq_len=24,

@@ -192,6 +192,29 @@ class TestChronosModelSeq2SeqForecaster(TestCase):
             forecaster.export_openvino_file(dirname=ckpt_name, quantized_dirname=ckpt_name_q)
 
     @op_diff_set_all
+    def test_s2s_forecaster_jit_methods(self):
+        train_data, val_data, test_data = create_data()
+        forecaster = Seq2SeqForecaster(past_seq_len=24,
+                                       future_seq_len=5,
+                                       input_feature_num=1,
+                                       output_feature_num=1,
+                                       loss="mae",
+                                       lr=0.01)
+        forecaster.fit(train_data, epochs=2)
+        try:
+            pred = forecaster.predict(test_data[0])
+            pred_jit = forecaster.predict_with_jit(test_data[0])
+            np.testing.assert_almost_equal(pred, pred_jit, decimal=5)
+        except ImportError:
+            pass
+
+        # test exporting the openvino
+        with tempfile.TemporaryDirectory() as tmp_dir_name:
+            ckpt_name = os.path.join(tmp_dir_name, "fp32_jit")
+            ckpt_name_q = os.path.join(tmp_dir_name, "int_jit")
+            forecaster.export_jit_file(dirname=ckpt_name, quantized_dirname=ckpt_name_q)
+
+    @op_diff_set_all
     def test_s2s_forecaster_quantization(self):
         train_data, val_data, test_data = create_data()
         forecaster = Seq2SeqForecaster(past_seq_len=24,
