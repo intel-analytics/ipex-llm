@@ -26,6 +26,8 @@ import tensorflow as tf
 import tensorflow_datasets as tfds
 from tensorflow.keras.applications import ResNet50
 
+from bigdl.nano.tf.keras import Model
+
 
 def create_dataset(img_size, batch_size):
     dataset, info = tfds.load('imagenette/320px-v2',
@@ -59,7 +61,6 @@ if __name__ == '__main__':
     # then you can use the returned model for inference, all inference will be 
     # accelerated automatically after that.
     #
-    from bigdl.nano.tf.keras import Model
     model = Model(inputs=model.inputs, outputs=model.outputs)
     spec = tf.TensorSpec((None, 224, 224, 3), tf.float32)
     onnx_model = model.trace(accelerator='onnxruntime', input_sample=spec)
