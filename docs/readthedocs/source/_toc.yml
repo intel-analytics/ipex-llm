@@ -110,6 +110,9 @@ subtrees:
       subtrees:
         - entries:
           - file: doc/DLlib/Overview/dllib
+            title: "DLLib in 5 minutes"
+          - file: doc/DLlib/Overview/install
+            title: "Installation"
           - file: doc/DLlib/Overview/keras-api
           - file: doc/DLlib/Overview/nnframes
 

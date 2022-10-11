@@ -1,21 +1,18 @@
-# DLlib User Guide
+# DLlib in 5 minutes
 
-## 1. Overview
+## Overview
 
 DLlib is a distributed deep learning library for Apache Spark; with DLlib, users can write their deep learning applications as standard Spark programs (using either Scala or Python APIs).
 
 It includes the functionalities of the [original BigDL](https://github.com/intel-analytics/BigDL/tree/branch-0.14) project, and provides following high-level APIs for distributed deep learning on Spark:
 
-* [Keras-like API](keras-api.md) 
+* [Keras-like API](keras-api.md)
 * [Spark ML pipeline support](nnframes.md)
 
-## 2. Scala user guide
-### 2.1 Install and Run
-Please refer [scala guide](../../UserGuide/scala.md) for details.
 
 ---
 
-### 2.2 Get started
+## Scala Example
 ---
 
 This section show a single example of how to use dllib to build a deep learning application on Spark, using Keras APIs
@@ -79,62 +76,9 @@ Finally we _**train the model**_ by calling ````model.fit````:
 
 ---
 
-## 3. Python user guide
+## Python Example
 
-### 3.1 Install
-
-#### 3.1.1 Official Release
-
-Run below command to install _bigdl-dllib_.
-
-```bash
-conda create -n my_env python=3.7
-conda activate my_env
-pip install bigdl-dllib
-```
-
-#### 3.1.2 Nightly build
-
-You can install the latest nightly build of bigdl-dllib as follows:
-```bash
-pip install --pre --upgrade bigdl-dllib
-```
-
-
-### 3.2 Run
-
-#### **3.2.1 Interactive Shell**
-
-You may test if the installation is successful using the interactive Python shell as follows:
-
-* Type `python` in the command line to start a REPL.
-* Try to run the example code below to verify the installation:
-
-  ```python
-  from bigdl.dllib.utils.nncontext import *
-
-  sc = init_nncontext()  # Initiation of bigdl-dllib on the underlying cluster.
-  ```
-
-#### **3.2.2 Jupyter Notebook**
-
-You can start the Jupyter notebook as you normally do using the following command and run bigdl-dllib programs directly in a Jupyter notebook:
-
-```bash
-jupyter notebook --notebook-dir=./ --ip=* --no-browser
-```
-
-#### **3.2.3 Python Script**
-
-You can directly write bigdl-dlllib programs in a Python file (e.g. script.py) and run in the command line as a normal Python program:
-
-```bash
-python script.py
-```
----
-### 3.3 Get started
-
-#### **NN Context**
+#### **Initialize NN Context**
 
 `NNContext` is the main entry for provisioning the dllib program on the underlying cluster (such as K8s or Hadoop cluster), or just on a single laptop.
 
