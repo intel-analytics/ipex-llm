@@ -6,7 +6,7 @@ ARG JDK_URL
 ARG SPARK_JAR_REPO_URL
 
 # Stage.1 JDK & Scala & Spark & Hadoop & Hive & Flink
-FROM ubuntu:20.04 as spark
+FROM ubuntu:20.04 as bigdata
 ARG HTTP_PROXY_HOST
 ARG HTTP_PROXY_PORT
 ARG HTTPS_PROXY_HOST
@@ -137,3 +137,61 @@ RUN cd /opt && \
     wget -P /opt/flink-${FLINK_VERSION}/lib/ https://repo1.maven.org/maven2/org/apache/logging/log4j/log4j-core/2.17.1/log4j-core-2.17.1.jar && \
     wget -P /opt/flink-${FLINK_VERSION}/lib/ https://repo1.maven.org/maven2/org/apache/logging/log4j/log4j-slf4j-impl/2.17.1/log4j-slf4j-impl-2.17.1.jar
 RUN ls -al /opt
+
+# stage.2 gramine
+FROM gramine-base:2.2.0-SNAPSHOT as base
+
+ARG SPARK_VERSION
+ARG TINI_VERSION
+ARG FLINK_VERSION=1.11.3
+ENV SPARK_VERSION                       ${SPARK_VERSION}
+ENV SPARK_HOME                          /ppml/trusted-big-data-ml/work/spark-${SPARK_VERSION}
+ENV BIGDL_HOME                          /ppml/trusted-big-data-ml/work/bigdl-${BIGDL_VERSION}
+ENV JAVA_HOME                           /opt/jdk8
+ENV PATH                                ${JAVA_HOME}/bin:${PATH}
+ENV LOCAL_IP                            127.0.0.1
+ENV SGX_MEM_SIZE                        32G
+ENV SGX_LOG_LEVEL                       error
+ENV SPARK_MASTER_IP                     127.0.0.1
+ENV SPARK_MASTER_PORT                   7077
+ENV SPARK_MASTER_WEBUI_PORT             8080
+ENV SPARK_MASTER                        spark://$SPARK_MASTER_IP:$SPARK_MASTER_PORT
+ENV SPARK_WORKER_PORT                   8082
+ENV SPARK_WORKER_WEBUI_PORT             8081
+ENV SPARK_DRIVER_PORT                   10027
+ENV SPARK_DRIVER_BLOCK_MANAGER_PORT     10026
+ENV SPARK_DRIVER_IP                     $LOCAL_IP
+ENV SPARK_BLOCK_MANAGER_PORT            10025
+ENV TINI_VERSION                        $TINI_VERSION
+ENV LC_ALL                              C.UTF-8
+ENV LANG                                C.UTF-8
+ENV FLINK_VERSION			            ${FLINK_VERSION}
+ENV FLINK_HOME				            /ppml/trusted-big-data/java/work/flink-${FLINK_VERSION}
+ENV FLINK_JOB_MANAGER_IP		        127.0.0.1
+ENV FLINK_JOB_MANAGER_REST_PORT		    8081
+ENV FLINK_JOB_MANAGER_RPC_PORT		    6123
+ENV FLINK_TASK_MANAGER_IP		        127.0.0.1
+ENV FLINK_TASK_MANAGER_DATA_PORT	    6126
+ENV FLINK_BLOB_SERVER_PORT              6124
+ENV FLINK_TASK_MANAGER_RPC_PORT		    6125
+ENV FLINK_TASK_MANAGER_TASKSLOTS_NUM	1
+
+RUN mkdir -p /ppml/trusted-big-data-ml/work && \
+    mkdir -p /ppml/trusted-big-data-ml/work/lib && \
+    mkdir -p /ppml/trusted-big-data-ml/work/keys && \
+    mkdir -p /ppml/trusted-big-data-ml/work/password && \
+    mkdir -p /ppml/trusted-big-data-ml/work/data && \
+    mkdir -p /ppml/trusted-big-data-ml/work/models && \
+    mkdir -p /ppml/trusted-big-data-ml/work/apps && \
+    mkdir -p /ppml/trusted-big-data-ml/work/examples/bigdl && \
+    mkdir -p /root/.keras/datasets && \
+    mkdir -p /root/.zinc && \
+    mkdir -p /root/.m2 && \
+    mkdir -p /root/.kube/ && \
+    mkdir -p /ppml/trusted-big-data-ml/fl
+
+COPY --from=spark /opt/jdk  /opt/jdk8
+COPY --from=flink /opt/scala-${SCALA_VERSION}.${SCALA_SUB_VERSION_NUM}  /opt/scala-${SCALA_VERSION}.${SCALA_SUB_VERSION_NUM}
+COPY --from=flink /opt/flink-${FLINK_VERSION} /ppml/trusted-realtime-ml/java/work/flink-${FLINK_VERSION}
+COPY --from=spark /opt/spark-${SPARK_VERSION} /ppml/trusted-big-data-ml/work/spark-${SPARK_VERSION}
+COPY --from=spark /opt/spark-${SPARK_VERSION}/examples/src/main/resources /ppml/trusted-big-data-ml/examples/src/main/resources
