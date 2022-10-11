@@ -25,11 +25,7 @@ from bigdl.dllib.nnframes.tree_model import LightGBMClassifier
 from pyspark.ml.evaluation import BinaryClassificationEvaluator, MulticlassClassificationEvaluator
 
 # Please use 0.10.0 version for Spark3.2 and 0.9.5-13-d1b51517-SNAPSHOT version for Spark3.1
-spark_conf = {"spark.app.name": "recsys-lightGBM",
-              "spark.serializer": "org.apache.spark.serializer.KryoSerializer",
-              "spark.driver.memoryOverhead": "8G"}
 
-model_dir = "./lightgbm"
 num_cols = ["enaging_user_follower_count", 'enaging_user_following_count',
             "engaged_with_user_follower_count", "engaged_with_user_following_count",
             "len_hashtags", "len_domains", "len_links"]
@@ -53,7 +49,7 @@ if __name__ == '__main__':
                         help='The driver core number.')
     parser.add_argument('--driver_memory', type=str, default="36g",
                         help='The driver memory.')
-    parser.add_argument('--model_dir', default='snapshot', type=str,
+    parser.add_argument('--model_dir', default='./lightgbm', type=str,
                         help='nativeModel directory name (default: nativeModel)')
     parser.add_argument('--data_dir', type=str, help='data directory')
 
@@ -61,18 +57,16 @@ if __name__ == '__main__':
 
     if args.cluster_mode == "local":
         sc = init_orca_context("local", cores=args.executor_cores,
-                               memory=args.executor_memory, conf=spark_conf)
+                               memory=args.executor_memory)
     elif args.cluster_mode == "standalone":
         sc = init_orca_context("standalone", master=args.master,
                                cores=args.executor_cores, num_nodes=args.num_executors,
                                memory=args.executor_memory,
-                               driver_cores=args.driver_cores, driver_memory=args.driver_memory,
-                               conf=spark_conf)
+                               driver_cores=args.driver_cores, driver_memory=args.driver_memory)
     elif args.cluster_mode == "yarn":
         sc = init_orca_context("yarn-client", cores=args.executor_cores,
                                num_nodes=args.num_executors, memory=args.executor_memory,
-                               driver_cores=args.driver_cores, driver_memory=args.driver_memory,
-                               conf=spark_conf)
+                               driver_cores=args.driver_cores, driver_memory=args.driver_memory)
     elif args.cluster_mode == "spark-submit":
         sc = init_orca_context("spark-submit")
     else:
@@ -84,42 +78,36 @@ if __name__ == '__main__':
 
     features = num_cols + [col + "_te_label" for col in cat_cols]
     begin = time.time()
-    # train_tbl = FeatureTable.read_parquet(args.data_dir + "/train_parquet") \
-    #     .drop("tweet_timestamp", "enaging_user_account_creation", "reply_timestamp", "text_tokens",
-    #           "retweet_timestamp", "retweet_with_comment_timestamp", "like_timestamp")
-    # test_tbl = FeatureTable.read_parquet(args.data_dir + "/test_parquet") \
-    #     .drop("tweet_timestamp", "enaging_user_account_creation", "reply_timestamp", "text_tokens",
-    #           "retweet_timestamp", "retweet_with_comment_timestamp", "like_timestamp")
-    #
-    # train_tbl.cache()
-    # test_tbl.cache()
-    # full = train_tbl.concat(test_tbl)
-    # full, target_codes = full.target_encode(cat_cols=cat_cols, target_cols=["label"])
-    # print(full.size())
-    # for code in target_codes:
-    #     code.cache()
-    #
-    # train = train_tbl \
-    #     .encode_target(target_cols="label", targets=target_codes) \
-    #     .merge_cols(features, "features") \
-    #     .select(["label", "features"]) \
-    #     .apply("features", "features", lambda x: DenseVector(x), VectorUDT()) \
-    #     .repartition(args.num_executor * args.executor_cores)
-    #
-    # train.show(5, False)
-    #
-    # test = test_tbl \
-    #     .encode_target(target_cols="label", targets=target_codes) \
-    #     .merge_cols(features, "features") \
-    #     .select(["label", "features"]) \
-    #     .apply("features", "features", lambda x: DenseVector(x), VectorUDT()) \
-    #     .repartition(args.num_executor * args.executor_cores)
+    train_tbl = FeatureTable.read_parquet(args.data_dir + "/train_parquet") \
+        .drop("tweet_timestamp", "enaging_user_account_creation", "reply_timestamp", "text_tokens",
+              "retweet_timestamp", "retweet_with_comment_timestamp", "like_timestamp")
+    test_tbl = FeatureTable.read_parquet(args.data_dir + "/test_parquet") \
+        .drop("tweet_timestamp", "enaging_user_account_creation", "reply_timestamp", "text_tokens",
+              "retweet_timestamp", "retweet_with_comment_timestamp", "like_timestamp")
 
-    input_path = "/Users/guoqiong/intelWork/data/tweet/xgb_processed"
-    # input_path = "hdfs://172.16.0.105:8020/user/root/guoqiong/recsys2021/xgb_processed"
-    spark = OrcaContext.get_spark_session()
-    train = FeatureTable.read_parquet(input_path + "/train").repartition(args.num_executor * args.executor_cores)
-    test = FeatureTable.read_parquet(input_path + "/test").repartition(args.num_executor * args.executor_cores)
+    train_tbl.cache()
+    test_tbl.cache()
+    full = train_tbl.concat(test_tbl)
+    full, target_codes = full.target_encode(cat_cols=cat_cols, target_cols=["label"])
+    print(full.size())
+    for code in target_codes:
+        code.cache()
+
+    train = train_tbl \
+        .encode_target(target_cols="label", targets=target_codes) \
+        .merge_cols(features, "features") \
+        .select(["label", "features"]) \
+        .apply("features", "features", lambda x: DenseVector(x), VectorUDT()) \
+        .repartition(args.num_executor * args.executor_cores)
+
+    train.show(5, False)
+
+    test = test_tbl \
+        .encode_target(target_cols="label", targets=target_codes) \
+        .merge_cols(features, "features") \
+        .select(["label", "features"]) \
+        .apply("features", "features", lambda x: DenseVector(x), VectorUDT()) \
+        .repartition(args.num_executor * args.executor_cores)
 
     test.show(5, False)
     train = train.cache()
@@ -127,14 +115,14 @@ if __name__ == '__main__':
     print("training size:", train.size())
     print("test size:", test.size())
     #
-    # train_tbl.uncache()
-    # test_tbl.uncache()
+    train_tbl.uncache()
+    test_tbl.uncache()
     preprocess = time.time()
     print("feature preprocessing time: %.2f" % (preprocess - begin))
 
     params = {"boosting_type": "gbdt", "num_leaves": 70, "learning_rate": 0.3,
               "min_data_in_leaf": 20, "objective": "binary",
-              'num_iterations': 10000,
+              'num_iterations': 1000,
               'max_depth': 14,
               'lambda_l1': 0.01,
               'lambda_l2': 0.01,
@@ -143,16 +131,15 @@ if __name__ == '__main__':
               'early_stopping_round': 20
               }
 
-    params = {"objective": "binary"}
-    for learning_rate in [0.1]:
-        for max_depth in [14]:
-            for num_iterations in [10000]:
-                # params.update({"learning_rate": learning_rate, "max_depth": max_depth, "num_iterations": num_iterations})
+    params = {"objective": "binary", 'num_iterations': 100}
+    for learning_rate in [0.1, 0.2]:
+        for max_depth in [7, 14]:
+            for num_iterations in [100, 200, 400, 800, 10000]:
+                params.update({"learning_rate": learning_rate, "max_depth": max_depth,
+                               "num_iterations": num_iterations})
 
-                model = LightGBMClassifier(params)
-                # model = LightGBMClassifier()
-
-                model = model.fit(train.df)
+                estimator = LightGBMClassifier(params)
+                model = estimator.fit(train.df)
                 predictions = model.transform(test.df)
                 predictions.cache()
                 predictions.show(5, False)
@@ -169,6 +156,7 @@ if __name__ == '__main__':
 
                 predictions.unpersist(blocking=True)
 
+    model.saveModel(args.model_dir)
     end = time.time()
     print("training time: %.2f" % (end - preprocess))
     print(end - begin)

@@ -26,7 +26,7 @@ from collections import OrderedDict
 import urllib.parse
 from requests.packages import urllib3
 
-urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning
+urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 use_secure_cert = False
 headers = {"Content-Type":"application/json"}
 # below placeholders for global variables, and they will be initalized in the below context

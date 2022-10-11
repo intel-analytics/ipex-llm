@@ -386,7 +386,7 @@
         <dependency>
             <groupId>com.microsoft.azure</groupId>
             <artifactId>synapseml-lightgbm_2.12</artifactId>
-            <version>0.9.5</version>
+            <version>0.10.1</version>
             <scope>${lightgbm.scope}</scope>
             <exclusions>
                 <exclusion>

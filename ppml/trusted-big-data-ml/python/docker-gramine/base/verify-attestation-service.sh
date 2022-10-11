@@ -4,7 +4,7 @@ set -x
 export ATTESTATION_URL=your_attestation_url
 export ATTESTATION_TYPE=your_attestation_service_type
 export APP_ID=your_app_id
-export API_KEY=your_api_keya
+export API_KEY=your_api_key
 export CHALLENGE=your_challenge_string
 export SPARK_HOME=$SPARK_HOME
 export BIGDL_PPML_JAR=$BIGDL_HOME/jars/*
