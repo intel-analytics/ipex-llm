@@ -79,6 +79,7 @@ backends_class_map = {
     "k8s": DDPK8sStrategy
 }
 
+
 class TorchNano(LightningLite):
     """
     TorchNano for BigDL-Nano pytorch.

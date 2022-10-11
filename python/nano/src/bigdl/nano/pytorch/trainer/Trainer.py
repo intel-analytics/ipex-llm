@@ -142,7 +142,7 @@ class Trainer(pl.Trainer):
                                       f"`checkpoint_callback` set to False. "
                                       f"Currently, disable checkpoint callback make "
                                       f"distributed training backend work incorrect")
-            
+
             strategy_cls = backends_class_map[distributed_backend]
             strategy = strategy_cls(num_processes=num_processes,
                                     cpu_for_each_process=cpu_for_each_process,

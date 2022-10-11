@@ -31,6 +31,8 @@ from pytorch_lightning.core.optimizer import _set_scheduler_opt_idx, _validate_s
 from pytorch_lightning.plugins.environments import LightningEnvironment
 from bigdl.nano.pytorch.utils import TORCH_VERSION_LESS_1_10
 from bigdl.nano.utils.log4Error import invalidInputError
+from bigdl.nano.pytorch.strategies.ipex.ipex_api import ipex_optimize
+
 
 class DDPK8sStrategy(DDPStrategy):
     """Extending DDPStrategy to support IPEX and auto_lr on k8s"""
@@ -49,8 +51,8 @@ class DDPK8sStrategy(DDPStrategy):
 
         """Create a DDPK8sStrategy."""
 
-        invalidInputError(use_ipex and TORCH_VERSION_LESS_1_10, \
-            "currently ipex with torch version under 1.10 is not supported.")
+        invalidInputError(use_ipex and TORCH_VERSION_LESS_1_10,
+                          "currently ipex with torch version under 1.10 is not supported.")
 
         device = 'cpu'
         parallel_devices = [torch.device(device) for _ in range(num_processes)]
