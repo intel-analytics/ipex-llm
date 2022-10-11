@@ -15,6 +15,7 @@ subtrees:
             title: "Install on Clouds"
             subtrees:
               - entries:
+                - file: doc/UserGuide/win
                 - file: doc/UserGuide/colab
                 - file: doc/UserGuide/docker
                 - file: doc/UserGuide/hadoop
