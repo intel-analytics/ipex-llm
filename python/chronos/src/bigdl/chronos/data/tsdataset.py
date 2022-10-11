@@ -44,8 +44,10 @@ class TSDataset:
         '''
         self.df = data
         # detect low-quality data and automatic repair (optional)
-        quality_check_timeseries_dataframe(df=self.df, dt_col=schema["dt_col"],
-                                           repair=repair)
+        flag, self.df = quality_check_timeseries_dataframe(df=self.df,
+                                                           dt_col=schema["dt_col"],
+                                                           id_col=schema["id_col"],
+                                                           repair=repair)
         self.id_col = schema["id_col"]
         self.dt_col = schema["dt_col"]
         self.feature_col = schema["feature_col"].copy()

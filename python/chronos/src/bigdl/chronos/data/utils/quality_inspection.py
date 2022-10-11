@@ -19,18 +19,23 @@ from bigdl.nano.utils.log4Error import invalidInputError
 import logging
 
 
-def quality_check_timeseries_dataframe(df, dt_col, repair=True):
+def quality_check_timeseries_dataframe(df, dt_col, id_col=None, repair=True):
     '''
     detect the low-quality data and provide suggestion (e.g. call .impute or .resample).
 
     :param df: a pandas dataframe for your raw time series data.
     :param dt_col: a str indicates the col name of datetime
-            column in the input data frame, the dt_col must be sorted
-            from past to latest respectively for each id.
+           column in the input data frame, the dt_col must be sorted
+           from past to latest respectively for each id.
+    :param id_col: (optional) a str indicates the col name of dataframe id. If
+           it is not explicitly stated, then the data is interpreted as only
+           containing a single id.
     :param repair: a bool indicates whether automaticly repair low quality data.
 
     :return: a bool indicates df whether contains low-quality data.
     '''
+    invalidInputError(dt_col in df.columns, f"dt_col {dt_col} can not be found in df.")
+    invalidInputError(pd.isna(df[dt_col]).sum() == 0, "There is N/A in datetime col")
     flag = True
     # 1. timestamp check
     if _timestamp_type_check(df[dt_col]) is False:
@@ -40,11 +45,15 @@ def quality_check_timeseries_dataframe(df, dt_col, repair=True):
             flag = False
 
     # 2. irregular interval check
-    if _time_interval_check(df[dt_col]) is False:
-        if repair is True:
-            flag = flag and _time_interval_repair(df, dt_col)
-        else:
-            flag = False
+    if flag is True:
+        interval_flag, interval = _time_interval_check(df[dt_col])
+        if interval_flag is False:
+            if repair is True:
+                df, repair_flag = _time_interval_repair(df, dt_col,
+                                                        interval, id_col)
+                flag = flag and repair_flag
+            else:
+                flag = False
 
     # 3. missing value check
     if _missing_value_check(df, dt_col) is False:
@@ -56,7 +65,7 @@ def quality_check_timeseries_dataframe(df, dt_col, repair=True):
     # 4. pattern check and noise check
     # TODO:
 
-    return flag
+    return flag, df
 
 
 def _timestamp_type_check(df_column):
@@ -72,7 +81,17 @@ def _timestamp_type_check(df_column):
 
 
 def _timestamp_type_repair(df, dt_col):
-    pass
+    '''
+    This repair is used to convert object or other non datetime64 timestamp column
+    to datetime dtype.
+    '''
+    try:
+        df[dt_col].astype('datetime64')
+    except:
+        return False
+    df[dt_col] = df[dt_col].astype('datetime64')
+    logging.warning("Datetime colomn has be modified to datetime64 dtype.")
+    return True
 
 
 def _time_interval_check(df_column):
@@ -81,17 +100,31 @@ def _time_interval_check(df_column):
     are consistent.
     '''
     interval = df_column.shift(-1) - df_column
-    intervals = interval[:-1].unique()
-    if len(intervals) > 1:
+    unique_intervals = interval[:-1].unique()
+    if len(unique_intervals) > 1:
         logging.warning("There are irregular interval(more than one interval length)"
                         " among the data, please call .resample(interval).impute() "
                         "first to clean the data.")
-        return False
-    return True
+        return False, interval
+    return True, interval
 
 
-def _time_interval_repair(df, dt_col):
-    pass
+def _time_interval_repair(df, dt_col, interval, id_col=None):
+    '''
+    This check is used to get consitent time interval by resample data according to
+    the mode of original intervals.
+    '''
+    mode = interval[:-1].mode()[0]  # Timedelta
+    from bigdl.chronos.data.utils.resample import resample_timeseries_dataframe
+    # TODO: how to change into inplace modification
+    try:
+        df = resample_timeseries_dataframe(df, dt_col=dt_col,
+                                           interval=mode,
+                                           id_col=id_col)
+        logging.warning(f"Dataframe has be resampled according to interval {mode}.")
+        return df, True
+    except:
+        return df, False
 
 
 def _missing_value_check(df, dt_col, threshold=0):
@@ -112,4 +145,15 @@ def _missing_value_check(df, dt_col, threshold=0):
 
 
 def _missing_value_repair(df):
-    pass
+    '''
+    This repair is used to fill missing value with impute by linear interpolation.
+    '''
+    try:
+        # interpolate for most cases
+        df.interpolate(axis=0, limit_direction='both', inplace=True)
+        # fillna with 0 for cases when the whole column is missing
+        df.fillna(0, inplace=True)
+    except:
+        return False
+    logging.warning("Missing data has be imputed.")
+    return True
