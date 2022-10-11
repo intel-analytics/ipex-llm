@@ -97,6 +97,36 @@ def get_not_aligned_df():
     return df
 
 
+def get_missing_df():
+    data = np.random.random_sample((50, 5))
+    mask = np.random.random_sample((50, 5))
+    mask[mask >= 0.4] = 2
+    mask[mask < 0.4] = 1
+    mask[mask < 0.2] = 0
+    data[mask == 0] = None
+    data[mask == 1] = np.nan
+    df = pd.DataFrame(data, columns=['a', 'b', 'c', 'd', 'e'])
+    df['a'] = np.nan  # make sure column 'a' has are all N/A
+    df["datetime"] = pd.date_range('1/1/2019', periods=50)
+    return df
+
+
+def get_multi_interval_df():
+    data = np.random.random_sample((50, 5))
+    df = pd.DataFrame(data, columns=['a', 'b', 'c', 'd', 'e'])
+    df["datetime"] = pd.date_range('1/1/2019', periods=50)
+    # modify datetime to generate a different interval
+    df["datetime"][25:] = pd.date_range('1/1/2020', periods=25)
+    return df
+
+
+def get_non_std_dt_df():
+    data = np.random.random_sample((50, 5))
+    df = pd.DataFrame(data, columns=['a', 'b', 'c', 'd', 'e'])
+    df["datetime"] = ["2022-1-1"]*50
+    return df
+
+
 class TestTSDataset(TestCase):
     def setup_method(self, method):
         pass
@@ -1191,3 +1221,31 @@ class TestTSDataset(TestCase):
         assert data[1].shape[1] == max(lookback // 2, 1)
         assert data[3].shape[1] == max(lookback // 2, 1) + horizon
 
+    def test_tsdataset_missing_check_and_repair(self):
+        df = get_missing_df()
+        tsdata = TSDataset.from_pandas(df, dt_col="datetime",
+                                       target_col=['a', 'b', 'c', 'd', 'e'],
+                                       extra_feature_col=None,
+                                       repair=True)
+        missing_value = tsdata.df.isna().sum()
+        assert missing_value == 0
+    
+    def test_tsdataset_non_std_dt_check_and_repair(self):
+        df = get_non_std_dt_df()
+        tsdata = TSDataset.from_pandas(df, dt_col="datetime",
+                                       target_col=['a', 'b', 'c', 'd', 'e'],
+                                       extra_feature_col=None,
+                                       repair=True)
+        _is_pd_datetime = pd.api.types.is_datetime64_any_dtype(tsdata.df["datetime"].dtypes)
+        assert _is_pd_datetime is True
+
+    def test_tsdataset_interval_check_and_repair(self):
+        df = get_multi_id_ts_df()
+        tsdata = TSDataset.from_pandas(df, dt_col="datetime",
+                                       target_col=['a', 'b', 'c', 'd', 'e'],
+                                       extra_feature_col=None,
+                                       repair=True)
+        dt_col = tsdata.df["datetime"]
+        interval = dt_col.shift(-1) - dt_col
+        unique_intervals = interval[:-1].unique()
+        assert unique_intervals == 1
