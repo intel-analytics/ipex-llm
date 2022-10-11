@@ -77,8 +77,9 @@ object LgbmClassifierTrain {
         .setMetricName("accuracy")
 
       val acc = evaluatorMulti.evaluate(predictions)
+      println("acc:", acc)
 
-      println("acc: " + acc)
+      sc.stop()
     }
   }
 }
