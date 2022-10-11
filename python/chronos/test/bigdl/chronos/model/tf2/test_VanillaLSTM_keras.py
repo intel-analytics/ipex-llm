@@ -23,7 +23,7 @@ model_creator = LazyImport('bigdl.chronos.model.tf2.VanillaLSTM_keras.model_crea
 import numpy as np
 import tempfile
 import os
-from ... import op_tf2
+from ... import op_tf2, op_all
 
 
 def create_data():
@@ -46,6 +46,7 @@ def create_data():
     return train_data, val_data, test_data
 
 
+@op_all
 @op_tf2
 class TestVanillaLSTM(TestCase):
     def setUp(self):

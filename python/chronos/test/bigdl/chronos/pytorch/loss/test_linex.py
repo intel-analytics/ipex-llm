@@ -19,9 +19,10 @@ torch = LazyImport('torch')
 LinexLoss = LazyImport('bigdl.chronos.pytorch.loss.LinexLoss')
 from unittest import TestCase
 import pytest
-from ... import op_torch
+from ... import op_torch, op_all
 
 
+@op_all
 @op_torch
 class TestChronosPytorchLoss(TestCase):
 

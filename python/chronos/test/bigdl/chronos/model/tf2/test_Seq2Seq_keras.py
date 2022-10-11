@@ -24,7 +24,7 @@ tf = LazyImport('tensorflow')
 LSTMSeq2Seq = LazyImport('bigdl.chronos.model.tf2.Seq2Seq_keras.LSTMSeq2Seq')
 model_creator = LazyImport('bigdl.chronos.model.tf2.Seq2Seq_keras.model_creator')
 import numpy as np
-from ... import op_tf2
+from ... import op_tf2, op_all
 
 
 def create_data():
@@ -44,6 +44,7 @@ def create_data():
     return train_data, test_data
 
 
+@op_all
 @op_tf2
 class TestSeq2Seq(TestCase):
     def setUp(self):

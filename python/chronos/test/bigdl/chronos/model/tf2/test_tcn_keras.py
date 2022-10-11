@@ -24,7 +24,7 @@ model_creator = LazyImport('bigdl.chronos.model.tf2.TCN_keras.model_creator')
 TemporalConvNet = LazyImport('bigdl.chronos.model.tf2.TCN_keras.TemporalConvNet')
 TemporalBlock = LazyImport('bigdl.chronos.model.tf2.TCN_keras.TemporalBlock')
 tf = LazyImport('tensorflow')
-from ... import op_tf2
+from ... import op_tf2, op_all
 
 
 def create_data():
@@ -43,6 +43,7 @@ def create_data():
     test_data = get_x_y(test_num_samples)
     return train_data, test_data
 
+@op_all
 @op_tf2
 class TestTcnKeras(TestCase):
     def setUp(self):

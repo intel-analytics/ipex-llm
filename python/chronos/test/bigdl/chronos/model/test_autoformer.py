@@ -15,16 +15,14 @@
 #
 
 from unittest import TestCase
-from bigdl.chronos.model.autoformer import model_creator
-from bigdl.chronos.pytorch import TSTrainer
+from bigdl.chronos.utils import LazyImport
+model_creator = LazyImport('bigdl.chronos.model.autoformer.model_creator')
+TSTrainer = LazyImport('bigdl.chronos.pytorch.TSTrainer')
 from bigdl.chronos.data import TSDataset
 import pandas as pd
 import numpy as np
 from sklearn.preprocessing import StandardScaler
-import tempfile
-import os
-import torch
-from torch.utils.data import TensorDataset, DataLoader
+torch = LazyImport('torch')
 from .. import op_torch, op_all
 
 def get_ts_df():
@@ -43,9 +41,11 @@ def get_tsdata(mode="train"):
     return tsdata
 
 
+@op_all
 @op_torch
 class TestAutoformerPytorch(TestCase):
     def test_fit(self):
+        from torch.utils.data import TensorDataset, DataLoader
         tsdata = get_tsdata()
         data = tsdata.to_numpy()
         dataloader = DataLoader(TensorDataset(torch.from_numpy(data[0]),

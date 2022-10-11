@@ -25,7 +25,7 @@ from bigdl.chronos.data import TSDataset
 import pandas as pd
 import numpy as np
 from numpy.testing import assert_array_almost_equal
-from ... import op_tf2
+from ... import op_tf2, op_all
 
 
 def create_data():
@@ -54,6 +54,7 @@ def create_data():
     return tsdata_train, tsdata_test
 
 
+@op_all
 @op_tf2
 class TestMTNetKeras(TestCase):
 

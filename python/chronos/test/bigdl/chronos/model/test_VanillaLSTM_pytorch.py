@@ -16,12 +16,13 @@
 
 import pytest
 from unittest import TestCase
-from bigdl.chronos.model.VanillaLSTM_pytorch import VanillaLSTMPytorch
+from bigdl.chronos.utils import LazyImport
+VanillaLSTMPytorch = LazyImport('bigdl.chronos.model.VanillaLSTM_pytorch.VanillaLSTMPytorch')
 import numpy as np
 import tempfile
 import os
 import random
-from .. import op_torch
+from .. import op_torch, op_all
 
 
 def create_data(loader=False):
@@ -44,6 +45,7 @@ def create_data(loader=False):
     return train_data, val_data, test_data
 
 
+@op_all
 @op_torch
 class TestVanillaLSTMPytorch(TestCase):
     train_data, val_data, test_data = create_data()

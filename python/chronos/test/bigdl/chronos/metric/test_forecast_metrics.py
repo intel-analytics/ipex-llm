@@ -20,11 +20,9 @@ import time
 from unittest import TestCase
 from numpy.testing import assert_almost_equal
 from numpy.testing import assert_array_almost_equal
-from bigdl.chronos.utils import LazyImport
 
-Evaluator = LazyImport('bigdl.chronos.metric.forecast_metrics.Evaluator')
-sMAPE = LazyImport('bigdl.orca.automl.metrics.sMAPE')
-
+from bigdl.chronos.metric.forecast_metrics import Evaluator
+from bigdl.orca.automl.metrics import sMAPE
 
 class TestChronosForecastMetrics(TestCase):
 

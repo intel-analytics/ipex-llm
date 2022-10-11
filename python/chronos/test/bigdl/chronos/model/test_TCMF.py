@@ -17,14 +17,16 @@
 import pytest
 
 from unittest import TestCase
-from bigdl.chronos.model.tcmf_model import TCMF
+from bigdl.chronos.utils import LazyImport
+TCMF = LazyImport('bigdl.chronos.model.tcmf_model.TCMF')
 import numpy as np
 import os
 from numpy.testing import assert_array_almost_equal
 import pandas as pd
-from .. import op_torch, op_distributed
+from .. import op_torch, op_distributed, op_all
 
 
+@op_all
 @op_torch
 @op_distributed
 class TestTCMF(TestCase):

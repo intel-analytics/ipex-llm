@@ -23,10 +23,11 @@ import numpy as np
 import os
 from numpy.testing import assert_array_almost_equal
 import pandas as pd
-from .. import op_all
+from .. import op_all, op_diff_set_all
 
 
 @op_all
+@op_diff_set_all
 class TestProphetModel(TestCase):
 
     def setup_method(self, method):
