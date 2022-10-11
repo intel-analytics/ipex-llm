@@ -30,6 +30,7 @@ logger.addHandler(ch)
 import pandas as pd
 import numpy as np
 from bigdl.chronos.data.tsdataset import TSDataset
+from bigdl.nano.utils.log4Error import invalidInputError
 
 
 DATASET_NAME = {'network_traffic': ['2018%02d.agr' % i for i in range(1, 13)]
@@ -53,7 +54,9 @@ BASE_URL = \
      'uci_electricity':
      ['https://archive.ics.uci.edu/ml/machine-learning-databases/00321/LD2011_2014.txt.zip'],
      'uci_electricity_wide':
-     ['https://archive.ics.uci.edu/ml/machine-learning-databases/00321/LD2011_2014.txt.zip']}
+     ['https://archive.ics.uci.edu/ml/machine-learning-databases/00321/LD2011_2014.txt.zip'],
+     "tsinghua_electricity":
+     None}
 
 
 class PublicDataset:
@@ -65,6 +68,7 @@ class PublicDataset:
         self.val_ratio = kwargs.get('val_ratio', 0.1)
         self.test_ratio = kwargs.get('test_ratio', 0.1)
 
+        self.path = path
         self.url = BASE_URL[self.name]
         self.dir_path = os.path.join(os.path.expanduser(path), self.name)
         self.final_file_path = os.path.join(self.dir_path, self.name + '_data.csv')
@@ -74,7 +78,6 @@ class PublicDataset:
         Complete path stitching and download files.
         param chunk_size: Byte size of a single read, preferably an integer multiple of 2.
         '''
-        from bigdl.nano.utils.log4Error import invalidInputError
         invalidInputError(isinstance(chunk_size, int), "chunk_size must be int.")
         if not os.path.exists(self.dir_path):
             os.makedirs(self.dir_path)
@@ -237,6 +240,15 @@ class PublicDataset:
         for column in self.df.columns.tolist()[1:]:
             self.df[column] = self.df[column].apply(lambda x: str(x).replace(",", ""))\
                                   .astype(np.float32)
+        return self
+
+    def preprocess_tsinghua_electricity(self):
+        self.final_file_path = os.path.join(os.path.expanduser(self.path), "electricity.csv")
+        invalidInputError(os.path.exists(self.final_file_path),
+                          "tsinghua_electricity does not support automatic downloading, "
+                          "users should download manually from "
+                          "https://github.com/thuml/Autoformer#get-started")
+        self.df = pd.read_csv(self.final_file_path, parse_dates=["date"])
         return self
 
     def get_tsdata(self,
