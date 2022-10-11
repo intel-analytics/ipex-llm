@@ -21,6 +21,8 @@ on:
         required: true
         default: 'latest'
         type: string
+env:
+  GIST_ID: 48dbd87983219d4fe264adfea701815a
 
 permissions:
   contents: read
@@ -156,7 +158,7 @@ jobs:
       if: ${{ always() }}
       with:
         secret: ${{ secrets.GIST_SECRET}}
-        gist-id: 7495dccc42118020c12de5a095cfa2a6
+        gist-id: ${{env.GIST_ID}}
         is-self-hosted-runner: true
         file-name: nb-scala-build.json
         type: job
@@ -224,7 +226,7 @@ jobs:
       uses: ./.github/actions/create-job-status-badge
       with:
         secret: ${{ secrets.GIST_SECRET }}
-        gist-id: aaee1abb17ed9aad37e19256787c52b2
+        gist-id: ${{env.GIST_ID}}
         is-self-hosted-runner: true
         file-name: nb-docker-build-bigdl.json
         type: job
@@ -276,7 +278,7 @@ jobs:
       uses: ./.github/actions/create-job-status-badge
       with:
         secret: ${{ secrets.GIST_SECRET }}
-        gist-id: 983672c70e351381418fdf6f9076637a
+        gist-id: ${{env.GIST_ID}}
         is-self-hosted-runner: true
         file-name: nb-python-build.json
         type: job
@@ -402,7 +404,7 @@ jobs:
       uses: ./.github/actions/create-job-status-badge
       with:
         secret: ${{ secrets.GIST_SECRET }}
-        gist-id: 6d878630c0c8f50c388bb7e196354ca8
+        gist-id: ${{env.GIST_ID}}
         is-self-hosted-runner: true
         file-name: nb-python-sourceforge-build.json
         type: job
@@ -418,7 +420,7 @@ jobs:
       uses: ./.github/actions/create-job-status-badge
       with:
         secret: ${{ secrets.GIST_SECRET }}
-        gist-id: 48dbd87983219d4fe264adfea701815a
+        gist-id: ${{env.GIST_ID}}
         file-name: nightly-build.json
         type: workflow
 
