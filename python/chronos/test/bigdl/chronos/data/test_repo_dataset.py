@@ -44,6 +44,11 @@ class TestRepoDataset(TestCase):
         with pytest.raises(RuntimeError):
             get_public_dataset(name, path=path, redownload=False)
 
+        name = 'tsinghua_electricity'
+        path = '~/.chorons/dataset/'
+        with pytest.raises(RuntimeError):
+            get_public_dataset(name, path=path, redownload=False)
+
     def test_gen_synthetic_data(self):
         with pytest.raises(RuntimeError):
             gen_synthetic_data(len="10000")
