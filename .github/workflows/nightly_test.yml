@@ -29,12 +29,9 @@ on:
         - Dllib-Scala-UT
         - Friesian-Scala-UT
         - PPML-Scala-UT
-        - PPML-PySpark-K8s-Example
         - PPML-Spark-PySpark-Local-Sql-UT-On-Gramine
         - PPML-Occlum-ExampleTests
-        - PPML-Occlum-k8s-ExampleTests
         - PPML-spark-Local-Example-Tests-on-Gramine
-        - PPML-Spark-K8S-Example-On-Gramine
       image:
         description: 'docker image name'
         required: true
@@ -505,37 +502,6 @@ jobs:
         job-name: PPML-Spark-PySpark-Local-Sql-UT-On-Gramine
         runner-hosted-on: 'Shanghai'
 
-  PPML-PySpark-K8s-Example:
-    if: ${{ github.event.schedule || github.event.inputs.artifact == 'PPML-PySpark-K8s-Example' || github.event.inputs.artifact == 'all' }} 
-    runs-on: [self-hosted, Vilvarin]
-
-    steps:
-    - uses: actions/checkout@v3
-    - name: Set up JDK8
-      uses: ./.github/actions/jdk-setup-action
-    - name: Set up maven
-      uses: ./.github/actions/maven-setup-action
-    - name: set env
-      env:
-        DEFAULT_TAG: 'latest'
-      run: |
-        echo "TAG=${{ github.event.inputs.tag || env.DEFAULT_TAG }} " >> $GITHUB_ENV
-    - name: Run test
-      uses: ./.github/actions/ppml/ppml-pyspark-k8s-example-on-gramine-action
-      with:
-        image-tag: ${TAG}
-    - name: Create Job Badge
-      uses: ./.github/actions/create-job-status-badge
-      if: ${{ always() }}
-      with:
-        secret: ${{ secrets.GIST_SECRET}}
-        gist-id: ${{env.GIST_ID}}
-        is-self-hosted-runner: true
-        file-name: PPML-PySpark-K8s-Example.json
-        type: job
-        job-name: PPML-PySpark-K8s-Example
-        runner-hosted-on: 'Shanghai'
-
   PPML-Occlum-ExampleTests:
     if: ${{ github.event.schedule || github.event.inputs.artifact == 'PPML-Occlum-ExampleTests' || github.event.inputs.artifact == 'all' }} 
     runs-on: [self-hosted, Wilwarin, ubuntu-20.04-lts]
@@ -594,60 +560,6 @@ jobs:
         job-name: PPML-spark-Local-Example-Tests-on-Gramine
         runner-hosted-on: 'Shanghai'
 
-  PPML-Occlum-k8s-ExampleTests:
-    if: ${{ github.event.schedule || github.event.inputs.artifact == 'PPML-Occlum-k8s-ExampleTests' || github.event.inputs.artifact == 'all' }}
-    runs-on: [self-hosted, Vilvarin]
-
-    steps:
-    - uses: actions/checkout@v3
-    - name: Run Test
-      uses: ./.github/actions/ppml-occlum-k8s-exampletests-action
-    - name: Create Job Badge
-      uses: ./.github/actions/create-job-status-badge
-      if: ${{ always() }}
-      with:
-        secret: ${{ secrets.GIST_SECRET}}
-        gist-id: ${{env.GIST_ID}}
-        is-self-hosted-runner: true
-        file-name: PPML-Occlum-k8s-ExampleTests.json
-        type: job
-        job-name: PPML-Occlum-k8s-ExampleTests
-        runner-hosted-on: 'Shanghai'
-
-
-  PPML-Spark-K8S-Example-On-Gramine:
-    if: ${{ github.event.schedule || github.event.inputs.artifact == 'PPML-Spark-K8S-Example-On-Gramine' || github.event.inputs.artifact == 'all' }}
-    runs-on: [self-hosted, Vilvarin]
-
-    steps:
-    - uses: actions/checkout@v3
-    - name: Set up JDK8
-      uses: ./.github/actions/jdk-setup-action
-    - name: Set up maven
-      uses: ./.github/actions/maven-setup-action
-    - name: set env
-      env:
-        DEFAULT_IMAGE: '10.239.45.10/arda/intelanalytics/bigdl-ppml-trusted-big-data-ml-python-gramine'
-        DEFAULT_TAG: 'latest'
-      run: |
-        echo "TAG=${{ github.event.inputs.tag || env.DEFAULT_TAG }}" >> $GITHUB_ENV
-        echo "IMAGE=${{ github.event.inputs.image || env.DEFAULT_IMAGE }}" >> $GITHUB_ENV
-    - name: Run test
-      uses: ./.github/actions/ppml-spark-k8s-example-on-gramine-action
-      with:
-        image: ${{env.IMAGE}}
-        image-tag: ${{env.TAG}}
-    - name: Create Job Badge
-      uses: ./.github/actions/create-job-status-badge
-      if: ${{ always() }}
-      with:
-        secret: ${{ secrets.GIST_SECRET}}
-        gist-id: ${{env.GIST_ID}}
-        is-self-hosted-runner: true
-        file-name: PPML-Spark-K8S-Example-On-Gramine.json
-        type: job
-        job-name: PPML-Spark-K8S-Example-On-Gramine
-        runner-hosted-on: 'Shanghai'
 
   # please put your test before the create-workflow-badge to make sure the badge can be displayed on the github page.
   create-workflow-badge:
