@@ -47,8 +47,9 @@ jobs:
         echo "########################################"
         echo "####### big-data-ml-python-gramine ####"
         echo "########################################"
-        cd ppml/trusted-big-data-ml/python/docker-gramine
-        export image=intelanalytics/bigdl-ppml-trusted-big-data-ml-python-gramine
+        cd ppml/trusted-big-data-ml/python/docker-gramine/base
+        export image=intelanalytics/bigdl-ppml-trusted-big-data-ml-python-gramine-reference
+        export base_image=intelanalytics/bigdl-ppml-trusted-big-data-ml-python-gramine-base
         sudo docker build \
           --no-cache=true \
           --build-arg http_proxy=${HTTP_PROXY} \
@@ -61,8 +62,16 @@ jobs:
           --build-arg JDK_URL=${JDK_URL} \
           --build-arg no_proxy=${NO_PROXY} \
           --build-arg SPARK_JAR_REPO_URL=${SPARK_JAR_REPO_URL} \
-          -t ${image}:${TAG} -f ./Dockerfile .
-        sudo docker push ${image}:${TAG}
+          -t ${base_image}:${TAG} -f ./Dockerfile .
+        cd ../bigdl-gramine
+        openssl genrsa -3 -out enclave-key.pem 3072
+        sudo docker build \
+         --build-arg BIGDL_IMAGE_NAME=${base_image} \
+         --build-arg BIGDL_IMAGE_VERSION=${TAG} \
+         --build-arg SGX_MEM_SIZE=32G \
+         --build-arg SGX_LOG_LEVEL=error \
+         -t ${image}:${TAG} -f ./Dockerfile .
+        #sudo docker push ${image}:${TAG}
         sudo docker tag ${image}:${TAG} 10.239.45.10/arda/${image}:${TAG}
         sudo docker push 10.239.45.10/arda/${image}:${TAG}
         sudo docker rmi -f ${image}:${TAG}
