@@ -22,7 +22,7 @@ wsl --install
 
 ## Installation Guide
 
-You can treat WSL2 shell as a normal Linux shell and run normal bash commands in it. If you're using WSL2 shell for the first time, it may require you to set up some user information.
+You can treat WSL2 shell as a normal Linux shell and run normal bash commands in it. If you're using WSL2 shell for the first time, it may require you to set up some user information. Using WSL2, you can install BigDL the same way as you do on a Linux system.
 
 
 ### Install Conda
@@ -49,7 +49,7 @@ conda create -n bigdl-env
 conda activate bigdl-env
 ```
 
-Then install BigDL, or BigDL-Nano, BigDL-Chronos, etc. the same way as you do on a Linux system.
+Then install BigDL as a whole, or specific bigdl library the same way as you do on a Linux system. For example,
 
 ```bash
 pip install bigdl

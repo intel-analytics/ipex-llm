@@ -75,9 +75,11 @@ PyTorch
 Install
 -------------------------
 * `How to install BigDL-Nano in Google Colab <install_in_colab.html>`_
+* `How to install BigDL-Nano on Windows <windows_guide.html>`_
 
 .. toctree::
     :maxdepth: 1
     :hidden:
 
     install_in_colab
+    windows_guide
