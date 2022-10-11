@@ -1,5 +1,5 @@
-name: 'Run Orca Python Py37 Spark3'
-description: 'Run Orca Python Py37 Spark3'
+name: 'Run PPML Python Py37 Spark3'
+description: 'Run PPML Python Py37 Spark3'
 runs:
   using: "composite"
   steps:
@@ -9,7 +9,6 @@ runs:
         source activate py37
         export SPARK_LOCAL_HOSTNAME=localhost
         export KERAS_BACKEND=tensorflow
-        pip install pyspark==3.1.2
         cd python/ppml
         mkdir data && cd data
         export FTP_URI=ftp://zoo:1234qwer@10.112.231.51
