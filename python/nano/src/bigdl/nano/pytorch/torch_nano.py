@@ -32,7 +32,7 @@ from bigdl.nano.utils.log4Error import invalidInputError
 from bigdl.nano.pytorch.utils import TORCH_VERSION_LESS_1_10, TORCH_VERSION_LESS_1_11
 from bigdl.nano.pytorch.strategies.ipex.ipex_api import ipex_optimize
 from bigdl.nano.pytorch.strategies import create_IPEXStrategy, DDPSpawnStrategy, \
-    DDPSubprocessStrategy, create_RayStrategy
+    DDPSubprocessStrategy, create_ray_strategy
 
 
 class _TorchNanoModule(_LiteModule):
@@ -130,7 +130,7 @@ class TorchNano(LightningLite):
                                              use_ipex=self.use_ipex,
                                              dtype=self.dtype)
         elif strategy == "ray":
-            strategy = create_RayStrategy(num_workers=self.num_processes,
+            strategy = create_ray_strategy(num_workers=self.num_processes,
                                           use_ipex=self.use_ipex,
                                           dtype=self.dtype)
         else:
