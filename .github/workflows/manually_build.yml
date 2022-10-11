@@ -71,7 +71,7 @@ jobs:
          --build-arg SGX_MEM_SIZE=32G \
          --build-arg SGX_LOG_LEVEL=error \
          -t ${image}:${TAG} -f ./Dockerfile .
-        #sudo docker push ${image}:${TAG}
+        sudo docker push ${image}:${TAG}
         sudo docker tag ${image}:${TAG} 10.239.45.10/arda/${image}:${TAG}
         sudo docker push 10.239.45.10/arda/${image}:${TAG}
         sudo docker rmi -f ${image}:${TAG}
