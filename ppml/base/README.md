@@ -48,7 +48,7 @@ RUN  mkdir -p /root/.keras/datasets && \
 
 The image have Python3.7 installed.  If this is what you needed, put the following command into your image:
 ```dockerfile
-ENV PYTHONPATH                          /usr/lib/python3.7:/usr/lib/python3.7/lib-dynload:/usr/local/lib/python3.7/dist-packages:/usr/lib/python3/dist-packages
+ENV PYTHONPATH   /usr/lib/python3.7:/usr/lib/python3.7/lib-dynload:/usr/local/lib/python3.7/dist-packages:/usr/lib/python3/dist-packages
 ```
 
 Otherwise, install your version of Python and set the `PYTHONPATH` accordingly.

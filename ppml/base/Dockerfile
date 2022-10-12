@@ -85,6 +85,6 @@ RUN env DEBIAN_FRONTEND=noninteractive apt-get update && \
 
 
 
-ENV PYTHONPATH                          /usr/lib/python3.7:/usr/lib/python3.7/lib-dynload:/usr/local/lib/python3.7/dist-packages:/usr/lib/python3/dist-packages
+ENV PYTHONPATH   /usr/lib/python3.7:/usr/lib/python3.7/lib-dynload:/usr/local/lib/python3.7/dist-packages:/usr/lib/python3/dist-packages
 WORKDIR /ppml
 ENTRYPOINT [ "/bin/bash" ]
