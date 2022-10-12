@@ -11,9 +11,9 @@ on:
       - '.github/actions/ppml-scala-ut-action/action.yml'
       - 'python/orca/**'
       - '.github/actions/orca-ray-ctx-example-action/action.yml'
-      - '.github/actions/orca/*'
+      - '.github/actions/orca/**'
       - 'python/ppml/**'
-      - '.github/actions/ppml/*'
+      - '.github/actions/ppml/**'
       - '.github/workflows/PR_validation.yml'
       
   pull_request:
@@ -27,9 +27,9 @@ on:
       - '.github/actions/ppml-scala-ut-action/action.yml'
       - 'python/orca/**'
       - '.github/actions/orca-ray-ctx-example-action/action.yml'
-      - '.github/actions/orca/*'
+      - '.github/actions/orca/**'
       - 'python/ppml/**'
-      - '.github/actions/ppml/*'
+      - '.github/actions/ppml/**'
       - '.github/workflows/PR_validation.yml'
 
 
@@ -62,11 +62,11 @@ jobs:
             - 'scala/ppml/**'
             - '.github/actions/ppml-scala-ut-action/action.yml'
             - 'python/ppml/**'
-            - '.github/actions/ppml/*'
+            - '.github/actions/ppml/**'
             orca:
               - 'python/orca/**'
               - '.github/actions/orca-ray-ctx-example-action/action.yml'
-              - '.github/actions/orca/*'
+              - '.github/actions/orca/**'
            
   Friesian-Scala-UT:
     needs: changes
