@@ -47,7 +47,6 @@ jobs:
         echo "########################################"
         echo "####### big-data-ml-python-gramine ####"
         echo "########################################"
-        export image=intelanalytics/bigdl-ppml-trusted-big-data-ml-python-gramine-reference
         export base_image=intelanalytics/bigdl-ppml-trusted-big-data-ml-python-gramine-base
         cd ppml/trusted-big-data-ml/python/docker-gramine/base
         sudo docker build \
@@ -68,13 +67,24 @@ jobs:
         sudo docker push 10.239.45.10/arda/${base_image}:${TAG}
         cd ../bigdl-gramine
         openssl genrsa -3 -out enclave-key.pem 3072
+        export image=intelanalytics/bigdl-ppml-trusted-big-data-ml-python-gramine-reference-32G
         sudo docker build \
          --build-arg BASE_IMAGE_NAME=${base_image} \
          --build-arg BASE_IMAGE_TAG=${TAG} \
          --build-arg SGX_MEM_SIZE=32G \
          --build-arg SGX_LOG_LEVEL=error \
          -t ${image}:${TAG} -f ./Dockerfile .
-        export image=intelanalytics/bigdl-ppml-trusted-big-data-ml-python-gramine-reference
+        sudo docker push ${image}:${TAG}
+        sudo docker tag ${image}:${TAG} 10.239.45.10/arda/${image}:${TAG}
+        sudo docker push 10.239.45.10/arda/${image}:${TAG}
+        sudo docker rmi -f ${image}:${TAG}
+        export image=intelanalytics/bigdl-ppml-trusted-big-data-ml-python-gramine-reference-64G
+        sudo docker build \
+         --build-arg BASE_IMAGE_NAME=${base_image} \
+         --build-arg BASE_IMAGE_TAG=${TAG} \
+         --build-arg SGX_MEM_SIZE=64G \
+         --build-arg SGX_LOG_LEVEL=error \
+         -t ${image}:${TAG} -f ./Dockerfile .
         sudo docker push ${image}:${TAG}
         sudo docker tag ${image}:${TAG} 10.239.45.10/arda/${image}:${TAG}
         sudo docker push 10.239.45.10/arda/${image}:${TAG}
