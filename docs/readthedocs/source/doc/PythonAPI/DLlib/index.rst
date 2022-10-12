@@ -2,6 +2,7 @@ DLlib API
 ==================
 
 .. toctree::
-    :maxdepth: 2
+    :maxdepth: 1
 
+    model.rst
     core_layers.md
