@@ -75,9 +75,7 @@ class BaseTF2Forecaster(Forecaster):
         if isinstance(data, TSDataset):
             if data.lookback is None:
                 data.roll(lookback=self.model_config['past_seq_len'],
-                          horizon=self.model_config['future_seq_len'],
-                          feature_col=data.roll_feature,
-                          target_col=data.roll_target)
+                          horizon=self.model_config['future_seq_len'])
 
         if self.distributed:
             if isinstance(data, tuple):
@@ -129,9 +127,7 @@ class BaseTF2Forecaster(Forecaster):
         if isinstance(data, TSDataset):
             if data.lookback is None:
                 data.roll(lookback=self.model_config['past_seq_len'],
-                          horizon=self.model_config['future_seq_len'],
-                          target_col=data.roll_target,
-                          feature_col=data.roll_feature)
+                          horizon=self.model_config['future_seq_len'])
 
         invalidInputError(self.fitted,
                           "You must call fit or restore first before calling predict!")
@@ -143,7 +139,7 @@ class BaseTF2Forecaster(Forecaster):
                 input_data, _ = data.to_numpy()
                 data = np_to_xshards(input_data)
             invalidInputError(not isinstance(data, tf.data.Dataset),
-                              "Will support in the future.")
+                              "prediction on tf.data.Dataset will be supported in future.")
             yhat = self.internal.predict(data, batch_size=batch_size)
 
             # pytorch and tf2 have different behavior, when `future_seq_len` and
