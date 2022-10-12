@@ -91,22 +91,6 @@ init_instance() {
         sed -i "s/SGX_KERNEL_HEAP/${SGX_KERNEL_HEAP}/g" Occlum.json
     fi
 
-    # check attestation setting
-    if [ -z "$ATTESTATION" ]; then
-        echo "[INFO] Attestation is disabled!"
-        ATTESTATION="false"
-    fi
-
-    if [[ $ATTESTATION == "true" ]]; then
-        if [[ $PCCS_URL == "" ]]; then
-           echo "[ERROR] Attestation set to true but NO PCCS"
-           exit 1
-        else
-           export ENABLE_SGX_DEBUG=false
-           sed -i "s#https://localhost:8081/sgx/certification/v3/#${PCCS_URL}#g" /etc/sgx_default_qcnl.conf
-        fi
-    fi
-
     # check occlum log level for docker
     export ENABLE_SGX_DEBUG=false
     export OCCLUM_LOG_LEVEL=off
@@ -166,25 +150,6 @@ build_spark() {
 
     # Build
     occlum build
-}
-
-build_initfs() {
-    cd /root/demos/remote_attestation/init_ra_flow/
-    bash build_content.sh build_init_ra
-    cd /opt/occlum_spark
-    rm -rf initfs
-    jq ' .verify_mr_enclave = "off" |
-        .verify_mr_signer = "off" |
-        .verify_isv_prod_id = "off" |
-        .verify_isv_svn = "off" |
-        .verify_enclave_debuggable = "on" |
-        .sgx_mrs[0].debuggable = false ' /root/demos/remote_attestation/init_ra_flow/ra_config_template.json > /opt/occlum_spark/dynamic_config.json
-    export INITRA_DIR=/root/demos/remote_attestation/init_ra_flow/init_ra
-    export DEP_LIBS_DIR=/root/demos/remote_attestation/init_ra_flow/dep_libs
-    export RATLS_DIR=/root/demos/ra_tls
-    copy_bom -f /root/demos/remote_attestation/init_ra_flow/init_ra_client.yaml --root initfs --include-dir /opt/occlum/etc/template
-
-    occlum build -f --image-key /opt/occlum_spark/data/image_key
 }
 
 run_spark_pi() {
