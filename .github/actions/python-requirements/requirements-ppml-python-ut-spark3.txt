@@ -1,7 +1,7 @@
 pypandoc
 pyspark==3.1.2
 psutil
-numpy==1.19.5
+numpy
 pandas==1.1.5
 grpcio
 pyyaml
