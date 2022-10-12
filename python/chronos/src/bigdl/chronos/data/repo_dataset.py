@@ -29,7 +29,7 @@ def get_public_dataset(name, path='~/.chronos/dataset', redownload=False, **kwar
 
     :param name: str, public dataset name, e.g. "network_traffic".
            We only support network_traffic, AIOps, fsi, nyc_taxi, uci_electricity,
-           uci_electricity_wide.
+           uci_electricity_wide, tsinghua_electricity
     :param path: str, download path, the value defatults to "~/.chronos/dataset/".
     :param redownload: bool, if redownload the raw dataset file(s).
     :param kwargs: extra arguments passed to initialize the tsdataset,
@@ -91,6 +91,19 @@ def get_public_dataset(name, path='~/.chronos/dataset', redownload=False, **kwar
                                       .preprocess_uci_electricity_wide()\
                                       .get_tsdata(dt_col='timestamp',
                                                   target_col=target)
+    elif name.lower().strip() == 'tsinghua_electricity':
+        target = []
+        for i in range(0, 320):
+            target.append(str(i))
+        target.append("OT")
+        dataset = PublicDataset(name='tsinghua_electricity',
+                                path=path,
+                                redownload=False,
+                                **kwargs).preprocess_tsinghua_electricity()\
+                                         .get_tsdata(dt_col='date',
+                                                     target_col=target)
+        return dataset
+
     else:
         invalidInputError(False,
                           "Only network_traffic, AIOps, fsi, nyc_taxi, uci_electricity"

@@ -43,13 +43,12 @@ jobs:
       run: |
         docker login -u ${DOCKERHUB_USERNAME} -p ${DOCKERHUB_PASSWORD}
     - name: bigdl-ppml-trusted-big-data-ml-python-gramine
-      run: |
+      run: |        
         echo "########################################"
         echo "####### big-data-ml-python-gramine ####"
         echo "########################################"
-        cd ppml/trusted-big-data-ml/python/docker-gramine/base
-        export image=intelanalytics/bigdl-ppml-trusted-big-data-ml-python-gramine-reference
         export base_image=intelanalytics/bigdl-ppml-trusted-big-data-ml-python-gramine-base
+        cd ppml/trusted-big-data-ml/python/docker-gramine/base
         sudo docker build \
           --no-cache=true \
           --build-arg http_proxy=${HTTP_PROXY} \
@@ -63,12 +62,27 @@ jobs:
           --build-arg no_proxy=${NO_PROXY} \
           --build-arg SPARK_JAR_REPO_URL=${SPARK_JAR_REPO_URL} \
           -t ${base_image}:${TAG} -f ./Dockerfile .
+        sudo docker push ${base_image}:${TAG}
+        sudo docker tag ${base_image}:${TAG} 10.239.45.10/arda/${base_image}:${TAG}
+        sudo docker push 10.239.45.10/arda/${base_image}:${TAG}
         cd ../bigdl-gramine
         openssl genrsa -3 -out enclave-key.pem 3072
+        export image=intelanalytics/bigdl-ppml-trusted-big-data-ml-python-gramine-reference-32G
         sudo docker build \
-         --build-arg BIGDL_IMAGE_NAME=${base_image} \
-         --build-arg BIGDL_IMAGE_VERSION=${TAG} \
+         --build-arg BASE_IMAGE_NAME=${base_image} \
+         --build-arg BASE_IMAGE_TAG=${TAG} \
          --build-arg SGX_MEM_SIZE=32G \
+         --build-arg SGX_LOG_LEVEL=error \
+         -t ${image}:${TAG} -f ./Dockerfile .
+        sudo docker push ${image}:${TAG}
+        sudo docker tag ${image}:${TAG} 10.239.45.10/arda/${image}:${TAG}
+        sudo docker push 10.239.45.10/arda/${image}:${TAG}
+        sudo docker rmi -f ${image}:${TAG}
+        export image=intelanalytics/bigdl-ppml-trusted-big-data-ml-python-gramine-reference-64G
+        sudo docker build \
+         --build-arg BASE_IMAGE_NAME=${base_image} \
+         --build-arg BASE_IMAGE_TAG=${TAG} \
+         --build-arg SGX_MEM_SIZE=64G \
          --build-arg SGX_LOG_LEVEL=error \
          -t ${image}:${TAG} -f ./Dockerfile .
         sudo docker push ${image}:${TAG}

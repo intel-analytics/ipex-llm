@@ -5,6 +5,8 @@ SGX-based Trusted Big Data ML allows the user to run end-to-end big data analyti
 ## Before Running code
 ### 1. Build Docker Images
 
+**Tip:** if you want to skip building the custom image, you can use our public image `intelanalytics/bigdl-ppml-trusted-big-data-ml-python-gramine-reference:2.2.0-SNAPSHOT` for a quick start, which is provided for a demo purpose. Do not use it in production.
+
 #### 1.1 Build BigDL Base Image
 
 The bigdl base image is a public one that does not contain any secrets. You will use the base image to get your own custom image in the following. 
@@ -28,7 +30,7 @@ cd bigdl-gramine
 openssl genrsa -3 -out enclave-key.pem 3072
 ```
 
-Then, use the `enclave-key.pem` and the bigdl base image to build your own custom image. Change the `IMAGE_MODE` to `custom_image` and run `build-custom-image.sh`. In the process, SGX MREnclave will be made and signed without saving the sensitive encalve key inside the final image, which is safer.
+Then, use the `enclave-key.pem` and the bigdl base image to build your own custom image. In the process, SGX MREnclave will be made and signed without saving the sensitive encalve key inside the final image, which is safer.
 
 ```bash
 # under bigdl-gramine dir
@@ -46,7 +48,7 @@ mr_enclave       : c7a8a42af......
 mr_signer        : 6f0627955......
 ````
 
-### 2. Prepare Spark SSL key
+### 2. Prepare SSL key
 
 #### 2.1 Prepare the Key
 
@@ -62,7 +64,7 @@ mr_signer        : 6f0627955......
   Next, you need to store the password you used for key generation, i.e., `generate-keys.sh`, in a secured file.
 
 ```bash
-  sudo bash ../../../scripts/generate-password.sh used_password_when_generate_keys
+  sudo bash ../../../scripts/generate-password.sh <used_password_when_generate_keys>
 ```
 
 ### 3. Register MREnclave
@@ -142,7 +144,11 @@ Upload the metadata of your MREnclave obtained above to EHSM, and then only regi
 
 ```bash
 # At /ppml/trusted-big-data-ml inside the container now
-python register-mrenclave.py --appid <your_appid> --apikey <your_apikey> --url https://<kms_ip>:9000 --mr_enclave <your_mrenclave_hash_value> --mr_signer <your_mrensigner_hash_value>
+python register-mrenclave.py --appid <your_appid> \
+                             --apikey <your_apikey> \
+                             --url https://<kms_ip>:9000 \
+                             --mr_enclave <your_mrenclave_hash_value> \
+                             --mr_signer <your_mrensigner_hash_value>
 ```
 
 ## Run Your PySpark Program

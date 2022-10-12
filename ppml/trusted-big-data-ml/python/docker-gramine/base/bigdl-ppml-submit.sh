@@ -64,8 +64,8 @@ fi
 
 
 if [ "$SGX_ENABLED" = "true" ]; then
-  if [ "$SGX_DRIVER_JVM_MEM" = "" ] || [ "$SGX_EXECUTOR_JVM_MEM" = "" ] || [ "$SGX_LOG_LEVEL" = "" ]; then
-    echo "--sgx-driver-jvm-memory, --sgx-executor-jvm-memory, --sgx-log-level must be specified when sgx is enabled"
+  if [ "$SGX_DRIVER_JVM_MEM" = "" ] || [ "$SGX_EXECUTOR_JVM_MEM" = "" ]; then
+    echo "--sgx-driver-jvm-memory and --sgx-executor-jvm-memory must be specified when sgx is enabled"
     exit 1
   else
     sgx_commands="--conf spark.kubernetes.sgx.enabled=$SGX_ENABLED \
@@ -122,10 +122,12 @@ spark_submit_command="${JAVA_HOME}/bin/java \
 
 set -x
 
-spark_commnd="${spark_submit_command} ${input_args} ${application_args}"
-echo "[INFO] spark_submit_command: $spark_commnd"
+spark_submit_command="${spark_submit_command} ${input_args} ${application_args}"
+echo "[INFO] spark_submit_command: ${spark_submit_command}"
 if [ "$SGX_ENABLED" == "true" ] && [ "$DEPLOY_MODE" != "cluster" ]; then
+    echo "[INFO] sgx enabled and convert spark submit command to sgx command"
+    sgx_command=${spark_submit_commnd}
     gramine-sgx bash 2>&1 | tee $LOG_FILE
 else
-    $spark_commnd 2>&1 | tee $LOG_FILE
+    $spark_submit_commnd 2>&1 | tee $LOG_FILE
 fi
