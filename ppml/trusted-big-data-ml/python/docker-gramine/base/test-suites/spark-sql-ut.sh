@@ -38,7 +38,6 @@ mkdir -p /ppml/trusted-big-data-ml/logs/reporter
 
 cd /ppml/trusted-big-data-ml
 
-./clean.sh
 for suite in "${sparkSqlSuites[@]}"
 do
     while true
