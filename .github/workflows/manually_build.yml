@@ -66,7 +66,6 @@ jobs:
         sudo docker push ${base_image}:${TAG}
         sudo docker tag ${base_image}:${TAG} 10.239.45.10/arda/${base_image}:${TAG}
         sudo docker push 10.239.45.10/arda/${base_image}:${TAG}
-        sudo docker rmi -f ${image}:${TAG}
         cd ../bigdl-gramine
         openssl genrsa -3 -out enclave-key.pem 3072
         sudo docker build \
@@ -75,7 +74,10 @@ jobs:
          --build-arg SGX_MEM_SIZE=32G \
          --build-arg SGX_LOG_LEVEL=error \
          -t ${image}:${TAG} -f ./Dockerfile .
-        
+        sudo docker push ${image}:${TAG}
+        sudo docker tag ${image}:${TAG} 10.239.45.10/arda/${image}:${TAG}
+        sudo docker push 10.239.45.10/arda/${image}:${TAG}
+        sudo docker rmi -f ${image}:${TAG}
         rm enclave-key.pem
 
 
