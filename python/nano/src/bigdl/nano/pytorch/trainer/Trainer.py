@@ -147,11 +147,17 @@ class Trainer(pl.Trainer):
                                       f"distributed training backend work incorrect")
 
             strategy_cls = backends_class_map[distributed_backend]
-            strategy = strategy_cls(num_processes=num_processes,
-                                    cpu_for_each_process=cpu_for_each_process,
-                                    use_ipex=self.use_ipex,
-                                    dtype=dtype,
-                                    auto_lr=auto_lr)
+
+            strategy_args = dict(num_processes=num_processes,
+                                 cpu_for_each_process=cpu_for_each_process,
+                                 use_ipex=self.use_ipex,
+                                 dtype=dtype,
+                                 auto_lr=auto_lr)
+
+            if distributed_backend == "ray":
+                del strategy_args["cpu_for_each_process"]
+
+            strategy = strategy_cls(**strategy_args)
 
             kwargs["strategy"] = strategy
             super().__init__(*args, **kwargs)
