@@ -7,11 +7,10 @@ Most AI projects start with a Python notebook running on a single laptop; howeve
 -------
 
 
-.. grid:: 2
-    :gutter: 1
+.. grid:: 1 2 2 2
+    :gutter: 2
 
     .. grid-item-card::
-        :class-footer: sd-bg-light
 
         **Get Started**
         ^^^
@@ -24,7 +23,6 @@ Most AI projects start with a Python notebook running on a single laptop; howeve
         `Tutorials <./QuickStart/index.html>`_
 
     .. grid-item-card::
-        :class-footer: sd-bg-light
 
         **Key Features Guide**
         ^^^
@@ -38,11 +36,7 @@ Most AI projects start with a Python notebook running on a single laptop; howeve
         `Distributed Training and Inference <./Overview/distributed-training-inference.html>`_ /
         `Distributed AutoML <./Overview/distributed-tuning.html>`_
 
-.. grid:: 2
-    :gutter: 1
-
     .. grid-item-card::
-        :class-footer: sd-bg-light
 
         **How-to Guide**
         ^^^
@@ -55,7 +49,6 @@ Most AI projects start with a Python notebook running on a single laptop; howeve
         `How-to-Guide <./Howto/index.html>`_
 
     .. grid-item-card::
-        :class-footer: sd-bg-light
 
         **API Document**
         ^^^

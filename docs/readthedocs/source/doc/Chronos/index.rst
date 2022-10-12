@@ -6,11 +6,10 @@ BigDL-Chronos
 You can use **Chronos** for:
 
 
-.. grid:: 3
-    :gutter: 1
+.. grid:: 1 3 3 3
+    :gutter: 2
 
     .. grid-item-card::
-        :class-footer: sd-bg-light
 
         **Forecasting**
         ^^^
@@ -24,7 +23,6 @@ You can use **Chronos** for:
         Predict future using history data.
 
     .. grid-item-card::
-        :class-footer: sd-bg-light
 
         **Anomaly Detection**
         ^^^
@@ -38,7 +36,6 @@ You can use **Chronos** for:
         Discover unexpected items in data.
 
     .. grid-item-card::
-        :class-footer: sd-bg-light
 
         **Simulation**
         ^^^
@@ -55,11 +52,10 @@ You can use **Chronos** for:
 -------
 
 
-.. grid:: 2
-    :gutter: 1
+.. grid:: 1 2 2 2
+    :gutter: 2
 
     .. grid-item-card::
-        :class-footer: sd-bg-light
 
         **Get Started**
         ^^^
@@ -71,7 +67,6 @@ You can use **Chronos** for:
         `Installation <./Overview/install.html>`_
 
     .. grid-item-card::
-        :class-footer: sd-bg-light
 
         **Key Features Guide**
         ^^^
@@ -85,11 +80,7 @@ You can use **Chronos** for:
         `Detect <./Overview/anomaly_detection.html>`_ /
         `Simulate <./Overview/simulation.html>`_
 
-.. grid:: 2
-    :gutter: 1
-
     .. grid-item-card::
-        :class-footer: sd-bg-light
 
         **How-to-Guide** / **Tutorials**
         ^^^
@@ -102,7 +93,6 @@ You can use **Chronos** for:
         `How-to-Guide <./Howto/index.html>`_ / `Example <./QuickStart/index.html>`_
 
     .. grid-item-card::
-        :class-footer: sd-bg-light
 
         **API Document**
         ^^^

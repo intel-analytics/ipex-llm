@@ -6,11 +6,10 @@ BigDL-Nano
 -------
 
 
-.. grid:: 2
-    :gutter: 1
+.. grid:: 1 2 2 2
+    :gutter: 2
 
     .. grid-item-card::
-        :class-footer: sd-bg-light
 
         **Get Started**
         ^^^
@@ -23,7 +22,6 @@ BigDL-Nano
         `Tutorials <./QuickStart/index.html>`_
 
     .. grid-item-card::
-        :class-footer: sd-bg-light
 
         **Key Features Guide**
         ^^^
@@ -37,11 +35,7 @@ BigDL-Nano
         `Tensorflow Inference <./Overview/tensorflow_inference.html>`_ /
         `Tensorflow Training <./Overview/tensorflow_train.html>`_
 
-.. grid:: 2
-    :gutter: 1
-
     .. grid-item-card::
-        :class-footer: sd-bg-light
 
         **How-to Guide**
         ^^^
@@ -54,7 +48,6 @@ BigDL-Nano
         `How-to-Guide <./Howto/index.html>`_
 
     .. grid-item-card::
-        :class-footer: sd-bg-light
 
         **API Document**
         ^^^

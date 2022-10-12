@@ -6,11 +6,10 @@ BigDL-DLlib
 -------
 
 
-.. grid:: 2
-    :gutter: 1
+.. grid:: 1 2 2 2
+    :gutter: 2
 
     .. grid-item-card::
-        :class-footer: sd-bg-light
 
         **Get Started**
         ^^^
@@ -22,7 +21,6 @@ BigDL-DLlib
         `Installation <./Overview/install.html>`_ /
 
     .. grid-item-card::
-        :class-footer: sd-bg-light
 
         **Key Features Guide**
         ^^^
@@ -34,11 +32,7 @@ BigDL-DLlib
         `Keras-Like API <./Overview/keras-api.html>`_ /
         `Spark ML Pipeline <./Overview/nnframes.html>`_ /
 
-.. grid:: 2
-    :gutter: 1
-
     .. grid-item-card::
-        :class-footer: sd-bg-light
 
         **Examples**
         ^^^
@@ -51,7 +45,6 @@ BigDL-DLlib
         `Tutorials <./QuickStart/index.html>`_
 
     .. grid-item-card::
-        :class-footer: sd-bg-light
 
         **API Document**
         ^^^
