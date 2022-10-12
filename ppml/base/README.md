@@ -59,6 +59,8 @@ Besides, you may also want to set the `WORKDIR` and the `ENTRYPOINT` in your ima
 
 The image only contains these important components:
 
-1. Python3.7 and some packages
-2. Gramine
+1. Python3.7 and some packages.
+2. Gramine.
 3. Three patches applied to the Python source code and its packages.
+4. Package sgxsdk and dcap, required by remote attestation.
+5. Script for register MREnclave and verify remote EHSM (The jars required are not fully provided).
