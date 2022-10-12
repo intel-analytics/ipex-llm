@@ -172,7 +172,7 @@ class RayStrategy(DDPSpawnStrategy):
     strategy_name = "ray"
 
     def __init__(self,
-                 num_workers: int = 1,
+                 num_processes: int = 1,
                  num_cpus_per_worker: int = 1,
                  use_gpu: bool = False,
                  use_ipex: bool = False,
@@ -196,14 +196,14 @@ class RayStrategy(DDPSpawnStrategy):
         if use_ipex and TORCH_VERSION_LESS_1_10 and 'accelerator' not in ddp_kwargs:
             super().__init__(accelerator=create_IPEXAccelerator(),
                              parallel_devices=[],
-                             cluster_environment=RayEnvironment(world_size=num_workers),
+                             cluster_environment=RayEnvironment(world_size=num_processes),
                              **ddp_kwargs)
         else:
             super().__init__(parallel_devices=[],
-                             cluster_environment=RayEnvironment(world_size=num_workers),
+                             cluster_environment=RayEnvironment(world_size=num_processes),
                              **ddp_kwargs)
 
-        self.num_workers = num_workers
+        self.num_workers = num_processes
         self.num_cpus_per_worker = num_cpus_per_worker
         self.use_gpu = use_gpu
         self.use_ipex = use_ipex
