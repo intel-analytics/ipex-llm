@@ -92,12 +92,12 @@
             </exclusion>
         </exclusions>
       </dependency>
-        <dependency>
-            <groupId>org.scala-lang</groupId>
-            <artifactId>scala-compiler</artifactId>
-            <version>${scala.version}</version>
-            <scope>${spark-scope}</scope>
-        </dependency>
+      <dependency>
+          <groupId>org.scala-lang</groupId>
+          <artifactId>scala-compiler</artifactId>
+          <version>${scala.version}</version>
+          <scope>${spark-scope}</scope>
+      </dependency>
     </dependencies>
 
     <build>
@@ -132,6 +132,18 @@
                                 <descriptor>src/main/assembly/fat-assembly.xml</descriptor>
                             </descriptors>
                         </configuration>
+                    </execution>
+                    <execution>
+                        <id>with-all-in-one</id>
+                        <configuration>
+                            <descriptors>
+                                <descriptor>${project.basedir}/src/assembly/all-in-one.xml</descriptor>
+                            </descriptors>
+                        </configuration>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>single</goal>
+                        </goals>
                     </execution>
                 </executions>
             </plugin>
