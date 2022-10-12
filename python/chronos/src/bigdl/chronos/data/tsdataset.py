@@ -17,6 +17,7 @@
 import pandas as pd
 import numpy as np
 import functools
+import logging
 
 from bigdl.chronos.data.utils.feature import generate_dt_features, generate_global_features
 from bigdl.chronos.data.utils.impute import impute_timeseries_dataframe
@@ -48,6 +49,10 @@ class TSDataset:
                                                            dt_col=schema["dt_col"],
                                                            id_col=schema["id_col"],
                                                            repair=repair)
+        if flag is True:
+            logging.info("Now that there is no low quality data here.")
+        else:
+            logging.warn("There are still some low quality data.")
         self.id_col = schema["id_col"]
         self.dt_col = schema["dt_col"]
         self.feature_col = schema["feature_col"].copy()

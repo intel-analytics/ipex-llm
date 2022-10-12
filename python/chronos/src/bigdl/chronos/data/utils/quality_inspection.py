@@ -86,10 +86,9 @@ def _timestamp_type_repair(df, dt_col):
     to datetime dtype.
     '''
     try:
-        df[dt_col].astype('datetime64')
+        df[dt_col] = df[dt_col].astype('datetime64')
     except:
         return False
-    df[dt_col] = df[dt_col].astype('datetime64')
     logging.warning("Datetime colomn has be modified to datetime64 dtype.")
     return True
 
