@@ -10,9 +10,9 @@ if [ $status_5_local_spark_basic_sql -ne 0 ]; then
 echo "example.5 local spark, Basic SQL"
 export sgx_command="export PYSPARK_PYTHON=/usr/bin/python && \
   /opt/jdk8/bin/java \
-  -cp '/ppml/trusted-big-data-ml/work/spark-3.1.2/conf/:/ppml/trusted-big-data-ml/work/spark-3.1.2/jars/*' \
+  -cp '/ppml/trusted-big-data-ml/work/spark-3.1.2/conf/:/ppml/trusted-big-data-ml/work/spark-3.1.2/jars/*:/ppml/trusted-big-data-ml/work/spark-3.1.2/examples/jars/*' \
   -Xmx1g org.apache.spark.deploy.SparkSubmit \
-  --master 'local[4]' \
+  --master local[4] \
   --conf spark.python.use.daemon=false \
   --conf spark.python.worker.reuse=false \
   /ppml/trusted-big-data-ml/work/spark-3.1.2/examples/src/main/python/sql/basic.py"
@@ -26,9 +26,9 @@ echo "example.6 local spark, Arrow"
 export sgx_command="export PYSPARK_PYTHON=/usr/bin/python && \
   export ARROW_PRE_0_15_IPC_FORMAT=0 && \
   /opt/jdk8/bin/java \
-  -cp '/ppml/trusted-big-data-ml/work/spark-3.1.2/conf/:/ppml/trusted-big-data-ml/work/spark-3.1.2/jars/*' \
+  -cp '/ppml/trusted-big-data-ml/work/spark-2.1.2/conf/:/ppml/trusted-big-data-ml/work/spark-3.1.2/jars/*:/ppml/trusted-big-data-ml/work/spark-3.1.2/examples/jars/*' \
   -Xmx2g org.apache.spark.deploy.SparkSubmit \
-  --master 'local[4]' \
+  --master local[4] \
   --conf spark.python.use.daemon=false \
   --conf spark.python.worker.reuse=false \
   --conf spark.sql.execution.arrow.enabled=true \
@@ -43,9 +43,9 @@ if [ $status_7_local_spark_hive -ne 0 ]; then
 echo "example.7 local spark, Hive"
 export sgx_command="export PYSPARK_PYTHON=/usr/bin/python && \
   /opt/jdk8/bin/java \
-  -cp '/ppml/trusted-big-data-ml/work/spark-3.1.2/conf/:/ppml/trusted-big-data-ml/work/spark-3.1.2/jars/*' \
+  -cp '/ppml/trusted-big-data-ml/work/spark-3.1.2/conf/:/ppml/trusted-big-data-ml/work/spark-3.1.2/jars/*:/ppml/trusted-big-data-ml/work/spark-3.1.2/examples/jars/*' \
   -Xmx2g org.apache.spark.deploy.SparkSubmit \
-  --master 'local[4]' \
+  --master local[4] \
   --conf spark.python.use.daemon=false \
   --conf spark.python.worker.reuse=false \
   --conf spark.driver.memory=2g \
@@ -65,6 +65,6 @@ echo "#### example.6 Excepted result(arrow.py): |    time| id| v1| v2|"
 echo "---- example.6 Actual result: "
 cat test-sql-arrow-sgx.log | egrep -a '\|\s*time\|'
 
-#echo "#### example.7 Excepted result(hive.py): |key| value|key| value|"
-#echo "---- example.7 Actual result: "
-#cat test-sql-hive-sgx.log | egrep -a '\|key\|.*value\|key\|.*value\|'
+echo "#### example.7 Excepted result(hive.py): |key| value|key| value|"
+echo "---- example.7 Actual result: "
+cat test-sql-hive-sgx.log | egrep -a '\|key\|.*value\|key\|.*value\|'
