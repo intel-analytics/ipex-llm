@@ -52,7 +52,7 @@ class DDPK8sStrategy(DDPStrategy):
         """Create a DDPK8sStrategy."""
         if num_processes is None:
             num_processes = int(os.environ["WORLD_SIZE"])
-        
+
         invalidInputError(not (use_ipex and TORCH_VERSION_LESS_1_10),
                           "currently ipex with torch version under 1.10 is not supported.")
 
