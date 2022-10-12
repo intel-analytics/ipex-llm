@@ -126,8 +126,8 @@ class TorchNano(LightningLite):
 
         kwargs['precision'] = precision
 
-        if num_processes is None and strategy != "k8s":
-            num_processes = 1
+        if self.num_processes is None and strategy != "k8s":
+            self.num_processes = 1
 
         if self.num_processes == 1:
             if self.use_ipex:
