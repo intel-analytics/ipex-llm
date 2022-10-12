@@ -7,3 +7,4 @@ grpcio
 pyyaml
 torch
 tensorflow
+cryptography==2.2.2
