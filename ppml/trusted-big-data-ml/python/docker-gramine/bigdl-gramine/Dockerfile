@@ -1,8 +1,8 @@
-ARG BIGDL_IMAGE_NAME
-ARG BIGDL_IMAGE_VERSION
+ARG BASE_IMAGE_NAME
+ARG BASE_IMAGE_TAG
 
 # stage 1. generate SGX secrets and prepare KMS env
-FROM $BIGDL_IMAGE_NAME:$BIGDL_IMAGE_VERSION as temp
+FROM $BASE_IMAGE_NAME:$BASE_IMAGE_TAG as temp
 
 ARG SGX_MEM_SIZE
 ARG SGX_LOG_LEVEL
@@ -16,7 +16,7 @@ RUN cd /ppml/trusted-big-data-ml && \
     make SGX=1 DEBUG=1 THIS_DIR=/ppml/trusted-big-data-ml  SPARK_USER=root G_SGX_SIZE=$SGX_MEM_SIZE G_LOG_LEVEL=$SGX_LOG_LEVEL
 
 # stage 2. copy sign etc. secrets from temp into target image and generate AS secrets
-FROM $BIGDL_IMAGE_NAME:$BIGDL_IMAGE_VERSION
+FROM $BASE_IMAGE_NAME:$BASE_IMAGE_TAG
 
 # 2.1 copy sign etc. secrets from temp into target image
 COPY --from=temp /ppml/trusted-big-data-ml/bash.manifest.sgx /ppml/trusted-big-data-ml/bash.manifest.sgx
