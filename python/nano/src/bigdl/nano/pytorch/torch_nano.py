@@ -14,7 +14,7 @@
 # limitations under the License.
 #
 
-from typing import Any, Union, List
+from typing import Any, List, Optional, Union
 from logging import warning
 from functools import partial
 from abc import abstractmethod

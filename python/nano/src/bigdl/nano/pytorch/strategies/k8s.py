@@ -29,7 +29,7 @@ from pytorch_lightning.core.optimizer import LightningOptimizer
 from pytorch_lightning.core.optimizer import _configure_schedulers_automatic_opt
 from pytorch_lightning.core.optimizer import _configure_schedulers_manual_opt
 from pytorch_lightning.core.optimizer import _set_scheduler_opt_idx, _validate_scheduler_api
-from pytorch_lightning.plugins.environments import LightningEnvironment
+from pytorch_lightning.plugins.environments import KubeflowEnvironment
 from bigdl.nano.pytorch.utils import TORCH_VERSION_LESS_1_10
 from bigdl.nano.utils.log4Error import invalidInputError
 from bigdl.nano.pytorch.strategies.ipex.ipex_api import ipex_optimize
@@ -49,16 +49,16 @@ class DDPK8sStrategy(DDPStrategy):
         auto_lr=False,
         **kwargs: Any
     ):
-        
-        if num_processes is None:
-            num_processes == os.environ["WORLD_SIZE"]
         """Create a DDPK8sStrategy."""
+        if num_processes is None:
+            num_processes = int(os.environ["WORLD_SIZE"])
+        
         invalidInputError(not (use_ipex and TORCH_VERSION_LESS_1_10),
                           "currently ipex with torch version under 1.10 is not supported.")
 
         device = 'cpu'
         parallel_devices = [torch.device(device) for _ in range(num_processes)]
-        cluster_environment = LightningEnvironment()
+        cluster_environment = KubeflowEnvironment()
         if use_ipex and dtype == torch.bfloat16 and 'precision_plugin' not in kwargs:
             from bigdl.nano.pytorch.strategies.ipex.ipex_strategy import IPEXBF16Precision
             super().__init__(parallel_devices=parallel_devices,
