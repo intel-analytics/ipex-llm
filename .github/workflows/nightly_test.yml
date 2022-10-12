@@ -446,7 +446,7 @@ jobs:
         runner-hosted-on: 'Shanghai'
 
   PPML-Python-UT-Spark3:
-    #if: ${{ github.event.schedule || github.event.inputs.artifact == 'PPML-Python-UT-Spark3' || github.event.inputs.artifact == 'all' }} 
+    if: ${{ github.event.schedule || github.event.inputs.artifact == 'PPML-Python-UT-Spark3' || github.event.inputs.artifact == 'all' }} 
     runs-on: [ self-hosted, Gondolin, ubuntu-20.04-lts ]
 
     steps:
