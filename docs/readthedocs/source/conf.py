@@ -42,9 +42,9 @@ html_theme_options = {
             "type": "fontawesome",
         }
    ],
-   "navbar_start": ["navbar-logo.html", "version_badge.html"]
+   "navbar_start": ["navbar-logo.html", "version_badge.html"],
+   "navbar_end": ["navbar-icon-links.html"], # remove dark mode for now
 }
-html_logo = "../image/bigdl_logo.png"
 
 # add search bar to side bar
 html_sidebars = {
@@ -54,6 +54,14 @@ html_sidebars = {
     ],
     "**": ["sidebar_backbutton.html","sidebar-nav-bs.html"]
 }
+
+# remove dark mode for now
+html_context = {
+    "default_mode": "light" 
+}
+
+html_logo = "../image/bigdl_logo.png"
+
 # hard code it for now, may change it to read from installed bigdl
 release = "latest"
 
