@@ -9,9 +9,9 @@ runs:
         source activate py37
         export SPARK_LOCAL_HOSTNAME=localhost
         export KERAS_BACKEND=tensorflow
+        mkdir -p ~/.keras/datasets
         cd python/ppml
         mkdir data && cd data
-        export FTP_URI=ftp://zoo:1234qwer@10.112.231.51
         wget $FTP_URI/analytics-zoo-data/mnist.npz -O ~/.keras/datasets/mnist.npz
         wget $FTP_URI/analytics-zoo-data/FashionMNIST.zip
         unzip FashionMNIST.zip
