@@ -1,11 +1,11 @@
 pypandoc
 pyspark==3.1.2
 psutil
-numpy
-pandas
+numpy==1.19.5
+pandas==1.1.5
 grpcio
 pyyaml
-torch
-tensorflow
+torch==1.7.1
+tensorflow==2.6.2
 cryptography==2.8
 click==7.1.1
