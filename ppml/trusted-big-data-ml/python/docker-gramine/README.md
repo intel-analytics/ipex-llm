@@ -5,6 +5,8 @@ SGX-based Trusted Big Data ML allows the user to run end-to-end big data analyti
 ## Before Running code
 ### 1. Build Docker Images
 
+**Tip:** if you want to skip building the custom image, you can use our public image `intelanalytics/bigdl-ppml-trusted-big-data-ml-python-gramine-reference:2.2.0-SNAPSHOT` for a quick start, which is provided for a demo purpose. Do not use it in production.
+
 #### 1.1 Build BigDL Base Image
 
 The bigdl base image is a public one that does not contain any secrets. You will use the base image to get your own custom image in the following. 

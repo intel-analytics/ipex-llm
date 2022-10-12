@@ -64,8 +64,8 @@ fi
 
 
 if [ "$SGX_ENABLED" = "true" ]; then
-  if [ "$SGX_DRIVER_JVM_MEM" = "" ] || [ "$SGX_EXECUTOR_JVM_MEM" = "" ] || [ "$SGX_LOG_LEVEL" = "" ]; then
-    echo "--sgx-driver-jvm-memory, --sgx-executor-jvm-memory, --sgx-log-level must be specified when sgx is enabled"
+  if [ "$SGX_DRIVER_JVM_MEM" = "" ] || [ "$SGX_EXECUTOR_JVM_MEM" = "" ]; then
+    echo "--sgx-driver-jvm-memory and --sgx-executor-jvm-memory must be specified when sgx is enabled"
     exit 1
   else
     sgx_commands="--conf spark.kubernetes.sgx.enabled=$SGX_ENABLED \
