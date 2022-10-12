@@ -30,7 +30,7 @@ cd bigdl-gramine
 openssl genrsa -3 -out enclave-key.pem 3072
 ```
 
-Then, use the `enclave-key.pem` and the bigdl base image to build your own custom image. Change the `IMAGE_MODE` to `custom_image` and run `build-custom-image.sh`. In the process, SGX MREnclave will be made and signed without saving the sensitive encalve key inside the final image, which is safer.
+Then, use the `enclave-key.pem` and the bigdl base image to build your own custom image. In the process, SGX MREnclave will be made and signed without saving the sensitive encalve key inside the final image, which is safer.
 
 ```bash
 # under bigdl-gramine dir
