@@ -1,13 +1,3 @@
-if (( $# < 4)); then
-    echo "You need to specify four build args when building the image:"
-    echo "model: pytorch|tensorflow|prophet|arima|ml"
-    echo "auto_tuning: y|n"
-    echo "hardware: single|cluster"
-    echo "extra_dep: y|n"
-    echo "Visit https://github.com/intel-analytics/BigDL/blob/main/docker/chronos-nightly/README.md for more information."
-    exit -1
-fi
-
 conda create -y -n chronos python=3.7 setuptools=58.0.4
 source activate chronos
 

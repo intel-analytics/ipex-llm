@@ -20,15 +20,15 @@ WORKDIR /opt/work
 ARG DEBIAN_FRONTEND=noninteractive
 ENV TZ=Asia/Shanghai
 
-# model: select from pytorch, tensorflow, prophet, arima, ml
-ARG model
-# auto_tuning: y (for yes) or n (for no)
-ARG auto_tuning
-# hardware: single or cluster
-ARG hardware
+# model: select from pytorch (default), tensorflow, prophet, arima, ml
+ARG model=pytorch
+# auto_tuning: y (for yes) or n (default, for no)
+ARG auto_tuning=n
+# hardware: single (default) or cluster
+ARG hardware=single
 # extra_dep: install extra dependencies(e.g. onnxruntime, jupyter, ...)
-#            y (for yes) or n (for no)
-ARG extra_dep 
+#            y (for yes) or n (default, for no)
+ARG extra_dep=n
 
 ADD ./docker/chronos-nightly/install-python-env.sh /opt
 ADD ./python/chronos/colab-notebook /opt/work/colab-notebook
@@ -54,4 +54,3 @@ RUN apt-get update --fix-missing && \
 RUN echo "source activate chronos" > ~/.bashrc
 RUN echo "export JAVA_HOME=/usr/lib/jvm/java-8-openjdk-amd64/" >> ~/.bashrc
 ENV PATH /usr/local/envs/chronos/bin:$PATH
-
