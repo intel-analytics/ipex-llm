@@ -44,6 +44,7 @@ jobs:
         docker login -u ${DOCKERHUB_USERNAME} -p ${DOCKERHUB_PASSWORD}
     - name: bigdl-ppml-trusted-big-data-ml-python-gramine
       run: |        
+        export image=intelanalytics/bigdl-ppml-trusted-big-data-ml-python-gramine-reference
         sudo docker push ${image}:${TAG}
         sudo docker tag ${image}:${TAG} 10.239.45.10/arda/${image}:${TAG}
         sudo docker push 10.239.45.10/arda/${image}:${TAG}
