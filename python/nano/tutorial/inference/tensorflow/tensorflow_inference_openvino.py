@@ -72,6 +72,7 @@ if __name__ == '__main__':
     model = create_model(num_classes, img_size)
 
     # trace the tensorflow.keras model to an openvino model
+    # there is no need to set an input_sample for openvino accelerator
     openvino_model = model.trace(accelerator="openvino")
 
     # use the traced model same as the origial model
