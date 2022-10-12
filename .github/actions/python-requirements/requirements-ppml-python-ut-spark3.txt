@@ -9,3 +9,4 @@ torch==1.7.1
 tensorflow==2.6.2
 cryptography==2.8
 click==7.1.1
+protobuf==3.19.4
