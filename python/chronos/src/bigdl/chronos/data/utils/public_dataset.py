@@ -255,12 +255,14 @@ class PublicDataset:
                    dt_col,
                    target_col,
                    extra_feature=None,
-                   id_col=None):
+                   id_col=None,
+                   repair=True):
         """
         param dt_col: same as tsdata.from_pandas.
         param target_col: same as tsdata.from_pandas.
         param extra_feature: same as tsdata.from_pandas.
         param id_col: same as tsdata.from_pandas.
+        param repair: same as tsdata.from_pandas.
         return tsdata.
         """
         if self.with_split:
@@ -271,13 +273,15 @@ class PublicDataset:
                                          id_col=id_col,
                                          with_split=self.with_split,
                                          val_ratio=self.val_ratio,
-                                         test_ratio=self.test_ratio)
+                                         test_ratio=self.test_ratio,
+                                         repair=repair)
         else:
             return TSDataset.from_pandas(self.df,
                                          dt_col=dt_col,
                                          target_col=target_col,
                                          extra_feature_col=extra_feature,
-                                         id_col=id_col)
+                                         id_col=id_col,
+                                         repair=repair)
 
 
 def download(url, path, chunk_size):

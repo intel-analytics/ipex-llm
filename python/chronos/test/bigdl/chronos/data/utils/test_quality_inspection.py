@@ -52,7 +52,7 @@ def get_non_dt_df():
     return df
 
 
-class TestImputeTimeSeries(TestCase):
+class TestCheckAndRepairTimeSeries(TestCase):
     def setup_method(self, method):
         pass
 
@@ -62,17 +62,32 @@ class TestImputeTimeSeries(TestCase):
     def test_normal_dataframe(self):
         pass
 
-    def test_missing_check(self):
+    def test_missing_check_and_repair(self):
         df = get_missing_df()
-        flag = quality_check_timeseries_dataframe(df, "datetime")
+        flag, _ = quality_check_timeseries_dataframe(df, "datetime", repair=False)
         assert flag is False
+        flag, _ = quality_check_timeseries_dataframe(df, "datetime", repair=True)
+        assert flag is True
+        # make sure modifiation has been made to df
+        flag, _ = quality_check_timeseries_dataframe(df, "datetime", repair=False)
+        assert flag is True
 
-    def test_time_interval_check(self):
+    def test_time_interval_check_and_repair(self):
         df = get_multi_interval_df()
-        flag = quality_check_timeseries_dataframe(df, "datetime")
+        flag, _ = quality_check_timeseries_dataframe(df, "datetime", repair=False)
         assert flag is False
+        flag, df = quality_check_timeseries_dataframe(df, "datetime", repair=True)
+        assert flag is True
+        # make sure modifiation has been made to df
+        flag, _ = quality_check_timeseries_dataframe(df, "datetime", repair=False)
+        assert flag is True
 
-    def test_non_dt_type_check(self):
+    def test_non_dt_type_check_and_repair(self):
         df = get_non_dt_df()
-        flag = quality_check_timeseries_dataframe(df, "datetime")
+        flag, _ = quality_check_timeseries_dataframe(df, "datetime", repair=False)
         assert flag is False
+        flag, df = quality_check_timeseries_dataframe(df, "datetime", repair=True)
+        assert flag is True
+        # make sure modifiation has been made to df
+        flag, _ = quality_check_timeseries_dataframe(df, "datetime", repair=False)
+        assert flag is True
