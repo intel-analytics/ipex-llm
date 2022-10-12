@@ -26,5 +26,5 @@ if os.getenv("LD_PRELOAD", "null") != "null":
 try:
     from .tspipeline import TSPipeline
     from .autotsestimator import AutoTSEstimator
-except:
+except ImportError:
     pass
