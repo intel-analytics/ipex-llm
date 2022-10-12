@@ -76,7 +76,7 @@
                     <artifactId>spark-mllib_${scala.major.version}</artifactId>
                 </exclusion>
             </exclusions>
-        </dependency>
+      </dependency>
       <dependency>
         <groupId>com.intel.analytics.bigdl</groupId>
         <artifactId>bigdl-serving-spark_${spark.version}</artifactId>
@@ -97,6 +97,58 @@
           <artifactId>scala-compiler</artifactId>
           <version>${scala.version}</version>
           <scope>${spark-scope}</scope>
+      </dependency>
+      <dependency>
+          <groupId>org.apache.spark</groupId>
+          <artifactId>spark-core_${scala.major.version}</artifactId>
+          <version>${spark.version}</version>
+          <scope>${spark-scope}</scope>
+          <exclusions>
+              <exclusion>
+                  <groupId>log4j</groupId>
+                  <artifactId>log4j</artifactId>
+              </exclusion>
+              <exclusion>
+                  <groupId>org.slf4j</groupId>
+                  <artifactId>slf4j-log4j12</artifactId>
+              </exclusion>
+              <exclusion>
+                  <groupId>com.fasterxml.jackson.core</groupId>
+                  <artifactId>jackson-databind</artifactId>
+              </exclusion>
+              <exclusion>
+                  <groupId>org.apache.zookeeper</groupId>
+                  <artifactId>zookeeper</artifactId>
+              </exclusion>
+              <exclusion>
+                  <groupId>org.glassfish.jersey.media</groupId>
+                  <artifactId>jersey-media-jaxb</artifactId>
+              </exclusion>
+              <exclusion>
+                  <groupId>org.codehaus.jackson</groupId>
+                  <artifactId>jackson-mapper-asl</artifactId>
+              </exclusion>
+              <exclusion>
+                  <groupId>org.apache.commons</groupId>
+                  <artifactId>commons-compress</artifactId>
+              </exclusion>
+          </exclusions>
+      </dependency>
+      <dependency>
+          <groupId>org.apache.spark</groupId>
+          <artifactId>spark-mllib_${scala.major.version}</artifactId>
+          <version>${spark.version}</version>
+          <scope>${spark-scope}</scope>
+          <exclusions>
+              <exclusion>
+                  <groupId>org.glassfish.jersey.media</groupId>
+                  <artifactId>jersey-media-jaxb</artifactId>
+              </exclusion>
+              <exclusion>
+                  <groupId>org.codehaus.jackson</groupId>
+                  <artifactId>jackson-mapper-asl</artifactId>
+              </exclusion>
+          </exclusions>
       </dependency>
     </dependencies>
 
@@ -137,7 +189,7 @@
                         <id>with-all-in-one</id>
                         <configuration>
                             <descriptors>
-                                <descriptor>${project.basedir}/src/assembly/all-in-one.xml</descriptor>
+				    <descriptor>${project.basedir}/src/main/assembly/all-in-one.xml</descriptor>
                             </descriptors>
                         </configuration>
                         <phase>package</phase>
