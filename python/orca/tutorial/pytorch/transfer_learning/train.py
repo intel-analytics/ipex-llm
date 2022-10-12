@@ -26,12 +26,12 @@ from torchvision import datasets, transforms
 import matplotlib.pyplot as plt
 import os
 
-plt.ion()   # interactive mode
+plt.ion()  # interactive mode
 
 # Step 1: Init Orca Context
 
 from bigdl.orca import init_orca_context, stop_orca_context
-init_orca_context(cores=1, memory="8g") # 1 cpu core
+init_orca_context()
 
 # Step 2: Define Train Dataset
 
@@ -57,16 +57,26 @@ image_datasets = {x: datasets.ImageFolder(os.path.join(data_dir, x),
                                           data_transforms[x])
                   for x in ['train', 'val']}
 dataloaders = {x: torch.utils.data.DataLoader(image_datasets[x], batch_size=4,
-                                             shuffle=True, num_workers=1)
-              for x in ['train', 'val']}
+                                              shuffle=True, num_workers=1)
+               for x in ['train', 'val']}
 dataset_sizes = {x: len(image_datasets[x]) for x in ['train', 'val']}
 class_names = image_datasets['train'].classes
-
 device = torch.device("cpu")
 
-# Visualize a few training images so as to understand the data augmentations.
+
+def train_loader_func(config, batch_size):
+    return dataloaders['train']
+
+
+def test_loader_func(config, batch_size):
+    return dataloaders['val']
+
+
 def imshow(inp, title=None):
-    """Imshow for Tensor."""
+    """
+    Visualize a few training images 
+    so as to understand the data augmentations.
+    """
     inp = inp.numpy().transpose((1, 2, 0))
     mean = np.array([0.485, 0.456, 0.406])
     std = np.array([0.229, 0.224, 0.225])
@@ -77,17 +87,13 @@ def imshow(inp, title=None):
         plt.title(title)
     plt.pause(0.001)  # pause a bit so that plots are updated
 
-# Get a batch of training data
-inputs, classes = next(iter(dataloaders['train']))
-
-# Make a grid from batch
-out = torchvision.utils.make_grid(inputs)
-
+inputs, classes = next(iter(dataloaders['train']))  # Get a batch of training data
+out = torchvision.utils.make_grid(inputs)  # Make a grid from batch
 imshow(out, title=[class_names[x] for x in classes])
 
 # Step 3: Finetuning the Convnet
 
-# Instead of random initialization, we initialize the network with a pretrained network, 
+# Instead of random initialization, we initialize the network with a pretrained network,
 # like the one that is trained on imagenet 1000 dataset. Rest of the training looks as usual.
 
 # Step 3.1: Define the Model
@@ -100,14 +106,14 @@ from bigdl.orca.learn.pytorch import Estimator
 from bigdl.orca.learn.metrics import Accuracy
 
 # Create the estimator
-est = Estimator.from_torch(model=ConvNetModel.model_creator, optimizer=ConvNetModel.optimizer_creator, loss=nn.CrossEntropyLoss(), metrics=[Accuracy()], scheduler_creator=ConvNetModel.scheduler_creator, scheduler_step_freq="epoch", config={'device': device}, use_tqdm=True, backend="ray")
-
-# Construct the train and test dataloader
-def train_loader_func(config, batch_size):
-    return dataloaders['train']
-
-def test_loader_func(config, batch_size):
-    return dataloaders['val']
+est = Estimator.from_torch(model=ConvNetModel.model_creator,
+                           optimizer=ConvNetModel.optimizer_creator,
+                           loss=nn.CrossEntropyLoss(),
+                           metrics=[Accuracy()],
+                           scheduler_creator=ConvNetModel.scheduler_creator,
+                           scheduler_step_freq="epoch",
+                           config={'device': device},
+                           use_tqdm=True, backend="ray")
 
 # Fit the estimator
 est.fit(data=train_loader_func, epochs=5, validation_data=test_loader_func)
@@ -122,8 +128,11 @@ result = est.evaluate(data=test_loader_func)
 for r in result:
     print(r, ":", result[r])
 
-# Visualize the model predictions
+
 def visualize_model(model, num_images=6):
+    """
+    Visualize the model predictions
+    """
     was_training = model.training
     model.eval()
     images_so_far = 0
@@ -157,7 +166,7 @@ est.shutdown()
 # Step 4: ConvNet as fixed feature extractor
 
 # Here, we will freeze the weights for all of the network except that of
-# the final fully connected layer. This last fully connected layer is 
+# the final fully connected layer. This last fully connected layer is
 # replaced with a new one with random weights and only this layer is trained.
 
 # Step 4.1: Define the Model
@@ -166,7 +175,12 @@ from model import FixedConvNetModel
 
 # Step 4.2: Finetune with Orca Estimator
 
-est_fixed = Estimator.from_torch(model=FixedConvNetModel.model_creator, optimizer=FixedConvNetModel.optimizer_creator, loss=nn.CrossEntropyLoss(), metrics=[Accuracy()], scheduler_creator=FixedConvNetModel.scheduler_creator, scheduler_step_freq="epoch", config={'device': device}, use_tqdm=True, backend="ray")
+est_fixed = Estimator.from_torch(model=FixedConvNetModel.model_creator,
+                                 optimizer=FixedConvNetModel.optimizer_creator,
+                                 loss=nn.CrossEntropyLoss(), metrics=[Accuracy()],
+                                 scheduler_creator=FixedConvNetModel.scheduler_creator,
+                                 scheduler_step_freq="epoch", config={'device': device},
+                                 use_tqdm=True, backend="ray")
 
 est_fixed.fit(data=train_loader_func, epochs=5, validation_data=test_loader_func)
 
