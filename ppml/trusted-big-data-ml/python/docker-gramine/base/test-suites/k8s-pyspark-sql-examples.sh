@@ -1,12 +1,13 @@
 #!/bin/bash
 status_2_k8s_pyspark_sql_basic=1
+SPARK_LOCAL_IP=$LOCAL_IP
 
 if [ $status_2_k8s_pyspark_sql_basic -ne 0 ]; then
 cd /ppml/trusted-big-data-ml
-export spark_commnd="export TF_MKL_ALLOC_MAX_BYTES=10737418240 && \
-  export SPARK_LOCAL_IP=$SPARK_LOCAL_IP && \
-  /opt/jdk8/bin/java \
-    -cp '/ppml/trusted-big-data-ml/work/spark-3.1.2/conf/:/ppml/trusted-big-data-ml/work/spark-3.1.2/jars/*' \
+export TF_MKL_ALLOC_MAX_BYTES=10737418240
+export SPARK_LOCAL_IP=$SPARK_LOCAL_IP
+export sgx_command="/opt/jdk8/bin/java \
+    -cp '/ppml/trusted-big-data-ml/work/spark-3.1.2/conf/:/ppml/trusted-big-data-ml/work/spark-3.1.2/jars/*:/ppml/trusted-big-data-ml/work/spark-3.1.2/examples/jars/*' \
     -Xmx10g \
     org.apache.spark.deploy.SparkSubmit \
     --master $RUNTIME_SPARK_MASTER \

@@ -11,9 +11,9 @@ for suite in "${pysparkSqlSuites[@]}"
 do
     while true
     do
-        export spark_commnd="/opt/jdk8/bin/java -cp \
-                                        '/ppml/trusted-big-data-ml/work/spark-3.1.2/conf/:/ppml/trusted-big-data-ml/work/spark-3.1.2/jars/*' \
-                                        -Xmx1g org.apache.spark.deploy.SparkSubmit --master 'local[4]' --conf spark.network.timeout=10000000 \
+        export sgx_command="/opt/jdk8/bin/java -cp \
+                                        '/ppml/trusted-big-data-ml/work/spark-3.1.2/conf/:/ppml/trusted-big-data-ml/work/spark-3.1.2/jars/*:/ppml/trusted-big-data-ml/work/spark-3.1.2/examples/jars/*' \
+                                        -Xmx1g org.apache.spark.deploy.SparkSubmit --master local[4] --conf spark.network.timeout=10000000 \
                                         --conf spark.executor.heartbeatInterval=10000000 --conf spark.python.use.daemon=false \
                                         --conf spark.python.worker.reuse=false \
                                         /ppml/trusted-big-data-ml/work/spark-3.1.2/python/pyspark/sql/tests/$suite"

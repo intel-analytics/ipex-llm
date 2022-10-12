@@ -48,13 +48,14 @@ def mock_process(data_train, target, client_id, upload_server_model):
     else:
         df_x = df_train
         df_y = None
+    df_x = df_x.drop('ID', 1)
     x = df_x.to_numpy(dtype="float32")
     y = np.expand_dims(df_y.to_numpy(dtype="float32"), axis=1) if df_y is not None else None
 
-    model = LogisticRegressionNetwork1()
+    model = build_client_model(4)
     set_one_like_parameter(model)
     loss_fn = tf.keras.losses.BinaryCrossentropy()
-    server_model = LogisticRegressionNetwork2() if upload_server_model else None
+    server_model = build_server_model() if upload_server_model else None
     logging.info("Creating FL Tensorflow Estimator")
     ppl = Estimator.from_keras(client_model=model,
                                loss_fn=loss_fn,
@@ -89,10 +90,10 @@ class TestLogisticRegression(FLTest):
         df_train = pd.read_csv(
             os.path.join(resource_path, 'pima-indians-diabetes.csv'))
 
-        df_x1 = df_train[['Pregnancies', 'Glucose', 'BloodPressure', 'SkinThickness', 'Outcome']]
+        df_x1 = df_train[['Pregnancies', 'Glucose', 'BloodPressure', 'SkinThickness']]
         df_x2 = df_train[['Insulin', 'BMI', 'DiabetesPedigreeFunction', 'Age']]
         df_y = df_train['Outcome']
-        model = LogisticRegressionNetwork()
+        model = build_whole_model(feature_num1=4, feature_num2=4)
         set_one_like_parameter(model)
         optimizer = tf.keras.optimizers.SGD(learning_rate=1e-3)
         loss_fn = tf.keras.losses.BinaryCrossentropy()
@@ -110,29 +111,50 @@ class TestLogisticRegression(FLTest):
         while i + batch_size < len(x1):
             X1, X2, Y = x1[i:i + batch_size], x2[i:i + batch_size], y[i:i + batch_size]
             with tf.GradientTape() as tape:
-                pred = model(X1, X2)
+                pred = model([X1, X2])
                 loss = loss_fn(pred, Y)
             grads = tape.gradient(loss, model.trainable_variables)
             optimizer.apply_gradients(zip(grads, model.trainable_variables))
             i += batch_size
             if i % 100 == 0:
-                #                 loss, current = loss.item(), i
-                #                 print(f"loss: {loss:>7f}  [{current:>3d}/{size:>3d}]")
-                print("------loss is missing:^_^----" + str(i) + "----------------")
+                loss, current = loss, i
+                print(f"loss: {loss:>7f}  [{current:>3d}/{size:>3d}]")                
                 tensorflow_loss_list.append(np.array(loss))
 
-        # TODO: fix it
-        # mock_party2 = Process(target=mock_process,
-        #     args=('diabetes-vfl-2.csv', self.target, 2, False))
-        # mock_party2.start()
-        # ppl = mock_process(data_train='diabetes-vfl-1.csv',
-        #                    target=self.target,
-        #                    client_id=1,
-        #                    upload_server_model=True)
-        # mock_party2.join()
-        # assert np.allclose(tensorflow_loss_list, ppl.loss_history), \
-        #     "Validation failed, correctness of PPML and native Tensorflow not the same"
 
+        mock_party2 = Process(target=mock_process,
+            args=('diabetes-vfl-2.csv', self.target, 2, False))
+        mock_party2.start()
+        ppl = mock_process(data_train='diabetes-vfl-1.csv',
+                           target=self.target,
+                           client_id=1,
+                           upload_server_model=True)
+        mock_party2.join()
+        assert np.allclose(tensorflow_loss_list, ppl.loss_history, 1e-1, 1e-1), \
+            "Validation failed, correctness of PPML and native Tensorflow not the same"
+
+def build_client_model(feature_num):
+    inputs = Input(shape=(feature_num))
+    outputs = Dense(1)(inputs)
+    return Model(inputs=inputs, outputs=outputs, name="vfl_client_model")
+
+def build_server_model():
+    input1 = Input(shape=(1))
+    input2 = Input(shape=(1))
+    x = tf.stack([input1, input2])
+    x = tf.reduce_sum(x, 0)  # above two act as interactive layer, CAddTable
+    outputs = tf.sigmoid(x)
+    return Model(inputs=[input1, input2], outputs=outputs, name="vfl_server_model")
+
+def build_whole_model(feature_num1, feature_num2):
+    input1 = Input(shape=(feature_num1))
+    input2 = Input(shape=(feature_num2))
+    dense1 = Dense(1)(input1)
+    dense2 = Dense(1)(input2)
+    x = tf.stack([dense1, dense2])
+    x = tf.reduce_sum(x, 0)  # above two act as interactive layer, CAddTable
+    outputs = tf.sigmoid(x)
+    return Model(inputs=[input1, input2], outputs=outputs, name="tf_model")
 
 class LogisticRegressionNetwork1(Model):
     def __init__(self) -> None:

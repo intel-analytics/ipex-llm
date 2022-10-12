@@ -229,7 +229,7 @@ curl -v -k -G "https://<kms_ip>:9000/ehsm?Action=Enroll"
 ## 4. Test BigDL-PCCS-eHSM-KMS with SimpleQuerySparkExample
 
 Test with following scala spark example:
-### [SimpleQuerySparkExample](https://github.com/intel-analytics/BigDL/blob/main/scala/ppml/src/main/scala/com/intel/analytics/bigdl/ppml/examples/SimpleQuerySparkExample.scala)
+### [SimpleQuerySparkExample](https://github.com/intel-analytics/BigDL/tree/main/ppml#step-0-preparation-your-environment)
 
 
 ## 5. Delete Service from Kubernetes

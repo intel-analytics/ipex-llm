@@ -36,6 +36,7 @@ sealed trait EngineType
 
 case object MklBlas extends EngineType
 case object MklDnn extends EngineType
+case object NoneMkl extends EngineType
 
 /**
  * define optimizer version trait
@@ -223,6 +224,7 @@ object Engine {
     System.getProperty("bigdl.engineType", "mklblas").toLowerCase(Locale.ROOT) match {
       case "mklblas" => MklBlas
       case "mkldnn" => MklDnn
+      case "nonemkl" => NoneMkl
       case engineType =>
         Log4Error.invalidOperationError(false, s"Unknown engine type $engineType")
         MklDnn
@@ -318,7 +320,10 @@ object Engine {
   private[bigdl] def setCoreNumber(n: Int): Unit = {
     Log4Error.invalidInputError(n > 0, "Engine.init: core number is smaller than zero")
     physicalCoreNumber = n
-    initThreadPool(n)
+    // won't init mkl if EngineType is not mkl.
+    if (getEngineType() != NoneMkl) {
+      initThreadPool(n)
+    }
   }
 
   /**

@@ -1,6 +1,6 @@
 #!/bin/bash
 cd /ppml/trusted-big-data-ml
-export spark_commnd="/opt/jdk8/bin/java \
+export sgx_command="/opt/jdk8/bin/java \
     -cp '/ppml/trusted-big-data-ml/work/spark-3.1.2/conf/:/ppml/trusted-big-data-ml/work/spark-3.1.2/jars/*' \
     -Xmx1g org.apache.spark.deploy.SparkSubmit \
     --master 'local[4]' \

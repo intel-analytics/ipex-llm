@@ -3,12 +3,12 @@ cd /ppml/trusted-big-data-ml
 status_1_scala_spark_pi=1
 
 if [ $status_1_scala_spark_pi -ne 0 ]; then
-export spark_commnd="/opt/jdk8/bin/java \
-  -cp '/ppml/trusted-big-data-ml/work/spark-3.1.2/conf/:/ppml/trusted-big-data-ml/work/spark-3.1.2/jars/*' \
+export sgx_command="/opt/jdk8/bin/java \
+  -cp '/ppml/trusted-big-data-ml/work/spark-3.1.2/conf/:/ppml/trusted-big-data-ml/work/spark-3.1.2/jars/*:/ppml/trusted-big-data-ml/work/spark-3.1.2/examples/jars/*' \
   -Xmx10g \
   -XX:ActiveProcessorCount=24 \
   org.apache.spark.deploy.SparkSubmit \
-  --master 'local[4]' \
+  --master local[4] \
   --class org.apache.spark.examples.SparkPi \
   /ppml/trusted-big-data-ml/work/spark-3.1.2/examples/jars/spark-examples_2.12-3.1.2.jar"
 gramine-sgx bash 2>&1 | tee test-scala-spark-pi-sgx.log

@@ -1,0 +1,28 @@
+name: 'Run PPML Python Py37 Spark3'
+description: 'Run PPML Python Py37 Spark3'
+runs:
+  using: "composite"
+  steps:
+    - name: Run Test
+      shell: bash
+      run: |
+        source activate py37
+        export SPARK_LOCAL_HOSTNAME=localhost
+        export KERAS_BACKEND=tensorflow
+        mkdir -p ~/.keras/datasets
+        cd python/ppml
+        mkdir data && cd data
+        wget $FTP_URI/analytics-zoo-data/mnist.npz -O ~/.keras/datasets/mnist.npz
+        wget $FTP_URI/analytics-zoo-data/FashionMNIST.zip
+        unzip FashionMNIST.zip
+        cd ../../..
+        ls
+
+        bash scala/make-dist.sh -P spark_3.x
+        export http_proxy=
+        export https_proxy=
+        BUILD_ID=dontKillMe nohup bash python/ppml/dev/test/run-pytests
+        source deactivate
+      env:
+        BIGDL_ROOT: ${{ github.workspace }}
+        ANALYTICS_ZOO_ROOT: ${{ github.workspace }}

@@ -1,6 +1,10 @@
 name: 'PPML-spark-Local-Example-Tests-on-Gramine'
 description: 'PPML-spark-Local-Example-Tests-on-Gramine'
 inputs:
+  image:
+    description: 'image'
+    required: true
+    default: '10.239.45.10/arda/intelanalytics/bigdl-ppml-trusted-big-data-ml-python-gramine'
   image-tag:
     description: 'image tag'
     required: true
@@ -13,7 +17,7 @@ runs:
       shell: bash
       env:
         DEFAULT_SGX_MEM_SIZE: 32G
-        DEFAULT_IMAGE: 10.239.45.10/arda/intelanalytics/bigdl-ppml-trusted-big-data-ml-python-gramine:${{ inputs.image-tag }}
+        DEFAULT_IMAGE: ${{ inputs.image }}:${{ inputs.image-tag }}
       run: |
         echo "CONTAINER_NAME=spark-exmaples-test-gramine" >> $GITHUB_ENV
         echo "SGX_MEM_SIZE=${{ env.DEFAULT_SGX_MEM_SIZE }}" >> $GITHUB_ENV

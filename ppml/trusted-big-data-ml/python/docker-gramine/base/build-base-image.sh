@@ -5,8 +5,8 @@ export HTTPS_PROXY_PORT=your_https_proxy_port
 export JDK_URL=http://your-http-url-to-download-jdk
 export SPARK_JAR_REPO_URL=http://your_spark_jar_repo_url
 export LOCAL_IP=your_local_ip
-export BIGDL_IMAGE_NAME=bigdl-ppml-trusted-big-data-ml-python-gramine-base
-export BIGDL_IMAGE_VERSION=2.1.0-SNAPSHOT
+export BASE_IMAGE_NAME=bigdl-ppml-trusted-big-data-ml-python-gramine-base
+export BASE_IMAGE_TAG=2.1.0-SNAPSHOT
 
 Proxy_Modified="sudo docker build \
     --build-arg http_proxy=http://${HTTP_PROXY_HOST}:${HTTP_PROXY_PORT} \
@@ -19,14 +19,14 @@ Proxy_Modified="sudo docker build \
     --build-arg JDK_URL=${JDK_URL} \
     --build-arg SPARK_JAR_REPO_URL=${SPARK_JAR_REPO_URL} \
     --build-arg no_proxy=${LOCAL_IP} \
-    -t ${BIGDL_IMAGE_NAME}:${BIGDL_IMAGE_VERSION} -f ./Dockerfile ."
+    -t ${BASE_IMAGE_NAME}:${BASE_IMAGE_TAG} -f ./Dockerfile ."
 
 No_Proxy_Modified="sudo docker build \
     --build-arg JDK_VERSION=8u192 \
     --build-arg JDK_URL=${JDK_URL} \
     --build-arg SPARK_JAR_REPO_URL=${SPARK_JAR_REPO_URL} \
     --build-arg no_proxy=${LOCAL_IP} \
-    -t ${BIGDL_IMAGE_NAME}:${BIGDL_IMAGE_VERSION} -f ./Dockerfile ."
+    -t ${BASE_IMAGE_NAME}:${BASE_IMAGE_TAG} -f ./Dockerfile ."
 
 if [[ "$JDK_URL" == "http://your-http-url-to-download-jdk" ]] || [[ "$SPARK_JAR_REPO_URL" == "http://your_spark_jar_repo_url" ]]
 then

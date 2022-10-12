@@ -157,9 +157,11 @@ jobs:
           bash python/nano/dev/build_and_install.sh linux default false tensorflow
           pip install neural-compressor==1.11
           pip install tensorflow-datasets
+          pip install onnx onnxruntime tf2onnx
           source bigdl-nano-init
           bash python/nano/tutorial/training/tensorflow/run-nano-tensorflow-test.sh
           bash python/nano/tutorial/inference/tensorflow/run_nano_tf_quantization_inference_tests.sh
+          bash python/nano/tutorial/inference/tensorflow/run_nano_tf_inference_tests_onnx.sh
           source $CONDA/bin/deactivate
           $CONDA/bin/conda remove -n example-tensorflow --all
         env:

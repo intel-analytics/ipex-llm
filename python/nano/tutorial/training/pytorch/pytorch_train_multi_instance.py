@@ -23,7 +23,7 @@ from torchvision.datasets import OxfordIIITPet
 from torchmetrics import Accuracy
 
 from pytorch_lightning import seed_everything
-from bigdl.nano.pytorch.torch_nano import TorchNano
+from bigdl.nano.pytorch import TorchNano
 
 
 class MyPytorchModule(nn.Module):
