@@ -113,7 +113,8 @@ extensions = [
     'sphinx_external_toc',
     'sphinx_design',
     'nbsphinx',
-    'nbsphinx_link'
+    'nbsphinx_link',
+    'sphinx.ext.graphviz' # for embedded graphviz diagram
 ]
 
 # Add any paths that contain templates here, relative to this directory.
@@ -275,3 +276,6 @@ def setup(app):
 
 # disable notebook execution
 nbsphinx_execute = 'never'
+
+# make output of graphviz diagram to svg
+graphviz_output_format = 'svg'
