@@ -122,10 +122,12 @@ spark_submit_command="${JAVA_HOME}/bin/java \
 
 set -x
 
-spark_commnd="${spark_submit_command} ${input_args} ${application_args}"
-echo "[INFO] spark_submit_command: $spark_commnd"
+spark_submit_command="${spark_submit_command} ${input_args} ${application_args}"
+echo "[INFO] spark_submit_command: ${spark_submit_command}"
 if [ "$SGX_ENABLED" == "true" ] && [ "$DEPLOY_MODE" != "cluster" ]; then
+    echo "[INFO] sgx enabled and convert spark submit command to sgx command"
+    sgx_command=${spark_submit_commnd}
     gramine-sgx bash 2>&1 | tee $LOG_FILE
 else
-    $spark_commnd 2>&1 | tee $LOG_FILE
+    $spark_submit_commnd 2>&1 | tee $LOG_FILE
 fi
