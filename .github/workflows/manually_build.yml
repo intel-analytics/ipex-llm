@@ -66,8 +66,8 @@ jobs:
         cd ../bigdl-gramine
         openssl genrsa -3 -out enclave-key.pem 3072
         sudo docker build \
-         --build-arg BIGDL_IMAGE_NAME=${base_image} \
-         --build-arg BIGDL_IMAGE_VERSION=${TAG} \
+         --build-arg BASE_IMAGE_NAME=${base_image} \
+         --build-arg BASE_IMAGE_TAG=${TAG} \
          --build-arg SGX_MEM_SIZE=32G \
          --build-arg SGX_LOG_LEVEL=error \
          -t ${image}:${TAG} -f ./Dockerfile .
