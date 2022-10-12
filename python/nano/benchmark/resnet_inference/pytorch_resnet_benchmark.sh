@@ -22,6 +22,7 @@ bash $ANALYTICS_ZOO_ROOT/python/nano/dev/build_and_install.sh linux default fals
 pip install onnxruntime
 pip install onnx
 pip install onnxruntime_extensions
+pip install neural-compressor
 pip install intel-extension-for-pytorch==1.12
 pip install openvino-dev
 
