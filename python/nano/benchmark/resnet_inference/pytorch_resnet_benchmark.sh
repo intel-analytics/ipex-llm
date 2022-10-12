@@ -19,6 +19,12 @@ set -e
 
 bash $ANALYTICS_ZOO_ROOT/python/nano/dev/build_and_install.sh linux default false pytorch
 
+pip install onnxruntime
+pip install onnx
+pip install onnxruntime_extensions
+pip install intel-extension-for-pytorch==1.12
+pip install openvino-dev
+
 cd $ANALYTICS_ZOO_ROOT/python/nano/benchmark/resnet_inference/
 
 echo "Nano_Perf: Running PyTorch Inference Baseline"
