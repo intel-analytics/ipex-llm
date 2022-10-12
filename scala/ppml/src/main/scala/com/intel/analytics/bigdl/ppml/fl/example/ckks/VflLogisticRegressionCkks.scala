@@ -75,9 +75,9 @@ object VflLogisticRegressionCkks {
       val (trainDataset, validationDataset) = pre.loadCensusData()
 
       val numFeature = if (clientId == 1) {
-        3049 - 6 - 1000 - 11 - 9 - 7
+        3049 - 6 - 9 - 7
       } else {
-        6 + 1000 + 11 + 9 + 7
+        6 + 9 + 7
       }
 
       val linear = if (clientId == 1) {

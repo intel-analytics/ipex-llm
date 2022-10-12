@@ -106,8 +106,8 @@ class DataPreprocessing(spark: SparkSession,
     println(trainDf.show(10))
     val localColumnInfo = if (clientId == 1) {
       ColumnFeatureInfo(
-        wideBaseCols = Array("edu"),
-        wideBaseDims = Array(16),
+        wideBaseCols = Array("edu", "occ", "age_bucket"),
+        wideBaseDims = Array(16, 1000, 11),
         wideCrossCols = Array("edu_occ", "age_edu_occ"),
         wideCrossDims = Array(1000, 1000),
         indicatorCols = Array("work", "edu", "mari"),
@@ -118,8 +118,8 @@ class DataPreprocessing(spark: SparkSession,
         continuousCols = Array("age", "education_num"))
     } else {
       ColumnFeatureInfo(
-        wideBaseCols = Array("rela", "occ", "age_bucket", "work", "mari"),
-        wideBaseDims = Array(6, 1000, 11, 9, 7),
+        wideBaseCols = Array("rela", "work", "mari"),
+        wideBaseDims = Array(6, 9, 7),
         indicatorCols = Array("rela"),
         indicatorDims = Array(6),
         // TODO: the error may well be the missed field here
