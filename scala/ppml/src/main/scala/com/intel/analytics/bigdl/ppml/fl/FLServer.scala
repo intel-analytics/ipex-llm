@@ -86,7 +86,9 @@ class FLServer private[ppml](val _args: Array[String] = null) extends GrpcServer
     if (nnService == null) {
       nnService = new NNServiceImpl(clientNum)
     }
-    nnService.initCkksAggregator(ckksSecretPath)
+    if (ckksSecretPath.nonEmpty) {
+      nnService.initCkksAggregator(ckksSecretPath)
+    }
     serverServices.add(nnService)
     serverServices.add(new FGBoostServiceImpl(clientNum, fgBoostConfig))
   }
