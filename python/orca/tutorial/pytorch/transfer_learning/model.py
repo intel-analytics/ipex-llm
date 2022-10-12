@@ -24,6 +24,7 @@ from torch.optim import lr_scheduler
 import torchvision
 from torchvision import models
 
+
 class ConvNetModel:
     def __init__(self):
         return
@@ -48,6 +49,7 @@ class ConvNetModel:
     @staticmethod
     def scheduler_creator(optimizer, config):
         return lr_scheduler.StepLR(optimizer, step_size=7, gamma=0.1)
+
 
 class FixedConvNetModel:
     def __init__(self):
