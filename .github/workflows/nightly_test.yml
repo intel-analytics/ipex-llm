@@ -29,6 +29,7 @@ on:
         - Dllib-Scala-UT
         - Friesian-Scala-UT
         - PPML-Scala-UT
+        - PPML-Python-UT-Spark3
         - PPML-Spark-PySpark-Local-Sql-UT-On-Gramine
         - PPML-Occlum-ExampleTests
         - PPML-spark-Local-Example-Tests-on-Gramine
@@ -442,6 +443,35 @@ jobs:
         file-name: PPML-Scala-UT.json
         type: job
         job-name: PPML-Scala-UT
+        runner-hosted-on: 'Shanghai'
+
+  PPML-Python-UT-Spark3:
+    if: ${{ github.event.schedule || github.event.inputs.artifact == 'PPML-Python-UT-Spark3' || github.event.inputs.artifact == 'all' }} 
+    runs-on: [ self-hosted, Gondolin, ubuntu-20.04-lts ]
+
+    steps:
+    - uses: actions/checkout@v3
+    - name: Set up JDK8
+      uses: ./.github/actions/jdk-setup-action
+    - name: Set up maven
+      uses: ./.github/actions/maven-setup-action
+    - name: Setup env
+      uses: ./.github/actions/ppml/setup-env/setup-ppml-python-ut-spark3
+    - name: Run Test
+      uses: ./.github/actions/ppml/ppml-python-ut-spark3-action/nightly-test
+    - name: Remove Env
+      if: ${{ always() }}
+      uses: ./.github/actions/remove-env
+    - name: Create Job Badge
+      uses: ./.github/actions/create-job-status-badge
+      if: ${{ always() }}
+      with:
+        secret: ${{ secrets.GIST_SECRET}}
+        gist-id: ${{env.GIST_ID}}
+        is-self-hosted-runner: true
+        file-name: PPML-Python-UT-Spark3.json
+        type: job
+        job-name: PPML-Python-UT-Spark3
         runner-hosted-on: 'Shanghai'
 
   Orca-Ray-Ctx-Example:

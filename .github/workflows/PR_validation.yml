@@ -11,7 +11,9 @@ on:
       - '.github/actions/ppml-scala-ut-action/action.yml'
       - 'python/orca/**'
       - '.github/actions/orca-ray-ctx-example-action/action.yml'
-      - '.github/actions/orca/*'
+      - '.github/actions/orca/**'
+      - 'python/ppml/**'
+      - '.github/actions/ppml/**'
       - '.github/workflows/PR_validation.yml'
       
   pull_request:
@@ -25,7 +27,9 @@ on:
       - '.github/actions/ppml-scala-ut-action/action.yml'
       - 'python/orca/**'
       - '.github/actions/orca-ray-ctx-example-action/action.yml'
-      - '.github/actions/orca/*'
+      - '.github/actions/orca/**'
+      - 'python/ppml/**'
+      - '.github/actions/ppml/**'
       - '.github/workflows/PR_validation.yml'
 
 
@@ -51,20 +55,18 @@ jobs:
             friesian:
               - 'scala/friesian/**'
               - '.github/actions/friesian-scala-ut-action/action.yml'
-              - '.github/workflows/PR_validation.yml'
             dllib:
               - 'scala/dllib/**'
               - '.github/actions/dllib-scala-ut-action/action.yml'
-              - '.github/workflows/PR_validation.yml'
             ppml:
             - 'scala/ppml/**'
             - '.github/actions/ppml-scala-ut-action/action.yml'
-            - '.github/workflows/PR_validation.yml'
+            - 'python/ppml/**'
+            - '.github/actions/ppml/**'
             orca:
               - 'python/orca/**'
               - '.github/actions/orca-ray-ctx-example-action/action.yml'
-              - '.github/actions/orca/*'
-              - '.github/workflows/PR_validation.yml'
+              - '.github/actions/orca/**'
            
   Friesian-Scala-UT:
     needs: changes
@@ -330,3 +332,23 @@ jobs:
     - name: Remove Env
       if: ${{ always() }}
       uses: ./.github/actions/remove-env
+
+  PPML-Python-UT-Spark3:
+    needs: changes
+    if: ${{ needs.changes.outputs.ppml == 'true' }}
+    runs-on: [ self-hosted, Gondolin, ubuntu-20.04-lts ]
+
+    steps:
+    - uses: actions/checkout@v3
+    - name: Set up JDK8
+      uses: ./.github/actions/jdk-setup-action
+    - name: Set up maven
+      uses: ./.github/actions/maven-setup-action
+    - name: Setup env
+      uses: ./.github/actions/ppml/setup-env/setup-ppml-python-ut-spark3
+    - name: Run Test
+      uses: ./.github/actions/ppml/ppml-python-ut-spark3-action/pr-test
+    - name: Remove Env
+      if: ${{ always() }}
+      uses: ./.github/actions/remove-env
+    
