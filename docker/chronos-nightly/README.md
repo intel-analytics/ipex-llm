@@ -11,7 +11,39 @@ Then `cd` to the root directory of `BigDL`, and copy the Dockerfile to it.
 cd BigDL
 cp docker/chronos-nightly/Dockerfile ./Dockerfile
 ```
-Then build your docker image with Dockerfile:
+When building image, you can specify some build args to install chronos with necessary dependencies according to your own needs.
+The build args are similar to the install options in [Chronos documentation](https://bigdl.readthedocs.io/en/latest/doc/Chronos/Overview/chronos.html#install).
+
+```
+model: which model or framework you want. 
+       value: pytorch (default)
+              tensorflow
+              prophet
+              arima
+              ml (for machine learning models).
+
+auto_tuning: whether to enable auto tuning.
+             value: y (for yes)
+                    n (default, for no).
+
+hardware: run chronos on a single machine or a cluster.
+          value: single (default)
+                 cluster
+
+extra_dep: whether to install some extra dependencies like onnx and jupyter.
+           value: y (for yes)
+                  n (default, for no)
+           if specified to y, the following dependencies will be installed:
+           neural_compressor, onnxruntime, onnx, tsfresh, 
+           prometheus_pandas, xgboost, jupyter
+```
+
+If you want to build image with the default options, you can simply use the following command:
+```bash
+sudo docker build -t chronos-nightly:b1 . # You may choose any NAME:TAG you want.
+```
+
+You can also build with other options by specifying the build args:
 ```bash
 sudo docker build \
     --build-arg model=pytorch \
@@ -20,42 +52,13 @@ sudo docker build \
     --build-arg extra_dep=n \
      -t chronos-nightly:b1 . # You may choose any NAME:TAG you want.
 ```
-You may specify some build args to install chronos with necessary dependencies according to your own needs.
-The build args are similar to the install options in [Chronos documentation](https://bigdl.readthedocs.io/en/latest/doc/Chronos/Overview/chronos.html#install).
 
-```
-model: which model or framework you want. 
-       value: pytorch
-              tensorflow
-              prophet
-              arima
-              ml (for machine learning models).
-
-auto_tuning: whether to enable auto tuning.
-             value: y (for yes)
-                    n (for no).
-
-hardware: run chronos on a single machine or a cluster.
-          value: single
-                 cluster
-
-extra_dep: whether to install some extra dependencies like onnx and jupyter.
-           value: y (for yes)
-                  n (for no)
-           if specified to y, the following dependencies will be installed:
-           neural_compressor, onnxruntime, onnx, tsfresh, 
-           prometheus_pandas, xgboost, jupyter
-```
-(Optional) Or build with a proxy:
+(Optional) If you need a proxy, you can add two additional build args to specify it:
 ```bash
 # typically, you need a proxy for building since there will be some downloading.
 sudo docker build \
     --build-arg http_proxy=http://<your_proxy_ip>:<your_proxy_port> \ #optional
     --build-arg https_proxy=http://<your_proxy_ip>:<your_proxy_port> \ #optional
-    --build-arg model=pytorch \
-    --build-arg auto_tuning=y \
-    --build-arg hardware=single \
-    --build-arg extra_dep=n \
     -t chronos-nightly:b1 . # You may choose any NAME:TAG you want.
 ```
 According to your network status, this building will cost **15-30 mins**. 
