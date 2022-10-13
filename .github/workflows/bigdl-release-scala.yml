@@ -50,13 +50,13 @@ jobs:
     #           "timeout": "3600000"
     #         }
     #       }]
-    - name: Maven verify
-      run: |
-        export http_proxy="http://child-prc.intel.com:913/"
-        export https_proxy="http://child-prc.intel.com:913/"
-        cd ./scala
-        mvn clean
-        mvn deploy -Dgpg.passphrase=BigDL2017
+    # - name: Maven verify
+    #   run: |
+    #     export http_proxy="http://child-prc.intel.com:913/"
+    #     export https_proxy="http://child-prc.intel.com:913/"
+    #     cd ./scala
+    #     mvn clean
+    #     mvn deploy -Dgpg.passphrase=BigDL2017
     - name: Maven clean deploy
       run: |
         set -x
