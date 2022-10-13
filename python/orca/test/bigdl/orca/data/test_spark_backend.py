@@ -251,6 +251,12 @@ class TestSparkBackend(TestCase):
         scale = StandardScaler(inputCol="sale_price", outputCol="sale_price_scaled")
         transformed_data_shard = scale.fit_transform(data_shard)
 
+    def test_max_values(self):
+        file_path = os.path.join(self.resource_path, "orca/data/csv/morgage1.csv")
+        data_shard = bigdl.orca.data.pandas.read_csv(file_path)
+        max_value = data_shard.max_values('sale_price')
+        assert max_value == 475000, "max value of sale_price should be 2"
+
 
 if __name__ == "__main__":
     pytest.main([__file__])
