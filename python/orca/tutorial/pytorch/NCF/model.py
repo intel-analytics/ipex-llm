@@ -106,10 +106,7 @@ class NCF(nn.Module):
             self.predict_layer.bias.data.copy_(0.5 * precit_bias)
 
     def forward(self, *args):
-        if(len(args) == 2):  # args=user,item
-            user, item = args[0], args[1]
-        else:  # args=user_item
-            user, item = args[0][:, 0], args[0][:, 1]
+        user, item = args[0], args[1]
 
         if not self.model == 'MLP':
             embed_user_GMF = self.embed_user_GMF(user)
