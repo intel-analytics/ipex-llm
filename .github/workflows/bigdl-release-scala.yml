@@ -50,10 +50,6 @@ jobs:
     #           "timeout": "3600000"
     #         }
     #       }]
-    - name: Maven verify
-      run: |
-        cd ./scala/
-        mvn verify -Dgpg.passphrase=BigDL2017
     - name: Maven clean deploy
       run: |
         set -x
