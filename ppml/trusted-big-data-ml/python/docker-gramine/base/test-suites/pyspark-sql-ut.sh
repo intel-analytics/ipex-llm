@@ -6,7 +6,6 @@ mkdir -p /ppml/trusted-big-data-ml/logs/pyspark/sql
 
 cd /ppml/trusted-big-data-ml
 
-./clean.sh
 for suite in "${pysparkSqlSuites[@]}"
 do
     while true
