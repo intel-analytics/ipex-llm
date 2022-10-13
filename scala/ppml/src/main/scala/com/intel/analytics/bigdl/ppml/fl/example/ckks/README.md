@@ -8,31 +8,35 @@ The original data has 15 columns. In preprocessing, some new feature are created
 * data of client 1: `age`, `education`, `occupation`, cross columns: `edu_occ`, `age_edu_occ`
 * data of client 2: `relationship`, `workclass`, `marital_status`
 
+### Download BigDL assembly
+
+Download BigDL assembly from [BigDL-Release](https://bigdl.readthedocs.io/en/latest/doc/release.html)
+
+### Generate secret
+
+```bash
+java -cp bigdl-ppml-[version]-jar-with-all-dependencies.jar com.intel.analytics.bigdl.ppml.fl.GenerateCkksSecret ckks.crt
+```
+
 ### Start FLServer
-Before starting server, modify the config file, `ppml-conf.yaml`, this application has 2 clients globally, so use following config.
+Before starting server, modify the config file, `ppml-conf.yaml`, this application has 2 clients globally, and set the absolute path to ckks secret. So use following config:
 ```
 worldSize: 2
+ckksSercetPath: /[absolute path]/ckks.crt
 ```
 Then start FLServer at server machine
-```
+```bash
 java -cp bigdl-ppml-[version]-jar-with-all-dependencies.jar com.intel.analytics.bigdl.ppml.fl.FLServer
 ```
 
 ## Start Local Trainers
-Change the config file to following.
+Start the local Logistic Regression trainers at 2 training machines
 ```
-clientTarget: FLServer_URL
-```
-The port of server is provided in `ppml-conf.yaml` when server starts, default value `8980`. e.g. if you run the server and clients on same machine, `FLServer_URL` should be `localhost:8980`
-
-And start the local Logistic Regression trainers at 2 training machines
-```
-java -cp bigdl-ppml-[version]-jar-with-all-dependencies.jar com.intel.analytics.bigdl.ppml.fl.example.logisticregression.VflLogisticRegression 
-    --dataPath dataset/diabetes/diabetes-1.csv 
-    --rowKeyName ID
-    --learningRate 0.005
-    --batchSize 4    
-# change dataPath to diabetes-2.csv at client-2
+java -cp bigdl-ppml-[version]-jar-with-all-dependencies.jar com.intel.analytics.bigdl.ppml.fl.example.VflLogisticRegressionCkks
+    -d [path to adult dataset]
+    -i 1
+    -s [path to ckks.crt]
+# change -i 1 to -i 2 at client-2
 ```
 
 The example will train the data and evaluate the training result.
