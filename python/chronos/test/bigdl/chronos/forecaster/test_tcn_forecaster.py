@@ -131,9 +131,9 @@ class TestChronosModelTCNForecaster(TestCase):
                                    loss="mae",
                                    lr=0.01)
         forecaster.fit(train_data, epochs=2)
-        test_pred = forecaster.predict(test_data[0])
+        test_pred = forecaster.predict(test_data[0], no_acceleration=True)
         assert test_pred.shape == test_data[1].shape
-        test_mse = forecaster.evaluate(test_data)
+        test_mse = forecaster.evaluate(test_data, no_acceleration=True)
         assert test_mse[0].shape == test_data[1].shape[1:]
 
     @op_diff_set_all
@@ -153,11 +153,11 @@ class TestChronosModelTCNForecaster(TestCase):
                             val_data=val_loader,
                             metric="mae",
                             framework=['onnxrt_qlinearops', 'pytorch_fx'])
-        yhat = forecaster.predict(data=test_loader)
-        q_yhat = forecaster.predict(data=test_loader, quantize=True)
+        yhat = forecaster.predict(data=test_loader, no_acceleration=True)
+        q_yhat = forecaster.predict(data=test_loader, quantize=True, no_acceleration=True)
         q_onnx_yhat = forecaster.predict_with_onnx(data=test_loader, quantize=True)
         assert yhat.shape == q_onnx_yhat.shape == q_yhat.shape == (400, 5, 1)
-        forecaster.evaluate(test_loader, batch_size=32)
+        forecaster.evaluate(test_loader, batch_size=32, no_acceleration=True)
         forecaster.evaluate_with_onnx(test_loader)
         forecaster.evaluate_with_onnx(test_loader, batch_size=32, quantize=True)
 
@@ -301,17 +301,17 @@ class TestChronosModelTCNForecaster(TestCase):
         try:
             import onnx
             import onnxruntime
-            pred = forecaster.predict(test_data[0])
+            pred = forecaster.predict(test_data[0], no_acceleration=True)
             pred_onnx = forecaster.predict_with_onnx(test_data[0])
             np.testing.assert_almost_equal(pred, pred_onnx, decimal=5)
-            mse = forecaster.evaluate(test_data, multioutput="raw_values")
+            mse = forecaster.evaluate(test_data, multioutput="raw_values", no_acceleration=True)
             mse_onnx = forecaster.evaluate_with_onnx(test_data,
                                                      multioutput="raw_values")
             np.testing.assert_almost_equal(mse, mse_onnx, decimal=5)
             with pytest.raises(RuntimeError):
                 forecaster.build_onnx(sess_options=1)
             forecaster.build_onnx(thread_num=1)
-            mse = forecaster.evaluate(test_data)
+            mse = forecaster.evaluate(test_data, no_acceleration=True)
             mse_onnx = forecaster.evaluate_with_onnx(test_data)
             np.testing.assert_almost_equal(mse, mse_onnx, decimal=5)
         except ImportError:
@@ -329,7 +329,7 @@ class TestChronosModelTCNForecaster(TestCase):
                                    lr=0.01)
         forecaster.fit(train_data, epochs=2)
         try:
-            pred = forecaster.predict(test_data[0])
+            pred = forecaster.predict(test_data[0], no_acceleration=True)
             pred_openvino = forecaster.predict_with_openvino(test_data[0])
             np.testing.assert_almost_equal(pred, pred_openvino, decimal=5)
         except ImportError:
@@ -337,7 +337,7 @@ class TestChronosModelTCNForecaster(TestCase):
 
         forecaster.quantize(calib_data=train_data,
                             framework="openvino")
-        openvino_yhat = forecaster.predict_with_openvino(test_data[0])
+        openvino_yhat = forecaster.predict_with_openvino(test_data[0], no_acceleration=True)
         q_openvino_yhat = forecaster.predict_with_openvino(test_data[0], quantize=True)
         assert openvino_yhat.shape == q_openvino_yhat.shape == test_data[1].shape
 
@@ -358,7 +358,7 @@ class TestChronosModelTCNForecaster(TestCase):
                                    lr=0.01)
         forecaster.fit(train_loader, epochs=2)
         try:
-            pred = forecaster.predict(test_loader)
+            pred = forecaster.predict(test_loader, no_acceleration=True)
             pred_openvino = forecaster.predict_with_openvino(test_loader)
             np.testing.assert_almost_equal(pred, pred_openvino, decimal=5)
         except ImportError:
@@ -381,7 +381,7 @@ class TestChronosModelTCNForecaster(TestCase):
                                    lr=0.01)
         forecaster.fit(train, epochs=2)
         try:
-            pred = forecaster.predict(test)
+            pred = forecaster.predict(test, no_acceleration=True)
             pred_openvino = forecaster.predict_with_openvino(test)
             np.testing.assert_almost_equal(pred, pred_openvino, decimal=5)
         except ImportError:
@@ -405,8 +405,8 @@ class TestChronosModelTCNForecaster(TestCase):
                                    lr=0.01)
         forecaster.fit(train_data, epochs=2)
         forecaster.quantize(approach="dynamic")
-        pred_q = forecaster.predict(test_data[0], quantize=True)
-        eval_q = forecaster.evaluate(test_data, quantize=True)
+        pred_q = forecaster.predict(test_data[0], quantize=True, no_acceleration=True)
+        eval_q = forecaster.evaluate(test_data, quantize=True, no_acceleration=True)
         # reset model
         forecaster.internal.train()
         forecaster.internal.eval()
@@ -427,25 +427,25 @@ class TestChronosModelTCNForecaster(TestCase):
         forecaster.fit(train_data, epochs=2)
         # no tunning quantization
         forecaster.quantize(train_data)
-        pred_q = forecaster.predict(test_data[0], quantize=True)
-        eval_q = forecaster.evaluate(test_data, quantize=True)
+        pred_q = forecaster.predict(test_data[0], quantize=True, no_acceleration=True)
+        eval_q = forecaster.evaluate(test_data, quantize=True, no_acceleration=True)
         # reset model
         forecaster.internal.train()
         forecaster.internal.eval()
         # quantization with tunning
         forecaster.quantize(train_data, val_data=val_data,
                             metric="rmse", relative_drop=0.1, max_trials=3)
-        pred_q = forecaster.predict(test_data[0], quantize=True)
-        eval_q = forecaster.evaluate(test_data, quantize=True)
+        pred_q = forecaster.predict(test_data[0], quantize=True, no_acceleration=True)
+        eval_q = forecaster.evaluate(test_data, quantize=True, no_acceleration=True)
         with tempfile.TemporaryDirectory() as tmp_dir_name:
             ckpt_name = os.path.join(tmp_dir_name, "ckpt")
             ckpt_name_q = os.path.join(tmp_dir_name, "ckpt.q")
-            test_pred_save = forecaster.predict(test_data[0])
-            test_pred_save_q = forecaster.predict(test_data[0], quantize=True)
+            test_pred_save = forecaster.predict(test_data[0], no_acceleration=True)
+            test_pred_save_q = forecaster.predict(test_data[0], quantize=True, no_acceleration=True)
             forecaster.save(ckpt_name, ckpt_name_q)
             forecaster.load(ckpt_name, ckpt_name_q)
-            test_pred_load = forecaster.predict(test_data[0])
-            test_pred_load_q = forecaster.predict(test_data[0], quantize=True)
+            test_pred_load = forecaster.predict(test_data[0], no_acceleration=True)
+            test_pred_load_q = forecaster.predict(test_data[0], quantize=True, no_acceleration=True)
         np.testing.assert_almost_equal(test_pred_save, test_pred_load)
         np.testing.assert_almost_equal(test_pred_save_q, test_pred_load_q)
 
@@ -501,10 +501,10 @@ class TestChronosModelTCNForecaster(TestCase):
         forecaster.fit(train_data, epochs=2)
         with tempfile.TemporaryDirectory() as tmp_dir_name:
             ckpt_name = os.path.join(tmp_dir_name, "ckpt")
-            test_pred_save = forecaster.predict(test_data[0])
+            test_pred_save = forecaster.predict(test_data[0], no_acceleration=True)
             forecaster.save(ckpt_name)
             forecaster.load(ckpt_name)
-            test_pred_load = forecaster.predict(test_data[0])
+            test_pred_load = forecaster.predict(test_data[0], no_acceleration=True)
         np.testing.assert_almost_equal(test_pred_save, test_pred_load)
 
     def test_tcn_forecaster_runtime_error(self):
@@ -520,9 +520,9 @@ class TestChronosModelTCNForecaster(TestCase):
                 ckpt_name = os.path.join(tmp_dir_name, "ckpt")
                 forecaster.save(ckpt_name)
         with pytest.raises(RuntimeError):
-            forecaster.predict(test_data[0])
+            forecaster.predict(test_data[0], no_acceleration=True)
         with pytest.raises(RuntimeError):
-            forecaster.evaluate(test_data)
+            forecaster.evaluate(test_data, no_acceleration=True)
 
     def test_tcn_forecaster_shape_error(self):
         train_data, val_data, test_data = create_data()
@@ -560,8 +560,8 @@ class TestChronosModelTCNForecaster(TestCase):
                                        lr=0.01,
                                        distributed=distributed)
             forecaster.fit(train_data, epochs=2)
-            distributed_pred = forecaster.predict(test_data)
-            distributed_eval = forecaster.evaluate(val_data)
+            distributed_pred = forecaster.predict(test_data, no_acceleration=True)
+            distributed_eval = forecaster.evaluate(val_data, no_acceleration=True)
         stop_orca_context()
 
     def test_tcn_forecaster_xshard_input_of_validation_data(self):
@@ -607,15 +607,15 @@ class TestChronosModelTCNForecaster(TestCase):
                                    distributed=True)
 
         forecaster.fit(train_data, epochs=2)
-        distributed_pred = forecaster.predict(test_data[0])
-        distributed_eval = forecaster.evaluate(val_data)
+        distributed_pred = forecaster.predict(test_data[0], no_acceleration=True)
+        distributed_eval = forecaster.evaluate(val_data, no_acceleration=True)
 
         model = forecaster.get_model()
         assert isinstance(model, torch.nn.Module)
 
         forecaster.to_local()
-        local_pred = forecaster.predict(test_data[0])
-        local_eval = forecaster.evaluate(val_data)
+        local_pred = forecaster.predict(test_data[0], no_acceleration=True)
+        local_eval = forecaster.evaluate(val_data, no_acceleration=True)
 
         np.testing.assert_almost_equal(distributed_pred, local_pred, decimal=5)
 
@@ -635,10 +635,10 @@ class TestChronosModelTCNForecaster(TestCase):
 
         with tempfile.TemporaryDirectory() as tmp_dir_name:
             ckpt_name = os.path.join(tmp_dir_name, "checkpoint.ckpt")
-            test_pred_save = forecaster.predict(test_data[0])
+            test_pred_save = forecaster.predict(test_data[0], no_acceleration=True)
             forecaster.save(ckpt_name)
             forecaster.load(ckpt_name)
-            test_pred_load = forecaster.predict(test_data[0])
+            test_pred_load = forecaster.predict(test_data[0], no_acceleration=True)
         np.testing.assert_almost_equal(test_pred_save, test_pred_load)
 
         stop_orca_context()
@@ -677,10 +677,10 @@ class TestChronosModelTCNForecaster(TestCase):
         forecaster.fit(train_loader, epochs=2)
         with tempfile.TemporaryDirectory() as tmp_dir_name:
             ckpt_name = os.path.join(tmp_dir_name, "ckpt")
-            test_pred_save = forecaster.predict(test_data[0])
+            test_pred_save = forecaster.predict(test_data[0], no_acceleration=True)
             forecaster.save(ckpt_name)
             forecaster.load(ckpt_name)
-            test_pred_load = forecaster.predict(test_data[0])
+            test_pred_load = forecaster.predict(test_data[0], no_acceleration=True)
         np.testing.assert_almost_equal(test_pred_save, test_pred_load)
    
     def test_tcn_forecaster_fit_val(self):
@@ -694,7 +694,7 @@ class TestChronosModelTCNForecaster(TestCase):
                                    loss="mae",
                                    lr=0.01)
         val_loss = forecaster.fit(train_data, val_data, epochs=10)
-        _ = forecaster.predict(test_data[0])
+        _ = forecaster.predict(test_data[0], no_acceleration=True)
 
     def test_tcn_forecaster_fit_loader_val(self):
         train_loader, val_loader, _ = create_data(loader=True)
@@ -759,8 +759,8 @@ class TestChronosModelTCNForecaster(TestCase):
         q_onnx_yhat = tcn.predict_with_onnx(test, quantize=True)
         assert onnx_yhat.shape == q_yhat.shape == yhat.shape == q_onnx_yhat.shape
 
-        res = tcn.evaluate(test_loader)
-        q_res = tcn.evaluate(test_loader, quantize=True)
+        res = tcn.evaluate(test_loader, no_acceleration=True)
+        q_res = tcn.evaluate(test_loader, quantize=True, no_acceleration=True)
         onnx_res = tcn.evaluate_with_onnx(test_loader)
         q_onnx_res = tcn.evaluate_with_onnx(test_loader, quantize=True)
 
@@ -817,10 +817,10 @@ class TestChronosModelTCNForecaster(TestCase):
         forecaster.fit(train_data, epochs=2)
         with tempfile.TemporaryDirectory() as tmp_dir_name:
             ckpt_name = os.path.join(tmp_dir_name, "ckpt")
-            test_pred_save = forecaster.predict(test_data[0])
+            test_pred_save = forecaster.predict(test_data[0], no_acceleration=True)
             forecaster.save(ckpt_name)
             forecaster.load(ckpt_name)
-            test_pred_load = forecaster.predict(test_data[0])
+            test_pred_load = forecaster.predict(test_data[0], no_acceleration=True)
         np.testing.assert_almost_equal(test_pred_save, test_pred_load)
 
     def test_predict_interval_with_numpy(self):
@@ -917,3 +917,39 @@ class TestChronosModelTCNForecaster(TestCase):
                   horizon=tcn.data_config['future_seq_len'])
         _, y_test = test.to_numpy()
         assert yhat.shape == y_test.shape
+
+    @op_onnxrt16
+    def test_forecaster_optimize_loader(self):
+        train_loader, val_loader, test_loader = create_data(loader=True)
+        forecaster = TCNForecaster(past_seq_len=24,
+                                   future_seq_len=5,
+                                   input_feature_num=1,
+                                   output_feature_num=1,
+                                   kernel_size=4,
+                                   num_channels=[16, 16, 16],
+                                   loss="mse",
+                                   metrics=["mse"],
+                                   lr=0.01)
+        forecaster.fit(train_loader, epochs=2)
+        forecaster.optimize(train_data=train_loader,
+                            validation_data=val_loader,
+                            batch_size=32)
+        forecaster.evaluate(val_loader)
+        forecaster.predict(test_loader)
+
+    def test_forecaster_predict_with_optimize(self):
+        train_loader, val_loader, test_loader = create_data(loader=True)
+        forecaster = TCNForecaster(past_seq_len=24,
+                                   future_seq_len=5,
+                                   input_feature_num=1,
+                                   output_feature_num=1,
+                                   kernel_size=4,
+                                   num_channels=[16, 16, 16],
+                                   loss="mse",
+                                   metrics=["mse"],
+                                   lr=0.01)
+        forecaster.fit(train_loader, epochs=2)
+        with pytest.raises(RuntimeError):
+            forecaster.evaluate(val_loader)
+        with pytest.raises(RuntimeError):
+            forecaster.predict(test_loader)
