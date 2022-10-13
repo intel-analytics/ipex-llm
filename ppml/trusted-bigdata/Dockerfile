@@ -1,4 +1,5 @@
-ARG BIGDL_VERSION=2.2.0-SNAPSHOT
+ARG BASE_IMAGE_NAME
+ARG BASE_IMAGE_TAG
 ARG SPARK_VERSION=3.1.2
 ARG TINI_VERSION=v0.18.0
 ARG JDK_VERSION=8u192
@@ -139,14 +140,13 @@ RUN cd /opt && \
 RUN ls -al /opt
 
 # stage.2 gramine
-FROM gramine-base:2.2.0-SNAPSHOT as base
+FROM $BASE_IMAGE_NAME:$BASE_IMAGE_TAG
 
 ARG SPARK_VERSION
 ARG TINI_VERSION
 ARG FLINK_VERSION=1.11.3
 ENV SPARK_VERSION                       ${SPARK_VERSION}
-ENV SPARK_HOME                          /ppml/trusted-big-data-ml/work/spark-${SPARK_VERSION}
-ENV BIGDL_HOME                          /ppml/trusted-big-data-ml/work/bigdl-${BIGDL_VERSION}
+ENV SPARK_HOME                          /ppml/trusted-bigdata/work/spark-${SPARK_VERSION}
 ENV JAVA_HOME                           /opt/jdk8
 ENV PATH                                ${JAVA_HOME}/bin:${PATH}
 ENV LOCAL_IP                            127.0.0.1
@@ -166,7 +166,7 @@ ENV TINI_VERSION                        $TINI_VERSION
 ENV LC_ALL                              C.UTF-8
 ENV LANG                                C.UTF-8
 ENV FLINK_VERSION			            ${FLINK_VERSION}
-ENV FLINK_HOME				            /ppml/trusted-big-data/java/work/flink-${FLINK_VERSION}
+ENV FLINK_HOME				            /ppml/trusted-bigdata/work/flink-${FLINK_VERSION}
 ENV FLINK_JOB_MANAGER_IP		        127.0.0.1
 ENV FLINK_JOB_MANAGER_REST_PORT		    8081
 ENV FLINK_JOB_MANAGER_RPC_PORT		    6123
@@ -176,22 +176,27 @@ ENV FLINK_BLOB_SERVER_PORT              6124
 ENV FLINK_TASK_MANAGER_RPC_PORT		    6125
 ENV FLINK_TASK_MANAGER_TASKSLOTS_NUM	1
 
-RUN mkdir -p /ppml/trusted-big-data-ml/work && \
-    mkdir -p /ppml/trusted-big-data-ml/work/lib && \
-    mkdir -p /ppml/trusted-big-data-ml/work/keys && \
-    mkdir -p /ppml/trusted-big-data-ml/work/password && \
-    mkdir -p /ppml/trusted-big-data-ml/work/data && \
-    mkdir -p /ppml/trusted-big-data-ml/work/models && \
-    mkdir -p /ppml/trusted-big-data-ml/work/apps && \
-    mkdir -p /ppml/trusted-big-data-ml/work/examples/bigdl && \
-    mkdir -p /root/.keras/datasets && \
-    mkdir -p /root/.zinc && \
-    mkdir -p /root/.m2 && \
-    mkdir -p /root/.kube/ && \
-    mkdir -p /ppml/trusted-big-data-ml/fl
+RUN mkdir -p /ppml/trusted-bigdata/work && \
+    mkdir -p /ppml/trusted-bigdata/work/lib && \
+    mkdir -p /ppml/trusted-bigdata/work/keys && \
+    mkdir -p /ppml/trusted-bigdata/work/password && \
+    mkdir -p /ppml/trusted-bigdata/work/data && \
+    mkdir -p /ppml/trusted-bigdata/work/models && \
+    mkdir -p /ppml/trusted-bigdata/work/apps && \
+    mkdir -p /root/.kube/
 
-COPY --from=spark /opt/jdk  /opt/jdk8
-COPY --from=flink /opt/scala-${SCALA_VERSION}.${SCALA_SUB_VERSION_NUM}  /opt/scala-${SCALA_VERSION}.${SCALA_SUB_VERSION_NUM}
-COPY --from=flink /opt/flink-${FLINK_VERSION} /ppml/trusted-realtime-ml/java/work/flink-${FLINK_VERSION}
-COPY --from=spark /opt/spark-${SPARK_VERSION} /ppml/trusted-big-data-ml/work/spark-${SPARK_VERSION}
-COPY --from=spark /opt/spark-${SPARK_VERSION}/examples/src/main/resources /ppml/trusted-big-data-ml/examples/src/main/resources
+COPY --from=bigdata /opt/jdk  /opt/jdk8
+COPY --from=bigdata /opt/scala-${SCALA_VERSION}.${SCALA_SUB_VERSION_NUM}  /opt/scala-${SCALA_VERSION}.${SCALA_SUB_VERSION_NUM}
+COPY --from=bigdata /opt/flink-${FLINK_VERSION} /ppml/trusted-bigdata/work/flink-${FLINK_VERSION}
+COPY --from=bigdata /opt/spark-${SPARK_VERSION} /ppml/trusted-bigdata/work/spark-${SPARK_VERSION}
+
+ADD ./bigdl-ppml-submit.sh /ppml/trusted-bigdata/bigdl-ppml-submit.sh
+ADD ./examples /ppml/trusted-big-data-ml/work/examples
+ADD ./start-scripts /ppml/trusted-big-data-ml/work/start-scripts
+ADD ./test-suites /ppml/trusted-big-data-ml/work/test-suites
+ADD ./spark-executor-template.yaml /ppml/trusted-bigdata/spark-executor-template.yaml
+ADD ./spark-driver-template.yaml /ppml/trusted-bigdata/spark-driver-template.yaml
+ADD ./entrypoint.sh /opt/entrypoint.sh
+
+
+ENTRYPOINT [ "/opt/entrypoint.sh" ]
