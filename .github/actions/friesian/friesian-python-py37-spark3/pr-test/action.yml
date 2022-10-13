@@ -1,5 +1,5 @@
-name: 'Run Friesian Python Ray Py37 Spark3'
-description: 'Run Friesian Python Ray Py37 Spark3'
+name: 'Run Friesian Python Py37 Spark3'
+description: 'Run Friesian Python Py37 Spark3'
 runs:
   using: "composite"
   steps:
@@ -10,9 +10,11 @@ runs:
         ./make-dist.sh -P spark_3.x -Dspark.version=3.1.2
         cd -
         source activate py37
-        export SPARK_LOCAL_HOSTNAME=localhost
+        #export SPARK_LOCAL_HOSTNAME=localhost
         pip install pyspark==3.1.2
+        echo "tests 1"
         chmod a+x python/friesian/dev/test/run-pytests-friesian
+        echo "tests 2"
         python/friesian/dev/test/run-pytests-friesian
         source deactivate
       env:
