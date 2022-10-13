@@ -94,7 +94,7 @@
       </dependency>
       <dependency>
           <groupId>org.scala-lang</groupId>
-          <artifactId>scala-compiler</artifactId>
+          <artifactId>scala-library</artifactId>
           <version>${scala.version}</version>
           <scope>${spark-scope}</scope>
       </dependency>
@@ -189,7 +189,7 @@
                         <id>with-all-in-one</id>
                         <configuration>
                             <descriptors>
-				    <descriptor>${project.basedir}/src/main/assembly/all-in-one.xml</descriptor>
+                                <descriptor>${project.basedir}/src/main/assembly/all-in-one.xml</descriptor>
                             </descriptors>
                         </configuration>
                         <phase>package</phase>
