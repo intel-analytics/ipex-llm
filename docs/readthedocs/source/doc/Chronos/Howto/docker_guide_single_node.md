@@ -77,7 +77,7 @@ A conda environment is created for you automatically. `bigdl-chronos` and the ne
 ```
 
 ## Run unittest examples on Jupyter Notebook for a quick use
-> To use jupyter notebook, you need to specify the build arg `extra_dep` to `y`.
+> Note: To use jupyter notebook, you need to specify the build arg `extra_dep` to `y`.
 
 You can run these on Jupyter Notebook on single node server if you pursue a quick use on Chronos.
 ```bash
