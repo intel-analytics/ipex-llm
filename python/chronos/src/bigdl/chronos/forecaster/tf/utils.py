@@ -53,6 +53,7 @@ def np_to_xshards(data, workers_num):
         warnings.warn("Too many partitions and too few workers will reduce inference performance, "
                       "we recommend setting 'worker_per_node' to a large number and",
                       "not larger than the number of partitions.", category=RuntimeWarning)
+
     def transform_to_dict(data):
         return {"x": data}
     return _shards.transform_shard(transform_to_dict)
