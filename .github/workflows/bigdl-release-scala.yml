@@ -56,7 +56,7 @@ jobs:
         export https_proxy="http://child-prc.intel.com:913/"
         cd ./scala
         mvn clean
-        mvn verify -Dgpg.passphrase=BigDL2017
+        mvn deploy -Dgpg.passphrase=BigDL2017
     - name: Maven clean deploy
       run: |
         set -x
