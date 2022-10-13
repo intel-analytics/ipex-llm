@@ -18,33 +18,53 @@ Choosing the right BigDL library
 .. graphviz::
 
     digraph BigDLDecisionTree {
-        node [color="#459db9" shape="box" fontname="Arial" fontsize=14]
-        edge [fontname="Arial" fontsize=12]
+        node [color="#0171c3" shape=box fontname="Arial" fontsize=14]
         
         Feature1 [label="Hardware Secured Big Data & AI?"]
         Feature2 [label="Python vs. Scala/Java?"]
         Feature3 [label="What type of application?"]
         Feature4 [label="Domain?"]
         
-        Orca[href="../doc/Orca/index.html" target="_blank" target="_blank" style="rounded,filled" fillcolor="#459db9" fontcolor="#ffffff"]
-        Nano[href="../doc/Nano/index.html" target="_blank" target="_blank" style="rounded,filled" fillcolor="#459db9" fontcolor="#ffffff"]
-        DLlib1[label="DLlib" href="../doc/DLlib/index.html" target="_blank" style="rounded,filled" fillcolor="#459db9" fontcolor="#ffffff"]
-        DLlib2[label="DLlib" href="../doc/DLlib/index.html" target="_blank" style="rounded,filled" fillcolor="#459db9" fontcolor="#ffffff"]
-        Chronos[href="../doc/Chronos/index.html" target="_blank" style="rounded,filled" fillcolor="#459db9" fontcolor="#ffffff"]
-        Friesian[href="../doc/Friesian/index.html" target="_blank" style="rounded,filled" fillcolor="#459db9" fontcolor="#ffffff"]
-        PPML[href="../doc/PPML/index.html" target="_blank" style="rounded,filled" fillcolor="#459db9" fontcolor="#ffffff"]
+        Orca[href="../doc/Orca/index.html" target="_blank" target="_blank" style="rounded,filled" fontcolor="#ffffff"]
+        Nano[href="../doc/Nano/index.html" target="_blank" target="_blank" style="rounded,filled" fontcolor="#ffffff"]
+        DLlib1[label="DLlib" href="../doc/DLlib/index.html" target="_blank" style="rounded,filled" fontcolor="#ffffff"]
+        DLlib2[label="DLlib" href="../doc/DLlib/index.html" target="_blank" style="rounded,filled" fontcolor="#ffffff"]
+        Chronos[href="../doc/Chronos/index.html" target="_blank" style="rounded,filled" fontcolor="#ffffff"]
+        Friesian[href="../doc/Friesian/index.html" target="_blank" style="rounded,filled" fontcolor="#ffffff"]
+        PPML[href="../doc/PPML/index.html" target="_blank" style="rounded,filled" fontcolor="#ffffff"]
         
-        Feature1 -> Feature2[label="No"]
-        Feature1 -> PPML[label="Yes"]
+        ArrowLabel1[label="No" fontsize=10 width=0.1 height=0.1 style=filled color="#c9c9c9"]
+        ArrowLabel2[label="Yes" fontsize=10 width=0.1 height=0.1 style=filled color="#c9c9c9"]
+        ArrowLabel3[label="Python" fontsize=10 width=0.1 height=0.1 style=filled color="#c9c9c9"]
+        ArrowLabel4[label="Scala/Java" fontsize=10 width=0.1 height=0.1 style=filled color="#c9c9c9"]
+        ArrowLabel5[label="Distributed Big Data \n + \n AI (TF/PyTorch)" fontsize=10 width=0.1 height=0.1 style=filled color="#c9c9c9"]
+        ArrowLabel6[label="Accelerate \n TensorFlow / PyTorch" fontsize=10 width=0.1 height=0.1 style=filled color="#c9c9c9"]
+        ArrowLabel7[label="DL for Spark MLlib" fontsize=10 width=0.1 height=0.1 style=filled color="#c9c9c9"]
+        ArrowLabel8[label="High Level App Framework" fontsize=10 width=0.1 height=0.1 style=filled color="#c9c9c9"]
+        ArrowLabel9[label="Time Series" fontsize=10 width=0.1 height=0.1 style=filled color="#c9c9c9"]
+        ArrowLabel10[label="Recommender System" fontsize=10 width=0.1 height=0.1 style=filled color="#c9c9c9"]
         
-        Feature2 -> Feature3[label="Python"]
-        Feature2 -> DLlib1[label="Scala/Java"]
+        Feature1 -> ArrowLabel1[dir=none]
+        ArrowLabel1 -> Feature2
+        Feature1 -> ArrowLabel2[dir=none]
+        ArrowLabel2 -> PPML
         
-        Feature3 -> Orca[label="Distributed Big Data \n + \n  AI (TF/PyTorch)"]
-        Feature3 -> Nano[label="Accelerate \n TensorFlow / PyTorch"]
-        Feature3 -> DLlib2[label="DL for Spark MLlib"]
-        Feature3 -> Feature4[label="High Level \n  App Framework"]
+        Feature2 -> ArrowLabel3[dir=none]
+        ArrowLabel3 -> Feature3
+        Feature2 -> ArrowLabel4[dir=none]
+        ArrowLabel4 -> DLlib1
         
-        Feature4 -> Chronos[label="Time Series"]
-        Feature4 -> Friesian[label="Recommender System"]
+        Feature3 -> ArrowLabel5[dir=none]
+         ArrowLabel5 -> Orca
+        Feature3 -> ArrowLabel6[dir=none]
+        ArrowLabel6 -> Nano
+        Feature3 -> ArrowLabel7[dir=none]
+        ArrowLabel7 -> DLlib2
+        Feature3 -> ArrowLabel8[dir=none]
+        ArrowLabel8 -> Feature4
+        
+        Feature4 -> ArrowLabel9[dir=none]
+        ArrowLabel9 -> Chronos
+        Feature4 -> ArrowLabel10[dir=none]
+        ArrowLabel10 -> Friesian
     }
