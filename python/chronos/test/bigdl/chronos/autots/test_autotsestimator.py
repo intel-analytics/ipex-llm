@@ -78,11 +78,11 @@ def gen_CustomizedNet():
     import torch.nn as nn
     class CustomizedNet(nn.Module):
         def __init__(self,
-                        dropout,
-                        input_size,
-                        input_feature_num,
-                        hidden_dim,
-                        output_size):
+                     dropout,
+                     input_size,
+                     input_feature_num,
+                     hidden_dim,
+                     output_size):
             '''
             Simply use linear layers for multi-variate single-step forecasting.
             '''
