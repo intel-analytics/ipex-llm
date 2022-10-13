@@ -10,8 +10,8 @@ ARG no_proxy
 ARG TINI_VERSION
 ENV TINI_VERSION                        $TINI_VERSION
 # Environment used for build pytorch
-ENV USE_CUDA=0 USE_CUDNN=0 USE_MKLDNN=1
-ENV CMAKE_PREFIX_PATH="/usr/local/lib/python3.7/dist-packages/"
+ARG USE_CUDA=0 USE_CUDNN=0 USE_MKLDNN=1 USE_DISTRIBUTED=1 USE_GLOO=1 USE_GLOO_WITH_OPENSSL=1 USE_MKL=1 BUILD_TEST=0 BLAS=MKL
+ARG CMAKE_PREFIX_PATH="/usr/local/lib/python3.7/dist-packages/:/usr/local/lib/"
 
 ADD https://github.com/krallin/tini/releases/download/${TINI_VERSION}/tini /sbin/tini
 ADD ./entrypoint.sh /opt/entrypoint.sh
@@ -22,10 +22,16 @@ RUN mkdir -p /root/.keras/datasets && \
     mkdir -p /root/.m2 && \
     mkdir -p /root/.kube/ && \
     # PyTorch dependencies
-    pip install --no-cache-dir astunparse numpy ninja pyyaml setuptools cmake cffi typing_extensions future six requests dataclasses mkl mkl-include && \
+    env DEBIAN_FRONTEND=noninteractive apt-get update && \
+    apt-get install -y libssl-dev && \
+    pip install --no-cache-dir astunparse numpy ninja pyyaml setuptools cmake cffi typing_extensions future six requests dataclasses mkl mkl-include intel-openmp && \
     pip install --no-cache-dir torchvision==0.13.1 && \
+    cd /usr/local/lib && \
+    ln -s libmkl_gnu_thread.so.2 libmkl_gnu_thread.so && \
+    ln -s libmkl_intel_lp64.so.2 libmkl_intel_lp64.so && \
+    ln -s libmkl_core.so.2 libmkl_core.so && \
     # PyTorch
-    rm -rf ${CMAKE_PREFIX_PATH}/torch && \
+    rm -rf /usr/local/lib/python3.7/dist-packages/torch && \
     git clone https://github.com/analytics-zoo/pytorch /pytorch && \
     cd /pytorch && git checkout devel-v1.12.1-2022-10-08 && \
     git submodule sync && git submodule update --init --recursive --jobs 0 && \
