@@ -65,6 +65,8 @@ jobs:
         # export JAVA_PATH=${JAVA_HOME}/bin:${JRE_HOME}/bin
         # export PATH=${JAVA_PATH}:$PATH
         # export PATH=/opt/work/apache-maven-3.6.3/bin:$PATH
+        export http_proxy="http://child-prc.intel.com:913/"
+        export https_proxy="http://child-prc.intel.com:913/"
         cp scala/pom.xml scala/pom.xml.origin
         cp scala/common/spark-version/pom.xml scala/common/spark-version/pom.xml.origin
         cp scala/common/spark-version/3.0/pom.xml scala/common/spark-version/3.0/pom.xml.origin
