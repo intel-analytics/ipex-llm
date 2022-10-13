@@ -72,8 +72,9 @@ def ng_sampling(data):
 
     features_fill = features_ps + features_ng
     labels_fill = labels_ps + labels_ng
-    data_XY = pd.DataFrame(data=features_fill, columns=["user", "item"])
+    data_XY = pd.DataFrame(data=features_fill, columns=["user", "item"], dtype=np.int64)
     data_XY["y"] = labels_fill
+    data_XY["y"] = data_XY["y"].astype(np.float)
     return data_XY
 
 
@@ -81,12 +82,12 @@ def transform_to_dict(data):
     # split training set and testing set
     train_data, test_data = train_test_split(data, test_size=0.2, random_state=100)
     # transform dataset into dict
-    train_data = train_data.to_numpy()
-    test_data = test_data.to_numpy()
-    train_data = {"x": train_data[:, : -1].astype(np.int64),
-        "y": train_data[:, -1].astype(np.float)}
-    test_data = {"x": test_data[:, : -1].astype(np.int64),
-        "y": test_data[:, -1].astype(np.float)}
+    #train_data = train_data.to_numpy()
+    #test_data = test_data.to_numpy()
+    #train_data = {"x": train_data[:, : -1].astype(np.int64),
+    #    "y": train_data[:, -1].astype(np.float)}
+    #test_data = {"x": test_data[:, : -1].astype(np.int64),
+    #    "y": test_data[:, -1].astype(np.float)}
     return train_data, test_data
 
 # Prepare the train and test datasets
@@ -121,7 +122,7 @@ from bigdl.orca.learn.pytorch import Estimator
 from bigdl.orca.learn.metrics import Accuracy, AUC
 
 # Create the estimator
-backend = "spark"  # "ray" or "spark"
+backend = "ray"  # "ray" or "spark"
 est = Estimator.from_torch(model=model_creator,
                         optimizer=optimizer_creator,
                         loss=loss_function, 
@@ -136,7 +137,9 @@ est.fit(data=train_shards, epochs=1, batch_size=256,
 # Step 5: Evaluate and save the Model
 
 # Evaluate the model
-result = est.evaluate(data=test_shards)
+result = est.evaluate(data=test_shards,
+                      feature_cols=["user", "item"],
+                      label_cols=["y"])
 for r in result:
     print(r, ":", result[r])
 
