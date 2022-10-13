@@ -487,7 +487,7 @@ class TestTSDataset(TestCase):
         for df in [df_single_id, df_multi_id]:
             horizon = random.randint(1, 10)
             lookback = random.randint(1, 20)
-            batch_size = random.randint(16, 32)
+            batch_size = random.randint(8, 16)
 
             tsdata = TSDataset.from_pandas(df, dt_col="datetime", target_col="value",
                                            extra_feature_col=["extra feature"], id_col="id")
