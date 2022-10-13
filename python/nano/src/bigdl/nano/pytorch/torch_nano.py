@@ -14,7 +14,7 @@
 # limitations under the License.
 #
 
-from typing import Any, Union, List
+from typing import Any, List, Optional, Union
 from logging import warning
 from functools import partial
 from abc import abstractmethod
@@ -33,7 +33,7 @@ from bigdl.nano.utils.log4Error import invalidInputError
 from bigdl.nano.pytorch.utils import TORCH_VERSION_LESS_1_10, TORCH_VERSION_LESS_1_11
 from bigdl.nano.pytorch.strategies.ipex.ipex_api import ipex_optimize
 from bigdl.nano.pytorch.strategies import create_IPEXStrategy, DDPSpawnStrategy, \
-    DDPSubprocessStrategy, create_RayStrategy
+    DDPSubprocessStrategy, create_ray_strategy, DDPK8sStrategy
 
 
 class _TorchNanoModule(_LiteModule):
@@ -86,6 +86,16 @@ class _TorchNanoModule(_LiteModule):
         return super().forward(*args, **kwargs)
 
 
+distributed_backends = ["spawn", "ray", "subprocess", "k8s"]
+
+backends_class_map = {
+    "spawn": DDPSpawnStrategy,
+    "subprocess": DDPSubprocessStrategy,
+    "ray": create_ray_strategy,
+    "k8s": DDPK8sStrategy
+}
+
+
 class TorchNano(LightningLite):
     """
     TorchNano for BigDL-Nano pytorch.
@@ -93,7 +103,7 @@ class TorchNano(LightningLite):
     It can be used to accelerate custom pytorch training loops with very few code changes.
     """
 
-    def __init__(self, num_processes: int = 1,
+    def __init__(self, num_processes: Optional[int] = None,
                  use_ipex: bool = False,
                  strategy: str = "subprocess",
                  precision: Union[str, int] = 32,
@@ -136,25 +146,21 @@ class TorchNano(LightningLite):
 
         kwargs['precision'] = precision
 
+        if self.num_processes is None and strategy != "k8s":
+            self.num_processes = 1
+
         if self.num_processes == 1:
             if self.use_ipex:
                 strategy = create_IPEXStrategy(dtype=self.dtype)
             else:
                 strategy = None     # type: ignore
-        elif strategy == "spawn":
-            strategy = DDPSpawnStrategy(num_processes=self.num_processes,   # type: ignore
-                                        use_ipex=self.use_ipex,
-                                        dtype=self.dtype)
-        elif strategy == "subprocess":
-            strategy = DDPSubprocessStrategy(num_processes=self.num_processes,  # type: ignore
-                                             use_ipex=self.use_ipex,
-                                             dtype=self.dtype)
-        elif strategy == "ray":
-            strategy = create_RayStrategy(num_workers=self.num_processes,
-                                          use_ipex=self.use_ipex,
-                                          dtype=self.dtype)
+        elif strategy in backends_class_map:
+            cls = backends_class_map[strategy]
+            strategy = cls(num_processes=self.num_processes,   # type: ignore
+                           use_ipex=self.use_ipex,
+                           dtype=self.dtype)
         else:
-            warning(f"Bigdl-nano doesn't support '{strategy}' strategy now, "
+            warning(f"BigDL-Nano doesn't support '{strategy}' strategy now, "
                     f"'{strategy}' strategy of pytorch_lightning will be used. "
                     f"Supported strategies are 'spawn', 'subprocess' and 'ray'.")
 
