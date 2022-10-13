@@ -6,7 +6,8 @@ html[data-theme="light"] {
 
 /* ectra css variables */
 :root {
-    --pst-color-info-low-opacity: rgba(1, 113, 195, 0.1);
+    --pst-color-info-tiny-opacity: rgba(1, 113, 195, 0.1);
+    --pst-color-info-low-opacity: rgba(1, 113, 195, 0.25);
 }
 
 
@@ -27,10 +28,10 @@ html[data-theme="light"] {
 /* for card components */
 .bd-content .sd-card {
     border: none;
-    border-left: .2rem solid var(--pst-color-info);
+    border-left: .2rem solid var(--pst-color-info-low-opacity);
 }
 
 .bd-content .sd-card .sd-card-header{
-    background-color: var(--pst-color-info-low-opacity);
+    background-color: var(--pst-color-info-tiny-opacity);
     border: none;
 }
