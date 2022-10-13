@@ -21,12 +21,14 @@ bash $ANALYTICS_ZOO_ROOT/python/nano/dev/build_and_install.sh linux default fals
 
 apt-get update && apt-get install -y libgl1
 
+pip install torch==1.12.0
 pip install onnxruntime
 pip install onnx
 pip install onnxruntime_extensions
-pip install neural-compressor
+pip install neural-compressor==1.11
 pip install intel-extension-for-pytorch==1.12
-pip install openvino-dev
+pip install openvino==2022.2.0
+pip install openvino-dev==2022.2.0
 
 cd $ANALYTICS_ZOO_ROOT/python/nano/benchmark/resnet_inference/
 
