@@ -26,6 +26,7 @@ from torch.utils.data import DataLoader
 from torch.nn.parallel.distributed import DistributedDataParallel
 from pytorch_lightning.lite import LightningLite
 from pytorch_lightning.lite.wrappers import _LiteModule, _LiteOptimizer
+from pytorch_lightning.utilities.apply_func import apply_to_collection
 
 from bigdl.nano.common import check_avx512
 from bigdl.nano.utils.log4Error import invalidInputError
@@ -36,6 +37,10 @@ from bigdl.nano.pytorch.strategies import create_IPEXStrategy, DDPSpawnStrategy,
 
 
 class _TorchNanoModule(_LiteModule):
+    def __init__(self, module, precision_plugin, channels_last) -> None:
+        super().__init__(module, precision_plugin)
+        self.channels_last = channels_last
+
     def state_dict(self, *args, **kwargs):
         if isinstance(self.module, DistributedDataParallel):
             return self.module.module.state_dict(*args, **kwargs)
@@ -69,6 +74,17 @@ class _TorchNanoModule(_LiteModule):
         else:
             return getattr(self.module, name)
 
+    def forward(self, *args: Any, **kwargs: Any) -> Any:
+        """Casts all inputs to the right memory format."""
+        if self.channels_last:
+            def _convert_to_channels_last(t: torch.Tensor) -> torch.Tensor:
+                if t.dim() == 4:
+                    return t.to(memory_format=torch.channels_last)  # type: ignore
+                return t
+            args, kwargs = apply_to_collection([args, kwargs], function=_convert_to_channels_last,
+                                               dtype=torch.Tensor)
+        return super().forward(*args, **kwargs)
+
 
 class TorchNano(LightningLite):
     """
@@ -81,6 +97,7 @@ class TorchNano(LightningLite):
                  use_ipex: bool = False,
                  strategy: str = "subprocess",
                  precision: Union[str, int] = 32,
+                 channels_last: bool = False,
                  *args, **kwargs) -> None:
         """
         Create a TorchNano with nano acceleration.
@@ -92,10 +109,13 @@ class TorchNano(LightningLite):
         :param precision: Double precision (64), full precision (32), half precision (16)
             or bfloat16 precision (bf16), defaults to 32.
             Enable ipex bfloat16 weight prepack when `use_ipex=True` and `precision='bf16'`
+        :param channels_last: whether convert input to channels last memory formats, \
+            defaults to False.
         """
         self.num_processes = num_processes
         self.use_ipex = use_ipex
         self.dtype = None
+        self.channels_last = channels_last
         if self.use_ipex and precision == 'bf16':
             # Enable ipex bfloat16 weight prepack and disable native AMP
             self.dtype = torch.bfloat16
@@ -150,6 +170,8 @@ class TorchNano(LightningLite):
         move_to_device: bool = True,
     ) -> Any:
         """Used to replace LightningLite's setup method."""
+        if self.channels_last:
+            model = model.to(memory_format=torch.channels_last)  # type: ignore
         # LightningLite won't call `Strategy.setup()` method,
         # in which we add IPEX's optimization when using `trainer`.
 
@@ -187,7 +209,7 @@ class TorchNano(LightningLite):
 
         if move_to_device:
             model = self._move_model_to_device(model=model, optimizers=optimizers)
-        model = _TorchNanoModule(model, self._precision_plugin)
+        model = _TorchNanoModule(model, self._precision_plugin, self.channels_last)
         optimizers = [_LiteOptimizer(optimizer=optimizer, strategy=self._strategy)  # type: ignore
                       for optimizer in optimizers]
         self._models_setup += 1
