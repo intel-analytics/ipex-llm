@@ -49,7 +49,7 @@ class PytorchIPEXJITModel(AcceleratedLightningModule):
             self.use_jit = use_jit
             self.channels_last = channels_last
             return
-        self.channels_last = use_ipex if (channels_last is None or not use_ipex) else channels_last
+        self.channels_last = channels_last
         self.original_state_dict = model.state_dict()
         self.use_ipex = use_ipex
         self.use_jit = use_jit
@@ -70,8 +70,9 @@ class PytorchIPEXJITModel(AcceleratedLightningModule):
         return inputs
 
     def forward_step(self, *inputs):
-        if self.channels_last:
+        if self.channels_last is True:
             inputs = tuple(map(lambda x: x.to(memory_format=torch.channels_last), inputs))
+        print(inputs)
         return self.model(*inputs)
 
     def on_forward_end(self, outputs):

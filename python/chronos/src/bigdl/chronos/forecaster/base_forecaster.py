@@ -597,7 +597,7 @@ class BasePytorchForecaster(Forecaster):
             invalidInputError(False, "Unable to find an optimized model that meets your conditions."
                               "Maybe you can relax your search limit.")
 
-    def predict(self, data, batch_size=32, quantize=False, no_acceleration=False):
+    def predict(self, data, batch_size=32, quantize=False, acceleration: bool = True):
         """
         Predict using a trained forecaster.
 
@@ -631,8 +631,8 @@ class BasePytorchForecaster(Forecaster):
         :param batch_size: predict batch size. The value will not affect predict
                result but will affect resources cost(e.g. memory and time).
         :param quantize: if use the quantized model to predict.
-        :param no_acceleration: bool variable indicates whether use original model.
-               Default to False which means use optim_model to predict.
+        :param acceleration: bool variable indicates whether use original model.
+               Default to True which means use optim_model to predict.
 
         :return: A numpy array with shape (num_samples, horizon, target_dim)
                  if data is a numpy ndarray or a dataloader.
@@ -641,6 +641,7 @@ class BasePytorchForecaster(Forecaster):
                  if data is a xshard item.
         """
         from bigdl.chronos.pytorch.utils import _pytorch_fashion_inference
+        from bigdl.nano.utils.log4Error import invalidInputError
 
         if isinstance(data, TSDataset):
             _rolled = data.numpy_x is None
@@ -655,7 +656,6 @@ class BasePytorchForecaster(Forecaster):
         is_local_data = isinstance(data, (np.ndarray, DataLoader))
         if is_local_data and self.distributed:
             if isinstance(data, DataLoader):
-                from bigdl.nano.utils.log4Error import invalidInputError
                 invalidInputError(False,
                                   "We will be support input dataloader later.")
             data = np_to_xshard(data)
@@ -676,7 +676,6 @@ class BasePytorchForecaster(Forecaster):
             return yhat
         else:
             if not self.fitted:
-                from bigdl.nano.utils.log4Error import invalidInputError
                 invalidInputError(False,
                                   "You must call fit or restore first before calling predict!")
             if quantize:
@@ -684,7 +683,7 @@ class BasePytorchForecaster(Forecaster):
                                                   input_data=data,
                                                   batch_size=batch_size)
             else:
-                if no_acceleration is True:
+                if acceleration is False:
                     self.internal.eval()
                     yhat = _pytorch_fashion_inference(model=self.internal,
                                                       input_data=data,
@@ -835,7 +834,7 @@ class BasePytorchForecaster(Forecaster):
                                               batch_size=batch_size)
 
     def evaluate(self, data, batch_size=32, multioutput="raw_values", quantize=False,
-                 no_acceleration=False):
+                 acceleration: bool = True):
         """
         Evaluate using a trained forecaster.
 
@@ -885,12 +884,13 @@ class BasePytorchForecaster(Forecaster):
                'raw_values'.The param is only effective when the forecaster is a
                non-distribtued version.
         :param quantize: if use the quantized model to predict.
-        :param no_acceleration: bool variable indicates whether use original model.
-               Default to False which means use optim_model to predict.
+        :param acceleration: bool variable indicates whether use original model.
+               Default to True which means use optim_model to predict.
 
         :return: A list of evaluation results. Each item represents a metric.
         """
         from bigdl.chronos.pytorch.utils import _pytorch_fashion_inference
+        from bigdl.nano.utils.log4Error import invalidInputError
 
         # data transform
         if isinstance(data, TSDataset):
@@ -911,7 +911,6 @@ class BasePytorchForecaster(Forecaster):
                                           batch_size=batch_size)
         else:
             if not self.fitted:
-                from bigdl.nano.utils.log4Error import invalidInputError
                 invalidInputError(False,
                                   "You must call fit or restore first before calling evaluate!")
             if isinstance(data, DataLoader):
@@ -924,7 +923,7 @@ class BasePytorchForecaster(Forecaster):
                                                   input_data=input_data,
                                                   batch_size=batch_size)
             else:
-                if no_acceleration is True:
+                if acceleration is False:
                     self.internal.eval()
                     yhat = _pytorch_fashion_inference(model=self.internal,
                                                       input_data=input_data,
