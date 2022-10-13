@@ -76,12 +76,12 @@ A conda environment is created for you automatically. `bigdl-chronos` and the ne
 (chronos) root@cpx-3:/opt/work#
 ```
 
-## Run unitest examples on Jupyter Notebook for a quick use
+## Run unittest examples on Jupyter Notebook for a quick use
 >To use jupyter notebook, you need to specify the build arg `extra_dep` to `y`.
 
 You can run these on Jupyter Notebook on single node server if you pursue a quick use on Chronos.
 ```bash
-(chronos) root@cpx-3:/opt/work# cd /opt/work/colab-notebook #Unitest examples are here.
+(chronos) root@cpx-3:/opt/work# cd /opt/work/colab-notebook #Unittest examples are here.
 ```
 ```bash
 (chronos) root@cpx-3:/opt/work# jupyter notebook --notebook-dir=./ --ip=* --allow-root #Start the Jupyter Notebook services.
