@@ -19,6 +19,8 @@ set -e
 
 bash $ANALYTICS_ZOO_ROOT/python/nano/dev/build_and_install.sh linux default false pytorch
 
+apt-get install -y libgl1
+
 pip install onnxruntime
 pip install onnx
 pip install onnxruntime_extensions
