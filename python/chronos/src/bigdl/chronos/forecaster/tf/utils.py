@@ -15,7 +15,8 @@
 #
 import tensorflow as tf
 import numpy as np
-from collections import Iterable
+import math
+import warnings
 
 
 def np_to_data_creator(tuple_data, shuffle=False):
@@ -45,10 +46,13 @@ def np_to_tfdataset(tuple_data, shuffle=True, batch_size=32):
     return data.prefetch(tf.data.AUTOTUNE)
 
 
-def np_to_xshards(data):
+def np_to_xshards(data, workers_num):
     from bigdl.orca.data import XShards
     _shards = XShards.partition(data)
-
+    if math.floor(math.sqrt(math.sqrt(_shards.num_partitions()))) > workers_num:
+        warnings.warn("Too many partitions and too few workers will reduce inference performance, "
+                      "we recommend setting 'worker_per_node' to a large number and",
+                      "not larger than the number of partitions.", category=RuntimeWarning)
     def transform_to_dict(data):
         return {"x": data}
     return _shards.transform_shard(transform_to_dict)

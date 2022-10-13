@@ -82,9 +82,23 @@ class BaseTF2Forecaster(Forecaster):
                 data = np_to_data_creator(data, shuffle=True)
             if isinstance(data, TSDataset):
                 data = tsdata_to_data_creator(data, shuffle=True)
+            from bigdl.nano.utils.log4Error import invalidInputError
             invalidInputError(not isinstance(data, tf.data.Dataset),
                               "tf.data.Dataset is not supported, "
                               "please replace with numpy.ndarray or TSDataset instance.")
+            # for cluster mode
+            from bigdl.orca.common import OrcaContext
+            sc = OrcaContext.get_spark_context().getConf()
+            num_nodes = 1 if sc.get('spark.master').startswith('local') \
+                else int(sc.get('spark.executor.instances'))
+            if batch_size % self.workers_per_node != 0:
+                from bigdl.nano.utils.log4Error import invalidInputError
+                invalidInputError(False,
+                                  "Please make sure that batch_size can be divisible by "
+                                  "the product of worker_per_node and num_nodes, "
+                                  f"but 'batch_size' is {batch_size}, 'workers_per_node' "
+                                  f"is {self.workers_per_node}, 'num_nodes' is {num_nodes}")
+            batch_size //= (self.workers_per_node * num_nodes)
             self.internal.fit(data, epochs=epochs, batch_size=batch_size)
         else:
             if isinstance(data, tuple):
@@ -134,10 +148,10 @@ class BaseTF2Forecaster(Forecaster):
 
         if self.distributed:
             if isinstance(data, np.ndarray):
-                data = np_to_xshards(data)
+                data = np_to_xshards(data, self.workers_per_node)
             if isinstance(data, TSDataset):
                 input_data, _ = data.to_numpy()
-                data = np_to_xshards(input_data)
+                data = np_to_xshards(input_data, self.workers_per_node)
             invalidInputError(not isinstance(data, tf.data.Dataset),
                               "prediction on tf.data.Dataset will be supported in future.")
             yhat = self.internal.predict(data, batch_size=batch_size)
