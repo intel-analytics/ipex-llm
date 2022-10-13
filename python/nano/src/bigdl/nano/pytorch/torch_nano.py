@@ -14,7 +14,8 @@
 # limitations under the License.
 #
 
-from typing import Any, List, Optional, Union
+
+from typing import Any, Union, List, Optional
 from logging import warning
 from functools import partial
 from abc import abstractmethod
@@ -107,6 +108,7 @@ class TorchNano(LightningLite):
                  use_ipex: bool = False,
                  strategy: str = "subprocess",
                  precision: Union[str, int] = 32,
+                 cpu_for_each_process: Optional[List[List[int]]] = None,
                  channels_last: bool = False,
                  *args, **kwargs) -> None:
         """
@@ -119,13 +121,18 @@ class TorchNano(LightningLite):
         :param precision: Double precision (64), full precision (32), half precision (16)
             or bfloat16 precision (bf16), defaults to 32.
             Enable ipex bfloat16 weight prepack when `use_ipex=True` and `precision='bf16'`
+        :param cpu_for_each_process: specify the cpu cores which will be used by each process,
+            if `None`, cpu cores will be distributed evenly by all processes,
+            only take effect when `num_processes` > 1
         :param channels_last: whether convert input to channels last memory formats, \
             defaults to False.
         """
         self.num_processes = num_processes
         self.use_ipex = use_ipex
         self.dtype = None
+        self.cpu_for_each_process = cpu_for_each_process
         self.channels_last = channels_last
+
         if self.use_ipex and precision == 'bf16':
             # Enable ipex bfloat16 weight prepack and disable native AMP
             self.dtype = torch.bfloat16
