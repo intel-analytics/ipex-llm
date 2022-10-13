@@ -1,0 +1,35 @@
+#!/bin/bash
+
+set -e
+
+#detect paths
+export BIGDL_ENV=`python -c """from bigdl.dllib.utils.engine import *
+print(' ' + get_bigdl_conf(), end=' ')
+bigdl_jars = get_bigdl_jars()
+print(','.join(bigdl_jars), end=' ')
+"""
+`
+
+#setup env
+IFS=$' ' array=($(echo $BIGDL_ENV))
+len=${#array[@]}
+export BIGDL_CONF="${array[$len-2]}"
+export BIGDL_JARS="${array[$len-1]}"
+
+# Check env
+if [ -z ${BIGDL_CONF} ]; then
+    echo "Cannot find BigDL configuration file, please check your BigDL installation"
+    exit 1
+fi
+
+if [ -z $BIGDL_JARS ]; then
+    echo "Cannot find BigDL jar files, please check your BigDL installation"
+    exit 1
+fi
+
+spark-submit \
+  --properties-file ${BIGDL_CONF} \
+  --jars ${BIGDL_JARS} \
+  --conf spark.driver.extraClassPath=${BIGDL_JARS} \
+  --conf spark.executor.extraClassPath=${BIGDL_JARS} \
+  $*
