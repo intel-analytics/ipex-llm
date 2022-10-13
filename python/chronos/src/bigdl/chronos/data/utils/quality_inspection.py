@@ -15,11 +15,13 @@
 #
 
 import pandas as pd
+import numpy as np
 from bigdl.nano.utils.log4Error import invalidInputError
+from bigdl.chronos.data.utils.cycle_detection import cycle_length_est
 import logging
 
 
-def quality_check_timeseries_dataframe(df, dt_col, id_col=None, repair=True):
+def quality_check_timeseries_dataframe(df, dt_col, target_col=None, id_col=None, repair=True):
     '''
     detect the low-quality data and provide suggestion (e.g. call .impute or .resample).
 
@@ -27,6 +29,8 @@ def quality_check_timeseries_dataframe(df, dt_col, id_col=None, repair=True):
     :param dt_col: a str indicates the col name of datetime
            column in the input data frame, the dt_col must be sorted
            from past to latest respectively for each id.
+    :param target_col: a str or list indicates the col name of target column
+           in the input data frame.
     :param id_col: (optional) a str indicates the col name of dataframe id. If
            it is not explicitly stated, then the data is interpreted as only
            containing a single id.
@@ -63,7 +67,8 @@ def quality_check_timeseries_dataframe(df, dt_col, id_col=None, repair=True):
             flag = False
 
     # 4. pattern check and noise check
-    # TODO:
+    if not _pattern_check(df, target_col, id_col):
+        flag = False
 
     return flag, df
 
@@ -156,3 +161,26 @@ def _missing_value_repair(df):
         return False
     logging.warning("Missing data has be imputed.")
     return True
+
+
+def _pattern_check(df, target_col, id_col):
+    flag = True
+    try:
+        res = df.groupby(id_col)\
+                        .apply(lambda x: pd.DataFrame({'cycle_length':
+                        {col: cycle_length_est(x[col].values,
+                                            3,
+                                            adjust=True,
+                                            return_acf_score=True)[1] for col in target_col}}))
+        _id_list = list(np.unique(df[id_col]))
+        for id_iter in _id_list:
+            for target in target_col:
+                if res.cycle_length[id_iter][target] < 0.5:
+                    logging.warning(f"time series id = {id_iter} and target = {target} "
+                                    "does not have significant period.")
+                    flag = False
+    except:
+        logging.warning("pattern check fails, some time series might have too many missing value, "
+                        "or all elements are the same.")
+        flag = False
+    return flag

@@ -484,13 +484,13 @@ class TestTSDataset(TestCase):
     def test_tsdataset_to_torch_loader_roll(self):
         df_single_id = get_ts_df()
         df_multi_id = get_multi_id_ts_df()
-        for df in [df_single_id, df_multi_id]:
+        for df in [df_multi_id]:
             horizon = random.randint(1, 10)
             lookback = random.randint(1, 20)
             batch_size = random.randint(16, 32)
 
             tsdata = TSDataset.from_pandas(df, dt_col="datetime", target_col="value",
-                                           extra_feature_col=["extra feature"], id_col="id")
+                                           extra_feature_col=["extra feature"], id_col="id", repair=False)
 
             # train
             torch_loader = tsdata.to_torch_data_loader(batch_size=batch_size,
@@ -538,7 +538,7 @@ class TestTSDataset(TestCase):
 
             # multi target_col
             tsdata = TSDataset.from_pandas(df, dt_col="datetime",
-                                           target_col=["value", "extra feature"], id_col="id")
+                                           target_col=["value", "extra feature"], id_col="id", repair=False)
             torch_loader = tsdata.to_torch_data_loader(batch_size=batch_size,
                                                        lookback=lookback,
                                                        horizon=horizon)
@@ -1138,8 +1138,7 @@ class TestTSDataset(TestCase):
         tsdata = TSDataset.from_pandas(df,
                                        target_col='value',
                                        dt_col='datetime')
-        with pytest.raises(RuntimeError):
-            tsdata.get_cycle_length(aggregate='min', top_k=3)
+        tsdata.get_cycle_length(aggregate='min', top_k=3)
 
     def test_lookback_equal_to_one(self):
         df = get_ts_df()
