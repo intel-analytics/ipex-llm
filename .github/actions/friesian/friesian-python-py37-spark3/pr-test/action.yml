@@ -1,0 +1,19 @@
+name: 'Run Orca Python Ray Py37 Spark3'
+description: 'Run Orca Python Ray Py37 Spark3'
+runs:
+  using: "composite"
+  steps:
+    - name: Run Test
+      shell: bash
+      run: |
+        source activate py37
+        export SPARK_LOCAL_HOSTNAME=localhost
+        pip install pyspark==3.1.2
+        cd scala
+        ./make-dist.sh -P spark_3.x -Dspark.version=3.1.2
+        cd -
+        python/friesian/dev/test/run-pytests-friesian
+        source deactivate
+      env:
+        BIGDL_ROOT: ${{ github.workspace }}
+        ANALYTICS_ZOO_ROOT: ${{ github.workspace }}
