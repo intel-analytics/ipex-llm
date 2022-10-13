@@ -47,6 +47,8 @@ def _get_patch_map():
             [keras, "Sequential", Sequential, None],
             [keras.layers, "Embedding", Embedding, None]
         ]
+    else:
+        _mapping_tf = []
 
     if patch_torch and _mapping_torch is None:
         _mapping_torch = []
@@ -60,12 +62,12 @@ def _get_patch_map():
             [torchvision, "transforms", transforms, None],
             [torchvision, "datasets", datasets, None],
         ]
+    else:
+        _mapping_torch = []
 
-    if not patch_tf:
-        return [], _mapping_torch
-    if not patch_torch:
-        return _mapping_tf, []
-    return _mapping_tf, _mapping_torch
+
+# generate the patch map
+_get_patch_map()
 
 
 def patch_nano(patch_tf=None, patch_torch=None):
@@ -87,20 +89,21 @@ def patch_nano(patch_tf=None, patch_torch=None):
     :param patch_torch: bool, if patch pytorch related classes, will patch defaultly if pytorch
            is installed
     """
+    global _mapping_tf
+    global _mapping_torch
+
     if patch_tf is None:
         patch_tf = find_spec("tensorflow") is not None
     if patch_torch is None:
         patch_torch = find_spec("pytorch_lightning") is not None
 
-    mapping_tf, mapping_torch = _get_patch_map()
-
     if patch_tf:
-        for mapping_iter in mapping_tf:
+        for mapping_iter in _mapping_tf:
             mapping_iter[3] = getattr(mapping_iter[0], mapping_iter[1], None)
             setattr(mapping_iter[0], mapping_iter[1], mapping_iter[2])
 
     if patch_torch:
-        for mapping_iter in mapping_torch:
+        for mapping_iter in _mapping_torch:
             mapping_iter[3] = getattr(mapping_iter[0], mapping_iter[1], None)
             setattr(mapping_iter[0], mapping_iter[1], mapping_iter[2])
 
@@ -114,17 +117,18 @@ def unpatch_nano(unpatch_tf=None, unpatch_torch=None):
     :param unpatch_torch: bool, if unpatch pytorch related classes,
            will unpatch defaultly if pytorch is installed
     """
+    global _mapping_tf
+    global _mapping_torch
+
     if unpatch_tf is None:
         unpatch_tf = find_spec("tensorflow") is not None
     if unpatch_torch is None:
         unpatch_torch = find_spec("pytorch_lightning") is not None
 
-    mapping_tf, mapping_torch = _get_patch_map()
-
     if unpatch_tf:
-        for mapping_iter in mapping_tf:
+        for mapping_iter in _mapping_tf:
             setattr(mapping_iter[0], mapping_iter[1], mapping_iter[3])
 
     if unpatch_torch:
-        for mapping_iter in mapping_torch:
+        for mapping_iter in _mapping_torch:
             setattr(mapping_iter[0], mapping_iter[1], mapping_iter[3])
