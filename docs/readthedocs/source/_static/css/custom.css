@@ -1,12 +1,12 @@
 /* change primary & info color for light mode*/
 html[data-theme="light"] {
-    --pst-color-primary: rgb(1, 113, 193);
+    --pst-color-primary: rgb(1, 113, 195);
     --pst-color-info: rgb(1, 113, 195);
 }
 
 /* ectra css variables */
 :root {
-    --pst-color-info-low-opacity: rgba(1, 113, 193, 0.1);
+    --pst-color-info-low-opacity: rgba(1, 113, 195, 0.1);
 }
 
 

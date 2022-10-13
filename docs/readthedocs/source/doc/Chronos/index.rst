@@ -5,49 +5,34 @@ BigDL-Chronos
 
 You can use **Chronos** for:
 
-
 .. grid:: 1 3 3 3
-    :gutter: 2
 
-    .. grid-item-card::
-
-        **Forecasting**
-        ^^^
+    .. grid-item::
 
         .. image:: ./Image/forecasting.svg
-            :width: 200
-            :alt: Alternative text
+            :alt: Forcasting example diagram
 
-        +++
+        **Forecasting**
 
         Predict future using history data.
 
-    .. grid-item-card::
-
-        **Anomaly Detection**
-        ^^^
+    .. grid-item::
 
         .. image:: ./Image/anomaly_detection.svg
-            :width: 200
-            :alt: Alternative text
+            :alt: Anomaly Detection example diagram
 
-        +++
+        **Anomaly Detection**
 
         Discover unexpected items in data.
 
-    .. grid-item-card::
-
-        **Simulation**
-        ^^^
+    .. grid-item::
 
         .. image:: ./Image/simulation.svg
-            :width: 200
-            :alt: Alternative text
-
-        +++
+            :alt: Simulation example diagram
+        
+        **Simulation**
 
         Generate similar data as history data.
-
 
 -------
 
