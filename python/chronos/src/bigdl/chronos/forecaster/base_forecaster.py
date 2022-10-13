@@ -882,7 +882,7 @@ class BasePytorchForecaster(Forecaster):
         :param batch_size: predict batch size. The value will not affect predict
                result but will affect resources cost(e.g. memory and time). Defaults
                to 32. None for all-data-single-time inference.
-        :param quantize: if use the quantized jit model to predict.
+        :param quantize: if use the quantized jit model to predict. Not support yet.
 
         :return: A numpy array with shape (num_samples, horizon, target_dim).
         """
@@ -908,7 +908,7 @@ class BasePytorchForecaster(Forecaster):
                                              target_col=data.roll_target,
                                              shuffle=False)
 
-        if quantize:
+        if quantize and False:
             return _pytorch_fashion_inference(model=self.jit_int8,
                                               input_data=data,
                                               batch_size=batch_size)
@@ -1614,7 +1614,7 @@ class BasePytorchForecaster(Forecaster):
         :param conf: A path to conf yaml file for quantization. Default to None,
                using default config.
         :param framework: string or list. [{'pytorch_fx'|'pytorch_ipex'},
-               {'onnxrt_integerops'|'onnxrt_qlinearops'}, {'openvino'}, {'jit'}]
+               {'onnxrt_integerops'|'onnxrt_qlinearops'}, {'openvino'}]
                Default: 'pytorch_fx'. Consistent with Intel Neural Compressor.
         :param approach: str, 'static' or 'dynamic'. Default to 'static'.
                OpenVINO supports static mode only, if set to 'dynamic',
@@ -1707,9 +1707,6 @@ class BasePytorchForecaster(Forecaster):
             elif accelerator == 'openvino':
                 method = None
                 approach = "static"
-            elif accelerator == 'jit':
-                method = 'ipex'
-                approach = "static"
             else:
                 accelerator = 'onnxruntime'
                 method = method[:-3]
@@ -1730,8 +1727,6 @@ class BasePytorchForecaster(Forecaster):
                 self.onnxruntime_int8 = q_model
             if accelerator == 'openvino':
                 self.openvino_int8 = q_model
-            if accelerator == 'jit':
-                self.jit_int8 = q_model
             if accelerator is None:
                 self.pytorch_int8 = q_model
 

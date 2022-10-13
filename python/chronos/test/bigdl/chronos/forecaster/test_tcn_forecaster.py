@@ -411,17 +411,10 @@ class TestChronosModelTCNForecaster(TestCase):
         except ImportError:
             pass
 
-        forecaster.quantize(calib_data=train_data,
-                            framework="jit")
-        jit_yhat = forecaster.predict_with_jit(test_data[0])
-        q_jit_yhat = forecaster.predict_with_jit(test_data[0], quantize=True)
-        assert jit_yhat.shape == q_jit_yhat.shape == test_data[1].shape
-
-        # test exporting the openvino
+        # test exporting the jit
         with tempfile.TemporaryDirectory() as tmp_dir_name:
             ckpt_name = os.path.join(tmp_dir_name, "fp32_jit")
-            ckpt_name_q = os.path.join(tmp_dir_name, "int_jit")
-            forecaster.export_jit_file(dirname=ckpt_name, quantized_dirname=ckpt_name_q)
+            forecaster.export_jit_file(dirname=ckpt_name)
 
     @op_diff_set_all
     def test_tcn_forecaster_jit_methods_loader(self):
@@ -441,12 +434,6 @@ class TestChronosModelTCNForecaster(TestCase):
         except ImportError:
             pass
 
-        forecaster.quantize(calib_data=train_loader,
-                            framework="jit")
-        jit_yhat = forecaster.predict_with_jit(test_loader)
-        q_jit_yhat = forecaster.predict_with_jit(test_loader, quantize=True)
-        assert jit_yhat.shape == q_jit_yhat.shape
-
     @op_diff_set_all
     def test_tcn_forecaster_jit_methods_tsdataset(self):
         train, test = create_tsdataset(roll=True, horizon=5)
@@ -464,12 +451,6 @@ class TestChronosModelTCNForecaster(TestCase):
             np.testing.assert_almost_equal(pred, pred_jit, decimal=5)
         except ImportError:
             pass
-
-        forecaster.quantize(calib_data=train,
-                            framework="jit")
-        jit_yhat = forecaster.predict_with_jit(test)
-        q_jit_yhat = forecaster.predict_with_jit(test, quantize=True)
-        assert jit_yhat.shape == q_jit_yhat.shape
 
     @op_diff_set_all
     def test_tcn_forecaster_quantization_dynamic(self):

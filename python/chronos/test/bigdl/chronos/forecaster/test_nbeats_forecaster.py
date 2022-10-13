@@ -208,11 +208,10 @@ class TestChronosNBeatsForecaster(TestCase):
         except ImportError:
             pass
 
-        # test exporting the openvino
+        # test exporting the jit
         with tempfile.TemporaryDirectory() as tmp_dir_name:
             ckpt_name = os.path.join(tmp_dir_name, "fp32_jit")
-            ckpt_name_q = os.path.join(tmp_dir_name, "int_jit")
-            forecaster.export_jit_file(dirname=ckpt_name, quantized_dirname=ckpt_name_q)
+            forecaster.export_jit_file(dirname=ckpt_name)
 
     @op_diff_set_all
     def test_nbeats_forecaster_quantization(self):
