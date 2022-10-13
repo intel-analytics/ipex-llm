@@ -1,3 +1,9 @@
+/* change primary & info color for light mode*/
+html[data-theme="light"] {
+    --pst-color-primary: #0171c3;
+    --pst-color-info: #0171c3;
+}
+
 /* align items in the left part of header to the ground*/
 .bd-header #navbar-start {
     align-items: end;
