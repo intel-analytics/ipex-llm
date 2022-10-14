@@ -190,12 +190,12 @@ subtrees:
 
   - entries:
     - file: doc/UserGuide/develop
-      title: "Developer Guide"
+      title: "Developer guide"
 
 
   - entries:
     - file: doc/Serving/index
-      title: "Cluster Serving"
+      title: "Cluster serving"
       subtrees:
         - entries:
           - file: doc/Serving/Overview/serving.md
