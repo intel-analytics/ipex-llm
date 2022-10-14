@@ -44,7 +44,7 @@ html_theme_options = {
    ],
    "navbar_start": ["navbar-logo.html", "version_badge.html"],
    "navbar_end": ["navbar-icon-links.html"], # remove dark mode for now
-   "footer_items": ["copyright", "sphinx-version","myads","sidebar-ethical-ads"],
+#    "footer_items": ["copyright", "sphinx-version","myads","sidebar-ethical-ads"],
 }
 
 # add search bar to side bar

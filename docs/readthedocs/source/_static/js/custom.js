@@ -16,11 +16,13 @@ $(document).ready(function(){
 
     // manually add the ads to the end of content
     $(".bd-article").append(
-        "<div\
+        "<div style='display:flex;justify-content:center;'\
+        <div\
         id='ethical-ad-placement'\
         class='horizontal'\
         data-ea-publisher='readthedocs'\
         data-ea-type='image'\
-      ></div>"
+      ></div>\
+      </div>"
     )
 })
