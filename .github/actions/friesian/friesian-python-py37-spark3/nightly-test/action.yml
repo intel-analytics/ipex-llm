@@ -13,9 +13,7 @@ runs:
         source activate py37
         #export SPARK_LOCAL_HOSTNAME=localhost
         pip install pyspark==3.1.2
-        echo "tests 1"
         chmod a+x python/friesian/dev/test/run-pytests-friesian
-        echo "tests 2"
         python/friesian/dev/test/run-pytests-friesian
         source deactivate
       env:
