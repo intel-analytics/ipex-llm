@@ -252,6 +252,25 @@ class TestPyTorchEstimator(TestCase):
         val_stats = estimator.evaluate(val_xshards, batch_size=128)
         print(val_stats)
 
+    def test_spark_xshards_not_dict(self):
+        from bigdl.dllib.nncontext import init_nncontext
+        from bigdl.orca.data import SparkXShards
+        estimator = get_estimator(workers_per_node=1,
+                                  model_fn=lambda config: MultiInputNet())
+        sc = init_nncontext()
+        x_rdd = sc.parallelize(np.random.rand(4000, 1, 50).astype(np.float32))
+        # torch 1.7.1+ requires target size same as output size, which is (batch, 1)
+        y_rdd = sc.parallelize(np.random.randint(0, 2, size=(4000, 1, 1)).astype(np.float32))
+        rdd = x_rdd.zip(y_rdd).map(lambda x_y: {'feature': x_y[0], 'label': x_y[1]})
+        train_rdd, val_rdd = rdd.randomSplit([0.9, 0.1])
+        train_xshards = SparkXShards(train_rdd)
+        val_xshards = SparkXShards(val_rdd)
+        train_stats = estimator.fit(train_xshards, validation_data=val_xshards,
+                                    batch_size=256, epochs=2, feature_cols=["feature"], label_cols=["label"])
+        print(train_stats)
+        val_stats = estimator.evaluate(val_xshards, batch_size=128)
+        print(val_stats)
+
     def test_dataframe_train_eval(self):
 
         sc = init_nncontext()
