@@ -8,6 +8,12 @@ runs:
       with:
         python-version: '3.7.10'
 
+    - name: Set up Spark
+      uses: vemonet/setup-spark@v1
+      with:
+        spark-version: '3.1.2'
+        spark-url: 'https://archive.apache.org/dist/spark/spark-3.1.2/spark-3.1.2-bin-hadoop2.7.tgz'
+
     - name: Install dependencies
       shell: bash
       run: |
