@@ -233,7 +233,7 @@ function refresh_cmd(){
 //set the color of selected buttons
 function set_color(id){
    $("#"+id).parent().css("background-color","var(--pst-color-primary)");
-   $("#"+id).css("color","white");
+   $("#"+id).css("color","var(--pst-color-primary-text)");
    $("#"+id).addClass("isset");
 }
 
@@ -304,7 +304,7 @@ $(document).on({
     mouseenter: function () {
         if($(this).prop("disabled")!=true){
             $(this).parent().css("background-color","var(--pst-color-primary)");
-            $(this).css("color","white");
+            $(this).css("color","var(--pst-color-primary-text)");
         }
     },
     mouseleave: function () {
