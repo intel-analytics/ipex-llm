@@ -826,15 +826,13 @@ class SparkXShards(XShards):
         :return: A new merged SparkXShards.
         """
         from bigdl.orca.data.utils import spark_df_to_pd_sparkxshards
-        from pyspark.sql import SparkSession
-        invalidInputError(isinstance(right, SparkXShards), "right should be a SparkXShards")
-        spark = SparkSession.builder.getOrCreate()
+        invalidInputError(isinstance(right, SparkXShards), "right should be a SparkXShards") 
 
         left_df = self.to_spark_df()
         right_df = right.to_spark_df()
         merged = left_df.join(right_df, on=on, how=how)
         # count non-empty partitions
-        nonEmptyPart = spark.sparkContext.accumulator(0)
+        nonEmptyPart = get_spark_context().accumulator(0)
         def f(iterator):
             isEmpty = 1
             for x in iterator:
@@ -845,9 +843,10 @@ class SparkXShards(XShards):
             nonEmptyPart.add(isEmpty == 0)
         merged.rdd.foreachPartition(f)
         # repartition evenly according to the index
-        merged_withIndex_rdd = merged.rdd.zipWithIndex().map(lambda p: (p[1], p[0]))
-        merged = merged_withIndex_rdd.partitionBy(nonEmptyPart.value, lambda x: x)\
-                .map(lambda p: p[1]).toDF()
+        if nonEmptyPart.value != merged.rdd.getNumPartitions():    
+            merged_withIndex_rdd = merged.rdd.zipWithIndex().map(lambda p: (p[1], p[0]))
+            merged = merged_withIndex_rdd.partitionBy(nonEmptyPart.value, lambda x: x)\
+                    .map(lambda p: p[1]).toDF()
         merged = spark_df_to_pd_sparkxshards(merged)
         return merged
 
