@@ -49,6 +49,7 @@ html_theme_options = {
 # add search bar to side bar
 html_sidebars = {
     "index": [
+        "sidebar_quicklinks.html"
     ],
     "**": ["sidebar_backbutton.html","sidebar-nav-bs.html"]
 }

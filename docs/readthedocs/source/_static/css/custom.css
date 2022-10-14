@@ -55,3 +55,13 @@ object.graphviz{
     display: flex;
     justify-content: center;
 }
+
+/* for landing page side bar */
+.bigdl-quicklinks-section-nav{
+    padding-bottom: 0.5rem;
+    padding-left: 1rem;
+}
+
+.bigdl-quicklinks-section-title{
+    color: var(--pst-color-primary);
+}
