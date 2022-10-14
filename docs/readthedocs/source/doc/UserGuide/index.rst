@@ -1,3 +1,7 @@
+.. |scala-logo| image:: ../../../image/scala_logo.png
+  :height: 20
+  :alt: Scala Logo
+
 User Guide
 =========================
 
@@ -10,7 +14,7 @@ User Guide
 
         Python Environment Setup Guide (Linux), applicable to Orca, Nano, DLlib, Chronos, Friesian.
 
-    .. grid-item-card:: :fas:`server` Scala User Guide
+    .. grid-item-card:: |scala-logo| Scala User Guide
         :link: scala.html
         :class-card: bigdl-link-card
 
