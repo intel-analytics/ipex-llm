@@ -67,6 +67,7 @@ runs:
     - name: Spark K8S Examples Test
       shell: bash
       run: |
+        docker exec -i $CONTAINER_NAME bash -c "/ppml/trusted-big-data-ml/init.sh"
         docker exec -i $CONTAINER_NAME bash -c "/ppml/trusted-big-data-ml/work/test-suites/k8s-spark-pi.sh"
         docker exec -i $CONTAINER_NAME bash -c "/ppml/trusted-big-data-ml/work/test-suites/k8s-spark-sql-examples.sh"
         docker exec -i $CONTAINER_NAME bash -c "/ppml/trusted-big-data-ml/work/test-suites/k8s-pyspark-sql-examples.sh"
