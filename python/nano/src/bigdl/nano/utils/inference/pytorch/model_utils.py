@@ -80,8 +80,7 @@ def export_to_onnx(model, input_sample=None, onnx_path="model.onnx", dynamic_axe
            KEY (str): an input or output name. Each name must also be provided in input_names or
            output_names.
            VALUE (dict or list): If a dict, keys are axis indices and values are axis names. If a
-           list, each element is an axis index. If we set the first dim of each input as a dynamic
-           batch_size.
+           list, each element is an axis index.
     :param **kwargs: will be passed to torch.onnx.export function.
     '''
     forward_args = get_forward_args(model)
@@ -93,7 +92,7 @@ def export_to_onnx(model, input_sample=None, onnx_path="model.onnx", dynamic_axe
                       'or set one of input_sample and model.example_input_array')
     if isinstance(dynamic_axes, dict):
         pass
-    elif dynamic_axes:
+    elif dynamic_axes is True:
         dynamic_axes = {}
         for arg in forward_args:
             dynamic_axes[arg] = {0: 'batch_size'}  # set all dim0 to be dynamic
