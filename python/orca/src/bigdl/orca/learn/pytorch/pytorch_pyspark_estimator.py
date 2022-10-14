@@ -408,6 +408,8 @@ class PyTorchPySparkEstimator(BaseEstimator):
             result = convert_predict_xshards_to_dataframe(data, pred_shards)
 
         elif isinstance(data, SparkXShards):
+            if data._get_class_name() == 'pandas.core.frame.DataFrame':
+                data = process_xshards_of_pandas_dataframe(data, feature_cols)
             pred_shards = self._predict_spark_xshards(data, init_params, params)
             result = update_predict_xshards(data, pred_shards)
         else:
@@ -475,6 +477,8 @@ class PyTorchPySparkEstimator(BaseEstimator):
                                              mode="evaluate",
                                              num_workers=self.num_workers)
         if isinstance(data, SparkXShards):
+            if data._get_class_name() == 'pandas.core.frame.DataFrame':
+                data = process_xshards_of_pandas_dataframe(data, feature_cols, label_cols)
             # set train/validation data
             def transform_func(iter, init_param, param):
                 partition_data = list(iter)
