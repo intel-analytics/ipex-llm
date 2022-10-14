@@ -63,7 +63,7 @@ if cluster_mode == "local":
     sc = init_orca_context(memory=str(sys.argv[2]))
 
 
-data_path = "./bigdl2.0/data"
+data_path = "."
 data_type = "ml-1m"
 # Need spark3 to support delimiter with more than one character.
 spark= OrcaContext.get_spark_session()
@@ -120,9 +120,9 @@ stats = est.fit(train_df,
                 batch_size=batch_size,
                 feature_cols=['user', 'item'],
                 label_cols=['label'],
-                steps_per_epoch=int(60000 // batch_size),
+                steps_per_epoch=int(0.01*train_df.count() // batch_size),
                 validation_data=test_df,
-                validation_steps =int(10000 // batch_size))
+                validation_steps =int(0.01*test_df.count() // batch_size))
 
 # save model in H5 format
 est.save("./ncf_tf_model.h5")
@@ -132,7 +132,7 @@ stats = est.evaluate(test_df,
                      feature_cols=['user', 'item'],
                      label_cols=['label'],
                      batch_size=batch_size,
-                     num_steps=int(epochs*10000 // batch_size))
+                     num_steps=int(0.01*test_df.count()*epochs // batch_size))
 
 print(stats)
 est.shutdown()
