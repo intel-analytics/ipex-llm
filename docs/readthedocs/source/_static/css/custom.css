@@ -35,3 +35,7 @@ html[data-theme="light"] {
     background-color: var(--pst-color-info-tiny-opacity);
     border: none;
 }
+
+.bigdl-link-card:hover{
+    border-left: .2rem solid var(--pst-color-info);
+}
