@@ -44,3 +44,13 @@ html[data-theme="light"] {
 .sd-badge{
     padding: .35em .50em
 }
+
+/* limit the width of graphviz object and center it*/
+object.graphviz{
+    max-width: 95%;
+}
+
+.graphviz{
+    display: flex;
+    justify-content: center;
+}
