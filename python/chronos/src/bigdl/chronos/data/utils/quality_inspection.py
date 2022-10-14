@@ -36,7 +36,8 @@ def quality_check_timeseries_dataframe(df, dt_col, id_col=None, repair=True):
     :return: a bool indicates df whether contains low-quality data.
     '''
     invalidInputError(dt_col in df.columns, f"dt_col {dt_col} can not be found in df.")
-    invalidInputError(id_col in df.columns, f"id_col {id_col} can not be found in df.")
+    if id_col is not None:
+        invalidInputError(id_col in df.columns, f"id_col {id_col} can not be found in df.")
     invalidInputError(pd.isna(df[dt_col]).sum() == 0, "There is N/A in datetime col")
     if df.empty is True:
         return True, df
