@@ -36,6 +36,7 @@ def quality_check_timeseries_dataframe(df, dt_col, id_col=None, repair=True):
     :return: a bool indicates df whether contains low-quality data.
     '''
     invalidInputError(dt_col in df.columns, f"dt_col {dt_col} can not be found in df.")
+    invalidInputError(id_col in df.columns, f"id_col {id_col} can not be found in df.")
     invalidInputError(pd.isna(df[dt_col]).sum() == 0, "There is N/A in datetime col")
     if df.empty is True:
         return True, df
@@ -78,7 +79,8 @@ def _timestamp_type_check(df_column):
     '''
     _is_pd_datetime = pd.api.types.is_datetime64_any_dtype(df_column.dtypes)
     if _is_pd_datetime is not True:
-        logging.warning("Datetime colomn should be datetime64 dtype.")
+        logging.warning("Datetime column should be datetime64 dtype. You can manually modify "
+                        "the dtype, or set repair=True when initialize TSDataset.")
         return False
     return True
 
@@ -92,18 +94,21 @@ def _timestamp_type_repair(df, dt_col):
         df[dt_col] = df[dt_col].astype('datetime64')
     except:
         return False
-    logging.warning("Datetime colomn has be modified to datetime64 dtype.")
+    logging.warning("Datetime column has be modified to datetime64 dtype.")
     return True
 
 
-def _time_interval_check(df, dt_col, id_col):
+def _time_interval_check(df, dt_col, id_col=None):
     '''
     This check is used to verify whether all the time intervals of datetime column
     are consistent.
     '''
     if id_col is not None:
-        flag = True
         _id_list = list(np.unique(df[id_col]))
+
+    # check whether exists multi id
+    if id_col is not None and len(_id_list) > 1:
+        flag = True
         intervals = {}
         for id_ in _id_list:
             df_id = df[df[id_col] == id_]
@@ -117,8 +122,9 @@ def _time_interval_check(df, dt_col, id_col):
             return True, intervals
         else:
             logging.warning("There are irregular interval(more than one interval length)"
-                            " among the data, please call .resample(interval).impute() "
-                            "first to clean the data.")
+                            " among the data. You can call .resample(interval).impute() "
+                            "first to clean the data manually, or set repair=True when "
+                            "initialize TSDataset.")
             return False, intervals
     else:
         df_column = df[dt_col]
@@ -126,8 +132,9 @@ def _time_interval_check(df, dt_col, id_col):
         unique_intervals = intervals[:-1].unique()
         if len(unique_intervals) > 1:
             logging.warning("There are irregular interval(more than one interval length)"
-                            " among the data, please call .resample(interval).impute() "
-                            "first to clean the data.")
+                            " among the data. You can call .resample(interval).impute() "
+                            "first to clean the data manually, or set repair=True when "
+                            "initialize TSDataset.")
             return False, intervals
         return True, intervals
 
@@ -182,7 +189,8 @@ def _missing_value_check(df, dt_col, threshold=0):
         rows = len(df)
         if missing_value / rows > threshold:
             logging.warning(f"The missing value of column {column} exceeds {threshold},"
-                            f"please call .impute() fisrt to remove N/A number")
+                            f"please call .impute() fisrt to remove N/A number manually, "
+                            f"or set repair=True when initialize TSDataset.")
             return False
     return True
 

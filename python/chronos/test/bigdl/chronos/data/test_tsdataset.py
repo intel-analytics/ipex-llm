@@ -1283,6 +1283,24 @@ class TestTSDataset(TestCase):
         unique_intervals = interval[:-1].unique()
         assert len(unique_intervals) == 1
 
+    def test_tsdataset_interval_repair_for_single_and_multi_id(self):
+        df = get_multi_id_ts_df_interval()
+        tsdata = TSDataset.from_pandas(df, dt_col="datetime",
+                                       target_col=['value'],
+                                       extra_feature_col=None,
+                                       repair=True)
+        dt_col = tsdata.df["datetime"]
+        assert len(dt_col) == 366
+        df = get_multi_id_ts_df_interval()
+        tsdata = TSDataset.from_pandas(df,
+                                       id_col="id",
+                                       dt_col="datetime",
+                                       target_col=['value'],
+                                       extra_feature_col=None,
+                                       repair=True)
+        dt_col = tsdata.df["datetime"]
+        assert len(dt_col) == 366*2
+
     def test_tsdataset_interval_check_and_repair_for_multi_id(self):
         df_multi_id = get_multi_id_ts_df()
         horizon = 10
@@ -1290,7 +1308,8 @@ class TestTSDataset(TestCase):
         batch_size = 32
 
         tsdata = TSDataset.from_pandas(df_multi_id, dt_col="datetime", target_col="value",
-                                        extra_feature_col=["extra feature"], id_col="id")
+                                        extra_feature_col=["extra feature"], id_col="id",
+                                        repair=True)
 
         # train
         torch_loader = tsdata.to_torch_data_loader(batch_size=batch_size,
