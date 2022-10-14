@@ -30,8 +30,8 @@ BigDL-Nano
 
         +++
 
-        PyTorch :bdg-link:`Infer <./Overview/pytorch_inference.html>`:bdg-link:`Train <./Overview/pytorch_train.html>` |
-        TF2 :bdg-link:`Infer <./Overview/tensorflow_inference.html>`:bdg-link:`Train <./Overview/tensorflow_train.html>`
+        :bdg-link:`PyTorch Infer <./Overview/pytorch_inference.html>`:bdg-link:`Train <./Overview/pytorch_train.html>` |
+        :bdg-link:`TensorFlow Infer <./Overview/tensorflow_inference.html>`:bdg-link:`Train <./Overview/tensorflow_train.html>`
 
     .. grid-item-card::
 
