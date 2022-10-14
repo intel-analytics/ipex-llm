@@ -9,13 +9,7 @@ In this section we take SimpleQuery as an example to go through the entire BigDL
   <img src="https://user-images.githubusercontent.com/61072813/178393982-929548b9-1c4e-4809-a628-10fafad69628.png" alt="data lifecycle" />
 </p>
 
-
-<div class="video-text-flex-container-v">
-    <div class="video-container">
-        <iframe src="https://user-images.githubusercontent.com/61072813/184758702-4b9809f9-50ac-425e-8def-0ea1c5bf1805.mp4" title="Video" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
-    </div>
-</div>
-
+<video src="https://user-images.githubusercontent.com/61072813/184758702-4b9809f9-50ac-425e-8def-0ea1c5bf1805.mp4" width="100%" controls></video>
 
 ---
 
@@ -178,9 +172,4 @@ When the job is done, you can decrypt and read result of the job. More details i
 
 ## Video Demo
 
-<div class="video-text-flex-container-v">
-    <div class="video-container">
-        <iframe src="https://user-images.githubusercontent.com/61072813/184758643-821026c3-40e0-4d4c-bcd3-8a516c55fc01.mp4" title="Video" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
-    </div>
-</div>
-
+<video src="https://user-images.githubusercontent.com/61072813/184758643-821026c3-40e0-4d4c-bcd3-8a516c55fc01.mp4" width="100%" controls></video>

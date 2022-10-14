@@ -2,12 +2,7 @@
 
 ## 1. What is BigDL PPML?
 
-
-<div class="video-text-flex-container-v">
-    <div class="video-container">
-        <iframe src="https://user-images.githubusercontent.com/61072813/184758908-da01f8ea-8f52-4300-9736-8c5ee981d4c0.mp4" title="Video" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
-    </div>
-</div>
+<video src="https://user-images.githubusercontent.com/61072813/184758908-da01f8ea-8f52-4300-9736-8c5ee981d4c0.mp4" width="100%" controls></video>
 
 ---
 
