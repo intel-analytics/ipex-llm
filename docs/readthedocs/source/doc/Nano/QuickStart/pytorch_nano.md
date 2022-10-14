@@ -163,7 +163,7 @@ At this stage, you may already experience some speedup due to the optimized envi
 MyNano(num_processes=2, distributed_backend="subprocess").train()
 ```
 
-- Note: BigDL-Nano now support 'spawn', 'subprocess' and 'ray' backends for distributed training, but only the 'subprocess' backends can be used in interactive environment.
+- Note: BigDL-Nano now support 'spawn', 'subprocess' and 'ray' backends for distributed training, but only the 'subprocess' backend can be used in interactive environment.
 
 #### Intel Extension for Pytorch (a.k.a. [IPEX](https://github.com/intel/intel-extension-for-pytorch))
 
