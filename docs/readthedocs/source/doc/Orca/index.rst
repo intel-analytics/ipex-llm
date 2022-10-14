@@ -29,11 +29,10 @@ Most AI projects start with a Python notebook running on a single laptop; howeve
         Each guide in this section provides you with in-depth information, concepts and knowledges about Orca key features.
 
         +++
-
-        :bdg-link:`OrcaContext <./Overview/orca-context.html>` |
+        
         :bdg-link:`Data <./Overview/data-parallel-processing.html>` |
-        :bdg-link:`Train & Infer <./Overview/distributed-training-inference.html>` |
-        :bdg-link:`AutoML <./Overview/distributed-tuning.html>`
+        :bdg-link:`Estimator <./Overview/distributed-training-inference.html>` |
+        :bdg-link:`RayOnSpark <./Overview/ray.html>` 
 
     .. grid-item-card::
 
