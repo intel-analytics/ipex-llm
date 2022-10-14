@@ -51,8 +51,6 @@ do
         if [ -z "$(grep "All tests passed" /ppml/trusted-big-data-ml/logs/reporter/${suite}.txt)" ]
         then
             echo "failed"
-            rm /ppml/trusted-big-data-ml/logs/reporter/${suite}.txt
-            rm /ppml/trusted-big-data-ml/logs/runtime/${suite}.log
         else
             echo "pass"
             break
