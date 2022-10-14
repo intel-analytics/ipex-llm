@@ -15,7 +15,7 @@ Most AI projects start with a Python notebook running on a single laptop; howeve
         **Get Started**
         ^^^
 
-        Documents in these sections helps you getting started quickly with Orca.
+        Documents in these sections helps you get started quickly with Orca.
 
         +++
         :bdg-link:`Orca in 5 minutes <./Overview/orca.html>` |
