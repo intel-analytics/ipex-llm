@@ -29,7 +29,7 @@ You can use **Chronos** for:
 
         .. image:: ./Image/simulation.svg
             :alt: Simulation example diagram
-        
+
         **Simulation**
 
         Generate similar data as history data.
@@ -48,8 +48,8 @@ You can use **Chronos** for:
         You may understand the basic usage of Chronos' components and learn to write the first runnable application in this quick tour page.
 
         +++
-        `Chronos in 5 minutes <./Overview/quick-tour.html>`_ /
-        `Installation <./Overview/install.html>`_
+        :bdg-link:`Chronos in 5 minutes <./Overview/quick-tour.html>` |
+        :bdg-link:`Installation <./Overview/install.html>`
 
     .. grid-item-card::
 
@@ -60,10 +60,10 @@ You can use **Chronos** for:
 
         +++
 
-        `Data <./Overview/data_processing_feature_engineering.html>`_ /
-        `Forecast <./Overview/forecasting.html>`_ /
-        `Detect <./Overview/anomaly_detection.html>`_ /
-        `Simulate <./Overview/simulation.html>`_
+        :bdg-link:`Data <./Overview/data_processing_feature_engineering.html>` |
+        :bdg-link:`Forecast <./Overview/forecasting.html>` |
+        :bdg-link:`Detect <./Overview/anomaly_detection.html>` |
+        :bdg-link:`Simulate <./Overview/simulation.html>`
 
     .. grid-item-card::
 
@@ -75,7 +75,7 @@ You can use **Chronos** for:
 
         +++
 
-        `How-to-Guide <./Howto/index.html>`_ / `Example <./QuickStart/index.html>`_
+        :bdg-link:`How-to-Guide <./Howto/index.html>` | :bdg-link:`Example <./QuickStart/index.html>`
 
     .. grid-item-card::
 
@@ -86,7 +86,7 @@ You can use **Chronos** for:
 
         +++
 
-        `API Document <../PythonAPI/Chronos/index.html>`_
+        :bdg-link:`API Document <../PythonAPI/Chronos/index.html>`
 
 
 ..  toctree::

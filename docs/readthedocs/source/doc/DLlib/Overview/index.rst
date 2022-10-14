@@ -3,5 +3,5 @@
 DLLib Key Features
 ================================
 
-.. toctree::
-    :maxdepth: 1
+* `Keras-like API <keras-api.html>`_
+* `Spark ML Pipeline Support <nnframes.html>`_

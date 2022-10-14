@@ -2,13 +2,14 @@ root: index
 subtrees:
   - entries:
     - file: doc/UserGuide/index
+      title: 'User guide'
       subtrees:
         - entries:
           - file: doc/UserGuide/python
           - file: doc/UserGuide/scala
           - file: doc/UserGuide/win
-          - file: doc/UserGuide/colab
           - file: doc/UserGuide/docker
+          - file: doc/UserGuide/colab
           - file: doc/UserGuide/hadoop
           - file: doc/UserGuide/k8s
           - file: doc/UserGuide/databricks
@@ -16,7 +17,7 @@ subtrees:
 
   - entries:
     - file: doc/Application/powered-by
-      title: "Powered By"
+      title: "Powered by"
 
 
   - entries:
@@ -145,6 +146,12 @@ subtrees:
       title: "Friesian"
       subtrees:
         - entries:
+          - file: doc/Friesian/intro
+            title: "Introduction"
+          - file: doc/Friesian/serving
+            title: "Serving"
+          - file: doc/Friesian/examples
+            title: "Use Cases"
           - file: doc/PythonAPI/Friesian/index
             title: "API Reference"
 
@@ -153,16 +160,31 @@ subtrees:
       title: "PPML"
       subtrees:
         - entries:
-          - file: doc/PPML/Overview/ppml
-          - file: doc/PPML/Overview/trusted_big_data_analytics_and_ml
-          - file: doc/PPML/Overview/trusted_fl
-          - file: doc/PPML/QuickStart/secure_your_services
-          - file: doc/PPML/QuickStart/build_kernel_with_sgx
-          - file: doc/PPML/QuickStart/deploy_intel_sgx_device_plugin_for_kubernetes
-          - file: doc/PPML/QuickStart/trusted-serving-on-k8s-guide
-          - file: doc/PPML/QuickStart/tpc-h_with_sparksql_on_k8s
-          - file: doc/PPML/QuickStart/tpc-ds_with_sparksql_on_k8s
-          - file: doc/PPML/Overview/azure_ppml
+            - file: doc/PPML/Overview/intro
+              title: "PPML Introduction"
+            - file: doc/PPML/Overview/userguide
+              title: 'User Guide'
+            - file: doc/PPML/Overview/examples
+              title: "Tutorials"
+              subtrees:
+                - entries:
+                  - file: doc/PPML/Overview/quicktour
+                  - file: doc/PPML/QuickStart/end-to-end
+            - file: doc/PPML/Overview/misc
+              title: "Advanced Topics"
+              subtrees:
+                - entries:
+                  - file: doc/PPML/Overview/ppml
+                  - file: doc/PPML/Overview/trusted_big_data_analytics_and_ml
+                  - file: doc/PPML/Overview/trusted_fl
+                  - file: doc/PPML/QuickStart/secure_your_services
+                  - file: doc/PPML/QuickStart/build_kernel_with_sgx
+                  - file: doc/PPML/QuickStart/deploy_intel_sgx_device_plugin_for_kubernetes
+                  - file: doc/PPML/QuickStart/trusted-serving-on-k8s-guide
+                  - file: doc/PPML/QuickStart/tpc-h_with_sparksql_on_k8s
+                  - file: doc/PPML/QuickStart/tpc-ds_with_sparksql_on_k8s
+                  - file: doc/PPML/Overview/azure_ppml
+
 
   - entries:
     - file: doc/UserGuide/develop
@@ -175,11 +197,14 @@ subtrees:
       subtrees:
         - entries:
           - file: doc/Serving/Overview/serving.md
+            title: "User Guide"
           - file: doc/Serving/QuickStart/serving-quickstart
+            title: "Serving in 5 miniutes"
           - file: doc/Serving/ProgrammingGuide/serving-installation
           - file: doc/Serving/ProgrammingGuide/serving-start
           - file: doc/Serving/ProgrammingGuide/serving-inference
           - file: doc/Serving/Example/example
+            title: "Examples"
           - file: doc/Serving/FAQ/faq
           - file: doc/Serving/FAQ/contribute-guide
 

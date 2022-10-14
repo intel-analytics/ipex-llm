@@ -9,7 +9,7 @@ User Guide
 
         Python Environment Setup Guide (Linux), applicable to Orca, Nano, DLlib, Chronos, Friesian.
 
-    .. grid-item-card:: :fas:`plug` Scala User Guide
+    .. grid-item-card:: :fas:`server` Scala User Guide
         :link: scala.html
 
         Scala Environment Setup Guide (Linux), applicable to DLLib.
@@ -19,12 +19,17 @@ User Guide
 
         Use BigDL on Windows.
 
+    .. grid-item-card:: :fas:`desktop` Docker User Guide
+        :link: docker.html
+
+        Use BigDL in docker Environment.
+
     .. grid-item-card:: :fas:`cloud-arrow-up` Colab User Guide
         :link: colab.html
 
         Use BigDL in Google Colab Environment.
 
-    .. grid-item-card:: :fas:`cloud-arrow-up` Databricks User Guide
+    .. grid-item-card:: :fas:`cloud` Databricks User Guide
         :link: databricks.html
 
         Use BigDL in Databricks Environment.
@@ -34,13 +39,10 @@ User Guide
 
         Use BigDL in Hadoop/YARN Environment.
 
-    .. grid-item-card:: :fas:`server` k8s User Guide
+    .. grid-item-card:: :fas:`cloud` k8s User Guide
         :link: k8s.html
 
         Use BigDL in K8s Environment.
 
 
-    .. grid-item-card:: :fas:`server` Docker User Guide
-        :link: docker.html
 
-        Use BigDL in docker Environment.

@@ -17,43 +17,42 @@ BigDL-DLlib
         Documents in these sections helps you getting started quickly with DLLib.
 
         +++
-        `DLlib in 5 minutes <./Overview/dllib.html>`_ /
-        `Installation <./Overview/install.html>`_ /
+        :bdg-link:`DLlib in 5 minutes <./Overview/dllib.html>` |
+        :bdg-link:`Installation <./Overview/install.html>`
 
     .. grid-item-card::
 
         **Key Features Guide**
         ^^^
 
-        Each guide in this section provides you with in-depth information, concepts and knowledges about Nano key features.
+        Each guide in this section provides you with in-depth information, concepts and knowledges about DLLib key features.
 
         +++
 
-        `Keras-Like API <./Overview/keras-api.html>`_ /
-        `Spark ML Pipeline <./Overview/nnframes.html>`_ /
+        :bdg-link:`Keras-Like API <./Overview/keras-api.html>` |
+        :bdg-link:`Spark ML Pipeline <./Overview/nnframes.html>`
 
     .. grid-item-card::
 
         **Examples**
         ^^^
 
-        How-to Guide provides bite-sized, actionable examples of how to use specific Nano features, different from our tutorials
-        which are full-length examples each implementing a full usage scenario.
+        DLLib Examples and Tutorials.
 
         +++
 
-        `Tutorials <./QuickStart/index.html>`_
+        :bdg-link:`Tutorials <./QuickStart/index.html>`
 
     .. grid-item-card::
 
         **API Document**
         ^^^
 
-        API Document provides detailed description of Nano APIs.
+        API Document provides detailed description of DLLib APIs.
 
         +++
 
-        `API Document <../../PythonAPI/DLlib/index.html>`_
+        :bdg-link:`API Document <../../PythonAPI/DLlib/index.html>`
 
 
 ..  toctree::

@@ -15,12 +15,11 @@ Most AI projects start with a Python notebook running on a single laptop; howeve
         **Get Started**
         ^^^
 
-        Documents in these sections helps you getting started quickly with Nano.
+        Documents in these sections helps you getting started quickly with Orca.
 
         +++
-        `Orca in 5 minutes <./Overview/orca.html>`_ /
-        `Installation <./Overview/install.html>`_ /
-        `Tutorials <./QuickStart/index.html>`_
+        :bdg-link:`Orca in 5 minutes <./Overview/orca.html>` |
+        :bdg-link:`Installation <./Overview/install.html>`
 
     .. grid-item-card::
 
@@ -31,22 +30,21 @@ Most AI projects start with a Python notebook running on a single laptop; howeve
 
         +++
 
-        `Orca Context <./Overview/orca-context.html>`_ /
-        `Distributed Data Processing <./Overview/data-parallel-processing.html>`_ /
-        `Distributed Training and Inference <./Overview/distributed-training-inference.html>`_ /
-        `Distributed AutoML <./Overview/distributed-tuning.html>`_
+        :bdg-link:`Context <./Overview/orca-context.html>` |
+        :bdg-link:`Data <./Overview/data-parallel-processing.html>` |
+        :bdg-link:`Train & Infer <./Overview/distributed-training-inference.html>` |
+        :bdg-link:`AutoML <./Overview/distributed-tuning.html>`
 
     .. grid-item-card::
 
-        **How-to Guide**
+        **Tutorials**
         ^^^
 
-        How-to Guide provides bite-sized, actionable examples of how to use specific Nano features, different from our tutorials
-        which are full-length examples each implementing a full usage scenario.
+        Orca Tutorials and Examples.
 
         +++
 
-        `How-to-Guide <./Howto/index.html>`_
+        :bdg-link:`Tutorials <./QuickStart/index.html>`
 
     .. grid-item-card::
 
@@ -57,7 +55,7 @@ Most AI projects start with a Python notebook running on a single laptop; howeve
 
         +++
 
-        `API Document <../PythonAPI/Orca/index.html>`_
+        :bdg-link:`API Document <../PythonAPI/Orca/index.html>`
 
 
 ..  toctree::

@@ -17,9 +17,9 @@ BigDL-Nano
         Documents in these sections helps you getting started quickly with Nano.
 
         +++
-        `Nano in 5 minutes <./Overview/nano.html>`_ /
-        `Installation <./Overview/install.html>`_ /
-        `Tutorials <./QuickStart/index.html>`_
+        :bdg-link:`Nano in 5 minutes <./Overview/nano.html>` |
+        :bdg-link:`Installation <./Overview/install.html>` |
+        :bdg-link:`Tutorials <./QuickStart/index.html>`
 
     .. grid-item-card::
 
@@ -30,10 +30,8 @@ BigDL-Nano
 
         +++
 
-        `PyTorch Inference <./Overview/pytorch_inference.html>`_ /
-        `PyTorch Training <./Overview/pytorch_train.html>`_ /
-        `Tensorflow Inference <./Overview/tensorflow_inference.html>`_ /
-        `Tensorflow Training <./Overview/tensorflow_train.html>`_
+        PyTorch :bdg-link:`Infer <./Overview/pytorch_inference.html>`:bdg-link:`Train <./Overview/pytorch_train.html>` |
+        TF2 :bdg-link:`Infer <./Overview/tensorflow_inference.html>`:bdg-link:`Train <./Overview/tensorflow_train.html>`
 
     .. grid-item-card::
 
@@ -45,7 +43,7 @@ BigDL-Nano
 
         +++
 
-        `How-to-Guide <./Howto/index.html>`_
+        :bdg-link:`How-to-Guide <./Howto/index.html>`
 
     .. grid-item-card::
 
@@ -56,7 +54,7 @@ BigDL-Nano
 
         +++
 
-        `API Document <../../PythonAPI/Nano/index.html>`_
+        :bdg-link:`API Document <../../PythonAPI/Nano/index.html>`
 
 
 ..  toctree::
