@@ -116,8 +116,8 @@ class TorchNano(LightningLite):
 
         :param num_processes: number of processes in distributed training, defaults to 1
         :param use_ipex: whether use ipex acceleration, defaults to False
-        :param distributed_backend: use which backend in distributed mode, defaults to "subprocess", \
-            now avaiable backends are 'spawn', 'subprocess' and 'ray'
+        :param distributed_backend: use which backend in distributed mode, defaults to \
+            "subprocess", now avaiable backends are 'spawn', 'subprocess' and 'ray'
         :param precision: Double precision (64), full precision (32), half precision (16)
             or bfloat16 precision (bf16), defaults to 32.
             Enable ipex bfloat16 weight prepack when `use_ipex=True` and `precision='bf16'`
