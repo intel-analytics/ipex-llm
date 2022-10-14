@@ -12,27 +12,21 @@ You can use **Chronos** for:
         .. image:: ./Image/forecasting.svg
             :alt: Forcasting example diagram
 
-        **Forecasting**
-
-        Predict future using history data.
+        **Forecasting:** Predict future using history data.
 
     .. grid-item::
 
         .. image:: ./Image/anomaly_detection.svg
             :alt: Anomaly Detection example diagram
 
-        **Anomaly Detection**
-
-        Discover unexpected items in data.
+        **Anomaly Detection:** Discover unexpected items in data.
 
     .. grid-item::
 
         .. image:: ./Image/simulation.svg
             :alt: Simulation example diagram
 
-        **Simulation**
-
-        Generate similar data as history data.
+        **Simulation:** Generate similar data as history data.
 
 -------
 
