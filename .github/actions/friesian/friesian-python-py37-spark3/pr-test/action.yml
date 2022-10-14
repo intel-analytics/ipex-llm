@@ -15,7 +15,7 @@ runs:
         cd ..
         export SPARK_HOME=${{ github.workspace }}/data/spark-3.1.2-bin-hadoop2.7
         source activate py37
-        #export SPARK_LOCAL_HOSTNAME=localhost
+        export SPARK_LOCAL_HOSTNAME=localhost
         pip install pyspark==3.1.2 pytest
         chmod a+x python/friesian/dev/test/run-pytests-friesian
         python/friesian/dev/test/run-pytests-friesian
