@@ -2,14 +2,11 @@ Blogs
 ---
 
 **2022**
-- [BigDL 2.0: Seamless Scaling of AI Pipelines from Laptops to Distributed Cluster](https://openaccess.thecvf.com/content/CVPR2022/papers/Dai_BigDL_2.0_Seamless_Scaling_of_AI_Pipelines_From_Laptops_to_CVPR_2022_paper.pdf)
-- [Goldwind SE: Intelligent Power Prediction Solution](https://www.intel.com/content/www/us/en/customer-spotlight/stories/goldwind-customer-story.html)
-- [PROJECT BOSE: A smart way to enable sustainable 5G networks](https://www.capgemini.com/insights/expert-perspectives/project-bose-a-smart-way-to-enable-sustainable-5g-networks/)
-- [AsiaInfo Taps Intelligent Network Applications Based on Intel Xeon Scalable Platform and Network Big Data Case Study](https://www.intel.cn/content/www/cn/zh/customer-spotlight/cases/asiainfo-taps-intelligent-network-applications.html) (in Chinese)
-- [China Unicom Uses BigDL Chronos Framework to Realize 5G Core Network Dynamic Energy-saving and Build New Digital Information Infrastructure Solution Brief](https://www.intel.cn/content/www/cn/zh/customer-spotlight/cases/china-unicom-bigdl-chronos-framework-5gc.html) (in Chinese)
-- [Inspur’s Big Data Intelligent Computing AIO Solution Based on Intel Architecture](https://www.intel.cn/content/www/cn/zh/analytics/inspur-big-data-intelligent-computing-aio.html) (in Chinese)
-- ["AI at Scale" in Mastercard* with BigDL](https://www.intel.com/content/www/us/en/developer/articles/technical/ai-at-scale-in-mastercard-with-bigdl.html)
-- [Technical Verification of SGX and BigDL Based Privacy Computing for Multi-source Financial Big Data](https://www.intel.cn/content/www/cn/zh/now/data-centric/sgx-bigdl-financial-big-data.html) (in Chinese)
+- ["AI at Scale" in Mastercard with BigDL](https://www.intel.com/content/www/us/en/developer/articles/technical/ai-at-scale-in-mastercard-with-bigdl.html)
+- [BigDL 2.0: Seamless Scaling of AI Pipelines from Laptops to Distributed Cluster](https://arxiv.org/abs/2204.01715)
+- [Project Bose: A smart way to enable sustainable 5G networks in Capgemini](https://www.capgemini.com/insights/expert-perspectives/project-bose-a-smart-way-to-enable-sustainable-5g-networks/)
+- [Intelligent Power Prediction Solution in Goldwind](https://www.intel.com/content/www/us/en/customer-spotlight/stories/goldwind-customer-story.html)
+- [5G Core Network Power Saving using BigDL Chronos Framework in China Unicom](https://www.intel.cn/content/www/cn/zh/customer-spotlight/cases/china-unicom-bigdl-chronos-framework-5gc.html) (in Chinese)
 
 **2021**
 - [From Ray to Chronos: Build end-to-end AI use cases using BigDL on top of Ray](https://www.anyscale.com/blog/from-ray-to-chronos-build-end-to-end-ai-use-cases-using-bigdl-on-top-of-ray)
