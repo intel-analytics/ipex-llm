@@ -13,7 +13,7 @@ export BIGDATA_IMAGE_TAG=2.2.0-SNAPSHOT
 
 Proxy_Modified="sudo docker build \
     --build-arg http_proxy=http://${HTTP_PROXY_HOST}:${HTTP_PROXY_PORT} \
-    --build-arg https_proxy=http://${HTTPS_PROXY_HOST}:${HTTPS_PROXY_PORT} \
+    --build-arg https_proxy=https://${HTTPS_PROXY_HOST}:${HTTPS_PROXY_PORT} \
     --build-arg HTTP_PROXY_HOST=${HTTP_PROXY_HOST} \
     --build-arg HTTP_PROXY_PORT=${HTTP_PROXY_PORT} \
     --build-arg HTTPS_PROXY_HOST=${HTTPS_PROXY_HOST} \
