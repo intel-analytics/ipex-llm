@@ -256,7 +256,7 @@ About `TSDataset`, more details, please refer to [here](../../PythonAPI/Chronos/
 
 ```python
 # load built-in dataset
-from bigdl.chronos.data.repo_dataset import get_public_dataset
+from bigdl.chronos.data import get_public_dataset
 from sklearn.preprocessing import StandardScaler
 tsdata_train, tsdata_val, \
     tsdata_test = get_public_dataset(name='nyc_taxi',
