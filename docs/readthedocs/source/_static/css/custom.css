@@ -35,3 +35,23 @@ html[data-theme="light"] {
     background-color: var(--pst-color-info-tiny-opacity);
     border: none;
 }
+
+.bigdl-link-card:hover{
+    border-left: .2rem solid var(--pst-color-info);
+}
+
+/* for sphinx-design badge components (customized for usage in card footer)*/
+.sd-badge{
+    padding: .35em 0.1em;
+    font-size: 0.9em;
+}
+
+/* limit the width of graphviz object and center it*/
+object.graphviz{
+    max-width: 95%;
+}
+
+.graphviz{
+    display: flex;
+    justify-content: center;
+}
