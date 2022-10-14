@@ -48,10 +48,11 @@ subtrees:
                 - file: doc/Orca/QuickStart/orca-pytorch-distributed-quickstart
                 - file: doc/Orca/QuickStart/orca-autoestimator-pytorch-quickstart
                 - file: doc/Orca/QuickStart/orca-autoxgboost-quickstart
-          - file: doc/PythonAPI/Orca/index
-            title: "API Reference"
           - file: doc/Orca/Overview/known_issues
             title: "Tips and Known Issues"
+          - file: doc/PythonAPI/Orca/index
+            title: "API Reference"
+
 
 
   - entries:
@@ -87,10 +88,11 @@ subtrees:
                   - file: doc/Nano/QuickStart/tensorflow_quantization_quickstart
             - file: doc/Nano/Howto/index
               title: "How-to Guides"
-            - file: doc/PythonAPI/Nano/index
-              title: "API Reference"
             - file: doc/Nano/Overview/known_issues
               title: "Tips and Known Issues"
+            - file: doc/PythonAPI/Nano/index
+              title: "API Reference"
+
 
 
   - entries:
