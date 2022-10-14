@@ -159,6 +159,9 @@ def model_creator(config):
 
 
 def model_creator_auto(config):
+    """
+    Add model(inputs) in this model creator to initialize the weights
+    """
     model = LSTMSeq2Seq(input_feature_num=config["input_feature_num"],
                         output_feature_num=config["output_feature_num"],
                         future_seq_len=config["future_seq_len"],
