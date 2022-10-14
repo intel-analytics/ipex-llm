@@ -83,8 +83,9 @@ def setup_package():
                         "torchmetrics==0.7.2",
                         "opencv-python-headless",
                         "PyTurboJPEG",
-                        "opencv-transforms",
-                        "intel_extension_for_pytorch==1.11.0"]
+                        "opencv-transforms"
+                        # "intel_extension_for_pytorch==1.11.0"
+                        ]
 
     install_requires = ["intel-openmp", "cloudpickle", "protobuf==3.19.4"]
 
