@@ -167,17 +167,18 @@ def _pattern_check(df, target_col, id_col):
     flag = True
     try:
         res = df.groupby(id_col)\
-                        .apply(lambda x: pd.DataFrame({'cycle_length':
-                        {col: cycle_length_est(x[col].values,
-                                            3,
-                                            adjust=True,
-                                            return_acf_score=True)[1] for col in target_col}}))
+                .apply(lambda x: pd.DataFrame({'cycle_length':
+                                               {col: cycle_length_est(x[col].values,
+                                                                      3,
+                                                                      adjust=True,
+                                                                      return_acf_score=True)[1]
+                                                for col in target_col}}))
         _id_list = list(np.unique(df[id_col]))
         for id_iter in _id_list:
             for target in target_col:
                 if res.cycle_length[id_iter][target] < 0.5:
                     logging.warning(f"time series id = {id_iter} and target = {target} "
-                                    "does not have significant period.")
+                                    "does not have significant seasonality.")
                     flag = False
     except:
         logging.warning("pattern check fails, some time series might have too many missing value, "

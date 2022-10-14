@@ -61,6 +61,7 @@ def cycle_length_est(data, top_k=3, return_acf_score=False, adjust=False):
     else:
         return cycle_length_est
 
+
 def acf(x, lag, adjust):
     '''
     generate acf score as in statsmodels.tsa.stattools.acf
