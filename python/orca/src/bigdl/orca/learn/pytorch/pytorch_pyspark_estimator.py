@@ -255,9 +255,11 @@ class PyTorchPySparkEstimator(BaseEstimator):
             # set train/validation
             params["wrap_dataloader"] = False
             if data._get_class_name() == 'pandas.core.frame.DataFrame':
+                print('df type')
                 data, validation_data = process_xshards_of_pandas_dataframe(data, feature_cols,
                                                                             label_cols,
                                                               validation_data, "fit")
+            print(data._get_class_name())
 
             if validation_data is None:
                 def transform_func(iter, init_params, param):
