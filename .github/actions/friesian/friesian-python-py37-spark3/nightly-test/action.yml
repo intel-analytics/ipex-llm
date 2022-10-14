@@ -10,7 +10,7 @@ runs:
         ./make-dist.sh -P spark_3.x -Dspark.version=3.1.2
         cd -
         #mkdir data && cd data
-        #wget https://archive.apache.org/dist/spark/spark-3.1.2/spark-3.1.2-bin-hadoop2.7.tgz
+        #wget https://archive.apache.org/dist/spark/spark-3.1.2/spark-3.1.2-bin-hadoop2.7.tgz -O ${{ github.workspace }}/spark-3.1.2-bin-hadoop2.7.tgz
         #tar -xf spark-3.1.2-bin-hadoop2.7.tgz
         #cd ..
         #export SPARK_HOME=${{ github.workspace }}/data/spark-3.1.2-bin-hadoop2.7

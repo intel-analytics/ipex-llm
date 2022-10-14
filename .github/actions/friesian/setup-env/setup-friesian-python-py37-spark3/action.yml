@@ -12,7 +12,8 @@ runs:
       uses: vemonet/setup-spark@v1
       with:
         spark-version: '3.1.2'
-        spark-url: 'https://archive.apache.org/dist/spark/spark-3.1.2/spark-3.1.2-bin-hadoop2.7.tgz'
+        hadoop-version: '2.7'
+        #spark-url: 'https://archive.apache.org/dist/spark/spark-3.1.2/spark-3.1.2-bin-hadoop2.7.tgz'
 
     - name: Install dependencies
       shell: bash
