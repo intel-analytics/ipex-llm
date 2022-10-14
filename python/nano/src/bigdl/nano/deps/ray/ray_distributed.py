@@ -173,6 +173,7 @@ class RayStrategy(DDPSpawnStrategy):
 
     def __init__(self,
                  num_processes: int = 1,
+                 cpu_for_each_process: Optional[List[List[int]]] = None,
                  num_cpus_per_worker: int = 1,
                  use_gpu: bool = False,
                  use_ipex: bool = False,

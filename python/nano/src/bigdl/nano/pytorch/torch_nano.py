@@ -164,6 +164,7 @@ class TorchNano(LightningLite):
         elif strategy in backends_class_map:
             cls = backends_class_map[strategy]
             strategy = cls(num_processes=self.num_processes,   # type: ignore
+                           cpu_for_each_process=self.cpu_for_each_process,
                            use_ipex=self.use_ipex,
                            dtype=self.dtype)
         else:
