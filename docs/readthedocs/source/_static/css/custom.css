@@ -36,21 +36,7 @@ html[data-theme="light"] {
     border: none;
 }
 
-.bigdl-link-card:hover{
-    border-left: .2rem solid var(--pst-color-info);
-}
-
-/* for sphinx-design badge components */
-.sd-badge{
-    padding: .35em .50em
-}
-
-/* limit the width of graphviz object and center it*/
-object.graphviz{
-    max-width: 95%;
-}
-
-.graphviz{
-    display: flex;
-    justify-content: center;
+/* for footer display */
+.footer-item {
+    display: inline-block;
 }

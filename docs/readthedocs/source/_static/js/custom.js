@@ -9,8 +9,18 @@ $(document).ready(function(){
         // "opacity":"0.7"             // modify its opacity
         "display":"none"
     });
-    $('#ethical-ad-placement').parent().css({
-        "position":"relative",      // modify ads position
-        "height":"60px"             // give it a default height to prevent wrong display
-    })
+    // $('#ethical-ad-placement').parent().css({
+    //     "position":"relative",      // modify ads position
+    //     "height":"60px"             // give it a default height to prevent wrong display
+    // })
+
+    // manually add the ads to the end of content
+    $(".bd-article").append(
+        "<div\
+        id='ethical-ad-placement'\
+        class='horizontal'\
+        data-ea-publisher='readthedocs'\
+        data-ea-type='image'\
+      ></div>"
+    )
 })
