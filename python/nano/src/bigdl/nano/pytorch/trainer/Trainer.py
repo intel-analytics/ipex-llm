@@ -28,15 +28,21 @@ from bigdl.nano.pytorch.utils import TORCH_VERSION_LESS_1_10, TORCH_VERSION_LESS
 from bigdl.nano.pytorch.utils import ChannelsLastCallback, save_model, load_model
 from bigdl.nano.pytorch.algorithms import SelectiveBackprop
 from bigdl.nano.pytorch.lightning import LightningModule
-from bigdl.nano.pytorch.plugins.ddp_spawn import DDPSpawnPlugin
-from bigdl.nano.pytorch.plugins.ddp_subprocess import DDPSubprocessPlugin
+from bigdl.nano.pytorch.strategies import DDPSpawnStrategy, DDPSubprocessStrategy, DDPK8sStrategy
 from bigdl.nano.deps.automl.hpo_api import create_hpo_searcher, check_hpo_status
-from bigdl.nano.deps.ray.ray_api import distributed_ray
+from bigdl.nano.deps.ray.ray_api import create_ray_strategy
 from bigdl.nano.utils.log4Error import invalidInputError
 from bigdl.nano.common import check_avx512
 from bigdl.nano.utils import deprecated
 
-distributed_backends = ["spawn", "ray", "subprocess"]
+distributed_backends = ["spawn", "ray", "subprocess", "k8s"]
+
+backends_class_map = {
+    "spawn": DDPSpawnStrategy,
+    "subprocess": DDPSubprocessStrategy,
+    "ray": create_ray_strategy,
+    "k8s": DDPK8sStrategy
+}
 
 
 class Trainer(pl.Trainer):
@@ -47,7 +53,7 @@ class Trainer(pl.Trainer):
     various options to accelerate pytorch training.
     """
 
-    def __init__(self, num_processes: int = 1,
+    def __init__(self, num_processes: Optional[int] = None,
                  use_ipex: bool = False,
                  distributed_backend="subprocess",
                  cpu_for_each_process: Optional[List[List[int]]] = None,
@@ -120,6 +126,9 @@ class Trainer(pl.Trainer):
 
         kwargs['precision'] = precision
 
+        if num_processes is None and distributed_backend != "k8s":
+            num_processes = 1
+
         if num_processes == 1:
             from bigdl.nano.pytorch.strategies import create_IPEXStrategy
             strategy = create_IPEXStrategy(dtype=dtype) if self.use_ipex else None
@@ -136,26 +145,20 @@ class Trainer(pl.Trainer):
                                       f"`checkpoint_callback` set to False. "
                                       f"Currently, disable checkpoint callback make "
                                       f"distributed training backend work incorrect")
-            if distributed_backend == "spawn":
-                from bigdl.nano.pytorch.strategies import DDPSpawnStrategy
-                strategy = DDPSpawnStrategy(num_processes=num_processes,
-                                            cpu_for_each_process=cpu_for_each_process,
-                                            use_ipex=self.use_ipex,
-                                            dtype=dtype,
-                                            auto_lr=auto_lr)
-            elif distributed_backend == "subprocess":
-                from bigdl.nano.pytorch.strategies import DDPSubprocessStrategy
-                strategy = DDPSubprocessStrategy(num_processes=num_processes,
-                                                 cpu_for_each_process=cpu_for_each_process,
-                                                 use_ipex=self.use_ipex,
-                                                 dtype=dtype,
-                                                 auto_lr=auto_lr)
-            elif distributed_backend == "ray":
-                from bigdl.nano.pytorch.strategies import create_RayStrategy
-                strategy = create_RayStrategy(num_workers=num_processes,
-                                              use_ipex=self.use_ipex,
-                                              dtype=dtype,
-                                              auto_lr=auto_lr)
+
+            strategy_cls = backends_class_map[distributed_backend]
+
+            strategy_args = dict(num_processes=num_processes,
+                                 cpu_for_each_process=cpu_for_each_process,
+                                 use_ipex=self.use_ipex,
+                                 dtype=dtype,
+                                 auto_lr=auto_lr)
+
+            if distributed_backend == "ray":
+                del strategy_args["cpu_for_each_process"]
+
+            strategy = strategy_cls(**strategy_args)
+
             kwargs["strategy"] = strategy
             super().__init__(*args, **kwargs)
 

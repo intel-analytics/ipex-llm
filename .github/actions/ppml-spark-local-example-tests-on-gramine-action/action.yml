@@ -55,6 +55,7 @@ runs:
     - name: Spark Examples Test
       shell: bash
       run: |
+        docker exec -i $CONTAINER_NAME bash -c "/ppml/trusted-big-data-ml/init.sh"
         /opt/hadoop-3.2.0/bin/hadoop fs -rm -r -f hdfs://172.168.0.205:9000/spark-warehouse
         docker exec -i $CONTAINER_NAME bash -c "/ppml/trusted-big-data-ml/work/test-suites/spark-examples.sh"
         /opt/hadoop-3.2.0/bin/hadoop fs -rm -r -f hdfs://172.168.0.205:9000/spark-warehouse

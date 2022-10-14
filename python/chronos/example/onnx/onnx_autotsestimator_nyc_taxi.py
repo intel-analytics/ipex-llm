@@ -20,7 +20,7 @@ from sklearn.preprocessing import StandardScaler
 
 from bigdl.orca import init_orca_context, stop_orca_context
 from bigdl.chronos.autots.autotsestimator import AutoTSEstimator
-from bigdl.chronos.data.repo_dataset import get_public_dataset
+from bigdl.chronos.data import get_public_dataset
 
 
 def get_tsdata():

@@ -14,7 +14,7 @@
 # limitations under the License.
 #
 
-from typing import Any, Union, List
+from typing import Any, List, Optional, Union
 from logging import warning
 from functools import partial
 from abc import abstractmethod
@@ -26,16 +26,21 @@ from torch.utils.data import DataLoader
 from torch.nn.parallel.distributed import DistributedDataParallel
 from pytorch_lightning.lite import LightningLite
 from pytorch_lightning.lite.wrappers import _LiteModule, _LiteOptimizer
+from pytorch_lightning.utilities.apply_func import apply_to_collection
 
 from bigdl.nano.common import check_avx512
 from bigdl.nano.utils.log4Error import invalidInputError
 from bigdl.nano.pytorch.utils import TORCH_VERSION_LESS_1_10, TORCH_VERSION_LESS_1_11
 from bigdl.nano.pytorch.strategies.ipex.ipex_api import ipex_optimize
 from bigdl.nano.pytorch.strategies import create_IPEXStrategy, DDPSpawnStrategy, \
-    DDPSubprocessStrategy, create_RayStrategy
+    DDPSubprocessStrategy, create_ray_strategy, DDPK8sStrategy
 
 
 class _TorchNanoModule(_LiteModule):
+    def __init__(self, module, precision_plugin, channels_last) -> None:
+        super().__init__(module, precision_plugin)
+        self.channels_last = channels_last
+
     def state_dict(self, *args, **kwargs):
         if isinstance(self.module, DistributedDataParallel):
             return self.module.module.state_dict(*args, **kwargs)
@@ -69,6 +74,27 @@ class _TorchNanoModule(_LiteModule):
         else:
             return getattr(self.module, name)
 
+    def forward(self, *args: Any, **kwargs: Any) -> Any:
+        """Casts all inputs to the right memory format."""
+        if self.channels_last:
+            def _convert_to_channels_last(t: torch.Tensor) -> torch.Tensor:
+                if t.dim() == 4:
+                    return t.to(memory_format=torch.channels_last)  # type: ignore
+                return t
+            args, kwargs = apply_to_collection([args, kwargs], function=_convert_to_channels_last,
+                                               dtype=torch.Tensor)
+        return super().forward(*args, **kwargs)
+
+
+distributed_backends = ["spawn", "ray", "subprocess", "k8s"]
+
+backends_class_map = {
+    "spawn": DDPSpawnStrategy,
+    "subprocess": DDPSubprocessStrategy,
+    "ray": create_ray_strategy,
+    "k8s": DDPK8sStrategy
+}
+
 
 class TorchNano(LightningLite):
     """
@@ -77,10 +103,11 @@ class TorchNano(LightningLite):
     It can be used to accelerate custom pytorch training loops with very few code changes.
     """
 
-    def __init__(self, num_processes: int = 1,
+    def __init__(self, num_processes: Optional[int] = None,
                  use_ipex: bool = False,
                  strategy: str = "subprocess",
                  precision: Union[str, int] = 32,
+                 channels_last: bool = False,
                  *args, **kwargs) -> None:
         """
         Create a TorchNano with nano acceleration.
@@ -92,10 +119,13 @@ class TorchNano(LightningLite):
         :param precision: Double precision (64), full precision (32), half precision (16)
             or bfloat16 precision (bf16), defaults to 32.
             Enable ipex bfloat16 weight prepack when `use_ipex=True` and `precision='bf16'`
+        :param channels_last: whether convert input to channels last memory formats, \
+            defaults to False.
         """
         self.num_processes = num_processes
         self.use_ipex = use_ipex
         self.dtype = None
+        self.channels_last = channels_last
         if self.use_ipex and precision == 'bf16':
             # Enable ipex bfloat16 weight prepack and disable native AMP
             self.dtype = torch.bfloat16
@@ -116,25 +146,21 @@ class TorchNano(LightningLite):
 
         kwargs['precision'] = precision
 
+        if self.num_processes is None and strategy != "k8s":
+            self.num_processes = 1
+
         if self.num_processes == 1:
             if self.use_ipex:
                 strategy = create_IPEXStrategy(dtype=self.dtype)
             else:
                 strategy = None     # type: ignore
-        elif strategy == "spawn":
-            strategy = DDPSpawnStrategy(num_processes=self.num_processes,   # type: ignore
-                                        use_ipex=self.use_ipex,
-                                        dtype=self.dtype)
-        elif strategy == "subprocess":
-            strategy = DDPSubprocessStrategy(num_processes=self.num_processes,  # type: ignore
-                                             use_ipex=self.use_ipex,
-                                             dtype=self.dtype)
-        elif strategy == "ray":
-            strategy = create_RayStrategy(num_workers=self.num_processes,
-                                          use_ipex=self.use_ipex,
-                                          dtype=self.dtype)
+        elif strategy in backends_class_map:
+            cls = backends_class_map[strategy]
+            strategy = cls(num_processes=self.num_processes,   # type: ignore
+                           use_ipex=self.use_ipex,
+                           dtype=self.dtype)
         else:
-            warning(f"Bigdl-nano doesn't support '{strategy}' strategy now, "
+            warning(f"BigDL-Nano doesn't support '{strategy}' strategy now, "
                     f"'{strategy}' strategy of pytorch_lightning will be used. "
                     f"Supported strategies are 'spawn', 'subprocess' and 'ray'.")
 
@@ -150,6 +176,8 @@ class TorchNano(LightningLite):
         move_to_device: bool = True,
     ) -> Any:
         """Used to replace LightningLite's setup method."""
+        if self.channels_last:
+            model = model.to(memory_format=torch.channels_last)  # type: ignore
         # LightningLite won't call `Strategy.setup()` method,
         # in which we add IPEX's optimization when using `trainer`.
 
@@ -187,7 +215,7 @@ class TorchNano(LightningLite):
 
         if move_to_device:
             model = self._move_model_to_device(model=model, optimizers=optimizers)
-        model = _TorchNanoModule(model, self._precision_plugin)
+        model = _TorchNanoModule(model, self._precision_plugin, self.channels_last)
         optimizers = [_LiteOptimizer(optimizer=optimizer, strategy=self._strategy)  # type: ignore
                       for optimizer in optimizers]
         self._models_setup += 1
