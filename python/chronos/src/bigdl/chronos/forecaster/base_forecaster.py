@@ -578,6 +578,8 @@ class BasePytorchForecaster(Forecaster):
         if metric is not None:
             metric = _str2optimizer_metrc(metric)
 
+        dummy_input = torch.rand(1, self.data_config["past_seq_len"],
+                                 self.data_config["input_feature_num"])
         from bigdl.nano.pytorch import InferenceOptimizer
         opt = InferenceOptimizer()
         opt.optimize(model=self.internal,
@@ -585,7 +587,8 @@ class BasePytorchForecaster(Forecaster):
                      validation_data=validation_data,
                      metric=metric,
                      direction="min",
-                     thread_num=thread_num)
+                     thread_num=thread_num,
+                     input_sample=dummy_input)
         try:
             optim_model, option = opt.get_best_model(
                 accelerator=accelerator,

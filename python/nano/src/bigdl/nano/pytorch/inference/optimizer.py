@@ -121,6 +121,7 @@ class InferenceOptimizer:
     def optimize(self, model: nn.Module,
                  training_data: DataLoader,
                  validation_data: Optional[DataLoader] = None,
+                 input_sample=None,
                  metric: Optional[Callable] = None,
                  direction: str = "max",
                  thread_num: Optional[int] = None,
@@ -149,6 +150,9 @@ class InferenceOptimizer:
         :param validation_data: (optional) A torch.utils.data.dataloader.DataLoader object
                for accuracy evaluation. This is only needed when users care about the possible
                accuracy drop.
+        :param input_sample: (optional) A set of inputs for trace, defaults to None.
+               In most cases, you don't need specify this parameter, it will be obtained from
+               training_data.
         :param metric: (optional) A callable object which is used for calculating accuracy.
                It supports two kinds of callable object:
 
@@ -201,8 +205,9 @@ class InferenceOptimizer:
 
         model.eval()  # change model to eval mode
 
-        forward_args = get_forward_args(model)
-        input_sample = get_input_example(model, training_data, forward_args)
+        if input_sample is None:
+            forward_args = get_forward_args(model)
+            input_sample = get_input_example(model, training_data, forward_args)
         st = time.perf_counter()
         try:
             with torch.no_grad():
@@ -271,6 +276,7 @@ class InferenceOptimizer:
                                                         accelerator=accelerator,
                                                         use_ipex=use_ipex,
                                                         calib_dataloader=training_data,
+                                                        input_sample=input_sample,
                                                         method=ort_method,
                                                         thread_num=thread_num,
                                                         sample_size=sample_size_for_pot,
