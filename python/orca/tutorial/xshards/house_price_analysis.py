@@ -21,22 +21,22 @@ from bigdl.orca.data.transformer import *
 
 import numpy as np
 
-path = 'house_price/train.csv'
+path = '/home/ding/data/house_price/train.csv'
 data_shard = bigdl.orca.data.pandas.read_csv(path, nullValue="NA")
 
-null_cnt_shard = data_shard.get_null_sum()
-print(null_cnt_shard.collect())
+null_cnt_pdf = data_shard.get_null_sum()
+print(null_cnt_pdf)
 
-missing_data_shards = null_cnt_shard.sort_values(col_names="total", ascending=False)
-print(missing_data_shards.collect())
+sort_pdf = null_cnt_pdf.sort_values(by='total', ascending=False)
+print(sort_pdf)
 
 # dealing with missing data
 new_shards = data_shard.drop_missing_value()
 
 # verify missing value has been removed
-new_shards3 = new_shards.get_null_sum()
-max_value = new_shards3.max_values('total')
-
+new_cnt_pdf = new_shards.get_null_sum()
+max_value = new_cnt_pdf['total'].max()
+print(max_value)
 
 def drop_data(df):
     df = df.drop(df[df['Id'] == 0].index)
