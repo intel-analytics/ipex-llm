@@ -15,6 +15,7 @@
 #
 
 import pandas as pd
+import numpy as np
 from bigdl.nano.utils.log4Error import invalidInputError
 import logging
 
@@ -36,6 +37,8 @@ def quality_check_timeseries_dataframe(df, dt_col, id_col=None, repair=True):
     '''
     invalidInputError(dt_col in df.columns, f"dt_col {dt_col} can not be found in df.")
     invalidInputError(pd.isna(df[dt_col]).sum() == 0, "There is N/A in datetime col")
+    if df.empty is True:
+        return True, df
     flag = True
     # 1. timestamp check
     if _timestamp_type_check(df[dt_col]) is False:
@@ -46,11 +49,11 @@ def quality_check_timeseries_dataframe(df, dt_col, id_col=None, repair=True):
 
     # 2. irregular interval check
     if flag is True:
-        interval_flag, interval = _time_interval_check(df[dt_col])
+        interval_flag, intervals = _time_interval_check(df, dt_col, id_col)
         if interval_flag is False:
             if repair is True:
                 df, repair_flag = _time_interval_repair(df, dt_col,
-                                                        interval, id_col)
+                                                        intervals, id_col)
                 flag = flag and repair_flag
             else:
                 flag = False
@@ -93,37 +96,78 @@ def _timestamp_type_repair(df, dt_col):
     return True
 
 
-def _time_interval_check(df_column):
+def _time_interval_check(df, dt_col, id_col):
     '''
     This check is used to verify whether all the time intervals of datetime column
     are consistent.
     '''
-    interval = df_column.shift(-1) - df_column
-    unique_intervals = interval[:-1].unique()
-    if len(unique_intervals) > 1:
-        logging.warning("There are irregular interval(more than one interval length)"
-                        " among the data, please call .resample(interval).impute() "
-                        "first to clean the data.")
-        return False, interval
-    return True, interval
+    if id_col is not None:
+        flag = True
+        _id_list = list(np.unique(df[id_col]))
+        intervals = {}
+        for id_ in _id_list:
+            df_id = df[df[id_col] == id_]
+            df_column = df_id[dt_col]
+            interval = df_column.shift(-1) - df_column
+            unique_intervals = interval[:-1].unique()
+            intervals[id_] = interval
+            if len(unique_intervals) > 1:
+                flag = False
+        if flag is True:
+            return True, intervals
+        else:
+            logging.warning("There are irregular interval(more than one interval length)"
+                            " among the data, please call .resample(interval).impute() "
+                            "first to clean the data.")
+            return False, intervals
+    else:
+        df_column = df[dt_col]
+        intervals = df_column.shift(-1) - df_column
+        unique_intervals = intervals[:-1].unique()
+        if len(unique_intervals) > 1:
+            logging.warning("There are irregular interval(more than one interval length)"
+                            " among the data, please call .resample(interval).impute() "
+                            "first to clean the data.")
+            return False, intervals
+        return True, intervals
 
 
-def _time_interval_repair(df, dt_col, interval, id_col=None):
+def _time_interval_repair(df, dt_col, intervals, id_col=None):
     '''
     This check is used to get consitent time interval by resample data according to
     the mode of original intervals.
     '''
-    mode = interval[:-1].mode()[0]  # Timedelta
-    from bigdl.chronos.data.utils.resample import resample_timeseries_dataframe
-    # TODO: how to change into inplace modification
-    try:
-        df = resample_timeseries_dataframe(df, dt_col=dt_col,
-                                           interval=mode,
-                                           id_col=id_col)
-        logging.warning(f"Dataframe has be resampled according to interval {mode}.")
-        return df, True
-    except:
-        return df, False
+    if id_col is not None and isinstance(intervals, dict):
+        # multi_id case
+        new_df = []
+        for id_, interval in intervals.items():
+            mode = interval[:-1].mode()[0]  # Timedelta
+            from bigdl.chronos.data.utils.resample import resample_timeseries_dataframe
+            # TODO: how to change into inplace modification
+            df_id = df[df[id_col] == id_]
+            try:
+                df_ = resample_timeseries_dataframe(df_id, dt_col=dt_col,
+                                                    interval=mode,
+                                                    id_col=id_col)
+                logging.warning(f"Dataframe has be resampled according to interval {mode}.")
+                # df[df[id_col] == id_] = df_
+                new_df.append(df_)
+            except:
+                return df, False
+        new_df = pd.concat(new_df, axis=0, ignore_index=True)
+        return new_df, True
+    else:
+        mode = intervals[:-1].mode()[0]  # Timedelta
+        from bigdl.chronos.data.utils.resample import resample_timeseries_dataframe
+        # TODO: how to change into inplace modification
+        try:
+            df = resample_timeseries_dataframe(df, dt_col=dt_col,
+                                               interval=mode,
+                                               id_col=id_col)
+            logging.warning(f"Dataframe has be resampled according to interval {mode}.")
+            return df, True
+        except:
+            return df, False
 
 
 def _missing_value_check(df, dt_col, threshold=0):
