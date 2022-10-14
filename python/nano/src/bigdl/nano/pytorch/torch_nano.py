@@ -106,7 +106,7 @@ class TorchNano(LightningLite):
 
     def __init__(self, num_processes: Optional[int] = None,
                  use_ipex: bool = False,
-                 strategy: str = "subprocess",
+                 distributed_backend: str = "subprocess",
                  precision: Union[str, int] = 32,
                  cpu_for_each_process: Optional[List[List[int]]] = None,
                  channels_last: bool = False,
@@ -116,8 +116,8 @@ class TorchNano(LightningLite):
 
         :param num_processes: number of processes in distributed training, defaults to 1
         :param use_ipex: whether use ipex acceleration, defaults to False
-        :param strategy: use which backend in distributed mode, defaults to "subprocess", \
-            now avaiable strategies are 'spawn', 'subprocess' and 'ray'
+        :param distributed_backend: use which backend in distributed mode, defaults to "subprocess", \
+            now avaiable backends are 'spawn', 'subprocess' and 'ray'
         :param precision: Double precision (64), full precision (32), half precision (16)
             or bfloat16 precision (bf16), defaults to 32.
             Enable ipex bfloat16 weight prepack when `use_ipex=True` and `precision='bf16'`
@@ -153,7 +153,7 @@ class TorchNano(LightningLite):
 
         kwargs['precision'] = precision
 
-        if self.num_processes is None and strategy != "k8s":
+        if self.num_processes is None and distributed_backend != "k8s":
             self.num_processes = 1
 
         if self.num_processes == 1:
@@ -161,16 +161,17 @@ class TorchNano(LightningLite):
                 strategy = create_IPEXStrategy(dtype=self.dtype)
             else:
                 strategy = None     # type: ignore
-        elif strategy in backends_class_map:
-            cls = backends_class_map[strategy]
+        elif distributed_backend in backends_class_map:
+            cls = backends_class_map[distributed_backend]
             strategy = cls(num_processes=self.num_processes,   # type: ignore
                            cpu_for_each_process=self.cpu_for_each_process,
                            use_ipex=self.use_ipex,
                            dtype=self.dtype)
         else:
-            warning(f"BigDL-Nano doesn't support '{strategy}' strategy now, "
-                    f"'{strategy}' strategy of pytorch_lightning will be used. "
-                    f"Supported strategies are 'spawn', 'subprocess' and 'ray'.")
+            warning(f"BigDL-Nano doesn't support '{distributed_backend}' backend now, "
+                    f"'{distributed_backend}' strategy of pytorch_lightning will be used. "
+                    f"Supported backends are 'spawn', 'subprocess' and 'ray'.")
+            strategy = distributed_backend
 
         kwargs["strategy"] = strategy
         super().__init__(*args, **kwargs)
