@@ -18,7 +18,7 @@ import os.path
 import shutil
 import tempfile
 
-from bigdl.orca.data.file import open_image, open_text, load_numpy, exists, makedirs, write_text, multi_fs_load
+from bigdl.orca.data.file import open_image, open_text, load_numpy, exists, makedirs, write_text, enable_multi_fs_load_static
 
 
 class TestFile:
@@ -163,7 +163,7 @@ class TestFile:
 
     def test_multi_fs_load_local(self):
 
-        @multi_fs_load
+        @enable_multi_fs_load_static
         def mock_func(path):
             assert exists(path)
 
@@ -172,7 +172,7 @@ class TestFile:
 
     def test_multi_fs_load_s3(self):
 
-        @multi_fs_load
+        @enable_multi_fs_load_static
         def mock_func(path):
             assert exists(path)
 

@@ -17,4 +17,5 @@
 from .ipex.ipex_api import create_IPEXStrategy
 from .ddp_spawn import DDPSpawnStrategy
 from .ddp_subprocess import DDPSubprocessStrategy
-from bigdl.nano.deps.ray.ray_api import create_RayStrategy
+from bigdl.nano.deps.ray.ray_api import create_ray_strategy
+from .k8s import DDPK8sStrategy

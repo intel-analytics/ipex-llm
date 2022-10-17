@@ -41,7 +41,6 @@ class VFLNNEstimator(algorithm: String,
                      threadNum: Int = 1) extends Estimator with FLClientClosable {
   val logger = LogManager.getLogger(getClass)
   val (weight, grad) = getParametersFromModel(model)
-
   protected val evaluateResults = mutable.Map[String, ArrayBuffer[Float]]()
 
   /**
@@ -62,7 +61,6 @@ class VFLNNEstimator(algorithm: String,
     (0 until endEpoch).foreach { epoch =>
       val dataSet = trainDataSet.data(true)
       var count = 0
-      var hasLabel = true
       while (count < size) {
         logger.debug(s"training next batch, progress: $count/$size, epoch: $epoch/$endEpoch")
         val miniBatch = dataSet.next()
@@ -73,24 +71,7 @@ class VFLNNEstimator(algorithm: String,
           .update("neval", iteration + 1)
         val input = miniBatch.getInput()
         val target = miniBatch.getTarget()
-        if (target == null) hasLabel = false
-        model.training()
-        val output = model.forward(input)
-
-        // Upload to PS
-        val metadata = MetaData.newBuilder
-              .setName(s"${model.getName()}_output").setVersion(iteration).build
-        val tableProto = outputTargetToTableProto(model.output, target, metadata)
-        model.zeroGradParameters()
-        val gradInput = flClient.nnStub.train(tableProto, algorithm).getData
-
-        // model replace
-        val errors = getTensor("gradInput", gradInput)
-        val loss = getTensor("loss", gradInput).value()
-        model.backward(input, errors)
-        logger.debug(s"Model doing backward, version: $iteration")
-        optimMethod.optimize(_ => (loss, grad), weight)
-
+        trainStep(input, target, iteration)
         iteration += 1
         count += miniBatch.size()
       }
@@ -98,10 +79,31 @@ class VFLNNEstimator(algorithm: String,
         model.evaluate()
         evaluate(valDataSet)
       }
-
     }
-
     model
+  }
+
+  protected def trainStep(
+        input: Activity,
+        target: Activity,
+        iteration: Int): Unit = {
+    model.training()
+    model.zeroGradParameters()
+    val output = model.forward(input)
+
+    // Upload to PS
+    val metadata = MetaData.newBuilder
+      .setName(s"${model.getName()}_output").setVersion(iteration).build
+    val tableProto = outputTargetToTableProto(model.output, target, metadata)
+    val gradInput = flClient.nnStub.train(tableProto, algorithm)
+
+    // model replace
+    val errors = getTensor("gradInput", gradInput)
+    val loss = getTensor("loss", gradInput).mean()
+    logger.info(s"Loss: ${loss}")
+    model.backward(input, errors)
+    logger.debug(s"Model doing backward, version: $iteration")
+    optimMethod.optimize(_ => (loss, grad), weight)
   }
 
   /**
@@ -156,17 +158,20 @@ class VFLNNEstimator(algorithm: String,
       model.evaluate()
       val miniBatch = data.next()
       val input = miniBatch.getInput()
-      val target = miniBatch.getTarget()
-      val output = model.forward(input)
-
-      val metadata = MetaData.newBuilder
-        .setName(s"${model.getName()}_output").setVersion(iteration).build
-      val tableProto = outputTargetToTableProto(model.output, target, metadata)
-      val result = flClient.nnStub.predict(tableProto, algorithm).getData
-      resultSeq = resultSeq :+ getTensor("predictOutput", result)
+      val result = predict(input, iteration)
+      resultSeq = resultSeq :+ result.toTensor[Float]
       iteration += 1
       count += miniBatch.size()
     }
     resultSeq.toArray
+  }
+
+  protected def predict(input: Activity, iteration: Int): Activity = {
+    val output = model.forward(input)
+    val metadata = MetaData.newBuilder
+      .setName(s"${model.getName()}_output").setVersion(iteration).build
+    val tableProto = outputTargetToTableProto(model.output, null, metadata)
+    val result = flClient.nnStub.predict(tableProto, algorithm)
+    getTensor("predictOutput", result)
   }
 }

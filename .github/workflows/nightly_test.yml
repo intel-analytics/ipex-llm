@@ -2,6 +2,7 @@ name: Nightly Test
 
 on:
   #pull_request:
+     #branchs: [ main ]
   schedule:
     - cron: '0 13 * * *' # GMT time, 13:00 GMT == 21:00 China
   workflow_dispatch:
@@ -18,16 +19,34 @@ on:
         - Orca-Ray-Ctx-Example
         - Orca-Python-Horovod-Tf2-Py37-Spark3
         - Orca-Python-Horovod-Pytorch-Py37-Spark3
+        - Orca-Jep-Python-Py37-Spark2
+        - Orca-Python-Rayonspark-Tf2-Py37
         - Orca-Jep-ExampleTest-Py37-Spark2
         - Orca-Python-ExampleTest-Py37-Spark3
         - Orca-Python-ExampleTest-Ray-Py37-Spark3
         - Orca-Python-ExampleTest-Horovod-Pytorch-Py37-Spark3
+        - Orca-Python-ExampleTest-Horovod-Tf-Py37-Spark3
         - Dllib-Scala-UT
         - Friesian-Scala-UT
         - PPML-Scala-UT
-        - PPML-PySpark-K8S-EXAMPLE
+        - PPML-Python-UT-Spark3
+        - PPML-Spark-PySpark-Local-Sql-UT-On-Gramine
         - PPML-Occlum-ExampleTests
         - PPML-spark-Local-Example-Tests-on-Gramine
+      image:
+        description: 'docker image name'
+        required: true
+        default: '10.239.45.10/arda/intelanalytics/bigdl-ppml-trusted-big-data-ml-python-gramine'
+        type: string
+      tag:
+        description: 'docker image tag'
+        required: true
+        default: 'latest'
+        type: string
+
+
+env:
+  GIST_ID: bc8a699b455bced4a1aef138ad5df07e
 
 permissions:
   contents: read
@@ -56,7 +75,7 @@ jobs:
       if: ${{ always() }}
       with:
         secret: ${{ secrets.GIST_SECRET}}
-        gist-id: 746dcada5746912c8d6808d71bd6c35b
+        gist-id: ${{env.GIST_ID}}
         is-self-hosted-runner: true
         file-name: Orca-Python-ExampleTest-Py37-Spark3.json
         type: job
@@ -86,7 +105,7 @@ jobs:
       if: ${{ always() }}
       with:
         secret: ${{ secrets.GIST_SECRET}}
-        gist-id: 93d483f54b60396d8bbe7ab7a9317c4e
+        gist-id: ${{env.GIST_ID}}
         is-self-hosted-runner: true
         file-name: Orca-Python-ExampleTest-Ray-Py37-Spark3.json
         type: job
@@ -115,7 +134,7 @@ jobs:
       if: ${{ always() }}
       with:
         secret: ${{ secrets.GIST_SECRET}}
-        gist-id: 89232c5854a99a723765c3d5593f3bfe
+        gist-id: ${{env.GIST_ID}}
         is-self-hosted-runner: true
         file-name: Orca-Jep-ExampleTest-Py37-Spark2.json
         type: job
@@ -144,11 +163,40 @@ jobs:
       if: ${{ always() }}
       with:
         secret: ${{ secrets.GIST_SECRET}}
-        gist-id: 2345324d7d79e955c378e627f265d20f
+        gist-id: ${{env.GIST_ID}}
         is-self-hosted-runner: true
         file-name: Orca-Python-ExampleTest-Horovod-Pytorch-Py37-Spark3.json
         type: job
         job-name: Orca-Python-ExampleTest-Horovod-Pytorch-Py37-Spark3
+        runner-hosted-on: 'Shanghai'
+
+  Orca-Python-ExampleTest-Horovod-Tf-Py37-Spark3:
+    if: ${{ github.event.schedule || github.event.inputs.artifact == 'Orca-Python-ExampleTest-Horovod-Tf-Py37-Spark3' || github.event.inputs.artifact == 'all' }}
+    runs-on: [self-hosted, Gondolin, ubuntu-20.04-lts]
+
+    steps:
+    - uses: actions/checkout@v3
+    - name: Set up JDK8
+      uses: ./.github/actions/jdk-setup-action
+    - name: Set up maven
+      uses: ./.github/actions/maven-setup-action 
+    - name: Setup env
+      uses: ./.github/actions/orca/setup-env/setup-horovod-tf2-py37
+    - name: Run Test
+      uses: ./.github/actions/orca/orca-python-exampletest-horovod-tf2-py37-spark3-action/nightly-test
+    - name: Remove Env
+      if: ${{ always() }}
+      uses: ./.github/actions/remove-env
+    - name: Create Job Badge
+      uses: ./.github/actions/create-job-status-badge
+      if: ${{ always() }}
+      with:
+        secret: ${{ secrets.GIST_SECRET}}
+        gist-id: ${{env.GIST_ID}}
+        is-self-hosted-runner: true
+        file-name: Orca-Python-ExampleTest-Horovod-Tf-Py37-Spark3.json
+        type: job
+        job-name: Orca-Python-ExampleTest-Horovod-Tf-Py37-Spark3
         runner-hosted-on: 'Shanghai'
 
   Orca-Python-Ray-Py37-Spark3:
@@ -173,7 +221,7 @@ jobs:
       if: ${{ always() }}
       with:
         secret: ${{ secrets.GIST_SECRET}}
-        gist-id: b9d4492a7eeaf4c2564ce4ef295d36f5
+        gist-id: ${{env.GIST_ID}}
         is-self-hosted-runner: true
         file-name: Orca-Python-Ray-Py37-Spark3.json
         type: job
@@ -202,7 +250,7 @@ jobs:
       if: ${{ always() }}
       with:
         secret: ${{ secrets.GIST_SECRET}}
-        gist-id: 10a49ea64c5e1d06eea5518dc24712cd
+        gist-id: ${{env.GIST_ID}}
         is-self-hosted-runner: true
         file-name: Orca-Python-Py37-Spark3.json
         type: job
@@ -231,7 +279,7 @@ jobs:
       if: ${{ always() }}
       with:
         secret: ${{ secrets.GIST_SECRET}}
-        gist-id: 2778d46ee325dfcf27262bb5587c08fa
+        gist-id: ${{env.GIST_ID}}
         is-self-hosted-runner: true
         file-name: Orca-Python-Horovod-Tf2-Py37-Spark3.json
         type: job
@@ -260,11 +308,69 @@ jobs:
       if: ${{ always() }}
       with:
         secret: ${{ secrets.GIST_SECRET}}
-        gist-id: 2a5a6ec35dc080f612db9d3fd78a00f7
+        gist-id: ${{env.GIST_ID}}
         is-self-hosted-runner: true
         file-name: Orca-Python-Horovod-Pytorch-Py37-Spark3.json
         type: job
         job-name: Orca-Python-Horovod-Pytorch-Py37-Spark3
+        runner-hosted-on: 'Shanghai'
+
+  Orca-Python-Rayonspark-Tf2-Py37:
+    if: ${{ github.event.schedule || github.event.inputs.artifact == 'Orca-Python-Rayonspark-Tf2-Py37' || github.event.inputs.artifact == 'all' }}
+    runs-on: [self-hosted, Gondolin, ubuntu-20.04-lts]
+
+    steps:
+    - uses: actions/checkout@v3
+    - name: Set up JDK8
+      uses: ./.github/actions/jdk-setup-action
+    - name: Set up maven
+      uses: ./.github/actions/maven-setup-action 
+    - name: Setup env
+      uses: ./.github/actions/orca/setup-env/setup-rayonspark-tf2-py37
+    - name: Run Test
+      uses: ./.github/actions/orca/orca-rayonspark-tf2-action/nightly-test
+    - name: Remove Env
+      if: ${{ always() }}
+      uses: ./.github/actions/remove-env
+    - name: Create Job Badge
+      uses: ./.github/actions/create-job-status-badge
+      if: ${{ always() }}
+      with:
+        secret: ${{ secrets.GIST_SECRET}}
+        gist-id: ${{env.GIST_ID}}
+        is-self-hosted-runner: true
+        file-name: Orca-Python-Rayonspark-Tf2-Py37.json
+        type: job
+        job-name: Orca-Python-Rayonspark-Tf2-Py37
+        runner-hosted-on: 'Shanghai'
+
+  Orca-Jep-Python-Py37-Spark2:
+    if: ${{ github.event.schedule || github.event.inputs.artifact == 'Orca-Jep-Python-Py37-Spark2' || github.event.inputs.artifact == 'all' }} 
+    runs-on: [self-hosted, Gondolin, ubuntu-20.04-lts]
+
+    steps:
+    - uses: actions/checkout@v3
+    - name: Set up JDK8
+      uses: ./.github/actions/jdk-setup-action
+    - name: Set up maven
+      uses: ./.github/actions/maven-setup-action
+    - name: Setup env
+      uses: ./.github/actions/orca/setup-env/setup-jep-exampletest-py37
+    - name: Run Test
+      uses: ./.github/actions/orca/orca-jep-python-py37-spark2-action/nightly-test
+    - name: Remove Env
+      if: ${{ always() }}
+      uses: ./.github/actions/remove-env
+    - name: Create Job Badge
+      uses: ./.github/actions/create-job-status-badge
+      if: ${{ always() }}
+      with:
+        secret: ${{ secrets.GIST_SECRET}}
+        gist-id: ${{env.GIST_ID}}
+        is-self-hosted-runner: true
+        file-name: Orca-Jep-Python-Py37-Spark2.json
+        type: job
+        job-name: Orca-Jep-Python-Py37-Spark2
         runner-hosted-on: 'Shanghai'
       
   Dllib-Scala-UT:
@@ -284,7 +390,7 @@ jobs:
       if: ${{ always() }}
       with:
         secret: ${{ secrets.GIST_SECRET}}
-        gist-id: c52229602fb85cc8b6d757c04d565da8
+        gist-id: ${{env.GIST_ID}}
         is-self-hosted-runner: true
         file-name: Dllib-Scala-UT.json
         type: job
@@ -308,7 +414,7 @@ jobs:
       if: ${{ always() }}
       with:
         secret: ${{ secrets.GIST_SECRET}}
-        gist-id: 9fa4633899a08528f35ed51a11963a1e
+        gist-id: ${{env.GIST_ID}}
         is-self-hosted-runner: true
         file-name: Friesian-Scala-UT.json
         type: job
@@ -332,11 +438,40 @@ jobs:
       if: ${{ always() }}
       with:
         secret: ${{ secrets.GIST_SECRET}}
-        gist-id: 6bcf97ad277d77344b88ddbefa2dd4ad
+        gist-id: ${{env.GIST_ID}}
         is-self-hosted-runner: true
         file-name: PPML-Scala-UT.json
         type: job
         job-name: PPML-Scala-UT
+        runner-hosted-on: 'Shanghai'
+
+  PPML-Python-UT-Spark3:
+    if: ${{ github.event.schedule || github.event.inputs.artifact == 'PPML-Python-UT-Spark3' || github.event.inputs.artifact == 'all' }} 
+    runs-on: [ self-hosted, Gondolin, ubuntu-20.04-lts ]
+
+    steps:
+    - uses: actions/checkout@v3
+    - name: Set up JDK8
+      uses: ./.github/actions/jdk-setup-action
+    - name: Set up maven
+      uses: ./.github/actions/maven-setup-action
+    - name: Setup env
+      uses: ./.github/actions/ppml/setup-env/setup-ppml-python-ut-spark3
+    - name: Run Test
+      uses: ./.github/actions/ppml/ppml-python-ut-spark3-action/nightly-test
+    - name: Remove Env
+      if: ${{ always() }}
+      uses: ./.github/actions/remove-env
+    - name: Create Job Badge
+      uses: ./.github/actions/create-job-status-badge
+      if: ${{ always() }}
+      with:
+        secret: ${{ secrets.GIST_SECRET}}
+        gist-id: ${{env.GIST_ID}}
+        is-self-hosted-runner: true
+        file-name: PPML-Python-UT-Spark3.json
+        type: job
+        job-name: PPML-Python-UT-Spark3
         runner-hosted-on: 'Shanghai'
 
   Orca-Ray-Ctx-Example:
@@ -356,39 +491,47 @@ jobs:
       if: ${{ always() }}
       with:
         secret: ${{ secrets.GIST_SECRET}}
-        gist-id: 98707847d2ca0e2aff40547673e9f7ab
+        gist-id: ${{env.GIST_ID}}
         is-self-hosted-runner: true
         file-name: Orca-Ray-Ctx-Example.json
         type: job
         job-name: Orca-Ray-Ctx-Example
         runner-hosted-on: 'Shanghai'
-    
-  PPML-PySpark-K8S-EXAMPLE:
-    if: ${{ github.event.schedule || github.event.inputs.artifact == 'PPML-PySpark-K8S-EXAMPLE' || github.event.inputs.artifact == 'all' }} 
-    runs-on: [self-hosted, Vilvarin]
-
+        
+        
+  PPML-Spark-PySpark-Local-Sql-UT-On-Gramine:
+    if: ${{ github.event.schedule || github.event.inputs.artifact == 'PPML-Spark-PySpark-Local-Sql-UT-On-Gramine' || github.event.inputs.artifact == 'all' }}
+    runs-on: [self-hosted, SGX, Wilwarin]
     steps:
     - uses: actions/checkout@v3
     - name: Set up JDK8
       uses: ./.github/actions/jdk-setup-action
     - name: Set up maven
       uses: ./.github/actions/maven-setup-action
+    - name: set env
+      env:
+        DEFAULT_IMAGE: '10.239.45.10/arda/intelanalytics/bigdl-ppml-trusted-big-data-ml-python-gramine'
+        DEFAULT_TAG: 'latest'
+      run: |
+        echo "IMAGE=${{ github.event.inputs.image || env.DEFAULT_IMAGE }}" >> $GITHUB_ENV
+        echo "TAG=${{ github.event.inputs.tag || env.DEFAULT_TAG }}" >> $GITHUB_ENV
     - name: Run test
-      uses: ./.github/actions/ppml/ppml-pyspark-k8s-example-on-gramine-action
-
-  create-workflow-badge:
-    runs-on: ubuntu-latest
-    steps:
-    - uses: actions/checkout@v3
-    - name: create workflow badge
-      if: ${{ always() }}
-      uses: ./.github/actions/create-job-status-badge
+      uses: ./.github/actions/ppml/ppml-spark-pyspark-sql-ut-on-gramine-action
       with:
-        secret: ${{ secrets.GIST_SECRET }}
-        gist-id: bc8a699b455bced4a1aef138ad5df07e
-        file-name: nightly-test.json
-        type: workflow
-  
+        image: ${{env.IMAGE}}
+        image-tag: ${{env.TAG}}
+    - name: Create Job Badge
+      uses: ./.github/actions/create-job-status-badge
+      if: ${{ always() }}
+      with:
+        secret: ${{ secrets.GIST_SECRET}}
+        gist-id: ${{env.GIST_ID}}
+        is-self-hosted-runner: true
+        file-name: PPML-Spark-PySpark-Local-Sql-UT-On-Gramine.json
+        type: job
+        job-name: PPML-Spark-PySpark-Local-Sql-UT-On-Gramine
+        runner-hosted-on: 'Shanghai'
+
   PPML-Occlum-ExampleTests:
     if: ${{ github.event.schedule || github.event.inputs.artifact == 'PPML-Occlum-ExampleTests' || github.event.inputs.artifact == 'all' }} 
     runs-on: [self-hosted, Wilwarin, ubuntu-20.04-lts]
@@ -406,7 +549,7 @@ jobs:
       if: ${{ always() }}
       with:
         secret: ${{ secrets.GIST_SECRET}}
-        gist-id: e065c0f7987e9d1c9d85dab9a014cf0a
+        gist-id: ${{env.GIST_ID}}
         is-self-hosted-runner: true
         file-name: PPML-Occlum-ExampleTests.json
         type: job
@@ -423,17 +566,44 @@ jobs:
       uses: ./.github/actions/jdk-setup-action
     - name: Set up maven
       uses: ./.github/actions/maven-setup-action
+    - name: set env
+      env:
+        DEFAULT_IMAGE: '10.239.45.10/arda/intelanalytics/bigdl-ppml-trusted-big-data-ml-python-gramine'
+        DEFAULT_TAG: 'latest'
+      run: |
+        echo "TAG=${{ github.event.inputs.tag || env.DEFAULT_TAG }}" >> $GITHUB_ENV
+        echo "IMAGE=${{ github.event.inputs.image || env.DEFAULT_IMAGE }}" >> $GITHUB_ENV
     - name: Run test
       uses: ./.github/actions/ppml-spark-local-example-tests-on-gramine-action
+      with:
+        image: ${{env.IMAGE}}
+        image-tag: ${{env.TAG}}
     - name: Create Job Badge
       uses: ./.github/actions/create-job-status-badge
       if: ${{ always() }}
       with:
         secret: ${{ secrets.GIST_SECRET}}
-        gist-id: 69ba2fad5b631e287dcedb4c51f338a2
+        gist-id: ${{env.GIST_ID}}
         is-self-hosted-runner: true
         file-name: PPML-spark-Local-Example-Tests-on-Gramine.json
         type: job
         job-name: PPML-spark-Local-Example-Tests-on-Gramine
         runner-hosted-on: 'Shanghai'
-      
+
+
+  # please put your test before the create-workflow-badge to make sure the badge can be displayed on the github page.
+  create-workflow-badge:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+    - name: create workflow badge
+      if: ${{ always() }}
+      uses: ./.github/actions/create-job-status-badge
+      with:
+        secret: ${{ secrets.GIST_SECRET }}
+        gist-id: ${{env.GIST_ID}}
+        file-name: nightly-test.json
+        type: workflow
+  
+
+

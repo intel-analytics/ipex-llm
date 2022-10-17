@@ -9,6 +9,9 @@ set -e
 # the number of epoch to run is limited for testing purposes
 sed -i 's/epochs=10/epochs=1/' $NANO_HOWTO_GUIDES_TEST_DIR/*.ipynb
 
+# the number of batches to run is limited for testing purposes
+sed -i "s/steps_per_epoch=(ds_info.splits\['train'].num_examples \/\/ 32)/steps_per_epoch=(ds_info.splits\['train'].num_examples \/\/ 32 \/\/ 10)/" $NANO_HOWTO_GUIDES_TEST_DIR/accelerate_tensorflow_training_multi_instance.ipynb
+
 # comment out the install commands
 sed -i 's/!pip install/#!pip install/' $NANO_HOWTO_GUIDES_TEST_DIR/*.ipynb
 
@@ -19,7 +22,7 @@ echo 'Start testing'
 start=$(date "+%s")
 
 # use nbconvert to test here; nbmake may cause some errors
-jupyter nbconvert --ExecutePreprocessor.timeout=700 --to notebook --execute ${NANO_HOWTO_GUIDES_TEST_DIR}/*.ipynb
+jupyter nbconvert --ExecutePreprocessor.timeout=600 --to notebook --execute ${NANO_HOWTO_GUIDES_TEST_DIR}/*.ipynb
 
 now=$(date "+%s")
 time=$((now-start))

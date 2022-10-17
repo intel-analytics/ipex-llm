@@ -14,7 +14,6 @@
 # limitations under the License.
 #
 import json
-import logging
 import os
 import tempfile
 import shutil
@@ -22,13 +21,10 @@ import copy
 
 import tensorflow as tf
 
-from pyspark import BarrierTaskContext, TaskContext
-
 from bigdl.orca.data.utils import ray_partition_get_data_label
 from bigdl.orca.data.file import exists
 from bigdl.orca.learn.utils import save_pkl, duplicate_stdout_stderr_to_file,\
-    get_specific_object_from_callbacks, get_replaced_path, get_rank, \
-    process_tensorboard_in_callbacks, save_model, load_model, \
+    get_rank, process_tensorboard_in_callbacks, save_model, load_model, \
     replace_specific_object_from_callbacks
 from bigdl.orca.learn.log_monitor import LogMonitor
 from bigdl.orca.learn.tf2.callbacks import ModelCheckpoint
@@ -215,8 +211,10 @@ class SparkRunner:
         self.setup()
         self.cluster = cluster_info
         if mode == "fit" or mode == "evaluate":
+            from pyspark import BarrierTaskContext
             self.partition_id = BarrierTaskContext.get().partitionId()
         else:
+            from pyspark import TaskContext
             self.partition_id = TaskContext.get().partitionId()
         self.need_to_log_to_driver = need_to_log_to_driver
         if need_to_log_to_driver:
@@ -280,7 +278,7 @@ class SparkRunner:
                 if self.model_weights:
                     model.set_weights(self.model_weights.value)
 
-            if not model._is_compiled:
+            if not model._is_compiled and self.compile_args_creator:
                 model.compile(**self.compile_args_creator(config))
 
             dataset_handler = DatasetHandler.get_handler(self.backend, self.rank, self.size)

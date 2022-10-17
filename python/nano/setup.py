@@ -116,6 +116,9 @@ def setup_package():
         package_data={"bigdl.nano": package_data},
         scripts=scripts,
         package_dir={"": "src"},
+        entry_points = {
+            'console_scripts': ['bigdl-submit=bigdl.nano.k8s:main'],
+            },
         packages=get_nano_packages(),
     )
     setup(**metadata)

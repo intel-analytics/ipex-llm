@@ -50,9 +50,6 @@ object Encrypt extends App with Supportive{
 
   logger.info(s"$arguments.inputPath will be encrypted and saved at $encryptedFilePath")
 
-  logger.info(s"Primary key will be saved at $primaryKeyPath," +
-    s" and data key will be saved at $dataKeyPath")
-
   val dataKeyPlaintext = kms.retrieveDataKeyPlainText(primaryKeyPath, dataKeyPath)
 
   logger.info("The cryptos initializing for encryption...")

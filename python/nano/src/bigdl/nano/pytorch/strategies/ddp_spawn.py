@@ -129,7 +129,7 @@ class _DDPSpawnLauncher(_SpawnLauncher):
             log.debug(f"[Process {i}]: using KMP_AFFINITY: {os.environ['KMP_AFFINITY']}")
             log.debug(f"[Process {i}]: using OMP_NUM_THREADS: {os.environ['OMP_NUM_THREADS']}")
             error_queue = mp.SimpleQueue()
-            process = mp.Process(
+            process = mp.Process(   # type: ignore
                 target=_wrap,
                 args=(self._wrapping_function, i, args, error_queue),
                 daemon=False,
@@ -401,14 +401,7 @@ class DDPSpawnStrategy(_DDPSpawnStrategy):
 
         return super().validation_step_end(output)
 
-    def backward(self,  # type: ignore
-                 closure_loss: torch.Tensor,
-                 *args,
-                 **kwargs) -> torch.Tensor:
+    def backward(self, closure_loss: torch.Tensor, *args, **kwargs) -> torch.Tensor:
         """Moving back loss to xpu device."""
         closure_loss = closure_loss.to(self.root_device)
-        return super().backward(
-            closure_loss,
-            *args,
-            **kwargs,
-        )
+        return super().backward(closure_loss, *args, **kwargs)
