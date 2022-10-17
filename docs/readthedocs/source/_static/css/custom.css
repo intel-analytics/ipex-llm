@@ -55,3 +55,9 @@ html[data-theme="light"] {
 .bigdl-quicklinks-section-title{
     color: var(--pst-color-primary);
 }
+
+/* force long parameter definition (which occupy a whole line) 
+   to break in api documents for class/method */
+.sig-object{
+    overflow-wrap: break-word;
+}
