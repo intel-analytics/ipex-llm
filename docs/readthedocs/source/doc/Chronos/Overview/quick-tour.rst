@@ -133,7 +133,7 @@ To import a specific forecaster, you may use {algorithm name} + "Forecaster", an
 .. code-block:: python
 
     from bigdl.chronos.forecaster import TCNForecaster  # TCN is algorithm name
-    from bigdl.chronos.data.repo_dataset import get_public_dataset
+    from bigdl.chronos.data import get_public_dataset
 
     if __name__ == "__main__":
         # use nyc_taxi public dataset
@@ -159,7 +159,7 @@ For time series forecasting, we also provide an ``AutoTSEstimator`` for distribu
 .. code-block:: python
 
     from bigdl.orca.automl import hp
-    from bigdl.chronos.data.repo_dataset import get_public_dataset
+    from bigdl.chronos.data import get_public_dataset
     from bigdl.chronos.autots import AutoTSEstimator
     from bigdl.orca import init_orca_context, stop_orca_context
     from sklearn.preprocessing import StandardScaler
@@ -230,7 +230,7 @@ To import a specific detector, you may use {algorithm name} + "Detector", and ca
 .. code-block:: python
 
     from bigdl.chronos.detector.anomaly import DBScanDetector  # DBScan is algorithm name
-    from bigdl.chronos.data.repo_dataset import get_public_dataset
+    from bigdl.chronos.data import get_public_dataset
 
     if __name__ == "__main__":
         # use nyc_taxi public dataset

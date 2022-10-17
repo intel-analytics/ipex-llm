@@ -34,5 +34,5 @@ def export(model, input_sample=None, xml_path="model.xml", logging=True, **kwarg
     with TemporaryDirectory() as folder:
         folder = Path(folder)
         onnx_path = str(folder / 'tmp.onnx')
-        export_to_onnx(model, input_sample, onnx_path, dynamic_axes=True, **kwargs)
+        export_to_onnx(model, input_sample, onnx_path, **kwargs)
         convert_onnx_to_xml(onnx_path, xml_path, logging)

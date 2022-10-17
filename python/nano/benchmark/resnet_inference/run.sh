@@ -1,3 +1,5 @@
+#!/usr/bin/env bash
+
 #
 # Copyright 2016 The BigDL Authors.
 #
@@ -14,8 +16,21 @@
 # limitations under the License.
 #
 
-from .ipex.ipex_api import create_IPEXStrategy
-from .ddp_spawn import DDPSpawnStrategy
-from .ddp_subprocess import DDPSubprocessStrategy
-from bigdl.nano.deps.ray.ray_api import create_ray_strategy
-from .k8s import DDPK8sStrategy
+# Enviroment Settings
+export ANALYTICS_ZOO_ROOT=${ANALYTICS_ZOO_ROOT}
+export NANO_HOME=${ANALYTICS_ZOO_ROOT}/python/nano/src
+export NANO_BENCHMARK_DIR=${ANALYTICS_ZOO_ROOT}/python/nano/benchmark
+
+set -e
+echo "# Start testing"
+start=$(date "+%s")
+
+# Boot-up commands 
+# e.g. python benchmark_program.py 
+bash $NANO_BENCHMARK_DIR/resnet_inference/pytorch_resnet_benchmark.sh
+#
+
+now=$(date "+%s")
+time=$((now-start))
+echo ">> All Benchmark test finished"
+echo ">> Time used:$time sec"

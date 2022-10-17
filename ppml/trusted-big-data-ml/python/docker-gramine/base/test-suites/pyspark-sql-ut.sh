@@ -21,7 +21,6 @@ do
         if [ -n "$(grep "FAILED" /ppml/trusted-big-data-ml/logs/pyspark/sql/$suite.log -H -o)" ]
         then
             echo "failed"
-            rm /ppml/trusted-big-data-ml/logs/pyspark/sql/$suite.log
         else
             echo "pass"
             break

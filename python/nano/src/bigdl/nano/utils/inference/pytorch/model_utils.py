@@ -72,7 +72,15 @@ def export_to_onnx(model, input_sample=None, onnx_path="model.onnx", dynamic_axe
 
     :param input_sample: torch.Tensor or a list for the model tracing.
     :param file_path: The path to save onnx model file.
-    :param dynamic_axes: If we set the first dim of each input as a dynamic batch_size
+    :param dynamic_axes: dict or boolean, default: True. By default the exported model will
+           have the first dim of each input as a dynamic batch_size. If dynamic_axes=False, the
+           exported model will have the shapes of all input and output tensors set to exactly match
+           those given in input_sample. To specify axes of tensors as dynamic (i.e. known only at
+           run-time), set dynamic_axes to a dict with schema:
+           KEY (str): an input or output name. Each name must also be provided in input_names or
+           output_names.
+           VALUE (dict or list): If a dict, keys are axis indices and values are axis names. If a
+           list, each element is an axis index.
     :param **kwargs: will be passed to torch.onnx.export function.
     '''
     forward_args = get_forward_args(model)
@@ -82,7 +90,9 @@ def export_to_onnx(model, input_sample=None, onnx_path="model.onnx", dynamic_axe
                       'model.train_dataloader, model.val_dataloader and '
                       'model.predict_dataloader, '
                       'or set one of input_sample and model.example_input_array')
-    if dynamic_axes:
+    if isinstance(dynamic_axes, dict):
+        pass
+    elif dynamic_axes is True:
         dynamic_axes = {}
         for arg in forward_args:
             dynamic_axes[arg] = {0: 'batch_size'}  # set all dim0 to be dynamic
