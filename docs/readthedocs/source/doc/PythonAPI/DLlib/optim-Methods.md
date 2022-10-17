@@ -1,3 +1,7 @@
+# Optimizer
+
+--------
+
 ## Adam ##
 
 **Scala:**
@@ -11,16 +15,16 @@ optim = Adam(learningrate=1e-3, learningrate_decay=0.0, beta1=0.9, beta2=0.999, 
 
 An implementation of Adam optimization, first-order gradient-based optimization of stochastic  objective  functions. http://arxiv.org/pdf/1412.6980.pdf
 
- `learningRate` learning rate. Default value is 1e-3. 
- 
+ `learningRate` learning rate. Default value is 1e-3.
+
  `learningRateDecay` learning rate decay. Default value is 0.0.
- 
+
  `beta1` first moment coefficient. Default value is 0.9.
- 
+
  `beta2` second moment coefficient. Default value is 0.999.
- 
+
  `Epsilon` for numerical stability. Default value is 1e-8.
- 
+
 
 **Scala example:**
 ```scala
@@ -66,7 +70,7 @@ def rosenBrock(x: Tensor[Float]): (Float, Tensor[Float]) = {
     dxout.narrow(1, 2, d - 1).add(x0)
 
     (fout, dxout)
-  }  
+  }
 val x = Tensor(2).fill(0)
 > print(optm.optimize(rosenBrock, x))
 (0.0019999996
@@ -76,7 +80,7 @@ val x = Tensor(2).fill(0)
 **Python example:**
 ```python
 optim_method = Adam(learningrate=0.002)
-                  
+
 optimizer = Optimizer(
     model=mlp_model,
     training_rdd=train_data,
@@ -104,10 +108,10 @@ optim_method = SGD(learningrate=1e-3,learningrate_decay=0.0,weightdecay=0.0,
                    weightdecays=None,bigdl_type="float")
 ```
 
-A plain implementation of SGD which provides optimize method. After setting 
-optimization method when create Optimize, Optimize will call optimization method at the end of 
+A plain implementation of SGD which provides optimize method. After setting
+optimization method when create Optimize, Optimize will call optimization method at the end of
 each iteration.
- 
+
 **Scala example:**
 ```scala
 val optimMethod = new SGD[Float](learningRate= 1e-3,learningRateDecay=0.0,
@@ -123,7 +127,7 @@ optim_method = SGD(learningrate=1e-3,learningrate_decay=0.0,weightdecay=0.0,
                   momentum=0.0,dampening=DOUBLEMAX,nesterov=False,
                   leaningrate_schedule=None,learningrates=None,
                   weightdecays=None,bigdl_type="float")
-                  
+
 optimizer = Optimizer(
     model=mlp_model,
     training_rdd=train_data,
@@ -136,7 +140,7 @@ optimizer = Optimizer(
 ## Adadelta ##
 
 
-*AdaDelta* implementation for *SGD* 
+*AdaDelta* implementation for *SGD*
 It has been proposed in `ADADELTA: An Adaptive Learning Rate Method`.
 http://arxiv.org/abs/1212.5701.
 
@@ -302,7 +306,7 @@ optimizer.setOptimMethod(optimMethod)
 optim_method = LBFGS(max_iter=20, max_eval=DOUBLEMAX, \
                  tol_fun=1e-5, tol_x=1e-9, n_correction=100, \
                  learning_rate=1.0, line_search=None, line_search_options=None)
-                  
+
 optimizer = Optimizer(
     model=mlp_model,
     training_rdd=train_data,
@@ -353,7 +357,7 @@ optimizer.setOptimMethod(optimMethod)
 optim_method = Ftrl(learningrate = 5e-3, \
     learningrate_power = -0.5, \
     initial_accumulator_value = 0.01)
-                  
+
 optimizer = Optimizer(
     model=mlp_model,
     training_rdd=train_data,

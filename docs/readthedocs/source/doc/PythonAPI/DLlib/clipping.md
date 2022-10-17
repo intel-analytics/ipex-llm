@@ -1,3 +1,7 @@
+# Clipping
+
+--------
+
 ## ConstantGradientClipping ##
 
 Set constant gradient clipping during the training process.

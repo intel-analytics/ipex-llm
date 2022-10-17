@@ -1,3 +1,7 @@
+# Regularizer
+
+--------
+
 ## L1 Regularizer ##
 
 **Scala:**

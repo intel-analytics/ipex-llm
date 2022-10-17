@@ -1,4 +1,4 @@
-# DLLib Getting Start Guide
+# DLLib Scala Getting Start Guide
 
 ## 1. Creating dev environment
 

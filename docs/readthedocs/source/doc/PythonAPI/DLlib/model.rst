@@ -1,4 +1,4 @@
-dllib.keras.models
+Model/Sequential
 ==================
 
 dllib.keras.models.Model

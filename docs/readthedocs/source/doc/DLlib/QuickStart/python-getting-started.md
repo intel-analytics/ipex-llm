@@ -1,4 +1,4 @@
-# Python DLLib Getting Start Guide
+# DLLib Python Getting Start Guide
 
 ## 1. Code initialization
 ```nncontext``` is the main entry for provisioning the dllib program on the underlying cluster (such as K8s or Hadoop cluster), or just on a single laptop.

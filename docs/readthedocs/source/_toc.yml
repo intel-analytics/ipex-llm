@@ -110,11 +110,16 @@ subtrees:
               - entries:
                 - file: doc/DLlib/Overview/keras-api
                 - file: doc/DLlib/Overview/nnframes
+                - file: doc/DLlib/Overview/visualization
+                  title: "Visualization"
           - file: doc/DLlib/QuickStart/index
             title: "Tutorials"
             subtrees:
               - entries:
-                - file: doc/DLlib/QuickStart/dllib-quickstart
+                - file: doc/DLlib/QuickStart/python-getting-started
+                  title: "Python Quick Start"
+                - file: doc/DLlib/QuickStart/scala-getting-started
+                  title: "Scala Quick Start"
           - file: doc/PythonAPI/DLlib/index
             title: "API Reference"
 
