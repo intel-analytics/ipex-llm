@@ -151,7 +151,7 @@ ARG SCALA_VERSION=2.12
 ARG SCALA_SUB_VERSION_NUM=10
 
 ENV SPARK_VERSION                       ${SPARK_VERSION}
-ENV SPARK_HOME                          /ppml/trusted-bigdata/work/spark-${SPARK_VERSION}
+ENV SPARK_HOME                          /ppml/work/spark-${SPARK_VERSION}
 ENV JAVA_HOME                           /opt/jdk8
 ENV PATH                                ${JAVA_HOME}/bin:${PATH}
 ENV SCALA_VERSION                       ${SCALA_VERSION}
@@ -173,7 +173,7 @@ ENV TINI_VERSION                        $TINI_VERSION
 ENV LC_ALL                              C.UTF-8
 ENV LANG                                C.UTF-8
 ENV FLINK_VERSION			            ${FLINK_VERSION}
-ENV FLINK_HOME				            /ppml/trusted-bigdata/work/flink-${FLINK_VERSION}
+ENV FLINK_HOME				            /ppml/work/flink-${FLINK_VERSION}
 ENV FLINK_JOB_MANAGER_IP		        127.0.0.1
 ENV FLINK_JOB_MANAGER_REST_PORT		    8081
 ENV FLINK_JOB_MANAGER_RPC_PORT		    6123
@@ -183,24 +183,33 @@ ENV FLINK_BLOB_SERVER_PORT              6124
 ENV FLINK_TASK_MANAGER_RPC_PORT		    6125
 ENV FLINK_TASK_MANAGER_TASKSLOTS_NUM	1
 
-RUN mkdir -p /ppml/trusted-bigdata/work && \
-    mkdir -p /ppml/trusted-bigdata/work/lib && \
-    mkdir -p /ppml/trusted-bigdata/work/keys && \
-    mkdir -p /ppml/trusted-bigdata/work/password && \
-    mkdir -p /ppml/trusted-bigdata/work/data && \
-    mkdir -p /ppml/trusted-bigdata/work/models && \
-    mkdir -p /ppml/trusted-bigdata/work/apps && \
+RUN mkdir -p /ppml/work && \
+    mkdir -p /ppml/work/lib && \
+    mkdir -p /ppml/work/keys && \
+    mkdir -p /ppml/work/password && \
+    mkdir -p /ppml/work/data && \
+    mkdir -p /ppml/work/models && \
+    mkdir -p /ppml/work/apps && \
     mkdir -p /root/.kube/
 
 COPY --from=bigdata /opt/jdk  /opt/jdk8
 COPY --from=bigdata /opt/scala-${SCALA_VERSION}.${SCALA_SUB_VERSION_NUM}  /opt/scala-${SCALA_VERSION}.${SCALA_SUB_VERSION_NUM}
-COPY --from=bigdata /opt/spark-${SPARK_VERSION} /ppml/trusted-bigdata/work/spark-${SPARK_VERSION}
-COPY --from=bigdata /opt/flink-${FLINK_VERSION} /ppml/trusted-bigdata/work/flink-${FLINK_VERSION}
+COPY --from=bigdata /opt/spark-${SPARK_VERSION} /ppml/work/spark-${SPARK_VERSION}
+COPY --from=bigdata /opt/flink-${FLINK_VERSION} /ppml/work/flink-${FLINK_VERSION}
 
-ADD ./bigdl-ppml-submit.sh /ppml/trusted-bigdata/bigdl-ppml-submit.sh
-ADD ./spark-executor-template.yaml /ppml/trusted-bigdata/spark-executor-template.yaml
-ADD ./spark-driver-template.yaml /ppml/trusted-bigdata/spark-driver-template.yaml
+ADD ./bigdl-ppml-submit.sh /ppml/bigdl-ppml-submit.sh
+ADD ./spark-executor-template.yaml /ppml/spark-executor-template.yaml
+ADD ./spark-driver-template.yaml /ppml/spark-driver-template.yaml
 ADD ./entrypoint.sh /opt/entrypoint.sh
+ADD https://github.com/krallin/tini/releases/download/${TINI_VERSION}/tini /sbin/tini
+RUN rm $SPARK_HOME/jars/okhttp-*.jar && \
+    wget -P $SPARK_HOME/jars https://repo1.maven.org/maven2/com/squareup/okhttp3/okhttp/3.8.0/okhttp-3.8.0.jar && \
+    wget -P $SPARK_HOME/jars https://github.com/xerial/sqlite-jdbc/releases/download/3.36.0.1/sqlite-jdbc-3.36.0.1.jar && \
+    chmod +x /opt/entrypoint.sh && \
+    chmod +x /sbin/tini && \
+    chmod +x /ppml/bigdl-ppml-submit.sh && \
+    cp /sbin/tini /usr/bin/tini && \
+    gramine-argv-serializer bash -c 'export TF_MKL_ALLOC_MAX_BYTES=10737418240 && export _SPARK_AUTH_SECRET=$_SPARK_AUTH_SECRET && $sgx_command' > /ppml/trusted-big-data-ml/secured_argvs
 
 
 ENTRYPOINT [ "/opt/entrypoint.sh" ]
