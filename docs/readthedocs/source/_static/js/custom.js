@@ -17,5 +17,10 @@ $(document).ready(function(){
         data-ea-type='image'\
       ></div>\
       </div>"
-    )
+    );
+
+    // make tables responsive
+    $("table").wrap(
+        "<div style='overflow-x:auto;'></div>"
+    );
 })
