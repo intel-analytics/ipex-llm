@@ -125,17 +125,17 @@ After connecting to the Jupyter Notebook in the browser, you can run multiple Bi
 You should shut down the BigDL Docker container after using it.
 
 1. You can list all the active Docker containers by command line:
-```
-sudo docker ps
-```
+    ```
+    sudo docker ps
+    ```
 
 2. You will see your docker containers:
-```
-CONTAINER ID        IMAGE                                        COMMAND                  CREATED             STATUS              PORTS               NAMES
-40de2cdad025        intelanalytics/bigdl:2.1.0-SNAPSHOT         "/opt/work/start-n..."   3 hours ago         Up 3 hours                              upbeat_al
-```
+    ```
+    CONTAINER ID        IMAGE                                        COMMAND                  CREATED             STATUS              PORTS               NAMES
+    40de2cdad025        intelanalytics/bigdl:2.1.0-SNAPSHOT         "/opt/work/start-n..."   3 hours ago         Up 3 hours                              upbeat_al
+    ```
 
 3. Shut down the corresponding docker container by its ID:
-```
-$sudo docker rm -f 40de2cdad025
-```
+    ```
+    $sudo docker rm -f 40de2cdad025
+    ```
