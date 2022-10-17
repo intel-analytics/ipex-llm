@@ -31,15 +31,5 @@ if [ "$CHALLENGE" = "your_challenge_string" ]; then
     echo "[INFO] PPML Application Exit!"
     exit 1
 fi
-if [ "$SPARK_HOME" = "your_spark_home" ]; then
-    echo "[ERROR] SPARK_HOME is not set!"
-    echo "[INFO] PPML Application Exit!"
-    exit 1
-fi
-if [ "$BIGDL_PPML_JAR" = "your_bigdl_ppml_jar" ]; then
-    echo "[ERROR] BIGDL_PPML_JAR is not set!"
-    echo "[INFO] PPML Application Exit!"
-    exit 1
-fi
 
 java -cp $JARS com.intel.analytics.bigdl.ppml.attestation.VerificationCLI -i $APP_ID -k $API_KEY -c $CHALLENGE -u $ATTESTATION_URL -t $ATTESTATION_TYPE
