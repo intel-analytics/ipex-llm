@@ -20,7 +20,7 @@ Download BigDL assembly all in one jar from [BigDL-Release](https://bigdl.readth
 ### Generate secret
 
 ```bash
-java -cp bigdl-assembly-[version]-jar-with-all-dependencies.jar com.intel.analytics.bigdl.ppml.fl.GenerateCkksSecret ckks.crt
+java -cp bigdl-assembly-[version]-jar-with-all-dependencies.jar com.intel.analytics.bigdl.ppml.fl.example.ckks.GenerateCkksSecret ckks.crt
 ```
 
 ### Start FLServer
@@ -37,7 +37,7 @@ java -cp bigdl-assembly-[version]-jar-with-all-dependencies.jar com.intel.analyt
 ## Start Local Trainers
 Start the local Logistic Regression trainers at 2 training machines
 ```
-java -cp bigdl-assembly-[version]-jar-with-all-dependencies.jar com.intel.analytics.bigdl.ppml.fl.example.VflLogisticRegressionCkks
+java -cp bigdl-assembly-[version]-jar-with-all-dependencies.jar com.intel.analytics.bigdl.ppml.fl.example.ckks.VflLogisticRegressionCkks
     -d [path to adult dataset]
     -i 1
     -s [path to ckks.crt]
