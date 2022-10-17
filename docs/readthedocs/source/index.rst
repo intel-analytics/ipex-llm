@@ -18,6 +18,7 @@ Choosing the right BigDL library
 .. graphviz::
 
     digraph BigDLDecisionTree {
+        graph [pad=0.1 ranksep=0.3]
         node [color="#0171c3" shape=box fontname="Arial" fontsize=14]
         
         Feature1 [label="Hardware Secured Big Data & AI?"]

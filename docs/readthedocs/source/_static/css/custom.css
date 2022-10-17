@@ -46,16 +46,6 @@ html[data-theme="light"] {
     font-size: 0.9em;
 }
 
-/* limit the width of graphviz object and center it*/
-object.graphviz{
-    max-width: 95%;
-}
-
-.graphviz{
-    display: flex;
-    justify-content: center;
-}
-
 /* for landing page side bar */
 .bigdl-quicklinks-section-nav{
     padding-bottom: 0.5rem;
