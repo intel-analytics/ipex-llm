@@ -83,8 +83,8 @@ default_config="--conf spark.driver.host=$LOCAL_IP \
         --conf spark.python.use.daemon=false \
         --conf spark.python.worker.reuse=false \
         --conf spark.kubernetes.authenticate.driver.serviceAccountName=spark \
-        --conf spark.kubernetes.driver.podTemplateFile=/ppml/trusted-big-data-ml/spark-driver-template.yaml \
-        --conf spark.kubernetes.executor.podTemplateFile=/ppml/trusted-big-data-ml/spark-executor-template.yaml \
+        --conf spark.kubernetes.driver.podTemplateFile=/ppml/spark-driver-template.yaml \
+        --conf spark.kubernetes.executor.podTemplateFile=/ppml/spark-executor-template.yaml \
         --conf spark.kubernetes.executor.deleteOnTermination=false"
 
 if [ $secure_password ]; then
@@ -102,10 +102,10 @@ if [ $secure_password ]; then
     --conf spark.ssl.enabled=true \
     --conf spark.ssl.port=8043 \
     --conf spark.ssl.keyPassword=$secure_password \
-    --conf spark.ssl.keyStore=/ppml/trusted-big-data-ml/work/keys/keystore.jks  \
+    --conf spark.ssl.keyStore=/ppml/work/keys/keystore.jks  \
     --conf spark.ssl.keyStorePassword=$secure_password \
     --conf spark.ssl.keyStoreType=JKS \
-    --conf spark.ssl.trustStore=/ppml/trusted-big-data-ml/work/keys/keystore.jks \
+    --conf spark.ssl.trustStore=/ppml/work/keys/keystore.jks \
     --conf spark.ssl.trustStorePassword=$secure_password \
     --conf spark.ssl.trustStoreType=JKS"
 else
