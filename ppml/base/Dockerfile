@@ -95,18 +95,10 @@ RUN wget $JDK_URL && \
     mv /opt/jdk* /opt/jdk$JDK_VERSION && \
     ln -s /opt/jdk$JDK_VERSION /opt/jdk
 
-ADD ./verification_jars /ppml/
+ADD ./verification_jars /ppml/verification_jars
 
-ARG YOUR_PCCS_URL=https://localhost:8081
-ARG USE_SECURE_CERT=true
-ENV YOUR_PCCS_URL       ${YOUR_PCCS_URL}
-ENV USE_SECURE_CERT     ${USE_SECURE_CERT}
 ADD ./sgx_default_qcnl.conf /ppml
-
-RUN cd /ppml/ \
-    sed -i 's/YOUR_PCCS_URL/$YOUR_PCCS_URL/g' ./sgx_default_qcnl.conf \
-    sed -i 's/USE_SECURE_CERT/$USE_SECURE_CERT/g' ./sgx_default_qcnl.conf \
-    cp ./sgx_default_qcnl.conf /etc/sgx_default_qcnl.conf
+RUN cp /ppml/sgx_default_qcnl.conf /etc/sgx_default_qcnl.conf
 
 ENV PYTHONPATH   /usr/lib/python3.7:/usr/lib/python3.7/lib-dynload:/usr/local/lib/python3.7/dist-packages:/usr/lib/python3/dist-packages
 WORKDIR /ppml
