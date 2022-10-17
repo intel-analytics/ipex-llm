@@ -58,6 +58,7 @@ jobs:
       - name: Run tutorial notebooks Pytorch unit tests
         shell: bash
         run: |
+            $CONDA/bin/conda remove -n notebooks-tutorial-pytorch --all
             $CONDA/bin/conda create -n notebooks-tutorial-pytorch -y python==3.7.10 setuptools=58.0.4
             source $CONDA/bin/activate notebooks-tutorial-pytorch
             $CONDA/bin/conda info
