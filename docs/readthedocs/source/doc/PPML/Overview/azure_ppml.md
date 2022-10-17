@@ -447,7 +447,7 @@ bash bigdl-ppml-submit.sh \
     --conf spark.bigdl.kms.key.data=$DATA_KEY_PATH \
     --class $SPARK_JOB_MAIN_CLASS \
     --verbose \
-    /ppml/trusted-big-data-ml/work/bigdl-$BIGDL_VERSION/jars/bigdl-ppml-spark_3.1.2-$BIGDL_VERSION-SNAPSHOT.jar \
+    local:///ppml/trusted-big-data-ml/work/bigdl-$BIGDL_VERSION/jars/bigdl-ppml-spark_3.1.2-$BIGDL_VERSION-SNAPSHOT.jar \
     $INPUT_DIR $OUTPUT_DIR aes_cbc_pkcs5padding plain_text [QUERY]
 ```
 
