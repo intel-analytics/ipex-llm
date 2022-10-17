@@ -198,9 +198,6 @@ COPY --from=bigdata /opt/spark-${SPARK_VERSION} /ppml/trusted-bigdata/work/spark
 COPY --from=bigdata /opt/flink-${FLINK_VERSION} /ppml/trusted-bigdata/work/flink-${FLINK_VERSION}
 
 ADD ./bigdl-ppml-submit.sh /ppml/trusted-bigdata/bigdl-ppml-submit.sh
-ADD ./examples /ppml/trusted-big-data-ml/work/examples
-ADD ./start-scripts /ppml/trusted-big-data-ml/work/start-scripts
-ADD ./test-suites /ppml/trusted-big-data-ml/work/test-suites
 ADD ./spark-executor-template.yaml /ppml/trusted-bigdata/spark-executor-template.yaml
 ADD ./spark-driver-template.yaml /ppml/trusted-bigdata/spark-driver-template.yaml
 ADD ./entrypoint.sh /opt/entrypoint.sh
