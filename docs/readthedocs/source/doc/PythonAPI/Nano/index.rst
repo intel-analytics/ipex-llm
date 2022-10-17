@@ -4,11 +4,6 @@ Nano API
 .. toctree::
     :maxdepth: 2
 
-    common.rst
-
-.. toctree::
-    :maxdepth: 2
-
     pytorch.rst
 
 
