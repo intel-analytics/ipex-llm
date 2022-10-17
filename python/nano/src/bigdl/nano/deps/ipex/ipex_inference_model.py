@@ -72,7 +72,6 @@ class PytorchIPEXJITModel(AcceleratedLightningModule):
     def forward_step(self, *inputs):
         if self.channels_last is True:
             inputs = tuple(map(lambda x: x.to(memory_format=torch.channels_last), inputs))
-        print(inputs)
         return self.model(*inputs)
 
     def on_forward_end(self, outputs):

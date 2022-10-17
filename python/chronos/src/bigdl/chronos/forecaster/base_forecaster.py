@@ -629,13 +629,15 @@ class BasePytorchForecaster(Forecaster):
                | By default, TSDataset will be transformed to a pytorch dataloader,
                | which is memory-friendly while a little bit slower.
                | Users may call `roll` on the TSDataset before calling `fit`
-               | Then the training speed will be faster but will consume more memory.
+               | Then the training speed will be faster but will consume memory.
 
         :param batch_size: predict batch size. The value will not affect predict
                result but will affect resources cost(e.g. memory and time).
         :param quantize: if use the quantized model to predict.
         :param acceleration: bool variable indicates whether use original model.
-               Default to True which means use optim_model to predict.
+               Default to True means use optim_model to predict which requires to call
+               .optimize() first to obtain an optim_model, otherwise will use original
+               model to predict.
 
         :return: A numpy array with shape (num_samples, horizon, target_dim)
                  if data is a numpy ndarray or a dataloader.
@@ -686,15 +688,12 @@ class BasePytorchForecaster(Forecaster):
                                                   input_data=data,
                                                   batch_size=batch_size)
             else:
-                if acceleration is False:
+                if acceleration is False or self.optim_model is None:
                     self.internal.eval()
                     yhat = _pytorch_fashion_inference(model=self.internal,
                                                       input_data=data,
                                                       batch_size=batch_size)
                 else:
-                    invalidInputError(self.optim_model is not None,
-                                      "There is not optimized model, please call "
-                                      ".optimize() first.")
                     self.optim_model.eval()
                     yhat = _pytorch_fashion_inference(model=self.optim_model,
                                                       input_data=data,
@@ -888,7 +887,9 @@ class BasePytorchForecaster(Forecaster):
                non-distribtued version.
         :param quantize: if use the quantized model to predict.
         :param acceleration: bool variable indicates whether use original model.
-               Default to True which means use optim_model to predict.
+               Default to True means use optim_model to predict which requires to call
+               .optimize() first to obtain an optim_model, otherwise will use original
+               model to predict.
 
         :return: A list of evaluation results. Each item represents a metric.
         """
@@ -926,15 +927,12 @@ class BasePytorchForecaster(Forecaster):
                                                   input_data=input_data,
                                                   batch_size=batch_size)
             else:
-                if acceleration is False:
+                if acceleration is False or self.optim_model is None:
                     self.internal.eval()
                     yhat = _pytorch_fashion_inference(model=self.internal,
                                                       input_data=input_data,
                                                       batch_size=batch_size)
                 else:
-                    invalidInputError(self.optim_model is not None,
-                                      "There is not optimized model, please call "
-                                      ".optimize() first.")
                     self.optim_model.eval()
                     yhat = _pytorch_fashion_inference(model=self.optim_model,
                                                       input_data=input_data,

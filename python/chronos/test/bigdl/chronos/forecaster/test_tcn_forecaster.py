@@ -983,7 +983,6 @@ class TestChronosModelTCNForecaster(TestCase):
                                    metrics=["mse"],
                                    lr=0.01)
         forecaster.fit(train_loader, epochs=2)
-        with pytest.raises(RuntimeError):
-            forecaster.evaluate(val_loader)
-        with pytest.raises(RuntimeError):
-            forecaster.predict(test_loader)
+        forecaster.evaluate(val_loader)
+        forecaster.predict(test_loader)
+        assert forecaster.optim_model is None

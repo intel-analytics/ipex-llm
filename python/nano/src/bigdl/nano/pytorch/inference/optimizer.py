@@ -211,7 +211,7 @@ class InferenceOptimizer:
         st = time.perf_counter()
         try:
             with torch.no_grad():
-                if isinstance(input_sample, Dict):
+                if isinstance(input_sample, (Dict, torch.Tensor)):
                     model(input_sample)
                 else:
                     model(*input_sample)
@@ -292,7 +292,7 @@ class InferenceOptimizer:
 
                 def func_test(model, input_sample):
                     with torch.no_grad():
-                        if isinstance(input_sample, Dict):
+                        if isinstance(input_sample, (Dict, torch.Tensor)):
                             model(input_sample)
                         else:
                             model(*input_sample)
@@ -308,6 +308,7 @@ class InferenceOptimizer:
                         continue
                 except Exception as e:
                     result_map[method]["status"] = "fail to forward"
+                    print(f"----------{method} failed to forward----------")
                     torch.set_num_threads(default_threads)
                     continue
 
