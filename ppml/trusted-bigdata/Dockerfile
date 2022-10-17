@@ -187,8 +187,8 @@ RUN mkdir -p /ppml/trusted-bigdata/work && \
 
 COPY --from=bigdata /opt/jdk  /opt/jdk8
 COPY --from=bigdata /opt/scala-${SCALA_VERSION}.${SCALA_SUB_VERSION_NUM}  /opt/scala-${SCALA_VERSION}.${SCALA_SUB_VERSION_NUM}
-COPY --from=bigdata /opt/flink-${FLINK_VERSION} /ppml/trusted-bigdata/work/flink-${FLINK_VERSION}
 COPY --from=bigdata /opt/spark-${SPARK_VERSION} /ppml/trusted-bigdata/work/spark-${SPARK_VERSION}
+COPY --from=bigdata /opt/flink-${FLINK_VERSION} /ppml/trusted-bigdata/work/flink-${FLINK_VERSION}
 
 ADD ./bigdl-ppml-submit.sh /ppml/trusted-bigdata/bigdl-ppml-submit.sh
 ADD ./examples /ppml/trusted-big-data-ml/work/examples
