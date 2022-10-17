@@ -19,7 +19,7 @@ runs:
         DEFAULT_SGX_MEM_SIZE: 32G
         DEFAULT_IMAGE: ${{ inputs.image }}:${{ inputs.image-tag }}
       run: |
-        echo "CONTAINER_NAME=spark-exmaples-test-gramine" >> $GITHUB_ENV
+        echo "CONTAINER_NAME=spark-examples-test-gramine" >> $GITHUB_ENV
         echo "SGX_MEM_SIZE=${{ env.DEFAULT_SGX_MEM_SIZE }}" >> $GITHUB_ENV
         echo "IMAGE=${{ env.DEFAULT_IMAGE }}" >> $GITHUB_ENV
     - name: Start Container
@@ -55,4 +55,5 @@ runs:
       shell: bash
       run: |
         docker exec -i $CONTAINER_NAME bash -c "/ppml/trusted-big-data-ml/init.sh"
-        docker exec -i $CONTAINER_NAME bash -c "/ppml/trusted-big-data-ml/work/test-suites/simplequery-example.sh"
+        docker exec -i $CONTAINER_NAME bash -c "/ppml/trusted-big-data-ml/work/test-suites/pyspark-simplequery.sh
+"
