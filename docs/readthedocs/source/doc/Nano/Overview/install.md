@@ -1,6 +1,7 @@
 # Nano Installation
 
-Note: For windows users, we recommend using Windows Subsystem for Linux 2 (WSL2) to run BigDL-Nano. Please refer [here](./windows_guide.md) for instructions.
+Note: For windows users, we recommend using Windows Subsystem for Linux 2 (WSL2) to run BigDL-Nano. Please refer to [Nano Windows install guide](../Howto/windows_guide.md) for instructions.
+
 
 BigDL-Nano can be installed using pip and we recommend installing BigDL-Nano in a conda environment.
 
