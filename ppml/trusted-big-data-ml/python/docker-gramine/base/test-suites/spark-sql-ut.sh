@@ -10,8 +10,8 @@ cp -r /ppml/trusted-big-data-ml/work/spark-${SPARK_VERSION}/bin /opt/spark-sourc
 cd /ppml/trusted-big-data-ml/work/spark-${SPARK_VERSION}
 mkdir /ppml/trusted-big-data-ml/work/spark-${SPARK_VERSION}/test-jars
 cd /ppml/trusted-big-data-ml/work/spark-${SPARK_VERSION}/test-jars
-wget https://repo1.maven.org/maven2/org/apache/spark/spark-core_2.12/3.1.2/spark-core_2.12-3.1.2-tests.jar
-wget https://repo1.maven.org/maven2/org/apache/spark/spark-catalyst_2.12/3.1.2/spark-catalyst_2.12-3.1.2-tests.jar
+wget https://repo1.maven.org/maven2/org/apache/spark/spark-core_2.12/$SPARK_VERSION/spark-core_2.12-$SPARK_VERSION-tests.jar
+wget https://repo1.maven.org/maven2/org/apache/spark/spark-catalyst_2.12/$SPARK_VERSION/spark-catalyst_2.12-$SPARK_VERSION-tests.jar
 wget https://repo1.maven.org/maven2/org/scalactic/scalactic_2.12/3.1.4/scalactic_2.12-3.1.4.jar
 wget https://repo1.maven.org/maven2/org/scalatest/scalatest_2.12/3.1.4/scalatest_2.12-3.1.4.jar
 wget https://repo1.maven.org/maven2/org/mockito/mockito-core/3.4.6/mockito-core-3.4.6.jar
@@ -24,7 +24,7 @@ wget https://repo1.maven.org/maven2/org/scalatestplus/scalatestplus-mockito_2.12
 wget https://repo1.maven.org/maven2/org/scalatestplus/scalatestplus-scalacheck_2.12/3.1.0.0-RC2/scalatestplus-scalacheck_2.12-3.1.0.0-RC2.jar
 #mkdir /ppml/trusted-big-data-ml/work/spark-${SPARK_VERSION}/test-classes
 #cd /ppml/trusted-big-data-ml/work/spark-${SPARK_VERSION}/test-classes
-wget https://repo1.maven.org/maven2/org/apache/spark/spark-sql_2.12/3.1.2/spark-sql_2.12-3.1.2-tests.jar
+wget https://repo1.maven.org/maven2/org/apache/spark/spark-sql_2.12/$SPARK_VERSION/spark-sql_2.12-$SPARK_VERSION-tests.jar
 #jar xvf spark-sql_2.12-$SPARK_VERSION-tests.jar
 #rm spark-sql_2.12-$SPARK_VERSION-tests.jar
 
@@ -44,7 +44,7 @@ do
     do
         export sgx_command="/opt/jdk8/bin/java -cp '$SPARK_HOME/conf/:$SPARK_HOME/jars/*:$SPARK_HOME/test-jars/*:$SPARK_HOME/examples/jars/*' \
                                         -Xmx8g -Dspark.testing=true -Djdk.lang.Process.launchMechanism=posix_spawn -XX:MaxMetaspaceSize=256m -Dos.name='Linux' \
-                                        -Dspark.test.home=/ppml/trusted-big-data-ml/work/spark-3.1.2 -Dspark.python.use.daemon=false -Dspark.python.worker.reuse=false \
+                                        -Dspark.test.home=/ppml/trusted-big-data-ml/work/spark-$SPARK_VERSION -Dspark.python.use.daemon=false -Dspark.python.worker.reuse=false \
                                         -Dspark.driver.host=127.0.0.1 org.scalatest.tools.Runner -s ${suite} -fF /ppml/trusted-big-data-ml/logs/reporter/${suite}.txt"
         gramine-sgx bash 2>&1 | tee /ppml/trusted-big-data-ml/logs/runtime/${suite}.log
         echo "##########$suite Test:"
