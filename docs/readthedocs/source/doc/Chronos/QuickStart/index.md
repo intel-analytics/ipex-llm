@@ -33,6 +33,7 @@
                 <div class="choicebox"><input type="checkbox" class="forecasters" name="forecasters" value="Seq2SeqForecaster" id="Seq2SeqForecaster">Seq2SeqForecaster</div>
                 <div class="choicebox"><input type="checkbox" class="forecasters" name="forecasters" value="DPGANSimulator" id="DPGANSimulator">DPGANSimulator</div>
                 <div class="choicebox"><input type="checkbox" class="forecasters" name="forecasters" value="TCMFForecaster" id="TCMFForecaster">TCMFForecaster</div>
+                <div class="choicebox"><input type="checkbox" class="forecasters" name="forecasters" value="TFT_model" id="TFT_model">TFT_model</div>
             </div>
         </div>
         </br>
@@ -216,7 +217,7 @@
                 <p>Tag: 
                     <button value="forecast">forecast</button>&nbsp;
                     <button value="customized_model">customized model</button>&nbsp;
-                    <button value="DeepAR" class="roundbutton">DeepAR</button>
+                    <button value="TFT_model" class="roundbutton">TFT Model</button>
                 </p>
             </summary>
             <img src="../../../_images/GitHub-Mark-32px.png"><a href="https://github.com/intel-analytics/BigDL/tree/main/python/chronos/use-case/pytorch-forecasting/TFT">View source on GitHub</a>
