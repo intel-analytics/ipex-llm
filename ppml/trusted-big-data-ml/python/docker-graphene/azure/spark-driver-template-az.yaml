@@ -5,8 +5,9 @@ spec:
   - name: spark-driver
     securityContext:
       privileged: true
-    - name: ATTESTATION
-      value: false
+    env:
+      - name: ATTESTATION
+        value: false
     volumeMounts:
       - name: secrets-store01
         mountPath: /graphene/Pal/src/host/Linux-SGX/signer/enclave-key.pem

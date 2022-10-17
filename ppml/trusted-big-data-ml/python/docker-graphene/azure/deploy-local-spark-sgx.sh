@@ -16,5 +16,5 @@ sudo docker run -itd \
     -v /var/run/aesmd/aesm.socket:/var/run/aesmd/aesm.socket \
     --name=spark-local \
     -e LOCAL_IP=$LOCAL_IP \
-    -e SGX_MEM_SIZE=64G \
+    -e SGX_MEM_SIZE=32G \
     $DOCKER_IMAGE bash
