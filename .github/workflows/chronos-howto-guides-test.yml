@@ -41,12 +41,9 @@ jobs:
       - name: Run tests for Chronos How-to Guides
         shell: bash
         run: |
-          if conda info --env | grep "chronos-howto-env"; then
-            source deactivate
-            conda remove -n chronos-howto-env -y --all
-          fi
-          conda create -n chronos-howto-env -y python==3.7.10 setuptools==58.0.4
-          source activate chronos-howto-env
+          $CONDA/bin/conda create -n chronos-howto-env -y python==3.7.10 setuptools=58.0.4
+          source $CONDA/bin/activate chronos-howto-env
+          $CONDA/bin/conda info
           pip install pytest nbmake
           pip install neural-compressor==1.11
           pip install onnx==1.11.0
@@ -64,8 +61,8 @@ jobs:
           export SPARK_LOCAL_HOSTNAME=localhost
           export KERAS_BACKEND=tensorflow
           bash python/chronos/dev/test/run-pytests-howto-guides.sh
-          source deactivate
-          conda remove -n chronos-howto-env -y --all
+          source $CONDA/bin/deactivate
+          $CONDA/bin/conda remove -n chronos-howto-env --all
         env:
           BIGDL_ROOT: ${{ github.workspace }}
           ANALYTICS_ZOO_ROOT: ${{ github.workspace }}
