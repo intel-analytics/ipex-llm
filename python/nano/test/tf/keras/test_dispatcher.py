@@ -20,8 +20,8 @@ from unittest import TestCase
 class TestDispatcherKeras(TestCase):
 
     def test_dispatch_keras(self):
-        from bigdl.nano import patch_nano, unpatch_nano
-        patch_nano()
+        from bigdl.nano.tf import patch_tensorflow, unpatch_tensorflow
+        patch_tensorflow()
         import keras
         import tensorflow
         import bigdl.nano
@@ -32,7 +32,7 @@ class TestDispatcherKeras(TestCase):
         assert issubclass(tensorflow.keras.layers.Embedding, bigdl.nano.tf.keras.layers.Embedding)
         assert issubclass(tensorflow.keras.optimizers.Adam, bigdl.nano.tf.optimizers.SparseAdam)
 
-        unpatch_nano()
+        unpatch_tensorflow()
         # not checking keras.Model since there is no change
         assert not issubclass(tensorflow.keras.Sequential, bigdl.nano.tf.keras.Sequential)
         assert not issubclass(keras.Sequential, bigdl.nano.tf.keras.Sequential)

@@ -20,8 +20,8 @@ from unittest import TestCase
 class TestDispatcherPytorch(TestCase):
 
     def test_dispatch_pytorch(self):
-        from bigdl.nano import patch_nano, unpatch_nano
-        patch_nano()
+        from bigdl.nano.pytorch import patch_torch, unpatch_torch
+        patch_torch()
         import pytorch_lightning
         import bigdl.nano.pytorch
         import torchvision
@@ -29,7 +29,7 @@ class TestDispatcherPytorch(TestCase):
         assert torchvision.datasets is bigdl.nano.pytorch.vision.datasets
         assert torchvision.transforms is bigdl.nano.pytorch.vision.transforms
 
-        unpatch_nano()
+        unpatch_torch()
         assert not issubclass(pytorch_lightning.Trainer, bigdl.nano.pytorch.Trainer)
         assert not torchvision.datasets is bigdl.nano.pytorch.vision.datasets
         assert not torchvision.transforms is bigdl.nano.pytorch.vision.transforms

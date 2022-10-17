@@ -39,6 +39,3 @@ def _check_nano_envs():
 
 # disable env check for now, as it does not work for tf and windows
 # _check_nano_envs()
-
-
-from .dispatcher import patch_nano, unpatch_nano
