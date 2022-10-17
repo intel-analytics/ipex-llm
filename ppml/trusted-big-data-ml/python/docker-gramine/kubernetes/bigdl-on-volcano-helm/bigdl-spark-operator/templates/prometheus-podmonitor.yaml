@@ -1,0 +1,19 @@
+{{ if and .Values.metrics.enable .Values.podMonitor.enable }}
+apiVersion: monitoring.coreos.com/v1
+kind: PodMonitor
+metadata:
+  name: {{ include "spark-operator.name" . -}}-podmonitor
+  labels: {{ toYaml .Values.podMonitor.labels | nindent 4 }}
+spec:
+  podMetricsEndpoints:
+    - interval: {{ .Values.podMonitor.podMetricsEndpoint.interval }}
+      port: {{ .Values.metrics.portName | quote }}
+      scheme: {{ .Values.podMonitor.podMetricsEndpoint.scheme }}
+  jobLabel: {{ .Values.podMonitor.jobLabel }}
+  namespaceSelector:
+    matchNames:
+      - {{ .Release.Namespace }}
+  selector:
+    matchLabels:
+      {{- include "spark-operator.selectorLabels" . | nindent 6 }}
+{{ end }}

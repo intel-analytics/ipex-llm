@@ -1,0 +1,51 @@
+{{- if or .Values.rbac.create .Values.rbac.createRole }}
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: spark-role
+  namespace: {{ default .Release.Namespace .Values.sparkJobNamespace }}
+  labels:
+    {{- include "spark-operator.labels" . | nindent 4 }}
+rules:
+- apiGroups:
+  - ""
+  resources:
+  - pods
+  verbs:
+  - "*"
+- apiGroups:
+  - ""
+  resources:
+  - services
+  verbs:
+  - "*"
+- apiGroups:
+  - ""
+  resources:
+  - configmaps
+  verbs:
+  - "*"
+- apiGroups:
+  - ""
+  resources:
+  - persistentvolumeclaims
+  verbs:
+  - "*"
+---
+
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: spark
+  namespace: {{ default .Release.Namespace .Values.sparkJobNamespace }}
+  labels:
+    {{- include "spark-operator.labels" . | nindent 4 }}
+subjects:
+- kind: ServiceAccount
+  name: {{ include "spark.serviceAccountName" . }}
+  namespace: {{ default .Release.Namespace .Values.sparkJobNamespace }}
+roleRef:
+  kind: Role
+  name: spark-role
+  apiGroup: rbac.authorization.k8s.io
+{{- end }}

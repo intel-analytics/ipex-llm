@@ -1,0 +1,46 @@
+{{ if .Values.webhook.enable }}
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: {{ include "spark-operator.fullname" . }}-webhook-init
+  annotations:
+    {{- toYaml .Values.webhook.initAnnotations | nindent 4 }}
+  labels:
+    {{- include "spark-operator.labels" . | nindent 4 }}
+spec:
+  template:
+    metadata:
+      name: {{ include "spark-operator.fullname" . }}-webhook-init
+      {{- if .Values.istio.enabled }}
+      annotations:
+        "sidecar.istio.io/inject": "false"
+      {{- end }}
+    spec:
+      serviceAccountName: {{ include "spark-operator.serviceAccountName" . }}
+      restartPolicy: OnFailure
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      containers:
+      - name: main
+        image: {{ .Values.image.repository }}:{{ default .Chart.AppVersion .Values.image.tag }}
+        imagePullPolicy: {{ .Values.image.pullPolicy }}
+        securityContext:
+          {{- toYaml .Values.securityContext | nindent 10 }}
+        command: [
+            "/usr/bin/gencerts.sh",
+            "-n", "{{ .Release.Namespace }}",
+            "-s", "{{ include "spark-operator.fullname" . }}-webhook",
+            "-r", "{{ include "spark-operator.fullname" . }}-webhook-certs",
+            "-p"
+          ]
+{{ end }}
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}

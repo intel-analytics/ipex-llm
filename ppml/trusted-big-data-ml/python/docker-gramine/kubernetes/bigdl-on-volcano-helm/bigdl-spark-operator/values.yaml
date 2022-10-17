@@ -1,0 +1,176 @@
+# Default values for spark-operator.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+# replicaCount -- Desired number of pods, leaderElection will be enabled
+# if this is greater than 1
+replicaCount: 1
+
+image:
+  # -- Image repository
+  repository: 10.239.45.10/arda/intelanalytics/bigdl-spark-operator
+  # -- Image pull policy
+  pullPolicy: IfNotPresent
+  # -- if set, override the image tag whose default is the chart appVersion.
+  tag: "2.2.0-SNAPSHOT"
+
+# -- Image pull secrets
+imagePullSecrets: []
+
+# -- String to partially override `spark-operator.fullname` template (will maintain the release name)
+nameOverride: ""
+
+# -- String to override release name
+fullnameOverride: ""
+
+rbac:
+  # -- **DEPRECATED** use `createRole` and `createClusterRole`
+  create: false
+  # -- Create and use RBAC `Role` resources
+  createRole: true
+  # -- Create and use RBAC `ClusterRole` resources
+  createClusterRole: true
+
+serviceAccounts:
+  spark:
+    # -- Create a service account for spark apps
+    create: true
+    # -- Optional name for the spark service account
+    name: ""
+    # -- Optional annotations for the spark service account
+    annotations: {}
+  sparkoperator:
+    # -- Create a service account for the operator
+    create: true
+    # -- Optional name for the operator service account
+    name: ""
+    # -- Optional annotations for the operator service account
+    annotations: {}
+
+# -- Set this if running spark jobs in a different namespace than the operator
+sparkJobNamespace: ""
+
+# -- Operator concurrency, higher values might increase memory usage
+controllerThreads: 10
+
+# -- Operator resync interval. Note that the operator will respond to events (e.g. create, update)
+# unrelated to this setting
+resyncInterval: 30
+
+uiService:
+  # -- Enable UI service creation for Spark application
+  enable: true
+
+# -- Ingress URL format.
+# Requires the UI service to be enabled by setting `uiService.enable` to true.
+ingressUrlFormat: ""
+
+# -- Set higher levels for more verbose logging
+logLevel: 2
+
+# podSecurityContext -- Pod security context
+podSecurityContext: {}
+
+# securityContext -- Operator container security context
+securityContext: {}
+
+# volumes - Operator volumes
+volumes: []
+
+# volumeMounts - Operator volumeMounts
+volumeMounts: []
+
+webhook:
+  # -- Enable webhook server
+  enable: false
+  # -- Webhook service port
+  port: 8080
+  # -- The webhook server will only operate on namespaces with this label, specified in the form key1=value1,key2=value2.
+  # Empty string (default) will operate on all namespaces
+  namespaceSelector: ""
+  # -- The annotations applied to init job, required to restore certs deleted by the cleanup job during upgrade
+  initAnnotations:
+    "helm.sh/hook": pre-install, pre-upgrade
+    "helm.sh/hook-weight": "50"
+  # -- The annotations applied to the cleanup job, required for helm lifecycle hooks
+  cleanupAnnotations:
+    "helm.sh/hook": pre-delete, pre-upgrade
+    "helm.sh/hook-delete-policy": hook-succeeded
+    # -- Webhook Timeout in seconds
+  timeout: 30
+
+metrics:
+  # -- Enable prometheus metric scraping
+  enable: true
+  # -- Metrics port
+  port: 10254
+  # -- Metrics port name
+  portName: metrics
+  # -- Metrics serving endpoint
+  endpoint: /metrics
+  # -- Metric prefix, will be added to all exported metrics
+  prefix: ""
+
+# -- Prometheus pod monitor for operator's pod.
+podMonitor:
+  # -- If enabled, a pod monitor for operator's pod will be submitted. Note that prometheus metrics should be enabled as well.
+  enable: false
+  # -- Pod monitor labels
+  labels: {}
+  # -- The label to use to retrieve the job name from
+  jobLabel: spark-operator-podmonitor
+  # -- Prometheus metrics endpoint properties. `metrics.portName` will be used as a port
+  podMetricsEndpoint:
+    scheme: http
+    interval: 5s
+
+# nodeSelector -- Node labels for pod assignment
+nodeSelector: {}
+
+# tolerations -- List of node taints to tolerate
+tolerations: []
+
+# affinity -- Affinity for pod assignment
+affinity: {}
+
+# podAnnotations -- Additional annotations to add to the pod
+podAnnotations: {}
+
+# podLabels -- Additional labels to add to the pod
+podLabels: {}
+
+# resources -- Pod resource requests and limits
+# Note, that each job submission will spawn a JVM within the Spark Operator Pod using "/usr/local/openjdk-11/bin/java -Xmx128m".
+# Kubernetes may kill these Java processes at will to enforce resource limits. When that happens, you will see the following error:
+# 'failed to run spark-submit for SparkApplication [...]: signal: killed' - when this happens, you may want to increase memory limits.
+resources: {}
+  # limits:
+  #   cpu: 100m
+  #   memory: 300Mi
+  # requests:
+  #   cpu: 100m
+  #   memory: 300Mi
+
+batchScheduler:
+  # -- Enable batch scheduler for spark jobs scheduling. If enabled, users can specify batch scheduler name in spark application
+  enable: false
+
+resourceQuotaEnforcement:
+  # -- Whether to enable the ResourceQuota enforcement for SparkApplication resources.
+  # Requires the webhook to be enabled by setting `webhook.enable` to true.
+  # Ref: https://github.com/GoogleCloudPlatform/spark-on-k8s-operator/blob/master/docs/user-guide.md#enabling-resource-quota-enforcement.
+  enable: false
+
+leaderElection:
+  # -- Leader election lock name.
+  # Ref: https://github.com/GoogleCloudPlatform/spark-on-k8s-operator/blob/master/docs/user-guide.md#enabling-leader-election-for-high-availability.
+  lockName: "spark-operator-lock"
+  # -- Optionally store the lock in another namespace. Defaults to operator's namespace
+  lockNamespace: ""
+
+istio:
+  # -- When using `istio`, spark jobs need to run without a sidecar to properly terminate
+  enabled: false
+
+# labelSelectorFilter -- A comma-separated list of key=value, or key labels to filter resources during watch and list based on the specified labels.
+labelSelectorFilter: ""
