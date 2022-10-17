@@ -29,14 +29,13 @@ from bigdl.ppml.fl.nn.fl_server import FLServer
 if __name__ == '__main__':
 
     client_num = 2
-    port = 8980
-    
+
     try:
         opts, args = getopt.getopt(sys.argv[1:], "hc:p:", ["client-num=", "port="])
     except getopt.GetoptError:
         print("start_fl_server.py -c <client-num> -p <port>")
         sys.exit(2)
-    
+
     for opt, arg in opts:
         if opt == '-h':
             print("start_fl_server.py -c <client-num> -p <port>")
@@ -51,3 +50,4 @@ if __name__ == '__main__':
     fl_server.start()
 
     fl_server.wait_for_termination()
+
