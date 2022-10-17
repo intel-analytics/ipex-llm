@@ -1,0 +1,37 @@
+<settings xmlns="http://maven.apache.org/SETTINGS/1.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://maven.apache.org/SETTINGS/1.0.0 https://maven.apache.org/xsd/settings-1.0.0.xsd">
+<proxies>
+    <proxy>
+    <id>cn-http</id>
+    <active>true</active>
+    <protocol>http</protocol>
+    <host>child-prc.intel.com</host>
+    <port>913</port>
+    <nonProxyHosts>10.239.45.10|localhost</nonProxyHosts>
+</proxy>
+<proxy>
+    <id>cn-https</id>
+    <active>true</active>
+    <protocol>https</protocol>
+    <host>child-prc.intel.com</host>
+    <port>913</port>
+    <nonProxyHosts>10.239.45.10|localhost</nonProxyHosts>
+</proxy>
+</proxies>
+
+
+    <mirrors>
+    <mirror>
+    <id>ardaNexus</id>
+    <mirrorOf>*</mirrorOf>
+    <name>Arda's nexus</name>
+    <url>http://10.239.45.10:8081/repository/maven-public/</url>
+</mirror>
+    <mirror>
+                    <id>nexus-aliyun</id>
+                        <name>Nexus aliyun</name>
+                                <url>http://maven.aliyun.com/nexus/content/groups/public</url>
+                                    <mirrorOf>central</mirrorOf>
+                                        </mirror>
+    </mirrors>
+</settings>

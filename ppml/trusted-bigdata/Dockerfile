@@ -88,6 +88,7 @@ RUN cd /opt && \
     wget -P /opt/spark-${SPARK_VERSION}/jars/ https://repo1.maven.org/maven2/com/microsoft/azure/azure-storage/7.0.0/azure-storage-7.0.0.jar && \
     wget -P /opt/spark-${SPARK_VERSION}/jars/ https://repo1.maven.org/maven2/com/microsoft/azure/azure-data-lake-store-sdk/2.2.9/azure-data-lake-store-sdk-2.2.9.jar
 # hadoop
+ADD ./settings.xml /root/.m2/settings.xml
 RUN cd /opt && \
     apt-get install -y build-essential && \
     wget https://github.com/protocolbuffers/protobuf/releases/download/v2.5.0/protobuf-2.5.0.tar.bz2 && \
@@ -111,6 +112,7 @@ RUN cd /opt && \
         -Dhttps.proxyPort=$HTTPS_PROXY_PORT" && \
     mvn -T 16 -DskipTests=true clean package && \
     mv /opt/hadoop/hadoop-common-project/hadoop-common/target/hadoop-common-3.2.0.jar /opt/spark-${SPARK_VERSION}/jars/hadoop-common-3.2.0.jar
+RUN rm /root/.m2/settings.xml
 # hive
 RUN cd /opt && \
     git clone https://github.com/analytics-zoo/hive.git && \
