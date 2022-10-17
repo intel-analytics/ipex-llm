@@ -23,7 +23,7 @@ _mapping_tf = None
 def _get_patch_map():
     global _mapping_tf
 
-    # decide if generate 
+    # decide if generate
     patch_tf = find_spec("tensorflow") is not None
 
     if patch_tf and _mapping_tf is None:

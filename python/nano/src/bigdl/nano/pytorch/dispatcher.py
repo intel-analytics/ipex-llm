@@ -23,7 +23,7 @@ _mapping_torch = None
 def _get_patch_map():
     global _mapping_torch
 
-    # decide if generate 
+    # decide if generate
     patch_torch = find_spec("pytorch_lightning") is not None
 
     if patch_torch and _mapping_torch is None:
