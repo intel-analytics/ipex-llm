@@ -1,5 +1,10 @@
+# VFL Logistic Regression with CKKS Example
+
+This example show how to create an end-to-end VFL Logistic Regression application with 2 clients and 1 server with CKKS on BigDL PPML.
+The targets and outputs of each clients will be protected by CKKS, server will compute loss and grad using cipherText. 
+
 ### Data
-We use [Census]() data in this example
+We use [Census Income Dataset](https://archive.ics.uci.edu/ml/datasets/Census+Income) data in this example.
 
 To simulate the scenario of two parties, we use select different features of Census data.
 
@@ -10,12 +15,12 @@ The original data has 15 columns. In preprocessing, some new feature are created
 
 ### Download BigDL assembly
 
-Download BigDL assembly from [BigDL-Release](https://bigdl.readthedocs.io/en/latest/doc/release.html)
+Download BigDL assembly all in one jar from [BigDL-Release](https://bigdl.readthedocs.io/en/latest/doc/release.html), file name is bigdl-assembly-spark_[version]-jar-with-all-dependencies.jar
 
 ### Generate secret
 
 ```bash
-java -cp bigdl-ppml-[version]-jar-with-all-dependencies.jar com.intel.analytics.bigdl.ppml.fl.GenerateCkksSecret ckks.crt
+java -cp bigdl-assembly-[version]-jar-with-all-dependencies.jar com.intel.analytics.bigdl.ppml.fl.GenerateCkksSecret ckks.crt
 ```
 
 ### Start FLServer
@@ -26,13 +31,13 @@ ckksSercetPath: /[absolute path]/ckks.crt
 ```
 Then start FLServer at server machine
 ```bash
-java -cp bigdl-ppml-[version]-jar-with-all-dependencies.jar com.intel.analytics.bigdl.ppml.fl.FLServer
+java -cp bigdl-assembly-[version]-jar-with-all-dependencies.jar com.intel.analytics.bigdl.ppml.fl.FLServer
 ```
 
 ## Start Local Trainers
 Start the local Logistic Regression trainers at 2 training machines
 ```
-java -cp bigdl-ppml-[version]-jar-with-all-dependencies.jar com.intel.analytics.bigdl.ppml.fl.example.VflLogisticRegressionCkks
+java -cp bigdl-assembly-[version]-jar-with-all-dependencies.jar com.intel.analytics.bigdl.ppml.fl.example.VflLogisticRegressionCkks
     -d [path to adult dataset]
     -i 1
     -s [path to ckks.crt]
