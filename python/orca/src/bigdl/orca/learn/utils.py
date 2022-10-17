@@ -158,7 +158,7 @@ def convert_predict_xshards_to_dataframe(df, pred_shards):
             else:
                 yield row[0]
 
-    pred_rdd = pred_shards.rdd.flatMap(flatten)
+    pred_rdd = pred_shards.rdd.flatMap(lambda x: x).flatMap(flatten)
     result = convert_predict_rdd_to_dataframe(df, pred_rdd)
     return result
 
@@ -346,7 +346,7 @@ def _dataframe_to_xshards(data, feature_cols, label_cols=None, accept_str_col=Fa
                                                               feature_cols,
                                                               label_cols,
                                                               shard_size))
-    return SparkXShards(shard_rdd)
+    return SparkXShards(shard_rdd, transient=True)
 
 
 def dataframe_to_xshards_of_feature_dict(data, feature_cols, label_cols=None,

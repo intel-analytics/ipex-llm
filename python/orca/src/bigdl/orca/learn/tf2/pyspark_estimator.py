@@ -376,13 +376,17 @@ class SparkTFEstimator():
                                               accept_str_col=True)
 
             def transform_func(iter, init_param, param):
-                partition_data = list(iter)
-                # res = combine_in_partition(partition_data)
-                param["data_creator"] = make_data_creator(partition_data)
-                return SparkRunner(**init_param).predict(**param)
+                # partition_data = list(iter)
+                # # res = combine_in_partition(partition_data)
+                # param["data_creator"] = make_data_creator(partition_data)
+                # return SparkRunner(**init_param).predict(**param)
+                runner = SparkRunner(**init_param)
+                for partition_data in iter:
+                    param["data_creator"] = make_data_creator([partition_data])
+                    yield runner.predict(**param)
 
             pred_shards = SparkXShards(xshards.rdd.mapPartitions(
-                lambda iter: transform_func(iter, init_params, params)))
+                lambda iter: transform_func(iter, init_params, params)), transient=True)
             result = convert_predict_xshards_to_dataframe(pre_predict_data, pred_shards)
         else:
             invalidInputError(False,
