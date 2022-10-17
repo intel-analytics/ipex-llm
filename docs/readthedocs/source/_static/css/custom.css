@@ -42,7 +42,7 @@ html[data-theme="light"] {
 
 /* for sphinx-design badge components (customized for usage in card footer)*/
 .sd-badge{
-    padding: .35em 0.1em;
+    padding: .35em 0em;
     font-size: 0.9em;
 }
 
