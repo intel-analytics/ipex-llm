@@ -83,7 +83,30 @@ RUN env DEBIAN_FRONTEND=noninteractive apt-get update && \
     apt-get update && \
     apt-get install -y libsgx-enclave-common-dev  libsgx-ae-qe3 libsgx-ae-qve libsgx-urts libsgx-dcap-ql libsgx-dcap-default-qpl libsgx-dcap-quote-verify-dev libsgx-dcap-ql-dev libsgx-dcap-default-qpl-dev libsgx-quote-ex-dev libsgx-uae-service libsgx-ra-network libsgx-ra-uefi
 
+# java
+ARG JDK_VERSION=8u192
+ARG JDK_URL
+ENV JAVA_HOME           /opt/jdk$JDK_VERSION
+ENV PATH                ${JAVA_HOME}/bin:${PATH}
+RUN wget $JDK_URL && \
+    gunzip jdk-$JDK_VERSION-linux-x64.tar.gz && \
+    tar -xf jdk-$JDK_VERSION-linux-x64.tar -C /opt && \
+    rm jdk-$JDK_VERSION-linux-x64.tar && \
+    mv /opt/jdk* /opt/jdk$JDK_VERSION && \
+    ln -s /opt/jdk$JDK_VERSION /opt/jdk
 
+ADD ./verification_jars /ppml/
+
+ARG YOUR_PCCS_URL=https://localhost:8081
+ARG USE_SECURE_CERT=true
+ENV YOUR_PCCS_URL       ${YOUR_PCCS_URL}
+ENV USE_SECURE_CERT     ${USE_SECURE_CERT}
+ADD ./sgx_default_qcnl.conf /ppml
+
+RUN cd /ppml/ \
+    sed -i 's/YOUR_PCCS_URL/$YOUR_PCCS_URL/g' ./sgx_default_qcnl.conf \
+    sed -i 's/USE_SECURE_CERT/$USE_SECURE_CERT/g' ./sgx_default_qcnl.conf \
+    cp ./sgx_default_qcnl.conf /etc/sgx_default_qcnl.conf
 
 ENV PYTHONPATH   /usr/lib/python3.7:/usr/lib/python3.7/lib-dynload:/usr/local/lib/python3.7/dist-packages:/usr/lib/python3/dist-packages
 WORKDIR /ppml
