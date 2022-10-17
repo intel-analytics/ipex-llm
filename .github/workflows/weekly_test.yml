@@ -1,8 +1,8 @@
 name: Weekly Test
 
 on:
-  pull_request:
-     branchs: [ main ]
+  #pull_request:
+     #branchs: [ main ]
   schedule:
     - cron: '0 4 * * 0' # GMT time, 4:00 GMT == 12:00 China Every Sunday
   workflow_dispatch:
@@ -92,7 +92,7 @@ jobs:
         runner-hosted-on: 'Shanghai'
 
   PPML-Spark-K8S-SimpleQuery-On-Gramine:
-          #if: ${{ github.event.schedule || github.event.inputs.artifact == 'PPML-Spark-K8S-SimpleQuery-On-Gramine' || github.event.inputs.artifact == 'all' }}
+    if: ${{ github.event.schedule || github.event.inputs.artifact == 'PPML-Spark-K8S-SimpleQuery-On-Gramine' || github.event.inputs.artifact == 'all' }}
     runs-on: [self-hosted, Vilvarin]
 
     steps:

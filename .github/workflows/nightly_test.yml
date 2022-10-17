@@ -1,8 +1,8 @@
 name: Nightly Test
 
 on:
-  pull_request:
-     branchs: [ main ]
+  #pull_request:
+     #branchs: [ main ]
   schedule:
     - cron: '0 13 * * *' # GMT time, 13:00 GMT == 21:00 China
   workflow_dispatch:
@@ -592,7 +592,7 @@ jobs:
         runner-hosted-on: 'Shanghai'
 
   PPML-spark-Local-SimpleQuery-Tests-on-Gramine:
-          #if: ${{ github.event.schedule || github.event.inputs.artifact == 'PPML-spark-Local-SimpleQuery-Tests-on-Gramine' || github.event.inputs.artifact == 'all' }}
+    if: ${{ github.event.schedule || github.event.inputs.artifact == 'PPML-spark-Local-SimpleQuery-Tests-on-Gramine' || github.event.inputs.artifact == 'all' }}
     runs-on: [self-hosted, SGX, Wilwarin]
 
     steps:
