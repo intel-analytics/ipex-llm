@@ -20,12 +20,12 @@ ARG FLINK_VERSION=1.11.3
 ARG SCALA_VERSION=2.12
 ARG SCALA_SUB_VERSION_NUM=10
 
-ENV SPARK_VERSION       ${SPARK_VERSION}
-ENV JAVA_HOME           /opt/jdk$JDK_VERSION
-ENV PATH                ${JAVA_HOME}/bin:${PATH}
-ENV FLINK_VERSION ${FLINK_VERSION}
-ENV SCALA_VERSION ${SCALA_VERSION}
-ENV SCALA_SUB_VERSION_NUM ${SCALA_SUB_VERSION_NUM}
+ENV SPARK_VERSION                       ${SPARK_VERSION}
+ENV JAVA_HOME                           /opt/jdk$JDK_VERSION
+ENV PATH                                ${JAVA_HOME}/bin:${PATH}
+ENV FLINK_VERSION                       ${FLINK_VERSION}
+ENV SCALA_VERSION                       ${SCALA_VERSION}
+ENV SCALA_SUB_VERSION_NUM               ${SCALA_SUB_VERSION_NUM}
 
 RUN apt-get update --fix-missing && \
     env DEBIAN_FRONTEND=noninteractive TZ=Etc/UTC apt-get install -y tzdata apt-utils wget unzip patch zip git maven nasm
@@ -147,10 +147,15 @@ FROM $BASE_IMAGE_NAME:$BASE_IMAGE_TAG
 ARG SPARK_VERSION
 ARG TINI_VERSION
 ARG FLINK_VERSION=1.11.3
+ARG SCALA_VERSION=2.12
+ARG SCALA_SUB_VERSION_NUM=10
+
 ENV SPARK_VERSION                       ${SPARK_VERSION}
 ENV SPARK_HOME                          /ppml/trusted-bigdata/work/spark-${SPARK_VERSION}
 ENV JAVA_HOME                           /opt/jdk8
 ENV PATH                                ${JAVA_HOME}/bin:${PATH}
+ENV SCALA_VERSION                       ${SCALA_VERSION}
+ENV SCALA_SUB_VERSION_NUM               ${SCALA_SUB_VERSION_NUM}
 ENV LOCAL_IP                            127.0.0.1
 ENV SGX_MEM_SIZE                        32G
 ENV SGX_LOG_LEVEL                       error
