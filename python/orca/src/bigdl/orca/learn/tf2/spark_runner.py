@@ -232,6 +232,12 @@ class SparkRunner:
                 self.setup_distributed(self.cluster)
         self.model_dir = model_dir
         self.application_id = application_id
+        if self.backend == "tf-distributed":
+            self.local_model = self.model_creator(self.config)
+            if self.model_weights:
+                self.local_model.set_weights(self.model_weights.value)
+        else:
+            self.local_model = self.model_creator(self.config)
 
     def setup(self):
         import tensorflow as tf
@@ -445,15 +451,8 @@ class SparkRunner:
             callbacks=callbacks,
         )
 
-        if self.backend == "tf-distributed":
-            local_model = self.model_creator(self.config)
-            if self.model_weights:
-                local_model.set_weights(self.model_weights.value)
-        else:
-            local_model = self.model_creator(self.config)
-
         def predict_fn(shard):
-            y = local_model.predict(shard["x"], **params)
+            y = self.local_model.predict(shard["x"], **params)
             return {"prediction": y}
 
         new_part = [predict_fn(shard) for shard in partition]
