@@ -1,7 +1,30 @@
 # Chronos Installation
 
 ---
-### **Install**
+
+#### **OS and Python version requirement**
+
+
+```eval_rst
+.. note::
+    **Supported OS**:
+
+     Chronos is thoroughly tested on Ubuntu (16.04/18.04/20.04), and should works fine on CentOS. If you are a Windows user, the most convenient way to use Chronos on a windows laptop might be using WSL2, you may refer to https://docs.microsoft.com/en-us/windows/wsl/setup/environment or just install a ubuntu virtual machine.
+```
+```eval_rst
+.. note::
+    **Supported Python Version**:
+
+     Chronos only supports Python 3.7.2 ~ latest 3.7.x. We are validating more Python versions.
+```
+
+
+
+#### **Install using Conda**
+
+We recommend using conda to manage the Chronos python environment. For more information about Conda, refer to [here](https://docs.conda.io/en/latest/miniconda.html#).
+Select your preferences in the panel below to find the proper install command. Then run the install command as the example shown below.
+
 
 ```eval_rst
 .. raw:: html
@@ -90,28 +113,11 @@
 conda create -n my_env python=3.7 setuptools=58.0.4
 conda activate my_env
 
-# select your preference in above panel to find the proper command to replace the below command
+# select your preference in above panel to find the proper command to replace the below command, e.g.
 pip install --pre --upgrade bigdl-chronos[pytorch]
 
 # init bigdl-nano to enable local accelerations
 source bigdl-nano-init  # accelerate the conda env
 ```
 
-#### **2.2 OS and Python version requirement**
-
-```eval_rst
-.. note::
-    **Supported OS**:
-
-     Chronos is thoroughly tested on Ubuntu (16.04/18.04/20.04), and should works fine on CentOS. If you are a Windows user, the most convenient way to use Chronos on a windows laptop might be using WSL2, you may refer to https://docs.microsoft.com/en-us/windows/wsl/setup/environment or just install a ubuntu virtual machine.
-```
-```eval_rst
-.. note::
-    **Supported Python Version**:
-
-     Chronos only supports Python 3.7.2 ~ latest 3.7.x. We are validating more Python versions.
-```
-
-
----
 
