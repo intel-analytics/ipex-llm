@@ -72,7 +72,7 @@ PyTorch
     Inference/PyTorch/accelerate_pytorch_inference_openvino
     Inference/PyTorch/quantize_pytorch_inference_inc
     Inference/PyTorch/quantize_pytorch_inference_pot
-    Inference/PyTorch/inference_optimizer_optimize.html
+    Inference/PyTorch/inference_optimizer_optimize
 
 Install
 -------------------------
