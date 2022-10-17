@@ -190,6 +190,9 @@ RUN mkdir -p /ppml/work && \
     mkdir -p /ppml/work/data && \
     mkdir -p /ppml/work/models && \
     mkdir -p /ppml/work/apps && \
+    mkdir -p /root/.keras/datasets && \
+    mkdir -p /root/.zinc && \
+    mkdir -p /root/.m2 && \
     mkdir -p /root/.kube/
 
 COPY --from=bigdata /opt/jdk  /opt/jdk8
