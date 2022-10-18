@@ -1,15 +1,11 @@
 Chronos Quick Tour
-======================
+=================================
 Welcome to Chronos for building a fast, accurate and scalable time series analysis application🎉! Start with our quick tour to understand some critical concepts and how to use them to tackle your tasks.
 
 .. grid:: 1 1 1 1
 
     .. grid-item-card::
         :text-align: center
-        :shadow: none
-        :class-header: sd-bg-light
-        :class-footer: sd-bg-light
-        :class-card: sd-mb-2
 
         **Data processing**
         ^^^
@@ -22,13 +18,11 @@ Welcome to Chronos for building a fast, accurate and scalable time series analys
 
             Get Started
 
-.. grid:: 1 1 3 3
+.. grid:: 1 3 3 3
+    :gutter: 2
 
     .. grid-item-card::
         :text-align: center
-        :shadow: none
-        :class-header: sd-bg-light
-        :class-footer: sd-bg-light
         :class-card: sd-mb-2
 
         **Forecasting**
@@ -42,11 +36,8 @@ Welcome to Chronos for building a fast, accurate and scalable time series analys
 
             Get Started
 
-    .. grid-item-card:: 
+    .. grid-item-card::
         :text-align: center
-        :shadow: none
-        :class-header: sd-bg-light
-        :class-footer: sd-bg-light
         :class-card: sd-mb-2
 
         **Anomaly Detection**
@@ -60,11 +51,8 @@ Welcome to Chronos for building a fast, accurate and scalable time series analys
 
             Get Started
 
-    .. grid-item-card:: 
+    .. grid-item-card::
         :text-align: center
-        :shadow: none
-        :class-header: sd-bg-light
-        :class-footer: sd-bg-light
         :class-card: sd-mb-2
 
         **Simulation**
@@ -104,7 +92,7 @@ In Chronos, we provide a ``TSDataset`` (and a ``XShardsTSDataset`` to handle lar
 
 
 .. grid:: 2
-    :gutter: 1
+    :gutter: 2
 
     .. grid-item-card::
 
@@ -192,7 +180,7 @@ For time series forecasting, we also provide an ``AutoTSEstimator`` for distribu
         stop_orca_context()
 
 .. grid:: 3
-    :gutter: 1
+    :gutter: 2
 
     .. grid-item-card::
 
@@ -246,7 +234,7 @@ To import a specific detector, you may use {algorithm name} + "Detector", and ca
         anomaly_indexes = detector.anomaly_indexes()
 
 .. grid:: 3
-    :gutter: 1
+    :gutter: 2
 
     .. grid-item-card::
 
@@ -280,7 +268,7 @@ Simulator(experimental)
 Simulator is still under activate development with unstable API.
 
 .. grid:: 2
-    :gutter: 1
+    :gutter: 2
 
     .. grid-item-card::
 

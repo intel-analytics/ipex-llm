@@ -1,4 +1,4 @@
-# Time Series Forecasting Overview
+# Time Series Forecasting
 
 _Chronos_ provides both deep learning/machine learning models and traditional statistical models for forecasting.
 
@@ -67,16 +67,16 @@ For AutoTS Pipeline, we will leverage `AutoTSEstimator`, `TSPipeline` and prefer
 3. Use the returned `TSPipeline` for further development.
 ```eval_rst
 .. warning::
-    `AutoTSTrainer` workflow has been deprecated, no feature updates or performance improvement will be carried out. Users of `AutoTSTrainer` may refer to `Chronos API doc <https://bigdl.readthedocs.io/en/latest/doc/PythonAPI/Chronos/autots.html>`_.
+    ``AutoTSTrainer`` workflow has been deprecated, no feature updates or performance improvement will be carried out. Users of ``AutoTSTrainer`` may refer to `Chronos API doc <https://bigdl.readthedocs.io/en/latest/doc/PythonAPI/Chronos/autots.html>`_.
 ```
 ```eval_rst
 .. note::
-    `AutoTSEstimator` currently only support pytorch backend.
+    ``AutoTSEstimator`` currently only support pytorch backend.
 ```
 View [Quick Start](../QuickStart/chronos-autotsest-quickstart.html) for a more detailed example.
 
 ##### **2.1 Prepare dataset**
-`AutoTSEstimator` support 2 types of data input. 
+`AutoTSEstimator` support 2 types of data input.
 
 You can easily prepare your data in `TSDataset` (recommended). You may refer to [here](#TSDataset) for the detailed information to prepare your `TSDataset` with proper data processing and feature generation. Here is a typical `TSDataset` preparation.
 ```python
@@ -107,7 +107,7 @@ auto_estimator = AutoTSEstimator(model='lstm',
                                  search_space='normal',
                                  past_seq_len=hp.randint(1, 10),
                                  future_seq_len=1,
-                                 selected_features="auto") 
+                                 selected_features="auto")
 ```
 We prebuild three defualt search space for each build-in model, which you can use the by setting `search_space` to "minimal"，"normal", or "large" or define your own search space in a dictionary. The larger the search space, the better accuracy you will get and the more time will be cost.
 
@@ -147,7 +147,7 @@ Detailed information please refer to [TSPipeline API doc](../../PythonAPI/Chrono
 
 ```eval_rst
 .. note::
-    `init_orca_context` is not needed if you just use the trained TSPipeline for inference, evaluation or incremental fitting.
+    ``init_orca_context`` is not needed if you just use the trained TSPipeline for inference, evaluation or incremental fitting.
 ```
 ```eval_rst
 .. note::
@@ -160,7 +160,7 @@ _Chronos_ provides a set of standalone time series forecasters without AutoML su
 
 View some examples notebooks for [Network Traffic Prediction][network_traffic]
 
-The common process of using a Forecaster looks like below. 
+The common process of using a Forecaster looks like below.
 ```python
 # set fixed hyperparameters, loss, metric...
 f = Forecaster(...)
@@ -197,9 +197,9 @@ View Network Traffic multivariate multistep Prediction [notebook][network_traffi
 ##### **3.4 MTNetForecaster**
 
 ```eval_rst
-.. note:: 
+.. note::
     **Additional Dependencies**:
-    You need to install `bigdl-nano[tensorflow]` to enable this built-in model.
+    You need to install ``bigdl-nano[tensorflow]`` to enable this built-in model.
 
     ``pip install bigdl-nano[tensorflow]``
 ```
@@ -219,9 +219,9 @@ View High-dimensional Electricity Data Forecasting [example][run_electricity] an
 ##### **3.6 ARIMAForecaster**
 
 ```eval_rst
-.. note:: 
+.. note::
     **Additional Dependencies**:
-    You need to install `pmdarima` to enable this built-in model.
+    You need to install ``pmdarima`` to enable this built-in model.
 
     ``pip install pmdarima==1.8.5``
 ```
@@ -234,7 +234,7 @@ View [ARIMAForecaster API Doc](../../PythonAPI/Chronos/forecasters.html#arimafor
 ##### **3.7 ProphetForecaster**
 
 ```eval_rst
-.. note:: 
+.. note::
     **Additional Dependencies**:
     You need to install `prophet` to enable this built-in model.
 
@@ -242,7 +242,7 @@ View [ARIMAForecaster API Doc](../../PythonAPI/Chronos/forecasters.html#arimafor
 ```
 
 ```eval_rst
-.. note:: 
+.. note::
     **Acceleration Note**:
     Intel® Distribution for Python may improve the speed of prophet's training and inferencing. You may install it by refering to https://www.intel.com/content/www/us/en/developer/tools/oneapi/distribution-for-python.html.
 ```
