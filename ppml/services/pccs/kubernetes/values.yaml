@@ -2,7 +2,7 @@
 # Set the versions according to your images
 pccsImageName: intelanalytics/pccs:0.3.0-SNAPSHOT
 pccsIP: your_pccs_ip_to_use_as  # Refer to README for obtaining pcs api key
-
+apiKey: your_intel_pcs_server_subscription_key_obtained_through_web_registeration # Refer to README for obtaining pcs api key
 # The below service IP should be a IP address that unused in your subnetwork
 # Please do not use the same real IPs as nodes
 httpsProxyUrl: your_usable_https_proxy_url
