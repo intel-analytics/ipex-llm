@@ -36,7 +36,6 @@ runs:
         -v ~/glorysdj/kuberconfig:/root/.kube/config \
         -v /var/run/aesmd/aesm.socket:/var/run/aesmd/aesm.socket \
         -v $NFS_INPUT_PATH:/ppml/trusted-big-data-ml/work/data \
-        -v $DATA_PATH:/ppml/trusted-big-data-ml/work/data \
         -v $KEYS_PATH:/ppml/trusted-big-data-ml/work/keys \
         -e LOCAL_IP=$LOCAL_IP \
         -e SGX_MEM_SIZE=$SGX_MEM_SIZE \
@@ -56,3 +55,4 @@ runs:
       run: |
         docker exec -i $CONTAINER_NAME bash -c "/ppml/trusted-big-data-ml/init.sh"
         docker exec -i $CONTAINER_NAME bash -c "/ppml/trusted-big-data-ml/work/test-suites/pyspark-simplequery.sh"
+        docker exec -i $CONTAINER_NAME bash -c "/ppml/trusted-big-data-ml/work/test-suites/spark-simplequery.sh"
