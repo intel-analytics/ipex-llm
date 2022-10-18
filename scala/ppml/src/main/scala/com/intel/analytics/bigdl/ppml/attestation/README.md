@@ -75,6 +75,8 @@ java -cp [dependent-jars] com.intel.analytics.bigdl.ppml.attestation.Verificatio
 ```
 Or you can use `verify-attestation-service.sh` to verify the attestation service quote.
 ```bash
+cd ../../../../../../../../../../..
+cd ppml/trusted-big-data-ml/python/docker-gramine/base/
 bash verify-attestation-service.sh
 ```
 

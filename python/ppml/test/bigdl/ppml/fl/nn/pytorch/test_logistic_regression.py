@@ -89,7 +89,7 @@ class TestLogisticRegression(FLTest):
             os.path.join(resource_path, 'pima-indians-diabetes.csv'))
         
     
-        df_x1 = df_train[['Pregnancies','Glucose','BloodPressure','SkinThickness','Outcome']]
+        df_x1 = df_train[['Pregnancies','Glucose','BloodPressure','SkinThickness']]
         df_x2 = df_train[['Insulin','BMI','DiabetesPedigreeFunction','Age']]
         df_y = df_train['Outcome']
         model = LogisticRegressionNetwork(len(df_x1.columns), len(df_x2.columns))

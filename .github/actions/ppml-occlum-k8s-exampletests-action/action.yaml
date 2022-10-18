@@ -1,0 +1,72 @@
+name: 'Run PPML Occlum k8s ExampleTests'
+description: 'Run PPML Occlum k8s ExampleTests'
+
+runs:
+  using: "composite"
+  steps:
+    - name: Run tests
+      shell: bash
+      run: |
+        docker pull 10.239.45.10/arda/intelanalytics/bigdl-ppml-trusted-big-data-ml-scala-occlum:2.1.0-SNAPSHOT
+        docker tag 10.239.45.10/arda/intelanalytics/bigdl-ppml-trusted-big-data-ml-scala-occlum:2.1.0-SNAPSHOT intelanalytics/bigdl-ppml-trusted-big-data-ml-scala-occlum:2.1.0-SNAPSHOT
+
+        export NO_PROXY=10.239.45.10:8081,10.112.231.51,10.239.45.10,172.168.0.205
+        export kubernetes_master_url=172.168.0.205
+
+        cd /home/icx/BigDL/ppml/trusted-big-data-ml/scala/docker-occlum/kubernetes
+
+        status_1_spark_pi=1
+        status_2_spark_lr=1
+        status_3_spark_sql=0
+        status_4_spark_gbt=1
+
+        if [ $status_1_spark_pi -ne 0 ]; then
+          echo "################## start spark pi"
+          echo "example.1 spark pi"
+          bash run_spark_pi.sh
+          if [ "`kubectl get pods | grep spark-pi | awk '{print $1}'`" != "" ]; then
+            kubectl delete pods `kubectl get pods | grep spark-pi | awk '{print $1}'`
+          fi
+          status_1_spark_pi=$(echo $?)
+        fi
+
+        if [ $status_2_spark_lr -ne 0 ]; then
+          echo "################## start spark lr"
+          echo "example.2 spark lr"
+          bash run_spark_lr.sh
+          if [ "`kubectl get pods | grep sparklr | awk '{print $1}'`" != "" ]; then
+            kubectl delete pods `kubectl get pods | grep sparklr | awk '{print $1}'`
+          fi
+          status_2_spark_lr=$(echo $?)
+        fi
+
+        if [ $status_3_spark_sql -ne 0 ]; then
+          echo "################## start spark sql"
+          echo "example.3 spark sql"
+          bash run_spark_sql.sh
+          if [ "`kubectl get pods | grep sparksql | awk '{print $1}'`" != "" ]; then
+            kubectl delete pods `kubectl get pods | grep sparksql | awk '{print $1}'`
+          fi
+          if [ "`kubectl get pods | grep spark-sql-example | awk '{print $1}'`" != "" ]; then
+            kubectl delete pods `kubectl get pods | grep spark-sql-example | awk '{print $1}'`
+          fi
+          status_3_spark_sql=$(echo $?)
+        fi
+
+        if [ $status_4_spark_gbt -ne 0 ]; then
+          echo "################## start spark gbt"
+          echo "example.4 spark gbt"
+          bash run_spark_gbt.sh
+          if [ "`kubectl get pods | grep sparkgbt | awk '{print $1}'`" != "" ]; then
+            kubectl delete pods `kubectl get pods | grep sparkgbt | awk '{print $1}'`
+          fi
+          if [ "`kubectl get pods | grep spark-gbt-example | awk '{print $1}'`" != "" ]; then
+            kubectl delete pods `kubectl get pods | grep spark-gbt-example | awk '{print $1}'`
+          fi
+          status_4_spark_gbt=$(echo $?)
+        fi
+
+        echo "status_1_spark_pi $status_1_spark_pi"
+        echo "status_2_spark_lr $status_2_spark_lr"
+        #echo "status_3_spark_sql $status_3_spark_sql"
+        echo "status_4_spark_gbt $status_4_spark_gbt"

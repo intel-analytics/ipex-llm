@@ -1,4 +1,4 @@
-ARG BIGDL_VERSION=2.1.0-SNAPSHOT
+ARG BIGDL_VERSION=2.2.0-SNAPSHOT
 ARG SPARK_VERSION=3.1.2
 ARG TINI_VERSION=v0.18.0
 ARG JDK_VERSION=8u192
@@ -238,6 +238,7 @@ RUN apt-get update --fix-missing && \
     mkdir -p /ppml/trusted-big-data-ml/fl
 
 COPY --from=bigdl /bigdl-${BIGDL_VERSION}/python/start-fl-server.py /ppml/trusted-big-data-ml/fl
+COPY --from=bigdl /bigdl-${BIGDL_VERSION}/python/start-fgboost-server.py /ppml/trusted-big-data-ml/fl
 
 #python
 RUN apt install software-properties-common -y && \
@@ -263,6 +264,7 @@ RUN apt install software-properties-common -y && \
     pip install --no-cache-dir ninja meson && \
     pip install --no-cache-dir psutil && \
     pip install --no-cache-dir dill==0.3.4 && \
+    pip install --no-cache-dir py4j && \
     python3 -m pip install toml==0.10.2 click jinja2 && \
     python3 -m ipykernel.kernelspec && \
     ln -s /usr/lib/x86_64-linux-gnu/libtinfo.so.6 /usr/lib/x86_64-linux-gnu/libtinfo.so.5 && \
@@ -326,6 +328,8 @@ RUN rm $SPARK_HOME/jars/okhttp-*.jar && \
 # Azure support
 RUN curl -sL https://aka.ms/InstallAzureCLIDeb | bash
 RUN apt-get install bsdmainutils
+RUN curl -LO https://dl.k8s.io/release/v1.25.0/bin/linux/amd64/kubectl
+RUN install -o root -g root -m 0755 kubectl /usr/local/bin/kubectl
 ADD azure /ppml/trusted-big-data-ml/azure
 RUN chmod a+x /ppml/trusted-big-data-ml/azure/create-aks.sh && \
     chmod a+x /ppml/trusted-big-data-ml/azure/deploy-local-spark-sgx.sh && \

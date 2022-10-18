@@ -17,6 +17,7 @@
 import pandas as pd
 import numpy as np
 import functools
+import logging
 
 from bigdl.chronos.data.utils.feature import generate_dt_features, generate_global_features
 from bigdl.chronos.data.utils.impute import impute_timeseries_dataframe
@@ -27,6 +28,7 @@ from bigdl.chronos.data.utils.scale import unscale_timeseries_numpy
 from bigdl.chronos.data.utils.resample import resample_timeseries_dataframe
 from bigdl.chronos.data.utils.split import split_timeseries_dataframe
 from bigdl.chronos.data.utils.cycle_detection import cycle_length_est
+from bigdl.chronos.data.utils.quality_inspection import quality_check_timeseries_dataframe
 from bigdl.chronos.data.utils.utils import _to_list, _check_type,\
     _check_col_within, _check_col_no_na, _check_is_aligned, _check_dt_is_sorted
 
@@ -36,12 +38,17 @@ _DEFAULT_ID_PLACEHOLDER = "0"
 
 
 class TSDataset:
-    def __init__(self, data, **schema):
+    def __init__(self, data, repair=True, **schema):
         '''
         TSDataset is an abstract of time series dataset.
         Cascade call is supported for most of the transform methods.
         '''
         self.df = data
+        # detect low-quality data and automatic repair (optional)
+        _, self.df = quality_check_timeseries_dataframe(df=self.df,
+                                                        dt_col=schema["dt_col"],
+                                                        id_col=schema["id_col"],
+                                                        repair=repair)
         self.id_col = schema["id_col"]
         self.dt_col = schema["dt_col"]
         self.feature_col = schema["feature_col"].copy()
@@ -80,7 +87,8 @@ class TSDataset:
                     extra_feature_col=None,
                     with_split=False,
                     val_ratio=0,
-                    test_ratio=0.1):
+                    test_ratio=0.1,
+                    repair=True):
         '''
         Initialize tsdataset(s) from pandas dataframe.
 
@@ -101,6 +109,8 @@ class TSDataset:
                with_split is set to True. The value defaults to 0.
         :param test_ratio: (optional) float, test ratio. Only effective when with_split
                is set to True. The value defaults to 0.1.
+        :param repair: a bool indicates whether automaticly repair low quality data,
+               which may call .impute()/.resample() or modify datetime column on dataframe.
 
         :return: a TSDataset instance when with_split is set to False,
                  three TSDataset instances when with_split is set to True.
@@ -135,12 +145,14 @@ class TSDataset:
                                                        val_ratio=val_ratio,
                                                        test_ratio=test_ratio)
             return [TSDataset(data=tsdataset_dfs[i],
+                              repair=repair,
                               id_col=id_col,
                               dt_col=dt_col,
                               target_col=target_col,
                               feature_col=feature_col) for i in range(3)]
 
         return TSDataset(data=tsdataset_df,
+                         repair=repair,
                          id_col=id_col,
                          dt_col=dt_col,
                          target_col=target_col,
@@ -155,6 +167,7 @@ class TSDataset:
                      with_split=False,
                      val_ratio=0,
                      test_ratio=0.1,
+                     repair=True,
                      **kwargs):
         """
         Initialize tsdataset(s) from path of parquet file.
@@ -179,6 +192,8 @@ class TSDataset:
                with_split is set to True. The value defaults to 0.
         :param test_ratio: (optional) float, test ratio. Only effective when with_split
                is set to True. The value defaults to 0.1.
+        :param repair: a bool indicates whether automaticly repair low quality data,
+               which may call .impute()/.resample() or modify datetime column on dataframe.
         :param kwargs: Any additional kwargs are passed to the pd.read_parquet
                and pyarrow.parquet.read_table.
 
@@ -205,10 +220,84 @@ class TSDataset:
             _to_list(extra_feature_col, name="extra_feature_col")
         df = parquet2pd(path, columns=columns, **kwargs)
         return TSDataset.from_pandas(df,
+                                     repair=repair,
                                      dt_col=dt_col,
                                      target_col=target_col,
                                      id_col=id_col,
                                      extra_feature_col=extra_feature_col,
+                                     with_split=with_split,
+                                     val_ratio=val_ratio,
+                                     test_ratio=test_ratio)
+
+    @staticmethod
+    def from_prometheus(prometheus_url,
+                        query,
+                        starttime,
+                        endtime,
+                        step,
+                        target_col=None,
+                        id_col=None,
+                        extra_feature_col=None,
+                        with_split=False,
+                        val_ratio=0,
+                        test_ratio=0.1,
+                        **kwargs):
+        """
+        Initialize tsdataset(s) from Prometheus data for specified time period via url.
+
+        :param prometheus_url: a str indicates url of a Prometheus server.
+        :param query: str, Prometheus expression query string.
+        :param starttime: start timestamp of the specified time period, RFC-3339 string
+               or as a Unix timestamp in seconds.
+        :param endtime: end timestamp of the specified time period, RFC-3339 string
+               or as a Unix timestamp in seconds.
+        :param step: a str indicates query resolution step width in Prometheus duration format
+               or float number of seconds. More information about Prometheus time durations
+               are here:
+               https://prometheus.io/docs/prometheus/latest/querying/basics/#time-durations
+        :param target_col: (optional) a Prometheus expression query str or list indicates the
+               col name of target column in the input data frame. If it is not explicitly stated,
+               then target column is automatically specified according to the Prometheus data.
+        :param id_col: (optional) a Prometheus expression query str indicates the col name of
+               dataframe id. If it is not explicitly stated, then the data is interpreted as
+               only containing a single id.
+        :param extra_feature_col: (optional) a Prometheus expression query str or list indicates
+               the col name of extra feature columns that needs to predict the target column.
+               If it is not explicitly stated, then extra feature column is None.
+        :param with_split: (optional) bool, states if we need to split the dataframe
+               to train, validation and test set. The value defaults to False.
+        :param val_ratio: (optional) float, validation ratio. Only effective when
+               with_split is set to True. The value defaults to 0.
+        :param test_ratio: (optional) float, test ratio. Only effective when with_split
+               is set to True. The value defaults to 0.1.
+        :param kwargs: Any additional kwargs are passed to the Prometheus query, such as
+               timeout.
+
+        :return: a TSDataset instance when with_split is set to False,
+                 three TSDataset instances when with_split is set to True.
+
+        Create a tsdataset instance by:
+
+        >>> # Here is an example:
+        >>> tsdataset = TSDataset.from_prometheus(prometheus_url="http://localhost:9090",
+        >>>                                       query="collectd_cpufreq{cpufreq="0"}",
+        >>>                                       starttime="2022-09-01T00:00:00Z",
+        >>>                                       endtime="2022-10-01T00:00:00Z",
+        >>>                                       step="1h")
+        """
+        # TODO: Corresponding unit test should be added
+        # Only test locally at present
+        from bigdl.chronos.data.utils.prometheus_df import GetRangeDataframe
+        columns = {"target_col": _to_list(target_col, name="target_col"),
+                   "id_col": _to_list(id_col, name="id_col"),
+                   "extra_feature_col": _to_list(extra_feature_col, name="extra_feature_col")}
+        df, df_columns = GetRangeDataframe(prometheus_url, query, starttime, endtime,
+                                           step, columns=columns, **kwargs)
+        return TSDataset.from_pandas(df,
+                                     dt_col=df_columns["dt_col"],
+                                     target_col=df_columns["target_col"],
+                                     id_col=df_columns["id_col"],
+                                     extra_feature_col=df_columns["extra_feature_col"],
                                      with_split=with_split,
                                      val_ratio=val_ratio,
                                      test_ratio=test_ratio)
@@ -344,8 +433,6 @@ class TSDataset:
         This method will be implemented by tsfresh.
         Make sure that the specified column name does not contain '__'.
 
-        TODO: relationship with scale should be figured out.
-
         :param settings: str or dict. If a string is set, then it must be one of "comprehensive"
                "minimal" and "efficient". If a dict is set, then it should follow the instruction
                for default_fc_parameters in tsfresh. The value is defaulted to "comprehensive".
@@ -355,6 +442,7 @@ class TSDataset:
 
         :return: the tsdataset instance.
         '''
+        # TODO: relationship with scale should be figured out.
         from bigdl.nano.utils.log4Error import invalidInputError
         try:
             from tsfresh import extract_features
@@ -413,8 +501,6 @@ class TSDataset:
         This method will be implemented by tsfresh.
         Make sure that the specified column name does not contain '__'.
 
-        TODO: relationship with scale should be figured out.
-
         :param window_size: int, generate feature according to the rolling result.
         :param settings: str or dict. If a string is set, then it must be one of "comprehensive"
                "minimal" and "efficient". If a dict is set, then it should follow the instruction
@@ -425,6 +511,7 @@ class TSDataset:
 
         :return: the tsdataset instance.
         '''
+        # TODO: relationship with scale should be figured out.
         from bigdl.nano.utils.log4Error import invalidInputError
         try:
             from tsfresh.utilities.dataframe_functions import roll_time_series
@@ -493,47 +580,43 @@ class TSDataset:
 
         :param lookback: int, lookback value. Default to 'auto',
                if 'auto', the mode of time series' cycle length will be taken as the lookback.
-        :param horizon: int or list,
-               if `horizon` is an int, we will sample `horizon` step
+        :param horizon: int or list.
+               If `horizon` is an int, we will sample `horizon` step
                continuously after the forecasting point.
-               if `horizon` is a list, we will sample discretely according
+               If `horizon` is a list, we will sample discretely according
                to the input list. 1 means the timestamp just after the observed data.
                specially, when `horizon` is set to 0, ground truth will be generated as None.
-
-               WARNING: The usage of setting `horizon` to will be deprecated later, please
-               use `is_predict` in future.
         :param feature_col: str or list, indicates the feature col name. Default to None,
                where we will take all available feature in rolling.
         :param target_col: str or list, indicates the target col name. Default to None,
-               where we will take all target in rolling. it should be a subset of target_col
+               where we will take all target in rolling. It should be a subset of target_col
                you used to initialize the tsdataset.
-        :param id_sensitive: bool,
-               if `id_sensitive` is False, we will rolling on each id's sub dataframe
+        :param id_sensitive: bool.
+               If `id_sensitive` is False, we will rolling on each id's sub dataframe
                and fuse the sampings.
                The shape of rolling will be
                x: (num_sample, lookback, num_feature_col + num_target_col)
-               y: (num_sample, horizon+label_len, num_target_col)
-               where num_sample is the summation of sample number of each dataframe
+               y: (num_sample, horizon + label_len, num_target_col)
+               where num_sample is the summation of sample number of each dataframe.
 
-               if `id_sensitive` is True, we will rolling on the wide dataframe whose
-               columns are cartesian product of id_col and feature_col
+               If `id_sensitive` is True, we will rolling on the wide dataframe whose
+               columns are cartesian product of id_col and feature_col.
                The shape of rolling will be
                x: (num_sample, lookback, new_num_feature_col + new_num_target_col)
-               y: (num_sample, horizon+label_len, new_num_target_col)
+               y: (num_sample, horizon + label_len, new_num_target_col)
                where num_sample is the sample number of the wide dataframe,
-               new_num_feature_col is the product of the number of id and the number of feature_col.
+               new_num_feature_col is the product of the number of id and the number of feature_col,
                new_num_target_col is the product of the number of id and the number of target_col.
-        :param time_enc: bool,
+        :param time_enc: bool.
                This parameter should be set to True only when you are using Autoformer model. With
                time_enc to be true, 2 additional numpy ndarray will be returned when you call
                `.to_numpy()`. Be sure to have a time type for dt_col if you set time_enc to True.
-        :param label_len: int,
+        :param label_len: int.
                This parameter should be set to True only when you are using Autoformer model. This
                indicates the length of overlap area of output(y) and input(x) on time axis.
-        :param is_predict: bool,
-               This parameter should be set to True only when you are using Autoformer model. This
-               indicates if the dataset will be sampled as a prediction dataset(without groud
-               truth).
+        :param is_predict: bool.
+               This parameter indicates if the dataset will be sampled as a prediction dataset
+               (without groud truth).
 
         :return: the tsdataset instance.
 
@@ -588,7 +671,7 @@ class TSDataset:
             else self.roll_feature_df[additional_feature_col]
 
         if time_enc and label_len == 0:
-            label_len = lookback // 2
+            label_len = max(lookback // 2, 1)
 
         self.lookback, self.horizon, self.label_len = lookback, horizon, label_len
         # horizon_time is only for time_enc, the time_enc numpy ndarray won't have any
@@ -614,7 +697,7 @@ class TSDataset:
         self.numpy_x = np.concatenate([rolling_result[i][0]
                                        for i in self._id_list],
                                       axis=concat_axis).astype(np.float32)
-        if horizon != 0 or time_enc:
+        if (horizon != 0 and is_predict is False) or time_enc:
             self.numpy_y = np.concatenate([rolling_result[i][1]
                                            for i in self._id_list],
                                           axis=concat_axis).astype(np.float32)
@@ -707,10 +790,17 @@ class TSDataset:
                indicates the length of overlap area of output(y) and input(x) on time axis.
         :param is_predict: bool,
                This parameter should be set to True only when you are processing test data without
-               accuracy evaluation for Autoformer model. This indicates if the dataset will be
-               sampled as a prediction dataset(without groud truth).
+               accuracy evaluation. This indicates if the dataset will be sampled as a prediction
+               dataset(without groud truth).
 
-        :return: A pytorch DataLoader instance.
+        :return: A pytorch DataLoader instance. The data returned from dataloader is in the
+                 following form:
+                1. a 3d numpy ndarray when is_predict=True or horizon=0
+                and time_enc=False
+                2. a 2-dim tuple of 3d numpy ndarray (x, y) when is_predict=False
+                and horizon != 0 and time_enc=False
+                3. a 4-dim tuple of 3d numpy ndarray (x, y, x_enc, y_enc) when
+                time_enc=True
 
         to_torch_data_loader() can be called by:
 
@@ -749,7 +839,7 @@ class TSDataset:
                 else self.target_col
 
             if time_enc and label_len == 0:
-                label_len = lookback // 2
+                label_len = max(lookback // 2, 1)
 
             # set scaler index for unscale_numpy
             self.scaler_index = [self.target_col.index(t) for t in target_col]
@@ -795,11 +885,25 @@ class TSDataset:
                 invalidInputError(False,
                                   "Please call 'roll' method before transforming a TSDataset to "
                                   "torch DataLoader if roll is False!")
-            x, y = self.to_numpy()
-            return DataLoader(TensorDataset(torch.from_numpy(x).float(),
-                                            torch.from_numpy(y).float()),
-                              batch_size=batch_size,
-                              shuffle=shuffle)
+            if self.numpy_y is None:
+                x = self.numpy_x
+                return DataLoader(TensorDataset(torch.from_numpy(x).float()),
+                                  batch_size=batch_size,
+                                  shuffle=shuffle)
+            elif self.numpy_x_timeenc is None:
+                x, y = self.to_numpy()
+                return DataLoader(TensorDataset(torch.from_numpy(x).float(),
+                                                torch.from_numpy(y).float()),
+                                  batch_size=batch_size,
+                                  shuffle=shuffle)
+            else:
+                x, y, x_enc, y_enc = self.to_numpy()
+                return DataLoader(TensorDataset(torch.from_numpy(x).float(),
+                                                torch.from_numpy(y).float(),
+                                                torch.from_numpy(x_enc).float(),
+                                                torch.from_numpy(y_enc).float()),
+                                  batch_size=batch_size,
+                                  shuffle=shuffle)
 
     def to_tf_dataset(self, batch_size=32, shuffle=False):
         """
@@ -827,17 +931,30 @@ class TSDataset:
 
     def to_numpy(self):
         '''
-        Export rolling result in form of a tuple of numpy ndarray (x, y).
+        Export rolling result in form of :
+            1. a 3d numpy ndarray when is_predict=True or horizon=0
+               and time_enc=False
+            2. a 2-dim tuple of 3d numpy ndarray (x, y) when is_predict=False
+               and horizon != 0 and time_enc=False
+            3. a 4-dim tuple of 3d numpy ndarray (x, y, x_enc, y_enc) when
+               time_enc=True
 
-        :return: a 2-dim tuple. each item is a 3d numpy ndarray. The ndarray
-                 is casted to float32.
+        :return: a 3d numpy ndarray when is_predict=True or horizon=0
+                 and time_enc=False.
+                 or a 2-dim tuple of 3d numpy ndarray (x, y) when is_predict=False
+                 and horizon != 0 and time_enc=False
+                 or a 4-dim tuple of 3d numpy ndarray (x, y, x_enc, y_enc)
+                 when time_enc=True.
+                 The ndarray is casted to float32.
         '''
         from bigdl.nano.utils.log4Error import invalidInputError
         if self.numpy_x is None:
             invalidInputError(False,
                               "Please call 'roll' method "
                               "before transform a TSDataset to numpy ndarray!")
-        if self.numpy_x_timeenc is None:
+        if self.numpy_y is None and self.numpy_x_timeenc is None:
+            return self.numpy_x
+        elif self.numpy_x_timeenc is None:
             return self.numpy_x, self.numpy_y
         else:
             return self.numpy_x, self.numpy_y, self.numpy_x_timeenc, self.numpy_y_timeenc

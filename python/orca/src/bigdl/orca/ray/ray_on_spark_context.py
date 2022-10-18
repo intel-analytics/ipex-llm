@@ -98,6 +98,7 @@ class RayServiceFuncGenerator(object):
         modified_env.pop("KMP_BLOCKTIME", None)
         modified_env.pop("KMP_AFFINITY", None)
         modified_env.pop("KMP_SETTINGS", None)
+        modified_env.pop("PYTHONHOME", None)
         if self.env:  # Add in env argument if any MKL setting is needed.
             modified_env.update(self.env)
         if self.verbose:

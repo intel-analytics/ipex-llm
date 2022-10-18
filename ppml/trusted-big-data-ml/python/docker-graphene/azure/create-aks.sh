@@ -133,7 +133,6 @@ az aks create \
     --name $AKSClusterName \
     --node-count $NodeCount \
     --node-vm-size $ConfVMSize \
-    --vm-set-type AvailabilitySet \
     --network-plugin azure \
     --generate-ssh-keys \
     --vnet-subnet-id $SUBNET_ID \
@@ -142,4 +141,7 @@ az aks create \
     --location $region \
     --service-principal $APP_ID \
     --client-secret $PASSWORD
+
+az aks addon update --addon confcom --name $AKSClusterName \
+	--resource-group $BigDLResourceGroupName --enable-sgxquotehelper
 

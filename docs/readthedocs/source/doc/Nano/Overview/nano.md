@@ -7,7 +7,7 @@ BigDL Nano is a Python package to transparently accelerate PyTorch and TensorFlo
 ---
 ## **2. Install**
 
-Note: For windows users, we recommend using Windows Subsystem for Linux 2 (WSL2) to run BigDL-Nano. Please refer [here](./windows_guide.md) for instructions.
+Note: For windows users, we recommend using Windows Subsystem for Linux 2 (WSL2) to run BigDL-Nano. Please refer to [Nano Windows install guide](../Howto/windows_guide.md) for instructions.
 
 BigDL-Nano can be installed using pip and we recommend installing BigDL-Nano in a conda environment.
 
@@ -27,13 +27,13 @@ conda activate env
 pip install bigdl-nano[tensorflow]
 ```
 
-After installing bigdl-nano, you can run the following command to setup a few environment variables. 
+After installing bigdl-nano, you can run the following command to setup a few environment variables.
 
 ```bash
 source bigdl-nano-init
 ```
 
-The `bigdl-nano-init` scripts will export a few environment variable according to your hardware to maximize performance. 
+The `bigdl-nano-init` scripts will export a few environment variable according to your hardware to maximize performance.
 
 In a conda environment, `source bigdl-nano-init` will also be added to `$CONDA_PREFIX/etc/conda/activate.d/`, which will automaticly run when you activate your current environment.
 

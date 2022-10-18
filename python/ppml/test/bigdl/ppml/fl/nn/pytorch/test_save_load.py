@@ -43,7 +43,8 @@ class TestSaveLoad(FLTest):
     logging.basicConfig(format=fmt, level=logging.INFO)
     server_model_path = '/tmp/vfl_server_model'
     client_model_path = '/tmp/vfl_client_model'
-    def setUp(self) -> None:
+
+    def setUp(self) -> None:        
         self.fl_server = FLServer(client_num=1)
         self.fl_server.set_port(self.port)
         self.fl_server.build()

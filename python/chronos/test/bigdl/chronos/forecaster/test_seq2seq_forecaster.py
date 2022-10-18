@@ -17,13 +17,14 @@
 import numpy as np
 import tempfile
 import os
-import torch
 
-from bigdl.chronos.forecaster.seq2seq_forecaster import Seq2SeqForecaster
+from bigdl.chronos.utils import LazyImport
+torch = LazyImport('torch')
+Seq2SeqForecaster = LazyImport('bigdl.chronos.forecaster.seq2seq_forecaster.Seq2SeqForecaster')
 from unittest import TestCase
 import pytest
+from .. import op_torch, op_distributed, op_all, op_onnxrt16, op_automl, op_diff_set_all
 
-from .. import op_all, op_onnxrt16
 
 def create_data(loader=False):
     num_train_samples = 1000
@@ -96,6 +97,8 @@ def create_tsdataset_val(roll=True, horizon=5):
     return train, val, test
 
 
+@op_all
+@op_torch
 class TestChronosModelSeq2SeqForecaster(TestCase):
 
     def setUp(self):
@@ -118,7 +121,7 @@ class TestChronosModelSeq2SeqForecaster(TestCase):
         test_mse = forecaster.evaluate(test_data)
         assert test_mse[0].shape == test_data[1].shape[1:]
 
-    @op_all
+    @op_diff_set_all
     @op_onnxrt16
     def test_s2s_forecaster_fit_loader(self):
         train_loader, val_loader, test_loader = create_data(loader=True)
@@ -136,7 +139,6 @@ class TestChronosModelSeq2SeqForecaster(TestCase):
         forecaster.evaluate_with_onnx(test_loader)
         forecaster.evaluate_with_onnx(test_loader, batch_size=32)
 
-    @op_all
     @op_onnxrt16
     def test_s2s_forecaster_onnx_methods(self):
         train_data, val_data, test_data = create_data()
@@ -166,6 +168,7 @@ class TestChronosModelSeq2SeqForecaster(TestCase):
         except ImportError:
             pass
 
+    @op_diff_set_all
     def test_s2s_forecaster_openvino_methods(self):
         train_data, val_data, test_data = create_data()
         forecaster = Seq2SeqForecaster(past_seq_len=24,
@@ -188,6 +191,7 @@ class TestChronosModelSeq2SeqForecaster(TestCase):
             ckpt_name_q = os.path.join(tmp_dir_name, "int_openvino")
             forecaster.export_openvino_file(dirname=ckpt_name, quantized_dirname=ckpt_name_q)
 
+    @op_diff_set_all
     def test_s2s_forecaster_quantization(self):
         train_data, val_data, test_data = create_data()
         forecaster = Seq2SeqForecaster(past_seq_len=24,
@@ -245,6 +249,7 @@ class TestChronosModelSeq2SeqForecaster(TestCase):
         with pytest.raises(RuntimeError):
             forecaster.fit(train_data, epochs=2)
 
+    @op_distributed
     def test_s2s_forecaster_xshard_input(self):
         from bigdl.orca import init_orca_context, stop_orca_context
         train_data, val_data, test_data = create_data()
@@ -273,7 +278,8 @@ class TestChronosModelSeq2SeqForecaster(TestCase):
             distributed_eval = forecaster.evaluate(val_data)
         stop_orca_context()
 
-    @op_all
+    @op_distributed
+    @op_diff_set_all
     @op_onnxrt16
     def test_s2s_forecaster_distributed(self):
         from bigdl.orca import init_orca_context, stop_orca_context
@@ -327,6 +333,7 @@ class TestChronosModelSeq2SeqForecaster(TestCase):
 
         stop_orca_context()
 
+    @op_distributed
     def test_s2s_dataloader_distributed(self):
         from bigdl.orca import init_orca_context, stop_orca_context
         train_data, _, _ = create_data(loader=True)
@@ -415,7 +422,7 @@ class TestChronosModelSeq2SeqForecaster(TestCase):
         _, y_test = test.to_numpy()
         assert yhat.shape == y_test.shape
 
-    @op_all
+    @op_diff_set_all
     @op_onnxrt16
     def test_forecaster_from_tsdataset_data_loader_onnx(self):
         train, test = create_tsdataset(roll=False)
@@ -467,6 +474,7 @@ class TestChronosModelSeq2SeqForecaster(TestCase):
         val_loss = forecaster.fit(train_data, val_data,
                                   validation_mode='best_epoch', epochs=10)
 
+    @op_automl
     def test_s2s_forecaster_tune_fit(self):
         train_data, val_data, _ = create_data()
         import bigdl.nano.automl.hpo.space as space
@@ -493,7 +501,7 @@ class TestChronosModelSeq2SeqForecaster(TestCase):
                                        lr=0.01)
         forecaster.fit(train_data, epochs=2)
         y_pred, std = forecaster.predict_interval(data=test_data[0],
-                                                  val_data=val_data,
+                                                  validation_data=val_data,
                                                   repetition_times=5)
         assert y_pred.shape == test_data[1].shape
         assert y_pred.shape == std.shape

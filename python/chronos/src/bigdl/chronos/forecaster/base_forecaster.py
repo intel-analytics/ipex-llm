@@ -203,18 +203,20 @@ class BasePytorchForecaster(Forecaster):
 
         if self.tune_trainer.hposearcher.objective.mo_hpo:
             return self.internal
-        else:
+        # else:
             # reset train and validation datasets
-            self.tune_trainer.reset_train_val_dataloaders(self.internal)
+            # self.tune_trainer.reset_train_val_dataloaders(self.internal)
 
     def search_summary(self):
+        """
+        Return search summary of HPO.
+        """
         # add tuning check
         invalidOperationError(self.use_hpo, "No search summary when HPO is disabled.")
         return self.tune_trainer.search_summary()
 
     def fit(self, data, validation_data=None, epochs=1, batch_size=32, validation_mode='output',
             earlystop_patience=1, use_trial_id=None):
-        # TODO: give an option to close validation during fit to save time.
         """
         Fit(Train) the forecaster.
 
@@ -246,6 +248,7 @@ class BasePytorchForecaster(Forecaster):
 
         :param validation_data: Validation sample for validation loop. Defaults to 'None'.
                If you do not input data for 'validation_data', the validation_step will be skipped.
+               Validation data will be ignored under distributed mode.
                The validation_data support following formats:
 
                | 1. a numpy ndarray tuple (x, y):
@@ -254,14 +257,18 @@ class BasePytorchForecaster(Forecaster):
                | y's shape is (num_samples, horizon, target_dim), where horizon and target_dim
                | should be the same as future_seq_len and output_feature_num.
                |
-               | 2. pytorch dataloader:
+               | 2. a xshard item:
+               | each partition can be a dictionary of {'x': x, 'y': y}, where x and y's shape
+               | should follow the shape stated before.
+               |
+               | 3. pytorch dataloader:
                | the dataloader should return x, y in each iteration with the shape as following:
                | x's shape is (num_samples, lookback, feature_dim) where lookback and feature_dim
                | should be the same as past_seq_len and input_feature_num.
                | y's shape is (num_samples, horizon, target_dim), where horizon and target_dim
                | should be the same as future_seq_len and output_feature_num.
                |
-               | 3. A bigdl.chronos.data.tsdataset.TSDataset instance:
+               | 4. A bigdl.chronos.data.tsdataset.TSDataset instance:
                | Forecaster will automatically process the TSDataset.
                | By default, TSDataset will be transformed to a pytorch dataloader,
                | which is memory-friendly while a little bit slower.
@@ -314,6 +321,10 @@ class BasePytorchForecaster(Forecaster):
                 warnings.warn("Xshards is collected to local since the "
                               "forecaster is non-distribued.")
                 data = xshard_to_np(data)
+            if isinstance(validation_data, SparkXShards) and not self.distributed:
+                warnings.warn("Xshards is collected to local since the "
+                              "forecaster is non-distribued.")
+                validation_data = xshard_to_np(validation_data)
         except ImportError:
             pass
 
@@ -418,6 +429,12 @@ class BasePytorchForecaster(Forecaster):
                 if validation_mode == 'best_epoch':
                     self.load('validation/best.ckpt')
                     delete_folder("./validation")
+                # modify logger attr in trainer, otherwise predict will report error
+                self.trainer._logger_connector.on_trainer_init(
+                    False,
+                    self.trainer.flush_logs_every_n_steps,
+                    self.trainer.log_every_n_steps,
+                    self.trainer.move_metrics_to_cpu)
                 return fit_out
 
     def predict(self, data, batch_size=32, quantize=False):
@@ -432,15 +449,18 @@ class BasePytorchForecaster(Forecaster):
                | 1. a numpy ndarray x:
                | x's shape is (num_samples, lookback, feature_dim) where lookback and feature_dim
                | should be the same as past_seq_len and input_feature_num.
+               |
                | 2. a xshard item:
                | each partition can be a dictionary of {'x': x}, where x's shape
                | should follow the shape stated before.
+               |
                | 3. pytorch dataloader:
                | the dataloader needs to return at least x in each iteration
                | with the shape as following:
                | x's shape is (num_samples, lookback, feature_dim) where lookback and feature_dim
                | should be the same as past_seq_len and input_feature_num.
                | If returns x and y only get x.
+               |
                | 4. A bigdl.chronos.data.tsdataset.TSDataset instance:
                | Forecaster will automatically process the TSDataset.
                | By default, TSDataset will be transformed to a pytorch dataloader,
@@ -523,12 +543,14 @@ class BasePytorchForecaster(Forecaster):
                | 1. a numpy ndarray x:
                | x's shape is (num_samples, lookback, feature_dim) where lookback and feature_dim
                | should be the same as past_seq_len and input_feature_num.
+               |
                | 2. pytorch dataloader:
                | the dataloader needs to return at least x in each iteration
                | with the shape as following:
                | x's shape is (num_samples, lookback, feature_dim) where lookback and feature_dim
                | should be the same as past_seq_len and input_feature_num.
                | If returns x and y only get x.
+               |
                | 3. A bigdl.chronos.data.tsdataset.TSDataset instance:
                | Forecaster will automatically process the TSDataset.
                | By default, TSDataset will be transformed to a pytorch dataloader,
@@ -581,11 +603,25 @@ class BasePytorchForecaster(Forecaster):
         Directly call this method without calling build_openvino is valid and Forecaster will
         automatically build an openvino session with default settings.
 
-        :param data: The data support following formats:
+       :param data: The data support following formats:
 
                | 1. a numpy ndarray x:
                | x's shape is (num_samples, lookback, feature_dim) where lookback and feature_dim
                | should be the same as past_seq_len and input_feature_num.
+               |
+               | 2. pytorch dataloader:
+               | the dataloader needs to return at least x in each iteration
+               | with the shape as following:
+               | x's shape is (num_samples, lookback, feature_dim) where lookback and feature_dim
+               | should be the same as past_seq_len and input_feature_num.
+               | If returns x and y only get x.
+               |
+               | 3. A bigdl.chronos.data.tsdataset.TSDataset instance:
+               | Forecaster will automatically process the TSDataset.
+               | By default, TSDataset will be transformed to a pytorch dataloader,
+               | which is memory-friendly while a little bit slower.
+               | Users may call `roll` on the TSDataset before calling `fit`
+               | Then the training speed will be faster but will consume more memory.
 
         :param batch_size: predict batch size. The value will not affect predict
                result but will affect resources cost(e.g. memory and time). Defaults
@@ -605,6 +641,17 @@ class BasePytorchForecaster(Forecaster):
         if not self.fitted:
             invalidInputError(False,
                               "You must call fit or restore first before calling predict!")
+
+        if isinstance(data, TSDataset):
+            _rolled = data.numpy_x is None
+            data = data.to_torch_data_loader(batch_size=batch_size,
+                                             roll=_rolled,
+                                             lookback=self.data_config['past_seq_len'],
+                                             horizon=self.data_config['future_seq_len'],
+                                             feature_col=data.roll_feature,
+                                             target_col=data.roll_target,
+                                             shuffle=False)
+
         if quantize:
             return _pytorch_fashion_inference(model=self.openvino_int8,
                                               input_data=data,
@@ -640,15 +687,18 @@ class BasePytorchForecaster(Forecaster):
                | should be the same as past_seq_len and input_feature_num.
                | y's shape is (num_samples, horizon, target_dim), where horizon and target_dim
                | should be the same as future_seq_len and output_feature_num.
+               |
                | 2. a xshard item:
                | each partition can be a dictionary of {'x': x, 'y': y}, where x and y's shape
                | should follow the shape stated before.
+               |
                | 3. pytorch dataloader:
                | the dataloader should return x, y in each iteration with the shape as following:
                | x's shape is (num_samples, lookback, feature_dim) where lookback and feature_dim
                | should be the same as past_seq_len and input_feature_num.
                | y's shape is (num_samples, horizon, target_dim), where horizon and target_dim
                | should be the same as future_seq_len and output_feature_num.
+               |
                | 4. A bigdl.chronos.data.tsdataset.TSDataset instance:
                | Forecaster will automatically process the TSDataset.
                | By default, TSDataset will be transformed to a pytorch dataloader,
@@ -737,12 +787,14 @@ class BasePytorchForecaster(Forecaster):
                | should be the same as past_seq_len and input_feature_num.
                | y's shape is (num_samples, horizon, target_dim), where horizon and target_dim
                | should be the same as future_seq_len and output_feature_num.
+               |
                | 2. pytorch dataloader:
                | should be the same as future_seq_len and output_feature_num.
                | the dataloader should return x, y in each iteration with the shape as following:
                | x's shape is (num_samples, lookback, feature_dim) where lookback and feature_dim
                | should be the same as past_seq_len and input_feature_num.
                | y's shape is (num_samples, horizon, target_dim), where horizon and target_dim
+               |
                | 3. A bigdl.chronos.data.tsdataset.TSDataset instance:
                | Forecaster will automatically process the TSDataset.
                | By default, TSDataset will be transformed to a pytorch dataloader,
@@ -797,7 +849,8 @@ class BasePytorchForecaster(Forecaster):
         aggregate = 'mean' if multioutput == 'uniform_average' else None
         return Evaluator.evaluate(self.metrics, target, yhat, aggregate=aggregate)
 
-    def predict_interval(self, data, val_data=None, batch_size=32, repetition_times=5):
+    def predict_interval(self, data, validation_data=None, batch_size=32,
+                         repetition_times=5):
         """
         Calculate confidence interval of data based on Monte Carlo dropout(MC dropout).
         Related paper : https://arxiv.org/abs/1709.01907
@@ -807,12 +860,14 @@ class BasePytorchForecaster(Forecaster):
                | 1. a numpy ndarray x:
                | x's shape is (num_samples, lookback, feature_dim) where lookback and feature_dim
                | should be the same as past_seq_len and input_feature_num.
+               |
                | 2. pytorch dataloader:
                | the dataloader needs to return at least x in each iteration
                | with the shape as following:
                | x's shape is (num_samples, lookback, feature_dim) where lookback and feature_dim
                | should be the same as past_seq_len and input_feature_num.
                | If returns x and y only get x.
+               |
                | 3. A bigdl.chronos.data.tsdataset.TSDataset instance:
                | Forecaster will automatically process the TSDataset.
                | By default, TSDataset will be transformed to a pytorch dataloader,
@@ -820,19 +875,21 @@ class BasePytorchForecaster(Forecaster):
                | Users may call `roll` on the TSDataset before calling `fit`
                | Then the training speed will be faster but will consume more memory.
 
-        :param val_data: The val_data support following formats:
+        :param validation_data: The validation_data support following formats:
 
                | 1. a numpy ndarray tuple (x, y):
                | x's shape is (num_samples, lookback, feature_dim) where lookback and feature_dim
                | should be the same as past_seq_len and input_feature_num.
                | y's shape is (num_samples, horizon, target_dim), where horizon and target_dim
                | should be the same as future_seq_len and output_feature_num.
+               |
                | 2. pytorch dataloader:
                | the dataloader should return x, y in each iteration with the shape as following:
                | x's shape is (num_samples, lookback, feature_dim) where lookback and feature_dim
                | should be the same as past_seq_len and input_feature_num.
                | y's shape is (num_samples, horizon, target_dim), where horizon and target_dim
                | should be the same as future_seq_len and output_feature_num.
+               |
                | 3. A bigdl.chronos.data.tsdataset.TSDataset instance:
                | Forecaster will automatically process the TSDataset.
                | By default, TSDataset will be transformed to a pytorch dataloader,
@@ -842,8 +899,8 @@ class BasePytorchForecaster(Forecaster):
 
         :param batch_size: predict batch size. The value will not affect predict
                result but will affect resources cost(e.g. memory and time).
-        :param repetition_times : Defines repeate how many times to calculate model
-                                  uncertainty based on MC Dropout.
+        :param repetition_times: Defines repeate how many times to calculate model
+                                 uncertainty based on MC Dropout.
 
         :return: prediction and standard deviation which are both numpy array
                  with shape (num_samples, horizon, target_dim)
@@ -862,27 +919,28 @@ class BasePytorchForecaster(Forecaster):
                               "You must call fit or restore first before calling predict_interval!")
 
         # step1, according to validation dataset, calculate inherent noise
-        # which should be done during fit
         if not hasattr(self, "data_noise"):
-            invalidInputError(val_data is not None,
+            invalidInputError(validation_data is not None,
                               "When call predict_interval for the first time, you must pass in "
-                              "validation data to calculate data noise.")
+                              "validation_data to calculate data noise.")
             # data transform
-            if isinstance(val_data, TSDataset):
-                _rolled = val_data.numpy_x is None
-                val_data = val_data.to_torch_data_loader(batch_size=batch_size,
-                                                         roll=_rolled,
-                                                         lookback=self.data_config['past_seq_len'],
-                                                         horizon=self.data_config['future_seq_len'],
-                                                         feature_col=data.roll_feature,
-                                                         target_col=data.roll_target,
-                                                         shuffle=False)
+            if isinstance(validation_data, TSDataset):
+                _rolled = validation_data.numpy_x is None
+                validation_data = validation_data.to_torch_data_loader(
+                    batch_size=batch_size,
+                    roll=_rolled,
+                    lookback=self.data_config['past_seq_len'],
+                    horizon=self.data_config['future_seq_len'],
+                    feature_col=data.roll_feature,
+                    target_col=data.roll_target,
+                    shuffle=False,
+                )
 
-            if isinstance(val_data, DataLoader):
-                input_data = val_data
-                target = np.concatenate(tuple(val[1] for val in val_data), axis=0)
+            if isinstance(validation_data, DataLoader):
+                input_data = validation_data
+                target = np.concatenate(tuple(val[1] for val in validation_data), axis=0)
             else:
-                input_data, target = val_data
+                input_data, target = validation_data
             self.internal.eval()
             val_yhat = _pytorch_fashion_inference(model=self.internal,
                                                   input_data=input_data,
@@ -890,7 +948,7 @@ class BasePytorchForecaster(Forecaster):
             self.data_noise = Evaluator.evaluate(["mse"], target,
                                                  val_yhat, aggregate=None)[0]  # 2d array
 
-        # step2: data preprocess
+        # data preprocess
         if isinstance(data, TSDataset):
             _rolled = data.numpy_x is None
             data = data.to_torch_data_loader(batch_size=batch_size,
@@ -901,7 +959,7 @@ class BasePytorchForecaster(Forecaster):
                                              target_col=data.roll_target,
                                              shuffle=False)
 
-        # step3: calculate model uncertainty based MC Dropout
+        # step2: calculate model uncertainty based MC Dropout
         def apply_dropout(m):
             if type(m) == torch.nn.Dropout:
                 m.train()
@@ -1142,7 +1200,7 @@ class BasePytorchForecaster(Forecaster):
                               "forecaster. You can call .to_local() to transform the "
                               "forecaster to a non-distributed version.")
         if quantized_dirname and self.onnxruntime_int8:
-            Trainer.save(self.onnxruntime_int8, dirname)
+            Trainer.save(self.onnxruntime_int8, quantized_dirname)
         if dirname:
             if self.onnxruntime_fp32 is None:
                 self.build_onnx()
@@ -1164,7 +1222,7 @@ class BasePytorchForecaster(Forecaster):
                               "forecaster. You can call .to_local() to transform the "
                               "forecaster to a non-distributed version.")
         if quantized_dirname and self.openvino_int8:
-            Trainer.save(self.openvino_int8, dirname)
+            Trainer.save(self.openvino_int8, quantized_dirname)
         if dirname:
             if self.openvino_fp32 is None:
                 self.build_openvino()
@@ -1185,9 +1243,50 @@ class BasePytorchForecaster(Forecaster):
         """
         Quantize the forecaster.
 
-        :param calib_data: A torch.utils.data.dataloader.DataLoader object for calibration.
-               Required for static quantization.
-        :param val_data: A torch.utils.data.dataloader.DataLoader object for evaluation.
+        :param calib_data: Required for static quantization. Support following formats:
+
+               | 1. a numpy ndarray tuple (x, y):
+               | x's shape is (num_samples, lookback, feature_dim) where lookback and feature_dim
+               | should be the same as past_seq_len and input_feature_num.
+               | y's shape is (num_samples, horizon, target_dim), where horizon and target_dim
+               | should be the same as future_seq_len and output_feature_num.
+               |
+               | 2. pytorch dataloader:
+               | the dataloader should return x, y in each iteration with the shape as following:
+               | x's shape is (num_samples, lookback, feature_dim) where lookback and feature_dim
+               | should be the same as past_seq_len and input_feature_num.
+               | y's shape is (num_samples, horizon, target_dim), where horizon and target_dim
+               | should be the same as future_seq_len and output_feature_num.
+               |
+               | 3. A bigdl.chronos.data.tsdataset.TSDataset instance:
+               | Forecaster will automatically process the TSDataset.
+               | By default, TSDataset will be transformed to a pytorch dataloader,
+               | which is memory-friendly while a little bit slower.
+               | Users may call `roll` on the TSDataset before calling `fit`
+               | Then the training speed will be faster but will consume more memory.
+
+        :param val_data: for evaluation. Support following formats:
+
+               | 1. a numpy ndarray tuple (x, y):
+               | x's shape is (num_samples, lookback, feature_dim) where lookback and feature_dim
+               | should be the same as past_seq_len and input_feature_num.
+               | y's shape is (num_samples, horizon, target_dim), where horizon and target_dim
+               | should be the same as future_seq_len and output_feature_num.
+               |
+               | 2. pytorch dataloader:
+               | the dataloader should return x, y in each iteration with the shape as following:
+               | x's shape is (num_samples, lookback, feature_dim) where lookback and feature_dim
+               | should be the same as past_seq_len and input_feature_num.
+               | y's shape is (num_samples, horizon, target_dim), where horizon and target_dim
+               | should be the same as future_seq_len and output_feature_num.
+               |
+               | 3. A bigdl.chronos.data.tsdataset.TSDataset instance:
+               | Forecaster will automatically process the TSDataset.
+               | By default, TSDataset will be transformed to a pytorch dataloader,
+               | which is memory-friendly while a little bit slower.
+               | Users may call `roll` on the TSDataset before calling `fit`
+               | Then the training speed will be faster but will consume more memory.
+
         :param metric: A str represent the metrics for tunning the quality of
                quantization. You may choose from "mse", "mae", "rmse", "r2", "mape", "smape".
         :param conf: A path to conf yaml file for quantization. Default to None,
@@ -1230,6 +1329,28 @@ class BasePytorchForecaster(Forecaster):
             invalidInputError(False, "You must set a `calib_data` for static quantization.")
         if approach == 'dynamic' and calib_data is not None:
             invalidInputError(False, "You must not set a `calib_data` for dynamic quantization.")
+
+        # change tsdataset to dataloader
+        if isinstance(calib_data, TSDataset):
+            _rolled = calib_data.numpy_x is None
+            calib_data = calib_data.to_torch_data_loader(
+                batch_size=1,
+                roll=_rolled,
+                lookback=self.data_config['past_seq_len'],
+                horizon=self.data_config['future_seq_len'],
+                feature_col=calib_data.roll_feature,
+                target_col=calib_data.roll_target,
+                shuffle=False)
+        if isinstance(val_data, TSDataset):
+            _rolled = val_data.numpy_x is None
+            val_data = val_data.to_torch_data_loader(
+                batch_size=1,
+                roll=_rolled,
+                lookback=self.data_config['past_seq_len'],
+                horizon=self.data_config['future_seq_len'],
+                feature_col=val_data.roll_feature,
+                target_col=val_data.roll_target,
+                shuffle=False)
 
         # change data tuple to dataloader
         if isinstance(calib_data, tuple):
