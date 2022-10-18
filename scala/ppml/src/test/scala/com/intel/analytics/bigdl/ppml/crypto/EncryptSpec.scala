@@ -25,6 +25,7 @@ import java.nio.file.{Files, Paths}
 import scala.io.Source
 
 class EncryptSpec extends DataFrameHelper {
+  val (plainFileName, encryptFileName, data, dataKeyPlaintext) = generateCsvData()
   val fs = File.getFileSystem(plainFileName)
 
   "decrypt file" should "work" in {

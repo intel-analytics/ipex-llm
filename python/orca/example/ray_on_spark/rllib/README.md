@@ -1,16 +1,16 @@
 # Orca Ray Pong example
 
 We demonstrate how to easily run [multi-agent](https://github.com/ray-project/ray/blob/master/rllib/examples/multi_agent_two_trainers.py)
-example provided by [Ray](https://github.com/ray-project/ray). See [here](https://analytics-zoo.github.io/master/#ProgrammingGuide/rayonspark/) for more details for RayOnSpark support in Analytics Zoo.
+example provided by [Ray](https://github.com/ray-project/ray). See [here](https://bigdl.readthedocs.io/en/latest/doc/Ray/Overview/ray.html) for more details for RayOnSpark support in BigDL.
 
 ## Prepare environments
 We recommend you to use [Anaconda](https://www.anaconda.com/distribution/#linux) to prepare the environments, especially if you want to run on a yarn cluster(yarn-client mode only).
 ```
-conda create -n zoo python=3.7 #zoo is conda enviroment name, you can set another name you like.
-conda activate zoo
+conda create -n bigdl python=3.7 #bigdl is conda enviroment name, you can set another name you like.
+conda activate bigdl
 pip install gym
 pip install tensorflow
-pip install analytics-zoo[ray]
+pip install bigdl-orca[ray]
 ```
 
 ## Run example

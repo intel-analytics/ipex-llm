@@ -25,7 +25,6 @@ import torch
 from logging import warning
 from os.path import split, join, realpath
 
-
 local_libturbo_path = None
 _turbo_path = realpath(join(split(realpath(__file__))[0],
                             "../../../libs/libturbojpeg.so.0.2.0"))

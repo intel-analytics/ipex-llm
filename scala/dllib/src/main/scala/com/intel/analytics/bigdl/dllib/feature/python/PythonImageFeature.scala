@@ -217,7 +217,7 @@ class PythonImageFeature[T: ClassTag](implicit ev: TensorNumeric[T]) extends Pyt
 
   def createImageBytesToMat(
       byteKey: String = ImageFeature.bytes,
-      imageCodec: Int = Imgcodecs.CV_LOAD_IMAGE_UNCHANGED): ImageBytesToMat = {
+      imageCodec: Int = Imgcodecs.IMREAD_UNCHANGED): ImageBytesToMat = {
     ImageBytesToMat(byteKey, imageCodec)
   }
 

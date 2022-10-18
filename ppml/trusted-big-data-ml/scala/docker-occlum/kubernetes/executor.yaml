@@ -8,6 +8,8 @@ spec:
   - name: spark-example
     imagePullPolicy: Never
     volumeMounts:
+#    - name: device-plugin
+#      mountPath: /var/lib/kubelet/device-plugins
     - name: sgx-enclave
       mountPath: /dev/sgx/enclave
     - name: sgx-provision
@@ -22,7 +24,7 @@ spec:
     - name: NETTY_THREAD
       value: "32"
     - name: SGX_MEM_SIZE
-      value: "20GB"
+      value: "10GB"
     - name: SGX_THREAD
       value: "512"
     - name: SGX_HEAP
@@ -30,6 +32,9 @@ spec:
     - name: SGX_KERNEL_HEAP
       value: "1GB"
   volumes:
+#    - name: device-plugin
+#      hostPath:
+#        path: /var/lib/kubelet/device-plugins
   - name: sgx-enclave
     hostPath:
       path: /dev/sgx_enclave

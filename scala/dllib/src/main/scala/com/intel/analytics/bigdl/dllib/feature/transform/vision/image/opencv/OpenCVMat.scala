@@ -88,7 +88,7 @@ class OpenCVMat() extends Mat with Serializable {
    * @return
    */
   def drawBoundingBox(bbox: BoundingBox, text: String,
-    font: Int = Core.FONT_HERSHEY_COMPLEX_SMALL,
+    font: Int = Imgproc.FONT_HERSHEY_SIMPLEX,
     boxColor: (Double, Double, Double) = (0, 255, 0),
     textColor: (Double, Double, Double) = (255, 255, 255)): this.type = {
     Imgproc.rectangle(this,
@@ -129,7 +129,7 @@ object OpenCVMat {
     var result: OpenCVMat = null
     try {
       matOfByte = new MatOfByte(fileContent: _*)
-      mat = Imgcodecs.imdecode(matOfByte, Imgcodecs.CV_LOAD_IMAGE_UNCHANGED)
+      mat = Imgcodecs.imdecode(matOfByte, Imgcodecs.IMREAD_UNCHANGED)
       result = new OpenCVMat(mat)
     } catch {
       case e: Exception =>

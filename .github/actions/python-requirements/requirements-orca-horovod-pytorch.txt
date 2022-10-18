@@ -1,0 +1,13 @@
+psutil==5.7.0
+aiohttp==3.8.1
+async-timeout==4.0.1
+setproctitle==1.1.0
+pyarrow==0.17.0
+pandas==1.1.2
+scikit-learn==0.22.0
+convertdate==2.3.2
+pystan==2.19.1.1
+prophet==1.0.1
+tsfresh==0.18.0
+aioredis==1.1.0
+pytest==5.4.1

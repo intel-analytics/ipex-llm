@@ -53,7 +53,7 @@ class StorageHolder(flDataType: FLDataType) {
 
   def getClientDataSize(): Int = this.clientDataSize
 
-  def putClientData(clientID: String, dataHolder: DataHolder): Unit = {
+  def putClientData(clientID: Int, dataHolder: DataHolder): Unit = {
     if (dataHolder.tensorMap != null) {
       tensorMapStorage.clientData.put(clientID, dataHolder.tensorMap)
       clientDataSize = tensorMapStorage.clientData.size()

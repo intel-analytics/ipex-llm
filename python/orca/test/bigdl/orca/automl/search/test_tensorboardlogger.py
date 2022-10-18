@@ -15,7 +15,7 @@
 #
 import pytest
 from bigdl.orca.test_zoo_utils import ZooTestCase
-from bigdl.orca.automl.search import TensorboardLogger
+from bigdl.orca.automl.search.tensorboardlogger import TensorboardLogger
 import numpy as np
 import random
 import os.path

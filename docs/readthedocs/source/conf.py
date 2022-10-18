@@ -30,8 +30,6 @@ sys.path.insert(0, os.path.abspath("../../../python/orca/src/"))
 sys.path.insert(0, os.path.abspath("../../../python/serving/src/"))
 sys.path.insert(0, os.path.abspath("../../../python/nano/src/"))
 
-
-
 # -- Project information -----------------------------------------------------
 import sphinx_rtd_theme
 html_theme = "sphinx_rtd_theme"
@@ -90,8 +88,12 @@ extensions = [
     'recommonmark',
     'sphinx_markdown_tables',
     'sphinx_tabs.tabs',
+    'sphinx_design',
+    'sphinx_external_toc',
+    'sphinx_design',
+    'nbsphinx',
+    'nbsphinx_link'
 ]
-
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
@@ -151,6 +153,14 @@ html_static_path = ['_static']
 # Output file base name for HTML help builder.
 htmlhelp_basename = 'BigDL Documentation'
 
+
+
+# -- Options for external TOC tree ---
+external_toc_exclude_missing = False
+external_toc_path = "_toc.yml"
+
+# this is to surpresswarnings about explicit "toctree" directives
+suppress_warnings = ["etoc.toctree"]
 
 # -- Options for LaTeX output ------------------------------------------------
 
@@ -234,3 +244,6 @@ def setup(app):
         'enable_auto_doc_ref': True,
     }, True)
     app.add_transform(AutoStructify)
+
+# disable notebook execution
+nbsphinx_execute = 'never'

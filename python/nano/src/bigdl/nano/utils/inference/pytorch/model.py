@@ -13,17 +13,16 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-from pytorch_lightning import LightningModule
-from ..model import AcceleratedModel
 import torch
-from pathlib import Path
-from .model_utils import get_forward_args
+
+from bigdl.nano.pytorch.lightning import LightningModule
 from bigdl.nano.utils.log4Error import invalidInputError
+from ..model import AcceleratedModel
 
 
 class AcceleratedLightningModule(AcceleratedModel, LightningModule):
     def __init__(self, model):
-        super().__init__()
+        super().__init__(model)
         self.model = model
         self.train(False)
 
@@ -32,7 +31,10 @@ class AcceleratedLightningModule(AcceleratedModel, LightningModule):
         outputs = self.forward_step(*inputs)
         return self.on_forward_end(outputs)
 
-    def train(self, mode=True):
+    def on_train_start(self) -> None:
+        invalidInputError(False, errMsg="This model is not trainable!")
+
+    def train(self, mode=False):
         if mode:
             invalidInputError(False, "This model is not trainable!")
         super().train(mode)
@@ -42,7 +44,9 @@ class AcceleratedLightningModule(AcceleratedModel, LightningModule):
 
     @staticmethod
     def tensors_to_numpy(tensors):
-        np_data = tuple(map(lambda x: x.cpu().numpy(), tensors))
+        np_data = tuple(map(
+            lambda x: x.cpu().numpy() if isinstance(x, torch.Tensor) else x,
+            tensors))
         return np_data
 
     @staticmethod

@@ -226,10 +226,10 @@ if __name__ == "__main__":
         ray_ctx = OrcaContext.get_ray_context()
     elif cluster_mode == "spark-submit":
         sc = init_orca_context(cluster_mode=cluster_mode)
-        ray_ctx = OrcaContext.get_ray_context()        
+        ray_ctx = OrcaContext.get_ray_context()
     else:
-        print("init_orca_context failed. cluster_mode should be one of 'local', 'yarn' and 'spark-submit' but got "
-              + cluster_mode)
+        print("init_orca_context failed. cluster_mode should be one of 'local',"
+              "'yarn' and 'spark-submit' but got " + cluster_mode)
 
     batch_size = args.batch_size
     # Run the reinforcement learning.

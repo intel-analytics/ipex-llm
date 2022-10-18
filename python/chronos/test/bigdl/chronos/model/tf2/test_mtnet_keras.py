@@ -17,7 +17,7 @@ import shutil
 
 import pytest
 
-from bigdl.orca.test_zoo_utils import ZooTestCase
+from unittest import TestCase
 from bigdl.chronos.model.tf2.MTNet_keras import MTNetKeras
 from bigdl.chronos.data import TSDataset
 import pandas as pd
@@ -53,7 +53,7 @@ def create_data():
 
 
 @pytest.mark.skipif(tf.__version__ < '2.0.0', reason="Run only when tf>2.0.0")
-class TestMTNetKeras(ZooTestCase):
+class TestMTNetKeras(TestCase):
 
     def setup_method(self, method):
         tf.keras.backend.clear_session()

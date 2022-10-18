@@ -304,9 +304,15 @@ arrays2pandas = partial(arrays2others, generate_func=_generate_output_pandas_df)
 def transform_to_shard_dict(data, feature_cols, label_cols=None):
     def to_shard_dict(df):
         result = dict()
-        result["x"] = [df[feature_col].to_numpy() for feature_col in feature_cols]
+        if len(feature_cols) == 1:
+            featureLists = df[feature_cols[0]].tolist()
+            result["x"] = np.stack(featureLists, axis=0)
+        else:
+            result["x"] = [df[feature_col].to_numpy() for feature_col in feature_cols]
+
         if label_cols:
             result["y"] = df[label_cols[0]].to_numpy()
+
         return result
 
     data = data.transform_shard(to_shard_dict)
@@ -453,6 +459,29 @@ def make_data_creator(refs):
     return data_creator
 
 
+def make_dataloader_list_wrapper(func):
+    import torch
+
+    def make_feature_list(batch):
+        if func is not None:
+            batch = func(batch)
+        *features, target = batch
+        if len(features) == 1 and torch.is_tensor(features[0]):
+            features = features[0]
+        return features, target
+
+    return make_feature_list
+
+
+def reload_dataloader_creator(dataloader_func):
+    def reload_dataloader(config, batch_size):
+        dataloader = dataloader_func(config, batch_size)
+        dataloader.collate_fn = make_dataloader_list_wrapper(dataloader.collate_fn)
+        return dataloader
+
+    return reload_dataloader if dataloader_func else None
+
+
 def data_length(data):
     x = data["x"]
     if isinstance(x, np.ndarray):
@@ -463,14 +492,12 @@ def data_length(data):
 
 def save_pkl(data, path):
     if path.startswith("hdfs"):  # hdfs://url:port/file_path
-        import pyarrow as pa
-        host_port = path.split("://")[1].split("/")[0].split(":")
-        classpath = subprocess.Popen(["hadoop", "classpath", "--glob"],
-                                     stdout=subprocess.PIPE).communicate()[0]
-        os.environ["CLASSPATH"] = classpath.decode("utf-8")
-        fs = pa.hdfs.connect(host=host_port[0], port=int(host_port[1]))
-        with fs.open(path, 'wb') as f:
+        import uuid
+        file_name = str(uuid.uuid1()) + ".pkl"
+        temp_path = os.path.join(tempfile.gettempdir(), file_name)
+        with open(temp_path, 'wb') as f:
             pickle.dump(data, f)
+        put_local_file_to_remote(temp_path, path)
     elif path.startswith("s3"):  # s3://bucket/file_path
         access_key_id = os.environ["AWS_ACCESS_KEY_ID"]
         secret_access_key = os.environ["AWS_SECRET_ACCESS_KEY"]

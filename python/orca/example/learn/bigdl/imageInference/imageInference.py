@@ -78,8 +78,8 @@ if __name__ == "__main__":
     elif cluster_mode == "spark-submit":
         sc = init_orca_context(cluster_mode="spark-submit")
     else:
-        print("init_orca_context failed. cluster_mode should be one of 'local', 'yarn' and 'spark-submit' but got "
-              + cluster_mode)
+        print("init_orca_context failed. cluster_mode should be one of 'local', "
+              "'yarn' and 'spark-submit' but got " + cluster_mode)
 
     image_path = options.image_path
     model_path = options.model_path
@@ -92,4 +92,3 @@ if __name__ == "__main__":
 
     print("finished...")
     stop_orca_context()
-

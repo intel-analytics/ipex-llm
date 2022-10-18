@@ -19,6 +19,7 @@ from bigdl.nano.utils.inference.pytorch.model import AcceleratedLightningModule
 from ..core import version as inc_version
 from neural_compressor.utils.pytorch import load
 from neural_compressor.model.model import PyTorchModel
+from bigdl.nano.utils.log4Error import invalidInputError
 
 
 class PytorchQuantizedModel(AcceleratedLightningModule):
@@ -26,8 +27,16 @@ class PytorchQuantizedModel(AcceleratedLightningModule):
         super().__init__(model.model)
         self.quantized = model
 
+    @property
+    def _nargs(self):
+        return -1
+
     @staticmethod
     def _load(path, model):
+        invalidInputError(
+            model is not None,
+            errMsg="FP32 model is required to create a quantized model."
+        )
         qmodel = PyTorchModel(load(path, model))
         from packaging import version
         if version.parse(inc_version) < version.parse("1.11"):

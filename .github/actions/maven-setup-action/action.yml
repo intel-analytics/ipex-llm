@@ -1,0 +1,41 @@
+name: 'Setup Maven'
+description: 'setup maven'
+# inputs:
+#   arda_nexus:
+#     description: 'arda nexus secret'
+#     required: true
+runs:
+  using: "composite"
+  steps:
+    #pls use cache only on github owned runners 
+    # - uses: actions/cache@v2
+    #   with:
+    #     path: ~/.m2/repository
+    #     key: maven-${{ hashFiles('**/pom.xml') }}
+    #     restore-keys: maven-
+    
+    - name: Set up Maven
+      uses: stCarolas/setup-maven@v4.4
+      with:
+        maven-version: 3.8.2
+
+    - name: Set up Maven Settings
+      uses: s4u/maven-settings-action@v2.6.0
+      with:
+        sonatypeSnapshots: true
+        apacheSnapshots: true
+        servers: |
+          [
+            {
+              "id": "central",
+              "configuration": {
+                "httpConfiguration": {
+                  "all": {
+                    "connectionTimeout": "3600000",
+                    "readTimeout": "3600000"
+                  }    
+                }
+              }
+            }
+          ]
+        mirrors: '[{"id": "ardaNexus", "name": "ardaNexus", "mirrorOf": "*", "url": "${NEXUS_URL}" }]'

@@ -18,18 +18,19 @@ package com.intel.analytics.bigdl.ppml.kms
 
 import java.util.Base64
 
-import com.intel.analytics.bigdl.dllib.utils.Log4Error
-import com.intel.analytics.bigdl.ppml.utils.KeyReaderWriter
-
 import scala.collection.mutable
 import scala.collection.mutable.HashMap
 import scala.util.Random
+
+import org.apache.hadoop.conf.Configuration
 import com.azure.identity.{DefaultAzureCredential, DefaultAzureCredentialBuilder}
 import com.azure.security.keyvault.keys.KeyClientBuilder
 import com.azure.security.keyvault.keys.cryptography.{CryptographyClient, CryptographyClientBuilder}
 import com.azure.security.keyvault.keys.models.KeyType
 import com.azure.security.keyvault.keys.cryptography.models.WrapResult
 import com.azure.security.keyvault.keys.cryptography.models.KeyWrapAlgorithm
+import com.intel.analytics.bigdl.dllib.utils.Log4Error
+import com.intel.analytics.bigdl.ppml.utils.KeyReaderWriter
 
 class AzureKeyManagementService(keyVaultName: String, managedIdentityClientId : String = "")
   extends KeyManagementService {
@@ -53,21 +54,22 @@ class AzureKeyManagementService(keyVaultName: String, managedIdentityClientId : 
     .credential(defaultCredential)
     .buildClient()
 
-  def retrievePrimaryKey(primaryKeySavePath: String = ""): Unit = {
+  def retrievePrimaryKey(primaryKeySavePath: String = "", config: Configuration = null): Unit = {
     Log4Error.invalidInputError(primaryKeySavePath != null && primaryKeySavePath != "",
       "primaryKeySavePath should be specified")
     val keyName = "key-" + (1 to 4).map(x => Random.nextInt(10)).mkString
     val primaryKey = keyClient.createKey(keyName, KeyType.RSA)
     val keyId = primaryKey.getId()
-    keyReaderWriter.writeKeyToFile(primaryKeySavePath, keyId)
+    keyReaderWriter.writeKeyToFile(primaryKeySavePath, keyId, config)
   }
 
-  def retrieveDataKey(primaryKeyPath: String, dataKeySavePath: String): Unit = {
+  def retrieveDataKey(primaryKeyPath: String, dataKeySavePath: String,
+                      config: Configuration = null): Unit = {
     Log4Error.invalidInputError(primaryKeyPath != null && primaryKeyPath != "",
       "primaryKeyPath should be specified")
     Log4Error.invalidInputError(dataKeySavePath != null && dataKeySavePath != "",
       "dataKeySavePath should be specified")
-    val primaryKeyId: String = keyReaderWriter.readKeyFromFile(primaryKeyPath)
+    val primaryKeyId: String = keyReaderWriter.readKeyFromFile(primaryKeyPath, config)
     // get crypto client for primary key
     val cryptoClient = getCryptoClient(primaryKeyId)
     // create aes data key
@@ -77,17 +79,18 @@ class AzureKeyManagementService(keyVaultName: String, managedIdentityClientId : 
     // wrap data key content.
     val wrapResult: WrapResult = cryptoClient.wrapKey(KeyWrapAlgorithm.RSA_OAEP, aesKey)
     val dataKeyCiphertext = Base64.getEncoder.encodeToString(wrapResult.getEncryptedKey())
-    keyReaderWriter.writeKeyToFile(dataKeySavePath, dataKeyCiphertext)
+    keyReaderWriter.writeKeyToFile(dataKeySavePath, dataKeyCiphertext, config)
   }
 
-  def retrieveDataKeyPlainText(primaryKeyPath: String, dataKeyPath: String): String = {
+  def retrieveDataKeyPlainText(primaryKeyPath: String, dataKeyPath: String,
+                               config: Configuration = null): String = {
     Log4Error.invalidInputError(primaryKeyPath != null && primaryKeyPath != "",
       "primaryKeyPath should be specified")
     Log4Error.invalidInputError(dataKeyPath != null && dataKeyPath != "",
       "dataKeyPath should be specified")
-    val primaryKeyId: String = keyReaderWriter.readKeyFromFile(primaryKeyPath)
+    val primaryKeyId: String = keyReaderWriter.readKeyFromFile(primaryKeyPath, config)
     val cryptoClient = getCryptoClient(primaryKeyId)
-    val dataKeyCiphertext: String = keyReaderWriter.readKeyFromFile(dataKeyPath)
+    val dataKeyCiphertext: String = keyReaderWriter.readKeyFromFile(dataKeyPath, config)
     val unwrapResult = cryptoClient.unwrapKey(KeyWrapAlgorithm.RSA_OAEP,
       Base64.getDecoder().decode(dataKeyCiphertext))
     val dataKey = unwrapResult.getKey()

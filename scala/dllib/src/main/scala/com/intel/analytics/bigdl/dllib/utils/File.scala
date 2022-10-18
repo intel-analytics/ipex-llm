@@ -16,12 +16,14 @@
 
 package com.intel.analytics.bigdl.dllib.utils
 
-import java.io._
-import java.net.URI
-
+import org.apache.commons.io.serialization.ValidatingObjectInputStream
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.{FSDataInputStream, FSDataOutputStream, FileSystem, Path}
 import org.apache.hadoop.io.IOUtils
+
+import java.io._
+import java.net.URI
+import scala.reflect.{ClassTag, classTag}
 
 object File {
   private[bigdl] val hdfsPrefix: String = "hdfs:"
@@ -150,11 +152,12 @@ object File {
    *
    * @param fileName
    */
-  def loadFromHdfs[T](fileName: String): T = {
+  def loadFromHdfs[T: ClassTag](fileName: String): T = {
     val byteArrayOut = readHdfsByte(fileName)
-    var objFile: ObjectInputStream = null
+    var objFile: ValidatingObjectInputStream = null
     try {
-      objFile = new ObjectInputStream(new ByteArrayInputStream(byteArrayOut))
+      objFile = new ValidatingObjectInputStream(new ByteArrayInputStream(byteArrayOut))
+      objFile.accept(classTag[T].runtimeClass)
       val result = objFile.readObject()
       objFile.close()
       result.asInstanceOf[T]

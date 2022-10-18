@@ -1,0 +1,42 @@
+name: 'Run Friesian Scala UT'
+description: 'Run Friesian Scala UT'
+runs:
+  using: "composite"
+  steps:
+    - name: Set up redis
+      shell: bash
+      run: |
+          sudo mkdir -p /usr/share/keyrings
+          curl -fsSL https://packages.redis.io/gpg | sudo -E gpg --yes --dearmor -o /usr/share/keyrings/redis-archive-keyring.gpg
+          echo "deb [signed-by=/usr/share/keyrings/redis-archive-keyring.gpg] https://packages.redis.io/deb $(lsb_release -cs) main" | sudo tee /etc/apt/sources.list.d/redis.list
+          sudo -E apt-get update
+          sudo -E apt-get install -y redis redis-tools
+          redis-server --daemonize yes
+          redis-cli ping
+
+    - name: Set up mkl
+      shell: bash
+      run: |
+        cd /tmp
+        curl -O http://10.239.45.10:8081/repository/raw/analytics-zoo-data/faiss-lib.zip
+        sudo unzip -o faiss-lib.zip -d /lib
+        sudo ln -fs /lib/libmkl_core.so /lib/libmkl_core.so.2
+        sudo ln -fs /lib/libmkl_gnu_thread.so /lib/libmkl_gnu_thread.so.2
+        sudo ln -fs /lib/libmkl_intel_lp64.so /lib/libmkl_intel_lp64.so.2
+
+    - name: Prepare data
+      shell: bash
+      run: |
+        mkdir -p /tmp/friesian-unittest
+        cd /tmp/friesian-unittest
+        curl -O http://10.239.45.10:8081/repository/raw/analytics-zoo-data/friesian-serving-upload.tar.gz 
+        tar -zxf friesian-serving-upload.tar.gz
+
+    - name: Run tests
+      shell: bash
+      run: |
+        export SPARK_LOCAL_HOSTNAME=localhost
+        export KERAS_BACKEND=tensorflow
+        cd scala
+        mvn "-DwildcardSuites=com.intel.analytics.bigdl.friesian" "-Dtest=com.intel.analytics.bigdl.friesian.*Test" test -P spark_2.x -Dspark.version=2.4.6 "-Dspark.master=local[*]"
+        mvn "-DwildcardSuites=com.intel.analytics.bigdl.friesian" "-Dtest=com.intel.analytics.bigdl.friesian.*Test" test -P spark_3.x -Dspark.version=3.1.2 "-Dspark.master=local[*]"

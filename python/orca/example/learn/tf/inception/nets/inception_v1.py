@@ -40,6 +40,7 @@ from __future__ import print_function
 import tensorflow as tf
 
 from nets import inception_utils
+from bigdl.dllib.utils.log4Error import invalidInputError
 
 slim = tf.contrib.slim
 trunc_normal = lambda stddev: tf.truncated_normal_initializer(0.0, stddev)
@@ -296,7 +297,7 @@ def inception_v1_base(inputs,
                 end_points[end_point] = net
                 if final_endpoint == end_point:
                     return net, end_points
-        raise ValueError('Unknown final endpoint %s' % final_endpoint)
+        invalidInputError(False, 'Unknown final endpoint %s' % final_endpoint)
 
 
 def inception_v1(inputs,

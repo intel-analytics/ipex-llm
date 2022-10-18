@@ -89,6 +89,7 @@ public class RankingServer extends GrpcServerBase {
      */
     public static void main(String[] args) throws Exception {
         RankingServer rankingServer = new RankingServer(args);
+        rankingServer.parseConfig();
         rankingServer.build();
         if (Utils.runMonitor()) {
             new HTTPServer.Builder()

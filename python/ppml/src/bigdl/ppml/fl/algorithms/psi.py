@@ -20,6 +20,10 @@ from bigdl.ppml.fl import *
 from bigdl.dllib.utils.common import JavaValue
 
 
+def set_psi_salt(psi_salt):
+    callBigDlFunc("float", "setPsiSalt", psi_salt)
+
+
 class PSI(JavaValue):
     def __init__(self, jvalue=None, *args):
         self.bigdl_type = "float"

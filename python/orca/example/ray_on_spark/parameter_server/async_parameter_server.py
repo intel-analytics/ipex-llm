@@ -54,13 +54,14 @@ parser.add_argument("--driver_cores", type=int, default=8,
 parser.add_argument("--extra_executor_memory_for_ray", type=str, default="20g",
                     help="The extra executor memory to store some data."
                     "You can change it depending on your own cluster setting.")
-parser.add_argument("--extra_python_lib", type=str, 
+parser.add_argument("--extra_python_lib", type=str,
                     default="python/orca/example/ray_on_spark/parameter_server/model.py",
                     help="The extra executor memory to store some data."
                     "You can change it depending on your own cluster setting.")
 parser.add_argument("--object_store_memory", type=str, default="4g",
                     help="The memory to store data on local."
                     "You can change it depending on your own cluster setting.")
+
 
 @ray.remote
 class ParameterServer(object):
@@ -120,8 +121,8 @@ if __name__ == "__main__":
         sc = init_orca_context(cluster_mode=cluster_mode)
         ray_ctx = OrcaContext.get_ray_context()
     else:
-        print("init_orca_context failed. cluster_mode should be one of 'local', 'yarn' and 'spark-submit' but got "
-              + cluster_mode)
+        print("init_orca_context failed. cluster_mode should be one of 'local', "
+              "'yarn' and 'spark-submit' but got " + cluster_mode)
 
     # Create a parameter server with some random weights.
     net = SimpleCNN()

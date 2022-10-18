@@ -48,8 +48,6 @@ sudo systemctl restart docker
 After pulling the BigDL Docker image, you can launch an BigDL Docker container:
 ```
 sudo docker run -it --rm --net=host \
-    -e NOTEBOOK_PORT=12345 \
-    -e NOTEBOOK_TOKEN="your-token" \
     -e http_proxy=http://your-proxy-host:your-proxy-port \
     -e https_proxy=https://your-proxy-host:your-proxy-port \
     intelanalytics/bigdl:2.1.0-SNAPSHOT bash

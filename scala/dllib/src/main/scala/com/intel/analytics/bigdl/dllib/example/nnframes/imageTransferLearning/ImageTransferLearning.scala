@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.intel.analytics.bigdl.dllib.examples.nnframes.imageTransferLearning
+package com.intel.analytics.bigdl.dllib.example.nnframes.imageTransferLearning
 
 import com.intel.analytics.bigdl.dllib.nn._
 import com.intel.analytics.bigdl.dllib.optim.Adam

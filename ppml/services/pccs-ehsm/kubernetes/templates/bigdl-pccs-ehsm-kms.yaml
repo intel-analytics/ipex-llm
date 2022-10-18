@@ -41,7 +41,7 @@ spec:
         - name: API_KEY
           value: {{ .Values.apiKey }}
         - name: PCCS_PORT
-          value: 18081
+          value: "18081"
         - name: HTTPS_PROXY_URL
           value: {{ .Values.httpsProxyUrl }}
         - name: COUNTRY_NAME
@@ -130,8 +130,10 @@ spec:
       containers:
       - name: dkeyserver
         image: {{ .Values.dkeyserverImageName }}
+        securityContext:
+          privileged: true
         imagePullPolicy: IfNotPresent
-        command: ['sh' , '-c','if [ -c "/dev/sgx/enclave" ]; then echo "/dev/sgx/enclave is ready";elif [ -c "/dev/sgx_enclave" ]; then echo "/dev/sgx/enclave not ready, try to link to /dev/sgx_enclave"; mkdir -p /dev/sgx; ln -s /dev/sgx_enclave /dev/sgx/enclave; else echo "both /dev/sgx/enclave /dev/sgx_enclave are not ready, please check the kernel and driver";fi; if [ -c "/dev/sgx/provision" ]; then echo "/dev/sgx/provision is ready";elif [ -c "/dev/sgx_provision" ]; then echo "/dev/sgx/provision not ready, try to link to /dev/sgx_provision";mkdir -p /dev/sgx;ln -s /dev/sgx_provision /dev/sgx/provision;else echo "both /dev/sgx/provision /dev/sgx_provision are not ready, please check the kernel and driver";fi;sleep 30; curl -v -k -G -w "%{http_code}" "http://{{ .Values.pccsIP }}:18081/sgx/certification/v3/rootcacrl";  bash /home/start_dkeyserver.sh']
+        command: ['sh' , '-c','if [ -c "/dev/sgx/enclave" ]; then echo "/dev/sgx/enclave is ready";elif [ -c "/dev/sgx_enclave" ]; then echo "/dev/sgx/enclave not ready, try to link to /dev/sgx_enclave"; mkdir -p /dev/sgx; ln -s /dev/sgx_enclave /dev/sgx/enclave; else echo "both /dev/sgx/enclave /dev/sgx_enclave are not ready, please check the kernel and driver";fi; if [ -c "/dev/sgx/provision" ]; then echo "/dev/sgx/provision is ready";elif [ -c "/dev/sgx_provision" ]; then echo "/dev/sgx/provision not ready, try to link to /dev/sgx_provision";mkdir -p /dev/sgx;ln -s /dev/sgx_provision /dev/sgx/provision;else echo "both /dev/sgx/provision /dev/sgx_provision are not ready, please check the kernel and driver";fi;sleep 30; curl -v -k -G -w "%{http_code}" "https://{{ .Values.pccsIP }}:18081/sgx/certification/v3/rootcacrl";  bash /home/start_dkeyserver.sh']
         volumeMounts:
         - mountPath: /dev/sgx/enclave
           name: dev-enclave

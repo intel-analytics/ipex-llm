@@ -32,3 +32,40 @@ def ipex_optimize(*args, **kwargs):
 def ipex_device():
     from bigdl.nano.deps.ipex.version_1_9 import DEVICE
     return DEVICE
+
+
+def PytorchIPEXJITModel(model, input_sample=None, use_ipex=False,
+                        use_jit=False, channels_last=None):
+    '''
+    :param model: the model(nn.module) to be transform.
+    :param input_sample: torch tensor indicate the data sample to be used
+            for tracing.
+    :param use_ipex: if use ipex to optimize the model
+    :param use_jit: if use jit to accelerate the model
+    :param channels_last: if set model and data to be channels-last mode.
+            the parameter will be ignored if use_ipex is False.
+    '''
+    from .ipex_inference_model import PytorchIPEXJITModel
+    return PytorchIPEXJITModel(model, input_sample=input_sample, use_ipex=use_ipex,
+                               use_jit=use_jit, channels_last=channels_last)
+
+
+def PytorchIPEXJITBF16Model(model, input_sample=None, use_ipex=False,
+                            use_jit=False, channels_last=None):
+    '''
+    :param model: the model(nn.module) to be transform.
+    :param input_sample: torch tensor indicate the data sample to be used
+            for tracing.
+    :param use_ipex: if use ipex to optimize the model
+    :param use_jit: if use jit to accelerate the model
+    :param channels_last: if set model and data to be channels-last mode.
+            the parameter will be ignored if use_ipex is False.
+    '''
+    from .ipex_inference_bf16_model import PytorchIPEXJITBF16Model
+    return PytorchIPEXJITBF16Model(model, input_sample=input_sample, use_ipex=use_ipex,
+                                   use_jit=use_jit, channels_last=channels_last)
+
+
+def load_ipexjit_model(path, model):
+    from .ipex_inference_model import PytorchIPEXJITModel
+    return PytorchIPEXJITModel._load(path, model)

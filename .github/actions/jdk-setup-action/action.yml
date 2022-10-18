@@ -1,0 +1,11 @@
+name: 'Setup JDK8'
+description: 'setup jdk8'
+runs:
+  using: "composite"
+  steps:
+    - name: Set up JDK 8
+      uses: actions/setup-java@v3
+      with:
+        java-version: '8'
+        distribution: 'temurin'
+        settings-path: ${{ github.workspace }} # location for the settings.xml file

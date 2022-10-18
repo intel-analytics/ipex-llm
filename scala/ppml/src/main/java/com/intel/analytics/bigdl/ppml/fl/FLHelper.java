@@ -22,10 +22,16 @@ public class FLHelper {
     int serverPort = 8980;
 
     // Client property
+    String psiSalt = null;
     String clientTarget = "localhost:8980";
     String taskID = "taskID";
     String certChainFilePath = null;
     String privateKeyFilePath = null;
+
+    String ckksSercetPath = "";
+    String fgBoostServerModelPath = null;
+
+    public void setPsiSalt(String psiSalt) { this.psiSalt = psiSalt; }
 
     public void setClientNum(int clientNum) {
         this.clientNum = clientNum;
@@ -46,9 +52,16 @@ public class FLHelper {
     public void setCertChainFilePath(String certChainFilePath) {
        this.certChainFilePath = certChainFilePath;
     }
+
+    public void setCkksSercetPath(String ckksSercetPath) {
+        this.ckksSercetPath = ckksSercetPath;
+    }
     
     public void setPrivateKeyFilePath(String privateKeyFilePath) {
        this.privateKeyFilePath = privateKeyFilePath;
     }
-        
+
+    public void setFgBoostServerModelPath(String fgBoostServerModelPath) {
+        this.fgBoostServerModelPath = fgBoostServerModelPath;
+    }
 }

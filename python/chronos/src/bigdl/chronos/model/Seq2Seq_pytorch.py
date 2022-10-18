@@ -19,6 +19,7 @@ import torch.nn as nn
 
 from .utils import PYTORCH_REGRESSION_LOSS_MAP
 import numpy as np
+from pytorch_lightning import seed_everything
 
 
 class LSTMSeq2Seq(nn.Module):
@@ -29,8 +30,10 @@ class LSTMSeq2Seq(nn.Module):
                  lstm_hidden_dim=128,
                  lstm_layer_num=2,
                  dropout=0.25,
-                 teacher_forcing=False):
+                 teacher_forcing=False,
+                 seed=None):
         super(LSTMSeq2Seq, self).__init__()
+        seed_everything(seed, workers=True)
         self.lstm_encoder = nn.LSTM(input_size=input_feature_num,
                                     hidden_size=lstm_hidden_dim,
                                     num_layers=lstm_layer_num,
@@ -73,7 +76,8 @@ def model_creator(config):
                        lstm_hidden_dim=config.get("lstm_hidden_dim", 128),
                        lstm_layer_num=config.get("lstm_layer_num", 2),
                        dropout=config.get("dropout", 0.25),
-                       teacher_forcing=config.get("teacher_forcing", False))
+                       teacher_forcing=config.get("teacher_forcing", False),
+                       seed=config.get("seed", None))
 
 
 def optimizer_creator(model, config):

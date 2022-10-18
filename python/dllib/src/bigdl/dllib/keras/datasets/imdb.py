@@ -37,11 +37,11 @@ def download_imdb(dest_dir):
     return file_abs_path
 
 
-def load_data(dest_dir='/tmp/.zoo/dataset', nb_words=None, oov_char=2):
+def load_data(dest_dir='/tmp/.bigdl/dataset', nb_words=None, oov_char=2):
     """Load IMDB dataset.
 
     :argument
-        dest_dir: where to cache the data (relative to `~/.zoo/dataset`).
+        dest_dir: where to cache the data (relative to `~/.bigdl/dataset`).
         nb_words: number of words to keep, the words are already indexed by frequency
                   so that the less frequent words would be abandoned
         oov_char: index to pad the abandoned words, if None, one abandoned word
@@ -93,11 +93,11 @@ def shuffle_by_seed(arr_list, seed=0):
         np.random.shuffle(arr)
 
 
-def get_word_index(dest_dir='/tmp/.zoo/dataset', filename='imdb_word_index.pkl'):
+def get_word_index(dest_dir='/tmp/.bigdl/dataset', filename='imdb_word_index.pkl'):
     """Retrieves the dictionary mapping word indices back to words.
 
     # Arguments
-        dest_dir: where to cache the data (relative to `~/.zoo/dataset`).
+        dest_dir: where to cache the data (relative to `~/.bigdl/dataset`).
         filename: dataset file name
 
     # Returns

@@ -41,27 +41,11 @@ class EncryptedDataFrameReader(
   }
 
   def csv(path: String): DataFrame = {
-    encryptMode match {
-      case PLAIN_TEXT =>
-        sparkSession.read.options(extraOptions).csv(path)
-      case AES_CBC_PKCS5PADDING =>
-        val rdd = PPMLContext.textFile(sparkSession.sparkContext, path,
-           dataKeyPlainText, encryptMode)
-        // TODO: support more options
-        if (extraOptions.contains("header") &&
-          extraOptions("header").toLowerCase() == "true") {
-          EncryptedDataFrameReader.toDataFrame(rdd)
-        } else {
-          val rows = rdd.map(_.split(",")).map(Row.fromSeq(_))
-          val fields = (0 until  rows.first().length).map(i =>
-            StructField(s"_c$i", StringType, true)
-          )
-          val schema = StructType(fields)
-          sparkSession.createDataFrame(rows, schema)
-        }
-      case _ =>
-        throw new IllegalArgumentException("unknown EncryptMode " + CryptoMode.toString)
-    }
+    sparkSession.read.options(extraOptions).csv(path)
+  }
+
+  def json(path: String): DataFrame = {
+    sparkSession.read.options(extraOptions).json(path)
   }
 
   def parquet(path: String): DataFrame = {

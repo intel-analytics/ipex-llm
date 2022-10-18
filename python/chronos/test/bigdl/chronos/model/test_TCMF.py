@@ -16,7 +16,7 @@
 
 import pytest
 
-from bigdl.orca.test_zoo_utils import ZooTestCase
+from unittest import TestCase
 from bigdl.chronos.model.tcmf_model import TCMF
 import numpy as np
 import os
@@ -24,7 +24,7 @@ from numpy.testing import assert_array_almost_equal
 import pandas as pd
 
 
-class TestTCMF(ZooTestCase):
+class TestTCMF(TestCase):
 
     def setup_method(self, method):
         self.seq_len = 480

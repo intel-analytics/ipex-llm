@@ -35,9 +35,9 @@ case class EncryptIOArguments(
                                kmsServerIP: String = "0.0.0.0",
                                kmsServerPort: String = "5984",
                                ehsmAPPID: String = "ehsmAPPID",
-                               ehsmAPPKEY: String = "ehsmAPPKEY",
+                               ehsmAPIKEY: String = "ehsmAPIKEY",
                                simpleAPPID: String = "simpleAPPID",
-                               simpleAPPKEY: String = "simpleAPPKEY",
+                               simpleAPIKEY: String = "simpleAPIKEY",
                                keyVaultName: String = "keyVaultName",
                                managedIdentityClientId: String = "") {
   def ppmlArgs(): Map[String, String] = {
@@ -48,10 +48,10 @@ case class EncryptIOArguments(
         kmsArgs("spark.bigdl.kms.ehs.ip") = kmsServerIP
         kmsArgs("spark.bigdl.kms.ehs.port") = kmsServerPort
         kmsArgs("spark.bigdl.kms.ehs.id") = ehsmAPPID
-        kmsArgs("spark.bigdl.kms.ehs.key") = ehsmAPPKEY
+        kmsArgs("spark.bigdl.kms.ehs.key") = ehsmAPIKEY
       case KMS_CONVENTION.MODE_SIMPLE_KMS =>
         kmsArgs("spark.bigdl.kms.simple.id") = simpleAPPID
-        kmsArgs("spark.bigdl.kms.simple.key") = simpleAPPKEY
+        kmsArgs("spark.bigdl.kms.simple.key") = simpleAPIKEY
       case KMS_CONVENTION.MODE_AZURE_KMS =>
         kmsArgs("spark.bigdl.kms.azure.vault") = keyVaultName
         kmsArgs("spark.bigdl.kms.azure.clientId") = managedIdentityClientId
@@ -110,15 +110,15 @@ object EncryptIOArguments {
     opt[String]('j', "ehsmAPPID")
       .action((x, c) => c.copy(ehsmAPPID = x))
       .text("ehsmAPPID")
-    opt[String]('k', "ehsmAPPKEY")
-      .action((x, c) => c.copy(ehsmAPPKEY = x))
-      .text("ehsmAPPKEY")
+    opt[String]('k', "ehsmAPIKEY")
+      .action((x, c) => c.copy(ehsmAPIKEY = x))
+      .text("ehsmAPIKEY")
     opt[String]('s', "simpleAPPID")
       .action((x, c) => c.copy(simpleAPPID = x))
       .text("simpleAPPID")
-    opt[String]('k', "simpleAPPKEY")
-      .action((x, c) => c.copy(simpleAPPKEY = x))
-      .text("simpleAPPKEY")
+    opt[String]('k', "simpleAPIKEY")
+      .action((x, c) => c.copy(simpleAPIKEY = x))
+      .text("simpleAPIKEY")
     opt[String]('v', "vaultName")
       .action((x, c) => c.copy(keyVaultName = x))
       .text("keyVaultName")

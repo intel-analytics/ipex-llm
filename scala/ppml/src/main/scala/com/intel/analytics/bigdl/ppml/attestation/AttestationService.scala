@@ -40,7 +40,7 @@ trait AttestationService extends Supportive {
    * Get Quote from Attestation Service
    * @return quote in string
    */
-  def getQuoteFromServer(): String
+  def getQuoteFromServer(challenge: String): String
 
   /**
    * Send quote to Attestation Service, get attestation result

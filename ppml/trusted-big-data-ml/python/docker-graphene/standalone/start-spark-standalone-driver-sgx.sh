@@ -9,7 +9,7 @@ export secure_password=`openssl rsautl -inkey /ppml/trusted-big-data-ml/work/pas
 
 export SPARK_HOME=/ppml/trusted-big-data-ml/work/spark-3.1.2
 
-bash ppml-spark-submit.sh \
+bash bigdl-ppml-submit.sh \
     --master $spark_master \
     --conf spark.driver.port=$driver_port \
     --conf spark.scheduler.maxRegisteredResourcesWaitingTime=5000000 \

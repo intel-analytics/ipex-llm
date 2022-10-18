@@ -1,8 +1,8 @@
 # Python User Guide
 
 ---
-Supported Platforms: Linux and macOS.   _**Note:** Windows is currently not supported._
- 
+Supported Platforms: Linux and macOS. For Windows, Refer to [Windows User Guide](./win.md).
+
 ### **1. Install**
 - We recommend using [conda](https://docs.conda.io/projects/conda/en/latest/user-guide/install/) to prepare the Python environment as follows:
 
@@ -51,13 +51,13 @@ Alternatively, you can find the list of the nightly build versions [here](https:
 pip install bigdl==version
 ```
 
-_**Note:** If you are using a custom URL of Python Package Index, you may need to check whether the latest packages have been sync'ed with pypi. 
+_**Note:** If you are using a custom URL of Python Package Index, you may need to check whether the latest packages have been sync'ed with pypi.
 Or you can add the option `-i https://pypi.python.org/simple` when pip install to use pypi as the index-url._
 
 You could uninstall all the packages of BigDL as follows:
 
 ```bash
-pip uninstall bigdl-dllib bigdl-tf bigdl-math bigdl-orca bigdl-chronos bigdl-friesian bigdl-nano bigdl-serving bigdl
+pip uninstall bigdl-dllib bigdl-core bigdl-tf bigdl-math bigdl-orca bigdl-chronos bigdl-friesian bigdl-nano bigdl-serving bigdl
 ```
 
 #### **1.3 BigDL on Spark 3**
@@ -69,6 +69,11 @@ pip install --pre --upgrade bigdl-spark3  # Install the latest nightly build ver
 ```
 You can find the list of the nightly build versions built on top of Spark 3.1.2 [here](https://pypi.org/project/bigdl-spark3/#history).
 
+You could uninstall all the packages of BigDL on Spark3 as follows:
+
+```bash
+pip uninstall bigdl-dllib-spark3 bigdl-core bigdl-tf bigdl-math bigdl-orca-spark3 bigdl-chronos-spark3 bigdl-friesian-spark3 bigdl-nano bigdl-serving bigdl-spark3
+```
 
 ---
 ### **2. Run**
@@ -108,7 +113,7 @@ python script.py
 ---
 ### **3. Python Dependencies**
 
-We recommend using [conda](https://docs.conda.io/projects/conda/en/latest/user-guide/install/) to manage your Python dependencies. Libraries installed in the current conda environment will be automatically distributed to the cluster when calling `init_orca_context`. You can also add extra dependencies as `.py`, `.zip` and `.egg` files by specifying `extra_python_lib` argument in `init_orca_context`. 
+We recommend using [conda](https://docs.conda.io/projects/conda/en/latest/user-guide/install/) to manage your Python dependencies. Libraries installed in the current conda environment will be automatically distributed to the cluster when calling `init_orca_context`. You can also add extra dependencies as `.py`, `.zip` and `.egg` files by specifying `extra_python_lib` argument in `init_orca_context`.
 
 For more details, please refer to [Orca Context](../Orca/Overview/orca-context.md).
 

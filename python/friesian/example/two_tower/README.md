@@ -7,10 +7,10 @@ We recommend you to use [Anaconda](https://www.anaconda.com/distribution/#linux)
 conda create -n bigdl python=3.7  # "bigdl" is the conda environment name, you can use any name you like.
 conda activate bigdl
 pip install tensorflow==2.6.0
-pip install --pre --upgrade bigdl-friesian
+pip install --pre --upgrade bigdl-friesian[train]
 ```
 ## Preprocess data
-You can download the full Twitter dataset from [here](https://recsys-twitter.com/data/show-downloads#) and then follow the [WideAndDeep Preprocessing](https://github.com/intel-analytics/BigDL/tree/branch-2.0/python/friesian/example/wnd) to preprocess the orginal data.
+You can download the full Twitter dataset from [here](https://recsys-twitter.com/data/show-downloads#) and then follow the [WideAndDeep Preprocessing](https://github.com/intel-analytics/BigDL/tree/branch-2.0/python/friesian/example/wnd) to preprocess the original data.
 
 ## Training 2 tower model
 * Spark local, we can use some sample data to have a trial, example command:
@@ -46,11 +46,11 @@ python train_2tower.py \
 ```
 
 __Options:__
-* `cluster_mode`: The cluster mode to run the data preprocessing, one of local, yarn, standalone or spark-submit. Default to be local.
+* `cluster_mode`: The cluster mode to run the training, one of local, yarn, standalone or spark-submit. Default to be local.
 * `master`: The master URL, only used when cluster_mode is standalone.
 * `executor_cores`: The number of cores to use on each node. Default to be 48.
 * `executor_memory`: The amount of memory to allocate on each node. Default to be 240g.
-* `num_nodes`: The number of nodes to use in the cluster. Default to be 8.
+* `num_executors`: The number of executors to use in the cluster. Default to be 8.
 * `driver_cores`: The number of cores to use for the driver. Default to be 4.
 * `driver_memory`: The amount of memory to allocate for the driver. Default to be 36g.
 * `data_dir`: The input data directory as well as output of embedding reindex tables.

@@ -17,6 +17,7 @@
 package com.intel.analytics.bigdl.ppml.fl.fgboost
 
 import com.intel.analytics.bigdl.dllib.utils.Log4Error
+import com.intel.analytics.bigdl.ppml.fl.FLConfig
 import com.intel.analytics.bigdl.ppml.fl.base.DataHolder
 import com.intel.analytics.bigdl.ppml.fl.common.FLPhase
 import com.intel.analytics.bigdl.ppml.fl.generated.FGBoostServiceGrpc
@@ -31,14 +32,15 @@ import java.util.concurrent.ConcurrentHashMap
 import collection.JavaConverters._
 
 
-class FGBoostServiceImpl(clientNum: Int) extends FGBoostServiceGrpc.FGBoostServiceImplBase{
+class FGBoostServiceImpl(clientNum: Int, config: FLConfig)
+  extends FGBoostServiceGrpc.FGBoostServiceImplBase{
   val logger = LogManager.getLogger(getClass)
-  val aggregator = new FGBoostAggregator()
+  val aggregator = new FGBoostAggregator(config)
   aggregator.setClientNum(clientNum)
 
   // store client id as key and client data as value
-  val evalBufferMap = new ConcurrentHashMap[String, util.ArrayList[BoostEval]]()
-  var predBufferMap = new ConcurrentHashMap[String, util.ArrayList[BoostEval]]()
+  val evalBufferMap = new ConcurrentHashMap[Int, util.ArrayList[BoostEval]]()
+  var predBufferMap = new ConcurrentHashMap[Int, util.ArrayList[BoostEval]]()
 
   override def downloadLabel(request: DownloadLabelRequest,
                              responseObserver: StreamObserver[DownloadResponse]): Unit = {
@@ -245,5 +247,42 @@ class FGBoostServiceImpl(clientNum: Int) extends FGBoostServiceGrpc.FGBoostServi
     }
   }
 
+  override def saveServerModel(request: SaveModelRequest,
+                               responseObserver: StreamObserver[SaveModelResponse]): Unit = {
+    try {
+      aggregator.saveModel(request.getModelPath)
+      val response = "Save model on server successfully"
+      responseObserver.onNext(
+        SaveModelResponse.newBuilder.setMessage(response).setCode(1).build)
+      responseObserver.onCompleted()
+    } catch {
+      case e: Exception =>
+        val error = e.getStackTrace.map(_.toString).mkString("\n")
+        logger.error(e.getMessage + "\n" + error)
+        val response = SaveModelResponse.newBuilder.setMessage(e.getMessage).setCode(1).build
+        responseObserver.onNext(response)
+        responseObserver.onCompleted()
+    }
+
+  }
+
+  override def loadServerModel(request: LoadModelRequest,
+                               responseObserver: StreamObserver[LoadModelResponse]): Unit = {
+    try {
+      aggregator.loadModel(request.getModelPath)
+      val response = "Save model on server successfully"
+      responseObserver.onNext(
+        LoadModelResponse.newBuilder.setMessage(response).setCode(1).build)
+      responseObserver.onCompleted()
+    } catch {
+      case e: Exception =>
+        val error = e.getStackTrace.map(_.toString).mkString("\n")
+        logger.error(e.getMessage + "\n" + error)
+        val response = LoadModelResponse.newBuilder.setMessage(e.getMessage).setCode(1).build
+        responseObserver.onNext(response)
+        responseObserver.onCompleted()
+    }
+
+  }
 
 }

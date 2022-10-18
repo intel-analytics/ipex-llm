@@ -14,61 +14,40 @@
 # limitations under the License.
 #
 
+import io
 import pickle
 import logging
 import threading
 from torch import nn
 import torch
 from bigdl.ppml.fl.nn.utils import ndarray_map_to_tensor_map
-from bigdl.dllib.utils.log4Error import invalidInputError
+from bigdl.dllib.utils.log4Error import invalidInputError, invalidOperationError
 from threading import Condition
+import os
+from bigdl.dllib.utils.encryption_utils import *
 
 class Aggregator(object):
-    def __init__(self,
-                 client_num=1) -> None:
+    def __init__(self, conf: dict) -> None:
         self.model = None
-        self.client_data = {}
-        self.server_data = {}
-        self.client_num = client_num
+        self.client_data = {'train':{}, 'eval':{}, 'pred':{}}
+        self.server_data = {'train':{}, 'eval':{}, 'pred':{}}
+        self.client_num = conf['clientNum']
+        self.client_num = int(self.client_num)
         self.condition = Condition()
         self._lock = threading.Lock()
-        logging.info(f"Initialized Pytorch aggregator [client_num: {client_num}]")
+        self.optimizer_cls = None
+        self.optimizer_args = None
+        self.secret_key = conf['secretKey'] if 'secretKey' in conf.keys() else None
+        self.salt = conf['salt'] if 'salt' in conf.keys() else None
+        logging.info(f"Initialized Pytorch aggregator [client_num: {self.client_num}]")
 
-    # deprecated, use set_server_model for fully customized NN Model
-    def add_server_model(self, model):
+    def set_meta(self, loss_fn, optimizer):
         with self._lock:
-            if self.model is not None:
-                logging.warn("model exists on server, the add model operation is skipped")
-            else:
-                self.model = model
-                self.init_loss_fn()
-                self.init_optimizer()
-
-    def set_server(self, model, loss_fn, optimizer):
-        with self._lock:
-            if self.model is not None:
-                logging.warn("model exists on server, the add model operation is skipped")
-            else:
-                if model is not None:
-                    self.model = model
-                self.set_loss_fn(loss_fn)
-                optimizer_cls = pickle.loads(optimizer.cls)
-                optimizer_args = pickle.loads(optimizer.args)
-                self.set_optimizer(optimizer_cls, optimizer_args)
-
-    
-        
-
-    # deprecated, use set_loss_fn for fully customized NN Model
-    def init_loss_fn(self):
-        # match-case is supported only from Python 3.10
-        if self.loss_fn == 'cross_entropy':
-            self.loss_fn = nn.CrossEntropyLoss()
-        elif self.loss_fn == 'binary_cross_entropy':
-            self.loss_fn = nn.BCELoss()
-        else:
-            invalidInputError(False,
-                              f"Illigal loss function: {self.loss_fn}")
+            self.set_loss_fn(loss_fn)
+            optimizer_cls = pickle.loads(optimizer.cls)
+            optimizer_args = pickle.loads(optimizer.args)
+            self.optimizer_cls, self.optimizer_args = optimizer_cls, optimizer_args
+            self.set_optimizer(optimizer_cls, optimizer_args)
 
     def set_loss_fn(self, loss_fn):
         self.loss_fn = loss_fn
@@ -79,28 +58,17 @@ class Aggregator(object):
             return
         self.optimizer = optimizer_cls(self.model.parameters(), **optimizer_args)
 
-    # deprecated, use set_optimizer for fully customized NN Model
-    def init_optimizer(self):
-        if len(list(self.model.parameters())) == 0:
-            self.optimizer = None
-            return
-        if self.optimizer == 'sgd':
-            self.optimizer = torch.optim.SGD(self.model.parameters(), lr=self.learning_rate)
-        else:
-            invalidInputError(False,
-                              f"Illigal optimizer: {self.optimizer}")
-
-    def put_client_data(self, client_id, data):
+    def put_client_data(self, client_id, data, phase):
         self.condition.acquire()
-        self.client_data[client_id] = data
+        self.client_data[phase][client_id] = data
         logging.debug(f'server receive data [{client_id}], \
-got {len(self.client_data)}/{self.client_num}')
+got {len(self.client_data[phase])}/{self.client_num}')
         
-        if len(self.client_data) == self.client_num:            
+        if len(self.client_data[phase]) == self.client_num:            
             logging.debug('server received all client data, start aggregate')
-            self.aggregate()
+            self.aggregate(phase)
             logging.debug('clearing client data')
-            self.client_data = {}
+            self.client_data[phase] = {}
             self.condition.notify_all()            
         else:
             logging.debug(f'[{client_id}] waiting')
@@ -108,10 +76,11 @@ got {len(self.client_data)}/{self.client_num}')
         self.condition.release()
 
 
-    def aggregate(self):
+    def aggregate(self, phase):
+    
         input, target = [], None
         # to record the order of tensors with client ID
-        for cid, ndarray_map in self.client_data.items():
+        for cid, ndarray_map in self.client_data[phase].items():
             for k, v in ndarray_map.items():
                 if k == 'input':
                     input.append((cid, torch.from_numpy(v)))
@@ -138,17 +107,79 @@ got {len(self.client_data)}/{self.client_num}')
             input_tensor.requires_grad = True
             tensor_list.append(input_tensor)
 
-        pred = self.model(tensor_list)
-        loss = self.loss_fn(pred, target)
-        if self.optimizer is not None:
-            self.optimizer.zero_grad()
-        loss.backward()
-        if self.optimizer is not None:
-            self.optimizer.step()
+        if phase == 'train':
+            pred = self.model(tensor_list)
+            loss = self.loss_fn(pred, target)
+            if self.optimizer is not None:
+                self.optimizer.zero_grad()
+            loss.backward()
+            if self.optimizer is not None:
+                self.optimizer.step()
 
-        for cid, input_tensor in input:
-            grad_map = {'grad': input_tensor.grad.numpy(), 'loss': loss.detach().numpy()}            
-            self.server_data[cid] = ndarray_map_to_tensor_map(grad_map)
+            for cid, input_tensor in input:
+                grad_map = {'grad': input_tensor.grad.numpy(), 'loss': loss.detach().numpy()}
+                self.server_data['train'][cid] = ndarray_map_to_tensor_map(grad_map)            
 
-    
+        elif phase == 'eval':
+            pass
+        elif phase == 'pred':
+            pred = self.model(tensor_list)
+            for cid, input_tensor in input:
+                pred_map = {'pred': pred.detach().numpy()}
+                self.server_data['pred'][cid] = ndarray_map_to_tensor_map(pred_map)
+        else:
+            invalidInputError(False,
+                              f'Invalid phase: {phase}, should be train/eval/pred')
 
+    def load_uploaded_model(self, client_id, model_path):
+        if self.model is not None:
+            invalidOperationError(False,
+                f"Model exists, model uploading from {client_id} ignored.")
+        else:
+            os.rename(model_path, f'{model_path}.pt')                
+            self.model = torch.jit.load(f'{model_path}.pt')
+
+    def save_server_model(self, model_path):
+        if not os.path.exists(f"{model_path}/model.meta"):
+            os.makedirs(f"{model_path}", exist_ok=True)
+            with open(f"{model_path}/model.meta", 'wb') as meta_file:
+                pickle.dump({'loss': self.loss_fn,
+                             'optimizer': (self.optimizer_cls, self.optimizer_args)},
+                            meta_file)
+        m = torch.jit.script(self.model)
+        if self.secret_key is not None and self.salt is not None:
+            logging.warn("Saving encrypted model...")
+            buffer = io.BytesIO()
+            torch.jit.save(m, buffer)
+            byte_buffer = buffer.getvalue()
+            encrypted = encrypt_bytes_with_AES_CBC(byte_buffer, self.secret_key, self.salt)
+            with open(f"{model_path}/model.pt", 'wb') as f:
+                f.write(encrypted)
+                logging.info(f"Writing model to {model_path}/model.pt")
+        else:
+            logging.warn("Secret key or salt is missed, saving unencrypted model...")
+            torch.jit.save(m, f"{model_path}/model.pt")
+        # save meta to file if not saved yet
+        
+
+    def load_server_model(self, client_id, model_path):
+        if self.model is not None:
+            invalidOperationError(False,
+                f"Model exists, model uploading from {client_id} ignored.")
+        else:
+            logging.info(f"Trying to load model from {model_path}")
+            if self.secret_key is not None and self.salt is not None:
+                logging.info(f"Loading encrypted model...")
+                with open(f'{model_path}/model.pt', 'rb') as f:
+                    encrypted_read = f.read()
+                    loaded = decrypt_bytes_with_AES_CBC(encrypted_read, self.key, self.salt)
+                    buffer_load = io.BytesIO(loaded)
+                    self.model = torch.jit.load(buffer_load)
+            else:
+                logging.warn(f"Loading unencrypted model...")
+                self.model = torch.jit.load(f"{model_path}/model.pt")
+            # if loaded, set meta here to make the optimizer bind the model
+            with open(f"{model_path}/model.meta", "rb") as meta_file:
+                meta = pickle.load(meta_file)
+                self.loss_fn = meta['loss']
+                self.set_optimizer(meta['optimizer'][0], meta['optimizer'][1])

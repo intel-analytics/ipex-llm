@@ -15,7 +15,8 @@
 #
 
 import os
-import torch
+from bigdl.chronos.utils import LazyImport
+torch = LazyImport('torch')
 import types
 import numpy as np
 
@@ -219,7 +220,7 @@ class TSPipeline:
         from bigdl.chronos.pytorch.utils import _pytorch_fashion_inference
         from bigdl.nano.utils.log4Error import invalidInputError
         if isinstance(data, TSDataset):
-            x, _ = self._tsdataset_to_numpy(data, is_predict=True)
+            x = self._tsdataset_to_numpy(data, is_predict=True)
             if quantize:
                 yhat = _pytorch_fashion_inference(model=self._pytorch_int8,
                                                   input_data=x,
@@ -265,7 +266,7 @@ class TSPipeline:
         from bigdl.chronos.pytorch.utils import _pytorch_fashion_inference
         from bigdl.nano.utils.log4Error import invalidInputError
         if isinstance(data, TSDataset):
-            x, _ = self._tsdataset_to_numpy(data, is_predict=True)
+            x = self._tsdataset_to_numpy(data, is_predict=True)
             yhat = None
             if quantize:
                 yhat = _pytorch_fashion_inference(model=self._onnxruntime_int8,
@@ -501,9 +502,14 @@ class TSPipeline:
         calib_data = preprocess_quantize_data(self, calib_data)
 
         # map metric str to function
-        from bigdl.chronos.metric.forecast_metrics import TORCHMETRICS_REGRESSION_MAP
+        from bigdl.chronos.metric.forecast_metrics import REGRESSION_MAP
         if isinstance(metric, str):
-            metric = TORCHMETRICS_REGRESSION_MAP[metric]
+            metric_func = REGRESSION_MAP[metric]
+
+            def metric(y_label, y_predict):
+                y_label = y_label.numpy()
+                y_predict = y_predict.numpy()
+                return metric_func(y_label, y_predict)
 
         # init acc criterion
         accuracy_criterion = None
@@ -552,7 +558,6 @@ class TSPipeline:
         horizon = 0 if is_predict else self._best_config["future_seq_len"]
         selected_features = self._best_config["selected_features"]
         data_loader = data.to_torch_data_loader(batch_size=batch_size,
-                                                roll=True,
                                                 lookback=lookback,
                                                 horizon=horizon,
                                                 feature_col=selected_features)
@@ -561,11 +566,12 @@ class TSPipeline:
     def _tsdataset_to_numpy(self, data, is_predict=False):
         self._check_mixed_data_type_usage()
         lookback = self._best_config["past_seq_len"]
-        horizon = 0 if is_predict else self._best_config["future_seq_len"]
+        horizon = self._best_config["future_seq_len"]
         selected_features = self._best_config["selected_features"]
         data.roll(lookback=lookback,
                   horizon=horizon,
-                  feature_col=selected_features)
+                  feature_col=selected_features,
+                  is_predict=is_predict)
         return data.to_numpy()
 
     def _check_mixed_data_type_usage(self):

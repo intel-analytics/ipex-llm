@@ -22,12 +22,14 @@ from numpy import ndarray
 from bigdl.dllib.utils.log4Error import invalidInputError
 
 from bigdl.ppml.fl.nn.fl_client import FLClient
-from bigdl.ppml.fl.nn.utils import print_file_size_in_dir, tensor_map_to_ndarray_map
+from bigdl.ppml.fl.nn.nn_client import NNClient
+from bigdl.ppml.fl.nn.utils import file_chunk_generate, print_file_size_in_dir, tensor_map_to_ndarray_map
 
 import tensorflow as tf
 from tensorflow.keras.layers import Dense, Flatten, Conv2D
 from tensorflow.keras import Model
 from bigdl.ppml.fl.nn.generated.nn_service_pb2 import ByteChunk
+from nn_service_pb2 import LoadModelRequest, SaveModelRequest
 
 class TensorflowEstimator:
     def __init__(self, 
@@ -35,51 +37,43 @@ class TensorflowEstimator:
                  loss_fn, 
                  optimizer_cls,
                  optimizer_args,
-                 client_id,
                  bigdl_type="float", 
-                 target="localhost:8980", 
                  fl_client=None,
-                 server_model=None):
+                 server_model=None,
+                 client_model_path=None,
+                 server_model_path=None):
         self.bigdl_type = bigdl_type
         self.model = model
         self.loss_fn = loss_fn
         self.optimizer = optimizer_cls(**optimizer_args)
         self.version = 0
+        self.client_model_path = client_model_path
+        self.server_model_path = server_model_path
         self.fl_client = fl_client if fl_client is not None \
-            else FLClient(client_id=client_id, aggregator='tf', target=target)
+            else NNClient(aggregator='tf')
         self.loss_history = []
         if server_model is not None:
             self.__add_server_model(server_model, loss_fn, optimizer_cls, optimizer_args)
 
-    @staticmethod
-    def file_chunk_generate(file_path):
-        CHUNK_SIZE = 1 * 1024 * 1024
-        with open(file_path, 'rb') as f:
-            while True:
-                piece = f.read(CHUNK_SIZE);
-                if not piece:
-                    return
-                yield ByteChunk(buffer=piece)
+    def save_server_model(self, model_path):
+        self.fl_client.nn_stub.save_server_model(
+        SaveModelRequest(model_path=model_path, backend='tf'))
 
+    def load_server_model(self, model_path):
+        self.fl_client.nn_stub.load_server_model(
+            LoadModelRequest(model_path=model_path, backend='tf'))
+    
     @staticmethod
     def load_model_as_bytes(model):
-        model_path = os.path.join(tempfile.mkdtemp(), "tf_vfl_server_model.h5")
-        model.save(model_path)
-        # print_file_size_in_dir(tmpdir)
-        # print("0", os.listdir(tmpdir))
-        # zip_path = os.path.join(tempfile.mkdtemp(), "tf_vfl_server_model")
-        # shutil.make_archive(zip_path, 'zip', tmpdir)
-        # size = os.path.getsize(f'{zip_path}.zip')
+        model_path = os.path.join(tempfile.mkdtemp(), "vfl_server_model")
+        model.save(model_path, save_format='h5')
         logging.info(f"Client packed model file, length: {os.path.getsize(model_path)}")
-        file_chunk_generator = TensorflowEstimator.file_chunk_generate(model_path)
+        file_chunk_generator = file_chunk_generate(model_path)
         return file_chunk_generator
-        
         
 
 
     def __add_server_model(self, model, loss_fn=None, optimizer_cls=None, optimizer_args={}):
-        
-        
         # add model and pickle to server
         if loss_fn is None:
             logging.info(f'loss_fn on FLServer not specified, \
@@ -92,9 +86,9 @@ class TensorflowEstimator:
 
         msg_model = self.fl_client.nn_stub.upload_file(
             TensorflowEstimator.load_model_as_bytes(model))
-        msg = self.fl_client.upload_model(None, loss_fn, optimizer_cls, optimizer_args).message
-        
         logging.info(msg_model)
+
+        msg = self.fl_client.upload_meta(loss_fn, optimizer_cls, optimizer_args).message
         logging.info(msg)
 
     def train_step(self, x, y):
@@ -144,6 +138,10 @@ class TensorflowEstimator:
             else:
                 invalidInputError(False, f'got unsupported data input type: {type(x)}')
             
+            if self.server_model_path is not None:
+                self.save_server_model(self.server_model_path)
+            if self.client_model_path is not None:
+                self.model.save(self.client_model_path)
 
     def predict(self, x):
         y_pred_local = self.model(x)

@@ -33,7 +33,7 @@ elif cluster_mode == "yarn":  # For Hadoop/YARN cluster
     sc = init_orca_context(cluster_mode="yarn", num_nodes=2, cores=2, memory="10g", driver_memory="10g", driver_cores=1, init_ray_on_spark=True)
 ```
 
-This is the only place where you need to specify local or distributed mode.
+This is the only place where you need to specify local or distributed mode. See [here](./../../Ray/Overview/ray.md#initialize) for more RayOnSpark related arguments when you `init_orca_context`.
 
 By default, the Ray cluster would be launched using Spark barrier execution mode, you can turn it off via the configurations of `OrcaContext`:
 

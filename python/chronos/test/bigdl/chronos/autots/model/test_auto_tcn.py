@@ -13,17 +13,16 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-from torch.utils.data import Dataset, DataLoader
-import torch
+
+from bigdl.chronos.utils import LazyImport
+torch = LazyImport('torch')
 import tensorflow as tf
 import numpy as np
 from unittest import TestCase
 import pytest
 import tempfile
-import onnxruntime
 
-_onnxrt_ver = onnxruntime.__version__ != '1.6.0' #  Jenkins requires 1.6.0(chronos)
-skip_onnxrt = pytest.mark.skipif(_onnxrt_ver, reason="Only runs when onnxrt is 1.6.0")
+from ... import op_all, op_onnxrt16
 
 from bigdl.chronos.autots.model.auto_tcn import AutoTCN
 from bigdl.orca.automl import hp
@@ -40,26 +39,36 @@ def get_x_y(size):
     return x.astype(np.float32), y.astype(np.float32)
 
 
-class RandomDataset(Dataset):
-    def __init__(self, size=1000):
-        x, y = get_x_y(size)
-        self.x = torch.from_numpy(x).float()
-        self.y = torch.from_numpy(y).float()
+def gen_RandomDataset():
+    import torch
+    from torch.utils.data import Dataset
+    class RandomDataset(Dataset):
+        def __init__(self, size=1000):
+            x, y = get_x_y(size)
+            self.x = torch.from_numpy(x).float()
+            self.y = torch.from_numpy(y).float()
 
-    def __len__(self):
-        return self.x.shape[0]
+        def __len__(self):
+            return self.x.shape[0]
 
-    def __getitem__(self, idx):
-        return self.x[idx], self.y[idx]
+        def __getitem__(self, idx):
+            return self.x[idx], self.y[idx]
+    return RandomDataset
 
 
 def train_dataloader_creator(config):
+    import torch
+    from torch.utils.data import DataLoader
+    RandomDataset = gen_RandomDataset()
     return DataLoader(RandomDataset(size=1000),
                       batch_size=config["batch_size"],
                       shuffle=True)
 
 
 def valid_dataloader_creator(config):
+    import torch
+    from torch.utils.data import DataLoader
+    RandomDataset = gen_RandomDataset()
     return DataLoader(RandomDataset(size=400),
                       batch_size=config["batch_size"],
                       shuffle=True)
@@ -187,7 +196,8 @@ class TestAutoTCN(TestCase):
         auto_tcn.predict(test_data_x)
         auto_tcn.evaluate((test_data_x, test_data_y))
 
-    @skip_onnxrt
+    @op_all
+    @op_onnxrt16
     def test_onnx_methods(self):
         auto_tcn = get_auto_estimator()
         auto_tcn.fit(data=train_dataloader_creator(config={"batch_size": 64}),
@@ -207,7 +217,8 @@ class TestAutoTCN(TestCase):
         except ImportError:
             pass
 
-    @skip_onnxrt
+    @op_all
+    @op_onnxrt16
     def test_save_load(self):
         auto_tcn = get_auto_estimator()
         auto_tcn.fit(data=train_dataloader_creator(config={"batch_size": 64}),

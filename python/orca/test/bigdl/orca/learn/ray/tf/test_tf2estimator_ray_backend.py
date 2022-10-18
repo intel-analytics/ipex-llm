@@ -149,14 +149,14 @@ class TestTF2EstimatorTF2Backend(TestCase):
 
         path = "/tmp/model_test_orca_dataset.ckpt"
         try:
-            orca_estimator.save(path)
+            orca_estimator.save_checkpoint(path)
             orca_estimator.shutdown()
             est = get_estimator(model_fn=model_creator_for_orca_dataset)
             with self.assertRaises(Exception) as context:
-                est.load(path)
+                est.load_checkpoint(path)
             self.assertTrue('Failed to set model weights, please provide real tensor data'
                             in str(context.exception))
-            est.load(path, sample_input={"item": np.array([[1]], dtype=np.float32)})
+            est.load_checkpoint(path, sample_input={"item": np.array([[1]], dtype=np.float32)})
             result_shards = est.predict(test_dataset)
             pred2 = result_shards.collect()
         finally:

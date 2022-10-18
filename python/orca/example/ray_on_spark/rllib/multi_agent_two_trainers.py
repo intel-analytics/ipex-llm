@@ -32,6 +32,8 @@ from ray.rllib.agents.ppo import PPOTrainer, PPOTFPolicy, PPOTorchPolicy
 from ray.rllib.examples.env.multi_agent import MultiAgentCartPole
 from ray.tune.logger import pretty_print
 from ray.tune.registry import register_env
+
+from bigdl.dllib.utils.log4Error import invalidInputError
 from bigdl.orca import init_orca_context, stop_orca_context
 from bigdl.orca import OrcaContext
 
@@ -94,24 +96,24 @@ if __name__ == "__main__":
     if cluster_mode.startswith("yarn"):
         if cluster_mode == "yarn-client":
             sc = init_orca_context(cluster_mode="yarn-client",
-                                cores=args.executor_cores,
-                                memory=args.executor_memory,
-                                init_ray_on_spark=True,
-                                driver_memory=args.driver_memory,
-                                driver_cores=args.driver_cores,
-                                num_executors=args.slave_num,
-                                extra_executor_memory_for_ray=args.extra_executor_memory_for_ray,
-                                object_store_memory=args.object_store_memory)
+                                   cores=args.executor_cores,
+                                   memory=args.executor_memory,
+                                   init_ray_on_spark=True,
+                                   driver_memory=args.driver_memory,
+                                   driver_cores=args.driver_cores,
+                                   num_executors=args.slave_num,
+                                   extra_executor_memory_for_ray=args.extra_executor_memory_for_ray,
+                                   object_store_memory=args.object_store_memory)
         else:
             sc = init_orca_context(cluster_mode="yarn-cluster",
-                                cores=args.executor_cores,
-                                memory=args.executor_memory,
-                                init_ray_on_spark=True,
-                                driver_memory=args.driver_memory,
-                                driver_cores=args.driver_cores,
-                                num_executors=args.slave_num,
-                                extra_executor_memory_for_ray=args.extra_executor_memory_for_ray,
-                                object_store_memory=args.object_store_memory)
+                                   cores=args.executor_cores,
+                                   memory=args.executor_memory,
+                                   init_ray_on_spark=True,
+                                   driver_memory=args.driver_memory,
+                                   driver_cores=args.driver_cores,
+                                   num_executors=args.slave_num,
+                                   extra_executor_memory_for_ray=args.extra_executor_memory_for_ray,
+                                   object_store_memory=args.object_store_memory)
         ray_ctx = OrcaContext.get_ray_context()
     elif cluster_mode == "local":
         sc = init_orca_context(cores=args.driver_cores)
@@ -120,8 +122,8 @@ if __name__ == "__main__":
         sc = init_orca_context(cluster_mode=cluster_mode)
         ray_ctx = OrcaContext.get_ray_context()
     else:
-        print("init_orca_context failed. cluster_mode should be one of 'local', 'yarn' and 'spark-submit' but got "
-              + cluster_mode)
+        print("init_orca_context failed. cluster_mode should be one of 'local', "
+              "'yarn' and 'spark-submit' but got " + cluster_mode)
 
     # Simple environment with 4 independent cartpole entities
     register_env("multi_agent_cartpole",
@@ -215,6 +217,6 @@ if __name__ == "__main__":
 
     # Desired reward not reached.
     if args.as_test:
-        raise ValueError("Desired reward ({}) not reached!".format(
+        invalidInputError(False, "Desired reward ({}) not reached!".format(
             args.stop_reward))
     stop_orca_context()

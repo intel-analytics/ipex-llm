@@ -30,6 +30,13 @@ class OrcaRayContext(object):
                  cores=2,
                  num_nodes=1,
                  **kwargs):
+        # Add sys.stdout.fileno for Databricks. In Databricks notebook, sys.stdout is redirected to
+        # a ConsoleBuffer object, this object has no attribute fileno, and cause ray init crash.
+        # Normally, sys.stdout should have attribute fileno and is set to 1.
+        # So set sys.stdout.fileno to 1 when this attribute is missing.
+        import sys
+        if not hasattr(sys.stdout, 'fileno'):
+            sys.stdout.fileno = lambda: 1
 
         self.runtime = runtime
         self.initialized = False
@@ -38,8 +45,6 @@ class OrcaRayContext(object):
             from bigdl.orca.ray import RayOnSparkContext
             self._ray_on_spark_context = RayOnSparkContext(**kwargs)
             self.is_local = self._ray_on_spark_context.is_local
-            self.num_ray_nodes = self._ray_on_spark_context.num_ray_nodes
-            self.ray_node_cpu_cores = self._ray_on_spark_context.ray_node_cpu_cores
 
         elif runtime == "ray":
             self.is_local = False
@@ -60,6 +65,8 @@ class OrcaRayContext(object):
             results = ray.init(**self.ray_args)
         else:
             results = self._ray_on_spark_context.init(driver_cores=driver_cores)
+            self.num_ray_nodes = self._ray_on_spark_context.num_ray_nodes
+            self.ray_node_cpu_cores = self._ray_on_spark_context.ray_node_cpu_cores
             self.address_info = self._ray_on_spark_context.address_info
             self.redis_address = self._ray_on_spark_context.redis_address
             self.redis_password = self._ray_on_spark_context.redis_password

@@ -16,7 +16,7 @@
 
 import pytest
 
-from bigdl.orca.test_zoo_utils import ZooTestCase
+from unittest import TestCase
 from bigdl.chronos.model.arima import ARIMAModel
 import numpy as np
 import os
@@ -24,7 +24,7 @@ from numpy.testing import assert_array_almost_equal
 import pandas as pd
 
 
-class TestARIMAModel(ZooTestCase):
+class TestARIMAModel(TestCase):
 
     def setup_method(self, method):
         np.random.seed(0)

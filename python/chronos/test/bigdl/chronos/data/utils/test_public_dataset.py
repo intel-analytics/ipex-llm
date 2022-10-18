@@ -17,11 +17,11 @@ import os
 import pandas as pd
 import pytest
 
-from bigdl.orca.test_zoo_utils import ZooTestCase
+from unittest import TestCase
 from bigdl.chronos.data.utils.public_dataset import PublicDataset
 
 
-class TestPublicDataset(ZooTestCase):
+class TestPublicDataset(TestCase):
     def setup_method(self, method):
         pass
 
@@ -63,7 +63,8 @@ class TestPublicDataset(ZooTestCase):
                                                                   if x.endswith("Mbps")
                                                                   else float(x[:-4])*1000)
 
-            tsdata = public_data.get_tsdata(target_col=['AvgRate', 'total'], dt_col='StartTime')
+            tsdata = public_data.get_tsdata(target_col=['AvgRate', 'total'],
+                                            dt_col='StartTime', repair=False)
             assert tsdata.df.shape == (8760, 5)
             assert set(tsdata.df.columns) == {'StartTime', 'EndTime', 'AvgRate', 'total', 'id'}
             tsdata._check_basic_invariants()
@@ -82,7 +83,8 @@ class TestPublicDataset(ZooTestCase):
             public_data.df.time_step = pd.to_datetime(public_data.df.time_step,
                                                       unit='s',
                                                       origin=pd.Timestamp('2018-01-01'))
-            tsdata = public_data.get_tsdata(dt_col='time_step', target_col='cpu_usage')
+            tsdata = public_data.get_tsdata(dt_col='time_step', target_col='cpu_usage',
+                                            repair=False)
             assert tsdata.df.shape == (61570, 4)
             assert set(tsdata.df.columns) == {'time_step', 'cpu_usage', 'mem_usage', 'id'}
             tsdata._check_basic_invariants()

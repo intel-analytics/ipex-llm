@@ -14,7 +14,9 @@
 # limitations under the License.
 #
 
+import logging
 import pickle
+import stat
 import numpy as np
 
 from bigdl.ppml.fl.nn.generated.nn_service_pb2 import *
@@ -30,6 +32,8 @@ class ClassAndArgsWrapper(object):
         cls = pickle.dumps(self.cls)
         args = pickle.dumps(self.args)
         return ClassAndArgs(cls=cls, args=args)
+
+
 
 import numpy as np
 from bigdl.dllib.utils.log4Error import invalidInputError
@@ -55,6 +59,15 @@ def tensor_map_to_ndarray_map(tensor_map: TensorMap):
         ndarray_map[k] = np.array(v.tensor, dtype=dtype).reshape(v.shape)
     return ndarray_map
 
+def file_chunk_generate(file_path):
+    CHUNK_SIZE = 1 * 1024 * 1024
+    logging.debug("Splitting model to file chunks")
+    with open(file_path, 'rb') as f:
+        while True:
+            piece = f.read(CHUNK_SIZE);
+            if not piece:
+                return
+            yield ByteChunk(buffer=piece)
 
 def print_file_size_in_dir(path='.'):
     import os

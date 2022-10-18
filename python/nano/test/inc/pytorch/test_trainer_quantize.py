@@ -113,6 +113,10 @@ class TestTrainer(TestCase):
         out = qmodel(x)
         assert out.shape == torch.Size([256, 10])
 
+        trainer.validate(qmodel, self.train_loader)
+        trainer.test(qmodel, self.train_loader)
+        trainer.predict(qmodel, self.train_loader)
+
         # save and load
         with tempfile.TemporaryDirectory() as tmp_dir_name:
             trainer.save(qmodel, tmp_dir_name)

@@ -22,6 +22,14 @@ import fnmatch
 from shutil import copytree, rmtree
 from setuptools import setup
 
+long_description = '''
+BigDL Friesian is an application framework for building optimized 
+large-scale recommender solutions.
+
+See [here](https://github.com/intel-analytics/BigDL/tree/main/python/friesian) 
+for more information.
+'''
+
 TEMP_PATH = "bigdl/share/friesian"
 bigdl_home = os.path.abspath(__file__ + "/../../../..")
 exclude_patterns = ["*__pycache__*", "*ipynb_checkpoints*"]
@@ -83,6 +91,8 @@ def setup_package():
         name='bigdl-friesian',
         version=VERSION,
         description='Large-scale End-to-End Recommendation Solution on Big Data',
+        long_description=long_description,
+        long_description_content_type="text/markdown",
         author='BigDL Authors',
         author_email='bigdl-user-group@googlegroups.com',
         license='Apache License, Version 2.0',

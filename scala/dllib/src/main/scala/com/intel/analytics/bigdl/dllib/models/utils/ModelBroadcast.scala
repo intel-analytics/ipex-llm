@@ -16,23 +16,20 @@
 
 package com.intel.analytics.bigdl.dllib.models.utils
 
-import java.io.{IOException, ObjectInputStream, ObjectOutputStream}
-import java.util.UUID
-
 import com.intel.analytics.bigdl.Module
 import com.intel.analytics.bigdl.dllib.nn.Container
 import com.intel.analytics.bigdl.dllib.nn.abstractnn.Activity
 import com.intel.analytics.bigdl.dllib.nn.mkldnn.{MklDnnLayer, TensorMMap}
 import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.dllib.tensor._
-import com.intel.analytics.bigdl.dllib.utils.{Engine, Log4Error, MklDnn}
 import com.intel.analytics.bigdl.dllib.utils.Util._
 import com.intel.analytics.bigdl.dllib.utils.intermediate.IRGraph
-import org.apache.commons.lang3.SerializationUtils
+import com.intel.analytics.bigdl.dllib.utils.{Engine, Log4Error, MklDnn}
 import org.apache.spark.SparkContext
 import org.apache.spark.broadcast.Broadcast
-import org.apache.zookeeper.KeeperException.UnimplementedException
 
+import java.io.{IOException, ObjectInputStream, ObjectOutputStream}
+import java.util.UUID
 import scala.collection.mutable.ArrayBuffer
 import scala.reflect.ClassTag
 
@@ -289,6 +286,10 @@ private[bigdl] class ModelInfo[T: ClassTag](val uuid: String, @transient var mod
 
   @throws(classOf[IOException])
   private def readObject(in: ObjectInputStream): Unit = {
+//    val in1 = new ValidatingObjectInputStream(in)
+//    in1.accept(classOf[Module[T]])
+//    in1.defaultReadObject()
+//    model = in1.readObject().asInstanceOf[Module[T]]
     in.defaultReadObject()
     model = in.readObject().asInstanceOf[Module[T]]
     CachedModels.add(uuid, model)
@@ -302,7 +303,6 @@ object ModelInfo {
 
 object CachedModels {
   import java.util.concurrent.ConcurrentHashMap
-
   import scala.collection._
   import scala.collection.convert.decorateAsScala._
   import scala.language.existentials

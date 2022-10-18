@@ -13,16 +13,19 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-from bigdl.dllib.utils.common import Sample as BSample, JTensor as BJTensor,\
-    JavaCreator, _get_gateway, _py2java, _java2py
-import numpy as np
-import os
-import tempfile
-import uuid
+
 import functools
 import glob
-
+import os
+import subprocess
+import tempfile
+import uuid
 from urllib.parse import urlparse
+
+import numpy as np
+
+from bigdl.dllib.utils.common import Sample as BSample, JTensor as BJTensor,\
+    JavaCreator, _get_gateway, _py2java, _java2py
 from bigdl.dllib.utils.log4Error import *
 
 
@@ -67,6 +70,8 @@ def mkdirs(path):
 
 
 def is_local_path(path):
+    if path.startswith("/dbfs"):
+        return False
     parse_result = urlparse(path)
     return len(parse_result.scheme.lower()) == 0 or parse_result.scheme.lower() == "file"
 
@@ -139,6 +144,37 @@ def enable_multi_fs_load(load_func):
                 return load_func(obj, temp_path, *args, **kwargs)
             finally:
                 os.remove(temp_path)
+
+    return multi_fs_load
+
+
+def enable_hdfs_load(load_func):
+
+    @functools.wraps(load_func)
+    def multi_fs_load(path, *args, **kwargs):
+        if is_local_path(path):
+            return load_func(path, *args, **kwargs)
+        else:
+            file_name = str(uuid.uuid1())
+            file_name = append_suffix(file_name, path.strip("/").split("/")[-1])
+            temp_path = os.path.join(tempfile.gettempdir(), file_name)
+            classpath = subprocess.Popen(["hadoop", "classpath", "--glob"],
+                                         stdout=subprocess.PIPE).communicate()[0]
+            os.environ["CLASSPATH"] = classpath.decode("utf-8")
+            import pyarrow.fs as pafs
+            import pyarrow as pa
+            hdfs = pa.hdfs.connect()
+            if not hdfs.isfile(path):
+                os.mkdir(temp_path)
+            pafs.copy_files(path, temp_path)
+            try:
+                return load_func(temp_path, *args, **kwargs)
+            finally:
+                if os.path.isdir(temp_path):
+                    import shutil
+                    shutil.rmtree(temp_path)
+                else:
+                    os.remove(temp_path)
 
     return multi_fs_load
 

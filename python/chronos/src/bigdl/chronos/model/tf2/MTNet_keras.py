@@ -46,8 +46,7 @@ from tensorflow.keras.initializers import TruncatedNormal, Constant
 import tensorflow.keras.backend as K
 
 import tensorflow as tf
-from bigdl.orca.automl.metrics import Evaluator
-from bigdl.orca.automl.model.abstract import BaseModel
+from bigdl.chronos.metric.forecast_metrics import Evaluator
 
 
 class AttentionRNNWrapper(Wrapper):
@@ -235,7 +234,11 @@ class AttentionRNNWrapper(Wrapper):
         return dict(list(base_config.items()) + list(config.items()))
 
 
-class MTNetKeras(BaseModel):
+class MTNetKeras:
+
+    check_optional_config = False
+    config = None
+    model = None
 
     def __init__(self, check_optional_config=False, future_seq_len=1):
 
@@ -272,7 +275,7 @@ class MTNetKeras(BaseModel):
         self.epochs = None
 
     def apply_config(self, rs=False, config=None):
-        super()._check_config(**config)
+        self._check_config(**config)
         if rs:
             config_names = set(config.keys())
             from bigdl.nano.utils.log4Error import invalidInputError
@@ -295,9 +298,9 @@ class MTNetKeras(BaseModel):
         self.loss = config.get('loss', "mae")
         self.batch_size = config.get("batch_size", 64)
         self.lr = config.get('lr', 0.001)
-        self._check_configs()
+        self._check_hyperparameter()
 
-    def _check_configs(self):
+    def _check_hyperparameter(self):
         from bigdl.nano.utils.log4Error import invalidInputError
         invalidInputError(self.time_step >= 1,
                           "Invalid configuration value. 'time_step' must be larger than 1")
@@ -527,11 +530,11 @@ class MTNetKeras(BaseModel):
         """
         y_pred = self.predict(x, batch_size=batch_size)
         if y_pred.shape[1] == 1:
-            multioutput = 'uniform_average'
+            aggregate = 'mean'
         else:
-            multioutput = 'raw_values'
+            aggregate = None
         # y = np.squeeze(y, axis=2)
-        return [Evaluator.evaluate(m, y, y_pred, multioutput=multioutput) for m in metrics]
+        return [Evaluator.evaluate(m, y, y_pred, aggregate=aggregate) for m in metrics]
 
     def predict(self, x, mc=False, batch_size=32):
         input_x = self._reshape_input_x(x)
@@ -609,3 +612,21 @@ class MTNetKeras(BaseModel):
             "feature_num",
             "output_dim"
         }
+
+    def _check_config(self, **config):
+        """
+        Do necessary checking for config
+        :param config:
+        :return:
+        """
+        config_parameters = set(config.keys())
+        if not config_parameters.issuperset(self._get_required_parameters()):
+            invalidInputError(False,
+                              "Missing required parameters in configuration. " +
+                              "Required parameters are: " + str(self._get_required_parameters()))
+        if self.check_optional_config and \
+                not config_parameters.issuperset(self._get_optional_parameters()):
+            invalidInputError(False,
+                              "Missing optional parameters in configuration. " +
+                              "Optional parameters are: " + str(self._get_optional_parameters()))
+        return True

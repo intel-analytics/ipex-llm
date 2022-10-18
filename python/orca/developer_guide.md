@@ -34,9 +34,10 @@ After running the above code there will be a `BigDl/dist` directory consisting o
 ```bash
 pip install pyspark==2.4.3 # ./make-dist.sh build against spark 2.4.3 by default
 pip install ray==1.9.2
-pip install aiohttp==3.7.4 # dependencis introduced by ray, latest version has api changes
-pip install aioredis==1.3.1 # dependencis introduced by ray, latest version has api changes
+pip install aiohttp==3.7.4 # dependencies introduced by ray, latest version has api changes
+pip install aioredis==1.3.1 # dependencies introduced by ray, latest version has api changes
 pip install pytest pyarrow pandas
+pip install bigdl-math bigdl-tf # dependencies introduced by bigdl-orca
 pip3 install torch==1.10.1+cpu torchvision==0.11.2+cpu torchaudio==0.10.1+cpu -f https://download.pytorch.org/whl/cpu/torch_stable.html
 ```
 
@@ -44,12 +45,13 @@ pip3 install torch==1.10.1+cpu torchvision==0.11.2+cpu torchaudio==0.10.1+cpu -f
 
 ```bash
 cd BigDL/python/orca
-source dev/test/prepare_env.sh
+source dev/prepare_env.sh
 ```
 
 3. Run tests to verify environment
 
 ```bash
+cd BigDL/python/orca
 pytest test/bigdl/orca/learn/ray/pytorch/test_estimator_pyspark_backend.py
 ```
 

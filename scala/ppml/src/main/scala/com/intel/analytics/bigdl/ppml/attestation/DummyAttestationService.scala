@@ -41,7 +41,7 @@ class DummyAttestationService extends AttestationService {
      * Generate a quote randomly
      * @return a quote of String type
      */
-    def getQuoteFromServer(): String = {
+    def getQuoteFromServer(challenge: String): String = {
         val userReportData = new Array[Byte](16)
         Random.nextBytes(userReportData)
         new String(userReportData)

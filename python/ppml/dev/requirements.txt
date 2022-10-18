@@ -1,4 +1,9 @@
 pypandoc
-pyspark==2.4.6
+pyspark==3.1.2
+psutil
 numpy
 pandas
+grpcio
+pyyaml
+torch
+tensorflow

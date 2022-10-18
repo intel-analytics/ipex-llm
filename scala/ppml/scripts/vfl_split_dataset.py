@@ -49,7 +49,7 @@ def vfl_split_dataset(file_name, num_pieces, has_rowkey_index):
         for i, row in enumerate(csv_reader):
             row = np.array(row)
             for j in range(num_pieces):
-                writer_list[j].writerow(row[np.array(col_idx_list[j])])   
+                writer_list[j].writerow(row[np.array(col_idx_list[j])])
 
 
 if __name__ == "__main__":

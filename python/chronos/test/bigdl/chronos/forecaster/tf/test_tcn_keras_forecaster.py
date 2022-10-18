@@ -20,7 +20,11 @@ import os
 
 from unittest import TestCase
 import numpy as np
-import tensorflow as tf
+
+from bigdl.chronos.utils import LazyImport
+tf = LazyImport('tensorflow')
+TCNForecaster = LazyImport('bigdl.chronos.forecaster.tf.tcn_forecaster.TCNForecaster')
+from test.bigdl.chronos import op_tf2, op_all
 
 
 def create_data(tf_data=False, batch_size=32):
@@ -51,7 +55,28 @@ def create_data(tf_data=False, batch_size=32):
     return train_data, test_data
 
 
-@pytest.mark.skipif(tf.__version__ < '2.0.0', reason="Run only when tf > 2.0.0.")
+def create_tsdataset(roll=True):
+    from bigdl.chronos.data import TSDataset
+    import pandas as pd
+    timeseries = pd.date_range(start='2020-01-01', freq='D', periods=1000)
+    df = pd.DataFrame(np.random.rand(1000, 2),
+                      columns=['value1', 'value2'],
+                      index=timeseries,
+                      dtype=np.float32)
+    df.reset_index(inplace=True)
+    df.rename(columns={'index': 'timeseries'}, inplace=True)
+    train, _, test = TSDataset.from_pandas(df=df,
+                                           dt_col='timeseries',
+                                           target_col=['value1', 'value2'],
+                                           with_split=True)
+    if roll:
+        for tsdata in [train, test]:
+            tsdata.roll(lookback=24, horizon=5)
+    return train, test
+
+
+@op_all
+@op_tf2
 class TestTCNForecaster(TestCase):
     def setUp(self):
         from bigdl.chronos.forecaster.tf.tcn_forecaster import TCNForecaster
@@ -62,7 +87,7 @@ class TestTCNForecaster(TestCase):
                                         num_channels=[15]*7)
 
     def tearDown(self):
-        pass
+        del self.forecaster
 
     def test_tcn_forecaster_fit_predict_evaluate(self):
         train_data, test_data = create_data()
@@ -125,6 +150,37 @@ class TestTCNForecaster(TestCase):
         load_model_yhat = self.forecaster.predict(test_data)
         assert yhat.shape == (400, 2, 2)
         np.testing.assert_almost_equal(yhat, load_model_yhat, decimal=5)
+
+    def test_tcn_from_tsdataset(self):
+        train, test = create_tsdataset(roll=True)
+
+        tcn = TCNForecaster.from_tsdataset(train,
+                                            num_channels=[16]*2)
+        tcn.fit(train,
+                 epochs=2,
+                 batch_size=32)
+        yhat = tcn.predict(test, batch_size=32)
+        test.roll(lookback=tcn.model_config['past_seq_len'],
+                  horizon=tcn.model_config['future_seq_len'])
+        _, y_test = test.to_numpy()
+        assert yhat.shape == y_test.shape
+
+        del tcn
+
+        train, test = create_tsdataset(roll=False)
+        tcn = TCNForecaster.from_tsdataset(train,
+                                            past_seq_len=24,
+                                            future_seq_len=5,
+                                            num_channels=[16]*2)
+        tcn.fit(train,
+                 epochs=2,
+                 batch_size=32)
+        yhat = tcn.predict(test, batch_size=None)
+        test.roll(lookback=tcn.model_config['past_seq_len'],
+                  horizon=tcn.model_config['future_seq_len'])
+        _, y_test = test.to_numpy()
+        assert yhat.shape == y_test.shape
+
 
 if __name__ == '__main__':
     pytest.main([__file__])

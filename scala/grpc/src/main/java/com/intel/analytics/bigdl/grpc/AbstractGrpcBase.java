@@ -35,7 +35,7 @@ public abstract class AbstractGrpcBase {
         Logger logger = LogManager.getLogger(getClass().getName());
         options.addOption(new Option(
                 "c", "config", true, "config path"));
-        CommandLineParser parser = new DefaultParser();
+        CommandLineParser parser = new BasicParser();
         HelpFormatter formatter = new HelpFormatter();
         cmd = null;
 

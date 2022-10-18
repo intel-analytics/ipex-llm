@@ -15,53 +15,52 @@
 #
 
 
-import pickle
+import logging
 import grpc
-from numpy import ndarray
-from bigdl.ppml.fl.nn.generated.nn_service_pb2 import TrainRequest, UploadModelRequest
+from bigdl.ppml.fl.nn.generated.nn_service_pb2 import TrainRequest, PredictRequest, UploadMetaRequest
 from bigdl.ppml.fl.nn.generated.nn_service_pb2_grpc import *
-from bigdl.ppml.fl.nn.utils import ndarray_map_to_tensor_map
-import uuid
+import yaml
 import threading
-from torch.utils.data import DataLoader
 from bigdl.dllib.utils.log4Error import invalidInputError
 
-from bigdl.ppml.fl.nn.utils import ClassAndArgsWrapper
 
 class FLClient(object):
     channel = None
     _lock = threading.Lock()
-    def __init__(self, client_id, aggregator, target="localhost:8980") -> None: 
-        with FLClient._lock:
-            if FLClient.channel == None:                
-                FLClient.channel = grpc.insecure_channel(target)
-        self.nn_stub = NNServiceStub(FLClient.channel)
-        self.client_uuid = client_id
-        self.aggregator = aggregator
+    client_id = None
+    target = "localhost:8980"
+    secure = False
+    creds = None
+
+    @staticmethod
+    def set_client_id(client_id):
+        FLClient.client_id = client_id
     
-    def train(self, x):
-        tensor_map = ndarray_map_to_tensor_map(x)
-        train_request = TrainRequest(clientuuid=self.client_uuid,
-                                     data=tensor_map,
-                                     algorithm=self.aggregator)
-        
-        response = self.nn_stub.train(train_request)
-        if response.code == 1:
-            invalidInputError(False,
-                              response.response)
-        return response
+    @staticmethod
+    def set_target(target):
+        FLClient.target = target
 
-    def upload_model(self, model, loss_fn, optimizer_cls, optimizer_args):
-        # upload model to server
-        model = pickle.dumps(model)
-        loss_fn = pickle.dumps(loss_fn)
-        optimizer = ClassAndArgsWrapper(optimizer_cls, optimizer_args).to_protobuf()
-        request = UploadModelRequest(client_uuid=self.client_uuid,
-                                     model_bytes=model,
-                                     loss_fn=loss_fn,
-                                     optimizer=optimizer,
-                                     aggregator=self.aggregator)
-        return self.nn_stub.upload_model(request)
-
+    @staticmethod
+    def ensure_initialized():
+        with FLClient._lock:
+            if FLClient.channel == None:
+                if FLClient.secure:
+                    FLClient.channel = grpc.secure_channel(FLClient.target, FLClient.creds)
+                else:
+                    FLClient.channel = grpc.insecure_channel(FLClient.target)
+    
+    @staticmethod
+    def load_config():
+        try:
+            with open('ppml-conf.yaml', 'r') as stream:
+                conf = yaml.safe_load(stream)
+                if 'privateKeyFilePath' in conf:
+                    FLClient.secure = True
+                    with open(conf['privateKeyFilePath'], 'rb') as f:
+                        FLClient.creds = grpc.ssl_channel_credentials(f.read())
+        except yaml.YAMLError as e:
+            logging.warn('Loading config failed, using default config ')
+        except Exception as e:
+            logging.warn('Failed to find config file "ppml-conf.yaml", using default config')
 
     

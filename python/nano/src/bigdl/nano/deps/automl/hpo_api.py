@@ -17,10 +17,10 @@
 import warnings
 
 
-def create_hpo_searcher(trainer):
+def create_hpo_searcher(trainer, num_processes=1):
     """Create HPO Search for PyTorch."""
     from bigdl.nano.automl.pytorch import HPOSearcher
-    return HPOSearcher(trainer)
+    return HPOSearcher(trainer, num_processes=num_processes)
 
 
 def check_hpo_status(searcher):

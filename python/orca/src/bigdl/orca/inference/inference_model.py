@@ -37,7 +37,7 @@ class InferenceModel(JavaValue):
 
     def load_bigdl(self, model_path, weight_path=None):
         """
-        Load a pre-trained Analytics Zoo or BigDL model.
+        Load a pre-trained BigDL model.
 
         :param model_path: String. The file path to the model.
         :param weight_path: String. The file path to the weights if any. Default is None.
@@ -48,7 +48,7 @@ class InferenceModel(JavaValue):
     # deprecated in "0.8.0"
     def load(self, model_path, weight_path=None):
         """
-        Load a pre-trained Analytics Zoo or BigDL model.
+        Load a pre-trained BigDL model.
 
         :param model_path: String. The file path to the model.
         :param weight_path: String. The file path to the weights if any. Default is None.

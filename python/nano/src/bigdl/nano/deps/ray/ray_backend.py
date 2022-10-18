@@ -27,7 +27,7 @@ class RayBackend(Backend):
     def shutdown(self) -> None:
         ray.shutdown()
 
-    def run(self, target, args=..., nprocs=1, envs=None) -> None:
+    def run(self, target, args=..., nprocs=1, envs=None):
         if envs is not None:
             if isinstance(envs, list):
                 invalidInputError(nprocs == len(envs),

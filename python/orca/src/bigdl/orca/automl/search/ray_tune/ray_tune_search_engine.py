@@ -203,7 +203,7 @@ class RayTuneSearchEngine(SearchEngine):
 
         # Visualization code for ray (leaderboard)
         try:
-            from bigdl.orca.automl.search import TensorboardLogger
+            from bigdl.orca.automl.search.tensorboardlogger import TensorboardLogger
             logger_name = self.name if self.name else DEFAULT_LOGGER_NAME
             tf_config, tf_metric = TensorboardLogger._ray_tune_searcher_log_adapt(analysis)
 

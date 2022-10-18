@@ -33,6 +33,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 import torch.optim as optim
 
+from bigdl.dllib.utils.log4Error import invalidInputError
 from bigdl.orca import init_orca_context, stop_orca_context
 from bigdl.orca.learn.pytorch import Estimator
 from bigdl.orca.learn.metrics import Accuracy
@@ -41,7 +42,7 @@ from bigdl.orca.learn.trigger import EveryEpoch
 
 parser = argparse.ArgumentParser(description='PyTorch Cifar10 Example')
 parser.add_argument('--cluster_mode', type=str, default="local",
-                    help='The cluster mode, such as local, yarn-client, yarn-cluster, spark-submit or k8s.')
+                    help='The cluster mode, such as local, yarn, spark-submit or k8s.')
 parser.add_argument('--runtime', type=str, default="spark",
                     help='The runtime backend, one of spark or ray.')
 parser.add_argument('--address', type=str, default="",
@@ -69,7 +70,8 @@ else:
         if args.cluster_mode == "yarn-client":
             init_orca_context(cluster_mode="yarn-client")
         elif args.cluster_mode == "yarn-cluster":
-            init_orca_context(cluster_mode="yarn-cluster", memory=args.executor_memory, driver_memory=args.driver_memory)
+            init_orca_context(cluster_mode="yarn-cluster",
+                              memory=args.executor_memory, driver_memory=args.driver_memory)
     elif args.cluster_mode == "spark-submit":
         init_orca_context(cluster_mode="spark-submit")
 
@@ -107,6 +109,7 @@ def imshow(img, one_channel=False):
         plt.imshow(npimg, cmap="Greys")
     else:
         plt.imshow(np.transpose(npimg, (1, 2, 0)))
+
 
 class Net(nn.Module):
     def __init__(self):
@@ -199,8 +202,7 @@ elif args.backend in ["ray", "spark"]:
     for r in res:
         print(r, ":", res[r])
 else:
-    raise NotImplementedError("Only bigdl, ray, and spark are supported as the backend,"
-                              " but got {}".format(args.backend))
+    invalidInputError(False, "Only bigdl, ray, and spark are supported as the backend,"
+                      " but got {}".format(args.backend))
 
 stop_orca_context()
-
