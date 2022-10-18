@@ -28,12 +28,13 @@ on:
         - Orca-Python-ExampleTest-Horovod-Tf-Py37-Spark3
         - Dllib-Scala-UT
         - Friesian-Scala-UT
+        - Friesian-Python-Py37-Spark3
         - PPML-Scala-UT
         - PPML-Python-UT-Spark3
         - PPML-Spark-PySpark-Local-Sql-UT-On-Gramine
         - PPML-Occlum-ExampleTests
         - PPML-spark-Local-Example-Tests-on-Gramine
-        - Friesian-Python-Py37-Spark3
+        
       image:
         description: 'docker image name'
         required: true
