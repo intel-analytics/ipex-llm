@@ -183,8 +183,7 @@ def get_estimator(workers_per_node=1, model_fn=get_model, sync_stats=False,
                                      workers_per_node=workers_per_node,
                                      backend="spark",
                                      sync_stats=sync_stats,
-                                     log_level=log_level,
-                                     model_dir='./')
+                                     log_level=log_level)
     return estimator
 
 
