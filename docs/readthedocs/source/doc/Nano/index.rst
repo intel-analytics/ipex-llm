@@ -54,7 +54,7 @@ BigDL-Nano
 
         +++
 
-        :bdg-link:`API Document <../../PythonAPI/Nano/index.html>`
+        :bdg-link:`API Document <../PythonAPI/Nano/index.html>`
 
 
 ..  toctree::

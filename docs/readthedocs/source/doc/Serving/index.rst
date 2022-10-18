@@ -31,8 +31,8 @@ BigDL Cluster Serving is a lightweight distributed, real-time serving solution 
 
         +++
 
-        :bdg-link:`Start Serving <./Serving/ProgrammingGuide/serving-start.html>` |
-        :bdg-link:`Inference <./Serving/ProgrammingGuide/serving-inference.html>`
+        :bdg-link:`Start Serving <./ProgrammingGuide/serving-start.html>` |
+        :bdg-link:`Inference <./ProgrammingGuide/serving-inference.html>`
 
 
     .. grid-item-card::
@@ -56,7 +56,7 @@ BigDL Cluster Serving is a lightweight distributed, real-time serving solution 
         +++
 
         :bdg-link:`FAQ <./FAQ/faq.html>` |
-        :bdg-link:`Contribute <./FAQ/contribuite-guide.html>`
+        :bdg-link:`Contribute <./FAQ/contribute-guide.html>`
 
 
 

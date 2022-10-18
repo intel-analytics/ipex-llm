@@ -52,7 +52,7 @@ BigDL-DLlib
 
         +++
 
-        :bdg-link:`API Document <../../PythonAPI/DLlib/index.html>`
+        :bdg-link:`API Document <../PythonAPI/DLlib/index.html>`
 
 
 ..  toctree::
