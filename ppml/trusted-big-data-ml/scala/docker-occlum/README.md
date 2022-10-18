@@ -353,8 +353,8 @@ hdfs crypto -getFileEncryptionInfo -path /empty_zone/helloWorld
 4. Add permission control to users or groups in $HADOOP_HOME/etc/hadoop/kms-acls.xml. It will be hotbooted after every update. For example:
 ```xml
 <property>
-    <name>key.acl.xgboost.ALL</name>
-    <value>hdfs,icx,root</value>
+    <name>key.acl.mykey.ALL</name>
+    <value>use_a group_a</value>
 </property>
 ```
 5. Now only user_a and other users in group_a can use the file in the mykey’s encryption zone.view encrypted zone:
