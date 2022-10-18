@@ -18,7 +18,6 @@ pccsIP: your_pccs_ip_to_use_as                    --->   <an_used_ip_address_in_
 
 # Replace the below parameters according to your environment
 apiKey: your_intel_pcs_server_subscription_key_obtained_through_web_registeration
-httpsProxyUrl: your_usable_https_proxy_url
 countryName: your_country_name
 cityName: your_city_name
 organizaitonName: your_organizaition_name
