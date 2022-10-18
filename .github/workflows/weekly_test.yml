@@ -75,7 +75,7 @@ jobs:
         echo "TAG=${{ github.event.inputs.tag || env.DEFAULT_TAG }}" >> $GITHUB_ENV
         echo "IMAGE=${{ github.event.inputs.image || env.DEFAULT_IMAGE }}" >> $GITHUB_ENV
     - name: Run test
-      uses: ./.github/actions/ppml-spark-k8s-example-on-gramine-action
+      uses: ./.github/actions/ppml/ppml-spark-k8s-example-on-gramine-action
       with:
         image: ${{env.IMAGE}}
         image-tag: ${{env.TAG}}
@@ -109,7 +109,7 @@ jobs:
         echo "TAG=${{ github.event.inputs.tag || env.DEFAULT_TAG }}" >> $GITHUB_ENV
         echo "IMAGE=${{ github.event.inputs.image || env.DEFAULT_IMAGE }}" >> $GITHUB_ENV
     - name: Run test
-      uses: ./.github/actions/ppml-spark-k8s-simplequery-on-gramine-action
+      uses: ./.github/actions/ppml/ppml-spark-k8s-simplequery-on-gramine-action
       with:
         image: ${{env.IMAGE}}
         image-tag: ${{env.TAG}}
