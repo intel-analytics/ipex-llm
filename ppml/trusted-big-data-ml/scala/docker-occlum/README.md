@@ -298,9 +298,52 @@ You can find GBT result under folder `/path/to/data/`.
 ```
 
 ## How to debug
-Modify the `SGX_LOG_LEVEL` to one of `off, error, warn, debug, info, and trace` in `start-spark-local.sh`. 
+Modify the `SGX_LOG_LEVEL` to one of `off, debug and trace` in `start-spark-local.sh`. 
 The default value is off, showing no log messages at all. The most verbose level is trace.
 When you use attestation, `SGX_LOG_LEVEL` will be set to `off`.
+
+## How to enabled hdfs encryption service
+You can refer to [here](https://hadoop.apache.org/docs/stable/hadoop-project-dist/hadoop-hdfs/TransparentEncryption.html)
+### How to start hadoop KMS service
+1.	Make sure you can correctly start and use hdfs
+2.	To config a KMS client in $HADOOP_HOME/etc/hadoop/core-site.xml, for example:
+```xml
+<property>
+    <name>hadoop.security.key.provider.path</name>
+    <value>kms://http@172.168.0.205:9600/kms</value>
+    <description>
+        The KeyProvider to use when interacting with encryption keys used
+        when reading and writing to an encryption zone.
+    </description>
+</property>
+```
+(If your hdfs is running in a distributed system, you need to update all nodes.).
+3. To config the KMS backing KeyProvider properties in the $HADOOP_HOME/etc/hadoop/kms-site.xml configuration file. 
+```xml
+<property>
+    <name>hadoop.kms.key.provider.uri</name>
+    <value>jceks://file@/${user.home}/kms.keystore</value>
+</property>
+```
+4. Restart you hdfs server. --  sbin/stop-dfs.sh  sbin/start-dfs.sh
+5. Start KMS server --  use hadoop --daemon start|stop kms
+6. Run this bash command to check if the KMS started “hadoop key list”
+
+### How to use KMS to encrypt and decrypt data
+1. Create a new encryption key for an encryption zone
+```bash
+hadoop key create mykey
+```
+2.	Create a new empty directory(must) and make it an encryption zone
+```bash
+hdfs crypto -createZone -keyName mykey -path /empty_zone
+```
+3.	Get encryption information from the file
+```bash
+hdfs crypto -getFileEncryptionInfo -path /empty_zone/helloWorld
+```
+4.	Add permission control to users or groups in $HADOOP_HOME/etc/hadoop/kms-acls.xml. It will be hotbooted after every update. For example:
+5.	Now only user_a and other users in group_a can use the file int the mykey’s encryption zone.
 
 ## Start BigDL PPML Occlum Attestation Server
 Modify `PCCL_URL`, `ATTESTATION_SERVER_IP` and `ATTESTATION_SERVER_PORT` in `start-occlum-attestation-server.sh`, Then
