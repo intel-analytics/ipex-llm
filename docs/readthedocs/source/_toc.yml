@@ -185,7 +185,7 @@ subtrees:
                   - file: doc/PPML/Overview/trusted_big_data_analytics_and_ml
                   - file: doc/PPML/Overview/trusted_fl
                   - file: doc/PPML/QuickStart/secure_your_services
-                  - file: doc/PPML/QuickStart/build_kernel_with_sgx
+                  - file: doc/PPML/QuickStart/install_sgx_driver
                   - file: doc/PPML/QuickStart/deploy_intel_sgx_device_plugin_for_kubernetes
                   - file: doc/PPML/QuickStart/trusted-serving-on-k8s-guide
                   - file: doc/PPML/QuickStart/tpc-h_with_sparksql_on_k8s
