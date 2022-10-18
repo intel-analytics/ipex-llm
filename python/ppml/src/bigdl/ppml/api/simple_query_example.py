@@ -42,8 +42,10 @@ parser.add_argument("--input_encrypt_mode", type=str, required=True, help="input
 parser.add_argument("--output_encrypt_mode", type=str, required=True, help="output encrypt mode")
 parser.add_argument("--input_path", type=str, required=True, help="input path")
 parser.add_argument("--output_path", type=str, required=True, help="output path")
+parser.add_argument("--azure_vault", type=str, help="Azure vault")
+parser.add_argument("--azure_client_id", type=str, help="Azure client id")
 parser.add_argument("--kms_type", type=str, default="SimpleKeyManagementService",
-                    help="SimpleKeyManagementService or EHSMKeyManagementService")
+                    help="SimpleKeyManagementService or EHSMKeyManagementService or AzureKeyManagementService")
 args = parser.parse_args()
 arg_dict = vars(args)
 
