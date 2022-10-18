@@ -176,7 +176,7 @@ Other than historical target data and other extra feature provided by users, som
 A time series dataset needs to be sampling and exporting as numpy ndarray/dataloader to be used in machine learning and deep learning models(e.g. forecasters, anomaly detectors, auto models, etc.).
 ```eval_rst
 .. warning::
-    You don't need to call any sampling or exporting methods introduced in this section when using `AutoTSEstimator`.
+    You don't need to call any sampling or exporting methods introduced in this section when using ``AutoTSEstimator``.
 ```
 ### **6.1 Roll sampling**
 Roll sampling (or sliding window sampling) is useful when you want to train a RR type supervised deep learning forecasting model. It works as the [diagram](#RR-forecast-image) shows.
@@ -187,11 +187,11 @@ Please refer to the API doc [`roll`](../../PythonAPI/Chronos/tsdataset.html#bigd
 
 ```eval_rst
 .. note::
-    **Difference between `roll` and `to_torch_data_loader`**:
+    **Difference between** ``roll`` **and** ``to_torch_data_loader``:
 
-    `.roll(...)` performs the rolling before RR forecasters/auto models training while `.to_torch_data_loader(...)` performs rolling during the training.
+    ``.roll(...)`` performs the rolling before RR forecasters/auto models training while ``.to_torch_data_loader(...)`` performs rolling during the training.
 
-    It is fine to use either of them when you have a relatively small dataset (less than 1G). `.to_torch_data_loader(...)` is recommended when you have a large dataset (larger than 1G) to save memory usage.
+    It is fine to use either of them when you have a relatively small dataset (less than 1G). ``.to_torch_data_loader(...)`` is recommended when you have a large dataset (larger than 1G) to save memory usage.
 ```
 
 ```eval_rst

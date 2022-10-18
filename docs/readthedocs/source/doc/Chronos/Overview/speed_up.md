@@ -80,7 +80,7 @@ Typically, throughput and latency is a trade-off pair. We have three optimizatio
 .. note::
     **Additional Dependencies**:
 
-    You need to install `neural-compressor` to enable quantization related methods.
+    You need to install ``neural-compressor`` to enable quantization related methods.
 
     ``pip install neural-compressor==1.8.1``
 ```

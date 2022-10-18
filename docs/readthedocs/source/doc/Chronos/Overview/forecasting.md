@@ -67,11 +67,11 @@ For AutoTS Pipeline, we will leverage `AutoTSEstimator`, `TSPipeline` and prefer
 3. Use the returned `TSPipeline` for further development.
 ```eval_rst
 .. warning::
-    `AutoTSTrainer` workflow has been deprecated, no feature updates or performance improvement will be carried out. Users of `AutoTSTrainer` may refer to `Chronos API doc <https://bigdl.readthedocs.io/en/latest/doc/PythonAPI/Chronos/autots.html>`_.
+    ``AutoTSTrainer`` workflow has been deprecated, no feature updates or performance improvement will be carried out. Users of ``AutoTSTrainer`` may refer to `Chronos API doc <https://bigdl.readthedocs.io/en/latest/doc/PythonAPI/Chronos/autots.html>`_.
 ```
 ```eval_rst
 .. note::
-    `AutoTSEstimator` currently only support pytorch backend.
+    ``AutoTSEstimator`` currently only support pytorch backend.
 ```
 View [Quick Start](../QuickStart/chronos-autotsest-quickstart.html) for a more detailed example.
 
@@ -147,7 +147,7 @@ Detailed information please refer to [TSPipeline API doc](../../PythonAPI/Chrono
 
 ```eval_rst
 .. note::
-    `init_orca_context` is not needed if you just use the trained TSPipeline for inference, evaluation or incremental fitting.
+    ``init_orca_context`` is not needed if you just use the trained TSPipeline for inference, evaluation or incremental fitting.
 ```
 ```eval_rst
 .. note::
@@ -199,7 +199,7 @@ View Network Traffic multivariate multistep Prediction [notebook][network_traffi
 ```eval_rst
 .. note::
     **Additional Dependencies**:
-    You need to install `bigdl-nano[tensorflow]` to enable this built-in model.
+    You need to install ``bigdl-nano[tensorflow]`` to enable this built-in model.
 
     ``pip install bigdl-nano[tensorflow]``
 ```
@@ -221,7 +221,7 @@ View High-dimensional Electricity Data Forecasting [example][run_electricity] an
 ```eval_rst
 .. note::
     **Additional Dependencies**:
-    You need to install `pmdarima` to enable this built-in model.
+    You need to install ``pmdarima`` to enable this built-in model.
 
     ``pip install pmdarima==1.8.5``
 ```

@@ -13,7 +13,7 @@ f.predict_with_onnx(...)  # onnxruntime only supports single node
 #### **Distributed Data processing: XShardsTSDataset**
 ```eval_rst
 .. warning::
-    `XShardsTSDataset` is still experimental.
+    ``XShardsTSDataset`` is still experimental.
 ```
 `TSDataset` is a single thread lib with reasonable speed on large datasets(~10G). When you handle an extra large dataset or limited memory on a single node, `XShardsTSDataset` can be involved to handle the exact same functionality and usage as `TSDataset` in a distributed fashion.
 

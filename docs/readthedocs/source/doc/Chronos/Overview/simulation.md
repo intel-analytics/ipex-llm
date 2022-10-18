@@ -4,7 +4,7 @@ Chronos provides simulators to generate synthetic time series data for users who
 
 ```eval_rst
 .. note::
-    DPGANSimulator is the only simulator chronos provides at the moment, more simulators are on their way.
+     ``DPGANSimulator`` is the only simulator chronos provides at the moment, more simulators are on their way.
 ```
 
 ## **1. DPGANSimulator**

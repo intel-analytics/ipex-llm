@@ -23,7 +23,7 @@ DBScanDetector uses DBSCAN clustering algortihm for anomaly detection.
 
 ```eval_rst
 .. note::
-     Users may install `scikit-learn-intelex` to accelerate this detector. Chronos will detect if `scikit-learn-intelex` is installed to decide if using it. More details please refer to: https://intel.github.io/scikit-learn-intelex/installation.html
+     Users may install ``scikit-learn-intelex`` to accelerate this detector. Chronos will detect if ``scikit-learn-intelex`` is installed to decide if using it. More details please refer to: https://intel.github.io/scikit-learn-intelex/installation.html
 ```
 
 View anomaly detection [notebook][AIOps_anomaly_detect_unsupervised] and [DBScanDetector API Doc](../../PythonAPI/Chronos/anomaly_detectors.html#chronos-model-anomaly-dbscan-detector) for more details.
