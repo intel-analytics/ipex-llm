@@ -457,8 +457,8 @@ class SparkRunner:
 
         new_part = [predict_fn(shard) for shard in partition]
 
-        if self.need_to_log_to_driver:
-            LogMonitor.stop_log_monitor(self.log_path, self.logger_thread, self.thread_stop)
+        # if self.need_to_log_to_driver:
+        #     LogMonitor.stop_log_monitor(self.log_path, self.logger_thread, self.thread_stop)
         return new_part
 
     @property

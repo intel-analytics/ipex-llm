@@ -384,6 +384,9 @@ class SparkTFEstimator():
                 for partition_data in iter:
                     param["data_creator"] = make_data_creator([partition_data])
                     yield runner.predict(**param)[0]
+                if runner.need_to_log_to_driver:
+                    from bigdl.orca.learn.log_monitor import LogMonitor
+                    LogMonitor.stop_log_monitor(runner.log_path, runner.logger_thread, runner.thread_stop)
 
             pred_shards = SparkXShards(xshards.rdd.mapPartitions(
                 lambda iter: transform_func(iter, init_params, params)), transient=True)
