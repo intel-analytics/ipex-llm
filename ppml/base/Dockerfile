@@ -86,6 +86,8 @@ RUN env DEBIAN_FRONTEND=noninteractive apt-get update && \
 # java
 ARG JDK_VERSION=8u192
 ARG JDK_URL
+ARG SPARK_VERSION=3.1.2
+ENV SPARK_VERSION ${SPARK_VERSION}
 ENV JAVA_HOME           /opt/jdk$JDK_VERSION
 ENV PATH                ${JAVA_HOME}/bin:${PATH}
 RUN wget $JDK_URL && \
@@ -95,10 +97,19 @@ RUN wget $JDK_URL && \
     mv /opt/jdk* /opt/jdk$JDK_VERSION && \
     ln -s /opt/jdk$JDK_VERSION /opt/jdk
 
-ADD ./verification_jars /ppml/verification_jars
+ADD ./download_jars.sh /ppml
+RUN cd /ppml && \
+    bash ./download_jars.sh
 
+ARG PCCS_URL=localhost:8081
+ARG USE_SECURE_CERT=true
+ENV PCCS_URL ${PCCS_URL}
+ENV USE_SECURE_CERT ${USE_SECURE_CERT}
 ADD ./sgx_default_qcnl.conf /ppml
-RUN cp /ppml/sgx_default_qcnl.conf /etc/sgx_default_qcnl.conf
+RUN cd /ppml && \
+    sed -i "s/<your_pccs_url>/${PCCS_URL}/g" sgx_default_qcnl.conf && \
+    sed -i "s/<use_secure_cert>/${USE_SECURE_CERT}/g" sgx_default_qcnl.conf && \
+    cp /ppml/sgx_default_qcnl.conf /etc/sgx_default_qcnl.conf
 
 ENV PYTHONPATH   /usr/lib/python3.7:/usr/lib/python3.7/lib-dynload:/usr/local/lib/python3.7/dist-packages:/usr/lib/python3/dist-packages
 WORKDIR /ppml
