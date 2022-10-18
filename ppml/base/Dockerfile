@@ -101,16 +101,9 @@ ADD ./download_jars.sh /ppml
 RUN cd /ppml && \
     bash ./download_jars.sh
 
-ARG PCCS_URL=localhost:8081
-ARG USE_SECURE_CERT=true
-ENV PCCS_URL ${PCCS_URL}
-ENV USE_SECURE_CERT ${USE_SECURE_CERT}
-ADD ./sgx_default_qcnl.conf /ppml
-RUN cd /ppml && \
-    sed -i "s/<your_pccs_url>/${PCCS_URL}/g" sgx_default_qcnl.conf && \
-    sed -i "s/<use_secure_cert>/${USE_SECURE_CERT}/g" sgx_default_qcnl.conf && \
-    cp /ppml/sgx_default_qcnl.conf /etc/sgx_default_qcnl.conf
+ADD ./entrypoint.sh /opt/entrypoint.sh
+RUN chmod +x /opt/entrypoint.sh 
 
 ENV PYTHONPATH   /usr/lib/python3.7:/usr/lib/python3.7/lib-dynload:/usr/local/lib/python3.7/dist-packages:/usr/lib/python3/dist-packages
 WORKDIR /ppml
-ENTRYPOINT [ "/bin/bash" ]
+ENTRYPOINT [ "/opt/entrypoint.sh" ]
