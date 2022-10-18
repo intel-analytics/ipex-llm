@@ -1,0 +1,123 @@
+#
+# Copyright 2018 Google LLC
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     https://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+
+---
+lowercaseOutputName: true
+attrNameSnakeCase: true
+rules:
+  # These come from the application driver if it's a streaming application
+  # Example: default/streaming.driver.com.example.ClassName.StreamingMetrics.streaming.lastCompletedBatch_schedulingDelay
+  - pattern: metrics<name=(\S+)\.(\S+)\.driver\.(\S+)\.StreamingMetrics\.streaming\.(\S+)><>Value
+    name: spark_streaming_driver_$4
+    labels:
+      app_namespace: "$1"
+      app_id: "$2"
+  # These come from the application driver if it's a structured streaming application
+  # Example: default/streaming.driver.spark.streaming.QueryName.inputRate-total
+  - pattern: metrics<name=(\S+)\.(\S+)\.driver\.spark\.streaming\.(\S+)\.(\S+)><>Value
+    name: spark_structured_streaming_driver_$4
+    labels:
+      app_namespace: "$1"
+      app_id: "$2"
+      query_name: "$3"
+  # These come from the application executors
+  # Example: default/spark-pi.0.executor.threadpool.activeTasks
+  - pattern: metrics<name=(\S+)\.(\S+)\.(\S+)\.executor\.(\S+)><>Value
+    name: spark_executor_$4
+    type: GAUGE
+    labels:
+      app_namespace: "$1"
+      app_id: "$2"
+      executor_id: "$3"
+  # These come from the application driver
+  # Example: default/spark-pi.driver.DAGScheduler.stage.failedStages
+  - pattern: metrics<name=(\S+)\.(\S+)\.driver\.(BlockManager|DAGScheduler|jvm)\.(\S+)><>Value
+    name: spark_driver_$3_$4
+    type: GAUGE
+    labels:
+      app_namespace: "$1"
+      app_id: "$2"
+  # These come from the application driver
+  # Emulate timers for DAGScheduler like messagePRocessingTime
+  - pattern: metrics<name=(\S+)\.(\S+)\.driver\.DAGScheduler\.(.*)><>Count
+    name: spark_driver_DAGScheduler_$3_count
+    type: COUNTER
+    labels:
+      app_namespace: "$1"
+      app_id: "$2"
+  # HiveExternalCatalog is of type counter
+  - pattern: metrics<name=(\S+)\.(\S+)\.driver\.HiveExternalCatalog\.(.*)><>Count
+    name: spark_driver_HiveExternalCatalog_$3_count
+    type: COUNTER
+    labels:
+      app_namespace: "$1"
+      app_id: "$2"
+  # These come from the application driver
+  # Emulate histograms for CodeGenerator
+  - pattern: metrics<name=(\S+)\.(\S+)\.driver\.CodeGenerator\.(.*)><>Count
+    name: spark_driver_CodeGenerator_$3_count
+    type: COUNTER
+    labels:
+      app_namespace: "$1"
+      app_id: "$2"
+  # These come from the application driver
+  # Emulate timer (keep only count attribute) plus counters for LiveListenerBus
+  - pattern: metrics<name=(\S+)\.(\S+)\.driver\.LiveListenerBus\.(.*)><>Count
+    name: spark_driver_LiveListenerBus_$3_count
+    type: COUNTER
+    labels:
+      app_namespace: "$1"
+      app_id: "$2"
+  # Get Gauge type metrics for LiveListenerBus
+  - pattern: metrics<name=(\S+)\.(\S+)\.driver\.LiveListenerBus\.(.*)><>Value
+    name: spark_driver_LiveListenerBus_$3
+    type: GAUGE
+    labels:
+      app_namespace: "$1"
+      app_id: "$2"
+  # Executors counters
+  - pattern: metrics<name=(\S+)\.(\S+)\.(.*)\.executor\.(.*)><>Count
+    name: spark_executor_$4_count
+    type: COUNTER
+    labels:
+      app_namespace: "$1"
+      app_id: "$2"
+      executor_id: "$3"
+  # These come from the application executors
+  # Example: app-20160809000059-0000.0.jvm.threadpool.activeTasks
+  - pattern: metrics<name=(\S+)\.(\S+)\.([0-9]+)\.(jvm|NettyBlockTransfer)\.(.*)><>Value
+    name: spark_executor_$4_$5
+    type: GAUGE
+    labels:
+      app_namespace: "$1"
+      app_id: "$2"
+      executor_id: "$3"
+  - pattern: metrics<name=(\S+)\.(\S+)\.([0-9]+)\.HiveExternalCatalog\.(.*)><>Count
+    name: spark_executor_HiveExternalCatalog_$4_count
+    type: COUNTER
+    labels:
+      app_namespace: "$1"
+      app_id: "$2"
+      executor_id: "$3"
+  # These come from the application driver
+  # Emulate histograms for CodeGenerator
+  - pattern: metrics<name=(\S+)\.(\S+)\.([0-9]+)\.CodeGenerator\.(.*)><>Count
+    name: spark_executor_CodeGenerator_$4_count
+    type: COUNTER
+    labels:
+      app_namespace: "$1"
+      app_id: "$2"
+      executor_id: "$3"
