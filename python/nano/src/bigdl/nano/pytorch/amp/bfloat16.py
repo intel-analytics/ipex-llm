@@ -176,7 +176,10 @@ class BF16Model(LightningModule):
         # ALLOW_NON_BF16_ISA='1' sometimes helps debug and test cases without AVX512 or AMX
         if self._has_bf16_isa:
             self._is_bf16 = True
-            # TODO: enable if torch >= 1.13, reference: https://github.com/pytorch/pytorch/commit/0e957465802204fb30e2a94cd330c16ba71955a6#diff-d730aecf3ceee9216948ee50d46f015c327d65b9f0c4981ef7adfa44dddc2673
+            # TODO: enable if torch >= 1.13,
+            #  reference: https://github.com/pytorch/pytorch/commit/
+            #  0e957465802204fb30e2a94cd330c16ba71955a6
+            #  #diff-d730aecf3ceee9216948ee50d46f015c327d65b9f0c4981ef7adfa44dddc2673
             # max_bf16_isa = self._max_bf16_isa(*args, **kwargs)
             # if max_bf16_isa:
             #     info("{} BF16 support is enabled in this model.".format(max_bf16_isa))
