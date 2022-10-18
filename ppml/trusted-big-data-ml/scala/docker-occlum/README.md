@@ -303,10 +303,10 @@ The default value is off, showing no log messages at all. The most verbose level
 When you use attestation, `SGX_LOG_LEVEL` will be set to `off`.
 
 ## How to enabled hdfs encryption service
-You can refer to [here](https://hadoop.apache.org/docs/stable/hadoop-project-dist/hadoop-hdfs/TransparentEncryption.html)
+You can refer to [here](https://hadoop.apache.org/docs/stable/hadoop-project-dist/hadoop-hdfs/TransparentEncryption.html) for more information.
 ### How to start hadoop KMS service
 1.	Make sure you can correctly start and use hdfs
-2.	To config a KMS client in $HADOOP_HOME/etc/hadoop/core-site.xml, for example:
+2.	To config a KMS client in $HADOOP_HOME/etc/hadoop/core-site.xml(If your hdfs is running in a distributed system, you need to update all nodes.), for example:
 ```xml
 <property>
     <name>hadoop.security.key.provider.path</name>
@@ -317,7 +317,6 @@ You can refer to [here](https://hadoop.apache.org/docs/stable/hadoop-project-dis
     </description>
 </property>
 ```
-(If your hdfs is running in a distributed system, you need to update all nodes.).
 3. To config the KMS backing KeyProvider properties in the $HADOOP_HOME/etc/hadoop/kms-site.xml configuration file. 
 ```xml
 <property>
@@ -325,9 +324,18 @@ You can refer to [here](https://hadoop.apache.org/docs/stable/hadoop-project-dis
     <value>jceks://file@/${user.home}/kms.keystore</value>
 </property>
 ```
-4. Restart you hdfs server. --  sbin/stop-dfs.sh  sbin/start-dfs.sh
-5. Start KMS server --  use hadoop --daemon start|stop kms
-6. Run this bash command to check if the KMS started “hadoop key list”
+4. Restart you hdfs server. 
+```bash
+sbin/stop-dfs.sh  sbin/start-dfs.sh
+```
+5. Start KMS server. 
+```bash
+hadoop --daemon start|stop kms
+```bash
+6. Run this bash command to check if the KMS started 
+```bash
+hadoop key list
+```
 
 ### How to use KMS to encrypt and decrypt data
 1. Create a new encryption key for an encryption zone
