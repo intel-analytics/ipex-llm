@@ -154,7 +154,7 @@ ARG SCALA_VERSION
 ARG SCALA_SUB_VERSION_NUM
 
 ENV SPARK_VERSION                       ${SPARK_VERSION}
-ENV SPARK_HOME                          /ppml/work/spark-${SPARK_VERSION}
+ENV SPARK_HOME                          /ppml/spark-${SPARK_VERSION}
 ENV JAVA_HOME                           /opt/jdk8
 ENV PATH                                ${JAVA_HOME}/bin:${PATH}
 ENV SCALA_VERSION                       ${SCALA_VERSION}
@@ -174,15 +174,14 @@ ENV TINI_VERSION                        $TINI_VERSION
 ENV LC_ALL                              C.UTF-8
 ENV LANG                                C.UTF-8
 ENV FLINK_VERSION			            ${FLINK_VERSION}
-ENV FLINK_HOME				            /ppml/work/flink-${FLINK_VERSION}
+ENV FLINK_HOME				            /ppml/flink-${FLINK_VERSION}
 
-RUN mkdir -p /ppml/work && \
-    mkdir -p /ppml/work/lib && \
-    mkdir -p /ppml/work/keys && \
-    mkdir -p /ppml/work/password && \
-    mkdir -p /ppml/work/data && \
-    mkdir -p /ppml/work/models && \
-    mkdir -p /ppml/work/apps && \
+RUN mkdir -p /ppml/lib && \
+    mkdir -p /ppml/keys && \
+    mkdir -p /ppml/password && \
+    mkdir -p /ppml/data && \
+    mkdir -p /ppml/models && \
+    mkdir -p /ppml/apps && \
     mkdir -p /root/.keras/datasets && \
     mkdir -p /root/.zinc && \
     mkdir -p /root/.m2 && \
@@ -190,8 +189,8 @@ RUN mkdir -p /ppml/work && \
 
 COPY --from=bigdata /opt/jdk  /opt/jdk8
 COPY --from=bigdata /opt/scala-${SCALA_VERSION}.${SCALA_SUB_VERSION_NUM}  /opt/scala-${SCALA_VERSION}.${SCALA_SUB_VERSION_NUM}
-COPY --from=bigdata /opt/spark-${SPARK_VERSION} /ppml/work/spark-${SPARK_VERSION}
-COPY --from=bigdata /opt/flink-${FLINK_VERSION} /ppml/work/flink-${FLINK_VERSION}
+COPY --from=bigdata /opt/spark-${SPARK_VERSION} /ppml/spark-${SPARK_VERSION}
+COPY --from=bigdata /opt/flink-${FLINK_VERSION} /ppml/flink-${FLINK_VERSION}
 
 ADD ./bigdl-ppml-submit.sh /ppml/bigdl-ppml-submit.sh
 ADD ./spark-executor-template.yaml /ppml/spark-executor-template.yaml
