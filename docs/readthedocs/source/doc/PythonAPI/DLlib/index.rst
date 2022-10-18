@@ -9,4 +9,5 @@ DLlib API
     optim-Methods.md
     regularizers.md
     learningrate-Scheduler.md
+    freeze.md
     clipping.md

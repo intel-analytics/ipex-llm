@@ -1,4 +1,5 @@
-## Model Freeze
+# Model Freeze
+
 To "freeze" a model means to exclude some layers of model from training.
 
 ```scala

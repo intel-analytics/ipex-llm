@@ -19,7 +19,7 @@
   ```
   libraryDependencies += "com.intel.analytics.bigdl" % "bigdl-dllib-spark_2.4.6" % "0.14.0"
   ```
-  For more information about how to add BigDL dependency, please refer https://bigdl.readthedocs.io/en/latest/doc/UserGuide/scala.html#build-a-scala-project
+  For more information about how to add BigDL dependency, please refer [scala docs](../../UserGuide/scala.md#build-a-scala-project)
 
 #### IDE (Intelij)
 Open up IntelliJ and click File => Open
@@ -27,7 +27,7 @@ Open up IntelliJ and click File => Open
 Navigate to your project. If you have add BigDL DLLib as dependency in your pom.xml.
 The IDE will automatically download it from maven and you are able to run your application.
 
-For more details about how to setup IDE for BigDL project, please refer https://bigdl-project.github.io/master/#ScalaUserGuide/install-build-src/#setup-ide
+For more details about how to setup IDE for BigDL project, please refer [IDE Setup Guide](../../UserGuide/develop.html#id2)
 
 
 ## 2. Code initialization
@@ -50,7 +50,7 @@ import org.apache.spark.sql.types.DoubleType
 
 val sc = NNContext.initNNContext("dllib_demo")
 ```
-For more information about ```NNContext```, please refer to [NNContext](https://bigdl.readthedocs.io/en/latest/doc/DLlib/Overview/dllib.html#nn-context)
+For more information about ```NNContext```, please refer to [NNContext](../Overview/dllib.md#initialize-nn-context)
 
 ## 3. Distributed Data Loading
 
@@ -104,7 +104,7 @@ val spark = new SQLContext(sc)
 
 #### Using Keras-like APIs
 
-To define a model, you can use the [Keras Style API](https://bigdl.readthedocs.io/en/latest/doc/DLlib/Overview/keras-api.html).
+To define a model, you can use the [Keras Style API](../Overview/keras-api.md).
 ```
 val x1 = Input(Shape(8))
 val dense1 = Dense(12, activation="relu").inputs(x1)
@@ -169,7 +169,7 @@ BigDL allows you to save your BigDL model on local filesystem, HDFS, or Amazon s
   val preDF2 = loadModel.predict(valDF, featureCols = Array("features"), predictionCol = "predict")
   ```
 
-You may want to refer [Save/Load](https://bigdl.readthedocs.io/en/latest/doc/DLlib/Overview/keras-api.html#save)
+You may want to refer [Save/Load](../Overview/keras-api.html#save)
 
 ## 7. Distributed evaluation and inference
 After training finishes, you can then use the trained model for prediction or evaluation.
@@ -220,7 +220,7 @@ val loadModel = Models.loadModel(path)
   ```
   dmodel.setTensorBoard("./", "dllib_demo")
   ```
-  For more details, please refer [visulization](visualization.md)`
+  For more details, please refer [visulization](../Overview/visualization.md)`
 
 ## 10. Transfer learning and finetuning
 
@@ -236,18 +236,18 @@ val loadModel = Models.loadModel(path)
   ```
   dmodel.unFreeze(layer_names)
   ```
-  For more information, you may refer [freeze](freeze.md)
+  For more information, you may refer [freeze](../../PythonAPI/DLlib/freeze.md)
 
 ## 11. Hyperparameter tuning
 - **optimizer**
 
   DLLib supports a list of optimization methods.
-  For more details, please refer [optimization](optim-Methods.md)
+  For more details, please refer [optimization](../../PythonAPI/DLlib/optim-Methods.md)
 
 - **learning rate scheduler**
 
   DLLib supports a list of learning rate scheduler.
-  For more details, please refer [lr_scheduler](learningrate-Scheduler.md)
+  For more details, please refer [lr_scheduler](../../PythonAPI/DLlib/learningrate-Scheduler.md)
 
 - **batch size**
 
@@ -256,12 +256,12 @@ val loadModel = Models.loadModel(path)
 - **regularizer**
 
   DLLib supports a list of regularizers.
-  For more details, please refer [regularizer](regularizers.md)
+  For more details, please refer [regularizer](../../PythonAPI/DLlib/regularizers.md)
 
 - **clipping**
 
   DLLib supports gradient clipping operations.
-  For more details, please refer [gradient_clip](clipping.md)
+  For more details, please refer [gradient_clip](../../PythonAPI/DLlib/clipping.md)
 
 ## 12. Running program
 You can run a bigdl-dllib program as a standard Spark program (running on either a local machine or a distributed cluster) as follows:
@@ -300,4 +300,4 @@ ${BIGDL_HOME}/bin/spark-submit-with-dllib.sh \
  --class class_name
  jar_path
 ```
-For more detail about how to run BigDL scala application, please refer https://bigdl.readthedocs.io/en/latest/doc/UserGuide/scala.html
+For more detail about how to run BigDL scala application, please refer to [Scala UserGuide](../../UserGuide/scala.md)

@@ -8,7 +8,7 @@ It is recommended to initialize `nncontext` at the beginning of your program:
 from bigdl.dllib.nncontext import *
 sc = init_nncontext()
 ```
-For more information about ```nncontext```, please refer to [nncontext](https://bigdl.readthedocs.io/en/latest/doc/DLlib/Overview/dllib.html#nn-context)
+For more information about ```nncontext```, please refer to [nncontext](../Overview/dllib.md#initialize-nn-context)
 
 ## 2. Distributed Data Loading
 
@@ -59,7 +59,7 @@ spark = SQLContext(sc)
 
 #### Using Keras-like APIs
 
-To define a model, you can use the [Keras Style API](https://bigdl.readthedocs.io/en/latest/doc/DLlib/Overview/keras-api.html).
+To define a model, you can use the [Keras Style API](../Overview/keras-api.md).
 ```
 x1 = Input(shape=[8])
 dense1 = Dense(12, activation="relu")(x1)
@@ -119,7 +119,7 @@ BigDL allows you to save your BigDL model on local filesystem, HDFS, or Amazon s
   preDF = loadModel.predict(df, feature_cols=["features"], prediction_col="predict")
   ```
 
-You may want to refer [Save/Load](https://bigdl.readthedocs.io/en/latest/doc/DLlib/Overview/keras-api.html#save)
+You may want to refer [Save/Load](../Overview/keras-api.html#save)
 
 ## 6. Distributed evaluation and inference
 After training finishes, you can then use the trained model for prediction or evaluation.
@@ -169,7 +169,7 @@ loadModel = Model.loadModel(path)
   ```
   dmodel.set_tensorboard("./", "dllib_demo")
   ```
-  For more details, please refer [visulization](visualization.md)
+  For more details, please refer [visulization](../Overview/visualization.md)
 
 ## 9. Transfer learning and finetuning
 
@@ -185,18 +185,18 @@ loadModel = Model.loadModel(path)
   ```
   dmodel.unFreeze(layer_names)
   ```
-  For more information, you may refer [freeze](freeze.md)
+  For more information, you may refer [freeze](../../PythonAPI/DLlib/freeze.md)
 
 ## 10. Hyperparameter tuning
 - **optimizer**
 
   DLLib supports a list of optimization methods.
-  For more details, please refer [optimization](optim-Methods.md)
+  For more details, please refer [optimization](../../PythonAPI/DLlib/optim-Methods.md)
 
 - **learning rate scheduler**
 
   DLLib supports a list of learning rate scheduler.
-  For more details, please refer [lr_scheduler](learningrate-Scheduler.md)
+  For more details, please refer [lr_scheduler](../../PythonAPI/DLlib/learningrate-Scheduler.md)
 
 - **batch size**
 
@@ -205,12 +205,12 @@ loadModel = Model.loadModel(path)
 - **regularizer**
 
   DLLib supports a list of regularizers.
-  For more details, please refer [regularizer](regularizers.md)
+  For more details, please refer [regularizer](../../PythonAPI/DLlib/regularizers.md)
 
 - **clipping**
 
   DLLib supports gradient clipping operations.
-  For more details, please refer [gradient_clip](clipping.md)
+  For more details, please refer [gradient_clip](../../PythonAPI/DLlib/clipping.md)
 
 ## 11. Running program
 ```
