@@ -1,5 +1,3 @@
-# DLlib User Guide
-
 DLLib Key Features
 ================================
 

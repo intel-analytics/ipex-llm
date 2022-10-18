@@ -6,20 +6,20 @@
 
 - **Maven**
 
-To use BigDL DLLib to build your own deep learning application, you can use maven to create your project and add bigdl-dllib to your dependency. Please add below code to your pom.xml to add BigDL DLLib as your dependency:
-```
-<dependency>
-    <groupId>com.intel.analytics.bigdl</groupId>
-    <artifactId>bigdl-dllib-spark_2.4.6</artifactId>
-    <version>0.14.0</version>
-</dependency>
-```
+  To use BigDL DLLib to build your own deep learning application, you can use maven to create your project and add bigdl-dllib to your dependency. Please add below code to your pom.xml to add BigDL DLLib as your dependency:
+  ```
+  <dependency>
+      <groupId>com.intel.analytics.bigdl</groupId>
+      <artifactId>bigdl-dllib-spark_2.4.6</artifactId>
+      <version>0.14.0</version>
+  </dependency>
+  ```
 
 - **SBT**
-```
-libraryDependencies += "com.intel.analytics.bigdl" % "bigdl-dllib-spark_2.4.6" % "0.14.0"
-```
-For more information about how to add BigDL dependency, please refer https://bigdl.readthedocs.io/en/latest/doc/UserGuide/scala.html#build-a-scala-project
+  ```
+  libraryDependencies += "com.intel.analytics.bigdl" % "bigdl-dllib-spark_2.4.6" % "0.14.0"
+  ```
+  For more information about how to add BigDL dependency, please refer https://bigdl.readthedocs.io/en/latest/doc/UserGuide/scala.html#build-a-scala-project
 
 #### IDE (Intelij)
 Open up IntelliJ and click File => Open
@@ -66,39 +66,39 @@ val spark = new SQLContext(sc)
 ```
 
 1. We can use Spark API to load the data into Spark DataFrame, eg. read csv file into Spark DataFrame
-```
-val path = "pima-indians-diabetes.data.csv"
-val df = spark.read.options(Map("inferSchema"->"true","delimiter"->",")).csv(path)
-      .toDF("num_times_pregrant", "plasma_glucose", "blood_pressure", "skin_fold_thickness", "2-hour_insulin", "body_mass_index", "diabetes_pedigree_function", "age", "class")
-```
+   ```
+   val path = "pima-indians-diabetes.data.csv"
+   val df = spark.read.options(Map("inferSchema"->"true","delimiter"->",")).csv(path)
+         .toDF("num_times_pregrant", "plasma_glucose", "blood_pressure", "skin_fold_thickness", "2-hour_insulin", "body_mass_index", "diabetes_pedigree_function", "age", "class")
+   ```
 
-If the feature column for the model is a Spark ML Vector. Please assemble related columns into a Vector and pass it to the model. eg.
-```
-val assembler = new VectorAssembler()
-  .setInputCols(Array("num_times_pregrant", "plasma_glucose", "blood_pressure", "skin_fold_thickness", "2-hour_insulin", "body_mass_index", "diabetes_pedigree_function", "age"))
-  .setOutputCol("features")
-val assembleredDF = assembler.transform(df)
-val df2 = assembleredDF.withColumn("label",col("class").cast(DoubleType) + lit(1))
-```
+   If the feature column for the model is a Spark ML Vector. Please assemble related columns into a Vector and pass it to the model. eg.
+   ```
+   val assembler = new VectorAssembler()
+     .setInputCols(Array("num_times_pregrant", "plasma_glucose", "blood_pressure", "skin_fold_thickness", "2-hour_insulin", "body_mass_index", "diabetes_pedigree_function", "age"))
+     .setOutputCol("features")
+   val assembleredDF = assembler.transform(df)
+   val df2 = assembleredDF.withColumn("label",col("class").cast(DoubleType) + lit(1))
+   ```
 
 2. If the training data is image, we can use DLLib api to load image into Spark DataFrame. Eg.
-```
-val createLabel = udf { row: Row =>
-if (new Path(row.getString(0)).getName.contains("cat")) 1 else 2
-}
-val imagePath = "cats_dogs/"
-val imgDF = NNImageReader.readImages(imagePath, sc)
-```
+   ```
+   val createLabel = udf { row: Row =>
+   if (new Path(row.getString(0)).getName.contains("cat")) 1 else 2
+   }
+   val imagePath = "cats_dogs/"
+   val imgDF = NNImageReader.readImages(imagePath, sc)
+   ```
 
-It will load the images and generate feature tensors automatically. Also we need generate labels ourselves. eg:
-```
-val df = imgDF.withColumn("label", createLabel(col("image")))
-```
+   It will load the images and generate feature tensors automatically. Also we need generate labels ourselves. eg:
+   ```
+   val df = imgDF.withColumn("label", createLabel(col("image")))
+   ```
 
-Then split the Spark DataFrame into traing part and validation part
-```
-val Array(trainDF, valDF) = df.randomSplit(Array(0.8, 0.2))
-```
+   Then split the Spark DataFrame into traing part and validation part
+   ```
+   val Array(trainDF, valDF) = df.randomSplit(Array(0.8, 0.2))
+   ```
 
 ## 4. Model Definition
 
@@ -125,49 +125,49 @@ Now the model is built and ready to train.
 ## 5. Distributed Model Training
 Now you can use 'fit' begin the training, please set the label columns. Model Evaluation can be performed periodically during a training.
 1. If the dataframe is generated using Spark apis, you also need set the feature columns. eg.
-```
-model.fit(x=trainDF, batchSize=4, nbEpoch = 2,
-  featureCols = Array("feature1"), labelCols = Array("label"), valX=valDF)
-```
-Note: Above model accepts single input(column `feature1`) and single output(column `label`).
+   ```
+   model.fit(x=trainDF, batchSize=4, nbEpoch = 2,
+     featureCols = Array("feature1"), labelCols = Array("label"), valX=valDF)
+   ```
+   Note: Above model accepts single input(column `feature1`) and single output(column `label`).
 
-If your model accepts multiple inputs(eg. column `f1`, `f2`, `f3`), please set the features as below:
-```
-model.fit(x=dataframe, batchSize=4, nbEpoch = 2,
-  featureCols = Array("f1", "f2", "f3"), labelCols = Array("label"))
-```
+   If your model accepts multiple inputs(eg. column `f1`, `f2`, `f3`), please set the features as below:
+   ```
+   model.fit(x=dataframe, batchSize=4, nbEpoch = 2,
+     featureCols = Array("f1", "f2", "f3"), labelCols = Array("label"))
+   ```
 
-Similarly, if the model accepts multiple outputs(eg. column `label1`, `label2`), please set the label columns as below:
-```
-model.fit(x=dataframe, batchSize=4, nbEpoch = 2,
-  featureCols = Array("f1", "f2", "f3"), labelCols = Array("label1", "label2"))
-```
+   Similarly, if the model accepts multiple outputs(eg. column `label1`, `label2`), please set the label columns as below:
+   ```
+   model.fit(x=dataframe, batchSize=4, nbEpoch = 2,
+     featureCols = Array("f1", "f2", "f3"), labelCols = Array("label1", "label2"))
+   ```
 
 2. If the dataframe is generated using DLLib `NNImageReader`, we don't need set `featureCols`, we can set `transform` to config how to process the images before training. Eg.
-```
-val transformers = transforms.Compose(Array(ImageResize(50, 50),
-  ImageMirror()))
-model.fit(x=dataframe, batchSize=4, nbEpoch = 2,
-  labelCols = Array("label"), transform = transformers)
-```
-For more details about how to use DLLib keras api to train image data, you may want to refer [ImageClassification](https://github.com/intel-analytics/BigDL/blob/main/scala/dllib/src/main/scala/com/intel/analytics/bigdl/dllib/example/keras/ImageClassification.scala)
+   ```
+   val transformers = transforms.Compose(Array(ImageResize(50, 50),
+     ImageMirror()))
+   model.fit(x=dataframe, batchSize=4, nbEpoch = 2,
+     labelCols = Array("label"), transform = transformers)
+   ```
+   For more details about how to use DLLib keras api to train image data, you may want to refer [ImageClassification](https://github.com/intel-analytics/BigDL/blob/main/scala/dllib/src/main/scala/com/intel/analytics/bigdl/dllib/example/keras/ImageClassification.scala)
 
 ## 6. Model saving and loading
 When training is finished, you may need to save the final model for later use.
 
 BigDL allows you to save your BigDL model on local filesystem, HDFS, or Amazon s3.
 - **save**
-```
-val modelPath = "/tmp/demo/keras.model"
-dmodel.saveModel(modelPath)
-```
+  ```
+  val modelPath = "/tmp/demo/keras.model"
+  dmodel.saveModel(modelPath)
+  ```
 
 - **load**
-```
-val loadModel = Models.loadModel(modelPath)
+  ```
+  val loadModel = Models.loadModel(modelPath)
 
-val preDF2 = loadModel.predict(valDF, featureCols = Array("features"), predictionCol = "predict")
-```
+  val preDF2 = loadModel.predict(valDF, featureCols = Array("features"), predictionCol = "predict")
+  ```
 
 You may want to refer [Save/Load](https://bigdl.readthedocs.io/en/latest/doc/DLlib/Overview/keras-api.html#save)
 
@@ -175,26 +175,27 @@ You may want to refer [Save/Load](https://bigdl.readthedocs.io/en/latest/doc/DLl
 After training finishes, you can then use the trained model for prediction or evaluation.
 
 - **inference**
-1. For dataframe generated by Spark API, please set `featureCols`
-```
-dmodel.predict(trainDF, featureCols = Array("features"), predictionCol = "predict")
-```
-2. For dataframe generated by `NNImageReader`, no need to set `featureCols` and you can set `transform` if needed
-```
-model.predict(imgDF, predictionCol = "predict", transform = transformers)
-```
+  1. For dataframe generated by Spark API, please set `featureCols`
+     ```
+     dmodel.predict(trainDF, featureCols = Array("features"), predictionCol = "predict")
+     ```
+  2. For dataframe generated by `NNImageReader`, no need to set `featureCols` and you can set `transform` if needed
+     ```
+     model.predict(imgDF, predictionCol = "predict", transform = transformers)
+     ```
 
 - **evaluation**
-Similary for dataframe generated by Spark API, the code is as below:
-```
-dmodel.evaluate(trainDF, batchSize = 4, featureCols = Array("features"),
-  labelCols = Array("label"))
-```
 
-For dataframe generated by `NNImageReader`:
-```
-model.evaluate(imgDF, batchSize = 1, labelCols = Array("label"), transform = transformers)
-```
+  Similary for dataframe generated by Spark API, the code is as below:
+  ```
+  dmodel.evaluate(trainDF, batchSize = 4, featureCols = Array("features"),
+    labelCols = Array("label"))
+  ```
+
+  For dataframe generated by `NNImageReader`:
+  ```
+  model.evaluate(imgDF, batchSize = 1, labelCols = Array("label"), transform = transformers)
+  ```
 
 ## 8. Checkpointing and resuming training
 You can configure periodically taking snapshots of the model.
@@ -213,53 +214,54 @@ val loadModel = Models.loadModel(path)
 
 - **Tensorboard**
 
-BigDL provides a convenient way to monitor/visualize your training progress. It writes the statistics collected during training/validation. Saved summary can be viewed via TensorBoard.
+  BigDL provides a convenient way to monitor/visualize your training progress. It writes the statistics collected during training/validation. Saved summary can be viewed via TensorBoard.
 
-In order to take effect, it needs to be called before fit.
-```
-dmodel.setTensorBoard("./", "dllib_demo")
-```
-For more details, please refer [visulization](visualization.md)
+  In order to take effect, it needs to be called before fit.
+  ```
+  dmodel.setTensorBoard("./", "dllib_demo")
+  ```
+  For more details, please refer [visulization](visualization.md)`
 
 ## 10. Transfer learning and finetuning
 
 - **freeze and trainable**
-BigDL DLLib supports exclude some layers of model from training.
-```
-dmodel.freeze(layer_names)
-```
-Layers that match the given names will be freezed. If a layer is freezed, its parameters(weight/bias, if exists) are not changed in training process.
 
-BigDL DLLib also support unFreeze operations. The parameters for the layers that match the given names will be trained(updated) in training process
-```
-dmodel.unFreeze(layer_names)
-```
-For more information, you may refer [freeze](freeze.md)
+  BigDL DLLib supports exclude some layers of model from training.
+  ```
+  dmodel.freeze(layer_names)
+  ```
+  Layers that match the given names will be freezed. If a layer is freezed, its parameters(weight/bias, if exists) are not changed in training process.
+
+  BigDL DLLib also support unFreeze operations. The parameters for the layers that match the given names will be trained(updated) in training process
+  ```
+  dmodel.unFreeze(layer_names)
+  ```
+  For more information, you may refer [freeze](freeze.md)
 
 ## 11. Hyperparameter tuning
 - **optimizer**
 
-DLLib supports a list of optimization methods.
-For more details, please refer [optimization](optim-Methods.md)
+  DLLib supports a list of optimization methods.
+  For more details, please refer [optimization](optim-Methods.md)
 
 - **learning rate scheduler**
 
-DLLib supports a list of learning rate scheduler.
-For more details, please refer [lr_scheduler](learningrate-Scheduler.md)
+  DLLib supports a list of learning rate scheduler.
+  For more details, please refer [lr_scheduler](learningrate-Scheduler.md)
 
 - **batch size**
 
-DLLib supports set batch size during training and prediction. We can adjust the batch size to tune the model's accuracy.
+  DLLib supports set batch size during training and prediction. We can adjust the batch size to tune the model's accuracy.
 
 - **regularizer**
 
-DLLib supports a list of regularizers.
-For more details, please refer [regularizer](regularizers.md)
+  DLLib supports a list of regularizers.
+  For more details, please refer [regularizer](regularizers.md)
 
 - **clipping**
 
-DLLib supports gradient clipping operations.
-For more details, please refer [gradient_clip](clipping.md)
+  DLLib supports gradient clipping operations.
+  For more details, please refer [gradient_clip](clipping.md)
 
 ## 12. Running program
 You can run a bigdl-dllib program as a standard Spark program (running on either a local machine or a distributed cluster) as follows:
