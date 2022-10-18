@@ -24,20 +24,26 @@ def _get_patch_map():
     global _mapping_torch
 
     # decide if generate
-    patch_torch = find_spec("pytorch_lightning") is not None
+    patch_lightning = find_spec("pytorch_lightning") is not None
+    patch_torchvision = find_spec("torchvision") is not None
+    patch_torch = patch_lightning or patch_torchvision
 
     if patch_torch and _mapping_torch is None:
         _mapping_torch = []
-        import pytorch_lightning
-        import torchvision
-        from bigdl.nano.pytorch import Trainer
-        from bigdl.nano.pytorch.vision import transforms
-        from bigdl.nano.pytorch.vision import datasets
-        _mapping_torch += [
-            [pytorch_lightning, "Trainer", Trainer, None],
-            [torchvision, "transforms", transforms, None],
-            [torchvision, "datasets", datasets, None],
-        ]
+        if patch_lightning:
+            import pytorch_lightning
+            from bigdl.nano.pytorch import Trainer
+            _mapping_torch += [
+                [pytorch_lightning, "Trainer", Trainer, None],
+            ]
+        if patch_torchvision:
+            import torchvision
+            from bigdl.nano.pytorch.vision import transforms
+            from bigdl.nano.pytorch.vision import datasets
+            _mapping_torch += [
+                [torchvision, "transforms", transforms, None],
+                [torchvision, "datasets", datasets, None],
+            ]
 
     if not patch_torch:
         _mapping_torch = []
@@ -46,7 +52,8 @@ def _get_patch_map():
 
 
 def patch_torch():
-    """patch_torch is used to patch optimized torch classes to replace original ones.
+    """
+    patch_torch is used to patch optimized torch classes to replace original ones.
 
     Optimized classes include:
 

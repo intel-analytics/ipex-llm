@@ -51,7 +51,8 @@ def _get_patch_map():
 
 
 def patch_tensorflow():
-    """patch_tensorflow is used to patch optimized tensorflow classes to replace original ones.
+    """
+    patch_tensorflow is used to patch optimized tensorflow classes to replace original ones.
 
     Optimized classes include:
 
@@ -60,7 +61,6 @@ def patch_tensorflow():
     | 3. tf.keras.layers.Embedding/keras.layers.Embedding -> bigdl.nano.tf.keras.layers.Embedding
     | 4. tf.optimizers.Adam -> bigdl.nano.tf.optimizers.SparseAdam
     """
-
     mapping_tf = _get_patch_map()
 
     for mapping_iter in mapping_tf:
@@ -70,7 +70,6 @@ def patch_tensorflow():
 
 def unpatch_tensorflow():
     """unpatch_tensorflow is used to unpatch optimized tensorflow classes to original ones."""
-
     mapping_tf = _get_patch_map()
 
     for mapping_iter in mapping_tf:
