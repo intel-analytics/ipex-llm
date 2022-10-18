@@ -229,6 +229,79 @@ class TSDataset:
                                      val_ratio=val_ratio,
                                      test_ratio=test_ratio)
 
+    @staticmethod
+    def from_prometheus(prometheus_url,
+                        query,
+                        starttime,
+                        endtime,
+                        step,
+                        target_col=None,
+                        id_col=None,
+                        extra_feature_col=None,
+                        with_split=False,
+                        val_ratio=0,
+                        test_ratio=0.1,
+                        **kwargs):
+        """
+        Initialize tsdataset(s) from Prometheus data for specified time period via url.
+
+        :param prometheus_url: a str indicates url of a Prometheus server.
+        :param query: str, Prometheus expression query string.
+        :param starttime: start timestamp of the specified time period, RFC-3339 string
+               or as a Unix timestamp in seconds.
+        :param endtime: end timestamp of the specified time period, RFC-3339 string
+               or as a Unix timestamp in seconds.
+        :param step: a str indicates query resolution step width in Prometheus duration format
+               or float number of seconds. More information about Prometheus time durations
+               are here:
+               https://prometheus.io/docs/prometheus/latest/querying/basics/#time-durations
+        :param target_col: (optional) a Prometheus expression query str or list indicates the
+               col name of target column in the input data frame. If it is not explicitly stated,
+               then target column is automatically specified according to the Prometheus data.
+        :param id_col: (optional) a Prometheus expression query str indicates the col name of
+               dataframe id. If it is not explicitly stated, then the data is interpreted as
+               only containing a single id.
+        :param extra_feature_col: (optional) a Prometheus expression query str or list indicates
+               the col name of extra feature columns that needs to predict the target column.
+               If it is not explicitly stated, then extra feature column is None.
+        :param with_split: (optional) bool, states if we need to split the dataframe
+               to train, validation and test set. The value defaults to False.
+        :param val_ratio: (optional) float, validation ratio. Only effective when
+               with_split is set to True. The value defaults to 0.
+        :param test_ratio: (optional) float, test ratio. Only effective when with_split
+               is set to True. The value defaults to 0.1.
+        :param kwargs: Any additional kwargs are passed to the Prometheus query, such as
+               timeout.
+
+        :return: a TSDataset instance when with_split is set to False,
+                 three TSDataset instances when with_split is set to True.
+
+        Create a tsdataset instance by:
+
+        >>> # Here is an example:
+        >>> tsdataset = TSDataset.from_prometheus(prometheus_url="http://localhost:9090",
+        >>>                                       query="collectd_cpufreq{cpufreq="0"}",
+        >>>                                       starttime="2022-09-01T00:00:00Z",
+        >>>                                       endtime="2022-10-01T00:00:00Z",
+        >>>                                       step="1h")
+        """
+        # TODO: Corresponding unit test should be added
+        # Only test locally at present
+        from bigdl.chronos.data.utils.prometheus_df import GetRangeDataframe
+        columns = {"target_col": _to_list(target_col, name="target_col"),
+                   "id_col": _to_list(id_col, name="id_col"),
+                   "extra_feature_col": _to_list(extra_feature_col, name="extra_feature_col")}
+        df, df_columns = GetRangeDataframe(prometheus_url, query, starttime, endtime,
+                                           step, columns=columns, **kwargs)
+        return TSDataset.from_pandas(df,
+                                     dt_col=df_columns["dt_col"],
+                                     target_col=df_columns["target_col"],
+                                     id_col=df_columns["id_col"],
+                                     extra_feature_col=df_columns["extra_feature_col"],
+                                     with_split=with_split,
+                                     val_ratio=val_ratio,
+                                     test_ratio=test_ratio)
+
     def impute(self, mode="last", const_num=0):
         '''
         Impute the tsdataset by imputing each univariate time series

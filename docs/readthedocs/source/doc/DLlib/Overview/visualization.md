@@ -1,5 +1,5 @@
 ## **Visualizing training with TensorBoard**
-With the summary info generated, we can then use [TensorBoard](https://pypi.python.org/pypi/tensorboard) to visualize the behaviors of the BigDL program.  
+With the summary info generated, we can then use [TensorBoard](https://pypi.python.org/pypi/tensorboard) to visualize the behaviors of the BigDL program.
 
 * **Installing TensorBoard**
 
@@ -31,10 +31,10 @@ After that, navigate to the TensorBoard dashboard using a browser. You can find 
 * **Visualizations in TensorBoard**
 
 Within the TensorBoard dashboard, you will be able to read the visualizations of each run, including the “Loss” and “Throughput” curves under the SCALARS tab (as illustrated below):
-![Scalar](../Image/tensorboard-scalar.png)
+![](../Image/tensorboard-scalar.png)
 
 And “weights”, “bias”, “gradientWeights” and “gradientBias” under the DISTRIBUTIONS and HISTOGRAMS tabs (as illustrated below):
-![histogram1](../Image/tensorboard-histo1.png)
-![histogram2](../Image/tensorboard-histo2.png)
+![](../Image/tensorboard-histo1.png)
+![](../Image/tensorboard-histo2.png)
 
 ---

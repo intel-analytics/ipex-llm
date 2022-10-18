@@ -16,6 +16,7 @@
 
 package com.intel.analytics.bigdl.ppml.fl
 
+import com.intel.analytics.bigdl.ckks.CKKS
 import com.intel.analytics.bigdl.dllib.utils.Engine
 import org.apache.log4j.LogManager
 import org.apache.spark.SparkConf
@@ -40,6 +41,14 @@ object FLContext {
 
   def getPsiSalt(): String = {
       flClient.psiSalt
+  }
+
+  def initCkks(secrets: Array[Array[Byte]]): Unit = {
+    flClient.initCkks(secrets)
+  }
+
+  def initCkks(secretsPath: String): Unit = {
+    flClient.initCkks(CKKS.loadSecret(secretsPath))
   }
 
   def initFLContext(id: Int, target: String = null): Unit = {

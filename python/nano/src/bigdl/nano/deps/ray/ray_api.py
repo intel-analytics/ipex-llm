@@ -20,7 +20,7 @@ def create_ray_multiprocessing_backend():
     return RayBackend()
 
 
-def create_RayStrategy(*args, **kwargs):
+def create_ray_strategy(*args, **kwargs):
     """Create ray strategy."""
     from .ray_distributed import RayStrategy
     return RayStrategy(*args, **kwargs)

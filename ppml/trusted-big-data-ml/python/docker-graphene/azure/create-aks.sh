@@ -142,3 +142,6 @@ az aks create \
     --service-principal $APP_ID \
     --client-secret $PASSWORD
 
+az aks addon update --addon confcom --name $AKSClusterName \
+	--resource-group $BigDLResourceGroupName --enable-sgxquotehelper
+

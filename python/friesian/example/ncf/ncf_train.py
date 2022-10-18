@@ -51,7 +51,7 @@ def build_model(num_users, num_items, class_num, layers=[20, 10], include_mf=Tru
         mf_embed_user = Embedding(input_dim=num_users,
                                   output_dim=mf_embed,
                                   input_length=1)(user_input)
-        mf_embed_item = Embedding(input_dim=num_users,
+        mf_embed_item = Embedding(input_dim=num_items,
                                   output_dim=mf_embed,
                                   input_length=1)(item_input)
         mf_user_flatten = Flatten()(mf_embed_user)
