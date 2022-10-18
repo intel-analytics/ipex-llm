@@ -16,10 +16,15 @@ if [[ $BIGDL_VERSION == *"SNAPSHOT"* ]]; then
 
   NIGHTLY_VERSION=$(echo $(echo `wget -qO - https://oss.sonatype.org/content/repositories/snapshots/com/intel/analytics/bigdl/bigdl-dllib-spark_$SPARK_VERSION/$BIGDL_VERSION/maven-metadata.xml | sed -n '/<value>[0-9]*\.[0-9]*\.[0-9]*-[0-9][0-9]*\.[0-9][0-9]*-[0-9][0-9]*.*value>/p' | head -n1 | awk -F'>' '{print $2}' | tr '</value' ' '`))
   wget https://oss.sonatype.org/content/repositories/snapshots/com/intel/analytics/bigdl/bigdl-dllib-spark_$SPARK_VERSION/$BIGDL_VERSION/bigdl-dllib-spark_$SPARK_VERSION-$NIGHTLY_VERSION.jar
+
+  NIGHTLY_VERSION=$(echo $(echo `wget -qO - https://oss.sonatype.org/content/repositories/snapshots/com/intel/analytics/bigdl/core/dist/all/$BIGDL_VERSION/maven-metadata.xml | sed -n '/<value>[0-9]*\.[0-9]*\.[0-9]*-[0-9][0-9]*\.[0-9][0-9]*-[0-9][0-9]*.*value>/p' | head -n1 | awk -F'>' '{print $2}' | tr '</value' ' '`))
+  wget https://oss.sonatype.org/content/repositories/snapshots/com/intel/analytics/bigdl/core/dist/all/$BIGDL_VERSION/all-$NIGHTLY_VERSION.jar
 else
+  wget https://repo1.maven.org/maven2/com/intel/analytics/bigdl/bigdl-ppml-spark_$SPARK_VERSION/$BIGDL_VERSION/bigdl-ppml-spark_$SPARK_VERSION-$BIGDL_VERSION.jar
   wget https://repo1.maven.org/maven2/com/intel/analytics/bigdl/bigdl-dllib-spark_$SPARK_VERSION/$BIGDL_VERSION/bigdl-dllib-spark_$SPARK_VERSION-$BIGDL_VERSION.jar
+  wget https://repo1.maven.org/maven2/com/intel/analytics/bigdl/core/dist/all/$BIGDL_VERSION/all-$BIGDL_VERSION.jar
 fi
-wget https://repo1.maven.org/maven2/com/intel/analytics/bigdl/core/dist/all/2.1.0/all-2.1.0.jar
+
 
 # Others
 wget https://repo1.maven.org/maven2/org/scala-lang/scala-compiler/2.12.10/scala-compiler-2.12.10.jar
