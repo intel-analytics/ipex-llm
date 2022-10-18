@@ -331,7 +331,7 @@ sbin/stop-dfs.sh  sbin/start-dfs.sh
 5. Start KMS server. 
 ```bash
 hadoop --daemon start|stop kms
-```bash
+```
 6. Run this bash command to check if the KMS started 
 ```bash
 hadoop key list
@@ -350,8 +350,17 @@ hdfs crypto -createZone -keyName mykey -path /empty_zone
 ```bash
 hdfs crypto -getFileEncryptionInfo -path /empty_zone/helloWorld
 ```
-4.	Add permission control to users or groups in $HADOOP_HOME/etc/hadoop/kms-acls.xml. It will be hotbooted after every update. For example:
-5.	Now only user_a and other users in group_a can use the file int the mykey’s encryption zone.
+4. Add permission control to users or groups in $HADOOP_HOME/etc/hadoop/kms-acls.xml. It will be hotbooted after every update. For example:
+```xml
+<property>
+    <name>key.acl.xgboost.ALL</name>
+    <value>hdfs,icx,root</value>
+</property>
+```
+5. Now only user_a and other users in group_a can use the file in the mykey’s encryption zone.view encrypted zone:
+```bash
+hdfs  crypto -listZones
+```
 
 ## Start BigDL PPML Occlum Attestation Server
 Modify `PCCL_URL`, `ATTESTATION_SERVER_IP` and `ATTESTATION_SERVER_PORT` in `start-occlum-attestation-server.sh`, Then
