@@ -28,13 +28,13 @@ serverPassword: your_server_password_to_use
 Then, deploy BigDL-PCCS on kubernetes:
 
 ```bash
-kubectl create namespace bigdl-pccs-ehsm-kms
+kubectl create namespace bigdl-pccs
 helm install pccs . # pccs can be modified to any name as you like
 ```
 Check the service whether it has successfully been running (it may take seconds):
 
 ```bash
-kubectl get all -n bigdl-pccs-ehsm-kms
+kubectl get all -n bigdl-pccs
 
 # you will get similar to below
 NAME            READY   STATUS        RESTARTS   AGE
@@ -54,14 +54,53 @@ Execute command to check if pccs service is available.
 curl -v -k -G "https://<your_pccs_ip>:<your_pccs_port>/sgx/certification/v3/rootcacrl"
 
 # you will get similar to below if success
-...
+
+* Uses proxy env variable no_proxy == '10.239.45.10:8081,10.112.231.51,10.239.45.10,172.168.0.205'
+*   Trying 172.168.0.226:18081...
+* TCP_NODELAY set
 * Connected to 172.168.0.226 (172.168.0.226) port 18081 (#0)
 * ALPN, offering h2
 * ALPN, offering http/1.1
 * successfully set certificate verify locations:
 *   CAfile: /etc/ssl/certs/ca-certificates.crt
   CApath: /etc/ssl/certs
-...
+* TLSv1.3 (OUT), TLS handshake, Client hello (1):
+* TLSv1.3 (IN), TLS handshake, Server hello (2):
+* TLSv1.3 (IN), TLS handshake, Encrypted Extensions (8):
+* TLSv1.3 (IN), TLS handshake, Certificate (11):
+* TLSv1.3 (IN), TLS handshake, CERT verify (15):
+* TLSv1.3 (IN), TLS handshake, Finished (20):
+* TLSv1.3 (OUT), TLS change cipher, Change cipher spec (1):
+* TLSv1.3 (OUT), TLS handshake, Finished (20):
+* SSL connection using TLSv1.3 / TLS_AES_256_GCM_SHA384
+* ALPN, server accepted to use http/1.1
+* Server certificate:
+*  subject: C=cn; ST=nanjing; L=nanjing; O=intel; OU=intel; CN=liyao; emailAddress=yao3.li@intel.com
+*  start date: Oct 17 08:14:42 2022 GMT
+*  expire date: Oct 17 08:14:42 2023 GMT
+*  issuer: C=cn; ST=nanjing; L=nanjing; O=intel; OU=intel; CN=liyao; emailAddress=yao3.li@intel.com
+*  SSL certificate verify result: self signed certificate (18), continuing anyway.
+> GET /sgx/certification/v3/rootcacrl HTTP/1.1
+> Host: 172.168.0.226:18081
+> User-Agent: curl/7.68.0
+> Accept: */*
+>
+* TLSv1.3 (IN), TLS handshake, Newsession Ticket (4):
+* TLSv1.3 (IN), TLS handshake, Newsession Ticket (4):
+* old SSL session ID is stale, removing
+* Mark bundle as not supporting multiuse
+< HTTP/1.1 200 OK
+< X-Powered-By: Express
+< Request-ID: 64371451f83842079bded0b228fb7d1a
+< Content-Type: application/x-pem-file; charset=utf-8
+< Content-Length: 586
+< ETag: W/"24a-lXdmj38gN2RweL6On8KEs2rk9To"
+< Date: Tue, 18 Oct 2022 01:46:43 GMT
+< Connection: keep-alive
+< Keep-Alive: timeout=5
+<
+* Connection #0 to host 172.168.0.226 left intact
+308201213081c8020101300a06082a8648ce3d0403023068311a301806035504030c11496e74656c2053475820526f6f74204341311a3018060355040a0c11496e74656c20436f72706f726174696f6e3114301206035504070c0b53616e746120436c617261310b300906035504080c024341310b3009060355040613025553170d3232303431393038333131385a170d3233303431393038333131385aa02f302d300a0603551d140403020101301f0603551d2304183016801422650cd65a9d3489f383b49552bf501b392706ac300a06082a8648ce3d0403020348003045022100b7805acf592113584c45c8b0e11b2b8a9db462a215bbf8d4fd416539d7f5ab7502207ff56984c5199cf2b23d97d37b104ec0ebb5243674f41346887a6bdfbfdfeb42
 ```
 
 

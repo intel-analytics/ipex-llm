@@ -3,7 +3,7 @@ apiVersion: v1
 kind: Service
 metadata:
   name: pccs
-  namespace: bigdl-pccs-ehsm-kms
+  namespace: bigdl-pccs
   labels:
     app: pccs
 spec:
@@ -21,7 +21,7 @@ apiVersion: apps/v1
 kind: StatefulSet
 metadata:
   name: pccs
-  namespace: bigdl-pccs-ehsm-kms
+  namespace: bigdl-pccs
 spec:
   selector:
     matchLabels:
