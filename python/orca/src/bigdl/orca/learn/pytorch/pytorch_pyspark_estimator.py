@@ -19,18 +19,18 @@ import logging
 import numbers
 import torch
 import numpy as np
-from copy import copy
+import copy
 
 from bigdl.orca.learn.pytorch.training_operator import TrainingOperator
 from bigdl.orca.learn.pytorch.pytorch_pyspark_worker import PytorchPysparkWorker
 from bigdl.orca.learn.utils import maybe_dataframe_to_xshards, dataframe_to_xshards, \
     convert_predict_xshards_to_dataframe, make_data_creator, update_predict_xshards, \
-    process_xshards_of_pandas_dataframe
+    reload_dataloader_creator
 from bigdl.orca.data import SparkXShards
 from bigdl.orca import OrcaContext
 from bigdl.orca.learn.base_estimator import BaseEstimator
-from bigdl.dllib.utils.file_utils import enable_multi_fs_load, enable_multi_fs_save, \
-    get_remote_file_to_local
+from bigdl.orca.data.file import get_remote_file_to_local, enable_multi_fs_save, \
+    enable_multi_fs_load
 from bigdl.dllib.utils.common import get_node_and_core_number
 from bigdl.orca.learn.log_monitor import start_log_server, stop_log_server
 
@@ -40,7 +40,6 @@ from bigdl.dllib.utils.log4Error import *
 
 
 def partition_to_creator(partition):
-
     def data_creator(config, batch_size):
         from bigdl.orca.data.utils import ray_partition_get_data_label, index_data, get_size
         from torch.utils.data import Dataset, DataLoader
@@ -71,6 +70,12 @@ def partition_to_creator(partition):
         return data_loader
 
     return data_creator
+
+
+def parse_model_dir(model_dir):
+    if model_dir and model_dir.startswith("dbfs:/"):
+        model_dir = "/dbfs/" + model_dir[len("dbfs:/"):]
+    return model_dir
 
 
 class PyTorchPySparkEstimator(BaseEstimator):
@@ -115,7 +120,7 @@ class PyTorchPySparkEstimator(BaseEstimator):
                               "If a loss_creator is not provided, you must "
                               "provide a custom training operator.")
 
-        self.model_dir = model_dir
+        self.model_dir = parse_model_dir(model_dir)
 
         self.model_creator = model_creator
         self.initialization_hook = initialization_hook
@@ -145,7 +150,7 @@ class PyTorchPySparkEstimator(BaseEstimator):
             training_operator_cls=training_operator_cls,
             scheduler_step_freq=scheduler_step_freq,
             use_tqdm=use_tqdm,
-            config=copy(self.config),
+            config=copy.copy(self.config),
             metrics=metrics,
             size=self.num_workers,
             cores_per_worker=self.cores_per_worker,
@@ -277,7 +282,7 @@ class PyTorchPySparkEstimator(BaseEstimator):
 
                 train_rdd = data.rdd.mapPartitions(lambda iter: [list(iter)])
                 val_rdd = validation_data.rdd.mapPartitions(lambda iter: [list(iter)])
-                res = train_rdd.zip(val_rdd).repartition(self.num_workers).barrier()\
+                res = train_rdd.zip(val_rdd).repartition(self.num_workers).barrier() \
                     .mapPartitions(
                     lambda iter: transform_func(iter, init_params, params)).collect()
 
@@ -287,8 +292,8 @@ class PyTorchPySparkEstimator(BaseEstimator):
                                   "data should be either an instance of SparkXShards or a "
                                   "callable  function, but got type: {}".format(type(data)))
 
-            params["data_creator"] = data
-            params["validation_data_creator"] = validation_data
+            params["data_creator"] = reload_dataloader_creator(data)
+            params["validation_data_creator"] = reload_dataloader_creator(validation_data)
 
             def transform_func(iter, init_param, param):
                 return PytorchPysparkWorker(**init_param).train_epochs(**param)
@@ -319,8 +324,7 @@ class PyTorchPySparkEstimator(BaseEstimator):
         try:
             temp_dir = tempfile.mkdtemp()
             get_remote_file_to_local(os.path.join(remote_dir, "state.pkl"),
-                                     os.path.join(temp_dir, "state.pkl"),
-                                     over_write=True)
+                                     os.path.join(temp_dir, "state.pkl"))
             import pickle
             with open(os.path.join(temp_dir, "state.pkl"), 'rb') as f:
                 state_dicts = pickle.load(f)
@@ -350,7 +354,7 @@ class PyTorchPySparkEstimator(BaseEstimator):
             return PytorchPysparkWorker(**init_param).predict(**params)
 
         pred_shards = SparkXShards(xshards.rdd.mapPartitions(
-                                   lambda iter: transform_func(iter, init_params, params)))
+            lambda iter: transform_func(iter, init_params, params)))
         return pred_shards
 
     def predict(self,
@@ -474,7 +478,7 @@ class PyTorchPySparkEstimator(BaseEstimator):
             res = data.rdd.repartition(self.num_workers).barrier() \
                 .mapPartitions(lambda iter: transform_func(iter, init_params, params)).collect()
         else:
-            params["data_creator"] = data
+            params["data_creator"] = reload_dataloader_creator(data)
 
             def transform_func(iter, init_param, param):
                 return PytorchPysparkWorker(**init_param).validate(**param)

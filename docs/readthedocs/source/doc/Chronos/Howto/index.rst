@@ -23,6 +23,7 @@ Forecasting
 * `Speed up inference of forecaster through ONNXRuntime <how_to_speedup_inference_of_forecaster_through_ONNXRuntime.html>`__
 * `Speed up inference of forecaster through OpenVINO <how_to_speedup_inference_of_forecaster_through_OpenVINO.html>`__
 * `Evaluate a forecaster <how_to_evaluate_a_forecaster.html>`__
+* `Generate confidence interval for prediction <how_to_generate_confidence_interval_for_prediction.html>`__
 
 .. toctree::
     :maxdepth: 1
@@ -34,4 +35,5 @@ Forecasting
     how_to_speedup_inference_of_forecaster_through_ONNXRuntime
     how_to_speedup_inference_of_forecaster_through_OpenVINO
     how_to_evaluate_a_forecaster
+    how_to_generate_confidence_interval_for_prediction
 

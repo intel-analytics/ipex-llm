@@ -11,6 +11,9 @@ on:
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
 
+env:
+  GIST_ID: 966d4c0bf23c67662120d1bf4b1c88dc
+
 jobs:
   fossa-scan:
     runs-on: [self-hosted, Linux, Bree]
@@ -67,7 +70,7 @@ jobs:
       uses: ./.github/actions/create-job-status-badge
       with:
         secret: ${{ secrets.GIST_SECRET }}
-        gist-id: f91eb10af4d9dbe216ba0f0da71cace9
+        gist-id: ${{env.GIST_ID}}
         is-self-hosted-runner: true
         file-name: fossa-scan.json
         type: job
@@ -84,7 +87,7 @@ jobs:
       uses: ./.github/actions/create-job-status-badge
       with:
         secret: ${{ secrets.GIST_SECRET }}
-        gist-id: 966d4c0bf23c67662120d1bf4b1c88dc
+        gist-id: ${{env.GIST_ID}}
         file-name: license-scan.json
         type: workflow
 

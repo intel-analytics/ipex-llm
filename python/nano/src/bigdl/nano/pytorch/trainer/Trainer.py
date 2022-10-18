@@ -15,7 +15,6 @@
 #
 import copy
 from logging import warning
-from pathlib import Path
 from typing import Any, List, Optional, Union
 import pytorch_lightning as pl
 import torch
@@ -24,25 +23,26 @@ from torch.nn.modules.loss import _Loss
 from torch.utils.data import DataLoader
 from torchmetrics.metric import Metric
 from torch.optim.lr_scheduler import _LRScheduler
-import yaml
 from bigdl.nano.pytorch import InferenceOptimizer
 from bigdl.nano.pytorch.utils import TORCH_VERSION_LESS_1_10, TORCH_VERSION_LESS_1_11
-from bigdl.nano.pytorch.utils import ChannelsLastCallback
+from bigdl.nano.pytorch.utils import ChannelsLastCallback, save_model, load_model
 from bigdl.nano.pytorch.algorithms import SelectiveBackprop
 from bigdl.nano.pytorch.lightning import LightningModule
-from bigdl.nano.pytorch.plugins.ddp_spawn import DDPSpawnPlugin
-from bigdl.nano.pytorch.plugins.ddp_subprocess import DDPSubprocessPlugin
+from bigdl.nano.pytorch.strategies import DDPSpawnStrategy, DDPSubprocessStrategy, DDPK8sStrategy
 from bigdl.nano.deps.automl.hpo_api import create_hpo_searcher, check_hpo_status
-from bigdl.nano.deps.ray.ray_api import distributed_ray
+from bigdl.nano.deps.ray.ray_api import create_ray_strategy
 from bigdl.nano.utils.log4Error import invalidInputError
-from bigdl.nano.deps.openvino.openvino_api import load_openvino_model
-from bigdl.nano.deps.ipex.ipex_api import load_ipexjit_model
-from bigdl.nano.deps.onnxruntime.onnxruntime_api import load_onnxruntime_model
-from bigdl.nano.deps.neural_compressor.inc_api import load_inc_model
 from bigdl.nano.common import check_avx512
 from bigdl.nano.utils import deprecated
 
-distributed_backends = ["spawn", "ray", "subprocess"]
+distributed_backends = ["spawn", "ray", "subprocess", "k8s"]
+
+backends_class_map = {
+    "spawn": DDPSpawnStrategy,
+    "subprocess": DDPSubprocessStrategy,
+    "ray": create_ray_strategy,
+    "k8s": DDPK8sStrategy
+}
 
 
 class Trainer(pl.Trainer):
@@ -53,7 +53,7 @@ class Trainer(pl.Trainer):
     various options to accelerate pytorch training.
     """
 
-    def __init__(self, num_processes: int = 1,
+    def __init__(self, num_processes: Optional[int] = None,
                  use_ipex: bool = False,
                  distributed_backend="subprocess",
                  cpu_for_each_process: Optional[List[List[int]]] = None,
@@ -126,6 +126,9 @@ class Trainer(pl.Trainer):
 
         kwargs['precision'] = precision
 
+        if num_processes is None and distributed_backend != "k8s":
+            num_processes = 1
+
         if num_processes == 1:
             from bigdl.nano.pytorch.strategies import create_IPEXStrategy
             strategy = create_IPEXStrategy(dtype=dtype) if self.use_ipex else None
@@ -142,26 +145,14 @@ class Trainer(pl.Trainer):
                                       f"`checkpoint_callback` set to False. "
                                       f"Currently, disable checkpoint callback make "
                                       f"distributed training backend work incorrect")
-            if distributed_backend == "spawn":
-                from bigdl.nano.pytorch.strategies import DDPSpawnStrategy
-                strategy = DDPSpawnStrategy(num_processes=num_processes,
-                                            cpu_for_each_process=cpu_for_each_process,
-                                            use_ipex=self.use_ipex,
-                                            dtype=dtype,
-                                            auto_lr=auto_lr)
-            elif distributed_backend == "subprocess":
-                from bigdl.nano.pytorch.strategies import DDPSubprocessStrategy
-                strategy = DDPSubprocessStrategy(num_processes=num_processes,
-                                                 cpu_for_each_process=cpu_for_each_process,
-                                                 use_ipex=self.use_ipex,
-                                                 dtype=dtype,
-                                                 auto_lr=auto_lr)
-            elif distributed_backend == "ray":
-                from bigdl.nano.pytorch.strategies import create_RayStrategy
-                strategy = create_RayStrategy(num_workers=num_processes,
-                                              use_ipex=self.use_ipex,
-                                              dtype=dtype,
-                                              auto_lr=auto_lr)
+
+            strategy_cls = backends_class_map[distributed_backend]
+            strategy = strategy_cls(num_processes=num_processes,
+                                    cpu_for_each_process=cpu_for_each_process,
+                                    use_ipex=self.use_ipex,
+                                    dtype=dtype,
+                                    auto_lr=auto_lr)
+
             kwargs["strategy"] = strategy
             super().__init__(*args, **kwargs)
 
@@ -420,21 +411,7 @@ class Trainer(pl.Trainer):
                Trainer.trace/Trainer.quantize.
         :param path: Path to saved model. Path should be a directory.
         """
-        path = Path(path)
-        path.mkdir(parents=path.parent, exist_ok=True)
-        if hasattr(model, '_save'):
-            model._save(path)
-        else:
-            # typically for models of nn.Module, pl.LightningModule type
-            meta_path = Path(path) / "nano_model_meta.yml"
-            with open(meta_path, 'w+') as f:
-                metadata = {
-                    'ModelType': 'PytorchModel',
-                    'checkpoint': 'saved_weight.pt'
-                }
-                yaml.safe_dump(metadata, f)
-            checkpoint_path = path / metadata['checkpoint']
-            torch.save(model.state_dict(), checkpoint_path)
+        save_model(model, path)
 
     @staticmethod
     def load(path, model: pl.LightningModule = None):
@@ -448,42 +425,7 @@ class Trainer(pl.Trainer):
         :return: Model with different acceleration(None/OpenVINO/ONNX Runtime/JIT) or
                  precision(FP32/FP16/BF16/INT8).
         """
-        path = Path(path)
-        if not path.exists():
-            invalidInputError(False, "{} doesn't exist.".format(path))
-        meta_path = path / "nano_model_meta.yml"
-        if not meta_path.exists():
-            invalidInputError(False, "File {} is required to load model.".format(str(meta_path)))
-        with open(meta_path, 'r') as f:
-            metadata = yaml.safe_load(f)
-        model_type = metadata.get('ModelType', None)
-        if model_type == 'PytorchOpenVINOModel':
-            invalidInputError(model is None,
-                              "Argument 'model' must be None for OpenVINO loading.")
-            return load_openvino_model(path)
-        if model_type == 'PytorchONNXRuntimeModel':
-            invalidInputError(model is None,
-                              "Argument 'model' must be None for ONNX Runtime loading.")
-            return load_onnxruntime_model(path)
-        if model_type == 'PytorchQuantizedModel':
-            return load_inc_model(path, model, 'pytorch')
-        if model_type == 'PytorchIPEXJITModel':
-            return load_ipexjit_model(path, model)
-        if isinstance(model, nn.Module):
-            # typically for models of nn.Module, pl.LightningModule type
-            model = copy.deepcopy(model)
-            checkpoint_path = metadata.get('checkpoint', None)
-            if checkpoint_path:
-                checkpoint_path = path / metadata['checkpoint']
-                state_dict = torch.load(checkpoint_path, map_location='cpu')
-                model.load_state_dict(state_dict)
-                return model
-            else:
-                invalidInputError(False, "Key 'checkpoint' must be specified.")
-        else:
-            invalidInputError(False,
-                              "ModelType {} or argument 'model={}' is not acceptable for pytorch"
-                              " loading.".format(model_type, type(model)))
+        return load_model(path, model)
 
     def save_checkpoint(    # type: ignore[override]
         self, filepath, weights_only: bool = False, storage_options: Optional[Any] = None

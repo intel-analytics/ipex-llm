@@ -12,3 +12,13 @@ bigdl.nano.tf.keras
     :members:
     :undoc-members:
     :inherited-members: Sequential
+
+.. autoclass:: bigdl.nano.tf.keras.layers.Embedding
+    :members:
+    :undoc-members:
+
+bigdl.nano.tf.optimizers
+---------------------------
+.. autoclass:: bigdl.nano.tf.optimizers.SparseAdam
+    :members: 
+    :undoc-members:

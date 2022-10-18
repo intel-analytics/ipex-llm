@@ -125,3 +125,12 @@ class TestChronosForecastMetrics(TestCase):
         for info in ["p50", "p90", "p95", "p99"]:
             assert info in latency_list
             assert isinstance(latency_list[info], float)
+    
+    def test_plot(self):
+        # TODO: more tests
+        y = np.random.randn(100, 24, 1)
+        pred = np.random.randn(100, 24, 1)
+        x = np.random.randn(100, 48, 1)
+        std = np.random.randn(100, 24, 1)
+        Evaluator.plot(pred, x=x, ground_truth=y, std=std,
+                       prediction_interval=0.95, layout=(2,2), figsize=(16,8))

@@ -106,12 +106,7 @@ class MyNanoCorrectness(TorchNano):
                 self.backward(loss)
                 optimizer.step()
 
-        try:
-            assert model._module.fc1.weight.data == 0.25, \
-                f"wrong weights: {model._module.fc1.weight.data}"
-        except:
-            assert model._module.module.fc1.weight.data == 0.25, \
-                f"wrong weights: {model._module.module.fc1.weight.data}"
+        assert model.fc1.weight.data == 0.25, f"wrong weights: {model.fc1.weight.data}"
 
 
 class MyNanoAccess(TorchNano):
@@ -183,8 +178,7 @@ class MyNanoLoadStateDict(TorchNano):
         model.train()
         train_one_epoch(model, optimizer, loss_func, train_loader)
 
-        assert model._module.fc1.weight.data == 0.25, \
-            f"wrong weights: {model._module.fc1.weight.data}"
+        assert model.fc1.weight.data == 0.25, f"wrong weights: {model.fc1.weight.data}"
 
 
 class TestLite(TestCase):
@@ -204,6 +198,9 @@ class TestLite(TestCase):
     def test_torch_nano_subprocess(self):
         MyNano(num_processes=2, strategy="subprocess").train()
 
+    def test_torch_nano_specify_cpu_cores(self):
+        MyNano(num_processes=2, cpu_for_each_process=[[0,1], [2,3]]).train()
+
     def test_torch_nano_correctness(self):
         MyNanoCorrectness().train(0.25)
 
@@ -216,11 +213,17 @@ class TestLite(TestCase):
     def test_torch_nano_attribute_access(self):
         MyNanoAccess().train()
 
+    def test_torch_nano_attribute_access_ddp(self):
+        MyNanoAccess(num_processes=2).train()
+
     def test_torch_nano_multi_optimizer(self):
         MyNanoMultiOptimizer().train()
 
     def test_torch_nano_load_state_dict(self):
         MyNanoLoadStateDict().train(0.25)
+
+    def test_torch_nano_load_state_dict_ddp(self):
+        MyNanoLoadStateDict(num_processes=2).train(0.5)
 
 if __name__ == '__main__':
     pytest.main([__file__])
