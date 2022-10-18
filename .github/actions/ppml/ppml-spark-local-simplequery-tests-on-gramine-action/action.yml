@@ -54,5 +54,4 @@ runs:
       shell: bash
       run: |
         docker exec -i $CONTAINER_NAME bash -c "/ppml/trusted-big-data-ml/init.sh"
-        docker exec -i $CONTAINER_NAME bash -c "/ppml/trusted-big-data-ml/work/test-suites/pyspark-simplequery.sh
-"
+        docker exec -i $CONTAINER_NAME bash -c "/ppml/trusted-big-data-ml/work/test-suites/pyspark-simplequery.sh"
