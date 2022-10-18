@@ -22,15 +22,15 @@ wget https://repo1.maven.org/maven2/net/bytebuddy/byte-buddy/1.10.13/byte-buddy-
 wget https://repo1.maven.org/maven2/org/postgresql/postgresql/42.2.6/postgresql-42.2.6.jar
 wget https://repo1.maven.org/maven2/org/scalatestplus/scalatestplus-mockito_2.12/1.0.0-SNAP5/scalatestplus-mockito_2.12-1.0.0-SNAP5.jar
 wget https://repo1.maven.org/maven2/org/scalatestplus/scalatestplus-scalacheck_2.12/3.1.0.0-RC2/scalatestplus-scalacheck_2.12-3.1.0.0-RC2.jar
-mkdir /ppml/trusted-big-data-ml/work/spark-${SPARK_VERSION}/test-classes
-cd /ppml/trusted-big-data-ml/work/spark-${SPARK_VERSION}/test-classes
+#mkdir /ppml/trusted-big-data-ml/work/spark-${SPARK_VERSION}/test-classes
+#cd /ppml/trusted-big-data-ml/work/spark-${SPARK_VERSION}/test-classes
 wget https://repo1.maven.org/maven2/org/apache/spark/spark-sql_2.12/3.1.2/spark-sql_2.12-3.1.2-tests.jar
-jar xvf spark-sql_2.12-$SPARK_VERSION-tests.jar
-rm spark-sql_2.12-$SPARK_VERSION-tests.jar
+#jar xvf spark-sql_2.12-$SPARK_VERSION-tests.jar
+#rm spark-sql_2.12-$SPARK_VERSION-tests.jar
 
 sparkSqlSuites=("org.apache.spark.status.api.v1.sql.SqlResourceSuite" \
                 "org.apache.spark.sql.UnsafeRowSuite" \
-                "org.apache.spark.sql.TPCDSQueryWithStatsSuite" \
+                "org.apache.spark.sql.execution.columnar.compression.IntegralDeltaSuite" \
                 "org.apache.spark.sql.api.python.PythonSQLUtilsSuite")
 
 mkdir -p /ppml/trusted-big-data-ml/logs/runtime
@@ -42,7 +42,7 @@ for suite in "${sparkSqlSuites[@]}"
 do
     while true
     do
-        export sgx_command="/opt/jdk8/bin/java -cp '$SPARK_HOME/conf/:$SPARK_HOME/jars/*:$SPARK_HOME/test-jars/*:$SPARK_HOME/examples/jars/*:$SPARK_HOME/test-classes/' \
+        export sgx_command="/opt/jdk8/bin/java -cp '$SPARK_HOME/conf/:$SPARK_HOME/jars/*:$SPARK_HOME/test-jars/*:$SPARK_HOME/examples/jars/*' \
                                         -Xmx8g -Dspark.testing=true -Djdk.lang.Process.launchMechanism=posix_spawn -XX:MaxMetaspaceSize=256m -Dos.name='Linux' \
                                         -Dspark.test.home=/ppml/trusted-big-data-ml/work/spark-3.1.2 -Dspark.python.use.daemon=false -Dspark.python.worker.reuse=false \
                                         -Dspark.driver.host=127.0.0.1 org.scalatest.tools.Runner -s ${suite} -fF /ppml/trusted-big-data-ml/logs/reporter/${suite}.txt"
@@ -51,8 +51,6 @@ do
         if [ -z "$(grep "All tests passed" /ppml/trusted-big-data-ml/logs/reporter/${suite}.txt)" ]
         then
             echo "failed"
-            rm /ppml/trusted-big-data-ml/logs/reporter/${suite}.txt
-            rm /ppml/trusted-big-data-ml/logs/runtime/${suite}.log
         else
             echo "pass"
             break

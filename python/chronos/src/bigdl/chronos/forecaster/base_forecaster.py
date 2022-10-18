@@ -1200,7 +1200,7 @@ class BasePytorchForecaster(Forecaster):
                               "forecaster. You can call .to_local() to transform the "
                               "forecaster to a non-distributed version.")
         if quantized_dirname and self.onnxruntime_int8:
-            Trainer.save(self.onnxruntime_int8, dirname)
+            Trainer.save(self.onnxruntime_int8, quantized_dirname)
         if dirname:
             if self.onnxruntime_fp32 is None:
                 self.build_onnx()
@@ -1222,7 +1222,7 @@ class BasePytorchForecaster(Forecaster):
                               "forecaster. You can call .to_local() to transform the "
                               "forecaster to a non-distributed version.")
         if quantized_dirname and self.openvino_int8:
-            Trainer.save(self.openvino_int8, dirname)
+            Trainer.save(self.openvino_int8, quantized_dirname)
         if dirname:
             if self.openvino_fp32 is None:
                 self.build_openvino()

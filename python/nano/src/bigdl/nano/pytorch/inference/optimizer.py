@@ -131,33 +131,36 @@ class InferenceOptimizer:
         and record the latency, accuracy and model instance inside the Optimizer for
         future usage. All model instance is setting to eval mode.
 
-        :param model: A nn.module to be optimized
-        :param training_data: A pytorch dataloader for training dataset.
-               Users should be careful with this parameter since this dataloader
+        :param model: A torch.nn.Module to be optimized
+        :param training_data: A torch.utils.data.dataloader.DataLoader object for training
+               dataset. Users should be careful with this parameter since this dataloader
                might be exposed to the model, which causing data leak. The
                batch_size of this dataloader is important as well, users may
                want to set it to the same batch size you may want to use the model
                in real deploy environment. E.g. batch size should be set to 1
                if you would like to use the accelerated model in an online service.
-        :param validation_data: (optional) A pytorch dataloader for accuracy evaluation
-               This is only needed when users care about the possible accuracy drop.
+        :param validation_data: (optional) A torch.utils.data.dataloader.DataLoader object
+               for accuracy evaluation. This is only needed when users care about the possible
+               accuracy drop.
         :param metric: (optional) A callable object which is used for calculating accuracy.
                It supports two kinds of callable object:
-               1. A torchmetrics.Metric object or similar callable object which takes
-               prediction and target then returns an accuracy value in this calling
-               method `metric(pred, target)`. This requires data in validation_data
-               is composed of (input_data, target).
-               2. A callable object that takes model and validation_data (if
-               validation_data is not None) as input, and returns an accuracy value in
-               this calling method metric(model, data_loader) (or metric(model) if
-               validation_data is None).
+
+               | 1. A torchmetrics.Metric object or similar callable object which takes
+               | prediction and target then returns an accuracy value in this calling
+               | method `metric(pred, target)`. This requires data in validation_data
+               | is composed of (input_data, target).
+               | 2. A callable object that takes model and validation_data (if
+               | validation_data is not None) as input, and returns an accuracy value in
+               | this calling method metric(model, data_loader) (or metric(model) if
+               | validation_data is None).
+
         :param direction: (optional) A string that indicates the higher/lower
                better for the metric, "min" for the lower the better and "max" for the
                higher the better. Default value is "max".
         :param thread_num: (optional) a int represents how many threads(cores) is needed for
                inference.
         :param logging: whether to log detailed information of model conversion.
-               default: False.
+               Default: False.
         :param latency_sample_num: (optional) a int represents the number of repetitions
                to calculate the average latency. The default value is 100.
         '''
@@ -341,7 +344,7 @@ class InferenceOptimizer:
 
     def summary(self):
         '''
-        Print format string representation for optimization result
+        Print format string representation for optimization result.
         '''
         invalidOperationError(len(self.optimized_model_dict) > 0,
                               "There is no optimization result. You should call .optimize() "
@@ -363,9 +366,9 @@ class InferenceOptimizer:
         :param precision: (optional) Supported type: 'int8', 'bf16',
                defaults to None which represents 'fp32'. If not None, the will
                only find the model with thie specific precision.
-        :param use_ipex: (optional) if not NOne, then will only find the
-               model with this specific ipex setting
-        :param :param accuracy_criterion: (optional) a float represents tolerable
+        :param use_ipex: (optional) if not None, then will only find the
+               model with this specific ipex setting.
+        :param accuracy_criterion: (optional) a float represents tolerable
                accuracy drop percentage, defaults to None meaning no accuracy control.
         :return: best model, corresponding acceleration option
         '''
@@ -447,10 +450,10 @@ class InferenceOptimizer:
                  logging: bool = True,
                  **export_kwargs):
         """
-        Calibrate a Pytorch-Lightning model for post-training quantization.
+        Calibrate a torch.nn.Module for post-training quantization.
 
         :param model:           A model to be quantized. Model type should be an instance of
-                                nn.Module.
+                                torch.nn.Module.
         :param precision:       Global precision of quantized model,
                                 supported type: 'int8', 'bf16', 'fp16', defaults to 'int8'.
         :param accelerator:     Use accelerator 'None', 'onnxruntime', 'openvino', defaults to None.
@@ -494,13 +497,13 @@ class InferenceOptimizer:
                                             accelerator='onnxruntime', otherwise will be ignored.
         :param sample_size: (optional) a int represents how many samples will be used for
                             Post-training Optimization Tools (POT) from OpenVINO toolkit,
-                            only valid for accelerator='openvino'. default to 100.
+                            only valid for accelerator='openvino'. Default to 100.
                             The larger the value, the more accurate the conversion,
                             the lower the performance degradation, but the longer the time.
         :param logging: whether to log detailed information of model conversion, only valid when
-                        accelerator='openvino', otherwise will be ignored. default: True.
+                        accelerator='openvino', otherwise will be ignored. Default: ``True``.
         :param **export_kwargs: will be passed to torch.onnx.export function.
-        :return:            A accelerated Pytorch-Lightning Model if quantization is sucessful.
+        :return:            A accelerated torch.nn.Module if quantization is sucessful.
         """
         if precision == 'bf16':
             if accelerator is None:
@@ -622,7 +625,7 @@ class InferenceOptimizer:
               logging: bool = True,
               **export_kwargs):
         """
-        Trace a pytorch model and convert it into an accelerated module for inference.
+        Trace a torch.nn.Module and convert it into an accelerated module for inference.
 
         For example, this function returns a PytorchOpenVINOModel when accelerator=='openvino'.
 
@@ -638,13 +641,13 @@ class InferenceOptimizer:
         :param onnxruntime_session_options: The session option for onnxruntime, only valid when
                                             accelerator='onnxruntime', otherwise will be ignored.
         :param logging: whether to log detailed information of model conversion, only valid when
-                        accelerator='openvino', otherwise will be ignored. default: True.
+                        accelerator='openvino', otherwise will be ignored. Default: ``True``.
         :param **kwargs: other extra advanced settings include
                          1. those be passed to torch.onnx.export function, only valid when
                          accelerator='onnxruntime'/'openvino', otherwise will be ignored.
-                         2. if channels_last is set and use_ipex=True, we will transform the
+                         2. if channels_last is set and `use_ipex=True`, we will transform the
                          data to be channels last according to the setting. Defaultly, channels_last
-                         will be set to True if use_ipex=True.
+                         will be set to ``True`` if `use_ipex=True`.
         :return: Model with different acceleration.
         """
         invalidInputError(

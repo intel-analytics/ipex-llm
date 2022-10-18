@@ -3,7 +3,7 @@
 Set constant gradient clipping during the training process.
 
 ```scala
-model.setConstantGradientClipping(clipNorm)
+model.setConstantGradientClipping(min, max)
 ```
 param:
    * min: The minimum value to clip by.

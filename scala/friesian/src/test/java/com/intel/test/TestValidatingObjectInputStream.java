@@ -18,10 +18,11 @@ package com.intel.test;
 
 import java.io.Serializable;
 
-public class TestValidationgObjectInputStream implements Serializable {
+public class TestValidatingObjectInputStream implements Serializable {
 
     public String name;
-    public TestValidationgObjectInputStream() {
+
+    public TestValidatingObjectInputStream() {
         this.name = "test";
     }
 }

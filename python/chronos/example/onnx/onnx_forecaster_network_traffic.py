@@ -19,7 +19,7 @@ import numpy as np
 from sklearn.preprocessing import MinMaxScaler
 
 from bigdl.chronos.forecaster.seq2seq_forecaster import Seq2SeqForecaster
-from bigdl.chronos.data.repo_dataset import get_public_dataset
+from bigdl.chronos.data import get_public_dataset
 
 
 def get_tsdata():

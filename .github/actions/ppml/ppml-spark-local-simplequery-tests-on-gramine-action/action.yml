@@ -1,5 +1,5 @@
-name: 'PPML-spark-Local-Example-Tests-on-Gramine'
-description: 'PPML-spark-Local-Example-Tests-on-Gramine'
+name: 'PPML-spark-Local-SimpleQuery-Tests-on-Gramine'
+description: 'PPML-spark-Local-SimpleQuery-Tests-on-Gramine'
 inputs:
   image:
     description: 'image'
@@ -19,10 +19,9 @@ runs:
         DEFAULT_SGX_MEM_SIZE: 32G
         DEFAULT_IMAGE: ${{ inputs.image }}:${{ inputs.image-tag }}
       run: |
-        echo "CONTAINER_NAME=spark-exmaples-test-gramine" >> $GITHUB_ENV
+        echo "CONTAINER_NAME=spark-examples-test-gramine" >> $GITHUB_ENV
         echo "SGX_MEM_SIZE=${{ env.DEFAULT_SGX_MEM_SIZE }}" >> $GITHUB_ENV
         echo "IMAGE=${{ env.DEFAULT_IMAGE }}" >> $GITHUB_ENV
-
     - name: Start Container
       shell: bash
       run: |
@@ -36,7 +35,7 @@ runs:
         --device=/dev/sgx/provision \
         -v ~/glorysdj/kuberconfig:/root/.kube/config \
         -v /var/run/aesmd/aesm.socket:/var/run/aesmd/aesm.socket \
-        -v $ENCLAVE_KEY:/root/.config/gramine/enclave-key.pem \
+        -v $NFS_INPUT_PATH:/ppml/trusted-big-data-ml/work/data \
         -v $DATA_PATH:/ppml/trusted-big-data-ml/work/data \
         -v $KEYS_PATH:/ppml/trusted-big-data-ml/work/keys \
         -e LOCAL_IP=$LOCAL_IP \
@@ -55,13 +54,5 @@ runs:
     - name: Spark Examples Test
       shell: bash
       run: |
-        /opt/hadoop-3.2.0/bin/hadoop fs -rm -r -f hdfs://172.168.0.205:9000/spark-warehouse
-        docker exec -i $CONTAINER_NAME bash -c "/ppml/trusted-big-data-ml/work/test-suites/spark-examples.sh"
-        /opt/hadoop-3.2.0/bin/hadoop fs -rm -r -f hdfs://172.168.0.205:9000/spark-warehouse
-        docker exec -i $CONTAINER_NAME bash -c "/ppml/trusted-big-data-ml/work/test-suites/spark-sql-examples.sh"
-        /opt/hadoop-3.2.0/bin/hadoop fs -rm -r -f hdfs://172.168.0.205:9000/spark-warehouse
-        docker exec -i $CONTAINER_NAME bash -c "/ppml/trusted-big-data-ml/work/test-suites/pyspark-simple-examples.sh"
-        /opt/hadoop-3.2.0/bin/hadoop fs -rm -r -f hdfs://172.168.0.205:9000/spark-warehouse
-        docker exec -i $CONTAINER_NAME bash -c "/ppml/trusted-big-data-ml/work/test-suites/pyspark-sql-examples.sh"
-        /opt/hadoop-3.2.0/bin/hadoop fs -rm -r -f hdfs://172.168.0.205:9000/spark-warehouse
-        docker exec -i $CONTAINER_NAME bash -c "/ppml/trusted-big-data-ml/work/test-suites/pyspark-sql-api-examples.sh"
+        docker exec -i $CONTAINER_NAME bash -c "/ppml/trusted-big-data-ml/init.sh"
+        docker exec -i $CONTAINER_NAME bash -c "/ppml/trusted-big-data-ml/work/test-suites/pyspark-simplequery.sh"
