@@ -45,7 +45,7 @@ docker pull myContainerRegistry/intel_corporation/bigdl-ppml-trusted-big-data-ml
 #!/bin/bash
 
 export LOCAL_IP=YOUR_LOCAL_IP
-export DOCKER_IMAGE=intelanalytics/bigdl-ppml-trusted-big-data-ml-python-graphene
+export DOCKER_IMAGE=intel_corporation/bigdl-ppml-trusted-big-data-ml-python-graphene
 
 sudo docker run -itd \
     --privileged \
@@ -62,9 +62,14 @@ sudo docker run -itd \
     $DOCKER_IMAGE bash
 ```
 
-### 2.3 Create AKS(Azure Kubernetes Services) or use existing AKS
-Create AKS or use existing AKS with Intel SGX support.
+### 2.3 Create AKS(Azure Kubernetes Services) or use existing AKs
+First, login to your client VM and enter your BigDL PPML container:
+```bash
+docker exec -it spark-local bash
+```
+Then run `az login` to login to Azure system.
 
+Create AKS or use existing AKS with Intel SGX support.
 In your BigDL PPML container, you can run `/ppml/trusted-big-data-ml/azure/create-aks.sh` to create AKS with confidential computing support.
 
 Note: Please use the same VNet information of your client to create AKS. And use DC-Series VM size(i.e.Standard_DC8ds_v3) to create AKS.
@@ -244,6 +249,12 @@ Run such scripts to generate keys:
 ```
 When entering the passphrase or password, you could input the same password by yourself; and these passwords could also be used for the next step of generating other passwords. Password should be longer than 6 bits and contain numbers and letters, and one sample password is "3456abcd". These passwords would be used for future remote attestations and to start SGX enclaves more securely.
 
+After generate keys, run such command to save keys in Kubernetes.
+```
+kubectl apply -f /ppml/trusted-big-data-ml/work/keys/keys.yaml
+```
+
+
 ### 3.3 Generate password
 Run such script to save the password to Azure Key Vault
 ```bash
@@ -267,6 +278,11 @@ kubectl create clusterrolebinding spark-role --clusterrole=edit --serviceaccount
 ### 3.6 Run PPML spark job
 The example script to run PPML spark job on AKS is as below. You can also refer to `/ppml/trusted-big-data-ml/azure/submit-spark-sgx-az.sh`
 ```bash
+RUNTIME_SPARK_MASTER=
+export RUNTIME_DRIVER_MEMORY=8g
+export RUNTIME_DRIVER_PORT=54321
+
+BIGDL_VERSION=2.1.0
 SPARK_EXTRA_JAR_PATH=
 SPARK_JOB_MAIN_CLASS=
 ARGS=
@@ -276,66 +292,28 @@ KEY_VAULT_NAME=
 PRIMARY_KEY_PATH=
 DATA_KEY_PATH=
 
-LOCAL_IP=
-RUNTIME_SPARK_MASTER=
-
 secure_password=`az keyvault secret show --name "key-pass" --vault-name $KEY_VAULT_NAME --query "value" | sed -e 's/^"//' -e 's/"$//'`
 
-export TF_MKL_ALLOC_MAX_BYTES=10737418240 && \
-  /opt/jdk8/bin/java \
-    -cp '/ppml/trusted-big-data-ml/work/spark-3.1.2/conf/:/ppml/trusted-big-data-ml/work/spark-3.1.2/jars/*' \
-    -Xmx12g \
-    org.apache.spark.deploy.SparkSubmit \
-    --master $RUNTIME_SPARK_MASTER \
-    --deploy-mode client \
+bash bigdl-ppml-submit.sh \
+	--master $RUNTIME_SPARK_MASTER \
+	--deploy-mode client \
+	--sgx-enabled true \
+	--sgx-log-level error \
+	--sgx-driver-memory 4g \
+	--sgx-driver-jvm-memory 2g \
+	--sgx-executor-memory 16g \
+	--sgx-executor-jvm-memory 7g \
+	--driver-memory 8g \
+	--driver-cores 4 \
+	--executor-memory 18g \
+	--executor-cores 4 \
+	--num-executors 2 \
+	--conf spark.cores.max=8 \
     --name spark-decrypt-sgx \
-    --conf spark.driver.host=$LOCAL_IP
-    --conf spark.driver.memory=18g \
-    --conf spark.driver.cores=2 \
-    --conf spark.executor.cores=2 \
-    --conf spark.executor.memory=24g \
-    --conf spark.executor.instances=1 \
-    --conf spark.driver.defaultJavaOptions="-Dlog4j.configuration=/ppml/trusted-big-data-ml/work/spark-3.1.2/conf/log4j2.xml" \
-    --conf spark.executor.defaultJavaOptions="-Dlog4j.configuration=/ppml/trusted-big-data-ml/work/spark-3.1.2/conf/log4j2.xml" \
-    --conf spark.kubernetes.authenticate.driver.serviceAccountName=spark \
-    --conf spark.kubernetes.container.image=intelanalytics/bigdl-ppml-trusted-big-data-ml-python-graphene:2.1.0-SNAPSHOT \
+    --conf spark.kubernetes.container.image=intelanalytics/bigdl-ppml-trusted-big-data-ml-python-graphene:$BIGDL_VERSION \
     --conf spark.kubernetes.driver.podTemplateFile=/ppml/trusted-big-data-ml/azure/spark-driver-template-az.yaml \
     --conf spark.kubernetes.executor.podTemplateFile=/ppml/trusted-big-data-ml/azure/spark-executor-template-az.yaml \
-    --conf spark.kubernetes.executor.deleteOnTermination=false \
-    --conf spark.network.timeout=10000000 \
-    --conf spark.executor.heartbeatInterval=10000000 \
-    --conf spark.python.use.daemon=false \
-    --conf spark.python.worker.reuse=false \
-    --conf spark.sql.auto.repartition=true \
-    --conf spark.default.parallelism=400 \
-    --conf spark.sql.shuffle.partitions=400 \
     --jars local://$SPARK_EXTRA_JAR_PATH \
-    --conf spark.kubernetes.sgx.enabled=true \
-    --conf spark.kubernetes.sgx.driver.mem=16g \
-    --conf spark.kubernetes.sgx.driver.jvm.mem=7g \
-    --conf spark.kubernetes.sgx.executor.mem=16g \
-    --conf spark.kubernetes.sgx.executor.jvm.mem=7g \
-    --conf spark.kubernetes.sgx.log.level=error \
-    --conf spark.authenticate=true \
-    --conf spark.authenticate.secret=$secure_password \
-    --conf spark.kubernetes.executor.secretKeyRef.SPARK_AUTHENTICATE_SECRET="spark-secret:secret" \
-    --conf spark.kubernetes.driver.secretKeyRef.SPARK_AUTHENTICATE_SECRET="spark-secret:secret" \
-    --conf spark.authenticate.enableSaslEncryption=true \
-    --conf spark.network.crypto.enabled=true \
-    --conf spark.network.crypto.keyLength=128 \
-    --conf spark.network.crypto.keyFactoryAlgorithm=PBKDF2WithHmacSHA1 \
-    --conf spark.io.encryption.enabled=true \
-    --conf spark.io.encryption.keySizeBits=128 \
-    --conf spark.io.encryption.keygen.algorithm=HmacSHA1 \
-    --conf spark.ssl.enabled=true \
-    --conf spark.ssl.port=8043 \
-    --conf spark.ssl.keyPassword=$secure_password \
-    --conf spark.ssl.keyStore=/ppml/trusted-big-data-ml/work/keys/keystore.jks \
-    --conf spark.ssl.keyStorePassword=$secure_password \
-    --conf spark.ssl.keyStoreType=JKS \
-    --conf spark.ssl.trustStore=/ppml/trusted-big-data-ml/work/keys/keystore.jks \
-    --conf spark.ssl.trustStorePassword=$secure_password \
-    --conf spark.ssl.trustStoreType=JKS \
     --conf spark.hadoop.fs.azure.account.auth.type.${DATA_LAKE_NAME}.dfs.core.windows.net=SharedKey \
     --conf spark.hadoop.fs.azure.account.key.${DATA_LAKE_NAME}.dfs.core.windows.net=${DATA_LAKE_ACCESS_KEY} \
     --conf spark.hadoop.fs.azure.enable.append.support=true \
@@ -380,7 +358,8 @@ Generate primary key and data key, then save to file system.
 
 The example code for generating the primary key and data key is like below:
 ```
-java -cp '/ppml/trusted-big-data-ml/work/bigdl-2.1.0-SNAPSHOT/jars/*:/ppml/trusted-big-data-ml/work/spark-3.1.2/conf/:/ppml/trusted-big-data-ml/work/spark-3.1.2/jars/* \
+BIGDL_VERSION=2.1.0
+java -cp '/ppml/trusted-big-data-ml/work/bigdl-$BIGDL_VERSION/jars/*:/ppml/trusted-big-data-ml/work/spark-3.1.2/conf/:/ppml/trusted-big-data-ml/work/spark-3.1.2/jars/* \
    -Xmx10g \
    com.intel.analytics.bigdl.ppml.examples.GenerateKeys \
    --kmsType AzureKeyManagementService \
@@ -394,7 +373,8 @@ Encrypt data with specified BigDL `AzureKeyManagementService`
 
 The example code of encrypting data is like below:
 ```
-java -cp '/ppml/trusted-big-data-ml/work/bigdl-2.1.0-SNAPSHOT/jars/*:/ppml/trusted-big-data-ml/work/spark-3.1.2/conf/:/ppml/trusted-big-data-ml/work/spark-3.1.2/jars/* \
+BIGDL_VERSION=2.1.0
+java -cp '/ppml/trusted-big-data-ml/work/bigdl-$BIGDL_VERSION/jars/*:/ppml/trusted-big-data-ml/work/spark-3.1.2/conf/:/ppml/trusted-big-data-ml/work/spark-3.1.2/jars/* \
    -Xmx10g \
    com.intel.analytics.bigdl.ppml.examples.tpch.EncryptFiles \
    --kmsType AzureKeyManagementService \
@@ -420,75 +400,44 @@ location of the input data and where the output should be saved.
 The example script to run a query is like:
 
 ```
+export RUNTIME_DRIVER_MEMORY=8g
+export RUNTIME_DRIVER_PORT=54321
+
 secure_password=`az keyvault secret show --name "key-pass" --vault-name $KEY_VAULT_NAME --query "value" | sed -e 's/^"//' -e 's/"$//'`
 
+BIGDL_VERSION=2.1.0
 DATA_LAKE_NAME=
 DATA_LAKE_ACCESS_KEY=
 KEY_VAULT_NAME=
 PRIMARY_KEY_PATH=
 DATA_KEY_PATH=
 
-LOCAL_IP=
 RUNTIME_SPARK_MASTER=
 INPUT_DIR=xxx/dbgen-encrypted
 OUTPUT_DIR=xxx/output
 
-export TF_MKL_ALLOC_MAX_BYTES=10737418240 && \
-  /opt/jdk8/bin/java \
-    -cp '/ppml/trusted-big-data-ml/work/bigdl-2.1.0-SNAPSHOT/jars/*:/ppml/trusted-big-data-ml/work/spark-3.1.2/conf/:/ppml/trusted-big-data-ml/work/spark-3.1.2/jars/*' \
-    -Xmx10g \
-    -Dbigdl.mklNumThreads=1 \
-    org.apache.spark.deploy.SparkSubmit \
-    --master $RUNTIME_SPARK_MASTER \
-    --deploy-mode client \
+bash bigdl-ppml-submit.sh \
+	--master $RUNTIME_SPARK_MASTER \
+	--deploy-mode client \
+	--sgx-enabled true \
+	--sgx-log-level error \
+	--sgx-driver-memory 4g \
+	--sgx-driver-jvm-memory 2g \
+	--sgx-executor-memory 16g \
+	--sgx-executor-jvm-memory 7g \
+	--driver-memory 8g \
+	--driver-cores 4 \
+	--executor-memory 18g \
+	--executor-cores 4 \
+	--num-executors 2 \
+	--conf spark.cores.max=8 \
     --name spark-tpch-sgx \
-	--conf spark.driver.host=$LOCAL_IP
-    --conf spark.driver.memory=18g \
-    --conf spark.driver.cores=2 \
-    --conf spark.executor.cores=2 \
-    --conf spark.executor.memory=24g \
-    --conf spark.executor.instances=2 \
-    --conf spark.driver.defaultJavaOptions="-Dlog4j.configuration=/ppml/trusted-big-data-ml/work/spark-3.1.2/conf/log4j2.xml" \
-    --conf spark.executor.defaultJavaOptions="-Dlog4j.configuration=/ppml/trusted-big-data-ml/work/spark-3.1.2/conf/log4j2.xml" \
-    --conf spark.kubernetes.authenticate.driver.serviceAccountName=spark \
-    --conf spark.kubernetes.container.image=intelanalytics/bigdl-ppml-trusted-big-data-ml-python-graphene:2.1.0-SNAPSHOT \
+    --conf spark.kubernetes.container.image=intelanalytics/bigdl-ppml-trusted-big-data-ml-python-graphene:$BIGDL_VERSION \
     --conf spark.kubernetes.driver.podTemplateFile=/ppml/trusted-big-data-ml/azure/spark-driver-template-az.yaml \
     --conf spark.kubernetes.executor.podTemplateFile=/ppml/trusted-big-data-ml/azure/spark-executor-template-az.yaml \
-    --conf spark.kubernetes.executor.deleteOnTermination=false \
-    --conf spark.network.timeout=10000000 \
-    --conf spark.executor.heartbeatInterval=10000000 \
-    --conf spark.python.use.daemon=false \
-    --conf spark.python.worker.reuse=false \
     --conf spark.sql.auto.repartition=true \
     --conf spark.default.parallelism=400 \
     --conf spark.sql.shuffle.partitions=400 \
-    --jars local://$SPARK_EXTRA_JAR_PATH \
-    --conf spark.kubernetes.sgx.enabled=true \
-    --conf spark.kubernetes.sgx.driver.mem=16g \
-    --conf spark.kubernetes.sgx.driver.jvm.mem=7g \
-    --conf spark.kubernetes.sgx.executor.mem=16g \
-    --conf spark.kubernetes.sgx.executor.jvm.mem=7g \
-    --conf spark.kubernetes.sgx.log.level=error \
-    --conf spark.authenticate=true \
-    --conf spark.authenticate.secret=$secure_password \
-    --conf spark.kubernetes.executor.secretKeyRef.SPARK_AUTHENTICATE_SECRET="spark-secret:secret" \
-    --conf spark.kubernetes.driver.secretKeyRef.SPARK_AUTHENTICATE_SECRET="spark-secret:secret" \
-    --conf spark.authenticate.enableSaslEncryption=true \
-    --conf spark.network.crypto.enabled=true \
-    --conf spark.network.crypto.keyLength=128 \
-    --conf spark.network.crypto.keyFactoryAlgorithm=PBKDF2WithHmacSHA1 \
-    --conf spark.io.encryption.enabled=true \
-    --conf spark.io.encryption.keySizeBits=128 \
-    --conf spark.io.encryption.keygen.algorithm=HmacSHA1 \
-    --conf spark.ssl.enabled=true \
-    --conf spark.ssl.port=8043 \
-    --conf spark.ssl.keyPassword=$secure_password \
-    --conf spark.ssl.keyStore=/ppml/trusted-big-data-ml/work/keys/keystore.jks \
-    --conf spark.ssl.keyStorePassword=$secure_password \
-    --conf spark.ssl.keyStoreType=JKS \
-    --conf spark.ssl.trustStore=/ppml/trusted-big-data-ml/work/keys/keystore.jks \
-    --conf spark.ssl.trustStorePassword=$secure_password \
-    --conf spark.ssl.trustStoreType=JKS \
     --conf spark.hadoop.fs.azure.account.auth.type.${DATA_LAKE_NAME}.dfs.core.windows.net=SharedKey \
     --conf spark.hadoop.fs.azure.account.key.${DATA_LAKE_NAME}.dfs.core.windows.net=${DATA_LAKE_ACCESS_KEY} \
     --conf spark.hadoop.fs.azure.enable.append.support=true \
@@ -498,7 +447,7 @@ export TF_MKL_ALLOC_MAX_BYTES=10737418240 && \
     --conf spark.bigdl.kms.key.data=$DATA_KEY_PATH \
     --class $SPARK_JOB_MAIN_CLASS \
     --verbose \
-    /ppml/trusted-big-data-ml/work/bigdl-2.1.0-SNAPSHOT/jars/bigdl-ppml-spark_3.1.2-2.1.0-SNAPSHOT.jar \
+    local:///ppml/trusted-big-data-ml/work/bigdl-$BIGDL_VERSION/jars/bigdl-ppml-spark_3.1.2-$BIGDL_VERSION-SNAPSHOT.jar \
     $INPUT_DIR $OUTPUT_DIR aes_cbc_pkcs5padding plain_text [QUERY]
 ```
 

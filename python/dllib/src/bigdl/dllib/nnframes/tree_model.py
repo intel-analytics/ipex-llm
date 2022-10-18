@@ -30,13 +30,13 @@ class XGBClassifier():
         self.value = callZooFunc("float", "getXGBClassifier", params)
 
     def setNthread(self, value: int):
-        callZooFunc("float", "setXGBClassifierNthread", self.value, value)
+        return callZooFunc("float", "setXGBClassifierNthread", self.value, value)
 
     def setNumRound(self, value: int):
-        callZooFunc("float", "setXGBClassifierNumRound", self.value, value)
+        return callZooFunc("float", "setXGBClassifierNumRound", self.value, value)
 
     def setNumWorkers(self, value: int):
-        callZooFunc("float", "setXGBClassifierNumWorkers", self.value, value)
+        return callZooFunc("float", "setXGBClassifierNumWorkers", self.value, value)
 
     def fit(self, df):
         model = callZooFunc("float", "fitXGBClassifier", self.value, df)
@@ -80,13 +80,13 @@ class XGBClassifierModel:
         self.value = jvalue
 
     def setFeaturesCol(self, features):
-        callZooFunc("float", "setFeaturesXGBClassifierModel", self.value, features)
+        return callZooFunc("float", "setFeaturesXGBClassifierModel", self.value, features)
 
     def setPredictionCol(self, prediction):
-        callZooFunc("float", "setPredictionXGBClassifierModel", self.value, prediction)
+        return callZooFunc("float", "setPredictionXGBClassifierModel", self.value, prediction)
 
     def setInferBatchSize(self, batch_size):
-        callZooFunc("float", "setInferBatchSizeXGBClassifierModel", self.value, batch_size)
+        return callZooFunc("float", "setInferBatchSizeXGBClassifierModel", self.value, batch_size)
 
     def transform(self, dataset):
         df = callZooFunc("float", "transformXGBClassifierModel", self.value, dataset)
@@ -107,19 +107,19 @@ class XGBClassifierModel:
 
 
 class XGBRegressor():
-    def __init__(self):
+    def __init__(self, params=None):
         super(XGBRegressor, self).__init__()
         bigdl_type = "float"
-        self.value = callZooFunc("float", "getXGBRegressor")
+        self.value = callZooFunc("float", "getXGBRegressor", params)
 
     def setNthread(self, value: int):
-        callZooFunc("float", "setXGBRegressorNthread", self.value, value)
+        return callZooFunc("float", "setXGBRegressorNthread", self.value, value)
 
     def setNumRound(self, value: int):
-        callZooFunc("float", "setXGBRegressorNumRound", self.value, value)
+        return callZooFunc("float", "setXGBRegressorNumRound", self.value, value)
 
     def setNumWorkers(self, value: int):
-        callZooFunc("float", "setXGBRegressorNumWorkers", self.value, value)
+        return callZooFunc("float", "setXGBRegressorNumWorkers", self.value, value)
 
     def fit(self, df):
         model = callZooFunc("float", "fitXGBRegressor", self.value, df)
@@ -133,13 +133,13 @@ class XGBRegressorModel:
         self.value = jvalue
 
     def setFeaturesCol(self, features):
-        callZooFunc("float", "setFeaturesXGBRegressorModel", self.value, features)
+        return callZooFunc("float", "setFeaturesXGBRegressorModel", self.value, features)
 
     def setPredictionCol(self, prediction):
-        callZooFunc("float", "setPredictionXGBRegressorModel", self.value, prediction)
+        return callZooFunc("float", "setPredictionXGBRegressorModel", self.value, prediction)
 
     def setInferBatchSize(self, value: int):
-        callZooFunc("float", "setInferBatchSizeXGBRegressorModel", self.value, value)
+        return callZooFunc("float", "setInferBatchSizeXGBRegressorModel", self.value, value)
 
     def transform(self, dataset):
         df = callZooFunc("float", "transformXGBRegressorModel", self.value, dataset)
