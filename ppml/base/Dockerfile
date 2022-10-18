@@ -86,7 +86,7 @@ RUN env DEBIAN_FRONTEND=noninteractive apt-get update && \
 # java
 ARG JDK_VERSION=8u192
 ARG JDK_URL
-ARG SPARK_VERSION=3.1.2
+ARG SPARK_VERSION=3.1.3
 ENV SPARK_VERSION ${SPARK_VERSION}
 ENV JAVA_HOME           /opt/jdk$JDK_VERSION
 ENV PATH                ${JAVA_HOME}/bin:${PATH}
@@ -98,11 +98,11 @@ RUN wget $JDK_URL && \
     ln -s /opt/jdk$JDK_VERSION /opt/jdk
 
 ADD ./download_jars.sh /ppml
-RUN cd /ppml && \
-    bash ./download_jars.sh
-
 ADD ./entrypoint.sh /opt/entrypoint.sh
-RUN chmod +x /opt/entrypoint.sh 
+
+RUN cd /ppml && \
+    bash ./download_jars.sh && \
+    chmod +x /opt/entrypoint.sh 
 
 ENV PYTHONPATH   /usr/lib/python3.7:/usr/lib/python3.7/lib-dynload:/usr/local/lib/python3.7/dist-packages:/usr/lib/python3/dist-packages
 WORKDIR /ppml
