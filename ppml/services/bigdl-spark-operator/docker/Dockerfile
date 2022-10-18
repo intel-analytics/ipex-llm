@@ -138,7 +138,7 @@ RUN mkdir -p /etc/metrics/conf
 COPY metrics.properties /etc/metrics/conf
 COPY prometheus.yaml /etc/metrics/conf
 USER root
-ADD ./spark-operator /usr/bin/
+ADD ./spark-operator /usr/bin/ # todo, download the binary file from a link
 RUN apt-get update --allow-releaseinfo-change \
     && apt-get update \
     && apt-get install -y openssl curl tini \
