@@ -82,6 +82,37 @@ class RedirectStream(object):
         os.close(self.origin_stream_fileno_dup)
 
 
+@contextlib.contextmanager
+def stdout_redirected(to=os.devnull):
+    """
+    Only redirect cpp stdout to file or os.devnull
+    import os
+
+    with stdout_redirected(to=filename):
+        print("from Python")
+        os.system("echo non-Python applications are also supported")
+    """
+    fd = sys.stdout.fileno()
+
+    def _redirect_stdout(to):
+        sys.stdout.close()
+        os.dup2(to.fileno(), fd)
+        # Python writes to fd
+        sys.stdout = os.fdopen(fd, 'w')
+
+    with os.fdopen(os.dup(fd), 'w') as old_stdout:
+        with open(to, 'w') as file:
+            _redirect_stdout(to=file)
+        try:
+            # allow code to be run with the redirected stdout
+            yield
+        finally:
+            # restore stdout.
+            # buffering and flags such as
+            # CLOEXEC may be different
+            _redirect_stdout(to=old_stdout)
+
+
 class BF16Model(LightningModule):
     """Model of BFloat16 with auto mixed precision."""
 
@@ -93,7 +124,7 @@ class BF16Model(LightningModule):
     def _has_bf16_isa(self):
         """Indicator to verify if bf16 instructions are available."""
         msg = subprocess.check_output(["lscpu"]).decode("utf-8")
-        return "avx512_core_bf16" in msg or "amx_bf16" in msg
+        return "avx512_core_bf16" in msg or "amx_bf16" in msg or "avx512_bf16" in msg
 
     @property
     def _allow_non_bf16(self):
@@ -111,12 +142,15 @@ class BF16Model(LightningModule):
 
         :return:True/False
         """
-        dnnl_log = io.StringIO()
-        with contextlib.redirect_stdout(dnnl_log):
+        dnnl_log_file = "dnnl_log.log"
+        with stdout_redirected(dnnl_log_file):
             os.environ['DNNL_VERBOSE'] = '1'
             self.bf16_model(*args, **kwargs)
-            os.environ['DNNL_VERBOSE'] = '0'
-        dnnl_log = dnnl_log.getvalue()
+        dnnl_log = ""
+        with open(dnnl_log_file, "r") as f:
+            dnnl_log = f.read()
+        if os.path.exists(dnnl_log_file):
+            os.remove(dnnl_log_file)
         max_bf16_isa = None
         if 'amx_bf16' in dnnl_log:
             max_bf16_isa = "AMX"
@@ -141,20 +175,22 @@ class BF16Model(LightningModule):
         # ALLOW_NON_BF16_ISA indicates if we restrict bf16 instructions support to be available.
         # ALLOW_NON_BF16_ISA='1' sometimes helps debug and test cases without AVX512 or AMX
         if self._has_bf16_isa:
-            max_bf16_isa = self._max_bf16_isa(*args, **kwargs)
-            if max_bf16_isa:
-                info("{} BF16 support is enabled in this model.".format(max_bf16_isa))
-                self._is_bf16 = True
-            else:
-                if self._allow_non_bf16:
-                    self._is_bf16 = False
-                else:
-                    invalidOperationError(
-                        False,
-                        errMsg="BF16 ISA support is not enabled under current context.",
-                        fixMsg="Please try to upgrade your pytorch version to obtain"
-                               " BF16 acceleration."
-                    )
+            self._is_bf16 = True
+            # TODO: enable if torch >= 1.13, reference: https://github.com/pytorch/pytorch/commit/0e957465802204fb30e2a94cd330c16ba71955a6#diff-d730aecf3ceee9216948ee50d46f015c327d65b9f0c4981ef7adfa44dddc2673
+            # max_bf16_isa = self._max_bf16_isa(*args, **kwargs)
+            # if max_bf16_isa:
+            #     info("{} BF16 support is enabled in this model.".format(max_bf16_isa))
+            #     self._is_bf16 = True
+            # else:
+            #     if self._allow_non_bf16:
+            #         self._is_bf16 = False
+            #     else:
+            #         invalidOperationError(
+            #             False,
+            #             errMsg="BF16 ISA support is not enabled under current context.",
+            #             fixMsg="Please try to upgrade your pytorch version to obtain"
+            #                    " BF16 acceleration."
+            #         )
         else:
             if self._allow_non_bf16:
                 self._is_bf16 = False
