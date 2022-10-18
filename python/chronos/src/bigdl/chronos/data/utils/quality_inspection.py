@@ -105,28 +105,30 @@ def _time_interval_check(df, dt_col, id_col=None):
     are consistent.
     '''
     if id_col is not None:
-        _id_list = list(np.unique(df[id_col]))
-
+        # _id_list = list(np.unique(df[id_col]))
+        _id_list = df[id_col].unique()
     # check whether exists multi id
     if id_col is not None and len(_id_list) > 1:
         flag = True
-        intervals = {}
-        for id_ in _id_list:
-            df_id = df[df[id_col] == id_]
-            df_column = df_id[dt_col]
+
+        def get_interval(x):
+            df_column = x[dt_col]
             interval = df_column.shift(-1) - df_column
             unique_intervals = interval[:-1].unique()
-            intervals[id_] = interval
+            return unique_intervals
+        group = df.groupby(id_col).apply(get_interval)
+        for ind in group.index:
+            unique_intervals = group[ind]
             if len(unique_intervals) > 1:
                 flag = False
         if flag is True:
-            return True, intervals
+            return True, None
         else:
             logging.warning("There are irregular interval(more than one interval length)"
                             " among the data. You can call .resample(interval).impute() "
                             "first to clean the data manually, or set repair=True when "
                             "initialize TSDataset.")
-            return False, intervals
+            return False, None
     else:
         df_column = df[dt_col]
         intervals = df_column.shift(-1) - df_column
@@ -145,25 +147,25 @@ def _time_interval_repair(df, dt_col, intervals, id_col=None):
     This check is used to get consitent time interval by resample data according to
     the mode of original intervals.
     '''
-    if id_col is not None and isinstance(intervals, dict):
+    if id_col is not None and intervals is None:
         # multi_id case
-        new_df = []
-        for id_, interval in intervals.items():
-            mode = interval[:-1].mode()[0]  # Timedelta
-            from bigdl.chronos.data.utils.resample import resample_timeseries_dataframe
-            # TODO: how to change into inplace modification
-            df_id = df[df[id_col] == id_]
-            try:
-                df_ = resample_timeseries_dataframe(df_id, dt_col=dt_col,
-                                                    interval=mode,
-                                                    id_col=id_col)
-                logging.warning(f"Dataframe has be resampled according to interval {mode}.")
-                # df[df[id_col] == id_] = df_
-                new_df.append(df_)
-            except:
-                return df, False
-        new_df = pd.concat(new_df, axis=0, ignore_index=True)
-        return new_df, True
+        from bigdl.chronos.data.utils.resample import resample_timeseries_dataframe
+        try:
+            def resample_interval(x):
+                df_column = x[dt_col]
+                interval = df_column.shift(-1) - df_column
+                intervals = interval[:-1]
+                mode = intervals.mode()[0]  # Timedelta
+                df = resample_timeseries_dataframe(x, dt_col=dt_col,
+                                                   interval=mode,
+                                                   id_col=id_col)
+                return df
+            new_df = df.groupby(id_col, as_index=False).apply(resample_interval)
+            new_df.reset_index(drop=True, inplace=True)
+            logging.warning("Dataframe has be resampled.")
+            return new_df, True
+        except:
+            return df, False
     else:
         mode = intervals[:-1].mode()[0]  # Timedelta
         from bigdl.chronos.data.utils.resample import resample_timeseries_dataframe
