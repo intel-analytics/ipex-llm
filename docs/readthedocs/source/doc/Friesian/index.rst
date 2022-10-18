@@ -11,6 +11,7 @@ Friesian provides end-to-end support for three typical stages in a modern recomm
 - Nearline stage: Feature and model updates.
 - Online stage: Recall and ranking.
 
+-------
 
 .. grid:: 1 2 2 2
     :gutter: 2

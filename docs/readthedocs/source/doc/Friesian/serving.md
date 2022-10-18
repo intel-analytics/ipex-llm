@@ -85,61 +85,61 @@ You can run Friesian Serving Recommendation Framework using the official Docker 
 You can follow the following steps to run the WnD demo.
 
 1. Pull docker image from dockerhub
-```bash
-docker pull intelanalytics/friesian-grpc:0.0.2
-```
+   ```bash
+   docker pull intelanalytics/friesian-grpc:0.0.2
+   ```
 
 2. Run & enter docker container
-```bash
-docker run -itd --name friesian --net=host intelanalytics/friesian-grpc:0.0.2
-docker exec -it friesian bash
-```
+   ```bash
+   docker run -itd --name friesian --net=host intelanalytics/friesian-grpc:0.0.2
+   docker exec -it friesian bash
+   ```
 
 3. Add vec_feature_user_prediction.parquet, vec_feature_item_prediction.parquet, wnd model,
    wnd_item.parquet and wnd_user.parquet (You can check [the schema of the parquet files](#schema-of-the-parquet-files))
 
 4. Start ranking service
-```bash
-export OMP_NUM_THREADS=1
-java -cp bigdl-friesian-serving-spark_2.4.6-0.14.0-SNAPSHOT.jar com.intel.analytics.bigdl.friesian.serving.ranking.RankingServer -c config_ranking.yaml > logs/inf.log 2>&1 &
-```
+   ```bash
+   export OMP_NUM_THREADS=1
+   java -cp bigdl-friesian-serving-spark_2.4.6-0.14.0-SNAPSHOT.jar com.intel.analytics.bigdl.friesian.serving.ranking.RankingServer -c config_ranking.yaml > logs/inf.log 2>&1 &
+   ```
 
 5. Start feature service for recommender service
-```bash
-./redis-5.0.5/src/redis-server &
-java -Dspark.master=local[*] -cp bigdl-friesian-serving-spark_2.4.6-0.14.0-SNAPSHOT.jar com.intel.analytics.bigdl.friesian.serving.feature.FeatureServer -c config_feature.yaml > logs/feature.log 2>&1 &
-```
+   ```bash
+   ./redis-5.0.5/src/redis-server &
+   java -Dspark.master=local[*] -cp bigdl-friesian-serving-spark_2.4.6-0.14.0-SNAPSHOT.jar com.intel.analytics.bigdl.friesian.serving.feature.FeatureServer -c config_feature.yaml > logs/feature.log 2>&1 &
+   ```
 
 6. Start feature service for recall service
-```bash
-java -Dspark.master=local[*] -cp bigdl-friesian-serving-spark_2.4.6-0.14.0-SNAPSHOT.jar com.intel.analytics.bigdl.friesian.serving.feature.FeatureServer -c config_feature_vec.yaml > logs/fea_recall.log 2>&1 &
-```
+   ```bash
+   java -Dspark.master=local[*] -cp bigdl-friesian-serving-spark_2.4.6-0.14.0-SNAPSHOT.jar com.intel.analytics.bigdl.friesian.serving.feature.FeatureServer -c config_feature_vec.yaml > logs/fea_recall.log 2>&1 &
+   ```
 
 7. Start recall service
-```bash
-java -Dspark.master=local[*] -Dspark.driver.maxResultSize=2G -cp bigdl-friesian-serving-spark_2.4.6-0.14.0-SNAPSHOT.jar com.intel.analytics.bigdl.friesian.serving.recall.RecallServer -c config_recall.yaml > logs/vec.log 2>&1 &
-```
+   ```bash
+   java -Dspark.master=local[*] -Dspark.driver.maxResultSize=2G -cp bigdl-friesian-serving-spark_2.4.6-0.14.0-SNAPSHOT.jar com.intel.analytics.bigdl.friesian.serving.recall.RecallServer -c config_recall.yaml > logs/vec.log 2>&1 &
+   ```
 
 8. Start recommender service
-```bash
-java -cp bigdl-friesian-serving-spark_2.4.6-0.14.0-SNAPSHOT.jar com.intel.analytics.bigdl.friesian.serving.recommender.RecommenderServer -c config_recommender.yaml > logs/rec.log 2>&1 &
-```
+   ```bash
+   java -cp bigdl-friesian-serving-spark_2.4.6-0.14.0-SNAPSHOT.jar com.intel.analytics.bigdl.friesian.serving.recommender.RecommenderServer -c config_recommender.yaml > logs/rec.log 2>&1 &
+   ```
 
 9. Check if the services are running
-```bash
-ps aux|grep friesian
-```
-You will see 5 processes start with 'java'
+   ```bash
+   ps aux|grep friesian
+   ```
+   You will see 5 processes start with 'java'
 
 10. Run client to test
-```bash
-java -Dspark.master=local[*] -cp bigdl-friesian-serving-spark_2.4.6-0.14.0-SNAPSHOT.jar com.intel.analytics.bigdl.friesian.serving.recommender.RecommenderMultiThreadClient -target localhost:8980 -dataDir wnd_user.parquet -k 50 -clientNum 4 -testNum 2
-```
+    ```bash
+    java -Dspark.master=local[*] -cp bigdl-friesian-serving-spark_2.4.6-0.14.0-SNAPSHOT.jar com.intel.analytics.bigdl.friesian.serving.recommender.RecommenderMultiThreadClient -target localhost:8980 -dataDir wnd_user.parquet -k 50 -clientNum 4 -testNum 2
+    ```
 11. Close services
-```bash
-ps aux|grep friesian (find the service pid)
-kill xxx (pid of the service which should be closed)
-```
+    ```bash
+    ps aux|grep friesian (find the service pid)
+    kill xxx (pid of the service which should be closed)
+    ```
 
 ### Schema of the parquet files
 
@@ -228,211 +228,211 @@ modelParallelism: 4
 ##### Feature Service Config
 Config with example:
 1. load data into redis. Search data from redis
-```yaml
-### Basic setting
-# Default: 8980, which port to create the server
-servicePort: 8082
+   ```yaml
+   ### Basic setting
+   # Default: 8980, which port to create the server
+   servicePort: 8082
 
-# Default: null, open a port for prometheus monitoring tool, if set, user can check the
-# performance using prometheus
-monitorPort: 1235
+   # Default: null, open a port for prometheus monitoring tool, if set, user can check the
+   # performance using prometheus
+   monitorPort: 1235
 
-# 'kv' or 'inference' default: kv
-serviceType: kv
+   # 'kv' or 'inference' default: kv
+   serviceType: kv
 
-# default: false, if need to load initial data to redis, set true
-loadInitialData: true
+   # default: false, if need to load initial data to redis, set true
+   loadInitialData: true
 
-# default: "", prefix for redis key
-redisKeyPrefix:
+   # default: "", prefix for redis key
+   redisKeyPrefix:
 
-# default: 0, item slot type on redis cluster. 0 means slot number use the default value 16384, 1 means all keys save to same slot, 2 means use the last character of id as hash tag.
-redisClusterItemSlotType: 2
+   # default: 0, item slot type on redis cluster. 0 means slot number use the default value 16384, 1 means all keys save to same slot, 2 means use the last character of id as hash tag.
+   redisClusterItemSlotType: 2
 
-# default: null, if loadInitialData=true, initialUserDataPath or initialItemDataPath must be
-# provided. Only support parquet file
-initialUserDataPath: /home/yina/Documents/data/recsys/preprocess_output/wnd_user.parquet
-initialItemDataPath: /home/yina/Documents/data/recsys/preprocess_output/wnd_exp1/wnd_item.parquet
+   # default: null, if loadInitialData=true, initialUserDataPath or initialItemDataPath must be
+   # provided. Only support parquet file
+   initialUserDataPath: /home/yina/Documents/data/recsys/preprocess_output/wnd_user.parquet
+   initialItemDataPath: /home/yina/Documents/data/recsys/preprocess_output/wnd_exp1/wnd_item.parquet
 
-# default: null, if loadInitialData=true and initialUserDataPath != null, userIDColumn and
-# userFeatureColumns must be provided
-userIDColumn: enaging_user_id
-userFeatureColumns: enaging_user_follower_count,enaging_user_following_count
+   # default: null, if loadInitialData=true and initialUserDataPath != null, userIDColumn and
+   # userFeatureColumns must be provided
+   userIDColumn: enaging_user_id
+   userFeatureColumns: enaging_user_follower_count,enaging_user_following_count
 
-# default: null, if loadInitialData=true and initialItemDataPath != null, userIDColumn and
-# userFeatureColumns must be provided
-itemIDColumn: tweet_id
-itemFeatureColumns: present_media, language, tweet_id, hashtags, present_links, present_domains, tweet_type, engaged_with_user_follower_count,engaged_with_user_following_count, len_hashtags, len_domains, len_links, present_media_language, tweet_id_engaged_with_user_id
+   # default: null, if loadInitialData=true and initialItemDataPath != null, userIDColumn and
+   # userFeatureColumns must be provided
+   itemIDColumn: tweet_id
+   itemFeatureColumns: present_media, language, tweet_id, hashtags, present_links, present_domains, tweet_type, engaged_with_user_follower_count,engaged_with_user_following_count, len_hashtags, len_domains, len_links, present_media_language, tweet_id_engaged_with_user_id
 
-# default: null, user model path or item model path must be provided if serviceType
-# contains 'inference'. If serviceType=kv, usermodelPath, itemModelPath and modelParallelism will
-# be ignored
-# userModelPath:
+   # default: null, user model path or item model path must be provided if serviceType
+   # contains 'inference'. If serviceType=kv, usermodelPath, itemModelPath and modelParallelism will
+   # be ignored
+   # userModelPath:
 
-# default: null, user model path or item model path must be provided if serviceType
-# contains 'inference'. If serviceType=kv, usermodelPath, itemModelPath and modelParallelism will
-# be ignored
-# itemModelPath:
+   # default: null, user model path or item model path must be provided if serviceType
+   # contains 'inference'. If serviceType=kv, usermodelPath, itemModelPath and modelParallelism will
+   # be ignored
+   # itemModelPath:
 
-# default: 1, number of models used for inference
-# modelParallelism:
+   # default: 1, number of models used for inference
+   # modelParallelism:
 
-### Redis Configuration
-# default: localhost:6379
-# redisUrl:
+   ### Redis Configuration
+   # default: localhost:6379
+   # redisUrl:
 
-# default: 256, JedisPoolMaxTotal
-# redisPoolMaxTotal:
-```
+   # default: 256, JedisPoolMaxTotal
+   # redisPoolMaxTotal:
+   ```
 
 2. load user features into redis. Get features from redis, use model at 'userModelPath' to do
    inference and get the user embedding
-```yaml
-### Basic setting
-# Default: 8980, which port to create the server
-servicePort: 8085
+   ```yaml
+   ### Basic setting
+   # Default: 8980, which port to create the server
+   servicePort: 8085
 
-# Default: null, open a port for prometheus monitoring tool, if set, user can check the
-# performance using prometheus
-monitorPort: 1236
+   # Default: null, open a port for prometheus monitoring tool, if set, user can check the
+   # performance using prometheus
+   monitorPort: 1236
 
-# 'kv' or 'inference' default: kv
-serviceType: kv, inference
+   # 'kv' or 'inference' default: kv
+   serviceType: kv, inference
 
-# default: false, if need to load initial data to redis, set true
-loadInitialData: true
+   # default: false, if need to load initial data to redis, set true
+   loadInitialData: true
 
-# default: ""
-redisKeyPrefix: 2tower_
+   # default: ""
+   redisKeyPrefix: 2tower_
 
-# default: 0, item slot type on redis cluster. 0 means slot number use the default value 16384, 1 means all keys save to same slot, 2 means use the last character of id as hash tag.
-redisClusterItemSlotType: 2
+   # default: 0, item slot type on redis cluster. 0 means slot number use the default value 16384, 1 means all keys save to same slot, 2 means use the last character of id as hash tag.
+   redisClusterItemSlotType: 2
 
-# default: null, if loadInitialData=true, initialDataPath must be provided. Only support parquet
-# file
-initialUserDataPath: /home/yina/Documents/data/recsys/preprocess_output/guoqiong/vec_feature_user.parquet
-# initialItemDataPath:
+   # default: null, if loadInitialData=true, initialDataPath must be provided. Only support parquet
+   # file
+   initialUserDataPath: /home/yina/Documents/data/recsys/preprocess_output/guoqiong/vec_feature_user.parquet
+   # initialItemDataPath:
 
-# default: null, if loadInitialData=true and initialUserDataPath != null, userIDColumn and
-# userFeatureColumns must be provided
-#userIDColumn: user
-userIDColumn: enaging_user_id
-userFeatureColumns: user
+   # default: null, if loadInitialData=true and initialUserDataPath != null, userIDColumn and
+   # userFeatureColumns must be provided
+   #userIDColumn: user
+   userIDColumn: enaging_user_id
+   userFeatureColumns: user
 
-# default: null, if loadInitialData=true and initialItemDataPath != null, userIDColumn and
-# userFeatureColumns must be provided
-# itemIDColumn:
-# itemFeatureColumns:
+   # default: null, if loadInitialData=true and initialItemDataPath != null, userIDColumn and
+   # userFeatureColumns must be provided
+   # itemIDColumn:
+   # itemFeatureColumns:
 
-# default: null, user model path or item model path must be provided if serviceType
-# includes 'inference'. If serviceType=kv, usermodelPath, itemModelPath and modelParallelism will
-# be ignored
-userModelPath: /home/yina/Documents/model/recys2021/2tower/guoqiong/user-model
+   # default: null, user model path or item model path must be provided if serviceType
+   # includes 'inference'. If serviceType=kv, usermodelPath, itemModelPath and modelParallelism will
+   # be ignored
+   userModelPath: /home/yina/Documents/model/recys2021/2tower/guoqiong/user-model
 
-# default: null, user model path or item model path must be provided if serviceType
-# contains 'inference'. If serviceType=kv, usermodelPath, itemModelPath and modelParallelism will
-# be ignored
-# itemModelPath:
+   # default: null, user model path or item model path must be provided if serviceType
+   # contains 'inference'. If serviceType=kv, usermodelPath, itemModelPath and modelParallelism will
+   # be ignored
+   # itemModelPath:
 
-# default: 1, number of models used for inference
-# modelParallelism:
+   # default: 1, number of models used for inference
+   # modelParallelism:
 
-### Redis Configuration
-# default: localhost:6379
-# redisUrl:
+   ### Redis Configuration
+   # default: localhost:6379
+   # redisUrl:
 
-# default: 256, JedisPoolMaxTotal
-# redisPoolMaxTotal:
-```
+   # default: 256, JedisPoolMaxTotal
+   # redisPoolMaxTotal:
+   ```
 
 #### Recall Service Config
 Config with example:
 
 1. load initial item vector from vec_feature_item.parquet and item-model to build faiss index.
-```yaml
-# Default: 8980, which port to create the server
-servicePort: 8084
+   ```yaml
+   # Default: 8980, which port to create the server
+   servicePort: 8084
 
-# Default: null, open a port for prometheus monitoring tool, if set, user can check the
-# performance using prometheus
-monitorPort: 1238
+   # Default: null, open a port for prometheus monitoring tool, if set, user can check the
+   # performance using prometheus
+   monitorPort: 1238
 
-# default: 128, the dimensionality of the embedding vectors
-indexDim: 50
+   # default: 128, the dimensionality of the embedding vectors
+   indexDim: 50
 
-# default: false, if load saved index, set true
-# loadSavedIndex: true
+   # default: false, if load saved index, set true
+   # loadSavedIndex: true
 
-# default: false, if true, the built index will be saved to indexPath. Ignored when
-# loadSavedIndex=true
-saveBuiltIndex: true
+   # default: false, if true, the built index will be saved to indexPath. Ignored when
+   # loadSavedIndex=true
+   saveBuiltIndex: true
 
-# default: null, path to saved index path, must be provided if loadSavedIndex=true
-indexPath: ./2tower_item_full.idx
+   # default: null, path to saved index path, must be provided if loadSavedIndex=true
+   indexPath: ./2tower_item_full.idx
 
-# default: false
-getFeatureFromFeatureService: true
+   # default: false
+   getFeatureFromFeatureService: true
 
-# default: localhost:8980, feature service target
-featureServiceURL: localhost:8085
+   # default: localhost:8980, feature service target
+   featureServiceURL: localhost:8085
 
-itemIDColumn: tweet_id
-itemFeatureColumns: item
+   itemIDColumn: tweet_id
+   itemFeatureColumns: item
 
-# default: null, user model path must be provided if getFeatureFromFeatureService=false
-# userModelPath:
+   # default: null, user model path must be provided if getFeatureFromFeatureService=false
+   # userModelPath:
 
-# default: null, item model path must be provided if loadSavedIndex=false and initialDataPath is
-# not orca predict result
-itemModelPath: /home/yina/Documents/model/recys2021/2tower/guoqiong/item-model
+   # default: null, item model path must be provided if loadSavedIndex=false and initialDataPath is
+   # not orca predict result
+   itemModelPath: /home/yina/Documents/model/recys2021/2tower/guoqiong/item-model
 
-# default: null,  Only support parquet file
-initialDataPath: /home/yina/Documents/data/recsys/preprocess_output/guoqiong/vec_feature_item.parquet
+   # default: null,  Only support parquet file
+   initialDataPath: /home/yina/Documents/data/recsys/preprocess_output/guoqiong/vec_feature_item.parquet
 
-# default: 1, number of models used in inference service
-modelParallelism: 1
-```
+   # default: 1, number of models used in inference service
+   modelParallelism: 1
+   ```
 
 2. load existing faiss index
-```yaml
-# Default: 8980, which port to create the server
-servicePort: 8084
+   ```yaml
+   # Default: 8980, which port to create the server
+   servicePort: 8084
 
-# Default: null, open a port for prometheus monitoring tool, if set, user can check the
-# performance using prometheus
-monitorPort: 1238
+   # Default: null, open a port for prometheus monitoring tool, if set, user can check the
+   # performance using prometheus
+   monitorPort: 1238
 
-# default: 128, the dimensionality of the embedding vectors
-# indexDim:
+   # default: 128, the dimensionality of the embedding vectors
+   # indexDim:
 
-# default: false, if load saved index, set true
-loadSavedIndex: true
+   # default: false, if load saved index, set true
+   loadSavedIndex: true
 
-# default: null, path to saved index path, must be provided if loadSavedIndex=true
-indexPath: ./2tower_item_full.idx
+   # default: null, path to saved index path, must be provided if loadSavedIndex=true
+   indexPath: ./2tower_item_full.idx
 
-# default: false
-getFeatureFromFeatureService: true
+   # default: false
+   getFeatureFromFeatureService: true
 
-# default: localhost:8980, feature service target
-featureServiceURL: localhost:8085
+   # default: localhost:8980, feature service target
+   featureServiceURL: localhost:8085
 
-# itemIDColumn:
-# itemFeatureColumns:
+   # itemIDColumn:
+   # itemFeatureColumns:
 
-# default: null, user model path must be provided if getFeatureFromFeatureService=false
-# userModelPath:
+   # default: null, user model path must be provided if getFeatureFromFeatureService=false
+   # userModelPath:
 
-# default: null, item model path must be provided if loadSavedIndex=false and initialDataPath is
-# not orca predict result
-# itemModelPath:
+   # default: null, item model path must be provided if loadSavedIndex=false and initialDataPath is
+   # not orca predict result
+   # itemModelPath:
 
-# default: null,  Only support parquet file
-# initialDataPath:
+   # default: null,  Only support parquet file
+   # initialDataPath:
 
-# default: 1, number of models used in inference service
-# modelParallelism:
-```
+   # default: 1, number of models used in inference service
+   # modelParallelism:
+   ```
 #### Recommender Service Config
 Config with example:
 
@@ -470,45 +470,45 @@ You should init a maven project and use proto files in [friesian gRPC project](h
 Make sure to add the following extensions and plugins in your pom.xml, and replace
 *protocExecutable* with your own protoc executable.
 ```xml
-    <build>
-        <extensions>
-            <extension>
-                <groupId>kr.motd.maven</groupId>
-                <artifactId>os-maven-plugin</artifactId>
-                <version>1.6.2</version>
-            </extension>
-        </extensions>
-        <plugins>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-compiler-plugin</artifactId>
-                <version>3.8.0</version>
-                <configuration>
-                    <source>8</source>
-                    <target>8</target>
-                </configuration>
-            </plugin>
-            <plugin>
-                <groupId>org.xolstice.maven.plugins</groupId>
-                <artifactId>protobuf-maven-plugin</artifactId>
-                <version>0.6.1</version>
-                <configuration>
-                    <protocArtifact>com.google.protobuf:protoc:3.12.0:exe:${os.detected.classifier}</protocArtifact>
-                    <pluginId>grpc-java</pluginId>
-                    <pluginArtifact>io.grpc:protoc-gen-grpc-java:1.37.0:exe:${os.detected.classifier}</pluginArtifact>
-                    <protocExecutable>/home/yina/Documents/protoc/bin/protoc</protocExecutable>
-                </configuration>
-                <executions>
-                    <execution>
-                        <goals>
-                            <goal>compile</goal>
-                            <goal>compile-custom</goal>
-                        </goals>
-                    </execution>
-                </executions>
-            </plugin>
-        </plugins>
-    </build>
+<build>
+    <extensions>
+        <extension>
+            <groupId>kr.motd.maven</groupId>
+            <artifactId>os-maven-plugin</artifactId>
+            <version>1.6.2</version>
+        </extension>
+    </extensions>
+    <plugins>
+        <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-compiler-plugin</artifactId>
+            <version>3.8.0</version>
+            <configuration>
+                <source>8</source>
+                <target>8</target>
+            </configuration>
+        </plugin>
+        <plugin>
+            <groupId>org.xolstice.maven.plugins</groupId>
+            <artifactId>protobuf-maven-plugin</artifactId>
+            <version>0.6.1</version>
+            <configuration>
+                <protocArtifact>com.google.protobuf:protoc:3.12.0:exe:${os.detected.classifier}</protocArtifact>
+                <pluginId>grpc-java</pluginId>
+                <pluginArtifact>io.grpc:protoc-gen-grpc-java:1.37.0:exe:${os.detected.classifier}</pluginArtifact>
+                <protocExecutable>/home/yina/Documents/protoc/bin/protoc</protocExecutable>
+            </configuration>
+            <executions>
+                <execution>
+                    <goals>
+                        <goal>compile</goal>
+                        <goal>compile-custom</goal>
+                    </goals>
+                </execution>
+            </executions>
+        </plugin>
+    </plugins>
+</build>
 ```
 Then you can generate the gRPC files with
 ```bash
@@ -594,7 +594,7 @@ Each of the services could be scaled out. It is recommended to use the same reso
 
 ##### How to run envoy:
 1. [download](https://www.envoyproxy.io/docs/envoy/latest/start/install) and deploy envoy(below use docker as example):
- * download: `docker pull envoyproxy/envoy-dev:21df5e8676a0f705709f0b3ed90fc2dbbd63cfc5`
+   * download: `docker pull envoyproxy/envoy-dev:21df5e8676a0f705709f0b3ed90fc2dbbd63cfc5`
 2. run command: `docker run --rm -it  -p 9082:9082 -p 9090:9090 envoyproxy/envoy-dev:79ade4aebd02cf15bd934d6d58e90aa03ef6909e --config-yaml "$(cat path/to/service-specific-envoy.yaml)" --parent-shutdown-time-s 1000000`
 3. validate: run `netstat -tnlp` to see if the envoy process is listening to the corresponding port in the envoy config file.
 4. For details on envoy and sample procedure, read [envoy](envoy.md).
