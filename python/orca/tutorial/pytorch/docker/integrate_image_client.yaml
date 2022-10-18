@@ -10,8 +10,8 @@ spec:
       hostNetwork: true
       containers:
       - name: spark-local-k8s-client
-        image: 10.239.45.10/arda/intelanalytics/bigdl-spark-3.1.2:orca-2.1.0
-        imagePullPolicy: Always
+        image: intelanalytics/bigdl-spark-3.1.2:orca-2.1.0
+        imagePullPolicy: IfNotPresent
         command: ["/bin/sh","-c"]
         args: ["
                 export RUNTIME_DRIVER_HOST=$( hostname -I | awk '{print $1}' );
