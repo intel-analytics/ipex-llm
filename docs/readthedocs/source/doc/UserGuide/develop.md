@@ -72,31 +72,31 @@ You need to do the following preparations before starting the IDE to successfull
 - Build BigDL; see [here](#build) for more instructions.
 - Prepare Spark environment by either setting `SPARK_HOME` as the environment variable or `pip install pyspark`. Note that the Spark version should match the one you build BigDL on.
 - Check the jars under `BigDL/dist/lib` and set the environment variable `BIGDL_CLASSPATH`. Modify SPARKVERSION and BIGDLVERSION(Scala) as appropriate:
-```bash
-export BIGDL_CLASSPATH=BigDL/dist/lib/bigdl-dllib-spark_SPARKVERSION-BIGDLVERSION-jar-with-dependencies.jar:BigDL/dist/lib/bigdl-orca-spark_SPARKVERSION-BIGDLVERSION-jar-with-dependencies.jar:BigDL/dist/lib/bigdl-friesian-spark_SPARKVERSION-BIGDLVERSION-jar-with-dependencies.jar
-```
+  ```bash
+  export BIGDL_CLASSPATH=BigDL/dist/lib/bigdl-dllib-spark_SPARKVERSION-BIGDLVERSION-jar-with-dependencies.jar:BigDL/dist/lib/bigdl-orca-spark_SPARKVERSION-BIGDLVERSION-jar-with-dependencies.jar:BigDL/dist/lib/bigdl-friesian-spark_SPARKVERSION-BIGDLVERSION-jar-with-dependencies.jar
+  ```
 - Configure BigDL source files to the Python interpreter:
 
-You can easily do this after launching PyCharm by right clicking the folder `BigDL/python/dllib/src` -> __Mark Directory As__ -> __Sources Root__ (also do this for `BigDL/python/nano/src`, `BigDL/python/orca/src`, `BigDL/python/friesian/src`, `BigDL/python/chronos/src`, `BigDL/python/serving/src` if necessary).
+  You can easily do this after launching PyCharm by right clicking the folder `BigDL/python/dllib/src` -> __Mark Directory As__ -> __Sources Root__ (also do this for `BigDL/python/nano/src`, `BigDL/python/orca/src`, `BigDL/python/friesian/src`, `BigDL/python/chronos/src`, `BigDL/python/serving/src` if necessary).
 
-Alternatively, you can add BigDL source files to `PYTHONPATH`:
-```bash
-export PYTHONPATH=BigDL/python/dllib/src:BigDL/python/nano/src:BigDL/python/orca/src:BigDL/python/friesian/src:BigDL/python/chronos/src:BigDL/python/serving/src:$PYTHONPATH
-```
+  Alternatively, you can add BigDL source files to `PYTHONPATH`:
+  ```bash
+  export PYTHONPATH=BigDL/python/dllib/src:BigDL/python/nano/src:BigDL/python/orca/src:BigDL/python/friesian/src:BigDL/python/chronos/src:BigDL/python/serving/src:$PYTHONPATH
+  ```
 
 - Add `spark-bigdl.conf` to `PYTHONPATH`:
-```bash
-export PYTHONPATH=BigDL/python/dist/conf/spark-bigdl.conf:$PYTHONPATH
-```
+  ```bash
+  export PYTHONPATH=BigDL/python/dist/conf/spark-bigdl.conf:$PYTHONPATH
+  ```
 
 - Install and add `tflibs` to `TF_LIBS_PATH`:
-```bash
-# Install bigdl-tf and bigdl-math
-pip install bigdl-tf bigdl-math
+  ```bash
+  # Install bigdl-tf and bigdl-math
+  pip install bigdl-tf bigdl-math
 
-# Configure TF_LIBS_PATH
-export TF_LIBS_PATH=$(python -c 'import site; print(site.getsitepackages()[0])')/bigdl/share/tflibs
-```
+  # Configure TF_LIBS_PATH
+  export TF_LIBS_PATH=$(python -c 'import site; print(site.getsitepackages()[0])')/bigdl/share/tflibs
+  ```
 
 
 The above environment variables should be available when running or debugging code in the IDE. When running applications in PyCharm, you can add runtime environment variables by clicking  __Run__ -> __Edit Configurations__; then in the __Run/Debug Configurations__ panel, you can add necessary environment variables to your applications.

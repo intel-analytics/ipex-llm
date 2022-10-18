@@ -24,8 +24,9 @@ function disCheck(ids){
 //event when click the checkboxes
 $(".checkboxes").click(function(){
     //get all checked values
+    //class checkboxes is specified to avoid selecting toctree checkboxes (arrows)
     var vals = [];
-    $('input:checkbox:checked').each(function (index, item) {
+    $('.checkboxes:input:checkbox:checked').each(function (index, item) {
         vals.push($(this).val());
     });
 
