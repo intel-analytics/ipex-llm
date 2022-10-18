@@ -38,6 +38,7 @@ new_cnt_pdf = new_shards.get_null_sum()
 max_value = new_cnt_pdf['total'].max()
 print(max_value)
 
+
 def drop_data(df):
     df = df.drop(df[df['Id'] == 0].index)
     df = df.drop(df[df['Id'] == 1].index)
