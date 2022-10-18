@@ -46,8 +46,7 @@ def _get_patch_map():
 
 
 def patch_torch():
-    """
-    patch_torch is used to patch optimized torch classes to replace original ones.
+    """patch_torch is used to patch optimized torch classes to replace original ones.
 
     Optimized classes include:
 
@@ -65,9 +64,7 @@ def patch_torch():
 
 
 def unpatch_torch():
-    """
-    unpatch_torch is used to unpatch optimized torch classes to original ones.
-    """
+    """unpatch_torch is used to unpatch optimized torch classes to original ones."""
     # TODO: unpatch_torch to support gpu-to-cpu unpatching
 
     mapping_torch = _get_patch_map()

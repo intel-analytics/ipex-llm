@@ -51,8 +51,7 @@ def _get_patch_map():
 
 
 def patch_tensorflow():
-    """
-    patch_tensorflow is used to patch optimized tensorflow classes to replace original ones.
+    """patch_tensorflow is used to patch optimized tensorflow classes to replace original ones.
 
     Optimized classes include:
 
@@ -70,9 +69,7 @@ def patch_tensorflow():
 
 
 def unpatch_tensorflow():
-    """
-    unpatch_tensorflow is used to unpatch optimized tensorflow classes to original ones.
-    """
+    """unpatch_tensorflow is used to unpatch optimized tensorflow classes to original ones."""
 
     mapping_tf = _get_patch_map()
 
