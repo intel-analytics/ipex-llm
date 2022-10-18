@@ -19,40 +19,39 @@ import time
 import os
 
 import tensorflow as tf
-from tensorflow import keras
 
-from bigdl.orca import OrcaContext, init_orca_context, stop_orca_context
+from bigdl.orca import init_orca_context, stop_orca_context, OrcaContext
 from bigdl.orca.learn.tf2 import Estimator
 
 
 def model_creator(config):
     embedding_size=16
-    user = keras.layers.Input(dtype=tf.int32, shape=(None,))
-    item = keras.layers.Input(dtype=tf.int32, shape=(None,))
-    label = keras.layers.Input(dtype=tf.int32, shape=(None,))
+    user = tf.keras.layers.Input(dtype=tf.int32, shape=(None,))
+    item = tf.keras.layers.Input(dtype=tf.int32, shape=(None,))
+    label = tf.keras.layers.Input(dtype=tf.int32, shape=(None,))
 
     with tf.name_scope("GMF"):
-        user_embed_GMF = keras.layers.Embedding(max_user_id + 1, embedding_size)(user)
-        item_embed_GMF = keras.layers.Embedding(max_item_id + 1, embedding_size)(item)
-        GMF = keras.layers.Multiply()([user_embed_GMF, item_embed_GMF])
+        user_embed_GMF = tf.keras.layers.Embedding(max_user_id + 1, embedding_size)(user)
+        item_embed_GMF = tf.keras.layers.Embedding(max_item_id + 1, embedding_size)(item)
+        GMF = tf.keras.layers.Multiply()([user_embed_GMF, item_embed_GMF])
 
     with tf.name_scope("MLP"):
-        user_embed_MLP = keras.layers.Embedding(max_user_id + 1, embedding_size)(user)
-        item_embed_MLP = keras.layers.Embedding(max_item_id + 1, embedding_size)(item)
+        user_embed_MLP = tf.keras.layers.Embedding(max_user_id + 1, embedding_size)(user)
+        item_embed_MLP = tf.keras.layers.Embedding(max_item_id + 1, embedding_size)(item)
         interaction = tf.concat([user_embed_MLP, item_embed_MLP], axis=-1)
-        layer1_MLP = keras.layers.Dense(units=embedding_size * 2, activation='relu')(interaction)
-        layer1_MLP = keras.layers.Dropout(rate=0.2)(layer1_MLP)
-        layer2_MLP = keras.layers.Dense(units=embedding_size, activation='relu')(layer1_MLP)
-        layer2_MLP = keras.layers.Dropout(rate=0.2)(layer2_MLP)
-        layer3_MLP = keras.layers.Dense(units=embedding_size // 2, activation='relu')(layer2_MLP)
-        layer3_MLP = keras.layers.Dropout(rate=0.2)(layer3_MLP)
+        layer1_MLP = tf.keras.layers.Dense(units=embedding_size * 2, activation='relu')(interaction)
+        layer1_MLP = tf.keras.layers.Dropout(rate=0.2)(layer1_MLP)
+        layer2_MLP = tf.keras.layers.Dense(units=embedding_size, activation='relu')(layer1_MLP)
+        layer2_MLP = tf.keras.layers.Dropout(rate=0.2)(layer2_MLP)
+        layer3_MLP = tf.keras.layers.Dense(units=embedding_size // 2, activation='relu')(layer2_MLP)
+        layer3_MLP = tf.keras.layers.Dropout(rate=0.2)(layer3_MLP)
 
     # Concate the two parts together
     with tf.name_scope("concatenation"):
         concatenation = tf.concat([GMF, layer3_MLP], axis=-1)
-        outputs = keras.layers.Dense(1, activation='sigmoid')(concatenation)
+        outputs = tf.keras.layers.Dense(1, activation='sigmoid')(concatenation)
 
-    model = keras.Model(inputs=[user, item], outputs=outputs)
+    model = tf.keras.Model(inputs=[user, item], outputs=outputs)
     model.compile(optimizer= "adam",
                   loss= "binary_crossentropy",
                   metrics=['accuracy'])
@@ -62,26 +61,11 @@ cluster_mode = str(sys.argv[1])
 # cluster_mode = "k8s"
 if cluster_mode == "local":
     sc = init_orca_context(memory=str(sys.argv[2]))
-elif cluster_mode == "standalone":
-    sc = init_orca_context("standalone", cores=int(sys.argv[3]), num_nodes=int(sys.argv[4]), memory=str(sys.argv[2]))
-elif cluster_mode == "yarn":
-    sc = init_orca_context("yarn", cores=int(sys.argv[3]), num_nodes=int(sys.argv[4]), memory=str(sys.argv[2]))
-elif cluster_mode == "k8s":
-    sc = init_orca_context(cluster_mode="k8s", cores=8, num_nodes=4, memory="20g",
-                           master="k8s://https://172.16.0.200:6443",
-                           container_image="10.239.45.10/arda/intelanalytics/bigdl-k8s-spark-3.1.2:0.14.0-SNAPSHOT",
-                           conf={"spark.kubernetes.driver.volumes.persistentVolumeClaim.nfsvolumeclaim.options.claimName": "nfsvolumeclaim",
-                                 "spark.kubernetes.driver.volumes.persistentVolumeClaim.nfsvolumeclaim.mount.path": "/bigdl2.0/data",
-                                 "spark.kubernetes.executor.volumes.persistentVolumeClaim.nfsvolumeclaim.options.claimName": "nfsvolumeclaim",
-                                 "spark.kubernetes.executor.volumes.persistentVolumeClaim.nfsvolumeclaim.mount.path": "/bigdl2.0/data"})
-elif cluster_mode == "spark-submit":  # To test k8s using spark-submit
-    sc = init_orca_context(cluster_mode="spark-submit")
 
 
-data_path = "./bigdl2.0/data"
+data_path = "."
 data_type = "ml-1m"
 # Need spark3 to support delimiter with more than one character.
-start = time.time()
 spark= OrcaContext.get_spark_session()
 from pyspark.sql.types import StructField, StructType, IntegerType, StringType
 
@@ -91,7 +75,6 @@ schema = StructType(
         StructField('item', IntegerType(), True)
     ]
 )
-#UserID::Gender::Age::Occupation::Zip-code
 schema_user = StructType(
     [
         StructField('user_u', IntegerType(), True),
@@ -108,7 +91,7 @@ schema_item = StructType(
         StructField('genres', StringType(), True)
     ]
 )
-df = spark.read.csv("{}/{}/ratings.csv".format(data_path, data_type), sep="::",schema=schema,
+df = spark.read.csv("{}/{}/ratings.dat".format(data_path, data_type), sep="::",schema=schema,
                      header=False)
 min_user_id = df.agg({"user": "min"}).collect()[0]["min(user)"]
 max_user_id = df.agg({"user": "max"}).collect()[0]["max(user)"]
@@ -117,9 +100,10 @@ max_item_id = df.agg({"item": "max"}).collect()[0]["max(item)"]
 print(min_user_id, max_user_id, min_item_id, max_item_id)
 from pyspark.sql import functions
 df = df.withColumn('label', functions.lit(1))
-df_user = spark.read.csv("{}/{}/users.csv".format(data_path, data_type), sep="::",schema=schema_user,
+
+df_user = spark.read.csv("{}/{}/users.dat".format(data_path, data_type), sep="::",schema=schema_user,
                      header=False)
-df_item = spark.read.csv("{}/{}/movies.csv".format(data_path, data_type), sep="::",schema=schema_item,
+df_item = spark.read.csv("{}/{}/movies.dat".format(data_path, data_type), sep="::",schema=schema_item,
                      header=False)
 from pyspark.ml.feature import StringIndexer
 indexer_u = StringIndexer(inputCol="gender", outputCol="genderindex").fit(df_user)
@@ -136,8 +120,8 @@ df_feat = df.join(df_user, df.user == df_user.user_u, "inner")
 df_feat = df_feat.join(df_item, df_feat.item == df_item.item_i, "inner")
 df_feat = df_feat.drop('user_u', 'item_i')
 
-from pyspark.sql import functions as F
-from pyspark.sql import types as T
+from pyspark.sql.functions import udf, collect_list
+from pyspark.sql.types import ArrayType
 import random
 
 neg_scale = 4
@@ -147,9 +131,9 @@ def neg_sample(x):
     neg_item = random.sample(set(range(min_item_id, max_item_id+1)) - set(x), min(item_count,max_count))
     return neg_item
 
-neg_sample_udf = F.udf(neg_sample, T.ArrayType(IntegerType(), False))
+neg_sample_udf = udf(neg_sample, ArrayType(IntegerType(), False))
 
-df_neg= df.groupBy('user').agg(neg_sample_udf(F.collect_list('item')).alias('item_list'))
+df_neg= df.groupBy('user').agg(neg_sample_udf(collect_list('item')).alias('item_list'))
 from pyspark.sql.functions import *
 df_neg = df_neg.select(df_neg.user, explode(df_neg.item_list))
 df_neg = df_neg.withColumn('label', functions.lit(0))
@@ -160,7 +144,6 @@ train_df, test_df = df.randomSplit([0.8, 0.2],100)
 
 batch_size=256
 epochs=5
-model_dir='./'
 
 # create an Estimator
 backend = 'spark'
@@ -172,19 +155,19 @@ stats = est.fit(train_df,
                 batch_size=batch_size,
                 feature_cols=['user', 'item'],
                 label_cols=['label'],
-                steps_per_epoch=int(60000 // batch_size),
+                steps_per_epoch=int(0.01*train_df.count() // batch_size),
                 validation_data=test_df,
-                validation_steps =int(10000 // batch_size))
+                validation_steps =int(0.01*test_df.count() // batch_size))
 
 # save model in H5 format
-est.save("/tmp/cifar10_model.h5", save_format='h5')
+est.save("./ncf_tf_model.h5")
 
 # evaluate with Estimator
 stats = est.evaluate(test_df, 
                      feature_cols=['user', 'item'],
                      label_cols=['label'],
                      batch_size=batch_size,
-                     num_steps=int(epochs*10000 // batch_size))
+                     num_steps=int(0.01*test_df.count()*epochs // batch_size))
 
 print(stats)
 est.shutdown()
