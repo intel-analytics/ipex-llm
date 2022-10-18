@@ -633,6 +633,20 @@ class SparkXShards(XShards):
                               "The two SparkXShards should have the same number of elements "
                               "in each partition")
 
+    def groupByAgg(self, col_names=None):
+        if self._get_class_name() == 'pandas.core.frame.DataFrame':
+            import pandas as pd
+            from pyspark.sql.functions import *
+            df = self.to_spark_df()
+            agg_df = df.groupBy(col_names).agg(count("*").alias("count"),
+                                                mean("salary").alias("avg"),
+                                                stddev("salary").alias("std"))
+            agg_shards = spark_df_to_pd_sparkxshards(agg_df)
+            return agg_shards
+        else:
+            invalidInputError(False,
+                              "Currently only support sort() on XShards of Pandas DataFrame")
+
     def _to_spark_df_without_arrow(self):
         def f(iter):
             from bigdl.dllib.utils.log4Error import invalidInputError
