@@ -41,7 +41,7 @@ on:
       tag:
         description: 'docker image tag'
         required: true
-        default: 'latest'
+        default: '2.2.0-SNAPSHOT'
         type: string
 
 
