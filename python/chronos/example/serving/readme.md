@@ -1,6 +1,6 @@
-# Serving Forecaster Example
+# Serve a forecaster on TorchServe
 
-Model serving is most flexible in terms of model deployment and it can generate predictions on data in real-time and online.
+Model serving is for model deployment in a production environment for wide accessibility.
 
 This example shows how to serve Chronos forecaster and predict through TorchServe. We will take `TCNForecaster` and nyc_taxi dataset in this example.
 
@@ -9,7 +9,7 @@ We recommend to use Anaconda to setup the environment:
 ```bash
 conda create -n my_env python=3.7 setuptools=58.0.4
 conda activate my_env
-pip install --pre --upgrade bigdl-chronos[all]
+pip install --pre --upgrade bigdl-chronos[pytorch]
 ```
 
 Please refer to [Chronos Install Guide](https://bigdl.readthedocs.io/en/latest/doc/Chronos/Overview/chronos.html) for more information.
@@ -26,7 +26,7 @@ Create and train a `TCNForecaster` based on nyc_taxi dataset, then save the pth 
 python ./generate_torchscript_pt.py
 ```
 
-## Store forecaster
+## Archive forecasting model
 To serve a model with TorchServe, archive the model as a mar file.
 ```bash
 torch-model-archiver --model-name tcn_nyctaxi --version 1.1 --serialized-file ./checkpoint/ckpt.pth --handler ./model_handler:entry_point_function_name --export-path ./model_store/
@@ -50,5 +50,5 @@ Then return the prediction results.
 ## Stop serving
 To stop serving, just run the command:
 ```bash
-torchserve –stop
+torchserve --stop
 ```

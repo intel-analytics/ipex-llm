@@ -35,9 +35,6 @@ if __name__ == "__main__":
     # train the forecaster
     forecaster.fit(train_data, epochs=10)
 
-    # predict with the trained forecaster
-    pred, std = forecaster.predict_interval(test_data, validation_data=val_data)
-
     model = TSTrainer.trace(forecaster.internal, accelerator="jit",
                             input_sample=torch.randn(1, 6, 1))
 
