@@ -4,13 +4,13 @@ status_1_scala_spark_pi=1
 
 if [ $status_1_scala_spark_pi -ne 0 ]; then
 export sgx_command="/opt/jdk8/bin/java \
-  -cp '/ppml/trusted-big-data-ml/work/spark-3.1.2/conf/:/ppml/trusted-big-data-ml/work/spark-3.1.2/jars/*:/ppml/trusted-big-data-ml/work/spark-3.1.2/examples/jars/*' \
+  -cp '/ppml/trusted-big-data-ml/work/spark-$SPARK_VERSION/conf/:/ppml/trusted-big-data-ml/work/spark-$SPARK_VERSION/jars/*:/ppml/trusted-big-data-ml/work/spark-$SPARK_VERSION/examples/jars/*' \
   -Xmx10g \
   -XX:ActiveProcessorCount=24 \
   org.apache.spark.deploy.SparkSubmit \
   --master local[4] \
   --class org.apache.spark.examples.SparkPi \
-  /ppml/trusted-big-data-ml/work/spark-3.1.2/examples/jars/spark-examples_2.12-3.1.2.jar"
+  /ppml/trusted-big-data-ml/work/spark-$SPARK_VERSION/examples/jars/spark-examples_2.12-$SPARK_VERSION.jar"
 gramine-sgx bash 2>&1 | tee test-scala-spark-pi-sgx.log
 fi
 status_1_scala_spark_pi=$(echo $?)
