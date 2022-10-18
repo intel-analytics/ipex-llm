@@ -1,15 +1,14 @@
 ARG BASE_IMAGE_NAME=intelanalytics/bigdl-ppml-gramine-base
 ARG BASE_IMAGE_TAG=2.2.0-SNAPSHOT
-ARG FLINK_VERSION=1.11.3
+ARG FLINK_VERSION=1.15.2
 ARG SCALA_VERSION=2.12
-ARG SCALA_SUB_VERSION_NUM=10
 ARG SPARK_VERSION=3.1.2
 ARG TINI_VERSION=v0.18.0
 ARG JDK_VERSION=8u192
 ARG JDK_URL
 ARG SPARK_JAR_REPO_URL
 
-# Stage.1 JDK & Scala & Spark & Hadoop & Hive & Flink
+# Stage.1 JDK & Spark & Hadoop & Hive & Flink
 FROM ubuntu:20.04 as bigdata
 ARG HTTP_PROXY_HOST
 ARG HTTP_PROXY_PORT
@@ -21,14 +20,12 @@ ARG JDK_URL
 ARG SPARK_JAR_REPO_URL
 ARG FLINK_VERSION
 ARG SCALA_VERSION
-ARG SCALA_SUB_VERSION_NUM
 
 ENV SPARK_VERSION                       ${SPARK_VERSION}
 ENV JAVA_HOME                           /opt/jdk$JDK_VERSION
 ENV PATH                                ${JAVA_HOME}/bin:${PATH}
 ENV FLINK_VERSION                       ${FLINK_VERSION}
 ENV SCALA_VERSION                       ${SCALA_VERSION}
-ENV SCALA_SUB_VERSION_NUM               ${SCALA_SUB_VERSION_NUM}
 
 RUN apt-get update --fix-missing && \
     env DEBIAN_FRONTEND=noninteractive TZ=Etc/UTC apt-get install -y tzdata apt-utils wget unzip patch zip git maven nasm
@@ -39,10 +36,6 @@ RUN wget $JDK_URL && \
     rm jdk-$JDK_VERSION-linux-x64.tar && \
     mv /opt/jdk* /opt/jdk$JDK_VERSION && \
     ln -s /opt/jdk$JDK_VERSION /opt/jdk
-# scala
-RUN cd / && wget -c https://downloads.lightbend.com/scala/${SCALA_VERSION}.${SCALA_SUB_VERSION_NUM}/scala-${SCALA_VERSION}.${SCALA_SUB_VERSION_NUM}.tgz && \
-    (cd / && gunzip < scala-${SCALA_VERSION}.${SCALA_SUB_VERSION_NUM}.tgz)|(cd /opt && tar -xvf -) && \
-    rm /scala-${SCALA_VERSION}.${SCALA_SUB_VERSION_NUM}.tgz
 
 # spark
 RUN cd /opt && \
@@ -133,15 +126,6 @@ RUN cd /opt && \
 RUN cd /opt && \
     wget https://archive.apache.org/dist/flink/flink-${FLINK_VERSION}/flink-${FLINK_VERSION}-bin-scala_${SCALA_VERSION}.tgz && \
     tar -zxvf flink-${FLINK_VERSION}-bin-scala_${SCALA_VERSION}.tgz && \
-    rm flink-${FLINK_VERSION}-bin-scala_${SCALA_VERSION}.tgz && \
-    rm /opt/flink-${FLINK_VERSION}/lib/log4j-1.2-api-2.12.1.jar && \
-    rm /opt/flink-${FLINK_VERSION}/lib/log4j-api-2.12.1.jar && \
-    rm /opt/flink-${FLINK_VERSION}/lib/log4j-core-2.12.1.jar && \
-    rm /opt/flink-${FLINK_VERSION}/lib/log4j-slf4j-impl-2.12.1.jar && \
-    wget -P /opt/flink-${FLINK_VERSION}/lib/ https://repo1.maven.org/maven2/org/apache/logging/log4j/log4j-1.2-api/2.17.1/log4j-1.2-api-2.17.1.jar && \
-    wget -P /opt/flink-${FLINK_VERSION}/lib/ https://repo1.maven.org/maven2/org/apache/logging/log4j/log4j-api/2.17.1/log4j-api-2.17.1.jar && \
-    wget -P /opt/flink-${FLINK_VERSION}/lib/ https://repo1.maven.org/maven2/org/apache/logging/log4j/log4j-core/2.17.1/log4j-core-2.17.1.jar && \
-    wget -P /opt/flink-${FLINK_VERSION}/lib/ https://repo1.maven.org/maven2/org/apache/logging/log4j/log4j-slf4j-impl/2.17.1/log4j-slf4j-impl-2.17.1.jar
 RUN ls -al /opt
 
 # stage.2 gramine
@@ -151,14 +135,12 @@ ARG SPARK_VERSION
 ARG TINI_VERSION
 ARG FLINK_VERSION
 ARG SCALA_VERSION
-ARG SCALA_SUB_VERSION_NUM
 
 ENV SPARK_VERSION                       ${SPARK_VERSION}
 ENV SPARK_HOME                          /ppml/spark-${SPARK_VERSION}
 ENV JAVA_HOME                           /opt/jdk8
 ENV PATH                                ${JAVA_HOME}/bin:${PATH}
 ENV SCALA_VERSION                       ${SCALA_VERSION}
-ENV SCALA_SUB_VERSION_NUM               ${SCALA_SUB_VERSION_NUM}
 ENV LOCAL_IP                            127.0.0.1
 ENV SPARK_MASTER_IP                     127.0.0.1
 ENV SPARK_MASTER_PORT                   7077
@@ -188,7 +170,6 @@ RUN mkdir -p /ppml/lib && \
     mkdir -p /root/.kube/
 
 COPY --from=bigdata /opt/jdk  /opt/jdk8
-COPY --from=bigdata /opt/scala-${SCALA_VERSION}.${SCALA_SUB_VERSION_NUM}  /opt/scala-${SCALA_VERSION}.${SCALA_SUB_VERSION_NUM}
 COPY --from=bigdata /opt/spark-${SPARK_VERSION} /ppml/spark-${SPARK_VERSION}
 COPY --from=bigdata /opt/flink-${FLINK_VERSION} /ppml/flink-${FLINK_VERSION}
 
