@@ -1,11 +1,20 @@
-# Building Linux Kernel from Source with SGX Enabled
+# Install SGX (Software Guard Extensions) Driver for Xeon Server
 
-SGX driver is merged to Linux Kernel from 5.11+. After enabling SGX feature during kernel building, we don't have to install SGX driver anymore.
+Checklist for SGX Driver:
 
-In this guide, we show how to build Kernel 5.14 from source code and enable SGX feature on Ubuntu 18.04. You can change the kernel version, i.e., 5.14 if necessary.
+1. Please [check if your CPU has SGX feature](https://www.intel.com/content/www/us/en/support/articles/000028173/processors.html).
+2. Check if SGX feature is correctly enabled on BIOS. Please ensure enough memory and Reserved Memory Range Registers (PRMRR) are configured for SGX.
+3. Recommended OS (Operating System): Ubuntu 18.04/20.04, CentOS 8, Redhat 8.
 
+Note that SGX driver has been merged to Linux Kernel from 5.11+. After enabling SGX feature during kernel building, SGX driver will be automatically enabled. So, we recommend our customers to upgrade their kernel to 5.14+ with SGX enabled. See [Building Linux Kernel from Source with SGX Enabled](##building-linux-kernel-from-source-with-sgx-enabled).
 
-## Prerequisite
+If your data center cannot upgrade OS or kernel, then you can [Install SGX Driver through the Installation Package](#install-sgx-driver-through-the-installation-package)
+
+## Building Linux Kernel from Source with SGX Enabled
+
+In this guide, we show how to build Kernel 5.14 from the source code and enable SGX feature on Ubuntu 18.04. You can change the kernel version, i.e., 5.14 if necessary.
+
+### Prerequisite for kernel build
 
 Install prerequisites for kernel build. Please follow your distro instruction or your favorite way to build the kernel.
 
@@ -14,7 +23,7 @@ sudo apt-get install flex bison git build-essential kernel-package fakeroot libn
 
 ```
 
-## Main steps
+### Main steps
 
 Clone Linux Kernel source code.
 
@@ -49,11 +58,11 @@ sudo reboot
 Check if Kernel was installed correctly and the SGX driver is working
 
 ```bash
-$ uname -r
-$ ls -l /dev/ | grep sgx
+uname -r
+ls -l /dev/ | grep sgx
 ```
 
-## Uninstall this kernel
+### Uninstall this kernel
 
 Uninstall kernel with dpkg (if you want to change back to the previous kernel)
 
@@ -62,7 +71,33 @@ sudo dpkg --purge linux-image-5.14.0 linux-headers-5.14.0
 sudo reboot
 ```
 
-### Trouble Shooting
+## Install SGX Driver through the Installation Package
+
+### Prerequisite for SGX Driver
+
+```bash
+sudo apt-get install build-essential ocaml automake autoconf libtool
+wget python libssl-dev dkms 
+```
+
+### Download & Install SGX Driver binary file
+
+```bash
+wget - https://download.01.org/intel-sgx/latest/linux-latest/distro/ubuntu20.04-server/sgx_linux_x64_driver_1.41.bin
+chmod 777 sgx_linux_x64_driver_1.41.bin
+sudo ./sgx_linux_x64_driver_1.41.bin
+```
+
+Check if the SGX driver is installed correctly
+
+```bash
+ls -l /dev/ | grep sgx
+```
+
+See more details in [Intel_SGX_SW_Installation_Guide_for_Linux.pdf](https://download.01.org/intel-sgx/latest/dcap-latest/linux/docs/Intel_SGX_SW_Installation_Guide_for_Linux.pdf).
+
+
+## Trouble Shooting
 
 * Building on Ubuntu 5.4.X may encounter
 	* "make[2]: *** No rule to make target 'debian/certs/benh@debian.org.cert.pem', needed by 'certs/x509_certificate_list'.  Stop.". Please disable `SYSTEM_TRUSTED_KEYS`. Refer to [CONFIG_SYSTEM_TRUSTED_KEYS](https://askubuntu.com/questions/1329538/compiling-the-kernel-5-11-11).
