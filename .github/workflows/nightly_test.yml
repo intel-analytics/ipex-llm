@@ -625,6 +625,7 @@ jobs:
   PPML-spark-Local-SimpleQuery-Tests-on-Gramine:
     if: ${{ github.event.schedule || github.event.inputs.artifact == 'PPML-spark-Local-SimpleQuery-Tests-on-Gramine' || github.event.inputs.artifact == 'all' }}
     runs-on: [self-hosted, SGX, Wilwarin]
+    
     steps:
     - uses: actions/checkout@v3
     - name: Set up JDK8
