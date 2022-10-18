@@ -36,7 +36,7 @@ from model import model_creator, optimizer_creator
 parser = argparse.ArgumentParser(description='PyTorch Example')
 parser.add_argument('--cluster_mode', type=str, default="spark-submit",
                     help='The cluster mode, such as local, yarn-client, yarn-cluster, '
-                         'spark-submit or bigdl-submit.')
+                         'k8s-client, k8s-cluster, spark-submit or bigdl-submit.')
 parser.add_argument('--remote_dir', type=str, help='The path to load data from remote resources')
 args = parser.parse_args()
 
@@ -52,7 +52,7 @@ def train_data_creator(config, batch_size):
         trainloader = torch.utils.data.DataLoader(trainset, batch_size=batch_size,
                                                   shuffle=True, num_workers=0)
     else:
-        print("Please specify the dataset path on a network file system.")
+        print("Please specify the train dataset path.")
     return trainloader
 
 
@@ -72,7 +72,8 @@ def main():
         init_orca_context(cluster_mode="spark-submit")
     else:
         print("init_orca_context failed. cluster_mode should be one of 'yarn-client', "
-              "'yarn-cluster', 'bigdl-submit' or 'spark-submit', but got " + args.cluster_mode)
+              "'yarn-cluster', 'k8s-client', 'k8s-cluster', 'bigdl-submit' or 'spark-submit', " 
+              "but got " + args.cluster_mode)
 
     orca_estimator = Estimator.from_torch(model=model_creator,
                                           optimizer=optimizer_creator,
