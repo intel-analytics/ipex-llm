@@ -147,7 +147,7 @@ def _duration(value):
         return value
 
 
-def GetRangeDataframe(prometheus_url, query, starttime, endtime, step, columns, **kwargs):
+def GetRangeDataframe(prometheus_url, query_list, starttime, endtime, step, columns, **kwargs):
     '''
     Convert the Prometheus data over the specified time period to dataframe and confirm
     dt_col, target_col, id_col and extra_feature_col.
@@ -156,22 +156,25 @@ def GetRangeDataframe(prometheus_url, query, starttime, endtime, step, columns, 
     '''
     from bigdl.chronos.data.utils.utils import _check_type
     _check_type(prometheus_url, "prometheus_url", str)
-    _check_type(query, "query", str)
     _check_type(starttime, "starttime", (str, float))
     _check_type(endtime, "endtime", (str, float))
     _check_type(step, "step", (str, float))
 
-    # Generate dateframe
-    Pro_client = Prometheus(prometheus_url)
-    Pro_df = Pro_client.query_range(query, starttime, endtime, step, **kwargs)
-    df = pd.DataFrame(columns=Pro_df.columns.tolist())
-    df.insert(0, "datetime", Pro_df.index)
-    for col in Pro_df.columns.tolist():
-        df[col] = Pro_df[col].values
+    # Generate dataframe according query_list
+    pro_client = Prometheus(prometheus_url)
+    pro_df = pd.DataFrame()
+    for query in query_list:
+        query_df = pro_client.query_range(query, starttime, endtime, step, **kwargs)
+        pro_df = pd.concat([pro_df, query_df], axis=1)
+
+    df = pd.DataFrame(columns=pro_df.columns.tolist())
+    df.insert(0, "datetime", pro_df.index)
+    for col in pro_df.columns.tolist():
+        df[col] = pro_df[col].values
 
     # Clean columns
     output_columns = {"dt_col": "datetime",
-                      "target_col": Pro_df.columns.tolist(),
+                      "target_col": pro_df.columns.tolist(),
                       "id_col": None,
                       "extra_feature_col": None}
     output_col_list = ["datetime"]
