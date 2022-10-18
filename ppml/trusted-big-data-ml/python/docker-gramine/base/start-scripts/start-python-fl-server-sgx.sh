@@ -14,10 +14,9 @@ do
     esac
 done
 cd /ppml/trusted-big-data-ml
-export sgx_command"/opt/jdk8/bin/java\
-        -cp '/ppml/trusted-big-data-ml/work/spark-${SPARK_VERSION}/conf/:/ppml/trusted-big-data-ml/work/spark-${SPARK_VERSION}/jars/*'\
+export sgx_command="/opt/jdk8/bin/java\
+        -cp '/ppml/trusted-big-data-ml/work/spark-3.1.2/conf/:/ppml/trusted-big-data-ml/work/spark-3.1.2/jars/*:/ppml/trusted-big-data-ml/work/spark-3.1.2/examples/jars/*'\
         -Xmx10g org.apache.spark.deploy.SparkSubmit\
-        --master 'local[4]'\
-        /ppml/trusted-big-data-ml/fl/start-fl-server.py -p $port -c $client_num" 
+        --master local[4] \
+        /ppml/trusted-big-data-ml/fl/start-fl-server.py -p $port -c $client_num"
 gramine-sgx bash 2>&1 | tee fl-server-sgx.log
-
