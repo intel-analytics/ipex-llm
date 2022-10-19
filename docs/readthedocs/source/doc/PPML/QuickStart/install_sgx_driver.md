@@ -18,16 +18,15 @@ In this guide, we show how to build Kernel 5.14 from the source code and enable 
 
 Install prerequisites for kernel build. Please follow your distro instruction or your favorite way to build the kernel.
 
-```
+```bash
 sudo apt-get install flex bison git build-essential kernel-package fakeroot libncurses5-dev libssl-dev ccache libelf-dev
-
 ```
 
 ### Main steps
 
 Clone Linux Kernel source code.
 
-```
+```bash
 # Obtain Linux kernel source tree
 mkdir kernel && cd kernel
 git clone https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git
@@ -38,7 +37,7 @@ git checkout v5.14
 
 Build Kernel from source code with SGX enabled.
 
-```
+```bash
 cp /boot/config-`uname -r` .config
 yes '' | make oldconfig
 # Enable SGX and SGX KVM
@@ -49,7 +48,7 @@ make -j `getconf _NPROCESSORS_ONLN` deb-pkg
 
 Install kernel from deb and reboot
 
-```
+```bash
 cd ..
 sudo dpkg -i linux-headers-5.14.0_5.14.0-1_amd64.deb linux-image-5.14.0_5.14.0-1_amd64.deb
 sudo reboot
@@ -78,8 +77,7 @@ In this guide, we show how to install SGX driver with the installation package. 
 ### Prerequisite for SGX Driver
 
 ```bash
-sudo apt-get install build-essential ocaml automake autoconf libtool
-wget python libssl-dev dkms 
+sudo apt-get install build-essential ocaml automake autoconf libtool wget python libssl-dev dkms 
 ```
 
 ### Download & Install SGX Driver binary file
@@ -96,6 +94,7 @@ Check if the SGX driver is installed correctly
 ls -l /dev/ | grep sgx
 ```
 
+If you encounter any issue during installation, please open an issue on [Intel(R) Software Guard Extensions Data Center Attestation Primitives](https://github.com/intel/SGXDataCenterAttestationPrimitives)
 
 ## Trouble Shooting
 
@@ -105,4 +104,4 @@ ls -l /dev/ | grep sgx
 * In some kernels, SGX option is `CONFIG_INTEL_SGX`.
 * 5.13 Kernel may encounter nfs problem [Can't mount NFS-shares from Linux-5.13.0](https://forums.gentoo.org/viewtopic-p-8629887.html?sid=f7359b869fb71849d64f3e69bb48503a)
 * [Mellanox interface may be disabled on 5.14.0](https://bugzilla.redhat.com/show_bug.cgi?id=2014094). Changes to 5.15.5 will fix this issue.
-* Error 404 when downloading binary file. Please go to [intel-sgx-linux](https://download.01.org/intel-sgx/latest/linux-latest/distro) for latest download link.
+* Error 404 when downloading binary file. Please go to [intel-sgx-linux](https://download.01.org/intel-sgx/latest/linux-latest/distro) for the latest download link.
