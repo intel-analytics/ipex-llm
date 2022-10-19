@@ -36,12 +36,12 @@ on:
       image:
         description: 'docker image name'
         required: true
-        default: '10.239.45.10/arda/intelanalytics/bigdl-ppml-trusted-big-data-ml-python-gramine-reference-64g-error'
+        default: '10.239.45.10/arda/intelanalytics/bigdl-ppml-trusted-big-data-ml-python-gramine-reference'
         type: string
       tag:
         description: 'docker image tag'
         required: true
-        default: '2.2.0-SNAPSHOT'
+        default: 'latest'
         type: string
 
 
@@ -510,8 +510,8 @@ jobs:
       uses: ./.github/actions/maven-setup-action
     - name: set env
       env:
-        DEFAULT_IMAGE: '10.239.45.10/arda/intelanalytics/bigdl-ppml-trusted-big-data-ml-python-gramine-reference-64g-error'
-        DEFAULT_TAG: '2.2.0-SNAPSHOT'
+        DEFAULT_IMAGE: '10.239.45.10/arda/intelanalytics/bigdl-ppml-trusted-big-data-ml-python-gramine-reference'
+        DEFAULT_TAG: 'latest'
       run: |
         echo "IMAGE=${{ github.event.inputs.image || env.DEFAULT_IMAGE }}" >> $GITHUB_ENV
         echo "TAG=${{ github.event.inputs.tag || env.DEFAULT_TAG }}" >> $GITHUB_ENV
@@ -568,8 +568,8 @@ jobs:
       uses: ./.github/actions/maven-setup-action
     - name: set env
       env:
-        DEFAULT_IMAGE: '10.239.45.10/arda/intelanalytics/bigdl-ppml-trusted-big-data-ml-python-gramine-reference-64g-error'
-        DEFAULT_TAG: '2.2.0-SNAPSHOT'
+        DEFAULT_IMAGE: '10.239.45.10/arda/intelanalytics/bigdl-ppml-trusted-big-data-ml-python-gramine-reference'
+        DEFAULT_TAG: 'latest'
       run: |
         echo "TAG=${{ github.event.inputs.tag || env.DEFAULT_TAG }}" >> $GITHUB_ENV
         echo "IMAGE=${{ github.event.inputs.image || env.DEFAULT_IMAGE }}" >> $GITHUB_ENV
