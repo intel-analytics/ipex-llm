@@ -12,7 +12,6 @@
     <packaging>jar</packaging>
 
     <properties>
-        <grpc.version>1.47.0</grpc.version>
         <bigdl.basedir>${project.parent.basedir}</bigdl.basedir>
         <parquet.version>1.12.2</parquet.version>
     </properties>
@@ -119,12 +118,10 @@
         <dependency>
             <groupId>io.grpc</groupId>
             <artifactId>grpc-api</artifactId>
-            <version>1.37.0</version>
         </dependency>
         <dependency>
             <groupId>io.grpc</groupId>
             <artifactId>grpc-netty-shaded</artifactId>
-            <version>1.37.0</version>
         </dependency>
         <dependency>
             <groupId>commons-cli</groupId>
@@ -140,12 +137,10 @@
         <dependency>
             <groupId>io.grpc</groupId>
             <artifactId>grpc-protobuf</artifactId>
-            <version>${grpc.version}</version>
         </dependency>
         <dependency>
             <groupId>io.grpc</groupId>
             <artifactId>grpc-stub</artifactId>
-            <version>${grpc.version}</version>
         </dependency>
         <dependency>
             <groupId>org.json</groupId>
@@ -417,7 +412,6 @@
                 <artifactId>maven-assembly-plugin</artifactId>
                 <executions>
                     <execution>
-                        <id>python</id>
                         <inherited>false</inherited>
                         <configuration>
                             <descriptors>

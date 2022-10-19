@@ -186,6 +186,7 @@
 	    <bigdl-core-all-scope>compile</bigdl-core-all-scope>
         <data-store-url>http://download.tensorflow.org</data-store-url>
         <lightgbm.scope>provided</lightgbm.scope>
+        <grpc.version>1.48.1</grpc.version>
 
     </properties>
 
@@ -273,6 +274,31 @@
                 <groupId>io.projectreactor</groupId>
                 <artifactId>reactor-core</artifactId>
                 <version>3.4.19</version>
+            </dependency>
+            <dependency>
+                <groupId>io.grpc</groupId>
+                <artifactId>grpc-api</artifactId>
+                <version>${grpc.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>io.grpc</groupId>
+                <artifactId>grpc-netty-shaded</artifactId>
+                <version>${grpc.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>io.grpc</groupId>
+                <artifactId>grpc-protobuf</artifactId>
+                <version>${grpc.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>io.grpc</groupId>
+                <artifactId>grpc-stub</artifactId>
+                <version>${grpc.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>io.grpc</groupId>
+                <artifactId>grpc-services</artifactId>
+                <version>${grpc.version}</version>
             </dependency>
         </dependencies>
     </dependencyManagement>
