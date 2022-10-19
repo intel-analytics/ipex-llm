@@ -66,13 +66,43 @@ def main():
             init_orca_context(cluster_mode="yarn-cluster", cores=4, memory="10g", num_nodes=2,
                               driver_cores=2, driver_memory="4g",
                               extra_python_lib="model.py")
+    elif args.cluster_mode.startswith("k8s"):
+        if args.cluster_mode == "k8s-client":
+            conf={
+                "spark.kubernetes.executor.volumes.persistentVolumeClaim.nfsvolumeclaim"\
+                ".options.claimName":"nfsvolumeclaim",
+                "spark.kubernetes.executor.volumes.persistentVolumeClaim.nfsvolumeclaim"\
+                ".mount.path": "/bigdl/nfsdata"
+            }
+            init_orca_context(cluster_mode="k8s-client", num_nodes=2, cores=2, memory="2g",
+                      master=os.environ.get("RUNTIME_SPARK_MASTER"),
+                      container_image="intelanalytics/bigdl-k8s:2.1.0",
+                      extra_python_lib="model.py", conf=conf)
+        elif args.cluster_mode == "k8s-cluster":
+            conf={
+                "spark.kubernetes.driver.volumes.persistentVolumeClaim.nfsvolumeclaim"\
+                ".options.claimName":"nfsvolumeclaim",
+                "spark.kubernetes.driver.volumes.persistentVolumeClaim.nfsvolumeclaim"\
+                ".mount.path": "/bigdl/nfsdata",
+                "spark.kubernetes.executor.volumes.persistentVolumeClaim.nfsvolumeclaim"\
+                ".options.claimName":"nfsvolumeclaim",
+                "spark.kubernetes.executor.volumes.persistentVolumeClaim.nfsvolumeclaim"\
+                ".mount.path": "/bigdl/nfsdata",
+                "spark.kubernetes.authenticate.driver.serviceAccountName":"spark",
+                "spark.kubernetes.file.upload.path":"/bigdl/nfsdata/"
+            }
+            init_orca_context(cluster_mode="k8s-cluster", num_nodes=2, cores=2, memory="2g",
+                            master=os.environ.get("RUNTIME_SPARK_MASTER"), 
+                            container_image="intelanalytics/bigdl-k8s:latest",
+                            penv_archive="file:///bigdl/nfsdata/environment.tar.gz",
+                            extra_python_lib="/bigdl/nfsdata/model.py", conf=conf)
     elif args.cluster_mode == "bigdl-submit":
         init_orca_context(cluster_mode="bigdl-submit")
     elif args.cluster_mode == "spark-submit":
         init_orca_context(cluster_mode="spark-submit")
     else:
         print("init_orca_context failed. cluster_mode should be one of 'yarn-client', "
-              "'yarn-cluster', 'k8s-client', 'k8s-cluster', 'bigdl-submit' or 'spark-submit', " 
+              "'yarn-cluster', 'k8s-client', 'k8s-cluster', 'bigdl-submit' or 'spark-submit', "
               "but got " + args.cluster_mode)
 
     orca_estimator = Estimator.from_torch(model=model_creator,
