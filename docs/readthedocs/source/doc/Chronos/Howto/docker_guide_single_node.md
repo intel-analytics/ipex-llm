@@ -97,15 +97,15 @@ After the Jupyter Notebook service is successfully started, you can connect to t
 You should shut down the BigDL Docker container after using it.
 1. First, use `ctrl+p+q` to quit the container when you are still in it. 
 2. Then, you can list all the active Docker containers by command line:
-```bash
-sudo docker ps
-```
-You will see your docker containers:
-```bash
-CONTAINER ID        IMAGE                                        COMMAND                  CREATED             STATUS              PORTS               NAMES
-40de2cdad025        chronos-nightly:b1         "/opt/work/"   3 hours ago         Up 3 hours                              upbeat_al
-```
+   ```bash
+   sudo docker ps
+   ```
+   You will see your docker containers:
+   ```bash
+   CONTAINER ID        IMAGE                                        COMMAND                  CREATED             STATUS              PORTS               NAMES
+   40de2cdad025        chronos-nightly:b1         "/opt/work/"   3 hours ago         Up 3 hours                              upbeat_al
+   ```
 3. Shut down the corresponding docker container by its ID:
-```bash
-sudo docker rm -f 40de2cdad025
-```
+   ```bash
+   sudo docker rm -f 40de2cdad025
+   ```
