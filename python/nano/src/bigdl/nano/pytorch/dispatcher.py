@@ -15,6 +15,7 @@
 #
 
 from importlib.util import find_spec
+from bigdl.nano.pytorch.gpu_cpu import patch_cuda
 
 
 _mapping_torch = None
@@ -51,7 +52,7 @@ def _get_patch_map():
     return _mapping_torch
 
 
-def patch_torch():
+def patch_torch(gpu_to_cpu: bool = False):
     """
     patch_torch is used to patch optimized torch classes to replace original ones.
 
@@ -60,13 +61,18 @@ def patch_torch():
     | 1. pytorch_lightning.Trainer -> bigdl.nano.pytorch.Trainer
     | 2. torchvision.transforms -> bigdl.nano.pytorch.vision.transforms
     | 3. torchvision.datasets -> bigdl.nano.pytorch.vision.datasets
-    """
-    # TODO: patch_torch to support gpu-to-cpu patching
 
+    :param gpu_to_cpu: bool, make codes write for CUDA available for CPU if set to True.
+           This feature is still experimental and only valid in python layer codes.
+           Default to False.
+    """
+    if gpu_to_cpu:
+        patch_cuda()
     mapping_torch = _get_patch_map()
 
     for mapping_iter in mapping_torch:
-        mapping_iter[3] = getattr(mapping_iter[0], mapping_iter[1], None)
+        if mapping_iter[3] is None:
+            mapping_iter[3] = getattr(mapping_iter[0], mapping_iter[1], None)
         setattr(mapping_iter[0], mapping_iter[1], mapping_iter[2])
 
 
