@@ -123,7 +123,7 @@ RUN cd /opt && \
 # flink
 RUN cd /opt && \
     wget https://archive.apache.org/dist/flink/flink-${FLINK_VERSION}/flink-${FLINK_VERSION}-bin-scala_${SCALA_VERSION}.tgz && \
-    tar -zxvf flink-${FLINK_VERSION}-bin-scala_${SCALA_VERSION}.tgz && \
+    tar -zxvf flink-${FLINK_VERSION}-bin-scala_${SCALA_VERSION}.tgz
 RUN ls -al /opt
 
 # stage.2 gramine
