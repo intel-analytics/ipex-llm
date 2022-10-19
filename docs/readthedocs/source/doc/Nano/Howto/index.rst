@@ -62,7 +62,7 @@ PyTorch
 * `How to accelerate a PyTorch inference pipeline through OpenVINO <Inference/PyTorch/accelerate_pytorch_inference_openvino.html>`_
 * `How to quantize your PyTorch model for inference using Intel Neural Compressor <Inference/PyTorch/quantize_pytorch_inference_inc.html>`_
 * `How to quantize your PyTorch model for inference using OpenVINO Post-training Optimization Tools <Inference/PyTorch/quantize_pytorch_inference_pot.html>`_
-* `How to find accelerated method with minimal latency using InfereceOptimizer <Inference/PyTorch/inference_optimizer_optimize.html>`_
+* `How to find accelerated method with minimal latency using InferenceOptimizer <Inference/PyTorch/inference_optimizer_optimize.html>`_
 
 .. toctree::
     :maxdepth: 1
