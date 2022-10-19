@@ -12,7 +12,7 @@ If your data center cannot upgrade OS or kernel, then you can [Install SGX Drive
 
 ## Building Linux Kernel from Source with SGX Enabled
 
-In this guide, we show how to build Kernel 5.14 from the source code and enable SGX feature on Ubuntu 18.04. You can change the kernel version, i.e., 5.14 if necessary.
+In this guide, we show how to build Kernel 5.14 from the source code and enable SGX feature on Ubuntu 18.04/20.04. You can change the kernel version, i.e., 5.14 if necessary.
 
 ### Prerequisite for kernel build
 
@@ -73,6 +73,8 @@ sudo reboot
 
 ## Install SGX Driver through the Installation Package
 
+In this guide, we show how to install SGX driver with the installation package. This allows customers to enable SGX without upgrading their OS or kernel. More details in [Intel_SGX_SW_Installation_Guide_for_Linux.pdf](https://download.01.org/intel-sgx/latest/dcap-latest/linux/docs/Intel_SGX_SW_Installation_Guide_for_Linux.pdf).
+
 ### Prerequisite for SGX Driver
 
 ```bash
@@ -94,8 +96,6 @@ Check if the SGX driver is installed correctly
 ls -l /dev/ | grep sgx
 ```
 
-See more details in [Intel_SGX_SW_Installation_Guide_for_Linux.pdf](https://download.01.org/intel-sgx/latest/dcap-latest/linux/docs/Intel_SGX_SW_Installation_Guide_for_Linux.pdf).
-
 
 ## Trouble Shooting
 
@@ -105,3 +105,5 @@ See more details in [Intel_SGX_SW_Installation_Guide_for_Linux.pdf](https://down
 * In some kernels, SGX option is `CONFIG_INTEL_SGX`.
 * 5.13 Kernel may encounter nfs problem [Can't mount NFS-shares from Linux-5.13.0](https://forums.gentoo.org/viewtopic-p-8629887.html?sid=f7359b869fb71849d64f3e69bb48503a)
 * [Mellanox interface may be disabled on 5.14.0](https://bugzilla.redhat.com/show_bug.cgi?id=2014094). Changes to 5.15.5 will fix this issue.
+* Error 404 when downloading binary file. Please go to [intel-sgx-linux](https://download.01.org/intel-sgx/latest/linux-latest/distro) for latest download link.
+
