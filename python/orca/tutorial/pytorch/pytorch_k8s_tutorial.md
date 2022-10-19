@@ -63,11 +63,14 @@ from bigdl.orca.data.file import get_remote_file_to_local
 def train_data_creator(config, batch_size):
     transform = transforms.Compose([transforms.ToTensor(),
                                     transforms.Normalize((0.5,), (0.5,))])
+    
+    get_remote_file_to_local(remote_path="/path/to/nfsdata", local_path="/tmp/dataset")
 
     trainset = torchvision.datasets.FashionMNIST(root="/bigdl/nfsdata/dataset", train=True, 
                                                  download=False, transform=transform)
 
-    trainloader = torch.utils.data.DataLoader(trainset, batch_size=batch_size, shuffle=True, num_workers=0)
+    trainloader = torch.utils.data.DataLoader(trainset, batch_size=batch_size,
+                                              shuffle=True, num_workers=0)
     return trainloader
 ```
 
@@ -103,7 +106,7 @@ In the script:
 * `-v /root/.kube:/root/.kube`: specify the path of kubernetes installation;
 
 __Notes:__
-* Please switch the `2.1.0` tag to `latest` if you pull the latest BigDL image.
+* Please switch the tag from `2.1.0` to `latest` if you pull the latest BigDL image.
 * The __Client Container__ contains all the required environment except K8s configs.
 * You needn't to create an __Executor Container__ manually, which is scheduled by K8s at runtime.
 
@@ -719,16 +722,19 @@ In the YAML file:
         * `mountPath`: Path within the Container at which the volume should be mounted.
         * `subPath`: Path within the volume from which the Container's volume should be mounted.
 
-Please execute the command below to deloy the pods and submit your application.
+Create a Pod and run Fashion-MNIST application based on the YAML file.
 ```bash
-kubectl apply -f orca-pytorch-k8s.yaml
+kubectl apply -f orca-tutorial-client.yaml
 ```
 
-To retrive training logs, please find the driver pod first, the driver pod will be named such as `orca-pytorch-job-xxx`.
+List all pods to find the driver pod, which will be named as `orca-pytorch-job-xxx`.
 ```bash
 # find out driver pod
 kubectl get pods
+```
 
+View logs from the driver pod to retrive the training stats. 
+```bash
 # retrive training logs
 kubectl logs `orca-pytorch-job-xxx`
 ```
@@ -834,19 +840,42 @@ spec:
           claimName: nfsvolumeclaim
 ```
 
-Please execute the command below to deloy the pods and submit your application.
+In the YAML file:
+* `restartPolicy`: Restart policy for all Containers within the pod. One of Always, OnFailure, Never. Default to Always.
+* `containers`: A single application Container that you want to run within a pod.
+    * `name`: Name of the Container, each Container in a pod must have a unique name.
+    * `image`: Name of the Container image.
+    * `imagePullPolicy`: Image pull policy. One of Always, Never and IfNotPresent. Defaults to Always if `:latest` tag is specified, or IfNotPresent otherwise.
+    * `command`: command for the containers that run in the Pod.
+    * `args`: arguments to submit the spark application in the Pod. See more details of the `spark-submit` script in __[Section 6.2.2](#622-k8s-cluster)__.
+    * `securityContext`: SecurityContext defines the security options the container should be run with.
+    * `env`: List of environment variables to set in the Container, which will be used when submitting the application.
+        * `env.name`: Name of the environment variable.
+        * `env.value`: Value of the environment variable.
+    * `resources`: Allocate resources in the cluster to each pod.
+        * `resource.limits`: Limits describes the maximum amount of compute resources allowed.
+        * `resource.requests`: Requests describes the minimum amount of compute resources required.
+    * `volumeMounts`: Pod volumes to mount into the Container's filesystem.
+        * `name`: Match with the Name of a Volume.
+        * `mountPath`: Path within the Container at which the volume should be mounted.
+        * `subPath`: Path within the volume from which the Container's volume should be mounted.
+
+Create a Pod and run Fashion-MNIST application based on the YAML file.
 ```bash
-kubectl apply -f orca-pytorch-k8s.yaml
+kubectl apply -f orca-tutorial-cluster.yaml
 ```
 
-Please find the driver pod to retrive training logs (the client pod named `orca-pytorch-job-xxx` only returns training status), the driver pod will be named such as `orca-pytorch-job-driver`.
+List all pods to find the driver pod (since the client pod only returns training status), which will be named as `orca-pytorch-job-driver`.
 ```bash
 # checkout training status
 kubectl logs `orca-pytorch-job-xxx`
 
 # find out driver pod
 kubectl get pods
+```
 
+View logs from the driver pod to retrive the training stats. 
+```bash
 # retrive training logs
 kubectl logs `orca-pytorch-job-driver`
 ```
@@ -1004,23 +1033,26 @@ In the YAML file:
         * `mountPath`: Path within the Container at which the volume should be mounted.
         * `subPath`: Path within the volume from which the Container's volume should be mounted.
 
-Please execute the command below to deloy the pods and submit your application.
+Create a Pod and run Fashion-MNIST application based on the YAML file.
 ```bash
-kubectl apply -f orca-pytorch-k8s.yaml
+kubectl apply -f integrate_image_client.yaml
 ```
 
-To retrive training logs, please find the driver pod first, the driver pod will be named such as `orca-pytorch-job-xxx`.
+List all pods to find the driver pod, which will be named as `orca-integrate-job-xxx`.
 ```bash
 # find out driver pod
 kubectl get pods
+```
 
+View logs from the driver pod to retrive the training stats. 
+```bash
 # retrive training logs
-kubectl logs `orca-pytorch-job-xxx`
+kubectl logs `orca-integrate-job-xxx`
 ```
 
 After the task finish, you could delete the job as the command below.
 ```bash
-kubectl delete job orca-pytorch-job
+kubectl delete job orca-integrate-job
 ```
 
 ### 6.4.2 K8s Cluster
@@ -1122,7 +1154,7 @@ In the YAML file:
     * `image`: Name of the Container image.
     * `imagePullPolicy`: Image pull policy. One of Always, Never and IfNotPresent. Defaults to Always if `:latest` tag is specified, or IfNotPresent otherwise.
     * `command`: command for the containers that run in the Pod.
-    * `args`: arguments to submit the spark application in the Pod. See more details of the `spark-submit` script in __[Section 6.2.1](#621-k8s-client)__.
+    * `args`: arguments to submit the spark application in the Pod. See more details of the `spark-submit` script in __[Section 6.2.2](#622-k8s-cluster)__.
     * `securityContext`: SecurityContext defines the security options the container should be run with.
     * `env`: List of environment variables to set in the Container, which will be used when submitting the application.
         * `env.name`: Name of the environment variable.
@@ -1135,24 +1167,27 @@ In the YAML file:
         * `mountPath`: Path within the Container at which the volume should be mounted.
         * `subPath`: Path within the volume from which the Container's volume should be mounted.
 
-Please execute the command below to deloy the pods and submit your application.
+Create a Pod and run Fashion-MNIST application based on the YAML file.
 ```bash
-kubectl apply -f orca-pytorch-k8s.yaml
+kubectl apply -f integrate_image_cluster.yaml
 ```
 
-Please find the driver pod to retrive training logs (the client pod named `orca-pytorch-job-xxx` only returns training status), the driver pod will be named such as `orca-pytorch-job-driver`.
+List all pods to find the driver pod (since the client pod only returns training status), which will be named as `orca-integrate-job-driver`.
 ```bash
 # checkout training status
-kubectl logs `orca-pytorch-job-xxx`
+kubectl logs `orca-integrate-job-xxx`
 
 # find out driver pod
 kubectl get pods
+```
 
+View logs from the driver pod to retrive the training stats. 
+```bash
 # retrive training logs
-kubectl logs `orca-pytorch-job-driver`
+kubectl logs `orca-integrate-job-driver`
 ```
 
 After the task finish, you could delete the job as the command below.
 ```bash
-kubectl delete job orca-pytorch-job
+kubectl delete job orca-integrate-job
 ```
