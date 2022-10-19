@@ -1,15 +1,15 @@
 name: Friesian Docker Build
 
 on:
-  #  push:
-  #    paths:
-  #      - 'scala/friesian/**'
-  #      - '.github/actions/friesian-docker-build-action/action.yml'
-  #  pull_request:
-  #    branches: [ main ]
-  #    paths:
-  #      - 'scala/friesian/**'
-  #      - '.github/actions/friesian-docker-build-action/action.yml'
+  push:
+    paths:
+      - 'scala/friesian/**'
+      - '.github/actions/friesian-docker-build-action/action.yml'
+  pull_request:
+    branches: [ main ]
+    paths:
+      - 'scala/friesian/**'
+      - '.github/actions/friesian-docker-build-action/action.yml'
   #  schedule:
   #    - cron: '0 12 * * *' # GMT time, 12:00 GMT == 20:00 China
   workflow_dispatch:
@@ -24,15 +24,43 @@ permissions:
   packages: write
 
 jobs:
-  friesian-docker-build:
-    runs-on: [ self-hosted, Shire ]
+  serving-jar-package:
+    runs-on: [ self-hosted, Linux, Bree ]
     steps:
       - uses: actions/checkout@v3
-      - name: set env
-        run: |
-          echo "TAG=${{github.event.inputs.tag||'latest'}}" >> $GITHUB_ENV
+
       - name: Set up JDK8
         uses: ./.github/actions/jdk-setup-action
-      - name: Build docker
-        uses: ./.github/actions/friesian-docker-build-action
+
+      - uses: actions/cache@v2
+        with:
+          path: ~/.m2/repository
+          key: maven-${{ hashFiles('**/pom.xml') }}
+          restore-keys: maven-
+
+      - name: Set up maven
+          uses: ./.github/actions/maven-setup-action
+
+      - name: Build with Maven
+        run: |
+          cd scala/friesian
+          mvn clean package -P serving,spark_3.x -DskipTests
+
+          # upload
+          sshpass -p 'abcd1234!@#$QWER' \
+          scp ./scala/friesian/target/bigdl-friesian-*-serving.jar \
+          intelanalytics@frs.sourceforge.net:/home/frs/project/analytics-zoo/friesian-serving-jars
+
+
+#  friesian-docker-build:
+#    runs-on: [ self-hosted, Shire ]
+#    steps:
+#      - uses: actions/checkout@v3
+#      - name: set env
+#        run: |
+#          echo "TAG=${{github.event.inputs.tag||'latest'}}" >> $GITHUB_ENV
+#      - name: Set up JDK8
+#        uses: ./.github/actions/jdk-setup-action
+#      - name: Build docker
+#        uses: ./.github/actions/friesian-docker-build-action
 
