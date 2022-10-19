@@ -1133,7 +1133,7 @@ class BasePytorchForecaster(Forecaster):
             >>> pred = forecaster.predict_with_onnx(data)
         '''
         import onnxruntime
-        from bigdl.chronos.pytorch import TSTrainer as Trainer
+        from bigdl.chronos.pytorch import TSInferenceOptimizer as InferenceOptimizer
         from bigdl.nano.utils.log4Error import invalidInputError
         if sess_options is not None and not isinstance(sess_options, onnxruntime.SessionOptions):
             invalidInputError(False,
@@ -1151,10 +1151,10 @@ class BasePytorchForecaster(Forecaster):
                               "forecaster to a non-distributed version.")
         dummy_input = torch.rand(1, self.data_config["past_seq_len"],
                                  self.data_config["input_feature_num"])
-        self.onnxruntime_fp32 = Trainer.trace(self.internal,
-                                              input_sample=dummy_input,
-                                              accelerator="onnxruntime",
-                                              onnxruntime_session_options=sess_options)
+        self.onnxruntime_fp32 = InferenceOptimizer.trace(self.internal,
+                                                         input_sample=dummy_input,
+                                                         accelerator="onnxruntime",
+                                                         onnxruntime_session_options=sess_options)
 
     def build_openvino(self, thread_num=None):
         '''
@@ -1170,7 +1170,7 @@ class BasePytorchForecaster(Forecaster):
         :param thread_num: int, the num of thread limit. The value is set to None by
                default where no limit is set.
         '''
-        from bigdl.chronos.pytorch import TSTrainer as Trainer
+        from bigdl.chronos.pytorch import TSInferenceOptimizer as InferenceOptimizer
         from bigdl.nano.utils.log4Error import invalidInputError
 
         if self.distributed:
@@ -1180,10 +1180,10 @@ class BasePytorchForecaster(Forecaster):
                               "forecaster to a non-distributed version.")
         dummy_input = torch.rand(1, self.data_config["past_seq_len"],
                                  self.data_config["input_feature_num"])
-        self.openvino_fp32 = Trainer.trace(self.internal,
-                                           input_sample=dummy_input,
-                                           accelerator="openvino",
-                                           thread_num=thread_num)
+        self.openvino_fp32 = InferenceOptimizer.trace(self.internal,
+                                                      input_sample=dummy_input,
+                                                      accelerator="openvino",
+                                                      thread_num=thread_num)
 
     def export_onnx_file(self, dirname="fp32_onnx", quantized_dirname=None):
         """
@@ -1192,7 +1192,7 @@ class BasePytorchForecaster(Forecaster):
         :param dirname: The dir location you want to save the onnx file.
         :param quantized_dirname: The dir location you want to save the quantized onnx file.
         """
-        from bigdl.chronos.pytorch import TSTrainer as Trainer
+        from bigdl.chronos.pytorch import TSInferenceOptimizer as InferenceOptimizer
         from bigdl.nano.utils.log4Error import invalidInputError
         if self.distributed:
             invalidInputError(False,
@@ -1200,11 +1200,11 @@ class BasePytorchForecaster(Forecaster):
                               "forecaster. You can call .to_local() to transform the "
                               "forecaster to a non-distributed version.")
         if quantized_dirname and self.onnxruntime_int8:
-            Trainer.save(self.onnxruntime_int8, dirname)
+            InferenceOptimizer.save(self.onnxruntime_int8, quantized_dirname)
         if dirname:
             if self.onnxruntime_fp32 is None:
                 self.build_onnx()
-            Trainer.save(self.onnxruntime_fp32, dirname)
+            InferenceOptimizer.save(self.onnxruntime_fp32, dirname)
 
     def export_openvino_file(self, dirname="fp32_openvino",
                              quantized_dirname=None):
@@ -1214,7 +1214,7 @@ class BasePytorchForecaster(Forecaster):
         :param dirname: The dir location you want to save the openvino file.
         :param quantized_dirname: The dir location you want to save the quantized openvino file.
         """
-        from bigdl.chronos.pytorch import TSTrainer as Trainer
+        from bigdl.chronos.pytorch import TSInferenceOptimizer as InferenceOptimizer
         from bigdl.nano.utils.log4Error import invalidInputError
         if self.distributed:
             invalidInputError(False,
@@ -1222,11 +1222,11 @@ class BasePytorchForecaster(Forecaster):
                               "forecaster. You can call .to_local() to transform the "
                               "forecaster to a non-distributed version.")
         if quantized_dirname and self.openvino_int8:
-            Trainer.save(self.openvino_int8, dirname)
+            InferenceOptimizer.save(self.openvino_int8, quantized_dirname)
         if dirname:
             if self.openvino_fp32 is None:
                 self.build_openvino()
-            Trainer.save(self.openvino_fp32, dirname)
+            InferenceOptimizer.save(self.openvino_fp32, dirname)
 
     def quantize(self, calib_data=None,
                  val_data=None,
@@ -1313,6 +1313,7 @@ class BasePytorchForecaster(Forecaster):
         """
         # check model support for quantization
         from bigdl.nano.utils.log4Error import invalidInputError
+        from bigdl.chronos.pytorch import TSInferenceOptimizer as InferenceOptimizer
         if not self.quantize_available:
             invalidInputError(False,
                               "This model has not supported quantization.")
@@ -1387,19 +1388,19 @@ class BasePytorchForecaster(Forecaster):
             else:
                 accelerator = 'onnxruntime'
                 method = method[:-3]
-            q_model = self.trainer.quantize(self.internal,
-                                            precision='int8',
-                                            accelerator=accelerator,
-                                            method=method,
-                                            calib_dataloader=calib_data,
-                                            metric=metric,
-                                            conf=conf,
-                                            approach=approach,
-                                            tuning_strategy=tuning_strategy,
-                                            accuracy_criterion=accuracy_criterion,
-                                            timeout=timeout,
-                                            max_trials=max_trials,
-                                            onnxruntime_session_options=sess_options)
+            q_model = InferenceOptimizer.quantize(self.internal,
+                                                  precision='int8',
+                                                  accelerator=accelerator,
+                                                  method=method,
+                                                  calib_dataloader=calib_data,
+                                                  metric=metric,
+                                                  conf=conf,
+                                                  approach=approach,
+                                                  tuning_strategy=tuning_strategy,
+                                                  accuracy_criterion=accuracy_criterion,
+                                                  timeout=timeout,
+                                                  max_trials=max_trials,
+                                                  onnxruntime_session_options=sess_options)
             if accelerator == 'onnxruntime':
                 self.onnxruntime_int8 = q_model
             if accelerator == 'openvino':

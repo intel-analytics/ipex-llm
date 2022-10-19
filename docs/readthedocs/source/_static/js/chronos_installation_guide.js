@@ -232,8 +232,8 @@ function refresh_cmd(){
 
 //set the color of selected buttons
 function set_color(id){
-   $("#"+id).parent().css("background-color","rgb(74, 106, 237)");
-   $("#"+id).css("color","white");
+   $("#"+id).parent().css("background-color","var(--pst-color-primary)");
+   $("#"+id).css("color","var(--pst-color-primary-text)");
    $("#"+id).addClass("isset");
 }
 
@@ -241,7 +241,7 @@ function set_color(id){
 function reset_color(list){
     for (btn in list){
         $("#"+list[btn]).parent().css("background-color","transparent");
-        $("#"+list[btn]).css("color","black");
+        $("#"+list[btn]).css("color","var(--pst-color-text-base)");
         $("#"+list[btn]).removeClass("isset");
     }
 }
@@ -254,7 +254,7 @@ function disable(list){
     }
     reset_color(list);
     for(btn in list){
-        $("#"+list[btn]).parent().css("background-color","rgb(133, 133, 133)");
+        $("#"+list[btn]).parent().css("background-color","var(--pst-color-muted)");
     }
 }
 
@@ -303,14 +303,14 @@ $(document).on('click',"button",function(){
 $(document).on({
     mouseenter: function () {
         if($(this).prop("disabled")!=true){
-            $(this).parent().css("background-color","rgb(74, 106, 237)");
-            $(this).css("color","white");
+            $(this).parent().css("background-color","var(--pst-color-primary)");
+            $(this).css("color","var(--pst-color-primary-text)");
         }
     },
     mouseleave: function () {
         if(!$(this).hasClass("isset") && $(this).prop("disabled")!=true){
             $(this).parent().css("background-color","transparent");
-            $(this).css("color","black");
+            $(this).css("color","var(--pst-color-text-base)");
         }
     }
 }, "button");
