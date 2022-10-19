@@ -18,6 +18,7 @@ from numpy import ndarray
 import numpy as np
 from bigdl.nano.utils.log4Error import invalidInputError
 from timeit import repeat
+import random
 
 
 EPSILON = 1e-10
@@ -26,8 +27,11 @@ EPSILON = 1e-10
 def mae(y_label, y_predict):
     """
     Calculate the mean absolute error (MAE).
+
     .. math::
+
         \\text{MAE} = \\frac{1}{n}\\sum_{t=1}^n |y_t-\\hat{y_t}|
+
     :param y_label: Array-like of shape = (n_samples, \*).
            Ground truth (correct) target values.
     :param y_predict: Array-like of shape = (n_samples, \*).
@@ -42,8 +46,11 @@ def mae(y_label, y_predict):
 def mse(y_label, y_predict):
     """
     Calculate the mean squared error (MSE).
+
     .. math::
+
         \\text{MSE} = \\frac{1}{n}\\sum_{t=1}^n (y_t-\\hat{y_t})^2
+
     :param y_label: Array-like of shape = (n_samples, \*).
            Ground truth (correct) target values.
     :param y_predict: Array-like of shape = (n_samples, \*).
@@ -58,8 +65,11 @@ def mse(y_label, y_predict):
 def rmse(y_label, y_predict):
     """
     Calculate square root of the mean squared error (RMSE).
+
     .. math::
+
         \\text{RMSE} = \\sqrt{(\\frac{1}{n}\\sum_{t=1}^n (y_t-\\hat{y_t})^2)}
+
     :param y_label: Array-like of shape = (n_samples, \*).
            Ground truth (correct) target values.
     :param y_predict: Array-like of shape = (n_samples, \*).
@@ -73,8 +83,11 @@ def rmse(y_label, y_predict):
 def mape(y_label, y_predict):
     """
     Calculate mean absolute percentage error (MAPE).
+
     .. math::
+
         \\text{MAPE} = \\frac{100\%}{n}\\sum_{t=1}^n  |\\frac{y_t-\\hat{y_t}}{y_t}|
+
     :param y_label: Array-like of shape = (n_samples, \*).
            Ground truth (correct) target values.
     :param y_predict: Array-like of shape = (n_samples, \*).
@@ -88,8 +101,11 @@ def mape(y_label, y_predict):
 def smape(y_label, y_predict):
     """
     Calculate Symmetric mean absolute percentage error (sMAPE).
+
     .. math::
+
         \\text{sMAPE} = \\frac{100\%}{n} \\sum_{t=1}^n \\frac{|y_t-\\hat{y_t}|}{|y_t|+|\\hat{y_t}|}
+
     :param y_label: Array-like of shape = (n_samples, \*).
            Ground truth (correct) target values.
     :param y_predict: Array-like of shape = (n_samples, \*).
@@ -106,8 +122,11 @@ def smape(y_label, y_predict):
 def r2(y_label, y_predict):
     """
     Calculate the r2 score.
+
     .. math::
+
         R^2 = 1-\\frac{\\sum_{t=1}^n (y_t-\\hat{y_t})^2}{\\sum_{t=1}^n (y_t-\\bar{y})^2}
+
     :param y_label: Array-like of shape = (n_samples, \*).
            Ground truth (correct) target values.
     :param y_predict: Array-like of shape = (n_samples, \*).
@@ -160,6 +179,13 @@ def _standard_input(metrics, y_true, y_pred):
     else:
         original_shape = y_true.shape
     return metrics, y_true, y_pred, original_shape
+
+
+def _check_shape(input1, input2, input_name1, input_name2):
+    invalidInputError(input1.shape == input2.shape,
+                      f"{input_name1} does not have same input as {input_name2}, "
+                      f"{input_name1} has a shape as {input1.shape} while "
+                      f"{input_name2} has a shape as {input2.shape}.")
 
 
 class Evaluator(object):
@@ -222,7 +248,7 @@ class Evaluator(object):
             >>> # run forecaster.predict(x.numpy()) for len(tsdata_test.df) times
             >>> # to evaluate the time cost
             >>> latency = Evaluator.get_latency(forecaster.predict, x.numpy(),\
-                          num_running = len(tsdata_test.df))
+                num_running = len(tsdata_test.df))
             >>> # an example output:
             >>> # {"p50": 3.853, "p90": 3.881, "p95": 3.933, "p99": 4.107}
         """
@@ -241,3 +267,113 @@ class Evaluator(object):
                         "p99": round(1000 * sorted_time[int(0.99 * num_running)], 3)}
 
         return latency_list
+
+    @staticmethod
+    def plot(y,
+             std=None,
+             ground_truth=None,
+             x=None,
+             feature_index=0,
+             instance_index=None,
+             layout=(1, 1),
+             prediction_interval=0.95,
+             figsize=(16, 16),
+             output_file=None,
+             **kwargs):
+        '''
+        `Evaluator.plot` function helps users to visualize their forecasting result.
+
+        :param y: predict result, a 3-dim numpy ndarray with shape represented as
+               (batch_size, predict_length, output_feature_dim).
+        :param std: standard deviation, a 3-dim numpy ndarray with shape represented
+               as (batch_size, predict_length, output_feature_dim). Same shape as `y`.
+        :param ground_truth: ground truth, a 3-dim numpy ndarray with shape represented as
+               (batch_size, predict_length, output_feature_dim). Same shape as `y`.
+        :param x: input numpy array, a 3-dim numpy ndarray with shape represented
+               as (batch_size, lookback_length, input_feature_dim).
+        :param feature_index: int, the feature index (along last dim) to plot.
+               Default to the first feature.
+        :param instance_index: int/tuple/list, the instance index to show. Default to None
+               which represents random number.
+        :param layout: a 2-dim tuple, indicate the row_num and col_num to plot.
+        :param prediction_internval: a float, indicates the confidence percentile. Default to
+               0.95 refer to 95% confidence. This only effective when `std` is not None.
+        :param figsize: figure size to be inputed to pyplot. Default to (16,16).
+        :param output_file: a path, indicates the save path of the output plot. Default to
+               None, indicates no output file is needed.
+        :param **kwargs: other paramters will be passed to matplotlib.pyplot.
+        '''
+        try:
+            import matplotlib.pyplot as plt
+        except ImportError:
+            invalidInputError(False,
+                              "To enable visualization, you need to install matplotlib by:\n"
+                              "\t\t pip install matplotlib\n")
+
+        # shape check
+        if std is not None:
+            _check_shape(y, std, "y", "std")
+        if ground_truth is not None:
+            _check_shape(y, ground_truth, "y", "ground_truth")
+        invalidInputError(len(layout) == 2, f"len of `layout` should be 2 while get {len(layout)}")
+
+        batch_num = y.shape[0]
+        horizon = y.shape[1]
+        lookback = 0 if x is None else x.shape[1]
+        row_num = 1 if layout is None else layout[0]
+        col_num = 1 if layout is None else layout[1]
+
+        y_index = list(range(lookback, horizon + lookback))
+        x_index = list(range(0, lookback))
+        iter_num = 1
+        instance_index_iter = iter(instance_index) if instance_index is not None else None
+
+        plt.figure(figsize=figsize, **kwargs)
+
+        for row_iter in range(1, row_num + 1):
+            for col_iter in range(1, col_num + 1):
+                # generate the index
+                if instance_index_iter is None:
+                    instance_index = random.randint(0, y.shape[0])
+                else:
+                    try:
+                        instance_index = next(instance_index_iter)
+                    except e:
+                        # nothing to plot, skip following grids
+                        continue
+                ax = plt.subplot(row_num * 100 + col_num * 10 + iter_num)
+                ax.plot(y_index, y[instance_index, :, feature_index], color="royalblue")
+                if ground_truth is not None:
+                    ax.plot(y_index, ground_truth[instance_index, :, feature_index],
+                            color="limegreen")
+                if x is not None:
+                    ax.plot(x_index, x[instance_index, :, feature_index], color="black")
+                    ax.plot([x_index[-1], y_index[0]],
+                            np.array([x[instance_index, -1, feature_index],
+                                      y[instance_index, 0, feature_index]]),
+                            color="royalblue")
+                    if ground_truth is not None:
+                        ax.plot([x_index[-1], y_index[0]],
+                                np.array([x[instance_index, -1, feature_index],
+                                          ground_truth[instance_index, 0, feature_index]]),
+                                color="limegreen")
+                if std is not None:
+                    import scipy.stats
+                    ppf_value = scipy.stats.norm.ppf(prediction_interval)
+                    ax.fill_between(y_index,
+                                    y[instance_index, :,
+                                      feature_index] - std[instance_index, :,
+                                                           feature_index] * ppf_value,
+                                    y[instance_index, :,
+                                      feature_index] + std[instance_index, :,
+                                                           feature_index] * ppf_value,
+                                    alpha=0.2)
+                if ground_truth is not None:
+                    ax.legend(["prediction", "ground truth"])
+                else:
+                    ax.legend(["prediction"])
+                ax.set_title(f"index {instance_index}")
+                iter_num += 1
+
+        if output_file:
+            plt.savefig(output_file)

@@ -94,23 +94,9 @@
     </fileSet>
     <fileSet>
       <outputDirectory>/jars</outputDirectory>
-      <directory>${project.parent.basedir}/dllib/target</directory>
+      <directory>${project.parent.basedir}/assembly/target</directory>
       <includes>
-          <include>bigdl-dllib*-jar-with-dependencies.jar</include>
-      </includes>
-    </fileSet>
-    <fileSet>
-      <outputDirectory>/jars</outputDirectory>
-      <directory>${project.parent.basedir}/orca/target</directory>
-      <includes>
-          <include>bigdl-orca*-jar-with-dependencies.jar</include>
-      </includes>
-    </fileSet>
-    <fileSet>
-      <outputDirectory>/jars</outputDirectory>
-      <directory>${project.parent.basedir}/friesian/target</directory>
-      <includes>
-          <include>bigdl-friesian*-jar-with-dependencies.jar</include>
+          <include>bigdl-assembly*-jar-with-dependencies.jar</include>
       </includes>
     </fileSet>
   </fileSets>

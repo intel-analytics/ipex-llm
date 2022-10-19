@@ -38,7 +38,7 @@ def create_IPEXStrategy(*args, **kwargs):
 def ipex_optimize(*args, **kwargs):
     """Optimize model to apply IPEX's optimizations in IPEX 1.11."""
     import intel_extension_for_pytorch as ipex
-    ipex.optimize(*args, **kwargs)
+    return ipex.optimize(*args, **kwargs)
 
 
 def ipex_device():

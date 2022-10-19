@@ -303,7 +303,7 @@ def main(hparams: Namespace):
     # ------------------------
     # 2 INIT TRAINER
     # ------------------------
-    trainer = Trainer.from_argparse_args(hparams)
+    trainer = Trainer.from_argparse_args(hparams)  # type: ignore
 
     # ------------------------
     # 3 START TRAINING

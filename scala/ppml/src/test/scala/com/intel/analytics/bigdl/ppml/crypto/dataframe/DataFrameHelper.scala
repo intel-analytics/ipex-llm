@@ -29,8 +29,8 @@ class DataFrameHelper extends BigDLSpecHelper {
   val repeatedNum = 100000
   val totalNum = repeatedNum * 3
   val header = "name,age,job\n"
-  val (appid, appkey) = generateKeys()
-  val simpleKms = SimpleKeyManagementService(appid, appkey)
+  val (appid, apikey) = generateKeys()
+  val simpleKms = SimpleKeyManagementService(appid, apikey)
   val dir = createTmpDir("rwx------")
 
   val primaryKeyPath = dir + s"/primary.key"
@@ -38,8 +38,8 @@ class DataFrameHelper extends BigDLSpecHelper {
 
   def generateKeys(): (String, String) = {
     val appid: String = "123456789012"
-    val appkey: String = "210987654321"
-    (appid, appkey)
+    val apikey: String = "210987654321"
+    (appid, apikey)
   }
 
   def generateCsvData(): (String, String, String, String) = {

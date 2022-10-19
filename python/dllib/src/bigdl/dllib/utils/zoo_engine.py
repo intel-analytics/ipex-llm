@@ -110,7 +110,7 @@ def __prepare_analytics_zoo_env():
 
 def get_analytics_zoo_classpath():
     """
-    Get and return the jar path for analytics-zoo if exists.
+    Get and return the jar path for BigDL if exists.
     """
     if os.getenv("BIGDL_CLASSPATH"):
         for path in os.getenv("BIGDL_CLASSPATH").split(":"):

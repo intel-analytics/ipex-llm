@@ -171,16 +171,16 @@ you can use [generate_people_csv.py](https://github.com/analytics-zoo/ppml-e2e-e
 
 2. Encrypt `people.csv`
     ```
-    docker exec -i $KMSUTIL_CONTAINER_NAME bash -c "bash /home/entrypoint.sh encrypt $appid $appkey $input_file_path"
+    docker exec -i $KMSUTIL_CONTAINER_NAME bash -c "bash /home/entrypoint.sh encrypt $appid $apikey $input_file_path"
     ```
 #### Step 2. Build Big Data & AI applications
 To build your own Big Data & AI applications, refer to [develop your own Big Data & AI applications with BigDL PPML](#4-develop-your-own-big-data--ai-applications-with-bigdl-ppml). The code of SimpleQuery is in [here](https://github.com/intel-analytics/BigDL/blob/main/scala/ppml/src/main/scala/com/intel/analytics/bigdl/ppml/examples/SimpleQuerySparkExample.scala), it is already built into bigdl-ppml-spark_3.1.2-2.1.0-SNAPSHOT.jar, and the jar is put into PPML image.
 
 #### Step 3. Attestation 
 
-To enable attestation, you should have a running Attestation Service (EHSM-KMS here for example) in your environment. (You can start a KMS  refering to [this link](https://github.com/intel-analytics/BigDL/tree/main/ppml/services/kms-utils/docker)). Configure your KMS app_id and app_key with `kubectl`, and then configure KMS settings in `spark-driver-template.yaml` and `spark-executor-template.yaml` in the container.
+To enable attestation, you should have a running Attestation Service (EHSM-KMS here for example) in your environment. (You can start a KMS  refering to [this link](https://github.com/intel-analytics/BigDL/tree/main/ppml/services/kms-utils/docker)). Configure your KMS app_id and api_key with `kubectl`, and then configure KMS settings in `spark-driver-template.yaml` and `spark-executor-template.yaml` in the container.
 ``` bash
-kubectl create secret generic kms-secret --from-literal=app_id=your-kms-app-id --from-literal=app_key=your-kms-app-key
+kubectl create secret generic kms-secret --from-literal=app_id=your-kms-app-id --from-literal=api_key=your-kms-api-key
 ```
 Configure `spark-driver-template.yaml` for example. (`spark-executor-template.yaml` is similar)
 ``` yaml
@@ -205,7 +205,7 @@ spec:
         valueFrom:
           secretKeyRef:
             name: kms-secret
-            key: app_key
+            key: api_key
 ...
 ```
 You should get `Attestation Success!` in logs after you [submit a PPML job](#step-4-submit-job) if the quote generated with user report is verified successfully by Attestation Service, or you will get `Attestation Fail! Application killed!` and the job will be stopped.
@@ -287,7 +287,7 @@ Here we use **k8s client mode** and **PPML CLI** to run SimpleQuery. Check other
               --kmsServerIP your_ehsm_kms_server_ip \
               --kmsServerPort your_ehsm_kms_server_port \
               --ehsmAPPID your_ehsm_kms_appid \
-              --ehsmAPPKEY your_ehsm_kms_appkey
+              --ehsmAPIKEY your_ehsm_kms_apikey
       ```
 
 
@@ -313,7 +313,7 @@ Here we use **k8s client mode** and **PPML CLI** to run SimpleQuery. Check other
 When the job is done, you can decrypt and read result of the job. More details in [Decrypt Job Result](./services/kms-utils/docker/README.md#3-enroll-generate-key-encrypt-and-decrypt).
 
   ```
-  docker exec -i $KMSUTIL_CONTAINER_NAME bash -c "bash /home/entrypoint.sh decrypt $appid $appkey $input_path"
+  docker exec -i $KMSUTIL_CONTAINER_NAME bash -c "bash /home/entrypoint.sh decrypt $appid $apikey $input_path"
   ```
 
 https://user-images.githubusercontent.com/61072813/184758643-821026c3-40e0-4d4c-bcd3-8a516c55fc01.mp4
@@ -376,7 +376,7 @@ If you are familiar with Spark, you may find that the usage of `PPMLConext` is v
       val ppmlArgs: Map[String, String] = Map(
              "spark.bigdl.kms.type" -> "SimpleKeyManagementService",
              "spark.bigdl.kms.simple.id" -> "your_app_id",
-             "spark.bigdl.kms.simple.key" -> "your_app_key",
+             "spark.bigdl.kms.simple.key" -> "your_api_key",
              "spark.bigdl.kms.key.primary" -> "/your/primary/key/path/primaryKey",
              "spark.bigdl.kms.key.data" -> "/your/data/key/path/dataKey"
          )
@@ -395,7 +395,7 @@ If you are familiar with Spark, you may find that the usage of `PPMLConext` is v
 
       ppml_args = {"kms_type": "SimpleKeyManagementService",
                    "simple_app_id": "your_app_id",
-                   "simple_app_key": "your_app_key",
+                   "simple_api_key": "your_api_key",
                    "primary_key_path": "/your/primary/key/path/primaryKey",
                    "data_key_path": "/your/data/key/path/dataKey"
                   }
@@ -418,7 +418,7 @@ If you are familiar with Spark, you may find that the usage of `PPMLConext` is v
              "spark.bigdl.kms.ehs.ip" -> "your_server_ip",
              "spark.bigdl.kms.ehs.port" -> "your_server_port",
              "spark.bigdl.kms.ehs.id" -> "your_app_id",
-             "spark.bigdl.kms.ehs.key" -> "your_app_key",
+             "spark.bigdl.kms.ehs.key" -> "your_api_key",
              "spark.bigdl.kms.key.primary" -> "/your/primary/key/path/primaryKey",
              "spark.bigdl.kms.key.data" -> "/your/data/key/path/dataKey"
       )
@@ -438,7 +438,7 @@ If you are familiar with Spark, you may find that the usage of `PPMLConext` is v
                    "kms_server_ip": "your_server_ip",
                    "kms_server_port": "your_server_port"
                    "ehsm_app_id": "your_app_id",
-                   "ehsm_app_key": "your_app_key",
+                   "ehsm_api_key": "your_api_key",
                    "primary_key_path": "/your/primary/key/path/primaryKey",
                    "data_key_path": "/your/data/key/path/dataKey"
                   }
@@ -504,7 +504,7 @@ If you are familiar with Spark, you may find that the usage of `PPMLConext` is v
    val ppmlArgs: Map[String, String] = Map(
        "spark.bigdl.kms.type" -> "SimpleKeyManagementService",
        "spark.bigdl.kms.simple.id" -> "your_app_id",
-       "spark.bigdl.kms.simple.key" -> "your_app_key",
+       "spark.bigdl.kms.simple.key" -> "your_api_key",
        "spark.bigdl.kms.key.primary" -> "/your/primary/key/path/primaryKey",
        "spark.bigdl.kms.key.data" -> "/your/data/key/path/dataKey"
    )
@@ -525,7 +525,7 @@ If you are familiar with Spark, you may find that the usage of `PPMLConext` is v
    
    ppml_args = {"kms_type": "SimpleKeyManagementService",
                 "simple_app_id": "your_app_id",
-                "simple_app_key": "your_app_key",
+                "simple_api_key": "your_api_key",
                 "primary_key_path": "/your/primary/key/path/primaryKey",
                 "data_key_path": "/your/data/key/path/dataKey"
                }

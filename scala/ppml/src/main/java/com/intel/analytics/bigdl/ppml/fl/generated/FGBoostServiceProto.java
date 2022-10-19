@@ -19,16 +19,10 @@ public final class FGBoostServiceProto {
       com.google.protobuf.MessageOrBuilder {
 
     /**
-     * <code>string clientuuid = 1;</code>
+     * <code>int32 clientuuid = 1;</code>
      * @return The clientuuid.
      */
-    java.lang.String getClientuuid();
-    /**
-     * <code>string clientuuid = 1;</code>
-     * @return The bytes for clientuuid.
-     */
-    com.google.protobuf.ByteString
-        getClientuuidBytes();
+    int getClientuuid();
 
     /**
      * <code>.TensorMap data = 2;</code>
@@ -70,7 +64,6 @@ public final class FGBoostServiceProto {
       super(builder);
     }
     private UploadLabelRequest() {
-      clientuuid_ = "";
       algorithm_ = "";
     }
 
@@ -104,10 +97,9 @@ public final class FGBoostServiceProto {
             case 0:
               done = true;
               break;
-            case 10: {
-              java.lang.String s = input.readStringRequireUtf8();
+            case 8: {
 
-              clientuuid_ = s;
+              clientuuid_ = input.readInt32();
               break;
             }
             case 18: {
@@ -162,41 +154,14 @@ public final class FGBoostServiceProto {
     }
 
     public static final int CLIENTUUID_FIELD_NUMBER = 1;
-    private volatile java.lang.Object clientuuid_;
+    private int clientuuid_;
     /**
-     * <code>string clientuuid = 1;</code>
+     * <code>int32 clientuuid = 1;</code>
      * @return The clientuuid.
      */
     @java.lang.Override
-    public java.lang.String getClientuuid() {
-      java.lang.Object ref = clientuuid_;
-      if (ref instanceof java.lang.String) {
-        return (java.lang.String) ref;
-      } else {
-        com.google.protobuf.ByteString bs = 
-            (com.google.protobuf.ByteString) ref;
-        java.lang.String s = bs.toStringUtf8();
-        clientuuid_ = s;
-        return s;
-      }
-    }
-    /**
-     * <code>string clientuuid = 1;</code>
-     * @return The bytes for clientuuid.
-     */
-    @java.lang.Override
-    public com.google.protobuf.ByteString
-        getClientuuidBytes() {
-      java.lang.Object ref = clientuuid_;
-      if (ref instanceof java.lang.String) {
-        com.google.protobuf.ByteString b = 
-            com.google.protobuf.ByteString.copyFromUtf8(
-                (java.lang.String) ref);
-        clientuuid_ = b;
-        return b;
-      } else {
-        return (com.google.protobuf.ByteString) ref;
-      }
+    public int getClientuuid() {
+      return clientuuid_;
     }
 
     public static final int DATA_FIELD_NUMBER = 2;
@@ -277,8 +242,8 @@ public final class FGBoostServiceProto {
     @java.lang.Override
     public void writeTo(com.google.protobuf.CodedOutputStream output)
                         throws java.io.IOException {
-      if (!getClientuuidBytes().isEmpty()) {
-        com.google.protobuf.GeneratedMessageV3.writeString(output, 1, clientuuid_);
+      if (clientuuid_ != 0) {
+        output.writeInt32(1, clientuuid_);
       }
       if (data_ != null) {
         output.writeMessage(2, getData());
@@ -295,8 +260,9 @@ public final class FGBoostServiceProto {
       if (size != -1) return size;
 
       size = 0;
-      if (!getClientuuidBytes().isEmpty()) {
-        size += com.google.protobuf.GeneratedMessageV3.computeStringSize(1, clientuuid_);
+      if (clientuuid_ != 0) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeInt32Size(1, clientuuid_);
       }
       if (data_ != null) {
         size += com.google.protobuf.CodedOutputStream
@@ -320,8 +286,8 @@ public final class FGBoostServiceProto {
       }
       com.intel.analytics.bigdl.ppml.fl.generated.FGBoostServiceProto.UploadLabelRequest other = (com.intel.analytics.bigdl.ppml.fl.generated.FGBoostServiceProto.UploadLabelRequest) obj;
 
-      if (!getClientuuid()
-          .equals(other.getClientuuid())) return false;
+      if (getClientuuid()
+          != other.getClientuuid()) return false;
       if (hasData() != other.hasData()) return false;
       if (hasData()) {
         if (!getData()
@@ -341,7 +307,7 @@ public final class FGBoostServiceProto {
       int hash = 41;
       hash = (19 * hash) + getDescriptor().hashCode();
       hash = (37 * hash) + CLIENTUUID_FIELD_NUMBER;
-      hash = (53 * hash) + getClientuuid().hashCode();
+      hash = (53 * hash) + getClientuuid();
       if (hasData()) {
         hash = (37 * hash) + DATA_FIELD_NUMBER;
         hash = (53 * hash) + getData().hashCode();
@@ -481,7 +447,7 @@ public final class FGBoostServiceProto {
       @java.lang.Override
       public Builder clear() {
         super.clear();
-        clientuuid_ = "";
+        clientuuid_ = 0;
 
         if (dataBuilder_ == null) {
           data_ = null;
@@ -572,9 +538,8 @@ public final class FGBoostServiceProto {
 
       public Builder mergeFrom(com.intel.analytics.bigdl.ppml.fl.generated.FGBoostServiceProto.UploadLabelRequest other) {
         if (other == com.intel.analytics.bigdl.ppml.fl.generated.FGBoostServiceProto.UploadLabelRequest.getDefaultInstance()) return this;
-        if (!other.getClientuuid().isEmpty()) {
-          clientuuid_ = other.clientuuid_;
-          onChanged();
+        if (other.getClientuuid() != 0) {
+          setClientuuid(other.getClientuuid());
         }
         if (other.hasData()) {
           mergeData(other.getData());
@@ -612,78 +577,33 @@ public final class FGBoostServiceProto {
         return this;
       }
 
-      private java.lang.Object clientuuid_ = "";
+      private int clientuuid_ ;
       /**
-       * <code>string clientuuid = 1;</code>
+       * <code>int32 clientuuid = 1;</code>
        * @return The clientuuid.
        */
-      public java.lang.String getClientuuid() {
-        java.lang.Object ref = clientuuid_;
-        if (!(ref instanceof java.lang.String)) {
-          com.google.protobuf.ByteString bs =
-              (com.google.protobuf.ByteString) ref;
-          java.lang.String s = bs.toStringUtf8();
-          clientuuid_ = s;
-          return s;
-        } else {
-          return (java.lang.String) ref;
-        }
+      @java.lang.Override
+      public int getClientuuid() {
+        return clientuuid_;
       }
       /**
-       * <code>string clientuuid = 1;</code>
-       * @return The bytes for clientuuid.
-       */
-      public com.google.protobuf.ByteString
-          getClientuuidBytes() {
-        java.lang.Object ref = clientuuid_;
-        if (ref instanceof String) {
-          com.google.protobuf.ByteString b = 
-              com.google.protobuf.ByteString.copyFromUtf8(
-                  (java.lang.String) ref);
-          clientuuid_ = b;
-          return b;
-        } else {
-          return (com.google.protobuf.ByteString) ref;
-        }
-      }
-      /**
-       * <code>string clientuuid = 1;</code>
+       * <code>int32 clientuuid = 1;</code>
        * @param value The clientuuid to set.
        * @return This builder for chaining.
        */
-      public Builder setClientuuid(
-          java.lang.String value) {
-        if (value == null) {
-    throw new NullPointerException();
-  }
-  
+      public Builder setClientuuid(int value) {
+        
         clientuuid_ = value;
         onChanged();
         return this;
       }
       /**
-       * <code>string clientuuid = 1;</code>
+       * <code>int32 clientuuid = 1;</code>
        * @return This builder for chaining.
        */
       public Builder clearClientuuid() {
         
-        clientuuid_ = getDefaultInstance().getClientuuid();
-        onChanged();
-        return this;
-      }
-      /**
-       * <code>string clientuuid = 1;</code>
-       * @param value The bytes for clientuuid to set.
-       * @return This builder for chaining.
-       */
-      public Builder setClientuuidBytes(
-          com.google.protobuf.ByteString value) {
-        if (value == null) {
-    throw new NullPointerException();
-  }
-  checkByteStringIsUtf8(value);
-        
-        clientuuid_ = value;
+        clientuuid_ = 0;
         onChanged();
         return this;
       }
@@ -3577,16 +3497,10 @@ public final class FGBoostServiceProto {
       com.google.protobuf.MessageOrBuilder {
 
     /**
-     * <code>string clientuuid = 1;</code>
+     * <code>int32 clientuuid = 1;</code>
      * @return The clientuuid.
      */
-    java.lang.String getClientuuid();
-    /**
-     * <code>string clientuuid = 1;</code>
-     * @return The bytes for clientuuid.
-     */
-    com.google.protobuf.ByteString
-        getClientuuidBytes();
+    int getClientuuid();
 
     /**
      * <code>.fgboost.TreeLeaf treeLeaf = 2;</code>
@@ -3616,7 +3530,6 @@ public final class FGBoostServiceProto {
       super(builder);
     }
     private UploadTreeLeafRequest() {
-      clientuuid_ = "";
     }
 
     @java.lang.Override
@@ -3649,10 +3562,9 @@ public final class FGBoostServiceProto {
             case 0:
               done = true;
               break;
-            case 10: {
-              java.lang.String s = input.readStringRequireUtf8();
+            case 8: {
 
-              clientuuid_ = s;
+              clientuuid_ = input.readInt32();
               break;
             }
             case 18: {
@@ -3701,41 +3613,14 @@ public final class FGBoostServiceProto {
     }
 
     public static final int CLIENTUUID_FIELD_NUMBER = 1;
-    private volatile java.lang.Object clientuuid_;
+    private int clientuuid_;
     /**
-     * <code>string clientuuid = 1;</code>
+     * <code>int32 clientuuid = 1;</code>
      * @return The clientuuid.
      */
     @java.lang.Override
-    public java.lang.String getClientuuid() {
-      java.lang.Object ref = clientuuid_;
-      if (ref instanceof java.lang.String) {
-        return (java.lang.String) ref;
-      } else {
-        com.google.protobuf.ByteString bs = 
-            (com.google.protobuf.ByteString) ref;
-        java.lang.String s = bs.toStringUtf8();
-        clientuuid_ = s;
-        return s;
-      }
-    }
-    /**
-     * <code>string clientuuid = 1;</code>
-     * @return The bytes for clientuuid.
-     */
-    @java.lang.Override
-    public com.google.protobuf.ByteString
-        getClientuuidBytes() {
-      java.lang.Object ref = clientuuid_;
-      if (ref instanceof java.lang.String) {
-        com.google.protobuf.ByteString b = 
-            com.google.protobuf.ByteString.copyFromUtf8(
-                (java.lang.String) ref);
-        clientuuid_ = b;
-        return b;
-      } else {
-        return (com.google.protobuf.ByteString) ref;
-      }
+    public int getClientuuid() {
+      return clientuuid_;
     }
 
     public static final int TREELEAF_FIELD_NUMBER = 2;
@@ -3778,8 +3663,8 @@ public final class FGBoostServiceProto {
     @java.lang.Override
     public void writeTo(com.google.protobuf.CodedOutputStream output)
                         throws java.io.IOException {
-      if (!getClientuuidBytes().isEmpty()) {
-        com.google.protobuf.GeneratedMessageV3.writeString(output, 1, clientuuid_);
+      if (clientuuid_ != 0) {
+        output.writeInt32(1, clientuuid_);
       }
       if (treeLeaf_ != null) {
         output.writeMessage(2, getTreeLeaf());
@@ -3793,8 +3678,9 @@ public final class FGBoostServiceProto {
       if (size != -1) return size;
 
       size = 0;
-      if (!getClientuuidBytes().isEmpty()) {
-        size += com.google.protobuf.GeneratedMessageV3.computeStringSize(1, clientuuid_);
+      if (clientuuid_ != 0) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeInt32Size(1, clientuuid_);
       }
       if (treeLeaf_ != null) {
         size += com.google.protobuf.CodedOutputStream
@@ -3815,8 +3701,8 @@ public final class FGBoostServiceProto {
       }
       com.intel.analytics.bigdl.ppml.fl.generated.FGBoostServiceProto.UploadTreeLeafRequest other = (com.intel.analytics.bigdl.ppml.fl.generated.FGBoostServiceProto.UploadTreeLeafRequest) obj;
 
-      if (!getClientuuid()
-          .equals(other.getClientuuid())) return false;
+      if (getClientuuid()
+          != other.getClientuuid()) return false;
       if (hasTreeLeaf() != other.hasTreeLeaf()) return false;
       if (hasTreeLeaf()) {
         if (!getTreeLeaf()
@@ -3834,7 +3720,7 @@ public final class FGBoostServiceProto {
       int hash = 41;
       hash = (19 * hash) + getDescriptor().hashCode();
       hash = (37 * hash) + CLIENTUUID_FIELD_NUMBER;
-      hash = (53 * hash) + getClientuuid().hashCode();
+      hash = (53 * hash) + getClientuuid();
       if (hasTreeLeaf()) {
         hash = (37 * hash) + TREELEAF_FIELD_NUMBER;
         hash = (53 * hash) + getTreeLeaf().hashCode();
@@ -3972,7 +3858,7 @@ public final class FGBoostServiceProto {
       @java.lang.Override
       public Builder clear() {
         super.clear();
-        clientuuid_ = "";
+        clientuuid_ = 0;
 
         if (treeLeafBuilder_ == null) {
           treeLeaf_ = null;
@@ -4060,9 +3946,8 @@ public final class FGBoostServiceProto {
 
       public Builder mergeFrom(com.intel.analytics.bigdl.ppml.fl.generated.FGBoostServiceProto.UploadTreeLeafRequest other) {
         if (other == com.intel.analytics.bigdl.ppml.fl.generated.FGBoostServiceProto.UploadTreeLeafRequest.getDefaultInstance()) return this;
-        if (!other.getClientuuid().isEmpty()) {
-          clientuuid_ = other.clientuuid_;
-          onChanged();
+        if (other.getClientuuid() != 0) {
+          setClientuuid(other.getClientuuid());
         }
         if (other.hasTreeLeaf()) {
           mergeTreeLeaf(other.getTreeLeaf());
@@ -4096,78 +3981,33 @@ public final class FGBoostServiceProto {
         return this;
       }
 
-      private java.lang.Object clientuuid_ = "";
+      private int clientuuid_ ;
       /**
-       * <code>string clientuuid = 1;</code>
+       * <code>int32 clientuuid = 1;</code>
        * @return The clientuuid.
        */
-      public java.lang.String getClientuuid() {
-        java.lang.Object ref = clientuuid_;
-        if (!(ref instanceof java.lang.String)) {
-          com.google.protobuf.ByteString bs =
-              (com.google.protobuf.ByteString) ref;
-          java.lang.String s = bs.toStringUtf8();
-          clientuuid_ = s;
-          return s;
-        } else {
-          return (java.lang.String) ref;
-        }
+      @java.lang.Override
+      public int getClientuuid() {
+        return clientuuid_;
       }
       /**
-       * <code>string clientuuid = 1;</code>
-       * @return The bytes for clientuuid.
-       */
-      public com.google.protobuf.ByteString
-          getClientuuidBytes() {
-        java.lang.Object ref = clientuuid_;
-        if (ref instanceof String) {
-          com.google.protobuf.ByteString b = 
-              com.google.protobuf.ByteString.copyFromUtf8(
-                  (java.lang.String) ref);
-          clientuuid_ = b;
-          return b;
-        } else {
-          return (com.google.protobuf.ByteString) ref;
-        }
-      }
-      /**
-       * <code>string clientuuid = 1;</code>
+       * <code>int32 clientuuid = 1;</code>
        * @param value The clientuuid to set.
        * @return This builder for chaining.
        */
-      public Builder setClientuuid(
-          java.lang.String value) {
-        if (value == null) {
-    throw new NullPointerException();
-  }
-  
+      public Builder setClientuuid(int value) {
+        
         clientuuid_ = value;
         onChanged();
         return this;
       }
       /**
-       * <code>string clientuuid = 1;</code>
+       * <code>int32 clientuuid = 1;</code>
        * @return This builder for chaining.
        */
       public Builder clearClientuuid() {
         
-        clientuuid_ = getDefaultInstance().getClientuuid();
-        onChanged();
-        return this;
-      }
-      /**
-       * <code>string clientuuid = 1;</code>
-       * @param value The bytes for clientuuid to set.
-       * @return This builder for chaining.
-       */
-      public Builder setClientuuidBytes(
-          com.google.protobuf.ByteString value) {
-        if (value == null) {
-    throw new NullPointerException();
-  }
-  checkByteStringIsUtf8(value);
-        
-        clientuuid_ = value;
+        clientuuid_ = 0;
         onChanged();
         return this;
       }
@@ -8753,16 +8593,10 @@ public final class FGBoostServiceProto {
       com.google.protobuf.MessageOrBuilder {
 
     /**
-     * <code>string clientuuid = 1;</code>
+     * <code>int32 clientuuid = 1;</code>
      * @return The clientuuid.
      */
-    java.lang.String getClientuuid();
-    /**
-     * <code>string clientuuid = 1;</code>
-     * @return The bytes for clientuuid.
-     */
-    com.google.protobuf.ByteString
-        getClientuuidBytes();
+    int getClientuuid();
 
     /**
      * <code>string token = 2;</code>
@@ -8789,7 +8623,6 @@ public final class FGBoostServiceProto {
       super(builder);
     }
     private RegisterRequest() {
-      clientuuid_ = "";
       token_ = "";
     }
 
@@ -8823,10 +8656,9 @@ public final class FGBoostServiceProto {
             case 0:
               done = true;
               break;
-            case 10: {
-              java.lang.String s = input.readStringRequireUtf8();
+            case 8: {
 
-              clientuuid_ = s;
+              clientuuid_ = input.readInt32();
               break;
             }
             case 18: {
@@ -8868,41 +8700,14 @@ public final class FGBoostServiceProto {
     }
 
     public static final int CLIENTUUID_FIELD_NUMBER = 1;
-    private volatile java.lang.Object clientuuid_;
+    private int clientuuid_;
     /**
-     * <code>string clientuuid = 1;</code>
+     * <code>int32 clientuuid = 1;</code>
      * @return The clientuuid.
      */
     @java.lang.Override
-    public java.lang.String getClientuuid() {
-      java.lang.Object ref = clientuuid_;
-      if (ref instanceof java.lang.String) {
-        return (java.lang.String) ref;
-      } else {
-        com.google.protobuf.ByteString bs = 
-            (com.google.protobuf.ByteString) ref;
-        java.lang.String s = bs.toStringUtf8();
-        clientuuid_ = s;
-        return s;
-      }
-    }
-    /**
-     * <code>string clientuuid = 1;</code>
-     * @return The bytes for clientuuid.
-     */
-    @java.lang.Override
-    public com.google.protobuf.ByteString
-        getClientuuidBytes() {
-      java.lang.Object ref = clientuuid_;
-      if (ref instanceof java.lang.String) {
-        com.google.protobuf.ByteString b = 
-            com.google.protobuf.ByteString.copyFromUtf8(
-                (java.lang.String) ref);
-        clientuuid_ = b;
-        return b;
-      } else {
-        return (com.google.protobuf.ByteString) ref;
-      }
+    public int getClientuuid() {
+      return clientuuid_;
     }
 
     public static final int TOKEN_FIELD_NUMBER = 2;
@@ -8957,8 +8762,8 @@ public final class FGBoostServiceProto {
     @java.lang.Override
     public void writeTo(com.google.protobuf.CodedOutputStream output)
                         throws java.io.IOException {
-      if (!getClientuuidBytes().isEmpty()) {
-        com.google.protobuf.GeneratedMessageV3.writeString(output, 1, clientuuid_);
+      if (clientuuid_ != 0) {
+        output.writeInt32(1, clientuuid_);
       }
       if (!getTokenBytes().isEmpty()) {
         com.google.protobuf.GeneratedMessageV3.writeString(output, 2, token_);
@@ -8972,8 +8777,9 @@ public final class FGBoostServiceProto {
       if (size != -1) return size;
 
       size = 0;
-      if (!getClientuuidBytes().isEmpty()) {
-        size += com.google.protobuf.GeneratedMessageV3.computeStringSize(1, clientuuid_);
+      if (clientuuid_ != 0) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeInt32Size(1, clientuuid_);
       }
       if (!getTokenBytes().isEmpty()) {
         size += com.google.protobuf.GeneratedMessageV3.computeStringSize(2, token_);
@@ -8993,8 +8799,8 @@ public final class FGBoostServiceProto {
       }
       com.intel.analytics.bigdl.ppml.fl.generated.FGBoostServiceProto.RegisterRequest other = (com.intel.analytics.bigdl.ppml.fl.generated.FGBoostServiceProto.RegisterRequest) obj;
 
-      if (!getClientuuid()
-          .equals(other.getClientuuid())) return false;
+      if (getClientuuid()
+          != other.getClientuuid()) return false;
       if (!getToken()
           .equals(other.getToken())) return false;
       if (!unknownFields.equals(other.unknownFields)) return false;
@@ -9009,7 +8815,7 @@ public final class FGBoostServiceProto {
       int hash = 41;
       hash = (19 * hash) + getDescriptor().hashCode();
       hash = (37 * hash) + CLIENTUUID_FIELD_NUMBER;
-      hash = (53 * hash) + getClientuuid().hashCode();
+      hash = (53 * hash) + getClientuuid();
       hash = (37 * hash) + TOKEN_FIELD_NUMBER;
       hash = (53 * hash) + getToken().hashCode();
       hash = (29 * hash) + unknownFields.hashCode();
@@ -9145,7 +8951,7 @@ public final class FGBoostServiceProto {
       @java.lang.Override
       public Builder clear() {
         super.clear();
-        clientuuid_ = "";
+        clientuuid_ = 0;
 
         token_ = "";
 
@@ -9225,9 +9031,8 @@ public final class FGBoostServiceProto {
 
       public Builder mergeFrom(com.intel.analytics.bigdl.ppml.fl.generated.FGBoostServiceProto.RegisterRequest other) {
         if (other == com.intel.analytics.bigdl.ppml.fl.generated.FGBoostServiceProto.RegisterRequest.getDefaultInstance()) return this;
-        if (!other.getClientuuid().isEmpty()) {
-          clientuuid_ = other.clientuuid_;
-          onChanged();
+        if (other.getClientuuid() != 0) {
+          setClientuuid(other.getClientuuid());
         }
         if (!other.getToken().isEmpty()) {
           token_ = other.token_;
@@ -9262,78 +9067,33 @@ public final class FGBoostServiceProto {
         return this;
       }
 
-      private java.lang.Object clientuuid_ = "";
+      private int clientuuid_ ;
       /**
-       * <code>string clientuuid = 1;</code>
+       * <code>int32 clientuuid = 1;</code>
        * @return The clientuuid.
        */
-      public java.lang.String getClientuuid() {
-        java.lang.Object ref = clientuuid_;
-        if (!(ref instanceof java.lang.String)) {
-          com.google.protobuf.ByteString bs =
-              (com.google.protobuf.ByteString) ref;
-          java.lang.String s = bs.toStringUtf8();
-          clientuuid_ = s;
-          return s;
-        } else {
-          return (java.lang.String) ref;
-        }
+      @java.lang.Override
+      public int getClientuuid() {
+        return clientuuid_;
       }
       /**
-       * <code>string clientuuid = 1;</code>
-       * @return The bytes for clientuuid.
-       */
-      public com.google.protobuf.ByteString
-          getClientuuidBytes() {
-        java.lang.Object ref = clientuuid_;
-        if (ref instanceof String) {
-          com.google.protobuf.ByteString b = 
-              com.google.protobuf.ByteString.copyFromUtf8(
-                  (java.lang.String) ref);
-          clientuuid_ = b;
-          return b;
-        } else {
-          return (com.google.protobuf.ByteString) ref;
-        }
-      }
-      /**
-       * <code>string clientuuid = 1;</code>
+       * <code>int32 clientuuid = 1;</code>
        * @param value The clientuuid to set.
        * @return This builder for chaining.
        */
-      public Builder setClientuuid(
-          java.lang.String value) {
-        if (value == null) {
-    throw new NullPointerException();
-  }
-  
+      public Builder setClientuuid(int value) {
+        
         clientuuid_ = value;
         onChanged();
         return this;
       }
       /**
-       * <code>string clientuuid = 1;</code>
+       * <code>int32 clientuuid = 1;</code>
        * @return This builder for chaining.
        */
       public Builder clearClientuuid() {
         
-        clientuuid_ = getDefaultInstance().getClientuuid();
-        onChanged();
-        return this;
-      }
-      /**
-       * <code>string clientuuid = 1;</code>
-       * @param value The bytes for clientuuid to set.
-       * @return This builder for chaining.
-       */
-      public Builder setClientuuidBytes(
-          com.google.protobuf.ByteString value) {
-        if (value == null) {
-    throw new NullPointerException();
-  }
-  checkByteStringIsUtf8(value);
-        
-        clientuuid_ = value;
+        clientuuid_ = 0;
         onChanged();
         return this;
       }
@@ -10109,16 +9869,10 @@ public final class FGBoostServiceProto {
       com.google.protobuf.MessageOrBuilder {
 
     /**
-     * <code>string clientuuid = 1;</code>
+     * <code>int32 clientuuid = 1;</code>
      * @return The clientuuid.
      */
-    java.lang.String getClientuuid();
-    /**
-     * <code>string clientuuid = 1;</code>
-     * @return The bytes for clientuuid.
-     */
-    com.google.protobuf.ByteString
-        getClientuuidBytes();
+    int getClientuuid();
 
     /**
      * <code>int32 version = 2;</code>
@@ -10163,7 +9917,6 @@ public final class FGBoostServiceProto {
       super(builder);
     }
     private UploadTreeEvalRequest() {
-      clientuuid_ = "";
       treeEval_ = java.util.Collections.emptyList();
     }
 
@@ -10198,10 +9951,9 @@ public final class FGBoostServiceProto {
             case 0:
               done = true;
               break;
-            case 10: {
-              java.lang.String s = input.readStringRequireUtf8();
+            case 8: {
 
-              clientuuid_ = s;
+              clientuuid_ = input.readInt32();
               break;
             }
             case 16: {
@@ -10254,41 +10006,14 @@ public final class FGBoostServiceProto {
     }
 
     public static final int CLIENTUUID_FIELD_NUMBER = 1;
-    private volatile java.lang.Object clientuuid_;
+    private int clientuuid_;
     /**
-     * <code>string clientuuid = 1;</code>
+     * <code>int32 clientuuid = 1;</code>
      * @return The clientuuid.
      */
     @java.lang.Override
-    public java.lang.String getClientuuid() {
-      java.lang.Object ref = clientuuid_;
-      if (ref instanceof java.lang.String) {
-        return (java.lang.String) ref;
-      } else {
-        com.google.protobuf.ByteString bs = 
-            (com.google.protobuf.ByteString) ref;
-        java.lang.String s = bs.toStringUtf8();
-        clientuuid_ = s;
-        return s;
-      }
-    }
-    /**
-     * <code>string clientuuid = 1;</code>
-     * @return The bytes for clientuuid.
-     */
-    @java.lang.Override
-    public com.google.protobuf.ByteString
-        getClientuuidBytes() {
-      java.lang.Object ref = clientuuid_;
-      if (ref instanceof java.lang.String) {
-        com.google.protobuf.ByteString b = 
-            com.google.protobuf.ByteString.copyFromUtf8(
-                (java.lang.String) ref);
-        clientuuid_ = b;
-        return b;
-      } else {
-        return (com.google.protobuf.ByteString) ref;
-      }
+    public int getClientuuid() {
+      return clientuuid_;
     }
 
     public static final int VERSION_FIELD_NUMBER = 2;
@@ -10356,8 +10081,8 @@ public final class FGBoostServiceProto {
     @java.lang.Override
     public void writeTo(com.google.protobuf.CodedOutputStream output)
                         throws java.io.IOException {
-      if (!getClientuuidBytes().isEmpty()) {
-        com.google.protobuf.GeneratedMessageV3.writeString(output, 1, clientuuid_);
+      if (clientuuid_ != 0) {
+        output.writeInt32(1, clientuuid_);
       }
       if (version_ != 0) {
         output.writeInt32(2, version_);
@@ -10374,8 +10099,9 @@ public final class FGBoostServiceProto {
       if (size != -1) return size;
 
       size = 0;
-      if (!getClientuuidBytes().isEmpty()) {
-        size += com.google.protobuf.GeneratedMessageV3.computeStringSize(1, clientuuid_);
+      if (clientuuid_ != 0) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeInt32Size(1, clientuuid_);
       }
       if (version_ != 0) {
         size += com.google.protobuf.CodedOutputStream
@@ -10400,8 +10126,8 @@ public final class FGBoostServiceProto {
       }
       com.intel.analytics.bigdl.ppml.fl.generated.FGBoostServiceProto.UploadTreeEvalRequest other = (com.intel.analytics.bigdl.ppml.fl.generated.FGBoostServiceProto.UploadTreeEvalRequest) obj;
 
-      if (!getClientuuid()
-          .equals(other.getClientuuid())) return false;
+      if (getClientuuid()
+          != other.getClientuuid()) return false;
       if (getVersion()
           != other.getVersion()) return false;
       if (!getTreeEvalList()
@@ -10418,7 +10144,7 @@ public final class FGBoostServiceProto {
       int hash = 41;
       hash = (19 * hash) + getDescriptor().hashCode();
       hash = (37 * hash) + CLIENTUUID_FIELD_NUMBER;
-      hash = (53 * hash) + getClientuuid().hashCode();
+      hash = (53 * hash) + getClientuuid();
       hash = (37 * hash) + VERSION_FIELD_NUMBER;
       hash = (53 * hash) + getVersion();
       if (getTreeEvalCount() > 0) {
@@ -10559,7 +10285,7 @@ public final class FGBoostServiceProto {
       @java.lang.Override
       public Builder clear() {
         super.clear();
-        clientuuid_ = "";
+        clientuuid_ = 0;
 
         version_ = 0;
 
@@ -10655,9 +10381,8 @@ public final class FGBoostServiceProto {
 
       public Builder mergeFrom(com.intel.analytics.bigdl.ppml.fl.generated.FGBoostServiceProto.UploadTreeEvalRequest other) {
         if (other == com.intel.analytics.bigdl.ppml.fl.generated.FGBoostServiceProto.UploadTreeEvalRequest.getDefaultInstance()) return this;
-        if (!other.getClientuuid().isEmpty()) {
-          clientuuid_ = other.clientuuid_;
-          onChanged();
+        if (other.getClientuuid() != 0) {
+          setClientuuid(other.getClientuuid());
         }
         if (other.getVersion() != 0) {
           setVersion(other.getVersion());
@@ -10718,78 +10443,33 @@ public final class FGBoostServiceProto {
       }
       private int bitField0_;
 
-      private java.lang.Object clientuuid_ = "";
+      private int clientuuid_ ;
       /**
-       * <code>string clientuuid = 1;</code>
+       * <code>int32 clientuuid = 1;</code>
        * @return The clientuuid.
        */
-      public java.lang.String getClientuuid() {
-        java.lang.Object ref = clientuuid_;
-        if (!(ref instanceof java.lang.String)) {
-          com.google.protobuf.ByteString bs =
-              (com.google.protobuf.ByteString) ref;
-          java.lang.String s = bs.toStringUtf8();
-          clientuuid_ = s;
-          return s;
-        } else {
-          return (java.lang.String) ref;
-        }
+      @java.lang.Override
+      public int getClientuuid() {
+        return clientuuid_;
       }
       /**
-       * <code>string clientuuid = 1;</code>
-       * @return The bytes for clientuuid.
-       */
-      public com.google.protobuf.ByteString
-          getClientuuidBytes() {
-        java.lang.Object ref = clientuuid_;
-        if (ref instanceof String) {
-          com.google.protobuf.ByteString b = 
-              com.google.protobuf.ByteString.copyFromUtf8(
-                  (java.lang.String) ref);
-          clientuuid_ = b;
-          return b;
-        } else {
-          return (com.google.protobuf.ByteString) ref;
-        }
-      }
-      /**
-       * <code>string clientuuid = 1;</code>
+       * <code>int32 clientuuid = 1;</code>
        * @param value The clientuuid to set.
        * @return This builder for chaining.
        */
-      public Builder setClientuuid(
-          java.lang.String value) {
-        if (value == null) {
-    throw new NullPointerException();
-  }
-  
+      public Builder setClientuuid(int value) {
+        
         clientuuid_ = value;
         onChanged();
         return this;
       }
       /**
-       * <code>string clientuuid = 1;</code>
+       * <code>int32 clientuuid = 1;</code>
        * @return This builder for chaining.
        */
       public Builder clearClientuuid() {
         
-        clientuuid_ = getDefaultInstance().getClientuuid();
-        onChanged();
-        return this;
-      }
-      /**
-       * <code>string clientuuid = 1;</code>
-       * @param value The bytes for clientuuid to set.
-       * @return This builder for chaining.
-       */
-      public Builder setClientuuidBytes(
-          com.google.protobuf.ByteString value) {
-        if (value == null) {
-    throw new NullPointerException();
-  }
-  checkByteStringIsUtf8(value);
-        
-        clientuuid_ = value;
+        clientuuid_ = 0;
         onChanged();
         return this;
       }
@@ -11122,16 +10802,10 @@ public final class FGBoostServiceProto {
       com.google.protobuf.MessageOrBuilder {
 
     /**
-     * <code>string clientuuid = 1;</code>
+     * <code>int32 clientuuid = 1;</code>
      * @return The clientuuid.
      */
-    java.lang.String getClientuuid();
-    /**
-     * <code>string clientuuid = 1;</code>
-     * @return The bytes for clientuuid.
-     */
-    com.google.protobuf.ByteString
-        getClientuuidBytes();
+    int getClientuuid();
 
     /**
      * <code>repeated .fgboost.BoostEval treeEval = 2;</code>
@@ -11182,7 +10856,6 @@ public final class FGBoostServiceProto {
       super(builder);
     }
     private EvaluateRequest() {
-      clientuuid_ = "";
       treeEval_ = java.util.Collections.emptyList();
     }
 
@@ -11217,10 +10890,9 @@ public final class FGBoostServiceProto {
             case 0:
               done = true;
               break;
-            case 10: {
-              java.lang.String s = input.readStringRequireUtf8();
+            case 8: {
 
-              clientuuid_ = s;
+              clientuuid_ = input.readInt32();
               break;
             }
             case 18: {
@@ -11278,41 +10950,14 @@ public final class FGBoostServiceProto {
     }
 
     public static final int CLIENTUUID_FIELD_NUMBER = 1;
-    private volatile java.lang.Object clientuuid_;
+    private int clientuuid_;
     /**
-     * <code>string clientuuid = 1;</code>
+     * <code>int32 clientuuid = 1;</code>
      * @return The clientuuid.
      */
     @java.lang.Override
-    public java.lang.String getClientuuid() {
-      java.lang.Object ref = clientuuid_;
-      if (ref instanceof java.lang.String) {
-        return (java.lang.String) ref;
-      } else {
-        com.google.protobuf.ByteString bs = 
-            (com.google.protobuf.ByteString) ref;
-        java.lang.String s = bs.toStringUtf8();
-        clientuuid_ = s;
-        return s;
-      }
-    }
-    /**
-     * <code>string clientuuid = 1;</code>
-     * @return The bytes for clientuuid.
-     */
-    @java.lang.Override
-    public com.google.protobuf.ByteString
-        getClientuuidBytes() {
-      java.lang.Object ref = clientuuid_;
-      if (ref instanceof java.lang.String) {
-        com.google.protobuf.ByteString b = 
-            com.google.protobuf.ByteString.copyFromUtf8(
-                (java.lang.String) ref);
-        clientuuid_ = b;
-        return b;
-      } else {
-        return (com.google.protobuf.ByteString) ref;
-      }
+    public int getClientuuid() {
+      return clientuuid_;
     }
 
     public static final int TREEEVAL_FIELD_NUMBER = 2;
@@ -11391,8 +11036,8 @@ public final class FGBoostServiceProto {
     @java.lang.Override
     public void writeTo(com.google.protobuf.CodedOutputStream output)
                         throws java.io.IOException {
-      if (!getClientuuidBytes().isEmpty()) {
-        com.google.protobuf.GeneratedMessageV3.writeString(output, 1, clientuuid_);
+      if (clientuuid_ != 0) {
+        output.writeInt32(1, clientuuid_);
       }
       for (int i = 0; i < treeEval_.size(); i++) {
         output.writeMessage(2, treeEval_.get(i));
@@ -11412,8 +11057,9 @@ public final class FGBoostServiceProto {
       if (size != -1) return size;
 
       size = 0;
-      if (!getClientuuidBytes().isEmpty()) {
-        size += com.google.protobuf.GeneratedMessageV3.computeStringSize(1, clientuuid_);
+      if (clientuuid_ != 0) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeInt32Size(1, clientuuid_);
       }
       for (int i = 0; i < treeEval_.size(); i++) {
         size += com.google.protobuf.CodedOutputStream
@@ -11442,8 +11088,8 @@ public final class FGBoostServiceProto {
       }
       com.intel.analytics.bigdl.ppml.fl.generated.FGBoostServiceProto.EvaluateRequest other = (com.intel.analytics.bigdl.ppml.fl.generated.FGBoostServiceProto.EvaluateRequest) obj;
 
-      if (!getClientuuid()
-          .equals(other.getClientuuid())) return false;
+      if (getClientuuid()
+          != other.getClientuuid()) return false;
       if (!getTreeEvalList()
           .equals(other.getTreeEvalList())) return false;
       if (getVersion()
@@ -11462,7 +11108,7 @@ public final class FGBoostServiceProto {
       int hash = 41;
       hash = (19 * hash) + getDescriptor().hashCode();
       hash = (37 * hash) + CLIENTUUID_FIELD_NUMBER;
-      hash = (53 * hash) + getClientuuid().hashCode();
+      hash = (53 * hash) + getClientuuid();
       if (getTreeEvalCount() > 0) {
         hash = (37 * hash) + TREEEVAL_FIELD_NUMBER;
         hash = (53 * hash) + getTreeEvalList().hashCode();
@@ -11606,7 +11252,7 @@ public final class FGBoostServiceProto {
       @java.lang.Override
       public Builder clear() {
         super.clear();
-        clientuuid_ = "";
+        clientuuid_ = 0;
 
         if (treeEvalBuilder_ == null) {
           treeEval_ = java.util.Collections.emptyList();
@@ -11705,9 +11351,8 @@ public final class FGBoostServiceProto {
 
       public Builder mergeFrom(com.intel.analytics.bigdl.ppml.fl.generated.FGBoostServiceProto.EvaluateRequest other) {
         if (other == com.intel.analytics.bigdl.ppml.fl.generated.FGBoostServiceProto.EvaluateRequest.getDefaultInstance()) return this;
-        if (!other.getClientuuid().isEmpty()) {
-          clientuuid_ = other.clientuuid_;
-          onChanged();
+        if (other.getClientuuid() != 0) {
+          setClientuuid(other.getClientuuid());
         }
         if (treeEvalBuilder_ == null) {
           if (!other.treeEval_.isEmpty()) {
@@ -11771,78 +11416,33 @@ public final class FGBoostServiceProto {
       }
       private int bitField0_;
 
-      private java.lang.Object clientuuid_ = "";
+      private int clientuuid_ ;
       /**
-       * <code>string clientuuid = 1;</code>
+       * <code>int32 clientuuid = 1;</code>
        * @return The clientuuid.
        */
-      public java.lang.String getClientuuid() {
-        java.lang.Object ref = clientuuid_;
-        if (!(ref instanceof java.lang.String)) {
-          com.google.protobuf.ByteString bs =
-              (com.google.protobuf.ByteString) ref;
-          java.lang.String s = bs.toStringUtf8();
-          clientuuid_ = s;
-          return s;
-        } else {
-          return (java.lang.String) ref;
-        }
+      @java.lang.Override
+      public int getClientuuid() {
+        return clientuuid_;
       }
       /**
-       * <code>string clientuuid = 1;</code>
-       * @return The bytes for clientuuid.
-       */
-      public com.google.protobuf.ByteString
-          getClientuuidBytes() {
-        java.lang.Object ref = clientuuid_;
-        if (ref instanceof String) {
-          com.google.protobuf.ByteString b = 
-              com.google.protobuf.ByteString.copyFromUtf8(
-                  (java.lang.String) ref);
-          clientuuid_ = b;
-          return b;
-        } else {
-          return (com.google.protobuf.ByteString) ref;
-        }
-      }
-      /**
-       * <code>string clientuuid = 1;</code>
+       * <code>int32 clientuuid = 1;</code>
        * @param value The clientuuid to set.
        * @return This builder for chaining.
        */
-      public Builder setClientuuid(
-          java.lang.String value) {
-        if (value == null) {
-    throw new NullPointerException();
-  }
-  
+      public Builder setClientuuid(int value) {
+        
         clientuuid_ = value;
         onChanged();
         return this;
       }
       /**
-       * <code>string clientuuid = 1;</code>
+       * <code>int32 clientuuid = 1;</code>
        * @return This builder for chaining.
        */
       public Builder clearClientuuid() {
         
-        clientuuid_ = getDefaultInstance().getClientuuid();
-        onChanged();
-        return this;
-      }
-      /**
-       * <code>string clientuuid = 1;</code>
-       * @param value The bytes for clientuuid to set.
-       * @return This builder for chaining.
-       */
-      public Builder setClientuuidBytes(
-          com.google.protobuf.ByteString value) {
-        if (value == null) {
-    throw new NullPointerException();
-  }
-  checkByteStringIsUtf8(value);
-        
-        clientuuid_ = value;
+        clientuuid_ = 0;
         onChanged();
         return this;
       }
@@ -13197,16 +12797,10 @@ public final class FGBoostServiceProto {
       com.google.protobuf.MessageOrBuilder {
 
     /**
-     * <code>string clientuuid = 1;</code>
+     * <code>int32 clientuuid = 1;</code>
      * @return The clientuuid.
      */
-    java.lang.String getClientuuid();
-    /**
-     * <code>string clientuuid = 1;</code>
-     * @return The bytes for clientuuid.
-     */
-    com.google.protobuf.ByteString
-        getClientuuidBytes();
+    int getClientuuid();
 
     /**
      * <code>repeated .fgboost.BoostEval treeEval = 2;</code>
@@ -13257,7 +12851,6 @@ public final class FGBoostServiceProto {
       super(builder);
     }
     private PredictRequest() {
-      clientuuid_ = "";
       treeEval_ = java.util.Collections.emptyList();
     }
 
@@ -13292,10 +12885,9 @@ public final class FGBoostServiceProto {
             case 0:
               done = true;
               break;
-            case 10: {
-              java.lang.String s = input.readStringRequireUtf8();
+            case 8: {
 
-              clientuuid_ = s;
+              clientuuid_ = input.readInt32();
               break;
             }
             case 18: {
@@ -13353,41 +12945,14 @@ public final class FGBoostServiceProto {
     }
 
     public static final int CLIENTUUID_FIELD_NUMBER = 1;
-    private volatile java.lang.Object clientuuid_;
+    private int clientuuid_;
     /**
-     * <code>string clientuuid = 1;</code>
+     * <code>int32 clientuuid = 1;</code>
      * @return The clientuuid.
      */
     @java.lang.Override
-    public java.lang.String getClientuuid() {
-      java.lang.Object ref = clientuuid_;
-      if (ref instanceof java.lang.String) {
-        return (java.lang.String) ref;
-      } else {
-        com.google.protobuf.ByteString bs = 
-            (com.google.protobuf.ByteString) ref;
-        java.lang.String s = bs.toStringUtf8();
-        clientuuid_ = s;
-        return s;
-      }
-    }
-    /**
-     * <code>string clientuuid = 1;</code>
-     * @return The bytes for clientuuid.
-     */
-    @java.lang.Override
-    public com.google.protobuf.ByteString
-        getClientuuidBytes() {
-      java.lang.Object ref = clientuuid_;
-      if (ref instanceof java.lang.String) {
-        com.google.protobuf.ByteString b = 
-            com.google.protobuf.ByteString.copyFromUtf8(
-                (java.lang.String) ref);
-        clientuuid_ = b;
-        return b;
-      } else {
-        return (com.google.protobuf.ByteString) ref;
-      }
+    public int getClientuuid() {
+      return clientuuid_;
     }
 
     public static final int TREEEVAL_FIELD_NUMBER = 2;
@@ -13466,8 +13031,8 @@ public final class FGBoostServiceProto {
     @java.lang.Override
     public void writeTo(com.google.protobuf.CodedOutputStream output)
                         throws java.io.IOException {
-      if (!getClientuuidBytes().isEmpty()) {
-        com.google.protobuf.GeneratedMessageV3.writeString(output, 1, clientuuid_);
+      if (clientuuid_ != 0) {
+        output.writeInt32(1, clientuuid_);
       }
       for (int i = 0; i < treeEval_.size(); i++) {
         output.writeMessage(2, treeEval_.get(i));
@@ -13487,8 +13052,9 @@ public final class FGBoostServiceProto {
       if (size != -1) return size;
 
       size = 0;
-      if (!getClientuuidBytes().isEmpty()) {
-        size += com.google.protobuf.GeneratedMessageV3.computeStringSize(1, clientuuid_);
+      if (clientuuid_ != 0) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeInt32Size(1, clientuuid_);
       }
       for (int i = 0; i < treeEval_.size(); i++) {
         size += com.google.protobuf.CodedOutputStream
@@ -13517,8 +13083,8 @@ public final class FGBoostServiceProto {
       }
       com.intel.analytics.bigdl.ppml.fl.generated.FGBoostServiceProto.PredictRequest other = (com.intel.analytics.bigdl.ppml.fl.generated.FGBoostServiceProto.PredictRequest) obj;
 
-      if (!getClientuuid()
-          .equals(other.getClientuuid())) return false;
+      if (getClientuuid()
+          != other.getClientuuid()) return false;
       if (!getTreeEvalList()
           .equals(other.getTreeEvalList())) return false;
       if (getVersion()
@@ -13537,7 +13103,7 @@ public final class FGBoostServiceProto {
       int hash = 41;
       hash = (19 * hash) + getDescriptor().hashCode();
       hash = (37 * hash) + CLIENTUUID_FIELD_NUMBER;
-      hash = (53 * hash) + getClientuuid().hashCode();
+      hash = (53 * hash) + getClientuuid();
       if (getTreeEvalCount() > 0) {
         hash = (37 * hash) + TREEEVAL_FIELD_NUMBER;
         hash = (53 * hash) + getTreeEvalList().hashCode();
@@ -13681,7 +13247,7 @@ public final class FGBoostServiceProto {
       @java.lang.Override
       public Builder clear() {
         super.clear();
-        clientuuid_ = "";
+        clientuuid_ = 0;
 
         if (treeEvalBuilder_ == null) {
           treeEval_ = java.util.Collections.emptyList();
@@ -13780,9 +13346,8 @@ public final class FGBoostServiceProto {
 
       public Builder mergeFrom(com.intel.analytics.bigdl.ppml.fl.generated.FGBoostServiceProto.PredictRequest other) {
         if (other == com.intel.analytics.bigdl.ppml.fl.generated.FGBoostServiceProto.PredictRequest.getDefaultInstance()) return this;
-        if (!other.getClientuuid().isEmpty()) {
-          clientuuid_ = other.clientuuid_;
-          onChanged();
+        if (other.getClientuuid() != 0) {
+          setClientuuid(other.getClientuuid());
         }
         if (treeEvalBuilder_ == null) {
           if (!other.treeEval_.isEmpty()) {
@@ -13846,78 +13411,33 @@ public final class FGBoostServiceProto {
       }
       private int bitField0_;
 
-      private java.lang.Object clientuuid_ = "";
+      private int clientuuid_ ;
       /**
-       * <code>string clientuuid = 1;</code>
+       * <code>int32 clientuuid = 1;</code>
        * @return The clientuuid.
        */
-      public java.lang.String getClientuuid() {
-        java.lang.Object ref = clientuuid_;
-        if (!(ref instanceof java.lang.String)) {
-          com.google.protobuf.ByteString bs =
-              (com.google.protobuf.ByteString) ref;
-          java.lang.String s = bs.toStringUtf8();
-          clientuuid_ = s;
-          return s;
-        } else {
-          return (java.lang.String) ref;
-        }
+      @java.lang.Override
+      public int getClientuuid() {
+        return clientuuid_;
       }
       /**
-       * <code>string clientuuid = 1;</code>
-       * @return The bytes for clientuuid.
-       */
-      public com.google.protobuf.ByteString
-          getClientuuidBytes() {
-        java.lang.Object ref = clientuuid_;
-        if (ref instanceof String) {
-          com.google.protobuf.ByteString b = 
-              com.google.protobuf.ByteString.copyFromUtf8(
-                  (java.lang.String) ref);
-          clientuuid_ = b;
-          return b;
-        } else {
-          return (com.google.protobuf.ByteString) ref;
-        }
-      }
-      /**
-       * <code>string clientuuid = 1;</code>
+       * <code>int32 clientuuid = 1;</code>
        * @param value The clientuuid to set.
        * @return This builder for chaining.
        */
-      public Builder setClientuuid(
-          java.lang.String value) {
-        if (value == null) {
-    throw new NullPointerException();
-  }
-  
+      public Builder setClientuuid(int value) {
+        
         clientuuid_ = value;
         onChanged();
         return this;
       }
       /**
-       * <code>string clientuuid = 1;</code>
+       * <code>int32 clientuuid = 1;</code>
        * @return This builder for chaining.
        */
       public Builder clearClientuuid() {
         
-        clientuuid_ = getDefaultInstance().getClientuuid();
-        onChanged();
-        return this;
-      }
-      /**
-       * <code>string clientuuid = 1;</code>
-       * @param value The bytes for clientuuid to set.
-       * @return This builder for chaining.
-       */
-      public Builder setClientuuidBytes(
-          com.google.protobuf.ByteString value) {
-        if (value == null) {
-    throw new NullPointerException();
-  }
-  checkByteStringIsUtf8(value);
-        
-        clientuuid_ = value;
+        clientuuid_ = 0;
         onChanged();
         return this;
       }
@@ -14281,16 +13801,10 @@ public final class FGBoostServiceProto {
       com.google.protobuf.MessageOrBuilder {
 
     /**
-     * <code>string clientuuid = 1;</code>
+     * <code>int32 clientuuid = 1;</code>
      * @return The clientuuid.
      */
-    java.lang.String getClientuuid();
-    /**
-     * <code>string clientuuid = 1;</code>
-     * @return The bytes for clientuuid.
-     */
-    com.google.protobuf.ByteString
-        getClientuuidBytes();
+    int getClientuuid();
 
     /**
      * <code>.fgboost.DataSplit split = 2;</code>
@@ -14320,7 +13834,6 @@ public final class FGBoostServiceProto {
       super(builder);
     }
     private SplitRequest() {
-      clientuuid_ = "";
     }
 
     @java.lang.Override
@@ -14353,10 +13866,9 @@ public final class FGBoostServiceProto {
             case 0:
               done = true;
               break;
-            case 10: {
-              java.lang.String s = input.readStringRequireUtf8();
+            case 8: {
 
-              clientuuid_ = s;
+              clientuuid_ = input.readInt32();
               break;
             }
             case 18: {
@@ -14405,41 +13917,14 @@ public final class FGBoostServiceProto {
     }
 
     public static final int CLIENTUUID_FIELD_NUMBER = 1;
-    private volatile java.lang.Object clientuuid_;
+    private int clientuuid_;
     /**
-     * <code>string clientuuid = 1;</code>
+     * <code>int32 clientuuid = 1;</code>
      * @return The clientuuid.
      */
     @java.lang.Override
-    public java.lang.String getClientuuid() {
-      java.lang.Object ref = clientuuid_;
-      if (ref instanceof java.lang.String) {
-        return (java.lang.String) ref;
-      } else {
-        com.google.protobuf.ByteString bs = 
-            (com.google.protobuf.ByteString) ref;
-        java.lang.String s = bs.toStringUtf8();
-        clientuuid_ = s;
-        return s;
-      }
-    }
-    /**
-     * <code>string clientuuid = 1;</code>
-     * @return The bytes for clientuuid.
-     */
-    @java.lang.Override
-    public com.google.protobuf.ByteString
-        getClientuuidBytes() {
-      java.lang.Object ref = clientuuid_;
-      if (ref instanceof java.lang.String) {
-        com.google.protobuf.ByteString b = 
-            com.google.protobuf.ByteString.copyFromUtf8(
-                (java.lang.String) ref);
-        clientuuid_ = b;
-        return b;
-      } else {
-        return (com.google.protobuf.ByteString) ref;
-      }
+    public int getClientuuid() {
+      return clientuuid_;
     }
 
     public static final int SPLIT_FIELD_NUMBER = 2;
@@ -14482,8 +13967,8 @@ public final class FGBoostServiceProto {
     @java.lang.Override
     public void writeTo(com.google.protobuf.CodedOutputStream output)
                         throws java.io.IOException {
-      if (!getClientuuidBytes().isEmpty()) {
-        com.google.protobuf.GeneratedMessageV3.writeString(output, 1, clientuuid_);
+      if (clientuuid_ != 0) {
+        output.writeInt32(1, clientuuid_);
       }
       if (split_ != null) {
         output.writeMessage(2, getSplit());
@@ -14497,8 +13982,9 @@ public final class FGBoostServiceProto {
       if (size != -1) return size;
 
       size = 0;
-      if (!getClientuuidBytes().isEmpty()) {
-        size += com.google.protobuf.GeneratedMessageV3.computeStringSize(1, clientuuid_);
+      if (clientuuid_ != 0) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeInt32Size(1, clientuuid_);
       }
       if (split_ != null) {
         size += com.google.protobuf.CodedOutputStream
@@ -14519,8 +14005,8 @@ public final class FGBoostServiceProto {
       }
       com.intel.analytics.bigdl.ppml.fl.generated.FGBoostServiceProto.SplitRequest other = (com.intel.analytics.bigdl.ppml.fl.generated.FGBoostServiceProto.SplitRequest) obj;
 
-      if (!getClientuuid()
-          .equals(other.getClientuuid())) return false;
+      if (getClientuuid()
+          != other.getClientuuid()) return false;
       if (hasSplit() != other.hasSplit()) return false;
       if (hasSplit()) {
         if (!getSplit()
@@ -14538,7 +14024,7 @@ public final class FGBoostServiceProto {
       int hash = 41;
       hash = (19 * hash) + getDescriptor().hashCode();
       hash = (37 * hash) + CLIENTUUID_FIELD_NUMBER;
-      hash = (53 * hash) + getClientuuid().hashCode();
+      hash = (53 * hash) + getClientuuid();
       if (hasSplit()) {
         hash = (37 * hash) + SPLIT_FIELD_NUMBER;
         hash = (53 * hash) + getSplit().hashCode();
@@ -14676,7 +14162,7 @@ public final class FGBoostServiceProto {
       @java.lang.Override
       public Builder clear() {
         super.clear();
-        clientuuid_ = "";
+        clientuuid_ = 0;
 
         if (splitBuilder_ == null) {
           split_ = null;
@@ -14764,9 +14250,8 @@ public final class FGBoostServiceProto {
 
       public Builder mergeFrom(com.intel.analytics.bigdl.ppml.fl.generated.FGBoostServiceProto.SplitRequest other) {
         if (other == com.intel.analytics.bigdl.ppml.fl.generated.FGBoostServiceProto.SplitRequest.getDefaultInstance()) return this;
-        if (!other.getClientuuid().isEmpty()) {
-          clientuuid_ = other.clientuuid_;
-          onChanged();
+        if (other.getClientuuid() != 0) {
+          setClientuuid(other.getClientuuid());
         }
         if (other.hasSplit()) {
           mergeSplit(other.getSplit());
@@ -14800,78 +14285,33 @@ public final class FGBoostServiceProto {
         return this;
       }
 
-      private java.lang.Object clientuuid_ = "";
+      private int clientuuid_ ;
       /**
-       * <code>string clientuuid = 1;</code>
+       * <code>int32 clientuuid = 1;</code>
        * @return The clientuuid.
        */
-      public java.lang.String getClientuuid() {
-        java.lang.Object ref = clientuuid_;
-        if (!(ref instanceof java.lang.String)) {
-          com.google.protobuf.ByteString bs =
-              (com.google.protobuf.ByteString) ref;
-          java.lang.String s = bs.toStringUtf8();
-          clientuuid_ = s;
-          return s;
-        } else {
-          return (java.lang.String) ref;
-        }
+      @java.lang.Override
+      public int getClientuuid() {
+        return clientuuid_;
       }
       /**
-       * <code>string clientuuid = 1;</code>
-       * @return The bytes for clientuuid.
-       */
-      public com.google.protobuf.ByteString
-          getClientuuidBytes() {
-        java.lang.Object ref = clientuuid_;
-        if (ref instanceof String) {
-          com.google.protobuf.ByteString b = 
-              com.google.protobuf.ByteString.copyFromUtf8(
-                  (java.lang.String) ref);
-          clientuuid_ = b;
-          return b;
-        } else {
-          return (com.google.protobuf.ByteString) ref;
-        }
-      }
-      /**
-       * <code>string clientuuid = 1;</code>
+       * <code>int32 clientuuid = 1;</code>
        * @param value The clientuuid to set.
        * @return This builder for chaining.
        */
-      public Builder setClientuuid(
-          java.lang.String value) {
-        if (value == null) {
-    throw new NullPointerException();
-  }
-  
+      public Builder setClientuuid(int value) {
+        
         clientuuid_ = value;
         onChanged();
         return this;
       }
       /**
-       * <code>string clientuuid = 1;</code>
+       * <code>int32 clientuuid = 1;</code>
        * @return This builder for chaining.
        */
       public Builder clearClientuuid() {
         
-        clientuuid_ = getDefaultInstance().getClientuuid();
-        onChanged();
-        return this;
-      }
-      /**
-       * <code>string clientuuid = 1;</code>
-       * @param value The bytes for clientuuid to set.
-       * @return This builder for chaining.
-       */
-      public Builder setClientuuidBytes(
-          com.google.protobuf.ByteString value) {
-        if (value == null) {
-    throw new NullPointerException();
-  }
-  checkByteStringIsUtf8(value);
-        
-        clientuuid_ = value;
+        clientuuid_ = 0;
         onChanged();
         return this;
       }
@@ -16734,16 +16174,10 @@ public final class FGBoostServiceProto {
       com.google.protobuf.MessageOrBuilder {
 
     /**
-     * <code>string clientuuid = 1;</code>
+     * <code>int32 clientuuid = 1;</code>
      * @return The clientuuid.
      */
-    java.lang.String getClientuuid();
-    /**
-     * <code>string clientuuid = 1;</code>
-     * @return The bytes for clientuuid.
-     */
-    com.google.protobuf.ByteString
-        getClientuuidBytes();
+    int getClientuuid();
 
     /**
      * <code>string modelPath = 2;</code>
@@ -16770,7 +16204,6 @@ public final class FGBoostServiceProto {
       super(builder);
     }
     private SaveModelRequest() {
-      clientuuid_ = "";
       modelPath_ = "";
     }
 
@@ -16804,10 +16237,9 @@ public final class FGBoostServiceProto {
             case 0:
               done = true;
               break;
-            case 10: {
-              java.lang.String s = input.readStringRequireUtf8();
+            case 8: {
 
-              clientuuid_ = s;
+              clientuuid_ = input.readInt32();
               break;
             }
             case 18: {
@@ -16849,41 +16281,14 @@ public final class FGBoostServiceProto {
     }
 
     public static final int CLIENTUUID_FIELD_NUMBER = 1;
-    private volatile java.lang.Object clientuuid_;
+    private int clientuuid_;
     /**
-     * <code>string clientuuid = 1;</code>
+     * <code>int32 clientuuid = 1;</code>
      * @return The clientuuid.
      */
     @java.lang.Override
-    public java.lang.String getClientuuid() {
-      java.lang.Object ref = clientuuid_;
-      if (ref instanceof java.lang.String) {
-        return (java.lang.String) ref;
-      } else {
-        com.google.protobuf.ByteString bs = 
-            (com.google.protobuf.ByteString) ref;
-        java.lang.String s = bs.toStringUtf8();
-        clientuuid_ = s;
-        return s;
-      }
-    }
-    /**
-     * <code>string clientuuid = 1;</code>
-     * @return The bytes for clientuuid.
-     */
-    @java.lang.Override
-    public com.google.protobuf.ByteString
-        getClientuuidBytes() {
-      java.lang.Object ref = clientuuid_;
-      if (ref instanceof java.lang.String) {
-        com.google.protobuf.ByteString b = 
-            com.google.protobuf.ByteString.copyFromUtf8(
-                (java.lang.String) ref);
-        clientuuid_ = b;
-        return b;
-      } else {
-        return (com.google.protobuf.ByteString) ref;
-      }
+    public int getClientuuid() {
+      return clientuuid_;
     }
 
     public static final int MODELPATH_FIELD_NUMBER = 2;
@@ -16938,8 +16343,8 @@ public final class FGBoostServiceProto {
     @java.lang.Override
     public void writeTo(com.google.protobuf.CodedOutputStream output)
                         throws java.io.IOException {
-      if (!getClientuuidBytes().isEmpty()) {
-        com.google.protobuf.GeneratedMessageV3.writeString(output, 1, clientuuid_);
+      if (clientuuid_ != 0) {
+        output.writeInt32(1, clientuuid_);
       }
       if (!getModelPathBytes().isEmpty()) {
         com.google.protobuf.GeneratedMessageV3.writeString(output, 2, modelPath_);
@@ -16953,8 +16358,9 @@ public final class FGBoostServiceProto {
       if (size != -1) return size;
 
       size = 0;
-      if (!getClientuuidBytes().isEmpty()) {
-        size += com.google.protobuf.GeneratedMessageV3.computeStringSize(1, clientuuid_);
+      if (clientuuid_ != 0) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeInt32Size(1, clientuuid_);
       }
       if (!getModelPathBytes().isEmpty()) {
         size += com.google.protobuf.GeneratedMessageV3.computeStringSize(2, modelPath_);
@@ -16974,8 +16380,8 @@ public final class FGBoostServiceProto {
       }
       com.intel.analytics.bigdl.ppml.fl.generated.FGBoostServiceProto.SaveModelRequest other = (com.intel.analytics.bigdl.ppml.fl.generated.FGBoostServiceProto.SaveModelRequest) obj;
 
-      if (!getClientuuid()
-          .equals(other.getClientuuid())) return false;
+      if (getClientuuid()
+          != other.getClientuuid()) return false;
       if (!getModelPath()
           .equals(other.getModelPath())) return false;
       if (!unknownFields.equals(other.unknownFields)) return false;
@@ -16990,7 +16396,7 @@ public final class FGBoostServiceProto {
       int hash = 41;
       hash = (19 * hash) + getDescriptor().hashCode();
       hash = (37 * hash) + CLIENTUUID_FIELD_NUMBER;
-      hash = (53 * hash) + getClientuuid().hashCode();
+      hash = (53 * hash) + getClientuuid();
       hash = (37 * hash) + MODELPATH_FIELD_NUMBER;
       hash = (53 * hash) + getModelPath().hashCode();
       hash = (29 * hash) + unknownFields.hashCode();
@@ -17126,7 +16532,7 @@ public final class FGBoostServiceProto {
       @java.lang.Override
       public Builder clear() {
         super.clear();
-        clientuuid_ = "";
+        clientuuid_ = 0;
 
         modelPath_ = "";
 
@@ -17206,9 +16612,8 @@ public final class FGBoostServiceProto {
 
       public Builder mergeFrom(com.intel.analytics.bigdl.ppml.fl.generated.FGBoostServiceProto.SaveModelRequest other) {
         if (other == com.intel.analytics.bigdl.ppml.fl.generated.FGBoostServiceProto.SaveModelRequest.getDefaultInstance()) return this;
-        if (!other.getClientuuid().isEmpty()) {
-          clientuuid_ = other.clientuuid_;
-          onChanged();
+        if (other.getClientuuid() != 0) {
+          setClientuuid(other.getClientuuid());
         }
         if (!other.getModelPath().isEmpty()) {
           modelPath_ = other.modelPath_;
@@ -17243,78 +16648,33 @@ public final class FGBoostServiceProto {
         return this;
       }
 
-      private java.lang.Object clientuuid_ = "";
+      private int clientuuid_ ;
       /**
-       * <code>string clientuuid = 1;</code>
+       * <code>int32 clientuuid = 1;</code>
        * @return The clientuuid.
        */
-      public java.lang.String getClientuuid() {
-        java.lang.Object ref = clientuuid_;
-        if (!(ref instanceof java.lang.String)) {
-          com.google.protobuf.ByteString bs =
-              (com.google.protobuf.ByteString) ref;
-          java.lang.String s = bs.toStringUtf8();
-          clientuuid_ = s;
-          return s;
-        } else {
-          return (java.lang.String) ref;
-        }
+      @java.lang.Override
+      public int getClientuuid() {
+        return clientuuid_;
       }
       /**
-       * <code>string clientuuid = 1;</code>
-       * @return The bytes for clientuuid.
-       */
-      public com.google.protobuf.ByteString
-          getClientuuidBytes() {
-        java.lang.Object ref = clientuuid_;
-        if (ref instanceof String) {
-          com.google.protobuf.ByteString b = 
-              com.google.protobuf.ByteString.copyFromUtf8(
-                  (java.lang.String) ref);
-          clientuuid_ = b;
-          return b;
-        } else {
-          return (com.google.protobuf.ByteString) ref;
-        }
-      }
-      /**
-       * <code>string clientuuid = 1;</code>
+       * <code>int32 clientuuid = 1;</code>
        * @param value The clientuuid to set.
        * @return This builder for chaining.
        */
-      public Builder setClientuuid(
-          java.lang.String value) {
-        if (value == null) {
-    throw new NullPointerException();
-  }
-  
+      public Builder setClientuuid(int value) {
+        
         clientuuid_ = value;
         onChanged();
         return this;
       }
       /**
-       * <code>string clientuuid = 1;</code>
+       * <code>int32 clientuuid = 1;</code>
        * @return This builder for chaining.
        */
       public Builder clearClientuuid() {
         
-        clientuuid_ = getDefaultInstance().getClientuuid();
-        onChanged();
-        return this;
-      }
-      /**
-       * <code>string clientuuid = 1;</code>
-       * @param value The bytes for clientuuid to set.
-       * @return This builder for chaining.
-       */
-      public Builder setClientuuidBytes(
-          com.google.protobuf.ByteString value) {
-        if (value == null) {
-    throw new NullPointerException();
-  }
-  checkByteStringIsUtf8(value);
-        
-        clientuuid_ = value;
+        clientuuid_ = 0;
         onChanged();
         return this;
       }
@@ -18090,16 +17450,10 @@ public final class FGBoostServiceProto {
       com.google.protobuf.MessageOrBuilder {
 
     /**
-     * <code>string client_id = 1;</code>
+     * <code>int32 client_id = 1;</code>
      * @return The clientId.
      */
-    java.lang.String getClientId();
-    /**
-     * <code>string client_id = 1;</code>
-     * @return The bytes for clientId.
-     */
-    com.google.protobuf.ByteString
-        getClientIdBytes();
+    int getClientId();
 
     /**
      * <code>string model_path = 2;</code>
@@ -18126,7 +17480,6 @@ public final class FGBoostServiceProto {
       super(builder);
     }
     private LoadModelRequest() {
-      clientId_ = "";
       modelPath_ = "";
     }
 
@@ -18160,10 +17513,9 @@ public final class FGBoostServiceProto {
             case 0:
               done = true;
               break;
-            case 10: {
-              java.lang.String s = input.readStringRequireUtf8();
+            case 8: {
 
-              clientId_ = s;
+              clientId_ = input.readInt32();
               break;
             }
             case 18: {
@@ -18205,41 +17557,14 @@ public final class FGBoostServiceProto {
     }
 
     public static final int CLIENT_ID_FIELD_NUMBER = 1;
-    private volatile java.lang.Object clientId_;
+    private int clientId_;
     /**
-     * <code>string client_id = 1;</code>
+     * <code>int32 client_id = 1;</code>
      * @return The clientId.
      */
     @java.lang.Override
-    public java.lang.String getClientId() {
-      java.lang.Object ref = clientId_;
-      if (ref instanceof java.lang.String) {
-        return (java.lang.String) ref;
-      } else {
-        com.google.protobuf.ByteString bs = 
-            (com.google.protobuf.ByteString) ref;
-        java.lang.String s = bs.toStringUtf8();
-        clientId_ = s;
-        return s;
-      }
-    }
-    /**
-     * <code>string client_id = 1;</code>
-     * @return The bytes for clientId.
-     */
-    @java.lang.Override
-    public com.google.protobuf.ByteString
-        getClientIdBytes() {
-      java.lang.Object ref = clientId_;
-      if (ref instanceof java.lang.String) {
-        com.google.protobuf.ByteString b = 
-            com.google.protobuf.ByteString.copyFromUtf8(
-                (java.lang.String) ref);
-        clientId_ = b;
-        return b;
-      } else {
-        return (com.google.protobuf.ByteString) ref;
-      }
+    public int getClientId() {
+      return clientId_;
     }
 
     public static final int MODEL_PATH_FIELD_NUMBER = 2;
@@ -18294,8 +17619,8 @@ public final class FGBoostServiceProto {
     @java.lang.Override
     public void writeTo(com.google.protobuf.CodedOutputStream output)
                         throws java.io.IOException {
-      if (!getClientIdBytes().isEmpty()) {
-        com.google.protobuf.GeneratedMessageV3.writeString(output, 1, clientId_);
+      if (clientId_ != 0) {
+        output.writeInt32(1, clientId_);
       }
       if (!getModelPathBytes().isEmpty()) {
         com.google.protobuf.GeneratedMessageV3.writeString(output, 2, modelPath_);
@@ -18309,8 +17634,9 @@ public final class FGBoostServiceProto {
       if (size != -1) return size;
 
       size = 0;
-      if (!getClientIdBytes().isEmpty()) {
-        size += com.google.protobuf.GeneratedMessageV3.computeStringSize(1, clientId_);
+      if (clientId_ != 0) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeInt32Size(1, clientId_);
       }
       if (!getModelPathBytes().isEmpty()) {
         size += com.google.protobuf.GeneratedMessageV3.computeStringSize(2, modelPath_);
@@ -18330,8 +17656,8 @@ public final class FGBoostServiceProto {
       }
       com.intel.analytics.bigdl.ppml.fl.generated.FGBoostServiceProto.LoadModelRequest other = (com.intel.analytics.bigdl.ppml.fl.generated.FGBoostServiceProto.LoadModelRequest) obj;
 
-      if (!getClientId()
-          .equals(other.getClientId())) return false;
+      if (getClientId()
+          != other.getClientId()) return false;
       if (!getModelPath()
           .equals(other.getModelPath())) return false;
       if (!unknownFields.equals(other.unknownFields)) return false;
@@ -18346,7 +17672,7 @@ public final class FGBoostServiceProto {
       int hash = 41;
       hash = (19 * hash) + getDescriptor().hashCode();
       hash = (37 * hash) + CLIENT_ID_FIELD_NUMBER;
-      hash = (53 * hash) + getClientId().hashCode();
+      hash = (53 * hash) + getClientId();
       hash = (37 * hash) + MODEL_PATH_FIELD_NUMBER;
       hash = (53 * hash) + getModelPath().hashCode();
       hash = (29 * hash) + unknownFields.hashCode();
@@ -18482,7 +17808,7 @@ public final class FGBoostServiceProto {
       @java.lang.Override
       public Builder clear() {
         super.clear();
-        clientId_ = "";
+        clientId_ = 0;
 
         modelPath_ = "";
 
@@ -18562,9 +17888,8 @@ public final class FGBoostServiceProto {
 
       public Builder mergeFrom(com.intel.analytics.bigdl.ppml.fl.generated.FGBoostServiceProto.LoadModelRequest other) {
         if (other == com.intel.analytics.bigdl.ppml.fl.generated.FGBoostServiceProto.LoadModelRequest.getDefaultInstance()) return this;
-        if (!other.getClientId().isEmpty()) {
-          clientId_ = other.clientId_;
-          onChanged();
+        if (other.getClientId() != 0) {
+          setClientId(other.getClientId());
         }
         if (!other.getModelPath().isEmpty()) {
           modelPath_ = other.modelPath_;
@@ -18599,78 +17924,33 @@ public final class FGBoostServiceProto {
         return this;
       }
 
-      private java.lang.Object clientId_ = "";
+      private int clientId_ ;
       /**
-       * <code>string client_id = 1;</code>
+       * <code>int32 client_id = 1;</code>
        * @return The clientId.
        */
-      public java.lang.String getClientId() {
-        java.lang.Object ref = clientId_;
-        if (!(ref instanceof java.lang.String)) {
-          com.google.protobuf.ByteString bs =
-              (com.google.protobuf.ByteString) ref;
-          java.lang.String s = bs.toStringUtf8();
-          clientId_ = s;
-          return s;
-        } else {
-          return (java.lang.String) ref;
-        }
+      @java.lang.Override
+      public int getClientId() {
+        return clientId_;
       }
       /**
-       * <code>string client_id = 1;</code>
-       * @return The bytes for clientId.
-       */
-      public com.google.protobuf.ByteString
-          getClientIdBytes() {
-        java.lang.Object ref = clientId_;
-        if (ref instanceof String) {
-          com.google.protobuf.ByteString b = 
-              com.google.protobuf.ByteString.copyFromUtf8(
-                  (java.lang.String) ref);
-          clientId_ = b;
-          return b;
-        } else {
-          return (com.google.protobuf.ByteString) ref;
-        }
-      }
-      /**
-       * <code>string client_id = 1;</code>
+       * <code>int32 client_id = 1;</code>
        * @param value The clientId to set.
        * @return This builder for chaining.
        */
-      public Builder setClientId(
-          java.lang.String value) {
-        if (value == null) {
-    throw new NullPointerException();
-  }
-  
+      public Builder setClientId(int value) {
+        
         clientId_ = value;
         onChanged();
         return this;
       }
       /**
-       * <code>string client_id = 1;</code>
+       * <code>int32 client_id = 1;</code>
        * @return This builder for chaining.
        */
       public Builder clearClientId() {
         
-        clientId_ = getDefaultInstance().getClientId();
-        onChanged();
-        return this;
-      }
-      /**
-       * <code>string client_id = 1;</code>
-       * @param value The bytes for clientId to set.
-       * @return This builder for chaining.
-       */
-      public Builder setClientIdBytes(
-          com.google.protobuf.ByteString value) {
-        if (value == null) {
-    throw new NullPointerException();
-  }
-  checkByteStringIsUtf8(value);
-        
-        clientId_ = value;
+        clientId_ = 0;
         onChanged();
         return this;
       }
@@ -19567,7 +18847,7 @@ public final class FGBoostServiceProto {
     java.lang.String[] descriptorData = {
       "\n\025fgboost_service.proto\022\007fgboost\032\rfl_bas" +
       "e.proto\"U\n\022UploadLabelRequest\022\022\n\nclientu" +
-      "uid\030\001 \001(\t\022\030\n\004data\030\002 \001(\0132\n.TensorMap\022\021\n\ta" +
+      "uid\030\001 \001(\005\022\030\n\004data\030\002 \001(\0132\n.TensorMap\022\021\n\ta" +
       "lgorithm\030\003 \001(\t\"F\n\024DownloadLabelRequest\022\033" +
       "\n\010metaData\030\001 \001(\0132\t.MetaData\022\021\n\talgorithm" +
       "\030\002 \001(\t\"L\n\020DownloadResponse\022\030\n\004data\030\001 \001(\013" +
@@ -19575,7 +18855,7 @@ public final class FGBoostServiceProto {
       " \001(\005\"R\n\010TreeLeaf\022\016\n\006treeID\030\001 \001(\t\022\021\n\tleaf" +
       "Index\030\002 \003(\005\022\022\n\nleafOutput\030\003 \003(\002\022\017\n\007versi" +
       "on\030\004 \001(\005\"P\n\025UploadTreeLeafRequest\022\022\n\ncli" +
-      "entuuid\030\001 \001(\t\022#\n\010treeLeaf\030\002 \001(\0132\021.fgboos" +
+      "entuuid\030\001 \001(\005\022#\n\010treeLeaf\030\002 \001(\0132\021.fgboos" +
       "t.TreeLeaf\"\250\001\n\tDataSplit\022\016\n\006treeID\030\001 \001(\t" +
       "\022\016\n\006nodeID\030\002 \001(\t\022\021\n\tfeatureID\030\003 \001(\005\022\022\n\ns" +
       "plitValue\030\004 \001(\002\022\014\n\004gain\030\005 \001(\002\022\021\n\tsetLeng" +
@@ -19586,29 +18866,29 @@ public final class FGBoostServiceProto {
       "\"6\n\014BoostPredict\022&\n\010predicts\030\001 \003(\0132\024.fgb" +
       "oost.TreePredict\"4\n\tBoostEval\022\'\n\tevaluat" +
       "es\030\001 \003(\0132\024.fgboost.TreePredict\"4\n\017Regist" +
-      "erRequest\022\022\n\nclientuuid\030\001 \001(\t\022\r\n\005token\030\002" +
+      "erRequest\022\022\n\nclientuuid\030\001 \001(\005\022\r\n\005token\030\002" +
       " \001(\t\"2\n\020RegisterResponse\022\020\n\010response\030\001 \001" +
       "(\t\022\014\n\004code\030\002 \001(\005\"b\n\025UploadTreeEvalReques" +
-      "t\022\022\n\nclientuuid\030\001 \001(\t\022\017\n\007version\030\002 \001(\005\022$" +
+      "t\022\022\n\nclientuuid\030\001 \001(\005\022\017\n\007version\030\002 \001(\005\022$" +
       "\n\010treeEval\030\003 \003(\0132\022.fgboost.BoostEval\"o\n\017" +
-      "EvaluateRequest\022\022\n\nclientuuid\030\001 \001(\t\022$\n\010t" +
+      "EvaluateRequest\022\022\n\nclientuuid\030\001 \001(\005\022$\n\010t" +
       "reeEval\030\002 \003(\0132\022.fgboost.BoostEval\022\017\n\007ver" +
       "sion\030\003 \001(\005\022\021\n\tlastBatch\030\004 \001(\010\"]\n\020Evaluat" +
       "eResponse\022\020\n\010response\030\001 \001(\t\022\030\n\004data\030\002 \001(" +
       "\0132\n.TensorMap\022\014\n\004code\030\003 \001(\005\022\017\n\007message\030\004" +
       " \001(\t\"n\n\016PredictRequest\022\022\n\nclientuuid\030\001 \001" +
-      "(\t\022$\n\010treeEval\030\002 \003(\0132\022.fgboost.BoostEval" +
+      "(\005\022$\n\010treeEval\030\002 \003(\0132\022.fgboost.BoostEval" +
       "\022\017\n\007version\030\003 \001(\005\022\021\n\tlastBatch\030\004 \001(\010\"E\n\014" +
-      "SplitRequest\022\022\n\nclientuuid\030\001 \001(\t\022!\n\005spli" +
+      "SplitRequest\022\022\n\nclientuuid\030\001 \001(\005\022!\n\005spli" +
       "t\030\002 \001(\0132\022.fgboost.DataSplit\"K\n\017PredictRe" +
       "sponse\022\020\n\010response\030\001 \001(\t\022\030\n\004data\030\002 \001(\0132\n" +
       ".TensorMap\022\014\n\004code\030\003 \001(\005\"R\n\rSplitRespons" +
       "e\022!\n\005split\030\001 \001(\0132\022.fgboost.DataSplit\022\020\n\010" +
       "response\030\002 \001(\t\022\014\n\004code\030\003 \001(\005\"9\n\020SaveMode" +
-      "lRequest\022\022\n\nclientuuid\030\001 \001(\t\022\021\n\tmodelPat" +
+      "lRequest\022\022\n\nclientuuid\030\001 \001(\005\022\021\n\tmodelPat" +
       "h\030\002 \001(\t\"2\n\021SaveModelResponse\022\017\n\007message\030" +
       "\001 \001(\t\022\014\n\004code\030\002 \001(\005\"9\n\020LoadModelRequest\022" +
-      "\021\n\tclient_id\030\001 \001(\t\022\022\n\nmodel_path\030\002 \001(\t\"2" +
+      "\021\n\tclient_id\030\001 \001(\005\022\022\n\nmodel_path\030\002 \001(\t\"2" +
       "\n\021LoadModelResponse\022\017\n\007message\030\001 \001(\t\022\014\n\004" +
       "code\030\002 \001(\0052\211\005\n\016FGBoostService\022E\n\013uploadL" +
       "abel\022\033.fgboost.UploadLabelRequest\032\027.fgbo" +

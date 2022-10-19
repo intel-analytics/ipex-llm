@@ -1387,16 +1387,10 @@ public final class PSIServiceProto {
         getTaskIdBytes();
 
     /**
-     * <code>string client_id = 2;</code>
+     * <code>int32 client_id = 2;</code>
      * @return The clientId.
      */
-    java.lang.String getClientId();
-    /**
-     * <code>string client_id = 2;</code>
-     * @return The bytes for clientId.
-     */
-    com.google.protobuf.ByteString
-        getClientIdBytes();
+    int getClientId();
 
     /**
      * <code>int32 split = 3;</code>
@@ -1461,7 +1455,6 @@ public final class PSIServiceProto {
     }
     private UploadSetRequest() {
       taskId_ = "";
-      clientId_ = "";
       hashedID_ = com.google.protobuf.LazyStringArrayList.EMPTY;
     }
 
@@ -1502,10 +1495,9 @@ public final class PSIServiceProto {
               taskId_ = s;
               break;
             }
-            case 18: {
-              java.lang.String s = input.readStringRequireUtf8();
+            case 16: {
 
-              clientId_ = s;
+              clientId_ = input.readInt32();
               break;
             }
             case 24: {
@@ -1611,41 +1603,14 @@ public final class PSIServiceProto {
     }
 
     public static final int CLIENT_ID_FIELD_NUMBER = 2;
-    private volatile java.lang.Object clientId_;
+    private int clientId_;
     /**
-     * <code>string client_id = 2;</code>
+     * <code>int32 client_id = 2;</code>
      * @return The clientId.
      */
     @java.lang.Override
-    public java.lang.String getClientId() {
-      java.lang.Object ref = clientId_;
-      if (ref instanceof java.lang.String) {
-        return (java.lang.String) ref;
-      } else {
-        com.google.protobuf.ByteString bs = 
-            (com.google.protobuf.ByteString) ref;
-        java.lang.String s = bs.toStringUtf8();
-        clientId_ = s;
-        return s;
-      }
-    }
-    /**
-     * <code>string client_id = 2;</code>
-     * @return The bytes for clientId.
-     */
-    @java.lang.Override
-    public com.google.protobuf.ByteString
-        getClientIdBytes() {
-      java.lang.Object ref = clientId_;
-      if (ref instanceof java.lang.String) {
-        com.google.protobuf.ByteString b = 
-            com.google.protobuf.ByteString.copyFromUtf8(
-                (java.lang.String) ref);
-        clientId_ = b;
-        return b;
-      } else {
-        return (com.google.protobuf.ByteString) ref;
-      }
+    public int getClientId() {
+      return clientId_;
     }
 
     public static final int SPLIT_FIELD_NUMBER = 3;
@@ -1744,8 +1709,8 @@ public final class PSIServiceProto {
       if (!getTaskIdBytes().isEmpty()) {
         com.google.protobuf.GeneratedMessageV3.writeString(output, 1, taskId_);
       }
-      if (!getClientIdBytes().isEmpty()) {
-        com.google.protobuf.GeneratedMessageV3.writeString(output, 2, clientId_);
+      if (clientId_ != 0) {
+        output.writeInt32(2, clientId_);
       }
       if (split_ != 0) {
         output.writeInt32(3, split_);
@@ -1774,8 +1739,9 @@ public final class PSIServiceProto {
       if (!getTaskIdBytes().isEmpty()) {
         size += com.google.protobuf.GeneratedMessageV3.computeStringSize(1, taskId_);
       }
-      if (!getClientIdBytes().isEmpty()) {
-        size += com.google.protobuf.GeneratedMessageV3.computeStringSize(2, clientId_);
+      if (clientId_ != 0) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeInt32Size(2, clientId_);
       }
       if (split_ != 0) {
         size += com.google.protobuf.CodedOutputStream
@@ -1818,8 +1784,8 @@ public final class PSIServiceProto {
 
       if (!getTaskId()
           .equals(other.getTaskId())) return false;
-      if (!getClientId()
-          .equals(other.getClientId())) return false;
+      if (getClientId()
+          != other.getClientId()) return false;
       if (getSplit()
           != other.getSplit()) return false;
       if (getNumSplit()
@@ -1844,7 +1810,7 @@ public final class PSIServiceProto {
       hash = (37 * hash) + TASK_ID_FIELD_NUMBER;
       hash = (53 * hash) + getTaskId().hashCode();
       hash = (37 * hash) + CLIENT_ID_FIELD_NUMBER;
-      hash = (53 * hash) + getClientId().hashCode();
+      hash = (53 * hash) + getClientId();
       hash = (37 * hash) + SPLIT_FIELD_NUMBER;
       hash = (53 * hash) + getSplit();
       hash = (37 * hash) + NUM_SPLIT_FIELD_NUMBER;
@@ -1992,7 +1958,7 @@ public final class PSIServiceProto {
         super.clear();
         taskId_ = "";
 
-        clientId_ = "";
+        clientId_ = 0;
 
         split_ = 0;
 
@@ -2094,9 +2060,8 @@ public final class PSIServiceProto {
           taskId_ = other.taskId_;
           onChanged();
         }
-        if (!other.getClientId().isEmpty()) {
-          clientId_ = other.clientId_;
-          onChanged();
+        if (other.getClientId() != 0) {
+          setClientId(other.getClientId());
         }
         if (other.getSplit() != 0) {
           setSplit(other.getSplit());
@@ -2226,78 +2191,33 @@ public final class PSIServiceProto {
         return this;
       }
 
-      private java.lang.Object clientId_ = "";
+      private int clientId_ ;
       /**
-       * <code>string client_id = 2;</code>
+       * <code>int32 client_id = 2;</code>
        * @return The clientId.
        */
-      public java.lang.String getClientId() {
-        java.lang.Object ref = clientId_;
-        if (!(ref instanceof java.lang.String)) {
-          com.google.protobuf.ByteString bs =
-              (com.google.protobuf.ByteString) ref;
-          java.lang.String s = bs.toStringUtf8();
-          clientId_ = s;
-          return s;
-        } else {
-          return (java.lang.String) ref;
-        }
+      @java.lang.Override
+      public int getClientId() {
+        return clientId_;
       }
       /**
-       * <code>string client_id = 2;</code>
-       * @return The bytes for clientId.
-       */
-      public com.google.protobuf.ByteString
-          getClientIdBytes() {
-        java.lang.Object ref = clientId_;
-        if (ref instanceof String) {
-          com.google.protobuf.ByteString b = 
-              com.google.protobuf.ByteString.copyFromUtf8(
-                  (java.lang.String) ref);
-          clientId_ = b;
-          return b;
-        } else {
-          return (com.google.protobuf.ByteString) ref;
-        }
-      }
-      /**
-       * <code>string client_id = 2;</code>
+       * <code>int32 client_id = 2;</code>
        * @param value The clientId to set.
        * @return This builder for chaining.
        */
-      public Builder setClientId(
-          java.lang.String value) {
-        if (value == null) {
-    throw new NullPointerException();
-  }
-  
+      public Builder setClientId(int value) {
+        
         clientId_ = value;
         onChanged();
         return this;
       }
       /**
-       * <code>string client_id = 2;</code>
+       * <code>int32 client_id = 2;</code>
        * @return This builder for chaining.
        */
       public Builder clearClientId() {
         
-        clientId_ = getDefaultInstance().getClientId();
-        onChanged();
-        return this;
-      }
-      /**
-       * <code>string client_id = 2;</code>
-       * @param value The bytes for clientId to set.
-       * @return This builder for chaining.
-       */
-      public Builder setClientIdBytes(
-          com.google.protobuf.ByteString value) {
-        if (value == null) {
-    throw new NullPointerException();
-  }
-  checkByteStringIsUtf8(value);
-        
-        clientId_ = value;
+        clientId_ = 0;
         onChanged();
         return this;
       }
@@ -5119,7 +5039,7 @@ public final class PSIServiceProto {
       "ltRequest\022\017\n\007task_id\030\001 \001(\t\022\022\n\nclient_num" +
       "\030\002 \001(\005\022\023\n\013secure_code\030\003 \001(\t\"\037\n\tSaltReply" +
       "\022\022\n\nsalt_reply\030\001 \001(\t\"\226\001\n\020UploadSetReques" +
-      "t\022\017\n\007task_id\030\001 \001(\t\022\021\n\tclient_id\030\002 \001(\t\022\r\n" +
+      "t\022\017\n\007task_id\030\001 \001(\t\022\021\n\tclient_id\030\002 \001(\005\022\r\n" +
       "\005split\030\003 \001(\005\022\021\n\tnum_split\030\004 \001(\005\022\024\n\014split" +
       "_length\030\005 \001(\005\022\024\n\014total_length\030\006 \001(\005\022\020\n\010h" +
       "ashedID\030\007 \003(\t\"=\n\021UploadSetResponse\022\017\n\007ta" +

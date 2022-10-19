@@ -21,6 +21,7 @@ from bigdl.dllib.utils.log4Error import *
 from bigdl.orca.data import SparkXShards
 from bigdl.orca import OrcaContext
 from pyspark.ml.feature import MinMaxScaler as SparkMinMaxScaler
+from pyspark.ml.feature import StandardScaler as SparkStandardScaler
 from pyspark.ml.feature import VectorAssembler as SparkVectorAssembler
 from pyspark.ml import Pipeline as SparkPipeline
 
@@ -334,6 +335,47 @@ class MinMaxScaler:
         assembler = SparkVectorAssembler(inputCols=self.inputCol, outputCol=vecOutputCol)
         scaler = SparkMinMaxScaler(min=self.min, max=self.max,
                                    inputCol=vecOutputCol, outputCol=self.outputCol)
+        self.scaler = SparkPipeline(stages=[assembler, scaler])
+
+    def setInputOutputCol(self, inputCol, outputCol):
+        self.inputCol = inputCol
+        self.outputCol = outputCol
+        self.__createScaler__()
+
+    def fit_transform(self, shard):
+        df = shard.to_spark_df()
+        self.scalerModel = self.scaler.fit(df)
+        scaledData = self.scalerModel.transform(df)
+        data_shards = spark_df_to_pd_sparkxshards(scaledData)
+        return data_shards
+
+    def transform(self, shard):
+        invalidInputError(self.scalerModel, "Please call fit_transform first")
+        df = shard.to_spark_df()
+        scaledData = self.scalerModel.transform(df)
+        data_shards = spark_df_to_pd_sparkxshards(scaledData)
+        return data_shards
+
+
+class StandardScaler:
+    def __init__(self, withMean=False, withStd=True, inputCol=None, outputCol=None):
+        self.withMean = withMean
+        self.withStd = withStd
+        self.inputCol = inputCol
+        self.outputCol = outputCol
+        self.scaler = None
+        self.scalerModel = None
+        if inputCol:
+            self.__createScaler__()
+
+    def __createScaler__(self):
+        invalidInputError(self.inputCol, "inputColumn cannot be empty")
+        invalidInputError(self.outputCol, "outputColumn cannot be empty")
+
+        vecOutputCol = str(uuid.uuid1()) + "x_vec"
+        assembler = SparkVectorAssembler(inputCols=[self.inputCol], outputCol=vecOutputCol)
+        scaler = SparkStandardScaler(withMean=self.withMean, withStd=self.withStd,
+                                     inputCol=vecOutputCol, outputCol=self.outputCol)
         self.scaler = SparkPipeline(stages=[assembler, scaler])
 
     def setInputOutputCol(self, inputCol, outputCol):

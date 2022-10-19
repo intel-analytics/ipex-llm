@@ -51,3 +51,13 @@ spec:
 ### **Nano keras multi-instance training currently does not suport tensorflow dataset.from_generators, numpy_function, py_function**
 
 Nano keras multi-instance training will serialize TensorFlow dataset object into a `graph.pb` file, which does not work with `dataset.from_generators`, `dataset.numpy_function`, `dataset.py_function` due to limitations in TensorFlow.
+
+### **RuntimeError: Inter op parallelism cannot be modified after initialization**
+
+If you meet this error when import `bigdl.nano.tf`, it could be that you have already run some TensorFlow code that set the inter/intra op parallelism, such as `tfds.load`. You can try to workaround this issue by trying to import `bigdl.nano.tf` first before running TensorFlow code. See https://github.com/tensorflow/tensorflow/issues/57812 for more information.
+
+## **Ray Issues**
+
+### **protobuf version error**
+
+Now `pip install ray[default]==1.11.0` will install `google-api-core==2.10.0`, which depends on `protobuf>=3.20.1`. However, nano depends on `protobuf==3.19.4`, so if we install `ray` after installing `bigdl-nano`, pip will reinstall `protobuf==4.21.5`, which causes error.

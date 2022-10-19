@@ -44,29 +44,20 @@ max_features = 2000
 max_len = 200
 
 if cluster_mode == "local":
-    sc = init_orca_context(cluster_mode="local", cores=8,
-                           memory="100g",
-                           driver_memory="20g",
-                           conf=conf
-                           )
+    sc = init_orca_context(cluster_mode="local", cores=8, memory="100g",
+                           driver_memory="20g", conf=conf)
 elif cluster_mode.startswith("yarn"):
     if cluster_mode == "yarn_client":
         sc = init_orca_context(cluster_mode="yarn-client", num_nodes=8, cores=8,
-                           memory="100g",
-                           driver_memory="20g",
-                           conf=conf
-                            )
+                               memory="100g", driver_memory="20g", conf=conf)
     else:
         sc = init_orca_context(cluster_mode="yarn-cluster", num_nodes=8, cores=8,
-                            memory="100g",
-                            driver_memory="20g",
-                            conf=conf
-                            )
+                               memory="100g", driver_memory="20g", conf=conf)
 elif cluster_mode == "spark-submit":
-    sc = init_orca_context(cluster_mode="spark-submit")                           
+    sc = init_orca_context(cluster_mode="spark-submit")
 else:
-    print("init_orca_context failed. cluster_mode should be one of 'local', 'yarn' and 'spark-submit' but got "
-          + cluster_mode)
+    print("init_orca_context failed. cluster_mode should be one of 'local', "
+          "'yarn' and 'spark-submit' but got " + cluster_mode)
 
 print('Loading data...')
 (x_train, y_train), (x_test, y_test) = imdb.load_data(num_words=max_features)

@@ -46,8 +46,8 @@ def generate_data():
         tsdata.impute(mode="last")\
               .scale(standard_scaler, fit=(tsdata is tsdata_train))
             
-    train_loader = tsdata_train.to_torch_data_loader(roll=True, lookback=look_back, horizon=horizon)
-    test_loader = tsdata_test.to_torch_data_loader(batch_size=1, roll=True, lookback=look_back, horizon=horizon, shuffle=False)
+    train_loader = tsdata_train.to_torch_data_loader(lookback=look_back, horizon=horizon)
+    test_loader = tsdata_test.to_torch_data_loader(batch_size=1, lookback=look_back, horizon=horizon, shuffle=False)
     
     return train_loader, test_loader
 

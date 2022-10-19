@@ -17,10 +17,16 @@
 #
 
 import os
-import sys
-from shutil import copyfile, copytree, rmtree
 import fnmatch
 from setuptools import setup
+
+long_description = '''
+BigDL Chronos is an application framework for building a fast, accurate
+ and scalable time series analysis application.
+
+See [here](https://bigdl.readthedocs.io/en/latest/doc/Chronos/Overview/chronos.html)
+ for more information.
+'''
 
 bigdl_home = os.path.abspath(__file__ + "/../../../..")
 exclude_patterns = ["*__pycache__*", "*ipynb_checkpoints*"]
@@ -48,6 +54,8 @@ def setup_package():
         name='bigdl-chronos',
         version=VERSION,
         description='Scalable time series analysis using AutoML',
+        long_description=long_description,
+        long_description_content_type="text/markdown",
         author='BigDL Authors',
         author_email='bigdl-user-group@googlegroups.com',
         license='Apache License, Version 2.0',
@@ -56,11 +64,11 @@ def setup_package():
         install_requires=['pandas>=1.0.5, <1.3.0', 'scikit-learn>=0.22.0, <=1.0.2',
                           'bigdl-nano==' + VERSION],
         extras_require={'pytorch': ['bigdl-nano[pytorch]==' + VERSION],
-                        # 'tensorflow': ['bigdl-nano[tensorflow]=='+VERSION],
+                        'tensorflow': ['bigdl-nano[tensorflow]=='+VERSION],
                         'automl': ['optuna<=2.10.1', 'configspace<=0.5.0'],
                         'distributed': ['bigdl-orca[automl]==' + VERSION],
                         'all': ['bigdl-nano[pytorch]==' + VERSION,
-                                # 'bigdl-nano[tensorflow]=='+VERSION,
+                                'bigdl-nano[tensorflow]=='+VERSION,
                                 'optuna<=2.10.1', 'configspace<=0.5.0',
                                 'bigdl-orca[automl]==' + VERSION, 'pmdarima==1.8.5',
                                 'prophet==1.1.0', 'tsfresh==0.17.0',

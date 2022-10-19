@@ -17,6 +17,9 @@ For spark 2.4 you need `bigdl-dllib-spark_2.4.6-0.14.0-build_time-jar-with-depen
 You can download iris.data [here](https://archive.ics.uci.edu/ml/machine-learning-databases/iris/iris.data).
 
 # XGBoostClassifier Train Example
+
+> Warning: Running XGBoost in distributed mode is not safe due to the fact that Rabit's network (contains gradient, split, and env) is not protected.
+
 ## Run:
 
 command:

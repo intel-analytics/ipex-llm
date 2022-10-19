@@ -20,8 +20,11 @@ import os
 
 from unittest import TestCase
 import numpy as np
-import tensorflow as tf
-from bigdl.chronos.forecaster.tf.tcn_forecaster import TCNForecaster
+
+from bigdl.chronos.utils import LazyImport
+tf = LazyImport('tensorflow')
+TCNForecaster = LazyImport('bigdl.chronos.forecaster.tf.tcn_forecaster.TCNForecaster')
+from test.bigdl.chronos import op_tf2, op_all
 
 
 def create_data(tf_data=False, batch_size=32):
@@ -72,7 +75,8 @@ def create_tsdataset(roll=True):
     return train, test
 
 
-@pytest.mark.skipif(tf.__version__ < '2.0.0', reason="Run only when tf > 2.0.0.")
+@op_all
+@op_tf2
 class TestTCNForecaster(TestCase):
     def setUp(self):
         from bigdl.chronos.forecaster.tf.tcn_forecaster import TCNForecaster

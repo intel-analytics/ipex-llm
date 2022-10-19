@@ -25,7 +25,7 @@ import java.util.Base64
 
 class EHSMParams(
       appId: String,
-      appKey: String,
+      apiKey: String,
       timeStamp: String) {
 
   protected val payLoad = new HashMap[String, String]
@@ -56,7 +56,7 @@ class EHSMParams(
 
 
   private def getSignCiphertextString(): String = {
-    val secret = new SecretKeySpec(appKey.getBytes("UTF-8"), "SHA256")
+    val secret = new SecretKeySpec(apiKey.getBytes("UTF-8"), "SHA256")
     val mac = Mac.getInstance("HmacSHA256")
     mac.init(secret)
     val signPlaintextString: String = getSignPlaintextString()
@@ -67,7 +67,7 @@ class EHSMParams(
 
   private def getSignPlaintextString(): String = {
 
-    Log4Error.invalidInputError(appId != "" && appKey != "" && timeStamp != ""
+    Log4Error.invalidInputError(appId != "" && apiKey != "" && timeStamp != ""
       && !payLoad.isEmpty, "Lack necessary param or payload!")
     var signString: String = s"appid=$appId&payload="
     val tmp = Map(payLoad.toSeq.sortWith(_._1 < _._1): _*)

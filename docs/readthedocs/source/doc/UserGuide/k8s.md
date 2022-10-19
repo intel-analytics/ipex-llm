@@ -253,15 +253,15 @@ python script.py
 ```
 In cluster mode, install conda, pack environment and use on both the driver and executor.
 - Pack the current conda environment to `environment.tar.gz` (you can use any name you like):
-```bash
-conda pack -o environment.tar.gz
-```
+  ```bash
+  conda pack -o environment.tar.gz
+  ```
 - spark-submit with "--archives" and specify python stores for dirver and executor
-```bash
---conf spark.pyspark.driver.python=./env/bin/python \
---conf spark.pyspark.python=./env/bin/python \
---archives local:///bigdl2.0/data/environment.tar.gz#env \ # this path shoud be that k8s pod can access
-```
+  ```bash
+  --conf spark.pyspark.driver.python=./env/bin/python \
+  --conf spark.pyspark.python=./env/bin/python \
+  --archives local:///bigdl2.0/data/environment.tar.gz#env \ # this path shoud be that k8s pod can access
+  ```
 
 #### **5.2 How to retain executor logs for debugging?**
 

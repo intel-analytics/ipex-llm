@@ -33,6 +33,10 @@ class PytorchIPEXJITModel(AcceleratedLightningModule):
         :param input_sample: torch tensor indicate the data sample to be used
                for tracing.
         :param use_ipex: if use ipex to optimize the model
+        :param dtype (torch.dtype): Only works for ``torch.bfloat16``. Model parameters
+                                    will be casted to ``torch.bfloat16`` if dtype is set
+                                    to ``torch.bfloat16``. The default value is None,
+                                    meaning do nothing.
         :param use_jit: if use jit to accelerate the model
         :param channels_last: if set model and data to be channels-last mode.
                the parameter will be ignored if use_ipex is False.

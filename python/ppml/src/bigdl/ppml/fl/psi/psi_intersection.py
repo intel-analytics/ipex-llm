@@ -26,7 +26,7 @@ class PsiIntersection(object):
         self.intersection = []
         self._thread_intersection = []
 
-        self.max_collection = max_collection
+        self.max_collection = int(max_collection)
         self.condition = threading.Condition()
         self._lock = threading.Lock()
 

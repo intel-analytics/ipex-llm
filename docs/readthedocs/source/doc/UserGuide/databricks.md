@@ -5,57 +5,92 @@
 You can run BigDL program on the [Databricks](https://databricks.com/) cluster as follows.
 ### **1. Create a Databricks Cluster**
 
-- Create either [AWS Databricks](https://docs.databricks.com/getting-started/try-databricks.html) workspace or [Azure Databricks](https://docs.microsoft.com/en-us/azure/azure-databricks/) workspace. 
-- Create a Databricks [clusters](https://docs.databricks.com/clusters/create.html) using the UI. Choose Databricks runtime version. This guide is tested on Runtime 7.3 (includes Apache Spark 3.0.1, Scala 2.12).
+- Create either an [AWS Databricks](https://docs.databricks.com/getting-started/try-databricks.html) workspace or an [Azure Databricks](https://docs.microsoft.com/en-us/azure/azure-databricks/) workspace. 
+- Create a Databricks [cluster](https://docs.databricks.com/clusters/create.html) using the UI. Choose Databricks runtime version. This guide is tested on Runtime 9.1 LTS (includes Apache Spark 3.1.2, Scala 2.12).
 
-### **2. Installing BigDL Python libraries**
+![](images/create-cluster.png)
 
-In the left pane, click **Clusters** and select your cluster.
+### 2. Generate initialization script
 
-![](images/cluster.png)
+[Init script](https://learn.microsoft.com/en-us/azure/databricks/clusters/init-scripts) is used to Install BigDL or other libraries. First, you need to put the **init script** into [DBFS](https://docs.databricks.com/dbfs/index.html), you can use one of the following ways.
 
-Install BigDL DLLib python environment using prebuilt release Wheel package. Click **Libraries > Install New > Upload > Python Whl**. Download BigDL DLLib prebuilt Wheel [here](https://sourceforge.net/projects/analytics-zoo/files/dllib-py). Choose a wheel with timestamp for the same Spark version and platform as Databricks runtime. Download and drop it on Databricks.
+**a. Generate init script in Databricks notebook**
 
-![](images/dllib-whl.png)
+Create a Databricks notebook and execute
 
-Install BigDL Orca python environment using prebuilt release Wheel package. Click **Libraries > Install New > Upload > Python Whl**. Download Bigdl Orca prebuilt Wheel [here](https://sourceforge.net/projects/analytics-zoo/files/dllib-py). Choose a wheel with timestamp for the same Spark version and platform as Databricks runtime. Download and drop it on Databricks.
+```python
+init_script = """
+#!/bin/bash
 
-![](images/orca-whl.png)
+# install bigdl-orca, add other bigdl modules if you need
+/databricks/python/bin/pip install pip install --pre --upgrade bigdl-orca-spark3[ray]
 
-If you want to use other BigDL libraries (Friesian, Chronos, Nano, Serving, etc.), download prebuilt release Wheel package from [here](https://sourceforge.net/projects/analytics-zoo/files/) and install to cluster in the similar ways.
+# install other necessary libraries, here we install libraries needed in this tutorial
+/databricks/python/bin/pip install tensorflow==2.9.1
+/databricks/python/bin/pip install tqdm
+/databricks/python/bin/pip install torch==1.11.0+cpu torchvision==0.12.0+cpu tensorboard -f https://download.pytorch.org/whl/torch_stable.html
 
+# copy bigdl jars to databricks
+cp /databricks/python/lib/python3.8/site-packages/bigdl/share/*/lib/*.jar /databricks/jars
+"""
 
-### **3. Installing BigDL Java libraries**
+# Change the first parameter to your DBFS path
+dbutils.fs.put("dbfs:/FileStore/scripts/init.sh", init_script, True)
+```
 
-Install BigDL DLLib prebuilt jar package. Click **Libraries > Install New > Upload > Jar**. Download BigDL DLLib prebuilt package from [Release Page](../release.md). Please note that you should choose the same spark version of package as your Databricks runtime version. Find jar named "bigdl-dllib-spark_*-jar-with-dependencies.jar" in the lib directory. Drop the jar on Databricks.
+To make sure the init script is in DBFS, in the left panel, click **Data > DBFS > check your script save path**.
 
-![](images/dllib-jar.png)
+> if you do not see DBFS in your panel, see [Appendix A](#appendix-a).
 
-Install BigDL Orca prebuilt jar package. Click **Libraries > Install New > Upload > Jar**. Download BigDL Orca prebuilt package from [Release Page](../release.md). Please note that you should choose the same spark version of package as your Databricks runtime version. Find jar named "bigdl-orca-spark_*-jar-with-dependencies.jar" in the lib directory. Drop the jar on Databricks.
+**b. Create init script in local and upload to DBFS**
 
-![](images/orca-jar.png)
+Create a file **init.sh**(or any other filename) in your computer, the file content is
 
-If you want to use other BigDL libraries (Friesian, Chronos, Nano, Serving, etc.), download prebuilt jar package from [Release Page](../release.md) and install to cluster in the similar ways.
+```bash
+#!/bin/bash
 
+# install bigdl-orca, add other bigdl modules if you need
+/databricks/python/bin/pip install pip install --pre --upgrade bigdl-orca-spark3[ray]
 
-Make sure the jar files and whl files are installed on all clusters. In **Libraries** tab of your cluster, check installed libraries and click “Install automatically on all clusters” option in **Admin Settings**.
+# install other necessary libraries, here we install libraries needed in this tutorial
+/databricks/python/bin/pip install tensorflow==2.9.1
+/databricks/python/bin/pip install tqdm
+/databricks/python/bin/pip install torch==1.11.0+cpu torchvision==0.12.0+cpu tensorboard -f https://download.pytorch.org/whl/torch_stable.html
 
-![](images/apply-all.png)
+# copy bigdl jars to databricks
+cp /databricks/python/lib/python3.8/site-packages/bigdl/share/*/lib/*.jar /databricks/jars
+```
 
-### **4. Setting Spark configuration**
+Then upload **init.sh** to DBFS.  In Databricks left panel, click **Data > DBFS > Choose or create upload directory > Right click > Upload here**.
 
-On the cluster configuration page, click the **Advanced Options** toggle. Click the **Spark** tab. You can provide custom [Spark configuration properties](https://spark.apache.org/docs/latest/configuration.html) in a cluster configuration. Please set it according to your cluster resource and program needs.
+![](images/upload-init-script.png)
 
-![](images/Databricks5.PNG)
+Now the init script is in DBFS, right click the init.sh and choose **Copy path**, copy the **Spark API Format** path.
 
-See below for an example of Spark config setting needed by BigDL. Here it sets 2 core per executor. Note that "spark.cores.max" needs to be properly set below.
+![](images/copy-script-path.png)
+
+### 3. Set Spark configuration
+
+In the left panel, click **Compute > Choose your cluster > edit > Advanced options > Spark > Confirm**. You can provide custom [Spark configuration properties](https://spark.apache.org/docs/latest/configuration.html) in a cluster configuration. Please set it according to your cluster resource and program needs.
+
+![](images/spark-config.png)
+
+See below for an example of Spark config setting **needed** by BigDL. Here it sets 2 core per executor. Note that "spark.cores.max" needs to be properly set below.
 
 ```
 spark.executor.cores 2
 spark.cores.max 4
 ```
 
-### **5. Running BigDL on Databricks**
+### 4. Install BigDL Libraries
+
+Use the init script from [step 2](#2-generate-initialization-script) to install BigDL libraries. In the left panel, click **Compute > Choose your cluster > edit > Advanced options > Init Scripts > Paste init script path > Add > Confirm**.
+
+![](images/config-init-script.png)
+
+Then start or restart the cluster. After starting/restarting the cluster, the libraries specified in the init script are all installed.
+
+### **5. Run BigDL on Databricks**
 
 Open a new notebook, and call `init_orca_context` at the beginning of your code (with `cluster_mode` set to "spark-submit").
 
@@ -66,9 +101,67 @@ init_orca_context(cluster_mode="spark-submit")
 
 Output on Databricks:
 
-![](images/spark-context.png)
+![](images/init-orca-context.png)
 
+**Run Examples**
 
-### **6. Install other third-party libraries on Databricks if necessary**
+- [Keras example on Databricks](https://github.com/intel-analytics/BigDL/blob/main/python/orca/tutorial/databricks/tf_keras_ncf.ipynb)
+- [Pytorch example on Databricks](https://github.com/intel-analytics/BigDL/blob/main/python/orca/tutorial/databricks/pytorch_fashion_mnist.ipynb)
 
-If you want to use other third-party libraries, check related Databricks documentation of [libraries for AWS Databricks](https://docs.databricks.com/libraries/index.html) and [libraries for Azure Databricks](https://docs.microsoft.com/en-us/azure/databricks/libraries/).
+> Note that if you want to save model to DBFS, or load model from DBFS, the save/load path should be the **File API Format** on Databricks, which means your save/load path should start with `/dbfs`.
+
+### **6. Other ways to install third-party libraries on Databricks if necessary**
+
+If you want to use other ways to install third-party libraries, check related Databricks documentation of [libraries for AWS Databricks](https://docs.databricks.com/libraries/index.html) and [libraries for Azure Databricks](https://docs.microsoft.com/en-us/azure/databricks/libraries/).
+
+### Appendix A
+
+If there is no DBFS in your panel,  go to **User profile > Admin Console > Workspace settings > Advanced > Enabled DBFS File Browser**
+
+![](images/dbfs.png)
+
+### Appendix B
+
+Use **Databricks CLI** to upload file to DBFS. When you upload a large file to DBFS, using Databricks CLI could be faster than using the Databricks web UI.
+
+**Install and config Azure Databricks CLI**
+
+1. Install Python, need Python version 2.7.9 and above if you’re using Python 2 or Python 3.6 and above if you’re using Python 3.
+
+2. Run `pip install databricks-cli`
+
+3. Set authentication, Click **user profile icon > User Settings > Access tokens > Generate new token > generate > copy the token**, make sure to **copy** the token and store it in a secure location, **it won't show again**.
+
+   ![](images/token.png)
+
+4. Copy the URL of Databricks host, the format is `https://adb-<workspace-id>.<random-number>.azuredatabricks.net`, you can copy it from your Databricks web page URL.
+
+   ![](images/url.png)
+
+5. In cmd run `dbfs config --token` as shown below:
+
+   ```
+   dbfs configure --token
+   Databricks Host (should begin with https://): https://your.url.from.step.4
+   Token: your-token-from-step-3
+   ```
+
+6. Verify whether you are able to connect to DBFS, run "databricks fs ls".
+
+   ![](images/verify-dbfs.png)
+
+**Upload through Databricks CLI**
+
+Now, we can use Databricks CLI to upload file to DBFS. run command:
+
+```
+dbfs cp /your/local/filepath/bigdl-assembly-spark_3.1.2-2.1.0-SNAPSHOT-jar-with-dependencies.jar dbfs:/FileStore/jars/stable/bigdl-assembly-spark_3.1.2-2.1.0-SNAPSHOT-jar-with-dependencies.jar
+```
+
+After command finished, check DBFS in Databricks, in left panel, click **Data > DBFS > your upload directory**, if you do not see DBFS in your panel, see [Appendix A](#appendix-a).
+
+**Install package from DBFS**
+
+In the left panel, click **Compute > choose your cluster > Libraries > Install new > Library Source(DBFS/ADLS) > Library Type(your package type)**.
+
+![](images/install-zip.png)

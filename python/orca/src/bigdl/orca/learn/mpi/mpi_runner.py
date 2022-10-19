@@ -111,7 +111,7 @@ class MPIRunner:
         from bigdl.orca.ray.utils import resource_to_bytes
         self.plasma_path = "/".join(sys.executable.split("/")[:-1] + ["plasma_store"])
         self.object_store_memory = resource_to_bytes(object_store_memory)
-        self.object_store_address = "/tmp/analytics_zoo_plasma"
+        self.object_store_address = "/tmp/bigdl_plasma"
         command = "{} -m {} -s {}".format(
             self.plasma_path, self.object_store_memory, self.object_store_address)
         for host in self.hosts:

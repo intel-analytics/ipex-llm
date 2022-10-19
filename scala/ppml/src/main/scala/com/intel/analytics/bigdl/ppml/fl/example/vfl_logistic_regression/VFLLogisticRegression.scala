@@ -41,13 +41,13 @@ object VFLLogisticRegression extends DebugLogger{
   }
 
   def main(args: Array[String]): Unit = {
-    case class Params(clientId: String = "",
+    case class Params(clientId: Int = 0,
                       dataPath: String = null,
                       rowKeyName: String = "ID",
                       learningRate: Float = 0.005f,
                       batchSize: Int = 4)
     val parser: OptionParser[Params] = new OptionParser[Params]("VFL Logistic Regression") {
-      opt[String]('c', "clientId")
+      opt[Int]('c', "clientId")
         .text("data path to load")
         .action((x, params) => params.copy(clientId = x))
         .required()
@@ -83,9 +83,9 @@ object VFLLogisticRegression extends DebugLogger{
 
     // Data pipeline from DataFrame to Tensor, and call fit, evaluate, predict
     val (featureColumns, labelColumns) = argv.clientId match {
-      case "1" => (Array("Pregnancies", "Glucose", "BloodPressure", "SkinThickness"),
+      case 1 => (Array("Pregnancies", "Glucose", "BloodPressure", "SkinThickness"),
         Array("Outcome"))
-      case "2" => (Array("Insulin", "BMI", "DiabetesPedigreeFunction"), null)
+      case 2 => (Array("Insulin", "BMI", "DiabetesPedigreeFunction"), null)
       case _ => throw new IllegalArgumentException("clientId only support 1, 2 in this example")
     }
     val xTrain = TensorUtils.fromDataFrame(trainData, featureColumns)

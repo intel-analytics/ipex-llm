@@ -45,11 +45,11 @@ def generate_data():
               .scale(standard_scaler, fit=(tsdata is tsdata_train))
 
     # get dataset for training, evaluation and prediction
-    train_loader = tsdata_train.to_torch_data_loader(roll=True, lookback=look_back, horizon=horizon,
+    train_loader = tsdata_train.to_torch_data_loader(lookback=look_back, horizon=horizon,
                                                      time_enc=True, label_len=label_len)
-    test_loader = tsdata_test.to_torch_data_loader(roll=True, lookback=look_back, horizon=horizon,
+    test_loader = tsdata_test.to_torch_data_loader(lookback=look_back, horizon=horizon,
                                                    time_enc=True, label_len=label_len, shuffle=False)
-    pred_loader = tsdata_test.to_torch_data_loader(roll=True, lookback=look_back, horizon=horizon,
+    pred_loader = tsdata_test.to_torch_data_loader(lookback=look_back, horizon=horizon,
                                                    time_enc=True, label_len=label_len, is_predict=True,
                                                    shuffle=False, batch_size=1)
 

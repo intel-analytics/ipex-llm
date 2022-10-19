@@ -36,6 +36,7 @@ data_shard = bigdl.orca.data.pandas.read_csv(file_path)
 # Drop duplicate columns
 data_shard = data_shard.deduplicates()
 
+
 # Labelencode y
 def change_col_name(df):
     df = df.rename(columns={'id': 'id0'})
@@ -43,10 +44,13 @@ def change_col_name(df):
 data_shard = data_shard.transform_shard(change_col_name)
 encode = StringIndexer(inputCol='target')
 data_shard = encode.fit_transform(data_shard)
+
+
 def change_val(df):
     df['target'] = df['target']-1
     return df
 data_shard = data_shard.transform_shard(change_val)
+
 
 # Split train and test set
 def split_train_test(data):
@@ -63,6 +67,7 @@ scale = MinMaxScaler(inputCol=feature_list, outputCol="x_scaled")
 train_shard = scale.fit_transform(train_shard)
 val_shard = scale.transform(val_shard)
 
+
 # Change data types
 def change_data_type(df):
     df['x_scaled'] = df['x_scaled'].apply(lambda x: np.array(x, dtype=np.float32))
@@ -78,12 +83,14 @@ NUM_CLASSES = 4
 NUM_EPOCHS = 1
 NUM_FEATURES = 50
 
+
 def linear_block(in_features, out_features, p_drop, *args, **kwargs):
     return nn.Sequential(
         nn.Linear(in_features, out_features),
         nn.ReLU(),
         nn.Dropout(p=p_drop)
     )
+
 
 class TPS05ClassificationSeq(nn.Module):
     def __init__(self):
@@ -104,9 +111,11 @@ class TPS05ClassificationSeq(nn.Module):
         x = self.linear(x)
         return self.out(x)
 
+
 def model_creator(config):
     model = TPS05ClassificationSeq()
     return model
+
 
 def optim_creator(model, config):
     return optim.Adam(model.parameters(), lr=0.001)
@@ -119,7 +128,8 @@ est = Estimator.from_torch(model=model_creator, optimizer=optim_creator,
 est.fit(data=train_shard, feature_cols=['x_scaled'], label_cols=['target'],
         validation_data=val_shard, epochs=NUM_EPOCHS, batch_size=BATCH_SIZE)
 
-result = est.evaluate(data=val_shard, feature_cols=['x_scaled'], label_cols=['target'], batch_size=BATCH_SIZE)
+result = est.evaluate(data=val_shard, feature_cols=['x_scaled'],
+                      label_cols=['target'], batch_size=BATCH_SIZE)
 
 for r in result:
     print(r, ":", result[r])

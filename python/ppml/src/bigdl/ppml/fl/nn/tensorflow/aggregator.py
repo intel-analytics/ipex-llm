@@ -34,6 +34,10 @@ class Aggregator(object):
         self.client_num = conf['clientNum']
         self.condition = Condition()
         self._lock = threading.Lock()
+        self.optimizer_cls = None
+        self.optimizer_args = None
+        self.secret_key = conf['secretKey'] if 'secretKey' in conf.keys() else None
+        self.salt = conf['salt'] if 'salt' in conf.keys() else None
         logging.info(f"Initialized Tensorflow aggregator [client_num: {self.client_num}]")
 
 
@@ -42,6 +46,7 @@ class Aggregator(object):
             self.set_loss_fn(loss_fn)
             optimizer_cls = pickle.loads(optimizer.cls)
             optimizer_args = pickle.loads(optimizer.args)
+            self.optimizer_cls, self.optimizer_args = optimizer_cls, optimizer_args
             self.set_optimizer(optimizer_cls, optimizer_args)
 
     def set_loss_fn(self, loss_fn):
@@ -119,7 +124,7 @@ got {len(self.client_data[phase])}/{self.client_num}')
         else:
             invalidInputError(False,
                               f'Invalid phase: {phase}, should be train/eval/pred')
-
+    
     def load_uploaded_model(self, client_id, model_path):
         if self.model is not None:
             invalidOperationError(False,
@@ -127,3 +132,33 @@ got {len(self.client_data[phase])}/{self.client_num}')
         else:
             os.rename(model_path, f'{model_path}.h5')                
             self.model = tf.keras.models.load_model(f'{model_path}.h5')
+
+    def save_server_model(self, model_path):
+        if not os.path.exists(f"{model_path}/model.meta"):
+            os.makedirs(f"{model_path}", exist_ok=True)
+            with open(f"{model_path}/model.meta", 'wb') as meta_file:
+                pickle.dump({'loss': self.loss_fn,
+                             'optimizer': (self.optimizer_cls, self.optimizer_args)},
+                            meta_file)
+        if self.secret_key is not None and self.salt is not None:
+            logging.error("Not implemented...")
+        else:
+            logging.warn("Secret key or salt is missed, saving unencrypted model...")
+            self.model.save(f'{model_path}/model.h5')
+        # save meta to file if not saved yet
+
+    def load_server_model(self, client_id, model_path):
+        if self.model is not None:
+            invalidOperationError(False,
+                f"Model exists, model uploading from {client_id} ignored.")
+        else:
+            logging.info(f"Trying to load model from {model_path}")
+            if self.secret_key is not None and self.salt is not None:
+                logging.error("Not implemented...")
+            else:                
+                self.model = tf.keras.models.load_model(f"{model_path}/model.h5")
+            # if loaded, set meta here to make the optimizer bind the model
+            with open(f"{model_path}/model.meta", "rb") as meta_file:
+                meta = pickle.load(meta_file)
+                self.loss_fn = meta['loss']
+                self.set_optimizer(meta['optimizer'][0], meta['optimizer'][1])

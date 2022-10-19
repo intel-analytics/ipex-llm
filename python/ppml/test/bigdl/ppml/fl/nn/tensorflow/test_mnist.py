@@ -131,7 +131,7 @@ class TestCorrectness(FLTest):
             )
         
         # TODO: set fixed parameters
-        init_fl_context('1', self.target)
+        init_fl_context(1, self.target)
         vfl_model_1 = build_client_model()
         set_one_like_parameter(vfl_model_1)
         vfl_model_2 = build_server_model()
@@ -166,41 +166,6 @@ def build_whole_model():
     outputs = Dense(10)(x)
     return Model(inputs=inputs, outputs=outputs, name="vfl_whole_model")
 
-class NeuralNetwork(Model):
-    def __init__(self):
-        super().__init__()
-        self.conv1 = Conv2D(32, 3, activation='relu')
-        self.flatten = Flatten()
-        self.d1 = Dense(128, activation='relu')
-        self.d2 = Dense(10)
-
-    def call(self, x):
-        x = self.conv1(x)
-        x = self.flatten(x)
-        x = self.d1(x)
-        return self.d2(x)
-
-class NeuralNetworkPart1(Model):
-    def __init__(self):
-        super().__init__()
-        self.conv1 = Conv2D(32, 3, activation='relu')
-        self.flatten = Flatten()
-
-    def call(self, x):
-        x = self.conv1(x)
-        x = self.flatten(x)
-        return x
-
-class NeuralNetworkPart2(Model):
-    def __init__(self):
-        super().__init__()
-        self.d1 = Dense(128, activation='relu')
-        self.d2 = Dense(10)
-    
-    def call(self, x):
-        x = x[0]
-        x = self.d1(x)
-        return self.d2(x)
 
 
 if __name__ == '__main__':

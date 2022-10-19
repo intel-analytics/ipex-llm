@@ -43,7 +43,8 @@ class TestSaveLoad(FLTest):
     logging.basicConfig(format=fmt, level=logging.INFO)
     server_model_path = '/tmp/vfl_server_model'
     client_model_path = '/tmp/vfl_client_model'
-    def setUp(self) -> None:
+
+    def setUp(self) -> None:        
         self.fl_server = FLServer(client_num=1)
         self.fl_server.set_port(self.port)
         self.fl_server.build()
@@ -90,7 +91,7 @@ class TestSaveLoad(FLTest):
         loss_fn = nn.CrossEntropyLoss()
 
         # list for result validation
-        init_fl_context('1', self.target)
+        init_fl_context(1, self.target)
         vfl_model_1 = NeuralNetworkPart1()
         vfl_model_2 = NeuralNetworkPart2()
         vfl_client_ppl = Estimator.from_torch(client_model=vfl_model_1,

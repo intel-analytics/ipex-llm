@@ -329,7 +329,7 @@ class TCMFXshardsModelWrapper(ModelWrapper):
         if num_workers:
             invalidInputError(False,
                               "We don't support passing num_workers in fit "
-                              "with input of xShards of dict")
+                              "with input of xShards of builtins.dict")
 
         def orca_train_model(d, config):
             tcmf = TCMF()
@@ -339,15 +339,15 @@ class TCMFXshardsModelWrapper(ModelWrapper):
             return [id_arr, tcmf]
 
         if isinstance(x, SparkXShards):
-            if x._get_class_name() == "dict":
+            if x._get_class_name() == "builtins.dict":
                 self.internal = x.transform_shard(orca_train_model, self.config)
             else:
                 invalidInputError(False,
-                                  "value of x should be an xShards of dict, "
+                                  "value of x should be an xShards of builtins.dict, "
                                   "but is an xShards of " + x._get_class_name())
         else:
             invalidInputError(False,
-                              "value of x should be an xShards of dict, "
+                              "value of x should be an xShards of builtins.dict, "
                               "but isn't an xShards")
 
     def fit_incremental(self, x_incr, covariates_incr=None, dti_incr=None):

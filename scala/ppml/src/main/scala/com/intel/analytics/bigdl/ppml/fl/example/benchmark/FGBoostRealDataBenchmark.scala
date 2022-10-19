@@ -67,7 +67,7 @@ object FGBoostRealDataBenchmark extends TimingSupportive {
       trainLabelStacked = trainLabelStacked ++ trainLabelArray
     })
 
-    FLContext.initFLContext("1")
+    FLContext.initFLContext(1)
     val fGBoostRegression = new FGBoostRegression(
       learningRate = 0.1f, maxDepth = 7, minChildSize = 5)
     fGBoostRegression.fit(

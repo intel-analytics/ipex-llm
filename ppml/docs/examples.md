@@ -175,7 +175,7 @@ bash bigdl-ppml-submit.sh \
         --kmsServerIP kms_server_ip \
         --kmsServerPort kms_server_port \
         --ehsmAPPID appid \
-        --ehsmAPPKEY apikey
+        --ehsmAPIKEY apikey
 ```
 
 spark native mode, sgx enabled
@@ -214,7 +214,7 @@ bash bigdl-ppml-submit.sh \
         --kmsServerIP kms_server_ip \
         --kmsServerPort kms_server_port \
         --ehsmAPPID appid \
-        --ehsmAPPKEY apikey
+        --ehsmAPIKEY apikey
 ```
 
 k8s client mode, sgx enabled
@@ -256,7 +256,7 @@ bash bigdl-ppml-submit.sh \
         --kmsServerIP kms_server_ip \
         --kmsServerPort kms_server_port \
         --ehsmAPPID appid \
-        --ehsmAPPKEY apikey
+        --ehsmAPIKEY apikey
 ```
   
 k8s cluster mode, sgx enabled
@@ -298,16 +298,19 @@ bash bigdl-ppml-submit.sh \
         --kmsServerIP kms_server_ip \
         --kmsServerPort kms_server_port \
         --ehsmAPPID appid \
-        --ehsmAPPKEY apikey
+        --ehsmAPIKEY apikey
 ```
 </details>
 
 ## Trusted ML 
-### Run Trusted Spark XGBoost Regressor
+
+Please be noted that the xgboost examples listed here are **deprecated** due to the fact that Rabit's network (contains gradient, split and env) is not protected.
+
+### (Deprecated) Run Trusted Spark XGBoost Regressor
 <details><summary>This example shows how to run trusted Spark XGBoost Regressor.</summary>
 
 
-First, make sure that `Boston_Housing.csv` is under `work/data` directory or the same path in the `start-spark-local-xgboost-regressor-sgx.sh`. Replace the value of `RABIT_TRACKER_IP` with your own IP address in the script.
+First, make sure that `Boston_Housing.csv` is under `work/data` directory or the same path in the `start-spark-local-xgboost-regressor-sgx.sh`.
 
 Run the script to run trusted Spark XGBoost Regressor and it would take some time to show the final results:
 
@@ -364,11 +367,11 @@ The result should look something like this:
 > |[7.02259,0.0,18.1...| 14.2| 13.38729190826416|
 </details>
   
-### Run Trusted Spark XGBoost Classifier
+### (Deprecated) Run Trusted Spark XGBoost Classifier
 <details><summary>This example shows how to run trusted Spark XGBoost Classifier.</summary>
 
 
-Before running the example, download the sample dataset from [pima-indians-diabetes](https://raw.githubusercontent.com/jbrownlee/Datasets/master/pima-indians-diabetes.data.csv) dataset. After downloading the dataset, make sure that `pima-indians-diabetes.data.csv` is under `work/data` directory or the same path in the `start-spark-local-xgboost-classifier-sgx.sh`. Replace `path_of_pima_indians_diabetes_csv` with your path of `pima-indians-diabetes.data.csv`  and the value of `RABIT_TRACKER_IP` with your own IP address in the script.
+Before running the example, download the sample dataset from [pima-indians-diabetes](https://raw.githubusercontent.com/jbrownlee/Datasets/master/pima-indians-diabetes.data.csv) dataset. After downloading the dataset, make sure that `pima-indians-diabetes.data.csv` is under `work/data` directory or the same path in the `start-spark-local-xgboost-classifier-sgx.sh`. Replace `path_of_pima_indians_diabetes_csv` with your path of `pima-indians-diabetes.data.csv`.
 
 Run the script to run trusted Spark XGBoost Classifier and it would take some time to show the final results:
 

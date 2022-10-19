@@ -16,10 +16,10 @@
 
 package com.intel.analytics.bigdl.dllib.nnframes
 
-import com.intel.analytics.bigdl.dllib.utils.Engine
+import com.intel.analytics.bigdl.dllib.utils.{Engine, TestUtils}
 import com.intel.analytics.bigdl.dllib.keras.ZooSpecHelper
 import org.apache.spark.SparkContext
-import org.apache.spark.ml.feature.{VectorAssembler}
+import org.apache.spark.ml.feature.VectorAssembler
 import org.apache.spark.sql.{SQLContext, SparkSession}
 
 class XgboostTrainSpec extends ZooSpecHelper {
@@ -38,7 +38,7 @@ class XgboostTrainSpec extends ZooSpecHelper {
     }
   }
 
-/*
+
   "XGBClassifer train" should "work" in {
     if (!(scala.util.Properties.isMac || scala.util.Properties.isWin)) {
       val spark = SparkSession.builder().getOrCreate()
@@ -57,13 +57,9 @@ class XgboostTrainSpec extends ZooSpecHelper {
       xgbCf0.setNumRound(10)
       xgbCf0.setNthread(1)
       val model = xgbCf0.fit(assembledDf)
-
-      model.setFeaturesCol(Array("f1", "f2", "f3", "f4"))
-      //      testdf = df.cache()
-      println("the df is: ")
-      df.show()
-      val res = model.transform(df)
-      print(res)
+      model.setFeaturesCol("features")
+      model.save("/tmp/xgboost")
+      val res = model.transform(assembledDf)
       res.show()
     }
   }
@@ -90,9 +86,9 @@ class XgboostTrainSpec extends ZooSpecHelper {
       xgbRegressorModel0.save("/tmp/test")
       val model = XGBRegressorModel.load("/tmp/test")
       val y0_0 = model.transform(assembledDf)
-      TestUtils.conditionFailTest(y0_0.except(y0).count()==0)
+      y0_0.show()
+      TestUtils.conditionFailTest(y0_0.except(y0).count() == 0)
     }
   }
-*/
 }
 

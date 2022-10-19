@@ -35,7 +35,7 @@ class Workload:
         """Run a workload."""
         process = subprocess.run(f"bash {self.script_path}", stdout=subprocess.PIPE,
                                  stderr=subprocess.PIPE, shell=True)
-        uuid = '' # uuid=='' means errors
+        uuid = '' # uuid=='' means running workload failed
         try:
             if process.returncode != 0:
                 err_msg = str(process.stderr, encoding='utf-8')
@@ -99,12 +99,12 @@ class Workload:
         job_url = os.environ.get("JOB_URL")
         token = os.environ.get("GITHUB_ACCESS_TOKEN")
 
-        text = f"@{user} Your benchmark <{comment_url}> has finished, \
-            see <{job_url}> for details\n\n"
+        text = f"@{user} Your benchmark <{comment_url}> of workload `{self.name}` \
+            has finished, see <{job_url}> for details\n\n"
         if uuid == '':
             text += "It seems there are some errors"
         else:
-            text += f"Use `uuid={uuid}` to query the result"
+            text += f"Use `uuid='{uuid}'` to query the result"
 
         requests.post(
             url=pr_url,

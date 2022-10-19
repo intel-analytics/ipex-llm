@@ -24,7 +24,7 @@ import org.apache.log4j.LogManager
 
 import scala.io.Source
 
-class MockClient(clientId: String,
+class MockClient(clientId: Int,
                  dataPath: String,
                  testPath: String = null,
                  rowKeyName: String = null,

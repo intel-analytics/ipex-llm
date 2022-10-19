@@ -42,7 +42,7 @@ class TestMnist(FLTest):
     fmt = '%(asctime)s %(levelname)s {%(module)s:%(lineno)d} - %(message)s'
     logging.basicConfig(format=fmt, level=logging.INFO)
     def setUp(self) -> None:
-        self.fl_server = FLServer()
+        self.fl_server = FLServer(1)
         self.fl_server.set_port(self.port)
         self.fl_server.build()
         self.fl_server.start()
@@ -108,7 +108,7 @@ class TestMnist(FLTest):
 
         
         train(train_dataloader, model, loss_fn, optimizer)
-        init_fl_context('1', self.target)
+        init_fl_context(1, self.target)
         vfl_model_1 = NeuralNetworkPart1()
         set_one_like_parameter(vfl_model_1)
         vfl_model_2 = NeuralNetworkPart2()
