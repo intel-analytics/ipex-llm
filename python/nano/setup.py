@@ -22,7 +22,6 @@ from setuptools import setup
 import urllib.request
 import os
 import stat
-import platform
 
 long_description = '''
 BigDL Nano automatically accelerates TensorFlow and PyTorch pipelines 
@@ -79,14 +78,6 @@ def setup_package():
                            "tensorflow-estimator==2.7.0"]
 
     # ipex is only avaliable for linux now
-    pytorch_requires_win = ["torch==1.11.0",
-                            "torchvision==0.12.0",
-                            "pytorch_lightning==1.6.4",
-                            "torchmetrics==0.7.2",
-                            "opencv-python-headless",
-                            "PyTurboJPEG",
-                            "opencv-transforms"]
-
     pytorch_requires = ["torch==1.11.0",
                         "torchvision==0.12.0",
                         "pytorch_lightning==1.6.4",
@@ -94,7 +85,7 @@ def setup_package():
                         "opencv-python-headless",
                         "PyTurboJPEG",
                         "opencv-transforms",
-                        "intel_extension_for_pytorch==1.11.0"]
+                        "intel_extension_for_pytorch==1.11.0;platform_system!='Windows'"]
 
     install_requires = ["intel-openmp", "cloudpickle", "protobuf==3.19.4"]
 
@@ -122,9 +113,7 @@ def setup_package():
         url='https://github.com/intel-analytics/BigDL',
         install_requires=install_requires,
         extras_require={"tensorflow": tensorflow_requires,
-                        "pytorch": pytorch_requires_win 
-                                   if platform.system() == "Windows"
-                                   else pytorch_requires},
+                        "pytorch": pytorch_requires},
         package_data={"bigdl.nano": package_data},
         scripts=scripts,
         package_dir={"": "src"},
