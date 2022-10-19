@@ -83,7 +83,24 @@ RUN env DEBIAN_FRONTEND=noninteractive apt-get update && \
     apt-get update && \
     apt-get install -y libsgx-enclave-common-dev  libsgx-ae-qe3 libsgx-ae-qve libsgx-urts libsgx-dcap-ql libsgx-dcap-default-qpl libsgx-dcap-quote-verify-dev libsgx-dcap-ql-dev libsgx-dcap-default-qpl-dev libsgx-quote-ex-dev libsgx-uae-service libsgx-ra-network libsgx-ra-uefi
 
+# java
+ARG JDK_VERSION=8u192
+ARG JDK_URL
+ARG SPARK_VERSION=3.1.3
+ENV SPARK_VERSION ${SPARK_VERSION}
+ENV JAVA_HOME           /opt/jdk$JDK_VERSION
+ENV PATH                ${JAVA_HOME}/bin:${PATH}
+RUN wget $JDK_URL && \
+    gunzip jdk-$JDK_VERSION-linux-x64.tar.gz && \
+    tar -xf jdk-$JDK_VERSION-linux-x64.tar -C /opt && \
+    rm jdk-$JDK_VERSION-linux-x64.tar && \
+    mv /opt/jdk* /opt/jdk$JDK_VERSION && \
+    ln -s /opt/jdk$JDK_VERSION /opt/jdk
 
+ADD ./download_jars.sh /ppml
+
+RUN cd /ppml && \
+    bash ./download_jars.sh
 
 ENV PYTHONPATH   /usr/lib/python3.7:/usr/lib/python3.7/lib-dynload:/usr/local/lib/python3.7/dist-packages:/usr/lib/python3/dist-packages
 WORKDIR /ppml
