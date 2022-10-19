@@ -412,7 +412,7 @@
                 <artifactId>maven-assembly-plugin</artifactId>
                 <executions>
                     <execution>
-			<id>python</id>
+                        <id>python</id>
                         <inherited>false</inherited>
                         <configuration>
                             <descriptors>
