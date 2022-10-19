@@ -6,7 +6,7 @@ Checklist for SGX Driver:
 2. Check if SGX feature is correctly enabled on BIOS. Please ensure enough memory and Reserved Memory Range Registers (PRMRR) are configured for SGX.
 3. Recommended OS (Operating System): Ubuntu 18.04/20.04, CentOS 8, Redhat 8.
 
-Note that SGX driver has been merged to Linux Kernel from 5.11+. After enabling SGX feature during kernel building, SGX driver will be automatically enabled. So, we recommend our customers to upgrade their kernel to 5.14+ with SGX enabled. See [Building Linux Kernel from Source with SGX Enabled](##building-linux-kernel-from-source-with-sgx-enabled).
+Note that SGX driver has been merged to Linux Kernel from 5.11+. After enabling SGX feature during kernel building, SGX driver will be automatically enabled. So, we recommend our customers upgrade their kernel to 5.14+ with SGX enabled. See [Building Linux Kernel from Source with SGX Enabled](#building-linux-kernel-from-source-with-sgx-enabled).
 
 If your data center cannot upgrade OS or kernel, then you can [Install SGX Driver through the Installation Package](#install-sgx-driver-through-the-installation-package)
 
@@ -106,4 +106,3 @@ ls -l /dev/ | grep sgx
 * 5.13 Kernel may encounter nfs problem [Can't mount NFS-shares from Linux-5.13.0](https://forums.gentoo.org/viewtopic-p-8629887.html?sid=f7359b869fb71849d64f3e69bb48503a)
 * [Mellanox interface may be disabled on 5.14.0](https://bugzilla.redhat.com/show_bug.cgi?id=2014094). Changes to 5.15.5 will fix this issue.
 * Error 404 when downloading binary file. Please go to [intel-sgx-linux](https://download.01.org/intel-sgx/latest/linux-latest/distro) for latest download link.
-
