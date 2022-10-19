@@ -4,38 +4,25 @@ ARG FLINK_VERSION=1.15.2
 ARG SCALA_VERSION=2.12
 ARG SPARK_VERSION=3.1.3
 ARG TINI_VERSION=v0.18.0
-ARG JDK_VERSION=8u192
-ARG JDK_URL
 ARG SPARK_JAR_REPO_URL
 
-# Stage.1 JDK & Spark & Hadoop & Hive & Flink
+# Stage.1 Spark & Hadoop & Hive & Flink
 FROM ubuntu:20.04 as bigdata
 ARG HTTP_PROXY_HOST
 ARG HTTP_PROXY_PORT
 ARG HTTPS_PROXY_HOST
 ARG HTTPS_PROXY_PORT
 ARG SPARK_VERSION
-ARG JDK_VERSION
-ARG JDK_URL
 ARG SPARK_JAR_REPO_URL
 ARG FLINK_VERSION
 ARG SCALA_VERSION
 
 ENV SPARK_VERSION                       ${SPARK_VERSION}
-ENV JAVA_HOME                           /opt/jdk$JDK_VERSION
-ENV PATH                                ${JAVA_HOME}/bin:${PATH}
 ENV FLINK_VERSION                       ${FLINK_VERSION}
 ENV SCALA_VERSION                       ${SCALA_VERSION}
 
 RUN apt-get update --fix-missing && \
     env DEBIAN_FRONTEND=noninteractive TZ=Etc/UTC apt-get install -y tzdata apt-utils wget unzip patch zip git maven nasm
-# java
-RUN wget $JDK_URL && \
-    gunzip jdk-$JDK_VERSION-linux-x64.tar.gz && \
-    tar -xf jdk-$JDK_VERSION-linux-x64.tar -C /opt && \
-    rm jdk-$JDK_VERSION-linux-x64.tar && \
-    mv /opt/jdk* /opt/jdk$JDK_VERSION && \
-    ln -s /opt/jdk$JDK_VERSION /opt/jdk
 
 # spark
 RUN cd /opt && \
