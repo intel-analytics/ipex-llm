@@ -3,7 +3,7 @@ ARG HADOOP_VERSION=2.7
 ARG SPARK_HOME=/opt/spark
 ARG JDK_VERSION=8u192
 ARG JDK_URL=your_jdk_url
-ARG BIGDL_VERSION=2.1.0-SNAPSHOT
+ARG BIGDL_VERSION=2.1.0
 ARG TINI_VERSION=v0.18.0
 ARG DEBIAN_FRONTEND=noninteractive
 # stage.1 jdk & spark
@@ -138,7 +138,7 @@ RUN mkdir -p /etc/metrics/conf
 COPY metrics.properties /etc/metrics/conf
 COPY prometheus.yaml /etc/metrics/conf
 USER root
-ADD ./spark-operator /usr/bin/ # todo, download the binary file from a link
+COPY --from=ghcr.io/googlecloudplatform/spark-operator:v1beta2-1.3.7-3.1.1 /usr/bin/spark-operator /usr/bin/
 RUN apt-get update --allow-releaseinfo-change \
     && apt-get update \
     && apt-get install -y openssl curl tini \
