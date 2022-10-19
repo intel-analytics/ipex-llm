@@ -52,12 +52,13 @@ jobs:
       #       bash python/nano/notebooks/pytorch/cifar10/run-nano-notebooks-pytorch-cifar10-tests.sh
       #       source deactivate
       #       conda remove -n notebooks-pytorch --all
-        env:
-            ANALYTICS_ZOO_ROOT: ${{ github.workspace }}
+        # env:
+        #     ANALYTICS_ZOO_ROOT: ${{ github.workspace }}
 
       - name: Run tutorial notebooks Pytorch unit tests
         shell: bash
         run: |
+            apt-get update && apt-get install -y libgl1
             conda create -n notebooks-tutorial-pytorch -y python==3.7.10 setuptools=58.0.4
             source activate notebooks-tutorial-pytorch
             conda info
