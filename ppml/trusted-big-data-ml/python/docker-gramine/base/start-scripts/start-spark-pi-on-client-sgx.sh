@@ -55,6 +55,6 @@ export sgx_command="/opt/jdk8/bin/java \
     --conf spark.ssl.trustStoreType=JKS \
     --class org.apache.spark.examples.SparkPi \
     --verbose \
-    --jars local:///ppml/trusted-big-data-ml/work/spark-${SPARK_VERSION}/examples/jars/spark-examples_2.12-3.1.2.jar \
-    local:///ppml/trusted-big-data-ml/work/spark-${SPARK_VERSION}/examples/jars/spark-examples_2.12-3.1.2.jar 3000"
+    --jars local:///ppml/trusted-big-data-ml/work/spark-${SPARK_VERSION}/examples/jars/spark-examples_2.12-${SPARK_VERSION}.jar \
+    local:///ppml/trusted-big-data-ml/work/spark-${SPARK_VERSION}/examples/jars/spark-examples_2.12-${SPARK_VERSION}.jar 3000"
 gramine-sgx bash 2>&1 | tee spark-pi-client-sgx.log

@@ -8,4 +8,4 @@
     --driver-memory 8g \
     --class org.apache.spark.examples.SparkPi \
     --verbose \
-    local:///ppml/trusted-big-data-ml/work/spark-${SPARK_VERSION}/examples/jars/spark-examples_2.12-3.1.2.jar 100
+    local:///ppml/trusted-big-data-ml/work/spark-${SPARK_VERSION}/examples/jars/spark-examples_2.12-${SPARK_VERSION}.jar 100

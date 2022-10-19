@@ -53,5 +53,5 @@ export TF_MKL_ALLOC_MAX_BYTES=10737418240 && \
     --conf spark.ssl.trustStoreType=JKS \
     --class org.apache.spark.examples.SparkPi \
     --verbose \
-    --jars local:///ppml/trusted-big-data-ml/work/spark-${SPARK_VERSION}/examples/jars/spark-examples_2.12-3.1.2.jar \
-    local:///ppml/trusted-big-data-ml/work/spark-${SPARK_VERSION}/examples/jars/spark-examples_2.12-3.1.2.jar 3000 2>&1 | tee spark-pi-cluster-sgx.log
+    --jars local:///ppml/trusted-big-data-ml/work/spark-${SPARK_VERSION}/examples/jars/spark-examples_2.12-${SPARK_VERSION}.jar \
+    local:///ppml/trusted-big-data-ml/work/spark-${SPARK_VERSION}/examples/jars/spark-examples_2.12-${SPARK_VERSION}.jar 3000 2>&1 | tee spark-pi-cluster-sgx.log
