@@ -9,11 +9,7 @@ java -cp bigdl-ppml-xxx.jar com.intel.analytics.bigdl.ppml.fl.FLServer
 ```
 
 ## Start PSI Client
-Change the config file to following. 
-```
-clientTarget: FLServer_URL
-```
-The port of server is provided in `ppml-conf.yaml` when server starts, default value `8980`. e.g. if you run the server and clients on same machine, `FLServer_URL` should be `localhost:8980`
+On the same machine, start client by
 
 ```
 java -cp bigdl-ppml-xxx.jar com.intel.analytics.bigdl.ppml.fl.example.psi.PSIExample
