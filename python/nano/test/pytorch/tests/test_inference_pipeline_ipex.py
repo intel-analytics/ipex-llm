@@ -153,6 +153,16 @@ class TestInferencePipeline(TestCase):
                                direction="max",
                                thread_num=1)
     
+    def test_pipeline_with_torchmetrics_functional_metric(self):
+        inference_opt = InferenceOptimizer()
+        metric = torchmetrics.functional.accuracy
+        inference_opt.optimize(model=self.model,
+                               training_data=self.train_loader,
+                               validation_data=self.test_loader,
+                               metric=metric,
+                               direction="max",
+                               thread_num=1)
+
     def test_pipeline_with_custom_function_metric_without_data(self):
         inference_opt = InferenceOptimizer()
 

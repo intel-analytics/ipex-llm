@@ -795,7 +795,7 @@ def _signature_check(function):
     '''
     import inspect
     sig = inspect.signature(function)
-    if len(sig.parameters.values()) != 2:
+    if len(sig.parameters.values()) < 2:
         return False
     param1_name = list(sig.parameters.values())[0].name
     param2_name = list(sig.parameters.values())[1].name
