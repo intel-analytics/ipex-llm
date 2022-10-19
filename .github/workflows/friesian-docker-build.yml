@@ -39,7 +39,7 @@ jobs:
           restore-keys: maven-
 
       - name: Set up maven
-          uses: ./.github/actions/maven-setup-action
+        uses: ./.github/actions/maven-setup-action
 
       - name: Build with Maven
         run: |
