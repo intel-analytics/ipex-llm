@@ -9,7 +9,7 @@ spec:
       restartPolicy: Never
       hostNetwork: true
       containers:
-      - name: spark-local-k8s-client
+      - name: spark-k8s-cluster
         image: intelanalytics/bigdl-spark-3.1.2:orca-2.1.0
         imagePullPolicy: IfNotPresent
         command: ["/bin/sh","-c"]
