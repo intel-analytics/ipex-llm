@@ -100,5 +100,16 @@
       </includes>
     </fileSet>
   </fileSets>
+  <containerDescriptorHandlers>
+    <containerDescriptorHandler>
+      <handlerName>metaInf-services</handlerName>
+    </containerDescriptorHandler>
+    <containerDescriptorHandler>
+      <handlerName>metaInf-spring</handlerName>
+    </containerDescriptorHandler>
+    <containerDescriptorHandler>
+      <handlerName>plexus</handlerName>
+    </containerDescriptorHandler>
+  </containerDescriptorHandlers>
 </assembly>
 
