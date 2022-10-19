@@ -633,19 +633,88 @@ class SparkXShards(XShards):
                               "The two SparkXShards should have the same number of elements "
                               "in each partition")
 
-    def groupByAgg(self, col_names=None):
-        if self._get_class_name() == 'pandas.core.frame.DataFrame':
-            import pandas as pd
-            from pyspark.sql.functions import *
-            df = self.to_spark_df()
-            agg_df = df.groupBy(col_names).agg(count("*").alias("count"),
-                                                mean("salary").alias("avg"),
-                                                stddev("salary").alias("std"))
-            agg_shards = spark_df_to_pd_sparkxshards(agg_df)
-            return agg_shards
-        else:
+    def group_by(
+        self,
+        columns: Union[str, List[str]]=[],
+        agg: Union[Dict[str, List[str]], List[str], Dict[str, str], str]="count",
+        join: bool = False
+    ) -> "SparkXShards":
+        """
+        Group the Table with specified columns and then run aggregation. Optionally join the result
+        with the original Table.
+
+        :param columns: str or a list of str. Columns to group the Table. If it is an empty list,
+               aggregation is run directly without grouping. Default is [].
+        :param agg: str, list or dict. Aggregate functions to be applied to grouped Table.
+               Default is "count".
+               Supported aggregate functions are: "max", "min", "count", "sum", "avg", "mean",
+               "sumDistinct", "stddev", "stddev_pop", "variance", "var_pop", "skewness", "kurtosis",
+               "collect_list", "collect_set", "approx_count_distinct", "first", "last".
+               If agg is a str, then agg is the aggregate function and the aggregation is performed
+               on all columns that are not in `columns`.
+               If agg is a list of str, then agg is a list of aggregate function and the aggregation
+               is performed on all columns that are not in `columns`.
+               If agg is a single dict mapping from str to str, then the key is the column
+               to perform aggregation on, and the value is the aggregate function.
+               If agg is a single dict mapping from str to list, then the key is the
+               column to perform aggregation on, and the value is list of aggregate functions.
+
+               Examples:
+               agg="sum"
+               agg=["last", "stddev"]
+               agg={"*":"count"}
+               agg={"col_1":"sum", "col_2":["count", "mean"]}
+        :param join: boolean. If True, join the aggregation result with original Table.
+
+        :return: A new Table with aggregated column fields.
+        """
+
+        if self._get_class_name() != 'pandas.core.frame.DataFrame':
             invalidInputError(False,
                               "Currently only support sort() on XShards of Pandas DataFrame")
+
+        if isinstance(columns, str):
+            columns = [columns]
+        invalidInputError(isinstance(columns, list), "columns should be str or a list of str")
+        df = self.to_spark_df()
+        grouped_data = df.groupBy(columns)
+
+        if isinstance(agg, str):
+            agg_exprs_dict = {agg_column: agg for agg_column in df.columns
+                              if agg_column not in columns}
+            agg_df = grouped_data.agg(agg_exprs_dict)
+        elif isinstance(agg, list):
+            agg_exprs_list = []
+            for stat in agg:
+                stat_func = getattr(F, stat)
+                agg_exprs_list += [stat_func(agg_column) for agg_column in df.columns
+                                   if agg_column not in columns]
+            agg_df = grouped_data.agg(*agg_exprs_list)
+        elif isinstance(agg, dict):
+            if all(isinstance(stats, str) for agg_column, stats in agg.items()):
+                agg_df = grouped_data.agg(agg)
+            else:
+                agg_exprs_list = []
+                for agg_column, stats in agg.items():
+                    if isinstance(stats, str):
+                        stats = [stats]
+                    invalidInputError(isinstance(stats, list),
+                                      "value in agg should be str or a list of str")
+                    for stat in stats:
+                        stat_func = getattr(F, stat)
+                        agg_exprs_list += [stat_func(agg_column)]
+                agg_df = grouped_data.agg(*agg_exprs_list)
+        else:
+            invalidInputError(False,
+                              "agg should be str, list of str, or dict")
+
+        if join:
+            invalidInputError(columns, "columns can not be empty if join is True")
+            result_df = df.join(agg_df, on=columns, how="left")
+        else:
+            result_df = agg_df
+        agg_shards = spark_df_to_pd_sparkxshards(result_df)
+        return agg_shards
 
     def _to_spark_df_without_arrow(self):
         def f(iter):
