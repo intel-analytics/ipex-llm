@@ -10,7 +10,7 @@ For PyTorch Users, you can install bigdl-nano along with some dependencies speci
 ```bash
 conda create -n env
 conda activate env
-pip install bigdl-nano[pytorch]
+pip install --pre --upgrade bigdl-nano[pytorch]
 ```
 
 For TensorFlow users, you can install bigdl-nano along with some dependencies specific to TensorFlow using the following commands.
@@ -18,7 +18,12 @@ For TensorFlow users, you can install bigdl-nano along with some dependencies sp
 ```bash
 conda create -n env
 conda activate env
-pip install bigdl-nano[tensorflow]
+pip install --pre --upgrade bigdl-nano[tensorflow]
+```
+
+```eval_rst
+.. note::
+    Since bigdl-nano is still in the process of rapid iteration, we highly recommend that you install nightly build version through the above command to facilitate your use of the latest features, rather than installing the latest release version such as 2.1.0 by ``pip install bigdl-nano[pytorch]``.
 ```
 
 After installing bigdl-nano, you can run the following command to setup a few environment variables.
