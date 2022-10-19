@@ -14,10 +14,10 @@
 # limitations under the License.
 #
 
-# unset the KMP_INIT_AT_FORK (for linux now)
+# unset the KMP_INIT_AT_FORK
 # which will cause significant slow down in multiprocessing training
 import os
-if os.name == "posix":
-    os.unsetenv('KMP_INIT_AT_FORK')
+if 'KMP_INIT_AT_FORK' in os.environ:
+    del os.environ['KMP_INIT_AT_FORK']
 
 from .trainer import TSTrainer
