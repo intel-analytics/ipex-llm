@@ -17,10 +17,11 @@
 import logging
 import importlib
 from bigdl.chronos.utils import LazyImport
-# unset the KMP_INIT_AT_FORK
+# unset the KMP_INIT_AT_FORK (for linux now)
 # which will cause significant slow down in multiprocessing training
 import os
-os.unsetenv('KMP_INIT_AT_FORK')
+if os.name == "posix":
+    os.unsetenv('KMP_INIT_AT_FORK')
 
 class Disablelogging:
     def __enter__(self):
