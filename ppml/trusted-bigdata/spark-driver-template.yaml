@@ -28,9 +28,9 @@ spec:
       - name: aesm-socket
         mountPath: /var/run/aesmd/aesm.socket
       - name: nfs-storage
-        mountPath: /ppml/trusted-big-data-ml/work/data
+        mountPath: /ppml/data
       - name: secure-keys
-        mountPath: /ppml/trusted-big-data-ml/work/keys
+        mountPath: /ppml/keys
       - name: nfs-storage
         mountPath: /root/.kube/config
         subPath: kubeconfig
