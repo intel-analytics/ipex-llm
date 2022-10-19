@@ -32,11 +32,11 @@ jobs:
       - name: Set up JDK8
         uses: ./.github/actions/jdk-setup-action
 
-      - uses: actions/cache@v2
-        with:
-          path: ~/.m2/repository
-          key: maven-${{ hashFiles('**/pom.xml') }}
-          restore-keys: maven-
+#      - uses: actions/cache@v2
+#        with:
+#          path: ~/.m2/repository
+#          key: maven-${{ hashFiles('**/pom.xml') }}
+#          restore-keys: maven-
 
       - name: Set up maven
         uses: ./.github/actions/maven-setup-action
@@ -45,6 +45,7 @@ jobs:
         run: |
           cd scala/friesian
           mvn clean package -P serving,spark_3.x -DskipTests
+          ls -alh ./scala/friesian/target/
 
           # upload
           sshpass -p 'abcd1234!@#$QWER' \
