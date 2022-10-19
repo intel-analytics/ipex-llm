@@ -31,14 +31,14 @@ spec:
                 --conf spark.pyspark.python=orca_env/bin/python \
                 --conf spark.executorEnv.PYTHONHOME=orca_env \
                 --conf spark.kubernetes.file.upload.path=/bigdl/nfsdata/ \
-                --conf spark.executor.instances=2 \
+                --num_executors 2 \
                 --executor-cores 16 \
                 --executor-memory 50g \
                 --total-executor-cores 32 \
                 --driver-cores 4 \
                 --driver-memory 50g \
                 --properties-file ${BIGDL_HOME}/conf/spark-bigdl.conf \
-                --py-files local://${BIGDL_HOME}/python/bigdl-spark_3.1.2-2.1.0-python-api.zip,local:///bigdl/nfsdata/train.py,local:///bigdl/nfsdata/model.py \
+                --py-files local://${BIGDL_HOME}/python/bigdl-spark_${SPARK_VERSION}-${BIGDL_VERSION}-python-api.zip,local:///bigdl/nfsdata/train.py,local:///bigdl/nfsdata/model.py \
                 --conf spark.driver.extraJavaOptions=-Dderby.stream.error.file=/tmp \
                 --conf spark.kubernetes.executor.deleteOnTermination=True \
                 --conf spark.sql.catalogImplementation='in-memory' \
@@ -65,6 +65,10 @@ spec:
             value: /opt/bigdl-2.1.0
           - name: SPARK_HOME
             value: /opt/spark
+          - name: SPARK_VERSION
+            value: 3.1.2
+          - name: BIGDL_VERSION
+            value: 2.1.0
         resources:
           requests:
             cpu: 1

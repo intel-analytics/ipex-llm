@@ -35,7 +35,7 @@ spec:
                 --driver-cores 10 \
                 --driver-memory 50g \
                 --properties-file ${BIGDL_HOME}/conf/spark-bigdl.conf \
-                --py-files local://${BIGDL_HOME}/python/bigdl-spark_3.1.2-2.1.0-python-api.zip,local:///bigdl/nfsdata/train.py,local:///bigdl/nfsdata/model.py \
+                --py-files local://${BIGDL_HOME}/python/bigdl-spark_${SPARK_VERSION}-${BIGDL_VERSION}-python-api.zip,local:///bigdl/nfsdata/train.py,local:///bigdl/nfsdata/model.py \
                 --conf spark.driver.extraJavaOptions=-Dderby.stream.error.file=/tmp \
                 --conf spark.sql.catalogImplementation='in-memory' \
                 --conf spark.driver.extraClassPath=local://${BIGDL_HOME}/jars/* \
@@ -61,6 +61,10 @@ spec:
             value: /opt/bigdl-2.1.0
           - name: SPARK_HOME
             value: /opt/spark
+          - name: SPARK_VERSION
+            value: 3.1.2
+          - name: BIGDL_VERSION
+            value: 2.1.0
         resources:
           requests:
             cpu: 1
