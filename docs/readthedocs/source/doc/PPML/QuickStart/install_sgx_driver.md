@@ -103,8 +103,8 @@ If you encounter any issue during installation, please open an issue on [Intel S
 
 * Building on Ubuntu 5.4.X may encounter
   * "dpkg-source: error: cannot represent change to vmlinux-gdb.py:". Remove `vmlinux-gdb.py`, then build again.
-  * "make[2]: *** No rule to make target 'debian/certs/benh@debian.org.cert.pem', needed by 'certs/x509_certificate_list'.  Stop.". Please disable `SYSTEM_TRUSTED_KEYS`. Refer to [CONFIG_SYSTEM_TRUSTED_KEYS](https://askubuntu.com/questions/1329538/compiling-the-kernel-5-11-11).
-  * "make[4]: *** No rule to make target 'debian/canonical-revoked-certs.pem', needed by 'certs/x509_revocation_list'.  Stop.". Please disable `SYSTEM_REVOCATION_KEYS`.
+  * "make[2]: *** No rule to make target 'debian/certs/benh@debian.org.cert.pem', needed by 'certs/x509_certificate_list'.  Stop.". Please disable `SYSTEM_TRUSTED_KEYS`, i.e., `CONFIG_SYSTEM_TRUSTED_KEYS=""` in `.config`. Refer to [CONFIG_SYSTEM_TRUSTED_KEYS](https://askubuntu.com/questions/1329538/compiling-the-kernel-5-11-11).
+  * "make[4]: *** No rule to make target 'debian/canonical-revoked-certs.pem', needed by 'certs/x509_revocation_list'.  Stop.". Please disable `SYSTEM_REVOCATION_KEYS`, i.e., `CONFIG_SYSTEM_REVOCATION_KEYS=""` in `.config`.
   * "BTF: .tmp_vmlinux.btf: pahole (pahole) is not available. Failed to generate BTF for vmlinux". `dwarves` are missing. `sudo apt-get install dwarves`.
 * In some kernels, SGX option is `CONFIG_INTEL_SGX`.
 * 5.13 Kernel may encounter nfs problem [Can't mount NFS-shares from Linux-5.13.0](https://forums.gentoo.org/viewtopic-p-8629887.html?sid=f7359b869fb71849d64f3e69bb48503a)
