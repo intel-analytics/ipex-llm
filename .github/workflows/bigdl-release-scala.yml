@@ -2,6 +2,8 @@ name: BigDL Release Scala
 
 on:
   pull_request:
+    branches:
+      - 'branch-2.1'
   
   workflow_dispatch:
 
