@@ -43,24 +43,24 @@ jobs:
       - name: Run cifar10 notebooks PyTorch unit tests
         shell: bash
         run: |
-            $CONDA/bin/conda create -n notebooks-trainer-pytorch -y python==3.7.10 setuptools=58.0.4
-            source $CONDA/bin/activate notebooks-trainer-pytorch
-            $CONDA/bin/conda info
+            conda create -n notebooks-trainer-pytorch -y python==3.7.10 setuptools=58.0.4
+            source activate notebooks-trainer-pytorch
+            conda info
             bash python/nano/dev/build_and_install.sh linux default false pytorch
             source bigdl-nano-init
             pip install -r python/nano/notebooks/pytorch/cifar10/requirements.txt
             bash python/nano/notebooks/pytorch/cifar10/run-nano-notebooks-pytorch-cifar10-tests.sh
-            source $CONDA/bin/deactivate
-            $CONDA/bin/conda remove -n notebooks-pytorch --all
+            source deactivate
+            conda remove -n notebooks-pytorch --all
         env:
             ANALYTICS_ZOO_ROOT: ${{ github.workspace }}
 
       - name: Run tutorial notebooks Pytorch unit tests
         shell: bash
         run: |
-            $CONDA/bin/conda create -n notebooks-tutorial-pytorch -y python==3.7.10 setuptools=58.0.4
-            source $CONDA/bin/activate notebooks-tutorial-pytorch
-            $CONDA/bin/conda info
+            conda create -n notebooks-tutorial-pytorch -y python==3.7.10 setuptools=58.0.4
+            source activate notebooks-tutorial-pytorch
+            conda info
             bash python/nano/dev/build_and_install.sh linux default false pytorch
             source bigdl-nano-init
             pip install pytest nbmake
@@ -71,17 +71,17 @@ jobs:
             bash python/nano/tutorial/inference/pytorch/run_nano_pytorch_inference_tests_onnx.sh
             bash python/nano/tutorial/training/pytorch-lightning/run_nano_pytorch_lightning_test.sh
             bash python/nano/tutorial/training/pytorch/run_nano_pytorch_test.sh
-            source $CONDA/bin/deactivate
-            $CONDA/bin/conda remove -n notebooks-pytorch --all
+            source deactivate
+            conda remove -n notebooks-pytorch --all
         env:
             ANALYTICS_ZOO_ROOT: ${{ github.workspace }}
 
       - name: Run tutorial notebooks Pytorch unit tests(OpenVINO)
         shell: bash
         run: |
-            $CONDA/bin/conda create -n notebooks-tutorial-pytorch -y python==3.7.10 setuptools=58.0.4
-            source $CONDA/bin/activate notebooks-tutorial-pytorch
-            $CONDA/bin/conda info
+            conda create -n notebooks-tutorial-pytorch -y python==3.7.10 setuptools=58.0.4
+            source activate notebooks-tutorial-pytorch
+            conda info
             bash python/nano/dev/build_and_install.sh linux default false pytorch
             source bigdl-nano-init
             pip install pytest nbmake
@@ -89,32 +89,32 @@ jobs:
             pip install openvino-dev
             bash python/nano/notebooks/pytorch/tutorial/run-nano-notebooks-pytorch-tutorial-tests.sh true
             bash python/nano/tutorial/inference/pytorch/run_nano_pytorch_inference_tests_openvino.sh
-            source $CONDA/bin/deactivate
-            $CONDA/bin/conda remove -n notebooks-tutorial-pytorch --all
+            source deactivate
+            conda remove -n notebooks-tutorial-pytorch --all
         env:
             ANALYTICS_ZOO_ROOT: ${{ github.workspace }}
 
       - name: Run tutorial notebooks Pytorch unit tests(JIT+IPEX)
         shell: bash
         run: |
-            $CONDA/bin/conda create -n notebooks-tutorial-pytorch -y python==3.7.10 setuptools=58.0.4
-            source $CONDA/bin/activate notebooks-tutorial-pytorch
-            $CONDA/bin/conda info
+            conda create -n notebooks-tutorial-pytorch -y python==3.7.10 setuptools=58.0.4
+            source activate notebooks-tutorial-pytorch
+            conda info
             bash python/nano/dev/build_and_install.sh linux default false pytorch
             pip install intel_extension_for_pytorch==1.11
             source bigdl-nano-init
             bash python/nano/tutorial/inference/pytorch/run_nano_pytorch_inference_tests_jit_ipex.sh
-            source $CONDA/bin/deactivate
-            $CONDA/bin/conda remove -n notebooks-tutorial-pytorch --all
+            source deactivate
+            conda remove -n notebooks-tutorial-pytorch --all
         env:
             ANALYTICS_ZOO_ROOT: ${{ github.workspace }}
 
       - name: Run realworld notebooks Pytorch unit tests(OpenVINO)
         shell: bash
         run: |
-            $CONDA/bin/conda create -n notebooks-tutorial-pytorch -y python==3.7.10 setuptools=58.0.4
+            conda create -n notebooks-tutorial-pytorch -y python==3.7.10 setuptools=58.0.4
             source $CONDA/bin/activate notebooks-tutorial-pytorch
-            $CONDA/bin/conda info
+            conda info
             bash python/nano/dev/build_and_install.sh linux default false pytorch
             source bigdl-nano-init
             pip install pytest nbmake
@@ -123,7 +123,7 @@ jobs:
             pip install matplotlib
             bash python/nano/notebooks/pytorch/openvino/run-nano-notebooks-pytorch-openvino-tests.sh
             source $CONDA/bin/deactivate
-            $CONDA/bin/conda remove -n notebooks-tutorial-pytorch --all
+            conda remove -n notebooks-tutorial-pytorch --all
         env:
             ANALYTICS_ZOO_ROOT: ${{ github.workspace }}  
 
@@ -152,7 +152,7 @@ jobs:
 
       - name: Run TensorFlow Example
         run: |
-          $CONDA/bin/conda create -n example-tensorflow -y python==3.7.10 setuptools=58.0.4
+          conda create -n example-tensorflow -y python==3.7.10 setuptools=58.0.4
           source $CONDA/bin/activate example-tensorflow
           bash python/nano/dev/build_and_install.sh linux default false tensorflow
           pip install neural-compressor==1.11
@@ -165,16 +165,16 @@ jobs:
           bash python/nano/tutorial/inference/tensorflow/run_nano_tf_inference_tests_onnx.sh
           bash python/nano/tutorial/inference/tensorflow/run_nano_tf_inference_tests_openvino.sh
           source $CONDA/bin/deactivate
-          $CONDA/bin/conda remove -n example-tensorflow --all
+          conda remove -n example-tensorflow --all
         env:
             ANALYTICS_ZOO_ROOT: ${{ github.workspace }}
 
       - name: Run tutorial notebooks TensorFlow unit tests
         shell: bash
         run: |
-            $CONDA/bin/conda create -n notebooks-tutorial-tensorflow -y python==3.7.10 setuptools=58.0.4
+            conda create -n notebooks-tutorial-tensorflow -y python==3.7.10 setuptools=58.0.4
             source $CONDA/bin/activate notebooks-tutorial-tensorflow
-            $CONDA/bin/conda info
+            conda info
             bash python/nano/dev/build_and_install.sh linux default false tensorflow
             source bigdl-nano-init
             pip install pytest nbmake
@@ -183,7 +183,7 @@ jobs:
             pip install tensorflow-datasets
             bash python/nano/notebooks/tensorflow/tutorial/run-nano-notebooks-tensorflow-tutorial-tests.sh
             source $CONDA/bin/deactivate
-            $CONDA/bin/conda remove -n notebooks-tutorial-tensorflow --all
+            conda remove -n notebooks-tutorial-tensorflow --all
         env:
             ANALYTICS_ZOO_ROOT: ${{ github.workspace }}
 
@@ -213,14 +213,14 @@ jobs:
       - name: Run tutorial notebooks OpenVINO unit tests
         shell: bash
         run: |
-            $CONDA/bin/conda create -n notebooks-tutorial-openvino -y python==3.7.10 setuptools=58.0.4
+            conda create -n notebooks-tutorial-openvino -y python==3.7.10 setuptools=58.0.4
             source $CONDA/bin/activate notebooks-tutorial-openvino
-            $CONDA/bin/conda info
+            conda info
             bash python/nano/dev/build_and_install.sh linux default false basic
             source bigdl-nano-init
             pip install openvino-dev
             bash python/nano/tutorial/inference/openvino/run_nano_openvino_inference_tests.sh
             source $CONDA/bin/deactivate
-            $CONDA/bin/conda remove -n notebooks-tutorial-openvino --all
+            conda remove -n notebooks-tutorial-openvino --all
         env:
             ANALYTICS_ZOO_ROOT: ${{ github.workspace }}
