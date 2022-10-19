@@ -5,6 +5,8 @@ ARG http_proxy
 ARG https_proxy
 ARG no_proxy
 ARG BIGDL_VERSION
+ARG JDK_VERSION=8u192
+ARG JDK_URL
 
 ENV BIGDL_VERSION                       ${BIGDL_VERSION}
 ENV LOCAL_IP                            127.0.0.1
@@ -12,6 +14,8 @@ ENV SGX_MEM_SIZE                        32G
 ENV SGX_LOG_LEVEL                       error
 ENV LC_ALL                              C.UTF-8
 ENV LANG                                C.UTF-8
+ENV JAVA_HOME           /opt/jdk$JDK_VERSION
+ENV PATH                ${JAVA_HOME}/bin:${PATH}
 
 RUN mkdir -p /ppml/
 
@@ -84,18 +88,12 @@ RUN env DEBIAN_FRONTEND=noninteractive apt-get update && \
     apt-get install -y libsgx-enclave-common-dev  libsgx-ae-qe3 libsgx-ae-qve libsgx-urts libsgx-dcap-ql libsgx-dcap-default-qpl libsgx-dcap-quote-verify-dev libsgx-dcap-ql-dev libsgx-dcap-default-qpl-dev libsgx-quote-ex-dev libsgx-uae-service libsgx-ra-network libsgx-ra-uefi
 
 # java
-ARG JDK_VERSION=8u192
-ARG JDK_URL
-ARG SPARK_VERSION=3.1.3
-ENV SPARK_VERSION ${SPARK_VERSION}
-ENV JAVA_HOME           /opt/jdk$JDK_VERSION
-ENV PATH                ${JAVA_HOME}/bin:${PATH}
 RUN wget $JDK_URL && \
     gunzip jdk-$JDK_VERSION-linux-x64.tar.gz && \
     tar -xf jdk-$JDK_VERSION-linux-x64.tar -C /opt && \
     rm jdk-$JDK_VERSION-linux-x64.tar && \
-    mv /opt/jdk* /opt/jdk$JDK_VERSION && \
-    ln -s /opt/jdk$JDK_VERSION /opt/jdk
+    mv /opt/jdk* /opt/jdk8 && \
+    ln -s /opt/jdk8 /opt/jdk
 
 ADD ./download_jars.sh /ppml
 
