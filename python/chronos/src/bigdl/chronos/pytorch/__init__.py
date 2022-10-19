@@ -20,3 +20,4 @@ import os
 os.unsetenv('KMP_INIT_AT_FORK')
 
 from .trainer import TSTrainer
+from .inference_optimizer import TSInferenceOptimizer

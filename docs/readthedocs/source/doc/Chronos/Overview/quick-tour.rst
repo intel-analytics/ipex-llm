@@ -1,15 +1,11 @@
 Chronos Quick Tour
-======================
+=================================
 Welcome to Chronos for building a fast, accurate and scalable time series analysis application🎉! Start with our quick tour to understand some critical concepts and how to use them to tackle your tasks.
 
 .. grid:: 1 1 1 1
 
     .. grid-item-card::
         :text-align: center
-        :shadow: none
-        :class-header: sd-bg-light
-        :class-footer: sd-bg-light
-        :class-card: sd-mb-2
 
         **Data processing**
         ^^^
@@ -22,13 +18,11 @@ Welcome to Chronos for building a fast, accurate and scalable time series analys
 
             Get Started
 
-.. grid:: 1 1 3 3
+.. grid:: 1 3 3 3
+    :gutter: 2
 
     .. grid-item-card::
         :text-align: center
-        :shadow: none
-        :class-header: sd-bg-light
-        :class-footer: sd-bg-light
         :class-card: sd-mb-2
 
         **Forecasting**
@@ -42,11 +36,8 @@ Welcome to Chronos for building a fast, accurate and scalable time series analys
 
             Get Started
 
-    .. grid-item-card:: 
+    .. grid-item-card::
         :text-align: center
-        :shadow: none
-        :class-header: sd-bg-light
-        :class-footer: sd-bg-light
         :class-card: sd-mb-2
 
         **Anomaly Detection**
@@ -60,11 +51,8 @@ Welcome to Chronos for building a fast, accurate and scalable time series analys
 
             Get Started
 
-    .. grid-item-card:: 
+    .. grid-item-card::
         :text-align: center
-        :shadow: none
-        :class-header: sd-bg-light
-        :class-footer: sd-bg-light
         :class-card: sd-mb-2
 
         **Simulation**
@@ -104,7 +92,7 @@ In Chronos, we provide a ``TSDataset`` (and a ``XShardsTSDataset`` to handle lar
 
 
 .. grid:: 2
-    :gutter: 1
+    :gutter: 2
 
     .. grid-item-card::
 
@@ -133,7 +121,7 @@ To import a specific forecaster, you may use {algorithm name} + "Forecaster", an
 .. code-block:: python
 
     from bigdl.chronos.forecaster import TCNForecaster  # TCN is algorithm name
-    from bigdl.chronos.data.repo_dataset import get_public_dataset
+    from bigdl.chronos.data import get_public_dataset
 
     if __name__ == "__main__":
         # use nyc_taxi public dataset
@@ -159,7 +147,7 @@ For time series forecasting, we also provide an ``AutoTSEstimator`` for distribu
 .. code-block:: python
 
     from bigdl.orca.automl import hp
-    from bigdl.chronos.data.repo_dataset import get_public_dataset
+    from bigdl.chronos.data import get_public_dataset
     from bigdl.chronos.autots import AutoTSEstimator
     from bigdl.orca import init_orca_context, stop_orca_context
     from sklearn.preprocessing import StandardScaler
@@ -192,7 +180,7 @@ For time series forecasting, we also provide an ``AutoTSEstimator`` for distribu
         stop_orca_context()
 
 .. grid:: 3
-    :gutter: 1
+    :gutter: 2
 
     .. grid-item-card::
 
@@ -230,7 +218,7 @@ To import a specific detector, you may use {algorithm name} + "Detector", and ca
 .. code-block:: python
 
     from bigdl.chronos.detector.anomaly import DBScanDetector  # DBScan is algorithm name
-    from bigdl.chronos.data.repo_dataset import get_public_dataset
+    from bigdl.chronos.data import get_public_dataset
 
     if __name__ == "__main__":
         # use nyc_taxi public dataset
@@ -246,7 +234,7 @@ To import a specific detector, you may use {algorithm name} + "Detector", and ca
         anomaly_indexes = detector.anomaly_indexes()
 
 .. grid:: 3
-    :gutter: 1
+    :gutter: 2
 
     .. grid-item-card::
 
@@ -280,7 +268,7 @@ Simulator(experimental)
 Simulator is still under activate development with unstable API.
 
 .. grid:: 2
-    :gutter: 1
+    :gutter: 2
 
     .. grid-item-card::
 

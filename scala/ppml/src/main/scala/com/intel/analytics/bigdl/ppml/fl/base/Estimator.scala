@@ -18,6 +18,7 @@ package com.intel.analytics.bigdl.ppml.fl.base
 
 import com.intel.analytics.bigdl.dllib.feature.dataset.{LocalDataSet, MiniBatch}
 import com.intel.analytics.bigdl.dllib.nn.abstractnn.Activity
+import com.intel.analytics.bigdl.dllib.tensor.Tensor
 
 import scala.collection.mutable
 import scala.collection.mutable.ArrayBuffer
@@ -27,6 +28,7 @@ trait Estimator {
   def getEvaluateResults(): Map[String, Array[Float]] = {
     evaluateResults.map(v => (v._1, v._2.toArray)).toMap
   }
+
   def train(endEpoch: Int,
             trainDataSet: LocalDataSet[MiniBatch[Float]],
             valDataSet: LocalDataSet[MiniBatch[Float]]): Any

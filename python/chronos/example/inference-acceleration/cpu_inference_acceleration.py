@@ -17,7 +17,7 @@ import torch
 from bigdl.chronos.pytorch import TSTrainer as Trainer
 from bigdl.chronos.model.tcn import model_creator
 from bigdl.chronos.metric.forecast_metrics import Evaluator
-from bigdl.chronos.data.repo_dataset import get_public_dataset
+from bigdl.chronos.data import get_public_dataset
 from sklearn.preprocessing import StandardScaler
 
 def gen_dataloader():

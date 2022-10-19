@@ -17,6 +17,7 @@
 import pandas as pd
 import numpy as np
 import functools
+import logging
 
 from bigdl.chronos.data.utils.feature import generate_dt_features, generate_global_features
 from bigdl.chronos.data.utils.impute import impute_timeseries_dataframe
@@ -27,6 +28,7 @@ from bigdl.chronos.data.utils.scale import unscale_timeseries_numpy
 from bigdl.chronos.data.utils.resample import resample_timeseries_dataframe
 from bigdl.chronos.data.utils.split import split_timeseries_dataframe
 from bigdl.chronos.data.utils.cycle_detection import cycle_length_est
+from bigdl.chronos.data.utils.quality_inspection import quality_check_timeseries_dataframe
 from bigdl.chronos.data.utils.utils import _to_list, _check_type,\
     _check_col_within, _check_col_no_na, _check_is_aligned, _check_dt_is_sorted
 
@@ -36,12 +38,17 @@ _DEFAULT_ID_PLACEHOLDER = "0"
 
 
 class TSDataset:
-    def __init__(self, data, **schema):
+    def __init__(self, data, repair=True, **schema):
         '''
         TSDataset is an abstract of time series dataset.
         Cascade call is supported for most of the transform methods.
         '''
         self.df = data
+        # detect low-quality data and automatic repair (optional)
+        _, self.df = quality_check_timeseries_dataframe(df=self.df,
+                                                        dt_col=schema["dt_col"],
+                                                        id_col=schema["id_col"],
+                                                        repair=repair)
         self.id_col = schema["id_col"]
         self.dt_col = schema["dt_col"]
         self.feature_col = schema["feature_col"].copy()
@@ -80,7 +87,8 @@ class TSDataset:
                     extra_feature_col=None,
                     with_split=False,
                     val_ratio=0,
-                    test_ratio=0.1):
+                    test_ratio=0.1,
+                    repair=True):
         '''
         Initialize tsdataset(s) from pandas dataframe.
 
@@ -101,6 +109,8 @@ class TSDataset:
                with_split is set to True. The value defaults to 0.
         :param test_ratio: (optional) float, test ratio. Only effective when with_split
                is set to True. The value defaults to 0.1.
+        :param repair: a bool indicates whether automaticly repair low quality data,
+               which may call .impute()/.resample() or modify datetime column on dataframe.
 
         :return: a TSDataset instance when with_split is set to False,
                  three TSDataset instances when with_split is set to True.
@@ -135,12 +145,14 @@ class TSDataset:
                                                        val_ratio=val_ratio,
                                                        test_ratio=test_ratio)
             return [TSDataset(data=tsdataset_dfs[i],
+                              repair=repair,
                               id_col=id_col,
                               dt_col=dt_col,
                               target_col=target_col,
                               feature_col=feature_col) for i in range(3)]
 
         return TSDataset(data=tsdataset_df,
+                         repair=repair,
                          id_col=id_col,
                          dt_col=dt_col,
                          target_col=target_col,
@@ -155,6 +167,7 @@ class TSDataset:
                      with_split=False,
                      val_ratio=0,
                      test_ratio=0.1,
+                     repair=True,
                      **kwargs):
         """
         Initialize tsdataset(s) from path of parquet file.
@@ -179,6 +192,8 @@ class TSDataset:
                with_split is set to True. The value defaults to 0.
         :param test_ratio: (optional) float, test ratio. Only effective when with_split
                is set to True. The value defaults to 0.1.
+        :param repair: a bool indicates whether automaticly repair low quality data,
+               which may call .impute()/.resample() or modify datetime column on dataframe.
         :param kwargs: Any additional kwargs are passed to the pd.read_parquet
                and pyarrow.parquet.read_table.
 
@@ -205,10 +220,84 @@ class TSDataset:
             _to_list(extra_feature_col, name="extra_feature_col")
         df = parquet2pd(path, columns=columns, **kwargs)
         return TSDataset.from_pandas(df,
+                                     repair=repair,
                                      dt_col=dt_col,
                                      target_col=target_col,
                                      id_col=id_col,
                                      extra_feature_col=extra_feature_col,
+                                     with_split=with_split,
+                                     val_ratio=val_ratio,
+                                     test_ratio=test_ratio)
+
+    @staticmethod
+    def from_prometheus(prometheus_url,
+                        query,
+                        starttime,
+                        endtime,
+                        step,
+                        target_col=None,
+                        id_col=None,
+                        extra_feature_col=None,
+                        with_split=False,
+                        val_ratio=0,
+                        test_ratio=0.1,
+                        **kwargs):
+        """
+        Initialize tsdataset(s) from Prometheus data for specified time period via url.
+
+        :param prometheus_url: a str indicates url of a Prometheus server.
+        :param query: str, Prometheus expression query string.
+        :param starttime: start timestamp of the specified time period, RFC-3339 string
+               or as a Unix timestamp in seconds.
+        :param endtime: end timestamp of the specified time period, RFC-3339 string
+               or as a Unix timestamp in seconds.
+        :param step: a str indicates query resolution step width in Prometheus duration format
+               or float number of seconds. More information about Prometheus time durations
+               are here:
+               https://prometheus.io/docs/prometheus/latest/querying/basics/#time-durations
+        :param target_col: (optional) a Prometheus expression query str or list indicates the
+               col name of target column in the input data frame. If it is not explicitly stated,
+               then target column is automatically specified according to the Prometheus data.
+        :param id_col: (optional) a Prometheus expression query str indicates the col name of
+               dataframe id. If it is not explicitly stated, then the data is interpreted as
+               only containing a single id.
+        :param extra_feature_col: (optional) a Prometheus expression query str or list indicates
+               the col name of extra feature columns that needs to predict the target column.
+               If it is not explicitly stated, then extra feature column is None.
+        :param with_split: (optional) bool, states if we need to split the dataframe
+               to train, validation and test set. The value defaults to False.
+        :param val_ratio: (optional) float, validation ratio. Only effective when
+               with_split is set to True. The value defaults to 0.
+        :param test_ratio: (optional) float, test ratio. Only effective when with_split
+               is set to True. The value defaults to 0.1.
+        :param kwargs: Any additional kwargs are passed to the Prometheus query, such as
+               timeout.
+
+        :return: a TSDataset instance when with_split is set to False,
+                 three TSDataset instances when with_split is set to True.
+
+        Create a tsdataset instance by:
+
+        >>> # Here is an example:
+        >>> tsdataset = TSDataset.from_prometheus(prometheus_url="http://localhost:9090",
+        >>>                                       query="collectd_cpufreq{cpufreq="0"}",
+        >>>                                       starttime="2022-09-01T00:00:00Z",
+        >>>                                       endtime="2022-10-01T00:00:00Z",
+        >>>                                       step="1h")
+        """
+        # TODO: Corresponding unit test should be added
+        # Only test locally at present
+        from bigdl.chronos.data.utils.prometheus_df import GetRangeDataframe
+        columns = {"target_col": _to_list(target_col, name="target_col"),
+                   "id_col": _to_list(id_col, name="id_col"),
+                   "extra_feature_col": _to_list(extra_feature_col, name="extra_feature_col")}
+        df, df_columns = GetRangeDataframe(prometheus_url, query, starttime, endtime,
+                                           step, columns=columns, **kwargs)
+        return TSDataset.from_pandas(df,
+                                     dt_col=df_columns["dt_col"],
+                                     target_col=df_columns["target_col"],
+                                     id_col=df_columns["id_col"],
+                                     extra_feature_col=df_columns["extra_feature_col"],
                                      with_split=with_split,
                                      val_ratio=val_ratio,
                                      test_ratio=test_ratio)
