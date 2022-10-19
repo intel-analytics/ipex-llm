@@ -6,7 +6,7 @@ export ATTESTATION_TYPE=your_attestation_service_type
 export APP_ID=your_app_id
 export API_KEY=your_api_key
 export CHALLENGE=your_challenge_string
-export JARS=/jars
+export JARS=./jars/*:
 
 if [ "$ATTESTATION_URL" = "your_attestation_url" ]; then
     echo "[ERROR] ATTESTATION_URL is not set!"
