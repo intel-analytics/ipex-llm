@@ -40,18 +40,18 @@ jobs:
           python -m pip install --upgrade setuptools==58.0.4
           python -m pip install --upgrade wheel
 
-      - name: Run cifar10 notebooks PyTorch unit tests
-        shell: bash
-        run: |
-            conda create -n notebooks-trainer-pytorch -y python==3.7.10 setuptools=58.0.4
-            source activate notebooks-trainer-pytorch
-            conda info
-            bash python/nano/dev/build_and_install.sh linux default false pytorch
-            source bigdl-nano-init
-            pip install -r python/nano/notebooks/pytorch/cifar10/requirements.txt
-            bash python/nano/notebooks/pytorch/cifar10/run-nano-notebooks-pytorch-cifar10-tests.sh
-            source deactivate
-            conda remove -n notebooks-pytorch --all
+      # - name: Run cifar10 notebooks PyTorch unit tests
+      #   shell: bash
+      #   run: |
+      #       conda create -n notebooks-trainer-pytorch -y python==3.7.10 setuptools=58.0.4
+      #       source activate notebooks-trainer-pytorch
+      #       conda info
+      #       bash python/nano/dev/build_and_install.sh linux default false pytorch
+      #       source bigdl-nano-init
+      #       pip install -r python/nano/notebooks/pytorch/cifar10/requirements.txt
+      #       bash python/nano/notebooks/pytorch/cifar10/run-nano-notebooks-pytorch-cifar10-tests.sh
+      #       source deactivate
+      #       conda remove -n notebooks-pytorch --all
         env:
             ANALYTICS_ZOO_ROOT: ${{ github.workspace }}
 
