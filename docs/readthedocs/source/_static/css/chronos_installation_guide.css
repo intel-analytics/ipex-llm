@@ -11,7 +11,7 @@
 }
 
 #table-1 tr, td{
-    background-color: rgb(240, 241, 245);
+    background-color: var(--pst-color-on-surface);
     height: 30px;
     border-width: 2px;
     border-style: solid;
@@ -26,7 +26,7 @@
 #table-1 td{
     font-size: 16px;
     font-family: Verdana;
-    color: rgb(15, 24, 33);
+    color: var(--pst-color-text-base);
     text-align: center;
     /* height: 56px;
     line-height: 56px; */

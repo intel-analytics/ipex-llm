@@ -1,8 +1,10 @@
 name: Nightly Test
 
 on:
+
   pull_request:
-     branchs: [ main ]
+    branchs: [ main ]
+
   schedule:
     - cron: '0 13 * * *' # GMT time, 13:00 GMT == 21:00 China
   workflow_dispatch:
@@ -39,7 +41,7 @@ on:
       image:
         description: 'docker image name'
         required: true
-        default: '10.239.45.10/arda/intelanalytics/bigdl-ppml-trusted-big-data-ml-python-gramine'
+        default: '10.239.45.10/arda/intelanalytics/bigdl-ppml-trusted-big-data-ml-python-gramine-reference'
         type: string
       tag:
         description: 'docker image tag'
@@ -513,7 +515,7 @@ jobs:
       uses: ./.github/actions/maven-setup-action
     - name: set env
       env:
-        DEFAULT_IMAGE: '10.239.45.10/arda/intelanalytics/bigdl-ppml-trusted-big-data-ml-python-gramine'
+        DEFAULT_IMAGE: '10.239.45.10/arda/intelanalytics/bigdl-ppml-trusted-big-data-ml-python-gramine-reference'
         DEFAULT_TAG: 'latest'
       run: |
         echo "IMAGE=${{ github.event.inputs.image || env.DEFAULT_IMAGE }}" >> $GITHUB_ENV
@@ -537,7 +539,7 @@ jobs:
 
   PPML-Occlum-ExampleTests:
     if: ${{ github.event.schedule || github.event.inputs.artifact == 'PPML-Occlum-ExampleTests' || github.event.inputs.artifact == 'all' }} 
-    runs-on: [self-hosted, Wilwarin, ubuntu-20.04-lts]
+    runs-on: [self-hosted, SGX, Wilwarin]
 
     steps:
     - uses: actions/checkout@v3
@@ -571,7 +573,7 @@ jobs:
       uses: ./.github/actions/maven-setup-action
     - name: set env
       env:
-        DEFAULT_IMAGE: '10.239.45.10/arda/intelanalytics/bigdl-ppml-trusted-big-data-ml-python-gramine'
+        DEFAULT_IMAGE: '10.239.45.10/arda/intelanalytics/bigdl-ppml-trusted-big-data-ml-python-gramine-reference'
         DEFAULT_TAG: 'latest'
       run: |
         echo "TAG=${{ github.event.inputs.tag || env.DEFAULT_TAG }}" >> $GITHUB_ENV

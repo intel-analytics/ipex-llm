@@ -1,4 +1,4 @@
-# Time Series Processing and Feature Engineering Overview
+# Data Processing and Feature Engineering
 
 Time series data is a special data formulation with its specific operations. _Chronos_ provides [`TSDataset`](../../PythonAPI/Chronos/tsdataset.html) as a time series dataset abstract for data processing (e.g. impute, deduplicate, resample, scale/unscale, roll sampling) and auto feature engineering (e.g. datetime feature, aggregation feature). Chronos also provides [`XShardsTSDataset`](../../PythonAPI/Chronos/tsdataset.html#xshardstsdataset) with same(or similar) API for distributed and parallelized data preprocessing on large data.
 
@@ -6,7 +6,7 @@ Users can create a [`TSDataset`](../../PythonAPI/Chronos/tsdataset.html) quickly
 
 ## **1. Basic concepts**
 
-A time series can be interpreted as a sequence of real value whose order is timestamp. While a time series dataset can be a combination of one or a huge amount of time series. It may contain multiple time series since users may collect different time series in the same/different period of time (e.g. An AIops dataset may have CPU usage ratio and memory usage ratio data for two servers at a period of time. This dataset contains four time series). 
+A time series can be interpreted as a sequence of real value whose order is timestamp. While a time series dataset can be a combination of one or a huge amount of time series. It may contain multiple time series since users may collect different time series in the same/different period of time (e.g. An AIops dataset may have CPU usage ratio and memory usage ratio data for two servers at a period of time. This dataset contains four time series).
 
 In [`TSDataset`](../../PythonAPI/Chronos/tsdataset.html) and [`XShardsTSDataset`](../../PythonAPI/Chronos/tsdataset.html#xshardstsdataset), we provide **2** possible dimensions to construct a high dimension time series dataset (i.e. **feature dimension** and **id dimension**).
 
@@ -16,10 +16,10 @@ In [`TSDataset`](../../PythonAPI/Chronos/tsdataset.html) and [`XShardsTSDataset`
 All the preprocessing operations will be done on each independent time series(i.e on both feature dimension and id dimension), while feature scaling will be only carried out on the feature dimension.
 
 ```eval_rst
-.. note:: 
-    
+.. note::
+
      ``XShardsTSDataset`` will perform the data processing in parallel(based on spark) to support large dataset. While the parallelization will only be performed on "id dimension". This means, in previous example, ``XShardsTSDataset`` will only utilize multiple workers to process data for different servers at the same time. If a dataset only has 1 id, ``XShardsTSDataset`` will be even slower than ``TSDataset`` because of the overhead.
-     
+
 ```
 
 ## **2. Create a TSDataset**
@@ -40,13 +40,13 @@ You can initialize a [`XShardsTSDataset`](../../PythonAPI/Chronos/tsdataset.html
         .. code-block:: python
 
             # Server id  Datetime         CPU usage   Mem usage
-            # 0          08:39 2021/7/9   93          24            
-            # 0          08:40 2021/7/9   91          24              
-            # 0          08:41 2021/7/9   93          25              
+            # 0          08:39 2021/7/9   93          24
+            # 0          08:40 2021/7/9   91          24
+            # 0          08:41 2021/7/9   93          25
             # 0          ...              ...         ...
-            # 1          08:39 2021/7/9   73          79            
-            # 1          08:40 2021/7/9   72          80              
-            # 1          08:41 2021/7/9   79          80              
+            # 1          08:39 2021/7/9   73          79
+            # 1          08:40 2021/7/9   72          80
+            # 1          08:41 2021/7/9   79          80
             # 1          ...              ...         ...
             from bigdl.chronos.data import TSDataset
 
@@ -74,14 +74,14 @@ You can initialize a [`XShardsTSDataset`](../../PythonAPI/Chronos/tsdataset.html
                                                       target_col="value", id_col="id",
                                                       extra_feature_col=["extra feature 1",
                                                                          "extra feature 2"])
-        
+
 ```
 `target_col` is a list of all elements along feature dimension, while `id_col` is the identifier that distinguishes the id dimension. `dt_col` is the datetime column. For `extra_feature_col`(not shown in this case), you should list those features that you are not interested for your task (e.g. you will **not** perform forecasting or anomaly detection task on this col).
 
 If you are building a prototype for your forecasting/anomaly detection task and you need to split you TSDataset to train/valid/test set, you can use `with_split` parameter.[`TSDataset`](../../PythonAPI/Chronos/tsdataset.html) or [`XShardsTSDataset`](../../PythonAPI/Chronos/tsdataset.html#xshardstsdataset) supports split with ratio by `val_ratio` and `test_ratio`.
 
 ## **3. Time series dataset preprocessing**
-[`TSDataset`](../../PythonAPI/Chronos/tsdataset.html) supports [`impute`](../../PythonAPI/Chronos/tsdataset.html#bigdl.chronos.data.tsdataset.TSDataset.impute), [`deduplicate`](../../PythonAPI/Chronos/tsdataset.html#bigdl.chronos.data.tsdataset.TSDataset.deduplicate) and [`resample`](../../PythonAPI/Chronos/tsdataset.html#bigdl.chronos.data.tsdataset.TSDataset.resample). You may fill the missing point by [`impute`](../../PythonAPI/Chronos/tsdataset.html#bigdl.chronos.data.tsdataset.TSDataset.impute) in different modes. You may remove the records that are totally the same by [`deduplicate`](../../PythonAPI/Chronos/tsdataset.html#bigdl.chronos.data.tsdataset.TSDataset.deduplicate). You may change the sample frequency by [`resample`](../../PythonAPI/Chronos/tsdataset.html#bigdl.chronos.data.tsdataset.TSDataset.resample). [`XShardsTSDataset`](../../PythonAPI/Chronos/tsdataset.html#xshardstsdataset) only supports [`impute`](../../PythonAPI/Chronos/tsdataset.html#bigdl.chronos.data.experimental.xshards_tsdataset.XShardsTSDataset.impute) for now. 
+[`TSDataset`](../../PythonAPI/Chronos/tsdataset.html) supports [`impute`](../../PythonAPI/Chronos/tsdataset.html#bigdl.chronos.data.tsdataset.TSDataset.impute), [`deduplicate`](../../PythonAPI/Chronos/tsdataset.html#bigdl.chronos.data.tsdataset.TSDataset.deduplicate) and [`resample`](../../PythonAPI/Chronos/tsdataset.html#bigdl.chronos.data.tsdataset.TSDataset.resample). You may fill the missing point by [`impute`](../../PythonAPI/Chronos/tsdataset.html#bigdl.chronos.data.tsdataset.TSDataset.impute) in different modes. You may remove the records that are totally the same by [`deduplicate`](../../PythonAPI/Chronos/tsdataset.html#bigdl.chronos.data.tsdataset.TSDataset.deduplicate). You may change the sample frequency by [`resample`](../../PythonAPI/Chronos/tsdataset.html#bigdl.chronos.data.tsdataset.TSDataset.resample). [`XShardsTSDataset`](../../PythonAPI/Chronos/tsdataset.html#xshardstsdataset) only supports [`impute`](../../PythonAPI/Chronos/tsdataset.html#bigdl.chronos.data.experimental.xshards_tsdataset.XShardsTSDataset.impute) for now.
 
 A typical cascade call for preprocessing is:
 ```eval_rst
@@ -92,7 +92,7 @@ A typical cascade call for preprocessing is:
         .. code-block:: python
 
             tsdata.deduplicate().resample(interval="2s").impute()
-    
+
     .. tab:: XShardsTSDataset
 
          .. code-block:: python
@@ -109,7 +109,7 @@ Since a scaler should not fit, a typical call for scaling operations is is:
 .. tabs::
 
     .. tab:: TSDataset
-    
+
         .. code-block:: python
 
             from sklearn.preprocessing import StandardScaler
@@ -139,14 +139,14 @@ Since a scaler should not fit, a typical call for scaling operations is is:
             for tsdata in [tsdata_train, tsdata_valid, tsdata_test]:
                 tsdata.unscale()
 ```
-[`unscale_numpy`](../../PythonAPI/Chronos/tsdataset.html#bigdl.chronos.data.tsdataset.TSDataset.unscale_numpy) in TSDataset or [`unscale_xshards`](../../PythonAPI/Chronos/tsdataset.html#bigdl.chronos.data.experimental.xshards_tsdataset.XShardsTSDataset.unscale_xshards) in XShardsTSDataset is specially designed for forecasters. Users may unscale the output of a forecaster by this operation. 
+[`unscale_numpy`](../../PythonAPI/Chronos/tsdataset.html#bigdl.chronos.data.tsdataset.TSDataset.unscale_numpy) in TSDataset or [`unscale_xshards`](../../PythonAPI/Chronos/tsdataset.html#bigdl.chronos.data.experimental.xshards_tsdataset.XShardsTSDataset.unscale_xshards) in XShardsTSDataset is specially designed for forecasters. Users may unscale the output of a forecaster by this operation.
 
 A typical call is:
 ```eval_rst
 .. tabs::
 
     .. tab:: TSDataset
-    
+
         .. code-block:: python
 
             x, y = tsdata_test.scale(scaler)\
@@ -156,9 +156,9 @@ A typical call is:
             unscaled_yhat = tsdata_test.unscale_numpy(yhat)
             unscaled_y = tsdata_test.unscale_numpy(y)
             # calculate metric by unscaled_yhat and unscaled_y
-    
+
     .. tab:: XShardsTSDataset
-    
+
         .. code-block:: python
 
             x, y = tsdata_test.scale(scaler)\
@@ -176,28 +176,28 @@ Other than historical target data and other extra feature provided by users, som
 A time series dataset needs to be sampling and exporting as numpy ndarray/dataloader to be used in machine learning and deep learning models(e.g. forecasters, anomaly detectors, auto models, etc.).
 ```eval_rst
 .. warning::
-    You don't need to call any sampling or exporting methods introduced in this section when using `AutoTSEstimator`.
+    You don't need to call any sampling or exporting methods introduced in this section when using ``AutoTSEstimator``.
 ```
 ### **6.1 Roll sampling**
-Roll sampling (or sliding window sampling) is useful when you want to train a RR type supervised deep learning forecasting model. It works as the [diagram](#RR-forecast-image) shows. 
+Roll sampling (or sliding window sampling) is useful when you want to train a RR type supervised deep learning forecasting model. It works as the [diagram](#RR-forecast-image) shows.
 
 
 Please refer to the API doc [`roll`](../../PythonAPI/Chronos/tsdataset.html#bigdl.chronos.data.tsdataset.TSDataset.roll) for detailed behavior. Users can simply export the sampling result as numpy ndarray by [`to_numpy`](../../PythonAPI/Chronos/tsdataset.html#bigdl.chronos.data.tsdataset.TSDataset.to_numpy), pytorch dataloader [`to_torch_data_loader`](../../PythonAPI/Chronos/tsdataset.html#bigdl.chronos.data.tsdataset.TSDataset.to_torch_data_loader), tensorflow dataset by [to_tf_dataset](https://bigdl.readthedocs.io/en/latest/doc/PythonAPI/Chronos/tsdataset.html#bigdl.chronos.data.tsdataset.TSDataset.to_tf_dataset) or xshards object by [to_xshards](https://bigdl.readthedocs.io/en/latest/doc/PythonAPI/Chronos/tsdataset.html#bigdl.chronos.data.experimental.xshards_tsdataset.XShardsTSDataset.to_xshards).
 
 
 ```eval_rst
-.. note:: 
-    **Difference between `roll` and `to_torch_data_loader`**:
-    
-    `.roll(...)` performs the rolling before RR forecasters/auto models training while `.to_torch_data_loader(...)` performs rolling during the training.
-    
-    It is fine to use either of them when you have a relatively small dataset (less than 1G). `.to_torch_data_loader(...)` is recommended when you have a large dataset (larger than 1G) to save memory usage.
+.. note::
+    **Difference between** ``roll`` **and** ``to_torch_data_loader``:
+
+    ``.roll(...)`` performs the rolling before RR forecasters/auto models training while ``.to_torch_data_loader(...)`` performs rolling during the training.
+
+    It is fine to use either of them when you have a relatively small dataset (less than 1G). ``.to_torch_data_loader(...)`` is recommended when you have a large dataset (larger than 1G) to save memory usage.
 ```
 
 ```eval_rst
-.. note:: 
+.. note::
     **Roll sampling format**:
-    
+
     As decribed in RR style forecasting concept, the sampling result will have the following shape requirement.
 
     | x: (sample_num, lookback, input_feature_num)
@@ -218,7 +218,7 @@ A typical call of [`roll`](../../PythonAPI/Chronos/tsdataset.html#bigdl.chronos.
             # forecaster
             x, y = tsdata.roll(lookback=..., horizon=...).to_numpy()
             forecaster.fit((x, y))
-    
+
     .. tab:: XShardsTSDataset
 
         .. code-block:: python
@@ -235,7 +235,7 @@ Now we support pandas dataframe exporting through `to_pandas()` for users to car
 x = tsdata.to_pandas()["target"].to_numpy()
 anomaly_detector.fit(x)
 ```
-View [TSDataset API Doc](../../PythonAPI/Chronos/tsdataset.html#) for more details. 
+View [TSDataset API Doc](../../PythonAPI/Chronos/tsdataset.html#) for more details.
 
 ## **7. Built-in Dataset**
 
