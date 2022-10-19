@@ -2,25 +2,8 @@
 
 ---
 
-**Orca `AutoEstimator` provides similar APIs as Orca `Estimator` for distributed hyper-parameter tuning.** 
+**Orca `AutoEstimator` provides similar APIs as Orca `Estimator` for distributed hyper-parameter tuning.**
 
-### **Install**
-We recommend using [conda](https://docs.conda.io/projects/conda/en/latest/user-guide/install/) to prepare the Python environment.
-```bash
-conda create -n bigdl-orca-automl python=3.7  # "bigdl-orca-automl" is conda environment name, you can use any name you like.
-conda activate bigdl-orca-automl
-pip install bigdl-orca[automl]
-````
-You can install the latest release version of BigDL Orca as follows:
-```bash
-pip install --pre --upgrade bigdl-orca[automl]
-```
-_Note that with extra key of [automl], `pip` will automatically install the additional dependencies for distributed hyper-parameter tuning,
-including `ray[tune]==1.9.2`, `scikit-learn`, `tensorboard`, `xgboost`._
-
-To use [Pytorch Estimator](#pytorch-autoestimator), you need to install Pytorch with `pip install torch==1.8.1`.
-
-To use [TensorFlow/Keras AutoEstimator](#tensorflow-keras-autoestimator), you need to install Tensorflow with `pip install tensorflow==1.15.0`.
 
 
 ### **1. AutoEstimator**
@@ -28,11 +11,11 @@ To use [TensorFlow/Keras AutoEstimator](#tensorflow-keras-autoestimator), you ne
 To perform distributed hyper-parameter tuning, user can first create an Orca `AutoEstimator` from standard TensorFlow Keras or PyTorch model, and then call `AutoEstimator.fit`.
 
 Under the hood, the Orca `AutoEstimator` generates different trials and schedules them on each mode in the cluster. Each trial runs a different combination of hyper parameters, sampled from the user-desired hyper-parameter space.
-HDFS is used to save temporary results of each trial and all the results will be finally transferred to driver for further analysis. 
+HDFS is used to save temporary results of each trial and all the results will be finally transferred to driver for further analysis.
 
 ### **2. Pytorch AutoEstimator**
 
-User could pass *Creator Function*s, including *Data Creator Function*, *Model Creator Function* and *Optimizer Creator Function* to `AutoEstimator` for training. 
+User could pass *Creator Function*s, including *Data Creator Function*, *Model Creator Function* and *Optimizer Creator Function* to `AutoEstimator` for training.
 
 The *Creator Function*s should take a parameter of `config` as input and get the hyper-parameter values from `config` to enable hyper parameter search.
 
@@ -64,7 +47,7 @@ class LeNet(nn.Module):
         self.conv2 = nn.Conv2d(20, 50, 5, 1)
         self.fc1 = nn.Linear(4*4*50, fc1_hidden_size)
         self.fc2 = nn.Linear(fc1_hidden_size, 10)
-    
+
     def forward(self, x):
         pass
 
@@ -75,7 +58,7 @@ def model_creator(config):
 ```
 
 #### **2.3 Optimizer Creator Function**
-*Optimizer Creator Function* takes `model` and `config` as input, and returns a `torch.optim.Optimizer` object. 
+*Optimizer Creator Function* takes `model` and `config` as input, and returns a `torch.optim.Optimizer` object.
 ```python
 import torch
 def optim_creator(model, config):
@@ -170,7 +153,7 @@ search_space = {
 ```
 
 #### **4.2 Advanced Search Algorithms**
-Beside grid search and random search, user could also choose to use some advanced hyper-parameter optimization methods, 
+Beside grid search and random search, user could also choose to use some advanced hyper-parameter optimization methods,
 such as [Ax](https://ax.dev/), [Bayesian Optimization](https://github.com/fmfn/BayesianOptimization), [Scikit-Optimize](https://scikit-optimize.github.io), etc. We supported all *Search Algorithms* in [Ray Tune](https://docs.ray.io/en/master/index.html). View the [Ray Tune Search Algorithms](https://docs.ray.io/en/master/tune/api_docs/suggestion.html) for more details.
 Note that you should install the dependency for your search algorithm manually.
 
@@ -207,7 +190,7 @@ We support all *Schedulers* in [Ray Tune](https://docs.ray.io/en/master/index.ht
 User can pass the *Scheduler* name to `scheduler` in `AutoEstimator.fit`. The *Scheduler* names supported are "fifo", "hyperband", "async_hyperband", "median_stopping_rule", "hb_bohb", "pbt", "pbt_replay".
 The default `scheduler` is "fifo", which just runs trials in submission order.
 
-See examples below about how to use *Scheduler* in `AutoEstimator`. 
+See examples below about how to use *Scheduler* in `AutoEstimator`.
 ```python
 scheduler_params = dict(
             max_t=50,

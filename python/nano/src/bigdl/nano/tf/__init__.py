@@ -31,3 +31,5 @@ if platform.system() != "Darwin":
                       "please run `source bigdl-nano-init`")
 
     tf.config.set_soft_device_placement(enabled=True)
+
+from .dispatcher import patch_tensorflow, unpatch_tensorflow

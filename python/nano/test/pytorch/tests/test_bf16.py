@@ -74,6 +74,7 @@ class Pytorch1_12:
 
     @patch("bigdl.nano.pytorch.amp.bfloat16.BF16Model._max_bf16_isa", return_value=None)
     @patch("bigdl.nano.pytorch.amp.bfloat16.BF16Model._has_bf16_isa", new_callable=PropertyMock)
+    @pytest.mark.skip(reason="Disable dnnl log check if torch==1.12")
     def test_not_executed_on_bf16(self, mocked_has_bf16_isa, mocked_max_bf16_isa):
         """
         Pytorch version is correct and bf16 instructions are detected.
