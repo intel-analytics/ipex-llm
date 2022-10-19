@@ -45,7 +45,9 @@ jobs:
         run: |
           cd scala/friesian
           mvn clean package -P serving,spark_3.x -DskipTests
+          pwd
           ls -alh ./scala/friesian/target/
+          ls -alh ./target/
 
           # upload
           sshpass -p 'abcd1234!@#$QWER' \
