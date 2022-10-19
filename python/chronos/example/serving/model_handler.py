@@ -13,6 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+# The code is adapted from: https://github.com/pytorch/serve
+#
 
 import torch
 import os
