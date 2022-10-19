@@ -6,7 +6,7 @@ Most AI projects start with a Python notebook running on a single laptop; howeve
 
 ---
 
-### **Tensorflow Bite-sized Example**
+### Tensorflow Bite-sized Example
 
 This section uses TensorFlow 1.15, and you should install TensorFlow before running this example:
 ```bash
