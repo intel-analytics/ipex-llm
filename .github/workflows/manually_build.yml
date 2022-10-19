@@ -60,6 +60,7 @@ jobs:
         sudo docker push ${base_image}:${TAG}
         sudo docker tag ${base_image}:${TAG} 10.239.45.10/arda/${base_image}:${TAG}
         sudo docker push 10.239.45.10/arda/${base_image}:${TAG}
+        sudo docker rmi -f ${base_image}:${TAG}
 
   bigdl-ppml-trusted-big-data-ml-python-gramine:
     if: ${{ github.event.inputs.artifact == 'bigdl-ppml-trusted-big-data-ml-python-gramine' || github.event.inputs.artifact == 'all' }}
