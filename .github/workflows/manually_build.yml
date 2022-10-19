@@ -78,7 +78,7 @@ jobs:
         echo "##############################################################"
         export base_image=intelanalytics/bigdl-ppml-gramine-base
         export image=intelanalytics/bigdl-ppml-trusted-deep-learning-gramine-base
-        cd ppml/base/trusted-deep-learning/base
+        cd ppml/trusted-deep-learning/base
         sudo docker build \
           --no-cache=true \
           --build-arg http_proxy=${HTTP_PROXY} \
