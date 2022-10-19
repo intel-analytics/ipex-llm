@@ -40,7 +40,7 @@ NAME            READY   STATUS        RESTARTS   AGE
 pod/pccs-0      1/1     Running       0          18s
 
 NAME           TYPE        CLUSTER-IP      EXTERNAL-IP     PORT(S)     AGE
-service/pccs   ClusterIP   10.97.134.251   172.168.0.226   18081/TCP   18s
+service/pccs   ClusterIP   1.7.4.251   1.2.3.4   18081/TCP   18s
 
 NAME                    READY   AGE
 statefulset.apps/pccs   1/1     18s
@@ -55,9 +55,9 @@ curl -v -k -G "https://<your_pccs_ip>:<your_pccs_port>/sgx/certification/v3/root
 # you will get similar to below if success
 
 * Uses proxy env variable no_proxy == '10.239.45.10:8081,10.112.231.51,10.239.45.10,172.168.0.205'
-*   Trying 172.168.0.226:18081...
+*   Trying 1.2.3.4:18081...
 * TCP_NODELAY set
-* Connected to 172.168.0.226 (172.168.0.226) port 18081 (#0)
+* Connected to 1.2.3.4 (1.2.3.4) port 18081 (#0)
 * ALPN, offering h2
 * ALPN, offering http/1.1
 * successfully set certificate verify locations:
@@ -80,7 +80,7 @@ curl -v -k -G "https://<your_pccs_ip>:<your_pccs_port>/sgx/certification/v3/root
 *  issuer: C=cn; ST=nanjing; L=nanjing; O=intel; OU=intel; CN=liyao; emailAddress=yao3.li@intel.com
 *  SSL certificate verify result: self signed certificate (18), continuing anyway.
 > GET /sgx/certification/v3/rootcacrl HTTP/1.1
-> Host: 172.168.0.226:18081
+> Host: 1.2.3.4:18081
 > User-Agent: curl/7.68.0
 > Accept: */*
 >
@@ -98,7 +98,7 @@ curl -v -k -G "https://<your_pccs_ip>:<your_pccs_port>/sgx/certification/v3/root
 < Connection: keep-alive
 < Keep-Alive: timeout=5
 <
-* Connection #0 to host 172.168.0.226 left intact
+* Connection #0 to host 1.2.3.4 left intact
 308201213081c80********************************************************************************************************************************************************************************************************************************
 ```
 
