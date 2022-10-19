@@ -14,8 +14,8 @@ ENV SGX_MEM_SIZE                        32G
 ENV SGX_LOG_LEVEL                       error
 ENV LC_ALL                              C.UTF-8
 ENV LANG                                C.UTF-8
-ENV JAVA_HOME           /opt/jdk$JDK_VERSION
-ENV PATH                ${JAVA_HOME}/bin:${PATH}
+ENV JAVA_HOME                           /opt/jdk$JDK_VERSION
+ENV PATH                                ${JAVA_HOME}/bin:${PATH}
 
 RUN mkdir -p /ppml/
 
