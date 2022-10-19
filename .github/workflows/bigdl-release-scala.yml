@@ -1,10 +1,6 @@
 name: BigDL Release Scala
 
 on:
-  # pull_request:
-  #   branches:
-  #     - 'branch-2.1'
-  
   workflow_dispatch:
 
 
@@ -17,49 +13,12 @@ jobs:
     runs-on: [self-hosted, Linux, Bree, test, ubuntu-16.04]
     steps:
     - uses: actions/checkout@v3
-    # - uses: actions/cache@v2
-    #   with:
-    #     path: ~/.m2/repository
-    #     key: maven-${{ hashFiles('**/pom.xml') }}
-    #     restore-keys: maven-
     - name: Set up JDK8
       uses: ./.github/actions/jdk-setup-action
     - name: Set up Maven
       uses: stCarolas/setup-maven@v4.4
       with:
         maven-version: 3.6.3
-    # - name: Set up Maven Settings
-    #   uses: s4u/maven-settings-action@v2.6.0
-    #   with:
-    #     sonatypeSnapshots: true
-    #     apacheSnapshots: true
-    #     servers: |
-    #       [{
-    #         "id": "central",
-    #         "configuration": {
-    #           "httpConfiguration": {
-    #             "all": {
-    #               "connectionTimeout": "3600000",
-    #               "readTimeout": "3600000"
-    #               }    
-    #             }
-    #           }
-    #       },{
-    #         "id": "ossrh",
-    #         "username": "${{ secrets.OSSRH_USERNAME }}",
-    #         "password": "${{ secrets.OSSRH_PASSWORD }}",
-    #         "configuration": {
-    #           "timeout": "3600000"
-    #         }
-    #       }]
-          
-    # - name: Maven verify
-    #   run: |
-    #     export http_proxy="http://child-prc.intel.com:913/"
-    #     export https_proxy="http://child-prc.intel.com:913/"
-    #     cd ./scala
-    #     mvn clean
-    #     mvn deploy -Dgpg.passphrase=BigDL2017
     - name: Maven clean deploy
       run: |
         set -x
