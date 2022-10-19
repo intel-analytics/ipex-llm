@@ -136,8 +136,6 @@ ARG SCALA_VERSION
 
 ENV SPARK_VERSION                       ${SPARK_VERSION}
 ENV SPARK_HOME                          /ppml/spark-${SPARK_VERSION}
-ENV JAVA_HOME                           /opt/jdk8
-ENV PATH                                ${JAVA_HOME}/bin:${PATH}
 ENV SCALA_VERSION                       ${SCALA_VERSION}
 ENV LOCAL_IP                            127.0.0.1
 ENV SPARK_MASTER_IP                     127.0.0.1
@@ -167,7 +165,6 @@ RUN mkdir -p /ppml/lib && \
     mkdir -p /root/.m2 && \
     mkdir -p /root/.kube/
 
-COPY --from=bigdata /opt/jdk  /opt/jdk8
 COPY --from=bigdata /opt/spark-${SPARK_VERSION} /ppml/spark-${SPARK_VERSION}
 COPY --from=bigdata /opt/flink-${FLINK_VERSION} /ppml/flink-${FLINK_VERSION}
 
