@@ -1,8 +1,8 @@
 name: Nightly Test
 
 on:
-  #pull_request:
-     #branchs: [ main ]
+  pull_request:
+     branchs: [ main ]
   schedule:
     - cron: '0 13 * * *' # GMT time, 13:00 GMT == 21:00 China
   workflow_dispatch:
@@ -595,7 +595,7 @@ jobs:
 
 
   Friesian-Python-Py37-Spark3:
-    if: ${{ github.event.schedule || github.event.inputs.artifact == 'Friesian-Python-Py37-Spark3' || github.event.inputs.artifact == 'all' }}
+    #if: ${{ github.event.schedule || github.event.inputs.artifact == 'Friesian-Python-Py37-Spark3' || github.event.inputs.artifact == 'all' }}
     runs-on: [self-hosted, Gondolin, ubuntu-20.04-lts]
     
     steps:
@@ -607,7 +607,7 @@ jobs:
     - name: Setup env
       uses: ./.github/actions/friesian/setup-env/setup-friesian-python-py37-spark3
     - name: Run Test
-      uses: ./.github/actions/friesian/friesian-python-py37-spark3/nightly-test
+      uses: ./.github/actions/friesian/friesian-python-py37-spark3
     - name: Remove Env
       if: ${{ always() }}
       uses: ./.github/actions/remove-env

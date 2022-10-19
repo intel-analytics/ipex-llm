@@ -372,7 +372,7 @@ jobs:
     - name: Setup env
       uses: ./.github/actions/friesian/setup-env/setup-friesian-python-py37-spark3
     - name: Run Test
-      uses: ./.github/actions/friesian/friesian-python-py37-spark3/pr-test
+      uses: ./.github/actions/friesian/friesian-python-py37-spark3/
     - name: Remove Env
       if: ${{ always() }}
       uses: ./.github/actions/remove-env
