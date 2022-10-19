@@ -98,12 +98,10 @@ RUN wget $JDK_URL && \
     ln -s /opt/jdk$JDK_VERSION /opt/jdk
 
 ADD ./download_jars.sh /ppml
-ADD ./entrypoint.sh /opt/entrypoint.sh
 
 RUN cd /ppml && \
-    bash ./download_jars.sh && \
-    chmod +x /opt/entrypoint.sh 
+    bash ./download_jars.sh
 
 ENV PYTHONPATH   /usr/lib/python3.7:/usr/lib/python3.7/lib-dynload:/usr/local/lib/python3.7/dist-packages:/usr/lib/python3/dist-packages
 WORKDIR /ppml
-ENTRYPOINT [ "/opt/entrypoint.sh" ]
+ENTRYPOINT [ "/bin/bash" ]
