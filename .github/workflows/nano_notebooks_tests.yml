@@ -23,7 +23,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: ["ubuntu-20.04"]
+        os: [self-hosted, Gondolin, ubuntu-20.04-lts]
         python-version: ["3.7"]
 
     # Steps represent a sequence of tasks that will be executed as part of the job
