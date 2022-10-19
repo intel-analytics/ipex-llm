@@ -276,8 +276,6 @@ class TrainingOperator:
                 output = self.model(features)
             elif isinstance(features, dict):
                 output = self.model(**features)
-            elif isinstance(features, (tuple, list)):
-                output = self.model(*features)
             else:
                 invalidInputError(False,
                                   "Features should be tensor, list/tuple or dict, "
