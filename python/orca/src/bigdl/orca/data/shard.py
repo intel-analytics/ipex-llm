@@ -643,9 +643,9 @@ class SparkXShards(XShards):
         Group the Shards with specified columns and then run aggregation. Optionally join the
         result with the original Shards.
 
-        :param columns: str or a list of str. Columns to group the Table. If it is an empty list,
-               aggregation is run directly without grouping. Default is [].
-        :param agg: str, list or dict. Aggregate functions to be applied to grouped Table.
+        :param columns: str or a list of str. Columns to group the SparkXShards. If it is an
+               empty list, aggregation is run directly without grouping. Default is [].
+        :param agg: str, list or dict. Aggregate functions to be applied to grouped SparkXShards.
                Default is "count".
                Supported aggregate functions are: "max", "min", "count", "sum", "avg", "mean",
                "sumDistinct", "stddev", "stddev_pop", "variance", "var_pop", "skewness", "kurtosis",
@@ -664,9 +664,9 @@ class SparkXShards(XShards):
                agg=["last", "stddev"]
                agg={"*":"count"}
                agg={"col_1":"sum", "col_2":["count", "mean"]}
-        :param join: boolean. If True, join the aggregation result with original Table.
+        :param join: boolean. If True, join the aggregation result with original SparkXShards.
 
-        :return: A new Table with aggregated column fields.
+        :return: A new SparkXShards with aggregated column fields.
         """
 
         if self._get_class_name() != 'pandas.core.frame.DataFrame':

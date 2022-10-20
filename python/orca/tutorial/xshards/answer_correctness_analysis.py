@@ -20,7 +20,7 @@ import bigdl.orca.data.pandas
 from bigdl.orca.data.transformer import *
 
 
-path = '/home/ding/data/answer_correctness/train_debug.csv'
+path = 'answer_correctness/train.csv'
 used_data_types_list = [
     'timestamp',
     'user_id',
