@@ -121,7 +121,7 @@ else
   ls
   echo "ls data"
   ls data
-  unzip data/multi_task.zip
+  unzip data/multi_task.zip -d data
   ls data
 
 
