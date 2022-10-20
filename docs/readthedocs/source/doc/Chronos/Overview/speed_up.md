@@ -129,13 +129,13 @@ Please refer to [Forecaster API Docs](../../PythonAPI/Chronos/forecasters.html) 
 
 #### 3.2 `TSPipeline` Inference Acceleration
 Basically same to [`Forecaster`](#31-forecaster-inference-acceleration)
-##### 3.1.1 Default Acceleration
+##### 3.2.1 Default Acceleration
 Basically same to [`Forecaster`](#31-forecaster-inference-acceleration)
-##### 3.1.2 ONNX Runtime
+##### 3.2.2 ONNX Runtime
 ```python
 tsppl.predict_with_onnx(...)
 ```
-##### 3.1.3 Quantization
+##### 3.2.3 Quantization
 ```python
 tsppl.quantize(...)
 tsppl.predict/predict_with_onnx(test_data, quantize=True/False)
