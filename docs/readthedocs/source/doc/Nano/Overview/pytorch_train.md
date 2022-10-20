@@ -88,8 +88,8 @@ class MyNano(TorchNano):
 # enable IPEX optimizaiton
 MyNano(use_ipex=True).train(...)
 
-# enable IPEX and distributed training, using subprocess strategy
-MyNano(use_ipex=True, num_processes=2, strategy="subprocess").train(...)
+# enable IPEX and distributed training, using 'subprocess' backend
+MyNano(use_ipex=True, num_processes=2, distributed_backend="subprocess").train(...)
 ```
 
 ### Optimized Data Pipeline
