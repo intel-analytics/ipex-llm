@@ -8,7 +8,7 @@
 
 **In this guide we will describe how to scale out _TensorFlow 1.15_ programs using Orca in 4 simple steps.** (_[Keras 2.3](./orca-keras-quickstart.md) and [TensorFlow 2](./orca-tf2keras-quickstart.md) guides are also available._)
 
-### **Step 0: Prepare Environment**
+### Step 0: Prepare Environment
 
 We recommend using [conda](https://docs.conda.io/projects/conda/en/latest/user-guide/install/) to prepare the environment. Please refer to the [install guide](../../UserGuide/python.md) for more details.
 
@@ -21,7 +21,7 @@ pip install tensorflow-datasets==2.0
 pip install psutil
 ```
 
-### **Step 1: Init Orca Context**
+### Step 1: Init Orca Context
 ```python
 from bigdl.orca import init_orca_context, stop_orca_context
 
@@ -39,7 +39,7 @@ This is the only place where you need to specify local or distributed mode. View
 
 **Note:** You should `export HADOOP_CONF_DIR=/path/to/hadoop/conf/dir` when running on Hadoop YARN cluster. View [Hadoop User Guide](./../../UserGuide/hadoop.md) for more details. To use tensorflow_datasets on HDFS, you should correctly set HADOOP_HOME, HADOOP_HDFS_HOME, LD_LIBRARY_PATH, etc. For more details, please refer to TensorFlow documentation [link](https://github.com/tensorflow/docs/blob/r1.11/site/en/deploy/hadoop.md).
 
-### **Step 2: Define the Model**
+### Step 2: Define the Model
 
 You may define your model, loss and metrics in the same way as in any standard (single node) TensorFlow program.
 
@@ -71,7 +71,7 @@ logits = lenet(images)
 loss = tf.reduce_mean(tf.losses.sparse_softmax_cross_entropy(logits=logits, labels=labels))
 acc = accuracy(logits, labels)
 ```
-### **Step 3: Define Train Dataset**
+### Step 3: Define Train Dataset
 
 You can define the dataset using standard [tf.data.Dataset](https://www.tensorflow.org/api_docs/python/tf/data/Dataset). Orca also supports [Spark DataFrame](https://spark.apache.org/docs/latest/sql-programming-guide.html) and [Orca XShards](../Overview/data-parallel-processing.md).
 
@@ -91,7 +91,7 @@ mnist_train = mnist_train.map(preprocess)
 mnist_test = mnist_test.map(preprocess)
 ```
 
-### **Step 4: Fit with Orca Estimator**
+### Step 4: Fit with Orca Estimator
 
 First, create an Estimator.
 

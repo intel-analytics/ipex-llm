@@ -60,9 +60,9 @@ pip install bigdl
 
     **Related Readings**
     ^^^
-    * `BigDL Installation Guide <../UserGuide/python>`_
-    * `Nano Installation Guide <../Nano/Overview/nano.html#install>`_
-    * `Chronos Installation Guide <../Chronos/Overview/chronos.html#install>`_
+    * `BigDL Installation Guide <./python.html>`_
+    * `Nano Installation Guide <../Nano/Overview/install.html>`_
+    * `Chronos Installation Guide <../Chronos/Overview/install.html>`_
 ```
 
 ### Setup Jupyter Notebook Environment

@@ -4,20 +4,20 @@ Anomaly Detection detects abnormal samples in a given time series. _Chronos_ pro
 
 View some examples notebooks for [Datacenter AIOps][AIOps].
 
-## **1. ThresholdDetector**
+## 1. ThresholdDetector
 
 ThresholdDetector detects anomaly based on threshold. It can be used to detect anomaly on a given time series ([notebook][AIOps_anomaly_detect_unsupervised]), or used together with [Forecasters](#forecasting) to detect anomaly on new coming samples ([notebook][AIOps_anomaly_detect_unsupervised_forecast_based]).
 
 View [ThresholdDetector API Doc](../../PythonAPI/Chronos/anomaly_detectors.html#chronos-model-anomaly-th-detector) for more details.
 
 
-## **2. AEDetector**
+## 2. AEDetector
 
 AEDetector detects anomaly based on the reconstruction error of an autoencoder network.
 
 View anomaly detection [notebook][AIOps_anomaly_detect_unsupervised] and [AEDetector API Doc](../../PythonAPI/Chronos/anomaly_detectors.html#chronos-model-anomaly-ae-detector) for more details.
 
-## **3. DBScanDetector**
+## 3. DBScanDetector
 
 DBScanDetector uses DBSCAN clustering algortihm for anomaly detection.
 

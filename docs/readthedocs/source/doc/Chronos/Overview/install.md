@@ -2,7 +2,7 @@
 
 ---
 
-#### **OS and Python version requirement**
+#### OS and Python version requirement
 
 
 ```eval_rst
@@ -20,7 +20,7 @@
 
 
 
-#### **Install using Conda**
+#### Install using Conda
 
 We recommend using conda to manage the Chronos python environment. For more information about Conda, refer to [here](https://docs.conda.io/en/latest/miniconda.html#).
 Select your preferences in the panel below to find the proper install command. Then run the install command as the example shown below.
