@@ -23,7 +23,7 @@ from importlib.util import find_spec
 import time
 import numpy as np
 from copy import deepcopy
-from typing import Dict, Callable, Tuple
+from typing import Dict, Callable, Tuple, Optional, List, Set
 from torch.utils.data import DataLoader
 from torchmetrics.metric import Metric
 from bigdl.nano.utils.log4Error import invalidInputError, invalidOperationError
@@ -120,16 +120,23 @@ class InferenceOptimizer:
 
     def optimize(self, model: nn.Module,
                  training_data: DataLoader,
-                 validation_data: DataLoader = None,
-                 metric: Callable = None,
+                 validation_data: Optional[DataLoader] = None,
+                 metric: Optional[Callable] = None,
                  direction: str = "max",
-                 thread_num: int = None,
+                 thread_num: Optional[int] = None,
                  logging: bool = False,
-                 latency_sample_num: int = 100) -> None:
+                 latency_sample_num: int = 100,
+                 includes: Optional[List[str]] = None,
+                 excludes: Optional[List[str]] = None) -> None:
         '''
         This function will give all available inference acceleration methods a try
         and record the latency, accuracy and model instance inside the Optimizer for
         future usage. All model instance is setting to eval mode.
+
+        The available methods are "original", "fp32_ipex", "bf16", "bf16_ipex","int8",
+        "jit_fp32", "jit_fp32_ipex", "jit_fp32_ipex_channels_last", "openvino_fp32",
+        "openvino_int8", "onnxruntime_fp32", "onnxruntime_int8_qlinear"
+        and "onnxruntime_int8_integer"
 
         :param model: A torch.nn.Module to be optimized
         :param training_data: A torch.utils.data.dataloader.DataLoader object for training
@@ -163,6 +170,11 @@ class InferenceOptimizer:
                Default: False.
         :param latency_sample_num: (optional) a int represents the number of repetitions
                to calculate the average latency. The default value is 100.
+        :param includes: (optional) a list of acceleration methods that will be included in the
+               search. Default to None meaning including all available methods. "original" method
+               will be automatically add to includes.
+        :param excludes: (optional) a list of acceleration methods that will be excluded from the
+               search. "original" will be ignored in the excludes.
         '''
 
         # check if model is a nn.Module or inherited from a nn.Module
@@ -171,7 +183,8 @@ class InferenceOptimizer:
                           "Only support direction 'min', 'max'.")
 
         # get the available methods whose dep is met
-        available_dict: Dict = _available_acceleration_combination()
+        available_dict: Dict = _available_acceleration_combination(excludes=excludes,
+                                                                   includes=includes)
 
         self._direction: str = direction  # save direction as attr
         # record whether calculate accuracy in optimize by this attr
@@ -352,10 +365,10 @@ class InferenceOptimizer:
         print(self._optimize_result)
 
     def get_best_model(self,
-                       accelerator: str = None,
-                       precision: str = None,
-                       use_ipex: bool = None,
-                       accuracy_criterion: float = None) -> Tuple[nn.Module, str]:
+                       accelerator: Optional[str] = None,
+                       precision: Optional[str] = None,
+                       use_ipex: Optional[bool] = None,
+                       accuracy_criterion: Optional[float] = None) -> Tuple[nn.Module, str]:
         '''
         According to results of `optimize`, obtain the model with minimum latency under
         specific restrictions or without restrictions.
@@ -432,19 +445,19 @@ class InferenceOptimizer:
     @staticmethod
     def quantize(model: nn.Module,
                  precision: str = 'int8',
-                 accelerator: str = None,
+                 accelerator: Optional[str] = None,
                  use_ipex: bool = False,
-                 calib_dataloader: DataLoader = None,
-                 metric: Metric = None,
-                 accuracy_criterion: dict = None,
+                 calib_dataloader: Optional[DataLoader] = None,
+                 metric: Optional[Metric] = None,
+                 accuracy_criterion: Optional[dict] = None,
                  approach: str = 'static',
-                 method: str = None,
-                 conf: str = None,
-                 tuning_strategy: str = None,
-                 timeout: int = None,
-                 max_trials: int = None,
+                 method: Optional[str] = None,
+                 conf: Optional[str] = None,
+                 tuning_strategy: Optional[str] = None,
+                 timeout: Optional[int] = None,
+                 max_trials: Optional[int] = None,
                  input_sample=None,
-                 thread_num: int = None,
+                 thread_num: Optional[int] = None,
                  onnxruntime_session_options=None,
                  sample_size: int = 100,
                  logging: bool = True,
@@ -618,9 +631,9 @@ class InferenceOptimizer:
     @staticmethod
     def trace(model: nn.Module,
               input_sample=None,
-              accelerator: str = None,
+              accelerator: Optional[str] = None,
               use_ipex: bool = False,
-              thread_num: int = None,
+              thread_num: Optional[int] = None,
               onnxruntime_session_options=None,
               logging: bool = True,
               **export_kwargs):
@@ -689,7 +702,7 @@ class InferenceOptimizer:
         save_model(model, path)
 
     @staticmethod
-    def load(path, model: nn.Module = None):
+    def load(path, model: Optional[nn.Module] = None):
         """
         Load a model from local.
 
@@ -741,7 +754,8 @@ def _bf16_checker():
     return "avx512_bf16" in msg or "amx_bf16" in msg
 
 
-def _available_acceleration_combination():
+def _available_acceleration_combination(excludes: Optional[List[str]],
+                                        includes: Optional[List[str]]):
     '''
     :return: a dictionary states the availablity (if meet depdencies)
     '''
@@ -751,8 +765,26 @@ def _available_acceleration_combination():
                           "openvino": _openvino_checker,
                           "pot": _openvino_checker,
                           "bf16": _bf16_checker}
+    if excludes is None:
+        exclude_set: Set[str] = set()
+    else:
+        exclude_set: Set[str] = set(excludes)
+        exclude_set.discard("original")
+
+    if includes is None:
+        include_set: Set[str] = set(ALL_INFERENCE_ACCELERATION_METHOD.keys())
+    else:
+        include_set: Set[str] = set(includes)
+        include_set.add("original")
+
     available_dict = {}
     for method, option in ALL_INFERENCE_ACCELERATION_METHOD.items():
+        if method not in include_set:
+            continue
+
+        if method in exclude_set:
+            continue
+
         available_iter = True
         for name, value in option.__dict__.items():
             if value is True:
@@ -795,7 +827,7 @@ def _signature_check(function):
     '''
     import inspect
     sig = inspect.signature(function)
-    if len(sig.parameters.values()) != 2:
+    if len(sig.parameters.values()) < 2:
         return False
     param1_name = list(sig.parameters.values())[0].name
     param2_name = list(sig.parameters.values())[1].name

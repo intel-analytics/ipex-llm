@@ -2,41 +2,24 @@
 
 ---
 
-**Orca `AutoEstimator` provides similar APIs as Orca `Estimator` for distributed hyper-parameter tuning.** 
-
-### **Install**
-We recommend using [conda](https://docs.conda.io/projects/conda/en/latest/user-guide/install/) to prepare the Python environment.
-```bash
-conda create -n bigdl-orca-automl python=3.7  # "bigdl-orca-automl" is conda environment name, you can use any name you like.
-conda activate bigdl-orca-automl
-pip install bigdl-orca[automl]
-````
-You can install the latest release version of BigDL Orca as follows:
-```bash
-pip install --pre --upgrade bigdl-orca[automl]
-```
-_Note that with extra key of [automl], `pip` will automatically install the additional dependencies for distributed hyper-parameter tuning,
-including `ray[tune]==1.9.2`, `scikit-learn`, `tensorboard`, `xgboost`._
-
-To use [Pytorch Estimator](#pytorch-autoestimator), you need to install Pytorch with `pip install torch==1.8.1`.
-
-To use [TensorFlow/Keras AutoEstimator](#tensorflow-keras-autoestimator), you need to install Tensorflow with `pip install tensorflow==1.15.0`.
+**Orca `AutoEstimator` provides similar APIs as Orca `Estimator` for distributed hyper-parameter tuning.**
 
 
-### **1. AutoEstimator**
+
+### 1. AutoEstimator
 
 To perform distributed hyper-parameter tuning, user can first create an Orca `AutoEstimator` from standard TensorFlow Keras or PyTorch model, and then call `AutoEstimator.fit`.
 
 Under the hood, the Orca `AutoEstimator` generates different trials and schedules them on each mode in the cluster. Each trial runs a different combination of hyper parameters, sampled from the user-desired hyper-parameter space.
-HDFS is used to save temporary results of each trial and all the results will be finally transferred to driver for further analysis. 
+HDFS is used to save temporary results of each trial and all the results will be finally transferred to driver for further analysis.
 
-### **2. Pytorch AutoEstimator**
+### 2. Pytorch AutoEstimator
 
-User could pass *Creator Function*s, including *Data Creator Function*, *Model Creator Function* and *Optimizer Creator Function* to `AutoEstimator` for training. 
+User could pass *Creator Function*s, including *Data Creator Function*, *Model Creator Function* and *Optimizer Creator Function* to `AutoEstimator` for training.
 
 The *Creator Function*s should take a parameter of `config` as input and get the hyper-parameter values from `config` to enable hyper parameter search.
 
-#### **2.1 Data Creator Function**
+#### 2.1 Data Creator Function
 You can define the train and validation datasets using *Data Creator Function*. The *Data Creator Function* takes `config` as input and returns a `torch.utils.data.DataLoader` object, as shown below.
 ```python
 # "batch_size" is the hyper-parameter to be tuned.
@@ -52,7 +35,7 @@ def train_loader_creator(config):
 ```
 The input data for Pytorch `AutoEstimator` can be a *Data Creator Function* or a tuple of numpy ndarrays in the form of (x, y), where x is training input data and y is training target data.
 
-#### **2.2 Model Creator Function**
+#### 2.2 Model Creator Function
 *Model Creator Function* also takes `config` as input and returns a `torch.nn.Module` object, as shown below.
 
 ```python
@@ -64,7 +47,7 @@ class LeNet(nn.Module):
         self.conv2 = nn.Conv2d(20, 50, 5, 1)
         self.fc1 = nn.Linear(4*4*50, fc1_hidden_size)
         self.fc2 = nn.Linear(fc1_hidden_size, 10)
-    
+
     def forward(self, x):
         pass
 
@@ -74,8 +57,8 @@ def model_creator(config):
     return model
 ```
 
-#### **2.3 Optimizer Creator Function**
-*Optimizer Creator Function* takes `model` and `config` as input, and returns a `torch.optim.Optimizer` object. 
+#### 2.3 Optimizer Creator Function
+*Optimizer Creator Function* takes `model` and `config` as input, and returns a `torch.optim.Optimizer` object.
 ```python
 import torch
 def optim_creator(model, config):
@@ -84,7 +67,7 @@ def optim_creator(model, config):
 
 Note that the `optimizer` argument in Pytorch `AutoEstimator` constructor could be a *Optimizer Creator Function* or a string, which is the name of Pytorch Optimizer. The above *Optimizer Creator Function* has the same functionality with "Adam".
 
-#### **2.4 Create and Fit Pytorch AutoEstimator**
+#### 2.4 Create and Fit Pytorch AutoEstimator
 User could create a Pytorch `AutoEstimator` as below.
 ```python
 from bigdl.orca.automl.auto_estimator import AutoEstimator
@@ -112,7 +95,7 @@ best_config = auto_est.get_best_config() # a dictionary of hyper-parameter names
 ```
 View the related [Python API doc](https://bigdl.readthedocs.io/en/latest/doc/PythonAPI/AutoML/automl.html#orca-automl-auto-estimator) for more details.
 
-### **3. TensorFlow/Keras AutoEstimator**
+### 3. TensorFlow/Keras AutoEstimator
 Users can create an `AutoEstimator` for TensorFlow Keras from a `tf.keras` model (using a *Model Creator Function*). For example:
 
 ```python
@@ -149,10 +132,10 @@ best_config = auto_est.get_best_config() # a dictionary of hyper-parameter names
 ```
 View the related [Python API doc](https://bigdl.readthedocs.io/en/latest/doc/PythonAPI/AutoML/automl.html#orca-automl-auto-estimator) for more details.
 
-### **4. Search Space and Search Algorithms**
+### 4. Search Space and Search Algorithms
 For Hyper-parameter Optimization, user should define the search space of various hyper-parameter values for neural network training, as well as how to search through the chosen hyper-parameter space.
 
-#### **4.1 Basic Search Algorithms**
+#### 4.1 Basic Search Algorithms
 
 For basic search algorithms like **Grid Search** and **Random Search**, we provide several sampling functions with `automl.hp`. See [API doc](https://bigdl.readthedocs.io/en/latest/doc/PythonAPI/AutoML/automl.html#orca-automl-hp) for more details.
 
@@ -169,8 +152,8 @@ search_space = {
 }
 ```
 
-#### **4.2 Advanced Search Algorithms**
-Beside grid search and random search, user could also choose to use some advanced hyper-parameter optimization methods, 
+#### 4.2 Advanced Search Algorithms
+Beside grid search and random search, user could also choose to use some advanced hyper-parameter optimization methods,
 such as [Ax](https://ax.dev/), [Bayesian Optimization](https://github.com/fmfn/BayesianOptimization), [Scikit-Optimize](https://scikit-optimize.github.io), etc. We supported all *Search Algorithms* in [Ray Tune](https://docs.ray.io/en/master/index.html). View the [Ray Tune Search Algorithms](https://docs.ray.io/en/master/tune/api_docs/suggestion.html) for more details.
 Note that you should install the dependency for your search algorithm manually.
 
@@ -199,7 +182,7 @@ auto_estimator.fit(
 ```
 See [API Doc](https://bigdl.readthedocs.io/en/latest/doc/PythonAPI/AutoML/automl.html#orca-automl-auto-estimator) for more details.
 
-### **5. Scheduler**
+### 5. Scheduler
 *Scheduler* can stop/pause/tweak the hyper-parameters of running trials, making the hyper-parameter tuning process much efficient.
 
 We support all *Schedulers* in [Ray Tune](https://docs.ray.io/en/master/index.html). See [Ray Tune Schedulers](https://docs.ray.io/en/master/tune/api_docs/schedulers.html#schedulers-ref) for more details.
@@ -207,7 +190,7 @@ We support all *Schedulers* in [Ray Tune](https://docs.ray.io/en/master/index.ht
 User can pass the *Scheduler* name to `scheduler` in `AutoEstimator.fit`. The *Scheduler* names supported are "fifo", "hyperband", "async_hyperband", "median_stopping_rule", "hb_bohb", "pbt", "pbt_replay".
 The default `scheduler` is "fifo", which just runs trials in submission order.
 
-See examples below about how to use *Scheduler* in `AutoEstimator`. 
+See examples below about how to use *Scheduler* in `AutoEstimator`.
 ```python
 scheduler_params = dict(
             max_t=50,

@@ -3,7 +3,7 @@
 ---
 
 You can run BigDL program on the [Databricks](https://databricks.com/) cluster as follows.
-### **1. Create a Databricks Cluster**
+### 1. Create a Databricks Cluster
 
 - Create either an [AWS Databricks](https://docs.databricks.com/getting-started/try-databricks.html) workspace or an [Azure Databricks](https://docs.microsoft.com/en-us/azure/azure-databricks/) workspace. 
 - Create a Databricks [cluster](https://docs.databricks.com/clusters/create.html) using the UI. Choose Databricks runtime version. This guide is tested on Runtime 9.1 LTS (includes Apache Spark 3.1.2, Scala 2.12).
@@ -90,7 +90,7 @@ Use the init script from [step 2](#2-generate-initialization-script) to install 
 
 Then start or restart the cluster. After starting/restarting the cluster, the libraries specified in the init script are all installed.
 
-### **5. Run BigDL on Databricks**
+### 5. Run BigDL on Databricks
 
 Open a new notebook, and call `init_orca_context` at the beginning of your code (with `cluster_mode` set to "spark-submit").
 
@@ -110,7 +110,7 @@ Output on Databricks:
 
 > Note that if you want to save model to DBFS, or load model from DBFS, the save/load path should be the **File API Format** on Databricks, which means your save/load path should start with `/dbfs`.
 
-### **6. Other ways to install third-party libraries on Databricks if necessary**
+### 6. Other ways to install third-party libraries on Databricks if necessary
 
 If you want to use other ways to install third-party libraries, check related Databricks documentation of [libraries for AWS Databricks](https://docs.databricks.com/libraries/index.html) and [libraries for Azure Databricks](https://docs.microsoft.com/en-us/azure/databricks/libraries/).
 
