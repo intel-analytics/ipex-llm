@@ -18,6 +18,7 @@ from bigdl.chronos.forecaster.abstract import Forecaster
 from bigdl.chronos.forecaster.utils import *
 from bigdl.chronos.metric.forecast_metrics import Evaluator
 
+from typing import Optional
 import numpy as np
 import warnings
 # Filter out useless Userwarnings
@@ -439,15 +440,20 @@ class BasePytorchForecaster(Forecaster):
                     self.trainer.move_metrics_to_cpu)
                 return fit_out
 
-    def optimize(self, train_data, validation_data, batch_size=32, thread_num=None,
-                 accelerator=None, precision=None, metric='mse',
-                 accuracy_criterion: float=0.1):
+    def optimize(self, train_data,
+                 validation_data=None,
+                 batch_size: int = 32,
+                 thread_num: Optional[int] = None,
+                 accelerator: Optional[str] = None,
+                 precision: Optional[str] = None,
+                 metric: str = 'mse',
+                 accuracy_criterion: Optional[float] = None):
         '''
         This method will traverse existing optimization methods(onnxruntime, openvino, jit, ...)
-        and return the model with minimum latency under the given data and search
-        restrictions(accelerator, precision, accuracy_criterion).
-        This method is required to call before predict and evaluate.
-        Now this function is only for non distributed model.
+        and save the model with minimum latency under the given data and search
+        restrictions(accelerator, precision, accuracy_criterion) in `forecaster.optim_model`.
+        This method is required to call before `predict` and `evaluate`.
+        Now this function is only for non-distributed model.
 
         :param train_data: Data used for training model. Users should be careful with this parameter
                since this data might be exposed to the model, which causing data leak.
@@ -544,7 +550,7 @@ class BasePytorchForecaster(Forecaster):
                 target_col=train_data.roll_target,
                 shuffle=False)
 
-        if isinstance(validation_data, TSDataset):
+        if validation_data is not None and isinstance(validation_data, TSDataset):
             _rolled = validation_data.numpy_x is None
             validation_data = validation_data.to_torch_data_loader(
                 batch_size=batch_size,
@@ -557,16 +563,17 @@ class BasePytorchForecaster(Forecaster):
 
         # turn numpy into dataloader
         if isinstance(train_data, (tuple, list)):
-            assert(len(train_data) == 2,
-                   f"train_data should be a 2-dim tuple, but get {len(train_data)}-dim.")
+            invalidInputError(len(train_data) == 2,
+                              f"train_data should be a 2-dim tuple, but get {len(train_data)}-dim.")
             train_data = DataLoader(TensorDataset(torch.from_numpy(train_data[0]),
                                                   torch.from_numpy(train_data[1])),
                                     batch_size=batch_size,
                                     shuffle=False)
 
-        if isinstance(validation_data, (tuple, list)):
-            assert(len(validation_data) == 2,
-                   f"validation_data should be a 2-dim tuple, but get {len(validation_data)}-dim.")
+        if validation_data is not None and isinstance(validation_data, (tuple, list)):
+            invalidInputError(len(validation_data) == 2,
+                              f"validation_data should be a 2-dim tuple, but get "
+                              f"{len(validation_data)}-dim.")
             validation_data = DataLoader(
                 TensorDataset(
                     torch.from_numpy(validation_data[0]),
@@ -576,11 +583,18 @@ class BasePytorchForecaster(Forecaster):
 
         # align metric
         if metric is not None:
-            metric = _str2optimizer_metrc(metric)
+            if validation_data is None:
+                metric = None
+            else:
+                try:
+                    metric = _str2optimizer_metrc(metric)
+                except Exception:
+                    invalidInputError(False,
+                                      "Unable to recognize the metric string you passed in.")
 
         dummy_input = torch.rand(1, self.data_config["past_seq_len"],
                                  self.data_config["input_feature_num"])
-        from bigdl.nano.pytorch import InferenceOptimizer
+        from bigdl.chronos.pytorch import TSInferenceOptimizer as InferenceOptimizer
         opt = InferenceOptimizer()
         opt.optimize(model=self.internal,
                      training_data=train_data,
@@ -596,7 +610,7 @@ class BasePytorchForecaster(Forecaster):
                 accuracy_criterion=accuracy_criterion)
             self.optim_model = optim_model
             self.metadata = option  # represent which model is stored in self.optim_model
-        except:
+        except Exception:
             invalidInputError(False, "Unable to find an optimized model that meets your conditions."
                               "Maybe you can relax your search limit.")
 

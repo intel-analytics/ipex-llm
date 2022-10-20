@@ -23,7 +23,7 @@ from importlib.util import find_spec
 import time
 import numpy as np
 from copy import deepcopy
-from typing import Dict, Callable, Tuple, Optional, List, Set
+from typing import Dict, Callable, Tuple, Optional, List, Set, Union
 from torch.utils.data import DataLoader
 from torchmetrics.metric import Metric
 from bigdl.nano.utils.log4Error import invalidInputError, invalidOperationError
@@ -121,7 +121,7 @@ class InferenceOptimizer:
     def optimize(self, model: nn.Module,
                  training_data: DataLoader,
                  validation_data: Optional[DataLoader] = None,
-                 input_sample=None,
+                 input_sample: Union[torch.Tensor, Dict, Tuple[torch.Tensor], None] = None,
                  metric: Optional[Callable] = None,
                  direction: str = "max",
                  thread_num: Optional[int] = None,

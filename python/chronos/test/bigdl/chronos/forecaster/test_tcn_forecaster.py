@@ -986,3 +986,22 @@ class TestChronosModelTCNForecaster(TestCase):
         forecaster.evaluate(val_loader)
         forecaster.predict(test_loader)
         assert forecaster.optim_model is None
+
+    @op_diff_set_all
+    @op_onnxrt16
+    def test_forecaster_optimize_loader_without_validation_data(self):
+        train_loader, val_loader, test_loader = create_data(loader=True)
+        forecaster = TCNForecaster(past_seq_len=24,
+                                   future_seq_len=5,
+                                   input_feature_num=1,
+                                   output_feature_num=1,
+                                   kernel_size=4,
+                                   num_channels=[16, 16, 16],
+                                   loss="mse",
+                                   metrics=["mse"],
+                                   lr=0.01)
+        forecaster.fit(train_loader, epochs=2)
+        forecaster.optimize(train_data=train_loader,
+                            batch_size=32)
+        forecaster.evaluate(val_loader)
+        forecaster.predict(test_loader)
