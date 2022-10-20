@@ -340,7 +340,7 @@ Here we use **k8s client mode** and **PPML CLI** to run SimpleQuery. Check other
      $ cat spark-application-1666144573580
      ......
      {"Event":"SparkListenerJobEnd","Job ID":0,"Completion Time":1666144848006,"Job Result":{"Result":"JobSucceeded"}}
-{"Event":"SparkListenerApplicationEnd","Timestamp":1666144848021}
+     {"Event":"SparkListenerApplicationEnd","Timestamp":1666144848021}
      ```
      
      You can use these logs to analyze spark jobs. Moreover, you are also allowed to surf from a web UI provided by the history server by accessing `http://localhost:18080`.
