@@ -118,7 +118,7 @@ if [ -d data/train_processed ]; then
 else
   echo "download train_processed"
   wget -nv -r $FTP_URI/analytics-zoo-data/multi_task.zip -P data
-  unzip ./data/multi_task.zip
+  unzip data/multi_task.zip
 
 fi
 
