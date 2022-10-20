@@ -121,7 +121,7 @@ else
    echo "download test_processed"
   wget -nv -r $FTP_URI/analytics-zoo-data/test_processed -P data
 fi
-
+ls ./data
 start=$(date "+%s")
 
 python ../../example/multi_task/run_multi_task.py \
