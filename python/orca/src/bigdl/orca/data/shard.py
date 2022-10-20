@@ -640,8 +640,8 @@ class SparkXShards(XShards):
         join: bool = False
     ) -> "SparkXShards":
         """
-        Group the Table with specified columns and then run aggregation. Optionally join the result
-        with the original Table.
+        Group the Shards with specified columns and then run aggregation. Optionally join the
+        result with the original Shards.
 
         :param columns: str or a list of str. Columns to group the Table. If it is an empty list,
                aggregation is run directly without grouping. Default is [].
@@ -673,50 +673,13 @@ class SparkXShards(XShards):
             invalidInputError(False,
                               "Currently only support sort() on XShards of Pandas DataFrame")
 
-        if isinstance(columns, str):
-            columns = [columns]
-        invalidInputError(isinstance(columns, list), "columns should be str or a list of str")
         df = self.to_spark_df()
         sqlContext = get_spark_sql_context(get_spark_context())
         defaultPartitionNum = sqlContext.getConf("spark.sql.shuffle.partitions")
         partitionNum = df.rdd.getNumPartitions()
         sqlContext.setConf("spark.sql.shuffle.partitions", str(partitionNum))
-        grouped_data = df.groupBy(columns)
 
-        if isinstance(agg, str):
-            agg_exprs_dict = {agg_column: agg for agg_column in df.columns
-                              if agg_column not in columns}
-            agg_df = grouped_data.agg(agg_exprs_dict)
-        elif isinstance(agg, list):
-            agg_exprs_list = []
-            for stat in agg:
-                stat_func = getattr(F, stat)
-                agg_exprs_list += [stat_func(agg_column) for agg_column in df.columns
-                                   if agg_column not in columns]
-            agg_df = grouped_data.agg(*agg_exprs_list)
-        elif isinstance(agg, dict):
-            if all(isinstance(stats, str) for agg_column, stats in agg.items()):
-                agg_df = grouped_data.agg(agg)
-            else:
-                agg_exprs_list = []
-                for agg_column, stats in agg.items():
-                    if isinstance(stats, str):
-                        stats = [stats]
-                    invalidInputError(isinstance(stats, list),
-                                      "value in agg should be str or a list of str")
-                    for stat in stats:
-                        stat_func = getattr(F, stat)
-                        agg_exprs_list += [stat_func(agg_column)]
-                agg_df = grouped_data.agg(*agg_exprs_list)
-        else:
-            invalidInputError(False,
-                              "agg should be str, list of str, or dict")
-
-        if join:
-            invalidInputError(columns, "columns can not be empty if join is True")
-            result_df = df.join(agg_df, on=columns, how="left")
-        else:
-            result_df = agg_df
+        result_df = group_by_spark_df(df, columns, agg, join)
 
         agg_shards = spark_df_to_pd_sparkxshards(result_df)
         sqlContext.setConf("spark.sql.shuffle.partitions", defaultPartitionNum)
