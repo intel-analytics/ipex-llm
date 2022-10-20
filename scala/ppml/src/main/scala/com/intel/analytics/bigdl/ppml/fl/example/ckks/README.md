@@ -1,6 +1,6 @@
 # VFL Logistic Regression with CKKS Example
 
-This example show how to create an end-to-end VFL Logistic Regression application with 2 clients and 1 server with CKKS on BigDL PPML.
+This example show you how to create an end-to-end VFL Logistic Regression application with 2 clients and 1 server, using CKKS to protect data passing to FlServer on BigDL PPML.
 The targets and outputs of each clients will be protected by CKKS, server will compute loss and grad using cipherText. 
 
 ### Data
