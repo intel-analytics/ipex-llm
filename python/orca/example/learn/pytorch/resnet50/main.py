@@ -33,8 +33,8 @@ import torchvision.models as models
 parser = argparse.ArgumentParser(description='PyTorch ImageNet Training')
 parser.add_argument('data', metavar='DIR',
                     help='path to dataset')
-parser.add_argument('-j', '--workers', default=2, type=int, metavar='N',
-                    help='number of data loading workers (default: 4)')
+parser.add_argument('--workers', default=1, type=int,
+                    help='number of workers for orca estimator (default: 1)')
 parser.add_argument('--ipex', action='store_true', default=False,
                     help='use intel pytorch extension')
 parser.add_argument('--jit', action='store_true', default=False,
@@ -44,7 +44,8 @@ parser.add_argument('--int8', action='store_true', default=False,
 parser.add_argument('--bf16', action='store_true', default=False,
                     help='enable ipex bf16 path')
 parser.add_argument('-b', '--batch_size', default=256, type=int)
-
+parser.add_argument('--d_workers', default=4, type=int,
+                    help='number of workers for dataloader (default: 4)')
 
 def main():
     args = parser.parse_args()
@@ -58,14 +59,13 @@ def main():
         assert not args.jit, "jit path is not enabled for offical pytorch"
 
     from bigdl.orca import init_orca_context, stop_orca_context
-    init_orca_context(cores=args.workers)
+    init_orca_context(cluster_mode="local")
 
     validate(args)
     return
 
 
 def validate(args):
-
 
     def val_loader_func(config, batch_size):
         valdir = os.path.join(args.data, 'val')
@@ -79,9 +79,8 @@ def validate(args):
                 normalize,
             ])),
             batch_size=args.batch_size, shuffle=False,
-            num_workers=args.workers, pin_memory=True)
+            num_workers=args.d_workers, pin_memory=True) 
         return val_loader
-
 
     def model_creator(config):
         print("=> using pre-trained model '{}'".format('resnet50'))
@@ -132,7 +131,6 @@ def validate(args):
 
         model.eval()
         return model
-
 
     def optimizer_creator(model, config):
         optimizer = torch.optim.SGD(model.parameters(), lr=0.1,
