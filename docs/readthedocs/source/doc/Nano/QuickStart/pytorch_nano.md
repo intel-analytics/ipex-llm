@@ -160,15 +160,15 @@ At this stage, you may already experience some speedup due to the optimized envi
 #### Increase the number of processes in distributed training to accelerate training.
 
 ```python
-MyNano(num_processes=2, strategy="subprocess").train()
+MyNano(num_processes=2, distributed_backend="subprocess").train()
 ```
 
-- Note: BigDL-Nano now support 'spawn', 'subprocess' and 'ray' strategies for distributed training, but only the 'subprocess' strategy can be used in interactive environment.
+- Note: BigDL-Nano now support 'spawn', 'subprocess' and 'ray' backends for distributed training, but only the 'subprocess' backend can be used in interactive environment.
 
 #### Intel Extension for Pytorch (a.k.a. [IPEX](https://github.com/intel/intel-extension-for-pytorch))
 
 IPEX extends Pytorch with optimizations on intel hardware. BigDL-Nano also integrates IPEX into the `TorchNano`, you can turn on IPEX optimization by setting `use_ipex=True`.
 
 ```python
-MyNano(use_ipex=True, num_processes=2, strategy="subprocess").train()
+MyNano(use_ipex=True, num_processes=2, distributed_backend="subprocess").train()
 ```

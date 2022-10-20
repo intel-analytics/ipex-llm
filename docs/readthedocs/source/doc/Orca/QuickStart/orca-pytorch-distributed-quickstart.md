@@ -8,7 +8,7 @@
 
 **In this guide we will describe how to scale out _PyTorch_ programs using the `torch.distributed` package in Orca.**
 
-### **Step 0: Prepare Environment**
+### Step 0: Prepare Environment
 
 [Conda](https://docs.conda.io/projects/conda/en/latest/user-guide/install/) is needed to prepare the Python environment for running this example. Please refer to the [install guide](../../UserGuide/python.md) for more details.
 
@@ -19,7 +19,7 @@ pip install bigdl-orca[ray]
 pip install torch==1.7.1 torchvision==0.8.2
 ```
 
-### **Step 1: Init Orca Context**
+### Step 1: Init Orca Context
 ```python
 from bigdl.orca import init_orca_context, stop_orca_context
 
@@ -35,7 +35,7 @@ This is the only place where you need to specify local or distributed mode. View
 
 **Note:** You should `export HADOOP_CONF_DIR=/path/to/hadoop/conf/dir` when running on Hadoop YARN cluster. View [Hadoop User Guide](./../../UserGuide/hadoop.md) for more details.
 
-### **Step 2: Define the Model**
+### Step 2: Define the Model
 
 You may define your model, loss and optimizer in the same way as in any standard (single node) PyTorch program.
 
@@ -75,7 +75,7 @@ def optim_creator(model, config):
     return torch.optim.Adam(model.parameters(), lr=0.001)
 ```
 
-### **Step 3: Define Train Dataset**
+### Step 3: Define Train Dataset
 
 You can define the dataset using a *Data Creator Function* that returns a PyTorch `DataLoader`. Orca also supports [Orca SparkXShards](../Overview/data-parallel-processing).
 
@@ -109,7 +109,7 @@ def test_loader_creator(config, batch_size):
     return test_loader
 ```
 
-### **Step 4: Fit with Orca Estimator**
+### Step 4: Fit with Orca Estimator
 
 First, Create an Estimator
 
@@ -130,7 +130,7 @@ for r in result:
     print(r, ":", result[r])
 ```
 
-### **Step 5: Save and Load the Model**
+### Step 5: Save and Load the Model
 
 Save the Estimator states (including model and optimizer) to the provided model path.
 

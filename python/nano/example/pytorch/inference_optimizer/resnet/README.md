@@ -60,28 +60,27 @@ python inference_pipeline.py
 ```
 
 ## Results
-It will take about 1 minute to run inference optimization. Then you may find the result for inference as follows:
+Then you may find the result for inference as follows. The actual number may vary based on your hardware.
 ```
 ==========================Optimization Results==========================
  -------------------------------- ---------------------- -------------- ----------------------
 |             method             |        status        | latency(ms)  |       accuracy       |
  -------------------------------- ---------------------- -------------- ----------------------
-|            original            |      successful      |    43.688    |        0.969         |
-|           fp32_ipex            |      successful      |    33.383    |    not recomputed    |
-|              bf16              |   fail to forward    |     None     |         None         |
-|           bf16_ipex            |    early stopped     |   203.897    |         None         |
-|              int8              |      successful      |    10.74     |        0.969         |
-|            jit_fp32            |      successful      |    38.732    |    not recomputed    |
-|         jit_fp32_ipex          |      successful      |    35.205    |    not recomputed    |
-|  jit_fp32_ipex_channels_last   |      successful      |    19.327    |    not recomputed    |
-|         openvino_fp32          |      successful      |    10.215    |    not recomputed    |
-|         openvino_int8          |      successful      |    8.192     |        0.969         |
-|        onnxruntime_fp32        |      successful      |    20.931    |    not recomputed    |
-|    onnxruntime_int8_qlinear    |      successful      |    8.274     |        0.969         |
+|            original            |      successful      |   1162.768   |         1.0          |
+|           fp32_ipex            |    early stopped     |   1143.545   |         None         |
+|              bf16              |      successful      |   747.366    |         1.0          |
+|           bf16_ipex            |      successful      |   596.062    |         1.0          |
+|              int8              |      successful      |   306.137    |         1.0          |
+|            jit_fp32            |    early stopped     |   1007.57    |         None         |
+|         jit_fp32_ipex          |    early stopped     |   1008.285   |         None         |
+|  jit_fp32_ipex_channels_last   |      successful      |   628.462    |    not recomputed    |
+|         openvino_fp32          |      successful      |   339.543    |    not recomputed    |
+|         openvino_int8          |      successful      |    42.436    |        0.994         |
+|        onnxruntime_fp32        |      successful      |   644.439    |    not recomputed    |
+|    onnxruntime_int8_qlinear    |      successful      |   268.766    |        0.994         |
 |    onnxruntime_int8_integer    |   fail to convert    |     None     |         None         |
  -------------------------------- ---------------------- -------------- ----------------------
-
-Optimization cost 64.3s at all.
+Optimization cost 104.4s in total.
 ===========================Stop Optimization===========================
 When accuracy drop less than 5%, the model with minimal latency is:  openvino + int8
 ```

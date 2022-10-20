@@ -125,7 +125,7 @@ else
 fi
 
 spark_submit_command="${JAVA_HOME}/bin/java \
-        -cp ${SPARK_HOME}/conf/:${SPARK_HOME}/jars/* \
+        -cp ${BIGDL_HOME}/jars/*:${SPARK_HOME}/conf/:${SPARK_HOME}/jars/* \
         -Xmx${RUNTIME_DRIVER_MEMORY} \
         org.apache.spark.deploy.SparkSubmit \
         $SSL \

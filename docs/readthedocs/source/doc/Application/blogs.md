@@ -1,6 +1,13 @@
 Blogs
 ---
 
+**2022**
+- ["AI at Scale" in Mastercard with BigDL](https://www.intel.com/content/www/us/en/developer/articles/technical/ai-at-scale-in-mastercard-with-bigdl.html)
+- [BigDL 2.0: Seamless Scaling of AI Pipelines from Laptops to Distributed Cluster](https://arxiv.org/abs/2204.01715)
+- [Project Bose: A smart way to enable sustainable 5G networks in Capgemini](https://www.capgemini.com/insights/expert-perspectives/project-bose-a-smart-way-to-enable-sustainable-5g-networks/)
+- [Intelligent Power Prediction Solution in Goldwind](https://www.intel.com/content/www/us/en/customer-spotlight/stories/goldwind-customer-story.html)
+- [5G Core Network Power Saving using BigDL Chronos Framework in China Unicom](https://www.intel.cn/content/www/cn/zh/customer-spotlight/cases/china-unicom-bigdl-chronos-framework-5gc.html) (in Chinese)
+
 **2021**
 - [From Ray to Chronos: Build end-to-end AI use cases using BigDL on top of Ray](https://www.anyscale.com/blog/from-ray-to-chronos-build-end-to-end-ai-use-cases-using-bigdl-on-top-of-ray)
 - [Scalable AutoXGBoost Using Analytics Zoo AutoML](https://medium.com/intel-analytics-software/scalable-autoxgboost-using-analytics-zoo-automl-30d576cb138a)

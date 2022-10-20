@@ -9,12 +9,12 @@
 **In this guide we will describe how to use Orca AutoXGBoost for automated xgboost tuning**
 
 Orca AutoXGBoost enables distributed automated hyper-parameter tuning for XGBoost, which includes `AutoXGBRegressor` and `AutoXGBClassifier` for sklearn`XGBRegressor` and `XGBClassifier` respectively. See more about [xgboost scikit-learn API](https://xgboost.readthedocs.io/en/latest/python/python_api.html#module-xgboost.sklearn).
-### **Step 0: Prepare Environment**
+### Step 0: Prepare Environment
 
 [Conda](https://docs.conda.io/projects/conda/en/latest/user-guide/install/) is needed to prepare the Python environment for running this example. Please refer to the [install guide](https://bigdl.readthedocs.io/en/latest/doc/Orca/Overview/distributed-tuning.html#install) for more details.
 
 
-### **Step 1: Init Orca Context**
+### Step 1: Init Orca Context
 ```python
 from bigdl.orca import init_orca_context, stop_orca_context
 
@@ -32,7 +32,7 @@ This is the only place where you need to specify local or distributed mode. View
 
 **Note:** You should `export HADOOP_CONF_DIR=/path/to/hadoop/conf/dir` when running on Hadoop YARN cluster. View [Hadoop User Guide](./../../UserGuide/hadoop.md) for more details.
 
-### **Step 2: Define Search space**
+### Step 2: Define Search space
 
 You should define a dictionary as your hyper-parameter search space.
 
@@ -47,7 +47,7 @@ search_space = {
 }
 ```
 
-### **Step 3: Automatically fit and search with Orca AutoXGBoost**
+### Step 3: Automatically fit and search with Orca AutoXGBoost
 
 First create an `AutoXGBRegressor`.
 
@@ -70,7 +70,7 @@ auto_xgb_reg.fit(data=(X_train, y_train),
                  metric="rmse")
 ```
 
-### **Step 4: Get best model and hyper parameters**
+### Step 4: Get best model and hyper parameters
 
 You can get the best learned model and the best hyper-parameter set for further deployment. The best model is an sklearn `XGBRegressor` instance.
 

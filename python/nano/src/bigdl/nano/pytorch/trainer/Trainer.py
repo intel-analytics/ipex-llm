@@ -65,11 +65,15 @@ class Trainer(pl.Trainer):
         """
         A pytorch lightning trainer that uses bigdl-nano optimization.
 
-        :param num_processes: number of processes in distributed training. default: 4.
+        :param num_processes: number of processes in distributed training. default: 1.
         :param use_ipex: whether we use ipex as accelerator for trainer. default: False.
+        :param distributed_backend: use which backend in distributed mode, defaults to \
+            "subprocess", now avaiable backends are 'spawn', 'subprocess' and 'ray'
         :param cpu_for_each_process: A list of length `num_processes`, each containing a list of
             indices of cpus each process will be using. default: None, and the cpu will be
             automatically and evenly distributed among processes.
+        :param channels_last: whether convert input to channels last memory formats, \
+            defaults to False.
         :param precision: Double precision (64), full precision (32), half precision (16)
             or bfloat16 precision (bf16), defaults to 32.
             Enable ipex bfloat16 weight prepack when `use_ipex=True` and `precision='bf16'`
@@ -147,17 +151,11 @@ class Trainer(pl.Trainer):
                                       f"distributed training backend work incorrect")
 
             strategy_cls = backends_class_map[distributed_backend]
-
-            strategy_args = dict(num_processes=num_processes,
-                                 cpu_for_each_process=cpu_for_each_process,
-                                 use_ipex=self.use_ipex,
-                                 dtype=dtype,
-                                 auto_lr=auto_lr)
-
-            if distributed_backend == "ray":
-                del strategy_args["cpu_for_each_process"]
-
-            strategy = strategy_cls(**strategy_args)
+            strategy = strategy_cls(num_processes=num_processes,
+                                    cpu_for_each_process=cpu_for_each_process,
+                                    use_ipex=self.use_ipex,
+                                    dtype=dtype,
+                                    auto_lr=auto_lr)
 
             kwargs["strategy"] = strategy
             super().__init__(*args, **kwargs)

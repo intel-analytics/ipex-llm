@@ -4,11 +4,11 @@
 
 You can use BigDL without any installation by using  [Google Colab](https://colab.research.google.com/).
 
-### **1. Open a Colab Notebook**
+### 1. Open a Colab Notebook
 
 BigDL includes a collection of [notebooks](./notebooks.md) that can be directly opened and run in Colab. You can click 'Run in Google Colab' that opens the notebook on Colab directly. Click the "run" triangle on the left of each cell to run the notebook cell. When you run the first cell, you may face a pop-up saying 'Warning: This notebook was not authored by Google'; you should click on 'Run Anyway' to get rid of the warning. 
 
-### **2. Notebook Setup**
+### 2. Notebook Setup
 
 The first few cells of the notebook contains the code necessary to set up BigDL and other libraries.
 
