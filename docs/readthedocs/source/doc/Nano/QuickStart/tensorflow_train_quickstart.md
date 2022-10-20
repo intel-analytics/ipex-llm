@@ -1,7 +1,7 @@
 # BigDL-Nano TensorFlow Training Quickstart
 **In this guide we will describe how to accelerate TensorFlow Keras application on training workloads using BigDL-Nano in 5 simple steps**
 
-### **Step 0: Prepare Environment**
+### Step 0: Prepare Environment
 
 We recommend using [conda](https://docs.conda.io/projects/conda/en/latest/user-guide/install/) to prepare the environment. Please refer to the [install guide](../../UserGuide/python.md) for more details.
 
@@ -15,13 +15,13 @@ source bigdl-nano-init
 pip install tensorflow-datasets
 ```
 
-### **Step 1: Import BigDL-Nano**
+### Step 1: Import BigDL-Nano
 The optimizations in BigDL-Nano are delivered through BigDL-Nano’s `Model` and `Sequential` classes. For most cases, you can just replace your `tf.keras.Model` to `bigdl.nano.tf.keras.Model` and `tf.keras.Sequential` to `bigdl.nano.tf.keras.Sequential` to benefits from BigDL-Nano.
 ```python
 from bigdl.nano.tf.keras import Model, Sequential
 ```
 
-### **Step 2: Load the Data**
+### Step 2: Load the Data
 Here we load data from tensorflow_datasets(hereafter [TFDS](https://www.tensorflow.org/datasets)). The [Stanford Dogs](http://vision.stanford.edu/aditya86/ImageNetDogs/main.html) dataset contains images of 120 breeds of dogs around the world. There are 20,580 images, out of which 12,000 are used for training and 8580 for testing.
 ```python
 import tensorflow_datasets as tfds
@@ -47,7 +47,7 @@ ds_train = ds_train.cache().repeat().shuffle(1000).map(preprocessing).batch(batc
 ds_test = ds_test.map(preprocessing).batch(batch_size, drop_remainder=True).prefetch(AUTOTUNE)
 ```
 
-### **Step 3: Build Model**
+### Step 3: Build Model
 BigDL-Nano's `Model` (`bigdl.nano.tf.keras.Model`) and `Sequential` (`bigdl.nano.tf.keras.Sequential`) classes have identical APIs with `tf.keras.Model` and `tf.keras.Sequential`.
 Here we initialize the model with pre-trained ImageNet weights, and we fine-tune it on the Stanford Dogs dataset.
 ```python
@@ -92,7 +92,7 @@ def unfreeze_model(model):
     )
 ```
 
-### **Step 4: Training**
+### Step 4: Training
 ```python
 steps_per_epoch = ds_info.splits['train'].num_examples // batch_size
 model_default = make_model()
