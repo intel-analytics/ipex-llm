@@ -8,7 +8,7 @@
 
 **In this guide we will describe how to use [XShards](../Orca/Overview/data-parallel-processing.md) to scale-out Pandas data processing for distribtued deep learning.** 
 
-### **1. Read input data into XShards of Pandas DataFrame**
+### 1. Read input data into XShards of Pandas DataFrame
 
 First, read CVS, JSON or Parquet files into an `XShards` of Pandas Dataframe (i.e., a distributed and sharded dataset where each partition contained a Pandas Dataframe), as shown below:
 
@@ -19,7 +19,7 @@ full_data = read_csv(new_rating_files, sep=':', header=None,
                      dtype={0: np.int32, 1: np.int32, 2: np.int32})
 ```
 
-### **2. Process Pandas Dataframes using XShards**
+### 2. Process Pandas Dataframes using XShards
 
 Next, use XShards to efficiently process large-size Pandas Dataframes in a distributed and data-parallel fashion. You may run standard Python code on each partition in a data-parallel fashion using `XShards.transform_shard`, as shown below:
 
@@ -43,7 +43,7 @@ def split_train_test(data):
 train_data, test_data = full_data.transform_shard(split_train_test).split()
 ```
 
-### **3. Define NCF model**
+### 3. Define NCF model
 
 Define the NCF model using TensorFlow 1.15 APIs:
 
@@ -94,7 +94,7 @@ class NCF(object):
 embedding_size=16
 model = NCF(embedding_size, max_user_id, max_item_id)
 ```
-### **4. Fit with Orca Estimator**
+### 4. Fit with Orca Estimator
 
 Finally, directly run distributed model training/inference on the XShards of Pandas DataFrames.
 

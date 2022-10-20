@@ -8,7 +8,7 @@
 
 **In this guide we will describe how to enable automated hyper-parameter search for PyTorch using Orca `AutoEstimator`.**
 
-### **Step 0: Prepare Environment**
+### Step 0: Prepare Environment
 
 [Conda](https://docs.conda.io/projects/conda/en/latest/user-guide/install/) is needed to prepare the Python environment for running this example. Please refer to the [install guide](https://bigdl.readthedocs.io/en/latest/doc/Orca/Overview/distributed-tuning.html#install) for more details.
 
@@ -19,7 +19,7 @@ pip install bigdl-orca[automl]
 pip install torch==1.8.1 torchvision==0.9.1
 ```
 
-### **Step 1: Init Orca Context**
+### Step 1: Init Orca Context
 ```python
 from bigdl.orca import init_orca_context, stop_orca_context
 
@@ -37,7 +37,7 @@ This is the only place where you need to specify local or distributed mode. View
 
 **Note:** You should `export HADOOP_CONF_DIR=/path/to/hadoop/conf/dir` when running on Hadoop YARN cluster. View [Hadoop User Guide](./../../UserGuide/hadoop.md) for more details.
 
-### **Step 2: Define the Model**
+### Step 2: Define the Model
 
 You may define your model, loss and optimizer in the same way as in any standard PyTorch program.
 
@@ -77,7 +77,7 @@ def optim_creator(model, config):
     return torch.optim.Adam(model.parameters(), lr=config["lr"])
 ```
 
-### **Step 3: Define Dataset**
+### Step 3: Define Dataset
 
 You can define the train and validation datasets using *Data Creator Function* that takes `config` as input and returns a PyTorch `DataLoader`.
 
@@ -110,7 +110,7 @@ def test_loader_creator(config):
     return test_loader
 ```
 
-### **Step 4: Define Search Space**
+### Step 4: Define Search Space
 You should define a dictionary as your hyper-parameter search space.
 
 The keys are hyper-parameter names which should be the same with those in your creators, and you can specify how you want to sample each hyper-parameter in the values of the search space. See [automl.hp](https://bigdl.readthedocs.io/en/latest/doc/PythonAPI/AutoML/automl.html#orca-automl-hp) for more details.
@@ -125,7 +125,7 @@ search_space = {
 }
 ```
 
-### **Step 5: Automatically Fit and Search with Orca AutoEstimator**
+### Step 5: Automatically Fit and Search with Orca AutoEstimator
 
 First, create an `AutoEstimator`. You can refer to [AutoEstimator API doc](https://bigdl.readthedocs.io/en/latest/doc/PythonAPI/AutoML/automl.html#orca-automl-auto-estimator) for more details.
 

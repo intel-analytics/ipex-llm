@@ -1,8 +1,8 @@
 # Orca Known Issues
 
-## **Estimator Issues**
+## Estimator Issues
 
-### **UnkownError: Could not start gRPC server**
+### UnkownError: Could not start gRPC server
 
 This error occurs while running Orca TF2 Estimator with spark backend, which may because the previous pyspark tensorflow job was not cleaned completely. You can retry later or you can set spark config `spark.python.worker.reuse=false` in your application.
 
@@ -16,7 +16,7 @@ If you are using `init_orca_context(cluster_mode="yarn-client")`:
    spark-submit --conf spark.python.worker.reuse=false
    ```
 
-### **RuntimeError: Inter op parallelism cannot be modified after initialization**
+### RuntimeError: Inter op parallelism cannot be modified after initialization
 
 This error occurs if you build your TensorFlow model on the driver rather than on workers. You should build the complete model in `model_creator` which runs on each worker node. You can refer to the following examples:
 
@@ -43,9 +43,9 @@ This error occurs if you build your TensorFlow model on the driver rather than o
    ...
    ```
 
-## **OrcaContext Issues**
+## OrcaContext Issues
 
-### **Exception: Failed to read dashbord log: [Errno 2] No such file or directory: '/tmp/ray/.../dashboard.log'**
+### Exception: Failed to read dashbord log: [Errno 2] No such file or directory: '/tmp/ray/.../dashboard.log'
 
 This error occurs when initialize an orca context with `init_ray_on_spark=True`. We have not locate the root cause of this problem, but it might be caused by an atypical python environment.
 
@@ -63,9 +63,9 @@ You could follow below steps to workaround:
 
 2. If you really need to use ray on spark, please install bigdl-orca under a conda environment. Detailed information please refer to [here](./orca.html).
 
-## **Other Issues**
+## Other Issues
 
-### **OSError: Unable to load libhdfs: ./libhdfs.so: cannot open shared object file: No such file or directory**
+### OSError: Unable to load libhdfs: ./libhdfs.so: cannot open shared object file: No such file or directory
 
 This error is because PyArrow fails to locate `libhdfs.so` in default path of `$HADOOP_HOME/lib/native` when you run with YARN on Cloudera.
 To solve this issue, you need to set the path of `libhdfs.so` in Cloudera to the environment variable of `ARROW_LIBHDFS_DIR` on Spark driver and executors with the following steps:
@@ -87,7 +87,7 @@ To solve this issue, you need to set the path of `libhdfs.so` in Cloudera to the
                 --conf spark.yarn.appMasterEnv.ARROW_LIBHDFS_DIR=/opt/cloudera/parcels/CDH-5.15.2-1.cdh5.15.2.p0.3/lib64
 
 
-### **Spark Dynamic Allocation**
+### Spark Dynamic Allocation
 
 By design, BigDL does not support Spark Dynamic Allocation mode, and needs to allocate fixed resources for deep learning model training. Thus if your environment has already configured Spark Dynamic Allocation, or stipulated that Spark Dynamic Allocation must be used, you may encounter the following error:
 
