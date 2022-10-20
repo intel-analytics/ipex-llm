@@ -3,7 +3,10 @@
 Checklist for SGX Driver:
 
 1. Please [check if your CPU has SGX feature](https://www.intel.com/content/www/us/en/support/articles/000028173/processors.html).
-2. Check if SGX feature is correctly enabled on BIOS. Please ensure enough memory and Reserved Memory Range Registers (PRMRR) are configured for SGX.
+2. Check if SGX feature is correctly enabled on BIOS. Please ensure enough memory is installed.
+   * Disable `UMA-Based Clustering`.
+   * Enable `SGX` or `SW Guard Extensions(SGX)`. Set `PRMRR` to the max. Please ensure Reserved Memory Range Registers (PRMRR) are configured for SGX.
+   * SGX will reserve some memory from the installed memory. This memory (PRMRR) can not be seen by your system (total memory), e.g., `free -h`. So, `Installed Memory = Total Memory + 2 * PRMRR`.
 3. Recommended OS (Operating System): Ubuntu 18.04/20.04, CentOS 8, Redhat 8.
 
 Note that SGX driver has been merged to Linux Kernel from 5.11+. After enabling SGX feature during kernel building, SGX driver will be automatically enabled. So, we recommend our customers upgrade their kernel to 5.14+ with SGX enabled. See [Building Linux Kernel from Source with SGX Enabled](#building-linux-kernel-from-source-with-sgx-enabled).
@@ -94,14 +97,15 @@ Check if the SGX driver is installed correctly
 ls -l /dev/ | grep sgx
 ```
 
-If you encounter any issue during installation, please open an issue on [Intel(R) Software Guard Extensions Data Center Attestation Primitives](https://github.com/intel/SGXDataCenterAttestationPrimitives)
+If you encounter any issue during installation, please open an issue on [Intel Software Guard Extensions Data Center Attestation Primitives](https://github.com/intel/SGXDataCenterAttestationPrimitives)
 
 ## Trouble Shooting
 
 * Building on Ubuntu 5.4.X may encounter
-  * "make[2]: *** No rule to make target 'debian/certs/benh@debian.org.cert.pem', needed by 'certs/x509_certificate_list'.  Stop.". Please disable `SYSTEM_TRUSTED_KEYS`. Refer to [CONFIG_SYSTEM_TRUSTED_KEYS](https://askubuntu.com/questions/1329538/compiling-the-kernel-5-11-11).
-  * "make[4]: *** No rule to make target 'debian/canonical-revoked-certs.pem', needed by 'certs/x509_revocation_list'.  Stop.". Please disable `SYSTEM_REVOCATION_KEYS`.
   * "dpkg-source: error: cannot represent change to vmlinux-gdb.py:". Remove `vmlinux-gdb.py`, then build again.
+  * "make[2]: *** No rule to make target 'debian/certs/benh@debian.org.cert.pem', needed by 'certs/x509_certificate_list'.  Stop.". Please disable `SYSTEM_TRUSTED_KEYS`, i.e., `CONFIG_SYSTEM_TRUSTED_KEYS=""` in `.config`. Refer to [CONFIG_SYSTEM_TRUSTED_KEYS](https://askubuntu.com/questions/1329538/compiling-the-kernel-5-11-11).
+  * "make[4]: *** No rule to make target 'debian/canonical-revoked-certs.pem', needed by 'certs/x509_revocation_list'.  Stop.". Please disable `SYSTEM_REVOCATION_KEYS`, i.e., `CONFIG_SYSTEM_REVOCATION_KEYS=""` in `.config`.
+  * "BTF: .tmp_vmlinux.btf: pahole (pahole) is not available. Failed to generate BTF for vmlinux". `dwarves` are missing. `sudo apt-get install dwarves`.
 * In some kernels, SGX option is `CONFIG_INTEL_SGX`.
 * 5.13 Kernel may encounter nfs problem [Can't mount NFS-shares from Linux-5.13.0](https://forums.gentoo.org/viewtopic-p-8629887.html?sid=f7359b869fb71849d64f3e69bb48503a)
 * [Mellanox interface may be disabled on 5.14.0](https://bugzilla.redhat.com/show_bug.cgi?id=2014094). Changes to 5.15.5 will fix this issue.
