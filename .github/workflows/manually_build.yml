@@ -109,7 +109,7 @@ jobs:
         echo "##############################################################"
         export base_image=intelanalytics/bigdl-ppml-trusted-deep-learning-gramine-base
         export image=intelanalytics/bigdl-ppml-trusted-deep-learning-gramine-ref
-        cd ppml/base/trusted-deep-learning/ref
+        cd ppml/trusted-deep-learning/ref
         openssl genrsa -3 -out enclave-key.pem 3072
         sudo docker build \
           --no-cache=true \
