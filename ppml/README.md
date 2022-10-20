@@ -343,7 +343,10 @@ Here we use **k8s client mode** and **PPML CLI** to run SimpleQuery. Check other
      {"Event":"SparkListenerApplicationEnd","Timestamp":1666144848021}
      ```
      
-     You can use these logs to analyze spark jobs. Moreover, you are also allowed to surf from a web UI provided by the history server by accessing `http://localhost:18080`.
+     You can use these logs to analyze spark jobs. Moreover, you are also allowed to surf from a web UI provided by the history server by accessing `http://localhost:18080`:
+     
+     ![history server UI](https://user-images.githubusercontent.com/60865256/196840282-6584f36e-5e72-4144-921e-4536d3391f05.png)
+
     
 
   </details>
