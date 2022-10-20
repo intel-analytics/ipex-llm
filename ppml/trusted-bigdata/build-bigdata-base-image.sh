@@ -6,7 +6,7 @@ export JDK_URL=http://your-http-url-to-download-jdk
 export SPARK_JAR_REPO_URL=http://your_spark_jar_repo_url
 export LOCAL_IP=your_local_ip
 
-export BASE_IMAGE_NAME=bigdl-ppml-gramine-base
+export BASE_IMAGE_NAME=intelanalytics/bigdl-ppml-gramine-base
 export BASE_IMAGE_TAG=2.2.0-SNAPSHOT
 export BIGDATA_IMAGE_NAME=bigdl-ppml-trusted-bigdata-gramine
 export BIGDATA_IMAGE_TAG=2.2.0-SNAPSHOT
