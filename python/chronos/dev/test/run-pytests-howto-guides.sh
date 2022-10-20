@@ -18,6 +18,11 @@
 
 export Chronos_Howto_Guides_dir=${ANALYTICS_ZOO_ROOT}/python/chronos/colab-notebook/howto
 
+# limit the number of epoch to reduce test time
+sed -i 's/epochs=./epochs=1/' $Chronos_Howto_Guides_dir/*.ipynb
+# comment out the install commands
+sed -i 's/!pip install/#!pip install/' $Chronos_Howto_Guides_dir/*.ipynb
+
 echo "Running tests for Chronos How-to Guides"
 python -m pytest -v  --nbmake --nbmake-timeout=6000 --nbmake-kernel=python3 ${Chronos_Howto_Guides_dir}
 
