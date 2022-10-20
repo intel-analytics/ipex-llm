@@ -6,7 +6,7 @@ export TF_MKL_ALLOC_MAX_BYTES=10737418240
 export SPARK_LOCAL_IP=$LOCAL_IP
 
 export sgx_command="/opt/jdk8/bin/java \
-    -cp '/ppml/trusted-big-data-ml/work/spark-3.1.2/conf/:/ppml/trusted-big-data-ml/work/spark-3.1.2/jars/*:/ppml/trusted-big-data-ml/work/bigdl-2.2.0-SNAPSHOT/jars/*' \
+    -cp /ppml/trusted-big-data-ml/work/spark-$SPARK_VERSION/conf/:/ppml/trusted-big-data-ml/work/spark-$SPARK_VERSION/jars/*:/ppml/trusted-big-data-ml/work/bigdl-$BIGDL_VERSION/jars/* \
     -Xmx1g org.apache.spark.deploy.SparkSubmit \
     --master $RUNTIME_SPARK_MASTER \
     --deploy-mode client \
@@ -28,9 +28,7 @@ export sgx_command="/opt/jdk8/bin/java \
     --conf spark.python.use.daemon=false \
     --conf spark.python.worker.reuse=false \
     --conf spark.kubernetes.sgx.enabled=true \
-    --conf spark.kubernetes.sgx.executor.mem=64g \
     --conf spark.kubernetes.sgx.executor.jvm.mem=12g \
-    --conf spark.kubernetes.sgx.log.level=error \
     --conf spark.authenticate=true \
     --conf spark.authenticate.secret=$secure_password \
     --conf spark.kubernetes.executor.secretKeyRef.SPARK_AUTHENTICATE_SECRET="spark-secret:secret" \
@@ -55,15 +53,15 @@ export sgx_command="/opt/jdk8/bin/java \
     --conf spark.executor.heartbeatInterval=10000000 \
     --conf spark.python.use.daemon=false \
     --conf spark.python.worker.reuse=false \
-    --jars local://$SPARK_HOME/examples/jars/scopt_2.12-3.7.1.jar,$(echo $BIGDL_HOME/jars/* |tr ' ' ',' | sed "s#${BIGDL_HOME}#local://${BIGDL_HOME}#g") \
-    --py-files local:///ppml/trusted-big-data-ml/work/bigdl-2.2.0-SNAPSHOT/python/bigdl-ppml-spark_3.1.2-2.2.0-SNAPSHOT-python-api.zip,local:///ppml/trusted-big-data-ml/work/bigdl-2.2.0-SNAPSHOT/python/bigdl-spark_3.1.2-2.2.0-SNAPSHOT-python-api.zip,local:///ppml/trusted-big-data-ml/work/bigdl-2.2.0-SNAPSHOT/python/bigdl-dllib-spark_3.1.2-2.2.0-SNAPSHOT-python-api.zip \
-    /ppml/trusted-big-data-ml/work/data/zhoujian/code/simple_query_example.py \
+    --jars local:///ppml/trusted-big-data-ml/work/bigdl-$BIGDL_VERSION/jars/bigdl-ppml-spark_$SPARK_VERSION-$BIGDL_VERSION.jar,local:///ppml/trusted-big-data-ml/work/bigdl-$BIGDL_VERSION/jars/bigdl-dllib-spark_$SPARK_VERSION-$BIGDL_VERSION.jar,local:///ppml/trusted-big-data-ml/work/bigdl-$BIGDL_VERSION/jars/bigdl-friesian-spark_$SPARK_VERSION-$BIGDL_VERSION.jar,local:///ppml/trusted-big-data-ml/work/bigdl-$BIGDL_VERSION/jars/bigdl-grpc-spark_$SPARK_VERSION-$BIGDL_VERSION.jar,local:///ppml/trusted-big-data-ml/work/bigdl-$BIGDL_VERSION/jars/bigdl-orca-spark_$SPARK_VERSION-$BIGDL_VERSION.jar,local:///ppml/trusted-big-data-ml/work/bigdl-$BIGDL_VERSION/jars/bigdl-serving-spark_$SPARK_VERSION-$BIGDL_VERSION.jar \
+    --py-files /ppml/trusted-big-data-ml/work/bigdl-$BIGDL_VERSION/python/bigdl-ppml-spark_$SPARK_VERSION-$BIGDL_VERSION-python-api.zip,/ppml/trusted-big-data-ml/work/bigdl-$BIGDL_VERSION/python/bigdl-spark_$SPARK_VERSION-$BIGDL_VERSION-python-api.zip,/ppml/trusted-big-data-ml/work/bigdl-$BIGDL_VERSION/python/bigdl-dllib-spark_$SPARK_VERSION-$BIGDL_VERSION-python-api.zip \
+    /ppml/trusted-big-data-ml/work/data/SimpleQueryExampleWithSimpleKMS/code/simple_query_example.py \
     --simple_app_id 465227134889 \
     --simple_app_key 799072978028 \
-    --primary_key_path /ppml/trusted-big-data-ml/work/data/zhoujian/keys/simple/primaryKey \
-    --data_key_path /ppml/trusted-big-data-ml/work/data/zhoujian/keys/simple/dataKey \
-    --input_path /ppml/trusted-big-data-ml/work/data/zhoujian/ppml_test/input \
-    --output_path /ppml/trusted-big-data-ml/work/data/zhoujian/ppml_test/output \
+    --primary_key_path /ppml/trusted-big-data-ml/work/data/SimpleQueryExampleWithSimpleKMS/keys/simple/primaryKey \
+    --data_key_path /ppml/trusted-big-data-ml/work/data/SimpleQueryExampleWithSimpleKMS/keys/simple/dataKey \
+    --input_path /ppml/trusted-big-data-ml/work/data/SimpleQueryExampleWithSimpleKMS/ppml_test/input \
+    --output_path /ppml/trusted-big-data-ml/work/data/SimpleQueryExampleWithSimpleKMS/ppml_test/output \
     --input_encrypt_mode AES/CBC/PKCS5Padding \
     --output_encrypt_mode plain_text"
-gramine-sgx bash 2>&1 | tee test-scala-k8s-spark-simplequery.log
+gramine-sgx bash 2>&1 | tee test-python-k8s-spark-simplequery.log
