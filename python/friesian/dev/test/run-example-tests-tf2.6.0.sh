@@ -113,12 +113,19 @@ now=$(date "+%s")
 time5=$((now - start))
 
 echo "#6 start example test for multi task train"
+if [ -d data/train_processed ]; then
+  echo "data/train_processed already exists"
+else
+  wget -nv $FTP_URI/analytics-zoo-data/train_processed -P data
+  wget -nv $FTP_URI/analytics-zoo-data/test_processed -P data
+fi
+
 start=$(date "+%s")
 
 python ../../example/multi_task/run_multi_task.py \
     --model_save_path ./result/multi_task \
     --train_data_path ./data/train_processed \
-    --test_data_path ./data/train_processed \
+    --test_data_path ./data/test_processed \
 
 
 now=$(date "+%s")
