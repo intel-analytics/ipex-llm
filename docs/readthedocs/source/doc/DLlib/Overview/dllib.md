@@ -16,7 +16,7 @@ It includes the functionalities of the [original BigDL](https://github.com/intel
 
 This section show a single example of how to use dllib to build a deep learning application on Spark, using Keras APIs
 
-#### **LeNet Model on MNIST using Keras-Style API**
+#### LeNet Model on MNIST using Keras-Style API
 
 This tutorial is an explanation of what is happening in the [lenet](https://github.com/intel-analytics/BigDL/tree/branch-2.0/scala/dllib/src/main/scala/com/intel/analytics/bigdl/dllib/example/keras) example
 
@@ -75,7 +75,7 @@ model.fit(trainSet, nbEpoch = param.maxEpoch, validationData = validationSet)
 
 ## Python Example
 
-#### **Initialize NN Context**
+#### Initialize NN Context
 
 `NNContext` is the main entry for provisioning the dllib program on the underlying cluster (such as K8s or Hadoop cluster), or just on a single laptop.
 
@@ -93,7 +93,7 @@ In `init_nncontext`, the user may specify cluster mode for the dllib program:
 The dllib program simply runs `init_nncontext` on the local machine, which will automatically provision the runtime Python environment and distributed execution engine on the underlying computing environment (such as a single laptop, a large K8s or Hadoop cluster, etc.).
 
 
-#### **Autograd Examples using bigdl-dllb keras Python API**
+#### Autograd Examples using bigdl-dllb keras Python API
 
 This tutorial describes the [Autograd](https://github.com/intel-analytics/BigDL/tree/branch-2.0/python/dllib/examples/autograd).
 

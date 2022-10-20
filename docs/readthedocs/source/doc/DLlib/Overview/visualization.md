@@ -1,4 +1,4 @@
-## **Visualizing training with TensorBoard**
+## Visualizing training with TensorBoard
 With the summary info generated, we can then use [TensorBoard](https://pypi.python.org/pypi/tensorboard) to visualize the behaviors of the BigDL program.
 
 * **Installing TensorBoard**
