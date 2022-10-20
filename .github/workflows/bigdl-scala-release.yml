@@ -17,11 +17,11 @@ jobs:
     runs-on: [self-hosted, Linux, Bree, test, ubuntu-16.04]
     steps:
     - uses: actions/checkout@v3
-    # - uses: actions/cache@v2
-    #   with:
-    #     path: ~/.m2/repository
-    #     key: maven-${{ hashFiles('**/pom.xml') }}
-    #     restore-keys: maven-
+    - uses: actions/cache@v2
+      with:
+        path: ~/.m2/repository
+        key: maven-${{ hashFiles('**/pom.xml') }}
+        restore-keys: maven-
     - name: Set up JDK8
       uses: ./.github/actions/jdk-setup-action
     - name: Set up Maven
@@ -83,25 +83,11 @@ jobs:
             "name": "Arda's nexus",
             "url": "http://10.239.45.10:8081/repository/maven-public/"
           }]
-          
-    # - name: Maven verify
-    #   run: |
-    #     export http_proxy="http://child-prc.intel.com:913/"
-    #     export https_proxy="http://child-prc.intel.com:913/"
-    #     cd ./scala
-    #     mvn clean
-    #     mvn deploy -Dgpg.passphrase=BigDL2017
     - name: Maven clean deploy
       run: |
         set -x
         set -e
         export TIMESTAMP=`date '+%Y%m%d'`
-        # export JAVA_HOME=/opt/jdk1.8.0_152
-        # export JRE_HOME=${JAVA_HOME}/jre
-        # export CLASSPATH=.:${JAVA_HOME}/lib:${JRE_HOME}/lib:$CLASSPATH
-        # export JAVA_PATH=${JAVA_HOME}/bin:${JRE_HOME}/bin
-        # export PATH=${JAVA_PATH}:$PATH
-        # export PATH=/opt/work/apache-maven-3.6.3/bin:$PATH
         export http_proxy="proxy-chain.intel.com:911"
         export https_prox="proxy-chain.intel.com:912"
         cp scala/pom.xml scala/pom.xml.origin
