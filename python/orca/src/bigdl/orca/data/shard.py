@@ -845,7 +845,7 @@ class SparkXShards(XShards):
         # repartition evenly according to the index
         if nonEmptyPart.value != merged.rdd.getNumPartitions():    
             merged_withIndex_rdd = merged.rdd.zipWithIndex().map(lambda p: (p[1], p[0]))
-            merged = merged_withIndex_rdd.partitionBy(nonEmptyPart.value, lambda x: x)\
+            merged = merged_withIndex_rdd.partitionBy(nonEmptyPart.value)\
                     .map(lambda p: p[1]).toDF()
         merged = spark_df_to_pd_sparkxshards(merged)
         return merged
