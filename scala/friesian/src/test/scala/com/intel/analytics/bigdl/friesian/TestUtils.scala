@@ -18,7 +18,9 @@ package com.intel.analytics.bigdl.friesian
 
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.dllib.utils.{T, Table}
+import org.apache.spark.ml.linalg.DenseVector
 
+import scala.collection.mutable
 import scala.util.Random
 
 object TestUtils {
@@ -32,5 +34,14 @@ object TestUtils {
     T.array(
       Array.fill(length)(
         Tensor[Float](Array.fill(dim)(Random.nextFloat()), Array(dim))))
+  }
+
+  def toFloatArray(obj: Any): Array[Float] = {
+    obj match {
+      case vector: DenseVector =>
+        vector.toArray.map(_.toFloat)
+      case _ =>
+        obj.asInstanceOf[mutable.WrappedArray[Any]].array.map(_.toString.toFloat)
+    }
   }
 }
