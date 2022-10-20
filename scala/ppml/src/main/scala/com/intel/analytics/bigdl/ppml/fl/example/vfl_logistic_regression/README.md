@@ -42,13 +42,13 @@ clientNum: 2
 ```
 Then start FLServer at server machine
 ```
-java -cp bigdl-ppml-xxx.jar com.intel.analytics.bigdl.ppml.fl.FLServer
+java -cp bigdl-assembly-[version]-jar-with-all-dependencies.jar com.intel.analytics.bigdl.ppml.fl.FLServer
 ```
 
 ## Start Local Trainers
 On the same machine, start the two local Logistic Regression trainers, with learning rate 0.01, batch size 4
 ```
-java -cp bigdl-ppml-xxx.jar com.intel.analytics.bigdl.ppml.fl.example.logisticregression.VflLogisticRegression 
+java -cp bigdl-assembly-[version]-jar-with-all-dependencies.jar com.intel.analytics.bigdl.ppml.fl.example.logisticregression.VflLogisticRegression 
     --dataPath dataset/diabetes/diabetes-1.csv 
     --rowKeyName ID
     --learningRate 0.005

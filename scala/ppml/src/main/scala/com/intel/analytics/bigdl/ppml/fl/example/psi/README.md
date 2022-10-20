@@ -12,5 +12,5 @@ java -cp bigdl-ppml-xxx.jar com.intel.analytics.bigdl.ppml.fl.FLServer
 On the same machine, start client by
 
 ```
-java -cp bigdl-ppml-xxx.jar com.intel.analytics.bigdl.ppml.fl.example.psi.PSIExample
+java -cp bigdl-assembly-[version]-jar-with-all-dependencies.jar com.intel.analytics.bigdl.ppml.fl.example.psi.PSIExample
 ```
