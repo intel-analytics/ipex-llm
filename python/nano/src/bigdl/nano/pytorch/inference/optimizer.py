@@ -133,6 +133,11 @@ class InferenceOptimizer:
         and record the latency, accuracy and model instance inside the Optimizer for
         future usage. All model instance is setting to eval mode.
 
+        The available methods are "original", "fp32_ipex", "bf16", "bf16_ipex","int8",
+        "jit_fp32", "jit_fp32_ipex", "jit_fp32_ipex_channels_last", "openvino_fp32",
+        "openvino_int8", "onnxruntime_fp32", "onnxruntime_int8_qlinear"
+        and "onnxruntime_int8_integer"
+
         :param model: A torch.nn.Module to be optimized
         :param training_data: A torch.utils.data.dataloader.DataLoader object for training
                dataset. Users should be careful with this parameter since this dataloader
@@ -166,9 +171,10 @@ class InferenceOptimizer:
         :param latency_sample_num: (optional) a int represents the number of repetitions
                to calculate the average latency. The default value is 100.
         :param includes: (optional) a list of acceleration methods that will be included in the
-               search. Default to None meaning including all available methods.
+               search. Default to None meaning including all available methods. "original" method
+               will be automatically add to includes.
         :param excludes: (optional) a list of acceleration methods that will be excluded from the
-               search.
+               search. "original" will be ignored in the excludes.
         '''
 
         # check if model is a nn.Module or inherited from a nn.Module
