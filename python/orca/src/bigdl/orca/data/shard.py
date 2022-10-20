@@ -25,8 +25,9 @@ from bigdl.dllib.utils.log4Error import *
 import numpy as np
 from pandas.core.frame import DataFrame as PandasDataFrame
 from pyspark.sql.dataframe import DataFrame as SparkDataFrame
+import pyspark.sql.functions as F
 from pyspark import RDD
-from typing import (Union, List)
+from typing import (Union, List, Dict)
 
 
 class XShards(object):
@@ -676,6 +677,10 @@ class SparkXShards(XShards):
             columns = [columns]
         invalidInputError(isinstance(columns, list), "columns should be str or a list of str")
         df = self.to_spark_df()
+        sqlContext = get_spark_sql_context(get_spark_context())
+        defaultPartitionNum = sqlContext.getConf("spark.sql.shuffle.partitions")
+        partitionNum = df.rdd.getNumPartitions()
+        sqlContext.setConf("spark.sql.shuffle.partitions", str(partitionNum))
         grouped_data = df.groupBy(columns)
 
         if isinstance(agg, str):
@@ -712,7 +717,9 @@ class SparkXShards(XShards):
             result_df = df.join(agg_df, on=columns, how="left")
         else:
             result_df = agg_df
+
         agg_shards = spark_df_to_pd_sparkxshards(result_df)
+        sqlContext.setConf("spark.sql.shuffle.partitions", defaultPartitionNum)
         return agg_shards
 
     def _to_spark_df_without_arrow(self):
