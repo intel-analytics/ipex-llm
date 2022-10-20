@@ -56,12 +56,14 @@ object RecallNearlineUtils {
           case _: DenseVector =>
             tmpDataArr.flatMap(_.asInstanceOf[DenseVector].toArray.map(_.toFloat))
           case _: mutable.WrappedArray[Any] =>
-            tmpDataArr.flatMap(_.asInstanceOf[mutable.WrappedArray[Any]].array.map(_.toString.toFloat))
+            tmpDataArr.flatMap(
+              _.asInstanceOf[mutable.WrappedArray[Any]].array.map(_.toString.toFloat))
           case _ =>
             Log4Error.invalidInputError(condition = false,
               "Recall's initialData parquet files contain unsupported Dtype. ",
               "Make sure ID's type is int and ebd's type is DenseVector or array")
-            throw new IllegalArgumentException("Recall's initialData parquet files contain unsupported Dtype.")
+            throw new IllegalArgumentException(
+              "Recall's initialData parquet files contain unsupported Dtype.")
         }
       } else {
         new Array[Float](0)
