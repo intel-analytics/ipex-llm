@@ -28,38 +28,38 @@ jobs:
       uses: stCarolas/setup-maven@v4.4
       with:
         maven-version: 3.6.3
-    - name: Set up Maven Settings
-      uses: s4u/maven-settings-action@v2.6.0
-      with:
-        sonatypeSnapshots: true
-        apacheSnapshots: true
-        servers: |
-          [{
-            "id": "central",
-            "configuration": {
-              "httpConfiguration": {
-                "all": {
-                  "connectionTimeout": "3600000",
-                  "readTimeout": "3600000"
-                  }    
-                }
-              }
-          },{
-            "id": "ossrh",
-            "username": "yihengwa",
-            "password": "BigDL2017",
-            "configuration": {
-              "timeout": "3600000"
-            }
-          },{
-            "id": "releases",
-            "username": "deployment",
-            "password": "abc123"
-          },{
-            "id": "snapshots",
-            "username": "deployment",
-            "password": "abc123"
-          }]
+    # - name: Set up Maven Settings
+    #   uses: s4u/maven-settings-action@v2.6.0
+    #   with:
+    #     sonatypeSnapshots: true
+    #     apacheSnapshots: true
+    #     servers: |
+    #       [{
+    #         "id": "central",
+    #         "configuration": {
+    #           "httpConfiguration": {
+    #             "all": {
+    #               "connectionTimeout": "3600000",
+    #               "readTimeout": "3600000"
+    #               }    
+    #             }
+    #           }
+    #       },{
+    #         "id": "ossrh",
+    #         "username": "yihengwa",
+    #         "password": "BigDL2017",
+    #         "configuration": {
+    #           "timeout": "3600000"
+    #         }
+    #       },{
+    #         "id": "releases",
+    #         "username": "deployment",
+    #         "password": "abc123"
+    #       },{
+    #         "id": "snapshots",
+    #         "username": "deployment",
+    #         "password": "abc123"
+    #       }]
           
     # - name: Maven verify
     #   run: |
