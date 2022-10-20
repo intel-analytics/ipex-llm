@@ -11,9 +11,9 @@ git clone https://github.com/intel-analytics/BigDL.git
 By default, `git clone` will download the development version of BigDL. If you want a release version, you can use the command `git checkout` to change the specified version.
 
 
-### **1. Python**
+### 1. Python
 
-#### **1.1 Build** 
+#### 1.1 Build
 
 To generate a new [whl](https://pythonwheels.com/) package for pip install, you can run the following script:
 
@@ -64,7 +64,7 @@ pip install bigdl_serving-*.whl
 See [here](./python.md) for more instructions to run BigDL after pip install.
 
 
-#### **1.2 IDE Setup**
+#### 1.2 IDE Setup
 Any IDE that support Python should be able to run BigDL. PyCharm works fine for us.
 
 You need to do the following preparations before starting the IDE to successfully run a BigDL Python program in the IDE:
@@ -102,7 +102,7 @@ You need to do the following preparations before starting the IDE to successfull
 The above environment variables should be available when running or debugging code in the IDE. When running applications in PyCharm, you can add runtime environment variables by clicking  __Run__ -> __Edit Configurations__; then in the __Run/Debug Configurations__ panel, you can add necessary environment variables to your applications.
 
 
-#### **1.3 Terminal Setup**
+#### 1.3 Terminal Setup
 
 Besides setting the environment variables mentioned above manually for Linux users, we also provide a solution to set them with a script:
 
@@ -123,9 +123,9 @@ python BigDL/python/dllib/examples/autograd/custom.py
 Note that this approach will only work temporarily for this terminal. 
 
 
-### **2. Scala**
+### 2. Scala
 
-#### **2.1 Build**
+#### 2.1 Build
 
 Maven 3 is needed to build BigDL, you can download it from the [maven website](https://maven.apache.org/download.cgi).
 
@@ -162,7 +162,7 @@ Build with `make-dist.sh`:
 $ bash make-dist.sh -P spark_3.x -Djava.version=11 -Djavac.version=11
 ```
 
-#### **2.2 IDE Setup**
+#### 2.2 IDE Setup
 
 BigDL uses maven to organize project. You should choose an IDE that supports Maven project and scala language. IntelliJ IDEA works fine for us.
 
