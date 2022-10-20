@@ -42,7 +42,7 @@ public class RecallInitializerTest {
     @Test
     public void testInitialization() throws IOException, InterruptedException {
         URL resource = getClass().getClassLoader().getResource("testConfig/config_recall_init.yaml");
-        assert resource != null;
+        assertNotNull(resource);
         RecallInitializer.main(new String[]{"-c", resource.getPath()});
         // you can get initialDataPath file from friesian-serving.tar.gz
 
@@ -58,21 +58,19 @@ public class RecallInitializerTest {
         assertEquals(dataset.count(), indexService.getNTotal());
         Map<Integer, float[]> vectorMap = new HashMap<>();
         List<Row> rows = dataset.collectAsList();
-        if (rows.size() > 0) {
-            rows.forEach(
-                    row -> vectorMap.put(
-                            Integer.parseInt(row.get(0).toString()),
-                            TestUtils.toFloatArray(row.get(1))));
-            rows.forEach(row -> {
-                float[] floatArr = TestUtils.toFloatArray(row.get(1));
-                assertNotNull(vectorMap.get(indexService.search(IndexService.vectorToFloatArray(floatArr), 1)[0]));
+        rows.forEach(
+                row -> vectorMap.put(
+                        Integer.parseInt(row.get(0).toString()),
+                        TestUtils.toFloatArray(row.get(1))));
+        rows.forEach(row -> {
+            float[] floatArr = TestUtils.toFloatArray(row.get(1));
+            assertNotNull(vectorMap.get(indexService.search(IndexService.vectorToFloatArray(floatArr), 1)[0]));
 
-                // assertArrayEquals(vectorMap.get(Integer.parseInt(row.get(0).toString())),
-                //         vectorMap.get(indexService.search(IndexService.vectorToFloatArray(floatArr), 1)[0]));
+            // assertArrayEquals(vectorMap.get(Integer.parseInt(row.get(0).toString())),
+            //         vectorMap.get(indexService.search(IndexService.vectorToFloatArray(floatArr), 1)[0]));
 
-                // assertEquals(indexService.search(IndexService.vectorToFloatArray(floatArr), 1)[0], row.getInt(0));
-                // When multi vector have same value, may get unexpected id
-            });
-        }
+            // assertEquals(indexService.search(IndexService.vectorToFloatArray(floatArr), 1)[0], row.getInt(0));
+            // When multi vector have same value, may get unexpected id
+        });
     }
 }
