@@ -14,6 +14,8 @@
  * limitations under the License.
  */
 
+package com.intel.analytics.bigdl.orca.utils
+
 import org.apache.spark.TaskContext
 import org.apache.spark.broadcast.Broadcast
 import org.apache.spark.sql.functions.{col, udf}
@@ -24,9 +26,24 @@ import scala.collection.mutable
 import scala.collection.mutable.WrappedArray
 import scala.util.Random
 
-package com.intel.analytics.bigdl.orca.utils
-
 object DataUtils {
+  def checkTypeAndCast(schemaType: String, targetType: String, fillVal: Any):
+
+  (Boolean, Any) = {
+    if (schemaType == targetType) {
+      return (true, fillVal)
+    } else if (targetType == "numeric") {
+      val fillNum = fillVal.asInstanceOf[Number]
+      return schemaType match {
+        case "long" => (true, fillNum.longValue)
+        case "integer" => (true, fillNum.intValue)
+        case "double" => (true, fillNum.doubleValue)
+        case _ => (false, fillVal)
+      }
+    }
+    (false, fillVal)
+  }
+
   def fillNaIndex(df: DataFrame, fillVal: Any, columns: Array[Int]): DataFrame = {
     val targetType = fillVal match {
       case _: Double | _: Long | _: Int => "numeric"
@@ -70,6 +87,5 @@ object DataUtils {
       idx
     })
   }
-
-
 }
+
