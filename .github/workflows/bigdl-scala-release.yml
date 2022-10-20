@@ -71,7 +71,7 @@ jobs:
     - name: Maven clean deploy
       run: |
         set -x
-        set -e
+        # set -e
         export TIMESTAMP=`date '+%Y%m%d'`
         # export JAVA_HOME=/opt/jdk1.8.0_152
         # export JRE_HOME=${JAVA_HOME}/jre
