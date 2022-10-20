@@ -165,6 +165,8 @@ def GetRangeDataframe(prometheus_url, query_list, starttime, endtime, step, colu
     pro_df = pd.DataFrame()
     for query in query_list:
         query_df = pro_client.query_range(query, starttime, endtime, step, **kwargs)
+        # TODO: whatif pro_df and query_df has different length
+        # TODO: repair missing value when query Prometheus client
         pro_df = pd.concat([pro_df, query_df], axis=1)
 
     df = pd.DataFrame(columns=pro_df.columns.tolist())
