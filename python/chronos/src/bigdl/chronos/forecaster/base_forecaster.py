@@ -514,9 +514,9 @@ class BasePytorchForecaster(Forecaster):
         :param accelerator: (optional) Use accelerator 'None', 'onnxruntime',
                'openvino', 'jit', defaults to None. If not None, then will only find the
                model with this specific accelerator.
-        :param precision: (optional) Supported type: 'int8', 'bf16',
-               defaults to None which represents 'fp32'. If not None, the will
-               only find the model with thie specific precision.
+        :param precision: (optional) Supported type: 'int8', 'bf16', 'fp32'.
+               Defaults to None which represents no precision limit. If not None, then will
+               only find the model with this specific precision.
         :param metric: (optional) A str represent corresponding metric which is used for calculating
                accuracy.
         :param accuracy_criterion: (optional) a float represents tolerable

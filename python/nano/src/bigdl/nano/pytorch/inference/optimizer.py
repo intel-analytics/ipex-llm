@@ -383,9 +383,9 @@ class InferenceOptimizer:
         :param accelerator: (optional) Use accelerator 'None', 'onnxruntime',
                'openvino', 'jit', defaults to None. If not None, then will only find the
                model with this specific accelerator.
-        :param precision: (optional) Supported type: 'int8', 'bf16',
-               defaults to None which represents 'fp32'. If not None, the will
-               only find the model with thie specific precision.
+        :param precision: (optional) Supported type: 'int8', 'bf16', and 'fp32'.
+               Defaults to None which represents no precision limit. If not None, then will
+               only find the model with this specific precision.
         :param use_ipex: (optional) if not None, then will only find the
                model with this specific ipex setting.
         :param accuracy_criterion: (optional) a float represents tolerable
@@ -398,8 +398,8 @@ class InferenceOptimizer:
         invalidInputError(accelerator in [None, 'onnxruntime', 'openvino', 'jit'],
                           "Only support accelerator 'onnxruntime', 'openvino' and 'jit'.")
         # TODO: include fp16?
-        invalidInputError(precision in [None, 'int8', 'bf16'],
-                          "Only support precision 'int8', 'bf16'.")
+        invalidInputError(precision in [None, 'int8', 'bf16', 'fp32'],
+                          "Only support precision 'int8', 'bf16', 'fp32'.")
         if accuracy_criterion is not None and not self._calculate_accuracy:
             invalidInputError(False, "If you want to specify accuracy_criterion, you need "
                               "to set metric and validation_data when call 'optimize'.")
@@ -421,6 +421,8 @@ class InferenceOptimizer:
                 if precision == 'bf16' and not option.bf16:
                     continue
                 if precision == 'int8' and not (option.inc or option.pot):
+                    continue
+                if precision == 'fp32' and option.get_precision() != 'fp32':
                     continue
             if use_ipex:
                 if not option.ipex:
