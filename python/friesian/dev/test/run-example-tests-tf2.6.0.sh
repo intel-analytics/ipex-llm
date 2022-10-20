@@ -116,7 +116,6 @@ echo "#6 start example test for multi task train"
 start=$(date "+%s")
 
 python ../../example/multi_task/run_multi_task.py \
-    --data_dir .data/multi_task_data.csv \
     --model_save_path ./result/multi_task \
     --train_data_path ./data/train_processed \
     --test_data_path ./data/train_processed \
