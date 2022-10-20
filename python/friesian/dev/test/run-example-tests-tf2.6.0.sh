@@ -117,11 +117,11 @@ if [ -d data/train_processed ]; then
   echo "data/train_processed already exists"
 else
   echo "download train_processed"
-  wget -nv -r $FTP_URI/analytics-zoo-data/train_processed -P data
-   echo "download test_processed"
-  wget -nv -r $FTP_URI/analytics-zoo-data/test_processed -P data
+  wget -nv -r $FTP_URI/analytics-zoo-data/multi_task.zip -P data
+  unzip ./data/multi_task.zip -d data
+
 fi
-ls ./data
+
 start=$(date "+%s")
 
 python ../../example/multi_task/run_multi_task.py \
