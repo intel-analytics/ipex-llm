@@ -32,12 +32,6 @@ jobs:
       - name: Set up JDK8
         uses: ./.github/actions/jdk-setup-action
 
-#      - uses: actions/cache@v2
-#        with:
-#          path: ~/.m2/repository
-#          key: maven-${{ hashFiles('**/pom.xml') }}
-#          restore-keys: maven-
-
       - name: Set up maven
         uses: ./.github/actions/maven-setup-action
 
@@ -53,15 +47,15 @@ jobs:
           intelanalytics@frs.sourceforge.net:/home/frs/project/analytics-zoo/friesian-serving-jars
 
 
-#  friesian-docker-build:
-#    runs-on: [ self-hosted, Shire ]
-#    steps:
-#      - uses: actions/checkout@v3
-#      - name: set env
-#        run: |
-#          echo "TAG=${{github.event.inputs.tag||'latest'}}" >> $GITHUB_ENV
-#      - name: Set up JDK8
-#        uses: ./.github/actions/jdk-setup-action
-#      - name: Build docker
-#        uses: ./.github/actions/friesian-docker-build-action
+  friesian-docker-build:
+    runs-on: [ self-hosted, Shire ]
+    steps:
+      - uses: actions/checkout@v3
+      - name: set env
+        run: |
+          echo "TAG=${{github.event.inputs.tag||'latest'}}" >> $GITHUB_ENV
+      - name: Set up JDK8
+        uses: ./.github/actions/jdk-setup-action
+      - name: Build docker
+        uses: ./.github/actions/friesian-docker-build-action
 
