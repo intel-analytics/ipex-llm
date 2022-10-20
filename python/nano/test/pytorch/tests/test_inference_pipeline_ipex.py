@@ -117,8 +117,11 @@ class TestInferencePipeline(TestCase):
         inference_opt.optimize(model=self.model,
                                training_data=self.train_loader,
                                thread_num=1,
-                               excludes=["fp32_ipex"])
+                               excludes=["fp32_ipex", "original"])
 
+        # original is a special method that must be included in
+        # the search
+        assert "original" in inference_opt.optimized_model_dict
         assert "jit_fp32_ipex" in inference_opt.optimized_model_dict
         assert "fp32_ipex" not in inference_opt.optimized_model_dict
 

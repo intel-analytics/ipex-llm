@@ -763,6 +763,7 @@ def _available_acceleration_combination(excludes: Optional[List[str]],
         exclude_set: Set[str] = set()
     else:
         exclude_set: Set[str] = set(excludes)
+        exclude_set.discard("original")
 
     if includes is None:
         include_set: Set[str] = set(ALL_INFERENCE_ACCELERATION_METHOD.keys())
