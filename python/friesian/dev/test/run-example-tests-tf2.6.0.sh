@@ -117,7 +117,7 @@ if [ -d data/train_processed ]; then
   echo "data/train_processed already exists"
 else
   echo "download train_processed"
-  wget -nv -r $FTP_URI/analytics-zoo-data/multi_task.zip -P data
+  wget -nv $FTP_URI/analytics-zoo-data/multi_task.zip -P data
   ls
   echo "ls data"
   ls data
