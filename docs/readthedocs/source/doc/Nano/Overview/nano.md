@@ -5,7 +5,7 @@ BigDL-Nano is a Python package to transparently accelerate PyTorch and TensorFlo
 ----
 
 
-### **PyTorch Bite-sized Example**
+### PyTorch Bite-sized Example
 
 BigDL-Nano supports both PyTorch and PyTorch Lightning models and most optimizations require only changing a few "import" lines in your code and adding a few flags.
 
@@ -34,10 +34,10 @@ class MyNano(TorchNano):
 MyNano(use_ipex=True, num_processes=2).train()
 ```
 
-For more details on the BigDL-Nano's PyTorch usage, please refer to the [PyTorch Training](../QuickStart/pytorch_train.md) and [PyTorch Inference](../QuickStart/pytorch_inference.md) page.
+For more details on the BigDL-Nano's PyTorch usage, please refer to the [PyTorch Training](./pytorch_train.md) and [PyTorch Inference](./pytorch_inference.md) page.
 
 
-### **TensorFlow Bite-sized Example**
+### TensorFlow Bite-sized Example
 
 BigDL-Nano supports `tensorflow.keras` API and most optimizations require only changing a few "import" lines in your code and adding a few flags.
 
@@ -67,4 +67,4 @@ model.compile(optimizer='adam',
 model.fit(x_train, y_train, epochs=5, num_processes=4)
 ```
 
-For more details on the BigDL-Nano's Tensorflow usage, please refer to the [TensorFlow Training](../QuickStart/tensorflow_train.md) and [TensorFlow Inference](../QuickStart/tensorflow_inference.md) page.
+For more details on the BigDL-Nano's Tensorflow usage, please refer to the [TensorFlow Training](./tensorflow_train.md) and [TensorFlow Inference](./tensorflow_inference.md) page.
