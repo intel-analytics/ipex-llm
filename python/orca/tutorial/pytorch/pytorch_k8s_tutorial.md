@@ -325,7 +325,7 @@ Before running the example on `k8s-client` mode, you should:
 
         init_orca_context(cluster_mode="k8s-client", num_nodes=2, cores=2, memory="2g",
                         master="k8s://https://<k8s-apiserver-host>:<k8s-apiserver-port>",
-                        container_image="intelanalytics/bigdl-k8s:latest",
+                        container_image="intelanalytics/bigdl-k8s:2.1.0",
                         extra_python_lib="/path/to/model.py", conf=conf)
         ```
 
@@ -362,7 +362,7 @@ Before running the example on `k8s-cluster` mode, you should:
 
         init_orca_context(cluster_mode="k8s-cluster", num_nodes=2, cores=2, memory="2g",
                           master="k8s://https://<k8s-apiserver-host>:<k8s-apiserver-port>", 
-                          container_image="intelanalytics/bigdl-k8s:latest",
+                          container_image="intelanalytics/bigdl-k8s:2.1.0",
                           penv_archive="file:///bigdl/nfsdata/environment.tar.gz",
                           extra_python_lib="/bigdl/nfsdata/model.py", conf=conf)
         ```
@@ -374,8 +374,7 @@ Before running the example on `k8s-cluster` mode, you should:
         * `spark.kubernetes.executor.volumes.persistentVolumeClaim.nfsvolumeclaim.mount.path`: add volumeName `nfsvolumeclaim` of the volumeType `persistentVolumeClaim` to executor pods on the NFS path specified in value;
         * `spark.kubernetes.authenticate.driver.serviceAccountName`: the service account for driver pod;
         * `spark.kubernetes.file.upload.path`: the path to store files at spark submit side in cluster mode;
-    2. Using Conda to install BigDL and needed Python dependency libraries (see __Section 3__).
-    3. Pack the current activate Conda environment to an archive.
+    2. Using Conda to install BigDL and needed Python dependency libraries (see __[Section 3](#3-prepare-environment)__), then pack the current activate Conda environment to an archive.
         ```
         conda pack -o /path/to/environment.tar.gz
         ```
@@ -426,8 +425,7 @@ Before submitting the example on `k8s-client` mode, you should:
 
         init_orca_context(cluster_mode="spark-submit")
         ```
-    2. Using Conda to install BigDL and needed Python dependency libraries (see __Section 3__).
-    3. Pack the current activate Conda environment to an archive.
+    2. Using Conda to install BigDL and needed Python dependency libraries (see __[Section 3](#3-prepare-environment)__), then pack the current activate Conda environment to an archive.
         ```bash
         conda pack -o environment.tar.gz
         ```
@@ -489,7 +487,7 @@ Before submitting the example on `k8s-cluster` mode, you should:
 
         init_orca_context(cluster_mode="spark-submit")
         ```
-    2. Using Conda to install BigDL and needed Python dependency libraries (see __[Section 3](#3-prepare-environment)__), the pack the Conda environment to an archive.
+    2. Using Conda to install BigDL and needed Python dependency libraries (see __[Section 3](#3-prepare-environment)__), then pack the Conda environment to an archive.
         ```bash
         conda pack -o environment.tar.gz
         ```
@@ -595,7 +593,7 @@ Before submitting the Orca application, you should:
         ```
 
 ### 6.3.1 K8s Client
-BigDL has provided an example YAML file (see __`[orca-tutorial-client.yaml](../../../../python/orca/tutorial/pytorch/docker/orca-tutorial-client.yaml)`__, which describes a Deployment that runs the `intelanalytics/bigdl-k8s:2.1.0` image) to run the tutorial FashionMNIST program on k8s-client mode:
+BigDL has provided an example YAML file (see __[orca-tutorial-client.yaml](./docker/orca-tutorial-client.yaml)__, which describes a Deployment that runs the `intelanalytics/bigdl-k8s:2.1.0` image) to run the tutorial FashionMNIST program on k8s-client mode:
 
 __Notes:__ 
 * Please call `init_orca_context` at very begining part of each Orca program.
@@ -745,7 +743,7 @@ kubectl delete job orca-pytorch-job
 ```
 
 ### 6.3.2 K8s Cluster
-BigDL has provided an example YAML file (see __[orca-tutorial-cluster.yaml](../../../../python/orca/tutorial/pytorch/docker/orca-tutorial-cluster.yaml)__, which describes a Deployment that runs the `intelanalytics/bigdl-k8s:2.1.0` image) to run the tutorial FashionMNIST program on k8s-cluster mode:
+BigDL has provided an example YAML file (see __[orca-tutorial-cluster.yaml](./docker/orca-tutorial-cluster.yaml)__, which describes a Deployment that runs the `intelanalytics/bigdl-k8s:2.1.0` image) to run the tutorial FashionMNIST program on k8s-cluster mode:
 
 __Notes:__ 
 * Please call `init_orca_context` at very begining part of each Orca program.
@@ -892,7 +890,7 @@ BigDL also supports uses to skip preparing envionment through providing a contai
 __Notes:__
 * The image will be pulled automatically when you deploy pods with the YAML file.
 * Conda archive is no longer needed in this method, please skip __[Section 3](#3-prepare-environment)__, since BigDL has integrated environment in `intelanalytics/bigdl-k8s:orca-2.1.0`. 
-* If you need to install extra Python libraries that not included in the image, you need to re-build a docker image (using __[BigDL K8s dockfile](../../../../docker/bigdl-k8s/Dockerfile)__) or submit applications using Conda archive (see __[Section 6.3](#63-use-kubernetes-deployment)__).
+* If you need to install extra Python libraries which may not included in the image, please submit applications with Conda archive (refer to __[Section 6.3](#63-use-kubernetes-deployment)__).
 
 Before submitting the example application, you should:
 * On the __Develop Node__
@@ -910,7 +908,7 @@ Before submitting the example application, you should:
         ```
 
 ### 6.4.1 K8s Client
-BigDL has provided an example YAML file (see __[integrated_image_client.yaml](../../../../python/orca/tutorial/pytorch/docker/integrate_image_client.yaml)__, which describes a deployment that runs the `intelanalytics/bigdl-k8s:orca-2.1.0` image) to run the tutorial FashionMNIST program on k8s-client mode:
+BigDL has provided an example YAML file (see __[integrated_image_client.yaml](./docker/integrate_image_client.yaml)__, which describes a deployment that runs the `intelanalytics/bigdl-k8s:orca-2.1.0` image) to run the tutorial FashionMNIST program on k8s-client mode:
 
 __Notes:__
 * Please call `init_orca_context` at very begining part of each Orca program.
@@ -1056,7 +1054,7 @@ kubectl delete job orca-integrate-job
 ```
 
 ### 6.4.2 K8s Cluster
-BigDL has provided an example YAML file (see __[integrate_image_cluster.yaml](../../../../python/orca/tutorial/pytorch/docker/integrate_image_cluster.yaml)__, which describes a deployment that runs the `intelanalytics/bigdl-k8s:orca-2.1.0` image) to run the tutorial FashionMNIST program on k8s-cluster mode:
+BigDL has provided an example YAML file (see __[integrate_image_cluster.yaml](./docker/integrate_image_cluster.yaml)__, which describes a deployment that runs the `intelanalytics/bigdl-k8s:orca-2.1.0` image) to run the tutorial FashionMNIST program on k8s-cluster mode:
 
 __Notes:__
 * Please call `init_orca_context` at very begining part of each Orca program.
