@@ -715,10 +715,12 @@ In the YAML file:
     * `resources`: Allocate resources in the cluster to each pod.
         * `resource.limits`: Limits describes the maximum amount of compute resources allowed.
         * `resource.requests`: Requests describes the minimum amount of compute resources required.
-    * `volumeMounts`: Pod volumes to mount into the Container's filesystem.
+    * `volumeMounts`: Declare where to mount volumes into containers.
         * `name`: Match with the Name of a Volume.
         * `mountPath`: Path within the Container at which the volume should be mounted.
         * `subPath`: Path within the volume from which the Container's volume should be mounted.
+    * `volume`: specify the volumes to provide for the Pod.
+        * `persistentVolumeClaim`: mount a PersistentVolume into a Pod
 
 Create a Pod and run Fashion-MNIST application based on the YAML file.
 ```bash
@@ -853,10 +855,12 @@ In the YAML file:
     * `resources`: Allocate resources in the cluster to each pod.
         * `resource.limits`: Limits describes the maximum amount of compute resources allowed.
         * `resource.requests`: Requests describes the minimum amount of compute resources required.
-    * `volumeMounts`: Pod volumes to mount into the Container's filesystem.
+    * `volumeMounts`: Declare where to mount volumes into containers.
         * `name`: Match with the Name of a Volume.
         * `mountPath`: Path within the Container at which the volume should be mounted.
         * `subPath`: Path within the volume from which the Container's volume should be mounted.
+    * `volume`: specify the volumes to provide for the Pod.
+        * `persistentVolumeClaim`: mount a PersistentVolume into a Pod
 
 Create a Pod and run Fashion-MNIST application based on the YAML file.
 ```bash
@@ -1026,10 +1030,12 @@ In the YAML file:
     * `resources`: Allocate resources in the cluster to each pod.
         * `resource.limits`: Limits describes the maximum amount of compute resources allowed.
         * `resource.requests`: Requests describes the minimum amount of compute resources required.
-    * `volumeMounts`: Pod volumes to mount into the Container's filesystem.
+    * `volumeMounts`: Declare where to mount volumes into containers.
         * `name`: Match with the Name of a Volume.
         * `mountPath`: Path within the Container at which the volume should be mounted.
         * `subPath`: Path within the volume from which the Container's volume should be mounted.
+    * `volume`: specify the volumes to provide for the Pod.
+        * `persistentVolumeClaim`: mount a PersistentVolume into a Pod
 
 Create a Pod and run Fashion-MNIST application based on the YAML file.
 ```bash
@@ -1160,10 +1166,12 @@ In the YAML file:
     * `resources`: Allocate resources in the cluster to each pod.
         * `resource.limits`: Limits describes the maximum amount of compute resources allowed.
         * `resource.requests`: Requests describes the minimum amount of compute resources required.
-    * `volumeMounts`: Pod volumes to mount into the Container's filesystem.
+    * `volumeMounts`: Declare where to mount volumes into containers.
         * `name`: Match with the Name of a Volume.
         * `mountPath`: Path within the Container at which the volume should be mounted.
         * `subPath`: Path within the volume from which the Container's volume should be mounted.
+    * `volume`: specify the volumes to provide for the Pod.
+        * `persistentVolumeClaim`: mount a PersistentVolume into a Pod
 
 Create a Pod and run Fashion-MNIST application based on the YAML file.
 ```bash
