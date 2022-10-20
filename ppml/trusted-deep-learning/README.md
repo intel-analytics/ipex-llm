@@ -147,6 +147,7 @@ sudo docker run -itd \
         -e GLOO_DEVICE_TRANSPORT_TCP_TLS_PKEY=/ppml/certs/test.key \
         -e GLOO_DEVICE_TRANSPORT_TCP_TLS_CERT=/ppml/certs/test.crt \
         -e GLOO_DEVICE_TRANSPORT_TCP_TLS_CA_FILE=/ppml/certs/myCA.pem \
+        -e SGX_ENABLED true \
         -e http_proxy="your_http_proxy" \
         -e https_proxy="your_https_proxy" \
         -e no_proxy="your_no_proxy" \
@@ -179,6 +180,7 @@ sudo docker run -itd \
         -e GLOO_DEVICE_TRANSPORT_TCP_TLS_PKEY=/ppml/certs/test.key \
         -e GLOO_DEVICE_TRANSPORT_TCP_TLS_CERT=/ppml/certs/test.crt \
         -e GLOO_DEVICE_TRANSPORT_TCP_TLS_CA_FILE=/ppml/certs/myCA.pem \
+        -e SGX_ENABLED true \
         -e http_proxy="your_http_proxy" \
         -e https_proxy="your_https_proxy" \
         -e no_proxy="your_no_proxy" \
@@ -213,6 +215,7 @@ sudo docker run -itd \
         -e GLOO_DEVICE_TRANSPORT_TCP_TLS_PKEY=/ppml/certs/test.key \
         -e GLOO_DEVICE_TRANSPORT_TCP_TLS_CERT=/ppml/certs/test.crt \
         -e GLOO_DEVICE_TRANSPORT_TCP_TLS_CA_FILE=/ppml/certs/myCA.pem \
+        -e SGX_ENABLED true \
         -e http_proxy="your_http_proxy" \
         -e https_proxy="your_https_proxy" \
         -e no_proxy="your_no_proxy" \
