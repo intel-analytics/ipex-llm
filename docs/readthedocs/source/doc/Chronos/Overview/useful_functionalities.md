@@ -1,7 +1,7 @@
 # Distributed Processing
 
 
-#### **Distributed training**
+#### Distributed training
 LSTM, TCN and Seq2seq users can easily train their forecasters in a distributed fashion to **handle extra large dataset and utilize a cluster**. The functionality is powered by Project Orca.
 ```python
 f = Forecaster(..., distributed=True)
@@ -10,7 +10,7 @@ f.predict(...)
 f.to_local()  # collect the forecaster to single node
 f.predict_with_onnx(...)  # onnxruntime only supports single node
 ```
-#### **Distributed Data processing: XShardsTSDataset**
+#### Distributed Data processing: XShardsTSDataset
 ```eval_rst
 .. warning::
     ``XShardsTSDataset`` is still experimental.
