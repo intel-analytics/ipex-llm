@@ -24,6 +24,16 @@ from bigdl.dllib.utils.log4Error import *
 
 import numpy as np
 
+from typing import (
+    TYPE_CHECKING,
+    TypeVar,
+    Callable,
+    Dict,
+    List,
+    Optional,
+    Tuple,
+    Union,
+)
 
 class XShards(object):
     """
@@ -134,6 +144,7 @@ But got data of type {}
 
 
 class SparkXShards(XShards):
+
     """
 
     A collection of data which can be pre-processed in parallel on Spark
@@ -632,6 +643,19 @@ class SparkXShards(XShards):
             invalidInputError(False,
                               "The two SparkXShards should have the same number of elements "
                               "in each partition")
+
+    def fillna(self, value: Union[int, float, str, bool],
+               columns: Optional[Union[str, List[str]]]):
+        if self._get_class_name() == 'pandas.core.frame.DataFrame':
+            import pandas as pd
+            df = self.to_spark_df()
+            filled_df = fill_na(df, value, columns)
+            data_shards = spark_df_to_pd_sparkxshards(filled_df)
+            return data_shards
+        else:
+            invalidInputError(False,
+                              "Currently only support dedup() on XShards of Pandas DataFrame")
+
 
     def _to_spark_df_without_arrow(self):
         def f(iter):

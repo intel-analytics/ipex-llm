@@ -23,6 +23,7 @@ from functools import reduce
 import numpy as np
 import pyspark.sql.functions as F
 from bigdl.friesian.feature.utils import *
+from bigdl.orca.data.utils import import fill_na, fill_na_int
 from bigdl.dllib.utils.log4Error import *
 from bigdl.orca import OrcaContext
 from py4j.protocol import Py4JError

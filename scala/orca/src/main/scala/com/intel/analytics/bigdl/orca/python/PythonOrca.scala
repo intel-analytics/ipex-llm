@@ -18,10 +18,11 @@ package com.intel.analytics.bigdl.orca.python
 
 import com.intel.analytics.bigdl.orca.inference.InferenceModel
 import org.apache.spark.api.java.{JavaRDD, JavaSparkContext}
-import java.util.{List => JList}
 
+import java.util.{List => JList}
 import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.dllib.common.PythonZoo
+import com.intel.analytics.bigdl.orca.utils.DataUtils
 
 import scala.reflect.ClassTag
 import scala.collection.JavaConverters._
@@ -120,4 +121,54 @@ class PythonOrca[T: ClassTag](implicit ev: TensorNumeric[T]) extends PythonZoo[T
       Array(Tuple2(part_id, rows.size)).iterator
     }
   }
+
+
+  def fillNa(df: DataFrame, fillVal: Any = 0, columns: JList[String] = null): DataFrame = {
+    val cols = if (columns == null) {
+      df.columns
+    } else {
+      columns.asScala.toArray
+    }
+
+    val cols_idx = DataUtils.getIndex(df, cols)
+
+    DataUtils.fillNaIndex(df, fillVal, cols_idx)
+  }
+
+  def fillNaInt(df: DataFrame, fillVal: Int = 0, columns: JList[String] = null): DataFrame = {
+    val schema = df.schema
+    val allColumns = df.columns
+
+    val cols_idx = if (columns == null) {
+      schema.zipWithIndex.filter(pair => pair._1.dataType.typeName == "integer")
+        .map(pair => pair._2)
+    } else {
+      val cols = columns.asScala.toList
+      cols.map(col_n => {
+        val idx = allColumns.indexOf(col_n)
+        if (idx == -1) {
+          throw new IllegalArgumentException(s"The column name ${col_n} does not exist")
+        }
+        if (schema(idx).dataType.typeName != "integer") {
+          throw new IllegalArgumentException(s"Only columns of IntegerType are supported, but " +
+            s"the type of column ${col_n} is ${schema(idx).dataType.typeName}")
+        }
+        idx
+      })
+    }
+
+    val dfUpdated = df.rdd.map(row => {
+      val origin = row.toSeq.toArray
+      for (idx <- cols_idx) {
+        if (row.isNullAt(idx)) {
+          origin.update(idx, fillVal)
+        }
+      }
+      Row.fromSeq(origin)
+    })
+
+    val spark = df.sparkSession
+    spark.createDataFrame(dfUpdated, schema)
+  }
+
 }

@@ -43,54 +43,6 @@ object PythonFriesian {
 class PythonFriesian[T: ClassTag](implicit ev: TensorNumeric[T]) extends PythonZoo[T] {
   val numericTypes: List[String] = List("long", "double", "integer")
 
-  def fillNa(df: DataFrame, fillVal: Any = 0, columns: JList[String] = null): DataFrame = {
-    val cols = if (columns == null) {
-      df.columns
-    } else {
-      columns.asScala.toArray
-    }
-
-    val cols_idx = Utils.getIndex(df, cols)
-
-    Utils.fillNaIndex(df, fillVal, cols_idx)
-  }
-
-  def fillNaInt(df: DataFrame, fillVal: Int = 0, columns: JList[String] = null): DataFrame = {
-    val schema = df.schema
-    val allColumns = df.columns
-
-    val cols_idx = if (columns == null) {
-      schema.zipWithIndex.filter(pair => pair._1.dataType.typeName == "integer")
-        .map(pair => pair._2)
-    } else {
-      val cols = columns.asScala.toList
-      cols.map(col_n => {
-        val idx = allColumns.indexOf(col_n)
-        if (idx == -1) {
-          throw new IllegalArgumentException(s"The column name ${col_n} does not exist")
-        }
-        if (schema(idx).dataType.typeName != "integer") {
-          throw new IllegalArgumentException(s"Only columns of IntegerType are supported, but " +
-            s"the type of column ${col_n} is ${schema(idx).dataType.typeName}")
-        }
-        idx
-      })
-    }
-
-    val dfUpdated = df.rdd.map(row => {
-      val origin = row.toSeq.toArray
-      for (idx <- cols_idx) {
-        if (row.isNullAt(idx)) {
-          origin.update(idx, fillVal)
-        }
-      }
-      Row.fromSeq(origin)
-    })
-
-    val spark = df.sparkSession
-    spark.createDataFrame(dfUpdated, schema)
-  }
-
   def compute(df: DataFrame): Unit = {
     df.rdd.count()
   }

@@ -18,7 +18,16 @@ from bigdl.dllib.utils.file_utils import get_file_list, callZooFunc
 from bigdl.dllib.utils.utils import convert_row_to_numpy
 from bigdl.dllib.utils.common import *
 from bigdl.dllib.utils.log4Error import *
-
+from typing import (
+    TYPE_CHECKING,
+    TypeVar,
+    Callable,
+    Dict,
+    List,
+    Optional,
+    Tuple,
+    Union,
+)
 
 def list_s3_file(file_path, env):
     path_parts = file_path.split('/')
@@ -502,3 +511,15 @@ def check_col_exists(df, columns):
     if len(col_not_exist) > 0:
         invalidInputError(False,
                           str(col_not_exist) + " do not exist in this Table")
+
+
+def fill_na(df: "SparkDataFrame",
+            fill_val: Union[int, str, float],
+            columns: List[str]) -> "SparkDataFrame":
+    return callZooFunc("float", "fillNa", df, fill_val, columns)
+
+
+def fill_na_int(df: "SparkDataFrame",
+                fill_val: int,
+                columns: Optional[List[str]]) -> "SparkDataFrame":
+    return callZooFunc("float", "fillNaInt", df, fill_val, columns)
