@@ -116,7 +116,9 @@ echo "#6 start example test for multi task train"
 if [ -d data/train_processed ]; then
   echo "data/train_processed already exists"
 else
+  echo "download train_processed"
   wget -nv $FTP_URI/analytics-zoo-data/train_processed -P data
+   echo "download test_processed"
   wget -nv $FTP_URI/analytics-zoo-data/test_processed -P data
 fi
 
