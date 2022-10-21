@@ -10,7 +10,7 @@ permissions:
 
 jobs:
   bigdl-release-scala:
-    runs-on: [self-hosted, Linux, Bree, test, ubuntu-16.04]
+    runs-on: [self-hosted, Linux, Bree, ubuntu-16.04]
     steps:
     - uses: actions/checkout@v3
     - uses: actions/cache@v2
