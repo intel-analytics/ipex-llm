@@ -170,7 +170,7 @@ def _create_pod(pod_name: str,
 
     if pod_file_template_str is not None:
         pod_body = _deserialize_pod_object(pod_file_template_str,
-                                      api_client)
+                                           api_client)
         pod_body.metadata.name = pod_name
         pod_body.metadata.labels.update(pod_labels)
         pod_body.spec.containers[0].env.extend(envs)
@@ -181,17 +181,17 @@ def _create_pod(pod_name: str,
                 client.V1EnvVar(name=env[0], value=env[1]),
             )
         resource = client.V1ResourceRequirements(limits={"cpu": pod_cpu,
-                                                        "memory": pod_memory},
-                                                requests={"cpu": pod_cpu,
-                                                        "memory": pod_memory})
+                                                         "memory": pod_memory},
+                                                 requests={"cpu": pod_cpu,
+                                                           "memory": pod_memory})
         volumn_mounts = [_deserialize_volume_mounts_object(json_str, api_client)
-                        for json_str in volume_mount_strs]
+                         for json_str in volume_mount_strs]
         container = client.V1Container(name="pytorch",
-                                    image=image,
-                                    env=envs,
-                                    command=command,
-                                    resources=resource,
-                                    volume_mounts=volumn_mounts)
+                                       image=image,
+                                       env=envs,
+                                       command=command,
+                                       resources=resource,
+                                       volume_mounts=volumn_mounts)
 
         volumes = [_deserialize_volume_object(json_str, api_client) for json_str in volume_strs]
 
@@ -202,7 +202,6 @@ def _create_pod(pod_name: str,
                                 metadata=metadata,
                                 kind='Pod',
                                 spec=pod_spec)
-    
 
     return pod_body
 
