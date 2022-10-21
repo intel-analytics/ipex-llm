@@ -27,7 +27,7 @@ cd /path/to/zoo-tutorials/tpcds-spark/spark-sql-perf
 sbt "test:runMain com.databricks.spark.sql.perf.tpcds.GenTPCDSData -d <dsdgenDir> -s <scaleFactor> -l <dataDir> -f parquet"
 ```
 
-`dsdgenDir` is the path of `tpcds-kit/tools`, `scaleFactor` is the size of the data, for example `-s 1` will generate 1G data, `dataDir` is the path to store generated data, both local file system and HDFS are supported.
+`dsdgenDir` is the path of `tpcds-kit/tools`, `scaleFactor` indicates data size, for example `-s 1` will generate data of 1GB scale factor, `dataDir` is the path to store generated data.
 
 ### Deploy PPML TPC-DS on Kubernetes
 1. Pull docker image
@@ -36,7 +36,7 @@ sbt "test:runMain com.databricks.spark.sql.perf.tpcds.GenTPCDSData -d <dsdgenDir
 sudo docker pull intelanalytics/bigdl-ppml-trusted-big-data-ml-python-graphene:2.1.0-SNAPSHOT
 ```
 
-2. Prepare keys, password and k8s configurations (following instructions [here](https://github.com/intel-analytics/BigDL/tree/main/ppml/trusted-big-data-ml/python/docker-graphene#11-prepare-the-keyspassworddataenclave-keypem "here")), make sure keys, `tpcds-spark` and generated tpc-ds data can be accessed on each K8S node
+2. Prepare keys, password and k8s configurations (follow instructions [here](https://github.com/intel-analytics/BigDL/tree/main/ppml/trusted-big-data-ml/python/docker-graphene#11-prepare-the-keyspassworddataenclave-keypem "here")), make sure keys, `tpcds-spark` and generated tpc-ds data can be accessed on each K8S node, e.g. deploy on distributed storage inclusing NFS and HDFS. 
 3. Start a bigdl-ppml enabled Spark K8S client container with configured local IP, key, tpc-ds and kubeconfig path, also configure data path if your data is stored on local FS
 
 ```bash
