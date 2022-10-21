@@ -263,6 +263,6 @@ echo "NANO_TF_INTER_OP"=${NANO_TF_INTER_OP}
 echo "+++++++++++++++++++++++++"
 # Run the commands after bigdl-nano-init
 echo "Complete."
-if [ ! $1 = "activate" ];then
+if [ ! $1 = "activate" ] && [ ! $1 = "deactivate" ];then
     ${@:1}
 fi
