@@ -29,6 +29,7 @@ import torch.utils.data
 import torchvision.transforms as transforms
 import torchvision.datasets as datasets
 import torchvision.models as models
+from bigdl.dllib.utils.log4Error import *
 
 parser = argparse.ArgumentParser(description='PyTorch ImageNet Training')
 parser.add_argument('data', metavar='DIR',
@@ -74,11 +75,11 @@ def main():
     print(args)
 
     if args.jit and args.int8:
-        assert False, "jit path is not available for int8 path using ipex"
+        invalidInputError(False, "jit path is not available for int8 path using ipex")
     if not args.ipex:
         # for offical pytorch, int8 and jit path is not enabled.
-        assert not args.int8, "int8 path is not enabled for offical pytorch"
-        assert not args.jit, "jit path is not enabled for offical pytorch"
+        invalidInputError(not args.int8, "int8 path is not enabled for offical pytorch")
+        invalidInputError(not args.jit, "jit path is not enabled for offical pytorch")
 
     from bigdl.orca import init_orca_context, stop_orca_context
     init_orca_context(cluster_mode="local")
