@@ -16,7 +16,7 @@
 # Most of the pytorch code is adapted from IntelAI's ResNet50 FP32 inference for
 # imagenet dataset.
 # https://github.com/IntelAI/models/blob/master/quickstart/image_recognition/
-# pytorch/resnet50/inference/cpu/fp32/README.md
+# pytorch/resnet50/inference/cpu
 #
 
 import argparse
