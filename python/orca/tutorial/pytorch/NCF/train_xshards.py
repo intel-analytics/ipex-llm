@@ -20,7 +20,6 @@
 
 import numpy as np
 import pandas as pd
-import scipy.sparse as sp
 
 # Step 1: Init Orca Context
 
@@ -29,7 +28,6 @@ init_orca_context()
 
 # Step 2: Define Dataset
 
-from bigdl.orca.data import XShards
 from bigdl.orca.data.pandas import read_csv
 from sklearn.model_selection import train_test_split
 
@@ -52,6 +50,7 @@ def ng_sampling(data):
     data_X = data.values.tolist()
 
     # calculate a dok matrix
+    import scipy.sparse as sp
     train_mat = sp.dok_matrix((user_num, item_num), dtype=np.int64)
     for row in data_X:
         train_mat[row[0], row[1]] = 1
@@ -73,21 +72,14 @@ def ng_sampling(data):
     features_fill = features_ps + features_ng
     labels_fill = labels_ps + labels_ng
     data_XY = pd.DataFrame(data=features_fill, columns=["user", "item"], dtype=np.int64)
-    data_XY["y"] = labels_fill
-    data_XY["y"] = data_XY["y"].astype(np.float)
+    data_XY["label"] = labels_fill
+    data_XY["label"] = data_XY["label"].astype(np.float)
     return data_XY
 
 
-def transform_to_dict(data):
+def split_dataset(data):
     # split training set and testing set
     train_data, test_data = train_test_split(data, test_size=0.2, random_state=100)
-    # transform dataset into dict
-    #train_data = train_data.to_numpy()
-    #test_data = test_data.to_numpy()
-    #train_data = {"x": train_data[:, : -1].astype(np.int64),
-    #    "y": train_data[:, -1].astype(np.float)}
-    #test_data = {"x": test_data[:, : -1].astype(np.int64),
-    #    "y": test_data[:, -1].astype(np.float)}
     return train_data, test_data
 
 # Prepare the train and test datasets
@@ -95,7 +87,7 @@ data_X, user_num, item_num = preprocess_data()
 
 # Construct the train and test xshards
 data_X = data_X.transform_shard(ng_sampling)
-train_shards, test_shards = data_X.transform_shard(transform_to_dict).split()
+train_shards, test_shards = data_X.transform_shard(split_dataset).split()
 
 # Step 3: Define the Model
 
@@ -105,8 +97,8 @@ from model import NCF
 
 
 def model_creator(config):
-    model = NCF(config['user_num'], config['item_num'], \
-        factor_num=32, num_layers=3, dropout=0.0, model="NeuMF-end")
+    model = NCF(config['user_num'], config['item_num'],
+                factor_num=32, num_layers=3, dropout=0.0, model="NeuMF-end")
     model.train()
     return model
 
@@ -119,27 +111,28 @@ loss_function = nn.BCEWithLogitsLoss()
 # Step 4: Fit with Orca Estimator
 
 from bigdl.orca.learn.pytorch import Estimator
-from bigdl.orca.learn.metrics import Accuracy, AUC
+from bigdl.orca.learn.metrics import Accuracy
 
 # Create the estimator
 backend = "ray"  # "ray" or "spark"
 est = Estimator.from_torch(model=model_creator,
-                        optimizer=optimizer_creator,
-                        loss=loss_function, 
-                        metrics=[Accuracy(), AUC()],
-                        config={'user_num': user_num, 'item_num': item_num},
-                        backend=backend)
+                           optimizer=optimizer_creator,
+                           loss=loss_function,
+                           metrics=[Accuracy()],
+                           config={'user_num': user_num, 'item_num': item_num},
+                           backend=backend)
 
 # Fit the estimator
 est.fit(data=train_shards, epochs=1, batch_size=256,
-    feature_cols=["user", "item"], label_cols=["y"])
+        feature_cols=["user", "item"], label_cols=["label"])
 
 # Step 5: Evaluate and save the Model
 
 # Evaluate the model
 result = est.evaluate(data=test_shards,
                       feature_cols=["user", "item"],
-                      label_cols=["y"])
+                      label_cols=["label"], batch_size=256)
+print('Evaluate results:')
 for r in result:
     print(r, ":", result[r])
 
