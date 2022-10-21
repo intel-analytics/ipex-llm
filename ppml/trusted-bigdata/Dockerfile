@@ -1,14 +1,12 @@
 ARG BASE_IMAGE_NAME=intelanalytics/bigdl-ppml-gramine-base
 ARG BASE_IMAGE_TAG=2.2.0-SNAPSHOT
-ARG FLINK_VERSION=1.15.2
-ARG SCALA_VERSION=2.12
 ARG SPARK_VERSION=3.1.3
 ARG TINI_VERSION=v0.18.0
 ARG JDK_VERSION=8u192
 ARG JDK_URL
 ARG SPARK_JAR_REPO_URL
 
-# Stage.1 Spark & Hadoop & Hive & Flink
+# Stage.1 Spark & Hadoop & Hive
 FROM ubuntu:20.04 as bigdata
 ARG HTTP_PROXY_HOST
 ARG HTTP_PROXY_PORT
@@ -18,14 +16,10 @@ ARG SPARK_VERSION
 ARG JDK_VERSION
 ARG JDK_URL
 ARG SPARK_JAR_REPO_URL
-ARG FLINK_VERSION
-ARG SCALA_VERSION
 
 ENV SPARK_VERSION                       ${SPARK_VERSION}
 ENV JAVA_HOME                           /opt/jdk${JDK_VERSION}
 ENV PATH                                ${JAVA_HOME}/bin:${PATH}
-ENV FLINK_VERSION                       ${FLINK_VERSION}
-ENV SCALA_VERSION                       ${SCALA_VERSION}
 
 RUN apt-get update --fix-missing && \
     env DEBIAN_FRONTEND=noninteractive TZ=Etc/UTC apt-get install -y tzdata apt-utils wget unzip patch zip git maven nasm
@@ -120,10 +114,6 @@ RUN cd /opt && \
         -Dhttps.proxyPort=$HTTPS_PROXY_PORT" && \
     mvn -T 16 -DskipTests=true clean package && \
     mv /opt/hive/ql/target/hive-exec-2.3.7-core.jar /opt/spark-${SPARK_VERSION}/jars/hive-exec-2.3.7-core.jar
-# flink
-RUN cd /opt && \
-    wget https://archive.apache.org/dist/flink/flink-${FLINK_VERSION}/flink-${FLINK_VERSION}-bin-scala_${SCALA_VERSION}.tgz && \
-    tar -zxvf flink-${FLINK_VERSION}-bin-scala_${SCALA_VERSION}.tgz
 RUN ls -al /opt
 
 # stage.2 gramine
@@ -131,12 +121,9 @@ FROM $BASE_IMAGE_NAME:$BASE_IMAGE_TAG
 
 ARG SPARK_VERSION
 ARG TINI_VERSION
-ARG FLINK_VERSION
-ARG SCALA_VERSION
 
 ENV SPARK_VERSION                       ${SPARK_VERSION}
 ENV SPARK_HOME                          /ppml/spark-${SPARK_VERSION}
-ENV SCALA_VERSION                       ${SCALA_VERSION}
 ENV LOCAL_IP                            127.0.0.1
 ENV SPARK_MASTER_IP                     127.0.0.1
 ENV SPARK_MASTER_PORT                   7077
@@ -151,8 +138,6 @@ ENV SPARK_BLOCK_MANAGER_PORT            10025
 ENV TINI_VERSION                        $TINI_VERSION
 ENV LC_ALL                              C.UTF-8
 ENV LANG                                C.UTF-8
-ENV FLINK_VERSION			            ${FLINK_VERSION}
-ENV FLINK_HOME				            /ppml/flink-${FLINK_VERSION}
 
 RUN mkdir -p /ppml/lib && \
     mkdir -p /ppml/keys && \
@@ -166,7 +151,6 @@ RUN mkdir -p /ppml/lib && \
     mkdir -p /root/.kube/
 
 COPY --from=bigdata /opt/spark-${SPARK_VERSION} /ppml/spark-${SPARK_VERSION}
-COPY --from=bigdata /opt/flink-${FLINK_VERSION} /ppml/flink-${FLINK_VERSION}
 
 ADD ./bigdl-ppml-submit.sh /ppml/bigdl-ppml-submit.sh
 ADD ./spark-executor-template.yaml /ppml/spark-executor-template.yaml

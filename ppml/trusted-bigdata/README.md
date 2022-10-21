@@ -1,6 +1,6 @@
 # Gramine Bigdata Toolkit
 
-This image contains Gramine and some popular Big Data libraries including Hadoop, Spark, Hive and Flink.
+This image contains Gramine and some popular Big Data frameworks including Hadoop, Spark and Hive.
 
 ## Before Running Code
 ### 1. Build Docker Images
