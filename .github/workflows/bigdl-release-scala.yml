@@ -1,6 +1,6 @@
 name: BigDL Release Scala
 
-on:
+on:  
   workflow_dispatch:
 
 
@@ -13,25 +13,80 @@ jobs:
     runs-on: [self-hosted, Linux, Bree, test, ubuntu-16.04]
     steps:
     - uses: actions/checkout@v3
+    - uses: actions/cache@v2
+      with:
+        path: ~/.m2/repository
+        key: maven-${{ hashFiles('**/pom.xml') }}
+        restore-keys: maven-
     - name: Set up JDK8
       uses: ./.github/actions/jdk-setup-action
     - name: Set up Maven
       uses: stCarolas/setup-maven@v4.4
       with:
         maven-version: 3.6.3
+    - name: Set up Maven Settings
+      uses: analytics-zoo/maven-settings-action@dev
+      with:
+        sonatypeSnapshots: true
+        apacheSnapshots: true
+        servers: |
+          [{
+            "id": "central",
+            "configuration": {
+              "httpConfiguration": {
+                "all": {
+                  "connectionTimeout": "3600000",
+                  "readTimeout": "3600000"
+                  }    
+                }
+              }
+          },{
+            "id": "ossrh",
+            "username": "${{ secrets.OSSRH_USERNAME }}",
+            "password": "${{ secrets.OSSRH_PASSWORD }}",
+            "configuration": {
+              "timeout": "3600000"
+            }
+          },{
+            "id": "releases",
+            "username": "${{ secrets.RELEASES_USERNAME }}",
+            "password": "${{ secrets.RELEASES_PASSWORD }}"
+          },{
+            "id": "snapshots",
+            "username": "${{ secrets.SNAPSHOTS_USERNAME }}",
+            "password": "${{ secrets.SNAPSHOTS_PASSWORD }}"
+          }]
+        proxies: |
+          [{
+            "id": "uc-http",
+            "active": "true",
+            "protocol": "http",
+            "host": "${{ secrets.HTTP_PROXY_HOST_2 }}",
+            "port": "${{ secrets.HTTP_PROXY_PORT_2 }}",
+            "nonProxyHosts": "10.239.45.219|localhost"
+          },{
+            "id": "uc-https",
+            "active": "true",
+            "protocol": "https",
+            "host": "${{ secrets.HTTP_PROXY_HOST_2 }}",
+            "port": "${{ secrets.HTTP_PROXY_PORT_3 }}",
+            "nonProxyHosts": "10.239.45.219|localhost"
+          }]
+        mirrors: |
+          [{
+            "id": "ardaNexus",
+            "mirrorOf": "*",
+            "name": "Arda's nexus",
+            "url": "${NEXUS_URL}"
+          }]
     - name: Maven clean deploy
       run: |
         set -x
         set -e
         export TIMESTAMP=`date '+%Y%m%d'`
-        # export JAVA_HOME=/opt/jdk1.8.0_152
-        # export JRE_HOME=${JAVA_HOME}/jre
-        # export CLASSPATH=.:${JAVA_HOME}/lib:${JRE_HOME}/lib:$CLASSPATH
-        # export JAVA_PATH=${JAVA_HOME}/bin:${JRE_HOME}/bin
-        # export PATH=${JAVA_PATH}:$PATH
-        # export PATH=/opt/work/apache-maven-3.6.3/bin:$PATH
         export http_proxy="proxy-chain.intel.com:911"
         export https_prox="proxy-chain.intel.com:912"
+        # SPARK 3.1.3
         cp scala/pom.xml scala/pom.xml.origin
         cp scala/common/spark-version/pom.xml scala/common/spark-version/pom.xml.origin
         cp scala/common/spark-version/3.0/pom.xml scala/common/spark-version/3.0/pom.xml.origin
@@ -55,6 +110,7 @@ jobs:
         sed -i 's/<artifactId>bigdl-parent-spark_${spark.version}<\/artifactId>/<artifactId>bigdl-parent-spark_3.1.2<\/artifactId>/' scala/ppml/pom.xml
         sed -i 's/<artifactId>bigdl-parent-spark_${spark.version}<\/artifactId>/<artifactId>bigdl-parent-spark_3.1.2<\/artifactId>/' scala/assembly/pom.xml
         mvn clean deploy -DskipTests -Dspark.version=3.1.2 -DSPARK_PLATFORM=SPARK_3.1 -P spark_3.x -P sign -X -DstagingProgressTimeoutMinutes=20 -Dgpg.passphrase=BigDL2017 --file scala/pom.xml
+        #SPARK 3.1.3
         mv scala/pom.xml.origin scala/pom.xml
         mv scala/common/spark-version/pom.xml.origin scala/common/spark-version/pom.xml
         mv scala/common/spark-version/3.0/pom.xml.origin scala/common/spark-version/3.0/pom.xml
@@ -98,3 +154,4 @@ jobs:
         mv scala/serving/pom.xml.origin scala/serving/pom.xml
         mv scala/ppml/pom.xml.origin scala/ppml/pom.xml
         mv scala/assembly/pom.xml.origin scala/assembly/pom.xml
+        mvn clean deploy -DskipTests -Dspark.version=3.1.3 -DSPARK_PLATFORM=SPARK_3.1 -P spark_3.x -P sign -X -DstagingProgressTimeoutMinutes=20 -Dgpg.passphrase=BigDL2017 --file scala/pom.xml
