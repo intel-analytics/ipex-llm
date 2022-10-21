@@ -13,7 +13,7 @@ However, Intel SGX requires applications (enclave) to be signed by a user-specif
 
 ![](../images/ppml_scope.png)
 
-Due to security and privacy considerations (e.g., `enclave-key` security), only stage 1 is fully covered by BigDL PPML image. Customers/users need to handle Stage 2 carefully by themselves, especially when they are building their applications with `enclave-key`. Because, `enclave-key` is related to `MRENCLAVE` and `MRSIGNER`. When setting up SGX attestation for integrity, you need to verify MRENCLAVE or MRSIGNER.
+Due to security and privacy considerations (e.g., `enclave-key` security), only stage 1 is fully covered by BigDL PPML image. Customers/users need to handle Stage 2 carefully by themselves, especially when they are building their applications with `enclave-key`. Because `enclave-key` is related to `MRENCLAVE` and `MRSIGNER`. When setting up SGX attestation for integrity, you need to verify MRENCLAVE or MRSIGNER.
 
 * MRENCLAVE, i.e., Enclave Identity. MRENCLAVE uniquely identifies any particular enclave, so using the Enclave Identity will restrict access to the sealed data only to instances of that enclave.
 * MRSIGNER, i.e., Signing Identity. MRSIGNER will be the same for all enclaves signed with the same authority.
@@ -61,7 +61,7 @@ Note that all PPML examples are following this workflow. It will greatly acceler
 
 After finishing development and testing, almost all parameters or configurations are fixed. In that case, we can build customer image with these settings.
 
-### Build & sign applications with `enclave-key` in a `secured environment`: 
+### Build & sign applications with `enclave-key` in a secured environment
 
 1. Configurations.
 2. Build & Sign SGX enclave with `enclave-key` in BigDL PPML image.
@@ -69,7 +69,11 @@ After finishing development and testing, almost all parameters or configurations
 
 Note that a `secured environment` is required for signing applications & build image. This environment has access to `enclave-key` and can build image based on BigDL PPML image. This environment doesn't need SGX.
 
-### Deploy applications in the production environment:
+After building & signing, we can get `MRSIGNER` or `MRENCLAVE` in the command line or logs.
+
+### Deploy applications in the production environment
+
+During application deployment, users/customers can enable attestation for integrity. To avoid changing applications or frameworks, you can set up an open-source attestation service. This attestation service will verify `MRSIGNER` or `MRENCLAVE` of your applications. We recommend using [Intel eHSM](https://github.com/intel/ehsm) for both key management and attestation service.
 
 1. Deploy the `customer image`.
 2. Run PPML applications in customer image.
