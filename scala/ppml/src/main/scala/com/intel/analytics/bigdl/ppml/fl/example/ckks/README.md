@@ -1,7 +1,7 @@
 # VFL Logistic Regression with CKKS Example
 
-This example show you how to create an end-to-end VFL Logistic Regression application with 2 clients and 1 server, using CKKS to protect data passing to FlServer on BigDL PPML.
-The targets and outputs of each clients will be protected by CKKS, server will compute loss and grad using cipherText. 
+This example show you how to create an end-to-end VFL Logistic Regression application with 2 clients and 1 server, using CKKS to protect data passing to FlServer on BigDL PPML.  
+The targets and outputs of each client's linear will be protected by CKKS, clients will encrypt targets and outputs to cipher text, then send the cipher texts to FL server. FLServer will compute loss and grad using cipher texts, return the cipher-text results back to clients. After receive the cipher texts, Clients can use their private key to decrypt the returned cipher texts to loss and grad. The plain-text loss and grad will be given back linear to compute linear's grad, the rest work is just normal LR training.
 
 ### Data
 We use [Census Income Dataset](https://archive.ics.uci.edu/ml/datasets/Census+Income) data in this example.
