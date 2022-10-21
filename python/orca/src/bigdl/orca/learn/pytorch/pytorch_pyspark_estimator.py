@@ -25,7 +25,7 @@ from bigdl.orca.learn.pytorch.training_operator import TrainingOperator
 from bigdl.orca.learn.pytorch.pytorch_pyspark_worker import PytorchPysparkWorker
 from bigdl.orca.learn.utils import maybe_dataframe_to_xshards, dataframe_to_xshards, \
     convert_predict_xshards_to_dataframe, make_data_creator, update_predict_xshards, \
-    reload_dataloader_creator
+    reload_dataloader_creator, process_xshards_of_pandas_dataframe
 from bigdl.orca.data import SparkXShards
 from bigdl.orca import OrcaContext
 from bigdl.orca.learn.base_estimator import BaseEstimator
@@ -254,6 +254,10 @@ class PyTorchPySparkEstimator(BaseEstimator):
         if isinstance(data, SparkXShards):
             # set train/validation
             params["wrap_dataloader"] = False
+            if data._get_class_name() == 'pandas.core.frame.DataFrame':
+                data, validation_data = process_xshards_of_pandas_dataframe(data, feature_cols,
+                                                                            label_cols,
+                                                                            validation_data, "fit")
 
             if validation_data is None:
                 def transform_func(iter, init_params, param):
@@ -402,6 +406,8 @@ class PyTorchPySparkEstimator(BaseEstimator):
             result = convert_predict_xshards_to_dataframe(data, pred_shards)
 
         elif isinstance(data, SparkXShards):
+            if data._get_class_name() == 'pandas.core.frame.DataFrame':
+                data = process_xshards_of_pandas_dataframe(data, feature_cols)
             pred_shards = self._predict_spark_xshards(data, init_params, params)
             result = update_predict_xshards(data, pred_shards)
         else:
@@ -469,7 +475,10 @@ class PyTorchPySparkEstimator(BaseEstimator):
                                              mode="evaluate",
                                              num_workers=self.num_workers)
         if isinstance(data, SparkXShards):
+            if data._get_class_name() == 'pandas.core.frame.DataFrame':
+                data = process_xshards_of_pandas_dataframe(data, feature_cols, label_cols)
             # set train/validation data
+
             def transform_func(iter, init_param, param):
                 partition_data = list(iter)
                 param["data_creator"] = partition_to_creator(partition_data)
