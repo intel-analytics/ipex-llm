@@ -100,7 +100,7 @@ def train_loader_func(config, batch_size):
 
     train_dataset = NCFData(train_data, item_num=item_num, train_mat=train_mat,
                             num_ng=4, is_training=True)
-    train_loader = data.DataLoader(train_dataset, batch_size=256, shuffle=True, num_workers=0)
+    train_loader = data.DataLoader(train_dataset, batch_size=batch_size, shuffle=True, num_workers=0)
     train_loader.dataset.ng_sample()  # sample negative items for training datasets
     return train_loader
 
@@ -113,10 +113,10 @@ def test_loader_func(config, batch_size):
 
     data_X = data_X.values.tolist()
 
-    _, test_data = train_test_split(data_X, test_size=0.1, random_state=100)
+    _, test_data = train_test_split(data_X, test_size=0.2, random_state=100)
 
     test_dataset = NCFData(test_data)
-    test_loader = data.DataLoader(test_dataset, shuffle=False, num_workers=0)
+    test_loader = data.DataLoader(test_dataset, batch_size=batch_size, shuffle=False, num_workers=0)
     return test_loader
 
 # Step 3: Define the Model
@@ -156,7 +156,7 @@ est = Estimator.from_torch(model=model_creator, optimizer=optimizer_creator,
                            loss=loss_function, metrics=[Accuracy()], backend=backend)
 
 # Fit the estimator
-est.fit(data=train_loader_func, epochs=1, batch_size=256)
+est.fit(data=train_loader_func, epochs=3, batch_size=256)
 
 # Step 5: Save and Load the Model
 
