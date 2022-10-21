@@ -61,9 +61,8 @@ object RecallNearlineUtils {
           case _ =>
             Log4Error.invalidInputError(condition = false,
               "Recall's initialData parquet files contain unsupported Dtype. ",
-              "Make sure ID's type is int and ebd's type is DenseVector or array")
-            throw new IllegalArgumentException(
-              "Recall's initialData parquet files contain unsupported Dtype.")
+              "Make sure ID's type is int and ebd's type is DenseVector or array.")
+            new Array[Float](0)
         }
       } else {
         new Array[Float](0)
