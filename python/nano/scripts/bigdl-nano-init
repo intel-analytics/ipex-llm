@@ -222,9 +222,9 @@ else
     if [ -f $CONDA_PREFIX/etc/conda/activate.d/nano_vars.sh ];then
         echo "nano_vars.sh already exists"
     elif [ ! -f $CONDA_PREFIX/bin/bigdl-nano-init]; then
-        echo "you are sourcing bigdl-nano-init which is not in current conda environment,"
-        echo "maybe you have installed bigdl-nano using system's pip, if so, please uninstall"
-        echo "it and install bigdl-nano in the current conda environment instead."
+        echo "It seems that you are using bidl-nano installed by system's pip, "
+        echo "you may need to 'source bgidl-nano-init' before using bigdl-nano "
+        echo "and 'source bigdl-nano-unset-env' after using bigdl-nano yourself"
     else
         echo "Setting environment variables in current conda env"
         ACTIVATED_PATH=$CONDA_PREFIX/etc/conda/activate.d
