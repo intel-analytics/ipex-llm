@@ -141,7 +141,7 @@ def _get_json_str_from_yaml_file(file_name: str) -> str:
         yml_document_all = yaml.safe_load_all(f)
         for obj in yml_document_all:
             return json.dumps(obj)
-    
+
     invalidInputError(False, "submitted yaml file is empty")
 
 
