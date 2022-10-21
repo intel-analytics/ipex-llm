@@ -196,4 +196,4 @@ class DDPK8sStrategy(DDPStrategy):
         """Wraps the model into a 'DistributedDataParallel' module."""
         # we should override this method to change the creation of `DistributedDataParallel`
         self._ddp_kwargs['find_unused_parameters'] = True
-        return DistributedDataParallel(model, **self._ddp_kwargs) # type: ignore
+        return DistributedDataParallel(model, **self._ddp_kwargs)   # type: ignore
