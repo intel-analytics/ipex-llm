@@ -136,13 +136,14 @@ def _deserialize_pod_object(json_str: str, api_client: ApiClient) -> object:
     return api_client.deserialize(res, 'V1Pod')
 
 
-def _get_json_str_from_yaml_file(file_name: str) -> str:
+def _get_json_str_from_yaml_file(file_name: str) -> Optional[str]:
     with open(path.abspath(file_name)) as f:
         yml_document_all = yaml.safe_load_all(f)
         for obj in yml_document_all:
             return json.dumps(obj)
 
     invalidInputError(False, "submitted yaml file is empty")
+    return None
 
 
 def _create_pod(pod_name: str,
