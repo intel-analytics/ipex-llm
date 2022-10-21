@@ -49,43 +49,6 @@ class FriesianSpec extends ZooSpecHelper {
     }
   }
 
-  "Fill NA int" should "work properly" in {
-    val path = resource.getFile + "/data1.parquet"
-    val df = sqlContext.read.parquet(path)
-    val cols = Array("col_1", "col_2")
-    val dfFilled = friesian.fillNa(df, 0, cols.toList.asJava)
-    TestUtils.conditionFailTest(dfFilled.filter(dfFilled("col_1").isNull).count == 0)
-    TestUtils.conditionFailTest(dfFilled.filter(dfFilled("col_2").isNull).count == 0)
-  }
-
-  "Fill NA string" should "work properly" in {
-    val path = resource.getFile + "/data1.parquet"
-    val df = sqlContext.read.parquet(path)
-    val cols = Array("col_4", "col_5")
-    val dfFilled = friesian.fillNa(df, "bb", cols.toList.asJava)
-    TestUtils.conditionFailTest(dfFilled.filter(dfFilled("col_4").isNull).count == 0)
-    TestUtils.conditionFailTest(dfFilled.filter(dfFilled("col_5").isNull).count == 0)
-  }
-
-  "Fill NA string int" should "throw exception" in {
-    val path = resource.getFile + "/data1.parquet"
-    val df = sqlContext.read.parquet(path)
-    val cols = Array("col_1", "col_4")
-    assertThrows[IllegalArgumentException] {
-      friesian.fillNa(df, "bb", cols.toList.asJava)
-    }
-  }
-
-  "Fill NAInt" should "work properly" in {
-    val path = resource.getFile + "/data1.parquet"
-    val df = sqlContext.read.parquet(path)
-    val dfFilled = friesian.fillNaInt(df, 3)
-    TestUtils.conditionFailTest(dfFilled.filter(dfFilled("col_2").isNull).count == 0)
-    TestUtils.conditionFailTest(dfFilled.filter(dfFilled("col_3").isNull).count == 0)
-    val dfFilled2 = friesian.fillNaInt(df, 4, List("col_3").asJava)
-    TestUtils.conditionFailTest(dfFilled2.filter(dfFilled2("col_2").isNull).count == 1)
-    TestUtils.conditionFailTest(dfFilled2.filter(dfFilled2("col_3").isNull).count == 0)
-  }
 
   "Clip" should "work properly" in {
     val path = resource.getFile + "/data1.parquet"
