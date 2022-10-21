@@ -20,7 +20,7 @@
 
 import numpy as np
 import pandas as pd
-import scipy.sparse as sp
+from bigdl.dllib.utils.log4Error import *
 
 # Step 1: Init Orca Context
 
@@ -35,7 +35,7 @@ import torch.utils.data as data
 
 class NCFData(data.Dataset):
     def __init__(self, features,
-                    item_num=0, train_mat=None, num_ng=4, is_training=False):
+                 item_num=0, train_mat=None, num_ng=4, is_training=False):
         super(NCFData, self).__init__()
         """ Note that the labels are only useful when training, we thus
             add them in the ng_sample() function.
@@ -48,7 +48,7 @@ class NCFData(data.Dataset):
         self.labels = [0 for _ in range(len(features))]
 
     def ng_sample(self):
-        assert self.is_training, 'no need to sampling when testing'
+        invalidInputError(self.is_training, 'no need to sampling when testing')
 
         self.features_ng = []
         for x in self.features_ps:
@@ -91,13 +91,15 @@ def train_loader_func(config, batch_size):
     data_X = data_X.values.tolist()
 
     # load ratings as a dok matrix
+    import scipy.sparse as sp
     train_mat = sp.dok_matrix((user_num, item_num), dtype=np.int64)
     for x in data_X:
         train_mat[x[0], x[1]] = 1
 
     train_data, _ = train_test_split(data_X, test_size=0.1, random_state=100)
 
-    train_dataset = NCFData(train_data, item_num=item_num, train_mat=train_mat, num_ng=4, is_training=True)
+    train_dataset = NCFData(train_data, item_num=item_num, train_mat=train_mat,
+                            num_ng=4, is_training=True)
     train_loader = data.DataLoader(train_dataset, batch_size=256, shuffle=True, num_workers=0)
     train_loader.dataset.ng_sample()  # sample negative items for training datasets
     return train_loader
@@ -132,8 +134,8 @@ def model_creator(config):
     user_num = data_X['user'].max() + 1
     item_num = data_X['item'].max() + 1
 
-    model = NCF(user_num, item_num, \
-        factor_num=32, num_layers=3, dropout=0.0, model="NeuMF-end")
+    model = NCF(user_num, item_num,
+                factor_num=32, num_layers=3, dropout=0.0, model="NeuMF-end")
     model.train()
     return model
 
@@ -150,16 +152,17 @@ from bigdl.orca.learn.metrics import Accuracy
 
 # Create the estimator
 backend = "ray"  # "ray" or "spark"
-est = Estimator.from_torch(model=model_creator, optimizer=optimizer_creator, \
-    loss=loss_function, metrics=[Accuracy()], backend=backend)
+est = Estimator.from_torch(model=model_creator, optimizer=optimizer_creator,
+                           loss=loss_function, metrics=[Accuracy()], backend=backend)
 
 # Fit the estimator
-est.fit(data=train_loader_func, epochs=1)
+est.fit(data=train_loader_func, epochs=1, batch_size=256)
 
 # Step 5: Save and Load the Model
 
 # Evaluate the model
-result = est.evaluate(data=test_loader_func)
+result = est.evaluate(data=test_loader_func, batch_size=256)
+print('Evaluate results:')
 for r in result:
     print(r, ":", result[r])
 
