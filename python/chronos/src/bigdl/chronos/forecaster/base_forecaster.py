@@ -302,10 +302,7 @@ class BasePytorchForecaster(Forecaster):
         :return: Validation loss if 'validation_data' is not None.
         """
         # auto adjust batch_size
-        if batch_size // self.num_processes > 0:
-            batch_size = batch_size // self.num_processes
-        else:
-            batch_size = 1
+        batch_size = max(batch_size // self.num_processes, 1)
         # input transform
         if isinstance(data, TSDataset):
             _rolled = data.numpy_x is None
