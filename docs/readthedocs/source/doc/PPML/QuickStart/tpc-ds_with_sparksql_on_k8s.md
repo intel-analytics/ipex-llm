@@ -51,7 +51,7 @@ export DOCKER_IMAGE=intelanalytics/bigdl-ppml-trusted-big-data-ml-python-graphen
 sudo docker run -itd \
         --privileged \
         --net=host \
-        --name=spark-local-k8s-client \
+        --name=spark-k8s-client \
         --oom-kill-disable \
         --device=/dev/sgx/enclave \
         --device=/dev/sgx/provision \
