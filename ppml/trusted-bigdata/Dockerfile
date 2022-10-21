@@ -79,6 +79,7 @@ RUN cd /opt && \
     wget -P /opt/spark-${SPARK_VERSION}/jars/ https://repo1.maven.org/maven2/com/microsoft/azure/azure-data-lake-store-sdk/2.2.9/azure-data-lake-store-sdk-2.2.9.jar
 # hadoop
 RUN cd /opt && \
+    apt-get update --fix-missing && \
     apt-get install -y build-essential && \
     wget https://github.com/protocolbuffers/protobuf/releases/download/v2.5.0/protobuf-2.5.0.tar.bz2 && \
     tar jxvf protobuf-2.5.0.tar.bz2 && \
