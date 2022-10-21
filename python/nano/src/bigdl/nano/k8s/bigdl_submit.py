@@ -19,7 +19,10 @@ from kubernetes import client, config
 from kubernetes.client import ApiClient
 from argparse import REMAINDER, ArgumentParser
 import functools
-from typing import Dict, List, Callable
+from typing import Dict, List, Callable, Optional
+import yaml
+import json
+from os import path
 
 
 def _get_args_parser() -> ArgumentParser:
@@ -89,6 +92,13 @@ def _get_args_parser() -> ArgumentParser:
         help='A Json string specifying one volumeMount in all containers'
     )
 
+    parser.add_argument(
+        '--submit_pod_template',
+        action='store_true',
+        default=False,
+        help='If set, inidicate the main_scipt is a pod template yaml file'
+    )
+
     #
     # Positional arguments.
     #
@@ -120,6 +130,18 @@ def _deserialize_volume_mounts_object(json_str: str, api_client: ApiClient) -> o
     return api_client.deserialize(res, 'V1VolumeMount')
 
 
+def _deserialize_pod_object(json_str: str, api_client: ApiClient) -> object:
+    res = _FakeKubeResponse(json_str)
+    return api_client.deserialize(res, 'V1Pod')
+
+
+def _get_json_str_from_yaml_file(file_name):
+    with open(path.abspath(file_name)) as f:
+        yml_document_all = yaml.safe_load_all(f)
+        for obj in yml_document_all:
+            return json.dumps(obj)
+
+
 def _create_pod(pod_name: str,
                 pod_labels: Dict[str, str],
                 rank: str,
@@ -133,11 +155,11 @@ def _create_pod(pod_name: str,
                 image: str,
                 command: str,
                 volume_strs: List[str],
-                volume_mount_strs: List[str]) -> client.V1Pod:
-    api_cliet = client.ApiClient()
+                volume_mount_strs: List[str],
+                pod_file_template_str: Optional[str]) -> client.V1Pod:
+    api_client = client.ApiClient()
     metadata = client.V1ObjectMeta(name=pod_name,
                                    labels=pod_labels)
-    client.V1EnvVarSource()
     envs = [
         client.V1EnvVar(name="WORLD_SIZE", value=f"{world_size}"),
         client.V1EnvVar(name="RANK", value=rank),
@@ -146,32 +168,42 @@ def _create_pod(pod_name: str,
         client.V1EnvVar(name="APP_ID", value=app_id)
     ]
 
-    for env in extra_envs:
-        envs.append(
-            client.V1EnvVar(name=env[0], value=env[1]),
-        )
-    resource = client.V1ResourceRequirements(limits={"cpu": pod_cpu,
-                                                     "memory": pod_memory},
-                                             requests={"cpu": pod_cpu,
-                                                       "memory": pod_memory})
-    volumn_mounts = [_deserialize_volume_mounts_object(json_str, api_cliet)
-                     for json_str in volume_mount_strs]
-    container = client.V1Container(name="pytorch",
-                                   image=image,
-                                   env=envs,
-                                   command=command,
-                                   resources=resource,
-                                   volume_mounts=volumn_mounts)
+    if pod_file_template_str is not None:
+        pod_body = _deserialize_pod_object(pod_file_template_str,
+                                      api_client)
+        pod_body.metadata.name = pod_name
+        pod_body.metadata.labels.update(pod_labels)
+        pod_body.spec.containers[0].env.extend(envs)
+        pod_body.spec.restart_policy = "Never"
+    else:
+        for env in extra_envs:
+            envs.append(
+                client.V1EnvVar(name=env[0], value=env[1]),
+            )
+        resource = client.V1ResourceRequirements(limits={"cpu": pod_cpu,
+                                                        "memory": pod_memory},
+                                                requests={"cpu": pod_cpu,
+                                                        "memory": pod_memory})
+        volumn_mounts = [_deserialize_volume_mounts_object(json_str, api_client)
+                        for json_str in volume_mount_strs]
+        container = client.V1Container(name="pytorch",
+                                    image=image,
+                                    env=envs,
+                                    command=command,
+                                    resources=resource,
+                                    volume_mounts=volumn_mounts)
 
-    volumes = [_deserialize_volume_object(json_str, api_cliet) for json_str in volume_strs]
+        volumes = [_deserialize_volume_object(json_str, api_client) for json_str in volume_strs]
 
-    pod_spec = client.V1PodSpec(containers=[container],
-                                restart_policy="Never",
-                                volumes=volumes)
-    pod_body = client.V1Pod(api_version='v1',
-                            metadata=metadata,
-                            kind='Pod',
-                            spec=pod_spec)
+        pod_spec = client.V1PodSpec(containers=[container],
+                                    restart_policy="Never",
+                                    volumes=volumes)
+        pod_body = client.V1Pod(api_version='v1',
+                                metadata=metadata,
+                                kind='Pod',
+                                spec=pod_spec)
+    
+
     return pod_body
 
 
@@ -229,8 +261,6 @@ def main():
     """Entry point of bigdl-submit command line tool."""
     args = _parse_args()
 
-    command = ["python", args.main_script] + args.main_script_args
-
     app_id = str(uuid4())[:7]
 
     config.load_config()
@@ -245,6 +275,12 @@ def main():
                                                         driver_pod_name=driver_pod_name,
                                                         driver_pod_labels=driver_pod_labels,
                                                         driver_port=args.driver_port)
+    if args.submit_pod_template:
+        template_json_str = _get_json_str_from_yaml_file(args.main_script)
+        command = None
+    else:
+        template_json_str = None
+        command = ["python", args.main_script] + args.main_script_args
 
     create_pod_fn = functools.partial(_create_pod,
                                       world_size=args.nnodes,
@@ -257,7 +293,9 @@ def main():
                                       image=args.image,
                                       command=command,
                                       volume_strs=args.volume,
-                                      volume_mount_strs=args.volume_mount)
+                                      volume_mount_strs=args.volume_mount,
+                                      pod_file_template_str=template_json_str
+                                      )
 
     _create_driver_pod(v1_api=v1,
                        namespace=args.namespace,
