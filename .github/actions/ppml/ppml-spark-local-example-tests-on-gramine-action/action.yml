@@ -19,6 +19,7 @@ runs:
         DEFAULT_SGX_MEM_SIZE: 32G
         DEFAULT_IMAGE: ${{ inputs.image }}:${{ inputs.image-tag }}
       run: |
+        echo "HDFS_ADDRESS=172.168.0.206:9000" >> $GITHUB_ENV
         echo "CONTAINER_NAME=spark-examples-test-gramine" >> $GITHUB_ENV
         echo "SGX_MEM_SIZE=${{ env.DEFAULT_SGX_MEM_SIZE }}" >> $GITHUB_ENV
         echo "IMAGE=${{ env.DEFAULT_IMAGE }}" >> $GITHUB_ENV
@@ -39,6 +40,7 @@ runs:
         -v $DATA_PATH:/ppml/trusted-big-data-ml/work/data \
         -v $KEYS_PATH:/ppml/trusted-big-data-ml/work/keys \
         -e LOCAL_IP=$LOCAL_IP \
+        -e HDFS_ADDRESS=$HDFS_ADDRESS \
         -e SGX_MEM_SIZE=$SGX_MEM_SIZE \
         -e RUNTIME_K8S_SERVICE_ACCOUNT=spark \
         -e RUNTIME_K8S_SPARK_IMAGE=$IMAGE \
@@ -55,13 +57,10 @@ runs:
       shell: bash
       run: |
         docker exec -i $CONTAINER_NAME bash -c "/ppml/trusted-big-data-ml/init.sh"
-        /opt/hadoop-3.2.0/bin/hadoop fs -rm -r -f hdfs://172.168.0.205:9000/spark-warehouse
         docker exec -i $CONTAINER_NAME bash -c "/ppml/trusted-big-data-ml/work/test-suites/spark-examples.sh"
-        /opt/hadoop-3.2.0/bin/hadoop fs -rm -r -f hdfs://172.168.0.205:9000/spark-warehouse
         docker exec -i $CONTAINER_NAME bash -c "/ppml/trusted-big-data-ml/work/test-suites/spark-sql-examples.sh"
-        /opt/hadoop-3.2.0/bin/hadoop fs -rm -r -f hdfs://172.168.0.205:9000/spark-warehouse
         docker exec -i $CONTAINER_NAME bash -c "/ppml/trusted-big-data-ml/work/test-suites/pyspark-simple-examples.sh"
-        /opt/hadoop-3.2.0/bin/hadoop fs -rm -r -f hdfs://172.168.0.205:9000/spark-warehouse
+        /opt/hadoop-3.2.0/bin/hadoop fs -rm -r -f hdfs://$HDFS_ADDRESS/spark-warehous
         docker exec -i $CONTAINER_NAME bash -c "/ppml/trusted-big-data-ml/work/test-suites/pyspark-sql-examples.sh"
-        /opt/hadoop-3.2.0/bin/hadoop fs -rm -r -f hdfs://172.168.0.205:9000/spark-warehouse
+        /opt/hadoop-3.2.0/bin/hadoop fs -rm -r -f hdfs://$HDFS_ADDRESS/spark-warehous
         docker exec -i $CONTAINER_NAME bash -c "/ppml/trusted-big-data-ml/work/test-suites/pyspark-sql-api-examples.sh"
