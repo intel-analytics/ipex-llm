@@ -74,12 +74,20 @@ class TensorFlow2Estimator(OrcaRayEstimator):
                               "compile_args_creator should not be None,"
                               " when backend is set to horovod")
 
-        params = {
-            "model_creator": model_creator,
-            "compile_args_creator": compile_args_creator,
-            "config": self.config,
-            "verbose": self.verbose,
-        }
+        if self.model_creator is not None:
+            params = {
+                "model_creator": self.model_creator,
+                "compile_args_creator": self.compile_args_creator,
+                "config": self.config,
+                "verbose": self.verbose,
+            }
+        else:
+            params = {
+                "compile_args_creator": self.compile_args_creator,
+                "config": self.config,
+                "verbose": self.verbose,
+            }
+        
 
         if backend == "ray":
             cores_per_node = ray_ctx.ray_node_cpu_cores // workers_per_node

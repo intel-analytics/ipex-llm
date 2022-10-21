@@ -27,7 +27,7 @@ logger = logging.getLogger(__name__)
 class Estimator(object):
     @staticmethod
     def from_keras(*,
-                   model_creator,
+                   model_creator=None,
                    config=None,
                    verbose=False,
                    workers_per_node=1,
@@ -64,9 +64,10 @@ class Estimator(object):
         """
         if backend in {"ray", "horovod"}:
             from bigdl.orca.learn.tf2.ray_estimator import TensorFlow2Estimator
-            return TensorFlow2Estimator(model_creator=model_creator, config=config,
-                                        verbose=verbose, workers_per_node=workers_per_node,
-                                        backend=backend, compile_args_creator=compile_args_creator,
+            return TensorFlow2Estimator(model_creator=model_creator,
+                                        config=config, verbose=verbose,
+                                        workers_per_node=workers_per_node, backend=backend,
+                                        compile_args_creator=compile_args_creator,
                                         cpu_binding=cpu_binding)
         elif backend == "spark":
             if cpu_binding:

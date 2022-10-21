@@ -235,7 +235,9 @@ class LocalDatasetHandler(DatasetHandler):
 class TFRunner:
     """Manages a TensorFlow model for training."""
 
-    def __init__(self, model_creator, compile_args_creator,
+    def __init__(self,
+                 model_creator,
+                 compile_args_creator,
                  config=None,
                  verbose=False):
         """Initializes the runner.
@@ -264,8 +266,9 @@ class TFRunner:
     def setup_local(self):
         """Initializes the model."""
         logger.debug("Creating model")
-        self.model = self.model_creator(self.config)
-        self.model.compile(**self.compile_args_creator(self.config))
+        if self.model_creator is not None:
+            self.model = self.model_creator(self.config)
+            self.model.compile(**self.compile_args_creator(self.config))
         self.backend = "tf-local"
         self.size = 1
         self.rank = 0
@@ -275,11 +278,13 @@ class TFRunner:
     def setup_horovod(self):
         import horovod.tensorflow.keras as hvd
         hvd.init()
-        self.model = self.model_creator(self.config)
-        compile_args = self.compile_args_creator(self.config)
-        compile_args["optimizer"] = hvd.DistributedOptimizer(compile_args["optimizer"])
 
-        self.model.compile(**compile_args)
+        if self.model_creator is not None:
+            self.model = self.model_creator(self.config)
+            compile_args = self.compile_args_creator(self.config)
+            compile_args["optimizer"] = hvd.DistributedOptimizer(compile_args["optimizer"])
+            self.model.compile(**compile_args)
+
         self.backend = "horovod"
         self.size = hvd.size()
         self.rank = hvd.rank()
@@ -323,9 +328,10 @@ class TFRunner:
 
         logger.debug("Creating model with MultiWorkerMirroredStrategy")
         with self.strategy.scope():
-            self.model = self.model_creator(self.config)
-            if not self.model._is_compiled and self.compile_args_creator:
-                self.model.compile(**self.compile_args_creator(self.config))
+            if self.model_creator is not None:
+                self.model = self.model_creator(self.config)
+                if not self.model._is_compiled and self.compile_args_creator:
+                    self.model.compile(**self.compile_args_creator(self.config))
 
         # For use in model.evaluate()
         self.local_model = None
@@ -344,7 +350,7 @@ class TFRunner:
         config["batch_size"] = batch_size
 
         with self.strategy.scope():
-            dataset_handler = DatasetHandler.get_handler(self.backend, self.rank, self.size)
+            dataset_handler = DatasetHandler.ge1t_handler(self.backend, self.rank, self.size)
             train_dataset, test_dataset = dataset_handler \
                 .handle_datasets_train(data_creator,
                                        validation_data_creator,
@@ -431,8 +437,12 @@ class TFRunner:
             # Using local Model since model.evaluate() returns None
             # for MultiWorkerMirroredStrategy
             logger.warning("Running a local model to get validation score.")
-            self.local_model = self.model_creator(self.config)
-            self.local_model.set_weights(self.model.get_weights())
+            if self.model_creator is not None:
+                self.local_model = self.model_creator(self.config)
+                self.local_model.set_weights(self.model.get_weights())
+            else:
+                self.local_model = self.tf_model
+                self.local_model.set_weights(self.model.get_weights())
             results = self.local_model.evaluate(dataset, **params)
 
         if isinstance(results, list):
@@ -468,7 +478,7 @@ class TFRunner:
             callbacks=callbacks,
         )
 
-        if self.backend == "tf-distributed":
+        if self.backend == "tf-distributed" and self.model_creator is not None:
             local_model = self.model_creator(self.config)
             try:
                 local_model.set_weights(self.model.get_weights())
