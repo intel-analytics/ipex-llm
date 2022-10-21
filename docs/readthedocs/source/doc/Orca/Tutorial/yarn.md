@@ -1,4 +1,4 @@
-# Running BigDL-Orca Program on YARN
+# Running BigDL-Orca on Hadoop/YARN Clusters
 
 This tutorial provides a step-by-step guide on how to run BigDL-Orca programs on Apache Hadoop/YARN clusters, using a [PyTorch Fashin-MNIST program](https://github.com/intel-analytics/BigDL/blob/main/python/orca/tutorial/pytorch/FashionMNIST/) as a working example.
 
