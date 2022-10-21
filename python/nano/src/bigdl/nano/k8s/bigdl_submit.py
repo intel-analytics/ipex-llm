@@ -23,6 +23,7 @@ from typing import Dict, List, Callable, Optional
 import yaml
 import json
 from os import path
+from bigdl.nano.utils.log4Error import invalidInputError
 
 
 def _get_args_parser() -> ArgumentParser:
@@ -135,11 +136,13 @@ def _deserialize_pod_object(json_str: str, api_client: ApiClient) -> object:
     return api_client.deserialize(res, 'V1Pod')
 
 
-def _get_json_str_from_yaml_file(file_name):
+def _get_json_str_from_yaml_file(file_name: str) -> str:
     with open(path.abspath(file_name)) as f:
         yml_document_all = yaml.safe_load_all(f)
         for obj in yml_document_all:
             return json.dumps(obj)
+    
+    invalidInputError(False, "submitted yaml file is empty")
 
 
 def _create_pod(pod_name: str,
@@ -169,8 +172,8 @@ def _create_pod(pod_name: str,
     ]
 
     if pod_file_template_str is not None:
-        pod_body = _deserialize_pod_object(pod_file_template_str,
-                                           api_client)
+        pod_body: client.V1Pod = _deserialize_pod_object(pod_file_template_str,
+                                                         api_client)
         pod_body.metadata.name = pod_name
         pod_body.metadata.labels.update(pod_labels)
         pod_body.spec.containers[0].env.extend(envs)
