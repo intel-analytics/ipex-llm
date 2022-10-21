@@ -13,29 +13,29 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
-# Most of the pytorch code is adapted from IntelAI's ResNet50 FP32 inference for
-# imagenet dataset.
+# Most of the pytorch code is adapted from:
 # https://github.com/IntelAI/models/blob/master/quickstart/image_recognition/
 # pytorch/resnet50/inference/cpu
 #
 
-import argparse
 import os
-import random
-import time
+import argparse
+
 import torch
 import torch.nn as nn
 import torch.utils.data
 import torchvision.transforms as transforms
 import torchvision.datasets as datasets
 import torchvision.models as models
-from bigdl.dllib.utils.log4Error import *
 
-parser = argparse.ArgumentParser(description='PyTorch ImageNet Training')
+from bigdl.dllib.utils.log4Error import *
+from bigdl.orca import init_orca_context, stop_orca_context
+
+parser = argparse.ArgumentParser(description='PyTorch ImageNet Inference')
 parser.add_argument('data', metavar='DIR',
                     help='path to dataset')
-parser.add_argument('--workers', default=1, type=int,
-                    help='number of workers for orca estimator (default: 1)')
+parser.add_argument('--workers_per_node', default=1, type=int,
+                    help='number of torch workers on each node (default: 1)')
 parser.add_argument('--ipex', action='store_true', default=False,
                     help='use intel pytorch extension')
 parser.add_argument('--jit', action='store_true', default=False,
@@ -45,22 +45,22 @@ parser.add_argument('--int8', action='store_true', default=False,
 parser.add_argument('--bf16', action='store_true', default=False,
                     help='enable ipex bf16 path')
 parser.add_argument('-b', '--batch_size', default=256, type=int)
-parser.add_argument('--d_workers', default=4, type=int,
-                    help='number of workers for dataloader (default: 4)')
+parser.add_argument('--workers', default=4, type=int,
+                    help='number of data loading workers (default: 4)')
 parser.add_argument("--dummy", action='store_true',
-                    help="using  dummu data to test the performance of inference")
+                    help="using dummy data to test the performance of inference")
 
 
 class DummyData(torch.utils.data.Dataset):
 
-    def __init__(self):
+    def __init__(self, use_ipex, use_bf16):
         super(DummyData, self).__init__()
         self.len = 1000
         self.features = torch.randn(self.len, 3, 224, 224)
         self.labels = torch.arange(1, self.len + 1).long()
-        if args.ipex:
+        if use_ipex:
             self.features = self.features.contiguous(memory_format=torch.channels_last)
-        if args.bf16:
+        if use_bf16:
             self.features = self.features.to(torch.bfloat16)
 
     def __len__(self):
@@ -81,11 +81,10 @@ def main():
         invalidInputError(not args.int8, "int8 path is not enabled for offical pytorch")
         invalidInputError(not args.jit, "jit path is not enabled for offical pytorch")
 
-    from bigdl.orca import init_orca_context, stop_orca_context
     init_orca_context(cluster_mode="local")
 
     validate(args)
-    return
+    stop_orca_context()
 
 
 def validate(args):
@@ -102,14 +101,14 @@ def validate(args):
                     transforms.ToTensor(),
                     normalize,
                 ])),
-                batch_size=args.batch_size, shuffle=False,
-                num_workers=args.d_workers, pin_memory=True)
+                batch_size=batch_size, shuffle=False,
+                num_workers=args.workers, pin_memory=True)
         else:
             # dummy data, always running channle last for fp32, bf16, int8
             val_loader = torch.utils.data.DataLoader(
-                DummyData(),
+                DummyData(args.ipex, args.bf16),
                 batch_size=args.batch_size, shuffle=False,
-                num_workers=args.d_workers, pin_memory=True)
+                num_workers=args.workers, pin_memory=True)
         return val_loader
 
     def model_creator(config):
@@ -131,7 +130,7 @@ def validate(args):
                 with torch.no_grad():
                     y = model(x)
                     print(model.graph_for(x))
-                print("running int8 evalation step\n")
+                print("running int8 evaluation step\n")
             else:
                 # for ipex path, always convert model to channels_last for bf16, fp32.
                 # TODO: int8 path: https://jira.devtools.intel.com/browse/MFDNN-6103
@@ -139,10 +138,10 @@ def validate(args):
 
                 if args.bf16:
                     model = ipex.optimize(model, dtype=torch.bfloat16, inplace=True)
-                    print("running bfloat16 evalation step\n")
+                    print("running bfloat16 evaluation step\n")
                 else:
                     model = ipex.optimize(model, dtype=torch.float32, inplace=True)
-                    print("running fp32 evalation step\n")
+                    print("running fp32 evaluation step\n")
 
                 if args.jit:
                     x = torch.randn(args.batch_size, 3, 224, 224) \
@@ -167,7 +166,6 @@ def validate(args):
                                     weight_decay=1e-4)
         return optimizer
 
-    loss_function = nn.CrossEntropyLoss()
 
     from bigdl.orca.learn.pytorch import Estimator
     from bigdl.orca.learn.metrics import Accuracy
@@ -175,24 +173,22 @@ def validate(args):
     backend = "ray"
     est = Estimator.from_torch(model=model_creator,
                                optimizer=optimizer_creator,
-                               loss=loss_function,
+                               loss=nn.CrossEntropyLoss(),
                                metrics=[Accuracy()],
                                backend=backend,
-                               workers_per_node=args.workers
-                               )
+                               workers_per_node=args.workers_per_node)
     if not args.jit and args.bf16:
         with torch.cpu.amp.autocast():
-            result = est.evaluate(data=val_loader_func, profile=True)
+            result = est.evaluate(data=val_loader_func, batch_size=args.batch_size, profile=True)
     else:
-        result = est.evaluate(data=val_loader_func, profile=True)
+        result = est.evaluate(data=val_loader_func, batch_size=args.batch_size, profile=True)
     for r in result:
         print(r, ":", result[r])
 
     print('---------')
     print('total num_samples:', result['num_samples'])
-    print('num_workers:', args.workers)
     print('batch_size:', args.batch_size)
-    num_samples = result['num_samples'] / args.workers
+    num_samples = result['num_samples'] / args.workers_per_node
     print('num_samples for each worker:', num_samples)
     print('num_batches for each worker:', num_samples / args.batch_size)
     mean_validation_s = result['profile']['mean_validation_s']
@@ -203,7 +199,6 @@ def validate(args):
     perf = args.batch_size / mean_eval_fwd_s
     print('inference latency %.3f ms' % latency)
     print("throughput: {:.3f} fps".format(perf))
-    return
 
 if __name__ == '__main__':
     main()
