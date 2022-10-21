@@ -3,6 +3,7 @@ from __future__ import print_function
 import argparse
 import logging
 import os
+import time
 
 from torchvision import datasets, transforms
 import torch
@@ -165,9 +166,18 @@ def main():
     optimizer = optim.SGD(model.parameters(), lr=args.lr,
                           momentum=args.momentum)
 
+
+    start = time.perf_counter()
+    cpu_start = time.process_time()
+
     for epoch in range(1, args.epochs + 1):
         train(args, model, device, train_loader, optimizer, epoch)
         test(args, model, device, test_loader, epoch)
+
+    cpu_end = time.process_time()
+    end = time.perf_counter()
+    print("CPU Elapsed time:", cpu_end - cpu_start)
+    print("Elapsed time:", end - start)
 
     if (args.save_model):
         torch.save(model.state_dict(), "mnist_cnn.pt")
