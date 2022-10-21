@@ -17,14 +17,23 @@ package com.intel.analytics.bigdl.ppml.fl.example.ckks
 
 import com.intel.analytics.bigdl.ckks.CKKS
 
+import java.io.File
+
 // TODO: key should be provided by Key Management System
 object GenerateCkksSecret {
   def main(args: Array[String]): Unit = {
     if (args.length >=  1) {
       val ckks = new CKKS()
       val keys = ckks.createSecrets()
-      CKKS.saveSecret(keys, args(0))
-      println("save secret to " + args(0))
+      val computeKeys = new Array[Array[Byte]](2)
+      computeKeys(0) = keys(0)
+      computeKeys(1) = keys(2)
+      val fullSecretFileName = args(0) + File.separator + "all_secret"
+      val computeSecretFileName = args(0) + File.separator + "compute_secret"
+      CKKS.saveSecret(keys, fullSecretFileName)
+      println("save all secret to " + fullSecretFileName)
+      CKKS.saveSecret(computeKeys, computeSecretFileName)
+      println("save compute secret to " + computeSecretFileName)
     } else {
       println("please provide a path to save secret.")
     }
