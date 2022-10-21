@@ -46,6 +46,28 @@ parser.add_argument('--bf16', action='store_true', default=False,
 parser.add_argument('-b', '--batch_size', default=256, type=int)
 parser.add_argument('--d_workers', default=4, type=int,
                     help='number of workers for dataloader (default: 4)')
+parser.add_argument("--dummy", action='store_true',
+                    help="using  dummu data to test the performance of inference")
+
+
+class DummyData(torch.utils.data.Dataset):
+
+    def __init__(self):
+        super(DummyData, self).__init__()
+        self.len = 1000
+        self.features = torch.randn(self.len, 3, 224, 224)
+        self.labels = torch.arange(1, self.len + 1).long()
+        if args.ipex:
+            self.features = self.features.contiguous(memory_format=torch.channels_last)
+        if args.bf16:
+            self.features = self.features.to(torch.bfloat16)
+
+    def __len__(self):
+        return self.len
+
+    def __getitem__(self, idx):
+        return self.features[idx], self.labels[idx]
+
 
 def main():
     args = parser.parse_args()
@@ -68,24 +90,30 @@ def main():
 def validate(args):
 
     def val_loader_func(config, batch_size):
-        valdir = os.path.join(args.data, 'val')
-        normalize = transforms.Normalize(mean=[0.485, 0.456, 0.406],
-                                         std=[0.229, 0.224, 0.225])
-        val_loader = torch.utils.data.DataLoader(
-            datasets.ImageFolder(valdir, transforms.Compose([
-                transforms.Resize(256),
-                transforms.CenterCrop(224),
-                transforms.ToTensor(),
-                normalize,
-            ])),
-            batch_size=args.batch_size, shuffle=False,
-            num_workers=args.d_workers, pin_memory=True) 
+        if not args.dummy:
+            valdir = os.path.join(args.data, 'val')
+            normalize = transforms.Normalize(mean=[0.485, 0.456, 0.406],
+                                             std=[0.229, 0.224, 0.225])
+            val_loader = torch.utils.data.DataLoader(
+                datasets.ImageFolder(valdir, transforms.Compose([
+                    transforms.Resize(256),
+                    transforms.CenterCrop(224),
+                    transforms.ToTensor(),
+                    normalize,
+                ])),
+                batch_size=args.batch_size, shuffle=False,
+                num_workers=args.d_workers, pin_memory=True)
+        else:
+            # dummy data, always running channle last for fp32, bf16, int8
+            val_loader = torch.utils.data.DataLoader(
+                DummyData(),
+                batch_size=args.batch_size, shuffle=False,
+                num_workers=args.d_workers, pin_memory=True)
         return val_loader
 
     def model_creator(config):
         print("=> using pre-trained model '{}'".format('resnet50'))
         model = models.__dict__['resnet50'](pretrained=True)
-
 
         if args.ipex:
             print("using ipex model to do inference\n")
@@ -134,8 +162,8 @@ def validate(args):
 
     def optimizer_creator(model, config):
         optimizer = torch.optim.SGD(model.parameters(), lr=0.1,
-                                momentum=0.9,
-                                weight_decay=1e-4)
+                                    momentum=0.9,
+                                    weight_decay=1e-4)
         return optimizer
 
     loss_function = nn.CrossEntropyLoss()
@@ -151,7 +179,11 @@ def validate(args):
                                backend=backend,
                                workers_per_node=args.workers
                                )
-    result = est.evaluate(data=val_loader_func, profile=True)
+    if not args.jit and args.bf16:
+        with torch.cpu.amp.autocast():
+            result = est.evaluate(data=val_loader_func, profile=True)
+    else:
+        result = est.evaluate(data=val_loader_func, profile=True)
     for r in result:
         print(r, ":", result[r])
 
