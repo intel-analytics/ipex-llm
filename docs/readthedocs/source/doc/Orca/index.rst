@@ -31,7 +31,7 @@ Most AI projects start with a Python notebook running on a single laptop; howeve
         +++
 
         :bdg-link:`Quickstarts <./QuickStart/index.html>`
-        :bdg-link:`Hadoop/YARN <./Tutorial/pytorch_yarn_tutorial.html>`
+        :bdg-link:`Hadoop/YARN <./Tutorial/yarn.html>`
 
     .. grid-item-card::
 
