@@ -351,7 +351,7 @@ class DDPSpawnStrategy(_DDPSpawnStrategy):
     def _setup_model(self, model: nn.Module) -> DistributedDataParallel:
         """Wraps the model into a 'DistributedDataParallel' module."""
         # we should override this method to change the creation of `DistributedDataParallel`
-        return DistributedDataParallel(model, **self._ddp_kwargs)
+        return DistributedDataParallel(model, find_unused_parameters=True, **self._ddp_kwargs)
 
     def reduce(self, tensor, group: Optional[Any] = None,   # type: ignore[override]
                reduce_op: Union[ReduceOp, str] = "mean") -> Tensor:

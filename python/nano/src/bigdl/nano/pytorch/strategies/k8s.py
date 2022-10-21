@@ -195,4 +195,5 @@ class DDPK8sStrategy(DDPStrategy):
     def _setup_model(self, model: nn.Module) -> DistributedDataParallel:
         """Wraps the model into a 'DistributedDataParallel' module."""
         # we should override this method to change the creation of `DistributedDataParallel`
-        return DistributedDataParallel(model, **self._ddp_kwargs)  # type: ignore
+        return DistributedDataParallel(model, find_unused_parameters=True,
+                                       **self._ddp_kwargs)  # type: ignore
