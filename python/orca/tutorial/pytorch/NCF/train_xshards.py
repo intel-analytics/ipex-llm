@@ -123,7 +123,7 @@ est = Estimator.from_torch(model=model_creator,
                            backend=backend)
 
 # Fit the estimator
-est.fit(data=train_shards, epochs=1, batch_size=256,
+est.fit(data=train_shards, epochs=3, batch_size=256,
         feature_cols=["user", "item"], label_cols=["label"])
 
 # Step 5: Evaluate and save the Model
