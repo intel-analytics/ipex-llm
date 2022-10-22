@@ -223,7 +223,7 @@ jobs:
         echo "########################################"
         export base_image=intelanalytics/bigdl-ppml-trusted-big-data-ml-python-gramine-base-noattest
         cd ppml/trusted-big-data-ml/python/docker-gramine/base
-        sed -i 's/"dcap"/none/g' bash.manifest.template
+        sed -i 's/"dcap"/"none"/g' bash.manifest.template
         sudo docker build \
           --no-cache=true \
           --build-arg http_proxy=${HTTP_PROXY} \
