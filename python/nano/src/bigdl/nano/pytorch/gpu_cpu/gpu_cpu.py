@@ -16,8 +16,7 @@
 
 import torch
 from functools import partial
-from bigdl.nano.pytorch.utils import TORCH_VERSION_LESS_1_10, TORCH_VERSION_LESS_1_11,\
-    TORCH_VERSION_LESS_1_12
+from bigdl.nano.pytorch.utils import TORCH_VERSION_LESS_1_10
 
 
 CPU_DEVICE = torch.device("cpu")
@@ -152,7 +151,7 @@ def patch_cuda(disable_jit=True):
     for t in CUDA_TENSOR_TYPE:
         setattr(torch.cuda, f'{t}Tensor', getattr(torch, f'{t.replace("Complex", "")}Tensor'))
     for f in CREATE_TENSOR_FUNC:
-        if TORCH_VERSION_LESS_1_11:
-            if f in ["asarray"]:
-                continue
-        setattr(torch, f, create_tensor_func(getattr(torch, f)))
+        try:
+            setattr(torch, f, create_tensor_func(getattr(torch, f)))
+        except e:
+            pass
