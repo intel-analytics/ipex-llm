@@ -1483,6 +1483,7 @@ class BasePytorchForecaster(Forecaster):
                                                  input_sample=dummy_input,
                                                  accelerator="jit",
                                                  use_ipex=True,
+                                                 channels_last=False,
                                                  thread_num=thread_num)
 
     def export_onnx_file(self, dirname="fp32_onnx", quantized_dirname=None):
@@ -1528,23 +1529,23 @@ class BasePytorchForecaster(Forecaster):
                 self.build_openvino()
             InferenceOptimizer.save(self.openvino_fp32, dirname)
 
-    def export_jit_file(self, dirname="fp32_jit",
-                             quantized_dirname=None):
+    def export_torchscript_file(self, dirname="fp32_torchscript",
+                                quantized_dirname=None):
         """
-        Save the jit model file to the disk.
+        Save the torchscript model file to the disk.
 
-        :param dirname: The dir location you want to save the jit file.
-        :param quantized_dirname: The dir location you want to save the quantized jit file.
+        :param dirname: The dir location you want to save the torchscript file.
+        :param quantized_dirname: The dir location you want to save the quantized torchscript file.
         """
         from bigdl.nano.pytorch import InferenceOptimizer
         from bigdl.nano.utils.log4Error import invalidInputError
         if self.distributed:
             invalidInputError(False,
-                              "export_jit_file has not been supported for distributed "
+                              "export_torchscript_file has not been supported for distributed "
                               "forecaster. You can call .to_local() to transform the "
                               "forecaster to a non-distributed version.")
         if quantized_dirname and self.jit_int8:
-            InferenceOptimizer.save(self.jit_int8, dirname)
+            InferenceOptimizer.save(self.jit_int8, quantized_dirname)
         if dirname:
             if self.jit_fp32 is None:
                 self.build_jit()

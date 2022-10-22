@@ -236,7 +236,7 @@ class TestChronosModelLSTMForecaster(TestCase):
         # test exporting the jit
         with tempfile.TemporaryDirectory() as tmp_dir_name:
             ckpt_name = os.path.join(tmp_dir_name, "fp32_jit")
-            forecaster.export_jit_file(dirname=ckpt_name)
+            forecaster.export_torchscript_file(dirname=ckpt_name)
 
     @op_diff_set_all
     def test_lstm_forecaster_jit_methods_loader(self):
