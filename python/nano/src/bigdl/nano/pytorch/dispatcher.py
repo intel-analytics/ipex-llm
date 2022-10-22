@@ -52,7 +52,7 @@ def _get_patch_map():
     return _mapping_torch
 
 
-def patch_torch(gpu_to_cpu: bool = False):
+def patch_torch(gpu_to_cpu: bool = True):
     """
     patch_torch is used to patch optimized torch classes to replace original ones.
 
