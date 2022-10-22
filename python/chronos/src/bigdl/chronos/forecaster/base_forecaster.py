@@ -1458,7 +1458,7 @@ class BasePytorchForecaster(Forecaster):
         '''
          Build jit model to speed up inference and reduce latency.
          The method is Not required to call before predict_with_jit
-         or export_jit_file.
+         or export_torchscript_file.
 
          It is recommended to use when you want to:
 
