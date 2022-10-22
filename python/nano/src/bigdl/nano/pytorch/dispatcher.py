@@ -64,7 +64,7 @@ def patch_torch(gpu_to_cpu: bool = True):
 
     :param gpu_to_cpu: bool, make codes write for CUDA available for CPU if set to True.
            This feature is still experimental and only valid in python layer codes.
-           Default to False.
+           Default to True.
     """
     if gpu_to_cpu:
         patch_cuda()
