@@ -16,6 +16,9 @@
 
 import torch
 from functools import partial
+from bigdl.nano.utils import TORCH_VERSION_LESS_1_10, TORCH_VERSION_LESS_1_11,\
+    TORCH_VERSION_LESS_1_12
+
 
 CPU_DEVICE = torch.device("cpu")
 TORCH_CUDA_NO_OP_LIST = ["set_device", "synchronize", "reset_peak_memory_stats",
@@ -137,7 +140,8 @@ def patch_cuda(disable_jit=True):
     setattr(torch.cuda, "Stream", no_op_context)
     setattr(torch.cuda, "current_stream", current_stream)
     setattr(torch.Tensor, "record_stream", np_op_func)
-    setattr(torch.cuda.amp, "autocast", torch.cpu.amp.autocast)
+    if not TORCH_VERSION_LESS_1_10:
+        setattr(torch.cuda.amp, "autocast", torch.cpu.amp.autocast)
     setattr(torch.cuda.amp, "GradScaler", GradScalerClass_wrapper(torch.cuda.amp.GradScaler))
     setattr(torch.distributed, "init_process_group",
             init_process_group(torch.distributed.init_process_group))
@@ -148,4 +152,7 @@ def patch_cuda(disable_jit=True):
     for t in CUDA_TENSOR_TYPE:
         setattr(torch.cuda, f'{t}Tensor', getattr(torch, f'{t.replace("Complex", "")}Tensor'))
     for f in CREATE_TENSOR_FUNC:
+        if TORCH_VERSION_LESS_1_11:
+            if f in ["asarray"]:
+                continue
         setattr(torch, f, create_tensor_func(getattr(torch, f)))
