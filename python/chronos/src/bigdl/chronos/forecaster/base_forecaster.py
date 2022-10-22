@@ -1464,7 +1464,7 @@ class BasePytorchForecaster(Forecaster):
 
          | 1. Strictly control the thread to be used during inferencing.
          | 2. Alleviate the cold start problem when you call predict_with_jit
-              for the first time.
+         |    for the first time.
 
          :param thread_num: int, the num of thread limit. The value is set to None by
                 default where no limit is set.
