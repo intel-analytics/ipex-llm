@@ -16,7 +16,7 @@
 
 import torch
 from functools import partial
-from bigdl.nano.utils import TORCH_VERSION_LESS_1_10, TORCH_VERSION_LESS_1_11,\
+from bigdl.nano.pytorch.utils import TORCH_VERSION_LESS_1_10, TORCH_VERSION_LESS_1_11,\
     TORCH_VERSION_LESS_1_12
 
 
