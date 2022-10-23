@@ -153,5 +153,5 @@ def patch_cuda(disable_jit=True):
     for f in CREATE_TENSOR_FUNC:
         try:
             setattr(torch, f, create_tensor_func(getattr(torch, f)))
-        except NameError:
+        except AttributeError:
             pass
