@@ -1454,7 +1454,7 @@ class BasePytorchForecaster(Forecaster):
                                                       accelerator="openvino",
                                                       thread_num=thread_num)
 
-    def build_jit(self, thread_num=None):
+    def build_jit(self, thread_num=None, use_ipex=False):
         '''
          Build jit model to speed up inference and reduce latency.
          The method is Not required to call before predict_with_jit
@@ -1466,6 +1466,9 @@ class BasePytorchForecaster(Forecaster):
          | 2. Alleviate the cold start problem when you call predict_with_jit
          |    for the first time.
 
+         :param use_ipex: if to use intel-pytorch-extension for acceleration. Typically,
+                intel-pytorch-extension will bring some acceleration while causing some
+                unexpected error as well.
          :param thread_num: int, the num of thread limit. The value is set to None by
                 default where no limit is set.
          '''
@@ -1482,7 +1485,7 @@ class BasePytorchForecaster(Forecaster):
         self.jit_fp32 = InferenceOptimizer.trace(self.internal,
                                                  input_sample=dummy_input,
                                                  accelerator="jit",
-                                                 use_ipex=True,
+                                                 use_ipex=use_ipex,
                                                  channels_last=False,
                                                  thread_num=thread_num)
 
