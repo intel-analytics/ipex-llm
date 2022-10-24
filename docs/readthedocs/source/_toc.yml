@@ -78,6 +78,7 @@ subtrees:
               subtrees:
                 - entries:
                   - file: doc/Nano/QuickStart/pytorch_train_quickstart
+                  - file: doc/Nano/QuickStart/pytorch_nano
                   - file: doc/Nano/QuickStart/pytorch_onnxruntime
                   - file: doc/Nano/QuickStart/pytorch_openvino
                   - file: doc/Nano/QuickStart/pytorch_quantization_inc_onnx
