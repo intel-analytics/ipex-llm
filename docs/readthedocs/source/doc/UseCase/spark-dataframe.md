@@ -1,4 +1,4 @@
-# Use Spark Dataframe for Deep Learning
+# Use Spark DataFrames for Deep Learning
 
 ---
 
