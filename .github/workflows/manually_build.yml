@@ -1,12 +1,14 @@
 name: Manually Build
 
 on:
+  pull_request:
+    branchs: [ main ]
   workflow_dispatch:
     inputs:
       artifact:
         description: 'select which job to run("all" will make all jobs run)'
         required: true
-        default: 'all'
+        default: 'bigdl-ppml-gramine-base'
         type: choice
         options:
         - all
@@ -25,7 +27,7 @@ on:
       tag:
         description: 'docker image tag (e.g. 2.1.0-SNAPSHOT)'
         required: true
-        default: 'latest'
+        default: '2.2.0-SNAPSHOT'
         type: string
 
 env:
@@ -37,7 +39,7 @@ permissions:
 
 jobs:
   bigdl-ppml-gramine-base:
-    if: ${{ github.event.inputs.artifact == 'bigdl-ppml-gramine-base' || github.event.inputs.artifact == 'all' }}
+    # if: ${{ github.event.inputs.artifact == 'bigdl-ppml-gramine-base' || github.event.inputs.artifact == 'all' }}
     runs-on: [self-hosted, Shire]
 
     steps:
