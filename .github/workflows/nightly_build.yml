@@ -342,7 +342,7 @@ jobs:
         #scp ./python/serving/src/dist/bigdl_serving*-py2.py3-none-any.whl \
         #intelanalytics@frs.sourceforge.net:/home/frs/project/analytics-zoo/cluster-serving-py
         echo "test mac build"
-        echo ${SOURCEFORGE_PW}
+        
         ## mac ##
         bash python/dev/release_default_mac_spark246.sh ${nb_version} false false
 
