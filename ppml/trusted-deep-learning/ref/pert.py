@@ -1,12 +1,13 @@
 import torch
 import argparse
 import os
+import logging
 from torch import nn
 from datasets import load_dataset
 from torch.utils.data import DataLoader
 import torch.distributed as dist
 from transformers import BertTokenizer, BertModel, AdamW
-from tqdm.auto import tqdm
+#from tqdm.auto import tqdm
 
 WORLD_SIZE = int(os.environ.get("WORLD_SIZE", 1))
 
@@ -75,9 +76,7 @@ class NeuralNetwork(nn.Module):
 
 device = 'cpu'
 
-def train_loop(dataloader, model, loss_fn, optimizer, epoch, total_loss):
-    progress_bar = tqdm(range(len(dataloader)))
-    progress_bar.set_description(f'loss: {0:>7f}')
+def train_loop(args, dataloader, model, loss_fn, optimizer, epoch, total_loss):
     finish_batch_num = (epoch-1)*len(dataloader)
     
     # Set to train mode
@@ -93,8 +92,12 @@ def train_loop(dataloader, model, loss_fn, optimizer, epoch, total_loss):
         optimizer.step()
 
         total_loss += loss.item()
-        progress_bar.set_description(f'loss: {total_loss/(finish_batch_num + batch):>7f}')
-        progress_bar.update(1)
+        if batch % args.log_interval == 0:
+            msg = "Train Epoch: {} [{}/{} ({:.0f}%)]\tloss={:.4f}".format(
+                epoch, batch * len(X), len(dataloader.dataset),
+                100. * batch / len(dataloader), loss.item())
+            logging.info(msg)
+
     return total_loss
 
 def test_loop(dataloader, model, mode='Test'):
@@ -132,7 +135,23 @@ def main():
     # Only for test purpose
     parser.add_argument("--load-model", action="store_true", default=False,
                         help="For loading the current model")
+    parser.add_argument("--log-interval", type=int, default=10, metavar="N",
+                        help="how many batches to wait before logging training status")
+    parser.add_argument("--log-path", type=str, default="",
+                        help="Path to save logs. Print to StdOut if log-path is not set")
     args = parser.parse_args()
+    if args.log_path == "":
+        logging.basicConfig(
+            format="%(asctime)s %(levelname)-8s %(message)s",
+            datefmt="%Y-%m-%dT%H:%M:%SZ",
+            level=logging.DEBUG)
+    else:
+        logging.basicConfig(
+            format="%(asctime)s %(levelname)-8s %(message)s",
+            datefmt="%Y-%m-%dT%H:%M:%SZ",
+            level=logging.DEBUG,
+            filename=args.log_path)
+
     torch.manual_seed(args.seed)
     if should_distribute():
         print("Using distributed PyTorch with {} backend".format(
@@ -168,7 +187,7 @@ def main():
 
     for t in range(args.epochs):
         print(f"Epoch {t+1}/{epoch_num}\n-------------------------------")
-        total_loss = train_loop(train_dataloader, model,loss_fn, optimizer, t+1, total_loss)
+        total_loss = train_loop(args, train_dataloader, model,loss_fn, optimizer, t+1, total_loss)
         valid_acc = test_loop(valid_dataloader, model, mode='Valid')
 
     print("[INFO]Finish all test", flush=True)
