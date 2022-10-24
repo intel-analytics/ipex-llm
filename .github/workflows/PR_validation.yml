@@ -433,3 +433,22 @@ jobs:
     - name: Remove Env
       if: ${{ always() }}
       uses: ./.github/actions/remove-env
+
+  Friesian-Python-ExampleTest-Tf2-Py37-Spark3:
+    needs: changes
+    if: ${{ needs.changes.outputs.friesian == 'true' }}
+    runs-on: [self-hosted, Gondolin, ubuntu-20.04-lts]
+
+    steps:
+    - uses: actions/checkout@v3
+    - name: Set up JDK8
+      uses: ./.github/actions/jdk-setup-action
+    - name: Set up maven
+      uses: ./.github/actions/maven-setup-action
+    - name: Setup env
+      uses: ./.github/actions/friesian/setup-env/setup-friesian-python-tf2-py37-spark3
+    - name: Run Test
+      uses: ./.github/actions/friesian/friesian-python-exampletest-tf2-py37-spark3
+    - name: Remove Env
+      if: ${{ always() }}
+      uses: ./.github/actions/remove-env
