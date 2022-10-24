@@ -1,5 +1,5 @@
-name: 'Run Friesian Python ExampleTest Feature Tf1 Pip Py37 Spark3'
-description: 'Run Friesian Python ExampleTest Feature Tf1 Pip Py37 Spark3'
+name: 'Run Friesian Python ExampleTest Tf2 Pip Py37 Spark3'
+description: 'Run Friesian Python ExampleTest Tf2 Pip Py37 Spark3'
 runs:
   using: "composite"
   steps:
@@ -19,8 +19,7 @@ runs:
         pip install python/friesian/src/dist/bigdl_friesian_spark3-*-py3-none-manylinux1_x86_64.whl
 
         cd python/friesian/dev/test
-        bash run-feature-example-tests.sh 
-        bash run-example-tests-tf1.15.0.sh
+        bash run-example-tests-tf2.6.0.sh
         source deactivate
       env:
         BIGDL_ROOT: ${{ github.workspace }}
