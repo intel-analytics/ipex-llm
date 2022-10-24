@@ -602,7 +602,7 @@
                 <orca.scope>compile</orca.scope>
                 <core.scope>compile</core.scope>
                 <serving.scope>compile</serving.scope>
-                <jackson.version>2.12.2</jackson.version>
+                <jackson.version>2.12.7</jackson.version>
             </properties>
         </profile>
 
