@@ -350,7 +350,7 @@ class TFRunner:
         config["batch_size"] = batch_size
 
         with self.strategy.scope():
-            dataset_handler = DatasetHandler.ge1t_handler(self.backend, self.rank, self.size)
+            dataset_handler = DatasetHandler.get_handler(self.backend, self.rank, self.size)
             train_dataset, test_dataset = dataset_handler \
                 .handle_datasets_train(data_creator,
                                        validation_data_creator,
@@ -439,9 +439,6 @@ class TFRunner:
             logger.warning("Running a local model to get validation score.")
             if self.model_creator is not None:
                 self.local_model = self.model_creator(self.config)
-                self.local_model.set_weights(self.model.get_weights())
-            else:
-                self.local_model = self.tf_model
                 self.local_model.set_weights(self.model.get_weights())
             results = self.local_model.evaluate(dataset, **params)
 
