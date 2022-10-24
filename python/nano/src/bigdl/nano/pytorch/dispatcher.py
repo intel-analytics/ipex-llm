@@ -52,7 +52,7 @@ def _get_patch_map():
     return _mapping_torch
 
 
-def patch_torch(gpu_to_cpu: bool = True):
+def patch_torch(cuda_to_cpu: bool = True):
     """
     patch_torch is used to patch optimized torch classes to replace original ones.
 
@@ -62,11 +62,11 @@ def patch_torch(gpu_to_cpu: bool = True):
     | 2. torchvision.transforms -> bigdl.nano.pytorch.vision.transforms
     | 3. torchvision.datasets -> bigdl.nano.pytorch.vision.datasets
 
-    :param gpu_to_cpu: bool, make codes write for CUDA available for CPU if set to True.
+    :param cuda_to_cpu: bool, make codes write for CUDA available for CPU if set to True.
            This feature is still experimental and only valid in python layer codes.
            Default to True.
     """
-    if gpu_to_cpu:
+    if cuda_to_cpu:
         patch_cuda()
     mapping_torch = _get_patch_map()
 

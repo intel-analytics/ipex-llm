@@ -38,7 +38,7 @@ class TestDispatcherPytorch(TestCase):
 
     def test_dispatch_cuda(self):
         from bigdl.nano.pytorch import patch_torch, unpatch_torch
-        patch_torch(gpu_to_cpu=True)
+        patch_torch(cuda_to_cpu=True)
 
         import torch
 
