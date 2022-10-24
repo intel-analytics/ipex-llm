@@ -1,7 +1,7 @@
 # Installation
 
 
-## To use distributed data processing, training, and/or inference
+## To use basic Orca features
 We recommend using [conda](https://docs.conda.io/projects/conda/en/latest/user-guide/install/) to prepare the Python environment.
 ```bash
 conda create -n py37 python=3.7  # "py37" is conda environment name, you can use any name you like.
@@ -49,4 +49,3 @@ including `ray[tune]==1.9.2`, `scikit-learn`, `tensorboard`, `xgboost` together 
 - To use [Pytorch Estimator](#pytorch-autoestimator), you need to install Pytorch with `pip install torch==1.8.1`.
 
 - To use [TensorFlow/Keras AutoEstimator](#tensorflow-keras-autoestimator), you need to install TensorFlow with `pip install tensorflow==1.15.0`.
-
