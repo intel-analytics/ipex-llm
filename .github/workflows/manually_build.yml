@@ -72,12 +72,12 @@ jobs:
         cd ../trusted-bigdata
         export bigdata_base_image=intelanalytics/bigdl-ppml-trusted-bigdata-gramine-base
         sudo docker build \
-          --build-arg http_proxy=http://${HTTP_PROXY_HOST}:${HTTP_PROXY_PORT} \
-          --build-arg https_proxy=http://${HTTPS_PROXY_HOST}:${HTTPS_PROXY_PORT} \
-          --build-arg HTTP_PROXY_HOST=${HTTP_PROXY_HOST} \
-          --build-arg HTTP_PROXY_PORT=${HTTP_PROXY_PORT} \
-          --build-arg HTTPS_PROXY_HOST=${HTTPS_PROXY_HOST} \
-          --build-arg HTTPS_PROXY_PORT=${HTTPS_PROXY_PORT} \
+          --build-arg http_proxy=${HTTP_PROXY} \
+          --build-arg https_proxy=${HTTPS_PROXY} \
+          --build-arg HTTP_PROXY_HOST=${HTTP_PROXY_HOST_2} \
+          --build-arg HTTP_PROXY_PORT=${HTTP_PROXY_PORT_2} \
+          --build-arg HTTPS_PROXY_HOST=${HTTP_PROXY_HOST_2} \
+          --build-arg HTTPS_PROXY_PORT=${HTTP_PROXY_PORT_3} \
           --build-arg JDK_VERSION=8u192 \
           --build-arg JDK_URL=${JDK_URL} \
           --build-arg SPARK_JAR_REPO_URL=${SPARK_JAR_REPO_URL} \
