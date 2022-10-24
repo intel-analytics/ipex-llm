@@ -8,7 +8,7 @@ Most AI projects start with a Python notebook running on a single laptop; howeve
 
 ### TensorFlow Bite-sized Example
 
-First of all, follow the steps [here](install.md) to install Orca in your environment.
+First of all, follow the steps [here](install.md#to-use-basic-orca-features) to install Orca in your environment.
 
 This section uses TensorFlow 1.15, and you should also install TensorFlow before running this example:
 ```bash
