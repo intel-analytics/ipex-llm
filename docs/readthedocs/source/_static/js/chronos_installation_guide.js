@@ -43,7 +43,7 @@ function refresh_cmd(){
     $("#model").empty();
     if(functionality=="Forecasting"){
         $("#model").append("<td colspan='1'>Model</td>\
-        <td colspan='1'><button id='Deep_learning_models' style='font-size: 13px;'>Deep learning models</button></td>\
+        <td colspan='1'><button id='Deep_learning_models'>Deep learning models</button></td>\
         <td colspan='2'><button id='Prophet'>Prophet</button></td>\
         <td colspan='1'><button id='ARIMA'>ARIMA</button></td>");
     }
@@ -314,5 +314,12 @@ $(document).on({
         }
     }
 }, "button");
+
+$(document).ready(function(){
+    $("#cmd").css({"text-align":"left"});
+    $(".taller_tr").css({
+        "height":"71px"
+    })
+})
 
 refresh_cmd();

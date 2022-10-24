@@ -43,7 +43,5 @@
 }
 
 #cmd {
-    width: auto;
-    height: 35px;
-    overflow:unset;
+    height: 2em;
 }

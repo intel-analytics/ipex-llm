@@ -23,4 +23,12 @@ $(document).ready(function(){
     $("table").wrap(
         "<div style='overflow-x:auto;'></div>"
     );
+
+    // make left-sidebar padding
+    var item1_num = $(".bd-toc-item").children().length;
+    if(item1_num == 2){
+        $(".bd-toc-item").children("ul:last-child").css({
+            "padding-left":"1rem"
+        });
+    }
 })
