@@ -46,6 +46,8 @@ if [ "$platform" ==  "mac" ]; then
     verbose_pname="macosx_10_11_x86_64"
 elif [ "$platform" == "linux" ]; then
     verbose_pname="manylinux1_x86_64"
+elif [ "$platform" == "windows" ]; then
+    verbose_pname="win_amd64"
 else
     echo "Unsupported platform"
 fi
