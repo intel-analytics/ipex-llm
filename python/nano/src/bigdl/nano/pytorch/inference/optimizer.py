@@ -137,7 +137,7 @@ class InferenceOptimizer:
         The available methods are "original", "fp32_ipex", "bf16", "bf16_ipex","int8",
         "jit_fp32", "jit_fp32_ipex", "jit_fp32_ipex_channels_last", "openvino_fp32",
         "openvino_int8", "onnxruntime_fp32", "onnxruntime_int8_qlinear"
-        and "onnxruntime_int8_integer"
+        and "onnxruntime_int8_integer".
 
         :param model: A torch.nn.Module to be optimized
         :param training_data: A torch.utils.data.dataloader.DataLoader object for training
@@ -370,6 +370,30 @@ class InferenceOptimizer:
                               "There is no optimization result. You should call .optimize() "
                               "before summary()")
         print(self._optimize_result)
+
+    def get_model(self, method_name: str):
+        """
+        According to results of `optimize`, obtain the model with method_name.
+
+        The available methods are "original", "fp32_ipex", "bf16", "bf16_ipex","int8",
+        "jit_fp32", "jit_fp32_ipex", "jit_fp32_ipex_channels_last", "openvino_fp32",
+        "openvino_int8", "onnxruntime_fp32", "onnxruntime_int8_qlinear"
+        and "onnxruntime_int8_integer".
+
+        :param method_name: (optional) Obtain specific model according to method_name.
+        :return: Model with different acceleration.
+        """
+        invalidOperationError(len(self.optimized_model_dict) > 0,
+                              "There is no optimized model. You should call .optimize() "
+                              "before get_model()")
+        invalidInputError(method_name in ALL_INFERENCE_ACCELERATION_METHOD.keys(),
+                          f"The model name you passed does not exist in the existing method "
+                          f"list{list(ALL_INFERENCE_ACCELERATION_METHOD.keys())}, please re-enter "
+                          f"the model name again.")
+        invalidInputError("model" in self.optimized_model_dict[method_name],
+                          "Unable to get the specified model as it doesn't exist in "
+                          "optimized_model_dict.")
+        return self.optimized_model_dict[method_name]["model"]
 
     def get_best_model(self,
                        accelerator: Optional[str] = None,
