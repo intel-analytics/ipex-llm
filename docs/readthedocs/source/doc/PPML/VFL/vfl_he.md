@@ -5,8 +5,8 @@ Vertical Federated Learning (VFL) is a federated machine learning case where mul
 In some cases, third party doesn't has a trusted computing environment, to run the BigDL FL server. So we introduce a new solution using Homomorphic Encryption to protect the data passed to FL server.
 
 ## System Architecture
-The high-level architecture is shown in the diagram below. 
-
+The high-level architecture is shown in the diagram below.   
+![](../images/fl_ckks.png)  
 Different from VFL with SGX, this solution will encrypt all the data passed to FL server, using CKKS encryptor. Server can only 
 
 ## Quick Start Examples
