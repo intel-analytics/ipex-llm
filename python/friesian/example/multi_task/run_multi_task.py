@@ -17,10 +17,11 @@
 import math
 from time import time
 from argparse import ArgumentParser
-from keras.callbacks import EarlyStopping
 
 from deepctr.feature_column import SparseFeat, DenseFeat
 from deepctr.models import MMOE, PLE
+
+from keras.callbacks import EarlyStopping
 
 from bigdl.dllib.utils.log4Error import invalidInputError
 from bigdl.orca import init_orca_context, stop_orca_context
@@ -223,8 +224,6 @@ if __name__ == "__main__":
     # do train
     train_tbl = FeatureTable.read_parquet(args.train_data_path)
     valid_tbl = FeatureTable.read_parquet(args.test_data_path)
-    train_tbl.show()
-    valid_tbl.show()
     train_multi_task(train_tbl, valid_tbl, args.model_save_path,
                      args.model_type, cat_cols, continuous_cols,
                      feature_max_idx)
