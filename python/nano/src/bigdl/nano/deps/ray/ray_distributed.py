@@ -357,6 +357,8 @@ class RayStrategy(DDPSpawnStrategy):
     def _setup_model(self, model: torch.nn.Module) -> DistributedDataParallel:
         """Wraps the model into a 'DistributedDataParallel' module."""
         # we should override this method to change the creation of `DistributedDataParallel`
+        # we need to set `find_unused_parameters` to True to fix mult-instance training,
+        # `Trainer` will set it automatically, but `TorchNano` won't, so we set it manually
         self._ddp_kwargs['find_unused_parameters'] = True
         return DistributedDataParallel(model, **self._ddp_kwargs)
 
