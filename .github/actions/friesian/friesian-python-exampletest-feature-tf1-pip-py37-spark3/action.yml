@@ -6,8 +6,8 @@ runs:
     - name: Run Test
       shell: bash
       run: |
-        chmod a+x python/dev/release_default_linux_spark312.sh
-        ./python/dev/release_default_linux_spark312.sh default false false
+        chmod a+x python/dev/release_default_linux_spark313.sh
+        ./python/dev/release_default_linux_spark313.sh default false false
        
         source activate py37
         export SPARK_LOCAL_HOSTNAME=localhost
