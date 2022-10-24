@@ -93,7 +93,9 @@ RUN env DEBIAN_FRONTEND=noninteractive apt-get update && \
     tar -xf jdk-$JDK_VERSION-linux-x64.tar -C /opt && \
     rm jdk-$JDK_VERSION-linux-x64.tar && \
     mv /opt/jdk* /opt/jdk8 && \
-    ln -s /opt/jdk8 /opt/jdk
+    ln -s /opt/jdk8 /opt/jdk && \
+# related dirs
+    mkdir -p /root/.cache/
 
 ADD ./download_jars.sh /ppml
 
