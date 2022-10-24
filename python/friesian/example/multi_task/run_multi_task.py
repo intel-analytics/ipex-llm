@@ -223,6 +223,8 @@ if __name__ == "__main__":
     # do train
     train_tbl = FeatureTable.read_parquet(args.train_data_path)
     valid_tbl = FeatureTable.read_parquet(args.test_data_path)
+    train_tbl.show()
+    valid_tbl.show()
     train_multi_task(train_tbl, valid_tbl, args.model_save_path,
                      args.model_type, cat_cols, continuous_cols,
                      feature_max_idx)
