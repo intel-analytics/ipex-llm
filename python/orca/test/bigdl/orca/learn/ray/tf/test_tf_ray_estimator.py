@@ -737,7 +737,7 @@ class TestTFRayEstimator(TestCase):
         finally:
             shutil.rmtree(temp_dir)
     
-    def test_load_model(self):   
+    def test_optional_model_creator(self):   
         sc = OrcaContext.get_spark_context()
         rdd = sc.range(0, 100)
         spark = OrcaContext.get_spark_session()
