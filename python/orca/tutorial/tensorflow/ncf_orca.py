@@ -17,12 +17,17 @@
 import sys
 import time
 import os
+import argparse
 
 import tensorflow as tf
 
 from bigdl.orca import init_orca_context, stop_orca_context, OrcaContext
 from bigdl.orca.learn.tf2 import Estimator
 
+parser = argparse.ArgumentParser(description='Tensorflow ImageNet Training')
+parser.add_argument("--mode", type=str, required=True)
+parser.add_argument("--memory", type=str, required=True)
+args = parser.parse_args() 
 
 def model_creator(config):
     embedding_size=16
@@ -57,10 +62,9 @@ def model_creator(config):
                   metrics=['accuracy'])
     return model
 
-cluster_mode = str(sys.argv[1])
-# cluster_mode = "k8s"
+cluster_mode = args.mode
 if cluster_mode == "local":
-    sc = init_orca_context(memory=str(sys.argv[2]))
+    sc = init_orca_context(memory=args.memory)
 
 
 data_path = "."
