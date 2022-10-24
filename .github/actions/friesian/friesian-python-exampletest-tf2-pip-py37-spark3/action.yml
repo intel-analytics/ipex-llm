@@ -1,5 +1,5 @@
-name: 'Run Friesian Python ExampleTest Tf2 Py37 Spark3'
-description: 'Run Friesian Python ExampleTest Tf2 Py37 Spark3'
+name: 'Run Friesian Python ExampleTest Tf2 Pip Py37 Spark3'
+description: 'Run Friesian Python ExampleTest Tf2 Pip Py37 Spark3'
 runs:
   using: "composite"
   steps:
