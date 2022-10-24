@@ -236,8 +236,8 @@ class TFRunner:
     """Manages a TensorFlow model for training."""
 
     def __init__(self,
-                 model_creator,
-                 compile_args_creator,
+                 model_creator=None,
+                 compile_args_creator=None,
                  config=None,
                  verbose=False):
         """Initializes the runner.
