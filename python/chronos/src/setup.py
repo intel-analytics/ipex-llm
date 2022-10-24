@@ -39,7 +39,7 @@ def get_bigdl_packages():
     bigdl_packages = []
     source_dir = os.path.join(bigdl_python_home, "bigdl")
     for dirpath, dirs, files in os.walk(source_dir):
-        package = dirpath.split(bigdl_python_home)[1].replace('/', '.')
+        package = dirpath.split(bigdl_python_home)[1].replace(os.sep, '.')
         if any(fnmatch.fnmatchcase(package, pat=pattern)
                 for pattern in exclude_patterns):
             print("excluding", package)
@@ -84,7 +84,7 @@ def setup_package():
             'Programming Language :: Python :: 3',
             'Programming Language :: Python :: 3.7',
             'Programming Language :: Python :: Implementation :: CPython'],
-        platforms=['mac', 'linux']
+        platforms=['mac', 'linux', 'windows']
     )
 
     setup(**metadata)

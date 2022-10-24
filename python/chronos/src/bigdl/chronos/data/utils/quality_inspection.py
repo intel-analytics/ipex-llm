@@ -15,6 +15,7 @@
 #
 
 import pandas as pd
+import numpy as np
 from bigdl.nano.utils.log4Error import invalidInputError
 import logging
 
@@ -35,7 +36,11 @@ def quality_check_timeseries_dataframe(df, dt_col, id_col=None, repair=True):
     :return: a bool indicates df whether contains low-quality data.
     '''
     invalidInputError(dt_col in df.columns, f"dt_col {dt_col} can not be found in df.")
+    if id_col is not None:
+        invalidInputError(id_col in df.columns, f"id_col {id_col} can not be found in df.")
     invalidInputError(pd.isna(df[dt_col]).sum() == 0, "There is N/A in datetime col")
+    if df.empty is True:
+        return True, df
     flag = True
     # 1. timestamp check
     if _timestamp_type_check(df[dt_col]) is False:
@@ -46,11 +51,11 @@ def quality_check_timeseries_dataframe(df, dt_col, id_col=None, repair=True):
 
     # 2. irregular interval check
     if flag is True:
-        interval_flag, interval = _time_interval_check(df[dt_col])
+        interval_flag, intervals = _time_interval_check(df, dt_col, id_col)
         if interval_flag is False:
             if repair is True:
                 df, repair_flag = _time_interval_repair(df, dt_col,
-                                                        interval, id_col)
+                                                        intervals, id_col)
                 flag = flag and repair_flag
             else:
                 flag = False
@@ -75,7 +80,8 @@ def _timestamp_type_check(df_column):
     '''
     _is_pd_datetime = pd.api.types.is_datetime64_any_dtype(df_column.dtypes)
     if _is_pd_datetime is not True:
-        logging.warning("Datetime colomn should be datetime64 dtype.")
+        logging.warning("Datetime column should be datetime64 dtype. You can manually modify "
+                        "the dtype, or set repair=True when initialize TSDataset.")
         return False
     return True
 
@@ -89,41 +95,89 @@ def _timestamp_type_repair(df, dt_col):
         df[dt_col] = df[dt_col].astype('datetime64')
     except:
         return False
-    logging.warning("Datetime colomn has be modified to datetime64 dtype.")
+    logging.warning("Datetime column has be modified to datetime64 dtype.")
     return True
 
 
-def _time_interval_check(df_column):
+def _time_interval_check(df, dt_col, id_col=None):
     '''
     This check is used to verify whether all the time intervals of datetime column
     are consistent.
     '''
-    interval = df_column.shift(-1) - df_column
-    unique_intervals = interval[:-1].unique()
-    if len(unique_intervals) > 1:
-        logging.warning("There are irregular interval(more than one interval length)"
-                        " among the data, please call .resample(interval).impute() "
-                        "first to clean the data.")
-        return False, interval
-    return True, interval
+    if id_col is not None:
+        # _id_list = list(np.unique(df[id_col]))
+        _id_list = df[id_col].unique()
+    # check whether exists multi id
+    if id_col is not None and len(_id_list) > 1:
+        flag = True
+
+        def get_interval(x):
+            df_column = x[dt_col]
+            interval = df_column.shift(-1) - df_column
+            unique_intervals = interval[:-1].unique()
+            return unique_intervals
+        group = df.groupby(id_col).apply(get_interval)
+        for ind in group.index:
+            unique_intervals = group[ind]
+            if len(unique_intervals) > 1:
+                flag = False
+        if flag is True:
+            return True, None
+        else:
+            logging.warning("There are irregular interval(more than one interval length)"
+                            " among the data. You can call .resample(interval).impute() "
+                            "first to clean the data manually, or set repair=True when "
+                            "initialize TSDataset.")
+            return False, None
+    else:
+        df_column = df[dt_col]
+        intervals = df_column.shift(-1) - df_column
+        unique_intervals = intervals[:-1].unique()
+        if len(unique_intervals) > 1:
+            logging.warning("There are irregular interval(more than one interval length)"
+                            " among the data. You can call .resample(interval).impute() "
+                            "first to clean the data manually, or set repair=True when "
+                            "initialize TSDataset.")
+            return False, intervals
+        return True, intervals
 
 
-def _time_interval_repair(df, dt_col, interval, id_col=None):
+def _time_interval_repair(df, dt_col, intervals, id_col=None):
     '''
     This check is used to get consitent time interval by resample data according to
     the mode of original intervals.
     '''
-    mode = interval[:-1].mode()[0]  # Timedelta
-    from bigdl.chronos.data.utils.resample import resample_timeseries_dataframe
-    # TODO: how to change into inplace modification
-    try:
-        df = resample_timeseries_dataframe(df, dt_col=dt_col,
-                                           interval=mode,
-                                           id_col=id_col)
-        logging.warning(f"Dataframe has be resampled according to interval {mode}.")
-        return df, True
-    except:
-        return df, False
+    if id_col is not None and intervals is None:
+        # multi_id case
+        from bigdl.chronos.data.utils.resample import resample_timeseries_dataframe
+        try:
+            def resample_interval(x):
+                df_column = x[dt_col]
+                interval = df_column.shift(-1) - df_column
+                intervals = interval[:-1]
+                mode = intervals.mode()[0]  # Timedelta
+                df = resample_timeseries_dataframe(x, dt_col=dt_col,
+                                                   interval=mode,
+                                                   id_col=id_col)
+                return df
+            new_df = df.groupby(id_col, as_index=False).apply(resample_interval)
+            new_df.reset_index(drop=True, inplace=True)
+            logging.warning("Dataframe has be resampled.")
+            return new_df, True
+        except:
+            return df, False
+    else:
+        mode = intervals[:-1].mode()[0]  # Timedelta
+        from bigdl.chronos.data.utils.resample import resample_timeseries_dataframe
+        # TODO: how to change into inplace modification
+        try:
+            df = resample_timeseries_dataframe(df, dt_col=dt_col,
+                                               interval=mode,
+                                               id_col=id_col)
+            logging.warning(f"Dataframe has be resampled according to interval {mode}.")
+            return df, True
+        except:
+            return df, False
 
 
 def _missing_value_check(df, dt_col, threshold=0):
@@ -138,7 +192,8 @@ def _missing_value_check(df, dt_col, threshold=0):
         rows = len(df)
         if missing_value / rows > threshold:
             logging.warning(f"The missing value of column {column} exceeds {threshold},"
-                            f"please call .impute() fisrt to remove N/A number")
+                            f"please call .impute() fisrt to remove N/A number manually, "
+                            f"or set repair=True when initialize TSDataset.")
             return False
     return True
 

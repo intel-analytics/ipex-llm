@@ -13,6 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+from pathlib import Path
 import shutil
 
 import pytest
@@ -89,7 +90,8 @@ class TestMTNetKeras(TestCase):
                             **self.config)
         y_pred = self.model.predict(self.x_test)
         assert y_pred.shape == (self.x_test.shape[0], self.y_val.shape[-1])
-        dirname = "/tmp"
+        dirname = Path("savedroot")
+        dirname.mkdir(exist_ok=True)
         restored_model = MTNetKeras()
         ckpt = os.path.join(dirname, "mtnet.ckpt")
         self.model.save(checkpoint_file=ckpt)

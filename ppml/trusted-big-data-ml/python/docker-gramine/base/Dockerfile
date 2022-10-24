@@ -1,5 +1,5 @@
 ARG BIGDL_VERSION=2.2.0-SNAPSHOT
-ARG SPARK_VERSION=3.1.2
+ARG SPARK_VERSION=3.1.3
 ARG TINI_VERSION=v0.18.0
 ARG JDK_VERSION=8u192
 ARG JDK_URL
@@ -227,11 +227,14 @@ RUN env DEBIAN_FRONTEND=noninteractive apt-get update && \
     ln -s /usr/lib/x86_64-linux-gnu/libtinfo.so.6 /usr/lib/x86_64-linux-gnu/libtinfo.so.5 && \
     pip install --no-cache-dir pyyaml && \
 # Gramine
-    env DEBIAN_FRONTEND=noninteractive apt-get install -y build-essential autoconf bison gawk git ninja-build python3-click python3-jinja2 wget pkg-config cmake libcurl4-openssl-dev libprotobuf-c-dev protobuf-c-compiler python3-cryptography python3-pip python3-protobuf nasm && \
+    env DEBIAN_FRONTEND=noninteractive apt-get install -y build-essential autoconf bison gawk git ninja-build python3-click python3-jinja2 wget pkg-config cmake libcurl4-openssl-dev libprotobuf-c-dev protobuf-c-compiler protobuf-compiler python3-cryptography python3-pip python3-protobuf nasm python3 python3-click python3-pyelftools && \
+    python3 -m pip install 'meson>=0.56' 'toml>=0.10' && \
+    apt-get install -y libunwind8 musl-tools python3-pytest && \
+    apt-get install -y libgmp-dev libmpfr-dev libmpc-dev libisl-dev rsync && \
     git clone https://github.com/analytics-zoo/gramine.git /gramine && \
     git clone https://github.com/intel/SGXDataCenterAttestationPrimitives.git /opt/intel/SGXDataCenterAttestationPrimitives && \
     cd /gramine && \
-    git checkout devel-2022-5-29 && \
+    git checkout devel-v1.3.1-2022-10-08 && \
     meson setup build/ --buildtype=release  -Dsgx=enabled   -Dsgx_driver=dcap1.10 && \
     ninja -C build/ && \
     ninja -C build/ install && \
@@ -248,9 +251,9 @@ RUN env DEBIAN_FRONTEND=noninteractive apt-get update && \
     patch /usr/local/lib/python3.7/dist-packages/psutil/_pslinux.py /python-pslinux.patch && \
     wget -P /ppml/trusted-big-data-ml/work/lib https://sourceforge.net/projects/analytics-zoo/files/analytics-zoo-data/libhadoop.so && \
     cp /usr/lib/x86_64-linux-gnu/libpython3.7m.so.1 /usr/lib/libpython3.7m.so.1 && \
-    sed -i 's/examples/\/ppml\/trusted-big-data-ml\/work\/spark-3.1.2\/examples/' /ppml/trusted-big-data-ml/work/spark-3.1.2/examples/src/main/python/sql/basic.py && \
-    sed -i 's/examples/\/ppml\/trusted-big-data-ml\/work\/spark-3.1.2\/examples/' /ppml/trusted-big-data-ml/work/spark-3.1.2/examples/src/main/python/sql/hive.py && \
-    sed -i 's/spark-warehouse/\/ppml\/trusted-big-data-ml\/work\/spark-warehouse/' /ppml/trusted-big-data-ml/work/spark-3.1.2/examples/src/main/python/sql/hive.py && \
+    sed -i "s/examples/\/ppml\/trusted-big-data-ml\/work\/spark-${SPARK_VERSION}\/examples/" /ppml/trusted-big-data-ml/work/spark-${SPARK_VERSION}/examples/src/main/python/sql/basic.py && \
+    sed -i "s/examples/\/ppml\/trusted-big-data-ml\/work\/spark-${SPARK_VERSION}\/examples/" /ppml/trusted-big-data-ml/work/spark-${SPARK_VERSION}/examples/src/main/python/sql/hive.py && \
+    sed -i "s/spark-warehouse/\/ppml\/trusted-big-data-ml\/work\/spark-warehouse/" /ppml/trusted-big-data-ml/work/spark-${SPARK_VERSION}/examples/src/main/python/sql/hive.py && \
     chmod a+x /ppml/trusted-big-data-ml/init.sh && \
     chmod a+x /ppml/trusted-big-data-ml/clean.sh && \
     chmod a+x /ppml/trusted-big-data-ml/work/start-scripts/* && \

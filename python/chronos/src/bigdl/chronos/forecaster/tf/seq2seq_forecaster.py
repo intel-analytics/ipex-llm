@@ -111,15 +111,10 @@ class Seq2SeqForecaster(BaseTF2Forecaster):
         self.custom_objects_config = {"LSTMSeq2Seq": LSTMSeq2Seq}
 
         # distributed settings
-        # self.distributed = distributed
-        # self.distributed_backend = distributed_backend
-        # self.workers_per_node = workers_per_node
-        from bigdl.nano.utils.log4Error import invalidInputError
-        if distributed:
-            invalidInputError(False,
-                              "We will add distributed support in subsequent releases, "
-                              "the feature is currently unavailable, "
-                              "Please set distributed=False.")
+        self.distributed = distributed
+        self.local_distributed_backend = "subprocess"
+        self.remote_distributed_backend = distributed_backend
+        self.workers_per_node = workers_per_node
 
         # other settings
         self.lr = lr

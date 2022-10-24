@@ -40,7 +40,7 @@ class CkksSpec extends BigDLSpecHelper {
     val ckks = new CKKS()
     val secrets = ckks.createSecrets()
     val encryptorPtr = ckks.createCkksEncryptor(secrets)
-    val ckksRunnerPtr = ckks.createCkksCommonInstance(secrets)
+    val ckksRunnerPtr = ckks.createCkksCommon(secrets)
 
     val input1 = Array(0.1f, 0.2f, 1.1f, -1f)
     val input2 = Array(-0.1f, 1.2f, 2.1f, 1f)
@@ -82,7 +82,7 @@ class CkksSpec extends BigDLSpecHelper {
     val ckks = new CKKS()
     val secrets = ckks.createSecrets()
     val encryptorPtr = ckks.createCkksEncryptor(secrets)
-    val ckksRunnerPtr = ckks.createCkksCommonInstance(secrets)
+    val ckksRunnerPtr = ckks.createCkksCommon(secrets)
     val enTarget =
       Tensor[Byte](Storage[Byte](ckks.ckksEncrypt(encryptorPtr, target.storage().array())))
         .resize(target.size())
@@ -131,7 +131,7 @@ class CkksSpec extends BigDLSpecHelper {
     val ckks = new CKKS()
     val secrets = ckks.createSecrets()
     val encryptorPtr = ckks.createCkksEncryptor(secrets)
-    val ckksRunnerPtr = ckks.createCkksCommonInstance(secrets)
+    val ckksRunnerPtr = ckks.createCkksCommon(secrets)
     val enInput = ckks.ckksEncrypt(encryptorPtr, input.storage().array())
     val enTarget = ckks.ckksEncrypt(encryptorPtr, target.storage().array())
     val o = ckks.train(ckksRunnerPtr, enInput, enTarget)
@@ -165,7 +165,7 @@ class CkksSpec extends BigDLSpecHelper {
     val ckks = new CKKS()
     val secrets = ckks.createSecrets()
     val encryptorPtr = ckks.createCkksEncryptor(secrets)
-    val ckksRunnerPtr = ckks.createCkksCommonInstance(secrets)
+    val ckksRunnerPtr = ckks.createCkksCommon(secrets)
     val enInput = ckks.ckksEncrypt(encryptorPtr, input.storage().array())
     val enOutput = ckks.sigmoidForward(ckksRunnerPtr, enInput)
     val outputArray = ckks.ckksDecrypt(encryptorPtr, enOutput(0))
@@ -209,7 +209,7 @@ class CkksSpec extends BigDLSpecHelper {
     val ckks = new CKKS()
     val secrets = ckks.createSecrets()
     val encryptorPtr = ckks.createCkksEncryptor(secrets)
-    val ckksRunnerPtr = ckks.createCkksCommonInstance(secrets)
+    val ckksRunnerPtr = ckks.createCkksCommon(secrets)
 
     val epochNum = 2
     val lossArray = new Array[Float](epochNum)

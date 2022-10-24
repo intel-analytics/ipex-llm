@@ -46,7 +46,7 @@ object SimpleQuerySparkExample extends Supportive {
       // load csv file to data frame with ppmlcontext.
       val df = timing("1/3 loadInputs") {
         sc.read(cryptoMode = arguments.inputEncryptMode).option("header", "true")
-          .csv(arguments.inputPath + "/people.csv")
+          .csv(arguments.inputPath)
       }
 
       val developers = timing("2/3 doSQLOperations") {

@@ -77,6 +77,7 @@ def setup_package():
                            "keras==2.7.0",
                            "tensorflow-estimator==2.7.0"]
 
+    # ipex is only avaliable for linux now
     pytorch_requires = ["torch==1.11.0",
                         "torchvision==0.12.0",
                         "pytorch_lightning==1.6.4",
@@ -84,7 +85,7 @@ def setup_package():
                         "opencv-python-headless",
                         "PyTurboJPEG",
                         "opencv-transforms",
-                        "intel_extension_for_pytorch==1.11.0"]
+                        "intel_extension_for_pytorch==1.11.0;platform_system!='Windows'"]
 
     install_requires = ["intel-openmp", "cloudpickle", "protobuf==3.19.4"]
 
