@@ -66,7 +66,7 @@ def setup_package():
         extras_require={'pytorch': ['bigdl-nano[pytorch]==' + VERSION],
                         'tensorflow': ['bigdl-nano[tensorflow]=='+VERSION],
                         'automl': ['optuna<=2.10.1', 'configspace<=0.5.0'],
-                        'distributed:platform_system!="Windows"': ['bigdl-orca[automl]==' + VERSION],
+                        'distributed:platform_system!="Windows"': ['bigdl-orca[automl]=='+VERSION],
                         'all': ['bigdl-nano[pytorch]==' + VERSION,
                                 'bigdl-nano[tensorflow]=='+VERSION,
                                 'optuna<=2.10.1', 'configspace<=0.5.0',
