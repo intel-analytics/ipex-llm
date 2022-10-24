@@ -49,6 +49,6 @@ pip install --pre --upgrade bigdl-orca[automl]  # For the latest nightly build v
 Note that with the extra key of [automl], `pip` will automatically install the additional dependencies for distributed hyper-parameter tuning,
 including `ray[tune]==1.9.2`, `scikit-learn`, `tensorboard`, `xgboost` together with the dependencies given by the extra key [ray].
 
-- To use [Pytorch Estimator](distributed-tuning.md#pytorch-autoestimator), you need to install Pytorch with `pip install torch==1.8.1`.
+- To use [Pytorch AutoEstimator](distributed-tuning.md#pytorch-autoestimator), you need to install Pytorch with `pip install torch==1.8.1`.
 
 - To use [TensorFlow/Keras AutoEstimator](distributed-tuning.md#tensorflow-keras-autoestimator), you need to install TensorFlow with `pip install tensorflow==1.15.0`.
