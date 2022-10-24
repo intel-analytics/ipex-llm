@@ -74,8 +74,6 @@ class MyNano(TorchNano) :
 MyNano().train(...)
 ```
 
-- note: see [this tutorial](./pytorch_nano.html) for details about our `TorchNano`.
-
 Our `TorchNano` also integrates IPEX and distributed training optimizations. For example,
 
 ```python
