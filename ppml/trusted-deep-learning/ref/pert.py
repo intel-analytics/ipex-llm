@@ -6,11 +6,13 @@ import time
 from torch import nn
 from datasets import load_dataset
 from torch.utils.data import DataLoader
+from torch.utils.data.distributed import DistributedSampler
 import torch.distributed as dist
 from transformers import BertTokenizer, BertModel, AdamW
 #from tqdm.auto import tqdm
 
 WORLD_SIZE = int(os.environ.get("WORLD_SIZE", 1))
+RANK = int(os.environ.get("RANK", 0))
 
 
 def should_distribute():
@@ -166,9 +168,14 @@ def main():
     valid_data = Dataset('validation')
 #    test_data = Dataset('test')
 
-    train_dataloader = DataLoader(train_data, batch_size=args.batch_size, shuffle=True, collate_fn=collate_fn)
-    valid_dataloader = DataLoader(valid_data, batch_size=args.test_batch_size, shuffle=True, collate_fn=collate_fn)
-#    test_dataloader = DataLoader(test_data, batch_size=args.test_batch_size, shuffle=True, collate_fn=collate_fn)
+    if is_distributed():
+        train_sampler = DistributedSampler(train_data, num_replicas=WORLD_SIZE, rank=RANK, shuffle=True, drop_last=False, seed=args.seed)
+        valid_sampler = DistributedSampler(valid_data, num_replicas=WORLD_SIZE, rank=RANK, shuffle=True, drop_last=False, seed=args.seed)
+        train_dataloader = DataLoader(train_data, batch_size=args.batch_size, collate_fn=collate_fn, sampler=train_sampler)
+        valid_dataloader = DataLoader(valid_data, batch_size=args.test_batch_size,collate_fn=collate_fn, sampler=valid_sampler)
+    else:
+        train_dataloader = DataLoader(train_data, batch_size=args.batch_size, shuffle=True, collate_fn=collate_fn)
+        valid_dataloader = DataLoader(valid_data, batch_size=args.test_batch_size, shuffle=True, collate_fn=collate_fn)
 
     print("[INFO]Data get loaded successfully", flush=True)
 
@@ -180,24 +187,28 @@ def main():
         Distributor = nn.parallel.DistributedDataParallel
         model = Distributor(model,find_unused_parameters=True)
     loss_fn = nn.CrossEntropyLoss()
-    epoch_num = 3
     optimizer = AdamW(model.parameters(), lr=args.lr)
 
     total_loss = 0.
     best_acc = 0.
 
     for t in range(args.epochs):
-        print(f"Epoch {t+1}/{epoch_num}\n-------------------------------")
+        print(f"Epoch {t+1}/{args.epochs + 1}\n-------------------------------")
+        if is_distributed():
+            train_dataloader.sampler.set_epoch(t)
+            valid_dataloader.sampler.set_epoch(t)
         start = time.perf_counter()
         total_loss = train_loop(args, train_dataloader, model,loss_fn, optimizer, t+1, total_loss)
         end = time.perf_counter()
-        print(f"Epoch {t+1}/{epoch_num} Elapsed time:", end - start)
+        print(f"Epoch {t+1}/{args.epochs + 1} Elapsed time:", end - start)
         valid_acc = test_loop(valid_dataloader, model, mode='Valid')
 
     print("[INFO]Finish all test", flush=True)
 
     if (args.save_model):
         torch.save(model.state_dict(), "pert.bin")
+    if is_distributed():
+        dist.destroy_process_group()
 
 if __name__ == "__main__":
     main()
