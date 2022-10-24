@@ -315,11 +315,4 @@ $(document).on({
     }
 }, "button");
 
-$(document).ready(function(){
-    $("#cmd").css({"text-align":"left"});
-    $(".taller_tr").css({
-        "height":"71px"
-    })
-})
-
 refresh_cmd();
