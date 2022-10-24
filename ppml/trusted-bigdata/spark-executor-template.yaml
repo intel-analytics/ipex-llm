@@ -3,8 +3,6 @@ kind: Pod
 spec:
   containers:
   - name: spark-executor
-    securityContext:
-      privileged: true
     env:
       - name: ATTESTATION
         value: false
@@ -32,19 +30,19 @@ spec:
       - name: nfs-storage
         mountPath: /root/.kube/config
         subPath: kubeconfig
-    #resources:
-      #requests:
-        #cpu: 16
-        #memory: 128Gi
-        #sgx.intel.com/epc: 133258905600
-        #sgx.intel.com/enclave: 10
-        #sgx.intel.com/provision: 10
-      #limits:
-        #cpu: 16
-        #memory: 128Gi
-        #sgx.intel.com/epc: 133258905600
-        #sgx.intel.com/enclave: 10
-        #sgx.intel.com/provision: 10
+    resources:
+      requests:
+        cpu: 16
+        memory: 128Gi
+        sgx.intel.com/epc: 133258905600
+        sgx.intel.com/enclave: 10
+        sgx.intel.com/provision: 10
+      limits:
+        cpu: 16
+        memory: 128Gi
+        sgx.intel.com/epc: 133258905600
+        sgx.intel.com/enclave: 10
+        sgx.intel.com/provision: 10
   volumes:
     - name: device-plugin
       hostPath:
