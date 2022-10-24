@@ -6,14 +6,11 @@ In some cases, third party doesn't has a trusted computing environment, to run t
 
 ## System Architecture
 The high-level architecture is shown in the diagram below.   
-![](../images/fl_ckks.png)  
-Different from VFL with SGX, this solution will encrypt all the data passed to FL server, using CKKS encryptor. Server can only 
+![](../images/fl_ckks.PNG)  
+Different from VFL with SGX, this solution will encrypt all the data passed to FL server, using CKKS encryptor. Server only holds computing secrets to compute loss and gradient with the cipher data, server has not secrets to see what's inside the cipher data. So the data passed to server is very safe, even FL server is not protected by SGX.
 
 ## Quick Start Examples
-For each scenario, an quick start example is available in following links.
+* [VFL with Homomorphic Encryption](https://github.com/intel-analytics/BigDL/blob/main/scala/ppml/src/main/scala/com/intel/analytics/bigdl/ppml/fl/example/ckks/README.md): A example of VFL Logistic Regression with HE on census dataset.
 
-
-## Next steps
-For detailed usage of BigDL PPML VFL, please see [User Guide](user_guide.md)
 
 
