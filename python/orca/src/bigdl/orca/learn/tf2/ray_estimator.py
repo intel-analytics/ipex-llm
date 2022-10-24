@@ -87,7 +87,6 @@ class TensorFlow2Estimator(OrcaRayEstimator):
                 "config": self.config,
                 "verbose": self.verbose,
             }
-        
 
         if backend == "ray":
             cores_per_node = ray_ctx.ray_node_cpu_cores // workers_per_node
