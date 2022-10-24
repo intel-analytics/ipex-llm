@@ -11,7 +11,7 @@ https://github.com/tensorflow/docs/blob/r2.4/site/en/tutorials/images/transfer_l
     You can install the necessary packages with the following command
     
     ```
-    pip install bigdl-nano[tensorflow]
+    pip install --pre --upgrade bigdl-nano[tensorflow] # install the nightly-bulit version
     ```
 
     Then setup the environment with the script `bigdl-nano-init`:
