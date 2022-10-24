@@ -95,7 +95,7 @@ class _TorchNanoOptimizer(_LiteOptimizer):
         self.cur_lr_ratio = 1.0
         self.max_lr_ratio = num_processes
         self.cur_step = 0
-        self.max_step = 100
+        self.max_step = 1000
         self.auto_lr = auto_lr
 
     def step(self, closure=None) -> Any:     # type: ignore

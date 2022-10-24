@@ -197,12 +197,12 @@ class MyNanoAutoLRCorrectness(TorchNano):
 
         model.train()
 
-        num_epochs = 110
         expect_weight = torch.tensor([[1.0]])
         cur_lr_ratio = 1.0
         max_lr_ratio = self.num_processes
         cur_step = 0
         max_step = optimizer.max_step
+        num_epochs = max_step + 10
         for _i in range(num_epochs):
             for X, y in train_loader:
                 optimizer.zero_grad()
@@ -265,7 +265,7 @@ class TestLite(TestCase):
         MyNanoLoadStateDict(num_processes=2).train(0.5)
 
     def test_torch_nano_auto_lr(self):
-        MyNanoAutoLRCorrectness(num_processes=2, auto_lr=True).train(0.1)
+        MyNanoAutoLRCorrectness(num_processes=2, distributed_backend='spawn', auto_lr=True).train(0.01)
 
 if __name__ == '__main__':
     pytest.main([__file__])
