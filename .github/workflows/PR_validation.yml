@@ -14,6 +14,8 @@ on:
       - '.github/actions/orca/**'
       - 'python/ppml/**'
       - '.github/actions/ppml/**'
+      - 'python/friesian/**'
+      - '.github/actions/friesian/**'
       - '.github/workflows/PR_validation.yml'
       
   pull_request:
@@ -30,6 +32,8 @@ on:
       - '.github/actions/orca/**'
       - 'python/ppml/**'
       - '.github/actions/ppml/**'
+      - 'python/friesian/**'
+      - '.github/actions/friesian/**'
       - '.github/workflows/PR_validation.yml'
 
 
@@ -55,14 +59,16 @@ jobs:
             friesian:
               - 'scala/friesian/**'
               - '.github/actions/friesian-scala-ut-action/action.yml'
+              - 'python/friesian/**'
+              - '.github/actions/friesian/**'
             dllib:
               - 'scala/dllib/**'
               - '.github/actions/dllib-scala-ut-action/action.yml'
             ppml:
-            - 'scala/ppml/**'
-            - '.github/actions/ppml-scala-ut-action/action.yml'
-            - 'python/ppml/**'
-            - '.github/actions/ppml/**'
+              - 'scala/ppml/**'
+              - '.github/actions/ppml-scala-ut-action/action.yml'
+              - 'python/ppml/**'
+              - '.github/actions/ppml/**'
             orca:
               - 'python/orca/**'
               - '.github/actions/orca-ray-ctx-example-action/action.yml'
@@ -351,4 +357,98 @@ jobs:
     - name: Remove Env
       if: ${{ always() }}
       uses: ./.github/actions/remove-env
+  
+  Friesian-Python-Py37-Spark3:
+    needs: changes
+    if: ${{ needs.changes.outputs.friesian == 'true' }}
+    runs-on: [self-hosted, Gondolin, ubuntu-20.04-lts]
+
+    steps:
+    - uses: actions/checkout@v3
+    - name: Set up JDK8
+      uses: ./.github/actions/jdk-setup-action
+    - name: Set up maven
+      uses: ./.github/actions/maven-setup-action
+    - name: Setup env
+      uses: ./.github/actions/friesian/setup-env/setup-friesian-python-py37-spark3
+    - name: Run Test
+      uses: ./.github/actions/friesian/friesian-python-py37-spark3/
+    - name: Remove Env
+      if: ${{ always() }}
+      uses: ./.github/actions/remove-env
     
+  Friesian-Python-Py37-Spark3-Pip:
+    needs: changes
+    if: ${{ needs.changes.outputs.friesian == 'true' }}
+    runs-on: [self-hosted, Gondolin, ubuntu-20.04-lts]
+
+    steps:
+    - uses: actions/checkout@v3
+    - name: Set up JDK8
+      uses: ./.github/actions/jdk-setup-action
+    - name: Set up maven
+      uses: ./.github/actions/maven-setup-action
+    - name: Setup env
+      uses: ./.github/actions/friesian/setup-env/setup-friesian-python-py37-spark3
+    - name: Run Test
+      uses: ./.github/actions/friesian/friesian-python-py37-spark3-pip/
+    - name: Remove Env
+      if: ${{ always() }}
+      uses: ./.github/actions/remove-env
+
+  Friesian-Python-ExampleTest-Feature-Tf1-Py37-Spark3:
+    needs: changes
+    if: ${{ needs.changes.outputs.friesian == 'true' }}
+    runs-on: [self-hosted, Gondolin, ubuntu-20.04-lts]
+
+    steps:
+    - uses: actions/checkout@v3
+    - name: Set up JDK8
+      uses: ./.github/actions/jdk-setup-action
+    - name: Set up maven
+      uses: ./.github/actions/maven-setup-action
+    - name: Setup env
+      uses: ./.github/actions/friesian/setup-env/setup-friesian-python-py37-spark3
+    - name: Run Test
+      uses: ./.github/actions/friesian/friesian-python-exampletest-feature-tf1-py37-spark3/
+    - name: Remove Env
+      if: ${{ always() }}
+      uses: ./.github/actions/remove-env
+
+  Friesian-Python-ExampleTest-Feature-Tf1-Pip-Py37-Spark3:
+    needs: changes
+    if: ${{ needs.changes.outputs.friesian == 'true' }}
+    runs-on: [self-hosted, Gondolin, ubuntu-20.04-lts]
+
+    steps:
+    - uses: actions/checkout@v3
+    - name: Set up JDK8
+      uses: ./.github/actions/jdk-setup-action
+    - name: Set up maven
+      uses: ./.github/actions/maven-setup-action
+    - name: Setup env
+      uses: ./.github/actions/friesian/setup-env/setup-friesian-python-py37-spark3
+    - name: Run Test
+      uses: ./.github/actions/friesian/friesian-python-exampletest-feature-tf1-pip-py37-spark3/
+    - name: Remove Env
+      if: ${{ always() }}
+      uses: ./.github/actions/remove-env
+
+  Friesian-Python-ExampleTest-Tf2-Py37-Spark3:
+    needs: changes
+    if: ${{ needs.changes.outputs.friesian == 'true' }}
+    runs-on: [self-hosted, Gondolin, ubuntu-20.04-lts]
+
+    steps:
+    - uses: actions/checkout@v3
+    - name: Set up JDK8
+      uses: ./.github/actions/jdk-setup-action
+    - name: Set up maven
+      uses: ./.github/actions/maven-setup-action
+    - name: Setup env
+      uses: ./.github/actions/friesian/setup-env/setup-friesian-python-tf2-py37-spark3
+    - name: Run Test
+      uses: ./.github/actions/friesian/friesian-python-exampletest-tf2-py37-spark3
+    - name: Remove Env
+      if: ${{ always() }}
+      uses: ./.github/actions/remove-env

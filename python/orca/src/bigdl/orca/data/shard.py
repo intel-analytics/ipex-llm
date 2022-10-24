@@ -23,6 +23,10 @@ from bigdl.dllib.utils import nest
 from bigdl.dllib.utils.log4Error import *
 
 import numpy as np
+from pandas.core.frame import DataFrame as PandasDataFrame
+from pyspark.sql.dataframe import DataFrame as SparkDataFrame
+from pyspark import RDD
+from typing import (Union, List)
 
 
 class XShards(object):
@@ -416,7 +420,7 @@ class SparkXShards(XShards):
             invalidInputError(False,
                               "Currently only support unique() on XShards of Pandas Series")
 
-    def deduplicates(self):
+    def deduplicates(self) -> "SparkXShards":
         if self._get_class_name() == 'pandas.core.frame.DataFrame':
             import pandas as pd
             df = self.to_spark_df()
@@ -427,7 +431,8 @@ class SparkXShards(XShards):
             invalidInputError(False,
                               "Currently only support dedup() on XShards of Pandas DataFrame")
 
-    def sort_values(self, col_names=None, ascending=True):
+    def sort_values(self, col_names: Union[str, List[str]]=None,
+                    ascending: bool=True) -> "SparkXShards":
         """
         Sort the value of shards. This is only applicable for SparkXShards of Pandas Series.
 
@@ -450,13 +455,13 @@ class SparkXShards(XShards):
             invalidInputError(False,
                               "Currently only support sort() on XShards of Pandas DataFrame")
 
-    def max_values(self, col_name):
+    def max_values(self, col_name: str) -> Union[int, float]:
         """
         Get the max values of the column name. This is only applicable for SparkXShards
          of Pandas Series.
 
         :param col_name column name that need return the max value
-        :return: maximum for the specified columns.
+        :return: maximum value for the specified columns.
         """
         if self._get_class_name() == 'pandas.core.frame.DataFrame':
             import pandas as pd
@@ -467,12 +472,12 @@ class SparkXShards(XShards):
             invalidInputError(False,
                               "Currently only support max() on XShards of Pandas DataFrame")
 
-    def get_null_sum(self):
+    def get_null_sum(self) -> "PandasDataFrame":
         """
         With SparkXShards of pandas data frame, the api will get null numbers for
         each column. For other type of SparkXShards, it will throw exception
 
-       :return: SparkXShards of pandas data frame with 2 columns, `col` represents column name,
+       :return: pandas data frame with 2 columns, `col` represents column name,
         `total` represents null numbers
         """
         if self._get_class_name() != 'pandas.core.frame.DataFrame':
@@ -489,13 +494,10 @@ class SparkXShards(XShards):
 
         na_cnt_rdd = self.rdd.mapPartitions(get_na_sum)
 
-        from functools import reduce
-        sum_rdd = na_cnt_rdd.mapPartitions(
-            lambda iter: [reduce(lambda l1, l2: l1.add(l2), iter)])
-        sum_shards = SparkXShards(sum_rdd)
-        return sum_shards
+        na_cnt = na_cnt_rdd.reduce(lambda l1, l2: l1.add(l2))
+        return na_cnt
 
-    def drop_missing_value(self):
+    def drop_missing_value(self) -> "SparkXShards":
         """
         With SparkXShards of pandas data frame, the api will drop null values in shards.
          For other type of SparkXShards, it will throw exception
@@ -507,20 +509,17 @@ class SparkXShards(XShards):
                               "Currently only support assembleFeatureLabelCols() on"
                               " XShards of Pandas DataFrame")
 
-        null_cnt_shard = self.get_null_sum()
-        missing_data_shards = null_cnt_shard.sort_values(col_names="total", ascending=False)
-        zip_shards = self.zip(missing_data_shards)
+        null_cnt = self.get_null_sum()
 
-        def drop_missing_data(tuple):
-            df_train = tuple[0]
-            missing_data = tuple[1]
-            df2 = df_train.drop((missing_data[missing_data['total'] > 0]['col']), 1)
+        def drop_missing_data(pdf):
+            df2 = pdf.drop((null_cnt[null_cnt['total'] > 0]['col']), 1)
             return df2
 
         # dealing with missing data
-        return zip_shards.transform_shard(drop_missing_data)
+        return self.transform_shard(drop_missing_data)
 
-    def assembleFeatureLabelCols(self, featureCols, labelCols):
+    def assembleFeatureLabelCols(self, featureCols: List[str],
+                                 labelCols: List[str]) -> "SparkXShards":
         """
         The api is used to merge/convert one or multiple feature columns into a numpy array,
         merge/convert one or multiple label columns into a numpy array.
@@ -575,7 +574,7 @@ class SparkXShards(XShards):
         transformed_shard = self.transform_shard(to_shard_dict)
         return transformed_shard
 
-    def split(self):
+    def split(self) -> "List[SparkXShards]":
         """
 
         Split SparkXShards into multiple SparkXShards.
@@ -608,7 +607,7 @@ class SparkXShards(XShards):
             else:
                 return [self]
 
-    def zip(self, other):
+    def zip(self, other: "SparkXShards") -> "SparkXShards":
         """
 
         Zips this SparkXShards with another one, returning key-value pairs with the first element
@@ -651,7 +650,7 @@ class SparkXShards(XShards):
 
     # to_spark_df adapted from pyspark
     # https://github.com/apache/spark/blob/master/python/pyspark/sql/pandas/conversion.py
-    def to_spark_df(self):
+    def to_spark_df(self) -> "SparkDataFrame":
         if self._get_class_name() != 'pandas.core.frame.DataFrame':
             invalidInputError(False,
                               "Currently only support to_spark_df on XShards of Pandas DataFrame")
@@ -815,6 +814,41 @@ class SparkXShards(XShards):
             return (_class_name, pdf_schema, spark_df_schema)
 
         return self.rdd.map(lambda x: func(x)).first()
+
+    def merge(self, right, how="inner", on=None, **kwargs):
+        """
+        Merge two SparkXShards into a single SparkXShards with a database-style join.
+
+        :param right: The other SparkXShards to be merged.
+        :param how: Type of merge. 'left', 'right', 'outer' or 'inner'. Default is 'inner'.
+        :param on: Column name(s) to join on.
+        :return: A new merged SparkXShards.
+        """
+        from bigdl.orca.data.utils import spark_df_to_pd_sparkxshards
+        invalidInputError(isinstance(right, SparkXShards), "right should be a SparkXShards")
+
+        left_df = self.to_spark_df()
+        right_df = right.to_spark_df()
+        merged = left_df.join(right_df, on=on, how=how)
+        # count non-empty partitions
+        nonEmptyPart = get_spark_context().accumulator(0)
+
+        def f(iterator):
+            isEmpty = 1
+            for x in iterator:
+                if(isEmpty == 0):
+                    break
+                else:
+                    isEmpty = 0
+            nonEmptyPart.add(isEmpty == 0)
+        merged.rdd.foreachPartition(f)
+        # repartition evenly according to the index
+        if nonEmptyPart.value != merged.rdd.getNumPartitions():
+            merged_withIndex_rdd = merged.rdd.zipWithIndex().map(lambda p: (p[1], p[0]))
+            merged = merged_withIndex_rdd.partitionBy(nonEmptyPart.value) \
+                .map(lambda p: p[1]).toDF()
+        merged = spark_df_to_pd_sparkxshards(merged)
+        return merged
 
 
 class SharedValue(object):

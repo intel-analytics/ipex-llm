@@ -23,7 +23,7 @@ from importlib.util import find_spec
 import time
 import numpy as np
 from copy import deepcopy
-from typing import Dict, Callable, Tuple
+from typing import Dict, Callable, Tuple, Optional, List, Set
 from torch.utils.data import DataLoader
 from torchmetrics.metric import Metric
 from bigdl.nano.utils.log4Error import invalidInputError, invalidOperationError
@@ -120,46 +120,61 @@ class InferenceOptimizer:
 
     def optimize(self, model: nn.Module,
                  training_data: DataLoader,
-                 validation_data: DataLoader = None,
-                 metric: Callable = None,
+                 validation_data: Optional[DataLoader] = None,
+                 metric: Optional[Callable] = None,
                  direction: str = "max",
-                 thread_num: int = None,
+                 thread_num: Optional[int] = None,
                  logging: bool = False,
-                 latency_sample_num: int = 100) -> None:
+                 latency_sample_num: int = 100,
+                 includes: Optional[List[str]] = None,
+                 excludes: Optional[List[str]] = None) -> None:
         '''
         This function will give all available inference acceleration methods a try
         and record the latency, accuracy and model instance inside the Optimizer for
         future usage. All model instance is setting to eval mode.
 
-        :param model: A nn.module to be optimized
-        :param training_data: A pytorch dataloader for training dataset.
-               Users should be careful with this parameter since this dataloader
+        The available methods are "original", "fp32_ipex", "bf16", "bf16_ipex","int8",
+        "jit_fp32", "jit_fp32_ipex", "jit_fp32_ipex_channels_last", "openvino_fp32",
+        "openvino_int8", "onnxruntime_fp32", "onnxruntime_int8_qlinear"
+        and "onnxruntime_int8_integer"
+
+        :param model: A torch.nn.Module to be optimized
+        :param training_data: A torch.utils.data.dataloader.DataLoader object for training
+               dataset. Users should be careful with this parameter since this dataloader
                might be exposed to the model, which causing data leak. The
                batch_size of this dataloader is important as well, users may
                want to set it to the same batch size you may want to use the model
                in real deploy environment. E.g. batch size should be set to 1
                if you would like to use the accelerated model in an online service.
-        :param validation_data: (optional) A pytorch dataloader for accuracy evaluation
-               This is only needed when users care about the possible accuracy drop.
+        :param validation_data: (optional) A torch.utils.data.dataloader.DataLoader object
+               for accuracy evaluation. This is only needed when users care about the possible
+               accuracy drop.
         :param metric: (optional) A callable object which is used for calculating accuracy.
                It supports two kinds of callable object:
-               1. A torchmetrics.Metric object or similar callable object which takes
-               prediction and target then returns an accuracy value in this calling
-               method `metric(pred, target)`. This requires data in validation_data
-               is composed of (input_data, target).
-               2. A callable object that takes model and validation_data (if
-               validation_data is not None) as input, and returns an accuracy value in
-               this calling method metric(model, data_loader) (or metric(model) if
-               validation_data is None).
+
+               | 1. A torchmetrics.Metric object or similar callable object which takes
+               | prediction and target then returns an accuracy value in this calling
+               | method `metric(pred, target)`. This requires data in validation_data
+               | is composed of (input_data, target).
+               | 2. A callable object that takes model and validation_data (if
+               | validation_data is not None) as input, and returns an accuracy value in
+               | this calling method metric(model, data_loader) (or metric(model) if
+               | validation_data is None).
+
         :param direction: (optional) A string that indicates the higher/lower
                better for the metric, "min" for the lower the better and "max" for the
                higher the better. Default value is "max".
         :param thread_num: (optional) a int represents how many threads(cores) is needed for
                inference.
         :param logging: whether to log detailed information of model conversion.
-               default: False.
+               Default: False.
         :param latency_sample_num: (optional) a int represents the number of repetitions
                to calculate the average latency. The default value is 100.
+        :param includes: (optional) a list of acceleration methods that will be included in the
+               search. Default to None meaning including all available methods. "original" method
+               will be automatically add to includes.
+        :param excludes: (optional) a list of acceleration methods that will be excluded from the
+               search. "original" will be ignored in the excludes.
         '''
 
         # check if model is a nn.Module or inherited from a nn.Module
@@ -168,7 +183,8 @@ class InferenceOptimizer:
                           "Only support direction 'min', 'max'.")
 
         # get the available methods whose dep is met
-        available_dict: Dict = _available_acceleration_combination()
+        available_dict: Dict = _available_acceleration_combination(excludes=excludes,
+                                                                   includes=includes)
 
         self._direction: str = direction  # save direction as attr
         # record whether calculate accuracy in optimize by this attr
@@ -341,7 +357,7 @@ class InferenceOptimizer:
 
     def summary(self):
         '''
-        Print format string representation for optimization result
+        Print format string representation for optimization result.
         '''
         invalidOperationError(len(self.optimized_model_dict) > 0,
                               "There is no optimization result. You should call .optimize() "
@@ -349,10 +365,10 @@ class InferenceOptimizer:
         print(self._optimize_result)
 
     def get_best_model(self,
-                       accelerator: str = None,
-                       precision: str = None,
-                       use_ipex: bool = None,
-                       accuracy_criterion: float = None) -> Tuple[nn.Module, str]:
+                       accelerator: Optional[str] = None,
+                       precision: Optional[str] = None,
+                       use_ipex: Optional[bool] = None,
+                       accuracy_criterion: Optional[float] = None) -> Tuple[nn.Module, str]:
         '''
         According to results of `optimize`, obtain the model with minimum latency under
         specific restrictions or without restrictions.
@@ -363,9 +379,9 @@ class InferenceOptimizer:
         :param precision: (optional) Supported type: 'int8', 'bf16',
                defaults to None which represents 'fp32'. If not None, the will
                only find the model with thie specific precision.
-        :param use_ipex: (optional) if not NOne, then will only find the
-               model with this specific ipex setting
-        :param :param accuracy_criterion: (optional) a float represents tolerable
+        :param use_ipex: (optional) if not None, then will only find the
+               model with this specific ipex setting.
+        :param accuracy_criterion: (optional) a float represents tolerable
                accuracy drop percentage, defaults to None meaning no accuracy control.
         :return: best model, corresponding acceleration option
         '''
@@ -429,28 +445,28 @@ class InferenceOptimizer:
     @staticmethod
     def quantize(model: nn.Module,
                  precision: str = 'int8',
-                 accelerator: str = None,
+                 accelerator: Optional[str] = None,
                  use_ipex: bool = False,
-                 calib_dataloader: DataLoader = None,
-                 metric: Metric = None,
-                 accuracy_criterion: dict = None,
+                 calib_dataloader: Optional[DataLoader] = None,
+                 metric: Optional[Metric] = None,
+                 accuracy_criterion: Optional[dict] = None,
                  approach: str = 'static',
-                 method: str = None,
-                 conf: str = None,
-                 tuning_strategy: str = None,
-                 timeout: int = None,
-                 max_trials: int = None,
+                 method: Optional[str] = None,
+                 conf: Optional[str] = None,
+                 tuning_strategy: Optional[str] = None,
+                 timeout: Optional[int] = None,
+                 max_trials: Optional[int] = None,
                  input_sample=None,
-                 thread_num: int = None,
+                 thread_num: Optional[int] = None,
                  onnxruntime_session_options=None,
                  sample_size: int = 100,
                  logging: bool = True,
                  **export_kwargs):
         """
-        Calibrate a Pytorch-Lightning model for post-training quantization.
+        Calibrate a torch.nn.Module for post-training quantization.
 
         :param model:           A model to be quantized. Model type should be an instance of
-                                nn.Module.
+                                torch.nn.Module.
         :param precision:       Global precision of quantized model,
                                 supported type: 'int8', 'bf16', 'fp16', defaults to 'int8'.
         :param accelerator:     Use accelerator 'None', 'onnxruntime', 'openvino', defaults to None.
@@ -494,13 +510,13 @@ class InferenceOptimizer:
                                             accelerator='onnxruntime', otherwise will be ignored.
         :param sample_size: (optional) a int represents how many samples will be used for
                             Post-training Optimization Tools (POT) from OpenVINO toolkit,
-                            only valid for accelerator='openvino'. default to 100.
+                            only valid for accelerator='openvino'. Default to 100.
                             The larger the value, the more accurate the conversion,
                             the lower the performance degradation, but the longer the time.
         :param logging: whether to log detailed information of model conversion, only valid when
-                        accelerator='openvino', otherwise will be ignored. default: True.
+                        accelerator='openvino', otherwise will be ignored. Default: ``True``.
         :param **export_kwargs: will be passed to torch.onnx.export function.
-        :return:            A accelerated Pytorch-Lightning Model if quantization is sucessful.
+        :return:            A accelerated torch.nn.Module if quantization is sucessful.
         """
         if precision == 'bf16':
             if accelerator is None:
@@ -615,14 +631,14 @@ class InferenceOptimizer:
     @staticmethod
     def trace(model: nn.Module,
               input_sample=None,
-              accelerator: str = None,
+              accelerator: Optional[str] = None,
               use_ipex: bool = False,
-              thread_num: int = None,
+              thread_num: Optional[int] = None,
               onnxruntime_session_options=None,
               logging: bool = True,
               **export_kwargs):
         """
-        Trace a pytorch model and convert it into an accelerated module for inference.
+        Trace a torch.nn.Module and convert it into an accelerated module for inference.
 
         For example, this function returns a PytorchOpenVINOModel when accelerator=='openvino'.
 
@@ -638,13 +654,13 @@ class InferenceOptimizer:
         :param onnxruntime_session_options: The session option for onnxruntime, only valid when
                                             accelerator='onnxruntime', otherwise will be ignored.
         :param logging: whether to log detailed information of model conversion, only valid when
-                        accelerator='openvino', otherwise will be ignored. default: True.
+                        accelerator='openvino', otherwise will be ignored. Default: ``True``.
         :param **kwargs: other extra advanced settings include
                          1. those be passed to torch.onnx.export function, only valid when
                          accelerator='onnxruntime'/'openvino', otherwise will be ignored.
-                         2. if channels_last is set and use_ipex=True, we will transform the
+                         2. if channels_last is set and `use_ipex=True`, we will transform the
                          data to be channels last according to the setting. Defaultly, channels_last
-                         will be set to True if use_ipex=True.
+                         will be set to ``True`` if `use_ipex=True`.
         :return: Model with different acceleration.
         """
         invalidInputError(
@@ -686,7 +702,7 @@ class InferenceOptimizer:
         save_model(model, path)
 
     @staticmethod
-    def load(path, model: nn.Module = None):
+    def load(path, model: Optional[nn.Module] = None):
         """
         Load a model from local.
 
@@ -738,7 +754,8 @@ def _bf16_checker():
     return "avx512_bf16" in msg or "amx_bf16" in msg
 
 
-def _available_acceleration_combination():
+def _available_acceleration_combination(excludes: Optional[List[str]],
+                                        includes: Optional[List[str]]):
     '''
     :return: a dictionary states the availablity (if meet depdencies)
     '''
@@ -748,8 +765,26 @@ def _available_acceleration_combination():
                           "openvino": _openvino_checker,
                           "pot": _openvino_checker,
                           "bf16": _bf16_checker}
+    if excludes is None:
+        exclude_set: Set[str] = set()
+    else:
+        exclude_set: Set[str] = set(excludes)
+        exclude_set.discard("original")
+
+    if includes is None:
+        include_set: Set[str] = set(ALL_INFERENCE_ACCELERATION_METHOD.keys())
+    else:
+        include_set: Set[str] = set(includes)
+        include_set.add("original")
+
     available_dict = {}
     for method, option in ALL_INFERENCE_ACCELERATION_METHOD.items():
+        if method not in include_set:
+            continue
+
+        if method in exclude_set:
+            continue
+
         available_iter = True
         for name, value in option.__dict__.items():
             if value is True:
@@ -792,7 +827,7 @@ def _signature_check(function):
     '''
     import inspect
     sig = inspect.signature(function)
-    if len(sig.parameters.values()) != 2:
+    if len(sig.parameters.values()) < 2:
         return False
     param1_name = list(sig.parameters.values())[0].name
     param2_name = list(sig.parameters.values())[1].name

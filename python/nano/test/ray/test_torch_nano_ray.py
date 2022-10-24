@@ -114,10 +114,10 @@ class TestLite(TestCase):
         os.environ['PYTHONPATH'] = project_test_dir
 
     def test_torch_nano_ray(self):
-        MyNano(num_processes=2, strategy="ray").train()
+        MyNano(num_processes=2, distributed_backend="ray").train()
 
     def test_torch_nano_ray_correctness(self):
-        MyNanoCorrectness(num_processes=2, strategy="ray").train(0.5)
+        MyNanoCorrectness(num_processes=2, distributed_backend="ray").train(0.5)
 
 
 if __name__ == '__main__':

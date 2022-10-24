@@ -178,9 +178,9 @@ To build your own Big Data & AI applications, refer to [develop your own Big Dat
 
 #### Step 3. Attestation 
 
-To enable attestation, you should have a running Attestation Service (EHSM-KMS here for example) in your environment. (You can start a KMS  refering to [this link](https://github.com/intel-analytics/BigDL/tree/main/ppml/services/kms-utils/docker)). Configure your KMS app_id and app_key with `kubectl`, and then configure KMS settings in `spark-driver-template.yaml` and `spark-executor-template.yaml` in the container.
+To enable attestation, you should have a running Attestation Service (EHSM-KMS here for example) in your environment. (You can start a KMS  refering to [this link](https://github.com/intel-analytics/BigDL/tree/main/ppml/services/kms-utils/docker)). Configure your KMS app_id and api_key with `kubectl`, and then configure KMS settings in `spark-driver-template.yaml` and `spark-executor-template.yaml` in the container.
 ``` bash
-kubectl create secret generic kms-secret --from-literal=app_id=your-kms-app-id --from-literal=app_key=your-kms-app-key
+kubectl create secret generic kms-secret --from-literal=app_id=your-kms-app-id --from-literal=api_key=your-kms-api-key
 ```
 Configure `spark-driver-template.yaml` for example. (`spark-executor-template.yaml` is similar)
 ``` yaml
@@ -205,7 +205,7 @@ spec:
         valueFrom:
           secretKeyRef:
             name: kms-secret
-            key: app_key
+            key: api_key
 ...
 ```
 You should get `Attestation Success!` in logs after you [submit a PPML job](#step-4-submit-job) if the quote generated with user report is verified successfully by Attestation Service, or you will get `Attestation Fail! Application killed!` and the job will be stopped.
@@ -306,6 +306,49 @@ Here we use **k8s client mode** and **PPML CLI** to run SimpleQuery. Check other
 
     ![image](https://user-images.githubusercontent.com/61072813/179948818-a2f6844f-0009-49d1-aeac-2e8c5a7ef677.png)
 
+  5. Monitor spark events using history server:
+
+     The history server provides an interface to watch and log spark performance and metrics.
+     
+     First, create a shared directory that can be accessed by both the client and the other worker containers in your cluster. For example, you can create an empty directory under the mounted nfs path or hdfs. The spark drivers and executors will write their event logs to this destination, and the history server will read logs here as well.
+     
+     Second, enter your client container and edit `$SPARK_HOME/conf/spark-defaults.conf`, where the histroy server reads the configurations:
+     ```
+     spark.eventLog.enabled           true                     # enable logging events
+     spark.eventLog.dir               <your_shared_dir_path>   # e.g. file://<your_nfs_dir_path> or hdfs://<your_hdfs_dir_path>
+     spark.history.fs.logDirectory    <your_shared_dir_path>   # similiar to spark.eventLog.dir
+     ```
+     
+     Third, run the below command and the history server will start to watch automatically:
+     ```
+     $SPARK_HOME/sbin/start-history-server.sh
+     ```
+     
+     Next, when you run spark jobs, enable writing driver and executor event logs in java/spark-submit commands by setting spark conf like below:
+     ```
+     ...
+     --conf spark.eventLog.enabled=true \
+     --conf spark.eventLog.dir=<your_shared_dir_path> \
+     ...
+     ```
+     
+     Starting spark jobs, you can find event log files at `<your_shared_dir_path>` like:
+     ```
+     $ ls
+     local-1666143241860 spark-application-1666144573580
+     
+     $ cat spark-application-1666144573580
+     ......
+     {"Event":"SparkListenerJobEnd","Job ID":0,"Completion Time":1666144848006,"Job Result":{"Result":"JobSucceeded"}}
+     {"Event":"SparkListenerApplicationEnd","Timestamp":1666144848021}
+     ```
+     
+     You can use these logs to analyze spark jobs. Moreover, you are also allowed to surf from a web UI provided by the history server by accessing `http://localhost:18080`:
+     
+     ![history server UI](https://user-images.githubusercontent.com/60865256/196840282-6584f36e-5e72-4144-921e-4536d3391f05.png)
+
+    
+
   </details>
 <br />
 
@@ -376,7 +419,7 @@ If you are familiar with Spark, you may find that the usage of `PPMLConext` is v
       val ppmlArgs: Map[String, String] = Map(
              "spark.bigdl.kms.type" -> "SimpleKeyManagementService",
              "spark.bigdl.kms.simple.id" -> "your_app_id",
-             "spark.bigdl.kms.simple.key" -> "your_app_key",
+             "spark.bigdl.kms.simple.key" -> "your_api_key",
              "spark.bigdl.kms.key.primary" -> "/your/primary/key/path/primaryKey",
              "spark.bigdl.kms.key.data" -> "/your/data/key/path/dataKey"
          )
@@ -395,7 +438,7 @@ If you are familiar with Spark, you may find that the usage of `PPMLConext` is v
 
       ppml_args = {"kms_type": "SimpleKeyManagementService",
                    "simple_app_id": "your_app_id",
-                   "simple_app_key": "your_app_key",
+                   "simple_api_key": "your_api_key",
                    "primary_key_path": "/your/primary/key/path/primaryKey",
                    "data_key_path": "/your/data/key/path/dataKey"
                   }
@@ -418,7 +461,7 @@ If you are familiar with Spark, you may find that the usage of `PPMLConext` is v
              "spark.bigdl.kms.ehs.ip" -> "your_server_ip",
              "spark.bigdl.kms.ehs.port" -> "your_server_port",
              "spark.bigdl.kms.ehs.id" -> "your_app_id",
-             "spark.bigdl.kms.ehs.key" -> "your_app_key",
+             "spark.bigdl.kms.ehs.key" -> "your_api_key",
              "spark.bigdl.kms.key.primary" -> "/your/primary/key/path/primaryKey",
              "spark.bigdl.kms.key.data" -> "/your/data/key/path/dataKey"
       )
@@ -438,7 +481,7 @@ If you are familiar with Spark, you may find that the usage of `PPMLConext` is v
                    "kms_server_ip": "your_server_ip",
                    "kms_server_port": "your_server_port"
                    "ehsm_app_id": "your_app_id",
-                   "ehsm_app_key": "your_app_key",
+                   "ehsm_api_key": "your_api_key",
                    "primary_key_path": "/your/primary/key/path/primaryKey",
                    "data_key_path": "/your/data/key/path/dataKey"
                   }
@@ -504,7 +547,7 @@ If you are familiar with Spark, you may find that the usage of `PPMLConext` is v
    val ppmlArgs: Map[String, String] = Map(
        "spark.bigdl.kms.type" -> "SimpleKeyManagementService",
        "spark.bigdl.kms.simple.id" -> "your_app_id",
-       "spark.bigdl.kms.simple.key" -> "your_app_key",
+       "spark.bigdl.kms.simple.key" -> "your_api_key",
        "spark.bigdl.kms.key.primary" -> "/your/primary/key/path/primaryKey",
        "spark.bigdl.kms.key.data" -> "/your/data/key/path/dataKey"
    )
@@ -525,7 +568,7 @@ If you are familiar with Spark, you may find that the usage of `PPMLConext` is v
    
    ppml_args = {"kms_type": "SimpleKeyManagementService",
                 "simple_app_id": "your_app_id",
-                "simple_app_key": "your_app_key",
+                "simple_api_key": "your_api_key",
                 "primary_key_path": "/your/primary/key/path/primaryKey",
                 "data_key_path": "/your/data/key/path/dataKey"
                }

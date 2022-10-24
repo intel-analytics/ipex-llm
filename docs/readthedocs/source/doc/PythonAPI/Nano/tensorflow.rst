@@ -22,3 +22,11 @@ bigdl.nano.tf.optimizers
 .. autoclass:: bigdl.nano.tf.optimizers.SparseAdam
     :members: 
     :undoc-members:
+
+Patch API
+---------------------------
+
+.. automodule:: bigdl.nano.tf.dispatcher
+    :members:
+    :undoc-members:
+    :show-inheritance:

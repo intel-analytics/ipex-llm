@@ -257,6 +257,28 @@ class TestSparkBackend(TestCase):
         max_value = data_shard.max_values('sale_price')
         assert max_value == 475000, "max value of sale_price should be 2"
 
+    def test_merge_shards(self):
+        from bigdl.orca.data.utils import spark_df_to_pd_sparkxshards  
+        from pyspark.sql import SparkSession
+        spark = SparkSession.builder.getOrCreate()
+        df1 = spark.createDataFrame([
+            (1, 2.),
+            (2, 3.),
+            (3, 5.),
+            (4, 1.)
+            ], schema=['a', 'b'])
+        df2 = spark.createDataFrame([
+            (1, 7),
+            (2, 8),
+            (4, 9),
+            (5, 9)
+            ], schema=['a', 'c'])
+        data_shard1 = spark_df_to_pd_sparkxshards(df1)
+        data_shard2 = spark_df_to_pd_sparkxshards(df2)
+        merged_shard = data_shard1.merge(data_shard2, on='a')
+        merged_shard_df = merged_shard.to_spark_df()
+        assert len(merged_shard)==3 and merged_shard_df.columns==['a','b','c']
+
 
 if __name__ == "__main__":
     pytest.main([__file__])
