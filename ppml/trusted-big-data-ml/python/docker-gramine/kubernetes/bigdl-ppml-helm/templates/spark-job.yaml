@@ -77,9 +77,6 @@ spec:
             mountPath: /dev/gsgx
           - name: aesm-socket
             mountPath: /var/run/aesmd/aesm.socket
-          - name: enclave-key
-            mountPath: /root/.config/gramine/enclave-key.pem
-            subPath: enclave-key.pem
           - name: secure-keys
             mountPath: /ppml/trusted-big-data-ml/work/keys
           - name: secure-password
