@@ -770,6 +770,7 @@ class TestTFRayEstimator(TestCase):
 
             before_res = trainer.predict(df, feature_cols=["feature"]).collect()
             expect_res = np.concatenate([part["prediction"] for part in before_res])
+            trainer.shutdown()
 
             est = Estimator.from_keras(
                 verbose=True,
