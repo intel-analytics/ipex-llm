@@ -52,7 +52,7 @@ subtrees:
             title: "Tutorials"
             subtrees:
               - entries:
-                - file: doc/Tutorial/yarn
+                - file: doc/Orca/Tutorial/yarn
           - file: doc/Orca/Overview/known_issues
             title: "Tips and Known Issues"
           - file: doc/PythonAPI/Orca/index
