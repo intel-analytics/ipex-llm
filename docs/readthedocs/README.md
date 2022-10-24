@@ -2,7 +2,7 @@
 This is the repositary for BigDL documentation, which is hosted at https://bigdl.readthedocs.io/en/latest/
 ## Local build
 ### 1. Set up environment
-To build BigDL documentation locally for testing purposes, it is recommended to create a conda enviroment with specified Python version:
+To build BigDL documentation locally for testing purposes, it is recommended to create a conda environment with specified Python version:
 
 ```bash
 conda create -n docs python=3.7
@@ -23,6 +23,8 @@ You can then build the documentation locally through:
 make html
 ```
 > **Tips**: If you meet building error `Notebook error: Pandoc wasn't found`, try `conda install pandoc` to resolve it.
+
+> **Note**: The built files inside `docs/readthedocs/_build/html` dictionary should not be commited, they are only for testing purposes.
 
 ### 3. Test the documentation
 To view the documentation locally, you could set up a testing server:
