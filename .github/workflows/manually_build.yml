@@ -49,6 +49,7 @@ jobs:
         docker login -u ${DOCKERHUB_USERNAME} -p ${DOCKERHUB_PASSWORD}
     - name: bigdl-ppml-gramine-base
       run: |
+        export TAG=2.2.0-SNAPSHOT
         echo "########################################"
         echo "####### bigdl-ppml-gramine-base ########"
         echo "########################################"
