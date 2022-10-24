@@ -2,6 +2,7 @@ import torch
 import argparse
 import os
 import logging
+import time
 from torch import nn
 from datasets import load_dataset
 from torch.utils.data import DataLoader
@@ -94,7 +95,7 @@ def train_loop(args, dataloader, model, loss_fn, optimizer, epoch, total_loss):
         total_loss += loss.item()
         if batch % args.log_interval == 0:
             msg = "Train Epoch: {} [{}/{} ({:.0f}%)]\tloss={:.4f}".format(
-                epoch, batch * len(X), len(dataloader.dataset),
+                epoch, batch, len(dataloader),
                 100. * batch / len(dataloader), loss.item())
             logging.info(msg)
 
@@ -120,8 +121,8 @@ def test_loop(dataloader, model, mode='Test'):
 
 def main():
     parser = argparse.ArgumentParser(description="PyTorch MNIST Example")
-    parser.add_argument("--batch-size", type=int, default=64, metavar="N",
-                        help="input batch size for training (default: 64)")
+    parser.add_argument("--batch-size", type=int, default=16, metavar="N",
+                        help="input batch size for training (default: 16)")
     parser.add_argument("--test-batch-size", type=int, default=1000, metavar="N",
                         help="input batch size for testing (default: 1000)") 
     parser.add_argument("--epochs", type=int, default=1, metavar="N",
@@ -135,7 +136,7 @@ def main():
     # Only for test purpose
     parser.add_argument("--load-model", action="store_true", default=False,
                         help="For loading the current model")
-    parser.add_argument("--log-interval", type=int, default=10, metavar="N",
+    parser.add_argument("--log-interval", type=int, default=2, metavar="N",
                         help="how many batches to wait before logging training status")
     parser.add_argument("--log-path", type=str, default="",
                         help="Path to save logs. Print to StdOut if log-path is not set")
@@ -187,7 +188,10 @@ def main():
 
     for t in range(args.epochs):
         print(f"Epoch {t+1}/{epoch_num}\n-------------------------------")
+        start = time.perf_counter()
         total_loss = train_loop(args, train_dataloader, model,loss_fn, optimizer, t+1, total_loss)
+        end = time.perf_counter()
+        print(f"Epoch {t+1}/{epoch_num} Elapsed time:", end - start)
         valid_acc = test_loop(valid_dataloader, model, mode='Valid')
 
     print("[INFO]Finish all test", flush=True)
