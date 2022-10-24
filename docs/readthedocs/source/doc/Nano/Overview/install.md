@@ -23,7 +23,7 @@ pip install --pre --upgrade bigdl-nano[tensorflow]
 
 ```eval_rst
 .. note::
-    Since bigdl-nano is still in the process of rapid iteration, we highly recommend that you install nightly build version through the above command to facilitate your use of the latest features, rather than installing the latest release version such as 2.1.0 by ``pip install bigdl-nano[pytorch]``.
+    Since bigdl-nano is still in the process of rapid iteration, we highly recommend that you install nightly build version through the above command to facilitate your use of the latest features. For stable version, please refer to the document and installation guide [here](https://bigdl.readthedocs.io/en/v2.1.0/doc/Nano/Overview/nano.html).
 ```
 
 After installing bigdl-nano, you can run the following command to setup a few environment variables.
