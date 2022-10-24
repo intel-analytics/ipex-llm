@@ -126,16 +126,6 @@ ARG TINI_VERSION
 ENV SPARK_VERSION                       ${SPARK_VERSION}
 ENV SPARK_HOME                          /ppml/spark-${SPARK_VERSION}
 ENV LOCAL_IP                            127.0.0.1
-ENV SPARK_MASTER_IP                     127.0.0.1
-ENV SPARK_MASTER_PORT                   7077
-ENV SPARK_MASTER_WEBUI_PORT             8080
-ENV SPARK_MASTER                        spark://$SPARK_MASTER_IP:$SPARK_MASTER_PORT
-ENV SPARK_WORKER_PORT                   8082
-ENV SPARK_WORKER_WEBUI_PORT             8081
-ENV SPARK_DRIVER_PORT                   10027
-ENV SPARK_DRIVER_BLOCK_MANAGER_PORT     10026
-ENV SPARK_DRIVER_IP                     $LOCAL_IP
-ENV SPARK_BLOCK_MANAGER_PORT            10025
 ENV TINI_VERSION                        $TINI_VERSION
 ENV LC_ALL                              C.UTF-8
 ENV LANG                                C.UTF-8
