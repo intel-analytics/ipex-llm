@@ -194,6 +194,26 @@ class TestChronosNBeatsForecaster(TestCase):
             forecaster.export_openvino_file(dirname=ckpt_name, quantized_dirname=ckpt_name_q)
 
     @op_diff_set_all
+    def test_nbeats_forecaster_jit_methods(self):
+        train_data, val_data, test_data = create_data()
+        forecaster = NBeatsForecaster(past_seq_len=24,
+                                      future_seq_len=5,
+                                      loss='mae',
+                                      lr=0.01)
+        forecaster.fit(train_data, epochs=2)
+        try:
+            pred = forecaster.predict(test_data[0])
+            pred_jit = forecaster.predict_with_jit(test_data[0])
+            np.testing.assert_almost_equal(pred, pred_jit, decimal=5)
+        except ImportError:
+            pass
+
+        # test exporting the jit
+        with tempfile.TemporaryDirectory() as tmp_dir_name:
+            ckpt_name = os.path.join(tmp_dir_name, "fp32_jit")
+            forecaster.export_torchscript_file(dirname=ckpt_name)
+
+    @op_diff_set_all
     def test_nbeats_forecaster_quantization(self):
         train_data, val_data, test_data = create_data()
         forecaster = NBeatsForecaster(past_seq_len=24,

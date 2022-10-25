@@ -85,8 +85,10 @@ class BasePytorchForecaster(Forecaster):
                                                 optimizer=optimizer)
             self.onnxruntime_fp32 = None  # onnxruntime session for fp32 precision
             self.openvino_fp32 = None  # placeholader openvino session for fp32 precision
+            self.jit_fp32 = None  # placeholader jit session for fp32 precision
             self.onnxruntime_int8 = None  # onnxruntime session for int8 precision
             self.openvino_int8 = None  # placeholader openvino session for int8 precision
+            self.jit_int8 = None  # placeholader jit session for int8 precision
             self.pytorch_int8 = None  # pytorch model for int8 precision
             self.optim_model = None  # accelarated model obtained from .optimize()
             self.metadata = None  # str indicates model type of optim_model
@@ -849,6 +851,74 @@ class BasePytorchForecaster(Forecaster):
                                               input_data=data,
                                               batch_size=batch_size)
 
+    def predict_with_jit(self, data, batch_size=32, quantize=False):
+        """
+        Predict using a trained forecaster with jit. The method can only be
+        used when forecaster is a non-distributed version.
+
+        Directly call this method without calling build_jit is valid and Forecaster will
+        automatically build an jit session with default settings.
+
+       :param data: The data support following formats:
+
+               | 1. a numpy ndarray x:
+               | x's shape is (num_samples, lookback, feature_dim) where lookback and feature_dim
+               | should be the same as past_seq_len and input_feature_num.
+               |
+               | 2. pytorch dataloader:
+               | the dataloader needs to return at least x in each iteration
+               | with the shape as following:
+               | x's shape is (num_samples, lookback, feature_dim) where lookback and feature_dim
+               | should be the same as past_seq_len and input_feature_num.
+               | If returns x and y only get x.
+               |
+               | 3. A bigdl.chronos.data.tsdataset.TSDataset instance:
+               | Forecaster will automatically process the TSDataset.
+               | By default, TSDataset will be transformed to a pytorch dataloader,
+               | which is memory-friendly while a little bit slower.
+               | Users may call `roll` on the TSDataset before calling `fit`
+               | Then the training speed will be faster but will consume more memory.
+
+        :param batch_size: predict batch size. The value will not affect predict
+               result but will affect resources cost(e.g. memory and time). Defaults
+               to 32. None for all-data-single-time inference.
+        :param quantize: if use the quantized jit model to predict. Not support yet.
+
+        :return: A numpy array with shape (num_samples, horizon, target_dim).
+        """
+        from bigdl.chronos.pytorch.utils import _pytorch_fashion_inference
+        from bigdl.nano.utils.log4Error import invalidInputError
+
+        if self.distributed:
+            invalidInputError(False,
+                              "Jit inference has not been supported for distributed "
+                              "forecaster. You can call .to_local() to transform the "
+                              "forecaster to a non-distributed version.")
+        if not self.fitted:
+            invalidInputError(False,
+                              "You must call fit or restore first before calling predict!")
+
+        if isinstance(data, TSDataset):
+            _rolled = data.numpy_x is None
+            data = data.to_torch_data_loader(batch_size=batch_size,
+                                             roll=_rolled,
+                                             lookback=self.data_config['past_seq_len'],
+                                             horizon=self.data_config['future_seq_len'],
+                                             feature_col=data.roll_feature,
+                                             target_col=data.roll_target,
+                                             shuffle=False)
+
+        if quantize and False:
+            return _pytorch_fashion_inference(model=self.jit_int8,
+                                              input_data=data,
+                                              batch_size=batch_size)
+        else:
+            if self.jit_fp32 is None:
+                self.build_jit()
+            return _pytorch_fashion_inference(model=self.jit_fp32,
+                                              input_data=data,
+                                              batch_size=batch_size)
+
     def evaluate(self, data, batch_size=32, multioutput="raw_values", quantize=False,
                  acceleration: bool = True):
         """
@@ -1288,8 +1358,10 @@ class BasePytorchForecaster(Forecaster):
         self.fitted = True
         self.onnxruntime_fp32 = None  # onnxruntime session for fp32 precision
         self.openvino_fp32 = None  # openvino session for fp32 precision
+        self.jit_fp32 = None  # jit session for fp32 precision
         self.onnxruntime_int8 = None  # onnxruntime session for int8 precision
         self.openvino_int8 = None  # openvino session for int8 precision
+        self.jit_int8 = None  # jit session for int8 precision
         self.pytorch_int8 = None  # pytorch model for int8 precision
         return self
 
@@ -1382,6 +1454,41 @@ class BasePytorchForecaster(Forecaster):
                                                       accelerator="openvino",
                                                       thread_num=thread_num)
 
+    def build_jit(self, thread_num=None, use_ipex=False):
+        '''
+         Build jit model to speed up inference and reduce latency.
+         The method is Not required to call before predict_with_jit
+         or export_torchscript_file.
+
+         It is recommended to use when you want to:
+
+         | 1. Strictly control the thread to be used during inferencing.
+         | 2. Alleviate the cold start problem when you call predict_with_jit
+         |    for the first time.
+
+         :param use_ipex: if to use intel-pytorch-extension for acceleration. Typically,
+                intel-pytorch-extension will bring some acceleration while causing some
+                unexpected error as well.
+         :param thread_num: int, the num of thread limit. The value is set to None by
+                default where no limit is set.
+         '''
+        from bigdl.nano.pytorch import InferenceOptimizer
+        from bigdl.nano.utils.log4Error import invalidInputError
+
+        if self.distributed:
+            invalidInputError(False,
+                              "build_jit has not been supported for distributed "
+                              "forecaster. You can call .to_local() to transform the "
+                              "forecaster to a non-distributed version.")
+        dummy_input = torch.rand(1, self.data_config["past_seq_len"],
+                                 self.data_config["input_feature_num"])
+        self.jit_fp32 = InferenceOptimizer.trace(self.internal,
+                                                 input_sample=dummy_input,
+                                                 accelerator="jit",
+                                                 use_ipex=use_ipex,
+                                                 channels_last=False,
+                                                 thread_num=thread_num)
+
     def export_onnx_file(self, dirname="fp32_onnx", quantized_dirname=None):
         """
         Save the onnx model file to the disk.
@@ -1424,6 +1531,28 @@ class BasePytorchForecaster(Forecaster):
             if self.openvino_fp32 is None:
                 self.build_openvino()
             InferenceOptimizer.save(self.openvino_fp32, dirname)
+
+    def export_torchscript_file(self, dirname="fp32_torchscript",
+                                quantized_dirname=None):
+        """
+        Save the torchscript model file to the disk.
+
+        :param dirname: The dir location you want to save the torchscript file.
+        :param quantized_dirname: The dir location you want to save the quantized torchscript file.
+        """
+        from bigdl.nano.pytorch import InferenceOptimizer
+        from bigdl.nano.utils.log4Error import invalidInputError
+        if self.distributed:
+            invalidInputError(False,
+                              "export_torchscript_file has not been supported for distributed "
+                              "forecaster. You can call .to_local() to transform the "
+                              "forecaster to a non-distributed version.")
+        if quantized_dirname and self.jit_int8:
+            InferenceOptimizer.save(self.jit_int8, quantized_dirname)
+        if dirname:
+            if self.jit_fp32 is None:
+                self.build_jit()
+            InferenceOptimizer.save(self.jit_fp32, dirname)
 
     def quantize(self, calib_data=None,
                  val_data=None,
