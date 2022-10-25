@@ -135,11 +135,7 @@ RUN mkdir -p /ppml/lib && \
     mkdir -p /ppml/password && \
     mkdir -p /ppml/data && \
     mkdir -p /ppml/models && \
-    mkdir -p /ppml/apps && \
-    mkdir -p /root/.keras/datasets && \
-    mkdir -p /root/.zinc && \
-    mkdir -p /root/.m2 && \
-    mkdir -p /root/.kube/
+    mkdir -p /ppml/apps
 
 COPY --from=bigdata /opt/spark-${SPARK_VERSION} /ppml/spark-${SPARK_VERSION}
 
