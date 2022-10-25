@@ -89,7 +89,7 @@ void main(int argc, char *args[]) {
 
     // get quote
     FILE *fp;
-    fp = fopen ("/etc/attestation/quote", "wb+");
+    fp = fopen ("/etc/occlum_attestation/quote", "wb+");
     if (fp == NULL) {
         printf ("error open\n");
         return;

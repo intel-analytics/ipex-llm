@@ -121,19 +121,6 @@ init_instance() {
     sed -i "s/\"ENABLE_SGX_DEBUG\"/$ENABLE_SGX_DEBUG/g" Occlum.json
     sed -i "s/#USE_SECURE_CERT=FALSE/USE_SECURE_CERT=FALSE/g" /etc/sgx_default_qcnl.conf
 
-    #before start occlum app
-        if [[ $ATTESTATION == "true" ]]; then
-            if [[ $PCCS_URL == "" ]]; then
-                echo "[ERROR] Attestation set to true but NO PCCS"
-                exit 1
-            else
-                if [[ $RUNTIME_ENV == "driver" || $RUNTIME_ENV == "native" ]]; then
-                    #verify ehsm service
-
-                    #register application
-                fi
-            fi
-        fi
 }
 
 build_spark() {
@@ -177,11 +164,32 @@ build_spark() {
     cp -rf /opt/spark-source image/opt/
 
     # Build
+
+    occlum build
+
+    #before start occlum app after occlum build
     if [[ $ATTESTATION == "true" ]]; then
-       occlum build --image-key /opt/occlum_spark/data/image_key
-       build_initfs
-    else
-       occlum build
+        if [[ $PCCS_URL == "" ]]; then
+            echo "[ERROR] Attestation set to true but NO PCCS"
+            exit 1
+        else
+            if [[ $RUNTIME_ENV == "driver" || $RUNTIME_ENV == "native" ]]; then
+                #verify ehsm service
+                bash verify-attestation-service.sh
+                #register application
+
+                #get mrenclave mrsigner
+                MR_EBCLAVE_temp=$(bash print_enclave_signer.sh | grep mr_enclave)
+                MR_EBCLAVE_temp_arr=(${MR_EBCLAVE_temp})
+                export MR_EBCLAVE=${MR_EBCLAVE_temp_arr[1]}
+                MR_SIGNER_temp=$(bash print_enclave_signer.sh | grep mr_signer)
+                MR_SIGNER_temp_arr=(${MR_SIGNER_temp})
+                export MR_SIGNER=${MR_SIGNER_temp_arr[1]}
+
+                #register
+                bash register.sh
+            fi
+        fi
     fi
 }
 
