@@ -1,19 +1,107 @@
-# BigDL Documentation Guide: Writing Tips & Rules
-## 1. Differentiate the syntax of reStructuredText and Markdown
-Our documentation includes both reStructuredText (.rst) and Markdown (.md) files. They have different syntax, please make sure you do not mix the usage of them.
+# Documentation Guide
 
-> Refer to [here](https://www.sphinx-doc.org/en/master/usage/restructuredtext/index.html) for reStructuredText syntax examples.
+Here list several writing tips or rules you could refer to if you want to revise or add documents for BigDL documentation. The source code of our documentation is available [here](https://github.com/intel-analytics/BigDL/tree/main/docs/readthedocs).
 
-### 1.1 Location to use reStructuredText or Markdown in convention
-| reStructuredText | Markdown |
-| :----------------| :--------|
-| - index pages (which includes or leads to pages with lower hierarchy in table of contents) <br> - **description comments in source code (for API documentation)**  | - other pages |
+```eval_rst
+.. tip::
 
-### 1.2 The places where reStructuredText and Markdown syntax are often confused
+   You could refer to `here <https://github.com/intel-analytics/BigDL/blob/main/docs/readthedocs/README.md>`_ if you would like to test your local changes to BigDL documentation.
+```
+
+## 1. How to add a new document
+### 1.1 Decide whether to add a reStructuredText (`.rst`) file or a CommonMark (`.md`) file
+In our documentation, both reStructuredText (`.rst`) and CommonMark (`.md`) files are allowed to use. In convension, we use `.rst` file in index pages, and `.md` files for other pages.
+
+Here shows an overview of our documentation structure tree:
+
+```eval_rst
+.. graphviz::
+
+   digraph DocStructure {
+      graph [tooltip=" " splines=ortho]
+      node [color="#0171c3" shape=box fontname="Arial" fontsize=12 tooltip=" "]
+      edge [tooltip=" "]
+      
+      N1 [label="BigDL (.rst)" style=filled fontcolor="#ffffff"]
+      
+      N1_1 [label="User guide (.rst)" style=filled fontcolor="#ffffff"]
+      N1_2 [label="Powered by (.md)" style=rounded]
+      N1_3 [label="Orca (.rst)" style=filled fontcolor="#ffffff"]
+      N1_4 [label="Nano (.rst)" style=filled fontcolor="#ffffff"]
+      N1_5 [label="DLlib (.rst)" style=filled fontcolor="#ffffff"]
+      N1_6 [label="Chronos (.rst)" style=filled fontcolor="#ffffff"]
+      N1_7 [label="Fresian (.rst)" style=filled fontcolor="#ffffff"]
+      N1_8 [label="PPML (.rst)" style=filled fontcolor="#ffffff"]
+      N1_9 [label="..." shape=plaintext]
+      
+      N1_1_1 [label="Python (.md)" style=rounded]
+      N1_1_2 [label="Scala (.md)" style=rounded]
+      N1_1_3 [label="..." shape=plaintext]
+      
+      N1_8_1 [label="PPML Intro. (.md)" style=rounded]
+      N1_8_2 [label="User Guide (.md)" style=rounded]
+      N1_8_3 [label="Tutorials (.rst)" style="filled" fontcolor="#ffffff"]
+      N1_8_4 [label="..." shape=plaintext]
+      
+      
+      N1_8_3_1 [label="..." shape=plaintext]
+      
+      N1_3_1 [label="..." shape=plaintext]
+      N1_4_1 [label="..." shape=plaintext]
+      N1_5_1 [label="..." shape=plaintext]
+      N1_6_1 [label="..." shape=plaintext]
+      N1_7_1 [label="..." shape=plaintext]
+      
+      N1 -> N1_1
+      N1 -> N1_2
+      N1 -> N1_3 -> N1_3_1
+      N1 -> N1_4 -> N1_4_1
+      N1 -> N1_5 -> N1_5_1
+      N1 -> N1_6 -> N1_6_1
+      N1 -> N1_7 -> N1_7_1
+      N1 -> N1_8
+      N1 -> N1_9
+      
+      N1_1 -> N1_1_1
+      N1_1 -> N1_1_2
+      N1_1 -> N1_1_3
+      
+      N1_8 -> N1_8_1
+      N1_8 -> N1_8_2
+      N1_8 -> N1_8_3 -> N1_8_3_1
+      N1_8 -> N1_8_4
+   }
+```
+
+Index pages (nodes filled with blue) are the ones supposed to lead to further pages. In the structure above, they are nodes with descendants.
+
+### 1.2 Add the new document to the table of contents (toc)
+For clear navigation purposes, it is recommended to put the document in the toc. To do this, you need to insert the relative path to the newly-added file into the [`_toc.yml`](https://github.com/intel-analytics/BigDL/blob/main/docs/readthedocs/source/_toc.yml) file, according to its position in the structure tree.
+
+```eval_rst
+.. note::
+
+   For API related documents, we still use in-file ``.. toctree::`` directives instead of putting them inside ``_toc.yml``. You could refer to `here <https://github.com/intel-analytics/BigDL/tree/main/docs/readthedocs/source/doc/PythonAPI>`_ for example usages.
+
+.. tip::
+
+   When adding a new document, you should always check whether to put relative link directing to it inside its parent index page, or inside any other related pages.
+```
+
+## 2. Differentiate the syntax of reStructuredText and CommonMark
+As mentioned above, our documentation includes both `.rst` and `.md` files. They have different syntax, please make sure you do not mix the usage of them.
+
+```eval_rst
+.. seealso::
+
+   You could refer to `here <https://www.sphinx-doc.org/en/master/usage/restructuredtext/index.html>`_ for reStructuredText syntax examples, and `here <https://spec.commonmark.org/>`_ for CommonMark specifications.
+```
+
+Here list several use cases where syntax in `.rst` and `.md` are often confused:
 
 <table>
-<tr><th></th><th>reStructuredText</th><th>Markdown</th></tr>
-<tr><td>inline code</td>
+<tr><th></th><th>reStructuredText</th><th>CommonMark</th></tr>
+<tr><td>Inline code</td>
 <td>
 
 ```rst
@@ -23,29 +111,29 @@ Our documentation includes both reStructuredText (.rst) and Markdown (.md) files
 </td>
 <td>
 
-```markdown
+```md
 `inline code`
 ```
 
 </td></tr>
-<tr><td>hyperlinks</td>
+<tr><td>Hyperlinks</td>
 <td>
 
 ```rst
-`Relative Link text <relatve/path/to/the/file>`_ 
-`Absolute Link text <https://www.example.com/>`_ 
+`Relative link text <relatve/path/to/the/file>`_ 
+`Absolute link text <https://www.example.com/>`_ 
 ```
 
 </td>
 <td>
 
-```markdown
-[Relative Link text](relatve/path/to/the/file)
-[Absolute Link text](https://www.example.com/)
+```md
+[Relative link text](relatve/path/to/the/file)
+[Absolute link text](https://www.example.com/)
 ```
 
 </td></tr>
-<tr><td>italic</td>
+<tr><td>Italic</td>
 <td>
 
 ```rst
@@ -56,30 +144,31 @@ Our documentation includes both reStructuredText (.rst) and Markdown (.md) files
 </td>
 <td>
 
-```markdown
+```md
 *italicized text*
+
 ```
 
 </td></tr>
-<tr><td>italic & bold</td>
+<tr><td>Italic & bold</td>
 <td>
 
-not supported, needed help with css
+Not supported, needed help with css
 
 </td>
 <td>
 
-```markdown
+```md
 ***italicized & bold text***
 ```
 
 </td></tr>
 </table>
 
-### 1.3 Tips when adding comments in source code for API documentation
-According to the [`sphinx.ext.autodoc` document](https://www.sphinx-doc.org/en/master/usage/extensions/autodoc.html#module-sphinx.ext.autodoc), "the docstrings must of course be written in correct reStructuredText". We need to make sure that we are using reStructuredText syntax in the source code comments for API documentation.
+### 2.1 Tips when adding docstrings in source code for API documentation
+According to the [`sphinx.ext.autodoc`](https://www.sphinx-doc.org/en/master/usage/extensions/autodoc.html#module-sphinx.ext.autodoc) document, "the docstrings must of course be written in correct reStructuredText". We need to make sure that we are using reStructuredText syntax in the source code docstrings for API documentation.
 
-There are two special syntax often used in API documentation for parameter definition and return values. Let us take a snippet from Nano as an example:
+There are two [field lists](https://www.sphinx-doc.org/en/master/usage/restructuredtext/basics.html#field-lists) syntax often used in API documentation for parameter definition and return values. Let us take a snippet from [`bigdl.nano.pytorch.InferenceOptimizer.get_best_model`](../PythonAPI/Nano/pytorch.html#bigdl.nano.pytorch.InferenceOptimizer.get_best_model) as an example:
 ```rst
 :param use_ipex: (optional) if not None, then will only find the
        model with this specific ipex setting.
@@ -88,10 +177,16 @@ There are two special syntax often used in API documentation for parameter defin
 :return: best model, corresponding acceleration option
 ```
 
-Note that the following lines of one parameter/return definition should be indented to be rendered correctly.
+```eval_rst
+.. note::
 
-> **Note**: To make sure the API documentation is rendered correctly, please always checked the rendered documentation when changed made to the docstrings.
-## 2. Common reStructuredText components
+   The following lines of one parameter/return definition should be indented to be rendered correctly.
+
+.. tip::
+
+   Please always check whether corresponding API documentation is correctly rendered when changes made to the docstrings.
+```
+## 3. Common components in `.rst` files
 <table>
 <tr><td>Headers</td>
 <td>
@@ -113,10 +208,10 @@ Header Level 4
 </td>
 <td>
 
-Note that the underline symbols should be at least as long as the header texts. <br>
-<br>
-Also, **we do not expect maually-added styles to headers.**<br>
-<br>
+Note that the underline symbols should be at least as long as the header texts.
+
+Also, **we do not expect maually-added styles to headers.**
+
 You could refer to [here](https://www.sphinx-doc.org/en/master/usage/restructuredtext/basics.html#sections) for more information on reStructuredText sections.
 
 </td></tr>
@@ -140,14 +235,24 @@ You could refer to [here](https://www.sphinx-doc.org/en/master/usage/restructure
 </td>
 <td>
 
-Note that the number of spaces indented depends on the markup. That is, if we use `* `/`#. `/`10. ` for the list, the indent after it should be indented by 2/3/4 spaces. <br>
-<br>
-Also note that blanks lines are needed around the nested list. <br>
-<br>
+Note that the number of spaces indented depends on the markup. That is, if we use '* '/'#. '/'10. ' for the list, the indent after it should be indented by 2/3/4 spaces.
+
+Also note that blanks lines are needed around the nested list.
+
 You could refer to [here](https://www.sphinx-doc.org/en/master/usage/restructuredtext/basics.html#lists-and-quote-like-blocks) for more information on reStructuredText lists.
 
 </td></tr>
-<tr><td>Note, <br> Warning, <br> Danger, <br> Tip, <br> Important, <br> See Also boxes</td>
+<tr><td>
+
+Note, <br>
+Warning, <br>
+Danger, <br>
+Tip, <br>
+Important, <br>
+See Also <br>
+boxes
+
+</td>
 <td>
 
 ```rst
@@ -179,7 +284,31 @@ You could refer to [here](https://www.sphinx-doc.org/en/master/usage/restructure
 </td>
 <td>
 
-![image](https://user-images.githubusercontent.com/54161268/197151779-cd93772a-cfe5-414b-a9b7-9cf8e4453775.png)
+```eval_rst
+.. note::
+
+   This is a note box.
+
+.. warning::
+
+   This is a warning box.
+
+.. danger::
+
+   This is a danger box.
+
+.. tip::
+
+   This is a tip box.
+
+.. important::
+
+   This is an important box.
+
+.. seealso::
+
+   This is a see also box.
+```
 
 </td></tr>
 <tr><td>Code blocks</td>
@@ -204,20 +333,27 @@ All the supported language argument for syntax highlighting can be found [here](
 </tr>
 </table>
 
-### 2.1 Use reStructuredText in Markdown files
-You could embed reStructuredText into Markdown files through putting reStructuredText code into `eval_rst` code block:
-~~~
+### 3.1 Use reStructuredText in `.md` files
+You could embed reStructuredText into `.md` files through putting reStructuredText code into `eval_rst` code block:
+~~~md
 ```eval_rst
+any contents in reStructuredText syntax
 ```
 ~~~
-It could be useful if you want to use special boxes (e.g. note box) in your Markdown files.
+It could be useful if you want to use special boxes (e.g. note box) in your `.md` files.
 
-## 3. Common Markdown components
+```eval_rst
+.. note::
+
+   Any contents inside ``eval_rst`` code block should follow the reStructuredText syntax.
+```
+
+## 4. Common components in `.md` files
 <table>
 <tr><td>Headers</td>
 <td>
 
-```markdown
+```md
 # Header Level 1
 
 ## Header Level 2
@@ -236,7 +372,7 @@ Note that **we do not expect maually-added styles to headers.**
 <tr><td>Lists</td>
 <td>
 
-```markdown
+```md
 - A unordered list
 - The second item of the unordered list
   with two lines
@@ -251,13 +387,13 @@ Note that **we do not expect maually-added styles to headers.**
 </td>
 <td>
 
-Note that the number of spaces indented depends on the markup. That is, if we use `- `/`1. `/`10. ` for the list, the indent after it should be indented by 2/3/4 spaces.
+Note that the number of spaces indented depends on the markup. That is, if we use '- '/'1. '/'10. ' for the list, the indent after it should be indented by 2/3/4 spaces.
 
 </td></tr>
 <tr><td>Code blocks</td>
 <td>
 
-~~~markdow
+~~~md
 ```[language]
 some code in this language
 ```
@@ -276,10 +412,10 @@ All the supported language argument for syntax highlighting can be found [here](
 </tr>
 </table>
 
-## 4. How to include Jupyter notebooks directly inside our documentation
-If you want to include a Jupyter notebook into our documentation as an example, how-to guides, etc., you could just put it anywhere inside `BigDL/docs/readthedocs/source` dictionary, and link it into either `BigDL/docs/readthedocs/source/_toc.yml` or any index page.
+## 5. How to include Jupyter notebooks directly inside our documentation
+If you want to include a Jupyter notebook into our documentation as an example, how-to guides, etc., you could just put it anywhere inside [`BigDL/docs/readthedocs/source`](https://github.com/Oscilloscope98/BigDL/tree/doc-readme-rules/docs/readthedocs/source) dictionary, and link it into `_toc.yml` file.
 
-However, if you want to render a Jupyter notebook located out of `BigDL/docs/readthedocs/source` dictionary into our documentation, the case is a little bit complicated. To do this, you need to add a file with `.nblink` extension into `BigDL/docs/readthedocs/source` dictionary, and link the `.nblink` file into `BigDL/docs/readthedocs/source/_toc.yml` or any index page.
+However, if you want to render a Jupyter notebook located out of `BigDL/docs/readthedocs/source` dictionary into our documentation, the case is a little bit complicated. To do this, you need to add a file with `.nblink` extension into `BigDL/docs/readthedocs/source` , and link the `.nblink` file into `_toc.yml`.
 
 The `.nblink` file should have the following structure:
 ```json
@@ -288,10 +424,41 @@ The `.nblink` file should have the following structure:
 }
 ```
 
-> You could find [here](https://github.com/intel-analytics/BigDL/blob/main/docs/readthedocs/source/doc/Nano/Howto/Training/PyTorchLightning/accelerate_pytorch_lightning_training_ipex.nblink) for an example of `.nblink` usage inside our documentation.
+```eval_rst
+.. seealso::
 
-### 4.4 How to hide a cell from rendering into our documentation
+   You could find `here <https://github.com/intel-analytics/BigDL/blob/main/docs/readthedocs/source/doc/Nano/Howto/Training/PyTorchLightning/accelerate_pytorch_lightning_training_ipex.nblink>`_ for an example of ``.nblink`` usage inside our documentation.
+```
+
+### 5.1 How to hide a cell from rendering
 
 If you want to hide a notebook markdown/code cell from rendering into our documentation, you could simply add `"nbsphinx": "hidden"` into the cell's `metadata`.
 
-> **Note**: Currently we could not individually hide the output/input code cell from rendering as they have the same `metadata`. 
+
+```eval_rst
+.. tip::
+
+   You could simply open the notebook through text editor to see edit ``metadata`` of each cell.
+
+.. note::
+
+   Currently we could not hide the output/input code cell individually from rendering as they have the same ``metadata``. 
+```
+
+### 5.2 Note/Warning/Related Readings boxes
+In convension, in the markdown cell of notebooks, we create note/warning/related reading boxes with the help of quote blocks and emoji:
+
+```md
+> 📝 **Note**
+>
+> This is a note box in notebooks.
+
+> ⚠️ **Warning**
+> 
+> This is a warning box in notebooks.
+
+> 📚 **Related Readings**
+> 
+> This is a related readings box in notebooks.
+
+```
