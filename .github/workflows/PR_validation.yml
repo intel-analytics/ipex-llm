@@ -16,6 +16,8 @@ on:
       - '.github/actions/ppml/**'
       - 'python/friesian/**'
       - '.github/actions/friesian/**'
+      - 'python/dllib/**'
+      - '.github/actions/dllib/**'
       - '.github/workflows/PR_validation.yml'
       
   pull_request:
@@ -34,6 +36,8 @@ on:
       - '.github/actions/ppml/**'
       - 'python/friesian/**'
       - '.github/actions/friesian/**'
+      - 'python/dllib/**'
+      - '.github/actions/dllib/**'
       - '.github/workflows/PR_validation.yml'
 
 
