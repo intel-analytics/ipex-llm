@@ -103,6 +103,7 @@ RUN env DEBIAN_FRONTEND=noninteractive apt-get update && \
 
 
 ADD ./download_jars.sh /ppml
+ADD ./attestation.sh /ppml
 
 RUN cd /ppml && \
     bash ./download_jars.sh
