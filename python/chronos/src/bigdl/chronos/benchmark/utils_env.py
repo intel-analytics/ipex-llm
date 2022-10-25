@@ -18,7 +18,6 @@
 import os
 import subprocess
 import warnings
-import numpy as np
 
 from bigdl.nano.common.cpu_schedule import schedule_workers
 from bigdl.nano.common.common import _find_library

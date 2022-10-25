@@ -15,8 +15,7 @@
 #
 
 
-import pandas as pd
-from bigdl.chronos.data import TSDataset, get_public_dataset, gen_synthetic_data
+from bigdl.chronos.data import get_public_dataset, gen_synthetic_data
 from sklearn.preprocessing import StandardScaler
 
 
