@@ -8,7 +8,7 @@
 
 **In this guide we will describe how to to scale out _TensorFlow 2_ programs using Orca in 4 simple steps.** (_[TensorFlow 1.5](./orca-tf-quickstart.md) and [Keras 2.3](./orca-keras-quickstart.md) guides are also available._)
 
-### **Step 0: Prepare Environment**
+### Step 0: Prepare Environment
 
 We recommend using [conda](https://docs.conda.io/projects/conda/en/latest/user-guide/install/) to prepare the environment. Please refer to the [install guide](../../UserGuide/python.md) for more details.
 
@@ -19,7 +19,7 @@ pip install bigdl-orca[ray]
 pip install tensorflow
 ```
 
-### **Step 1: Init Orca Context**
+### Step 1: Init Orca Context
 ```python
 from bigdl.orca import init_orca_context, stop_orca_context
 
@@ -35,7 +35,7 @@ This is the only place where you need to specify local or distributed mode. View
 
 **Note:** You should `export HADOOP_CONF_DIR=/path/to/hadoop/conf/dir` when running on Hadoop YARN cluster. View [Hadoop User Guide](./../../UserGuide/hadoop.md) for more details.
 
-### **Step 2: Define the Model**
+### Step 2: Define the Model
 
 You can then define the Keras model in the _Creator Function_ using the standard TensroFlow 2 APIs.
 
@@ -61,7 +61,7 @@ def model_creator(config):
                   metrics=['accuracy'])
     return model
 ```
-### **Step 3: Define Train Dataset**
+### Step 3: Define Train Dataset
 
 You can define the dataset in the _Creator Function_ using standard [tf.data.Dataset](https://www.tensorflow.org/api_docs/python/tf/data/Dataset) APIs. Orca also supports [Spark DataFrame](https://spark.apache.org/docs/latest/sql-programming-guide.html) and [Orca XShards](../Overview/data-parallel-processing.md).
 
@@ -91,7 +91,7 @@ def val_data_creator(config, batch_size):
     return dataset
 ```
 
-### **Step 4: Fit with Orca Estimator**
+### Step 4: Fit with Orca Estimator
 
 First, create an Estimator.
 
@@ -118,7 +118,7 @@ est.shutdown()
 print(stats)
 ```
 
-### **Step 5: Save and Load the Model**
+### Step 5: Save and Load the Model
 
 Orca TF2 Estimator supports two formats to save and load the entire model (**TensorFlow SavedModel and Keras H5 Format**). The recommended format is SavedModel, which is the default format when you use `estimator.save()`.
 

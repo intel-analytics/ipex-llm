@@ -15,6 +15,7 @@
 #
 
 import os
+import math
 import pytest
 from unittest import TestCase
 
@@ -181,6 +182,44 @@ class MyNanoLoadStateDict(TorchNano):
         assert model.fc1.weight.data == 0.25, f"wrong weights: {model.fc1.weight.data}"
 
 
+class MyNanoAutoLRCorrectness(TorchNano):
+    def train(self, lr):
+        dataset=TensorDataset(
+            torch.tensor([[0.0],[0.0],[1.0],[1.0]]),
+            torch.tensor([[0.0],[0.0],[0.0],[0.0]]),
+        )
+        train_loader = DataLoader(dataset=dataset, batch_size=2, shuffle=False)
+        origin_model = LinearModel()
+        loss_func = nn.MSELoss()
+        optimizer = torch.optim.SGD(origin_model.parameters(), lr=lr)
+
+        model, optimizer, train_loader = self.setup(origin_model, optimizer, train_loader)
+
+        model.train()
+
+        expect_weight = torch.tensor([[1.0]])
+        cur_lr_ratio = 1.0
+        max_lr_ratio = self.num_processes
+        cur_step = 0
+        max_step = optimizer.max_step
+        num_epochs = max_step + 10
+        for _i in range(num_epochs):
+            for X, y in train_loader:
+                optimizer.zero_grad()
+                loss = loss_func(model(X), y)
+                self.backward(loss)
+                optimizer.step()
+
+                expect_weight = expect_weight - expect_weight * lr * cur_lr_ratio
+                expect = expect_weight.item()
+                real = model.fc1.weight.data.item()
+                assert math.isclose(expect, real, rel_tol=1e-5), \
+                    f"step: {_i}, expect: {expect}, real: {real}"
+                if cur_step < max_step:
+                    cur_step += 1
+                    cur_lr_ratio = (max_lr_ratio - 1.0) * cur_step / max_step + 1
+
+
 class TestLite(TestCase):
     def setUp(self):
         test_dir = os.path.dirname(__file__)
@@ -193,10 +232,10 @@ class TestLite(TestCase):
         MyNano().train()
 
     def test_torch_nano_spawn(self):
-        MyNano(num_processes=2, strategy="spawn").train()
+        MyNano(num_processes=2, distributed_backend="spawn").train()
 
     def test_torch_nano_subprocess(self):
-        MyNano(num_processes=2, strategy="subprocess").train()
+        MyNano(num_processes=2, distributed_backend="subprocess").train()
 
     def test_torch_nano_specify_cpu_cores(self):
         MyNano(num_processes=2, cpu_for_each_process=[[0,1], [2,3]]).train()
@@ -205,10 +244,10 @@ class TestLite(TestCase):
         MyNanoCorrectness().train(0.25)
 
     def test_torch_nano_spawn_correctness(self):
-        MyNanoCorrectness(num_processes=2, strategy="spawn").train(0.5)
+        MyNanoCorrectness(num_processes=2, distributed_backend="spawn").train(0.5)
 
     def test_torch_nano_subprocess_correctness(self):
-        MyNanoCorrectness(num_processes=2, strategy="subprocess").train(0.5)
+        MyNanoCorrectness(num_processes=2, distributed_backend="subprocess").train(0.5)
 
     def test_torch_nano_attribute_access(self):
         MyNanoAccess().train()
@@ -224,6 +263,9 @@ class TestLite(TestCase):
 
     def test_torch_nano_load_state_dict_ddp(self):
         MyNanoLoadStateDict(num_processes=2).train(0.5)
+
+    def test_torch_nano_auto_lr(self):
+        MyNanoAutoLRCorrectness(num_processes=2, distributed_backend='spawn', auto_lr=True).train(0.01)
 
 if __name__ == '__main__':
     pytest.main([__file__])

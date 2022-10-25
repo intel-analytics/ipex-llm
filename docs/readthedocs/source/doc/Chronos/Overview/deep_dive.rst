@@ -7,14 +7,3 @@ Chronos Deep Dive
 * `Generate Synthetic Sequential Data <simulation.html>`__ introduces how to build a series data generation application.
 * `Speed up Chronos built-in/customized models <speed_up.html>`__ introduces how to speed up chronos built-in models/customized time-series models
 * `Useful Functionalities <useful_functionalities.html>`__ introduces some functionalities provided by Chronos that can help you improve accuracy/performance or scale the application to a larger data. 
-
-.. toctree::
-    :maxdepth: 1
-    :hidden:
-
-    data_processing_feature_engineering.md
-    forecasting.md
-    anomaly_detection.md
-    simulation.md
-    speed_up.md
-    useful_functionalities.md

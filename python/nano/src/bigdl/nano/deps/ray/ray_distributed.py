@@ -41,6 +41,8 @@ from ray.util.ml_utils.util import find_free_port
 import torch
 from torch import Tensor
 from torch.optim.lr_scheduler import _LRScheduler
+from torch.nn.parallel.distributed import DistributedDataParallel
+
 import pytorch_lightning as pl
 from pytorch_lightning.core.datamodule import LightningDataModule
 from pytorch_lightning.trainer.states import TrainerFn
@@ -352,12 +354,13 @@ class RayStrategy(DDPSpawnStrategy):
         else:
             return torch.device("cpu")
 
-    def determine_ddp_device_ids(self):
-        """Return the index of root device."""
-        # For ipex case, we also should not return any optional device id.
-        if self.root_device.type == "cpu" or self.root_device.type == "xpu":
-            return None
-        return [self.root_device.index]
+    def _setup_model(self, model: torch.nn.Module) -> DistributedDataParallel:
+        """Wraps the model into a 'DistributedDataParallel' module."""
+        # we should override this method to change the creation of `DistributedDataParallel`
+        # we need to set `find_unused_parameters` to True to fix mult-instance training,
+        # `Trainer` will set it automatically, but `TorchNano` won't, so we set it manually
+        self._ddp_kwargs['find_unused_parameters'] = True
+        return DistributedDataParallel(model, **self._ddp_kwargs)
 
     @property
     def distributed_sampler_kwargs(self):

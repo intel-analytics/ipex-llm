@@ -8,7 +8,7 @@
 
 **In this guide, we will describe how to use RayOnSpark to directly run Ray programs on Big Data clusters in 2 simple steps.**
 
-### **Step 0: Prepare Environment**
+### Step 0: Prepare Environment
 
 We recommend using [conda](https://docs.conda.io/projects/conda/en/latest/user-guide/install/) to prepare the environment. Please refer to the [install guide](../../UserGuide/python.md) for more details.
 
@@ -18,7 +18,7 @@ conda activate bigdl
 pip install bigdl-orca[ray]
 ```
 
-### **Step 1: Initialize**
+### Step 1: Initialize
 
 We recommend using `init_orca_context` to initiate and run BigDL on the underlying cluster. The Ray cluster would be launched automatically by specifying `init_ray_on_spark=True`.
 
@@ -57,7 +57,7 @@ address_info = ray_ctx.address_info  # The dictionary information of the ray clu
 redis_address = ray_ctx.redis_address  # The redis address of the ray cluster.
 ```
 
-### **Step 2: Run Ray Applications**
+### Step 2: Run Ray Applications
 
 After the initialization, you can directly write Ray code inline with your Spark code, and run Ray programs on the underlying existing Big Data clusters. Ray [tasks](https://docs.ray.io/en/master/walkthrough.html#remote-functions-tasks) and [actors](https://docs.ray.io/en/master/actors.html) would be launched across the cluster.
 

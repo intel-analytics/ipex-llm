@@ -10,11 +10,11 @@ Users can seamlessly integrate Ray applications into the big data processing pip
 _**Note:** BigDL has been tested on Ray 1.9.2 and you are highly recommended to use this tested version._
 
 
-### **1. Install**
+### 1. Install
 
 We recommend using [conda](https://docs.conda.io/projects/conda/en/latest/user-guide/install/) to prepare the Python environment.
 When installing bigdl-orca with pip, you can specify the extras key `[ray]` to install the additional dependencies
-for running Ray (i.e. `ray==1.9.2`, `psutil`, `aiohttp==3.7.0`, `aioredis==1.1.0`, `setproctitle`, `hiredis==1.1.0`, `async-timeout==3.0.1`):
+for running Ray (i.e. `ray[default]==1.9.2`, `aiohttp==3.8.1`, `async-timeout==4.0.1`, `aioredis==1.3.1`, `hiredis==2.0.0`, `prometheus-client==0.11.0`, `psutil`,  `setproctitle`):
 
 ```bash
 conda create -n py37 python=3.7  # "py37" is conda environment name, you can use any name you like.
@@ -26,7 +26,7 @@ pip install bigdl-orca[ray]
 View [Python User Guide](../../UserGuide/python.html#install) and [Orca User Guide](../Overview/orca.md) for more installation instructions.
 
 ---
-### **2. Initialize**
+### 2. Initialize
 
 We recommend using `init_orca_context` to initiate and run RayOnSpark on the underlying cluster. The Ray cluster would be launched by specifying `init_ray_on_spark=True`. For example, to launch Spark and Ray on standard Hadoop/YARN clusters in [YARN client mode](https://spark.apache.org/docs/latest/running-on-yarn.html#launching-spark-on-yarn):
 
@@ -61,7 +61,7 @@ OrcaContext.barrier_mode = False
 View [Orca Context](../Overview/orca-context.md) for more details.
 
 ---
-### **3. Run**
+### 3. Run
 
 - After the initialization, you can directly run Ray applications on the underlying cluster. [Ray tasks](https://docs.ray.io/en/master/walkthrough.html#remote-functions-tasks) or [actors](https://docs.ray.io/en/master/actors.html) would be launched across the cluster. The following code shows a simple example:
 
@@ -101,7 +101,7 @@ View [Orca Context](../Overview/orca-context.md) for more details.
   ```
 
 ---
-### **4. Known Issue**
+### 4. Known Issue
 If you encounter the following error when launching Ray on the underlying cluster, especially when you are using a [Spark standalone](https://spark.apache.org/docs/latest/spark-standalone.html) cluster:
 
 ```
@@ -118,7 +118,7 @@ sc = init_orca_context(cluster_mode, init_ray_on_spark=True, env={"LANG": "C.UTF
 ```
 
 ---
-### **5. FAQ**
+### 5. FAQ
 - **ValueError: Ray component worker_ports is trying to use a port number ... that is used by other components.**
 
   This error is because that some port in worker port list is occupied by other processes. To handle this issue, you can set range of the worker port list by using the parameters `min-worker-port` and `max-worker-port` in `init_orca_context` as follows:

@@ -51,7 +51,7 @@ jobs:
             pip install -r python/nano/notebooks/pytorch/cifar10/requirements.txt
             bash python/nano/notebooks/pytorch/cifar10/run-nano-notebooks-pytorch-cifar10-tests.sh
             source $CONDA/bin/deactivate
-            $CONDA/bin/conda remove -n notebooks-pytorch --all
+            $CONDA/bin/conda remove -n notebooks-trainer-pytorch --all
         env:
             ANALYTICS_ZOO_ROOT: ${{ github.workspace }}
 
@@ -72,7 +72,7 @@ jobs:
             bash python/nano/tutorial/training/pytorch-lightning/run_nano_pytorch_lightning_test.sh
             bash python/nano/tutorial/training/pytorch/run_nano_pytorch_test.sh
             source $CONDA/bin/deactivate
-            $CONDA/bin/conda remove -n notebooks-pytorch --all
+            $CONDA/bin/conda remove -n notebooks-tutorial-pytorch --all
         env:
             ANALYTICS_ZOO_ROOT: ${{ github.workspace }}
 

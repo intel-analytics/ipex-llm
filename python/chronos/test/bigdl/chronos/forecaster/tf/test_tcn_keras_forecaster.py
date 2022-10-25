@@ -25,6 +25,7 @@ from bigdl.chronos.utils import LazyImport
 tf = LazyImport('tensorflow')
 TCNForecaster = LazyImport('bigdl.chronos.forecaster.tf.tcn_forecaster.TCNForecaster')
 from test.bigdl.chronos import op_tf2, op_all
+import tensorflow as tf
 
 
 def create_data(tf_data=False, batch_size=32):
@@ -41,6 +42,7 @@ def create_data(tf_data=False, batch_size=32):
         return x, y
     
     train_data = get_x_y(train_num_samples)
+    val_data = get_x_y(test_num_samples)
     test_data = get_x_y(test_num_samples)
 
     if tf_data:
@@ -49,10 +51,13 @@ def create_data(tf_data=False, batch_size=32):
                                                    .shuffle(train_num_samples)\
                                                    .batch(batch_size)\
                                                    .prefetch(tf.data.AUTOTUNE)
-        test_data = from_tensor_slices(test_data).cache()\
-                                                 .batch(batch_size)\
+        val_data = from_tensor_slices(val_data).batch(batch_size)\
+                                               .cache()\
+                                               .prefetch(tf.data.AUTOTUNE)
+        test_data = from_tensor_slices(test_data).batch(batch_size)\
+                                                 .cache()\
                                                  .prefetch(tf.data.AUTOTUNE)
-    return train_data, test_data
+    return train_data, val_data, test_data
 
 
 def create_tsdataset(roll=True):
@@ -65,14 +70,15 @@ def create_tsdataset(roll=True):
                       dtype=np.float32)
     df.reset_index(inplace=True)
     df.rename(columns={'index': 'timeseries'}, inplace=True)
-    train, _, test = TSDataset.from_pandas(df=df,
+    train, valid, test = TSDataset.from_pandas(df=df,
                                            dt_col='timeseries',
                                            target_col=['value1', 'value2'],
+                                           val_ratio=0.1,
                                            with_split=True)
     if roll:
-        for tsdata in [train, test]:
+        for tsdata in [train, valid, test]:
             tsdata.roll(lookback=24, horizon=5)
-    return train, test
+    return train, valid, test
 
 
 @op_all
@@ -87,10 +93,12 @@ class TestTCNForecaster(TestCase):
                                         num_channels=[15]*7)
 
     def tearDown(self):
+        from bigdl.orca import stop_orca_context
+        stop_orca_context()
         del self.forecaster
 
     def test_tcn_forecaster_fit_predict_evaluate(self):
-        train_data, test_data = create_data()
+        train_data, _, test_data = create_data()
         self.forecaster.fit(train_data,
                             epochs=2,
                             batch_size=32)
@@ -103,7 +111,7 @@ class TestTCNForecaster(TestCase):
         assert mse[0].shape == test_data[1].shape[1:]
 
     def test_tcn_forecaster_fit_tf_data(self):
-        train_data, test_data = create_data(tf_data=True)
+        train_data, _, test_data = create_data(tf_data=True)
         self.forecaster.fit(train_data,
                             epochs=2,
                             batch_size=32)
@@ -111,7 +119,7 @@ class TestTCNForecaster(TestCase):
         assert yhat.shape == (400, 2, 2)
 
     def test_tcn_forecaster_save_load(self):
-        train_data, test_data = create_data()
+        train_data, _, test_data = create_data()
         self.forecaster.fit(train_data, epochs=2)
         yhat = self.forecaster.predict(test_data[0])
         with tempfile.TemporaryDirectory() as tmp_dir_file:
@@ -125,11 +133,11 @@ class TestTCNForecaster(TestCase):
         np.testing.assert_almost_equal(yhat, load_model_yhat, decimal=5)
 
     def test_tcn_customized_loss_metric(self):
-        train_data, test_data = create_data(tf_data=True)
+        train_data, _, test_data = create_data(tf_data=True)
         loss = tf.keras.losses.MeanSquaredError()
         def customized_metric(y_true, y_pred):
             return tf.keras.losses.MeanSquaredError(tf.convert_to_tensor(y_pred),
-                                      tf.convert_to_tensor(y_true)).numpy()
+                                                    tf.convert_to_tensor(y_true)).numpy()
         from bigdl.chronos.forecaster.tf.tcn_forecaster import TCNForecaster
         self.forecaster = TCNForecaster(past_seq_len=10,
                                         future_seq_len=2,
@@ -152,7 +160,7 @@ class TestTCNForecaster(TestCase):
         np.testing.assert_almost_equal(yhat, load_model_yhat, decimal=5)
 
     def test_tcn_from_tsdataset(self):
-        train, test = create_tsdataset(roll=True)
+        train, _, test = create_tsdataset(roll=True)
 
         tcn = TCNForecaster.from_tsdataset(train,
                                             num_channels=[16]*2)
@@ -167,7 +175,7 @@ class TestTCNForecaster(TestCase):
 
         del tcn
 
-        train, test = create_tsdataset(roll=False)
+        train, _, test = create_tsdataset(roll=False)
         tcn = TCNForecaster.from_tsdataset(train,
                                             past_seq_len=24,
                                             future_seq_len=5,
@@ -181,6 +189,70 @@ class TestTCNForecaster(TestCase):
         _, y_test = test.to_numpy()
         assert yhat.shape == y_test.shape
 
+    def test_tcn_forecaster_distributed(self):
+        from bigdl.orca import init_orca_context, stop_orca_context
+        train_data, val_data, test_data = create_data()
+
+        init_orca_context(cores=4, memory="4g")
+        forecaster = TCNForecaster(past_seq_len=10,
+                                   future_seq_len=2,
+                                   input_feature_num=10,
+                                   output_feature_num=2,
+                                   kernel_size=3,
+                                   lr=1e-3,
+                                   distributed=True)
+
+        forecaster.fit(train_data, epochs=2)
+        distributed_pred = forecaster.predict(test_data[0])
+        distributed_eval = forecaster.evaluate(val_data)
+
+        model = forecaster.get_model()
+        from bigdl.chronos.model.tf2.TCN_keras import TemporalConvNet
+        assert isinstance(model, TemporalConvNet)
+
+        with tempfile.TemporaryDirectory() as tmp_file_name:
+            name = os.path.join(tmp_file_name, "tcn.ckpt")
+            test_pred_save = forecaster.predict(test_data[0])
+            forecaster.save(name)
+            forecaster.load(name)
+            test_pred_load = forecaster.predict(test_data[0])
+        np.testing.assert_almost_equal(test_pred_save, test_pred_load)
+
+        forecaster.to_local()
+        local_pred = forecaster.predict(test_data[0])
+        local_eval = forecaster.evaluate(val_data)
+
+        np.testing.assert_almost_equal(distributed_pred, local_pred, decimal=5)
+        stop_orca_context()
+
+    def test_tcn_forecaster_distributed_illegal_input(self):
+        from bigdl.orca import init_orca_context, stop_orca_context
+
+        init_orca_context(cores=4, memory="4g")
+        forecaster = TCNForecaster(past_seq_len=10,
+                                   future_seq_len=2,
+                                   input_feature_num=2,
+                                   output_feature_num=2,
+                                   kernel_size=3,
+                                   lr=1e-3,
+                                   distributed=True)
+
+        train_data, _, test_data = create_data(tf_data=True)
+        ts_train, _, ts_test = create_tsdataset(roll=False)
+        _, y_test = ts_test.roll(lookback=10, horizon=2).to_numpy()
+
+        forecaster.fit(ts_train, epochs=2)
+        yhat = forecaster.predict(ts_test)
+        assert yhat.shape == y_test.shape
+        res = forecaster.evaluate(ts_test)
+
+        # illegal input
+        with pytest.raises(RuntimeError):
+            forecaster.fit(train_data)
+        with pytest.raises(RuntimeError):
+            forecaster.evaluate(test_data)
+
+        stop_orca_context()
 
 if __name__ == '__main__':
     pytest.main([__file__])

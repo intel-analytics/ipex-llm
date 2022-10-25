@@ -230,7 +230,7 @@ RUN env DEBIAN_FRONTEND=noninteractive apt-get update && \
     env DEBIAN_FRONTEND=noninteractive apt-get install -y build-essential autoconf bison gawk git ninja-build python3-click python3-jinja2 wget pkg-config cmake libcurl4-openssl-dev libprotobuf-c-dev protobuf-c-compiler protobuf-compiler python3-cryptography python3-pip python3-protobuf nasm python3 python3-click python3-pyelftools && \
     python3 -m pip install 'meson>=0.56' 'toml>=0.10' && \
     apt-get install -y libunwind8 musl-tools python3-pytest && \
-    apt-get install -y libgmp-dev libmpfr-dev libmpc-dev libisl-dev && \
+    apt-get install -y libgmp-dev libmpfr-dev libmpc-dev libisl-dev rsync && \
     git clone https://github.com/analytics-zoo/gramine.git /gramine && \
     git clone https://github.com/intel/SGXDataCenterAttestationPrimitives.git /opt/intel/SGXDataCenterAttestationPrimitives && \
     cd /gramine && \
@@ -251,9 +251,9 @@ RUN env DEBIAN_FRONTEND=noninteractive apt-get update && \
     patch /usr/local/lib/python3.7/dist-packages/psutil/_pslinux.py /python-pslinux.patch && \
     wget -P /ppml/trusted-big-data-ml/work/lib https://sourceforge.net/projects/analytics-zoo/files/analytics-zoo-data/libhadoop.so && \
     cp /usr/lib/x86_64-linux-gnu/libpython3.7m.so.1 /usr/lib/libpython3.7m.so.1 && \
-    sed -i 's/examples/\/ppml\/trusted-big-data-ml\/work\/spark-${SPARK_VERSION}\/examples/' /ppml/trusted-big-data-ml/work/spark-${SPARK_VERSION}/examples/src/main/python/sql/basic.py && \
-    sed -i 's/examples/\/ppml\/trusted-big-data-ml\/work\/spark-${SPARK_VERSION}\/examples/' /ppml/trusted-big-data-ml/work/spark-${SPARK_VERSION}/examples/src/main/python/sql/hive.py && \
-    sed -i 's/spark-warehouse/\/ppml\/trusted-big-data-ml\/work\/spark-warehouse/' /ppml/trusted-big-data-ml/work/spark-${SPARK_VERSION}/examples/src/main/python/sql/hive.py && \
+    sed -i "s/examples/\/ppml\/trusted-big-data-ml\/work\/spark-${SPARK_VERSION}\/examples/" /ppml/trusted-big-data-ml/work/spark-${SPARK_VERSION}/examples/src/main/python/sql/basic.py && \
+    sed -i "s/examples/\/ppml\/trusted-big-data-ml\/work\/spark-${SPARK_VERSION}\/examples/" /ppml/trusted-big-data-ml/work/spark-${SPARK_VERSION}/examples/src/main/python/sql/hive.py && \
+    sed -i "s/spark-warehouse/\/ppml\/trusted-big-data-ml\/work\/spark-warehouse/" /ppml/trusted-big-data-ml/work/spark-${SPARK_VERSION}/examples/src/main/python/sql/hive.py && \
     chmod a+x /ppml/trusted-big-data-ml/init.sh && \
     chmod a+x /ppml/trusted-big-data-ml/clean.sh && \
     chmod a+x /ppml/trusted-big-data-ml/work/start-scripts/* && \

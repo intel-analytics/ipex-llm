@@ -57,7 +57,7 @@ class NNServiceImpl(clientNum: Int) extends NNServiceGrpc.NNServiceImplBase {
   }
   def initCkksAggregator(secret: Array[Array[Byte]]): Unit = {
     val ckks = new CKKS()
-    val ckksCommonInstance = ckks.createCkksCommonInstance(secret)
+    val ckksCommonInstance = ckks.createCkksCommon(secret)
     val ckksAggregator = new VFLNNAggregatorCkks(ckksCommonInstance)
     ckksAggregator.setClientNum(clientNum)
     aggregatorMap.put("vfl_logistic_regression_ckks", ckksAggregator)

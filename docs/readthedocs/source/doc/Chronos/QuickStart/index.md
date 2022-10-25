@@ -1,7 +1,5 @@
 # Chronos Examples
 
-</br>
-
 ```eval_rst
 .. raw:: html
 

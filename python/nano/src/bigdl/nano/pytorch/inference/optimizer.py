@@ -23,7 +23,7 @@ from importlib.util import find_spec
 import time
 import numpy as np
 from copy import deepcopy
-from typing import Dict, Callable, Tuple
+from typing import Dict, Callable, Tuple, Optional, List, Set, Union
 from torch.utils.data import DataLoader
 from torchmetrics.metric import Metric
 from bigdl.nano.utils.log4Error import invalidInputError, invalidOperationError
@@ -120,16 +120,24 @@ class InferenceOptimizer:
 
     def optimize(self, model: nn.Module,
                  training_data: DataLoader,
-                 validation_data: DataLoader = None,
-                 metric: Callable = None,
+                 validation_data: Optional[DataLoader] = None,
+                 input_sample: Union[torch.Tensor, Dict, Tuple[torch.Tensor], None] = None,
+                 metric: Optional[Callable] = None,
                  direction: str = "max",
-                 thread_num: int = None,
+                 thread_num: Optional[int] = None,
                  logging: bool = False,
-                 latency_sample_num: int = 100) -> None:
+                 latency_sample_num: int = 100,
+                 includes: Optional[List[str]] = None,
+                 excludes: Optional[List[str]] = None) -> None:
         '''
         This function will give all available inference acceleration methods a try
         and record the latency, accuracy and model instance inside the Optimizer for
         future usage. All model instance is setting to eval mode.
+
+        The available methods are "original", "fp32_ipex", "bf16", "bf16_ipex","int8",
+        "jit_fp32", "jit_fp32_ipex", "jit_fp32_ipex_channels_last", "openvino_fp32",
+        "openvino_int8", "onnxruntime_fp32", "onnxruntime_int8_qlinear"
+        and "onnxruntime_int8_integer".
 
         :param model: A torch.nn.Module to be optimized
         :param training_data: A torch.utils.data.dataloader.DataLoader object for training
@@ -142,6 +150,9 @@ class InferenceOptimizer:
         :param validation_data: (optional) A torch.utils.data.dataloader.DataLoader object
                for accuracy evaluation. This is only needed when users care about the possible
                accuracy drop.
+        :param input_sample: (optional) A set of inputs for trace, defaults to None.
+               In most cases, you don't need specify this parameter, it will be obtained from
+               training_data.
         :param metric: (optional) A callable object which is used for calculating accuracy.
                It supports two kinds of callable object:
 
@@ -163,6 +174,11 @@ class InferenceOptimizer:
                Default: False.
         :param latency_sample_num: (optional) a int represents the number of repetitions
                to calculate the average latency. The default value is 100.
+        :param includes: (optional) a list of acceleration methods that will be included in the
+               search. Default to None meaning including all available methods. "original" method
+               will be automatically add to includes.
+        :param excludes: (optional) a list of acceleration methods that will be excluded from the
+               search. "original" will be ignored in the excludes.
         '''
 
         # check if model is a nn.Module or inherited from a nn.Module
@@ -171,7 +187,8 @@ class InferenceOptimizer:
                           "Only support direction 'min', 'max'.")
 
         # get the available methods whose dep is met
-        available_dict: Dict = _available_acceleration_combination()
+        available_dict: Dict = _available_acceleration_combination(excludes=excludes,
+                                                                   includes=includes)
 
         self._direction: str = direction  # save direction as attr
         # record whether calculate accuracy in optimize by this attr
@@ -188,12 +205,13 @@ class InferenceOptimizer:
 
         model.eval()  # change model to eval mode
 
-        forward_args = get_forward_args(model)
-        input_sample = get_input_example(model, training_data, forward_args)
+        if input_sample is None:
+            forward_args = get_forward_args(model)
+            input_sample = get_input_example(model, training_data, forward_args)
         st = time.perf_counter()
         try:
             with torch.no_grad():
-                if isinstance(input_sample, Dict):
+                if isinstance(input_sample, (Dict, torch.Tensor)):
                     model(input_sample)
                 else:
                     model(*input_sample)
@@ -258,6 +276,7 @@ class InferenceOptimizer:
                                                         accelerator=accelerator,
                                                         use_ipex=use_ipex,
                                                         calib_dataloader=training_data,
+                                                        input_sample=input_sample,
                                                         method=ort_method,
                                                         thread_num=thread_num,
                                                         sample_size=sample_size_for_pot,
@@ -273,7 +292,7 @@ class InferenceOptimizer:
 
                 def func_test(model, input_sample):
                     with torch.no_grad():
-                        if isinstance(input_sample, Dict):
+                        if isinstance(input_sample, (Dict, torch.Tensor)):
                             model(input_sample)
                         else:
                             model(*input_sample)
@@ -289,6 +308,7 @@ class InferenceOptimizer:
                         continue
                 except Exception as e:
                     result_map[method]["status"] = "fail to forward"
+                    print(f"----------{method} failed to forward----------")
                     torch.set_num_threads(default_threads)
                     continue
 
@@ -351,11 +371,35 @@ class InferenceOptimizer:
                               "before summary()")
         print(self._optimize_result)
 
+    def get_model(self, method_name: str):
+        """
+        According to results of `optimize`, obtain the model with method_name.
+
+        The available methods are "original", "fp32_ipex", "bf16", "bf16_ipex","int8",
+        "jit_fp32", "jit_fp32_ipex", "jit_fp32_ipex_channels_last", "openvino_fp32",
+        "openvino_int8", "onnxruntime_fp32", "onnxruntime_int8_qlinear"
+        and "onnxruntime_int8_integer".
+
+        :param method_name: (optional) Obtain specific model according to method_name.
+        :return: Model with different acceleration.
+        """
+        invalidOperationError(len(self.optimized_model_dict) > 0,
+                              "There is no optimized model. You should call .optimize() "
+                              "before get_model()")
+        invalidInputError(method_name in ALL_INFERENCE_ACCELERATION_METHOD.keys(),
+                          f"The model name you passed does not exist in the existing method "
+                          f"list{list(ALL_INFERENCE_ACCELERATION_METHOD.keys())}, please re-enter "
+                          f"the model name again.")
+        invalidInputError("model" in self.optimized_model_dict[method_name],
+                          "Unable to get the specified model as it doesn't exist in "
+                          "optimized_model_dict.")
+        return self.optimized_model_dict[method_name]["model"]
+
     def get_best_model(self,
-                       accelerator: str = None,
-                       precision: str = None,
-                       use_ipex: bool = None,
-                       accuracy_criterion: float = None) -> Tuple[nn.Module, str]:
+                       accelerator: Optional[str] = None,
+                       precision: Optional[str] = None,
+                       use_ipex: Optional[bool] = None,
+                       accuracy_criterion: Optional[float] = None) -> Tuple[nn.Module, str]:
         '''
         According to results of `optimize`, obtain the model with minimum latency under
         specific restrictions or without restrictions.
@@ -363,9 +407,9 @@ class InferenceOptimizer:
         :param accelerator: (optional) Use accelerator 'None', 'onnxruntime',
                'openvino', 'jit', defaults to None. If not None, then will only find the
                model with this specific accelerator.
-        :param precision: (optional) Supported type: 'int8', 'bf16',
-               defaults to None which represents 'fp32'. If not None, the will
-               only find the model with thie specific precision.
+        :param precision: (optional) Supported type: 'int8', 'bf16', and 'fp32'.
+               Defaults to None which represents no precision limit. If not None, then will
+               only find the model with this specific precision.
         :param use_ipex: (optional) if not None, then will only find the
                model with this specific ipex setting.
         :param accuracy_criterion: (optional) a float represents tolerable
@@ -378,8 +422,8 @@ class InferenceOptimizer:
         invalidInputError(accelerator in [None, 'onnxruntime', 'openvino', 'jit'],
                           "Only support accelerator 'onnxruntime', 'openvino' and 'jit'.")
         # TODO: include fp16?
-        invalidInputError(precision in [None, 'int8', 'bf16'],
-                          "Only support precision 'int8', 'bf16'.")
+        invalidInputError(precision in [None, 'int8', 'bf16', 'fp32'],
+                          "Only support precision 'int8', 'bf16', 'fp32'.")
         if accuracy_criterion is not None and not self._calculate_accuracy:
             invalidInputError(False, "If you want to specify accuracy_criterion, you need "
                               "to set metric and validation_data when call 'optimize'.")
@@ -401,6 +445,8 @@ class InferenceOptimizer:
                 if precision == 'bf16' and not option.bf16:
                     continue
                 if precision == 'int8' and not (option.inc or option.pot):
+                    continue
+                if precision == 'fp32' and option.get_precision() != 'fp32':
                     continue
             if use_ipex:
                 if not option.ipex:
@@ -432,19 +478,19 @@ class InferenceOptimizer:
     @staticmethod
     def quantize(model: nn.Module,
                  precision: str = 'int8',
-                 accelerator: str = None,
+                 accelerator: Optional[str] = None,
                  use_ipex: bool = False,
-                 calib_dataloader: DataLoader = None,
-                 metric: Metric = None,
-                 accuracy_criterion: dict = None,
+                 calib_dataloader: Optional[DataLoader] = None,
+                 metric: Optional[Metric] = None,
+                 accuracy_criterion: Optional[dict] = None,
                  approach: str = 'static',
-                 method: str = None,
-                 conf: str = None,
-                 tuning_strategy: str = None,
-                 timeout: int = None,
-                 max_trials: int = None,
+                 method: Optional[str] = None,
+                 conf: Optional[str] = None,
+                 tuning_strategy: Optional[str] = None,
+                 timeout: Optional[int] = None,
+                 max_trials: Optional[int] = None,
                  input_sample=None,
-                 thread_num: int = None,
+                 thread_num: Optional[int] = None,
                  onnxruntime_session_options=None,
                  sample_size: int = 100,
                  logging: bool = True,
@@ -618,9 +664,9 @@ class InferenceOptimizer:
     @staticmethod
     def trace(model: nn.Module,
               input_sample=None,
-              accelerator: str = None,
+              accelerator: Optional[str] = None,
               use_ipex: bool = False,
-              thread_num: int = None,
+              thread_num: Optional[int] = None,
               onnxruntime_session_options=None,
               logging: bool = True,
               **export_kwargs):
@@ -689,7 +735,7 @@ class InferenceOptimizer:
         save_model(model, path)
 
     @staticmethod
-    def load(path, model: nn.Module = None):
+    def load(path, model: Optional[nn.Module] = None):
         """
         Load a model from local.
 
@@ -741,7 +787,8 @@ def _bf16_checker():
     return "avx512_bf16" in msg or "amx_bf16" in msg
 
 
-def _available_acceleration_combination():
+def _available_acceleration_combination(excludes: Optional[List[str]],
+                                        includes: Optional[List[str]]):
     '''
     :return: a dictionary states the availablity (if meet depdencies)
     '''
@@ -751,8 +798,26 @@ def _available_acceleration_combination():
                           "openvino": _openvino_checker,
                           "pot": _openvino_checker,
                           "bf16": _bf16_checker}
+    if excludes is None:
+        exclude_set: Set[str] = set()
+    else:
+        exclude_set: Set[str] = set(excludes)
+        exclude_set.discard("original")
+
+    if includes is None:
+        include_set: Set[str] = set(ALL_INFERENCE_ACCELERATION_METHOD.keys())
+    else:
+        include_set: Set[str] = set(includes)
+        include_set.add("original")
+
     available_dict = {}
     for method, option in ALL_INFERENCE_ACCELERATION_METHOD.items():
+        if method not in include_set:
+            continue
+
+        if method in exclude_set:
+            continue
+
         available_iter = True
         for name, value in option.__dict__.items():
             if value is True:
@@ -795,7 +860,7 @@ def _signature_check(function):
     '''
     import inspect
     sig = inspect.signature(function)
-    if len(sig.parameters.values()) != 2:
+    if len(sig.parameters.values()) < 2:
         return False
     param1_name = list(sig.parameters.values())[0].name
     param2_name = list(sig.parameters.values())[1].name

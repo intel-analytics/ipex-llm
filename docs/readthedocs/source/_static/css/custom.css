@@ -10,6 +10,18 @@ html[data-theme="light"] {
     --pst-color-info-low-opacity: rgba(1, 113, 195, 0.25);
 }
 
+/* force middle article contents to break an entire word 
+   that cannot be put inside one line (e.g. a long url) */
+.bd-article-container {
+    overflow-wrap: break-word;
+}
+
+/* make inline code block break word
+   if an entire word cannot be put inside one line,
+   or break at normal line break places such as / */
+code span.pre {
+    white-space: normal;
+}
 
 /* align items in the left part of header to the ground*/
 .bd-header #navbar-start {
@@ -17,7 +29,7 @@ html[data-theme="light"] {
 }
 
 /* for version badge, possible for other badges*/
-.version-badge{
+.version-badge {
     border: 1px solid var(--pst-color-primary);
     border-radius: 0.25rem;
     color: var(--pst-color-primary);
@@ -31,33 +43,27 @@ html[data-theme="light"] {
     border-left: .2rem solid var(--pst-color-info-low-opacity);
 }
 
-.bd-content .sd-card .sd-card-header{
+.bd-content .sd-card .sd-card-header {
     background-color: var(--pst-color-info-tiny-opacity);
     border: none;
 }
 
-.bigdl-link-card:hover{
+.bigdl-link-card:hover {
     border-left: .2rem solid var(--pst-color-info);
 }
 
 /* for sphinx-design badge components (customized for usage in card footer)*/
-.sd-badge{
+.sd-badge {
     padding: .35em 0em;
     font-size: 0.9em;
 }
 
 /* for landing page side bar */
-.bigdl-quicklinks-section-nav{
-    padding-bottom: 0.5rem;
+.bigdl-quicklinks-section-nav {
     padding-left: 1rem;
 }
 
-.bigdl-quicklinks-section-title{
+.bigdl-quicklinks-section-title {
     color: var(--pst-color-primary);
-}
-
-/* force long parameter definition (which occupy a whole line) 
-   to break in api documents for class/method */
-.sig-object{
-    overflow-wrap: break-word;
+    padding: 0.25rem 0rem;
 }
