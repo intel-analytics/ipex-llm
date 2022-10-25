@@ -72,12 +72,28 @@ data_path = "."
 data_type = "ml-1m"
 # Need spark3 to support delimiter with more than one character.
 spark = OrcaContext.get_spark_session()
-from pyspark.sql.types import StructField, StructType, IntegerType
+from pyspark.sql.types import StructField, StructType, IntegerType, StringType
 
 schema = StructType(
     [
         StructField('user', IntegerType(), True),
         StructField('item', IntegerType(), True)
+    ]
+)
+schema_user = StructType(
+    [
+        StructField('user_u', IntegerType(), True),
+        StructField('gender', StringType(), True),
+        StructField('age', IntegerType(), True),
+        StructField('occupation', IntegerType(), True),
+        StructField('zipcode', IntegerType(), True)
+    ]
+)
+schema_item = StructType(
+    [
+        StructField('item_i', IntegerType(), True),
+        StructField('title', StringType(), True),
+        StructField('genres', StringType(), True)
     ]
 )
 df = spark.read.csv("{}/{}/ratings.dat".format(data_path, data_type), sep="::", schema=schema,
@@ -89,6 +105,25 @@ max_item_id = df.agg({"item": "max"}).collect()[0]["max(item)"]
 print(min_user_id, max_user_id, min_item_id, max_item_id)
 from pyspark.sql import functions
 df = df.withColumn('label', functions.lit(1))
+
+df_user = spark.read.csv("{}/{}/users.dat".format(data_path, data_type), sep="::", schema=schema_user,
+                     header=False)
+df_item = spark.read.csv("{}/{}/movies.dat".format(data_path, data_type), sep="::", schema=schema_item,
+                     header=False)
+from pyspark.ml.feature import StringIndexer
+indexer_u = StringIndexer(inputCol="gender", outputCol="genderindex").fit(df_user)
+df_user = indexer_u.transform(df_user)
+df_user = df_user.withColumn("genderindex", df_user["genderindex"].cast(IntegerType()))
+indexer_i = StringIndexer(inputCol="title", outputCol="titleindex").fit(df_item)
+df_item = indexer_i.transform(df_item)
+indexer_i = StringIndexer(inputCol="genres", outputCol="genresindex").fit(df_item)
+df_item = indexer_i.transform(df_item)
+df_item = df_item.withColumn("titleindex", df_item["titleindex"].cast(IntegerType())).withColumn("genresindex", df_item["genresindex"].cast(IntegerType()))
+df_user = df_user.drop('gender')
+df_item = df_item.drop('title', 'genres')
+df_feat = df.join(df_user, df.user == df_user.user_u, "inner")
+df_feat = df_feat.join(df_item, df_feat.item == df_item.item_i, "inner")
+df_feat = df_feat.drop('user_u', 'item_i')
 
 from pyspark.sql.functions import udf, collect_list
 from pyspark.sql.types import ArrayType
