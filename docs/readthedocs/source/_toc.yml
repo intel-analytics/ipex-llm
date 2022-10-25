@@ -244,7 +244,7 @@ subtrees:
       subtrees:
         - entries:
           - file: doc/UserGuide/develop
-          - file: doc/UserGuide/document
+          - file: doc/UserGuide/documentation
 
 
 

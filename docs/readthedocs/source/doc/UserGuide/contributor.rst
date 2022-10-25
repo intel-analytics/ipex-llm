@@ -2,4 +2,4 @@ Contributor Guide
 =========================
 
 * `Developer Guide <./develop.html>`_
-* `Documentation Guide <./document.html>`_
+* `Documentation Guide <./documentation.html>`_
