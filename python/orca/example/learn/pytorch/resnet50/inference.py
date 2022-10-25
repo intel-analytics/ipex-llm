@@ -99,6 +99,7 @@ class ResNetPerfOperator(TrainingOperator):
                 unit="batch",
                 leave=False)
 
+        # TODO: for dummy data may not need dataloader?
         with torch.no_grad():
             for batch_idx, batch in enumerate(val_iterator):
                 if num_steps and batch_idx == num_steps:
@@ -109,7 +110,7 @@ class ResNetPerfOperator(TrainingOperator):
                 if self.use_tqdm and self.world_rank == 0:
                     _progress_bar.n = batch_idx + 1
                     postfix = {}
-                    postfix.update(loss=loss)
+                    # postfix.update(loss=loss)
                     _progress_bar.set_postfix(postfix)
                 from bigdl.orca.learn.pytorch.utils import get_batchsize
                 num_samples = get_batchsize(target)
