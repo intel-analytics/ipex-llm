@@ -25,13 +25,13 @@ on:
         - bigdl-ppml-kmsutil
         - bigdl-ppml-pccs
       tag:
-        default: 'txytest'
+        description: 'docker image tag (e.g. 2.1.0-SNAPSHOT)'
         required: true
-  TAG: 'txytest'
+        default: 'latest'
         type: string
 
 env:
-  TAG: ${{ github.event.inputs.tag }}
+  TAG: "txytest"
 
 permissions:
   contents: read
@@ -365,7 +365,7 @@ jobs:
         sudo docker rmi -f ${image}:${TAG}
 
   bigdl-ppml-trusted-big-data-ml-scala-occlum:
-    # if: ${{ github.event.inputs.artifact == 'bigdl-ppml-trusted-big-data-ml-scala-occlum' || github.event.inputs.artifact == 'all' }}
+    #if: ${{ github.event.inputs.artifact == 'bigdl-ppml-trusted-big-data-ml-scala-occlum' || github.event.inputs.artifact == 'all' }}
     runs-on: [self-hosted, Shire]
 
     steps:
