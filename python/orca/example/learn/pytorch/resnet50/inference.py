@@ -58,8 +58,6 @@ parser.add_argument('--steps', default=-1, type=int,
                     help='steps for validation')
 parser.add_argument('--calibration', action='store_true', default=False,
                     help='doing calibration step for int8 path')
-parser.add_argument('-w', '--warmup-iterations', default=100, type=int, metavar='N',
-                    help='number of warmup iterations to run')
 parser.add_argument('--configure-dir', default='configure.json', type=str, metavar='PATH',
                     help = 'path to int8 configures, default file name is configure.json')
 
@@ -99,7 +97,7 @@ class ResNetPerfOperator(TrainingOperator):
                 unit="batch",
                 leave=False)
 
-        # TODO: for dummy data may not need dataloader?
+        # TODO: support warmup
         with torch.no_grad():
             for batch_idx, batch in enumerate(val_iterator):
                 if num_steps and batch_idx == num_steps:
@@ -150,10 +148,9 @@ class ResNetPerfOperator(TrainingOperator):
 class DummyData(torch.utils.data.Dataset):
 
     def __init__(self, size, use_ipex, use_bf16):
-        super(DummyData, self).__init__()
         self.len = size
         self.features = torch.randn(self.len, 3, 224, 224)
-        self.labels = torch.arange(1, self.len + 1).long()
+        self.labels = torch.randint(1, 1000, size=(self.len, )).long()
         if use_ipex:
             self.features = self.features.contiguous(memory_format=torch.channels_last)
         if use_bf16:
@@ -162,6 +159,7 @@ class DummyData(torch.utils.data.Dataset):
     def __len__(self):
         return self.len
 
+    # TODO: This may not be efficient
     def __getitem__(self, idx):
         return self.features[idx], self.labels[idx]
 
@@ -178,7 +176,6 @@ def main():
         invalidInputError(not args.jit, "jit path is not enabled for offical pytorch")
 
     init_orca_context(cluster_mode="local")
-
     validate(args)
     stop_orca_context()
 
@@ -200,7 +197,8 @@ def validate(args):
                 batch_size=batch_size, shuffle=False,
                 num_workers=args.workers, pin_memory=True)
         else:
-            # dummy data, always running channle last for fp32, bf16, int8
+            # TODO: dummy data may not need dataloader?
+            # dummy data, always running channel last for fp32, bf16, int8
             val_loader = torch.utils.data.DataLoader(
                 DummyData(config["number_iter"]*batch_size, args.ipex, args.bf16),
                 batch_size=batch_size, shuffle=False,
@@ -284,8 +282,6 @@ def validate(args):
 
     if args.dummy:
         number_iter = args.steps if args.steps > 0 else 200
-        if args.int8:
-            number_iter = args.steps if args.steps > 0 else 200
     else:
         number_iter = args.steps if args.steps > 0 else None
     if args.calibration:
@@ -311,22 +307,23 @@ def validate(args):
     result = est.evaluate(data=val_loader_func, batch_size=batch_size,
                           num_steps=number_iter, profile=True)
     for r in result:
-        print(r, ":", result[r])
+        print("{}: {}".format(r, result[r]))
 
     print('---------')
-    print('total num_samples:', result['num_samples'])
-    print('batch_size:', args.batch_size)
-    num_samples = result['num_samples'] / args.workers_per_node
-    print('num_samples for each worker:', num_samples)
-    print('num_batches for each worker:', num_samples / args.batch_size)
+    print('total number of records:', result['num_samples'])
+    print('batch_size for each worker:', batch_size)
+    num_samples_per_worker = result['num_samples'] / args.workers_per_node
+    print('num_samples for each worker: around', num_samples_per_worker)
+    print('num_batches for each worker: around', num_samples_per_worker // batch_size)
     mean_validation_s = result['profile']['mean_validation_s']
     mean_eval_fwd_s = result['profile']['mean_eval_fwd_s']
-    print('ave_val_time for each worker:', mean_validation_s)
-    print('ave_val_time for each batch:', mean_eval_fwd_s)
-    latency = mean_eval_fwd_s / args.batch_size * 1000
-    perf = args.batch_size / mean_eval_fwd_s
+    print('avg_val_time for each worker:', mean_validation_s)
+    print('avg_forward_time for each batch:', mean_eval_fwd_s)
+    latency = mean_eval_fwd_s / batch_size * 1000
+    perf = batch_size / mean_eval_fwd_s
     print('inference latency %.3f ms' % latency)
-    print("throughput: {:.3f} fps".format(perf))
+    print("Throughput: {:.3f} fps".format(perf))
+    print("Accuracy: {top1:.3f} ".format(top1=result["Accuracy"]))
 
 if __name__ == '__main__':
     main()
