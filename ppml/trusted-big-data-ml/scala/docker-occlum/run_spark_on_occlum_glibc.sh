@@ -102,9 +102,16 @@ init_instance() {
            echo "[ERROR] Attestation set to true but NO PCCS"
            exit 1
         else
+           echo 'PCCS_URL='${PCCS_URL}'/sgx/certification/v3/' > /etc/sgx_default_qcnl.conf
+           echo 'USE_SECURE_CERT=FALSE' >> /etc/sgx_default_qcnl.conf
+           cd /root/demos/remote_attestation/d_cap/
+           #build .c file
+           bash ./run_dcap_quote_on_occlum.sh
+           cd /opt/occlum_spark
            mkdir -p /opt/occlum_spark/image/attestation/
            mkdir -p /opt/occlum_spark/image/occlum_attestation/
-           echo 'PCCS_URL='${PCCS_URL}'/sgx/certification/v3/' > /etc/sgx_default_qcnl.conf
+           #copy bom
+           copy_bom -f /root/demos/remote_attestation/dcap/dcap.yaml --root image --include-dir /opt/occlum/etc/template
         fi
     fi
 
@@ -177,13 +184,14 @@ build_spark() {
         else
             if [[ $RUNTIME_ENV == "driver" || $RUNTIME_ENV == "native" ]]; then
                 #verify ehsm service
+                cd /opt/
                 bash verify-attestation-service.sh
                 #register application
 
                 #get mrenclave mrsigner
-                MR_EBCLAVE_temp=$(bash print_enclave_signer.sh | grep mr_enclave)
-                MR_EBCLAVE_temp_arr=(${MR_EBCLAVE_temp})
-                export MR_EBCLAVE=${MR_EBCLAVE_temp_arr[1]}
+                MR_ENCLAVE_temp=$(bash print_enclave_signer.sh | grep mr_enclave)
+                MR_ENCLAVE_temp_arr=(${MR_ENCLAVE_temp})
+                export MR_ENCLAVE=${MR_ENCLAVE_temp_arr[1]}
                 MR_SIGNER_temp=$(bash print_enclave_signer.sh | grep mr_signer)
                 MR_SIGNER_temp_arr=(${MR_SIGNER_temp})
                 export MR_SIGNER=${MR_SIGNER_temp_arr[1]}
@@ -201,6 +209,7 @@ build_spark() {
             exit 1
         else
                 #generate dcap quote
+                cd /opt/occlum_spark
                 occlum run /bin/dcap_c_test $REPORT_DATA
                 echo "generate quote success"
                 #attest quote

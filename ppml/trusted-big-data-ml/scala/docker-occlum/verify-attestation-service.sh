@@ -3,7 +3,7 @@ set -x
 
 export BIGDL_PPML_JAR=$BIGDL_HOME/jars/*
 
-if [[ -z "$ATTESTATION_URL" = "your_attestation_url" ]]; then
+if [[ -z "$ATTESTATION_URL" ]]; then
     echo "[ERROR] ATTESTATION_URL is not set!"
     echo "[INFO] PPML Application Exit!"
     exit 1
