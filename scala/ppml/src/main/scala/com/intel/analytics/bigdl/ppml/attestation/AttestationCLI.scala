@@ -34,6 +34,7 @@ object AttestationCLI {
                              asType: String = ATTESTATION_CONVENTION.MODE_EHSM_KMS,
                              asURL: String = "127.0.0.1:9000",
                              challenge: String = "",
+                             policyID: String = "",
                              userReport: String = "ppml")
 
         val cmdParser: OptionParser[CmdParams] = new OptionParser[CmdParams](
@@ -53,6 +54,9 @@ object AttestationCLI {
             opt[String]('c', "challenge")
               .text("challenge to attestation service, defaultly skip bi-attestation")
               .action((x, c) => c.copy(challenge = x))
+            opt[String]('o', "policyID")
+              .text("policyID of registered MREnclave and MRSigner, defaultly empty")
+              .action((x, c) => c.copy(policyID = x))
             opt[String]('p', "userReport")
               .text("userReportDataPath, default is test")
               .action((x, c) => c.copy(userReport = x))
@@ -90,7 +94,12 @@ object AttestationCLI {
               System.exit(1)
             }
         }
-        val attResult = as.attestWithServer(Base64.getEncoder.encodeToString(quote))
+
+        val attResult = params.policyID match {
+          case "" => as.attestWithServer(Base64.getEncoder.encodeToString(quote))
+          case _ => as.attestWithServer(Base64.getEncoder.encodeToString(quote), params.policyID)
+        }
+        
 
         if (attResult._1) {
             System.out.println("Attestation Success!")
