@@ -492,6 +492,7 @@ class InferenceOptimizer:
                  input_sample=None,
                  thread_num: Optional[int] = None,
                  onnxruntime_session_options=None,
+                 simplification: bool = True,
                  sample_size: int = 100,
                  logging: bool = True,
                  **export_kwargs):
@@ -541,6 +542,9 @@ class InferenceOptimizer:
                            or accelerator='openvino'.
         :param onnxruntime_session_options: The session option for onnxruntime, only valid when
                                             accelerator='onnxruntime', otherwise will be ignored.
+        :param simplification: whether we use onnxsim to simplify the ONNX model, only valid when
+                               accelerator='onnxruntime', otherwise will be ignored. If this option
+                               is set to True, new dependency 'onnxsim' need to be installed.
         :param sample_size: (optional) a int represents how many samples will be used for
                             Post-training Optimization Tools (POT) from OpenVINO toolkit,
                             only valid for accelerator='openvino'. Default to 100.
@@ -600,6 +604,7 @@ class InferenceOptimizer:
                             input_sample=input_sample,
                             accelerator='onnxruntime',
                             onnxruntime_session_options=onnxruntime_session_options,
+                            simplification=simplification,
                             **export_kwargs)
                 """
                 If accelerator==None, quantized model returned should be an object of PytorchModel
@@ -668,6 +673,7 @@ class InferenceOptimizer:
               use_ipex: bool = False,
               thread_num: Optional[int] = None,
               onnxruntime_session_options=None,
+              simplification: bool = True,
               logging: bool = True,
               **export_kwargs):
         """
@@ -686,6 +692,9 @@ class InferenceOptimizer:
                            or accelerator='openvino'.
         :param onnxruntime_session_options: The session option for onnxruntime, only valid when
                                             accelerator='onnxruntime', otherwise will be ignored.
+        :param simplification: whether we use onnxsim to simplify the ONNX model, only valid when
+                               accelerator='onnxruntime', otherwise will be ignored. If this option
+                               is set to True, new dependency 'onnxsim' need to be installed.
         :param logging: whether to log detailed information of model conversion, only valid when
                         accelerator='openvino', otherwise will be ignored. Default: ``True``.
         :param **kwargs: other extra advanced settings include
@@ -711,7 +720,7 @@ class InferenceOptimizer:
                     onnxruntime_session_options.intra_op_num_threads = thread_num
                     onnxruntime_session_options.inter_op_num_threads = thread_num
             return PytorchONNXRuntimeModel(model, input_sample, onnxruntime_session_options,
-                                           **export_kwargs)
+                                           simplification=simplification, **export_kwargs)
         if accelerator == 'jit' or use_ipex:
             if use_ipex:
                 invalidInputError(not TORCH_VERSION_LESS_1_10,
