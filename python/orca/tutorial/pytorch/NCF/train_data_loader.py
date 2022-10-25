@@ -96,7 +96,7 @@ def train_loader_func(config, batch_size):
     for x in data_X:
         train_mat[x[0], x[1]] = 1
 
-    train_data, _ = train_test_split(data_X, test_size=0.1, random_state=100)
+    train_data, _ = train_test_split(data_X, test_size=0.2, random_state=100)
 
     train_dataset = NCFData(train_data, item_num=item_num, train_mat=train_mat,
                             num_ng=4, is_training=True)
