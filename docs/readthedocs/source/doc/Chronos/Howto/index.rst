@@ -8,13 +8,6 @@ Install
 * `Install Chronos on Windows <windows_guide.html>`__
 * `Use Chronos in container(docker) <docker_guide_single_node.html>`__
 
-.. toctree::
-    :maxdepth: 1
-    :hidden:
-
-    windows_guide
-    docker_guide_single_node
-
 Forecasting
 -------------------------
 * `Create a forecaster <how_to_create_forecaster.html>`__
@@ -24,16 +17,3 @@ Forecasting
 * `Speed up inference of forecaster through OpenVINO <how_to_speedup_inference_of_forecaster_through_OpenVINO.html>`__
 * `Evaluate a forecaster <how_to_evaluate_a_forecaster.html>`__
 * `Generate confidence interval for prediction <how_to_generate_confidence_interval_for_prediction.html>`__
-
-.. toctree::
-    :maxdepth: 1
-    :hidden:
-
-    how_to_create_forecaster
-    how_to_train_forecaster_on_one_node
-    how_to_tune_forecaster_model
-    how_to_speedup_inference_of_forecaster_through_ONNXRuntime
-    how_to_speedup_inference_of_forecaster_through_OpenVINO
-    how_to_evaluate_a_forecaster
-    how_to_generate_confidence_interval_for_prediction
-
