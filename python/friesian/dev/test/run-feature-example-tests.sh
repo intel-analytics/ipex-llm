@@ -133,7 +133,6 @@ now=$(date "+%s")
 time6=$((now - start))
 
 echo "#7 start example test for multi_task data preprocessing"
-
 if [ -d data/multi_task_data.csv ]; then
   echo "data/multi_task_data.csv already exists"
 else
@@ -145,7 +144,6 @@ start=$(date "+%s")
 python ../../example/multi_task/data_processing.py \
     --input_path ./data/multi_task_data.csv \
     --output_path ./data
-
 now=$(date "+%s")
 time7=$((now - start))
 
