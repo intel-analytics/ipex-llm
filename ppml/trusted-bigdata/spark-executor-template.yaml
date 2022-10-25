@@ -38,8 +38,8 @@ spec:
         sgx.intel.com/enclave: 1
         sgx.intel.com/provision: 1
       limits:
-        cpu: 8
-        memory: 32Gi
+        cpu: 10
+        memory: 40Gi
         sgx.intel.com/epc: 34359738368
         sgx.intel.com/enclave: 1
         sgx.intel.com/provision: 1
