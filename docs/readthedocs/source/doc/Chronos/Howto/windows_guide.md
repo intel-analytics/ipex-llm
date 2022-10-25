@@ -41,3 +41,5 @@ You can use the [install panel](https://bigdl.readthedocs.io/en/latest/doc/Chron
 - The Hardware will always be `single node` on native Windows, which means the `distributed` option is not supported.
 
 - `Prophet` model is not supported on native Windows now.
+
+- `intel_extension_for_pytorch (ipex)` is unavailable for Windows now.
