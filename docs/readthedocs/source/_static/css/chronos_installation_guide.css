@@ -42,8 +42,11 @@
     cursor: pointer;
 }
 
-#cmd {
-    width: auto;
-    height: 35px;
-    overflow:unset;
+#table-1 #cmd {
+    height: 2em;
+    text-align: left;
+}
+
+#table-1 .taller_tr {
+    height: 71px;
 }
