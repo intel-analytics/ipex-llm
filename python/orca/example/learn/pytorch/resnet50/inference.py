@@ -35,6 +35,14 @@ from bigdl.orca.learn.pytorch import TrainingOperator
 parser = argparse.ArgumentParser(description='PyTorch ImageNet Inference')
 parser.add_argument('data', metavar='DIR',
                     help='path to dataset')
+parser.add_argument("--cluster_mode", type=str, default="local",
+                    help="The cluster mode, such as local, yarn or standalone.")
+parser.add_argument("--master", type=str, default=None,
+                    help="The master url, only used when cluster mode is standalone.")
+parser.add_argument("--cores", type=int, default=4,
+                    help="The number of cores on each node.")
+parser.add_argument("--num_nodes", type=int, default=1,
+                    help="The number of nodes to use.")
 parser.add_argument('--workers_per_node', default=1, type=int,
                     help='number of torch workers on each node (default: 1)')
 parser.add_argument('--ipex', action='store_true', default=False,
@@ -175,7 +183,20 @@ def main():
         invalidInputError(not args.int8, "int8 path is not enabled for offical pytorch")
         invalidInputError(not args.jit, "jit path is not enabled for offical pytorch")
 
-    init_orca_context(cluster_mode="local")
+    if args.cluster_mode == "local":
+        init_orca_context("local", cores=args.cores, memory="10g")
+    elif args.cluster_mode == "standalone":
+        init_orca_context("standalone", master=args.master,
+                          cores=args.cores, num_nodes=args.num_nodes,
+                          memory="10g", driver_cores=4, driver_memory="2g")
+    elif args.cluster_mode == "yarn":
+        init_orca_context("yarn-client", cores=args.cores,
+                          num_nodes=args.num_nodes, memory="10g",
+                          driver_cores=4, driver_memory="2g")
+    else:
+        invalidInputError(False,
+                          "cluster_mode should be one of 'local', 'yarn' and 'standalone', "
+                          "but got " + args.cluster_mode)
     validate(args)
     stop_orca_context()
 
@@ -312,7 +333,7 @@ def validate(args):
     print('---------')
     print('total number of records:', result['num_samples'])
     print('batch_size for each worker:', batch_size)
-    num_samples_per_worker = result['num_samples'] / args.workers_per_node
+    num_samples_per_worker = result['num_samples'] / (args.workers_per_node * args.num_nodes)
     print('num_samples for each worker: around', num_samples_per_worker)
     print('num_batches for each worker: around', num_samples_per_worker // batch_size)
     mean_validation_s = result['profile']['mean_validation_s']
