@@ -102,6 +102,8 @@ init_instance() {
            echo "[ERROR] Attestation set to true but NO PCCS"
            exit 1
         else
+           mkdir -p /opt/occlum_spark/image/attestation/
+           mkdir -p /opt/occlum_spark/image/occlum_attestation/
            echo 'PCCS_URL='${PCCS_URL}'/sgx/certification/v3/' > /etc/sgx_default_qcnl.conf
         fi
     fi
@@ -189,6 +191,31 @@ build_spark() {
                 #register
                 bash register.sh
             fi
+        fi
+    fi
+
+    #for test
+    if [[ $ATTESTATION == "true" ]]; then
+        if [[ $PCCS_URL == "" ]]; then
+            echo "[ERROR] Attestation set to /root/demos/remote_attestation/dcaprue but NO PCCS"
+            exit 1
+        else
+                #generate dcap quote
+                occlum run /bin/dcap_c_test $REPORT_DATA
+                echo "generate quote success"
+                #attest quote
+                occlum run /usr/lib/jvm/java-8-openjdk-amd64/bin/java \
+                            -XX:-UseCompressedOops -XX:MaxMetaspaceSize=1g \
+                            -XX:ActiveProcessorCount=4 \
+                            -Divy.home="/tmp/.ivy" \
+                            -Dos.name="Linux" \
+                            -cp "$SPARK_HOME/conf/:$SPARK_HOME/jars/*:/bin/jars/*" \
+                            -Xmx1g com.intel.analytics.bigdl.ppml.attestation.AttestationCLI \
+                            -u $ATTESTATION_URL \
+                            -i $APP_ID \
+                            -k $API_KEY \
+                            -o occlum
+                echo "verify success"
         fi
     fi
 }
