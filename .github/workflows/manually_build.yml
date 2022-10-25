@@ -27,7 +27,7 @@ on:
       tag:
         description: 'docker image tag (e.g. 2.1.0-SNAPSHOT)'
         required: true
-        default: 'latest'
+        default: 'txytest'
         type: string
 
 env:
@@ -39,7 +39,7 @@ permissions:
 
 jobs:
   bigdl-ppml-gramine-base:
-    # if: ${{ github.event.inputs.artifact == 'bigdl-ppml-gramine-base' || github.event.inputs.artifact == 'all' }}
+    if: ${{ github.event.inputs.artifact == 'bigdl-ppml-gramine-base' || github.event.inputs.artifact == 'all' }}
     runs-on: [self-hosted, Shire]
 
     steps:
@@ -366,7 +366,7 @@ jobs:
 
     
   bigdl-ppml-trusted-big-data-ml-scala-occlum:
-    if: ${{ github.event.inputs.artifact == 'bigdl-ppml-trusted-big-data-ml-scala-occlum' || github.event.inputs.artifact == 'all' }}
+    # if: ${{ github.event.inputs.artifact == 'bigdl-ppml-trusted-big-data-ml-scala-occlum' || github.event.inputs.artifact == 'all' }}
     runs-on: [self-hosted, Shire]
 
     steps:
