@@ -57,8 +57,11 @@ class PytorchONNXRuntimeModel(ONNXRuntimeModel, AcceleratedLightningModule):
             onnx_path = 'tmp.onnx'
             if simplification is True:
                 # simplify model
-                from bigdl.nano.deps.onnxsim.onnxsim_api import onnx_simplify
-                onnx_simplify(onnx_path)
+                try:
+                    from bigdl.nano.deps.onnxsim.onnxsim_api import onnx_simplify
+                    onnx_simplify(onnx_path)
+                except Exception:
+                    pass
         AcceleratedLightningModule.__init__(self, None)
         ONNXRuntimeModel.__init__(self, onnx_path, session_options=onnxruntime_session_options)
         if os.path.exists('tmp.onnx'):
