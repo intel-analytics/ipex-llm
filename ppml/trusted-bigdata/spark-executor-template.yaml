@@ -32,17 +32,17 @@ spec:
         subPath: kubeconfig
     resources:
       requests:
-        cpu: 16
-        memory: 128Gi
-        sgx.intel.com/epc: 133258905600
-        sgx.intel.com/enclave: 10
-        sgx.intel.com/provision: 10
+        cpu: 8
+        memory: 32Gi
+        sgx.intel.com/epc: 34359738368
+        sgx.intel.com/enclave: 1
+        sgx.intel.com/provision: 1
       limits:
-        cpu: 16
-        memory: 128Gi
-        sgx.intel.com/epc: 133258905600
-        sgx.intel.com/enclave: 10
-        sgx.intel.com/provision: 10
+        cpu: 8
+        memory: 32Gi
+        sgx.intel.com/epc: 34359738368
+        sgx.intel.com/enclave: 1
+        sgx.intel.com/provision: 1
   volumes:
     - name: device-plugin
       hostPath:
