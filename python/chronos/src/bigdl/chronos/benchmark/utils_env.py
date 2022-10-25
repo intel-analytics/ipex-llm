@@ -16,13 +16,9 @@
 
 
 import os
-import sys
 import subprocess
-import logging
 import warnings
-from typing import Union, Dict, List, Optional
 import numpy as np
-import re
 
 from bigdl.nano.common.cpu_schedule import schedule_workers
 from bigdl.nano.common.common import _find_library
@@ -65,7 +61,7 @@ def _find_path(path_name: str) -> bool:
 
 
 def get_nano_env_var(use_malloc: str = "tc", use_openmp: bool = True,
-                     print_environment: bool = False) -> Dict[str, str]:
+                     print_environment: bool = False):
     """
     Return proper environment variables for jemalloc and openmp libraries.
     :param use_malloc: Allocator to be chosen, either "je" for jemalloc or "tc" for tcmalloc.
@@ -134,7 +130,8 @@ def get_nano_env_var(use_malloc: str = "tc", use_openmp: bool = True,
         ld_preload_list = [lib for lib in ld_preload_list if "libiomp5.so" not in lib]
 
     if use_malloc is not "je":
-        nano_env.pop("MALLOC_CONF")
+        if "MALLOC_CONF" in nano_env:
+            nano_env.pop("MALLOC_CONF")
         ld_preload_list = [lib for lib in ld_preload_list if "libjemalloc.so" not in lib]
 
     if use_malloc is not "tc":
@@ -152,5 +149,3 @@ def get_nano_env_var(use_malloc: str = "tc", use_openmp: bool = True,
         print(nano_env)
 
     return nano_env
-
-
