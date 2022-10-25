@@ -14,7 +14,7 @@ spec:
    - /bigdl2.0/data/nyc_taxi.csv
   deps:
     pyFiles:
-     - local:///opt/bigdl-2.1.0/python/bigdl-spark_3.1.2-2.1.0-python-api.zip
+     - local:///bigdl2.0/data/bigdl-2.1.0/python/bigdl-spark_3.1.2-2.1.0-python-api.zip
      - local:///bigdl2.0/data/transfer_learning.py
   sparkVersion: "3.1.2"
   batchScheduler: "volcano"
@@ -31,7 +31,7 @@ spec:
     "spark.kubernetes.executor.volumes.persistentVolumeClaim.nfsvolumeclaim.mount.path": "/bigdl2.0/data"
     "spark.archives": "file:///bigdl2.0/data/pandas-environment.tar.gz"
     "spark.pyspark.driver.python": "/bigdl2.0/data/python_env/bin/python"
-    "spark.pyspark.python": "/bigdl2.0/data/python_env/bin/python"
+    "spark.pyspark.python": "/bigdl2.0/data/python"
     "spark.kubernetes.executor.deleteOnTermination": "false"
     "spark.kubernetes.file.upload.path": "/bigdl2.0/data/"
     "spark.shuffle.reduceLocality.enabled": "false"
@@ -41,8 +41,8 @@ spec:
     "spark.speculation": "false"
     "spark.serializer": "org.apache.spark.serializer.JavaSerializer"
     "spark.sql.catalogImplementation": "in-memory"
-    "spark.driver.extraClassPath": "local:///opt/bigdl-2.1.0/jars/*"
-    "spark.executor.extraClassPath": "local:///opt/bigdl-2.1.0/jars/*"    
+    "spark.driver.extraClassPath": "local:///bigdl2.0/data/bigdl-2.1.0/jars/*"
+    "spark.executor.extraClassPath": "local:///bigdl2.0/data/bigdl-2.1.0/jars/* 
   volumes:
   - name: nfs-storage
     persistentVolumeClaim:
