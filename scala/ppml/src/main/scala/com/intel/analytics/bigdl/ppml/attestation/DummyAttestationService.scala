@@ -72,4 +72,15 @@ class DummyAttestationService extends AttestationService {
             (verifyQuoteResult, response.toString)
         }
     }
+    /**
+     * Do a quote verification 
+     * @param quote the quote generated before
+     * @param policyID a policy ID not used in dummy attestation service
+     * @return the result and response of quote verify.
+     *         If the quote contains the substring "true" then return true,
+     *         else return false
+     */
+    override def attestWithServer(quote: String, policyID: String): (Boolean, String) = {
+        attestWithServer(quote)
+    }
 }
