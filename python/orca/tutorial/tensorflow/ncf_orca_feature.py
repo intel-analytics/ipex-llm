@@ -17,15 +17,21 @@
 import sys
 import time
 import os
+import argparse
 
 import tensorflow as tf
 
 from bigdl.orca import init_orca_context, stop_orca_context, OrcaContext
 from bigdl.orca.learn.tf2 import Estimator
 
+parser = argparse.ArgumentParser(description='Tensorflow ImageNet Training')
+parser.add_argument("--mode", type=str, required=True)
+parser.add_argument("--memory", type=str, required=True)
+args = parser.parse_args()
+
 
 def model_creator(config):
-    embedding_size=16
+    embedding_size = 16
     user = tf.keras.layers.Input(dtype=tf.int32, shape=(None,))
     item = tf.keras.layers.Input(dtype=tf.int32, shape=(None,))
     label = tf.keras.layers.Input(dtype=tf.int32, shape=(None,))
@@ -52,21 +58,20 @@ def model_creator(config):
         outputs = tf.keras.layers.Dense(1, activation='sigmoid')(concatenation)
 
     model = tf.keras.Model(inputs=[user, item], outputs=outputs)
-    model.compile(optimizer= "adam",
-                  loss= "binary_crossentropy",
+    model.compile(optimizer="adam",
+                  loss="binary_crossentropy",
                   metrics=['accuracy'])
     return model
 
-cluster_mode = str(sys.argv[1])
-# cluster_mode = "k8s"
+cluster_mode = args.mode
 if cluster_mode == "local":
-    sc = init_orca_context(memory=str(sys.argv[2]))
+    sc = init_orca_context(memory=args.memory)
 
 
 data_path = "."
 data_type = "ml-1m"
 # Need spark3 to support delimiter with more than one character.
-spark= OrcaContext.get_spark_session()
+spark = OrcaContext.get_spark_session()
 from pyspark.sql.types import StructField, StructType, IntegerType, StringType
 
 schema = StructType(
@@ -91,8 +96,8 @@ schema_item = StructType(
         StructField('genres', StringType(), True)
     ]
 )
-df = spark.read.csv("{}/{}/ratings.dat".format(data_path, data_type), sep="::",schema=schema,
-                     header=False)
+df = spark.read.csv("{}/{}/ratings.dat".format(data_path, data_type), sep="::", schema=schema,
+                    header=False)
 min_user_id = df.agg({"user": "min"}).collect()[0]["min(user)"]
 max_user_id = df.agg({"user": "max"}).collect()[0]["max(user)"]
 min_item_id = df.agg({"item": "min"}).collect()[0]["min(item)"]
@@ -101,9 +106,9 @@ print(min_user_id, max_user_id, min_item_id, max_item_id)
 from pyspark.sql import functions
 df = df.withColumn('label', functions.lit(1))
 
-df_user = spark.read.csv("{}/{}/users.dat".format(data_path, data_type), sep="::",schema=schema_user,
+df_user = spark.read.csv("{}/{}/users.dat".format(data_path, data_type), sep="::", schema=schema_user,
                      header=False)
-df_item = spark.read.csv("{}/{}/movies.dat".format(data_path, data_type), sep="::",schema=schema_item,
+df_item = spark.read.csv("{}/{}/movies.dat".format(data_path, data_type), sep="::", schema=schema_item,
                      header=False)
 from pyspark.ml.feature import StringIndexer
 indexer_u = StringIndexer(inputCol="gender", outputCol="genderindex").fit(df_user)
@@ -125,25 +130,29 @@ from pyspark.sql.types import ArrayType
 import random
 
 neg_scale = 4
+
+
 def neg_sample(x):
     item_count = len(x) * neg_scale
     max_count = max_item_id - len(set(x))
-    neg_item = random.sample(set(range(min_item_id, max_item_id+1)) - set(x), min(item_count,max_count))
+    neg_count = min(item_count, max_count)
+    neg_item = random.sample(set(range(min_item_id, max_item_id+1)) - set(x), neg_count)
     return neg_item
 
 neg_sample_udf = udf(neg_sample, ArrayType(IntegerType(), False))
 
-df_neg= df.groupBy('user').agg(neg_sample_udf(collect_list('item')).alias('item_list'))
+df_neg = df.groupBy('user').agg(neg_sample_udf(collect_list('item')).alias('item_list'))
 from pyspark.sql.functions import *
 df_neg = df_neg.select(df_neg.user, explode(df_neg.item_list))
 df_neg = df_neg.withColumn('label', functions.lit(0))
+df_neg = df_neg.withColumnRenamed('col', 'item')
 df = df.unionAll(df_neg)
 num_sample = df.count()
-train_df, test_df = df.randomSplit([0.8, 0.2],100)
+train_df, test_df = df.randomSplit([0.8, 0.2], 100)
 
 
-batch_size=256
-epochs=5
+batch_size = 256
+epochs = 5
 
 # create an Estimator
 backend = 'spark'
@@ -155,19 +164,19 @@ stats = est.fit(train_df,
                 batch_size=batch_size,
                 feature_cols=['user', 'item'],
                 label_cols=['label'],
-                steps_per_epoch=int(0.01*train_df.count() // batch_size),
+                steps_per_epoch=int(train_df.count() // batch_size),
                 validation_data=test_df,
-                validation_steps =int(0.01*test_df.count() // batch_size))
+                validation_steps=int(test_df.count() // batch_size))
 
 # save model in H5 format
 est.save("./ncf_tf_model.h5")
 
 # evaluate with Estimator
-stats = est.evaluate(test_df, 
+stats = est.evaluate(test_df,
                      feature_cols=['user', 'item'],
                      label_cols=['label'],
                      batch_size=batch_size,
-                     num_steps=int(0.01*test_df.count()*epochs // batch_size))
+                     num_steps=int(test_df.count()*epochs // batch_size))
 
 print(stats)
 est.shutdown()
