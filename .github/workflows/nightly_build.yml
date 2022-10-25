@@ -289,7 +289,7 @@ jobs:
 
   python-sourceforge-build:
     #if: ${{ github.event.schedule || github.event.inputs.artifact == 'python-sourceforge-build' || github.event.inputs.artifact == 'all' }} 
-    runs-on: [self-hosted,alpha,Bree-test,ubuntu-20.04-lts]
+    runs-on: [self-hosted,alpha,Bree,ubuntu-20.04-lts]
 
     steps:
     - uses: actions/checkout@v3
