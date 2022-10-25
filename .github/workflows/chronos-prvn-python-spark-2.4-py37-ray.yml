@@ -66,7 +66,6 @@ jobs:
           pip install scipy==1.5.4
           pip install cloudpickle
           pip install matplotlib
-          pip install zipp==3.9.0 fonttools==4.37.4 boto3==1.24.94 botocore==1.27.94 pbr==5.10.0 stevedore==3.5.1
           apt-get update
           apt-get install patchelf
           pip uninstall -y bigdl-friesian bigdl-friesian-spark3 bigdl-dllib bigdl-dllib-spark3 bigdl-orca pyspark bigdl-orca-spark3 bigdl-chronos bigdl-chronos-spark3 bigdl-nano bigdl-friesian bigdl-friesian-spark3

@@ -52,7 +52,7 @@ jobs:
           source activate chronos-prvn-env-3
           pip install boto3==1.24.96
           pip install pytest==5.4.1
-          pip install prophet==1.1
+          pip install prophet==1.0.1
           pip install pmdarima==1.8.4
           pip install neural-compressor==1.11
           pip install tsfresh==0.17.0
