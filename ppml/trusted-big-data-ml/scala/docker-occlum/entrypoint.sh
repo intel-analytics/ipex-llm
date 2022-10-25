@@ -19,7 +19,6 @@ if [ -z "$uidentry" ] ; then
 fi
 
 # check occlum log level for k8s
-export ENABLE_SGX_DEBUG=false
 export OCCLUM_LOG_LEVEL=off
 if [[ -z "$SGX_LOG_LEVEL" ]]; then
     echo "No SGX_LOG_LEVEL specified, set to off."
@@ -179,4 +178,29 @@ case "$SPARK_K8S_CMD" in
     exit 1
 esac
 
+if [[ $ATTESTATION == "true" ]]; then
+    if [[ $PCCS_URL == "" ]]; then
+        echo "[ERROR] Attestation set to /root/demos/remote_attestation/dcaprue but NO PCCS"
+        exit 1
+    else
+        if [[ $RUNTIME_ENV == "driver" || $RUNTIME_ENV == "native" ]]; then
+            #generate dcap quote
+            occlum run /bin/dcap_c_test $REPORT_DATA
+            echo "generate quote success"
+            #attest quote
+            occlum run /usr/lib/jvm/java-8-openjdk-amd64/bin/java \
+                        -XX:-UseCompressedOops -XX:MaxMetaspaceSize=1g \
+                        -XX:ActiveProcessorCount=4 \
+                        -Divy.home="/tmp/.ivy" \
+                        -Dos.name="Linux" \
+                        -cp "$SPARK_HOME/conf/:$SPARK_HOME/jars/*:/bin/jars/*" \
+                        -Xmx1g com.intel.analytics.bigdl.ppml.attestation.AttestationCLI \
+                        -u $URL \
+                        -i $APP_ID \
+                        -k $API_KEY \
+                        -o occlum
+            echo "verify success"
+        fi
+    fi
+fi
 /sbin/tini -s -- occlum run "${CMD[@]}"
