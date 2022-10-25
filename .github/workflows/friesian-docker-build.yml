@@ -52,7 +52,7 @@ jobs:
           ls -alh ./target/
 
           # upload
-          sshpass -p 'abcd1234!@#$QWER' \
+          sshpass -p "${SOURCEFORGE_PW}" \
           scp ./target/bigdl-friesian-*-serving.jar \
           intelanalytics@frs.sourceforge.net:/home/frs/project/analytics-zoo/friesian-serving-jars
 
