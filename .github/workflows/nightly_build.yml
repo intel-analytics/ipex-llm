@@ -320,7 +320,7 @@ jobs:
         #spark2
         ## linux ##
         bash python/dev/release_default_linux_spark246.sh ${nb_version} false false
-        echo ${SOURCEFORGE_PW}
+        
         # upload
         sshpass -p "${SOURCEFORGE_PW}" \
         scp ./python/dllib/src/dist/bigdl_dllib*-py3-none-manylinux1_x86_64.whl \
