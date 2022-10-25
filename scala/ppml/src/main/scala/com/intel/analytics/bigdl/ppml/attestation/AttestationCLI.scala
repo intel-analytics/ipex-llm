@@ -26,6 +26,7 @@ import java.util.Base64
  * Simple Attestation Command Line tool for attestation service
  */
 object AttestationCLI {
+    var quote: Array[Byte] = new Array[Byte](1000);
     def main(args: Array[String]): Unit = {
 
         val logger = LogManager.getLogger(getClass)
