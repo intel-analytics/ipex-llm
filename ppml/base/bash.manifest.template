@@ -24,8 +24,7 @@ sgx.static_address = 1
 sgx.isvprodid = 1
 sgx.isvsvn = 3
 
-#loader.env.LD_LIBRARY_PATH = "/lib:{{ arch_libdir }}:/usr{{ arch_libdir }}:/usr/lib/python3.7/lib:/usr/lib:{{ jdk_home }}:{{ jdk_home }}/lib/amd64/jli:/ppml/trusted-big-data-ml/work/lib"
-loader.env.LD_LIBRARY_PATH = "/lib:{{ arch_libdir }}:/usr{{ arch_libdir }}:/usr/lib/python3.7/lib:/usr/lib:{{ jdk_home }}:{{ jdk_home }}/lib/amd64/jli:/ppml/work/lib"
+loader.env.LD_LIBRARY_PATH = "/lib:{{ arch_libdir }}:/usr{{ arch_libdir }}:/usr/lib/python3.7/lib:/usr/lib:{{ jdk_home }}:{{ jdk_home }}/lib/amd64/jli:/ppml/lib"
 loader.env.PATH = "{{ execdir }}:/usr/lib/python3.7/bin:/:/usr/sbin:/usr/bin:/sbin:/bin:{{ jdk_home }}/bin"
 loader.env.PYTHONHOME = "/usr/lib/python3.7"
 loader.env.PYTHONPATH = "/usr/lib/python3.7:/usr/lib/python3.7/lib-dynload:/usr/local/lib/python3.7/dist-packages:/usr/lib/python3/dist-packages"
@@ -64,6 +63,7 @@ fs.mounts = [
   { path = "/root/.keras", uri = "file:/root/.keras" },
   { path = "/root/.m2", uri = "file:/root/.m2" },
   { path = "/root/.zinc", uri = "file:/root/.zinc" },
+  { path = "/root/.cache", uri = "file:/root/.cache" },
   { path = "/usr/lib/gcc", uri = "file:/usr/lib/gcc" },
   #{ path = "/ppml/trusted-big-data-ml", uri = "file:/ppml/trusted-big-data-ml" },
   { path = "/ppml", uri = "file:/ppml" },
@@ -91,6 +91,7 @@ sgx.allowed_files = [
   "file:/root/.keras",
   "file:/root/.m2",
   "file:/root/.zinc",
+  "file:/root/.cache",
   "file:/usr/lib/gcc",
   "file:/root/.kube/config",
   "file:/etc/localtime",

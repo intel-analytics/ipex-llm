@@ -39,14 +39,13 @@ if __name__ == "__main__":
     optimizer = InferenceOptimizer()
     # optimize may take about 2 minutes to run all possible accelaration combinations
     optimizer.optimize(model=model,
-                       # To obtain the latency of single sample, set batch_size=1
-                       training_data=datamodule.train_dataloader(batch_size=1),
+                       training_data=datamodule.train_dataloader(batch_size=32),
                        # here we only take part samples to calculate a rough accuracy
                        validation_data=datamodule.val_dataloader(limit_num_samples=160),
                        metric=accuracy,
                        direction="max",
                        thread_num=1,
-                       latency_sample_num=30)
+                       latency_sample_num=10)
 
     # 4. Get the best model under specific restrictions or without restrictions
     acc_model, option = optimizer.get_best_model(accuracy_criterion=0.05)

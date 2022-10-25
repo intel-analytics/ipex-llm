@@ -1,4 +1,4 @@
-# Use Spark Dataframe for Deep Learning
+# Use Spark DataFrames for Deep Learning
 
 ---
 
@@ -10,7 +10,7 @@
 
 The dataset used in this guide is [movielens-1M](https://grouplens.org/datasets/movielens/1m/), which contains 1 million ratings of 5 levels from 6000 users on 4000 movies. We will read the data into Spark Dataframe and directly use the Spark Dataframe as the input to the distributed training.
 
-### **1. Read input data into Spark DataFrame**
+### 1. Read input data into Spark DataFrame
 
 First, read the input data into Spark Dataframes.
 
@@ -23,7 +23,7 @@ df = spark.read.csv(new_rating_files, sep=':', inferSchema=True).toDF(
   "user", "item", "label", "timestamp")
 ```
 
-### **2. Process data using Spark Dataframe**
+### 2. Process data using Spark Dataframe
 
 Next, process the data using Spark Dataframe operations.
 
@@ -35,7 +35,7 @@ df = df.withColumn('label', df.label-1)
 train_data, test_data = df.randomSplit([0.8, 0.2], 100)
 ```
 
-### **3. Define NCF model**
+### 3. Define NCF model
 
 This example defines NCF model in the _Creator Function_ using TensroFlow 2 APIs as follows.
 
@@ -77,7 +77,7 @@ def model_creator(config):
     return model
 ```
 
-### **4. Fit with Orca Estimator**
+### 4. Fit with Orca Estimator
 
 Finally, run distributed model training/inference on the Spark Dataframes directly.
 

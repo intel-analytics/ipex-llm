@@ -1,5 +1,5 @@
 # Chronos Known Issue
-## **1. Issue 1**
+## 1. Issue 1
 **Problem description**
 
 Numpy.ndarray size changed, may indicate binary incompatibility. Expected 88 from C header, got 80 from PyObject. 
@@ -11,7 +11,7 @@ Numpy.ndarray size changed, may indicate binary incompatibility. Expected 88 fro
 
 ---------------------------
 
-## **2. Issue 2**
+## 2. Issue 2
 **Problem description**
 
 NotImplementedError: Cannot convert a symbolic Tensor (encoder_lstm_8/strided_slice:0) to a numpy array. 
@@ -22,7 +22,7 @@ NotImplementedError: Cannot convert a symbolic Tensor (encoder_lstm_8/strided_sl
 
 ---------------------------
 
-## **3. Issue 3**
+## 3. Issue 3
 
 **Problem description**
 
@@ -35,7 +35,7 @@ StanModel object has no attribute 'fit_class', cause of pip, may be.
 
 ---------------------------
 
-## **4. Issue 4**
+## 4. Issue 4
 **Problem description**
 
 Exception: No active RayContext. Please call init_orca_context to create a RayContext.
@@ -49,7 +49,7 @@ Exception: No active RayContext. Please call init_orca_context to create a RayCo
 
 ---------------------------
 
-## **5. Issue 5**
+## 5. Issue 5
 **Problem description**
 
  Sed: error while loading shared libraries: libunwind.so.8: cannot open shared object file: No such file or directory.

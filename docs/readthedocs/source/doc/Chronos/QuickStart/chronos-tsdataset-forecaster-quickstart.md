@@ -8,7 +8,7 @@
 
 **In this guide we will demonstrate how to use _Chronos TSDataset_ and _Chronos Forecaster_ for time seires processing and forecasting in 4 simple steps.**
 
-### **Step 0: Prepare Environment**
+### Step 0: Prepare Environment
 
 We recommend using [conda](https://docs.conda.io/projects/conda/en/latest/user-guide/install/) to prepare the environment. Please refer to the [install guide](../Overview/chronos.html#install) for more details.
 

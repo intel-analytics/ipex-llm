@@ -1,8 +1,10 @@
 name: Nightly Test
 
 on:
+
   #pull_request:
-     #branchs: [ main ]
+    #branchs: [ main ]
+
   schedule:
     - cron: '0 13 * * *' # GMT time, 13:00 GMT == 21:00 China
   workflow_dispatch:
@@ -28,16 +30,21 @@ on:
         - Orca-Python-ExampleTest-Horovod-Tf-Py37-Spark3
         - Dllib-Scala-UT
         - Friesian-Scala-UT
+        - Friesian-Python-Py37-Spark3
+        - Friesian-Python-Py37-Spark3-Pip
+        - Friesian-Python-ExampleTest-Feature-Tf1-Py37-Spark3
+        - Friesian-Python-ExampleTest-Feature-Tf1-Pip-Py37-Spark3
         - PPML-Scala-UT
         - PPML-Python-UT-Spark3
         - PPML-Spark-PySpark-Local-Sql-UT-On-Gramine
         - PPML-Occlum-ExampleTests
         - PPML-spark-Local-Example-Tests-on-Gramine
         - PPML-spark-Local-SimpleQuery-Tests-on-Gramine
+
       image:
         description: 'docker image name'
         required: true
-        default: '10.239.45.10/arda/intelanalytics/bigdl-ppml-trusted-big-data-ml-python-gramine'
+        default: '10.239.45.10/arda/intelanalytics/bigdl-ppml-trusted-big-data-ml-python-gramine-reference'
         type: string
       tag:
         description: 'docker image tag'
@@ -511,7 +518,7 @@ jobs:
       uses: ./.github/actions/maven-setup-action
     - name: set env
       env:
-        DEFAULT_IMAGE: '10.239.45.10/arda/intelanalytics/bigdl-ppml-trusted-big-data-ml-python-gramine'
+        DEFAULT_IMAGE: '10.239.45.10/arda/intelanalytics/bigdl-ppml-trusted-big-data-ml-python-gramine-reference'
         DEFAULT_TAG: 'latest'
       run: |
         echo "IMAGE=${{ github.event.inputs.image || env.DEFAULT_IMAGE }}" >> $GITHUB_ENV
@@ -535,7 +542,7 @@ jobs:
 
   PPML-Occlum-ExampleTests:
     if: ${{ github.event.schedule || github.event.inputs.artifact == 'PPML-Occlum-ExampleTests' || github.event.inputs.artifact == 'all' }} 
-    runs-on: [self-hosted, Wilwarin, ubuntu-20.04-lts]
+    runs-on: [self-hosted, SGX, Wilwarin]
 
     steps:
     - uses: actions/checkout@v3
@@ -569,7 +576,7 @@ jobs:
       uses: ./.github/actions/maven-setup-action
     - name: set env
       env:
-        DEFAULT_IMAGE: '10.239.45.10/arda/intelanalytics/bigdl-ppml-trusted-big-data-ml-python-gramine'
+        DEFAULT_IMAGE: '10.239.45.10/arda/intelanalytics/bigdl-ppml-trusted-big-data-ml-python-gramine-reference'
         DEFAULT_TAG: 'latest'
       run: |
         echo "TAG=${{ github.event.inputs.tag || env.DEFAULT_TAG }}" >> $GITHUB_ENV
@@ -591,6 +598,181 @@ jobs:
         job-name: PPML-spark-Local-Example-Tests-on-Gramine
         runner-hosted-on: 'Shanghai'
 
+
+  Friesian-Python-Py37-Spark3:
+    if: ${{ github.event.schedule || github.event.inputs.artifact == 'Friesian-Python-Py37-Spark3' || github.event.inputs.artifact == 'all' }}
+    runs-on: [self-hosted, Gondolin, ubuntu-20.04-lts]
+    
+    steps:
+    - uses: actions/checkout@v3
+    - name: Set up JDK8
+      uses: ./.github/actions/jdk-setup-action
+    - name: Set up maven
+      uses: ./.github/actions/maven-setup-action
+    - name: Setup env
+      uses: ./.github/actions/friesian/setup-env/setup-friesian-python-py37-spark3
+    - name: Run Test
+      uses: ./.github/actions/friesian/friesian-python-py37-spark3
+    - name: Remove Env
+      if: ${{ always() }}
+      uses: ./.github/actions/remove-env
+    - name: Create Job Badge
+      uses: ./.github/actions/create-job-status-badge
+      if: ${{ always() }}
+      with:
+        secret: ${{ secrets.GIST_SECRET}}
+        gist-id: ${{env.GIST_ID}}
+        is-self-hosted-runner: true
+        file-name: Friesian-Python-Py37-Spark3.json
+        type: job
+        job-name: Friesian-Python-Py37-Spark3
+        runner-hosted-on: 'Shanghai'
+
+  Friesian-Python-Py37-Spark3-Pip:
+    if: ${{ github.event.schedule || github.event.inputs.artifact == 'Friesian-Python-Py37-Spark3-Pip' || github.event.inputs.artifact == 'all' }}
+    runs-on: [self-hosted, Gondolin, ubuntu-20.04-lts]
+    
+    steps:
+    - uses: actions/checkout@v3
+    - name: Set up JDK8
+      uses: ./.github/actions/jdk-setup-action
+    - name: Set up maven
+      uses: ./.github/actions/maven-setup-action
+    - name: Setup env
+      uses: ./.github/actions/friesian/setup-env/setup-friesian-python-py37-spark3
+    - name: Run Test
+      uses: ./.github/actions/friesian/friesian-python-py37-spark3-pip
+    - name: Remove Env
+      if: ${{ always() }}
+      uses: ./.github/actions/remove-env
+    - name: Create Job Badge
+      uses: ./.github/actions/create-job-status-badge
+      if: ${{ always() }}
+      with:
+        secret: ${{ secrets.GIST_SECRET}}
+        gist-id: ${{env.GIST_ID}}
+        is-self-hosted-runner: true
+        file-name: Friesian-Python-Py37-Spark3-Pip.json
+        type: job
+        job-name: Friesian-Python-Py37-Spark3-Pip
+        runner-hosted-on: 'Shanghai'
+
+  Friesian-Python-ExampleTest-Feature-Tf1-Py37-Spark3:
+    if: ${{ github.event.schedule || github.event.inputs.artifact == 'Friesian-Python-ExampleTest-Feature-Tf1-Py37-Spark3' || github.event.inputs.artifact == 'all' }}
+    runs-on: [self-hosted, Gondolin, ubuntu-20.04-lts]
+    
+    steps:
+    - uses: actions/checkout@v3
+    - name: Set up JDK8
+      uses: ./.github/actions/jdk-setup-action
+    - name: Set up maven
+      uses: ./.github/actions/maven-setup-action
+    - name: Setup env
+      uses: ./.github/actions/friesian/setup-env/setup-friesian-python-py37-spark3
+    - name: Run Test
+      uses: ./.github/actions/friesian/friesian-python-exampletest-feature-tf1-py37-spark3
+    - name: Remove Env
+      if: ${{ always() }}
+      uses: ./.github/actions/remove-env
+    - name: Create Job Badge
+      uses: ./.github/actions/create-job-status-badge
+      if: ${{ always() }}
+      with:
+        secret: ${{ secrets.GIST_SECRET}}
+        gist-id: ${{env.GIST_ID}}
+        is-self-hosted-runner: true
+        file-name: Friesian-Python-ExampleTest-Feature-Tf1-Py37-Spark3.json
+        type: job
+        job-name: Friesian-Python-ExampleTest-Feature-Tf1-Py37-Spark3
+        runner-hosted-on: 'Shanghai'
+
+  Friesian-Python-ExampleTest-Feature-Tf1-Pip-Py37-Spark3:
+    if: ${{ github.event.schedule || github.event.inputs.artifact == 'Friesian-Python-ExampleTest-Feature-Tf1-Pip-Py37-Spark3' || github.event.inputs.artifact == 'all' }}
+    runs-on: [self-hosted, Gondolin, ubuntu-20.04-lts]
+    
+    steps:
+    - uses: actions/checkout@v3
+    - name: Set up JDK8
+      uses: ./.github/actions/jdk-setup-action
+    - name: Set up maven
+      uses: ./.github/actions/maven-setup-action
+    - name: Setup env
+      uses: ./.github/actions/friesian/setup-env/setup-friesian-python-py37-spark3
+    - name: Run Test
+      uses: ./.github/actions/friesian/friesian-python-exampletest-feature-tf1-pip-py37-spark3
+    - name: Remove Env
+      if: ${{ always() }}
+      uses: ./.github/actions/remove-env
+    - name: Create Job Badge
+      uses: ./.github/actions/create-job-status-badge
+      if: ${{ always() }}
+      with:
+        secret: ${{ secrets.GIST_SECRET}}
+        gist-id: ${{env.GIST_ID}}
+        is-self-hosted-runner: true
+        file-name: Friesian-Python-ExampleTest-Feature-Tf1-Pip-Py37-Spark3.json
+        type: job
+        job-name: Friesian-Python-ExampleTest-Feature-Tf1-Pip-Py37-Spark3
+        runner-hosted-on: 'Shanghai'
+
+  Friesian-Python-ExampleTest-Tf2-Py37-Spark3:
+    if: ${{ github.event.schedule || github.event.inputs.artifact == 'Friesian-Python-ExampleTest-Tf2-Py37-Spark3' || github.event.inputs.artifact == 'all' }}
+    runs-on: [self-hosted, Gondolin, ubuntu-20.04-lts]
+    
+    steps:
+    - uses: actions/checkout@v3
+    - name: Set up JDK8
+      uses: ./.github/actions/jdk-setup-action
+    - name: Set up maven
+      uses: ./.github/actions/maven-setup-action
+    - name: Setup env
+      uses: ./.github/actions/friesian/setup-env/setup-friesian-python-tf2-py37-spark3
+    - name: Run Test
+      uses: ./.github/actions/friesian/friesian-python-exampletest-tf2-py37-spark3
+    - name: Remove Env
+      if: ${{ always() }}
+      uses: ./.github/actions/remove-env
+    - name: Create Job Badge
+      uses: ./.github/actions/create-job-status-badge
+      if: ${{ always() }}
+      with:
+        secret: ${{ secrets.GIST_SECRET}}
+        gist-id: ${{env.GIST_ID}}
+        is-self-hosted-runner: true
+        file-name: Friesian-Python-ExampleTest-Tf2-Py37-Spark3.json
+        type: job
+        job-name: Friesian-Python-ExampleTest-Tf2-Py37-Spark3
+        runner-hosted-on: 'Shanghai'
+
+  Friesian-Python-ExampleTest-Tf2-Pip-Py37-Spark3:
+    if: ${{ github.event.schedule || github.event.inputs.artifact == 'Friesian-Python-ExampleTest-Tf2-Pip-Py37-Spark3' || github.event.inputs.artifact == 'all' }}
+    runs-on: [self-hosted, Gondolin, ubuntu-20.04-lts]
+    
+    steps:
+    - uses: actions/checkout@v3
+    - name: Set up JDK8
+      uses: ./.github/actions/jdk-setup-action
+    - name: Set up maven
+      uses: ./.github/actions/maven-setup-action
+    - name: Setup env
+      uses: ./.github/actions/friesian/setup-env/setup-friesian-python-tf2-py37-spark3
+    - name: Run Test
+      uses: ./.github/actions/friesian/friesian-python-exampletest-tf2-pip-py37-spark3
+    - name: Remove Env
+      if: ${{ always() }}
+      uses: ./.github/actions/remove-env
+    - name: Create Job Badge
+      uses: ./.github/actions/create-job-status-badge
+      if: ${{ always() }}
+      with:
+        secret: ${{ secrets.GIST_SECRET}}
+        gist-id: ${{env.GIST_ID}}
+        is-self-hosted-runner: true
+        file-name: Friesian-Python-ExampleTest-Tf2-Pip-Py37-Spark3.json
+        type: job
+        job-name: Friesian-Python-ExampleTest-Tf2-Pip-Py37-Spark3
+        runner-hosted-on: 'Shanghai'
+
   PPML-spark-Local-SimpleQuery-Tests-on-Gramine:
     if: ${{ github.event.schedule || github.event.inputs.artifact == 'PPML-spark-Local-SimpleQuery-Tests-on-Gramine' || github.event.inputs.artifact == 'all' }}
     runs-on: [self-hosted, SGX, Wilwarin]
@@ -603,7 +785,7 @@ jobs:
       uses: ./.github/actions/maven-setup-action
     - name: set env
       env:
-        DEFAULT_IMAGE: '10.239.45.10/arda/intelanalytics/bigdl-ppml-trusted-big-data-ml-python-gramine'
+        DEFAULT_IMAGE: '10.239.45.10/arda/intelanalytics/bigdl-ppml-trusted-big-data-ml-python-gramine-reference'
         DEFAULT_TAG: 'latest'
       run: |
         echo "TAG=${{ github.event.inputs.tag || env.DEFAULT_TAG }}" >> $GITHUB_ENV
@@ -639,5 +821,4 @@ jobs:
         file-name: nightly-test.json
         type: workflow
   
-
 

@@ -8,7 +8,7 @@ For _**Scala users**_, please see [Scala User Guide](./scala.md) for how to run 
 
 For _**Python users**_, you can run BigDL programs on standard Hadoop/YARN clusters without any changes to the cluster (i.e., no need to pre-install BigDL or other Python libraries on all nodes in the cluster).
 
-### **1. Prepare Python Environment**
+### 1. Prepare Python Environment
 
 - You need to first use [conda](https://docs.conda.io/projects/conda/en/latest/user-guide/install/) to prepare the Python environment _**on the local machine**_ where you submit your application. Create a conda environment, install BigDL and all the needed Python libraries in the created conda environment:
 
@@ -54,7 +54,7 @@ For _**Python users**_, you can run BigDL programs on standard Hadoop/YARN clust
   Also, a CDH cluster's `HADOOP_CONF_DIR` should be `/etc/hadoop/conf` on CDH by default.
 
 ---
-### **2. Run on YARN with built-in function**
+### 2. Run on YARN with built-in function
 
 _**This is the easiest and most recommended way to run BigDL on YARN,**_ as you don't need to care about environment preparation and Spark related commands. In this way, you can easily switch your job between local (for test) and YARN (for production) by changing the "cluster_mode".
 
@@ -85,7 +85,7 @@ _**This is the easiest and most recommended way to run BigDL on YARN,**_ as you 
   ```
 
 ---
-### **3. Run on YARN with spark-submit**
+### 3. Run on YARN with spark-submit
 
 Follow the steps below if you need to run BigDL with [spark-submit](https://spark.apache.org/docs/latest/running-on-yarn.html#launching-spark-on-yarn).  
 

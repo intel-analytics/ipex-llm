@@ -6,12 +6,12 @@ cd /ppml/trusted-big-data-ml
 if [ $status_3_local_spark_pi -ne 0 ]; then
 echo "example.3 local spark, pi"
 export sgx_command="/opt/jdk8/bin/java \
-   -cp '/ppml/trusted-big-data-ml/work/spark-3.1.2/conf/:/ppml/trusted-big-data-ml/work/spark-3.1.2/jars/*:/ppml/trusted-big-data-ml/work/spark-3.1.2/examples/jars/*' \
+   -cp '/ppml/trusted-big-data-ml/work/spark-$SPARK_VERSION/conf/:/ppml/trusted-big-data-ml/work/spark-$SPARK_VERSION/jars/*:/ppml/trusted-big-data-ml/work/spark-$SPARK_VERSION/examples/jars/*' \
    -Xmx1g org.apache.spark.deploy.SparkSubmit \
    --master local[4] \
    --conf spark.python.use.daemon=false \
    --conf spark.python.worker.reuse=false \
-   /ppml/trusted-big-data-ml/work/spark-3.1.2/examples/src/main/python/pi.py"
+   /ppml/trusted-big-data-ml/work/spark-$SPARK_VERSION/examples/src/main/python/pi.py"
 gramine-sgx bash 2>&1 | tee test-pi-sgx.log
 cat test-pi-sgx.log | egrep 'roughly'
 status_3_local_spark_pi=$(echo $?)
@@ -22,12 +22,12 @@ if [ $status_4_local_spark_wordcount -ne 0 ]; then
 echo "example.4 local spark, test-wordcount"
 export PYSPARK_PYTHON=/usr/bin/python
 export sgx_command="/opt/jdk8/bin/java \
-   -cp '/ppml/trusted-big-data-ml/work/spark-3.1.2/conf/:/ppml/trusted-big-data-ml/work/spark-3.1.2/jars/*:/ppml/trusted-big-data-ml/work/spark-3.1.2/examples/jars/*' \
+   -cp '/ppml/trusted-big-data-ml/work/spark-$SPARK_VERSION/conf/:/ppml/trusted-big-data-ml/work/spark-$SPARK_VERSION/jars/*:/ppml/trusted-big-data-ml/work/spark-$SPARK_VERSION/examples/jars/*' \
    -Xmx1g org.apache.spark.deploy.SparkSubmit \
    --master local[4] \
    --conf spark.python.use.daemon=false \
    --conf spark.python.worker.reuse=false \
-   /ppml/trusted-big-data-ml/work/spark-3.1.2/examples/src/main/python/wordcount.py \
+   /ppml/trusted-big-data-ml/work/spark-$SPARK_VERSION/examples/src/main/python/wordcount.py \
    /ppml/trusted-big-data-ml/work/examples/helloworld.py"
 gramine-sgx bash 2>&1 | tee test-wordcount-sgx.log
 cat test-wordcount-sgx.log | egrep 'print'
