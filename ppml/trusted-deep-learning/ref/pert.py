@@ -1,14 +1,18 @@
 import torch
 import argparse
 import os
+import logging
+import time
 from torch import nn
 from datasets import load_dataset
 from torch.utils.data import DataLoader
+from torch.utils.data.distributed import DistributedSampler
 import torch.distributed as dist
 from transformers import BertTokenizer, BertModel, AdamW
-from tqdm.auto import tqdm
+#from tqdm.auto import tqdm
 
 WORLD_SIZE = int(os.environ.get("WORLD_SIZE", 1))
+RANK = int(os.environ.get("RANK", 0))
 
 
 def should_distribute():
@@ -75,9 +79,7 @@ class NeuralNetwork(nn.Module):
 
 device = 'cpu'
 
-def train_loop(dataloader, model, loss_fn, optimizer, epoch, total_loss):
-    progress_bar = tqdm(range(len(dataloader)))
-    progress_bar.set_description(f'loss: {0:>7f}')
+def train_loop(args, dataloader, model, loss_fn, optimizer, epoch, total_loss):
     finish_batch_num = (epoch-1)*len(dataloader)
     
     # Set to train mode
@@ -93,8 +95,12 @@ def train_loop(dataloader, model, loss_fn, optimizer, epoch, total_loss):
         optimizer.step()
 
         total_loss += loss.item()
-        progress_bar.set_description(f'loss: {total_loss/(finish_batch_num + batch):>7f}')
-        progress_bar.update(1)
+        if batch % args.log_interval == 0:
+            msg = "Train Epoch: {} [{}/{} ({:.0f}%)]\tloss={:.4f}".format(
+                epoch, batch, len(dataloader),
+                100. * batch / len(dataloader), loss.item())
+            logging.info(msg)
+
     return total_loss
 
 def test_loop(dataloader, model, mode='Test'):
@@ -117,8 +123,8 @@ def test_loop(dataloader, model, mode='Test'):
 
 def main():
     parser = argparse.ArgumentParser(description="PyTorch MNIST Example")
-    parser.add_argument("--batch-size", type=int, default=64, metavar="N",
-                        help="input batch size for training (default: 64)")
+    parser.add_argument("--batch-size", type=int, default=16, metavar="N",
+                        help="input batch size for training (default: 16)")
     parser.add_argument("--test-batch-size", type=int, default=1000, metavar="N",
                         help="input batch size for testing (default: 1000)") 
     parser.add_argument("--epochs", type=int, default=1, metavar="N",
@@ -132,7 +138,23 @@ def main():
     # Only for test purpose
     parser.add_argument("--load-model", action="store_true", default=False,
                         help="For loading the current model")
+    parser.add_argument("--log-interval", type=int, default=2, metavar="N",
+                        help="how many batches to wait before logging training status")
+    parser.add_argument("--log-path", type=str, default="",
+                        help="Path to save logs. Print to StdOut if log-path is not set")
     args = parser.parse_args()
+    if args.log_path == "":
+        logging.basicConfig(
+            format="%(asctime)s %(levelname)-8s %(message)s",
+            datefmt="%Y-%m-%dT%H:%M:%SZ",
+            level=logging.DEBUG)
+    else:
+        logging.basicConfig(
+            format="%(asctime)s %(levelname)-8s %(message)s",
+            datefmt="%Y-%m-%dT%H:%M:%SZ",
+            level=logging.DEBUG,
+            filename=args.log_path)
+
     torch.manual_seed(args.seed)
     if should_distribute():
         print("Using distributed PyTorch with {} backend".format(
@@ -146,9 +168,14 @@ def main():
     valid_data = Dataset('validation')
 #    test_data = Dataset('test')
 
-    train_dataloader = DataLoader(train_data, batch_size=args.batch_size, shuffle=True, collate_fn=collate_fn)
-    valid_dataloader = DataLoader(valid_data, batch_size=args.test_batch_size, shuffle=True, collate_fn=collate_fn)
-#    test_dataloader = DataLoader(test_data, batch_size=args.test_batch_size, shuffle=True, collate_fn=collate_fn)
+    if is_distributed():
+        train_sampler = DistributedSampler(train_data, num_replicas=WORLD_SIZE, rank=RANK, shuffle=True, drop_last=False, seed=args.seed)
+        valid_sampler = DistributedSampler(valid_data, num_replicas=WORLD_SIZE, rank=RANK, shuffle=True, drop_last=False, seed=args.seed)
+        train_dataloader = DataLoader(train_data, batch_size=args.batch_size, collate_fn=collate_fn, sampler=train_sampler)
+        valid_dataloader = DataLoader(valid_data, batch_size=args.test_batch_size,collate_fn=collate_fn, sampler=valid_sampler)
+    else:
+        train_dataloader = DataLoader(train_data, batch_size=args.batch_size, shuffle=True, collate_fn=collate_fn)
+        valid_dataloader = DataLoader(valid_data, batch_size=args.test_batch_size, shuffle=True, collate_fn=collate_fn)
 
     print("[INFO]Data get loaded successfully", flush=True)
 
@@ -160,21 +187,28 @@ def main():
         Distributor = nn.parallel.DistributedDataParallel
         model = Distributor(model,find_unused_parameters=True)
     loss_fn = nn.CrossEntropyLoss()
-    epoch_num = 3
     optimizer = AdamW(model.parameters(), lr=args.lr)
 
     total_loss = 0.
     best_acc = 0.
 
     for t in range(args.epochs):
-        print(f"Epoch {t+1}/{epoch_num}\n-------------------------------")
-        total_loss = train_loop(train_dataloader, model,loss_fn, optimizer, t+1, total_loss)
+        print(f"Epoch {t+1}/{args.epochs + 1}\n-------------------------------")
+        if is_distributed():
+            train_dataloader.sampler.set_epoch(t)
+            valid_dataloader.sampler.set_epoch(t)
+        start = time.perf_counter()
+        total_loss = train_loop(args, train_dataloader, model,loss_fn, optimizer, t+1, total_loss)
+        end = time.perf_counter()
+        print(f"Epoch {t+1}/{args.epochs + 1} Elapsed time:", end - start)
         valid_acc = test_loop(valid_dataloader, model, mode='Valid')
 
     print("[INFO]Finish all test", flush=True)
 
     if (args.save_model):
         torch.save(model.state_dict(), "pert.bin")
+    if is_distributed():
+        dist.destroy_process_group()
 
 if __name__ == "__main__":
     main()

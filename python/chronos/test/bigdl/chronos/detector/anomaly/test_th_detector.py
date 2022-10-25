@@ -77,7 +77,7 @@ class TestThresholdDetector(TestCase):
                                     hidden_dim=32,
                                     layer_num=2)
         forecaster.fit(data=(x_train, y_train), batch_size=1024, epochs=50)
-        y_predict = forecaster.predict(x_test)
+        y_predict = forecaster.predict(x_test, acceleration=False)
         y_predict = np.squeeze(y_predict, axis=1)
 
         # find anomaly using a manual set threshold

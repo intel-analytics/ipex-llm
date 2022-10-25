@@ -28,6 +28,7 @@ from torch.nn.parallel.distributed import DistributedDataParallel
 from pytorch_lightning.lite import LightningLite
 from pytorch_lightning.lite.wrappers import _LiteModule, _LiteOptimizer
 from pytorch_lightning.utilities.apply_func import apply_to_collection
+from pytorch_lightning.strategies import Strategy
 
 from bigdl.nano.common import check_avx512
 from bigdl.nano.utils.log4Error import invalidInputError
@@ -87,6 +88,41 @@ class _TorchNanoModule(_LiteModule):
         return super().forward(*args, **kwargs)
 
 
+class _TorchNanoOptimizer(_LiteOptimizer):
+    def __init__(self, optimizer: Optimizer, strategy: Strategy,
+                 auto_lr: bool, num_processes: Optional[int]) -> None:
+        super().__init__(optimizer, strategy)
+        self.cur_lr_ratio = 1.0
+        self.max_lr_ratio = num_processes
+        self.cur_step = 0
+        self.max_step = 1000
+        self.auto_lr = auto_lr
+
+    def step(self, closure=None) -> Any:     # type: ignore
+        if not self.auto_lr or self.max_lr_ratio is None or self.max_lr_ratio == 1:
+            return super().step(closure)
+        else:
+            # adjust learning rate
+            base_lrs = []
+            for param_group in self.optimizer.param_groups:
+                base_lr = param_group['lr']
+                base_lrs.append(base_lr)
+                param_group['lr'] = base_lr * self.cur_lr_ratio
+
+            # call step
+            ret = super().step(closure=closure)
+
+            # restore learning rate
+            for param_group, base_lr in zip(self.optimizer.param_groups, base_lrs):
+                param_group['lr'] = base_lr
+
+            if self.cur_step < self.max_step:
+                self.cur_step += 1
+                self.cur_lr_ratio = (self.max_lr_ratio - 1) * self.cur_step / self.max_step + 1
+
+            return ret
+
+
 distributed_backends = ["spawn", "ray", "subprocess", "k8s"]
 
 backends_class_map = {
@@ -110,6 +146,7 @@ class TorchNano(LightningLite):
                  precision: Union[str, int] = 32,
                  cpu_for_each_process: Optional[List[List[int]]] = None,
                  channels_last: bool = False,
+                 auto_lr: bool = False,
                  *args, **kwargs) -> None:
         """
         Create a TorchNano with nano acceleration.
@@ -132,6 +169,7 @@ class TorchNano(LightningLite):
         self.dtype = None
         self.cpu_for_each_process = cpu_for_each_process
         self.channels_last = channels_last
+        self.auto_lr = auto_lr
 
         if self.use_ipex and precision == 'bf16':
             # Enable ipex bfloat16 weight prepack and disable native AMP
@@ -225,7 +263,8 @@ class TorchNano(LightningLite):
         if move_to_device:
             model = self._move_model_to_device(model=model, optimizers=optimizers)
         model = _TorchNanoModule(model, self._precision_plugin, self.channels_last)
-        optimizers = [_LiteOptimizer(optimizer=optimizer, strategy=self._strategy)  # type: ignore
+        optimizers = [_TorchNanoOptimizer(optimizer, self._strategy,    # type: ignore
+                                          self.auto_lr, self.num_processes)
                       for optimizer in optimizers]
         self._models_setup += 1
         if optimizers is not None:

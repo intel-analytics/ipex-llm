@@ -35,20 +35,20 @@ Select your preferences in the panel below to find the proper install command. T
 
         <table id="table-1">
             <tbody>
-                <tr>
+                <tr class="taller_tr">
                     <td colspan="1">Functionality</td>
                     <td colspan="1"><button id="Forecasting">Forecasting</button></td>
                     <td colspan="2"><button id="Anomaly" style="font-size: 15px">Anomaly Detection</button></td>
                     <td colspan="1"><button id="Simulation">Simulation</button></td>
                 </tr>
-                <tr id="model">
+                <tr id="model" class="taller_tr">
                     <td colspan="1">Model</td>
                     <td colspan="1"><button id="Deep_learning_models" style="font-size: 13px;">Deep learning models</button></td>
                     <td colspan="2"><button id="Prophet">Prophet</button></td>
                     <td colspan="1"><button id="ARIMA">ARIMA</button></td>
                 </tr>
                 <tr>
-                    <td colspan="1">DL<br>framework</td>
+                    <td colspan="1">DL&nbsp;framework</td>
                     <td colspan="2"><button id="pytorch"
                             title="Use PyTorch as deep learning models' backend. Most of the model support and works better under PyTorch.">PyTorch (Recommended)</button>
                     </td>
@@ -92,11 +92,9 @@ Select your preferences in the panel below to find the proper install command. T
                             title="For users would like to deploy chronos in their production">Stable (2.1.0)</button></td>
                 </tr>
 
-                <tr>
+                <tr class="taller_tr">
                     <td colspan="1">Install CMD</td>
-                    <td colspan="4">
-                        <div id="cmd" style="text-align: left;">NA</div>
-                    </td>
+                    <td colspan="4" id="cmd">NA</td>
                 </tr>
             </tbody>
         </table>

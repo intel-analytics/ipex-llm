@@ -26,7 +26,7 @@ subtrees:
       subtrees:
         - entries:
           - file: doc/Orca/Overview/orca
-            title: "Orca in 5 miniutes"
+            title: "Orca in 5 minutes"
           - file: doc/Orca/Overview/install
             title: "Installation"
           - file: doc/Orca/Overview/index
@@ -39,7 +39,7 @@ subtrees:
                 - file: doc/Orca/Overview/distributed-tuning
                 - file: doc/Orca/Overview/ray
           - file: doc/Orca/QuickStart/index
-            title: "Tutorials"
+            title: "Quick Examples"
             subtrees:
               - entries:
                 - file: doc/UseCase/spark-dataframe
@@ -48,6 +48,11 @@ subtrees:
                 - file: doc/Orca/QuickStart/orca-pytorch-distributed-quickstart
                 - file: doc/Orca/QuickStart/orca-autoestimator-pytorch-quickstart
                 - file: doc/Orca/QuickStart/orca-autoxgboost-quickstart
+          - file: doc/Orca/Tutorial/index
+            title: "Tutorials"
+            subtrees:
+              - entries:
+                - file: doc/Orca/Tutorial/yarn
           - file: doc/Orca/Overview/known_issues
             title: "Tips and Known Issues"
           - file: doc/PythonAPI/Orca/index
@@ -78,6 +83,7 @@ subtrees:
               subtrees:
                 - entries:
                   - file: doc/Nano/QuickStart/pytorch_train_quickstart
+                  - file: doc/Nano/QuickStart/pytorch_nano
                   - file: doc/Nano/QuickStart/pytorch_onnxruntime
                   - file: doc/Nano/QuickStart/pytorch_openvino
                   - file: doc/Nano/QuickStart/pytorch_quantization_inc_onnx
@@ -88,6 +94,23 @@ subtrees:
                   - file: doc/Nano/QuickStart/tensorflow_quantization_quickstart
             - file: doc/Nano/Howto/index
               title: "How-to Guides"
+              subtrees:
+                - entries:
+                  - file: doc/Nano/Howto/Training/PyTorchLightning/accelerate_pytorch_lightning_training_ipex
+                  - file: doc/Nano/Howto/Training/PyTorchLightning/accelerate_pytorch_lightning_training_multi_instance
+                  - file: doc/Nano/Howto/Training/PyTorchLightning/pytorch_lightning_training_channels_last
+                  - file: doc/Nano/Howto/Training/PyTorchLightning/pytorch_lightning_training_bf16
+                  - file: doc/Nano/Howto/Training/PyTorchLightning/pytorch_lightning_cv_data_pipeline
+                  - file: doc/Nano/Howto/Training/TensorFlow/accelerate_tensorflow_training_multi_instance
+                  - file: doc/Nano/Howto/Training/TensorFlow/tensorflow_training_embedding_sparseadam
+                  - file: doc/Nano/Howto/Training/General/choose_num_processes_training
+                  - file: doc/Nano/Howto/Inference/PyTorch/accelerate_pytorch_inference_onnx
+                  - file: doc/Nano/Howto/Inference/PyTorch/accelerate_pytorch_inference_openvino
+                  - file: doc/Nano/Howto/Inference/PyTorch/quantize_pytorch_inference_inc
+                  - file: doc/Nano/Howto/Inference/PyTorch/quantize_pytorch_inference_pot
+                  - file: doc/Nano/Howto/Inference/PyTorch/inference_optimizer_optimize
+                  - file: doc/Nano/Howto/install_in_colab
+                  - file: doc/Nano/Howto/windows_guide
             - file: doc/Nano/Overview/known_issues
               title: "Tips and Known Issues"
             - file: doc/PythonAPI/Nano/index
@@ -134,8 +157,27 @@ subtrees:
             title: "Installation"
           - file: doc/Chronos/Overview/deep_dive
             title: "Key Features"
+            subtrees:
+              - entries:
+                - file: doc/Chronos/Overview/data_processing_feature_engineering
+                - file: doc/Chronos/Overview/forecasting
+                - file: doc/Chronos/Overview/anomaly_detection
+                - file: doc/Chronos/Overview/simulation
+                - file: doc/Chronos/Overview/speed_up
+                - file: doc/Chronos/Overview/useful_functionalities
           - file: doc/Chronos/Howto/index
             title: "How-to Guides"
+            subtrees:
+              - entries:
+                - file: doc/Chronos/Howto/windows_guide
+                - file: doc/Chronos/Howto/docker_guide_single_node
+                - file: doc/Chronos/Howto/how_to_create_forecaster
+                - file: doc/Chronos/Howto/how_to_train_forecaster_on_one_node
+                - file: doc/Chronos/Howto/how_to_tune_forecaster_model
+                - file: doc/Chronos/Howto/how_to_speedup_inference_of_forecaster_through_ONNXRuntime
+                - file: doc/Chronos/Howto/how_to_speedup_inference_of_forecaster_through_OpenVINO
+                - file: doc/Chronos/Howto/how_to_evaluate_a_forecaster
+                - file: doc/Chronos/Howto/how_to_generate_confidence_interval_for_prediction
           - file: doc/Chronos/QuickStart/index
             title: "Tutorials"
             subtrees:
