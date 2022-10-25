@@ -200,9 +200,9 @@ jobs:
         pytorch-version: [
           # The reason why ipex1.10 is not currently supported is that the optimization of ipex1.10
           # will change the require_grad attribute of layers, which will make some tests of nano fail.
-          "torch==1.9.0+cpu torchvision==0.10.0+cpu torch_ipex==1.9.0",
+          "torch==1.9.0+cpu torchvision==0.10.0+cpu torch_ipex==1.9.0 intel_extension_for_pytorch==1.9.0",
           "",
-          "torch==1.12.1+cpu torchvision==0.13.1+cpu intel_extension_for_pytorch==1.12.100"
+          "torch==1.12.1+cpu torchvision==0.13.1+cpu intel_extension_for_pytorch==1.12.100 torch_ipex==1.12.100"
           # "torch==1.10.1+cpu torchvision==0.11.2+cpu intel_extension_for_pytorch==1.10.0 psutil"
           ]
 
