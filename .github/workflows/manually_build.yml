@@ -3,10 +3,6 @@ name: Manually Build
 on:
   pull_request:
     branchs: [ main ]
-  pull_request:
-    branchs: [ main ]
-  pull_request:
-    branchs: [ main ]
   workflow_dispatch:
     inputs:
       artifact:
@@ -29,9 +25,9 @@ on:
         - bigdl-ppml-kmsutil
         - bigdl-ppml-pccs
       tag:
-        description: 'docker image tag (e.g. 2.1.0-SNAPSHOT)'
+        default: 'txytest'
         required: true
-        default: 'latest'
+  TAG: 'txytest'
         type: string
 
 env:
@@ -366,9 +362,8 @@ jobs:
         sudo docker push ${image}:${TAG}
         sudo docker tag ${image}:${TAG} 10.239.45.10/arda/${image}:${TAG}
         sudo docker push 10.239.45.10/arda/${image}:${TAG}
-    # if: ${{ github.event.inputs.artifact == 'bigdl-ppml-trusted-big-data-ml-scala-occlum' || github.event.inputs.artifact == 'all' }}
+        sudo docker rmi -f ${image}:${TAG}
 
-    # if: ${{ github.event.inputs.artifact == 'bigdl-ppml-trusted-big-data-ml-scala-occlum' || github.event.inputs.artifact == 'all' }}
   bigdl-ppml-trusted-big-data-ml-scala-occlum:
     # if: ${{ github.event.inputs.artifact == 'bigdl-ppml-trusted-big-data-ml-scala-occlum' || github.event.inputs.artifact == 'all' }}
     runs-on: [self-hosted, Shire]
