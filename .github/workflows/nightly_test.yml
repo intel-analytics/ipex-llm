@@ -785,9 +785,9 @@ jobs:
     - name: Set up maven
       uses: ./.github/actions/maven-setup-action
     - name: Setup env
-      uses: ./.github/actions/friesian/setup-env/setup-dllib-python-py37-spark3-part1
+      uses: ./.github/actions/dllib/setup-env/setup-dllib-python-py37-spark3-part1
     - name: Run Test
-      uses: ./.github/actions/friesian/dllib-python-py37-spark3-part1
+      uses: ./.github/actions/dllib/dllib-python-py37-spark3-part1
     - name: Remove Env
       if: ${{ always() }}
       uses: ./.github/actions/remove-env
