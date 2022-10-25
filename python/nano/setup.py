@@ -86,7 +86,7 @@ def setup_package():
                         "opencv-python-headless",
                         "PyTurboJPEG",
                         "opencv-transforms",
-                        "intel_extension_for_pytorch==1.12.1;platform_system!='Windows'"]
+                        "intel_extension_for_pytorch==1.12.100;platform_system!='Windows'"]
     
     inference_requires = ["onnx==1.12.0",
                           "onnxruntime==1.12.1",
