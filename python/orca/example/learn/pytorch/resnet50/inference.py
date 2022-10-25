@@ -49,6 +49,10 @@ parser.add_argument('--workers', default=4, type=int,
                     help='number of data loading workers (default: 4)')
 parser.add_argument("--dummy", action='store_true',
                     help="using dummy data to test the performance of inference")
+parser.add_argument('--hub', action='store_true', default=False,
+                    help='use model with torch hub')
+parser.add_argument('--pretrained', dest='pretrained', action='store_true',
+                    help='use pre-trained model')
 
 
 class DummyData(torch.utils.data.Dataset):
@@ -112,14 +116,41 @@ def validate(args):
         return val_loader
 
     def model_creator(config):
-        print("=> using pre-trained model '{}'".format('resnet50'))
-        model = models.__dict__['resnet50'](pretrained=True)
+        arch = 'resnet50'
+        if args.hub:
+            torch.set_flush_denormal(True)
+            model = torch.hub.load('facebookresearch/WSL-Images', arch)
+        else:
+            # create model
+            if args.pretrained:
+                print("=> using pre-trained model '{}'".format(args.arch))
+                model = models.__dict__[arch](pretrained=True)
+            else:
+                print("=> creating model '{}'".format(args.arch))
+                model = models.__dict__[arch]()
 
         if args.ipex:
             print("using ipex model to do inference\n")
             import intel_extension_for_pytorch as ipex
 
             if args.int8:
+                model.eval()
+                if not args.calibration:
+                    from torch.ao.quantization import MinMaxObserver, PerChannelMinMaxObserver, QConfig
+                    x = torch.randn(args.batch_size, 3, 224, 224).contiguous(memory_format=torch.channels_last)
+                    qconfig = QConfig(
+                        activation=MinMaxObserver.with_args(qscheme=torch.per_tensor_symmetric, dtype=torch.qint8),
+                        weight=PerChannelMinMaxObserver.with_args(dtype=torch.qint8,
+                                                                  qscheme=torch.per_channel_symmetric))
+                    prepared_model = ipex.quantization.prepare(model, qconfig, x, inplace=True)
+                    prepared_model.load_qconf_summary(qconf_summary=args.configure_dir)
+                    model = ipex.quantization.convert(prepared_model)
+                    model = torch.jit.trace(model, x)
+                    model = torch.jit.freeze(model.eval())
+                    y = model(x)
+                    y = model(x)
+                    print("running int8 evaluation step\n")
+
                 import torch.fx.experimental.optimization as optimization
 
                 model = optimization.fuse(model, inplace=True)
@@ -135,6 +166,11 @@ def validate(args):
                 # for ipex path, always convert model to channels_last for bf16, fp32.
                 # TODO: int8 path: https://jira.devtools.intel.com/browse/MFDNN-6103
                 model = model.to(memory_format=torch.channels_last)
+                model.eval()
+
+                if args.bf32:
+                    ipex.set_fp32_math_mode(mode=ipex.FP32MathMode.BF32, device="cpu")
+                    print("using bf32 fmath mode\n")
 
                 if args.bf16:
                     model = ipex.optimize(model, dtype=torch.bfloat16, inplace=True)
@@ -155,7 +191,7 @@ def validate(args):
                             model = torch.jit.trace(model, x).eval()
                     model = torch.jit.freeze(model)
         else:
-            print("using offical pytorch model to do inference\n")
+            print("using official pytorch model to do inference\n")
 
         model.eval()
         return model
