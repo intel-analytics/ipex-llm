@@ -43,11 +43,17 @@ fi
 
 if [ $RUN_PART1 = 1 ]; then
 echo "Running chronos tests Part 1"
+```
 python -m pytest -v -m "not onnxrt16 and not tmp_skip" test/bigdl/chronos/model \
                                                        test/bigdl/chronos/forecaster \
                                                        test/bigdl/chronos/metric \
                                                        test/bigdl/chronos/pytorch \
        -k "not test_forecast_tcmf_distributed"
+```
+python -m pytest -v -m "tmp_skip" test/bigdl/chronos/model \
+                                  test/bigdl/chronos/forecaster \
+                                  test/bigdl/chronos/metric \
+                                  test/bigdl/chronos/pytorch
 exit_status_0=$?
 if [ $exit_status_0 -ne 0 ];
 then
@@ -57,11 +63,17 @@ fi
 
 if [ $RUN_PART2 = 1 ]; then
 echo "Running chronos tests Part 2"
+'''
 python -m pytest -v -m "not onnxrt16 and not tmp_skip" test/bigdl/chronos/autots\
                                                        test/bigdl/chronos/data \
                                                        test/bigdl/chronos/simulator \
                                                        test/bigdl/chronos/detector \
         -k "not test_ae_fit_score_unrolled"
+'''
+python -m pytest -v -m "tmp_skip" test/bigdl/chronos/autots\
+                                  test/bigdl/chronos/data \
+                                  test/bigdl/chronos/simulator \
+                                  test/bigdl/chronos/detector
 exit_status_0=$?
 if [ $exit_status_0 -ne 0 ];
 then
