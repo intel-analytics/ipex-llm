@@ -1,15 +1,15 @@
 name: Friesian Docker Build
 
 on:
-  #  push:
-  #    paths:
-  #      - 'scala/friesian/**'
-  #      - '.github/actions/friesian-docker-build-action/action.yml'
-  #  pull_request:
-  #    branches: [ main ]
-  #    paths:
-  #      - 'scala/friesian/**'
-  #      - '.github/actions/friesian-docker-build-action/action.yml'
+  push:
+    paths:
+      - 'scala/friesian/**'
+      - '.github/actions/friesian-docker-build-action/action.yml'
+  pull_request:
+    branches: [ main ]
+    paths:
+      - 'scala/friesian/**'
+      - '.github/actions/friesian-docker-build-action/action.yml'
   #  schedule:
   #    - cron: '0 12 * * *' # GMT time, 12:00 GMT == 20:00 China
   workflow_dispatch:
@@ -41,6 +41,12 @@ jobs:
 
       - name: Set up JDK8
         uses: ./.github/actions/jdk-setup-action
+
+      - uses: actions/cache@v2
+        with:
+          path: ~/.m2/repository
+          key: maven-${{ hashFiles('**/pom.xml') }}
+          restore-keys: maven-
 
       - name: Set up maven
         uses: ./.github/actions/maven-setup-action
