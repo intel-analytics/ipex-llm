@@ -181,7 +181,7 @@ jobs:
           fi
           pip install pytest
           pip install neural-compressor==1.11
-          pip install onnxruntime onnxruntime-extensions onnx
+          pip install onnxruntime onnxruntime-extensions onnx onnxsim
           source bigdl-nano-init
           bash python/nano/test/run-nano-pytorch-onnx-tests.sh
           source $CONDA/bin/deactivate

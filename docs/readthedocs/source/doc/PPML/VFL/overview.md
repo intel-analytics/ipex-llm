@@ -19,5 +19,5 @@ The high-level architecture is shown in the diagram below. This includes the com
 ![](../images/fl_architecture.png)
 
 ## Next steps
-For detailed usage of BigDL PPML VFL, please see [User Guide](user_guide.md)
-
+For detailed usage of BigDL PPML VFL, please see [User Guide](user_guide.md)  
+For BigDL PPML VFL with Homomorphic Encryption, please see [VFL HE](vfl_he.md) 

@@ -63,6 +63,7 @@ jobs:
           pip install onnx==1.11.0
           pip install onnxruntime==1.11.1
           pip install openvino-dev==2022.2.0
+          pip install onnxsim==0.4.8
           pip install scipy==1.5.4
           pip install cloudpickle
           pip install matplotlib

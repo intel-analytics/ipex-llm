@@ -32,7 +32,7 @@ class PytorchONNXRuntimeModel(ONNXRuntimeModel, AcceleratedLightningModule):
     '''
 
     def __init__(self, model, input_sample=None, onnxruntime_session_options=None,
-                 **export_kwargs):
+                 simplification=True, **export_kwargs):
         """
         Create a ONNX Runtime model from pytorch.
 
@@ -41,6 +41,10 @@ class PytorchONNXRuntimeModel(ONNXRuntimeModel, AcceleratedLightningModule):
         :param input_sample: A set of inputs for trace, defaults to None if you have trace before or
                              model is a LightningModule with any dataloader attached,
                              defaults to None.
+        :param onnxruntime_session_options: A session option for onnxruntime accelerator.
+        :param simplification: whether we use onnxsim to simplify the ONNX model, only valid when
+                               accelerator='onnxruntime', otherwise will be ignored. If this option
+                               is set to True, new dependency 'onnxsim' need to be installed.
         :param **export_kwargs: will be passed to torch.onnx.export function.
         """
         # Typically, when model is int8, we use this path
@@ -48,10 +52,16 @@ class PytorchONNXRuntimeModel(ONNXRuntimeModel, AcceleratedLightningModule):
         onnx_path = model
         if isinstance(model, torch.nn.Module):
             # Typically, when model is fp32, we use this path
-            # TODO: expose ONNX export parameters to users
             export_to_onnx(model, input_sample=input_sample, onnx_path='tmp.onnx',
                            **export_kwargs)
             onnx_path = 'tmp.onnx'
+            if simplification is True:
+                # simplify model
+                try:
+                    from bigdl.nano.deps.onnxsim.onnxsim_api import onnx_simplify
+                    onnx_simplify(onnx_path)
+                except Exception:
+                    pass
         AcceleratedLightningModule.__init__(self, None)
         ONNXRuntimeModel.__init__(self, onnx_path, session_options=onnxruntime_session_options)
         if os.path.exists('tmp.onnx'):

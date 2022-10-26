@@ -17,7 +17,7 @@
 
 def PytorchONNXRuntimeModel(model, input_sample=None,
                             onnxruntime_session_options=None,
-                            **export_kwargs):
+                            simplification=True, **export_kwargs):
     """
         Create a ONNX Runtime model from pytorch.
 
@@ -27,13 +27,16 @@ def PytorchONNXRuntimeModel(model, input_sample=None,
                              model is a LightningModule with any dataloader attached,
                              defaults to None.
         :param onnxruntime_session_options: A session option for onnxruntime accelerator.
+        :param simplification: whether we use onnxsim to simplify the ONNX model, only valid when
+                               accelerator='onnxruntime', otherwise will be ignored. If this option
+                               is set to True, new dependency 'onnxsim' need to be installed.
         :param **export_kwargs: will be passed to torch.onnx.export function.
         :return: A PytorchONNXRuntimeModel instance
         """
     from .pytorch.pytorch_onnxruntime_model import PytorchONNXRuntimeModel
     return PytorchONNXRuntimeModel(model, input_sample,
                                    onnxruntime_session_options=onnxruntime_session_options,
-                                   **export_kwargs)
+                                   simplification=simplification, **export_kwargs)
 
 
 def load_onnxruntime_model(path):

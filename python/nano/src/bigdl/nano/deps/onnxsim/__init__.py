@@ -1,5 +1,3 @@
-#!/bin/bash
-
 #
 # Copyright 2016 The BigDL Authors.
 #
@@ -15,10 +13,3 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-
-set -x
-
-echo $BIGDL_VERSION
-echo $SPARK_VERSION
-
-wget https://sourceforge.net/projects/analytics-zoo/files/friesian-serving-jars/bigdl-friesian-spark_$SPARK_VERSION-$BIGDL_VERSION-serving.jar -O bigdl-friesian-serving.jar
