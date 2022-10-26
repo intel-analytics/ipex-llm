@@ -6,8 +6,8 @@ on:
 #      - 'scala/friesian/**'
 #      - '.github/workflows/friesian-docker-build.yml'
 #      - '.github/actions/friesian-docker-build-action/action.yml'
-  pull_request:
-    branches: [ main ]
+#  pull_request:
+#    branches: [ main ]
 #    paths:
 #      - 'scala/friesian/**'
 #      - '.github/workflows/friesian-docker-build.yml'
@@ -16,15 +16,15 @@ on:
   #    - cron: '0 12 * * *' # GMT time, 12:00 GMT == 20:00 China
   workflow_dispatch:
     inputs:
-#      artifact:
-#        description: 'select which job to run("all" will make all jobs run)'
-#        required: true
-#        default: 'all'
-#        type: choice
-#        options:
-#          - all
-#          - serving-jar-package
-#          - docker-build
+      artifact:
+        description: 'select which job to run("all" will make all jobs run)'
+        required: true
+        default: 'all'
+        type: choice
+        options:
+          - all
+          - serving-jar-package
+          - docker-build
       tag:
         description: 'docker image tag (e.g. 2.1.0-SNAPSHOT)'
         required: true
@@ -36,7 +36,7 @@ permissions:
 
 jobs:
   serving-jar-package:
-#    if: ${{ github.event.inputs.artifact == 'serving-jar-package' || github.event.inputs.artifact == 'all' }}
+    if: ${{ github.event.inputs.artifact == 'serving-jar-package' || github.event.inputs.artifact == 'all' }}
     runs-on:  [self-hosted,alpha,Bree,ubuntu-20.04-lts]
     steps:
       - uses: actions/checkout@v3
@@ -61,7 +61,7 @@ jobs:
 
   friesian-docker-build:
     needs: serving-jar-package
-#    if: ${{ github.event.inputs.artifact == 'docker-build' || github.event.inputs.artifact == 'all' }}
+    if: ${{ github.event.inputs.artifact == 'docker-build' || github.event.inputs.artifact == 'all' }}
     runs-on: [ self-hosted, Shire ]
     steps:
       - uses: actions/checkout@v3
