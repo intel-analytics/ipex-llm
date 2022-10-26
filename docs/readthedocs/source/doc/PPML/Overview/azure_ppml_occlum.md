@@ -114,7 +114,14 @@ This may be associated with [[RFC] IOCTRL IOCTL_GET_DCAP_QUOTE_SIZE failed](http
 
 ## Reference
 
-1. https://www.intel.com/content/www/us/en/developer/tools/software-guard-extensions/overview.html
-2. https://github.com/intel-analytics/BigDL
-3. https://github.com/occlum/occlum
-4. [Confidential Data Analytics with Apache Spark on Intel SGX Confidential Containers](https://github.com/Azure-Samples/confidential-container-samples/blob/main/confidential-big-data-spark/README.md)
+1.	https://github.com/intel-analytics/BigDL-PPML-Azure-Occlum-Example 
+2.	https://www.intel.com/content/www/us/en/developer/tools/software-guard-extensions/overview.html 
+3.	https://www.databricks.com/glossary/what-are-spark-applications
+4.	https://github.com/occlum/occlum 
+5.	https://github.com/intel-analytics/BigDL
+6.	https://docs.microsoft.com/en-us/azure/open-datasets/dataset-taxi-yellow
+7.	https://azure.microsoft.com/en-us/services/storage/data-lake-storage/
+8.	https://azure.microsoft.com/en-us/services/key-vault/
+9.	https://azure.microsoft.com/en-us/services/azure-attestation/
+10.	https://github.com/Azure-Samples/confidential-container-samples/blob/main/confidential-big-data-spark/README.md
+11.	https://bigdl.readthedocs.io/en/latest/doc/PPML/Overview/ppml.html 
