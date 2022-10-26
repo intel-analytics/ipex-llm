@@ -20,8 +20,7 @@ runs:
       shell: bash
       run: |
         conda create -n py37-jep -y python==3.7.10 setuptools==58.0.4
-        source activate py37-jep
-        
+
       env:
         BIGDL_ROOT: ${{ github.workspace }}
         ANALYTICS_ZOO_ROOT: ${{ github.workspace }}
@@ -29,6 +28,7 @@ runs:
     -name: Run test
       shell: bash
       run: |
+        source activate py37-jep
         conda remove -c anaconda -y intel-openmp || true
         chmod a+x python/orca/dev/colab-notebook/ipynb2py.sh
         chmod a+x python/chronos/dev/app/ipynb2py.sh
@@ -49,6 +49,7 @@ runs:
         pip uninstall -y bigdl-dllib bigdl-orca bigdl-chronos
         unset PYTHONHOME
         source deactivate
+        conda remove -n py37-jep
 
       env:
         BIGDL_ROOT: ${{ github.workspace }}
