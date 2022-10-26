@@ -36,9 +36,30 @@ runs:
         export CLASSPATH=.:${JAVA_HOME}/lib:${JAVA_HOME}/jre/lib:${JAVA_HOME}/lib/tools.jar:${JAVA_HOME}/lib/dt.jar
         export PATH=${JAVA_HOME}/bin/:${JAVA_HOME}/jre/bin:${PATH}
         export PATH=/opt/work/apache-maven-3.6.3/bin:$PATH 
-        echo $JAVA_HOME
-        echo $CLASSPATH
-        echo $PATH
+        source activate py37-jep
+        conda remove -c anaconda -y intel-openmp || true
+        chmod a+x python/orca/dev/colab-notebook/ipynb2py.sh
+        chmod a+x python/chronos/dev/app/ipynb2py.sh
+        chmod a+x python/chronos/dev/colab-notebook/run-notebook-pytorch.sh
+        chmod a+x python/orca/dev/colab-notebook/run-notebook-pytorch.sh
+        export LD_LIBRARY_PATH=/opt/conda/envs/py37-jep/lib:$LD_LIBRARY_PATH
+        export PYTHONHOME=/opt/conda/envs/py37-jep 
+        pip uninstall -y bigdl-dllib bigdl-orca bigdl-chronos
+        pip install jupyter bigdl-orca matplotlib
+        pip install --pre --upgrade bigdl-chronos[pytorch,distributed]
+        pip uninstall -y torchtext 
+        if [ -f python/chronos/dev/colab-notebook/run-notebook-pytorch.sh ]
+        then
+          bash python/chronos/dev/colab-notebook/run-notebook-pytorch.sh
+        fi
+        if [ -f python/orca/dev/colab-notebook/run-notebook-pytorch.sh ]
+        then
+          bash python/orca/dev/colab-notebook/run-notebook-pytorch.sh
+        fi
+        pip uninstall -y bigdl-dllib bigdl-orca bigdl-chronos
+        unset PYTHONHOME
+        source deactivate
+        conda remove -n py37-jep
 
       env:
         BIGDL_ROOT: ${{ github.workspace }}
