@@ -478,7 +478,7 @@ jobs:
 
   Dllib-Python-Py37-Spark3-Part1:
     needs: changes
-    if: ${{ needs.changes.outputs.friesian == 'true' }}
+    if: ${{ needs.changes.outputs.dllib == 'true' }}
     runs-on: [self-hosted, Gondolin, ubuntu-20.04-lts]
     
     steps:
