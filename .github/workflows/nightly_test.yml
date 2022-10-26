@@ -778,6 +778,10 @@ jobs:
 
     steps:
     - uses: actions/checkout@v3
+    - name: Set up JDK8
+      uses: ./.github/actions/jdk-setup-action
+    - name: Set up maven
+      uses: ./.github/actions/maven-setup-action
     - name: Run Test
       uses: ./.github/actions/colab/colab-python-py37-pytorch
     - name: Create Job Badge
