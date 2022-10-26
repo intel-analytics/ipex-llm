@@ -274,14 +274,17 @@ class TestLite(TestCase):
         MyNanoAutoLRCorrectness(num_processes=2, distributed_backend='spawn', auto_lr=True).train(0.01)
 
     def test_torch_nano_cuda_patch_spawn(self):
-        from bigdl.nano.pytorch import patch_torch
+        from bigdl.nano.pytorch import patch_torch, unpatch_torch
         patch_torch(cuda_to_cpu=True)
         MyNanoCUDA(num_processes=2, distributed_backend='spawn').train()
+        unpatch_torch()
 
     def test_torch_nano_cuda_patch_subprocess(self):
-        from bigdl.nano.pytorch import patch_torch
+        from bigdl.nano.pytorch import patch_torch, unpatch_torch
         patch_torch(cuda_to_cpu=True)
         MyNanoCUDA(num_processes=2, distributed_backend='subprocess').train()
+        unpatch_torch()
+
 
 if __name__ == '__main__':
     pytest.main([__file__])
