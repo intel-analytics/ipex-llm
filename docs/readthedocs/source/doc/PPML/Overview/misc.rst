@@ -13,3 +13,4 @@ Advanced Topic
 * `TPC-H with Trusted SparkSQL on Kubernetes <../QuickStart/tpc-h_with_sparksql_on_k8s.html>`_
 * `TPC-DS with Trusted SparkSQL on Kubernetes <../QuickStart/tpc-ds_with_sparksql_on_k8s.html>`_
 * `Privacy Preserving Machine Learning (PPML) on Azure User Guide <azure_ppml.html>`_
+* `BigDL-PPML-Azure-Occlum-Example <azure_occlum.html>`_

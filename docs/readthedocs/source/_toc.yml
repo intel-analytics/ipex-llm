@@ -236,7 +236,7 @@ subtrees:
                   - file: doc/PPML/QuickStart/tpc-ds_with_sparksql_on_k8s
                   - file: doc/PPML/Overview/azure_ppml
                   - file: doc/PPML/Overview/deploy_ppml_in_production
-
+                  - file: doc/PPML/Overview/azure_occlum
 
   - entries:
     - file: doc/UserGuide/develop
