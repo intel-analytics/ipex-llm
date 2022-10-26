@@ -22,6 +22,11 @@ spec:
       #    secretKeyRef:
       #      name: kms-secret
       #      key: app_key
+      #- name: POLICY_ID
+      #  valueFrom:
+      #    secretKeyRef:
+      #      name: policy-id-secret
+      #      key: policy_id
     volumeMounts:
       - name: device-plugin
         mountPath: /var/lib/kubelet/device-plugins
