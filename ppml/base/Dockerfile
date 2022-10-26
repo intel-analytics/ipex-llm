@@ -1,4 +1,5 @@
 ARG BIGDL_VERSION=2.2.0-SNAPSHOT
+ARG SPARK_VERSION=3.1.3
 
 FROM ubuntu:20.04
 ARG http_proxy
@@ -9,6 +10,7 @@ ARG JDK_VERSION=8u192
 ARG JDK_URL
 
 ENV BIGDL_VERSION                       ${BIGDL_VERSION}
+ENV SPARK_VERSION                       ${SPARK_VERSION}
 ENV LOCAL_IP                            127.0.0.1
 ENV SGX_MEM_SIZE                        32G
 ENV SGX_LOG_LEVEL                       error
