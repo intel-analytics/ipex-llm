@@ -587,7 +587,7 @@ When SGX is not used, the configuration is the same as spark native.
     --conf spark.executor.memory=12g
 ```
 #### 2. Spark security configurations
-Below is an explanation of these security configurations, Please refer to [Spark Security](https://spark.apache.org/docs/${SPARK_VERSION}/security.html) for detail.  
+Below is an explanation of these security configurations, Please refer to [Spark Security](https://spark.apache.org/docs/3.1.2/security.html) for detail.  
 ##### 2.1 Spark RPC
 ###### 2.1.1 Authentication
 `spark.authenticate`: true -> Spark authenticates its internal connections, default is false.  
