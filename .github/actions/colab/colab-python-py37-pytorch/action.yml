@@ -28,6 +28,7 @@ runs:
     - name: Run test
       shell: bash
       run: |
+        set -x
         source activate py37-jep
         conda remove -c anaconda -y intel-openmp || true
         chmod a+x python/orca/dev/colab-notebook/ipynb2py.sh
@@ -37,6 +38,7 @@ runs:
         export LD_LIBRARY_PATH=/opt/conda/envs/py37-jep/lib:$LD_LIBRARY_PATH
         export PYTHONHOME=/opt/conda/envs/py37-jep 
         pip uninstall -y bigdl-dllib bigdl-orca bigdl-chronos
+        pip install jupyter
         pip install --pre --upgrade bigdl-chronos
         if [ -f python/chronos/dev/colab-notebook/run-notebook-pytorch.sh ]
         then
