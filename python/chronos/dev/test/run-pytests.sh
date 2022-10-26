@@ -47,6 +47,7 @@ python -m pytest -v -m "not onnxrt16" test/bigdl/chronos/model \
                                       test/bigdl/chronos/forecaster \
                                       test/bigdl/chronos/metric \
                                       test/bigdl/chronos/pytorch
+       -k "not test_forecast_tcmf_distributed"
 exit_status_0=$?
 if [ $exit_status_0 -ne 0 ];
 then
@@ -60,6 +61,7 @@ python -m pytest -v -m "not onnxrt16" test/bigdl/chronos/autots\
                                       test/bigdl/chronos/data \
                                       test/bigdl/chronos/simulator \
                                       test/bigdl/chronos/detector
+       -k "not test_ae_fit_score_unrolled"
 exit_status_0=$?
 if [ $exit_status_0 -ne 0 ];
 then
