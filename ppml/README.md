@@ -355,6 +355,8 @@ To build your own Big Data & AI applications, refer to [develop your own Big Dat
             value: true
           - name: PCCS_URL
             value: your_pccs_url  -----> <set_the_value_to_your_pccs_url>
+          - name: ATTESTATION_URL
+            value: your_attestation_url
           - name: ATTESTATION_ID
             valueFrom:
               secretKeyRef:
