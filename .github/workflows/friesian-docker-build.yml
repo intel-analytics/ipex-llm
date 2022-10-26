@@ -9,6 +9,7 @@ on:
     branches: [ main ]
     paths:
       - 'scala/friesian/**'
+      - '.github/workflow/friesian-docker-build.yml'
       - '.github/actions/friesian-docker-build-action/action.yml'
   #  schedule:
   #    - cron: '0 12 * * *' # GMT time, 12:00 GMT == 20:00 China
