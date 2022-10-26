@@ -33,8 +33,7 @@ runs:
       shell: bash
       run: |
         set -x
-        echo $JAVA_HOME
-        echo ${JAVA_HOME}
+        mvn -version
 
       env:
         BIGDL_ROOT: ${{ github.workspace }}
