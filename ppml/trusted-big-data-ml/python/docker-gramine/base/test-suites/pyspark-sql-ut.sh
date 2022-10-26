@@ -25,6 +25,7 @@ for ((i=1; i<=TIMES; i++))
 do
         # prepare input suites and test failed suites again
         mv $FAILED_SUITES_FILE_PATH $INPUT_SUITES_FILE_PATH
+        touch $FAILED_SUITES_FILE_PATH
 
         while read suite
         do
@@ -57,4 +58,9 @@ do
         echo -e "The Failed Test Files Count: `cat $FAILED_SUITES_FILE_PATH | wc -l`, Below The File List:\n"
         cat $FAILED_SUITES_FILE_PATH
 	echo -e "\n\n\n"
+
+	if [ `cat $FAILED_SUITES_FILE_PATH | wc -l` -eq 0 ]
+        then
+	    break
+	fi
 done
