@@ -1,6 +1,6 @@
 #!/bin/bash
 
-#Prepare Spark Test-jars and Test-classes
+# Prepare Spark Test-jars and Test-classes
 cd /opt
 wget https://github.com/apache/spark/archive/refs/tags/v$SPARK_VERSION.zip
 unzip -q v$SPARK_VERSION.zip
@@ -28,33 +28,65 @@ wget https://repo1.maven.org/maven2/org/apache/spark/spark-sql_2.12/$SPARK_VERSI
 #jar xvf spark-sql_2.12-$SPARK_VERSION-tests.jar
 #rm spark-sql_2.12-$SPARK_VERSION-tests.jar
 
-sparkSqlSuites=("org.apache.spark.status.api.v1.sql.SqlResourceSuite" \
-                "org.apache.spark.sql.UnsafeRowSuite" \
-                "org.apache.spark.sql.execution.columnar.compression.IntegralDeltaSuite" \
-                "org.apache.spark.sql.api.python.PythonSQLUtilsSuite")
 
+cd /ppml/trusted-big-data-ml
 mkdir -p /ppml/trusted-big-data-ml/logs/runtime
 mkdir -p /ppml/trusted-big-data-ml/logs/reporter
 
-cd /ppml/trusted-big-data-ml
+# Source Suites Path
+SOURCE_SUITES_FILE_PATH="/ppml/trusted-big-data-ml/work/data/Spark-UT-Suites/sparkSuites"
 
-for suite in "${sparkSqlSuites[@]}"
+# temp input data for and result data for ut test
+INPUT_SUITES_FILE_PATH="/ppml/trusted-big-data-ml/sparkInputSuites"
+SUCCESS_SUITES_FILE_PATH="/ppml/trusted-big-data-ml/sparkSucceessSuites"
+FAILED_SUITES_FILE_PATH="/ppml/trusted-big-data-ml/sparkFailedSuites"
+
+# copy source suites to failed suites, assume
+cp $SOURCE_SUITES_FILE_PATH $FAILED_SUITES_FILE_PATH
+
+# total test suites
+total_test_suites=`cat $SOURCE_SUITES_FILE_PATH | wc -l`
+
+# Run 3 times for spark sql ut
+TIMES=3
+
+for ((i=1; i<=TIMES; i++))
 do
-    while true
+    # prepare input suites and test failed suites again
+    mv $FAILED_SUITES_FILE_PATH $INPUT_SUITES_FILE_PATH
+
+    while read suite
     do
-        export sgx_command="/opt/jdk8/bin/java -cp '$SPARK_HOME/conf/:$SPARK_HOME/jars/*:$SPARK_HOME/test-jars/*:$SPARK_HOME/examples/jars/*' \
-                                        -Xmx8g -Dspark.testing=true -Djdk.lang.Process.launchMechanism=posix_spawn -XX:MaxMetaspaceSize=256m -Dos.name='Linux' \
-                                        -Dspark.test.home=/ppml/trusted-big-data-ml/work/spark-$SPARK_VERSION -Dspark.python.use.daemon=false -Dspark.python.worker.reuse=false \
-                                        -Dspark.driver.host=127.0.0.1 org.scalatest.tools.Runner -s ${suite} -fF /ppml/trusted-big-data-ml/logs/reporter/${suite}.txt"
-        gramine-sgx bash 2>&1 | tee /ppml/trusted-big-data-ml/logs/runtime/${suite}.log
-        echo "##########$suite Test:"
-        if [ -z "$(grep "All tests passed" /ppml/trusted-big-data-ml/logs/reporter/${suite}.txt)" ]
+        export sgx_command="/opt/jdk8/bin/java \
+               -cp '$SPARK_HOME/conf/:$SPARK_HOME/jars/*:$SPARK_HOME/test-jars/*:$SPARK_HOME/examples/jars/*' \
+               -Xmx8g \
+               -Dspark.testing=true \
+               -Djdk.lang.Process.launchMechanism=posix_spawn \
+               -XX:MaxMetaspaceSize=256m \
+               -Dos.name='Linux' \
+               -Dspark.test.home=/ppml/trusted-big-data-ml/work/spark-$SPARK_VERSION \
+               -Dspark.python.use.daemon=false \
+               -Dspark.python.worker.reuse=false \
+               -Dspark.driver.host=$LOCAL_IP \
+               org.scalatest.tools.Runner \
+               -s $suite \
+               -fF /ppml/trusted-big-data-ml/logs/reporter/$suite.txt"
+        gramine-sgx bash 2>&1 | tee /ppml/trusted-big-data-ml/logs/runtime/$suite.log
+
+        if [ -z "$(grep "All tests passed" /ppml/trusted-big-data-ml/logs/reporter/$suite.txt)" ]
         then
-            echo "failed"
+            echo "$suite" >> $FAILED_SUITES_FILE_PATH
         else
-            echo "pass"
-            break
+            echo "$suite" >> $SUCCESS_SUITES_FILE_PATH
         fi
-    done
-    echo "##########$suite Test Done"
+    done < $INPUT_SUITES_FILE_PATH
+
+    # always print the result on the console per time
+    echo "Total Test Suites Count: $total_test_suites"
+    echo -e "The Success Test Files Count: `cat $SUCCESS_SUITES_FILE_PATH | wc -l`, Below The File List:\n"
+    cat $SUCCESS_SUITES_FILE_PATH
+    echo -e "\n-----------------------------------------------------------------------------------------"
+    echo -e "The Failed Test Files Count: `cat $FAILED_SUITES_FILE_PATH | wc -l`, Below The File List:\n"
+    cat $FAILED_SUITES_FILE_PATH
+    echo -e "\n\n\n"
 done
