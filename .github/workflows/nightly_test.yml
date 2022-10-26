@@ -847,6 +847,7 @@ jobs:
       shell: bash
       run: |
         set -x
+        export FTP_URI=ftp://zoo:1234qwer@10.112.231.51
         chmod a+x python/orca/dev/colab-notebook/ipynb2py.sh
         conda install intel-openmp
         conda remove -c anaconda -y intel-openmp || true
