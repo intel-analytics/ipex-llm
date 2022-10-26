@@ -53,8 +53,8 @@ fi
 
 # Attestation
 if [ -z "$ATTESTATION" ]; then
-    echo "[INFO] Attestation is disabled!"
-    ATTESTATION="false"
+  echo "[INFO] Attestation is disabled!"
+  ATTESTATION="false"
 fi
 
 echo $SGX_ENABLED
@@ -65,7 +65,7 @@ if [ "$SGX_ENABLED" == "true" ]; then
   if [ "$ATTESTATION" ==  "true" ]; then 
     bash attestation.sh
     echo $runtime_command >> temp_command_file
-    export sgx_command="bash temp_commnd_file && rm temp_commnd_file"
+    export sgx_command="bash temp_command_file && rm temp_command_file"
   else 
     export sgx_command=$runtime_command
   fi
