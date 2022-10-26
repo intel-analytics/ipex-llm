@@ -64,8 +64,8 @@ object VflLogisticRegressionCkks {
       val inputDir = param.dataPath
       val clientId = param.clientId
 
-      val trainDataPath = s"$inputDir/adult-${clientId}.data"
-      val testDataPath = s"$inputDir/adult-${clientId}.test"
+      val trainDataPath = s"$inputDir/adult.data"
+      val testDataPath = s"$inputDir/adult.test"
       val mode = param.mode
       val ckksSecretPath = param.secretePath
 
@@ -87,14 +87,16 @@ object VflLogisticRegressionCkks {
       }
       linear.getParameters()._1.randn(0, 0.001)
 
+      val learningRate = 0.01f
       val lr: NNModel = mode match {
-        case "dllib" => new VFLLogisticRegression(numFeature, 0.005f, linear)
+        case "dllib" => new VFLLogisticRegression(numFeature, learningRate, linear)
         case "ckks" =>
           FLContext.initCkks(ckksSecretPath)
-          new VFLLogisticRegression(numFeature, 0.005f, linear, "vfl_logistic_regression_ckks")
+          new VFLLogisticRegression(numFeature, learningRate,
+            linear, "vfl_logistic_regression_ckks")
         case _ => throw new Error()
       }
-      lr.estimator.train(40, trainDataset.toLocal(), null)
+      lr.estimator.train(20, trainDataset.toLocal(), null)
 
       val validationMethod = new BinaryAccuracy[Float]()
       val preditions = lr.estimator.predict(validationDataset.toLocal())
