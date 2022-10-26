@@ -49,7 +49,7 @@ jobs:
           source bigdl-nano-init
           pip install pytest nbmake
           pip install neural-compressor==1.11.0
-          pip install onnx onnxruntime onnxruntime-extensions
+          pip install onnx onnxruntime onnxruntime-extensions onnxsim
           bash python/nano/tutorial/notebook/inference/pytorch/run-nano-howto-guides-inference-pytorch-tests.sh onnx
           source $CONDA/bin/deactivate
           $CONDA/bin/conda remove -n howto-guides-inference-pytorch-onnx --all

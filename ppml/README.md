@@ -63,7 +63,13 @@ In this section, you can get started with running a simple native python HelloWo
 
 <details><summary>Click to see detailed steps</summary>
 
-**a. Prepare Keys**
+**a. Prepare Images**
+
+For demo purpose, we will skip building the custom image here and use the public reference image provided by BigDL PPML `intelanalytics/bigdl-ppml-trusted-big-data-ml-python-gramine-reference:2.2.0-SNAPSHOT` to have a quick start.
+
+Note: This public image is only for demo purposes, it is non-production. For security concern, you are strongly recommended to generate your encalve key and build your own custom image for your production environment. Refer to How to Build Your PPML image for production environment.
+
+**b. Prepare Keys**
 
 * generate ssl_key
 
@@ -75,21 +81,12 @@ In this section, you can get started with running a simple native python HelloWo
   ```
   This script will generate keys under keys/ folder
 
-* generate enclave-key.pem
-
-  ```
-  openssl genrsa -3 -out enclave-key.pem 3072
-  ```
-  This script generates a file enclave-key.pem which is used to sign image.
-
-**b. Start the BigDL PPML client container**
+**c. Start the BigDL PPML client container**
 ```
 #!/bin/bash
 
-# ENCLAVE_KEY_PATH means the absolute path to the "enclave-key.pem" in step a
 # KEYS_PATH means the absolute path to the keys folder in step a
 # LOCAL_IP means your local IP address.
-export ENCLAVE_KEY_PATH=YOUR_LOCAL_ENCLAVE_KEY_PATH
 export KEYS_PATH=YOUR_LOCAL_KEYS_PATH
 export LOCAL_IP=YOUR_LOCAL_IP
 export DOCKER_IMAGE=intelanalytics/bigdl-ppml-trusted-big-data-ml-python-graphene:devel
@@ -104,7 +101,6 @@ sudo docker run -itd \
     --device=/dev/gsgx \
     --device=/dev/sgx/enclave \
     --device=/dev/sgx/provision \
-    -v $ENCLAVE_KEY_PATH:/graphene/Pal/src/host/Linux-SGX/signer/enclave-key.pem \
     -v /var/run/aesmd/aesm.socket:/var/run/aesmd/aesm.socket \
     -v $KEYS_PATH:/ppml/trusted-big-data-ml/work/keys \
     --name=bigdl-ppml-client-local \
@@ -113,7 +109,7 @@ sudo docker run -itd \
     $DOCKER_IMAGE bash
 ```
 
-**c. Run Python HelloWorld in BigDL PPML Client Container**
+**d. Run Python HelloWorld in BigDL PPML Client Container**
 
 Run the [script](https://github.com/intel-analytics/BigDL/blob/main/ppml/trusted-big-data-ml/python/docker-graphene/start-scripts/start-python-helloworld-sgx.sh) to run trusted [Python HelloWorld](https://github.com/intel-analytics/BigDL/blob/main/ppml/trusted-big-data-ml/python/docker-graphene/examples/helloworld.py) in BigDL PPML client container:
 ```
@@ -127,7 +123,7 @@ The result should look something like this:
 > Hello World
 
 
-**d. Run Spark Pi in BigDL PPML Client Container**
+**e. Run Spark Pi in BigDL PPML Client Container**
 
 Run the [script](https://github.com/intel-analytics/BigDL/blob/main/ppml/trusted-big-data-ml/python/docker-graphene/start-scripts/start-spark-local-pi-sgx.sh) to run trusted [Spark Pi](https://github.com/apache/spark/blob/v3.1.2/examples/src/main/python/pi.py) in BigDL PPML client container:
 
@@ -163,7 +159,51 @@ https://user-images.githubusercontent.com/61072813/184758702-4b9809f9-50ac-425e-
 To secure your Big Data & AI applications in BigDL PPML manner, you should prepare your environment first, including K8s cluster setup, K8s-SGX plugin setup, key/password preparation, key management service (KMS) and attestation service (AS) setup, BigDL PPML client container preparation. **Please follow the detailed steps in** [Prepare Environment](./docs/prepare_environment.md). 
 
 
-#### Step 1. Encrypt and Upload Data
+#### Step 1. Build your PPML image for production environment
+To build a secure PPML image which can be used in production environment, BigDL prepared a public base image that does not contain any secrets. You can customize your own image on top of this base image.
+
+1. Build BigDL Base Image
+
+    Running the following command to build the BigDL base image first. Please update the parameters in `./base/build-base-image.sh` first. 
+
+    ```bash
+    cd base
+    # configure parameters in build-base-image.sh please
+    ./build-base-image.sh
+    cd ..
+    ```
+2. Build Custom Image
+
+    When the base image is ready, you need to generate your enclave key which will be used when building custom image, keep the enclave key safely for future remote attestations.
+
+    Running the following command to generate the enclave key `enclave-key.pem` , which is used to launch and sign SGX Enclave. 
+
+    ```bash
+    cd bigdl-gramine
+    openssl genrsa -3 -out enclave-key.pem 3072
+    ```
+
+    When the enclave key `enclave-key.pem` is generated, you are ready to build your custom image by running the following command: 
+
+    ```bash
+    # under bigdl-gramine dir
+    # modify custom parameters in build-custom-image.sh
+    ./build-custom-image.sh
+    cd ..
+    ```
+
+    The sensitive encalve key will not be saved in the built image. Two values `mr_enclave` and `mr_signer` are recorded while the Enclave is built, you can find `mr_enclave` and `mr_signer` values in the console log, which are hash values and used to register your MREnclave in the following attestation step.
+
+    ````bash
+    [INFO] Use the below hash values of mr_enclave and mr_signer to register enclave:
+    mr_enclave       : c7a8a42af......
+    mr_signer        : 6f0627955......
+    ````
+
+    Note: you can also customize the image  according to your own needs, e.g. install extra python library, add code, jars.
+    
+
+#### Step 2. Encrypt and Upload Data
 Encrypt the input data of your Big Data & AI applications (here we use SimpleQuery) and then upload encrypted data to the nfs server. More details in [Encrypt Your Data](./services/kms-utils/docker/README.md#3-enroll-generate-key-encrypt-and-decrypt).
 
 1. Generate the input data `people.csv` for SimpleQuery application
@@ -173,44 +213,142 @@ you can use [generate_people_csv.py](https://github.com/analytics-zoo/ppml-e2e-e
     ```
     docker exec -i $KMSUTIL_CONTAINER_NAME bash -c "bash /home/entrypoint.sh encrypt $appid $apikey $input_file_path"
     ```
-#### Step 2. Build Big Data & AI applications
+#### Step 3. Build Big Data & AI applications
 To build your own Big Data & AI applications, refer to [develop your own Big Data & AI applications with BigDL PPML](#4-develop-your-own-big-data--ai-applications-with-bigdl-ppml). The code of SimpleQuery is in [here](https://github.com/intel-analytics/BigDL/blob/main/scala/ppml/src/main/scala/com/intel/analytics/bigdl/ppml/examples/SimpleQuerySparkExample.scala), it is already built into bigdl-ppml-spark_3.1.2-2.1.0-SNAPSHOT.jar, and the jar is put into PPML image.
 
-#### Step 3. Attestation 
+#### Step 4. Attestation 
 
-To enable attestation, you should have a running Attestation Service (EHSM-KMS here for example) in your environment. (You can start a KMS  refering to [this link](https://github.com/intel-analytics/BigDL/tree/main/ppml/services/kms-utils/docker)). Configure your KMS app_id and api_key with `kubectl`, and then configure KMS settings in `spark-driver-template.yaml` and `spark-executor-template.yaml` in the container.
-``` bash
-kubectl create secret generic kms-secret --from-literal=app_id=your-kms-app-id --from-literal=api_key=your-kms-api-key
-```
-Configure `spark-driver-template.yaml` for example. (`spark-executor-template.yaml` is similar)
-``` yaml
-apiVersion: v1
-kind: Pod
-spec:
-  containers:
-  - name: spark-driver
-    securityContext:
-      privileged: true
-    env:
-      - name: ATTESTATION
-        value: true
-      - name: ATTESTATION_URL
-        value: your_attestation_url
-      - name: ATTESTATION_ID
-        valueFrom:
-          secretKeyRef:
-            name: kms-secret
-            key: app_id
-      - name: ATTESTATION_KEY
-        valueFrom:
-          secretKeyRef:
-            name: kms-secret
-            key: api_key
-...
-```
-You should get `Attestation Success!` in logs after you [submit a PPML job](#step-4-submit-job) if the quote generated with user report is verified successfully by Attestation Service, or you will get `Attestation Fail! Application killed!` and the job will be stopped.
+1. Disable attestation
 
-#### Step 4. Submit Job
+    To disable attestation service, you should configure spark-driver-template.yaml and spark-executor-template.yaml to set `ATTESTATION` value to `false`. By default, the attestation service is disabled. 
+    ``` yaml
+    apiVersion: v1
+    kind: Pod
+    spec:
+      containers:
+      - name: spark-driver
+        securityContext:
+          privileged: true
+        env:
+          - name: ATTESTATION
+            value: false
+    ```
+
+2. Enable attestation
+      
+    To enable attestation, first you should have a running Attestation Service in your environment. 
+
+    **2.1. Deploy EHSM KMS & AS**
+
+      KMS (Key Management Service) and AS (Attestation Service) make sure applications of the customer actually run in the SGX MREnclave signed above by customer-self, rather than a fake one fake by an attacker.
+
+      BigDL PPML use EHSM as reference KMS&AS, you can follow the guide [here](https://github.com/intel-analytics/BigDL/tree/main/ppml/services/pccs-ehsm/kubernetes#deploy-bigdl-pccs-ehsm-kms-on-kubernetes-with-helm-charts) to deploy EHSM in your environment.
+
+    **2.2. Enroll in EHSM**
+
+    Execute the following command to enroll yourself in EHSM, The `<kms_ip>` is your configured-ip of EHSM service in the deployment section:
+
+    ```bash
+    curl -v -k -G "https://<kms_ip>:9000/ehsm?Action=Enroll"
+    ......
+    {"code":200,"message":"successful","result":{"apikey":"E8QKpBB******","appid":"8d5dd3b*******"}}
+    ```
+
+    You will get a `appid` and `apikey` pair, save it for later use.
+
+    **2.3. Attest EHSM Server (optional)**
+
+    You can attest the EHSM server and verify the service is trusted before running workloads, that avoids sending your secrets to a fake EHSM service.
+
+    To attest EHSM server, first, start a bigdl container using the custom image build before.
+
+    ```bash
+    export KEYS_PATH=YOUR_LOCAL_SPARK_SSL_KEYS_FOLDER_PATH
+    export LOCAL_IP=YOUR_LOCAL_IP
+    export CUSTOM_IMAGE=YOUR_CUSTOM_IMAGE_BUILT_BEFORE
+    export PCCS_URL=YOUR_PCCS_URL # format like https://1.2.3.4:xxxx, obtained from KMS services or a self-deployed one
+
+    sudo docker run -itd \
+        --privileged \
+        --net=host \
+        --cpuset-cpus="0-5" \
+        --oom-kill-disable \
+        -v /var/run/aesmd/aesm.socket:/var/run/aesmd/aesm.socket \
+        -v $KEYS_PATH:/ppml/trusted-big-data-ml/work/keys \
+        --name=gramine-verify-worker \
+        -e LOCAL_IP=$LOCAL_IP \
+        -e PCCS_URL=$PCCS_URL \
+        $CUSTOM_IMAGE bash
+    ```
+
+    Enter the docker container:
+
+    ```bash
+    sudo docker exec -it gramine-verify-worker bash
+    ```
+
+    Set the variables in `verify-attestation-service.sh` before running it:
+
+      ```
+      `ATTESTATION_URL`: URL of attestation service. Should match the format `<ip_address>:<port>`.
+
+      `APP_ID`, `API_KEY`: The appID and apiKey pair generated by your attestation service.
+
+      `ATTESTATION_TYPE`: Type of attestation service. Currently support `EHSMAttestationService`.
+
+      `CHALLENGE`: Challenge to get quote of attestation service which will be verified by local SGX SDK. Should be a BASE64 string. It can be a casual BASE64 string, for example, it can be generated by the command `echo anystring|base64`.
+      ```
+
+    In the container, execute `verify-attestation-service.sh` to verify the attestation service quote.
+
+      ```bash
+      bash verify-attestation-service.sh
+      ```
+
+    **3.4. Register your MREnclave to EHSM**
+
+    Register the MREnclave with metadata of your MREnclave (appid, apikey, mr_enclave, mr_signer) obtained in above steps to EHSM through running a python script:
+
+    ```bash
+    # At /ppml/trusted-big-data-ml inside the container now
+    python register-mrenclave.py --appid <your_appid> \
+                                --apikey <your_apikey> \
+                                --url https://<kms_ip>:9000 \
+                                --mr_enclave <your_mrenclave_hash_value> \
+                                --mr_signer <your_mrensigner_hash_value>
+    ```
+
+    **3.5. Enable Attestation in configuration**
+
+    Configure `spark-driver-template.yaml` and `spark-executor-template.yaml` to enable Attestation as follows:
+    ``` yaml
+    apiVersion: v1
+    kind: Pod
+    spec:
+      containers:
+      - name: spark-driver
+        securityContext:
+          privileged: true
+        env:
+          - name: ATTESTATION
+            value: true
+          - name: ATTESTATION_URL
+            value: your_attestation_url
+          - name: ATTESTATION_ID
+            valueFrom:
+              secretKeyRef:
+                name: kms-secret
+                key: app_id
+          - name: ATTESTATION_KEY
+            valueFrom:
+              secretKeyRef:
+                name: kms-secret
+                key: api_key
+    ...
+    ```
+    You should get `Attestation Success!` in logs after you [submit a PPML job](#step-4-submit-job) if the quote generated with user report is verified successfully by Attestation Service, or you will get `Attestation Fail! Application killed!` and the job will be stopped.
+
+#### Step 5. Submit Job
 When the Big Data & AI application and its input data is prepared, you are ready to submit BigDL PPML jobs. You need to choose the deploy mode and the way to submit job first.
 
 * **There are 4 modes to submit job**:
@@ -352,7 +490,7 @@ Here we use **k8s client mode** and **PPML CLI** to run SimpleQuery. Check other
   </details>
 <br />
 
-#### Step 5. Decrypt and Read Result
+#### Step 6. Decrypt and Read Result
 When the job is done, you can decrypt and read result of the job. More details in [Decrypt Job Result](./services/kms-utils/docker/README.md#3-enroll-generate-key-encrypt-and-decrypt).
 
   ```

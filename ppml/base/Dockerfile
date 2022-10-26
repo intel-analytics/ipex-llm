@@ -93,7 +93,14 @@ RUN env DEBIAN_FRONTEND=noninteractive apt-get update && \
     tar -xf jdk-$JDK_VERSION-linux-x64.tar -C /opt && \
     rm jdk-$JDK_VERSION-linux-x64.tar && \
     mv /opt/jdk* /opt/jdk8 && \
-    ln -s /opt/jdk8 /opt/jdk
+    ln -s /opt/jdk8 /opt/jdk && \
+# related dirs required by bash.manifest
+    mkdir -p /root/.cache/ && \
+    mkdir -p /root/.keras/datasets && \
+    mkdir -p /root/.zinc && \
+    mkdir -p /root/.m2 && \
+    mkdir -p /root/.kube/
+
 
 ADD ./download_jars.sh /ppml
 

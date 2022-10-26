@@ -30,7 +30,10 @@ class NanoMetric(object):
             metric_list = []
             sample_num = 0
             for data_input, target in data_loader:
+                metric_value = self.metric(model(data_input), target)
+                if isinstance(metric_value, torch.Tensor):
+                    metric_value = metric_value.numpy()
                 metric_list.append(
-                    self.metric(model(data_input), target).numpy() * data_input.shape[0])
+                    metric_value * data_input.shape[0])
                 sample_num += data_input.shape[0]
             return np.sum(metric_list) / sample_num
