@@ -116,6 +116,10 @@ init_instance() {
     fi
 
     # check occlum log level for docker
+    if [[-z "$ENABLE_SGX_DEBUG"]]; then
+        echo "No ENABLE_SGX_DEBUG specified, set to off."
+        export ENABLE_SGX_DEBUG=false
+    fi
     export OCCLUM_LOG_LEVEL=off
     if [[ -z "$SGX_LOG_LEVEL" ]]; then
         echo "No SGX_LOG_LEVEL specified, set to off."
