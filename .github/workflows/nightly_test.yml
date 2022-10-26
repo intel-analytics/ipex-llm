@@ -856,7 +856,6 @@ jobs:
         chmod a+x python/orca/dev/colab-notebook/run-notebook-pytorch.sh
         export LD_LIBRARY_PATH=/opt/work/conda/envs/py37-jep/lib:$LD_LIBRARY_PATH
         export PYTHONHOME=/opt/work/conda/envs/py37-jep 
-        pip uninstall -y bigdl-dllib bigdl-orca bigdl-chronos
         pip install --pre --upgrade bigdl-chronos
         if [ -f python/chronos/dev/colab-notebook/run-notebook-pytorch.sh ]
         then
