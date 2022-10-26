@@ -1,5 +1,3 @@
-#!/bin/bash
-
 #
 # Copyright 2016 The BigDL Authors.
 #
@@ -15,10 +13,23 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+from onnxsim import simplify
+import onnx
 
-set -x
 
-echo $BIGDL_VERSION
-echo $SPARK_VERSION
+def onnx_simplify(onnx_path: str):
+    """
+    Simplify the ONNX model based on onnxsim.
+    If simplification is successful, will overwrite new ONNX model to onnx_path
 
-wget https://sourceforge.net/projects/analytics-zoo/files/friesian-serving-jars/bigdl-friesian-spark_$SPARK_VERSION-$BIGDL_VERSION-serving.jar -O bigdl-friesian-serving.jar
+    :param onnx_path: File path of of onnx ModelProto object.
+    """
+    # load your predefined ONNX model
+    model = onnx.load(onnx_path)
+
+    # convert model
+    model_simp, check = simplify(model)
+
+    # overwrite model_simp to onnx_path
+    if check is True:
+        onnx.save(model_simp, onnx_path)

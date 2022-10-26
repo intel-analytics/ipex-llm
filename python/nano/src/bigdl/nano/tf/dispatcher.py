@@ -64,7 +64,8 @@ def patch_tensorflow():
     mapping_tf = _get_patch_map()
 
     for mapping_iter in mapping_tf:
-        mapping_iter[3] = getattr(mapping_iter[0], mapping_iter[1], None)
+        if mapping_iter[3] is None:
+            mapping_iter[3] = getattr(mapping_iter[0], mapping_iter[1], None)
         setattr(mapping_iter[0], mapping_iter[1], mapping_iter[2])
 
 

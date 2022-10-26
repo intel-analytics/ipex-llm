@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 #
 # Copyright 2016 The BigDL Authors.
@@ -16,9 +16,14 @@
 # limitations under the License.
 #
 
-set -x
+export Chronos_Howto_Guides_dir=${ANALYTICS_ZOO_ROOT}/python/chronos/colab-notebook/howto
 
-echo $BIGDL_VERSION
-echo $SPARK_VERSION
+# limit the number of epoch to reduce test time
+sed -i 's/epochs=./epochs=1/' $Chronos_Howto_Guides_dir/*.ipynb
+# comment out the install commands
+sed -i 's/!pip install/#!pip install/' $Chronos_Howto_Guides_dir/*.ipynb
 
-wget https://sourceforge.net/projects/analytics-zoo/files/friesian-serving-jars/bigdl-friesian-spark_$SPARK_VERSION-$BIGDL_VERSION-serving.jar -O bigdl-friesian-serving.jar
+echo "Running tests for Chronos How-to Guides"
+python -m pytest -v  --nbmake --nbmake-timeout=6000 --nbmake-kernel=python3 ${Chronos_Howto_Guides_dir}
+
+echo "Tests for Chronos How-to Guides finished."
