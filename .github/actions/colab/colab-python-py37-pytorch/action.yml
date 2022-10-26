@@ -19,7 +19,10 @@ runs:
     - name: Setup env
       shell: bash
       run: |
-        conda create -n py37-jep -y python==3.7.10 setuptools==58.0.4
+        if [ ! -d "/opt/conda/envs/py37-jep" ]
+        then
+          conda create -n py37-jep -y python==3.7.10 setuptools==58.0.4
+        fi
 
       env:
         BIGDL_ROOT: ${{ github.workspace }}
