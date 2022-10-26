@@ -1,14 +1,14 @@
 name: Friesian Docker Build
 
 on:
-  push:
-    paths:
+#  push:
+#    paths:
       - 'scala/friesian/**'
       - '.github/workflow/friesian-docker-build.yml'
       - '.github/actions/friesian-docker-build-action/action.yml'
   pull_request:
     branches: [ main ]
-    paths:
+#    paths:
       - 'scala/friesian/**'
       - '.github/workflow/friesian-docker-build.yml'
       - '.github/actions/friesian-docker-build-action/action.yml'
