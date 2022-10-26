@@ -50,7 +50,7 @@ jobs:
       - name: Build with Maven
         run: |
           cd scala
-          bash make-dist.sh -P serving,spark_3.x
+          bash make-dist.sh -P serving,spark_3.x -pl "-assembly,-serving,-ppml"
           ls -alh ./friesian/target/
 
           # upload
