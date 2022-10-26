@@ -24,8 +24,9 @@ jobs:
         os: ["ubuntu-20.04"]
         python-version: ["3.7"]
         pytorch-version: [
-          "torch==1.9.0+cpu torchvision==0.10.0+cpu torch_ipex==1.9.0",
-          "torch==1.10.1+cpu torchvision==0.11.2+cpu intel_extension_for_pytorch==1.10.100",
+          "torch==1.9.0+cpu torchvision==0.10.0+cpu intel_extension_for_pytorch==1.11.0",
+          "torch==1.10.1+cpu torchvision==0.11.2+cpu intel_extension_for_pytorch==1.11.0",
+          "torch==1.11.0+cpu torchvision==0.12.0+cpu intel_extension_for_pytorch==1.11.0", 
           "torch==1.12.1+cpu torchvision==0.13.1+cpu intel_extension_for_pytorch==1.12.100"
           ]
     steps:
@@ -47,7 +48,6 @@ jobs:
           source $CONDA/bin/activate bigdl-init
           $CONDA/bin/conda info
           bash python/nano/dev/build_and_install.sh linux default false pytorch
-          pip uninstall -y intel_extension_for_pytorch
           if [ ! -z "${{matrix.pytorch-version}}" ]; then
             requirements=(${{matrix.pytorch-version}})
             pip install ${requirements[0]} ${requirements[1]} -f https://download.pytorch.org/whl/torch_stable.html
@@ -85,7 +85,6 @@ jobs:
           $CONDA/bin/conda info
           bash python/nano/dev/build_and_install.sh linux default false pytorch
           pip install pytest
-          pip uninstall -y intel_extension_for_pytorch
           if [ ! -z "${{matrix.pytorch-version}}" ]; then
             requirements=(${{matrix.pytorch-version}})
             pip install ${requirements[0]} ${requirements[1]} -f https://download.pytorch.org/whl/torch_stable.html
@@ -106,7 +105,6 @@ jobs:
           $CONDA/bin/conda info
           bash python/nano/dev/build_and_install.sh linux default false pytorch
           pip install pytest
-          pip uninstall -y intel_extension_for_pytorch
           # fix issue, see https://github.com/intel-analytics/BigDL/blob/main/docs/readthedocs/source/doc/Nano/Overview/known_issues.md#ray-issues
           pip install google-api-core==2.8.2
           pip install ray[default]==1.11.0 prometheus_client==0.13.0
@@ -128,15 +126,13 @@ jobs:
           $CONDA/bin/conda create -n openvino-pytorch -y python==3.7.10 setuptools=58.0.4
           source $CONDA/bin/activate openvino-pytorch
           $CONDA/bin/conda info
-          bash python/nano/dev/build_and_install.sh linux default false pytorch
+          bash python/nano/dev/build_and_install.sh linux default false pytorch,inference
           pip install pytest
-          pip uninstall -y intel_extension_for_pytorch
           if [ ! -z "${{matrix.pytorch-version}}" ]; then
             requirements=(${{matrix.pytorch-version}})
             pip install ${requirements[0]} ${requirements[1]} -f https://download.pytorch.org/whl/torch_stable.html
             pip install ${requirements[2]} -f https://software.intel.com/ipex-whl-stable
           fi
-          pip install openvino-dev
           source bigdl-nano-init
           bash python/nano/test/run-nano-pytorch-openvino-tests.sh
           source $CONDA/bin/deactivate
@@ -167,14 +163,14 @@ jobs:
           $CONDA/bin/conda create -n inc-pytorch -y python==3.7.10 setuptools=58.0.4
           source $CONDA/bin/activate inc-pytorch
           $CONDA/bin/conda info
-          bash python/nano/dev/build_and_install.sh linux default false pytorch,inference
+          bash python/nano/dev/build_and_install.sh linux default false pytorch
           pip install pytest
-          pip uninstall -y intel_extension_for_pytorch
           if [ ! -z "${{matrix.pytorch-version}}" ]; then
             requirements=(${{matrix.pytorch-version}})
             pip install ${requirements[0]} ${requirements[1]} -f https://download.pytorch.org/whl/torch_stable.html
             pip install ${requirements[2]} -f https://software.intel.com/ipex-whl-stable
           fi
+          pip install neural-compressor==1.13.1
           source bigdl-nano-init
           bash python/nano/test/run-nano-pytorch-inc-tests.sh
           source $CONDA/bin/deactivate
@@ -189,7 +185,6 @@ jobs:
           source $CONDA/bin/activate onnx-pytorch
           $CONDA/bin/conda info
           bash python/nano/dev/build_and_install.sh linux default false pytorch,inference
-          pip uninstall -y intel_extension_for_pytorch
           if [ ! -z "${{matrix.pytorch-version}}" ]; then
             requirements=(${{matrix.pytorch-version}})
             pip install ${requirements[0]} ${requirements[1]} -f https://download.pytorch.org/whl/torch_stable.html
@@ -215,8 +210,8 @@ jobs:
           # The reason why ipex1.10 is not currently supported is that the optimization of ipex1.10
           # will change the require_grad attribute of layers, which will make some tests of nano fail.
           "torch==1.9.0+cpu torchvision==0.10.0+cpu torch_ipex==1.9.0",
-          "",
-          "torch==1.12.1+cpu torchvision==0.13.1+cpu intel_extension_for_pytorch==1.12.100",
+          "torch==1.11.0+cpu torchvision==0.12.0+cpu intel_extension_for_pytorch==1.11.0", 
+          "torch==1.12.1+cpu torchvision==0.13.1+cpu intel_extension_for_pytorch==1.12.100"
           # "torch==1.10.1+cpu torchvision==0.11.2+cpu intel_extension_for_pytorch==1.10.0 psutil"
           ]
 
