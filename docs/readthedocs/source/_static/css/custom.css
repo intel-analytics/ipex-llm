@@ -67,3 +67,28 @@ code span.pre {
     color: var(--pst-color-primary);
     padding: 0.25rem 0rem;
 }
+
+
+/* make the sidebars sticky */
+
+/* make the page footer position absolute to aviod pushing sidebars up when scrolling to the end of the page */
+.bd-footer{
+    position: absolute;
+    bottom: 0;
+    background-color: var(--pst-color-on-background);
+}
+
+/* make its parent element position relative to ensure the "position:absolute" change valid */
+body{
+    position: relative;
+}
+
+/* set the height of footer */
+footer.bd-footer{
+    height: 5rem;
+}
+
+/* the margin height is just the height of original footer, to avoid content overlapping */
+.bd-footer-article {
+    margin-bottom: 5rem;
+}

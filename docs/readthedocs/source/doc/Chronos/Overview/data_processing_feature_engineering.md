@@ -24,7 +24,7 @@ All the preprocessing operations will be done on each independent time series(i.
 
 ## 2. Create a TSDataset
 
-[`TSDataset`](../../PythonAPI/Chronos/tsdataset.html) supports initializing from a pandas dataframe through [`TSDataset.from_pandas`](../../PythonAPI/Chronos/tsdataset.html#bigdl.chronos.data.tsdataset.TSDataset.from_pandas) or from a parquet file through [`TSDataset.from_parquet`](../../PythonAPI/Chronos/tsdataset.html#bigdl.chronos.data.tsdataset.TSDataset.from_parquet).
+[`TSDataset`](../../PythonAPI/Chronos/tsdataset.html) supports initializing from a pandas dataframe through [`TSDataset.from_pandas`](../../PythonAPI/Chronos/tsdataset.html#bigdl.chronos.data.tsdataset.TSDataset.from_pandas), from a parquet file through [`TSDataset.from_parquet`](../../PythonAPI/Chronos/tsdataset.html#bigdl.chronos.data.tsdataset.TSDataset.from_parquet) or from Prometheus data through [`TSDataset.from_prometheus`](../../PythonAPI/Chronos/tsdataset.html#bigdl.chronos.data.tsdataset.TSDataset.from_prometheus).
 
 [`XShardsTSDataset`](../../PythonAPI/Chronos/tsdataset.html#xshardstsdataset) supports initializing from an [xshards object](https://bigdl.readthedocs.io/en/latest/doc/Orca/Overview/data-parallel-processing.html#xshards-distributed-data-parallel-python-processing) through [`XShardsTSDataset.from_xshards`](../../PythonAPI/Chronos/tsdataset.html#bigdl.chronos.data.experimental.xshards_tsdataset.XShardsTSDataset.from_xshards) or from a Spark Dataframe through [`XShardsTSDataset.from_sparkdf`](../../PythonAPI/Chronos/tsdataset.html#bigdl.chronos.data.experimental.xshards_tsdataset.XShardsTSDataset.from_sparkdf).
 
@@ -76,7 +76,7 @@ You can initialize a [`XShardsTSDataset`](../../PythonAPI/Chronos/tsdataset.html
                                                                          "extra feature 2"])
 
 ```
-`target_col` is a list of all elements along feature dimension, while `id_col` is the identifier that distinguishes the id dimension. `dt_col` is the datetime column. For `extra_feature_col`(not shown in this case), you should list those features that you are not interested for your task (e.g. you will **not** perform forecasting or anomaly detection task on this col).
+`target_col` is a list of all elements along feature dimension, while `id_col` is the identifier that distinguishes the id dimension. `dt_col` is the datetime column. For `extra_feature_col`(not shown in this case), you should list those features that you will use as input features but not as target features (e.g. you will **not** perform forecasting or anomaly detection task on this col).
 
 If you are building a prototype for your forecasting/anomaly detection task and you need to split you TSDataset to train/valid/test set, you can use `with_split` parameter.[`TSDataset`](../../PythonAPI/Chronos/tsdataset.html) or [`XShardsTSDataset`](../../PythonAPI/Chronos/tsdataset.html#xshardstsdataset) supports split with ratio by `val_ratio` and `test_ratio`.
 
@@ -182,7 +182,7 @@ A time series dataset needs to be sampling and exporting as numpy ndarray/datalo
 Roll sampling (or sliding window sampling) is useful when you want to train a RR type supervised deep learning forecasting model. It works as the [diagram](#RR-forecast-image) shows.
 
 
-Please refer to the API doc [`roll`](../../PythonAPI/Chronos/tsdataset.html#bigdl.chronos.data.tsdataset.TSDataset.roll) for detailed behavior. Users can simply export the sampling result as numpy ndarray by [`to_numpy`](../../PythonAPI/Chronos/tsdataset.html#bigdl.chronos.data.tsdataset.TSDataset.to_numpy), pytorch dataloader [`to_torch_data_loader`](../../PythonAPI/Chronos/tsdataset.html#bigdl.chronos.data.tsdataset.TSDataset.to_torch_data_loader), tensorflow dataset by [to_tf_dataset](https://bigdl.readthedocs.io/en/latest/doc/PythonAPI/Chronos/tsdataset.html#bigdl.chronos.data.tsdataset.TSDataset.to_tf_dataset) or xshards object by [to_xshards](https://bigdl.readthedocs.io/en/latest/doc/PythonAPI/Chronos/tsdataset.html#bigdl.chronos.data.experimental.xshards_tsdataset.XShardsTSDataset.to_xshards).
+Please refer to the API doc [`roll`](../../PythonAPI/Chronos/tsdataset.html#bigdl.chronos.data.tsdataset.TSDataset.roll) for detailed behavior. Users can simply export the sampling result as numpy ndarray by [`to_numpy`](../../PythonAPI/Chronos/tsdataset.html#bigdl.chronos.data.tsdataset.TSDataset.to_numpy), pytorch dataloader [`to_torch_data_loader`](../../PythonAPI/Chronos/tsdataset.html#bigdl.chronos.data.tsdataset.TSDataset.to_torch_data_loader), tensorflow dataset by [`to_tf_dataset`](https://bigdl.readthedocs.io/en/latest/doc/PythonAPI/Chronos/tsdataset.html#bigdl.chronos.data.tsdataset.TSDataset.to_tf_dataset) or xshards object by [`to_xshards`](https://bigdl.readthedocs.io/en/latest/doc/PythonAPI/Chronos/tsdataset.html#bigdl.chronos.data.experimental.xshards_tsdataset.XShardsTSDataset.to_xshards).
 
 
 ```eval_rst
@@ -248,6 +248,7 @@ Built-in Dataset supports the function of data downloading, preprocessing, and r
 |fsi|forecasting|1259|1|1|[fsi](https://github.com/CNuge/kaggle-code/tree/master/stock_data)|[fsi](https://github.com/CNuge/kaggle-code/raw/master/stock_data/individual_stocks_5yr.zip)|
 |AIOps|anomaly_detect|61570|1|1|[AIOps](https://github.com/alibaba/clusterdata)|[AIOps](http://clusterdata2018pubcn.oss-cn-beijing.aliyuncs.com/machine_usage.tar.gz)|
 |uci_electricity|forecasting|140256|370|1|[uci_electricity](https://archive.ics.uci.edu/ml/datasets/ElectricityLoadDiagrams20112014)|[uci_electricity](https://archive.ics.uci.edu/ml/machine-learning-databases/00321/LD2011_2014.txt.zip)|
+|tsinghua_electricity|forecasting|26304|321|1|[tsinghua_electricity](https://cloud.tsinghua.edu.cn/d/e1ccfff39ad541908bae/?p=%2Felectricity&mode=list)|[tsinghua_electricity](https://cloud.tsinghua.edu.cn/d/e1ccfff39ad541908bae/?p=%2Felectricity&mode=list)|
 
 Specify the `name`, the raw data file will be saved in the specified `path` (defaults to ~/.chronos/dataset). `redownload` can help you re-download the files you need.
 

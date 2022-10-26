@@ -14,6 +14,15 @@ on:
   #    - cron: '0 12 * * *' # GMT time, 12:00 GMT == 20:00 China
   workflow_dispatch:
     inputs:
+      artifact:
+        description: 'select which job to run("all" will make all jobs run)'
+        required: true
+        default: 'all'
+        type: choice
+        options:
+          - all
+          - serving-jar-package
+          - docker-build
       tag:
         description: 'docker image tag (e.g. 2.1.0-SNAPSHOT)'
         required: true
@@ -24,7 +33,33 @@ permissions:
   packages: write
 
 jobs:
+  serving-jar-package:
+    if: ${{ github.event.inputs.artifact == 'serving-jar-package' || github.event.inputs.artifact == 'all' }}
+    runs-on:  [self-hosted,alpha,Bree,ubuntu-20.04-lts]
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Set up JDK8
+        uses: ./.github/actions/jdk-setup-action
+
+      - name: Set up maven
+        uses: ./.github/actions/maven-setup-action
+
+      - name: Build with Maven
+        run: |
+          cd scala/friesian
+          mvn clean package -P serving,spark_3.x -DskipTests
+          ls -alh ./target/
+
+          # upload
+          sshpass -p "${SOURCEFORGE_PW}" \
+          scp ./target/bigdl-friesian-*-serving.jar \
+          intelanalytics@frs.sourceforge.net:/home/frs/project/analytics-zoo/friesian-serving-jars
+
+
   friesian-docker-build:
+    needs: serving-jar-package
+    if: ${{ github.event.inputs.artifact == 'docker-build' || github.event.inputs.artifact == 'all' }}
     runs-on: [ self-hosted, Shire ]
     steps:
       - uses: actions/checkout@v3

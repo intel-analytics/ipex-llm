@@ -65,7 +65,7 @@ jobs:
             source bigdl-nano-init
             pip install pytest nbmake
             pip install neural-compressor==1.11
-            pip install onnx onnxruntime onnxruntime-extensions
+            pip install onnx onnxruntime onnxruntime-extensions onnxsim
             pip install lightning-bolts
             bash python/nano/notebooks/pytorch/tutorial/run-nano-notebooks-pytorch-tutorial-tests.sh false
             bash python/nano/tutorial/inference/pytorch/run_nano_pytorch_inference_tests_onnx.sh

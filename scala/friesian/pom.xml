@@ -20,11 +20,10 @@
         <tagsToExclude>com.intel.analytics.bigdl.tags.Integration</tagsToExclude>
         <core.artifactId>zoo-core-dist-all</core.artifactId>
         <core.dependencyType>jar</core.dependencyType>
-        <dllib.scope>compile</dllib.scope>
-        <orca.scope>compile</orca.scope>
-        <core.scope>compile</core.scope>
-        <serving.scope>compile</serving.scope>
-        <spark-scope>provided</spark-scope>
+        <dllib.scope>provided</dllib.scope>
+        <orca.scope>provided</orca.scope>
+        <core.scope>provided</core.scope>
+        <serving.scope>provided</serving.scope>
         <jersey.version>2.36</jersey.version>
         <bigdl.basedir>${project.parent.basedir}</bigdl.basedir>
     </properties>
@@ -202,6 +201,7 @@
             <groupId>io.lettuce</groupId>
             <artifactId>lettuce-core</artifactId>
             <version>6.1.6.RELEASE</version>
+            <scope>${serving.scope}</scope>
             <exclusions>
                 <exclusion>
                     <groupId>io.projectreactor</groupId>
@@ -212,11 +212,13 @@
         <dependency>
             <groupId>io.projectreactor</groupId>
             <artifactId>reactor-core</artifactId>
+            <scope>${serving.scope}</scope>
         </dependency>
         <dependency>
             <groupId>org.latencyutils</groupId>
             <artifactId>LatencyUtils</artifactId>
             <version>2.0.3</version>
+            <scope>${serving.scope}</scope>
         </dependency>
         <dependency>
             <groupId>me.dinowernli</groupId>
@@ -598,6 +600,17 @@
     </reporting>
 
     <profiles>
+        <profile>
+            <id>serving</id>
+            <properties>
+                <dllib.scope>compile</dllib.scope>
+                <orca.scope>compile</orca.scope>
+                <core.scope>compile</core.scope>
+                <serving.scope>compile</serving.scope>
+                <jackson.version>2.12.7</jackson.version>
+            </properties>
+        </profile>
+
         <profile>
             <id>per_platform</id>
             <properties>

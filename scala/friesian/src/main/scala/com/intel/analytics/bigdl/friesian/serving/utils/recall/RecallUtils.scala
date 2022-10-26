@@ -16,15 +16,16 @@
 
 package com.intel.analytics.bigdl.friesian.serving.utils.recall
 
-import java.util.{List => JList}
 import com.intel.analytics.bigdl.dllib.nn.abstractnn.Activity
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
-import com.intel.analytics.bigdl.dllib.utils.T
+import com.intel.analytics.bigdl.dllib.utils.{Log4Error, T}
 import com.intel.analytics.bigdl.friesian.serving.recall.IndexService
 import org.apache.logging.log4j.{LogManager, Logger}
 import org.apache.spark.ml.linalg.DenseVector
 
+import java.util.{List => JList}
 import scala.collection.JavaConverters._
+import scala.collection.mutable
 
 object RecallUtils {
   private val logger: Logger = LogManager.getLogger(classOf[IndexService].getName)
@@ -48,12 +49,19 @@ object RecallUtils {
         }
         d(0) match {
           case f: DenseVector => denseVectorToFloatArr(f)
+          case f: mutable.WrappedArray[Any] => f.array.map(_.toString.toFloat)
           case f: Array[Float] => f
-          case _ => throw new Exception(s"Unsupported user vector type, only Activity, " +
-            s"DenseVector and Float[] are supported, but got ${d.getClass.getName}")
+          case _ =>
+            Log4Error.invalidInputError(condition = false, s"Unsupported " +
+              s"user vector type, only Activity, DenseVector, WrappedArray and Float[] are " +
+              s"supported, but got ${d.getClass.getName}", "")
+            new Array[Float](0)
         }
-      case d => throw new Exception(s"Unsupported user vector type, only Activity, DenseVector " +
-        s"and Float[] are supported, but got ${d.getClass.getName}")
+      case d =>
+        Log4Error.invalidInputError(condition = false, s"Unsupported " +
+          s"user vector type, only Activity, DenseVector, WrappedArray and Float[] are " +
+          s"supported, but got ${d.getClass.getName}", "")
+        new Array[Float](0)
     }
   }
 
