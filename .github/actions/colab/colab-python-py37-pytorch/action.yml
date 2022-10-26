@@ -46,7 +46,7 @@ runs:
         export PYTHONHOME=/opt/conda/envs/py37-jep 
         pip uninstall -y bigdl-dllib bigdl-orca bigdl-chronos
         pip install jupyter bigdl-orca
-        pip install --pre --upgrade bigdl-chronos[pytorch]
+        pip install --pre --upgrade bigdl-chronos[pytorch, distributed]
         pip uninstall -y torchtext 
         if [ -f python/chronos/dev/colab-notebook/run-notebook-pytorch.sh ]
         then
