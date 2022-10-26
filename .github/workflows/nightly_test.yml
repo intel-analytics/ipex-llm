@@ -36,7 +36,6 @@ on:
         - Friesian-Python-ExampleTest-Feature-Tf1-Pip-Py37-Spark3
         - PPML-Scala-UT
         - PPML-Python-UT-Spark3
-        - PPML-Spark-PySpark-Local-Sql-UT-On-Gramine
         - PPML-Occlum-ExampleTests
         - PPML-spark-Local-Example-Tests-on-Gramine
         - PPML-spark-Local-SimpleQuery-Tests-on-Gramine
@@ -505,40 +504,6 @@ jobs:
         file-name: Orca-Ray-Ctx-Example.json
         type: job
         job-name: Orca-Ray-Ctx-Example
-        runner-hosted-on: 'Shanghai'
-        
-        
-  PPML-Spark-PySpark-Local-Sql-UT-On-Gramine:
-    if: ${{ github.event.schedule || github.event.inputs.artifact == 'PPML-Spark-PySpark-Local-Sql-UT-On-Gramine' || github.event.inputs.artifact == 'all' }}
-    runs-on: [self-hosted, SGX, Wilwarin]
-    steps:
-    - uses: actions/checkout@v3
-    - name: Set up JDK8
-      uses: ./.github/actions/jdk-setup-action
-    - name: Set up maven
-      uses: ./.github/actions/maven-setup-action
-    - name: set env
-      env:
-        DEFAULT_IMAGE: '10.239.45.10/arda/intelanalytics/bigdl-ppml-trusted-big-data-ml-python-gramine-reference'
-        DEFAULT_TAG: 'latest'
-      run: |
-        echo "IMAGE=${{ github.event.inputs.image || env.DEFAULT_IMAGE }}" >> $GITHUB_ENV
-        echo "TAG=${{ github.event.inputs.tag || env.DEFAULT_TAG }}" >> $GITHUB_ENV
-    - name: Run test
-      uses: ./.github/actions/ppml/ppml-spark-pyspark-sql-ut-on-gramine-action
-      with:
-        image: ${{env.IMAGE}}
-        image-tag: ${{env.TAG}}
-    - name: Create Job Badge
-      uses: ./.github/actions/create-job-status-badge
-      if: ${{ always() }}
-      with:
-        secret: ${{ secrets.GIST_SECRET}}
-        gist-id: ${{env.GIST_ID}}
-        is-self-hosted-runner: true
-        file-name: PPML-Spark-PySpark-Local-Sql-UT-On-Gramine.json
-        type: job
-        job-name: PPML-Spark-PySpark-Local-Sql-UT-On-Gramine
         runner-hosted-on: 'Shanghai'
 
   PPML-Occlum-ExampleTests:

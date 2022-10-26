@@ -22,7 +22,7 @@ import java.io.File
 // TODO: key should be provided by Key Management System
 object GenerateCkksSecret {
   def main(args: Array[String]): Unit = {
-    if (args.length >=  1) {
+    if (args.length >= 1) {
       val ckks = new CKKS()
       val keys = ckks.createSecrets()
       val computeKeys = new Array[Array[Byte]](2)
