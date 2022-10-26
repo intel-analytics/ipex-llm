@@ -158,7 +158,8 @@ https://user-images.githubusercontent.com/61072813/184758702-4b9809f9-50ac-425e-
 #### Step 0. Preparation your environment
 To secure your Big Data & AI applications in BigDL PPML manner, you should prepare your environment first, including K8s cluster setup, K8s-SGX plugin setup, key/password preparation, key management service (KMS) and attestation service (AS) setup, BigDL PPML client container preparation. **Please follow the detailed steps in** [Prepare Environment](./docs/prepare_environment.md). 
 
-Next, you are going to build a base image and a custom image on top of it in order to avoid leaving secrets e.g. enclave key in images/containers. Before running your application, you need to register the mrenclave in your custom image to Attestation Service, and PPML will verify the runtime MREnclave automatically at the backend. The below chart illustrated the whole workflow:
+Next, you are going to build a base image, and a custom image on top of it in order to avoid leaving secrets e.g. enclave key in images/containers. After that, you need to register the mrenclave in your custom image to Attestation Service Before running your application, and PPML will verify the runtime MREnclave automatically at the backend. The below chart illustrated the whole workflow:
+![PPML Workflow with MREnclave](https://user-images.githubusercontent.com/60865256/197942436-7e40d40a-3759-49b4-aab1-826f09760ab1.png)
 
 Start your application with the following guide step by step:
 
@@ -239,7 +240,8 @@ To build your own Big Data & AI applications, refer to [develop your own Big Dat
 
 2. Enable attestation
     The bi-attestation gurantees that the MREnclave in runtime containers is a secure one made by you. Its workflow is as below:
-  
+    ![image](https://user-images.githubusercontent.com/60865256/197942524-85a52f73-cf1a-49b3-bd1c-175d130f93e4.png)
+
     To enable attestation, first you should have a running Attestation Service in your environment. 
 
     **2.1. Deploy EHSM KMS & AS**
