@@ -846,6 +846,7 @@ jobs:
     - name: Run Test
       shell: bash
       run: |
+        set -x
         chmod a+x python/orca/dev/colab-notebook/ipynb2py.sh
         conda install intel-openmp
         conda remove -c anaconda -y intel-openmp || true
