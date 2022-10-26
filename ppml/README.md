@@ -7,11 +7,12 @@ Protecting privacy and confidentiality is critical for large-scale data analysis
 &ensp;&ensp;[3.1 BigDL PPML Hello World](#31-bigdl-ppml-hello-world) \
 &ensp;&ensp;[3.2 BigDL PPML End-to-End Workflow](#32-bigdl-ppml-end-to-end-workflow) \
 &ensp;&ensp;&ensp;&ensp;&ensp;&ensp;[Step 0. Preparation your environment](#step-0-preparation-your-environment): detailed steps in [Prepare Environment](https://github.com/liu-shaojun/BigDL/blob/ppml_doc/ppml/docs/prepare_environment.md) \
-&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;[Step 1. Encrypt and Upload Data](#step-1-encrypt-and-upload-data) \
-&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;[Step 2. Build Big Data & AI applications](#step-2-build-big-data--ai-applications) \
-&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;[Step 3. Attestation ](#step-3-attestation) \
-&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;[Step 4. Submit Job](#step-4-submit-job): 4 deploy modes and 2 options to submit job  \
-&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;[Step 5. Decrypt and Read Result](#step-5-decrypt-and-read-result) \
+&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;[Step 1. Build your PPML image for production environment](#step-1-build-your-ppml-image-for-production-environment) \
+&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;[Step 2. Encrypt and Upload Data](#step-2-encrypt-and-upload-data) \
+&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;[Step 3. Build Big Data & AI applications](#step-3-build-big-data--ai-applications) \
+&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;[Step 4. Attestation ](#step-4-attestation) \
+&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;[Step 5. Submit Job](#step-5-submit-job): 4 deploy modes and 2 options to submit job  \
+&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;[Step 6. Decrypt and Read Result](#step-6-decrypt-and-read-result) \
 &ensp;&ensp;[3.3 More BigDL PPML Examples](#33-more-bigdl-ppml-examples) \
 [4. Develop your own Big Data & AI applications with BigDL PPML](#4-develop-your-own-big-data--ai-applications-with-bigdl-ppml) \
 &ensp;&ensp;[4.1 Create PPMLContext](#41-create-ppmlcontext) \
@@ -67,7 +68,7 @@ In this section, you can get started with running a simple native python HelloWo
 
 For demo purpose, we will skip building the custom image here and use the public reference image provided by BigDL PPML `intelanalytics/bigdl-ppml-trusted-big-data-ml-python-gramine-reference:2.2.0-SNAPSHOT` to have a quick start.
 
-Note: This public image is only for demo purposes, it is non-production. For security concern, you are strongly recommended to generate your encalve key and build your own custom image for your production environment. Refer to How to Build Your PPML image for production environment.
+Note: This public image is only for demo purposes, it is non-production. For security concern, you are strongly recommended to generate your encalve key and build your own custom image for your production environment. Refer to [How to Build Your PPML image for production environment](#step-1-build-your-ppml-image-for-production-environment).
 
 **b. Prepare Keys**
 
@@ -158,14 +159,23 @@ https://user-images.githubusercontent.com/61072813/184758702-4b9809f9-50ac-425e-
 #### Step 0. Preparation your environment
 To secure your Big Data & AI applications in BigDL PPML manner, you should prepare your environment first, including K8s cluster setup, K8s-SGX plugin setup, key/password preparation, key management service (KMS) and attestation service (AS) setup, BigDL PPML client container preparation. **Please follow the detailed steps in** [Prepare Environment](./docs/prepare_environment.md). 
 
-Next, you are going to build a base image and a custom image on top of it in order to avoid leaving secrets e.g. enclave key in images/containers. Before running your application, you need to register the mrenclave in your custom image to Attestation Service, and PPML will verify the runtime MREnclave automatically at the backend. The below chart illustrated the whole workflow:
+Next, you are going to build a base image, and a custom image on top of it in order to avoid leaving secrets e.g. enclave key in images/containers. After that, you need to register the mrenclave in your custom image to Attestation Service Before running your application, and PPML will verify the runtime MREnclave automatically at the backend. The below chart illustrated the whole workflow:
+![PPML Workflow with MREnclave](https://user-images.githubusercontent.com/60865256/197942436-7e40d40a-3759-49b4-aab1-826f09760ab1.png)
 
 Start your application with the following guide step by step:
 
 #### Step 1. Build your PPML image for production environment
 To build a secure PPML image which can be used in production environment, BigDL prepared a public base image that does not contain any secrets. You can customize your own image on top of this base image.
 
-1. Build BigDL Base Image
+1. Prepare BigDL Base Image
+
+    Users can pull the base image or build it by themselves. 
+
+    Pull the base image
+    ```bash
+    docker pull 10.239.45.10/arda/intelanalytics/bigdl-ppml-trusted-big-data-ml-python-gramine-reference-32g-all:2.2.0-SNAPSHOT
+    ```
+    or
 
     Running the following command to build the BigDL base image first. Please update the parameters in `./base/build-base-image.sh` first. 
 
@@ -175,6 +185,7 @@ To build a secure PPML image which can be used in production environment, BigDL 
     ./build-base-image.sh
     cd ..
     ```
+    
 2. Build Custom Image
 
     When the base image is ready, you need to generate your enclave key which will be used when building custom image, keep the enclave key safely for future remote attestations.
@@ -237,7 +248,8 @@ To build your own Big Data & AI applications, refer to [develop your own Big Dat
 
 2. Enable attestation
     The bi-attestation gurantees that the MREnclave in runtime containers is a secure one made by you. Its workflow is as below:
-  
+    ![image](https://user-images.githubusercontent.com/60865256/197942524-85a52f73-cf1a-49b3-bd1c-175d130f93e4.png)
+    
     To enable attestation, first you should have a running Attestation Service in your environment. 
 
     **2.1. Deploy EHSM KMS & AS**
