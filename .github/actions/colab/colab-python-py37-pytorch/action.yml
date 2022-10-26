@@ -25,7 +25,7 @@ runs:
         BIGDL_ROOT: ${{ github.workspace }}
         ANALYTICS_ZOO_ROOT: ${{ github.workspace }}
     
-    -name: Run test
+    - name: Run test
       shell: bash
       run: |
         source activate py37-jep
