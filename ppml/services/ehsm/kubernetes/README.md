@@ -13,7 +13,7 @@
 
 **couchdb** stores run-time data (like enroll info), the persistent is based on Kubernetes PV and NFS. 
 
-**bigdl-pccs-ehsm-kms-deployment** is the direct key service provider.
+**bigdl-ehsm-kms-deployment** is the direct key service provider.
 
 
 ## Prerequests
