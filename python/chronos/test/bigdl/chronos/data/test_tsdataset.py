@@ -47,6 +47,19 @@ def get_multi_id_ts_df():
     return train_df
 
 
+def get_multi_id_ts_df_interval():
+    sample_num = 100
+    train_df = pd.DataFrame({"value": np.random.randn(sample_num),
+                             "id": np.array(['00']*50 + ['01']*50),
+                             "extra feature": np.random.randn(sample_num)})
+    train_df["datetime"] = pd.date_range('1/1/2019', periods=sample_num)
+    train_df.loc[49, "datetime"] = '1/1/2020'
+    train_df.loc[50:100, "datetime"] = pd.date_range('1/1/2019', periods=50)
+    train_df.loc[99, "datetime"] = '1/1/2020'
+    train_df["datetime"] = train_df["datetime"].astype('datetime64')
+    return train_df
+
+
 def get_ugly_ts_df():
     data = np.random.random_sample((100, 5))
     mask = np.random.random_sample((100, 5))
@@ -1269,3 +1282,65 @@ class TestTSDataset(TestCase):
         interval = dt_col.shift(-1) - dt_col
         unique_intervals = interval[:-1].unique()
         assert len(unique_intervals) == 1
+
+    def test_tsdataset_interval_repair_for_single_and_multi_id(self):
+        df = get_multi_id_ts_df_interval()
+        tsdata = TSDataset.from_pandas(df, dt_col="datetime",
+                                       target_col=['value'],
+                                       extra_feature_col=None,
+                                       repair=True)
+        dt_col = tsdata.df["datetime"]
+        assert len(dt_col) == 366
+        df = get_multi_id_ts_df_interval()
+        tsdata = TSDataset.from_pandas(df,
+                                       id_col="id",
+                                       dt_col="datetime",
+                                       target_col=['value'],
+                                       extra_feature_col=None,
+                                       repair=True)
+        dt_col = tsdata.df["datetime"]
+        assert len(dt_col) == 366*2
+
+    def test_tsdataset_interval_check_and_repair_for_multi_id(self):
+        df_multi_id = get_multi_id_ts_df()
+        horizon = 10
+        lookback = 20
+        batch_size = 32
+
+        tsdata = TSDataset.from_pandas(df_multi_id, dt_col="datetime", target_col="value",
+                                        extra_feature_col=["extra feature"], id_col="id",
+                                        repair=True)
+
+        # train
+        torch_loader = tsdata.to_torch_data_loader(batch_size=batch_size,
+                                                    lookback=lookback,
+                                                    horizon=horizon)
+        for x_batch, y_batch in torch_loader:
+            assert tuple(x_batch.size()) == (batch_size, lookback, 2)
+            assert tuple(y_batch.size()) == (batch_size, horizon, 1)
+            break
+
+        # test
+        torch_loader = tsdata.to_torch_data_loader(batch_size=batch_size,
+                                                    lookback=lookback,
+                                                    horizon=0)
+        for x_batch in torch_loader:
+            assert tuple(x_batch.size()) == (batch_size, lookback, 2)
+            break
+
+        # specify feature_col
+        torch_loader = tsdata.to_torch_data_loader(batch_size=batch_size,
+                                                    lookback=lookback,
+                                                    horizon=horizon,
+                                                    feature_col=[])
+        for x_batch, y_batch in torch_loader:
+            assert tuple(x_batch.size()) == (batch_size, lookback, 1)
+            assert tuple(y_batch.size()) == (batch_size, horizon, 1)
+            break
+
+        # Non-subset relationship
+        with pytest.raises(ValueError):
+            tsdata.to_torch_data_loader(batch_size=batch_size,
+                                        lookback=lookback,
+                                        horizon=horizon,
+                                        target_col=['value', 'extra feature'])

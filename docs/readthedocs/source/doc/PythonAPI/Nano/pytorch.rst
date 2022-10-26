@@ -24,3 +24,11 @@ bigdl.nano.pytorch.TorchNano
     :members:
     :undoc-members:
     :exclude-members: run
+
+Patch API
+---------------------------
+
+.. automodule:: bigdl.nano.pytorch.dispatcher
+    :members:
+    :undoc-members:
+    :show-inheritance:

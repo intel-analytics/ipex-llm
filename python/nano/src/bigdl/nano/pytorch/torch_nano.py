@@ -28,6 +28,7 @@ from torch.nn.parallel.distributed import DistributedDataParallel
 from pytorch_lightning.lite import LightningLite
 from pytorch_lightning.lite.wrappers import _LiteModule, _LiteOptimizer
 from pytorch_lightning.utilities.apply_func import apply_to_collection
+from pytorch_lightning.strategies import Strategy
 
 from bigdl.nano.common import check_avx512
 from bigdl.nano.utils.log4Error import invalidInputError
@@ -87,6 +88,41 @@ class _TorchNanoModule(_LiteModule):
         return super().forward(*args, **kwargs)
 
 
+class _TorchNanoOptimizer(_LiteOptimizer):
+    def __init__(self, optimizer: Optimizer, strategy: Strategy,
+                 auto_lr: bool, num_processes: Optional[int]) -> None:
+        super().__init__(optimizer, strategy)
+        self.cur_lr_ratio = 1.0
+        self.max_lr_ratio = num_processes
+        self.cur_step = 0
+        self.max_step = 1000
+        self.auto_lr = auto_lr
+
+    def step(self, closure=None) -> Any:     # type: ignore
+        if not self.auto_lr or self.max_lr_ratio is None or self.max_lr_ratio == 1:
+            return super().step(closure)
+        else:
+            # adjust learning rate
+            base_lrs = []
+            for param_group in self.optimizer.param_groups:
+                base_lr = param_group['lr']
+                base_lrs.append(base_lr)
+                param_group['lr'] = base_lr * self.cur_lr_ratio
+
+            # call step
+            ret = super().step(closure=closure)
+
+            # restore learning rate
+            for param_group, base_lr in zip(self.optimizer.param_groups, base_lrs):
+                param_group['lr'] = base_lr
+
+            if self.cur_step < self.max_step:
+                self.cur_step += 1
+                self.cur_lr_ratio = (self.max_lr_ratio - 1) * self.cur_step / self.max_step + 1
+
+            return ret
+
+
 distributed_backends = ["spawn", "ray", "subprocess", "k8s"]
 
 backends_class_map = {
@@ -106,18 +142,19 @@ class TorchNano(LightningLite):
 
     def __init__(self, num_processes: Optional[int] = None,
                  use_ipex: bool = False,
-                 strategy: str = "subprocess",
+                 distributed_backend: str = "subprocess",
                  precision: Union[str, int] = 32,
                  cpu_for_each_process: Optional[List[List[int]]] = None,
                  channels_last: bool = False,
+                 auto_lr: bool = False,
                  *args, **kwargs) -> None:
         """
         Create a TorchNano with nano acceleration.
 
         :param num_processes: number of processes in distributed training, defaults to 1
         :param use_ipex: whether use ipex acceleration, defaults to False
-        :param strategy: use which backend in distributed mode, defaults to "subprocess", \
-            now avaiable strategies are 'spawn', 'subprocess' and 'ray'
+        :param distributed_backend: use which backend in distributed mode, defaults to \
+            "subprocess", now avaiable backends are 'spawn', 'subprocess' and 'ray'
         :param precision: Double precision (64), full precision (32), half precision (16)
             or bfloat16 precision (bf16), defaults to 32.
             Enable ipex bfloat16 weight prepack when `use_ipex=True` and `precision='bf16'`
@@ -132,6 +169,7 @@ class TorchNano(LightningLite):
         self.dtype = None
         self.cpu_for_each_process = cpu_for_each_process
         self.channels_last = channels_last
+        self.auto_lr = auto_lr
 
         if self.use_ipex and precision == 'bf16':
             # Enable ipex bfloat16 weight prepack and disable native AMP
@@ -153,7 +191,7 @@ class TorchNano(LightningLite):
 
         kwargs['precision'] = precision
 
-        if self.num_processes is None and strategy != "k8s":
+        if self.num_processes is None and distributed_backend != "k8s":
             self.num_processes = 1
 
         if self.num_processes == 1:
@@ -161,16 +199,17 @@ class TorchNano(LightningLite):
                 strategy = create_IPEXStrategy(dtype=self.dtype)
             else:
                 strategy = None     # type: ignore
-        elif strategy in backends_class_map:
-            cls = backends_class_map[strategy]
+        elif distributed_backend in backends_class_map:
+            cls = backends_class_map[distributed_backend]
             strategy = cls(num_processes=self.num_processes,   # type: ignore
                            cpu_for_each_process=self.cpu_for_each_process,
                            use_ipex=self.use_ipex,
                            dtype=self.dtype)
         else:
-            warning(f"BigDL-Nano doesn't support '{strategy}' strategy now, "
-                    f"'{strategy}' strategy of pytorch_lightning will be used. "
-                    f"Supported strategies are 'spawn', 'subprocess' and 'ray'.")
+            warning(f"BigDL-Nano doesn't support '{distributed_backend}' backend now, "
+                    f"'{distributed_backend}' strategy of pytorch_lightning will be used. "
+                    f"Supported backends are 'spawn', 'subprocess' and 'ray'.")
+            strategy = distributed_backend
 
         kwargs["strategy"] = strategy
         super().__init__(*args, **kwargs)
@@ -224,7 +263,8 @@ class TorchNano(LightningLite):
         if move_to_device:
             model = self._move_model_to_device(model=model, optimizers=optimizers)
         model = _TorchNanoModule(model, self._precision_plugin, self.channels_last)
-        optimizers = [_LiteOptimizer(optimizer=optimizer, strategy=self._strategy)  # type: ignore
+        optimizers = [_TorchNanoOptimizer(optimizer, self._strategy,    # type: ignore
+                                          self.auto_lr, self.num_processes)
                       for optimizer in optimizers]
         self._models_setup += 1
         if optimizers is not None:

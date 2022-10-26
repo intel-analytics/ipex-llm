@@ -5,6 +5,8 @@ ARG http_proxy
 ARG https_proxy
 ARG no_proxy
 ARG BIGDL_VERSION
+ARG JDK_VERSION=8u192
+ARG JDK_URL
 
 ENV BIGDL_VERSION                       ${BIGDL_VERSION}
 ENV LOCAL_IP                            127.0.0.1
@@ -12,6 +14,8 @@ ENV SGX_MEM_SIZE                        32G
 ENV SGX_LOG_LEVEL                       error
 ENV LC_ALL                              C.UTF-8
 ENV LANG                                C.UTF-8
+ENV JAVA_HOME                           /opt/jdk8
+ENV PATH                                ${JAVA_HOME}/bin:${PATH}
 
 RUN mkdir -p /ppml/
 
@@ -81,9 +85,27 @@ RUN env DEBIAN_FRONTEND=noninteractive apt-get update && \
     echo 'deb [trusted=yes arch=amd64] file:///opt/intel/sgx_debian_local_repo focal main' | tee /etc/apt/sources.list.d/intel-sgx.list && \
     wget -qO - https://download.01.org/intel-sgx/sgx_repo/ubuntu/intel-sgx-deb.key | apt-key add - && \
     apt-get update && \
-    apt-get install -y libsgx-enclave-common-dev  libsgx-ae-qe3 libsgx-ae-qve libsgx-urts libsgx-dcap-ql libsgx-dcap-default-qpl libsgx-dcap-quote-verify-dev libsgx-dcap-ql-dev libsgx-dcap-default-qpl-dev libsgx-quote-ex-dev libsgx-uae-service libsgx-ra-network libsgx-ra-uefi
+    apt-get install -y libsgx-enclave-common-dev  libsgx-ae-qe3 libsgx-ae-qve libsgx-urts libsgx-dcap-ql libsgx-dcap-default-qpl libsgx-dcap-quote-verify-dev libsgx-dcap-ql-dev libsgx-dcap-default-qpl-dev libsgx-quote-ex-dev libsgx-uae-service libsgx-ra-network libsgx-ra-uefi && \
+# java
+    cd /opt && \
+    wget $JDK_URL && \
+    gunzip jdk-$JDK_VERSION-linux-x64.tar.gz && \
+    tar -xf jdk-$JDK_VERSION-linux-x64.tar -C /opt && \
+    rm jdk-$JDK_VERSION-linux-x64.tar && \
+    mv /opt/jdk* /opt/jdk8 && \
+    ln -s /opt/jdk8 /opt/jdk && \
+# related dirs required by bash.manifest
+    mkdir -p /root/.cache/ && \
+    mkdir -p /root/.keras/datasets && \
+    mkdir -p /root/.zinc && \
+    mkdir -p /root/.m2 && \
+    mkdir -p /root/.kube/
 
 
+ADD ./download_jars.sh /ppml
+
+RUN cd /ppml && \
+    bash ./download_jars.sh
 
 ENV PYTHONPATH   /usr/lib/python3.7:/usr/lib/python3.7/lib-dynload:/usr/local/lib/python3.7/dist-packages:/usr/lib/python3/dist-packages
 WORKDIR /ppml

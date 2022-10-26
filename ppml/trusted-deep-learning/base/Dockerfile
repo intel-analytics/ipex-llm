@@ -16,13 +16,8 @@ ARG CMAKE_PREFIX_PATH="/usr/local/lib/python3.7/dist-packages/:/usr/local/lib/"
 ADD https://github.com/krallin/tini/releases/download/${TINI_VERSION}/tini /sbin/tini
 ADD ./entrypoint.sh /opt/entrypoint.sh
 
-# Folders required by bash.menifest.template
-RUN mkdir -p /root/.keras/datasets && \
-    mkdir -p /root/.zinc && \
-    mkdir -p /root/.m2 && \
-    mkdir -p /root/.kube/ && \
-    # PyTorch dependencies
-    env DEBIAN_FRONTEND=noninteractive apt-get update && \
+# PyTorch Dependencies
+RUN env DEBIAN_FRONTEND=noninteractive apt-get update && \
     apt-get install -y libssl-dev && \
     pip install --no-cache-dir astunparse numpy ninja pyyaml setuptools cmake cffi typing_extensions future six requests dataclasses mkl mkl-include intel-openmp && \
     pip install --no-cache-dir torchvision==0.13.1 && \

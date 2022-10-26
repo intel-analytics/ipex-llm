@@ -50,6 +50,7 @@ jobs:
           fi
           conda create -n chronos-prvn-env-1 -y python==3.7.10 setuptools==58.0.4
           source activate chronos-prvn-env-1
+          pip install boto3==1.24.96
           pip install pytest==5.4.1
           pip install prophet==1.1
           pip install pmdarima==1.8.4
@@ -61,9 +62,7 @@ jobs:
           pip install optuna==2.10.1
           pip install onnx==1.11.0
           pip install onnxruntime==1.11.1
-          pip install openvino-dev==2022.1.0
-          pip uninstall -y numpy
-          pip install numpy==1.19.5
+          pip install openvino-dev==2022.2.0
           pip install scipy==1.5.4
           pip install cloudpickle
           pip install matplotlib

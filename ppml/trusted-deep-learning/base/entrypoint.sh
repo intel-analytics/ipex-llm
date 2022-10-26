@@ -43,6 +43,7 @@ if [ -z "$uidentry" ] ; then
 fi
 
 
+# We do not have any arguments, just run bash
 if [ "$#" == 0 ]; then
   echo "[INFO] no command is passed in"
   echo "[INFO] enter pass-through mode"
@@ -75,7 +76,14 @@ elif [ "$ATTESTATION" = "true" ]; then
   ATTESTATION_COMMAND="/opt/jdk8/bin/java -Xmx1g -cp $SPARK_CLASSPATH:$BIGDL_HOME/jars/* com.intel.analytics.bigdl.ppml.attestation.AttestationCLI -u ${ATTESTATION_URL} -i ${ATTESTATION_ID}  -k ${ATTESTATION_KEY}"
 fi
 
-export sgx_command="$@"
+echo $SGX_ENABLED
 
-./init.sh && \
-gramine-sgx bash 2>&1
+runtime_command="$@"
+
+if [ "$SGX_ENABLED" == "true" ]; then
+  export sgx_command=$runtime_command
+  ./init.sh && \
+  gramine-sgx bash 2>&1
+else
+  exec $runtime_command
+fi

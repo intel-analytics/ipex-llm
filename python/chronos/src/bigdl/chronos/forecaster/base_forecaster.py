@@ -18,6 +18,7 @@ from bigdl.chronos.forecaster.abstract import Forecaster
 from bigdl.chronos.forecaster.utils import *
 from bigdl.chronos.metric.forecast_metrics import Evaluator
 
+from typing import Optional
 import numpy as np
 import warnings
 # Filter out useless Userwarnings
@@ -84,9 +85,13 @@ class BasePytorchForecaster(Forecaster):
                                                 optimizer=optimizer)
             self.onnxruntime_fp32 = None  # onnxruntime session for fp32 precision
             self.openvino_fp32 = None  # placeholader openvino session for fp32 precision
+            self.jit_fp32 = None  # placeholader jit session for fp32 precision
             self.onnxruntime_int8 = None  # onnxruntime session for int8 precision
             self.openvino_int8 = None  # placeholader openvino session for int8 precision
+            self.jit_int8 = None  # placeholader jit session for int8 precision
             self.pytorch_int8 = None  # pytorch model for int8 precision
+            self.optim_model = None  # accelarated model obtained from .optimize()
+            self.metadata = None  # str indicates model type of optim_model
 
     def _build_automodel(self, data, validation_data=None, batch_size=32, epochs=1):
         """Build a Generic Model using config parameters."""
@@ -437,7 +442,181 @@ class BasePytorchForecaster(Forecaster):
                     self.trainer.move_metrics_to_cpu)
                 return fit_out
 
-    def predict(self, data, batch_size=32, quantize=False):
+    def optimize(self, train_data,
+                 validation_data=None,
+                 batch_size: int = 32,
+                 thread_num: Optional[int] = None,
+                 accelerator: Optional[str] = None,
+                 precision: Optional[str] = None,
+                 metric: str = 'mse',
+                 accuracy_criterion: Optional[float] = None):
+        '''
+        This method will traverse existing optimization methods(onnxruntime, openvino, jit, ...)
+        and save the model with minimum latency under the given data and search
+        restrictions(accelerator, precision, accuracy_criterion) in `forecaster.optim_model`.
+        This method is required to call before `predict` and `evaluate`.
+        Now this function is only for non-distributed model.
+
+        :param train_data: Data used for training model. Users should be careful with this parameter
+               since this data might be exposed to the model, which causing data leak.
+               The train_data support following formats:
+
+               | 1. a numpy ndarray tuple (x, y):
+               | x's shape is (num_samples, lookback, feature_dim) where lookback and feature_dim
+               | should be the same as past_seq_len and input_feature_num.
+               | y's shape is (num_samples, horizon, target_dim), where horizon and target_dim
+               | should be the same as future_seq_len and output_feature_num.
+               |
+               | 2. pytorch dataloader:
+               | the dataloader should return x, y in each iteration with the shape as following:
+               | x's shape is (num_samples, lookback, feature_dim) where lookback and feature_dim
+               | should be the same as past_seq_len and input_feature_num.
+               | y's shape is (num_samples, horizon, target_dim), where horizon and target_dim
+               | should be the same as future_seq_len and output_feature_num.
+               | The batch_size of this dataloader is important as well, users may want to set it
+               | to the same batch size you may want to use the model in real deploy environment.
+               | E.g. batch size should be set to 1 if you would like to use the accelerated model
+               | in an online service.
+               |
+               | 3. A bigdl.chronos.data.tsdataset.TSDataset instance:
+               | Forecaster will automatically process the TSDataset.
+               | By default, TSDataset will be transformed to a pytorch dataloader,
+               | which is memory-friendly while a little bit slower.
+               | Users may call `roll` on the TSDataset before calling `fit`
+               | Then the training speed will be faster but will consume more memory.
+
+        :param validation_data(optional): This is only needed when users care about the possible
+               accuracy drop. The validation_data support following formats:
+
+               | 1. a numpy ndarray tuple (x, y):
+               | x's shape is (num_samples, lookback, feature_dim) where lookback and feature_dim
+               | should be the same as past_seq_len and input_feature_num.
+               | y's shape is (num_samples, horizon, target_dim), where horizon and target_dim
+               | should be the same as future_seq_len and output_feature_num.
+               |
+               | 2. pytorch dataloader:
+               | the dataloader should return x, y in each iteration with the shape as following:
+               | x's shape is (num_samples, lookback, feature_dim) where lookback and feature_dim
+               | should be the same as past_seq_len and input_feature_num.
+               | y's shape is (num_samples, horizon, target_dim), where horizon and target_dim
+               | should be the same as future_seq_len and output_feature_num.
+               |
+               | 3. A bigdl.chronos.data.tsdataset.TSDataset instance:
+               | Forecaster will automatically process the TSDataset.
+               | By default, TSDataset will be transformed to a pytorch dataloader,
+               | which is memory-friendly while a little bit slower.
+               | Users may call `roll` on the TSDataset before calling `fit`
+               | Then the training speed will be faster but will consume more memory.
+
+        :param batch_size: Number of batch size you want to use the model in real deploy
+               environment. The value defaults to 32. If you input a pytorch dataloader for
+               `train_data`, the batch_size will follow the batch_size setted in `train_data`.
+        :param thread_num: int, the num of thread limit. The value is set to None by
+               default where no limit is set.
+        :param accelerator: (optional) Use accelerator 'None', 'onnxruntime',
+               'openvino', 'jit', defaults to None. If not None, then will only find the
+               model with this specific accelerator.
+        :param precision: (optional) Supported type: 'int8', 'bf16', 'fp32'.
+               Defaults to None which represents no precision limit. If not None, then will
+               only find the model with this specific precision.
+        :param metric: (optional) A str represent corresponding metric which is used for calculating
+               accuracy.
+        :param accuracy_criterion: (optional) a float represents tolerable
+               accuracy drop percentage, defaults to None meaning no accuracy control.
+
+        Example:
+            >>> # obtain optimized model
+            >>> forecaster.optimize(train_data, val_data, thread_num=1)
+            >>> pred = forecaster.predict(data)
+        '''
+        # check distribution
+        if self.distributed:
+            invalidInputError(False,
+                              "optimize has not been supported for distributed "
+                              "forecaster. You can call .to_local() to transform the "
+                              "forecaster to a non-distributed version.")
+        # check fit
+        if not self.fitted:
+            invalidInputError(False,
+                              "You must call fit or restore first before calling optimize!")
+
+        # turn tsdataset to dataloader
+        if isinstance(train_data, TSDataset):
+            _rolled = train_data.numpy_x is None
+            train_data = train_data.to_torch_data_loader(
+                batch_size=batch_size,
+                roll=_rolled,
+                lookback=self.data_config['past_seq_len'],
+                horizon=self.data_config['future_seq_len'],
+                feature_col=train_data.roll_feature,
+                target_col=train_data.roll_target,
+                shuffle=False)
+
+        if validation_data is not None and isinstance(validation_data, TSDataset):
+            _rolled = validation_data.numpy_x is None
+            validation_data = validation_data.to_torch_data_loader(
+                batch_size=batch_size,
+                roll=_rolled,
+                lookback=self.data_config['past_seq_len'],
+                horizon=self.data_config['future_seq_len'],
+                feature_col=validation_data.roll_feature,
+                target_col=validation_data.roll_target,
+                shuffle=False)
+
+        # turn numpy into dataloader
+        if isinstance(train_data, (tuple, list)):
+            invalidInputError(len(train_data) == 2,
+                              f"train_data should be a 2-dim tuple, but get {len(train_data)}-dim.")
+            train_data = DataLoader(TensorDataset(torch.from_numpy(train_data[0]),
+                                                  torch.from_numpy(train_data[1])),
+                                    batch_size=batch_size,
+                                    shuffle=False)
+
+        if validation_data is not None and isinstance(validation_data, (tuple, list)):
+            invalidInputError(len(validation_data) == 2,
+                              f"validation_data should be a 2-dim tuple, but get "
+                              f"{len(validation_data)}-dim.")
+            validation_data = DataLoader(
+                TensorDataset(
+                    torch.from_numpy(validation_data[0]),
+                    torch.from_numpy(validation_data[1])),
+                batch_size=batch_size,
+                shuffle=False)
+
+        # align metric
+        if metric is not None:
+            if validation_data is None:
+                metric = None
+            else:
+                try:
+                    metric = _str2optimizer_metrc(metric)
+                except Exception:
+                    invalidInputError(False,
+                                      "Unable to recognize the metric string you passed in.")
+
+        dummy_input = torch.rand(1, self.data_config["past_seq_len"],
+                                 self.data_config["input_feature_num"])
+        from bigdl.chronos.pytorch import TSInferenceOptimizer as InferenceOptimizer
+        opt = InferenceOptimizer()
+        opt.optimize(model=self.internal,
+                     training_data=train_data,
+                     validation_data=validation_data,
+                     metric=metric,
+                     direction="min",
+                     thread_num=thread_num,
+                     input_sample=dummy_input)
+        try:
+            optim_model, option = opt.get_best_model(
+                accelerator=accelerator,
+                precision=precision,
+                accuracy_criterion=accuracy_criterion)
+            self.optim_model = optim_model
+            self.metadata = option  # represent which model is stored in self.optim_model
+        except Exception:
+            invalidInputError(False, "Unable to find an optimized model that meets your conditions."
+                              "Maybe you can relax your search limit.")
+
+    def predict(self, data, batch_size=32, quantize=False, acceleration: bool = True):
         """
         Predict using a trained forecaster.
 
@@ -466,11 +645,15 @@ class BasePytorchForecaster(Forecaster):
                | By default, TSDataset will be transformed to a pytorch dataloader,
                | which is memory-friendly while a little bit slower.
                | Users may call `roll` on the TSDataset before calling `fit`
-               | Then the training speed will be faster but will consume more memory.
+               | Then the training speed will be faster but will consume memory.
 
         :param batch_size: predict batch size. The value will not affect predict
                result but will affect resources cost(e.g. memory and time).
         :param quantize: if use the quantized model to predict.
+        :param acceleration: bool variable indicates whether use original model.
+               Default to True means use optim_model to predict which requires to call
+               .optimize() first to obtain an optim_model, otherwise will use original
+               model to predict.
 
         :return: A numpy array with shape (num_samples, horizon, target_dim)
                  if data is a numpy ndarray or a dataloader.
@@ -479,6 +662,7 @@ class BasePytorchForecaster(Forecaster):
                  if data is a xshard item.
         """
         from bigdl.chronos.pytorch.utils import _pytorch_fashion_inference
+        from bigdl.nano.utils.log4Error import invalidInputError
 
         if isinstance(data, TSDataset):
             _rolled = data.numpy_x is None
@@ -493,7 +677,6 @@ class BasePytorchForecaster(Forecaster):
         is_local_data = isinstance(data, (np.ndarray, DataLoader))
         if is_local_data and self.distributed:
             if isinstance(data, DataLoader):
-                from bigdl.nano.utils.log4Error import invalidInputError
                 invalidInputError(False,
                                   "We will be support input dataloader later.")
             data = np_to_xshard(data)
@@ -514,7 +697,6 @@ class BasePytorchForecaster(Forecaster):
             return yhat
         else:
             if not self.fitted:
-                from bigdl.nano.utils.log4Error import invalidInputError
                 invalidInputError(False,
                                   "You must call fit or restore first before calling predict!")
             if quantize:
@@ -522,10 +704,16 @@ class BasePytorchForecaster(Forecaster):
                                                   input_data=data,
                                                   batch_size=batch_size)
             else:
-                self.internal.eval()
-                yhat = _pytorch_fashion_inference(model=self.internal,
-                                                  input_data=data,
-                                                  batch_size=batch_size)
+                if acceleration is False or self.optim_model is None:
+                    self.internal.eval()
+                    yhat = _pytorch_fashion_inference(model=self.internal,
+                                                      input_data=data,
+                                                      batch_size=batch_size)
+                else:
+                    self.optim_model.eval()
+                    yhat = _pytorch_fashion_inference(model=self.optim_model,
+                                                      input_data=data,
+                                                      batch_size=batch_size)
             if not is_local_data:
                 yhat = np_to_xshard(yhat, prefix="prediction")
             return yhat
@@ -663,7 +851,76 @@ class BasePytorchForecaster(Forecaster):
                                               input_data=data,
                                               batch_size=batch_size)
 
-    def evaluate(self, data, batch_size=32, multioutput="raw_values", quantize=False):
+    def predict_with_jit(self, data, batch_size=32, quantize=False):
+        """
+        Predict using a trained forecaster with jit. The method can only be
+        used when forecaster is a non-distributed version.
+
+        Directly call this method without calling build_jit is valid and Forecaster will
+        automatically build an jit session with default settings.
+
+       :param data: The data support following formats:
+
+               | 1. a numpy ndarray x:
+               | x's shape is (num_samples, lookback, feature_dim) where lookback and feature_dim
+               | should be the same as past_seq_len and input_feature_num.
+               |
+               | 2. pytorch dataloader:
+               | the dataloader needs to return at least x in each iteration
+               | with the shape as following:
+               | x's shape is (num_samples, lookback, feature_dim) where lookback and feature_dim
+               | should be the same as past_seq_len and input_feature_num.
+               | If returns x and y only get x.
+               |
+               | 3. A bigdl.chronos.data.tsdataset.TSDataset instance:
+               | Forecaster will automatically process the TSDataset.
+               | By default, TSDataset will be transformed to a pytorch dataloader,
+               | which is memory-friendly while a little bit slower.
+               | Users may call `roll` on the TSDataset before calling `fit`
+               | Then the training speed will be faster but will consume more memory.
+
+        :param batch_size: predict batch size. The value will not affect predict
+               result but will affect resources cost(e.g. memory and time). Defaults
+               to 32. None for all-data-single-time inference.
+        :param quantize: if use the quantized jit model to predict. Not support yet.
+
+        :return: A numpy array with shape (num_samples, horizon, target_dim).
+        """
+        from bigdl.chronos.pytorch.utils import _pytorch_fashion_inference
+        from bigdl.nano.utils.log4Error import invalidInputError
+
+        if self.distributed:
+            invalidInputError(False,
+                              "Jit inference has not been supported for distributed "
+                              "forecaster. You can call .to_local() to transform the "
+                              "forecaster to a non-distributed version.")
+        if not self.fitted:
+            invalidInputError(False,
+                              "You must call fit or restore first before calling predict!")
+
+        if isinstance(data, TSDataset):
+            _rolled = data.numpy_x is None
+            data = data.to_torch_data_loader(batch_size=batch_size,
+                                             roll=_rolled,
+                                             lookback=self.data_config['past_seq_len'],
+                                             horizon=self.data_config['future_seq_len'],
+                                             feature_col=data.roll_feature,
+                                             target_col=data.roll_target,
+                                             shuffle=False)
+
+        if quantize and False:
+            return _pytorch_fashion_inference(model=self.jit_int8,
+                                              input_data=data,
+                                              batch_size=batch_size)
+        else:
+            if self.jit_fp32 is None:
+                self.build_jit()
+            return _pytorch_fashion_inference(model=self.jit_fp32,
+                                              input_data=data,
+                                              batch_size=batch_size)
+
+    def evaluate(self, data, batch_size=32, multioutput="raw_values", quantize=False,
+                 acceleration: bool = True):
         """
         Evaluate using a trained forecaster.
 
@@ -713,10 +970,15 @@ class BasePytorchForecaster(Forecaster):
                'raw_values'.The param is only effective when the forecaster is a
                non-distribtued version.
         :param quantize: if use the quantized model to predict.
+        :param acceleration: bool variable indicates whether use original model.
+               Default to True means use optim_model to predict which requires to call
+               .optimize() first to obtain an optim_model, otherwise will use original
+               model to predict.
 
         :return: A list of evaluation results. Each item represents a metric.
         """
         from bigdl.chronos.pytorch.utils import _pytorch_fashion_inference
+        from bigdl.nano.utils.log4Error import invalidInputError
 
         # data transform
         if isinstance(data, TSDataset):
@@ -737,7 +999,6 @@ class BasePytorchForecaster(Forecaster):
                                           batch_size=batch_size)
         else:
             if not self.fitted:
-                from bigdl.nano.utils.log4Error import invalidInputError
                 invalidInputError(False,
                                   "You must call fit or restore first before calling evaluate!")
             if isinstance(data, DataLoader):
@@ -750,10 +1011,16 @@ class BasePytorchForecaster(Forecaster):
                                                   input_data=input_data,
                                                   batch_size=batch_size)
             else:
-                self.internal.eval()
-                yhat = _pytorch_fashion_inference(model=self.internal,
-                                                  input_data=input_data,
-                                                  batch_size=batch_size)
+                if acceleration is False or self.optim_model is None:
+                    self.internal.eval()
+                    yhat = _pytorch_fashion_inference(model=self.internal,
+                                                      input_data=input_data,
+                                                      batch_size=batch_size)
+                else:
+                    self.optim_model.eval()
+                    yhat = _pytorch_fashion_inference(model=self.optim_model,
+                                                      input_data=input_data,
+                                                      batch_size=batch_size)
 
             aggregate = 'mean' if multioutput == 'uniform_average' else None
             return Evaluator.evaluate(self.metrics, target,
@@ -1091,8 +1358,10 @@ class BasePytorchForecaster(Forecaster):
         self.fitted = True
         self.onnxruntime_fp32 = None  # onnxruntime session for fp32 precision
         self.openvino_fp32 = None  # openvino session for fp32 precision
+        self.jit_fp32 = None  # jit session for fp32 precision
         self.onnxruntime_int8 = None  # onnxruntime session for int8 precision
         self.openvino_int8 = None  # openvino session for int8 precision
+        self.jit_int8 = None  # jit session for int8 precision
         self.pytorch_int8 = None  # pytorch model for int8 precision
         return self
 
@@ -1133,7 +1402,7 @@ class BasePytorchForecaster(Forecaster):
             >>> pred = forecaster.predict_with_onnx(data)
         '''
         import onnxruntime
-        from bigdl.chronos.pytorch import TSTrainer as Trainer
+        from bigdl.chronos.pytorch import TSInferenceOptimizer as InferenceOptimizer
         from bigdl.nano.utils.log4Error import invalidInputError
         if sess_options is not None and not isinstance(sess_options, onnxruntime.SessionOptions):
             invalidInputError(False,
@@ -1151,10 +1420,10 @@ class BasePytorchForecaster(Forecaster):
                               "forecaster to a non-distributed version.")
         dummy_input = torch.rand(1, self.data_config["past_seq_len"],
                                  self.data_config["input_feature_num"])
-        self.onnxruntime_fp32 = Trainer.trace(self.internal,
-                                              input_sample=dummy_input,
-                                              accelerator="onnxruntime",
-                                              onnxruntime_session_options=sess_options)
+        self.onnxruntime_fp32 = InferenceOptimizer.trace(self.internal,
+                                                         input_sample=dummy_input,
+                                                         accelerator="onnxruntime",
+                                                         onnxruntime_session_options=sess_options)
 
     def build_openvino(self, thread_num=None):
         '''
@@ -1170,7 +1439,7 @@ class BasePytorchForecaster(Forecaster):
         :param thread_num: int, the num of thread limit. The value is set to None by
                default where no limit is set.
         '''
-        from bigdl.chronos.pytorch import TSTrainer as Trainer
+        from bigdl.chronos.pytorch import TSInferenceOptimizer as InferenceOptimizer
         from bigdl.nano.utils.log4Error import invalidInputError
 
         if self.distributed:
@@ -1180,10 +1449,45 @@ class BasePytorchForecaster(Forecaster):
                               "forecaster to a non-distributed version.")
         dummy_input = torch.rand(1, self.data_config["past_seq_len"],
                                  self.data_config["input_feature_num"])
-        self.openvino_fp32 = Trainer.trace(self.internal,
-                                           input_sample=dummy_input,
-                                           accelerator="openvino",
-                                           thread_num=thread_num)
+        self.openvino_fp32 = InferenceOptimizer.trace(self.internal,
+                                                      input_sample=dummy_input,
+                                                      accelerator="openvino",
+                                                      thread_num=thread_num)
+
+    def build_jit(self, thread_num=None, use_ipex=False):
+        '''
+         Build jit model to speed up inference and reduce latency.
+         The method is Not required to call before predict_with_jit
+         or export_torchscript_file.
+
+         It is recommended to use when you want to:
+
+         | 1. Strictly control the thread to be used during inferencing.
+         | 2. Alleviate the cold start problem when you call predict_with_jit
+         |    for the first time.
+
+         :param use_ipex: if to use intel-pytorch-extension for acceleration. Typically,
+                intel-pytorch-extension will bring some acceleration while causing some
+                unexpected error as well.
+         :param thread_num: int, the num of thread limit. The value is set to None by
+                default where no limit is set.
+         '''
+        from bigdl.nano.pytorch import InferenceOptimizer
+        from bigdl.nano.utils.log4Error import invalidInputError
+
+        if self.distributed:
+            invalidInputError(False,
+                              "build_jit has not been supported for distributed "
+                              "forecaster. You can call .to_local() to transform the "
+                              "forecaster to a non-distributed version.")
+        dummy_input = torch.rand(1, self.data_config["past_seq_len"],
+                                 self.data_config["input_feature_num"])
+        self.jit_fp32 = InferenceOptimizer.trace(self.internal,
+                                                 input_sample=dummy_input,
+                                                 accelerator="jit",
+                                                 use_ipex=use_ipex,
+                                                 channels_last=False,
+                                                 thread_num=thread_num)
 
     def export_onnx_file(self, dirname="fp32_onnx", quantized_dirname=None):
         """
@@ -1192,7 +1496,7 @@ class BasePytorchForecaster(Forecaster):
         :param dirname: The dir location you want to save the onnx file.
         :param quantized_dirname: The dir location you want to save the quantized onnx file.
         """
-        from bigdl.chronos.pytorch import TSTrainer as Trainer
+        from bigdl.chronos.pytorch import TSInferenceOptimizer as InferenceOptimizer
         from bigdl.nano.utils.log4Error import invalidInputError
         if self.distributed:
             invalidInputError(False,
@@ -1200,11 +1504,11 @@ class BasePytorchForecaster(Forecaster):
                               "forecaster. You can call .to_local() to transform the "
                               "forecaster to a non-distributed version.")
         if quantized_dirname and self.onnxruntime_int8:
-            Trainer.save(self.onnxruntime_int8, quantized_dirname)
+            InferenceOptimizer.save(self.onnxruntime_int8, quantized_dirname)
         if dirname:
             if self.onnxruntime_fp32 is None:
                 self.build_onnx()
-            Trainer.save(self.onnxruntime_fp32, dirname)
+            InferenceOptimizer.save(self.onnxruntime_fp32, dirname)
 
     def export_openvino_file(self, dirname="fp32_openvino",
                              quantized_dirname=None):
@@ -1214,7 +1518,7 @@ class BasePytorchForecaster(Forecaster):
         :param dirname: The dir location you want to save the openvino file.
         :param quantized_dirname: The dir location you want to save the quantized openvino file.
         """
-        from bigdl.chronos.pytorch import TSTrainer as Trainer
+        from bigdl.chronos.pytorch import TSInferenceOptimizer as InferenceOptimizer
         from bigdl.nano.utils.log4Error import invalidInputError
         if self.distributed:
             invalidInputError(False,
@@ -1222,11 +1526,33 @@ class BasePytorchForecaster(Forecaster):
                               "forecaster. You can call .to_local() to transform the "
                               "forecaster to a non-distributed version.")
         if quantized_dirname and self.openvino_int8:
-            Trainer.save(self.openvino_int8, quantized_dirname)
+            InferenceOptimizer.save(self.openvino_int8, quantized_dirname)
         if dirname:
             if self.openvino_fp32 is None:
                 self.build_openvino()
-            Trainer.save(self.openvino_fp32, dirname)
+            InferenceOptimizer.save(self.openvino_fp32, dirname)
+
+    def export_torchscript_file(self, dirname="fp32_torchscript",
+                                quantized_dirname=None):
+        """
+        Save the torchscript model file to the disk.
+
+        :param dirname: The dir location you want to save the torchscript file.
+        :param quantized_dirname: The dir location you want to save the quantized torchscript file.
+        """
+        from bigdl.nano.pytorch import InferenceOptimizer
+        from bigdl.nano.utils.log4Error import invalidInputError
+        if self.distributed:
+            invalidInputError(False,
+                              "export_torchscript_file has not been supported for distributed "
+                              "forecaster. You can call .to_local() to transform the "
+                              "forecaster to a non-distributed version.")
+        if quantized_dirname and self.jit_int8:
+            InferenceOptimizer.save(self.jit_int8, quantized_dirname)
+        if dirname:
+            if self.jit_fp32 is None:
+                self.build_jit()
+            InferenceOptimizer.save(self.jit_fp32, dirname)
 
     def quantize(self, calib_data=None,
                  val_data=None,
@@ -1313,6 +1639,7 @@ class BasePytorchForecaster(Forecaster):
         """
         # check model support for quantization
         from bigdl.nano.utils.log4Error import invalidInputError
+        from bigdl.chronos.pytorch import TSInferenceOptimizer as InferenceOptimizer
         if not self.quantize_available:
             invalidInputError(False,
                               "This model has not supported quantization.")
@@ -1387,19 +1714,19 @@ class BasePytorchForecaster(Forecaster):
             else:
                 accelerator = 'onnxruntime'
                 method = method[:-3]
-            q_model = self.trainer.quantize(self.internal,
-                                            precision='int8',
-                                            accelerator=accelerator,
-                                            method=method,
-                                            calib_dataloader=calib_data,
-                                            metric=metric,
-                                            conf=conf,
-                                            approach=approach,
-                                            tuning_strategy=tuning_strategy,
-                                            accuracy_criterion=accuracy_criterion,
-                                            timeout=timeout,
-                                            max_trials=max_trials,
-                                            onnxruntime_session_options=sess_options)
+            q_model = InferenceOptimizer.quantize(self.internal,
+                                                  precision='int8',
+                                                  accelerator=accelerator,
+                                                  method=method,
+                                                  calib_dataloader=calib_data,
+                                                  metric=metric,
+                                                  conf=conf,
+                                                  approach=approach,
+                                                  tuning_strategy=tuning_strategy,
+                                                  accuracy_criterion=accuracy_criterion,
+                                                  timeout=timeout,
+                                                  max_trials=max_trials,
+                                                  onnxruntime_session_options=sess_options)
             if accelerator == 'onnxruntime':
                 self.onnxruntime_int8 = q_model
             if accelerator == 'openvino':
@@ -1490,5 +1817,20 @@ def _str2metric(metric):
             y_label = y_label.numpy()
             y_predict = y_predict.numpy()
             return metric_func(y_label, y_predict)
+        metric.__name__ = metric_name
+    return metric
+
+
+def _str2optimizer_metrc(metric):
+    # map metric str to function for InferenceOptimizer
+    if isinstance(metric, str):
+        metric_name = metric
+        from bigdl.chronos.metric.forecast_metrics import REGRESSION_MAP
+        metric_func = REGRESSION_MAP[metric_name]
+
+        def metric(pred, target):
+            pred = pred.numpy()
+            target = target.numpy()
+            return metric_func(target, pred)
         metric.__name__ = metric_name
     return metric

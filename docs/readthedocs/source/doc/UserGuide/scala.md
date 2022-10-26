@@ -3,10 +3,10 @@
 ---
 Supported Platforms: Linux and macOS. _**Note:** Windows is currently not supported._
  
-### **1. Try BigDL Examples**
+### 1. Try BigDL Examples
 This section will show you how to download BigDL prebuild packages and run the build-in examples.
 
-#### **1.1 Download and config** 
+#### 1.1 Download and config
 You can download the BigDL official releases and nightly build from the [Release Page](../release.md). After extracting the prebuild package, you need to set environment variables **BIGDL_HOME** and **SPARK_HOME** as follows:
 
 ```bash
@@ -14,7 +14,7 @@ export SPARK_HOME=folder path where you extract the Spark package
 export BIGDL_HOME=folder path where you extract the BigDL package
 ```
 
-#### **1.2 Use Spark interactive shell**
+#### 1.2 Use Spark interactive shell
 You can  try BigDL using the Spark interactive shell as follows:
 
 ```bash
@@ -60,7 +60,7 @@ scala> val seq = Sequential()
        seq.add(layer)
 ```
 
-#### **1.3 Run BigDL examples**
+#### 1.3 Run BigDL examples
 
 You can run a bigdl-dllib program, e.g., the [Language Model](https://github.com/intel-analytics/BigDL/tree/branch-2.0/scala/dllib/src/main/scala/com/intel/analytics/bigdl/dllib/example/languagemodel), as a standard Spark program (running on either a local machine or a distributed cluster) as follows:
 
@@ -143,12 +143,12 @@ If you are to run your own program, do remember to do the initialize before call
 ```
 --- 
 
-### **2. Build BigDL Applications**
+### 2. Build BigDL Applications
 
 This section will show you how to build your own deep learning project with BigDL. 
 
-#### **2.1 Add BigDL dependency**
-##### **2.1.1 official Release** 
+#### 2.1 Add BigDL dependency
+##### 2.1.1 official Release
 Currently, BigDL releases are hosted on maven central; below is an example to add the BigDL dllib dependency to your own project:
 
 ```xml
@@ -167,7 +167,7 @@ SBT developers can use
 libraryDependencies += "com.intel.analytics.bigdl" % "bigdl-dllib-spark_2.4.6" % "0.14.0"
 ```
 
-##### **2.1.2 Nightly Build**
+##### 2.1.2 Nightly Build
 
 Currently, BigDL nightly build is hosted on [SonaType](https://oss.sonatype.org/content/groups/public/com/intel/analytics/bigdl/).
 
@@ -194,6 +194,6 @@ resolvers += "ossrh repository" at "https://oss.sonatype.org/content/repositorie
 ```
 
 
-#### **2.2 Build a Scala project**
+#### 2.2 Build a Scala project
 To enable BigDL in project, you should add BigDL to your project's dependencies using maven or sbt. Here is a [simple MLP example](https://github.com/intel-analytics/BigDL/tree/branch-2.0/apps/SimpleMlp) to show you how to use BigDL to build your own deep learning project using maven or sbt, and how to run the simple example in IDEA and spark-submit.
 

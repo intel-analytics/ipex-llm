@@ -112,6 +112,30 @@ class TestInferencePipeline(TestCase):
         assert error_msg == "If you want to specify accuracy_criterion, you need "\
                             "to set metric and validation_data when call 'optimize'."
 
+    def test_pipeline_with_excludes(self):
+        inference_opt = InferenceOptimizer()
+        inference_opt.optimize(model=self.model,
+                               training_data=self.train_loader,
+                               thread_num=1,
+                               excludes=["fp32_ipex", "original"])
+
+        # original is a special method that must be included in
+        # the search
+        assert "original" in inference_opt.optimized_model_dict
+        assert "jit_fp32_ipex" in inference_opt.optimized_model_dict
+        assert "fp32_ipex" not in inference_opt.optimized_model_dict
+
+    def test_pipeline_with_includes(self):
+        inference_opt = InferenceOptimizer()
+        inference_opt.optimize(model=self.model,
+                               training_data=self.train_loader,
+                               thread_num=1,
+                               includes=["fp32_ipex"])
+
+        assert "original" in inference_opt.optimized_model_dict
+        assert "fp32_ipex" in inference_opt.optimized_model_dict
+        assert len(inference_opt.optimized_model_dict) == 2
+
     def test_summary(self):
         inference_opt = InferenceOptimizer()
         with pytest.raises(RuntimeError) as e:
@@ -153,6 +177,16 @@ class TestInferencePipeline(TestCase):
                                direction="max",
                                thread_num=1)
     
+    def test_pipeline_with_torchmetrics_functional_metric(self):
+        inference_opt = InferenceOptimizer()
+        metric = torchmetrics.functional.accuracy
+        inference_opt.optimize(model=self.model,
+                               training_data=self.train_loader,
+                               validation_data=self.test_loader,
+                               metric=metric,
+                               direction="max",
+                               thread_num=1)
+
     def test_pipeline_with_custom_function_metric_without_data(self):
         inference_opt = InferenceOptimizer()
 
@@ -198,3 +232,30 @@ class TestInferencePipeline(TestCase):
                                metric=metric,
                                direction="max",
                                thread_num=1)
+
+    def test_get_model_with_wrong_method_name(self):
+        inference_opt = InferenceOptimizer()
+        inference_opt.optimize(model=self.model,
+                               training_data=self.train_loader,
+                               validation_data=self.test_loader,
+                               metric=self.metric,
+                               direction="max",
+                               thread_num=1)
+
+        with pytest.raises(RuntimeError):
+            inference_opt.get_model(method_name="fp16_ipex")
+
+    def test_get_model_with_method_name(self):
+        inference_opt = InferenceOptimizer()
+        inference_opt.optimize(model=self.model,
+                               training_data=self.train_loader,
+                               validation_data=self.test_loader,
+                               metric=self.metric,
+                               direction="max",
+                               thread_num=1)
+        try:
+            model = inference_opt.get_model(method_name="fp32_ipex")
+            from bigdl.nano.deps.ipex.ipex_inference_model import PytorchIPEXJITModel
+            assert isinstance(model, PytorchIPEXJITModel)
+        except:
+            pass

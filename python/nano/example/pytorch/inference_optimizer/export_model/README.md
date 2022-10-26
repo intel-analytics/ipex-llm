@@ -8,10 +8,10 @@ For the sake of this example, we take ResNet50 for an example. First, by calling
 ## Prepare the environment
 We recommend you to use [Miniconda](https://docs.conda.io/en/latest/miniconda.html) to prepare the environment.
 **Note**: during your installation, there may be some warnings or errors about version, just ignore them.
-```
+```bash
 conda create -n nano python=3.7 setuptools=58.0.4  # "nano" is conda environment name, you can use any name you like.
 conda activate nano
-pip install --pre --upgrade bigdl-nano[pytorch]
+pip install --pre --upgrade bigdl-nano[pytorch] # install the nightly-bulit version
 
 # bf16 is available only on torch1.12
 pip install torch==1.12.0 torchvision --extra-index-url https://download.pytorch.org/whl/cpu 

@@ -256,7 +256,7 @@ class PublicDataset:
                    target_col,
                    extra_feature=None,
                    id_col=None,
-                   repair=True):
+                   repair=False):
         """
         param dt_col: same as tsdata.from_pandas.
         param target_col: same as tsdata.from_pandas.
