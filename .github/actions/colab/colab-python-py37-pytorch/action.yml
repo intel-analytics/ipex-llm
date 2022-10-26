@@ -1,0 +1,55 @@
+name: 'Run Colab Python Py37 Pytorch'
+description: 'Run Colab Python Py37 Pytorch'
+runs:
+  using: "composite"
+  steps:
+    - name: Set up Python 
+      uses: actions/setup-python@v2
+      with:
+        python-version: '3.7.10'
+
+    - name: Install dependencies
+      shell: bash
+      run: |
+        apt-get update
+        apt-get install -y zip
+        python -m pip install --upgrade pip
+        python -m pip install --upgrade setuptools==58.0.4
+
+    - name: Setup env
+      shell: bash
+      run: |
+        conda create -n py37-jep -y python==3.7.10 setuptools==58.0.4
+        source activate py37-jep
+        
+      env:
+        BIGDL_ROOT: ${{ github.workspace }}
+        ANALYTICS_ZOO_ROOT: ${{ github.workspace }}
+    
+    -name: Run test
+      shell: bash
+      run: |
+        conda remove -c anaconda -y intel-openmp || true
+        chmod a+x python/orca/dev/colab-notebook/ipynb2py.sh
+        chmod a+x python/chronos/dev/app/ipynb2py.sh
+        chmod a+x python/chronos/dev/colab-notebook/run-notebook-pytorch.sh
+        chmod a+x python/orca/dev/colab-notebook/run-notebook-pytorch.sh
+        export LD_LIBRARY_PATH=/opt/conda/envs/py37-jep/lib:$LD_LIBRARY_PATH
+        export PYTHONHOME=/opt/conda/envs/py37-jep 
+        pip uninstall -y bigdl-dllib bigdl-orca bigdl-chronos
+        pip install --pre --upgrade bigdl-chronos
+        if [ -f python/chronos/dev/colab-notebook/run-notebook-pytorch.sh ]
+        then
+          bash python/chronos/dev/colab-notebook/run-notebook-pytorch.sh
+        fi
+        if [ -f python/orca/dev/colab-notebook/run-notebook-pytorch.sh ]
+        then
+          bash python/orca/dev/colab-notebook/run-notebook-pytorch.sh
+        fi
+        pip uninstall -y bigdl-dllib bigdl-orca bigdl-chronos
+        unset PYTHONHOME
+        source deactivate
+
+      env:
+        BIGDL_ROOT: ${{ github.workspace }}
+        FTP_URI: ftp://zoo:1234qwer@10.112.231.51
