@@ -10,8 +10,6 @@ ARG JDK_URL
 
 ENV BIGDL_VERSION                       ${BIGDL_VERSION}
 ENV LOCAL_IP                            127.0.0.1
-ENV SGX_MEM_SIZE                        32G
-ENV SGX_LOG_LEVEL                       error
 ENV LC_ALL                              C.UTF-8
 ENV LANG                                C.UTF-8
 ENV JAVA_HOME                           /opt/jdk8
