@@ -47,7 +47,7 @@ class InferenceUtils:
                                 static quantization. It's also used as validation dataloader.
         :param precision:       Global precision of quantized model,
                                 supported type: 'int8', 'bf16', 'fp16', defaults to 'int8'.
-        :param accelerator:     Use accelerator 'None', 'onnxruntime', 'openvino', defaults to None.
+        :param accelerator:     Use accelerator 'None', defaults to None.
                                 None means staying in tensorflow.
         :param metric:          A tensorflow.keras.metrics.Metric object for evaluation.
         :param accuracy_criterion:  Tolerable accuracy drop.
