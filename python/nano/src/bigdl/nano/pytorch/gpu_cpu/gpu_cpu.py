@@ -15,6 +15,7 @@
 #
 
 import torch
+from logging import warning
 from functools import partial
 from bigdl.nano.pytorch.utils import TORCH_VERSION_LESS_1_10
 
@@ -128,6 +129,7 @@ def create_tensor_func(torch_create_tensor_func):
 def patch_cuda(disable_jit=True):
     # add this parameter since it's a known issue
     if disable_jit:
+        warning("This CUDA patch is incompatible with JIT, JIT will be disabled!")
         torch.jit._state.disable()
 
     setattr(torch.Tensor, "cuda", cuda)
