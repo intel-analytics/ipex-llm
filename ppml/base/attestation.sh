@@ -30,6 +30,5 @@ elif [ "$ATTESTATION" = "true" ]; then
   if [ -n "$ATTESTATION_POLICYID" ]; then
     ATTESTATION_COMMAND="${ATTESTATION_COMMAND} -o ${ATTESTATION_POLICYID}"
   fi
+  echo $ATTESTATION_COMMAND > temp_command_file
 fi
-
-echo $ATTESTATION_COMMAND > temp_command_file
