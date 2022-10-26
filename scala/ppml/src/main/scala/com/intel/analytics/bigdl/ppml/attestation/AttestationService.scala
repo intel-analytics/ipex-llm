@@ -55,5 +55,5 @@ trait AttestationService extends Supportive {
    * @param policyID application's policy ID
    * @return attestation result/token
    */
-  def attestWithServer(quote: String, policyID: String): (Boolean, String) 
+  def attestWithServer(quote: String, policyID: String): (Boolean, String)
 }

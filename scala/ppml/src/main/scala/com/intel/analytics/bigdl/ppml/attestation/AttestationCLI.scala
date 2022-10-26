@@ -99,7 +99,6 @@ object AttestationCLI {
           case "" => as.attestWithServer(Base64.getEncoder.encodeToString(quote))
           case _ => as.attestWithServer(Base64.getEncoder.encodeToString(quote), params.policyID)
         }
-        
 
         if (attResult._1) {
             System.out.println("Attestation Success!")

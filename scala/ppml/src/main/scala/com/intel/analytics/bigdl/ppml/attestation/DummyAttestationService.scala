@@ -73,7 +73,7 @@ class DummyAttestationService extends AttestationService {
         }
     }
     /**
-     * Do a quote verification 
+     * Do a quote verification
      * @param quote the quote generated before
      * @param policyID a policy ID not used in dummy attestation service
      * @return the result and response of quote verify.
