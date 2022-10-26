@@ -7,7 +7,25 @@
 - Please make sure you have already installed **[helm](https://helm.sh/)**.
 - Please make sure you have an usable PCCS ApiKey for your platform. The PCCS uses this API key to request collaterals from Intel's Provisioning Certificate Service. User needs to subscribe first to obtain an API key. For how to subscribe to Intel Provisioning Certificate Service and receive an API key, goto https://api.portal.trustedservices.intel.com/provisioning-certification and click on 'Subscribe'.
 
-## 1. Start BigDL-PCCS on Kubernetes 
+## 1. Pull/Build the PCCS Image
+
+We encapsulate host PCCS service into a docker image, which enables a user-friendly container-service.
+
+Download image as below:
+
+```bash
+docker pull intelanalytics/pccs:0.3.0-SNAPSHOT
+```
+
+Or you are allowed to build the image manually:
+
+```bash
+cd ../pccs
+# configure build parameters in build-docker-image.sh
+bash build-docker-image.sh
+cd ../kubernetes
+```
+## 2. Start BigDL-PCCS on Kubernetes 
 Please make sure current workdir is `kubernetes`.
 
 Then modify parameters in `values.yaml` as following:
@@ -47,7 +65,7 @@ statefulset.apps/pccs   1/1     18s
 
 ```
 
-## 2. Check if pccs service is running and available:
+## 3. Check if pccs service is running and available:
 Execute command to check if pccs service is available.
 ```bash
 curl -v -k -G "https://<your_pccs_ip>:<your_pccs_port>/sgx/certification/v3/rootcacrl"
