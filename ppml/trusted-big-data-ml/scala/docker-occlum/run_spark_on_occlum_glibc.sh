@@ -108,8 +108,8 @@ init_instance() {
            #build .c file
            bash ./run_dcap_quote_on_occlum.sh
            cd /opt/occlum_spark
-           mkdir -p /opt/occlum_spark/image/attestation/
-           mkdir -p /opt/occlum_spark/image/occlum_attestation/
+           mkdir -p /opt/occlum_spark/image/etc/attestation/
+           mkdir -p /opt/occlum_spark/image/etc/occlum_attestation/
            #copy bom
            copy_bom -f /root/demos/remote_attestation/dcap/dcap.yaml --root image --include-dir /opt/occlum/etc/template
         fi
