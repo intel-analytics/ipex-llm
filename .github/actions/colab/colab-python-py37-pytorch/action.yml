@@ -43,6 +43,7 @@ runs:
         chmod a+x python/chronos/dev/app/ipynb2py.sh
         chmod a+x python/chronos/dev/colab-notebook/run-notebook-pytorch.sh
         chmod a+x python/orca/dev/colab-notebook/run-notebook-pytorch.sh
+        chmod a+x python/orca/dev/colab-notebook/ipynb2py.sh
         export LD_LIBRARY_PATH=/opt/conda/envs/py37-jep/lib:$LD_LIBRARY_PATH
         export PYTHONHOME=/opt/conda/envs/py37-jep 
         pip uninstall -y bigdl-dllib bigdl-orca bigdl-chronos
