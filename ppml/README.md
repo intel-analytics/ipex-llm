@@ -367,7 +367,7 @@ To build your own Big Data & AI applications, refer to [develop your own Big Dat
               secretKeyRef:
                 name: kms-secret
                 key: app_key
-          - name: POLICY_ID
+          - name: ATTESTATION_POLICYID
             valueFrom:
               secretKeyRef:
                 name: policy-id-secret
