@@ -99,7 +99,7 @@ def export_to_onnx(model, input_sample=None, onnx_path="model.onnx", dynamic_axe
     else:
         dynamic_axes = {}
     default_onnx_export_args = {'export_params': True,
-                                'opset_version': 11,  # version = 11 by default
+                                'opset_version': 12,  # version = 12 by default
                                 'do_constant_folding': True,
                                 'input_names': forward_args,
                                 'dynamic_axes': dynamic_axes,
