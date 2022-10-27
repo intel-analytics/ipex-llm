@@ -1,6 +1,6 @@
 # Chronos Known Issue
 
-## Version compatibility issues
+## Version Compatibility Issues
 
 ### Numpy.ndarray size changed, may indicate binary incompatibility. Expected 88 from C header, got 80 from PyObject
 
@@ -40,6 +40,8 @@ We recommend reinstalling prophet using conda or miniconda.
 * `conda install –c conda-forge prophet=1.0.1`
 
 ---------------------------
+
+## Dependency Issues
 
 ### RuntimeError: No active RayContext
 
