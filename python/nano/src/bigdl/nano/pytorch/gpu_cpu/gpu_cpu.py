@@ -14,6 +14,7 @@
 # limitations under the License.
 #
 
+from typing import Optional
 import torch
 from logging import warning
 from functools import partial
@@ -94,7 +95,7 @@ def GradScalerClass_wrapper(GradScaler):
 
 # it seems we don't really need this repalcement  
 class new_autocast(torch.autocast):
-    def __init__(self, device_type, dtype, *args, **kwargs):
+    def __init__(self, device_type, dtype=None, *args, **kwargs):
         device_type = 'cpu' if device_type == 'cuda' else device_type
         dtype = torch.bfloat16 if dtype == torch.float16 else dtype
         super().__init__(device_type, dtype, *args, **kwargs)
