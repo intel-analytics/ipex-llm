@@ -150,6 +150,7 @@ python register-mrenclave.py --appid <your_appid> \
                              --mr_enclave <your_mrenclave_hash_value> \
                              --mr_signer <your_mrensigner_hash_value>
 ```
+You will receive a response containing a `policyID` and please save it which will be used to attest runtime MREnclave of distributed kubernetes application.
 
 ## Run Your PySpark Program
 
@@ -270,7 +271,8 @@ kubectl config view --flatten --minify > /YOUR_DIR/kubeconfig
 #### 1.2.3 Create k8s secret
 ```bash
 kubectl create secret generic spark-secret --from-literal secret=YOUR_SECRET
-kubectl create secret generic kms-secret --from-literal=app_id=your-kms-app-id --from-literal=api_key=your-kms-api-key
+kubectl create secret generic kms-secret --from-literal=app_id=YOUR_KMS_APP_ID --from-literal=api_key=YOUR_KMS_API_KEY
+kubectl create secret generic policy-id-secret --from-literal=policy_id=YOUR_POLICY_ID
 ```
 **The secret created (`YOUR_SECRET`) should be the same as the password you specified in section 1.1**
 

@@ -185,7 +185,7 @@ To build a secure PPML image which can be used in production environment, BigDL 
     ./build-base-image.sh
     cd ..
     ```
-
+    
 2. Build Custom Image
 
     When the base image is ready, you need to generate your enclave key which will be used when building custom image, keep the enclave key safely for future remote attestations.
@@ -214,7 +214,7 @@ To build a secure PPML image which can be used in production environment, BigDL 
     mr_signer        : 6f0627955......
     ````
 
-    Note: you can also customize the image  according to your own needs, e.g. install extra python library, add code, jars.
+    Note: you can also customize the image according to your own needs, e.g. install extra python library, add code, jars.
     
 
 #### Step 2. Encrypt and Upload Data
@@ -239,19 +239,17 @@ To build your own Big Data & AI applications, refer to [develop your own Big Dat
     apiVersion: v1
     kind: Pod
     spec:
-      containers:
-      - name: spark-driver
-        securityContext:
-          privileged: true
+      ...
         env:
           - name: ATTESTATION
             value: false
+      ...
     ```
 
 2. Enable attestation
     The bi-attestation gurantees that the MREnclave in runtime containers is a secure one made by you. Its workflow is as below:
-    ![image](https://user-images.githubusercontent.com/60865256/197942524-85a52f73-cf1a-49b3-bd1c-175d130f93e4.png)
-
+    ![image](https://user-images.githubusercontent.com/60865256/198168194-d62322f8-60a3-43d3-84b3-a76b57a58470.png)
+    
     To enable attestation, first you should have a running Attestation Service in your environment. 
 
     **2.1. Deploy EHSM KMS & AS**
@@ -333,9 +331,16 @@ To build your own Big Data & AI applications, refer to [develop your own Big Dat
                                 --mr_enclave <your_mrenclave_hash_value> \
                                 --mr_signer <your_mrensigner_hash_value>
     ```
+    You will receive a response containing a `policyID` and save it which will be used to attest runtime MREnclave when running distributed kubernetes application.
 
     **3.5. Enable Attestation in configuration**
 
+    First, upload `policyID` obtained to kubernetes as a secret when registering MREnclave before:
+    
+    ```bash
+    kubectl create secret generic policy-id-secret --from-literal=policy_id=YOUR_POLICY_ID
+    ```
+    
     Configure `spark-driver-template.yaml` and `spark-executor-template.yaml` to enable Attestation as follows:
     ``` yaml
     apiVersion: v1
@@ -348,6 +353,8 @@ To build your own Big Data & AI applications, refer to [develop your own Big Dat
         env:
           - name: ATTESTATION
             value: true
+          - name: PCCS_URL
+            value: your_pccs_url  -----> <set_the_value_to_your_pccs_url>
           - name: ATTESTATION_URL
             value: your_attestation_url
           - name: ATTESTATION_ID
@@ -359,7 +366,12 @@ To build your own Big Data & AI applications, refer to [develop your own Big Dat
             valueFrom:
               secretKeyRef:
                 name: kms-secret
-                key: api_key
+                key: app_key
+          - name: ATTESTATION_POLICYID
+            valueFrom:
+              secretKeyRef:
+                name: policy-id-secret
+                key: policy_id
     ...
     ```
     You should get `Attestation Success!` in logs after you [submit a PPML job](#step-4-submit-job) if the quote generated with user report is verified successfully by Attestation Service, or you will get `Attestation Fail! Application killed!` and the job will be stopped.
