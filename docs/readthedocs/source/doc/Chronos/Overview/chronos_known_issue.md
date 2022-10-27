@@ -1,5 +1,6 @@
 # Chronos Known Issue
 ### 1. Numpy.ndarray size changed, may indicate binary incompatibility. Expected 88 from C header, got 80 from PyObject
+
 **Problem description**
 
 It seems to be a numpy compatibility issue, we do not recommend to solve it by downgrading Numpy to 1.19.x,
@@ -13,6 +14,7 @@ when no other issues exist, the solution is given below.
 ---------------------------
 
 ### 2. Cannot convert a symbolic Tensor (encoder_lstm_8/strided_slice:0) to a numpy array
+
 **Problem description**
 
 This is a compatibility issue caused by Tensorflow and Numpy 1.20.x
@@ -37,6 +39,7 @@ We recommend reinstalling prophet using conda or miniconda.
 ---------------------------
 
 ### 4. RuntimeError: No active RayContext
+
 **Problem description**
 
 Exception: No active RayContext. Please call init_orca_context to create a RayContext.
@@ -51,6 +54,7 @@ Exception: No active RayContext. Please call init_orca_context to create a RayCo
 ---------------------------
 
 ### 5. error while loading shared libraries: libunwind.so.8: cannot open shared object file: No such file or directory.
+
 **Problem description**
 
 A dependency is missing from your environment, only happens when you run `source bigdl-nano-init`.
