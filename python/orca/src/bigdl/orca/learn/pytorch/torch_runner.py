@@ -400,12 +400,11 @@ class TorchRunner:
         elif wrap_dataloader is True:
             loader = self.with_sampler(loader)
         loader = iter(loader)
-        if num_steps:
-            loader = itertools.islice(loader, num_steps)
         with self.timers.record("validation"):
             validation_stats = self.training_operator.validate(loader,
                                                                info=info,
-                                                               metrics=self.metrics)
+                                                               metrics=self.metrics,
+                                                               num_steps=num_steps)
         if profile:
             validation_stats.update(profile=self.timers.stats())
         return validation_stats
