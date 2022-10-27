@@ -62,6 +62,7 @@ class TensorBoardCallback(Callback):
         Called at the end of a training batch in `fit` methods.
         Subclasses should override for any actions to run.
         @param batch: Integer, index of batch within the current epoch.
+        @param logs: Dict. Aggregated metric results up until this batch.
         """
         if self.freq != "epoch" and self._is_rank_zero():
             if self.freq == "batch" or batch % int(self.freq) == 0:
