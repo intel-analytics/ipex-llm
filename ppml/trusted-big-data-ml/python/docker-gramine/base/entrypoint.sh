@@ -78,12 +78,6 @@ if [ -n "$R_APP_ARGS" ]; then
     R_ARGS="$R_APP_ARGS"
 fi
 
-# Attestation
-if [ -z "$ATTESTATION" ]; then
-  echo "[INFO] Attestation is disabled!"
-  ATTESTATION="false"
-fi
-
 if [ "$PYSPARK_MAJOR_PYTHON_VERSION" == "2" ]; then
     pyv="$(python -V 2>&1)"
     export PYTHON_VERSION="${pyv:7}"
