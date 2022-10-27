@@ -122,7 +122,6 @@ class ResNetPerfOperator(TrainingOperator):
                     _progress_bar.set_postfix(postfix)
                 from bigdl.orca.learn.pytorch.utils import get_batchsize
                 num_samples = get_batchsize(target)
-                print('n',num_samples)
                 total_samples += num_samples
                 losses.append(loss.item() * num_samples)
                 for metric in metrics.values():
@@ -157,8 +156,7 @@ class ResNetPerfOperator(TrainingOperator):
 
 class DummyData(torch.utils.data.Dataset):
 
-    def __init__(self, size, use_ipex, use_bf16):
-        super(DummyData, self).__init__()
+    def __init__(self, size):
         self.len = size
         self.features = torch.randn(self.len, 3, 224, 224)
         self.labels = torch.randint(1, 1000, size=(self.len, )).long()
@@ -223,7 +221,7 @@ def validate(args):
             # TODO: dummy data may not need dataloader?
             # dummy data, always running channel last for fp32, bf16, int8
             val_loader = torch.utils.data.DataLoader(
-                DummyData(config["number_iter"] * batch_size, args.ipex, args.bf16),
+                DummyData(config["number_iter"] * batch_size),
                 batch_size=batch_size, shuffle=False,
                 num_workers=args.workers, pin_memory=True)
         return val_loader
@@ -344,7 +342,8 @@ def validate(args):
     mean_validation_s = result['profile']['mean_validation_s']
     mean_eval_fwd_s = result['profile']['mean_eval_fwd_s']
     print('avg_val_time for each worker:', mean_validation_s)
-    print('avg_forward_time for each batch:', mean_eval_fwd_s)
+for
+    print('avg_forward_time  each batch:', mean_eval_fwd_s)
     latency = mean_eval_fwd_s / batch_size * 1000
     perf = batch_size / mean_eval_fwd_s
     print('inference latency %.3f ms' % latency)
