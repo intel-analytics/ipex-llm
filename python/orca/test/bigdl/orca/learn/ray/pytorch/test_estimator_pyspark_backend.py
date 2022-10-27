@@ -616,7 +616,7 @@ class TestPyTorchEstimator(TestCase):
                           feature_cols=["feature"],
                           label_cols=["label"])
 
-            assert len(os.listdir(log_dir))) > 0
+            assert len(os.listdir(log_dir)) > 0
         finally:
             shutil.rmtree(temp_dir)
 
