@@ -1,5 +1,5 @@
 name: 'Run Colab Python Py37 tf1'
-description: 'Run Colab Python Py37 tf1
+description: 'Run Colab Python Py37 tf1'
 runs:
   using: "composite"
   steps:
