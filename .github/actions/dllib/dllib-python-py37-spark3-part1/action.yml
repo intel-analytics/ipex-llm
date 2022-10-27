@@ -6,13 +6,15 @@ runs:
     - name: Run Test
       shell: bash
       run: |
+        pip install h5py==2.10.0
+        pip install keras==1.2.2
         cd scala
         mvn clean package -DskipTests -P spark_3.x -Dspark.version=3.1.2 -pl '!orca,!friesian,!grpc,!serving,!ppml,!assembly' 
         cd -
        
-        wget https://archive.apache.org/dist/spark/spark-3.1.2/spark-3.1.2-bin-hadoop2.7.tgz -O ${{ github.workspace }}/spark-3.1.2-bin-hadoop2.7.tgz
-        tar -xf spark-3.1.2-bin-hadoop2.7.tgz -C ${{ github.workspace }}/
-        export SPARK_HOME=${{ github.workspace }}/spark-3.1.2-bin-hadoop2.7
+        wget https://archive.apache.org/dist/spark/spark-3.1.3/spark-3.1.3-bin-hadoop2.7.tgz -O ${{ github.workspace }}/spark-3.1.3-bin-hadoop2.7.tgz
+        tar -xf spark-3.1.3-bin-hadoop2.7.tgz -C ${{ github.workspace }}/
+        export SPARK_HOME=${{ github.workspace }}/spark-3.1.3-bin-hadoop2.7
         
         mkdir -p dist/lib
         cp -r scala/dllib/target/bigdl-dllib*-jar-with-dependencies.jar dist/lib
@@ -20,10 +22,9 @@ runs:
 
         source activate py37
         export SPARK_LOCAL_HOSTNAME=localhost
-        pip install pyspark==3.1.2 pytest
+        #pip install pyspark==3.1.2 pytest
 
-        pip install h5py==2.10.0
-        pip install keras==1.2.2
+        
         
         python/dllib/dev/run-tests 1
         source deactivate
