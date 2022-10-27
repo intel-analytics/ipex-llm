@@ -1,6 +1,8 @@
 name: Manually Build
 
 on:
+  pull_request:
+    branchs: [ main ]
   workflow_dispatch:
     inputs:
       artifact:
@@ -364,7 +366,7 @@ jobs:
 
     
   bigdl-ppml-trusted-big-data-ml-scala-occlum:
-    if: ${{ github.event.inputs.artifact == 'bigdl-ppml-trusted-big-data-ml-scala-occlum' || github.event.inputs.artifact == 'all' }}
+    #if: ${{ github.event.inputs.artifact == 'bigdl-ppml-trusted-big-data-ml-scala-occlum' || github.event.inputs.artifact == 'all' }}
     runs-on: [self-hosted, Shire]
 
     steps:
@@ -378,6 +380,7 @@ jobs:
         echo "####### big-data-ml-scala-occlum  ######"
         echo "########################################"
         cd ppml/trusted-big-data-ml/scala/docker-occlum/
+        export TAG=test-0.29.1
         export image=intelanalytics/bigdl-ppml-trusted-big-data-ml-scala-occlum
         pwd
         docker build \
