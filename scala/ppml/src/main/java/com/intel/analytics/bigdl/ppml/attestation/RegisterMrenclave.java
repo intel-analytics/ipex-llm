@@ -88,10 +88,12 @@ public class RegisterMrenclave {
         if (https.getResponseCode() == 200) {
             BufferedReader reader = new BufferedReader(
                     new InputStreamReader(https.getInputStream()));
-            String result = reader.readLine();
-            System.out.println(result);
-            JsonObject jsonObject = new JsonParser().parse(result).getAsJsonObject();
-            System.out.println(jsonObject.get("result"));
+            String rep = reader.readLine();
+            //System.out.println(rep);
+            JsonObject resJson = new JsonParser().parse(rep).getAsJsonObject();
+            JsonObject result = resJson.getAsJsonObject("result");
+            String policyId = result.get("policyId").toString().replace("\"", "");
+            System.out.println("policy_Id " + policyId); // user for grep
         } else {
             System.out.println("register fail");
             return;

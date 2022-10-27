@@ -104,7 +104,7 @@ init_instance() {
         else
            echo 'PCCS_URL='${PCCS_URL}'/sgx/certification/v3/' > /etc/sgx_default_qcnl.conf
            echo 'USE_SECURE_CERT=FALSE' >> /etc/sgx_default_qcnl.conf
-           cd /root/demos/remote_attestation/d_cap/
+           cd /root/demos/remote_attestation/dcap/
            #build .c file
            bash ./get_quote_on_ppml.sh
            cd /opt/occlum_spark
@@ -200,7 +200,9 @@ build_spark() {
                 export MR_SIGNER=${MR_SIGNER_temp_arr[1]}
 
                 #register
-                bash register.sh
+                policy_Id_temp=$(bash register.sh | grep policy_Id)
+                policy_Id_temp_arr=(${policy_Id_temp})
+                export policy_Id=${policy_Id_temp_arr[1]}
             fi
         fi
     fi
@@ -226,7 +228,8 @@ build_spark() {
                             -u $ATTESTATION_URL \
                             -i $APP_ID \
                             -k $API_KEY \
-                            -o occlum
+                            -O occlum \
+                            -o $policy_Id
                 echo "verify success"
         fi
     fi
@@ -445,6 +448,7 @@ id=$([ -f "$pid" ] && echo $(wc -l < "$pid") || echo "0")
 arg=$1
 case "$arg" in
     init)
+        export RUNTIME_ENV="native"
         init_instance
         build_spark
         ;;
