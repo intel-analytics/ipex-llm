@@ -1,13 +1,17 @@
-# BigDL-PPML-Azure-Occlum-Example
+# BigDL PPML Azure Occlum Example
 
 ## Overview
 
-This repository demonstrates how to run standard Apache Spark applications with BigDL PPML and Occlum on Azure Intel SGX enabled Confidential Virtual machines ([DCsv3](https://docs.microsoft.com/en-us/azure/virtual-machines/dcv3-series) or [Azure Kubernetes Service (AKS)](https://azure.microsoft.com/en-us/services/kubernetes-service/)). These Azure Virtual Machines include the Intel SGX extensions.
+This documentation demonstrates how to run standard Apache Spark applications with BigDL PPML and Occlum on Azure Intel SGX enabled Confidential Virtual machines ([DCsv3](https://docs.microsoft.com/en-us/azure/virtual-machines/dcv3-series) or [Azure Kubernetes Service (AKS)](https://azure.microsoft.com/en-us/services/kubernetes-service/)). These Azure Virtual Machines include the Intel SGX extensions.
 
 Key points:
 
-* Azure DC Series: We run distributed Spark 3.1.2 examples, on an Azure DCsv3 machine running Docker. These machines are backed by the 3rd generation Intel Xeon Scalabe Processor with large Encrypted Page Cache (EPC) memory. 
-* Occlum: To run Spark inside an Intel SGX enclave - we leverage Occlum, who have essentially taken the Open Source Spark code, and wrapped it with their enclave runtime so that Spark can run inside SGX enclaves (a task that requires deep knowledge of the SGX ecosystem - something Occlum is an expert at).
+* Azure Cloud Services:  
+    * [Azure Data Lake Storage](https://azure.microsoft.com/en-us/services/storage/data-lake-storage/): a secure cloud storage platform that provides scalable, cost-effective storage for big data analytics. 
+    * [Key Vault](https://azure.microsoft.com/en-us/services/key-vault/): Safeguard cryptographic keys and other secrets used by cloud apps and services. Although, this solution works for all Azure Key Valut types, it is recommended to use [Azure Key Vault Managed HSM](https://learn.microsoft.com/en-us/azure/key-vault/managed-hsm/overview) (FIPS 140-2 Level 3) for better safety.
+    * [Attestation Service](https://azure.microsoft.com/en-us/services/azure-attestation/): A unified solution for remotely verifying the trustworthiness of a platform and integrity of the binaries running inside it.
+    
+* Occlum: Occlum is a memory-safe, multi-process library OS (LibOS) for Intel SGX. As a LibOS, it enables legacy applications to run on Intel® SGX with little to no modifications of source code, thus protecting the confidentiality and integrity of user workloads transparently.
 
 ![Distributed Spark in SGX on Azure](../images/spark_sgx_azure.png)
 
@@ -27,14 +31,6 @@ Pull the image from [Dockerhub](https://hub.docker.com/r/intelanalytics/bigdl-pp
 
 ```bash
 docker pull intelanalytics/bigdl-ppml-azure-occlum:2.1.0
-```
-
-Or you can clone this repository and build image with `build-docker-image.sh`. Configure environment variables in `build-docker-image.sh`.
-
-Build the docker image:
-
-```bash
-bash build-docker-image.sh
 ```
 
 ## Single Node Spark Examples on Azure
