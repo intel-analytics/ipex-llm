@@ -130,7 +130,7 @@ def init_process_group(torch_init_process_group):
 
 def create_tensor_func(torch_create_tensor_func):
     def new_create_tensor_func(*args, **kwargs):
-        if 'device' in kwargs and is_gpu_device(kwargs['device']):
+        if is_gpu_device(kwargs.get('device')):
             kwargs['device'] = 'cpu'
         return torch_create_tensor_func(*args, **kwargs)
     return new_create_tensor_func
