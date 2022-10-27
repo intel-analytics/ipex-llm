@@ -222,11 +222,6 @@ RUN cd /opt && \
     ./download-bigdl.sh && \
     rm bigdl*.zip
 
-# Prepare Attestation
-ADD ./build_content.sh /root/demos/remote_attestation/init_ra_flow/
-ADD ./run_attestation_server.sh /root/demos/remote_attestation/init_ra_flow/
-RUN cd /root/demos/remote_attestation/init_ra_flow/ && \
-    bash build_content.sh build_ra_tls
 # Prepare Tpc-H
 COPY --from=bigdl /opt/zoo-tutorials/tpch-spark/target/scala-2.12/spark-tpc-h-queries_2.12-1.0.jar $SPARK_HOME/jars
 
@@ -235,11 +230,26 @@ ADD ./run_spark_on_occlum_glibc.sh /opt/run_spark_on_occlum_glibc.sh
 ADD ./sqlSuites /opt/sqlSuites
 ADD ./log4j2.xml /opt/spark/conf/log4j2.xml
 
+# For get_quote C compile
+RUN rm /root/demos/remote_attestation/dcap/c_app/dcap_c_test.c
+ADD ./dcap_c_test.c /root/demos/remote_attestation/dcap/c_app/
+ADD ./dcap-ppml.yaml /root/demos/remote_attestation/dcap/
+ADD ./get_quote_on_ppml.sh /root/demos/remote_attestation/dcap
+
+# For attestation
+ADD ./verify-attestation-service.sh /opt
+ADD ./print_enclave_signer.sh /opt
+ADD ./register.sh /opt
+
 COPY ./entrypoint.sh /opt/
 
 RUN chmod a+x /opt/entrypoint.sh && \
     chmod a+x /opt/run_spark_on_occlum_glibc.sh && \
-    chmod a+x /root/demos/remote_attestation/init_ra_flow/run_attestation_server.sh && \
+    chmod a+x /opt/verify-attestation-service.sh && \
+    chmod a+x /opt/print_enclave_signer.sh && \
+    chmod a+x /opt/register.sh && \
+    chmod a+x /root/demos/remote_attestation/dcap/get_quote_on_ppml.sh && \
+    cmod a+x /root/demos/remote_attestation/dcap/c_app/dcap_c_test.c && \
     sed -i '/aesm/d' /root/.bashrc && \
     rm -rf /var/run/aesmd
 
