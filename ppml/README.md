@@ -173,7 +173,7 @@ To build a secure PPML image which can be used in production environment, BigDL 
 
     Pull the base image
     ```bash
-    docker pull 10.239.45.10/arda/intelanalytics/bigdl-ppml-trusted-big-data-ml-python-gramine-reference-32g-all:2.2.0-SNAPSHOT
+    docker pull intelanalytics/bigdl-ppml-trusted-big-data-ml-python-gramine-base:2.2.0-SNAPSHOT
     ```
     or
 
@@ -228,7 +228,7 @@ you can use [generate_people_csv.py](https://github.com/analytics-zoo/ppml-e2e-e
     docker exec -i $KMSUTIL_CONTAINER_NAME bash -c "bash /home/entrypoint.sh encrypt $appid $apikey $input_file_path"
     ```
 #### Step 3. Build Big Data & AI applications
-To build your own Big Data & AI applications, refer to [develop your own Big Data & AI applications with BigDL PPML](#4-develop-your-own-big-data--ai-applications-with-bigdl-ppml). The code of SimpleQuery is in [here](https://github.com/intel-analytics/BigDL/blob/main/scala/ppml/src/main/scala/com/intel/analytics/bigdl/ppml/examples/SimpleQuerySparkExample.scala), it is already built into bigdl-ppml-spark_3.1.2-2.1.0-SNAPSHOT.jar, and the jar is put into PPML image.
+To build your own Big Data & AI applications, refer to [develop your own Big Data & AI applications with BigDL PPML](#4-develop-your-own-big-data--ai-applications-with-bigdl-ppml). The code of SimpleQuery is in [here](https://github.com/intel-analytics/BigDL/blob/main/scala/ppml/src/main/scala/com/intel/analytics/bigdl/ppml/examples/SimpleQuerySparkExample.scala), it is already built into bigdl-ppml-spark_$SPARK_VERSION-$BIGDL_VERSION.jar, and the jar is put into PPML image.
 
 #### Step 4. Attestation 
 
