@@ -79,7 +79,7 @@ case "$SPARK_K8S_CMD" in
     else
         echo "DRIVER_MEMORY=$DRIVER_MEMORY"
     fi
-    /opt/run_spark_on_occlum_glibc.sh init
+    /opt/run_spark_on_occlum_glibc.sh initDriver
     cd /opt/occlum_spark
     DMLC_TRACKER_URI=$SPARK_DRIVER_BIND_ADDRESS
 
