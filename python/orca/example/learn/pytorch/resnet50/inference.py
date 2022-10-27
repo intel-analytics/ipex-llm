@@ -342,8 +342,7 @@ def validate(args):
     mean_validation_s = result['profile']['mean_validation_s']
     mean_eval_fwd_s = result['profile']['mean_eval_fwd_s']
     print('avg_val_time for each worker:', mean_validation_s)
-for
-    print('avg_forward_time  each batch:', mean_eval_fwd_s)
+    print('avg_forward_time for each batch:', mean_eval_fwd_s)
     latency = mean_eval_fwd_s / batch_size * 1000
     perf = batch_size / mean_eval_fwd_s
     print('inference latency %.3f ms' % latency)
