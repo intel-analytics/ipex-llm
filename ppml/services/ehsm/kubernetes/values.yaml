@@ -10,7 +10,7 @@ dkeyserverImageName: intelccc/ehsm_dkeyserver:0.3.0
 couchdbImageName: couchdb:3.2
 dkeycacheImageName: intelccc/ehsm_dkeycache:0.3.0
 ehsmKmsImageName: intelccc/ehsm_kms:0.3.0
-pccsIP: your_pccs_ip_to_use_as
+pccsIP: your_pccs_IP
 dkeyserverIP: your_dkeyserver_ip_to_use_as
 kmsIP: your_kms_ip_to_use_as
 # Below are used by pccs

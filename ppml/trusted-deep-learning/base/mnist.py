@@ -6,6 +6,7 @@ import os
 import time
 
 from torchvision import datasets, transforms
+from torch.utils.data.distributed import DistributedSampler
 import torch
 import torch.distributed as dist
 import torch.nn as nn
@@ -14,6 +15,7 @@ import torch.optim as optim
 
 WORLD_SIZE = int(os.environ.get("WORLD_SIZE", 1))
 
+RANK = int(os.environ.get("RANK", 0))
 
 class Net(nn.Module):
     def __init__(self):
@@ -45,7 +47,7 @@ def train(args, model, device, train_loader, optimizer, epoch):
         optimizer.step()
         if batch_idx % args.log_interval == 0:
             msg = "Train Epoch: {} [{}/{} ({:.0f}%)]\tloss={:.4f}".format(
-                epoch, batch_idx * len(data), len(train_loader.dataset),
+                epoch, batch_idx, len(train_loader),
                 100. * batch_idx / len(train_loader), loss.item())
             logging.info(msg)
             niter = epoch * len(train_loader) + batch_idx
@@ -67,7 +69,7 @@ def test(args, model, device, test_loader, epoch):
 
     test_loss /= len(test_loader.dataset)
     logging.info("{{metricName: accuracy, metricValue: {:.4f}}};{{metricName: loss, metricValue: {:.4f}}}\n".format(
-        float(correct) / len(test_loader.dataset), test_loss))
+        float(correct) / (len(test_loader.dataset) / WORLD_SIZE), test_loss))
 
 
 def should_distribute():
@@ -139,14 +141,32 @@ def main():
     kwargs = {"num_workers": 1, "pin_memory": True} if use_cuda else {}
 
     print("Before downloading data", flush=True)
-    train_loader = torch.utils.data.DataLoader(
-        datasets.FashionMNIST("./data",
-                              train=True,
-                              download=True,
-                              transform=transforms.Compose([
-                                  transforms.ToTensor()
-                              ])),
-        batch_size=args.batch_size, shuffle=True, **kwargs)
+    train_data = datasets.FashionMNIST("./data",
+                            train=True,
+                            download=True,
+                            transform=transforms.Compose([
+                            transforms.ToTensor()
+                            ]))
+
+
+    test_data = datasets.FashionMNIST("./data",
+                            train=True,
+                            download=True,
+                            transform=transforms.Compose([
+                            transforms.ToTensor()
+                            ]))
+    if is_distributed():
+        train_sampler = DistributedSampler(train_data, num_replicas=WORLD_SIZE, rank=RANK, shuffle=True, drop_last=False, seed=args.seed)
+        test_sampler = DistributedSampler(test_data, num_replicas=WORLD_SIZE, rank=RANK, shuffle=True, drop_last=False, seed=args.seed)
+        train_loader = torch.utils.data.DataLoader(train_data, batch_size=args.batch_size,sampler=train_sampler, **kwargs)
+        test_loader = torch.utils.data.DataLoader(test_data, batch_size=args.test_batch_size, shuffle=False, **kwargs)
+    else:
+        train_loader = torch.utils.data.DataLoader(
+            train_data,
+            batch_size=args.batch_size, shuffle=True, **kwargs)
+        test_loader = torch.utils.data.DataLoader(test_data,
+        batch_size=args.test_batch_size, shuffle=False, **kwargs)
+
     print("After downloading data", flush=True)
 
     test_loader = torch.utils.data.DataLoader(
@@ -181,6 +201,9 @@ def main():
 
     if (args.save_model):
         torch.save(model.state_dict(), "mnist_cnn.pt")
+
+    if is_distributed():
+        dist.destroy_process_group()
 
 
 if __name__ == "__main__":

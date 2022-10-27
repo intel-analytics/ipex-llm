@@ -1,5 +1,5 @@
 apiVersion: v2
-name: bigdl-pccs-ehsm-kms
+name: bigdl-ehsm-kms
 description: A Helm chart for bigdl-ehsm-kms
 type: application
 version: 0.3.0

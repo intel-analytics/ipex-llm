@@ -1,4 +1,5 @@
 ARG BIGDL_VERSION=2.2.0-SNAPSHOT
+ARG SPARK_VERSION=3.1.3
 
 FROM ubuntu:20.04
 ARG http_proxy
@@ -9,9 +10,8 @@ ARG JDK_VERSION=8u192
 ARG JDK_URL
 
 ENV BIGDL_VERSION                       ${BIGDL_VERSION}
+ENV SPARK_VERSION                       ${SPARK_VERSION}
 ENV LOCAL_IP                            127.0.0.1
-ENV SGX_MEM_SIZE                        32G
-ENV SGX_LOG_LEVEL                       error
 ENV LC_ALL                              C.UTF-8
 ENV LANG                                C.UTF-8
 ENV JAVA_HOME                           /opt/jdk8
@@ -103,6 +103,7 @@ RUN env DEBIAN_FRONTEND=noninteractive apt-get update && \
 
 
 ADD ./download_jars.sh /ppml
+ADD ./attestation.sh /ppml
 
 RUN cd /ppml && \
     bash ./download_jars.sh

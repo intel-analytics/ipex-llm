@@ -115,7 +115,9 @@ def test_loop(dataloader, model, mode='Test'):
             pred = model(X)
             correct += (pred.argmax(1) == y).type(torch.float).sum().item()
 
-    correct /= size
+    #correct /= size
+    #correct *= WORLD_SIZE
+    correct = correct / (size / WORLD_SIZE)
     print(f"{mode} Accuracy: {(100*correct):>0.1f}%\n")
     return correct
 
@@ -200,7 +202,7 @@ def main():
         start = time.perf_counter()
         total_loss = train_loop(args, train_dataloader, model,loss_fn, optimizer, t+1, total_loss)
         end = time.perf_counter()
-        print(f"Epoch {t+1}/{args.epochs + 1} Elapsed time:", end - start)
+        print(f"Epoch {t+1}/{args.epochs + 1} Elapsed time:", end - start, flush=True)
         valid_acc = test_loop(valid_dataloader, model, mode='Valid')
 
     print("[INFO]Finish all test", flush=True)
