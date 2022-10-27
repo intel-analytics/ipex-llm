@@ -31,6 +31,7 @@ start=$(date "+%s")
 ${ANALYTICS_ZOO_HOME}/python/orca/dev/colab-notebook/ipynb2py.sh ${ANALYTICS_ZOO_HOME}/python/orca/colab-notebook/quickstart/keras_lenet_mnist
 sed -i '/get_ipython/s/^/#/' ${ANALYTICS_ZOO_HOME}/python/orca/colab-notebook/quickstart/keras_lenet_mnist.py
 sed -i 's/^[^#].*environ*/#&/g' ${ANALYTICS_ZOO_HOME}/python/orca/colab-notebook/quickstart/tf_lenet_mnist.py
+sed -i 's/!update-alternatives/#&/g' ${ANALYTICS_ZOO_HOME}/python/orca/colab-notebook/quickstart/tf_lenet_mnist.py
 python ${ANALYTICS_ZOO_HOME}/python/orca/colab-notebook/quickstart/keras_lenet_mnist.py
 
 exit_status=$?
@@ -47,6 +48,7 @@ echo "#3 start test for ncf_xshards_pandas "
 ${ANALYTICS_ZOO_HOME}/python/orca/dev/colab-notebook/ipynb2py.sh ${ANALYTICS_ZOO_HOME}/python/orca/colab-notebook/quickstart/ncf_xshards_pandas
 sed -i '/get_ipython/s/^/#/' ${ANALYTICS_ZOO_HOME}/python/orca/colab-notebook/quickstart/ncf_xshards_pandas.py
 sed -i 's/^[^#].*environ*/#&/g' ${ANALYTICS_ZOO_HOME}/python/orca/colab-notebook/quickstart/tf_lenet_mnist.py
+sed -i 's/!update-alternatives/#&/g' ${ANALYTICS_ZOO_HOME}/python/orca/colab-notebook/quickstart/tf_lenet_mnist.py
 start=$(date "+%s")
 python ${ANALYTICS_ZOO_HOME}/python/orca/colab-notebook/quickstart/ncf_xshards_pandas.py
 
