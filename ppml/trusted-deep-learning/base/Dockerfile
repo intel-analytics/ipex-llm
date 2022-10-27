@@ -13,8 +13,17 @@ ENV TINI_VERSION                        $TINI_VERSION
 ARG USE_CUDA=0 USE_CUDNN=0 USE_MKLDNN=1 USE_DISTRIBUTED=1 USE_GLOO=1 USE_GLOO_WITH_OPENSSL=1 USE_MKL=1 BUILD_TEST=0 BLAS=MKL
 ARG CMAKE_PREFIX_PATH="/usr/local/lib/python3.7/dist-packages/:/usr/local/lib/"
 
+RUN mkdir /ppml/examples
+
 ADD https://github.com/krallin/tini/releases/download/${TINI_VERSION}/tini /sbin/tini
 ADD ./entrypoint.sh /opt/entrypoint.sh
+
+# Small examples for PyTorch
+ADD ./mnist.py       /ppml/examples/mnist.py
+ADD ./pert.py        /ppml/examples/pert.py
+# Patch for datasets
+ADD ./filelock.patch /filelock.patch
+
 
 # PyTorch Dependencies
 RUN env DEBIAN_FRONTEND=noninteractive apt-get update && \
@@ -41,6 +50,10 @@ RUN env DEBIAN_FRONTEND=noninteractive apt-get update && \
     gramine-argv-serializer bash -c 'export TF_MKL_ALLOC_MAX_BYTES=10737418240 && $sgx_command' > /ppml/secured_argvs && \
     chmod +x /sbin/tini && \
     chmod +x /opt/entrypoint.sh && \
-    cp /sbin/tini /usr/bin/tini
+    cp /sbin/tini /usr/bin/tini && \
+    # huggingface related
+    pip3 install --no-cache datasets==2.6.1 transformers pyarrow==6.0.1 && \
+    patch /usr/local/lib/python3.7/dist-packages/datasets/utils/filelock.py /filelock.patch
+
 
 ENTRYPOINT [ "/opt/entrypoint.sh" ]

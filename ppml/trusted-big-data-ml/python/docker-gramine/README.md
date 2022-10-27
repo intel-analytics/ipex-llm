@@ -150,6 +150,7 @@ python register-mrenclave.py --appid <your_appid> \
                              --mr_enclave <your_mrenclave_hash_value> \
                              --mr_signer <your_mrensigner_hash_value>
 ```
+You will receive a response containing a `policyID` and please save it which will be used to attest runtime MREnclave of distributed kubernetes application.
 
 ## Run Your PySpark Program
 
@@ -219,7 +220,7 @@ Run the example with SGX spark local mode with the following command in the term
 
 ```bash
 export sgx_command="/opt/jdk8/bin/java \
-    -cp '/ppml/trusted-big-data-ml/work/spark-3.1.2/conf/:/ppml/trusted-big-data-ml/work/spark-3.1.2/jars/*:/ppml/trusted-big-data-ml/work/spark-3.1.2/examples/jars/*' -Xmx16g \
+    -cp '/ppml/trusted-big-data-ml/work/spark-${SPARK_VERSION}/conf/:/ppml/trusted-big-data-ml/work/spark-${SPARK_VERSION}/jars/*:/ppml/trusted-big-data-ml/work/spark-${SPARK_VERSION}/examples/jars/*' -Xmx16g \
     org.apache.spark.deploy.SparkSubmit \
     --master local[4] \
     --executor-memory 8g \
@@ -228,7 +229,7 @@ export sgx_command="/opt/jdk8/bin/java \
     --conf spark.network.timeout=10000000 \
     --conf spark.executor.heartbeatInterval=10000000 \
     --verbose \
-    local:///ppml/trusted-big-data-ml/work/spark-3.1.2/examples/jars/spark-examples_2.12-3.1.2.jar 100"
+    local:///ppml/trusted-big-data-ml/work/spark-${SPARK_VERSION}/examples/jars/spark-examples_2.12-${SPARK_VERSION}.jar 100"
 gramine-sgx bash 2>&1 | tee local-pi-sgx.log
 ```
 
@@ -270,7 +271,8 @@ kubectl config view --flatten --minify > /YOUR_DIR/kubeconfig
 #### 1.2.3 Create k8s secret
 ```bash
 kubectl create secret generic spark-secret --from-literal secret=YOUR_SECRET
-kubectl create secret generic kms-secret --from-literal=app_id=your-kms-app-id --from-literal=api_key=your-kms-api-key
+kubectl create secret generic kms-secret --from-literal=app_id=YOUR_KMS_APP_ID --from-literal=api_key=YOUR_KMS_API_KEY
+kubectl create secret generic policy-id-secret --from-literal=policy_id=YOUR_POLICY_ID
 ```
 **The secret created (`YOUR_SECRET`) should be the same as the password you specified in section 1.1**
 
@@ -339,7 +341,7 @@ secure_password=`openssl rsautl -inkey /ppml/trusted-big-data-ml/work/password/k
 TF_MKL_ALLOC_MAX_BYTES=10737418240
 SPARK_LOCAL_IP=$LOCAL_IP
 export sgx_command="/opt/jdk8/bin/java \
-        -cp '/ppml/trusted-big-data-ml/work/spark-3.1.2/conf/:/ppml/trusted-big-data-ml/work/spark-3.1.2/jars/*:ppml/trusted-big-data-ml/work/spark-3.1.2/examples/jars/*' \
+        -cp '/ppml/trusted-big-data-ml/work/spark-${SPARK_VERSION}/conf/:/ppml/trusted-big-data-ml/work/spark-${SPARK_VERSION}/jars/*:ppml/trusted-big-data-ml/work/spark-${SPARK_VERSION}/examples/jars/*' \
         -Xmx8g \
         org.apache.spark.deploy.SparkSubmit \
         --master $RUNTIME_SPARK_MASTER \
@@ -388,12 +390,12 @@ export sgx_command="/opt/jdk8/bin/java \
         --conf spark.ssl.trustStoreType=JKS \
         --class org.apache.spark.examples.SparkPi \
         --verbose \
-        local:///ppml/trusted-big-data-ml/work/spark-3.1.2/examples/jars/spark-examples_2.12-3.1.2.jar"
+        local:///ppml/trusted-big-data-ml/work/spark-${SPARK_VERSION}/examples/jars/spark-examples_2.12-${SPARK_VERSION}.jar"
 ```
 
 Note that: you can run your own Spark Appliction after changing `--class` and jar path.
 
-1. `local:///ppml/trusted-big-data-ml/work/spark-3.1.2/examples/jars/spark-examples_2.12-3.1.2.jar` => `your_jar_path`
+1. `local:///ppml/trusted-big-data-ml/work/spark-${SPARK_VERSION}/examples/jars/spark-examples_2.12-${SPARK_VERSION}.jar` => `your_jar_path`
 2. `--class org.apache.spark.examples.SparkPi` => `--class your_class_path`
 
 #### 1.4.3 Spark-Pi example
@@ -420,7 +422,7 @@ bash bigdl-ppml-submit.sh \
         --name spark-pi \
         --verbose \
         --log-file spark-pi-local.log
-        local:///ppml/trusted-big-data-ml/work/spark-3.1.2/examples/jars/spark-examples_2.12-3.1.2.jar 3000
+        local:///ppml/trusted-big-data-ml/work/spark-${SPARK_VERSION}/examples/jars/spark-examples_2.12-${SPARK_VERSION}.jar 3000
 ```
 #### 1.5.2 Spark-Pi on local sgx mode
 ![image2022-6-6_16-18-57](https://user-images.githubusercontent.com/61072813/174703165-2afc280d-6a3d-431d-9856-dd5b3659214a.png)
@@ -441,7 +443,7 @@ bash bigdl-ppml-submit.sh \
         --name spark-pi \
         --log-file spark-pi-local-sgx.log
         --verbose \
-        local:///ppml/trusted-big-data-ml/work/spark-3.1.2/examples/jars/spark-examples_2.12-3.1.2.jar 3000
+        local:///ppml/trusted-big-data-ml/work/spark-${SPARK_VERSION}/examples/jars/spark-examples_2.12-${SPARK_VERSION}.jar 3000
 
 ```
 #### 1.5.3 Spark-Pi on client mode
@@ -467,7 +469,7 @@ bash bigdl-ppml-submit.sh \
         --name spark-pi \
         --log-file spark-pi-client-sgx.log
         --verbose \
-        local:///ppml/trusted-big-data-ml/work/spark-3.1.2/examples/jars/spark-examples_2.12-3.1.2.jar 3000
+        local:///ppml/trusted-big-data-ml/work/spark-${SPARK_VERSION}/examples/jars/spark-examples_2.12-${SPARK_VERSION}.jar 3000
 ```
 
 #### 1.5.4 Spark-Pi on cluster mode
@@ -493,7 +495,7 @@ bash bigdl-ppml-submit.sh \
         --name spark-pi \
         --log-file spark-pi-cluster-sgx.log
         --verbose \
-        local:///ppml/trusted-big-data-ml/work/spark-3.1.2/examples/jars/spark-examples_2.12-3.1.2.jar 3000
+        local:///ppml/trusted-big-data-ml/work/spark-${SPARK_VERSION}/examples/jars/spark-examples_2.12-${SPARK_VERSION}.jar 3000
 ```
 #### 1.5.5 bigdl-ppml-submit.sh explanations
 
@@ -516,7 +518,7 @@ bigdl-ppml-submit.sh is used to simplify the steps in 1.4
 --verbose \
 --class org.apache.spark.examples.SparkPi \
 --log-file spark-pi-cluster-sgx.log
-local:///ppml/trusted-big-data-ml/work/spark-3.1.2/examples/jars/spark-examples_2.12-3.1.2.jar 3000
+local:///ppml/trusted-big-data-ml/work/spark-${SPARK_VERSION}/examples/jars/spark-examples_2.12-${SPARK_VERSION}.jar 3000
 ```
 if you are want to enable sgx, don't forget to set the sgx-related arguments
 ```
@@ -529,7 +531,7 @@ if you are want to enable sgx, don't forget to set the sgx-related arguments
 you can update the application arguments to anything you want to run
 ```
 --class org.apache.spark.examples.SparkPi \
-local:///ppml/trusted-big-data-ml/work/spark-3.1.2/examples/jars/spark-examples_2.12-3.1.2.jar 3000
+local:///ppml/trusted-big-data-ml/work/spark-${SPARK_VERSION}/examples/jars/spark-examples_2.12-${SPARK_VERSION}.jar 3000
 ```
 
 2. If you want to enable the spark security configurations as in 2.Spark security configurations, export secure_password to enable it.
