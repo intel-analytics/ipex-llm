@@ -65,7 +65,6 @@ runs:
         pip uninstall -y bigdl-dllib bigdl-orca bigdl-chronos
         unset PYTHONHOME
         source deactivate
-        conda remove -n py37-jep
 
       env:
         BIGDL_ROOT: ${{ github.workspace }}
