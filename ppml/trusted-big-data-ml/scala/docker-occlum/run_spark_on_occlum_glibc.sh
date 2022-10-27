@@ -106,17 +106,16 @@ init_instance() {
            echo 'USE_SECURE_CERT=FALSE' >> /etc/sgx_default_qcnl.conf
            cd /root/demos/remote_attestation/d_cap/
            #build .c file
-           bash ./run_dcap_quote_on_occlum.sh
+           bash ./get_quote_on_ppml.sh
            cd /opt/occlum_spark
-           mkdir -p /opt/occlum_spark/image/etc/attestation/
            mkdir -p /opt/occlum_spark/image/etc/occlum_attestation/
            #copy bom
-           copy_bom -f /root/demos/remote_attestation/dcap/dcap.yaml --root image --include-dir /opt/occlum/etc/template
+           copy_bom -f /root/demos/remote_attestation/dcap/dcap-ppml.yaml --root image --include-dir /opt/occlum/etc/template
         fi
     fi
 
     # check occlum log level for docker
-    if [[-z "$ENABLE_SGX_DEBUG"]]; then
+    if [[ -z "$ENABLE_SGX_DEBUG" ]]; then
         echo "No ENABLE_SGX_DEBUG specified, set to off."
         export ENABLE_SGX_DEBUG=false
     fi
