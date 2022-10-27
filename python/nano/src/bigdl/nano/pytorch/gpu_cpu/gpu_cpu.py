@@ -14,10 +14,10 @@
 # limitations under the License.
 #
 
-from typing import Optional
 import torch
 from logging import warning
 from functools import partial
+
 from bigdl.nano.pytorch.utils import TORCH_VERSION_LESS_1_10
 
 
@@ -93,7 +93,7 @@ def GradScalerClass_wrapper(GradScaler):
     return GradScalerClass
 
 
-# it seems we don't really need this repalcement  
+# it seems we don't really need this repalcement
 class new_autocast(torch.autocast):
     def __init__(self, device_type, dtype=None, *args, **kwargs):
         device_type = 'cpu' if device_type == 'cuda' else device_type
