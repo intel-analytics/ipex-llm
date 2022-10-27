@@ -69,7 +69,7 @@ class TensorBoardCallback(Callback):
                 writer = SummaryWriter(log_dir=self.tmp_dir, **self.kwargs)
                 for name, value in logs.items():
                     if name not in self.unlog_items:
-                        writer.add_scalar(name, value, epoch)
+                        writer.add_scalar(name, value, batch)
                 writer.close()
 
     def on_epoch_begin(self, epoch):
