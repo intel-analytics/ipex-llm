@@ -24,7 +24,6 @@ from bigdl.orca.learn.pytorch.callbacks import Callback
 from bigdl.dllib.utils.log4Error import invalidInputError
 
 
-
 class TensorBoardCallback(Callback):
 
     def __init__(
@@ -36,10 +35,10 @@ class TensorBoardCallback(Callback):
         """
         :param log_dir: Log directory of TensorBoard.
         :param freq: Frequency of logging metrics and loss. 
-            Accept values: 'batch' or 'epoch' or integer. When using 'batch', 
+            Accept values: 'batch' or 'epoch' or integer. When using 'batch',
             writes the losses and metrics to TensorBoard after each batch.
-            The same applies for 'epoch'. If using an integer, let's say 1000, 
-            the callback will write the metrics and losses to TensorBoard every 1000 batches. 
+            The same applies for 'epoch'. If using an integer, let's say 1000,
+            the callback will write the metrics and losses to TensorBoard every 1000 batches.
             Note that writing too frequently to TensorBoard can slow down your training.
         :param **kwargs: The keyword arguments will be pased to ``SummaryWriter``.
         """
@@ -119,7 +118,6 @@ class TensorBoardCallback(Callback):
             put_local_dir_tree_to_remote(self.tmp_dir, self.log_dir)
             if os.path.exists(self.tmp_dir):
                 shutil.rmtree(self.tmp_dir)
-
 
     def set_model(self, model):
         self.model = model
