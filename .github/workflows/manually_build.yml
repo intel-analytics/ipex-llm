@@ -156,6 +156,7 @@ jobs:
           --build-arg no_proxy=${NO_PROXY} \
           --build-arg BASE_IMAGE_NAME=${base_image} \
           --build-arg SGX_MEM_SIZE=64G \
+          --build-arg SGX_LOG_LEVEL=error \
           --build-arg BASE_IMAGE_TAG=${TAG} \
           -t ${image}:${TAG} -f ./Dockerfile .
         sudo docker push ${image}:${TAG}
