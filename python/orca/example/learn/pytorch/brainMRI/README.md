@@ -26,7 +26,7 @@ pip install --pre --upgrade bigdl-orca
 ```
 
 ## Prepare the dataset
-You can download the dataset [here](https://www.kaggle.com/datasets/mateuszbuda/lgg-mri-segmentation/download). Put the downloaded data in the current working directory.
+You can download the dataset from [here](https://www.kaggle.com/datasets/mateuszbuda/lgg-mri-segmentation/download). Put the downloaded data in the current working directory.
 
 
 ```
