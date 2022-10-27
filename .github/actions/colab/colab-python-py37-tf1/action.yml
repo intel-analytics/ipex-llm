@@ -43,7 +43,7 @@ runs:
         export PATH=/opt/hostedtoolcache/maven/3.6.3/x64:$PATH 
         export SPARK_LOCAL_HOSTNAME=localhost
         source activate py37
-        spark --version
+        echo $SPARK_HOME
         # chmod a+x python/orca/dev/colab-notebook/ipynb2py.sh
         # chmod a+x python/orca/dev/colab-notebook/run-notebook-tf1.sh
         # pip uninstall -y bigdl bigdl-dllib bigdl-orca 
