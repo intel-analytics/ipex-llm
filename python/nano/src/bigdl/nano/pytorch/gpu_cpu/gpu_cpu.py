@@ -148,11 +148,11 @@ def patch_cuda(disable_jit=True):
     setattr(torch.nn.Module, "to", to(torch.nn.Module.to))
     setattr(torch, "device", DeviceClass)
     setattr(torch, "load", load(torch.load))
-    setattr(torch, "autocast", new_autocast)
     setattr(torch.cuda, "Stream", no_op_context)
     setattr(torch.cuda, "current_stream", current_stream)
     setattr(torch.Tensor, "record_stream", np_op_func)
     if not TORCH_VERSION_LESS_1_10:
+        setattr(torch, "autocast", new_autocast)
         setattr(torch.cuda.amp, "autocast", torch.cpu.amp.autocast)
     setattr(torch.cuda.amp, "GradScaler", GradScalerClass_wrapper(torch.cuda.amp.GradScaler))
     setattr(torch.distributed, "init_process_group",
