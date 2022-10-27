@@ -92,6 +92,7 @@ def GradScalerClass_wrapper(GradScaler):
             return GradScaler(*args, **kwargs)
     return GradScalerClass
 
+
 # it seems we don't really need this repalcement
 if not TORCH_VERSION_LESS_1_10:
     class new_autocast(torch.autocast):
