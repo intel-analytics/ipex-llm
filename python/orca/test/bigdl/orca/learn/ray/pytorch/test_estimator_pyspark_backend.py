@@ -604,7 +604,7 @@ class TestPyTorchEstimator(TestCase):
                           feature_cols=["feature"],
                           label_cols=["label"])
 
-            assert len(os.listdir(log_dir))) > 0
+            assert len(os.listdir(log_dir)) > 0
 
             log_dir = os.path.join(temp_dir, "runs_batch")
 
