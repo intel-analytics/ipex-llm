@@ -57,7 +57,7 @@ class TensorBoardCallback(Callback):
         """
         pass
 
-    def on_batch_end(self, batch):
+    def on_batch_end(self, batch, logs=None):
         """
         Called at the end of a training batch in `fit` methods.
         Subclasses should override for any actions to run.
