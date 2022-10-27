@@ -44,7 +44,7 @@ permissions:
 jobs:
   bigdl-ppml-gramine-base:
     #if: ${{ github.event.inputs.artifact == 'bigdl-ppml-gramine-base' || github.event.inputs.artifact == 'all' }}
-    runs-on: [self-hosted, Gondolin, ubuntu-20.04-lts]
+    runs-on: [self-hosted, Gondolin-resources, ubuntu-20.04-lts]
 
     steps:
     - uses: actions/checkout@v3
