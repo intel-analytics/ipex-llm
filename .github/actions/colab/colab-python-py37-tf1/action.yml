@@ -41,6 +41,7 @@ runs:
         export CLASSPATH=.:${JAVA_HOME}/lib:${JAVA_HOME}/jre/lib:${JAVA_HOME}/lib/tools.jar:${JAVA_HOME}/lib/dt.jar
         export PATH=${JAVA_HOME}/bin/:${JAVA_HOME}/jre/bin:${PATH}
         export PATH=/opt/hostedtoolcache/maven/3.6.3/x64:$PATH 
+        export SPARK_LOCAL_HOSTNAME=localhost
         source activate py37
         chmod a+x python/orca/dev/colab-notebook/ipynb2py.sh
         chmod a+x python/orca/dev/colab-notebook/run-notebook-tf1.sh
