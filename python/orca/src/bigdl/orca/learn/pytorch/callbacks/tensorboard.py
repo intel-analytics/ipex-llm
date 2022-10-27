@@ -34,7 +34,7 @@ class TensorBoardCallback(Callback):
     ):
         """
         :param log_dir: Log directory of TensorBoard.
-        :param freq: Frequency of logging metrics and loss. 
+        :param freq: Frequency of logging metrics and loss.
             Accept values: 'batch' or 'epoch' or integer. When using 'batch',
             writes the losses and metrics to TensorBoard after each batch.
             The same applies for 'epoch'. If using an integer, let's say 1000,
