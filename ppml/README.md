@@ -357,12 +357,12 @@ To build your own Big Data & AI applications, refer to [develop your own Big Dat
             value: your_pccs_url  -----> <set_the_value_to_your_pccs_url>
           - name: ATTESTATION_URL
             value: your_attestation_url
-          - name: ATTESTATION_ID
+          - name: APP_ID
             valueFrom:
               secretKeyRef:
                 name: kms-secret
                 key: app_id
-          - name: ATTESTATION_KEY
+          - name: API_KEY
             valueFrom:
               secretKeyRef:
                 name: kms-secret
