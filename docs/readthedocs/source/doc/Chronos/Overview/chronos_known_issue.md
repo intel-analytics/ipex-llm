@@ -1,6 +1,6 @@
 # Chronos Known Issue
 
-### 1. Numpy.ndarray size changed, may indicate binary incompatibility. Expected 88 from C header, got 80 from PyObject
+### Numpy.ndarray size changed, may indicate binary incompatibility. Expected 88 from C header, got 80 from PyObject
 
 **Problem description**
 
@@ -14,7 +14,7 @@ when no other issues exist, the solution is given below.
 
 ---------------------------
 
-### 2. Cannot convert a symbolic Tensor (encoder_lstm_8/strided_slice:0) to a numpy array
+### Cannot convert a symbolic Tensor (encoder_lstm_8/strided_slice:0) to a numpy array
 
 **Problem description**
 
@@ -26,7 +26,7 @@ This is a compatibility issue caused by Tensorflow and Numpy 1.20.x
 
 ---------------------------
 
-### 3. StanModel object has no attribute 'fit_class'
+### StanModel object has no attribute 'fit_class'
 
 **Problem description**
 
@@ -39,7 +39,7 @@ We recommend reinstalling prophet using conda or miniconda.
 
 ---------------------------
 
-### 4. RuntimeError: No active RayContext
+### RuntimeError: No active RayContext
 
 **Problem description**
 
@@ -54,7 +54,7 @@ Exception: No active RayContext. Please call init_orca_context to create a RayCo
 
 ---------------------------
 
-### 5. error while loading shared libraries: libunwind.so.8: cannot open shared object file: No such file or directory.
+### error while loading shared libraries: libunwind.so.8: cannot open shared object file: No such file or directory.
 
 **Problem description**
 
