@@ -77,7 +77,7 @@ class BaseInferenceOptimizer:
                        accelerator: Optional[str] = None,
                        precision: Optional[str] = None,
                        use_ipex: Optional[bool] = None,
-                       accuracy_criterion: Optional[float] = None) -> Tuple[Callable, str]:
+                       accuracy_criterion: Optional[float] = None):
         '''
         According to results of `optimize`, obtain the model with minimum latency under
         specific restrictions or without restrictions.
