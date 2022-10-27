@@ -26,7 +26,7 @@ import java.util.Base64
  * Simple Attestation Command Line tool for attestation service
  */
 object AttestationCLI {
-    var quote: Array[Byte] = new Array[Byte](1000);
+    var quote = Array[Byte]()
     def main(args: Array[String]): Unit = {
 
         val logger = LogManager.getLogger(getClass)
@@ -36,6 +36,7 @@ object AttestationCLI {
                              asURL: String = "127.0.0.1:9000",
                              challenge: String = "",
                              policyID: String = "",
+                             OSType: String = "gramine",
                              userReport: String = "ppml")
 
         val cmdParser: OptionParser[CmdParams] = new OptionParser[CmdParams](
@@ -61,13 +62,23 @@ object AttestationCLI {
             opt[String]('p', "userReport")
               .text("userReportDataPath, default is test")
               .action((x, c) => c.copy(userReport = x))
+            opt[String]('O', "OSType")
+              .text("OSType, default is gramine, occlum can be chose")
+              .action((x, c) => c.copy(OSType = x))
         }
         val params = cmdParser.parse(args, CmdParams()).get
 
         // Generate quote
         val userReportData = params.userReport
-        val quoteGenerator = new GramineQuoteGeneratorImpl()
-        val quote = quoteGenerator.getQuote(userReportData.getBytes)
+
+
+        if (params.OSType == "gramine") {
+          val quoteGenerator = new GramineQuoteGeneratorImpl()
+          quote = quoteGenerator.getQuote(userReportData.getBytes)
+        } else if (params.OSType == "occlum") {
+          val quoteGenerator = new OcclumQuoteGeneratorImpl()
+          quote = quoteGenerator.getQuote(userReportData.getBytes)
+        }
 
         // Attestation Client
         val as = params.asType match {
