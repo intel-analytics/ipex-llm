@@ -92,13 +92,13 @@ def GradScalerClass_wrapper(GradScaler):
             return GradScaler(*args, **kwargs)
     return GradScalerClass
 
-
 # it seems we don't really need this repalcement
-class new_autocast(torch.autocast):
-    def __init__(self, device_type, dtype=None, *args, **kwargs):
-        device_type = 'cpu' if device_type == 'cuda' else device_type
-        dtype = torch.bfloat16 if dtype == torch.float16 else dtype
-        super().__init__(device_type, dtype, *args, **kwargs)
+if not TORCH_VERSION_LESS_1_10:
+    class new_autocast(torch.autocast):
+        def __init__(self, device_type, dtype=None, *args, **kwargs):
+            device_type = 'cpu' if device_type == 'cuda' else device_type
+            dtype = torch.bfloat16 if dtype == torch.float16 else dtype
+            super().__init__(device_type, dtype, *args, **kwargs)
 
 
 class no_op_context:
