@@ -230,6 +230,9 @@ build_spark() {
                             -k $API_KEY \
                             -O occlum \
                             -o $policy_Id
+                if [ $? -gt 0 ];
+                    then exit 1;
+                fi
                 echo "verify success"
         fi
     fi

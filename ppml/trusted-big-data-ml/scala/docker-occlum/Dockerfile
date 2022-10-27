@@ -249,7 +249,7 @@ RUN chmod a+x /opt/entrypoint.sh && \
     chmod a+x /opt/print_enclave_signer.sh && \
     chmod a+x /opt/register.sh && \
     chmod a+x /root/demos/remote_attestation/dcap/get_quote_on_ppml.sh && \
-    cmod a+x /root/demos/remote_attestation/dcap/c_app/dcap_c_test.c && \
+    chmod a+x /root/demos/remote_attestation/dcap/c_app/dcap_c_test.c && \
     sed -i '/aesm/d' /root/.bashrc && \
     rm -rf /var/run/aesmd
 
