@@ -58,11 +58,6 @@ jobs:
           pip install pyarrow==6.0.1
           pip install ConfigSpace==0.5.0
           pip install optuna==2.10.1
-          pip install neural-compressor==1.11
-          pip install onnxruntime==1.11.1
-          pip install onnx==1.11.0
-          pip install onnxruntime-extensions==0.4.2
-          pip install onnxsim==0.4.8
           pip install scipy==1.5.4
           pip install cloudpickle
           apt-get update
@@ -73,7 +68,7 @@ jobs:
           bash python/dev/release_default_linux_spark313.sh default false false
           bash python/nano/dev/build_and_install.sh linux default false pytorch --force-reinstall --no-deps -U
           whl_name=`ls python/nano/dist/`
-          pip install python/nano/dist/${whl_name}[tensorflow,pytorch]
+          pip install python/nano/dist/${whl_name}[tensorflow,pytorch,inference]
           pip install  python/dllib/src/dist/bigdl_dllib_*-py3-none-manylinux1_x86_64.whl
           pip install  python/orca/src/dist/bigdl_orca_*-py3-none-manylinux1_x86_64.whl
           pip install  python/chronos/src/dist/bigdl_chronos_*-py3-none-manylinux1_x86_64.whl
