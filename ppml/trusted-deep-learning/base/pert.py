@@ -24,7 +24,8 @@ def is_distributed():
 #定义数据集,方便后续模型读取批量数据。
 class Dataset(torch.utils.data.Dataset):
     # data_type is actually split, so that we can define dataset for train set/validate set
-    def __init__(self, data_type):
+    def __init__(self, data_type, dataset_load):
+        self.dataset_load = dataset_load
         self.data = self.load_data(data_type)
 
     def load_data(self, data_type):
@@ -32,9 +33,15 @@ class Dataset(torch.utils.data.Dataset):
         Data = {}
         # So enumerate will return a index, and  the line?
         # line is a dict, including 'text', 'label'
-        for idx, line in enumerate(tmp_dataset):
-            sample = line
-            Data[idx] = sample
+        if data_type == 'train':
+            for i in range(self.dataset_load):
+                for idx, line in enumerate(tmp_dataset):
+                    sample = line
+                    Data[idx + i * len(tmp_dataset)] = sample
+        else:
+            for idx, line in enumerate(tmp_dataset):
+                sample = line
+                Data[idx] = sample
         return Data
 
     def __len__(self):
@@ -135,6 +142,8 @@ def main():
                         help="learning rate (default: 0.01)")
     parser.add_argument("--seed", type=int, default=1, metavar="S",
                         help="random seed (default: 1)")
+    parser.add_argument("--dataset", type=int, default=1, metavar="D",
+                        help="dataset size (default 1 * 9600)")
     parser.add_argument("--save-model", action="store_true", default=False,
                         help="For Saving the current Model")
     # Only for test purpose
@@ -166,9 +175,9 @@ def main():
 
     # Load the data and dataset
     print("[INFO]Before data get loaded", flush=True)
-    train_data = Dataset('train')
-    valid_data = Dataset('validation')
-#    test_data = Dataset('test')
+    train_data = Dataset('train', args.dataset)
+    print("######train data length:", len(train_data.data), flush=True)
+    valid_data = Dataset('validation', 1)
 
     if is_distributed():
         train_sampler = DistributedSampler(train_data, num_replicas=WORLD_SIZE, rank=RANK, shuffle=True, drop_last=False, seed=args.seed)
