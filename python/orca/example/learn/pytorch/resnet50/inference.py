@@ -161,7 +161,7 @@ class DummyData(torch.utils.data.Dataset):
         super(DummyData, self).__init__()
         self.len = size
         self.features = torch.randn(self.len, 3, 224, 224)
-        self.labels = torch.randint(1, 256, size=(self.len, )).long()
+        self.labels = torch.randint(1, 1000, size=(self.len, )).long()
 
     def __len__(self):
         return self.len
