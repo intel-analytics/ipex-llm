@@ -34,6 +34,7 @@ runs:
       run: |
         set -x
         export CLASSPATH=.:${JAVA_HOME}/lib:${JAVA_HOME}/jre/lib:${JAVA_HOME}/lib/tools.jar:${JAVA_HOME}/lib/dt.jar
+        export SPARK_LOCAL_HOSTNAME=localhost
         export PATH=${JAVA_HOME}/bin/:${JAVA_HOME}/jre/bin:${PATH}
         export PATH=/opt/hostedtoolcache/maven/3.6.3/x64:$PATH 
         source activate py37-jep
