@@ -23,13 +23,14 @@ from bigdl.nano.pytorch.utils import TORCH_VERSION_LESS_1_10
 CPU_DEVICE = torch.device("cpu")
 TORCH_CUDA_NO_OP_LIST = ["set_device", "synchronize", "reset_peak_memory_stats",
                          "reset_accumulated_memory_stats"]
-COMMON_TENSOR_TYPE = ['Double', 'Float', 'Long', 'Int', 'Short',
-                      'Char', 'Byte', 'Half', 'Bool', 'BFloat16']
-CUDA_TENSOR_TYPE = ['ComplexDouble', 'ComplexFloat']
+COMMON_TENSOR_TYPE = ['Double', 'Float', 'Long', 'Int', 'Short', 'Char', 'Byte',
+                      'Half', 'Bool', 'BFloat16', 'ComplexDouble', 'ComplexFloat']
 CREATE_TENSOR_FUNC = ['rand', 'randint', 'randn', 'zeros', 'ones', 'empty', 'full',
                       'rand_like', 'randint_like', 'randn_like', 'zeros_like',
                       'ones_like', 'empty_like', 'full_like',
                       'tensor', 'scalar_tensor', 'sparse_coo_tensor', 'sparse_csr_tensor',
+                      'sparse_csc_tensor', 'sparse_bsc_tensor', 'sparse_bsr_tensor',
+                      'sparse_compressed_tensor', 'nested_tensor'
                       'randperm', 'normal', 'range', 'arange', 'eye',
                       'as_tensor', 'asarray',
                       'linspace', 'logspace',
@@ -56,7 +57,7 @@ def is_gpu_device(device):
 
 def to(torch_to):
     def new_to(self, *args, **kwargs):
-        if 'device' in kwargs and is_gpu_device(kwargs['device']):
+        if is_gpu_device(kwargs.get('device')):
             kwargs['device'] = 'cpu'
             return torch_to(self, *args, **kwargs)
         elif len(args) > 0 and is_gpu_device(args[0]):
@@ -89,6 +90,14 @@ def GradScalerClass_wrapper(GradScaler):
             kwargs["enabled"] = False
             return GradScaler(*args, **kwargs)
     return GradScalerClass
+
+
+# it seems we don't really need this repalcement  
+class new_autocast(torch.autocast):
+    def __init__(self, device_type, dtype, *args, **kwargs):
+        device_type = 'cpu' if device_type == 'cuda' else device_type
+        dtype = torch.bfloat16 if dtype == torch.float16 else dtype
+        super().__init__(device_type, dtype, *args, **kwargs)
 
 
 class no_op_context:
@@ -138,6 +147,7 @@ def patch_cuda(disable_jit=True):
     setattr(torch.nn.Module, "to", to(torch.nn.Module.to))
     setattr(torch, "device", DeviceClass)
     setattr(torch, "load", load(torch.load))
+    setattr(torch, "autocast", new_autocast)
     setattr(torch.cuda, "Stream", no_op_context)
     setattr(torch.cuda, "current_stream", current_stream)
     setattr(torch.Tensor, "record_stream", np_op_func)
@@ -149,8 +159,6 @@ def patch_cuda(disable_jit=True):
     for no_op_cand in TORCH_CUDA_NO_OP_LIST:
         setattr(torch.cuda, no_op_cand, np_op_func)
     for t in COMMON_TENSOR_TYPE:
-        setattr(torch.cuda, f'{t}Tensor', getattr(torch, f'{t}Tensor'))
-    for t in CUDA_TENSOR_TYPE:
         setattr(torch.cuda, f'{t}Tensor', getattr(torch, f'{t.replace("Complex", "")}Tensor'))
     for f in CREATE_TENSOR_FUNC:
         try:

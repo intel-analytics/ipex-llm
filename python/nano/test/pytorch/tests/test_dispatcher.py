@@ -55,6 +55,11 @@ class TestDispatcherPytorch(TestCase):
         # autocast
         amp = torch.cuda.amp.autocast()
 
+        with torch.autocast(device_type='cuda', dtype=torch.float16):
+            model = torch.nn.Linear(8, 8)
+            input_tensor = torch.ones((1, 8))
+            model(input_tensor)
+
         # GradScaler
         scaler = torch.cuda.amp.GradScaler()
         scaler.scale(a)
