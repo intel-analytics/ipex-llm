@@ -48,8 +48,8 @@ runs:
         pip uninstall -y bigdl bigdl-dllib bigdl-orca pyspark
         pip install --pre --upgrade bigdl-orca
         pip install jupyter
-        sh python/orca/dev/colab-notebook/run-notebook-ray.sh
-        sh python/orca/dev/colab-notebook/run-notebook-tf2.sh
+        bash python/orca/dev/colab-notebook/run-notebook-ray.sh
+        bash python/orca/dev/colab-notebook/run-notebook-tf2.sh
         pip uninstall -y bigdl bigdl-dllib bigdl-orca
         source deactivate
 
