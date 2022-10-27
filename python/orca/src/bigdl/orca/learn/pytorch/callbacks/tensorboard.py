@@ -29,12 +29,18 @@ class TensorBoardCallback(Callback):
 
     def __init__(
         self,
-        log_dir: str = None,
-        freq: str = "epoch",
+        log_dir=None,
+        freq="epoch",
         **kwargs,
     ):
         """
-        :param logdir: Log directory of TensorBoard.
+        :param log_dir: Log directory of TensorBoard.
+        :param freq: Frequency of logging metrics and loss. 
+            Accept values: 'batch' or 'epoch' or integer. When using 'batch', 
+            writes the losses and metrics to TensorBoard after each batch.
+            The same applies for 'epoch'. If using an integer, let's say 1000, 
+            the callback will write the metrics and losses to TensorBoard every 1000 batches. 
+            Note that writing too frequently to TensorBoard can slow down your training.
         :param **kwargs: The keyword arguments will be pased to ``SummaryWriter``.
         """
         self.log_dir = log_dir
