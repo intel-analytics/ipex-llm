@@ -58,6 +58,11 @@ jobs:
           pip install pyarrow==6.0.1
           pip install ConfigSpace==0.5.0
           pip install optuna==2.10.1
+          pip install neural-compressor==1.11
+          pip install onnxruntime==1.11.1
+          pip install onnx==1.11.0
+          pip install onnxruntime-extensions==0.4.2
+          pip install onnxsim==0.4.8
           pip install scipy==1.5.4
           pip install cloudpickle
           apt-get update
