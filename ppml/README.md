@@ -248,7 +248,7 @@ To build your own Big Data & AI applications, refer to [develop your own Big Dat
 
 2. Enable attestation
     The bi-attestation gurantees that the MREnclave in runtime containers is a secure one made by you. Its workflow is as below:
-    ![image](https://user-images.githubusercontent.com/60865256/197942524-85a52f73-cf1a-49b3-bd1c-175d130f93e4.png)
+    ![image](https://user-images.githubusercontent.com/60865256/198168194-d62322f8-60a3-43d3-84b3-a76b57a58470.png)
     
     To enable attestation, first you should have a running Attestation Service in your environment. 
 
