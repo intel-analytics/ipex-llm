@@ -46,6 +46,7 @@ runs:
         chmod a+x python/orca/dev/colab-notebook/run-notebook-tf1.sh
         pip uninstall -y bigdl bigdl-dllib bigdl-orca 
         pip install --pre --upgrade bigdl-orca
+        pip install jupyter
         sh python/orca/dev/colab-notebook/run-notebook-tf1.sh
         source deactivate
 
