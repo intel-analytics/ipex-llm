@@ -195,6 +195,7 @@ ADD ./_dill.py.patch /_dill.py.patch
 ADD ./python-uuid.patch /python-uuid.patch
 ADD ./python-pslinux.patch /python-pslinux.patch
 ADD ./register-mrenclave.py /ppml/trusted-big-data-ml/register-mrenclave.py
+ADD ./attestation.sh /ppml/trusted-big-data-ml/attestation.sh
 
 # python
 RUN env DEBIAN_FRONTEND=noninteractive apt-get update && \
