@@ -27,4 +27,5 @@ scikit-optimize==0.8.1
 pandas==1.1.5
 sentence-transformers
 cryptography
+scipy==1.5.4
 
