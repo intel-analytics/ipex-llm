@@ -1,7 +1,6 @@
 name: Manually Build For Testing
 
 on:
-  push:
   workflow_dispatch:
     inputs:
       sha:
@@ -29,9 +28,9 @@ on:
         - bigdl-ppml-kmsutil
         - bigdl-ppml-pccs
       tag:
-        description: 'docker image tag (e.g. 2.1.0-SNAPSHOT)'
+        description: 'docker image tag (e.g. test)'
         required: true
-        default: 'latest'
+        default: 'test'
         type: string
 
 env:
@@ -43,24 +42,80 @@ permissions:
 
 jobs:
   bigdl-ppml-gramine-base:
-    #if: ${{ github.event.inputs.artifact == 'bigdl-ppml-gramine-base' || github.event.inputs.artifact == 'all' }}
-    runs-on: [self-hosted, Gondolin-resources, ubuntu-20.04-lts]
+    if: ${{ github.event.inputs.artifact == 'bigdl-ppml-gramine-base' || github.event.inputs.artifact == 'all' }}
+    runs-on: [self-hosted, Shire]
 
     steps:
     - uses: actions/checkout@v3
       with:
-        ref: aedb2965d3433e1e36c791f8b5e64d4afb6964ca
-    - name: echo 
+        ref: ${{ github.event.inputs.sha }}
+    - name: docker login
       run: |
-        echo ${{ github.event.inputs.tag }}
-        echo ${{ github.event.inputs.sha }}
-        echo ${{ github.event.inputs.artifact }}
+        docker login -u ${DOCKERHUB_USERNAME} -p ${DOCKERHUB_PASSWORD}
+    - name: bigdl-ppml-gramine-base
+      run: |
+        echo "########################################"
+        echo "####### bigdl-ppml-gramine-base ########"
+        echo "########################################"
+        export base_image=intelanalytics/bigdl-ppml-gramine-base
+        cd ppml/base
+        sudo docker build \
+          --no-cache=true \
+          --build-arg http_proxy=${HTTP_PROXY} \
+          --build-arg https_proxy=${HTTPS_PROXY} \
+          --build-arg JDK_VERSION=8u192 \
+          --build-arg JDK_URL=${JDK_URL} \
+          --build-arg no_proxy=${NO_PROXY} \
+          -t ${base_image}:${TAG} -f ./Dockerfile .
+        sudo docker push ${base_image}:${TAG}
+        sudo docker tag ${base_image}:${TAG} 10.239.45.10/arda/${base_image}:${TAG}
+        sudo docker push 10.239.45.10/arda/${base_image}:${TAG}
+        echo "########################################################"
+        echo "####### bigdl-ppml-trusted-bigdata-gramine-base ########"
+        echo "########################################################"
+        cd ../trusted-bigdata
+        export bigdata_base_image=intelanalytics/bigdl-ppml-trusted-bigdata-gramine-base
+        sudo docker build \
+          --build-arg http_proxy=${HTTP_PROXY} \
+          --build-arg https_proxy=${HTTPS_PROXY} \
+          --build-arg HTTP_PROXY_HOST=${HTTP_PROXY_HOST_2} \
+          --build-arg HTTP_PROXY_PORT=${HTTP_PROXY_PORT_2} \
+          --build-arg HTTPS_PROXY_HOST=${HTTP_PROXY_HOST_2} \
+          --build-arg HTTPS_PROXY_PORT=${HTTP_PROXY_PORT_3} \
+          --build-arg JDK_VERSION=8u192 \
+          --build-arg JDK_URL=${JDK_URL} \
+          --build-arg SPARK_JAR_REPO_URL=${SPARK_JAR_REPO_URL} \
+          --build-arg no_proxy=${LOCAL_IP} \
+          --build-arg BASE_IMAGE_NAME=${base_image} \
+          --build-arg BASE_IMAGE_TAG=${TAG} \
+          -t ${bigdata_base_image}:${TAG} -f ./Dockerfile .
+        sudo docker push ${bigdata_base_image}:${TAG}
+        sudo docker tag ${bigdata_base_image}:${TAG} 10.239.45.10/arda/${bigdata_base_image}:${TAG}
+        sudo docker push 10.239.45.10/arda/${bigdata_base_image}:${TAG}
+        cd custom-image
+        openssl genrsa -3 -out enclave-key.pem 3072
+        export bigdata_custom_image=intelanalytics/bigdl-ppml-trusted-bigdata-gramine-reference
+        sudo docker build \
+          --build-arg BASE_IMAGE_NAME=${bigdata_base_image} \
+          --build-arg BASE_IMAGE_TAG=${TAG} \
+          --build-arg SGX_MEM_SIZE=32G \
+          --build-arg SGX_LOG_LEVEL=error \
+          -t ${bigdata_custom_image}:${TAG} \
+          -f ./Dockerfile .
+        sudo docker push ${bigdata_custom_image}:${TAG}
+        sudo docker tag ${bigdata_custom_image}:${TAG} 10.239.45.10/arda/${bigdata_custom_image}:${TAG}
+        sudo docker push 10.239.45.10/arda/${bigdata_custom_image}:${TAG}
+        sudo docker rmi -f ${base_image}:${TAG}
+        sudo docker rmi -f ${bigdata_base_image}:${TAG}
+        sudo docker rmi -f ${bigdata_custom_image}:${TAG}
         
   bigdl-ppml-trusted-deep-learning-gramine-base:
     if: ${{ github.event.inputs.artifact == 'bigdl-ppml-trusted-deep-learning-gramine-base' || github.event.inputs.artifact == 'all' }}
     runs-on: [self-hosted, Shire]
     steps:
     - uses: actions/checkout@v3
+      with:
+        ref: ${{ github.event.inputs.sha }}
     - name: docker login
       run: |
         docker login -u ${DOCKERHUB_USERNAME} -p ${DOCKERHUB_PASSWORD}
@@ -89,6 +144,8 @@ jobs:
     runs-on: [self-hosted, Shire]
     steps:
     - uses: actions/checkout@v3
+      with:
+        ref: ${{ github.event.inputs.sha }}
     - name: docker login
       run: |
         docker login -u ${DOCKERHUB_USERNAME} -p ${DOCKERHUB_PASSWORD}
@@ -120,6 +177,8 @@ jobs:
 
     steps:
     - uses: actions/checkout@v3
+      with:
+        ref: ${{ github.event.inputs.sha }}
     - name: docker login
       run: |
         docker login -u ${DOCKERHUB_USERNAME} -p ${DOCKERHUB_PASSWORD}
@@ -202,6 +261,8 @@ jobs:
 
     steps:
     - uses: actions/checkout@v3
+      with:
+        ref: ${{ github.event.inputs.sha }}
     - name: docker login
       run: |
         docker login -u ${DOCKERHUB_USERNAME} -p ${DOCKERHUB_PASSWORD}
@@ -278,12 +339,15 @@ jobs:
         sudo docker push 10.239.45.10/arda/${image}:${TAG}
         sudo docker rmi -f ${image}:${TAG}
         rm enclave-key.pem
+
   bigdl-ppml-trusted-big-data-ml-python-graphene:
     if: ${{ github.event.inputs.artifact == 'bigdl-ppml-trusted-big-data-ml-python-graphene' || github.event.inputs.artifact == 'all' }}
     runs-on: [self-hosted, Shire]
 
     steps:
     - uses: actions/checkout@v3
+      with:
+        ref: ${{ github.event.inputs.sha }}
     - name: docker login
       run: |
         docker login -u ${DOCKERHUB_USERNAME} -p ${DOCKERHUB_PASSWORD}
@@ -318,6 +382,8 @@ jobs:
 
     steps:
     - uses: actions/checkout@v3
+      with:
+        ref: ${{ github.event.inputs.sha }}
     - name: docker login
       run: |
         docker login -u ${DOCKERHUB_USERNAME} -p ${DOCKERHUB_PASSWORD}
@@ -346,12 +412,15 @@ jobs:
         docker tag ${image}:${TAG} 10.239.45.10/arda/${image}:${TAG}
         docker push 10.239.45.10/arda/${image}:${TAG}
         docker rmi -f ${image}:${TAG}
+
   bigdl-ppml-trusted-big-data-ml-scala-occlum-production:
     if: ${{ github.event.inputs.artifact == 'bigdl-ppml-trusted-big-data-ml-scala-occlum-production' || github.event.inputs.artifact == 'all' }}
     runs-on: [ self-hosted, Shire ]
 
     steps:
       - uses: actions/checkout@v3
+        with:
+         ref: ${{ github.event.inputs.sha }}
       - name: docker login
         run: |
           docker login -u ${DOCKERHUB_USERNAME} -p ${DOCKERHUB_PASSWORD}
@@ -386,6 +455,8 @@ jobs:
 
     steps:
     - uses: actions/checkout@v3
+      with:
+        ref: ${{ github.event.inputs.sha }}
     - name: docker login
       run: |
         docker login -u ${DOCKERHUB_USERNAME} -p ${DOCKERHUB_PASSWORD}
@@ -420,6 +491,8 @@ jobs:
 
     steps:
     - uses: actions/checkout@v3
+      with:
+        ref: ${{ github.event.inputs.sha }}
     - name: docker login
       run: |
         docker login -u ${DOCKERHUB_USERNAME} -p ${DOCKERHUB_PASSWORD}
@@ -454,6 +527,8 @@ jobs:
 
     steps:
     - uses: actions/checkout@v3
+      with:
+        ref: ${{ github.event.inputs.sha }}
     - name: docker deploy kms-util
       run: |
         export IMAGE=intelanalytics/kms-utils
@@ -479,6 +554,8 @@ jobs:
 
     steps:
     - uses: actions/checkout@v3
+      with:
+        ref: ${{ github.event.inputs.sha }}
     - name: docker deploy pccs
       run: |
         export IMAGE=intelanalytics/pccs
