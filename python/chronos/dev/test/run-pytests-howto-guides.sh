@@ -26,4 +26,10 @@ sed -i 's/!pip install/#!pip install/' $Chronos_Howto_Guides_dir/*.ipynb
 echo "Running tests for Chronos How-to Guides"
 python -m pytest -v  --nbmake --nbmake-timeout=6000 --nbmake-kernel=python3 ${Chronos_Howto_Guides_dir}
 
+exit_status_0=$?
+if [ $exit_status_0 -ne 0 ];
+then
+    exit $exit_status_0
+fi
+
 echo "Tests for Chronos How-to Guides finished."
