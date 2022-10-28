@@ -379,7 +379,7 @@ class TFRunner:
         invalidInputError(hasattr(self, "model"),
                           "The model has not yet been created. "
                           "Please input a model_creator when creating estimator "
-                          "or use load function of the estimator to load a model")
+                          "or use load function of the estimator to load a model.")
 
         history = self.model.fit(train_dataset,
                                  epochs=self.epoch + epochs,
@@ -441,7 +441,7 @@ class TFRunner:
         invalidInputError(hasattr(self, "model"),
                           "The model has not yet been created. "
                           "Please input a model_creator when creating estimator "
-                          "or use load function of the estimator to load a model")
+                          "or use load function of the estimator to load a model.")
 
         results = self.model.evaluate(dataset, **params)
         if results is None:
@@ -489,7 +489,7 @@ class TFRunner:
         invalidInputError(hasattr(self, "model"),
                           "The model has not yet been created. "
                           "Please input a model_creator when creating estimator "
-                          "or use load function of the estimator to load a model")
+                          "or use load function of the estimator to load a model.")
 
         if self.backend == "tf-distributed" and self.model_creator is not None:
             local_model = self.model_creator(self.config)
@@ -523,7 +523,7 @@ class TFRunner:
         invalidInputError(hasattr(self, "model"),
                           "The model has not yet been created. "
                           "Please input a model_creator when creating estimator "
-                          "or use load function of the estimator to load a model")
+                          "or use load function of the estimator to load a model.")
         return {
             "epoch": self.epoch,
             "weights": self.model.get_weights(),
