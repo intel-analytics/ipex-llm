@@ -44,7 +44,7 @@ parser.add_argument("--cores", type=int, default=4,
 parser.add_argument("--num_nodes", type=int, default=1,
                     help="The number of nodes to use.")
 parser.add_argument('--workers_per_node', default=1, type=int,
-                    help='number of torch workers on each node (default: 1)')
+                    help='The number of torch runners on each node.')
 parser.add_argument('--ipex', action='store_true', default=False,
                     help='use intel pytorch extension')
 parser.add_argument('--jit', action='store_true', default=False,
@@ -71,7 +71,7 @@ parser.add_argument('--calibration', action='store_true', default=False,
 parser.add_argument('--configure_dir', default='configure.json', type=str, metavar='PATH',
                     help='path to int8 configures, default file name is configure.json')
 parser.add_argument('--seed', default=None, type=int,
-                    help='seed for initializing training. ')
+                    help='seed for initializing training')
 
 
 class ResNetPerfOperator(TrainingOperator):
