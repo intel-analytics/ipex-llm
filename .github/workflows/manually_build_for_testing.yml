@@ -4,9 +4,8 @@ on:
   workflow_dispatch:
     inputs:
       sha:
-        description: 'commit id'
+        description: 'commit id (SHA-1 hash)'
         required: true
-        default: 'latest'
         type: string
       artifact:
         description: 'select which job to run("all" will make all jobs run)'
