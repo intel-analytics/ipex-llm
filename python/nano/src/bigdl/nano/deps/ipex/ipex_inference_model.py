@@ -58,7 +58,7 @@ class PytorchIPEXJITModel(AcceleratedLightningModule):
         if self.use_ipex:
             self.model = ipex.optimize(self.model, dtype=dtype)
         if self.use_jit:
-            self.model = torch.jit.trace(self.model, input_sample)
+            self.model = torch.jit.trace(self.model, input_sample, check_trace=False)
             self.model = torch.jit.freeze(self.model)
 
     @property
