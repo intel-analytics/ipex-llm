@@ -14,6 +14,38 @@ from transformers import BertTokenizer, BertModel, AdamW
 WORLD_SIZE = int(os.environ.get("WORLD_SIZE", 1))
 RANK = int(os.environ.get("RANK", 0))
 
+parser = argparse.ArgumentParser(description="PyTorch PERT Example")
+
+parser.add_argument("--batch-size", type=int, default=16, metavar="N",
+                    help="input batch size for training (default: 16)")
+parser.add_argument("--test-batch-size", type=int, default=1000, metavar="N",
+                    help="input batch size for testing (default: 1000)")
+parser.add_argument("--epochs", type=int, default=1, metavar="N",
+                    help="number of epochs to train (default: 10)")
+parser.add_argument("--lr", type=float, default=1e-5, metavar="LR",
+                    help="learning rate (default: 0.01)")
+parser.add_argument("--seed", type=int, default=1, metavar="S",
+                    help="random seed (default: 1)")
+parser.add_argument("--dataset", type=int, default=1, metavar="D",
+                    help="dataset size (default 1 * 9600)")
+parser.add_argument("--save-model", action="store_true", default=False,
+                    help="For Saving the current Model")
+parser.add_argument("--local-only", action="store_true", default=False,
+                    help="If set to true, then load model from disk")
+parser.add_argument("--model-path", type=str, default="/ppml/model",
+                    help="Where to load model")
+    # Only for test purpose
+parser.add_argument("--load-model", action="store_true", default=False,
+                    help="For loading the current model")
+
+parser.add_argument("--log-interval", type=int, default=2, metavar="N",
+                    help="how many batches to wait before logging training status")
+
+parser.add_argument("--log-path", type=str, default="",
+                    help="Path to save logs. Print to StdOut if log-path is not set")
+
+args = parser.parse_args()
+
 
 def should_distribute():
     return dist.is_available() and WORLD_SIZE > 1
@@ -50,8 +82,14 @@ class Dataset(torch.utils.data.Dataset):
     def __getitem__(self, idx):
         return self.data[idx]
 
-checkpoint = 'hfl/chinese-pert-base'
-tokenizer = BertTokenizer.from_pretrained(checkpoint, model_max_length=512)
+
+if args.local_only:
+    checkpoint = args.model_path
+    tokenizer = BertTokenizer.from_pretrained(checkpoint, model_max_length=512, local_files_only=True)
+else:
+    checkpoint = 'hfl/chinese-pert-base'
+    tokenizer = BertTokenizer.from_pretrained(checkpoint, model_max_length=512)
+
 
 
 # Return a batch of data, which is used for training
@@ -75,7 +113,10 @@ def collate_fn(batch_samples):
 class NeuralNetwork(nn.Module):
     def __init__(self):
         super(NeuralNetwork, self).__init__()
-        self.bert_encoder = BertModel.from_pretrained(checkpoint)
+        if args.local_only:
+            self.bert_encoder = BertModel.from_pretrained(checkpoint, local_files_only=True)
+        else:
+            self.bert_encoder = BertModel.from_pretrained(checkpoint)
         self.classifier = nn.Linear(768, 2)
 
     def forward(self, x):
@@ -131,29 +172,6 @@ def test_loop(dataloader, model, mode='Test'):
 
 
 def main():
-    parser = argparse.ArgumentParser(description="PyTorch MNIST Example")
-    parser.add_argument("--batch-size", type=int, default=16, metavar="N",
-                        help="input batch size for training (default: 16)")
-    parser.add_argument("--test-batch-size", type=int, default=1000, metavar="N",
-                        help="input batch size for testing (default: 1000)") 
-    parser.add_argument("--epochs", type=int, default=1, metavar="N",
-                        help="number of epochs to train (default: 10)") 
-    parser.add_argument("--lr", type=float, default=1e-5, metavar="LR",
-                        help="learning rate (default: 0.01)")
-    parser.add_argument("--seed", type=int, default=1, metavar="S",
-                        help="random seed (default: 1)")
-    parser.add_argument("--dataset", type=int, default=1, metavar="D",
-                        help="dataset size (default 1 * 9600)")
-    parser.add_argument("--save-model", action="store_true", default=False,
-                        help="For Saving the current Model")
-    # Only for test purpose
-    parser.add_argument("--load-model", action="store_true", default=False,
-                        help="For loading the current model")
-    parser.add_argument("--log-interval", type=int, default=2, metavar="N",
-                        help="how many batches to wait before logging training status")
-    parser.add_argument("--log-path", type=str, default="",
-                        help="Path to save logs. Print to StdOut if log-path is not set")
-    args = parser.parse_args()
     if args.log_path == "":
         logging.basicConfig(
             format="%(asctime)s %(levelname)-8s %(message)s",
