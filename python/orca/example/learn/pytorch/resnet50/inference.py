@@ -53,8 +53,10 @@ parser.add_argument('--int8', action='store_true', default=False,
                     help='enable ipex int8 path')
 parser.add_argument('--bf16', action='store_true', default=False,
                     help='enable ipex bf16 path')
+parser.add_argument('--bf32', action='store_true', default=False,
+                    help='enable ipex bf32 path')
 parser.add_argument('-b', '--batch_size', default=256, type=int)
-parser.add_argument('--workers', default=4, type=int,
+parser.add_argument('-j', '--workers', default=4, type=int, metavar='N',
                     help='number of data loading workers (default: 4)')
 parser.add_argument("--dummy", action='store_true',
                     help="using dummy data to test the performance of inference")
@@ -68,6 +70,8 @@ parser.add_argument('--calibration', action='store_true', default=False,
                     help='doing calibration step for int8 path')
 parser.add_argument('--configure_dir', default='configure.json', type=str, metavar='PATH',
                     help='path to int8 configures, default file name is configure.json')
+parser.add_argument('--seed', default=None, type=int,
+                    help='seed for initializing training. ')
 
 
 class ResNetPerfOperator(TrainingOperator):
@@ -227,6 +231,10 @@ def validate(args):
         return val_loader
 
     def model_creator(config):
+        if args.seed is not None:
+            import random
+            random.seed(args.seed)
+            torch.manual_seed(args.seed)
         arch = 'resnet50'
         if args.hub:
             torch.set_flush_denormal(True)
@@ -299,10 +307,7 @@ def validate(args):
         return model
 
     def optimizer_creator(model, config):
-        optimizer = torch.optim.SGD(model.parameters(), lr=0.1,
-                                    momentum=0.9,
-                                    weight_decay=1e-4)
-        return optimizer
+        return None
 
     if args.dummy:
         number_iter = args.steps if args.steps > 0 else 200
@@ -314,9 +319,9 @@ def validate(args):
     from bigdl.orca.learn.pytorch import Estimator
     from bigdl.orca.learn.metrics import Accuracy
 
-    config = vars(args)
+    config = vars(args).copy()
     config["number_iter"] = number_iter
-    batch_size = config.pop("batch_size")
+    config.pop("batch_size")
     backend = "ray"
     est = Estimator.from_torch(model=model_creator,
                                optimizer=optimizer_creator,
@@ -328,23 +333,23 @@ def validate(args):
                                training_operator_cls=ResNetPerfOperator,
                                use_tqdm=True)
 
-    result = est.evaluate(data=val_loader_func, batch_size=batch_size,
+    result = est.evaluate(data=val_loader_func, batch_size=args.batch_size,
                           num_steps=number_iter, profile=True)
     for r in result:
         print("{}: {}".format(r, result[r]))
 
     print('---------')
     print('total number of records:', result['num_samples'])
-    print('batch_size for each worker:', batch_size)
+    print('batch_size for each worker:', args.batch_size)
     num_samples_per_worker = result['num_samples'] / (args.workers_per_node * args.num_nodes)
     print('num_samples for each worker: around', num_samples_per_worker)
-    print('num_batches for each worker: around', num_samples_per_worker // batch_size)
+    print('num_batches for each worker: around', num_samples_per_worker // args.batch_size)
     mean_validation_s = result['profile']['mean_validation_s']
     mean_eval_fwd_s = result['profile']['mean_eval_fwd_s']
     print('avg_val_time for each worker:', mean_validation_s)
     print('avg_forward_time for each batch:', mean_eval_fwd_s)
-    latency = mean_eval_fwd_s / batch_size * 1000
-    perf = batch_size / mean_eval_fwd_s
+    latency = mean_eval_fwd_s / args.batch_size * 1000
+    perf = args.batch_size / mean_eval_fwd_s
     print('inference latency %.3f ms' % latency)
     print("Throughput: {:.3f} fps".format(perf))
     print("Accuracy: {top1:.3f} ".format(top1=result["Accuracy"]))

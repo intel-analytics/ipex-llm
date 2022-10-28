@@ -19,6 +19,8 @@ pip install protobuf==3.19.5
 
 conda install pytorch torchvision cpuonly -c pytorch
 pip install intel_extension_for_pytorch
+
+conda install -c conda-forge jemalloc
 ```
 
 ## Running commands
@@ -32,3 +34,5 @@ python inference.py /path/to/imagenet --cores 8 --workers_per_node 2 --steps 10 
 export PYSPARK_PYTHON=...
 python inference.py /path/to/imagenet --cluster_mode standalone --master spark://ip:port --num_nodes 2 --cores 4 --workers_per_node 1 --pretrained
 ```
+
+- Int8 configure file can be downloaded from: https://github.com/IntelAI/models/blob/master/models/image_recognition/pytorch/common/resnet50_configure_sym.json
