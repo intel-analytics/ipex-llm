@@ -206,6 +206,7 @@ def _stack_arrs(arrs):
     if isinstance(arrs, list):
         return np.stack(arrs)
     else:
+        # do nothing if arrs are not a list of ndarrays.
         return arrs
 
 
