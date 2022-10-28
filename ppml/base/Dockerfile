@@ -8,9 +8,9 @@ ARG no_proxy
 ARG BIGDL_VERSION
 ARG JDK_VERSION=8u192
 ARG JDK_URL
+ARG SPARK_VERSION
 
 ENV BIGDL_VERSION                       ${BIGDL_VERSION}
-ENV SPARK_VERSION                       ${SPARK_VERSION}
 ENV LOCAL_IP                            127.0.0.1
 ENV LC_ALL                              C.UTF-8
 ENV LANG                                C.UTF-8
