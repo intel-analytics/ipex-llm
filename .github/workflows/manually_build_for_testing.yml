@@ -70,7 +70,7 @@ jobs:
         sudo docker tag ${base_image}:${TAG} 10.239.45.10/arda/${base_image}:${TAG}
         sudo docker push 10.239.45.10/arda/${base_image}:${TAG}
         echo "########################################################"
-        echo "####### bigdl-ppml-trusted-bigdata-gramine-base ########"
+        echo "######### bigdl-ppml-trusted-bigdata-gramine ###########"
         echo "########################################################"
         cd ../trusted-bigdata
         export bigdata_base_image=intelanalytics/bigdl-ppml-trusted-bigdata-gramine-base
@@ -93,11 +93,25 @@ jobs:
         sudo docker push 10.239.45.10/arda/${bigdata_base_image}:${TAG}
         cd custom-image
         openssl genrsa -3 -out enclave-key.pem 3072
-        export bigdata_custom_image=intelanalytics/bigdl-ppml-trusted-bigdata-gramine-reference
+        export bigdata_custom_image=intelanalytics/bigdl-ppml-trusted-bigdata-gramine-reference-32g
         sudo docker build \
           --build-arg BASE_IMAGE_NAME=${bigdata_base_image} \
           --build-arg BASE_IMAGE_TAG=${TAG} \
           --build-arg SGX_MEM_SIZE=32G \
+          --build-arg SGX_LOG_LEVEL=error \
+          -t ${bigdata_custom_image}:${TAG} \
+          -f ./Dockerfile .
+        sudo docker push ${bigdata_custom_image}:${TAG}
+        sudo docker tag ${bigdata_custom_image}:${TAG} 10.239.45.10/arda/${bigdata_custom_image}:${TAG}
+        sudo docker push 10.239.45.10/arda/${bigdata_custom_image}:${TAG}
+        sudo docker tag ${bigdata_custom_image}:${TAG} intelanalytics/bigdl-ppml-trusted-bigdata-gramine-reference:${TAG}
+        sudo docker push intelanalytics/bigdl-ppml-trusted-bigdata-gramine-reference:${TAG}
+        sudo docker rmi -f ${bigdata_custom_image}:${TAG}
+        export bigdata_custom_image=intelanalytics/bigdl-ppml-trusted-bigdata-gramine-reference-64g
+        sudo docker build \
+          --build-arg BASE_IMAGE_NAME=${bigdata_base_image} \
+          --build-arg BASE_IMAGE_TAG=${TAG} \
+          --build-arg SGX_MEM_SIZE=64G \
           --build-arg SGX_LOG_LEVEL=error \
           -t ${bigdata_custom_image}:${TAG} \
           -f ./Dockerfile .
