@@ -274,8 +274,6 @@ class TrainingOperator:
         with self.timers.record("fwd"):
             if torch.is_tensor(features):
                 output = self.model(features)
-            elif isinstance(features, dict):
-                output = self.model(**features)
             elif isinstance(features, (tuple, list)):
                 output = self.model(*features)
             else:
@@ -406,8 +404,6 @@ class TrainingOperator:
         with self.timers.record("eval_fwd"):
             if torch.is_tensor(features):
                 output = self.model(features)
-            elif isinstance(features, dict):
-                output = self.model(**features)
             elif isinstance(features, (tuple, list)):
                 output = self.model(*features)
             else:
