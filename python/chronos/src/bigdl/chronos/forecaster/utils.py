@@ -22,6 +22,7 @@ from torch.utils.data import TensorDataset, DataLoader
 import numpy as np
 import multiprocessing as mp
 import warnings
+import math
 
 __all__ = ['loader_to_creator',
            'np_to_creator',
@@ -84,9 +85,13 @@ def xshard_expand_dim(yhat, expand_dim=None):
     return yhat
 
 
-def np_to_xshard(x, prefix="x"):
+def np_to_xshard(x, workers_num, prefix="x"):
     from bigdl.orca.data import XShards
     x = XShards.partition(x)
+    if math.floor(math.sqrt(math.sqrt(x.num_partitions()))) > workers_num:
+        warnings.warn("Too many partitions and too few workers will reduce inference performance, "
+                      "we recommend setting 'workers_per_node' to a large number and",
+                      "not larger than the number of partitions.", category=RuntimeWarning)
 
     def transform_to_dict(train_data):
         return {prefix: train_data}

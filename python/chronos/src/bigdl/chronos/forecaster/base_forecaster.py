@@ -679,7 +679,7 @@ class BasePytorchForecaster(Forecaster):
             if isinstance(data, DataLoader):
                 invalidInputError(False,
                                   "We will be support input dataloader later.")
-            data = np_to_xshard(data)
+            data = np_to_xshard(data, self.workers_per_node)
         if not is_local_data and not self.distributed:
             data = xshard_to_np(data, mode="predict")
 
@@ -715,7 +715,7 @@ class BasePytorchForecaster(Forecaster):
                                                       input_data=data,
                                                       batch_size=batch_size)
             if not is_local_data:
-                yhat = np_to_xshard(yhat, prefix="prediction")
+                yhat = np_to_xshard(yhat, self.workers_per_node, prefix="prediction")
             return yhat
 
     def predict_with_onnx(self, data, batch_size=32, quantize=False):
