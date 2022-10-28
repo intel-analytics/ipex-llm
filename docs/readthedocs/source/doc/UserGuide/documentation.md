@@ -75,18 +75,26 @@ Here shows an overview of our documentation structure tree:
 
 Index pages (nodes filled with blue) are the ones supposed to lead to further pages. In the structure above, they are nodes with descendants.
 
-### 1.2 Add the new document to the table of contents (toc)
-For clear navigation purposes, it is recommended to put the document in the toc. To do this, you need to insert the relative path to the newly-added file into the [`_toc.yml`](https://github.com/intel-analytics/BigDL/blob/main/docs/readthedocs/source/_toc.yml) file, according to its position in the structure tree.
-
 ```eval_rst
 .. note::
+   
+   In convension, we use ``.rst`` file for index pages  becuase complex web components (such as cards, note boxes, tabs, etc.) are more straightforward to be inserted in our documentation through reStructuredText. And it is a common case in our documentation that index pages include complex web components.
+```
 
-   For API related documents, we still use in-file ``.. toctree::`` directives instead of putting them inside ``_toc.yml``. You could refer to `here <https://github.com/intel-analytics/BigDL/tree/main/docs/readthedocs/source/doc/PythonAPI>`_ for example usages.
+### 1.2 Add the new document to the table of contents (ToC)
+For clear navigation purposes, it is recommended to put the document in the ToC. To do this, you need to insert the relative path to the newly-added file into the [`_toc.yml`](https://github.com/intel-analytics/BigDL/blob/main/docs/readthedocs/source/_toc.yml) file, according to its position in the structure tree.
 
+```eval_rst
 .. tip::
 
    When adding a new document, you should always check whether to put relative link directing to it inside its parent index page, or inside any other related pages.
+
+.. warning::
+
+   According to `sphinx-external-toc <https://sphinx-external-toc.readthedocs.io/en/latest/user_guide/sphinx.html#basic-structure>`_ document, "each document file can only occur once in the ToC".
 ```
+
+For API related documents, we still use in-file `.. toctree::` directives instead of putting them inside `_toc.yml`. You could refer to [here](https://github.com/intel-analytics/BigDL/tree/main/docs/readthedocs/source/doc/PythonAPI) for example usages.
 
 ## 2. Differentiate the syntax of reStructuredText and CommonMark
 As mentioned above, our documentation includes both `.rst` and `.md` files. They have different syntax, please make sure you do not mix the usage of them.
@@ -99,71 +107,33 @@ As mentioned above, our documentation includes both `.rst` and `.md` files. They
 
 Here list several use cases where syntax in `.rst` and `.md` are often confused:
 
-<table>
-<tr><th></th><th>reStructuredText</th><th>CommonMark</th></tr>
-<tr><td>Inline code</td>
-<td>
+<div class="bigdl-documentation-guide-tables">
 
-```rst
-``inline code``
+```eval_rst
++--------------------+-----------------------------------------------------+---------------------------------------------------+
+|                    | reStructuredText                                    | CommonMark                                        |
++====================+=====================================================+===================================================+
+| Inline code        | .. code-block:: rst                                 | .. code-block:: md                                |
+|                    |                                                     |                                                   |
+|                    |    ``inline code``                                  |    `inline code`                                  |
++--------------------+-----------------------------------------------------+---------------------------------------------------+
+| Hyperlinks         | .. code-block:: rst                                 | .. code-block:: md                                |
+|                    |                                                     |                                                   |
+|                    |    `Relative link text <relatve/path/to/the/file>`_ |    [Relative link text](relatve/path/to/the/file) |
+|                    |    `Absolute link text <https://www.example.com/>`_ |    [Absolute link text](https://www.example.com/) |
++--------------------+-----------------------------------------------------+---------------------------------------------------+
+| Italic             | .. code-block:: rst                                 | .. code-block:: md                                |
+|                    |                                                     |                                                   |
+|                    |    `italicized text`                                |    *italicized text*                              |
+|                    |    *italicized text*                                |                                                   |
++--------------------+-----------------------------------------------------+---------------------------------------------------+
+| Italic & bold      | Not supported, needed help with css                 | .. code-block:: md                                |
+|                    |                                                     |                                                   |
+|                    |                                                     |    ***italicized & bold text***                   |
++--------------------+-----------------------------------------------------+---------------------------------------------------+
 ```
 
-</td>
-<td>
-
-```md
-`inline code`
-```
-
-</td></tr>
-<tr><td>Hyperlinks</td>
-<td>
-
-```rst
-`Relative link text <relatve/path/to/the/file>`_ 
-`Absolute link text <https://www.example.com/>`_ 
-```
-
-</td>
-<td>
-
-```md
-[Relative link text](relatve/path/to/the/file)
-[Absolute link text](https://www.example.com/)
-```
-
-</td></tr>
-<tr><td>Italic</td>
-<td>
-
-```rst
-`italic text`
-*italic text*
-```
-
-</td>
-<td>
-
-```md
-*italicized text*
-
-```
-
-</td></tr>
-<tr><td>Italic & bold</td>
-<td>
-
-Not supported, needed help with css
-
-</td>
-<td>
-
-```md
-***italicized & bold text***
-```
-
-</td></tr>
-</table>
+</div>
 
 ### 2.1 Tips when adding docstrings in source code for API documentation
 According to the [`sphinx.ext.autodoc`](https://www.sphinx-doc.org/en/master/usage/extensions/autodoc.html#module-sphinx.ext.autodoc) document, "the docstrings must of course be written in correct reStructuredText". We need to make sure that we are using reStructuredText syntax in the source code docstrings for API documentation.
@@ -178,7 +148,7 @@ There are two [field lists](https://www.sphinx-doc.org/en/master/usage/restructu
 ```
 
 ```eval_rst
-.. note::
+.. important::
 
    The following lines of one parameter/return definition should be indented to be rendered correctly.
 
@@ -187,6 +157,43 @@ There are two [field lists](https://www.sphinx-doc.org/en/master/usage/restructu
    Please always check whether corresponding API documentation is correctly rendered when changes made to the docstrings.
 ```
 ## 3. Common components in `.rst` files
+
+<div class="bigdl-documentation-guide-tables">
+
+```eval_rst
++----------------+-----------------------------------------------------+---------------------------------------------------------------------------------------------------------------+
+| Headers        | .. code-block:: rst                                 | Note that the underline symbols should be at least as long as the header texts.                               |
+|                |                                                     |                                                                                                               |
+|                |    Header Level 1                                   | Also, **we do not expect maually-added styles to headers.**                                                   |
+|                |    =========================                        |                                                                                                               |
+|                |                                                     | You could refer to                                                                                            |
+|                |    Header Level 2                                   | `here <https://www.sphinx-doc.org/en/master/usage/restructuredtext/basics.html#sections>`_                    |
+|                |    -------------------------                        | for more information on reStructuredText sections.                                                            |
+|                |                                                     |                                                                                                               |
+|                |    Header Level 3                                   |                                                                                                               |
+|                |    ~~~~~~~~~~~~~~~~~~~~~~~~~                        |                                                                                                               |
+|                |                                                     |                                                                                                               |
+|                |    Header Level 4                                   |                                                                                                               |
+|                |    ^^^^^^^^^^^^^^^^^^^^^^^^^                        |                                                                                                               |
++----------------+-----------------------------------------------------+---------------------------------------------------------------------------------------------------------------+
+| Lists          | .. code-block:: rst                                 | Note that the number of spaces indented depends on the markup.                                                |
+|                |                                                     | That is, if we use '* '/'#. '/'10. ' for the list,                                                            |
+|                |    * A unordered list                               | the indent after it should be indented by 2/3/4 spaces.                                                       |
+|                |    * The second item of the unordered list          |                                                                                                               |
+|                |      with two lines                                 | Also note that blanks lines are needed around the nested list.                                                |
+|                |                                                     |                                                                                                               |
+|                |    #. A numbered list                               | You could refer to                                                                                            |
+|                |                                                     | `here <https://www.sphinx-doc.org/en/master/usage/restructuredtext/basics.html#lists-and-quote-like-blocks>`_ |
+|                |       1. A nested numbered list                     | for more information on reStructuredText lists.                                                               |
+|                |       2. The second nested numbered list            |                                                                                                               |
+|                |                                                     |                                                                                                               |
+|                |    #. The second item of                            |                                                                                                               |
+|                |       the numbered list                             |                                                                                                               |
++----------------+-----------------------------------------------------+---------------------------------------------------------------------------------------------------------------+
+```
+
+</div>
+
 <table>
 <tr><td>Headers</td>
 <td>
@@ -343,7 +350,7 @@ any contents in reStructuredText syntax
 It could be useful if you want to use special boxes (e.g. note box) in your `.md` files.
 
 ```eval_rst
-.. note::
+.. important::
 
    Any contents inside ``eval_rst`` code block should follow the reStructuredText syntax.
 ```
@@ -438,7 +445,7 @@ If you want to hide a notebook markdown/code cell from rendering into our docume
 ```eval_rst
 .. tip::
 
-   You could simply open the notebook through text editor to see edit ``metadata`` of each cell.
+   You could simply open the notebook through text editor to edit the ``metadata`` of each cell.
 
 .. note::
 
