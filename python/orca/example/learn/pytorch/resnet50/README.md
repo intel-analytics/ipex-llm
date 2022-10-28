@@ -35,4 +35,4 @@ export PYSPARK_PYTHON=...
 python inference.py /path/to/imagenet --cluster_mode standalone --master spark://ip:port --num_nodes 2 --cores 4 --workers_per_node 1 --pretrained
 ```
 
-- Int8 configure file can be downloaded from: https://github.com/IntelAI/models/blob/master/models/image_recognition/pytorch/common/resnet50_configure_sym.json
+- Int8 configure file can be downloaded from: https://raw.githubusercontent.com/IntelAI/models/master/models/image_recognition/pytorch/common/resnet50_configure_sym.json
