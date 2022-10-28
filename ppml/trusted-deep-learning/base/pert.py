@@ -132,6 +132,7 @@ def train_loop(args, dataloader, model, loss_fn, optimizer, epoch, total_loss):
     
     # Set to train mode
     model.train()
+    total_dataset = 0
     for batch, (X, y) in enumerate(dataloader, start=1):
         X, y = X.to(device), y.to(device)
         pred = model(X)
@@ -143,13 +144,14 @@ def train_loop(args, dataloader, model, loss_fn, optimizer, epoch, total_loss):
         optimizer.step()
 
         total_loss += loss.item()
+        total_dataset += args.batch_size
         if batch % args.log_interval == 0:
             msg = "Train Epoch: {} [{}/{} ({:.0f}%)]\tloss={:.4f}".format(
                 epoch, batch, len(dataloader),
                 100. * batch / len(dataloader), loss.item())
             logging.info(msg)
 
-    return total_loss
+    return total_loss, total_dataset
 
 def test_loop(dataloader, model, mode='Test'):
     assert mode in ['Valid', 'Test']
@@ -227,9 +229,12 @@ def main():
             train_dataloader.sampler.set_epoch(t)
             valid_dataloader.sampler.set_epoch(t)
         start = time.perf_counter()
-        total_loss = train_loop(args, train_dataloader, model,loss_fn, optimizer, t+1, total_loss)
+        total_loss, total_dataset = train_loop(args, train_dataloader, model,loss_fn, optimizer, t+1, total_loss)
         end = time.perf_counter()
         print(f"Epoch {t+1}/{args.epochs + 1} Elapsed time:", end - start, flush=True)
+        print(f"Epoch {t+1}/{args.epochs + 1} Processed dataset length:", total_dataset, flush=True)
+        msg = "Epoch {}/{} Throughput: {: .4f}".format(t+1, args.epochs+1, 1.0 * total_dataset / (end-start))
+        print(msg, flush=True)
         valid_acc = test_loop(valid_dataloader, model, mode='Valid')
 
     print("[INFO]Finish all test", flush=True)
