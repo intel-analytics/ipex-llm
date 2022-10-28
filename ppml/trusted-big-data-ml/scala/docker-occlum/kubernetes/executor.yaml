@@ -34,7 +34,7 @@ spec:
     - name: PCCS_URL
       value: "https://PCCS_IP:PCCS_PORT"
     - name: ATTESTATION
-      value: true
+      value: false
     - name: ATTESTATION_URL
       value: "ESHM_IP:EHSM_PORT"
     - name: APP_ID
