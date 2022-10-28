@@ -294,7 +294,7 @@ class SparkRunner:
                                      executor_cores, executor_memory, extra_executor_memory_for_ray)
         conf.update({
             "spark.cores.max": num_executors * executor_cores,
-            "spark.executorEnv.PYTHONHOME": "/".join(detect_python_location().split("/")[:-2])
+            "spark.executorEnv.PYTHONHOME": "/".join(os.environ["PYSPARK_PYTHON"].split("/")[:-2])
         })
         # Driver and executor are assumed to have the same Python environment
         zoo_bigdl_jar_path = get_zoo_bigdl_classpath_on_driver()
