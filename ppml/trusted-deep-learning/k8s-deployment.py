@@ -165,10 +165,10 @@ def _create_pod(pod_name: str,
                                                      "sgx.intel.com/provision": 1},
                                              requests={"cpu": pod_cpu,
                                                        "memory": pod_memory,
-                                                      "sgx.intel.com/epc": pod_epc_memory,
-                                                      "sgx.intel.com/enclave": 1,
-                                                      "sgx.intel.com/provision": 1}
-)
+                                                       "sgx.intel.com/epc": pod_epc_memory,
+                                                       "sgx.intel.com/enclave": 1,
+                                                       "sgx.intel.com/provision": 1}
+                                             )
     volume_mounts = [_deserialize_volume_mounts_object(json_str, api_client)
                      for json_str in volume_mount_strs]
     container = client.V1Container(name="pytorch",
@@ -256,7 +256,6 @@ def main():
 
     app_id = str(uuid4())[:7]
 
-
     config.load_config()
 
     v1 = client.CoreV1Api()
@@ -280,6 +279,7 @@ def main():
                                       extra_envs=args.env,
                                       pod_cpu=args.pod_cpu,
                                       pod_memory=args.pod_memory,
+                                      pod_epc_memory=args.pod_epc_memory,
                                       image=args.image,
                                       command=command,
                                       volume_strs=args.volume,
@@ -302,6 +302,5 @@ def main():
     print(f"**** kubectl logs {driver_pod_name} ****")
 
 
-
-if __name__=="__main__":
+if __name__ == "__main__":
     main()
