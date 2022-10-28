@@ -9,6 +9,8 @@ set +e
 uidentry=$(getent passwd $myuid)
 set -e
 
+# To use sgx_sign in k8s env
+source /opt/intel/sgxsdk/environment
 # If there is no passwd entry for the container UID, attempt to create one
 if [ -z "$uidentry" ] ; then
     if [ -w /etc/passwd ] ; then
