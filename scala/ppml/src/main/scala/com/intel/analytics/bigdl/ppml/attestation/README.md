@@ -1,7 +1,28 @@
 # General Attestation Interface
 
 Support Grapmine, Occlum and SGX SDK.
-
+```mermaid
+classDiagram
+    AttestationCLI ..> AttestationService
+    AttestationCLI ..> QuoteGenerator
+    AttestationCLI ..> QuoteVerifier
+        
+    AttestationService <|-- EHSMAttestationService 
+    AttestationService <|-- DummyAttestationService
+    AttestationService <|-- DCAPAttestationService
+    AttestationService: +register()
+    AttestationService: +getQuoteFromServer()
+    AttestationService: +attWithServer()
+        EHSMAttestationService: +payLoad
+        EHSMAttestationService: +contrustUrl()
+    QuoteGenerator <|-- GramineQuoteGeneratorImpl
+    QuoteGenerator: +getQuote()
+        GramineQuoteGeneratorImpl: +USER_REPORT_PATH
+        GramineQuoteGeneratorImpl: +QUOTE_PATH
+    QuoteVerifier <|-- SGXDCAPQuoteVerifierImpl
+    QuoteVerifier: +verifyQuote()
+        SGXDCAPQuoteVerifierImpl: +sdkVerifyQuote()
+```
 ## Environment
 You should have an available attestation service to attest with. You can use `EHSMAttestationService` and configure eHSM-KMS according to [this link](https://github.com/intel-analytics/BigDL/tree/main/ppml/services/pccs-ehsm/kubernetes), or you can just use `DummyAttestationService` for debug. 
 
