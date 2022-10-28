@@ -168,33 +168,34 @@ class TorchRunner:
 
     def setup_torch_distribute(self, tcp_store_host, tcp_store_port, world_rank,
                                world_size):
-        import torch.distributed as dist
-        from torch.nn.parallel import DistributedDataParallel
-        client_store = dist.TCPStore(tcp_store_host, tcp_store_port, -1, False)
-        dist.init_process_group(
-            backend="gloo",
-            store=client_store,
-            rank=world_rank,
-            world_size=world_size)
+        # import torch.distributed as dist
+        # from torch.nn.parallel import DistributedDataParallel
+        # client_store = dist.TCPStore(tcp_store_host, tcp_store_port, -1, False)
+        # dist.init_process_group(
+        #     backend="gloo",
+        #     store=client_store,
+        #     rank=world_rank,
+        #     world_size=world_size)
         self.backend = "torch-distributed"
         self.rank = world_rank
         self.size = world_size
         self.setup_components()
-        training_models = [
-            DistributedDataParallel(model)
-            for model in self.models
-        ]
-        self.setup_operator(training_models)
+        # training_models = [
+        #     DistributedDataParallel(model)
+        #     for model in self.models
+        # ]
+        self.setup_operator(self.models)
 
     def setup_components(self):
         """Runs the creator functions without any distributed coordination."""
 
         self.logger.debug("Creating model")
         self.models = self.model_creator(self.config)
-        if isinstance(self.models, nn.Sequential) or not isinstance(self.models, Iterable):
-            self.models = [self.models]
-        invalidInputError(all(isinstance(model, nn.Module) for model in self.models),
-                          ("All models must be PyTorch models: {}.".format(self.models)))
+        # if isinstance(self.models, nn.Sequential) or not isinstance(self.models, Iterable):
+        #     self.models = [self.models]
+        # invalidInputError(all(isinstance(model, nn.Module) for model in self.models),
+        #                   ("All models must be PyTorch models: {}.".format(self.models)))
+        self.models = [self.models]
 
         self.logger.debug("Creating optimizer.")
         self.optimizers = self.optimizer_creator(self.given_models,
