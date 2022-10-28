@@ -180,27 +180,4 @@ case "$SPARK_K8S_CMD" in
     exit 1
 esac
 
-if [[ $ATTESTATION == "true" ]]; then
-    if [[ $PCCS_URL == "" ]]; then
-        echo "[ERROR] Attestation set to /root/demos/remote_attestation/dcaprue but NO PCCS"
-        exit 1
-    else
-            #generate dcap quote
-            occlum run /bin/dcap_c_test $REPORT_DATA
-            echo "generate quote success"
-            #attest quote
-            occlum run /usr/lib/jvm/java-8-openjdk-amd64/bin/java \
-                        -XX:-UseCompressedOops -XX:MaxMetaspaceSize=1g \
-                        -XX:ActiveProcessorCount=4 \
-                        -Divy.home="/tmp/.ivy" \
-                        -Dos.name="Linux" \
-                        -cp "$SPARK_HOME/conf/:$SPARK_HOME/jars/*:/bin/jars/*" \
-                        -Xmx1g com.intel.analytics.bigdl.ppml.attestation.AttestationCLI \
-                        -u $ATTESTATION_URL \
-                        -i $APP_ID \
-                        -k $API_KEY \
-                        -o occlum
-            echo "verify success"
-    fi
-fi
 /sbin/tini -s -- occlum run "${CMD[@]}"
