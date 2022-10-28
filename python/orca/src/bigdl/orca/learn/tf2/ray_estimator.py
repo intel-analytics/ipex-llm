@@ -57,6 +57,10 @@ class TensorFlow2Estimator(OrcaRayEstimator):
         self.config = {} if config is None else config
         self.verbose = verbose
 
+        if self.model_creator is None:
+            logger.warning("Please use load function of the estimator to load model when"
+                           " model_creator is None.")
+
         ray_ctx = OrcaRayContext.get()
         if "batch_size" in self.config:
             invalidInputError(False,
@@ -72,11 +76,11 @@ class TensorFlow2Estimator(OrcaRayEstimator):
         if backend == "horovod":
             invalidInputError(compile_args_creator is not None,
                               "compile_args_creator should not be None,"
-                              " when backend is set to horovod")
+                              " when backend is set to horovod.")
 
         params = {
-            "model_creator": model_creator,
-            "compile_args_creator": compile_args_creator,
+            "model_creator": self.model_creator,
+            "compile_args_creator": self.compile_args_creator,
             "config": self.config,
             "verbose": self.verbose,
         }
