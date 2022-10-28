@@ -53,27 +53,29 @@ jobs:
           pip install pytest==5.4.1
           pip install prophet==1.1
           pip install pmdarima==1.8.4
+          pip install neural-compressor==1.11
           pip install tsfresh==0.17.0
           pip install ray==1.9.2 ray[tune]==1.9.2 ray[default]==1.9.2
           pip install pyarrow==6.0.1
           pip install ConfigSpace==0.5.0
           pip install optuna==2.10.1
+          pip install onnx==1.11.0
+          pip install onnxruntime==1.11.1
+          pip install openvino-dev==2022.2.0
+          pip install onnxsim==0.4.8
           pip install scipy==1.5.4
           pip install cloudpickle
           apt-get update
           apt-get install patchelf
-          apt-get update && apt-get install -y libgl1
           pip uninstall -y bigdl-friesian bigdl-friesian-spark3 bigdl-dllib bigdl-dllib-spark3 bigdl-orca pyspark bigdl-orca-spark3 bigdl-chronos bigdl-chronos-spark3 bigdl-nano bigdl-friesian bigdl-friesian-spark3
           #sed -i "s/'bigdl-core=='+VERSION/'bigdl-core==2.1.0b20220811'/g" python/dllib/src/setup.py
           bash python/dev/release_default_linux_spark246.sh default false false
           bash python/nano/dev/build_and_install.sh linux default false pytorch --force-reinstall --no-deps -U
           whl_name=`ls python/nano/dist/`
-          pip install python/nano/dist/${whl_name}[tensorflow,pytorch,inference]
+          pip install python/nano/dist/${whl_name}[tensorflow,pytorch]
           pip install python/dllib/src/dist/bigdl_dllib-*-py3-none-manylinux1_x86_64.whl
           pip install python/orca/src/dist/bigdl_orca-*-py3-none-manylinux1_x86_64.whl
           pip install python/chronos/src/dist/bigdl_chronos-*-py3-none-manylinux1_x86_64.whl
-          pip install opencv-python-headless==4.5.3.56
-          pip install opencv-python==4.5.3.56
           export SPARK_LOCAL_HOSTNAME=localhost
           export KERAS_BACKEND=tensorflow
           bash python/chronos/dev/test/run-pytests-onnxrt16.sh
