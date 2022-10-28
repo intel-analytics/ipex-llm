@@ -100,7 +100,8 @@ def train_loader_func(config, batch_size):
 
     train_dataset = NCFData(train_data, item_num=item_num, train_mat=train_mat,
                             num_ng=4, is_training=True)
-    train_loader = data.DataLoader(train_dataset, batch_size=batch_size, shuffle=True, num_workers=0)
+    train_loader = data.DataLoader(train_dataset, batch_size=batch_size,
+                                   shuffle=True, num_workers=0)
     train_loader.dataset.ng_sample()  # sample negative items for training datasets
     return train_loader
 
