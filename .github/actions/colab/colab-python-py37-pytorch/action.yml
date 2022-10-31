@@ -71,4 +71,3 @@ runs:
         BIGDL_ROOT: ${{ github.workspace }}
         ANALYTICS_ZOO_ROOT: ${{ github.workspace }}
         ANALYTICS_ZOO_HOME: ${{ github.workspace }}
-        FTP_URI: ftp://zoo:1234qwer@10.112.231.51
