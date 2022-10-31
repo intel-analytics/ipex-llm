@@ -78,7 +78,7 @@ Index pages (nodes filled with blue) are the ones supposed to lead to further pa
 ```eval_rst
 .. note::
    
-   In convension, we use ``.rst`` file for index pages  becuase complex web components (such as cards, note boxes, tabs, etc.) are more straightforward to be inserted in our documentation through reStructuredText. And it is a common case in our documentation that index pages include complex web components.
+   In convension, we use ``.rst`` file for index pages becuase various web components (such as cards, note boxes, tabs, etc.) are more straightforward to be inserted in our documentation through reStructuredText. And it is a common case in our documentation that index pages include various web components.
 ```
 
 ### 1.2 Add the new document to the table of contents (ToC)
@@ -172,7 +172,7 @@ Not supported, needed help with css
 </table>
 
 ### 2.1 Tips when adding docstrings in source code for API documentation
-According to the [`sphinx.ext.autodoc`](https://www.sphinx-doc.org/en/master/usage/extensions/autodoc.html#module-sphinx.ext.autodoc) document, "the docstrings must of course be written in correct reStructuredText". We need to make sure that we are using reStructuredText syntax in the source code docstrings for API documentation.
+According to the [`sphinx.ext.autodoc`](https://www.sphinx-doc.org/en/master/usage/extensions/autodoc.html#module-sphinx.ext.autodoc) document, docstrings should be written in reStructuredText. We need to make sure that we are using reStructuredText syntax in the source code docstrings for API documentation.
 
 There are two [field lists](https://www.sphinx-doc.org/en/master/usage/restructuredtext/basics.html#field-lists) syntax often used in API documentation for parameter definition and return values. Let us take a snippet from [`bigdl.nano.pytorch.InferenceOptimizer.get_best_model`](../PythonAPI/Nano/pytorch.html#bigdl.nano.pytorch.InferenceOptimizer.get_best_model) as an example:
 ```rst
@@ -242,7 +242,7 @@ You could refer to [here](https://www.sphinx-doc.org/en/master/usage/restructure
 </td>
 <td>
 
-Note that the number of spaces indented depends on the markup. That is, if we use '* '/'#. '/'10. ' for the list, the indent after it should be indented by 2/3/4 spaces.
+Note that the number of spaces indented depends on the markup. That is, if we use '* '/'#. '/'10. ' for the list, the following contents belong to the list or the nested lists after it should be indented by 2/3/4 spaces.
 
 Also note that blanks lines are needed around the nested list.
 
@@ -336,8 +336,48 @@ boxes
 
 All the supported language argument for syntax highlighting can be found [here](https://pygments.org/docs/lexers/).
 
+</td></tr>
+<tr><td>Tabs</td>
+<td>
+
+```rst
+.. tabs::
+
+   .. tab:: Title 1
+
+      Contents for tab 1
+
+   .. tab:: Title 2
+
+      Contents for tab 2
+
+      .. code-block:: python
+
+         some python code
+```
+
 </td>
-</tr>
+<td>
+
+```eval_rst
+.. tabs::
+
+   .. tab:: Title 1
+
+      Contents for tab 1
+
+   .. tab:: Title 2
+
+      Contents for tab 2
+
+      .. code-block:: python
+
+         some python code
+```
+
+You could refer to [here](https://sphinx-tabs.readthedocs.io/en/v3.4.0/) for more information on the usage of tabs.
+
+</td></tr>
 </table>
 
 ### 3.1 Use reStructuredText in `.md` files
@@ -347,7 +387,7 @@ You could embed reStructuredText into `.md` files through putting reStructuredTe
 any contents in reStructuredText syntax
 ```
 ~~~
-It could be useful if you want to use special boxes (e.g. note box) in your `.md` files.
+It could be useful if you want to use special boxes (e.g. note box) or tabs in your `.md` files.
 
 ```eval_rst
 .. important::
@@ -394,7 +434,7 @@ Note that **we do not expect maually-added styles to headers.**
 </td>
 <td>
 
-Note that the number of spaces indented depends on the markup. That is, if we use '- '/'1. '/'10. ' for the list, the indent after it should be indented by 2/3/4 spaces.
+Note that the number of spaces indented depends on the markup. That is, if we use '- '/'1. '/'10. ' for the list, the following contents belong to the list or the nested lists after it should be indented by 2/3/4 spaces.
 
 </td></tr>
 <tr><td>Code blocks</td>
@@ -420,7 +460,7 @@ All the supported language argument for syntax highlighting can be found [here](
 </table>
 
 ## 5. How to include Jupyter notebooks directly inside our documentation
-If you want to include a Jupyter notebook into our documentation as an example, how-to guides, etc., you could just put it anywhere inside [`BigDL/docs/readthedocs/source`](https://github.com/Oscilloscope98/BigDL/tree/doc-readme-rules/docs/readthedocs/source) dictionary, and link it into `_toc.yml` file.
+If you want to include a Jupyter notebook into our documentation as an example, a tutorial, a how-to guide, etc., you could just put it anywhere inside [`BigDL/docs/readthedocs/source`](https://github.com/intel-analytics/BigDL/tree/main/docs/readthedocs/source) dictionary, and link it into `_toc.yml` file.
 
 However, if you want to render a Jupyter notebook located out of `BigDL/docs/readthedocs/source` dictionary into our documentation, the case is a little bit complicated. To do this, you need to add a file with `.nblink` extension into `BigDL/docs/readthedocs/source` , and link the `.nblink` file into `_toc.yml`.
 
@@ -441,6 +481,19 @@ The `.nblink` file should have the following structure:
 
 If you want to hide a notebook markdown/code cell from rendering into our documentation, you could simply add `"nbsphinx": "hidden"` into the cell's `metadata`.
 
+Here shows an examlpe of a markdown cell hidden from rendering:
+
+```json
+{
+"cell_type": "markdown",
+"metadata": {
+   "nbsphinx": "hidden"
+},
+"source": [
+   ...
+]
+}
+```
 
 ```eval_rst
 .. tip::
