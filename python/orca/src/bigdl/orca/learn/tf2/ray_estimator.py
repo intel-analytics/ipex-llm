@@ -591,19 +591,17 @@ class TensorFlow2Estimator(OrcaRayEstimator):
                options for loading from SavedModel.
 
         """
-        self.load_path = filepath
-
-        params = dict(
+        self.load_params = dict(
             filepath=filepath,
             custom_objects=custom_objects,
             compile=compile,
             options=options
         )
         if is_local_path(filepath):
-            ray.get([worker.load_model.remote(**params)
+            ray.get([worker.load_model.remote(**self.load_params)
                      for worker in self.remote_workers])
         else:
-            ray.get([worker.load_remote_model.remote(**params)
+            ray.get([worker.load_remote_model.remote(**self.load_params)
                      for worker in self.remote_workers])
 
     def save_weights(self, filepath, overwrite=True, save_format=None, options=None):
@@ -686,18 +684,18 @@ class TensorFlow2Estimator(OrcaRayEstimator):
         if self.model_creator is not None:
             model = self.model_creator(self.config)
         else:
-            file_name = os.path.basename(self.load_path)
+            file_name = os.path.basename(self.load_params["filepath"])
             temp_dir = tempfile.mkdtemp()
             temp_path = os.path.join(temp_dir, file_name)
 
-            if is_file(self.load_path):
-                get_remote_file_to_local(self.load_path, temp_path)
+            if is_file(self.load_params["filepath"]):
+                get_remote_file_to_local(self.load_params["filepath"], temp_path)
             else:
                 if os.path.exists(temp_path):
                     os.makedirs(temp_path)
-                get_remote_dir_to_local(self.load_path, temp_path)
+                get_remote_dir_to_local(self.load_params["filepath"], temp_path)
             try:
-                model = tf.keras.models.load_model(temp_path)
+                model = tf.keras.models.load_model(**self.load_params)
             finally:
                 shutil.rmtree(temp_dir)
 
