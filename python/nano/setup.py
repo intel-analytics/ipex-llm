@@ -73,9 +73,9 @@ def download_libs(url: str):
 
 def setup_package():
 
-    tensorflow_requires = ["intel-tensorflow==2.7.0",
-                           "keras==2.7.0",
-                           "tensorflow-estimator==2.7.0"]
+    tensorflow_requires = ["intel-tensorflow==2.9.1",
+                           "keras==2.9.0",
+                           "tensorflow-estimator==2.9.0"]
 
     # ipex is only avaliable for linux now
     pytorch_requires = ["torch==1.12.1",
@@ -85,7 +85,7 @@ def setup_package():
                         "opencv-python-headless",
                         "PyTurboJPEG",
                         "opencv-transforms",
-                        "intel_extension_for_pytorch==1.11.0;platform_system!='Windows'"]
+                        "intel_extension_for_pytorch==1.12.100;platform_system!='Windows'"]
 
     install_requires = ["intel-openmp", "cloudpickle", "protobuf==3.19.4"]
 
