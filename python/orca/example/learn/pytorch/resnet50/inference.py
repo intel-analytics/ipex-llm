@@ -175,7 +175,8 @@ def main():
         invalidInputError(not args.int8, "int8 path is not enabled for offical pytorch")
         invalidInputError(not args.jit, "jit path is not enabled for offical pytorch")
 
-    env = {"MALLOC_CONF": "oversize_threshold:1,background_thread:true,metadata_thp:auto,dirty_decay_ms:9000000000,muzzy_decay_ms:9000000000",
+    env = {"MALLOC_CONF": "oversize_threshold:1,background_thread:true,metadata_thp:"
+                          "auto,dirty_decay_ms:9000000000,muzzy_decay_ms:9000000000",
            "DNNL_PRIMITIVE_CACHE_CAPACITY": "1024",
            "KMP_BLOCKTIME": "1",
            "KMP_AFFINITY": "granularity=fine,compact,1,0",
