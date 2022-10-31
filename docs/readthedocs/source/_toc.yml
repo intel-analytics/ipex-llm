@@ -239,8 +239,13 @@ subtrees:
                   - file: doc/PPML/Overview/azure_ppml_occlum
 
   - entries:
-    - file: doc/UserGuide/develop
-      title: "Developer guide"
+    - file: doc/UserGuide/contributor
+      title: "Contributor guide"
+      subtrees:
+        - entries:
+          - file: doc/UserGuide/develop
+          - file: doc/UserGuide/documentation
+
 
 
   - entries:
