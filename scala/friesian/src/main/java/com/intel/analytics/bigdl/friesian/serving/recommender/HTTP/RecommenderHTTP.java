@@ -59,6 +59,20 @@ public class RecommenderHTTP {
     public static void main(String[] args) throws IOException {
         final HttpServer server = startServer(args);
 
+        if (Utils.runMonitor()) {
+            logger.info("Starting prometheus client HTTPServer at port " +
+                    Utils.helper().monitorPort() + "....");
+            final io.prometheus.client.exporter.HTTPServer monitorServer =
+                    new io.prometheus.client.exporter.HTTPServer.Builder()
+                            .withPort(Utils.helper().monitorPort())
+                            .build();
+            // register shutdown hook
+            Runtime.getRuntime().addShutdownHook(new Thread(() -> {
+                logger.info("Stopping prometheus client HTTPServer....");
+                monitorServer.close();
+            }, "prometheusShutdownHook"));
+        }
+
         // register shutdown hook
         Runtime.getRuntime().addShutdownHook(new Thread(() -> {
             logger.info("Stopping server..");

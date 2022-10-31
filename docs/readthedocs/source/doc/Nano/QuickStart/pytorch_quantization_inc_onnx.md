@@ -2,7 +2,7 @@
 
 **In this guide we will describe how to obtain a quantized model running inference in the ONNXRuntime engine with the APIs delivered by BigDL-Nano in 4 simple steps**
 
-### **Step 0: Prepare Environment**
+### Step 0: Prepare Environment
 We recommend using [conda](https://docs.conda.io/projects/conda/en/latest/user-guide/install/) to prepare the environment. Please refer to the [install guide](../../UserGuide/python.md) for more details.
 
 ```bash
@@ -19,7 +19,7 @@ To quantize model using ONNXRuntime as backend, it is required to install Intel 
 pip install neural-compress==1.11
 pip install onnx onnxruntime onnxruntime-extensions
 ```
-### **Step 1: Load the data**
+### Step 1: Load the data
 ```python
 import torch
 from torchvision.io import read_image
@@ -46,7 +46,7 @@ val_dataset = torch.utils.data.Subset(val_dataset, indices[-val_size:])
 train_dataloader = DataLoader(train_dataset, batch_size=32)
 ```
 
-### **Step 2: Prepare your Model**
+### Step 2: Prepare your Model
 ```python
 import torch
 from torchvision.models import resnet18
@@ -72,7 +72,7 @@ y_hat = model_ft(x)
 y_hat.argmax(dim=1)
 ```
 
-### **Step 3: Quantization with ONNXRuntime accelerator**
+### Step 3: Quantization with ONNXRuntime accelerator
 With the ONNXRuntime accelerator, `Trainer.quantize()` will return a model with compressed precision but running inference in the ONNXRuntime engine.
 
 you can add quantization as below:

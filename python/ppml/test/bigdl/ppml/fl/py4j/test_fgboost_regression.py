@@ -62,7 +62,7 @@ class TestFGBoostRegression(FLTest):
         self.update_available_port()
         self.fl_server = FLServer()
         self.fl_server.set_port(self.port)
-        init_fl_context("1", self.target)
+        init_fl_context(1, self.target)
         # this explicit set is needed, default value is 'fork' on Unix
         # if 'fork', the resources would be inherited and thread crash would occur
         # (to be verified)
@@ -72,6 +72,7 @@ class TestFGBoostRegression(FLTest):
         self.fl_server.stop()
 
     def test_dummy_data(self):
+        self.fl_server.set_client_num(1)
         self.fl_server.build()
         self.fl_server.start()
         x, y = np.ones([2, 3]), np.ones([2])
@@ -81,11 +82,13 @@ class TestFGBoostRegression(FLTest):
         result
 
     def test_save_load(self):
+        self.fl_server.set_client_num(1)
         self.fl_server.build()
         self.fl_server.start()
         df_train = pd.read_csv(
             os.path.join(resource_path, "house-prices-train-preprocessed.csv"))
-        fgboost_regression = FGBoostRegression()
+        server_model_path = "/tmp/fgboost_server_model"
+        fgboost_regression = FGBoostRegression(server_model_path=server_model_path)
         
         df_x = df_train.drop('SalePrice', 1)
         df_y = df_train.filter(items=['SalePrice'])
@@ -93,12 +96,15 @@ class TestFGBoostRegression(FLTest):
         fgboost_regression.fit(df_x, df_y,
             feature_columns=df_x.columns, label_columns=['SalePrice'], num_round=1)
         tmp_file_name = f'/tmp/{str(uuid4())}'
+        
         fgboost_regression.save_model(tmp_file_name)
         model_loaded = FGBoostRegression.load_model(tmp_file_name)
         
         df_test = pd.read_csv(os.path.join(resource_path, "house-prices-test-preprocessed.csv"))
         result = model_loaded.predict(df_test, feature_columns=df_x.columns)
         result = list(map(lambda x: math.exp(x), result))
+        os.remove(server_model_path)
+        os.remove(tmp_file_name)
         result
 
     def test_three_party(self):
@@ -106,10 +112,10 @@ class TestFGBoostRegression(FLTest):
         self.fl_server.build()
         self.fl_server.start()
         mock_party1 = Process(target=mock_process, 
-        args=('2', 'house-prices-train-preprocessed-1.csv', 'house-prices-test-preprocessed-1.csv', self.target))
+        args=(2, 'house-prices-train-preprocessed-1.csv', 'house-prices-test-preprocessed-1.csv', self.target))
         mock_party1.start()
         mock_party2 = Process(target=mock_process, 
-        args=('3', 'house-prices-train-preprocessed-2.csv', 'house-prices-test-preprocessed-2.csv', self.target))
+        args=(3, 'house-prices-train-preprocessed-2.csv', 'house-prices-test-preprocessed-2.csv', self.target))
         mock_party2.start()        
 
         df_train = pd.read_csv(

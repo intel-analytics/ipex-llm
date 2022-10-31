@@ -2,11 +2,13 @@
 status_4_k8s_spark_sql_example=1
 status_5_k8s_spark_sql_e2e=1
 
-SPARK_LOCAL_IP=192.168.0.112
+SPARK_LOCAL_IP=$LOCAL_IP
 DB_PATH=/ppml/trusted-big-data-ml/work/data/sqlite_example/100w.db
 
 if [ $status_4_k8s_spark_sql_example -ne 0 ]; then
-SGX=1 ./pal_loader bash -c "export TF_MKL_ALLOC_MAX_BYTES=10737418240 && \
+cd /ppml/trusted-big-data-ml
+./clean.sh
+/graphene/Tools/argv_serializer bash -c "export TF_MKL_ALLOC_MAX_BYTES=10737418240 && \
   export SPARK_LOCAL_IP=$SPARK_LOCAL_IP && \
   /opt/jdk8/bin/java \
     -cp '/ppml/trusted-big-data-ml/work/spark-3.1.2/conf/:/ppml/trusted-big-data-ml/work/spark-3.1.2/jars/*' \
@@ -36,12 +38,16 @@ SGX=1 ./pal_loader bash -c "export TF_MKL_ALLOC_MAX_BYTES=10737418240 && \
     --conf spark.kubernetes.sgx.mem=32g \
     --conf spark.kubernetes.sgx.jvm.mem=16g \
     --class org.apache.spark.examples.sql.SparkSQLExample \
-    /ppml/trusted-big-data-ml/work/spark-3.1.2/examples/jars/spark-examples_2.12-3.1.2.jar" 2>&1 > k8s-spark-sql-example-sgx.log
+    /ppml/trusted-big-data-ml/work/spark-3.1.2/examples/jars/spark-examples_2.12-3.1.2.jar" > /ppml/trusted-big-data-ml/secured-argvs
+./init.sh
+SGX=1 ./pal_loader bash 2>&1 | tee k8s-spark-sql-example-sgx.log
 fi
 status_4_k8s_spark_sql_example=$(echo $?)
 
 if [ $status_5_k8s_spark_sql_e2e -ne 0 ]; then
-SGX=1 ./pal_loader bash -c "export TF_MKL_ALLOC_MAX_BYTES=10737418240 && \
+cd /ppml/trusted-big-data-ml
+./clean.sh
+/graphene/Tools/argv_serializer bash -c "export TF_MKL_ALLOC_MAX_BYTES=10737418240 && \
   export SPARK_LOCAL_IP=$SPARK_LOCAL_IP && \
   /opt/jdk8/bin/java \
     -cp '/ppml/trusted-big-data-ml/work/spark-3.1.2/conf/:/ppml/trusted-big-data-ml/work/spark-3.1.2/jars/*:/ppml/trusted-big-data-ml/work/data/sqlite_example/spark-example-sql-e2e.jar' -Xmx10g \
@@ -70,7 +76,9 @@ SGX=1 ./pal_loader bash -c "export TF_MKL_ALLOC_MAX_BYTES=10737418240 && \
     --conf spark.kubernetes.sgx.jvm.mem=16g \
     --class test.SqlExample \
     /ppml/trusted-big-data-ml/work/spark-3.1.2/examples/jars/spark-example-sql-e2e.jar \
-    $DB_PATH" 2>&1 > k8s-spark-sql-e2e-100w-sgx.log
+    $DB_PATH" > /ppml/trusted-big-data-ml/secured-argvs
+./init.sh
+SGX=1 ./pal_loader bash 2>&1 | tee k8s-spark-sql-e2e-100w-sgx.log
 fi
 status_5_k8s_spark_sql_e2e=$(echo $?)
 

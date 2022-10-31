@@ -22,7 +22,14 @@ from setuptools import setup
 import urllib.request
 import os
 import stat
-import sys
+
+long_description = '''
+BigDL Nano automatically accelerates TensorFlow and PyTorch pipelines 
+by applying modern CPU optimizations.
+
+See [here](https://bigdl.readthedocs.io/en/latest/doc/Nano/Overview/nano.html) 
+for more information.
+'''
 
 exclude_patterns = ["*__pycache__*", "lightning_logs", "recipe", "setup.py"]
 nano_home = os.path.join(os.path.dirname(os.path.abspath(__file__)), "src")
@@ -70,6 +77,7 @@ def setup_package():
                            "keras==2.7.0",
                            "tensorflow-estimator==2.7.0"]
 
+    # ipex is only avaliable for linux now
     pytorch_requires = ["torch==1.11.0",
                         "torchvision==0.12.0",
                         "pytorch_lightning==1.6.4",
@@ -77,7 +85,7 @@ def setup_package():
                         "opencv-python-headless",
                         "PyTurboJPEG",
                         "opencv-transforms",
-                        "intel_extension_for_pytorch==1.11.0"]
+                        "intel_extension_for_pytorch==1.11.0;platform_system!='Windows'"]
 
     install_requires = ["intel-openmp", "cloudpickle", "protobuf==3.19.4"]
 
@@ -98,6 +106,8 @@ def setup_package():
         name='bigdl-nano',
         version=VERSION,
         description='High-performance scalable acceleration components for intel.',
+        long_description=long_description,
+        long_description_content_type="text/markdown",
         author='BigDL Authors',
         author_email='bigdl-user-group@googlegroups.com',
         url='https://github.com/intel-analytics/BigDL',
@@ -107,6 +117,9 @@ def setup_package():
         package_data={"bigdl.nano": package_data},
         scripts=scripts,
         package_dir={"": "src"},
+        entry_points = {
+            'console_scripts': ['bigdl-submit=bigdl.nano.k8s:main'],
+            },
         packages=get_nano_packages(),
     )
     setup(**metadata)

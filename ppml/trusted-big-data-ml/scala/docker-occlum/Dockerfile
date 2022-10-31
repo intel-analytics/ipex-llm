@@ -158,9 +158,9 @@ RUN cd /opt && \
     sed -i 's/2.4.0/3.1.2/g' tpch.sbt && \
     sbt package
 
-FROM occlum/occlum:0.27.3-ubuntu20.04 as ppml
+FROM occlum/occlum:0.28.1-ubuntu20.04 as ppml
 
-ARG BIGDL_VERSION=2.1.0-SNAPSHOT
+ARG BIGDL_VERSION=2.2.0-SNAPSHOT
 ARG SPARK_VERSION
 ARG HADOOP_VERSION
 ENV HADOOP_VERSION=${HADOOP_VERSION}

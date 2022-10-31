@@ -41,7 +41,7 @@ class DummyAttestationService extends AttestationService {
      * Generate a quote randomly
      * @return a quote of String type
      */
-    def getQuoteFromServer(): String = {
+    def getQuoteFromServer(challenge: String): String = {
         val userReportData = new Array[Byte](16)
         Random.nextBytes(userReportData)
         new String(userReportData)
@@ -71,5 +71,16 @@ class DummyAttestationService extends AttestationService {
             response.put("sign", sign)
             (verifyQuoteResult, response.toString)
         }
+    }
+    /**
+     * Do a quote verification
+     * @param quote the quote generated before
+     * @param policyID a policy ID not used in dummy attestation service
+     * @return the result and response of quote verify.
+     *         If the quote contains the substring "true" then return true,
+     *         else return false
+     */
+    override def attestWithServer(quote: String, policyID: String): (Boolean, String) = {
+        attestWithServer(quote)
     }
 }

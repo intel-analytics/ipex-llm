@@ -2,7 +2,7 @@
 
 **In this guide we will describe how to scale out PyTorch programs using Nano Trainer in 5 simple steps**
 
-### **Step 0: Prepare Environment**
+### Step 0: Prepare Environment
 
 We recommend using [conda](https://docs.conda.io/projects/conda/en/latest/user-guide/install/) to prepare the environment. Please refer to the [install guide](../../UserGuide/python.md) for more details.
 
@@ -16,7 +16,7 @@ source bigdl-nano-init
 pip install lightning-bolts
 ```
 
-### **Step 1: Import BigDL-Nano**
+### Step 1: Import BigDL-Nano
 The PyTorch Trainer (`bigdl.nano.pytorch.Trainer`) is the place where we integrate most optimizations. It extends PyTorch Lightning's Trainer and has a few more parameters and methods specific to BigDL-Nano. The Trainer can be directly used to train a `LightningModule`.
 ```python
 from bigdl.nano.pytorch import Trainer
@@ -26,7 +26,7 @@ Computer Vision task often needs a data processing pipeline that sometimes const
 from bigdl.nano.pytorch.vision import transforms
 ```
 
-### **Step 2: Load the Data**
+### Step 2: Load the Data
 You can define the datamodule using standard [LightningDataModule](https://pytorch-lightning.readthedocs.io/en/latest/data/datamodule.html)
 ```python
 from pl_bolts.datamodules import CIFAR10DataModule
@@ -45,7 +45,7 @@ cifar10_dm = CIFAR10DataModule(
 return cifar10_dm
 ```
 
-### **Step 3: Define the Model**
+### Step 3: Define the Model
 
 You may define your model, loss and optimizer in the same way as in any standard PyTorch Lightning program.
 

@@ -5,14 +5,13 @@
     <parent>
         <artifactId>bigdl-parent-spark_${spark.version}</artifactId>
         <groupId>com.intel.analytics.bigdl</groupId>
-        <version>2.1.0-SNAPSHOT</version>
+        <version>2.2.0-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
     <artifactId>bigdl-ppml-spark_${spark.version}</artifactId>
     <packaging>jar</packaging>
 
     <properties>
-        <grpc.version>1.37.0</grpc.version>
         <bigdl.basedir>${project.parent.basedir}</bigdl.basedir>
         <parquet.version>1.12.2</parquet.version>
     </properties>
@@ -64,7 +63,17 @@
                     <groupId>org.apache.parquet</groupId>
                     <artifactId>parquet-hadoop</artifactId>
                 </exclusion>
+                <exclusion>
+                    <groupId>org.apache.commons</groupId>
+                    <artifactId>commons-compress</artifactId>
+                </exclusion>
             </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-compress</artifactId>
+            <version>1.21</version>
+            <scope>${spark-scope}</scope>
         </dependency>
         <dependency>
             <groupId>org.apache.parquet</groupId>
@@ -109,12 +118,10 @@
         <dependency>
             <groupId>io.grpc</groupId>
             <artifactId>grpc-api</artifactId>
-            <version>1.37.0</version>
         </dependency>
         <dependency>
             <groupId>io.grpc</groupId>
             <artifactId>grpc-netty-shaded</artifactId>
-            <version>1.37.0</version>
         </dependency>
         <dependency>
             <groupId>commons-cli</groupId>
@@ -130,12 +137,10 @@
         <dependency>
             <groupId>io.grpc</groupId>
             <artifactId>grpc-protobuf</artifactId>
-            <version>${grpc.version}</version>
         </dependency>
         <dependency>
             <groupId>io.grpc</groupId>
             <artifactId>grpc-stub</artifactId>
-            <version>${grpc.version}</version>
         </dependency>
         <dependency>
             <groupId>org.json</groupId>
@@ -150,7 +155,7 @@
         <dependency>
             <groupId>com.google.protobuf</groupId>
             <artifactId>protobuf-java</artifactId>
-            <version>3.15.8</version>
+            <version>3.19.2</version>
         </dependency>
         <dependency>
             <groupId>com.google.protobuf</groupId>
@@ -178,18 +183,18 @@
         <dependency>
             <groupId>com.intel.analytics.bigdl</groupId>
             <artifactId>bigdl-dllib-spark_${spark.version}</artifactId>
-            <version>2.1.0-SNAPSHOT</version>
+            <version>2.2.0-SNAPSHOT</version>
         </dependency>
         <dependency>
             <groupId>com.intel.analytics.bigdl.core.dist</groupId>
             <artifactId>all</artifactId>
-            <version>2.1.0-SNAPSHOT</version>
+            <version>2.2.0-SNAPSHOT</version>
             <scope>${bigdl-core-all-scope}</scope>
         </dependency>
         <dependency>
             <groupId>com.intel.analytics.bigdl</groupId>
             <artifactId>bigdl-grpc-spark_${spark.version}</artifactId>
-            <version>2.1.0-SNAPSHOT</version>
+            <version>2.2.0-SNAPSHOT</version>
             <exclusions>
                 <exclusion>
                     <groupId>com.fasterxml.jackson.core</groupId>
@@ -336,6 +341,7 @@
                  or shade plugin will be executed after assembly plugin. -->
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-shade-plugin</artifactId>
+                <version>3.2.1</version>
                 <configuration>
                     <filters>
                         <filter>

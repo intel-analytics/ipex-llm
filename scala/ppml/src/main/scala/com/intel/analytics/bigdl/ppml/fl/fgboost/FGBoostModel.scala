@@ -24,7 +24,7 @@ import com.intel.analytics.bigdl.ppml.fl.FLContext
 import com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.{MetaData, TensorMap}
 import com.intel.analytics.bigdl.ppml.fl.utils.{DataFrameUtils, FLClientClosable}
 import com.intel.analytics.bigdl.ppml.fl.utils.ProtoUtils.{getTensor, toArrayFloat, toBoostEvals, toFloatTensor}
-import jdk.nashorn.internal.ir.debug.ObjectSizeCalculator
+
 import com.intel.analytics.bigdl.ppml.fl.utils.Conventions._
 import org.apache.logging.log4j.LogManager
 
@@ -38,7 +38,8 @@ abstract class FGBoostModel(continuous: Boolean,
                             learningRate: Float = 0.005f,
                             maxDepth: Int = 6,
                             minChildSize: Int = 1,
-                            validationMethods: Array[ValidationMethod[Float]] = null)
+                            validationMethods: Array[ValidationMethod[Float]] = null,
+                            serverModelPath: String = null)
   extends FLClientClosable {
   val logger = LogManager.getLogger(getClass)
   var splitVersion = 0
@@ -49,6 +50,10 @@ abstract class FGBoostModel(continuous: Boolean,
   var xTrainBuffer: ArrayBuffer[Tensor[Float]] = new ArrayBuffer[Tensor[Float]]()
   val trees = new mutable.Queue[RegressionTree]()
   var curLoss: Float = Float.MaxValue
+
+  def loadServerModel(modelPath: String): Unit = {
+    flClient.fgbostStub.loadServerModel(modelPath)
+  }
   def fit(feature: Array[Tensor[Float]],
           label: Array[Float],
           boostRound: Int): Unit = {
@@ -158,6 +163,9 @@ abstract class FGBoostModel(continuous: Boolean,
     trees.enqueue(currTree)
     // Evaluate tree and update residual and grads (g and h)
     uploadResidual(tree.dataset)
+    if (serverModelPath != null) {
+      flClient.fgbostStub.saveServerModel(serverModelPath)
+    }
     true
   }
 
@@ -176,10 +184,8 @@ abstract class FGBoostModel(continuous: Boolean,
     val boostEvals = toBoostEvals(predictToUpload)
     // TODO: add grouped sending message
 
-    val perMsgSize = ObjectSizeCalculator.getObjectSize(boostEvals.head)
-    val dataPerGroup = MAX_MSG_SIZE / perMsgSize
-    logger.debug(s"data num: ${boostEvals.size}," +
-      s" per msg size: $perMsgSize, data per group: $dataPerGroup")
+    val dataPerGroup = MAX_MSG_SIZE / MAX_REC_NUM
+    logger.debug(s"data num: ${boostEvals.size}, data per group: $dataPerGroup")
     var sended = 0
     var lastBatch = false
     boostEvals.grouped(dataPerGroup.toInt).foreach(l => {

@@ -35,6 +35,7 @@ import socket
 import shutil
 import tempfile
 import subprocess
+import copy
 
 import ray
 import numpy as np
@@ -42,7 +43,9 @@ from contextlib import closing
 
 from bigdl.dllib.utils import log4Error
 from bigdl.orca.data.utils import ray_partitions_get_data_label, ray_partitions_get_tf_dataset
-from bigdl.orca.data.file import is_file, get_remote_file_to_local, get_remote_dir_to_local
+from bigdl.orca.data.file import is_file, get_remote_file_to_local, get_remote_dir_to_local, \
+    get_remote_files_with_prefix_to_local
+from bigdl.orca.learn.utils import process_tensorboard_in_callbacks
 from bigdl.dllib.utils.log4Error import *
 
 logger = logging.getLogger(__name__)
@@ -232,7 +235,9 @@ class LocalDatasetHandler(DatasetHandler):
 class TFRunner:
     """Manages a TensorFlow model for training."""
 
-    def __init__(self, model_creator, compile_args_creator,
+    def __init__(self,
+                 model_creator=None,
+                 compile_args_creator=None,
                  config=None,
                  verbose=False):
         """Initializes the runner.
@@ -261,8 +266,9 @@ class TFRunner:
     def setup_local(self):
         """Initializes the model."""
         logger.debug("Creating model")
-        self.model = self.model_creator(self.config)
-        self.model.compile(**self.compile_args_creator(self.config))
+        if self.model_creator is not None:
+            self.model = self.model_creator(self.config)
+            self.model.compile(**self.compile_args_creator(self.config))
         self.backend = "tf-local"
         self.size = 1
         self.rank = 0
@@ -272,11 +278,13 @@ class TFRunner:
     def setup_horovod(self):
         import horovod.tensorflow.keras as hvd
         hvd.init()
-        self.model = self.model_creator(self.config)
-        compile_args = self.compile_args_creator(self.config)
-        compile_args["optimizer"] = hvd.DistributedOptimizer(compile_args["optimizer"])
 
-        self.model.compile(**compile_args)
+        if self.model_creator is not None:
+            self.model = self.model_creator(self.config)
+            compile_args = self.compile_args_creator(self.config)
+            compile_args["optimizer"] = hvd.DistributedOptimizer(compile_args["optimizer"])
+            self.model.compile(**compile_args)
+
         self.backend = "horovod"
         self.size = hvd.size()
         self.rank = hvd.rank()
@@ -320,7 +328,10 @@ class TFRunner:
 
         logger.debug("Creating model with MultiWorkerMirroredStrategy")
         with self.strategy.scope():
-            self.model = self.model_creator(self.config)
+            if self.model_creator is not None:
+                self.model = self.model_creator(self.config)
+                if not self.model._is_compiled and self.compile_args_creator:
+                    self.model.compile(**self.compile_args_creator(self.config))
 
         # For use in model.evaluate()
         self.local_model = None
@@ -333,7 +344,7 @@ class TFRunner:
              steps_per_epoch=None, validation_steps=None, validation_freq=1,
              data_config=None):
         """Runs a training epoch and updates the model parameters."""
-        config = self.config.copy()
+        config = copy.copy(self.config)
         if data_config is not None:
             config.update(data_config)
         config["batch_size"] = batch_size
@@ -362,6 +373,14 @@ class TFRunner:
             if self.strategy.cluster_resolver.task_id != 0:
                 verbose = 0
 
+        if callbacks:
+            replaced_log_dir = process_tensorboard_in_callbacks(callbacks, "fit", self.rank)
+
+        invalidInputError(hasattr(self, "model"),
+                          "The model has not yet been created. "
+                          "Please input a model_creator when creating estimator "
+                          "or use load function of the estimator to load a model.")
+
         history = self.model.fit(train_dataset,
                                  epochs=self.epoch + epochs,
                                  verbose=verbose,
@@ -372,6 +391,10 @@ class TFRunner:
                                  steps_per_epoch=steps_per_epoch,
                                  validation_steps=validation_steps,
                                  validation_freq=validation_freq)
+        if callbacks:
+            if replaced_log_dir and os.path.exists(replaced_log_dir):
+                shutil.rmtree(replaced_log_dir)
+
         if history is None:
             stats = {}
         else:
@@ -383,7 +406,7 @@ class TFRunner:
     def validate(self, data_creator, batch_size=32, verbose=1, sample_weight=None,
                  steps=None, callbacks=None, data_config=None):
         """Evaluates the model on the validation data set."""
-        config = self.config.copy()
+        config = copy.copy(self.config)
         if data_config is not None:
             config.update(data_config)
         config["batch_size"] = batch_size
@@ -405,19 +428,29 @@ class TFRunner:
             if self.strategy.cluster_resolver.task_id != 0:
                 verbose = 0
 
+        if callbacks:
+            replaced_log_dir = process_tensorboard_in_callbacks(callbacks, "evaluate", self.rank)
+
         params = dict(
             verbose=verbose,
             sample_weight=sample_weight,
             steps=steps,
             callbacks=callbacks,
         )
+
+        invalidInputError(hasattr(self, "model"),
+                          "The model has not yet been created. "
+                          "Please input a model_creator when creating estimator "
+                          "or use load function of the estimator to load a model.")
+
         results = self.model.evaluate(dataset, **params)
         if results is None:
             # Using local Model since model.evaluate() returns None
             # for MultiWorkerMirroredStrategy
             logger.warning("Running a local model to get validation score.")
-            self.local_model = self.model_creator(self.config)
-            self.local_model.set_weights(self.model.get_weights())
+            if self.model_creator is not None:
+                self.local_model = self.model_creator(self.config)
+                self.local_model.set_weights(self.model.get_weights())
             results = self.local_model.evaluate(dataset, **params)
 
         if isinstance(results, list):
@@ -428,10 +461,14 @@ class TFRunner:
         else:
             stats = {"results": results}
 
+        if callbacks:
+            if replaced_log_dir and os.path.exists(replaced_log_dir):
+                shutil.rmtree(replaced_log_dir)
+
         return [stats]
 
     def predict(self, data_creator, batch_size, verbose, steps, callbacks, data_config):
-        config = self.config.copy()
+        config = copy.copy(self.config)
         if data_config is not None:
             config.update(data_config)
 
@@ -449,7 +486,12 @@ class TFRunner:
             callbacks=callbacks,
         )
 
-        if self.backend == "tf-distributed":
+        invalidInputError(hasattr(self, "model"),
+                          "The model has not yet been created. "
+                          "Please input a model_creator when creating estimator "
+                          "or use load function of the estimator to load a model.")
+
+        if self.backend == "tf-distributed" and self.model_creator is not None:
             local_model = self.model_creator(self.config)
             try:
                 local_model.set_weights(self.model.get_weights())
@@ -478,6 +520,10 @@ class TFRunner:
 
     def get_state(self):
         """Returns the state of the runner."""
+        invalidInputError(hasattr(self, "model"),
+                          "The model has not yet been created. "
+                          "Please input a model_creator when creating estimator "
+                          "or use load function of the estimator to load a model.")
         return {
             "epoch": self.epoch,
             "weights": self.model.get_weights(),
@@ -500,7 +546,10 @@ class TFRunner:
     def load_model(self, filepath, custom_objects, compile, options):
         """Load the model from provided local filepath."""
         import tensorflow as tf
-        self.model = tf.keras.models.load_model(filepath, custom_objects, compile, options)
+        if options:
+            self.model = tf.keras.models.load_model(filepath, custom_objects, compile, options)
+        else:  # To support older TensorFlow versions such as 2.1
+            self.model = tf.keras.models.load_model(filepath, custom_objects, compile)
 
     def load_remote_model(self, filepath, custom_objects, compile, options):
         """Load the model from provided remote filepath."""
@@ -516,12 +565,43 @@ class TFRunner:
                 os.makedirs(temp_path)
             get_remote_dir_to_local(filepath, temp_path)
         try:
-            self.model = tf.keras.models.load_model(temp_path, custom_objects, compile, options)
+            if options:
+                self.model = tf.keras.models.load_model(temp_path, custom_objects, compile, options)
+            else:  # To support older TensorFlow versions such as 2.1
+                self.model = tf.keras.models.load_model(temp_path, custom_objects, compile)
         finally:
             if os.path.isdir(temp_path):
                 shutil.rmtree(temp_path)
             else:
                 os.remove(temp_path)
+
+    def load_weights(self, filepath, by_name, skip_mismatch, options):
+        """Loads all layer weights from a TensorFlow or an HDF5 weight file."""
+        if options:
+            self.model.load_weights(filepath, by_name, skip_mismatch, options)
+        else:  # To support older TensorFlow versions such as 2.1
+            self.model.load_weights(filepath, by_name, skip_mismatch)
+
+    def load_remote_weights(self, filepath, by_name, skip_mismatch, options):
+        """Loads all layer weights from a remote weight file (Tensorflow or HDF5 format)."""
+        file_name = os.path.basename(filepath)
+        temp_dir = tempfile.mkdtemp()
+        if is_file(filepath):
+            # h5 format
+            temp_path = os.path.join(temp_dir, file_name)
+            get_remote_file_to_local(filepath, temp_path)
+        else:
+            # tensorflow format
+            prefix = os.path.basename(filepath)
+            get_remote_files_with_prefix_to_local(filepath, temp_dir)
+            temp_path = os.path.join(temp_dir, prefix)
+        try:
+            if options:
+                self.model.load_weights(temp_path, by_name, skip_mismatch, options)
+            else:  # To support older TensorFlow versions such as 2.1
+                self.model.load_weights(temp_path, by_name, skip_mismatch)
+        finally:
+            shutil.rmtree(temp_dir)
 
     def shutdown(self):
         """Attempts to shut down the worker."""

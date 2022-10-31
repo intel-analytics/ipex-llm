@@ -27,7 +27,7 @@ logger = logging.getLogger(__name__)
 class Estimator(object):
     @staticmethod
     def from_keras(*,
-                   model_creator,
+                   model_creator=None,
                    config=None,
                    verbose=False,
                    workers_per_node=1,
@@ -72,9 +72,6 @@ class Estimator(object):
             if cpu_binding:
                 invalidInputError(False,
                                   "cpu_binding should not be True when using spark backend")
-            if not model_dir:
-                invalidInputError(False,
-                                  "Please specify model directory when using spark backend")
             from bigdl.orca.learn.tf2.pyspark_estimator import SparkTFEstimator
             return SparkTFEstimator(model_creator=model_creator,
                                     config=config, verbose=verbose,

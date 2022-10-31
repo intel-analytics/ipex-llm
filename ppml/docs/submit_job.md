@@ -1,4 +1,4 @@
-There are two ways to submit PPML jobs: 
+There are two ways to submit PPML jobs:
 * use [PPML CLI](#ppml-cli) to submit jobs manually
 * use [helm chart](#helm-chart) to submit jobs automatically
 
@@ -16,40 +16,34 @@ Once a user application is bundled, it can be launched using the [bigdl-ppml-sub
 
     `--sgx-enabled` **true** -> enable spark executor running on sgx, **false** -> native on k8s without SGX. The default value is false. Once --sgx-enabled is set as true, you should also set other sgx-related options (--sgx-log-level, --sgx-driver-memory, --sgx-driver-jvm-memory, --sgx-executor-memory, --sgx-executor-jvm-memory) otherwise PPML CLI will throw an error.
 
-    `--sgx-log-level` Set the SGX log level, Supported values are **error**, **all** and **debug**.
+    `--sgx-driver-jvm-memory` Set the sgx driver jvm memory, recommended setting is less than half of driver epc memory, in the same format as JVM memory strings with a size unit suffix ("k", "m", "g" or "t") (e.g. 512m, 2g).
 
-    `--sgx-driver-memory` Set the sgx driver epc memory, in the same format as JVM memory strings with a size unit suffix ("k", "m", "g" or "t") (e.g. 512m, 2g). 
+    `--sgx-executor-jvm-memory` Set the sgx executor jvm memory, recommended setting is less than half of executor epc memory, in the same format as JVM memory strings with a size unit suffix ("k", "m", "g" or "t") (e.g. 512m, 2g).
 
-    `--sgx-driver-jvm-memory` Set the sgx driver jvm memory, recommended setting is less than half of driver epc memory, in the same format as JVM memory strings with a size unit suffix ("k", "m", "g" or "t") (e.g. 512m, 2g). 
+* Except for the above sgx options, other options are exactly the same as [spark properties](https://spark.apache.org/docs/latest/configuration.html#available-properties)
 
-    `--sgx-executor-memory` Set the sgx executor epc memory, in the same format as JVM memory strings with a size unit suffix ("k", "m", "g" or "t") (e.g. 512m, 2g). 
+    `--master` The master URL for the cluster (e.g. spark://23.195.26.187:7077)
 
-    `--sgx-executor-jvm-memory` Set the sgx executor jvm memory, recommended setting is less than half of executor epc memory, in the same format as JVM memory strings with a size unit suffix ("k", "m", "g" or "t") (e.g. 512m, 2g). 
+    `--deploy-mode` Whether to deploy your driver on the worker nodes (cluster) or locally as an external client (client) (default: client)
 
-* Except for the above sgx options, other options are exactly the same as [spark properties](https://spark.apache.org/docs/latest/configuration.html#available-properties) 
+    `--driver-memory` Amount of memory to use for the driver process, in the same format as JVM memory strings with a size unit suffix ("k", "m", "g" or "t") (e.g. 512m, 2g).
 
-    `--master` The master URL for the cluster (e.g. spark://23.195.26.187:7077) 
-    
-    `--deploy-mode` Whether to deploy your driver on the worker nodes (cluster) or locally as an external client (client) (default: client) 
-    
-    `--driver-memory` Amount of memory to use for the driver process, in the same format as JVM memory strings with a size unit suffix ("k", "m", "g" or "t") (e.g. 512m, 2g). 
-    
-    `--driver-cores` Number of cores to use for the driver process, only in cluster mode. 
-    
-    `--executor-memory` Amount of memory to use per executor process, in the same format as JVM memory strings with a size unit suffix ("k", "m", "g" or "t") (e.g. 512m, 2g). 
-    
-    `--executor-cores` The number of cores to use on each executor. 
-    
-    `--num-executors` The initial number of executors. 
-    
-    `--name` The Spark application name is used by default to name the Kubernetes resources created like drivers and executors. 
-    
-    `--verbose` Print out fine-grained debugging information 
-    
-    `--class` The entry point for your application (e.g. org.apache.spark.examples.SparkPi) 
-    
-    `application-jar`: Path to a bundled jar including your application and all dependencies. 
-    
+    `--driver-cores` Number of cores to use for the driver process, only in cluster mode.
+
+    `--executor-memory` Amount of memory to use per executor process, in the same format as JVM memory strings with a size unit suffix ("k", "m", "g" or "t") (e.g. 512m, 2g).
+
+    `--executor-cores` The number of cores to use on each executor.
+
+    `--num-executors` The initial number of executors.
+
+    `--name` The Spark application name is used by default to name the Kubernetes resources created like drivers and executors.
+
+    `--verbose` Print out fine-grained debugging information
+
+    `--class` The entry point for your application (e.g. org.apache.spark.examples.SparkPi)
+
+    `application-jar`: Path to a bundled jar including your application and all dependencies.
+
     `application-arguments`: Arguments passed to the main method of your main class, if any.
 
 ### Usage Examples
@@ -84,10 +78,7 @@ bash bigdl-ppml-submit.sh \
 bash bigdl-ppml-submit.sh \
         --master local[2] \
         --sgx-enabled true \
-        --sgx-log-level error \
-        --sgx-driver-memory 64g \
         --sgx-driver-jvm-memory 12g \
-        --sgx-executor-memory 64g \
         --sgx-executor-jvm-memory 12g \
         --driver-memory 32g \
         --driver-cores 8 \
@@ -106,16 +97,13 @@ bash bigdl-ppml-submit.sh \
 
 ```
 #!/bin/bash
- 
+
 export secure_password=`openssl rsautl -inkey /ppml/trusted-big-data-ml/work/password/key.txt -decrypt </ppml/trusted-big-data-ml/work/password/output.bin`
 bash bigdl-ppml-submit.sh \
         --master $RUNTIME_SPARK_MASTER \
         --deploy-mode client \
         --sgx-enabled true \
-        --sgx-log-level error \
-        --sgx-driver-memory 64g \
         --sgx-driver-jvm-memory 12g \
-        --sgx-executor-memory 64g \
         --sgx-executor-jvm-memory 12g \
         --driver-memory 32g \
         --driver-cores 8 \
@@ -147,10 +135,7 @@ bash bigdl-ppml-submit.sh \
         --master $RUNTIME_SPARK_MASTER \
         --deploy-mode cluster \
         --sgx-enabled true \
-        --sgx-log-level error \
-        --sgx-driver-memory 64g \
         --sgx-driver-jvm-memory 12g \
-        --sgx-executor-memory 64g \
         --sgx-executor-jvm-memory 12g \
         --driver-memory 32g \
         --driver-cores 8 \

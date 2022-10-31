@@ -33,6 +33,10 @@ class PytorchIPEXJITModel(AcceleratedLightningModule):
         :param input_sample: torch tensor indicate the data sample to be used
                for tracing.
         :param use_ipex: if use ipex to optimize the model
+        :param dtype (torch.dtype): Only works for ``torch.bfloat16``. Model parameters
+                                    will be casted to ``torch.bfloat16`` if dtype is set
+                                    to ``torch.bfloat16``. The default value is None,
+                                    meaning do nothing.
         :param use_jit: if use jit to accelerate the model
         :param channels_last: if set model and data to be channels-last mode.
                the parameter will be ignored if use_ipex is False.
@@ -45,7 +49,7 @@ class PytorchIPEXJITModel(AcceleratedLightningModule):
             self.use_jit = use_jit
             self.channels_last = channels_last
             return
-        self.channels_last = use_ipex if (channels_last is None or not use_ipex) else channels_last
+        self.channels_last = channels_last
         self.original_state_dict = model.state_dict()
         self.use_ipex = use_ipex
         self.use_jit = use_jit
@@ -54,7 +58,7 @@ class PytorchIPEXJITModel(AcceleratedLightningModule):
         if self.use_ipex:
             self.model = ipex.optimize(self.model, dtype=dtype)
         if self.use_jit:
-            self.model = torch.jit.trace(self.model, input_sample)
+            self.model = torch.jit.trace(self.model, input_sample, check_trace=False)
             self.model = torch.jit.freeze(self.model)
 
     @property
@@ -66,7 +70,7 @@ class PytorchIPEXJITModel(AcceleratedLightningModule):
         return inputs
 
     def forward_step(self, *inputs):
-        if self.channels_last:
+        if self.channels_last is True:
             inputs = tuple(map(lambda x: x.to(memory_format=torch.channels_last), inputs))
         return self.model(*inputs)
 

@@ -70,6 +70,8 @@ def mkdirs(path):
 
 
 def is_local_path(path):
+    if path.startswith("/dbfs"):
+        return False
     parse_result = urlparse(path)
     return len(parse_result.scheme.lower()) == 0 or parse_result.scheme.lower() == "file"
 

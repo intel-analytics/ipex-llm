@@ -20,8 +20,16 @@ from types import MethodType
 import pytorch_lightning as pl
 from typing import Optional
 import torch
+import torch.nn as nn
 import copy
+import yaml
 from logging import warning
+from bigdl.nano.deps.openvino.openvino_api import load_openvino_model
+from bigdl.nano.deps.ipex.ipex_api import load_ipexjit_model
+from bigdl.nano.deps.onnxruntime.onnxruntime_api import load_onnxruntime_model
+from bigdl.nano.deps.neural_compressor.inc_api import load_inc_model
+from bigdl.nano.utils.log4Error import invalidInputError
+from pathlib import Path
 
 TORCH_VERSION_LESS_1_10 = _compare_version("torch", operator.lt, "1.10")
 TORCH_VERSION_LESS_1_11 = _compare_version("torch", operator.lt, "1.11")
@@ -78,3 +86,77 @@ class ChannelsLastCallback(pl.Callback):
                     pl_module.on_before_batch_transfer_origin)
             delattr(pl_module, "on_before_batch_transfer_origin")
         return super().teardown(trainer, pl_module, stage)
+
+
+def save_model(model: pl.LightningModule, path):
+    """
+    Save the model to local file.
+
+    :param model: Any model of torch.nn.Module, including all models accelareted by
+            Trainer.trace/Trainer.quantize.
+    :param path: Path to saved model. Path should be a directory.
+    """
+    path = Path(path)
+    path.mkdir(parents=path.parent, exist_ok=True)
+    if hasattr(model, '_save'):
+        model._save(path)
+    else:
+        # typically for models of nn.Module, pl.LightningModule type
+        meta_path = Path(path) / "nano_model_meta.yml"
+        with open(meta_path, 'w+') as f:
+            metadata = {
+                'ModelType': 'PytorchModel',
+                'checkpoint': 'saved_weight.pt'
+            }
+            yaml.safe_dump(metadata, f)
+        checkpoint_path = path / metadata['checkpoint']
+        torch.save(model.state_dict(), checkpoint_path)
+
+
+def load_model(path, model: pl.LightningModule = None):
+    """
+    Load a model from local.
+
+    :param path: Path to model to be loaded. Path should be a directory.
+    :param model: Required FP32 model to load pytorch model, it is needed if you accelerated
+            the model with accelerator=None by Trainer.trace/Trainer.quantize. model
+            should be set to None if you choose accelerator="onnxruntime"/"openvino"/"jit".
+    :return: Model with different acceleration(None/OpenVINO/ONNX Runtime/JIT) or
+                precision(FP32/FP16/BF16/INT8).
+    """
+    path = Path(path)
+    if not path.exists():
+        invalidInputError(False, "{} doesn't exist.".format(path))
+    meta_path = path / "nano_model_meta.yml"
+    if not meta_path.exists():
+        invalidInputError(False, "File {} is required to load model.".format(str(meta_path)))
+    with open(meta_path, 'r') as f:
+        metadata = yaml.safe_load(f)
+    model_type = metadata.get('ModelType', None)
+    if model_type == 'PytorchOpenVINOModel':
+        invalidInputError(model is None,
+                          "Argument 'model' must be None for OpenVINO loading.")
+        return load_openvino_model(path)
+    if model_type == 'PytorchONNXRuntimeModel':
+        invalidInputError(model is None,
+                          "Argument 'model' must be None for ONNX Runtime loading.")
+        return load_onnxruntime_model(path)
+    if model_type == 'PytorchQuantizedModel':
+        return load_inc_model(path, model, 'pytorch')
+    if model_type == 'PytorchIPEXJITModel':
+        return load_ipexjit_model(path, model)
+    if isinstance(model, nn.Module):
+        # typically for models of nn.Module, pl.LightningModule type
+        model = copy.deepcopy(model)
+        checkpoint_path = metadata.get('checkpoint', None)
+        if checkpoint_path:
+            checkpoint_path = path / metadata['checkpoint']
+            state_dict = torch.load(checkpoint_path, map_location='cpu')
+            model.load_state_dict(state_dict)
+            return model
+        else:
+            invalidInputError(False, "Key 'checkpoint' must be specified.")
+    else:
+        invalidInputError(False,
+                          "ModelType {} or argument 'model={}' is not acceptable for pytorch"
+                          " loading.".format(model_type, type(model)))

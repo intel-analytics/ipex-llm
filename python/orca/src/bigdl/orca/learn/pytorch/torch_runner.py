@@ -36,6 +36,7 @@ import logging
 import io
 import itertools
 import os
+import copy
 import tempfile
 import torch
 import torch.nn as nn
@@ -255,7 +256,7 @@ class TorchRunner:
     def train_epochs(self, data_creator, epochs=1, batch_size=32, profile=False,
                      info=None, wrap_dataloader=None, callbacks=None,
                      validation_data_creator=None):
-        config = self.config.copy()
+        config = copy.copy(self.config)
         if OrcaContext.serialize_data_creator:
             with FileLock(
                     os.path.join(tempfile.gettempdir(), ".orcadata.lock")):
@@ -382,7 +383,7 @@ class TorchRunner:
     def validate(self, data_creator, batch_size=32, num_steps=None, profile=False,
                  info=None, wrap_dataloader=None):
         """Evaluates the model on the validation data set."""
-        config = self.config.copy()
+        config = copy.copy(self.config)
         info = info or {}
         self._toggle_profiling(profile=profile)
 
@@ -399,19 +400,18 @@ class TorchRunner:
         elif wrap_dataloader is True:
             loader = self.with_sampler(loader)
         loader = iter(loader)
-        if num_steps:
-            loader = itertools.islice(loader, num_steps)
         with self.timers.record("validation"):
             validation_stats = self.training_operator.validate(loader,
                                                                info=info,
-                                                               metrics=self.metrics)
+                                                               metrics=self.metrics,
+                                                               num_steps=num_steps)
         if profile:
             validation_stats.update(profile=self.timers.stats())
         return validation_stats
 
     def predict(self, partition, batch_size=32, profile=False):
         """Evaluates the model on the validation data set."""
-        config = self.config.copy()
+        config = copy.copy(self.config)
         self._toggle_profiling(profile=profile)
 
         params = {"batch_size": batch_size, "shuffle": False}

@@ -5,6 +5,9 @@ on:
   # Triggers the workflow on push or pull request events but only for the main branch
   push:
     branches: [ main ]
+    paths:
+      - 'python/nano/**'
+      - '.github/workflows/nano_unit_tests_tensorflow.yml'
   pull_request:
     branches: [ main ]
     paths:
@@ -81,6 +84,8 @@ jobs:
           $CONDA/bin/conda info
           bash python/nano/dev/build_and_install.sh linux default false tensorflow
           pip install pytest
+          # fix issue, see https://github.com/intel-analytics/BigDL/blob/main/docs/readthedocs/source/doc/Nano/Overview/known_issues.md#ray-issues
+          pip install google-api-core==2.8.2
           pip install ray[default]==1.11.0 prometheus_client==0.13.0
           source bigdl-nano-init
           bash python/nano/test/run-nano-tf-ray-tests.sh
@@ -140,5 +145,24 @@ jobs:
           bash python/nano/test/run-nano-tf-openvino-tests.sh
           source $CONDA/bin/deactivate
           $CONDA/bin/conda remove -n openvino-tensorflow --all
+        env:
+          ANALYTICS_ZOO_ROOT: ${{ github.workspace }}
+      
+      - name: Run tensorflow unit tests (ONNX)
+        shell: bash
+        run: |
+          $CONDA/bin/conda create -n onnx-tensorflow -y python==3.7.10 setuptools=58.0.4
+          source $CONDA/bin/activate onnx-tensorflow
+          $CONDA/bin/conda info
+          bash python/nano/dev/build_and_install.sh linux default false tensorflow
+          if [ ! -z "${{matrix.tf-version}}" ]; then
+            pip install ${{matrix.tf-version}}
+          fi
+          pip install pytest
+          pip install onnx onnxruntime tf2onnx pyyaml
+          source bigdl-nano-init
+          bash python/nano/test/run-nano-tf-onnx-tests.sh
+          source $CONDA/bin/deactivate
+          $CONDA/bin/conda remove -n onnx-tensorflow --all
         env:
           ANALYTICS_ZOO_ROOT: ${{ github.workspace }}

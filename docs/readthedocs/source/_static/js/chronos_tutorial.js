@@ -24,8 +24,9 @@ function disCheck(ids){
 //event when click the checkboxes
 $(".checkboxes").click(function(){
     //get all checked values
+    //class checkboxes is specified to avoid selecting toctree checkboxes (arrows)
     var vals = [];
-    $('input:checkbox:checked').each(function (index, item) {
+    $('.checkboxes:input:checkbox:checked').each(function (index, item) {
         vals.push($(this).val());
     });
 
@@ -51,7 +52,8 @@ $(".checkboxes").click(function(){
             var ids = ["ChronosForecaster","TuneaForecasting","AutoTSEstimator","AutoWIDE",
             "MultvarWIDE","MultstepWIDE","LSTMForecaster","AutoProphet","AnomalyDetection",
             "DeepARmodel","TFTmodel","hyperparameter","taxiDataset","distributedFashion",
-            "ONNX","Quantize","TCMFForecaster"];
+            "ONNX","Quantize","TCMFForecaster","PenalizeUnderestimation",
+            "GPUtrainingCPUacceleration"];
             showTutorials(ids);
             var disIds = ["simulation"];
             disCheck(disIds);
@@ -94,7 +96,7 @@ $(".checkboxes").click(function(){
             disCheck(disIds);
         }
         else if(vals.includes("customized_model")){
-            var ids = ["AutoTSEstimator","DeepARmodel","TFTmodel"];
+            var ids = ["AutoTSEstimator","DeepARmodel","TFTmodel", "GPUtrainingCPUacceleration"];
             showTutorials(ids);
             var disIds = ["anomaly_detection","simulation","onnxruntime","quantization","distributed"];
             disCheck(disIds);
@@ -114,7 +116,7 @@ $(".checkboxes").click(function(){
             disCheck(disIds);
         }
         else if(vals.includes("forecast") && vals.includes("customized_model")){
-            var ids = ["DeepARmodel","TFTmodel","AutoTSEstimator"];
+            var ids = ["DeepARmodel","TFTmodel","AutoTSEstimator","GPUtrainingCPUacceleration"];
             showTutorials(ids);
             var disIds = ["anomaly_detection","simulation","onnxruntime","quantization","distributed"];
             disCheck(disIds);

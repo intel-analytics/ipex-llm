@@ -19,7 +19,7 @@ import tensorflow as tf
 
 import pytest
 
-from bigdl.orca.test_zoo_utils import ZooTestCase
+from unittest import TestCase
 from bigdl.chronos.model.tf2.Seq2Seq_keras import LSTMSeq2Seq, model_creator
 import numpy as np
 
@@ -42,47 +42,67 @@ def create_data():
 
 
 @pytest.mark.skipif(tf.__version__ < '2.0.0', reason="Run only when tf>2.0.0.")
-class TestSeq2Seq(ZooTestCase):
+class TestSeq2Seq(TestCase):
 
-    train_data, test_data = create_data()
-    model = model_creator(config={
-        "input_feature_num": 10,
-        "output_feature_num": 2,
-        "future_seq_len": test_data[-1].shape[1],
-        "lstm_hidden_dim": 32
-    })
+    def setUp(self):
+        pass
+
+    def tearDown(self):
+        pass
 
     def test_seq2seq_fit_predict_evaluate(self):
-        self.model.fit(self.train_data[0],
-                       self.train_data[1],
-                       epochs=2,
-                       validation_data=self.test_data)
-        yhat = self.model.predict(self.test_data[0])
-        self.model.evaluate(self.test_data[0], self.test_data[1])
-        assert yhat.shape == (400, self.train_data[-1].shape[1], 2)
+        train_data, test_data = create_data()
+        model = model_creator(config={
+            "input_feature_num": 10,
+            "output_feature_num": 2,
+            "future_seq_len": test_data[-1].shape[1],
+            "lstm_hidden_dim": 32
+        })
+
+        model.fit(train_data[0],
+                  train_data[1],
+                  epochs=2,
+                  validation_data=test_data)
+        yhat = model.predict(test_data[0])
+        model.evaluate(test_data[0], test_data[1])
+        assert yhat.shape == (400, train_data[-1].shape[1], 2)
 
     def test_seq2seq_save_load(self):
-        self.model.fit(self.train_data[0],
-                       self.train_data[1],
-                       epochs=2,
-                       validation_data=self.test_data)
+        train_data, test_data = create_data()
+        model = model_creator(config={
+            "input_feature_num": 10,
+            "output_feature_num": 2,
+            "future_seq_len": test_data[-1].shape[1],
+            "lstm_hidden_dim": 32
+        })
+        model.fit(train_data[0],
+                  train_data[1],
+                  epochs=2,
+                  validation_data=test_data)
         with tempfile.TemporaryDirectory() as tmp_dir_file:
-            self.model.save(tmp_dir_file)
+            model.save(tmp_dir_file)
             import keras
             restore_model = keras.models.load_model(tmp_dir_file,
                                                     custom_objects={"LSTMSeq2Seq": LSTMSeq2Seq})
-        model_res = self.model.evaluate(self.test_data[0], self.test_data[1])
-        restore_model_res = restore_model.evaluate(self.test_data[0], self.test_data[1])
+        model_res = model.evaluate(test_data[0], test_data[1])
+        restore_model_res = restore_model.evaluate(test_data[0], test_data[1])
         np.testing.assert_almost_equal(model_res, restore_model_res, decimal=5)
         assert isinstance(restore_model, LSTMSeq2Seq)
 
     def test_seq2seq_freeze_training(self):
-        freeze_yhat = self.model(self.test_data[0], training=False)
-        _freeze_yhat = self.model(self.test_data[0], training=False)
+        train_data, test_data = create_data()
+        model = model_creator(config={
+            "input_feature_num": 10,
+            "output_feature_num": 2,
+            "future_seq_len": test_data[-1].shape[1],
+            "lstm_hidden_dim": 32
+        })
+        freeze_yhat = model(test_data[0], training=False)
+        _freeze_yhat = model(test_data[0], training=False)
         assert np.all(_freeze_yhat == freeze_yhat)
 
-        _unfreeze_yhat = self.model(self.test_data[0], training=True)
-        unfreeze_yhat = self.model(self.test_data[0], training=True)
+        _unfreeze_yhat = model(test_data[0], training=True)
+        unfreeze_yhat = model(test_data[0], training=True)
         assert np.any(_unfreeze_yhat != unfreeze_yhat)
 
 if __name__ == '__main__':

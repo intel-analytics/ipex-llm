@@ -7,10 +7,10 @@ We recommend you to use [Anaconda](https://www.anaconda.com/distribution/#linux)
 conda create -n bigdl python=3.7  # "bigdl" is the conda environment name, you can use any name you like.
 conda activate bigdl
 pip install tensorflow==2.6.0
-pip install --pre --upgrade bigdl-friesian
+pip install --pre --upgrade bigdl-friesian[train]
 ```
 ## Preprocess data
-You can download the full Twitter dataset from [here](https://recsys-twitter.com/data/show-downloads#) and then follow the [WideAndDeep Preprocessing](https://github.com/intel-analytics/BigDL/tree/branch-2.0/python/friesian/example/wnd) to preprocess the orginal data.
+You can download the full Twitter dataset from [here](https://recsys-twitter.com/data/show-downloads#) and then follow the [WideAndDeep Preprocessing](https://github.com/intel-analytics/BigDL/tree/branch-2.0/python/friesian/example/wnd) to preprocess the original data.
 
 ## Training 2 tower model
 * Spark local, we can use some sample data to have a trial, example command:

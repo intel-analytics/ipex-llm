@@ -14,21 +14,15 @@
 # limitations under the License.
 #
 
-import logging
 import os
-
-from pyspark.sql.dataframe import DataFrame
+import logging
 import tempfile
 import shutil
-import glob
 
-import pickle
-
-import tensorflow as tf
+from pyspark.sql.dataframe import DataFrame
 
 from bigdl.dllib.utils.common import get_node_and_core_number
-from bigdl.dllib.utils.file_utils import enable_multi_fs_load, enable_multi_fs_save, \
-    is_local_path, append_suffix
+from bigdl.dllib.utils.file_utils import is_local_path
 from bigdl.dllib.utils.utils import get_node_ip
 
 from bigdl.orca.data.file import is_file, exists, get_remote_file_to_local, \
@@ -45,6 +39,12 @@ from bigdl.orca import OrcaContext
 from bigdl.dllib.utils.log4Error import invalidInputError
 
 logger = logging.getLogger(__name__)
+
+
+def parse_model_dir(model_dir):
+    if model_dir and model_dir.startswith("dbfs:/"):
+        model_dir = "/dbfs/" + model_dir[len("dbfs:/"):]
+    return model_dir
 
 
 class SparkTFEstimator():
@@ -83,7 +83,7 @@ class SparkTFEstimator():
             invalidInputError(False,
                               "Please do not specify batch_size in config. Input batch_size in the"
                               " fit/evaluate function of the estimator instead.")
-        self.model_dir = model_dir
+        self.model_dir = parse_model_dir(model_dir)
         master = sc.getConf().get("spark.master")
         if not master.startswith("local"):
             logger.info("For cluster mode, make sure to use shared filesystem path "
@@ -214,7 +214,8 @@ class SparkTFEstimator():
             res = self.workerRDD.barrier().mapPartitions(
                 lambda iter: transform_func(iter, init_params, params)).collect()
 
-        if self.model_dir:
+        if self.model_dir is not None:
+            result = res
             try:
                 temp_dir = tempfile.mkdtemp()
                 get_remote_file_to_local(os.path.join(self.model_dir, "state.pkl"),
@@ -225,8 +226,11 @@ class SparkTFEstimator():
                     self.model_weights = state['weights']
             finally:
                 shutil.rmtree(temp_dir)
+        else:
+            result = res[0]
+            self.model_weights = res[1]
 
-        return res[0]
+        return result[0]
 
     def evaluate(self, data, batch_size=32, num_steps=None, verbose=1,
                  sample_weight=None, callbacks=None, data_config=None,
@@ -346,7 +350,7 @@ class SparkTFEstimator():
             size=self.num_workers,
             model_weights=weights,
             mode="predict",
-            cluster_info=self._get_cluster_info(sc),
+            cluster_info=None,  # cluster_info is not needed for predict
             model_dir=self.model_dir,
             application_id=self.application_id,
             need_to_log_to_driver=self.need_to_log_to_driver,
@@ -417,12 +421,11 @@ class SparkTFEstimator():
                 model.save_weights(temp_path, overwrite, save_format)
                 if save_format == 'h5' or filepath.endswith('.h5') or filepath.endswith('.keras'):
                     # hdf5 format
-                    put_local_file_to_remote(temp_path, filepath, over_write=overwrite)
+                    put_local_file_to_remote(temp_path, filepath)
                 else:
                     # tf format
                     remote_dir = os.path.dirname(filepath)
-                    put_local_files_with_prefix_to_remote(temp_path, remote_dir,
-                                                          over_write=overwrite)
+                    put_local_files_with_prefix_to_remote(temp_path, remote_dir)
             finally:
                 shutil.rmtree(temp_dir)
 
@@ -489,7 +492,7 @@ class SparkTFEstimator():
             saving to SavedModel.
         """
         # get current model
-        if exists(self._model_saved_path):
+        if self.model_dir is not None and exists(self._model_saved_path):
             model = load_model(self._model_saved_path)
         else:
             model = self.get_model()
@@ -513,7 +516,8 @@ class SparkTFEstimator():
         model = load_model(filepath, custom_objects=custom_objects, compile=compile)
         self.model_weights = model.get_weights()
         # update remote model
-        save_model(model, self._model_saved_path, save_format="h5", filemode=0o666)
+        if self.model_dir is not None:
+            save_model(model, self._model_saved_path, save_format="h5", filemode=0o666)
 
     def get_model(self):
         """
@@ -533,4 +537,5 @@ class SparkTFEstimator():
         """
         Shutdown estimator and release resources.
         """
-        stop_log_server(self.log_server_thread, self.ip, self.port)
+        if self.need_to_log_to_driver:
+            stop_log_server(self.log_server_thread, self.ip, self.port)

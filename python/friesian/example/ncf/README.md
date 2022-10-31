@@ -8,7 +8,7 @@ conda create -n bigdl python=3.7  # "bigdl" is the conda environment name, you c
 conda activate bigdl
 pip install tensorflow==2.6.0
 pip install pandas
-pip install --pre --upgrade bigdl-friesian
+pip install --pre --upgrade bigdl-friesian[train]
 ```
 
 ## Train NCF model

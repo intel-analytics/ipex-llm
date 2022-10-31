@@ -19,10 +19,10 @@ You can add 'OCCLUM_LOG_LEVEL=trace' in [run_spark_on_occlum_glibc.sh](https://g
 Pull image from dockerhub.
 
 ```bash
-docker pull intelanalytics/bigdl-ppml-trusted-big-data-ml-scala-occlum:2.1.0-SNAPSHOT
+docker pull intelanalytics/bigdl-ppml-trusted-big-data-ml-scala-occlum:2.2.0-SNAPSHOT
 ```
 
-Also, you can build image with `build-docker-image.sh`. Configure environment variables in `Dockerfile` and `build-docker-image.sh`.
+Also, you can build the image with `build-docker-image.sh`. Configure environment variables in `Dockerfile` and `build-docker-image.sh`.
 
 Build the docker image:
 
@@ -30,10 +30,10 @@ Build the docker image:
 bash build-docker-image.sh
 ```
 
-## Before run example
+## Before running the example
 
 ### Check Device
-Before run any example, please make sure you have correctly set the --device option in the start-spark-local.sh according to your machine.
+Before running any example, please make sure you have correctly set the --device option in the start-spark-local.sh according to your machine.
 
 For example:
 ```
@@ -72,7 +72,7 @@ Pi is roughly 3.1436957184785923
 
 To train a model with PPML in BigDL, you need to prepare the data first. You can download the MNIST Data from [here](http://yann.lecun.com/exdb/mnist/). There are 5 files in total. `train-images-idx3-ubyte` contains train images; `train-labels-idx1-ubyte` is the train label file; `t10k-images-idx3-ubyte` has validation images; `t10k-labels-idx1-ubyte` contains validation labels. Unzip all the files and put them in a new directory `data`.
 
-**By default, `data` dir will be mounted to `/opt/occlum_spark/data` in container (become `/host/data` in occlum). You can change data path in `start-spark-local.sh`.**
+**By default, `data` dir will be mounted to `/opt/occlum_spark/data` in container (become `/host/data` in occlum). You can change the data path in `start-spark-local.sh`.**
 
 You can enlarge the configuration in [start-spark-local.sh](https://github.com/intel-analytics/BigDL/blob/main/ppml/trusted-big-data-ml/scala/docker-occlum/start-spark-local.sh)
 ``` bash
@@ -100,6 +100,15 @@ The examples are run in the docker container. Attach it and see the results (`do
 
 Download the Cifar-10 dataset (CIFAR-10 binary version) from [here](https://www.cs.toronto.edu/~kriz/cifar.html). The dataset contains 5 files, i.e, `data_batch_1.bin`, `data_batch_2.bin`, `data_batch_3.bin`, `data_batch_4.bin`, `data_batch_5.bin` and `test_batch.bin`. Put all the files in `data` directory.
 
+You can enlarge the configuration in [start-spark-local.sh](https://github.com/intel-analytics/BigDL/blob/main/ppml/trusted-big-data-ml/scala/docker-occlum/start-spark-local.sh)
+``` bash
+#start-spark-local.sh
+-e SGX_MEM_SIZE=30GB \
+-e SGX_THREAD=1024 \
+-e SGX_HEAP=1GB \
+-e SGX_KERNEL_HEAP=4GB \
+```
+
 To run BigDL ResNet CIFAR-10 example, start the docker container with:
 
 ``` bash
@@ -121,7 +130,7 @@ The examples are run in the docker container. Attach it and see the results (`do
 You can change the configuration in [start-spark-local.sh](https://github.com/intel-analytics/BigDL/blob/main/ppml/trusted-big-data-ml/scala/docker-occlum/start-spark-local.sh)
 ``` bash
 #start-spark-local.sh
--e SGX_MEM_SIZE=16GB \
+-e SGX_MEM_SIZE=24GB \
 -e SGX_THREAD=1024 \
 -e SGX_HEAP=1GB \
 -e SGX_KERNEL_HEAP=1GB \
@@ -155,6 +164,16 @@ You will find `output` folder under `/path/to/zoo-tutorials/tpch-spark/dbgen` wh
 ## Spark SQL Scala Unit Tests
 
 ### Run Spark SQl Scala Unit Tests
+
+You can enlarge the configuration in [start-spark-local.sh](https://github.com/intel-analytics/BigDL/blob/main/ppml/trusted-big-data-ml/scala/docker-occlum/start-spark-local.sh)
+``` bash
+#start-spark-local.sh
+-e SGX_MEM_SIZE=60GB \
+-e SGX_THREAD=1024 \
+-e SGX_HEAP=1GB \
+-e SGX_KERNEL_HEAP=1GB \
+```
+
 To run Spark Sql Scala Unit Tests, start the docker container with:
 ```
 bash start-spark-local.sh ut
@@ -190,15 +209,15 @@ And the log files will be saved to `data/olog` folder.
 ## BigDL XGBoost Example
 
 ### Download data
-You can download the criteo-1tb-click-logs-dataset from [here](https://ailab.criteo.com/download-criteo-1tb-click-logs-dataset/). Split 10g data from the dataset and put it into a folder. Then mount `/path/to/data/10g_data` to container's `/opt/occlum_spark/data` in `start-spark-local.sh` via:
+You can download the criteo-1tb-click-logs-dataset from [here](https://ailab.criteo.com/download-criteo-1tb-click-logs-dataset/). Split 1g of data from the dataset and put it into a folder. Then mount `/path/to/data/1g_data` to container's `/opt/occlum_spark/data` in `start-spark-local.sh` via:
 ```
--v /path/to/data/10g_data:/opt/occlum_spark/data
+-v /path/to/data/1g_data:/opt/occlum_spark/data
 ```
 
 You can enlarge the configuration in [start-spark-local.sh](https://github.com/intel-analytics/BigDL/blob/main/ppml/trusted-big-data-ml/scala/docker-occlum/start-spark-local.sh)
 ``` bash
 #start-spark-local.sh
--e SGX_MEM_SIZE=60GB \
+-e SGX_MEM_SIZE=30GB \
 -e SGX_THREAD=1024 \
 -e SGX_HEAP=1GB \
 -e SGX_KERNEL_HEAP=1GB \
@@ -211,7 +230,7 @@ You can change the configuration in [start-spark-local.sh](https://github.com/in
 -s /host/data/model  // -s means savepath of model
 -t 2                 // -t means threads num
 -r 100               // -r means Round num
--d 2                 // -d means maxdepth
+-d 2                 // -d means maxDepth
 -w 1                 // -w means Workers num
 ```
 
@@ -220,14 +239,14 @@ Start run BigDL Spark XGBoost example:
 bash start-spark-local.sh xgboost
 ```
 
-The console output looks like:
+The console output looks like this:
 ```
 [INFO] [02/10/2022 14:57:04.244] [RabitTracker-akka.actor.default-dispatcher-3] [akka://RabitTracker/user/Handler] [0]  train-merror:0.030477   eval1-merror:0.030473   eval2-merror:0.030350
 [INFO] [02/10/2022 14:57:07.296] [RabitTracker-akka.actor.default-dispatcher-3] [akka://RabitTracker/user/Handler] [1]  train-merror:0.030477   eval1-merror:0.030473   eval2-merror:0.030350
 [INFO] [02/10/2022 14:57:10.071] [RabitTracker-akka.actor.default-dispatcher-7] [akka://RabitTracker/user/Handler] [2]  train-merror:0.030477   eval1-merror:0.030473   eval2-merror:0.030350
 ```
 
-You can find XGBoost model under folder `/path/to/data/`.
+You can find XGBoost model under the folder `/path/to/data/`.
 ```
 /path/to/data/
 ├── data
@@ -237,10 +256,111 @@ You can find XGBoost model under folder `/path/to/data/`.
     └── _SUCCESS
 ```
 
+## BigDL GBT Example
+
+### Download data
+You can download the criteo-1tb-click-logs-dataset from [here](https://ailab.criteo.com/download-criteo-1tb-click-logs-dataset/). Split 1g of data from the dataset and put it into a folder. Then mount `/path/to/data/1g_data` to container's `/opt/occlum_spark/data` in `start-spark-local.sh` via:
+```
+-v /path/to/data/1g_data:/opt/occlum_spark/data
+```
+
+You can enlarge the configuration in [start-spark-local.sh](https://github.com/intel-analytics/BigDL/blob/main/ppml/trusted-big-data-ml/scala/docker-occlum/start-spark-local.sh)
+``` bash
+#start-spark-local.sh
+-e SGX_MEM_SIZE=30GB \
+-e SGX_THREAD=1024 \
+-e SGX_HEAP=1GB \
+-e SGX_KERNEL_HEAP=1GB \
+```
+
+You can change the configuration in [start-spark-local.sh](https://github.com/intel-analytics/BigDL/blob/main/ppml/trusted-big-data-ml/scala/docker-occlum/start-spark-local.sh)
+``` bash
+#start-spark-local.sh
+-i /host/data        // -i means inputpath of training data
+-s /host/data/model  // -s means savepath of model
+-I 100               // -r means maxInter
+-d 5                 // -d means maxDepth
+```
+
+Start run BigDL Spark GBT example:
+```
+bash start-spark-local.sh gbt
+```
+
+You can find GBT result under folder `/path/to/data/`.
+```
+/path/to/data/
+├── data
+├── treesMetadata
+└── metadata
+    ├── part-00000
+    └── _SUCCESS
+```
+
 ## How to debug
-Modify the `SGX_LOG_LEVEL` to one of `off, error, warn, debug, info, and trace` in `start-spark-local.sh`. 
+Modify the `SGX_LOG_LEVEL` to one of `off, debug and trace` in `start-spark-local.sh`. 
 The default value is off, showing no log messages at all. The most verbose level is trace.
 When you use attestation, `SGX_LOG_LEVEL` will be set to `off`.
+
+## How to enabled hdfs encryption service
+You can refer to [here](https://hadoop.apache.org/docs/stable/hadoop-project-dist/hadoop-hdfs/TransparentEncryption.html) for more information.
+### How to start hadoop KMS service
+1.	Make sure you can correctly start and use hdfs
+2.	To config a KMS client in $HADOOP_HOME/etc/hadoop/core-site.xml(If your hdfs is running in a distributed system, you need to update all nodes.), for example:
+```xml
+<property>
+    <name>hadoop.security.key.provider.path</name>
+    <value>kms://http@172.168.0.205:9600/kms</value>
+    <description>
+        The KeyProvider to use when interacting with encryption keys used
+        when reading and writing to an encryption zone.
+    </description>
+</property>
+```
+3. To config the KMS backing KeyProvider properties in the $HADOOP_HOME/etc/hadoop/kms-site.xml configuration file. 
+```xml
+<property>
+    <name>hadoop.kms.key.provider.uri</name>
+    <value>jceks://file@/${user.home}/kms.keystore</value>
+</property>
+```
+4. Restart you hdfs server. 
+```bash
+sbin/stop-dfs.sh  sbin/start-dfs.sh
+```
+5. Start KMS server. 
+```bash
+hadoop --daemon start|stop kms
+```
+6. Run this bash command to check if the KMS started 
+```bash
+hadoop key list
+```
+
+### How to use KMS to encrypt and decrypt data
+1. Create a new encryption key for an encryption zone
+```bash
+hadoop key create mykey
+```
+2.	Create a new empty directory(must) and make it an encryption zone
+```bash
+hdfs crypto -createZone -keyName mykey -path /empty_zone
+```
+3.	Get encryption information from the file
+```bash
+hdfs crypto -getFileEncryptionInfo -path /empty_zone/helloWorld
+```
+4. Add permission control to users or groups in $HADOOP_HOME/etc/hadoop/kms-acls.xml. It will be hotbooted after every update. For example:
+```xml
+<property>
+    <name>key.acl.mykey.ALL</name>
+    <value>use_a group_a</value>
+</property>
+```
+5. Now only user_a and other users in group_a can use the file in the mykey’s encryption zone.view encrypted zone:
+```bash
+hdfs  crypto -listZones
+```
 
 ## Start BigDL PPML Occlum Attestation Server
 Modify `PCCL_URL`, `ATTESTATION_SERVER_IP` and `ATTESTATION_SERVER_PORT` in `start-occlum-attestation-server.sh`, Then

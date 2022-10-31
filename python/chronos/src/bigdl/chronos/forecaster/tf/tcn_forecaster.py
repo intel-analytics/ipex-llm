@@ -36,7 +36,7 @@ class TCNForecaster(BaseTF2Forecaster):
                  future_seq_len,
                  input_feature_num,
                  output_feature_num,
-                 num_channels=[30]*7,
+                 num_channels=[16]*3,
                  kernel_size=3,
                  repo_initialization=True,
                  dropout=0.1,
@@ -60,7 +60,7 @@ class TCNForecaster(BaseTF2Forecaster):
         :param input_feature_num: Specify the feature dimension.
         :param output_feature_num: Specify the output dimension.
         :param num_channels: Specify the convolutional layer filter number in
-               TCN's encoder. This value defaults to [30]*7.
+               TCN's encoder. This value defaults to [16]*3.
         :param kernel_size: Specify convolutional layer filter height in TCN's
                encoder. This value defaults to 3.
         :param repo_initialization: if to use framework default initialization,
@@ -114,14 +114,10 @@ class TCNForecaster(BaseTF2Forecaster):
                                       "TemporalConvNet": TemporalConvNet}
 
         # distributed settings
-        # self.distributed = distributed
-        # self.distributed_backend = distributed_backend
-        # self.workers_per_node = workers_per_node
-        from bigdl.nano.utils.log4Error import invalidInputError
-        if distributed:
-            invalidInputError(False, "We will add distributed support in subsequent releases, "
-                                     "the feature is currently unavailable, "
-                                     "Please set distributed=False.")
+        self.distributed = distributed
+        self.local_distributed_backend = "subprocess"
+        self.remote_distributed_backend = distributed_backend
+        self.workers_per_node = workers_per_node
 
         # other settings
         self.lr = lr

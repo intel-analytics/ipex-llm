@@ -22,7 +22,7 @@ public final class PSIServiceProto {
      * <code>string task_id = 1;</code>
      * @return The taskId.
      */
-    String getTaskId();
+    java.lang.String getTaskId();
     /**
      * <code>string task_id = 1;</code>
      * @return The bytes for taskId.
@@ -40,7 +40,7 @@ public final class PSIServiceProto {
      * <code>string secure_code = 3;</code>
      * @return The secureCode.
      */
-    String getSecureCode();
+    java.lang.String getSecureCode();
     /**
      * <code>string secure_code = 3;</code>
      * @return The bytes for secureCode.
@@ -65,14 +65,14 @@ public final class PSIServiceProto {
       secureCode_ = "";
     }
 
-    @Override
+    @java.lang.Override
     @SuppressWarnings({"unused"})
-    protected Object newInstance(
+    protected java.lang.Object newInstance(
         UnusedPrivateParameter unused) {
       return new SaltRequest();
     }
 
-    @Override
+    @java.lang.Override
     public final com.google.protobuf.UnknownFieldSet
     getUnknownFields() {
       return this.unknownFields;
@@ -83,7 +83,7 @@ public final class PSIServiceProto {
         throws com.google.protobuf.InvalidProtocolBufferException {
       this();
       if (extensionRegistry == null) {
-        throw new NullPointerException();
+        throw new java.lang.NullPointerException();
       }
       com.google.protobuf.UnknownFieldSet.Builder unknownFields =
           com.google.protobuf.UnknownFieldSet.newBuilder();
@@ -96,7 +96,7 @@ public final class PSIServiceProto {
               done = true;
               break;
             case 10: {
-              String s = input.readStringRequireUtf8();
+              java.lang.String s = input.readStringRequireUtf8();
 
               taskId_ = s;
               break;
@@ -107,7 +107,7 @@ public final class PSIServiceProto {
               break;
             }
             case 26: {
-              String s = input.readStringRequireUtf8();
+              java.lang.String s = input.readStringRequireUtf8();
 
               secureCode_ = s;
               break;
@@ -133,32 +133,32 @@ public final class PSIServiceProto {
     }
     public static final com.google.protobuf.Descriptors.Descriptor
         getDescriptor() {
-      return PSIServiceProto.internal_static_SaltRequest_descriptor;
+      return com.intel.analytics.bigdl.ppml.fl.generated.PSIServiceProto.internal_static_SaltRequest_descriptor;
     }
 
-    @Override
-    protected FieldAccessorTable
+    @java.lang.Override
+    protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
         internalGetFieldAccessorTable() {
-      return PSIServiceProto.internal_static_SaltRequest_fieldAccessorTable
+      return com.intel.analytics.bigdl.ppml.fl.generated.PSIServiceProto.internal_static_SaltRequest_fieldAccessorTable
           .ensureFieldAccessorsInitialized(
-              SaltRequest.class, Builder.class);
+              com.intel.analytics.bigdl.ppml.fl.generated.PSIServiceProto.SaltRequest.class, com.intel.analytics.bigdl.ppml.fl.generated.PSIServiceProto.SaltRequest.Builder.class);
     }
 
     public static final int TASK_ID_FIELD_NUMBER = 1;
-    private volatile Object taskId_;
+    private volatile java.lang.Object taskId_;
     /**
      * <code>string task_id = 1;</code>
      * @return The taskId.
      */
-    @Override
-    public String getTaskId() {
-      Object ref = taskId_;
-      if (ref instanceof String) {
-        return (String) ref;
+    @java.lang.Override
+    public java.lang.String getTaskId() {
+      java.lang.Object ref = taskId_;
+      if (ref instanceof java.lang.String) {
+        return (java.lang.String) ref;
       } else {
         com.google.protobuf.ByteString bs = 
             (com.google.protobuf.ByteString) ref;
-        String s = bs.toStringUtf8();
+        java.lang.String s = bs.toStringUtf8();
         taskId_ = s;
         return s;
       }
@@ -167,14 +167,14 @@ public final class PSIServiceProto {
      * <code>string task_id = 1;</code>
      * @return The bytes for taskId.
      */
-    @Override
+    @java.lang.Override
     public com.google.protobuf.ByteString
         getTaskIdBytes() {
-      Object ref = taskId_;
-      if (ref instanceof String) {
+      java.lang.Object ref = taskId_;
+      if (ref instanceof java.lang.String) {
         com.google.protobuf.ByteString b = 
             com.google.protobuf.ByteString.copyFromUtf8(
-                (String) ref);
+                (java.lang.String) ref);
         taskId_ = b;
         return b;
       } else {
@@ -188,26 +188,26 @@ public final class PSIServiceProto {
      * <code>int32 client_num = 2;</code>
      * @return The clientNum.
      */
-    @Override
+    @java.lang.Override
     public int getClientNum() {
       return clientNum_;
     }
 
     public static final int SECURE_CODE_FIELD_NUMBER = 3;
-    private volatile Object secureCode_;
+    private volatile java.lang.Object secureCode_;
     /**
      * <code>string secure_code = 3;</code>
      * @return The secureCode.
      */
-    @Override
-    public String getSecureCode() {
-      Object ref = secureCode_;
-      if (ref instanceof String) {
-        return (String) ref;
+    @java.lang.Override
+    public java.lang.String getSecureCode() {
+      java.lang.Object ref = secureCode_;
+      if (ref instanceof java.lang.String) {
+        return (java.lang.String) ref;
       } else {
         com.google.protobuf.ByteString bs = 
             (com.google.protobuf.ByteString) ref;
-        String s = bs.toStringUtf8();
+        java.lang.String s = bs.toStringUtf8();
         secureCode_ = s;
         return s;
       }
@@ -216,14 +216,14 @@ public final class PSIServiceProto {
      * <code>string secure_code = 3;</code>
      * @return The bytes for secureCode.
      */
-    @Override
+    @java.lang.Override
     public com.google.protobuf.ByteString
         getSecureCodeBytes() {
-      Object ref = secureCode_;
-      if (ref instanceof String) {
+      java.lang.Object ref = secureCode_;
+      if (ref instanceof java.lang.String) {
         com.google.protobuf.ByteString b = 
             com.google.protobuf.ByteString.copyFromUtf8(
-                (String) ref);
+                (java.lang.String) ref);
         secureCode_ = b;
         return b;
       } else {
@@ -232,7 +232,7 @@ public final class PSIServiceProto {
     }
 
     private byte memoizedIsInitialized = -1;
-    @Override
+    @java.lang.Override
     public final boolean isInitialized() {
       byte isInitialized = memoizedIsInitialized;
       if (isInitialized == 1) return true;
@@ -242,7 +242,7 @@ public final class PSIServiceProto {
       return true;
     }
 
-    @Override
+    @java.lang.Override
     public void writeTo(com.google.protobuf.CodedOutputStream output)
                         throws java.io.IOException {
       if (!getTaskIdBytes().isEmpty()) {
@@ -257,7 +257,7 @@ public final class PSIServiceProto {
       unknownFields.writeTo(output);
     }
 
-    @Override
+    @java.lang.Override
     public int getSerializedSize() {
       int size = memoizedSize;
       if (size != -1) return size;
@@ -278,15 +278,15 @@ public final class PSIServiceProto {
       return size;
     }
 
-    @Override
-    public boolean equals(final Object obj) {
+    @java.lang.Override
+    public boolean equals(final java.lang.Object obj) {
       if (obj == this) {
        return true;
       }
-      if (!(obj instanceof SaltRequest)) {
+      if (!(obj instanceof com.intel.analytics.bigdl.ppml.fl.generated.PSIServiceProto.SaltRequest)) {
         return super.equals(obj);
       }
-      SaltRequest other = (SaltRequest) obj;
+      com.intel.analytics.bigdl.ppml.fl.generated.PSIServiceProto.SaltRequest other = (com.intel.analytics.bigdl.ppml.fl.generated.PSIServiceProto.SaltRequest) obj;
 
       if (!getTaskId()
           .equals(other.getTaskId())) return false;
@@ -298,7 +298,7 @@ public final class PSIServiceProto {
       return true;
     }
 
-    @Override
+    @java.lang.Override
     public int hashCode() {
       if (memoizedHashCode != 0) {
         return memoizedHashCode;
@@ -316,69 +316,69 @@ public final class PSIServiceProto {
       return hash;
     }
 
-    public static SaltRequest parseFrom(
+    public static com.intel.analytics.bigdl.ppml.fl.generated.PSIServiceProto.SaltRequest parseFrom(
         java.nio.ByteBuffer data)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data);
     }
-    public static SaltRequest parseFrom(
+    public static com.intel.analytics.bigdl.ppml.fl.generated.PSIServiceProto.SaltRequest parseFrom(
         java.nio.ByteBuffer data,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data, extensionRegistry);
     }
-    public static SaltRequest parseFrom(
+    public static com.intel.analytics.bigdl.ppml.fl.generated.PSIServiceProto.SaltRequest parseFrom(
         com.google.protobuf.ByteString data)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data);
     }
-    public static SaltRequest parseFrom(
+    public static com.intel.analytics.bigdl.ppml.fl.generated.PSIServiceProto.SaltRequest parseFrom(
         com.google.protobuf.ByteString data,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data, extensionRegistry);
     }
-    public static SaltRequest parseFrom(byte[] data)
+    public static com.intel.analytics.bigdl.ppml.fl.generated.PSIServiceProto.SaltRequest parseFrom(byte[] data)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data);
     }
-    public static SaltRequest parseFrom(
+    public static com.intel.analytics.bigdl.ppml.fl.generated.PSIServiceProto.SaltRequest parseFrom(
         byte[] data,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data, extensionRegistry);
     }
-    public static SaltRequest parseFrom(java.io.InputStream input)
+    public static com.intel.analytics.bigdl.ppml.fl.generated.PSIServiceProto.SaltRequest parseFrom(java.io.InputStream input)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseWithIOException(PARSER, input);
     }
-    public static SaltRequest parseFrom(
+    public static com.intel.analytics.bigdl.ppml.fl.generated.PSIServiceProto.SaltRequest parseFrom(
         java.io.InputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseWithIOException(PARSER, input, extensionRegistry);
     }
-    public static SaltRequest parseDelimitedFrom(java.io.InputStream input)
+    public static com.intel.analytics.bigdl.ppml.fl.generated.PSIServiceProto.SaltRequest parseDelimitedFrom(java.io.InputStream input)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseDelimitedWithIOException(PARSER, input);
     }
-    public static SaltRequest parseDelimitedFrom(
+    public static com.intel.analytics.bigdl.ppml.fl.generated.PSIServiceProto.SaltRequest parseDelimitedFrom(
         java.io.InputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseDelimitedWithIOException(PARSER, input, extensionRegistry);
     }
-    public static SaltRequest parseFrom(
+    public static com.intel.analytics.bigdl.ppml.fl.generated.PSIServiceProto.SaltRequest parseFrom(
         com.google.protobuf.CodedInputStream input)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseWithIOException(PARSER, input);
     }
-    public static SaltRequest parseFrom(
+    public static com.intel.analytics.bigdl.ppml.fl.generated.PSIServiceProto.SaltRequest parseFrom(
         com.google.protobuf.CodedInputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
@@ -386,23 +386,23 @@ public final class PSIServiceProto {
           .parseWithIOException(PARSER, input, extensionRegistry);
     }
 
-    @Override
+    @java.lang.Override
     public Builder newBuilderForType() { return newBuilder(); }
     public static Builder newBuilder() {
       return DEFAULT_INSTANCE.toBuilder();
     }
-    public static Builder newBuilder(SaltRequest prototype) {
+    public static Builder newBuilder(com.intel.analytics.bigdl.ppml.fl.generated.PSIServiceProto.SaltRequest prototype) {
       return DEFAULT_INSTANCE.toBuilder().mergeFrom(prototype);
     }
-    @Override
+    @java.lang.Override
     public Builder toBuilder() {
       return this == DEFAULT_INSTANCE
           ? new Builder() : new Builder().mergeFrom(this);
     }
 
-    @Override
+    @java.lang.Override
     protected Builder newBuilderForType(
-        BuilderParent parent) {
+        com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
       Builder builder = new Builder(parent);
       return builder;
     }
@@ -412,18 +412,18 @@ public final class PSIServiceProto {
     public static final class Builder extends
         com.google.protobuf.GeneratedMessageV3.Builder<Builder> implements
         // @@protoc_insertion_point(builder_implements:SaltRequest)
-        SaltRequestOrBuilder {
+        com.intel.analytics.bigdl.ppml.fl.generated.PSIServiceProto.SaltRequestOrBuilder {
       public static final com.google.protobuf.Descriptors.Descriptor
           getDescriptor() {
-        return PSIServiceProto.internal_static_SaltRequest_descriptor;
+        return com.intel.analytics.bigdl.ppml.fl.generated.PSIServiceProto.internal_static_SaltRequest_descriptor;
       }
 
-      @Override
-      protected FieldAccessorTable
+      @java.lang.Override
+      protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
           internalGetFieldAccessorTable() {
-        return PSIServiceProto.internal_static_SaltRequest_fieldAccessorTable
+        return com.intel.analytics.bigdl.ppml.fl.generated.PSIServiceProto.internal_static_SaltRequest_fieldAccessorTable
             .ensureFieldAccessorsInitialized(
-                SaltRequest.class, Builder.class);
+                com.intel.analytics.bigdl.ppml.fl.generated.PSIServiceProto.SaltRequest.class, com.intel.analytics.bigdl.ppml.fl.generated.PSIServiceProto.SaltRequest.Builder.class);
       }
 
       // Construct using com.intel.analytics.bigdl.ppml.fl.generated.PSIServiceProto.SaltRequest.newBuilder()
@@ -432,7 +432,7 @@ public final class PSIServiceProto {
       }
 
       private Builder(
-          BuilderParent parent) {
+          com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
         super(parent);
         maybeForceBuilderInitialization();
       }
@@ -441,7 +441,7 @@ public final class PSIServiceProto {
                 .alwaysUseFieldBuilders) {
         }
       }
-      @Override
+      @java.lang.Override
       public Builder clear() {
         super.clear();
         taskId_ = "";
@@ -453,29 +453,29 @@ public final class PSIServiceProto {
         return this;
       }
 
-      @Override
+      @java.lang.Override
       public com.google.protobuf.Descriptors.Descriptor
           getDescriptorForType() {
-        return PSIServiceProto.internal_static_SaltRequest_descriptor;
+        return com.intel.analytics.bigdl.ppml.fl.generated.PSIServiceProto.internal_static_SaltRequest_descriptor;
       }
 
-      @Override
-      public SaltRequest getDefaultInstanceForType() {
-        return SaltRequest.getDefaultInstance();
+      @java.lang.Override
+      public com.intel.analytics.bigdl.ppml.fl.generated.PSIServiceProto.SaltRequest getDefaultInstanceForType() {
+        return com.intel.analytics.bigdl.ppml.fl.generated.PSIServiceProto.SaltRequest.getDefaultInstance();
       }
 
-      @Override
-      public SaltRequest build() {
-        SaltRequest result = buildPartial();
+      @java.lang.Override
+      public com.intel.analytics.bigdl.ppml.fl.generated.PSIServiceProto.SaltRequest build() {
+        com.intel.analytics.bigdl.ppml.fl.generated.PSIServiceProto.SaltRequest result = buildPartial();
         if (!result.isInitialized()) {
           throw newUninitializedMessageException(result);
         }
         return result;
       }
 
-      @Override
-      public SaltRequest buildPartial() {
-        SaltRequest result = new SaltRequest(this);
+      @java.lang.Override
+      public com.intel.analytics.bigdl.ppml.fl.generated.PSIServiceProto.SaltRequest buildPartial() {
+        com.intel.analytics.bigdl.ppml.fl.generated.PSIServiceProto.SaltRequest result = new com.intel.analytics.bigdl.ppml.fl.generated.PSIServiceProto.SaltRequest(this);
         result.taskId_ = taskId_;
         result.clientNum_ = clientNum_;
         result.secureCode_ = secureCode_;
@@ -483,50 +483,50 @@ public final class PSIServiceProto {
         return result;
       }
 
-      @Override
+      @java.lang.Override
       public Builder clone() {
         return super.clone();
       }
-      @Override
+      @java.lang.Override
       public Builder setField(
           com.google.protobuf.Descriptors.FieldDescriptor field,
-          Object value) {
+          java.lang.Object value) {
         return super.setField(field, value);
       }
-      @Override
+      @java.lang.Override
       public Builder clearField(
           com.google.protobuf.Descriptors.FieldDescriptor field) {
         return super.clearField(field);
       }
-      @Override
+      @java.lang.Override
       public Builder clearOneof(
           com.google.protobuf.Descriptors.OneofDescriptor oneof) {
         return super.clearOneof(oneof);
       }
-      @Override
+      @java.lang.Override
       public Builder setRepeatedField(
           com.google.protobuf.Descriptors.FieldDescriptor field,
-          int index, Object value) {
+          int index, java.lang.Object value) {
         return super.setRepeatedField(field, index, value);
       }
-      @Override
+      @java.lang.Override
       public Builder addRepeatedField(
           com.google.protobuf.Descriptors.FieldDescriptor field,
-          Object value) {
+          java.lang.Object value) {
         return super.addRepeatedField(field, value);
       }
-      @Override
+      @java.lang.Override
       public Builder mergeFrom(com.google.protobuf.Message other) {
-        if (other instanceof SaltRequest) {
-          return mergeFrom((SaltRequest)other);
+        if (other instanceof com.intel.analytics.bigdl.ppml.fl.generated.PSIServiceProto.SaltRequest) {
+          return mergeFrom((com.intel.analytics.bigdl.ppml.fl.generated.PSIServiceProto.SaltRequest)other);
         } else {
           super.mergeFrom(other);
           return this;
         }
       }
 
-      public Builder mergeFrom(SaltRequest other) {
-        if (other == SaltRequest.getDefaultInstance()) return this;
+      public Builder mergeFrom(com.intel.analytics.bigdl.ppml.fl.generated.PSIServiceProto.SaltRequest other) {
+        if (other == com.intel.analytics.bigdl.ppml.fl.generated.PSIServiceProto.SaltRequest.getDefaultInstance()) return this;
         if (!other.getTaskId().isEmpty()) {
           taskId_ = other.taskId_;
           onChanged();
@@ -543,21 +543,21 @@ public final class PSIServiceProto {
         return this;
       }
 
-      @Override
+      @java.lang.Override
       public final boolean isInitialized() {
         return true;
       }
 
-      @Override
+      @java.lang.Override
       public Builder mergeFrom(
           com.google.protobuf.CodedInputStream input,
           com.google.protobuf.ExtensionRegistryLite extensionRegistry)
           throws java.io.IOException {
-        SaltRequest parsedMessage = null;
+        com.intel.analytics.bigdl.ppml.fl.generated.PSIServiceProto.SaltRequest parsedMessage = null;
         try {
           parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
         } catch (com.google.protobuf.InvalidProtocolBufferException e) {
-          parsedMessage = (SaltRequest) e.getUnfinishedMessage();
+          parsedMessage = (com.intel.analytics.bigdl.ppml.fl.generated.PSIServiceProto.SaltRequest) e.getUnfinishedMessage();
           throw e.unwrapIOException();
         } finally {
           if (parsedMessage != null) {
@@ -567,21 +567,21 @@ public final class PSIServiceProto {
         return this;
       }
 
-      private Object taskId_ = "";
+      private java.lang.Object taskId_ = "";
       /**
        * <code>string task_id = 1;</code>
        * @return The taskId.
        */
-      public String getTaskId() {
-        Object ref = taskId_;
-        if (!(ref instanceof String)) {
+      public java.lang.String getTaskId() {
+        java.lang.Object ref = taskId_;
+        if (!(ref instanceof java.lang.String)) {
           com.google.protobuf.ByteString bs =
               (com.google.protobuf.ByteString) ref;
-          String s = bs.toStringUtf8();
+          java.lang.String s = bs.toStringUtf8();
           taskId_ = s;
           return s;
         } else {
-          return (String) ref;
+          return (java.lang.String) ref;
         }
       }
       /**
@@ -590,11 +590,11 @@ public final class PSIServiceProto {
        */
       public com.google.protobuf.ByteString
           getTaskIdBytes() {
-        Object ref = taskId_;
+        java.lang.Object ref = taskId_;
         if (ref instanceof String) {
           com.google.protobuf.ByteString b = 
               com.google.protobuf.ByteString.copyFromUtf8(
-                  (String) ref);
+                  (java.lang.String) ref);
           taskId_ = b;
           return b;
         } else {
@@ -607,7 +607,7 @@ public final class PSIServiceProto {
        * @return This builder for chaining.
        */
       public Builder setTaskId(
-          String value) {
+          java.lang.String value) {
         if (value == null) {
     throw new NullPointerException();
   }
@@ -648,7 +648,7 @@ public final class PSIServiceProto {
        * <code>int32 client_num = 2;</code>
        * @return The clientNum.
        */
-      @Override
+      @java.lang.Override
       public int getClientNum() {
         return clientNum_;
       }
@@ -674,21 +674,21 @@ public final class PSIServiceProto {
         return this;
       }
 
-      private Object secureCode_ = "";
+      private java.lang.Object secureCode_ = "";
       /**
        * <code>string secure_code = 3;</code>
        * @return The secureCode.
        */
-      public String getSecureCode() {
-        Object ref = secureCode_;
-        if (!(ref instanceof String)) {
+      public java.lang.String getSecureCode() {
+        java.lang.Object ref = secureCode_;
+        if (!(ref instanceof java.lang.String)) {
           com.google.protobuf.ByteString bs =
               (com.google.protobuf.ByteString) ref;
-          String s = bs.toStringUtf8();
+          java.lang.String s = bs.toStringUtf8();
           secureCode_ = s;
           return s;
         } else {
-          return (String) ref;
+          return (java.lang.String) ref;
         }
       }
       /**
@@ -697,11 +697,11 @@ public final class PSIServiceProto {
        */
       public com.google.protobuf.ByteString
           getSecureCodeBytes() {
-        Object ref = secureCode_;
+        java.lang.Object ref = secureCode_;
         if (ref instanceof String) {
           com.google.protobuf.ByteString b = 
               com.google.protobuf.ByteString.copyFromUtf8(
-                  (String) ref);
+                  (java.lang.String) ref);
           secureCode_ = b;
           return b;
         } else {
@@ -714,7 +714,7 @@ public final class PSIServiceProto {
        * @return This builder for chaining.
        */
       public Builder setSecureCode(
-          String value) {
+          java.lang.String value) {
         if (value == null) {
     throw new NullPointerException();
   }
@@ -749,13 +749,13 @@ public final class PSIServiceProto {
         onChanged();
         return this;
       }
-      @Override
+      @java.lang.Override
       public final Builder setUnknownFields(
           final com.google.protobuf.UnknownFieldSet unknownFields) {
         return super.setUnknownFields(unknownFields);
       }
 
-      @Override
+      @java.lang.Override
       public final Builder mergeUnknownFields(
           final com.google.protobuf.UnknownFieldSet unknownFields) {
         return super.mergeUnknownFields(unknownFields);
@@ -766,18 +766,18 @@ public final class PSIServiceProto {
     }
 
     // @@protoc_insertion_point(class_scope:SaltRequest)
-    private static final SaltRequest DEFAULT_INSTANCE;
+    private static final com.intel.analytics.bigdl.ppml.fl.generated.PSIServiceProto.SaltRequest DEFAULT_INSTANCE;
     static {
-      DEFAULT_INSTANCE = new SaltRequest();
+      DEFAULT_INSTANCE = new com.intel.analytics.bigdl.ppml.fl.generated.PSIServiceProto.SaltRequest();
     }
 
-    public static SaltRequest getDefaultInstance() {
+    public static com.intel.analytics.bigdl.ppml.fl.generated.PSIServiceProto.SaltRequest getDefaultInstance() {
       return DEFAULT_INSTANCE;
     }
 
     private static final com.google.protobuf.Parser<SaltRequest>
         PARSER = new com.google.protobuf.AbstractParser<SaltRequest>() {
-      @Override
+      @java.lang.Override
       public SaltRequest parsePartialFrom(
           com.google.protobuf.CodedInputStream input,
           com.google.protobuf.ExtensionRegistryLite extensionRegistry)
@@ -790,13 +790,13 @@ public final class PSIServiceProto {
       return PARSER;
     }
 
-    @Override
+    @java.lang.Override
     public com.google.protobuf.Parser<SaltRequest> getParserForType() {
       return PARSER;
     }
 
-    @Override
-    public SaltRequest getDefaultInstanceForType() {
+    @java.lang.Override
+    public com.intel.analytics.bigdl.ppml.fl.generated.PSIServiceProto.SaltRequest getDefaultInstanceForType() {
       return DEFAULT_INSTANCE;
     }
 
@@ -810,7 +810,7 @@ public final class PSIServiceProto {
      * <code>string salt_reply = 1;</code>
      * @return The saltReply.
      */
-    String getSaltReply();
+    java.lang.String getSaltReply();
     /**
      * <code>string salt_reply = 1;</code>
      * @return The bytes for saltReply.
@@ -834,14 +834,14 @@ public final class PSIServiceProto {
       saltReply_ = "";
     }
 
-    @Override
+    @java.lang.Override
     @SuppressWarnings({"unused"})
-    protected Object newInstance(
+    protected java.lang.Object newInstance(
         UnusedPrivateParameter unused) {
       return new SaltReply();
     }
 
-    @Override
+    @java.lang.Override
     public final com.google.protobuf.UnknownFieldSet
     getUnknownFields() {
       return this.unknownFields;
@@ -852,7 +852,7 @@ public final class PSIServiceProto {
         throws com.google.protobuf.InvalidProtocolBufferException {
       this();
       if (extensionRegistry == null) {
-        throw new NullPointerException();
+        throw new java.lang.NullPointerException();
       }
       com.google.protobuf.UnknownFieldSet.Builder unknownFields =
           com.google.protobuf.UnknownFieldSet.newBuilder();
@@ -865,7 +865,7 @@ public final class PSIServiceProto {
               done = true;
               break;
             case 10: {
-              String s = input.readStringRequireUtf8();
+              java.lang.String s = input.readStringRequireUtf8();
 
               saltReply_ = s;
               break;
@@ -891,32 +891,32 @@ public final class PSIServiceProto {
     }
     public static final com.google.protobuf.Descriptors.Descriptor
         getDescriptor() {
-      return PSIServiceProto.internal_static_SaltReply_descriptor;
+      return com.intel.analytics.bigdl.ppml.fl.generated.PSIServiceProto.internal_static_SaltReply_descriptor;
     }
 
-    @Override
-    protected FieldAccessorTable
+    @java.lang.Override
+    protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
         internalGetFieldAccessorTable() {
-      return PSIServiceProto.internal_static_SaltReply_fieldAccessorTable
+      return com.intel.analytics.bigdl.ppml.fl.generated.PSIServiceProto.internal_static_SaltReply_fieldAccessorTable
           .ensureFieldAccessorsInitialized(
-              SaltReply.class, Builder.class);
+              com.intel.analytics.bigdl.ppml.fl.generated.PSIServiceProto.SaltReply.class, com.intel.analytics.bigdl.ppml.fl.generated.PSIServiceProto.SaltReply.Builder.class);
     }
 
     public static final int SALT_REPLY_FIELD_NUMBER = 1;
-    private volatile Object saltReply_;
+    private volatile java.lang.Object saltReply_;
     /**
      * <code>string salt_reply = 1;</code>
      * @return The saltReply.
      */
-    @Override
-    public String getSaltReply() {
-      Object ref = saltReply_;
-      if (ref instanceof String) {
-        return (String) ref;
+    @java.lang.Override
+    public java.lang.String getSaltReply() {
+      java.lang.Object ref = saltReply_;
+      if (ref instanceof java.lang.String) {
+        return (java.lang.String) ref;
       } else {
         com.google.protobuf.ByteString bs = 
             (com.google.protobuf.ByteString) ref;
-        String s = bs.toStringUtf8();
+        java.lang.String s = bs.toStringUtf8();
         saltReply_ = s;
         return s;
       }
@@ -925,14 +925,14 @@ public final class PSIServiceProto {
      * <code>string salt_reply = 1;</code>
      * @return The bytes for saltReply.
      */
-    @Override
+    @java.lang.Override
     public com.google.protobuf.ByteString
         getSaltReplyBytes() {
-      Object ref = saltReply_;
-      if (ref instanceof String) {
+      java.lang.Object ref = saltReply_;
+      if (ref instanceof java.lang.String) {
         com.google.protobuf.ByteString b = 
             com.google.protobuf.ByteString.copyFromUtf8(
-                (String) ref);
+                (java.lang.String) ref);
         saltReply_ = b;
         return b;
       } else {
@@ -941,7 +941,7 @@ public final class PSIServiceProto {
     }
 
     private byte memoizedIsInitialized = -1;
-    @Override
+    @java.lang.Override
     public final boolean isInitialized() {
       byte isInitialized = memoizedIsInitialized;
       if (isInitialized == 1) return true;
@@ -951,7 +951,7 @@ public final class PSIServiceProto {
       return true;
     }
 
-    @Override
+    @java.lang.Override
     public void writeTo(com.google.protobuf.CodedOutputStream output)
                         throws java.io.IOException {
       if (!getSaltReplyBytes().isEmpty()) {
@@ -960,7 +960,7 @@ public final class PSIServiceProto {
       unknownFields.writeTo(output);
     }
 
-    @Override
+    @java.lang.Override
     public int getSerializedSize() {
       int size = memoizedSize;
       if (size != -1) return size;
@@ -974,15 +974,15 @@ public final class PSIServiceProto {
       return size;
     }
 
-    @Override
-    public boolean equals(final Object obj) {
+    @java.lang.Override
+    public boolean equals(final java.lang.Object obj) {
       if (obj == this) {
        return true;
       }
-      if (!(obj instanceof SaltReply)) {
+      if (!(obj instanceof com.intel.analytics.bigdl.ppml.fl.generated.PSIServiceProto.SaltReply)) {
         return super.equals(obj);
       }
-      SaltReply other = (SaltReply) obj;
+      com.intel.analytics.bigdl.ppml.fl.generated.PSIServiceProto.SaltReply other = (com.intel.analytics.bigdl.ppml.fl.generated.PSIServiceProto.SaltReply) obj;
 
       if (!getSaltReply()
           .equals(other.getSaltReply())) return false;
@@ -990,7 +990,7 @@ public final class PSIServiceProto {
       return true;
     }
 
-    @Override
+    @java.lang.Override
     public int hashCode() {
       if (memoizedHashCode != 0) {
         return memoizedHashCode;
@@ -1004,69 +1004,69 @@ public final class PSIServiceProto {
       return hash;
     }
 
-    public static SaltReply parseFrom(
+    public static com.intel.analytics.bigdl.ppml.fl.generated.PSIServiceProto.SaltReply parseFrom(
         java.nio.ByteBuffer data)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data);
     }
-    public static SaltReply parseFrom(
+    public static com.intel.analytics.bigdl.ppml.fl.generated.PSIServiceProto.SaltReply parseFrom(
         java.nio.ByteBuffer data,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data, extensionRegistry);
     }
-    public static SaltReply parseFrom(
+    public static com.intel.analytics.bigdl.ppml.fl.generated.PSIServiceProto.SaltReply parseFrom(
         com.google.protobuf.ByteString data)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data);
     }
-    public static SaltReply parseFrom(
+    public static com.intel.analytics.bigdl.ppml.fl.generated.PSIServiceProto.SaltReply parseFrom(
         com.google.protobuf.ByteString data,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data, extensionRegistry);
     }
-    public static SaltReply parseFrom(byte[] data)
+    public static com.intel.analytics.bigdl.ppml.fl.generated.PSIServiceProto.SaltReply parseFrom(byte[] data)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data);
     }
-    public static SaltReply parseFrom(
+    public static com.intel.analytics.bigdl.ppml.fl.generated.PSIServiceProto.SaltReply parseFrom(
         byte[] data,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data, extensionRegistry);
     }
-    public static SaltReply parseFrom(java.io.InputStream input)
+    public static com.intel.analytics.bigdl.ppml.fl.generated.PSIServiceProto.SaltReply parseFrom(java.io.InputStream input)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseWithIOException(PARSER, input);
     }
-    public static SaltReply parseFrom(
+    public static com.intel.analytics.bigdl.ppml.fl.generated.PSIServiceProto.SaltReply parseFrom(
         java.io.InputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseWithIOException(PARSER, input, extensionRegistry);
     }
-    public static SaltReply parseDelimitedFrom(java.io.InputStream input)
+    public static com.intel.analytics.bigdl.ppml.fl.generated.PSIServiceProto.SaltReply parseDelimitedFrom(java.io.InputStream input)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseDelimitedWithIOException(PARSER, input);
     }
-    public static SaltReply parseDelimitedFrom(
+    public static com.intel.analytics.bigdl.ppml.fl.generated.PSIServiceProto.SaltReply parseDelimitedFrom(
         java.io.InputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseDelimitedWithIOException(PARSER, input, extensionRegistry);
     }
-    public static SaltReply parseFrom(
+    public static com.intel.analytics.bigdl.ppml.fl.generated.PSIServiceProto.SaltReply parseFrom(
         com.google.protobuf.CodedInputStream input)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseWithIOException(PARSER, input);
     }
-    public static SaltReply parseFrom(
+    public static com.intel.analytics.bigdl.ppml.fl.generated.PSIServiceProto.SaltReply parseFrom(
         com.google.protobuf.CodedInputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
@@ -1074,23 +1074,23 @@ public final class PSIServiceProto {
           .parseWithIOException(PARSER, input, extensionRegistry);
     }
 
-    @Override
+    @java.lang.Override
     public Builder newBuilderForType() { return newBuilder(); }
     public static Builder newBuilder() {
       return DEFAULT_INSTANCE.toBuilder();
     }
-    public static Builder newBuilder(SaltReply prototype) {
+    public static Builder newBuilder(com.intel.analytics.bigdl.ppml.fl.generated.PSIServiceProto.SaltReply prototype) {
       return DEFAULT_INSTANCE.toBuilder().mergeFrom(prototype);
     }
-    @Override
+    @java.lang.Override
     public Builder toBuilder() {
       return this == DEFAULT_INSTANCE
           ? new Builder() : new Builder().mergeFrom(this);
     }
 
-    @Override
+    @java.lang.Override
     protected Builder newBuilderForType(
-        BuilderParent parent) {
+        com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
       Builder builder = new Builder(parent);
       return builder;
     }
@@ -1100,18 +1100,18 @@ public final class PSIServiceProto {
     public static final class Builder extends
         com.google.protobuf.GeneratedMessageV3.Builder<Builder> implements
         // @@protoc_insertion_point(builder_implements:SaltReply)
-        SaltReplyOrBuilder {
+        com.intel.analytics.bigdl.ppml.fl.generated.PSIServiceProto.SaltReplyOrBuilder {
       public static final com.google.protobuf.Descriptors.Descriptor
           getDescriptor() {
-        return PSIServiceProto.internal_static_SaltReply_descriptor;
+        return com.intel.analytics.bigdl.ppml.fl.generated.PSIServiceProto.internal_static_SaltReply_descriptor;
       }
 
-      @Override
-      protected FieldAccessorTable
+      @java.lang.Override
+      protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
           internalGetFieldAccessorTable() {
-        return PSIServiceProto.internal_static_SaltReply_fieldAccessorTable
+        return com.intel.analytics.bigdl.ppml.fl.generated.PSIServiceProto.internal_static_SaltReply_fieldAccessorTable
             .ensureFieldAccessorsInitialized(
-                SaltReply.class, Builder.class);
+                com.intel.analytics.bigdl.ppml.fl.generated.PSIServiceProto.SaltReply.class, com.intel.analytics.bigdl.ppml.fl.generated.PSIServiceProto.SaltReply.Builder.class);
       }
 
       // Construct using com.intel.analytics.bigdl.ppml.fl.generated.PSIServiceProto.SaltReply.newBuilder()
@@ -1120,7 +1120,7 @@ public final class PSIServiceProto {
       }
 
       private Builder(
-          BuilderParent parent) {
+          com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
         super(parent);
         maybeForceBuilderInitialization();
       }
@@ -1129,7 +1129,7 @@ public final class PSIServiceProto {
                 .alwaysUseFieldBuilders) {
         }
       }
-      @Override
+      @java.lang.Override
       public Builder clear() {
         super.clear();
         saltReply_ = "";
@@ -1137,78 +1137,78 @@ public final class PSIServiceProto {
         return this;
       }
 
-      @Override
+      @java.lang.Override
       public com.google.protobuf.Descriptors.Descriptor
           getDescriptorForType() {
-        return PSIServiceProto.internal_static_SaltReply_descriptor;
+        return com.intel.analytics.bigdl.ppml.fl.generated.PSIServiceProto.internal_static_SaltReply_descriptor;
       }
 
-      @Override
-      public SaltReply getDefaultInstanceForType() {
-        return SaltReply.getDefaultInstance();
+      @java.lang.Override
+      public com.intel.analytics.bigdl.ppml.fl.generated.PSIServiceProto.SaltReply getDefaultInstanceForType() {
+        return com.intel.analytics.bigdl.ppml.fl.generated.PSIServiceProto.SaltReply.getDefaultInstance();
       }
 
-      @Override
-      public SaltReply build() {
-        SaltReply result = buildPartial();
+      @java.lang.Override
+      public com.intel.analytics.bigdl.ppml.fl.generated.PSIServiceProto.SaltReply build() {
+        com.intel.analytics.bigdl.ppml.fl.generated.PSIServiceProto.SaltReply result = buildPartial();
         if (!result.isInitialized()) {
           throw newUninitializedMessageException(result);
         }
         return result;
       }
 
-      @Override
-      public SaltReply buildPartial() {
-        SaltReply result = new SaltReply(this);
+      @java.lang.Override
+      public com.intel.analytics.bigdl.ppml.fl.generated.PSIServiceProto.SaltReply buildPartial() {
+        com.intel.analytics.bigdl.ppml.fl.generated.PSIServiceProto.SaltReply result = new com.intel.analytics.bigdl.ppml.fl.generated.PSIServiceProto.SaltReply(this);
         result.saltReply_ = saltReply_;
         onBuilt();
         return result;
       }
 
-      @Override
+      @java.lang.Override
       public Builder clone() {
         return super.clone();
       }
-      @Override
+      @java.lang.Override
       public Builder setField(
           com.google.protobuf.Descriptors.FieldDescriptor field,
-          Object value) {
+          java.lang.Object value) {
         return super.setField(field, value);
       }
-      @Override
+      @java.lang.Override
       public Builder clearField(
           com.google.protobuf.Descriptors.FieldDescriptor field) {
         return super.clearField(field);
       }
-      @Override
+      @java.lang.Override
       public Builder clearOneof(
           com.google.protobuf.Descriptors.OneofDescriptor oneof) {
         return super.clearOneof(oneof);
       }
-      @Override
+      @java.lang.Override
       public Builder setRepeatedField(
           com.google.protobuf.Descriptors.FieldDescriptor field,
-          int index, Object value) {
+          int index, java.lang.Object value) {
         return super.setRepeatedField(field, index, value);
       }
-      @Override
+      @java.lang.Override
       public Builder addRepeatedField(
           com.google.protobuf.Descriptors.FieldDescriptor field,
-          Object value) {
+          java.lang.Object value) {
         return super.addRepeatedField(field, value);
       }
-      @Override
+      @java.lang.Override
       public Builder mergeFrom(com.google.protobuf.Message other) {
-        if (other instanceof SaltReply) {
-          return mergeFrom((SaltReply)other);
+        if (other instanceof com.intel.analytics.bigdl.ppml.fl.generated.PSIServiceProto.SaltReply) {
+          return mergeFrom((com.intel.analytics.bigdl.ppml.fl.generated.PSIServiceProto.SaltReply)other);
         } else {
           super.mergeFrom(other);
           return this;
         }
       }
 
-      public Builder mergeFrom(SaltReply other) {
-        if (other == SaltReply.getDefaultInstance()) return this;
+      public Builder mergeFrom(com.intel.analytics.bigdl.ppml.fl.generated.PSIServiceProto.SaltReply other) {
+        if (other == com.intel.analytics.bigdl.ppml.fl.generated.PSIServiceProto.SaltReply.getDefaultInstance()) return this;
         if (!other.getSaltReply().isEmpty()) {
           saltReply_ = other.saltReply_;
           onChanged();
@@ -1218,21 +1218,21 @@ public final class PSIServiceProto {
         return this;
       }
 
-      @Override
+      @java.lang.Override
       public final boolean isInitialized() {
         return true;
       }
 
-      @Override
+      @java.lang.Override
       public Builder mergeFrom(
           com.google.protobuf.CodedInputStream input,
           com.google.protobuf.ExtensionRegistryLite extensionRegistry)
           throws java.io.IOException {
-        SaltReply parsedMessage = null;
+        com.intel.analytics.bigdl.ppml.fl.generated.PSIServiceProto.SaltReply parsedMessage = null;
         try {
           parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
         } catch (com.google.protobuf.InvalidProtocolBufferException e) {
-          parsedMessage = (SaltReply) e.getUnfinishedMessage();
+          parsedMessage = (com.intel.analytics.bigdl.ppml.fl.generated.PSIServiceProto.SaltReply) e.getUnfinishedMessage();
           throw e.unwrapIOException();
         } finally {
           if (parsedMessage != null) {
@@ -1242,21 +1242,21 @@ public final class PSIServiceProto {
         return this;
       }
 
-      private Object saltReply_ = "";
+      private java.lang.Object saltReply_ = "";
       /**
        * <code>string salt_reply = 1;</code>
        * @return The saltReply.
        */
-      public String getSaltReply() {
-        Object ref = saltReply_;
-        if (!(ref instanceof String)) {
+      public java.lang.String getSaltReply() {
+        java.lang.Object ref = saltReply_;
+        if (!(ref instanceof java.lang.String)) {
           com.google.protobuf.ByteString bs =
               (com.google.protobuf.ByteString) ref;
-          String s = bs.toStringUtf8();
+          java.lang.String s = bs.toStringUtf8();
           saltReply_ = s;
           return s;
         } else {
-          return (String) ref;
+          return (java.lang.String) ref;
         }
       }
       /**
@@ -1265,11 +1265,11 @@ public final class PSIServiceProto {
        */
       public com.google.protobuf.ByteString
           getSaltReplyBytes() {
-        Object ref = saltReply_;
+        java.lang.Object ref = saltReply_;
         if (ref instanceof String) {
           com.google.protobuf.ByteString b = 
               com.google.protobuf.ByteString.copyFromUtf8(
-                  (String) ref);
+                  (java.lang.String) ref);
           saltReply_ = b;
           return b;
         } else {
@@ -1282,7 +1282,7 @@ public final class PSIServiceProto {
        * @return This builder for chaining.
        */
       public Builder setSaltReply(
-          String value) {
+          java.lang.String value) {
         if (value == null) {
     throw new NullPointerException();
   }
@@ -1317,13 +1317,13 @@ public final class PSIServiceProto {
         onChanged();
         return this;
       }
-      @Override
+      @java.lang.Override
       public final Builder setUnknownFields(
           final com.google.protobuf.UnknownFieldSet unknownFields) {
         return super.setUnknownFields(unknownFields);
       }
 
-      @Override
+      @java.lang.Override
       public final Builder mergeUnknownFields(
           final com.google.protobuf.UnknownFieldSet unknownFields) {
         return super.mergeUnknownFields(unknownFields);
@@ -1334,18 +1334,18 @@ public final class PSIServiceProto {
     }
 
     // @@protoc_insertion_point(class_scope:SaltReply)
-    private static final SaltReply DEFAULT_INSTANCE;
+    private static final com.intel.analytics.bigdl.ppml.fl.generated.PSIServiceProto.SaltReply DEFAULT_INSTANCE;
     static {
-      DEFAULT_INSTANCE = new SaltReply();
+      DEFAULT_INSTANCE = new com.intel.analytics.bigdl.ppml.fl.generated.PSIServiceProto.SaltReply();
     }
 
-    public static SaltReply getDefaultInstance() {
+    public static com.intel.analytics.bigdl.ppml.fl.generated.PSIServiceProto.SaltReply getDefaultInstance() {
       return DEFAULT_INSTANCE;
     }
 
     private static final com.google.protobuf.Parser<SaltReply>
         PARSER = new com.google.protobuf.AbstractParser<SaltReply>() {
-      @Override
+      @java.lang.Override
       public SaltReply parsePartialFrom(
           com.google.protobuf.CodedInputStream input,
           com.google.protobuf.ExtensionRegistryLite extensionRegistry)
@@ -1358,13 +1358,13 @@ public final class PSIServiceProto {
       return PARSER;
     }
 
-    @Override
+    @java.lang.Override
     public com.google.protobuf.Parser<SaltReply> getParserForType() {
       return PARSER;
     }
 
-    @Override
-    public SaltReply getDefaultInstanceForType() {
+    @java.lang.Override
+    public com.intel.analytics.bigdl.ppml.fl.generated.PSIServiceProto.SaltReply getDefaultInstanceForType() {
       return DEFAULT_INSTANCE;
     }
 
@@ -1378,7 +1378,7 @@ public final class PSIServiceProto {
      * <code>string task_id = 1;</code>
      * @return The taskId.
      */
-    String getTaskId();
+    java.lang.String getTaskId();
     /**
      * <code>string task_id = 1;</code>
      * @return The bytes for taskId.
@@ -1387,16 +1387,10 @@ public final class PSIServiceProto {
         getTaskIdBytes();
 
     /**
-     * <code>string client_id = 2;</code>
+     * <code>int32 client_id = 2;</code>
      * @return The clientId.
      */
-    String getClientId();
-    /**
-     * <code>string client_id = 2;</code>
-     * @return The bytes for clientId.
-     */
-    com.google.protobuf.ByteString
-        getClientIdBytes();
+    int getClientId();
 
     /**
      * <code>int32 split = 3;</code>
@@ -1426,7 +1420,7 @@ public final class PSIServiceProto {
      * <code>repeated string hashedID = 7;</code>
      * @return A list containing the hashedID.
      */
-    java.util.List<String>
+    java.util.List<java.lang.String>
         getHashedIDList();
     /**
      * <code>repeated string hashedID = 7;</code>
@@ -1438,7 +1432,7 @@ public final class PSIServiceProto {
      * @param index The index of the element to return.
      * @return The hashedID at the given index.
      */
-    String getHashedID(int index);
+    java.lang.String getHashedID(int index);
     /**
      * <code>repeated string hashedID = 7;</code>
      * @param index The index of the value to return.
@@ -1461,18 +1455,17 @@ public final class PSIServiceProto {
     }
     private UploadSetRequest() {
       taskId_ = "";
-      clientId_ = "";
       hashedID_ = com.google.protobuf.LazyStringArrayList.EMPTY;
     }
 
-    @Override
+    @java.lang.Override
     @SuppressWarnings({"unused"})
-    protected Object newInstance(
+    protected java.lang.Object newInstance(
         UnusedPrivateParameter unused) {
       return new UploadSetRequest();
     }
 
-    @Override
+    @java.lang.Override
     public final com.google.protobuf.UnknownFieldSet
     getUnknownFields() {
       return this.unknownFields;
@@ -1483,7 +1476,7 @@ public final class PSIServiceProto {
         throws com.google.protobuf.InvalidProtocolBufferException {
       this();
       if (extensionRegistry == null) {
-        throw new NullPointerException();
+        throw new java.lang.NullPointerException();
       }
       int mutable_bitField0_ = 0;
       com.google.protobuf.UnknownFieldSet.Builder unknownFields =
@@ -1497,15 +1490,14 @@ public final class PSIServiceProto {
               done = true;
               break;
             case 10: {
-              String s = input.readStringRequireUtf8();
+              java.lang.String s = input.readStringRequireUtf8();
 
               taskId_ = s;
               break;
             }
-            case 18: {
-              String s = input.readStringRequireUtf8();
+            case 16: {
 
-              clientId_ = s;
+              clientId_ = input.readInt32();
               break;
             }
             case 24: {
@@ -1529,7 +1521,7 @@ public final class PSIServiceProto {
               break;
             }
             case 58: {
-              String s = input.readStringRequireUtf8();
+              java.lang.String s = input.readStringRequireUtf8();
               if (!((mutable_bitField0_ & 0x00000001) != 0)) {
                 hashedID_ = new com.google.protobuf.LazyStringArrayList();
                 mutable_bitField0_ |= 0x00000001;
@@ -1561,32 +1553,32 @@ public final class PSIServiceProto {
     }
     public static final com.google.protobuf.Descriptors.Descriptor
         getDescriptor() {
-      return PSIServiceProto.internal_static_UploadSetRequest_descriptor;
+      return com.intel.analytics.bigdl.ppml.fl.generated.PSIServiceProto.internal_static_UploadSetRequest_descriptor;
     }
 
-    @Override
-    protected FieldAccessorTable
+    @java.lang.Override
+    protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
         internalGetFieldAccessorTable() {
-      return PSIServiceProto.internal_static_UploadSetRequest_fieldAccessorTable
+      return com.intel.analytics.bigdl.ppml.fl.generated.PSIServiceProto.internal_static_UploadSetRequest_fieldAccessorTable
           .ensureFieldAccessorsInitialized(
-              UploadSetRequest.class, Builder.class);
+              com.intel.analytics.bigdl.ppml.fl.generated.PSIServiceProto.UploadSetRequest.class, com.intel.analytics.bigdl.ppml.fl.generated.PSIServiceProto.UploadSetRequest.Builder.class);
     }
 
     public static final int TASK_ID_FIELD_NUMBER = 1;
-    private volatile Object taskId_;
+    private volatile java.lang.Object taskId_;
     /**
      * <code>string task_id = 1;</code>
      * @return The taskId.
      */
-    @Override
-    public String getTaskId() {
-      Object ref = taskId_;
-      if (ref instanceof String) {
-        return (String) ref;
+    @java.lang.Override
+    public java.lang.String getTaskId() {
+      java.lang.Object ref = taskId_;
+      if (ref instanceof java.lang.String) {
+        return (java.lang.String) ref;
       } else {
         com.google.protobuf.ByteString bs = 
             (com.google.protobuf.ByteString) ref;
-        String s = bs.toStringUtf8();
+        java.lang.String s = bs.toStringUtf8();
         taskId_ = s;
         return s;
       }
@@ -1595,14 +1587,14 @@ public final class PSIServiceProto {
      * <code>string task_id = 1;</code>
      * @return The bytes for taskId.
      */
-    @Override
+    @java.lang.Override
     public com.google.protobuf.ByteString
         getTaskIdBytes() {
-      Object ref = taskId_;
-      if (ref instanceof String) {
+      java.lang.Object ref = taskId_;
+      if (ref instanceof java.lang.String) {
         com.google.protobuf.ByteString b = 
             com.google.protobuf.ByteString.copyFromUtf8(
-                (String) ref);
+                (java.lang.String) ref);
         taskId_ = b;
         return b;
       } else {
@@ -1611,41 +1603,14 @@ public final class PSIServiceProto {
     }
 
     public static final int CLIENT_ID_FIELD_NUMBER = 2;
-    private volatile Object clientId_;
+    private int clientId_;
     /**
-     * <code>string client_id = 2;</code>
+     * <code>int32 client_id = 2;</code>
      * @return The clientId.
      */
-    @Override
-    public String getClientId() {
-      Object ref = clientId_;
-      if (ref instanceof String) {
-        return (String) ref;
-      } else {
-        com.google.protobuf.ByteString bs = 
-            (com.google.protobuf.ByteString) ref;
-        String s = bs.toStringUtf8();
-        clientId_ = s;
-        return s;
-      }
-    }
-    /**
-     * <code>string client_id = 2;</code>
-     * @return The bytes for clientId.
-     */
-    @Override
-    public com.google.protobuf.ByteString
-        getClientIdBytes() {
-      Object ref = clientId_;
-      if (ref instanceof String) {
-        com.google.protobuf.ByteString b = 
-            com.google.protobuf.ByteString.copyFromUtf8(
-                (String) ref);
-        clientId_ = b;
-        return b;
-      } else {
-        return (com.google.protobuf.ByteString) ref;
-      }
+    @java.lang.Override
+    public int getClientId() {
+      return clientId_;
     }
 
     public static final int SPLIT_FIELD_NUMBER = 3;
@@ -1654,7 +1619,7 @@ public final class PSIServiceProto {
      * <code>int32 split = 3;</code>
      * @return The split.
      */
-    @Override
+    @java.lang.Override
     public int getSplit() {
       return split_;
     }
@@ -1665,7 +1630,7 @@ public final class PSIServiceProto {
      * <code>int32 num_split = 4;</code>
      * @return The numSplit.
      */
-    @Override
+    @java.lang.Override
     public int getNumSplit() {
       return numSplit_;
     }
@@ -1676,7 +1641,7 @@ public final class PSIServiceProto {
      * <code>int32 split_length = 5;</code>
      * @return The splitLength.
      */
-    @Override
+    @java.lang.Override
     public int getSplitLength() {
       return splitLength_;
     }
@@ -1687,7 +1652,7 @@ public final class PSIServiceProto {
      * <code>int32 total_length = 6;</code>
      * @return The totalLength.
      */
-    @Override
+    @java.lang.Override
     public int getTotalLength() {
       return totalLength_;
     }
@@ -1714,7 +1679,7 @@ public final class PSIServiceProto {
      * @param index The index of the element to return.
      * @return The hashedID at the given index.
      */
-    public String getHashedID(int index) {
+    public java.lang.String getHashedID(int index) {
       return hashedID_.get(index);
     }
     /**
@@ -1728,7 +1693,7 @@ public final class PSIServiceProto {
     }
 
     private byte memoizedIsInitialized = -1;
-    @Override
+    @java.lang.Override
     public final boolean isInitialized() {
       byte isInitialized = memoizedIsInitialized;
       if (isInitialized == 1) return true;
@@ -1738,14 +1703,14 @@ public final class PSIServiceProto {
       return true;
     }
 
-    @Override
+    @java.lang.Override
     public void writeTo(com.google.protobuf.CodedOutputStream output)
                         throws java.io.IOException {
       if (!getTaskIdBytes().isEmpty()) {
         com.google.protobuf.GeneratedMessageV3.writeString(output, 1, taskId_);
       }
-      if (!getClientIdBytes().isEmpty()) {
-        com.google.protobuf.GeneratedMessageV3.writeString(output, 2, clientId_);
+      if (clientId_ != 0) {
+        output.writeInt32(2, clientId_);
       }
       if (split_ != 0) {
         output.writeInt32(3, split_);
@@ -1765,7 +1730,7 @@ public final class PSIServiceProto {
       unknownFields.writeTo(output);
     }
 
-    @Override
+    @java.lang.Override
     public int getSerializedSize() {
       int size = memoizedSize;
       if (size != -1) return size;
@@ -1774,8 +1739,9 @@ public final class PSIServiceProto {
       if (!getTaskIdBytes().isEmpty()) {
         size += com.google.protobuf.GeneratedMessageV3.computeStringSize(1, taskId_);
       }
-      if (!getClientIdBytes().isEmpty()) {
-        size += com.google.protobuf.GeneratedMessageV3.computeStringSize(2, clientId_);
+      if (clientId_ != 0) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeInt32Size(2, clientId_);
       }
       if (split_ != 0) {
         size += com.google.protobuf.CodedOutputStream
@@ -1806,20 +1772,20 @@ public final class PSIServiceProto {
       return size;
     }
 
-    @Override
-    public boolean equals(final Object obj) {
+    @java.lang.Override
+    public boolean equals(final java.lang.Object obj) {
       if (obj == this) {
        return true;
       }
-      if (!(obj instanceof UploadSetRequest)) {
+      if (!(obj instanceof com.intel.analytics.bigdl.ppml.fl.generated.PSIServiceProto.UploadSetRequest)) {
         return super.equals(obj);
       }
-      UploadSetRequest other = (UploadSetRequest) obj;
+      com.intel.analytics.bigdl.ppml.fl.generated.PSIServiceProto.UploadSetRequest other = (com.intel.analytics.bigdl.ppml.fl.generated.PSIServiceProto.UploadSetRequest) obj;
 
       if (!getTaskId()
           .equals(other.getTaskId())) return false;
-      if (!getClientId()
-          .equals(other.getClientId())) return false;
+      if (getClientId()
+          != other.getClientId()) return false;
       if (getSplit()
           != other.getSplit()) return false;
       if (getNumSplit()
@@ -1834,7 +1800,7 @@ public final class PSIServiceProto {
       return true;
     }
 
-    @Override
+    @java.lang.Override
     public int hashCode() {
       if (memoizedHashCode != 0) {
         return memoizedHashCode;
@@ -1844,7 +1810,7 @@ public final class PSIServiceProto {
       hash = (37 * hash) + TASK_ID_FIELD_NUMBER;
       hash = (53 * hash) + getTaskId().hashCode();
       hash = (37 * hash) + CLIENT_ID_FIELD_NUMBER;
-      hash = (53 * hash) + getClientId().hashCode();
+      hash = (53 * hash) + getClientId();
       hash = (37 * hash) + SPLIT_FIELD_NUMBER;
       hash = (53 * hash) + getSplit();
       hash = (37 * hash) + NUM_SPLIT_FIELD_NUMBER;
@@ -1862,69 +1828,69 @@ public final class PSIServiceProto {
       return hash;
     }
 
-    public static UploadSetRequest parseFrom(
+    public static com.intel.analytics.bigdl.ppml.fl.generated.PSIServiceProto.UploadSetRequest parseFrom(
         java.nio.ByteBuffer data)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data);
     }
-    public static UploadSetRequest parseFrom(
+    public static com.intel.analytics.bigdl.ppml.fl.generated.PSIServiceProto.UploadSetRequest parseFrom(
         java.nio.ByteBuffer data,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data, extensionRegistry);
     }
-    public static UploadSetRequest parseFrom(
+    public static com.intel.analytics.bigdl.ppml.fl.generated.PSIServiceProto.UploadSetRequest parseFrom(
         com.google.protobuf.ByteString data)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data);
     }
-    public static UploadSetRequest parseFrom(
+    public static com.intel.analytics.bigdl.ppml.fl.generated.PSIServiceProto.UploadSetRequest parseFrom(
         com.google.protobuf.ByteString data,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data, extensionRegistry);
     }
-    public static UploadSetRequest parseFrom(byte[] data)
+    public static com.intel.analytics.bigdl.ppml.fl.generated.PSIServiceProto.UploadSetRequest parseFrom(byte[] data)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data);
     }
-    public static UploadSetRequest parseFrom(
+    public static com.intel.analytics.bigdl.ppml.fl.generated.PSIServiceProto.UploadSetRequest parseFrom(
         byte[] data,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data, extensionRegistry);
     }
-    public static UploadSetRequest parseFrom(java.io.InputStream input)
+    public static com.intel.analytics.bigdl.ppml.fl.generated.PSIServiceProto.UploadSetRequest parseFrom(java.io.InputStream input)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseWithIOException(PARSER, input);
     }
-    public static UploadSetRequest parseFrom(
+    public static com.intel.analytics.bigdl.ppml.fl.generated.PSIServiceProto.UploadSetRequest parseFrom(
         java.io.InputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseWithIOException(PARSER, input, extensionRegistry);
     }
-    public static UploadSetRequest parseDelimitedFrom(java.io.InputStream input)
+    public static com.intel.analytics.bigdl.ppml.fl.generated.PSIServiceProto.UploadSetRequest parseDelimitedFrom(java.io.InputStream input)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseDelimitedWithIOException(PARSER, input);
     }
-    public static UploadSetRequest parseDelimitedFrom(
+    public static com.intel.analytics.bigdl.ppml.fl.generated.PSIServiceProto.UploadSetRequest parseDelimitedFrom(
         java.io.InputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseDelimitedWithIOException(PARSER, input, extensionRegistry);
     }
-    public static UploadSetRequest parseFrom(
+    public static com.intel.analytics.bigdl.ppml.fl.generated.PSIServiceProto.UploadSetRequest parseFrom(
         com.google.protobuf.CodedInputStream input)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseWithIOException(PARSER, input);
     }
-    public static UploadSetRequest parseFrom(
+    public static com.intel.analytics.bigdl.ppml.fl.generated.PSIServiceProto.UploadSetRequest parseFrom(
         com.google.protobuf.CodedInputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
@@ -1932,23 +1898,23 @@ public final class PSIServiceProto {
           .parseWithIOException(PARSER, input, extensionRegistry);
     }
 
-    @Override
+    @java.lang.Override
     public Builder newBuilderForType() { return newBuilder(); }
     public static Builder newBuilder() {
       return DEFAULT_INSTANCE.toBuilder();
     }
-    public static Builder newBuilder(UploadSetRequest prototype) {
+    public static Builder newBuilder(com.intel.analytics.bigdl.ppml.fl.generated.PSIServiceProto.UploadSetRequest prototype) {
       return DEFAULT_INSTANCE.toBuilder().mergeFrom(prototype);
     }
-    @Override
+    @java.lang.Override
     public Builder toBuilder() {
       return this == DEFAULT_INSTANCE
           ? new Builder() : new Builder().mergeFrom(this);
     }
 
-    @Override
+    @java.lang.Override
     protected Builder newBuilderForType(
-        BuilderParent parent) {
+        com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
       Builder builder = new Builder(parent);
       return builder;
     }
@@ -1958,18 +1924,18 @@ public final class PSIServiceProto {
     public static final class Builder extends
         com.google.protobuf.GeneratedMessageV3.Builder<Builder> implements
         // @@protoc_insertion_point(builder_implements:UploadSetRequest)
-        UploadSetRequestOrBuilder {
+        com.intel.analytics.bigdl.ppml.fl.generated.PSIServiceProto.UploadSetRequestOrBuilder {
       public static final com.google.protobuf.Descriptors.Descriptor
           getDescriptor() {
-        return PSIServiceProto.internal_static_UploadSetRequest_descriptor;
+        return com.intel.analytics.bigdl.ppml.fl.generated.PSIServiceProto.internal_static_UploadSetRequest_descriptor;
       }
 
-      @Override
-      protected FieldAccessorTable
+      @java.lang.Override
+      protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
           internalGetFieldAccessorTable() {
-        return PSIServiceProto.internal_static_UploadSetRequest_fieldAccessorTable
+        return com.intel.analytics.bigdl.ppml.fl.generated.PSIServiceProto.internal_static_UploadSetRequest_fieldAccessorTable
             .ensureFieldAccessorsInitialized(
-                UploadSetRequest.class, Builder.class);
+                com.intel.analytics.bigdl.ppml.fl.generated.PSIServiceProto.UploadSetRequest.class, com.intel.analytics.bigdl.ppml.fl.generated.PSIServiceProto.UploadSetRequest.Builder.class);
       }
 
       // Construct using com.intel.analytics.bigdl.ppml.fl.generated.PSIServiceProto.UploadSetRequest.newBuilder()
@@ -1978,7 +1944,7 @@ public final class PSIServiceProto {
       }
 
       private Builder(
-          BuilderParent parent) {
+          com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
         super(parent);
         maybeForceBuilderInitialization();
       }
@@ -1987,12 +1953,12 @@ public final class PSIServiceProto {
                 .alwaysUseFieldBuilders) {
         }
       }
-      @Override
+      @java.lang.Override
       public Builder clear() {
         super.clear();
         taskId_ = "";
 
-        clientId_ = "";
+        clientId_ = 0;
 
         split_ = 0;
 
@@ -2007,29 +1973,29 @@ public final class PSIServiceProto {
         return this;
       }
 
-      @Override
+      @java.lang.Override
       public com.google.protobuf.Descriptors.Descriptor
           getDescriptorForType() {
-        return PSIServiceProto.internal_static_UploadSetRequest_descriptor;
+        return com.intel.analytics.bigdl.ppml.fl.generated.PSIServiceProto.internal_static_UploadSetRequest_descriptor;
       }
 
-      @Override
-      public UploadSetRequest getDefaultInstanceForType() {
-        return UploadSetRequest.getDefaultInstance();
+      @java.lang.Override
+      public com.intel.analytics.bigdl.ppml.fl.generated.PSIServiceProto.UploadSetRequest getDefaultInstanceForType() {
+        return com.intel.analytics.bigdl.ppml.fl.generated.PSIServiceProto.UploadSetRequest.getDefaultInstance();
       }
 
-      @Override
-      public UploadSetRequest build() {
-        UploadSetRequest result = buildPartial();
+      @java.lang.Override
+      public com.intel.analytics.bigdl.ppml.fl.generated.PSIServiceProto.UploadSetRequest build() {
+        com.intel.analytics.bigdl.ppml.fl.generated.PSIServiceProto.UploadSetRequest result = buildPartial();
         if (!result.isInitialized()) {
           throw newUninitializedMessageException(result);
         }
         return result;
       }
 
-      @Override
-      public UploadSetRequest buildPartial() {
-        UploadSetRequest result = new UploadSetRequest(this);
+      @java.lang.Override
+      public com.intel.analytics.bigdl.ppml.fl.generated.PSIServiceProto.UploadSetRequest buildPartial() {
+        com.intel.analytics.bigdl.ppml.fl.generated.PSIServiceProto.UploadSetRequest result = new com.intel.analytics.bigdl.ppml.fl.generated.PSIServiceProto.UploadSetRequest(this);
         int from_bitField0_ = bitField0_;
         result.taskId_ = taskId_;
         result.clientId_ = clientId_;
@@ -2046,57 +2012,56 @@ public final class PSIServiceProto {
         return result;
       }
 
-      @Override
+      @java.lang.Override
       public Builder clone() {
         return super.clone();
       }
-      @Override
+      @java.lang.Override
       public Builder setField(
           com.google.protobuf.Descriptors.FieldDescriptor field,
-          Object value) {
+          java.lang.Object value) {
         return super.setField(field, value);
       }
-      @Override
+      @java.lang.Override
       public Builder clearField(
           com.google.protobuf.Descriptors.FieldDescriptor field) {
         return super.clearField(field);
       }
-      @Override
+      @java.lang.Override
       public Builder clearOneof(
           com.google.protobuf.Descriptors.OneofDescriptor oneof) {
         return super.clearOneof(oneof);
       }
-      @Override
+      @java.lang.Override
       public Builder setRepeatedField(
           com.google.protobuf.Descriptors.FieldDescriptor field,
-          int index, Object value) {
+          int index, java.lang.Object value) {
         return super.setRepeatedField(field, index, value);
       }
-      @Override
+      @java.lang.Override
       public Builder addRepeatedField(
           com.google.protobuf.Descriptors.FieldDescriptor field,
-          Object value) {
+          java.lang.Object value) {
         return super.addRepeatedField(field, value);
       }
-      @Override
+      @java.lang.Override
       public Builder mergeFrom(com.google.protobuf.Message other) {
-        if (other instanceof UploadSetRequest) {
-          return mergeFrom((UploadSetRequest)other);
+        if (other instanceof com.intel.analytics.bigdl.ppml.fl.generated.PSIServiceProto.UploadSetRequest) {
+          return mergeFrom((com.intel.analytics.bigdl.ppml.fl.generated.PSIServiceProto.UploadSetRequest)other);
         } else {
           super.mergeFrom(other);
           return this;
         }
       }
 
-      public Builder mergeFrom(UploadSetRequest other) {
-        if (other == UploadSetRequest.getDefaultInstance()) return this;
+      public Builder mergeFrom(com.intel.analytics.bigdl.ppml.fl.generated.PSIServiceProto.UploadSetRequest other) {
+        if (other == com.intel.analytics.bigdl.ppml.fl.generated.PSIServiceProto.UploadSetRequest.getDefaultInstance()) return this;
         if (!other.getTaskId().isEmpty()) {
           taskId_ = other.taskId_;
           onChanged();
         }
-        if (!other.getClientId().isEmpty()) {
-          clientId_ = other.clientId_;
-          onChanged();
+        if (other.getClientId() != 0) {
+          setClientId(other.getClientId());
         }
         if (other.getSplit() != 0) {
           setSplit(other.getSplit());
@@ -2125,21 +2090,21 @@ public final class PSIServiceProto {
         return this;
       }
 
-      @Override
+      @java.lang.Override
       public final boolean isInitialized() {
         return true;
       }
 
-      @Override
+      @java.lang.Override
       public Builder mergeFrom(
           com.google.protobuf.CodedInputStream input,
           com.google.protobuf.ExtensionRegistryLite extensionRegistry)
           throws java.io.IOException {
-        UploadSetRequest parsedMessage = null;
+        com.intel.analytics.bigdl.ppml.fl.generated.PSIServiceProto.UploadSetRequest parsedMessage = null;
         try {
           parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
         } catch (com.google.protobuf.InvalidProtocolBufferException e) {
-          parsedMessage = (UploadSetRequest) e.getUnfinishedMessage();
+          parsedMessage = (com.intel.analytics.bigdl.ppml.fl.generated.PSIServiceProto.UploadSetRequest) e.getUnfinishedMessage();
           throw e.unwrapIOException();
         } finally {
           if (parsedMessage != null) {
@@ -2150,21 +2115,21 @@ public final class PSIServiceProto {
       }
       private int bitField0_;
 
-      private Object taskId_ = "";
+      private java.lang.Object taskId_ = "";
       /**
        * <code>string task_id = 1;</code>
        * @return The taskId.
        */
-      public String getTaskId() {
-        Object ref = taskId_;
-        if (!(ref instanceof String)) {
+      public java.lang.String getTaskId() {
+        java.lang.Object ref = taskId_;
+        if (!(ref instanceof java.lang.String)) {
           com.google.protobuf.ByteString bs =
               (com.google.protobuf.ByteString) ref;
-          String s = bs.toStringUtf8();
+          java.lang.String s = bs.toStringUtf8();
           taskId_ = s;
           return s;
         } else {
-          return (String) ref;
+          return (java.lang.String) ref;
         }
       }
       /**
@@ -2173,11 +2138,11 @@ public final class PSIServiceProto {
        */
       public com.google.protobuf.ByteString
           getTaskIdBytes() {
-        Object ref = taskId_;
+        java.lang.Object ref = taskId_;
         if (ref instanceof String) {
           com.google.protobuf.ByteString b = 
               com.google.protobuf.ByteString.copyFromUtf8(
-                  (String) ref);
+                  (java.lang.String) ref);
           taskId_ = b;
           return b;
         } else {
@@ -2190,7 +2155,7 @@ public final class PSIServiceProto {
        * @return This builder for chaining.
        */
       public Builder setTaskId(
-          String value) {
+          java.lang.String value) {
         if (value == null) {
     throw new NullPointerException();
   }
@@ -2226,78 +2191,33 @@ public final class PSIServiceProto {
         return this;
       }
 
-      private Object clientId_ = "";
+      private int clientId_ ;
       /**
-       * <code>string client_id = 2;</code>
+       * <code>int32 client_id = 2;</code>
        * @return The clientId.
        */
-      public String getClientId() {
-        Object ref = clientId_;
-        if (!(ref instanceof String)) {
-          com.google.protobuf.ByteString bs =
-              (com.google.protobuf.ByteString) ref;
-          String s = bs.toStringUtf8();
-          clientId_ = s;
-          return s;
-        } else {
-          return (String) ref;
-        }
+      @java.lang.Override
+      public int getClientId() {
+        return clientId_;
       }
       /**
-       * <code>string client_id = 2;</code>
-       * @return The bytes for clientId.
-       */
-      public com.google.protobuf.ByteString
-          getClientIdBytes() {
-        Object ref = clientId_;
-        if (ref instanceof String) {
-          com.google.protobuf.ByteString b = 
-              com.google.protobuf.ByteString.copyFromUtf8(
-                  (String) ref);
-          clientId_ = b;
-          return b;
-        } else {
-          return (com.google.protobuf.ByteString) ref;
-        }
-      }
-      /**
-       * <code>string client_id = 2;</code>
+       * <code>int32 client_id = 2;</code>
        * @param value The clientId to set.
        * @return This builder for chaining.
        */
-      public Builder setClientId(
-          String value) {
-        if (value == null) {
-    throw new NullPointerException();
-  }
-  
+      public Builder setClientId(int value) {
+        
         clientId_ = value;
         onChanged();
         return this;
       }
       /**
-       * <code>string client_id = 2;</code>
+       * <code>int32 client_id = 2;</code>
        * @return This builder for chaining.
        */
       public Builder clearClientId() {
         
-        clientId_ = getDefaultInstance().getClientId();
-        onChanged();
-        return this;
-      }
-      /**
-       * <code>string client_id = 2;</code>
-       * @param value The bytes for clientId to set.
-       * @return This builder for chaining.
-       */
-      public Builder setClientIdBytes(
-          com.google.protobuf.ByteString value) {
-        if (value == null) {
-    throw new NullPointerException();
-  }
-  checkByteStringIsUtf8(value);
-        
-        clientId_ = value;
+        clientId_ = 0;
         onChanged();
         return this;
       }
@@ -2307,7 +2227,7 @@ public final class PSIServiceProto {
        * <code>int32 split = 3;</code>
        * @return The split.
        */
-      @Override
+      @java.lang.Override
       public int getSplit() {
         return split_;
       }
@@ -2338,7 +2258,7 @@ public final class PSIServiceProto {
        * <code>int32 num_split = 4;</code>
        * @return The numSplit.
        */
-      @Override
+      @java.lang.Override
       public int getNumSplit() {
         return numSplit_;
       }
@@ -2369,7 +2289,7 @@ public final class PSIServiceProto {
        * <code>int32 split_length = 5;</code>
        * @return The splitLength.
        */
-      @Override
+      @java.lang.Override
       public int getSplitLength() {
         return splitLength_;
       }
@@ -2400,7 +2320,7 @@ public final class PSIServiceProto {
        * <code>int32 total_length = 6;</code>
        * @return The totalLength.
        */
-      @Override
+      @java.lang.Override
       public int getTotalLength() {
         return totalLength_;
       }
@@ -2453,7 +2373,7 @@ public final class PSIServiceProto {
        * @param index The index of the element to return.
        * @return The hashedID at the given index.
        */
-      public String getHashedID(int index) {
+      public java.lang.String getHashedID(int index) {
         return hashedID_.get(index);
       }
       /**
@@ -2472,7 +2392,7 @@ public final class PSIServiceProto {
        * @return This builder for chaining.
        */
       public Builder setHashedID(
-          int index, String value) {
+          int index, java.lang.String value) {
         if (value == null) {
     throw new NullPointerException();
   }
@@ -2487,7 +2407,7 @@ public final class PSIServiceProto {
        * @return This builder for chaining.
        */
       public Builder addHashedID(
-          String value) {
+          java.lang.String value) {
         if (value == null) {
     throw new NullPointerException();
   }
@@ -2502,7 +2422,7 @@ public final class PSIServiceProto {
        * @return This builder for chaining.
        */
       public Builder addAllHashedID(
-          Iterable<String> values) {
+          java.lang.Iterable<java.lang.String> values) {
         ensureHashedIDIsMutable();
         com.google.protobuf.AbstractMessageLite.Builder.addAll(
             values, hashedID_);
@@ -2535,13 +2455,13 @@ public final class PSIServiceProto {
         onChanged();
         return this;
       }
-      @Override
+      @java.lang.Override
       public final Builder setUnknownFields(
           final com.google.protobuf.UnknownFieldSet unknownFields) {
         return super.setUnknownFields(unknownFields);
       }
 
-      @Override
+      @java.lang.Override
       public final Builder mergeUnknownFields(
           final com.google.protobuf.UnknownFieldSet unknownFields) {
         return super.mergeUnknownFields(unknownFields);
@@ -2552,18 +2472,18 @@ public final class PSIServiceProto {
     }
 
     // @@protoc_insertion_point(class_scope:UploadSetRequest)
-    private static final UploadSetRequest DEFAULT_INSTANCE;
+    private static final com.intel.analytics.bigdl.ppml.fl.generated.PSIServiceProto.UploadSetRequest DEFAULT_INSTANCE;
     static {
-      DEFAULT_INSTANCE = new UploadSetRequest();
+      DEFAULT_INSTANCE = new com.intel.analytics.bigdl.ppml.fl.generated.PSIServiceProto.UploadSetRequest();
     }
 
-    public static UploadSetRequest getDefaultInstance() {
+    public static com.intel.analytics.bigdl.ppml.fl.generated.PSIServiceProto.UploadSetRequest getDefaultInstance() {
       return DEFAULT_INSTANCE;
     }
 
     private static final com.google.protobuf.Parser<UploadSetRequest>
         PARSER = new com.google.protobuf.AbstractParser<UploadSetRequest>() {
-      @Override
+      @java.lang.Override
       public UploadSetRequest parsePartialFrom(
           com.google.protobuf.CodedInputStream input,
           com.google.protobuf.ExtensionRegistryLite extensionRegistry)
@@ -2576,13 +2496,13 @@ public final class PSIServiceProto {
       return PARSER;
     }
 
-    @Override
+    @java.lang.Override
     public com.google.protobuf.Parser<UploadSetRequest> getParserForType() {
       return PARSER;
     }
 
-    @Override
-    public UploadSetRequest getDefaultInstanceForType() {
+    @java.lang.Override
+    public com.intel.analytics.bigdl.ppml.fl.generated.PSIServiceProto.UploadSetRequest getDefaultInstanceForType() {
       return DEFAULT_INSTANCE;
     }
 
@@ -2596,7 +2516,7 @@ public final class PSIServiceProto {
      * <code>string task_id = 1;</code>
      * @return The taskId.
      */
-    String getTaskId();
+    java.lang.String getTaskId();
     /**
      * <code>string task_id = 1;</code>
      * @return The bytes for taskId.
@@ -2613,7 +2533,7 @@ public final class PSIServiceProto {
      * <code>.SIGNAL status = 2;</code>
      * @return The status.
      */
-    FlBaseProto.SIGNAL getStatus();
+    com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.SIGNAL getStatus();
   }
   /**
    * Protobuf type {@code UploadSetResponse}
@@ -2632,14 +2552,14 @@ public final class PSIServiceProto {
       status_ = 0;
     }
 
-    @Override
+    @java.lang.Override
     @SuppressWarnings({"unused"})
-    protected Object newInstance(
+    protected java.lang.Object newInstance(
         UnusedPrivateParameter unused) {
       return new UploadSetResponse();
     }
 
-    @Override
+    @java.lang.Override
     public final com.google.protobuf.UnknownFieldSet
     getUnknownFields() {
       return this.unknownFields;
@@ -2650,7 +2570,7 @@ public final class PSIServiceProto {
         throws com.google.protobuf.InvalidProtocolBufferException {
       this();
       if (extensionRegistry == null) {
-        throw new NullPointerException();
+        throw new java.lang.NullPointerException();
       }
       com.google.protobuf.UnknownFieldSet.Builder unknownFields =
           com.google.protobuf.UnknownFieldSet.newBuilder();
@@ -2663,7 +2583,7 @@ public final class PSIServiceProto {
               done = true;
               break;
             case 10: {
-              String s = input.readStringRequireUtf8();
+              java.lang.String s = input.readStringRequireUtf8();
 
               taskId_ = s;
               break;
@@ -2695,32 +2615,32 @@ public final class PSIServiceProto {
     }
     public static final com.google.protobuf.Descriptors.Descriptor
         getDescriptor() {
-      return PSIServiceProto.internal_static_UploadSetResponse_descriptor;
+      return com.intel.analytics.bigdl.ppml.fl.generated.PSIServiceProto.internal_static_UploadSetResponse_descriptor;
     }
 
-    @Override
-    protected FieldAccessorTable
+    @java.lang.Override
+    protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
         internalGetFieldAccessorTable() {
-      return PSIServiceProto.internal_static_UploadSetResponse_fieldAccessorTable
+      return com.intel.analytics.bigdl.ppml.fl.generated.PSIServiceProto.internal_static_UploadSetResponse_fieldAccessorTable
           .ensureFieldAccessorsInitialized(
-              UploadSetResponse.class, Builder.class);
+              com.intel.analytics.bigdl.ppml.fl.generated.PSIServiceProto.UploadSetResponse.class, com.intel.analytics.bigdl.ppml.fl.generated.PSIServiceProto.UploadSetResponse.Builder.class);
     }
 
     public static final int TASK_ID_FIELD_NUMBER = 1;
-    private volatile Object taskId_;
+    private volatile java.lang.Object taskId_;
     /**
      * <code>string task_id = 1;</code>
      * @return The taskId.
      */
-    @Override
-    public String getTaskId() {
-      Object ref = taskId_;
-      if (ref instanceof String) {
-        return (String) ref;
+    @java.lang.Override
+    public java.lang.String getTaskId() {
+      java.lang.Object ref = taskId_;
+      if (ref instanceof java.lang.String) {
+        return (java.lang.String) ref;
       } else {
         com.google.protobuf.ByteString bs = 
             (com.google.protobuf.ByteString) ref;
-        String s = bs.toStringUtf8();
+        java.lang.String s = bs.toStringUtf8();
         taskId_ = s;
         return s;
       }
@@ -2729,14 +2649,14 @@ public final class PSIServiceProto {
      * <code>string task_id = 1;</code>
      * @return The bytes for taskId.
      */
-    @Override
+    @java.lang.Override
     public com.google.protobuf.ByteString
         getTaskIdBytes() {
-      Object ref = taskId_;
-      if (ref instanceof String) {
+      java.lang.Object ref = taskId_;
+      if (ref instanceof java.lang.String) {
         com.google.protobuf.ByteString b = 
             com.google.protobuf.ByteString.copyFromUtf8(
-                (String) ref);
+                (java.lang.String) ref);
         taskId_ = b;
         return b;
       } else {
@@ -2750,21 +2670,21 @@ public final class PSIServiceProto {
      * <code>.SIGNAL status = 2;</code>
      * @return The enum numeric value on the wire for status.
      */
-    @Override public int getStatusValue() {
+    @java.lang.Override public int getStatusValue() {
       return status_;
     }
     /**
      * <code>.SIGNAL status = 2;</code>
      * @return The status.
      */
-    @Override public FlBaseProto.SIGNAL getStatus() {
+    @java.lang.Override public com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.SIGNAL getStatus() {
       @SuppressWarnings("deprecation")
-      FlBaseProto.SIGNAL result = FlBaseProto.SIGNAL.valueOf(status_);
-      return result == null ? FlBaseProto.SIGNAL.UNRECOGNIZED : result;
+      com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.SIGNAL result = com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.SIGNAL.valueOf(status_);
+      return result == null ? com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.SIGNAL.UNRECOGNIZED : result;
     }
 
     private byte memoizedIsInitialized = -1;
-    @Override
+    @java.lang.Override
     public final boolean isInitialized() {
       byte isInitialized = memoizedIsInitialized;
       if (isInitialized == 1) return true;
@@ -2774,19 +2694,19 @@ public final class PSIServiceProto {
       return true;
     }
 
-    @Override
+    @java.lang.Override
     public void writeTo(com.google.protobuf.CodedOutputStream output)
                         throws java.io.IOException {
       if (!getTaskIdBytes().isEmpty()) {
         com.google.protobuf.GeneratedMessageV3.writeString(output, 1, taskId_);
       }
-      if (status_ != FlBaseProto.SIGNAL.SUCCESS.getNumber()) {
+      if (status_ != com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.SIGNAL.SUCCESS.getNumber()) {
         output.writeEnum(2, status_);
       }
       unknownFields.writeTo(output);
     }
 
-    @Override
+    @java.lang.Override
     public int getSerializedSize() {
       int size = memoizedSize;
       if (size != -1) return size;
@@ -2795,7 +2715,7 @@ public final class PSIServiceProto {
       if (!getTaskIdBytes().isEmpty()) {
         size += com.google.protobuf.GeneratedMessageV3.computeStringSize(1, taskId_);
       }
-      if (status_ != FlBaseProto.SIGNAL.SUCCESS.getNumber()) {
+      if (status_ != com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.SIGNAL.SUCCESS.getNumber()) {
         size += com.google.protobuf.CodedOutputStream
           .computeEnumSize(2, status_);
       }
@@ -2804,15 +2724,15 @@ public final class PSIServiceProto {
       return size;
     }
 
-    @Override
-    public boolean equals(final Object obj) {
+    @java.lang.Override
+    public boolean equals(final java.lang.Object obj) {
       if (obj == this) {
        return true;
       }
-      if (!(obj instanceof UploadSetResponse)) {
+      if (!(obj instanceof com.intel.analytics.bigdl.ppml.fl.generated.PSIServiceProto.UploadSetResponse)) {
         return super.equals(obj);
       }
-      UploadSetResponse other = (UploadSetResponse) obj;
+      com.intel.analytics.bigdl.ppml.fl.generated.PSIServiceProto.UploadSetResponse other = (com.intel.analytics.bigdl.ppml.fl.generated.PSIServiceProto.UploadSetResponse) obj;
 
       if (!getTaskId()
           .equals(other.getTaskId())) return false;
@@ -2821,7 +2741,7 @@ public final class PSIServiceProto {
       return true;
     }
 
-    @Override
+    @java.lang.Override
     public int hashCode() {
       if (memoizedHashCode != 0) {
         return memoizedHashCode;
@@ -2837,69 +2757,69 @@ public final class PSIServiceProto {
       return hash;
     }
 
-    public static UploadSetResponse parseFrom(
+    public static com.intel.analytics.bigdl.ppml.fl.generated.PSIServiceProto.UploadSetResponse parseFrom(
         java.nio.ByteBuffer data)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data);
     }
-    public static UploadSetResponse parseFrom(
+    public static com.intel.analytics.bigdl.ppml.fl.generated.PSIServiceProto.UploadSetResponse parseFrom(
         java.nio.ByteBuffer data,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data, extensionRegistry);
     }
-    public static UploadSetResponse parseFrom(
+    public static com.intel.analytics.bigdl.ppml.fl.generated.PSIServiceProto.UploadSetResponse parseFrom(
         com.google.protobuf.ByteString data)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data);
     }
-    public static UploadSetResponse parseFrom(
+    public static com.intel.analytics.bigdl.ppml.fl.generated.PSIServiceProto.UploadSetResponse parseFrom(
         com.google.protobuf.ByteString data,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data, extensionRegistry);
     }
-    public static UploadSetResponse parseFrom(byte[] data)
+    public static com.intel.analytics.bigdl.ppml.fl.generated.PSIServiceProto.UploadSetResponse parseFrom(byte[] data)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data);
     }
-    public static UploadSetResponse parseFrom(
+    public static com.intel.analytics.bigdl.ppml.fl.generated.PSIServiceProto.UploadSetResponse parseFrom(
         byte[] data,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data, extensionRegistry);
     }
-    public static UploadSetResponse parseFrom(java.io.InputStream input)
+    public static com.intel.analytics.bigdl.ppml.fl.generated.PSIServiceProto.UploadSetResponse parseFrom(java.io.InputStream input)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseWithIOException(PARSER, input);
     }
-    public static UploadSetResponse parseFrom(
+    public static com.intel.analytics.bigdl.ppml.fl.generated.PSIServiceProto.UploadSetResponse parseFrom(
         java.io.InputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseWithIOException(PARSER, input, extensionRegistry);
     }
-    public static UploadSetResponse parseDelimitedFrom(java.io.InputStream input)
+    public static com.intel.analytics.bigdl.ppml.fl.generated.PSIServiceProto.UploadSetResponse parseDelimitedFrom(java.io.InputStream input)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseDelimitedWithIOException(PARSER, input);
     }
-    public static UploadSetResponse parseDelimitedFrom(
+    public static com.intel.analytics.bigdl.ppml.fl.generated.PSIServiceProto.UploadSetResponse parseDelimitedFrom(
         java.io.InputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseDelimitedWithIOException(PARSER, input, extensionRegistry);
     }
-    public static UploadSetResponse parseFrom(
+    public static com.intel.analytics.bigdl.ppml.fl.generated.PSIServiceProto.UploadSetResponse parseFrom(
         com.google.protobuf.CodedInputStream input)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseWithIOException(PARSER, input);
     }
-    public static UploadSetResponse parseFrom(
+    public static com.intel.analytics.bigdl.ppml.fl.generated.PSIServiceProto.UploadSetResponse parseFrom(
         com.google.protobuf.CodedInputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
@@ -2907,23 +2827,23 @@ public final class PSIServiceProto {
           .parseWithIOException(PARSER, input, extensionRegistry);
     }
 
-    @Override
+    @java.lang.Override
     public Builder newBuilderForType() { return newBuilder(); }
     public static Builder newBuilder() {
       return DEFAULT_INSTANCE.toBuilder();
     }
-    public static Builder newBuilder(UploadSetResponse prototype) {
+    public static Builder newBuilder(com.intel.analytics.bigdl.ppml.fl.generated.PSIServiceProto.UploadSetResponse prototype) {
       return DEFAULT_INSTANCE.toBuilder().mergeFrom(prototype);
     }
-    @Override
+    @java.lang.Override
     public Builder toBuilder() {
       return this == DEFAULT_INSTANCE
           ? new Builder() : new Builder().mergeFrom(this);
     }
 
-    @Override
+    @java.lang.Override
     protected Builder newBuilderForType(
-        BuilderParent parent) {
+        com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
       Builder builder = new Builder(parent);
       return builder;
     }
@@ -2933,18 +2853,18 @@ public final class PSIServiceProto {
     public static final class Builder extends
         com.google.protobuf.GeneratedMessageV3.Builder<Builder> implements
         // @@protoc_insertion_point(builder_implements:UploadSetResponse)
-        UploadSetResponseOrBuilder {
+        com.intel.analytics.bigdl.ppml.fl.generated.PSIServiceProto.UploadSetResponseOrBuilder {
       public static final com.google.protobuf.Descriptors.Descriptor
           getDescriptor() {
-        return PSIServiceProto.internal_static_UploadSetResponse_descriptor;
+        return com.intel.analytics.bigdl.ppml.fl.generated.PSIServiceProto.internal_static_UploadSetResponse_descriptor;
       }
 
-      @Override
-      protected FieldAccessorTable
+      @java.lang.Override
+      protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
           internalGetFieldAccessorTable() {
-        return PSIServiceProto.internal_static_UploadSetResponse_fieldAccessorTable
+        return com.intel.analytics.bigdl.ppml.fl.generated.PSIServiceProto.internal_static_UploadSetResponse_fieldAccessorTable
             .ensureFieldAccessorsInitialized(
-                UploadSetResponse.class, Builder.class);
+                com.intel.analytics.bigdl.ppml.fl.generated.PSIServiceProto.UploadSetResponse.class, com.intel.analytics.bigdl.ppml.fl.generated.PSIServiceProto.UploadSetResponse.Builder.class);
       }
 
       // Construct using com.intel.analytics.bigdl.ppml.fl.generated.PSIServiceProto.UploadSetResponse.newBuilder()
@@ -2953,7 +2873,7 @@ public final class PSIServiceProto {
       }
 
       private Builder(
-          BuilderParent parent) {
+          com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
         super(parent);
         maybeForceBuilderInitialization();
       }
@@ -2962,7 +2882,7 @@ public final class PSIServiceProto {
                 .alwaysUseFieldBuilders) {
         }
       }
-      @Override
+      @java.lang.Override
       public Builder clear() {
         super.clear();
         taskId_ = "";
@@ -2972,79 +2892,79 @@ public final class PSIServiceProto {
         return this;
       }
 
-      @Override
+      @java.lang.Override
       public com.google.protobuf.Descriptors.Descriptor
           getDescriptorForType() {
-        return PSIServiceProto.internal_static_UploadSetResponse_descriptor;
+        return com.intel.analytics.bigdl.ppml.fl.generated.PSIServiceProto.internal_static_UploadSetResponse_descriptor;
       }
 
-      @Override
-      public UploadSetResponse getDefaultInstanceForType() {
-        return UploadSetResponse.getDefaultInstance();
+      @java.lang.Override
+      public com.intel.analytics.bigdl.ppml.fl.generated.PSIServiceProto.UploadSetResponse getDefaultInstanceForType() {
+        return com.intel.analytics.bigdl.ppml.fl.generated.PSIServiceProto.UploadSetResponse.getDefaultInstance();
       }
 
-      @Override
-      public UploadSetResponse build() {
-        UploadSetResponse result = buildPartial();
+      @java.lang.Override
+      public com.intel.analytics.bigdl.ppml.fl.generated.PSIServiceProto.UploadSetResponse build() {
+        com.intel.analytics.bigdl.ppml.fl.generated.PSIServiceProto.UploadSetResponse result = buildPartial();
         if (!result.isInitialized()) {
           throw newUninitializedMessageException(result);
         }
         return result;
       }
 
-      @Override
-      public UploadSetResponse buildPartial() {
-        UploadSetResponse result = new UploadSetResponse(this);
+      @java.lang.Override
+      public com.intel.analytics.bigdl.ppml.fl.generated.PSIServiceProto.UploadSetResponse buildPartial() {
+        com.intel.analytics.bigdl.ppml.fl.generated.PSIServiceProto.UploadSetResponse result = new com.intel.analytics.bigdl.ppml.fl.generated.PSIServiceProto.UploadSetResponse(this);
         result.taskId_ = taskId_;
         result.status_ = status_;
         onBuilt();
         return result;
       }
 
-      @Override
+      @java.lang.Override
       public Builder clone() {
         return super.clone();
       }
-      @Override
+      @java.lang.Override
       public Builder setField(
           com.google.protobuf.Descriptors.FieldDescriptor field,
-          Object value) {
+          java.lang.Object value) {
         return super.setField(field, value);
       }
-      @Override
+      @java.lang.Override
       public Builder clearField(
           com.google.protobuf.Descriptors.FieldDescriptor field) {
         return super.clearField(field);
       }
-      @Override
+      @java.lang.Override
       public Builder clearOneof(
           com.google.protobuf.Descriptors.OneofDescriptor oneof) {
         return super.clearOneof(oneof);
       }
-      @Override
+      @java.lang.Override
       public Builder setRepeatedField(
           com.google.protobuf.Descriptors.FieldDescriptor field,
-          int index, Object value) {
+          int index, java.lang.Object value) {
         return super.setRepeatedField(field, index, value);
       }
-      @Override
+      @java.lang.Override
       public Builder addRepeatedField(
           com.google.protobuf.Descriptors.FieldDescriptor field,
-          Object value) {
+          java.lang.Object value) {
         return super.addRepeatedField(field, value);
       }
-      @Override
+      @java.lang.Override
       public Builder mergeFrom(com.google.protobuf.Message other) {
-        if (other instanceof UploadSetResponse) {
-          return mergeFrom((UploadSetResponse)other);
+        if (other instanceof com.intel.analytics.bigdl.ppml.fl.generated.PSIServiceProto.UploadSetResponse) {
+          return mergeFrom((com.intel.analytics.bigdl.ppml.fl.generated.PSIServiceProto.UploadSetResponse)other);
         } else {
           super.mergeFrom(other);
           return this;
         }
       }
 
-      public Builder mergeFrom(UploadSetResponse other) {
-        if (other == UploadSetResponse.getDefaultInstance()) return this;
+      public Builder mergeFrom(com.intel.analytics.bigdl.ppml.fl.generated.PSIServiceProto.UploadSetResponse other) {
+        if (other == com.intel.analytics.bigdl.ppml.fl.generated.PSIServiceProto.UploadSetResponse.getDefaultInstance()) return this;
         if (!other.getTaskId().isEmpty()) {
           taskId_ = other.taskId_;
           onChanged();
@@ -3057,21 +2977,21 @@ public final class PSIServiceProto {
         return this;
       }
 
-      @Override
+      @java.lang.Override
       public final boolean isInitialized() {
         return true;
       }
 
-      @Override
+      @java.lang.Override
       public Builder mergeFrom(
           com.google.protobuf.CodedInputStream input,
           com.google.protobuf.ExtensionRegistryLite extensionRegistry)
           throws java.io.IOException {
-        UploadSetResponse parsedMessage = null;
+        com.intel.analytics.bigdl.ppml.fl.generated.PSIServiceProto.UploadSetResponse parsedMessage = null;
         try {
           parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
         } catch (com.google.protobuf.InvalidProtocolBufferException e) {
-          parsedMessage = (UploadSetResponse) e.getUnfinishedMessage();
+          parsedMessage = (com.intel.analytics.bigdl.ppml.fl.generated.PSIServiceProto.UploadSetResponse) e.getUnfinishedMessage();
           throw e.unwrapIOException();
         } finally {
           if (parsedMessage != null) {
@@ -3081,21 +3001,21 @@ public final class PSIServiceProto {
         return this;
       }
 
-      private Object taskId_ = "";
+      private java.lang.Object taskId_ = "";
       /**
        * <code>string task_id = 1;</code>
        * @return The taskId.
        */
-      public String getTaskId() {
-        Object ref = taskId_;
-        if (!(ref instanceof String)) {
+      public java.lang.String getTaskId() {
+        java.lang.Object ref = taskId_;
+        if (!(ref instanceof java.lang.String)) {
           com.google.protobuf.ByteString bs =
               (com.google.protobuf.ByteString) ref;
-          String s = bs.toStringUtf8();
+          java.lang.String s = bs.toStringUtf8();
           taskId_ = s;
           return s;
         } else {
-          return (String) ref;
+          return (java.lang.String) ref;
         }
       }
       /**
@@ -3104,11 +3024,11 @@ public final class PSIServiceProto {
        */
       public com.google.protobuf.ByteString
           getTaskIdBytes() {
-        Object ref = taskId_;
+        java.lang.Object ref = taskId_;
         if (ref instanceof String) {
           com.google.protobuf.ByteString b = 
               com.google.protobuf.ByteString.copyFromUtf8(
-                  (String) ref);
+                  (java.lang.String) ref);
           taskId_ = b;
           return b;
         } else {
@@ -3121,7 +3041,7 @@ public final class PSIServiceProto {
        * @return This builder for chaining.
        */
       public Builder setTaskId(
-          String value) {
+          java.lang.String value) {
         if (value == null) {
     throw new NullPointerException();
   }
@@ -3162,7 +3082,7 @@ public final class PSIServiceProto {
        * <code>.SIGNAL status = 2;</code>
        * @return The enum numeric value on the wire for status.
        */
-      @Override public int getStatusValue() {
+      @java.lang.Override public int getStatusValue() {
         return status_;
       }
       /**
@@ -3180,18 +3100,18 @@ public final class PSIServiceProto {
        * <code>.SIGNAL status = 2;</code>
        * @return The status.
        */
-      @Override
-      public FlBaseProto.SIGNAL getStatus() {
+      @java.lang.Override
+      public com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.SIGNAL getStatus() {
         @SuppressWarnings("deprecation")
-        FlBaseProto.SIGNAL result = FlBaseProto.SIGNAL.valueOf(status_);
-        return result == null ? FlBaseProto.SIGNAL.UNRECOGNIZED : result;
+        com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.SIGNAL result = com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.SIGNAL.valueOf(status_);
+        return result == null ? com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.SIGNAL.UNRECOGNIZED : result;
       }
       /**
        * <code>.SIGNAL status = 2;</code>
        * @param value The status to set.
        * @return This builder for chaining.
        */
-      public Builder setStatus(FlBaseProto.SIGNAL value) {
+      public Builder setStatus(com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.SIGNAL value) {
         if (value == null) {
           throw new NullPointerException();
         }
@@ -3210,13 +3130,13 @@ public final class PSIServiceProto {
         onChanged();
         return this;
       }
-      @Override
+      @java.lang.Override
       public final Builder setUnknownFields(
           final com.google.protobuf.UnknownFieldSet unknownFields) {
         return super.setUnknownFields(unknownFields);
       }
 
-      @Override
+      @java.lang.Override
       public final Builder mergeUnknownFields(
           final com.google.protobuf.UnknownFieldSet unknownFields) {
         return super.mergeUnknownFields(unknownFields);
@@ -3227,18 +3147,18 @@ public final class PSIServiceProto {
     }
 
     // @@protoc_insertion_point(class_scope:UploadSetResponse)
-    private static final UploadSetResponse DEFAULT_INSTANCE;
+    private static final com.intel.analytics.bigdl.ppml.fl.generated.PSIServiceProto.UploadSetResponse DEFAULT_INSTANCE;
     static {
-      DEFAULT_INSTANCE = new UploadSetResponse();
+      DEFAULT_INSTANCE = new com.intel.analytics.bigdl.ppml.fl.generated.PSIServiceProto.UploadSetResponse();
     }
 
-    public static UploadSetResponse getDefaultInstance() {
+    public static com.intel.analytics.bigdl.ppml.fl.generated.PSIServiceProto.UploadSetResponse getDefaultInstance() {
       return DEFAULT_INSTANCE;
     }
 
     private static final com.google.protobuf.Parser<UploadSetResponse>
         PARSER = new com.google.protobuf.AbstractParser<UploadSetResponse>() {
-      @Override
+      @java.lang.Override
       public UploadSetResponse parsePartialFrom(
           com.google.protobuf.CodedInputStream input,
           com.google.protobuf.ExtensionRegistryLite extensionRegistry)
@@ -3251,13 +3171,13 @@ public final class PSIServiceProto {
       return PARSER;
     }
 
-    @Override
+    @java.lang.Override
     public com.google.protobuf.Parser<UploadSetResponse> getParserForType() {
       return PARSER;
     }
 
-    @Override
-    public UploadSetResponse getDefaultInstanceForType() {
+    @java.lang.Override
+    public com.intel.analytics.bigdl.ppml.fl.generated.PSIServiceProto.UploadSetResponse getDefaultInstanceForType() {
       return DEFAULT_INSTANCE;
     }
 
@@ -3271,7 +3191,7 @@ public final class PSIServiceProto {
      * <code>string task_id = 1;</code>
      * @return The taskId.
      */
-    String getTaskId();
+    java.lang.String getTaskId();
     /**
      * <code>string task_id = 1;</code>
      * @return The bytes for taskId.
@@ -3301,14 +3221,14 @@ public final class PSIServiceProto {
       taskId_ = "";
     }
 
-    @Override
+    @java.lang.Override
     @SuppressWarnings({"unused"})
-    protected Object newInstance(
+    protected java.lang.Object newInstance(
         UnusedPrivateParameter unused) {
       return new DownloadIntersectionRequest();
     }
 
-    @Override
+    @java.lang.Override
     public final com.google.protobuf.UnknownFieldSet
     getUnknownFields() {
       return this.unknownFields;
@@ -3319,7 +3239,7 @@ public final class PSIServiceProto {
         throws com.google.protobuf.InvalidProtocolBufferException {
       this();
       if (extensionRegistry == null) {
-        throw new NullPointerException();
+        throw new java.lang.NullPointerException();
       }
       com.google.protobuf.UnknownFieldSet.Builder unknownFields =
           com.google.protobuf.UnknownFieldSet.newBuilder();
@@ -3332,7 +3252,7 @@ public final class PSIServiceProto {
               done = true;
               break;
             case 10: {
-              String s = input.readStringRequireUtf8();
+              java.lang.String s = input.readStringRequireUtf8();
 
               taskId_ = s;
               break;
@@ -3363,32 +3283,32 @@ public final class PSIServiceProto {
     }
     public static final com.google.protobuf.Descriptors.Descriptor
         getDescriptor() {
-      return PSIServiceProto.internal_static_DownloadIntersectionRequest_descriptor;
+      return com.intel.analytics.bigdl.ppml.fl.generated.PSIServiceProto.internal_static_DownloadIntersectionRequest_descriptor;
     }
 
-    @Override
-    protected FieldAccessorTable
+    @java.lang.Override
+    protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
         internalGetFieldAccessorTable() {
-      return PSIServiceProto.internal_static_DownloadIntersectionRequest_fieldAccessorTable
+      return com.intel.analytics.bigdl.ppml.fl.generated.PSIServiceProto.internal_static_DownloadIntersectionRequest_fieldAccessorTable
           .ensureFieldAccessorsInitialized(
-              DownloadIntersectionRequest.class, Builder.class);
+              com.intel.analytics.bigdl.ppml.fl.generated.PSIServiceProto.DownloadIntersectionRequest.class, com.intel.analytics.bigdl.ppml.fl.generated.PSIServiceProto.DownloadIntersectionRequest.Builder.class);
     }
 
     public static final int TASK_ID_FIELD_NUMBER = 1;
-    private volatile Object taskId_;
+    private volatile java.lang.Object taskId_;
     /**
      * <code>string task_id = 1;</code>
      * @return The taskId.
      */
-    @Override
-    public String getTaskId() {
-      Object ref = taskId_;
-      if (ref instanceof String) {
-        return (String) ref;
+    @java.lang.Override
+    public java.lang.String getTaskId() {
+      java.lang.Object ref = taskId_;
+      if (ref instanceof java.lang.String) {
+        return (java.lang.String) ref;
       } else {
         com.google.protobuf.ByteString bs = 
             (com.google.protobuf.ByteString) ref;
-        String s = bs.toStringUtf8();
+        java.lang.String s = bs.toStringUtf8();
         taskId_ = s;
         return s;
       }
@@ -3397,14 +3317,14 @@ public final class PSIServiceProto {
      * <code>string task_id = 1;</code>
      * @return The bytes for taskId.
      */
-    @Override
+    @java.lang.Override
     public com.google.protobuf.ByteString
         getTaskIdBytes() {
-      Object ref = taskId_;
-      if (ref instanceof String) {
+      java.lang.Object ref = taskId_;
+      if (ref instanceof java.lang.String) {
         com.google.protobuf.ByteString b = 
             com.google.protobuf.ByteString.copyFromUtf8(
-                (String) ref);
+                (java.lang.String) ref);
         taskId_ = b;
         return b;
       } else {
@@ -3418,13 +3338,13 @@ public final class PSIServiceProto {
      * <code>int32 split = 2;</code>
      * @return The split.
      */
-    @Override
+    @java.lang.Override
     public int getSplit() {
       return split_;
     }
 
     private byte memoizedIsInitialized = -1;
-    @Override
+    @java.lang.Override
     public final boolean isInitialized() {
       byte isInitialized = memoizedIsInitialized;
       if (isInitialized == 1) return true;
@@ -3434,7 +3354,7 @@ public final class PSIServiceProto {
       return true;
     }
 
-    @Override
+    @java.lang.Override
     public void writeTo(com.google.protobuf.CodedOutputStream output)
                         throws java.io.IOException {
       if (!getTaskIdBytes().isEmpty()) {
@@ -3446,7 +3366,7 @@ public final class PSIServiceProto {
       unknownFields.writeTo(output);
     }
 
-    @Override
+    @java.lang.Override
     public int getSerializedSize() {
       int size = memoizedSize;
       if (size != -1) return size;
@@ -3464,15 +3384,15 @@ public final class PSIServiceProto {
       return size;
     }
 
-    @Override
-    public boolean equals(final Object obj) {
+    @java.lang.Override
+    public boolean equals(final java.lang.Object obj) {
       if (obj == this) {
        return true;
       }
-      if (!(obj instanceof DownloadIntersectionRequest)) {
+      if (!(obj instanceof com.intel.analytics.bigdl.ppml.fl.generated.PSIServiceProto.DownloadIntersectionRequest)) {
         return super.equals(obj);
       }
-      DownloadIntersectionRequest other = (DownloadIntersectionRequest) obj;
+      com.intel.analytics.bigdl.ppml.fl.generated.PSIServiceProto.DownloadIntersectionRequest other = (com.intel.analytics.bigdl.ppml.fl.generated.PSIServiceProto.DownloadIntersectionRequest) obj;
 
       if (!getTaskId()
           .equals(other.getTaskId())) return false;
@@ -3482,7 +3402,7 @@ public final class PSIServiceProto {
       return true;
     }
 
-    @Override
+    @java.lang.Override
     public int hashCode() {
       if (memoizedHashCode != 0) {
         return memoizedHashCode;
@@ -3498,69 +3418,69 @@ public final class PSIServiceProto {
       return hash;
     }
 
-    public static DownloadIntersectionRequest parseFrom(
+    public static com.intel.analytics.bigdl.ppml.fl.generated.PSIServiceProto.DownloadIntersectionRequest parseFrom(
         java.nio.ByteBuffer data)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data);
     }
-    public static DownloadIntersectionRequest parseFrom(
+    public static com.intel.analytics.bigdl.ppml.fl.generated.PSIServiceProto.DownloadIntersectionRequest parseFrom(
         java.nio.ByteBuffer data,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data, extensionRegistry);
     }
-    public static DownloadIntersectionRequest parseFrom(
+    public static com.intel.analytics.bigdl.ppml.fl.generated.PSIServiceProto.DownloadIntersectionRequest parseFrom(
         com.google.protobuf.ByteString data)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data);
     }
-    public static DownloadIntersectionRequest parseFrom(
+    public static com.intel.analytics.bigdl.ppml.fl.generated.PSIServiceProto.DownloadIntersectionRequest parseFrom(
         com.google.protobuf.ByteString data,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data, extensionRegistry);
     }
-    public static DownloadIntersectionRequest parseFrom(byte[] data)
+    public static com.intel.analytics.bigdl.ppml.fl.generated.PSIServiceProto.DownloadIntersectionRequest parseFrom(byte[] data)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data);
     }
-    public static DownloadIntersectionRequest parseFrom(
+    public static com.intel.analytics.bigdl.ppml.fl.generated.PSIServiceProto.DownloadIntersectionRequest parseFrom(
         byte[] data,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data, extensionRegistry);
     }
-    public static DownloadIntersectionRequest parseFrom(java.io.InputStream input)
+    public static com.intel.analytics.bigdl.ppml.fl.generated.PSIServiceProto.DownloadIntersectionRequest parseFrom(java.io.InputStream input)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseWithIOException(PARSER, input);
     }
-    public static DownloadIntersectionRequest parseFrom(
+    public static com.intel.analytics.bigdl.ppml.fl.generated.PSIServiceProto.DownloadIntersectionRequest parseFrom(
         java.io.InputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseWithIOException(PARSER, input, extensionRegistry);
     }
-    public static DownloadIntersectionRequest parseDelimitedFrom(java.io.InputStream input)
+    public static com.intel.analytics.bigdl.ppml.fl.generated.PSIServiceProto.DownloadIntersectionRequest parseDelimitedFrom(java.io.InputStream input)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseDelimitedWithIOException(PARSER, input);
     }
-    public static DownloadIntersectionRequest parseDelimitedFrom(
+    public static com.intel.analytics.bigdl.ppml.fl.generated.PSIServiceProto.DownloadIntersectionRequest parseDelimitedFrom(
         java.io.InputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseDelimitedWithIOException(PARSER, input, extensionRegistry);
     }
-    public static DownloadIntersectionRequest parseFrom(
+    public static com.intel.analytics.bigdl.ppml.fl.generated.PSIServiceProto.DownloadIntersectionRequest parseFrom(
         com.google.protobuf.CodedInputStream input)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseWithIOException(PARSER, input);
     }
-    public static DownloadIntersectionRequest parseFrom(
+    public static com.intel.analytics.bigdl.ppml.fl.generated.PSIServiceProto.DownloadIntersectionRequest parseFrom(
         com.google.protobuf.CodedInputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
@@ -3568,23 +3488,23 @@ public final class PSIServiceProto {
           .parseWithIOException(PARSER, input, extensionRegistry);
     }
 
-    @Override
+    @java.lang.Override
     public Builder newBuilderForType() { return newBuilder(); }
     public static Builder newBuilder() {
       return DEFAULT_INSTANCE.toBuilder();
     }
-    public static Builder newBuilder(DownloadIntersectionRequest prototype) {
+    public static Builder newBuilder(com.intel.analytics.bigdl.ppml.fl.generated.PSIServiceProto.DownloadIntersectionRequest prototype) {
       return DEFAULT_INSTANCE.toBuilder().mergeFrom(prototype);
     }
-    @Override
+    @java.lang.Override
     public Builder toBuilder() {
       return this == DEFAULT_INSTANCE
           ? new Builder() : new Builder().mergeFrom(this);
     }
 
-    @Override
+    @java.lang.Override
     protected Builder newBuilderForType(
-        BuilderParent parent) {
+        com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
       Builder builder = new Builder(parent);
       return builder;
     }
@@ -3594,18 +3514,18 @@ public final class PSIServiceProto {
     public static final class Builder extends
         com.google.protobuf.GeneratedMessageV3.Builder<Builder> implements
         // @@protoc_insertion_point(builder_implements:DownloadIntersectionRequest)
-        DownloadIntersectionRequestOrBuilder {
+        com.intel.analytics.bigdl.ppml.fl.generated.PSIServiceProto.DownloadIntersectionRequestOrBuilder {
       public static final com.google.protobuf.Descriptors.Descriptor
           getDescriptor() {
-        return PSIServiceProto.internal_static_DownloadIntersectionRequest_descriptor;
+        return com.intel.analytics.bigdl.ppml.fl.generated.PSIServiceProto.internal_static_DownloadIntersectionRequest_descriptor;
       }
 
-      @Override
-      protected FieldAccessorTable
+      @java.lang.Override
+      protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
           internalGetFieldAccessorTable() {
-        return PSIServiceProto.internal_static_DownloadIntersectionRequest_fieldAccessorTable
+        return com.intel.analytics.bigdl.ppml.fl.generated.PSIServiceProto.internal_static_DownloadIntersectionRequest_fieldAccessorTable
             .ensureFieldAccessorsInitialized(
-                DownloadIntersectionRequest.class, Builder.class);
+                com.intel.analytics.bigdl.ppml.fl.generated.PSIServiceProto.DownloadIntersectionRequest.class, com.intel.analytics.bigdl.ppml.fl.generated.PSIServiceProto.DownloadIntersectionRequest.Builder.class);
       }
 
       // Construct using com.intel.analytics.bigdl.ppml.fl.generated.PSIServiceProto.DownloadIntersectionRequest.newBuilder()
@@ -3614,7 +3534,7 @@ public final class PSIServiceProto {
       }
 
       private Builder(
-          BuilderParent parent) {
+          com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
         super(parent);
         maybeForceBuilderInitialization();
       }
@@ -3623,7 +3543,7 @@ public final class PSIServiceProto {
                 .alwaysUseFieldBuilders) {
         }
       }
-      @Override
+      @java.lang.Override
       public Builder clear() {
         super.clear();
         taskId_ = "";
@@ -3633,79 +3553,79 @@ public final class PSIServiceProto {
         return this;
       }
 
-      @Override
+      @java.lang.Override
       public com.google.protobuf.Descriptors.Descriptor
           getDescriptorForType() {
-        return PSIServiceProto.internal_static_DownloadIntersectionRequest_descriptor;
+        return com.intel.analytics.bigdl.ppml.fl.generated.PSIServiceProto.internal_static_DownloadIntersectionRequest_descriptor;
       }
 
-      @Override
-      public DownloadIntersectionRequest getDefaultInstanceForType() {
-        return DownloadIntersectionRequest.getDefaultInstance();
+      @java.lang.Override
+      public com.intel.analytics.bigdl.ppml.fl.generated.PSIServiceProto.DownloadIntersectionRequest getDefaultInstanceForType() {
+        return com.intel.analytics.bigdl.ppml.fl.generated.PSIServiceProto.DownloadIntersectionRequest.getDefaultInstance();
       }
 
-      @Override
-      public DownloadIntersectionRequest build() {
-        DownloadIntersectionRequest result = buildPartial();
+      @java.lang.Override
+      public com.intel.analytics.bigdl.ppml.fl.generated.PSIServiceProto.DownloadIntersectionRequest build() {
+        com.intel.analytics.bigdl.ppml.fl.generated.PSIServiceProto.DownloadIntersectionRequest result = buildPartial();
         if (!result.isInitialized()) {
           throw newUninitializedMessageException(result);
         }
         return result;
       }
 
-      @Override
-      public DownloadIntersectionRequest buildPartial() {
-        DownloadIntersectionRequest result = new DownloadIntersectionRequest(this);
+      @java.lang.Override
+      public com.intel.analytics.bigdl.ppml.fl.generated.PSIServiceProto.DownloadIntersectionRequest buildPartial() {
+        com.intel.analytics.bigdl.ppml.fl.generated.PSIServiceProto.DownloadIntersectionRequest result = new com.intel.analytics.bigdl.ppml.fl.generated.PSIServiceProto.DownloadIntersectionRequest(this);
         result.taskId_ = taskId_;
         result.split_ = split_;
         onBuilt();
         return result;
       }
 
-      @Override
+      @java.lang.Override
       public Builder clone() {
         return super.clone();
       }
-      @Override
+      @java.lang.Override
       public Builder setField(
           com.google.protobuf.Descriptors.FieldDescriptor field,
-          Object value) {
+          java.lang.Object value) {
         return super.setField(field, value);
       }
-      @Override
+      @java.lang.Override
       public Builder clearField(
           com.google.protobuf.Descriptors.FieldDescriptor field) {
         return super.clearField(field);
       }
-      @Override
+      @java.lang.Override
       public Builder clearOneof(
           com.google.protobuf.Descriptors.OneofDescriptor oneof) {
         return super.clearOneof(oneof);
       }
-      @Override
+      @java.lang.Override
       public Builder setRepeatedField(
           com.google.protobuf.Descriptors.FieldDescriptor field,
-          int index, Object value) {
+          int index, java.lang.Object value) {
         return super.setRepeatedField(field, index, value);
       }
-      @Override
+      @java.lang.Override
       public Builder addRepeatedField(
           com.google.protobuf.Descriptors.FieldDescriptor field,
-          Object value) {
+          java.lang.Object value) {
         return super.addRepeatedField(field, value);
       }
-      @Override
+      @java.lang.Override
       public Builder mergeFrom(com.google.protobuf.Message other) {
-        if (other instanceof DownloadIntersectionRequest) {
-          return mergeFrom((DownloadIntersectionRequest)other);
+        if (other instanceof com.intel.analytics.bigdl.ppml.fl.generated.PSIServiceProto.DownloadIntersectionRequest) {
+          return mergeFrom((com.intel.analytics.bigdl.ppml.fl.generated.PSIServiceProto.DownloadIntersectionRequest)other);
         } else {
           super.mergeFrom(other);
           return this;
         }
       }
 
-      public Builder mergeFrom(DownloadIntersectionRequest other) {
-        if (other == DownloadIntersectionRequest.getDefaultInstance()) return this;
+      public Builder mergeFrom(com.intel.analytics.bigdl.ppml.fl.generated.PSIServiceProto.DownloadIntersectionRequest other) {
+        if (other == com.intel.analytics.bigdl.ppml.fl.generated.PSIServiceProto.DownloadIntersectionRequest.getDefaultInstance()) return this;
         if (!other.getTaskId().isEmpty()) {
           taskId_ = other.taskId_;
           onChanged();
@@ -3718,21 +3638,21 @@ public final class PSIServiceProto {
         return this;
       }
 
-      @Override
+      @java.lang.Override
       public final boolean isInitialized() {
         return true;
       }
 
-      @Override
+      @java.lang.Override
       public Builder mergeFrom(
           com.google.protobuf.CodedInputStream input,
           com.google.protobuf.ExtensionRegistryLite extensionRegistry)
           throws java.io.IOException {
-        DownloadIntersectionRequest parsedMessage = null;
+        com.intel.analytics.bigdl.ppml.fl.generated.PSIServiceProto.DownloadIntersectionRequest parsedMessage = null;
         try {
           parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
         } catch (com.google.protobuf.InvalidProtocolBufferException e) {
-          parsedMessage = (DownloadIntersectionRequest) e.getUnfinishedMessage();
+          parsedMessage = (com.intel.analytics.bigdl.ppml.fl.generated.PSIServiceProto.DownloadIntersectionRequest) e.getUnfinishedMessage();
           throw e.unwrapIOException();
         } finally {
           if (parsedMessage != null) {
@@ -3742,21 +3662,21 @@ public final class PSIServiceProto {
         return this;
       }
 
-      private Object taskId_ = "";
+      private java.lang.Object taskId_ = "";
       /**
        * <code>string task_id = 1;</code>
        * @return The taskId.
        */
-      public String getTaskId() {
-        Object ref = taskId_;
-        if (!(ref instanceof String)) {
+      public java.lang.String getTaskId() {
+        java.lang.Object ref = taskId_;
+        if (!(ref instanceof java.lang.String)) {
           com.google.protobuf.ByteString bs =
               (com.google.protobuf.ByteString) ref;
-          String s = bs.toStringUtf8();
+          java.lang.String s = bs.toStringUtf8();
           taskId_ = s;
           return s;
         } else {
-          return (String) ref;
+          return (java.lang.String) ref;
         }
       }
       /**
@@ -3765,11 +3685,11 @@ public final class PSIServiceProto {
        */
       public com.google.protobuf.ByteString
           getTaskIdBytes() {
-        Object ref = taskId_;
+        java.lang.Object ref = taskId_;
         if (ref instanceof String) {
           com.google.protobuf.ByteString b = 
               com.google.protobuf.ByteString.copyFromUtf8(
-                  (String) ref);
+                  (java.lang.String) ref);
           taskId_ = b;
           return b;
         } else {
@@ -3782,7 +3702,7 @@ public final class PSIServiceProto {
        * @return This builder for chaining.
        */
       public Builder setTaskId(
-          String value) {
+          java.lang.String value) {
         if (value == null) {
     throw new NullPointerException();
   }
@@ -3823,7 +3743,7 @@ public final class PSIServiceProto {
        * <code>int32 split = 2;</code>
        * @return The split.
        */
-      @Override
+      @java.lang.Override
       public int getSplit() {
         return split_;
       }
@@ -3848,13 +3768,13 @@ public final class PSIServiceProto {
         onChanged();
         return this;
       }
-      @Override
+      @java.lang.Override
       public final Builder setUnknownFields(
           final com.google.protobuf.UnknownFieldSet unknownFields) {
         return super.setUnknownFields(unknownFields);
       }
 
-      @Override
+      @java.lang.Override
       public final Builder mergeUnknownFields(
           final com.google.protobuf.UnknownFieldSet unknownFields) {
         return super.mergeUnknownFields(unknownFields);
@@ -3865,18 +3785,18 @@ public final class PSIServiceProto {
     }
 
     // @@protoc_insertion_point(class_scope:DownloadIntersectionRequest)
-    private static final DownloadIntersectionRequest DEFAULT_INSTANCE;
+    private static final com.intel.analytics.bigdl.ppml.fl.generated.PSIServiceProto.DownloadIntersectionRequest DEFAULT_INSTANCE;
     static {
-      DEFAULT_INSTANCE = new DownloadIntersectionRequest();
+      DEFAULT_INSTANCE = new com.intel.analytics.bigdl.ppml.fl.generated.PSIServiceProto.DownloadIntersectionRequest();
     }
 
-    public static DownloadIntersectionRequest getDefaultInstance() {
+    public static com.intel.analytics.bigdl.ppml.fl.generated.PSIServiceProto.DownloadIntersectionRequest getDefaultInstance() {
       return DEFAULT_INSTANCE;
     }
 
     private static final com.google.protobuf.Parser<DownloadIntersectionRequest>
         PARSER = new com.google.protobuf.AbstractParser<DownloadIntersectionRequest>() {
-      @Override
+      @java.lang.Override
       public DownloadIntersectionRequest parsePartialFrom(
           com.google.protobuf.CodedInputStream input,
           com.google.protobuf.ExtensionRegistryLite extensionRegistry)
@@ -3889,13 +3809,13 @@ public final class PSIServiceProto {
       return PARSER;
     }
 
-    @Override
+    @java.lang.Override
     public com.google.protobuf.Parser<DownloadIntersectionRequest> getParserForType() {
       return PARSER;
     }
 
-    @Override
-    public DownloadIntersectionRequest getDefaultInstanceForType() {
+    @java.lang.Override
+    public com.intel.analytics.bigdl.ppml.fl.generated.PSIServiceProto.DownloadIntersectionRequest getDefaultInstanceForType() {
       return DEFAULT_INSTANCE;
     }
 
@@ -3909,7 +3829,7 @@ public final class PSIServiceProto {
      * <code>string task_id = 1;</code>
      * @return The taskId.
      */
-    String getTaskId();
+    java.lang.String getTaskId();
     /**
      * <code>string task_id = 1;</code>
      * @return The bytes for taskId.
@@ -3926,7 +3846,7 @@ public final class PSIServiceProto {
      * <code>.SIGNAL status = 2;</code>
      * @return The status.
      */
-    FlBaseProto.SIGNAL getStatus();
+    com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.SIGNAL getStatus();
 
     /**
      * <code>int32 split = 3;</code>
@@ -3956,7 +3876,7 @@ public final class PSIServiceProto {
      * <code>repeated string intersection = 7;</code>
      * @return A list containing the intersection.
      */
-    java.util.List<String>
+    java.util.List<java.lang.String>
         getIntersectionList();
     /**
      * <code>repeated string intersection = 7;</code>
@@ -3968,7 +3888,7 @@ public final class PSIServiceProto {
      * @param index The index of the element to return.
      * @return The intersection at the given index.
      */
-    String getIntersection(int index);
+    java.lang.String getIntersection(int index);
     /**
      * <code>repeated string intersection = 7;</code>
      * @param index The index of the value to return.
@@ -3995,14 +3915,14 @@ public final class PSIServiceProto {
       intersection_ = com.google.protobuf.LazyStringArrayList.EMPTY;
     }
 
-    @Override
+    @java.lang.Override
     @SuppressWarnings({"unused"})
-    protected Object newInstance(
+    protected java.lang.Object newInstance(
         UnusedPrivateParameter unused) {
       return new DownloadIntersectionResponse();
     }
 
-    @Override
+    @java.lang.Override
     public final com.google.protobuf.UnknownFieldSet
     getUnknownFields() {
       return this.unknownFields;
@@ -4013,7 +3933,7 @@ public final class PSIServiceProto {
         throws com.google.protobuf.InvalidProtocolBufferException {
       this();
       if (extensionRegistry == null) {
-        throw new NullPointerException();
+        throw new java.lang.NullPointerException();
       }
       int mutable_bitField0_ = 0;
       com.google.protobuf.UnknownFieldSet.Builder unknownFields =
@@ -4027,7 +3947,7 @@ public final class PSIServiceProto {
               done = true;
               break;
             case 10: {
-              String s = input.readStringRequireUtf8();
+              java.lang.String s = input.readStringRequireUtf8();
 
               taskId_ = s;
               break;
@@ -4059,7 +3979,7 @@ public final class PSIServiceProto {
               break;
             }
             case 58: {
-              String s = input.readStringRequireUtf8();
+              java.lang.String s = input.readStringRequireUtf8();
               if (!((mutable_bitField0_ & 0x00000001) != 0)) {
                 intersection_ = new com.google.protobuf.LazyStringArrayList();
                 mutable_bitField0_ |= 0x00000001;
@@ -4091,32 +4011,32 @@ public final class PSIServiceProto {
     }
     public static final com.google.protobuf.Descriptors.Descriptor
         getDescriptor() {
-      return PSIServiceProto.internal_static_DownloadIntersectionResponse_descriptor;
+      return com.intel.analytics.bigdl.ppml.fl.generated.PSIServiceProto.internal_static_DownloadIntersectionResponse_descriptor;
     }
 
-    @Override
-    protected FieldAccessorTable
+    @java.lang.Override
+    protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
         internalGetFieldAccessorTable() {
-      return PSIServiceProto.internal_static_DownloadIntersectionResponse_fieldAccessorTable
+      return com.intel.analytics.bigdl.ppml.fl.generated.PSIServiceProto.internal_static_DownloadIntersectionResponse_fieldAccessorTable
           .ensureFieldAccessorsInitialized(
-              DownloadIntersectionResponse.class, Builder.class);
+              com.intel.analytics.bigdl.ppml.fl.generated.PSIServiceProto.DownloadIntersectionResponse.class, com.intel.analytics.bigdl.ppml.fl.generated.PSIServiceProto.DownloadIntersectionResponse.Builder.class);
     }
 
     public static final int TASK_ID_FIELD_NUMBER = 1;
-    private volatile Object taskId_;
+    private volatile java.lang.Object taskId_;
     /**
      * <code>string task_id = 1;</code>
      * @return The taskId.
      */
-    @Override
-    public String getTaskId() {
-      Object ref = taskId_;
-      if (ref instanceof String) {
-        return (String) ref;
+    @java.lang.Override
+    public java.lang.String getTaskId() {
+      java.lang.Object ref = taskId_;
+      if (ref instanceof java.lang.String) {
+        return (java.lang.String) ref;
       } else {
         com.google.protobuf.ByteString bs = 
             (com.google.protobuf.ByteString) ref;
-        String s = bs.toStringUtf8();
+        java.lang.String s = bs.toStringUtf8();
         taskId_ = s;
         return s;
       }
@@ -4125,14 +4045,14 @@ public final class PSIServiceProto {
      * <code>string task_id = 1;</code>
      * @return The bytes for taskId.
      */
-    @Override
+    @java.lang.Override
     public com.google.protobuf.ByteString
         getTaskIdBytes() {
-      Object ref = taskId_;
-      if (ref instanceof String) {
+      java.lang.Object ref = taskId_;
+      if (ref instanceof java.lang.String) {
         com.google.protobuf.ByteString b = 
             com.google.protobuf.ByteString.copyFromUtf8(
-                (String) ref);
+                (java.lang.String) ref);
         taskId_ = b;
         return b;
       } else {
@@ -4146,17 +4066,17 @@ public final class PSIServiceProto {
      * <code>.SIGNAL status = 2;</code>
      * @return The enum numeric value on the wire for status.
      */
-    @Override public int getStatusValue() {
+    @java.lang.Override public int getStatusValue() {
       return status_;
     }
     /**
      * <code>.SIGNAL status = 2;</code>
      * @return The status.
      */
-    @Override public FlBaseProto.SIGNAL getStatus() {
+    @java.lang.Override public com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.SIGNAL getStatus() {
       @SuppressWarnings("deprecation")
-      FlBaseProto.SIGNAL result = FlBaseProto.SIGNAL.valueOf(status_);
-      return result == null ? FlBaseProto.SIGNAL.UNRECOGNIZED : result;
+      com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.SIGNAL result = com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.SIGNAL.valueOf(status_);
+      return result == null ? com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.SIGNAL.UNRECOGNIZED : result;
     }
 
     public static final int SPLIT_FIELD_NUMBER = 3;
@@ -4165,7 +4085,7 @@ public final class PSIServiceProto {
      * <code>int32 split = 3;</code>
      * @return The split.
      */
-    @Override
+    @java.lang.Override
     public int getSplit() {
       return split_;
     }
@@ -4176,7 +4096,7 @@ public final class PSIServiceProto {
      * <code>int32 num_split = 4;</code>
      * @return The numSplit.
      */
-    @Override
+    @java.lang.Override
     public int getNumSplit() {
       return numSplit_;
     }
@@ -4187,7 +4107,7 @@ public final class PSIServiceProto {
      * <code>int32 split_length = 5;</code>
      * @return The splitLength.
      */
-    @Override
+    @java.lang.Override
     public int getSplitLength() {
       return splitLength_;
     }
@@ -4198,7 +4118,7 @@ public final class PSIServiceProto {
      * <code>int32 total_length = 6;</code>
      * @return The totalLength.
      */
-    @Override
+    @java.lang.Override
     public int getTotalLength() {
       return totalLength_;
     }
@@ -4225,7 +4145,7 @@ public final class PSIServiceProto {
      * @param index The index of the element to return.
      * @return The intersection at the given index.
      */
-    public String getIntersection(int index) {
+    public java.lang.String getIntersection(int index) {
       return intersection_.get(index);
     }
     /**
@@ -4239,7 +4159,7 @@ public final class PSIServiceProto {
     }
 
     private byte memoizedIsInitialized = -1;
-    @Override
+    @java.lang.Override
     public final boolean isInitialized() {
       byte isInitialized = memoizedIsInitialized;
       if (isInitialized == 1) return true;
@@ -4249,13 +4169,13 @@ public final class PSIServiceProto {
       return true;
     }
 
-    @Override
+    @java.lang.Override
     public void writeTo(com.google.protobuf.CodedOutputStream output)
                         throws java.io.IOException {
       if (!getTaskIdBytes().isEmpty()) {
         com.google.protobuf.GeneratedMessageV3.writeString(output, 1, taskId_);
       }
-      if (status_ != FlBaseProto.SIGNAL.SUCCESS.getNumber()) {
+      if (status_ != com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.SIGNAL.SUCCESS.getNumber()) {
         output.writeEnum(2, status_);
       }
       if (split_ != 0) {
@@ -4276,7 +4196,7 @@ public final class PSIServiceProto {
       unknownFields.writeTo(output);
     }
 
-    @Override
+    @java.lang.Override
     public int getSerializedSize() {
       int size = memoizedSize;
       if (size != -1) return size;
@@ -4285,7 +4205,7 @@ public final class PSIServiceProto {
       if (!getTaskIdBytes().isEmpty()) {
         size += com.google.protobuf.GeneratedMessageV3.computeStringSize(1, taskId_);
       }
-      if (status_ != FlBaseProto.SIGNAL.SUCCESS.getNumber()) {
+      if (status_ != com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.SIGNAL.SUCCESS.getNumber()) {
         size += com.google.protobuf.CodedOutputStream
           .computeEnumSize(2, status_);
       }
@@ -4318,15 +4238,15 @@ public final class PSIServiceProto {
       return size;
     }
 
-    @Override
-    public boolean equals(final Object obj) {
+    @java.lang.Override
+    public boolean equals(final java.lang.Object obj) {
       if (obj == this) {
        return true;
       }
-      if (!(obj instanceof DownloadIntersectionResponse)) {
+      if (!(obj instanceof com.intel.analytics.bigdl.ppml.fl.generated.PSIServiceProto.DownloadIntersectionResponse)) {
         return super.equals(obj);
       }
-      DownloadIntersectionResponse other = (DownloadIntersectionResponse) obj;
+      com.intel.analytics.bigdl.ppml.fl.generated.PSIServiceProto.DownloadIntersectionResponse other = (com.intel.analytics.bigdl.ppml.fl.generated.PSIServiceProto.DownloadIntersectionResponse) obj;
 
       if (!getTaskId()
           .equals(other.getTaskId())) return false;
@@ -4345,7 +4265,7 @@ public final class PSIServiceProto {
       return true;
     }
 
-    @Override
+    @java.lang.Override
     public int hashCode() {
       if (memoizedHashCode != 0) {
         return memoizedHashCode;
@@ -4373,69 +4293,69 @@ public final class PSIServiceProto {
       return hash;
     }
 
-    public static DownloadIntersectionResponse parseFrom(
+    public static com.intel.analytics.bigdl.ppml.fl.generated.PSIServiceProto.DownloadIntersectionResponse parseFrom(
         java.nio.ByteBuffer data)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data);
     }
-    public static DownloadIntersectionResponse parseFrom(
+    public static com.intel.analytics.bigdl.ppml.fl.generated.PSIServiceProto.DownloadIntersectionResponse parseFrom(
         java.nio.ByteBuffer data,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data, extensionRegistry);
     }
-    public static DownloadIntersectionResponse parseFrom(
+    public static com.intel.analytics.bigdl.ppml.fl.generated.PSIServiceProto.DownloadIntersectionResponse parseFrom(
         com.google.protobuf.ByteString data)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data);
     }
-    public static DownloadIntersectionResponse parseFrom(
+    public static com.intel.analytics.bigdl.ppml.fl.generated.PSIServiceProto.DownloadIntersectionResponse parseFrom(
         com.google.protobuf.ByteString data,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data, extensionRegistry);
     }
-    public static DownloadIntersectionResponse parseFrom(byte[] data)
+    public static com.intel.analytics.bigdl.ppml.fl.generated.PSIServiceProto.DownloadIntersectionResponse parseFrom(byte[] data)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data);
     }
-    public static DownloadIntersectionResponse parseFrom(
+    public static com.intel.analytics.bigdl.ppml.fl.generated.PSIServiceProto.DownloadIntersectionResponse parseFrom(
         byte[] data,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data, extensionRegistry);
     }
-    public static DownloadIntersectionResponse parseFrom(java.io.InputStream input)
+    public static com.intel.analytics.bigdl.ppml.fl.generated.PSIServiceProto.DownloadIntersectionResponse parseFrom(java.io.InputStream input)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseWithIOException(PARSER, input);
     }
-    public static DownloadIntersectionResponse parseFrom(
+    public static com.intel.analytics.bigdl.ppml.fl.generated.PSIServiceProto.DownloadIntersectionResponse parseFrom(
         java.io.InputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseWithIOException(PARSER, input, extensionRegistry);
     }
-    public static DownloadIntersectionResponse parseDelimitedFrom(java.io.InputStream input)
+    public static com.intel.analytics.bigdl.ppml.fl.generated.PSIServiceProto.DownloadIntersectionResponse parseDelimitedFrom(java.io.InputStream input)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseDelimitedWithIOException(PARSER, input);
     }
-    public static DownloadIntersectionResponse parseDelimitedFrom(
+    public static com.intel.analytics.bigdl.ppml.fl.generated.PSIServiceProto.DownloadIntersectionResponse parseDelimitedFrom(
         java.io.InputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseDelimitedWithIOException(PARSER, input, extensionRegistry);
     }
-    public static DownloadIntersectionResponse parseFrom(
+    public static com.intel.analytics.bigdl.ppml.fl.generated.PSIServiceProto.DownloadIntersectionResponse parseFrom(
         com.google.protobuf.CodedInputStream input)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseWithIOException(PARSER, input);
     }
-    public static DownloadIntersectionResponse parseFrom(
+    public static com.intel.analytics.bigdl.ppml.fl.generated.PSIServiceProto.DownloadIntersectionResponse parseFrom(
         com.google.protobuf.CodedInputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
@@ -4443,23 +4363,23 @@ public final class PSIServiceProto {
           .parseWithIOException(PARSER, input, extensionRegistry);
     }
 
-    @Override
+    @java.lang.Override
     public Builder newBuilderForType() { return newBuilder(); }
     public static Builder newBuilder() {
       return DEFAULT_INSTANCE.toBuilder();
     }
-    public static Builder newBuilder(DownloadIntersectionResponse prototype) {
+    public static Builder newBuilder(com.intel.analytics.bigdl.ppml.fl.generated.PSIServiceProto.DownloadIntersectionResponse prototype) {
       return DEFAULT_INSTANCE.toBuilder().mergeFrom(prototype);
     }
-    @Override
+    @java.lang.Override
     public Builder toBuilder() {
       return this == DEFAULT_INSTANCE
           ? new Builder() : new Builder().mergeFrom(this);
     }
 
-    @Override
+    @java.lang.Override
     protected Builder newBuilderForType(
-        BuilderParent parent) {
+        com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
       Builder builder = new Builder(parent);
       return builder;
     }
@@ -4469,18 +4389,18 @@ public final class PSIServiceProto {
     public static final class Builder extends
         com.google.protobuf.GeneratedMessageV3.Builder<Builder> implements
         // @@protoc_insertion_point(builder_implements:DownloadIntersectionResponse)
-        DownloadIntersectionResponseOrBuilder {
+        com.intel.analytics.bigdl.ppml.fl.generated.PSIServiceProto.DownloadIntersectionResponseOrBuilder {
       public static final com.google.protobuf.Descriptors.Descriptor
           getDescriptor() {
-        return PSIServiceProto.internal_static_DownloadIntersectionResponse_descriptor;
+        return com.intel.analytics.bigdl.ppml.fl.generated.PSIServiceProto.internal_static_DownloadIntersectionResponse_descriptor;
       }
 
-      @Override
-      protected FieldAccessorTable
+      @java.lang.Override
+      protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
           internalGetFieldAccessorTable() {
-        return PSIServiceProto.internal_static_DownloadIntersectionResponse_fieldAccessorTable
+        return com.intel.analytics.bigdl.ppml.fl.generated.PSIServiceProto.internal_static_DownloadIntersectionResponse_fieldAccessorTable
             .ensureFieldAccessorsInitialized(
-                DownloadIntersectionResponse.class, Builder.class);
+                com.intel.analytics.bigdl.ppml.fl.generated.PSIServiceProto.DownloadIntersectionResponse.class, com.intel.analytics.bigdl.ppml.fl.generated.PSIServiceProto.DownloadIntersectionResponse.Builder.class);
       }
 
       // Construct using com.intel.analytics.bigdl.ppml.fl.generated.PSIServiceProto.DownloadIntersectionResponse.newBuilder()
@@ -4489,7 +4409,7 @@ public final class PSIServiceProto {
       }
 
       private Builder(
-          BuilderParent parent) {
+          com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
         super(parent);
         maybeForceBuilderInitialization();
       }
@@ -4498,7 +4418,7 @@ public final class PSIServiceProto {
                 .alwaysUseFieldBuilders) {
         }
       }
-      @Override
+      @java.lang.Override
       public Builder clear() {
         super.clear();
         taskId_ = "";
@@ -4518,29 +4438,29 @@ public final class PSIServiceProto {
         return this;
       }
 
-      @Override
+      @java.lang.Override
       public com.google.protobuf.Descriptors.Descriptor
           getDescriptorForType() {
-        return PSIServiceProto.internal_static_DownloadIntersectionResponse_descriptor;
+        return com.intel.analytics.bigdl.ppml.fl.generated.PSIServiceProto.internal_static_DownloadIntersectionResponse_descriptor;
       }
 
-      @Override
-      public DownloadIntersectionResponse getDefaultInstanceForType() {
-        return DownloadIntersectionResponse.getDefaultInstance();
+      @java.lang.Override
+      public com.intel.analytics.bigdl.ppml.fl.generated.PSIServiceProto.DownloadIntersectionResponse getDefaultInstanceForType() {
+        return com.intel.analytics.bigdl.ppml.fl.generated.PSIServiceProto.DownloadIntersectionResponse.getDefaultInstance();
       }
 
-      @Override
-      public DownloadIntersectionResponse build() {
-        DownloadIntersectionResponse result = buildPartial();
+      @java.lang.Override
+      public com.intel.analytics.bigdl.ppml.fl.generated.PSIServiceProto.DownloadIntersectionResponse build() {
+        com.intel.analytics.bigdl.ppml.fl.generated.PSIServiceProto.DownloadIntersectionResponse result = buildPartial();
         if (!result.isInitialized()) {
           throw newUninitializedMessageException(result);
         }
         return result;
       }
 
-      @Override
-      public DownloadIntersectionResponse buildPartial() {
-        DownloadIntersectionResponse result = new DownloadIntersectionResponse(this);
+      @java.lang.Override
+      public com.intel.analytics.bigdl.ppml.fl.generated.PSIServiceProto.DownloadIntersectionResponse buildPartial() {
+        com.intel.analytics.bigdl.ppml.fl.generated.PSIServiceProto.DownloadIntersectionResponse result = new com.intel.analytics.bigdl.ppml.fl.generated.PSIServiceProto.DownloadIntersectionResponse(this);
         int from_bitField0_ = bitField0_;
         result.taskId_ = taskId_;
         result.status_ = status_;
@@ -4557,50 +4477,50 @@ public final class PSIServiceProto {
         return result;
       }
 
-      @Override
+      @java.lang.Override
       public Builder clone() {
         return super.clone();
       }
-      @Override
+      @java.lang.Override
       public Builder setField(
           com.google.protobuf.Descriptors.FieldDescriptor field,
-          Object value) {
+          java.lang.Object value) {
         return super.setField(field, value);
       }
-      @Override
+      @java.lang.Override
       public Builder clearField(
           com.google.protobuf.Descriptors.FieldDescriptor field) {
         return super.clearField(field);
       }
-      @Override
+      @java.lang.Override
       public Builder clearOneof(
           com.google.protobuf.Descriptors.OneofDescriptor oneof) {
         return super.clearOneof(oneof);
       }
-      @Override
+      @java.lang.Override
       public Builder setRepeatedField(
           com.google.protobuf.Descriptors.FieldDescriptor field,
-          int index, Object value) {
+          int index, java.lang.Object value) {
         return super.setRepeatedField(field, index, value);
       }
-      @Override
+      @java.lang.Override
       public Builder addRepeatedField(
           com.google.protobuf.Descriptors.FieldDescriptor field,
-          Object value) {
+          java.lang.Object value) {
         return super.addRepeatedField(field, value);
       }
-      @Override
+      @java.lang.Override
       public Builder mergeFrom(com.google.protobuf.Message other) {
-        if (other instanceof DownloadIntersectionResponse) {
-          return mergeFrom((DownloadIntersectionResponse)other);
+        if (other instanceof com.intel.analytics.bigdl.ppml.fl.generated.PSIServiceProto.DownloadIntersectionResponse) {
+          return mergeFrom((com.intel.analytics.bigdl.ppml.fl.generated.PSIServiceProto.DownloadIntersectionResponse)other);
         } else {
           super.mergeFrom(other);
           return this;
         }
       }
 
-      public Builder mergeFrom(DownloadIntersectionResponse other) {
-        if (other == DownloadIntersectionResponse.getDefaultInstance()) return this;
+      public Builder mergeFrom(com.intel.analytics.bigdl.ppml.fl.generated.PSIServiceProto.DownloadIntersectionResponse other) {
+        if (other == com.intel.analytics.bigdl.ppml.fl.generated.PSIServiceProto.DownloadIntersectionResponse.getDefaultInstance()) return this;
         if (!other.getTaskId().isEmpty()) {
           taskId_ = other.taskId_;
           onChanged();
@@ -4635,21 +4555,21 @@ public final class PSIServiceProto {
         return this;
       }
 
-      @Override
+      @java.lang.Override
       public final boolean isInitialized() {
         return true;
       }
 
-      @Override
+      @java.lang.Override
       public Builder mergeFrom(
           com.google.protobuf.CodedInputStream input,
           com.google.protobuf.ExtensionRegistryLite extensionRegistry)
           throws java.io.IOException {
-        DownloadIntersectionResponse parsedMessage = null;
+        com.intel.analytics.bigdl.ppml.fl.generated.PSIServiceProto.DownloadIntersectionResponse parsedMessage = null;
         try {
           parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
         } catch (com.google.protobuf.InvalidProtocolBufferException e) {
-          parsedMessage = (DownloadIntersectionResponse) e.getUnfinishedMessage();
+          parsedMessage = (com.intel.analytics.bigdl.ppml.fl.generated.PSIServiceProto.DownloadIntersectionResponse) e.getUnfinishedMessage();
           throw e.unwrapIOException();
         } finally {
           if (parsedMessage != null) {
@@ -4660,21 +4580,21 @@ public final class PSIServiceProto {
       }
       private int bitField0_;
 
-      private Object taskId_ = "";
+      private java.lang.Object taskId_ = "";
       /**
        * <code>string task_id = 1;</code>
        * @return The taskId.
        */
-      public String getTaskId() {
-        Object ref = taskId_;
-        if (!(ref instanceof String)) {
+      public java.lang.String getTaskId() {
+        java.lang.Object ref = taskId_;
+        if (!(ref instanceof java.lang.String)) {
           com.google.protobuf.ByteString bs =
               (com.google.protobuf.ByteString) ref;
-          String s = bs.toStringUtf8();
+          java.lang.String s = bs.toStringUtf8();
           taskId_ = s;
           return s;
         } else {
-          return (String) ref;
+          return (java.lang.String) ref;
         }
       }
       /**
@@ -4683,11 +4603,11 @@ public final class PSIServiceProto {
        */
       public com.google.protobuf.ByteString
           getTaskIdBytes() {
-        Object ref = taskId_;
+        java.lang.Object ref = taskId_;
         if (ref instanceof String) {
           com.google.protobuf.ByteString b = 
               com.google.protobuf.ByteString.copyFromUtf8(
-                  (String) ref);
+                  (java.lang.String) ref);
           taskId_ = b;
           return b;
         } else {
@@ -4700,7 +4620,7 @@ public final class PSIServiceProto {
        * @return This builder for chaining.
        */
       public Builder setTaskId(
-          String value) {
+          java.lang.String value) {
         if (value == null) {
     throw new NullPointerException();
   }
@@ -4741,7 +4661,7 @@ public final class PSIServiceProto {
        * <code>.SIGNAL status = 2;</code>
        * @return The enum numeric value on the wire for status.
        */
-      @Override public int getStatusValue() {
+      @java.lang.Override public int getStatusValue() {
         return status_;
       }
       /**
@@ -4759,18 +4679,18 @@ public final class PSIServiceProto {
        * <code>.SIGNAL status = 2;</code>
        * @return The status.
        */
-      @Override
-      public FlBaseProto.SIGNAL getStatus() {
+      @java.lang.Override
+      public com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.SIGNAL getStatus() {
         @SuppressWarnings("deprecation")
-        FlBaseProto.SIGNAL result = FlBaseProto.SIGNAL.valueOf(status_);
-        return result == null ? FlBaseProto.SIGNAL.UNRECOGNIZED : result;
+        com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.SIGNAL result = com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.SIGNAL.valueOf(status_);
+        return result == null ? com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.SIGNAL.UNRECOGNIZED : result;
       }
       /**
        * <code>.SIGNAL status = 2;</code>
        * @param value The status to set.
        * @return This builder for chaining.
        */
-      public Builder setStatus(FlBaseProto.SIGNAL value) {
+      public Builder setStatus(com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.SIGNAL value) {
         if (value == null) {
           throw new NullPointerException();
         }
@@ -4795,7 +4715,7 @@ public final class PSIServiceProto {
        * <code>int32 split = 3;</code>
        * @return The split.
        */
-      @Override
+      @java.lang.Override
       public int getSplit() {
         return split_;
       }
@@ -4826,7 +4746,7 @@ public final class PSIServiceProto {
        * <code>int32 num_split = 4;</code>
        * @return The numSplit.
        */
-      @Override
+      @java.lang.Override
       public int getNumSplit() {
         return numSplit_;
       }
@@ -4857,7 +4777,7 @@ public final class PSIServiceProto {
        * <code>int32 split_length = 5;</code>
        * @return The splitLength.
        */
-      @Override
+      @java.lang.Override
       public int getSplitLength() {
         return splitLength_;
       }
@@ -4888,7 +4808,7 @@ public final class PSIServiceProto {
        * <code>int32 total_length = 6;</code>
        * @return The totalLength.
        */
-      @Override
+      @java.lang.Override
       public int getTotalLength() {
         return totalLength_;
       }
@@ -4941,7 +4861,7 @@ public final class PSIServiceProto {
        * @param index The index of the element to return.
        * @return The intersection at the given index.
        */
-      public String getIntersection(int index) {
+      public java.lang.String getIntersection(int index) {
         return intersection_.get(index);
       }
       /**
@@ -4960,7 +4880,7 @@ public final class PSIServiceProto {
        * @return This builder for chaining.
        */
       public Builder setIntersection(
-          int index, String value) {
+          int index, java.lang.String value) {
         if (value == null) {
     throw new NullPointerException();
   }
@@ -4975,7 +4895,7 @@ public final class PSIServiceProto {
        * @return This builder for chaining.
        */
       public Builder addIntersection(
-          String value) {
+          java.lang.String value) {
         if (value == null) {
     throw new NullPointerException();
   }
@@ -4990,7 +4910,7 @@ public final class PSIServiceProto {
        * @return This builder for chaining.
        */
       public Builder addAllIntersection(
-          Iterable<String> values) {
+          java.lang.Iterable<java.lang.String> values) {
         ensureIntersectionIsMutable();
         com.google.protobuf.AbstractMessageLite.Builder.addAll(
             values, intersection_);
@@ -5023,13 +4943,13 @@ public final class PSIServiceProto {
         onChanged();
         return this;
       }
-      @Override
+      @java.lang.Override
       public final Builder setUnknownFields(
           final com.google.protobuf.UnknownFieldSet unknownFields) {
         return super.setUnknownFields(unknownFields);
       }
 
-      @Override
+      @java.lang.Override
       public final Builder mergeUnknownFields(
           final com.google.protobuf.UnknownFieldSet unknownFields) {
         return super.mergeUnknownFields(unknownFields);
@@ -5040,18 +4960,18 @@ public final class PSIServiceProto {
     }
 
     // @@protoc_insertion_point(class_scope:DownloadIntersectionResponse)
-    private static final DownloadIntersectionResponse DEFAULT_INSTANCE;
+    private static final com.intel.analytics.bigdl.ppml.fl.generated.PSIServiceProto.DownloadIntersectionResponse DEFAULT_INSTANCE;
     static {
-      DEFAULT_INSTANCE = new DownloadIntersectionResponse();
+      DEFAULT_INSTANCE = new com.intel.analytics.bigdl.ppml.fl.generated.PSIServiceProto.DownloadIntersectionResponse();
     }
 
-    public static DownloadIntersectionResponse getDefaultInstance() {
+    public static com.intel.analytics.bigdl.ppml.fl.generated.PSIServiceProto.DownloadIntersectionResponse getDefaultInstance() {
       return DEFAULT_INSTANCE;
     }
 
     private static final com.google.protobuf.Parser<DownloadIntersectionResponse>
         PARSER = new com.google.protobuf.AbstractParser<DownloadIntersectionResponse>() {
-      @Override
+      @java.lang.Override
       public DownloadIntersectionResponse parsePartialFrom(
           com.google.protobuf.CodedInputStream input,
           com.google.protobuf.ExtensionRegistryLite extensionRegistry)
@@ -5064,13 +4984,13 @@ public final class PSIServiceProto {
       return PARSER;
     }
 
-    @Override
+    @java.lang.Override
     public com.google.protobuf.Parser<DownloadIntersectionResponse> getParserForType() {
       return PARSER;
     }
 
-    @Override
-    public DownloadIntersectionResponse getDefaultInstanceForType() {
+    @java.lang.Override
+    public com.intel.analytics.bigdl.ppml.fl.generated.PSIServiceProto.DownloadIntersectionResponse getDefaultInstanceForType() {
       return DEFAULT_INSTANCE;
     }
 
@@ -5114,12 +5034,12 @@ public final class PSIServiceProto {
   private static  com.google.protobuf.Descriptors.FileDescriptor
       descriptor;
   static {
-    String[] descriptorData = {
+    java.lang.String[] descriptorData = {
       "\n\021psi_service.proto\032\rfl_base.proto\"G\n\013Sa" +
       "ltRequest\022\017\n\007task_id\030\001 \001(\t\022\022\n\nclient_num" +
       "\030\002 \001(\005\022\023\n\013secure_code\030\003 \001(\t\"\037\n\tSaltReply" +
       "\022\022\n\nsalt_reply\030\001 \001(\t\"\226\001\n\020UploadSetReques" +
-      "t\022\017\n\007task_id\030\001 \001(\t\022\021\n\tclient_id\030\002 \001(\t\022\r\n" +
+      "t\022\017\n\007task_id\030\001 \001(\t\022\021\n\tclient_id\030\002 \001(\005\022\r\n" +
       "\005split\030\003 \001(\005\022\021\n\tnum_split\030\004 \001(\005\022\024\n\014split" +
       "_length\030\005 \001(\005\022\024\n\014total_length\030\006 \001(\005\022\020\n\010h" +
       "ashedID\030\007 \003(\t\"=\n\021UploadSetResponse\022\017\n\007ta" +
@@ -5141,45 +5061,45 @@ public final class PSIServiceProto {
     descriptor = com.google.protobuf.Descriptors.FileDescriptor
       .internalBuildGeneratedFileFrom(descriptorData,
         new com.google.protobuf.Descriptors.FileDescriptor[] {
-          FlBaseProto.getDescriptor(),
+          com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.getDescriptor(),
         });
     internal_static_SaltRequest_descriptor =
       getDescriptor().getMessageTypes().get(0);
     internal_static_SaltRequest_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_SaltRequest_descriptor,
-        new String[] { "TaskId", "ClientNum", "SecureCode", });
+        new java.lang.String[] { "TaskId", "ClientNum", "SecureCode", });
     internal_static_SaltReply_descriptor =
       getDescriptor().getMessageTypes().get(1);
     internal_static_SaltReply_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_SaltReply_descriptor,
-        new String[] { "SaltReply", });
+        new java.lang.String[] { "SaltReply", });
     internal_static_UploadSetRequest_descriptor =
       getDescriptor().getMessageTypes().get(2);
     internal_static_UploadSetRequest_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_UploadSetRequest_descriptor,
-        new String[] { "TaskId", "ClientId", "Split", "NumSplit", "SplitLength", "TotalLength", "HashedID", });
+        new java.lang.String[] { "TaskId", "ClientId", "Split", "NumSplit", "SplitLength", "TotalLength", "HashedID", });
     internal_static_UploadSetResponse_descriptor =
       getDescriptor().getMessageTypes().get(3);
     internal_static_UploadSetResponse_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_UploadSetResponse_descriptor,
-        new String[] { "TaskId", "Status", });
+        new java.lang.String[] { "TaskId", "Status", });
     internal_static_DownloadIntersectionRequest_descriptor =
       getDescriptor().getMessageTypes().get(4);
     internal_static_DownloadIntersectionRequest_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_DownloadIntersectionRequest_descriptor,
-        new String[] { "TaskId", "Split", });
+        new java.lang.String[] { "TaskId", "Split", });
     internal_static_DownloadIntersectionResponse_descriptor =
       getDescriptor().getMessageTypes().get(5);
     internal_static_DownloadIntersectionResponse_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_DownloadIntersectionResponse_descriptor,
-        new String[] { "TaskId", "Status", "Split", "NumSplit", "SplitLength", "TotalLength", "Intersection", });
-    FlBaseProto.getDescriptor();
+        new java.lang.String[] { "TaskId", "Status", "Split", "NumSplit", "SplitLength", "TotalLength", "Intersection", });
+    com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.getDescriptor();
   }
 
   // @@protoc_insertion_point(outer_class_scope)

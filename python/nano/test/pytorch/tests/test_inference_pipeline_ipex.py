@@ -18,7 +18,7 @@ import os
 from torch import nn
 import torch
 from unittest import TestCase
-
+import pytest
 import torchvision.transforms as transforms
 from bigdl.nano.pytorch import Trainer
 from bigdl.nano.pytorch import InferenceOptimizer
@@ -58,7 +58,7 @@ class TestInferencePipeline(TestCase):
     num_workers = 0
     data_dir = os.path.join(os.path.dirname(__file__), "data")
     metric = torchmetrics.Accuracy(num_classes=10, top_k=1)
-    max_epochs = 10
+    max_epochs = 5
 
     model = Net()
     test_loader = create_data_loader(data_dir, 1, num_workers, data_transform, subset=10, shuffle=False)
@@ -69,25 +69,193 @@ class TestInferencePipeline(TestCase):
     trainer = Trainer(max_epochs=max_epochs)
     model = Trainer.compile(model, loss, optimizer)
     trainer.fit(model, train_loader)
-
-    def test_pipeline(self):
+    
+    def test_get_model_without_optimize(self):
         inference_opt = InferenceOptimizer()
-        inference_opt.optimize(model=self.model, 
+        with pytest.raises(RuntimeError) as e:
+            acc_model, option = inference_opt.get_best_model()
+        error_msg = e.value.args[0]
+        assert error_msg == "There is no optimized model. You should call .optimize() " \
+                            "before get_best_model()"
+
+    def test_pipeline_with_metric(self):
+        inference_opt = InferenceOptimizer()
+        inference_opt.optimize(model=self.model,
                                training_data=self.train_loader,
-                               validation_data=self.test_loader, 
+                               validation_data=self.test_loader,
                                metric=self.metric,
                                direction="max",
-                               cpu_num=1)
-        for key, value in inference_opt.optimized_model_dict.items():
-            print(key, value["latency"], value["accuracy"])
+                               thread_num=1)
+
         acc_model, option = inference_opt.get_best_model()
-        print(option)
         acc_model, option = inference_opt.get_best_model(accelerator="onnxruntime")
         assert option == "" or "onnxruntime" in option
         acc_model, option = inference_opt.get_best_model(precision="int8")
-        assert option == "" or "inc" in option
+        assert option == "" or "inc" in option or "int8" in option
         acc_model, option = inference_opt.get_best_model(accuracy_criterion=0.1)
+        acc_model(next(iter(self.train_loader))[0])
 
-if __name__ == "__main__":
-    test = TestInferencePipeline()
-    test.test_pipeline()
+    def test_pipeline_without_metric(self):
+        inference_opt = InferenceOptimizer()
+        inference_opt.optimize(model=self.model,
+                               training_data=self.train_loader,
+                               thread_num=1)
+
+        acc_model, option = inference_opt.get_best_model()
+        acc_model, option = inference_opt.get_best_model(accelerator="onnxruntime")
+        assert option == "" or "onnxruntime" in option
+        acc_model, option = inference_opt.get_best_model(precision="int8")
+        assert option == "" or "inc" in option or "int8" in option
+        with pytest.raises(RuntimeError) as e:
+            acc_model, option = inference_opt.get_best_model(accuracy_criterion=0.1)
+        error_msg = e.value.args[0]
+        assert error_msg == "If you want to specify accuracy_criterion, you need "\
+                            "to set metric and validation_data when call 'optimize'."
+
+    def test_pipeline_with_excludes(self):
+        inference_opt = InferenceOptimizer()
+        inference_opt.optimize(model=self.model,
+                               training_data=self.train_loader,
+                               thread_num=1,
+                               excludes=["fp32_ipex", "original"])
+
+        # original is a special method that must be included in
+        # the search
+        assert "original" in inference_opt.optimized_model_dict
+        assert "jit_fp32_ipex" in inference_opt.optimized_model_dict
+        assert "fp32_ipex" not in inference_opt.optimized_model_dict
+
+    def test_pipeline_with_includes(self):
+        inference_opt = InferenceOptimizer()
+        inference_opt.optimize(model=self.model,
+                               training_data=self.train_loader,
+                               thread_num=1,
+                               includes=["fp32_ipex"])
+
+        assert "original" in inference_opt.optimized_model_dict
+        assert "fp32_ipex" in inference_opt.optimized_model_dict
+        assert len(inference_opt.optimized_model_dict) == 2
+
+    def test_summary(self):
+        inference_opt = InferenceOptimizer()
+        with pytest.raises(RuntimeError) as e:
+            inference_opt.summary()
+        error_msg = e.value.args[0]
+        assert error_msg == "There is no optimization result. You should call .optimize() "\
+                            "before summary()"
+        inference_opt.optimize(model=self.model,
+                               training_data=self.train_loader,
+                               thread_num=1)
+        inference_opt.summary()
+
+    def test_wrong_data_loader(self):
+        fake_transform = transforms.Compose([
+            transforms.ToTensor(),
+            transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5)),
+            transforms.Resize(64),
+        ])
+        fake_train_loader = create_data_loader(self.data_dir, 32, self.num_workers,
+                                               fake_transform, subset=10, shuffle=True)
+        inference_opt = InferenceOptimizer()
+        with pytest.raises(RuntimeError) as e:
+            inference_opt.optimize(model=self.model,
+                                   training_data=fake_train_loader,
+                                   thread_num=1)
+        error_msg = e.value.args[0]
+        assert error_msg == "training_data is incompatible with your model input."
+
+    def test_pipeline_with_custom_function_metric(self):
+        inference_opt = InferenceOptimizer()
+
+        def metric(pred, target):
+            return self.metric(pred, target)
+
+        inference_opt.optimize(model=self.model,
+                               training_data=self.train_loader,
+                               validation_data=self.test_loader,
+                               metric=metric,
+                               direction="max",
+                               thread_num=1)
+    
+    def test_pipeline_with_torchmetrics_functional_metric(self):
+        inference_opt = InferenceOptimizer()
+        metric = torchmetrics.functional.accuracy
+        inference_opt.optimize(model=self.model,
+                               training_data=self.train_loader,
+                               validation_data=self.test_loader,
+                               metric=metric,
+                               direction="max",
+                               thread_num=1)
+
+    def test_pipeline_with_custom_function_metric_without_data(self):
+        inference_opt = InferenceOptimizer()
+
+        def metric(pred, target):
+            return self.metric(pred, target)
+
+        with pytest.raises(RuntimeError):
+            inference_opt.optimize(model=self.model,
+                                training_data=self.train_loader,
+                                validation_data=None,
+                                metric=metric,
+                                direction="max",
+                                thread_num=1)
+
+    def test_pipeline_with_wrong_custom_function_metric(self):
+        inference_opt = InferenceOptimizer()
+
+        def metric(x, y):
+            return self.metric(x, y)
+
+        with pytest.raises(RuntimeError):
+            inference_opt.optimize(model=self.model,
+                                training_data=self.train_loader,
+                                validation_data=self.test_loader,
+                                metric=metric,
+                                direction="max",
+                                thread_num=1)
+
+    def test_pipeline_with_custom_function_metric_with_data_loader(self):
+        inference_opt = InferenceOptimizer()
+        import numpy as np
+        def metric(model, data_loader):
+            metrics = []
+            for input_data, target in data_loader:
+                pred = model(input_data)
+                metric = self.metric(pred, target)
+                metrics.append(metric)
+            return np.mean(metrics)
+
+        inference_opt.optimize(model=self.model,
+                               training_data=self.train_loader,
+                               validation_data=self.test_loader,
+                               metric=metric,
+                               direction="max",
+                               thread_num=1)
+
+    def test_get_model_with_wrong_method_name(self):
+        inference_opt = InferenceOptimizer()
+        inference_opt.optimize(model=self.model,
+                               training_data=self.train_loader,
+                               validation_data=self.test_loader,
+                               metric=self.metric,
+                               direction="max",
+                               thread_num=1)
+
+        with pytest.raises(RuntimeError):
+            inference_opt.get_model(method_name="fp16_ipex")
+
+    def test_get_model_with_method_name(self):
+        inference_opt = InferenceOptimizer()
+        inference_opt.optimize(model=self.model,
+                               training_data=self.train_loader,
+                               validation_data=self.test_loader,
+                               metric=self.metric,
+                               direction="max",
+                               thread_num=1)
+        try:
+            model = inference_opt.get_model(method_name="fp32_ipex")
+            from bigdl.nano.deps.ipex.ipex_inference_model import PytorchIPEXJITModel
+            assert isinstance(model, PytorchIPEXJITModel)
+        except:
+            pass

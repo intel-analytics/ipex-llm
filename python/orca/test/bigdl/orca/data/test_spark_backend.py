@@ -25,6 +25,8 @@ import bigdl.orca.data.pandas
 from bigdl.orca import OrcaContext
 from bigdl.dllib.nncontext import *
 from bigdl.orca.data.image import write_tfrecord, read_tfrecord
+from bigdl.orca.data.utils import *
+from bigdl.orca.data.transformer import *
 
 
 class TestSparkBackend(TestCase):
@@ -77,7 +79,7 @@ class TestSparkBackend(TestCase):
         df = data[0]
         assert df.location.dtype == "float64"
         assert df.ID.dtype == "float64"
-        data_shard = bigdl.orca.data.pandas.read_csv(file_path, dtype={"sale_price": np.float32})
+        data_shard = bigdl.orca.data.pandas.read_csv(file_path, dtype={"sale_price": np.float32, "ID": np.int64})
         data = data_shard.collect()
         df2 = data[0]
         assert df2.sale_price.dtype == "float32" and df2.ID.dtype == "int64"
@@ -213,6 +215,69 @@ class TestSparkBackend(TestCase):
             train_dataset.take(1)
         finally:
             shutil.rmtree(temp_dir)
+
+    def test_to_spark_df(self):
+        file_path = os.path.join(self.resource_path, "orca/data/csv")
+        data_shard = bigdl.orca.data.pandas.read_csv(file_path, header=0, names=['user', 'item'],
+                                                   usecols=[0, 1])
+        df = data_shard.to_spark_df()
+        df.show()
+
+    def test_read_large_csv(self):
+        file_path = os.path.join(self.resource_path, "orca/data/10010.csv")
+        data_shard = bigdl.orca.data.pandas.read_csv(file_path)
+        res = data_shard.collect()
+        assert len(res[0]) == 10009, "number of records should be 10009"
+
+    def test_spark_df_to_shards(self):
+        file_path = os.path.join(self.resource_path, "orca/data/csv")
+        from pyspark.sql import SparkSession
+        spark = SparkSession.builder.master("local[1]")\
+            .appName('test_spark_backend')\
+            .config("spark.driver.memory", "6g").getOrCreate()
+        df = spark.read.csv(file_path)
+        data_shards = spark_df_to_pd_sparkxshards(df)
+
+    def test_minmaxscale_shards(self):
+        file_path = os.path.join(self.resource_path, "orca/data/csv")
+        data_shard = bigdl.orca.data.pandas.read_csv(file_path)
+        scale = MinMaxScaler(inputCol=["sale_price"], outputCol="sale_price_scaled")
+        transformed_data_shard = scale.fit_transform(data_shard)
+
+    def test_standardscale_shards(self):
+        file_path = os.path.join(self.resource_path, "orca/data/csv")
+
+        data_shard = bigdl.orca.data.pandas.read_csv(file_path)
+        scale = StandardScaler(inputCol="sale_price", outputCol="sale_price_scaled")
+        transformed_data_shard = scale.fit_transform(data_shard)
+
+    def test_max_values(self):
+        file_path = os.path.join(self.resource_path, "orca/data/csv/morgage1.csv")
+        data_shard = bigdl.orca.data.pandas.read_csv(file_path)
+        max_value = data_shard.max_values('sale_price')
+        assert max_value == 475000, "max value of sale_price should be 2"
+
+    def test_merge_shards(self):
+        from bigdl.orca.data.utils import spark_df_to_pd_sparkxshards  
+        from pyspark.sql import SparkSession
+        spark = SparkSession.builder.getOrCreate()
+        df1 = spark.createDataFrame([
+            (1, 2.),
+            (2, 3.),
+            (3, 5.),
+            (4, 1.)
+            ], schema=['a', 'b'])
+        df2 = spark.createDataFrame([
+            (1, 7),
+            (2, 8),
+            (4, 9),
+            (5, 9)
+            ], schema=['a', 'c'])
+        data_shard1 = spark_df_to_pd_sparkxshards(df1)
+        data_shard2 = spark_df_to_pd_sparkxshards(df2)
+        merged_shard = data_shard1.merge(data_shard2, on='a')
+        merged_shard_df = merged_shard.to_spark_df()
+        assert len(merged_shard)==3 and merged_shard_df.columns==['a','b','c']
 
 
 if __name__ == "__main__":

@@ -26,11 +26,7 @@ from torch.utils.data import TensorDataset, DataLoader
 from bigdl.chronos.autots import TSPipeline
 from bigdl.chronos.data import TSDataset
 
-import onnxruntime
-
-_onnxrt_ver = onnxruntime.__version__ != '1.6.0' #  Jenkins requires 1.6.0(chronos)
-skip_onnxrt = pytest.mark.skipif(_onnxrt_ver, reason="Only runs when onnxrt is 1.6.0")
-
+from .. import op_all, op_onnxrt16
 
 def train_data_creator(config):
     return DataLoader(TensorDataset(torch.randn(1000,
@@ -76,7 +72,8 @@ class TestTSPipeline(TestCase):
     def tearDown(self) -> None:
         pass
 
-    @skip_onnxrt
+    @op_all
+    @op_onnxrt16
     def test_seq2seq_tsppl_support_dataloader(self):
         # load
         tsppl_seq2seq = TSPipeline.load(
@@ -180,7 +177,8 @@ class TestTSPipeline(TestCase):
         with pytest.raises(RuntimeError):
             yhat = tsppl_lstm.predict(data=get_test_tsdataset(), batch_size=16)
 
-    @skip_onnxrt
+    @op_all
+    @op_onnxrt16
     def test_tsppl_quantize_data_creator(self):
         # s2s not support quantize
         with pytest.raises(RuntimeError):

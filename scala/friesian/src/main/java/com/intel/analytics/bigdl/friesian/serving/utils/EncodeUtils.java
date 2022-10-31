@@ -16,7 +16,13 @@
 
 package com.intel.analytics.bigdl.friesian.serving.utils;
 
-import java.io.*;
+import org.apache.commons.io.serialization.ValidatingObjectInputStream;
+
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.ObjectOutputStream;
+import java.util.regex.Pattern;
 
 public class EncodeUtils {
     public static byte[] objToBytes(Object o) {
@@ -40,9 +46,15 @@ public class EncodeUtils {
 
     public static Object bytesToObj(byte[] bytes) {
         ByteArrayInputStream bis = new ByteArrayInputStream(bytes);
-        ObjectInputStream in;
+        ValidatingObjectInputStream in = null;
         try {
-            in = new ObjectInputStream(bis);
+            in = new ValidatingObjectInputStream(bis);
+            Pattern compile = Pattern.compile("java.*");
+            Pattern compile1 = Pattern.compile("org.apache.*");
+            Pattern compile2 = Pattern.compile("scala.*");
+            Pattern compile3 = Pattern.compile("com.intel.analytics.bigdl.*");
+            in.accept(compile.pattern(), compile1.pattern(), compile2.pattern(), compile3.pattern());
+            in.accept("[*");
             return in.readObject();
         } catch (IOException | ClassNotFoundException e) {
             e.printStackTrace();

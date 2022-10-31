@@ -14,27 +14,31 @@
 # limitations under the License.
 #
 
+import io
 import pickle
 import logging
 import threading
 from torch import nn
 import torch
 from bigdl.ppml.fl.nn.utils import ndarray_map_to_tensor_map
-from bigdl.dllib.utils.log4Error import invalidInputError
+from bigdl.dllib.utils.log4Error import invalidInputError, invalidOperationError
 from threading import Condition
 import os
-
+from bigdl.dllib.utils.encryption_utils import *
 
 class Aggregator(object):
-    def __init__(self, conf) -> None:
+    def __init__(self, conf: dict) -> None:
         self.model = None
         self.client_data = {'train':{}, 'eval':{}, 'pred':{}}
         self.server_data = {'train':{}, 'eval':{}, 'pred':{}}
         self.client_num = conf['clientNum']
+        self.client_num = int(self.client_num)
         self.condition = Condition()
         self._lock = threading.Lock()
         self.optimizer_cls = None
         self.optimizer_args = None
+        self.secret_key = conf['secretKey'] if 'secretKey' in conf.keys() else None
+        self.salt = conf['salt'] if 'salt' in conf.keys() else None
         logging.info(f"Initialized Pytorch aggregator [client_num: {self.client_num}]")
 
     def set_meta(self, loss_fn, optimizer):
@@ -127,6 +131,14 @@ got {len(self.client_data[phase])}/{self.client_num}')
             invalidInputError(False,
                               f'Invalid phase: {phase}, should be train/eval/pred')
 
+    def load_uploaded_model(self, client_id, model_path):
+        if self.model is not None:
+            invalidOperationError(False,
+                f"Model exists, model uploading from {client_id} ignored.")
+        else:
+            os.rename(model_path, f'{model_path}.pt')                
+            self.model = torch.jit.load(f'{model_path}.pt')
+
     def save_server_model(self, model_path):
         if not os.path.exists(f"{model_path}/model.meta"):
             os.makedirs(f"{model_path}", exist_ok=True)
@@ -135,15 +147,39 @@ got {len(self.client_data[phase])}/{self.client_num}')
                              'optimizer': (self.optimizer_cls, self.optimizer_args)},
                             meta_file)
         m = torch.jit.script(self.model)
-        torch.jit.save(m, f"{model_path}/model.pt")
+        if self.secret_key is not None and self.salt is not None:
+            logging.warn("Saving encrypted model...")
+            buffer = io.BytesIO()
+            torch.jit.save(m, buffer)
+            byte_buffer = buffer.getvalue()
+            encrypted = encrypt_bytes_with_AES_CBC(byte_buffer, self.secret_key, self.salt)
+            with open(f"{model_path}/model.pt", 'wb') as f:
+                f.write(encrypted)
+                logging.info(f"Writing model to {model_path}/model.pt")
+        else:
+            logging.warn("Secret key or salt is missed, saving unencrypted model...")
+            torch.jit.save(m, f"{model_path}/model.pt")
         # save meta to file if not saved yet
         
 
-    def load_server_model(self, model_path):        
-        logging.info(f"Trying to load model from {model_path}")
-        self.model = torch.jit.load(f"{model_path}/model.pt")
-        # if loaded, set meta here to make the optimizer bind the model
-        with open(f"{model_path}/model.meta", "rb") as meta_file:
-            meta = pickle.load(meta_file)
-            self.loss_fn = meta['loss']
-            self.set_optimizer(meta['optimizer'][0], meta['optimizer'][1])
+    def load_server_model(self, client_id, model_path):
+        if self.model is not None:
+            invalidOperationError(False,
+                f"Model exists, model uploading from {client_id} ignored.")
+        else:
+            logging.info(f"Trying to load model from {model_path}")
+            if self.secret_key is not None and self.salt is not None:
+                logging.info(f"Loading encrypted model...")
+                with open(f'{model_path}/model.pt', 'rb') as f:
+                    encrypted_read = f.read()
+                    loaded = decrypt_bytes_with_AES_CBC(encrypted_read, self.key, self.salt)
+                    buffer_load = io.BytesIO(loaded)
+                    self.model = torch.jit.load(buffer_load)
+            else:
+                logging.warn(f"Loading unencrypted model...")
+                self.model = torch.jit.load(f"{model_path}/model.pt")
+            # if loaded, set meta here to make the optimizer bind the model
+            with open(f"{model_path}/model.meta", "rb") as meta_file:
+                meta = pickle.load(meta_file)
+                self.loss_fn = meta['loss']
+                self.set_optimizer(meta['optimizer'][0], meta['optimizer'][1])

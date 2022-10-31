@@ -32,7 +32,7 @@ import sys
 def init_spark_on_local(cores=2, conf=None, python_location=None, spark_log_level="WARN",
                         redirect_spark_log=True):
     """
-    Create a SparkContext with Analytics Zoo configurations on the local machine.
+    Create a SparkContext with BigDL configurations on the local machine.
 
     :param cores: The number of cores for Spark local. Default to be 2. You can also set it to "*"
            to use all the available cores. i.e `init_spark_on_local(cores="*")`
@@ -73,7 +73,7 @@ def init_spark_on_yarn(hadoop_conf,
                        conf=None,
                        py_files=None):
     """
-    Create a SparkContext with Analytics Zoo configurations on Yarn cluster for yarn-client mode.
+    Create a SparkContext with BigDL configurations on Yarn cluster for yarn-client mode.
     You only need to create a conda environment and install the python dependencies in that
     environment beforehand on the driver machine. These dependencies would be automatically
     packaged and distributed to the whole Yarn cluster.
@@ -148,7 +148,7 @@ def init_spark_on_yarn_cluster(hadoop_conf,
                                conf=None,
                                py_files=None):
     """
-    Create a SparkContext with Analytics Zoo configurations on Yarn cluster for yarn-cluster mode.
+    Create a SparkContext with BigDL configurations on Yarn cluster for yarn-cluster mode.
     You only need to create a conda environment and install the python dependencies in that
     environment beforehand on the driver machine. These dependencies would be automatically
     packaged and distributed to the whole Yarn cluster.
@@ -223,10 +223,10 @@ def init_spark_standalone(num_executors,
                           python_location=None,
                           enable_numa_binding=False):
     """
-    Create a SparkContext with Analytics Zoo configurations on Spark standalone cluster.
+    Create a SparkContext with BigDL configurations on Spark standalone cluster.
 
     You need to specify master if you already have a Spark standalone cluster. For a
-    standalone cluster with multiple nodes, make sure that analytics-zoo is installed via
+    standalone cluster with multiple nodes, make sure that BigDL is installed via
     pip in the Python environment on every node.
     If master is not specified, a new Spark standalone cluster on the current single node
     would be started first and the SparkContext would use its master address. You need to
@@ -297,7 +297,7 @@ def init_spark_on_k8s(master,
     """
     Create a SparkContext with BigDL configurations on Kubernetes cluster for k8s client
     mode. You are recommended to use the Docker image intelanalytics/bigdl-k8s:latest.
-    You can refer to https://github.com/intel-analytics/BigDL/tree/branch-2.0/docker/bigdl-k8s
+    You can refer to https://github.com/intel-analytics/BigDL/tree/main/docker/bigdl-k8s
     to build your own Docker image.
 
     :param master: The master address of your k8s cluster.
@@ -366,7 +366,7 @@ def init_spark_on_k8s_cluster(master,
     """
     Create a SparkContext with BigDL configurations on Kubernetes cluster for k8s cluster
     mode. You are recommended to use the Docker image intelanalytics/bigdl-k8s:latest.
-    You can refer to https://github.com/intel-analytics/BigDL/tree/branch-2.0/docker/bigdl-k8s
+    You can refer to https://github.com/intel-analytics/BigDL/tree/main/docker/bigdl-k8s
     to build your own Docker image.
     :param master: The master address of your k8s cluster.
     :param container_image: The name of the docker container image for Spark executors.
@@ -432,7 +432,7 @@ class ZooContextMeta(type):
     def log_output(cls):
         """
         Whether to redirect Spark driver JVM's stdout and stderr to the current
-        python process. This is useful when running Analytics Zoo in jupyter notebook.
+        python process. This is useful when running BigDL in jupyter notebook.
         Default to be False. Needs to be set before initializing SparkContext.
         """
         return cls._log_output
@@ -496,10 +496,10 @@ def init_nncontext(conf=None, cluster_mode="spark-submit", spark_log_level="WARN
     before your code, you have to set the Spark configurations through command line options
     or the properties file before calling this method. In this case, you are recommended
     to use the launch scripts we provide:
-    https://github.com/intel-analytics/analytics-zoo/tree/master/scripts.
+    https://github.com/intel-analytics/BigDL/tree/main/scripts.
 
     :param conf: An instance of SparkConf. If not specified, a new SparkConf with
-           Analytics Zoo and BigDL configurations would be created and used.
+           BigDL configurations would be created and used.
            You can also input a string here to indicate the name of the application.
     :param cluster_mode: The mode for the Spark cluster. One of "local", "yarn-client",
        "yarn-cluster", "k8s-client", "standalone" and "spark-submit". Default to be "local".
@@ -508,9 +508,9 @@ def init_nncontext(conf=None, cluster_mode="spark-submit", spark_log_level="WARN
        In this case, please set the Spark configurations through command line options or
        the properties file. You need to use "spark-submit" for yarn-cluster or k8s-cluster mode.
        To make things easier, you are recommended to use the launch scripts we provide:
-       https://github.com/intel-analytics/analytics-zoo/tree/master/scripts.
+       https://github.com/intel-analytics/BigDL/tree/main/scripts.
 
-       For other cluster modes, you are recommended to install and run analytics-zoo through
+       For other cluster modes, you are recommended to install and run BigDL through
        pip, which is more convenient.
     :param spark_log_level: The log level for Spark. Default to be 'WARN'.
     :param redirect_spark_log: Whether to redirect the Spark log to local file. Default to be True.
@@ -628,10 +628,10 @@ def init_internal_nncontext(conf=None, spark_log_level="WARN", redirect_spark_lo
     before your code, you have to set the Spark configurations through command line options
     or the properties file before calling this method. In this case, you are recommended
     to use the launch scripts we provide:
-    https://github.com/intel-analytics/analytics-zoo/tree/master/scripts.
+    https://github.com/intel-analytics/BigDL/tree/main/scripts.
 
     :param conf: An instance of SparkConf. If not specified, a new SparkConf with
-           Analytics Zoo and BigDL configurations would be created and used.
+           BigDL configurations would be created and used.
            You can also input a string here to indicate the name of the application.
     :param spark_log_level: The log level for Spark. Default to be 'WARN'.
     :param redirect_spark_log: Whether to redirect the Spark log to local file. Default to be True.
@@ -673,7 +673,7 @@ def getOrCreateSparkContext(conf=None, appName=None):
     """
     Get the current active SparkContext or create a new SparkContext.
     :param conf: An instance of SparkConf. If not specified, a new SparkConf with
-           Analytics Zoo and BigDL configurations would be created and used.
+           BigDL configurations would be created and used.
     :param appName: The name of the application if any.
 
     :return: An instance of SparkContext.

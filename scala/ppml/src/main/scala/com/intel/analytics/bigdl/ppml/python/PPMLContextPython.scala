@@ -123,9 +123,9 @@ class PPMLContextPython[T]() {
    * support for test
    */
 
-  def initKeys(appId: String, appKey: String, primaryKeyPath: String,
+  def initKeys(appId: String, apiKey: String, primaryKeyPath: String,
                dataKeyPath: String): SimpleKeyManagementService = {
-    val kms = SimpleKeyManagementService.apply(appId, appKey)
+    val kms = SimpleKeyManagementService.apply(appId, apiKey)
     kms.retrievePrimaryKey(primaryKeyPath)
     kms.retrieveDataKey(primaryKeyPath, dataKeyPath)
     kms

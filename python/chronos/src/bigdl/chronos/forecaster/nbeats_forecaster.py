@@ -174,7 +174,7 @@ class NBeatsForecaster(BasePytorchForecaster):
         """
         Build a NBeats Forecaster Model.
 
-        :param tsdataset: A bigdl.chronos.data.tsdataset.TSDataset instance.
+        :param tsdataset: Train tsdataset, a bigdl.chronos.data.tsdataset.TSDataset instance.
         :param past_seq_len: Specify the history time steps (i.e. lookback).
                Do not specify the 'past_seq_len' if your tsdataset has called
                the 'TSDataset.roll' method or 'TSDataset.to_torch_data_loader'.
@@ -224,6 +224,9 @@ class NBeatsForecaster(BasePytorchForecaster):
                           f"but found {past_seq_len, future_seq_len}",
                           fixMsg="Do not specify past_seq_len and future seq_len "
                           "or call tsdataset.roll method again and specify time step")
+
+        invalidInputError(not all([tsdataset.id_sensitive, len(tsdataset._id_list) > 1]),
+                          "NBeats only supports univariate forecasting.")
 
         return cls(past_seq_len=past_seq_len,
                    future_seq_len=future_seq_len,

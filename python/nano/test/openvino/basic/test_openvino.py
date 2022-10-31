@@ -24,5 +24,13 @@ class TestOpenVINO(TestCase):
     def test_openvino_model(self):
         openvino_model = OpenVINOModel("./intel/resnet18-xnor-binary-onnx-0001/FP16-INT1/resnet18-xnor-binary-onnx-0001.xml")
         x = np.random.randn(1, 3, 224, 224)
-        y_hat = openvino_model.forward_step(x)
-        assert tuple(next(iter(y_hat)).shape) == (1, 1000)
+        y_hat = openvino_model(x)
+        assert y_hat.shape == (1, 1000)
+
+    def test_openvino_model_async_predict(self):
+        openvino_model = OpenVINOModel("./intel/resnet18-xnor-binary-onnx-0001/FP16-INT1/resnet18-xnor-binary-onnx-0001.xml")
+        x = [np.random.randn(1, 3, 224, 224) for i in range(5)]
+
+        result = openvino_model.async_predict(x, num_requests=5)
+        for res in result:
+            assert res.shape == (1, 1000)

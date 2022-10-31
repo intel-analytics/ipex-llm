@@ -36,16 +36,6 @@ cd BigDL/ppml/
 
 
 
-* **Prepare the enclave key**
-
-  **enclave key** is the signing key for SGX Enclaves.
-  
-  Run the script to generate your enclave key and add it to your Kubernetes cluster as a secret.
-  ```
-  cd kubernetes
-  bash enclave-key-to-secret.sh
-  ```
-  Then the secret **enclave_key** should be listed in `kubectl get secret`
   
 * **Prepare k8s secret**
 
@@ -109,7 +99,6 @@ placeholder
     ```
     export K8S_MASTER=k8s://$(sudo kubectl cluster-info | grep 'https.*6443' -o -m 1)
     echo The k8s master is $K8S_MASTER .
-    export ENCLAVE_KEY=/YOUR_DIR/enclave-key.pem
     export DATA_PATH=/YOUR_DIR/data
     export KEYS_PATH=/YOUR_DIR/keys
     export SECURE_PASSWORD_PATH=/YOUR_DIR/password
@@ -125,7 +114,6 @@ placeholder
         --device=/dev/sgx/enclave \
         --device=/dev/sgx/provision \
         -v /var/run/aesmd/aesm.socket:/var/run/aesmd/aesm.socket \
-        -v $ENCLAVE_KEY:/graphene/Pal/src/host/Linux-SGX/signer/enclave-key.pem \
         -v $DATA_PATH:/ppml/trusted-big-data-ml/work/data \
         -v $KEYS_PATH:/ppml/trusted-big-data-ml/work/keys \
         -v $SECURE_PASSWORD_PATH:/ppml/trusted-big-data-ml/work/password \

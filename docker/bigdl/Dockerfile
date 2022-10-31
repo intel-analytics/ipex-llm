@@ -18,7 +18,7 @@ ARG SPARK_VERSION=2.4.6
 ARG SPARK_HOME=/opt/spark
 ARG JDK_VERSION=8u192
 ARG JDK_URL=your_jdk_url
-ARG BIGDL_VERSION=2.1.0-SNAPSHOT
+ARG BIGDL_VERSION=2.2.0-SNAPSHOT
 ARG DEBIAN_FRONTEND=noninteractive
 
 # stage.1 jdk & spark
@@ -57,7 +57,7 @@ RUN apt-get update --fix-missing && \
 
 ADD ./log4j2.xml ${SPARK_HOME}/conf/log4j2.xml
 RUN ln -fs /bin/bash /bin/sh
-RUN if [ $SPARK_VERSION = "3.1.2" ]; then \
+RUN if [ $SPARK_VERSION = "3.1.3" ]; then \
         rm $SPARK_HOME/jars/okhttp-*.jar && \
         wget -P $SPARK_HOME/jars https://repo1.maven.org/maven2/com/squareup/okhttp3/okhttp/3.8.0/okhttp-3.8.0.jar; \
     elif [ $SPARK_VERSION = "2.4.6" ]; then \

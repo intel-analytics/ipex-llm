@@ -31,7 +31,7 @@ service NNService {
 }
 
 message TrainRequest {
-    string clientuuid = 1;
+    int32 clientuuid = 1;
     TensorMap data = 2;
     string algorithm = 3;
 }
@@ -42,7 +42,7 @@ message TrainResponse {
 }
 
 message EvaluateRequest {
-    string clientuuid = 1;
+    int32 clientuuid = 1;
     TensorMap data = 2;
     string algorithm = 3;
     bool return = 4;
@@ -55,7 +55,7 @@ message EvaluateResponse {
 }
 
 message PredictRequest {
-    string clientuuid = 1;
+    int32 clientuuid = 1;
     TensorMap data = 2;
     string algorithm = 3;
 }
@@ -65,7 +65,7 @@ message PredictResponse {
     int32 code = 3;
 }
 message UploadMetaRequest {
-    string client_uuid = 1;
+    int32 client_uuid = 1;
     bytes loss_fn = 2;
     ClassAndArgs optimizer = 3;
     string aggregator = 4;
@@ -81,23 +81,26 @@ message ClassAndArgs {
 }
 message UploadMetaResponse {
     string message = 1;
+    int32 code = 2;
 }
 
 message LoadModelRequest {
-    string client_id = 1;
+    int32 client_id = 1;
     string backend = 2;
     string model_path = 3;
 }
 
 message LoadModelResponse {
     string message = 1;
+    int32 code = 2;
 }
 
 message SaveModelRequest {
-    string client_id = 1;
+    int32 client_id = 1;
     string backend = 2;
     string model_path = 3;    
 }
 message SaveModelResponse  {
     string message = 1;
 }
+

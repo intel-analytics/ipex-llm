@@ -8,7 +8,7 @@
 
 **In this guide we will describe how to scale out _PyTorch_ programs using Orca in 4 simple steps.**
 
-### **Step 0: Prepare Environment**
+### Step 0: Prepare Environment
 
 [Conda](https://docs.conda.io/projects/conda/en/latest/user-guide/install/) is needed to prepare the Python environment for running this example. Please refer to the [install guide](../../UserGuide/python.md) for more details.
 
@@ -22,7 +22,7 @@ pip install six cloudpickle
 pip install jep==3.9.0
 ```
 
-### **Step 1: Init Orca Context**
+### Step 1: Init Orca Context
 ```python
 from bigdl.orca import init_orca_context, stop_orca_context
 
@@ -44,7 +44,7 @@ This is the only place where you need to specify local or distributed mode. View
 
 **Note:** You should `export HADOOP_CONF_DIR=/path/to/hadoop/conf/dir` when running on Hadoop YARN cluster. View [Hadoop User Guide](./../../UserGuide/hadoop.md) for more details.
 
-### **Step 2: Define the Model**
+### Step 2: Define the Model
 
 You may define your model, loss and optimizer in the same way as in any standard (single node) PyTorch program.
 
@@ -77,7 +77,7 @@ criterion = nn.NLLLoss()
 adam = torch.optim.Adam(model.parameters(), 0.001)
 ```
 
-### **Step 3: Define Train Dataset**
+### Step 3: Define Train Dataset
 
 You can define the dataset using standard [Pytorch DataLoader](https://pytorch.org/docs/stable/data.html). 
 
@@ -108,7 +108,7 @@ test_loader = torch.utils.data.DataLoader(
 
 Alternatively, we can also use a [Data Creator Function](https://github.com/intel-analytics/BigDL/blob/main/docs/docs/colab-notebook/orca/quickstart/pytorch_lenet_mnist_data_creator_func.ipynb) or [Orca XShards](../Overview/data-parallel-processing) as the input data, especially when the data size is very large)
 
-### **Step 4: Fit with Orca Estimator**
+### Step 4: Fit with Orca Estimator
 
 First, Create an Estimator
 
@@ -132,7 +132,7 @@ for r in result:
     print(r, ":", result[r])
 ```
 
-### **Step 5: Save and Load the Model**
+### Step 5: Save and Load the Model
 
 Save the Estimator states (including model and optimizer) to the provided model path.
 

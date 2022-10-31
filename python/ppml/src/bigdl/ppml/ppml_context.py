@@ -52,6 +52,11 @@ class PPMLContext(JavaValue):
                 conf["spark.bigdl.kms.ehs.key"] = check(ppml_args, "ehsm_app_key")
                 conf["spark.bigdl.kms.key.primary"] = check(ppml_args, "primary_key_path")
                 conf["spark.bigdl.kms.key.data"] = check(ppml_args, "data_key_path")
+            elif kms_type == "AzureKeyManagementService":
+                conf["spark.bigdl.kms.azure.vault"] = check(ppml_args, "azure_vault")
+                conf["spark.bigdl.kms.azure.clientId"] = ppml_args.get("azure_client_id", "")
+                conf["spark.bigdl.kms.key.primary"] = check(ppml_args, "primary_key_path")
+                conf["spark.bigdl.kms.key.data"] = check(ppml_args, "data_key_path")
             else:
                 invalidInputError(False, "invalid KMS type")
 

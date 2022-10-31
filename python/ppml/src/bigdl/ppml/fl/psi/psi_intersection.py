@@ -26,7 +26,7 @@ class PsiIntersection(object):
         self.intersection = []
         self._thread_intersection = []
 
-        self.max_collection = max_collection
+        self.max_collection = int(max_collection)
         self.condition = threading.Condition()
         self._lock = threading.Lock()
 
@@ -40,12 +40,14 @@ class PsiIntersection(object):
             invalidOperationError(len(self.collection) < self.max_collection,
                 f"PSI collection is full, got: {len(self.collection)}/{self.max_collection}")
             self.collection.append(collection)
+            logging.debug(f"PSI got collection {len(self.collection)}/{self.max_collection}")
             if len(self.collection) == self.max_collection:
                 current_intersection = self.collection[0]
                 for i in range(1, len(self.collection)):
                     current_intersection = \
                         self.find_intersection(current_intersection, self.collection[i])
                 self.intersection = current_intersection
+                self.collection.clear()
 
     def get_intersection(self):
         with self._lock:

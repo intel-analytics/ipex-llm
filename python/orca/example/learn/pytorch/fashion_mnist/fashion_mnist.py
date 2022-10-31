@@ -33,6 +33,7 @@ import torch.optim as optim
 
 from torch.utils.tensorboard import SummaryWriter
 
+from bigdl.dllib.utils.log4Error import invalidInputError
 from bigdl.orca import init_orca_context, stop_orca_context
 from bigdl.orca.learn.pytorch import Estimator
 from bigdl.orca.learn.metrics import Accuracy
@@ -109,12 +110,12 @@ def optimizer_creator(model, config):
 def main():
     parser = argparse.ArgumentParser(description='PyTorch Tensorboard Example')
     parser.add_argument('--cluster_mode', type=str, default="local",
-                        help='The cluster mode, such as local, yarn-client, yarn-cluster, spark-submit or k8s.')
+                        help='The cluster mode, such as local, yarn, spark-submit or k8s.')
     parser.add_argument('--runtime', type=str, default="spark",
                         help='The runtime backend, one of spark or ray.')
     parser.add_argument('--address', type=str, default="",
-                        help='The cluster address if the driver connects to an existing ray cluster. '
-                             'If it is empty, a new Ray cluster will be created.')
+                        help='The cluster address if the driver connects to an existing '
+                             'ray cluster. If it is empty, a new Ray cluster will be created.')
     parser.add_argument('--backend', type=str, default="bigdl",
                         help='The backend of PyTorch Estimator; '
                              'bigdl, ray and spark are supported.')
@@ -141,7 +142,8 @@ def main():
                'Sandal', 'Shirt', 'Sneaker', 'Bag', 'Ankle Boot')
 
     # plot some random training images
-    dataiter = iter(train_data_creator(config={}, batch_size=4, download=args.download, data_dir=args.data_dir))
+    dataiter = iter(train_data_creator(config={}, batch_size=4,
+                                       download=args.download, data_dir=args.data_dir))
     images, labels = dataiter.next()
 
     # create grid of images
@@ -162,8 +164,10 @@ def main():
     batch_size = args.batch_size
     epochs = args.epochs
     if args.backend == "bigdl":
-        train_loader = train_data_creator(config={}, batch_size=4, download=args.download, data_dir=args.data_dir)
-        test_loader = validation_data_creator(config={}, batch_size=4, download=args.download, data_dir=args.data_dir)
+        train_loader = train_data_creator(config={}, batch_size=4,
+                                          download=args.download, data_dir=args.data_dir)
+        test_loader = validation_data_creator(config={}, batch_size=4,
+                                              download=args.download, data_dir=args.data_dir)
 
         net = model_creator(config={})
         optimizer = optimizer_creator(model=net, config={"lr": 0.001})
@@ -197,12 +201,11 @@ def main():
         print("Validation stats: {}".format(val_stats))
         orca_estimator.shutdown()
     else:
-        raise NotImplementedError("Only bigdl, ray, and spark are supported "
-                                  "as the backend, but got {}".format(args.backend))
+        invalidInputError(False, "Only bigdl, ray, and spark are supported "
+                          "as the backend, but got {}".format(args.backend))
 
     stop_orca_context()
 
 
 if __name__ == '__main__':
     main()
-

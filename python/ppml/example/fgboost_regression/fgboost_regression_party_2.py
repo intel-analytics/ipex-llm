@@ -82,13 +82,13 @@ def preprocess(train_dataset, test_dataset):
 @click.command()
 @click.option('--load_model', default=False)
 def run_client(load_model):
-    client_id = '2'
+    client_id = 2
     init_fl_context(client_id)
 
-    df_train = pd.read_csv('./python/ppml/example/fgboost_regression/data/house-prices-train-2.csv')
+    df_train = pd.read_csv('./data/house-prices-train-2.csv')
     df_train['Id'] = df_train['Id'].astype(str)
 
-    df_test = pd.read_csv('./python/ppml/example/fgboost_regression/data/house-prices-test-2.csv')
+    df_test = pd.read_csv('./data/house-prices-test-2.csv')
     df_test['Id'] = df_test['Id'].astype(str)
 
     psi = PSI()

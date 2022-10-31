@@ -121,38 +121,24 @@
       </includes>
     </fileSet>
     <fileSet>
-      <outputDirectory>/assembly</outputDirectory>
-      <directory>${project.parent.basedir}/dllib/target</directory>
+      <outputDirectory>/python</outputDirectory>
+      <directory>${project.parent.basedir}/../python/ppml/scripts</directory>
       <includes>
-          <include>bigdl-dllib*-jar-with-dependencies.jar</include>
-      </includes>
-    </fileSet>
-    <fileSet>
-      <outputDirectory>/assembly</outputDirectory>
-      <directory>${project.parent.basedir}/orca/target</directory>
-      <includes>
-          <include>bigdl-orca*-jar-with-dependencies.jar</include>
-      </includes>
-    </fileSet>
-    <fileSet>
-      <outputDirectory>/assembly</outputDirectory>
-      <directory>${project.parent.basedir}/friesian/target</directory>
-      <includes>
-          <include>bigdl-friesian*-jar-with-dependencies.jar</include>
-      </includes>
-    </fileSet>
-    <fileSet>
-      <outputDirectory>/assembly</outputDirectory>
-      <directory>${project.parent.basedir}/ppml/target</directory>
-      <includes>
-          <include>bigdl-ppml*-jar-with-dependencies.jar</include>
+          <include>start-fl-server.py</include>
       </includes>
     </fileSet>
     <fileSet>
       <outputDirectory>/python</outputDirectory>
       <directory>${project.parent.basedir}/../python/ppml/scripts</directory>
       <includes>
-          <include>start-fl-server.py</include>
+          <include>start-fgboost-server.py</include>
+      </includes>
+    </fileSet>
+    <fileSet>
+      <outputDirectory>/python/requirements</outputDirectory>
+      <directory>${project.parent.basedir}/../python/requirements</directory>
+      <includes>
+          <include>/**</include>
       </includes>
     </fileSet>
   </fileSets>

@@ -17,15 +17,13 @@
 import numpy as np
 import tempfile
 import os
-import torch
 
-from bigdl.chronos.forecaster.seq2seq_forecaster import Seq2SeqForecaster
+from bigdl.chronos.utils import LazyImport
+torch = LazyImport('torch')
+Seq2SeqForecaster = LazyImport('bigdl.chronos.forecaster.seq2seq_forecaster.Seq2SeqForecaster')
 from unittest import TestCase
 import pytest
-import onnxruntime
-
-_onnxrt_ver = onnxruntime.__version__ != '1.6.0' #  Jenkins requires 1.6.0(chronos)
-skip_onnxrt = pytest.mark.skipif(_onnxrt_ver, reason="Only runs when onnxrt is 1.6.0")
+from .. import op_torch, op_distributed, op_all, op_onnxrt16, op_automl, op_diff_set_all
 
 
 def create_data(loader=False):
@@ -79,6 +77,28 @@ def create_tsdataset(roll=True, horizon=5):
     return train, test
 
 
+def create_tsdataset_val(roll=True, horizon=5):
+    from bigdl.chronos.data import TSDataset
+    import pandas as pd
+    timeseries = pd.date_range(start='2020-01-01', freq='D', periods=1000)
+    df = pd.DataFrame(np.random.rand(1000, 2),
+                      columns=['value1', 'value2'],
+                      index=timeseries)
+    df.reset_index(inplace=True)
+    df.rename(columns={'index': 'timeseries'}, inplace=True)
+    train, val, test = TSDataset.from_pandas(df=df,
+                                           dt_col='timeseries',
+                                           target_col=['value1', 'value2'],
+                                           with_split=True,
+                                           val_ratio = 0.1)
+    if roll:
+        for tsdata in [train, val, test]:
+            tsdata.roll(lookback=24, horizon=horizon)
+    return train, val, test
+
+
+@op_all
+@op_torch
 class TestChronosModelSeq2SeqForecaster(TestCase):
 
     def setUp(self):
@@ -96,12 +116,13 @@ class TestChronosModelSeq2SeqForecaster(TestCase):
                                        loss="mae",
                                        lr=0.01)
         forecaster.fit(train_data, epochs=2)
-        test_pred = forecaster.predict(test_data[0])
+        test_pred = forecaster.predict(test_data[0], acceleration=False)
         assert test_pred.shape == test_data[1].shape
-        test_mse = forecaster.evaluate(test_data)
+        test_mse = forecaster.evaluate(test_data, acceleration=False)
         assert test_mse[0].shape == test_data[1].shape[1:]
 
-    @skip_onnxrt
+    @op_diff_set_all
+    @op_onnxrt16
     def test_s2s_forecaster_fit_loader(self):
         train_loader, val_loader, test_loader = create_data(loader=True)
         forecaster = Seq2SeqForecaster(past_seq_len=24,
@@ -111,15 +132,14 @@ class TestChronosModelSeq2SeqForecaster(TestCase):
                                        loss="mae",
                                        lr=0.01)
         train_loss = forecaster.fit(train_loader, epochs=2)
-        yhat = forecaster.predict(data=test_loader)
+        yhat = forecaster.predict(data=test_loader, acceleration=False)
         onnx_yhat = forecaster.predict_with_onnx(data=test_loader)
         assert yhat.shape == onnx_yhat.shape == (400, 5, 1)
-        forecaster.evaluate(test_loader, batch_size=32)
+        forecaster.evaluate(test_loader, batch_size=32, acceleration=False)
         forecaster.evaluate_with_onnx(test_loader)
         forecaster.evaluate_with_onnx(test_loader, batch_size=32)
 
-
-    @skip_onnxrt
+    @op_onnxrt16
     def test_s2s_forecaster_onnx_methods(self):
         train_data, val_data, test_data = create_data()
         forecaster = Seq2SeqForecaster(past_seq_len=24,
@@ -132,22 +152,23 @@ class TestChronosModelSeq2SeqForecaster(TestCase):
         try:
             import onnx
             import onnxruntime
-            pred = forecaster.predict(test_data[0])
+            pred = forecaster.predict(test_data[0], acceleration=False)
             pred_onnx = forecaster.predict_with_onnx(test_data[0])
             np.testing.assert_almost_equal(pred, pred_onnx, decimal=5)
-            mse = forecaster.evaluate(test_data, multioutput="raw_values")
+            mse = forecaster.evaluate(test_data, multioutput="raw_values", acceleration=False)
             mse_onnx = forecaster.evaluate_with_onnx(test_data,
                                                      multioutput="raw_values")
             np.testing.assert_almost_equal(mse, mse_onnx, decimal=5)
             with pytest.raises(RuntimeError):
                 forecaster.build_onnx(sess_options=1)
             forecaster.build_onnx(thread_num=1)
-            mse = forecaster.evaluate(test_data)
+            mse = forecaster.evaluate(test_data, acceleration=False)
             mse_onnx = forecaster.evaluate_with_onnx(test_data)
             np.testing.assert_almost_equal(mse, mse_onnx, decimal=5)
         except ImportError:
             pass
 
+    @op_diff_set_all
     def test_s2s_forecaster_openvino_methods(self):
         train_data, val_data, test_data = create_data()
         forecaster = Seq2SeqForecaster(past_seq_len=24,
@@ -158,12 +179,41 @@ class TestChronosModelSeq2SeqForecaster(TestCase):
                                        lr=0.01)
         forecaster.fit(train_data, epochs=2)
         try:
-            pred = forecaster.predict(test_data[0])
+            pred = forecaster.predict(test_data[0], acceleration=False)
             pred_openvino = forecaster.predict_with_openvino(test_data[0])
             np.testing.assert_almost_equal(pred, pred_openvino, decimal=5)
         except ImportError:
             pass
 
+        # test exporting the openvino
+        with tempfile.TemporaryDirectory() as tmp_dir_name:
+            ckpt_name = os.path.join(tmp_dir_name, "fp32_openvino")
+            ckpt_name_q = os.path.join(tmp_dir_name, "int_openvino")
+            forecaster.export_openvino_file(dirname=ckpt_name, quantized_dirname=ckpt_name_q)
+
+    @op_diff_set_all
+    def test_s2s_forecaster_jit_methods(self):
+        train_data, val_data, test_data = create_data()
+        forecaster = Seq2SeqForecaster(past_seq_len=24,
+                                       future_seq_len=5,
+                                       input_feature_num=1,
+                                       output_feature_num=1,
+                                       loss="mae",
+                                       lr=0.01)
+        forecaster.fit(train_data, epochs=2)
+        try:
+            pred = forecaster.predict(test_data[0])
+            pred_jit = forecaster.predict_with_jit(test_data[0])
+            np.testing.assert_almost_equal(pred, pred_jit, decimal=5)
+        except ImportError:
+            pass
+
+        # test exporting the jit
+        with tempfile.TemporaryDirectory() as tmp_dir_name:
+            ckpt_name = os.path.join(tmp_dir_name, "fp32_jit")
+            forecaster.export_torchscript_file(dirname=ckpt_name)
+
+    @op_diff_set_all
     def test_s2s_forecaster_quantization(self):
         train_data, val_data, test_data = create_data()
         forecaster = Seq2SeqForecaster(past_seq_len=24,
@@ -187,10 +237,10 @@ class TestChronosModelSeq2SeqForecaster(TestCase):
         forecaster.fit(train_data, epochs=2)
         with tempfile.TemporaryDirectory() as tmp_dir_name:
             ckpt_name = os.path.join(tmp_dir_name, "ckpt")
-            test_pred_save = forecaster.predict(test_data[0])
+            test_pred_save = forecaster.predict(test_data[0], acceleration=False)
             forecaster.save(ckpt_name)
             forecaster.load(ckpt_name)
-            test_pred_load = forecaster.predict(test_data[0])
+            test_pred_load = forecaster.predict(test_data[0], acceleration=False)
         np.testing.assert_almost_equal(test_pred_save, test_pred_load)
 
     def test_s2s_forecaster_runtime_error(self):
@@ -206,9 +256,9 @@ class TestChronosModelSeq2SeqForecaster(TestCase):
                 ckpt_name = os.path.join(tmp_dir_name, "ckpt")
                 forecaster.save(ckpt_name)
         with pytest.raises(RuntimeError):
-            forecaster.predict(test_data[0])
+            forecaster.predict(test_data[0], acceleration=False)
         with pytest.raises(RuntimeError):
-            forecaster.evaluate(test_data)
+            forecaster.evaluate(test_data, acceleration=False)
 
     def test_s2s_forecaster_shape_error(self):
         train_data, val_data, test_data = create_data()
@@ -221,6 +271,7 @@ class TestChronosModelSeq2SeqForecaster(TestCase):
         with pytest.raises(RuntimeError):
             forecaster.fit(train_data, epochs=2)
 
+    @op_distributed
     def test_s2s_forecaster_xshard_input(self):
         from bigdl.orca import init_orca_context, stop_orca_context
         train_data, val_data, test_data = create_data()
@@ -245,11 +296,13 @@ class TestChronosModelSeq2SeqForecaster(TestCase):
                                            lr=0.01,
                                            distributed=distributed)
             forecaster.fit(train_data, epochs=2)
-            distributed_pred = forecaster.predict(test_data)
-            distributed_eval = forecaster.evaluate(val_data)
+            distributed_pred = forecaster.predict(test_data, acceleration=False)
+            distributed_eval = forecaster.evaluate(val_data, acceleration=False)
         stop_orca_context()
 
-    @skip_onnxrt
+    @op_distributed
+    @op_diff_set_all
+    @op_onnxrt16
     def test_s2s_forecaster_distributed(self):
         from bigdl.orca import init_orca_context, stop_orca_context
         train_data, val_data, test_data = create_data()
@@ -266,15 +319,15 @@ class TestChronosModelSeq2SeqForecaster(TestCase):
                                        distributed=True)
 
         forecaster.fit(train_data, epochs=2)
-        distributed_pred = forecaster.predict(test_data[0])
-        distributed_eval = forecaster.evaluate(val_data)
+        distributed_pred = forecaster.predict(test_data[0], acceleration=False)
+        distributed_eval = forecaster.evaluate(val_data, acceleration=False)
 
         model = forecaster.get_model()
         assert isinstance(model, torch.nn.Module)
 
         forecaster.to_local()
-        local_pred = forecaster.predict(test_data[0])
-        local_eval = forecaster.evaluate(val_data)
+        local_pred = forecaster.predict(test_data[0], acceleration=False)
+        local_eval = forecaster.evaluate(val_data, acceleration=False)
 
         np.testing.assert_almost_equal(distributed_pred, local_pred, decimal=5)
 
@@ -294,14 +347,15 @@ class TestChronosModelSeq2SeqForecaster(TestCase):
 
         with tempfile.TemporaryDirectory() as tmp_dir_name:
             ckpt_name = os.path.join(tmp_dir_name, "checkpoint.ckpt")
-            test_pred_save = forecaster.predict(test_data[0])
+            test_pred_save = forecaster.predict(test_data[0], acceleration=False)
             forecaster.save(ckpt_name)
             forecaster.load(ckpt_name)
-            test_pred_load = forecaster.predict(test_data[0])
+            test_pred_load = forecaster.predict(test_data[0], acceleration=False)
         np.testing.assert_almost_equal(test_pred_save, test_pred_load)
 
         stop_orca_context()
 
+    @op_distributed
     def test_s2s_dataloader_distributed(self):
         from bigdl.orca import init_orca_context, stop_orca_context
         train_data, _, _ = create_data(loader=True)
@@ -334,10 +388,10 @@ class TestChronosModelSeq2SeqForecaster(TestCase):
         forecaster.fit(train_data, epochs=2)
         with tempfile.TemporaryDirectory() as tmp_dir_name:
             ckpt_name = os.path.join(tmp_dir_name, "ckpt")
-            test_pred_save = forecaster.predict(test_data[0])
+            test_pred_save = forecaster.predict(test_data[0], acceleration=False)
             forecaster.save(ckpt_name)
             forecaster.load(ckpt_name)
-            test_pred_load = forecaster.predict(test_data[0])
+            test_pred_load = forecaster.predict(test_data[0], acceleration=False)
         np.testing.assert_almost_equal(test_pred_save, test_pred_load)
 
     def test_s2s_forecaster_fit_val(self):
@@ -368,7 +422,7 @@ class TestChronosModelSeq2SeqForecaster(TestCase):
         s2s.fit(train,
                 epochs=2,
                 batch_size=32)
-        yhat = s2s.predict(test, batch_size=32)
+        yhat = s2s.predict(test, batch_size=32, acceleration=False)
         test.roll(lookback=s2s.data_config['past_seq_len'],
                   horizon=s2s.data_config['future_seq_len'])
         _, y_test = test.to_numpy()
@@ -384,30 +438,29 @@ class TestChronosModelSeq2SeqForecaster(TestCase):
         s2s.fit(train,
                 epochs=2,
                 batch_size=32)
-        yhat = s2s.predict(test, batch_size=None)
+        yhat = s2s.predict(test, batch_size=None, acceleration=False)
         test.roll(lookback=s2s.data_config['past_seq_len'],
                   horizon=s2s.data_config['future_seq_len'])
         _, y_test = test.to_numpy()
         assert yhat.shape == y_test.shape
 
-    @skip_onnxrt
+    @op_diff_set_all
+    @op_onnxrt16
     def test_forecaster_from_tsdataset_data_loader_onnx(self):
         train, test = create_tsdataset(roll=False)
         train.gen_dt_feature(one_hot_features=['WEEK'])
         test.gen_dt_feature(one_hot_features=['WEEK'])
-        loader = train.to_torch_data_loader(roll=True,
-                                            lookback=24,
+        loader = train.to_torch_data_loader(lookback=24,
                                             horizon=5)
-        test_loader = test.to_torch_data_loader(roll=True,
-                                                lookback=24,
+        test_loader = test.to_torch_data_loader(lookback=24,
                                                 horizon=5)
         s2s = Seq2SeqForecaster.from_tsdataset(train)
         s2s.fit(loader, epochs=2)
-        yhat = s2s.predict(test)
+        yhat = s2s.predict(test, acceleration=False)
         onnx_yhat = s2s.predict_with_onnx(test)
         assert yhat.shape == onnx_yhat.shape
 
-        res = s2s.evaluate(test_loader)
+        res = s2s.evaluate(test_loader, acceleration=False)
         onnx_res = s2s.evaluate_with_onnx(test_loader)
 
     def test_s2s_forecaster_fit_earlystop(self):
@@ -443,6 +496,7 @@ class TestChronosModelSeq2SeqForecaster(TestCase):
         val_loss = forecaster.fit(train_data, val_data,
                                   validation_mode='best_epoch', epochs=10)
 
+    @op_automl
     def test_s2s_forecaster_tune_fit(self):
         train_data, val_data, _ = create_data()
         import bigdl.nano.automl.hpo.space as space
@@ -457,3 +511,79 @@ class TestChronosModelSeq2SeqForecaster(TestCase):
                         n_trials=3, target_metric="mse",
                         direction="minimize")
         forecaster.fit(train_data, epochs=10)
+
+    def test_predict_interval(self):
+        train_data, val_data, test_data = create_data()
+        forecaster = Seq2SeqForecaster(past_seq_len=24,
+                                       future_seq_len=5,
+                                       input_feature_num=1,
+                                       output_feature_num=1,
+                                       loss="mse",
+                                       metrics=["mse"],
+                                       lr=0.01)
+        forecaster.fit(train_data, epochs=2)
+        y_pred, std = forecaster.predict_interval(data=test_data[0],
+                                                  validation_data=val_data,
+                                                  repetition_times=5)
+        assert y_pred.shape == test_data[1].shape
+        assert y_pred.shape == std.shape
+
+    def test_forecaster_fit_val_from_tsdataset(self):
+        train, val, test = create_tsdataset_val()
+        s2s = Seq2SeqForecaster.from_tsdataset(train,
+                                               lstm_hidden_dim=16,
+                                               lstm_layer_num=1)
+        s2s.fit(train, val,
+                epochs=2,
+                batch_size=32)
+        yhat = s2s.predict(test, batch_size=32, acceleration=False)
+        test.roll(lookback=s2s.data_config['past_seq_len'],
+                  horizon=s2s.data_config['future_seq_len'])
+        _, y_test = test.to_numpy()
+        assert yhat.shape == y_test.shape
+
+        del s2s
+        train, val, test = create_tsdataset_val(roll=False, horizon=[1, 3, 5])
+        s2s = Seq2SeqForecaster.from_tsdataset(train,
+                                               past_seq_len=24,
+                                               future_seq_len=2,
+                                               lstm_hidden_dim=16,
+                                               lstm_layer_num=1)
+        s2s.fit(train, val,
+                epochs=2,
+                batch_size=32)
+        yhat = s2s.predict(test, batch_size=None, acceleration=False)
+        test.roll(lookback=s2s.data_config['past_seq_len'],
+                  horizon=s2s.data_config['future_seq_len'])
+        _, y_test = test.to_numpy()
+        assert yhat.shape == y_test.shape
+
+    @op_diff_set_all
+    @op_onnxrt16
+    def test_s2s_optimize_loader(self):
+        train_loader, val_loader, test_loader = create_data(loader=True)
+        forecaster = Seq2SeqForecaster(past_seq_len=24,
+                                       future_seq_len=5,
+                                       input_feature_num=1,
+                                       output_feature_num=1,
+                                       loss="mae",
+                                       lr=0.01)
+        forecaster.fit(train_loader, epochs=2)
+        forecaster.optimize(train_data=train_loader,
+                            validation_data=val_loader,
+                            batch_size=32)
+        forecaster.evaluate(val_loader)
+        forecaster.predict(test_loader)
+
+    def test_s2s_predict_without_optimize(self):
+        train_loader, val_loader, test_loader = create_data(loader=True)
+        forecaster = Seq2SeqForecaster(past_seq_len=24,
+                                       future_seq_len=5,
+                                       input_feature_num=1,
+                                       output_feature_num=1,
+                                       loss="mae",
+                                       lr=0.01)
+        forecaster.fit(train_loader, epochs=2)
+        forecaster.evaluate(val_loader)
+        forecaster.predict(test_loader)
+        assert forecaster.optim_model is None

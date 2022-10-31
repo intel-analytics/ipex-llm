@@ -41,6 +41,7 @@ jobs:
 
       - name: Run benchmark
         run: |
+          python python/nano/benchmark/run.py resnet_inference
           python python/nano/benchmark/run.py resnet50
         env:
           USER: ${{ github.actor }}

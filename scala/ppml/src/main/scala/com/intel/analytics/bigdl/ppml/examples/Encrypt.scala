@@ -35,9 +35,9 @@ object Encrypt extends App with Supportive{
   val kms = arguments.kmsType match {
     case KMS_CONVENTION.MODE_EHSM_KMS =>
       new EHSMKeyManagementService(arguments.kmsServerIP, arguments.kmsServerPort,
-        arguments.ehsmAPPID, arguments.ehsmAPPKEY)
+        arguments.ehsmAPPID, arguments.ehsmAPIKEY)
     case KMS_CONVENTION.MODE_SIMPLE_KMS =>
-      SimpleKeyManagementService(arguments.simpleAPPID, arguments.simpleAPPKEY)
+      SimpleKeyManagementService(arguments.simpleAPPID, arguments.simpleAPIKEY)
     case KMS_CONVENTION.MODE_AZURE_KMS =>
       new AzureKeyManagementService(arguments.keyVaultName, arguments.managedIdentityClientId)
     case _ =>
@@ -49,9 +49,6 @@ object Encrypt extends App with Supportive{
   val encryptedFilePath = arguments.inputPath + ".encrypted"
 
   logger.info(s"$arguments.inputPath will be encrypted and saved at $encryptedFilePath")
-
-  logger.info(s"Primary key will be saved at $primaryKeyPath," +
-    s" and data key will be saved at $dataKeyPath")
 
   val dataKeyPlaintext = kms.retrieveDataKeyPlainText(primaryKeyPath, dataKeyPath)
 
