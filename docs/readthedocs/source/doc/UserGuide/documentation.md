@@ -5,7 +5,7 @@ Here list several writing tips and guidelines you could refer to if you want to 
 ```eval_rst
 .. tip::
 
-   You could refer to `here <https://github.com/intel-analytics/BigDL/blob/main/docs/readthedocs/README.md>`_ if you would like to test your local changes to BigDL documentation.
+   You could refer `here <https://github.com/intel-analytics/BigDL/blob/main/docs/readthedocs/README.md>`_ if you would like to test your local changes to BigDL documentation.
 ```
 
 ## 1. How to add a new document
@@ -94,7 +94,7 @@ For clear navigation purposes, it is recommended to put the document in the ToC.
    According to `sphinx-external-toc <https://sphinx-external-toc.readthedocs.io/en/latest/user_guide/sphinx.html#basic-structure>`_ document, "each document file can only occur once in the ToC".
 ```
 
-For API related documents, we still use in-file `.. toctree::` directives instead of putting them inside `_toc.yml`. You could refer to [here](https://github.com/intel-analytics/BigDL/tree/main/docs/readthedocs/source/doc/PythonAPI) for example usages.
+For API related documents, we still use in-file `.. toctree::` directives instead of putting them inside `_toc.yml`. You could refer [here](https://github.com/intel-analytics/BigDL/tree/main/docs/readthedocs/source/doc/PythonAPI) for example usages.
 
 ## 2. Differentiate the syntax of reStructuredText and CommonMark
 As mentioned above, our documentation includes both `.rst` and `.md` files. They have different syntax, please make sure you do not mix the usage of them.
@@ -102,7 +102,7 @@ As mentioned above, our documentation includes both `.rst` and `.md` files. They
 ```eval_rst
 .. seealso::
 
-   You could refer to `here <https://www.sphinx-doc.org/en/master/usage/restructuredtext/index.html>`_ for reStructuredText syntax examples, and `here <https://spec.commonmark.org/>`_ for CommonMark specifications.
+   You could refer `here <https://www.sphinx-doc.org/en/master/usage/restructuredtext/index.html>`_ for reStructuredText syntax examples, and `here <https://spec.commonmark.org/>`_ for CommonMark specifications.
 ```
 
 Here list several use cases where syntax in `.rst` and `.md` are often confused:
@@ -171,6 +171,17 @@ Not supported, needed help with css
 </td></tr>
 </table>
 
+```eval_rst
+.. note::
+
+   When linking to a ``.rst`` file in a ``.md`` file, replace the ``.rst`` with ``.html`` in the relative path to avoid errors.
+   That is, if you want to link to the ``example.rst`` in a ``.md`` file, use 
+
+   .. code-block:: md
+
+      [Example](relatve/path/to/example.html)
+```
+
 ### 2.1 Tips when adding docstrings in source code for API documentation
 According to the [`sphinx.ext.autodoc`](https://www.sphinx-doc.org/en/master/usage/extensions/autodoc.html#module-sphinx.ext.autodoc) document, docstrings should be written in reStructuredText. We need to make sure that we are using reStructuredText syntax in the source code docstrings for API documentation.
 
@@ -219,7 +230,7 @@ Note that the underline symbols should be at least as long as the header texts.
 
 Also, **we do not expect maually-added styles to headers.**
 
-You could refer to [here](https://www.sphinx-doc.org/en/master/usage/restructuredtext/basics.html#sections) for more information on reStructuredText sections.
+You could refer [here](https://www.sphinx-doc.org/en/master/usage/restructuredtext/basics.html#sections) for more information on reStructuredText sections.
 
 </td></tr>
 <tr><td>Lists</td>
@@ -246,7 +257,7 @@ Note that the number of spaces indented depends on the markup. That is, if we us
 
 Also note that blanks lines are needed around the nested list.
 
-You could refer to [here](https://www.sphinx-doc.org/en/master/usage/restructuredtext/basics.html#lists-and-quote-like-blocks) for more information on reStructuredText lists.
+You could refer [here](https://www.sphinx-doc.org/en/master/usage/restructuredtext/basics.html#lists-and-quote-like-blocks) for more information on reStructuredText lists.
 
 </td></tr>
 <tr><td>
@@ -375,7 +386,64 @@ All the supported language argument for syntax highlighting can be found [here](
          some python code
 ```
 
-You could refer to [here](https://sphinx-tabs.readthedocs.io/en/v3.4.0/) for more information on the usage of tabs.
+You could refer [here](https://sphinx-tabs.readthedocs.io/en/v3.4.0/) for more information on the usage of tabs.
+
+</td></tr>
+<tr><td>Cards in grids</td>
+<td>
+
+```rst
+.. grid:: 1 2 2 2
+   :gutter: 2
+
+   .. grid-item-card::
+
+      **Header**
+      ^^^
+      A normal card.
+      +++
+      :bdg-link:`Footer <relatve/path>`
+
+   .. grid-item-card::
+      :link: https://www.example.com/
+      :class-card: bigdl-link-card
+
+      **Header**
+      ^^^
+      A link card.
+      +++
+      Footer
+```
+
+</td>
+<td>
+
+```eval_rst
+.. grid:: 1 2 2 2
+   :gutter: 2
+
+   .. grid-item-card::
+
+      **Header**
+      ^^^
+      A normal card.
+      +++
+      :bdg-link:`Footer <relatve/path>`
+
+   .. grid-item-card::
+      :link: https://www.example.com/
+      :class-card: bigdl-link-card
+
+      **Header**
+      ^^^
+      A link card.
+      +++
+      Footer
+```
+
+You could refer [here](https://sphinx-design.readthedocs.io/en/furo-theme/cards.html) for more information on the usage of cards, and [here](https://sphinx-design.readthedocs.io/en/furo-theme/grids.html#placing-a-card-in-a-grid) for cards in grids.
+
+Note that `1 2 2 2` defines the number of cards per row in different screen sizes (from extra-small to large).
 
 </td></tr>
 </table>
