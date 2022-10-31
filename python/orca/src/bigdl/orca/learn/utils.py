@@ -270,12 +270,15 @@ def _generate_output_pandas_df(feature_lists, label_lists, feature_cols, label_c
 
 
 def arrays2others(iter, feature_cols, label_cols, shard_size=None, generate_func=None):
-    def init_result_lists(first_row):
+    def init_result_lists(first_row, cols):
         if shard_size:
             # pre allocate numpy array
-            return [np.empty((shard_size,) + r.shape, r.dtype) for r in first_row]
+            if isinstance(first_row, np.ndarray):
+                return [np.empty((shard_size,) + first_row.shape, first_row.dtype)]
+            else:
+                return [np.empty((shard_size,) + r.shape, r.dtype) for r in first_row]
         else:
-            return [[] for r in first_row]
+            return [[] for r in cols]
 
     def add_row(data, results, current):
         if not isinstance(data, list):
@@ -296,11 +299,11 @@ def arrays2others(iter, feature_cols, label_cols, shard_size=None, generate_func
 
     for row in iter:
         if feature_lists is None:
-            feature_lists = init_result_lists(row[0])
+            feature_lists = init_result_lists(row[0], feature_cols)
         add_row(row[0], feature_lists, counter)
         if label_cols is not None:
             if label_lists is None:
-                label_lists = init_result_lists(row[1])
+                label_lists = init_result_lists(row[1], label_cols)
             add_row(row[1], label_lists, counter)
         counter += 1
 
