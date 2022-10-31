@@ -27,7 +27,7 @@ echo $BIGDL_DIR
 
 if (( $# < 3)); then
   echo "Usage: release_default_windows.sh version quick_build upload mvn_parameters"
-  echo "Notice: This script only build bigdl-nano for windows"
+  echo "Notice: This script only build bigdl-nano and bigdl-chronos for windows"
   echo "Usage example: bash release_default_windows.sh default false true"
   echo "Usage example: bash release_default_windows.sh 0.14.0.dev1 false false"
   echo "Usage example: bash release_default_windows.sh 0.14.0.dev1 false false -Ddata-store-url=.."
@@ -43,5 +43,8 @@ NANO_SCRIPT_DIR="$(cd ${BIGDL_DIR}/python/nano/dev; pwd)"
 echo $NANO_SCRIPT_DIR
 bash ${NANO_SCRIPT_DIR}/release_default_windows.sh ${version} ${upload}
 
+CHRONOS_SCRIPT_DIR="$(cd ${BIGDL_DIR}/python/chronos/dev/release; pwd)"
+echo $CHRONOS_SCRIPT_DIR
+bash ${CHRONOS_SCRIPT_DIR}/release_default_windows.sh ${version} ${upload}
 
 # TODO: may need to upload all whls in the very end at the same time in case any build fails?
