@@ -92,3 +92,8 @@ footer.bd-footer{
 .bd-footer-article {
     margin-bottom: 5rem;
 }
+
+/* for tables in documentation guides, vertically center rows */
+.bigdl-documentation-guide-tables td{
+    vertical-align: middle;
+}
