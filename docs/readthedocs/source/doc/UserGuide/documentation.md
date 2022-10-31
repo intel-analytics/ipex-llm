@@ -1,6 +1,6 @@
 # Documentation Guide
 
-Here list several writing tips or rules you could refer to if you want to revise or add documents for BigDL documentation. The source code of our documentation is available [here](https://github.com/intel-analytics/BigDL/tree/main/docs/readthedocs).
+Here list several writing tips and guidelines you could refer to if you want to add/modify documents for BigDL documentation. The source code of our documentation is available [here](https://github.com/intel-analytics/BigDL/tree/main/docs/readthedocs).
 
 ```eval_rst
 .. tip::
