@@ -1,8 +1,12 @@
-name: Manually Build
+name: Manually Build For Testing
 
 on:
   workflow_dispatch:
     inputs:
+      sha:
+        description: 'commit id (SHA-1 hash)'
+        required: true
+        type: string
       artifact:
         description: 'select which job to run("all" will make all jobs run)'
         required: true
@@ -23,9 +27,9 @@ on:
         - bigdl-ppml-kmsutil
         - bigdl-ppml-pccs
       tag:
-        description: 'docker image tag (e.g. 2.1.0-SNAPSHOT)'
+        description: 'docker image tag (e.g. test)'
         required: true
-        default: 'latest'
+        default: 'test'
         type: string
 
 env:
@@ -42,6 +46,8 @@ jobs:
 
     steps:
     - uses: actions/checkout@v3
+      with:
+        ref: ${{ github.event.inputs.sha }}
     - name: docker login
       run: |
         docker login -u ${DOCKERHUB_USERNAME} -p ${DOCKERHUB_PASSWORD}
@@ -115,12 +121,14 @@ jobs:
         sudo docker rmi -f ${base_image}:${TAG}
         sudo docker rmi -f ${bigdata_base_image}:${TAG}
         sudo docker rmi -f ${bigdata_custom_image}:${TAG}
-
+        
   bigdl-ppml-trusted-deep-learning-gramine-base:
     if: ${{ github.event.inputs.artifact == 'bigdl-ppml-trusted-deep-learning-gramine-base' || github.event.inputs.artifact == 'all' }}
     runs-on: [self-hosted, Shire]
     steps:
     - uses: actions/checkout@v3
+      with:
+        ref: ${{ github.event.inputs.sha }}
     - name: docker login
       run: |
         docker login -u ${DOCKERHUB_USERNAME} -p ${DOCKERHUB_PASSWORD}
@@ -144,13 +152,13 @@ jobs:
         sudo docker tag ${image}:${TAG} 10.239.45.10/arda/${image}:${TAG}
         sudo docker push 10.239.45.10/arda/${image}:${TAG}
         sudo docker rmi -f ${image}:${TAG}
-
-
   bigdl-ppml-trusted-deep-learning-gramine-ref:
     if: ${{ github.event.inputs.artifact == 'bigdl-ppml-trusted-deep-learning-gramine-ref' || github.event.inputs.artifact == 'all' }}
     runs-on: [self-hosted, Shire]
     steps:
     - uses: actions/checkout@v3
+      with:
+        ref: ${{ github.event.inputs.sha }}
     - name: docker login
       run: |
         docker login -u ${DOCKERHUB_USERNAME} -p ${DOCKERHUB_PASSWORD}
@@ -170,20 +178,20 @@ jobs:
           --build-arg no_proxy=${NO_PROXY} \
           --build-arg BASE_IMAGE_NAME=${base_image} \
           --build-arg SGX_MEM_SIZE=64G \
-          --build-arg SGX_LOG_LEVEL=error \
           --build-arg BASE_IMAGE_TAG=${TAG} \
           -t ${image}:${TAG} -f ./Dockerfile .
         sudo docker push ${image}:${TAG}
         sudo docker tag ${image}:${TAG} 10.239.45.10/arda/${image}:${TAG}
         sudo docker push 10.239.45.10/arda/${image}:${TAG}
         sudo docker rmi -f ${image}:${TAG}
-
   bigdl-ppml-trusted-big-data-ml-python-gramine:
     if: ${{ github.event.inputs.artifact == 'bigdl-ppml-trusted-big-data-ml-python-gramine' || github.event.inputs.artifact == 'all' }}
     runs-on: [self-hosted, Shire]
 
     steps:
     - uses: actions/checkout@v3
+      with:
+        ref: ${{ github.event.inputs.sha }}
     - name: docker login
       run: |
         docker login -u ${DOCKERHUB_USERNAME} -p ${DOCKERHUB_PASSWORD}
@@ -266,6 +274,8 @@ jobs:
 
     steps:
     - uses: actions/checkout@v3
+      with:
+        ref: ${{ github.event.inputs.sha }}
     - name: docker login
       run: |
         docker login -u ${DOCKERHUB_USERNAME} -p ${DOCKERHUB_PASSWORD}
@@ -326,13 +336,14 @@ jobs:
         sudo docker rmi -f ${image}:${TAG}
         rm enclave-key.pem
 
-
   bigdl-ppml-trusted-big-data-ml-python-graphene:
     if: ${{ github.event.inputs.artifact == 'bigdl-ppml-trusted-big-data-ml-python-graphene' || github.event.inputs.artifact == 'all' }}
     runs-on: [self-hosted, Shire]
 
     steps:
     - uses: actions/checkout@v3
+      with:
+        ref: ${{ github.event.inputs.sha }}
     - name: docker login
       run: |
         docker login -u ${DOCKERHUB_USERNAME} -p ${DOCKERHUB_PASSWORD}
@@ -360,7 +371,6 @@ jobs:
         sudo docker tag ${image}:${TAG} 10.239.45.10/arda/${image}:${TAG}
         sudo docker push 10.239.45.10/arda/${image}:${TAG}
         sudo docker rmi -f ${image}:${TAG}
-
     
   bigdl-ppml-trusted-big-data-ml-scala-occlum:
     if: ${{ github.event.inputs.artifact == 'bigdl-ppml-trusted-big-data-ml-scala-occlum' || github.event.inputs.artifact == 'all' }}
@@ -368,6 +378,8 @@ jobs:
 
     steps:
     - uses: actions/checkout@v3
+      with:
+        ref: ${{ github.event.inputs.sha }}
     - name: docker login
       run: |
         docker login -u ${DOCKERHUB_USERNAME} -p ${DOCKERHUB_PASSWORD}
@@ -403,6 +415,8 @@ jobs:
 
     steps:
       - uses: actions/checkout@v3
+        with:
+         ref: ${{ github.event.inputs.sha }}
       - name: docker login
         run: |
           docker login -u ${DOCKERHUB_USERNAME} -p ${DOCKERHUB_PASSWORD}
@@ -431,14 +445,14 @@ jobs:
           docker tag ${image}:${TAG} 10.239.45.10/arda/${image}:${TAG}
           docker push 10.239.45.10/arda/${image}:${TAG}
           docker rmi -f ${image}:${TAG}
-
-
   bigdl-ppml-trusted-realtime-ml-scala-graphene:
     if: ${{ github.event.inputs.artifact == 'bigdl-ppml-trusted-realtime-ml-scala-graphene' || github.event.inputs.artifact == 'all' }}
     runs-on: [self-hosted, Shire]
 
     steps:
     - uses: actions/checkout@v3
+      with:
+        ref: ${{ github.event.inputs.sha }}
     - name: docker login
       run: |
         docker login -u ${DOCKERHUB_USERNAME} -p ${DOCKERHUB_PASSWORD}
@@ -467,14 +481,14 @@ jobs:
         docker tag ${image}:${TAG} 10.239.45.10/arda/${image}:${TAG}
         docker push 10.239.45.10/arda/${image}:${TAG}
         docker rmi -f ${image}:${TAG}
-
-
   bigdl-ppml-trusted-realtime-ml-scala-occlum:
     if: ${{ github.event.inputs.artifact == 'bigdl-ppml-trusted-realtime-ml-scala-occlum' || github.event.inputs.artifact == 'all' }}
     runs-on: [self-hosted, Shire]
 
     steps:
     - uses: actions/checkout@v3
+      with:
+        ref: ${{ github.event.inputs.sha }}
     - name: docker login
       run: |
         docker login -u ${DOCKERHUB_USERNAME} -p ${DOCKERHUB_PASSWORD}
@@ -503,14 +517,14 @@ jobs:
         docker tag ${image}:${TAG} 10.239.45.10/arda/${image}:${TAG}
         docker push 10.239.45.10/arda/${image}:${TAG}
         docker rmi -f ${image}:${TAG}
-
-
   bigdl-ppml-kmsutil:
     if: ${{ github.event.inputs.artifact == 'bigdl-ppml-kmsutil' || github.event.inputs.artifact == 'all' }}
     runs-on: [self-hosted, Shire]
 
     steps:
     - uses: actions/checkout@v3
+      with:
+        ref: ${{ github.event.inputs.sha }}
     - name: docker deploy kms-util
       run: |
         export IMAGE=intelanalytics/kms-utils
@@ -536,6 +550,8 @@ jobs:
 
     steps:
     - uses: actions/checkout@v3
+      with:
+        ref: ${{ github.event.inputs.sha }}
     - name: docker deploy pccs
       run: |
         export IMAGE=intelanalytics/pccs
@@ -552,5 +568,3 @@ jobs:
         docker tag ${IMAGE}:${TAG} 10.239.45.10/arda/${IMAGE}:${TAG}
         docker push 10.239.45.10/arda/${IMAGE}:${TAG}
         docker rmi -f ${IMAGE}:${TAG} 10.239.45.10/arda/${IMAGE}:${TAG}
-
-

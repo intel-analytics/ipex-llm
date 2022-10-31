@@ -51,7 +51,7 @@ runs:
         pip install --pre bigdl
         pip install torch==1.7.1 torchvision==0.8.2
         pip install six cloudpickle
-        pip install jep==3.9.0
+        pip install jep==3.9.0 xgboost
         pip install --pre --upgrade bigdl-chronos[pytorch,distributed]
         pip uninstall -y torchtext 
         if [ -f python/chronos/dev/colab-notebook/run-notebook-pytorch.sh ]
@@ -65,7 +65,6 @@ runs:
         pip uninstall -y bigdl-dllib bigdl-orca bigdl-chronos
         unset PYTHONHOME
         source deactivate
-        conda remove -n py37-jep
 
       env:
         BIGDL_ROOT: ${{ github.workspace }}

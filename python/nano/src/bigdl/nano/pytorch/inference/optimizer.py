@@ -844,12 +844,12 @@ def _throughput_calculate_helper(iterrun, baseline_time, func, *args):
     time_list = []
     for i in range(iterrun):
         st = time.perf_counter()
-        with torch.no_grad():
-            func(*args)
+        func(*args)
         end = time.perf_counter()
         time_list.append(end - st)
-        # if three samples cost more than 4x time than baseline model, prune it
-        if i == 2 and end - start_time > 12 * baseline_time:
+        # don't use total three samples as jit may be very slow at first two calls.
+        # if the min time cost more than 4x time than baseline model, then prune it
+        if i == 2 and min(time_list) > 4 * baseline_time:
             return np.mean(time_list) * 1000, False
         # at least need 10 iters and try to control calculation
         # time less than 10s

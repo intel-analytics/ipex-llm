@@ -234,9 +234,9 @@ subtrees:
                   - file: doc/PPML/QuickStart/trusted-serving-on-k8s-guide
                   - file: doc/PPML/QuickStart/tpc-h_with_sparksql_on_k8s
                   - file: doc/PPML/QuickStart/tpc-ds_with_sparksql_on_k8s
+                  - file: doc/PPML/QuickStart/deploy_ppml_in_production
                   - file: doc/PPML/Overview/azure_ppml
-                  - file: doc/PPML/Overview/deploy_ppml_in_production
-
+                  - file: doc/PPML/Overview/azure_ppml_occlum
 
   - entries:
     - file: doc/UserGuide/develop
