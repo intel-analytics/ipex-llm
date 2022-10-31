@@ -10,7 +10,7 @@ loader.env.LD_PRELOAD  = ""
 loader.insecure_disable_aslr = true
 loader.argv_src_file = "file:/ppml/trusted-big-data-ml/secured_argvs"
 
-sgx.remote_attestation = "none"
+sgx.remote_attestation = "dcap"
 sgx.ra_client_spid = ""
 
 sys.enable_extra_runtime_domain_names_conf = true
