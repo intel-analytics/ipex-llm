@@ -284,33 +284,16 @@ jobs:
         echo "########################################"
         echo "####### big-data-ml-python-gramine ####"
         echo "########################################"
-        export base_image=intelanalytics/bigdl-ppml-trusted-big-data-ml-python-gramine-base-noattest
-        cd ppml/trusted-big-data-ml/python/docker-gramine/base
-        sed -i 's/"dcap"/"none"/g' bash.manifest.template
-        sudo docker build \
-          --no-cache=true \
-          --build-arg http_proxy=${HTTP_PROXY} \
-          --build-arg https_proxy=${HTTPS_PROXY} \
-          --build-arg HTTP_PROXY_HOST=${HTTP_PROXY_HOST_2} \
-          --build-arg HTTP_PROXY_PORT=${HTTP_PROXY_PORT_2} \
-          --build-arg HTTPS_PROXY_HOST=${HTTP_PROXY_HOST_2} \
-          --build-arg HTTPS_PROXY_PORT=${HTTP_PROXY_PORT_3} \
-          --build-arg JDK_VERSION=8u192 \
-          --build-arg JDK_URL=${JDK_URL} \
-          --build-arg no_proxy=${NO_PROXY} \
-          --build-arg SPARK_JAR_REPO_URL=${SPARK_JAR_REPO_URL} \
-          -t ${base_image}:${TAG} -f ./Dockerfile .
-        sudo docker push ${base_image}:${TAG}
-        sudo docker tag ${base_image}:${TAG} 10.239.45.10/arda/${base_image}:${TAG}
-        sudo docker push 10.239.45.10/arda/${base_image}:${TAG}
-        cd ../bigdl-gramine
-        openssl genrsa -3 -out enclave-key.pem 3072
+        export base_image=intelanalytics/bigdl-ppml-trusted-big-data-ml-python-gramine-base
         export image=intelanalytics/bigdl-ppml-trusted-big-data-ml-python-gramine-noattest-32g
+        cd ppml/trusted-big-data-ml/python/docker-gramine/bigdl-gramine
+        openssl genrsa -3 -out enclave-key.pem 3072
         sudo docker build \
          --build-arg BASE_IMAGE_NAME=${base_image} \
          --build-arg BASE_IMAGE_TAG=${TAG} \
          --build-arg SGX_MEM_SIZE=32G \
          --build-arg SGX_LOG_LEVEL=error \
+         --build-arg ENABLE_DCAP_ATTESTATION=false \
          -t ${image}:${TAG} -f ./Dockerfile .
         sudo docker push ${image}:${TAG}
         sudo docker tag ${image}:${TAG} 10.239.45.10/arda/${image}:${TAG}
