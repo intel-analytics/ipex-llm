@@ -6,7 +6,7 @@ FROM $BASE_IMAGE_NAME:$BASE_IMAGE_TAG as temp
 
 ARG SGX_MEM_SIZE
 ARG SGX_LOG_LEVEL
-ARG ATTESTATION
+ARG ENABLE_DCAP_ATTESTATION
 
 ADD ./enclave-key.pem /root/.config/gramine/enclave-key.pem
 ADD ./make-sgx.sh /ppml/trusted-big-data-ml/make-sgx.sh
