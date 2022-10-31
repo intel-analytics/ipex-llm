@@ -170,7 +170,7 @@ def model_creator_auto(config):
                         lstm_layer_num=config.get("lstm_layer_num", 2),
                         dropout=config.get("dropout", 0.25),
                         teacher_forcing=config.get("teacher_forcing", False))
-    inputs = np.zeros(shape=(1, 1, 1))
+    inputs = np.zeros(shape=(1, 1, config["input_feature_num"]))
     model(inputs)
     learning_rate = config.get('lr', 1e-3)
     model.compile(optimizer=getattr(tf.keras.optimizers,
