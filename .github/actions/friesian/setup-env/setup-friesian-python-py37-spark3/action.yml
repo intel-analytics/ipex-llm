@@ -21,6 +21,7 @@ runs:
       run: |
         wget -r -np -nH  ${FTP_URI}/pkgs/* -P ~/.conda/
         wget -r -np -nH  ${FTP_URI}/pkgs/* -P /opt/conda/
+        
         conda create -n py37 -y python==3.7.10 setuptools==58.0.4
         conda info --env
         source activate py37
