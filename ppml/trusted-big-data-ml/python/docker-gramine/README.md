@@ -38,7 +38,7 @@ Then, use the `enclave-key.pem` and the bigdl base image to build your own custo
 ./build-custom-image.sh
 cd ..
 ```
-**Warning:** If you want to skip DCAP attestation when starting containers, you can set `Attestation` to *false* in `build-custom-image.sh`, and this will generate a none-attestation image. **But never do this unsafe operation in producation!**
+**Warning:** If you want to skip DCAP attestation in runtime containers, you can set `Attestation` to *false* in `build-custom-image.sh`, and this will generate a none-attestation image. **But never do this unsafe operation in producation!**
 
 The docker build console will also output `mr_enclave` and `mr_signer` like below, which are hash values and used to  register your MREnclave in the following.
 

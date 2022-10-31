@@ -205,6 +205,7 @@ To build a secure PPML image which can be used in production environment, BigDL 
     ./build-custom-image.sh
     cd ..
     ```
+    **Warning:** If you want to skip DCAP attestation in runtime containers, you can set `Attestation` to *false* in `build-custom-image.sh`, and this will generate a none-attestation image. **But never do this unsafe operation in producation!**
 
     The sensitive encalve key will not be saved in the built image. Two values `mr_enclave` and `mr_signer` are recorded while the Enclave is built, you can find `mr_enclave` and `mr_signer` values in the console log, which are hash values and used to register your MREnclave in the following attestation step.
 
