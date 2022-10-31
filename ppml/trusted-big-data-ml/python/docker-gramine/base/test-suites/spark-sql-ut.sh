@@ -72,7 +72,7 @@ do
                org.scalatest.tools.Runner \
                -s $suite \
                -fF /ppml/trusted-big-data-ml/logs/reporter/$suite.txt"
-        gramine-sgx bash 2>&1 | tee /ppml/trusted-big-data-ml/logs/runtime/$suite.log
+        gramine-sgx bash > /ppml/trusted-big-data-ml/logs/runtime/$suite.log 2>&1
 
         if [ -z "$(grep "All tests passed" /ppml/trusted-big-data-ml/logs/reporter/$suite.txt)" ]
         then

@@ -39,7 +39,7 @@ do
                    --conf spark.python.use.daemon=false \
                    --conf spark.python.worker.reuse=false \
                    /ppml/trusted-big-data-ml/work/spark-$SPARK_VERSION/python/pyspark/sql/tests/$suite"
-            gramine-sgx bash 2>&1 | tee /ppml/trusted-big-data-ml/logs/pyspark/sql/$suite.log
+            gramine-sgx bash > /ppml/trusted-big-data-ml/logs/pyspark/sql/$suite.log 2>&1
 
             # Records the number of successful test files number and path.
             if [ -n "$(grep "FAILED" /ppml/trusted-big-data-ml/logs/pyspark/sql/$suite.log -H -o)" ]
