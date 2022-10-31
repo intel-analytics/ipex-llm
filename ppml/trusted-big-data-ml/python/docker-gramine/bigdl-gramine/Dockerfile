@@ -6,14 +6,15 @@ FROM $BASE_IMAGE_NAME:$BASE_IMAGE_TAG as temp
 
 ARG SGX_MEM_SIZE
 ARG SGX_LOG_LEVEL
+ARG ENABLE_DCAP_ATTESTATION
 
 ADD ./enclave-key.pem /root/.config/gramine/enclave-key.pem
+ADD ./make-sgx.sh /ppml/trusted-big-data-ml/make-sgx.sh
 
 # 1.1 make SGX and sign in a temp image
 RUN cd /ppml/trusted-big-data-ml && \
-    echo SGX_MEM_SIZE:$SGX_MEM_SIZE && \
-    echo SGX_LOG_LEVEL:$SGX_LOG_LEVEL && \
-    make SGX=1 DEBUG=1 THIS_DIR=/ppml/trusted-big-data-ml  SPARK_USER=root G_SGX_SIZE=$SGX_MEM_SIZE G_LOG_LEVEL=$SGX_LOG_LEVEL
+    chmod a+x make-sgx.sh && \
+    ./make-sgx.sh
 
 # stage 2. copy sign etc. secrets from temp into target image and generate AS secrets
 FROM $BASE_IMAGE_NAME:$BASE_IMAGE_TAG
