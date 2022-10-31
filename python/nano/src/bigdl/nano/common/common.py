@@ -27,9 +27,11 @@ import re
 from bigdl.nano.common.cpu_schedule import schedule_workers
 from bigdl.nano.utils import CPUInfo
 
+
 def check_avx512():
     cpuinfo = CPUInfo()
     return cpuinfo.has_avx512
+
 
 def _env_variable_is_set(variable: str,
                          env: Union[Dict[str, str], os._Environ] = os.environ) -> bool:

@@ -18,6 +18,7 @@ import warnings
 from functools import wraps
 import cpuinfo
 
+
 def deprecated(func_name=None, message=""):
     def deprecated_decorator(function):
         @wraps(function)
@@ -32,13 +33,17 @@ def deprecated(func_name=None, message=""):
         return wrapped
     return deprecated_decorator
 
+
 def singleton(cls):
     instance = {}
+
     def _singleton(*args, **kwargs):
         if cls not in instance:
             instance[cls] = cls(*args, **kwargs)
         return instance[cls]
+
     return _singleton
+
 
 @singleton
 class CPUInfo():
@@ -84,10 +89,10 @@ class CPUInfo():
 
                 # EAX = 7, ECX = 1
                 eax = cpuid._run_asm(
-                    b"\xB9\x01\x00\x00\x00", # mov ecx, 1
-                    b"\xB8\x07\x00\x00\x00"  # mov eax, 7
-                    b"\x0f\xa2"              # cpuid
-                    b"\xC3"                  # ret
+                    b"\xB9\x01\x00\x00\x00",  # mov ecx, 1
+                    b"\xB8\x07\x00\x00\x00"   # mov eax, 7
+                    b"\x0f\xa2"               # cpuid
+                    b"\xC3"                   # ret
                 )
 
                 avx512_bf16 = bool(eax & (1 << 5))
