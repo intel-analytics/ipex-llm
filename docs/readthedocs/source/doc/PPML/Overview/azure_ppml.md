@@ -29,7 +29,7 @@ az group create \
 
 #### 2.2.2 Create Linux client with SGX support
 Create Linux VM through Azure [CLI](https://docs.microsoft.com/en-us/azure/developer/javascript/tutorial/nodejs-virtual-machine-vm/create-linux-virtual-machine-azure-cli)/[Portal](https://docs.microsoft.com/en-us/azure/virtual-machines/linux/quick-create-portal)/Powershell.
-For size of the VM, please choose DC-V3 Series VM with more than 4 vCPU cores.
+For size of the VM, please choose DCSv3 Series VM with more than 4 vCPU cores.
 
 #### 2.2.3 Pull BigDL PPML image and run on Linux client
 * Go to Azure Marketplace, search "BigDL PPML" and find `BigDL PPML: Secure Big Data AI on Intel SGX` product. Click "Create" button which will lead you to `Subscribe` page.

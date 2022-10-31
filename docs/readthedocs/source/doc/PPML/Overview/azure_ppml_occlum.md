@@ -22,45 +22,56 @@ Key points:
 ## Prerequisites
 
 * Set up Azure VM on Azure
-    * [DCsv3](https://docs.microsoft.com/en-us/azure/virtual-machines/dcv3-series) for [single node spark example](#single-node-spark-examples-on-azure).
-    * [Azure Kubernetes Service (AKS)](https://azure.microsoft.com/en-us/services/kubernetes-service/) for [distributed Spark examples](#distributed-spark-example-on-aks).
-* Prepare image of Spark
-* (Required for distributed Spark examples only) Download [Spark 3.1.2](https://archive.apache.org/dist/spark/spark-3.1.2/spark-3.1.2-bin-hadoop3.2.tgz) and extract Spark binary. Install OpenJDK-8, and `export SPARK_HOME=${Spark_Binary_dir}`.
-
-Pull the image from [Dockerhub](https://hub.docker.com/r/intelanalytics/bigdl-ppml-azure-occlum).
-
-```bash
-docker pull intelanalytics/bigdl-ppml-azure-occlum:2.1.0
-```
-
+    * Create a [DCSv3](https://docs.microsoft.com/en-us/azure/virtual-machines/dcv3-series) VM for [single node spark example](#single-node-spark-examples-on-azure).
+    * Prepare image of Spark (Required for distributed Spark examples only)
+      * Login to the created VM, then download [Spark 3.1.2](https://archive.apache.org/dist/spark/spark-3.1.2/spark-3.1.2-bin-hadoop3.2.tgz) and extract Spark binary. Install OpenJDK-8, and `export SPARK_HOME=${Spark_Binary_dir}`.
+    * Go to Azure Marketplace, search "BigDL PPML" and find `BigDL PPML: Secure Big Data AI on Intel SGX (experimental and reference only, Occlum Edition)` product. Click "Create" button which will lead you to `Subscribe` page.
+      On `Subscribe` page, input your subscription, your Azure container registry, your resource group and your location. Then click `Subscribe` to subscribe BigDL PPML Occlum to your container registry.
+    * On the created VM, login to your Azure container registry, then pull BigDL PPML Occlum image using this command:
+    ```bash
+    docker pull myContainerRegistry/intel_corporation/bigdl-ppml-azure-occlum:latest
+    ```
+    * Clone the repository to the VM:
+    ```bash
+    git clone https://github.com/intel-analytics/BigDL-PPML-Azure-Occlum-Example.git
+    ```
+* Set up [Azure Kubernetes Service (AKS)](https://azure.microsoft.com/en-us/services/kubernetes-service/) for [distributed Spark examples](#distributed-spark-example-on-aks).
+  * Follow the [guide](https://learn.microsoft.com/en-us/azure/confidential-computing/confidential-enclave-nodes-aks-get-started) to deploy an AKS with confidential computing Intel SGX nodes.
+  * Install Azure CLI on the created VM or your local machine according to [Azure CLI guide](https://docs.microsoft.com/en-us/cli/azure/install-azure-cli).
+  * Login to AKS use such command:
+    ```bash
+    az aks get-credentials --resource-group  myResourceGroup --name myAKSCluster
+    ```
+  * Create the RBAC to AKS
+    ```bash
+    kubectl create serviceaccount spark
+    kubectl create clusterrolebinding spark-role --clusterrole=edit --serviceaccount=default:spark --namespace=default
+    ```
 ## Single Node Spark Examples on Azure
-
-Single node Spark Examples require 1 Azure VM with SGX. All examples are running in SGX. You can apply it to your application with a few changes in dockerfile or scripts.
-
 ### SparkPi example
 
-Run the SparkPi example with `run_spark_on_occlum_glibc.sh`.
+On the VM, go to `BigDL-PPML-Azure-Occlum-Example` repo, then run the SparkPi example with `run_spark_on_occlum_glibc.sh`.
 
 ```bash
 docker run --rm -it \
     --name=azure-ppml-example-with-occlum \
     --device=/dev/sgx/enclave \
     --device=/dev/sgx/provision \
-    intelanalytics/bigdl-ppml-azure-occlum:2.1.0 bash 
+    intel_corporation/bigdl-ppml-azure-occlum:latest bash 
 cd /opt
 bash run_spark_on_occlum_glibc.sh pi
 ```
 
 ### Nytaxi example with Azure NYTaxi
 
-Run the Nytaxi example with `run_azure_nytaxi.sh`.
+On the VM, go to `BigDL-PPML-Azure-Occlum-Example` repo, run the Nytaxi example with `run_azure_nytaxi.sh`.
 
 ```bash
 docker run --rm -it \
     --name=azure-ppml-example-with-occlum \
     --device=/dev/sgx/enclave \
     --device=/dev/sgx/provision \
-    intelanalytics/bigdl-ppml-azure-occlum:2.1.0 bash 
+    intel_corporation/bigdl-ppml-azure-occlum:latest bash 
 bash run_azure_nytaxi.sh
 ```
 
@@ -70,7 +81,7 @@ You should get Nytaxi dataframe count and aggregation duration when succeed.
 
 ### SparkPi on AKS
 
-Configure environment variables in `run_spark_pi.sh`, `driver.yaml` and `executor.yaml`. Then you can submit SparkPi task with `run_spark_pi.sh`.
+In `run_nytaxi_k8s.sh` script, update `IMAGE` variable to `intel_corporation/bigdl-ppml-azure-occlum:latest`, and configure your AKS address. In addition, configure environment variables in `driver.yaml` and `executor.yaml` too. Then you can submit SparkPi task with `run_spark_pi.sh`.
 
 ```bash
 bash run_spark_pi.sh
@@ -78,7 +89,7 @@ bash run_spark_pi.sh
 
 ### Nytaxi on AKS
 
-Configure environment variables in `run_nytaxi_k8s.sh`, `driver.yaml` and `executor.yaml`. Then you can submit Nytaxi query task with `run_nytaxi_k8s.sh`.
+In `run_nytaxi_k8s.sh` script, update `IMAGE` variable to `intel_corporation/bigdl-ppml-azure-occlum:latest`, and configure your AKS address. In addition, configure environment variables in `driver.yaml` and `executor.yaml` too. Then you can submit Nytaxi query task with `run_nytaxi_k8s.sh`.
 ```bash
 bash run_nytaxi_k8s.sh
 ```
