@@ -31,26 +31,27 @@ def get_CPU_info():
     Capture hardware information, such as CPU model, CPU informations, memory status
     """
 
-    #information about CPU
-    socket_num = int(subprocess.getoutput('cat /proc/cpuinfo | grep "physical id" | sort -u | wc -l'))
+    # information about CPU
+    socket_num = int(subprocess.getoutput('cat /proc/cpuinfo | grep "physical id" | '
+                                          'sort -u | wc -l'))
     model_name = subprocess.getoutput('lscpu | grep "Model name"')
     model_name = model_name.partition(":")[2]
 
-    print(">"*20,"Hardware Information",">"*20)
-    print('CPU architecture:',platform.processor())
-    print('CPU model name:',model_name.lstrip())
-    print('Logical Core(s):',psutil.cpu_count()) 
-    print('Physical Core(s):',psutil.cpu_count(logical=False)) 
-    print('Physical Core(s) per socket:',int(psutil.cpu_count(logical=False)/socket_num))
-    print('Socket(s):',socket_num)
-    print('CPU usage:',str(psutil.cpu_percent()) + '%')
-    print('CPU MHz:',format(psutil.cpu_freq().current,'.2f'))
-    print('CPU max MHz:',format(psutil.cpu_freq().max,'.2f'))
-    print('CPU min MHz:',format(psutil.cpu_freq().min,'.2f'))
-    print('Total memory:',get_bytesize(psutil.virtual_memory().total))
-    print('Available memory:',get_bytesize(psutil.virtual_memory().available))
+    print(">"*20, "Hardware Information", ">"*20)
+    print('CPU architecture:', platform.processor())
+    print('CPU model name:', model_name.lstrip())
+    print('Logical Core(s):', psutil.cpu_count())
+    print('Physical Core(s):', psutil.cpu_count(logical=False))
+    print('Physical Core(s) per socket:', int(psutil.cpu_count(logical=False)/socket_num))
+    print('Socket(s):', socket_num)
+    print('CPU usage:', str(psutil.cpu_percent()) + '%')
+    print('CPU MHz:', format(psutil.cpu_freq().current,'.2f'))
+    print('CPU max MHz:', format(psutil.cpu_freq().max,'.2f'))
+    print('CPU min MHz:', format(psutil.cpu_freq().min,'.2f'))
+    print('Total memory:', get_bytesize(psutil.virtual_memory().total))
+    print('Available memory:', get_bytesize(psutil.virtual_memory().available))
 
-    #support instruction set or not
+    # support instruction set or not
     disabled_logo = "\033[0;31m\u2718\033[0m"
     abled_logo = "\033[0;32m\u2714\033[0m"
 
@@ -60,9 +61,9 @@ def get_CPU_info():
             print("Support", flag, ":", abled_logo)
         else:
             print("Support", flag, ":", disabled_logo)
-        
+
     print("<"*20, "Hardware Information", "<"*20, "\n")
-    
+
 
 def check_nano_env(use_malloc: str = "tc", use_openmp: bool = True) -> None:
     """
@@ -72,12 +73,12 @@ def check_nano_env(use_malloc: str = "tc", use_openmp: bool = True) -> None:
     env_copy = os.environ.copy()
     # Get the proper environment
     correct_env = get_nano_env_var()
-  
-    # Flags about the environment values are proper or not
-    flag = {"LD_PRELOAD" : 1, "tcmalloc" : 1, "Intel OpenMp" : 1, "TF" : 1}
 
-    #Output information
-    name = {"LD_PRELOAD" : "", "tcmalloc" : "", "Intel OpenMp" : ": ", "TF" : ": "}
+    # Flags about the environment values are proper or not
+    flag = {"LD_PRELOAD": 1, "tcmalloc": 1, "Intel OpenMp": 1, "TF": 1}
+
+    # Output information
+    name = {"LD_PRELOAD": "", "tcmalloc": "", "Intel OpenMp": ": ", "TF": ": "}
     output_list = []
 
     # Find conda directory
@@ -110,8 +111,10 @@ def check_nano_env(use_malloc: str = "tc", use_openmp: bool = True) -> None:
     # Detect jemalloc library
     if use_malloc is "je":
         if jemalloc_lib_dir is not None:
-            if not _env_variable_is_set("MALLOC_CONF", env_copy) or env_copy["MALLOC_CONF"] != correct_env["MALLOC_CONF"]:
-                output_list.append("export MALLOC_CONF=oversize_threshold:1,background_thread:true,metadata_thp:auto,dirty_decay_ms:-1,muzzy_decay_ms:-1")            
+            if (not _env_variable_is_set("MALLOC_CONF", env_copy) or 
+                env_copy["MALLOC_CONF"] != correct_env["MALLOC_CONF"]):
+                output_list.append("export MALLOC_CONF=oversize_threshold:1,background_thread:"
+                                   "true,metadata_thp:auto,dirty_decay_ms:-1,muzzy_decay_ms:-1")
         else:
             output_list.append("jemalloc library (libjemalloc.so) is not found.")
 
@@ -119,7 +122,7 @@ def check_nano_env(use_malloc: str = "tc", use_openmp: bool = True) -> None:
         if tc_malloc_lib_dir is None:
             flag["tcmalloc"] = 0
             output_list.append("tcmalloc library (libtcmalloc.so) is not found.")
-    
+
     # Check TF_support
     for var in ["TF_ENABLE_ONEDNN_OPTS", "ENABLE_TF_OPTS", "NANO_TF_INTER_OP"]:
         if not _env_variable_is_set(var, env_copy) or env_copy[var] != correct_env[var]:
@@ -127,25 +130,25 @@ def check_nano_env(use_malloc: str = "tc", use_openmp: bool = True) -> None:
             name["TF"] = name["TF"] + var + " "
             output_list.append("export " + var + "=" + correct_env[var])
 
-    # Check LD_PRELOAD    
+    # Check LD_PRELOAD
     if not _env_variable_is_set("LD_PRELOAD", env_copy) or not _find_path(env_copy["LD_PRELOAD"]):
         flag["LD_PRELOAD"] = 0
         output_list.append("export LD_PRELOAD=" + correct_env["LD_PRELOAD"])
-   
+
     # Output overview
-    print(">"*20,"Environment Variables",">"*20)
+    print(">"*20, "Environment Variables", ">"*20)
     disabled_logo = "\033[0;31mnot enabled \033[0m" + "\033[0;31m\u2718\033[0m"
     abled_logo = "\033[0;32m enabled \033[0m" + "\033[0;32m\u2714\033[0m"
     for category in ["LD_PRELOAD", "tcmalloc", "Intel OpenMp", "TF"]:
-        if flag[category]  == 0:
+        if flag[category] == 0:
             print(category, name[category], disabled_logo)
         else:
             print(category, abled_logo)
-    
+
     # Output suggestions
     if output_list != []:
         print(" ")
-        print("+" * 20,"Suggested change: ", "+" * 20)
+        print("+" * 20, "Suggested change: ", "+" * 20)
         for info in output_list:
             print(info)
         print("+" * 60, "\n")

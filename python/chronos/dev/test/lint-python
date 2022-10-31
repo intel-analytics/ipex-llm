@@ -21,6 +21,7 @@ SCRIPT_DIR="$( cd "$( dirname "$0" )" && pwd )"
 PYTHON_ROOT_DIR="$SCRIPT_DIR/.."
 echo $PYTHON_ROOT_DIR
 PATHS_TO_CHECK="$SCRIPT_DIR/../../src"
+SCRIPT_PATH_TO_CHECK="$SCRIPT_DIR/../../script"
 PEP8_REPORT_PATH="$PYTHON_ROOT_DIR/test/pep8-report.txt"
 PYLINT_REPORT_PATH="$PYTHON_ROOT_DIR/test/pylint-report.txt"
 PYLINT_INSTALL_INFO="$PYTHON_ROOT_DIR/test/pylint-info.txt"
@@ -31,6 +32,7 @@ cd "$PYTHON_ROOT_DIR"
 
 # compileall: https://docs.python.org/2/library/compileall.html
 python -B -m compileall -q -l $PATHS_TO_CHECK > "$PEP8_REPORT_PATH"
+python -B -m compileall -q -l $SCRIPT_PATH_TO_CHECK > "$PEP8_REPORT_PATH"
 compile_status="${PIPESTATUS[0]}"
 
 PEP8_VERSION="1.7.0"
@@ -53,6 +55,7 @@ export "PATH=$PYTHONPATH:$PATH"
 #+ be output before the report, like with the
 #+ scalastyle and RAT checks.
 python "$PEP8_SCRIPT_PATH" --ignore=E402,E731,E241,W503,E226 --exclude=__init__.py --config=dev/tox.ini $PATHS_TO_CHECK >> "$PEP8_REPORT_PATH"
+python "$PEP8_SCRIPT_PATH" --ignore=E402,E731,E241,W503,E226 --exclude=__init__.py --config=dev/tox.ini $SCRIPT_PATH_TO_CHECK >> "$PEP8_REPORT_PATH"
 pep8_status="${PIPESTATUS[0]}"
 
 if [ "$compile_status" -eq 0 -a "$pep8_status" -eq 0 ]; then

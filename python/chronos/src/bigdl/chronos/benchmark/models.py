@@ -19,71 +19,66 @@ from bigdl.nano.utils.log4Error import invalidInputError
 
 
 def generate_forecaster(args):
+    input_feature_num = 321 if args.dataset == "tsinghua_electricity" else 1
+    output_feature_num = 321 if args.dataset == "tsinghua_electricity" else 1
+
     if args.model == 'lstm':
         if args.framework == 'torch':
             from bigdl.chronos.forecaster import LSTMForecaster as LSTMForecaster_torch
-            return LSTMForecaster_torch(
-                                        past_seq_len=args.lookback,
-                                        input_feature_num = 321 if args.dataset == "tsinghua_electricity" else 1,
-                                        output_feature_num = 321 if args.dataset == "tsinghua_electricity" else 1)
+            return LSTMForecaster_torch(past_seq_len=args.lookback,
+                                        input_feature_num=input_feature_num,
+                                        output_feature_num=output_feature_num)
         elif args.framework == 'tensorflow':
-            from bigdl.chronos.forecaster.tf import LSTMForecaster as LSTMForecaster_tensorflow
-            return LSTMForecaster_tensorflow(
-                                        past_seq_len=args.lookback,
-                                        input_feature_num = 321 if args.dataset == "tsinghua_electricity" else 1,
-                                        output_feature_num = 321 if args.dataset == "tsinghua_electricity" else 1)
+            from bigdl.chronos.forecaster.tf import LSTMForecaster as LSTMForecaster_tf
+            return LSTMForecaster_tf(past_seq_len=args.lookback,
+                                     input_feature_num=input_feature_num,
+                                     output_feature_num=output_feature_num)
     elif args.model == 'tcn':
         if args.framework == 'torch':
             from bigdl.chronos.forecaster import TCNForecaster as TCNForecaster_torch
-            return TCNForecaster_torch(
-                                        past_seq_len = args.lookback,
-                                        future_seq_len = args.horizon,
-                                        input_feature_num = 321 if args.dataset == "tsinghua_electricity" else 1,
-                                        output_feature_num = 321 if args.dataset == "tsinghua_electricity" else 1)
+            return TCNForecaster_torch(past_seq_len=args.lookback,
+                                       future_seq_len=args.horizon,
+                                       input_feature_num=input_feature_num,
+                                       output_feature_num=output_feature_num)
         elif args.framework == 'tensorflow':
-            from bigdl.chronos.forecaster.tf import TCNForecaster as TCNForecaster_tensorflow
-            return TCNForecaster_tensorflow(
-                                        past_seq_len = args.lookback,
-                                        future_seq_len = args.horizon,
-                                        input_feature_num = 321 if args.dataset == "tsinghua_electricity" else 1,
-                                        output_feature_num = 321 if args.dataset == "tsinghua_electricity" else 1)
+            from bigdl.chronos.forecaster.tf import TCNForecaster as TCNForecaster_tf
+            return TCNForecaster_tf(past_seq_len=args.lookback,
+                                    future_seq_len=args.horizon,
+                                    input_feature_num=input_feature_num,
+                                    output_feature_num=output_feature_num)
 
     elif args.model == 'seq2seq':
         if args.framework == 'torch':
             from bigdl.chronos.forecaster import Seq2SeqForecaster as Seq2SeqForecaster_torch
-            return Seq2SeqForecaster_torch(
-                                        past_seq_len = args.lookback,
-                                        future_seq_len = args.horizon,
-                                        input_feature_num = 321 if args.dataset == "tsinghua_electricity" else 1,
-                                        output_feature_num = 321 if args.dataset == "tsinghua_electricity" else 1)
+            return Seq2SeqForecaster_torch(past_seq_len=args.lookback,
+                                           future_seq_len=args.horizon,
+                                           input_feature_num=input_feature_num,
+                                           output_feature_num=output_feature_num)
         elif args.framework == 'tensorflow':
-            from bigdl.chronos.forecaster.tf import Seq2SeqForecaster as Seq2SeqForecaster_tensorflow
-            return Seq2SeqForecaster_tensorflow(
-                                        past_seq_len = args.lookback,
-                                        future_seq_len = args.horizon,
-                                        input_feature_num = 321 if args.dataset == "tsinghua_electricity" else 1,
-                                        output_feature_num = 321 if args.dataset == "tsinghua_electricity" else 1)
+            from bigdl.chronos.forecaster.tf import Seq2SeqForecaster as Seq2SeqForecaster_tf
+            return Seq2SeqForecaster_tf(past_seq_len=args.lookback,
+                                        future_seq_len=args.horizon,
+                                        input_feature_num=input_feature_num,
+                                        output_feature_num=output_feature_num)
 
     elif args.model == 'autoformer':
         if args.framework == 'torch':
             from bigdl.chronos.forecaster import AutoformerForecaster as AutoformerForecaster_torch
-            return AutoformerForecaster_torch(
-                                        past_seq_len = args.lookback,
-                                        future_seq_len = args.horizon,
-                                        input_feature_num = 321 if args.dataset == "tsinghua_electricity" else 1,
-                                        output_feature_num = 321 if args.dataset == "tsinghua_electricity" else 1,
-                                        label_len=int(args.lookback/2),
-                                        freq='h' if args.dataset == "tsinghua_electricity" else 't')
+            return AutoformerForecaster_torch(past_seq_len=args.lookback,
+                                              future_seq_len=args.horizon,
+                                              input_feature_num=input_feature_num,
+                                              output_feature_num=output_feature_num,
+                                              label_len=int(args.lookback/2),
+                                              freq='h' if args.dataset == "tsinghua_electricity" else 't')
         else:
             invalidInputError(args.framework == 'torch',
-                        f"Autoformer does not support tensorflow backend now.")
+                              f"Autoformer does not support tensorflow backend now.")
 
     elif args.model == 'nbeats':
         if args.framework == 'torch':
             from bigdl.chronos.forecaster import NBeatsForecaster as NBeatsForecaster_torch
-            return NBeatsForecaster_torch(
-                                        past_seq_len=args.lookback,
-                                        future_seq_len=args.horizon,)
+            return NBeatsForecaster_torch(past_seq_len=args.lookback,
+                                          future_seq_len=args.horizon)
         else:
             invalidInputError(args.framework == 'torch',
-                        f"NBeats does not support tensorflow backend now.")
+                              f"NBeats does not support tensorflow backend now.")
