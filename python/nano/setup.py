@@ -78,8 +78,8 @@ def setup_package():
                            "tensorflow-estimator==2.7.0"]
 
     # ipex is only avaliable for linux now
-    pytorch_requires = ["torch==1.11.0",
-                        "torchvision==0.12.0",
+    pytorch_requires = ["torch==1.12.1",
+                        "torchvision==0.13.1",
                         "pytorch_lightning==1.6.4",
                         "torchmetrics==0.7.2",
                         "opencv-python-headless",

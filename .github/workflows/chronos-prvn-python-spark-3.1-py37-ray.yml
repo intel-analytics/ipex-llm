@@ -9,6 +9,7 @@ on:
       - 'python/chronos/src/**'
       - 'python/chronos/test/**'
       - 'python/nano/src/**'
+      - 'python/nano/setup.py'
       - 'python/orca/src/bigdl/orca/automl/**'
       - 'python/orca/src/bigdl/orca/data/**'
       - '.github/workflows/chronos-prvn-python-spark-3.1-py37-ray.yml'
