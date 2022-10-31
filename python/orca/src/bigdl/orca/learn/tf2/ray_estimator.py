@@ -35,7 +35,8 @@ from bigdl.orca.learn.utils import maybe_dataframe_to_xshards, dataframe_to_xsha
     convert_predict_xshards_to_dataframe, update_predict_xshards, \
     process_xshards_of_pandas_dataframe, make_data_creator
 from bigdl.orca.data.file import put_local_file_to_remote, put_local_dir_tree_to_remote, \
-    put_local_files_with_prefix_to_remote
+    put_local_files_with_prefix_to_remote, get_remote_file_to_local, get_remote_dir_to_local, \
+    is_file
 from bigdl.orca.data.utils import process_spark_xshards
 from bigdl.dllib.utils.log4Error import *
 from bigdl.orca.ray import OrcaRayContext
@@ -590,6 +591,8 @@ class TensorFlow2Estimator(OrcaRayEstimator):
                options for loading from SavedModel.
 
         """
+        self.load_path = filepath
+
         params = dict(
             filepath=filepath,
             custom_objects=custom_objects,
@@ -677,13 +680,32 @@ class TensorFlow2Estimator(OrcaRayEstimator):
 
     def _get_model_from_state(self, state, sample_input=None):
         """Creates model and load weights from state"""
+        import tensorflow as tf
 
         # keep the same behavior as `set_state` in `load` do
-        model = self.model_creator(self.config)
+        if self.model_creator is not None:
+            model = self.model_creator(self.config)
+        else:
+            file_name = os.path.basename(self.load_path)
+            temp_dir = tempfile.mkdtemp()
+            temp_path = os.path.join(temp_dir, file_name)
+
+            if is_file(self.load_path):
+                get_remote_file_to_local(self.load_path, temp_path)
+            else:
+                if os.path.exists(temp_path):
+                    os.makedirs(temp_path)
+                get_remote_dir_to_local(self.load_path, temp_path)
+            try:
+                model = tf.keras.models.load_model(temp_path)
+            finally:
+                shutil.rmtree(temp_dir)
+
         if sample_input:
             model(sample_input)
         try:
             model.set_weights(state["weights"])
+            model.optimizer.set_weights(state["optimizer_weights"])
         except Exception:
             log4Error.invalidInputError(False,
                                         "Failed to set model weights, please provide real tensor "
@@ -691,3 +713,4 @@ class TensorFlow2Estimator(OrcaRayEstimator):
                                         "get_model method.")
 
         return model
+
