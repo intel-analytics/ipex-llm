@@ -263,9 +263,7 @@ kubectl apply -f password/password.yaml
 ```bash
 kubectl create serviceaccount spark
 kubectl create clusterrolebinding spark-role --clusterrole=edit --serviceaccount=default:spark --namespace=default
-
 kubectl get secret|grep service-account-token # you will find a spark service account secret, format like spark-token-12345
-kubectl get secret <spark_service_account_secret> -o yaml
 
 # bind service account and user
 kubectl config set-credentials spark-user \
