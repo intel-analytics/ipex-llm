@@ -34,9 +34,6 @@ spec:
         mountPath: /var/run/aesmd/aesm.socket
       - name: nfs-storage
         mountPath: /ppml/trusted-big-data-ml/work/data
-      - name: nfs-storage
-        mountPath: /root/.kube/config
-        subPath: kubeconfig
     #resources:
       #requests:
         #cpu: 16
