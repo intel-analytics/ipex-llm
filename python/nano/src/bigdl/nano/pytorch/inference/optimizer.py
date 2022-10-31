@@ -39,6 +39,8 @@ from bigdl.nano.utils.inference.pytorch.dataloader import\
     transform_multiple_input_dataloader_to_inc_mode
 from bigdl.nano.pytorch.utils import TORCH_VERSION_LESS_1_10, save_model, load_model
 import traceback
+from bigdl.nano.utils import CPUInfo
+from torchmetrics import Metric
 import warnings
 # Filter out useless Userwarnings
 warnings.filterwarnings('ignore', category=UserWarning, module='pytorch_lightning')
@@ -652,6 +654,110 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                  precision(FP32/FP16/BF16/INT8).
         """
         return load_model(path, model)
+
+
+def _inc_checker():
+    '''
+    check if intel neural compressor is installed
+    '''
+    return not find_spec("neural_compressor") is None
+
+
+def _ipex_checker():
+    '''
+    check if intel pytorch extension is installed
+    '''
+    return not find_spec("intel_extension_for_pytorch") is None
+
+
+def _onnxruntime_checker():
+    '''
+    check if onnxruntime and onnx is installed
+    '''
+    onnxruntime_installed = not find_spec("onnxruntime") is None
+    onnx_installed = not find_spec("onnx") is None
+    return onnxruntime_installed and onnx_installed
+
+
+def _openvino_checker():
+    '''
+    check if openvino-dev is installed
+    '''
+    return not find_spec("openvino") is None
+
+
+def _bf16_checker():
+    '''
+    bf16 availablity will be decided dynamically during the optimization
+    '''
+    cpuinfo = CPUInfo()
+    return cpuinfo.has_bf16
+
+
+def _available_acceleration_combination(excludes: Optional[List[str]],
+                                        includes: Optional[List[str]]):
+    '''
+    :return: a dictionary states the availablity (if meet depdencies)
+    '''
+    dependency_checker = {"inc": _inc_checker,
+                          "ipex": _ipex_checker,
+                          "onnxruntime": _onnxruntime_checker,
+                          "openvino": _openvino_checker,
+                          "pot": _openvino_checker,
+                          "bf16": _bf16_checker}
+    if excludes is None:
+        exclude_set: Set[str] = set()
+    else:
+        exclude_set: Set[str] = set(excludes)
+        exclude_set.discard("original")
+
+    if includes is None:
+        include_set: Set[str] = set(ALL_INFERENCE_ACCELERATION_METHOD.keys())
+    else:
+        include_set: Set[str] = set(includes)
+        include_set.add("original")
+
+    available_dict = {}
+    for method, option in ALL_INFERENCE_ACCELERATION_METHOD.items():
+        if method not in include_set:
+            continue
+
+        if method in exclude_set:
+            continue
+
+        available_iter = True
+        for name, value in option.__dict__.items():
+            if value is True:
+                if name in dependency_checker and not dependency_checker[name]():
+                    available_iter = False
+        available_dict[method] = available_iter
+    return available_dict
+
+
+def _throughput_calculate_helper(iterrun, baseline_time, func, *args):
+    '''
+    A simple helper to calculate average latency
+    '''
+    start_time = time.perf_counter()
+    time_list = []
+    for i in range(iterrun):
+        st = time.perf_counter()
+        func(*args)
+        end = time.perf_counter()
+        time_list.append(end - st)
+        # don't use total three samples as jit may be very slow at first two calls.
+        # if the min time cost more than 4x time than baseline model, then prune it
+        if i == 2 and min(time_list) > 4 * baseline_time:
+            return np.mean(time_list) * 1000, False
+        # at least need 10 iters and try to control calculation
+        # time less than 10s
+        if i + 1 >= min(iterrun, 10) and (end - start_time) > 10:
+            iterrun = i + 1
+            break
+    time_list.sort()
+    # remove top and least 10% data
+    time_list = time_list[int(0.1 * iterrun): int(0.9 * iterrun)]
+    return np.mean(time_list) * 1000, True
 
 
 def _signature_check(function):

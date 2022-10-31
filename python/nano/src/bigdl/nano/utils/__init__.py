@@ -15,3 +15,4 @@
 #
 
 from .util import deprecated
+from .util import CPUInfo
