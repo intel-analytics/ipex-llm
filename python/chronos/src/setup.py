@@ -39,7 +39,7 @@ def get_bigdl_packages():
     bigdl_packages = []
     source_dir = os.path.join(bigdl_python_home, "bigdl")
     for dirpath, dirs, files in os.walk(source_dir):
-        package = dirpath.split(bigdl_python_home)[1].replace('/', '.')
+        package = dirpath.split(bigdl_python_home)[1].replace(os.sep, '.')
         if any(fnmatch.fnmatchcase(package, pat=pattern)
                 for pattern in exclude_patterns):
             print("excluding", package)
@@ -66,12 +66,14 @@ def setup_package():
         extras_require={'pytorch': ['bigdl-nano[pytorch]==' + VERSION],
                         'tensorflow': ['bigdl-nano[tensorflow]=='+VERSION],
                         'automl': ['optuna<=2.10.1', 'configspace<=0.5.0'],
-                        'distributed': ['bigdl-orca[automl]==' + VERSION],
+                        'distributed:platform_system!="Windows"': ['bigdl-orca[automl]=='+VERSION],
                         'all': ['bigdl-nano[pytorch]==' + VERSION,
                                 'bigdl-nano[tensorflow]=='+VERSION,
                                 'optuna<=2.10.1', 'configspace<=0.5.0',
-                                'bigdl-orca[automl]==' + VERSION, 'pmdarima==1.8.5',
-                                'prophet==1.1.0', 'tsfresh==0.17.0',
+                                'bigdl-orca[automl]==' + VERSION + ';platform_system!="Windows"',
+                                'pmdarima==1.8.5',
+                                'prophet==1.1.0;platform_system!="Windows"',
+                                'tsfresh==0.17.0',
                                 'pyarrow==6.0.1', 'onnx>=1.8.0, <=1.11.0',
                                 'onnxruntime>=1.6.0, <=1.11.1',
                                 # 'openvino-dev==2022.1.0',
@@ -84,7 +86,7 @@ def setup_package():
             'Programming Language :: Python :: 3',
             'Programming Language :: Python :: 3.7',
             'Programming Language :: Python :: Implementation :: CPython'],
-        platforms=['mac', 'linux']
+        platforms=['mac', 'linux', 'windows']
     )
 
     setup(**metadata)

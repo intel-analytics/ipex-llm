@@ -249,7 +249,7 @@ class TSDataset:
         Initialize tsdataset(s) from Prometheus data for specified time period via url.
 
         :param prometheus_url: a str indicates url of a Prometheus server.
-        :param query: str, Prometheus expression query string.
+        :param query: a Prometheus expression query str or list.
         :param starttime: start timestamp of the specified time period, RFC-3339 string
                or as a Unix timestamp in seconds.
         :param endtime: end timestamp of the specified time period, RFC-3339 string
@@ -294,10 +294,11 @@ class TSDataset:
         # TODO: Corresponding unit test should be added
         # Only test locally at present
         from bigdl.chronos.data.utils.prometheus_df import GetRangeDataframe
+        query_list = _to_list(query, name="query")
         columns = {"target_col": _to_list(target_col, name="target_col"),
                    "id_col": _to_list(id_col, name="id_col"),
                    "extra_feature_col": _to_list(extra_feature_col, name="extra_feature_col")}
-        df, df_columns = GetRangeDataframe(prometheus_url, query, starttime, endtime,
+        df, df_columns = GetRangeDataframe(prometheus_url, query_list, starttime, endtime,
                                            step, columns=columns, **kwargs)
         return TSDataset.from_pandas(df,
                                      dt_col=df_columns["dt_col"],

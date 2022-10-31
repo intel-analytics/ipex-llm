@@ -99,6 +99,13 @@
           <include>bigdl-assembly*-jar-with-dependencies.jar</include>
       </includes>
     </fileSet>
+    <fileSet>
+      <outputDirectory>/python/requirements</outputDirectory>
+      <directory>${project.parent.basedir}/../python/requirements</directory>
+      <includes>
+	  <include>/**</include>
+      </includes>
+    </fileSet>
   </fileSets>
   <containerDescriptorHandlers>
     <containerDescriptorHandler>

@@ -4,8 +4,8 @@ ARG BASE_IMAGE_TAG
 # stage 1. generate SGX secrets and prepare KMS env
 FROM $BASE_IMAGE_NAME:$BASE_IMAGE_TAG as temp
 
-ARG SGX_MEM_SIZE
-ARG SGX_LOG_LEVEL
+ARG SGX_MEM_SIZE     32G
+ARG SGX_LOG_LEVEL    error
 
 ADD ./enclave-key.pem /root/.config/gramine/enclave-key.pem
 
@@ -23,8 +23,6 @@ COPY --from=temp /ppml/bash.manifest.sgx /ppml/bash.manifest.sgx
 COPY --from=temp /ppml/bash.sig /ppml/bash.sig
 COPY --from=temp /ppml/bash.manifest /ppml/bash.manifest
 
-# A small example for pytorch
-ADD ./mnist.py /ppml/mnist.py
 
 # 2.2 output mr_enclave and mr_signer to customer
 RUN cd /ppml && \

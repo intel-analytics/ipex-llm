@@ -13,16 +13,20 @@ ENV TINI_VERSION                        $TINI_VERSION
 ARG USE_CUDA=0 USE_CUDNN=0 USE_MKLDNN=1 USE_DISTRIBUTED=1 USE_GLOO=1 USE_GLOO_WITH_OPENSSL=1 USE_MKL=1 BUILD_TEST=0 BLAS=MKL
 ARG CMAKE_PREFIX_PATH="/usr/local/lib/python3.7/dist-packages/:/usr/local/lib/"
 
+RUN mkdir /ppml/examples
+
 ADD https://github.com/krallin/tini/releases/download/${TINI_VERSION}/tini /sbin/tini
 ADD ./entrypoint.sh /opt/entrypoint.sh
 
-# Folders required by bash.menifest.template
-RUN mkdir -p /root/.keras/datasets && \
-    mkdir -p /root/.zinc && \
-    mkdir -p /root/.m2 && \
-    mkdir -p /root/.kube/ && \
-    # PyTorch dependencies
-    env DEBIAN_FRONTEND=noninteractive apt-get update && \
+# Small examples for PyTorch
+ADD ./mnist.py       /ppml/examples/mnist.py
+ADD ./pert.py        /ppml/examples/pert.py
+# Patch for datasets
+ADD ./filelock.patch /filelock.patch
+
+
+# PyTorch Dependencies
+RUN env DEBIAN_FRONTEND=noninteractive apt-get update && \
     apt-get install -y libssl-dev && \
     pip install --no-cache-dir astunparse numpy ninja pyyaml setuptools cmake cffi typing_extensions future six requests dataclasses mkl mkl-include intel-openmp && \
     pip install --no-cache-dir torchvision==0.13.1 && \
@@ -46,6 +50,10 @@ RUN mkdir -p /root/.keras/datasets && \
     gramine-argv-serializer bash -c 'export TF_MKL_ALLOC_MAX_BYTES=10737418240 && $sgx_command' > /ppml/secured_argvs && \
     chmod +x /sbin/tini && \
     chmod +x /opt/entrypoint.sh && \
-    cp /sbin/tini /usr/bin/tini
+    cp /sbin/tini /usr/bin/tini && \
+    # huggingface related
+    pip3 install --no-cache datasets==2.6.1 transformers pyarrow==6.0.1 && \
+    patch /usr/local/lib/python3.7/dist-packages/datasets/utils/filelock.py /filelock.patch
+
 
 ENTRYPOINT [ "/opt/entrypoint.sh" ]

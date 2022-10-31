@@ -316,5 +316,121 @@ class TestSparkXShards(TestCase):
         max_value = data_shard.max_values('sale_price')
         assert max_value == 475000, "max value of sale_price should be 2"
 
+    def test_merge_shards(self):
+        from bigdl.orca.data.utils import spark_df_to_pd_sparkxshards
+        from pyspark.sql import SparkSession
+        spark = SparkSession.builder.getOrCreate()
+        df1 = spark.createDataFrame([
+            (1, 2.),
+            (2, 3.),
+            (3, 5.),
+            (4, 1.)
+            ], schema=['a', 'b'])
+        df2 = spark.createDataFrame([
+            (1, 7),
+            (2, 8),
+            (4, 9),
+            (5, 9)
+            ], schema=['a', 'c'])
+        data_shard1 = spark_df_to_pd_sparkxshards(df1)
+        data_shard2 = spark_df_to_pd_sparkxshards(df2)
+        merged_shard = data_shard1.merge(data_shard2, on='a')
+        merged_shard_df = merged_shard.to_spark_df()
+        assert len(merged_shard)==3 and merged_shard_df.columns==['a','b','c']
+
+    def test_usecols(self):
+        file_path = os.path.join(self.resource_path, "orca/data/csv")
+        data_shard = bigdl.orca.data.pandas.read_csv(file_path, usecols=[0, 1])
+        data = data_shard.collect()
+        df = data[0]
+        assert "sale_price" in df.columns
+        assert "location" not in df.columns
+        data_shard = bigdl.orca.data.pandas.read_csv(file_path, usecols=["ID"])
+        data = data_shard.collect()
+        df2 = data[0]
+        assert "ID" in df2.columns and "location" not in df2.columns
+
+        def filter_col(name):
+            return name == "sale_price"
+
+        data_shard = bigdl.orca.data.pandas.read_csv(file_path, usecols=filter_col)
+        data = data_shard.collect()
+        df3 = data[0]
+        assert "sale_price" in df3.columns and "location" not in df3.columns
+
+    def test_dtype(self):
+        file_path = os.path.join(self.resource_path, "orca/data/csv")
+        data_shard = bigdl.orca.data.pandas.read_csv(file_path, dtype="float")
+        data = data_shard.collect()
+        df = data[0]
+        assert df.location.dtype == "float64"
+        assert df.ID.dtype == "float64"
+        data_shard = bigdl.orca.data.pandas.read_csv(file_path, dtype={"sale_price": np.float32, "ID": np.int64})
+        data = data_shard.collect()
+        df2 = data[0]
+        assert df2.sale_price.dtype == "float32" and df2.ID.dtype == "int64"
+
+    def test_squeeze(self):
+        import pandas as pd
+        file_path = os.path.join(self.resource_path, "orca/data/single_column.csv")
+        data_shard = bigdl.orca.data.pandas.read_csv(file_path, squeeze=True)
+        data = data_shard.collect()
+        df = data[0]
+        assert isinstance(df, pd.Series)
+
+    def test_index_col(self):
+        file_path = os.path.join(self.resource_path, "orca/data/csv/morgage1.csv")
+        data_shard = bigdl.orca.data.pandas.read_csv(file_path, index_col="ID")
+        data = data_shard.collect()
+        df = data[0]
+        assert 100529 in df.index
+
+    def test_mix(self):
+        file_path = os.path.join(self.resource_path, "orca/data/csv")
+        data_shard = bigdl.orca.data.pandas.read_csv(file_path, header=0, names=['user', 'item'],
+                                                   usecols=[0, 1])
+        data = data_shard.collect()
+        df = data[0]
+        assert "user" in df.columns
+        assert "item" in df.columns
+        with self.assertRaises(Exception) as context:
+            data_shard = bigdl.orca.data.pandas.read_csv(file_path, header=0,
+                                                       names=['ID', 'location'], usecols=["ID"])
+            data = data_shard.collect()
+        self.assertTrue('Passed names did not match usecols'
+                        in str(context.exception))
+        data_shard = bigdl.orca.data.pandas.read_csv(file_path, header=0,
+                                                   names=['user', 'item'], usecols=[0, 1],
+                                                   dtype={0: np.float32, 1: np.int32})
+        data = data_shard.collect()
+        df2 = data[0]
+        assert df2.user.dtype == "float32" and df2.item.dtype == "int32"
+
+        data_shard = bigdl.orca.data.pandas.read_csv(file_path, header=0,
+                                                   names=['user', 'item', 'location'],
+                                                   usecols=[1, 2])
+        data = data_shard.collect()
+        df2 = data[0]
+        assert "user" not in df2.columns
+        assert "item" in df2.columns
+        assert "location" in df2.columns
+
+        data_shard = bigdl.orca.data.pandas.read_csv(file_path, header=0,
+                                                   names=['user', 'item', 'rating'],
+                                                   usecols=['user', 'item'],
+                                                   dtype={0: np.float32, 1: np.int32})
+        data = data_shard.collect()
+        df2 = data[0]
+        assert df2.user.dtype == "float32" and df2.item.dtype == "int32"
+
+        with self.assertRaises(Exception) as context:
+            data_shard = bigdl.orca.data.pandas.read_csv(file_path, header=0,
+                                                       names=['user', 'item'], usecols=[0, 1],
+                                                       dtype={1: np.float32, 2: np.int32})
+            data = data_shard.collect()
+        self.assertTrue('column index to be set type is not in current dataframe'
+                        in str(context.exception))
+
+
 if __name__ == "__main__":
     pytest.main([__file__])

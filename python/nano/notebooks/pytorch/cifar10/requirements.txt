@@ -5,3 +5,4 @@ neural-compressor==1.11
 onnxruntime==1.10.0
 onnx==1.11.0
 openvino-dev==2022.1.0
+onnxsim==0.4.8

@@ -25,6 +25,7 @@ import pyspark.sql.functions as F
 from bigdl.friesian.feature.utils import *
 from bigdl.dllib.utils.log4Error import *
 from bigdl.orca import OrcaContext
+from bigdl.orca.data.utils import *
 from py4j.protocol import Py4JError
 from pyspark.ml import Pipeline
 from pyspark.ml.feature import MinMaxScaler, VectorAssembler, Bucketizer
@@ -1858,46 +1859,8 @@ class FeatureTable(Table):
 
         :return: A new Table with aggregated column fields.
         """
-        if isinstance(columns, str):
-            columns = [columns]
-        invalidInputError(isinstance(columns, list), "columns should be str or a list of str")
-        grouped_data = self.df.groupBy(columns)
-
-        if isinstance(agg, str):
-            agg_exprs_dict = {agg_column: agg for agg_column in self.df.columns
-                              if agg_column not in columns}
-            agg_df = grouped_data.agg(agg_exprs_dict)
-        elif isinstance(agg, list):
-            agg_exprs_list = []
-            for stat in agg:
-                stat_func = getattr(F, stat)
-                agg_exprs_list += [stat_func(agg_column) for agg_column in self.df.columns
-                                   if agg_column not in columns]
-            agg_df = grouped_data.agg(*agg_exprs_list)
-        elif isinstance(agg, dict):
-            if all(isinstance(stats, str) for agg_column, stats in agg.items()):
-                agg_df = grouped_data.agg(agg)
-            else:
-                agg_exprs_list = []
-                for agg_column, stats in agg.items():
-                    if isinstance(stats, str):
-                        stats = [stats]
-                    invalidInputError(isinstance(stats, list),
-                                      "value in agg should be str or a list of str")
-                    for stat in stats:
-                        stat_func = getattr(F, stat)
-                        agg_exprs_list += [stat_func(agg_column)]
-                agg_df = grouped_data.agg(*agg_exprs_list)
-        else:
-            invalidInputError(False,
-                              "agg should be str, list of str, or dict")
-
-        if join:
-            invalidInputError(columns, "columns can not be empty if join is True")
-            result_df = self.df.join(agg_df, on=columns, how="left")
-            return FeatureTable(result_df)
-        else:
-            return FeatureTable(agg_df)
+        res_df = group_by_spark_df(self.df, columns, agg, join)
+        return FeatureTable(res_df)
 
     def target_encode(
         self,

@@ -22,6 +22,7 @@ import pandas as pd
 import tempfile
 from unittest import TestCase
 from bigdl.orca.automl import hp
+from ... import op_tmp_skip
 
 
 def get_data():
@@ -32,6 +33,7 @@ def get_data():
     return data, expect_horizon
 
 
+@op_tmp_skip
 class TestAutoProphet(TestCase):
     def setUp(self) -> None:
         from bigdl.orca import init_orca_context

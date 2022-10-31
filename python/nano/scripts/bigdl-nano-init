@@ -221,6 +221,10 @@ if [ -z "${CONDA_DEFAULT_ENV:-}" ]; then
 else
     if [ -f $CONDA_PREFIX/etc/conda/activate.d/nano_vars.sh ];then
         echo "nano_vars.sh already exists"
+    elif [ ! -f $CONDA_PREFIX/bin/bigdl-nano-init ]; then
+        echo "It seems that you are using bidl-nano installed by system's pip, "
+        echo "you may need to 'source bgidl-nano-init' before using bigdl-nano "
+        echo "and 'source bigdl-nano-unset-env' after using bigdl-nano yourself"
     else
         echo "Setting environment variables in current conda env"
         ACTIVATED_PATH=$CONDA_PREFIX/etc/conda/activate.d
@@ -259,6 +263,6 @@ echo "NANO_TF_INTER_OP"=${NANO_TF_INTER_OP}
 echo "+++++++++++++++++++++++++"
 # Run the commands after bigdl-nano-init
 echo "Complete."
-if [ ! $1 = "activate" ];then
+if [ ! $1 = "activate" ] && [ ! $1 = "deactivate" ];then
     ${@:1}
 fi

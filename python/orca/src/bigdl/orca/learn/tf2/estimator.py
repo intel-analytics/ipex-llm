@@ -27,7 +27,7 @@ logger = logging.getLogger(__name__)
 class Estimator(object):
     @staticmethod
     def from_keras(*,
-                   model_creator,
+                   model_creator=None,
                    config=None,
                    verbose=False,
                    workers_per_node=1,

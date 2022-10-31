@@ -252,6 +252,23 @@ class TestPyTorchEstimator(TestCase):
         val_stats = estimator.evaluate(val_xshards, batch_size=128)
         print(val_stats)
 
+    def test_spark_xshards_not_dict(self):
+        OrcaContext.pandas_read_backend = "pandas"
+        file_path = os.path.join(resource_path, "orca/learn/ncf.csv")
+        data_shard = read_csv(file_path, usecols=[0, 1, 2], dtype={0: np.float32, 1: np.float32,
+                                                                   2: np.float32})
+        
+        estimator = get_estimator(model_fn=lambda config: SimpleModel())
+        estimator.fit(data_shard, batch_size=2, epochs=2,
+                      validation_data=data_shard,
+                      feature_cols=["user", "item"],
+                      label_cols=["label"])
+
+        estimator.evaluate(data_shard, batch_size=2, feature_cols=["user", "item"],
+                           label_cols=["label"])
+        result = estimator.predict(data_shard, batch_size=2, feature_cols=["user", "item"])
+        result.collect()
+
     def test_dataframe_train_eval(self):
 
         sc = init_nncontext()
@@ -557,6 +574,53 @@ class TestPyTorchEstimator(TestCase):
         estimator.fit(train_data_loader, epochs=4, batch_size=128,
                       validation_data=val_data_loader, callbacks=callbacks)
 
+    def test_tensorboard_callback(self):
+        from bigdl.orca.learn.pytorch.callbacks.tensorboard import TensorBoardCallback
+        sc = OrcaContext.get_spark_context()
+        spark = SparkSession.builder.getOrCreate()
+        rdd = sc.range(0, 100)
+        epochs = 2
+        data = rdd.map(lambda x: (np.random.randn(50).astype(np.float).tolist(),
+                                  [float(np.random.randint(0, 2, size=()))])
+                       )
+        schema = StructType([
+            StructField("feature", ArrayType(FloatType()), True),
+            StructField("label", ArrayType(FloatType()), True)
+        ])
+        df = spark.createDataFrame(data=data, schema=schema)
+        df = df.cache()
+
+        estimator = get_estimator(workers_per_node=2, log_level=logging.DEBUG)
+
+        try:
+            temp_dir = tempfile.mkdtemp()
+            log_dir = os.path.join(temp_dir, "runs_epoch")
+
+            callbacks = [
+                TensorBoardCallback(log_dir=log_dir, freq="epoch")
+            ]
+            estimator.fit(df, batch_size=4, epochs=epochs,
+                          callbacks=callbacks,
+                          feature_cols=["feature"],
+                          label_cols=["label"])
+
+            assert len(os.listdir(log_dir)) > 0
+
+            log_dir = os.path.join(temp_dir, "runs_batch")
+
+            callbacks = [
+                TensorBoardCallback(log_dir=log_dir, freq="batch")
+            ]
+            estimator.fit(df, batch_size=4, epochs=epochs,
+                          callbacks=callbacks,
+                          feature_cols=["feature"],
+                          label_cols=["label"])
+
+            assert len(os.listdir(log_dir)) > 0
+        finally:
+            shutil.rmtree(temp_dir)
+
+        estimator.shutdown()
 
 if __name__ == "__main__":
     pytest.main([__file__])

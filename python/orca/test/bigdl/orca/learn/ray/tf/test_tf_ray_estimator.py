@@ -736,6 +736,56 @@ class TestTFRayEstimator(TestCase):
             assert np.array_equal(expect_res, pred_res)
         finally:
             shutil.rmtree(temp_dir)
+    
+    def test_optional_model_creator(self):   
+        sc = OrcaContext.get_spark_context()
+        rdd = sc.range(0, 100)
+        spark = OrcaContext.get_spark_session()
+
+        from pyspark.ml.linalg import DenseVector
+        df = rdd.map(lambda x: (DenseVector(np.random.randn(1, ).astype(np.float)),
+                                int(np.random.randint(0, 2, size=())))).toDF(["feature", "label"])
+
+        config = {
+            "lr": 0.2
+        }
+
+        try:
+            temp_dir = tempfile.mkdtemp()
+
+            trainer = Estimator.from_keras(
+                model_creator=model_creator,
+                verbose=True,
+                config=config,
+                workers_per_node=3,
+                backend="ray")
+
+            res = trainer.fit(df, epochs=5, batch_size=4, steps_per_epoch=25,
+                              feature_cols=["feature"],
+                              label_cols=["label"],
+                              validation_data=df,
+                              validation_steps=1)
+
+            trainer.save(os.path.join(temp_dir, "cifar10.h5"))
+
+            before_res = trainer.predict(df, feature_cols=["feature"]).collect()
+            expect_res = np.concatenate([part["prediction"] for part in before_res])
+            trainer.shutdown()
+
+            est = Estimator.from_keras(
+                verbose=True,
+                config=config,
+                workers_per_node=3,
+                backend="ray")
+
+            est.load(os.path.join(temp_dir, "cifar10.h5"))
+
+            after_res = est.predict(df, feature_cols=["feature"]).collect()
+            pred_res = np.concatenate([part["prediction"] for part in after_res])
+
+            assert np.array_equal(expect_res, pred_res)
+        finally:
+            shutil.rmtree(temp_dir)
 
     def test_save_load_model_weights_h5(self):
         sc = OrcaContext.get_spark_context()
@@ -882,7 +932,66 @@ class TestTFRayEstimator(TestCase):
         output_df = estimator.predict(input_df, batch_size=1, feature_cols=["input"])
         output = output_df.collect()
         print(output)
+        
+    def test_tensorboard(self):
+        sc = OrcaContext.get_spark_context()
+        rdd = sc.range(0, 100)
+        spark = OrcaContext.get_spark_session()
 
+        from pyspark.ml.linalg import DenseVector
+        df = rdd.map(lambda x: (DenseVector(np.random.randn(1, ).astype(np.float)),
+                                int(np.random.randint(0, 2, size=())))).toDF(["feature", "label"])
+
+        config = {
+            "lr": 0.2
+        }
+
+        try:
+            temp_dir = tempfile.mkdtemp()
+
+            trainer = Estimator.from_keras(
+                model_creator=model_creator,
+                verbose=True,
+                config=config,
+                workers_per_node=2,
+                backend="ray")
+
+            callbacks = [
+                tf.keras.callbacks.TensorBoard(log_dir=os.path.join(temp_dir, "train_log"),
+                                               update_freq='epoch')
+            ]
+            res = trainer.fit(df, epochs=3, batch_size=4, steps_per_epoch=25,
+                              callbacks=callbacks,
+                              feature_cols=["feature"],
+                              label_cols=["label"],
+                              validation_data=df,
+                              validation_steps=1)
+            assert len(os.listdir(os.path.join(temp_dir, "train_log"))) > 0
+
+            callbacks = [
+                tf.keras.callbacks.TensorBoard(log_dir=os.path.join(temp_dir, "train_log_2"),
+                                               update_freq='batch')
+            ]
+            res = trainer.fit(df, epochs=3, batch_size=4, steps_per_epoch=25,
+                              callbacks=callbacks,
+                              feature_cols=["feature"],
+                              label_cols=["label"],
+                              validation_data=df,
+                              validation_steps=11)
+            assert len(os.listdir(os.path.join(temp_dir, "train_log_2"))) > 0
+
+            callbacks = [
+                tf.keras.callbacks.TensorBoard(log_dir=os.path.join(temp_dir, "val_log"),
+                                               update_freq='batch')
+            ]
+            res = trainer.evaluate(df, batch_size=4, num_steps=25,
+                                   callbacks=callbacks,
+                                   feature_cols=["feature"],
+                                   label_cols=["label"])
+            assert len(os.listdir(os.path.join(temp_dir, "val_log"))) > 0
+
+        finally:
+            shutil.rmtree(temp_dir)
 
 if __name__ == "__main__":
     pytest.main([__file__])

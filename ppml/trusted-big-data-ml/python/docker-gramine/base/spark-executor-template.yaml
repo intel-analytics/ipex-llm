@@ -12,16 +12,21 @@ spec:
         value: your_attestation_url
       #- name: PCCS_URL
       #  value: your_pccs_url
-      #- name: ATTESTATION_ID
+      #- name: APP_ID
       #  valueFrom:
       #    secretKeyRef:
       #      name: kms-secret
       #      key: app_id
-      #- name: ATTESTATION_KEY
+      #- name: API_KEY
       #  valueFrom:
       #    secretKeyRef:
       #      name: kms-secret
       #      key: app_key
+      #- name: ATTESTATION_POLICYID
+      #  valueFrom:
+      #    secretKeyRef:
+      #      name: policy-id-secret
+      #      key: policy_id
     volumeMounts:
       - name: device-plugin
         mountPath: /var/lib/kubelet/device-plugins

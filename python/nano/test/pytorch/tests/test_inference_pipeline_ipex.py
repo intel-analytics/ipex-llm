@@ -232,3 +232,30 @@ class TestInferencePipeline(TestCase):
                                metric=metric,
                                direction="max",
                                thread_num=1)
+
+    def test_get_model_with_wrong_method_name(self):
+        inference_opt = InferenceOptimizer()
+        inference_opt.optimize(model=self.model,
+                               training_data=self.train_loader,
+                               validation_data=self.test_loader,
+                               metric=self.metric,
+                               direction="max",
+                               thread_num=1)
+
+        with pytest.raises(RuntimeError):
+            inference_opt.get_model(method_name="fp16_ipex")
+
+    def test_get_model_with_method_name(self):
+        inference_opt = InferenceOptimizer()
+        inference_opt.optimize(model=self.model,
+                               training_data=self.train_loader,
+                               validation_data=self.test_loader,
+                               metric=self.metric,
+                               direction="max",
+                               thread_num=1)
+        try:
+            model = inference_opt.get_model(method_name="fp32_ipex")
+            from bigdl.nano.deps.ipex.ipex_inference_model import PytorchIPEXJITModel
+            assert isinstance(model, PytorchIPEXJITModel)
+        except:
+            pass

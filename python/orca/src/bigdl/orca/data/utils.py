@@ -19,6 +19,9 @@ from bigdl.dllib.utils.utils import convert_row_to_numpy
 from bigdl.dllib.utils.common import *
 from bigdl.dllib.utils.log4Error import *
 
+import pyspark.sql.functions as F
+from typing import (Union, List, Dict)
+
 
 def list_s3_file(file_path, env):
     path_parts = file_path.split('/')
@@ -502,3 +505,49 @@ def check_col_exists(df, columns):
     if len(col_not_exist) > 0:
         invalidInputError(False,
                           str(col_not_exist) + " do not exist in this Table")
+
+
+def group_by_spark_df(df,
+                      columns: Union[str, List[str]]=[],
+                      agg: Union[Dict[str, List[str]], List[str], Dict[str, str], str]="count",
+                      join: bool = False):
+    if isinstance(columns, str):
+        columns = [columns]
+    invalidInputError(isinstance(columns, list), "columns should be str or a list of str")
+    grouped_data = df.groupBy(columns)
+
+    if isinstance(agg, str):
+        agg_exprs_dict = {agg_column: agg for agg_column in df.columns
+                          if agg_column not in columns}
+        agg_df = grouped_data.agg(agg_exprs_dict)
+    elif isinstance(agg, list):
+        agg_exprs_list = []
+        for stat in agg:
+            stat_func = getattr(F, stat)
+            agg_exprs_list += [stat_func(agg_column) for agg_column in df.columns
+                               if agg_column not in columns]
+        agg_df = grouped_data.agg(*agg_exprs_list)
+    elif isinstance(agg, dict):
+        if all(isinstance(stats, str) for agg_column, stats in agg.items()):
+            agg_df = grouped_data.agg(agg)
+        else:
+            agg_exprs_list = []
+            for agg_column, stats in agg.items():
+                if isinstance(stats, str):
+                    stats = [stats]
+                invalidInputError(isinstance(stats, list),
+                                  "value in agg should be str or a list of str")
+                for stat in stats:
+                    stat_func = getattr(F, stat)
+                    agg_exprs_list += [stat_func(agg_column)]
+            agg_df = grouped_data.agg(*agg_exprs_list)
+    else:
+        invalidInputError(False,
+                          "agg should be str, list of str, or dict")
+
+    if join:
+        invalidInputError(columns, "columns can not be empty if join is True")
+        result_df = df.join(agg_df, on=columns, how="left")
+    else:
+        result_df = agg_df
+    return result_df

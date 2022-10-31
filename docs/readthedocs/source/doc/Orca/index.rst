@@ -15,7 +15,7 @@ Most AI projects start with a Python notebook running on a single laptop; howeve
         **Get Started**
         ^^^
 
-        Documents in these sections helps you get started quickly with Orca.
+        For those who are new to Orca.
 
         +++
         :bdg-link:`Orca in 5 minutes <./Overview/orca.html>` |
@@ -23,34 +23,35 @@ Most AI projects start with a Python notebook running on a single laptop; howeve
 
     .. grid-item-card::
 
+        **Tutorials**
+        ^^^
+
+        Quick examples to get familiar with Orca and step-by-step tutorials to run Orca on large clusters.
+
+        +++
+
+        :bdg-link:`Quickstarts <./QuickStart/index.html>` |
+        :bdg-link:`Hadoop/YARN <./Tutorial/yarn.html>`
+
+    .. grid-item-card::
+
         **Key Features Guide**
         ^^^
 
-        Each guide in this section provides you with in-depth information, concepts and knowledges about Orca key features.
+        In-depth information, concepts and knowledge about the key features in Orca.
 
         +++
         
         :bdg-link:`Data <./Overview/data-parallel-processing.html>` |
         :bdg-link:`Estimator <./Overview/distributed-training-inference.html>` |
-        :bdg-link:`RayOnSpark <./Overview/ray.html>` 
-
-    .. grid-item-card::
-
-        **Tutorials**
-        ^^^
-
-        Orca Tutorials and Examples.
-
-        +++
-
-        :bdg-link:`Tutorials <./QuickStart/index.html>`
+        :bdg-link:`RayOnSpark <./Overview/ray.html>`
 
     .. grid-item-card::
 
         **API Document**
         ^^^
 
-        API Document provides detailed description of Orca APIs.
+        Detailed descriptions of Orca APIs.
 
         +++
 

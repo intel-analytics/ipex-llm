@@ -232,7 +232,7 @@ class TrainingOperator:
             self.global_step += 1
             if callbacks is not None:
                 for callback in callbacks:
-                    callback.on_batch_end(batch_idx)
+                    callback.on_batch_end(batch_idx, logs=metrics)
 
     def train_batch(self, batch, batch_info):
         """Computes loss and updates the model over one batch.

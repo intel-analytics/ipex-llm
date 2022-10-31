@@ -12,7 +12,7 @@ cd BigDL
 cp docker/chronos-nightly/Dockerfile ./Dockerfile
 ```
 When building image, you can specify some build args to install chronos with necessary dependencies according to your own needs.
-The build args are similar to the install options in [Chronos documentation](https://bigdl.readthedocs.io/en/latest/doc/Chronos/Overview/chronos.html#install).
+The build args are similar to the install options in [Chronos documentation](https://bigdl.readthedocs.io/en/latest/doc/Chronos/Overview/install.html).
 
 ```
 model: which model or framework you want. 

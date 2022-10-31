@@ -195,6 +195,7 @@ ADD ./_dill.py.patch /_dill.py.patch
 ADD ./python-uuid.patch /python-uuid.patch
 ADD ./python-pslinux.patch /python-pslinux.patch
 ADD ./register-mrenclave.py /ppml/trusted-big-data-ml/register-mrenclave.py
+ADD ./attestation.sh /ppml/trusted-big-data-ml/attestation.sh
 
 # python
 RUN env DEBIAN_FRONTEND=noninteractive apt-get update && \
@@ -251,9 +252,9 @@ RUN env DEBIAN_FRONTEND=noninteractive apt-get update && \
     patch /usr/local/lib/python3.7/dist-packages/psutil/_pslinux.py /python-pslinux.patch && \
     wget -P /ppml/trusted-big-data-ml/work/lib https://sourceforge.net/projects/analytics-zoo/files/analytics-zoo-data/libhadoop.so && \
     cp /usr/lib/x86_64-linux-gnu/libpython3.7m.so.1 /usr/lib/libpython3.7m.so.1 && \
-    sed -i 's/examples/\/ppml\/trusted-big-data-ml\/work\/spark-${SPARK_VERSION}\/examples/' /ppml/trusted-big-data-ml/work/spark-${SPARK_VERSION}/examples/src/main/python/sql/basic.py && \
-    sed -i 's/examples/\/ppml\/trusted-big-data-ml\/work\/spark-${SPARK_VERSION}\/examples/' /ppml/trusted-big-data-ml/work/spark-${SPARK_VERSION}/examples/src/main/python/sql/hive.py && \
-    sed -i 's/spark-warehouse/\/ppml\/trusted-big-data-ml\/work\/spark-warehouse/' /ppml/trusted-big-data-ml/work/spark-${SPARK_VERSION}/examples/src/main/python/sql/hive.py && \
+    sed -i "s/examples/\/ppml\/trusted-big-data-ml\/work\/spark-${SPARK_VERSION}\/examples/" /ppml/trusted-big-data-ml/work/spark-${SPARK_VERSION}/examples/src/main/python/sql/basic.py && \
+    sed -i "s/examples/\/ppml\/trusted-big-data-ml\/work\/spark-${SPARK_VERSION}\/examples/" /ppml/trusted-big-data-ml/work/spark-${SPARK_VERSION}/examples/src/main/python/sql/hive.py && \
+    sed -i "s/spark-warehouse/\/ppml\/trusted-big-data-ml\/work\/spark-warehouse/" /ppml/trusted-big-data-ml/work/spark-${SPARK_VERSION}/examples/src/main/python/sql/hive.py && \
     chmod a+x /ppml/trusted-big-data-ml/init.sh && \
     chmod a+x /ppml/trusted-big-data-ml/clean.sh && \
     chmod a+x /ppml/trusted-big-data-ml/work/start-scripts/* && \

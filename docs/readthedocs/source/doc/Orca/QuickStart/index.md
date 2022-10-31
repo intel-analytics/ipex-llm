@@ -1,4 +1,4 @@
-# Orca Tutorial
+# Orca Quickstarts
 
 
 - [**Orca TensorFlow 1.15 Quickstart**](./orca-tf-quickstart.html)

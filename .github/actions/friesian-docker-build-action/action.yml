@@ -13,7 +13,7 @@ runs:
         export IMAGE=intelanalytics/friesian-serving
         export FTP_URI=http://10.239.45.10:8081/repository/raw
         echo "################################################"
-        echo "################# friesian serving 2.4.6 #######"
+        echo "################# friesian serving 3.1.3 #######"
         echo "################################################"
         cd docker/friesian-serving
         wget $FTP_URI/analytics-zoo-data/faiss-lib.zip
@@ -24,7 +24,7 @@ runs:
         docker build \
         --build-arg http_proxy=${HTTP_PROXY} \
         --build-arg https_proxy=${HTTPS_PROXY} \
-        --build-arg SPARK_VERSION=3.1.2 \
+        --build-arg SPARK_VERSION=3.1.3 \
         --build-arg BIGDL_VERSION=2.2.0-SNAPSHOT \
         --build-arg no_proxy=${NO_PROXY} \
         --rm --no-cache -t $IMAGE:${TAG} .

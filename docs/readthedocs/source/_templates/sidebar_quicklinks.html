@@ -1,68 +1,97 @@
 <nav class="bd-links">
     <p class="bd-links__title">Quick Links</p>
     <div class="navbar-nav">
-        <strong class="bigdl-quicklinks-section-title">Orca QuickStart</Q></strong>
-        <ul class="nav bigdl-quicklinks-section-nav">
+        <ul class="nav">
             <li>
-                <a href="doc/UseCase/spark-dataframe.html">Use Spark Dataframe for Deep Learning</a>
+                <strong class="bigdl-quicklinks-section-title">Orca QuickStart</strong>
+                <input id="quicklink-cluster-orca" type="checkbox" class="toctree-checkbox" />
+                <label for="quicklink-cluster-orca" class="toctree-toggle">
+                    <i class="fa-solid fa-chevron-down"></i>
+                </label>
+                <ul class="bigdl-quicklinks-section-nav">
+                    <li>
+                        <a href="doc/UseCase/spark-dataframe.html">Use Spark Dataframe for Deep Learning</a>
+                    </li>
+                    <li>
+                        <a href="doc/Orca/QuickStart/orca-pytorch-distributed-quickstart.html">Distributed PyTorch using Orca</a>
+                    </li>
+                    <li>
+                        <a href="doc/Orca/QuickStart/orca-autoxgboost-quickstart.html">Use AutoXGBoost to tune XGBoost parameters automatically</a>
+                    </li>
+                </ul>
             </li>
             <li>
-                <a href="doc/Orca/QuickStart/orca-pytorch-distributed-quickstart.html">Distributed PyTorch using Orca</a>
+                <strong class="bigdl-quicklinks-section-title">Nano QuickStart</strong>
+                <input id="quicklink-cluster-nano" type="checkbox" class="toctree-checkbox" />
+                <label for="quicklink-cluster-nano" class="toctree-toggle">
+                    <i class="fa-solid fa-chevron-down"></i>
+                </label>
+                <ul class="nav bigdl-quicklinks-section-nav">
+                    <li>
+                        <a href="doc/Nano/QuickStart/pytorch_train_quickstart.html">PyTorch Training Acceleration</a>
+                    </li>
+                    <li>
+                        <a href="doc/Nano/QuickStart/pytorch_quantization_inc_onnx.html">PyTorch Inference Quantization with ONNXRuntime Acceleration </a>
+                    </li>
+                    <li>
+                        <a href="doc/Nano/QuickStart/pytorch_openvino.html">PyTorch Inference Acceleration using OpenVINO</a>
+                    </li>
+                    <li>
+                        <a href="doc/Nano/QuickStart/tensorflow_train_quickstart.html">Tensorflow Training Acceleration</a>
+                    </li>
+                    <li>
+                        <a href="doc/Nano/QuickStart/tensorflow_quantization_quickstart.html">Tensorflow Quantization Acceleration</a>
+                    </li>
+                </ul>
             </li>
             <li>
-                <a href="doc/Orca/QuickStart/orca-autoxgboost-quickstart.html">Use AutoXGBoost to tune XGBoost parameters automatically</a>
+                <strong class="bigdl-quicklinks-section-title">DLlib QuickStart</strong>
+                <input id="quicklink-cluster-dllib" type="checkbox" class="toctree-checkbox" />
+                <label for="quicklink-cluster-dllib" class="toctree-toggle">
+                    <i class="fa-solid fa-chevron-down"></i>
+                </label>
+                <ul class="nav bigdl-quicklinks-section-nav">
+                    <li>
+                        <a href="doc/DLlib/QuickStart/python-getting-started.html">Python QuickStart</a>
+                    </li>
+                    <li>
+                        <a href="doc/DLlib/QuickStart/scala-getting-started.html">Scala QuickStart</a>
+                    </li>
+                </ul>
             </li>
-
+            <li>
+                <strong class="bigdl-quicklinks-section-title">Chronos QuickStart</strong>
+                <input id="quicklink-cluster-chronos" type="checkbox" class="toctree-checkbox" />
+                <label for="quicklink-cluster-chronos" class="toctree-toggle">
+                    <i class="fa-solid fa-chevron-down"></i>
+                </label>
+                <ul class="nav bigdl-quicklinks-section-nav">
+                    <li>
+                        <a href="doc/Chronos/QuickStart/chronos-tsdataset-forecaster-quickstart.html">Basic Forecasting</a>
+                    </li>
+                    <li>
+                        <a href="doc/Chronos/QuickStart/chronos-autotsest-quickstart.html">Forecasting using AutoML</a>
+                    </li>
+                    <li>
+                        <a href="doc/Chronos/QuickStart/chronos-anomaly-detector.html">Anomaly Detection</a>
+                    </li>
+                </ul>
+            </li>
+            <li>
+                <strong class="bigdl-quicklinks-section-title">PPML QuickStart</strong>
+                <input id="quicklink-cluster-ppml" type="checkbox" class="toctree-checkbox" />
+                <label for="quicklink-cluster-ppml" class="toctree-toggle">
+                    <i class="fa-solid fa-chevron-down"></i>
+                </label>
+                <ul class="nav bigdl-quicklinks-section-nav">
+                    <li>
+                        <a href="doc/PPML/Overview/quicktour.html">Hello World Example</a>
+                    </li>
+                    <li>
+                        <a href="doc/PPML/QuickStart/end-to-end.html">End-to-End Example</a>
+                    </li>
+                </ul>
+            </li>
         </ul>
-        <strong class="bigdl-quicklinks-section-title">Nano QuickStart</strong>
-        <ul class="nav bigdl-quicklinks-section-nav" >
-            <li>
-                <a href="doc/Nano/QuickStart/pytorch_train_quickstart.html">PyTorch Training Acceleration</a>
-            </li>
-            <li>
-                <a href="doc/Nano/QuickStart/pytorch_quantization_inc_onnx.html">PyTorch Inference Quantization with ONNXRuntime Acceleration </a>
-            </li>
-            <li>
-                <a href="doc/Nano/QuickStart/pytorch_openvino.html">PyTorch Inference Acceleration using OpenVINO</a>
-            </li>
-            <li>
-                <a href="doc/Nano/QuickStart/tensorflow_train_quickstart.html">Tensorflow Training Acceleration</a>
-            </li>
-            <li>
-                <a href="doc/Nano/QuickStart/tensorflow_quantization_quickstart.html">Tensorflow Quantization Acceleration</a>
-            </li>
-        </ul>
-        <strong class="bigdl-quicklinks-section-title">DLlib QuickStart</strong>
-        <ul class="nav bigdl-quicklinks-section-nav" >
-            <li>
-                <a href="doc/DLlib/QuickStart/python-getting-started.html">Python QuickStart</a>
-            </li>
-            <li>
-                <a href="doc/DLlib/QuickStart/scala-getting-started.html">Scala QuickStart</a>
-            </li>
-        </ul>
-        <strong class="bigdl-quicklinks-section-title">Chronos QuickStart</strong>
-        <ul class="nav bigdl-quicklinks-section-nav" >
-            <li>
-                <a href="doc/Chronos/QuickStart/chronos-tsdataset-forecaster-quickstart.html">Basic Forecasting</a>
-            </li>
-            <li>
-                <a href="doc/Chronos/QuickStart/chronos-autotsest-quickstart.html">Forecasting using AutoML</a>
-            </li>
-            <li>
-                <a href="doc/Chronos/QuickStart/chronos-anomaly-detector.html">Anomaly Detection</a>
-            </li>
-        </ul>
-
-        <strong class="bigdl-quicklinks-section-title">PPML QuickStart</strong>
-        <ul class="nav bigdl-quicklinks-section-nav" >
-            <li>
-                <a href="doc/PPML/Overview/quicktour.html">Hello World Example</a>
-            </li>
-            <li>
-                <a href="doc/PPML/QuickStart/end-to-end.html">End-to-End Example</a>
-            </li>
-        </ul>
-
     </div>
 </nav>

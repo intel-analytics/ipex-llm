@@ -45,6 +45,7 @@ from bigdl.dllib.utils import log4Error
 from bigdl.orca.data.utils import ray_partitions_get_data_label, ray_partitions_get_tf_dataset
 from bigdl.orca.data.file import is_file, get_remote_file_to_local, get_remote_dir_to_local, \
     get_remote_files_with_prefix_to_local
+from bigdl.orca.learn.utils import process_tensorboard_in_callbacks
 from bigdl.dllib.utils.log4Error import *
 
 logger = logging.getLogger(__name__)
@@ -234,7 +235,9 @@ class LocalDatasetHandler(DatasetHandler):
 class TFRunner:
     """Manages a TensorFlow model for training."""
 
-    def __init__(self, model_creator, compile_args_creator,
+    def __init__(self,
+                 model_creator=None,
+                 compile_args_creator=None,
                  config=None,
                  verbose=False):
         """Initializes the runner.
@@ -263,8 +266,9 @@ class TFRunner:
     def setup_local(self):
         """Initializes the model."""
         logger.debug("Creating model")
-        self.model = self.model_creator(self.config)
-        self.model.compile(**self.compile_args_creator(self.config))
+        if self.model_creator is not None:
+            self.model = self.model_creator(self.config)
+            self.model.compile(**self.compile_args_creator(self.config))
         self.backend = "tf-local"
         self.size = 1
         self.rank = 0
@@ -274,11 +278,13 @@ class TFRunner:
     def setup_horovod(self):
         import horovod.tensorflow.keras as hvd
         hvd.init()
-        self.model = self.model_creator(self.config)
-        compile_args = self.compile_args_creator(self.config)
-        compile_args["optimizer"] = hvd.DistributedOptimizer(compile_args["optimizer"])
 
-        self.model.compile(**compile_args)
+        if self.model_creator is not None:
+            self.model = self.model_creator(self.config)
+            compile_args = self.compile_args_creator(self.config)
+            compile_args["optimizer"] = hvd.DistributedOptimizer(compile_args["optimizer"])
+            self.model.compile(**compile_args)
+
         self.backend = "horovod"
         self.size = hvd.size()
         self.rank = hvd.rank()
@@ -322,9 +328,10 @@ class TFRunner:
 
         logger.debug("Creating model with MultiWorkerMirroredStrategy")
         with self.strategy.scope():
-            self.model = self.model_creator(self.config)
-            if not self.model._is_compiled and self.compile_args_creator:
-                self.model.compile(**self.compile_args_creator(self.config))
+            if self.model_creator is not None:
+                self.model = self.model_creator(self.config)
+                if not self.model._is_compiled and self.compile_args_creator:
+                    self.model.compile(**self.compile_args_creator(self.config))
 
         # For use in model.evaluate()
         self.local_model = None
@@ -366,6 +373,14 @@ class TFRunner:
             if self.strategy.cluster_resolver.task_id != 0:
                 verbose = 0
 
+        if callbacks:
+            replaced_log_dir = process_tensorboard_in_callbacks(callbacks, "fit", self.rank)
+
+        invalidInputError(hasattr(self, "model"),
+                          "The model has not yet been created. "
+                          "Please input a model_creator when creating estimator "
+                          "or use load function of the estimator to load a model.")
+
         history = self.model.fit(train_dataset,
                                  epochs=self.epoch + epochs,
                                  verbose=verbose,
@@ -376,6 +391,10 @@ class TFRunner:
                                  steps_per_epoch=steps_per_epoch,
                                  validation_steps=validation_steps,
                                  validation_freq=validation_freq)
+        if callbacks:
+            if replaced_log_dir and os.path.exists(replaced_log_dir):
+                shutil.rmtree(replaced_log_dir)
+
         if history is None:
             stats = {}
         else:
@@ -409,19 +428,29 @@ class TFRunner:
             if self.strategy.cluster_resolver.task_id != 0:
                 verbose = 0
 
+        if callbacks:
+            replaced_log_dir = process_tensorboard_in_callbacks(callbacks, "evaluate", self.rank)
+
         params = dict(
             verbose=verbose,
             sample_weight=sample_weight,
             steps=steps,
             callbacks=callbacks,
         )
+
+        invalidInputError(hasattr(self, "model"),
+                          "The model has not yet been created. "
+                          "Please input a model_creator when creating estimator "
+                          "or use load function of the estimator to load a model.")
+
         results = self.model.evaluate(dataset, **params)
         if results is None:
             # Using local Model since model.evaluate() returns None
             # for MultiWorkerMirroredStrategy
             logger.warning("Running a local model to get validation score.")
-            self.local_model = self.model_creator(self.config)
-            self.local_model.set_weights(self.model.get_weights())
+            if self.model_creator is not None:
+                self.local_model = self.model_creator(self.config)
+                self.local_model.set_weights(self.model.get_weights())
             results = self.local_model.evaluate(dataset, **params)
 
         if isinstance(results, list):
@@ -431,6 +460,10 @@ class TFRunner:
             }
         else:
             stats = {"results": results}
+
+        if callbacks:
+            if replaced_log_dir and os.path.exists(replaced_log_dir):
+                shutil.rmtree(replaced_log_dir)
 
         return [stats]
 
@@ -453,7 +486,12 @@ class TFRunner:
             callbacks=callbacks,
         )
 
-        if self.backend == "tf-distributed":
+        invalidInputError(hasattr(self, "model"),
+                          "The model has not yet been created. "
+                          "Please input a model_creator when creating estimator "
+                          "or use load function of the estimator to load a model.")
+
+        if self.backend == "tf-distributed" and self.model_creator is not None:
             local_model = self.model_creator(self.config)
             try:
                 local_model.set_weights(self.model.get_weights())
@@ -482,6 +520,10 @@ class TFRunner:
 
     def get_state(self):
         """Returns the state of the runner."""
+        invalidInputError(hasattr(self, "model"),
+                          "The model has not yet been created. "
+                          "Please input a model_creator when creating estimator "
+                          "or use load function of the estimator to load a model.")
         return {
             "epoch": self.epoch,
             "weights": self.model.get_weights(),
