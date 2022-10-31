@@ -38,7 +38,7 @@ Key points:
 * Set up [Azure Kubernetes Service (AKS)](https://azure.microsoft.com/en-us/services/kubernetes-service/) for [distributed Spark examples](#distributed-spark-example-on-aks).
   * Follow the [guide](https://learn.microsoft.com/en-us/azure/confidential-computing/confidential-enclave-nodes-aks-get-started) to deploy an AKS with confidential computing Intel SGX nodes.
   * Install Azure CLI on the created VM or your local machine according to [Azure CLI guide](https://docs.microsoft.com/en-us/cli/azure/install-azure-cli).
-  * Login to AKS use such command:
+  * Login to AKS with such command:
     ```bash
     az aks get-credentials --resource-group  myResourceGroup --name myAKSCluster
     ```
