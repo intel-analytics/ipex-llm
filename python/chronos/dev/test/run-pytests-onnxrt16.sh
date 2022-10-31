@@ -28,9 +28,8 @@ fi
 ray stop -f
 
 echo "Running chronos tests onnxrt16"
-# python -m pytest -v -m "onnxrt16" test/bigdl/chronos/forecaster \
-#                                   test/bigdl/chronos/autots
-python -m pytest -v -m "onnxrt16" test/bigdl/chronos/forecaster/test_lstm_forecaster.py::TestChronosModelLSTMForecaster::test_forecaster_from_tsdataset_data_loader_onnx
+python -m pytest -v -m "onnxrt16" test/bigdl/chronos/forecaster \
+                                  test/bigdl/chronos/autots
 
 exit_status_0=$?
 if [ $exit_status_0 -ne 0 ];
