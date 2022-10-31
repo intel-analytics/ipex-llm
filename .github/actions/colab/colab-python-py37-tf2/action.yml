@@ -48,7 +48,7 @@ runs:
         chmod a+x python/orca/dev/colab-notebook/ipynb2py.sh
         pip install --no-cache-dir tensorflow
         pip uninstall -y bigdl bigdl-dllib bigdl-orca pyspark
-        pip install --pre --upgrade bigdl-orca[all]
+        # pip install --pre --upgrade bigdl-orca[all]
         pip install jupyter argparse
         pip install --pre --upgrade bigdl-orca-spark3[ray]
         bash python/orca/dev/colab-notebook/run-notebook-ray.sh
