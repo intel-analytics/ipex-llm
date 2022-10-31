@@ -2,14 +2,8 @@
 LSTM, TCN and NBeats users can easily quantize their forecasters to low precision and speed up the inference process (both throughput and latency) by on a single node. The functionality is powered by Project Nano.
 
 ## Prepare the environment
-We recommend you to use Anaconda to prepare the environment, especially if you want to run on a yarn cluster:
-```bash
-conda create -n my_env python=3.7 # "my_env" is conda environment name, you can use any name you like.
-conda activate my_env
-pip install --pre --upgrade bigdl-chronos[all]
-pip install neural-compressor==1.8.1
-```
-Please refer to [Chronos Install Guide](https://bigdl.readthedocs.io/en/latest/doc/Chronos/Overview/chronos.html#install)
+We recommend you to use Anaconda to prepare the environment, especially if you want to run on a yarn cluster.
+Please refer to [Chronos Install Guide](https://bigdl.readthedocs.io/en/latest/doc/Chronos/Overview/install.html)
 
 ## Prepare data
 We are using the nyc taxi provided by NAB, from 2014-07-01 to 2015-01-31 taxi fare information For more details, you can refer to the detailed information [here](https://github.com/numenta/NAB/tree/master/data). The dataset will be downloaded automatically for you.
