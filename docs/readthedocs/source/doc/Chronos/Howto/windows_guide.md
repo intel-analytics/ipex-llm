@@ -1,6 +1,6 @@
 # Install Chronos on Windows
 
-There are 2 ways to install Chronos on Windows: install using WSL2 and install on native Windows. We recommend installing using WSL2 because some features are not supported on native Windows.
+There are 2 ways to install Chronos on Windows: install using WSL2 and install on native Windows. With WSL2, all the feaatures of Chronos are available, while on native Windows, there are some limitations now.
 
 ## Install using WSL2
 ### Step 1: Install WSL2
@@ -38,8 +38,8 @@ pip install --pre --upgrade bigdl-chronos[pytorch]
 
 You can use the [install panel](https://bigdl.readthedocs.io/en/latest/doc/Chronos/Overview/install.html#install-using-conda) to select the proper install options based on your need, but there are some limitations now:
 
-- The Hardware will always be `single node` on native Windows, which means the `distributed` option is not supported.
+- bigdl-chronos[distributed] is not supported.
 
-- `Prophet` model is not supported on native Windows now.
+- `Prophet Forecaster` will raise RuntimeError on Windows, so the related feature is not supported.
 
-- `intel_extension_for_pytorch (ipex)` is unavailable for Windows now.
+- `intel_extension_for_pytorch (ipex)` is unavailable for Windows now, so the related feature is not supported.
