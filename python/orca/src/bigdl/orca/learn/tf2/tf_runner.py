@@ -36,7 +36,6 @@ import shutil
 import tempfile
 import subprocess
 import copy
-from pytest import param
 
 import ray
 import numpy as np
@@ -48,7 +47,6 @@ from bigdl.orca.data.file import is_file, get_remote_file_to_local, get_remote_d
     get_remote_files_with_prefix_to_local
 from bigdl.orca.learn.utils import process_tensorboard_in_callbacks
 from bigdl.dllib.utils.log4Error import *
-from sympy import comp
 
 logger = logging.getLogger(__name__)
 
