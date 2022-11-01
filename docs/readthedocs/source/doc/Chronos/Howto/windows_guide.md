@@ -38,7 +38,7 @@ pip install --pre --upgrade bigdl-chronos[pytorch]
 
 You can use the [install panel](https://bigdl.readthedocs.io/en/latest/doc/Chronos/Overview/install.html#install-using-conda) to select the proper install options based on your need, but there are some limitations now:
 
-- bigdl-chronos[distributed] is not supported.
+- `bigdl-chronos[distributed]` is not supported.
 
 - `Prophet Forecaster` will raise RuntimeError on Windows, so the related feature is not supported.
 
