@@ -39,6 +39,7 @@ subtrees:
                 - file: doc/Orca/Overview/distributed-tuning
                 - file: doc/Orca/Overview/ray
           - file: doc/Orca/QuickStart/index
+            title: "Quickstarts"
           - file: doc/Orca/Howto/index
             title: "How-to Guides"
             subtrees:
