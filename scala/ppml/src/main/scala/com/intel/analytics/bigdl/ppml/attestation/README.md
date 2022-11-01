@@ -1,6 +1,6 @@
 # General Attestation Interface
 
-Support Grapmine, Occlum and SGX SDK.
+Support Gramine, Occlum and SGX SDK.
 ```mermaid
 classDiagram
     AttestationCLI ..> AttestationService
@@ -42,7 +42,7 @@ classDiagram
         SGXDCAPQuoteVerifierImpl: +verifyQuote(asQuote)
 ```
 ## Environment
-You should have an available attestation service to attest with. You can use `EHSMAttestationService` and configure eHSM-KMS according to [this link](https://github.com/intel-analytics/BigDL/tree/main/ppml/services/pccs-ehsm/kubernetes), or you can just use `DummyAttestationService` for debug. 
+You should have an available attestation service to attest with. You can use `EHSMAttestationService` and configure eHSM-KMS according to [this link](https://github.com/intel-analytics/BigDL/tree/main/ppml/services/ehsm/kubernetes), or you can just use `DummyAttestationService` for debug. 
 
 ### Bidirectional Attestation
 To enable bidirectional attestation, you also need SGX SDK to fulfill quote verification. Here is the guide to install SGX SDK with related libs. 
