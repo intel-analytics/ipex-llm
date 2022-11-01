@@ -44,8 +44,6 @@ subtrees:
               - entries:
                 - file: doc/UseCase/spark-dataframe
                 - file: doc/UseCase/xshards-pandas
-                - file: doc/Orca/QuickStart/ray-quickstart
-                - file: doc/Orca/QuickStart/orca-pytorch-distributed-quickstart
                 - file: doc/Orca/QuickStart/orca-autoestimator-pytorch-quickstart
                 - file: doc/Orca/QuickStart/orca-autoxgboost-quickstart
           - file: doc/Orca/Tutorial/index
