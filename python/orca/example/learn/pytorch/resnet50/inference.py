@@ -115,14 +115,16 @@ class ResNetPerfOperator(TrainingOperator):
 
         # TODO: support warmup
         with torch.no_grad():
+            if self.config["dummy"]:
+                images = torch.randn(self.config["batch"], 3, 224, 224)
+                target = torch.arange(1, self.config["batch"] + 1).long()
+                batch = images, target
+            else:
+                batch = None
             for batch_idx in range(num_steps):
                 batch_info = {"batch_idx": batch_idx}
                 batch_info.update(info)
-                if self.config["dummy"]:
-                    images = torch.randn(self.config["batch"], 3, 224, 224)
-                    target = torch.arange(1, self.config["batch"] + 1).long()
-                    batch = images, target
-                else:
+                if not self.config["dummy"]:
                     batch = next(val_iterator)
                 output, target, loss = self.forward_batch(batch, batch_info)
                 if self.use_tqdm and self.world_rank == 0:
@@ -179,8 +181,7 @@ def main():
                           "auto,dirty_decay_ms:9000000000,muzzy_decay_ms:9000000000",
            "DNNL_PRIMITIVE_CACHE_CAPACITY": "1024",
            "KMP_BLOCKTIME": "1",
-           "KMP_AFFINITY": "granularity=fine,compact,1,0",
-           "SSL_CERT_DIR": "/etc/ssl/certs"}
+           "KMP_AFFINITY": "granularity=fine,compact,1,0"}
     if "LD_PRELOAD" in os.environ:
         env["LD_PRELOAD"] = os.environ["LD_PRELOAD"]
 
@@ -189,7 +190,7 @@ def main():
     elif args.cluster_mode == "standalone":
         init_orca_context("standalone", master=args.master,
                           cores=args.cores, num_nodes=args.num_nodes,
-                          memory="10g", driver_cores=4, driver_memory="2g", env=env)
+                          memory="10g", driver_cores=1, driver_memory="2g", env=env)
     elif args.cluster_mode == "yarn":
         init_orca_context("yarn-client", cores=args.cores,
                           num_nodes=args.num_nodes, memory="10g",
