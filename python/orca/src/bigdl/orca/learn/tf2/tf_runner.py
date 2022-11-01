@@ -561,7 +561,7 @@ class TFRunner:
             compile=compile,
             options=options
         )
-        if self.backend == "tf_distributed":
+        if self.backend == "tf-distributed":
             with self.strategy.scope():
                 self.process_model_load(**params)
         else:
@@ -588,7 +588,7 @@ class TFRunner:
             get_remote_dir_to_local(filepath, temp_path)
         try:
             params["filepath"] = temp_path
-            if self.backend == "tf_distributed":
+            if self.backend == "tf-distributed":
                 with self.strategy.scope():
                     self.process_model_load(**params)
             else:
