@@ -92,7 +92,7 @@ def setup_package():
                           "onnxruntime==1.12.1",
                           "onnxruntime-extensions==0.4.2",
                           "openvino-dev==2022.2.0",
-                          "neural-compressor==1.11",
+                          "neural-compressor==1.13.1",
                           "onnxsim==0.4.8"]
 
     install_requires = ["intel-openmp", "cloudpickle", "protobuf==3.19.4"]
