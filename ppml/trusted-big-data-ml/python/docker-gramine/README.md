@@ -280,44 +280,32 @@ kubectl create secret generic policy-id-secret --from-literal=policy_id=YOUR_POL
 ### 1.3 Start the client container
 Configure the environment variables in the following script before running it. Check [Bigdl ppml SGX related configurations](#1-bigdl-ppml-sgx-related-configurations) for detailed memory configurations.
 ```bash
-export K8S_MASTER=k8s://$(sudo kubectl cluster-info | grep 'https.*6443' -o -m 1)
-echo The k8s master is $K8S_MASTER
-export NFS_INPUT_PATH=/YOUR_DIR/data
-export KEYS_PATH=/YOUR_DIR/keys
-export SECURE_PASSWORD_PATH=/YOUR_DIR/password
-export KUBECONFIG_PATH=/YOUR_DIR/kubeconfig
-export LOCAL_IP=$LOCAL_IP
-export DOCKER_IMAGE=YOUR_DOCKER_IMAGE
-sudo docker run -itd \
-    --privileged \
-    --net=host \
-    --name=spark-local-k8s-client \
-    --cpuset-cpus="20-24" \
-    --oom-kill-disable \
-    --device=/dev/sgx/enclave \
-    --device=/dev/sgx/provision \
-    -v /var/run/aesmd/aesm.socket:/var/run/aesmd/aesm.socket \
-    -v $KEYS_PATH:/ppml/trusted-big-data-ml/work/keys \
-    -v $SECURE_PASSWORD_PATH:/ppml/trusted-big-data-ml/work/password \
-    -v $KUBECONFIG_PATH:/root/.kube/config \
-    -v $NFS_INPUT_PATH:/ppml/trusted-big-data-ml/work/data \
-    -e RUNTIME_SPARK_MASTER=$K8S_MASTERK8S_MASTER \
-    -e RUNTIME_K8S_SERVICE_ACCOUNT=spark \
-    -e RUNTIME_K8S_SPARK_IMAGE=$DOCKER_IMAGE \
-    -e RUNTIME_DRIVER_HOST=$LOCAL_IP \
-    -e RUNTIME_DRIVER_PORT=54321 \
-    -e RUNTIME_EXECUTOR_INSTANCES=2 \
-    -e RUNTIME_EXECUTOR_CORES=4 \
-    -e RUNTIME_EXECUTOR_MEMORY=20g \
-    -e RUNTIME_TOTAL_EXECUTOR_CORES=4 \
-    -e RUNTIME_DRIVER_CORES=4 \
-    -e RUNTIME_DRIVER_MEMORY=10g \
-    -e SGX_DRIVER_MEM=64g \
-    -e SGX_DRIVER_JVM_MEM=12g \
-    -e SGX_EXECUTOR_JVM_MEM=12g \
-    -e SGX_ENABLED=true \
-    -e LOCAL_IP=$LOCAL_IP \
-    $DOCKER_IMAGE bash
+   export K8S_MASTER=k8s://$(sudo kubectl cluster-info | grep 'https.*6443' -o -m 1)
+   echo The k8s master is $K8S_MASTER .
+   export DATA_PATH=/YOUR_DIR/data
+   export KEYS_PATH=/YOUR_DIR/keys
+   export SECURE_PASSWORD_PATH=/YOUR_DIR/password
+   export KUBECONFIG_PATH=/YOUR_DIR/kubeconfig
+   export LOCAL_IP=$LOCAL_IP
+   export DOCKER_IMAGE=intelanalytics/bigdl-ppml-trusted-big-data-ml-python-gramine-reference:2.2.0-SNAPSHOT # or the custom image built by yourself
+    
+   sudo docker run -itd \
+       --privileged \
+       --net=host \
+       --name=bigdl-ppml-client-k8s \
+       --cpuset-cpus="0-4" \
+       --oom-kill-disable \
+       --device=/dev/sgx/enclave \
+       --device=/dev/sgx/provision \
+       -v /var/run/aesmd/aesm.socket:/var/run/aesmd/aesm.socket \
+       -v $DATA_PATH:/ppml/trusted-big-data-ml/work/data \
+       -v $KEYS_PATH:/ppml/trusted-big-data-ml/work/keys \
+       -v $SECURE_PASSWORD_PATH:/ppml/trusted-big-data-ml/work/password \
+       -v $KUBECONFIG_PATH:/root/.kube/config \
+       -e RUNTIME_SPARK_MASTER=$K8S_MASTER \
+       -e RUNTIME_K8S_SPARK_IMAGE=$DOCKER_IMAGE \
+       -e LOCAL_IP=$LOCAL_IP \
+       $DOCKER_IMAGE bash
 ```
 run `docker exec -it spark-local-k8s-client bash` to entry the container.
 
