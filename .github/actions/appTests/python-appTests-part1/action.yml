@@ -43,6 +43,7 @@ runs:
         export MASTER=local[4]
         export KERAS_BACKEND=tensorflow
         source activate py37
+        pip install --upgrade pip
         pip install jupyter bigdl
         chmod a+x apps/ipynb2py.sh
         chmod a+x apps/run-app-tests-pip.sh
