@@ -19,7 +19,6 @@ runs:
     - name: Setup env
       shell: bash
       run: |
-        
         wget -r -np -nH -N ${FTP_URL}/pkgs/* -P ~/.conda/
         cp -n -r ~/.conda/pkgs/*.tar.bz2 /opt/conda/pkgs
         cp -n  ~/.conda/pkgs/cache/* /opt/conda/pkgs/cache
