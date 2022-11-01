@@ -923,7 +923,7 @@ jobs:
         runner-hosted-on: 'Shanghai'
 
   Scala-AppTests:
-    if: ${{ github.event.schedule || github.event.inputs.artifact == 'Scala-AppTests' || github.event.inputs.artifact == 'all' }}
+    # if: ${{ github.event.schedule || github.event.inputs.artifact == 'Scala-AppTests' || github.event.inputs.artifact == 'all' }}
     runs-on: [ self-hosted, Gondolin, ubuntu-20.04-lts ]
 
     steps:
