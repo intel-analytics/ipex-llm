@@ -14,14 +14,14 @@
 # limitations under the License.
 #
 from bigdl.nano.utils.log4Error import invalidInputError
-# try:
-import neural_compressor
-# except ImportError:
-#     invalidInputError(
-#         False,
-#         errMsg="Intel Neural Compressor must be installed to use quantization.",
-#         fixMsg="Please install INC by: pip install neural-compressor."
-#     )
+try:
+    import neural_compressor
+except ImportError:
+    invalidInputError(
+        False,
+        errMsg="Intel Neural Compressor must be installed to use quantization.",
+        fixMsg="Please install INC by: pip install neural-compressor."
+    )
 
 version = neural_compressor.__version__
 from .quantization import BaseQuantization
