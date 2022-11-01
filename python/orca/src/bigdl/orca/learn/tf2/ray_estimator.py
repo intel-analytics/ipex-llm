@@ -695,6 +695,7 @@ class TensorFlow2Estimator(OrcaRayEstimator):
                     os.makedirs(temp_path)
                 get_remote_dir_to_local(self.load_params["filepath"], temp_path)
             try:
+                self.load_params["filepath"] = temp_path
                 model = tf.keras.models.load_model(**self.load_params)
             finally:
                 shutil.rmtree(temp_dir)
@@ -709,6 +710,4 @@ class TensorFlow2Estimator(OrcaRayEstimator):
                                         "Failed to set model weights, please provide real tensor "
                                         "data (of the correct dtype) as sample_input in the "
                                         "get_model method.")
-
         return model
-
