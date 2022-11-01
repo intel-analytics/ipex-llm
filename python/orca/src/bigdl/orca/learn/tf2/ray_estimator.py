@@ -704,7 +704,6 @@ class TensorFlow2Estimator(OrcaRayEstimator):
             model(sample_input)
         try:
             model.set_weights(state["weights"])
-            model.optimizer.set_weights(state["optimizer_weights"])
         except Exception:
             log4Error.invalidInputError(False,
                                         "Failed to set model weights, please provide real tensor "
