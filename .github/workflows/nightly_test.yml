@@ -935,7 +935,7 @@ jobs:
       with:
         maven-version: 3.6.3
     - name: Run Test
-      uses: ./.github/actions/appTests/Scala-AppTests
+      uses: ./.github/actions/appTests/scala-appTests
     - name: Remove Env
       if: ${{ always() }}
       uses: ./.github/actions/remove-env
