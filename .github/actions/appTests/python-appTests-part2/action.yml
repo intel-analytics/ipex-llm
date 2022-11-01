@@ -44,7 +44,7 @@ runs:
         export KERAS_BACKEND=tensorflow
         source activate py37
         pip install --upgrade pip
-        pip install jupyter bigdl
+        pip install jupyter bigdl imageio
         chmod a+x apps/ipynb2py.sh
         chmod a+x apps/run-app-tests-pip.sh
         bash apps/run-app-tests-pip.sh 2
