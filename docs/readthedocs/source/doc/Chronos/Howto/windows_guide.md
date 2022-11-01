@@ -40,6 +40,6 @@ You can use the [install panel](https://bigdl.readthedocs.io/en/latest/doc/Chron
 
 - `bigdl-chronos[distributed]` is not supported.
 
-- `Prophet Forecaster` will raise RuntimeError on Windows, so the related feature is not supported.
+- There is an [issue](https://github.com/facebook/prophet/issues/2227) when using `Prophet` on Windows, so the related feature is not supported now.
 
 - `intel_extension_for_pytorch (ipex)` is unavailable for Windows now, so the related feature is not supported.
