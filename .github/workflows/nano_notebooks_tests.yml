@@ -101,7 +101,6 @@ jobs:
             source $CONDA/bin/activate notebooks-tutorial-pytorch
             $CONDA/bin/conda info
             bash python/nano/dev/build_and_install.sh linux default false pytorch
-            pip install intel_extension_for_pytorch==1.11
             source bigdl-nano-init
             bash python/nano/tutorial/inference/pytorch/run_nano_pytorch_inference_tests_jit_ipex.sh
             source $CONDA/bin/deactivate
