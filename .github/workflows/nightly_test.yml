@@ -865,7 +865,7 @@ jobs:
         runner-hosted-on: 'Shanghai'
 
   Python-AppTests-part1:
-    # if: ${{ github.event.schedule || github.event.inputs.artifact == 'Python-AppTests-part1' || github.event.inputs.artifact == 'all' }}
+    if: ${{ github.event.schedule || github.event.inputs.artifact == 'Python-AppTests-part1' || github.event.inputs.artifact == 'all' }}
     runs-on: [ self-hosted, Gondolin, ubuntu-20.04-lts ]
 
     steps:
