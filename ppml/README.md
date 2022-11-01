@@ -334,7 +334,7 @@ To build your own Big Data & AI applications, refer to [develop your own Big Dat
 
     You can attest the EHSM server and verify the service is trusted before running workloads, that avoids sending your secrets to a fake EHSM service.
 
-    To attest EHSM server, first, start a bigdl container using the custom image build before. **Note**: this is a another container different from the client.
+    To attest EHSM server, first, start a bigdl container using the custom image build before. **Note**: this is the other container different from the client.
 
     ```bash
     export KEYS_PATH=YOUR_LOCAL_SPARK_SSL_KEYS_FOLDER_PATH
