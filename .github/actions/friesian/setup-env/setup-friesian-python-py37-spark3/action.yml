@@ -19,7 +19,7 @@ runs:
     - name: Setup env
       shell: bash
       run: |
-        export FTP_URL=ftp://zoo:1234qwer@172.168.2.182
+        
         wget -r -np -nH -N ${FTP_URL}/pkgs/* -P ~/.conda/
         cp -n -r ~/.conda/pkgs/*.tar.bz2 /opt/conda/pkgs
         cp -n  ~/.conda/pkgs/cache/* /opt/conda/pkgs/cache
