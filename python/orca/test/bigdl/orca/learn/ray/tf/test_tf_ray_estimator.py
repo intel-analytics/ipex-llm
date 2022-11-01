@@ -779,6 +779,7 @@ class TestTFRayEstimator(TestCase):
                 backend="ray")
 
             est.load(os.path.join(temp_dir, "cifar10.h5"))
+            est.save(os.path.join(temp_dir, "cifar10_option.h5"))
 
             after_res = est.predict(df, feature_cols=["feature"]).collect()
             pred_res = np.concatenate([part["prediction"] for part in after_res])
