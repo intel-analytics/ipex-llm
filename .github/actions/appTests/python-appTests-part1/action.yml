@@ -42,6 +42,7 @@ runs:
         export MASTER=local[4]
         export KERAS_BACKEND=tensorflow
         source activate py37
+        apt install libgl1-mesa-glx ffmpeg libsm6 libxext6  -y
         pip install --upgrade pip
         pip install jupyter bigdl imageio matplotlib seaborn
         chmod a+x apps/ipynb2py.sh
