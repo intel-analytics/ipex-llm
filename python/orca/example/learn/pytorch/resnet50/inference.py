@@ -179,8 +179,7 @@ def main():
                           "auto,dirty_decay_ms:9000000000,muzzy_decay_ms:9000000000",
            "DNNL_PRIMITIVE_CACHE_CAPACITY": "1024",
            "KMP_BLOCKTIME": "1",
-           "KMP_AFFINITY": "granularity=fine,compact,1,0",
-           "SSL_CERT_DIR": "/etc/ssl/certs"}
+           "KMP_AFFINITY": "granularity=fine,compact,1,0"}
     if "LD_PRELOAD" in os.environ:
         env["LD_PRELOAD"] = os.environ["LD_PRELOAD"]
 
