@@ -43,6 +43,8 @@ parser.add_argument("--cores", type=int, default=4,
                     help="The number of cores on each node.")
 parser.add_argument("--num_nodes", type=int, default=1,
                     help="The number of nodes to use.")
+parser.add_argument('--backend', type=str, default="ray",
+                    help='The backend of PyTorch Estimator, either ray or spark.')
 parser.add_argument('--workers_per_node', default=1, type=int,
                     help='The number of torch runners on each node.')
 parser.add_argument('--ipex', action='store_true', default=False,
@@ -314,12 +316,11 @@ def validate(args):
     config = vars(args).copy()
     batch = config.pop("batch_size")
     config["batch"] = batch  # Dummy data needs batch_size in TrainingOperator
-    backend = "ray"
     est = Estimator.from_torch(model=model_creator,
                                optimizer=optimizer_creator,
                                loss=nn.CrossEntropyLoss(),
                                metrics=[Accuracy()],
-                               backend=backend,
+                               backend=args.backend,
                                config=config,
                                workers_per_node=args.workers_per_node,
                                training_operator_cls=ResNetPerfOperator,
