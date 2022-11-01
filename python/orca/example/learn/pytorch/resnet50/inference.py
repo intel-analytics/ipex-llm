@@ -14,8 +14,8 @@
 # limitations under the License.
 # ==============================================================================
 # Most of the pytorch code is adapted from:
-# https://github.com/IntelAI/models/blob/master/quickstart/image_recognition/
-# pytorch/resnet50/inference/cpu
+# https://github.com/IntelAI/models/blob/master/models/image_recognition/
+# pytorch/common/main.py
 #
 
 import os
@@ -171,9 +171,9 @@ def main():
     if args.jit and args.int8:
         invalidInputError(False, "jit path is not available for int8 path using ipex")
     if not args.ipex:
-        # for offical pytorch, int8 and jit path is not enabled.
-        invalidInputError(not args.int8, "int8 path is not enabled for offical pytorch")
-        invalidInputError(not args.jit, "jit path is not enabled for offical pytorch")
+        # for official pytorch, int8 and jit path is not enabled.
+        invalidInputError(not args.int8, "int8 path is not enabled for official pytorch")
+        invalidInputError(not args.jit, "jit path is not enabled for official pytorch")
 
     env = {"MALLOC_CONF": "oversize_threshold:1,background_thread:true,metadata_thp:"
                           "auto,dirty_decay_ms:9000000000,muzzy_decay_ms:9000000000",
@@ -311,9 +311,8 @@ def validate(args):
     from bigdl.orca.learn.metrics import Accuracy
 
     config = vars(args).copy()
-    config["number_iter"] = number_iter
     batch = config.pop("batch_size")
-    config["batch"] = batch
+    config["batch"] = batch  # Dummy data needs batch_size in TrainingOperator
     backend = "ray"
     est = Estimator.from_torch(model=model_creator,
                                optimizer=optimizer_creator,
