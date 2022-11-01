@@ -29,5 +29,3 @@ op_all = pytest.mark.all # Universe set, including all denpendencies.
 op_diff_set_all = pytest.mark.diff_set_all
 op_onnxrt16 = pytest.mark.onnxrt16
 
-# temp skip mark
-op_tmp_skip = pytest.mark.tmp_skip
