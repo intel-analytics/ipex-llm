@@ -36,6 +36,7 @@ import shutil
 import tempfile
 import subprocess
 import copy
+from pytest import param
 
 import ray
 import numpy as np
@@ -47,6 +48,7 @@ from bigdl.orca.data.file import is_file, get_remote_file_to_local, get_remote_d
     get_remote_files_with_prefix_to_local
 from bigdl.orca.learn.utils import process_tensorboard_in_callbacks
 from bigdl.dllib.utils.log4Error import *
+from sympy import comp
 
 logger = logging.getLogger(__name__)
 
@@ -543,7 +545,7 @@ class TFRunner:
                                         "data (of the correct dtype) as sample_input in the load "
                                         "method.")
 
-    def load_model(self, filepath, custom_objects, compile, options):
+    def process_model_load(self, filepath, custom_objects, compile, options):
         """Load the model from provided local filepath."""
         import tensorflow as tf
         if options:
@@ -551,9 +553,29 @@ class TFRunner:
         else:  # To support older TensorFlow versions such as 2.1
             self.model = tf.keras.models.load_model(filepath, custom_objects, compile)
 
+    def load_model(self, filepath, custom_objects, compile, options):
+        """Load the model from provided local filepath."""
+        params = dict(
+            filepath=filepath,
+            custom_objects=custom_objects,
+            compile=compile,
+            options=options
+        )
+        if self.backend == "tf_distributed":
+            with self.strategy.scope():
+                self.process_model_load(**params)
+        else:
+            self.process_model_load(**params)
+
     def load_remote_model(self, filepath, custom_objects, compile, options):
         """Load the model from provided remote filepath."""
         import tensorflow as tf
+        params = dict(
+            filepath=filepath,
+            custom_objects=custom_objects,
+            compile=compile,
+            options=options
+        )
         file_name = os.path.basename(filepath)
         temp_path = os.path.join(tempfile.mkdtemp(), file_name)
         if is_file(filepath):
@@ -565,10 +587,12 @@ class TFRunner:
                 os.makedirs(temp_path)
             get_remote_dir_to_local(filepath, temp_path)
         try:
-            if options:
-                self.model = tf.keras.models.load_model(temp_path, custom_objects, compile, options)
-            else:  # To support older TensorFlow versions such as 2.1
-                self.model = tf.keras.models.load_model(temp_path, custom_objects, compile)
+            params["filepath"] = temp_path
+            if self.backend == "tf_distributed":
+                with self.strategy.scope():
+                    self.process_model_load(**params)
+            else:
+                self.process_model_load(**params)
         finally:
             if os.path.isdir(temp_path):
                 shutil.rmtree(temp_path)
