@@ -379,7 +379,7 @@ To build your own Big Data & AI applications, refer to [develop your own Big Dat
       bash verify-attestation-service.sh
       ```
 
-    *3.4. Register your MREnclave to EHSM**
+    **3.4. Register your MREnclave to EHSM**
 
     Register the MREnclave with metadata of your MREnclave (appid, apikey, mr_enclave, mr_signer) obtained in above steps to EHSM through running a python script:
 
