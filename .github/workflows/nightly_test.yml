@@ -807,11 +807,7 @@ jobs:
         runner-hosted-on: 'Shanghai'
 
   Colab-Python-Py37-tf1:
-<<<<<<< HEAD
-    if: ${{ github.event.schedule || github.event.inputs.artifact == 'Colab-Python-Py37-Pytorch' || github.event.inputs.artifact == 'all' }}
-=======
     if: ${{ github.event.schedule || github.event.inputs.artifact == 'Colab-Python-Py37-tf1' || github.event.inputs.artifact == 'all' }}
->>>>>>> 2c5f2050739806c3fc41f3df4a1d2c91e6affdc5
     runs-on: [ self-hosted, Gondolin, ubuntu-20.04-lts ]
 
     steps:
@@ -840,11 +836,7 @@ jobs:
         runner-hosted-on: 'Shanghai'
 
   Colab-Python-Py37-tf2:
-<<<<<<< HEAD
-    if: ${{ github.event.schedule || github.event.inputs.artifact == 'Colab-Python-Py37-Pytorch' || github.event.inputs.artifact == 'all' }}
-=======
     if: ${{ github.event.schedule || github.event.inputs.artifact == 'Colab-Python-Py37-tf2' || github.event.inputs.artifact == 'all' }}
->>>>>>> 2c5f2050739806c3fc41f3df4a1d2c91e6affdc5
     runs-on: [ self-hosted, Gondolin, ubuntu-20.04-lts ]
 
     steps:

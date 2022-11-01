@@ -53,4 +53,3 @@ runs:
         BIGDL_HOME: ${{ github.workspace }}
         ANALYTICS_ZOO_ROOT: ${{ github.workspace }}
         ANALYTICS_ZOO_HOME: ${{ github.workspace }}
-        HDFS_URI: "hdfs://172.168.2.151:9000"
