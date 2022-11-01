@@ -1,4 +1,4 @@
-Chronos How-to Guides
+Orca How-to Guides
 =========================
 How-to guides are bite-sized, executable examples where users could check when meeting with some specific topic during the usage.
 
