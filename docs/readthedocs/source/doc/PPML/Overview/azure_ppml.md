@@ -38,7 +38,7 @@ On `Subscribe` page, input your subscription, your Azure container registry, you
 * Go to your Azure container regsitry, check `Repostirories`, and find `intel_corporation/bigdl-ppml-trusted-big-data-ml-python-graphene`
 * Login to the created VM. Then login to your Azure container registry, pull BigDL PPML image using this command:
   ```bash
-  docker pull myContainerRegistry/intel_corporation/bigdl-ppml-trusted-big-data-ml-python-graphene
+  docker pull myContainerRegistry.azurecr.io/intel_corporation/bigdl-ppml-trusted-big-data-ml-python-graphene
   ```
 * Start container of this image
 
@@ -46,7 +46,7 @@ On `Subscribe` page, input your subscription, your Azure container registry, you
   #!/bin/bash
 
   export LOCAL_IP=YOUR_LOCAL_IP
-  export DOCKER_IMAGE=intel_corporation/bigdl-ppml-trusted-big-data-ml-python-graphene
+  export DOCKER_IMAGE=myContainerRegistry.azurecr.io/intel_corporation/bigdl-ppml-trusted-big-data-ml-python-graphene
 
   sudo docker run -itd \
       --privileged \
@@ -317,7 +317,7 @@ bash bigdl-ppml-submit.sh \
 	--num-executors 2 \
 	--conf spark.cores.max=8 \
     --name spark-decrypt-sgx \
-    --conf spark.kubernetes.container.image=intelanalytics/bigdl-ppml-trusted-big-data-ml-python-graphene:$BIGDL_VERSION \
+    --conf spark.kubernetes.container.image=myContainerRegistry.azurecr.io/intel_corporation/bigdl-ppml-trusted-big-data-ml-python-graphene:$BIGDL_VERSION \
     --conf spark.kubernetes.driver.podTemplateFile=/ppml/trusted-big-data-ml/azure/spark-driver-template-az.yaml \
     --conf spark.kubernetes.executor.podTemplateFile=/ppml/trusted-big-data-ml/azure/spark-executor-template-az.yaml \
     --jars local://$SPARK_EXTRA_JAR_PATH \
@@ -439,7 +439,7 @@ bash bigdl-ppml-submit.sh \
 	--num-executors 2 \
 	--conf spark.cores.max=8 \
     --name spark-tpch-sgx \
-    --conf spark.kubernetes.container.image=intelanalytics/bigdl-ppml-trusted-big-data-ml-python-graphene:$BIGDL_VERSION \
+    --conf spark.kubernetes.container.image=myContainerRegistry.azurecr.io/intel_corporation/bigdl-ppml-trusted-big-data-ml-python-graphene:$BIGDL_VERSION \
     --conf spark.kubernetes.driver.podTemplateFile=/ppml/trusted-big-data-ml/azure/spark-driver-template-az.yaml \
     --conf spark.kubernetes.executor.podTemplateFile=/ppml/trusted-big-data-ml/azure/spark-executor-template-az.yaml \
     --conf spark.sql.auto.repartition=true \
