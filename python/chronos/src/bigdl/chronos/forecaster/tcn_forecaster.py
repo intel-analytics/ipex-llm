@@ -55,7 +55,8 @@ class TCNForecaster(BasePytorchForecaster):
                  seed=None,
                  distributed=False,
                  workers_per_node=1,
-                 distributed_backend="ray"):
+                 distributed_backend="ray",
+                 model_set='tcn'):
         """
         Build a TCN Forecast Model.
 
@@ -100,6 +101,18 @@ class TCNForecaster(BasePytorchForecaster):
                distributed is set to True.
         :param distributed_backend: str, select from "ray" or
                "horovod". The value defaults to "ray".
+        :param model_set: str, must be selected from "tcn", "Ntcn", "Dtcn" and
+               "NDtcn". 1) Choose "tcn" to use the original model. 2) "Ntcn"
+               applies a sample Normalization method which first subtracts the
+               input by the last value of the sequence. Then, the input goes
+               through the tcn layer, and the subtracted part is added back
+               before making the final prediction. 3) "Dtcn" applies a
+               Decomposition scheme that first decomposes a raw data input
+               into a trend component by a moving average kernel and a remainder
+               (seasonal) component. Then, two tcn models are applied to each
+               component and we sum up the two features to get the final prediction.
+               4) "NDtcn" applies the Normalization and the Decomposition methods
+               at the same time. The value defaults to "tcn".
         """
         # config setting
         self.data_config = {
@@ -113,7 +126,8 @@ class TCNForecaster(BasePytorchForecaster):
             "kernel_size": kernel_size,
             "repo_initialization": repo_initialization,
             "dropout": dropout,
-            "seed": seed
+            "seed": seed,
+            "model_set": model_set
         }
         self.loss_config = {
             "loss": loss
