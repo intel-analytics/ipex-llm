@@ -6,7 +6,7 @@ Protecting privacy and confidentiality is critical for large-scale data analysis
 [3. Getting Started with PPML](#3-getting-started-with-ppml)  \
 &ensp;&ensp;[3.1 BigDL PPML Hello World](#31-bigdl-ppml-hello-world) \
 &ensp;&ensp;[3.2 BigDL PPML End-to-End Workflow](#32-bigdl-ppml-end-to-end-workflow) \
-&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;[Step 0. Preparation your environment](#step-0-preparation-your-environment): detailed steps in [Prepare Environment](https://github.com/liu-shaojun/BigDL/blob/ppml_doc/ppml/docs/prepare_environment.md) \
+&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;[Step 0. Preparation your environment](#step-0-preparation-your-environment): detailed steps in [Prepare Environment](./docs/prepare_environment.md) \
 &ensp;&ensp;&ensp;&ensp;&ensp;&ensp;[Step 1. Build your PPML image for production environment](#step-1-build-your-ppml-image-for-production-environment) \
 &ensp;&ensp;&ensp;&ensp;&ensp;&ensp;[Step 2. Encrypt and Upload Data](#step-2-encrypt-and-upload-data) \
 &ensp;&ensp;&ensp;&ensp;&ensp;&ensp;[Step 3. Build Big Data & AI applications](#step-3-build-big-data--ai-applications) \
