@@ -170,7 +170,10 @@ class SparkXShards(XShards):
 
     A collection of data which can be pre-processed in parallel on Spark
     """
-    def __init__(self, rdd: Union["PipelinedRDD", "RDD"], transient: bool=False, class_name=None) -> None:
+    def __init__(self,
+                 rdd: Union["PipelinedRDD", "RDD"],
+                 transient: bool=False,
+                 class_name=None) -> None:
         self.rdd = rdd
         self.user_cached = False
         if transient:
@@ -556,7 +559,7 @@ class SparkXShards(XShards):
         :param labelCols: a list of label columns.
         :return: SparkXShards of dictionary, key is assembled feature numpy array, value is
          assembled label numpy array
-        
+
         eg:
         shards: SparkXShards of pandas data frame with 9 cols ['f1', 'f2', 'f3', 'f4', 'f5', 'f6',
          'f7', 'f8', 'lable']
@@ -566,11 +569,11 @@ class SparkXShards(XShards):
              8  183  64   0    0  23.3  0.672  32      1
              1   89  66  23   94  28.1  0.167  21      0
              0  137  40  35  168  43.1  2.288  33      1
-        
+
         transform_shards =
           shards.assembleFeatureLabelCols(featureCols=['f1', 'f2', 'f3', 'f4', 'f5', 'f6',
            'f7', 'f8'], labelCols=['label'])
-        
+
         transform_shards will be SparkXShards of dictionary. key will be a stacked numpy array
         (stack feature columns), value will be a numpy array
         {'x': array([[  6.   , 148.   ,  72.   , ...,  33.6  ,   0.627,  50.   ],
