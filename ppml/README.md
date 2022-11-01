@@ -82,7 +82,7 @@ Note: This public image is only for demo purposes, it is non-production. For sec
   ```
   This script will generate keys under keys/ folder
 
-**c. Start the BigDL PPML local container**
+**c. Start the BigDL PPML Local Container**
 ```
 # KEYS_PATH means the absolute path to the keys folder in step a
 # LOCAL_IP means your local IP address.
