@@ -26,11 +26,20 @@ classDiagram
         EHSMAttestationService: +ehsmAPIKEY
         EHSMAttestationService: +payLoad
         EHSMAttestationService: +contrustUrl()
+        EHSMAttestationService: +getQuoteFromServer(challenge)
+        EHSMAttestationService: +attWithServer(quote, policyID)
+
+        DummyAttestationService: +getQuoteFromServer(challenge)
+        DummyAttestationService: +attWithServer(quote, policyID)
+
+        DCAPAttestationService: +getQuoteFromServer(challenge)
+        DCAPAttestationService: +attWithServer(quote, policyID)
     QuoteGenerator <|-- GramineQuoteGeneratorImpl
     QuoteGenerator: +getQuote(userReport)
+        GramineQuoteGeneratorImpl: +getQuote(userReport)
     QuoteVerifier <|-- SGXDCAPQuoteVerifierImpl
     QuoteVerifier: +verifyQuote(asQuote)
-        SGXDCAPQuoteVerifierImpl: +sdkVerifyQuote(asQuote)
+        SGXDCAPQuoteVerifierImpl: +verifyQuote(asQuote)
 ```
 ## Environment
 You should have an available attestation service to attest with. You can use `EHSMAttestationService` and configure eHSM-KMS according to [this link](https://github.com/intel-analytics/BigDL/tree/main/ppml/services/pccs-ehsm/kubernetes), or you can just use `DummyAttestationService` for debug. 
