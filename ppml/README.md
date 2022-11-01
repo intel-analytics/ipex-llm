@@ -235,7 +235,7 @@ To build your own Big Data & AI applications, refer to [develop your own Big Dat
 
 1. Disable attestation
 
-    To disable attestation service, you should configure spark-driver-template.yaml and spark-executor-template.yaml to set `ATTESTATION` value to `false`. By default, the attestation service is disabled. 
+    If you do not need the attestation, you can disable the attestation service. You should configure spark-driver-template.yaml and spark-executor-template.yaml to set `ATTESTATION` value to `false`. By default, the attestation service is disabled. 
     ``` yaml
     apiVersion: v1
     kind: Pod
@@ -248,6 +248,7 @@ To build your own Big Data & AI applications, refer to [develop your own Big Dat
     ```
 
 2. Enable attestation
+
     The bi-attestation gurantees that the MREnclave in runtime containers is a secure one made by you. Its workflow is as below:
     ![image](https://user-images.githubusercontent.com/60865256/198168194-d62322f8-60a3-43d3-84b3-a76b57a58470.png)
     
@@ -257,7 +258,7 @@ To build your own Big Data & AI applications, refer to [develop your own Big Dat
 
       KMS (Key Management Service) and AS (Attestation Service) make sure applications of the customer actually run in the SGX MREnclave signed above by customer-self, rather than a fake one fake by an attacker.
 
-      BigDL PPML use EHSM as reference KMS&AS, you can follow the guide [here](https://github.com/intel-analytics/BigDL/tree/main/ppml/services/pccs-ehsm/kubernetes#deploy-bigdl-pccs-ehsm-kms-on-kubernetes-with-helm-charts) to deploy EHSM in your environment.
+      BigDL PPML use EHSM as reference KMS&AS, you can follow the guide [here](https://github.com/intel-analytics/BigDL/tree/main/ppml/services/ehsm/kubernetes#deploy-bigdl-ehsm-kms-on-kubernetes-with-helm-charts) to deploy EHSM in your environment.
 
     **2.2. Enroll in EHSM**
 
@@ -336,10 +337,13 @@ To build your own Big Data & AI applications, refer to [develop your own Big Dat
 
     **3.5. Enable Attestation in configuration**
 
-    First, upload `policyID` obtained to kubernetes as a secret when registering MREnclave before:
+    First, upload `appid`, `apikey` and `policyID` obtained before to kubernetes as secrets:
     
     ```bash
-    kubectl create secret generic policy-id-secret --from-literal=policy_id=YOUR_POLICY_ID
+    kubectl create secret generic kms-secret \
+                      --from-literal=app_id=YOUR_KMS_APP_ID \
+                      --from-literal=api_key=YOUR_KMS_API_KEY \
+                      --from-literal=policy_id=YOUR_POLICY_ID
     ```
     
     Configure `spark-driver-template.yaml` and `spark-executor-template.yaml` to enable Attestation as follows:
@@ -426,10 +430,7 @@ Here we use **k8s client mode** and **PPML CLI** to run SimpleQuery. Check other
               --master $RUNTIME_SPARK_MASTER \
               --deploy-mode client \
               --sgx-enabled true \
-              --sgx-log-level error \
-              --sgx-driver-memory 64g \
               --sgx-driver-jvm-memory 12g \
-              --sgx-executor-memory 64g \
               --sgx-executor-jvm-memory 12g \
               --driver-memory 32g \
               --driver-cores 8 \

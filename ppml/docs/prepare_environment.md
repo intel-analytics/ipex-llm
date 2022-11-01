@@ -69,13 +69,10 @@ cd BigDL/ppml/
     ```
 
 
-### Key Management Service (KMS) Setup
-Key Management Service (KMS) helps you manage cryptographic keys for your services. In BigDL PPML end-to-end workflow, KMS is used to generate keys, encrypt the input data and decrypt the result of Big Data & AI applications. You can choose to use the KMS service which PPML provides or your own one.
+### Key Management Service (KMS) and Attestation Service (AS) Setup
+Key Management Service (KMS) helps you manage cryptographic keys for your services. In BigDL PPML end-to-end workflow, KMS is used to generate keys, encrypt the input data and decrypt the result of Big Data & AI applications. Attestation Service (AS) makes sure applications of the customer actually run in the SGX MREnclave signed above by customer-self, rather than a fake one fake by an attacker. You can choose to use the KMS and AS which PPML provides or your own one.
 
-To use the KMS service in PPML, follow the document: https://github.com/intel-analytics/BigDL/blob/main/ppml/services/pccs-ehsm/kubernetes/README.md
-
-### Attestation Service (AS) Setup
-placeholder
+BigDL PPML use EHSM as the reference type of KMS & AS, follow the document to deploy EHSM: https://github.com/intel-analytics/BigDL/blob/main/ppml/services/ehsm/kubernetes/README.md
 
 ### Start BigDL PPML Client Container
 1. Prepare BigDL PPML Docker Image
