@@ -25,7 +25,7 @@ spec:
       #- name: ATTESTATION_POLICYID
       #  valueFrom:
       #    secretKeyRef:
-      #      name: policy-id-secret
+      #      name: kms-secret
       #      key: policy_id
     volumeMounts:
       - name: device-plugin
@@ -34,9 +34,6 @@ spec:
         mountPath: /var/run/aesmd/aesm.socket
       - name: nfs-storage
         mountPath: /ppml/trusted-big-data-ml/work/data
-      - name: nfs-storage
-        mountPath: /root/.kube/config
-        subPath: kubeconfig
     #resources:
       #requests:
         #cpu: 16
