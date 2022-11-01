@@ -7,11 +7,12 @@ Checklist for SGX Driver:
    * Disable `UMA-Based Clustering`.
    * Enable `SGX` or `SW Guard Extensions(SGX)`. Set `PRMRR` to the max. Please ensure Reserved Memory Range Registers (PRMRR) are configured for SGX.
    * SGX will reserve some memory from the installed memory. This memory (PRMRR) can not be seen by your system (total memory), e.g., `free -h`. So, `Installed Memory = Total Memory + 2 * PRMRR`.
+   * Enable `Auto MP Registration`. This setting is for remote attestation.
 3. Recommended OS (Operating System): Ubuntu 18.04/20.04, CentOS 8, Redhat 8.
 
-Note that SGX driver has been merged to Linux Kernel from 5.11+. After enabling SGX feature during kernel building, SGX driver will be automatically enabled. So, we recommend our customers upgrade their kernel to 5.14+ with SGX enabled. See [Building Linux Kernel from Source with SGX Enabled](#building-linux-kernel-from-source-with-sgx-enabled).
+**Note that SGX driver has been merged to Linux Kernel from 5.11+. After enabling SGX feature during kernel building, SGX driver will be automatically enabled.** So, we recommend our customers upgrade their kernel to 5.14+ with SGX enabled. See [Building Linux Kernel from Source with SGX Enabled](#building-linux-kernel-from-source-with-sgx-enabled).
 
-If your data center cannot upgrade OS or kernel, then you can [Install SGX Driver through the Installation Package](#install-sgx-driver-through-the-installation-package)
+If your data center cannot upgrade OS or kernel, then you can [Install SGX Driver through the Installation Package](#install-sgx-driver-through-the-installation-package).
 
 ## Building Linux Kernel from Source with SGX Enabled
 
@@ -74,6 +75,8 @@ sudo reboot
 ```
 
 ## Install SGX Driver through the Installation Package
+
+**Warning:** This guide is only for customers who cannot enable SGX driver in kernel.
 
 In this guide, we show how to install SGX driver with the installation package. This allows customers to enable SGX without upgrading their OS or kernel. More details in [Intel_SGX_SW_Installation_Guide_for_Linux.pdf](https://download.01.org/intel-sgx/latest/dcap-latest/linux/docs/Intel_SGX_SW_Installation_Guide_for_Linux.pdf).
 
