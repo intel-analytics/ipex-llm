@@ -124,7 +124,7 @@ class ResNetPerfOperator(TrainingOperator):
             for batch_idx in range(num_steps):
                 batch_info = {"batch_idx": batch_idx}
                 batch_info.update(info)
-                if not batch:
+                if not self.config["dummy"]:
                     batch = next(val_iterator)
                 output, target, loss = self.forward_batch(batch, batch_info)
                 if self.use_tqdm and self.world_rank == 0:
