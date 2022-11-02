@@ -60,7 +60,7 @@ With BigDL PPML, you can run trusted Big Data & AI applications
 ## 3. Getting Started with PPML
 
 ### 3.1 BigDL PPML Hello World
-In this section, you can get started with running a simple native python HelloWorld program and a simple native Spark Pi program locally in a BigDL PPML client container to get an initial understanding of the usage of ppml. 
+In this section, you can get started with running a simple native python HelloWorld program and a simple native Spark Pi program locally in a BigDL PPML local docker container to get an initial understanding of the usage of ppml. 
 
 <details><summary>Click to see detailed steps</summary>
 
@@ -82,10 +82,8 @@ Note: This public image is only for demo purposes, it is non-production. For sec
   ```
   This script will generate keys under keys/ folder
 
-**c. Start the BigDL PPML client container**
+**c. Start the BigDL PPML Local Container**
 ```
-#!/bin/bash
-
 # KEYS_PATH means the absolute path to the keys folder in step a
 # LOCAL_IP means your local IP address.
 export KEYS_PATH=YOUR_LOCAL_KEYS_PATH
@@ -110,7 +108,7 @@ sudo docker run -itd \
     $DOCKER_IMAGE bash
 ```
 
-**d. Run Python HelloWorld in BigDL PPML Client Container**
+**d. Run Python HelloWorld in BigDL PPML Local Container**
 
 Run the [script](https://github.com/intel-analytics/BigDL/blob/main/ppml/trusted-big-data-ml/python/docker-graphene/start-scripts/start-python-helloworld-sgx.sh) to run trusted [Python HelloWorld](https://github.com/intel-analytics/BigDL/blob/main/ppml/trusted-big-data-ml/python/docker-graphene/examples/helloworld.py) in BigDL PPML client container:
 ```
@@ -124,7 +122,7 @@ The result should look something like this:
 > Hello World
 
 
-**e. Run Spark Pi in BigDL PPML Client Container**
+**e. Run Spark Pi in BigDL PPML Local Container**
 
 Run the [script](https://github.com/intel-analytics/BigDL/blob/main/ppml/trusted-big-data-ml/python/docker-graphene/start-scripts/start-spark-local-pi-sgx.sh) to run trusted [Spark Pi](https://github.com/apache/spark/blob/v3.1.2/examples/src/main/python/pi.py) in BigDL PPML client container:
 
@@ -217,6 +215,37 @@ To build a secure PPML image which can be used in production environment, BigDL 
 
     Note: you can also customize the image according to your own needs, e.g. install extra python library, add code, jars.
     
+    Then, start a client container:
+
+    ```
+    export K8S_MASTER=k8s://$(sudo kubectl cluster-info | grep 'https.*6443' -o -m 1)
+    echo The k8s master is $K8S_MASTER .
+    export DATA_PATH=/YOUR_DIR/data
+    export KEYS_PATH=/YOUR_DIR/keys
+    export SECURE_PASSWORD_PATH=/YOUR_DIR/password
+    export KUBECONFIG_PATH=/YOUR_DIR/kubeconfig
+    export LOCAL_IP=$LOCAL_IP
+    export DOCKER_IMAGE=intelanalytics/bigdl-ppml-trusted-big-data-ml-python-gramine-reference:2.2.0-SNAPSHOT # or the custom image built by yourself
+
+    sudo docker run -itd \
+        --privileged \
+        --net=host \
+        --name=bigdl-ppml-client-k8s \
+        --cpuset-cpus="0-4" \
+        --oom-kill-disable \
+        --device=/dev/sgx/enclave \
+        --device=/dev/sgx/provision \
+        -v /var/run/aesmd/aesm.socket:/var/run/aesmd/aesm.socket \
+        -v $DATA_PATH:/ppml/trusted-big-data-ml/work/data \
+        -v $KEYS_PATH:/ppml/trusted-big-data-ml/work/keys \
+        -v $SECURE_PASSWORD_PATH:/ppml/trusted-big-data-ml/work/password \
+        -v $KUBECONFIG_PATH:/root/.kube/config \
+        -e RUNTIME_SPARK_MASTER=$K8S_MASTER \
+        -e RUNTIME_K8S_SPARK_IMAGE=$DOCKER_IMAGE \
+        -e LOCAL_IP=$LOCAL_IP \
+        $DOCKER_IMAGE bash
+    ```
+    
 
 #### Step 2. Encrypt and Upload Data
 Encrypt the input data of your Big Data & AI applications (here we use SimpleQuery) and then upload encrypted data to the nfs server. More details in [Encrypt Your Data](./services/kms-utils/docker/README.md#3-enroll-generate-key-encrypt-and-decrypt).
@@ -233,9 +262,14 @@ To build your own Big Data & AI applications, refer to [develop your own Big Dat
 
 #### Step 4. Attestation 
 
+   Enter the client container:
+   ```
+   sudo docker exec -it bigdl-ppml-client-k8s bash
+   ```
+   
 1. Disable attestation
 
-    To disable attestation service, you should configure spark-driver-template.yaml and spark-executor-template.yaml to set `ATTESTATION` value to `false`. By default, the attestation service is disabled. 
+    If you do not need the attestation, you can disable the attestation service. You should configure spark-driver-template.yaml and spark-executor-template.yaml to set `ATTESTATION` value to `false`. By default, the attestation service is disabled. 
     ``` yaml
     apiVersion: v1
     kind: Pod
@@ -248,6 +282,7 @@ To build your own Big Data & AI applications, refer to [develop your own Big Dat
     ```
 
 2. Enable attestation
+
     The bi-attestation gurantees that the MREnclave in runtime containers is a secure one made by you. Its workflow is as below:
     ![image](https://user-images.githubusercontent.com/60865256/198168194-d62322f8-60a3-43d3-84b3-a76b57a58470.png)
     
@@ -257,7 +292,7 @@ To build your own Big Data & AI applications, refer to [develop your own Big Dat
 
       KMS (Key Management Service) and AS (Attestation Service) make sure applications of the customer actually run in the SGX MREnclave signed above by customer-self, rather than a fake one fake by an attacker.
 
-      BigDL PPML use EHSM as reference KMS&AS, you can follow the guide [here](https://github.com/intel-analytics/BigDL/tree/main/ppml/services/pccs-ehsm/kubernetes#deploy-bigdl-pccs-ehsm-kms-on-kubernetes-with-helm-charts) to deploy EHSM in your environment.
+      BigDL PPML use EHSM as reference KMS&AS, you can follow the guide [here](https://github.com/intel-analytics/BigDL/tree/main/ppml/services/ehsm/kubernetes#deploy-bigdl-ehsm-kms-on-kubernetes-with-helm-charts) to deploy EHSM in your environment.
 
     **2.2. Enroll in EHSM**
 
@@ -275,7 +310,7 @@ To build your own Big Data & AI applications, refer to [develop your own Big Dat
 
     You can attest the EHSM server and verify the service is trusted before running workloads, that avoids sending your secrets to a fake EHSM service.
 
-    To attest EHSM server, first, start a bigdl container using the custom image build before.
+    To attest EHSM server, first, start a bigdl container using the custom image build before. **Note**: this is the other container different from the client.
 
     ```bash
     export KEYS_PATH=YOUR_LOCAL_SPARK_SSL_KEYS_FOLDER_PATH
@@ -320,7 +355,7 @@ To build your own Big Data & AI applications, refer to [develop your own Big Dat
       bash verify-attestation-service.sh
       ```
 
-    **3.4. Register your MREnclave to EHSM**
+    **2.4. Register your MREnclave to EHSM**
 
     Register the MREnclave with metadata of your MREnclave (appid, apikey, mr_enclave, mr_signer) obtained in above steps to EHSM through running a python script:
 
@@ -334,12 +369,15 @@ To build your own Big Data & AI applications, refer to [develop your own Big Dat
     ```
     You will receive a response containing a `policyID` and save it which will be used to attest runtime MREnclave when running distributed kubernetes application.
 
-    **3.5. Enable Attestation in configuration**
+    **2.5. Enable Attestation in configuration**
 
-    First, upload `policyID` obtained to kubernetes as a secret when registering MREnclave before:
+    First, upload `appid`, `apikey` and `policyID` obtained before to kubernetes as secrets:
     
     ```bash
-    kubectl create secret generic policy-id-secret --from-literal=policy_id=YOUR_POLICY_ID
+    kubectl create secret generic kms-secret \
+                      --from-literal=app_id=YOUR_KMS_APP_ID \
+                      --from-literal=api_key=YOUR_KMS_API_KEY \
+                      --from-literal=policy_id=YOUR_POLICY_ID
     ```
     
     Configure `spark-driver-template.yaml` and `spark-executor-template.yaml` to enable Attestation as follows:
@@ -426,10 +464,7 @@ Here we use **k8s client mode** and **PPML CLI** to run SimpleQuery. Check other
               --master $RUNTIME_SPARK_MASTER \
               --deploy-mode client \
               --sgx-enabled true \
-              --sgx-log-level error \
-              --sgx-driver-memory 64g \
               --sgx-driver-jvm-memory 12g \
-              --sgx-executor-memory 64g \
               --sgx-executor-jvm-memory 12g \
               --driver-memory 32g \
               --driver-cores 8 \
