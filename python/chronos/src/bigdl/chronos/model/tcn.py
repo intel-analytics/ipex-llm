@@ -256,7 +256,10 @@ def model_creator(config):
         n_hid = config["nhid"] if config.get("nhid") else 30
         levels = config["levels"] if config.get("levels") else 8
         num_channels = [n_hid] * (levels - 1)
-    print("num_channels: ", num_channels[0], len(num_channels))
+
+    if not config.get("model_set"):
+        config['model_set'] = "tcn"
+
     if config['model_set'] == 'tcn' or config['model_set'] == 'Ntcn':
         return TemporalConvNet(past_seq_len=config["past_seq_len"],
                                input_feature_num=config["input_feature_num"],
