@@ -215,6 +215,37 @@ To build a secure PPML image which can be used in production environment, BigDL 
 
     Note: you can also customize the image according to your own needs, e.g. install extra python library, add code, jars.
     
+    Then, start a client container:
+
+    ```
+    export K8S_MASTER=k8s://$(sudo kubectl cluster-info | grep 'https.*6443' -o -m 1)
+    echo The k8s master is $K8S_MASTER .
+    export DATA_PATH=/YOUR_DIR/data
+    export KEYS_PATH=/YOUR_DIR/keys
+    export SECURE_PASSWORD_PATH=/YOUR_DIR/password
+    export KUBECONFIG_PATH=/YOUR_DIR/kubeconfig
+    export LOCAL_IP=$LOCAL_IP
+    export DOCKER_IMAGE=intelanalytics/bigdl-ppml-trusted-big-data-ml-python-gramine-reference:2.2.0-SNAPSHOT # or the custom image built by yourself
+
+    sudo docker run -itd \
+        --privileged \
+        --net=host \
+        --name=bigdl-ppml-client-k8s \
+        --cpuset-cpus="0-4" \
+        --oom-kill-disable \
+        --device=/dev/sgx/enclave \
+        --device=/dev/sgx/provision \
+        -v /var/run/aesmd/aesm.socket:/var/run/aesmd/aesm.socket \
+        -v $DATA_PATH:/ppml/trusted-big-data-ml/work/data \
+        -v $KEYS_PATH:/ppml/trusted-big-data-ml/work/keys \
+        -v $SECURE_PASSWORD_PATH:/ppml/trusted-big-data-ml/work/password \
+        -v $KUBECONFIG_PATH:/root/.kube/config \
+        -e RUNTIME_SPARK_MASTER=$K8S_MASTER \
+        -e RUNTIME_K8S_SPARK_IMAGE=$DOCKER_IMAGE \
+        -e LOCAL_IP=$LOCAL_IP \
+        $DOCKER_IMAGE bash
+    ```
+    
 
 #### Step 2. Encrypt and Upload Data
 Encrypt the input data of your Big Data & AI applications (here we use SimpleQuery) and then upload encrypted data to the nfs server. More details in [Encrypt Your Data](./services/kms-utils/docker/README.md#3-enroll-generate-key-encrypt-and-decrypt).
@@ -231,67 +262,12 @@ To build your own Big Data & AI applications, refer to [develop your own Big Dat
 
 #### Step 4. Attestation 
 
-1. Start BigDL PPML Client Container
-   
-   First, create K8S RBAC:
-   
+   Enter the client container:
    ```
-   kubectl create serviceaccount spark
-   kubectl create clusterrolebinding spark-role --clusterrole=edit --serviceaccount=default:spark --namespace=default
-   kubectl get secret|grep service-account-token # you will find a spark service account secret, format like spark-token-12345
-
-   # bind service account and user
-   kubectl config set-credentials spark-user \
-                  --token=$(kubectl get secret <spark_service_account_secret> -o jsonpath={.data.token} | base64 -d)
- 
-   # bind user and context
-   kubectl config set-context spark-context --user=spark-user
-   
-   # bind context and cluster
-   kubectl config get-clusters
-   kubectl config set-context spark-context --cluster=<cluster_name> --user=spark-user
+   sudo docker exec -it bigdl-ppml-client-k8s bash
    ```
    
-   Second, create kubeconfig and upload it as k8s secret for k8s authentication:
-   
-   ```
-   kubectl config use-context spark-context
-   kubectl config view --flatten --minify > /YOUR_DIR/kubeconfig
-   ```
-
-   Third, start a client container:
-   
-   ```
-   export K8S_MASTER=k8s://$(sudo kubectl cluster-info | grep 'https.*6443' -o -m 1)
-   echo The k8s master is $K8S_MASTER .
-   export DATA_PATH=/YOUR_DIR/data
-   export KEYS_PATH=/YOUR_DIR/keys
-   export SECURE_PASSWORD_PATH=/YOUR_DIR/password
-   export KUBECONFIG_PATH=/YOUR_DIR/kubeconfig
-   export LOCAL_IP=$LOCAL_IP
-   export DOCKER_IMAGE=intelanalytics/bigdl-ppml-trusted-big-data-ml-python-gramine-reference:2.2.0-SNAPSHOT # or the custom image built by yourself
-    
-   sudo docker run -itd \
-       --privileged \
-       --net=host \
-       --name=bigdl-ppml-client-k8s \
-       --cpuset-cpus="0-4" \
-       --oom-kill-disable \
-       --device=/dev/sgx/enclave \
-       --device=/dev/sgx/provision \
-       -v /var/run/aesmd/aesm.socket:/var/run/aesmd/aesm.socket \
-       -v $DATA_PATH:/ppml/trusted-big-data-ml/work/data \
-       -v $KEYS_PATH:/ppml/trusted-big-data-ml/work/keys \
-       -v $SECURE_PASSWORD_PATH:/ppml/trusted-big-data-ml/work/password \
-       -v $KUBECONFIG_PATH:/root/.kube/config \
-       -e RUNTIME_SPARK_MASTER=$K8S_MASTER \
-       -e RUNTIME_K8S_SPARK_IMAGE=$DOCKER_IMAGE \
-       -e LOCAL_IP=$LOCAL_IP \
-       $DOCKER_IMAGE bash
-    ``` 
-
-
-2. Disable attestation
+1. Disable attestation
 
     If you do not need the attestation, you can disable the attestation service. You should configure spark-driver-template.yaml and spark-executor-template.yaml to set `ATTESTATION` value to `false`. By default, the attestation service is disabled. 
     ``` yaml
@@ -305,20 +281,20 @@ To build your own Big Data & AI applications, refer to [develop your own Big Dat
       ...
     ```
 
-3. Enable attestation
+2. Enable attestation
 
     The bi-attestation gurantees that the MREnclave in runtime containers is a secure one made by you. Its workflow is as below:
     ![image](https://user-images.githubusercontent.com/60865256/198168194-d62322f8-60a3-43d3-84b3-a76b57a58470.png)
     
     To enable attestation, first you should have a running Attestation Service in your environment. 
 
-    **3.1. Deploy EHSM KMS & AS**
+    **2.1. Deploy EHSM KMS & AS**
 
       KMS (Key Management Service) and AS (Attestation Service) make sure applications of the customer actually run in the SGX MREnclave signed above by customer-self, rather than a fake one fake by an attacker.
 
       BigDL PPML use EHSM as reference KMS&AS, you can follow the guide [here](https://github.com/intel-analytics/BigDL/tree/main/ppml/services/ehsm/kubernetes#deploy-bigdl-ehsm-kms-on-kubernetes-with-helm-charts) to deploy EHSM in your environment.
 
-    **3.2. Enroll in EHSM**
+    **2.2. Enroll in EHSM**
 
     Execute the following command to enroll yourself in EHSM, The `<kms_ip>` is your configured-ip of EHSM service in the deployment section:
 
@@ -330,7 +306,7 @@ To build your own Big Data & AI applications, refer to [develop your own Big Dat
 
     You will get a `appid` and `apikey` pair, save it for later use.
 
-    **3.3. Attest EHSM Server (optional)**
+    **2.3. Attest EHSM Server (optional)**
 
     You can attest the EHSM server and verify the service is trusted before running workloads, that avoids sending your secrets to a fake EHSM service.
 
@@ -379,7 +355,7 @@ To build your own Big Data & AI applications, refer to [develop your own Big Dat
       bash verify-attestation-service.sh
       ```
 
-    **3.4. Register your MREnclave to EHSM**
+    **2.4. Register your MREnclave to EHSM**
 
     Register the MREnclave with metadata of your MREnclave (appid, apikey, mr_enclave, mr_signer) obtained in above steps to EHSM through running a python script:
 
@@ -393,7 +369,7 @@ To build your own Big Data & AI applications, refer to [develop your own Big Dat
     ```
     You will receive a response containing a `policyID` and save it which will be used to attest runtime MREnclave when running distributed kubernetes application.
 
-    **3.5. Enable Attestation in configuration**
+    **2.5. Enable Attestation in configuration**
 
     First, upload `appid`, `apikey` and `policyID` obtained before to kubernetes as secrets:
     
