@@ -77,7 +77,7 @@ parser.add_argument('--seed', default=None, type=int,
                     help='seed for initializing training')
 parser.add_argument('-w', '--warmup_iterations', default=100, type=int, metavar='N',
                     help='number of warmup iterations to run')
-parser.add_argument('-p', '--print-freq', default=10, type=int,
+parser.add_argument('-p', '--print_freq', default=10, type=int,
                     metavar='N', help='print frequency (default: 10)')
 
 
@@ -163,20 +163,16 @@ class ResNetPerfOperator(TrainingOperator):
         return result
 
     def _forward(self, images):
-        # start = time.time()
         if not self.config["jit"] and self.config["bf16"]:
             with torch.cpu.amp.autocast():
                 output = self.model(images)
         else:
             output = self.model(images)
-        # end = time.time()
-        # print(end - start)
         return output
 
     def forward(self, images, target, warmup=False):
-
         # compute output
-        if warmup:
+        if warmup: # warmup iterations don't count into timers
             output = self._forward(images)
         else:
             with self.timers.record("eval_fwd"):
