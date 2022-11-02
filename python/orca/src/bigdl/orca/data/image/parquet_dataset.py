@@ -452,7 +452,7 @@ def read_as_dataloader(path: str,
 
 def read_parquet(format: str,
                  path: str,
-                 transforms: Callable=None,
+                 transforms: Optional[Callable]=None,
                  config: Optional[Dict[str, int]]=None,
                  batch_size: int=1,
                  *args, **kwargs) -> Union["tf.data.Dataset", "DataLoader"]:

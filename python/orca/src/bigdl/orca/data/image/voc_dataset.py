@@ -19,7 +19,7 @@ import os.path as osp
 from PIL import Image
 import logging
 from bigdl.dllib.utils.log4Error import *
-from typing import TYPE_CHECKING, List, Tuple
+from typing import TYPE_CHECKING, List, Tuple, Optional
 
 if TYPE_CHECKING:
     from numpy import ndarray
@@ -44,7 +44,7 @@ class VOCDatasets:
 
     def __init__(self, root: str="VOCdevkit",
                  splits_names: List[Tuple[int, str]]=[(2007, "trainval")],
-                 classes: None=None,
+                 classes: Optional[List[str]]=None,
                  difficult: bool=False) -> None:
 
         self.CLASSES = ['aeroplane', 'bicycle', 'bird', 'boat', 'bottle', 'bus', 'car',
