@@ -161,21 +161,21 @@ class ResNetPerfOperator(TrainingOperator):
         result["num_samples"] = total_samples
         return result
 
-    def _forward(self, images):
-        if not self.config["jit"] and self.config["bf16"]:
-            with torch.cpu.amp.autocast():
-                output = self.model(images)
-        else:
-            output = self.model(images)
-        return output
-
     def forward(self, images, target, warmup=False):
         # compute output
-        if warmup: # warmup iterations don't count into timers
-            output = self._forward(images)
+        if warmup:  # warmup iterations won't count into timers
+            if not self.config["jit"] and self.config["bf16"]:
+                with torch.cpu.amp.autocast():
+                    output = self.model(images)
+            else:
+                output = self.model(images)
         else:
             with self.timers.record("eval_fwd"):
-                output = self._forward(images)
+                if not self.config["jit"] and self.config["bf16"]:
+                    with torch.cpu.amp.autocast():
+                        output = self.model(images)
+                else:
+                    output = self.model(images)
 
         if self.config["bf16"]:
             output = output.to(torch.float32)
