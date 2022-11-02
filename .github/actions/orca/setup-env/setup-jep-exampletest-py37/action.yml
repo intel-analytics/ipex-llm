@@ -26,7 +26,7 @@ runs:
         if conda info --env | grep "py37"; then
             source activate py37
         else
-            conda create -n py37 -y python==3.7.10 setuptools==58.0.4
+            conda create -n py37 -y python==3.7.10 setuptools==58.0.4 --offline 
             conda info --env
             source activate py37
         fi
