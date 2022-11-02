@@ -26,7 +26,7 @@ from ..core.utils import save
 
 
 class KerasOpenVINOModel(AcceleratedKerasModel):
-    def __init__(self, model, thread_num=None, config=None):
+    def __init__(self, model, thread_num=None, config=None, logging=True):
         """
         Create a OpenVINO model from Keras.
 
@@ -35,16 +35,20 @@ class KerasOpenVINOModel(AcceleratedKerasModel):
         :param thread_num: a int represents how many threads(cores) is needed for
                     inference. default: None.
         :param config: The config to be inputted in core.compile_model.
+                       inference. default: None.
+        :param logging: whether to log detailed information of model conversion.
+                        default: True.
         """
         ov_model_path = model
         with TemporaryDirectory() as dir:
             dir = Path(dir)
             if isinstance(model, tf.keras.Model):
-                export(model, str(dir / 'tmp.xml'))
+                export(model, str(dir / 'tmp.xml'), logging)
                 ov_model_path = dir / 'tmp.xml'
             self.ov_model = OpenVINOModel(ov_model_path,
                                           thread_num=thread_num,
-                                          config=config)
+                                          config=config,
+                                          logging=logging)
             super().__init__(None)
 
     def forward_step(self, *inputs):

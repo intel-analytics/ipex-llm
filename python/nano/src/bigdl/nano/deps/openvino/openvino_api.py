@@ -46,7 +46,7 @@ def load_openvino_model(path):
     return PytorchOpenVINOModel._load(path)
 
 
-def KerasOpenVINOModel(model, input_sample=None, thread_num=None, config=None):
+def KerasOpenVINOModel(model, input_sample=None, thread_num=None, config=None, logging=True):
     """
     Create a OpenVINO model from Keras.
 
@@ -57,10 +57,11 @@ def KerasOpenVINOModel(model, input_sample=None, thread_num=None, config=None):
     :param thread_num: a int represents how many threads(cores) is needed for
                        inference. default: None.
     :param config: The config to be inputted in core.compile_model.
+    :param logging: whether to log detailed information of model conversion. default: True.
     :return: KerasOpenVINOModel model for OpenVINO inference.
     """
     from .tf.model import KerasOpenVINOModel
-    return KerasOpenVINOModel(model, thread_num=thread_num, config=config)
+    return KerasOpenVINOModel(model, thread_num=thread_num, config=config, logging=logging)
 
 
 def OpenVINOModel(model, device='CPU'):

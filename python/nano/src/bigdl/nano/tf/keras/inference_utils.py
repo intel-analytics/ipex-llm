@@ -43,7 +43,8 @@ class InferenceUtils:
                  outputs: List[str] = None,
                  sample_size: int = 100,
                  onnxruntime_session_options=None,
-                 openvino_config=None):
+                 openvino_config=None,
+                 logging=True):
         """
         Post-training quantization on a keras model.
 
@@ -95,6 +96,8 @@ class InferenceUtils:
                                             accelerator='onnxruntime', otherwise will be ignored.
         :param openvino_config: The config to be inputted in core.compile_model. Only valid when
                                 accelerator='openvino', otherwise will be ignored.
+        :param logging: whether to log detailed information of model conversion, only valid when
+                        accelerator='openvino', otherwise will be ignored. Default: ``True``.
         :return:            A TensorflowBaseModel for INC. If there is no model found, return None.
         """
         invalidInputError(approach == 'static', "Only 'static' approach is supported now.")
@@ -116,7 +119,10 @@ class InferenceUtils:
             if isinstance(self, KerasOpenVINOModel):    # type: ignore
                 openvino_model = self
             else:
-                openvino_model = self.trace(accelerator='openvino')
+                openvino_model = self.trace(accelerator='openvino',
+                                            thread_num=thread_num,
+                                            logging=logging,
+                                            openvino_config=openvino_config)
             if metric:
                 if not isinstance(accuracy_criterion, dict):
                     accuracy_criterion = {'relative': 0.99, 'higher_is_better': True}
@@ -171,7 +177,8 @@ class InferenceUtils:
               input_sample=None,
               thread_num: Optional[int] = None,
               onnxruntime_session_options=None,
-              openvino_config=None):
+              openvino_config=None,
+              logging=True):
         """
         Trace a Keras model and convert it into an accelerated module for inference.
 
@@ -188,6 +195,8 @@ class InferenceUtils:
                                             accelerator='onnxruntime', otherwise will be ignored.
         :param openvino_config: The config to be inputted in core.compile_model. Only valid when
                                 accelerator='openvino', otherwise will be ignored.
+        :param logging: whether to log detailed information of model conversion, only valid when
+                        accelerator='openvino', otherwise will be ignored. Default: ``True``.
         :return: Model with different acceleration(OpenVINO/ONNX Runtime).
         """
         if accelerator == 'openvino':
@@ -195,7 +204,9 @@ class InferenceUtils:
             if openvino_config is not None:
                 final_openvino_option.update(openvino_config)
             return KerasOpenVINOModel(self, input_sample=input_sample,
-                                      thread_num=thread_num, config=final_openvino_option)
+                                      thread_num=thread_num,
+                                      config=final_openvino_option,
+                                      logging=logging)
         elif accelerator == 'onnxruntime':
             if onnxruntime_session_options is None:
                 import onnxruntime
