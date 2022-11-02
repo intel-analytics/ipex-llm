@@ -78,4 +78,3 @@ class ModelIO(metaclass=ABCMeta):
         _buffer = io.BytesIO(byte_obj)
         state_dict = torch.load(_buffer)
         return state_dict
-

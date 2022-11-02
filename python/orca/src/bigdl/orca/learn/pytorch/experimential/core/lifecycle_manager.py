@@ -1,11 +1,12 @@
 from abc import abstractmethod, ABCMeta
+import ray
+
 from bigdl.orca.learn.pytorch.utils import find_free_port
 from bigdl.dllib.utils.log4Error import *
 
 from torch.utils.data import DataLoader, IterableDataset
 from torch.utils.data.distributed import DistributedSampler
 
-import ray
 
 class LifeCycleManager(metaclass=ABCMeta):
     def __init__(self) -> None:
@@ -29,7 +30,7 @@ class LifeCycleManager(metaclass=ABCMeta):
     def setup_torch_distribute(self, tcp_store_host, tcp_store_port, world_rank,
                                world_size):
         self._init_torchDDP(tcp_store_host, tcp_store_port, world_rank,
-                               world_size)
+                            world_size)
 
         self.setup_components()
 
@@ -45,7 +46,7 @@ class LifeCycleManager(metaclass=ABCMeta):
         pass
 
     def _init_torchDDP(self, tcp_store_host, tcp_store_port, world_rank,
-                               world_size):
+                       world_size):
         import torch.distributed as dist
         client_store = dist.TCPStore(tcp_store_host, tcp_store_port, -1, False)
         dist.init_process_group(

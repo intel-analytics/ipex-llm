@@ -2,6 +2,7 @@ import ray
 from ray.exceptions import RayActorError
 from bigdl.dllib.utils.log4Error import *
 
+
 def get_driver_node_ip():
     """
     Returns the IP address of the current node.
@@ -9,6 +10,7 @@ def get_driver_node_ip():
     :return: the IP address of the current node.
     """
     return ray._private.services.get_node_ip_address()
+
 
 def check_for_failure(remote_values):
     """Checks remote values for any that returned and failed.

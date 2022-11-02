@@ -1,6 +1,7 @@
 from abc import abstractmethod, ABCMeta
 
-class Trainer(metaclass=ABCMeta):    
+
+class Trainer(metaclass=ABCMeta):
     @abstractmethod
     def train_epochs(self, **kwargs):
         pass

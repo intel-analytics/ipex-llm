@@ -35,7 +35,7 @@ class BaseRayEstimator(Estimator, metaclass=ABCMeta):
         :return: predicted result.
         """
 
-        # Need to preprocess params as pytorch_ray_estimator does. 
+        # Need to preprocess params as pytorch_ray_estimator does.
         #
         # ...
         # self._train_epochs(**kwargs)
@@ -48,7 +48,7 @@ class BaseRayEstimator(Estimator, metaclass=ABCMeta):
 
         :return: predicted result.
         """
-        # Need to preprocess params as pytorch_ray_estimator does. 
+        # Need to preprocess params as pytorch_ray_estimator does.
         pass
 
     @abstractmethod
@@ -58,7 +58,7 @@ class BaseRayEstimator(Estimator, metaclass=ABCMeta):
 
         :return: evaluation result as a dictionary of {'metric name': metric value}
         """
-        # Need to preprocess params as pytorch_ray_estimator does. 
+        # Need to preprocess params as pytorch_ray_estimator does.
         pass
 
     @abstractmethod
@@ -68,7 +68,7 @@ class BaseRayEstimator(Estimator, metaclass=ABCMeta):
 
         :return: Trained model
         """
-        # Need to preprocess params as pytorch_ray_estimator does. 
+        # Need to preprocess params as pytorch_ray_estimator does.
         pass
 
     def setup(self, params, backend='ray', runner_cls=PytorchRayWorker, workers_per_node=1):
@@ -263,4 +263,3 @@ class BaseRayEstimator(Estimator, metaclass=ABCMeta):
             return success, ray.get(remote_worker_stats)
         else:
             return success, None
-
