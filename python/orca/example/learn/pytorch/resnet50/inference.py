@@ -19,6 +19,7 @@
 #
 
 import os
+import time
 import argparse
 
 import torch
@@ -74,6 +75,8 @@ parser.add_argument('--configure_dir', default='configure.json', type=str, metav
                     help='path to int8 configures, default file name is configure.json')
 parser.add_argument('--seed', default=None, type=int,
                     help='seed for initializing training')
+parser.add_argument('-w', '--warmup-iterations', default=100, type=int, metavar='N',
+                    help='number of warmup iterations to run')
 
 
 class ResNetPerfOperator(TrainingOperator):
@@ -107,6 +110,8 @@ class ResNetPerfOperator(TrainingOperator):
 
         if not num_steps:
             num_steps = len(val_iterator)
+        invalidInputError(num_steps > self.config["warmup_iterations"],
+                          "total steps should be larger than warmup iterations")
 
         if self.use_tqdm and self.world_rank == 0:
             from tqdm import tqdm
@@ -124,27 +129,43 @@ class ResNetPerfOperator(TrainingOperator):
             else:
                 batch = None
             for batch_idx in range(num_steps):
-                batch_info = {"batch_idx": batch_idx}
+                batch_info = {"batch_idx": batch_idx, "warmup": False}
                 batch_info.update(info)
                 if not self.config["dummy"]:
                     batch = next(val_iterator)
-                output, target, loss = self.forward_batch(batch, batch_info)
-                if self.use_tqdm and self.world_rank == 0:
-                    _progress_bar.n = batch_idx + 1
-                    postfix = {}
-                    # postfix.update(loss=loss)
-                    _progress_bar.set_postfix(postfix)
-                from bigdl.orca.learn.pytorch.utils import get_batchsize
-                num_samples = get_batchsize(target)
-                total_samples += num_samples
-                losses.append(loss.item() * num_samples)
-                for metric in metrics.values():
-                    metric(output, target)
+                if batch_idx < self.config["warmup_iterations"]:
+                    batch_info["warmup"] = True
+                    print("warmup...")
+                    self.forward_batch(batch, batch_info)
+                else:
+                    output, target, loss = self.forward_batch(batch, batch_info)
+                    if self.use_tqdm and self.world_rank == 0:
+                        _progress_bar.n = batch_idx + 1
+                        postfix = {}
+                        # postfix.update(loss=loss)
+                        _progress_bar.set_postfix(postfix)
+                    from bigdl.orca.learn.pytorch.utils import get_batchsize
+                    num_samples = get_batchsize(target)
+                    total_samples += num_samples
+                    losses.append(loss.item() * num_samples)
+                    for metric in metrics.values():
+                        metric(output, target)
 
         result = {name: metric.compute() for name, metric in metrics.items()}
         result["val_loss"] = sum(losses) / total_samples
         result["num_samples"] = total_samples
         return result
+
+    def _forward(self, images):
+        start = time.time()
+        if not self.config["jit"] and self.config["bf16"]:
+            with torch.cpu.amp.autocast():
+                output = self.model(images)
+        else:
+            output = self.model(images)
+        end = time.time()
+        print(end - start)
+        return output
 
     def forward_batch(self, batch, batch_info):
         images, target = batch
@@ -154,12 +175,11 @@ class ResNetPerfOperator(TrainingOperator):
             images = images.to(torch.bfloat16)
 
         # compute output
-        with self.timers.record("eval_fwd"):
-            if not self.config["jit"] and self.config["bf16"]:
-                with torch.cpu.amp.autocast():
-                    output = self.model(images)
-            else:
-                output = self.model(images)
+        if batch_info["warmup"]:
+            output = self._forward(images)
+        else:
+            with self.timers.record("eval_fwd"):
+                output = self._forward(images)
 
         if self.config["bf16"]:
             output = output.to(torch.float32)
@@ -182,6 +202,7 @@ def main():
     env = {"MALLOC_CONF": "oversize_threshold:1,background_thread:true,metadata_thp:"
                           "auto,dirty_decay_ms:9000000000,muzzy_decay_ms:9000000000",
            "DNNL_PRIMITIVE_CACHE_CAPACITY": "1024",
+           "OMP_NUM_THREADS": str(args.cores),
            "KMP_BLOCKTIME": "1",
            "KMP_AFFINITY": "granularity=fine,compact,1,0"}
     if "LD_PRELOAD" in os.environ:
