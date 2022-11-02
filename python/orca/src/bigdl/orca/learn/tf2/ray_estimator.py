@@ -482,6 +482,14 @@ class TensorFlow2Estimator(OrcaRayEstimator):
 
         return result
 
+    def get_model(self):
+        """
+        Returns the learned model.
+
+        :return: the learned model.
+        """
+        invalidInputError(False, "not implemented")
+
     @enable_multi_fs_save
     def save_checkpoint(self, checkpoint):
         """
