@@ -63,8 +63,8 @@ runs:
         pip install numpy
         pip install tensorflow==1.15.0
         pip install jupyter
-        chmod a+x ${BIGDL_ROOT}apps/run-scala-app-test.sh
-        ${BIGDL_ROOT}apps/run-scala-app-test.sh
+        chmod a+x ${BIGDL_ROOT}/apps/run-scala-app-test.sh
+        ${BIGDL_ROOT}/apps/run-scala-app-test.sh
         source deactivate
 
       env:
