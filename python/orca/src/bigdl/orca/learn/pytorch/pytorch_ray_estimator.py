@@ -616,23 +616,19 @@ class PyTorchRayEstimator(OrcaRayEstimator):
         if not res_stats:
             res_stats = {}
         for stat_key, stat_value in worker_stats[0].items():
-            if isinstance(stat_value, numbers.Number):
+            if isinstance(stat_value, numbers.Number): # loss
                 res_stats[stat_key] = np.nanmean(
                     [s.get(stat_key, np.nan) for s in worker_stats])
-            elif isinstance(stat_value, dict): # Profile
+            elif isinstance(stat_value, torch.Tensor): # Accuracy
+                res_stats[stat_key] = torch.mean(
+                    torch.stack([stats[stat_key] for stats in worker_stats]))
+            elif isinstance(stat_value, dict): # profile
                 res_stats[stat_key] = self._mean_reduce_stats([stats[stat_key] for stats in worker_stats])
             else:
                 res_stats[stat_key] = stat_value
         return res_stats
 
     def _process_stats(self, worker_stats):
-        print(worker_stats)
-        total = []
-        for worker_stat in worker_stats:
-            throughput = 116 / worker_stat["profile"]['mean_eval_fwd_s']
-            print(throughput)
-            total.append(throughput)
-        print(sum(total)/len(total))
         stats = {
             "num_samples": sum(
                 stats.pop("num_samples", np.nan) for stats in worker_stats)
