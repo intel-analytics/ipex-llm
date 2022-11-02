@@ -71,6 +71,7 @@ jobs:
               - '.github/actions/ppml-scala-ut-action/action.yml'
               - 'python/ppml/**'
               - '.github/actions/ppml/**'
+              - '.github/actions/python-requirements/**'
             orca:
               - 'python/orca/**'
               - '.github/actions/orca-ray-ctx-example-action/action.yml'
