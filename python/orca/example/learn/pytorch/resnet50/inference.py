@@ -205,17 +205,21 @@ def main():
            "KMP_AFFINITY": "granularity=fine,compact,1,0"}
     if "LD_PRELOAD" in os.environ:
         env["LD_PRELOAD"] = os.environ["LD_PRELOAD"]
+    extra_params = {"dashboard-port": "11281", "metrics-export-port": "10010",
+                    "min-worker-port": "30000", "max-worker-port": "33333"}
 
     if args.cluster_mode == "local":
         init_orca_context("local", cores=args.cores, memory="10g")
     elif args.cluster_mode == "standalone":
         init_orca_context("standalone", master=args.master,
                           cores=args.cores, num_nodes=args.num_nodes,
-                          memory="10g", driver_cores=1, driver_memory="2g", env=env)
+                          memory="10g", driver_cores=1, driver_memory="2g",
+                          env=env, extra_params=extra_params)
     elif args.cluster_mode == "yarn":
         init_orca_context("yarn-client", cores=args.cores,
                           num_nodes=args.num_nodes, memory="10g",
-                          driver_cores=4, driver_memory="2g", env=env)
+                          driver_cores=4, driver_memory="2g",
+                          env=env, extra_params=extra_params)
     else:
         invalidInputError(False,
                           "cluster_mode should be one of 'local', 'yarn' and 'standalone', "
