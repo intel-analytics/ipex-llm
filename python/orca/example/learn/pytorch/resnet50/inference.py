@@ -19,7 +19,6 @@
 #
 
 import os
-import time
 import argparse
 
 import torch
