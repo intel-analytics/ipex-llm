@@ -46,6 +46,7 @@ runs:
         pip install jupyter bigdl imageio matplotlib seaborn ray h5py
         pip install tensorflow==1.13.2
         pip uninstall -y opencv-python-headless
+        pip install opencv-python-headless
         chmod a+x apps/ipynb2py.sh
         chmod a+x apps/run-app-tests-pip.sh
         bash apps/run-app-tests-pip.sh 2
