@@ -612,18 +612,37 @@ class PyTorchRayEstimator(OrcaRayEstimator):
 
         self.remote_workers = []
 
+    def _mean_reduce_stats(self, worker_stats, res_stats=None):
+        if not res_stats:
+            res_stats = {}
+        for stat_key in worker_stats[0]:
+            if isinstance(worker_stats[0][stat_key], numbers.Number):
+                res_stats[stat_key] = np.nanmean(
+                    [s.get(stat_key, np.nan) for s in worker_stats])
+            elif isinstance(worker_stats[0][stat_key], dict): # Profile
+                res_stats[stat_key] = self._mean_reduce_stats([stats[stat_key] for stats in worker_stats])
+            else:
+                res_stats[stat_key] = worker_stats[0][stat_key]
+        return res_stats
+
     def _process_stats(self, worker_stats):
         stats = {
             "num_samples": sum(
                 stats.pop("num_samples", np.nan) for stats in worker_stats)
         }
 
-        for stat_key in worker_stats[0]:
-            if isinstance(worker_stats[0], numbers.Number):
-                stats[stat_key] = np.nanmean(
-                    [s.get(stat_key, np.nan) for s in worker_stats])
-            else:
-                stats[stat_key] = worker_stats[0][stat_key]
+        stats = self._mean_reduce_stats(worker_stats, stats)
+
+        # for stat_key in worker_stats[0]:
+        #     if isinstance(worker_stats[0][stat_key], numbers.Number):
+        #         stats[stat_key] = np.nanmean(
+        #             [s.get(stat_key, np.nan) for s in worker_stats])
+        #     elif isinstance(worker_stats[0][stat_key], dict): # Profile
+        #         stats[stat_key] = {}
+        #         np.nanmean(
+        #             [s.get(stat_key, np.nan) for s in worker_stats])
+        #     else:
+        #         stats[stat_key] = worker_stats[0][stat_key]
         return stats
 
     def _train_epochs(self, **params):
