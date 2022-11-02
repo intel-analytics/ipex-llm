@@ -46,10 +46,12 @@ def check_for_failure(remote_values):
 class OrcaRayEstimator(Estimator):
     def __init__(self, params, backend='ray', runner_cls=PytorchRayWorker, workers_per_node=1):
         # Implement logic to struct parameters
-        self.remote_workers=[]
-        self.setup(params, backend, runner_cls, workers_per_node, workers_per_node)
+        #
+        # self.remote_workers=[]
+        # self.setup(params, backend, runner_cls, workers_per_node, workers_per_node)
         raise NotImplementedError
 
+    @abstractmethod
     def fit(self, **kwargs):
         """
         Train the model with train data.
@@ -58,9 +60,12 @@ class OrcaRayEstimator(Estimator):
         """
 
         # Need to preprocess params as pytorch_ray_estimator does. 
-        self._train_epochs(**kwargs)
+        #
+        # ...
+        # self._train_epochs(**kwargs)
         raise NotImplementedError
 
+    @abstractmethod
     def predict(self, **kwargs):
         """
         Predict input data.
@@ -70,6 +75,7 @@ class OrcaRayEstimator(Estimator):
         # Need to preprocess params as pytorch_ray_estimator does. 
         raise NotImplementedError
 
+    @abstractmethod
     def evaluate(self, **kwargs):
         """
         Evaluate model.
@@ -79,6 +85,7 @@ class OrcaRayEstimator(Estimator):
         # Need to preprocess params as pytorch_ray_estimator does. 
         raise NotImplementedError
 
+    @abstractmethod
     def get_model(self):
         """
         Get the trained model.
