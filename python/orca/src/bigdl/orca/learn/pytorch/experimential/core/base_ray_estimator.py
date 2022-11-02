@@ -10,46 +10,22 @@ import torch
 
 import ray
 from ray.exceptions import RayActorError
-from abc import abstractmethod
+from abc import abstractmethod, ABCMeta
 
 from bigdl.orca.learn.pytorch.utils import find_free_port
 from bigdl.dllib.utils.log4Error import *
 
-
-# TODO: mv to utils
-def get_driver_node_ip():
-    """
-    Returns the IP address of the current node.
-
-    :return: the IP address of the current node.
-    """
-    return ray._private.services.get_node_ip_address()
-
-def check_for_failure(remote_values):
-    """Checks remote values for any that returned and failed.
-    :param remote_values: List of object IDs representing functions
-            that may fail in the middle of execution. For example, running
-            a SGD training loop in multiple parallel actor calls.
-    :return Bool for success in executing given remote tasks.
-    """
-    unfinished = remote_values
-    try:
-        while len(unfinished) > 0:
-            finished, unfinished = ray.wait(unfinished)
-            finished = ray.get(finished)
-        return True
-    except RayActorError as exc:
-        logger.exception(str(exc))
-    return False
+# TODO: full path when merge
+from ..utils import check_for_failure, get_driver_node_ip
 
 
-class OrcaRayEstimator(Estimator):
-    def __init__(self, params, backend='ray', runner_cls=PytorchRayWorker, workers_per_node=1):
+class BaseRayEstimator(Estimator, metaclass=ABCMeta):
+    def __init__(self, backend='ray', runner_cls=PytorchRayWorker, workers_per_node=1, **kwargs):
         # Implement logic to struct parameters
         #
         # self.remote_workers=[]
         # self.setup(params, backend, runner_cls, workers_per_node, workers_per_node)
-        raise NotImplementedError
+        pass
 
     @abstractmethod
     def fit(self, **kwargs):
@@ -63,7 +39,7 @@ class OrcaRayEstimator(Estimator):
         #
         # ...
         # self._train_epochs(**kwargs)
-        raise NotImplementedError
+        pass
 
     @abstractmethod
     def predict(self, **kwargs):
@@ -73,7 +49,7 @@ class OrcaRayEstimator(Estimator):
         :return: predicted result.
         """
         # Need to preprocess params as pytorch_ray_estimator does. 
-        raise NotImplementedError
+        pass
 
     @abstractmethod
     def evaluate(self, **kwargs):
@@ -83,7 +59,7 @@ class OrcaRayEstimator(Estimator):
         :return: evaluation result as a dictionary of {'metric name': metric value}
         """
         # Need to preprocess params as pytorch_ray_estimator does. 
-        raise NotImplementedError
+        pass
 
     @abstractmethod
     def get_model(self):
@@ -93,7 +69,7 @@ class OrcaRayEstimator(Estimator):
         :return: Trained model
         """
         # Need to preprocess params as pytorch_ray_estimator does. 
-        raise NotImplementedError
+        pass
 
     def setup(self, params, backend='ray', runner_cls=PytorchRayWorker, workers_per_node=1):
         ray_ctx = OrcaRayContext.get()

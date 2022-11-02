@@ -1,14 +1,14 @@
-from abc import abstractmethod
+from abc import abstractmethod, ABCMeta
 
-class Trainer:    
+class Trainer(metaclass=ABCMeta):    
     @abstractmethod
     def train_epochs(self, **kwargs):
-        raise NotImplementedError
+        pass
 
     @abstractmethod
     def predict(self, **kwargs):
-        raise NotImplementedError
+        pass
 
     @abstractmethod
     def validate(self, **kwargs):
-        raise NotImplementedError
+        pass

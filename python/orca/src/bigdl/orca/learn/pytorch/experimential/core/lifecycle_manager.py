@@ -1,4 +1,4 @@
-from abc import abstractmethod
+from abc import abstractmethod, ABCMeta
 from bigdl.orca.learn.pytorch.utils import find_free_port
 from bigdl.dllib.utils.log4Error import *
 
@@ -7,7 +7,7 @@ from torch.utils.data.distributed import DistributedSampler
 
 import ray
 
-class LifeCycleManager:
+class LifeCycleManager(metaclass=ABCMeta):
     def __init__(self) -> None:
         self.backend = "torch-distributed"
         self.rank = -1
@@ -42,8 +42,7 @@ class LifeCycleManager:
         #     for model in self.models
         # ]
         # self.setup_operator(training_models)
-
-        raise NotImplementedError
+        pass
 
     def _init_torchDDP(self, tcp_store_host, tcp_store_port, world_rank,
                                world_size):
@@ -90,4 +89,4 @@ class LifeCycleManager:
     @abstractmethod
     def shutdown(self):
         """Attempts to shut down the worker."""
-        raise NotImplemented
+        pass
