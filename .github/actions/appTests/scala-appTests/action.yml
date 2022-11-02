@@ -1,0 +1,74 @@
+name: 'Run BigDL NB Scala AppTests'
+description: 'Run BigDL NB Scala AppTests'
+runs:
+  using: "composite"
+  steps:
+    - name: Set up Python 
+      uses: actions/setup-python@v2
+      with:
+        python-version: '3.7.10'
+
+    - name: Install dependencies
+      shell: bash
+      run: |
+        apt-get update
+        apt-get install -y zip
+        python -m pip install --upgrade pip
+        python -m pip install --upgrade setuptools==58.0.4
+
+    - name: Setup env
+      shell: bash
+      run: |
+        if [ ! -d "/opt/conda/envs/py37" ]
+        then
+          conda create -n py37 -y python==3.7.10 setuptools==58.0.4
+        fi
+        source activate py37
+        pip install wheel
+        pip uninstall -y bigdl-friesian bigdl-friesian-spark3 bigdl-dllib bigdl-dllib-spark3 bigdl-orca pyspark bigdl-orca-spark3 bigdl-chronos bigdl-chronos-spark3 bigdl-friesian bigdl-friesian-spark3
+        pip uninstall -r .github/actions/python-requirements/requirements-friesian-python-ut-spark3.txt -y
+        pip install -i https://pypi.tuna.tsinghua.edu.cn/simple -r .github/actions/python-requirements/requirements-friesian-python-ut-spark3.txt 
+
+      env:
+        BIGDL_ROOT: ${{ github.workspace }}
+        ANALYTICS_ZOO_ROOT: ${{ github.workspace }}
+    
+    - name: Run test
+      shell: bash
+      run: |
+        set -x
+        set -e
+        source activate py37
+        export JAVA_HOME=/opt/hostedtoolcache/Java_Temurin-Hotspot_jdk/8.0.345-1/x64
+        export CLASSPATH=.:${JAVA_HOME}/lib:${JAVA_HOME}/jre/lib:${JAVA_HOME}/lib/tools.jar:${JAVA_HOME}/lib/dt.jar
+        export PATH=${JAVA_HOME}/bin/:${JAVA_HOME}/jre/bin:${PATH}
+        export PATH=/opt/hostedtoolcache/maven/3.6.3/x64:$PATH 
+        export SPARK_LOCAL_HOSTNAME=localhost
+        export MAVEN_OPTS="-XX:MaxPermSize=3G -Xmx100G -XX:ReservedCodeCacheSize=512m"
+        export _JAVA_OPTIONS="-Xmx100G -XX:MaxPermSize=3G"
+        export MASTER=local[4]
+        export KERAS_BACKEND=tensorflow
+        export SPARK_HOME=$SPARK_2_4_HOME
+        export SCALA_VERSION=2.11.8
+        export SCALA_HOME=/opt/scala-2.11.8
+        export PATH=$SCALA_HOME/bin::$PATH
+        export BIGDL_VERSION=0.13.0
+        if [ ! -d ${SCALA_HOME} ]; then
+          cd / && wget -c http://10.239.45.219:8081/content/repositories/dependencies/com/intel/bdt/analytics/arda-docker/scala/2.11.8/scala-$SCALA_VERSION.tgz && \
+            (cd / && gunzip < scala-$SCALA_VERSION.tgz)|(cd /opt && tar -xvf -) && \
+            rm /scala-$SCALA_VERSION.tgz && \
+            export SCALA_HOME=/opt/scala-2.11.8
+          export PATH=$SCALA_HOME/bin::$PATH
+        fi
+        pip install numpy
+        pip install tensorflow==1.15.0
+        pip install jupyter
+        chmod a+x ${BIGDL_ROOT}/apps/run-scala-app-test.sh
+        ${BIGDL_ROOT}/apps/run-scala-app-test.sh
+        source deactivate
+
+      env:
+        BIGDL_ROOT: ${{ github.workspace }}
+        BIGDL_HOME: ${{ github.workspace }}
+        ANALYTICS_ZOO_ROOT: ${{ github.workspace }}
+        ANALYTICS_ZOO_HOME: ${{ github.workspace }}

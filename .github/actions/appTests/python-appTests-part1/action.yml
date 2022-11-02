@@ -1,0 +1,57 @@
+name: 'Run BigDL NB Python AppTests part1'
+description: 'Run BigDL NB Python AppTests part1'
+runs:
+  using: "composite"
+  steps:
+    - name: Set up Python 
+      uses: actions/setup-python@v2
+      with:
+        python-version: '3.7.10'
+
+    - name: Install dependencies
+      shell: bash
+      run: |
+        apt-get update
+        apt-get install -y zip
+        python -m pip install --upgrade pip
+        python -m pip install --upgrade setuptools==58.0.4
+
+    - name: Setup env
+      shell: bash
+      run: |
+        if [ ! -d "/opt/conda/envs/py37" ]
+        then
+          conda create -n py37 -y python==3.7.10 setuptools==58.0.4
+        fi
+
+      env:
+        BIGDL_ROOT: ${{ github.workspace }}
+        ANALYTICS_ZOO_ROOT: ${{ github.workspace }}
+    
+    - name: Run test
+      shell: bash
+      run: |
+        set -x
+        # set -e
+        export CLASSPATH=.:${JAVA_HOME}/lib:${JAVA_HOME}/jre/lib:${JAVA_HOME}/lib/tools.jar:${JAVA_HOME}/lib/dt.jar
+        export PATH=${JAVA_HOME}/bin/:${JAVA_HOME}/jre/bin:${PATH}
+        export PATH=/opt/hostedtoolcache/maven/3.6.3/x64:$PATH 
+        export SPARK_LOCAL_HOSTNAME=localhost
+        export MAVEN_OPTS="-XX:MaxPermSize=3G -Xmx100G -XX:ReservedCodeCacheSize=512m"
+        export _JAVA_OPTIONS="-Xmx100G -XX:MaxPermSize=3G"
+        export MASTER=local[4]
+        export KERAS_BACKEND=tensorflow
+        source activate py37
+        apt install libgl1-mesa-glx ffmpeg libsm6 libxext6  -y
+        pip install --upgrade pip
+        pip install jupyter bigdl imageio matplotlib seaborn ray h5py
+        chmod a+x apps/ipynb2py.sh
+        chmod a+x apps/run-app-tests-pip.sh
+        bash apps/run-app-tests-pip.sh 1
+        source deactivate
+
+      env:
+        BIGDL_ROOT: ${{ github.workspace }}
+        BIGDL_HOME: ${{ github.workspace }}
+        ANALYTICS_ZOO_ROOT: ${{ github.workspace }}
+        ANALYTICS_ZOO_HOME: ${{ github.workspace }}
