@@ -316,6 +316,6 @@ try:
                 "nhid",
                 "levels",
                 "kernel_size",
-                } | super()._get_optional_parameters()
+            } | super()._get_optional_parameters()
 except ImportError:
     pass
