@@ -212,28 +212,28 @@ class DTCN(nn.Module):
         kernel_size = 25
         self.decompsition = series_decomp(kernel_size)
 
-        self.Linear_Seasonal = TemporalConvNet \
-            (past_seq_len=config["past_seq_len"],
-             input_feature_num=config["input_feature_num"],
-             future_seq_len=config["future_seq_len"],
-             output_feature_num=config["output_feature_num"],
-             num_channels=num_channels.copy(),
-             kernel_size=config.get("kernel_size", 7),
-             dropout=config.get("dropout", 0.2),
-             repo_initialization=config.get("repo_initialization", True),
-             seed=config.get("seed", None),
-             model_set=config.get("model_set"))
-        self.Linear_Trend = TemporalConvNet \
-            (past_seq_len=config["past_seq_len"],
-             input_feature_num=config["input_feature_num"],
-             future_seq_len=config["future_seq_len"],
-             output_feature_num=config["output_feature_num"],
-             num_channels=num_channels.copy(),
-             kernel_size=config.get("kernel_size", 7),
-             dropout=config.get("dropout", 0.2),
-             repo_initialization=config.get("repo_initialization", True),
-             seed=config.get("seed", None),
-             model_set=config.get("model_set"))
+        self.Linear_Seasonal = TemporalConvNet(
+            past_seq_len=config["past_seq_len"],
+            input_feature_num=config["input_feature_num"],
+            future_seq_len=config["future_seq_len"],
+            output_feature_num=config["output_feature_num"],
+            num_channels=num_channels.copy(),
+            kernel_size=config.get("kernel_size", 7),
+            dropout=config.get("dropout", 0.2),
+            repo_initialization=config.get("repo_initialization", True),
+            seed=config.get("seed", None),
+            model_set=config.get("model_set"))
+        self.Linear_Trend = TemporalConvNet(
+            past_seq_len=config["past_seq_len"],
+            input_feature_num=config["input_feature_num"],
+            future_seq_len=config["future_seq_len"],
+            output_feature_num=config["output_feature_num"],
+            num_channels=num_channels.copy(),
+            kernel_size=config.get("kernel_size", 7),
+            dropout=config.get("dropout", 0.2),
+            repo_initialization=config.get("repo_initialization", True),
+            seed=config.get("seed", None),
+            model_set=config.get("model_set"))
 
     def forward(self, x):
         # x: [Batch, Input length, Channel]
@@ -296,7 +296,6 @@ def loss_creator(config):
 try:
     from bigdl.orca.automl.model.base_pytorch_model import PytorchBaseModel
 
-
     class TCNPytorch(PytorchBaseModel):
         def __init__(self, check_optional_config=False):
             super().__init__(model_creator=model_creator,
@@ -314,9 +313,9 @@ try:
 
         def _get_optional_parameters(self):
             return {
-                       "nhid",
-                       "levels",
-                       "kernel_size",
-                   } | super()._get_optional_parameters()
+                "nhid",
+                "levels",
+                "kernel_size",
+                } | super()._get_optional_parameters()
 except ImportError:
     pass
