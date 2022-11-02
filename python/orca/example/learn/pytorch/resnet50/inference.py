@@ -75,13 +75,16 @@ parser.add_argument('--configure_dir', default='configure.json', type=str, metav
                     help='path to int8 configures, default file name is configure.json')
 parser.add_argument('--seed', default=None, type=int,
                     help='seed for initializing training')
-parser.add_argument('-w', '--warmup-iterations', default=100, type=int, metavar='N',
+parser.add_argument('-w', '--warmup_iterations', default=100, type=int, metavar='N',
                     help='number of warmup iterations to run')
+parser.add_argument('-p', '--print-freq', default=10, type=int,
+                    metavar='N', help='print frequency (default: 10)')
 
 
 class ResNetPerfOperator(TrainingOperator):
     def validate(self, val_iterator, info, metrics, num_steps=None):
         self.model.eval()
+        from bigdl.orca.learn.pytorch.utils import get_batchsize
         from bigdl.orca.learn.metrics import Metric
         metrics = Metric.convert_metrics_dict(metrics, backend="pytorch")
         losses = []
@@ -120,36 +123,39 @@ class ResNetPerfOperator(TrainingOperator):
                 unit="batch",
                 leave=False)
 
-        # TODO: support warmup
         with torch.no_grad():
             if self.config["dummy"]:
                 images = torch.randn(self.config["batch"], 3, 224, 224)
                 target = torch.arange(1, self.config["batch"] + 1).long()
-                batch = images, target
-            else:
-                batch = None
+                # Only do the conversion once for dummy data
+                if self.config["ipex"]:
+                    images = images.contiguous(memory_format=torch.channels_last)
+                if self.config["bf16"]:
+                    images = images.to(torch.bfloat16)
+            if self.config["warmup_iterations"] > 0:
+                print("running warmup iterations")
             for batch_idx in range(num_steps):
-                batch_info = {"batch_idx": batch_idx, "warmup": False}
-                batch_info.update(info)
                 if not self.config["dummy"]:
-                    batch = next(val_iterator)
+                    images, target = next(val_iterator)
+                    if self.config["ipex"]:
+                        images = images.contiguous(memory_format=torch.channels_last)
+                    if self.config["bf16"]:
+                        images = images.to(torch.bfloat16)
                 if batch_idx < self.config["warmup_iterations"]:
-                    batch_info["warmup"] = True
-                    print("warmup...")
-                    self.forward_batch(batch, batch_info)
+                    output, target, loss = self.forward(images, target, warmup=True)
                 else:
-                    output, target, loss = self.forward_batch(batch, batch_info)
-                    if self.use_tqdm and self.world_rank == 0:
-                        _progress_bar.n = batch_idx + 1
-                        postfix = {}
-                        # postfix.update(loss=loss)
-                        _progress_bar.set_postfix(postfix)
-                    from bigdl.orca.learn.pytorch.utils import get_batchsize
-                    num_samples = get_batchsize(target)
-                    total_samples += num_samples
-                    losses.append(loss.item() * num_samples)
-                    for metric in metrics.values():
-                        metric(output, target)
+                    output, target, loss = self.forward(images, target, warmup=False)
+                if self.use_tqdm and self.world_rank == 0 \
+                        and batch_idx % self.config["print_freq"] == 0:
+                    _progress_bar.n = batch_idx + self.config["print_freq"]
+                    postfix = {}
+                    # postfix.update(loss=loss)
+                    _progress_bar.set_postfix(postfix)
+                num_samples = get_batchsize(target)
+                total_samples += num_samples
+                losses.append(loss.item() * num_samples)
+                for metric in metrics.values():
+                    metric(output, target)
 
         result = {name: metric.compute() for name, metric in metrics.items()}
         result["val_loss"] = sum(losses) / total_samples
@@ -157,25 +163,20 @@ class ResNetPerfOperator(TrainingOperator):
         return result
 
     def _forward(self, images):
-        start = time.time()
+        # start = time.time()
         if not self.config["jit"] and self.config["bf16"]:
             with torch.cpu.amp.autocast():
                 output = self.model(images)
         else:
             output = self.model(images)
-        end = time.time()
-        print(end - start)
+        # end = time.time()
+        # print(end - start)
         return output
 
-    def forward_batch(self, batch, batch_info):
-        images, target = batch
-        if self.config["ipex"]:
-            images = images.contiguous(memory_format=torch.channels_last)
-        if self.config["bf16"]:
-            images = images.to(torch.bfloat16)
+    def forward(self, images, target, warmup=False):
 
         # compute output
-        if batch_info["warmup"]:
+        if warmup:
             output = self._forward(images)
         else:
             with self.timers.record("eval_fwd"):
@@ -192,6 +193,8 @@ def main():
     args = parser.parse_args()
     print(args)
 
+    invalidInputError(args.warmup_iterations >= 0,
+                      "warmup iterations should be a non-negative int")
     if args.jit and args.int8:
         invalidInputError(False, "jit path is not available for int8 path using ipex")
     if not args.ipex:
