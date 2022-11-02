@@ -34,6 +34,9 @@ def deprecated(func_name=None, message=""):
     return deprecated_decorator
 
 
+# code adapted from https://github.com/intel/neural-compressor/
+#                   blob/master/neural_compressor/utils/utility.py#L203
+
 def singleton(cls):
     instance = {}
 
@@ -59,8 +62,9 @@ class CPUInfo():
             cpuid = cpuinfo.CPUID()
             max_extension_support = cpuid.get_max_extension_support()
             if max_extension_support >= 7:
-                # get extened feature bits
+                # get extended feature bits
                 # EAX = 7, ECX = 0
+                # https://en.wikipedia.org/wiki/CPUID#EAX=7,_ECX=0:_Extended_Features
                 ebx = cpuid._run_asm(
                     b"\x31\xC9",             # xor ecx, ecx
                     b"\xB8\x07\x00\x00\x00"  # mov eax, 7
@@ -88,6 +92,7 @@ class CPUInfo():
                 amx_tile = bool(edx & (1 << 24))
 
                 # EAX = 7, ECX = 1
+                # https://en.wikipedia.org/wiki/CPUID#EAX=7,_ECX=1:_Extended_Features
                 eax = cpuid._run_asm(
                     b"\xB9\x01\x00\x00\x00",  # mov ecx, 1
                     b"\xB8\x07\x00\x00\x00"   # mov eax, 7
