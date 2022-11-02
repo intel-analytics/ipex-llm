@@ -101,6 +101,7 @@ class PytorchOpenVINOModel(AcceleratedLightningModule):
             maximal_drop=0.999,
             max_iter_num=1,
             n_requests=None,
+            thread_num=None,
             sample_size=300):
         # convert torch metric/dataloader to openvino format
         if metric:
@@ -109,7 +110,7 @@ class PytorchOpenVINOModel(AcceleratedLightningModule):
         model = self.ov_model.pot(dataloader, metric=metric, drop_type=drop_type,
                                   maximal_drop=maximal_drop, max_iter_num=max_iter_num,
                                   n_requests=n_requests, sample_size=sample_size)
-        return PytorchOpenVINOModel(model)
+        return PytorchOpenVINOModel(model, thread_num=thread_num)
 
     def _save_model(self, path):
         """
