@@ -19,6 +19,10 @@ runs:
     - name: Setup env
       shell: bash
       run: |
+        wget -r -np -nH -N ${FTP_URL}/pkgs/* -P ~/.conda/
+        cp -n -r ~/.conda/pkgs/*.tar.bz2 /opt/conda/pkgs
+        cp -n  ~/.conda/pkgs/cache/* /opt/conda/pkgs/cache
+        
         conda create -n py37 -y python==3.7.10 setuptools==58.0.4
         conda info --env
         source activate py37
