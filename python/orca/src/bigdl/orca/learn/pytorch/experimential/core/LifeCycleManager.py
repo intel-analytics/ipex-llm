@@ -7,7 +7,7 @@ from torch.utils.data.distributed import DistributedSampler
 
 import ray
 
-class ComponentManager:
+class LifeCycleManager:
     def __init__(self) -> None:
         self.backend = "torch-distributed"
         self.rank = -1
@@ -32,7 +32,6 @@ class ComponentManager:
                                world_size)
 
         self.setup_components()
-
 
     @abstractmethod
     def setup_components(self):
@@ -84,10 +83,11 @@ class ComponentManager:
             from torch.utils.data import IterableDataset
             not_iterable = not isinstance(loader.dataset, IterableDataset)
         except Exception as e:
-            not_iterable = ComponentManager
+            not_iterable = LifeCycleManager
         return (isinstance(loader, DataLoader)
                 and not_iterable)
 
+    @abstractmethod
     def shutdown(self):
         """Attempts to shut down the worker."""
         raise NotImplemented
