@@ -10,9 +10,9 @@ Most AI projects start with a Python notebook running on a single laptop; howeve
 
 First of all, follow the steps [here](install.md#to-use-basic-orca-features) to install Orca in your environment.
 
-This section uses TensorFlow 1.15, and you should also install TensorFlow before running this example:
+This section uses TensorFlow 2.9.1, and you should also install TensorFlow before running this example:
 ```bash
-pip install tensorflow==1.15
+pip install tensorflow==2.9.1
 ```
 
 First, initialize [Orca Context](orca-context.md):
@@ -27,33 +27,53 @@ sc = init_orca_context(cluster_mode="local", cores=4, memory="10g", num_nodes=1)
 Next, perform [data-parallel processing in Orca](data-parallel-processing.md) (supporting standard Spark Dataframes, TensorFlow Dataset, PyTorch DataLoader, Pandas, etc.):
 
 ```python
+import random
 from pyspark.sql.functions import array
+from pyspark.sql.types import StructType, StructField, IntegerType
+from bigdl.orca import OrcaContext
 
 spark = OrcaContext.get_spark_session()
-df = spark.read.parquet(file_path)
-df = df.withColumn('user', array('user')) \
-       .withColumn('item', array('item'))
+
+num_users, num_items = 200, 100
+rdd = sc.range(0, 512).map(
+    lambda x: [random.randint(0, num_users-1), random.randint(0, num_items-1), random.randint(0, 1)])
+schema = StructType([StructField("user", IntegerType(), False),
+                     StructField("item", IntegerType(), False),
+                     StructField("label", IntegerType(), False)])
+df = spark.createDataFrame(rdd, schema)
 ```
 
 Finally, use [sklearn-style Estimator APIs in Orca](distributed-training-inference.md) to perform distributed _TensorFlow_, _PyTorch_, _Keras_ and _BigDL_ training and inference:
 
 ```python
 from tensorflow import keras
-from bigdl.orca.learn.tf.estimator import Estimator
+from bigdl.orca.learn.tf2.estimator import Estimator
 
-user = keras.layers.Input(shape=[1])
-item = keras.layers.Input(shape=[1])
-feat = keras.layers.concatenate([user, item], axis=1)
-predictions = keras.layers.Dense(2, activation='softmax')(feat)
-model = keras.models.Model(inputs=[user, item], outputs=predictions)
-model.compile(optimizer='rmsprop',
-              loss='sparse_categorical_crossentropy',
-              metrics=['accuracy'])
+def model_creator(config):
+  user_input = keras.layers.Input(shape=(1,), dtype='int32', name='use_input')
+  item_input = keras.layers.Input(shape=(1,), dtype='int32', name='item_input')
+  mlp_embed_user = keras.layers.Embedding(input_dim=num_users, output_dim=8,
+                               input_length=1)(user_input)
+  mlp_embed_item = keras.layers.Embedding(input_dim=num_items, output_dim=8,
+                               input_length=1)(item_input)
 
-est = Estimator.from_keras(keras_model=model)
+  user_latent = keras.layers.Flatten()(mlp_embed_user)
+  item_latent = keras.layers.Flatten()(mlp_embed_item)
+
+  mlp_latent = keras.layers.concatenate([user_latent, item_latent], axis=1)
+  predictions = keras.layers.Dense(2, activation='softmax')(mlp_latent)
+  model = keras.models.Model(inputs=[user_input, item_input], outputs=predictions)
+  model.compile(optimizer='adam',
+                loss='sparse_categorical_crossentropy',
+                metrics=['accuracy'])
+  return model
+
+est = Estimator.from_keras(model_creator=model_creator, backend="spark")
 est.fit(data=df,
         batch_size=64,
         epochs=4,
         feature_cols=['user', 'item'],
-        label_cols=['label'])
+        label_cols=['label'],
+        steps_per_epoch=int(df.count()/64))
+
 ```
