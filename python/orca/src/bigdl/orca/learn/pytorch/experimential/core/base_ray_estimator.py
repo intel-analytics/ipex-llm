@@ -5,7 +5,6 @@ from bigdl.orca.data.file import enable_multi_fs_save, enable_multi_fs_load
 
 import numbers
 import numpy as np
-import io
 import torch
 
 import ray
