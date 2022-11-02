@@ -13,6 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+
 from abc import ABCMeta, abstractmethod
 import io
 import torch
@@ -22,11 +23,6 @@ from bigdl.dllib.utils.log4Error import *
 
 class ModelIO(metaclass=ABCMeta):
     def __init__(self):
-        self.epochs = 0
-        self.models = []
-        self.optimizers = []
-        self.training_operator = None
-        self.schedulers = None
         self.rank = -1
         self.logger = None
 

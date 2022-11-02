@@ -28,7 +28,7 @@ from bigdl.orca.learn.pytorch.pytorch_ray_worker import PytorchRayWorker
 from bigdl.orca.learn.utils import maybe_dataframe_to_xshards, dataframe_to_xshards, \
     convert_predict_xshards_to_dataframe, update_predict_xshards, \
     process_xshards_of_pandas_dataframe, reload_dataloader_creator
-from bigdl.orca.learn.pytorch.experimential.core.base_ray_estimator import OrcaRayEstimator
+from bigdl.orca.learn.pytorch.experimential.core.OrcaRayEstimator import OrcaRayEstimator
 
 import ray
 from ray.exceptions import RayActorError
@@ -47,6 +47,7 @@ class PyTorchRayEstimator(OrcaRayEstimator):
             metrics=None,
             scheduler_creator=None,
             training_operator_cls=TrainingOperator,
+            runner_cls=PytorchRayWorker,
             initialization_hook=None,
             config=None,
             scheduler_step_freq="batch",
@@ -98,7 +99,7 @@ class PyTorchRayEstimator(OrcaRayEstimator):
             log_level=log_level
         )
 
-        self.setup(params, self.backend, PytorchRayWorker, workers_per_node)
+        self.setup(params, self.backend, runner_cls, workers_per_node)
         self.num_workers = len(self.remote_workers)
 
     def fit(self,
@@ -415,6 +416,7 @@ class PyTorchRayEstimator(OrcaRayEstimator):
         return spark_xshards
 
 
+# TODO
 def partition_refs_to_creator(partition_refs):
     def data_creator(config, batch_size):
         from bigdl.orca.data.utils import ray_partitions_get_data_label, index_data, get_size
