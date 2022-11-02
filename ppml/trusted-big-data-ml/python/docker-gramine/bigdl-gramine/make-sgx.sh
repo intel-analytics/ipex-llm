@@ -2,7 +2,7 @@
 
 echo SGX_MEM_SIZE:$SGX_MEM_SIZE
 echo SGX_LOG_LEVEL:$SGX_LOG_LEVEL
-echo ATTESTATION:$ATTESTATION
+echo ENABLE_DCAP_ATTESTATION:$ENABLE_DCAP_ATTESTATION
 if [[ "ENABLE_DCAP_ATTESTATION" == "false" ]]; then
    sed -i 's/"dcap"/"none"/g' bash.manifest.template
 fi
