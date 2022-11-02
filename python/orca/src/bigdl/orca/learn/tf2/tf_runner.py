@@ -549,7 +549,8 @@ class TFRunner:
         temp_dir = tempfile.mkdtemp()
         temp_path = os.path.join(temp_dir, file_name)
         try:
-            self.model.save(temp_path, overwrite, include_optimizer, save_format, signatures, options)
+            self.model.save(temp_path, overwrite, include_optimizer, save_format, signatures,
+                            options)
             if save_format == 'h5' or filepath.endswith('.h5') or filepath.endswith('.keras'):
                 # hdf5 format
                 put_local_file_to_remote(temp_path, filepath)
