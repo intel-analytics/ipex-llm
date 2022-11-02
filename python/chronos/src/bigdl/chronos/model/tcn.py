@@ -212,26 +212,28 @@ class DTCN(nn.Module):
         kernel_size = 25
         self.decompsition = series_decomp(kernel_size)
 
-        self.Linear_Seasonal = TemporalConvNet(past_seq_len=config["past_seq_len"],
-                                               input_feature_num=config["input_feature_num"],
-                                               future_seq_len=config["future_seq_len"],
-                                               output_feature_num=config["output_feature_num"],
-                                               num_channels=num_channels.copy(),
-                                               kernel_size=config.get("kernel_size", 7),
-                                               dropout=config.get("dropout", 0.2),
-                                               repo_initialization=config.get("repo_initialization", True),
-                                               seed=config.get("seed", None),
-                                               model_set=config.get("model_set"))
-        self.Linear_Trend = TemporalConvNet(past_seq_len=config["past_seq_len"],
-                                            input_feature_num=config["input_feature_num"],
-                                            future_seq_len=config["future_seq_len"],
-                                            output_feature_num=config["output_feature_num"],
-                                            num_channels=num_channels.copy(),
-                                            kernel_size=config.get("kernel_size", 7),
-                                            dropout=config.get("dropout", 0.2),
-                                            repo_initialization=config.get("repo_initialization", True),
-                                            seed=config.get("seed", None),
-                                            model_set=config.get("model_set"))
+        self.Linear_Seasonal = TemporalConvNet \
+            (past_seq_len=config["past_seq_len"],
+             input_feature_num=config["input_feature_num"],
+             future_seq_len=config["future_seq_len"],
+             output_feature_num=config["output_feature_num"],
+             num_channels=num_channels.copy(),
+             kernel_size=config.get("kernel_size", 7),
+             dropout=config.get("dropout", 0.2),
+             repo_initialization=config.get("repo_initialization", True),
+             seed=config.get("seed", None),
+             model_set=config.get("model_set"))
+        self.Linear_Trend = TemporalConvNet \
+            (past_seq_len=config["past_seq_len"],
+             input_feature_num=config["input_feature_num"],
+             future_seq_len=config["future_seq_len"],
+             output_feature_num=config["output_feature_num"],
+             num_channels=num_channels.copy(),
+             kernel_size=config.get("kernel_size", 7),
+             dropout=config.get("dropout", 0.2),
+             repo_initialization=config.get("repo_initialization", True),
+             seed=config.get("seed", None),
+             model_set=config.get("model_set"))
 
     def forward(self, x):
         # x: [Batch, Input length, Channel]
@@ -266,7 +268,7 @@ def model_creator(config):
                                repo_initialization=config.get("repo_initialization", True),
                                seed=config.get("seed", None),
                                model_set=config.get("model_set"))
-    else: # Dtcn or NDtcn
+    else:  # Dtcn or NDtcn
         return DTCN(config=config, num_channels=num_channels.copy())
 
 
