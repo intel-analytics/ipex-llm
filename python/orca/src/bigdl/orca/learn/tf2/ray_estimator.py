@@ -482,16 +482,6 @@ class TensorFlow2Estimator(OrcaRayEstimator):
 
         return result
 
-    def get_model(self, sample_input=None):
-        """
-        Returns the learned model.
-
-        :return: the learned model.
-        """
-        state_refs = [w.get_state.remote() for w in self.remote_workers]
-        state = ray.get(state_refs[0])
-        return self._get_model_from_state(state, sample_input=sample_input)
-
     @enable_multi_fs_save
     def save_checkpoint(self, checkpoint):
         """
@@ -553,26 +543,16 @@ class TensorFlow2Estimator(OrcaRayEstimator):
                `tf.saved_model.SaveOptions` object that specifies options for
                saving to SavedModel.
         """
-        # get current trained model
-        model = self.get_model()
-
-        if is_local_path(filepath):
-            model.save(filepath, overwrite, include_optimizer, save_format, signatures, options)
-        else:
-            file_name = os.path.basename(filepath)
-            temp_dir = tempfile.mkdtemp()
-            temp_path = os.path.join(temp_dir, file_name)
-            try:
-                model.save(temp_path, overwrite, include_optimizer, save_format, signatures,
-                           options)
-                if save_format == 'h5' or filepath.endswith('.h5') or filepath.endswith('.keras'):
-                    # hdf5 format
-                    put_local_file_to_remote(temp_path, filepath)
-                else:
-                    # tf format
-                    put_local_dir_tree_to_remote(temp_path, filepath)
-            finally:
-                shutil.rmtree(temp_dir)
+        params = dict(
+            filepath=filepath,
+            overwrite=overwrite,
+            include_optimizer=include_optimizer,
+            save_format=save_format,
+            signatures=signatures,
+            options=options
+        )
+        model_refs = [w.save_model.remote(**params) for w in self.remote_workers]
+        ray.get(model_refs[0])
 
     def load(self,
              filepath,
@@ -620,25 +600,14 @@ class TensorFlow2Estimator(OrcaRayEstimator):
               weights.
         :return:
         """
-        model = self.get_model()
-
-        if is_local_path(filepath):
-            model.save_weights(filepath, overwrite, save_format, options)
-        else:
-            file_name = os.path.basename(filepath)
-            temp_dir = tempfile.mkdtemp()
-            temp_path = os.path.join(temp_dir, file_name)
-            try:
-                model.save_weights(temp_path, overwrite, save_format, options)
-                if save_format == 'h5' or filepath.endswith('.h5') or filepath.endswith('.keras'):
-                    # hdf5 format
-                    put_local_file_to_remote(temp_path, filepath)
-                else:
-                    # tf format
-                    remote_dir = os.path.dirname(filepath)
-                    put_local_files_with_prefix_to_remote(temp_path, remote_dir)
-            finally:
-                shutil.rmtree(temp_dir)
+        params = dict(
+            filepath=filepath,
+            overwrite=overwrite,
+            save_format=save_format,
+            options=options
+        )
+        weights_refs = [w.save_weights.remote(**params) for w in self.remote_workers]
+        ray.get(weights_refs[0])
 
     def load_weights(self, filepath, by_name=False, skip_mismatch=False, options=None):
         """
@@ -675,38 +644,3 @@ class TensorFlow2Estimator(OrcaRayEstimator):
         for worker in self.remote_workers:
             worker.shutdown.remote()
             worker.__ray_terminate__.remote()
-
-    def _get_model_from_state(self, state, sample_input=None):
-        """Creates model and load weights from state"""
-        import tensorflow as tf
-
-        # keep the same behavior as `set_state` in `load` do
-        if self.model_creator is not None:
-            model = self.model_creator(self.config)
-        else:
-            file_name = os.path.basename(self.load_params["filepath"])
-            temp_dir = tempfile.mkdtemp()
-            temp_path = os.path.join(temp_dir, file_name)
-
-            if is_file(self.load_params["filepath"]):
-                get_remote_file_to_local(self.load_params["filepath"], temp_path)
-            else:
-                if os.path.exists(temp_path):
-                    os.makedirs(temp_path)
-                get_remote_dir_to_local(self.load_params["filepath"], temp_path)
-            try:
-                self.load_params["filepath"] = temp_path
-                model = tf.keras.models.load_model(**self.load_params)
-            finally:
-                shutil.rmtree(temp_dir)
-
-        if sample_input:
-            model(sample_input)
-        try:
-            model.set_weights(state["weights"])
-        except Exception:
-            log4Error.invalidInputError(False,
-                                        "Failed to set model weights, please provide real tensor "
-                                        "data (of the correct dtype) as sample_input in the "
-                                        "get_model method.")
-        return model
