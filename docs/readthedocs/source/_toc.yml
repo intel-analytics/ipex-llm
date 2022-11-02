@@ -44,10 +44,10 @@ subtrees:
             title: "How-to Guides"
             subtrees:
               - entries:
-                - file: doc/UseCase/spark-dataframe
-                - file: doc/UseCase/xshards-pandas
-                - file: doc/Orca/QuickStart/orca-autoestimator-pytorch-quickstart
-                - file: doc/Orca/QuickStart/orca-autoxgboost-quickstart
+                - file: doc/Orca/Howto/spark-dataframe
+                - file: doc/Orca/Howto/xshards-pandas
+                - file: doc/Orca/Howto/orca-autoestimator-pytorch-quickstart
+                - file: doc/Orca/Howto/orca-autoxgboost-quickstart
           - file: doc/Orca/Tutorial/index
             title: "Tutorials"
             subtrees:
