@@ -272,7 +272,7 @@ def _generate_output_pandas_df(feature_lists, label_lists, feature_cols, label_c
 def arrays2others(iter, feature_cols, label_cols, shard_size=None, generate_func=None):
     def init_result_lists(first_row, cols):
         if shard_size:
-            # pre allocate numpy array
+            # pre allocate numpy array when shard_size is provided
             if isinstance(first_row, np.ndarray):
                 return [np.empty((shard_size,) + first_row.shape, first_row.dtype)]
             else:
