@@ -571,17 +571,17 @@ class TensorFlow2Estimator(OrcaRayEstimator):
                options for loading from SavedModel.
 
         """
-        self.load_params = dict(
+        params = dict(
             filepath=filepath,
             custom_objects=custom_objects,
             compile=compile,
             options=options
         )
         if is_local_path(filepath):
-            ray.get([worker.load_model.remote(**self.load_params)
+            ray.get([worker.load_model.remote(**params)
                      for worker in self.remote_workers])
         else:
-            ray.get([worker.load_remote_model.remote(**self.load_params)
+            ray.get([worker.load_remote_model.remote(**params)
                      for worker in self.remote_workers])
 
     def save_weights(self, filepath, overwrite=True, save_format=None, options=None):
