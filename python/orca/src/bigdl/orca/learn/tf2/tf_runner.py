@@ -603,7 +603,8 @@ class TFRunner:
                 put_local_file_to_remote(temp_path, filepath)
             else:
                 # tf format
-                put_local_files_with_prefix_to_remote(temp_path, filepath)
+                remote_dir = os.path.dirname(filepath)
+                put_local_files_with_prefix_to_remote(temp_path, remote_dir)
         finally:
             shutil.rmtree(temp_dir)
 
