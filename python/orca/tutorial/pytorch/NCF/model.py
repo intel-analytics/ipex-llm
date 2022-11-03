@@ -60,10 +60,7 @@ class NCF(nn.Module):
             predict_size = factor_num
         else:
             predict_size = factor_num * 2
-        output_modules = []
-        output_modules.append(nn.Linear(predict_size, 1))
-        output_modules.append(nn.Sigmoid())
-        self.predict_layer = nn.Sequential(*output_modules)
+        self.predict_layer = nn.Linear(predict_size, 1)
 
         self._init_weight_()
 
