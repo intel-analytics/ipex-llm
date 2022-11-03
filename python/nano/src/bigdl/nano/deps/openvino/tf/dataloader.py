@@ -21,6 +21,7 @@ from tensorflow.python.data.ops.dataset_ops import BatchDataset
 
 from bigdl.nano.utils.log4Error import invalidInputError
 
+
 class KerasOpenVINODataLoader(DataLoader):
     def __init__(self, dataset, collate_fn=None):
         invalidInputError(isinstance(dataset, tf.data.Dataset),

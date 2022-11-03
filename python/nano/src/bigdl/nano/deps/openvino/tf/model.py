@@ -66,7 +66,7 @@ class KerasOpenVINOModel(AcceleratedKerasModel):
         return status
 
     def pot(self,
-            dataloader,
+            dataset,
             metric=None,
             higher_better=True,
             drop_type="relative",
@@ -74,10 +74,9 @@ class KerasOpenVINOModel(AcceleratedKerasModel):
             max_iter_num=1,
             n_requests=None,
             sample_size=300):
-        # convert torch metric/dataloader to openvino format
         if metric:
             metric = KerasOpenVINOMetric(metric=metric, higher_better=higher_better)
-        dataloader = KerasOpenVINODataLoader(dataloader, collate_fn=self.tensors_to_numpy)
+        dataloader = KerasOpenVINODataLoader(dataset, collate_fn=self.tensors_to_numpy)
         model = self.ov_model.pot(dataloader, metric=metric, drop_type=drop_type,
                                   maximal_drop=maximal_drop, max_iter_num=max_iter_num,
                                   n_requests=n_requests, sample_size=sample_size)

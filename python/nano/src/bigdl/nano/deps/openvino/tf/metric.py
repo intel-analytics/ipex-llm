@@ -21,6 +21,7 @@ from bigdl.nano.utils.log4Error import invalidInputError
 
 from ..core.metric import BaseOpenVINOMetric
 
+
 class KerasOpenVINOMetric(BaseOpenVINOMetric):
     def __init__(self, metric, higher_better=True):
         invalidInputError(isinstance(metric, Metric),
