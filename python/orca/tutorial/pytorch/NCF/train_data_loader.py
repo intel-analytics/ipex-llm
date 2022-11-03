@@ -41,7 +41,10 @@ class NCFData(data.Dataset):
         return len(self.data)
 
     def __getitem__(self, idx):
-        return tuple(self.data[idx])
+        user = int(self.data[idx][0])
+        item = int(self.data[idx][1])
+        label = float(self.data[idx][2])
+        return user, item, label
 
 
 def train_loader_func(config, batch_size):
