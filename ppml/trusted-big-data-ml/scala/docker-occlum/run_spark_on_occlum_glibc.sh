@@ -51,6 +51,8 @@ init_instance() {
     echo "${new_json}" > Occlum.json
     echo "SGX_MEM_SIZE ${SGX_MEM_SIZE}"
 
+    #copy python lib
+    copy_bom -f /opt/python-glibc.yaml --root image --include-dir /opt/occlum/etc/template
     # enable tmp hostfs
     # --conf spark.executorEnv.USING_TMP_HOSTFS=true \
     if [[ $USING_TMP_HOSTFS == "true" ]]; then
@@ -125,6 +127,9 @@ init_instance() {
 }
 
 build_spark() {
+    # Copy python examples
+    mkdir -p image/py-examples
+    cp -rf /opt/py-examples/* image/py-examples
     # Copy JVM and class file into Occlum instance and build
     cd /opt/occlum_spark
     mkdir -p image/usr/lib/jvm
@@ -190,6 +195,22 @@ build_initfs() {
     copy_bom -f /root/demos/remote_attestation/init_ra_flow/init_ra_client.yaml --root initfs --include-dir /opt/occlum/etc/template
 
     occlum build -f --image-key /opt/occlum_spark/data/image_key
+}
+
+run_pyspark_pi() {
+    init_instance spark
+    build_spark
+    cd /opt/occlum_spark
+    echo -e "${BLUE}occlum run pyspark Pi${NC}"
+    occlum run /usr/lib/jvm/java-8-openjdk-amd64/bin/java \
+                -XX:-UseCompressedOops -XX:MaxMetaspaceSize=$META_SPACE \
+                -XX:ActiveProcessorCount=4 \
+                -Divy.home="/tmp/.ivy" \
+                -Dos.name="Linux" \
+                -Djdk.lang.Process.launchMechanism=vfork \
+                -cp "$SPARK_HOME/conf/:$SPARK_HOME/jars/*" \
+                -Xmx512m org.apache.spark.deploy.SparkSubmit \
+                /py-examples/pi.py
 }
 
 run_spark_pi() {
@@ -391,6 +412,10 @@ case "$arg" in
         ;;
     pi)
         run_spark_pi
+        cd ../
+        ;;
+    pypi)
+        run_pyspark_pi
         cd ../
         ;;
     lenet)

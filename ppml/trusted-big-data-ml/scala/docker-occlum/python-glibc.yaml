@@ -9,5 +9,5 @@ targets:
   - target: /opt
     copy: 
       - dirs:
-          - /root/demos/python/python_glibc/python-occlum
+          - /opt/python-occlum
   # below are python code and data
