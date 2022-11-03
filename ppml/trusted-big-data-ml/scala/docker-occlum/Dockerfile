@@ -243,4 +243,8 @@ RUN chmod a+x /opt/entrypoint.sh && \
     sed -i '/aesm/d' /root/.bashrc && \
     rm -rf /var/run/aesmd
 
+# Add python lib
+ADD ./python-glibc.yaml /opt/python-glibc.yaml
+ADD ./python-occlum /opt/python-occlum
+ADD ./py-examples /opt/py-examples
 ENTRYPOINT [ "/opt/entrypoint.sh" ]
