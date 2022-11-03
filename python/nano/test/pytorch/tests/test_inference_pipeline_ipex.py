@@ -26,6 +26,7 @@ import torchmetrics
 import torch
 import torch.nn.functional as F
 from test.pytorch.utils._train_torch_lightning import create_data_loader
+from torch.utils.data import TensorDataset, DataLoader
 
 
 data_transform = transforms.Compose([
@@ -52,6 +53,16 @@ class Net(nn.Module):
         x = F.relu(self.fc2(x))
         x = self.fc3(x)
         return x
+
+
+class MultipleInputNet(nn.Module):
+    def __init__(self):
+        super().__init__()
+        self.dense1 = nn.Linear(10, 1)
+        self.dense2 = nn.Linear(10, 1)
+
+    def forward(self, x1, x2):
+        return self.dense1(x1) + self.dense2(x2)
 
 
 class TestInferencePipeline(TestCase):
@@ -285,3 +296,29 @@ class TestInferencePipeline(TestCase):
                                metric=self.metric,
                                thread_num=1,
                                latency_sample_num=10)
+
+    def test_multiple_input_dataloader(self):
+        net = MultipleInputNet()
+        x1 = torch.randn(32, 10)
+        x2 = torch.randn(32, 10)
+        y = torch.randn(32, 1)
+        dataloader = DataLoader(TensorDataset(x1, x2, y), batch_size=1)
+
+        # int8
+        InferenceOptimizer.quantize(net,
+                                    calib_dataloader=dataloader)
+
+        # int8-onnxruntime
+        InferenceOptimizer.quantize(net,
+                                    accelerator="onnxruntime",
+                                    calib_dataloader=dataloader)
+
+        # int8-onnxruntime
+        InferenceOptimizer.trace(net,
+                                 accelerator="onnxruntime",
+                                 input_sample=dataloader)
+
+        # int8-openvino
+        InferenceOptimizer.trace(net,
+                                 accelerator="openvino",
+                                 input_sample=dataloader)
