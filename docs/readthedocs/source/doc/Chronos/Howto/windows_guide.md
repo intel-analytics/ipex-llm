@@ -43,3 +43,19 @@ You can use the [install panel](https://bigdl.readthedocs.io/en/latest/doc/Chron
 - There is an [issue](https://github.com/facebook/prophet/issues/2227) when using `Prophet` on Windows, so the related feature is not supported now.
 
 - `intel_extension_for_pytorch (ipex)` is unavailable for Windows now, so the related feature is not supported.
+
+### Known Issue on Native Windows
+#### Issue 1
+
+**Problem description**
+
+Calling `forecaster.quantize()` without specifying the `metric` parameter (e.g. `forecaster.quantize(train_data)`) will raise runtime error, it may happen when neural-compressor version is lower than `1.13.1`
+
+> [ERROR] Unexpected exception AssertionError('please use start() before end()') happened during tuning.
+> RuntimeError: Found no quantized model satisfying accuracy criterion.
+
+**Solution**
+
+Upgrade neural-compressor to 1.13.1 or higher.
+
+`pip install neural-compressor==1.13.1`
