@@ -138,9 +138,6 @@ print('Evaluate results:')
 for r in result:
     print(r, ":", result[r])
 
-pred = est.predict(test_shards, feature_cols=['user', 'item'])
-# print(pred.collect())
-
 # Save the model
 est.save("NCF_model")
 
