@@ -18,7 +18,6 @@
 # https://github.com/guoyang9/NCF
 #
 
-import numpy as np
 import torch
 import torch.nn as nn
 

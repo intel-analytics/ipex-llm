@@ -18,20 +18,27 @@
 # https://github.com/guoyang9/NCF
 #
 
+# Step 0: Import necessary libraries
 import numpy as np
 import pandas as pd
 
-# Step 1: Init Orca Context
-
-from bigdl.orca import init_orca_context, stop_orca_context
-init_orca_context()
-
-# Step 2: Define Dataset
-
-from bigdl.orca.data.pandas import read_csv
+import torch.nn as nn
+import torch.optim as optim
 from sklearn.model_selection import train_test_split
 
+from model import NCF
 
+from bigdl.orca import init_orca_context, stop_orca_context
+from bigdl.orca.data.pandas import read_csv
+from bigdl.orca.learn.pytorch import Estimator
+from bigdl.orca.learn.metrics import Accuracy, Precision, Recall
+
+
+# Step 1: Init Orca Context
+sc = init_orca_context()
+
+
+# Step 2: Define train and test datasets using Orca XShards
 def preprocess_data():
     data_X = read_csv(
         "ml-1m/ratings.dat",
@@ -79,24 +86,23 @@ def ng_sampling(data):
 
 
 def split_dataset(data):
-    # split training set and testing set
     train_data, test_data = train_test_split(data, test_size=0.2, random_state=100)
     return train_data, test_data
 
-# Prepare the train and test datasets
-data_X, user_num, item_num = preprocess_data()
+data = read_csv("ml-1m/ratings.dat", sep="::", header=None, names=['user', 'item'],
+                usecols=[0, 1], dtype={0: np.int64, 1: np.int64})
+data = data.partition_by("user")
 
-# Construct the train and test xshards
-data_X = data_X.transform_shard(ng_sampling)
-train_shards, test_shards = data_X.transform_shard(split_dataset).split()
+user_set = set(data["user"].unique())
+item_set = set(data["item"].unique())
+user_num = max(user_set) + 1
+item_num = max(item_set) + 1
 
-# Step 3: Define the Model
-
-import torch.nn as nn
-import torch.optim as optim
-from model import NCF
+data = data.transform_shard(ng_sampling)
+train_data, test_data = data.transform_shard(split_dataset).split()
 
 
+# Step 3: Define the model, optimizer and loss
 def model_creator(config):
     model = NCF(config['user_num'], config['item_num'],
                 factor_num=32, num_layers=3, dropout=0.0, model="NeuMF-end")
@@ -107,39 +113,30 @@ def model_creator(config):
 def optimizer_creator(model, config):
     return optim.Adam(model.parameters(), lr=0.001)
 
-loss_function = nn.BCEWithLogitsLoss()
+loss = nn.BCEWithLogitsLoss()
 
-# Step 4: Fit with Orca Estimator
 
-from bigdl.orca.learn.pytorch import Estimator
-from bigdl.orca.learn.metrics import Accuracy, Precision, Recall
-
-# Create the estimator
+# Step 4: Distributed training with Orca PyTorch Estimator
+batch_size = 1024
 backend = "spark"  # "ray" or "spark"
-est = Estimator.from_torch(model=model_creator,
-                           optimizer=optimizer_creator,
-                           loss=loss_function,
-                           metrics=[Accuracy(), Precision(), Recall()],
+est = Estimator.from_torch(model=model_creator, optimizer=optimizer_creator,
+                           loss=loss, metrics=[Accuracy(), Precision(), Recall()],
                            config={'user_num': user_num, 'item_num': item_num},
                            backend=backend)
-
-# Fit the estimator
-batch_size = 1024
-est.fit(data=train_shards, epochs=10, batch_size=batch_size,
+est.fit(data=train_data, epochs=10, batch_size=batch_size,
         feature_cols=["user", "item"], label_cols=["label"])
 
-# Step 5: Evaluate and save the Model
 
-# Evaluate the model
-result = est.evaluate(data=test_shards,
-                      feature_cols=["user", "item"],
-                      label_cols=["label"], batch_size=batch_size)
-print('Evaluate results:')
+# Step 5: Distributed evaluation of the trained model
+result = est.evaluate(data=test_data, batch_size=batch_size,
+                      feature_cols=["user", "item"], label_cols=["label"])
+print('Evaluation results:')
 for r in result:
     print(r, ":", result[r])
 
-# Save the model
+
+# Step 6: Save the trained PyTorch model
 est.save("NCF_model")
 
-# Stop orca context when program finishes
+# Step 7: Stop Orca Context when program finishes
 stop_orca_context()
