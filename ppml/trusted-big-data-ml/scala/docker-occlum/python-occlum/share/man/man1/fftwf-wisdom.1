@@ -1,0 +1,196 @@
+.\" 
+.\" Copyright (c) 2003, 2007-14 Matteo Frigo
+.\" Copyright (c) 2003, 2007-14 Massachusetts Institute of Technology
+.\" 
+.\" This program is free software; you can redistribute it and/or modify
+.\" it under the terms of the GNU General Public License as published by
+.\" the Free Software Foundation; either version 2 of the License, or
+.\" (at your option) any later version.
+.\" 
+.\" This program is distributed in the hope that it will be useful,
+.\" but WITHOUT ANY WARRANTY; without even the implied warranty of
+.\" MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+.\" GNU General Public License for more details.
+.\" 
+.\" You should have received a copy of the GNU General Public License
+.\" along with this program; if not, write to the Free Software
+.\" Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
+.\"
+.TH FFTW-WISDOM 1 "February, 2003" "fftw" "fftw"
+.SH NAME
+fftwf\-wisdom \- create wisdom (pre-optimized FFTs)
+.SH SYNOPSIS
+.B fftwf\-wisdom
+[\fIOPTION\fR]... [\fISIZE\fR]...
+.SH DESCRIPTION
+.PP
+.\" Add any additional description here
+.I fftwf\-wisdom
+is a utility to generate FFTW
+.B wisdom
+files, which contain saved information about how to optimally compute
+(Fourier) transforms of various sizes.  FFTW is a free library to
+compute discrete Fourier transforms in one or more dimensions, for
+arbitrary sizes, and of both real and complex data, among other
+related operations.  More information on FFTW can be found at the FFTW
+home page:
+.I http://www.fftw.org
+
+Programs using FFTW can be written to load wisdom from an arbitrary file,
+string, or other source.  Moreover, it is likely that many FFTW-using
+programs will load the \fBsystem wisdom\fR file, which is stored in
+.I /etc/fftw/wisdomf
+by default.
+.I fftwf\-wisdom
+can be used to create or add to such wisdom files.  In its most
+typical usage, the wisdom file can be created to pre-plan a canonical
+set of sizes (see below) via:
+
+.ce
+fftwf\-wisdom \-v \-c \-o wisdomf
+
+(this will take many hours, which can be limited by the 
+.B \-t
+option) and the output
+.I wisdomf
+file can then be copied (as root) to
+.I /etc/fftw/
+or whatever.
+
+The
+.I fftwf\-wisdom
+program normally writes the wisdom directly to standard output, but this
+can be changed via the
+.B \-o
+option, as in the example above.
+
+If the system wisdom file
+.I /etc/fftw/wisdomf
+already exists, then
+.I fftwf\-wisdom
+reads this existing wisdom (unless the
+.B \-n
+option is specified) and outputs both the old wisdom and any
+newly created wisdom.  In this way, it can be used to add new transform
+sizes to the existing system wisdom (or other wisdom file, with the 
+.B \-w
+option).
+.SH SPECIFYING SIZES
+Although a canonical set of sizes to optimize is specified by the 
+.B \-c
+option, the user can also specify zero or more non-canonical transform
+sizes and types to optimize, via the 
+.I SIZE
+arguments following the option flags.  Alternatively, the sizes to
+optimize can be read from standard input (whitespace-separated), if a
+.I SIZE
+argument of "\-" is supplied.
+
+Sizes are specified by the syntax:
+
+.ce
+<\fItype\fR><\fIinplace\fR><\fIdirection\fR><\fIgeometry\fR>
+
+<\fItype\fR> is either \'c\' (complex), \'r\' (real, r2c/c2r), or
+\'k\' (r2r, per-dimension kinds, specified in the geometry, below).
+
+<\fIinplace\fR> is either \'i\' (in place) or \'o\' (out of place).
+
+<\fIdirection\fR> is either \'f\' (forward) or \'b\' (backward).  The
+<\fIdirection\fR> should be omitted for \'k\' transforms, where it is
+specified via the geometry instead.
+
+<\fIgeometry\fR> is the size and dimensionality of the transform,
+where different dimensions are separated by \'x\' (e.g. \'16x32\' for
+a two-dimensional 16 by 32 transform).  In the case of \'k\'
+transforms, the size of each dimension is followed by a "type" string,
+which can be one of f/b/h/e00/e01/e10/e11/o00/o01/o10/o11 for
+R2HC/HC2R/DHT/REDFT00/.../RODFT11, respectively, as defined in the
+FFTW manual.
+
+For example, \'cif12x13x14\' is a three-dimensional 12 by 13 x 14
+complex DFT operating in-place.  \'rob65536\' is a one-dimensional
+size-65536 out-of-place complex-to-real (backwards) transform
+operating on Hermitian-symmetry input.  \'ki10hx20e01\' is a
+two-dimensional 10 by 20 r2r transform where the first dimension is a
+DHT and the second dimension is an REDFT01 (DCT-III).
+
+.SH OPTIONS
+.TP
+\fB\-h\fR, \fB\-\-help\fR
+Display help on the command-line options and usage.
+.TP
+\fB\-V\fR, \fB\-\-version\fR
+Print the version number and copyright information.
+.TP
+\fB\-v\fR, \fB\-\-verbose\fR
+Verbose output.  (You can specify this multiple times, or supply a numeric
+argument greater than 1, to increase the verbosity level.)  Note that the
+verbose output will be mixed with the wisdom output (making it impossible
+to import), unless you write the wisdom to a file via the 
+.B \-o
+option.
+.TP
+\fB\-c\fR, \fB\-\-canonical\fR
+Optimize/pre-plan a canonical set of sizes: all powers of two and ten
+up to 2^20 (1048576), including both real and complex, forward and
+backwards, in-place and out-of-place transforms.  Also includes two-
+and three-dimensional transforms of equal-size dimensions
+(e.g. 16x16x16).
+.TP
+\fB\-t\fR \fIhours\fR, \fB\-\-time\-limit\fR=\fIhours\fR
+Stop after a time of
+.I hours
+(hours) has elapsed, outputting accumulated wisdom.  (The problems are planned
+in increasing order of size.)  Defaults to 0, indicating no time limit.
+.TP
+\fB\-o\fR \fIfile\fR, \fB\-\-output-file\fR=\fIfile\fR
+Send wisdom output to
+.I file
+rather than to standard output (the default).
+.TP
+\fB\-m\fR, \fB\-\-measure\fR; \fB\-e\fR, \fB\-\-estimate\fR; \fB\-x\fR, \fB\-\-exhaustive\fR
+Normally, 
+.I fftwf\-wisdom
+creates plans in FFTW_PATIENT mode, but with these options you can instead
+use FFTW_MEASURE, FFTW_ESTIMATE, or FFTW_EXHAUSTIVE modes, respectively,
+as described in more detail by the FFTW manual.
+
+Note that wisdom is tagged with the planning patience level, and a
+single file can mix different levels of wisdom (e.g. you can mostly
+use the patient default, but plan a few sizes that you especially care
+about in
+.B \-\-exhaustive
+mode).
+.TP
+\fB\-n\fR, \fB\-\-no\-system\-wisdom\fR
+Do not import the system wisdom from
+.I /etc/fftw/wisdomf
+(which is normally read by default).
+.TP
+\fB\-w\fR \fIfile\fR, \fB\-\-wisdom\-file\fR=\fIfile\fR
+Import wisdom from
+.I file
+(in addition to the system wisdom, unless 
+.B \-n
+is specified).  Multiple wisdom files can be read via multiple
+.B \-w
+options.  If
+.I file
+is "\-", then read wisdom from standard input.
+.TP
+\fB\-T\fR \fIN\fR, \fB\--threads\fR=\fIN\fR
+Plan with
+.I N
+threads.  This option is only present if FFTW was configured with
+thread support.
+.SH BUGS
+Send bug reports to fftw@fftw.org.
+.SH AUTHORS
+Written by Steven G. Johnson and Matteo Frigo.
+
+Copyright (c) 2003, 2007-14 Matteo Frigo
+.br
+Copyright (c) 2003, 2007-14 Massachusetts Institute of Technology
+.SH "SEE ALSO"
+fftw-wisdom-to-conf(1)
