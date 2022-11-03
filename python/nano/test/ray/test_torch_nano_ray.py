@@ -105,6 +105,12 @@ class MyNanoCorrectness(TorchNano):
         assert model.fc1.weight.data == 0.25, f"wrong weights: {model.fc1.weight.data}"
 
 
+class MyNanoCUDA(TorchNano):
+    def train(self):
+        t = torch.tensor([0], device='cuda:0')
+        assert t.device.type == "cpu"
+
+
 class TestLite(TestCase):
     def setUp(self):
         test_dir = os.path.dirname(__file__)
@@ -118,6 +124,12 @@ class TestLite(TestCase):
 
     def test_torch_nano_ray_correctness(self):
         MyNanoCorrectness(num_processes=2, distributed_backend="ray").train(0.5)
+
+    def test_torch_nano_cuda_patch_ray(self):
+        from bigdl.nano.pytorch import patch_torch, unpatch_torch
+        patch_torch(cuda_to_cpu=True)
+        MyNanoCUDA(num_processes=2, distributed_backend="ray").train()
+        unpatch_torch()
 
 
 if __name__ == '__main__':
