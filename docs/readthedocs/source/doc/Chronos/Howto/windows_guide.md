@@ -45,7 +45,20 @@ You can use the [install panel](https://bigdl.readthedocs.io/en/latest/doc/Chron
 - `intel_extension_for_pytorch (ipex)` is unavailable for Windows now, so the related feature is not supported.
 
 ### Known Issues on Native Windows
+
 #### Issue 1
+
+**Problem description**
+
+Installing neural-compressor via pip may stuck when installing pycocotools.
+
+**Solution**
+
+Install pycocotools using conda:
+
+`conda install pycocotools -c esri`
+
+#### Issue 2
 
 **Problem description**
 
