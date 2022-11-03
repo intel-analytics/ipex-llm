@@ -173,6 +173,7 @@ subtrees:
                 - file: doc/Chronos/Howto/docker_guide_single_node
                 - file: doc/Chronos/Howto/how_to_create_forecaster
                 - file: doc/Chronos/Howto/how_to_train_forecaster_on_one_node
+                - file: doc/Chronos/Howto/how_to_save_and_load_forecaster
                 - file: doc/Chronos/Howto/how_to_tune_forecaster_model
                 - file: doc/Chronos/Howto/how_to_speedup_inference_of_forecaster_through_ONNXRuntime
                 - file: doc/Chronos/Howto/how_to_speedup_inference_of_forecaster_through_OpenVINO
