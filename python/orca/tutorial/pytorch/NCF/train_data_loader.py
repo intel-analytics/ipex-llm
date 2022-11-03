@@ -18,21 +18,27 @@
 # https://github.com/guoyang9/NCF
 #
 
+# Step 0: Import necessary libraries
 import numpy as np
 import pandas as pd
-from bigdl.dllib.utils.log4Error import *
 
-# Step 1: Init Orca Context
+import torch.nn as nn
+import torch.optim as optim
+import torch.utils.data as data
+from sklearn.model_selection import train_test_split
+
+from model import NCF
 
 from bigdl.orca import init_orca_context, stop_orca_context
-init_orca_context()
-
-# Step 2: Define Train Dataset
-
-from sklearn.model_selection import train_test_split
-import torch.utils.data as data
+from bigdl.orca.learn.pytorch import Estimator
+from bigdl.orca.learn.metrics import Accuracy, Precision, Recall
 
 
+# Step 1: Init Orca Context
+sc = init_orca_context()
+
+
+# Step 2: Define train and test datasets as PyTorch DataLoader
 class NCFData(data.Dataset):
     def __init__(self, data):
         self.data = data.values.tolist()
@@ -136,13 +142,8 @@ def test_loader_func(config, batch_size):
                                   shuffle=False, num_workers=0)
     return test_loader
 
-# Step 3: Define the Model
 
-from model import NCF
-import torch.nn as nn
-import torch.optim as optim
-
-
+# Step 3: Define the model, optimizer and loss
 def model_creator(config):
     data_X = pd.read_csv(
         "ml-1m/ratings.dat",
@@ -160,33 +161,28 @@ def model_creator(config):
 def optimizer_creator(model, config):
     return optim.Adam(model.parameters(), lr=0.001)
 
-loss_function = nn.BCEWithLogitsLoss()
+loss = nn.BCEWithLogitsLoss()
 
-# Step 4: Fit with Orca Estimator
 
-from bigdl.orca.learn.pytorch import Estimator
-from bigdl.orca.learn.metrics import Accuracy, Precision, Recall
-
-# Create the estimator
+# Step 4: Distributed training with Orca PyTorch Estimator
+batch_size = 1024
 backend = "ray"  # "ray" or "spark"
 est = Estimator.from_torch(model=model_creator, optimizer=optimizer_creator,
-                           loss=loss_function, metrics=[Accuracy(), Precision(), Recall()],
+                           loss=loss, metrics=[Accuracy(), Precision(), Recall()],
                            backend=backend)
-
-# Fit the estimator
-batch_size = 1024
 est.fit(data=train_loader_func, epochs=10, batch_size=batch_size)
 
-# Step 5: Save and Load the Model
 
-# Evaluate the model
+# Step 5: Distributed evaluation of the trained model
 result = est.evaluate(data=test_loader_func, batch_size=batch_size)
-print('Evaluate results:')
+print('Evaluation results:')
 for r in result:
     print(r, ":", result[r])
 
-# Save the model
+
+# Step 6: Save the trained PyTorch model
 est.save("NCF_model")
 
-# Stop orca context when program finishes
+
+# Step 7: Stop Orca Context when program finishes
 stop_orca_context()
