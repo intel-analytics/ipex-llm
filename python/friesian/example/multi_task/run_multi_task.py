@@ -215,7 +215,7 @@ if __name__ == "__main__":
         'gender',
         'cat_1'
     ]
-    continuous_cols = ['img_num']
+    continuous_cols = ['img_num', 'flush_nums']
     feature_max_idx = {'user_id': 40000, 'article_id': 200000, 'net_status': 1004,
                        'exop_position': 2000, 'device': 2000,
                        'city': 1379, 'age': 1005, 'gender': 1003, 'cat_1': 1038}
