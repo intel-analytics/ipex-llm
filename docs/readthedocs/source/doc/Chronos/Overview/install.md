@@ -13,7 +13,7 @@
      
      1. You could use Chronos on a windows laptop with WSL2, you may refer to https://docs.microsoft.com/en-us/windows/wsl/setup/environment or just install a ubuntu virtual machine.
 
-     2. You could use Chronos on native Windows, but some features are unavailble in this case, the limitations will be shown below.
+     2. You could use Chronos on native Windows, but some features are unavailable in this case, the limitations will be shown below.
 ```
 ```eval_rst
 .. note::
