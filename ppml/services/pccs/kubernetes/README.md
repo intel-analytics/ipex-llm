@@ -1,10 +1,9 @@
-# Deploy BigDL-PCCS on Kubernetes with Helm Charts
+# Deploy BigDL-PCCS on Kubernetes
 
 ## Prerequests
 
 - Please make sure you have a workable **Kubernetes cluster/machine**.
 - Please make sure you have a usable https proxy.
-- Please make sure you have already installed **[helm](https://helm.sh/)**.
 - Please make sure you have an usable PCCS ApiKey for your platform. The PCCS uses this API key to request collaterals from Intel's Provisioning Certificate Service. User needs to subscribe first to obtain an API key. For how to subscribe to Intel Provisioning Certificate Service and receive an API key, goto https://api.portal.trustedservices.intel.com/provisioning-certification and click on 'Subscribe'.
 
 ## 1. Pull/Build the PCCS Image
@@ -30,8 +29,8 @@ cd ../kubernetes
 Modify parameters in `install-bigdl-pccs.sh` as following:
 ```bash
 # reset of other parameters in install-bigdl-pccs.sh is optional, please check according to your environment
-export pccsIP=your_pccs_ip_to_use_as                  --->   <an_used_ip_address_in_your_subnetwork_to_assign_to_pccs>
-
+export pccsIP=your_pccs_ip_to_use_as               --->   <an_used_ip_address_in_your_subnetwork_to_assign_to_pccs>
+...
 # Replace the below parameters according to your environment
 export apiKey=your_intel_pcs_server_subscription_key_obtained_through_web_registeration
 export countryName=your_country_name
@@ -126,18 +125,24 @@ bash uninstall-bigdl-pccs.sh
 # you will get similar to below if success
 service "pccs" deleted
 statefulset.apps "pccs" deleted
-
-# Usually, it takes a while to terminate the pccs pod, check the namespace like this
+```
+Usually, it takes a while to terminate the pccs pod. You can check the namespace like this
+```bash
 kubectl get all -n bigdl-pccs
 
 # you will get similar to below if the pod has not been deleted
 NAME         READY   STATUS        RESTARTS   AGE
 pod/pccs-0   1/1     Terminating   0          85s
 
-# please wait for a while until it shows like below 
+# please wait for a few seconds until it shows like below 
 No resources found in bigdl-pccs namespace.
-
-# delete the namespace 
+```
+Delete the namespce
+```bash
 kubectl delete namespace bigdl-pccs
+
+# you will get similar to below if success
+namespace "bigdl-pccs" deleted
+
 ``` 
 
