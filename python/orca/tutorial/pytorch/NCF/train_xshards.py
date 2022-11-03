@@ -56,6 +56,7 @@ def ng_sampling(data):
         train_mat[row[0], row[1]] = 1
 
     # negative sampling
+    np.random.seed(0)
     features_ps = data_X
     features_ng = []
     for x in features_ps:
@@ -111,19 +112,20 @@ loss_function = nn.BCEWithLogitsLoss()
 # Step 4: Fit with Orca Estimator
 
 from bigdl.orca.learn.pytorch import Estimator
-from bigdl.orca.learn.metrics import Accuracy
+from bigdl.orca.learn.metrics import Accuracy, Precision, Recall
 
 # Create the estimator
-backend = "ray"  # "ray" or "spark"
+backend = "spark"  # "ray" or "spark"
 est = Estimator.from_torch(model=model_creator,
                            optimizer=optimizer_creator,
                            loss=loss_function,
-                           metrics=[Accuracy()],
+                           metrics=[Accuracy(), Precision(), Recall()],
                            config={'user_num': user_num, 'item_num': item_num},
                            backend=backend)
 
 # Fit the estimator
-est.fit(data=train_shards, epochs=3, batch_size=256,
+batch_size = 1024
+est.fit(data=train_shards, epochs=10, batch_size=batch_size,
         feature_cols=["user", "item"], label_cols=["label"])
 
 # Step 5: Evaluate and save the Model
@@ -131,10 +133,13 @@ est.fit(data=train_shards, epochs=3, batch_size=256,
 # Evaluate the model
 result = est.evaluate(data=test_shards,
                       feature_cols=["user", "item"],
-                      label_cols=["label"], batch_size=256)
+                      label_cols=["label"], batch_size=batch_size)
 print('Evaluate results:')
 for r in result:
     print(r, ":", result[r])
+
+pred = est.predict(test_shards, feature_cols=['user', 'item'])
+# print(pred.collect())
 
 # Save the model
 est.save("NCF_model")
