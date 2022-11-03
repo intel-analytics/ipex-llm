@@ -1,0 +1,43 @@
+{
+  "build": "py38h6c91a56_3",
+  "build_number": 3,
+  "channel": "https://mirrors.tuna.tsinghua.edu.cn/anaconda/pkgs/main/linux-64",
+  "constrains": [],
+  "depends": [
+    "blas 1.0 mkl",
+    "libgcc-ng >=11.2.0",
+    "libstdcxx-ng >=11.2.0",
+    "mkl >=2021.4.0,<2022.0a0",
+    "mkl-service >=2.3.0,<3.0a0",
+    "mkl_fft",
+    "mkl_random",
+    "numpy-base 1.21.5 py38ha15fc14_3",
+    "python >=3.8,<3.9.0a0"
+  ],
+  "extracted_package_dir": "/root/demos/python/python_glibc1/miniconda/pkgs/numpy-1.21.5-py38h6c91a56_3",
+  "features": "",
+  "files": [],
+  "fn": "numpy-1.21.5-py38h6c91a56_3.conda",
+  "legacy_bz2_md5": "66d980285c09805dc7fc6ba29e3406c6",
+  "legacy_bz2_size": 9814,
+  "license": "BSD-3-Clause",
+  "link": {
+    "source": "/root/demos/python/python_glibc1/miniconda/pkgs/numpy-1.21.5-py38h6c91a56_3",
+    "type": 1
+  },
+  "md5": "1380e47281d335ddd417b310caa056ab",
+  "name": "numpy",
+  "package_tarball_full_path": "/root/demos/python/python_glibc1/miniconda/pkgs/numpy-1.21.5-py38h6c91a56_3.conda",
+  "paths_data": {
+    "paths": [],
+    "paths_version": 1
+  },
+  "requested_spec": "numpy=1.21.5",
+  "sha256": "7086b3650934e3fe758fa09eaad22da1fb37692f9457185d7c1f96cc55a7fc64",
+  "size": 10006,
+  "subdir": "linux-64",
+  "timestamp": 1653918415296,
+  "track_features": "",
+  "url": "https://mirrors.tuna.tsinghua.edu.cn/anaconda/pkgs/main/linux-64/numpy-1.21.5-py38h6c91a56_3.conda",
+  "version": "1.21.5"
+}

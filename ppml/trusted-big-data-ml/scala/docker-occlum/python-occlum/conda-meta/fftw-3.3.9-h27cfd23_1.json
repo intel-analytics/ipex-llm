@@ -1,0 +1,441 @@
+{
+  "build": "h27cfd23_1",
+  "build_number": 1,
+  "channel": "https://mirrors.tuna.tsinghua.edu.cn/anaconda/pkgs/main/linux-64",
+  "constrains": [],
+  "depends": [
+    "libgcc-ng >=7.3.0"
+  ],
+  "extracted_package_dir": "/root/demos/python/python_glibc1/miniconda/pkgs/fftw-3.3.9-h27cfd23_1",
+  "features": "",
+  "files": [
+    "bin/fftw-wisdom",
+    "bin/fftw-wisdom-to-conf",
+    "bin/fftwf-wisdom",
+    "bin/fftwl-wisdom",
+    "include/fftw3.f",
+    "include/fftw3.f03",
+    "include/fftw3.h",
+    "include/fftw3l.f03",
+    "include/fftw3q.f03",
+    "lib/cmake/fftw3/FFTW3Config.cmake",
+    "lib/cmake/fftw3/FFTW3ConfigVersion.cmake",
+    "lib/cmake/fftw3/FFTW3fConfig.cmake",
+    "lib/cmake/fftw3/FFTW3fConfigVersion.cmake",
+    "lib/cmake/fftw3/FFTW3lConfig.cmake",
+    "lib/cmake/fftw3/FFTW3lConfigVersion.cmake",
+    "lib/libfftw3.a",
+    "lib/libfftw3.so",
+    "lib/libfftw3.so.3",
+    "lib/libfftw3.so.3.6.9",
+    "lib/libfftw3_threads.a",
+    "lib/libfftw3_threads.so",
+    "lib/libfftw3_threads.so.3",
+    "lib/libfftw3_threads.so.3.6.9",
+    "lib/libfftw3f.a",
+    "lib/libfftw3f.so",
+    "lib/libfftw3f.so.3",
+    "lib/libfftw3f.so.3.6.9",
+    "lib/libfftw3f_threads.a",
+    "lib/libfftw3f_threads.so",
+    "lib/libfftw3f_threads.so.3",
+    "lib/libfftw3f_threads.so.3.6.9",
+    "lib/libfftw3l.a",
+    "lib/libfftw3l.so",
+    "lib/libfftw3l.so.3",
+    "lib/libfftw3l.so.3.6.9",
+    "lib/libfftw3l_threads.a",
+    "lib/libfftw3l_threads.so",
+    "lib/libfftw3l_threads.so.3",
+    "lib/libfftw3l_threads.so.3.6.9",
+    "lib/pkgconfig/fftw3.pc",
+    "lib/pkgconfig/fftw3f.pc",
+    "lib/pkgconfig/fftw3l.pc",
+    "share/info/fftw3.info",
+    "share/info/fftw3.info-1",
+    "share/info/fftw3.info-2",
+    "share/man/man1/fftw-wisdom-to-conf.1",
+    "share/man/man1/fftw-wisdom.1",
+    "share/man/man1/fftwf-wisdom.1",
+    "share/man/man1/fftwl-wisdom.1"
+  ],
+  "fn": "fftw-3.3.9-h27cfd23_1.conda",
+  "legacy_bz2_md5": "7d40c13591f949a2032801059e2e6e06",
+  "legacy_bz2_size": 4100710,
+  "license": "GPL 2",
+  "link": {
+    "source": "/root/demos/python/python_glibc1/miniconda/pkgs/fftw-3.3.9-h27cfd23_1",
+    "type": 1
+  },
+  "md5": "d266674fbd3345d45a69896e1bdef8be",
+  "name": "fftw",
+  "package_tarball_full_path": "/root/demos/python/python_glibc1/miniconda/pkgs/fftw-3.3.9-h27cfd23_1.conda",
+  "paths_data": {
+    "paths": [
+      {
+        "_path": "bin/fftw-wisdom",
+        "path_type": "hardlink",
+        "sha256": "6892a53df04d48f63920ca51bde60d5c3c11d9347c8e49a509839021689d2715",
+        "sha256_in_prefix": "6892a53df04d48f63920ca51bde60d5c3c11d9347c8e49a509839021689d2715",
+        "size_in_bytes": 61280
+      },
+      {
+        "_path": "bin/fftw-wisdom-to-conf",
+        "path_type": "hardlink",
+        "sha256": "973735583d4c177f1e8087988f1bfc7d411e96210432134d7d492e7d3ccf722f",
+        "sha256_in_prefix": "973735583d4c177f1e8087988f1bfc7d411e96210432134d7d492e7d3ccf722f",
+        "size_in_bytes": 2279
+      },
+      {
+        "_path": "bin/fftwf-wisdom",
+        "path_type": "hardlink",
+        "sha256": "2ee8e67c9ee5b5f8703602e44bbdf206af98a991764d1af64efffc5c14109ad1",
+        "sha256_in_prefix": "2ee8e67c9ee5b5f8703602e44bbdf206af98a991764d1af64efffc5c14109ad1",
+        "size_in_bytes": 61328
+      },
+      {
+        "_path": "bin/fftwl-wisdom",
+        "path_type": "hardlink",
+        "sha256": "1ce79039dcbc3f77eb9abd86b57692a014f613ad2ece746b2c9e93fc116ce5a2",
+        "sha256_in_prefix": "1ce79039dcbc3f77eb9abd86b57692a014f613ad2ece746b2c9e93fc116ce5a2",
+        "size_in_bytes": 61328
+      },
+      {
+        "_path": "include/fftw3.f",
+        "path_type": "hardlink",
+        "sha256": "1f8a5c9a48f3e3726b667970907d22e3cb0cb9fdf8ec8be7521fb798fd3befc6",
+        "sha256_in_prefix": "1f8a5c9a48f3e3726b667970907d22e3cb0cb9fdf8ec8be7521fb798fd3befc6",
+        "size_in_bytes": 2447
+      },
+      {
+        "_path": "include/fftw3.f03",
+        "path_type": "hardlink",
+        "sha256": "8d79313ad20e5ea3d76294548af18507efbd97bd5238e9ef44dfb5b4eb9d3747",
+        "sha256_in_prefix": "8d79313ad20e5ea3d76294548af18507efbd97bd5238e9ef44dfb5b4eb9d3747",
+        "size_in_bytes": 55032
+      },
+      {
+        "_path": "include/fftw3.h",
+        "path_type": "hardlink",
+        "sha256": "0dd1b988b681d5797aaf10c2c57c107f7dca510695e4b94b3855eb52550d282c",
+        "sha256_in_prefix": "0dd1b988b681d5797aaf10c2c57c107f7dca510695e4b94b3855eb52550d282c",
+        "size_in_bytes": 31986
+      },
+      {
+        "_path": "include/fftw3l.f03",
+        "path_type": "hardlink",
+        "sha256": "6b729ba8afa474c2126bdaf278003be62ea4592b8c103d7b300b9baf3c64a9a2",
+        "sha256_in_prefix": "6b729ba8afa474c2126bdaf278003be62ea4592b8c103d7b300b9baf3c64a9a2",
+        "size_in_bytes": 27203
+      },
+      {
+        "_path": "include/fftw3q.f03",
+        "path_type": "hardlink",
+        "sha256": "9f6de4f745a1da719d97e6e18e8f118135d1f4538e9a9929cbf8fd72ecfe15c6",
+        "sha256_in_prefix": "9f6de4f745a1da719d97e6e18e8f118135d1f4538e9a9929cbf8fd72ecfe15c6",
+        "size_in_bytes": 25902
+      },
+      {
+        "_path": "lib/cmake/fftw3/FFTW3Config.cmake",
+        "file_mode": "text",
+        "path_type": "hardlink",
+        "prefix_placeholder": "/tmp/build/80754af9/fftw_1607969686363/_h_env_placehold_placehold_placehold_placehold_placehold_placehold_placehold_placehold_placehold_placehold_placehold_placehold_placehold_placehold_placehold_placehold_placehold_placehold_placehold_placehold_placehold",
+        "sha256": "5d3062927aab539fa6c3688b98bec68925c59dcd12a47c67eb38a75cc8113b43",
+        "sha256_in_prefix": "9a663ef3d1713828f49950156653716263efcf3488588fea05626a81c86b5edb",
+        "size_in_bytes": 1005
+      },
+      {
+        "_path": "lib/cmake/fftw3/FFTW3ConfigVersion.cmake",
+        "path_type": "hardlink",
+        "sha256": "d2a59e69f7cf2021d27d379ce953d4c77d5aa1751af494198171442e7c9918df",
+        "sha256_in_prefix": "d2a59e69f7cf2021d27d379ce953d4c77d5aa1751af494198171442e7c9918df",
+        "size_in_bytes": 376
+      },
+      {
+        "_path": "lib/cmake/fftw3/FFTW3fConfig.cmake",
+        "file_mode": "text",
+        "path_type": "hardlink",
+        "prefix_placeholder": "/tmp/build/80754af9/fftw_1607969686363/_h_env_placehold_placehold_placehold_placehold_placehold_placehold_placehold_placehold_placehold_placehold_placehold_placehold_placehold_placehold_placehold_placehold_placehold_placehold_placehold_placehold_placehold",
+        "sha256": "bd547304edcd5ace4edc415ef10c9df060757ad132ab1996d058150231252058",
+        "sha256_in_prefix": "dea3b2d7242e21ce8945ab6c7ce6ada64221812e45c30d2ab4ed1ed85864ce52",
+        "size_in_bytes": 1009
+      },
+      {
+        "_path": "lib/cmake/fftw3/FFTW3fConfigVersion.cmake",
+        "path_type": "hardlink",
+        "sha256": "d2a59e69f7cf2021d27d379ce953d4c77d5aa1751af494198171442e7c9918df",
+        "sha256_in_prefix": "d2a59e69f7cf2021d27d379ce953d4c77d5aa1751af494198171442e7c9918df",
+        "size_in_bytes": 376
+      },
+      {
+        "_path": "lib/cmake/fftw3/FFTW3lConfig.cmake",
+        "file_mode": "text",
+        "path_type": "hardlink",
+        "prefix_placeholder": "/tmp/build/80754af9/fftw_1607969686363/_h_env_placehold_placehold_placehold_placehold_placehold_placehold_placehold_placehold_placehold_placehold_placehold_placehold_placehold_placehold_placehold_placehold_placehold_placehold_placehold_placehold_placehold",
+        "sha256": "35fb095cecab6726be97d09c7cbdd93d648b94d7eb90ab270485a3b2e6e30f3b",
+        "sha256_in_prefix": "c4299eb28ae95ed3ea80dfa6b5a7eb905962eb8c76e381b5849aa03903bd1040",
+        "size_in_bytes": 1009
+      },
+      {
+        "_path": "lib/cmake/fftw3/FFTW3lConfigVersion.cmake",
+        "path_type": "hardlink",
+        "sha256": "d2a59e69f7cf2021d27d379ce953d4c77d5aa1751af494198171442e7c9918df",
+        "sha256_in_prefix": "d2a59e69f7cf2021d27d379ce953d4c77d5aa1751af494198171442e7c9918df",
+        "size_in_bytes": 376
+      },
+      {
+        "_path": "lib/libfftw3.a",
+        "file_mode": "binary",
+        "path_type": "hardlink",
+        "prefix_placeholder": "/tmp/build/80754af9/fftw_1607969686363/_h_env_placehold_placehold_placehold_placehold_placehold_placehold_placehold_placehold_placehold_placehold_placehold_placehold_placehold_placehold_placehold_placehold_placehold_placehold_placehold_placehold_placehold",
+        "sha256": "814a6ad6b8590f48c780548bbe409185e944a175a110562dd16be559e91c42e4",
+        "sha256_in_prefix": "a4a0301ee0e09d104a03c7541211fb35a0ca9f98de947e614efe1877a47bb203",
+        "size_in_bytes": 4726328
+      },
+      {
+        "_path": "lib/libfftw3.so",
+        "path_type": "softlink",
+        "sha256": "d56e59690fae638839e96a41b5bff0b3573701816bf9680b2762f4fbd171cc12",
+        "size_in_bytes": 2259176
+      },
+      {
+        "_path": "lib/libfftw3.so.3",
+        "path_type": "softlink",
+        "sha256": "d56e59690fae638839e96a41b5bff0b3573701816bf9680b2762f4fbd171cc12",
+        "size_in_bytes": 2259176
+      },
+      {
+        "_path": "lib/libfftw3.so.3.6.9",
+        "file_mode": "binary",
+        "path_type": "hardlink",
+        "prefix_placeholder": "/tmp/build/80754af9/fftw_1607969686363/_h_env_placehold_placehold_placehold_placehold_placehold_placehold_placehold_placehold_placehold_placehold_placehold_placehold_placehold_placehold_placehold_placehold_placehold_placehold_placehold_placehold_placehold",
+        "sha256": "d56e59690fae638839e96a41b5bff0b3573701816bf9680b2762f4fbd171cc12",
+        "sha256_in_prefix": "85e008c86fdca7a51bea2f3863565449426b7bce3bbc49b01fdc2624df1e2a2d",
+        "size_in_bytes": 2259176
+      },
+      {
+        "_path": "lib/libfftw3_threads.a",
+        "path_type": "hardlink",
+        "sha256": "d0db141df58e485c87d912c710e8790ecddbd6a2f69bab1fe7837bd1d5fd7ff8",
+        "sha256_in_prefix": "d0db141df58e485c87d912c710e8790ecddbd6a2f69bab1fe7837bd1d5fd7ff8",
+        "size_in_bytes": 56948
+      },
+      {
+        "_path": "lib/libfftw3_threads.so",
+        "path_type": "softlink",
+        "sha256": "a55613a2ec0f5d6acb73d9cf2471df820b2b1d19f7ee675d7681e6d3163712cd",
+        "size_in_bytes": 37616
+      },
+      {
+        "_path": "lib/libfftw3_threads.so.3",
+        "path_type": "softlink",
+        "sha256": "a55613a2ec0f5d6acb73d9cf2471df820b2b1d19f7ee675d7681e6d3163712cd",
+        "size_in_bytes": 37616
+      },
+      {
+        "_path": "lib/libfftw3_threads.so.3.6.9",
+        "path_type": "hardlink",
+        "sha256": "a55613a2ec0f5d6acb73d9cf2471df820b2b1d19f7ee675d7681e6d3163712cd",
+        "sha256_in_prefix": "a55613a2ec0f5d6acb73d9cf2471df820b2b1d19f7ee675d7681e6d3163712cd",
+        "size_in_bytes": 37616
+      },
+      {
+        "_path": "lib/libfftw3f.a",
+        "file_mode": "binary",
+        "path_type": "hardlink",
+        "prefix_placeholder": "/tmp/build/80754af9/fftw_1607969686363/_h_env_placehold_placehold_placehold_placehold_placehold_placehold_placehold_placehold_placehold_placehold_placehold_placehold_placehold_placehold_placehold_placehold_placehold_placehold_placehold_placehold_placehold",
+        "sha256": "0542ae9bb877b3e4f00c0e0729f0c46212cee46e2c71d5f320ddb7ab3f5349df",
+        "sha256_in_prefix": "f8b018e046e1fdecfd2d524dcd6847c93d3d13c5a709734ffa582775c0dbfb2b",
+        "size_in_bytes": 4782094
+      },
+      {
+        "_path": "lib/libfftw3f.so",
+        "path_type": "softlink",
+        "sha256": "6aef0a5fe57a5131a5f33e4291ff7fc78749a252209ba0e710a7c2bb559ae8dc",
+        "size_in_bytes": 2313424
+      },
+      {
+        "_path": "lib/libfftw3f.so.3",
+        "path_type": "softlink",
+        "sha256": "6aef0a5fe57a5131a5f33e4291ff7fc78749a252209ba0e710a7c2bb559ae8dc",
+        "size_in_bytes": 2313424
+      },
+      {
+        "_path": "lib/libfftw3f.so.3.6.9",
+        "file_mode": "binary",
+        "path_type": "hardlink",
+        "prefix_placeholder": "/tmp/build/80754af9/fftw_1607969686363/_h_env_placehold_placehold_placehold_placehold_placehold_placehold_placehold_placehold_placehold_placehold_placehold_placehold_placehold_placehold_placehold_placehold_placehold_placehold_placehold_placehold_placehold",
+        "sha256": "6aef0a5fe57a5131a5f33e4291ff7fc78749a252209ba0e710a7c2bb559ae8dc",
+        "sha256_in_prefix": "b2bf0a130604d7d74655e9bd3af8a7d164e0f602562683d80f7aeae7174dd4a4",
+        "size_in_bytes": 2313424
+      },
+      {
+        "_path": "lib/libfftw3f_threads.a",
+        "path_type": "hardlink",
+        "sha256": "12016db0a45157e9203a7b3ca33501fe4001255453b237c3154e0e9c01ee7fb2",
+        "sha256_in_prefix": "12016db0a45157e9203a7b3ca33501fe4001255453b237c3154e0e9c01ee7fb2",
+        "size_in_bytes": 57104
+      },
+      {
+        "_path": "lib/libfftw3f_threads.so",
+        "path_type": "softlink",
+        "sha256": "1b335e140ce5db390650e18db7d18dbec92e4ee70a5b65e9788b7b86ed272f88",
+        "size_in_bytes": 37672
+      },
+      {
+        "_path": "lib/libfftw3f_threads.so.3",
+        "path_type": "softlink",
+        "sha256": "1b335e140ce5db390650e18db7d18dbec92e4ee70a5b65e9788b7b86ed272f88",
+        "size_in_bytes": 37672
+      },
+      {
+        "_path": "lib/libfftw3f_threads.so.3.6.9",
+        "path_type": "hardlink",
+        "sha256": "1b335e140ce5db390650e18db7d18dbec92e4ee70a5b65e9788b7b86ed272f88",
+        "sha256_in_prefix": "1b335e140ce5db390650e18db7d18dbec92e4ee70a5b65e9788b7b86ed272f88",
+        "size_in_bytes": 37672
+      },
+      {
+        "_path": "lib/libfftw3l.a",
+        "file_mode": "binary",
+        "path_type": "hardlink",
+        "prefix_placeholder": "/tmp/build/80754af9/fftw_1607969686363/_h_env_placehold_placehold_placehold_placehold_placehold_placehold_placehold_placehold_placehold_placehold_placehold_placehold_placehold_placehold_placehold_placehold_placehold_placehold_placehold_placehold_placehold",
+        "sha256": "841ba288813f92bb3731c830b73fabefd6d4c635a7f35149dd5a1d1ac1934d96",
+        "sha256_in_prefix": "a6f4e9482fff1c5a61bfbd32c186237debd56f9b4cae66e1f2e5a153031b74e8",
+        "size_in_bytes": 2214056
+      },
+      {
+        "_path": "lib/libfftw3l.so",
+        "path_type": "softlink",
+        "sha256": "f7f01351063bade9ffb69fa14052b271f7e10059145f84abf2ef98c46256b815",
+        "size_in_bytes": 993408
+      },
+      {
+        "_path": "lib/libfftw3l.so.3",
+        "path_type": "softlink",
+        "sha256": "f7f01351063bade9ffb69fa14052b271f7e10059145f84abf2ef98c46256b815",
+        "size_in_bytes": 993408
+      },
+      {
+        "_path": "lib/libfftw3l.so.3.6.9",
+        "file_mode": "binary",
+        "path_type": "hardlink",
+        "prefix_placeholder": "/tmp/build/80754af9/fftw_1607969686363/_h_env_placehold_placehold_placehold_placehold_placehold_placehold_placehold_placehold_placehold_placehold_placehold_placehold_placehold_placehold_placehold_placehold_placehold_placehold_placehold_placehold_placehold",
+        "sha256": "f7f01351063bade9ffb69fa14052b271f7e10059145f84abf2ef98c46256b815",
+        "sha256_in_prefix": "1fa7a3c80ca84a93a2327f350585e011bfb1f15b547979e308a15d421389905a",
+        "size_in_bytes": 993408
+      },
+      {
+        "_path": "lib/libfftw3l_threads.a",
+        "path_type": "hardlink",
+        "sha256": "1d7b6d19bbc0b02611b250caa758d7e63f64d46b3f8e62c9bfca82025cafd362",
+        "sha256_in_prefix": "1d7b6d19bbc0b02611b250caa758d7e63f64d46b3f8e62c9bfca82025cafd362",
+        "size_in_bytes": 57040
+      },
+      {
+        "_path": "lib/libfftw3l_threads.so",
+        "path_type": "softlink",
+        "sha256": "dc0721837c2daa63d2651aa418a312769f5fd6f758ff99556bd3b774259a8642",
+        "size_in_bytes": 37672
+      },
+      {
+        "_path": "lib/libfftw3l_threads.so.3",
+        "path_type": "softlink",
+        "sha256": "dc0721837c2daa63d2651aa418a312769f5fd6f758ff99556bd3b774259a8642",
+        "size_in_bytes": 37672
+      },
+      {
+        "_path": "lib/libfftw3l_threads.so.3.6.9",
+        "path_type": "hardlink",
+        "sha256": "dc0721837c2daa63d2651aa418a312769f5fd6f758ff99556bd3b774259a8642",
+        "sha256_in_prefix": "dc0721837c2daa63d2651aa418a312769f5fd6f758ff99556bd3b774259a8642",
+        "size_in_bytes": 37672
+      },
+      {
+        "_path": "lib/pkgconfig/fftw3.pc",
+        "file_mode": "text",
+        "path_type": "hardlink",
+        "prefix_placeholder": "/tmp/build/80754af9/fftw_1607969686363/_h_env_placehold_placehold_placehold_placehold_placehold_placehold_placehold_placehold_placehold_placehold_placehold_placehold_placehold_placehold_placehold_placehold_placehold_placehold_placehold_placehold_placehold",
+        "sha256": "cf450fa18d38869dab4222ac25a1137f8d46a4a3c52714b700b3a0fb99748a22",
+        "sha256_in_prefix": "fbb1c71580e839f1feae8fb1d2f1108e16ebd338a356bbb7c218b7b9194cbd97",
+        "size_in_bytes": 480
+      },
+      {
+        "_path": "lib/pkgconfig/fftw3f.pc",
+        "file_mode": "text",
+        "path_type": "hardlink",
+        "prefix_placeholder": "/tmp/build/80754af9/fftw_1607969686363/_h_env_placehold_placehold_placehold_placehold_placehold_placehold_placehold_placehold_placehold_placehold_placehold_placehold_placehold_placehold_placehold_placehold_placehold_placehold_placehold_placehold_placehold",
+        "sha256": "c4c894edd6c42ebaf04751166efceb4e705203896ef0824959e4ccd33e9b35e5",
+        "sha256_in_prefix": "04664820777e501565db1c5d180beb56307c1dea6cdf874a53b9cf2fbc9a8175",
+        "size_in_bytes": 481
+      },
+      {
+        "_path": "lib/pkgconfig/fftw3l.pc",
+        "file_mode": "text",
+        "path_type": "hardlink",
+        "prefix_placeholder": "/tmp/build/80754af9/fftw_1607969686363/_h_env_placehold_placehold_placehold_placehold_placehold_placehold_placehold_placehold_placehold_placehold_placehold_placehold_placehold_placehold_placehold_placehold_placehold_placehold_placehold_placehold_placehold",
+        "sha256": "6e6b71354c76236fe04cbdfb212358203658ea445e282aa85a98e8d0ff0a500e",
+        "sha256_in_prefix": "a92fe3b477502c2f9d879b4afd50c797efa06ebf5d9c1206ce0dfcba19fc5619",
+        "size_in_bytes": 481
+      },
+      {
+        "_path": "share/info/fftw3.info",
+        "path_type": "hardlink",
+        "sha256": "93f0999712b7a241e9124ecad483fb9b9d73444dc926146971b98b3416f054c9",
+        "sha256_in_prefix": "93f0999712b7a241e9124ecad483fb9b9d73444dc926146971b98b3416f054c9",
+        "size_in_bytes": 6166
+      },
+      {
+        "_path": "share/info/fftw3.info-1",
+        "path_type": "hardlink",
+        "sha256": "fbfa2778da42b2c4c34968af174b7f50a0e897c16d79f3201ee5ffc81bd072dd",
+        "sha256_in_prefix": "fbfa2778da42b2c4c34968af174b7f50a0e897c16d79f3201ee5ffc81bd072dd",
+        "size_in_bytes": 300059
+      },
+      {
+        "_path": "share/info/fftw3.info-2",
+        "path_type": "hardlink",
+        "sha256": "e983c72aa29920ed4600cc6f92d06cb86f5f19188159417f2f4fb124e74bf846",
+        "sha256_in_prefix": "e983c72aa29920ed4600cc6f92d06cb86f5f19188159417f2f4fb124e74bf846",
+        "size_in_bytes": 79218
+      },
+      {
+        "_path": "share/man/man1/fftw-wisdom-to-conf.1",
+        "path_type": "hardlink",
+        "sha256": "24ff9a1a15c07f25a617db09531663c3687ea39746213ce5dd86fb17a03a3259",
+        "sha256_in_prefix": "24ff9a1a15c07f25a617db09531663c3687ea39746213ce5dd86fb17a03a3259",
+        "size_in_bytes": 3597
+      },
+      {
+        "_path": "share/man/man1/fftw-wisdom.1",
+        "path_type": "hardlink",
+        "sha256": "327b5308a5a207b8f42e1ab05ac70800154930dbac43aea906beb1c19fe79fd6",
+        "sha256_in_prefix": "327b5308a5a207b8f42e1ab05ac70800154930dbac43aea906beb1c19fe79fd6",
+        "size_in_bytes": 6888
+      },
+      {
+        "_path": "share/man/man1/fftwf-wisdom.1",
+        "path_type": "hardlink",
+        "sha256": "ffd2f9d9210d8b2556011c42f72305e3d93fc161d45ab0548e84260a8d83e9e5",
+        "sha256_in_prefix": "ffd2f9d9210d8b2556011c42f72305e3d93fc161d45ab0548e84260a8d83e9e5",
+        "size_in_bytes": 6901
+      },
+      {
+        "_path": "share/man/man1/fftwl-wisdom.1",
+        "path_type": "hardlink",
+        "sha256": "8887b212402fe2ab6c2ef43665c7b412f56151de528a3d4350dc1c88c4309377",
+        "sha256_in_prefix": "8887b212402fe2ab6c2ef43665c7b412f56151de528a3d4350dc1c88c4309377",
+        "size_in_bytes": 6901
+      }
+    ],
+    "paths_version": 1
+  },
+  "requested_spec": "None",
+  "sha256": "cd2b91933ab098dff121a4ea2a9d8e46f28aa6c3afb3f746b85a309eae14b0fe",
+  "size": 2443756,
+  "subdir": "linux-64",
+  "timestamp": 1607970357824,
+  "track_features": "",
+  "url": "https://mirrors.tuna.tsinghua.edu.cn/anaconda/pkgs/main/linux-64/fftw-3.3.9-h27cfd23_1.conda",
+  "version": "3.3.9"
+}

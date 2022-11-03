@@ -1,0 +1,32 @@
+{
+  "build": "mkl",
+  "build_number": 1,
+  "channel": "https://mirrors.tuna.tsinghua.edu.cn/anaconda/pkgs/main/linux-64",
+  "constrains": [],
+  "depends": [],
+  "extracted_package_dir": "/root/demos/python/python_glibc1/miniconda/pkgs/blas-1.0-mkl",
+  "features": "",
+  "files": [],
+  "fn": "blas-1.0-mkl.conda",
+  "legacy_bz2_md5": "751c2c5b239a728db05f91374aaac3a1",
+  "legacy_bz2_size": 5838,
+  "link": {
+    "source": "/root/demos/python/python_glibc1/miniconda/pkgs/blas-1.0-mkl",
+    "type": 1
+  },
+  "md5": "9a7a051e9bd41da46523acb017d8a517",
+  "name": "blas",
+  "package_tarball_full_path": "/root/demos/python/python_glibc1/miniconda/pkgs/blas-1.0-mkl.conda",
+  "paths_data": {
+    "paths": [],
+    "paths_version": 1
+  },
+  "requested_spec": "None",
+  "sha256": "05f806e9b610f80e15f2c8d7b4e9a7a2817ed4870b85427acb2a89a1db44ec0e",
+  "size": 6031,
+  "subdir": "linux-64",
+  "timestamp": 1528122042945,
+  "track_features": "",
+  "url": "https://mirrors.tuna.tsinghua.edu.cn/anaconda/pkgs/main/linux-64/blas-1.0-mkl.conda",
+  "version": "1.0"
+}
