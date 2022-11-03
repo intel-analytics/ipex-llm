@@ -44,7 +44,7 @@ You can use the [install panel](https://bigdl.readthedocs.io/en/latest/doc/Chron
 
 - `intel_extension_for_pytorch (ipex)` is unavailable for Windows now, so the related feature is not supported.
 
-### Known Issue on Native Windows
+### Known Issues on Native Windows
 #### Issue 1
 
 **Problem description**
@@ -52,6 +52,7 @@ You can use the [install panel](https://bigdl.readthedocs.io/en/latest/doc/Chron
 Calling `forecaster.quantize()` without specifying the `metric` parameter (e.g. `forecaster.quantize(train_data)`) will raise runtime error, it may happen when neural-compressor version is lower than `1.13.1`
 
 > [ERROR] Unexpected exception AssertionError('please use start() before end()') happened during tuning.
+>
 > RuntimeError: Found no quantized model satisfying accuracy criterion.
 
 **Solution**
