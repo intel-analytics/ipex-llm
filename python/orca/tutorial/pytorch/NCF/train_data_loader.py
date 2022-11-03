@@ -34,50 +34,14 @@ import torch.utils.data as data
 
 
 class NCFData(data.Dataset):
-    def __init__(self, features,
-                 item_num=0, train_mat=None, num_ng=4, is_training=False):
-        super(NCFData, self).__init__()
-        """ Note that the labels are only useful when training, we thus
-            add them in the ng_sample() function.
-        """
-        self.features_ps = features
-        self.item_num = item_num
-        self.train_mat = train_mat
-        self.num_ng = num_ng
-        self.is_training = is_training
-        self.labels = [0 for _ in range(len(features))]
-
-    def ng_sample(self):
-        invalidInputError(self.is_training, 'no need to sampling when testing')
-
-        self.features_ng = []
-        for x in self.features_ps:
-            u = x[0]
-            for t in range(self.num_ng):
-                j = np.random.randint(self.item_num)
-                while (u, j) in self.train_mat:
-                    j = np.random.randint(self.item_num)
-                self.features_ng.append([u, j])
-
-        labels_ps = [1 for _ in range(len(self.features_ps))]
-        labels_ng = [0 for _ in range(len(self.features_ng))]
-
-        self.features_fill = self.features_ps + self.features_ng
-        self.labels_fill = labels_ps + labels_ng
+    def __init__(self, data):
+        self.data = data.values.tolist()
 
     def __len__(self):
-        if self.is_training:
-            return (self.num_ng + 1) * len(self.labels)
-        return len(self.labels)
+        return len(self.data)
 
     def __getitem__(self, idx):
-        features = self.features_fill if self.is_training else self.features_ps
-        labels = self.labels_fill if self.is_training else self.labels
-
-        user = features[idx][0]
-        item = features[idx][1]
-        label = float(labels[idx])
-        return user, item, label
+        return tuple(self.data[idx])
 
 
 def train_loader_func(config, batch_size):
@@ -88,21 +52,40 @@ def train_loader_func(config, batch_size):
     user_num = data_X['user'].max() + 1
     item_num = data_X['item'].max() + 1
 
-    data_X = data_X.values.tolist()
+    features_ps = data_X.values.tolist()
 
     # load ratings as a dok matrix
     import scipy.sparse as sp
     train_mat = sp.dok_matrix((user_num, item_num), dtype=np.int64)
-    for x in data_X:
+    for x in features_ps:
         train_mat[x[0], x[1]] = 1
 
-    train_data, _ = train_test_split(data_X, test_size=0.2, random_state=100)
+    # sample negative items for training datasets
+    np.random.seed(0)
+    features_ng = []
+    for x in features_ps:
+        u = x[0]
+        for t in range(4):
+            j = np.random.randint(item_num)
+            while (u, j) in train_mat:
+                j = np.random.randint(item_num)
+            features_ng.append([u, j])
+    features = features_ps + features_ng
+    labels_ps = [1 for _ in range(len(features_ps))]
+    labels_ng = [0 for _ in range(len(features_ng))]
+    labels = labels_ps + labels_ng
+    data_X = pd.DataFrame(features, columns=["user", "item"], dtype=np.int64)
+    data_X["label"] = labels
 
-    train_dataset = NCFData(train_data, item_num=item_num, train_mat=train_mat,
-                            num_ng=4, is_training=True)
+    # train test split
+    data_X = data_X.values.tolist()
+    train_data, _ = train_test_split(data_X, test_size=0.2, random_state=100)
+    train_data = pd.DataFrame(train_data, columns=["user", "item", "label"], dtype=np.int64)
+    train_data["label"] = train_data["label"].astype(np.float)
+
+    train_dataset = NCFData(train_data)
     train_loader = data.DataLoader(train_dataset, batch_size=batch_size,
                                    shuffle=True, num_workers=0)
-    train_loader.dataset.ng_sample()  # sample negative items for training datasets
     return train_loader
 
 
@@ -111,13 +94,43 @@ def test_loader_func(config, batch_size):
         "ml-1m/ratings.dat",
         sep="::", header=None, names=['user', 'item'],
         usecols=[0, 1], dtype={0: np.int64, 1: np.int64})
+    user_num = data_X['user'].max() + 1
+    item_num = data_X['item'].max() + 1
 
+    features_ps = data_X.values.tolist()
+
+    # load ratings as a dok matrix
+    import scipy.sparse as sp
+    train_mat = sp.dok_matrix((user_num, item_num), dtype=np.int64)
+    for x in features_ps:
+        train_mat[x[0], x[1]] = 1
+
+    # sample negative items for training datasets
+    np.random.seed(0)
+    features_ng = []
+    for x in features_ps:
+        u = x[0]
+        for t in range(4):
+            j = np.random.randint(item_num)
+            while (u, j) in train_mat:
+                j = np.random.randint(item_num)
+            features_ng.append([u, j])
+    features = features_ps + features_ng
+    labels_ps = [1 for _ in range(len(features_ps))]
+    labels_ng = [0 for _ in range(len(features_ng))]
+    labels = labels_ps + labels_ng
+    data_X = pd.DataFrame(features, columns=["user", "item"], dtype=np.int64)
+    data_X["label"] = labels
+
+    # train test split
     data_X = data_X.values.tolist()
-
     _, test_data = train_test_split(data_X, test_size=0.2, random_state=100)
+    test_data = pd.DataFrame(test_data, columns=["user", "item", "label"], dtype=np.int64)
+    test_data["label"] = test_data["label"].astype(np.float)
 
     test_dataset = NCFData(test_data)
-    test_loader = data.DataLoader(test_dataset, batch_size=batch_size, shuffle=False, num_workers=0)
+    test_loader = data.DataLoader(test_dataset, batch_size=batch_size,
+                                  shuffle=False, num_workers=0)
     return test_loader
 
 # Step 3: Define the Model
@@ -149,20 +162,22 @@ loss_function = nn.BCEWithLogitsLoss()
 # Step 4: Fit with Orca Estimator
 
 from bigdl.orca.learn.pytorch import Estimator
-from bigdl.orca.learn.metrics import Accuracy
+from bigdl.orca.learn.metrics import Accuracy, Precision, Recall
 
 # Create the estimator
 backend = "ray"  # "ray" or "spark"
 est = Estimator.from_torch(model=model_creator, optimizer=optimizer_creator,
-                           loss=loss_function, metrics=[Accuracy()], backend=backend)
+                           loss=loss_function, metrics=[Accuracy(), Precision(), Recall()],
+                           backend=backend)
 
 # Fit the estimator
-est.fit(data=train_loader_func, epochs=3, batch_size=256)
+batch_size = 1024
+est.fit(data=train_loader_func, epochs=10, batch_size=batch_size)
 
 # Step 5: Save and Load the Model
 
 # Evaluate the model
-result = est.evaluate(data=test_loader_func, batch_size=256)
+result = est.evaluate(data=test_loader_func, batch_size=batch_size)
 print('Evaluate results:')
 for r in result:
     print(r, ":", result[r])
