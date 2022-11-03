@@ -1,5 +1,1 @@
-#!/root/demos/python/python_glibc1/python-occlum/bin/python3.8
-
-from idlelib.pyshell import main
-if __name__ == '__main__':
-    main()
+idle3.8
