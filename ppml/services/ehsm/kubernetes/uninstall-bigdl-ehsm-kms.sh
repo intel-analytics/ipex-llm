@@ -1,0 +1,7 @@
+kubectl delete svc couchdb -n bigdl-ehsm-kms
+kubectl delete svc bigdl-ehsm-kms-service -n bigdl-ehsm-kms
+kubectl delete svc dkeyserver -n bigdl-ehsm-kms
+kubectl delete deployment bigdl-ehsm-kms-deployment -n bigdl-ehsm-kms
+kubectl delete deployment dkeycache -n bigdl-ehsm-kms
+kubectl delete statefulsets.apps couchdb -n bigdl-ehsm-kms
+kubectl delete statefulsets.apps dkeyserver -n bigdl-ehsm-kms

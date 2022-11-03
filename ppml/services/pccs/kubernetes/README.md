@@ -33,6 +33,7 @@ export pccsIP=your_pccs_ip_to_use_as               --->   <an_used_ip_address_in
 ...
 # Replace the below parameters according to your environment
 export apiKey=your_intel_pcs_server_subscription_key_obtained_through_web_registeration
+export httpsProxyUrl=your_usable_https_proxy_url
 export countryName=your_country_name
 export cityName=your_city_name
 export organizaitonName=your_organizaition_name
@@ -134,7 +135,8 @@ kubectl get all -n bigdl-pccs
 NAME         READY   STATUS        RESTARTS   AGE
 pod/pccs-0   1/1     Terminating   0          85s
 
-# please wait for a few seconds until it shows like below 
+# please wait for a few seconds until it shows like below after the command
+kubectl get all -n bigdl-pccs
 No resources found in bigdl-pccs namespace.
 ```
 Delete the namespce

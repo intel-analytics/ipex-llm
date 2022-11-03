@@ -13,5 +13,6 @@ export commonName=server_fqdn_or_your_name
 export emailAddress=your_email_address
 export serverPassword=your_server_password_to_use 
 
+## Create k8s namespace and apply BigDL-PCCS
 kubectl create namespace bigdl-pccs
 envsubst < bigdl-pccs.yaml | kubectl apply -f -
