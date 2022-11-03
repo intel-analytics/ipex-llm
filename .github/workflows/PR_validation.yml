@@ -3,6 +3,7 @@ name: PR Validation
 on:
   push:
     paths:
+      - 'scala/pom.xml'
       - 'scala/friesian/**'
       - '.github/actions/friesian-scala-ut-action/action.yml'
       - 'scala/dllib/**'
@@ -22,6 +23,7 @@ on:
   pull_request:
     branches: [ main ]
     paths:
+      - 'scala/pom.xml'
       - 'scala/friesian/**'
       - '.github/actions/friesian-scala-ut-action/action.yml'
       - 'scala/dllib/**'
@@ -59,22 +61,26 @@ jobs:
         with:
           filters: |
             friesian:
+              - 'scala/pom.xml'
               - 'scala/friesian/**'
               - '.github/actions/friesian-scala-ut-action/action.yml'
               - 'python/friesian/**'
               - '.github/actions/friesian/**'
               - '.github/actions/python-requirements/**'
             dllib:
+              - 'scala/pom.xml'
               - 'scala/dllib/**'
               - '.github/actions/dllib-scala-ut-action/action.yml'
               - '.github/actions/python-requirements/**'
             ppml:
+              - 'scala/pom.xml'
               - 'scala/ppml/**'
               - '.github/actions/ppml-scala-ut-action/action.yml'
               - 'python/ppml/**'
               - '.github/actions/ppml/**'
               - '.github/actions/python-requirements/**'
             orca:
+              - 'scala/pom.xml'
               - 'python/orca/**'
               - '.github/actions/orca-ray-ctx-example-action/action.yml'
               - '.github/actions/orca/**'
