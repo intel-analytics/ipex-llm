@@ -216,9 +216,9 @@ class SparkRunner:
             conf = " --conf " + " --conf ".join("{}={}".format(*i) for i in conf.items())
             sys_args = " ".join(sys.argv)
             print(sys_args)
-            submit_commnad = "spark-submit " + submit_args + " " + conf + " " + sys_args
-            print(submit_commnad)
-            return_value = os.system(submit_commnad)
+            submit_command = "spark-submit " + submit_args + " " + conf + " " + sys_args
+            print(submit_command)
+            return_value = os.system(submit_command)
         finally:
             if conda_name and penv_archive and pack_env:
                 os.remove(penv_archive)
@@ -444,9 +444,9 @@ class SparkRunner:
         conf["spark.driver.extraClassPath"] = conf["spark.executor.extraClassPath"]
         sys_args = "local://" + " ".join(sys.argv)
         conf = " --conf " + " --conf ".join("{}={}".format(*i) for i in conf.items())
-        submit_commnad = "spark-submit " + submit_args + " " + conf + " " + sys_args
-        print("submit command", submit_commnad)
-        return_value = os.system(submit_commnad)
+        submit_command = "spark-submit " + submit_args + " " + conf + " " + sys_args
+        print("submit command", submit_command)
+        return_value = os.system(submit_command)
         return return_value
 
 
