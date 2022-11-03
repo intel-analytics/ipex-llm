@@ -58,6 +58,10 @@ Install pycocotools using conda:
 
 `conda install pycocotools -c esri`
 
+Then neural-compressor can be successfully installed using pip, we recommend installing neural-compressor 1.13.1 or higher:
+
+`pip install neural-compressor==1.13.1`
+
 #### Issue 2
 
 **Problem description**
