@@ -14,10 +14,10 @@ on:
       - '.github/actions/orca/**'
       - 'python/ppml/**'
       - '.github/actions/ppml/**'
-      - '.github/actions/python-requirements/**'
       - 'python/friesian/**'
       - '.github/actions/friesian/**'
       - '.github/workflows/PR_validation.yml'
+      - '.github/actions/python-requirements/**'
       
   pull_request:
     branches: [ main ]
@@ -33,10 +33,10 @@ on:
       - '.github/actions/orca/**'
       - 'python/ppml/**'
       - '.github/actions/ppml/**'
-      - '.github/actions/python-requirements/**'
       - 'python/friesian/**'
       - '.github/actions/friesian/**'
       - '.github/workflows/PR_validation.yml'
+      - '.github/actions/python-requirements/**'
 
 
 permissions:
@@ -63,9 +63,11 @@ jobs:
               - '.github/actions/friesian-scala-ut-action/action.yml'
               - 'python/friesian/**'
               - '.github/actions/friesian/**'
+              - '.github/actions/python-requirements/**'
             dllib:
               - 'scala/dllib/**'
               - '.github/actions/dllib-scala-ut-action/action.yml'
+              - '.github/actions/python-requirements/**'
             ppml:
               - 'scala/ppml/**'
               - '.github/actions/ppml-scala-ut-action/action.yml'
@@ -76,6 +78,7 @@ jobs:
               - 'python/orca/**'
               - '.github/actions/orca-ray-ctx-example-action/action.yml'
               - '.github/actions/orca/**'
+              - '.github/actions/python-requirements/**'
            
   Friesian-Scala-UT:
     needs: changes
