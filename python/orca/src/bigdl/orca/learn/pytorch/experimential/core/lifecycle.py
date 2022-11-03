@@ -25,12 +25,7 @@ from torch.utils.data import DataLoader, IterableDataset
 from torch.utils.data.distributed import DistributedSampler
 
 
-class LifeCycleManager(metaclass=ABCMeta):
-    def __init__(self) -> None:
-        self.backend = "torch-distributed"
-        self.rank = -1
-        self.size = -1
-
+class LifeCycle(metaclass=ABCMeta):
     def get_node_ip_port(self):
         ip = self.get_node_ip()
         port = find_free_port()
@@ -100,11 +95,42 @@ class LifeCycleManager(metaclass=ABCMeta):
             from torch.utils.data import IterableDataset
             not_iterable = not isinstance(loader.dataset, IterableDataset)
         except Exception as e:
-            not_iterable = LifeCycleManager
+            not_iterable = LifeCycle
         return (isinstance(loader, DataLoader)
                 and not_iterable)
 
     @abstractmethod
     def shutdown(self):
         """Attempts to shut down the worker."""
+        pass
+
+    # Internal variables must be accessible
+    @property
+    @abstractmethod
+    def rank(self):
+        pass
+
+    @rank.setter
+    @abstractmethod
+    def rank(self, rank):
+        pass
+
+    @property
+    @abstractmethod
+    def backend(self):
+        pass
+
+    @backend.setter
+    @abstractmethod
+    def backend(self, rank):
+        pass
+
+    @property
+    @abstractmethod
+    def size(self):
+        pass
+
+    @size.setter
+    @abstractmethod
+    def size(self, rank):
         pass

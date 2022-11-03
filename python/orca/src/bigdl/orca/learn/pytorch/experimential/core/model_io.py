@@ -22,9 +22,8 @@ from bigdl.dllib.utils.log4Error import *
 
 
 class ModelIO(metaclass=ABCMeta):
-    def __init__(self):
-        self.rank = -1
-        self.logger = None
+    def __init__(self, logger):
+        self.logger = logger
 
     @abstractmethod
     def get_state_dict(self):
@@ -66,6 +65,17 @@ class ModelIO(metaclass=ABCMeta):
         with fs.open(filepath, "rb") as f:
             state_dict = torch.load(f)
         self.load_state_dict(state_dict)
+
+    # Internal variables must be accessible
+    @property
+    @abstractmethod
+    def rank(self):
+        pass
+
+    @rank.setter
+    @abstractmethod
+    def rank(self, rank):
+        pass
 
     @staticmethod
     def _state_dict2stream(state_dict):

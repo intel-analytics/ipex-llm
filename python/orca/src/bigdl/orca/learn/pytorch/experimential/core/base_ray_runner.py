@@ -15,12 +15,12 @@
 #
 
 
-from .lifecycle_manager import LifeCycleManager
+from .lifecycle import LifeCycle
 from .trainer import Trainer
 from .model_io import ModelIO
 
 from abc import ABCMeta
 
 
-class BaseRayRunner(Trainer, LifeCycleManager, ModelIO, metaclass=ABCMeta):
+class BaseRayRunner(Trainer, LifeCycle, ModelIO, metaclass=ABCMeta):
     pass
