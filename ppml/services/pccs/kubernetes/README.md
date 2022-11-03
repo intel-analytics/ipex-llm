@@ -139,7 +139,7 @@ pod/pccs-0   1/1     Terminating   0          85s
 kubectl get all -n bigdl-pccs
 No resources found in bigdl-pccs namespace.
 ```
-Delete the namespce
+Delete the namespace
 ```bash
 kubectl delete namespace bigdl-pccs
 
