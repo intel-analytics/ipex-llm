@@ -305,7 +305,8 @@ class SparkRunner:
                             initial_epoch=initial_epoch,
                             steps_per_epoch=steps_per_epoch,
                             validation_steps=validation_steps,
-                            validation_freq=validation_freq)
+                            validation_freq=validation_freq,
+                            batch_size=config["batch_size"])
 
         if callbacks:
             if replaced_log_dir and os.path.exists(replaced_log_dir):
