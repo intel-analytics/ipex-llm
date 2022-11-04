@@ -65,6 +65,7 @@ class NCF(nn.Module):
         self._init_weight_()
 
     def _init_weight_(self):
+        """ We leave the weights initialization here. """
         if not self.model == 'NeuMF-pre':
             nn.init.normal_(self.embed_user_GMF.weight, std=0.01)
             nn.init.normal_(self.embed_user_MLP.weight, std=0.01)
