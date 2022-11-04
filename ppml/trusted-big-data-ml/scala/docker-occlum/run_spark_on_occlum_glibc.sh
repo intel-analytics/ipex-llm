@@ -102,13 +102,24 @@ init_instance() {
            echo "[ERROR] Attestation set to true but NO PCCS"
            exit 1
         else
-           export ENABLE_SGX_DEBUG=false
-           sed -i "s#https://localhost:8081/sgx/certification/v3/#${PCCS_URL}#g" /etc/sgx_default_qcnl.conf
+           echo 'PCCS_URL='${PCCS_URL}'/sgx/certification/v3/' > /etc/sgx_default_qcnl.conf
+           echo 'USE_SECURE_CERT=FALSE' >> /etc/sgx_default_qcnl.conf
+           cd /root/demos/remote_attestation/dcap/
+           #build .c file
+           bash ./get_quote_on_ppml.sh
+           cd /opt/occlum_spark
+           # dir need to exit when writing quote
+           mkdir -p /opt/occlum_spark/image/etc/occlum_attestation/
+           #copy bom to generate quote
+           copy_bom -f /root/demos/remote_attestation/dcap/dcap-ppml.yaml --root image --include-dir /opt/occlum/etc/template
         fi
     fi
 
     # check occlum log level for docker
-    export ENABLE_SGX_DEBUG=false
+    if [[ -z "$ENABLE_SGX_DEBUG" ]]; then
+        echo "No ENABLE_SGX_DEBUG specified, set to off."
+        export ENABLE_SGX_DEBUG=false
+    fi
     export OCCLUM_LOG_LEVEL=off
     if [[ -z "$SGX_LOG_LEVEL" ]]; then
         echo "No SGX_LOG_LEVEL specified, set to off."
