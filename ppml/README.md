@@ -12,7 +12,8 @@ Protecting privacy and confidentiality is critical for large-scale data analysis
 &ensp;&ensp;&ensp;&ensp;&ensp;&ensp;[Step 3. Build Big Data & AI applications](#step-3-build-big-data--ai-applications) \
 &ensp;&ensp;&ensp;&ensp;&ensp;&ensp;[Step 4. Attestation ](#step-4-attestation) \
 &ensp;&ensp;&ensp;&ensp;&ensp;&ensp;[Step 5. Submit Job](#step-5-submit-job): 4 deploy modes and 2 options to submit job  \
-&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;[Step 6. Decrypt and Read Result](#step-6-decrypt-and-read-result) \
+&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;[Step 6. Monitor Job by History Server](#step-6-monitor-job-by-history-server) \
+&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;[Step 7. Decrypt and Read Result](#step-7-decrypt-and-read-result) \
 &ensp;&ensp;[3.3 More BigDL PPML Examples](#33-more-bigdl-ppml-examples) \
 [4. Develop your own Big Data & AI applications with BigDL PPML](#4-develop-your-own-big-data--ai-applications-with-bigdl-ppml) \
 &ensp;&ensp;[4.1 Create PPMLContext](#41-create-ppmlcontext) \
@@ -507,10 +508,13 @@ Here we use **k8s client mode** and **PPML CLI** to run SimpleQuery. Check other
   4. If you setup [PPML Monitoring](docs/prepare_environment.md#optional-k8s-monitioring-setup), you can check PPML Dashboard to monitor the status in http://kubernetes_master_url:3000
 
     ![image](https://user-images.githubusercontent.com/61072813/179948818-a2f6844f-0009-49d1-aeac-2e8c5a7ef677.png)
+  </details>
+<br />
 
-  5. Monitor spark events using history server:
 
-     The history server provides an interface to watch and log spark performance and metrics.
+#### Step 6. Monitor Job by History Server
+
+     You can monitor spark events using history server. The history server provides an interface to watch and log spark performance and metrics.
      
      First, create a shared directory that can be accessed by both the client and the other worker containers in your cluster. For example, you can create an empty directory under the mounted nfs path or hdfs. The spark drivers and executors will write their event logs to this destination, and the history server will read logs here as well.
      
@@ -547,14 +551,10 @@ Here we use **k8s client mode** and **PPML CLI** to run SimpleQuery. Check other
      
      You can use these logs to analyze spark jobs. Moreover, you are also allowed to surf from a web UI provided by the history server by accessing `http://localhost:18080`:
      
-     ![history server UI](https://user-images.githubusercontent.com/60865256/196840282-6584f36e-5e72-4144-921e-4536d3391f05.png)
+     ![history server UI](https://user-images.githubusercontent.com/60865256/196840282-6584f36e-5e72-4144-921e-4536d3391f05.png)    
 
-    
 
-  </details>
-<br />
-
-#### Step 6. Decrypt and Read Result
+#### Step 7. Decrypt and Read Result
 When the job is done, you can decrypt and read result of the job. More details in [Decrypt Job Result](./services/kms-utils/docker/README.md#3-enroll-generate-key-encrypt-and-decrypt).
 
   ```
