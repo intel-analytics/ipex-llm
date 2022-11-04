@@ -129,7 +129,6 @@ if __name__ == '__main__':
 
     sparse_int_features = [
         'user_id', 'article_id',
-        'net_status', 'exop_position'
     ]
     sparse_string_features = [
         'cat_2', 'cat_1', 'device', 'os', 'province',
