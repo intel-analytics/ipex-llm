@@ -114,7 +114,7 @@ extensions = [
     'nbsphinx',
     'nbsphinx_link',
     'sphinx.ext.graphviz', # for embedded graphviz diagram
-    'sphinxcontrib.mermaid' # for mermaid.js diagram
+    'sphinxcontrib.mermaid' # for Mermaid diagram
 ]
 
 # Add any paths that contain templates here, relative to this directory.
@@ -280,5 +280,5 @@ nbsphinx_execute = 'never'
 # make output of graphviz diagram to svg
 graphviz_output_format = 'svg'
 
-# disable automatically included mermaid.js from sphinxcontrib.mermaid to load it before require.js
+# disable automatically included mermaid.js from sphinxcontrib-mermaid to load it before require.js
 mermaid_version=""
