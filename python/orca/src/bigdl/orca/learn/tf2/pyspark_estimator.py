@@ -78,7 +78,7 @@ class SparkTFEstimator():
             self.config["intra_op_parallelism"] = num_core // workers_per_node
 
         self.model_weights = None
-        self.load_path=None
+        self.load_path = None
 
         if "batch_size" in self.config:
             invalidInputError(False,
