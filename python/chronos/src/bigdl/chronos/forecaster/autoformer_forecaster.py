@@ -182,6 +182,7 @@ class AutoformerForecaster(Forecaster):
 
         self.model_creator = model_creator
         self.loss_creator = loss_creator
+        self.jit_fp32 = None
 
     def _build_automodel(self, data, validation_data=None, batch_size=32, epochs=1):
         """Build a Generic Model using config parameters."""
@@ -468,7 +469,7 @@ class AutoformerForecaster(Forecaster):
                         self.trainer.move_metrics_to_cpu)
                     return fit_out
 
-    def predict(self, data, batch_size=32):
+    def predict(self, data, batch_size=32, use_jit=False):
         """
         Predict using a trained forecaster.
 
@@ -482,6 +483,7 @@ class AutoformerForecaster(Forecaster):
 
         :param batch_size: predict batch size. The value will not affect predict
                result but will affect resources cost(e.g. memory and time).
+        :param use_jit: Predict using a trained forecaster with jit.
 
         :return: A list of numpy ndarray
         """
@@ -509,6 +511,14 @@ class AutoformerForecaster(Forecaster):
                                             torch.from_numpy(data[3]),),
                               batch_size=batch_size,
                               shuffle=False)
+
+        if use_jit:
+            if self.jit_fp32 is None:
+                dummy_inputs = next(iter(data))
+                dummy_inputs = tuple(map(lambda x: x[0:1, :, :], dummy_inputs))
+                self._build_jit(dummy_inputs)
+            with torch.jit.optimized_execution(should_optimize=False):
+                return self.trainer.predict(self.jit_fp32, data)
         return self.trainer.predict(self.internal, data)
 
     def evaluate(self, data, batch_size=32):
@@ -710,6 +720,14 @@ class AutoformerForecaster(Forecaster):
         if self.use_hpo:
             self.trainer.model = self.trainer.model.model
         self.trainer.save_checkpoint(checkpoint_file)
+
+    def _build_jit(self, dummy_inputs):
+        """
+        Build jit model to speed up inference and reduce latency.
+        """
+        from bigdl.nano.pytorch.inference import InferenceOptimizer
+        self.jit_fp32 = InferenceOptimizer.trace(self.internal, input_sample=dummy_inputs,
+                                                 accelerator="jit", use_ipex=self.use_ipex)
 
     @classmethod
     def from_tsdataset(cls,

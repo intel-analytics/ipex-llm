@@ -461,3 +461,18 @@ class TestChronosModelAutoformerForecaster(TestCase):
         forecaster.tune(train_data, validation_data=val_data, n_trials=2,
                         study_name=name, sampler=SamplerType.Grid,
                         storage=storage, n_parallels=2)
+
+    def test_autoformer_forecaster_jit_predict(self):
+        train_data, _, test_data = create_data(loader=False)
+        forecaster = AutoformerForecaster(past_seq_len=24,
+                                          future_seq_len=5,
+                                          input_feature_num=2,
+                                          output_feature_num=2,
+                                          label_len=12,
+                                          freq="s",
+                                          loss="mse",
+                                          metrics=["mse", "mape"])
+        forecaster.fit(train_data, epochs=2)
+        pred = forecaster.predict(test_data)
+        jit_pred = forecaster.predict(test_data, use_jit=True)
+        assert pred[0].shape == jit_pred[0].shape
