@@ -39,15 +39,22 @@ subtrees:
                 - file: doc/Orca/Overview/distributed-tuning
                 - file: doc/Orca/Overview/ray
           - file: doc/Orca/QuickStart/index
-            title: "Quick Examples"
+            title: "Quickstarts"
             subtrees:
               - entries:
-                - file: doc/UseCase/spark-dataframe
-                - file: doc/UseCase/xshards-pandas
+                - file: doc/Orca/QuickStart/orca-tf-quickstart
+                - file: doc/Orca/QuickStart/orca-tf2keras-quickstart
+                - file: doc/Orca/QuickStart/orca-keras-quickstart
+                - file: doc/Orca/QuickStart/orca-pytorch-quickstart
                 - file: doc/Orca/QuickStart/ray-quickstart
-                - file: doc/Orca/QuickStart/orca-pytorch-distributed-quickstart
-                - file: doc/Orca/QuickStart/orca-autoestimator-pytorch-quickstart
-                - file: doc/Orca/QuickStart/orca-autoxgboost-quickstart
+          - file: doc/Orca/Howto/index
+            title: "How-to Guides"
+            subtrees:
+              - entries:
+                - file: doc/Orca/Howto/spark-dataframe
+                - file: doc/Orca/Howto/xshards-pandas
+                - file: doc/Orca/Howto/orca-autoestimator-pytorch-quickstart
+                - file: doc/Orca/Howto/orca-autoxgboost-quickstart
           - file: doc/Orca/Tutorial/index
             title: "Tutorials"
             subtrees:
@@ -180,6 +187,7 @@ subtrees:
                 - file: doc/Chronos/Howto/how_to_generate_confidence_interval_for_prediction
                 - file: doc/Chronos/Howto/how_to_export_onnx_files
                 - file: doc/Chronos/Howto/how_to_export_openvino_files
+                - file: doc/Chronos/Howto/how_to_export_torchscript_files
           - file: doc/Chronos/QuickStart/index
             title: "Tutorials"
             subtrees:

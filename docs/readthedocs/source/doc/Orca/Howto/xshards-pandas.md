@@ -6,7 +6,7 @@
 
 ---
 
-**In this guide we will describe how to use [XShards](../Orca/Overview/data-parallel-processing.md) to scale-out Pandas data processing for distribtued deep learning.** 
+**In this guide we will describe how to use [XShards](../Orca/Overview/data-parallel-processing.md) to scale-out Pandas data processing for distributed deep learning.** 
 
 ### 1. Read input data into XShards of Pandas DataFrame
 

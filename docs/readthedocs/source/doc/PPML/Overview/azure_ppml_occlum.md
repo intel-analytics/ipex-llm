@@ -35,14 +35,30 @@ Key points:
   * Follow the [guide](https://learn.microsoft.com/en-us/azure/confidential-computing/confidential-enclave-nodes-aks-get-started) to deploy an AKS with confidential computing Intel SGX nodes.
   * Install Azure CLI on the created VM or your local machine according to [Azure CLI guide](https://docs.microsoft.com/en-us/cli/azure/install-azure-cli).
   * Login to AKS with such command:
-    ```bash
-    az aks get-credentials --resource-group  myResourceGroup --name myAKSCluster
-    ```
+  ```bash
+  az aks get-credentials --resource-group  myResourceGroup --name myAKSCluster
+  ```
+  * Create image pull secret from your Azure container registry
+      * If you already logged in to your Azure container registry, find your docker config json file (i.e. ~/.docker/config.json), and create secret for your registry credential like below:
+      ```bash
+      kubectl create secret generic regcred \
+      --from-file=.dockerconfigjson=<path/to/.docker/config.json> \
+      --type=kubernetes.io/dockerconfigjson
+      ```
+      * If you haven't logged in to your Azure container registry, you can create secret for your registry credential using your username and password:
+      ```bash
+      kubectl create secret docker-registry regcred --docker-server=myContainerRegistry.azurecr.io --docker-username=<your-name> --docker-password=<your-pword> --docker-email=<your-email>
+      ```
   * Create the RBAC to AKS
     ```bash
     kubectl create serviceaccount spark
     kubectl create clusterrolebinding spark-role --clusterrole=edit --serviceaccount=default:spark --namespace=default
     ```
+  * Add image pull secret to service account
+    ```bash
+    kubectl patch serviceaccount spark -p '{"imagePullSecrets": [{"name": "regcred"}]}'
+    ```
+  
 ## Single Node Spark Examples on Azure
 ### SparkPi example
 

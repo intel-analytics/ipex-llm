@@ -15,7 +15,7 @@ spec:
   selector:
     app: pccs
   externalIPs:
-  - {{ .Values.pccsIP }}
+  - $pccsIP 
 ---
 apiVersion: apps/v1
 kind: StatefulSet
@@ -35,27 +35,27 @@ spec:
     spec:
       containers:
       - name: pccs
-        image: {{ .Values.pccsImageName }}
+        image:  $pccsImageName
         imagePullPolicy: IfNotPresent
         env:
         - name: API_KEY
-          value: {{ .Values.apiKey }}
+          value:  $apiKey 
         - name: PCCS_PORT
           value: "18081"
         - name: HTTPS_PROXY_URL
-          value: {{ .Values.httpsProxyUrl }}
+          value:  $httpsProxyUrl 
         - name: COUNTRY_NAME
-          value: {{ .Values.countryName }}
+          value:  $countryName 
         - name: CITY_NAME
-          value: {{ .Values.cityName }}
+          value:  $cityName 
         - name: ORGANIZATION_NAME
-          value: {{ .Values.organizaitonName }}
+          value:  $organizaitonName 
         - name: COMMON_NAME
-          value: {{ .Values.commonName }}
+          value: $commonName 
         - name: EMAIL_ADDRESS
-          value: {{ .Values.emailAddress }}
+          value: $emailAddress 
         - name: PASSWORD
-          value: {{ .Values.serverPassword }}
+          value: $serverPassword 
         ports:
         - containerPort: 18081
           name: pccs-port

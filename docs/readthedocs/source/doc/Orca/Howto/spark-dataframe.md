@@ -6,7 +6,7 @@
 
 ---
 
-**In this guide we will describe how to use Apache Spark Dataframes to scale-out data processing for distribtued deep learning.**
+**In this guide we will describe how to use Apache Spark Dataframes to scale-out data processing for distributed deep learning.**
 
 The dataset used in this guide is [movielens-1M](https://grouplens.org/datasets/movielens/1m/), which contains 1 million ratings of 5 levels from 6000 users on 4000 movies. We will read the data into Spark Dataframe and directly use the Spark Dataframe as the input to the distributed training.
 
