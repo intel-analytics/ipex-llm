@@ -70,6 +70,16 @@ class MMCVRayEstimator(BaseRayEstimator):
                       **kwargs)
         success, worker_stats = self._train_epochs(**params)
 
+    def run(self,
+            data_loaders_creators: List[Callable],
+            workflow: List[Tuple[str, int]],
+            max_epochs: Optional[int] = None,  # deprecated
+            **kwargs):
+        """
+        Same as fit method, keep consistent with mmcv runner.run()
+        """
+        self.fit(data_loaders_creators, workflow, max_epochs, **kwargs)
+
     def predict(self, **kwargs):
         pass
 

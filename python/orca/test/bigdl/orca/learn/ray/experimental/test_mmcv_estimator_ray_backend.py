@@ -31,7 +31,6 @@ from mmcv.utils import get_logger
 from bigdl.orca import init_orca_context, stop_orca_context
 from bigdl.orca.learn.pytorch.experimential.mmcv.mmcv_ray_estimator import MMCVRayEstimator
 
-
 resource_path = os.path.join(
     os.path.realpath(os.path.dirname(__file__)), "../../../resources")
 
@@ -40,26 +39,28 @@ class Model(nn.Module):
 
     def __init__(self):
         super().__init__()
-        self.conv1 = nn.Conv2d(3, 6, 5)
-        self.pool = nn.MaxPool2d(2, 2)
-        self.conv2 = nn.Conv2d(6, 16, 5)
-        self.fc1 = nn.Linear(16 * 5 * 5, 120)
-        self.fc2 = nn.Linear(120, 84)
-        self.fc3 = nn.Linear(84, 10)
-        self.loss_fn = nn.CrossEntropyLoss()
+        self.fc1 = nn.Linear(50, 50)
+        self.relu1 = nn.ReLU()
+        self.dout = nn.Dropout(0.2)
+        self.fc2 = nn.Linear(50, 100)
+        self.prelu = nn.PReLU(1)
+        self.out = nn.Linear(100, 1)
+        self.out_act = nn.Sigmoid()
+        self.loss_fn = nn.BCELoss()
 
-    def forward(self, x):
-        x = self.pool(F.relu(self.conv1(x)))
-        x = self.pool(F.relu(self.conv2(x)))
-        x = x.view(-1, 16 * 5 * 5)
-        x = F.relu(self.fc1(x))
-        x = F.relu(self.fc2(x))
-        x = self.fc3(x)
-        return x
+    def forward(self, input_):
+        a1 = self.fc1(input_)
+        h1 = self.relu1(a1)
+        dout = self.dout(h1)
+        a2 = self.fc2(dout)
+        h2 = self.prelu(a2)
+        a3 = self.out(h2)
+        y = self.out_act(a3)
+        return y
 
     def train_step(self, data, optimizer):
-        images, labels = data
-        predicts = self(images)  # -> self.__call__() -> self.forward()
+        features, labels = data
+        predicts = self(features)  # -> self.__call__() -> self.forward()
         loss = self.loss_fn(predicts, labels)
         return {'loss': loss}
 
@@ -92,22 +93,32 @@ def runner_creator(config):
     return runner
 
 
+class LinearDataset(torch.utils.data.Dataset):
+    """y = a * x + b"""
+
+    def __init__(self, size=1000):
+        X1 = torch.randn(size // 2, 50)
+        X2 = torch.randn(size // 2, 50) + 1.5
+        self.x = torch.cat([X1, X2], dim=0)
+        Y1 = torch.zeros(size // 2, 1)
+        Y2 = torch.ones(size // 2, 1)
+        self.y = torch.cat([Y1, Y2], dim=0)
+
+    def __getitem__(self, index):
+        return self.x[index, None], self.y[index, None]
+
+    def __len__(self):
+        return len(self.x)
+
+
 def train_dataloader_creator(config):
-    # dataset and dataloader
-    transform = transforms.Compose([
-        transforms.ToTensor(),
-        transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))
-    ])
-    data_path = os.path.join(resource_path, "cifar10")
-    train_set = CIFAR10(
-        root=data_path, train=True, download=True, transform=transform)
+    train_set = LinearDataset()
     train_loader = DataLoader(
-        train_set, batch_size=32, shuffle=True, num_workers=2)
+        train_set, batch_size=64, shuffle=True, num_workers=2)
     return train_loader
 
 
 class TestMMCVRayEstimator(unittest.TestCase):
-
     estimator = None
 
     @classmethod
