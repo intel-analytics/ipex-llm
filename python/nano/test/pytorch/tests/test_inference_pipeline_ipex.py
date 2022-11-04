@@ -27,6 +27,7 @@ import torch
 import torch.nn.functional as F
 from test.pytorch.utils._train_torch_lightning import create_data_loader
 from torch.utils.data import TensorDataset, DataLoader
+from bigdl.nano.pytorch.utils import TORCH_VERSION_LESS_1_10
 
 
 data_transform = transforms.Compose([
@@ -298,6 +299,10 @@ class TestInferencePipeline(TestCase):
                                latency_sample_num=10)
 
     def test_multiple_input_dataloader(self):
+        # will not run this test if torch < 1.10
+        if TORCH_VERSION_LESS_1_10:
+            return
+
         net = MultipleInputNet()
         x1 = torch.randn(32, 10)
         x2 = torch.randn(32, 10)

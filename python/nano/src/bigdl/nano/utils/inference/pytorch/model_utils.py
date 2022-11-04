@@ -20,13 +20,15 @@ from torch.utils.data import DataLoader
 import torch
 from bigdl.nano.utils.log4Error import invalidInputError
 from bigdl.nano.pytorch.utils import TORCH_VERSION_LESS_1_11, TORCH_VERSION_LESS_1_12
+from bigdl.nano.utils.inference.pytorch.model import AcceleratedLightningModule
 
 
 def get_forward_args(model):
     forward_args = inspect.getfullargspec(model.forward).args[1:]
     if isinstance(model, LightningModule):
-        # forward param list for compiled model
-        forward_args = get_forward_args(model.model)
+        if not isinstance(model, AcceleratedLightningModule):
+            # forward param list for compiled model
+            forward_args = get_forward_args(model.model)
     return forward_args
 
 
