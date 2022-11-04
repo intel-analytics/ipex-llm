@@ -153,7 +153,7 @@ class AutoFormer(pl.LightningModule):
 
     def training_step(self, batch, batch_idx):
         batch_x, batch_y, batch_x_mark, batch_y_mark = map(lambda x: x.float(), batch)
-        outputs = self(batch_x, batch_y, batch_x_mark , batch_y_mark)
+        outputs = self(batch_x, batch_y, batch_x_mark, batch_y_mark)
 
         outputs = outputs[:, -self.pred_len:, -self.c_out:]
         batch_y = batch_y[:, -self.pred_len:, -self.c_out:]
