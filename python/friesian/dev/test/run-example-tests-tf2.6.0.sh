@@ -154,6 +154,8 @@ if [ -d data/multi_task_data.csv ]; then
   echo "data/multi_task_data.csv already exists"
 else
   wget -nv $FTP_URI/analytics-zoo-data/multi_task_data.csv -P data
+  echo "ls multi_task_data"
+  ls ./data
 fi
 
 #timer
