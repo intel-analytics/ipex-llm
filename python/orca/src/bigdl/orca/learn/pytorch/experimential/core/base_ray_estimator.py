@@ -33,33 +33,8 @@ from bigdl.orca.learn.pytorch.utils import find_free_port
 from bigdl.dllib.utils.log4Error import *
 
 # TODO: full path when merge
-# from ..utils import check_for_failure, get_driver_node_ip
+from ..utils import check_for_failure, get_driver_node_ip
 
-
-def check_for_failure(remote_values):
-    """Checks remote values for any that returned and failed.
-    :param remote_values: List of object IDs representing functions
-            that may fail in the middle of execution. For example, running
-            a SGD training loop in multiple parallel actor calls.
-    :return Bool for success in executing given remote tasks.
-    """
-    unfinished = remote_values
-    try:
-        while len(unfinished) > 0:
-            finished, unfinished = ray.wait(unfinished)
-            finished = ray.get(finished)
-        return True
-    except RayActorError as exc:
-        logger.exception(str(exc))
-    return False
-
-def get_driver_node_ip():
-    """
-    Returns the IP address of the current node.
-
-    :return: the IP address of the current node.
-    """
-    return ray._private.services.get_node_ip_address()
 
 class BaseRayEstimator(Estimator, metaclass=ABCMeta):
     def __init__(self, backend='ray', runner_cls=PytorchRayWorker, workers_per_node=1, **kwargs):
