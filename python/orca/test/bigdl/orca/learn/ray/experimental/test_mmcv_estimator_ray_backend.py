@@ -131,14 +131,13 @@ class TestMMCVRayEstimator(unittest.TestCase):
 
     @classmethod
     def tearDownClass(cls) -> None:
-        data_path = os.path.join(resource_path, "cifar10")
-        if os.path.exists(data_path):
-            shutil.rmtree(data_path)
-
         stop_orca_context()
 
     def test_fit(self):
         self.estimator.fit([train_dataloader_creator], [('train', 1)])
+
+    def test_run(self):
+        self.estimator.run([train_dataloader_creator], [('train', 1)])
 
 
 if __name__ == "__main__":
