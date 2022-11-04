@@ -41,7 +41,8 @@ class InferenceUtils:
                  batch=None,
                  inputs: List[str] = None,
                  outputs: List[str] = None,
-                 sample_size: int = 100):
+                 sample_size: int = 100
+                 onnxruntime_session_options=None):
         """
         Post-training quantization on a keras model.
 
@@ -89,6 +90,8 @@ class InferenceUtils:
                             only valid for accelerator='openvino'. Default to 100.
                             The larger the value, the more accurate the conversion,
                             the lower the performance degradation, but the longer the time.
+        :param onnxruntime_session_options: The session option for onnxruntime, only valid when
+                                            accelerator='onnxruntime', otherwise will be ignored.
         :return:            A TensorflowBaseModel for INC. If there is no model found, return None.
         """
         if accelerator is None:
@@ -125,6 +128,34 @@ class InferenceUtils:
                                       maximal_drop=maximal_drop,
                                       max_iter_num=max_trials,
                                       sample_size=sample_size)
+        elif accelerator == 'onnxruntime':
+            # convert tensorflow model to onnx model
+            from bigdl.nano.deps.onnxruntime.tensorflow.tensorflow_onnxruntime_model \
+                import KerasONNXRuntimeModel
+            if isinstance(self, KerasONNXRuntimeModel):     # type: ignore
+                onnx_model = self
+            else:
+                spec = tf.TensorSpec((self.input_shape), self.dtype)    # type: ignore
+                onnx_model = self.trace(accelerator='onnxruntime', input_sample=spec)
+
+            # trace onnx model
+            method_map = {
+                'qlinear': 'onnxrt_qlinearops',
+                'integer': 'onnxrt_integerops',
+                None: 'onnxrt_qlinearops'  # default
+            }
+            framework = method_map.get(method, None)
+            return inc_quantzie(onnx_model, dataloader=calib_dataset, metric=metric,
+                                framework=framework,
+                                conf=conf,
+                                approach=approach,
+                                tuning_strategy=tuning_strategy,
+                                accuracy_criterion=accuracy_criterion,
+                                timeout=timeout,
+                                max_trials=max_trials,
+                                inputs=inputs,
+                                outputs=outputs,
+                                onnxruntime_session_options=onnxruntime_session_options)
         else:
             invalidInputError(False, "Accelerator {} is invalid.".format(accelerator))
 
