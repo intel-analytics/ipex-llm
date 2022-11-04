@@ -57,10 +57,10 @@ runs:
       shell: bash
       run: |
         docker exec -i $CONTAINER_NAME bash -c "/ppml/trusted-big-data-ml/init.sh"
-        docker exec -i $CONTAINER_NAME bash -c "/ppml/trusted-big-data-ml/work/test-suites/spark-examples.sh"
-        docker exec -i $CONTAINER_NAME bash -c "/ppml/trusted-big-data-ml/work/test-suites/spark-sql-examples.sh"
-        docker exec -i $CONTAINER_NAME bash -c "/ppml/trusted-big-data-ml/work/test-suites/pyspark-simple-examples.sh"
+        docker exec -i $CONTAINER_NAME bash -c "/ppml/trusted-big-data-ml/work/scripts/local-spark-pi-sgx.sh"
+        docker exec -i $CONTAINER_NAME bash -c "/ppml/trusted-big-data-ml/work/scripts/local-pyspark-pi-sgx.sh"
+        docker exec -i $CONTAINER_NAME bash -c "/ppml/trusted-big-data-ml/work/scripts/pyspark-simple-examples.sh"
         /opt/hadoop-3.2.0/bin/hadoop fs -rm -r -f hdfs://$HDFS_ADDRESS/spark-warehous
-        docker exec -i $CONTAINER_NAME bash -c "/ppml/trusted-big-data-ml/work/test-suites/pyspark-sql-examples.sh"
+        docker exec -i $CONTAINER_NAME bash -c "/ppml/trusted-big-data-ml/work/scripts/pyspark-sql-examples.sh"
         /opt/hadoop-3.2.0/bin/hadoop fs -rm -r -f hdfs://$HDFS_ADDRESS/spark-warehous
-        docker exec -i $CONTAINER_NAME bash -c "/ppml/trusted-big-data-ml/work/test-suites/pyspark-sql-api-examples.sh"
+        docker exec -i $CONTAINER_NAME bash -c "/ppml/trusted-big-data-ml/work/scripts/pyspark-sql-api-examples.sh"
