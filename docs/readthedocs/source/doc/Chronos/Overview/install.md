@@ -128,8 +128,6 @@ Chronos can be simply installed using pip on native Windows, you could use the s
 
 1. `bigdl-chronos[distributed]` is not supported.
 
-2. There is an [issue](https://github.com/facebook/prophet/issues/2227) when using `Prophet` on Windows, so the related feature is not supported now.
-
-3. `intel_extension_for_pytorch (ipex)` is unavailable for Windows now, so the related feature is not supported.
+2. `intel_extension_for_pytorch (ipex)` is unavailable for Windows now, so the related feature is not supported.
 
 For some known issues when installing and using Chronos on native Windows, you could refer to the [windows_guide](https://bigdl.readthedocs.io/en/latest/doc/Chronos/Howto/windows_guide.html)

@@ -40,8 +40,6 @@ You can use the [install panel](https://bigdl.readthedocs.io/en/latest/doc/Chron
 
 - `bigdl-chronos[distributed]` is not supported.
 
-- There is an [issue](https://github.com/facebook/prophet/issues/2227) when using `Prophet` on Windows, so the related feature is not supported now.
-
 - `intel_extension_for_pytorch (ipex)` is unavailable for Windows now, so the related feature is not supported.
 
 ### Known Issues on Native Windows
@@ -77,3 +75,17 @@ Calling `forecaster.quantize()` without specifying the `metric` parameter (e.g. 
 Upgrade neural-compressor to 1.13.1 or higher.
 
 `pip install neural-compressor==1.13.1`
+
+#### Issue 3
+
+**Problem description**
+
+`ProphetForecaster.fit` and `ProphetModel.fit_eval` may raise runtime error on native Windows.
+
+> RuntimeError: Error during optimization!
+>
+> [ERROR] Chain [1] error: terminated by signal 3221225657
+
+According to our test, this issue only arises on some test machines or environments, you could check it by running `ProphetForecaster.fit` and `ProphetModel.fit_eval` on your own machines or environments.
+
+There is a similar [issue](https://github.com/facebook/prophet/issues/2227) in prophet repo, we will stay tuned for its progress.
