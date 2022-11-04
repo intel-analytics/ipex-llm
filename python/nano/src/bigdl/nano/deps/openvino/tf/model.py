@@ -24,15 +24,14 @@ from ..core.utils import save
 
 
 class KerasOpenVINOModel(AcceleratedKerasModel):
-    def __init__(self, model):
+    def __init__(self, model, thread_num=None):
         """
         Create a OpenVINO model from Keras.
 
         :param model: Keras model to be converted to OpenVINO for inference or
                       path to Openvino saved model.
-        :param input_sample: A set of inputs for trace, defaults to None if you have trace before or
-                             model is a LightningModule with any dataloader attached,
-                             defaults to None.
+        :param thread_num: a int represents how many threads(cores) is needed for
+                    inference. default: None.
         """
         ov_model_path = model
         with TemporaryDirectory() as dir:
@@ -40,7 +39,7 @@ class KerasOpenVINOModel(AcceleratedKerasModel):
             if isinstance(model, tf.keras.Model):
                 export(model, str(dir / 'tmp.xml'))
                 ov_model_path = dir / 'tmp.xml'
-            self.ov_model = OpenVINOModel(ov_model_path)
+            self.ov_model = OpenVINOModel(ov_model_path, thread_num)
             super().__init__(None)
 
     def forward_step(self, *inputs):
