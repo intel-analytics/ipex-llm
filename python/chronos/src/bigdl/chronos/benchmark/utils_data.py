@@ -35,13 +35,17 @@ def generate_data(args):
     if args.dataset == 'tsinghua_electricity':
         tsdata_train, _, tsdata_test = get_public_dataset(name='tsinghua_electricity',
                                                           with_split=True,
-                                                          test_ratio=0.1)
+                                                          val_ratio=0.1,
+                                                          test_ratio=0.2)
     elif args.dataset == 'nyc_taxi':
         tsdata_train, _, tsdata_test = get_public_dataset(name='nyc_taxi',
                                                           with_split=True,
-                                                          test_ratio=0.1)
+                                                          val_ratio=0.1,
+                                                          test_ratio=0.2)
     else:
-        tsdata_train, _, tsdata_test = gen_synthetic_data(with_split=True, test_ratio=0.1)
+        tsdata_train, _, tsdata_test = gen_synthetic_data(with_split=True, 
+                                                          val_ratio=0.1,
+                                                          test_ratio=0.2)
 
     # preprocessing data
     standard_scaler = StandardScaler()
@@ -66,7 +70,7 @@ def generate_data(args):
                                                          horizon=args.horizon,
                                                          **add_args)
         test_loader = tsdata_test.to_torch_data_loader(batch_size=args.inference_batchsize,
-                                                       roll=True, 
+                                                       roll=True,
                                                        lookback=args.lookback,
                                                        horizon=args.horizon,
                                                        **add_args)

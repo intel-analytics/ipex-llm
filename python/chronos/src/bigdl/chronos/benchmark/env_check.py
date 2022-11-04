@@ -45,9 +45,9 @@ def get_CPU_info():
     print('Physical Core(s) per socket:', int(psutil.cpu_count(logical=False)/socket_num))
     print('Socket(s):', socket_num)
     print('CPU usage:', str(psutil.cpu_percent()) + '%')
-    print('CPU MHz:', format(psutil.cpu_freq().current,'.2f'))
-    print('CPU max MHz:', format(psutil.cpu_freq().max,'.2f'))
-    print('CPU min MHz:', format(psutil.cpu_freq().min,'.2f'))
+    print('CPU MHz:', format(psutil.cpu_freq().current, '.2f'))
+    print('CPU max MHz:', format(psutil.cpu_freq().max, '.2f'))
+    print('CPU min MHz:', format(psutil.cpu_freq().min, '.2f'))
     print('Total memory:', get_bytesize(psutil.virtual_memory().total))
     print('Available memory:', get_bytesize(psutil.virtual_memory().available))
 
@@ -111,8 +111,8 @@ def check_nano_env(use_malloc: str = "tc", use_openmp: bool = True) -> None:
     # Detect jemalloc library
     if use_malloc is "je":
         if jemalloc_lib_dir is not None:
-            if (not _env_variable_is_set("MALLOC_CONF", env_copy) or 
-                env_copy["MALLOC_CONF"] != correct_env["MALLOC_CONF"]):
+            if (not _env_variable_is_set("MALLOC_CONF", env_copy) or
+               env_copy["MALLOC_CONF"] != correct_env["MALLOC_CONF"]):
                 output_list.append("export MALLOC_CONF=oversize_threshold:1,background_thread:"
                                    "true,metadata_thp:auto,dirty_decay_ms:-1,muzzy_decay_ms:-1")
         else:

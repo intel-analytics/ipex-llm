@@ -21,6 +21,7 @@ from bigdl.nano.utils.log4Error import invalidInputError
 def generate_forecaster(args):
     input_feature_num = 321 if args.dataset == "tsinghua_electricity" else 1
     output_feature_num = 321 if args.dataset == "tsinghua_electricity" else 1
+    freq = 'h' if args.dataset == "tsinghua_electricity" else 't'
 
     if args.model == 'lstm':
         if args.framework == 'torch':
@@ -69,7 +70,7 @@ def generate_forecaster(args):
                                               input_feature_num=input_feature_num,
                                               output_feature_num=output_feature_num,
                                               label_len=int(args.lookback/2),
-                                              freq='h' if args.dataset == "tsinghua_electricity" else 't')
+                                              freq=freq)
         else:
             invalidInputError(args.framework == 'torch',
                               f"Autoformer does not support tensorflow backend now.")

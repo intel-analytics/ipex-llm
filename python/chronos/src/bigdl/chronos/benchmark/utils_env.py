@@ -101,7 +101,7 @@ def get_nano_env_var(use_malloc: str = "tc", use_openmp: bool = True,
 
         # Set environment variables
         nano_env["OMP_NUM_THREADS"] = str(num_threads)
-        nano_env["KMP_AFFINITY"] = "granularity=fine,compact,1,0"
+        nano_env["KMP_AFFINITY"] = "granularity=fine"
         nano_env["KMP_BLOCKTIME"] = "1"
     else:
         warnings.warn("Intel OpenMP library (libiomp5.so) is not found.")
