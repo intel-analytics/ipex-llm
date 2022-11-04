@@ -35,7 +35,7 @@ spec:
     spec:
       containers:
       - name: pccs
-        image:  intelanalytics/pccs:0.3.0-SNAPSHOT
+        image:  $pccsImageName
         imagePullPolicy: IfNotPresent
         env:
         - name: API_KEY
