@@ -10,9 +10,9 @@ Most AI projects start with a Python notebook running on a single laptop; howeve
 
 First of all, follow the steps [here](install.md#to-use-basic-orca-features) to install Orca in your environment.
 
-This section uses TensorFlow 2.9.1, and you should also install TensorFlow before running this example:
+This section uses **TensorFlow 2.x**, and you should also install TensorFlow before running this example:
 ```bash
-pip install tensorflow==2.9.1
+pip install tensorflow
 ```
 
 First, initialize [Orca Context](orca-context.md):
@@ -49,19 +49,21 @@ Finally, use [sklearn-style Estimator APIs in Orca](distributed-training-inferen
 from tensorflow import keras
 from bigdl.orca.learn.tf2.estimator import Estimator
 
+config = {"embed_dim": 8}
+
 def model_creator(config):
   user_input = keras.layers.Input(shape=(1,), dtype='int32', name='use_input')
   item_input = keras.layers.Input(shape=(1,), dtype='int32', name='item_input')
-  mlp_embed_user = keras.layers.Embedding(input_dim=num_users, output_dim=8,
+  mlp_embed_user = keras.layers.Embedding(input_dim=num_users, output_dim=config["embed_dim"],
                                input_length=1)(user_input)
-  mlp_embed_item = keras.layers.Embedding(input_dim=num_items, output_dim=8,
+  mlp_embed_item = keras.layers.Embedding(input_dim=num_items, output_dim=config["embed_dim"],
                                input_length=1)(item_input)
 
   user_latent = keras.layers.Flatten()(mlp_embed_user)
   item_latent = keras.layers.Flatten()(mlp_embed_item)
 
   mlp_latent = keras.layers.concatenate([user_latent, item_latent], axis=1)
-  predictions = keras.layers.Dense(2, activation='softmax')(mlp_latent)
+  predictions = keras.layers.Dense(2, activation='sigmoid')(mlp_latent)
   model = keras.models.Model(inputs=[user_input, item_input], outputs=predictions)
   model.compile(optimizer='adam',
                 loss='sparse_categorical_crossentropy',
