@@ -71,7 +71,7 @@ def model_creator(config):
                 metrics=['accuracy'])
   return model
 
-est = Estimator.from_keras(model_creator=model_creator, backend="spark")
+est = Estimator.from_keras(model_creator=model_creator, backend="spark", config=config)
 est.fit(data=df,
         batch_size=64,
         epochs=4,
