@@ -22,6 +22,7 @@ from bigdl.dllib.utils.log4Error import invalidInputError
 from bigdl.orca import init_orca_context, stop_orca_context
 from bigdl.orca.learn.tf2.estimator import Estimator
 from bigdl.friesian.feature import FeatureTable
+
 from deepctr.feature_column import SparseFeat, DenseFeat
 from deepctr.models import MMOE, PLE
 
