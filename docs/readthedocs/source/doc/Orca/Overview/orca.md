@@ -24,7 +24,7 @@ from bigdl.orca import init_orca_context, OrcaContext
 sc = init_orca_context(cluster_mode="local", cores=4, memory="10g", num_nodes=1)
 ```
 
-Next, perform [data-parallel processing in Orca](data-parallel-processing.md) (supporting standard Spark Dataframes, TensorFlow Dataset, PyTorch DataLoader, Pandas, etc.):
+Next, perform [data-parallel processing in Orca](data-parallel-processing.md) (supporting standard Spark Dataframes, TensorFlow Dataset, PyTorch DataLoader, Pandas, etc.). Here to make things simple, we just generate some random data with Spark DataFrame:
 
 ```python
 import random
@@ -41,6 +41,7 @@ schema = StructType([StructField("user", IntegerType(), False),
                      StructField("item", IntegerType(), False),
                      StructField("label", IntegerType(), False)])
 df = spark.createDataFrame(rdd, schema)
+train, test = df.randomSplit([0.8, 0.2], seed=1)
 ```
 
 Finally, use [sklearn-style Estimator APIs in Orca](distributed-training-inference.md) to perform distributed _TensorFlow_, _PyTorch_, _Keras_ and _BigDL_ training and inference:
@@ -48,8 +49,6 @@ Finally, use [sklearn-style Estimator APIs in Orca](distributed-training-inferen
 ```python
 from tensorflow import keras
 from bigdl.orca.learn.tf2.estimator import Estimator
-
-config = {"embed_dim": 8}
 
 def model_creator(config):
   user_input = keras.layers.Input(shape=(1,), dtype="int32", name="use_input")
@@ -71,8 +70,8 @@ def model_creator(config):
                 metrics=['accuracy'])
   return model
 
-est = Estimator.from_keras(model_creator=model_creator, backend="spark", config=config)
-est.fit(data=df,
+est = Estimator.from_keras(model_creator=model_creator, backend="spark", config={"embed_dim": 8})
+est.fit(data=train,
         batch_size=64,
         epochs=4,
         feature_cols=['user', 'item'],
