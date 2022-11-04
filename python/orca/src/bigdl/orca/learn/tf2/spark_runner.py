@@ -176,9 +176,12 @@ class LocalDatasetHandler(DatasetHandler):
 
 
 class SparkRunner:
-    def __init__(self, model_creator, compile_args_creator,
-                 size,
-                 cluster_info,
+    def __init__(self,
+                 model_creator=None,
+                 model_load=None,
+                 compile_args_creator=None,
+                 size=None,
+                 cluster_info=None,
                  config=None,
                  verbose=False,
                  model_weights=None,
@@ -199,6 +202,7 @@ class SparkRunner:
                 """
 
         self.model_creator = model_creator
+        self.model_load = model_load
         self.compile_args_creator = compile_args_creator
         self.config = {} if config is None else config
         self.inter_op_parallelism = self.config.get("inter_op_parallelism", 1)
@@ -232,6 +236,15 @@ class SparkRunner:
                 self.setup_distributed(self.cluster)
         self.model_dir = model_dir
         self.application_id = application_id
+
+        if self.model_creator is None:
+            import tensorflow as tf
+            from pyspark import SparkFiles
+            if self.model_load.startswith("hdfs"):
+                self.model_load = self.model_load.split("/")[-1]
+            self.model_load = SparkFiles.get(self.model_load)
+            with self.strategy.scope():
+                self.model = tf.keras.models.load_model(self.model_load)
 
     def setup(self):
         import tensorflow as tf
@@ -274,9 +287,12 @@ class SparkRunner:
                 # for continous training
                 model = load_model(self._model_saved_path)
             else:
-                model = self.model_creator(self.config)
-                if self.model_weights:
-                    model.set_weights(self.model_weights.value)
+                if self.model_creator is not None:
+                    model = self.model_creator(self.config)
+                    if self.model_weights:
+                        model.set_weights(self.model_weights.value)
+                else:
+                    model = self.model
 
             if not model._is_compiled and self.compile_args_creator:
                 model.compile(**self.compile_args_creator(config))
@@ -380,9 +396,12 @@ class SparkRunner:
         config["batch_size"] = batch_size
 
         with self.strategy.scope():
-            model = self.model_creator(self.config)
-            if self.model_weights:
-                model.set_weights(self.model_weights.value)
+            if self.model_creator is not None:
+                model = self.model_creator(self.config)
+                if self.model_weights:
+                    model.set_weights(self.model_weights.value)
+            else:
+                model = self.model
 
         with self.strategy.scope():
             dataset_handler = DatasetHandler.get_handler(self.backend,
