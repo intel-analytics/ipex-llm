@@ -83,7 +83,7 @@ def runner_creator(config):
     # configuration of optimizer
     optimizer_config = dict(grad_clip=None)
     # save log periodically and multiple hooks can be used simultaneously
-    log_config = dict(interval=100, hooks=[dict(type='TextLoggerHook')])
+    log_config = dict(interval=4, hooks=[dict(type='TextLoggerHook')])
     # register hooks to runner and those hooks will be invoked automatically
     runner.register_training_hooks(
         lr_config=lr_config,
