@@ -205,9 +205,9 @@ build_spark() {
             fi
         fi
         #register error
-        if [ $? -gt 0 ];
+        if [ $? -gt 0 ]; then
             echo "register error"
-            then exit 1;
+            exit 1;
         fi
     fi
 
