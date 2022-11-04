@@ -15,6 +15,7 @@ on:
         - bigdl-ppml-trusted-deep-learning-gramine-ref
         - bigdl-ppml-trusted-big-data-ml-python-gramine
         - bigdl-ppml-trusted-big-data-ml-python-gramine-noattest
+        - bigdl-ppml-trusted-big-data-ml-python-gramine-debug
         - bigdl-ppml-trusted-big-data-ml-python-graphene
         - bigdl-ppml-trusted-big-data-ml-scala-occlum
         - bigdl-ppml-trusted-big-data-ml-scala-occlum-production
@@ -212,6 +213,30 @@ jobs:
         sudo docker push 10.239.45.10/arda/${base_image}:${TAG}
         cd ../bigdl-gramine
         openssl genrsa -3 -out enclave-key.pem 3072
+        ### debug log image
+        export image=intelanalytics/bigdl-ppml-trusted-big-data-ml-python-gramine-reference-32g-debug
+        sudo docker build \
+         --build-arg BASE_IMAGE_NAME=${base_image} \
+         --build-arg BASE_IMAGE_TAG=${TAG} \
+         --build-arg SGX_MEM_SIZE=32G \
+         --build-arg SGX_LOG_LEVEL=debug \
+         -t ${image}:${TAG} -f ./Dockerfile .
+        sudo docker push ${image}:${TAG}
+        sudo docker tag ${image}:${TAG} 10.239.45.10/arda/${image}:${TAG}
+        sudo docker push 10.239.45.10/arda/${image}:${TAG}
+        sudo docker rmi -f ${image}:${TAG}
+        export image=intelanalytics/bigdl-ppml-trusted-big-data-ml-python-gramine-reference-64g-debug
+        sudo docker build \
+         --build-arg BASE_IMAGE_NAME=${base_image} \
+         --build-arg BASE_IMAGE_TAG=${TAG} \
+         --build-arg SGX_MEM_SIZE=64G \
+         --build-arg SGX_LOG_LEVEL=debug \
+         -t ${image}:${TAG} -f ./Dockerfile .
+        sudo docker push ${image}:${TAG}
+        sudo docker tag ${image}:${TAG} 10.239.45.10/arda/${image}:${TAG}
+        sudo docker push 10.239.45.10/arda/${image}:${TAG}
+        sudo docker rmi -f ${image}:${TAG}
+        ##### error log image
         export image=intelanalytics/bigdl-ppml-trusted-big-data-ml-python-gramine-reference-32g
         sudo docker build \
          --build-arg BASE_IMAGE_NAME=${base_image} \
@@ -236,6 +261,7 @@ jobs:
         sudo docker tag ${image}:${TAG} 10.239.45.10/arda/${image}:${TAG}
         sudo docker push 10.239.45.10/arda/${image}:${TAG}
         sudo docker rmi -f ${image}:${TAG}
+        #### all log image
         export image=intelanalytics/bigdl-ppml-trusted-big-data-ml-python-gramine-reference-32g-all
         sudo docker build \
          --build-arg BASE_IMAGE_NAME=${base_image} \
