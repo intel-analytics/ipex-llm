@@ -20,6 +20,7 @@ from tensorflow.keras.metrics import Metric
 from bigdl.nano.utils.log4Error import invalidInputError
 from bigdl.nano.deps.openvino.openvino_api import KerasOpenVINOModel
 from bigdl.nano.deps.onnxruntime.onnxruntime_api import KerasONNXRuntimeModel
+from typing import Optional, List
 
 
 class InferenceUtils:
@@ -27,7 +28,7 @@ class InferenceUtils:
 
     def quantize(self,
                  precision: str = 'int8',
-                 accelerator: str = None,
+                 accelerator: Optional[str] = None,
                  calib_dataset: tf.data.Dataset = None,
                  metric: Metric = None,
                  accuracy_criterion: dict = None,
@@ -47,7 +48,7 @@ class InferenceUtils:
                                 static quantization. It's also used as validation dataloader.
         :param precision:       Global precision of quantized model,
                                 supported type: 'int8', 'bf16', 'fp16', defaults to 'int8'.
-        :param accelerator:     Use accelerator 'None', 'onnxruntime', 'openvino', defaults to None.
+        :param accelerator:     Use accelerator 'None', defaults to None.
                                 None means staying in tensorflow.
         :param metric:          A tensorflow.keras.metrics.Metric object for evaluation.
         :param accuracy_criterion:  Tolerable accuracy drop.
@@ -99,7 +100,11 @@ class InferenceUtils:
         else:
             invalidInputError(False, "Accelerator {} is invalid.".format(accelerator))
 
-    def trace(self, accelerator=None, input_sample=None, onnxruntime_session_options=None):
+    def trace(self,
+              accelerator: Optional[str] = None,
+              input_sample=None,
+              thread_num: Optional[int] = None,
+              onnxruntime_session_options=None):
         """
         Trace a Keras model and convert it into an accelerated module for inference.
 
@@ -109,12 +114,21 @@ class InferenceUtils:
             is 'openvino'.
         :param accelerator: The accelerator to use, defaults to None meaning staying in Keras
                             backend. 'openvino' and 'onnxruntime' are supported for now.
+        :param thread_num: (optional) a int represents how many threads(cores) is needed for
+                           inference, only valid for accelerator='onnxruntime'
+                           or accelerator='openvino'.
         :param onnxruntime_session_options: The session option for onnxruntime, only valid when
                                             accelerator='onnxruntime', otherwise will be ignored.
         :return: Model with different acceleration(OpenVINO/ONNX Runtime).
         """
         if accelerator == 'openvino':
-            return KerasOpenVINOModel(self, input_sample)
+            return KerasOpenVINOModel(self, input_sample, thread_num)
         elif accelerator == 'onnxruntime':
+            if onnxruntime_session_options is None:
+                import onnxruntime
+                onnxruntime_session_options = onnxruntime.SessionOptions()
+                if thread_num is not None:
+                    onnxruntime_session_options.intra_op_num_threads = thread_num
+                    onnxruntime_session_options.inter_op_num_threads = thread_num
             return KerasONNXRuntimeModel(self, input_sample, onnxruntime_session_options)
         return self

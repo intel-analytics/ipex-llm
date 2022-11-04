@@ -185,6 +185,8 @@ class TestChronosModelTCNForecaster(TestCase):
     def test_tcn_forecaster_tune_multi_processes(self):
         name = "parallel-example-torch"
         storage = "sqlite:///example_tcn.db"  # take sqlite for test, recommand to use mysql
+        if os.path.exists("./example_tcn.db"):
+            os.remove("./example_tcn.db")
         import bigdl.nano.automl.hpo.space as space
         train_data, val_data, _ = create_data(loader=False)
         forecaster = TCNForecaster(past_seq_len=24,
