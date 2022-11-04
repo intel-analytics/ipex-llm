@@ -132,4 +132,4 @@ Chronos can be simply installed using pip on native Windows, the install command
 
 3. `intel_extension_for_pytorch (ipex)` is unavailable for Windows now, so the related feature is not supported.
 
-For some known issues when installing and using Chronos on native Windows, you could refer to the [win user guide](https://bigdl.readthedocs.io/en/latest/doc/Chronos/Howto/windows_guide.html)
+For some known issues when installing and using Chronos on native Windows, you could refer to the [windows_guide](https://bigdl.readthedocs.io/en/latest/doc/Chronos/Howto/windows_guide.html)
