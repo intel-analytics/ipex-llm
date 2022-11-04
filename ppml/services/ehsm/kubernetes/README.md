@@ -41,22 +41,21 @@ Then modify parameters in `install-bigdl-ehsm-kms.sh` as following:
 
 ```shell
 # reset of other parameters in values.yaml is optional, please check according to your environment
-export nfsServerIp=your_nfs_server_ip                   --->   <the_IP_address_of_your_NFS_server>
-export nfsPath=a_nfs_shared_folder_path_on_the_server   --->   <an_existing_shared_folder_path_on_NFS_server>
+nfsServerIP: your_nfs_server_ip                   --->   <the_IP_address_of_your_NFS_server>
+nfsPath: a_nfs_shared_folder_path_on_the_server   --->   <an_existing_shared_folder_path_on_NFS_server>
 ......
-export pccsIP=IP=your_pccs_ip                           --->   <an_used_ip_address_in_your_subnetwork_you_have_assigned_to_pccs_in_step1>
-export dkeyserverIP=your_dkeyserver_ip_to_use_as        --->   <an_used_ip_address_in_your_subnetwork_to_assign_to_dkeyserver>
-export kmsIP=your_kms_ip_to_use_as                      --->   <an_used_ip_address_in_your_subnetwork_to_assign_to_kms>
+pccsIP: your_pccs_ip                              --->   <an_used_ip_address_in_your_subnetwork_you_have_assigned_to_pccs_in_step1>
+dkeyserverIP: your_dkeyserver_ip_to_use_as        --->   <an_used_ip_address_in_your_subnetwork_to_assign_to_dkeyserver>
+kmsIP: your_kms_ip_to_use_as                      --->   <an_used_ip_address_in_your_subnetwork_to_assign_to_kms>
 
 # Replace the below parameters according to your environment
-export apiKey=your_intel_pcs_server_subscription_key_obtained_through_web_registeration
-export httpsProxyUrl=your_usable_https_proxy_url
-export countryName=your_country_name
-export cityName=your_city_name
-export organizaitonName=your_organizaition_name
-export commonName=server_fqdn_or_your_name
-export emailAddress=your_email_address
-export serverPassword=your_server_password_to_use 
+
+apiKey: your_intel_pcs_server_subscription_key_obtained_through_web_registeration
+httpsProxyUrl: your_usable_https_proxy_url
+countryName: your_country_name
+cityName: your_city_name
+organizaitonName: your_organizaition_name
+commonName: server_fqdn_or_your_name
 ```
 
 Then, deploy BigDL-eHSM-KMS on kubernetes:
@@ -78,7 +77,7 @@ pod/dkeycache-57db49f98-z28t4                          1/1     Running   0      
 pod/dkeyserver-0                                       1/1     Running   0          6h52m
 
 NAME                                   TYPE           CLUSTER-IP      EXTERNAL-IP     PORT(S)          AGE
-service/bigdl-ehsm-kms-service         LoadBalancer   1.10.9.98       1.1.0.218       9000:30003/TCP   6h52m
+service/bigdl-ehsm-kms-service         LoadBalancer   1.10.9.98       1.1.0.218       9000:30000/TCP   6h52m
 service/couchdb                        ClusterIP      1.10.8.236      <none>          5984/TCP         6h52m
 service/dkeyserver                     ClusterIP      1.10.1.132      1.1.0.217       8888/TCP         6h52m
 

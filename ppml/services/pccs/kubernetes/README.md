@@ -28,18 +28,17 @@ cd ../kubernetes
 
 Modify parameters in `install-bigdl-pccs.sh` as following:
 ```bash
-# reset of other parameters in install-bigdl-pccs.sh is optional, please check according to your environment
-export pccsIP=your_pccs_ip_to_use_as               --->   <an_used_ip_address_in_your_subnetwork_to_assign_to_pccs>
-...
+# reset of other parameters in values.yaml is optional, please check according to your environment
+pccsIP: your_pccs_ip_to_use_as                    --->   <an_used_ip_address_in_your_subnetwork_to_assign_to_pccs>
+
 # Replace the below parameters according to your environment
-export apiKey=your_intel_pcs_server_subscription_key_obtained_through_web_registeration
-export httpsProxyUrl=your_usable_https_proxy_url
-export countryName=your_country_name
-export cityName=your_city_name
-export organizaitonName=your_organizaition_name
-export commonName=server_fqdn_or_your_name
-export emailAddress=your_email_address
-export serverPassword=your_server_password_to_use 
+apiKey: your_intel_pcs_server_subscription_key_obtained_through_web_registeration
+countryName: your_country_name
+cityName: your_city_name
+organizaitonName: your_organizaition_name
+commonName: server_fqdn_or_your_name
+emailAddress: your_email_address
+serverPassword: your_server_password_to_use 
 ```
 Then, deploy BigDL-PCCS on kubernetes:
 
