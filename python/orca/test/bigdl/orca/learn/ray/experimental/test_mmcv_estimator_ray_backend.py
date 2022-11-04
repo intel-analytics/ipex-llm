@@ -119,19 +119,20 @@ def train_dataloader_creator(config):
 
 
 class TestMMCVRayEstimator(unittest.TestCase):
-    estimator = None
 
     @classmethod
     def setUpClass(cls) -> None:
         init_orca_context(cores=8, memory="8g")
-        cls.estimator = MMCVRayEstimator(
-            mmcv_runner_creator=runner_creator,
-            config={}
-        )
 
     @classmethod
     def tearDownClass(cls) -> None:
         stop_orca_context()
+
+    def setUp(self) -> None:
+        self.estimator = MMCVRayEstimator(
+            mmcv_runner_creator=runner_creator,
+            config={}
+        )
 
     def test_fit(self):
         self.estimator.fit([train_dataloader_creator], [('train', 1)])
