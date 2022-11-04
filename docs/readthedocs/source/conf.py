@@ -161,6 +161,7 @@ html_static_path = ['_static']
 # add js/css for customizing each page
 html_js_files = [
     'js/custom.js',
+    'https://cdnjs.cloudflare.com/ajax/libs/mermaid/9.2.0/mermaid.js'
 ]
 html_css_files = [
     'css/custom.css',
