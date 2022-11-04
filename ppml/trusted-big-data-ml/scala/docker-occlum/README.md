@@ -362,19 +362,12 @@ hdfs crypto -getFileEncryptionInfo -path /empty_zone/helloWorld
 hdfs  crypto -listZones
 ```
 
-## Start BigDL PPML Occlum Attestation Server
-Modify `PCCL_URL`, `ATTESTATION_SERVER_IP` and `ATTESTATION_SERVER_PORT` in `start-occlum-attestation-server.sh`, Then
-```commandline
-bash start-occlum-attestation-server.sh
-```
-You will see:
-```
-Server listening on $ATTESTATION_SERVER_IP:$ATTESTATION_SERVER_PORT
-```
+## Using BigDL PPML Occlum EHSM Attestation Server
+Bigdl ppml use EHSM as reference KMS&AS, you can deploy EHSM following the [guide](https://github.com/intel-analytics/BigDL/tree/main/ppml/services/ehsm/kubernetes#deploy-bigdl-ehsm-kms-on-kubernetes-with-helm-charts)
+We assume you have already set up environment and enroll yourself on EHSM.
 
-Get `image_key`:
-```commandline
-docker cp bigdl-ppml-trusted-big-data-ml-scala-occlum-attestation-server:/root/demos/remote_attestation/init_ra_flow/image_key ./data
-```
+In [start-spark-local.sh](https://github.com/intel-analytics/BigDL/blob/main/ppml/trusted-big-data-ml/scala/docker-occlum/start-spark-local.sh).Set `ATTESTATION` = true and modify `PCCL_URL`, `ATTESTATION_URL` to the env value you have set,
+and modify `APP_ID`, `API_KEY` to the value you have get  when enroll, and then you can change `CHALLENGE` and
+`REPORT_DATA` to randomly attestation.
 
-## Before you run examples, you need to mount this `image_key` to container's `/opt/occlum_spark/data/`. We have already done it for you.
+

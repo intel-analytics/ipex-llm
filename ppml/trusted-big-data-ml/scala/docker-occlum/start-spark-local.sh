@@ -15,8 +15,8 @@ sudo docker run -it \
 	-e SGX_THREAD=512 \
 	-e SGX_HEAP=512MB \
 	-e SGX_KERNEL_HEAP=1GB \
+  -e ATTESTATION=false \
 	-e PCCS_URL=https://PCCS_IP:PCCS_PORT \
-	-e ATTESTATION=false \
 	-e ATTESTATION_URL=ESHM_IP:EHSM_PORT \
   -e APP_ID=your_app_id \
   -e API_KEY=your_api_key \
