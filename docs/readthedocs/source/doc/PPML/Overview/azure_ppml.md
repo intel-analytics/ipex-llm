@@ -243,13 +243,21 @@ Login to your client VM and enter your BigDL PPML container:
 docker exec -it spark-local bash
 ```
 Then run `az login` to login to Azure system.
-
-### 3.1 Generate enclave key to Azure Key Vault
+### 3.1 Save kubeconfig to secret
+Login to AKS use such command:
+```bash
+az aks get-credentials --resource-group  myResourceGroup --name myAKSCluster
+```
+Run such script to save kubeconfig to secret
+```bash
+/ppml/trusted-big-data-ml/azure/kubeconfig-secret.sh
+```
+### 3.2 Generate enclave key to Azure Key Vault
 Run such script to generate enclave key
 ```
 /ppml/trusted-big-data-ml/azure/generate-enclave-key-az.sh myKeyVault
 ```
-### 3.2 Generate keys
+### 3.3 Generate keys
 Run such scripts to generate keys:
 ```bash
 /ppml/trusted-big-data-ml/azure/generate-keys.sh
@@ -260,29 +268,32 @@ After generate keys, run such command to save keys in Kubernetes.
 ```
 kubectl apply -f /ppml/trusted-big-data-ml/work/keys/keys.yaml
 ```
-
-
-### 3.3 Generate password
+### 3.4 Generate password
 Run such script to save the password to Azure Key Vault
 ```bash
 /ppml/trusted-big-data-ml/azure/generate-password-az.sh myKeyVault used_password_when_generate_keys
 ```
-### 3.4 Save kubeconfig to secret
-Login to AKS use such command:
-```bash
-az aks get-credentials --resource-group  myResourceGroup --name myAKSCluster
-```
-Run such script to save kubeconfig to secret
-```bash
-/ppml/trusted-big-data-ml/azure/kubeconfig-secret.sh
-```
-### 3.5 Create the RBAC
+### 3.5 Create image pull secret from your Azure container registry
+  * If you already logged in to your Azure container registry, find your docker config json file (i.e. ~/.docker/config.json), and create secret for your registry credential like below:
+  ```bash
+  kubectl create secret generic regcred \
+  --from-file=.dockerconfigjson=<path/to/.docker/config.json> \
+  --type=kubernetes.io/dockerconfigjson
+  ```
+  * If you haven't logged in to your Azure container registry, you can create secret for your registry credential using your username and password:
+  ```bash
+  kubectl create secret docker-registry regcred --docker-server=myContainerRegistry.azurecr.io --docker-username=<your-name> --docker-password=<your-pword> --docker-email=<your-email>
+  ```
+### 3.6 Create the RBAC
 ```bash
 kubectl create serviceaccount spark
 kubectl create clusterrolebinding spark-role --clusterrole=edit --serviceaccount=default:spark --namespace=default
 ```
-
-### 3.6 Run PPML spark job
+### 3.7 Add image pull secret to service account
+```bash
+kubectl patch serviceaccount spark -p '{"imagePullSecrets": [{"name": "regcred"}]}'
+```
+### 3.8 Run PPML spark job
 The example script to run PPML spark job on AKS is as below. You can also refer to `/ppml/trusted-big-data-ml/azure/submit-spark-sgx-az.sh`
 ```bash
 RUNTIME_SPARK_MASTER=
