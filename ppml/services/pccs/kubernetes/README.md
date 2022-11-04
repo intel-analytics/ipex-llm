@@ -125,24 +125,6 @@ bash uninstall-bigdl-pccs.sh
 # you will get similar to below if success
 service "pccs" deleted
 statefulset.apps "pccs" deleted
-```
-Usually, it takes a while to terminate the pccs pod. You can check the namespace like this
-```bash
-kubectl get all -n bigdl-pccs
-
-# you will get similar to below if the pod has not been deleted
-NAME         READY   STATUS        RESTARTS   AGE
-pod/pccs-0   1/1     Terminating   0          85s
-
-# please wait for a few seconds until it shows like below after the command
-kubectl get all -n bigdl-pccs
-No resources found in bigdl-pccs namespace.
-```
-Delete the namespace
-```bash
-kubectl delete namespace bigdl-pccs
-
-# you will get similar to below if success
 namespace "bigdl-pccs" deleted
 
 ``` 

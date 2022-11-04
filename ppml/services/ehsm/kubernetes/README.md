@@ -86,7 +86,7 @@ deployment.apps/bigdl-ehsm-kms-deployment         1/1     1            1        
 deployment.apps/dkeycache                         1/1     1            1           6h52m
 
 NAME                                                         DESIRED   CURRENT   READY   AGE
-replicaset.apps/bigdl-ehsm-kms-liyao-deployment-7dd7c965d5   1         1         1       6h52m
+replicaset.apps/bigdl-ehsm-kms-deployment-7dd7c965d5   1         1         1       6h52m
 replicaset.apps/dkeycache-57db49f98                          1         1         1       6h52m
 
 NAME                          READY   AGE
@@ -132,25 +132,6 @@ deployment.apps "bigdl-ehsm-kms-deployment" deleted
 deployment.apps "dkeycache" deleted
 statefulset.apps "couchdb" deleted
 statefulset.apps "dkeyserver" deleted
-```
-
-Usually, it takes a while to terminate the pods. You can check the namespace like this
-```bash
-kubectl get all -n bigdl-ehsm-kms
-
-# you will get similar to below if the pods have not been deleted
-NAME                                             READY   STATUS        RESTARTS   AGE
-pod/bigdl-ehsm-kms-deployment-6cf96ddd5d-sntc6   1/1     Terminating   0          26h
-pod/dkeycache-57db49f98-zpkrm                    1/1     Terminating   0          26h
-
-# please wait for a few seconds until it shows like below after the command
-kubectl get all -n bigdl-ehsm-kms
-No resources found in bigdl-ehsm-kms namespace.
-```
-Delete the namespace
-```bash
-kubectl delete namespace bigdl-ehsm-kms
-
-# you will get similar to below if success
+persistentvolumeclaim "couch-persistent-storage-couchdb-0" deleted
 namespace "bigdl-ehsm-kms" deleted
 ```

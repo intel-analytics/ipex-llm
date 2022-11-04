@@ -5,3 +5,5 @@ kubectl delete deployment bigdl-ehsm-kms-deployment -n bigdl-ehsm-kms
 kubectl delete deployment dkeycache -n bigdl-ehsm-kms
 kubectl delete statefulsets.apps couchdb -n bigdl-ehsm-kms
 kubectl delete statefulsets.apps dkeyserver -n bigdl-ehsm-kms
+kubectl delete pvc couch-persistent-storage-couchdb-0 -n bigdl-ehsm-kms
+kubectl delete namespace bigdl-ehsm-kms

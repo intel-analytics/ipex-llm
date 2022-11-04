@@ -108,7 +108,7 @@ data:
 apiVersion: v1
 kind: PersistentVolume 
 metadata:
-  name: ehsm-pv-nfs-liyao-8
+  name: ehsm-pv-nfs
 spec:
   capacity:
     storage: 10Gi 
@@ -168,7 +168,7 @@ spec:
         - containerPort: 5984
           name: couchdb-port
         volumeMounts:
-        - name: couch-persistent-storage-liyao-8
+        - name: couch-persistent-storage
           mountPath: /opt/couchdb/data
         env:
           - name: COUCHDB_USER
@@ -183,7 +183,7 @@ spec:
                 key: couch_root_password
   volumeClaimTemplates:
   - metadata:
-      name: couch-persistent-storage-liyao-8
+      name: couch-persistent-storage
     spec:
       accessModes: [ "ReadWriteOnce" ]
       storageClassName: "nfs"
@@ -365,7 +365,7 @@ spec:
       # This port is ehsm_kms_service access port,you can change it to what you want.
       port: 9000
       targetPort: 9000
-      nodePort: 30008
+      nodePort: 30000
   sessionAffinity: ClientIP
   externalIPs:
   - $kmsIP
