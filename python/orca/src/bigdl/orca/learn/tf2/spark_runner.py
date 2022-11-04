@@ -243,8 +243,6 @@ class SparkRunner:
             if self.model_load.startswith("hdfs"):
                 self.model_load = self.model_load.split("/")[-1]
             self.model_load = SparkFiles.get(self.model_load)
-            with self.strategy.scope():
-                self.model = tf.keras.models.load_model(self.model_load)
 
     def setup(self):
         import tensorflow as tf
@@ -292,7 +290,7 @@ class SparkRunner:
                     if self.model_weights:
                         model.set_weights(self.model_weights.value)
                 else:
-                    model = self.model
+                    model = tf.keras.models.load_model(self.model_load)
 
             if not model._is_compiled and self.compile_args_creator:
                 model.compile(**self.compile_args_creator(config))
@@ -401,7 +399,7 @@ class SparkRunner:
                 if self.model_weights:
                     model.set_weights(self.model_weights.value)
             else:
-                model = self.model
+                model = tf.keras.models.load_model(self.model_load)
 
         with self.strategy.scope():
             dataset_handler = DatasetHandler.get_handler(self.backend,
@@ -423,9 +421,12 @@ class SparkRunner:
         results = model.evaluate(dataset, **params)
 
         if results is None:
-            local_model = self.model_creator(self.config)
-            if self.model_weights:
-                local_model = local_model.set_weights(self.model_weights.value)
+            if self.model_creator is not None:
+                local_model = self.model_creator(self.config)
+                if self.model_weights:
+                    local_model = local_model.set_weights(self.model_weights.value)
+            else:
+                local_model = tf.keras.models.load_model(self.model_load)
             results = local_model.evaluate(dataset, **params)
 
         if isinstance(results, list):
@@ -464,12 +465,12 @@ class SparkRunner:
             callbacks=callbacks,
         )
 
-        if self.backend == "tf-distributed":
+        if self.model_creator is not None:
             local_model = self.model_creator(self.config)
             if self.model_weights:
                 local_model.set_weights(self.model_weights.value)
         else:
-            local_model = self.model_creator(self.config)
+            local_model = tf.keras.models.load_model(self.model_load)
 
         def predict_fn(shard):
             y = local_model.predict(shard["x"], **params)
