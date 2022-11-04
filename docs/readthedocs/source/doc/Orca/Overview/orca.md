@@ -52,8 +52,9 @@ from bigdl.orca.learn.tf2.estimator import Estimator
 config = {"embed_dim": 8}
 
 def model_creator(config):
-  user_input = keras.layers.Input(shape=(1,), dtype='int32', name='use_input')
-  item_input = keras.layers.Input(shape=(1,), dtype='int32', name='item_input')
+  user_input = keras.layers.Input(shape=(1,), dtype="int32", name="use_input")
+  item_input = keras.layers.Input(shape=(1,), dtype="int32", name="item_input")
+
   mlp_embed_user = keras.layers.Embedding(input_dim=num_users, output_dim=config["embed_dim"],
                                input_length=1)(user_input)
   mlp_embed_item = keras.layers.Embedding(input_dim=num_items, output_dim=config["embed_dim"],
@@ -63,7 +64,7 @@ def model_creator(config):
   item_latent = keras.layers.Flatten()(mlp_embed_item)
 
   mlp_latent = keras.layers.concatenate([user_latent, item_latent], axis=1)
-  predictions = keras.layers.Dense(2, activation='sigmoid')(mlp_latent)
+  predictions = keras.layers.Dense(2, activation="sigmoid")(mlp_latent)
   model = keras.models.Model(inputs=[user_input, item_input], outputs=predictions)
   model.compile(optimizer='adam',
                 loss='sparse_categorical_crossentropy',
