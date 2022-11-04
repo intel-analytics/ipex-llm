@@ -1,4 +1,4 @@
-# Deploy BigDL-eHSM-KMS on Kubernetes with Helm Charts
+# Deploy BigDL-eHSM-KMS on Kubernetes
 
 
 
@@ -22,7 +22,6 @@
 - Please make sure you have a usable https proxy.
 - Please make sure your **CPU** is able to run PCCS service, which generate and verify quotes.
 - Please make sure you have a reachable **NFS**.
-- Please make sure you have already installed **[helm](https://helm.sh/)**.
 - Please make sure you have an usable PCCS ApiKey for your platform. The PCCS uses this API key to request collaterals from Intel's Provisioning Certificate Service. User needs to subscribe first to obtain an API key. For how to subscribe to Intel Provisioning Certificate Service and receive an API key, goto https://api.portal.trustedservices.intel.com/provisioning-certification and click on 'Subscribe'.
 
 
@@ -30,15 +29,15 @@
 Now you have already had a PCCS image.
 
 
-## 1. Deploy BigDL-PCCS on Kubernetes with Helm Charts
+## 1. Deploy BigDL-PCCS on Kubernetes
 If you already have a BidDL-PCCS service on Kubernetes, please skip this step.
 
-If not, please **[deploy BigDL-PCCS on Kubernetes with Helm Charts](https://github.com/intel-analytics/BigDL/tree/main/ppml/services/pccs/kubernetes)**.
+If not, please **[deploy BigDL-PCCS on Kubernetes](https://github.com/intel-analytics/BigDL/tree/main/ppml/services/pccs/kubernetes)**.
 ## 2. Start BigDL-eHSM-KMS on Kubernetes 
 
 Please make sure current workdir is `kubernetes`.
 
-Then modify parameters in `values.yaml` as following:
+Then modify parameters in `install-bigdl-ehsm-kms.sh` as following:
 
 ```shell
 # reset of other parameters in values.yaml is optional, please check according to your environment
@@ -62,8 +61,7 @@ commonName: server_fqdn_or_your_name
 Then, deploy BigDL-eHSM-KMS on kubernetes:
 
 ```bash
-kubectl create namespace bigdl-ehsm-kms
-helm install kms . # kms can be modified to any name as you like
+bash install-bigdl-ehsm-kms.sh
 ```
 
 Check the service whether it has successfully been running (it may take seconds):
@@ -79,16 +77,16 @@ pod/dkeycache-57db49f98-z28t4                          1/1     Running   0      
 pod/dkeyserver-0                                       1/1     Running   0          6h52m
 
 NAME                                   TYPE           CLUSTER-IP      EXTERNAL-IP     PORT(S)          AGE
-service/bigdl-ehsm-kms-service         LoadBalancer   10.100.91.98    172.168.0.218   9000:30003/TCP   6h52m
-service/couchdb                        ClusterIP      10.102.82.236   <none>          5984/TCP         6h52m
-service/dkeyserver                     ClusterIP      10.105.15.132   172.168.0.217   8888/TCP         6h52m
+service/bigdl-ehsm-kms-service         LoadBalancer   1.10.9.98       1.1.0.218       9000:30000/TCP   6h52m
+service/couchdb                        ClusterIP      1.10.8.236      <none>          5984/TCP         6h52m
+service/dkeyserver                     ClusterIP      1.10.1.132      1.1.0.217       8888/TCP         6h52m
 
 NAME                                              READY   UP-TO-DATE   AVAILABLE   AGE
 deployment.apps/bigdl-ehsm-kms-deployment         1/1     1            1           6h52m
 deployment.apps/dkeycache                         1/1     1            1           6h52m
 
 NAME                                                         DESIRED   CURRENT   READY   AGE
-replicaset.apps/bigdl-ehsm-kms-liyao-deployment-7dd7c965d5   1         1         1       6h52m
+replicaset.apps/bigdl-ehsm-kms-deployment-7dd7c965d5   1         1         1       6h52m
 replicaset.apps/dkeycache-57db49f98                          1         1         1       6h52m
 
 NAME                          READY   AGE
@@ -124,6 +122,16 @@ Test with following scala spark example:
 You can quickly and easily delete BigDL-eHSM-KMS from Kubernetes with following commands:
 
 ```bash
-helm uninstall kms # kms or the other name you specified when starting
-kubectl delete pvc couch-persistent-storage-couchdb-0 -n bigdl-ehsm-kms
+bash uninstall-bigdl-ehsm-kms.sh
+
+# you will get similar to below if success
+service "couchdb" deleted
+service "bigdl-ehsm-kms-service" deleted
+service "dkeyserver" deleted
+deployment.apps "bigdl-ehsm-kms-deployment" deleted
+deployment.apps "dkeycache" deleted
+statefulset.apps "couchdb" deleted
+statefulset.apps "dkeyserver" deleted
+persistentvolumeclaim "couch-persistent-storage-couchdb-0" deleted
+namespace "bigdl-ehsm-kms" deleted
 ```
