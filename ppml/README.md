@@ -513,45 +513,43 @@ Here we use **k8s client mode** and **PPML CLI** to run SimpleQuery. Check other
 
 
 #### Step 6. Monitor Job by History Server
-
-     You can monitor spark events using history server. The history server provides an interface to watch and log spark performance and metrics.
+You can monitor spark events using history server. The history server provides an interface to watch and log spark performance and metrics.
      
-     First, create a shared directory that can be accessed by both the client and the other worker containers in your cluster. For example, you can create an empty directory under the mounted nfs path or hdfs. The spark drivers and executors will write their event logs to this destination, and the history server will read logs here as well.
+First, create a shared directory that can be accessed by both the client and the other worker containers in your cluster. For example, you can create an empty directory under the mounted nfs path or hdfs. The spark drivers and executors will write their event logs to this destination, and the history server will read logs here as well.
      
-     Second, enter your client container and edit `$SPARK_HOME/conf/spark-defaults.conf`, where the histroy server reads the configurations:
-     ```
-     spark.eventLog.enabled           true                     # enable logging events
-     spark.eventLog.dir               <your_shared_dir_path>   # e.g. file://<your_nfs_dir_path> or hdfs://<your_hdfs_dir_path>
-     spark.history.fs.logDirectory    <your_shared_dir_path>   # similiar to spark.eventLog.dir
-     ```
+Second, enter your client container and edit `$SPARK_HOME/conf/spark-defaults.conf`, where the histroy server reads the configurations:
+```
+spark.eventLog.enabled           true
+spark.eventLog.dir               <your_shared_dir_path> ---> e.g. file://<your_nfs_dir_path> or hdfs://<your_hdfs_dir_path>
+spark.history.fs.logDirectory    <your_shared_dir_path> ---> similiar to spark.eventLog.dir
+```
      
-     Third, run the below command and the history server will start to watch automatically:
-     ```
-     $SPARK_HOME/sbin/start-history-server.sh
-     ```
+Third, run the below command and the history server will start to watch automatically:
+```
+$SPARK_HOME/sbin/start-history-server.sh
+```
      
-     Next, when you run spark jobs, enable writing driver and executor event logs in java/spark-submit commands by setting spark conf like below:
-     ```
-     ...
-     --conf spark.eventLog.enabled=true \
-     --conf spark.eventLog.dir=<your_shared_dir_path> \
-     ...
-     ```
+Next, when you run spark jobs, enable writing driver and executor event logs in java/spark-submit commands by setting spark conf like below:
+```
+...
+--conf spark.eventLog.enabled=true \
+--conf spark.eventLog.dir=<your_shared_dir_path> \
+...
+```
      
-     Starting spark jobs, you can find event log files at `<your_shared_dir_path>` like:
-     ```
-     $ ls
-     local-1666143241860 spark-application-1666144573580
+Starting spark jobs, you can find event log files at `<your_shared_dir_path>` like:
+```
+$ ls
+local-1666143241860 spark-application-1666144573580
      
-     $ cat spark-application-1666144573580
-     ......
-     {"Event":"SparkListenerJobEnd","Job ID":0,"Completion Time":1666144848006,"Job Result":{"Result":"JobSucceeded"}}
-     {"Event":"SparkListenerApplicationEnd","Timestamp":1666144848021}
-     ```
+$ cat spark-application-1666144573580
+......
+{"Event":"SparkListenerJobEnd","Job ID":0,"Completion Time":1666144848006,"Job Result":{"Result":"JobSucceeded"}}
+{"Event":"SparkListenerApplicationEnd","Timestamp":1666144848021}
+```
      
-     You can use these logs to analyze spark jobs. Moreover, you are also allowed to surf from a web UI provided by the history server by accessing `http://localhost:18080`:
-     
-     ![history server UI](https://user-images.githubusercontent.com/60865256/196840282-6584f36e-5e72-4144-921e-4536d3391f05.png)    
+You can use these logs to analyze spark jobs. Moreover, you are also allowed to surf from a web UI provided by the history server by accessing `http://localhost:18080`:
+![history server UI](https://user-images.githubusercontent.com/60865256/196840282-6584f36e-5e72-4144-921e-4536d3391f05.png)    
 
 
 #### Step 7. Decrypt and Read Result
