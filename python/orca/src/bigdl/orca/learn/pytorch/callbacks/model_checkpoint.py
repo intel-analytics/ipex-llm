@@ -55,7 +55,7 @@ class ModelCheckpoint(Callback):
         """
         Called at the beginning of a training batch in `fit` methods.
         Subclasses should override for any actions to run.
-        @param batch: Integer, index of batch within the current epoch.
+        :param batch: Integer, index of batch within the current epoch.
         """
         pass
 
@@ -63,8 +63,8 @@ class ModelCheckpoint(Callback):
         """
         Called at the end of a training batch in `fit` methods.
         Subclasses should override for any actions to run.
-        @param batch: Integer, index of batch within the current epoch.
-        @param logs: Dict. Aggregated metric results up until this batch.
+        :param batch: Integer, index of batch within the current epoch.
+        :param logs: Dict. Aggregated metric results up until this batch.
         """
         pass
 
@@ -73,8 +73,8 @@ class ModelCheckpoint(Callback):
         Called at the start of an epoch.
         Subclasses should override for any actions to run. This function should only
         be called during TRAIN mode.
-        @param epoch: Integer, index of epoch.
-        @param logs: Dict. Currently, saved stats in last epoch has been passed to this argument
+        :param epoch: Integer, index of epoch.
+        :param logs: Dict. Currently, saved stats in last epoch has been passed to this argument
         for this method but may change in the future.
         """
         pass
@@ -84,7 +84,7 @@ class ModelCheckpoint(Callback):
         Called at the end of an epoch.
         Subclasses should override for any actions to run. This function should only
         be called during TRAIN mode.
-        @param epoch:  Integer, index of epoch.
+        :param epoch:  Integer, index of epoch.
         """
         stats = {"epoch": self.trainer.epochs}
         last_ckpt_path = self._format_checkpoint_name(dirname=self.dirname,
@@ -96,7 +96,7 @@ class ModelCheckpoint(Callback):
         """
         Called at the beginning of training.
         Subclasses should override for any actions to run.
-        @param logs: Dict. Currently, no data is passed to this argument for this method
+        :param logs: Dict. Currently, no data is passed to this argument for this method
           but that may change in the future.
         """
         # todo: support resume training
