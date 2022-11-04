@@ -88,7 +88,7 @@ object RegisterMrEnclave {
       postRequest(constructUrl(action, URL), sslConSocFactory, postString)
     }
     // print policy_Id
-    if (postResult == null || postResult.get("policyId")  == null || postResult.get("policyId") == "") {
+    if (postResult == null || !postResult.has("policyId") || postResult.get("policyId")  == null || postResult.get("policyId") == "") {
         println("register error")
         return
     }
