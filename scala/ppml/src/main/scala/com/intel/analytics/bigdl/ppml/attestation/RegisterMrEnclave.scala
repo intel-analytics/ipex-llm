@@ -87,10 +87,12 @@ object RegisterMrEnclave {
       val postString: String = ehsmParams.getPostJSONString()
       postRequest(constructUrl(action, URL), sslConSocFactory, postString)
     }
-    // print resp and policy_Id
-    println(postResult)
-    val policyId = postResult.getJSONObject("result").getString("policyId")
-    println("policy_Id " + policyId)
+    // print policy_Id
+    if (postResult == null || postResult.get("policyId")  == null || postResult.get("policyId") == "") {
+        println("register error")
+        return
+    }
+    println("policy_Id " + postResult.getString("policyId"))
   }
 
   private def constructUrl(action: String, URL: String): String = {
