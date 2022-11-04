@@ -176,31 +176,71 @@ build_spark() {
     cp -rf /opt/spark-source image/opt/
 
     # Build
+    occlum build
+
+    #before start occlum app after occlum build
     if [[ $ATTESTATION == "true" ]]; then
-       occlum build --image-key /opt/occlum_spark/data/image_key
-       build_initfs
-    else
-       occlum build
+        if [[ $PCCS_URL == "" ]]; then
+            echo "[ERROR] Attestation set to true but NO PCCS"
+            exit 1
+        else
+            if [[ $RUNTIME_ENV == "driver" || $RUNTIME_ENV == "native" ]]; then
+                #verify ehsm service
+                cd /opt/
+                bash verify-attestation-service.sh
+                #register application
+
+                #get mrenclave mrsigner
+                MR_ENCLAVE_temp=$(bash print_enclave_signer.sh | grep mr_enclave)
+                MR_ENCLAVE_temp_arr=(${MR_ENCLAVE_temp})
+                export MR_ENCLAVE=${MR_ENCLAVE_temp_arr[1]}
+                MR_SIGNER_temp=$(bash print_enclave_signer.sh | grep mr_signer)
+                MR_SIGNER_temp_arr=(${MR_SIGNER_temp})
+                export MR_SIGNER=${MR_SIGNER_temp_arr[1]}
+
+                #register and get policy_Id
+                policy_Id_temp=$(bash register.sh | grep policy_Id)
+                policy_Id_temp_arr=(${policy_Id_temp})
+                export policy_Id=${policy_Id_temp_arr[1]}
+            fi
+        fi
+        #register error
+        if [ $? -gt 0 ];
+            echo "register error"
+            then exit 1;
+        fi
     fi
-}
 
-build_initfs() {
-    cd /root/demos/remote_attestation/init_ra_flow/
-    bash build_content.sh build_init_ra
-    cd /opt/occlum_spark
-    rm -rf initfs
-    jq ' .verify_mr_enclave = "off" |
-        .verify_mr_signer = "off" |
-        .verify_isv_prod_id = "off" |
-        .verify_isv_svn = "off" |
-        .verify_enclave_debuggable = "on" |
-        .sgx_mrs[0].debuggable = false ' /root/demos/remote_attestation/init_ra_flow/ra_config_template.json > /opt/occlum_spark/dynamic_config.json
-    export INITRA_DIR=/root/demos/remote_attestation/init_ra_flow/init_ra
-    export DEP_LIBS_DIR=/root/demos/remote_attestation/init_ra_flow/dep_libs
-    export RATLS_DIR=/root/demos/ra_tls
-    copy_bom -f /root/demos/remote_attestation/init_ra_flow/init_ra_client.yaml --root initfs --include-dir /opt/occlum/etc/template
-
-    occlum build -f --image-key /opt/occlum_spark/data/image_key
+    #attestation
+    if [[ $ATTESTATION == "true" ]]; then
+        if [[ $PCCS_URL == "" ]]; then
+            echo "[ERROR] Attestation set to /root/demos/remote_attestation/dcaprue but NO PCCS"
+            exit 1
+        else
+                #generate dcap quote
+                cd /opt/occlum_spark
+                occlum run /bin/dcap_c_test $REPORT_DATA
+                echo "generate quote success"
+                #attest quote
+                occlum run /usr/lib/jvm/java-8-openjdk-amd64/bin/java \
+                            -XX:-UseCompressedOops -XX:MaxMetaspaceSize=1g \
+                            -XX:ActiveProcessorCount=4 \
+                            -Divy.home="/tmp/.ivy" \
+                            -Dos.name="Linux" \
+                            -cp "$SPARK_HOME/conf/:$SPARK_HOME/jars/*:/bin/jars/*" \
+                            -Xmx1g com.intel.analytics.bigdl.ppml.attestation.AttestationCLI \
+                            -u $ATTESTATION_URL \
+                            -i $APP_ID \
+                            -k $API_KEY \
+                            -O occlum \
+                            -o $policy_Id
+                if [ $? -gt 0 ]; then
+                    echo "attest fail, exit"
+                    exit 1;
+                fi
+                echo "verify success"
+        fi
+    fi
 }
 
 run_spark_pi() {
