@@ -279,3 +279,6 @@ nbsphinx_execute = 'never'
 
 # make output of graphviz diagram to svg
 graphviz_output_format = 'svg'
+
+# disable automatically included mermaid.js from sphinxcontrib.mermaid to load it before require.js
+mermaid_version=""
