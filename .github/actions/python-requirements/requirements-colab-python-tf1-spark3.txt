@@ -7,7 +7,6 @@ opencv-python
 matplotlib
 tqdm
 protobuf==3.15.3
-pandas
 ray[default]==1.9.2
 dm_tree
 gym[atari]==0.17.1
