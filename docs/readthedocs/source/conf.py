@@ -113,7 +113,8 @@ extensions = [
     'sphinx_design',
     'nbsphinx',
     'nbsphinx_link',
-    'sphinx.ext.graphviz' # for embedded graphviz diagram
+    'sphinx.ext.graphviz', # for embedded graphviz diagram
+    'sphinxcontrib.mermaid' # for mermaid.js diagram
 ]
 
 # Add any paths that contain templates here, relative to this directory.
