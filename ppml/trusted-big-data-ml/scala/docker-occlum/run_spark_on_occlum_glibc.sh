@@ -127,7 +127,9 @@ init_instance() {
 }
 
 build_spark() {
-    # Copy python examples
+    # Copy python examples and unzip python lib
+    cd /opt && tar -xvf python-occlum.zip && rm python-occlum.zip
+    cd /opt/occlum_spark
     mkdir -p image/py-examples
     cp -rf /opt/py-examples/* image/py-examples
     # Copy JVM and class file into Occlum instance and build

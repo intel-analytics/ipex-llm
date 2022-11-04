@@ -247,5 +247,4 @@ RUN chmod a+x /opt/entrypoint.sh && \
 ADD ./python-glibc.yaml /opt/python-glibc.yaml
 COPY ./python-occlum.zip /opt/python-occlum.zip
 ADD ./py-examples /opt/py-examples
-RUN cd /opt && tar -xvf python-occlum.zip && rm python-occlum.zip
 ENTRYPOINT [ "/opt/entrypoint.sh" ]
