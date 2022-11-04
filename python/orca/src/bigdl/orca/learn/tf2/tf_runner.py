@@ -551,12 +551,13 @@ class TFRunner:
         try:
             self.model.save(temp_path, overwrite, include_optimizer, save_format, signatures,
                             options)
-            if save_format == 'h5' or filepath.endswith('.h5') or filepath.endswith('.keras'):
-                # hdf5 format
-                put_local_file_to_remote(temp_path, filepath)
-            else:
-                # savemodel format
-                put_local_dir_tree_to_remote(temp_path, filepath)
+            if self.rank == 0:
+                if save_format == 'h5' or filepath.endswith('.h5') or filepath.endswith('.keras'):
+                    # hdf5 format
+                    put_local_file_to_remote(temp_path, filepath)
+                else:
+                    # savemodel format
+                    put_local_dir_tree_to_remote(temp_path, filepath)
         finally:
             shutil.rmtree(temp_dir)
 
@@ -598,13 +599,14 @@ class TFRunner:
         temp_path = os.path.join(temp_dir, file_name)
         try:
             self.model.save_weights(temp_path, overwrite, save_format, options)
-            if save_format == 'h5' or filepath.endswith('.h5') or filepath.endswith('.keras'):
-                # hdf5 format
-                put_local_file_to_remote(temp_path, filepath)
-            else:
-                # tf format
-                remote_dir = os.path.dirname(filepath)
-                put_local_files_with_prefix_to_remote(temp_path, remote_dir)
+            if self.rank == 0:
+                if save_format == 'h5' or filepath.endswith('.h5') or filepath.endswith('.keras'):
+                    # hdf5 format
+                    put_local_file_to_remote(temp_path, filepath)
+                else:
+                    # tf format
+                    remote_dir = os.path.dirname(filepath)
+                    put_local_files_with_prefix_to_remote(temp_path, remote_dir)
         finally:
             shutil.rmtree(temp_dir)
 

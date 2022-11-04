@@ -559,8 +559,7 @@ class TensorFlow2Estimator(OrcaRayEstimator):
             signatures=signatures,
             options=options
         )
-        model_refs = [w.save_model.remote(**params) for w in self.remote_workers]
-        ray.get(model_refs[0])
+        ray.get([w.save_model.remote(**params) for w in self.remote_workers])
 
     def load(self,
              filepath,
@@ -614,8 +613,7 @@ class TensorFlow2Estimator(OrcaRayEstimator):
             save_format=save_format,
             options=options
         )
-        weights_refs = [w.save_weights.remote(**params) for w in self.remote_workers]
-        ray.get(weights_refs[0])
+        ray.get([w.save_weights.remote(**params) for w in self.remote_workers])
 
     def load_weights(self, filepath, by_name=False, skip_mismatch=False, options=None):
         """
