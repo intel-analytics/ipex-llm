@@ -22,6 +22,10 @@ ARG HTTPS_PROXY_PORT
 ENV HTTP_PROXY=http://$HTTP_PROXY_HOST:$HTTP_PROXY_PORT
 ENV HTTPS_PROXY=http://$HTTPS_PROXY_HOST:$HTTPS_PROXY_PORT
 
+#unzip python lib
+COPY ./python-occlum.zip /opt/python-occlum.zip
+RUN cd /opt && tar -xvf python-occlum.zip && rm python-occlum.zip
+
 RUN apt-get update && DEBIAN_FRONTEND="noninteractive" apt-get install -y --no-install-recommends \
         openjdk-8-jdk build-essential wget git unzip && \
     apt-get clean && \
@@ -245,6 +249,6 @@ RUN chmod a+x /opt/entrypoint.sh && \
 
 # Add python lib
 ADD ./python-glibc.yaml /opt/python-glibc.yaml
-COPY ./python-occlum.zip /opt/python-occlum.zip
+COPY --from=bigdl /opt/python-occlum /opt/python-occlum
 ADD ./py-examples /opt/py-examples
 ENTRYPOINT [ "/opt/entrypoint.sh" ]
