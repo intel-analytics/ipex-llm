@@ -436,7 +436,7 @@ class SparkRunner:
         if "spark.executor.extraClassPath" not in conf:
             # BigDL Class path in k8s image
             bigdl_class_version = get_bigdl_class_version()
-            conf["spark.executor.extraClassPath"] = "/opt/" + "bigdl-" +  bigdl_class_version \
+            conf["spark.executor.extraClassPath"] = "/opt/" + "bigdl-" + bigdl_class_version \
                 + "/jars/*"
         conf["spark.driver.extraClassPath"] = conf["spark.executor.extraClassPath"]
         sys_args = "local://" + " ".join(sys.argv)
