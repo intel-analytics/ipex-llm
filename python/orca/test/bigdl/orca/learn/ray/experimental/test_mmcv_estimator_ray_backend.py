@@ -28,6 +28,7 @@ from torchvision.datasets import CIFAR10
 
 from mmcv.runner import EpochBasedRunner
 from mmcv.utils import get_logger
+from bigdl.orca import init_orca_context, stop_orca_context
 from bigdl.orca.learn.pytorch.experimential.mmcv.mmcv_ray_estimator import MMCVRayEstimator
 
 
@@ -80,15 +81,12 @@ def runner_creator(config):
     lr_config = dict(policy='step', step=[2, 3])
     # configuration of optimizer
     optimizer_config = dict(grad_clip=None)
-    # configuration of saving checkpoints periodically
-    checkpoint_config = dict(interval=1)
     # save log periodically and multiple hooks can be used simultaneously
     log_config = dict(interval=100, hooks=[dict(type='TextLoggerHook')])
     # register hooks to runner and those hooks will be invoked automatically
     runner.register_training_hooks(
         lr_config=lr_config,
         optimizer_config=optimizer_config,
-        checkpoint_config=checkpoint_config,
         log_config=log_config)
 
     return runner
@@ -114,10 +112,19 @@ class TestMMCVRayEstimator(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls) -> None:
+        init_orca_context(cores=8, memory="8g")
         cls.estimator = MMCVRayEstimator(
             mmcv_runner_creator=runner_creator,
             config={}
         )
+
+    @classmethod
+    def tearDownClass(cls) -> None:
+        data_path = os.path.join(resource_path, "cifar10")
+        if os.path.exists(data_path):
+            shutil.rmtree(data_path)
+
+        stop_orca_context()
 
     def test_fit(self):
         self.estimator.fit([train_dataloader_creator], [('train', 1)])

@@ -70,11 +70,6 @@ class MMCVRayEstimator(BaseRayEstimator):
                       **kwargs)
         success, worker_stats = self._train_epochs(**params)
 
-        epoch_stats = list(map(list, zip(*worker_stats)))
-        for i in range(len(epoch_stats)):
-            epoch_stats[i] = self._process_stats(epoch_stats[i])
-        return epoch_stats
-
     def predict(self, **kwargs):
         pass
 
