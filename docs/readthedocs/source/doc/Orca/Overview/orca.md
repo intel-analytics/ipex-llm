@@ -76,7 +76,7 @@ est.fit(data=train,
         epochs=4,
         feature_cols=['user', 'item'],
         label_cols=['label'],
-        steps_per_epoch=int(train.count()/64)
+        steps_per_epoch=int(train.count()/64),
         validation_data=test,
         validation_steps=int(test.count()/64))
 
