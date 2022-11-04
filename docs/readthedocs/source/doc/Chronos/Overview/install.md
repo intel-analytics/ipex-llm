@@ -124,7 +124,7 @@ source bigdl-nano-init  # accelerate the conda env
 
 ##### Install Chronos on native Windows
 
-Chronos can be simply installed using pip on native Windows, the install command is almost the same as Linux, and you could run the above example command to install, but there are some limitations now:
+Chronos can be simply installed using pip on native Windows, you could use the same command as Linux to install, but unfortunately, some features are unavailable now:
 
 1. `bigdl-chronos[distributed]` is not supported.
 
