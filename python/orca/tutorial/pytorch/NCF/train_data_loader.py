@@ -51,7 +51,7 @@ class NCFData(data.Dataset):
         self.train_mat = train_mat
         self.num_ng = num_ng
         self.is_training = is_training
-        self.labels = [0 for _ in range(len(features))]
+        self.labels = [1 for _ in range(len(features))]
 
     def ng_sample(self):
         np.random.seed(0)
