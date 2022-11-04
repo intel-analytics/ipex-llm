@@ -46,6 +46,7 @@ class MMCVRayRunner(BaseRayRunner, EpochBasedRunner):
     def __init__(self, mmcv_runner_creator=None, config=None):
         self.mmcv_runner_creator = mmcv_runner_creator
         self.config = config
+        self.backend = "torch-local"
 
     def setup_components(self):
         runner = self.mmcv_runner_creator(self.config)
@@ -97,11 +98,11 @@ class MMCVRayRunner(BaseRayRunner, EpochBasedRunner):
 
     @property
     def backend(self):
-        return "torch-distributed"
+        return self.backend
 
     @backend.setter
     def backend(self, backend):
-        pass
+        self.backend = backend
 
     @property
     def size(self):
@@ -110,4 +111,3 @@ class MMCVRayRunner(BaseRayRunner, EpochBasedRunner):
     @size.setter
     def size(self, size):
         self._world_size = size
-
