@@ -18,7 +18,7 @@ pip install tensorflow
 First, initialize [Orca Context](orca-context.md):
 
 ```python
-from bigdl.orca import init_orca_context, OrcaContext
+from bigdl.orca import init_orca_context, stop_orca_context, OrcaContext
 
 # cluster_mode can be "local", "k8s" or "yarn"
 sc = init_orca_context(cluster_mode="local", cores=4, memory="10g", num_nodes=1)
@@ -76,6 +76,9 @@ est.fit(data=train,
         epochs=4,
         feature_cols=['user', 'item'],
         label_cols=['label'],
-        steps_per_epoch=int(df.count()/64))
+        steps_per_epoch=int(train.count()/64)
+        validation_data=test,
+        validation_steps=int(test.count()/64))
 
+stop_orca_context()
 ```
