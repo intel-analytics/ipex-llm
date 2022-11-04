@@ -15,7 +15,6 @@ on:
         - bigdl-ppml-trusted-deep-learning-gramine-ref
         - bigdl-ppml-trusted-big-data-ml-python-gramine
         - bigdl-ppml-trusted-big-data-ml-python-gramine-noattest
-        - bigdl-ppml-trusted-big-data-ml-python-gramine-debug
         - bigdl-ppml-trusted-big-data-ml-python-graphene
         - bigdl-ppml-trusted-big-data-ml-scala-occlum
         - bigdl-ppml-trusted-big-data-ml-scala-occlum-production
