@@ -129,3 +129,6 @@ class TestMMCVRayEstimator(unittest.TestCase):
     def test_fit(self):
         self.estimator.fit([train_dataloader_creator], [('train', 1)])
 
+
+if __name__ == "__main__":
+    unittest.main()
