@@ -40,6 +40,13 @@ subtrees:
                 - file: doc/Orca/Overview/ray
           - file: doc/Orca/QuickStart/index
             title: "Quickstarts"
+            subtrees:
+              - entries:
+                - file: doc/Orca/Quickstart/orca-tf-quickstart
+                - file: doc/Orca/Quickstart/orca-tf2keras-quickstart
+                - file: doc/Orca/Quickstart/orca-keras-quickstart
+                - file: doc/Orca/Quickstart/orca-pytorch-quickstart
+                - file: doc/Orca/Quickstart/ray-quickstart
           - file: doc/Orca/Howto/index
             title: "How-to Guides"
             subtrees:
