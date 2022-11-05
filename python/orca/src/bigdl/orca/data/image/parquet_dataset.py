@@ -31,7 +31,7 @@ import random
 import pyarrow.parquet as pq
 import io
 import math
-from bigdl.dllib.utils.log4Error import *
+from bigdl.dllib.utils.log4Error import invalidInputError
 from numpy import ndarray, uint32
 
 from typing import TYPE_CHECKING, Callable, Dict, List, Optional, Tuple, Union, Any
@@ -39,7 +39,7 @@ if TYPE_CHECKING:
     import tensorflow as tf
     from torch.utils.data import DataLoader
     from bigdl.orca.data.shard import SparkXShards
-    from pyspark.rdd import PipelinedRDD
+    from pyspark.rdd import RDD
     from bigdl.orca.data.tf.data import TensorSliceDataset, Dataset
 
 
@@ -93,7 +93,7 @@ class ParquetDataset:
         write_text(metadata_path, encode_schema(schema))
 
     @staticmethod
-    def _read_as_dict_rdd(path: str) -> Tuple["PipelinedRDD", Dict[str, SchemaField]]:
+    def _read_as_dict_rdd(path: str) -> Tuple["RDD[Any]", Dict[str, SchemaField]]:
         sc = SparkContext.getOrCreate()
         spark = SparkSession(sc)
 
@@ -230,7 +230,7 @@ def _extract_mnist_images(image_filepath: str) -> ndarray:
         num_images = _read32(bytestream)
         rows = _read32(bytestream)
         cols = _read32(bytestream)
-        buf = bytestream.read(rows * cols * num_images)
+        buf = bytestream.read(int(rows * cols * num_images))
         data = np.frombuffer(buf, dtype=np.uint8)
         data = data.reshape(num_images, rows, cols, 1)
         return data
@@ -242,9 +242,9 @@ def _extract_mnist_labels(labels_filepath: str) -> ndarray:
         if magic != 2049:
             invalidInputError(False,
                               'Invalid magic number %d in MNIST label file: %s' %
-                              (magic, labels_filepath.name))
+                              (magic, labels_filepath))
         num_items = _read32(bytestream)
-        buf = bytestream.read(num_items)
+        buf = bytestream.read(int(num_items))
         labels = np.frombuffer(buf, dtype=np.uint8)
         return labels
 
@@ -282,7 +282,7 @@ def write_from_directory(directory: str,
                                        dtype=DType.STRING,
                                        shape=())}
 
-    ParquetDataset.write(output_path, generator, schema, **kwargs)
+    ParquetDataset.write(output_path, generator, schema, **kwargs) # type: ignore
 
 
 def _write_ndarrays(images: ndarray, labels: ndarray, output_path: str, **kwargs) -> None:
@@ -342,7 +342,7 @@ def write_voc(voc_root_path: str,
 
 def _check_arguments(_format: str,
                      kwargs: Dict[str, Any],
-                     args: List[str]) -> None:
+                     args: Union[List[str], Tuple[str]]) -> None:
     for keyword in args:
         invalidInputError(keyword in kwargs,
                           keyword + " is not specified for format " + _format + ".")
@@ -365,7 +365,7 @@ def write_parquet(format: str, output_path: str, *args, **kwargs) -> None:
 
 def read_as_tfdataset(path: str,
                       output_types: Dict[str, 'tf.Dtype'],
-                      config: Dict[str, int]=None,
+                      config: Dict[str, int],
                       output_shapes: Dict[str, 'tf.TensorShape']=None,
                       *args, **kwargs) -> "tf.data.Dataset":
     """
@@ -397,7 +397,7 @@ def read_as_tfdataset(path: str,
 
 
 def read_as_dataloader(path: str,
-                       config: Dict[str, int]=None,
+                       config: Dict[str, int],
                        transforms: Callable=None,
                        batch_size: int=1,
                        *args, **kwargs) -> "DataLoader":
@@ -461,8 +461,8 @@ def read_parquet(format: str,
         invalidInputError(False,
                           format + " is not supported, should be 'tf_dataset' or 'dataloader'.")
 
-    format_to_function = {"tf_dataset": (read_as_tfdataset, ["output_types"]),
-                          "dataloader": (read_as_dataloader, [])}
+    format_to_function:Dict[str, Tuple] = {"tf_dataset": (read_as_tfdataset, ["output_types"]),
+                                           "dataloader": (read_as_dataloader, [])}
     func, required_args = format_to_function[format]
     _check_arguments(format, kwargs, required_args)
     return func(path=path, config=config or {},

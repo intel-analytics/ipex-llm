@@ -39,7 +39,7 @@ import sys
 import threading
 
 import numpy as np
-from bigdl.dllib.utils.log4Error import *
+from bigdl.dllib.utils.log4Error import invalidInputError
 
 if TYPE_CHECKING:
     from numpy import ndarray
@@ -151,8 +151,8 @@ class ImageCoder(object):
 
 
 def _process_dataset(
-        filenames: Iterable[str],
-        synsets: Iterable[str],
+        filenames: List[str],
+        synsets: List[str],
         labels: Mapping[str, int],
         output_directory: str,
         prefix: str,
@@ -233,8 +233,8 @@ def _process_image(
 def _process_image_files_batch(
         coder: ImageCoder,
         output_file: str,
-        filenames: Iterable[str],
-        synsets: Iterable[Union[str, bytes]],
+        filenames: List[str],
+        synsets: List[str],
         labels: Mapping[str, int]) -> None:
     """
     Processes and saves a list of images as TFRecords.
@@ -271,7 +271,7 @@ def _int64_feature(value: Union[int, Iterable[int]]) -> "Feature":
     """Inserts int64 features into Example proto."""
     import tensorflow as tf
     if not isinstance(value, list):
-        value = [value]
+        value = [value] # type: ignore
     return tf.train.Feature(int64_list=tf.train.Int64List(value=value))
 
 

@@ -21,7 +21,7 @@ import shutil
 import functools
 import glob
 from distutils.dir_util import copy_tree
-from bigdl.dllib.utils.log4Error import *
+from bigdl.dllib.utils.log4Error import invalidOperationError
 
 from typing import TYPE_CHECKING, List
 if TYPE_CHECKING:
@@ -157,7 +157,7 @@ def exists(path: str) -> bool:
         try:
             s3_client.get_object(Bucket=bucket, Key=key)
         except Exception as ex:
-            if ex.response['Error']['Code'] == 'NoSuchKey':
+            if ex.response['Error']['Code'] == 'NoSuchKey': # type:ignore
                 return False
             invalidOperationError(False, str(ex), cause=ex)
         return True
@@ -391,7 +391,7 @@ def put_local_file_to_remote(local_path, remote_path, filemode=None):
                 process = subprocess.Popen(chmod_cmd, shell=True)
                 process.wait()
         except Exception as e:
-            logger.error("Cannot upload file {} to {}: error: "
+            logger.error("Cannot upload file {} to {}: error: {}"
                          .format(local_path, remote_path, str(e)))
             return -1
         return 0
@@ -409,7 +409,7 @@ def put_local_file_to_remote(local_path, remote_path, filemode=None):
             with open(local_path, "rb") as f:
                 s3_client.upload_fileobj(f, Bucket=bucket, Key=prefix)
         except Exception as e:
-            logger.error("Cannot upload file {} to {}: error: "
+            logger.error("Cannot upload file {} to {}: error: {}"
                          .format(local_path, remote_path, str(e)))
             return -1
         return 0
@@ -421,7 +421,7 @@ def put_local_file_to_remote(local_path, remote_path, filemode=None):
             if filemode:
                 os.chmod(remote_path, filemode)
         except Exception as e:
-            logger.error("Cannot upload file {} to {}: error: "
+            logger.error("Cannot upload file {} to {}: error: {}"
                          .format(local_path, remote_path, str(e)))
             return -1
         return 0

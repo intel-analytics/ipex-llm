@@ -19,12 +19,13 @@ from bigdl.dllib.nncontext import init_nncontext
 from bigdl.orca import OrcaContext
 from bigdl.orca.data import SparkXShards
 from bigdl.orca.data.utils import *
-from bigdl.dllib.utils.log4Error import *
+from bigdl.dllib.utils.log4Error import invalidInputError
 from typing import TYPE_CHECKING, List, Optional
 
 if TYPE_CHECKING:
     from bigdl.orca.data.shard import SparkXShards
     from pyspark.sql.types import StructType
+    import os
 
 
 def read_csv(file_path: str, **kwargs) -> "SparkXShards":

@@ -18,9 +18,10 @@ from py4j.protocol import Py4JError
 from bigdl.orca.data.utils import *
 from bigdl.orca import OrcaContext
 from bigdl.dllib.nncontext import init_nncontext, ZooContext
-from bigdl.dllib.utils.common import *
+from bigdl.dllib.utils.common import get_node_and_core_number, \
+                                     get_spark_sql_context, get_spark_context 
 from bigdl.dllib.utils import nest
-from bigdl.dllib.utils.log4Error import *
+from bigdl.dllib.utils.log4Error import invalidInputError
 
 import numpy as np
 from pandas.core.frame import DataFrame as PandasDataFrame
@@ -37,6 +38,7 @@ from typing import (
     Optional,
     Tuple,
     Union,
+    NoReturn
 )
 
 if TYPE_CHECKING:
@@ -46,6 +48,7 @@ if TYPE_CHECKING:
     from pandas.core.series import Series
     from pyspark.rdd import (
         PipelinedRDD,
+        RDD
     )
     from pyspark.sql.dataframe import DataFrame as SparkDataFrame
     from pyspark.sql.column import Column
@@ -141,7 +144,7 @@ But got data of type {}
             invalidInputError(type(data) in supported_types, type_err_msg)
             flattened = nest.flatten(data)
             data_length = len(flattened[0])
-            data_to_be_shard = []
+            data_to_be_shard = []  # type:ignore
             if data_length < shard_num:
                 invalidInputError(False,
                                   "The length of data {} is smaller than the total number "
@@ -313,7 +316,7 @@ class SparkXShards(XShards):
                 rdd = self.rdd.coalesce(num_partitions)
                 from functools import reduce
                 repartitioned_shard = SparkXShards(rdd.mapPartitions(
-                    lambda iter: [reduce(lambda l1, l2: l1 + l2, iter)]))
+                    lambda iter: [reduce(lambda l1, l2: l1 + l2, iter)])) # type:ignore
         elif self._get_class_name() == 'numpy.ndarray':
             elem = self.rdd.first()
             shape = elem.shape
@@ -381,7 +384,8 @@ class SparkXShards(XShards):
         self._uncache()
         return repartitioned_shard
 
-    def partition_by(self, cols: str, num_partitions: Optional[int] = None) -> "SparkXShards":
+    def partition_by(self, cols: str, num_partitions: Optional[int] = None) \
+                     -> Optional["SparkXShards"]:
         """
 
         Return a new SparkXShards partitioned using the specified columns.
@@ -397,7 +401,7 @@ class SparkXShards(XShards):
             schema = self.get_schema()
             # if partition by a column
             if isinstance(cols, str):
-                if cols not in schema['columns']:
+                if not isinstance(schema, Dict) or cols not in schema['columns']:
                     invalidInputError(False,
                                       "The partition column is not in the DataFrame")
                 # change data to key value pairs
@@ -430,8 +434,9 @@ class SparkXShards(XShards):
             invalidInputError(False,
                               "Currently only support partition by for XShards"
                               " of Pandas DataFrame")
+        return None
 
-    def unique(self) -> "ndarray":
+    def unique(self) -> Optional["ndarray"]:
         """
 
         Return a unique list of elements of this SparkXShards.
@@ -449,8 +454,9 @@ class SparkXShards(XShards):
         else:
             invalidInputError(False,
                               "Currently only support unique() on XShards of Pandas Series")
+        return None
 
-    def deduplicates(self) -> "SparkXShards":
+    def deduplicates(self) -> Optional["SparkXShards"]:
         if self._get_class_name() == 'pandas.core.frame.DataFrame':
             import pandas as pd
             df = self.to_spark_df()
@@ -460,9 +466,10 @@ class SparkXShards(XShards):
         else:
             invalidInputError(False,
                               "Currently only support dedup() on XShards of Pandas DataFrame")
+        return None
 
     def sort_values(self, col_names: Union[str, List[str]]=None,
-                    ascending: bool=True) -> "SparkXShards":
+                    ascending: bool=True) -> Optional["SparkXShards"]:
         """
         Sort the value of shards. This is only applicable for SparkXShards of Pandas Series.
 
@@ -477,15 +484,16 @@ class SparkXShards(XShards):
             defaultPartitionNum = sqlContext.getConf("spark.sql.shuffle.partitions")
             partitionNum = df.rdd.getNumPartitions()
             sqlContext.setConf("spark.sql.shuffle.partitions", str(partitionNum))
-            sort_df = df.sort(col_names, ascending=ascending)
+            sort_df = df.sort(col_names, ascending=ascending) # type:ignore
             data_shards = spark_df_to_pd_sparkxshards(sort_df)
             sqlContext.setConf("spark.sql.shuffle.partitions", defaultPartitionNum)
             return data_shards
         else:
             invalidInputError(False,
                               "Currently only support sort() on XShards of Pandas DataFrame")
+        return None
 
-    def max_values(self, col_name: str) -> Union[int, float]:
+    def max_values(self, col_name: str) -> Union[int, float, None]:
         """
         Get the max values of the column name. This is only applicable for SparkXShards
          of Pandas Series.
@@ -501,6 +509,7 @@ class SparkXShards(XShards):
         else:
             invalidInputError(False,
                               "Currently only support max() on XShards of Pandas DataFrame")
+        return None
 
     def get_null_sum(self) -> "PandasDataFrame":
         """
@@ -605,7 +614,7 @@ class SparkXShards(XShards):
         transformed_shard = self.transform_shard(to_shard_dict)
         return transformed_shard
 
-    def split(self) -> List["SparkXShards"]:
+    def split(self) -> Optional[List["SparkXShards"]]:
         """
 
         Split SparkXShards into multiple SparkXShards.
@@ -637,8 +646,9 @@ class SparkXShards(XShards):
                 return split_shard_list
             else:
                 return [self]
+        return None
 
-    def zip(self, other: "SparkXShards") -> "SparkXShards":
+    def zip(self, other: "SparkXShards") -> Optional["SparkXShards"]:
         """
 
         Zips this SparkXShards with another one, returning key-value pairs with the first element
@@ -662,6 +672,7 @@ class SparkXShards(XShards):
             invalidInputError(False,
                               "The two SparkXShards should have the same number of elements "
                               "in each partition")
+        return None
 
     def group_by(
         self,
@@ -816,7 +827,7 @@ class SparkXShards(XShards):
 
         return SparkXShards(self.rdd.map(get_data), transient=True)
 
-    def _for_each(self, func: Callable, *args, **kwargs) -> "PipelinedRDD":
+    def _for_each(self, func: Callable, *args, **kwargs) -> "RDD[Any]":
         def utility_func(x, func, *args, **kwargs):
             try:
                 result = func(x, *args, **kwargs)
@@ -827,7 +838,7 @@ class SparkXShards(XShards):
         result_rdd = self.rdd.map(lambda x: utility_func(x, func, *args, **kwargs))
         return result_rdd
 
-    def get_schema(self) -> Dict[str, Union["Index", "Series"]]:
+    def get_schema(self) -> Optional[Dict[str, Union["Index", "Series"]]]:
         if 'schema' in self.type:
             return self.type['schema']
 

@@ -19,12 +19,12 @@ from bigdl.orca.tfpark.tf_dataset import TensorMeta
 from bigdl.dllib.utils import nest
 from bigdl.orca.data import SparkXShards
 from bigdl.dllib.utils import log4Error
-from bigdl.dllib.utils.log4Error import *
+from bigdl.dllib.utils.log4Error import invalidInputError
 
-from typing import TYPE_CHECKING, Callable, Optional
+from typing import TYPE_CHECKING, Callable, Optional, Any
 if TYPE_CHECKING:
     from bigdl.orca.data.shard import SparkXShards
-    from pyspark.rdd import PipelinedRDD
+    from pyspark.rdd import RDD
     from bigdl.friesian.feature import FeatureTable
 
 
@@ -44,7 +44,7 @@ class Dataset(object):
         self.create_dataset_fn = create_dataset_fn
         self.xshards_transform_fn = xshards_transform_fn
 
-    def as_graph_rdd(self, batch_per_shard: int, drop_remainder: bool=True) -> "PipelinedRDD":
+    def as_graph_rdd(self, batch_per_shard: int, drop_remainder: bool=True) -> "RDD[Any]":
 
         create_dataset_fn = self.create_dataset_fn
 
@@ -157,7 +157,7 @@ class TensorSliceDataset(Dataset):
 
 class MapDataset(Dataset):
 
-    def __init__(self, input_dataset: "TensorSliceDataset", map_func: Callable) -> None:
+    def __init__(self, input_dataset: "Dataset", map_func: Callable) -> None:
 
         create_pre_dataset_fn = input_dataset.create_dataset_fn
         xshards_pre_transform_fn = input_dataset.xshards_transform_fn

@@ -17,7 +17,7 @@
 import pyspark.sql.functions as F
 from pyspark.sql import Row
 from pyspark.sql.types import IntegerType, DataType, StructType, StringType, StructField
-from bigdl.dllib.utils.log4Error import *
+from bigdl.dllib.utils.log4Error import invalidInputError
 from bigdl.orca.data import SparkXShards
 from bigdl.orca import OrcaContext
 from pyspark.ml.feature import MinMaxScaler as SparkMinMaxScaler
@@ -36,9 +36,9 @@ if TYPE_CHECKING:
 
 # TODO: ADD UT
 class StringIndexer:
-    def __init__(self, inputCol: Optional[Union[str, List[str]]]=None) -> None:
+    def __init__(self, inputCol: Union[str, List[str]]) -> None:
         self.inputCol = inputCol
-        self.indices = None
+        self.indices: Union[StringIndex, List[StringIndex], None] = None
 
     def setInputCol(self, inputCol: Union[str, List[str]]) -> None:
         self.inputCol = inputCol
@@ -52,7 +52,7 @@ class StringIndexer:
     def transform(self, shard: "SparkXShards") -> "SparkXShards":
         invalidInputError(self.indices, "Please call fit_transform first")
         df = shard.to_spark_df()
-        indexedData = self.encode_string(df, self.inputCol, self.indices)
+        indexedData = self.encode_string(df, self.inputCol, self.indices) # type:ignore
         data_shards = spark_df_to_pd_sparkxshards(indexedData)
         return data_shards
 
@@ -103,9 +103,10 @@ class StringIndexer:
         check_col_exists(df, src_columns)
         if freq_limit:
             if isinstance(freq_limit, int):
-                freq_limit = str(freq_limit)
+                freq_limit = str(freq_limit) # type:ignore
             elif isinstance(freq_limit, dict):
-                freq_limit = ",".join(str(k) + ":" + str(v) for k, v in freq_limit.items())
+                freq_limit = ",".join(str(k) + ":" + str(v)  # type:ignore
+                                      for k, v in freq_limit.items())
             else:
                 invalidInputError(False,
                                   "freq_limit only supports int, dict or None, but get " +
@@ -175,7 +176,8 @@ class StringIndexer:
                         sep: str=',',
                         sort_for_array: bool=False,
                         keep_most_frequent: bool=False,
-                        broadcast: bool=True) -> Tuple["SparkDataFrame", List["StringIndex"]]:
+                        broadcast: bool=True) -> Tuple["SparkDataFrame",
+                                                       Union["StringIndex", List["StringIndex"]]]:
         """
         Category encode the given columns.
 
@@ -249,7 +251,7 @@ class StringIndexer:
         invalidInputError(len(columns) == len(indices),
                           "columns len doesn't match indices lenngth")
         if isinstance(indices[0], dict):
-            indices = list(map(lambda x: StringIndex.from_dict(x[1], columns[x[0]]),
+            indices = list(map(lambda x: StringIndex.from_dict(x[1], columns[x[0]]),  # type:ignore
                                enumerate(indices)))
         data_df = df
         for i in range(len(columns)):
@@ -319,10 +321,10 @@ class StringIndex:
         if not isinstance(col_name, str):
             invalidInputError(False,
                               'col_name should be str, but get ' + col_name.__class__.__name__)
-        indices = map(lambda x: {col_name: x[0], 'id': x[1]}, indices.items())
+        new_indices = map(lambda x: {col_name: x[0], 'id': x[1]}, indices.items())
         schema = StructType([StructField(col_name, StringType(), False),
                              StructField("id", IntegerType(), False)])
-        df = spark.createDataFrame((Row(**x) for x in indices), schema=schema)
+        df = spark.createDataFrame((Row(**x) for x in new_indices), schema=schema)
         return cls(df, col_name)
 
     def to_dict(self) -> Dict[str, "StringIndex"]:
@@ -354,7 +356,7 @@ class MinMaxScaler:
         self.max = max
         self.inputCol = inputCol
         self.outputCol = outputCol
-        self.scaler = None
+        self.scaler = None # type: Optional[SparkPipeline]
         self.scalerModel = None
         if inputCol:
             self.__createScaler__()
@@ -364,9 +366,10 @@ class MinMaxScaler:
         invalidInputError(self.outputCol, "outputColumn cannot be empty")
 
         vecOutputCol = str(uuid.uuid1()) + "x_vec"
-        assembler = SparkVectorAssembler(inputCols=self.inputCol, outputCol=vecOutputCol)
+        assembler = SparkVectorAssembler(inputCols=self.inputCol, # type:ignore
+                                         outputCol=vecOutputCol)
         scaler = SparkMinMaxScaler(min=self.min, max=self.max,
-                                   inputCol=vecOutputCol, outputCol=self.outputCol)
+                                   inputCol=vecOutputCol, outputCol=self.outputCol) # type:ignore
         self.scaler = SparkPipeline(stages=[assembler, scaler])
 
     def setInputOutputCol(self,
@@ -378,15 +381,15 @@ class MinMaxScaler:
 
     def fit_transform(self, shard: "SparkXShards") -> "SparkXShards":
         df = shard.to_spark_df()
-        self.scalerModel = self.scaler.fit(df)
-        scaledData = self.scalerModel.transform(df)
+        self.scalerModel = self.scaler.fit(df) # type: ignore
+        scaledData = self.scalerModel.transform(df) # type: ignore
         data_shards = spark_df_to_pd_sparkxshards(scaledData)
         return data_shards
 
     def transform(self, shard: "SparkXShards") -> "SparkXShards":
         invalidInputError(self.scalerModel, "Please call fit_transform first")
         df = shard.to_spark_df()
-        scaledData = self.scalerModel.transform(df)
+        scaledData = self.scalerModel.transform(df) # type: ignore
         data_shards = spark_df_to_pd_sparkxshards(scaledData)
         return data_shards
 

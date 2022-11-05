@@ -18,11 +18,12 @@ from bigdl.dllib.utils.common import get_node_and_core_number
 from bigdl.dllib.utils.file_utils import callZooFunc
 from bigdl.dllib.feature.common import FeatureSet
 from bigdl.orca.tfpark import TFDataset
-from bigdl.dllib.utils.log4Error import *
+from bigdl.dllib.utils.log4Error import invalidInputError
 
-from typing import TYPE_CHECKING, Optional
+from typing import TYPE_CHECKING, Optional, Any
 if TYPE_CHECKING:
     from bigdl.orca.data.tf.data import MapDataset
+    from pyspark.rdd import RDD
 
 
 class TF1Dataset(TFDataset):
@@ -74,7 +75,7 @@ class TF1Dataset(TFDataset):
             self.val_output_names = meta_info["output_names"]
             self.val_output_types = meta_info["output_types"]
         else:
-            self.val_rdd = None
+            self.val_rdd = None # type: ignore
             self.val_init_op_name = None
             self.val_output_names = None
             self.val_output_types = None

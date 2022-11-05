@@ -121,7 +121,9 @@ def write_tfrecord(format: str, output_path: str, *args, **kwargs) -> None:
     format_to_function = {"imagenet": (write_imagenet, ["imagenet_path"])}
     func, required_args = format_to_function[format]
     _check_arguments(format, kwargs, required_args)
-    func(output_path=output_path, *args, **kwargs)
+
+    kwargs["output_path"]=output_path
+    func(*args, **kwargs)
 
 
 def read_tfrecord(format: str, path: str, *args, **kwargs) -> "Dataset":
@@ -141,4 +143,6 @@ def read_tfrecord(format: str, path: str, *args, **kwargs) -> "Dataset":
     format_to_function = {"imagenet": (read_imagenet, ["is_training"])}
     func, required_args = format_to_function[format]
     _check_arguments(format, kwargs, required_args)
-    return func(path=path, *args, **kwargs)
+
+    kwargs["path"]=path
+    return func(*args, **kwargs)

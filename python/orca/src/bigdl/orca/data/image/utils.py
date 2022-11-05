@@ -25,7 +25,10 @@ from itertools import chain, islice
 from enum import Enum
 import json
 from bigdl.dllib.utils.log4Error import *
-from typing import Any, Dict, Iterator, List, Union
+from typing import Any, Dict, Iterator, List, Union, TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from numpy import ndarray
 
 
 class DType(Enum):
@@ -96,7 +99,7 @@ def encode_schema(schema: Dict[str, SchemaField]) -> str:
     copy_schema = schema.copy()
 
     for k, v in copy_schema.items():
-        copy_schema[k] = v.to_dict()
+        copy_schema[k] = v.to_dict() # type: ignore
 
     return json.dumps(copy_schema, cls=EnumEncoder)
 
@@ -157,7 +160,8 @@ def decode_feature_type_ndarray(df, schema):
     return df
 
 
-def chunks(iterable: List[Dict[str, Union[str, int]]], size: int=10) -> Iterator[chain]:
+def chunks(iterable: List[Dict[str, Union[str, int, float, "ndarray"]]],
+           size: int=10) -> Iterator[chain]:
     iterator = iter(iterable)
     for first in iterator:
         yield chain([first], islice(iterator, size - 1))

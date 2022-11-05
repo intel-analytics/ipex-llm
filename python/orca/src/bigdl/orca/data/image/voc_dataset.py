@@ -18,8 +18,8 @@ import os
 import os.path as osp
 from PIL import Image
 import logging
-from bigdl.dllib.utils.log4Error import *
-from typing import TYPE_CHECKING, List, Tuple, Optional
+from bigdl.dllib.utils.log4Error import invalidInputError, invalidOperationError
+from typing import TYPE_CHECKING, List, Tuple, Optional, Dict, no_type_check
 
 if TYPE_CHECKING:
     from numpy import ndarray
@@ -27,7 +27,7 @@ if TYPE_CHECKING:
 try:
     import xml.etree.cElementTree as ET
 except ImportError:
-    import xml.etree.ElementTree as ET
+    import xml.etree.ElementTree as ET # type: ignore
 
 
 class VOCDatasets:
@@ -59,9 +59,9 @@ class VOCDatasets:
         self._imgid_items = self._load_items(splits_names)
         self._anno_path = osp.join('{}', 'Annotations', '{}.xml')
         self._image_path = osp.join('{}', 'JPEGImages', '{}.jpg')
-        self._im_shapes = {}
+        self._im_shapes = {} # type: Dict[int, Tuple]
         self._im_anno = [self._load_label(idx) for idx in range(len(self))]
-        self._im_cache = {}
+        self._im_cache = {} # type: Dict[str, "ndarray"]
 
     def _load_items(self, splits_names: List[Tuple[int, str]]) -> List[Tuple[str, str]]:
 
@@ -87,12 +87,13 @@ class VOCDatasets:
         img_id = self._imgid_items[idx]
         img_path = self._image_path.format(*img_id)
         if img_path in self._im_cache:
-            img = self._im_cache
+            img = self._im_cache[img_path]
         else:
-            img = self._read_image(img_path)
+            img = self._read_image(img_path) # type: ignore
 
         return img, self._im_anno[idx]
 
+    @no_type_check
     def _load_label(self, idx: int) -> "ndarray":
         img_id = self._imgid_items[idx]
         anno_path = self._anno_path.format(*img_id)
@@ -155,7 +156,7 @@ class VOCDatasets:
         invalidInputError(((ymin < ymax) & (ymax <= height)).any(),
                           "ymax must in ({}, {}], given {}".format(ymin, height, ymax))
 
-    def _read_image(self, image_path: str) -> "ndarray":
+    def _read_image(self, image_path: str) -> Optional["ndarray"]:
         try:
             img = Image.open(image_path)
             img = np.array(img)
@@ -163,6 +164,7 @@ class VOCDatasets:
             return img
         except FileNotFoundError as e:
             invalidOperationError(False, str(e), cause=e)
+        return None
 
     @property
     def classes_label(self):

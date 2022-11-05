@@ -13,6 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+from __future__ import annotations
 from collections import defaultdict
 
 import ray
@@ -25,7 +26,7 @@ from bigdl.orca.data import XShards
 from bigdl.orca.ray import OrcaRayContext
 
 import logging
-from bigdl.dllib.utils.log4Error import *
+from bigdl.dllib.utils.log4Error import invalidInputError
 
 from numpy import ndarray
 from typing import (
@@ -37,12 +38,13 @@ from typing import (
     List,
     Tuple,
     Union,
+    no_type_check
 )
 
 
 if TYPE_CHECKING:
     from bigdl.orca.data.shard import SparkXShards
-    from pyspark.rdd import PipelinedRDD
+    from pyspark.rdd import PipelinedRDD, RDD
     from ray._raylet import ObjectRef
     from ray.actor import ActorHandle
 
@@ -154,7 +156,7 @@ def get_from_ray(idx, redis_address, redis_password, idx_to_store_name):
 
 class RayXShards(XShards):
 
-    def __init__(self, uuid: str, id_ip_store_rdd: "PipelinedRDD",
+    def __init__(self, uuid: str, id_ip_store_rdd: "RDD[Any]",
                  partition_stores: Dict[str, "ActorHandle"]) -> None:
         self.uuid = uuid
         self.rdd = id_ip_store_rdd
@@ -193,7 +195,7 @@ class RayXShards(XShards):
         Flatten get_partition_refs. Get a list of partition_refs or shard_refs
         """
         partition_refs = self.get_partition_refs()
-        return [ref for partition_ref in partition_refs for ref in partition_ref]
+        return [ref for partition_ref in partition_refs for ref in partition_ref] # type:ignore
 
     def collect_partitions(self) -> List[List[Dict[str, ndarray]]]:
         part_refs = self.get_partition_refs()
@@ -396,10 +398,11 @@ class RayXShards(XShards):
         else:
             return actor2assignments, actor_ips, actors
 
+    @no_type_check
     @staticmethod
     def from_partition_refs(ip2part_id: DefaultDict[str, List[int]],
                             part_id2ref: Dict[int, "ObjectRef"],
-                            old_rdd: "PipelinedRDD") -> "RayXShards":
+                            old_rdd: "RDD[Any]") -> "RayXShards":
         ray_ctx = OrcaRayContext.get()
         uuid_str = str(uuid.uuid4())
         id2store_name = {}
@@ -424,6 +427,7 @@ class RayXShards(XShards):
     def from_spark_xshards(spark_xshards: "SparkXShards") -> "RayXShards":
         return RayXShards._from_spark_xshards_ray_api(spark_xshards)
 
+    @no_type_check
     @staticmethod
     def _from_spark_xshards_ray_api(spark_xshards: "SparkXShards") -> "RayXShards":
         ray_ctx = OrcaRayContext.get()
