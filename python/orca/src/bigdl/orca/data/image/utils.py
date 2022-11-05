@@ -99,7 +99,7 @@ def encode_schema(schema: Dict[str, SchemaField]) -> str:
     copy_schema = schema.copy()
 
     for k, v in copy_schema.items():
-        copy_schema[k] = v.to_dict() # type: ignore
+        copy_schema[k] = v.to_dict()  # type: ignore
 
     return json.dumps(copy_schema, cls=EnumEncoder)
 

@@ -271,7 +271,7 @@ def _int64_feature(value: Union[int, Iterable[int]]) -> "Feature":
     """Inserts int64 features into Example proto."""
     import tensorflow as tf
     if not isinstance(value, list):
-        value = [value] # type: ignore
+        value = [value]  # type: ignore
     return tf.train.Feature(int64_list=tf.train.Int64List(value=value))
 
 

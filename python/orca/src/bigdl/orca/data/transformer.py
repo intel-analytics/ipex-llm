@@ -38,7 +38,7 @@ if TYPE_CHECKING:
 class StringIndexer:
     def __init__(self, inputCol: Union[str, List[str]]) -> None:
         self.inputCol = inputCol
-        self.indices: Union[StringIndex, List[StringIndex], None] = None
+        self.indices = None  # type: Union[StringIndex, List[StringIndex], None]
 
     def setInputCol(self, inputCol: Union[str, List[str]]) -> None:
         self.inputCol = inputCol
@@ -52,7 +52,7 @@ class StringIndexer:
     def transform(self, shard: "SparkXShards") -> "SparkXShards":
         invalidInputError(self.indices, "Please call fit_transform first")
         df = shard.to_spark_df()
-        indexedData = self.encode_string(df, self.inputCol, self.indices) # type:ignore
+        indexedData = self.encode_string(df, self.inputCol, self.indices)  # type:ignore
         data_shards = spark_df_to_pd_sparkxshards(indexedData)
         return data_shards
 
@@ -103,7 +103,7 @@ class StringIndexer:
         check_col_exists(df, src_columns)
         if freq_limit:
             if isinstance(freq_limit, int):
-                freq_limit = str(freq_limit) # type:ignore
+                freq_limit = str(freq_limit)  # type:ignore
             elif isinstance(freq_limit, dict):
                 freq_limit = ",".join(str(k) + ":" + str(v)  # type:ignore
                                       for k, v in freq_limit.items())
@@ -356,7 +356,7 @@ class MinMaxScaler:
         self.max = max
         self.inputCol = inputCol
         self.outputCol = outputCol
-        self.scaler = None # type: Optional[SparkPipeline]
+        self.scaler = None  # type: Optional[SparkPipeline]
         self.scalerModel = None
         if inputCol:
             self.__createScaler__()
@@ -366,10 +366,10 @@ class MinMaxScaler:
         invalidInputError(self.outputCol, "outputColumn cannot be empty")
 
         vecOutputCol = str(uuid.uuid1()) + "x_vec"
-        assembler = SparkVectorAssembler(inputCols=self.inputCol, # type:ignore
+        assembler = SparkVectorAssembler(inputCols=self.inputCol,  # type:ignore
                                          outputCol=vecOutputCol)
         scaler = SparkMinMaxScaler(min=self.min, max=self.max,
-                                   inputCol=vecOutputCol, outputCol=self.outputCol) # type:ignore
+                                   inputCol=vecOutputCol, outputCol=self.outputCol)  # type:ignore
         self.scaler = SparkPipeline(stages=[assembler, scaler])
 
     def setInputOutputCol(self,
@@ -381,15 +381,15 @@ class MinMaxScaler:
 
     def fit_transform(self, shard: "SparkXShards") -> "SparkXShards":
         df = shard.to_spark_df()
-        self.scalerModel = self.scaler.fit(df) # type: ignore
-        scaledData = self.scalerModel.transform(df) # type: ignore
+        self.scalerModel = self.scaler.fit(df)  # type: ignore
+        scaledData = self.scalerModel.transform(df)  # type: ignore
         data_shards = spark_df_to_pd_sparkxshards(scaledData)
         return data_shards
 
     def transform(self, shard: "SparkXShards") -> "SparkXShards":
         invalidInputError(self.scalerModel, "Please call fit_transform first")
         df = shard.to_spark_df()
-        scaledData = self.scalerModel.transform(df) # type: ignore
+        scaledData = self.scalerModel.transform(df)  # type: ignore
         data_shards = spark_df_to_pd_sparkxshards(scaledData)
         return data_shards
 

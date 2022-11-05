@@ -27,7 +27,7 @@ if TYPE_CHECKING:
 try:
     import xml.etree.cElementTree as ET
 except ImportError:
-    import xml.etree.ElementTree as ET # type: ignore
+    import xml.etree.ElementTree as ET  # type: ignore
 
 
 class VOCDatasets:
@@ -59,9 +59,9 @@ class VOCDatasets:
         self._imgid_items = self._load_items(splits_names)
         self._anno_path = osp.join('{}', 'Annotations', '{}.xml')
         self._image_path = osp.join('{}', 'JPEGImages', '{}.jpg')
-        self._im_shapes = {} # type: Dict[int, Tuple]
+        self._im_shapes = {}  # type: Dict[int, Tuple]
         self._im_anno = [self._load_label(idx) for idx in range(len(self))]
-        self._im_cache = {} # type: Dict[str, "ndarray"]
+        self._im_cache = {}  # type: Dict[str, "ndarray"]
 
     def _load_items(self, splits_names: List[Tuple[int, str]]) -> List[Tuple[str, str]]:
 
@@ -89,7 +89,7 @@ class VOCDatasets:
         if img_path in self._im_cache:
             img = self._im_cache[img_path]
         else:
-            img = self._read_image(img_path) # type: ignore
+            img = self._read_image(img_path)  # type: ignore
 
         return img, self._im_anno[idx]
 

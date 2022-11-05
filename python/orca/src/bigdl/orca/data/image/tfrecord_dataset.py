@@ -122,7 +122,7 @@ def write_tfrecord(format: str, output_path: str, *args, **kwargs) -> None:
     func, required_args = format_to_function[format]
     _check_arguments(format, kwargs, required_args)
 
-    kwargs["output_path"]=output_path
+    kwargs["output_path"] = output_path
     func(*args, **kwargs)
 
 
@@ -144,5 +144,5 @@ def read_tfrecord(format: str, path: str, *args, **kwargs) -> "Dataset":
     func, required_args = format_to_function[format]
     _check_arguments(format, kwargs, required_args)
 
-    kwargs["path"]=path
+    kwargs["path"] = path
     return func(*args, **kwargs)

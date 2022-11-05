@@ -157,7 +157,7 @@ def exists(path: str) -> bool:
         try:
             s3_client.get_object(Bucket=bucket, Key=key)
         except Exception as ex:
-            if ex.response['Error']['Code'] == 'NoSuchKey': # type:ignore
+            if ex.response['Error']['Code'] == 'NoSuchKey':  # type:ignore
                 return False
             invalidOperationError(False, str(ex), cause=ex)
         return True

@@ -282,7 +282,7 @@ def write_from_directory(directory: str,
                                        dtype=DType.STRING,
                                        shape=())}
 
-    ParquetDataset.write(output_path, generator, schema, **kwargs) # type: ignore
+    ParquetDataset.write(output_path, generator, schema, **kwargs)  # type: ignore
 
 
 def _write_ndarrays(images: ndarray, labels: ndarray, output_path: str, **kwargs) -> None:
@@ -461,8 +461,10 @@ def read_parquet(format: str,
         invalidInputError(False,
                           format + " is not supported, should be 'tf_dataset' or 'dataloader'.")
 
-    format_to_function:Dict[str, Tuple] = {"tf_dataset": (read_as_tfdataset, ["output_types"]),
-                                           "dataloader": (read_as_dataloader, [])}
+    format_to_function = {"tf_dataset": (read_as_tfdataset,
+                                         ["output_types"]),
+                          "dataloader": (read_as_dataloader,
+                                         [])}  # type: Dict[str, Tuple]
     func, required_args = format_to_function[format]
     _check_arguments(format, kwargs, required_args)
     return func(path=path, config=config or {},

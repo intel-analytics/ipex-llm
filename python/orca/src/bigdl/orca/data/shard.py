@@ -18,8 +18,9 @@ from py4j.protocol import Py4JError
 from bigdl.orca.data.utils import *
 from bigdl.orca import OrcaContext
 from bigdl.dllib.nncontext import init_nncontext, ZooContext
-from bigdl.dllib.utils.common import get_node_and_core_number, \
-                                     get_spark_sql_context, get_spark_context 
+from bigdl.dllib.utils.common import (get_node_and_core_number,
+                                      get_spark_sql_context,
+                                      get_spark_context)
 from bigdl.dllib.utils import nest
 from bigdl.dllib.utils.log4Error import invalidInputError
 
@@ -316,7 +317,7 @@ class SparkXShards(XShards):
                 rdd = self.rdd.coalesce(num_partitions)
                 from functools import reduce
                 repartitioned_shard = SparkXShards(rdd.mapPartitions(
-                    lambda iter: [reduce(lambda l1, l2: l1 + l2, iter)])) # type:ignore
+                    lambda iter: [reduce(lambda l1, l2: l1 + l2, iter)]))  # type:ignore
         elif self._get_class_name() == 'numpy.ndarray':
             elem = self.rdd.first()
             shape = elem.shape
@@ -384,8 +385,8 @@ class SparkXShards(XShards):
         self._uncache()
         return repartitioned_shard
 
-    def partition_by(self, cols: str, num_partitions: Optional[int] = None) \
-                     -> Optional["SparkXShards"]:
+    def partition_by(self, cols: str,
+                     num_partitions: Optional[int] = None) -> Optional["SparkXShards"]:
         """
 
         Return a new SparkXShards partitioned using the specified columns.
@@ -484,7 +485,7 @@ class SparkXShards(XShards):
             defaultPartitionNum = sqlContext.getConf("spark.sql.shuffle.partitions")
             partitionNum = df.rdd.getNumPartitions()
             sqlContext.setConf("spark.sql.shuffle.partitions", str(partitionNum))
-            sort_df = df.sort(col_names, ascending=ascending) # type:ignore
+            sort_df = df.sort(col_names, ascending=ascending)  # type:ignore
             data_shards = spark_df_to_pd_sparkxshards(sort_df)
             sqlContext.setConf("spark.sql.shuffle.partitions", defaultPartitionNum)
             return data_shards

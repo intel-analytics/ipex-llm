@@ -195,7 +195,7 @@ class RayXShards(XShards):
         Flatten get_partition_refs. Get a list of partition_refs or shard_refs
         """
         partition_refs = self.get_partition_refs()
-        return [ref for partition_ref in partition_refs for ref in partition_ref] # type:ignore
+        return [ref for partition_ref in partition_refs for ref in partition_ref]  # type:ignore
 
     def collect_partitions(self) -> List[List[Dict[str, ndarray]]]:
         part_refs = self.get_partition_refs()

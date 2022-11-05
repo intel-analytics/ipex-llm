@@ -75,7 +75,7 @@ class TF1Dataset(TFDataset):
             self.val_output_names = meta_info["output_names"]
             self.val_output_types = meta_info["output_types"]
         else:
-            self.val_rdd = None # type: ignore
+            self.val_rdd = None  # type: ignore
             self.val_init_op_name = None
             self.val_output_names = None
             self.val_output_types = None
