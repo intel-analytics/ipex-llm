@@ -25,8 +25,8 @@ from bigdl.nano.pytorch import Trainer
 
 input1 = TensorDataset(torch.ones(10, 3))
 input2 = TensorDataset(torch.ones(10, 4))
-label1 = TensorDataset(torch.ones(10))
-label2 = TensorDataset(torch.ones(10))
+label1 = TensorDataset(torch.ones(10, dtype=torch.int))
+label2 = TensorDataset(torch.ones(10, dtype=torch.int))
 
 
 def illegal_func(data):
@@ -97,15 +97,14 @@ class TestDataloader(TestCase):
 
         trainer.quantize(model, calib_dataloader=loader)
 
-    def test_illegal_data_format(self):
-        # illegal dataloader: torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor
-        dataset = ChainTensorDataset(input1, input2, label1, label2)
+    def test_legal_data_format(self):
+        # we can now easily support this test!
+        dataset = ChainTensorDataset(input1, input2, label1)
         dataloader = DataLoader(dataset, batch_size=5)
         trainer = Trainer()
         model = ModelWithMultipleInputs()
 
-        with pytest.raises(RuntimeError, match="Dataloader for quantization should yield data *"):
-            trainer.quantize(model, calib_dataloader=dataloader, metric=torchmetrics.F1(10))
+        trainer.quantize(model, calib_dataloader=dataloader, metric=torchmetrics.F1())
 
     def test_no_output_check(self):
         # dataloader 1: torch.Tensor, numpy.ndarray

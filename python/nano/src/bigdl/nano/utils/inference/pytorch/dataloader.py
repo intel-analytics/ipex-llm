@@ -25,9 +25,9 @@ def transform_multiple_input_dataloader_to_inc_mode(model, dataloader):
         def tuple_collate_fn_wrapper(func, forward_args_len):
             def collate_fn(batch):
                 res = func(batch)
-                if len(res) - forward_args_len <= 1:
+                if len(res) - forward_args_len == 1:
                     # if only one y is provided
-                    return tuple(res[:forward_args_len]), res[forward_args_len:]
+                    return tuple(res[:forward_args_len]), res[-1]
                 else:
                     # if multiple y are provided
                     return tuple(res[:forward_args_len]), tuple(res[forward_args_len:])
