@@ -26,6 +26,7 @@ def trainable_param(model):
     return training
 
 
+# TODO(will delete in 2.2.0)
 class DistributedSequentialSampler(Sampler):
     """
     A sequential sampler used in FeatureSet when get (train=false) iterator .

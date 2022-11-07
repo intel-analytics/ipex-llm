@@ -26,6 +26,7 @@ if find_spec('jep') is None:
     invalidInputError(False, "jep not found, please install jep first.")
 
 
+# TODO(will delete in 2.2.0)
 class TorchOptim(OptimMethod):
     """
     TorchOptim wraps a torch optimizer for distributed inference or training.

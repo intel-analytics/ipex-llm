@@ -47,6 +47,7 @@ class CatDogModel(nn.Module):
         return x
 
 
+# TODO(change to pytorch in 2.2.0)
 if __name__ == '__main__':
 
     parser = OptionParser()

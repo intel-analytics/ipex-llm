@@ -51,6 +51,7 @@ class Net(nn.Module):
         return F.log_softmax(x, dim=1)
 
 
+# TODO(change to other engine in 2.2.0)
 def main():
     # Training settings
     parser = argparse.ArgumentParser(description='PyTorch MNIST Example')
