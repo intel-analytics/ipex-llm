@@ -520,11 +520,12 @@ class SparkTFEstimator():
         sc = OrcaContext.get_spark_context()
         model = load_model(filepath, custom_objects=custom_objects, compile=compile)
         self.model_weights = model.get_weights()
-        self.load_path = filepath
-        if self.load_path.endswith('.h5') or self.load_path.endswith('.keras'):
-            sc.addFile(self.load_path, recursive=False)
-        else:
-            sc.addFile(self.load_path, recursive=True)
+        if self.model_creator is None:
+            self.load_path = filepath
+            if self.load_path.endswith('.h5') or self.load_path.endswith('.keras'):
+                sc.addFile(self.load_path, recursive=False)
+            else:
+                sc.addFile(self.load_path, recursive=True)
         # update remote model
         if self.model_dir is not None:
             save_model(model, self._model_saved_path, save_format="h5", filemode=0o666)
