@@ -1,7 +1,7 @@
 # Installation
 
 ## Install Java
-You need to download and install JDK in the environment, and properly set the environment variable `JAVA_HOME`, which is required by Spark. JDK8 is highly recommended.
+You need to download and install JDK in the environment, and properly set the environment variable `JAVA_HOME`. JDK8 is highly recommended.
 
 ```bash
 # For Ubuntu
@@ -31,7 +31,7 @@ bash /tmp/Anaconda3-2020.02-Linux-x86_64.sh
 source ~/.bashrc
 ``` 
 
-Create a Python environment for BigDL Orca:
+Then create a Python environment for BigDL Orca:
 ```bash
 conda create -n py37 python=3.7  # "py37" is conda environment name, you can use any name you like.
 conda activate py37

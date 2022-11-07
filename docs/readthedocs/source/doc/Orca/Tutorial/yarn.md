@@ -1,8 +1,8 @@
 # Run on Hadoop/YARN Clusters
 
-This tutorial provides a step-by-step guide on how to run BigDL-Orca programs on Apache Hadoop/YARN clusters, using a [PyTorch Fashin-MNIST program](https://github.com/intel-analytics/BigDL/blob/main/python/orca/tutorial/pytorch/FashionMNIST/) as a working example.
+This tutorial provides a step-by-step guide on how to run BigDL-Orca programs on Apache Hadoop/YARN clusters, using a [PyTorch Fashion-MNIST program](https://github.com/intel-analytics/BigDL/blob/main/python/orca/tutorial/pytorch/FashionMNIST/) as a working example.
 
-The **Client Node** that appears in this tutorial refer to the machine where you submit your applications.
+The **Client Node** that appears in this tutorial refer to the machine where you launch or submit your applications.
 
 ---
 ## 1. Basic Concepts
@@ -16,7 +16,7 @@ sc = init_orca_context(cluster_mode, cores, memory, num_nodes, driver_cores, dri
 ```
 
 In `init_orca_context`, you may specify necessary runtime configurations for running the example on YARN, including:
-* `cluster_mode`: `"yarn-client"`, `"yarn-cluster"`, `"bigdl-submit"` or `"spark-submit"` when you run on Hadoop/YARN clusters.
+* `cluster_mode`: one of `"yarn-client"`, `"yarn-cluster"`, `"bigdl-submit"` or `"spark-submit"` when you run on Hadoop/YARN clusters.
 * `cores`: an integer that specifies the number of cores for each executor (default to be `2`).
 * `memory`: a string that specifies the memory for each executor (default to be `"2g"`).
 * `num_nodes`: an integer that specifies the number of executors (default to be `1`).
@@ -26,9 +26,9 @@ In `init_orca_context`, you may specify necessary runtime configurations for run
 * `conf`: a dictionary to append extra conf for Spark (default to be `None`).
 
 __Note__: 
-* All arguments __except__ `cluster_mode` will be ignored when using [`bigdl-submit`](#use-bigdl-submit) or [`spark-submit`](#use-spark-submit) to submit and run Orca programs, in which case you are supposed to specify these configurations via the submit command.
+* All the arguments __except__ `cluster_mode` will be ignored when using [`bigdl-submit`](#use-bigdl-submit) or [`spark-submit`](#use-spark-submit) to submit and run Orca programs, in which case you are supposed to specify these configurations via the submit command.
 
-After Orca programs finish, you should call `stop_orca_context` at the end of the program to release resources and shutdown the underlying distributed runtime engine (such as Spark or Ray).
+After Orca programs finish, you should always call `stop_orca_context` at the end of the program to release resources and shutdown the underlying distributed runtime engine (such as Spark or Ray).
 ```python
 from bigdl.orca import stop_orca_context
 
@@ -38,16 +38,17 @@ stop_orca_context()
 For more details, please see [OrcaContext](../Overview/orca-context.md).
 
 ### 1.2 Yarn-Client & Yarn-Cluster
-The difference between yarn-client and yarn-cluster is where you run your Spark driver. 
+The difference between yarn-client mode and yarn-cluster mode is where you run your Spark driver. 
 
 For yarn-client, the Spark driver runs in the client process, and the application master is only used for requesting resources from YARN, while for yarn-cluster the Spark driver runs inside an application master process which is managed by YARN in the cluster.
 
 For more details, please see [Launching Spark on YARN](https://spark.apache.org/docs/latest/running-on-yarn.html#launching-spark-on-yarn).
 
 ### 1.3 Distributed storage on YARN
-__Note:__ When you are running programs on YARN, you are highly recommended to load data from a distributed storage (e.g. [HDFS](https://hadoop.apache.org/docs/r1.2.1/hdfs_design.html) or [S3](https://aws.amazon.com/s3/)) instead of the local file system.
+__Note__:
+* When you run programs on YARN, you are highly recommended to load/write data from/to a distributed storage (e.g. [HDFS](https://hadoop.apache.org/docs/r1.2.1/hdfs_design.html) or [S3](https://aws.amazon.com/s3/)) instead of the local file system.
 
-The Fashion-MNIST example uses a utility function `get_remote_file_to_local` provided by BigDL to download datasets and create the PyTorch DataLoader on each executor.
+The Fashion-MNIST example in this tutorial uses a utility function `get_remote_file_to_local` provided by BigDL to download datasets and create the PyTorch DataLoader on each executor.
 
 ```python
 import torch
@@ -72,10 +73,10 @@ def train_data_creator(config, batch_size):
 
 ---
 ## 2. Prepare Environment
-Before running BigDL Orca programs on YARN, you need to properly setup the environment following the steps below:
+Before running BigDL Orca programs on YARN, you need to properly setup the environment following the steps below.
 
 ### 2.1 Setup JAVA & Hadoop Environment
-- See [here](../Overview/install.md#install-jave) to prepare Java in your cluster.
+- See [here](../Overview/install.md#install-java) to prepare Java in your cluster.
 
 - Check the Hadoop setup and configurations of your cluster. Make sure you correctly set the environment variable `HADOOP_CONF_DIR`, which is needed to initialize Spark on YARN:
 ```bash
@@ -89,10 +90,10 @@ export HADOOP_CONF_DIR=/path/to/hadoop/conf
 
 - You should install all the other Python libraries that you need in your program in the conda environment as well.
 
-- Please see more details in [Python User Guide](https://bigdl.readthedocs.io/en/latest/doc/UserGuide/python.html).
+- For more details, please see [Python User Guide](https://bigdl.readthedocs.io/en/latest/doc/UserGuide/python.html).
 
-### 2.3 Notes for CDH Users
-* For CDH users, the environment variable `HADOOP_CONF_DIR` should be `/etc/hadoop/conf` by default.
+### 2.3 Run on CDH
+* For [CDH](https://www.cloudera.com/products/open-source/apache-hadoop/key-cdh-components.html) users, the environment variable `HADOOP_CONF_DIR` should be `/etc/hadoop/conf` by default.
 
 * The __Client Node__ may have already installed a different version of Spark than the one installed with BigDL. To avoid conflicts, unset all Spark-related environment variables (you may use use `env | grep SPARK` to find all of them):
     ```bash
@@ -115,10 +116,11 @@ Then upload it to a distributed storage. Sample command to upload data to HDFS i
 ```bash
 hdfs dfs -put /path/to/local/data/FashionMNIST hdfs://path/to/remote/data
 ```
+In the given example, you can specify the argument `--remote_dir` to be the directory on a distributed storage for the Fashion-MNIST dataset.
 
 ---
 ## 4. Prepare Custom Modules
-Spark allows to upload Python files (`.py`), and zipped Python packages (`.zip`) across the cluster by setting `--py-files` option in Spark scripts or `extra_python_lib` in `init_orca_context`. 
+Spark allows to upload Python files (`.py`), and zipped Python packages (`.zip`) across the cluster by setting `--py-files` option in Spark scripts or specifying `extra_python_lib` in `init_orca_context`. 
 
 The FasionMNIST example needs to import modules from [`model.py`](https://github.com/intel-analytics/BigDL/blob/main/python/orca/tutorial/pytorch/FashionMNIST/model.py).
 * When using [`python` command](#use-python-command), please specify `extra_python_lib` in `init_orca_context`.
@@ -175,7 +177,6 @@ Run the example with the following command by setting the cluster_mode to "yarn-
 ```bash
 python train.py --cluster_mode yarn-client --remote_dir hdfs://path/to/remote/data
 ```
-* `--remote_dir`: the directory on a distributed storage for the dataset. See [here](#prepare-dataset) for more details.
 
 
 #### 5.1.2 Yarn Cluster
@@ -183,7 +184,6 @@ Run the example with the following command by setting the cluster_mode to "yarn-
 ```bash
 python train.py --cluster_mode yarn-cluster --remote_dir hdfs://path/to/remote/data
 ```
-* `--remote_dir`: the directory on a distributed storage for the dataset. See [here](#prepare-dataset) for more details.
 
 
 #### 5.1.3 Jupyter Notebook
@@ -241,7 +241,6 @@ In the `bigdl-submit` script:
 * `--archives`: the conda archive to be uploaded to YARN.
 * `--conf spark.pyspark.driver.python`: set the activate Python location on __Client Node__ as the driver's Python environment. You can find the location by running `which python`.
 * `--conf spark.pyspark.python`: set the Python location in conda archive as each executor's Python environment.
-* `--remote_dir`: the directory on a distributed storage for the dataset. See [here](#prepare-dataset) for more details.
 
 
 #### 5.2.2 Yarn Cluster
@@ -271,7 +270,6 @@ In the `bigdl-submit` script:
 * `--archives`: the conda archive to be uploaded to YARN.
 * `--conf spark.yarn.appMasterEnv.PYSPARK_PYTHON`: set the Python location in conda archive as the Python environment of the Application Master.
 * `--conf spark.executorEnv.PYSPARK_PYTHON`: also set the Python location in conda archive as each executor's Python environment. The Application Master and the executors will all use the archive for the Python environment.
-* `--remote_dir`: the directory on a distributed storage for the dataset. See [here](#prepare-dataset) for more details.
 
 
 ### 5.3 Use `spark-submit`
@@ -337,7 +335,6 @@ In the `spark-submit` script:
 * `--conf spark.pyspark.python`: set the Python location in conda archive as each executor's Python environment.
 * `--conf spark.driver.extraClassPath`: upload and register the BigDL jars to the driver's classpath.
 * `--conf spark.executor.extraClassPath`: upload and register the BigDL jars to the executors' classpath.
-* `--remote_dir`: the directory on a distributed storage for the dataset. See [here](#prepare-dataset) for more details.
 
 
 #### 5.3.2 Yarn-Cluster
@@ -369,4 +366,3 @@ In the `spark-submit` script:
 * `--conf spark.yarn.appMasterEnv.PYSPARK_PYTHON`: set the Python location in conda archive as the Python environment of the Application Master.
 * `--conf spark.executorEnv.PYSPARK_PYTHON`: also set the Python location in conda archive as each executor's Python environment. The Application Master and the executors will all use the archive for the Python environment.
 * `--jars`: upload and register BigDL jars to YARN.
-* `--remote_dir`: the directory on a distributed storage for the dataset. See [here](#prepare-dataset) for more details.

@@ -64,7 +64,8 @@ def process(filepath, demo):
     columns.append("label")
     df1 = train_data.toDF(columns)
     vecasembler = VectorAssembler(inputCols=features, outputCol="features")
-    traindf = vecasembler.transform(df1).select("features", "label").cache()
+    traindf = vecasembler.transform(df1)\
+        .select("features", "label").cache()
     traindf.show()
 
     df2 = test_data.toDF(columns)
