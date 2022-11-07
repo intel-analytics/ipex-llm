@@ -42,7 +42,7 @@ spec:
     - name: API_KEY
       value: your_api_key
     - name: CHALLENGE
-      value: string(BASE64)
+      value: YW55c3RyaW5nCg==
     - name: REPORT_DATA
       value: String_to_generate_quote
   volumes:

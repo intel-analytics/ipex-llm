@@ -20,7 +20,7 @@ sudo docker run -it \
 	-e ATTESTATION_URL=ESHM_IP:EHSM_PORT \
   -e APP_ID=your_app_id \
   -e API_KEY=your_api_key \
-  -e CHALLENGE=challenge \
+  -e CHALLENGE=YW55c3RyaW5nCg== \
   -e REPORT_DATA=anything \
 	-e SGX_LOG_LEVEL=off \
 	intelanalytics/bigdl-ppml-trusted-big-data-ml-scala-occlum:2.2.0-SNAPSHOT \
