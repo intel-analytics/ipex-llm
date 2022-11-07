@@ -180,8 +180,8 @@ def result():
         print("Cores:", args.cores)
     else:
         print("Cores:", psutil.cpu_count(logical=False) *
-              int(subprocess.getoutput('cat /proc/cpuinfo'
-              ' | grep "physical id" | sort -u | wc -l')))
+              int(subprocess.getoutput('cat /proc/cpuinfo | '
+                                       'grep "physical id" | sort -u | wc -l')))
     print("Lookback:", args.lookback)
     print("Horizon:", args.horizon)
 
@@ -211,13 +211,13 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Benchmarking Parameters')
     parser.add_argument('-m', '--model', type=str, default='tcn', metavar='',
                         help=('model name, choose from tcn/lstm/seq2seq/nbeats/autoformer,'
-                        ' default to "tcn".'))
+                              ' default to "tcn".'))
     parser.add_argument('-s', '--stage', type=str, default='train', metavar='',
                         help=('stage name, choose from train/latency/throughput,'
-                        ' default to "train".'))
+                              ' default to "train".'))
     parser.add_argument('-d', '--dataset', type=str, default="tsinghua_electricity", metavar='',
                         help=('dataset name, choose from nyc_taxi/tsinghua_electricity/'
-                        'synthetic_dataset, default to "tsinghua_electricity".'))
+                              'synthetic_dataset, default to "tsinghua_electricity".'))
     parser.add_argument('-f', '--framework', type=str, default="torch", metavar='',
                         help='framework name, choose from torch/tensorflow, default to "torch".')
     parser.add_argument('-c', '--cores', type=int, default=0, metavar='',
@@ -245,10 +245,10 @@ if __name__ == '__main__':
                         help='if use ipex as accelerator for trainer, default to False.')
     parser.add_argument('--quantize_type', type=str, default='pytorch_fx', metavar='',
                         help=('quantize framework, choose from pytorch_fx/pytorch_ipex/'
-                        'onnxrt_qlinearops/openvino, default to "pytorch_fx".'))
+                              'onnxrt_qlinearops/openvino, default to "pytorch_fx".'))
     parser.add_argument('--ckpt', type=str, default='checkpoints/tcn', metavar='',
                         help=('checkpoint path of a trained model, e.g. "checkpoints/tcn",'
-                        ' default to "checkpoints/tcn".'))
+                              ' default to "checkpoints/tcn".'))
     args = parser.parse_args()
     records = vars(args)
 
@@ -265,18 +265,18 @@ if __name__ == '__main__':
                       f"-s/--stage argument should be one of {stages}, but get '{args.stage}'")
     invalidInputError(args.dataset in datasets,
                       (f"-d/--dataset argument should be one of {datasets},"
-                      " but get '{args.dataset}'"))
+                       " but get '{args.dataset}'"))
     invalidInputError(args.framework in frameworks,
                       (f"-f/--framework argument should be one of {frameworks},"
-                      " but get '{args.framework}'"))
+                       " but get '{args.framework}'"))
     invalidInputError(args.quantize_type in quantize_types,
                       (f"--quantize_type argument should be one of {quantize_types},"
-                      " but get '{args.quantize_type}'"))
+                       " but get '{args.quantize_type}'"))
     if args.quantize and 'torch' in args.inference_framework:
         invalidInputError(args.quantize_type in quantize_torch_types,
                           (f"if inference framework is 'torch', then --quantize_type"
-                          " argument should be one of {quantize_torch_types},"
-                          " but get '{args.quantize_type}'"))
+                           " argument should be one of {quantize_torch_types},"
+                           " but get '{args.quantize_type}'"))
 
     if 'onnx' in args.inference_framework:
         args.quantize_type = 'onnxrt_qlinearops'

@@ -43,7 +43,7 @@ def generate_data(args):
                                                           val_ratio=0.1,
                                                           test_ratio=0.2)
     else:
-        tsdata_train, _, tsdata_test = gen_synthetic_data(with_split=True, 
+        tsdata_train, _, tsdata_test = gen_synthetic_data(with_split=True,
                                                           val_ratio=0.1,
                                                           test_ratio=0.2)
 
