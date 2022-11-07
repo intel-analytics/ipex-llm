@@ -42,9 +42,9 @@ spec:
     - name: API_KEY
       value: your_api_key
     - name: CHALLENGE
-      value: YW55c3RyaW5nCg==
+      value: cHBtbAo=
     - name: REPORT_DATA
-      value: String_to_generate_quote
+      value: ppml
   volumes:
 #    - name: device-plugin
 #      hostPath:
