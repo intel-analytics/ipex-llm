@@ -164,6 +164,7 @@ def main():
     batch_size = args.batch_size
     epochs = args.epochs
     if args.backend == "bigdl":
+        # remove jep
         train_loader = train_data_creator(config={}, batch_size=4,
                                           download=args.download, data_dir=args.data_dir)
         test_loader = validation_data_creator(config={}, batch_size=4,
