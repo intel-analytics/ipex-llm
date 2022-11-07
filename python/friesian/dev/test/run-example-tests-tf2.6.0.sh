@@ -113,7 +113,7 @@ now=$(date "+%s")
 time5=$((now - start))
 
 echo "#6 start example test for multi task train"
-echo "start example test for multi_task data preprocessing"
+
 if [ -d data/multi_task_data.csv ]; then
   echo "data/multi_task_data.csv already exists"
 else
