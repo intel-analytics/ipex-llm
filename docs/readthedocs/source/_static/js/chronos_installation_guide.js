@@ -98,13 +98,6 @@ function refresh_cmd(){
                         }
                     }else if(hardware=="cluster"){
                         if(os=="win"){
-                            disable(functionalities);
-                            disable(models);
-                            disable(ais);
-                            disable(versions);
-                            disable(packages);
-                            disable(hardwares);
-                            disable(automls);
                             cmd="Not supported, please refer to <a href='https://bigdl.readthedocs.io/en/latest/doc/Chronos/Howto/windows_guide.html'>windows_guide.</a>";
                         }
                         else{
@@ -124,13 +117,6 @@ function refresh_cmd(){
                         }
                     }else if(hardware=="cluster"){
                         if(os=="win"){
-                            disable(functionalities);
-                            disable(models);
-                            disable(ais);
-                            disable(versions);
-                            disable(packages);
-                            disable(hardwares);
-                            disable(automls);
                             cmd="Not supported, please refer to <a href='https://bigdl.readthedocs.io/en/latest/doc/Chronos/Howto/windows_guide.html'>windows_guide.</a>";
                         }
                         else{
@@ -152,13 +138,6 @@ function refresh_cmd(){
                         }
                     }else if(hardware=="cluster"){
                         if(os=="win"){
-                            disable(functionalities);
-                            disable(models);
-                            disable(ais);
-                            disable(versions);
-                            disable(packages);
-                            disable(hardwares);
-                            disable(automls);
                             cmd="Not supported, please refer to <a href='https://bigdl.readthedocs.io/en/latest/doc/Chronos/Howto/windows_guide.html'>windows_guide.</a>";
                         }
                         else{
@@ -178,13 +157,6 @@ function refresh_cmd(){
                         }
                     }else if(hardware=="cluster"){
                         if(os=="win"){
-                            disable(functionalities);
-                            disable(models);
-                            disable(ais);
-                            disable(versions);
-                            disable(packages);
-                            disable(hardwares);
-                            disable(automls);
                             cmd="Not supported, please refer to <a href='https://bigdl.readthedocs.io/en/latest/doc/Chronos/Howto/windows_guide.html'>windows_guide.</a>";
                         }
                         else{
@@ -199,24 +171,25 @@ function refresh_cmd(){
             }
         }else if(model=="Prophet"){
             if(automl=="automlno"){
-                if(hardware=="singlenode"){
-                    if(version=="nightly"){
-                        cmd="pip install --pre --upgrade bigdl-chronos; pip install prophet==1.1.0";
-                    }else if(version=="stable"){
-                        cmd="pip install bigdl-chronos; pip install prophet==1.1.0";
-                    }
-                }else if(hardware=="cluster"){
-                    if(os=="win"){
-                        disable(functionalities);
-                        disable(models);
-                        disable(ais);
-                        disable(versions);
-                        disable(packages);
-                        disable(hardwares);
-                        disable(automls);
+                if(os=="win"){
+                    if(hardware=="singlenode"){
+                        if(version=="nightly"){
+                            cmd="pip install --pre --upgrade bigdl-chronos; pip install prophet==1.1.0\nPlease refer to <a href='https://bigdl.readthedocs.io/en/latest/doc/Chronos/Howto/windows_guide.html'>windows_guide.</a> for a known issue on windows";
+                        }else if(version=="stable"){
+                            cmd="pip install bigdl-chronos; pip install prophet==1.1.0\nPlease refer to <a href='https://bigdl.readthedocs.io/en/latest/doc/Chronos/Howto/windows_guide.html'>windows_guide.</a> for a known issue on windows";
+                        }
+                    }else if(hardware=="cluster"){
                         cmd="Not supported, please refer to <a href='https://bigdl.readthedocs.io/en/latest/doc/Chronos/Howto/windows_guide.html'>windows_guide.</a>";
                     }
-                    else{
+                }
+                else{
+                    if(hardware=="singlenode"){
+                        if(version=="nightly"){
+                            cmd="pip install --pre --upgrade bigdl-chronos; pip install prophet==1.1.0";
+                        }else if(version=="stable"){
+                            cmd="pip install bigdl-chronos; pip install prophet==1.1.0";
+                        }
+                    }else if(hardware=="cluster"){
                         if(version=="nightly"){
                             cmd="pip install --pre --upgrade bigdl-chronos[distributed]; pip install prophet==1.1.0";
                         }else if(version=="stable"){
@@ -225,28 +198,26 @@ function refresh_cmd(){
                     }
                 }
             }else if(automl=="automlyes"){
-                if(hardware=="singlenode"){
-                    if(version=="nightly"){
-                        cmd="pip install --pre --upgrade bigdl-chronos[distributed]; pip install prophet==1.1.0";
-                    }else if(version=="stable"){
-                        cmd="pip install bigdl-chronos[distributed]; pip install prophet==1.1.0";
-                    }
-                }else if(hardware=="cluster"){
-                    if(os=="win"){
-                        disable(functionalities);
-                        disable(models);
-                        disable(ais);
-                        disable(versions);
-                        disable(packages);
-                        disable(hardwares);
-                        disable(automls);
-                        cmd="Not supported, please refer to <a href='https://bigdl.readthedocs.io/en/latest/doc/Chronos/Howto/windows_guide.html'>windows_guide.</a>";
-                    }
-                    else{
+                if(os=="win"){
+                    cmd="Not supported, please refer to <a href='https://bigdl.readthedocs.io/en/latest/doc/Chronos/Howto/windows_guide.html'>windows_guide.</a>";
+                }
+                else{
+                    if(hardware=="singlenode"){
                         if(version=="nightly"){
                             cmd="pip install --pre --upgrade bigdl-chronos[distributed]; pip install prophet==1.1.0";
                         }else if(version=="stable"){
                             cmd="pip install bigdl-chronos[distributed]; pip install prophet==1.1.0";
+                        }
+                    }else if(hardware=="cluster"){
+                        if(os=="win"){
+                            cmd="Not supported, please refer to <a href='https://bigdl.readthedocs.io/en/latest/doc/Chronos/Howto/windows_guide.html'>windows_guide.</a>";
+                        }
+                        else{
+                            if(version=="nightly"){
+                                cmd="pip install --pre --upgrade bigdl-chronos[distributed]; pip install prophet==1.1.0";
+                            }else if(version=="stable"){
+                                cmd="pip install bigdl-chronos[distributed]; pip install prophet==1.1.0";
+                            }
                         }
                     }
                 }
@@ -260,28 +231,7 @@ function refresh_cmd(){
                         cmd="pip install bigdl-chronos; pip install pmdarima==1.8.5";
                     }
                 }else if(hardware=="cluster"){
-                    if(version=="nightly"){
-                        cmd="pip install --pre --upgrade bigdl-chronos[distributed]; pip install pmdarima==1.8.5";
-                    }else if(version=="stable"){
-                        cmd="pip install bigdl-chronos[distributed]; pip install pmdarima==1.8.5";
-                    }
-                }
-            }else if(automl=="automlyes"){
-                if(hardware=="singlenode"){
-                    if(version=="nightly"){
-                        cmd="pip install --pre --upgrade bigdl-chronos[distributed]; pip install pmdarima==1.8.5";
-                    }else if(version=="stable"){
-                        cmd="pip install bigdl-chronos[distributed]; pip install pmdarima==1.8.5";
-                    }
-                }else if(hardware=="cluster"){
                     if(os=="win"){
-                        disable(functionalities);
-                        disable(models);
-                        disable(ais);
-                        disable(versions);
-                        disable(packages);
-                        disable(hardwares);
-                        disable(automls);
                         cmd="Not supported, please refer to <a href='https://bigdl.readthedocs.io/en/latest/doc/Chronos/Howto/windows_guide.html'>windows_guide.</a>";
                     }
                     else{
@@ -292,6 +242,25 @@ function refresh_cmd(){
                         }
                     }
                 }
+            }else if(automl=="automlyes"){
+                if(os=="win"){
+                    cmd="Not supported, please refer to <a href='https://bigdl.readthedocs.io/en/latest/doc/Chronos/Howto/windows_guide.html'>windows_guide.</a>";
+                }
+                else{
+                    if(hardware=="singlenode"){
+                        if(version=="nightly"){
+                            cmd="pip install --pre --upgrade bigdl-chronos[distributed]; pip install pmdarima==1.8.5";
+                        }else if(version=="stable"){
+                            cmd="pip install bigdl-chronos[distributed]; pip install pmdarima==1.8.5";
+                        }
+                    }else if(hardware=="cluster"){
+                        if(version=="nightly"){
+                            cmd="pip install --pre --upgrade bigdl-chronos[distributed]; pip install pmdarima==1.8.5";
+                        }else if(version=="stable"){
+                            cmd="pip install bigdl-chronos[distributed]; pip install pmdarima==1.8.5";
+                        }
+                    }
+                } 
             }
         }else if(model=="Machine_learning_models"){
             if(version=="nightly"){
