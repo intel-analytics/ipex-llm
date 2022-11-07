@@ -44,41 +44,8 @@ import torch
 import torch.nn as nn
 from .utils import PYTORCH_REGRESSION_LOSS_MAP
 from pytorch_lightning import seed_everything
-
-
-class moving_avg(nn.Module):
-    """
-    Moving average block to highlight the trend of time series
-    """
-
-    def __init__(self, kernel_size, stride):
-        super(moving_avg, self).__init__()
-        self.kernel_size = kernel_size
-        self.avg = nn.AvgPool1d(kernel_size=kernel_size, stride=stride, padding=0)
-
-    def forward(self, x):
-        # padding on the both ends of time series
-        front = x[:, 0:1, :].repeat(1, (self.kernel_size - 1) // 2, 1)
-        end = x[:, -1:, :].repeat(1, (self.kernel_size - 1) // 2, 1)
-        x = torch.cat([front, x, end], dim=1)
-        x = self.avg(x.permute(0, 2, 1))
-        x = x.permute(0, 2, 1)
-        return x
-
-
-class series_decomp(nn.Module):
-    """
-    Series decomposition block
-    """
-
-    def __init__(self, kernel_size):
-        super(series_decomp, self).__init__()
-        self.moving_avg = moving_avg(kernel_size, stride=1)
-
-    def forward(self, x):
-        moving_mean = self.moving_avg(x)
-        res = x - moving_mean
-        return res, moving_mean
+from bigdl.chronos.pytorch.model_wrapper.normalization import NormalizeTSModel
+from bigdl.chronos.pytorch.model_wrapper.decomposition import DecompositionTSModel
 
 
 class Chomp1d(nn.Module):
@@ -137,13 +104,11 @@ class TemporalConvNet(nn.Module):
                  kernel_size=3,
                  dropout=0.1,
                  repo_initialization=True,
-                 seed=None,
-                 model_set='tcn'):
+                 seed=None):
         super(TemporalConvNet, self).__init__()
         seed_everything(seed, workers=True)
         num_channels.append(output_feature_num)
-        self.output_feature_num = output_feature_num
-        self.model_set = model_set
+
         layers = []
         num_levels = len(num_channels)
         for i in range(num_levels):
@@ -152,7 +117,7 @@ class TemporalConvNet(nn.Module):
             out_channels = num_channels[i]
             layers += [TemporalBlock(in_channels, out_channels, kernel_size,
                                      stride=1, dilation=dilation_size,
-                                     padding=(kernel_size - 1) * dilation_size,
+                                     padding=(kernel_size-1) * dilation_size,
                                      dropout=dropout, repo_initialization=repo_initialization)]
 
         self.tcn = nn.Sequential(*layers)
@@ -164,86 +129,11 @@ class TemporalConvNet(nn.Module):
         self.linear.weight.data.normal_(0, 0.01)
 
     def forward(self, x):
-        if self.model_set == 'tcn':
-            x = x.permute(0, 2, 1)
-            y = self.tcn(x)
-            y = self.linear(y)
-            y = y.permute(0, 2, 1)
-
-        elif self.model_set == 'Dtcn':
-            y = self.tcn(x)
-            y = self.linear(y)
-
-        elif self.model_set == 'Ntcn':
-            # x: [Batch, Input length, Channel]
-            seq_last = x[:, -1:, :].detach()
-            # seq_last = x[:, -1:, :].detach()
-            x = x - seq_last
-            seq_last = seq_last[:, :, :self.output_feature_num]  # for add_dt_feature
-            x = x.permute(0, 2, 1)
-            y = self.tcn(x)
-            y = self.linear(y)
-            y = y.permute(0, 2, 1)
-            y = y + seq_last
-        else:
-            # NDtcn
-            # x: [Batch, Input length, Channel]
-            seq_last = x[:, :, -1:].detach()  # already permute
-            x = x - seq_last
-            seq_last = seq_last[:, :self.output_feature_num, :]  # for add_dt_feature
-            y = self.tcn(x)
-            y = self.linear(y)
-            y = y + seq_last
-
+        x = x.permute(0, 2, 1)
+        y = self.tcn(x)
+        y = self.linear(y)
+        y = y.permute(0, 2, 1)
         return y
-
-
-class DTCN(nn.Module):
-    """
-    Decomposition-TCN
-    """
-
-    def __init__(self, config, num_channels):
-        super(DTCN, self).__init__()
-        self.seq_len = config["past_seq_len"]
-        self.pred_len = config["future_seq_len"]
-
-        # Decompsition Kernel Size
-        kernel_size = 25
-        self.decompsition = series_decomp(kernel_size)
-
-        self.Linear_Seasonal = TemporalConvNet(
-            past_seq_len=config["past_seq_len"],
-            input_feature_num=config["input_feature_num"],
-            future_seq_len=config["future_seq_len"],
-            output_feature_num=config["output_feature_num"],
-            num_channels=num_channels.copy(),
-            kernel_size=config.get("kernel_size", 7),
-            dropout=config.get("dropout", 0.2),
-            repo_initialization=config.get("repo_initialization", True),
-            seed=config.get("seed", None),
-            model_set=config.get("model_set"))
-        self.Linear_Trend = TemporalConvNet(
-            past_seq_len=config["past_seq_len"],
-            input_feature_num=config["input_feature_num"],
-            future_seq_len=config["future_seq_len"],
-            output_feature_num=config["output_feature_num"],
-            num_channels=num_channels.copy(),
-            kernel_size=config.get("kernel_size", 7),
-            dropout=config.get("dropout", 0.2),
-            repo_initialization=config.get("repo_initialization", True),
-            seed=config.get("seed", None),
-            model_set=config.get("model_set"))
-
-    def forward(self, x):
-        # x: [Batch, Input length, Channel]
-        seasonal_init, trend_init = self.decompsition(x)
-        seasonal_init, trend_init = seasonal_init.permute(0, 2, 1), trend_init.permute(0, 2, 1)
-        seasonal_output = self.Linear_Seasonal(seasonal_init)
-        trend_output = self.Linear_Trend(trend_init)
-
-        x = seasonal_output + trend_output
-        return x.permute(0, 2, 1)  # to [Batch, Output length, Channel]
 
 
 def model_creator(config):
@@ -257,22 +147,23 @@ def model_creator(config):
         levels = config["levels"] if config.get("levels") else 8
         num_channels = [n_hid] * (levels - 1)
 
-    if not config.get("model_set"):
-        config['model_set'] = "tcn"
+    model = TemporalConvNet(past_seq_len=config["past_seq_len"],
+                            input_feature_num=config["input_feature_num"],
+                            future_seq_len=config["future_seq_len"],
+                            output_feature_num=config["output_feature_num"],
+                            num_channels=num_channels.copy(),
+                            kernel_size=config.get("kernel_size", 7),
+                            dropout=config.get("dropout", 0.2),
+                            repo_initialization=config.get("repo_initialization", True),
+                            seed=config.get("seed", None))
 
-    if config['model_set'] == 'tcn' or config['model_set'] == 'Ntcn':
-        return TemporalConvNet(past_seq_len=config["past_seq_len"],
-                               input_feature_num=config["input_feature_num"],
-                               future_seq_len=config["future_seq_len"],
-                               output_feature_num=config["output_feature_num"],
-                               num_channels=num_channels.copy(),
-                               kernel_size=config.get("kernel_size", 7),
-                               dropout=config.get("dropout", 0.2),
-                               repo_initialization=config.get("repo_initialization", True),
-                               seed=config.get("seed", None),
-                               model_set=config.get("model_set"))
-    else:  # Dtcn or NDtcn
-        return DTCN(config=config, num_channels=num_channels.copy())
+    if config.get("normalization", False):
+        model = NormalizeTSModel(model, config["output_feature_num"])
+    decomposition_kernal_size = config.get("decomposition_kernal_size", 0)
+    if decomposition_kernal_size > 1:
+        model = DecompositionTSModel((model, model), decomposition_kernal_size)
+
+    return model
 
 
 def optimizer_creator(model, config):
