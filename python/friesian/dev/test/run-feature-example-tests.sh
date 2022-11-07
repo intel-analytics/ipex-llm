@@ -132,20 +132,6 @@ python ../../example/wnd/train/wnd_preprocess_recsys.py \
 now=$(date "+%s")
 time6=$((now - start))
 
-echo "#7 start example test for multi_task data preprocessing"
-if [ -d data/multi_task_data.csv ]; then
-  echo "data/multi_task_data.csv already exists"
-else
-  wget -nv $FTP_URI/analytics-zoo-data/multi_task_data.csv -P data
-fi
-
-#timer
-start=$(date "+%s")
-python ../../example/multi_task/data_processing.py \
-    --input_path ./data/multi_task_data.csv \
-    --output_path ./data
-now=$(date "+%s")
-time7=$((now - start))
 
 rm -rf data
 rm -rf result
@@ -156,4 +142,4 @@ echo "#3 wnd preprocessing time used: $time3 seconds"
 echo "#4 wnd recsys train data converting time used: $time4 seconds"
 echo "#5 wnd recsys test data converting time used: $time5 seconds"
 echo "#6 wnd recsys train/test data preprocessing time used: $time6 seconds"
-echo "#7 multi_task train/test data preprocessing time used: $time7 seconds"
+
