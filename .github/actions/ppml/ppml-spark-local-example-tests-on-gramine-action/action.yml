@@ -64,3 +64,4 @@ runs:
         docker exec -i $CONTAINER_NAME bash -c "/ppml/trusted-big-data-ml/work/scripts/start-spark-sqlexamples-on-local-sgx.sh"
         /opt/hadoop-3.2.0/bin/hadoop fs -rm -r -f hdfs://$HDFS_ADDRESS/spark-warehous
         docker exec -i $CONTAINER_NAME bash -c "/ppml/trusted-big-data-ml/work/scripts/start-pyspark-sqlexamples-on-local-sgx.sh"
+        docker exec -i $CONTAINER_NAME bash -c "/ppml/trusted-big-data-ml/work/scripts/start-pyspark-sqlApi-on-local-sgx.sh"
