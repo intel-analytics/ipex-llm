@@ -33,15 +33,15 @@ class InferenceOptimizer(BaseInferenceOptimizer):
 
     # acceleration method combinations, developers may want to register some new
     # combinations here
-    ALL_INFERENCE_ACCELERATION_METHOD = \
-        {
+    ALL_INFERENCE_ACCELERATION_METHOD: Dict = \
+        {  # type: ignore
             "original": AccelerationOption(),
             "int8": AccelerationOption(inc=True),
             "openvino_fp32": AccelerationOption(openvino=True),
             # "openvino_int8": AccelerationOption(openvino=True, pot=True),
             "onnxruntime_fp32": AccelerationOption(onnxruntime=True),
             # "onnxruntime_int8": AccelerationOption(onnxruntime=True, inc=True),
-        }
+        }  # type: ignore
 
     def optimize(self, model: Model,
                  training_data: Dataset,
@@ -109,9 +109,11 @@ class InferenceOptimizer(BaseInferenceOptimizer):
             validation_data = validation_data.batch(batch_size)
             self._calculate_accuracy = True
 
-        # TODO: how to control thread num in tf?
-        default_threads: int = int(os.getenv('OMP_NUM_THREADS'))
-        thread_num: int = default_threads if thread_num is None else int(thread_num)
+        if os.getenv('OMP_NUM_THREADS') is not None:
+            default_threads: int = int(os.getenv('OMP_NUM_THREADS'))  # type: ignore
+        else:
+            default_threads = None  # TODO: how to get and control thread num in tf?
+        thread_num = default_threads if thread_num is None else int(thread_num)  # type: ignore
 
         result_map: Dict[str, Dict] = {}
 
