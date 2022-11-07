@@ -21,10 +21,6 @@ if [[ -z "$API_KEY" ]]; then
     echo "[INFO] PPML Application Exit!"
     exit 1
 fi
-if [[ -z "$CHALLENGE" ]]; then
-    echo "[ERROR] CHALLENGE is not set!"
-    echo "[INFO] PPML Application Exit!"
-fi
 if [[ -z "$SPARK_HOME" ]]; then
     echo "[ERROR] SPARK_HOME is not set!"
     echo "[INFO] PPML Application Exit!"
