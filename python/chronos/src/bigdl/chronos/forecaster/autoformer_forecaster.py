@@ -668,7 +668,7 @@ class AutoformerForecaster(Forecaster):
             outputs_list = []
             for batch in data:
                 batch_x, batch_y, batch_x_mark, batch_y_mark = map(lambda x: x.float(), batch)
-                outputs = model(batch_x, batch_x_mark, batch_y, batch_y_mark)
+                outputs = model(batch_x, batch_y, batch_x_mark, batch_y_mark)
                 outputs = outputs[:, -model.pred_len:, -model.c_out:]
                 outputs_list.append(outputs.detach().numpy())
             return outputs_list
