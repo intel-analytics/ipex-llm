@@ -1,5 +1,9 @@
 name: Chronos PRVN Python Spark2.4 py37 onnxrt
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+  
 # Controls when the action will run. 
 on:
   # Triggers the workflow on pull request events but only for the main branch
