@@ -279,3 +279,11 @@ Parameters:
 ## How to debug
 
 Modify the `--conf spark.kubernetes.sgx.log.level=off \` to one of `debug or trace` in `run_spark_xx.sh`.
+
+## Using BigDL PPML Occlum EHSM Attestation Server on k8s
+Bigdl ppml use EHSM as reference KMS&AS, you can deploy EHSM following the [guide](https://github.com/intel-analytics/BigDL/tree/main/ppml/services/ehsm/kubernetes#deploy-bigdl-ehsm-kms-on-kubernetes-with-helm-charts)
+We assume you have already set up environment and enroll yourself on EHSM.
+
+In driver.yaml and executor.yaml. Set `ATTESTATION` = true and modify `PCCL_URL`, `ATTESTATION_URL` to the env value you have set,
+and modify `APP_ID`, `API_KEY` to the value you have get  when enroll, and then you can change `CHALLENGE` and
+`REPORT_DATA` for attestation.
