@@ -174,7 +174,8 @@ You can choose one of them based on your preference or cluster settings.
 We provide the running command for the [Fashion-MNIST example](https://github.com/intel-analytics/BigDL/blob/main/python/orca/tutorial/pytorch/FashionMNIST/) in this section.
 
 ### 5.1 Use `python` Command
-This is the easiest and most recommended way to run BigDL on YARN. Using this way, you only need to prepare the environment on the __Client Node__ and the environment would be automatically packaged and distributed to the YARN cluster. 
+This is the easiest and most recommended way to run BigDL Orca on YARN as a normal Python program. Using this way, you only need to prepare the environment on the __Client Node__ and the environment would be automatically packaged and distributed to the YARN cluster. 
+
 See [here](#init-orca-context) for the runtime configurations.
 
 
@@ -346,7 +347,7 @@ In the `spark-submit` script:
 * `--conf spark.executor.extraClassPath`: upload and register the BigDL jars to the executor's classpath.
 
 
-#### 5.3.2 Yarn-Cluster
+#### 5.3.2 Yarn Cluster
 Submit and run the program for `yarn-cluster` mode following the `spark-submit` script below:
 ```bash
 ${SPARK_HOME}/bin/spark-submit \
