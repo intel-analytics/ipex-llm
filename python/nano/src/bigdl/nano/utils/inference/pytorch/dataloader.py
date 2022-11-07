@@ -20,7 +20,8 @@ from copy import deepcopy
 
 
 def transform_multiple_input_dataloader_to_inc_mode(model, dataloader):
-    if _need_dataloader_type_transformation(model, dataloader):
+    need_transformation, forward_args_len = _need_dataloader_type_transformation(model, dataloader)
+    if need_transformation:
         # define a decorator to change multiple inputs to 2 items
         def tuple_collate_fn_wrapper(func, forward_args_len):
             def collate_fn(batch):
@@ -35,10 +36,6 @@ def transform_multiple_input_dataloader_to_inc_mode(model, dataloader):
 
         # deepcopy the dataloader so that the transformation will not pollute the original one
         new_dataloader = deepcopy(dataloader)
-
-        # get forward method's parameter number
-        forward_args = get_forward_args(model)
-        forward_args_len = len(forward_args)
 
         # add collate fn to the dataloader
         new_dataloader.collate_fn = tuple_collate_fn_wrapper(new_dataloader.collate_fn,
@@ -64,5 +61,5 @@ def _need_dataloader_type_transformation(model, dataloader):
     input_sample = next(iter(dataloader))
     if isinstance(input_sample[0], Sequence):
         if len(input_sample[0]) == forward_args_len:
-            return False
-    return True
+            return False, forward_args_len
+    return True, forward_args_len
