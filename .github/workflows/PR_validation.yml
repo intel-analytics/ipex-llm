@@ -3,7 +3,7 @@ name: PR Validation
 concurrency:
   group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
   cancel-in-progress: true
-  
+
 on:
       
   pull_request:
@@ -33,7 +33,7 @@ permissions:
 jobs:
   changes:
     name: Paths filter
-    runs-on: [self-hosted, Gondolin, ubuntu-20.04-lts]
+    runs-on: ubuntu-latest
     outputs:
       friesian: ${{ steps.filter.outputs.friesian }}
       dllib: ${{ steps.filter.outputs.dllib }}
@@ -41,6 +41,14 @@ jobs:
       ppml: ${{ steps.filter.outputs.ppml }}
     steps:
       - uses: actions/checkout@v3
+      - name: bigdl-ppml-gramine-base
+        run: |
+          echo ${{ github.workflow }}
+          echo ${{ github.event.pull_request.number }}
+          echo ${{ github.head_ref }}
+          echo ${{ github.ref }}
+          echo ${{ github.ref_name }}
+          echo ${{ github.base_ref }}
       - uses: dorny/paths-filter@v2
         id: filter
         with:
