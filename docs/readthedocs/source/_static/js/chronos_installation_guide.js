@@ -174,9 +174,9 @@ function refresh_cmd(){
                 if(os=="win"){
                     if(hardware=="singlenode"){
                         if(version=="nightly"){
-                            cmd="pip install --pre --upgrade bigdl-chronos; pip install prophet==1.1.0\r\nPlease refer to <a href='https://bigdl.readthedocs.io/en/latest/doc/Chronos/Howto/windows_guide.html'>windows_guide</a> for a known issue on windows.";
+                            cmd="pip install --pre --upgrade bigdl-chronos; pip install prophet==1.1.0";
                         }else if(version=="stable"){
-                            cmd="pip install bigdl-chronos; pip install prophet==1.1.0\r\nPlease refer to <a href='https://bigdl.readthedocs.io/en/latest/doc/Chronos/Howto/windows_guide.html'>windows_guide</a> for a known issue on windows.";
+                            cmd="pip install bigdl-chronos; pip install prophet==1.1.0";
                         }
                     }else if(hardware=="cluster"){
                         cmd="Not supported, please refer to <a href='https://bigdl.readthedocs.io/en/latest/doc/Chronos/Howto/windows_guide.html'>windows_guide.</a>";
