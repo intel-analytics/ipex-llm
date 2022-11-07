@@ -23,7 +23,7 @@ class RepeatDataset(Dataset):
     def __init__(self, sample, num=1):
         self.data = sample
         self.length = num
-    
+
     def __len__(self):
         return self.length
 

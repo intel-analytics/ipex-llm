@@ -242,19 +242,19 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                             if accelerator in ("jit", None):
                                 acce_model = \
                                     InferenceOptimizer.trace(model=model,
-                                                                accelerator=accelerator,
-                                                                use_ipex=use_ipex,
-                                                                # channels_last is only for jit
-                                                                channels_last=use_channels_last,
-                                                                input_sample=input_sample)
+                                                             accelerator=accelerator,
+                                                             use_ipex=use_ipex,
+                                                             # channels_last is only for jit
+                                                             channels_last=use_channels_last,
+                                                             input_sample=input_sample)
                             else:
                                 acce_model = \
                                     InferenceOptimizer.trace(model=model,
-                                                                accelerator=accelerator,
-                                                                input_sample=input_sample,
-                                                                thread_num=thread_num,
-                                                                # remove output of openvino
-                                                                logging=logging)
+                                                             accelerator=accelerator,
+                                                             input_sample=input_sample,
+                                                             thread_num=thread_num,
+                                                             # remove output of openvino
+                                                             logging=logging)
                     except Exception as e:
                         print(e)
                         result_map[method]["status"] = "fail to convert"
