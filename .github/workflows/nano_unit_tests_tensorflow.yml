@@ -48,7 +48,7 @@ jobs:
       - name: Run TensorFlow unit tests
         shell: bash
         run: |
-          $CONDA/bin/conda create -n nano-tensorflow -y python==3.7.10 setuptools=58.0.4
+          $CONDA/bin/conda create -n nano-tensorflow -y python==3.7.10 setuptools=58.0.4 -c ${CONDA_CHANNEL} --override-channels
           source $CONDA/bin/activate nano-tensorflow
           $CONDA/bin/conda info
           bash python/nano/dev/build_and_install.sh linux default false tensorflow
@@ -63,7 +63,7 @@ jobs:
       - name: Run TensorFlow unit tests (Horovod)
         shell: bash
         run: |
-          $CONDA/bin/conda create -n horovod-tf -y python==3.7.10 setuptools=58.0.4
+          $CONDA/bin/conda create -n horovod-tf -y python==3.7.10 setuptools=58.0.4 -c ${CONDA_CHANNEL} --override-channelss
           source $CONDA/bin/activate horovod-tf
           $CONDA/bin/conda info
           bash python/nano/dev/build_and_install.sh linux default false tensorflow
@@ -79,7 +79,7 @@ jobs:
       - name: Run TensorFlow unit tests (Ray)
         shell: bash
         run: |
-          $CONDA/bin/conda create -n ray-tf -y python==3.7.10 setuptools=58.0.4
+          $CONDA/bin/conda create -n ray-tf -y python==3.7.10 setuptools=58.0.4 -c ${CONDA_CHANNEL} --override-channels
           source $CONDA/bin/activate ray-tf
           $CONDA/bin/conda info
           bash python/nano/dev/build_and_install.sh linux default false tensorflow
@@ -97,7 +97,7 @@ jobs:
       - name: Run TensorFlow unit tests (Automl)
         shell: bash
         run: |
-          $CONDA/bin/conda create -n nano-automl-tf -y python==3.7.10 setuptools=58.0.4
+          $CONDA/bin/conda create -n nano-automl-tf -y python==3.7.10 setuptools=58.0.4 -c ${CONDA_CHANNEL} --override-channels
           source $CONDA/bin/activate nano-automl-tf
           $CONDA/bin/conda info
           bash python/nano/dev/build_and_install.sh linux default false tensorflow
@@ -115,7 +115,7 @@ jobs:
       - name: Run TensorFlow unit tests (INC)
         shell: bash
         run: |
-          $CONDA/bin/conda create -n inc-tf -y python==3.7.10 setuptools=58.0.4
+          $CONDA/bin/conda create -n inc-tf -y python==3.7.10 setuptools=58.0.4 -c ${CONDA_CHANNEL} --override-channels
           source $CONDA/bin/activate inc-tf
           $CONDA/bin/conda info
           bash python/nano/dev/build_and_install.sh linux default false tensorflow
@@ -131,7 +131,7 @@ jobs:
       - name: Run tensorflow unit tests (OpenVINO)
         shell: bash
         run: |
-          $CONDA/bin/conda create -n openvino-tensorflow -y python==3.7.10 setuptools=58.0.4
+          $CONDA/bin/conda create -n openvino-tensorflow -y python==3.7.10 setuptools=58.0.4 -c ${CONDA_CHANNEL} --override-channels
           source $CONDA/bin/activate openvino-tensorflow
           $CONDA/bin/conda info
           bash python/nano/dev/build_and_install.sh linux default false tensorflow
@@ -151,7 +151,7 @@ jobs:
       - name: Run tensorflow unit tests (ONNX)
         shell: bash
         run: |
-          $CONDA/bin/conda create -n onnx-tensorflow -y python==3.7.10 setuptools=58.0.4
+          $CONDA/bin/conda create -n onnx-tensorflow -y python==3.7.10 setuptools=58.0.4 -c ${CONDA_CHANNEL} --override-channels
           source $CONDA/bin/activate onnx-tensorflow
           $CONDA/bin/conda info
           bash python/nano/dev/build_and_install.sh linux default false tensorflow

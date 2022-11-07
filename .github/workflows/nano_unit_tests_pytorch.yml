@@ -44,7 +44,7 @@ jobs:
       - name: Run Nano-init test
         shell: bash
         run: |
-          $CONDA/bin/conda create -n bigdl-init -y python==3.7.10 setuptools==58.0.4
+          $CONDA/bin/conda create -n bigdl-init -y python==3.7.10 setuptools==58.0.4 -c ${CONDA_CHANNEL} --override-channels
           source $CONDA/bin/activate bigdl-init
           $CONDA/bin/conda info
           bash python/nano/dev/build_and_install.sh linux default false pytorch
@@ -100,7 +100,7 @@ jobs:
       - name: Run PyTorch unit tests(Ray)
         shell: bash
         run: |
-          $CONDA/bin/conda create -n ray-pytorch -y python==3.7.10 setuptools=58.0.4
+          $CONDA/bin/conda create -n ray-pytorch -y python==3.7.10 setuptools=58.0.4 -c ${CONDA_CHANNEL} --override-channels
           source $CONDA/bin/activate ray-pytorch
           $CONDA/bin/conda info
           bash python/nano/dev/build_and_install.sh linux default false pytorch
@@ -123,7 +123,7 @@ jobs:
       - name: Run PyTorch unit tests (OpenVINO)
         shell: bash
         run: |
-          $CONDA/bin/conda create -n openvino-pytorch -y python==3.7.10 setuptools=58.0.4
+          $CONDA/bin/conda create -n openvino-pytorch -y python==3.7.10 setuptools=58.0.4 -c ${CONDA_CHANNEL} --override-channels
           source $CONDA/bin/activate openvino-pytorch
           $CONDA/bin/conda info
           bash python/nano/dev/build_and_install.sh linux default false pytorch,inference
@@ -143,7 +143,7 @@ jobs:
       - name: Run PyTorch unit tests (Automl)
         shell: bash
         run: |
-          $CONDA/bin/conda create -n nano-automl-pytorch -y python==3.7.10 setuptools=58.0.4
+          $CONDA/bin/conda create -n nano-automl-pytorch -y python==3.7.10 setuptools=58.0.4 -c ${CONDA_CHANNEL} --override-channels
           source $CONDA/bin/activate nano-automl-pytorch
           $CONDA/bin/conda info
           bash python/nano/dev/build_and_install.sh linux default false pytorch
@@ -160,7 +160,7 @@ jobs:
       - name: Run PyTorch unit tests (INC)
         shell: bash
         run: |
-          $CONDA/bin/conda create -n inc-pytorch -y python==3.7.10 setuptools=58.0.4
+          $CONDA/bin/conda create -n inc-pytorch -y python==3.7.10 setuptools=58.0.4 -c ${CONDA_CHANNEL} --override-channels
           source $CONDA/bin/activate inc-pytorch
           $CONDA/bin/conda info
           bash python/nano/dev/build_and_install.sh linux default false pytorch
@@ -181,7 +181,7 @@ jobs:
       - name: Run PyTorch unit tests (ONNX)
         shell: bash
         run: |
-          $CONDA/bin/conda create -n onnx-pytorch -y python==3.7.10 setuptools=58.0.4
+          $CONDA/bin/conda create -n onnx-pytorch -y python==3.7.10 setuptools=58.0.4 -c ${CONDA_CHANNEL} --override-channels
           source $CONDA/bin/activate onnx-pytorch
           $CONDA/bin/conda info
           bash python/nano/dev/build_and_install.sh linux default false pytorch,inference
@@ -232,7 +232,7 @@ jobs:
       - name: Run PyTorch IPEX unit tests
         shell: bash
         run: |
-          $CONDA/bin/conda create -n pytorch-ipex -y python==3.7.10 setuptools=58.0.4
+          $CONDA/bin/conda create -n pytorch-ipex -y python==3.7.10 setuptools=58.0.4 -c ${CONDA_CHANNEL} --override-channels
           source $CONDA/bin/activate pytorch-ipex
           $CONDA/bin/conda info
           bash python/nano/dev/build_and_install.sh linux default false pytorch
