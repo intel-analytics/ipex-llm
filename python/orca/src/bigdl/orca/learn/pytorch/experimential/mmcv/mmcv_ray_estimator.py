@@ -21,14 +21,14 @@ from bigdl.dllib.utils.log4Error import *
 from typing import (Any, Dict, List, Optional, Tuple, Callable, overload)
 
 from bigdl.orca.learn.pytorch.experimential.core.base_ray_estimator import BaseRayEstimator
-from bigdl.orca.learn.pytorch.experimential.mmcv.mmcv_ray_runner import MMCVRayRunner
+from bigdl.orca.learn.pytorch.experimential.mmcv.mmcv_ray_runner import MMCVRayEpochRunner
 
 
 class MMCVRayEstimator(BaseRayEstimator):
     def __init__(self,
                  *,
                  mmcv_runner_creator=None,
-                 runner_cls=MMCVRayRunner,
+                 runner_cls=MMCVRayEpochRunner,
                  backend="ray",
                  workers_per_node=1,
                  config=None):
