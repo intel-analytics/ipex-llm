@@ -482,13 +482,15 @@ class TensorFlow2Estimator(OrcaRayEstimator):
 
         return result
 
-    def get_model(self):
+    def get_model(self, sample_input=None):
         """
         Returns the learned model.
 
         :return: the learned model.
         """
-        invalidInputError(False, "not implemented")
+        state_refs = [w.get_state.remote() for w in self.remote_workers]
+        state = ray.get(state_refs[0])
+        return self._get_model_from_state(state, sample_input=sample_input)
 
     @enable_multi_fs_save
     def save_checkpoint(self, checkpoint):
@@ -578,17 +580,17 @@ class TensorFlow2Estimator(OrcaRayEstimator):
                options for loading from SavedModel.
 
         """
-        params = dict(
+        self.load_params = dict(
             filepath=filepath,
             custom_objects=custom_objects,
             compile=compile,
             options=options
         )
         if is_local_path(filepath):
-            ray.get([worker.load_model.remote(**params)
+            ray.get([worker.load_model.remote(**self.load_params)
                      for worker in self.remote_workers])
         else:
-            ray.get([worker.load_remote_model.remote(**params)
+            ray.get([worker.load_remote_model.remote(**self.load_params)
                      for worker in self.remote_workers])
 
     def save_weights(self, filepath, overwrite=True, save_format=None, options=None):
@@ -650,3 +652,39 @@ class TensorFlow2Estimator(OrcaRayEstimator):
         for worker in self.remote_workers:
             worker.shutdown.remote()
             worker.__ray_terminate__.remote()
+
+    def _get_model_from_state(self, state, sample_input=None):
+        """Creates model and load weights from state"""
+        import tensorflow as tf
+
+        # keep the same behavior as `set_state` in `load` do
+        if self.model_creator is not None:
+            model = self.model_creator(self.config)
+        else:
+            file_name = os.path.basename(self.load_params["filepath"])
+            temp_dir = tempfile.mkdtemp()
+            temp_path = os.path.join(temp_dir, file_name)
+
+            if is_file(self.load_params["filepath"]):
+                get_remote_file_to_local(self.load_params["filepath"], temp_path)
+            else:
+                if os.path.exists(temp_path):
+                    os.makedirs(temp_path)
+                get_remote_dir_to_local(self.load_params["filepath"], temp_path)
+            try:
+                self.load_params["filepath"] = temp_path
+                model = tf.keras.models.load_model(**self.load_params)
+            finally:
+                shutil.rmtree(temp_dir)
+
+        if sample_input:
+            model(sample_input)
+        try:
+            model.set_weights(state["weights"])
+        except Exception:
+            log4Error.invalidInputError(False,
+                                        "Failed to set model weights, please provide real tensor "
+                                        "data (of the correct dtype) as sample_input in the "
+                                        "get_model method.")
+
+        return model
