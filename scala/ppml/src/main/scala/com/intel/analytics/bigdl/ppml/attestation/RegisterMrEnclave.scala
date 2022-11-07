@@ -33,12 +33,15 @@ object RegisterMrEnclave {
     val sslContext: SSLContext = SSLContext.getInstance("SSL")
     val trustManager: TrustManager = new X509TrustManager() {
       override def checkClientTrusted(chain: Array[X509Certificate], authType: String): Unit = {}
+
       override def checkServerTrusted(chain: Array[X509Certificate], authType: String): Unit = {}
+
       override def getAcceptedIssuers(): Array[X509Certificate] = Array.empty
     }
     sslContext.init(null, Array(trustManager), new SecureRandom())
     new SSLConnectionSocketFactory(sslContext, new AllowAllHostnameVerifier())
   }
+
   def main(args: Array[String]): Unit = {
     case class CmdParams(appID: String = "test",
                          apiKey: String = "test",
@@ -80,18 +83,20 @@ object RegisterMrEnclave {
     val currentTime = System.currentTimeMillis() // ms
     val timestamp = s"$currentTime"
     val ehsmParams = new EHSMParams(ehsmAPPID, ehsmAPIKEY, timestamp)
-    ehsmParams.addPayloadElement("mr_enclave",mrEnclave)
-    ehsmParams.addPayloadElement("mr_signer",mrSigner)
+    ehsmParams.addPayloadElement("mr_enclave", mrEnclave)
+    ehsmParams.addPayloadElement("mr_signer", mrSigner)
 
     val postResult: JSONObject = timing("Request for Register MrEnclave") {
       val postString: String = ehsmParams.getPostJSONString()
       postRequest(constructUrl(action, URL), sslConSocFactory, postString)
     }
     // print policy_Id
-    if (postResult == null || !postResult.has("policyId") || postResult.get("policyId")  == null || postResult.get("policyId") == "") {
-        println("register error")
-        return
+    if (postResult == null || !postResult.has("policyId") ||
+      postResult.get("policyId") == null || postResult.get("policyId") == "") {
+      println("register error")
+      return
     }
+
     println("policy_Id " + postResult.getString("policyId"))
   }
 
