@@ -428,6 +428,7 @@ class TestSparkXShards(TestCase):
                                                        names=['user', 'item'], usecols=[0, 1],
                                                        dtype={1: np.float32, 2: np.int32})
             data = data_shard.collect()
+            print(len(data))
         self.assertTrue('column index to be set type is not in current dataframe'
                         in str(context.exception))
 
