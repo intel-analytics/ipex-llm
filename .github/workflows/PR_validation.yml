@@ -1,7 +1,8 @@
 name: PR Validation
 
+# Cancel previous runs in the PR when you push new commits
 concurrency:
-  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.run_id }}
   cancel-in-progress: true
 
 on:
@@ -41,14 +42,6 @@ jobs:
       ppml: ${{ steps.filter.outputs.ppml }}
     steps:
       - uses: actions/checkout@v3
-      - name: bigdl-ppml-gramine-base
-        run: |
-          echo ${{ github.workflow }}
-          echo ${{ github.event.pull_request.number }}
-          echo ${{ github.head_ref }}
-          echo ${{ github.ref }}
-          echo ${{ github.ref_name }}
-          echo ${{ github.base_ref }}
       - uses: dorny/paths-filter@v2
         id: filter
         with:
