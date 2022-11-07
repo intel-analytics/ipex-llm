@@ -20,5 +20,5 @@ ${SPARK_HOME}/bin/spark-submit \
     --driver-memory 2g \
     --conf spark.kubernetes.driverEnv.SGX_DRIVER_JVM_MEM_SIZE="2G" \
     --conf spark.executorEnv.SGX_EXECUTOR_JVM_MEM_SIZE="3G" \
-    local:/bin/jars/bigdl-dllib-spark_3.1.2-2.2.0-SNAPSHOT.jar \
+    local:/bin/jars/bigdl-dllib-spark_3.1.3-2.2.0-SNAPSHOT.jar \
     /host/data/xgboost_data 2  100 /host/data/xgboost_model_to_be_saved
