@@ -77,7 +77,7 @@ jobs:
 
       - name: Orca type checking [pytorch]
         run: |
-            bash python/orca/dev/run-type-check.sh
+            bash python/orca/dev/test/run-type-check.sh
         env:
             BIGDL_HOME: ${{ github.workspace }}
 
