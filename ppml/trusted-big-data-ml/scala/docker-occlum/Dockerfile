@@ -1,4 +1,4 @@
-ARG SPARK_VERSION=3.1.2
+ARG SPARK_VERSION=3.1.3
 ARG HADOOP_VERSION=3.2.0
 
 FROM krallin/ubuntu-tini AS tini
@@ -150,12 +150,12 @@ RUN apt-get update && \
 
 # Prepare tpch 
 ## 2.11.7 2.12.1 for scala version
-## 2.4.0 3.1.2 for spark version
+## 2.4.0 3.1.3 for spark version
 RUN cd /opt && \
     git clone https://github.com/intel-analytics/zoo-tutorials.git && \
     cd zoo-tutorials/tpch-spark && \
     sed -i 's/2.11.7/2.12.1/g' tpch.sbt && \
-    sed -i 's/2.4.0/3.1.2/g' tpch.sbt && \
+    sed -i 's/2.4.0/3.1.3/g' tpch.sbt && \
     sbt package
 
 FROM occlum/occlum:0.28.1-ubuntu20.04 as ppml
