@@ -106,12 +106,14 @@ def model_creator(config):
 def optimizer_creator(model, config):
     return optim.Adam(model.parameters(), lr=config['lr'])
 
+loss_function = nn.BCEWithLogitsLoss()
+
 
 # Step 4: Distributed training with Orca PyTorch Estimator
 backend = "spark"  # "ray" or "spark"
 
 est = Estimator.from_torch(model=model_creator, optimizer=optimizer_creator,
-                           loss=nn.BCEWithLogitsLoss(),
+                           loss=loss_function,
                            metrics=[Accuracy(), Precision(), Recall()],
                            backend=backend,
                            config={'user_num': user_num, 'item_num': item_num,
