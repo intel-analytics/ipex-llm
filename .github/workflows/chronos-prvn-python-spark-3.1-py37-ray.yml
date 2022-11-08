@@ -40,12 +40,6 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
 
-      - name: Install dependencies
-        run: |
-          python -m pip install --upgrade pip
-          python -m pip install --upgrade setuptools==58.0.4
-          python -m pip install --upgrade wheel
-
       - name: Run Chronos python test
         shell: bash
         run: |
@@ -53,7 +47,7 @@ jobs:
             source deactivate
             conda remove -n chronos-prvn-env-3 -y --all
           fi
-          conda create -n chronos-prvn-env-3 -y python==3.7.10 setuptools==58.0.4
+          conda create -n chronos-prvn-env-3 -y python==3.7.10 setuptools==58.0.4 -c ${CONDA_CHANNEL} --override-channels
           source activate chronos-prvn-env-3
           pip install pytest==5.4.1
           pip install prophet==1.0.1
