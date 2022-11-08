@@ -290,7 +290,7 @@ class SparkRunner:
                 else:
                     model = tf.keras.models.load_model(self.model_load)
                 if self.model_weights:
-                        model.set_weights(self.model_weights.value)
+                    model.set_weights(self.model_weights.value)
 
             if not model._is_compiled and self.compile_args_creator:
                 model.compile(**self.compile_args_creator(config))
@@ -470,7 +470,7 @@ class SparkRunner:
         else:
             local_model = tf.keras.models.load_model(self.model_load)
         if self.model_weights:
-                local_model.set_weights(self.model_weights.value)
+            local_model.set_weights(self.model_weights.value)
 
         def predict_fn(shard):
             y = local_model.predict(shard["x"], **params)
