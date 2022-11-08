@@ -17,7 +17,6 @@ on:
       - 'scala/ppml/**'
       - '.github/actions/ppml-scala-ut-action/action.yml'
       - 'python/orca/**'
-      - '.github/actions/orca-ray-ctx-example-action/action.yml'
       - '.github/actions/orca/**'
       - 'python/ppml/**'
       - '.github/actions/ppml/**'
@@ -64,7 +63,6 @@ jobs:
               - '.github/actions/python-requirements/**'
             orca:
               - 'python/orca/**'
-              - '.github/actions/orca-ray-ctx-example-action/action.yml'
               - '.github/actions/orca/**'
               - '.github/actions/python-requirements/**'
            
