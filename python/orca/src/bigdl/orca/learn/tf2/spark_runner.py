@@ -240,7 +240,7 @@ class SparkRunner:
         if self.model_creator is None:
             import tensorflow as tf
             from pyspark import SparkFiles
-            if self.model_load.startswith("hdfs"):
+            if self.model_load.startswith("hdfs") or self.model_load.startswith("s3"):
                 self.model_load = self.model_load.split("/")[-1]
             self.model_load = SparkFiles.get(self.model_load)
 
