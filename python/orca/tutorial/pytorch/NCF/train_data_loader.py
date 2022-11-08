@@ -165,7 +165,8 @@ dataset_dir = "./ml-1m"
 backend = "ray"  # "ray" or "spark"
 
 est = Estimator.from_torch(model=model_creator, optimizer=optimizer_creator,
-                           loss=nn.BCEWithLogitsLoss(), metrics=[Accuracy(), Precision(), Recall()],
+                           loss=nn.BCEWithLogitsLoss(),
+                           metrics=[Accuracy(), Precision(), Recall()],
                            backend=backend,
                            config={'dataset_dir': dataset_dir,
                                    'num_ng': 4,
@@ -173,8 +174,7 @@ est = Estimator.from_torch(model=model_creator, optimizer=optimizer_creator,
                                    'num_layers': 3,
                                    'dropout': 0.5,
                                    'lr': 0.001,
-                                   'model': "NeuMF-end"
-                                   })
+                                   'model': "NeuMF-end"})
 est.fit(data=train_loader_func, epochs=10, batch_size=256)
 
 
