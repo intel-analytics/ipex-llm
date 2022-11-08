@@ -287,10 +287,10 @@ class SparkRunner:
             else:
                 if self.model_creator is not None:
                     model = self.model_creator(self.config)
-                    if self.model_weights:
-                        model.set_weights(self.model_weights.value)
                 else:
                     model = tf.keras.models.load_model(self.model_load)
+                if self.model_weights:
+                        model.set_weights(self.model_weights.value)
 
             if not model._is_compiled and self.compile_args_creator:
                 model.compile(**self.compile_args_creator(config))
@@ -396,10 +396,10 @@ class SparkRunner:
         with self.strategy.scope():
             if self.model_creator is not None:
                 model = self.model_creator(self.config)
-                if self.model_weights:
-                    model.set_weights(self.model_weights.value)
             else:
                 model = tf.keras.models.load_model(self.model_load)
+            if self.model_weights:
+                model.set_weights(self.model_weights.value)
 
         with self.strategy.scope():
             dataset_handler = DatasetHandler.get_handler(self.backend,
@@ -467,10 +467,10 @@ class SparkRunner:
 
         if self.model_creator is not None:
             local_model = self.model_creator(self.config)
-            if self.model_weights:
-                local_model.set_weights(self.model_weights.value)
         else:
             local_model = tf.keras.models.load_model(self.model_load)
+        if self.model_weights:
+                local_model.set_weights(self.model_weights.value)
 
         def predict_fn(shard):
             y = local_model.predict(shard["x"], **params)
