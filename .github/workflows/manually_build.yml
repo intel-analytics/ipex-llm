@@ -300,6 +300,19 @@ jobs:
         echo "####### big-data-ml-python-gramine ####"
         echo "########################################"
         export base_image=intelanalytics/bigdl-ppml-trusted-big-data-ml-python-gramine-base
+        ### error log level + 16G sgx mem size
+        export image=intelanalytics/bigdl-ppml-trusted-big-data-ml-python-gramine-noattest-16g
+        sudo docker build \
+         --build-arg BASE_IMAGE_NAME=${base_image} \
+         --build-arg BASE_IMAGE_TAG=${TAG} \
+         --build-arg SGX_MEM_SIZE=16G \
+         --build-arg SGX_LOG_LEVEL=error \
+         --build-arg ENABLE_DCAP_ATTESTATION=false \
+         -t ${image}:${TAG} -f ./Dockerfile .
+        sudo docker push ${image}:${TAG}
+        sudo docker tag ${image}:${TAG} 10.239.45.10/arda/${image}:${TAG}
+        sudo docker push 10.239.45.10/arda/${image}:${TAG}
+        sudo docker rmi -f ${image}:${TAG}
         ### debug log level
         export image=intelanalytics/bigdl-ppml-trusted-big-data-ml-python-gramine-noattest-32g-debug
         cd ppml/trusted-big-data-ml/python/docker-gramine/bigdl-gramine
