@@ -158,6 +158,9 @@ RUN cd /opt && \
     sed -i 's/2.4.0/3.1.3/g' tpch.sbt && \
     sbt package
 
+ADD ./install_python_with_conda.sh /opt
+RUN cd /opt && bash ./install_python_with_conda.sh
+
 FROM occlum/occlum:0.28.1-ubuntu20.04 as ppml
 
 ARG BIGDL_VERSION=2.2.0-SNAPSHOT
@@ -252,5 +255,10 @@ RUN chmod a+x /opt/entrypoint.sh && \
     chmod a+x /root/demos/remote_attestation/dcap/c_app/dcap_c_test.c && \
     sed -i '/aesm/d' /root/.bashrc && \
     rm -rf /var/run/aesmd
+
+# Add python lib
+ADD ./python-glibc.yaml /opt/python-glibc.yaml
+COPY --from=bigdl /opt/python-occlum /opt/python-occlum
+ADD ./py-examples /opt/py-examples
 
 ENTRYPOINT [ "/opt/entrypoint.sh" ]
