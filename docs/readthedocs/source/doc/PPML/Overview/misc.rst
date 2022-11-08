@@ -12,5 +12,4 @@ Advanced Topic
 * `Trusted Cluster Serving with Graphene on Kubernetes <../QuickStart/trusted-serving-on-k8s-guide.html>`_
 * `TPC-H with Trusted SparkSQL on Kubernetes <../QuickStart/tpc-h_with_sparksql_on_k8s.html>`_
 * `TPC-DS with Trusted SparkSQL on Kubernetes <../QuickStart/tpc-ds_with_sparksql_on_k8s.html>`_
-* `Privacy Preserving Machine Learning (PPML) on Azure User Guide <azure_ppml.html>`_
 * `BigDL-PPML-Azure-Occlum-Example <azure_ppml_occlum.html>`_
