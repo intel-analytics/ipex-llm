@@ -7,40 +7,48 @@
 
 ```eval_rst
 .. note::
-    **Required Hardware**:
+    **Hardware requirements**:
 
-     PPML's key features (except CKKS) are mainly built on Intel SGX. Intel SGX is a hardware feature provided by Intel's CPU. [Check if your CPU has SGX feature](https://www.intel.com/content/www/us/en/support/articles/000028173/processors.html).
+     Intel SGX: PPML's features (except Homomorphic Encryption) are mainly built upon Intel SGX. Intel SGX requires Intel CPU with SGX feature, e.g., IceLake (3rd Xeon Platform). [Check if your CPU has SGX feature](https://www.intel.com/content/www/us/en/support/articles/000028173/processors.html).
 ```
 ```eval_rst
 .. note::
     **Supported OS**:
 
-     Chronos is thoroughly tested on Ubuntu (18.04/20.04), and should works fine on CentOS/Redhat 8.
+     PPML is thoroughly tested on Ubuntu (18.04/20.04), and should works fine on CentOS/Redhat 8.
 ```
+
+#### Enable SGX for your Cluster
 
 ```eval_rst
 .. mermaid::
    
    graphe TD
-      A(Node A)
-      B([Node B])
-
-      A -- points to --> B
-      A --> C{{Node C}}
-
-      classDef blue color:#0171c3;
-      class B,C blue;
+      usesgx{Use SGX?} -- Yes --> installsgx(Install SGX Driver for Node)
+      usesgx{Use SGX?} -- No --> he(Homomorphic Encryption)
+      installsgx --> installaesm(Install AESM for Node)
+      installaesm --> needatt{Need Attestation?}
+      needatt -- Yes --> installPCCS(Install PCCS for Cluster)
 ```
 
 
-#### Install SGX Driver
+##### Install SGX Driver
 
-#### Install SGX Service (Optional)
+Please refer to [Install SGX (Software Guard Extensions) Driver for Xeon Server](https://bigdl.readthedocs.io/en/latest/doc/PPML/QuickStart/install_sgx_driver.html).
 
-Install aesm
+##### Install AESM
 
-Install PCCS
+```bash
+echo 'deb [arch=amd64] https://download.01.org/intel-sgx/sgx_repo/ubuntu focal main' | sudo tee /etc/apt/sources.list.d/intel-sgx.list > /dev/null
+wget -O - https://download.01.org/intel-sgx/sgx_repo/ubuntu/intel-sgx-deb.key | sudo apt-key add -
+sudo apt update
+sudo apt-get install libsgx-urts libsgx-dcap-ql libsgx-dcap-default-qpl
+```
 
-#### Install Kubernetes SGX Plugin
+##### Install PCCS (for attestation)
 
-#### Install KMS
+Please refer to [Intel® Software Guard Extensions Data Center Attestation Primitives (Intel® SGX DCAP): A Quick Install Guide](https://www.intel.com/content/www/us/en/developer/articles/guide/intel-software-guard-extensions-data-center-attestation-primitives-quick-install-guide.html)
+
+##### Install Kubernetes SGX Plugin (K8S only)
+
+Please refer to [Deploy the Intel SGX Device Plugin for Kubernetes](Deploy the Intel SGX Device Plugin for Kubernetes).
