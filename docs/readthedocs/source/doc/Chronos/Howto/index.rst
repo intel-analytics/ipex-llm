@@ -12,6 +12,7 @@ Forecasting
 -------------------------
 * `Create a forecaster <how_to_create_forecaster.html>`__
 * `Train forecaster on single node <how_to_train_forecaster_on_one_node.html>`__
+* `Save and load a forecaster <how_to_save_and_load_forecaster.html>`__
 * `Tune forecaster on single node <how_to_tune_forecaster_model.html>`__
 * `Speed up inference of forecaster through ONNXRuntime <how_to_speedup_inference_of_forecaster_through_ONNXRuntime.html>`__
 * `Speed up inference of forecaster through OpenVINO <how_to_speedup_inference_of_forecaster_through_OpenVINO.html>`__
