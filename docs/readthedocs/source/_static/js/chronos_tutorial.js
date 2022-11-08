@@ -220,9 +220,9 @@ $(".forecasters").click(function(){
 
         let fs = "";
         for(var i=0;i<forecasters.length;i++){
-            fs += forecasters[i]+',';
+            fs += forecasters[i]+', ';
         }
-        fs = fs.substring(0, fs.length - 1);
+        fs = fs.substring(0, fs.length - 2);
        
         $(".showingForecaster i").text(fs);
     }
