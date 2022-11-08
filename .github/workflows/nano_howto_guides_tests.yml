@@ -33,11 +33,16 @@ jobs:
         uses: actions/setup-python@v2
         with:
           python-version: ${{ matrix.python-version }}
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install --upgrade setuptools==58.0.4
+          python -m pip install --upgrade wheel
       
       - name: Run unit tests for Inference PyTorch (ONNXRuntime) how-to guides
         shell: bash
         run: |
-          $CONDA/bin/conda create -n howto-guides-inference-pytorch-onnx -y python==3.7.10 setuptools=58.0.4 -c ${CONDA_CHANNEL} --override-channels
+          $CONDA/bin/conda create -n howto-guides-inference-pytorch-onnx -y python==3.7.10 setuptools=58.0.4
           source $CONDA/bin/activate howto-guides-inference-pytorch-onnx
           $CONDA/bin/conda info
           bash python/nano/dev/build_and_install.sh linux default false pytorch,inference
@@ -52,7 +57,7 @@ jobs:
       - name: Run unit tests for Inference PyTorch (OpenVINO) how-to guides
         shell: bash
         run: |
-          $CONDA/bin/conda create -n howto-guides-inference-pytorch-openvino -y python==3.7.10 setuptools=58.0.4 -c ${CONDA_CHANNEL} --override-channels
+          $CONDA/bin/conda create -n howto-guides-inference-pytorch-openvino -y python==3.7.10 setuptools=58.0.4
           source $CONDA/bin/activate howto-guides-inference-pytorch-openvino
           $CONDA/bin/conda info
           bash python/nano/dev/build_and_install.sh linux default false pytorch
@@ -69,7 +74,7 @@ jobs:
       - name: Run unit tests for Inference PyTorch (InferenceOptimizer) how-to guides
         shell: bash
         run: |
-          $CONDA/bin/conda create -n howto-guides-inference-pytorch-openvino -y python==3.7.10 setuptools=58.0.4 -c ${CONDA_CHANNEL} --override-channels
+          $CONDA/bin/conda create -n howto-guides-inference-pytorch-openvino -y python==3.7.10 setuptools=58.0.4
           source $CONDA/bin/activate howto-guides-inference-pytorch-openvino
           $CONDA/bin/conda info
           bash python/nano/dev/build_and_install.sh linux default false pytorch,inference
@@ -100,11 +105,16 @@ jobs:
         uses: actions/setup-python@v2
         with:
           python-version: ${{ matrix.python-version }}
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install --upgrade setuptools==58.0.4
+          python -m pip install --upgrade wheel
       
       - name: Run unit tests for Training PyTorch Lightning how-to guides
         shell: bash
         run: |
-          $CONDA/bin/conda create -n howto-guides-training-pytorch-lightning -y python==3.7.10 setuptools=58.0.4 -c ${CONDA_CHANNEL} --override-channels
+          $CONDA/bin/conda create -n howto-guides-training-pytorch-lightning -y python==3.7.10 setuptools=58.0.4
           source $CONDA/bin/activate howto-guides-training-pytorch-lightning
           $CONDA/bin/conda info
           bash python/nano/dev/build_and_install.sh linux default false pytorch
@@ -119,7 +129,7 @@ jobs:
       - name: Run unit tests for Training TensorFlow how-to guides
         shell: bash
         run: |
-          $CONDA/bin/conda create -n howto-guides-training-tensorflow -y python==3.7.10 setuptools=58.0.4 -c ${CONDA_CHANNEL} --override-channels
+          $CONDA/bin/conda create -n howto-guides-training-tensorflow -y python==3.7.10 setuptools=58.0.4
           source $CONDA/bin/activate howto-guides-training-tensorflow
           $CONDA/bin/conda info
           bash python/nano/dev/build_and_install.sh linux default false tensorflow
