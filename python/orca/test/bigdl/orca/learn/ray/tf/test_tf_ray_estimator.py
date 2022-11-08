@@ -779,6 +779,7 @@ class TestTFRayEstimator(TestCase):
                 backend="ray")
 
             est.load(os.path.join(temp_dir, "cifar10.h5"))
+            est.save(os.path.join(temp_dir, "cifar10_option.h5"))
 
             after_res = est.predict(df, feature_cols=["feature"]).collect()
             pred_res = np.concatenate([part["prediction"] for part in after_res])
@@ -990,6 +991,54 @@ class TestTFRayEstimator(TestCase):
                                    label_cols=["label"])
             assert len(os.listdir(os.path.join(temp_dir, "val_log"))) > 0
 
+        finally:
+            shutil.rmtree(temp_dir)
+
+    def test_get_model(self):   
+        sc = OrcaContext.get_spark_context()
+        rdd = sc.range(0, 100)
+        spark = OrcaContext.get_spark_session()
+
+        from pyspark.ml.linalg import DenseVector
+        df = rdd.map(lambda x: (DenseVector(np.random.randn(1, ).astype(np.float)),
+                                int(np.random.randint(0, 2, size=())))).toDF(["feature", "label"])
+
+        config = {
+            "lr": 0.2
+        }
+
+        try:
+            temp_dir = tempfile.mkdtemp()
+
+            trainer = Estimator.from_keras(
+                model_creator=model_creator,
+                verbose=True,
+                config=config,
+                workers_per_node=3,
+                backend="ray")
+
+            res = trainer.fit(df, epochs=5, batch_size=4, steps_per_epoch=25,
+                              feature_cols=["feature"],
+                              label_cols=["label"],
+                              validation_data=df,
+                              validation_steps=1)
+
+            trainer.save(os.path.join(temp_dir, "cifar10.h5"))
+            pre_model_weights = trainer.get_model().get_weights()
+
+            trainer.shutdown()
+
+            est = Estimator.from_keras(
+                verbose=True,
+                config=config,
+                workers_per_node=3,
+                backend="ray")
+
+            est.load(os.path.join(temp_dir, "cifar10.h5"))
+            after_model_weights = est.get_model().get_weights()
+
+            for pre_tensor, after_tensor in list(zip(pre_model_weights, after_model_weights)):
+                assert np.allclose(pre_tensor, after_tensor)
         finally:
             shutil.rmtree(temp_dir)
 

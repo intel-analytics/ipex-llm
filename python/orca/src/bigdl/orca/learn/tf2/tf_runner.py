@@ -44,7 +44,8 @@ from contextlib import closing
 from bigdl.dllib.utils import log4Error
 from bigdl.orca.data.utils import ray_partitions_get_data_label, ray_partitions_get_tf_dataset
 from bigdl.orca.data.file import is_file, get_remote_file_to_local, get_remote_dir_to_local, \
-    get_remote_files_with_prefix_to_local
+    get_remote_files_with_prefix_to_local, put_local_file_to_remote, \
+    put_local_dir_tree_to_remote, put_local_files_with_prefix_to_remote
 from bigdl.orca.learn.utils import process_tensorboard_in_callbacks
 from bigdl.dllib.utils.log4Error import *
 
@@ -543,6 +544,23 @@ class TFRunner:
                                         "data (of the correct dtype) as sample_input in the load "
                                         "method.")
 
+    def save_model(self, filepath, overwrite, include_optimizer, save_format, signatures, options):
+        file_name = os.path.basename(filepath)
+        temp_dir = tempfile.mkdtemp()
+        temp_path = os.path.join(temp_dir, file_name)
+        try:
+            self.model.save(temp_path, overwrite, include_optimizer, save_format, signatures,
+                            options)
+            if self.rank == 0:
+                if save_format == 'h5' or filepath.endswith('.h5') or filepath.endswith('.keras'):
+                    # hdf5 format
+                    put_local_file_to_remote(temp_path, filepath)
+                else:
+                    # savemodel format
+                    put_local_dir_tree_to_remote(temp_path, filepath)
+        finally:
+            shutil.rmtree(temp_dir)
+
     def load_model(self, filepath, custom_objects, compile, options):
         """Load the model from provided local filepath."""
         import tensorflow as tf
@@ -574,6 +592,23 @@ class TFRunner:
                 shutil.rmtree(temp_path)
             else:
                 os.remove(temp_path)
+
+    def save_weights(self, filepath, overwrite, save_format, options):
+        file_name = os.path.basename(filepath)
+        temp_dir = tempfile.mkdtemp()
+        temp_path = os.path.join(temp_dir, file_name)
+        try:
+            self.model.save_weights(temp_path, overwrite, save_format, options)
+            if self.rank == 0:
+                if save_format == 'h5' or filepath.endswith('.h5') or filepath.endswith('.keras'):
+                    # hdf5 format
+                    put_local_file_to_remote(temp_path, filepath)
+                else:
+                    # tf format
+                    remote_dir = os.path.dirname(filepath)
+                    put_local_files_with_prefix_to_remote(temp_path, remote_dir)
+        finally:
+            shutil.rmtree(temp_dir)
 
     def load_weights(self, filepath, by_name, skip_mismatch, options):
         """Loads all layer weights from a TensorFlow or an HDF5 weight file."""
