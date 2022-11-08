@@ -21,6 +21,7 @@ from bigdl.dllib.utils.log4Error import *
 
 import pyspark.sql.functions as F
 from typing import (Union, List, Dict)
+import pandas
 
 
 def list_s3_file(file_path, env):
@@ -546,3 +547,19 @@ def group_by_spark_df(df,
     else:
         result_df = agg_df
     return result_df
+
+
+def check_col_str_list_exists(columns: List[str],
+                              column: Union[List[str], str],
+                              arg_name: str) -> None:
+    if isinstance(column, str):
+        invalidInputError(column in columns,
+                          column + " in " + arg_name + " does not exist in SparkXShards")
+    elif isinstance(column, list):
+        for single_column in column:
+            invalidInputError(single_column in columns,
+                              "{} in {} does not exist in SparkXShards".format(single_column, arg_name))
+    else:
+        invalidInputError(False,
+                          "elements in cat_cols should be str or list of str but"
+                          " get " + str(column))

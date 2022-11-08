@@ -28,6 +28,7 @@ from pyspark.sql.dataframe import DataFrame as SparkDataFrame
 import pyspark.sql.functions as F
 from pyspark import RDD
 from typing import (Union, List, Dict)
+import pandas as pd
 
 
 class XShards(object):
@@ -146,6 +147,7 @@ class SparkXShards(XShards):
 
     def __init__(self, rdd, transient=False, class_name=None):
         self.rdd = rdd
+        self.columns = self.rdd.first().columns
         self.user_cached = False
         if transient:
             self.eager = False
@@ -483,7 +485,7 @@ class SparkXShards(XShards):
         """
         if self._get_class_name() != 'pandas.core.frame.DataFrame':
             invalidInputError(False,
-                              "Currently only support assembleFeatureLabelCols() on"
+                              "Currently only support get_null_sum() on"
                               " XShards of Pandas DataFrame")
 
         def get_na_sum(iter):
@@ -902,6 +904,161 @@ class SparkXShards(XShards):
                 .map(lambda p: p[1]).toDF()
         merged = spark_df_to_pd_sparkxshards(merged)
         return merged
+
+    def sample(self, frac, replace=False, weights=None, random_state=None):
+        """
+
+        Samples from each pandas dataframe in old SparkXShards, Return a new SparkXShards  .
+
+        :param frac: float,  Fraction of items to return.
+        :param replace: bool, default False,
+            Allow or disallow sampling of the same row more than once.
+        str or ndarray-like, optional
+            Default 'None' results in equal probability weighting.
+            If passed a Series, will align with target object on index. Index
+            values in weights not found in sampled object will be ignored and
+            index values in sampled object not in weights will be assigned
+            weights of zero.
+            If called on a DataFrame, will accept the name of a column
+            when axis = 0.
+            Unless weights are a Series, weights must be same length as axis
+            being sampled.
+            If weights do not sum to 1, they will be normalized to sum to 1.
+            Missing values in the weights column will be treated as zero.
+            Infinite values not allowed.
+        random_state : int, array-like, BitGenerator, np.random.RandomState, optional
+            If int, array-like, or BitGenerator (NumPy>=1.17), seed for
+            random number generator
+            If np.random.RandomState, use as numpy RandomState object.
+        the new SparkXShards would keep the current partition number.
+        :return: a new SparkXShards.
+        """
+        if self._get_class_name() != 'pandas.core.frame.DataFrame':
+            invalidInputError(False,
+                              "Currently only support sample() on"
+                              " XShards of Pandas DataFrame")
+
+        rdd = self.rdd.map(lambda df: df.sample(
+            frac=frac, replace=replace, weights=weights, random_state=random_state))
+        return SparkXShards(rdd)
+
+    def select(self, cols):
+        """
+
+        Select specific columns of each pandas dataframe in SparkXShards and
+        return a new SparkXShards.
+
+        :param cols: list string,  Fraction of items to return.
+        :param replace: bool, default False,
+            Allow or disallow sampling of the same row more than once.
+        str or ndarray-like, optional
+            Default 'None' results in equal probability weighting.
+            If passed a Series, will align with target object on index. Index
+            values in weights not found in sampled object will be ignored and
+            index values in sampled object not in weights will be assigned
+            weights of zero.
+            If called on a DataFrame, will accept the name of a column
+            when axis = 0.
+            Unless weights are a Series, weights must be same length as axis
+            being sampled.
+            If weights do not sum to 1, they will be normalized to sum to 1.
+            Missing values in the weights column will be treated as zero.
+            Infinite values not allowed.
+        random_state : int, array-like, BitGenerator, np.random.RandomState, optional
+            If int, array-like, or BitGenerator (NumPy>=1.17), seed for
+            random number generator
+            If np.random.RandomState, use as numpy RandomState object.
+        the new SparkXShards would keep the current partition number.
+        :return: a new SparkXShards.
+        """
+        if self._get_class_name() != 'pandas.core.frame.DataFrame':
+            invalidInputError(False,
+                              "Currently only support select() on"
+                              " XShards of Pandas DataFrame")
+
+        if isinstance(cols, str):
+            cols = [cols]
+        invalidInputError(isinstance(cols, list), "cols should be str or list")
+
+        for c in cols:
+            check_col_str_list_exists(self.columns, cols, "cols")
+
+        return SparkXShards(self.rdd.map(lambda df: df[cols]))
+
+    def describe(self, *cols):
+        """
+
+        Computes basic statistics for numeric and string columns.
+
+        This include count, mean, stddev, min, and max. If no columns are
+        given, this function computes statistics for all numerical or string columns.
+        """
+        if self._get_class_name() != 'pandas.core.frame.DataFrame':
+            invalidInputError(False,
+                              "Currently only support select() on"
+                              " XShards of Pandas DataFrame")
+
+        cols = cols if cols else self.columns[0]
+
+        if isinstance(cols, str):
+            cols = [cols]
+        invalidInputError(isinstance(cols, list), "cols should be str or list")
+
+        for c in cols:
+            check_col_str_list_exists(self.columns, cols, "cols")
+
+        spark_df = self.to_spark_df()
+
+        description = spark_df.describe(*cols).toPandas()
+        return description
+
+    def head(self, n):
+        """
+
+        Retrun first rows of the pandas dataframe in a SparkXShards.
+
+        """
+        if self._get_class_name() != 'pandas.core.frame.DataFrame':
+            invalidInputError(False,
+                              "Currently only support head() on"
+                              " XShards of Pandas DataFrame")
+
+        return self.rdd.first().head(n)
+
+    def concat_to_pdf(self, axis=0):
+        """
+
+        Concatenate all pandas dataframes in SparsXShards into one single pandas dataframe
+
+        :param axis, integer, default 0
+        """
+        if self._get_class_name() != 'pandas.core.frame.DataFrame':
+            invalidInputError(False,
+                              "Currently only support concat_to_pdf() on"
+                              " XShards of Pandas DataFrame")
+
+        dfs = self.rdd.collect()
+        return pd.concat(dfs, axis=axis)
+
+    def total_count(self):
+        """
+
+        Count data records of all pandas dataframes in SparsXShards
+
+        """
+        if self._get_class_name() != 'pandas.core.frame.DataFrame':
+            invalidInputError(False,
+                              "Currently only support count() on"
+                              " XShards of Pandas DataFrame")
+
+        def get_cnt(iter):
+            for df in iter:
+                return [len(df)]
+
+        cnt_rdd = self.rdd.mapPartitions(get_cnt)
+
+        cnt = cnt_rdd.reduce(lambda l1, l2: l1 + l2)
+        return cnt
 
 
 class SharedValue(object):
