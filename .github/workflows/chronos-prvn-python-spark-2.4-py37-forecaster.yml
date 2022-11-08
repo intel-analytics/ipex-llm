@@ -1,4 +1,4 @@
-name: Chronos PRVN Python Spark2.4 py37 onnxrt
+name: Chronos PRVN Python Spark2.4 py37 forecaster
 
 # Cancel previous runs in the PR when you push new commits
 concurrency:
@@ -16,13 +16,13 @@ on:
       - 'python/nano/src/**'
       - 'python/orca/src/bigdl/orca/automl/**'
       - 'python/orca/src/bigdl/orca/data/**'
-      - '.github/workflows/chronos-prvn-python-spark-2.4-py37-onnxrt.yml'
+      - '.github/workflows/chronos-prvn-python-spark-2.4-py37-ray.yml'
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
 
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
-  chronos-PRVN-onnxrt:
+  chronos-PRVN-ray:
     runs-on: [ self-hosted, Gondolin, ubuntu-20.04-lts ]
     strategy:
       fail-fast: false
@@ -43,9 +43,9 @@ jobs:
       - name: Run Chronos python test
         shell: bash
         run: |
-          conda remove -n chronos-prvn-env-2 -y --all
-          conda create -n chronos-prvn-env-2 -y python==3.7.10 setuptools==58.0.4 -c ${GONDOLIN_CONDA_CHANNEL} --override-channels
-          source activate chronos-prvn-env-2
+          conda remove -n chronos-prvn-env-1 -y --all
+          conda create -n chronos-prvn-env-1 -y python==3.7.10 setuptools==58.0.4 -c ${GONDOLIN_CONDA_CHANNEL} --override-channels
+          source activate chronos-prvn-env-1
           apt-get update
           apt-get install -y libgl1
           apt-get install patchelf
@@ -61,9 +61,9 @@ jobs:
           pip install python/chronos/src/dist/bigdl_chronos-*-py3-none-manylinux1_x86_64.whl
           export SPARK_LOCAL_HOSTNAME=localhost
           export KERAS_BACKEND=tensorflow
-          bash python/chronos/dev/test/run-pytests-onnxrt16.sh
+          bash python/chronos/dev/test/run-pytests-forecaster.sh
           source deactivate
-          conda remove -n chronos-prvn-env-2 -y --all
+          conda remove -n chronos-prvn-env-1 -y --all
         env:
           BIGDL_ROOT: ${{ github.workspace }}
           ANALYTICS_ZOO_ROOT: ${{ github.workspace }}
