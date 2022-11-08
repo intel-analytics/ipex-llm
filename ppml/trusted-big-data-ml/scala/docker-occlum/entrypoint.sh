@@ -97,7 +97,7 @@ case "$SPARK_K8S_CMD" in
             -Dos.name="Linux" \
             -XX:-UseCompressedOops \
             -XX:MaxMetaspaceSize=$META_SPACE \
-            -Djdk.lang.Process.launchMechanism=posix_spawn \
+            -Djdk.lang.Process.launchMechanism=vfork \
             -cp "$SPARK_CLASSPATH" \
             -Xmx$DRIVER_MEMORY \
             -XX:ActiveProcessorCount=4 \
@@ -115,7 +115,7 @@ case "$SPARK_K8S_CMD" in
             -Dos.name="Linux" \
             -XX:-UseCompressedOops \
             -XX:MaxMetaspaceSize=$META_SPACE \
-            -Djdk.lang.Process.launchMechanism=posix_spawn \
+            -Djdk.lang.Process.launchMechanism=vfork \
             -cp "$SPARK_CLASSPATH" \
             -Xmx$SGX_DRIVER_JVM_MEM_SIZE \
             -XX:ActiveProcessorCount=4 \
@@ -146,7 +146,7 @@ case "$SPARK_K8S_CMD" in
             -Xmx$SPARK_EXECUTOR_MEMORY \
             -Dos.name=Linux \
             -Dio.netty.availableProcessors=$NETTY_THREAD \
-            -Djdk.lang.Process.launchMechanism=posix_spawn \
+            -Djdk.lang.Process.launchMechanism=vfork \
             -cp "$SPARK_CLASSPATH" \
             org.apache.spark.executor.CoarseGrainedExecutorBackend \
             --driver-url $SPARK_DRIVER_URL \
@@ -168,7 +168,7 @@ case "$SPARK_K8S_CMD" in
             -Xmx$SGX_EXECUTOR_JVM_MEM_SIZE \
             -Dos.name=Linux \
             -Dio.netty.availableProcessors=$NETTY_THREAD \
-            -Djdk.lang.Process.launchMechanism=posix_spawn \
+            -Djdk.lang.Process.launchMechanism=vfork \
             -cp "$SPARK_CLASSPATH" \
             org.apache.spark.executor.CoarseGrainedExecutorBackend \
             --driver-url $SPARK_DRIVER_URL \
