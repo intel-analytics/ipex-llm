@@ -54,7 +54,6 @@ class NCFData(data.Dataset):
         self.labels = [1 for _ in range(len(features))]
 
     def ng_sample(self):
-        np.random.seed(0)
         self.features_ng = []
         for x in self.features_ps:
             u = x[0]
@@ -159,13 +158,15 @@ def model_creator(config):
 def optimizer_creator(model, config):
     return optim.Adam(model.parameters(), lr=config['lr'])
 
+loss_function = nn.BCEWithLogitsLoss()
+
 
 # Step 4: Distributed training with Orca PyTorch Estimator
 dataset_dir = "./ml-1m"
 backend = "ray"  # "ray" or "spark"
 
 est = Estimator.from_torch(model=model_creator, optimizer=optimizer_creator,
-                           loss=nn.BCEWithLogitsLoss(),
+                           loss=loss_function,
                            metrics=[Accuracy(), Precision(), Recall()],
                            backend=backend,
                            config={'dataset_dir': dataset_dir,
