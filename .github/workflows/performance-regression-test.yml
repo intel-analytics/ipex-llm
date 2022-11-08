@@ -41,8 +41,8 @@ jobs:
 
       - name: Run benchmark
         run: |
-          python python/nano/benchmark/run.py resnet_inference
-          python python/nano/benchmark/run.py resnet50
+          python python/benchmark/run.py nano resnet_inference
+          python python/benchmark/run.py nano resnet50
         env:
           USER: ${{ github.actor }}
           PR_URL: ${{ github.event.comment.issue_url }}/comments
