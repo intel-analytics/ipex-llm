@@ -103,10 +103,8 @@ def export_to_onnx(model, input_sample=None, onnx_path="model.onnx", dynamic_axe
     # set opset_version according to torch version
     if TORCH_VERSION_LESS_1_11:
         opset_version = 12
-    elif TORCH_VERSION_LESS_1_12:
-        opset_version = 15
     else:
-        opset_version = 16
+        opset_version = 15
 
     default_onnx_export_args = {'export_params': True,
                                 'opset_version': opset_version,
