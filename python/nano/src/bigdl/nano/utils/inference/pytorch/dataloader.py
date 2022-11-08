@@ -55,7 +55,7 @@ def _need_dataloader_type_transformation(model, dataloader):
     # a special case is 0, this means *args is used in
     # users' forward method, we will also skip it as well
     if forward_args_len <= 1:
-        return False
+        return False, forward_args_len
 
     # check if a dataloader has met inc format
     input_sample = next(iter(dataloader))
