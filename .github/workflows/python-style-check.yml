@@ -43,7 +43,7 @@ jobs:
       - name: Install dependencies
         run: pip install pycodestyle
              pip install pydocstyle
-             pip install mypy==0.982  # specify version to avoid error caused by new version 0.990
+             pip install mypy==0.982
              pip install wheel
 
       # Runs a single command using the runners shell
