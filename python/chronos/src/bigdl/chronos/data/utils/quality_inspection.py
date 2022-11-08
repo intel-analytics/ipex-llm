@@ -70,6 +70,9 @@ def quality_check_timeseries_dataframe(df, dt_col, id_col=None, repair=True):
     # 4. pattern check and noise check
     # TODO:
 
+    # 5. abnormal value check
+    _abnormal_value_check(df, dt_col, id_col)
+
     return flag, df
 
 
@@ -211,3 +214,71 @@ def _missing_value_repair(df):
         return False
     logging.warning("Missing data has be imputed.")
     return True
+
+
+def _abnormal_value_check(df, dt_col, id_col, threshold=10):
+    '''
+    This check is used to determine whether there are abnormal values in the data.
+    '''
+    for column in df.columns:
+        if column == dt_col or column == id_col:
+            continue
+        df_col = df[column]
+        for val in df_col:
+            if df_col.std() != 0 and abs((val - df_col.mean()) / df_col.std()) > threshold:
+                logging.warning(f"Some values of column {column} exceeds the mean plus/minus "
+                                f"{threshold} times standard deviation, please call "
+                                f".repair_abnormal_data() to remove abnormal values.")
+                return False
+    return True
+
+
+def _abnormal_value_repair(df, dt_col, id_col, mode, threshold):
+    '''
+    This repair is used to replace detected abnormal data with the last non N/A number.
+    '''
+    invalidInputError(mode in ['absolute', 'relative'],
+                      f"mode should be one of ['absolute', 'relative'], but found {mode}.")
+    if mode == 'absolute':
+        invalidInputError(isinstance(threshold, tuple),
+                          "threshold should be a tuple when mode is set to 'absolute', "
+                          f"but found {type(threshold)}.")
+        invalidInputError(threshold[0] <= threshold[1],
+                          "threshold should be a tuple (min_value, max_value) when mode "
+                          f"is set to 'absolute', but found {threshold}.")
+        res_df = _abs_abnormal_value_repair(df, dt_col, id_col, threshold)
+    else:
+        invalidInputError(isinstance(threshold, float),
+                          "threshold should be a float when mode is set to 'relative', "
+                          f"but found {type(threshold)}.")
+        res_df = _rel_abnormal_value_repair(df, dt_col, id_col, threshold)
+    return res_df
+
+
+def _abs_abnormal_value_repair(df, dt_col, id_col, threshold):
+    res_df = df.copy()
+    for column in res_df.columns:
+        if column == dt_col or column == id_col:
+            continue
+        for i in range(len(res_df[column])):
+            if res_df[column][i] < threshold[0] or res_df[column][i] > threshold[1]:
+                # first change abnormal value to N/A
+                res_df[column][i] = np.nan
+    res_df.iloc[0] = res_df.iloc[0].fillna(0)
+    res_df = res_df.fillna(method='pad')
+    return res_df
+
+
+def _rel_abnormal_value_repair(df, dt_col, id_col, threshold):
+    res_df = df.copy()
+    for column in res_df.columns:
+        if column == dt_col or column == id_col:
+            continue
+        for i in range(len(res_df[column])):
+            if res_df[column][i] > res_df[column].mean() + threshold * res_df[column].std() or \
+               res_df[column][i] < res_df[column].mean() - threshold * res_df[column].std():
+                # first change abnormal value to N/A
+                res_df[column][i] = np.nan
+    res_df.iloc[0] = res_df.iloc[0].fillna(0)
+    res_df = res_df.fillna(method='pad')
+    return res_df
