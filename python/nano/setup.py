@@ -108,7 +108,8 @@ def setup_package():
 
     scripts = ["scripts/bigdl-nano-init",
                "scripts/bigdl-nano-init.ps1",
-               "scripts/bigdl-nano-unset-env"]
+               "scripts/bigdl-nano-unset-env",
+               "scripts/bigdl-nano-unset-env.ps1"]
 
     metadata = dict(
         name='bigdl-nano',

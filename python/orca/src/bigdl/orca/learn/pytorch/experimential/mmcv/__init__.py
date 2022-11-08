@@ -14,3 +14,5 @@
 # limitations under the License.
 #
 
+
+from .mmcv_ray_estimator import MMCVRayEstimator
