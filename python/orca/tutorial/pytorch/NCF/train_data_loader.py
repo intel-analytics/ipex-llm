@@ -159,37 +159,27 @@ def model_creator(config):
 def optimizer_creator(model, config):
     return optim.Adam(model.parameters(), lr=config['lr'])
 
-loss = nn.BCEWithLogitsLoss()
-
 
 # Step 4: Distributed training with Orca PyTorch Estimator
 dataset_dir = "./ml-1m"
-num_ng = 4
-factor_num = 16
-num_layers = 3
-dropout = 0.5
-lr = 0.001
-model = "NeuMF-end"
-batch_size = 256
 backend = "ray"  # "ray" or "spark"
-epochs = 10
 
 est = Estimator.from_torch(model=model_creator, optimizer=optimizer_creator,
-                           loss=loss, metrics=[Accuracy(), Precision(), Recall()],
+                           loss=nn.BCEWithLogitsLoss(), metrics=[Accuracy(), Precision(), Recall()],
                            backend=backend,
                            config={'dataset_dir': dataset_dir,
-                                   'num_ng': num_ng,
-                                   'factor_num': factor_num,
-                                   'num_layers': num_layers,
-                                   'dropout': dropout,
-                                   'lr': lr,
-                                   'model': model
+                                   'num_ng': 4,
+                                   'factor_num': 16,
+                                   'num_layers': 3,
+                                   'dropout': 0.5,
+                                   'lr': 0.001,
+                                   'model': "NeuMF-end"
                                    })
-est.fit(data=train_loader_func, epochs=epochs, batch_size=batch_size)
+est.fit(data=train_loader_func, epochs=10, batch_size=256)
 
 
 # Step 5: Distributed evaluation of the trained model
-result = est.evaluate(data=test_loader_func, batch_size=batch_size)
+result = est.evaluate(data=test_loader_func, batch_size=256)
 print('Evaluation results:')
 for r in result:
     print(r, ":", result[r])
