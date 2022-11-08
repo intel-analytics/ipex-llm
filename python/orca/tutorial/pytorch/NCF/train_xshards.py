@@ -111,16 +111,16 @@ def optimizer_creator(model, config):
 backend = "spark"  # "ray" or "spark"
 
 est = Estimator.from_torch(model=model_creator, optimizer=optimizer_creator,
-                           loss=nn.BCEWithLogitsLoss(), metrics=[Accuracy(), Precision(), Recall()],
+                           loss=nn.BCEWithLogitsLoss(),
+                           metrics=[Accuracy(), Precision(), Recall()],
+                           backend=backend,
                            config={'user_num': user_num, 'item_num': item_num,
                                    'dataset_dir': dataset_dir,
                                    'factor_num': 16,
                                    'num_layers': 3,
                                    'dropout': 0.0,
                                    'lr': 0.001,
-                                   'model': "NeuMF-end"
-                                   },
-                           backend=backend)
+                                   'model': "NeuMF-end"})
 est.fit(data=train_data, epochs=10, batch_size=256,
         feature_cols=["user", "item"], label_cols=["label"])
 
