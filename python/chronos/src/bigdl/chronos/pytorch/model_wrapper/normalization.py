@@ -19,6 +19,12 @@ import torch.nn as nn
 
 class NormalizeTSModel(nn.Module):
     def __init__(self, model, output_feature_dim):
+        """
+        Build a Normalization model wrapper.
+
+        param model: basic forecaster model.
+        :param output_feature_dim: Specify the output dimension.
+        """
         super(NormalizeTSModel, self).__init__()
         self.model = model
         self.output_feature_dim = output_feature_dim

@@ -54,10 +54,15 @@ class series_decomp(nn.Module):
 
 
 class DecompositionTSModel(nn.Module):
+
     def __init__(self, models, kernel_size=25):
+        """
+        Build a Decomposition model wrapper.
 
+        :param models: tuple, (model, model_copy) two basic forecaster models.
+        :param kernel_size: int, Specify the kernel size in moving average.
+        """
         super(DecompositionTSModel, self).__init__()
-
         self.decompsition = series_decomp(kernel_size)
         self.linear_seasonal = models[0]
         self.linear_trend = models[1]
