@@ -423,10 +423,10 @@ class SparkRunner:
         if results is None:
             if self.model_creator is not None:
                 local_model = self.model_creator(self.config)
-                if self.model_weights:
-                    local_model = local_model.set_weights(self.model_weights.value)
             else:
                 local_model = tf.keras.models.load_model(self.model_load)
+            if self.model_weights:
+                local_model = local_model.set_weights(self.model_weights.value)
             results = local_model.evaluate(dataset, **params)
 
         if isinstance(results, list):
