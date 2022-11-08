@@ -300,6 +300,8 @@ jobs:
         echo "####### big-data-ml-python-gramine ####"
         echo "########################################"
         export base_image=intelanalytics/bigdl-ppml-trusted-big-data-ml-python-gramine-base
+        cd ppml/trusted-big-data-ml/python/docker-gramine/bigdl-gramine
+        openssl genrsa -3 -out enclave-key.pem 3072
         ### error log level + 16G sgx mem size
         export image=intelanalytics/bigdl-ppml-trusted-big-data-ml-python-gramine-noattest-16g
         sudo docker build \
@@ -315,8 +317,6 @@ jobs:
         sudo docker rmi -f ${image}:${TAG}
         ### debug log level
         export image=intelanalytics/bigdl-ppml-trusted-big-data-ml-python-gramine-noattest-32g-debug
-        cd ppml/trusted-big-data-ml/python/docker-gramine/bigdl-gramine
-        openssl genrsa -3 -out enclave-key.pem 3072
         sudo docker build \
          --build-arg BASE_IMAGE_NAME=${base_image} \
          --build-arg BASE_IMAGE_TAG=${TAG} \
