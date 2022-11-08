@@ -1,7 +1,7 @@
 Advanced Topic
 ====================
 
-
+* `PPML User Guide <ppml.html>`_
 * `Develop your own Big Data & AI applications with BigDL PPML <devguide.html>`_
 * `Trusted Big Data Analytics and ML <trusted_big_data_analytics_and_ml.html>`_
 * `Trusted FL (Federated Learning) <trusted_fl.html>`_

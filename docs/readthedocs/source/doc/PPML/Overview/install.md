@@ -9,7 +9,7 @@
 .. note::
     **Hardware requirements**:
 
-     Intel SGX: PPML's features (except Homomorphic Encryption) are mainly built upon Intel SGX. Intel SGX requires Intel CPU with SGX feature, e.g., IceLake (3rd Xeon Platform). [Check if your CPU has SGX feature](https://www.intel.com/content/www/us/en/support/articles/000028173/processors.html).
+     Intel SGX: PPML's features (except Homomorphic Encryption) are mainly built upon Intel SGX. Intel SGX requires Intel CPU with SGX feature, e.g., IceLake (3rd Xeon Platform). `Check if your CPU has SGX feature <https://www.intel.com/content/www/us/en/support/articles/000028173/processors.html>`_
 ```
 ```eval_rst
 .. note::
@@ -23,7 +23,7 @@
 ```eval_rst
 .. mermaid::
    
-   graphe TD
+   graph TD
       usesgx{Use SGX?} -- Yes --> installsgx(Install SGX Driver for Node)
       usesgx{Use SGX?} -- No --> he(Homomorphic Encryption)
       installsgx --> installaesm(Install AESM for Node)
@@ -51,4 +51,4 @@ Please refer to [Intel® Software Guard Extensions Data Center Attestation Primi
 
 ##### Install Kubernetes SGX Plugin (K8S only)
 
-Please refer to [Deploy the Intel SGX Device Plugin for Kubernetes](Deploy the Intel SGX Device Plugin for Kubernetes).
+Please refer to [Deploy the Intel SGX Device Plugin for Kubernetes](https://bigdl.readthedocs.io/en/latest/doc/PPML/QuickStart/deploy_intel_sgx_device_plugin_for_kubernetes.html).
