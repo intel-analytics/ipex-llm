@@ -59,7 +59,7 @@ do
     while read suite
     do
         export sgx_command="/opt/jdk8/bin/java \
-               -cp '$SPARK_HOME/conf/:$SPARK_HOME/jars/*:$SPARK_HOME/test-jars/*:$SPARK_HOME/examples/jars/*' \
+               -cp $SPARK_HOME/conf/:$SPARK_HOME/jars/*:$SPARK_HOME/test-jars/*:$SPARK_HOME/examples/jars/* \
                -Xmx8g \
                -Dspark.testing=true \
                -Djdk.lang.Process.launchMechanism=posix_spawn \

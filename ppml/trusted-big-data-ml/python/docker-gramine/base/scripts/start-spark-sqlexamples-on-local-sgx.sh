@@ -14,7 +14,7 @@ LOCAL_IP=$LOCAL_IP
 
 if [ $status_2_scala_sql_example -ne 0 ]; then
 export sgx_command="/opt/jdk8/bin/java \
-  -cp '/ppml/trusted-big-data-ml/work/spark-$SPARK_VERSION/conf/:/ppml/trusted-big-data-ml/work/spark-$SPARK_VERSION/jars/*:/ppml/trusted-big-data-ml/work/spark-$SPARK_VERSION/examples/jars/*' \
+  -cp /ppml/trusted-big-data-ml/work/spark-$SPARK_VERSION/conf/:/ppml/trusted-big-data-ml/work/spark-$SPARK_VERSION/jars/*:/ppml/trusted-big-data-ml/work/spark-$SPARK_VERSION/examples/jars/* \
   -Xmx10g \
   -XX:ActiveProcessorCount=24 \
   org.apache.spark.deploy.SparkSubmit \
@@ -28,7 +28,7 @@ status_2_scala_sql_example=$(echo $?)
 if [ $status_3_scala_sql_RDDRelation -ne 0 ]; then
 rm -rf pair.parquet
 export sgx_command="/opt/jdk8/bin/java \
-    -cp '/ppml/trusted-big-data-ml/work/spark-$SPARK_VERSION/conf/:/ppml/trusted-big-data-ml/work/spark-$SPARK_VERSION/jars/*:/ppml/trusted-big-data-ml/work/spark-$SPARK_VERSION/examples/jars/*' \
+    -cp /ppml/trusted-big-data-ml/work/spark-$SPARK_VERSION/conf/:/ppml/trusted-big-data-ml/work/spark-$SPARK_VERSION/jars/*:/ppml/trusted-big-data-ml/work/spark-$SPARK_VERSION/examples/jars/* \
     -Xmx10g \
     -XX:ActiveProcessorCount=24 \
     org.apache.spark.deploy.SparkSubmit \
@@ -42,7 +42,7 @@ status_3_scala_sql_RDDRelation=$(echo $?)
 if [ $status_4_scala_sql_SimpleTypedAggregator -ne 0 ]; then
 rm -rf pair.parquet
 export sgx_command="/opt/jdk8/bin/java \
-  -cp '/ppml/trusted-big-data-ml/work/spark-$SPARK_VERSION/conf/:/ppml/trusted-big-data-ml/work/spark-$SPARK_VERSION/jars/*:/ppml/trusted-big-data-ml/work/spark-$SPARK_VERSION/examples/jars/*' \
+  -cp /ppml/trusted-big-data-ml/work/spark-$SPARK_VERSION/conf/:/ppml/trusted-big-data-ml/work/spark-$SPARK_VERSION/jars/*:/ppml/trusted-big-data-ml/work/spark-$SPARK_VERSION/examples/jars/* \
   -Xmx10g \
   -XX:ActiveProcessorCount=24 \
   org.apache.spark.deploy.SparkSubmit \
@@ -56,7 +56,7 @@ status_4_scala_sql_SimpleTypedAggregator=$(echo $?)
 if [ $status_5_scala_sql_UserDefinedScalar -ne 0 ]; then
 rm -rf pair.parquet
 export sgx_command="/opt/jdk8/bin/java \
-  -cp '/ppml/trusted-big-data-ml/work/spark-$SPARK_VERSION/conf/:/ppml/trusted-big-data-ml/work/spark-$SPARK_VERSION/jars/*:/ppml/trusted-big-data-ml/work/spark-$SPARK_VERSION/examples/jars/*' \
+  -cp /ppml/trusted-big-data-ml/work/spark-$SPARK_VERSION/conf/:/ppml/trusted-big-data-ml/work/spark-$SPARK_VERSION/jars/*:/ppml/trusted-big-data-ml/work/spark-$SPARK_VERSION/examples/jars/* \
   -Xmx10g \
   -XX:ActiveProcessorCount=24 \
   org.apache.spark.deploy.SparkSubmit \
@@ -70,7 +70,7 @@ status_5_scala_sql_UserDefinedScalar=$(echo $?)
 if [ $status_6_scala_sql_UserDefinedTypedAggregation -ne 0 ]; then
 rm -rf pair.parquet
 export sgx_command="/opt/jdk8/bin/java \
-  -cp '/ppml/trusted-big-data-ml/work/spark-$SPARK_VERSION/conf/:/ppml/trusted-big-data-ml/work/spark-$SPARK_VERSION/jars/*:/ppml/trusted-big-data-ml/work/spark-$SPARK_VERSION/examples/jars/*' \
+  -cp /ppml/trusted-big-data-ml/work/spark-$SPARK_VERSION/conf/:/ppml/trusted-big-data-ml/work/spark-$SPARK_VERSION/jars/*:/ppml/trusted-big-data-ml/work/spark-$SPARK_VERSION/examples/jars/* \
   -Xmx10g \
   -XX:ActiveProcessorCount=24 \
   org.apache.spark.deploy.SparkSubmit \
@@ -83,7 +83,7 @@ status_6_scala_sql_UserDefinedTypedAggregation=$(echo $?)
 
 if [ $status_7_scala_sql_UserDefinedUntypedAggregation -ne 0 ]; then
 export sgx_command="/opt/jdk8/bin/java \
-  -cp '/ppml/trusted-big-data-ml/work/spark-$SPARK_VERSION/conf/:/ppml/trusted-big-data-ml/work/spark-$SPARK_VERSION/jars/*:/ppml/trusted-big-data-ml/work/spark-$SPARK_VERSION/examples/jars/*' \
+  -cp /ppml/trusted-big-data-ml/work/spark-$SPARK_VERSION/conf/:/ppml/trusted-big-data-ml/work/spark-$SPARK_VERSION/jars/*:/ppml/trusted-big-data-ml/work/spark-$SPARK_VERSION/examples/jars/* \
   -Xmx10g \
   -XX:ActiveProcessorCount=24 \
   org.apache.spark.deploy.SparkSubmit \
@@ -101,11 +101,11 @@ status_7_scala_sql_UserDefinedUntypedAggregation=$(echo $?)
 #gramine-argv-serializer bash -c "
 #    rm -rf pair.parquet && \
 #    /opt/jdk8/bin/java \
-#        -cp '/ppml/trusted-big-data-ml/work/spark-$SPARK_VERSION/conf/:/ppml/trusted-big-data-ml/work/spark-$SPARK_VERSION/jars/*' \
+#        -cp /ppml/trusted-big-data-ml/work/spark-$SPARK_VERSION/conf/:/ppml/trusted-big-data-ml/work/spark-$SPARK_VERSION/jars/* \
 #        -Xmx10g \
 #        -XX:ActiveProcessorCount=24 \
 #        org.apache.spark.deploy.SparkSubmit \
-#        --master 'local[4]' \
+#        --master local[4] \
 #        --conf spark.driver.port=10027 \
 #        --conf spark.scheduler.maxRegisteredResourcesWaitingTime=5000000 \
 #        --conf spark.worker.timeout=600 \
