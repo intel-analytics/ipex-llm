@@ -96,7 +96,6 @@ jobs:
         pip install tensorflow==1.15.0
         pip install sklearn
         pip install pandas
-        pip install jep==3.9.0
         pip install cloudpickle
         pip install -i ${PIP_MIRROR} --trusted-host ${TRUSTED_HOST} -r .github/actions/python-requirements/requirements-orca-python-ray.txt 
         export SPARK_LOCAL_HOSTNAME=localhost

@@ -95,6 +95,7 @@ class Estimator(object):
                                        sync_stats=sync_stats,
                                        log_level=log_level)
         elif backend == "bigdl":
+            # TODO(remove jep)
             from bigdl.orca.learn.pytorch.pytorch_spark_estimator import PyTorchSparkEstimator
             return PyTorchSparkEstimator(model=model,
                                          loss=loss,

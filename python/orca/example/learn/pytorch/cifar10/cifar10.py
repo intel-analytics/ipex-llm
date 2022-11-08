@@ -166,6 +166,7 @@ imshow(torchvision.utils.make_grid(images), one_channel=False)
 print('GroundTruth: ', ' '.join('%5s' % classes[labels[j]] for j in range(batch_size)))
 
 if args.backend == "bigdl":
+    # TODO(remove jep)
     net = model_creator(config={})
     optimizer = optim_creator(model=net, config={"lr": 0.001})
     orca_estimator = Estimator.from_torch(model=net,
