@@ -26,7 +26,7 @@ runs:
           echo "################## start spark pi"
           echo "example.1 spark pi"
           bash run_spark_pi.sh
-          if [ "`kubectl get pods | grep spark-pi | awk '{print $1}'`" != "" ]; then
+          if [ "`kubectl get pods | grep spark-pi-test | awk '{print $1}'`" != "" ]; then
             kubectl delete pods `kubectl get pods | grep spark-pi | awk '{print $1}'`
           fi
           status_1_spark_pi=$(echo $?)
@@ -36,7 +36,7 @@ runs:
           echo "################## start spark lr"
           echo "example.2 spark lr"
           bash run_spark_lr.sh
-          if [ "`kubectl get pods | grep sparklr | awk '{print $1}'`" != "" ]; then
+          if [ "`kubectl get pods | grep sparklr-test | awk '{print $1}'`" != "" ]; then
             kubectl delete pods `kubectl get pods | grep sparklr | awk '{print $1}'`
           fi
           status_2_spark_lr=$(echo $?)
@@ -59,10 +59,7 @@ runs:
           echo "################## start spark gbt"
           echo "example.4 spark gbt"
           bash run_spark_gbt.sh
-          if [ "`kubectl get pods | grep sparkgbt | awk '{print $1}'`" != "" ]; then
-            kubectl delete pods `kubectl get pods | grep sparkgbt | awk '{print $1}'`
-          fi
-          if [ "`kubectl get pods | grep spark-gbt-example | awk '{print $1}'`" != "" ]; then
+          if [ "`kubectl get pods | grep spark-gbt-example-test | awk '{print $1}'`" != "" ]; then
             kubectl delete pods `kubectl get pods | grep spark-gbt-example | awk '{print $1}'`
           fi
           status_4_spark_gbt=$(echo $?)
