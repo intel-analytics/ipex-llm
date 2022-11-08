@@ -19,6 +19,8 @@ runs:
         status_2_spark_lr=1
         status_3_spark_sql=0
         status_4_spark_gbt=1
+        status_5_spark_gbt_criteo=1
+        status_6_spark_tpch=1
 
         if [ $status_1_spark_pi -ne 0 ]; then
           echo "################## start spark pi"
