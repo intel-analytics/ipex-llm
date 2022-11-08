@@ -2,8 +2,8 @@ name: Nightly Test
 
 on:
 
-  pull_request:
-    branchs: [ main ]
+  # pull_request:
+  #   branchs: [ main ]
 
   schedule:
     - cron: '0 13 * * *' # GMT time, 13:00 GMT == 21:00 China
@@ -778,7 +778,7 @@ jobs:
         job-name: PPML-spark-Local-SimpleQuery-Tests-on-Gramine
         runner-hosted-on: 'Shanghai'
   Colab-Python-Py37-Pytorch:
-    # if: ${{ github.event.schedule || github.event.inputs.artifact == 'Colab-Python-Py37-Pytorch' || github.event.inputs.artifact == 'all' }}
+    if: ${{ github.event.schedule || github.event.inputs.artifact == 'Colab-Python-Py37-Pytorch' || github.event.inputs.artifact == 'all' }}
     runs-on: [ self-hosted, Gondolin, ubuntu-20.04-lts ]
 
     steps:
@@ -807,7 +807,7 @@ jobs:
         runner-hosted-on: 'Shanghai'
 
   Colab-Python-Py37-tf1:
-    # if: ${{ github.event.schedule || github.event.inputs.artifact == 'Colab-Python-Py37-tf1' || github.event.inputs.artifact == 'all' }}
+    if: ${{ github.event.schedule || github.event.inputs.artifact == 'Colab-Python-Py37-tf1' || github.event.inputs.artifact == 'all' }}
     runs-on: [ self-hosted, Gondolin, ubuntu-20.04-lts ]
 
     steps:
@@ -836,7 +836,7 @@ jobs:
         runner-hosted-on: 'Shanghai'
 
   Colab-Python-Py37-tf2:
-    # if: ${{ github.event.schedule || github.event.inputs.artifact == 'Colab-Python-Py37-tf2' || github.event.inputs.artifact == 'all' }}
+    if: ${{ github.event.schedule || github.event.inputs.artifact == 'Colab-Python-Py37-tf2' || github.event.inputs.artifact == 'all' }}
     runs-on: [ self-hosted, Gondolin, ubuntu-20.04-lts ]
 
     steps:
@@ -894,7 +894,7 @@ jobs:
         runner-hosted-on: 'Shanghai'
 
   Python-AppTests-part2:
-    # if: ${{ github.event.schedule || github.event.inputs.artifact == 'Python-AppTests-part2' || github.event.inputs.artifact == 'all' }}
+    if: ${{ github.event.schedule || github.event.inputs.artifact == 'Python-AppTests-part2' || github.event.inputs.artifact == 'all' }}
     runs-on: [ self-hosted, Gondolin, ubuntu-20.04-lts ]
 
     steps:
