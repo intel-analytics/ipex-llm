@@ -1,6 +1,6 @@
 # Install Chronos on Windows
 
-There are 2 ways to install Chronos on Windows: install using WSL2 and install on native Windows. With WSL2, all the feaatures of Chronos are available, while on native Windows, there are some limitations now.
+There are 2 ways to install Chronos on Windows: install using WSL2 and install on native Windows. With WSL2, all the features of Chronos are available, while on native Windows, there are some limitations now.
 
 ## Install using WSL2
 ### Step 1: Install WSL2

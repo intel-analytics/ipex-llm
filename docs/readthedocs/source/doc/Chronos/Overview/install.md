@@ -11,7 +11,7 @@
 
      Chronos is thoroughly tested on Ubuntu (16.04/18.04/20.04), and should works fine on CentOS. If you are a Windows user, there are 2 ways to use Chronos:
      
-     1. You could use Chronos on a windows laptop with WSL2, you may refer to https://docs.microsoft.com/en-us/windows/wsl/setup/environment or just install a ubuntu virtual machine.
+     1. You could use Chronos on a windows laptop with WSL2 (you may refer to https://docs.microsoft.com/en-us/windows/wsl/setup/environment) or just install a ubuntu virtual machine.
 
      2. You could use Chronos on native Windows, but some features are unavailable in this case, the limitations will be shown below.
 ```
@@ -130,4 +130,4 @@ Chronos can be simply installed using pip on native Windows, you could use the s
 
 2. `intel_extension_for_pytorch (ipex)` is unavailable for Windows now, so the related feature is not supported.
 
-For some known issues when installing and using Chronos on native Windows, you could refer to the [windows_guide](https://bigdl.readthedocs.io/en/latest/doc/Chronos/Howto/windows_guide.html).
+For some known issues when installing and using Chronos on native Windows, you could refer to [windows_guide](https://bigdl.readthedocs.io/en/latest/doc/Chronos/Howto/windows_guide.html).
