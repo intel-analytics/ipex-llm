@@ -8,6 +8,11 @@
 
 name: Orca Tutorial Xshards
 
+# Cancel previous runs in the PR when you push new commits
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.run_id }}
+  cancel-in-progress: true
+  
 on:
   #release:
    # types: [published]
@@ -93,7 +98,7 @@ jobs:
         pip install pandas
         pip install jep==3.9.0
         pip install cloudpickle
-        pip install -i https://pypi.tuna.tsinghua.edu.cn/simple -r python/orca/dev/example/requirements-ray.txt 
+        pip install -i ${PIP_MIRROR} --trusted-host ${TRUSTED_HOST} -r .github/actions/python-requirements/requirements-orca-python-ray.txt 
         export SPARK_LOCAL_HOSTNAME=localhost
         export FTP_URI=${FTP_URI}
         chmod a+x python/orca/dev/test/run-tutorial-xshards.sh

@@ -147,8 +147,7 @@ flowchart TD;
 
   </details>  
   
-  *See RayOnSpark [user guide](https://bigdl.readthedocs.io/en/latest/doc/Ray/Overview/ray.html) and [quickstart](https://bigdl.readthedocs.io/en/latest/doc/Ray/QuickStart/ray-quickstart.html) for more details.*
-
+  *See RayOnSpark [user guide](https://bigdl.readthedocs.io/en/latest/doc/Orca/Overview/ray.html) and [quickstart](https://bigdl.readthedocs.io/en/latest/doc/Orca/QuickStart/ray-quickstart.html) for more details.*
 ### Nano
 You can transparently accelerate your TensorFlow or PyTorch programs on your laptop or server using *Nano*. With minimum code changes, *Nano* automatically applies modern CPU optimizations (e.g., SIMD,  multiprocessing, low precision, etc.) to standard TensorFlow and PyTorch code, with up-to 10x speedup.
 
@@ -361,7 +360,7 @@ pred = tsppl.predict(tsdata_test)
 
 </details>  
 
-*See Chronos [user guide](https://bigdl.readthedocs.io/en/latest/doc/Chronos/Overview/chronos.html) and [quick start](https://bigdl.readthedocs.io/en/latest/doc/Chronos/QuickStart/chronos-autotsest-quickstart.html) for more details.*
+*See Chronos [user guide](https://bigdl.readthedocs.io/en/latest/doc/Chronos/index.html) and [quick start](https://bigdl.readthedocs.io/en/latest/doc/Chronos/QuickStart/chronos-autotsest-quickstart.html) for more details.*
 
 ### Friesian
 The *Chronos* library makes it easy to build end-to-end, large-scale **recommedation system** (including *offline* feature transformation and traning, *near-line* feature and model update, and *online* serving pipeline). 

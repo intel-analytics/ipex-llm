@@ -26,6 +26,10 @@ from copy import deepcopy
 from typing import Dict, Callable, Tuple, Optional, List, Set, Union
 from torch.utils.data import DataLoader
 from torchmetrics.metric import Metric
+from bigdl.nano.utils.inference.common.checker import available_acceleration_combination
+from bigdl.nano.utils.inference.common.utils import AccelerationOption,\
+    throughput_calculate_helper, format_optimize_result
+from bigdl.nano.utils.inference.common.base_optimizer import BaseInferenceOptimizer
 from bigdl.nano.utils.log4Error import invalidInputError, invalidOperationError
 from bigdl.nano.pytorch.amp import BF16Model
 from bigdl.nano.deps.openvino.openvino_api import PytorchOpenVINOModel
@@ -48,75 +52,29 @@ import os
 os.environ['LOGLEVEL'] = 'ERROR'  # remove parital output of inc
 
 
-_whole_acceleration_options = ["inc", "ipex", "onnxruntime", "openvino", "pot",
-                               "bf16", "jit", "channels_last"]
+class InferenceOptimizer(BaseInferenceOptimizer):
 
-CompareMetric = namedtuple("CompareMetric", ["method_name", "latency", "accuracy"])
-
-
-class AccelerationOption(object):
-    __slot__ = _whole_acceleration_options
-
-    def __init__(self, *args, **kwargs):
-        '''
-        initialize optimization option
-        '''
-        for option in _whole_acceleration_options:
-            setattr(self, option, kwargs.get(option, False))
-        self.method = kwargs.get("method", None)
-
-    def get_precision(self):
-        if self.inc or self.pot:
-            return "int8"
-        if self.bf16:
-            return "bf16"
-        return "fp32"
-
-    def get_accelerator(self):
-        if self.onnxruntime:
-            return "onnxruntime"
-        if self.openvino:
-            return "openvino"
-        if self.jit:
-            return "jit"
-        return None
-
-
-# acceleration method combinations, developers may want to register some new
-# combinations here
-ALL_INFERENCE_ACCELERATION_METHOD = \
-    {
-        "original": AccelerationOption(),
-        "fp32_ipex": AccelerationOption(ipex=True),
-        "bf16": AccelerationOption(bf16=True),
-        "bf16_ipex": AccelerationOption(bf16=True, ipex=True),
-        "int8": AccelerationOption(inc=True),
-        "jit_fp32": AccelerationOption(jit=True),
-        "jit_fp32_ipex": AccelerationOption(jit=True, ipex=True),
-        "jit_fp32_ipex_channels_last": AccelerationOption(jit=True, ipex=True,
-                                                          channels_last=True),
-        "openvino_fp32": AccelerationOption(openvino=True),
-        "openvino_int8": AccelerationOption(openvino=True, pot=True),
-        "onnxruntime_fp32": AccelerationOption(onnxruntime=True),
-        "onnxruntime_int8_qlinear": AccelerationOption(onnxruntime=True, inc=True,
-                                                       method="qlinear"),
-        "onnxruntime_int8_integer": AccelerationOption(onnxruntime=True, inc=True,
-                                                       method="integer"),
-    }
-
-
-class InferenceOptimizer:
-
-    def __init__(self):
-        '''
-        InferenceOptimizer for Pytorch Model.
-
-        It can be used to accelerate inference pipeline with very few code changes.
-        '''
-        # optimized_model_dict handles the optimized model and some metadata
-        # in {"method_name": {"latency": ..., "accuracy": ..., "model": ...}}
-        self.optimized_model_dict = {}
-        self._optimize_result = None
+    # acceleration method combinations, developers may want to register some new
+    # combinations here
+    ALL_INFERENCE_ACCELERATION_METHOD = \
+        {
+            "original": AccelerationOption(),
+            "fp32_ipex": AccelerationOption(ipex=True),
+            "bf16": AccelerationOption(bf16=True),
+            "bf16_ipex": AccelerationOption(bf16=True, ipex=True),
+            "int8": AccelerationOption(inc=True),
+            "jit_fp32": AccelerationOption(jit=True),
+            "jit_fp32_ipex": AccelerationOption(jit=True, ipex=True),
+            "jit_fp32_ipex_channels_last": AccelerationOption(jit=True, ipex=True,
+                                                              channels_last=True),
+            "openvino_fp32": AccelerationOption(openvino=True),
+            "openvino_int8": AccelerationOption(openvino=True, pot=True),
+            "onnxruntime_fp32": AccelerationOption(onnxruntime=True),
+            "onnxruntime_int8_qlinear": AccelerationOption(onnxruntime=True, inc=True,
+                                                           method="qlinear"),
+            "onnxruntime_int8_integer": AccelerationOption(onnxruntime=True, inc=True,
+                                                           method="integer"),
+        }
 
     def optimize(self, model: nn.Module,
                  training_data: DataLoader,
@@ -187,8 +145,10 @@ class InferenceOptimizer:
                           "Only support direction 'min', 'max'.")
 
         # get the available methods whose dep is met
-        available_dict: Dict = _available_acceleration_combination(excludes=excludes,
-                                                                   includes=includes)
+        available_dict: Dict =\
+            available_acceleration_combination(excludes=excludes,
+                                               includes=includes,
+                                               full_methods=self.ALL_INFERENCE_ACCELERATION_METHOD)
 
         self._direction: str = direction  # save direction as attr
         # record whether calculate accuracy in optimize by this attr
@@ -232,8 +192,8 @@ class InferenceOptimizer:
                 result_map[method]["status"] = "lack dependency"
             else:
                 print(f"----------Start test {method} model "
-                      f"({idx+1}/{len(ALL_INFERENCE_ACCELERATION_METHOD)})----------")
-                option: AccelerationOption = ALL_INFERENCE_ACCELERATION_METHOD[method]
+                      f"({idx+1}/{len(self.ALL_INFERENCE_ACCELERATION_METHOD)})----------")
+                option: AccelerationOption = self.ALL_INFERENCE_ACCELERATION_METHOD[method]
                 use_ipex: bool = option.ipex
                 use_channels_last: bool = option.channels_last
                 accelerator: str = option.get_accelerator()
@@ -300,8 +260,8 @@ class InferenceOptimizer:
                 torch.set_num_threads(thread_num)
                 try:
                     result_map[method]["latency"], status =\
-                        _throughput_calculate_helper(latency_sample_num, baseline_time,
-                                                     func_test, acce_model, input_sample)
+                        throughput_calculate_helper(latency_sample_num, baseline_time,
+                                                    func_test, acce_model, input_sample)
                     if status is False and method != "original":
                         result_map[method]["status"] = "early stopped"
                         torch.set_num_threads(default_threads)
@@ -348,132 +308,19 @@ class InferenceOptimizer:
 
                 result_map[method]["model"] = acce_model
                 print(f"----------Finish test {method} model "
-                      f"({idx+1}/{len(ALL_INFERENCE_ACCELERATION_METHOD)})----------")
+                      f"({idx+1}/{len(self.ALL_INFERENCE_ACCELERATION_METHOD)})----------")
 
         self.optimized_model_dict: Dict = result_map
         print("\n\n==========================Optimization Results==========================")
 
-        self._optimize_result = _format_optimize_result(self.optimized_model_dict,
-                                                        self._calculate_accuracy)
+        self._optimize_result = format_optimize_result(self.optimized_model_dict,
+                                                       self._calculate_accuracy)
         # save time cost to self._optimize_result
         time_cost = time.perf_counter() - start_time
         time_cost_str = f"Optimization cost {time_cost:.1f}s in total."
         self._optimize_result += time_cost_str
         print(self._optimize_result)
         print("===========================Stop Optimization===========================")
-
-    def summary(self):
-        '''
-        Print format string representation for optimization result.
-        '''
-        invalidOperationError(len(self.optimized_model_dict) > 0,
-                              "There is no optimization result. You should call .optimize() "
-                              "before summary()")
-        print(self._optimize_result)
-
-    def get_model(self, method_name: str):
-        """
-        According to results of `optimize`, obtain the model with method_name.
-
-        The available methods are "original", "fp32_ipex", "bf16", "bf16_ipex","int8",
-        "jit_fp32", "jit_fp32_ipex", "jit_fp32_ipex_channels_last", "openvino_fp32",
-        "openvino_int8", "onnxruntime_fp32", "onnxruntime_int8_qlinear"
-        and "onnxruntime_int8_integer".
-
-        :param method_name: (optional) Obtain specific model according to method_name.
-        :return: Model with different acceleration.
-        """
-        invalidOperationError(len(self.optimized_model_dict) > 0,
-                              "There is no optimized model. You should call .optimize() "
-                              "before get_model()")
-        invalidInputError(method_name in ALL_INFERENCE_ACCELERATION_METHOD.keys(),
-                          f"The model name you passed does not exist in the existing method "
-                          f"list{list(ALL_INFERENCE_ACCELERATION_METHOD.keys())}, please re-enter "
-                          f"the model name again.")
-        invalidInputError("model" in self.optimized_model_dict[method_name],
-                          "Unable to get the specified model as it doesn't exist in "
-                          "optimized_model_dict.")
-        return self.optimized_model_dict[method_name]["model"]
-
-    def get_best_model(self,
-                       accelerator: Optional[str] = None,
-                       precision: Optional[str] = None,
-                       use_ipex: Optional[bool] = None,
-                       accuracy_criterion: Optional[float] = None) -> Tuple[nn.Module, str]:
-        '''
-        According to results of `optimize`, obtain the model with minimum latency under
-        specific restrictions or without restrictions.
-
-        :param accelerator: (optional) Use accelerator 'None', 'onnxruntime',
-               'openvino', 'jit', defaults to None. If not None, then will only find the
-               model with this specific accelerator.
-        :param precision: (optional) Supported type: 'int8', 'bf16', and 'fp32'.
-               Defaults to None which represents no precision limit. If not None, then will
-               only find the model with this specific precision.
-        :param use_ipex: (optional) if not None, then will only find the
-               model with this specific ipex setting.
-        :param accuracy_criterion: (optional) a float represents tolerable
-               accuracy drop percentage, defaults to None meaning no accuracy control.
-        :return: best model, corresponding acceleration option
-        '''
-        invalidOperationError(len(self.optimized_model_dict) > 0,
-                              "There is no optimized model. You should call .optimize() "
-                              "before get_best_model()")
-        invalidInputError(accelerator in [None, 'onnxruntime', 'openvino', 'jit'],
-                          "Only support accelerator 'onnxruntime', 'openvino' and 'jit'.")
-        # TODO: include fp16?
-        invalidInputError(precision in [None, 'int8', 'bf16', 'fp32'],
-                          "Only support precision 'int8', 'bf16', 'fp32'.")
-        if accuracy_criterion is not None and not self._calculate_accuracy:
-            invalidInputError(False, "If you want to specify accuracy_criterion, you need "
-                              "to set metric and validation_data when call 'optimize'.")
-
-        best_model = self.optimized_model_dict["original"]["model"]
-        best_metric = CompareMetric("original",
-                                    self.optimized_model_dict["original"]["latency"],
-                                    self.optimized_model_dict["original"]["accuracy"])
-
-        for method in self.optimized_model_dict.keys():
-            if method == "original" or self.optimized_model_dict[method]["status"] != "successful":
-                continue
-            option: AccelerationOption = ALL_INFERENCE_ACCELERATION_METHOD[method]
-            result: Dict = self.optimized_model_dict[method]
-            if accelerator is not None:
-                if not getattr(option, accelerator):
-                    continue
-            if precision is not None:
-                if precision == 'bf16' and not option.bf16:
-                    continue
-                if precision == 'int8' and not (option.inc or option.pot):
-                    continue
-                if precision == 'fp32' and option.get_precision() != 'fp32':
-                    continue
-            if use_ipex:
-                if not option.ipex:
-                    continue
-
-            if accuracy_criterion is not None:
-                accuracy = result["accuracy"]
-                compare_acc: float = best_metric.accuracy
-                if accuracy == "not recomputed":
-                    pass
-                elif self._direction == "min":
-                    if (accuracy - compare_acc) / compare_acc > accuracy_criterion:
-                        continue
-                else:
-                    if (compare_acc - accuracy) / compare_acc > accuracy_criterion:
-                        continue
-
-            # After the above conditions are met, the latency comparison is performed
-            if result["latency"] < best_metric.latency:
-                best_model = result["model"]
-                if result["accuracy"] != "not recomputed":
-                    accuracy = result["accuracy"]
-                else:
-                    accuracy = self.optimized_model_dict["original"]["accuracy"]
-                best_metric = CompareMetric(method, result["latency"], accuracy)
-
-        return best_model, _format_acceleration_option(best_metric.method_name)
 
     @staticmethod
     def quantize(model: nn.Module,
@@ -659,7 +506,7 @@ class InferenceOptimizer:
                     # "n_requests": None,
                     "sample_size": sample_size
                 }
-                return model.pot(calib_dataloader, **kwargs)
+                return model.pot(calib_dataloader, thread_num=thread_num, **kwargs)
             else:
                 invalidInputError(False,
                                   "Accelerator {} is invalid.".format(accelerator))
@@ -758,110 +605,6 @@ class InferenceOptimizer:
         return load_model(path, model)
 
 
-def _inc_checker():
-    '''
-    check if intel neural compressor is installed
-    '''
-    return not find_spec("neural_compressor") is None
-
-
-def _ipex_checker():
-    '''
-    check if intel pytorch extension is installed
-    '''
-    return not find_spec("intel_extension_for_pytorch") is None
-
-
-def _onnxruntime_checker():
-    '''
-    check if onnxruntime and onnx is installed
-    '''
-    onnxruntime_installed = not find_spec("onnxruntime") is None
-    onnx_installed = not find_spec("onnx") is None
-    return onnxruntime_installed and onnx_installed
-
-
-def _openvino_checker():
-    '''
-    check if openvino-dev is installed
-    '''
-    return not find_spec("openvino") is None
-
-
-def _bf16_checker():
-    '''
-    bf16 availablity will be decided dynamically during the optimization
-    '''
-    msg = subprocess.check_output(["lscpu"]).decode("utf-8")
-    return "avx512_bf16" in msg or "amx_bf16" in msg
-
-
-def _available_acceleration_combination(excludes: Optional[List[str]],
-                                        includes: Optional[List[str]]):
-    '''
-    :return: a dictionary states the availablity (if meet depdencies)
-    '''
-    dependency_checker = {"inc": _inc_checker,
-                          "ipex": _ipex_checker,
-                          "onnxruntime": _onnxruntime_checker,
-                          "openvino": _openvino_checker,
-                          "pot": _openvino_checker,
-                          "bf16": _bf16_checker}
-    if excludes is None:
-        exclude_set: Set[str] = set()
-    else:
-        exclude_set: Set[str] = set(excludes)
-        exclude_set.discard("original")
-
-    if includes is None:
-        include_set: Set[str] = set(ALL_INFERENCE_ACCELERATION_METHOD.keys())
-    else:
-        include_set: Set[str] = set(includes)
-        include_set.add("original")
-
-    available_dict = {}
-    for method, option in ALL_INFERENCE_ACCELERATION_METHOD.items():
-        if method not in include_set:
-            continue
-
-        if method in exclude_set:
-            continue
-
-        available_iter = True
-        for name, value in option.__dict__.items():
-            if value is True:
-                if name in dependency_checker and not dependency_checker[name]():
-                    available_iter = False
-        available_dict[method] = available_iter
-    return available_dict
-
-
-def _throughput_calculate_helper(iterrun, baseline_time, func, *args):
-    '''
-    A simple helper to calculate average latency
-    '''
-    start_time = time.perf_counter()
-    time_list = []
-    for i in range(iterrun):
-        st = time.perf_counter()
-        func(*args)
-        end = time.perf_counter()
-        time_list.append(end - st)
-        # don't use total three samples as jit may be very slow at first two calls.
-        # if the min time cost more than 4x time than baseline model, then prune it
-        if i == 2 and min(time_list) > 4 * baseline_time:
-            return np.mean(time_list) * 1000, False
-        # at least need 10 iters and try to control calculation
-        # time less than 10s
-        if i + 1 >= min(iterrun, 10) and (end - start_time) > 10:
-            iterrun = i + 1
-            break
-    time_list.sort()
-    # remove top and least 10% data
-    time_list = time_list[int(0.1 * iterrun): int(0.9 * iterrun)]
-    return np.mean(time_list) * 1000, True
-
-
 def _signature_check(function):
     '''
     A quick helper to judge whether input function is following this calling
@@ -894,64 +637,3 @@ def _accuracy_calculate_helper(model, metric, data):
             return metric(model)
         else:
             return metric(model, data)
-
-
-def _format_acceleration_option(method_name: str) -> str:
-    '''
-    Get a string represation for current method's acceleration option
-    '''
-    option = ALL_INFERENCE_ACCELERATION_METHOD[method_name]
-    repr_str = ""
-    for key, value in option.__dict__.items():
-        if value is True:
-            if key == "pot":
-                repr_str = repr_str + "int8" + " + "
-            else:
-                repr_str = repr_str + key + " + "
-        elif isinstance(value, str):
-            repr_str = repr_str + value + " + "
-    if len(repr_str) > 0:
-        repr_str = repr_str[:-2]
-    return repr_str
-
-
-def _format_optimize_result(optimize_result_dict: dict,
-                            calculate_accuracy: bool) -> str:
-    '''
-    Get a format string represation for optimization result
-    '''
-    if calculate_accuracy is True:
-        horizontal_line = " {0} {1} {2} {3}\n" \
-            .format("-" * 32, "-" * 22, "-" * 14, "-" * 22)
-        repr_str = horizontal_line
-        repr_str += "| {0:^30} | {1:^20} | {2:^12} | {3:^20} |\n" \
-            .format("method", "status", "latency(ms)", "accuracy")
-        repr_str += horizontal_line
-        for method, result in optimize_result_dict.items():
-            status = result["status"]
-            latency = result.get("latency", "None")
-            if latency != "None":
-                latency = round(latency, 3)
-            accuracy = result.get("accuracy", "None")
-            if accuracy != "None" and isinstance(accuracy, float):
-                accuracy = round(accuracy, 3)
-            method_str = f"| {method:^30} | {status:^20} | " \
-                         f"{latency:^12} | {accuracy:^20} |\n"
-            repr_str += method_str
-        repr_str += horizontal_line
-    else:
-        horizontal_line = " {0} {1} {2}\n" \
-            .format("-" * 32, "-" * 22, "-" * 14)
-        repr_str = horizontal_line
-        repr_str += "| {0:^30} | {1:^20} | {2:^12} |\n" \
-            .format("method", "status", "latency(ms)")
-        repr_str += horizontal_line
-        for method, result in optimize_result_dict.items():
-            status = result["status"]
-            latency = result.get("latency", "None")
-            if latency != "None":
-                latency = round(latency, 3)
-            method_str = f"| {method:^30} | {status:^20} | {latency:^12} |\n"
-            repr_str += method_str
-        repr_str += horizontal_line
-    return repr_str

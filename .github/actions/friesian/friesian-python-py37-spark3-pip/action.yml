@@ -19,7 +19,7 @@ runs:
 
         source activate py37
         export SPARK_LOCAL_HOSTNAME=localhost
-        pip install pyspark==3.1.3 pytest
+        pip install pyspark==3.1.3 wheel
         # install dllib
         pip install -i https://pypi.org/simple python/dllib/src/dist/bigdl_dllib_spark3-*-py3-none-manylinux1_x86_64.whl
         # install orca

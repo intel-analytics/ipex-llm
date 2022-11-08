@@ -220,6 +220,12 @@ class MyNanoAutoLRCorrectness(TorchNano):
                     cur_lr_ratio = (max_lr_ratio - 1.0) * cur_step / max_step + 1
 
 
+class MyNanoCUDA(TorchNano):
+    def train(self):
+        t = torch.tensor([0], device='cuda:0')
+        assert t.device.type == "cpu"
+
+
 class TestLite(TestCase):
     def setUp(self):
         test_dir = os.path.dirname(__file__)
@@ -266,6 +272,19 @@ class TestLite(TestCase):
 
     def test_torch_nano_auto_lr(self):
         MyNanoAutoLRCorrectness(num_processes=2, distributed_backend='spawn', auto_lr=True).train(0.01)
+
+    def test_torch_nano_cuda_patch_spawn(self):
+        from bigdl.nano.pytorch import patch_torch, unpatch_torch
+        patch_torch(cuda_to_cpu=True)
+        MyNanoCUDA(num_processes=2, distributed_backend='spawn').train()
+        unpatch_torch()
+
+    def test_torch_nano_cuda_patch_subprocess(self):
+        from bigdl.nano.pytorch import patch_torch, unpatch_torch
+        patch_torch(cuda_to_cpu=True)
+        MyNanoCUDA(num_processes=2, distributed_backend='subprocess').train()
+        unpatch_torch()
+
 
 if __name__ == '__main__':
     pytest.main([__file__])

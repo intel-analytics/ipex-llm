@@ -1,22 +1,11 @@
 name: PR Validation
 
+# Cancel previous runs in the PR when you push new commits
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.run_id }}
+  cancel-in-progress: true
+
 on:
-  push:
-    paths:
-      - 'scala/friesian/**'
-      - '.github/actions/friesian-scala-ut-action/action.yml'
-      - 'scala/dllib/**'
-      - '.github/actions/dllib-scala-ut-action/action.yml'
-      - 'scala/ppml/**'
-      - '.github/actions/ppml-scala-ut-action/action.yml'
-      - 'python/orca/**'
-      - '.github/actions/orca-ray-ctx-example-action/action.yml'
-      - '.github/actions/orca/**'
-      - 'python/ppml/**'
-      - '.github/actions/ppml/**'
-      - 'python/friesian/**'
-      - '.github/actions/friesian/**'
-      - '.github/workflows/PR_validation.yml'
       
   pull_request:
     branches: [ main ]
@@ -35,6 +24,7 @@ on:
       - 'python/friesian/**'
       - '.github/actions/friesian/**'
       - '.github/workflows/PR_validation.yml'
+      - '.github/actions/python-requirements/**'
 
 
 permissions:
@@ -61,18 +51,22 @@ jobs:
               - '.github/actions/friesian-scala-ut-action/action.yml'
               - 'python/friesian/**'
               - '.github/actions/friesian/**'
+              - '.github/actions/python-requirements/**'
             dllib:
               - 'scala/dllib/**'
               - '.github/actions/dllib-scala-ut-action/action.yml'
+              - '.github/actions/python-requirements/**'
             ppml:
               - 'scala/ppml/**'
               - '.github/actions/ppml-scala-ut-action/action.yml'
               - 'python/ppml/**'
               - '.github/actions/ppml/**'
+              - '.github/actions/python-requirements/**'
             orca:
               - 'python/orca/**'
               - '.github/actions/orca-ray-ctx-example-action/action.yml'
               - '.github/actions/orca/**'
+              - '.github/actions/python-requirements/**'
            
   Friesian-Scala-UT:
     needs: changes

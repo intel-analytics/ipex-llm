@@ -65,8 +65,8 @@ class WandbLoggerCallback(Callback):
         Called at the end of an epoch.
         Subclasses should override for any actions to run. This function should only
         be called during TRAIN mode.
-        @param epoch:  Integer, index of epoch.
-        @param logs: Dict, metric results for this training epoch, and for the validation epoch if
+        :param epoch:  Integer, index of epoch.
+        :param logs: Dict, metric results for this training epoch, and for the validation epoch if
             validation is performed. Validation result keys are prefixed with val_. For training
             epoch, the values of the Model's metrics are returned.
             Example : {'loss': 0.2, 'accuracy': 0.7}
@@ -77,7 +77,7 @@ class WandbLoggerCallback(Callback):
         """
         Called at the beginning of training.
         Subclasses should override for any actions to run.
-        @param logs: Dict. Currently, no data is passed to this argument for this method
+        :param logs: Dict. Currently, no data is passed to this argument for this method
           but that may change in the future.
         """
         is_rank_zero = self._is_rank_zero()

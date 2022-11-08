@@ -6,13 +6,14 @@ Protecting privacy and confidentiality is critical for large-scale data analysis
 [3. Getting Started with PPML](#3-getting-started-with-ppml)  \
 &ensp;&ensp;[3.1 BigDL PPML Hello World](#31-bigdl-ppml-hello-world) \
 &ensp;&ensp;[3.2 BigDL PPML End-to-End Workflow](#32-bigdl-ppml-end-to-end-workflow) \
-&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;[Step 0. Preparation your environment](#step-0-preparation-your-environment): detailed steps in [Prepare Environment](https://github.com/liu-shaojun/BigDL/blob/ppml_doc/ppml/docs/prepare_environment.md) \
+&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;[Step 0. Preparation your environment](#step-0-preparation-your-environment): detailed steps in [Prepare Environment](./docs/prepare_environment.md) \
 &ensp;&ensp;&ensp;&ensp;&ensp;&ensp;[Step 1. Build your PPML image for production environment](#step-1-build-your-ppml-image-for-production-environment) \
 &ensp;&ensp;&ensp;&ensp;&ensp;&ensp;[Step 2. Encrypt and Upload Data](#step-2-encrypt-and-upload-data) \
 &ensp;&ensp;&ensp;&ensp;&ensp;&ensp;[Step 3. Build Big Data & AI applications](#step-3-build-big-data--ai-applications) \
 &ensp;&ensp;&ensp;&ensp;&ensp;&ensp;[Step 4. Attestation ](#step-4-attestation) \
 &ensp;&ensp;&ensp;&ensp;&ensp;&ensp;[Step 5. Submit Job](#step-5-submit-job): 4 deploy modes and 2 options to submit job  \
-&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;[Step 6. Decrypt and Read Result](#step-6-decrypt-and-read-result) \
+&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;[Step 6. Monitor Job by History Server](#step-6-monitor-job-by-history-server) \
+&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;[Step 7. Decrypt and Read Result](#step-7-decrypt-and-read-result) \
 &ensp;&ensp;[3.3 More BigDL PPML Examples](#33-more-bigdl-ppml-examples) \
 [4. Develop your own Big Data & AI applications with BigDL PPML](#4-develop-your-own-big-data--ai-applications-with-bigdl-ppml) \
 &ensp;&ensp;[4.1 Create PPMLContext](#41-create-ppmlcontext) \
@@ -60,7 +61,7 @@ With BigDL PPML, you can run trusted Big Data & AI applications
 ## 3. Getting Started with PPML
 
 ### 3.1 BigDL PPML Hello World
-In this section, you can get started with running a simple native python HelloWorld program and a simple native Spark Pi program locally in a BigDL PPML client container to get an initial understanding of the usage of ppml. 
+In this section, you can get started with running a simple native python HelloWorld program and a simple native Spark Pi program locally in a BigDL PPML local docker container to get an initial understanding of the usage of ppml. 
 
 <details><summary>Click to see detailed steps</summary>
 
@@ -82,10 +83,8 @@ Note: This public image is only for demo purposes, it is non-production. For sec
   ```
   This script will generate keys under keys/ folder
 
-**c. Start the BigDL PPML client container**
+**c. Start the BigDL PPML Local Container**
 ```
-#!/bin/bash
-
 # KEYS_PATH means the absolute path to the keys folder in step a
 # LOCAL_IP means your local IP address.
 export KEYS_PATH=YOUR_LOCAL_KEYS_PATH
@@ -110,7 +109,7 @@ sudo docker run -itd \
     $DOCKER_IMAGE bash
 ```
 
-**d. Run Python HelloWorld in BigDL PPML Client Container**
+**d. Run Python HelloWorld in BigDL PPML Local Container**
 
 Run the [script](https://github.com/intel-analytics/BigDL/blob/main/ppml/trusted-big-data-ml/python/docker-graphene/start-scripts/start-python-helloworld-sgx.sh) to run trusted [Python HelloWorld](https://github.com/intel-analytics/BigDL/blob/main/ppml/trusted-big-data-ml/python/docker-graphene/examples/helloworld.py) in BigDL PPML client container:
 ```
@@ -124,7 +123,7 @@ The result should look something like this:
 > Hello World
 
 
-**e. Run Spark Pi in BigDL PPML Client Container**
+**e. Run Spark Pi in BigDL PPML Local Container**
 
 Run the [script](https://github.com/intel-analytics/BigDL/blob/main/ppml/trusted-big-data-ml/python/docker-graphene/start-scripts/start-spark-local-pi-sgx.sh) to run trusted [Spark Pi](https://github.com/apache/spark/blob/v3.1.2/examples/src/main/python/pi.py) in BigDL PPML client container:
 
@@ -217,6 +216,37 @@ To build a secure PPML image which can be used in production environment, BigDL 
 
     Note: you can also customize the image according to your own needs, e.g. install extra python library, add code, jars.
     
+    Then, start a client container:
+
+    ```
+    export K8S_MASTER=k8s://$(sudo kubectl cluster-info | grep 'https.*6443' -o -m 1)
+    echo The k8s master is $K8S_MASTER .
+    export DATA_PATH=/YOUR_DIR/data
+    export KEYS_PATH=/YOUR_DIR/keys
+    export SECURE_PASSWORD_PATH=/YOUR_DIR/password
+    export KUBECONFIG_PATH=/YOUR_DIR/kubeconfig
+    export LOCAL_IP=$LOCAL_IP
+    export DOCKER_IMAGE=intelanalytics/bigdl-ppml-trusted-big-data-ml-python-gramine-reference:2.2.0-SNAPSHOT # or the custom image built by yourself
+
+    sudo docker run -itd \
+        --privileged \
+        --net=host \
+        --name=bigdl-ppml-client-k8s \
+        --cpuset-cpus="0-4" \
+        --oom-kill-disable \
+        --device=/dev/sgx/enclave \
+        --device=/dev/sgx/provision \
+        -v /var/run/aesmd/aesm.socket:/var/run/aesmd/aesm.socket \
+        -v $DATA_PATH:/ppml/trusted-big-data-ml/work/data \
+        -v $KEYS_PATH:/ppml/trusted-big-data-ml/work/keys \
+        -v $SECURE_PASSWORD_PATH:/ppml/trusted-big-data-ml/work/password \
+        -v $KUBECONFIG_PATH:/root/.kube/config \
+        -e RUNTIME_SPARK_MASTER=$K8S_MASTER \
+        -e RUNTIME_K8S_SPARK_IMAGE=$DOCKER_IMAGE \
+        -e LOCAL_IP=$LOCAL_IP \
+        $DOCKER_IMAGE bash
+    ```
+    
 
 #### Step 2. Encrypt and Upload Data
 Encrypt the input data of your Big Data & AI applications (here we use SimpleQuery) and then upload encrypted data to the nfs server. More details in [Encrypt Your Data](./services/kms-utils/docker/README.md#3-enroll-generate-key-encrypt-and-decrypt).
@@ -233,9 +263,14 @@ To build your own Big Data & AI applications, refer to [develop your own Big Dat
 
 #### Step 4. Attestation 
 
+   Enter the client container:
+   ```
+   sudo docker exec -it bigdl-ppml-client-k8s bash
+   ```
+   
 1. Disable attestation
 
-    To disable attestation service, you should configure spark-driver-template.yaml and spark-executor-template.yaml to set `ATTESTATION` value to `false`. By default, the attestation service is disabled. 
+    If you do not need the attestation, you can disable the attestation service. You should configure spark-driver-template.yaml and spark-executor-template.yaml to set `ATTESTATION` value to `false`. By default, the attestation service is disabled. 
     ``` yaml
     apiVersion: v1
     kind: Pod
@@ -248,6 +283,7 @@ To build your own Big Data & AI applications, refer to [develop your own Big Dat
     ```
 
 2. Enable attestation
+
     The bi-attestation gurantees that the MREnclave in runtime containers is a secure one made by you. Its workflow is as below:
     ![image](https://user-images.githubusercontent.com/60865256/198168194-d62322f8-60a3-43d3-84b3-a76b57a58470.png)
     
@@ -257,7 +293,7 @@ To build your own Big Data & AI applications, refer to [develop your own Big Dat
 
       KMS (Key Management Service) and AS (Attestation Service) make sure applications of the customer actually run in the SGX MREnclave signed above by customer-self, rather than a fake one fake by an attacker.
 
-      BigDL PPML use EHSM as reference KMS&AS, you can follow the guide [here](https://github.com/intel-analytics/BigDL/tree/main/ppml/services/pccs-ehsm/kubernetes#deploy-bigdl-pccs-ehsm-kms-on-kubernetes-with-helm-charts) to deploy EHSM in your environment.
+      BigDL PPML use EHSM as reference KMS&AS, you can follow the guide [here](https://github.com/intel-analytics/BigDL/tree/main/ppml/services/ehsm/kubernetes#deploy-bigdl-ehsm-kms-on-kubernetes-with-helm-charts) to deploy EHSM in your environment.
 
     **2.2. Enroll in EHSM**
 
@@ -275,7 +311,7 @@ To build your own Big Data & AI applications, refer to [develop your own Big Dat
 
     You can attest the EHSM server and verify the service is trusted before running workloads, that avoids sending your secrets to a fake EHSM service.
 
-    To attest EHSM server, first, start a bigdl container using the custom image build before.
+    To attest EHSM server, first, start a bigdl container using the custom image build before. **Note**: this is the other container different from the client.
 
     ```bash
     export KEYS_PATH=YOUR_LOCAL_SPARK_SSL_KEYS_FOLDER_PATH
@@ -320,7 +356,7 @@ To build your own Big Data & AI applications, refer to [develop your own Big Dat
       bash verify-attestation-service.sh
       ```
 
-    **3.4. Register your MREnclave to EHSM**
+    **2.4. Register your MREnclave to EHSM**
 
     Register the MREnclave with metadata of your MREnclave (appid, apikey, mr_enclave, mr_signer) obtained in above steps to EHSM through running a python script:
 
@@ -334,12 +370,15 @@ To build your own Big Data & AI applications, refer to [develop your own Big Dat
     ```
     You will receive a response containing a `policyID` and save it which will be used to attest runtime MREnclave when running distributed kubernetes application.
 
-    **3.5. Enable Attestation in configuration**
+    **2.5. Enable Attestation in configuration**
 
-    First, upload `policyID` obtained to kubernetes as a secret when registering MREnclave before:
+    First, upload `appid`, `apikey` and `policyID` obtained before to kubernetes as secrets:
     
     ```bash
-    kubectl create secret generic policy-id-secret --from-literal=policy_id=YOUR_POLICY_ID
+    kubectl create secret generic kms-secret \
+                      --from-literal=app_id=YOUR_KMS_APP_ID \
+                      --from-literal=api_key=YOUR_KMS_API_KEY \
+                      --from-literal=policy_id=YOUR_POLICY_ID
     ```
     
     Configure `spark-driver-template.yaml` and `spark-executor-template.yaml` to enable Attestation as follows:
@@ -426,10 +465,7 @@ Here we use **k8s client mode** and **PPML CLI** to run SimpleQuery. Check other
               --master $RUNTIME_SPARK_MASTER \
               --deploy-mode client \
               --sgx-enabled true \
-              --sgx-log-level error \
-              --sgx-driver-memory 64g \
               --sgx-driver-jvm-memory 12g \
-              --sgx-executor-memory 64g \
               --sgx-executor-jvm-memory 12g \
               --driver-memory 32g \
               --driver-cores 8 \
@@ -472,54 +508,51 @@ Here we use **k8s client mode** and **PPML CLI** to run SimpleQuery. Check other
   4. If you setup [PPML Monitoring](docs/prepare_environment.md#optional-k8s-monitioring-setup), you can check PPML Dashboard to monitor the status in http://kubernetes_master_url:3000
 
     ![image](https://user-images.githubusercontent.com/61072813/179948818-a2f6844f-0009-49d1-aeac-2e8c5a7ef677.png)
-
-  5. Monitor spark events using history server:
-
-     The history server provides an interface to watch and log spark performance and metrics.
-     
-     First, create a shared directory that can be accessed by both the client and the other worker containers in your cluster. For example, you can create an empty directory under the mounted nfs path or hdfs. The spark drivers and executors will write their event logs to this destination, and the history server will read logs here as well.
-     
-     Second, enter your client container and edit `$SPARK_HOME/conf/spark-defaults.conf`, where the histroy server reads the configurations:
-     ```
-     spark.eventLog.enabled           true                     # enable logging events
-     spark.eventLog.dir               <your_shared_dir_path>   # e.g. file://<your_nfs_dir_path> or hdfs://<your_hdfs_dir_path>
-     spark.history.fs.logDirectory    <your_shared_dir_path>   # similiar to spark.eventLog.dir
-     ```
-     
-     Third, run the below command and the history server will start to watch automatically:
-     ```
-     $SPARK_HOME/sbin/start-history-server.sh
-     ```
-     
-     Next, when you run spark jobs, enable writing driver and executor event logs in java/spark-submit commands by setting spark conf like below:
-     ```
-     ...
-     --conf spark.eventLog.enabled=true \
-     --conf spark.eventLog.dir=<your_shared_dir_path> \
-     ...
-     ```
-     
-     Starting spark jobs, you can find event log files at `<your_shared_dir_path>` like:
-     ```
-     $ ls
-     local-1666143241860 spark-application-1666144573580
-     
-     $ cat spark-application-1666144573580
-     ......
-     {"Event":"SparkListenerJobEnd","Job ID":0,"Completion Time":1666144848006,"Job Result":{"Result":"JobSucceeded"}}
-     {"Event":"SparkListenerApplicationEnd","Timestamp":1666144848021}
-     ```
-     
-     You can use these logs to analyze spark jobs. Moreover, you are also allowed to surf from a web UI provided by the history server by accessing `http://localhost:18080`:
-     
-     ![history server UI](https://user-images.githubusercontent.com/60865256/196840282-6584f36e-5e72-4144-921e-4536d3391f05.png)
-
-    
-
   </details>
 <br />
 
-#### Step 6. Decrypt and Read Result
+
+#### Step 6. Monitor Job by History Server
+You can monitor spark events using history server. The history server provides an interface to watch and log spark performance and metrics.
+     
+First, create a shared directory that can be accessed by both the client and the other worker containers in your cluster. For example, you can create an empty directory under the mounted nfs path or hdfs. The spark drivers and executors will write their event logs to this destination, and the history server will read logs here as well.
+     
+Second, enter your client container and edit `$SPARK_HOME/conf/spark-defaults.conf`, where the histroy server reads the configurations:
+```
+spark.eventLog.enabled           true
+spark.eventLog.dir               <your_shared_dir_path> ---> e.g. file://<your_nfs_dir_path> or hdfs://<your_hdfs_dir_path>
+spark.history.fs.logDirectory    <your_shared_dir_path> ---> similiar to spark.eventLog.dir
+```
+     
+Third, run the below command and the history server will start to watch automatically:
+```
+$SPARK_HOME/sbin/start-history-server.sh
+```
+     
+Next, when you run spark jobs, enable writing driver and executor event logs in java/spark-submit commands by setting spark conf like below:
+```
+...
+--conf spark.eventLog.enabled=true \
+--conf spark.eventLog.dir=<your_shared_dir_path> \
+...
+```
+     
+Starting spark jobs, you can find event log files at `<your_shared_dir_path>` like:
+```
+$ ls
+local-1666143241860 spark-application-1666144573580
+     
+$ cat spark-application-1666144573580
+......
+{"Event":"SparkListenerJobEnd","Job ID":0,"Completion Time":1666144848006,"Job Result":{"Result":"JobSucceeded"}}
+{"Event":"SparkListenerApplicationEnd","Timestamp":1666144848021}
+```
+     
+You can use these logs to analyze spark jobs. Moreover, you are also allowed to surf from a web UI provided by the history server by accessing `http://localhost:18080`:
+![history server UI](https://user-images.githubusercontent.com/60865256/196840282-6584f36e-5e72-4144-921e-4536d3391f05.png)    
+
+
+#### Step 7. Decrypt and Read Result
 When the job is done, you can decrypt and read result of the job. More details in [Decrypt Job Result](./services/kms-utils/docker/README.md#3-enroll-generate-key-encrypt-and-decrypt).
 
   ```
