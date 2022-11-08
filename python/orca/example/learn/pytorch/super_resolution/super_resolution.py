@@ -245,7 +245,7 @@ criterion = nn.MSELoss()
 model_dir = opt.data_dir+"/models"
 
 if opt.backend == "bigdl":
-    # remove jep
+    # TODO(remove jep)
     model = model_creator(
         config={
             "upscale_factor": opt.upscale_factor,
