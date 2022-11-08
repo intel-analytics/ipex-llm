@@ -3,7 +3,7 @@ Tutorials & Examples
 
 * `A Hello World Example <../Overview/quicktour.html>`__ is a very simple exmaple for getting started.
 
-* `PPML e2e Example <../QuickStart/end-to-end.html>`__ introduces the end-to-end PPML workflow using SimpleQuery as an example.
+* `PPML E2E Example <../QuickStart/end-to-end.html>`__ introduces the end-to-end PPML workflow using SimpleQuery as an example.
 
 * `PPML E2E on Azure <../Overview/azure_ppml.html>`__ introduces the end-to-end PPML workflow on Azure Cloud.
 
