@@ -45,12 +45,14 @@ init_instance() {
         .process.default_heap_size = "SGX_HEAP" |
         .metadata.debuggable = "ENABLE_SGX_DEBUG" |
         .resource_limits.kernel_space_heap_size="SGX_KERNEL_HEAP" |
-        .entry_points = [ "/usr/lib/jvm/java-8-openjdk-amd64/bin" ] |
+        .entry_points = [ "/usr/lib/jvm/java-8-openjdk-amd64/bin", "/bin" ] |
         .env.untrusted = [ "DMLC_TRACKER_URI", "SPARK_DRIVER_URL", "SPARK_TESTING" , "_SPARK_AUTH_SECRET" ] |
-        .env.default = [ "LD_LIBRARY_PATH=/usr/lib/jvm/java-8-openjdk-amd64/lib/server:/usr/lib/jvm/java-8-openjdk-amd64/lib:/usr/lib/jvm/java-8-openjdk-amd64/../lib:/lib","SPARK_CONF_DIR=/opt/spark/conf","SPARK_ENV_LOADED=1","PYTHONHASHSEED=0","SPARK_HOME=/opt/spark","SPARK_SCALA_VERSION=2.12","SPARK_JARS_DIR=/opt/spark/jars","LAUNCH_CLASSPATH=/bin/jars/*",""]' Occlum.json)" && \
+        .env.default = [ "PYTHONHOME=/opt/python-occlum","LD_LIBRARY_PATH=/usr/lib/jvm/java-8-openjdk-amd64/lib/server:/usr/lib/jvm/java-8-openjdk-amd64/lib:/usr/lib/jvm/java-8-openjdk-amd64/../lib:/lib","SPARK_CONF_DIR=/opt/spark/conf","SPARK_ENV_LOADED=1","PYTHONHASHSEED=0","SPARK_HOME=/opt/spark","SPARK_SCALA_VERSION=2.12","SPARK_JARS_DIR=/opt/spark/jars","LAUNCH_CLASSPATH=/bin/jars/*",""]' Occlum.json)" && \
     echo "${new_json}" > Occlum.json
     echo "SGX_MEM_SIZE ${SGX_MEM_SIZE}"
 
+    #copy python lib
+    copy_bom -f /opt/python-glibc.yaml --root image --include-dir /opt/occlum/etc/template
     # enable tmp hostfs
     # --conf spark.executorEnv.USING_TMP_HOSTFS=true \
     if [[ $USING_TMP_HOSTFS == "true" ]]; then
@@ -102,13 +104,24 @@ init_instance() {
            echo "[ERROR] Attestation set to true but NO PCCS"
            exit 1
         else
-           export ENABLE_SGX_DEBUG=false
-           sed -i "s#https://localhost:8081/sgx/certification/v3/#${PCCS_URL}#g" /etc/sgx_default_qcnl.conf
+           echo 'PCCS_URL='${PCCS_URL}'/sgx/certification/v3/' > /etc/sgx_default_qcnl.conf
+           echo 'USE_SECURE_CERT=FALSE' >> /etc/sgx_default_qcnl.conf
+           cd /root/demos/remote_attestation/dcap/
+           #build .c file
+           bash ./get_quote_on_ppml.sh
+           cd /opt/occlum_spark
+           # dir need to exit when writing quote
+           mkdir -p /opt/occlum_spark/image/etc/occlum_attestation/
+           #copy bom to generate quote
+           copy_bom -f /root/demos/remote_attestation/dcap/dcap-ppml.yaml --root image --include-dir /opt/occlum/etc/template
         fi
     fi
 
     # check occlum log level for docker
-    export ENABLE_SGX_DEBUG=false
+    if [[ -z "$ENABLE_SGX_DEBUG" ]]; then
+        echo "No ENABLE_SGX_DEBUG specified, set to off."
+        export ENABLE_SGX_DEBUG=false
+    fi
     export OCCLUM_LOG_LEVEL=off
     if [[ -z "$SGX_LOG_LEVEL" ]]; then
         echo "No SGX_LOG_LEVEL specified, set to off."
@@ -125,6 +138,9 @@ init_instance() {
 }
 
 build_spark() {
+    # Copy python examples and unzip python lib
+    mkdir -p image/py-examples
+    cp -rf /opt/py-examples/* image/py-examples
     # Copy JVM and class file into Occlum instance and build
     cd /opt/occlum_spark
     mkdir -p image/usr/lib/jvm
@@ -165,31 +181,87 @@ build_spark() {
     cp -rf /opt/spark-source image/opt/
 
     # Build
+    occlum build
+
+    #before start occlum app after occlum build
     if [[ $ATTESTATION == "true" ]]; then
-       occlum build --image-key /opt/occlum_spark/data/image_key
-       build_initfs
-    else
-       occlum build
+        if [[ $PCCS_URL == "" ]]; then
+            echo "[ERROR] Attestation set to true but NO PCCS"
+            exit 1
+        else
+            if [[ $RUNTIME_ENV == "driver" || $RUNTIME_ENV == "native" ]]; then
+                #verify ehsm service
+                cd /opt/
+                bash verify-attestation-service.sh
+                #register application
+
+                #get mrenclave mrsigner
+                MR_ENCLAVE_temp=$(bash print_enclave_signer.sh | grep mr_enclave)
+                MR_ENCLAVE_temp_arr=(${MR_ENCLAVE_temp})
+                export MR_ENCLAVE=${MR_ENCLAVE_temp_arr[1]}
+                MR_SIGNER_temp=$(bash print_enclave_signer.sh | grep mr_signer)
+                MR_SIGNER_temp_arr=(${MR_SIGNER_temp})
+                export MR_SIGNER=${MR_SIGNER_temp_arr[1]}
+
+                #register and get policy_Id
+                policy_Id_temp=$(bash register.sh | grep policy_Id)
+                policy_Id_temp_arr=(${policy_Id_temp})
+                export policy_Id=${policy_Id_temp_arr[1]}
+            fi
+        fi
+        #register error
+        if [ $? -gt 0 ]; then
+            echo "register error"
+            exit 1;
+        fi
+    fi
+
+    #attestation
+    if [[ $ATTESTATION == "true" ]]; then
+        if [[ $PCCS_URL == "" ]]; then
+            echo "[ERROR] Attestation set to /root/demos/remote_attestation/dcaprue but NO PCCS"
+            exit 1
+        else
+                #generate dcap quote
+                cd /opt/occlum_spark
+                occlum run /bin/dcap_c_test $REPORT_DATA
+                echo "generate quote success"
+                #attest quote
+                occlum run /usr/lib/jvm/java-8-openjdk-amd64/bin/java \
+                            -XX:-UseCompressedOops -XX:MaxMetaspaceSize=1g \
+                            -XX:ActiveProcessorCount=4 \
+                            -Divy.home="/tmp/.ivy" \
+                            -Dos.name="Linux" \
+                            -cp "$SPARK_HOME/conf/:$SPARK_HOME/jars/*:/bin/jars/*" \
+                            -Xmx1g com.intel.analytics.bigdl.ppml.attestation.AttestationCLI \
+                            -u $ATTESTATION_URL \
+                            -i $APP_ID \
+                            -k $API_KEY \
+                            -O occlum \
+                            -o $policy_Id
+                if [ $? -gt 0 ]; then
+                    echo "attest fail, exit"
+                    exit 1;
+                fi
+                echo "verify success"
+        fi
     fi
 }
 
-build_initfs() {
-    cd /root/demos/remote_attestation/init_ra_flow/
-    bash build_content.sh build_init_ra
+run_pyspark_pi() {
+    init_instance spark
+    build_spark
     cd /opt/occlum_spark
-    rm -rf initfs
-    jq ' .verify_mr_enclave = "off" |
-        .verify_mr_signer = "off" |
-        .verify_isv_prod_id = "off" |
-        .verify_isv_svn = "off" |
-        .verify_enclave_debuggable = "on" |
-        .sgx_mrs[0].debuggable = false ' /root/demos/remote_attestation/init_ra_flow/ra_config_template.json > /opt/occlum_spark/dynamic_config.json
-    export INITRA_DIR=/root/demos/remote_attestation/init_ra_flow/init_ra
-    export DEP_LIBS_DIR=/root/demos/remote_attestation/init_ra_flow/dep_libs
-    export RATLS_DIR=/root/demos/ra_tls
-    copy_bom -f /root/demos/remote_attestation/init_ra_flow/init_ra_client.yaml --root initfs --include-dir /opt/occlum/etc/template
-
-    occlum build -f --image-key /opt/occlum_spark/data/image_key
+    echo -e "${BLUE}occlum run pyspark Pi${NC}"
+    occlum run /usr/lib/jvm/java-8-openjdk-amd64/bin/java \
+                -XX:-UseCompressedOops -XX:MaxMetaspaceSize=$META_SPACE \
+                -XX:ActiveProcessorCount=4 \
+                -Divy.home="/tmp/.ivy" \
+                -Dos.name="Linux" \
+                -Djdk.lang.Process.launchMechanism=vfork \
+                -cp "$SPARK_HOME/conf/:$SPARK_HOME/jars/*" \
+                -Xmx512m org.apache.spark.deploy.SparkSubmit \
+                /py-examples/pi.py
 }
 
 run_spark_pi() {
@@ -203,7 +275,7 @@ run_spark_pi() {
                 -Dos.name="Linux" \
                 -cp "$SPARK_HOME/conf/:$SPARK_HOME/jars/*" \
                 -Xmx512m org.apache.spark.deploy.SparkSubmit \
-                --jars $SPARK_HOME/examples/jars/spark-examples_2.12-3.1.2.jar,$SPARK_HOME/examples/jars/scopt_2.12-3.7.1.jar \
+                --jars $SPARK_HOME/examples/jars/spark-examples_2.12-${SPARK_VERSION}.jar,$SPARK_HOME/examples/jars/scopt_2.12-3.7.1.jar \
                 --class org.apache.spark.examples.SparkPi spark-internal
 }
 
@@ -386,8 +458,25 @@ id=$([ -f "$pid" ] && echo $(wc -l < "$pid") || echo "0")
 arg=$1
 case "$arg" in
     init)
+       export RUNTIME_ENV="native"
         init_instance
         build_spark
+        ;;
+    initDriver)
+        export RUNTIME_ENV="driver"
+        init_instance
+        build_spark
+        ;;
+    initExecutor)
+        # to do
+        # now executor have to register again
+        export RUNTIME_ENV="native"
+        init_instance
+        build_spark
+        ;;
+    pypi)
+        run_pyspark_pi
+        cd ../
         ;;
     pi)
         run_spark_pi

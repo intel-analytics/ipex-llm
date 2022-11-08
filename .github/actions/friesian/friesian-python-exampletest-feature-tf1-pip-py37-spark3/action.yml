@@ -11,6 +11,7 @@ runs:
        
         source activate py37
         export SPARK_LOCAL_HOSTNAME=localhost
+        pip install wheel
         # install dllib
         pip install python/dllib/src/dist/bigdl_dllib_spark3-*-py3-none-manylinux1_x86_64.whl
         # install orca

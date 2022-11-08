@@ -53,7 +53,7 @@ class TensorBoardCallback(Callback):
         """
         Called at the beginning of a training batch in `fit` methods.
         Subclasses should override for any actions to run.
-        @param batch: Integer, index of batch within the current epoch.
+        :param batch: Integer, index of batch within the current epoch.
         """
         pass
 
@@ -61,8 +61,8 @@ class TensorBoardCallback(Callback):
         """
         Called at the end of a training batch in `fit` methods.
         Subclasses should override for any actions to run.
-        @param batch: Integer, index of batch within the current epoch.
-        @param logs: Dict. Aggregated metric results up until this batch.
+        :param batch: Integer, index of batch within the current epoch.
+        :param logs: Dict. Aggregated metric results up until this batch.
         """
         if self.freq != "epoch" and self._is_rank_zero():
             if self.freq == "batch" or batch % int(self.freq) == 0:
@@ -77,8 +77,8 @@ class TensorBoardCallback(Callback):
         Called at the start of an epoch.
         Subclasses should override for any actions to run. This function should only
         be called during TRAIN mode.
-        @param epoch: Integer, index of epoch.
-        @param logs: Dict. Currently, saved stats in last epoch has been passed to this argument
+        :param epoch: Integer, index of epoch.
+        :param logs: Dict. Currently, saved stats in last epoch has been passed to this argument
         for this method but may change in the future.
         """
         pass
@@ -88,8 +88,8 @@ class TensorBoardCallback(Callback):
         Called at the end of an epoch.
         Subclasses should override for any actions to run. This function should only
         be called during TRAIN mode.
-        @param epoch:  Integer, index of epoch.
-        @param logs: Dict, metric results for this training epoch, and for the validation epoch if
+        :param epoch:  Integer, index of epoch.
+        :param logs: Dict, metric results for this training epoch, and for the validation epoch if
             validation is performed. Validation result keys are prefixed with val_. For training
             epoch, the values of the Model's metrics are returned.
             Example : {'loss': 0.2, 'accuracy': 0.7}
@@ -105,7 +105,7 @@ class TensorBoardCallback(Callback):
         """
         Called at the beginning of training.
         Subclasses should override for any actions to run.
-        @param logs: Dict. Currently, no data is passed to this argument for this method
+        :param logs: Dict. Currently, no data is passed to this argument for this method
           but that may change in the future.
         """
         pass

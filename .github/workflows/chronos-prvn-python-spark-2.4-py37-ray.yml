@@ -1,5 +1,10 @@
 name: Chronos PRVN Python Spark2.4 py37 ray
 
+# Cancel previous runs in the PR when you push new commits
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.run_id }}
+  cancel-in-progress: true
+
 # Controls when the action will run. 
 on:
   # Triggers the workflow on pull request events but only for the main branch
@@ -34,12 +39,6 @@ jobs:
         uses: actions/setup-python@v2
         with:
           python-version: ${{ matrix.python-version }}
-      
-      - name: Install dependencies
-        run: |
-          python -m pip install --upgrade pip
-          python -m pip install --upgrade setuptools==58.0.4
-          python -m pip install --upgrade wheel
 
       - name: Run Chronos python test
         shell: bash
@@ -48,11 +47,10 @@ jobs:
             source deactivate
             conda remove -n chronos-prvn-env-1 -y --all
           fi
-          conda create -n chronos-prvn-env-1 -y python==3.7.10 setuptools==58.0.4
+          conda create -n chronos-prvn-env-1 -y python==3.7.10 setuptools==58.0.4 -c ${CONDA_CHANNEL} --override-channels
           source activate chronos-prvn-env-1
-          pip install boto3==1.24.96
           pip install pytest==5.4.1
-          pip install prophet==1.1
+          pip install prophet==1.0.1
           pip install pmdarima==1.8.4
           pip install tsfresh==0.17.0
           pip install ray==1.9.2 ray[tune]==1.9.2 ray[default]==1.9.2

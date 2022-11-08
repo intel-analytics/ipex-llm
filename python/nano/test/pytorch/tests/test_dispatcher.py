@@ -18,6 +18,8 @@ from unittest import TestCase
 import tempfile
 import os
 
+from bigdl.nano.pytorch.utils import TORCH_VERSION_LESS_1_10
+
 
 class TestDispatcherPytorch(TestCase):
 
@@ -54,6 +56,12 @@ class TestDispatcherPytorch(TestCase):
 
         # autocast
         amp = torch.cuda.amp.autocast()
+
+        if not TORCH_VERSION_LESS_1_10:
+            with torch.autocast(device_type='cuda', dtype=torch.float16):
+                model = torch.nn.Linear(8, 8)
+                input_tensor = torch.ones((1, 8))
+                model(input_tensor)
 
         # GradScaler
         scaler = torch.cuda.amp.GradScaler()

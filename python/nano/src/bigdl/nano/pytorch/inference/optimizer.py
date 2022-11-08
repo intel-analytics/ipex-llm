@@ -506,7 +506,7 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                     # "n_requests": None,
                     "sample_size": sample_size
                 }
-                return model.pot(calib_dataloader, **kwargs)
+                return model.pot(calib_dataloader, thread_num=thread_num, **kwargs)
             else:
                 invalidInputError(False,
                                   "Accelerator {} is invalid.".format(accelerator))

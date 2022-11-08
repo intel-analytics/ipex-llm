@@ -216,9 +216,9 @@ class SparkRunner:
             conf = " --conf " + " --conf ".join("{}={}".format(*i) for i in conf.items())
             sys_args = " ".join(sys.argv)
             print(sys_args)
-            submit_commnad = "spark-submit " + submit_args + " " + conf + " " + sys_args
-            print(submit_commnad)
-            return_value = os.system(submit_commnad)
+            submit_command = "spark-submit " + submit_args + " " + conf + " " + sys_args
+            print(submit_command)
+            return_value = os.system(submit_command)
         finally:
             if conda_name and penv_archive and pack_env:
                 os.remove(penv_archive)
@@ -433,20 +433,17 @@ class SparkRunner:
                      "spark.executor.extraLibraryPath": ld_path,
                      "spark.executorEnv.LD_PRELOAD": preload_so,
                      "spark.kubernetes.container.image": container_image})
-        if "spark.executor.extraClassPath" in conf:
-            conf["spark.executor.extraClassPath"] = "{}:{}".format(
-                zoo_bigdl_path_on_executor, conf["spark.executor.extraClassPath"])
-        else:
+        if "spark.executor.extraClassPath" not in conf:
             # BigDL Class path in k8s image
             bigdl_class_version = get_bigdl_class_version()
-            conf["spark.executor.extraClassPath"] = "/opt/" + bigdl_class_version + "bigdl-" \
+            conf["spark.executor.extraClassPath"] = "/opt/" + "bigdl-" + bigdl_class_version \
                 + "/jars/*"
         conf["spark.driver.extraClassPath"] = conf["spark.executor.extraClassPath"]
         sys_args = "local://" + " ".join(sys.argv)
         conf = " --conf " + " --conf ".join("{}={}".format(*i) for i in conf.items())
-        submit_commnad = "spark-submit " + submit_args + " " + conf + " " + sys_args
-        print("submit command", submit_commnad)
-        return_value = os.system(submit_commnad)
+        submit_command = "spark-submit " + submit_args + " " + conf + " " + sys_args
+        print("submit command", submit_command)
+        return_value = os.system(submit_command)
         return return_value
 
 

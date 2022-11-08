@@ -437,6 +437,8 @@ class TestChronosModelAutoformerForecaster(TestCase):
     def test_autoformer_forecaster_tune_multi_processes(self):
         name = "parallel-example-torch"
         storage = "sqlite:///example_autoformer.db"  # take sqlite for test, recommand to use mysql
+        if os.path.exists("./example_autoformer.db"):
+            os.remove("./example_autoformer.db")
         import bigdl.nano.automl.hpo.space as space
         train_data, val_data, test_data = create_data(loader=False)
         forecaster = AutoformerForecaster(past_seq_len=24,

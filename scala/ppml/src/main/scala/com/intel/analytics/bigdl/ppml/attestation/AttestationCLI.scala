@@ -27,7 +27,7 @@ import java.util.Base64
  */
 object AttestationCLI {
     def main(args: Array[String]): Unit = {
-
+        var quote = Array[Byte]()
         val logger = LogManager.getLogger(getClass)
         case class CmdParams(appID: String = "test",
                              apiKey: String = "test",
@@ -35,6 +35,7 @@ object AttestationCLI {
                              asURL: String = "127.0.0.1:9000",
                              challenge: String = "",
                              policyID: String = "",
+                             OSType: String = "gramine",
                              userReport: String = "ppml")
 
         val cmdParser: OptionParser[CmdParams] = new OptionParser[CmdParams](
@@ -60,13 +61,22 @@ object AttestationCLI {
             opt[String]('p', "userReport")
               .text("userReportDataPath, default is test")
               .action((x, c) => c.copy(userReport = x))
+            opt[String]('O', "OSType")
+              .text("OSType, default is gramine, occlum can be chose")
+              .action((x, c) => c.copy(OSType = x))
         }
         val params = cmdParser.parse(args, CmdParams()).get
 
         // Generate quote
         val userReportData = params.userReport
-        val quoteGenerator = new GramineQuoteGeneratorImpl()
-        val quote = quoteGenerator.getQuote(userReportData.getBytes)
+
+        if (params.OSType == "gramine") {
+          val quoteGenerator = new GramineQuoteGeneratorImpl()
+          quote = quoteGenerator.getQuote(userReportData.getBytes)
+        } else if (params.OSType == "occlum") {
+          val quoteGenerator = new OcclumQuoteGeneratorImpl()
+          quote = quoteGenerator.getQuote(userReportData.getBytes)
+        }
 
         // Attestation Client
         val as = params.asType match {

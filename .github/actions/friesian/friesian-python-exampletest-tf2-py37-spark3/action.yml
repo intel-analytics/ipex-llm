@@ -17,7 +17,7 @@ runs:
         source activate py37
         source python/friesian/dev/prepare_env.sh
         export SPARK_LOCAL_HOSTNAME=localhost
-        pip install pyspark==3.1.3 pytest 
+        pip install pyspark==3.1.3 
         cd python/friesian/dev/test
         bash run-example-tests-tf2.6.0.sh
         source deactivate

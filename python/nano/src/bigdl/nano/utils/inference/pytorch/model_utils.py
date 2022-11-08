@@ -19,6 +19,7 @@ import inspect
 from torch.utils.data import DataLoader
 import torch
 from bigdl.nano.utils.log4Error import invalidInputError
+from bigdl.nano.pytorch.utils import TORCH_VERSION_LESS_1_11, TORCH_VERSION_LESS_1_12
 
 
 def get_forward_args(model):
@@ -98,8 +99,15 @@ def export_to_onnx(model, input_sample=None, onnx_path="model.onnx", dynamic_axe
             dynamic_axes[arg] = {0: 'batch_size'}  # set all dim0 to be dynamic
     else:
         dynamic_axes = {}
+
+    # set opset_version according to torch version
+    if TORCH_VERSION_LESS_1_11:
+        opset_version = 12
+    else:
+        opset_version = 15
+
     default_onnx_export_args = {'export_params': True,
-                                'opset_version': 11,  # version = 11 by default
+                                'opset_version': opset_version,
                                 'do_constant_folding': True,
                                 'input_names': forward_args,
                                 'dynamic_axes': dynamic_axes,
