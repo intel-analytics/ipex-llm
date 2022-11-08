@@ -52,3 +52,19 @@ Please refer to [Intel® Software Guard Extensions Data Center Attestation Primi
 ##### Install Kubernetes SGX Plugin (K8S only)
 
 Please refer to [Deploy the Intel SGX Device Plugin for Kubernetes](https://bigdl.readthedocs.io/en/latest/doc/PPML/QuickStart/deploy_intel_sgx_device_plugin_for_kubernetes.html).
+
+
+### FAQs
+
+1. Is SGX supported on CentOS 6/7?
+No. Please upgrade your OS if possible.
+
+2. Do we need Internet connection for SGX node?
+No. We can use PCCS for registration and certificates downloading. Only PCCS need Internet connection.
+
+3. Does PCCS requires SGX?
+No. PCCS can be installed on any server with Internet connection.
+
+4. Can we turn off attestation?
+Of course. But, urnning off attestation will break integrity provided by SGX. Attestation is turned off to simplify installation for quick start.
+
