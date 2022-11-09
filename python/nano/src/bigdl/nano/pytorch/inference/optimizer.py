@@ -14,12 +14,9 @@
 # limitations under the License.
 #
 
-from collections import namedtuple
 import torch
 import pytorch_lightning as pl
 from torch import nn
-import subprocess
-from importlib.util import find_spec
 import time
 import numpy as np
 from copy import deepcopy
@@ -40,6 +37,8 @@ from bigdl.nano.utils.inference.pytorch.model import AcceleratedLightningModule
 from bigdl.nano.utils.inference.pytorch.model_utils import get_forward_args, get_input_example
 from bigdl.nano.utils.inference.pytorch.metrics import NanoMetric
 from bigdl.nano.utils.inference.pytorch.dataset import RepeatDataset, remove_batch_dim_fn
+from bigdl.nano.utils.inference.pytorch.dataloader import\
+    transform_multiple_input_dataloader_to_inc_mode
 from bigdl.nano.pytorch.utils import TORCH_VERSION_LESS_1_10, save_model, load_model
 from torchmetrics import Metric
 import warnings
@@ -454,6 +453,10 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                 invalidInputError(False,
                                   "Accelerator {} is invalid for BF16.".format(accelerator))
         if precision == 'int8':
+            # transform the dataloader to inc mode
+            inc_calib_dataloader =\
+                transform_multiple_input_dataloader_to_inc_mode(model,
+                                                                calib_dataloader)
             if not accelerator or accelerator == 'onnxruntime':
                 method_map = {
                     None: {
@@ -495,7 +498,7 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                 model which is able to run on Pytorch or ONNXRuntime can be fetched by
                 `quantized_model.model`.
                 """
-                return inc_quantize(model, calib_dataloader, metric,
+                return inc_quantize(model, inc_calib_dataloader, metric,
                                     framework=framework,
                                     conf=conf,
                                     approach=approach,
