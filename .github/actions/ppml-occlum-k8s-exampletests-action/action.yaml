@@ -17,7 +17,7 @@ runs:
 
         status_1_spark_pi=1
         status_2_spark_lr=1
-        status_3_spark_sql=0
+        status_3_spark_sql=1
         status_4_spark_gbt=1
         status_5_spark_gbt_criteo=1
         status_6_spark_tpch=1
@@ -54,13 +54,14 @@ runs:
           echo "################## start spark sql"
           echo "example.3 spark sql"
           bash run_spark_sql.sh
-          if [ "`kubectl get pods | grep sparksql | awk '{print $1}'`" != "" ]; then
-            kubectl delete pods `kubectl get pods | grep sparksql | awk '{print $1}'`
+          if [ "`kubectl get pods | grep spark-sql-test | awk '{print $1}'`" != "" ]; then
+            sql_driver=`kubectl get pods | grep spark-sql-test | awk '{print $1}'`
           fi
-          if [ "`kubectl get pods | grep spark-sql-example | awk '{print $1}'`" != "" ]; then
-            kubectl delete pods `kubectl get pods | grep spark-sql-example | awk '{print $1}'`
-          fi
+          kubectl logs $sql_driver | egrep 'Name: Michael'
           status_3_spark_sql=$(echo $?)
+          if [ "`kubectl get pods | grep spark-sql-test | awk '{print $1}'`" != "" ]; then
+            kubectl delete pods `kubectl get pods | grep spark-sql-test | awk '{print $1}'`
+          fi
         fi
 
         if [ $status_4_spark_gbt -ne 0 ]; then
