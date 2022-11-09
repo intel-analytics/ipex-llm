@@ -21,6 +21,7 @@ from mmcv.runner import EpochBasedRunner
 from mmcv.runner.utils import get_host_info
 from mmcv.parallel.distributed import MMDistributedDataParallel
 from bigdl.orca.learn.pytorch.utils import AverageMeterCollection
+from bigdl.dllib.utils.log4Error import *
 from bigdl.orca.learn.pytorch.experimential.core.base_ray_runner import BaseRayRunner
 
 from typing import (Any, Dict, List, Optional, Tuple, Callable, overload)
@@ -72,17 +73,18 @@ class MMCVRayEpochRunner(BaseRayRunner, EpochBasedRunner):
             workflow: List[Tuple[str, int]],
             max_epochs: Optional[int] = None,
             **kwargs) -> List:
-        assert isinstance(data_loaders, list)
-        assert mmcv.is_list_of(workflow, tuple)
-        assert len(data_loaders) == len(workflow)
+        invalidInputError(isinstance(data_loaders, list), "data_loaders should be a list")
+        invalidInputError(mmcv.is_list_of(workflow, tuple), "workflow shoud be a list of tuple")
+        invalidInputError(len(data_loaders) == len(workflow),
+                          "data_loaders and workflow should have the same length")
+
         if max_epochs is not None:
             warnings.warn(
                 'setting max_epochs in run is deprecated, '
                 'please set max_epochs in runner_config', DeprecationWarning)
             self._max_epochs = max_epochs
 
-        assert self._max_epochs is not None, (
-            'max_epochs must be specified during instantiation')
+        invalidInputError(self._max_epochs is not None, "max_epochs must be specified during instantiation")
 
         for i, flow in enumerate(workflow):
             mode, epochs = flow
@@ -106,14 +108,12 @@ class MMCVRayEpochRunner(BaseRayRunner, EpochBasedRunner):
                 mode, epochs = flow
                 if isinstance(mode, str):  # self.train()
                     if not hasattr(self, mode):
-                        raise ValueError(
-                            f'runner has no method named "{mode}" to run an '
-                            'epoch')
+                        invalidInputError(False,
+                                          f'runner has no method named "{mode}" to run an epoch')
                     epoch_runner = getattr(self, mode)
                 else:
-                    raise TypeError(
-                        'mode in workflow must be a str, but got {}'.format(
-                            type(mode)))
+                    invalidInputError(False,
+                                      'mode in workflow must be a str, but got {}'.format(type(mode)))
 
                 for _ in range(epochs):
                     if mode == 'train' and self.epoch >= self._max_epochs:
@@ -168,8 +168,9 @@ class MMCVRayEpochRunner(BaseRayRunner, EpochBasedRunner):
         else:
             outputs = self.model.val_step(data_batch, self.optimizer, **kwargs)
         if not isinstance(outputs, dict):
-            raise TypeError('"batch_processor()" or "model.train_step()"'
-                            'and "model.val_step()" must return a dict')
+            invalidInputError(False,
+                              '"batch_processor()" or "model.train_step()" '
+                              'and "model.val_step()" must return a dict')
         if 'log_vars' in outputs:
             self.log_buffer.update(outputs['log_vars'], outputs['num_samples'])
         self.outputs = outputs
