@@ -29,7 +29,7 @@ class TestONNX(TestCase):
         input_features = np.random.randint(0, 10, size=100)
         
         train_dataset = tf.data.Dataset.from_tensor_slices((input_examples,
-                                                            input_features)).batch(1)
+                                                            input_features))
 
         # quantize a Keras model
         onnx_quantized_model = model.quantize(model,

@@ -26,7 +26,7 @@ class TestOpenVINO(TestCase):
         model = Model(inputs=model.inputs, outputs=model.outputs)
         train_examples = np.random.random((100, 40, 40, 3))
         train_labels = np.random.randint(0, 10, size=(100,))
-        train_dataset = tf.data.Dataset.from_tensor_slices((train_examples, train_labels)).batch(1)
+        train_dataset = tf.data.Dataset.from_tensor_slices((train_examples, train_labels))
 
         # Case1: Trace and quantize
         openvino_model = model.trace(accelerator='openvino')

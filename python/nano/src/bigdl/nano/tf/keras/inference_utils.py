@@ -46,8 +46,8 @@ class InferenceUtils:
         """
         Post-training quantization on a keras model.
 
-        :param calib_dataset:   A tf.data.Dataset object for calibration without setting
-                                batch_size or batch_size=1. Required for static quantization.
+        :param calib_dataset:   An unbatched tf.data.Dataset object for calibration.
+                                Required for static quantization.
                                 It's also used as validation dataloader.
         :param precision:       Global precision of quantized model,
                                 supported type: 'int8', defaults to 'int8'.
@@ -121,7 +121,7 @@ class InferenceUtils:
                 maximal_drop = accuracy_criterion.get(drop_type, None)
             else:
                 drop_type, higher_is_better, maximal_drop = None, None, None
-            return openvino_model.pot(dataset=calib_dataset,    # type: ignore
+            return openvino_model.pot(dataset=calib_dataset.batch(1),    # type: ignore
                                       metric=metric,
                                       higher_better=higher_is_better,
                                       drop_type=drop_type,
@@ -145,7 +145,8 @@ class InferenceUtils:
                 None: 'onnxrt_qlinearops'  # default
             }
             framework = method_map.get(method, None)
-            return inc_quantzie(onnx_model, dataloader=calib_dataset, metric=metric,
+            return inc_quantzie(onnx_model, dataloader=calib_dataset.batch(1),
+                                metric=metric,
                                 framework=framework,
                                 conf=conf,
                                 approach=approach,
