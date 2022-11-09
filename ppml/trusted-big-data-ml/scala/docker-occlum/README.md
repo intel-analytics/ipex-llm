@@ -45,7 +45,7 @@ or:
   --device=/dev/sgx/provision
 ```
 
-## Spark 3.1.2 Pi example
+## Spark 3.1.3 Pi example
 
 To run Spark Pi example, start the docker container with:
 
@@ -295,6 +295,29 @@ You can find GBT result under folder `/path/to/data/`.
 └── metadata
     ├── part-00000
     └── _SUCCESS
+```
+
+## PySpark 3.1.3 Pi example
+
+To run PySpark Pi example, start the docker container with:
+
+``` bash
+bash start-spark-local.sh pypi
+```
+
+You can change the configuration in [start-spark-local.sh](https://github.com/intel-analytics/BigDL/blob/main/ppml/trusted-big-data-ml/scala/docker-occlum/start-spark-local.sh)
+``` bash
+#start-spark-local.sh
+-e SGX_MEM_SIZE=10GB \
+-e SGX_THREAD=512 \
+-e SGX_HEAP=1GB \
+-e SGX_KERNEL_HEAP=1GB \
+```
+
+You can see Pi result in logs (`docker logs -f bigdl-ppml-trusted-big-data-ml-scala-occlum`)
+
+```bash
+Pi is roughly 3.1436957184785923
 ```
 
 ## How to debug
