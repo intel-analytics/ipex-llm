@@ -197,6 +197,40 @@ Then run the script.
 ./run_spark_tpch.sh
 ```
 
+### PySparkPi example
+
+```bash
+./run_pyspark_pi.sh
+```
+
+```yaml
+#driver.yaml
+    env:
+    - name: DRIVER_MEMORY
+      value: "512m"
+    - name: SGX_MEM_SIZE
+      value: "10GB"
+    - name: SGX_THREAD
+      value: "512"
+    - name: SGX_HEAP
+      value: "1GB"
+    - name: SGX_KERNEL_HEAP
+      value: "1GB"
+```
+
+```yaml
+#executor.yaml
+    env:
+    - name: SGX_MEM_SIZE
+      value: "10GB"
+    - name: SGX_THREAD
+      value: "512"
+    - name: SGX_HEAP
+      value: "1GB"
+    - name: SGX_KERNEL_HEAP
+      value: "1GB"
+```
+
 ### [Deprecated] Spark XGBoost example
 
 > Warning: Running XGBoost in distributed mode is not safe due to the fact that Rabit's network (which contains gradient, split, and env) is not protected.

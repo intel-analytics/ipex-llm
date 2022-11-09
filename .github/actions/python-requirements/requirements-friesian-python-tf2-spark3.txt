@@ -24,4 +24,3 @@ ray[default]==1.9.1
 sentence-transformers
 deepctr_torch
 deepctr
-wheel

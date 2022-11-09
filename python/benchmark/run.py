@@ -48,7 +48,7 @@ class Workload:
                 uuid = self._save_logs(logs)
         finally:
             # notify user if this benchmark is triggered by PR comments
-            if os.environ.get('IS_PR') == 'true':
+            if os.environ.get('IS_COMMENTS') == 'true':
                 self._notify(uuid)
 
     @staticmethod
@@ -116,10 +116,11 @@ class Workload:
         )
 
 if __name__ == '__main__':
-    if len(sys.argv) < 2:
-        print('please pass the workload name as the first argument')
+    if len(sys.argv) < 3:
+        print('Usage: python python/benchmark/run.py module workload')
         sys.exit(-1)
-    name = sys.argv[1]
-    script_path = os.path.join("python/nano/benchmark", name, "run.sh")
+    module = sys.argv[1]
+    name = sys.argv[2]
+    script_path = os.path.join("python", module, "benchmark", name, "run.sh")
     workload = Workload(name, script_path)
     workload.run()
