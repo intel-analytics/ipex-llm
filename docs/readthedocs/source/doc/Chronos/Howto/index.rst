@@ -17,6 +17,7 @@ Forecasting
 * `Speed up inference of forecaster through ONNXRuntime <how_to_speedup_inference_of_forecaster_through_ONNXRuntime.html>`__
 * `Speed up inference of forecaster through OpenVINO <how_to_speedup_inference_of_forecaster_through_OpenVINO.html>`__
 * `Evaluate a forecaster <how_to_evaluate_a_forecaster.html>`__
+* `Use forecaster to predict future data <how_to_use_forecaster_to_predict_future_data.html>`__
 * `Generate confidence interval for prediction <how_to_generate_confidence_interval_for_prediction.html>`__
 * `Export the ONNX model files to disk <how_to_export_onnx_files.html>`__
 * `Export the OpenVINO model files to disk <how_to_export_openvino_files.html>`__
