@@ -84,7 +84,8 @@ class MMCVRayEpochRunner(BaseRayRunner, EpochBasedRunner):
                 'please set max_epochs in runner_config', DeprecationWarning)
             self._max_epochs = max_epochs
 
-        invalidInputError(self._max_epochs is not None, "max_epochs must be specified during instantiation")
+        invalidInputError(self._max_epochs is not None,
+                          "max_epochs must be specified during instantiation")
 
         for i, flow in enumerate(workflow):
             mode, epochs = flow
@@ -112,8 +113,8 @@ class MMCVRayEpochRunner(BaseRayRunner, EpochBasedRunner):
                                           f'runner has no method named "{mode}" to run an epoch')
                     epoch_runner = getattr(self, mode)
                 else:
-                    invalidInputError(False,
-                                      'mode in workflow must be a str, but got {}'.format(type(mode)))
+                    invalidInputError(False, 'mode in workflow must be a str, '
+                                             'but got {}'.format(type(mode)))
 
                 for _ in range(epochs):
                     if mode == 'train' and self.epoch >= self._max_epochs:
