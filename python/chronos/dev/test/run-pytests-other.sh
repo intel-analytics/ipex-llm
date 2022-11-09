@@ -47,6 +47,7 @@ python -m pytest -v test/bigdl/chronos/model \
                     test/bigdl/chronos/pytorch \
                     test/bigdl/chronos/simulator \
         -k "not test_forecast_tcmf_distributed"
+
 exit_status_0=$?
 then
     exit $exit_status_0
@@ -58,7 +59,8 @@ echo "Running chronos tests Part 2"
 python -m pytest -v test/bigdl/chronos/autots\
                     test/bigdl/chronos/data \
                     test/bigdl/chronos/detector \
-        -k "not test_ae_fit_score_unrolled"
+        -k "not test_forecast_tcmf_distributed"
+
 
 exit_status_0=$?
 if [ $exit_status_0 -ne 0 ];

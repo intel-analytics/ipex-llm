@@ -16,7 +16,7 @@ on:
       - 'python/nano/src/**'
       - 'python/orca/src/bigdl/orca/automl/**'
       - 'python/orca/src/bigdl/orca/data/**'
-      - '.github/workflows/chronos-prvn-python-spark-3.1-py37-ray.yml'
+      - '.github/workflows/chronos-prvn-python-spark-3.1-py37-forecaster.yml'
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
 
