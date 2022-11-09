@@ -25,6 +25,5 @@ fsspec==2021.9.0
 scikit-optimize==0.8.1
 pandas==1.1.5
 sentence-transformers
-wheel
 pytest
 
