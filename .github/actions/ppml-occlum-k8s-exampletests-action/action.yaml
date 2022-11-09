@@ -79,7 +79,7 @@ runs:
         
         if [ $status_5_spark_gbt_criteo -ne 0 ]; then
           echo "################## start spark gbt criteo"
-          echo "example.4 spark gbt criteo"
+          echo "example.5 spark gbt criteo"
           bash run_spark_gbt_criteo.sh
           if [ "`kubectl get pods | grep spark-gbt-criteo-test | awk '{print $1}'`" != "" ]; then
             gbt_criteo_driver=`kubectl get pods | grep spark-gbt-criteo-test | grep driver | awk '{print $1}'`
@@ -91,9 +91,9 @@ runs:
           fi
         fi
         
-        if [ $status_5_spark_tpch -ne 0 ]; then
+        if [ $status_6_spark_tpch -ne 0 ]; then
           echo "################## start spark tpch"
-          echo "example.4 spark tpch"
+          echo "example.6 spark tpch"
           bash run_spark_tpch.sh
           if [ "`kubectl get pods | grep spark-tpch-test | awk '{print $1}'`" != "" ]; then
             tpch_driver=`kubectl get pods | grep spark-tpch-test | awk '{print $1}'`
