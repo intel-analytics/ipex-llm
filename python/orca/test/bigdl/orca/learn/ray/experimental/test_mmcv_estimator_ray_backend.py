@@ -31,6 +31,7 @@ resource_path = os.path.join(
 
 MAX_EPOCH = 4
 
+
 class Model(nn.Module):
 
     def __init__(self):
@@ -114,28 +115,24 @@ def train_dataloader_creator(config):
     return train_loader
 
 
+def get_estimator():
+    estimator = MMCVRayEstimator(
+        mmcv_runner_creator=runner_creator,
+        config={}
+    )
+    return estimator
+
+
 class TestMMCVRayEstimator(unittest.TestCase):
 
-    @classmethod
-    def setUpClass(cls) -> None:
-        init_orca_context(cores=8, memory="8g")
-
-    @classmethod
-    def tearDownClass(cls) -> None:
-        stop_orca_context()
-
-    def setUp(self) -> None:
-        self.estimator = MMCVRayEstimator(
-            mmcv_runner_creator=runner_creator,
-            config={}
-        )
-
     def test_fit(self):
-        epoch_stats = self.estimator.fit([train_dataloader_creator], [('train', 1)])
+        estimator = get_estimator()
+        epoch_stats = estimator.fit([train_dataloader_creator], [('train', 1)])
         self.assertEqual(len(epoch_stats), MAX_EPOCH)
 
     def test_run(self):
-        epoch_stats = self.estimator.run([train_dataloader_creator], [('train', 1)])
+        estimator = get_estimator()
+        epoch_stats = estimator.run([train_dataloader_creator], [('train', 1)])
         self.assertEqual(len(epoch_stats), MAX_EPOCH)
 
 
