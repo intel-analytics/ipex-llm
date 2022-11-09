@@ -95,7 +95,7 @@ including `ray[tune]==1.9.2`, `scikit-learn`, `tensorboard`, `xgboost` together 
 
 ### To install Orca for Spark3
 
-By default, Orca is built on top of Spark 2.4.6 (with pyspark==2.4.6 as a dependency). If you want to install Orca built on top of Spark 3.1.3 (with pyspark==3.1.2 as a dependency), you can use the following command instead:
+By default, Orca is built on top of Spark 2.4.6 (with pyspark==2.4.6 as a dependency). If you want to install Orca built on top of Spark 3.1.3 (with pyspark==3.1.3 as a dependency), you can use the following command instead:
 
 ```bash
 # For the official release version

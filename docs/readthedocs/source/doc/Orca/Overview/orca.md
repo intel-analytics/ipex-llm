@@ -4,11 +4,13 @@
 
 Most AI projects start with a Python notebook running on a single laptop; however, one usually needs to go through a mountain of pains to scale it to handle larger data set in a distributed fashion. The  _**Orca**_ library seamlessly scales out your single node Python notebook across large clusters (so as to process distributed Big Data).
 
+In this page, we demonstrate how to scale the distributed training of a standard TensorFlow model to a large cluster in three simple steps.
+
 ---
 
 ### TensorFlow Bite-sized Example
 
-First of all, follow the steps [here](install.md#install-bigdl-orca) to install Orca in your environment.
+Before running this example, follow the steps [here](install.md#install-bigdl-orca) to install Orca in your environment.
 
 This section uses **TensorFlow 2.x**, and you should also install TensorFlow before running this example:
 ```bash
@@ -24,11 +26,10 @@ from bigdl.orca import init_orca_context, stop_orca_context, OrcaContext
 sc = init_orca_context(cluster_mode="local", cores=4, memory="10g", num_nodes=1)
 ```
 
-Next, perform [data-parallel processing in Orca](data-parallel-processing.md) (supporting standard Spark Dataframes, TensorFlow Dataset, PyTorch DataLoader, Pandas, etc.). Here to make things simple, we just generate some random data with Spark DataFrame:
+Next, perform [data-parallel processing in Orca](data-parallel-processing.md) (supporting standard Spark DataFrames, TensorFlow Dataset, PyTorch DataLoader, Pandas, etc.). Here to make things simple, we just generate some random data with Spark DataFrame:
 
 ```python
 import random
-from pyspark.sql.functions import array
 from pyspark.sql.types import StructType, StructField, IntegerType
 from bigdl.orca import OrcaContext
 
@@ -51,24 +52,24 @@ from tensorflow import keras
 from bigdl.orca.learn.tf2.estimator import Estimator
 
 def model_creator(config):
-  user_input = keras.layers.Input(shape=(1,), dtype="int32", name="use_input")
-  item_input = keras.layers.Input(shape=(1,), dtype="int32", name="item_input")
+    user_input = keras.layers.Input(shape=(1,), dtype="int32", name="use_input")
+    item_input = keras.layers.Input(shape=(1,), dtype="int32", name="item_input")
 
-  mlp_embed_user = keras.layers.Embedding(input_dim=num_users, output_dim=config["embed_dim"],
-                               input_length=1)(user_input)
-  mlp_embed_item = keras.layers.Embedding(input_dim=num_items, output_dim=config["embed_dim"],
-                               input_length=1)(item_input)
+    mlp_embed_user = keras.layers.Embedding(input_dim=num_users, output_dim=config["embed_dim"],
+                                            input_length=1)(user_input)
+    mlp_embed_item = keras.layers.Embedding(input_dim=num_items, output_dim=config["embed_dim"],
+                                            input_length=1)(item_input)
 
-  user_latent = keras.layers.Flatten()(mlp_embed_user)
-  item_latent = keras.layers.Flatten()(mlp_embed_item)
+    user_latent = keras.layers.Flatten()(mlp_embed_user)
+    item_latent = keras.layers.Flatten()(mlp_embed_item)
 
-  mlp_latent = keras.layers.concatenate([user_latent, item_latent], axis=1)
-  predictions = keras.layers.Dense(2, activation="sigmoid")(mlp_latent)
-  model = keras.models.Model(inputs=[user_input, item_input], outputs=predictions)
-  model.compile(optimizer='adam',
-                loss='sparse_categorical_crossentropy',
-                metrics=['accuracy'])
-  return model
+    mlp_latent = keras.layers.concatenate([user_latent, item_latent], axis=1)
+    predictions = keras.layers.Dense(2, activation="sigmoid")(mlp_latent)
+    model = keras.models.Model(inputs=[user_input, item_input], outputs=predictions)
+    model.compile(optimizer='adam',
+                  loss='sparse_categorical_crossentropy',
+                  metrics=['accuracy'])
+    return model
 
 est = Estimator.from_keras(model_creator=model_creator, backend="spark", config={"embed_dim": 8})
 est.fit(data=train,
