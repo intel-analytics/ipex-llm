@@ -41,7 +41,7 @@ class InferenceUtils:
                  batch=None,
                  inputs: List[str] = None,
                  outputs: List[str] = None,
-                 sample_size: int = 100
+                 sample_size: int = 100,
                  onnxruntime_session_options=None):
         """
         Post-training quantization on a keras model.
@@ -50,8 +50,8 @@ class InferenceUtils:
                                 batch_size or batch_size=1. Required for static quantization.
                                 It's also used as validation dataloader.
         :param precision:       Global precision of quantized model,
-                                supported type: 'int8', 'bf16', 'fp16', defaults to 'int8'.
-        :param accelerator:     Use accelerator 'None', defaults to None.
+                                supported type: 'int8', defaults to 'int8'.
+        :param accelerator:     Use accelerator 'None', 'onnxruntime', 'openvino', defaults to None.
                                 None means staying in tensorflow.
         :param metric:          A tensorflow.keras.metrics.Metric object for evaluation.
         :param accuracy_criterion:  Tolerable accuracy drop.
