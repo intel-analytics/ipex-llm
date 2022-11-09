@@ -91,6 +91,10 @@ def setup_package():
                             "torchvision==0.11.2",
                             "intel_extension_for_pytorch==1.10.100;platform_system!='Windows'"]
 
+    # this require install option --extra-index-url https://download.pytorch.org/whl/nightly/
+    pytorch_nightly_requires = ["torch~=1.14.0.dev",
+                                "torchvision~=0.15.0.dev"]
+
     pytorch_common_requires = ["pytorch_lightning==1.6.4",
                                "torchmetrics==0.7.2",
                                "opencv-python-headless",
@@ -102,6 +106,7 @@ def setup_package():
     pytorch_112_requires += pytorch_common_requires
     pytorch_111_requires += pytorch_common_requires
     pytorch_110_requires += pytorch_common_requires
+    pytorch_nightly_requires += pytorch_common_requires
 
     inference_requires = ["onnx==1.12.0",
                           "onnxruntime==1.12.1",
@@ -141,8 +146,12 @@ def setup_package():
                         "pytorch_112": pytorch_112_requires,
                         "pytorch_111": pytorch_111_requires,
                         "pytorch_110": pytorch_110_requires,
+                        "pytorch_nightly": pytorch_nightly_requires,
                         "inference": inference_requires},
         package_data={"bigdl.nano": package_data},
+        dependency_links=[
+            'https://download.pytorch.org/whl/nightly/'
+        ],
         scripts=scripts,
         package_dir={"": "src"},
         entry_points = {
