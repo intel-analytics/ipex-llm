@@ -5,17 +5,19 @@ on:
     - cron: '0 16 * * *'
   issue_comment:
     types: [created]
-  # Allows you to run this workflow manually from the Actions tab
-  workflow_dispatch:
+  pull_request:
+    branches: [ main ]
+    paths:
+      - '.github/workflows/performance-regression-test.yml'
 
 jobs:
   performace-regression-test:
     runs-on: [Rohan, ubuntu-20.04-lts]
-    if: github.event.schedule || github.event.issue.pull_request && github.event.comment.body=='APRT'
+    if: github.event.pull_request || github.event.schedule || github.event.issue.pull_request && github.event.comment.body=='APRT'
     steps:
-      # trigged by scheduling or commenting 'APRT' in a closed PR
+      # trigged by opening a PR which modifies this file or scheduling or commenting 'APRT' in a closed PR
       - name: checkout (schedule or closed pr comments)
-        if: github.event.schedule || github.event.issue.pull_request.merged_at
+        if: github.event.pull_request || github.event.schedule || github.event.issue.pull_request.merged_at
         uses: actions/checkout@v3
 
       # trigged by commenting 'APRT' in an opening PR
