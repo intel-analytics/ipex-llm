@@ -29,7 +29,7 @@ az group create \
 
 #### 2.2.2 Create Linux client with SGX support
 Create Linux VM through Azure [CLI](https://docs.microsoft.com/en-us/azure/developer/javascript/tutorial/nodejs-virtual-machine-vm/create-linux-virtual-machine-azure-cli)/[Portal](https://docs.microsoft.com/en-us/azure/virtual-machines/linux/quick-create-portal)/Powershell.
-For size of the VM, please choose DC-V3 Series VM with more than 4 vCPU cores.
+For size of the VM, please choose DCSv3 Series VM with more than 4 vCPU cores.
 
 #### 2.2.3 Pull BigDL PPML image and run on Linux client
 * Go to Azure Marketplace, search "BigDL PPML" and find `BigDL PPML: Secure Big Data AI on Intel SGX` product. Click "Create" button which will lead you to `Subscribe` page.
@@ -38,7 +38,7 @@ On `Subscribe` page, input your subscription, your Azure container registry, you
 * Go to your Azure container regsitry, check `Repostirories`, and find `intel_corporation/bigdl-ppml-trusted-big-data-ml-python-graphene`
 * Login to the created VM. Then login to your Azure container registry, pull BigDL PPML image using this command:
   ```bash
-  docker pull myContainerRegistry/intel_corporation/bigdl-ppml-trusted-big-data-ml-python-graphene
+  docker pull myContainerRegistry.azurecr.io/intel_corporation/bigdl-ppml-trusted-big-data-ml-python-graphene
   ```
 * Start container of this image
 
@@ -46,7 +46,7 @@ On `Subscribe` page, input your subscription, your Azure container registry, you
   #!/bin/bash
 
   export LOCAL_IP=YOUR_LOCAL_IP
-  export DOCKER_IMAGE=intel_corporation/bigdl-ppml-trusted-big-data-ml-python-graphene
+  export DOCKER_IMAGE=myContainerRegistry.azurecr.io/intel_corporation/bigdl-ppml-trusted-big-data-ml-python-graphene
 
   sudo docker run -itd \
       --privileged \
@@ -77,13 +77,13 @@ In your BigDL PPML container, you can run `/ppml/trusted-big-data-ml/azure/creat
 Note: Please use the same VNet information of your client to create AKS. And use DC-Series VM size(i.e.Standard_DC8ds_v3) to create AKS.
 ```bash
 /ppml/trusted-big-data-ml/azure/create-aks.sh \
---resource-group myResourceGroup \
---vnet-resource-group myVnetResourceGroup \
---vnet-name myVnetName \
---subnet-name mySubnetName \
---cluster-name myAKSName \
---vm-size myAKSNodeVMSize \
---node-count myAKSInitNodeCount
+    --resource-group myResourceGroup \
+    --vnet-resource-group myVnetResourceGroup \
+    --vnet-name myVnetName \
+    --subnet-name mySubnetName \
+    --cluster-name myAKSName \
+    --vm-size myAKSNodeVMSize \
+    --node-count myAKSInitNodeCount
 
 ```
 You can check the information by running:
@@ -243,13 +243,21 @@ Login to your client VM and enter your BigDL PPML container:
 docker exec -it spark-local bash
 ```
 Then run `az login` to login to Azure system.
-
-### 3.1 Generate enclave key to Azure Key Vault
+### 3.1 Save kubeconfig to secret
+Login to AKS use such command:
+```bash
+az aks get-credentials --resource-group  myResourceGroup --name myAKSCluster
+```
+Run such script to save kubeconfig to secret
+```bash
+/ppml/trusted-big-data-ml/azure/kubeconfig-secret.sh
+```
+### 3.2 Generate enclave key to Azure Key Vault
 Run such script to generate enclave key
 ```
 /ppml/trusted-big-data-ml/azure/generate-enclave-key-az.sh myKeyVault
 ```
-### 3.2 Generate keys
+### 3.3 Generate keys
 Run such scripts to generate keys:
 ```bash
 /ppml/trusted-big-data-ml/azure/generate-keys.sh
@@ -260,29 +268,32 @@ After generate keys, run such command to save keys in Kubernetes.
 ```
 kubectl apply -f /ppml/trusted-big-data-ml/work/keys/keys.yaml
 ```
-
-
-### 3.3 Generate password
+### 3.4 Generate password
 Run such script to save the password to Azure Key Vault
 ```bash
 /ppml/trusted-big-data-ml/azure/generate-password-az.sh myKeyVault used_password_when_generate_keys
 ```
-### 3.4 Save kubeconfig to secret
-Login to AKS use such command:
-```bash
-az aks get-credentials --resource-group  myResourceGroup --name myAKSCluster
-```
-Run such script to save kubeconfig to secret
-```bash
-/ppml/trusted-big-data-ml/azure/kubeconfig-secret.sh
-```
-### 3.5 Create the RBAC
+### 3.5 Create image pull secret from your Azure container registry
+  * If you already logged in to your Azure container registry, find your docker config json file (i.e. ~/.docker/config.json), and create secret for your registry credential like below:
+  ```bash
+  kubectl create secret generic regcred \
+  --from-file=.dockerconfigjson=<path/to/.docker/config.json> \
+  --type=kubernetes.io/dockerconfigjson
+  ```
+  * If you haven't logged in to your Azure container registry, you can create secret for your registry credential using your username and password:
+  ```bash
+  kubectl create secret docker-registry regcred --docker-server=myContainerRegistry.azurecr.io --docker-username=<your-name> --docker-password=<your-pword> --docker-email=<your-email>
+  ```
+### 3.6 Create the RBAC
 ```bash
 kubectl create serviceaccount spark
 kubectl create clusterrolebinding spark-role --clusterrole=edit --serviceaccount=default:spark --namespace=default
 ```
-
-### 3.6 Run PPML spark job
+### 3.7 Add image pull secret to service account
+```bash
+kubectl patch serviceaccount spark -p '{"imagePullSecrets": [{"name": "regcred"}]}'
+```
+### 3.8 Run PPML spark job
 The example script to run PPML spark job on AKS is as below. You can also refer to `/ppml/trusted-big-data-ml/azure/submit-spark-sgx-az.sh`
 ```bash
 RUNTIME_SPARK_MASTER=
@@ -302,22 +313,22 @@ DATA_KEY_PATH=
 secure_password=`az keyvault secret show --name "key-pass" --vault-name $KEY_VAULT_NAME --query "value" | sed -e 's/^"//' -e 's/"$//'`
 
 bash bigdl-ppml-submit.sh \
-	--master $RUNTIME_SPARK_MASTER \
-	--deploy-mode client \
-	--sgx-enabled true \
-	--sgx-log-level error \
-	--sgx-driver-memory 4g \
-	--sgx-driver-jvm-memory 2g \
-	--sgx-executor-memory 16g \
-	--sgx-executor-jvm-memory 7g \
-	--driver-memory 8g \
-	--driver-cores 4 \
-	--executor-memory 18g \
-	--executor-cores 4 \
-	--num-executors 2 \
-	--conf spark.cores.max=8 \
+    --master $RUNTIME_SPARK_MASTER \
+    --deploy-mode client \
+    --sgx-enabled true \
+    --sgx-log-level error \
+    --sgx-driver-memory 4g \
+    --sgx-driver-jvm-memory 2g \
+    --sgx-executor-memory 16g \
+    --sgx-executor-jvm-memory 7g \
+    --driver-memory 8g \
+    --driver-cores 4 \
+    --executor-memory 18g \
+    --executor-cores 4 \
+    --num-executors 2 \
+    --conf spark.cores.max=8 \
     --name spark-decrypt-sgx \
-    --conf spark.kubernetes.container.image=intelanalytics/bigdl-ppml-trusted-big-data-ml-python-graphene:$BIGDL_VERSION \
+    --conf spark.kubernetes.container.image=myContainerRegistry.azurecr.io/intel_corporation/bigdl-ppml-trusted-big-data-ml-python-graphene:$BIGDL_VERSION \
     --conf spark.kubernetes.driver.podTemplateFile=/ppml/trusted-big-data-ml/azure/spark-driver-template-az.yaml \
     --conf spark.kubernetes.executor.podTemplateFile=/ppml/trusted-big-data-ml/azure/spark-executor-template-az.yaml \
     --jars local://$SPARK_EXTRA_JAR_PATH \
@@ -332,7 +343,6 @@ bash bigdl-ppml-submit.sh \
     --verbose \
     $SPARK_EXTRA_JAR_PATH \
     $ARGS
-
 ```
 
 ## 4. Run TPC-H example
@@ -364,32 +374,34 @@ will generate roughly 10GB of input data.
 Generate primary key and data key, then save to file system.
 
 The example code for generating the primary key and data key is like below:
-```
+
+```bash
 BIGDL_VERSION=2.1.0
 java -cp '/ppml/trusted-big-data-ml/work/bigdl-$BIGDL_VERSION/jars/*:/ppml/trusted-big-data-ml/work/spark-3.1.2/conf/:/ppml/trusted-big-data-ml/work/spark-3.1.2/jars/* \
-   -Xmx10g \
-   com.intel.analytics.bigdl.ppml.examples.GenerateKeys \
-   --kmsType AzureKeyManagementService \
-   --vaultName xxx \
-   --primaryKeyPath xxx/keys/primaryKey \
-   --dataKeyPath xxx/keys/dataKey
+    -Xmx10g \
+    com.intel.analytics.bigdl.ppml.examples.GenerateKeys \
+    --kmsType AzureKeyManagementService \
+    --vaultName xxx \
+    --primaryKeyPath xxx/keys/primaryKey \
+    --dataKeyPath xxx/keys/dataKey
 ```
 
 ### 4.3 Encrypt Data
 Encrypt data with specified BigDL `AzureKeyManagementService`
 
 The example code of encrypting data is like below:
-```
+
+```bash
 BIGDL_VERSION=2.1.0
 java -cp '/ppml/trusted-big-data-ml/work/bigdl-$BIGDL_VERSION/jars/*:/ppml/trusted-big-data-ml/work/spark-3.1.2/conf/:/ppml/trusted-big-data-ml/work/spark-3.1.2/jars/* \
-   -Xmx10g \
-   com.intel.analytics.bigdl.ppml.examples.tpch.EncryptFiles \
-   --kmsType AzureKeyManagementService \
-   --vaultName xxx \
-   --primaryKeyPath xxx/keys/primaryKey \
-   --dataKeyPath xxx/keys/dataKey \
-   --inputPath xxx/dbgen \
-   --outputPath xxx/dbgen-encrypted
+    -Xmx10g \
+    com.intel.analytics.bigdl.ppml.examples.tpch.EncryptFiles \
+    --kmsType AzureKeyManagementService \
+    --vaultName xxx \
+    --primaryKeyPath xxx/keys/primaryKey \
+    --dataKeyPath xxx/keys/dataKey \
+    --inputPath xxx/dbgen \
+    --outputPath xxx/dbgen-encrypted
 ```
 
 After encryption, you may upload encrypted data to Azure Data Lake store.
@@ -406,7 +418,7 @@ location of the input data and where the output should be saved.
 
 The example script to run a query is like:
 
-```
+```bash
 export RUNTIME_DRIVER_MEMORY=8g
 export RUNTIME_DRIVER_PORT=54321
 
@@ -424,22 +436,22 @@ INPUT_DIR=xxx/dbgen-encrypted
 OUTPUT_DIR=xxx/output
 
 bash bigdl-ppml-submit.sh \
-	--master $RUNTIME_SPARK_MASTER \
-	--deploy-mode client \
-	--sgx-enabled true \
-	--sgx-log-level error \
-	--sgx-driver-memory 4g \
-	--sgx-driver-jvm-memory 2g \
-	--sgx-executor-memory 16g \
-	--sgx-executor-jvm-memory 7g \
-	--driver-memory 8g \
-	--driver-cores 4 \
-	--executor-memory 18g \
-	--executor-cores 4 \
-	--num-executors 2 \
-	--conf spark.cores.max=8 \
+    --master $RUNTIME_SPARK_MASTER \
+    --deploy-mode client \
+    --sgx-enabled true \
+    --sgx-log-level error \
+    --sgx-driver-memory 4g \
+    --sgx-driver-jvm-memory 2g \
+    --sgx-executor-memory 16g \
+    --sgx-executor-jvm-memory 7g \
+    --driver-memory 8g \
+    --driver-cores 4 \
+    --executor-memory 18g \
+    --executor-cores 4 \
+    --num-executors 2 \
+    --conf spark.cores.max=8 \
     --name spark-tpch-sgx \
-    --conf spark.kubernetes.container.image=intelanalytics/bigdl-ppml-trusted-big-data-ml-python-graphene:$BIGDL_VERSION \
+    --conf spark.kubernetes.container.image=myContainerRegistry.azurecr.io/intel_corporation/bigdl-ppml-trusted-big-data-ml-python-graphene:$BIGDL_VERSION \
     --conf spark.kubernetes.driver.podTemplateFile=/ppml/trusted-big-data-ml/azure/spark-driver-template-az.yaml \
     --conf spark.kubernetes.executor.podTemplateFile=/ppml/trusted-big-data-ml/azure/spark-executor-template-az.yaml \
     --conf spark.sql.auto.repartition=true \
@@ -461,11 +473,3 @@ bash bigdl-ppml-submit.sh \
 INPUT_DIR is the TPC-H's data dir.
 OUTPUT_DIR is the dir to write the query result.
 The optional parameter [QUERY] is the number of the query to run e.g 1, 2, ..., 22
-
-
-
-
-
-
-
-

@@ -1,6 +1,37 @@
 # Installation
 
-We recommend using [conda](https://docs.conda.io/projects/conda/en/latest/user-guide/install/) to prepare the Python environment. Install conda and create an environment for BigDL Orca:
+## Install Java
+You need to download and install JDK in the environment, and properly set the environment variable `JAVA_HOME`. JDK8 is highly recommended.
+
+```bash
+# For Ubuntu
+sudo apt-get install openjdk-8-jre
+export JAVA_HOME=/usr/lib/jvm/java-8-openjdk-amd64/
+
+# For CentOS
+su -c "yum install java-1.8.0-openjdk"
+export JAVA_HOME=/usr/lib/jvm/java-1.8.0-openjdk-1.8.0.282.b08-1.el7_9.x86_64/jre
+
+export PATH=$PATH:$JAVA_HOME/bin
+java -version  # Verify the version of JDK.
+```
+
+## Install Anaconda
+We recommend using [conda](https://docs.conda.io/projects/conda/en/latest/user-guide/install/) to prepare the Python environment.
+
+You can follow the steps below to install conda:
+```bash
+# Download Anaconda installation script 
+wget -P /tmp https://repo.anaconda.com/archive/Anaconda3-2020.02-Linux-x86_64.sh
+
+# Execute the script to install conda
+bash /tmp/Anaconda3-2020.02-Linux-x86_64.sh
+
+# Run this command in your terminal to activate conda
+source ~/.bashrc
+``` 
+
+Then create a Python environment for BigDL Orca:
 ```bash
 conda create -n py37 python=3.7  # "py37" is conda environment name, you can use any name you like.
 conda activate py37

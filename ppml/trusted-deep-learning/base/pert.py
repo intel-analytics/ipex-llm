@@ -53,7 +53,7 @@ def should_distribute():
 def is_distributed():
     return dist.is_available() and dist.is_initialized()
 
-#定义数据集,方便后续模型读取批量数据。
+# Define dataset, so it is easier to load different split in the dataset
 class Dataset(torch.utils.data.Dataset):
     # data_type is actually split, so that we can define dataset for train set/validate set
     def __init__(self, data_type, dataset_load):

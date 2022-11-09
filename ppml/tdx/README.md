@@ -34,8 +34,8 @@ To deploy an actual workload with TDX-CC, you need to prepare the environment in
 7. Test TDX
     TDX tests are used to validate basic functionality of TDX software stack. The tests focus on TDVM lifecycle management and environment validation.
 ###  **Kata CCv0**
-Refer to the [`ccv0.sh`](https://github.com/kata-containers/kata-containers/blob/CCv0/docs/how-to/ccv0.sh) to install kata ccv0.
-To ensure the successful creation of Kata confidential containers, please follow the [`how-to-build-and-test-ccv0`](https://github.com/kata-containers/kata-containers/blob/CCv0/docs/how-to/how-to-build-and-test-ccv0.md#using-kubernetes-for-end-to-end-provisioning-of-a-kata-confidential-containers-pod-with-an-unencrypted-image) to verify.
+Refer to the [`operator`](https://github.com/confidential-containers/operator/blob/main/docs/INSTALL.md) to install kata ccv0.    
+To ensure the successful creation of Kata confidential containers, please follow the [`verify`](https://github.com/confidential-containers/operator/blob/main/docs/INSTALL.md#verify) to check if `kata-qemu-tdx` RuntimeClasses is installed.
 
 ## Before running the code
 #### 1. Prepare the key

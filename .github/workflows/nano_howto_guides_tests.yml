@@ -1,5 +1,10 @@
 name: Nano Unit Tests for How-To Guides Notebooks
 
+# Cancel previous runs in the PR when you push new commits
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.run_id }}
+  cancel-in-progress: true
+  
 # Controls when the workflow will run
 on:
   # Triggers the workflow on push or pull request events but only for the main branch
@@ -45,11 +50,9 @@ jobs:
           $CONDA/bin/conda create -n howto-guides-inference-pytorch-onnx -y python==3.7.10 setuptools=58.0.4
           source $CONDA/bin/activate howto-guides-inference-pytorch-onnx
           $CONDA/bin/conda info
-          bash python/nano/dev/build_and_install.sh linux default false pytorch
+          bash python/nano/dev/build_and_install.sh linux default false pytorch,inference
           source bigdl-nano-init
           pip install pytest nbmake
-          pip install neural-compressor==1.11.0
-          pip install onnx onnxruntime onnxruntime-extensions onnxsim
           bash python/nano/tutorial/notebook/inference/pytorch/run-nano-howto-guides-inference-pytorch-tests.sh onnx
           source $CONDA/bin/deactivate
           $CONDA/bin/conda remove -n howto-guides-inference-pytorch-onnx --all
@@ -66,7 +69,7 @@ jobs:
           source bigdl-nano-init
           pip install pytest nbmake
           pip install ipykernel==5.5.6
-          pip install openvino-dev
+          pip install openvino-dev==2022.2.0
           bash python/nano/tutorial/notebook/inference/pytorch/run-nano-howto-guides-inference-pytorch-tests.sh openvino
           source $CONDA/bin/deactivate
           $CONDA/bin/conda remove -n howto-guides-inference-pytorch-openvino --all
@@ -79,16 +82,11 @@ jobs:
           $CONDA/bin/conda create -n howto-guides-inference-pytorch-openvino -y python==3.7.10 setuptools=58.0.4
           source $CONDA/bin/activate howto-guides-inference-pytorch-openvino
           $CONDA/bin/conda info
-          bash python/nano/dev/build_and_install.sh linux default false pytorch
+          bash python/nano/dev/build_and_install.sh linux default false pytorch,inference
           source bigdl-nano-init
           pip install pytest nbmake
           pip install ipykernel==5.5.6
           pip install torch==1.12.0 torchvision --extra-index-url https://download.pytorch.org/whl/cpu 
-          pip install --upgrade intel-extension-for-pytorch
-          pip install onnx==1.12.0 onnxruntime==1.12.1 onnxruntime-extensions
-          pip install openvino-dev
-          pip install neural-compressor==1.12
-          pip install --upgrade numpy==1.21.6
           bash python/nano/tutorial/notebook/inference/pytorch/run-nano-howto-guides-inference-pytorch-tests.sh inferenceoptimizer
           source $CONDA/bin/deactivate
           $CONDA/bin/conda remove -n howto-guides-inference-pytorch-openvino --all

@@ -1,5 +1,10 @@
 name: Python Style Check
 
+# Cancel previous runs in the PR when you push new commits
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.run_id }}
+  cancel-in-progress: true
+
 # Controls when the action will run.
 on:
   push:
@@ -38,7 +43,7 @@ jobs:
       - name: Install dependencies
         run: pip install pycodestyle
              pip install pydocstyle
-             pip install mypy
+             pip install mypy==0.982
              pip install wheel
 
       # Runs a single command using the runners shell

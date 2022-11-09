@@ -25,7 +25,7 @@ spec:
       #- name: ATTESTATION_POLICYID
       #  valueFrom:
       #    secretKeyRef:
-      #      name: policy-id-secret
+      #      name: kms-secret
       #      key: policy_id
     volumeMounts:
       - name: device-plugin
@@ -36,9 +36,8 @@ spec:
         mountPath: /ppml/trusted-big-data-ml/work/data
       - name: secure-keys
         mountPath: /ppml/trusted-big-data-ml/work/keys
-      - name: nfs-storage
+      - name: kubeconfig
         mountPath: /root/.kube/config
-        subPath: kubeconfig
      #resources:
       #requests:
         #cpu: 16
@@ -65,3 +64,6 @@ spec:
     - name: nfs-storage
       persistentVolumeClaim:
         claimName: nfsvolumeclaim
+    - name: kubeconfig
+      secret:
+        secretName: kubeconfig-secret

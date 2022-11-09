@@ -187,10 +187,7 @@ spark native mode, sgx enabled
 bash bigdl-ppml-submit.sh \
         --master local[2] \
         --sgx-enabled true \
-        --sgx-log-level error \
-        --sgx-driver-memory 64g \
         --sgx-driver-jvm-memory 12g \
-        --sgx-executor-memory 64g \
         --sgx-executor-jvm-memory 12g \
         --driver-memory 32g \
         --driver-cores 8 \
@@ -227,10 +224,7 @@ bash bigdl-ppml-submit.sh \
         --master $RUNTIME_SPARK_MASTER \
         --deploy-mode client \
         --sgx-enabled true \
-        --sgx-log-level error \
-        --sgx-driver-memory 64g \
         --sgx-driver-jvm-memory 12g \
-        --sgx-executor-memory 64g \
         --sgx-executor-jvm-memory 12g \
         --driver-memory 32g \
         --driver-cores 4 \
@@ -269,10 +263,7 @@ bash bigdl-ppml-submit.sh \
         --master $RUNTIME_SPARK_MASTER \
         --deploy-mode cluster \
         --sgx-enabled true \
-        --sgx-log-level error \
-        --sgx-driver-memory 64g \
         --sgx-driver-jvm-memory 12g \
-        --sgx-executor-memory 64g \
         --sgx-executor-jvm-memory 12g \
         --driver-memory 32g \
         --driver-cores 4 \

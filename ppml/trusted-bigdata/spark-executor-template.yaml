@@ -30,6 +30,9 @@ spec:
       - name: nfs-storage
         mountPath: /root/.kube/config
         subPath: kubeconfig
+      - name: nfs-storage
+        mountPath: /ppml/encrypted
+        subPath: encrypted
     resources:
       requests:
         cpu: 8

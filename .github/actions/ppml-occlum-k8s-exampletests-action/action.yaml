@@ -7,8 +7,8 @@ runs:
     - name: Run tests
       shell: bash
       run: |
-        docker pull 10.239.45.10/arda/intelanalytics/bigdl-ppml-trusted-big-data-ml-scala-occlum:2.1.0-SNAPSHOT
-        docker tag 10.239.45.10/arda/intelanalytics/bigdl-ppml-trusted-big-data-ml-scala-occlum:2.1.0-SNAPSHOT intelanalytics/bigdl-ppml-trusted-big-data-ml-scala-occlum:2.1.0-SNAPSHOT
+        docker pull 10.239.45.10/arda/intelanalytics/bigdl-ppml-trusted-big-data-ml-scala-occlum:2.2.0-SNAPSHOT
+        docker tag 10.239.45.10/arda/intelanalytics/bigdl-ppml-trusted-big-data-ml-scala-occlum:2.2.0-SNAPSHOT intelanalytics/bigdl-ppml-trusted-big-data-ml-scala-occlum:2.2.0-SNAPSHOT
 
         export NO_PROXY=10.239.45.10:8081,10.112.231.51,10.239.45.10,172.168.0.205
         export kubernetes_master_url=172.168.0.205
@@ -17,56 +17,98 @@ runs:
 
         status_1_spark_pi=1
         status_2_spark_lr=1
-        status_3_spark_sql=0
+        status_3_spark_sql=1
         status_4_spark_gbt=1
+        status_5_spark_gbt_criteo=1
+        status_6_spark_tpch=1
 
         if [ $status_1_spark_pi -ne 0 ]; then
           echo "################## start spark pi"
           echo "example.1 spark pi"
           bash run_spark_pi.sh
-          if [ "`kubectl get pods | grep spark-pi | awk '{print $1}'`" != "" ]; then
-            kubectl delete pods `kubectl get pods | grep spark-pi | awk '{print $1}'`
+          if [ "`kubectl get pods | grep spark-pi-test | awk '{print $1}'`" != "" ]; then
+            pi_driver=`kubectl get pods | grep spark-pi-test | awk '{print $1}'`
           fi
+          kubectl logs $pi_driver | egrep 'Pi is roughly 3'
           status_1_spark_pi=$(echo $?)
+          if [ "`kubectl get pods | grep spark-pi-test | awk '{print $1}'`" != "" ]; then
+            kubectl delete pods `kubectl get pods | grep spark-pi-test | awk '{print $1}'`
+          fi
         fi
 
         if [ $status_2_spark_lr -ne 0 ]; then
           echo "################## start spark lr"
           echo "example.2 spark lr"
           bash run_spark_lr.sh
-          if [ "`kubectl get pods | grep sparklr | awk '{print $1}'`" != "" ]; then
-            kubectl delete pods `kubectl get pods | grep sparklr | awk '{print $1}'`
+          if [ "`kubectl get pods | grep spark-lr-test | awk '{print $1}'`" != "" ]; then
+            lr_driver=`kubectl get pods | grep spark-lr-test | awk '{print $1}'`
           fi
+          kubectl logs $lr_driver | egrep 'Training data results'
           status_2_spark_lr=$(echo $?)
+          if [ "`kubectl get pods | grep spark-lr-test | awk '{print $1}'`" != "" ]; then
+            kubectl delete pods `kubectl get pods | grep spark-lr-test | awk '{print $1}'`
+          fi
         fi
 
         if [ $status_3_spark_sql -ne 0 ]; then
           echo "################## start spark sql"
           echo "example.3 spark sql"
           bash run_spark_sql.sh
-          if [ "`kubectl get pods | grep sparksql | awk '{print $1}'`" != "" ]; then
-            kubectl delete pods `kubectl get pods | grep sparksql | awk '{print $1}'`
+          if [ "`kubectl get pods | grep spark-sql-test | awk '{print $1}'`" != "" ]; then
+            sql_driver=`kubectl get pods | grep spark-sql-test | awk '{print $1}'`
           fi
-          if [ "`kubectl get pods | grep spark-sql-example | awk '{print $1}'`" != "" ]; then
-            kubectl delete pods `kubectl get pods | grep spark-sql-example | awk '{print $1}'`
-          fi
+          kubectl logs $sql_driver | egrep 'Name: Michael'
           status_3_spark_sql=$(echo $?)
+          if [ "`kubectl get pods | grep spark-sql-test | awk '{print $1}'`" != "" ]; then
+            kubectl delete pods `kubectl get pods | grep spark-sql-test | awk '{print $1}'`
+          fi
         fi
 
         if [ $status_4_spark_gbt -ne 0 ]; then
           echo "################## start spark gbt"
           echo "example.4 spark gbt"
           bash run_spark_gbt.sh
-          if [ "`kubectl get pods | grep sparkgbt | awk '{print $1}'`" != "" ]; then
-            kubectl delete pods `kubectl get pods | grep sparkgbt | awk '{print $1}'`
+          if [ "`kubectl get pods | grep spark-gbt-example-test | awk '{print $1}'`" != "" ]; then
+            gbt_example_driver=`kubectl get pods | grep spark-gbt-example-test | awk '{print $1}'`
           fi
-          if [ "`kubectl get pods | grep spark-gbt-example | awk '{print $1}'`" != "" ]; then
-            kubectl delete pods `kubectl get pods | grep spark-gbt-example | awk '{print $1}'`
-          fi
+          kubectl logs $gbt_example_driver | egrep 'Training data results'
           status_4_spark_gbt=$(echo $?)
+          if [ "`kubectl get pods | grep spark-gbt-example-test | awk '{print $1}'`" != "" ]; then
+            kubectl delete pods `kubectl get pods | grep spark-gbt-example-test | awk '{print $1}'`
+          fi
+        fi
+        
+        if [ $status_5_spark_gbt_criteo -ne 0 ]; then
+          echo "################## start spark gbt criteo"
+          echo "example.5 spark gbt criteo"
+          bash run_spark_gbt_criteo.sh
+          if [ "`kubectl get pods | grep spark-gbt-criteo-test | awk '{print $1}'`" != "" ]; then
+            gbt_criteo_driver=`kubectl get pods | grep spark-gbt-criteo-test | grep driver | awk '{print $1}'`
+          fi
+          kubectl logs $gbt_criteo_driver | egrep 'end time is'
+          status_5_spark_gbt_criteo=$(echo $?)
+          if [ "`kubectl get pods | grep spark-gbt-criteo-test | awk '{print $1}'`" != "" ]; then
+            kubectl delete pods `kubectl get pods | grep spark-gbt-criteo-test | grep driver | awk '{print $1}'`
+          fi
+        fi
+        
+        if [ $status_6_spark_tpch -ne 0 ]; then
+          echo "################## start spark tpch"
+          echo "example.6 spark tpch"
+          bash run_spark_tpch.sh
+          if [ "`kubectl get pods | grep spark-tpch-test | awk '{print $1}'`" != "" ]; then
+            tpch_driver=`kubectl get pods | grep spark-tpch-test | awk '{print $1}'`
+          fi
+          kubectl logs $tpch_driver | egrep '22 finished-'
+          status_6_spark_tpch=$(echo $?)
+          if [ "`kubectl get pods | grep spark-tpch-test | awk '{print $1}'`" != "" ]; then
+            kubectl delete pods `kubectl get pods | grep spark-tpch-test | awk '{print $1}'`
+          fi
         fi
 
         echo "status_1_spark_pi $status_1_spark_pi"
         echo "status_2_spark_lr $status_2_spark_lr"
         #echo "status_3_spark_sql $status_3_spark_sql"
         echo "status_4_spark_gbt $status_4_spark_gbt"
+        echo "status_5_spark_gbt_criteo $status_5_spark_gbt_criteo"
+        echo "status_6_spark_tpch $status_6_spark_tpch"

@@ -1,0 +1,14 @@
+includes:
+  - base.yaml
+# dcap
+targets:
+  # copy bins
+  - target: /bin
+    copy:
+      - files:
+          - /root/demos/remote_attestation/dcap/c_app/dcap_c_test
+  # copy lib
+  - target: /opt/occlum/glibc/lib
+    copy:
+      - files:
+          - /opt/occlum/toolchains/dcap_lib/glibc/libocclum_dcap.so.0.1.0

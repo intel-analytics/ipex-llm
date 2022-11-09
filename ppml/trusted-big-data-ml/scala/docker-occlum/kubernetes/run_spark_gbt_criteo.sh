@@ -33,5 +33,5 @@ ${SPARK_HOME}/bin/spark-submit \
     --conf spark.kubernetes.driverEnv.SGX_DRIVER_JVM_MEM_SIZE="3G" \
     --conf spark.rpc.askTimeout=600s \
     --conf spark.executor.heartbeatInterval=100s \
-    local:/opt/spark/examples/jars/spark-examples_2.12-3.1.2.jar \
+    local:/opt/spark/examples/jars/spark-examples_2.12-3.1.3.jar \
     -i /host/data/gbt_data -s /host/data/path_to_save -I 20 -d 5

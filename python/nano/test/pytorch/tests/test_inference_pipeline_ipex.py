@@ -259,3 +259,29 @@ class TestInferencePipeline(TestCase):
             assert isinstance(model, PytorchIPEXJITModel)
         except:
             pass
+
+    def test_pipeline_with_single_tensor(self):
+        input_sample = torch.rand(1, 3, 32, 32)
+        inference_opt = InferenceOptimizer()
+        inference_opt.optimize(model=self.model,
+                               training_data=input_sample,
+                               thread_num=1,
+                               latency_sample_num=10)
+
+    def test_pipeline_with_single_tuple_of_tensor(self):
+        input_sample = (torch.rand(1, 3, 32, 32), torch.Tensor([1]).int())
+        inference_opt = InferenceOptimizer()
+        inference_opt.optimize(model=self.model,
+                               training_data=input_sample,
+                               thread_num=1,
+                               latency_sample_num=10)
+
+    def test_pipeline_accuracy_with_single_tuple_of_tensor(self):
+        input_sample = (torch.rand(1, 3, 32, 32), torch.Tensor([1]).int())
+        inference_opt = InferenceOptimizer()
+        inference_opt.optimize(model=self.model,
+                               training_data=input_sample,
+                               validation_data=input_sample,
+                               metric=self.metric,
+                               thread_num=1,
+                               latency_sample_num=10)
