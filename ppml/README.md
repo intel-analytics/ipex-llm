@@ -89,7 +89,8 @@ Note: This public image is only for demo purposes, it is non-production. For sec
 # LOCAL_IP means your local IP address.
 export KEYS_PATH=YOUR_LOCAL_KEYS_PATH
 export LOCAL_IP=YOUR_LOCAL_IP
-export DOCKER_IMAGE=intelanalytics/bigdl-ppml-trusted-big-data-ml-python-graphene:devel
+# ppml graphene image is deprecated, please use the gramine version
+export DOCKER_IMAGE=intelanalytics/bigdl-ppml-trusted-big-data-ml-python-gramine-reference:2.2.0-SNAPSHOT
 
 sudo docker pull $DOCKER_IMAGE
 
