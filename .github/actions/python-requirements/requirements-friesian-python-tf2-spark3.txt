@@ -23,5 +23,4 @@ tensorflow==2.6.2
 ray[default]==1.9.1
 sentence-transformers
 deepctr_torch
-deepctr==0.9.2
 wheel
