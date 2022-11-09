@@ -109,11 +109,15 @@ pip install --pre --upgrade bigdl-orca-spark3[ray]
 pip install --pre --upgrade bigdl-orca-spark3[automl]
 ```
 
-__Note__: You should only install Orca built on top of __ONE__ Spark version, but not both. If 
+__Note__: You should only install Orca built on top of __ONE__ Spark version, but not both. If you want to switch the Spark version, please [**uninstall**](#to-uninstall-orca) Orca cleanly before reinstall.
 
 ### To uninstall Orca
 ```bash
+# For default Orca built on top of Spark 2.4.6
 pip uninstall bigdl-orca bigdl-dllib bigdl-tf bigdl-math bigdl-core
 
+# For Orca built on top of Spark 3.1.3
 pip uninstall bigdl-orca-spark3 bigdl-dllib-spark3 bigdl-tf bigdl-math bigdl-core
 ```
+
+__Note__: If necessary, you need to manually uninstall `pyspark` and other [dependencies](https://github.com/intel-analytics/BigDL/tree/main/python/requirements/orca) introduced by Orca.
