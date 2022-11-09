@@ -27,7 +27,7 @@ fi
 
 ray stop -f
 
-echo "Running chronos tests onnxrt16"
+echo "Running chronos tests foreacster"
 python -m pytest -v test/bigdl/chronos/forecaster
 
 
