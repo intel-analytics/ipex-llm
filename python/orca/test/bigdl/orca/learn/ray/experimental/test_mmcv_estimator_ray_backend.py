@@ -16,15 +16,10 @@
 
 import unittest
 import os
-import random
-import shutil
 import torch
 import torch.nn as nn
-import torch.nn.functional as F
 import torch.optim as optim
-import torchvision.transforms as transforms
 from torch.utils.data import DataLoader
-from torchvision.datasets import CIFAR10
 
 from mmcv.runner import EpochBasedRunner
 from mmcv.utils import get_logger
@@ -58,11 +53,11 @@ class Model(nn.Module):
         y = self.out_act(a3)
         return y
 
-    def train_step(self, data, optimizer):
+    def train_step(self, data, optimizer, **kwargs):
         features, labels = data
         predicts = self(features)  # -> self.__call__() -> self.forward()
         loss = self.loss_fn(predicts, labels)
-        return {'loss': loss}
+        return {'loss': loss.item()}
 
 
 def runner_creator(config):

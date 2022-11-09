@@ -14,7 +14,10 @@
 # limitations under the License.
 #
 
+import time
+import mmcv
 from mmcv.runner import EpochBasedRunner
+from mmcv.runner.utils import get_host_info
 from mmcv.parallel.distributed import MMDistributedDataParallel
 from bigdl.orca.learn.pytorch.utils import AverageMeterCollection
 from bigdl.orca.learn.pytorch.experimential.core.base_ray_runner import BaseRayRunner
@@ -64,7 +67,7 @@ class MMCVRayEpochRunner(BaseRayRunner, EpochBasedRunner):
         return self.run(data_loaders, workflow, max_epochs, **kwargs)
 
     def run(self,
-            data_loaders: List[DataLoader],
+            data_loaders: List[Callable],
             workflow: List[Tuple[str, int]],
             max_epochs: Optional[int] = None,
             **kwargs) -> List:
