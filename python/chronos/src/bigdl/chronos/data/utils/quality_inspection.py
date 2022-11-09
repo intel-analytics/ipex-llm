@@ -224,7 +224,14 @@ def _abnormal_value_check(df, dt_col, id_col, threshold=10):
         if column == dt_col or column == id_col:
             continue
         df_col = df[column]
+        flag = True
         for val in df_col:
+            if isinstance(val, str):
+                flag = False
+                break
+        for val in df_col:
+            if flag is False:
+                break  # skip columns containing str
             if df_col.std() != 0 and abs((val - df_col.mean()) / df_col.std()) > threshold:
                 logging.warning(f"Some values of column {column} exceeds the mean plus/minus "
                                 f"{threshold} times standard deviation, please call "
@@ -260,7 +267,14 @@ def _abs_abnormal_value_repair(df, dt_col, id_col, threshold):
     for column in res_df.columns:
         if column == dt_col or column == id_col:
             continue
+        flag = True
         for i in range(len(res_df[column])):
+            if isinstance(res_df[column][i], str):
+                flag = False
+                break
+        for i in range(len(res_df[column])):
+            if flag is False:
+                break  # skip columns containing str
             if res_df[column][i] < threshold[0] or res_df[column][i] > threshold[1]:
                 # first change abnormal value to N/A
                 res_df[column][i] = np.nan
@@ -274,7 +288,14 @@ def _rel_abnormal_value_repair(df, dt_col, id_col, threshold):
     for column in res_df.columns:
         if column == dt_col or column == id_col:
             continue
+        flag = True
         for i in range(len(res_df[column])):
+            if isinstance(res_df[column][i], str):
+                flag = False
+                break
+        for i in range(len(res_df[column])):
+            if flag is False:
+                break  # skip columns containing str
             if res_df[column][i] > res_df[column].mean() + threshold * res_df[column].std() or \
                res_df[column][i] < res_df[column].mean() - threshold * res_df[column].std():
                 # first change abnormal value to N/A
