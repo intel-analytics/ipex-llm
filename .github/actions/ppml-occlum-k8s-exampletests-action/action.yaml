@@ -99,7 +99,7 @@ runs:
             tpch_driver=`kubectl get pods | grep spark-tpch-test | awk '{print $1}'`
           fi
           kubectl logs $tpch_driver | egrep '22 finished'
-          status_5_spark_tpch=$(echo $?)
+          status_6_spark_tpch=$(echo $?)
           if [ "`kubectl get pods | grep spark-tpch-test | awk '{print $1}'`" != "" ]; then
             kubectl delete pods `kubectl get pods | grep spark-tpch-test | awk '{print $1}'`
           fi
