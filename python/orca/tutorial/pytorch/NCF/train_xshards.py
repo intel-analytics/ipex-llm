@@ -40,7 +40,6 @@ sc = init_orca_context()
 
 # Step 2: Define train and test datasets using Orca XShards
 dataset_dir = "./ml-1m"
-num_ng = 4
 
 
 def ng_sampling(data):
@@ -53,12 +52,12 @@ def ng_sampling(data):
         train_mat[row[0], row[1]] = 1
 
     # negative sampling
-    np.random.seed(0)
+    num_ng = 4  # sample 4 negative items for training
     features_ps = data_X
     features_ng = []
     for x in features_ps:
         u = x[0]
-        for t in range(num_ng):  # sample 4 negative items for training
+        for t in range(num_ng):
             j = np.random.randint(item_num)
             while (u, j) in train_mat:
                 j = np.random.randint(item_num)
@@ -106,14 +105,14 @@ def model_creator(config):
 def optimizer_creator(model, config):
     return optim.Adam(model.parameters(), lr=config['lr'])
 
-loss_function = nn.BCEWithLogitsLoss()
+loss = nn.BCEWithLogitsLoss()
 
 
 # Step 4: Distributed training with Orca PyTorch Estimator
 backend = "spark"  # "ray" or "spark"
 
 est = Estimator.from_torch(model=model_creator, optimizer=optimizer_creator,
-                           loss=loss_function,
+                           loss=loss,
                            metrics=[Accuracy(), Precision(), Recall()],
                            backend=backend,
                            config={'user_num': user_num, 'item_num': item_num,
