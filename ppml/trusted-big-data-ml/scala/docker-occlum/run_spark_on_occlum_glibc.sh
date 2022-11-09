@@ -141,6 +141,9 @@ build_spark() {
     # Copy python examples and unzip python lib
     mkdir -p image/py-examples
     cp -rf /opt/py-examples/* image/py-examples
+    # Copy scala files for absolute path examples
+    mkdir -p image/examples/
+    cp -rf /opt/spark/examples/* image/examples/
     # Copy JVM and class file into Occlum instance and build
     cd /opt/occlum_spark
     mkdir -p image/usr/lib/jvm
