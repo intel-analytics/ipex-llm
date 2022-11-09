@@ -78,7 +78,6 @@ class MMCVRayEstimator(BaseRayEstimator):
             return epoch_stats
         else:
             return epoch_stats
-        return worker_stats
 
     def run(self,
             data_loaders_creators: List[Callable],

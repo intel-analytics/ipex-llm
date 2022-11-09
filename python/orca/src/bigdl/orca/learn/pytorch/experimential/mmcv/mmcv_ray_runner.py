@@ -16,6 +16,7 @@
 
 import time
 import mmcv
+import torch
 from mmcv.runner import EpochBasedRunner
 from mmcv.runner.utils import get_host_info
 from mmcv.parallel.distributed import MMDistributedDataParallel
@@ -157,7 +158,13 @@ class MMCVRayEpochRunner(BaseRayRunner, EpochBasedRunner):
                                             **kwargs)
             if kwargs.get("metric_meters"):
                 metric_meters = kwargs["metric_meters"]
-                metric_meters.update(outputs, n=len(data_batch))
+                copy = dict()
+                for k, v in outputs.items():
+                    if isinstance(v, torch.Tensor):
+                        copy[k] = v.item()
+                    else:
+                        copy[k] = v
+                metric_meters.update(copy, n=len(data_batch))
         else:
             outputs = self.model.val_step(data_batch, self.optimizer, **kwargs)
         if not isinstance(outputs, dict):

@@ -29,6 +29,7 @@ from bigdl.orca.learn.pytorch.experimential.mmcv.mmcv_ray_estimator import MMCVR
 resource_path = os.path.join(
     os.path.realpath(os.path.dirname(__file__)), "../../../resources")
 
+MAX_EPOCH = 4
 
 class Model(nn.Module):
 
@@ -57,7 +58,7 @@ class Model(nn.Module):
         features, labels = data
         predicts = self(features)  # -> self.__call__() -> self.forward()
         loss = self.loss_fn(predicts, labels)
-        return {'loss': loss.item()}
+        return {'loss': loss}
 
 
 def runner_creator(config):
@@ -71,7 +72,7 @@ def runner_creator(config):
         optimizer=optimizer,
         work_dir='./work_dir',
         logger=logger,
-        max_epochs=4)
+        max_epochs=MAX_EPOCH)
 
     # learning rate scheduler config
     lr_config = dict(policy='step', step=[2, 3])
@@ -130,10 +131,12 @@ class TestMMCVRayEstimator(unittest.TestCase):
         )
 
     def test_fit(self):
-        self.estimator.fit([train_dataloader_creator], [('train', 1)])
+        epoch_stats = self.estimator.fit([train_dataloader_creator], [('train', 1)])
+        self.assertEqual(len(epoch_stats), MAX_EPOCH)
 
     def test_run(self):
-        self.estimator.run([train_dataloader_creator], [('train', 1)])
+        epoch_stats = self.estimator.run([train_dataloader_creator], [('train', 1)])
+        self.assertEqual(len(epoch_stats), MAX_EPOCH)
 
 
 if __name__ == "__main__":
