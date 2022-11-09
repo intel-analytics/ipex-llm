@@ -149,9 +149,6 @@ def setup_package():
                         "pytorch_nightly": pytorch_nightly_requires,
                         "inference": inference_requires},
         package_data={"bigdl.nano": package_data},
-        dependency_links=[
-            'https://download.pytorch.org/whl/nightly/'
-        ],
         scripts=scripts,
         package_dir={"": "src"},
         entry_points = {
