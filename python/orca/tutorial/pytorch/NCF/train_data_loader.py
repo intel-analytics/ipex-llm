@@ -19,6 +19,7 @@
 #
 
 # Step 0: Import necessary libraries
+import os
 import numpy as np
 import pandas as pd
 
@@ -86,7 +87,7 @@ class NCFData(data.Dataset):
 
 def train_loader_func(config, batch_size):
     data_X = pd.read_csv(
-        config['dataset_dir']+"/ratings.dat",
+        os.path.join(config['dataset_dir'], 'ratings.dat'),
         sep="::", header=None, names=['user', 'item'],
         usecols=[0, 1], dtype={0: np.int64, 1: np.int64})
     user_num = data_X['user'].max() + 1
@@ -112,7 +113,7 @@ def train_loader_func(config, batch_size):
 
 def test_loader_func(config, batch_size):
     data_X = pd.read_csv(
-        config['dataset_dir']+"/ratings.dat",
+        os.path.join(config['dataset_dir'], 'ratings.dat'),
         sep="::", header=None, names=['user', 'item'],
         usecols=[0, 1], dtype={0: np.int64, 1: np.int64})
 
@@ -140,7 +141,7 @@ def test_loader_func(config, batch_size):
 # Step 3: Define the model, optimizer and loss
 def model_creator(config):
     data_X = pd.read_csv(
-        config['dataset_dir']+"/ratings.dat",
+        os.path.join(config['dataset_dir'], 'ratings.dat'),
         sep="::", header=None, names=['user', 'item'],
         usecols=[0, 1], dtype={0: np.int64, 1: np.int64})
     user_num = data_X['user'].max() + 1
