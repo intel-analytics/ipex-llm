@@ -76,6 +76,34 @@ runs:
             kubectl delete pods `kubectl get pods | grep spark-gbt-example-test | awk '{print $1}'`
           fi
         fi
+        
+        if [ $status_5_spark_gbt_criteo -ne 0 ]; then
+          echo "################## start spark gbt criteo"
+          echo "example.4 spark gbt criteo"
+          bash run_spark_gbt_criteo.sh
+          if [ "`kubectl get pods | grep spark-gbt-criteo-test | awk '{print $1}'`" != "" ]; then
+            gbt_criteo_driver=`kubectl get pods | grep spark-gbt-criteo-test | grep driver | awk '{print $1}'`
+          fi
+          kubectl logs $gbt_criteo_driver | egrep 'end time is'
+          status_5_spark_gbt_criteo=$(echo $?)
+          if [ "`kubectl get pods | grep spark-gbt-criteo-test | awk '{print $1}'`" != "" ]; then
+            kubectl delete pods `kubectl get pods | grep spark-gbt-criteo-test | grep driver | awk '{print $1}'`
+          fi
+        fi
+        
+        if [ $status_5_spark_tpch -ne 0 ]; then
+          echo "################## start spark tpch"
+          echo "example.4 spark tpch"
+          bash run_spark_tpch.sh
+          if [ "`kubectl get pods | grep spark-tpch-test | awk '{print $1}'`" != "" ]; then
+            tpch_driver=`kubectl get pods | grep spark-tpch-test | awk '{print $1}'`
+          fi
+          kubectl logs $tpch_driver | egrep '22 finished'
+          status_5_spark_tpch=$(echo $?)
+          if [ "`kubectl get pods | grep spark-tpch-test | awk '{print $1}'`" != "" ]; then
+            kubectl delete pods `kubectl get pods | grep spark-tpch-test | awk '{print $1}'`
+          fi
+        fi
 
         echo "status_1_spark_pi $status_1_spark_pi"
         echo "status_2_spark_lr $status_2_spark_lr"
