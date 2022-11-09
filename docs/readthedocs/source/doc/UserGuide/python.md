@@ -62,12 +62,12 @@ pip uninstall bigdl-dllib bigdl-core bigdl-tf bigdl-math bigdl-orca bigdl-chrono
 
 #### 1.3 BigDL on Spark 3
 
-You can install BigDL built on top of Spark 3.1.2 as follows:
+You can install BigDL built on top of Spark 3.1.3 as follows:
 ```bash
 pip install bigdl-spark3  # Install the latest release version
 pip install --pre --upgrade bigdl-spark3  # Install the latest nightly build version
 ```
-You can find the list of the nightly build versions built on top of Spark 3.1.2 [here](https://pypi.org/project/bigdl-spark3/#history).
+You can find the list of the nightly build versions built on top of Spark 3.1.3 [here](https://pypi.org/project/bigdl-spark3/#history).
 
 You could uninstall all the packages of BigDL on Spark3 as follows:
 
@@ -123,7 +123,7 @@ For more details, please refer to [Orca Context](../Orca/Overview/orca-context.m
 BigDL has been tested on __Python 3.6 and 3.7__ with the following library versions:
 
 ```bash
-pyspark==2.4.6 or 3.1.2
+pyspark==2.4.6 or 3.1.3
 ray==1.9.2
 tensorflow==1.15.0 or >2.0
 pytorch>=1.5.0
