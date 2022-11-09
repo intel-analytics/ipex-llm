@@ -16,7 +16,7 @@ jobs:
     if: github.event.pull_request || github.event.schedule || github.event.issue.pull_request && github.event.comment.body=='APRT'
     steps:
       # trigged by opening a PR which modifies this file or scheduling or commenting 'APRT' in a closed PR
-      - name: checkout (schedule or closed pr comments)
+      - name: checkout (open pr or schedule or closed pr comments)
         if: github.event.pull_request || github.event.schedule || github.event.issue.pull_request.merged_at
         uses: actions/checkout@v3
 
@@ -51,4 +51,5 @@ jobs:
           COMMENT_URL: ${{ github.event.comment.html_url }}
           JOB_URL: https://github.com/intel-analytics/BigDL/actions/runs/${{ github.run_id }}
           ANALYTICS_ZOO_ROOT: ${{ github.workspace }}
-          IS_PR: ${{ github.event.issue.pull_request != null}}
+          IS_PR: ${{ github.event.pull_request || github.event.issue.pull_request }}
+          IS_COMMENTS: ${{ github.event.issue.pull_request != null}}
