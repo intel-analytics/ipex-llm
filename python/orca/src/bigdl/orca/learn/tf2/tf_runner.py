@@ -496,16 +496,17 @@ class TFRunner:
             if self.model_creator is not None:
                 local_model = self.model_creator(self.config)
             else:
-                file_name = os.path.basename(self.load_params["filepath"])
+                filepath = self.load_params["filepath"]
+                file_name = os.path.basename(filepath)
                 temp_path = os.path.join(tempfile.mkdtemp(), file_name)
-                if is_file(self.load_params["filepath"]):
+                if filepath.endswith(".h5") or filepath.endswith('.keras'):
                     # h5 format
-                    get_remote_file_to_local(self.load_params["filepath"], temp_path)
+                    get_remote_file_to_local(filepath, temp_path)
                 else:
                     # savemodel format
                     if os.path.exists(temp_path):
                         os.makedirs(temp_path)
-                    get_remote_dir_to_local(self.load_params["filepath"], temp_path)
+                    get_remote_dir_to_local(filepath, temp_path)
                 self.load_params["filepath"] = temp_path
                 local_model = self.process_model_load(**self.load_params)
             try:
