@@ -27,9 +27,9 @@ class InferenceUtils:
     """A mixedin class for nano keras Sequential and Model, adding more functions for Inference."""
 
     def quantize(self,
+                 calib_dataset: tf.data.Dataset,
                  precision: str = 'int8',
                  accelerator: Optional[str] = None,
-                 calib_dataset: tf.data.Dataset = None,
                  metric: Metric = None,
                  accuracy_criterion: dict = None,
                  approach: str = 'static',
@@ -62,7 +62,7 @@ class InferenceUtils:
         :param approach:        'static' or 'dynamic'.
                                 'static': post_training_static_quant,
                                 'dynamic': post_training_dynamic_quant.
-                                Default: 'static'. OpenVINO supports static mode only.
+                                Default: 'static'. Now only static mode is supported.
         :param method:      Method to do quantization. When accelerator=None, supported methods:
                 None. When accelerator='onnxruntime', supported methods: 'qlinear', 'integer',
                 defaults to 'qlinear'. Suggest 'qlinear' for lower accuracy drop if using
@@ -95,7 +95,7 @@ class InferenceUtils:
         :return:            A TensorflowBaseModel for INC. If there is no model found, return None.
         """
         if accelerator is None:
-            if batch and calib_dataset:
+            if batch:
                 calib_dataset = calib_dataset.batch(batch)
             return inc_quantzie(self, dataloader=calib_dataset, metric=metric,
                                 framework='tensorflow',
@@ -156,6 +156,7 @@ class InferenceUtils:
                                 max_trials=max_trials,
                                 inputs=inputs,
                                 outputs=outputs,
+                                onnx_option='tensorflow',
                                 onnxruntime_session_options=onnxruntime_session_options)
         else:
             invalidInputError(False, "Accelerator {} is invalid.".format(accelerator))

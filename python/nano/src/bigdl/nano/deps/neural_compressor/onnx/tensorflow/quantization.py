@@ -62,4 +62,7 @@ class KerasNumpyDataset():
 
     def __iter__(self):
         for batch in self.dataset:
-            yield tuple(map(lambda x: x.numpy().astype(self.dtype), batch))
+            yield tuple(
+                map(lambda x: x.numpy().astype(self.dtype) if isinstance(x, tf.Tensor) else x,
+                    batch)
+            )
