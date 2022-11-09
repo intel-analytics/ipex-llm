@@ -295,7 +295,7 @@ It should be similar to the following:
 
 ### Running distributed training using Kubernetes
 
-If you want to boot multiple training processes using kubernetes, then please pay attention to the following cluster config, which will have a huge impact on training speed.
+If Kubernetes is used to boot multiple PyTorch training processes, then please pay attention to the following cluster configs, which may have a huge impact on training speed.
 
 
 #### Node CPU manager
