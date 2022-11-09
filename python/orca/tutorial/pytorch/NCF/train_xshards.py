@@ -19,6 +19,7 @@
 #
 
 # Step 0: Import necessary libraries
+import os
 import numpy as np
 import pandas as pd
 
@@ -78,7 +79,8 @@ def split_dataset(data):
     train_data, test_data = train_test_split(data, test_size=0.2, random_state=100)
     return train_data, test_data
 
-data = read_csv(dataset_dir+"/ratings.dat", sep="::", header=None, names=['user', 'item'],
+data = read_csv(os.path.join(dataset_dir, 'ratings.dat'),
+                sep="::", header=None, names=['user', 'item'],
                 usecols=[0, 1], dtype={0: np.int64, 1: np.int64})
 data = data.partition_by("user")
 
