@@ -18,7 +18,7 @@ Protecting privacy and confidentiality is critical for large-scale data analysis
 
         +++
 
-        :bdg-link:`Introduction <./Overview/intro.html>` |
+        :bdg-link:`Installation <./Overview/install.html>` |
         :bdg-link:`Hello World Example  <./Overview/quicktour.html>`
 
 
@@ -31,7 +31,7 @@ Protecting privacy and confidentiality is critical for large-scale data analysis
 
         +++
 
-        :bdg-link:`User Guide <./Overview/userguide.html>` |
+        :bdg-link:`Introduction <./Overview/intro.html>` |
         :bdg-link:`Advanced Topics <./Overview/misc.html>`
 
 

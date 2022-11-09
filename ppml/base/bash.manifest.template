@@ -67,6 +67,7 @@ fs.mounts = [
   { path = "/usr/lib/gcc", uri = "file:/usr/lib/gcc" },
   #{ path = "/ppml/trusted-big-data-ml", uri = "file:/ppml/trusted-big-data-ml" },
   { path = "/ppml", uri = "file:/ppml" },
+  { type = "encrypted", path = "/ppml/encrypted", uri = "file:/ppml/encrypted", key_name = "_sgx_mrsigner" },
 ]
 #  { path = "{{ gramine.runtimedir() }}/etc/localtime", uri = "file:/etc" },
 

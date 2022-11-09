@@ -20,19 +20,22 @@ Due to security and privacy considerations (e.g., `enclave-key` security), only 
 
 You can find more details in [Intel SGX Developer Guide](https://download.01.org/intel-sgx/linux-1.5/docs/Intel_SGX_Developer_Guide.pdf).
 
-```mermaid
-graph LR
-	subgraph SGX enclave
-	MRENCLAVE(fa:fa-file-signature MRENCLAVE)
-	MRSIGNER(fa:fa-file-signature MRSIGNER)
-  end
-	subgraph enclave-key
-	private_key(fa:fa-key private key)
-	public_key(fa:fa-key public key)
-	end
-	private_key --> MRENCLAVE
-	ppml_application(PPML Applicaiton) --> MRENCLAVE
-	public_key --> MRSIGNER
+
+```eval_rst
+.. mermaid::
+
+   graph LR
+      subgraph SGX enclave
+      MRENCLAVE(fa:fa-file-signature MRENCLAVE)
+      MRSIGNER(fa:fa-file-signature MRSIGNER)
+      end
+      subgraph enclave-key
+      private_key(fa:fa-key private key)
+      public_key(fa:fa-key public key)
+      end
+      private_key --> MRENCLAVE
+      ppml_application(PPML Applicaiton) --> MRENCLAVE
+      public_key --> MRSIGNER
 ```
 
 In this guide, we will demonstrate how to go through these 2 stages step by step.

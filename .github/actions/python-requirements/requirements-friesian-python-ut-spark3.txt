@@ -7,7 +7,6 @@ opencv-python
 matplotlib
 tqdm
 protobuf==3.15.3
-pandas
 ray[default]==1.9.2
 dm_tree
 gym[atari]==0.17.1
@@ -26,3 +25,6 @@ fsspec==2021.9.0
 scikit-optimize==0.8.1
 pandas==1.1.5
 sentence-transformers
+wheel
+pytest
+

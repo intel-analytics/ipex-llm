@@ -60,85 +60,46 @@ cd BigDL/ppml/
     ```bash
     kubectl create serviceaccount spark
     kubectl create clusterrolebinding spark-role --clusterrole=edit --serviceaccount=default:spark --namespace=default
+    kubectl get secret|grep service-account-token # you will find a spark service account secret, format like spark-token-12345
+    # bind service account and user
+    kubectl config set-credentials spark-user \
+                  --token=$(kubectl get secret <spark_service_account_secret> -o jsonpath={.data.token} | base64 -d)
+
+    # bind user and context
+    kubectl config set-context spark-context --user=spark-user
+
+    # bind context and cluster
+    kubectl config get-clusters
+    kubectl config set-context spark-context --cluster=<cluster_name> --user=spark-user
     ```
 
 2. Generate k8s config file, modify `YOUR_DIR` to the location you want to store the config:
 
     ```bash
+    kubectl config use-context spark-context
     kubectl config view --flatten --minify > /YOUR_DIR/kubeconfig
     ```
 
 
-### Key Management Service (KMS) Setup
-Key Management Service (KMS) helps you manage cryptographic keys for your services. In BigDL PPML end-to-end workflow, KMS is used to generate keys, encrypt the input data and decrypt the result of Big Data & AI applications. You can choose to use the KMS service which PPML provides or your own one.
+### Key Management Service (KMS) and Attestation Service (AS) Setup
+Key Management Service (KMS) helps you manage cryptographic keys for your services. In BigDL PPML end-to-end workflow, KMS is used to generate keys, encrypt the input data and decrypt the result of Big Data & AI applications. Attestation Service (AS) makes sure applications of the customer actually run in the SGX MREnclave signed above by customer-self, rather than a fake one fake by an attacker. You can choose to use the KMS and AS which PPML provides or your own one.
 
-To use the KMS service in PPML, follow the document: https://github.com/intel-analytics/BigDL/blob/main/ppml/services/pccs-ehsm/kubernetes/README.md
+BigDL PPML use EHSM as the reference type of KMS & AS, follow the document to deploy EHSM: https://github.com/intel-analytics/BigDL/blob/main/ppml/services/ehsm/kubernetes/README.md
 
-### Attestation Service (AS) Setup
-placeholder
+### Prepare BigDL PPML Docker Image
 
-### Start BigDL PPML Client Container
-1. Prepare BigDL PPML Docker Image
-
-    Pull Docker image from Dockerhub
+Pull Docker image from Dockerhub
     ```
     docker pull intelanalytics/bigdl-ppml-trusted-big-data-ml-scala-graphene:devel
     ```
 
-    Alternatively, you can build Docker image from Dockerfile (this will take some time):
+Alternatively, you can build Docker image from Dockerfile (this will take some time):
     ```
     cd trusted-big-data-ml/python/docker-graphene
     ./build-docker-image.sh
     ```
-    
-    **Note:** The above docker image `intelanalytics/bigdl-ppml-trusted-big-data-ml-scala-graphene:devel` is only used for demo purposes. You are recommended to refer to the [BigDL PPML Dockerfile](https://github.com/intel-analytics/BigDL/blob/main/ppml/trusted-big-data-ml/python/docker-graphene/Dockerfile) or use BigDL PPML image as a base image to build your own image and sign your image with your own enclave_key.
-    
-2. Start BigDL PPML client container
-    
-    Configure the environment variables in the following script before running it.
-    ```
-    export K8S_MASTER=k8s://$(sudo kubectl cluster-info | grep 'https.*6443' -o -m 1)
-    echo The k8s master is $K8S_MASTER .
-    export DATA_PATH=/YOUR_DIR/data
-    export KEYS_PATH=/YOUR_DIR/keys
-    export SECURE_PASSWORD_PATH=/YOUR_DIR/password
-    export KUBECONFIG_PATH=/YOUR_DIR/kubeconfig
-    export LOCAL_IP=$LOCAL_IP
-    export DOCKER_IMAGE=intelanalytics/bigdl-ppml-trusted-big-data-ml-python-graphene:devel
-    sudo docker run -itd \
-        --privileged \
-        --net=host \
-        --name=bigdl-ppml-client-k8s \
-        --cpuset-cpus="0-4" \
-        --oom-kill-disable \
-        --device=/dev/sgx/enclave \
-        --device=/dev/sgx/provision \
-        -v /var/run/aesmd/aesm.socket:/var/run/aesmd/aesm.socket \
-        -v $DATA_PATH:/ppml/trusted-big-data-ml/work/data \
-        -v $KEYS_PATH:/ppml/trusted-big-data-ml/work/keys \
-        -v $SECURE_PASSWORD_PATH:/ppml/trusted-big-data-ml/work/password \
-        -v $KUBECONFIG_PATH:/root/.kube/config \
-        -e RUNTIME_SPARK_MASTER=$K8S_MASTER \
-        -e RUNTIME_K8S_SERVICE_ACCOUNT=spark \
-        -e RUNTIME_K8S_SPARK_IMAGE=$DOCKER_IMAGE \
-        -e RUNTIME_DRIVER_HOST=$LOCAL_IP \
-        -e RUNTIME_DRIVER_PORT=54321 \
-        -e RUNTIME_DRIVER_CORES=1 \
-        -e RUNTIME_EXECUTOR_INSTANCES=1 \
-        -e RUNTIME_EXECUTOR_CORES=8 \
-        -e RUNTIME_EXECUTOR_MEMORY=1g \
-        -e RUNTIME_DRIVER_CORES=4 \
-        -e RUNTIME_DRIVER_MEMORY=1g \
-        -e SGX_DRIVER_MEM=32g \
-        -e SGX_DRIVER_JVM_MEM=8g \
-        -e SGX_EXECUTOR_MEM=32g \
-        -e SGX_EXECUTOR_JVM_MEM=12g \
-        -e SGX_ENABLED=true \
-        -e SGX_LOG_LEVEL=error \
-        -e SPARK_MODE=client \
-        -e LOCAL_IP=$LOCAL_IP \
-        $DOCKER_IMAGE bash
-    ```
+
+**Note:** The above docker image `intelanalytics/bigdl-ppml-trusted-big-data-ml-scala-graphene:devel` is only used for demo purposes. You are recommended to refer to the [BigDL PPML Dockerfile](https://github.com/intel-analytics/BigDL/blob/main/ppml/trusted-big-data-ml/python/docker-graphene/Dockerfile) or use BigDL PPML image as a base image to build your own image and sign your image with your own enclave_key.
 
 ### (Optional) K8s Monitioring Setup
 https://github.com/analytics-zoo/ppml-e2e-examples/blob/main/bigdl-ppml-sgx-k8s-prometheus/README.md

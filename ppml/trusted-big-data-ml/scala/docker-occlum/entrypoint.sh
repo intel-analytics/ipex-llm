@@ -9,6 +9,8 @@ set +e
 uidentry=$(getent passwd $myuid)
 set -e
 
+# To use sgx_sign in k8s env
+source /opt/intel/sgxsdk/environment
 # If there is no passwd entry for the container UID, attempt to create one
 if [ -z "$uidentry" ] ; then
     if [ -w /etc/passwd ] ; then
@@ -19,7 +21,10 @@ if [ -z "$uidentry" ] ; then
 fi
 
 # check occlum log level for k8s
-export ENABLE_SGX_DEBUG=false
+if [[ -z "$ENABLE_SGX_DEBUG" ]]; then
+    echo "No ENABLE_SGX_DEBUG specified, set to off."
+    export ENABLE_SGX_DEBUG=false
+fi
 export OCCLUM_LOG_LEVEL=off
 if [[ -z "$SGX_LOG_LEVEL" ]]; then
     echo "No SGX_LOG_LEVEL specified, set to off."
@@ -80,7 +85,7 @@ case "$SPARK_K8S_CMD" in
     else
         echo "DRIVER_MEMORY=$DRIVER_MEMORY"
     fi
-    /opt/run_spark_on_occlum_glibc.sh init
+    /opt/run_spark_on_occlum_glibc.sh initDriver
     cd /opt/occlum_spark
     DMLC_TRACKER_URI=$SPARK_DRIVER_BIND_ADDRESS
 
@@ -92,7 +97,7 @@ case "$SPARK_K8S_CMD" in
             -Dos.name="Linux" \
             -XX:-UseCompressedOops \
             -XX:MaxMetaspaceSize=$META_SPACE \
-            -Djdk.lang.Process.launchMechanism=posix_spawn \
+            -Djdk.lang.Process.launchMechanism=vfork \
             -cp "$SPARK_CLASSPATH" \
             -Xmx$DRIVER_MEMORY \
             -XX:ActiveProcessorCount=4 \
@@ -110,7 +115,7 @@ case "$SPARK_K8S_CMD" in
             -Dos.name="Linux" \
             -XX:-UseCompressedOops \
             -XX:MaxMetaspaceSize=$META_SPACE \
-            -Djdk.lang.Process.launchMechanism=posix_spawn \
+            -Djdk.lang.Process.launchMechanism=vfork \
             -cp "$SPARK_CLASSPATH" \
             -Xmx$SGX_DRIVER_JVM_MEM_SIZE \
             -XX:ActiveProcessorCount=4 \
@@ -124,7 +129,7 @@ case "$SPARK_K8S_CMD" in
     ;;
   executor)
     echo "SGX Mem $SGX_MEM_SIZE"
-    /opt/run_spark_on_occlum_glibc.sh init
+    /opt/run_spark_on_occlum_glibc.sh initExecutor
     cd /opt/occlum_spark
     DMLC_TRACKER_URI=$SPARK_DRIVER_BIND_ADDRESS
 
@@ -141,7 +146,7 @@ case "$SPARK_K8S_CMD" in
             -Xmx$SPARK_EXECUTOR_MEMORY \
             -Dos.name=Linux \
             -Dio.netty.availableProcessors=$NETTY_THREAD \
-            -Djdk.lang.Process.launchMechanism=posix_spawn \
+            -Djdk.lang.Process.launchMechanism=vfork \
             -cp "$SPARK_CLASSPATH" \
             org.apache.spark.executor.CoarseGrainedExecutorBackend \
             --driver-url $SPARK_DRIVER_URL \
@@ -163,7 +168,7 @@ case "$SPARK_K8S_CMD" in
             -Xmx$SGX_EXECUTOR_JVM_MEM_SIZE \
             -Dos.name=Linux \
             -Dio.netty.availableProcessors=$NETTY_THREAD \
-            -Djdk.lang.Process.launchMechanism=posix_spawn \
+            -Djdk.lang.Process.launchMechanism=vfork \
             -cp "$SPARK_CLASSPATH" \
             org.apache.spark.executor.CoarseGrainedExecutorBackend \
             --driver-url $SPARK_DRIVER_URL \

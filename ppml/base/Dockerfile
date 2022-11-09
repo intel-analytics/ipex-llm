@@ -99,7 +99,8 @@ RUN env DEBIAN_FRONTEND=noninteractive apt-get update && \
     mkdir -p /root/.keras/datasets && \
     mkdir -p /root/.zinc && \
     mkdir -p /root/.m2 && \
-    mkdir -p /root/.kube/
+    mkdir -p /root/.kube/ && \
+    mkdir -p /ppml/encrypted
 
 
 ADD ./download_jars.sh /ppml
