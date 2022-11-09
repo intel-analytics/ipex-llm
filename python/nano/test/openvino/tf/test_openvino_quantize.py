@@ -49,5 +49,6 @@ class TestOpenVINO(TestCase):
         y_hat = openvino_quantized_model.predict(train_examples, batch_size=5)
         assert y_hat.shape == (100, 10)
 
-        openvino_quantized_model.compile(metrics=[tf.keras.metrics.CategoricalAccuracy()])
-        acc = openvino_quantized_model.evaluate(train_dataset, return_dict=True)['categorical_accuracy']
+        preds = model.predict(train_examples)
+        openvino_preds = openvino_quantized_model.predict(train_examples)
+        np.testing.assert_allclose(preds, openvino_preds, rtol=1e-2)
