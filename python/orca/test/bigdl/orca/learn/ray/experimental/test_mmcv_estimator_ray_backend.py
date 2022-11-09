@@ -14,6 +14,7 @@
 # limitations under the License.
 #
 
+import pytest
 import unittest
 import os
 import torch
@@ -137,4 +138,4 @@ class TestMMCVRayEstimator(unittest.TestCase):
 
 
 if __name__ == "__main__":
-    unittest.main()
+    pytest.main([__file__])
