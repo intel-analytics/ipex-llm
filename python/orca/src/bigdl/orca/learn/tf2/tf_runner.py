@@ -491,8 +491,22 @@ class TFRunner:
                           "Please input a model_creator when creating estimator "
                           "or use load function of the estimator to load a model.")
 
-        if self.backend == "tf-distributed" and self.model_creator is not None:
-            local_model = self.model_creator(self.config)
+        if self.backend == "tf-distributed":
+            if self.model_creator is not None:
+                local_model = self.model_creator(self.config)
+            else:
+                file_name = os.path.basename(self.load_params["filepath"])
+                temp_path = os.path.join(tempfile.mkdtemp(), file_name)
+                if is_file(self.load_params["filepath"]):
+                    # h5 format
+                    get_remote_file_to_local(self.load_params["filepath"], temp_path)
+                else:
+                    # savemodel format
+                    if os.path.exists(temp_path):
+                        os.makedirs(temp_path)
+                    get_remote_dir_to_local(self.load_params["filepath"], temp_path)
+                self.load_params["filepath"] = temp_path
+                local_model = self.process_model_load(**self.load_params)
             try:
                 local_model.set_weights(self.model.get_weights())
             except Exception:
@@ -553,7 +567,7 @@ class TFRunner:
 
     def load_model(self, filepath, custom_objects, compile, options):
         """Load the model from provided local filepath."""
-        params = dict(
+        self.load_params = dict(
             filepath=filepath,
             custom_objects=custom_objects,
             compile=compile,
@@ -561,14 +575,14 @@ class TFRunner:
         )
         if self.backend == "tf-distributed":
             with self.strategy.scope():
-                self.process_model_load(**params)
+                self.process_model_load(**self.load_params)
         else:
-            self.process_model_load(**params)
+            self.process_model_load(**self.load_params)
 
     def load_remote_model(self, filepath, custom_objects, compile, options):
         """Load the model from provided remote filepath."""
         import tensorflow as tf
-        params = dict(
+        self.load_params = dict(
             filepath=filepath,
             custom_objects=custom_objects,
             compile=compile,
@@ -585,12 +599,12 @@ class TFRunner:
                 os.makedirs(temp_path)
             get_remote_dir_to_local(filepath, temp_path)
         try:
-            params["filepath"] = temp_path
+            self.load_params["filepath"] = temp_path
             if self.backend == "tf-distributed":
                 with self.strategy.scope():
-                    self.process_model_load(**params)
+                    self.process_model_load(**self.load_params)
             else:
-                self.process_model_load(**params)
+                self.process_model_load(**self.load_params)
         finally:
             if os.path.isdir(temp_path):
                 shutil.rmtree(temp_path)
