@@ -62,7 +62,7 @@ class InferenceUtils:
         :param approach:        'static' or 'dynamic'.
                                 'static': post_training_static_quant,
                                 'dynamic': post_training_dynamic_quant.
-                                Default: 'static'. Now only static mode is supported.
+                                Default: 'static'. Only 'static' approach is supported now.
         :param method:      Method to do quantization. When accelerator=None, supported methods:
                 None. When accelerator='onnxruntime', supported methods: 'qlinear', 'integer',
                 defaults to 'qlinear'. Suggest 'qlinear' for lower accuracy drop if using
@@ -94,6 +94,7 @@ class InferenceUtils:
                                             accelerator='onnxruntime', otherwise will be ignored.
         :return:            A TensorflowBaseModel for INC. If there is no model found, return None.
         """
+        invalidInputError(approach == 'static', "Only 'static' approach is supported now.")
         if accelerator is None:
             if batch:
                 calib_dataset = calib_dataset.batch(batch)
