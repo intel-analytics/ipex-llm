@@ -23,7 +23,6 @@ on:
       - 'scala/ppml/**'
       - '.github/actions/ppml-scala-ut-action/action.yml'
       - 'python/orca/**'
-      - '.github/actions/orca-ray-ctx-example-action/action.yml'
       - '.github/actions/orca/**'
       - 'python/ppml/**'
       - '.github/actions/ppml/**'
@@ -94,7 +93,6 @@ jobs:
               - 'scala/dllib/pom.xml'
               - 'scala/pom.xml'
               - 'python/orca/**'
-              - '.github/actions/orca-ray-ctx-example-action/action.yml'
               - '.github/actions/orca/**'
               - '.github/actions/python-requirements/**'
            
