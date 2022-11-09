@@ -41,7 +41,7 @@ sc = init_orca_context()
 # Step 2: Define train and test datasets as PyTorch DataLoader
 class NCFData(data.Dataset):
     def __init__(self, features,
-                 num_item=0, train_mat=None, num_ng=0, is_training=True):
+                 num_item=0, train_mat=None, num_ng=0, is_sampling=True):
         super(NCFData, self).__init__()
         """ Note that the labels are only useful when training, we thus
             add them in the ng_sample() function.
@@ -50,7 +50,7 @@ class NCFData(data.Dataset):
         self.num_item = num_item
         self.train_mat = train_mat
         self.num_ng = num_ng
-        self.is_training = is_training
+        self.is_sampling = is_sampling
         self.labels = [1 for _ in range(len(features))]
 
     def ng_sample(self):
@@ -73,9 +73,9 @@ class NCFData(data.Dataset):
         return (self.num_ng + 1) * len(self.labels)
 
     def __getitem__(self, idx):
-        features = self.features_fill if self.is_training \
+        features = self.features_fill if self.is_sampling \
             else self.features_ps
-        labels = self.labels_fill if self.is_training \
+        labels = self.labels_fill if self.is_sampling \
             else self.labels
 
         user = features[idx][0]
@@ -158,7 +158,7 @@ def model_creator(config):
 def optimizer_creator(model, config):
     return optim.Adam(model.parameters(), lr=config['lr'])
 
-loss_function = nn.BCEWithLogitsLoss()
+loss = nn.BCEWithLogitsLoss()
 
 
 # Step 4: Distributed training with Orca PyTorch Estimator
@@ -166,7 +166,7 @@ dataset_dir = "./ml-1m"
 backend = "ray"  # "ray" or "spark"
 
 est = Estimator.from_torch(model=model_creator, optimizer=optimizer_creator,
-                           loss=loss_function,
+                           loss=loss,
                            metrics=[Accuracy(), Precision(), Recall()],
                            backend=backend,
                            config={'dataset_dir': dataset_dir,
