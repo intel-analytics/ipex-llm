@@ -188,8 +188,7 @@ ADD ./init.sh /ppml/trusted-big-data-ml/init.sh
 ADD ./clean.sh /ppml/trusted-big-data-ml/clean.sh
 ADD ./bigdl-ppml-submit.sh /ppml/trusted-big-data-ml/bigdl-ppml-submit.sh
 ADD ./examples /ppml/trusted-big-data-ml/work/examples
-ADD ./start-scripts /ppml/trusted-big-data-ml/work/start-scripts
-ADD ./test-suites /ppml/trusted-big-data-ml/work/test-suites
+ADD ./scripts /ppml/trusted-big-data-ml/work/scripts
 ADD ./tracker.py /tracker.py
 ADD ./_dill.py.patch /_dill.py.patch
 ADD ./python-uuid.patch /python-uuid.patch
@@ -257,8 +256,7 @@ RUN env DEBIAN_FRONTEND=noninteractive apt-get update && \
     sed -i "s/spark-warehouse/\/ppml\/trusted-big-data-ml\/work\/spark-warehouse/" /ppml/trusted-big-data-ml/work/spark-${SPARK_VERSION}/examples/src/main/python/sql/hive.py && \
     chmod a+x /ppml/trusted-big-data-ml/init.sh && \
     chmod a+x /ppml/trusted-big-data-ml/clean.sh && \
-    chmod a+x /ppml/trusted-big-data-ml/work/start-scripts/* && \
-    chmod a+x /ppml/trusted-big-data-ml/work/test-suites/*.sh
+    chmod a+x /ppml/trusted-big-data-ml/work/scripts/*
 
 ADD ./spark-executor-template.yaml /ppml/trusted-big-data-ml/spark-executor-template.yaml
 ADD ./spark-driver-template.yaml /ppml/trusted-big-data-ml/spark-driver-template.yaml

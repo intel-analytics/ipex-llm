@@ -110,7 +110,7 @@
         <java.version>1.7</java.version>
         <javac.version>1.7</javac.version>
         <scala.major.version>2.11</scala.major.version>
-        <scala.version>2.11.8</scala.version>
+        <scala.version>2.11.12</scala.version>
         <scala.macros.version>2.1.0</scala.macros.version>
         <scalatest.version>3.0.7</scalatest.version>
 

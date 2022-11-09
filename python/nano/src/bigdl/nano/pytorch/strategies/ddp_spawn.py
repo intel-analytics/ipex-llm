@@ -157,6 +157,14 @@ class _DDPSpawnLauncher(_SpawnLauncher):
         self._recover_results_in_main_process(spawn_output, trainer)
         return spawn_output.trainer_results
 
+    def _wrapping_function(self, *args, **kwargs):    # type: ignore
+        # patch Pytorch and CUDA in subprocess
+        if os.environ.get('BIGDL_NANO_PATCH_TORCH') == '1':
+            patch_cuda = True if os.environ.get('BIGDL_NANO_PATCH_CUDA') == '1' else False
+            from bigdl.nano.pytorch import patch_torch
+            patch_torch(cuda_to_cpu=patch_cuda)
+        super()._wrapping_function(*args, **kwargs)
+
 
 class DDPSpawnStrategy(_DDPSpawnStrategy):
     """Extending DDPSpawnStrategy to support launch subprocesses with optimized env variables."""

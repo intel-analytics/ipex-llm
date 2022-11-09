@@ -446,16 +446,66 @@ You could refer [here](https://sphinx-design.readthedocs.io/en/furo-theme/cards.
 Note that `1 2 2 2` defines the number of cards per row in different screen sizes (from extra-small to large).
 
 </td></tr>
+<tr><td>
+
+[Mermaid](https://mermaid-js.github.io/) digrams
+
+</td><td>
+
+```rst
+.. mermaid::
+   
+   flowchart LR
+      A(Node A)
+      B([Node B])
+
+      A -- points to --> B
+      A --> C{{Node C}}
+
+      classDef blue color:#0171c3;
+      class B,C blue;
+```
+
+</td>
+<td>
+
+```eval_rst
+.. mermaid::
+   
+   flowchart LR
+      A(Node A)
+      B([Node B])
+
+      A -- points to --> B
+      A --> C{{Node C}}
+
+      classDef blue color:#0171c3;
+      class B,C blue;
+```
+
+Mermaid is a charting tool for dynamically creating/modifying diagrams. Refer [here](https://mermaid-js.github.io/) for more Mermaid syntax.
+
+</td></tr>
 </table>
 
 ### 3.1 Use reStructuredText in `.md` files
-You could embed reStructuredText into `.md` files through putting reStructuredText code into `eval_rst` code block:
+You could embed reStructuredText into `.md` files through putting reStructuredText code into `eval_rst` code block. It is really useful when you want to use components such as sepcial boxes, tabs, cards, Mermaid diagrams, etc. in your `.md` file.
 ~~~md
 ```eval_rst
 any contents in reStructuredText syntax
 ```
+
+```eval_rst
+.. note::
+   
+   This is a note box.
+
+.. mermaid::
+   
+   flowchart LR
+      A --> B
+```
 ~~~
-It could be useful if you want to use special boxes (e.g. note box) or tabs in your `.md` files.
 
 ```eval_rst
 .. important::

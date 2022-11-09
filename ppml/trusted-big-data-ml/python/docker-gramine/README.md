@@ -74,7 +74,7 @@ mr_signer        : 6f0627955......
 
 KMS (Key Management Service) and AS (Attestation Service) make sure applications of the customer actually run in the SGX MREnclave signed above by customer-self, rather than a fake one fake by an attacker.
 
-Bigdl ppml use EHSM as reference KMS&AS, you can deploy EHSM following a guide [here](https://github.com/intel-analytics/BigDL/tree/main/ppml/services/pccs-ehsm/kubernetes#deploy-bigdl-pccs-ehsm-kms-on-kubernetes-with-helm-charts).
+Bigdl ppml use EHSM as reference KMS&AS, you can deploy EHSM following a guide [here](https://github.com/intel-analytics/BigDL/tree/main/ppml/services/ehsm/kubernetes#deploy-bigdl-ehsm-kms-on-kubernetes-with-helm-charts).
 
 #### 3.2 Enroll yourself on EHSM
 
@@ -264,60 +264,64 @@ kubectl apply -f password/password.yaml
 ```bash
 kubectl create serviceaccount spark
 kubectl create clusterrolebinding spark-role --clusterrole=edit --serviceaccount=default:spark --namespace=default
+kubectl get secret|grep service-account-token # you will find a spark service account secret, format like spark-token-12345
+
+# bind service account and user
+kubectl config set-credentials spark-user \
+--token=$(kubectl get secret <spark_service_account_secret> -o jsonpath={.data.token} | base64 -d)
+
+# bind user and context
+kubectl config set-context spark-context --user=spark-user
+
+# bind context and cluster
+kubectl config get-clusters
+kubectl config set-context spark-context --cluster=<cluster_name> --user=spark-user
 ```
 #### 1.2.2 Generate k8s config file
 ```bash
+kubectl config use-context spark-context
 kubectl config view --flatten --minify > /YOUR_DIR/kubeconfig
 ```
 #### 1.2.3 Create k8s secret
 ```bash
 kubectl create secret generic spark-secret --from-literal secret=YOUR_SECRET
-kubectl create secret generic kms-secret --from-literal=app_id=YOUR_KMS_APP_ID --from-literal=api_key=YOUR_KMS_API_KEY
-kubectl create secret generic policy-id-secret --from-literal=policy_id=YOUR_POLICY_ID
+kubectl create secret generic kms-secret \
+                      --from-literal=app_id=YOUR_KMS_APP_ID \
+                      --from-literal=api_key=YOUR_KMS_API_KEY \
+                      --from-literal=policy_id=YOUR_POLICY_ID
+kubectl create secret generic kubeconfig-secret --from-file=/YOUR_DIR/kubeconfig
 ```
 **The secret created (`YOUR_SECRET`) should be the same as the password you specified in section 1.1**
 
 ### 1.3 Start the client container
 Configure the environment variables in the following script before running it. Check [Bigdl ppml SGX related configurations](#1-bigdl-ppml-sgx-related-configurations) for detailed memory configurations.
 ```bash
-export K8S_MASTER=k8s://$(sudo kubectl cluster-info | grep 'https.*6443' -o -m 1)
-echo The k8s master is $K8S_MASTER
-export NFS_INPUT_PATH=/YOUR_DIR/data
-export KEYS_PATH=/YOUR_DIR/keys
-export SECURE_PASSWORD_PATH=/YOUR_DIR/password
-export KUBECONFIG_PATH=/YOUR_DIR/kubeconfig
-export LOCAL_IP=$LOCAL_IP
-export DOCKER_IMAGE=YOUR_DOCKER_IMAGE
-sudo docker run -itd \
-    --privileged \
-    --net=host \
-    --name=spark-local-k8s-client \
-    --cpuset-cpus="20-24" \
-    --oom-kill-disable \
-    --device=/dev/sgx/enclave \
-    --device=/dev/sgx/provision \
-    -v /var/run/aesmd/aesm.socket:/var/run/aesmd/aesm.socket \
-    -v $KEYS_PATH:/ppml/trusted-big-data-ml/work/keys \
-    -v $SECURE_PASSWORD_PATH:/ppml/trusted-big-data-ml/work/password \
-    -v $KUBECONFIG_PATH:/root/.kube/config \
-    -v $NFS_INPUT_PATH:/ppml/trusted-big-data-ml/work/data \
-    -e RUNTIME_SPARK_MASTER=$K8S_MASTERK8S_MASTER \
-    -e RUNTIME_K8S_SERVICE_ACCOUNT=spark \
-    -e RUNTIME_K8S_SPARK_IMAGE=$DOCKER_IMAGE \
-    -e RUNTIME_DRIVER_HOST=$LOCAL_IP \
-    -e RUNTIME_DRIVER_PORT=54321 \
-    -e RUNTIME_EXECUTOR_INSTANCES=2 \
-    -e RUNTIME_EXECUTOR_CORES=4 \
-    -e RUNTIME_EXECUTOR_MEMORY=20g \
-    -e RUNTIME_TOTAL_EXECUTOR_CORES=4 \
-    -e RUNTIME_DRIVER_CORES=4 \
-    -e RUNTIME_DRIVER_MEMORY=10g \
-    -e SGX_DRIVER_MEM=64g \
-    -e SGX_DRIVER_JVM_MEM=12g \
-    -e SGX_EXECUTOR_JVM_MEM=12g \
-    -e SGX_ENABLED=true \
-    -e LOCAL_IP=$LOCAL_IP \
-    $DOCKER_IMAGE bash
+   export K8S_MASTER=k8s://$(sudo kubectl cluster-info | grep 'https.*6443' -o -m 1)
+   echo The k8s master is $K8S_MASTER .
+   export DATA_PATH=/YOUR_DIR/data
+   export KEYS_PATH=/YOUR_DIR/keys
+   export SECURE_PASSWORD_PATH=/YOUR_DIR/password
+   export KUBECONFIG_PATH=/YOUR_DIR/kubeconfig
+   export LOCAL_IP=$LOCAL_IP
+   export DOCKER_IMAGE=intelanalytics/bigdl-ppml-trusted-big-data-ml-python-gramine-reference:2.2.0-SNAPSHOT # or the custom image built by yourself
+    
+   sudo docker run -itd \
+       --privileged \
+       --net=host \
+       --name=bigdl-ppml-client-k8s \
+       --cpuset-cpus="0-4" \
+       --oom-kill-disable \
+       --device=/dev/sgx/enclave \
+       --device=/dev/sgx/provision \
+       -v /var/run/aesmd/aesm.socket:/var/run/aesmd/aesm.socket \
+       -v $DATA_PATH:/ppml/trusted-big-data-ml/work/data \
+       -v $KEYS_PATH:/ppml/trusted-big-data-ml/work/keys \
+       -v $SECURE_PASSWORD_PATH:/ppml/trusted-big-data-ml/work/password \
+       -v $KUBECONFIG_PATH:/root/.kube/config \
+       -e RUNTIME_SPARK_MASTER=$K8S_MASTER \
+       -e RUNTIME_K8S_SPARK_IMAGE=$DOCKER_IMAGE \
+       -e LOCAL_IP=$LOCAL_IP \
+       $DOCKER_IMAGE bash
 ```
 run `docker exec -it spark-local-k8s-client bash` to entry the container.
 
@@ -355,7 +359,6 @@ export sgx_command="/opt/jdk8/bin/java \
         --conf spark.executor.cores=$RUNTIME_EXECUTOR_CORES \
         --conf spark.executor.memory=$RUNTIME_EXECUTOR_MEMORY \
         --conf spark.executor.instances=$RUNTIME_EXECUTOR_INSTANCES \
-        --conf spark.kubernetes.authenticate.driver.serviceAccountName=spark \
         --conf spark.kubernetes.container.image=$RUNTIME_K8S_SPARK_IMAGE \
         --conf spark.kubernetes.driver.podTemplateFile=/ppml/trusted-big-data-ml/spark-driver-template.yaml \
         --conf spark.kubernetes.executor.podTemplateFile=/ppml/trusted-big-data-ml/spark-executor-template.yaml \
@@ -548,7 +551,6 @@ export secure_password=`openssl rsautl -inkey /ppml/trusted-big-data-ml/work/pas
 --conf spark.executor.heartbeatInterval=10000000 \
 --conf spark.python.use.daemon=false \
 --conf spark.python.worker.reuse=false \
---conf spark.kubernetes.authenticate.driver.serviceAccountName=spark \
 --conf spark.kubernetes.driver.podTemplateFile=/ppml/trusted-big-data-ml/spark-driver-template.yaml \
 --conf spark.kubernetes.executor.podTemplateFile=/ppml/trusted-big-data-ml/spark-executor-template.yaml \
 --conf spark.kubernetes.executor.deleteOnTermination=false \

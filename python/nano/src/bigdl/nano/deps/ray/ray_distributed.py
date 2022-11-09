@@ -153,6 +153,12 @@ class _RayLauncher(_SpawnLauncher):
         invalidInputError(isinstance(strategy.cluster_environment, RayEnvironment),
                           "expect ray environment here")
 
+        # patch Pytorch and CUDA in subprocess
+        if os.environ.get('BIGDL_NANO_PATCH_TORCH') == '1':
+            patch_cuda = True if os.environ.get('BIGDL_NANO_PATCH_CUDA') == '1' else False
+            from bigdl.nano.pytorch import patch_torch
+            patch_torch(cuda_to_cpu=patch_cuda)
+
         strategy.cluster_environment.set_global_rank(global_rank)
         strategy.cluster_environment.set_remote_execution(True)
 
@@ -245,6 +251,10 @@ class RayStrategy(DDPSpawnStrategy):
             # and subprocess will use it to initialize its `sys.path`,
             # so we can import `test` module in subprocess
             ray.get(worker.set_env_var.remote("PYTHONPATH", envs[i].get("PYTHONPATH", "")))
+            ray.get(worker.set_env_var.remote("BIGDL_NANO_PATCH_TORCH",
+                                              envs[i].get("BIGDL_NANO_PATCH_TORCH", "0")))
+            ray.get(worker.set_env_var.remote("BIGDL_NANO_PATCH_CUDA",
+                                              envs[i].get("BIGDL_NANO_PATCH_CUDA", "0")))
 
             workers.append(worker)
 

@@ -40,7 +40,7 @@ def load_openvino_model(path):
     return PytorchOpenVINOModel._load(path)
 
 
-def KerasOpenVINOModel(model, input_sample=None):
+def KerasOpenVINOModel(model, input_sample=None, thread_num=None):
     """
     Create a OpenVINO model from Keras.
 
@@ -48,10 +48,12 @@ def KerasOpenVINOModel(model, input_sample=None):
                   path to Openvino saved model.
     :param input_sample: A set of inputs for trace, defaults to None if you have trace before or
                          model is a LightningModule with any dataloader attached, defaults to None
+    :param thread_num: a int represents how many threads(cores) is needed for
+                       inference. default: None.
     :return: KerasOpenVINOModel model for OpenVINO inference.
     """
     from .tf.model import KerasOpenVINOModel
-    return KerasOpenVINOModel(model)
+    return KerasOpenVINOModel(model, thread_num=thread_num)
 
 
 def OpenVINOModel(model, device='CPU'):

@@ -19,9 +19,9 @@ runs:
     - name: Setup env
       shell: bash
       run: |
-        if [ ! -d "/opt/conda/envs/py37-jep" ]
+        if [ ! -d "/opt/conda/envs/py37" ]
         then
-          conda create -n py37-jep -y python==3.7.10 setuptools==58.0.4
+          conda create -n py37 -y python==3.7.10 setuptools==58.0.4 -c ${CONDA_CHANNEL} --override-channels
         fi
         java -version
 
@@ -37,15 +37,15 @@ runs:
         export SPARK_LOCAL_HOSTNAME=localhost
         export PATH=${JAVA_HOME}/bin/:${JAVA_HOME}/jre/bin:${PATH}
         export PATH=/opt/hostedtoolcache/maven/3.6.3/x64:$PATH 
-        source activate py37-jep
+        source activate py37
         conda remove -c anaconda -y intel-openmp || true
         chmod a+x python/orca/dev/colab-notebook/ipynb2py.sh
         chmod a+x python/chronos/dev/app/ipynb2py.sh
         chmod a+x python/chronos/dev/colab-notebook/run-notebook-pytorch.sh
         chmod a+x python/orca/dev/colab-notebook/run-notebook-pytorch.sh
         chmod a+x python/orca/dev/colab-notebook/ipynb2py.sh
-        export LD_LIBRARY_PATH=/opt/conda/envs/py37-jep/lib:$LD_LIBRARY_PATH
-        export PYTHONHOME=/opt/conda/envs/py37-jep 
+        export LD_LIBRARY_PATH=/opt/conda/envs/py37/lib:$LD_LIBRARY_PATH
+        export PYTHONHOME=/opt/conda/envs/py37 
         pip uninstall -y bigdl-dllib bigdl-orca bigdl-chronos
         pip install jupyter bigdl-orca matplotlib
         pip install --pre bigdl

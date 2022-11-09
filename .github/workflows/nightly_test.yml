@@ -2,8 +2,8 @@ name: Nightly Test
 
 on:
 
-  #pull_request:
-    #branchs: [ main ]
+#   pull_request:
+#     branchs: [ main ]
 
   schedule:
     - cron: '0 13 * * *' # GMT time, 13:00 GMT == 21:00 China
@@ -42,6 +42,9 @@ on:
         - Colab-Python-Py37-Pytorch
         - Colab-Python-Py37-tf1
         - Colab-Python-Py37-tf2
+        - Python-AppTests-part1
+        - Python-AppTests-part2
+        - Scala-AppTests
 
       image:
         description: 'docker image name'
@@ -859,6 +862,93 @@ jobs:
         file-name: Colab-Python-Py37-tf2.json
         type: job
         job-name: Colab-Python-Py37-tf2
+        runner-hosted-on: 'Shanghai'
+
+  Python-AppTests-part1:
+    if: ${{ github.event.schedule || github.event.inputs.artifact == 'Python-AppTests-part1' || github.event.inputs.artifact == 'all' }}
+    runs-on: [ self-hosted, Gondolin, ubuntu-20.04-lts ]
+
+    steps:
+    - uses: actions/checkout@v3
+    - name: Set up JDK8
+      uses: ./.github/actions/jdk-setup-action
+    - name: Set up Maven
+      uses: stCarolas/setup-maven@v4.4
+      with:
+        maven-version: 3.6.3
+    - name: Run Test
+      uses: ./.github/actions/appTests/python-appTests-part1
+    - name: Remove Env
+      if: ${{ always() }}
+      uses: ./.github/actions/remove-env
+    - name: Create Job Badge
+      uses: ./.github/actions/create-job-status-badge
+      if: ${{ always() }}
+      with:
+        secret: ${{ secrets.GIST_SECRET}}
+        gist-id: ${{env.GIST_ID}}
+        is-self-hosted-runner: true
+        file-name: Python-AppTests-part1.json
+        type: job
+        job-name: Python-AppTests-part1
+        runner-hosted-on: 'Shanghai'
+
+  Python-AppTests-part2:
+    if: ${{ github.event.schedule || github.event.inputs.artifact == 'Python-AppTests-part2' || github.event.inputs.artifact == 'all' }}
+    runs-on: [ self-hosted, Gondolin, ubuntu-20.04-lts ]
+
+    steps:
+    - uses: actions/checkout@v3
+    - name: Set up JDK8
+      uses: ./.github/actions/jdk-setup-action
+    - name: Set up Maven
+      uses: stCarolas/setup-maven@v4.4
+      with:
+        maven-version: 3.6.3
+    - name: Run Test
+      uses: ./.github/actions/appTests/python-appTests-part2
+    - name: Remove Env
+      if: ${{ always() }}
+      uses: ./.github/actions/remove-env
+    - name: Create Job Badge
+      uses: ./.github/actions/create-job-status-badge
+      if: ${{ always() }}
+      with:
+        secret: ${{ secrets.GIST_SECRET}}
+        gist-id: ${{env.GIST_ID}}
+        is-self-hosted-runner: true
+        file-name: Python-AppTests-part2.json
+        type: job
+        job-name: Python-AppTests-part2
+        runner-hosted-on: 'Shanghai'
+
+  Scala-AppTests:
+    if: ${{ github.event.schedule || github.event.inputs.artifact == 'Scala-AppTests' || github.event.inputs.artifact == 'all' }}
+    runs-on: [ self-hosted, Gondolin, ubuntu-20.04-lts ]
+
+    steps:
+    - uses: actions/checkout@v3
+    - name: Set up JDK8
+      uses: ./.github/actions/jdk-setup-action
+    - name: Set up Maven
+      uses: stCarolas/setup-maven@v4.4
+      with:
+        maven-version: 3.6.3
+    - name: Run Test
+      uses: ./.github/actions/appTests/scala-appTests
+    - name: Remove Env
+      if: ${{ always() }}
+      uses: ./.github/actions/remove-env
+    - name: Create Job Badge
+      uses: ./.github/actions/create-job-status-badge
+      if: ${{ always() }}
+      with:
+        secret: ${{ secrets.GIST_SECRET}}
+        gist-id: ${{env.GIST_ID}}
+        is-self-hosted-runner: true
+        file-name: Scala-AppTests.json
+        type: job
+        job-name: Scala-AppTests
         runner-hosted-on: 'Shanghai'
     
     
