@@ -161,7 +161,7 @@ RUN cd /opt && \
 ADD ./install_python_with_conda.sh /opt
 RUN cd /opt && bash ./install_python_with_conda.sh
 
-FROM occlum/occlum:0.28.1-ubuntu20.04 as ppml
+FROM occlum/occlum:0.29.2-ubuntu20.04 as ppml
 
 ARG BIGDL_VERSION=2.2.0-SNAPSHOT
 ARG SPARK_VERSION
