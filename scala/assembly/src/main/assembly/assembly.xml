@@ -134,7 +134,13 @@
           <include>start-fgboost-server.py</include>
       </includes>
     </fileSet>
-
+    <fileSet>
+      <outputDirectory>/python/requirements</outputDirectory>
+      <directory>${project.parent.basedir}/../python/requirements</directory>
+      <includes>
+          <include>/**</include>
+      </includes>
+    </fileSet>
   </fileSets>
   <dependencySets>
     <dependencySet>

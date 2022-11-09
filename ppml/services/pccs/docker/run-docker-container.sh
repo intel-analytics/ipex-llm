@@ -13,6 +13,7 @@ export EMAIL_ADDRESS=your_email_address
 export PASSWORD=your_server_password_to_use
 
 docker run -itd \
+--net=host \
 --name $PCCS_CONTAINER_NAME \
 -e PCCS_PORT=$PCCS_PORT \
 -e API_KEY=$API_KEY \

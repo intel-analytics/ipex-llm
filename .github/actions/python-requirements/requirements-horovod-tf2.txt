@@ -7,7 +7,6 @@ opencv-python
 matplotlib
 tqdm
 protobuf==3.15.3
-pandas
 ray[default]==1.9.2
 aiohttp==3.8.1
 async-timeout==4.0.1
@@ -31,3 +30,4 @@ scikit-optimize==0.8.1
 pandas==1.1.5
 Keras-Applications==1.0.8
 Keras-Preprocessing==1.1.2
+pytest

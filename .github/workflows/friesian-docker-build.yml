@@ -1,15 +1,17 @@
 name: Friesian Docker Build
 
 on:
-  #  push:
-  #    paths:
-  #      - 'scala/friesian/**'
-  #      - '.github/actions/friesian-docker-build-action/action.yml'
-  #  pull_request:
-  #    branches: [ main ]
-  #    paths:
-  #      - 'scala/friesian/**'
-  #      - '.github/actions/friesian-docker-build-action/action.yml'
+#  push:
+#    paths:
+#      - 'scala/friesian/**'
+#      - '.github/workflows/friesian-docker-build.yml'
+#      - '.github/actions/friesian-docker-build-action/action.yml'
+#  pull_request:
+#    branches: [ main ]
+#    paths:
+#      - 'scala/friesian/**'
+#      - '.github/workflows/friesian-docker-build.yml'
+#      - '.github/actions/friesian-docker-build-action/action.yml'
   #  schedule:
   #    - cron: '0 12 * * *' # GMT time, 12:00 GMT == 20:00 China
   workflow_dispatch:
@@ -47,13 +49,13 @@ jobs:
 
       - name: Build with Maven
         run: |
-          cd scala/friesian
-          mvn clean package -P serving,spark_3.x -DskipTests
-          ls -alh ./target/
+          cd scala
+          mvn clean package -P serving,spark_3.x -pl "-assembly,-serving,-ppml" -DskipTests
+          ls -alh ./friesian/target/
 
           # upload
           sshpass -p "${SOURCEFORGE_PW}" \
-          scp ./target/bigdl-friesian-*-serving.jar \
+          scp ./friesian/target/bigdl-friesian-*-serving.jar \
           intelanalytics@frs.sourceforge.net:/home/frs/project/analytics-zoo/friesian-serving-jars
 
 

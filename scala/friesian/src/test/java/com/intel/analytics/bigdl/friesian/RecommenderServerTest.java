@@ -131,7 +131,8 @@ public class RecommenderServerTest {
     public void testGetRecommendIDs() {
         RecommenderProto.RecommendIDProbs result = recommenderBlockingStub.getRecommendIDs(
                 RecommenderProto.RecommendRequest
-                        .newBuilder().addID(userDataRow.getInt(0)).setRecommendNum(3).setCandidateNum(10).build());
+                        .newBuilder().addID(Integer.parseInt(userDataRow.get(0).toString()))
+                        .setRecommendNum(3).setCandidateNum(10).build());
         assertEquals(result.getIDProbList(0).getIDCount(), 3);
         logger.info("Got Recommend IDs" + result.getIDProbListList().toString());
     }

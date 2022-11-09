@@ -16,6 +16,8 @@ run(){
 	start=$(date "+%s")
 	${ANALYTICS_ZOO_HOME}/python/orca/dev/colab-notebook/ipynb2py.sh ${ANALYTICS_ZOO_HOME}/$2
 	sed -i '/get_ipython/s/^/#/' ${ANALYTICS_ZOO_HOME}/$2.py
+	sed -i 's/^[^#].*environ*/#&/g' ${ANALYTICS_ZOO_HOME}/$2.py
+	sed -i 's/!update-alternatives/#&/g' ${ANALYTICS_ZOO_HOME}/$2.py
 	python ${ANALYTICS_ZOO_HOME}/$2.py
 
 	exit_status=$?

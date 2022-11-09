@@ -78,32 +78,6 @@ if [ -n "$R_APP_ARGS" ]; then
     R_ARGS="$R_APP_ARGS"
 fi
 
-# Attestation
-if [ -z "$ATTESTATION" ]; then
-    echo "[INFO] Attestation is disabled!"
-    ATTESTATION="false"
-elif [ "$ATTESTATION" = "true" ]; then
-  echo "[INFO] Attestation is enabled!"
-  # Build ATTESTATION_COMMAND
-  if [ -z "$ATTESTATION_URL" ]; then
-    echo "[ERROR] Attestation is enabled, but ATTESTATION_URL is empty!"
-    echo "[INFO] PPML Application Exit!"
-    exit 1
-  fi
-  if [ -z "$ATTESTATION_ID" ]; then
-    echo "[ERROR] Attestation is enabled, but ATTESTATION_ID is empty!"
-    echo "[INFO] PPML Application Exit!"
-    exit 1
-  fi
-  if [ -z "$ATTESTATION_KEY" ]; then
-    echo "[ERROR] Attestation is enabled, but ATTESTATION_KEY is empty!"
-    echo "[INFO] PPML Application Exit!"
-    exit 1
-  fi
-  ATTESTATION_COMMAND="/opt/jdk8/bin/java -Xmx1g -cp $SPARK_CLASSPATH:$BIGDL_HOME/jars/* com.intel.analytics.bigdl.ppml.attestation.AttestationCLI -u ${ATTESTATION_URL} -i ${ATTESTATION_ID}  -k ${ATTESTATION_KEY}"
-fi
-
-
 if [ "$PYSPARK_MAJOR_PYTHON_VERSION" == "2" ]; then
     pyv="$(python -V 2>&1)"
     export PYTHON_VERSION="${pyv:7}"
@@ -141,10 +115,10 @@ case "$SPARK_K8S_CMD" in
         export SGX_MEM_SIZE=$SGX_DRIVER_MEM_SIZE && \
         export sgx_command="/opt/jdk8/bin/java -Dlog4j.configurationFile=/ppml/trusted-big-data-ml/work/spark-3.1.2/conf/log4j2.xml -Xms1G -Xmx$SGX_DRIVER_JVM_MEM_SIZE -cp "$SPARK_CLASSPATH:$driverExtraClassPath" org.apache.spark.deploy.SparkSubmit --conf spark.driver.bindAddress=$SPARK_DRIVER_BIND_ADDRESS --deploy-mode client "$@"" && \
         if [ "$ATTESTATION" = "true" ]; then
-          echo $ATTESTATION_COMMAND > temp_commnd_file
-          echo $sgx_command >> temp_commnd_file
-          sgx_command="bash temp_commnd_file && rm temp_commnd_file"
-        fi
+	  bash attestation.sh
+	  echo $sgx_command >> temp_command_file
+	  export sgx_command="bash temp_command_file && rm temp_command_file"
+	fi
         echo $sgx_command && \
         ./init.sh && \
 	gramine-sgx bash  1>&2
@@ -193,9 +167,9 @@ case "$SPARK_K8S_CMD" in
       export SGX_MEM_SIZE=$SGX_EXECUTOR_MEM_SIZE && \
       export sgx_command="/opt/jdk8/bin/java -Dlog4j.configurationFile=/ppml/trusted-big-data-ml/work/spark-3.1.2/conf/log4j2.xml -Xms1G -Xmx$SGX_EXECUTOR_JVM_MEM_SIZE "${SPARK_EXECUTOR_JAVA_OPTS[@]}" -cp "$SPARK_CLASSPATH" org.apache.spark.executor.CoarseGrainedExecutorBackend --driver-url $SPARK_DRIVER_URL --executor-id $SPARK_EXECUTOR_ID --cores $SPARK_EXECUTOR_CORES --app-id $SPARK_APPLICATION_ID --hostname $SPARK_EXECUTOR_POD_IP --resourceProfileId $SPARK_RESOURCE_PROFILE_ID" && \
       if [ "$ATTESTATION" = "true" ]; then
-	echo $ATTESTATION_COMMAND > temp_commnd_file
-	echo $sgx_command >> temp_commnd_file
-	sgx_command="bash temp_commnd_file && rm temp_commnd_file"
+        bash attestation.sh
+	echo $sgx_command >> temp_command_file
+	export sgx_command="bash temp_command_file && rm temp_command_file"
       fi
       echo $sgx_command && \
       ./init.sh && \

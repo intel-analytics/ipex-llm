@@ -232,7 +232,7 @@ class TrainingOperator:
             self.global_step += 1
             if callbacks is not None:
                 for callback in callbacks:
-                    callback.on_batch_end(batch_idx)
+                    callback.on_batch_end(batch_idx, logs=metrics)
 
     def train_batch(self, batch, batch_info):
         """Computes loss and updates the model over one batch.
@@ -274,8 +274,6 @@ class TrainingOperator:
         with self.timers.record("fwd"):
             if torch.is_tensor(features):
                 output = self.model(features)
-            elif isinstance(features, dict):
-                output = self.model(**features)
             elif isinstance(features, (tuple, list)):
                 output = self.model(*features)
             else:
@@ -406,8 +404,6 @@ class TrainingOperator:
         with self.timers.record("eval_fwd"):
             if torch.is_tensor(features):
                 output = self.model(features)
-            elif isinstance(features, dict):
-                output = self.model(**features)
             elif isinstance(features, (tuple, list)):
                 output = self.model(*features)
             else:

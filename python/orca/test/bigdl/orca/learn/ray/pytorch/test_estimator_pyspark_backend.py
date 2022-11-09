@@ -222,7 +222,7 @@ class TestPyTorchEstimator(TestCase):
         x_rdd = sc.parallelize(np.random.rand(4000, 1, 50).astype(np.float32))
         # torch 1.7.1+ requires target size same as output size, which is (batch, 1)
         y_rdd = sc.parallelize(np.random.randint(0, 2, size=(4000, 1, 1)).astype(np.float32))
-        rdd = x_rdd.zip(y_rdd).map(lambda x_y: {'x': {"input_":x_y[0]}, 'y': x_y[1]})
+        rdd = x_rdd.zip(y_rdd).map(lambda x_y: {'x': x_y[0], 'y': x_y[1]})
         train_rdd, val_rdd = rdd.randomSplit([0.9, 0.1])
         train_xshards = SparkXShards(train_rdd)
         val_xshards = SparkXShards(val_rdd)
@@ -242,7 +242,7 @@ class TestPyTorchEstimator(TestCase):
         x2_rdd = sc.parallelize(np.random.rand(4000, 1, 25).astype(np.float32))
         # torch 1.7.1+ requires target size same as output size, which is (batch, 1)
         y_rdd = sc.parallelize(np.random.randint(0, 2, size=(4000, 1, 1)).astype(np.float32))
-        rdd = x1_rdd.zip(x2_rdd).zip(y_rdd).map(lambda x_y: {'x': {"input1":x_y[0][0], "input2":x_y[0][1]}, 'y': x_y[1]})
+        rdd = x1_rdd.zip(x2_rdd).zip(y_rdd).map(lambda x_y: {'x': [x_y[0][0], x_y[0][1]], 'y': x_y[1]})
         train_rdd, val_rdd = rdd.randomSplit([0.9, 0.1])
         train_xshards = SparkXShards(train_rdd)
         val_xshards = SparkXShards(val_rdd)
@@ -574,6 +574,53 @@ class TestPyTorchEstimator(TestCase):
         estimator.fit(train_data_loader, epochs=4, batch_size=128,
                       validation_data=val_data_loader, callbacks=callbacks)
 
+    def test_tensorboard_callback(self):
+        from bigdl.orca.learn.pytorch.callbacks.tensorboard import TensorBoardCallback
+        sc = OrcaContext.get_spark_context()
+        spark = SparkSession.builder.getOrCreate()
+        rdd = sc.range(0, 100)
+        epochs = 2
+        data = rdd.map(lambda x: (np.random.randn(50).astype(np.float).tolist(),
+                                  [float(np.random.randint(0, 2, size=()))])
+                       )
+        schema = StructType([
+            StructField("feature", ArrayType(FloatType()), True),
+            StructField("label", ArrayType(FloatType()), True)
+        ])
+        df = spark.createDataFrame(data=data, schema=schema)
+        df = df.cache()
+
+        estimator = get_estimator(workers_per_node=2, log_level=logging.DEBUG)
+
+        try:
+            temp_dir = tempfile.mkdtemp()
+            log_dir = os.path.join(temp_dir, "runs_epoch")
+
+            callbacks = [
+                TensorBoardCallback(log_dir=log_dir, freq="epoch")
+            ]
+            estimator.fit(df, batch_size=4, epochs=epochs,
+                          callbacks=callbacks,
+                          feature_cols=["feature"],
+                          label_cols=["label"])
+
+            assert len(os.listdir(log_dir)) > 0
+
+            log_dir = os.path.join(temp_dir, "runs_batch")
+
+            callbacks = [
+                TensorBoardCallback(log_dir=log_dir, freq="batch")
+            ]
+            estimator.fit(df, batch_size=4, epochs=epochs,
+                          callbacks=callbacks,
+                          feature_cols=["feature"],
+                          label_cols=["label"])
+
+            assert len(os.listdir(log_dir)) > 0
+        finally:
+            shutil.rmtree(temp_dir)
+
+        estimator.shutdown()
 
 if __name__ == "__main__":
     pytest.main([__file__])

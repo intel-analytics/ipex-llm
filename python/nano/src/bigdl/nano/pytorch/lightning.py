@@ -142,7 +142,7 @@ class LightningModule(pl.LightningModule):
             schedulers.append(self.scheduler)
         return optimizers, schedulers
 
-    def load_state_dict(self, state_dict: 'OrderedDict[str, Tensor]',
+    def load_state_dict(self, state_dict: 'OrderedDict[str, Tensor]',  # type: ignore
                         strict: bool = True):
         """Same as LightningModule.load_state_dict, execept falling back to pytorch."""
         try:

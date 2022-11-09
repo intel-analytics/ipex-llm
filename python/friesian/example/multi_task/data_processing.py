@@ -69,8 +69,8 @@ def feature_engineering(train_tbl, valid_tbl, output_path, sparse_int_features,
                         sparse_string_features, dense_features):
     train_tbl, min_max_dict = train_tbl.min_max_scale(dense_features)
     valid_tbl = valid_tbl.transform_min_max_scale(dense_features, min_max_dict)
-    # TODO: fix the bug of cat_2
-    cat_cols = sparse_string_features[-1:] + sparse_int_features + sparse_string_features[:-1]
+
+    cat_cols = sparse_string_features + sparse_int_features
     for feature in cat_cols:
         train_tbl, feature_idx = train_tbl.category_encode(feature)
         valid_tbl = valid_tbl.encode_string(feature, feature_idx)
@@ -129,13 +129,11 @@ if __name__ == '__main__':
 
     sparse_int_features = [
         'user_id', 'article_id',
-        'net_status', 'flush_nums',
-        'exop_position'
     ]
     sparse_string_features = [
-        'device', 'os', 'province',
+        'cat_2', 'cat_1', 'device', 'os', 'province',
         'city', 'age',
-        'gender', 'cat_1', 'cat_2'
+        'gender'
     ]
     dense_features = ['img_num']
 

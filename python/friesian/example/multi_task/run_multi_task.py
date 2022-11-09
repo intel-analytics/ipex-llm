@@ -17,15 +17,16 @@
 import math
 from time import time
 from argparse import ArgumentParser
-from keras.callbacks import EarlyStopping
-
-from deepctr.feature_column import SparseFeat, DenseFeat
-from deepctr.models import MMOE, PLE
 
 from bigdl.dllib.utils.log4Error import invalidInputError
 from bigdl.orca import init_orca_context, stop_orca_context
 from bigdl.orca.learn.tf2.estimator import Estimator
 from bigdl.friesian.feature import FeatureTable
+
+from deepctr.feature_column import SparseFeat, DenseFeat
+from deepctr.models import MMOE, PLE
+
+from keras.callbacks import EarlyStopping
 
 
 def build_model(model_type, sparse_features, dense_features, feature_max_idx):
@@ -215,7 +216,7 @@ if __name__ == "__main__":
         'gender',
         'cat_1'
     ]
-    continuous_cols = ['img_num']
+    continuous_cols = ['img_num', 'flush_nums']
     feature_max_idx = {'user_id': 40000, 'article_id': 200000, 'net_status': 1004,
                        'exop_position': 2000, 'device': 2000,
                        'city': 1379, 'age': 1005, 'gender': 1003, 'cat_1': 1038}
