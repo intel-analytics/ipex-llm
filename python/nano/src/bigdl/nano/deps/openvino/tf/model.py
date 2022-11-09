@@ -18,6 +18,8 @@ from tempfile import TemporaryDirectory
 from ..core.model import OpenVINOModel
 from bigdl.nano.utils.inference.tf.model import AcceleratedKerasModel
 from .utils import export
+from .dataloader import KerasOpenVINODataLoader
+from .metric import KerasOpenVINOMetric
 import tensorflow as tf
 from bigdl.nano.utils.log4Error import invalidInputError
 from ..core.utils import save
@@ -61,6 +63,23 @@ class KerasOpenVINOModel(AcceleratedKerasModel):
         status = super().status
         status.update({"xml_path": 'ov_saved_model.xml', "weight_path": 'ov_saved_model.bin'})
         return status
+
+    def pot(self,
+            dataset,
+            metric=None,
+            higher_better=True,
+            drop_type="relative",
+            maximal_drop=0.999,
+            max_iter_num=1,
+            n_requests=None,
+            sample_size=300):
+        if metric:
+            metric = KerasOpenVINOMetric(metric=metric, higher_better=higher_better)
+        dataloader = KerasOpenVINODataLoader(dataset, collate_fn=self.tensors_to_numpy)
+        model = self.ov_model.pot(dataloader, metric=metric, drop_type=drop_type,
+                                  maximal_drop=maximal_drop, max_iter_num=max_iter_num,
+                                  n_requests=n_requests, sample_size=sample_size)
+        return KerasOpenVINOModel(model)
 
     @staticmethod
     def _load(path):

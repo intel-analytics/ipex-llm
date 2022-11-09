@@ -40,12 +40,14 @@ class InferenceUtils:
                  max_trials: int = None,
                  batch=None,
                  inputs: List[str] = None,
-                 outputs: List[str] = None):
+                 outputs: List[str] = None,
+                 sample_size: int = 100):
         """
         Post-training quantization on a keras model.
 
-        :param calib_dataset:   A tf.data.Dataset object for calibration. Required for
-                                static quantization. It's also used as validation dataloader.
+        :param calib_dataset:   A tf.data.Dataset object for calibration without setting
+                                batch_size or batch_size=1. Required for static quantization.
+                                It's also used as validation dataloader.
         :param precision:       Global precision of quantized model,
                                 supported type: 'int8', 'bf16', 'fp16', defaults to 'int8'.
         :param accelerator:     Use accelerator 'None', defaults to None.
@@ -82,6 +84,11 @@ class InferenceUtils:
                             Default: None, automatically get names from graph.
         :param outputs:     A list of output names.
                             Default: None, automatically get names from graph.
+        :param sample_size: (optional) a int represents how many samples will be used for
+                            Post-training Optimization Tools (POT) from OpenVINO toolkit,
+                            only valid for accelerator='openvino'. Default to 100.
+                            The larger the value, the more accurate the conversion,
+                            the lower the performance degradation, but the longer the time.
         :return:            A TensorflowBaseModel for INC. If there is no model found, return None.
         """
         if accelerator is None:
@@ -97,6 +104,27 @@ class InferenceUtils:
                                 max_trials=max_trials,
                                 inputs=inputs,
                                 outputs=outputs)
+        elif accelerator == 'openvino':
+            from bigdl.nano.deps.openvino.tf.model import KerasOpenVINOModel    # type: ignore
+            if isinstance(self, KerasOpenVINOModel):    # type: ignore
+                openvino_model = self
+            else:
+                openvino_model = self.trace(accelerator='openvino')
+            if metric:
+                if not isinstance(accuracy_criterion, dict):
+                    accuracy_criterion = {'relative': 0.99, 'higher_is_better': True}
+                drop_type = 'relative' if 'relative' in accuracy_criterion else 'absolute'
+                higher_is_better = accuracy_criterion.get('higher_is_better', None)
+                maximal_drop = accuracy_criterion.get(drop_type, None)
+            else:
+                drop_type, higher_is_better, maximal_drop = None, None, None
+            return openvino_model.pot(dataset=calib_dataset,    # type: ignore
+                                      metric=metric,
+                                      higher_better=higher_is_better,
+                                      drop_type=drop_type,
+                                      maximal_drop=maximal_drop,
+                                      max_iter_num=max_trials,
+                                      sample_size=sample_size)
         else:
             invalidInputError(False, "Accelerator {} is invalid.".format(accelerator))
 
