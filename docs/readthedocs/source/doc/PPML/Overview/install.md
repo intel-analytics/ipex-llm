@@ -45,14 +45,30 @@ sudo apt update
 sudo apt-get install libsgx-urts libsgx-dcap-ql libsgx-dcap-default-qpl
 ```
 
-##### Install PCCS (for attestation)
+##### Install PCCS (Provisioning Certificate Caching Service) (for attestation)
 
 Please refer to [Intel® Software Guard Extensions Data Center Attestation Primitives (Intel® SGX DCAP): A Quick Install Guide](https://www.intel.com/content/www/us/en/developer/articles/guide/intel-software-guard-extensions-data-center-attestation-primitives-quick-install-guide.html)
+
+Note that PCCS requires Internet connection for downloading certificates from Intel PCS. PCCS is fully [open sourced on Github](https://github.com/intel/SGXDataCenterAttestationPrimitives/blob/master/QuoteGeneration/pccs), you can build your own PCCS based on these codes.
+
+```eval_rst
+.. mermaid::
+   
+   graph BT
+      pcs(Intel PCS) --> PCCS
+      PCCS --> pcs
+      subgraph Internet
+         pcs
+      end
+      subgraph Data Center
+         PCCS --> sgx(SGX Server)
+         sgx --> PCCS
+      end
+```
 
 ##### Install Kubernetes SGX Plugin (K8S only)
 
 Please refer to [Deploy the Intel SGX Device Plugin for Kubernetes](https://bigdl.readthedocs.io/en/latest/doc/PPML/QuickStart/deploy_intel_sgx_device_plugin_for_kubernetes.html).
-
 
 ### FAQs
 
