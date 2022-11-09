@@ -27,7 +27,7 @@ from bigdl.dllib.utils.utils import get_node_ip
 
 from bigdl.orca.data.file import is_file, exists, get_remote_file_to_local, \
     get_remote_files_with_prefix_to_local, put_local_file_to_remote, \
-    put_local_files_with_prefix_to_remote
+    put_local_files_with_prefix_to_remote, get_remote_dir_to_local
 from bigdl.orca.learn.tf2.spark_runner import SparkRunner
 from bigdl.orca.learn.utils import find_free_port, find_ip_and_free_port
 from bigdl.orca.learn.utils import maybe_dataframe_to_xshards, dataframe_to_xshards, \
@@ -513,6 +513,11 @@ class SparkTFEstimator():
         options for loading from SavedModel.
 
         """
+        self.load_params = dict(
+            filepath=filepath,
+            custom_objects=custom_objects,
+            compile=compile
+        )
         model = load_model(filepath, custom_objects=custom_objects, compile=compile)
         self.model_weights = model.get_weights()
         # update remote model
@@ -525,7 +530,27 @@ class SparkTFEstimator():
 
         :return: the learned model.
         """
-        model = self.model_creator(self.config)
+        import tensorflow as tf
+
+        if self.model_creator is not None:
+            model = self.model_creator(self.config)
+        else:
+            file_name = os.path.basename(self.load_params["filepath"])
+            temp_dir = tempfile.mkdtemp()
+            temp_path = os.path.join(temp_dir, file_name)
+
+            if is_file(self.load_params["filepath"]):
+                get_remote_file_to_local(self.load_params["filepath"], temp_path)
+            else:
+                if os.path.exists(temp_path):
+                    os.makedirs(temp_path)
+                get_remote_dir_to_local(self.load_params["filepath"], temp_path)
+            try:
+                self.load_params["filepath"] = temp_path
+                model = tf.keras.models.load_model(**self.load_params)
+            finally:
+                shutil.rmtree(temp_dir)
+
         model.set_weights(self.model_weights)
         return model
 
