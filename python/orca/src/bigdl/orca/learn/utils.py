@@ -204,9 +204,10 @@ def convert_predict_rdd_to_dataframe(df, prediction_rdd):
 
 def _stack_arrs(arrs):
     if isinstance(arrs, list):
+        # stack arrs if arrs is a list.
         return np.stack(arrs)
     else:
-        # do nothing if arrs are not a list of ndarrays.
+        # do nothing if arrs are not a list.
         return arrs
 
 
