@@ -28,7 +28,8 @@ fi
 ray stop -f
 
 echo "Running chronos tests foreacster"
-python -m pytest -v test/bigdl/chronos/forecaster
+python -m pytest -v test/bigdl/chronos/forecaster \
+        -k "not test_forecast_tcmf_distributed"
 
 
 exit_status_0=$?
