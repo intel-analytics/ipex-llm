@@ -42,7 +42,7 @@ sc = init_orca_context()
 # Step 2: Define train and test datasets as PyTorch DataLoader
 class NCFData(data.Dataset):
     def __init__(self, features,
-                 num_item=0, train_mat=None, num_ng=0, is_sampling=True):
+                 num_item=0, train_mat=None, num_ng=0):
         super(NCFData, self).__init__()
         """ Note that the labels are only useful when training, we thus
             add them in the ng_sample() function.
@@ -51,10 +51,11 @@ class NCFData(data.Dataset):
         self.num_item = num_item
         self.train_mat = train_mat
         self.num_ng = num_ng
-        self.is_sampling = is_sampling
+        self.is_sampling = False
         self.labels = [1 for _ in range(len(features))]
 
     def ng_sample(self):
+        self.is_sampling = True
         self.features_ng = []
         for x in self.features_ps:
             u = x[0]
@@ -104,7 +105,7 @@ def train_loader_func(config, batch_size):
     # train test split
     train_data, _ = train_test_split(data_X, test_size=0.2, random_state=100)
 
-    train_dataset = NCFData(train_data, item_num, train_mat, config['num_ng'], True)
+    train_dataset = NCFData(train_data, item_num, train_mat, config['num_ng'])
     train_dataset.ng_sample()
     train_loader = data.DataLoader(train_dataset, batch_size=batch_size,
                                    shuffle=True, num_workers=0)
@@ -131,7 +132,7 @@ def test_loader_func(config, batch_size):
     # train test split
     _, test_data = train_test_split(data_X, test_size=0.2, random_state=100)
 
-    test_dataset = NCFData(test_data, item_num, train_mat, config['num_ng'], True)
+    test_dataset = NCFData(test_data, item_num, train_mat, config['num_ng'])
     test_dataset.ng_sample()
     test_loader = data.DataLoader(test_dataset, batch_size=batch_size,
                                   shuffle=False, num_workers=0)
