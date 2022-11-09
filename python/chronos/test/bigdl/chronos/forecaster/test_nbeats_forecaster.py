@@ -452,7 +452,7 @@ class TestChronosNBeatsForecaster(TestCase):
                                       hidden_layer_units=256,
                                       metrics=['mae'],
                                       lr=0.01)
-        val_loss = forecaster.fit((train_data[0], train_data[1]), val_data, epochs=10)
+        val_loss = forecaster.fit((train_data[0], train_data[1]), val_data, epochs=2)
 
     def test_nbeats_forecaster_fit_loader_val(self):
         train_loader, val_loader, _ = create_data(loader=True)
@@ -460,7 +460,7 @@ class TestChronosNBeatsForecaster(TestCase):
                                      future_seq_len=5,
                                      loss='mae',
                                      lr=0.01)
-        val_loss = forecater.fit(train_loader, val_loader, epochs=10)
+        val_loss = forecater.fit(train_loader, val_loader, epochs=2)
 
     def test_forecaster_from_tsdataset(self):
         train, test = create_tsdataset()
@@ -530,7 +530,7 @@ class TestChronosNBeatsForecaster(TestCase):
                                       metrics=['mae'],
                                       lr=0.01)
         val_loss = forecaster.fit((train_data[0], train_data[1]), val_data,
-                                  validation_mode='earlystop', epochs=10)
+                                  validation_mode='earlystop', epochs=2)
 
     def test_nbeats_forecaster_fit_earlystop_patience(self):
         train_data, val_data, _ = create_data()
@@ -543,7 +543,7 @@ class TestChronosNBeatsForecaster(TestCase):
                                       lr=0.01)
         val_loss = forecaster.fit((train_data[0], train_data[1]), val_data,
                                   validation_mode='earlystop', earlystop_patience=6,
-                                  epochs=10)
+                                  epochs=2)
 
     def test_nbeats_forecaster_fit_best_val(self):
         train_data, val_data, _ = create_data()
@@ -555,7 +555,7 @@ class TestChronosNBeatsForecaster(TestCase):
                                       metrics=['mae'],
                                       lr=0.01)
         val_loss = forecaster.fit((train_data[0], train_data[1]), val_data,
-                                  validation_mode='best_epoch', epochs=10)
+                                  validation_mode='best_epoch', epochs=2)
 
     def test_predict_interval(self):
         train_data, val_data, test_data = create_data()

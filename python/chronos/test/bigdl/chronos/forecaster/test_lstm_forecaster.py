@@ -496,7 +496,7 @@ class TestChronosModelLSTMForecaster(TestCase):
                                     dropout=[0.1, 0.2],
                                     loss="mae",
                                     lr=0.01)
-        val_loss = forecaster.fit(train_data, val_data, epochs=10)
+        val_loss = forecaster.fit(train_data, val_data, epochs=2)
 
     def test_lstm_forecaster_fit_loader_val(self):
         train_loader, val_loader, _ = create_data(loader=True)
@@ -508,7 +508,7 @@ class TestChronosModelLSTMForecaster(TestCase):
                                     dropout=[0.1, 0.2],
                                     loss="mae",
                                     lr=0.01)
-        val_loss = forecaster.fit(train_loader, val_loader, epochs=10)
+        val_loss = forecaster.fit(train_loader, val_loader, epochs=2)
 
     def test_forecaster_from_tsdataset(self):
         train, test = create_tsdataset()
@@ -578,7 +578,7 @@ class TestChronosModelLSTMForecaster(TestCase):
                                     dropout=[0.1, 0.2],
                                     loss="mae",
                                     lr=0.01)
-        val_loss = forecaster.fit(train_data, val_data, validation_mode='earlystop', epochs=10)
+        val_loss = forecaster.fit(train_data, val_data, validation_mode='earlystop', epochs=2)
 
     def test_lstm_forecaster_fit_earlystop_patience(self):
         train_data, val_data, _ = create_data()
@@ -591,7 +591,7 @@ class TestChronosModelLSTMForecaster(TestCase):
                                     loss="mae",
                                     lr=0.01)
         val_loss = forecaster.fit(train_data, val_data, validation_mode='earlystop',
-                                  earlystop_patience=6, epochs=10)
+                                  earlystop_patience=6, epochs=2)
 
     def test_lstm_forecaster_fit_best_val(self):
         train_data, val_data, _ = create_data()
@@ -603,7 +603,7 @@ class TestChronosModelLSTMForecaster(TestCase):
                                     dropout=[0.1, 0.2],
                                     loss="mae",
                                     lr=0.01)
-        val_loss = forecaster.fit(train_data, val_data, validation_mode='best_epoch', epochs=10)
+        val_loss = forecaster.fit(train_data, val_data, validation_mode='best_epoch', epochs=2)
 
     @op_automl
     def test_lstm_forecaster_tune_fit(self):
@@ -618,10 +618,10 @@ class TestChronosModelLSTMForecaster(TestCase):
                                     loss="mae",
                                     metrics=["mse"],
                                     lr=0.01)
-        forecaster.tune(train_data, val_data, epochs=10,
+        forecaster.tune(train_data, val_data, epochs=2,
                         n_trials=3, target_metric="mse",
                         direction="minimize")
-        forecaster.fit(train_data, epochs=10)
+        forecaster.fit(train_data, epochs=2)
 
     def test_predict_interval(self):
         train_data, val_data, test_data = create_data()

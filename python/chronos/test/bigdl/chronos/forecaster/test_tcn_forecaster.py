@@ -1001,7 +1001,7 @@ class TestChronosModelTCNForecaster(TestCase):
                                    num_channels=[16, 16],
                                    loss="mae",
                                    lr=0.01)
-        val_loss = forecaster.fit(train_data, val_data, epochs=10)
+        val_loss = forecaster.fit(train_data, val_data, epochs=2)
         _ = forecaster.predict(test_data[0], acceleration=False)
 
     def test_tcn_forecaster_fit_loader_val(self):
@@ -1014,7 +1014,7 @@ class TestChronosModelTCNForecaster(TestCase):
                                    num_channels=[16, 16],
                                    loss="mae",
                                    lr=0.01)
-        val_loss = forecaster.fit(train_loader, val_loader, epochs=10)
+        val_loss = forecaster.fit(train_loader, val_loader, epochs=2)
 
     def test_forecaster_from_tsdataset(self):
         train, test = create_tsdataset()
@@ -1084,7 +1084,7 @@ class TestChronosModelTCNForecaster(TestCase):
                                    num_channels=[16, 16],
                                    loss="mae",
                                    lr=0.01)
-        train_loss = forecaster.fit(train_data, val_data, validation_mode='earlystop', epochs=10)
+        train_loss = forecaster.fit(train_data, val_data, validation_mode='earlystop', epochs=2)
 
     def test_tcn_forecaster_fit_earlystop_patience(self):
         train_data, val_data, test_data = create_data()
@@ -1097,7 +1097,7 @@ class TestChronosModelTCNForecaster(TestCase):
                                    loss="mae",
                                    lr=0.01)
         train_loss = forecaster.fit(train_data, val_data, validation_mode='earlystop',
-                                    earlystop_patience=6, epochs=10)
+                                    earlystop_patience=6, epochs=2)
 
     def test_tcn_forecaster_fit_best_val(self):
         train_data, val_data, _ = create_data()
@@ -1109,7 +1109,7 @@ class TestChronosModelTCNForecaster(TestCase):
                                    num_channels=[16, 16],
                                    loss="mae",
                                    lr=0.01)
-        val_loss = forecaster.fit(train_data, val_data, validation_mode='best_epoch', epochs=10)
+        val_loss = forecaster.fit(train_data, val_data, validation_mode='best_epoch', epochs=2)
 
     @op_automl
     def test_tcn_forecaster_tune_save_load(self):

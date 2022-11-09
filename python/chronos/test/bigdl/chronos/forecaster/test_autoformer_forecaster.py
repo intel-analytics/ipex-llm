@@ -114,7 +114,7 @@ class TestChronosModelAutoformerForecaster(TestCase):
                                           output_feature_num=2,
                                           label_len=12,
                                           freq='s')
-        forecaster.fit(train_loader, epochs=3, batch_size=32)
+        forecaster.fit(train_loader, epochs=2, batch_size=32)
         evaluate = forecaster.evaluate(val_loader)
         pred = forecaster.predict(test_loader)
         
@@ -126,7 +126,7 @@ class TestChronosModelAutoformerForecaster(TestCase):
                                           output_feature_num=2,
                                           label_len=12,
                                           freq='s')
-        forecaster.fit(train_data, epochs=3, batch_size=32)
+        forecaster.fit(train_data, epochs=2, batch_size=32)
         evaluate = forecaster.evaluate(val_data)
         pred = forecaster.predict(test_data)
 
@@ -138,7 +138,7 @@ class TestChronosModelAutoformerForecaster(TestCase):
                                           output_feature_num=2,
                                           label_len=12,
                                           freq='s')
-        forecaster.fit(train, epochs=3, batch_size=32)
+        forecaster.fit(train, epochs=2, batch_size=32)
         evaluate = forecaster.evaluate(val)
         pred = forecaster.predict(test)
 
@@ -156,7 +156,7 @@ class TestChronosModelAutoformerForecaster(TestCase):
                                           metrics=['mae', 'mse', 'mape'],
                                           lr=space.Real(0.001, 0.01, log=True))
         forecaster.tune(train_data, validation_data=val_data, n_trials=2)
-        forecaster.fit(train_data, epochs=3, batch_size=32)
+        forecaster.fit(train_data, epochs=2, batch_size=32)
         evaluate = forecaster.evaluate(val_data)
 
     @op_automl
@@ -173,7 +173,7 @@ class TestChronosModelAutoformerForecaster(TestCase):
                                           metrics=['mae', 'mse', 'mape'],
                                           lr=space.Real(0.001, 0.01, log=True))
         with pytest.raises(RuntimeError) as e:
-            forecaster.fit(train_data, epochs=3, batch_size=32)
+            forecaster.fit(train_data, epochs=2, batch_size=32)
         error_msg = e.value.args[0]
         assert error_msg == "There is no trainer, and you " \
                             "should call .tune() before .fit()"
@@ -196,7 +196,7 @@ class TestChronosModelAutoformerForecaster(TestCase):
                         directions=["minimize", "minimize"],
                         direction=None,
                         n_trials=2)
-        forecaster.fit(train_data, epochs=3, batch_size=32, use_trial_id=0)
+        forecaster.fit(train_data, epochs=2, batch_size=32, use_trial_id=0)
         evaluate = forecaster.evaluate(val_data)
 
     def test_autoformer_forecaster_seed(self):
@@ -210,7 +210,7 @@ class TestChronosModelAutoformerForecaster(TestCase):
                                             label_len=12,
                                             freq='s',
                                             seed=0)
-            forecaster.fit(train_loader, epochs=3, batch_size=32)
+            forecaster.fit(train_loader, epochs=2, batch_size=32)
             evaluate = forecaster.evaluate(val_loader)
             pred = forecaster.predict(test_loader)
             evaluate_list.append(evaluate)
@@ -224,7 +224,7 @@ class TestChronosModelAutoformerForecaster(TestCase):
                                           output_feature_num=2,
                                           label_len=12,
                                           freq='s')
-        forecaster.fit(train_loader, epochs=3, batch_size=32)
+        forecaster.fit(train_loader, epochs=2, batch_size=32)
         evaluate = forecaster.evaluate(val_loader)
         with tempfile.TemporaryDirectory() as tmp_dir_name:
             ckpt_name = os.path.join(tmp_dir_name, "af.ckpt")
@@ -249,7 +249,7 @@ class TestChronosModelAutoformerForecaster(TestCase):
                                         seed=1,
                                         lr=0.01)
         forecaster.tune(train_data, validation_data=val_data, n_trials=2)
-        forecaster.fit(train_data, epochs=3, batch_size=32)
+        forecaster.fit(train_data, epochs=2, batch_size=32)
         evaluate1 = forecaster.evaluate(val_data)
         with tempfile.TemporaryDirectory() as tmp_dir_name:
             ckpt_name = os.path.join(tmp_dir_name, "tune.ckpt")
@@ -269,7 +269,7 @@ class TestChronosModelAutoformerForecaster(TestCase):
                                             freq='s',
                                             seed=0,
                                             moving_avg=20) # even
-        forecaster.fit(train_loader, epochs=3, batch_size=32)
+        forecaster.fit(train_loader, epochs=2, batch_size=32)
         evaluate = forecaster.evaluate(val_loader)
         pred = forecaster.predict(test_loader)
         evaluate_list.append(evaluate)
@@ -285,7 +285,7 @@ class TestChronosModelAutoformerForecaster(TestCase):
                                           freq='s',
                                           seed=0,
                                           moving_avg=20) # even
-        forecaster.fit(train_loader, epochs=3, batch_size=32)
+        forecaster.fit(train_loader, epochs=2, batch_size=32)
         evaluate = forecaster.evaluate(val_loader)
         pred = forecaster.predict(test_loader)
         evaluate_list.append(evaluate)
@@ -299,7 +299,7 @@ class TestChronosModelAutoformerForecaster(TestCase):
                                           label_len=12,
                                           freq='s',
                                           seed=0)
-        forecaster.fit(train_loader, epochs=3, batch_size=32)
+        forecaster.fit(train_loader, epochs=2, batch_size=32)
         # only the first time needs val_data
         y_pred, std = forecaster.predict_interval(data=test_loader,
                                                   validation_data=val_loader,
@@ -316,7 +316,7 @@ class TestChronosModelAutoformerForecaster(TestCase):
                                           label_len=12,
                                           freq='s',
                                           seed=0)
-        forecaster.fit(train_data, epochs=3, batch_size=32)
+        forecaster.fit(train_data, epochs=2, batch_size=32)
         # only the first time needs val_data
         y_pred, std = forecaster.predict_interval(data=test_data,
                                                   validation_data=val_data,
@@ -334,7 +334,7 @@ class TestChronosModelAutoformerForecaster(TestCase):
                                           freq='s',
                                           seed=0,
                                           moving_avg=20) # even
-        forecaster.fit(train, epochs=3, batch_size=32)
+        forecaster.fit(train, epochs=2, batch_size=32)
         # only the first time needs val_data
         y_pred, std = forecaster.predict_interval(data=test,
                                                   validation_data=val,
@@ -395,7 +395,7 @@ class TestChronosModelAutoformerForecaster(TestCase):
                                           label_len=12,
                                           freq='s',
                                           seed=0)
-        val_loss = forecaster.fit(train_data, val_data, epochs=10)
+        val_loss = forecaster.fit(train_data, val_data, epochs=2)
 
     def test_autoformer_forecaster_fit_loader_val(self):
         train_loader, val_loader, _ = create_data(loader=True)
@@ -406,7 +406,7 @@ class TestChronosModelAutoformerForecaster(TestCase):
                                           label_len=12,
                                           freq='s',
                                           seed=0)
-        val_loss = forecaster.fit(train_loader, val_loader, epochs=10)
+        val_loss = forecaster.fit(train_loader, val_loader, epochs=2)
 
     def test_autoformer_forecaster_fit_val_best_epoch(self):
         train_loader, val_loader, _ = create_data(loader=True)
@@ -417,7 +417,7 @@ class TestChronosModelAutoformerForecaster(TestCase):
                                           label_len=12,
                                           freq='s',
                                           seed=0)
-        val_loss = forecaster.fit(train_loader, val_loader, epochs=10,
+        val_loss = forecaster.fit(train_loader, val_loader, epochs=2,
                                   validation_mode='best_epoch')
 
     def test_autoformer_forecaster_fit_val_tsdataset(self):
@@ -429,7 +429,7 @@ class TestChronosModelAutoformerForecaster(TestCase):
                                           label_len=12,
                                           freq='s',
                                           seed=0)
-        forecaster.fit(train, val, epochs=3, batch_size=32)
+        forecaster.fit(train, val, epochs=2, batch_size=32)
         forecaster.predict(test)
 
     @op_automl
@@ -454,7 +454,7 @@ class TestChronosModelAutoformerForecaster(TestCase):
         forecaster.tune(train_data, validation_data=val_data, n_trials=5,
                         study_name=name, sampler=SamplerType.Grid,
                         storage=storage, n_parallels=2)
-        forecaster.fit(train_data, epochs=3, batch_size=32)
+        forecaster.fit(train_data, epochs=2, batch_size=32)
         evaluate = forecaster.evaluate(val_data)
         os.remove("./example_autoformer.db")
         # test remove
