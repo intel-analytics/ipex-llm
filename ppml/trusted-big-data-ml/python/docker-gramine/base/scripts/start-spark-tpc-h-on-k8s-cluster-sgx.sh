@@ -1,4 +1,6 @@
 #!/bin/bash
+rm /ppml/trusted-big-data-ml/work/data/weekly-test/tpc-h/TIMES.txt
+
 export secure_password=`openssl rsautl -inkey /ppml/trusted-big-data-ml/work/password/key.txt -decrypt </ppml/trusted-big-data-ml/work/password/output.bin`
 bash bigdl-ppml-submit.sh \
         --master $RUNTIME_SPARK_MASTER \
