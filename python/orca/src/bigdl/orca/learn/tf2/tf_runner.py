@@ -499,7 +499,7 @@ class TFRunner:
                 filepath = self.load_params["filepath"]
                 file_name = os.path.basename(filepath)
                 temp_path = os.path.join(tempfile.mkdtemp(), file_name)
-                if filepath.endswith(".h5") or filepath.endswith('.keras'):
+                if is_file(filepath):
                     # h5 format
                     get_remote_file_to_local(filepath, temp_path)
                 else:
