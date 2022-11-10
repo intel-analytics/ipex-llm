@@ -1,7 +1,7 @@
 # default
-export container_name=intelanalytics/bigdl-ppml-trusted-big-data-ml-scala-occlum:2.2.0-SNAPSHOT-build-container
-export image_name=intelanalytics/bigdl-ppml-trusted-big-data-ml-scala-occlum:2.2.0-SNAPSHOT
-export final_name=intelanalytics/bigdl-ppml-trusted-big-data-ml-scala-occlum:2.2.0-SNAPSHOT-build
+export container_name=2.2.0-SNAPSHOT-build-container
+export image_name=intelanalytics/bigdl-ppml-trusted-big-data-ml-scala-occlum-production:2.2.0-SNAPSHOT
+export final_name=intelanalytics/bigdl-ppml-trusted-big-data-ml-scala-occlum-production:2.2.0-SNAPSHOT-build
 while getopts ":c:i:f:" opt
 do
     case $opt in
@@ -30,7 +30,7 @@ sudo docker rm -f $container_name
 sudo docker run -it \
         --net=host \
         --name=$container_name \
-        --cpuset-cpus 13-15 \
+        --cpuset-cpus 3-5 \
         -e LOCAL_IP=$LOCAL_IP \
         -e SGX_MEM_SIZE=20GB \
         -e SGX_THREAD=2048 \
