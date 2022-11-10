@@ -580,9 +580,10 @@ class TFRunner:
         """Load the model from provided local filepath."""
         import tensorflow as tf
         if options:
-            self.model = tf.keras.models.load_model(filepath, custom_objects, compile, options)
+            model = tf.keras.models.load_model(filepath, custom_objects, compile, options)
         else:  # To support older TensorFlow versions such as 2.1
-            self.model = tf.keras.models.load_model(filepath, custom_objects, compile)
+            model = tf.keras.models.load_model(filepath, custom_objects, compile)
+        return model
 
     def load_model(self, filepath, custom_objects, compile, options):
         """Load the model from provided local filepath."""
@@ -594,9 +595,9 @@ class TFRunner:
         )
         if self.backend == "tf-distributed":
             with self.strategy.scope():
-                self.process_model_load(**self.load_params)
+                self.model = self.process_model_load(**self.load_params)
         else:
-            self.process_model_load(**self.load_params)
+            self.model = self.process_model_load(**self.load_params)
 
     def load_remote_model(self, filepath, custom_objects, compile, options):
         """Load the model from provided remote filepath."""
@@ -621,9 +622,9 @@ class TFRunner:
             self.load_params["filepath"] = temp_path
             if self.backend == "tf-distributed":
                 with self.strategy.scope():
-                    self.process_model_load(**self.load_params)
+                    self.model = self.process_model_load(**self.load_params)
             else:
-                self.process_model_load(**self.load_params)
+                self.model = self.process_model_load(**self.load_params)
         finally:
             if os.path.isdir(temp_path):
                 shutil.rmtree(temp_path)
