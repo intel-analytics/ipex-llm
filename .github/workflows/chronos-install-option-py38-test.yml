@@ -17,12 +17,12 @@ on:
 
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
-  chronos-PRVN-onnxrt:
+  chronos-pytorch-test:
     runs-on: [ self-hosted, Gondolin, ubuntu-20.04-lts ]
     strategy:
       fail-fast: false
       matrix:
-        python-version: ["3.7.10"]
+        python-version: ["3.8"]
     steps:
       - uses: actions/checkout@v2
       - name: Set up JDK 8
