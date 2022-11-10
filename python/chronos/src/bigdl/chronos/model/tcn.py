@@ -44,6 +44,8 @@ import torch
 import torch.nn as nn
 from .utils import PYTORCH_REGRESSION_LOSS_MAP
 from pytorch_lightning import seed_everything
+from bigdl.chronos.pytorch.model_wrapper.normalization import NormalizeTSModel
+from bigdl.chronos.pytorch.model_wrapper.decomposition import DecompositionTSModel
 
 
 class Chomp1d(nn.Module):
@@ -144,15 +146,35 @@ def model_creator(config):
         n_hid = config["nhid"] if config.get("nhid") else 30
         levels = config["levels"] if config.get("levels") else 8
         num_channels = [n_hid] * (levels - 1)
-    return TemporalConvNet(past_seq_len=config["past_seq_len"],
-                           input_feature_num=config["input_feature_num"],
-                           future_seq_len=config["future_seq_len"],
-                           output_feature_num=config["output_feature_num"],
-                           num_channels=num_channels.copy(),
-                           kernel_size=config.get("kernel_size", 7),
-                           dropout=config.get("dropout", 0.2),
-                           repo_initialization=config.get("repo_initialization", True),
-                           seed=config.get("seed", None))
+
+    model = TemporalConvNet(past_seq_len=config["past_seq_len"],
+                            input_feature_num=config["input_feature_num"],
+                            future_seq_len=config["future_seq_len"],
+                            output_feature_num=config["output_feature_num"],
+                            num_channels=num_channels.copy(),
+                            kernel_size=config.get("kernel_size", 7),
+                            dropout=config.get("dropout", 0.2),
+                            repo_initialization=config.get("repo_initialization", True),
+                            seed=config.get("seed", None))
+
+    if config.get("normalization", False):
+        model = NormalizeTSModel(model, config["output_feature_num"])
+    decomposition_kernal_size = config.get("decomposition_kernal_size", 0)
+    if decomposition_kernal_size > 1:
+        model_copy = TemporalConvNet(past_seq_len=config["past_seq_len"],
+                                     input_feature_num=config["input_feature_num"],
+                                     future_seq_len=config["future_seq_len"],
+                                     output_feature_num=config["output_feature_num"],
+                                     num_channels=num_channels.copy(),
+                                     kernel_size=config.get("kernel_size", 7),
+                                     dropout=config.get("dropout", 0.2),
+                                     repo_initialization=config.get("repo_initialization", True),
+                                     seed=config.get("seed", None))
+        if config.get("normalization", False):
+            model_copy = NormalizeTSModel(model_copy, config["output_feature_num"])
+        model = DecompositionTSModel((model, model_copy), decomposition_kernal_size)
+
+    return model
 
 
 def optimizer_creator(model, config):
