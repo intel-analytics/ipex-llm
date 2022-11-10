@@ -18,7 +18,7 @@ tensorboard==2.3.0
 tensorboard-data-server==0.6.1
 tensorboard-plugin-wit==1.7.0
 tensorboardX==2.1
-tensorflow==2.3.0
+tensorflow==2.7.2
 tensorflow-estimator==2.3.0
 xgboost_ray
 argparse
