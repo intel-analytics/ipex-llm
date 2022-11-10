@@ -75,7 +75,7 @@ def prepare_data(dataset_dir):
 
     data = data.transform_shard(lambda shard: ng_sampling(shard, user_num, item_num))
     train_data, test_data = data.transform_shard(split_dataset).split()
-    return train_data, test_data
+    return train_data, test_data, user_num, item_num
 
 
 if __name__ == "__main__":
