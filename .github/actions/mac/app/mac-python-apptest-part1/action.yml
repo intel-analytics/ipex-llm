@@ -11,7 +11,7 @@ runs:
         python --version
         pip uninstall -y analytics-zoo bigdl-friesian bigdl-friesian-spark3 bigdl-dllib bigdl-orca pyspark bigdl-orca-spark3 bigdl-dllib-spark3 bigdl-chronos-spark3 pyspark
 
-        pip install --pre --upgrade bigdl-orca
+        pip install -i https://pypi.org/simple --pre --upgrade bigdl-orca 
 
         chmod a+x apps/ipynb2py.sh
         gsed -i "s/sed/gsed/g" apps/ipynb2py.sh
