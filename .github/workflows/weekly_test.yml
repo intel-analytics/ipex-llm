@@ -163,7 +163,7 @@ jobs:
 
   PPML-Spark-K8S-TPC-H-On-Gramine:
     if: ${{ github.event.schedule || github.event.inputs.artifact == 'PPML-Spark-K8S-TPC-H-On-Gramine' || github.event.inputs.artifact == 'all' }}
-    runs-on: [self-hosted, SGX, Wilwarin]
+    runs-on: [self-hosted, Vilvarin]
     steps:
     - uses: actions/checkout@v3
     - name: Set up JDK8
@@ -196,7 +196,7 @@ jobs:
 
   PPML-Spark-K8S-TPC-DS-On-Gramine:
     if: ${{ github.event.schedule || github.event.inputs.artifact == 'PPML-Spark-K8S-TPC-DS-On-Gramine' || github.event.inputs.artifact == 'all' }}
-    runs-on: [self-hosted, SGX, Wilwarin]
+    runs-on: [self-hosted, Vilvarin]
     steps:
     - uses: actions/checkout@v3
     - name: Set up JDK8
