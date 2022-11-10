@@ -182,7 +182,7 @@ class AutoformerForecaster(Forecaster):
 
         self.model_creator = model_creator
         self.loss_creator = loss_creator
-        self.jit_fp32 = None
+        self._jit_fp32 = None
 
     def _build_automodel(self, data, validation_data=None, batch_size=32, epochs=1):
         """Build a Generic Model using config parameters."""
@@ -469,7 +469,7 @@ class AutoformerForecaster(Forecaster):
                         self.trainer.move_metrics_to_cpu)
                     return fit_out
 
-    def predict(self, data, batch_size=32, use_jit=False):
+    def predict(self, data, batch_size=32):
         """
         Predict using a trained forecaster.
 
@@ -483,7 +483,6 @@ class AutoformerForecaster(Forecaster):
 
         :param batch_size: predict batch size. The value will not affect predict
                result but will affect resources cost(e.g. memory and time).
-        :param use_jit: Predict using a trained forecaster with jit.
 
         :return: A list of numpy ndarray
         """
@@ -511,15 +510,45 @@ class AutoformerForecaster(Forecaster):
                                             torch.from_numpy(data[3]),),
                               batch_size=batch_size,
                               shuffle=False)
-
-        if use_jit:
-            if self.jit_fp32 is None:
-                dummy_inputs = next(iter(data))
-                dummy_inputs = tuple(map(lambda x: x[0:1, :, :], dummy_inputs))
-                self._build_jit(dummy_inputs)
-            with torch.jit.optimized_execution(should_optimize=False):
-                return self.trainer.predict(self.jit_fp32, data)
         return self.trainer.predict(self.internal, data)
+
+    def predict_with_jit(self, data, batch_size=32):
+        """
+        :param data: The data support following formats:
+
+               | 1. numpy ndarrays: generate from `TSDataset.roll`,
+                    be sure to set label_len > 0 and time_enc = True
+               | 2. pytorch dataloader: generate from `TSDataset.to_torch_data_loader`,
+                    be sure to set label_len > 0, time_enc = True and is_predict = True
+               | 3. A bigdl.chronos.data.tsdataset.TSDataset instance.
+
+        :param batch_size: predict batch size. The value will not affect predict
+               result but will affect resources cost(e.g. memory and time).
+        """
+        if isinstance(data, TSDataset):
+            _rolled = data.numpy_x is None
+            data = data.to_torch_data_loader(batch_size=batch_size,
+                                             roll=_rolled,
+                                             lookback=self.data_config['past_seq_len'],
+                                             horizon=self.data_config['future_seq_len'],
+                                             label_len=self.data_config['label_len'],
+                                             time_enc=True,
+                                             feature_col=data.roll_feature,
+                                             target_col=data.roll_target,
+                                             shuffle=False)
+        invalidInputError(isinstance(data, tuple) or isinstance(data, DataLoader),
+                          "The input data to predict() support formats: numpy ndarray tuple"
+                          f" and pytorch dataloader, but found {type(data)}.")
+        if isinstance(data, tuple):
+            data = DataLoader(TensorDataset(torch.from_numpy(data[0]),
+                                            torch.from_numpy(data[1]),
+                                            torch.from_numpy(data[2]),
+                                            torch.from_numpy(data[3]),),
+                              batch_size=batch_size,
+                              shuffle=False)
+
+        with torch.jit.optimized_execution(should_optimize=False):
+            return self.trainer.predict(self.jit_fp32, data)
 
     def evaluate(self, data, batch_size=32):
         """
@@ -721,13 +750,46 @@ class AutoformerForecaster(Forecaster):
             self.trainer.model = self.trainer.model.model
         self.trainer.save_checkpoint(checkpoint_file)
 
-    def _build_jit(self, dummy_inputs):
+    @property
+    def jit_fp32(self):
         """
         Build jit model to speed up inference and reduce latency.
         """
+
+        if self._jit_fp32 is None:
+            freq = _freq_str2int(self.model_config["freq"])
+            label_len = self.model_config["label_len"]
+            pred_len = self.model_config["pred_len"]
+            seq_len = self.model_config["seq_len"]
+            dummy_inputs = torch.rand(1, seq_len, self.data_config["input_feature_num"]), \
+                           torch.rand(1, label_len+pred_len,
+                                      self.data_config["output_feature_num"]),\
+                           torch.rand(1, seq_len, freq), \
+                           torch.rand(1, label_len+pred_len, freq)
+            from bigdl.nano.pytorch.inference import InferenceOptimizer
+            self._jit_fp32 = InferenceOptimizer.trace(self.internal, input_sample=dummy_inputs,
+                                                      accelerator="jit", use_ipex=self.use_ipex)
+
+    @jit_fp32.setter
+    def jit_fp32(self, data):
+        """
+        :param data: The data support following formats:
+               numpy ndarrays: generate from `TSDataset.roll`,
+               be sure to set label_len > 0 and time_enc = True
+        """
         from bigdl.nano.pytorch.inference import InferenceOptimizer
-        self.jit_fp32 = InferenceOptimizer.trace(self.internal, input_sample=dummy_inputs,
-                                                 accelerator="jit", use_ipex=self.use_ipex)
+        self._jit_fp32 =  InferenceOptimizer.trace(self.internal, input_sample=data,
+                                                   accelerator="jit", use_ipex=self.use_ipex)
+
+    def export_torchscript_file(self, dirname='fp32_torchscript'):
+        """
+        Save the torchscript model file to the disk.
+
+        :param dirname: The dir location you want to save the torchscript file.
+        """
+        from bigdl.nano.pytorch.inference import InferenceOptimizer
+        if dirname and self.jit_fp32:
+            InferenceOptimizer.save(self._jit_fp32, dirname)
 
     @classmethod
     def from_tsdataset(cls,
@@ -843,3 +905,8 @@ def _timedelta_to_delta_str(offset):
         if offset < offset_type:
             return offset_str
     return 'a'
+
+
+def _freq_str2int(delta: str):
+    freq_map = {'h': 4, 't': 5, 's': 6, 'm': 1, 'a': 1, 'w': 2, 'd': 3, 'b': 3}
+    return freq_map[delta]
