@@ -22,7 +22,7 @@ from bigdl.nano.tf.keras import Model
 
 
 class TestONNX(TestCase):
-    def test_model_trace_onnx(self):
+    def test_model_quantize_onnx(self):
         model = ResNet50(weights=None, input_shape=[224, 224, 3], classes=10)
         model = Model(inputs=model.inputs, outputs=model.outputs)
         input_examples = np.random.random((100, 224, 224, 3))
@@ -32,8 +32,7 @@ class TestONNX(TestCase):
                                                             input_features))
 
         # quantize a Keras model
-        onnx_quantized_model = model.quantize(model,
-                                              accelerator='onnxruntime',
+        onnx_quantized_model = model.quantize(accelerator='onnxruntime',
                                               calib_dataset=train_dataset)
 
         y_hat = onnx_quantized_model(input_examples[:10])
