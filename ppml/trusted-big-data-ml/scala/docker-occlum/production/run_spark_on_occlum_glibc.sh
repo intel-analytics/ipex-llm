@@ -189,6 +189,13 @@ build_spark() {
     # Build
     occlum build
 
+}
+
+attestation_init() {
+    #occlum build done
+    cd /opt/occlum_spark
+    bash /opt/mount.sh
+
     #before start occlum app after occlum build
     if [[ $ATTESTATION == "true" ]]; then
         if [[ $PCCS_URL == "" ]]; then
@@ -216,7 +223,7 @@ build_spark() {
             fi
         fi
         #register error
-        if [ $? -gt 0 ]; then
+        if [[ $? -gt 0 || -z "$policy_Id" ]]; then
             echo "register error"
             exit 1;
         fi
