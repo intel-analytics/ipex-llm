@@ -761,14 +761,15 @@ class AutoformerForecaster(Forecaster):
             label_len = self.model_config["label_len"]
             pred_len = self.model_config["pred_len"]
             seq_len = self.model_config["seq_len"]
-            dummy_inputs = torch.rand(1, seq_len, self.data_config["input_feature_num"]), \
-                           torch.rand(1, label_len+pred_len,
-                                      self.data_config["output_feature_num"]),\
-                           torch.rand(1, seq_len, freq), \
-                           torch.rand(1, label_len+pred_len, freq)
+            dummy_inputs = (torch.rand(1, seq_len, self.data_config["input_feature_num"]),
+                            torch.rand(1, label_len+pred_len,
+                                       self.data_config["output_feature_num"]),
+                            torch.rand(1, seq_len, freq),
+                            torch.rand(1, label_len+pred_len, freq))
             from bigdl.nano.pytorch.inference import InferenceOptimizer
             self._jit_fp32 = InferenceOptimizer.trace(self.internal, input_sample=dummy_inputs,
                                                       accelerator="jit", use_ipex=self.use_ipex)
+        return self._jit_fp32
 
     @jit_fp32.setter
     def jit_fp32(self, data):
@@ -778,8 +779,8 @@ class AutoformerForecaster(Forecaster):
                be sure to set label_len > 0 and time_enc = True
         """
         from bigdl.nano.pytorch.inference import InferenceOptimizer
-        self._jit_fp32 =  InferenceOptimizer.trace(self.internal, input_sample=data,
-                                                   accelerator="jit", use_ipex=self.use_ipex)
+        self._jit_fp32 = InferenceOptimizer.trace(self.internal, input_sample=data,
+                                                  accelerator="jit", use_ipex=self.use_ipex)
 
     def export_torchscript_file(self, dirname='fp32_torchscript'):
         """
