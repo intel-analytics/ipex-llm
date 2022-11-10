@@ -1066,3 +1066,50 @@ class TestChronosModelTCNForecaster(TestCase):
                             batch_size=32)
         forecaster.evaluate(val_loader)
         forecaster.predict(test_loader)
+
+    def test_tcn_forecaster_eval_shuffle_loader(self):
+        from torch.utils.data import DataLoader, TensorDataset
+        from numpy.testing import assert_almost_equal
+        train_data, val_data, test_data = create_data()
+        forecaster = TCNForecaster(past_seq_len=24,
+                                   future_seq_len=5,
+                                   input_feature_num=1,
+                                   output_feature_num=1,
+                                   loss="mse",
+                                   lr=0.01)
+        forecaster.fit(train_data, epochs=2)
+        test_loader_shuffle_f = DataLoader(TensorDataset(torch.from_numpy(test_data[0]),
+                                                         torch.from_numpy(test_data[1])),
+                                           batch_size=32,
+                                           shuffle=False)
+        test_loader_shuffle_t = DataLoader(TensorDataset(torch.from_numpy(test_data[0]),
+                                                         torch.from_numpy(test_data[1])),
+                                           batch_size=32,
+                                           shuffle=True)
+        eval_f = forecaster.evaluate(test_loader_shuffle_f)
+        eval_t = forecaster.evaluate(test_loader_shuffle_t)
+        assert_almost_equal(eval_f, eval_t)
+
+    @op_onnxrt16
+    def test_tcn_forecaster_eval_with_onnx_shuffle_loader(self):
+        from torch.utils.data import DataLoader, TensorDataset
+        from numpy.testing import assert_almost_equal
+        train_data, val_data, test_data = create_data()
+        forecaster = TCNForecaster(past_seq_len=24,
+                                   future_seq_len=5,
+                                   input_feature_num=1,
+                                   output_feature_num=1,
+                                   loss="mse",
+                                   lr=0.01)
+        forecaster.fit(train_data, epochs=2)
+        test_loader_shuffle_f = DataLoader(TensorDataset(torch.from_numpy(test_data[0]),
+                                                         torch.from_numpy(test_data[1])),
+                                           batch_size=32,
+                                           shuffle=False)
+        test_loader_shuffle_t = DataLoader(TensorDataset(torch.from_numpy(test_data[0]),
+                                                         torch.from_numpy(test_data[1])),
+                                           batch_size=32,
+                                           shuffle=True)
+        eval_f = forecaster.evaluate_with_onnx(test_loader_shuffle_f)
+        eval_t = forecaster.evaluate_with_onnx(test_loader_shuffle_t)
+        assert_almost_equal(eval_f, eval_t)

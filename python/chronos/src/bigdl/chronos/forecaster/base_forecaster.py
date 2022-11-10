@@ -1002,8 +1002,20 @@ class BasePytorchForecaster(Forecaster):
                 invalidInputError(False,
                                   "You must call fit or restore first before calling evaluate!")
             if isinstance(data, DataLoader):
-                input_data = data
-                target = np.concatenate(tuple(val[1] for val in data), axis=0)
+                from torch.utils.data.sampler import RandomSampler
+                if isinstance(data.sampler, RandomSampler):
+                    # If dataloader is shuffled, convert input_data to numpy()
+                    # Avoid to iterate shuffled dataloader two times
+                    input_x = []
+                    input_y = []
+                    for val in data:
+                        input_x.append(val[0].numpy())
+                        input_y.append(val[1].numpy())
+                    input_data = np.concatenate(input_x, axis=0)
+                    target = np.concatenate(input_y, axis=0)
+                else:
+                    input_data = data
+                    target = np.concatenate(tuple(val[1] for val in data), axis=0)
             else:
                 input_data, target = data
             if quantize:
@@ -1098,8 +1110,20 @@ class BasePytorchForecaster(Forecaster):
                                              target_col=data.roll_target,
                                              shuffle=False)
         if isinstance(data, DataLoader):
-            input_data = data
-            target = np.concatenate(tuple(val[1] for val in data), axis=0)
+            from torch.utils.data.sampler import RandomSampler
+            if isinstance(data.sampler, RandomSampler):
+                # If dataloader is shuffled, convert input_data to numpy()
+                # Avoid to iterate shuffled dataloader two times
+                input_x = []
+                input_y = []
+                for val in data:
+                    input_x.append(val[0].numpy())
+                    input_y.append(val[1].numpy())
+                input_data = np.concatenate(input_x, axis=0)
+                target = np.concatenate(input_y, axis=0)
+            else:
+                input_data = data
+                target = np.concatenate(tuple(val[1] for val in data), axis=0)
         else:
             input_data, target = data
         if quantize:
