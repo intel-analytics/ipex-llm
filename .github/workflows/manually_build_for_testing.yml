@@ -26,8 +26,8 @@ on:
         - bigdl-ppml-trusted-realtime-ml-scala-occlum
         - bigdl-ppml-kmsutil
         - bigdl-ppml-pccs
-        - bigdl-ppml-trusted-deep-learning-gramine-base
-        - bigdl-ppml-trusted-deep-learning-gramine-ref
+        - bigdl-ppml-trusted-python-toolkit-base
+        - bigdl-ppml-trusted-python-toolkit-ref
       tag:
         description: 'docker image tag (e.g. test)'
         required: true
@@ -604,6 +604,7 @@ bigdl-ppml-trusted-python-toolkit-base:
         sudo docker tag ${image}:${TAG} 10.239.45.10/arda/${image}:${TAG}
         sudo docker push 10.239.45.10/arda/${image}:${TAG}
         sudo docker rmi -f ${image}:${TAG}
+
  bigdl-ppml-trusted-python-toolkit-ref:
     if: ${{ github.event.inputs.artifact == 'bigdl-ppml-trusted-python-toolkit-ref' || github.event.inputs.artifact == 'all' }}
     runs-on: [self-hosted, Shire]
@@ -614,7 +615,7 @@ bigdl-ppml-trusted-python-toolkit-base:
     - name: docker login
       run: |
         docker login -u ${DOCKERHUB_USERNAME} -p ${DOCKERHUB_PASSWORD}
-    - name: bigdl-ppml-trusted-deep-learning-gramine-ref
+    - name: bigdl-ppml-trusted-python-toolkit-ref
       run: |
         echo "##############################################################"
         echo "########## bigdl-ppml-trusted-python-toolkit-ref #############"
