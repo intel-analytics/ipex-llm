@@ -38,3 +38,9 @@ class TestOpenVINO(TestCase):
 
         openvino_model.compile(metrics=[tf.keras.metrics.CategoricalAccuracy()])
         acc = openvino_model.evaluate(train_dataset, return_dict=True)['categorical_accuracy']
+
+        # trace a Keras model with config
+        openvino_model = model.trace(accelerator='openvino',
+                                     openvino_config={"PERFORMANCE_HINT": "LATENCY"})
+        y_hat = openvino_model(train_examples[:10])
+        assert y_hat.shape == (10, 10)
