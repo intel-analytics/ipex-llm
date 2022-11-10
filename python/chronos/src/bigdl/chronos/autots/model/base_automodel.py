@@ -281,7 +281,7 @@ class BaseAutomodel:
         with open(best_config_path, "r") as f:
             self.best_config = json.load(f)
 
-    def build_onnx(self, thread_num=None, sess_options=None):
+    def build_onnx(self, thread_num=1, sess_options=None):
         '''
         Build onnx model to speed up inference and reduce latency.
         The method is Not required to call before predict_with_onnx,
@@ -292,7 +292,7 @@ class BaseAutomodel:
         | 2. Alleviate the cold start problem when you call predict_with_onnx
              for the first time.
 
-        :param thread_num: int, the num of thread limit. The value is set to None by
+        :param thread_num: int, the num of thread limit. The value is set to 1 by
                default where no limit is set.
         :param sess_options: an onnxruntime.SessionOptions instance, if you set this
                other than None, a new onnxruntime session will be built on this setting
@@ -300,10 +300,11 @@ class BaseAutomodel:
 
         Example:
             >>> # to pre build onnx sess
-            >>> automodel.build_onnx(thread_num=1)  # build onnx runtime sess for single thread
+            >>> automodel.build_onnx(thread_num=2)  # build onnx runtime sess for two threads
             >>> pred = automodel.predict_with_onnx(data)
             >>> # ------------------------------------------------------
             >>> # directly call onnx related method is also supported
+            >>> # default to build onnx runtime sess for single thread
             >>> pred = automodel.predict_with_onnx(data)
         '''
         from bigdl.nano.utils.log4Error import invalidInputError
