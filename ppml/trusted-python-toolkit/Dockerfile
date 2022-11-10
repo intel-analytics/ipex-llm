@@ -3,20 +3,23 @@ ARG BASE_IMAGE_TAG
 ARG BIGDL_VERSION=2.2.0-SNAPSHOT
 ARG TINI_VERSION=v0.18.0
 
-ENV TINI_VERSION                        $TINI_VERSION
-
 #Stage.1 Flask & Numpy & Pandas
 FROM $BASE_IMAGE_NAME:$BASE_IMAGE_TAG
+ARG http_proxy
+ARG https_proxy
+ARG TINI_VERSION
+ENV TINI_VERSION                        $TINI_VERSION
+
 ADD ./examples/ /ppml/examples
 ADD ./entrypoint.sh /opt/entrypoint.sh
 ADD ./start-scripts/ /ppml/work/start-scripts
 ADD https://github.com/krallin/tini/releases/download/${TINI_VERSION}/tini /sbin/tini
-
 RUN pip3 install --upgrade pip && \
     pip install --no-cache-dir flask && \
     pip install --no-cache-dir numpy && \
     pip install --no-cache-dir pandas && \
-    mkdir /ppml/examples && \
+    mkdir -p /ppml/tests/numpy && \
+    mkdir -p /ppml/tests/pandas && \
     mkdir -p /ppml/work/start-scripts && \
     chmod +x /opt/entrypoint.sh && \
     chmod +x /sbin/tini && \

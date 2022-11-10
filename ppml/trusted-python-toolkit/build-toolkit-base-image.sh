@@ -8,12 +8,8 @@ export TOOLKIT_IMAGE_NAME=your_toolkit_image_name
 export TOOLKIT_IMAGE_TAG=your_toolkit_image_tag
 
 Proxy_Modified="sudo docker build \
-    --build-arg http_proxy=$HTTP_PROXY_HOST \
-    --build-arg https_proxy=$HTTPS_PROXY_HOST \
-    --build-arg HTTP_PROXY_HOST=$HTTP_PROXY_HOST \
-    --build-arg HTTP_PROXY_PORT=$HTTP_PROXY_PORT \
-    --build-arg HTTPS_PROXY_HOST=$HTTPS_PROXY_HOST \
-    --build-arg HTTPS_PROXY_PORT=$HTTPS_PROXY_PORT \
+    --build-arg http_proxy=${HTTP_PROXY_HOST}:${HTTP_PROXY_PORT} \
+    --build-arg https_proxy=${HTTPS_PROXY_HOST}:${HTTP_PROXY_PORT} \
     --build-arg BASE_IMAGE_NAME=$BASE_IMAGE_NAME \
     --build-arg BASE_IMAGE_TAG=$BASE_IMAGE_TAG \
     -t ${TOOLKIT_IMAGE_NAME}:${TOOLKIT_IMAGE_TAG} -f ./Dockerfile ."
