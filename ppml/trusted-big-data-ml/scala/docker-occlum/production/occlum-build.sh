@@ -27,7 +27,7 @@ done
 sudo docker rm -f $container_name
 
 # Run new command in container
-sudo docker run -it \
+sudo docker run -i \
         --net=host \
         --name=$container_name \
         --cpuset-cpus 3-5 \
