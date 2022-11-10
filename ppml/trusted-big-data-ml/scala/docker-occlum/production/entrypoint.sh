@@ -42,9 +42,6 @@ if [[ -z "$NETTY_THREAD" ]]; then
     NETTY_THREAD=16
 fi
 
-cd /opt
-bash mount.sh
-
 SPARK_K8S_CMD="$1"
 case "$SPARK_K8S_CMD" in
     driver | executor)

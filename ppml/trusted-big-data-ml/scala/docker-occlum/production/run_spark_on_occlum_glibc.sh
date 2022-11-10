@@ -193,6 +193,7 @@ build_spark() {
 
 attestation_init() {
     #occlum build done
+    # make source mount file exit to avoid occlum mout fail
     cd /opt/occlum_spark
     bash /opt/mount.sh
 
@@ -262,8 +263,8 @@ attestation_init() {
 }
 
 run_pyspark_pi() {
-    init_instance spark
-    build_spark
+    export RUNTIME_ENV="native"
+    attestation_init
     cd /opt/occlum_spark
     echo -e "${BLUE}occlum run pyspark Pi${NC}"
     occlum run /usr/lib/jvm/java-8-openjdk-amd64/bin/java \
@@ -278,8 +279,8 @@ run_pyspark_pi() {
 }
 
 run_spark_pi() {
-    init_instance spark
-    build_spark
+    export RUNTIME_ENV="native"
+    attestation_init
     echo -e "${BLUE}occlum run spark Pi${NC}"
     occlum run /usr/lib/jvm/java-8-openjdk-amd64/bin/java \
                 -XX:-UseCompressedOops -XX:MaxMetaspaceSize=$META_SPACE \
@@ -293,8 +294,8 @@ run_spark_pi() {
 }
 
 run_spark_unittest() {
-    init_instance spark
-    build_spark
+    export RUNTIME_ENV="native"
+    attestation_init
     echo -e "${BLUE}occlum run spark unit test ${NC}"
     run_spark_unittest_only
 }
@@ -326,8 +327,8 @@ run_spark_unittest_only() {
 }
 
 run_spark_lenet_mnist(){
-    init_instance spark
-    build_spark
+    export RUNTIME_ENV="native"
+    attestation_init
     echo -e "${BLUE}occlum run BigDL lenet mnist{NC}"
     echo -e "${BLUE}logfile=$log${NC}"
     occlum run /usr/lib/jvm/java-8-openjdk-amd64/bin/java \
@@ -355,8 +356,8 @@ run_spark_lenet_mnist(){
 }
 
 run_spark_resnet_cifar(){
-    init_instance spark
-    build_spark
+    export RUNTIME_ENV="native"
+    attestation_init
     echo -e "${BLUE}occlum run BigDL Resnet Cifar10${NC}"
     occlum run /usr/lib/jvm/java-8-openjdk-amd64/bin/java \
                 -XX:-UseCompressedOops -XX:MaxMetaspaceSize=$META_SPACE \
@@ -383,8 +384,8 @@ run_spark_resnet_cifar(){
 }
 
 run_spark_tpch(){
-    init_instance spark
-    build_spark
+    export RUNTIME_ENV="native"
+    attestation_init
     echo -e "${BLUE}occlum run BigDL spark tpch${NC}"
     occlum run /usr/lib/jvm/java-8-openjdk-amd64/bin/java \
                 -XX:-UseCompressedOops -XX:MaxMetaspaceSize=$META_SPACE \
@@ -422,8 +423,8 @@ run_spark_tpch(){
 }
 
 run_spark_xgboost() {
-    init_instance spark
-    build_spark
+    export RUNTIME_ENV="native"
+    attestation_init
     echo -e "${BLUE}occlum run BigDL Spark XGBoost${NC}"
     occlum run /usr/lib/jvm/java-8-openjdk-amd64/bin/java \
                 -XX:-UseCompressedOops -XX:MaxMetaspaceSize=$META_SPACE \
@@ -444,8 +445,8 @@ run_spark_xgboost() {
 }
 
 run_spark_gbt() {
-    init_instance spark
-    build_spark
+    export RUNTIME_ENV="native"
+    attestation_init
     echo -e "${BLUE}occlum run BigDL Spark GBT${NC}"
     occlum run /usr/lib/jvm/java-8-openjdk-amd64/bin/java \
                 -XX:-UseCompressedOops -XX:MaxMetaspaceSize=$META_SPACE \
@@ -477,15 +478,13 @@ case "$arg" in
         ;;
     initDriver)
         export RUNTIME_ENV="driver"
-        init_instance
-        build_spark
+        attestation_init
         ;;
     initExecutor)
         # to do
         # now executor have to register again
         export RUNTIME_ENV="native"
-        init_instance
-        build_spark
+        attestation_init
         ;;
     pypi)
         run_pyspark_pi
