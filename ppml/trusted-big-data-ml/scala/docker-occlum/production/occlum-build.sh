@@ -36,7 +36,8 @@ sudo docker run -it \
         -e SGX_THREAD=2048 \
         -e SGX_HEAP=1GB \
         -e SGX_KERNEL_HEAP=1GB \
-        -e PCCS_URL=$PCCS_URL \
+        -e ENABLE_SGX_DEBUG=true \
+        -e ATTESTATION=true \
         $image_name \
         bash /opt/run_spark_on_occlum_glibc.sh init
 echo "build finish"

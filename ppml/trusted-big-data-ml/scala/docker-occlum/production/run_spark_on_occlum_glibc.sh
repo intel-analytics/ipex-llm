@@ -103,12 +103,6 @@ init_instance() {
     fi
 
     if [[ $ATTESTATION == "true" ]]; then
-        if [[ $PCCS_URL == "" ]]; then
-           echo "[ERROR] Attestation set to true but NO PCCS"
-           exit 1
-        else
-           echo 'PCCS_URL='${PCCS_URL}'/sgx/certification/v3/' > /etc/sgx_default_qcnl.conf
-           echo 'USE_SECURE_CERT=FALSE' >> /etc/sgx_default_qcnl.conf
            cd /root/demos/remote_attestation/dcap/
            #build .c file
            bash ./get_quote_on_ppml.sh
@@ -117,7 +111,6 @@ init_instance() {
            mkdir -p /opt/occlum_spark/image/etc/occlum_attestation/
            #copy bom to generate quote
            copy_bom -f /root/demos/remote_attestation/dcap/dcap-ppml.yaml --root image --include-dir /opt/occlum/etc/template
-        fi
     fi
 
     # check occlum log level for docker
@@ -203,6 +196,9 @@ attestation_init() {
             echo "[ERROR] Attestation set to true but NO PCCS"
             exit 1
         else
+            # when running
+            echo 'PCCS_URL='${PCCS_URL}'/sgx/certification/v3/' > /etc/sgx_default_qcnl.conf
+            echo 'USE_SECURE_CERT=FALSE' >> /etc/sgx_default_qcnl.conf
             if [[ $RUNTIME_ENV == "driver" || $RUNTIME_ENV == "native" ]]; then
                 #verify ehsm service
                 cd /opt/
