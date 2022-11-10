@@ -24,7 +24,7 @@ RUN pip3 install --upgrade pip && \
     chmod +x /opt/entrypoint.sh && \
     chmod +x /sbin/tini && \
     cp /sbin/tini /usr/bin/tini && \
-    gramine-argv-serializer bash -c 'export TF_MKL_ALLOC_MAX_BYTES=10737418240 && export _SPARK_AUTH_SECRET=$_SPARK_AUTH_SECRET && $sgx_command' > /ppml/secured_argvs && \
+    gramine-argv-serializer bash -c 'export TF_MKL_ALLOC_MAX_BYTES=10737418240 && export _SPARK_AUTH_SECRET=$_SPARK_AUTH_SECRET && $sgx_command' > /ppml/secured_argvs
 
 WORKDIR /ppml
 
