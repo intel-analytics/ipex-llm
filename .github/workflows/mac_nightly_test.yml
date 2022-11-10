@@ -1,0 +1,85 @@
+name: Mac Nightly Test
+
+on:
+
+  pull_request:
+    branchs: [ main ]
+
+  schedule:
+    - cron: '0 13 * * *' # GMT time, 13:00 GMT == 21:00 China
+  workflow_dispatch:
+    inputs:
+      artifact:
+        description: 'select which job to run("all" will make all jobs run)'
+        required: true
+        default: 'all'
+        type: choice
+        options:
+        - all
+        - Mac-Python-AppTest-Part1
+        - Mac-Dllib-ScalaTest-Spark2.4
+
+env:
+  GIST_ID: 
+
+permissions:
+  contents: read
+  packages: write
+
+jobs:
+  Mac-Python-AppTest-Part1:
+    #if: ${{ github.event.schedule || github.event.inputs.artifact == 'Mac-Python-AppTest-Part1' || github.event.inputs.artifact == 'all' }} 
+    runs-on: [self-hosted, mac]
+
+    steps:
+    - uses: actions/checkout@v3
+    - name: Run Test
+      uses: ./.github/actions/mac/app/mac-python-apptest-part1
+    - name: Create Job Badge
+      uses: ./.github/actions/create-job-status-badge
+      if: ${{ always() }}
+      with:
+        secret: ${{ secrets.GIST_SECRET}}
+        gist-id: ${{env.GIST_ID}}
+        is-self-hosted-runner: true
+        file-name: Mac-Python-AppTest-Part1.json
+        type: job
+        job-name: Mac-Python-AppTest-Part1
+        runner-hosted-on: 'Shanghai'
+
+
+  Mac-Dllib-ScalaTest-Spark2.4:
+    #if: ${{ github.event.schedule || github.event.inputs.artifact == 'Mac-Dllib-ScalaTest-Spark2.4' || github.event.inputs.artifact == 'all' }} 
+    runs-on: [self-hosted, mac]
+
+    steps:
+    - uses: actions/checkout@v3
+    - name: Run Test
+      uses: ./.github/actions/mac/dllib/mac-dllib-scalatest-spark2.4
+    - name: Create Job Badge
+      uses: ./.github/actions/create-job-status-badge
+      if: ${{ always() }}
+      with:
+        secret: ${{ secrets.GIST_SECRET}}
+        gist-id: ${{env.GIST_ID}}
+        is-self-hosted-runner: true
+        file-name: Mac-Dllib-ScalaTest-Spark2.4.json
+        type: job
+        job-name: Mac-Dllib-ScalaTest-Spark2.4
+        runner-hosted-on: 'Shanghai'
+    
+  # please put your test before the create-workflow-badge to make sure the badge can be displayed on the github page.
+  create-workflow-badge:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+    - name: create workflow badge
+      if: ${{ always() }}
+      uses: ./.github/actions/create-job-status-badge
+      with:
+        secret: ${{ secrets.GIST_SECRET }}
+        gist-id: ${{env.GIST_ID}}
+        file-name: mac-nightly-test.json
+        type: workflow
+  
+
