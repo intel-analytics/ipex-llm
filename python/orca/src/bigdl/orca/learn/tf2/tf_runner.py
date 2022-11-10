@@ -602,12 +602,13 @@ class TFRunner:
     def load_remote_model(self, filepath, custom_objects, compile, options):
         """Load the model from provided remote filepath."""
         import tensorflow as tf
-        self.load_params = dict(
+        params = dict(
             filepath=filepath,
             custom_objects=custom_objects,
             compile=compile,
             options=options
         )
+        self.load_params = params
         file_name = os.path.basename(filepath)
         temp_path = os.path.join(tempfile.mkdtemp(), file_name)
         if is_file(filepath):
@@ -619,12 +620,12 @@ class TFRunner:
                 os.makedirs(temp_path)
             get_remote_dir_to_local(filepath, temp_path)
         try:
-            self.load_params["filepath"] = temp_path
+            params["filepath"] = temp_path
             if self.backend == "tf-distributed":
                 with self.strategy.scope():
-                    self.model = self.process_model_load(**self.load_params)
+                    self.model = self.process_model_load(**params)
             else:
-                self.model = self.process_model_load(**self.load_params)
+                self.model = self.process_model_load(**params)
         finally:
             if os.path.isdir(temp_path):
                 shutil.rmtree(temp_path)
