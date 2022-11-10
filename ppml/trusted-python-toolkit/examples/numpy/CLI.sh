@@ -16,5 +16,5 @@ do
     esac
 done
 
-python /ppml/examples/numpy/benchmar-numpy.py --size=$num --env=$env --type=$dtype
+python /ppml/examples/numpy/benchmark-numpy.py --size=$num --env=$env --type=$dtype
 
