@@ -17,7 +17,7 @@ on:
         options:
         - all
         - Mac-Python-AppTest-Part1
-        - Mac-Dllib-ScalaTest-Spark2.4
+        - Mac-Dllib-ScalaTest-Spark3
 
 env:
   GIST_ID: 
@@ -48,14 +48,14 @@ jobs:
         runner-hosted-on: 'Shanghai'
 
 
-  Mac-Dllib-ScalaTest-Spark2.4:
-    #if: ${{ github.event.schedule || github.event.inputs.artifact == 'Mac-Dllib-ScalaTest-Spark2.4' || github.event.inputs.artifact == 'all' }} 
+  Mac-Dllib-ScalaTest-Spark3:
+    #if: ${{ github.event.schedule || github.event.inputs.artifact == 'Mac-Dllib-ScalaTest-Spark3' || github.event.inputs.artifact == 'all' }} 
     runs-on: [self-hosted, mac]
 
     steps:
     - uses: actions/checkout@v3
     - name: Run Test
-      uses: ./.github/actions/mac/dllib/mac-dllib-scalatest-spark2.4
+      uses: ./.github/actions/mac/dllib/mac-dllib-scalatest-spark3.1
     - name: Create Job Badge
       uses: ./.github/actions/create-job-status-badge
       if: ${{ always() }}
