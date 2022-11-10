@@ -13,17 +13,24 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-from ..core import version
-from packaging import version as v
-from bigdl.nano.utils.log4Error import invalidInputError
 
 
-if v.parse(version) >= v.parse("1.11"):
-    try:
-        import onnxruntime_extensions
-    except ImportError:
-        invalidInputError(
-            False,
-            errMsg="Neural Compressor >=1.11 requires onnxruntime_extensions.",
-            fixMsg="Please run installation:\n\t pip install onnxruntime-extensions"
-        )
+from ..metric import ONNXRuntimeINCMetic
+import tensorflow as tf
+
+
+class KerasONNXRuntimeINCMetic(ONNXRuntimeINCMetic):
+    '''
+    ONNXRuntime will use numpy as data type.
+    ONNXRuntime quantization in tensorflow will use tf.keras.metrics.Metric
+    '''
+
+    def stack(self, preds, labels):
+        # calculate accuracy
+        preds, labels = super().stack(preds, labels)
+        preds = tf.convert_to_tensor(preds)
+        labels = tf.convert_to_tensor(labels)
+        return preds, labels
+
+    def to_scalar(self, tensor):
+        return float(tensor)

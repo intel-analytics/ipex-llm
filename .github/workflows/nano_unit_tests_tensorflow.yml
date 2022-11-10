@@ -159,12 +159,11 @@ jobs:
           $CONDA/bin/conda create -n onnx-tensorflow -y python==3.7.10 setuptools=58.0.4
           source $CONDA/bin/activate onnx-tensorflow
           $CONDA/bin/conda info
-          bash python/nano/dev/build_and_install.sh linux default false tensorflow
+          bash python/nano/dev/build_and_install.sh linux default false tensorflow,inference
           if [ ! -z "${{matrix.tf-version}}" ]; then
             pip install ${{matrix.tf-version}}
           fi
           pip install pytest
-          pip install onnx onnxruntime tf2onnx pyyaml
           source bigdl-nano-init
           bash python/nano/test/run-nano-tf-onnx-tests.sh
           source $CONDA/bin/deactivate

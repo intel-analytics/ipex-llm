@@ -27,9 +27,9 @@ class InferenceUtils:
     """A mixedin class for nano keras Sequential and Model, adding more functions for Inference."""
 
     def quantize(self,
+                 calib_dataset: tf.data.Dataset,
                  precision: str = 'int8',
                  accelerator: Optional[str] = None,
-                 calib_dataset: tf.data.Dataset = None,
                  metric: Metric = None,
                  accuracy_criterion: dict = None,
                  approach: str = 'static',
@@ -41,16 +41,17 @@ class InferenceUtils:
                  batch=None,
                  inputs: List[str] = None,
                  outputs: List[str] = None,
-                 sample_size: int = 100):
+                 sample_size: int = 100,
+                 onnxruntime_session_options=None):
         """
         Post-training quantization on a keras model.
 
-        :param calib_dataset:   A tf.data.Dataset object for calibration without setting
-                                batch_size or batch_size=1. Required for static quantization.
+        :param calib_dataset:   An unbatched tf.data.Dataset object for calibration.
+                                Required for static quantization.
                                 It's also used as validation dataloader.
         :param precision:       Global precision of quantized model,
-                                supported type: 'int8', 'bf16', 'fp16', defaults to 'int8'.
-        :param accelerator:     Use accelerator 'None', defaults to None.
+                                supported type: 'int8', defaults to 'int8'.
+        :param accelerator:     Use accelerator 'None', 'onnxruntime', 'openvino', defaults to None.
                                 None means staying in tensorflow.
         :param metric:          A tensorflow.keras.metrics.Metric object for evaluation.
         :param accuracy_criterion:  Tolerable accuracy drop.
@@ -61,7 +62,7 @@ class InferenceUtils:
         :param approach:        'static' or 'dynamic'.
                                 'static': post_training_static_quant,
                                 'dynamic': post_training_dynamic_quant.
-                                Default: 'static'. OpenVINO supports static mode only.
+                                Default: 'static'. Only 'static' approach is supported now.
         :param method:      Method to do quantization. When accelerator=None, supported methods:
                 None. When accelerator='onnxruntime', supported methods: 'qlinear', 'integer',
                 defaults to 'qlinear'. Suggest 'qlinear' for lower accuracy drop if using
@@ -89,10 +90,13 @@ class InferenceUtils:
                             only valid for accelerator='openvino'. Default to 100.
                             The larger the value, the more accurate the conversion,
                             the lower the performance degradation, but the longer the time.
+        :param onnxruntime_session_options: The session option for onnxruntime, only valid when
+                                            accelerator='onnxruntime', otherwise will be ignored.
         :return:            A TensorflowBaseModel for INC. If there is no model found, return None.
         """
+        invalidInputError(approach == 'static', "Only 'static' approach is supported now.")
         if accelerator is None:
-            if batch and calib_dataset:
+            if batch:
                 calib_dataset = calib_dataset.batch(batch)
             return inc_quantzie(self, dataloader=calib_dataset, metric=metric,
                                 framework='tensorflow',
@@ -118,13 +122,43 @@ class InferenceUtils:
                 maximal_drop = accuracy_criterion.get(drop_type, None)
             else:
                 drop_type, higher_is_better, maximal_drop = None, None, None
-            return openvino_model.pot(dataset=calib_dataset,    # type: ignore
+            return openvino_model.pot(dataset=calib_dataset.batch(1),    # type: ignore
                                       metric=metric,
                                       higher_better=higher_is_better,
                                       drop_type=drop_type,
                                       maximal_drop=maximal_drop,
                                       max_iter_num=max_trials,
                                       sample_size=sample_size)
+        elif accelerator == 'onnxruntime':
+            # convert tensorflow model to onnx model
+            from bigdl.nano.deps.onnxruntime.tensorflow.tensorflow_onnxruntime_model \
+                import KerasONNXRuntimeModel
+            if isinstance(self, KerasONNXRuntimeModel):     # type: ignore
+                onnx_model = self
+            else:
+                spec = tf.TensorSpec((self.input_shape), self.dtype)    # type: ignore
+                onnx_model = self.trace(accelerator='onnxruntime', input_sample=spec)
+
+            # trace onnx model
+            method_map = {
+                'qlinear': 'onnxrt_qlinearops',
+                'integer': 'onnxrt_integerops',
+                None: 'onnxrt_qlinearops'  # default
+            }
+            framework = method_map.get(method, None)
+            return inc_quantzie(onnx_model, dataloader=calib_dataset.batch(1),
+                                metric=metric,
+                                framework=framework,
+                                conf=conf,
+                                approach=approach,
+                                tuning_strategy=tuning_strategy,
+                                accuracy_criterion=accuracy_criterion,
+                                timeout=timeout,
+                                max_trials=max_trials,
+                                inputs=inputs,
+                                outputs=outputs,
+                                onnx_option='tensorflow',
+                                onnxruntime_session_options=onnxruntime_session_options)
         else:
             invalidInputError(False, "Accelerator {} is invalid.".format(accelerator))
 
