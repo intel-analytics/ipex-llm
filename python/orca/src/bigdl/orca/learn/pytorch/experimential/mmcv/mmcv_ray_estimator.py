@@ -28,7 +28,6 @@ class MMCVRayEstimator(BaseRayEstimator):
     def __init__(self,
                  *,
                  mmcv_runner_creator=None,
-                 runner_cls=MMCVRayEpochRunner,
                  backend="ray",
                  workers_per_node=1,
                  config=None):
@@ -37,13 +36,14 @@ class MMCVRayEstimator(BaseRayEstimator):
 
         self.mmcv_runner_creator = mmcv_runner_creator
         self.backend = backend
+        self.runner_cls = MMCVRayEpochRunner
         self.config = {} if config is None else config
         worker_config = copy.copy(self.config)
         params = dict(
             mmcv_runner_creator=self.mmcv_runner_creator,
             config=worker_config
         )
-        self.setup(params, self.backend, runner_cls, workers_per_node)
+        self.setup(params, self.backend, self.runner_cls, workers_per_node)
         self.num_workers = len(self.remote_workers)
 
     def fit(self,
