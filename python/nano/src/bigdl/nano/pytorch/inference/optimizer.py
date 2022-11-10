@@ -374,6 +374,7 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                  input_sample=None,
                  thread_num: Optional[int] = None,
                  onnxruntime_session_options=None,
+                 openvino_config=None,
                  simplification: bool = True,
                  sample_size: int = 100,
                  logging: bool = True,
@@ -424,6 +425,8 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                            or accelerator='openvino'.
         :param onnxruntime_session_options: The session option for onnxruntime, only valid when
                                             accelerator='onnxruntime', otherwise will be ignored.
+        :param openvino_config: The config to be inputted in core.compile_model. Only valid when
+                                accelerator='openvino', otherwise will be ignored.
         :param simplification: whether we use onnxsim to simplify the ONNX model, only valid when
                                accelerator='onnxruntime', otherwise will be ignored. If this option
                                is set to True, new dependency 'onnxsim' need to be installed.
@@ -545,7 +548,8 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                     # "n_requests": None,
                     "sample_size": sample_size
                 }
-                return model.pot(calib_dataloader, thread_num=thread_num, **kwargs)
+                return model.pot(calib_dataloader, thread_num=thread_num,
+                                 config=openvino_config, **kwargs)
             else:
                 invalidInputError(False,
                                   "Accelerator {} is invalid.".format(accelerator))
@@ -559,6 +563,7 @@ class InferenceOptimizer(BaseInferenceOptimizer):
               use_ipex: bool = False,
               thread_num: Optional[int] = None,
               onnxruntime_session_options=None,
+              openvino_config=None,
               simplification: bool = True,
               logging: bool = True,
               **export_kwargs):
@@ -578,6 +583,8 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                            or accelerator='openvino'.
         :param onnxruntime_session_options: The session option for onnxruntime, only valid when
                                             accelerator='onnxruntime', otherwise will be ignored.
+        :param openvino_config: The config to be inputted in core.compile_model. Only valid when
+                                accelerator='openvino', otherwise will be ignored.
         :param simplification: whether we use onnxsim to simplify the ONNX model, only valid when
                                accelerator='onnxruntime', otherwise will be ignored. If this option
                                is set to True, new dependency 'onnxsim' need to be installed.
@@ -597,7 +604,11 @@ class InferenceOptimizer(BaseInferenceOptimizer):
             "but got type {}".format(type(model))
         )
         if accelerator == 'openvino':  # openvino backend will not care about ipex usage
-            return PytorchOpenVINOModel(model, input_sample, thread_num, logging, **export_kwargs)
+            final_openvino_option = {"INFERENCE_PRECISION_HINT": "f32"}
+            if openvino_config is not None:
+                final_openvino_option.update(openvino_config)
+            return PytorchOpenVINOModel(model, input_sample, thread_num, logging,
+                                        final_openvino_option, **export_kwargs)
         if accelerator == 'onnxruntime':  # onnxruntime backend will not care about ipex usage
             if onnxruntime_session_options is None:
                 import onnxruntime

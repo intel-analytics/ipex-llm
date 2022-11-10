@@ -16,6 +16,7 @@
 from tempfile import TemporaryDirectory
 from unittest import TestCase
 from bigdl.nano.pytorch import Trainer
+from bigdl.nano.pytorch import InferenceOptimizer
 from torchvision.models.mobilenetv3 import mobilenet_v3_small
 import torch
 from torch.utils.data.dataset import TensorDataset
@@ -44,7 +45,7 @@ class TestOpenVINO(TestCase):
         dataloader = DataLoader(ds, batch_size=2)
         trainer.fit(pl_model, dataloader)
 
-        openvino_model = trainer.trace(model, accelerator='openvino')
+        openvino_model = InferenceOptimizer.trace(model, accelerator='openvino')
         y_hat = openvino_model(x[0:3])
         assert y_hat.shape == (3, 10)
         y_hat = openvino_model(x)
@@ -60,7 +61,7 @@ class TestOpenVINO(TestCase):
         x = torch.rand((10, 3, 256, 256))
 
         # save and load pytorch model
-        openvino_model = trainer.trace(model, accelerator='openvino', input_sample=x)
+        openvino_model = InferenceOptimizer.trace(model, accelerator='openvino', input_sample=x)
         with TemporaryDirectory() as saved_root:
             trainer.save(openvino_model, saved_root)
             assert len(os.listdir(saved_root)) > 0
@@ -77,7 +78,7 @@ class TestOpenVINO(TestCase):
         x = torch.rand((10, 3, 256, 256))
         y = torch.ones((10, ), dtype=torch.long)
 
-        openvino_model = trainer.trace(model, input_sample=x, accelerator='openvino')
+        openvino_model = InferenceOptimizer.trace(model, input_sample=x, accelerator='openvino')
         ds = TensorDataset(x, y)
         dataloader = DataLoader(ds, batch_size=2)
 
@@ -91,3 +92,16 @@ class TestOpenVINO(TestCase):
         result = openvino_model.async_predict(x, num_requests=3)
         for res in result:
             assert res.shape == (10, 10)
+
+    def test_pytorch_openvino_model_option(self):
+        trainer = Trainer(max_epochs=1)
+        model = mobilenet_v3_small(num_classes=10)
+
+        x = torch.rand((10, 3, 256, 256))
+        y = torch.ones((10, ), dtype=torch.long)
+
+        openvino_model = InferenceOptimizer.trace(model, input_sample=x,
+                                                  accelerator='openvino',
+                                                  openvino_config={"PERFORMANCE_HINT": "LATENCY"})
+
+        result = openvino_model(x[0:1])
