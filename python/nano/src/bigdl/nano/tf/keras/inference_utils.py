@@ -191,8 +191,11 @@ class InferenceUtils:
         :return: Model with different acceleration(OpenVINO/ONNX Runtime).
         """
         if accelerator == 'openvino':
+            final_openvino_option = {"INFERENCE_PRECISION_HINT": "f32"}
+            if openvino_config is not None:
+                final_openvino_option.update(openvino_config)
             return KerasOpenVINOModel(self, input_sample=input_sample,
-                                      thread_num=thread_num, config=openvino_config)
+                                      thread_num=thread_num, config=final_openvino_option)
         elif accelerator == 'onnxruntime':
             if onnxruntime_session_options is None:
                 import onnxruntime
