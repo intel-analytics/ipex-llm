@@ -29,7 +29,7 @@ permissions:
 jobs:
   Mac-Python-AppTest-Part1:
     #if: ${{ github.event.schedule || github.event.inputs.artifact == 'Mac-Python-AppTest-Part1' || github.event.inputs.artifact == 'all' }} 
-    runs-on: [self-hosted, mac]
+    runs-on: [self-hosted, mac, macOS]
 
     steps:
     - uses: actions/checkout@v3
@@ -50,7 +50,7 @@ jobs:
 
   Mac-Dllib-ScalaTest-Spark3:
     #if: ${{ github.event.schedule || github.event.inputs.artifact == 'Mac-Dllib-ScalaTest-Spark3' || github.event.inputs.artifact == 'all' }} 
-    runs-on: [self-hosted, mac]
+    runs-on: [self-hosted, mac, macOS]
 
     steps:
     - uses: actions/checkout@v3
