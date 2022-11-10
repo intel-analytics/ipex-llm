@@ -70,10 +70,10 @@ echo $MASTER
 
 if [ "$MASTER" == k8s* ]; then
   if [ "$DEPLOY_MODE" = "" ]; then
-     echo "--deploy-mode should be specified for k8s mode"
+     echo "--deploy-mode should be specified for k8s"
      exit 1
   elif [ "$DRIVER_MEM" = "" ] || [ "$EXECUTOR_MEM" = "" ]; then
-     echo "--driver-memory and --executor-memory for k8s mode"
+     echo "--driver-memory and --executor-memory should be specified for k8s"
      exit 1
   fi
   default_config="--executor-memory $EXECUTOR_MEM \
