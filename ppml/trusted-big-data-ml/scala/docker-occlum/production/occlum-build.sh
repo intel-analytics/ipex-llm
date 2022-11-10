@@ -1,7 +1,7 @@
 # default
-export container_name=bigdl-ppml-trusted-big-data-ml-scala-occlum-build
-export image_name=intelanalytics/bigdl-ppml-azure-occlum:2.1.0-SNAPSHOT
-export final_name=intelanalytics/bigdl-ppml-azure-occlum:2.1.0
+export container_name=intelanalytics/bigdl-ppml-trusted-big-data-ml-scala-occlum:2.2.0-SNAPSHOT-build-container
+export image_name=intelanalytics/bigdl-ppml-trusted-big-data-ml-scala-occlum:2.2.0-SNAPSHOT
+export final_name=intelanalytics/bigdl-ppml-trusted-big-data-ml-scala-occlum:2.2.0-SNAPSHOT-build
 while getopts ":c:i:f:" opt
 do
     case $opt in
@@ -30,9 +30,9 @@ sudo docker rm -f $container_name
 sudo docker run -it \
         --net=host \
         --name=$container_name \
-        --cpuset-cpus 3-5 \
+        --cpuset-cpus 13-15 \
         -e LOCAL_IP=$LOCAL_IP \
-        -e SGX_MEM_SIZE=12GB \
+        -e SGX_MEM_SIZE=20GB \
         -e SGX_THREAD=2048 \
         -e SGX_HEAP=1GB \
         -e SGX_KERNEL_HEAP=1GB \
@@ -41,3 +41,5 @@ sudo docker run -it \
         bash /opt/run_spark_on_occlum_glibc.sh init
 echo "build finish"
 docker commit $container_name $final_name
+#clean up
+sudo docker rm -f $container_name
