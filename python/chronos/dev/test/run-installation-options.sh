@@ -27,7 +27,7 @@ fi
 
 # ray stop -f
 
-if [ $1 = true ]; then
+if [ $1 == true ]; then
 echo "Running chronos[pytorch] tests"
 python -m pytest -v -m "torch and not onnxrt16 and not automl and not distributed and not diff_set_all" test/bigdl/chronos/model \
                                                                                                         test/bigdl/chronos/forecaster \
