@@ -439,11 +439,12 @@ jobs:
             --build-arg no_proxy=${NO_PROXY} \
             --build-arg SPARK_JAR_REPO_URL=${SPARK_JAR_REPO_URL} \
             -t ${image}:${TAG} -f ./production/Dockerfile .
-          cd ppml/trusted-big-data-ml/scala/docker-occlum/production
+          pwd
+          cd /home/arda/github-action-runner/actions-runner/_work/BigDL/BigDL/ppml/trusted-big-data-ml/scala/docker-occlum
           export image_name=${image}:${TAG}
           export final_name=${image_name}-build
           export container_name=${final_name}-container
-          bash occlum-build.sh -c $container_name -i $image_name -f $final_name
+          bash ./production/occlum-build.sh -c $container_name -i $image_name -f $final_name
           sudo docker push ${image}:${TAG}
           docker tag ${image}:${TAG} 10.239.45.10/arda/${image}:${TAG}
           docker push 10.239.45.10/arda/${image}:${TAG}
