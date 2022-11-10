@@ -12,11 +12,6 @@ on:
       - '.github/workflows/chronos-install-option-py38-test.yml'
   workflow_dispatch:
 
-
-permissions:
-  contents: read
-  packages: write
-
 jobs:
   pytorch option:
     runs-on: [self-hosted, Gondolin, ubuntu-20.04-lts]
