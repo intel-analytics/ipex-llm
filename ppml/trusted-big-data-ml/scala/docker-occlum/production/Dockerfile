@@ -158,7 +158,7 @@ RUN cd /opt && \
     sed -i 's/2.4.0/3.1.3/g' tpch.sbt && \
     sbt package
 
-ADD ../install_python_with_conda.sh /opt
+ADD ./install_python_with_conda.sh /opt
 RUN cd /opt && bash ./install_python_with_conda.sh
 
 FROM occlum/occlum:0.29.2-ubuntu20.04 as ppml
@@ -230,19 +230,19 @@ COPY --from=bigdl /opt/zoo-tutorials/tpch-spark/target/scala-2.12/spark-tpc-h-qu
 
 # Copy scripts & other files
 ADD ./run_spark_on_occlum_glibc.sh /opt/run_spark_on_occlum_glibc.sh
-ADD ../sqlSuites /opt/sqlSuites
-ADD ../log4j2.xml /opt/spark/conf/log4j2.xml
+ADD ./sqlSuites /opt/sqlSuites
+ADD ./log4j2.xml /opt/spark/conf/log4j2.xml
 
 # For get_quote C compile
 RUN rm /root/demos/remote_attestation/dcap/c_app/dcap_c_test.c
-ADD ../dcap_c_test.c /root/demos/remote_attestation/dcap/c_app/
-ADD ../dcap-ppml.yaml /root/demos/remote_attestation/dcap/
-ADD ../get_quote_on_ppml.sh /root/demos/remote_attestation/dcap
+ADD ./dcap_c_test.c /root/demos/remote_attestation/dcap/c_app/
+ADD ./dcap-ppml.yaml /root/demos/remote_attestation/dcap/
+ADD ./get_quote_on_ppml.sh /root/demos/remote_attestation/dcap
 
 # For attestation
-ADD ../verify-attestation-service.sh /opt
-ADD ../print_enclave_signer.sh /opt
-ADD ../register.sh /opt
+ADD ./verify-attestation-service.sh /opt
+ADD ./print_enclave_signer.sh /opt
+ADD ./register.sh /opt
 
 COPY ./entrypoint.sh /opt/
 ADD ./mount.sh /opt/mount.sh
@@ -261,8 +261,8 @@ RUN chmod a+x /opt/entrypoint.sh && \
     rm -rf /var/run/aesmd
 
 # Add python lib
-ADD ../python-glibc.yaml /opt/python-glibc.yaml
+ADD ./python-glibc.yaml /opt/python-glibc.yaml
 COPY --from=bigdl /opt/python-occlum /opt/python-occlum
-ADD ../py-examples /opt/py-examples
+ADD ./py-examples /opt/py-examples
 
 ENTRYPOINT [ "/opt/entrypoint.sh" ]
