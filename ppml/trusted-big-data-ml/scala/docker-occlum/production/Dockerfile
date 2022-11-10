@@ -229,7 +229,7 @@ RUN cd /opt && \
 COPY --from=bigdl /opt/zoo-tutorials/tpch-spark/target/scala-2.12/spark-tpc-h-queries_2.12-1.0.jar $SPARK_HOME/jars
 
 # Copy scripts & other files
-ADD ./run_spark_on_occlum_glibc.sh /opt/run_spark_on_occlum_glibc.sh
+ADD ./production/run_spark_on_occlum_glibc.sh /opt/run_spark_on_occlum_glibc.sh
 ADD ./sqlSuites /opt/sqlSuites
 ADD ./log4j2.xml /opt/spark/conf/log4j2.xml
 
@@ -244,9 +244,9 @@ ADD ./verify-attestation-service.sh /opt
 ADD ./print_enclave_signer.sh /opt
 ADD ./register.sh /opt
 
-COPY ./entrypoint.sh /opt/
-ADD ./mount.sh /opt/mount.sh
-ADD ./add_conf.sh /opt/occlum_spark/add_conf.sh
+COPY ./production/entrypoint.sh /opt/
+ADD ./production/mount.sh /opt/mount.sh
+ADD ./production/add_conf.sh /opt/occlum_spark/add_conf.sh
 
 RUN chmod a+x /opt/entrypoint.sh && \
     chmod a+x /opt/run_spark_on_occlum_glibc.sh && \
