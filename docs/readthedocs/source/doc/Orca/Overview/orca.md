@@ -10,7 +10,7 @@ This page demonstrates how to scale the distributed training and inference of a 
 
 ### TensorFlow Bite-sized Example
 
-Before running this example, follow the steps [here](install.md#install-bigdl-orca) to install Orca in your environment.
+Before running this example, follow the steps [here](install.md) to prepare the environment and install Orca in your environment.
 
 This section uses **TensorFlow 2.x**, and you should also install TensorFlow before running this example:
 ```bash
