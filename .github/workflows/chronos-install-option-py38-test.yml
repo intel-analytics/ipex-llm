@@ -5,20 +5,24 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.run_id }}
   cancel-in-progress: true
 
+# Controls when the action will run. 
 on:
+  # Triggers the workflow on pull request events but only for the main branch
   pull_request:
     branches: [ main ]
     paths:
       - '.github/workflows/chronos-install-option-py38-test.yml'
+  # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
 
+# A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
-  pytorch option:
-    runs-on: [self-hosted, Gondolin, ubuntu-20.04-lts]
+  chronos-PRVN-onnxrt:
+    runs-on: [ self-hosted, Gondolin, ubuntu-20.04-lts ]
     strategy:
       fail-fast: false
       matrix:
-        python-version: ["3.8"]
+        python-version: ["3.7.10"]
     steps:
       - uses: actions/checkout@v2
       - name: Set up JDK 8
