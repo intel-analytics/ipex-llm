@@ -16,5 +16,61 @@
 # limitations under the License.
 #
 
-# Execute the container CMD under tini for better hygiene
-exec /usr/bin/tini -s -- "bash"
+# echo commands to the terminal output
+set -ex
+
+# Check whether there is a passwd entry for the container UID
+myuid=$(id -u)
+mygid=$(id -g)
+# turn off -e for getent because it will return error code in anonymous uid case
+set +e
+uidentry=$(getent passwd $myuid)
+set -e
+
+# Set PCCS conf
+if [ "$PCCS_URL" != "" ] ; then
+    echo 'PCCS_URL='${PCCS_URL}'/sgx/certification/v3/' > /etc/sgx_default_qcnl.conf
+    echo 'USE_SECURE_CERT=FALSE' >> /etc/sgx_default_qcnl.conf
+fi
+
+# If there is no passwd entry for the container UID, attempt to create one
+if [ -z "$uidentry" ] ; then
+    if [ -w /etc/passwd ] ; then
+        echo "$myuid:x:$myuid:$mygid:anonymous uid:$SPARK_HOME:/bin/false" >> /etc/passwd
+    else
+        echo "Container ENTRYPOINT failed to add passwd entry for anonymous UID"
+    fi
+fi
+
+
+# We do not have any arguments, just run bash
+if [ "$#" == 0 ]; then
+  echo "[INFO] no command is passed in"
+  echo "[INFO] enter pass-through mode"
+  exec /usr/bin/tini -s -- "bash"
+fi
+
+
+# Attestation
+if [ -z "$ATTESTATION" ]; then
+  echo "[INFO] Attestation is disabled!"
+  ATTESTATION="false"
+fi
+
+echo $SGX_ENABLED
+
+runtime_command="$@"
+
+if [ "$SGX_ENABLED" == "true" ]; then
+  if [ "$ATTESTATION" ==  "true" ]; then 
+    bash attestation.sh
+    echo $runtime_command >> temp_command_file
+    export sgx_command="bash temp_command_file && rm temp_command_file"
+  else 
+    export sgx_command=$runtime_command
+  fi
+  ./init.sh && \
+  gramine-sgx bash 2>&1
+else
+  exec $runtime_command
+fi
