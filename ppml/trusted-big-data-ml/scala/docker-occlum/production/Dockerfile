@@ -245,9 +245,13 @@ ADD ../print_enclave_signer.sh /opt
 ADD ../register.sh /opt
 
 COPY ./entrypoint.sh /opt/
+ADD ./mount.sh /opt/mount.sh
+ADD ./add_conf.sh /opt/occlum_spark/add_conf.sh
 
 RUN chmod a+x /opt/entrypoint.sh && \
     chmod a+x /opt/run_spark_on_occlum_glibc.sh && \
+    chmod a+x /opt/mount.sh && \
+    chmod a+x /opt/occlum_spark/add_conf.sh && \
     chmod a+x /opt/verify-attestation-service.sh && \
     chmod a+x /opt/print_enclave_signer.sh && \
     chmod a+x /opt/register.sh && \
