@@ -16,7 +16,7 @@
 
 import os
 from importlib.util import find_spec
-from bigdl.nano.pytorch.gpu_cpu import patch_cuda
+from bigdl.nano.pytorch.gpu_cpu import patch_cuda, unpatch_cuda
 
 
 _mapping_torch = None
@@ -90,6 +90,8 @@ def unpatch_torch():
 
     for mapping_iter in mapping_torch:
         setattr(mapping_iter[0], mapping_iter[1], mapping_iter[3])
+
+    unpatch_cuda()
 
     os.environ['BIGDL_NANO_PATCH_TORCH'] = '0'
     os.environ['BIGDL_NANO_PATCH_CUDA'] = '0'
