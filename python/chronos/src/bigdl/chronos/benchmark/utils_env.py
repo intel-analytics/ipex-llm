@@ -16,13 +16,8 @@
 
 
 import os
-import sys
 import subprocess
-import logging
 import warnings
-from typing import Union, Dict, List, Optional
-import numpy as np
-import re
 
 from bigdl.nano.common.cpu_schedule import schedule_workers
 from bigdl.nano.common.common import _find_library
@@ -33,18 +28,18 @@ def get_bytesize(bytes):
     Scale bytes to its proper format ( B / KB / MB / GB / TB / PB )
     """
     factor = 1024
-    for unit in ["B","KB","MB","GB","TB","PB"]:
+    for unit in ["B", "KB", "MB", "GB", "TB", "PB"]:
         if bytes < factor:
-            return str(format(bytes,'.2f')) + unit
+            return str(format(bytes, '.2f')) + unit
         bytes /= factor
-
 
 
 def _find_path(path_name: str) -> bool:
     """
-    Find whether .so files exist under the paths or not. This function will search the path one by one,
-    and confirm whether libiomp5.so and libtcmalloc.so exist or not. If .so files can be found, return 
-    True. Otherwise, return False.
+    Find whether .so files exist under the paths or not.
+    This function will search the path one by one,
+    and confirm whether libiomp5.so and libtcmalloc.so exist or not.
+    If .so files can be found, return True. Otherwise, return False.
     :param path_name: These paths to be found.
     :return: True(.so files can be found) or False(not all files can be found)
     """
@@ -61,11 +56,10 @@ def _find_path(path_name: str) -> bool:
                 libtcmalloc_flag = 1
 
     return True if libiomp5_flag and libtcmalloc_flag else False
-    
 
 
 def get_nano_env_var(use_malloc: str = "tc", use_openmp: bool = True,
-                     print_environment: bool = False) -> Dict[str, str]:
+                     print_environment: bool = False):
     """
     Return proper environment variables for jemalloc and openmp libraries.
     :param use_malloc: Allocator to be chosen, either "je" for jemalloc or "tc" for tcmalloc.
@@ -107,7 +101,7 @@ def get_nano_env_var(use_malloc: str = "tc", use_openmp: bool = True,
 
         # Set environment variables
         nano_env["OMP_NUM_THREADS"] = str(num_threads)
-        nano_env["KMP_AFFINITY"] = "granularity=fine,compact,1,0"
+        nano_env["KMP_AFFINITY"] = "granularity=fine"
         nano_env["KMP_BLOCKTIME"] = "1"
     else:
         warnings.warn("Intel OpenMP library (libiomp5.so) is not found.")
@@ -116,8 +110,8 @@ def get_nano_env_var(use_malloc: str = "tc", use_openmp: bool = True,
     if jemalloc_lib_dir is not None:
         ld_preload_list.append(jemalloc_lib_dir)
 
-        nano_env["MALLOC_CONF"] = "oversize_threshold:1,background_thread:true,"\
-                "metadata_thp:auto,dirty_decay_ms:-1,muzzy_decay_ms:-1"
+        nano_env["MALLOC_CONF"] = ("oversize_threshold:1,background_thread:true,"
+                                   "metadata_thp:auto,dirty_decay_ms:-1,muzzy_decay_ms:-1")
     else:
         warnings.warn("jemalloc library (libjemalloc.so) is nor found.")
 
@@ -134,12 +128,13 @@ def get_nano_env_var(use_malloc: str = "tc", use_openmp: bool = True,
         ld_preload_list = [lib for lib in ld_preload_list if "libiomp5.so" not in lib]
 
     if use_malloc is not "je":
-        nano_env.pop("MALLOC_CONF")
+        if "MALLOC_CONF" in nano_env:
+            nano_env.pop("MALLOC_CONF")
         ld_preload_list = [lib for lib in ld_preload_list if "libjemalloc.so" not in lib]
 
     if use_malloc is not "tc":
         ld_preload_list = [lib for lib in ld_preload_list if "libtcmalloc.so" not in lib]
-    
+
     # Set LD_PRELOAD
     nano_env["LD_PRELOAD"] = " ".join(ld_preload_list)
 
@@ -147,10 +142,8 @@ def get_nano_env_var(use_malloc: str = "tc", use_openmp: bool = True,
     nano_env["TF_ENABLE_ONEDNN_OPTS"] = "1"
     nano_env["ENABLE_TF_OPTS"] = "1"
     nano_env["NANO_TF_INTER_OP"] = "1"
-    
+
     if print_environment:
         print(nano_env)
 
     return nano_env
-
-

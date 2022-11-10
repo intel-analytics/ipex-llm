@@ -301,6 +301,7 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                         torch.set_num_threads(default_threads)
                         continue
                 except Exception as e:
+                    print(e)
                     result_map[method]["status"] = "fail to forward"
                     print(f"----------{method} failed to forward----------")
                     torch.set_num_threads(default_threads)
