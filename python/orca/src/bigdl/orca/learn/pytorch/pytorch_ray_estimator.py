@@ -16,10 +16,7 @@
 
 import io
 import types
-import logging
-import numbers
 import torch
-import numpy as np
 import copy
 
 from bigdl.orca.data.ray_xshards import RayXShards
@@ -31,7 +28,7 @@ from bigdl.orca.learn.utils import maybe_dataframe_to_xshards, dataframe_to_xsha
 from bigdl.orca.ray import OrcaRayContext
 from bigdl.orca.learn.ray_estimator import Estimator as OrcaRayEstimator
 from bigdl.orca.data.file import enable_multi_fs_save, enable_multi_fs_load
-from bigdl.orca.learn.pytorch.utils import find_free_port
+from bigdl.orca.learn.pytorch.utils import find_free_port, process_stats
 
 import ray
 from ray.exceptions import RayActorError
@@ -367,7 +364,7 @@ class PyTorchRayEstimator(OrcaRayEstimator):
         epoch_stats = list(map(list, zip(*worker_stats)))
         if reduce_results:
             for i in range(len(epoch_stats)):
-                epoch_stats[i] = self._process_stats(epoch_stats[i])
+                epoch_stats[i] = process_stats(epoch_stats[i])
             return epoch_stats
         else:
             return epoch_stats
@@ -509,7 +506,7 @@ class PyTorchRayEstimator(OrcaRayEstimator):
                           profile=profile, info=info)
 
             worker_stats = ray.get([w.validate.remote(**params) for w in self.remote_workers])
-        return self._process_stats(worker_stats)
+        return process_stats(worker_stats)
 
     def get_model(self):
         """
@@ -611,32 +608,6 @@ class PyTorchRayEstimator(OrcaRayEstimator):
                 ray.kill(worker)
 
         self.remote_workers = []
-
-    def _mean_reduce_stats(self, worker_stats, res_stats=None):
-        if not res_stats:
-            res_stats = {}
-        for stat_key, stat_value in worker_stats[0].items():
-            if isinstance(stat_value, numbers.Number): # loss
-                res_stats[stat_key] = np.nanmean(
-                    [s.get(stat_key, np.nan) for s in worker_stats])
-            elif isinstance(stat_value, torch.Tensor): # Accuracy
-                res_stats[stat_key] = torch.mean(
-                    torch.stack([stats[stat_key] for stats in worker_stats]))
-            elif isinstance(stat_value, dict): # profile
-                res_stats[stat_key] = self._mean_reduce_stats([stats[stat_key] for stats in worker_stats])
-            else:
-                res_stats[stat_key] = stat_value
-        return res_stats
-
-    def _process_stats(self, worker_stats):
-        stats = {
-            "num_samples": sum(
-                stats.pop("num_samples", np.nan) for stats in worker_stats)
-        }
-
-        stats = self._mean_reduce_stats(worker_stats, stats)
-
-        return stats
 
     def _train_epochs(self, **params):
         remote_worker_stats = []

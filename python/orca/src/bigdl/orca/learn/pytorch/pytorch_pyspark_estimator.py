@@ -15,14 +15,12 @@
 #
 
 import types
-import logging
-import numbers
 import torch
-import numpy as np
 import copy
 
 from bigdl.orca.learn.pytorch.training_operator import TrainingOperator
 from bigdl.orca.learn.pytorch.pytorch_pyspark_worker import PytorchPysparkWorker
+from bigdl.orca.learn.pytorch.utils import process_stats
 from bigdl.orca.learn.utils import maybe_dataframe_to_xshards, dataframe_to_xshards, \
     convert_predict_xshards_to_dataframe, make_data_creator, update_predict_xshards, \
     reload_dataloader_creator, process_xshards_of_pandas_dataframe
@@ -315,7 +313,7 @@ class PyTorchPySparkEstimator(BaseEstimator):
         epoch_stats = list(map(list, zip(*worker_stats)))
         if reduce_results:
             for i in range(len(epoch_stats)):
-                epoch_stats[i] = self._process_stats(epoch_stats[i])
+                epoch_stats[i] = process_stats(epoch_stats[i])
             return epoch_stats
         else:
             return epoch_stats
@@ -495,7 +493,7 @@ class PyTorchPySparkEstimator(BaseEstimator):
             res = self.workerRDD.barrier().mapPartitions(
                 lambda iter: transform_func(iter, init_params, params)).collect()
 
-        return self._process_stats(res)
+        return process_stats(res)
 
     def get_model(self):
         """
@@ -562,20 +560,6 @@ class PyTorchPySparkEstimator(BaseEstimator):
         else:
             self.driver_runner.load_checkpoint(filepath=model_path)
             self.state_dict = self.driver_runner.get_state_dict()
-
-    def _process_stats(self, worker_stats):
-        stats = {
-            "num_samples": sum(
-                stats.pop("num_samples", np.nan) for stats in worker_stats)
-        }
-
-        for stat_key in worker_stats[0]:
-            if isinstance(worker_stats[0], numbers.Number):
-                stats[stat_key] = np.nanmean(
-                    [s.get(stat_key, np.nan) for s in worker_stats])
-            else:
-                stats[stat_key] = worker_stats[0][stat_key]
-        return stats
 
     def shutdown(self):
         """
