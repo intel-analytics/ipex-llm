@@ -392,7 +392,6 @@ jobs:
         export image=intelanalytics/bigdl-ppml-trusted-big-data-ml-scala-occlum
         pwd
         docker build \
-          --no-cache=true \
           --build-arg http_proxy=${HTTP_PROXY} \
           --build-arg https_proxy=${HTTPS_PROXY} \
           --build-arg HTTP_PROXY_HOST=${HTTP_PROXY_HOST_2} \
@@ -425,11 +424,10 @@ jobs:
           echo "########################################"
           echo "####### big-data-ml-scala-occlum-production  ######"
           echo "########################################"
-          cd ppml/trusted-big-data-ml/scala/docker-occlum/production
+          cd ppml/trusted-big-data-ml/scala/docker-occlum
           export image=intelanalytics/bigdl-ppml-trusted-big-data-ml-scala-occlum-production
           pwd
           docker build \
-            --no-cache=true \
             --build-arg http_proxy=${HTTP_PROXY} \
             --build-arg https_proxy=${HTTPS_PROXY} \
             --build-arg HTTP_PROXY_HOST=${HTTP_PROXY_HOST_2} \
@@ -440,7 +438,7 @@ jobs:
             --build-arg JDK_URL=${JDK_URL} \
             --build-arg no_proxy=${NO_PROXY} \
             --build-arg SPARK_JAR_REPO_URL=${SPARK_JAR_REPO_URL} \
-            -t ${image}:${TAG} -f ./Dockerfile .
+            -t ${image}:${TAG} -f ./production/Dockerfile .
           cd ppml/trusted-big-data-ml/scala/docker-occlum/production
           export image_name=${image}:${TAG}
           export final_name=${image_name}-build
