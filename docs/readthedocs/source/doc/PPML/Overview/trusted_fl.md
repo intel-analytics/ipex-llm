@@ -39,7 +39,7 @@ Please ensure SGX is properly enabled, and SGX driver is installed. If not, plea
 
     ```bash
     cd scripts/
-    ./generate-keys.sh
+    ./generate-keys-az.sh
     cd ..
     ```
 

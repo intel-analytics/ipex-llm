@@ -43,7 +43,7 @@ BigDL PPML needs secured keys to enable spark security such as Authentication, R
 
 ```bash
 git clone https://github.com/intel-analytics/BigDL.git
-bash ppml/scripts/generate-keys.sh
+bash ppml/scripts/generate-keys-az.sh
 ```
 It will generate the keystores in `./keys`.
 #### 2. Prepare the password
@@ -80,7 +80,7 @@ bash spark-submit-with-ppml-tdx-local.sh \
 #### 1.1 Prepare the keys and password
 Please refer to the previous section about [prepare keys](#Prepare the key) and [prepare password](#Prepare the password).
 ```bash
-bash ../../../scripts/generate-keys.sh
+bash ../../../scripts/generate-keys-az.sh
 bash ../../../scripts/generate-password.sh YOUR_PASSWORD
 kubectl apply -f keys/keys.yaml
 kubectl apply -f password/password.yaml

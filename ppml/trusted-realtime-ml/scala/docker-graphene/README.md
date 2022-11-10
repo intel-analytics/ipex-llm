@@ -21,7 +21,7 @@ To launch Trusted Realtime ML on Graphene-SGX, you need to install graphene-sgx-
 The PPML in BigDL needs secured keys to enable Flink TLS, https and TLS enabled Redis. In this tutorial, you can generate keys and keystores with root permission (test only, need input security password for keys).
 
 ```bash
-sudo ../../../scripts/generate-keys.sh
+sudo ../../../scripts/generate-keys-az.sh
 ```
 
 You also need to generate your enclave key using the command below, and keep it safely for future remote attestations and to start SGX enclaves more securely.
