@@ -62,7 +62,7 @@ class OrcaRayContext(object):
     def init(self, driver_cores=0):
         if self.runtime == "ray":
             import ray
-            results = ray.init(**self.ray_args)
+            results = ray.init(num_cpus=self.ray_node_cpu_cores, **self.ray_args)
         else:
             results = self._ray_on_spark_context.init(driver_cores=driver_cores)
             self.num_ray_nodes = self._ray_on_spark_context.num_ray_nodes
