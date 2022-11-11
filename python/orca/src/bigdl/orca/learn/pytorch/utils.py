@@ -307,13 +307,13 @@ def mean_reduce_stats(worker_stats, res_stats=None):
     if not res_stats:
         res_stats = {}
     for stat_key, stat_value in worker_stats[0].items():
-        if isinstance(stat_value, numbers.Number): # loss
+        if isinstance(stat_value, numbers.Number):  # loss
             res_stats[stat_key] = np.nanmean(
                 [s.get(stat_key, np.nan) for s in worker_stats])
-        elif isinstance(stat_value, torch.Tensor): # Accuracy
+        elif isinstance(stat_value, torch.Tensor):  # Accuracy
             res_stats[stat_key] = torch.mean(
                 torch.stack([stats[stat_key] for stats in worker_stats]))
-        elif isinstance(stat_value, dict): # profile
+        elif isinstance(stat_value, dict):  # profile
             res_stats[stat_key] = mean_reduce_stats([stats[stat_key] for stats in worker_stats])
         else:
             res_stats[stat_key] = stat_value

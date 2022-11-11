@@ -278,17 +278,21 @@ class TestPyTorchEstimator(TestCase):
                       label_cols=["label"])
         worker_stats = estimator.evaluate(val_df, batch_size=4,
                                           feature_cols=["feature"],
-                                          label_cols=["label"], reduce_results=False, profile=True)
+                                          label_cols=["label"],
+                                          reduce_results=False, profile=True)
         acc = [stat["Accuracy"].data.item() for stat in worker_stats]
         loss = [stat["val_loss"] for stat in worker_stats]
         validation_time = [stat["profile"]["mean_validation_s"] for stat in worker_stats]
         forward_time = [stat["profile"]["mean_eval_fwd_s"] for stat in worker_stats]
         from bigdl.orca.learn.pytorch.utils import process_stats
         agg_worker_stats = process_stats(worker_stats)
-        assert agg_worker_stats["Accuracy"].data.item() == sum(acc) / 2
-        assert agg_worker_stats["val_loss"] == sum(loss) / 2
-        assert agg_worker_stats["profile"]["mean_validation_s"] == sum(validation_time) / 2
-        assert agg_worker_stats["profile"]["mean_eval_fwd_s"] == sum(forward_time) / 2
+        assert round(agg_worker_stats["Accuracy"].data.item(), 4) == \
+               round(sum(acc) / 2, 4)
+        assert round(agg_worker_stats["val_loss"], 4) == round(sum(loss) / 2, 4)
+        assert round(agg_worker_stats["profile"]["mean_validation_s"], 4) == \
+               round(sum(validation_time) / 2, 4)
+        assert round(agg_worker_stats["profile"]["mean_eval_fwd_s"], 4) == \
+               round(sum(forward_time) / 2, 4)
         assert agg_worker_stats["num_samples"] == 40
 
     def test_dataframe_shard_size_train_eval(self):
