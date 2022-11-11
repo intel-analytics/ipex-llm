@@ -177,38 +177,37 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                 # if precision is int8 or bf16, then we will use quantize method
                 elif precision == 'int8':
                     ort_method: Optional[str] = option.method
-                    # try:
-                    acce_model = model.quantize(precision=precision,
-                                                accelerator=accelerator,
-                                                calib_dataset=training_data.unbatch(),
-                                                method=ort_method,
-                                                thread_num=thread_num,
-                                                sample_size=sample_size_for_pot,
-                                                # remove output of openvino
-                                                logging=logging)
-                    # except Exception as e:
-                    #     print(e)
-                    #     result_map[method]["status"] = "fail to convert"
-                    #     print(f"----------Failed to convert to {method}----------")
-                    #     continue
+                    try:
+                        acce_model = model.quantize(precision=precision,
+                                                    accelerator=accelerator,
+                                                    calib_dataset=training_data.unbatch(),
+                                                    method=ort_method,
+                                                    thread_num=thread_num,
+                                                    sample_size=sample_size_for_pot,
+                                                    # remove output of openvino
+                                                    logging=logging)
+                    except Exception as e:
+                        print(e)
+                        result_map[method]["status"] = "fail to convert"
+                        print(f"----------Failed to convert to {method}----------")
+                        continue
 
                 result_map[method]["status"] = "successful"
 
                 def func_test(model, sample):
                     model(sample)
-                print("input sample:")
-                print(type(input_sample))
-                # try:
-                result_map[method]["latency"], status =\
-                    throughput_calculate_helper(latency_sample_num, baseline_time,
-                                                func_test, acce_model, input_sample)
-                if status is False and method != "original":
-                    result_map[method]["status"] = "early stopped"
+                try:
+                    numpy_sample = input_sample.numpy()
+                    result_map[method]["latency"], status =\
+                        throughput_calculate_helper(latency_sample_num, baseline_time,
+                                                    func_test, acce_model, numpy_sample)
+                    if status is False and method != "original":
+                        result_map[method]["status"] = "early stopped"
+                        continue
+                except Exception as e:
+                    result_map[method]["status"] = "fail to forward"
+                    print(f"----------{method} failed to forward----------")
                     continue
-                # except Exception as e:
-                #     result_map[method]["status"] = "fail to forward"
-                #     print(f"----------{method} failed to forward----------")
-                #     continue
 
                 if self._calculate_accuracy:
                     # here we suppose trace don't change accuracy,
