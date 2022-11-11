@@ -26,7 +26,8 @@ cd ../kubernetes
 ```
 ## 2. Start BigDL-PCCS on Kubernetes 
 ### 2.1 Determine PCCS IP address
-First of all, Please note that a **IP address that unused in your subnetwork** is needed to be used as PCCS IP. \
+First of all, Please note that an **IP address that unused in your subnetwork** is needed to be used as PCCS IP. \
+**Especially,** this IP address chosen for PCCS **SHOULD NOT** be the real machine IP address. \
 You could check if the IP address is available like this.
 
 ```bash

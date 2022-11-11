@@ -34,19 +34,21 @@ If you already have a BigDL-PCCS service on Kubernetes, please skip this step.
 
 If not, please **[deploy BigDL-PCCS on Kubernetes](https://github.com/intel-analytics/BigDL/tree/main/ppml/services/pccs/kubernetes)**.
 ## 2. Start BigDL-eHSM-KMS on Kubernetes 
-### 2.1 Determine IP addresses for dkey server and KMS
-First of all , **two different IP addresses that unused in your subnetwork** are needed to be used as dkey server IP and KMS IP, and they should be different from PCCS IP that you have set in step 1. \
-You could check if the IP adresses are available for dkey server and KMS like this
+### 2.1 Determine IP addresses for dkeyserver and KMS
+First of all , **two different IP addresses that unused in your subnetwork** are needed to be used as dkeyserver IP and KMS IP, and they should be different from PCCS IP that you have set in step 1. \
+**Especially,** the IP addresses chosen for dkeyserver and KMS **SHOULD NOT** be real machine IP address. \
+You could check if the IP adresses are available for dkeyserver and KMS like this
 ```bash
-# assume your IP address is 1.2.3.4, and you want to use 1.2.3.227 as dkey server IP
+# assume your IP address is 1.2.3.4, and you want to use 1.2.3.227 as dkeyserver IP
 ping 1.2.3.226
 
-# information below means 1.2.3.227 is expected to be an appropriate IP addess for dkey server. 
+# information below means 1.2.3.227 is expected to be an appropriate IP addess for dkeyserver. 
 # otherwise, you are supposed to test another one.
 PING 1.2.3.226 (1.2.3.227) 56(84) bytes of data.
 From 1.2.3.4 icmp_seq=1 Destination Host Unreachable
 From 1.2.3.4 icmp_seq=2 Destination Host Unreachable
 From 1.2.3.4 icmp_seq=3 Destination Host Unreachable
+........
 --- 1.2.3.227 ping statistics ---
 6 packets transmitted, 0 received, +3 errors, 100% packet loss, time 5107ms
 
