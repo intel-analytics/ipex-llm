@@ -72,14 +72,20 @@ class NCFData(data.Dataset):
         return user, item, label
 
 
-def train_loader_func(config, batch_size):
+def load_dataset(dataset_dir):
     data_X = pd.read_csv(
-        os.path.join(config['dataset_dir'], 'ratings.dat'),
+        os.path.join(dataset_dir, 'ratings.dat'),
         sep="::", header=None, names=['user', 'item'],
         usecols=[0, 1], dtype={0: np.int64, 1: np.int64})
+
     user_num = data_X['user'].max() + 1
     item_num = data_X['item'].max() + 1
 
+    return data_X, user_num, item_num
+
+
+def train_loader_func(config, batch_size):
+    data_X, user_num, item_num = load_dataset(config['dataset_dir'])
     data_X = data_X.values.tolist()
 
     # load ratings as a dok matrix
@@ -98,14 +104,7 @@ def train_loader_func(config, batch_size):
 
 
 def test_loader_func(config, batch_size):
-    data_X = pd.read_csv(
-        os.path.join(config['dataset_dir'], 'ratings.dat'),
-        sep="::", header=None, names=['user', 'item'],
-        usecols=[0, 1], dtype={0: np.int64, 1: np.int64})
-
-    user_num = data_X['user'].max() + 1
-    item_num = data_X['item'].max() + 1
-
+    data_X, user_num, item_num = load_dataset(config['dataset_dir'])
     data_X = data_X.values.tolist()
 
     # load ratings as a dok matrix
@@ -123,18 +122,6 @@ def test_loader_func(config, batch_size):
     return test_loader
 
 
-def get_user_num_item_num(dataset_dir):
-    data_X = pd.read_csv(
-        os.path.join(dataset_dir, 'ratings.dat'),
-        sep="::", header=None, names=['user', 'item'],
-        usecols=[0, 1], dtype={0: np.int64, 1: np.int64})
-
-    user_num = data_X['user'].max() + 1
-    item_num = data_X['item'].max() + 1
-
-    return user_num, item_num
-
-
 if __name__ == "__main__":
     dataset_dir = "./ml-1m"
     config = {'dataset_dir': dataset_dir,
@@ -142,4 +129,3 @@ if __name__ == "__main__":
 
     train_loader_func(config, 256)
     test_loader_func(config, 256)
-    get_user_num_item_num(dataset_dir)
