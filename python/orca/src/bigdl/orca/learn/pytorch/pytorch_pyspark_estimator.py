@@ -206,10 +206,9 @@ class PyTorchPySparkEstimator(BaseEstimator):
         :param profile: Boolean. Whether to return time stats for the training procedure.
                Default is False.
         :param reduce_results: Boolean. Whether to average all metrics across all workers into
-               one dict. If a metric is a non-numerical value (or nested dictionaries), one value
-               will be randomly selected among the workers. If False, returns a list of dicts for
-               all workers.
-               Default is True.
+               one dict. If a metric is a non-numerical value, the one value will be randomly
+               selected among the workers. If False, returns a list of dicts for
+               all workers. Default is True.
         :param info: An optional dictionary that can be passed to the TrainingOperator for
                train_epoch and train_batch.
         :param feature_cols: feature column names if data is Spark DataFrame.
@@ -419,6 +418,7 @@ class PyTorchPySparkEstimator(BaseEstimator):
                  batch_size=32,
                  num_steps=None,
                  profile=False,
+                 reduce_results=True,
                  info=None,
                  feature_cols=None,
                  label_cols=None):
@@ -440,6 +440,10 @@ class PyTorchPySparkEstimator(BaseEstimator):
                corresponds to the number of times `TrainingOperator.validate_batch` is called.
         :param profile: Boolean. Whether to return time stats for the training procedure.
                Default is False.
+        :param reduce_results: Boolean. Whether to average all metrics across all workers into
+               one dict. If a metric is a non-numerical value, the one value will be randomly
+               selected among the workers. If False, returns a list of dicts for
+               all workers. Default is True.
         :param info: An optional dictionary that can be passed to the TrainingOperator
                for validate.
         :param feature_cols: feature column names if train data is Spark DataFrame.
@@ -493,7 +497,10 @@ class PyTorchPySparkEstimator(BaseEstimator):
             res = self.workerRDD.barrier().mapPartitions(
                 lambda iter: transform_func(iter, init_params, params)).collect()
 
-        return process_stats(res)
+        if reduce_results:
+            return process_stats(res)
+        else:
+            return res
 
     def get_model(self):
         """
