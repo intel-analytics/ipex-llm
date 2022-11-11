@@ -28,7 +28,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# Some code in file is adapted from
+# Some code in this file is adapted from
 # https://github.com/ray-project/ray/blob/master/python/ray/util/sgd/utils.py
 
 import time
