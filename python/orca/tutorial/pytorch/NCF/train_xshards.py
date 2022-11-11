@@ -19,6 +19,7 @@
 #
 
 # Step 0: Import necessary libraries
+import os
 import numpy as np
 import pandas as pd
 
@@ -39,18 +40,7 @@ sc = init_orca_context()
 
 
 # Step 2: Define train and test datasets using Orca XShards
-def preprocess_data():
-    data_X = read_csv(
-        "ml-1m/ratings.dat",
-        sep="::", header=None, names=['user', 'item'],
-        usecols=[0, 1], dtype={0: np.int64, 1: np.int64})
-    data_X = data_X.partition_by("user")
-
-    user_set = set(data_X["user"].unique())
-    item_set = set(data_X["item"].unique())
-    user_num = max(user_set) + 1
-    item_num = max(item_set) + 1
-    return data_X, user_num, item_num
+dataset_dir = "./ml-1m"
 
 
 def ng_sampling(data):
@@ -63,12 +53,12 @@ def ng_sampling(data):
         train_mat[row[0], row[1]] = 1
 
     # negative sampling
-    np.random.seed(0)
+    num_ng = 4  # sample 4 negative items for training
     features_ps = data_X
     features_ng = []
     for x in features_ps:
         u = x[0]
-        for t in range(4):  # sample 4 negative items for training
+        for t in range(num_ng):
             j = np.random.randint(item_num)
             while (u, j) in train_mat:
                 j = np.random.randint(item_num)
@@ -89,7 +79,8 @@ def split_dataset(data):
     train_data, test_data = train_test_split(data, test_size=0.2, random_state=100)
     return train_data, test_data
 
-data = read_csv("ml-1m/ratings.dat", sep="::", header=None, names=['user', 'item'],
+data = read_csv(os.path.join(dataset_dir, 'ratings.dat'),
+                sep="::", header=None, names=['user', 'item'],
                 usecols=[0, 1], dtype={0: np.int64, 1: np.int64})
 data = data.partition_by("user")
 
@@ -105,30 +96,40 @@ train_data, test_data = data.transform_shard(split_dataset).split()
 # Step 3: Define the model, optimizer and loss
 def model_creator(config):
     model = NCF(config['user_num'], config['item_num'],
-                factor_num=32, num_layers=3, dropout=0.0, model="NeuMF-end")
+                factor_num=config['factor_num'],
+                num_layers=config['num_layers'],
+                dropout=config['dropout'],
+                model=config['model'])
     model.train()
     return model
 
 
 def optimizer_creator(model, config):
-    return optim.Adam(model.parameters(), lr=0.001)
+    return optim.Adam(model.parameters(), lr=config['lr'])
 
 loss = nn.BCEWithLogitsLoss()
 
 
 # Step 4: Distributed training with Orca PyTorch Estimator
-batch_size = 1024
 backend = "spark"  # "ray" or "spark"
+
 est = Estimator.from_torch(model=model_creator, optimizer=optimizer_creator,
-                           loss=loss, metrics=[Accuracy(), Precision(), Recall()],
-                           config={'user_num': user_num, 'item_num': item_num},
-                           backend=backend)
-est.fit(data=train_data, epochs=10, batch_size=batch_size,
+                           loss=loss,
+                           metrics=[Accuracy(), Precision(), Recall()],
+                           backend=backend,
+                           config={'user_num': user_num, 'item_num': item_num,
+                                   'dataset_dir': dataset_dir,
+                                   'factor_num': 16,
+                                   'num_layers': 3,
+                                   'dropout': 0.0,
+                                   'lr': 0.001,
+                                   'model': "NeuMF-end"})
+est.fit(data=train_data, epochs=10, batch_size=256,
         feature_cols=["user", "item"], label_cols=["label"])
 
 
 # Step 5: Distributed evaluation of the trained model
-result = est.evaluate(data=test_data, batch_size=batch_size,
+result = est.evaluate(data=test_data, batch_size=256,
                       feature_cols=["user", "item"], label_cols=["label"])
 print('Evaluation results:')
 for r in result:
@@ -137,6 +138,7 @@ for r in result:
 
 # Step 6: Save the trained PyTorch model
 est.save("NCF_model")
+
 
 # Step 7: Stop Orca Context when program finishes
 stop_orca_context()

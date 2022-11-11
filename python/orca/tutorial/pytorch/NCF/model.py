@@ -60,10 +60,7 @@ class NCF(nn.Module):
             predict_size = factor_num
         else:
             predict_size = factor_num * 2
-        output_modules = []
-        output_modules.append(nn.Linear(predict_size, 1))
-        output_modules.append(nn.Sigmoid())
-        self.predict_layer = nn.Sequential(*output_modules)
+        self.predict_layer = nn.Linear(predict_size, 1)
 
         self._init_weight_()
 
@@ -78,6 +75,7 @@ class NCF(nn.Module):
             for m in self.MLP_layers:
                 if isinstance(m, nn.Linear):
                     nn.init.xavier_uniform_(m.weight)
+            nn.init.kaiming_uniform_(self.predict_layer.weight, a=1, nonlinearity='sigmoid')
 
             for m in self.modules():
                 if isinstance(m, nn.Linear) and m.bias is not None:

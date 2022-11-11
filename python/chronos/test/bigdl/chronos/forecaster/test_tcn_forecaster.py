@@ -161,6 +161,33 @@ class TestChronosModelTCNForecaster(TestCase):
         forecaster.evaluate_with_onnx(test_loader)
         forecaster.evaluate_with_onnx(test_loader, batch_size=32, quantize=True)
 
+    @op_diff_set_all
+    @op_onnxrt16
+    def test_tcn_forecaster_fit_loader_normalization_decomposation(self):
+        train_loader, val_loader, test_loader = create_data(loader=True)
+        forecaster = TCNForecaster(past_seq_len=24,
+                                   future_seq_len=5,
+                                   input_feature_num=1,
+                                   output_feature_num=1,
+                                   kernel_size=4,
+                                   normalization=True,
+                                   decomposition_kernal_size=3,
+                                   num_channels=[16, 16],
+                                   loss="mae",
+                                   lr=0.01)
+        train_loss = forecaster.fit(train_loader, epochs=2)
+        forecaster.quantize(calib_data=train_loader,
+                            val_data=val_loader,
+                            metric="mae",
+                            framework=['onnxrt_qlinearops', 'pytorch_fx'])
+        yhat = forecaster.predict(data=test_loader, acceleration=False)
+        q_yhat = forecaster.predict(data=test_loader, quantize=True, acceleration=False)
+        q_onnx_yhat = forecaster.predict_with_onnx(data=test_loader, quantize=True)
+        assert yhat.shape == q_onnx_yhat.shape == q_yhat.shape == (400, 5, 1)
+        forecaster.evaluate(test_loader, batch_size=32, acceleration=False)
+        forecaster.evaluate_with_onnx(test_loader)
+        forecaster.evaluate_with_onnx(test_loader, batch_size=32, quantize=True)
+
     @op_automl
     def test_tcn_forecaster_tune(self):
         import bigdl.nano.automl.hpo.space as space
@@ -198,6 +225,32 @@ class TestChronosModelTCNForecaster(TestCase):
                                 loss="mae",
                                 metrics=['mae', 'mse', 'mape'],
                                 lr=space.Real(0.001, 0.01, log=True))
+        forecaster.tune(train_data, validation_data=val_data,
+                        n_trials=2, target_metric='mse', direction="minimize",
+                        study_name=name,
+                        storage=storage, n_parallels=2)
+        forecaster.fit(train_data, epochs=2)
+        os.remove("./example_tcn.db")
+
+    @op_automl
+    def test_tcn_forecaster_tune_multi_processes_normalization_decomposation(self):
+        name = "parallel-example-torch"
+        storage = "sqlite:///example_tcn.db"  # take sqlite for test, recommand to use mysql
+        if os.path.exists("./example_tcn.db"):
+            os.remove("./example_tcn.db")
+        import bigdl.nano.automl.hpo.space as space
+        train_data, val_data, _ = create_data(loader=False)
+        forecaster = TCNForecaster(past_seq_len=24,
+                                   future_seq_len=5,
+                                   input_feature_num=1,
+                                   output_feature_num=1,
+                                   kernel_size=4,
+                                   normalization=True,
+                                   decomposition_kernal_size=3,
+                                   num_channels=[16, 16],
+                                   loss="mae",
+                                   metrics=['mae', 'mse', 'mape'],
+                                   lr=space.Real(0.001, 0.01, log=True))
         forecaster.tune(train_data, validation_data=val_data,
                         n_trials=2, target_metric='mse', direction="minimize",
                         study_name=name,
@@ -320,6 +373,39 @@ class TestChronosModelTCNForecaster(TestCase):
             pass
 
     @op_diff_set_all
+    @op_onnxrt16
+    def test_tcn_forecaster_onnx_methods_normalization_decomposation(self):
+        train_data, val_data, test_data = create_data()
+        forecaster = TCNForecaster(past_seq_len=24,
+                                   future_seq_len=5,
+                                   input_feature_num=1,
+                                   output_feature_num=1,
+                                   kernel_size=4,
+                                   normalization=True,
+                                   decomposition_kernal_size=3,
+                                   num_channels=[16, 16],
+                                   lr=0.01)
+        forecaster.fit(train_data, epochs=2)
+        try:
+            import onnx
+            import onnxruntime
+            pred = forecaster.predict(test_data[0], acceleration=False)
+            pred_onnx = forecaster.predict_with_onnx(test_data[0])
+            np.testing.assert_almost_equal(pred, pred_onnx, decimal=5)
+            mse = forecaster.evaluate(test_data, multioutput="raw_values", acceleration=False)
+            mse_onnx = forecaster.evaluate_with_onnx(test_data,
+                                                     multioutput="raw_values")
+            np.testing.assert_almost_equal(mse, mse_onnx, decimal=5)
+            with pytest.raises(RuntimeError):
+                forecaster.build_onnx(sess_options=1)
+            forecaster.build_onnx(thread_num=1)
+            mse = forecaster.evaluate(test_data, acceleration=False)
+            mse_onnx = forecaster.evaluate_with_onnx(test_data)
+            np.testing.assert_almost_equal(mse, mse_onnx, decimal=5)
+        except ImportError:
+            pass
+
+    @op_diff_set_all
     def test_tcn_forecaster_openvino_methods(self):
         train_data, val_data, test_data = create_data()
         forecaster = TCNForecaster(past_seq_len=24,
@@ -327,6 +413,38 @@ class TestChronosModelTCNForecaster(TestCase):
                                    input_feature_num=1,
                                    output_feature_num=1,
                                    kernel_size=4,
+                                   num_channels=[16, 16],
+                                   lr=0.01)
+        forecaster.fit(train_data, epochs=2)
+        try:
+            pred = forecaster.predict(test_data[0], acceleration=False)
+            pred_openvino = forecaster.predict_with_openvino(test_data[0])
+            np.testing.assert_almost_equal(pred, pred_openvino, decimal=5)
+        except ImportError:
+            pass
+
+        forecaster.quantize(calib_data=train_data,
+                            framework="openvino")
+        openvino_yhat = forecaster.predict_with_openvino(test_data[0])
+        q_openvino_yhat = forecaster.predict_with_openvino(test_data[0], quantize=True)
+        assert openvino_yhat.shape == q_openvino_yhat.shape == test_data[1].shape
+
+        # test exporting the openvino
+        with tempfile.TemporaryDirectory() as tmp_dir_name:
+            ckpt_name = os.path.join(tmp_dir_name, "fp32_openvino")
+            ckpt_name_q = os.path.join(tmp_dir_name, "int_openvino")
+            forecaster.export_openvino_file(dirname=ckpt_name, quantized_dirname=ckpt_name_q)
+
+    @op_diff_set_all
+    def test_tcn_forecaster_openvino_methods_normalization_decomposation(self):
+        train_data, val_data, test_data = create_data()
+        forecaster = TCNForecaster(past_seq_len=24,
+                                   future_seq_len=5,
+                                   input_feature_num=1,
+                                   output_feature_num=1,
+                                   kernel_size=4,
+                                   normalization=True,
+                                   decomposition_kernal_size=3,
                                    num_channels=[16, 16],
                                    lr=0.01)
         forecaster.fit(train_data, epochs=2)
@@ -419,6 +537,31 @@ class TestChronosModelTCNForecaster(TestCase):
             forecaster.export_torchscript_file(dirname=ckpt_name)
 
     @op_diff_set_all
+    def test_tcn_forecaster_jit_methods_normalization_decomposation(self):
+        train_data, val_data, test_data = create_data()
+        forecaster = TCNForecaster(past_seq_len=24,
+                                   future_seq_len=5,
+                                   input_feature_num=1,
+                                   output_feature_num=1,
+                                   kernel_size=4,
+                                   normalization=True,
+                                   decomposition_kernal_size=3,
+                                   num_channels=[16, 16],
+                                   lr=0.01)
+        forecaster.fit(train_data, epochs=2)
+        try:
+            pred = forecaster.predict(test_data[0])
+            pred_jit = forecaster.predict_with_jit(test_data[0])
+            np.testing.assert_almost_equal(pred, pred_jit, decimal=5)
+        except ImportError:
+            pass
+
+        # test exporting the jit
+        with tempfile.TemporaryDirectory() as tmp_dir_name:
+            ckpt_name = os.path.join(tmp_dir_name, "fp32_jit")
+            forecaster.export_torchscript_file(dirname=ckpt_name)
+
+    @op_diff_set_all
     def test_tcn_forecaster_jit_methods_loader(self):
         train_loader, val_loader, test_loader = create_data(loader=True)
         forecaster = TCNForecaster(past_seq_len=24,
@@ -483,6 +626,43 @@ class TestChronosModelTCNForecaster(TestCase):
                                    input_feature_num=1,
                                    output_feature_num=1,
                                    kernel_size=4,
+                                   num_channels=[16, 16],
+                                   lr=0.01)
+        forecaster.fit(train_data, epochs=2)
+        # no tunning quantization
+        forecaster.quantize(train_data)
+        pred_q = forecaster.predict(test_data[0], quantize=True, acceleration=False)
+        eval_q = forecaster.evaluate(test_data, quantize=True, acceleration=False)
+        # reset model
+        forecaster.internal.train()
+        forecaster.internal.eval()
+        # quantization with tunning
+        forecaster.quantize(train_data, val_data=val_data,
+                            metric="rmse", relative_drop=0.1, max_trials=3)
+        pred_q = forecaster.predict(test_data[0], quantize=True, acceleration=False)
+        eval_q = forecaster.evaluate(test_data, quantize=True, acceleration=False)
+        with tempfile.TemporaryDirectory() as tmp_dir_name:
+            ckpt_name = os.path.join(tmp_dir_name, "ckpt")
+            ckpt_name_q = os.path.join(tmp_dir_name, "ckpt.q")
+            test_pred_save = forecaster.predict(test_data[0], acceleration=False)
+            test_pred_save_q = forecaster.predict(test_data[0], quantize=True, acceleration=False)
+            forecaster.save(ckpt_name, ckpt_name_q)
+            forecaster.load(ckpt_name, ckpt_name_q)
+            test_pred_load = forecaster.predict(test_data[0], acceleration=False)
+            test_pred_load_q = forecaster.predict(test_data[0], quantize=True, acceleration=False)
+        np.testing.assert_almost_equal(test_pred_save, test_pred_load)
+        np.testing.assert_almost_equal(test_pred_save_q, test_pred_load_q)
+
+    @op_diff_set_all
+    def test_tcn_forecaster_quantization_normalization_decomposation(self):
+        train_data, val_data, test_data = create_data()
+        forecaster = TCNForecaster(past_seq_len=24,
+                                   future_seq_len=5,
+                                   input_feature_num=1,
+                                   output_feature_num=1,
+                                   kernel_size=4,
+                                   normalization=True,
+                                   decomposition_kernal_size=3,
                                    num_channels=[16, 16],
                                    lr=0.01)
         forecaster.fit(train_data, epochs=2)
@@ -664,6 +844,63 @@ class TestChronosModelTCNForecaster(TestCase):
                                    input_feature_num=1,
                                    output_feature_num=1,
                                    kernel_size=3,
+                                   lr=0.01,
+                                   distributed=True)
+
+        forecaster.fit(train_data, epochs=2)
+        distributed_pred = forecaster.predict(test_data[0], acceleration=False)
+        distributed_eval = forecaster.evaluate(val_data, acceleration=False)
+
+        model = forecaster.get_model()
+        assert isinstance(model, torch.nn.Module)
+
+        forecaster.to_local()
+        local_pred = forecaster.predict(test_data[0], acceleration=False)
+        local_eval = forecaster.evaluate(val_data, acceleration=False)
+
+        np.testing.assert_almost_equal(distributed_pred, local_pred, decimal=5)
+
+        try:
+            import onnx
+            import onnxruntime
+            local_pred_onnx = forecaster.predict_with_onnx(test_data[0])
+            distributed_pred_onnx = forecaster.predict_with_onnx(_test_loader)
+            local_eval_onnx = forecaster.evaluate_with_onnx(val_data)
+            distributed_eval_onnx = forecaster.evaluate_with_onnx(_test_loader)
+            np.testing.assert_almost_equal(distributed_pred, local_pred_onnx, decimal=5)
+        except ImportError:
+            pass
+
+        model = forecaster.get_model()
+        assert isinstance(model, torch.nn.Module)
+
+        with tempfile.TemporaryDirectory() as tmp_dir_name:
+            ckpt_name = os.path.join(tmp_dir_name, "checkpoint.ckpt")
+            test_pred_save = forecaster.predict(test_data[0], acceleration=False)
+            forecaster.save(ckpt_name)
+            forecaster.load(ckpt_name)
+            test_pred_load = forecaster.predict(test_data[0], acceleration=False)
+        np.testing.assert_almost_equal(test_pred_save, test_pred_load)
+
+        stop_orca_context()
+
+    @op_distributed
+    @op_diff_set_all
+    @op_onnxrt16
+    def test_tcn_forecaster_distributed_normalization_decomposation(self):
+        from bigdl.orca import init_orca_context, stop_orca_context
+        train_data, val_data, test_data = create_data()
+        _train_loader, _, _test_loader = create_data(loader=True)
+
+        init_orca_context(cores=4, memory="2g")
+
+        forecaster = TCNForecaster(past_seq_len=24,
+                                   future_seq_len=5,
+                                   input_feature_num=1,
+                                   output_feature_num=1,
+                                   kernel_size=3,
+                                   normalization=True,
+                                   decomposition_kernal_size=3,
                                    lr=0.01,
                                    distributed=True)
 
@@ -1066,3 +1303,50 @@ class TestChronosModelTCNForecaster(TestCase):
                             batch_size=32)
         forecaster.evaluate(val_loader)
         forecaster.predict(test_loader)
+
+    def test_tcn_forecaster_eval_shuffle_loader(self):
+        from torch.utils.data import DataLoader, TensorDataset
+        from numpy.testing import assert_almost_equal
+        train_data, val_data, test_data = create_data()
+        forecaster = TCNForecaster(past_seq_len=24,
+                                   future_seq_len=5,
+                                   input_feature_num=1,
+                                   output_feature_num=1,
+                                   loss="mse",
+                                   lr=0.01)
+        forecaster.fit(train_data, epochs=2)
+        test_loader_shuffle_f = DataLoader(TensorDataset(torch.from_numpy(test_data[0]),
+                                                         torch.from_numpy(test_data[1])),
+                                           batch_size=32,
+                                           shuffle=False)
+        test_loader_shuffle_t = DataLoader(TensorDataset(torch.from_numpy(test_data[0]),
+                                                         torch.from_numpy(test_data[1])),
+                                           batch_size=32,
+                                           shuffle=True)
+        eval_f = forecaster.evaluate(test_loader_shuffle_f)
+        eval_t = forecaster.evaluate(test_loader_shuffle_t)
+        assert_almost_equal(eval_f, eval_t)
+
+    @op_onnxrt16
+    def test_tcn_forecaster_eval_with_onnx_shuffle_loader(self):
+        from torch.utils.data import DataLoader, TensorDataset
+        from numpy.testing import assert_almost_equal
+        train_data, val_data, test_data = create_data()
+        forecaster = TCNForecaster(past_seq_len=24,
+                                   future_seq_len=5,
+                                   input_feature_num=1,
+                                   output_feature_num=1,
+                                   loss="mse",
+                                   lr=0.01)
+        forecaster.fit(train_data, epochs=2)
+        test_loader_shuffle_f = DataLoader(TensorDataset(torch.from_numpy(test_data[0]),
+                                                         torch.from_numpy(test_data[1])),
+                                           batch_size=32,
+                                           shuffle=False)
+        test_loader_shuffle_t = DataLoader(TensorDataset(torch.from_numpy(test_data[0]),
+                                                         torch.from_numpy(test_data[1])),
+                                           batch_size=32,
+                                           shuffle=True)
+        eval_f = forecaster.evaluate_with_onnx(test_loader_shuffle_f)
+        eval_t = forecaster.evaluate_with_onnx(test_loader_shuffle_t)
+        assert_almost_equal(eval_f, eval_t)

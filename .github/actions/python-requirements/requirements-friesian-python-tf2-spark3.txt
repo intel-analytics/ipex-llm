@@ -19,8 +19,7 @@ h5py
 fsspec==2021.9.0
 scikit-optimize==0.8.1
 pandas==1.1.5
-tensorflow==2.6.2 
+tensorflow==2.6.2
 ray[default]==1.9.1
 sentence-transformers
 deepctr_torch
-deepctr

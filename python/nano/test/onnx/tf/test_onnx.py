@@ -29,7 +29,7 @@ class TestONNX(TestCase):
 
         # trace a Keras model
         spec = tf.TensorSpec((None, 224, 224, 3), tf.float32)
-        onnx_model = model.trace(accelerator='onnxruntime', input_sample=spec)
+        onnx_model = model.trace(accelerator='onnxruntime', input_sample=spec, thread_num=4)
 
         y_hat = onnx_model(input_examples[:10])
         assert y_hat.shape == (10, 10)

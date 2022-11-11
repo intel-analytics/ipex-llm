@@ -16,7 +16,6 @@ export kmsIP=your_kms_ip_to_use_as
 export apiKey=your_intel_pcs_server_subscription_key_obtained_through_web_registeration # Refer to README for obtaining pcs api key
 # The below three service IPs are different IP addresses that unused in your subnetwork
 # Please do not use the same real IPs as nodes
-export httpsProxyUrl=your_usable_https_proxy_url
 export countryName=your_country_name
 export cityName=your_city_name
 export organizaitonName=your_organizaition_name
