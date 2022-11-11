@@ -83,15 +83,10 @@ class BasePytorchForecaster(Forecaster):
                 optimizer = self.optimizer_creator(model, self.optim_config)
                 self.internal = Trainer.compile(model=model, loss=loss,
                                                 optimizer=optimizer)
-            self.onnxruntime_fp32 = None  # onnxruntime session for fp32 precision
-            self.openvino_fp32 = None  # placeholader openvino session for fp32 precision
-            self.jit_fp32 = None  # placeholader jit session for fp32 precision
-            self.onnxruntime_int8 = None  # onnxruntime session for int8 precision
-            self.openvino_int8 = None  # placeholader openvino session for int8 precision
-            self.jit_int8 = None  # placeholader jit session for int8 precision
-            self.pytorch_int8 = None  # pytorch model for int8 precision
-            self.optim_model = None  # accelarated model obtained from .optimize()
-            self.metadata = None  # str indicates model type of optim_model
+           
+            self.accelerated_model = None  # placeholder for accelerated model obtained from various accelerators
+            self.accelerate_method = None  # str indicates current accelerate method
+            self.metadata = None  # str indicates model type of the best model obtained from .optimize()
 
     def _build_automodel(self, data, validation_data=None, batch_size=32, epochs=1):
         """Build a Generic Model using config parameters."""
@@ -610,8 +605,9 @@ class BasePytorchForecaster(Forecaster):
                 accelerator=accelerator,
                 precision=precision,
                 accuracy_criterion=accuracy_criterion)
-            self.optim_model = optim_model
-            self.metadata = option  # represent which model is stored in self.optim_model
+            self.accelerated_model = optim_model
+            self.accelerate_method = "optimize"
+            self.metadata = option  # represent model type of the best model
         except Exception:
             invalidInputError(False, "Unable to find an optimized model that meets your conditions."
                               "Maybe you can relax your search limit.")
@@ -700,18 +696,22 @@ class BasePytorchForecaster(Forecaster):
                 invalidInputError(False,
                                   "You must call fit or restore first before calling predict!")
             if quantize:
-                yhat = _pytorch_fashion_inference(model=self.pytorch_int8,
+                if self.accelerate_method != "pytorch_int8":
+                    invalidInputError(False,
+                                      "Can't find the quantized model, "
+                                      "please call .quantize() method first")
+                yhat = _pytorch_fashion_inference(model=self.accelerated_model,
                                                   input_data=data,
                                                   batch_size=batch_size)
             else:
-                if acceleration is False or self.optim_model is None:
+                if acceleration is False or self.accelerate_method != "optimize":
                     self.internal.eval()
                     yhat = _pytorch_fashion_inference(model=self.internal,
                                                       input_data=data,
                                                       batch_size=batch_size)
                 else:
-                    self.optim_model.eval()
-                    yhat = _pytorch_fashion_inference(model=self.optim_model,
+                    self.accelerated_model.eval()
+                    yhat = _pytorch_fashion_inference(model=self.accelerated_model,
                                                       input_data=data,
                                                       batch_size=batch_size)
             if not is_local_data:
@@ -773,13 +773,17 @@ class BasePytorchForecaster(Forecaster):
                                              target_col=data.roll_target,
                                              shuffle=False)
         if quantize:
-            return _pytorch_fashion_inference(model=self.onnxruntime_int8,
+            if self.accelerate_method != "onnxruntime_int8":
+                    invalidInputError(False,
+                                      "Can't find the quantized model,"
+                                      "please call .quantize() method first")
+            return _pytorch_fashion_inference(model=self.accelerated_model,
                                               input_data=data,
                                               batch_size=batch_size)
         else:
-            if self.onnxruntime_fp32 is None:
+            if self.accelerate_method != "onnxruntime_fp32":
                 self.build_onnx()
-            return _pytorch_fashion_inference(model=self.onnxruntime_fp32,
+            return _pytorch_fashion_inference(model=self.accelerated_model,
                                               input_data=data,
                                               batch_size=batch_size)
 
@@ -841,13 +845,17 @@ class BasePytorchForecaster(Forecaster):
                                              shuffle=False)
 
         if quantize:
-            return _pytorch_fashion_inference(model=self.openvino_int8,
+            if self.accelerate_method != "openvino_int8":
+                    invalidInputError(False,
+                                      "Can't find the quantized model,"
+                                      "please call .quantize() method first")
+            return _pytorch_fashion_inference(model=self.accelerated_model,
                                               input_data=data,
                                               batch_size=batch_size)
         else:
-            if self.openvino_fp32 is None:
+            if self.accelerate_method != "openvino_fp32":
                 self.build_openvino()
-            return _pytorch_fashion_inference(model=self.openvino_fp32,
+            return _pytorch_fashion_inference(model=self.accelerated_model,
                                               input_data=data,
                                               batch_size=batch_size)
 
@@ -909,13 +917,17 @@ class BasePytorchForecaster(Forecaster):
                                              shuffle=False)
 
         if quantize and False:
-            return _pytorch_fashion_inference(model=self.jit_int8,
+            if self.accelerate_method != "jit_int8":
+                    invalidInputError(False,
+                                      "Can't find the quantized model,"
+                                      "please call .quantize() method first")
+            return _pytorch_fashion_inference(model=self.accelerated_model,
                                               input_data=data,
                                               batch_size=batch_size)
         else:
-            if self.jit_fp32 is None:
+            if self.accelerate_method != "jit_fp32":
                 self.build_jit()
-            return _pytorch_fashion_inference(model=self.jit_fp32,
+            return _pytorch_fashion_inference(model=self.accelerated_model,
                                               input_data=data,
                                               batch_size=batch_size)
 
@@ -1019,18 +1031,22 @@ class BasePytorchForecaster(Forecaster):
             else:
                 input_data, target = data
             if quantize:
-                yhat = _pytorch_fashion_inference(model=self.pytorch_int8,
+                if self.accelerate_method != "pytorch_int8":
+                    invalidInputError(False,
+                                      "Can't find the quantized model,"
+                                      "please call .quantize() method first")
+                yhat = _pytorch_fashion_inference(model=self.accelerated_model,
                                                   input_data=input_data,
                                                   batch_size=batch_size)
             else:
-                if acceleration is False or self.optim_model is None:
+                if acceleration is False or self.accelerate_method != "optimize":
                     self.internal.eval()
                     yhat = _pytorch_fashion_inference(model=self.internal,
                                                       input_data=input_data,
                                                       batch_size=batch_size)
                 else:
-                    self.optim_model.eval()
-                    yhat = _pytorch_fashion_inference(model=self.optim_model,
+                    self.accelerated_model.eval()
+                    yhat = _pytorch_fashion_inference(model=self.accelerated_model,
                                                       input_data=input_data,
                                                       batch_size=batch_size)
 
@@ -1127,13 +1143,17 @@ class BasePytorchForecaster(Forecaster):
         else:
             input_data, target = data
         if quantize:
-            yhat = _pytorch_fashion_inference(model=self.onnxruntime_int8,
+            if self.accelerate_method != "onnxruntime_int8":
+                    invalidInputError(False,
+                                      "Can't find the quantized model,"
+                                      "please call .quantize() method first")
+            yhat = _pytorch_fashion_inference(model=self.accelerated_model,
                                               input_data=input_data,
                                               batch_size=batch_size)
         else:
-            if self.onnxruntime_fp32 is None:
+            if self.accelerate_method != "onnxruntime_fp32":
                 self.build_onnx()
-            yhat = _pytorch_fashion_inference(model=self.onnxruntime_fp32,
+            yhat = _pytorch_fashion_inference(model=self.accelerated_model,
                                               input_data=input_data,
                                               batch_size=batch_size)
 
@@ -1299,9 +1319,9 @@ class BasePytorchForecaster(Forecaster):
                 self.trainer.model = self.internal
             self.trainer.save_checkpoint(checkpoint_file)  # save current status
             if quantize_checkpoint_file:
-                try:
-                    Trainer.save(self.pytorch_int8, quantize_checkpoint_file)
-                except RuntimeError:
+                if self.accelerate_method == "pytorch_int8":
+                    Trainer.save(self.accelerated_model, quantize_checkpoint_file)
+                else:
                     warnings.warn("Please call .quantize() method to build "
                                   "an up-to-date quantized model")
 
@@ -1338,8 +1358,9 @@ class BasePytorchForecaster(Forecaster):
             self.fitted = True
             if quantize_checkpoint_file:
                 # self.internal.load_quantized_state_dict(torch.load(quantize_checkpoint_file))
-                self.pytorch_int8 = Trainer.load(quantize_checkpoint_file,
+                self.accelerated_model = Trainer.load(quantize_checkpoint_file,
                                                  self.internal)
+                self.accelerate_method =  "pytorch_int8"                                            
             # This trainer is only for quantization, once the user call `fit`, it will be
             # replaced according to the new training config
             self.trainer = Trainer(logger=False, max_epochs=1,
@@ -1380,13 +1401,15 @@ class BasePytorchForecaster(Forecaster):
 
         self.distributed = False
         self.fitted = True
-        self.onnxruntime_fp32 = None  # onnxruntime session for fp32 precision
-        self.openvino_fp32 = None  # openvino session for fp32 precision
-        self.jit_fp32 = None  # jit session for fp32 precision
-        self.onnxruntime_int8 = None  # onnxruntime session for int8 precision
-        self.openvino_int8 = None  # openvino session for int8 precision
-        self.jit_int8 = None  # jit session for int8 precision
-        self.pytorch_int8 = None  # pytorch model for int8 precision
+        # self.onnxruntime_fp32 = None  # onnxruntime session for fp32 precision
+        # self.openvino_fp32 = None  # openvino session for fp32 precision
+        # self.jit_fp32 = None  # jit session for fp32 precision
+        # self.onnxruntime_int8 = None  # onnxruntime session for int8 precision
+        # self.openvino_int8 = None  # openvino session for int8 precision
+        # self.jit_int8 = None  # jit session for int8 precision
+        # self.pytorch_int8 = None  # pytorch model for int8 precision
+        self.accelerated_model = None  # placeholder for accelerated model obtained from various accelerators
+        self.accelerate_method = None  # str indicates current accelerate method
         return self
 
     def get_model(self):
@@ -1444,10 +1467,11 @@ class BasePytorchForecaster(Forecaster):
                               "forecaster to a non-distributed version.")
         dummy_input = torch.rand(1, self.data_config["past_seq_len"],
                                  self.data_config["input_feature_num"])
-        self.onnxruntime_fp32 = InferenceOptimizer.trace(self.internal,
+        self.accelerated_model = InferenceOptimizer.trace(self.internal,
                                                          input_sample=dummy_input,
                                                          accelerator="onnxruntime",
                                                          onnxruntime_session_options=sess_options)
+        self.accelerate_method = "onnxruntime_fp32"
 
     def build_openvino(self, thread_num=None):
         '''
@@ -1473,10 +1497,11 @@ class BasePytorchForecaster(Forecaster):
                               "forecaster to a non-distributed version.")
         dummy_input = torch.rand(1, self.data_config["past_seq_len"],
                                  self.data_config["input_feature_num"])
-        self.openvino_fp32 = InferenceOptimizer.trace(self.internal,
+        self.accelerated_model = InferenceOptimizer.trace(self.internal,
                                                       input_sample=dummy_input,
                                                       accelerator="openvino",
                                                       thread_num=thread_num)
+        self.accelerate_method = "openvino_fp32"                                                      
 
     def build_jit(self, thread_num=None, use_ipex=False):
         '''
@@ -1506,12 +1531,13 @@ class BasePytorchForecaster(Forecaster):
                               "forecaster to a non-distributed version.")
         dummy_input = torch.rand(1, self.data_config["past_seq_len"],
                                  self.data_config["input_feature_num"])
-        self.jit_fp32 = InferenceOptimizer.trace(self.internal,
+        self.accelerated_model = InferenceOptimizer.trace(self.internal,
                                                  input_sample=dummy_input,
                                                  accelerator="jit",
                                                  use_ipex=use_ipex,
                                                  channels_last=False,
                                                  thread_num=thread_num)
+        self.accelerate_method = "jit_fp32"                                                 
 
     def export_onnx_file(self, dirname="fp32_onnx", quantized_dirname=None):
         """
@@ -1527,12 +1553,12 @@ class BasePytorchForecaster(Forecaster):
                               "export_onnx_file has not been supported for distributed "
                               "forecaster. You can call .to_local() to transform the "
                               "forecaster to a non-distributed version.")
-        if quantized_dirname and self.onnxruntime_int8:
-            InferenceOptimizer.save(self.onnxruntime_int8, quantized_dirname)
+        if quantized_dirname and self.accelerate_method == "onnxruntime_int8":
+            InferenceOptimizer.save(self.accelerated_model, quantized_dirname)
         if dirname:
-            if self.onnxruntime_fp32 is None:
+            if self.accelerate_method != "onnxruntime_fp32":
                 self.build_onnx()
-            InferenceOptimizer.save(self.onnxruntime_fp32, dirname)
+            InferenceOptimizer.save(self.accelerated_model, dirname)
 
     def export_openvino_file(self, dirname="fp32_openvino",
                              quantized_dirname=None):
@@ -1549,12 +1575,12 @@ class BasePytorchForecaster(Forecaster):
                               "export_openvino_file has not been supported for distributed "
                               "forecaster. You can call .to_local() to transform the "
                               "forecaster to a non-distributed version.")
-        if quantized_dirname and self.openvino_int8:
-            InferenceOptimizer.save(self.openvino_int8, quantized_dirname)
+        if quantized_dirname and self.accelerate_method == "openvino_int8":
+            InferenceOptimizer.save(self.accelerated_model, quantized_dirname)
         if dirname:
-            if self.openvino_fp32 is None:
+            if self.accelerate_method != "openvino_fp32":
                 self.build_openvino()
-            InferenceOptimizer.save(self.openvino_fp32, dirname)
+            InferenceOptimizer.save(self.accelerated_model, dirname)
 
     def export_torchscript_file(self, dirname="fp32_torchscript",
                                 quantized_dirname=None):
@@ -1571,12 +1597,12 @@ class BasePytorchForecaster(Forecaster):
                               "export_torchscript_file has not been supported for distributed "
                               "forecaster. You can call .to_local() to transform the "
                               "forecaster to a non-distributed version.")
-        if quantized_dirname and self.jit_int8:
-            InferenceOptimizer.save(self.jit_int8, quantized_dirname)
+        if quantized_dirname and self.accelerate_method == "jit_int8":
+            InferenceOptimizer.save(self.accelerated_model, quantized_dirname)
         if dirname:
-            if self.jit_fp32 is None:
+            if self.accelerate_method != "jit_fp32":
                 self.build_jit()
-            InferenceOptimizer.save(self.jit_fp32, dirname)
+            InferenceOptimizer.save(self.accelerated_model, dirname)
 
     def quantize(self, calib_data=None,
                  val_data=None,
@@ -1752,11 +1778,14 @@ class BasePytorchForecaster(Forecaster):
                                                   max_trials=max_trials,
                                                   onnxruntime_session_options=sess_options)
             if accelerator == 'onnxruntime':
-                self.onnxruntime_int8 = q_model
+                self.accelerated_model = q_model
+                self.accelerate_method = "onnxruntime_int8"
             if accelerator == 'openvino':
-                self.openvino_int8 = q_model
+                self.accelerated_model = q_model
+                self.accelerate_method = "openvino_int8"
             if accelerator is None:
-                self.pytorch_int8 = q_model
+                self.accelerated_model = q_model
+                self.accelerate_method = "pytorch_int8"
 
     @classmethod
     def from_tsdataset(cls, tsdataset, past_seq_len=None, future_seq_len=None, **kwargs):
