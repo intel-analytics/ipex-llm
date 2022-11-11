@@ -17,8 +17,10 @@
 # Step 0: Import necessary libraries
 import torch.nn as nn
 import torch.optim as optim
+import torch.utils.data as data
+from sklearn.model_selection import train_test_split
 
-from pytorch_dataset import train_loader_func, test_loader_func, load_dataset
+from pytorch_dataset import NCFData, load_dataset
 from pytorch_model import NCF
 
 from bigdl.orca import init_orca_context, stop_orca_context
@@ -30,9 +32,38 @@ from bigdl.orca.learn.metrics import Accuracy, Precision, Recall
 sc = init_orca_context()
 
 
-# Step 2: Define the model, optimizer and loss
+# Step 2: Define train and test datasets as PyTorch DataLoader
+def train_loader_func(config, batch_size):
+    data_X, user_num, item_num, train_mat = load_dataset(config['dataset_dir'])
+    data_X = data_X.values.tolist()
+
+    # train test split
+    train_data, _ = train_test_split(data_X, test_size=0.2, random_state=100)
+
+    train_dataset = NCFData(train_data, item_num, train_mat, config['num_ng'])
+    train_dataset.ng_sample()
+    train_loader = data.DataLoader(train_dataset, batch_size=batch_size,
+                                   shuffle=True, num_workers=0)
+    return train_loader
+
+
+def test_loader_func(config, batch_size):
+    data_X, user_num, item_num, train_mat = load_dataset(config['dataset_dir'])
+    data_X = data_X.values.tolist()
+
+    # train test split
+    _, test_data = train_test_split(data_X, test_size=0.2, random_state=100)
+
+    test_dataset = NCFData(test_data, item_num, train_mat, config['num_ng'])
+    test_dataset.ng_sample()
+    test_loader = data.DataLoader(test_dataset, batch_size=batch_size,
+                                  shuffle=False, num_workers=0)
+    return test_loader
+
+
+# Step 3: Define the model, optimizer and loss
 def model_creator(config):
-    _, user_num, item_num = load_dataset(config['dataset_dir'])
+    data_X, user_num, item_num, train_mat = load_dataset(config['dataset_dir'])
     model = NCF(user_num, item_num,
                 factor_num=config['factor_num'],
                 num_layers=config['num_layers'],
@@ -48,7 +79,7 @@ def optimizer_creator(model, config):
 loss = nn.BCEWithLogitsLoss()
 
 
-# Step 3: Distributed training with Orca PyTorch Estimator
+# Step 4: Distributed training with Orca PyTorch Estimator
 dataset_dir = "./ml-1m"
 backend = "ray"  # "ray" or "spark"
 
@@ -66,16 +97,16 @@ est = Estimator.from_torch(model=model_creator, optimizer=optimizer_creator,
 est.fit(data=train_loader_func, epochs=10, batch_size=256)
 
 
-# Step 4: Distributed evaluation of the trained model
+# Step 5: Distributed evaluation of the trained model
 result = est.evaluate(data=test_loader_func, batch_size=256)
 print('Evaluation results:')
 for r in result:
     print(r, ":", result[r])
 
 
-# Step 5: Save the trained PyTorch model
+# Step 6: Save the trained PyTorch model
 est.save("NCF_model")
 
 
-# Step 6: Stop Orca Context when program finishes
+# Step 7: Stop Orca Context when program finishes
 stop_orca_context()
