@@ -38,6 +38,7 @@ from bigdl.nano.utils.inference.pytorch.dataset import RepeatDataset, remove_bat
 from bigdl.nano.utils.inference.pytorch.dataloader import\
     transform_multiple_input_dataloader_to_inc_mode
 from bigdl.nano.pytorch.utils import TORCH_VERSION_LESS_1_10, save_model, load_model
+import traceback
 import warnings
 # Filter out useless Userwarnings
 warnings.filterwarnings('ignore', category=UserWarning, module='pytorch_lightning')
@@ -275,7 +276,7 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                                                  logging=logging,
                                                  sample_size_for_pot=sample_size_for_pot)
                 except Exception as e:
-                    print(e)
+                    traceback.print_exc()
                     result_map[method]["status"] = "fail to convert"
                     print(f"----------Failed to convert to {method}----------")
                     continue
@@ -299,7 +300,7 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                         torch.set_num_threads(default_threads)
                         continue
                 except Exception as e:
-                    print(e)
+                    traceback.print_exc()
                     result_map[method]["status"] = "fail to forward"
                     print(f"----------{method} failed to forward----------")
                     torch.set_num_threads(default_threads)
@@ -319,7 +320,7 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                                     _accuracy_calculate_helper(acce_model, metric,
                                                                validation_data)
                             except Exception as e:
-                                print(e)
+                                traceback.print_exc()
                                 self._calculate_accuracy = False
                                 invalidInputError(
                                     False,
