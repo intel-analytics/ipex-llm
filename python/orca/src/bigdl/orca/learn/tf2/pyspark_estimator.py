@@ -522,7 +522,7 @@ class SparkTFEstimator():
         self.model_weights = model.get_weights()
         if self.model_creator is None:
             self.load_path = filepath
-            if self.load_path.endswith('.h5') or self.load_path.endswith('.keras'):
+            if is_file(self.load_path):
                 sc.addFile(self.load_path, recursive=False)
             else:
                 sc.addFile(self.load_path, recursive=True)
