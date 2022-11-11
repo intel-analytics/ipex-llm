@@ -17,7 +17,6 @@
 import os
 import time
 import tensorflow as tf
-from copy import deepcopy
 from typing import Dict, Optional, List
 from bigdl.nano.utils.inference.common.base_optimizer import BaseInferenceOptimizer
 from bigdl.nano.utils.inference.common.checker import available_acceleration_combination

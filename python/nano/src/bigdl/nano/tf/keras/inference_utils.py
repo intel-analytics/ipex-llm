@@ -38,7 +38,7 @@ class InferenceUtils:
                  tuning_strategy: Optional[str] = None,
                  timeout: Optional[int] = None,
                  max_trials: Optional[int] = None,
-                 batch: Optional[int] =None,
+                 batch: Optional[int] = None,
                  thread_num: Optional[int] = None,
                  inputs: List[str] = None,
                  outputs: List[str] = None,
