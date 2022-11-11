@@ -36,7 +36,7 @@ from bigdl.orca import OrcaContext
 spark = OrcaContext.get_spark_session()
 
 num_users, num_items = 200, 100
-rdd = sc.range(0, 512).map(
+rdd = sc.range(0, 5120).map(
     lambda x: [random.randint(0, num_users-1), random.randint(0, num_items-1), random.randint(0, 1)])
 schema = StructType([StructField("user", IntegerType(), False),
                      StructField("item", IntegerType(), False),
