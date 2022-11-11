@@ -58,7 +58,10 @@ class KerasNumpyDataset():
         self.dtype = dtype      # the dtype of dataset and model must be exactly the same
 
     def __len__(self):
-        return len(self.dataset)
+        try:
+            return len(self.dataset)
+        except TypeError:
+            return len(list(self.dataset.as_numpy_iterator()))
 
     def __iter__(self):
         for batch in self.dataset:

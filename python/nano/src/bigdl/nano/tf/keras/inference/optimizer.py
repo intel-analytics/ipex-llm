@@ -17,6 +17,7 @@
 import os
 import time
 import tensorflow as tf
+from copy import deepcopy
 from typing import Dict, Optional, List
 from bigdl.nano.utils.inference.common.base_optimizer import BaseInferenceOptimizer
 from bigdl.nano.utils.inference.common.checker import available_acceleration_combination
@@ -34,14 +35,17 @@ class InferenceOptimizer(BaseInferenceOptimizer):
     # acceleration method combinations, developers may want to register some new
     # combinations here
     ALL_INFERENCE_ACCELERATION_METHOD: Dict = \
-        {  # type: ignore
+        {
             "original": AccelerationOption(),
             "int8": AccelerationOption(inc=True),
             "openvino_fp32": AccelerationOption(openvino=True),
-            # "openvino_int8": AccelerationOption(openvino=True, pot=True),
+            "openvino_int8": AccelerationOption(openvino=True, pot=True),
             "onnxruntime_fp32": AccelerationOption(onnxruntime=True),
-            # "onnxruntime_int8": AccelerationOption(onnxruntime=True, inc=True),
-        }  # type: ignore
+            "onnxruntime_int8_qlinear": AccelerationOption(onnxruntime=True, inc=True,
+                                                           method="qlinear"),
+            "onnxruntime_int8_integer": AccelerationOption(onnxruntime=True, inc=True,
+                                                           method="integer"),
+        }
 
     def optimize(self, model: Model,
                  training_data: Dataset,
@@ -62,11 +66,11 @@ class InferenceOptimizer(BaseInferenceOptimizer):
         The available methods are "original", "openvino_fp32", "onnxruntime_fp32", "int8".
 
         :param model: A keras.Model to be optimized
-        :param training_data: A tf.data.Dataset object for for training dataset.
+        :param training_data: An unbatched tf.data.Dataset object for for training dataset.
                Users should be careful with this parameter since this dataloader
                might be exposed to the model, which causing data leak.
-        :param validation_data: (optional) A tf.data.Dataset object for accuracy evaluation.
-               This is only needed when users care about the possible accuracy drop.
+        :param validation_data: (optional) An unbatched tf.data.Dataset object for accuracy
+               evaluation. This is only needed when users care about the possible accuracy drop.
         :param metric: (optional) A tensorflow.keras.metrics.Metric object which is used for
                calculating accuracy.
         :param direction: (optional) A string that indicates the higher/lower
@@ -117,9 +121,7 @@ class InferenceOptimizer(BaseInferenceOptimizer):
 
         result_map: Dict[str, Dict] = {}
 
-        # make sure dataset don't have batch
         training_data = training_data.batch(batch_size)
-
         input_sample = next(iter(training_data))
         # TODO: how to obtain input from output of training_data
         input_sample = input_sample[:-1]
@@ -137,6 +139,10 @@ class InferenceOptimizer(BaseInferenceOptimizer):
             invalidInputError(False,
                               "training_data is incompatible with your model input.")
         baseline_time = time.perf_counter() - st
+        if baseline_time > 0.1:  # 100ms
+            sample_size_for_pot = 15
+        else:
+            sample_size_for_pot = 100
 
         print("==========================Start Optimization==========================")
         start_time = time.perf_counter()
@@ -146,7 +152,7 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                 result_map[method]["status"] = "lack dependency"
             else:
                 print(f"----------Start test {method} model "
-                      f"({idx+1}/{len(self.ALL_INFERENCE_ACCELERATION_METHOD)})----------")
+                      f"({idx+1}/{len(available_dict)})----------")
                 option: AccelerationOption = self.ALL_INFERENCE_ACCELERATION_METHOD[method]
                 precision: str = option.get_precision()
                 accelerator: str = option.get_accelerator()
@@ -170,38 +176,39 @@ class InferenceOptimizer(BaseInferenceOptimizer):
 
                 # if precision is int8 or bf16, then we will use quantize method
                 elif precision == 'int8':
-                    # ort_method: str = option.method
-                    try:
-                        acce_model = model.quantize(precision=precision,
-                                                    accelerator=accelerator,
-                                                    calib_dataset=training_data,
-                                                    # method=ort_method,
-                                                    # thread_num=thread_num,
-                                                    # sample_size=sample_size_for_pot,
-                                                    # remove output of openvino
-                                                    logging=logging)
-                    except Exception as e:
-                        print(e)
-                        result_map[method]["status"] = "fail to convert"
-                        print(f"----------Failed to convert to {method}----------")
-                        continue
+                    ort_method: Optional[str] = option.method
+                    # try:
+                    acce_model = model.quantize(precision=precision,
+                                                accelerator=accelerator,
+                                                calib_dataset=training_data.unbatch(),
+                                                method=ort_method,
+                                                thread_num=thread_num,
+                                                sample_size=sample_size_for_pot,
+                                                # remove output of openvino
+                                                logging=logging)
+                    # except Exception as e:
+                    #     print(e)
+                    #     result_map[method]["status"] = "fail to convert"
+                    #     print(f"----------Failed to convert to {method}----------")
+                    #     continue
 
                 result_map[method]["status"] = "successful"
 
-                def func_test(model, input_sample):
-                    model(input_sample)
-
-                try:
-                    result_map[method]["latency"], status =\
-                        throughput_calculate_helper(latency_sample_num, baseline_time,
-                                                    func_test, acce_model, input_sample)
-                    if status is False and method != "original":
-                        result_map[method]["status"] = "early stopped"
-                        continue
-                except Exception as e:
-                    result_map[method]["status"] = "fail to forward"
-                    print(f"----------{method} failed to forward----------")
+                def func_test(model, sample):
+                    model(sample)
+                print("input sample:")
+                print(type(input_sample))
+                # try:
+                result_map[method]["latency"], status =\
+                    throughput_calculate_helper(latency_sample_num, baseline_time,
+                                                func_test, acce_model, input_sample)
+                if status is False and method != "original":
+                    result_map[method]["status"] = "early stopped"
                     continue
+                # except Exception as e:
+                #     result_map[method]["status"] = "fail to forward"
+                #     print(f"----------{method} failed to forward----------")
+                #     continue
 
                 if self._calculate_accuracy:
                     # here we suppose trace don't change accuracy,
@@ -225,9 +232,12 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                 else:
                     result_map[method]["accuracy"] = None
 
+                print("input sample:")
+                print(type(input_sample))
+
                 result_map[method]["model"] = acce_model
                 print(f"----------Finish test {method} model "
-                      f"({idx+1}/{len(self.ALL_INFERENCE_ACCELERATION_METHOD)})----------")
+                      f"({idx+1}/{len(available_dict)})----------")
 
         self.optimized_model_dict: Dict = result_map
         print("\n\n==========================Optimization Results==========================")

@@ -50,4 +50,7 @@ class KerasOpenVINODataLoader(DataLoader):
         return data
 
     def __len__(self):
-        return len(self.dataset)
+        try:
+            return len(self.dataset)
+        except TypeError:
+            return len(list(self.dataset.as_numpy_iterator()))

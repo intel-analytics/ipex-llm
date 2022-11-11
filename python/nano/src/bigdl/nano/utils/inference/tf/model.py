@@ -34,6 +34,8 @@ class AcceleratedKerasModel(AcceleratedModel, tf.keras.Model):
         return super().__call__(*args, **kwds)
 
     def call(self, *inputs):
+        print(__file__)
+        print(inputs)
         return tf.py_function(self.forward, inputs, Tout=tf.float32)
 
     def forward(self, *inputs):
