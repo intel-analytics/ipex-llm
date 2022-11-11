@@ -14,7 +14,7 @@
 # limitations under the License.
 #
 from unittest import TestCase
-from bigdl.chronos.model.Seq2Seq_pytorch import Seq2SeqPytorch
+from .. import op_distributed
 import numpy as np
 import tempfile
 import os
@@ -41,7 +41,9 @@ def create_data():
     return train_data, val_data, test_data
 
 
+@op_distributed
 class TestSeq2SeqPytorch(TestCase):
+    from bigdl.chronos.model.Seq2Seq_pytorch import Seq2SeqPytorch
     train_data, val_data, test_data = create_data()
 
     def test_s2s_fit_evaluate(self):

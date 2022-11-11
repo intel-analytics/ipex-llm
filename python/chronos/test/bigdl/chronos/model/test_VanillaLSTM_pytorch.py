@@ -16,7 +16,7 @@
 
 import pytest
 from unittest import TestCase
-from bigdl.chronos.model.VanillaLSTM_pytorch import VanillaLSTMPytorch
+from .. import op_distributed
 import numpy as np
 import tempfile
 import os
@@ -43,7 +43,9 @@ def create_data(loader=False):
     return train_data, val_data, test_data
 
 
+@op_distributed
 class TestVanillaLSTMPytorch(TestCase):
+    from bigdl.chronos.model.VanillaLSTM_pytorch import VanillaLSTMPytorch
     train_data, val_data, test_data = create_data()
 
     model = VanillaLSTMPytorch()

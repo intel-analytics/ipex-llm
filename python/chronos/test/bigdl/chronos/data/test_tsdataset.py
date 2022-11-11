@@ -26,7 +26,9 @@ from bigdl.chronos.data import TSDataset
 
 from pandas.testing import assert_frame_equal
 from numpy.testing import assert_array_almost_equal
-import tensorflow as tf
+from bigdl.chronos.utils import LazyImport
+tf = LazyImport('tensorflow')
+from .. import op_tf2
 
 def get_ts_df():
     sample_num = np.random.randint(100, 200)
@@ -639,7 +641,7 @@ class TestTSDataset(TestCase):
 
         tsdata._check_basic_invariants()
 
-    @pytest.mark.skipif(tf.__version__ < '2.0.0', reason="run only when tf>2.0.0")
+    @op_tf2
     def test_tsdata_to_tf_dataset(self):
         df = get_ts_df()
         batch_size, lookback, horizon = 32, 10, 1

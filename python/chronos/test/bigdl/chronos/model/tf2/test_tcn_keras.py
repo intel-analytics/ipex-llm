@@ -17,10 +17,9 @@
 import tempfile
 import numpy as np
 import pytest
-import tensorflow as tf
+from ... import op_tf2
 
 from unittest import TestCase
-from bigdl.chronos.model.tf2.TCN_keras import model_creator, TemporalConvNet, TemporalBlock
 
 
 def create_data():
@@ -39,8 +38,10 @@ def create_data():
     test_data = get_x_y(test_num_samples)
     return train_data, test_data
 
-@pytest.mark.skipif(tf.__version__ < '2.0.0', reason="Run only when tf>2.0.0.")
+@op_tf2
 class TestTcnKeras(TestCase):
+    import tensorflow as tf
+    from bigdl.chronos.model.tf2.TCN_keras import model_creator, TemporalConvNet, TemporalBlock
 
     def setUp(self):
         pass

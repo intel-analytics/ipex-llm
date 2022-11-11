@@ -23,8 +23,7 @@ import os
 from unittest import TestCase
 from bigdl.chronos.data import TSDataset
 from bigdl.chronos.data.experimental import XShardsTSDataset
-from bigdl.orca.data.pandas import read_csv
-from bigdl.orca.common import init_orca_context, stop_orca_context, OrcaContext
+from ... import op_distributed
 
 from pandas.testing import assert_frame_equal
 from numpy.testing import assert_array_almost_equal
@@ -57,7 +56,10 @@ def get_ugly_ts_df():
     df["id"] = np.array(['00']*50 + ['01']*50)
     return df
 
+@op_distributed
 class TestXShardsTSDataset(TestCase):
+    from bigdl.orca.data.pandas import read_csv
+    from bigdl.orca.common import init_orca_context, stop_orca_context, OrcaContext
 
     def setUp(self):
         # In read_csv module, the initialized sc cannot be used normally

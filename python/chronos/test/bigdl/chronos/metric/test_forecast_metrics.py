@@ -22,7 +22,7 @@ from numpy.testing import assert_almost_equal
 from numpy.testing import assert_array_almost_equal
 
 from bigdl.chronos.metric.forecast_metrics import Evaluator
-from bigdl.orca.automl.metrics import sMAPE
+from .. import op_distributed
 
 class TestChronosForecastMetrics(TestCase):
 
@@ -104,8 +104,10 @@ class TestChronosForecastMetrics(TestCase):
         y_true = [10, 2, 5]
         with pytest.raises(RuntimeError):
             Evaluator.evaluate('mse', y_true, y_true)
-            
+
+    @op_distributed
     def test_smape_equal_orca(self):
+        from bigdl.orca.automl.metrics import sMAPE
         y_true = np.random.randn(100, 4)
         y_pred = np.random.randn(100, 4)
         smape = Evaluator.evaluate("smape", y_true, y_pred, aggregate="mean")[0]

@@ -29,13 +29,13 @@ fi
 
 if [ $1 = true ]; then
     echo "Running chronos[pytorch] tests"
-    python -m pytest -v test/bigdl/chronos/data \
-                        test/bigdl/chronos/detector \
-                        test/bigdl/chronos/forecaster \
-                        test/bigdl/chronos/metric \
-                        test/bigdl/chronos/model \
-                        test/bigdl/chronos/pytorch \
-                        test/bigdl/chronos/simulator
+    python -m pytest -v -m "not tf2 and not onnxrt16 and not automl and not distributed and not diff_set_all" test/bigdl/chronos/data \
+                                                                                                              test/bigdl/chronos/detector \
+                                                                                                              test/bigdl/chronos/forecaster \
+                                                                                                              test/bigdl/chronos/metric \
+                                                                                                              test/bigdl/chronos/model \
+                                                                                                              test/bigdl/chronos/pytorch \
+                                                                                                              test/bigdl/chronos/simulator
 fi
 
 exit_status_0=$?

@@ -17,14 +17,12 @@ from pathlib import Path
 import shutil
 
 import pytest
-
 from unittest import TestCase
-from bigdl.chronos.model.tf2.MTNet_keras import MTNetKeras
 from bigdl.chronos.data import TSDataset
 import pandas as pd
 import numpy as np
-import tensorflow as tf
 from numpy.testing import assert_array_almost_equal
+from ... import op_tf2
 
 
 def create_data():
@@ -53,8 +51,10 @@ def create_data():
     return tsdata_train, tsdata_test
 
 
-@pytest.mark.skipif(tf.__version__ < '2.0.0', reason="Run only when tf>2.0.0")
+@op_tf2
 class TestMTNetKeras(TestCase):
+    from bigdl.chronos.model.tf2.MTNet_keras import MTNetKeras
+    import tensorflow as tf
 
     def setup_method(self, method):
         tf.keras.backend.clear_session()

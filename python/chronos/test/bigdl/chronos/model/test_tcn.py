@@ -15,7 +15,7 @@
 #
 
 from unittest import TestCase
-from bigdl.chronos.model.tcn import TCNPytorch
+from .. import op_distributed
 import numpy as np
 import tempfile
 import os
@@ -41,7 +41,9 @@ def create_data():
     return train_data, val_data, test_data
 
 
+@op_distributed
 class TestTcn(TestCase):
+    from bigdl.chronos.model.tcn import TCNPytorch
     train_data, val_data, test_data = create_data()
     model = TCNPytorch()
 

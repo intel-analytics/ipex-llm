@@ -15,13 +15,10 @@
 #
 
 import tempfile
-import tensorflow as tf
-
 import pytest
-
 from unittest import TestCase
-from bigdl.chronos.model.tf2.Seq2Seq_keras import LSTMSeq2Seq, model_creator
 import numpy as np
+from ... import op_tf2
 
 
 def create_data():
@@ -41,8 +38,10 @@ def create_data():
     return train_data, test_data
 
 
-@pytest.mark.skipif(tf.__version__ < '2.0.0', reason="Run only when tf>2.0.0.")
+@op_tf2
 class TestSeq2Seq(TestCase):
+    import tensorflow as tf
+    from bigdl.chronos.model.tf2.Seq2Seq_keras import LSTMSeq2Seq, model_creator
 
     def setUp(self):
         pass
