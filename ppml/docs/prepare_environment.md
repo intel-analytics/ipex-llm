@@ -23,7 +23,7 @@ cd BigDL/ppml/
 
   Run the script to generate **keys/keys.yaml** and **password/password.yaml**
   ```bash
-  sudo bash scripts/generate-keys-az.sh
+  sudo bash scripts/generate-keys.sh
   sudo bash scripts/generate-password.sh YOUR_PASSWORD
   ```
 

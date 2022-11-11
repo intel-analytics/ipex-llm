@@ -54,7 +54,7 @@ cd BigDL/ppml/
 
     ```bash
     cd scripts/
-    ./generate-keys-az.sh
+    ./generate-keys.sh
     cd ..
     ```
     When entering the passphrase or password, you could input the same password by yourself; and these passwords could also be used for the next step of generating other passwords. Password should be longer than 6 bits and contain numbers and letters, and one sample password is "3456abcd". These passwords would be used for future remote attestations and to start SGX enclaves more securely. And This script will generate 6 files in `./ppml/scripts/keys` dir (you can replace them with your own TLS keys).

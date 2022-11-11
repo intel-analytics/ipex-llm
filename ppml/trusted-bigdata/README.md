@@ -53,7 +53,7 @@ mr_signer        : 6f0627955......
   The ppml in bigdl needs secured keys to enable spark security such as Authentication, RPC Encryption, Local Storage Encryption and TLS, you need to prepare the secure keys and keystores. In this tutorial, you can generate keys and keystores with root permission (test only, need input security password for keys).
 
 ```bash
-  sudo bash BigDL/ppml/scripts/generate-keys-az.sh
+  sudo bash BigDL/ppml/scripts/generate-keys.sh
 ```
 
 #### 2.2 Prepare the Password
