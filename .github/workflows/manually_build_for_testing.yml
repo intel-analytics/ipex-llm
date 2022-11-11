@@ -575,7 +575,7 @@ jobs:
         docker push 10.239.45.10/arda/${IMAGE}:${TAG}
         docker rmi -f ${IMAGE}:${TAG} 10.239.45.10/arda/${IMAGE}:${TAG}
 
-bigdl-ppml-trusted-python-toolkit-base:
+  bigdl-ppml-trusted-python-toolkit-base:
     if: ${{ github.event.inputs.artifact == 'bigdl-ppml-trusted-python-toolkit-base' || github.event.inputs.artifact == 'all' }}
     runs-on: [self-hosted, Shire]
     steps:
@@ -605,7 +605,7 @@ bigdl-ppml-trusted-python-toolkit-base:
         sudo docker push 10.239.45.10/arda/${image}:${TAG}
         sudo docker rmi -f ${image}:${TAG}
 
-bigdl-ppml-trusted-python-toolkit-ref:
+  bigdl-ppml-trusted-python-toolkit-ref:
     if: ${{ github.event.inputs.artifact == 'bigdl-ppml-trusted-python-toolkit-ref' || github.event.inputs.artifact == 'all' }}
     runs-on: [self-hosted, Shire]
     steps:
