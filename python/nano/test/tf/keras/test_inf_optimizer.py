@@ -20,12 +20,12 @@ from bigdl.nano.tf.keras import Sequential
 from bigdl.nano.tf.keras import InferenceOptimizer
 import numpy as np
 from bigdl.nano.tf.keras import Model as NanoModel
+from tensorflow.keras.applications.resnet import ResNet50
 
 
 class TestInferencePipeline(TestCase):
     def test_optimize_nano_model_without_accuracy(self):
-        from tensorflow.keras.applications.mobilenet_v2 import MobileNetV2
-        model = MobileNetV2(weights=None, input_shape=[40, 40, 3], classes=10)
+        model = ResNet50(weights=None, input_shape=[40, 40, 3], classes=10)
         model = NanoModel(inputs=model.inputs, outputs=model.outputs)
         # prepare dataset
         train_examples = np.random.random((100, 40, 40, 3))
@@ -40,8 +40,7 @@ class TestInferencePipeline(TestCase):
         model = opt.get_best_model()
 
     def test_optimize_model_without_accuracy(self):
-        from tensorflow.keras.applications.mobilenet_v2 import MobileNetV2
-        model = MobileNetV2(weights=None, input_shape=[40, 40, 3], classes=10)
+        model = ResNet50(weights=None, input_shape=[40, 40, 3], classes=10)
         # prepare dataset
         train_examples = np.random.random((100, 40, 40, 3))
         train_labels = np.random.randint(0, 10, size=(100,))
@@ -54,8 +53,7 @@ class TestInferencePipeline(TestCase):
         model = opt.get_best_model()
 
     def test_optimize_nano_model_without_accuracy_large_batch(self):
-        from tensorflow.keras.applications.mobilenet_v2 import MobileNetV2
-        model = MobileNetV2(weights=None, input_shape=[40, 40, 3], classes=10)
+        model = ResNet50(weights=None, input_shape=[40, 40, 3], classes=10)
         model = NanoModel(inputs=model.inputs, outputs=model.outputs)
         # prepare dataset
         train_examples = np.random.random((100, 40, 40, 3))
@@ -70,8 +68,7 @@ class TestInferencePipeline(TestCase):
         model = opt.get_best_model()
 
     def test_optimize_model_with_accuracy(self):
-        from tensorflow.keras.applications.mobilenet_v2 import MobileNetV2
-        model = MobileNetV2(weights=None, input_shape=[40, 40, 3], classes=10)
+        model = ResNet50(weights=None, input_shape=[40, 40, 3], classes=10)
         model = NanoModel(inputs=model.inputs, outputs=model.outputs)
         # prepare dataset
         train_examples = np.random.random((100, 40, 40, 3))

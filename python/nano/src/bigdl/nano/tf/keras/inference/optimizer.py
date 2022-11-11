@@ -29,6 +29,9 @@ from tensorflow.data import Dataset
 from tensorflow.keras.metrics import Metric
 
 
+
+
+
 class InferenceOptimizer(BaseInferenceOptimizer):
 
     # acceleration method combinations, developers may want to register some new
@@ -197,10 +200,9 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                 def func_test(model, sample):
                     model(sample)
                 try:
-                    numpy_sample = input_sample.numpy()
                     result_map[method]["latency"], status =\
                         throughput_calculate_helper(latency_sample_num, baseline_time,
-                                                    func_test, acce_model, numpy_sample)
+                                                    func_test, acce_model, input_sample)
                     if status is False and method != "original":
                         result_map[method]["status"] = "early stopped"
                         continue
