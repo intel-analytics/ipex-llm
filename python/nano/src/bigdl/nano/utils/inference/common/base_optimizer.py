@@ -15,7 +15,7 @@
 #
 
 
-from typing import Dict, Tuple, Optional, Callable
+from typing import Dict, Optional
 from bigdl.nano.utils.log4Error import invalidInputError, invalidOperationError
 from .utils import CompareMetric, AccelerationOption, format_acceleration_option
 from abc import abstractmethod

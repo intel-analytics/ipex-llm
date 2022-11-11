@@ -14,23 +14,18 @@
 # limitations under the License.
 #
 
-from collections import namedtuple
 import torch
-import pytorch_lightning as pl
 from torch import nn
-import subprocess
-from importlib.util import find_spec
 import time
-import numpy as np
 from copy import deepcopy
-from typing import Dict, Callable, Tuple, Optional, List, Set, Union, Sequence
+from typing import Dict, Callable, Tuple, Optional, List, Union, Sequence
 from torch.utils.data import DataLoader
 from torchmetrics.metric import Metric
 from bigdl.nano.utils.inference.common.checker import available_acceleration_combination
 from bigdl.nano.utils.inference.common.utils import AccelerationOption,\
     throughput_calculate_helper, format_optimize_result
 from bigdl.nano.utils.inference.common.base_optimizer import BaseInferenceOptimizer
-from bigdl.nano.utils.log4Error import invalidInputError, invalidOperationError
+from bigdl.nano.utils.log4Error import invalidInputError
 from bigdl.nano.pytorch.amp import BF16Model
 from bigdl.nano.deps.openvino.openvino_api import PytorchOpenVINOModel
 from bigdl.nano.deps.ipex.ipex_api import PytorchIPEXJITModel, PytorchIPEXJITBF16Model
@@ -40,8 +35,9 @@ from bigdl.nano.utils.inference.pytorch.model import AcceleratedLightningModule
 from bigdl.nano.utils.inference.pytorch.model_utils import get_forward_args, get_input_example
 from bigdl.nano.utils.inference.pytorch.metrics import NanoMetric
 from bigdl.nano.utils.inference.pytorch.dataset import RepeatDataset, remove_batch_dim_fn
+from bigdl.nano.utils.inference.pytorch.dataloader import\
+    transform_multiple_input_dataloader_to_inc_mode
 from bigdl.nano.pytorch.utils import TORCH_VERSION_LESS_1_10, save_model, load_model
-from torchmetrics import Metric
 import warnings
 # Filter out useless Userwarnings
 warnings.filterwarnings('ignore', category=UserWarning, module='pytorch_lightning')
@@ -53,28 +49,70 @@ import os
 os.environ['LOGLEVEL'] = 'ERROR'  # remove parital output of inc
 
 
+class TorchAccelerationOption(AccelerationOption):
+    def optimize(self, model, training_data=None, input_sample=None,
+                 thread_num=None, logging=False, sample_size_for_pot=100):
+        accelerator = self.get_accelerator()
+        if self.get_precision() == "fp32":
+            # trace
+            if accelerator is None and self.ipex is False:
+                return model
+            if accelerator in ("jit", None):
+                acce_model = \
+                    InferenceOptimizer.trace(model=model,
+                                             accelerator=accelerator,
+                                             use_ipex=self.ipex,
+                                             # channels_last is only for jit
+                                             channels_last=self.channels_last,
+                                             input_sample=input_sample)
+            else:
+                acce_model = \
+                    InferenceOptimizer.trace(model=model,
+                                             accelerator=accelerator,
+                                             input_sample=input_sample,
+                                             thread_num=thread_num,
+                                             # remove output of openvino
+                                             logging=logging)
+        else:
+            # quantize
+            ort_method: str = self.method
+            acce_model = \
+                InferenceOptimizer.quantize(model=deepcopy(model),
+                                            precision=self.get_precision(),
+                                            accelerator=accelerator,
+                                            use_ipex=self.ipex,
+                                            calib_dataloader=training_data,
+                                            input_sample=input_sample,
+                                            method=ort_method,
+                                            thread_num=thread_num,
+                                            sample_size=sample_size_for_pot,
+                                            # remove output of openvino
+                                            logging=logging)
+        return acce_model
+
+
 class InferenceOptimizer(BaseInferenceOptimizer):
 
     # acceleration method combinations, developers may want to register some new
     # combinations here
     ALL_INFERENCE_ACCELERATION_METHOD = \
         {
-            "original": AccelerationOption(),
-            "fp32_ipex": AccelerationOption(ipex=True),
-            "bf16": AccelerationOption(bf16=True),
-            "bf16_ipex": AccelerationOption(bf16=True, ipex=True),
-            "int8": AccelerationOption(inc=True),
-            "jit_fp32": AccelerationOption(jit=True),
-            "jit_fp32_ipex": AccelerationOption(jit=True, ipex=True),
-            "jit_fp32_ipex_channels_last": AccelerationOption(jit=True, ipex=True,
-                                                              channels_last=True),
-            "openvino_fp32": AccelerationOption(openvino=True),
-            "openvino_int8": AccelerationOption(openvino=True, pot=True),
-            "onnxruntime_fp32": AccelerationOption(onnxruntime=True),
-            "onnxruntime_int8_qlinear": AccelerationOption(onnxruntime=True, inc=True,
-                                                           method="qlinear"),
-            "onnxruntime_int8_integer": AccelerationOption(onnxruntime=True, inc=True,
-                                                           method="integer"),
+            "original": TorchAccelerationOption(),
+            "fp32_ipex": TorchAccelerationOption(ipex=True),
+            "bf16": TorchAccelerationOption(bf16=True),
+            "bf16_ipex": TorchAccelerationOption(bf16=True, ipex=True),
+            "int8": TorchAccelerationOption(inc=True),
+            "jit_fp32": TorchAccelerationOption(jit=True),
+            "jit_fp32_ipex": TorchAccelerationOption(jit=True, ipex=True),
+            "jit_fp32_ipex_channels_last": TorchAccelerationOption(jit=True, ipex=True,
+                                                                   channels_last=True),
+            "openvino_fp32": TorchAccelerationOption(openvino=True),
+            "openvino_int8": TorchAccelerationOption(openvino=True, pot=True),
+            "onnxruntime_fp32": TorchAccelerationOption(onnxruntime=True),
+            "onnxruntime_int8_qlinear": TorchAccelerationOption(onnxruntime=True, inc=True,
+                                                                method="qlinear"),
+            "onnxruntime_int8_integer": TorchAccelerationOption(onnxruntime=True, inc=True,
+                                                                method="integer"),
         }
 
     def optimize(self, model: nn.Module,
@@ -229,59 +267,18 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                 print(f"----------Start test {method} model "
                       f"({idx+1}/{len(self.ALL_INFERENCE_ACCELERATION_METHOD)})----------")
                 option: AccelerationOption = self.ALL_INFERENCE_ACCELERATION_METHOD[method]
-                use_ipex: bool = option.ipex
-                use_channels_last: bool = option.channels_last
-                accelerator: str = option.get_accelerator()
-                precision: str = option.get_precision()
-                # if precision is fp32, then we will use trace method
-                if precision == "fp32":
-                    try:
-                        if accelerator is None and use_ipex is False:
-                            acce_model = model
-                        else:
-                            if accelerator in ("jit", None):
-                                acce_model = \
-                                    InferenceOptimizer.trace(model=model,
-                                                             accelerator=accelerator,
-                                                             use_ipex=use_ipex,
-                                                             # channels_last is only for jit
-                                                             channels_last=use_channels_last,
-                                                             input_sample=input_sample)
-                            else:
-                                acce_model = \
-                                    InferenceOptimizer.trace(model=model,
-                                                             accelerator=accelerator,
-                                                             input_sample=input_sample,
-                                                             thread_num=thread_num,
-                                                             # remove output of openvino
-                                                             logging=logging)
-                    except Exception as e:
-                        print(e)
-                        result_map[method]["status"] = "fail to convert"
-                        print(f"----------Failed to convert to {method}----------")
-                        continue
-
-                # if precision is int8 or bf16, then we will use quantize method
-                elif precision in ("int8", "bf16"):
-                    ort_method: str = option.method
-                    try:
-                        acce_model = \
-                            InferenceOptimizer.quantize(model=deepcopy(model),
-                                                        precision=precision,
-                                                        accelerator=accelerator,
-                                                        use_ipex=use_ipex,
-                                                        calib_dataloader=training_data,
-                                                        input_sample=input_sample,
-                                                        method=ort_method,
-                                                        thread_num=thread_num,
-                                                        sample_size=sample_size_for_pot,
-                                                        # remove output of openvino
-                                                        logging=logging)
-                    except Exception as e:
-                        print(e)
-                        result_map[method]["status"] = "fail to convert"
-                        print(f"----------Failed to convert to {method}----------")
-                        continue
+                precision = option.get_precision()
+                try:
+                    acce_model = option.optimize(model, training_data=training_data,
+                                                 input_sample=input_sample,
+                                                 thread_num=thread_num,
+                                                 logging=logging,
+                                                 sample_size_for_pot=sample_size_for_pot)
+                except Exception as e:
+                    print(e)
+                    result_map[method]["status"] = "fail to convert"
+                    print(f"----------Failed to convert to {method}----------")
+                    continue
 
                 result_map[method]["status"] = "successful"
 
@@ -302,6 +299,7 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                         torch.set_num_threads(default_threads)
                         continue
                 except Exception as e:
+                    print(e)
                     result_map[method]["status"] = "fail to forward"
                     print(f"----------{method} failed to forward----------")
                     torch.set_num_threads(default_threads)
@@ -454,6 +452,10 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                 invalidInputError(False,
                                   "Accelerator {} is invalid for BF16.".format(accelerator))
         if precision == 'int8':
+            # transform the dataloader to inc mode
+            inc_calib_dataloader =\
+                transform_multiple_input_dataloader_to_inc_mode(model,
+                                                                calib_dataloader)
             if not accelerator or accelerator == 'onnxruntime':
                 method_map = {
                     None: {
@@ -495,7 +497,7 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                 model which is able to run on Pytorch or ONNXRuntime can be fetched by
                 `quantized_model.model`.
                 """
-                return inc_quantize(model, calib_dataloader, metric,
+                return inc_quantize(model, inc_calib_dataloader, metric,
                                     framework=framework,
                                     conf=conf,
                                     approach=approach,

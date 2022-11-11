@@ -86,7 +86,7 @@ export HADOOP_CONF_DIR=/path/to/hadoop/conf
 ### 2.2 Install Python Libraries
 - See [here](../Overview/install.md#install-anaconda) to install conda and prepare the Python environment on the __Client Node__.
 
-- See [here](../Overview/install.md#to-use-basic-orca-features) to install BigDL Orca in the created conda environment.
+- See [here](../Overview/install.md#install-bigdl-orca) to install BigDL Orca in the created conda environment.
 
 - You should install all the other Python libraries that you need in your program in the conda environment as well.
 

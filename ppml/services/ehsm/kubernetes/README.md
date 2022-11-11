@@ -49,9 +49,7 @@ dkeyserverIP: your_dkeyserver_ip_to_use_as        --->   <an_used_ip_address_in_
 kmsIP: your_kms_ip_to_use_as                      --->   <an_used_ip_address_in_your_subnetwork_to_assign_to_kms>
 
 # Replace the below parameters according to your environment
-
 apiKey: your_intel_pcs_server_subscription_key_obtained_through_web_registeration
-httpsProxyUrl: your_usable_https_proxy_url
 countryName: your_country_name
 cityName: your_city_name
 organizaitonName: your_organizaition_name
