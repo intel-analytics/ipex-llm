@@ -49,8 +49,7 @@ From 1.2.3.4 icmp_seq=1 Destination Host Unreachable
 From 1.2.3.4 icmp_seq=2 Destination Host Unreachable
 From 1.2.3.4 icmp_seq=3 Destination Host Unreachable
 ........
---- 1.2.3.227 ping statistics ---
-6 packets transmitted, 0 received, +3 errors, 100% packet loss, time 5107ms
+
 
 # try another IP address (e.g 1.2.3.228) for KMS with the same approach.
 ```

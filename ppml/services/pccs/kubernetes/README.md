@@ -40,8 +40,7 @@ PING 1.2.3.226 (1.2.3.226) 56(84) bytes of data.
 From 1.2.3.4 icmp_seq=1 Destination Host Unreachable
 From 1.2.3.4 icmp_seq=2 Destination Host Unreachable
 From 1.2.3.4 icmp_seq=3 Destination Host Unreachable
---- 1.2.3.226 ping statistics ---
-6 packets transmitted, 0 received, +3 errors, 100% packet loss, time 5107ms
+........
 ```
 
 ### 2.2 Modify the script and deploy BigDL-PCCS
