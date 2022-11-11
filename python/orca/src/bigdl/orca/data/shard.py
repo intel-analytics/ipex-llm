@@ -169,7 +169,6 @@ class SparkXShards(XShards):
         :param args: other arguments in this function.
         :return: a new SparkXShards.
         """
-
         def transform(iter, func, *args):
             for x in iter:
                 yield func(x, *args)
@@ -938,9 +937,14 @@ class SparkXShards(XShards):
                               "Currently only support sample() on"
                               " XShards of Pandas DataFrame")
 
-        rdd = self.rdd.map(lambda df: df.sample(
-            frac=frac, replace=replace, weights=weights, random_state=random_state))
-        return SparkXShards(rdd)
+        def inner_sample(iter, frac, replace=False, weights=None, random_state=None):
+            for df in iter:
+                yield df.sample(
+                    frac=frac, replace=replace, weights=weights, random_state=random_state)
+
+        rdd1 = self.rdd.mapPartitions(lambda iter:
+                                      inner_sample(iter, frac, replace, weights, random_state))
+        return SparkXShards(rdd1)
 
     def select(self, cols):
         """
@@ -985,7 +989,7 @@ class SparkXShards(XShards):
 
         return SparkXShards(self.rdd.map(lambda df: df[cols]))
 
-    def describe(self, *cols):
+    def describe(self, cols=None):
         """
 
         Computes basic statistics for numeric and string columns.
@@ -1053,9 +1057,9 @@ class SparkXShards(XShards):
 
         def get_cnt(iter):
             for df in iter:
-                return [len(df)]
+                yield len(df)
 
-        cnt_rdd = self.rdd.mapPartitions(get_cnt)
+        cnt_rdd = self.rdd.mapPartitions(lambda iter: get_cnt(iter))
 
         cnt = cnt_rdd.reduce(lambda l1, l2: l1 + l2)
         return cnt
