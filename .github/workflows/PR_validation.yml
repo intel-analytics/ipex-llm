@@ -62,7 +62,7 @@ jobs:
               - '.github/actions/friesian-scala-ut-action/action.yml'
               - 'python/friesian/**'
               - '.github/actions/friesian/**'
-              - '.github/actions/python-requirements/**'
+              
             dllib:
               - 'scala/serving/pom.xml'
               - 'scala/ppml/pom.xml'
@@ -72,7 +72,7 @@ jobs:
               - 'scala/pom.xml'
               - 'scala/dllib/**'
               - '.github/actions/dllib-scala-ut-action/action.yml'
-              - '.github/actions/python-requirements/**'
+              
             ppml:
               - 'scala/serving/pom.xml'
               - 'scala/ppml/pom.xml'
@@ -84,7 +84,7 @@ jobs:
               - '.github/actions/ppml-scala-ut-action/action.yml'
               - 'python/ppml/**'
               - '.github/actions/ppml/**'
-              - '.github/actions/python-requirements/**'
+              
             orca:
               - 'scala/serving/pom.xml'
               - 'scala/ppml/pom.xml'
@@ -94,7 +94,7 @@ jobs:
               - 'scala/pom.xml'
               - 'python/orca/**'
               - '.github/actions/orca/**'
-              - '.github/actions/python-requirements/**'
+              
            
   Friesian-Scala-UT:
     needs: changes
