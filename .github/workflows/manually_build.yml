@@ -492,7 +492,7 @@ jobs:
           echo "########################################"
           echo "####### big-data-ml-scala-occlum-production  ######"
           echo "########################################"
-          cd ppml/trusted-big-data-ml/scala/docker-occlum/production
+          cd ppml/trusted-big-data-ml/scala/docker-occlum
           export image=intelanalytics/bigdl-ppml-trusted-big-data-ml-scala-occlum-production
           pwd
           docker build \
@@ -507,7 +507,13 @@ jobs:
             --build-arg JDK_URL=${JDK_URL} \
             --build-arg no_proxy=${NO_PROXY} \
             --build-arg SPARK_JAR_REPO_URL=${SPARK_JAR_REPO_URL} \
-            -t ${image}:${TAG} -f ./Dockerfile .
+            -t ${image}:${TAG} -f ./production/Dockerfile .
+          pwd
+          cd /home/arda/github-action-runner/actions-runner/_work/BigDL/BigDL/ppml/trusted-big-data-ml/scala/docker-occlum
+          export image_name=${image}:${TAG}
+          export final_name=${image_name}-build
+          export container_name=${TAG}-container
+          bash ./production/occlum-build.sh -c $container_name -i $image_name -f $final_name
           sudo docker push ${image}:${TAG}
           docker tag ${image}:${TAG} 10.239.45.10/arda/${image}:${TAG}
           docker push 10.239.45.10/arda/${image}:${TAG}
