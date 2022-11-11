@@ -474,5 +474,5 @@ class TestChronosModelAutoformerForecaster(TestCase):
                                           metrics=["mse", "mape"])
         forecaster.fit(train_data, epochs=2)
         pred = forecaster.predict(test_data)
-        jit_pred = forecaster.predict(test_data, use_jit=True)
+        jit_pred = forecaster.predict_with_jit(test_data)
         assert pred[0].shape == jit_pred[0].shape

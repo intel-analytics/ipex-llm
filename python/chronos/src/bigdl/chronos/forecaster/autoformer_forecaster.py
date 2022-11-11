@@ -514,7 +514,7 @@ class AutoformerForecaster(Forecaster):
 
     def predict_with_jit(self, data, batch_size=32):
         """
-        Predict using a trained forecaster with jit
+        Predict using a trained forecaster with jit.
 
         :param data: The data support following formats:
 
