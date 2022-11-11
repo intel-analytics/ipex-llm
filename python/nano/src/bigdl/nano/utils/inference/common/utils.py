@@ -18,6 +18,7 @@ from collections import namedtuple
 import time
 import numpy as np
 from typing import Dict
+from abc import abstractmethod
 
 
 _whole_acceleration_options = ["inc", "ipex", "onnxruntime", "openvino", "pot",
@@ -52,6 +53,10 @@ class AccelerationOption(object):
         if self.jit:
             return "jit"
         return None
+
+    @abstractmethod
+    def optimize(self, *args, **kwargs):
+        pass
 
 
 def throughput_calculate_helper(iterrun, baseline_time, func, *args):

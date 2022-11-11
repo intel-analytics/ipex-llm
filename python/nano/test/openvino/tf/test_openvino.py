@@ -29,7 +29,7 @@ class TestOpenVINO(TestCase):
         train_dataset = tf.data.Dataset.from_tensor_slices((train_examples, train_labels)).batch(2)
 
         # trace a Keras model
-        openvino_model = model.trace(accelerator='openvino')
+        openvino_model = model.trace(accelerator='openvino', thread_num=4)
         y_hat = openvino_model(train_examples[:10])
         assert y_hat.shape == (10, 10)
 
