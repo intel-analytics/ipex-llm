@@ -622,7 +622,7 @@ jobs:
         echo "##############################################################"
         export base_image=intelanalytics/bigdl-ppml-trusted-python-toolkit-base
         export image=intelanalytics/bigdl-ppml-trusted-python-toolkit-ref
-        cd ppml/trusted-python-toolkit
+        cd ppml/trusted-python-toolkit/custom-image
         openssl genrsa -3 -out enclave-key.pem 3072
         sudo docker build \
           --no-cache=true \
