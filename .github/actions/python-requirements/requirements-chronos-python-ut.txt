@@ -1,0 +1,13 @@
+pytest==5.4.1
+prophet==1.0.1
+pmdarima==1.8.4
+tsfresh==0.17.0
+ray==1.9.2
+ray[tune]==1.9.2
+ray[default]==1.9.2
+pyarrow==6.0.1
+ConfigSpace==0.5.0
+optuna==2.10.1
+scipy==1.5.4
+cloudpickle
+matplotlib
