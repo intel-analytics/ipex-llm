@@ -40,16 +40,15 @@ First of all , **two different IP addresses that unused in your subnetwork** are
 You could check if the IP adresses are available for dkeyserver and KMS like this
 ```bash
 # assume your IP address is 1.2.3.4, and you want to use 1.2.3.227 as dkeyserver IP
-ping 1.2.3.226
+ping 1.2.3.227
 
 # information below means 1.2.3.227 is expected to be an appropriate IP addess for dkeyserver. 
 # otherwise, you are supposed to test another one.
-PING 1.2.3.226 (1.2.3.227) 56(84) bytes of data.
+PING 1.2.3.227 (1.2.3.227) 56(84) bytes of data.
 From 1.2.3.4 icmp_seq=1 Destination Host Unreachable
 From 1.2.3.4 icmp_seq=2 Destination Host Unreachable
 From 1.2.3.4 icmp_seq=3 Destination Host Unreachable
 ........
-
 
 # try another IP address (e.g 1.2.3.228) for KMS with the same approach.
 ```
