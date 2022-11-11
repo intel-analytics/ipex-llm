@@ -29,7 +29,32 @@ from tensorflow.data import Dataset
 from tensorflow.keras.metrics import Metric
 
 
-
+class TFAccelerationOption(AccelerationOption):
+    def optimize(self, model, training_data=None, input_sample=None,
+                 thread_num=None, logging=False, sample_size_for_pot=100):
+        accelerator = self.get_accelerator()
+        if self.get_precision() == "fp32":
+            # trace
+            if accelerator is None:
+                return model
+            else:
+                acce_model = model.trace(accelerator=accelerator,
+                                         input_sample=input_sample,
+                                         thread_num=thread_num,
+                                         # remove output of openvino
+                                         logging=logging)
+        else:
+            # quantize
+            ort_method: str = self.method
+            acce_model = model.quantize(precision=self.get_precision(),
+                                        accelerator=accelerator,
+                                        calib_dataset=training_data,
+                                        method=ort_method,
+                                        thread_num=thread_num,
+                                        sample_size=sample_size_for_pot,
+                                        # remove output of openvino
+                                        logging=logging)
+        return acce_model
 
 
 class InferenceOptimizer(BaseInferenceOptimizer):
@@ -38,15 +63,15 @@ class InferenceOptimizer(BaseInferenceOptimizer):
     # combinations here
     ALL_INFERENCE_ACCELERATION_METHOD: Dict = \
         {  # type: ignore
-            "original": AccelerationOption(),
-            "int8": AccelerationOption(inc=True),
-            "openvino_fp32": AccelerationOption(openvino=True),
-            "openvino_int8": AccelerationOption(openvino=True, pot=True),
-            "onnxruntime_fp32": AccelerationOption(onnxruntime=True),
-            "onnxruntime_int8_qlinear": AccelerationOption(onnxruntime=True, inc=True,
-                                                           method="qlinear"),
-            "onnxruntime_int8_integer": AccelerationOption(onnxruntime=True, inc=True,
-                                                           method="integer"),
+            "original": TFAccelerationOption(),
+            "int8": TFAccelerationOption(inc=True),
+            "openvino_fp32": TFAccelerationOption(openvino=True),
+            "openvino_int8": TFAccelerationOption(openvino=True, pot=True),
+            "onnxruntime_fp32": TFAccelerationOption(onnxruntime=True),
+            "onnxruntime_int8_qlinear": TFAccelerationOption(onnxruntime=True, inc=True,
+                                                             method="qlinear"),
+            "onnxruntime_int8_integer": TFAccelerationOption(onnxruntime=True, inc=True,
+                                                             method="integer"),
         }  # type: ignore
 
     def optimize(self, model: Model,
@@ -112,7 +137,7 @@ class InferenceOptimizer(BaseInferenceOptimizer):
         else:
             # test whether accuracy calculation works later
             # make sure dataset don't have batch
-            validation_data = validation_data.batch(batch_size)
+            batched_validation_data = validation_data.batch(batch_size)
             self._calculate_accuracy = True
 
         if os.getenv('OMP_NUM_THREADS') is not None:
@@ -124,8 +149,8 @@ class InferenceOptimizer(BaseInferenceOptimizer):
 
         result_map: Dict[str, Dict] = {}
 
-        training_data = training_data.batch(batch_size)
-        input_sample = next(iter(training_data))
+        batched_training_data = training_data.batch(batch_size)
+        input_sample = next(iter(batched_training_data))
         # TODO: how to obtain input from output of training_data
         input_sample = input_sample[:-1]
 
@@ -158,42 +183,20 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                       f"({idx+1}/{len(available_dict)})----------")
                 option: AccelerationOption = self.ALL_INFERENCE_ACCELERATION_METHOD[method]
                 precision: str = option.get_precision()
-                accelerator: str = option.get_accelerator()
-                if precision == "fp32":
-                    try:
-                        if accelerator is None:
-                            acce_model = model
-                        else:
-                            acce_model = model.trace(accelerator=accelerator,
-                                                     input_sample=tf.TensorSpec(
-                                                         shape=input_sample.shape,
-                                                         dtype=tf.float32),
-                                                     thread_num=thread_num,
-                                                     # remove output of openvino
-                                                     logging=logging)
-                    except Exception as e:
-                        print(e)
-                        result_map[method]["status"] = "fail to convert"
-                        print(f"----------Failed to convert to {method}----------")
-                        continue
-
-                # if precision is int8 or bf16, then we will use quantize method
-                elif precision == 'int8':
-                    ort_method: Optional[str] = option.method
-                    try:
-                        acce_model = model.quantize(precision=precision,
-                                                    accelerator=accelerator,
-                                                    calib_dataset=training_data.unbatch(),
-                                                    method=ort_method,
-                                                    thread_num=thread_num,
-                                                    sample_size=sample_size_for_pot,
-                                                    # remove output of openvino
-                                                    logging=logging)
-                    except Exception as e:
-                        print(e)
-                        result_map[method]["status"] = "fail to convert"
-                        print(f"----------Failed to convert to {method}----------")
-                        continue
+                try:
+                    acce_model = option.optimize(model=model,
+                                                 training_data=training_data,
+                                                 input_sample=tf.TensorSpec(
+                                                     shape=input_sample.shape,
+                                                     dtype=tf.float32),
+                                                 thread_num=thread_num,
+                                                 logging=logging,
+                                                 sample_size_for_pot=sample_size_for_pot)
+                except Exception as e:
+                    print(e)
+                    result_map[method]["status"] = "fail to convert"
+                    print(f"----------Failed to convert to {method}----------")
+                    continue
 
                 result_map[method]["status"] = "successful"
 
@@ -222,19 +225,16 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                             try:
                                 result_map[method]["accuracy"] =\
                                     _accuracy_calculate_helper(acce_model, metric,
-                                                               validation_data)
+                                                               batched_validation_data)
                             except Exception as e:
                                 print(e)
                                 self._calculate_accuracy = False
                         else:
                             result_map[method]["accuracy"] =\
                                 _accuracy_calculate_helper(acce_model, metric,
-                                                           validation_data)
+                                                           batched_validation_data)
                 else:
                     result_map[method]["accuracy"] = None
-
-                print("input sample:")
-                print(type(input_sample))
 
                 result_map[method]["model"] = acce_model
                 print(f"----------Finish test {method} model "
