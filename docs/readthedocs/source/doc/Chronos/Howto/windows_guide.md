@@ -32,7 +32,7 @@ You can simply install Chronos from PyPI using the following command:
 # activate your conda environment
 conda activate my_env
 
-# install Chronos nightly build version
+# install Chronos nightly build version (2.1.0 stable release is not supported on native Windows)
 pip install --pre --upgrade bigdl-chronos[pytorch]
 ```
 
@@ -44,7 +44,7 @@ You can use the [install panel](https://bigdl.readthedocs.io/en/latest/doc/Chron
 
 ### Known Issues on Native Windows
 
-#### Issue 1
+#### Fail to Install Neural-compressor via pip
 
 **Problem description**
 
@@ -60,7 +60,7 @@ Then neural-compressor can be successfully installed using pip, we recommend ins
 
 `pip install neural-compressor==1.13.1`
 
-#### Issue 2
+#### RuntimeError during Quantization
 
 **Problem description**
 
@@ -76,7 +76,7 @@ Upgrade neural-compressor to 1.13.1 or higher.
 
 `pip install neural-compressor==1.13.1`
 
-#### Issue 3
+#### RuntimeError during forecaster.fit
 
 **Problem description**
 
