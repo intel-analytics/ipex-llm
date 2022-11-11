@@ -213,8 +213,8 @@ build_spark() {
             fi
         fi
         #register error
-        if [ $? -gt 0 ]; then
-            echo "register error"
+        if [[ $? -gt 0 || -z "$policy_Id" ]]; then
+            echo "can not get policy_Id, register fail"
             exit 1;
         fi
     fi

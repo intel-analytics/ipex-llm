@@ -221,7 +221,7 @@ attestation_init() {
         fi
         #register error
         if [[ $? -gt 0 || -z "$policy_Id" ]]; then
-            echo "register error"
+            echo "can not get policy_Id, register fail"
             exit 1;
         fi
     fi
