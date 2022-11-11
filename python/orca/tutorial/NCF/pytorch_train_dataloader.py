@@ -18,7 +18,7 @@
 import torch.nn as nn
 import torch.optim as optim
 
-from pytorch_dataset import train_loader_func, test_loader_func, get_user_num_item_num
+from pytorch_dataset import train_loader_func, test_loader_func, load_dataset
 from pytorch_model import NCF
 
 from bigdl.orca import init_orca_context, stop_orca_context
@@ -32,7 +32,7 @@ sc = init_orca_context()
 
 # Step 2: Define train and test datasets as PyTorch DataLoader
 dataset_dir = "./ml-1m"
-user_num, item_num = get_user_num_item_num(dataset_dir)
+_, user_num, item_num = load_dataset(dataset_dir)
 
 
 # Step 3: Define the model, optimizer and loss
