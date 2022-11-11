@@ -19,6 +19,8 @@ ARG HTTP_PROXY_HOST
 ARG HTTP_PROXY_PORT
 ARG HTTPS_PROXY_HOST
 ARG HTTPS_PROXY_PORT
+ARG HTTP_PROXY=http://$HTTP_PROXY_HOST:$HTTP_PROXY_PORT
+ARG HTTPS_PROXY=http://$HTTPS_PROXY_HOST:$HTTPS_PROXY_PORT
 
 #copy occlum runable instance
 COPY --from=final /opt/occlum_spark /opt/occlum_spark
@@ -38,5 +40,9 @@ RUN apt-get install -y libsgx-uae-service libsgx-dcap-ql
 # glibc
 RUN apt install -y occlum-toolchains-glibc
 RUN echo "source /etc/profile" >> $HOME/.bashrc
+
+#COPY bash files
+COPY --from=final /opt/*.sh /opt
+COPY --from=final /opt/sqlSuites /opt
 
 ENV PATH="/opt/occlum/build/bin:/usr/local/occlum/bin:$PATH"
