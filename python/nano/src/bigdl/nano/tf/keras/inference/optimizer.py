@@ -34,7 +34,7 @@ class InferenceOptimizer(BaseInferenceOptimizer):
     # acceleration method combinations, developers may want to register some new
     # combinations here
     ALL_INFERENCE_ACCELERATION_METHOD: Dict = \
-        {
+        {  # type: ignore
             "original": AccelerationOption(),
             "int8": AccelerationOption(inc=True),
             "openvino_fp32": AccelerationOption(openvino=True),
@@ -44,7 +44,7 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                                                            method="qlinear"),
             "onnxruntime_int8_integer": AccelerationOption(onnxruntime=True, inc=True,
                                                            method="integer"),
-        }
+        }  # type: ignore
 
     def optimize(self, model: Model,
                  training_data: Dataset,
@@ -115,7 +115,8 @@ class InferenceOptimizer(BaseInferenceOptimizer):
         if os.getenv('OMP_NUM_THREADS') is not None:
             default_threads: int = int(os.getenv('OMP_NUM_THREADS'))  # type: ignore
         else:
-            default_threads = None  # TODO: how to get and control thread num in tf?
+            # TODO: how to get and control thread num in tf?
+            default_threads = None  # type: ignore
         thread_num = default_threads if thread_num is None else int(thread_num)  # type: ignore
 
         result_map: Dict[str, Dict] = {}
