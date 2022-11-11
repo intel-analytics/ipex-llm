@@ -9,7 +9,7 @@ on:
       - 'python/nano/**'
       - '.github/workflows/nano_howto_guides_tests.yml'
   pull_request:
-    branches: [ main ]
+    branches: [ branch-2.1 ]
     paths:
       - 'python/nano/**'
       - '.github/workflows/nano_howto_guides_tests.yml'
