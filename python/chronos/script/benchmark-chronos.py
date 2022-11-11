@@ -15,153 +15,294 @@
 #
 
 
-import psutil
-import platform
-import subprocess
-import os
-import sys
-import logging
-import warnings
-from typing import Union, Dict, List, Optional
+from bigdl.chronos.benchmark import generate_forecaster, generate_data, get_CPU_info, check_nano_env
+import time
 import numpy as np
-import re
+import argparse
+import os
+from scipy import stats
+import psutil
+import subprocess
+from bigdl.nano.utils.log4Error import invalidInputError
 
-from utils import get_bytesize, _find_path, get_nano_env_var
-from bigdl.nano.common.common import _env_variable_is_set, _find_library
 
-
-
-def CPU_info():
+def train():
     """
-    Capture hardware information, such as CPU model, CPU informations, memory status
+    train stage will record throughput.
+    """
+    if args.training_processes:
+        forecaster.num_processes = args.training_processes
+    epochs = args.training_epochs
+    forecaster.use_ipex = True if args.ipex else False
+
+    start_time = time.time()
+    forecaster.fit(train_loader, epochs=epochs)
+    training_time = time.time() - start_time
+
+    if args.framework == "tensorflow":
+        training_sample_num = epochs * sum([x.shape[0] for x, _ in train_loader])
+    else:
+        training_sample_num = epochs * len(train_loader.dataset)
+    forecaster.save(model_path)
+    records['training_time'] = training_time
+    records['training_sample_num'] = training_sample_num
+    records['train_throughput'] = training_sample_num/training_time
+
+
+def throughput():
+    """
+    throughput stage will record inference throughput.
     """
 
-    #information about CPU
-    socket_num = int(subprocess.getoutput('cat /proc/cpuinfo | grep "physical id" | sort -u | wc -l'))
-    model_name = subprocess.getoutput('lscpu | grep "Model name"')
-    model_name = model_name.partition(":")[2]
-
-    print(">"*20,"Hardware Information",">"*20)
-    print('CPU architecture:',platform.processor())
-    print('CPU model name:',model_name.lstrip())
-    print('Logical Core(s):',psutil.cpu_count()) 
-    print('Physical Core(s):',psutil.cpu_count(logical=False)) 
-    print('Physical Core(s) per socket:',int(psutil.cpu_count(logical=False)/socket_num))
-    print('Socket(s):',socket_num)
-    print('CPU usage:',str(psutil.cpu_percent()) + '%')
-    print('CPU MHz:',format(psutil.cpu_freq().current,'.2f'))
-    print('CPU max MHz:',format(psutil.cpu_freq().max,'.2f'))
-    print('CPU min MHz:',format(psutil.cpu_freq().min,'.2f'))
-    print('Total memory:',get_bytesize(psutil.virtual_memory().total))
-    print('Available memory:',get_bytesize(psutil.virtual_memory().available))
-
-    #support instruction set or not
-    disabled_logo = "\033[0;31m\u2718\033[0m"
-    abled_logo = "\033[0;32m\u2714\033[0m"
-
-    for flag in ["avx512f", "avx512_bf16", "avx512_vnni"]:
-        flag_enabled = int(subprocess.getoutput(f'lscpu | grep -c {flag} '))
-        if flag_enabled:
-            print("Support", flag, ":", abled_logo)
-        else:
-            print("Support", flag, ":", disabled_logo)
-        
-    print("<"*20, "Hardware Information", "<"*20, "\n")
-    
-
-
-
-def check_nano(use_malloc: str = "tc", use_openmp: bool = True) -> None:
-    """
-    Check whether necessary environment variables are setted properly
-    """
-    # Get a copy of os environment
-    env_copy = os.environ.copy()
-    # Get the proper environment
-    correct_env = get_nano_env_var()
-  
-    # Flags about the environment values are proper or not
-    flag = {"LD_PRELOAD" : 1, "tcmalloc" : 1, "Intel OpenMp" : 1, "TF" : 1}
-
-    #Output information
-    name = {"LD_PRELOAD" : "", "tcmalloc" : "", "Intel OpenMp" : ": ", "TF" : ": "}
-    output_list = []
-
-    # Find conda directory
-    conda_dir = None
     try:
-        conda_dir = subprocess.check_output("conda info | awk '/active env location/'"
-                                            "| sed 's/.*:.//g'",
-                                            shell=True).splitlines()[0].decode("utf-8")
-        conda_env_name = conda_dir.split("/")[-1]
-    except subprocess.CalledProcessError:
-        warnings.warn("Conda is not found on your computer.")
+        # load trained model
+        forecaster.load(model_path)
+    except:
+        # if no ckpt can be used, then train a new one
+        forecaster.fit(train_loader, epochs=1)
 
-    conda_lib_dir = conda_dir + "/lib" if conda_dir is not None else None
-    openmp_lib_dir = _find_library("libiomp5.so", conda_lib_dir)
-    jemalloc_lib_dir = _find_library("libjemalloc.so", conda_lib_dir)
-    tc_malloc_lib_dir = _find_library("libtcmalloc.so", conda_lib_dir)
+    # dataset size
+    if args.framework == "tensorflow":
+        inference_sample_num = sum([x.shape[0] for x, _ in test_loader])
+    else:
+        inference_sample_num = len(test_loader.dataset)
 
-    # Detect Intel OpenMP library
-    if use_openmp:
-        if openmp_lib_dir is not None:
-            # Check environment variables
-            for var in ["OMP_NUM_THREADS", "KMP_AFFINITY", "KMP_BLOCKTIME"]:
-                if not _env_variable_is_set(var, env_copy) or env_copy[var] != correct_env[var]:
-                    flag["Intel OpenMp"] = 0
-                    name["Intel OpenMp"] = name["Intel OpenMp"] + var + " "
-                    output_list.append("export " + var + "=" + correct_env[var])
-        else:
-            output_list.append("Intel OpenMP library (libiomp5.so) is not found.")
+    if args.quantize:
+        import onnxruntime
+        sess_options = onnxruntime.SessionOptions()
+        if args.cores:
+            sess_options.intra_op_num_threads = args.cores
+            sess_options.inter_op_num_threads = args.cores
+        forecaster.quantize(test_loader, framework=args.quantize_type, sess_options=sess_options)
+        print("QUANTIZATION DONE")
 
-    # Detect jemalloc library
-    if use_malloc is "je":
-        if jemalloc_lib_dir is not None:
-            if not _env_variable_is_set("MALLOC_CONF", env_copy) or env_copy["MALLOC_CONF"] != correct_env["MALLOC_CONF"]:
-                output_list.append("export MALLOC_CONF=oversize_threshold:1,background_thread:true,metadata_thp:auto,dirty_decay_ms:-1,muzzy_decay_ms:-1")            
-        else:
-            output_list.append("jemalloc library (libjemalloc.so) is not found.")
+    # predict
+    if 'torch' in args.inference_framework:
+        import torch
+        if args.cores:
+            torch.set_num_threads(args.cores)
+        st = time.time()
+        with torch.no_grad():
+            yhat = forecaster.predict(test_loader, quantize=args.quantize)
+        total_time = time.time()-st
+        records['torch_infer_throughput'] = inference_sample_num / total_time
 
-    if use_malloc is "tc":
-        if tc_malloc_lib_dir is None:
-            flag["tcmalloc"] = 0
-            output_list.append("tcmalloc library (libtcmalloc.so) is not found.")
-    
-    # Check TF_support
-    for var in ["TF_ENABLE_ONEDNN_OPTS", "ENABLE_TF_OPTS", "NANO_TF_INTER_OP"]:
-        if not _env_variable_is_set(var, env_copy) or env_copy[var] != correct_env[var]:
-            flag["TF"] = 0
-            name["TF"] = name["TF"] + var + " "
-            output_list.append("export " + var + "=" + correct_env[var])
+    # predict with onnx
+    if 'onnx' in args.inference_framework:
+        if args.cores:
+            forecaster.build_onnx(thread_num=args.cores)
+        st = time.time()
+        yhat = forecaster.predict_with_onnx(test_loader, quantize=args.quantize)
+        total_time = time.time()-st
+        records['onnx_infer_throughput'] = inference_sample_num / total_time
 
-    # Check LD_PRELOAD    
-    if not _env_variable_is_set("LD_PRELOAD", env_copy) or not _find_path(env_copy["LD_PRELOAD"]):
-        flag["LD_PRELOAD"] = 0
-        output_list.append("export LD_PRELOAD=" + correct_env["LD_PRELOAD"])
-   
-    # Output overview
-    print(">"*20,"Environment Variables",">"*20)
-    disabled_logo = "\033[0;31mnot enabled \033[0m" + "\033[0;31m\u2718\033[0m"
-    abled_logo = "\033[0;32m enabled \033[0m" + "\033[0;32m\u2714\033[0m"
-    for category in ["LD_PRELOAD", "tcmalloc", "Intel OpenMp", "TF"]:
-        if flag[category]  == 0:
-            print(category, name[category], disabled_logo)
-        else:
-            print(category, abled_logo)
-    
-    # Output suggestions
-    
-    if output_list != []:
-        print(" ")
-        print("+" * 20,"Suggested change: ", "+" * 20)
-        for info in output_list:
-            print(info)
-        print("+" * 60, "\n")
-         
-    print("<"*20, "Environment Variables", "<"*20, "\n")
+    # predict with openvino
+    if 'openvino' in args.inference_framework:
+        if args.cores:
+            forecaster.build_openvino(thread_num=args.cores)
+        st = time.time()
+        yhat = forecaster.predict_with_openvino(test_loader, quantize=args.quantize)
+        total_time = time.time()-st
+        records['openvino_infer_throughput'] = inference_sample_num / total_time
 
 
+def latency():
+    """
+    latency stage will record inference latency.
+    """
+
+    try:
+        # load trained model
+        forecaster.load(model_path)
+    except:
+        # if no ckpt can be used, then train a new one
+        forecaster.fit(train_loader, epochs=1)
+
+    latency, latency_onnx, latency_vino = [], [], []
+
+    if args.quantize:
+        import onnxruntime
+        sess_options = onnxruntime.SessionOptions()
+        if args.cores:
+            sess_options.intra_op_num_threads = args.cores
+            sess_options.inter_op_num_threads = args.cores
+        forecaster.quantize(test_loader, framework=args.quantize_type, sess_options=sess_options)
+        print("QUANTIZATION DONE")
+
+    # predict
+    if 'torch' in args.inference_framework:
+        import torch
+        if args.cores:
+            torch.set_num_threads(args.cores)
+        with torch.no_grad():
+            if args.model == 'autoformer':
+                for x, y, x_, y_ in test_loader:
+                    st = time.time()
+                    yhat = forecaster.predict((x.numpy(), y.numpy(), x_.numpy(), y_.numpy()))
+                    latency.append(time.time()-st)
+            else:
+                for x, y in test_loader:
+                    st = time.time()
+                    yhat = forecaster.predict(x.numpy(), quantize=args.quantize)
+                    latency.append(time.time()-st)
+        records['torch_latency'] = stats.trim_mean(latency, latency_trim_portion)
+        records['torch_percentile_latency'] = np.percentile(latency, latency_percentile)
+
+    # predict with onnx
+    if 'onnx' in args.inference_framework:
+        if args.cores:
+            forecaster.build_onnx(thread_num=args.cores)
+        for x, y in test_loader:
+            st = time.time()
+            yhat = forecaster.predict_with_onnx(x.numpy(), quantize=args.quantize)
+            latency_onnx.append(time.time()-st)
+        records['onnx_latency'] = stats.trim_mean(latency_onnx, latency_trim_portion)
+        records['onnx_percentile_latency'] = np.percentile(latency_onnx, latency_percentile)
+
+    # predict with openvino
+    if 'openvino' in args.inference_framework:
+        if args.cores:
+            forecaster.build_openvino(thread_num=args.cores)
+        for x, y in test_loader:
+            st = time.time()
+            yhat = forecaster.predict_with_openvino(x.numpy(), quantize=args.quantize)
+            latency_vino.append(time.time()-st)
+        records['openvino_latency'] = stats.trim_mean(latency_vino, latency_trim_portion)
+        records['openvino_percentile_latency'] = np.percentile(latency_vino, latency_percentile)
+
+
+def result():
+    print(">>>>>>>>>>>>> test-run information >>>>>>>>>>>>>")
+    print("Model:", args.model)
+    print("Stage:", args.stage)
+    print("Dataset:", args.dataset)
+    if args.cores:
+        print("Cores:", args.cores)
+    else:
+        print("Cores:", psutil.cpu_count(logical=False) *
+              int(subprocess.getoutput('cat /proc/cpuinfo | '
+                                       'grep "physical id" | sort -u | wc -l')))
+    print("Lookback:", args.lookback)
+    print("Horizon:", args.horizon)
+
+    if args.stage == 'train':
+        print("\n>>>>>>>>>>>>> train result >>>>>>>>>>>>>")
+        print("avg throughput: {}".format(records['train_throughput']))
+        print(">>>>>>>>>>>>> train result >>>>>>>>>>>>>")
+    elif args.stage == 'latency':
+        for framework in args.inference_framework:
+            print("\n>>>>>>>>>>>>> {} latency result >>>>>>>>>>>>>".format(framework))
+            print("avg latency: {}ms".format(records[framework+'_latency'] * 1000))
+            print("p50 latency: {}ms".format(records[framework+'_percentile_latency'][0] * 1000))
+            print("p90 latency: {}ms".format(records[framework+'_percentile_latency'][1] * 1000))
+            print("p95 latency: {}ms".format(records[framework+'_percentile_latency'][2] * 1000))
+            print("p99 latency: {}ms".format(records[framework+'_percentile_latency'][3] * 1000))
+            print(">>>>>>>>>>>>> {} latency result >>>>>>>>>>>>>".format(framework))
+    else:
+        for framework in args.inference_framework:
+            print("\n>>>>>>>>>>>>> {} throughput result >>>>>>>>>>>>>".format(framework))
+            print("avg throughput: {}".format(records[framework+'_infer_throughput']))
+            print(">>>>>>>>>>>>> {} throughput result >>>>>>>>>>>>>".format(framework))
 
 if __name__ == '__main__':
-    CPU_info()
-    check_nano()
+
+    # read input arguments
+    # currently designed arguments
+    parser = argparse.ArgumentParser(description='Benchmarking Parameters')
+    parser.add_argument('-m', '--model', type=str, default='tcn', metavar='',
+                        help=('model name, choose from tcn/lstm/seq2seq/nbeats/autoformer,'
+                              ' default to "tcn".'))
+    parser.add_argument('-s', '--stage', type=str, default='train', metavar='',
+                        help=('stage name, choose from train/latency/throughput,'
+                              ' default to "train".'))
+    parser.add_argument('-d', '--dataset', type=str, default="tsinghua_electricity", metavar='',
+                        help=('dataset name, choose from nyc_taxi/tsinghua_electricity/'
+                              'synthetic_dataset, default to "tsinghua_electricity".'))
+    parser.add_argument('-f', '--framework', type=str, default="torch", metavar='',
+                        help='framework name, choose from torch/tensorflow, default to "torch".')
+    parser.add_argument('-c', '--cores', type=int, default=0, metavar='',
+                        help='core number, default to all physical cores.')
+    parser.add_argument('-l', '--lookback', type=int, metavar='lookback', required=True,
+                        help='required, the history time steps (i.e. lookback).')
+    parser.add_argument('-o', '--horizon', type=int, metavar='horizon', required=True,
+                        help='required, the output time steps (i.e. horizon).')
+
+    # useful arguments which are not concluded in the currently designed pattern.
+    parser.add_argument('--training_processes', type=int, default=1, metavar='',
+                        help='number of processes when training, default to 1.')
+    parser.add_argument('--training_batchsize', type=int, default=32, metavar='',
+                        help='batch size when training, default to 32.')
+    parser.add_argument('--training_epochs', type=int, default=1, metavar='',
+                        help='number of epochs when training, default to 1.')
+    parser.add_argument('--inference_batchsize', type=int, default=1, metavar='',
+                        help='batch size when infering, default to 1.')
+    parser.add_argument('--quantize', action='store_true',
+                        help='if use the quantized model to predict, default to False.')
+    parser.add_argument('--inference_framework', nargs='+', default=['torch'], metavar='',
+                        help=('predict without/with accelerator, choose from torch/onnx/openvino,'
+                        ' default to "torch" (i.e. predict without accelerator).'))
+    parser.add_argument('--ipex', action='store_true',
+                        help='if use ipex as accelerator for trainer, default to False.')
+    parser.add_argument('--quantize_type', type=str, default='pytorch_fx', metavar='',
+                        help=('quantize framework, choose from pytorch_fx/pytorch_ipex/'
+                              'onnxrt_qlinearops/openvino, default to "pytorch_fx".'))
+    parser.add_argument('--ckpt', type=str, default='checkpoints/tcn', metavar='',
+                        help=('checkpoint path of a trained model, e.g. "checkpoints/tcn",'
+                              ' default to "checkpoints/tcn".'))
+    args = parser.parse_args()
+    records = vars(args)
+
+    # anomaly detection for input arguments
+    models = ['tcn', 'lstm', 'seq2seq', 'nbeats', 'autoformer']
+    stages = ['train', 'latency', 'throughput']
+    datasets = ['tsinghua_electricity', 'nyc_taxi', 'synthetic_dataset']
+    frameworks = ['torch', 'tensorflow']
+    quantize_types = ['pytorch_fx', 'pytorch_ipex', 'onnxrt_qlinearops', 'openvino']
+    quantize_torch_types = ['pytorch_fx', 'pytorch_ipex']
+    invalidInputError(args.model in models,
+                      f"-m/--model argument should be one of {models}, but get '{args.model}'")
+    invalidInputError(args.stage in stages,
+                      f"-s/--stage argument should be one of {stages}, but get '{args.stage}'")
+    invalidInputError(args.dataset in datasets,
+                      (f"-d/--dataset argument should be one of {datasets},"
+                       " but get '{args.dataset}'"))
+    invalidInputError(args.framework in frameworks,
+                      (f"-f/--framework argument should be one of {frameworks},"
+                       " but get '{args.framework}'"))
+    invalidInputError(args.quantize_type in quantize_types,
+                      (f"--quantize_type argument should be one of {quantize_types},"
+                       " but get '{args.quantize_type}'"))
+    if args.quantize and 'torch' in args.inference_framework:
+        invalidInputError(args.quantize_type in quantize_torch_types,
+                          (f"if inference framework is 'torch', then --quantize_type"
+                           " argument should be one of {quantize_torch_types},"
+                           " but get '{args.quantize_type}'"))
+
+    if 'onnx' in args.inference_framework:
+        args.quantize_type = 'onnxrt_qlinearops'
+    elif 'openvino' in args.inference_framework:
+        args.quantize_type = 'openvino'
+
+    latency_trim_portion = 0.1
+    latency_percentile = [50, 90, 95, 99]
+    path = os.path.abspath(os.path.dirname(__file__))
+    model_path = os.path.join(path, args.ckpt)
+
+    # generate data
+    train_loader, test_loader = generate_data(args)
+
+    # initialize forecaster
+    forecaster = generate_forecaster(args)
+
+    # running stage
+    if args.stage == 'train':
+        train()
+    elif args.stage == 'latency':
+        latency()
+    elif args.stage == 'throughput':
+        throughput()
+
+    # print results
+    get_CPU_info()
+    check_nano_env()
+    result()
