@@ -33,6 +33,7 @@ python -m pytest -v -m "torch and not onnxrt16 and not automl and not distribute
                                                                                                         test/bigdl/chronos/forecaster \
                                                                                                         test/bigdl/chronos/metric \
                                                                                                         test/bigdl/chronos/pytorch \
+fi
 
 exit_status_0=$?
 if [ $exit_status_0 -ne 0 ];
