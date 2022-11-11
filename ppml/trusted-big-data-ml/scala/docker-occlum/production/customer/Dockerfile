@@ -20,4 +20,23 @@ ARG HTTP_PROXY_PORT
 ARG HTTPS_PROXY_HOST
 ARG HTTPS_PROXY_PORT
 
+#copy occlum runable instance
 COPY --from=final /opt/occlum_spark /opt/occlum_spark
+
+# Configure sgx and occlum deb repo
+RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends vim ca-certificates gnupg2 jq make gdb wget libfuse-dev libtool tzdata && \
+                echo 'deb [arch=amd64] https://download.01.org/intel-sgx/sgx_repo/ubuntu focal main' | tee /etc/apt/sources.list.d/intel-sgx.list && \
+                wget -qO - https://download.01.org/intel-sgx/sgx_repo/ubuntu/intel-sgx-deb.key | apt-key add -
+
+RUN echo 'deb [arch=amd64] https://occlum.io/occlum-package-repos/debian focal main' | tee /etc/apt/sources.list.d/occlum.list && \
+                wget -qO - https://occlum.io/occlum-package-repos/debian/public.key | apt-key add -
+
+#Install sgx dependencies and occlum
+RUN apt-get update && apt-cache policy occlum
+RUN apt-get install -y occlum
+RUN apt-get install -y libsgx-uae-service libsgx-dcap-ql
+# glibc
+RUN apt install -y occlum-toolchains-glibc
+RUN echo "source /etc/profile" >> $HOME/.bashrc
+
+ENV PATH="/opt/occlum/build/bin:/usr/local/occlum/bin:$PATH"
