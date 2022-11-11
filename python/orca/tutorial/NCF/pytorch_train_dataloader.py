@@ -30,14 +30,10 @@ from bigdl.orca.learn.metrics import Accuracy, Precision, Recall
 sc = init_orca_context()
 
 
-# Step 2: Define train and test datasets as PyTorch DataLoader
-dataset_dir = "./ml-1m"
-_, user_num, item_num = load_dataset(dataset_dir)
-
-
-# Step 3: Define the model, optimizer and loss
+# Step 2: Define the model, optimizer and loss
 def model_creator(config):
-    model = NCF(config['user_num'], config['item_num'],
+    _, user_num, item_num = load_dataset(config['dataset_dir'])
+    model = NCF(user_num, item_num,
                 factor_num=config['factor_num'],
                 num_layers=config['num_layers'],
                 dropout=config['dropout'],
@@ -52,15 +48,15 @@ def optimizer_creator(model, config):
 loss = nn.BCEWithLogitsLoss()
 
 
-# Step 4: Distributed training with Orca PyTorch Estimator
+# Step 3: Distributed training with Orca PyTorch Estimator
+dataset_dir = "./ml-1m"
 backend = "ray"  # "ray" or "spark"
 
 est = Estimator.from_torch(model=model_creator, optimizer=optimizer_creator,
                            loss=loss,
                            metrics=[Accuracy(), Precision(), Recall()],
                            backend=backend,
-                           config={'user_num': user_num, 'item_num': item_num,
-                                   'dataset_dir': dataset_dir,
+                           config={'dataset_dir': dataset_dir,
                                    'num_ng': 4,
                                    'factor_num': 16,
                                    'num_layers': 3,
@@ -70,16 +66,16 @@ est = Estimator.from_torch(model=model_creator, optimizer=optimizer_creator,
 est.fit(data=train_loader_func, epochs=10, batch_size=256)
 
 
-# Step 5: Distributed evaluation of the trained model
+# Step 4: Distributed evaluation of the trained model
 result = est.evaluate(data=test_loader_func, batch_size=256)
 print('Evaluation results:')
 for r in result:
     print(r, ":", result[r])
 
 
-# Step 6: Save the trained PyTorch model
+# Step 5: Save the trained PyTorch model
 est.save("NCF_model")
 
 
-# Step 7: Stop Orca Context when program finishes
+# Step 6: Stop Orca Context when program finishes
 stop_orca_context()
