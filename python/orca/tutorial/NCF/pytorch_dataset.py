@@ -23,7 +23,6 @@ import pandas as pd
 import scipy.sparse as sp
 
 import torch.utils.data as data
-from sklearn.model_selection import train_test_split
 
 
 class NCFData(data.Dataset):
@@ -81,51 +80,13 @@ def load_dataset(dataset_dir):
     user_num = data_X['user'].max() + 1
     item_num = data_X['item'].max() + 1
 
-    return data_X, user_num, item_num
-
-
-def train_loader_func(config, batch_size):
-    data_X, user_num, item_num = load_dataset(config['dataset_dir'])
-    data_X = data_X.values.tolist()
-
     # load ratings as a dok matrix
     train_mat = sp.dok_matrix((user_num, item_num), dtype=np.int64)
-    for x in data_X:
+    for x in data_X.values.tolist():
         train_mat[x[0], x[1]] = 1
 
-    # train test split
-    train_data, _ = train_test_split(data_X, test_size=0.2, random_state=100)
-
-    train_dataset = NCFData(train_data, item_num, train_mat, config['num_ng'])
-    train_dataset.ng_sample()
-    train_loader = data.DataLoader(train_dataset, batch_size=batch_size,
-                                   shuffle=True, num_workers=0)
-    return train_loader
-
-
-def test_loader_func(config, batch_size):
-    data_X, user_num, item_num = load_dataset(config['dataset_dir'])
-    data_X = data_X.values.tolist()
-
-    # load ratings as a dok matrix
-    train_mat = sp.dok_matrix((user_num, item_num), dtype=np.int64)
-    for x in data_X:
-        train_mat[x[0], x[1]] = 1
-
-    # train test split
-    _, test_data = train_test_split(data_X, test_size=0.2, random_state=100)
-
-    test_dataset = NCFData(test_data, item_num, train_mat, config['num_ng'])
-    test_dataset.ng_sample()
-    test_loader = data.DataLoader(test_dataset, batch_size=batch_size,
-                                  shuffle=False, num_workers=0)
-    return test_loader
+    return data_X, user_num, item_num, train_mat
 
 
 if __name__ == "__main__":
-    dataset_dir = "./ml-1m"
-    config = {'dataset_dir': dataset_dir,
-              'num_ng': 4}
-
-    train_loader_func(config, 256)
-    test_loader_func(config, 256)
+    load_dataset("./ml-1m")
