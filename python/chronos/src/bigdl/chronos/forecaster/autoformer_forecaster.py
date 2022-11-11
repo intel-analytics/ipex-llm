@@ -548,7 +548,8 @@ class AutoformerForecaster(Forecaster):
                                             torch.from_numpy(data[3]),),
                               batch_size=batch_size,
                               shuffle=False)
-
+        # If jit-model is compiled in the context manager, it will not be used for the inference.
+        self.jit_fp32
         with torch.jit.optimized_execution(should_optimize=False):
             return self.trainer.predict(self.jit_fp32, data)
 
