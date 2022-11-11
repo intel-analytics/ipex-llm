@@ -313,9 +313,23 @@ class TestPyTorchEstimator(TestCase):
         estimator.fit(df, batch_size=4, epochs=2,
                       feature_cols=["feature"],
                       label_cols=["label"])
-        estimator.evaluate(df, batch_size=4,
-                           feature_cols=["feature"],
-                           label_cols=["label"])
+        worker_stats = estimator.evaluate(df, batch_size=4,
+                                          feature_cols=["feature"],
+                                          label_cols=["label"],
+                                          reduce_results=False, profile=True)
+        acc = [stat["Accuracy"].data.item() for stat in worker_stats]
+        loss = [stat["val_loss"] for stat in worker_stats]
+        validation_time = [stat["profile"]["mean_validation_s"] for stat in worker_stats]
+        forward_time = [stat["profile"]["mean_eval_fwd_s"] for stat in worker_stats]
+        from bigdl.orca.learn.pytorch.utils import process_stats
+        agg_worker_stats = process_stats(worker_stats)
+        assert round(agg_worker_stats["Accuracy"].data.item(), 4) == \
+               round(sum(acc) / 2, 4)
+        assert round(agg_worker_stats["val_loss"], 4) == round(sum(loss) / 2, 4)
+        assert round(agg_worker_stats["profile"]["mean_validation_s"], 4) == \
+               round(sum(validation_time) / 2, 4)
+        assert round(agg_worker_stats["profile"]["mean_eval_fwd_s"], 4) == \
+               round(sum(forward_time) / 2, 4)
 
     def test_partition_num_less_than_workers(self):
         sc = init_nncontext()

@@ -447,10 +447,10 @@ jobs:
           export final_name=${image_name}-build
           export container_name=${TAG}-container
           bash ./production/occlum-build.sh -c $container_name -i $image_name -f $final_name
-          sudo docker push ${image}:${TAG}
-          docker tag ${image}:${TAG} 10.239.45.10/arda/${image}:${TAG}
-          docker push 10.239.45.10/arda/${image}:${TAG}
-          docker rmi -f ${image}:${TAG}
+          sudo docker push ${final_name}
+          docker tag ${final_name} 10.239.45.10/arda/${final_name}
+          docker push 10.239.45.10/arda/${final_name}
+          docker rmi -f ${final_name}
   bigdl-ppml-trusted-realtime-ml-scala-graphene:
     if: ${{ github.event.inputs.artifact == 'bigdl-ppml-trusted-realtime-ml-scala-graphene' || github.event.inputs.artifact == 'all' }}
     runs-on: [self-hosted, Shire]
@@ -630,6 +630,7 @@ jobs:
           --build-arg https_proxy=${HTTPS_PROXY} \
           --build-arg BASE_IMAGE_NAME=${base_image} \
           --build-arg SGX_MEM_SIZE=64G \
+          --build-arg SGX_LOG_LEVEL=error \
           --build-arg BASE_IMAGE_TAG=${TAG} \
           -t ${image}:${TAG} -f ./Dockerfile .
         sudo docker push ${image}:${TAG}

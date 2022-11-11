@@ -144,6 +144,6 @@ if __name__ == '__main__':
                                                args.output_path,
                                                sparse_int_features,
                                                sparse_string_features, dense_features)
-    train_tbl.write_parquet(os.path.join(args.output_path, 'train_processed'))
-    valid_tbl.write_parquet(os.path.join(args.output_path, 'test_processed'))
+    train_tbl.write_parquet(os.path.join(args.output_path, 'train_multi_task'))
+    valid_tbl.write_parquet(os.path.join(args.output_path, 'test_multi_task'))
     stop_orca_context()
