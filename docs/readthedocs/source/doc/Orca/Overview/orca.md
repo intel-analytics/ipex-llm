@@ -36,7 +36,7 @@ from bigdl.orca import OrcaContext
 spark = OrcaContext.get_spark_session()
 
 num_users, num_items = 200, 100
-rdd = sc.range(0, 5120).map(
+rdd = sc.range(0, 512).map(
     lambda x: [random.randint(0, num_users-1), random.randint(0, num_items-1), random.randint(0, 1)])
 schema = StructType([StructField("user", IntegerType(), False),
                      StructField("item", IntegerType(), False),
@@ -94,8 +94,7 @@ est.fit(data=train_df,
 # Distributed inference
 prediction_df = est.predict(test_df,
                             batch_size=batch_size,
-                            feature_cols=['user', 'item'],
-                            steps=val_steps)
+                            feature_cols=['user', 'item'])
 ```
 
 Stop [Orca Context](orca-context.md) after you finish your program:
