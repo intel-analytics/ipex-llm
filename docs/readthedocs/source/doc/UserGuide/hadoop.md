@@ -152,7 +152,7 @@ Follow the steps below if you need to run BigDL with [spark-submit](https://spar
 ---
 ### 4. Run on YARN with bigdl-submit
 
-Follow the steps below if you need to run BigDL with bigdl-submit
+Follow the steps below if you need to run BigDL with bigdl-submit.
 
 - Pack the current active conda environment to `environment.tar.gz` (you can use any name you like) in the current working directory:
 
