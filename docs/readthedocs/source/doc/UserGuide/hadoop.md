@@ -105,11 +105,21 @@ Follow the steps below if you need to run BigDL with [spark-submit](https://spar
 
 - Use `spark-submit` to submit your BigDL program (e.g. script.py). You can adjust the configurations according to your cluster settings. Note that if `environment.tar.gz` is not under the same directory with `script.py`, you may need to modify its path in `--archives` in the running command below.
 
+  Setup environment variables:
+  ```bash
+  export SPARK_HOME=/path/to/spark # the folder path where you extract the Spark package
+  export SPARK_VERSION="downloaded spark version"
+
+  export BIGDL_HOME=/path/to/unzipped_BigDL
+  export BIGDL_VERSION="downloaded BigDL version"
+  ```
+
   For `yarn-cluster` mode:
   ```bash
-  spark-submit \
+  ${SPARK_HOME}/bin/spark-submit \
       --conf spark.yarn.appMasterEnv.PYSPARK_PYTHON=environment/bin/python \
       --conf spark.executorEnv.PYSPARK_PYTHON=environment/bin/python \
+      --jars ${BIGDL_HOME}/jars/bigdl-assembly-spark_${SPARK_VERSION}-${BIGDL_VERSION}-jar-with-dependencies.jar \
       --master yarn \
       --deploy-mode cluster \
       --executor-memory 10g \
@@ -124,7 +134,10 @@ Follow the steps below if you need to run BigDL with [spark-submit](https://spar
 
   For `yarn-client` mode:
   ```bash
-  spark-submit \
+  ${SPARK_HOME}/bin/spark-submit \
+      --conf spark.pyspark.driver.python=/path/to/python \
+      --conf spark.pyspark.python=environment/bin/python \
+      --jars ${BIGDL_HOME}/jars/bigdl-assembly-spark_${SPARK_VERSION}-${BIGDL_VERSION}-jar-with-dependencies.jar \
       --master yarn \
       --deploy-mode client \
       --executor-memory 10g \
