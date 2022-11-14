@@ -40,6 +40,7 @@ except IOError:
     sys.exit(-1)
 
 VERSION = __version__  # noqa
+PYSPARK_VERSION = open(os.path.join(bigdl_home, 'python/default_spark_version.txt'), 'r').read().strip()
 
 building_error_msg = """
 If you are packing python API from BigDL source, you should use the release script:
@@ -96,6 +97,7 @@ def setup_package():
     metadata = dict(
         name='bigdl-dllib',
         version=VERSION,
+        pyspark_version=PYSPARK_VERSION,
         description='Distributed Deep Learning Library for Apache Spark',
         long_description=long_description,
         long_description_content_type="text/markdown",
@@ -106,7 +108,7 @@ def setup_package():
         packages=get_bigdl_packages(),
         scripts=scripts,
         install_requires=[
-            'numpy>=1.19.5', 'pyspark==2.4.6', 'conda-pack==0.3.1',
+            'numpy>=1.19.5', 'pyspark=='+PYSPARK_VERSION , 'conda-pack==0.3.1',
             'six>=1.10.0', 'bigdl-core==2.2.0.dev0'],
         dependency_links=['https://d3kbcqa49mib13.cloudfront.net/spark-2.0.0-bin-hadoop2.7.tgz'],
         include_package_data=True,
