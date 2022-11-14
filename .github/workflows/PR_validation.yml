@@ -29,7 +29,7 @@ on:
       - 'python/friesian/**'
       - '.github/actions/friesian/**'
       - '.github/workflows/PR_validation.yml'
-      - '.github/actions/python-requirements/**'
+      
 
 
 permissions:
