@@ -46,7 +46,6 @@ jobs:
           conda remove -n chronos-prvn-env-1 -y --all
           conda create -n chronos-prvn-env-1 -y python==3.7.10 setuptools==58.0.4 -c ${GONDOLIN_CONDA_CHANNEL} --override-channels
           source activate chronos-prvn-env-1
-          pip install -i ${PIP_MIRROR} --trusted-host ${TRUSTED_HOST} -r .github/actions/python-requirements/requirements-chronos-python-ut.txt
           apt-get update
           apt-get install -y libgl1
           apt-get install patchelf
