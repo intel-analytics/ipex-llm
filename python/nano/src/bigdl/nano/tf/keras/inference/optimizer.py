@@ -93,9 +93,12 @@ class InferenceOptimizer(BaseInferenceOptimizer):
         The available methods are "original", "openvino_fp32", "onnxruntime_fp32", "int8".
 
         :param model: A keras.Model to be optimized
-        :param training_data: An unbatched tf.data.Dataset object for for training dataset.
-               Users should be careful with this parameter since this dataloader
-               might be exposed to the model, which causing data leak.
+        :param training_data: An unbatched tf.data.Dataset object which is used for training.
+                              This dataset will be used as calibration dataset for
+                              Post-Training Static Quantization (PTQ), as well as be used for
+                              generating input_sample to calculate latency.
+                              To avoid data leak during calibration, please use training
+                              dataset as much as possible.
         :param validation_data: (optional) An unbatched tf.data.Dataset object for accuracy
                evaluation. This is only needed when users care about the possible accuracy drop.
         :param metric: (optional) A tensorflow.keras.metrics.Metric object which is used for
@@ -210,6 +213,7 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                         result_map[method]["status"] = "early stopped"
                         continue
                 except Exception as e:
+                    print(e)
                     result_map[method]["status"] = "fail to forward"
                     print(f"----------{method} failed to forward----------")
                     continue

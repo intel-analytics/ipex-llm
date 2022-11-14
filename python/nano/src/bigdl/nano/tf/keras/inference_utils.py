@@ -211,7 +211,7 @@ class InferenceUtils:
             final_openvino_option = {"INFERENCE_PRECISION_HINT": "f32"}
             if openvino_config is not None:
                 final_openvino_option.update(openvino_config)
-            return KerasOpenVINOModel(self, input_sample=input_sample,
+            return KerasOpenVINOModel(self,
                                       thread_num=thread_num,
                                       config=final_openvino_option,
                                       logging=logging)

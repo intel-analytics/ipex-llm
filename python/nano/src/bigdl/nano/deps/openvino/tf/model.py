@@ -43,12 +43,11 @@ class KerasOpenVINOModel(AcceleratedKerasModel):
         with TemporaryDirectory() as dir:
             dir = Path(dir)
             if isinstance(model, tf.keras.Model):
-                export(model, str(dir / 'tmp.xml'), logging)
+                export(model, str(dir / 'tmp.xml'), logging=logging)
                 ov_model_path = dir / 'tmp.xml'
             self.ov_model = OpenVINOModel(ov_model_path,
                                           thread_num=thread_num,
-                                          config=config,
-                                          logging=logging)
+                                          config=config)
             super().__init__(None)
 
     def forward_step(self, *inputs):
