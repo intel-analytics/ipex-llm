@@ -25,8 +25,6 @@ from bigdl.dllib.utils import nest
 from bigdl.dllib.utils.log4Error import invalidInputError
 
 import numpy as np
-from pandas.core.frame import DataFrame as PandasDataFrame
-from pyspark.sql.dataframe import DataFrame as SparkDataFrame
 import pyspark.sql.functions as F
 from pyspark import RDD
 from typing import (Union, List, Dict)
