@@ -44,5 +44,9 @@ RUN echo "source /etc/profile" >> $HOME/.bashrc
 #COPY bash files
 COPY --from=final /opt/*.sh /opt/
 COPY --from=final /opt/sqlSuites /opt
+COPY --from=final /opt/spark /opt/spark
+COPY --from=final /var/run/secrets /var/run/secrets
+COPY --from=final /opt/intel /opt/intel
+
 
 ENV PATH="/opt/occlum/build/bin:/usr/local/occlum/bin:$PATH"
