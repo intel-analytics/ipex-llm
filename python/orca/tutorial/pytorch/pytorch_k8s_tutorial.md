@@ -243,9 +243,10 @@ Please download the Fashion-MNIST dataset manually on your __Develop Node__ (whe
 git clone https://github.com/zalandoresearch/fashion-mnist.git
 
 # Move the dataset to NFS
-mv /path/to/fashion-mnist/data/fashion /bigdl/nfsdata/dataset
+mv /path/to/fashion-mnist/data/fashion /bigdl/nfsdata/dataset/FashionMNIST/raw
 ```
 
+__Note:__ PyTorcg requires tge directory of dataset where `FashionMNIST/raw/train-images-idx3-ubyte` and `FashionMNIST/raw/t10k-images-idx3-ubyte` exist.
 
 
 # 5. Prepare Custom Modules
