@@ -60,6 +60,7 @@ subtrees:
             subtrees:
               - entries:
                 - file: doc/Orca/Tutorial/yarn
+                - file: doc/Orca/Tutorial/k8s
           - file: doc/Orca/Overview/known_issues
             title: "Tips and Known Issues"
           - file: doc/PythonAPI/Orca/index
