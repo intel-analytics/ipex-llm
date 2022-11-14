@@ -238,7 +238,6 @@ class SparkRunner:
         self.application_id = application_id
 
         if self.model_creator is None:
-            import tensorflow as tf
             from pyspark import SparkFiles
             if self.model_load.startswith("hdfs") or self.model_load.startswith("s3"):
                 self.model_load = self.model_load.split("/")[-1]
