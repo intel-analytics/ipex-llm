@@ -1,3 +1,5 @@
+# Run on Kubernetes Clusters
+
 This tutorial provides a step-by-step guide on how to run BigDL-Orca programs on Kubernetes (K8s) clusters, using a [PyTorch Fashin-MNIST program](https://github.com/intel-analytics/BigDL/tree/main/docs/docs/tutorials/tutorial_example/Fashion_MNIST/) as a working example.
 
 
@@ -597,7 +599,7 @@ Before submitting the Orca application, you should:
         ```
 
 ### 6.3.1 K8s Client
-BigDL has provided an example YAML file (see __[orca-tutorial-client.yaml](./docker/orca-tutorial-client.yaml)__, which describes a Deployment that runs the `intelanalytics/bigdl-k8s:2.1.0` image) to run the tutorial FashionMNIST program on k8s-client mode:
+BigDL has provided an example YAML file (see __[orca-tutorial-client.yaml](../../../../../../python/orca/tutorial/pytorch/docker/orca-tutorial-client.yaml)__, which describes a Deployment that runs the `intelanalytics/bigdl-k8s:2.1.0` image) to run the tutorial FashionMNIST program on k8s-client mode:
 
 __Notes:__ 
 * Please call `init_orca_context` at very begining part of each Orca program.
@@ -749,7 +751,7 @@ kubectl delete job orca-pytorch-job
 ```
 
 ### 6.3.2 K8s Cluster
-BigDL has provided an example YAML file (see __[orca-tutorial-cluster.yaml](./docker/orca-tutorial-cluster.yaml)__, which describes a Deployment that runs the `intelanalytics/bigdl-k8s:2.1.0` image) to run the tutorial FashionMNIST program on k8s-cluster mode:
+BigDL has provided an example YAML file (see __[orca-tutorial-cluster.yaml](../../../../../../python/orca/tutorial/pytorch/docker/orca-tutorial-cluster.yaml)__, which describes a Deployment that runs the `intelanalytics/bigdl-k8s:2.1.0` image) to run the tutorial FashionMNIST program on k8s-cluster mode:
 
 __Notes:__ 
 * Please call `init_orca_context` at very begining part of each Orca program.
@@ -916,7 +918,7 @@ Before submitting the example application, you should:
         ```
 
 ### 6.4.1 K8s Client
-BigDL has provided an example YAML file (see __[integrated_image_client.yaml](./docker/integrate_image_client.yaml)__, which describes a deployment that runs the `intelanalytics/bigdl-k8s:orca-2.1.0` image) to run the tutorial FashionMNIST program on k8s-client mode:
+BigDL has provided an example YAML file (see __[integrated_image_client.yaml](../../../../../../python/orca/tutorial/pytorch/docker/integrate_image_client.yaml)__, which describes a deployment that runs the `intelanalytics/bigdl-k8s:orca-2.1.0` image) to run the tutorial FashionMNIST program on k8s-client mode:
 
 __Notes:__
 * Please call `init_orca_context` at very begining part of each Orca program.
@@ -1064,7 +1066,7 @@ kubectl delete job orca-integrate-job
 ```
 
 ### 6.4.2 K8s Cluster
-BigDL has provided an example YAML file (see __[integrate_image_cluster.yaml](./docker/integrate_image_cluster.yaml)__, which describes a deployment that runs the `intelanalytics/bigdl-k8s:orca-2.1.0` image) to run the tutorial FashionMNIST program on k8s-cluster mode:
+BigDL has provided an example YAML file (see __[integrate_image_cluster.yaml](../../../../../../python/orca/tutorial/pytorch/docker/integrate_image_cluster.yaml)__, which describes a deployment that runs the `intelanalytics/bigdl-k8s:orca-2.1.0` image) to run the tutorial FashionMNIST program on k8s-cluster mode:
 
 __Notes:__
 * Please call `init_orca_context` at very begining part of each Orca program.
