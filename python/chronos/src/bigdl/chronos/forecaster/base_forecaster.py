@@ -714,8 +714,8 @@ class BasePytorchForecaster(Forecaster):
                                                       input_data=data,
                                                       batch_size=batch_size)
                 else:
-                    self.accelerated_model.eval()
-                    yhat = _pytorch_fashion_inference(model=self.accelerated_model,
+                    self.optim_model.eval()
+                    yhat = _pytorch_fashion_inference(model=self.optim_model,
                                                       input_data=data,
                                                       batch_size=batch_size)
             if not is_local_data:
@@ -1057,8 +1057,8 @@ class BasePytorchForecaster(Forecaster):
                                                       input_data=input_data,
                                                       batch_size=batch_size)
                 else:
-                    self.accelerated_model.eval()
-                    yhat = _pytorch_fashion_inference(model=self.accelerated_model,
+                    self.optim_model.eval()
+                    yhat = _pytorch_fashion_inference(model=self.optim_model,
                                                       input_data=input_data,
                                                       batch_size=batch_size)
 
