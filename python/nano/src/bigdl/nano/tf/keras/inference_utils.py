@@ -42,7 +42,8 @@ class InferenceUtils:
                  inputs: List[str] = None,
                  outputs: List[str] = None,
                  sample_size: int = 100,
-                 onnxruntime_session_options=None):
+                 onnxruntime_session_options=None,
+                 openvino_config=None):
         """
         Post-training quantization on a keras model.
 
@@ -92,6 +93,8 @@ class InferenceUtils:
                             the lower the performance degradation, but the longer the time.
         :param onnxruntime_session_options: The session option for onnxruntime, only valid when
                                             accelerator='onnxruntime', otherwise will be ignored.
+        :param openvino_config: The config to be inputted in core.compile_model. Only valid when
+                                accelerator='openvino', otherwise will be ignored.
         :return:            A TensorflowBaseModel for INC. If there is no model found, return None.
         """
         invalidInputError(approach == 'static', "Only 'static' approach is supported now.")
@@ -128,7 +131,8 @@ class InferenceUtils:
                                       drop_type=drop_type,
                                       maximal_drop=maximal_drop,
                                       max_iter_num=max_trials,
-                                      sample_size=sample_size)
+                                      sample_size=sample_size,
+                                      config=openvino_config)
         elif accelerator == 'onnxruntime':
             # convert tensorflow model to onnx model
             from bigdl.nano.deps.onnxruntime.tensorflow.tensorflow_onnxruntime_model \
@@ -166,7 +170,8 @@ class InferenceUtils:
               accelerator: Optional[str] = None,
               input_sample=None,
               thread_num: Optional[int] = None,
-              onnxruntime_session_options=None):
+              onnxruntime_session_options=None,
+              openvino_config=None):
         """
         Trace a Keras model and convert it into an accelerated module for inference.
 
@@ -181,10 +186,16 @@ class InferenceUtils:
                            or accelerator='openvino'.
         :param onnxruntime_session_options: The session option for onnxruntime, only valid when
                                             accelerator='onnxruntime', otherwise will be ignored.
+        :param openvino_config: The config to be inputted in core.compile_model. Only valid when
+                                accelerator='openvino', otherwise will be ignored.
         :return: Model with different acceleration(OpenVINO/ONNX Runtime).
         """
         if accelerator == 'openvino':
-            return KerasOpenVINOModel(self, input_sample, thread_num)
+            final_openvino_option = {"INFERENCE_PRECISION_HINT": "f32"}
+            if openvino_config is not None:
+                final_openvino_option.update(openvino_config)
+            return KerasOpenVINOModel(self, input_sample=input_sample,
+                                      thread_num=thread_num, config=final_openvino_option)
         elif accelerator == 'onnxruntime':
             if onnxruntime_session_options is None:
                 import onnxruntime

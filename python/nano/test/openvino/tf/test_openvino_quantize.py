@@ -21,7 +21,7 @@ from bigdl.nano.tf.keras import Model
 
 
 class TestOpenVINO(TestCase):
-    def test_model_trace_openvino(self):
+    def test_model_quantize_openvino(self):
         model = MobileNetV2(weights=None, input_shape=[40, 40, 3], classes=10)
         model = Model(inputs=model.inputs, outputs=model.outputs)
         train_examples = np.random.random((100, 40, 40, 3))
@@ -52,3 +52,11 @@ class TestOpenVINO(TestCase):
         preds = model.predict(train_examples)
         openvino_preds = openvino_quantized_model.predict(train_examples)
         np.testing.assert_allclose(preds, openvino_preds, rtol=1e-2)
+
+        # Case 3: with config
+        openvino_quantized_model = model.quantize(accelerator='openvino',
+                                                  calib_dataset=train_dataset,
+                                                  openvino_config={"PERFORMANCE_HINT": "LATENCY"})
+
+        y_hat = openvino_quantized_model(train_examples[:10])
+        assert y_hat.shape == (10, 10)
