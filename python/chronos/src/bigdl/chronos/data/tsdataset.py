@@ -406,7 +406,7 @@ class TSDataset:
 
         :return: the tsdataset instance.
         '''
-        self.df = _abnormal_value_repair(df=self.df, dt_col=self.dt_col, id_col=self.id_col,
+        self.df = _abnormal_value_repair(df=self.df, dt_col=self.dt_col,
                                          mode=mode, threshold=threshold)
         return self
 

@@ -1411,14 +1411,14 @@ class TestTSDataset(TestCase):
                                            target_col=['a', 'b', 'c', 'd', 'e'],
                                            extra_feature_col=None,
                                            repair=False)
-            flag = _abnormal_value_check(tsdata.df, tsdata.dt_col, tsdata.id_col, threshold=3)
+            flag = _abnormal_value_check(tsdata.df, tsdata.dt_col, threshold=3)
             assert flag == False
 
             if val is 'relative':
                 tsdata = tsdata.repair_abnormal_data()
-                flag = _abnormal_value_check(tsdata.df, tsdata.dt_col, tsdata.id_col, threshold=3)
+                flag = _abnormal_value_check(tsdata.df, tsdata.dt_col, threshold=3)
                 assert flag == True
             else:
                 tsdata = tsdata.repair_abnormal_data(mode=val, threshold=(-1, 2))
-                flag = _abnormal_value_check(tsdata.df, tsdata.dt_col, tsdata.id_col, threshold=3)
+                flag = _abnormal_value_check(tsdata.df, tsdata.dt_col, threshold=3)
                 assert flag == True
