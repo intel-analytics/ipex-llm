@@ -32,16 +32,24 @@ sc = init_orca_context()
 
 # Step 2: Define train and test datasets using Orca XShards
 dataset_dir = "./ml-1m"
-train_data, test_data, user_num, item_num = prepare_data(dataset_dir)
+feature_cols = ['user', 'item',
+                'gender', 'occupation', 'zipcode', 'category',  # categorical feature
+                'age']  # numerical feature
+label_cols = ["label"]
+total_cols = feature_cols + label_cols
+train_data, test_data, num_embed_cat_feats = prepare_data(dataset_dir,
+                                                          num_ng=4, total_cols=total_cols)
 
 
 # Step 3: Define the model, optimizer and loss
 def model_creator(config):
-    model = NCF(config['user_num'], config['item_num'],
-                factor_num=config['factor_num'],
+    model = NCF(factor_num=config['factor_num'],
                 num_layers=config['num_layers'],
                 dropout=config['dropout'],
-                model=config['model'])
+                model=config['model'],
+                cat_feats_dim=config['cat_feats_dim'],
+                numeric_feats_dim=config['numeric_feats_dim'],
+                num_embed_cat_feats=num_embed_cat_feats)
     model.train()
     return model
 
@@ -55,24 +63,30 @@ loss = nn.BCEWithLogitsLoss()
 # Step 4: Distributed training with Orca PyTorch Estimator
 backend = "spark"  # "ray" or "spark"
 
-est = Estimator.from_torch(model=model_creator, optimizer=optimizer_creator,
+est = Estimator.from_torch(model=model_creator,
+                           optimizer=optimizer_creator,
                            loss=loss,
                            metrics=[Accuracy(), Precision(), Recall()],
                            backend=backend,
-                           config={'user_num': user_num, 'item_num': item_num,
-                                   'dataset_dir': dataset_dir,
+                           config={'dataset_dir': dataset_dir,
                                    'factor_num': 16,
                                    'num_layers': 3,
                                    'dropout': 0.0,
                                    'lr': 0.001,
-                                   'model': "NeuMF-end"})
-est.fit(data=train_data, epochs=10, batch_size=256,
-        feature_cols=["user", "item"], label_cols=["label"])
+                                   'model': "NeuMF-end",
+                                   'cat_feats_dim': 6,
+                                   'numeric_feats_dim': 1})
+est.fit(data=train_data, epochs=10,
+        feature_cols=feature_cols,
+        label_cols=label_cols,
+        batch_size=1024)
 
 
 # Step 5: Distributed evaluation of the trained model
-result = est.evaluate(data=test_data, batch_size=256,
-                      feature_cols=["user", "item"], label_cols=["label"])
+result = est.evaluate(data=test_data,
+                      feature_cols=feature_cols,
+                      label_cols=label_cols,
+                      batch_size=1024)
 print('Evaluation results:')
 for r in result:
     print(r, ":", result[r])
