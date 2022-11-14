@@ -522,8 +522,8 @@ jobs:
           docker push 10.239.45.10/arda/${final_name}
           docker rmi -f ${final_name}
 
-bigdl-ppml-trusted-big-data-ml-scala-occlum-production:
-  if: ${{ github.event.inputs.artifact == 'bigdl-ppml-trusted-big-data-ml-scala-occlum-production' || github.event.inputs.artifact == 'all' }}
+bigdl-ppml-trusted-big-data-ml-scala-occlum-production-customer:
+  if: ${{ github.event.inputs.artifact == 'bigdl-ppml-trusted-big-data-ml-scala-occlum-production-customer' || github.event.inputs.artifact == 'all' }}
   runs-on: [ self-hosted, Shire ]
 
   steps:
