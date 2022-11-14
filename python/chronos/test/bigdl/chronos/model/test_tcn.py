@@ -19,6 +19,8 @@ from .. import op_distributed
 import numpy as np
 import tempfile
 import os
+from bigdl.chronos.utils import LazyImport
+TCNPytorch = LazyImport('bigdl.chronos.model.tcn')
 
 
 def create_data():
@@ -43,7 +45,6 @@ def create_data():
 
 @op_distributed
 class TestTcn(TestCase):
-    from bigdl.chronos.model.tcn import TCNPytorch
     train_data, val_data, test_data = create_data()
     model = TCNPytorch()
 

@@ -19,6 +19,8 @@ import numpy as np
 import tempfile
 import os
 import random
+from bigdl.chronos.utils import LazyImport
+Seq2SeqPytorch = LazyImport('bigdl.chronos.model.Seq2Seq_pytorch')
 
 
 def create_data():
@@ -43,7 +45,6 @@ def create_data():
 
 @op_distributed
 class TestSeq2SeqPytorch(TestCase):
-    from bigdl.chronos.model.Seq2Seq_pytorch import Seq2SeqPytorch
     train_data, val_data, test_data = create_data()
 
     def test_s2s_fit_evaluate(self):

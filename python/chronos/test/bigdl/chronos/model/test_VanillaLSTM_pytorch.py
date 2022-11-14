@@ -21,6 +21,8 @@ import numpy as np
 import tempfile
 import os
 import random
+from bigdl.chronos.utils import LazyImport
+VanillaLSTMPytorch = LazyImport('bigdl.chronos.model.VanillaLSTM_pytorch')
 
 
 def create_data(loader=False):
@@ -45,7 +47,6 @@ def create_data(loader=False):
 
 @op_distributed
 class TestVanillaLSTMPytorch(TestCase):
-    from bigdl.chronos.model.VanillaLSTM_pytorch import VanillaLSTMPytorch
     train_data, val_data, test_data = create_data()
 
     model = VanillaLSTMPytorch()

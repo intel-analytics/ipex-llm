@@ -22,7 +22,12 @@ import os
 
 from unittest import TestCase
 from bigdl.chronos.data import TSDataset
-from bigdl.chronos.data.experimental import XShardsTSDataset
+from bigdl.chronos.utils import LazyImport
+XShardsTSDataset = LazyImport('bigdl.chronos.data.experimental')
+read_csv = LazyImport('bigdl.orca.data.pandas')
+init_orca_context = LazyImport('bigdl.orca.data.pandas')
+stop_orca_context = LazyImport('bigdl.orca.data.pandas')
+OrcaContext = LazyImport('bigdl.orca.data.pandas')
 from ... import op_distributed
 
 from pandas.testing import assert_frame_equal
@@ -58,8 +63,6 @@ def get_ugly_ts_df():
 
 @op_distributed
 class TestXShardsTSDataset(TestCase):
-    from bigdl.orca.data.pandas import read_csv
-    from bigdl.orca.common import init_orca_context, stop_orca_context, OrcaContext
 
     def setUp(self):
         # In read_csv module, the initialized sc cannot be used normally

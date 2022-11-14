@@ -23,6 +23,9 @@ import pandas as pd
 import numpy as np
 from numpy.testing import assert_array_almost_equal
 from ... import op_tf2
+from bigdl.chronos.utils import LazyImport
+tf = LazyImport('tensorflow')
+MTNetKeras = LazyImport('bigdl.chronos.model.tf2.MTNet_keras')
 
 
 def create_data():
@@ -53,8 +56,6 @@ def create_data():
 
 @op_tf2
 class TestMTNetKeras(TestCase):
-    from bigdl.chronos.model.tf2.MTNet_keras import MTNetKeras
-    import tensorflow as tf
 
     def setup_method(self, method):
         tf.keras.backend.clear_session()

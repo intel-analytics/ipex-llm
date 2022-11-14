@@ -19,6 +19,10 @@ import pytest
 from unittest import TestCase
 import numpy as np
 from ... import op_tf2
+from bigdl.chronos.utils import LazyImport
+tf = LazyImport('tensorflow')
+LSTMSeq2Seq = LazyImport('bigdl.chronos.model.tf2.Seq2Seq_keras')
+model_creator = LazyImport('bigdl.chronos.model.tf2.Seq2Seq_keras')
 
 
 def create_data():
@@ -39,9 +43,7 @@ def create_data():
 
 
 @op_tf2
-class TestSeq2Seq(TestCase):
-    import tensorflow as tf
-    from bigdl.chronos.model.tf2.Seq2Seq_keras import LSTMSeq2Seq, model_creator
+class TestSeq2Seq(TestCase): 
 
     def setUp(self):
         pass

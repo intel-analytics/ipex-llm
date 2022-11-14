@@ -22,11 +22,12 @@ import numpy as np
 import os
 from numpy.testing import assert_array_almost_equal
 import pandas as pd
+from bigdl.chronos.utils import LazyImport
+ARIMAModel = LazyImport('bigdl.chronos.model.arima')
 
 
 @op_diff_set_all
 class TestARIMAModel(TestCase):
-    from bigdl.chronos.model.arima import ARIMAModel
     def setup_method(self, method):
         np.random.seed(0)
         self.seq_len = 400

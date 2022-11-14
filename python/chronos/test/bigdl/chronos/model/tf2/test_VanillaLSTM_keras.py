@@ -20,6 +20,10 @@ from ... import op_tf2
 import numpy as np
 import tempfile
 import os
+from bigdl.chronos.utils import LazyImport
+tf = LazyImport('tensorflow')
+LSTMModel = LazyImport('bigdl.chronos.model.tf2.VanillaLSTM_keras')
+model_creator = LazyImport('bigdl.chronos.model.tf2.VanillaLSTM_keras')
 
 
 def create_data():
@@ -44,8 +48,6 @@ def create_data():
 
 @op_tf2
 class TestVanillaLSTM(TestCase):
-    from bigdl.chronos.model.tf2.VanillaLSTM_keras import LSTMModel, model_creator
-    import tensorflow as tf
 
     def setUp(self):
         pass
