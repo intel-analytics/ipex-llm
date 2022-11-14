@@ -492,8 +492,23 @@ class TFRunner:
                           "Please input a model_creator when creating estimator "
                           "or use load function of the estimator to load a model.")
 
-        if self.backend == "tf-distributed" and self.model_creator is not None:
-            local_model = self.model_creator(self.config)
+        if self.backend == "tf-distributed":
+            if self.model_creator is not None:
+                local_model = self.model_creator(self.config)
+            else:
+                filepath = self.load_params["filepath"]
+                file_name = os.path.basename(filepath)
+                temp_path = os.path.join(tempfile.mkdtemp(), file_name)
+                if is_file(filepath):
+                    # h5 format
+                    get_remote_file_to_local(filepath, temp_path)
+                else:
+                    # savemodel format
+                    if os.path.exists(temp_path):
+                        os.makedirs(temp_path)
+                    get_remote_dir_to_local(filepath, temp_path)
+                self.load_params["filepath"] = temp_path
+                local_model = self.process_model_load(**self.load_params)
             try:
                 local_model.set_weights(self.model.get_weights())
             except Exception:
@@ -561,17 +576,39 @@ class TFRunner:
         finally:
             shutil.rmtree(temp_dir)
 
-    def load_model(self, filepath, custom_objects, compile, options):
+    def process_model_load(self, filepath, custom_objects, compile, options):
         """Load the model from provided local filepath."""
         import tensorflow as tf
         if options:
-            self.model = tf.keras.models.load_model(filepath, custom_objects, compile, options)
+            model = tf.keras.models.load_model(filepath, custom_objects, compile, options)
         else:  # To support older TensorFlow versions such as 2.1
-            self.model = tf.keras.models.load_model(filepath, custom_objects, compile)
+            model = tf.keras.models.load_model(filepath, custom_objects, compile)
+        return model
+
+    def load_model(self, filepath, custom_objects, compile, options):
+        """Load the model from provided local filepath."""
+        self.load_params = dict(
+            filepath=filepath,
+            custom_objects=custom_objects,
+            compile=compile,
+            options=options
+        )
+        if self.backend == "tf-distributed":
+            with self.strategy.scope():
+                self.model = self.process_model_load(**self.load_params)
+        else:
+            self.model = self.process_model_load(**self.load_params)
 
     def load_remote_model(self, filepath, custom_objects, compile, options):
         """Load the model from provided remote filepath."""
         import tensorflow as tf
+        params = dict(
+            filepath=filepath,
+            custom_objects=custom_objects,
+            compile=compile,
+            options=options
+        )
+        self.load_params = params
         file_name = os.path.basename(filepath)
         temp_path = os.path.join(tempfile.mkdtemp(), file_name)
         if is_file(filepath):
@@ -583,10 +620,12 @@ class TFRunner:
                 os.makedirs(temp_path)
             get_remote_dir_to_local(filepath, temp_path)
         try:
-            if options:
-                self.model = tf.keras.models.load_model(temp_path, custom_objects, compile, options)
-            else:  # To support older TensorFlow versions such as 2.1
-                self.model = tf.keras.models.load_model(temp_path, custom_objects, compile)
+            params["filepath"] = temp_path
+            if self.backend == "tf-distributed":
+                with self.strategy.scope():
+                    self.model = self.process_model_load(**params)
+            else:
+                self.model = self.process_model_load(**params)
         finally:
             if os.path.isdir(temp_path):
                 shutil.rmtree(temp_path)
