@@ -68,7 +68,7 @@ def main():
                               extra_python_lib="model.py")
     elif args.cluster_mode.startswith("k8s"):
         if args.cluster_mode == "k8s-client":
-            conf={
+            conf = {
                 "spark.kubernetes.executor.volumes.persistentVolumeClaim.nfsvolumeclaim"
                 ".options.claimName": "nfsvolumeclaim",
                 "spark.kubernetes.executor.volumes.persistentVolumeClaim.nfsvolumeclaim"
@@ -79,7 +79,7 @@ def main():
                               container_image="intelanalytics/bigdl-k8s:2.1.0",
                               extra_python_lib="model.py", conf=conf)
         elif args.cluster_mode == "k8s-cluster":
-            conf={
+            conf = {
                 "spark.kubernetes.driver.volumes.persistentVolumeClaim.nfsvolumeclaim"
                 ".options.claimName": "nfsvolumeclaim",
                 "spark.kubernetes.driver.volumes.persistentVolumeClaim.nfsvolumeclaim"
@@ -92,7 +92,7 @@ def main():
                 "spark.kubernetes.file.upload.path": "/bigdl/nfsdata/"
             }
             init_orca_context(cluster_mode="k8s-cluster", num_nodes=2, cores=2, memory="2g",
-                              master=os.environ.get("RUNTIME_SPARK_MASTER"), 
+                              master=os.environ.get("RUNTIME_SPARK_MASTER"),
                               container_image="intelanalytics/bigdl-k8s:2.1.0",
                               penv_archive="file:///bigdl/nfsdata/environment.tar.gz",
                               extra_python_lib="/bigdl/nfsdata/model.py", conf=conf)
