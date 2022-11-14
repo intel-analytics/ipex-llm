@@ -22,6 +22,7 @@ on:
         - bigdl-ppml-trusted-big-data-ml-python-graphene
         - bigdl-ppml-trusted-big-data-ml-scala-occlum
         - bigdl-ppml-trusted-big-data-ml-scala-occlum-production
+        - bigdl-ppml-trusted-big-data-ml-scala-occlum-production-customer
         - bigdl-ppml-trusted-realtime-ml-scala-graphene
         - bigdl-ppml-trusted-realtime-ml-scala-occlum
         - bigdl-ppml-kmsutil
