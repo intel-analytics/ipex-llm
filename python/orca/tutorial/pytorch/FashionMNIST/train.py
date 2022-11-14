@@ -29,7 +29,7 @@ import torchvision.transforms as transforms
 from bigdl.orca import init_orca_context, stop_orca_context
 from bigdl.orca.learn.pytorch import Estimator
 from bigdl.orca.learn.metrics import Accuracy
-from bigdl.orca.data.file import get_remote_file_to_local
+from bigdl.orca.data.file import get_remote_dir_to_local
 
 from model import model_creator, optimizer_creator
 
@@ -46,7 +46,7 @@ def train_data_creator(config, batch_size):
                                     transforms.Normalize((0.5,), (0.5,))])
     if args.remote_dir is not None:
         data_dir = "/tmp/dataset"
-        get_remote_file_to_local(remote_path=args.remote_dir, local_path=data_dir)
+        get_remote_dir_to_local(remote_dir=args.remote_dir, local_dir=data_dir)
         trainset = torchvision.datasets.FashionMNIST(root=data_dir, train=True,
                                                      download=False, transform=transform)
         trainloader = torch.utils.data.DataLoader(trainset, batch_size=batch_size,
