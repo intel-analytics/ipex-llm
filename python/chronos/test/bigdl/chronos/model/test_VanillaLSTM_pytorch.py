@@ -49,8 +49,6 @@ def create_data(loader=False):
 class TestVanillaLSTMPytorch(TestCase):
     train_data, val_data, test_data = create_data()
 
-    model = VanillaLSTMPytorch()
-
     def test_fit_evaluate(self):
         model = VanillaLSTMPytorch()
         config = {"batch_size": 128}
