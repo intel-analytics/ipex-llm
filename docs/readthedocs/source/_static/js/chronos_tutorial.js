@@ -65,7 +65,7 @@ $(".checkboxes").click(function(){
             "MultvarWIDE","MultstepWIDE","LSTMF","AutoPr","AnomalyDetection",
             "DeepARmodel","TFTmodel","hyperparameter","taxiDataset","distributedFashion",
             "ONNX","Quantize","TCMF","PenalizeUnderestimation",
-            "GPUtrainingCPUacceleration"];
+            "GPUtrainingCPUacceleration","ServeForecaster"];
             showTutorials(ids);
             var disIds = ["simulation"];
             disCheck(disIds);
