@@ -608,7 +608,7 @@ class BasePytorchForecaster(Forecaster):
                 precision=precision,
                 accuracy_criterion=accuracy_criterion)
             self.optim_model = optim_model
-            self.metadata = option  # represent model type of the best model
+            self.metadata = option  # represent which model is stored in self.optim_model
         except Exception:
             invalidInputError(False, "Unable to find an optimized model that meets your conditions."
                               "Maybe you can relax your search limit.")
