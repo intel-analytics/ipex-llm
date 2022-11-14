@@ -482,7 +482,7 @@ jobs:
             --build-arg JDK_VERSION=8u192 \
             --build-arg JDK_URL=${JDK_URL} \
             --build-arg no_proxy=${NO_PROXY} \
-            --build-arg FINAL_NAME=${image}:${TAG}
+            --build-arg FINAL_NAME=${image}:${TAG} \
             --build-arg SPARK_JAR_REPO_URL=${SPARK_JAR_REPO_URL} \
             -t ${image_customer}:${TAG} -f ./production/customer/Dockerfile .
           pwd
