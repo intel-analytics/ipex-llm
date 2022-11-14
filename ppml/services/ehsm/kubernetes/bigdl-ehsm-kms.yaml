@@ -158,6 +158,13 @@ spec:
       - name: couchdb
         image: $couchdbImageName
         imagePullPolicy: IfNotPresent
+        lifecycle:
+          postStart:
+            exec:
+              command:
+              - sh
+              - -c
+              - "echo [couchdb] single_node=true >> /opt/couchdb/etc/local.d/docker.ini; echo [couchdb] single_node=true >> /opt/couchdb/etc/local.ini"
         readinessProbe:
           httpGet:
             port: couchdb-port
