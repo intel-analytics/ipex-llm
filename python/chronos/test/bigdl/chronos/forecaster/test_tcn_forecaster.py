@@ -209,7 +209,31 @@ class TestChronosModelTCNForecaster(TestCase):
         assert train_loss > 10
 
     @op_automl
-    def test_first_forecaster_multi_processes_tune(self):
+    def test_tcn_forecaster_tune_multi_processes(self):
+        name = "parallel-example-torch"
+        storage = "sqlite:///example_tcn.db"  # take sqlite for test, recommand to use mysql
+        if os.path.exists("./example_tcn.db"):
+            os.remove("./example_tcn.db")
+        import bigdl.nano.automl.hpo.space as space
+        train_data, val_data, _ = create_data(loader=False)
+        forecaster = TCNForecaster(past_seq_len=24,
+                                future_seq_len=5,
+                                input_feature_num=1,
+                                output_feature_num=1,
+                                kernel_size=4,
+                                num_channels=[16, 16],
+                                loss="mae",
+                                metrics=['mae', 'mse', 'mape'],
+                                lr=space.Real(0.001, 0.01, log=True))
+        forecaster.tune(train_data, validation_data=val_data,
+                        n_trials=2, target_metric='mse', direction="minimize",
+                        study_name=name,
+                        storage=storage, n_parallels=2)
+        forecaster.fit(train_data, epochs=2)
+        os.remove("./example_tcn.db")
+
+    @op_automl
+    def test_tcn_forecaster_tune_multi_processes_normalization_decomposation(self):
         name = "parallel-example-torch"
         storage = "sqlite:///example_tcn.db"  # take sqlite for test, recommand to use mysql
         if os.path.exists("./example_tcn.db"):
@@ -221,10 +245,9 @@ class TestChronosModelTCNForecaster(TestCase):
                                    input_feature_num=1,
                                    output_feature_num=1,
                                    kernel_size=4,
-                                   num_channels=[16, 16],
-                                   # test normalization_decomposation
                                    normalization=True,
                                    decomposition_kernal_size=3,
+                                   num_channels=[16, 16],
                                    loss="mae",
                                    metrics=['mae', 'mse', 'mape'],
                                    lr=space.Real(0.001, 0.01, log=True))

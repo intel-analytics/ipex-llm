@@ -124,6 +124,15 @@ def format_optimize_result(optimize_result_dict: dict,
             accuracy = result.get("accuracy", "None")
             if accuracy != "None" and isinstance(accuracy, float):
                 accuracy = round(accuracy, 3)
+            else:
+                try:
+                    import torch
+                    # turn Tensor into float
+                    if isinstance(accuracy, torch.Tensor):
+                        accuracy = accuracy.item()
+                        accuracy = round(accuracy, 3)
+                except ImportError:
+                    pass
             method_str = f"| {method:^30} | {status:^20} | " \
                          f"{latency:^12} | {accuracy:^20} |\n"
             repr_str += method_str
