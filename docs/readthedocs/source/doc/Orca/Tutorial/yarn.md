@@ -330,11 +330,10 @@ ${SPARK_HOME}/bin/spark-submit \
     --num-executors 2 \
     --archives /path/to/environment.tar.gz#environment \
     --properties-file ${BIGDL_HOME}/conf/spark-bigdl.conf \
-    --py-files ${BIGDL_HOME}/python/bigdl-spark_${SPARK_VERSION}-${BIGDL_VERSION}-python-api.zip,model.py \
     --conf spark.pyspark.driver.python=/path/to/python \
     --conf spark.pyspark.python=environment/bin/python \
-    --conf spark.driver.extraClassPath=${BIGDL_HOME}/jars/* \
-    --conf spark.executor.extraClassPath=${BIGDL_HOME}/jars/* \
+    --py-files ${BIGDL_HOME}/python/bigdl-spark_${SPARK_VERSION}-${BIGDL_VERSION}-python-api.zip,model.py \
+    --jars ${BIGDL_HOME}/jars/bigdl-assembly-spark_${SPARK_VERSION}-${BIGDL_VERSION}-jar-with-dependencies.jar \
     train.py --cluster_mode spark-submit --remote_dir hdfs://path/to/remote/data
 ```
 In the `spark-submit` script:
@@ -343,8 +342,6 @@ In the `spark-submit` script:
 * `--properties-file`: the BigDL configuration properties to be uploaded to YARN.
 * `--conf spark.pyspark.driver.python`: set the activate Python location on __Client Node__ as the driver's Python environment. You can find the location by running `which python`.
 * `--conf spark.pyspark.python`: set the Python location in conda archive as each executor's Python environment.
-* `--conf spark.driver.extraClassPath`: upload and register the BigDL jars to the driver's classpath.
-* `--conf spark.executor.extraClassPath`: upload and register the BigDL jars to the executor's classpath.
 
 
 #### 5.3.2 Yarn Cluster
