@@ -20,7 +20,7 @@ import torch
 from mmcv.runner import EpochBasedRunner
 from mmcv.runner.utils import get_host_info
 from mmcv.parallel.distributed import MMDistributedDataParallel
-from bigdl.orca.learn.pytorch.utils import AverageMeterCollection
+from bigdl.orca.learn.pytorch.utils import AverageMeterCollection, get_batchsize
 from bigdl.dllib.utils.log4Error import *
 from bigdl.orca.learn.pytorch.experimential.core.base_ray_runner import BaseRayRunner
 
@@ -157,6 +157,14 @@ class MMCVRayEpochRunner(BaseRayRunner, EpochBasedRunner):
         elif train_mode:
             outputs = self.model.train_step(data_batch, self.optimizer,
                                             **kwargs)
+        else:
+            outputs = self.model.val_step(data_batch, self.optimizer, **kwargs)
+        if not isinstance(outputs, dict):
+            invalidInputError(False,
+                              '"batch_processor()" or "model.train_step()" '
+                              'and "model.val_step()" must return a dict')
+        # update the metrics
+        if train_mode:
             if kwargs.get("metric_meters"):
                 metric_meters = kwargs["metric_meters"]
                 copy = dict()
@@ -165,13 +173,9 @@ class MMCVRayEpochRunner(BaseRayRunner, EpochBasedRunner):
                         copy[k] = v.item()
                     else:
                         copy[k] = v
-                metric_meters.update(copy, n=len(data_batch))
-        else:
-            outputs = self.model.val_step(data_batch, self.optimizer, **kwargs)
-        if not isinstance(outputs, dict):
-            invalidInputError(False,
-                              '"batch_processor()" or "model.train_step()" '
-                              'and "model.val_step()" must return a dict')
+                copy.pop("log_vars", None)
+                metric_meters.update(copy, n=get_batchsize(data_batch))
+
         if 'log_vars' in outputs:
             self.log_buffer.update(outputs['log_vars'], outputs['num_samples'])
         self.outputs = outputs

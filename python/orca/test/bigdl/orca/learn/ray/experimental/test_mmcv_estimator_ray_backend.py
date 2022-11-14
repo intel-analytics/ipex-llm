@@ -31,6 +31,7 @@ resource_path = os.path.join(
     os.path.realpath(os.path.dirname(__file__)), "../../../resources")
 
 MAX_EPOCH = 4
+NUM_SAMPLES = 1000
 
 
 class Model(nn.Module):
@@ -110,7 +111,7 @@ class LinearDataset(torch.utils.data.Dataset):
 
 
 def train_dataloader_creator(config):
-    train_set = LinearDataset()
+    train_set = LinearDataset(size=NUM_SAMPLES)
     train_loader = DataLoader(
         train_set, batch_size=64, shuffle=True, num_workers=2)
     return train_loader
@@ -131,10 +132,28 @@ class TestMMCVRayEstimator(unittest.TestCase):
         epoch_stats = estimator.fit([train_dataloader_creator], [('train', 1)])
         self.assertEqual(len(epoch_stats), MAX_EPOCH)
 
+        start_stats = epoch_stats[0]
+        end_stats = epoch_stats[-1]
+        assert start_stats["num_samples"] == NUM_SAMPLES
+        assert end_stats["num_samples"] == NUM_SAMPLES
+
+        dloss = end_stats["loss"] - start_stats["loss"]
+        print(f"dLoss: {dloss}")
+        assert dloss < 0
+
     def test_run(self):
         estimator = get_estimator()
         epoch_stats = estimator.run([train_dataloader_creator], [('train', 1)])
         self.assertEqual(len(epoch_stats), MAX_EPOCH)
+
+        start_stats = epoch_stats[0]
+        end_stats = epoch_stats[-1]
+        assert start_stats["num_samples"] == NUM_SAMPLES
+        assert end_stats["num_samples"] == NUM_SAMPLES
+
+        dloss = end_stats["loss"] - start_stats["loss"]
+        print(f"dLoss: {dloss}")
+        assert dloss < 0
 
 
 if __name__ == "__main__":
