@@ -50,3 +50,5 @@ COPY --from=final /opt/intel /opt/intel
 
 
 ENV PATH="/opt/occlum/build/bin:/usr/local/occlum/bin:$PATH"
+
+ENTRYPOINT [ "/opt/entrypoint.sh" ]
