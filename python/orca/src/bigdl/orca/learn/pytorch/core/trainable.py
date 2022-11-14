@@ -17,7 +17,8 @@
 
 from abc import abstractmethod, ABCMeta
 
-class Trainer(metaclass=ABCMeta):
+
+class Trainable(metaclass=ABCMeta):
     """The base behavior of a Pytorch trainer
 
     All runners should inherit `Trainer`` as the worker interface
