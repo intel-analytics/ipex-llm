@@ -100,7 +100,8 @@ def format_acceleration_option(method_name: str,
         elif isinstance(value, str):
             repr_str = repr_str + value + " + "
     if len(repr_str) > 0:
-        repr_str = repr_str[:-2]
+        # remove " + " at last
+        repr_str = repr_str[:-3]
     if repr_str == "":
         # if no acceleration is applied, just return "original"
         repr_str = "original"
