@@ -42,7 +42,7 @@ RUN apt install -y occlum-toolchains-glibc
 RUN echo "source /etc/profile" >> $HOME/.bashrc
 
 #COPY bash files
-COPY --from=final /opt/*.sh /opt
+COPY --from=final /opt/*.sh /opt/
 COPY --from=final /opt/sqlSuites /opt
 
 ENV PATH="/opt/occlum/build/bin:/usr/local/occlum/bin:$PATH"
