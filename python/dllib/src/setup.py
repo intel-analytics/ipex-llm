@@ -31,6 +31,7 @@ for more information.
 
 TEMP_PATH = "bigdl/share/dllib"
 dllib_src_path = os.path.abspath(__file__ + "/..")
+bigdl_home = os.path.abspath(__file__ + "/../../../..")
 
 try:
     exec(open(dllib_src_path + "/bigdl/dllib/version.py").read())
