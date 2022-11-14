@@ -86,6 +86,7 @@ class BasePytorchForecaster(Forecaster):
            
             self.accelerated_model = None  # placeholder for accelerated model obtained from various accelerators
             self.accelerate_method = None  # str indicates current accelerate method
+            self.quantize_models = {}      # quantization models, format: {model_type : model}
             self.metadata = None  # str indicates model type of the best model obtained from .optimize()
 
     def _build_automodel(self, data, validation_data=None, batch_size=32, epochs=1):
@@ -696,11 +697,14 @@ class BasePytorchForecaster(Forecaster):
                 invalidInputError(False,
                                   "You must call fit or restore first before calling predict!")
             if quantize:
-                if self.accelerate_method != "pytorch_int8":
+                try:
+                    q_model = self.quantize_models["pytorch_int8"]
+                except KeyError:
                     invalidInputError(False,
                                       "Can't find the quantized model, "
                                       "please call .quantize() method first")
-                yhat = _pytorch_fashion_inference(model=self.accelerated_model,
+
+                yhat = _pytorch_fashion_inference(model=q_model,
                                                   input_data=data,
                                                   batch_size=batch_size)
             else:
@@ -773,11 +777,13 @@ class BasePytorchForecaster(Forecaster):
                                              target_col=data.roll_target,
                                              shuffle=False)
         if quantize:
-            if self.accelerate_method != "onnxruntime_int8":
-                    invalidInputError(False,
-                                      "Can't find the quantized model,"
-                                      "please call .quantize() method first")
-            return _pytorch_fashion_inference(model=self.accelerated_model,
+            try:
+                q_model = self.quantize_models["onnxruntime_int8"]
+            except KeyError:
+                invalidInputError(False,
+                                    "Can't find the quantized model, "
+                                    "please call .quantize() method first")
+            return _pytorch_fashion_inference(model=q_model,
                                               input_data=data,
                                               batch_size=batch_size)
         else:
@@ -845,11 +851,13 @@ class BasePytorchForecaster(Forecaster):
                                              shuffle=False)
 
         if quantize:
-            if self.accelerate_method != "openvino_int8":
-                    invalidInputError(False,
-                                      "Can't find the quantized model,"
-                                      "please call .quantize() method first")
-            return _pytorch_fashion_inference(model=self.accelerated_model,
+            try:
+                q_model = self.quantize_models["openvino_int8"]
+            except KeyError:
+                invalidInputError(False,
+                                    "Can't find the quantized model, "
+                                    "please call .quantize() method first")
+            return _pytorch_fashion_inference(model=q_model,
                                               input_data=data,
                                               batch_size=batch_size)
         else:
@@ -917,11 +925,13 @@ class BasePytorchForecaster(Forecaster):
                                              shuffle=False)
 
         if quantize and False:
-            if self.accelerate_method != "jit_int8":
-                    invalidInputError(False,
-                                      "Can't find the quantized model,"
-                                      "please call .quantize() method first")
-            return _pytorch_fashion_inference(model=self.accelerated_model,
+            try:
+                q_model = self.quantize_models["jit_int8"]
+            except KeyError:
+                invalidInputError(False,
+                                    "Can't find the quantized model, "
+                                    "please call .quantize() method first")
+            return _pytorch_fashion_inference(model=q_model,
                                               input_data=data,
                                               batch_size=batch_size)
         else:
@@ -1031,11 +1041,13 @@ class BasePytorchForecaster(Forecaster):
             else:
                 input_data, target = data
             if quantize:
-                if self.accelerate_method != "pytorch_int8":
+                try:
+                    q_model = self.quantize_models["pytorch_int8"]
+                except KeyError:
                     invalidInputError(False,
-                                      "Can't find the quantized model,"
+                                      "Can't find the quantized model, "
                                       "please call .quantize() method first")
-                yhat = _pytorch_fashion_inference(model=self.accelerated_model,
+                yhat = _pytorch_fashion_inference(model=q_model,
                                                   input_data=input_data,
                                                   batch_size=batch_size)
             else:
@@ -1143,11 +1155,13 @@ class BasePytorchForecaster(Forecaster):
         else:
             input_data, target = data
         if quantize:
-            if self.accelerate_method != "onnxruntime_int8":
-                    invalidInputError(False,
-                                      "Can't find the quantized model,"
-                                      "please call .quantize() method first")
-            yhat = _pytorch_fashion_inference(model=self.accelerated_model,
+            try:
+                q_model = self.quantize_models["onnxruntime_int8"]
+            except KeyError:
+                invalidInputError(False,
+                                    "Can't find the quantized model, "
+                                    "please call .quantize() method first")
+            yhat = _pytorch_fashion_inference(model=q_model,
                                               input_data=input_data,
                                               batch_size=batch_size)
         else:
@@ -1319,11 +1333,12 @@ class BasePytorchForecaster(Forecaster):
                 self.trainer.model = self.internal
             self.trainer.save_checkpoint(checkpoint_file)  # save current status
             if quantize_checkpoint_file:
-                if self.accelerate_method == "pytorch_int8":
-                    Trainer.save(self.accelerated_model, quantize_checkpoint_file)
-                else:
+                try:
+                    q_model = self.quantize_models["pytorch_int8"]
+                except KeyError:
                     warnings.warn("Please call .quantize() method to build "
                                   "an up-to-date quantized model")
+                Trainer.save(q_model, quantize_checkpoint_file)
 
     def load(self, checkpoint_file, quantize_checkpoint_file=None):
         """
@@ -1358,9 +1373,9 @@ class BasePytorchForecaster(Forecaster):
             self.fitted = True
             if quantize_checkpoint_file:
                 # self.internal.load_quantized_state_dict(torch.load(quantize_checkpoint_file))
-                self.accelerated_model = Trainer.load(quantize_checkpoint_file,
+                q_model = Trainer.load(quantize_checkpoint_file,
                                                  self.internal)
-                self.accelerate_method =  "pytorch_int8"                                            
+                self.quantize_models["pytorch_int8"] = q_model
             # This trainer is only for quantization, once the user call `fit`, it will be
             # replaced according to the new training config
             self.trainer = Trainer(logger=False, max_epochs=1,
@@ -1401,15 +1416,10 @@ class BasePytorchForecaster(Forecaster):
 
         self.distributed = False
         self.fitted = True
-        # self.onnxruntime_fp32 = None  # onnxruntime session for fp32 precision
-        # self.openvino_fp32 = None  # openvino session for fp32 precision
-        # self.jit_fp32 = None  # jit session for fp32 precision
-        # self.onnxruntime_int8 = None  # onnxruntime session for int8 precision
-        # self.openvino_int8 = None  # openvino session for int8 precision
-        # self.jit_int8 = None  # jit session for int8 precision
-        # self.pytorch_int8 = None  # pytorch model for int8 precision
+
         self.accelerated_model = None  # placeholder for accelerated model obtained from various accelerators
         self.accelerate_method = None  # str indicates current accelerate method
+        self.quantize_models = {}      # # quantization models, format: {model_type : model}
         return self
 
     def get_model(self):
@@ -1553,8 +1563,13 @@ class BasePytorchForecaster(Forecaster):
                               "export_onnx_file has not been supported for distributed "
                               "forecaster. You can call .to_local() to transform the "
                               "forecaster to a non-distributed version.")
-        if quantized_dirname and self.accelerate_method == "onnxruntime_int8":
-            InferenceOptimizer.save(self.accelerated_model, quantized_dirname)
+        if quantized_dirname:
+            try:
+                q_model = self.quantize_models["onnxruntime_int8"]
+            except KeyError:
+                warnings.warn("Please call .quantize() method to build "
+                                "an up-to-date quantized model")
+            InferenceOptimizer.save(q_model, quantized_dirname)
         if dirname:
             if self.accelerate_method != "onnxruntime_fp32":
                 self.build_onnx()
@@ -1575,8 +1590,13 @@ class BasePytorchForecaster(Forecaster):
                               "export_openvino_file has not been supported for distributed "
                               "forecaster. You can call .to_local() to transform the "
                               "forecaster to a non-distributed version.")
-        if quantized_dirname and self.accelerate_method == "openvino_int8":
-            InferenceOptimizer.save(self.accelerated_model, quantized_dirname)
+        if quantized_dirname:
+            try:
+                q_model = self.quantize_models["openvino_int8"]
+            except KeyError:
+                warnings.warn("Please call .quantize() method to build "
+                                "an up-to-date quantized model")
+            InferenceOptimizer.save(q_model, quantized_dirname)
         if dirname:
             if self.accelerate_method != "openvino_fp32":
                 self.build_openvino()
@@ -1597,7 +1617,12 @@ class BasePytorchForecaster(Forecaster):
                               "export_torchscript_file has not been supported for distributed "
                               "forecaster. You can call .to_local() to transform the "
                               "forecaster to a non-distributed version.")
-        if quantized_dirname and self.accelerate_method == "jit_int8":
+        if quantized_dirname:
+            try:
+                q_model = self.quantize_models["jit_int8"]
+            except KeyError:
+                warnings.warn("Please call .quantize() method to build "
+                                "an up-to-date quantized model")
             InferenceOptimizer.save(self.accelerated_model, quantized_dirname)
         if dirname:
             if self.accelerate_method != "jit_fp32":
@@ -1778,14 +1803,11 @@ class BasePytorchForecaster(Forecaster):
                                                   max_trials=max_trials,
                                                   onnxruntime_session_options=sess_options)
             if accelerator == 'onnxruntime':
-                self.accelerated_model = q_model
-                self.accelerate_method = "onnxruntime_int8"
+                self.quantize_models["onnxruntime_int8"] = q_model
             if accelerator == 'openvino':
-                self.accelerated_model = q_model
-                self.accelerate_method = "openvino_int8"
+                self.quantize_models["openvino_int8"] = q_model
             if accelerator is None:
-                self.accelerated_model = q_model
-                self.accelerate_method = "pytorch_int8"
+                self.quantize_models["pytorch_int8"] = q_model
 
     @classmethod
     def from_tsdataset(cls, tsdataset, past_seq_len=None, future_seq_len=None, **kwargs):
