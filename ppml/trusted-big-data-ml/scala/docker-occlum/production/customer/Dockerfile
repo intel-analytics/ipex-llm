@@ -2,6 +2,7 @@ ARG FINAL_NAME
 FROM ${FINAL_NAME} as final
 FROM krallin/ubuntu-tini AS tini
 COPY --from=final /opt/occlum_spark /opt/occlum_spark
+# remove image dir to reduce image size
 RUN rm -rf /opt/occlum_spark/image
 FROM ubuntu:20.04
 
@@ -52,6 +53,11 @@ COPY --from=final /var/run/secrets /var/run/secrets
 COPY --from=final /opt/intel /opt/intel
 COPY --from=tini /usr/local/bin/tini /sbin/tini
 
-ENV PATH="/opt/occlum/build/bin:/usr/local/occlum/bin:$PATH"
+# Add jdk and attestation ppml jars
+COPY --from=final /usr/lib/jvm/java-8-openjdk-amd64 /usr/lib/jvm/java-8-openjdk-amd64
+COPY --from=final ${BIGDL_HOME}/jars/bigdl* ${BIGDL_HOME}/jars/
+COPY --from=final ${BIGDL_HOME}/jars/all-* ${BIGDL_HOME}/jars/
+
+ENV PATH="/opt/occlum/build/bin:/usr/lib/jvm/java-8-openjdk-amd64/bin:/usr/local/occlum/bin:$PATH"
 
 ENTRYPOINT [ "/opt/entrypoint.sh" ]
