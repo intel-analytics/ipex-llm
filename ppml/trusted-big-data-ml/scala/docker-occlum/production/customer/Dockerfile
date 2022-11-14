@@ -1,5 +1,6 @@
 ARG FINAL_NAME
 FROM ${FINAL_NAME} as final
+FROM krallin/ubuntu-tini AS tini
 FROM ubuntu:20.04
 
 ARG BIGDL_VERSION=2.2.0-SNAPSHOT
@@ -47,7 +48,7 @@ COPY --from=final /opt/sqlSuites /opt
 COPY --from=final /opt/spark /opt/spark
 COPY --from=final /var/run/secrets /var/run/secrets
 COPY --from=final /opt/intel /opt/intel
-
+COPY --from=tini /usr/local/bin/tini /sbin/tini
 
 ENV PATH="/opt/occlum/build/bin:/usr/local/occlum/bin:$PATH"
 
