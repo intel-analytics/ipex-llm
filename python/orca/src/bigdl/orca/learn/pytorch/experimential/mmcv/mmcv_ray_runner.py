@@ -174,6 +174,7 @@ class MMCVRayEpochRunner(BaseRayRunner, EpochBasedRunner):
                     else:
                         copy[k] = v
                 copy.pop("log_vars", None)
+                copy.pop("num_samples", None)
                 metric_meters.update(copy, n=get_batchsize(data_batch))
 
         if 'log_vars' in outputs:

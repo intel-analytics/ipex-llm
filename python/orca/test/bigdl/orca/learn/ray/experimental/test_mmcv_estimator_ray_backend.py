@@ -63,6 +63,39 @@ class Model(nn.Module):
         return {'loss': loss}
 
 
+class Model2(nn.Module):
+
+    def __init__(self):
+        super().__init__()
+        self.fc1 = nn.Linear(50, 50)
+        self.relu1 = nn.ReLU()
+        self.dout = nn.Dropout(0.2)
+        self.fc2 = nn.Linear(50, 100)
+        self.prelu = nn.PReLU(1)
+        self.out = nn.Linear(100, 1)
+        self.out_act = nn.Sigmoid()
+        self.loss_fn = nn.BCELoss()
+
+    def forward(self, input_, labels):
+        a1 = self.fc1(input_)
+        h1 = self.relu1(a1)
+        dout = self.dout(h1)
+        a2 = self.fc2(dout)
+        h2 = self.prelu(a2)
+        a3 = self.out(h2)
+        y = self.out_act(a3)
+        loss = self.loss_fn(y, labels)
+        return loss
+
+
+def batch_processor(model, data, train_mode, **kwargs):
+    features, labels = data
+    loss = model(features, labels)
+    log_vars = dict()
+    log_vars["var1"] = 0.0
+    return {'loss': loss, 'log_vars': log_vars, "num_samples": features.size(0)}
+
+
 def runner_creator(config):
     model = Model()
 
@@ -71,6 +104,35 @@ def runner_creator(config):
     # runner is a scheduler to manage the training
     runner = EpochBasedRunner(
         model,
+        optimizer=optimizer,
+        work_dir='./work_dir',
+        logger=logger,
+        max_epochs=MAX_EPOCH)
+
+    # learning rate scheduler config
+    lr_config = dict(policy='step', step=[2, 3])
+    # configuration of optimizer
+    optimizer_config = dict(grad_clip=None)
+    # save log periodically and multiple hooks can be used simultaneously
+    log_config = dict(interval=4, hooks=[dict(type='TextLoggerHook')])
+    # register hooks to runner and those hooks will be invoked automatically
+    runner.register_training_hooks(
+        lr_config=lr_config,
+        optimizer_config=optimizer_config,
+        log_config=log_config)
+
+    return runner
+
+
+def runner_creator_with_batch_processor(config):
+    model = Model2()
+
+    optimizer = optim.SGD(model.parameters(), lr=0.001, momentum=0.9)
+    logger = get_logger('mmcv')
+    # runner is a scheduler to manage the training
+    runner = EpochBasedRunner(
+        model,
+        batch_processor=batch_processor,
         optimizer=optimizer,
         work_dir='./work_dir',
         logger=logger,
@@ -116,9 +178,9 @@ def train_dataloader_creator(config):
     return train_loader
 
 
-def get_estimator():
+def get_estimator(creator):
     estimator = MMCVRayEstimator(
-        mmcv_runner_creator=runner_creator,
+        mmcv_runner_creator=creator,
         config={}
     )
     return estimator
@@ -126,8 +188,7 @@ def get_estimator():
 
 class TestMMCVRayEstimator(unittest.TestCase):
 
-    def test_fit(self):
-        estimator = get_estimator()
+    def call_fit(self, estimator):
         epoch_stats = estimator.fit([train_dataloader_creator], [('train', 1)])
         self.assertEqual(len(epoch_stats), MAX_EPOCH)
 
@@ -140,8 +201,7 @@ class TestMMCVRayEstimator(unittest.TestCase):
         print(f"dLoss: {dloss}")
         assert dloss < 0
 
-    def test_run(self):
-        estimator = get_estimator()
+    def call_run(self, estimator):
         epoch_stats = estimator.run([train_dataloader_creator], [('train', 1)])
         self.assertEqual(len(epoch_stats), MAX_EPOCH)
 
@@ -153,6 +213,22 @@ class TestMMCVRayEstimator(unittest.TestCase):
         dloss = end_stats["loss"] - start_stats["loss"]
         print(f"dLoss: {dloss}")
         assert dloss < 0
+
+    def test_fit_with_train_step(self):
+        estimator = get_estimator(runner_creator)
+        self.call_fit(estimator)
+
+    def test_fit_with_batch_processor(self):
+        estimator = get_estimator(runner_creator_with_batch_processor)
+        self.call_fit(estimator)
+
+    def test_run_with_train_step(self):
+        estimator = get_estimator(runner_creator)
+        self.call_run(estimator)
+
+    def test_run_with_batch_processor(self):
+        estimator = get_estimator(runner_creator_with_batch_processor)
+        self.call_fit(estimator)
 
 
 if __name__ == "__main__":
