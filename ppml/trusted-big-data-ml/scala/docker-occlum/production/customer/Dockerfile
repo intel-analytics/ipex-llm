@@ -1,6 +1,8 @@
 ARG FINAL_NAME
 FROM ${FINAL_NAME} as final
 FROM krallin/ubuntu-tini AS tini
+COPY --from=final /opt/occlum_spark /opt/occlum_spark
+RUN rm -rf /opt/occlum_spark/image
 FROM ubuntu:20.04
 
 ARG BIGDL_VERSION=2.2.0-SNAPSHOT
@@ -24,7 +26,7 @@ ARG HTTP_PROXY=http://$HTTP_PROXY_HOST:$HTTP_PROXY_PORT
 ARG HTTPS_PROXY=http://$HTTPS_PROXY_HOST:$HTTPS_PROXY_PORT
 
 #copy occlum runable instance
-COPY --from=final /opt/occlum_spark /opt/occlum_spark
+COPY --from=tini /opt/occlum_spark /opt/occlum_spark
 
 # Configure sgx and occlum deb repo
 RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends vim ca-certificates gnupg2 jq make gdb wget libfuse-dev libtool tzdata && \
