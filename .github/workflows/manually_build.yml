@@ -553,7 +553,7 @@ bigdl-ppml-trusted-big-data-ml-scala-occlum-production-customer:
           --build-arg no_proxy=${NO_PROXY} \
           --build-arg FINAL_NAME=${image}:${TAG} \
           --build-arg SPARK_JAR_REPO_URL=${SPARK_JAR_REPO_URL} \
-          -t ${image}:${TAG} -f ./production/Dockerfile .
+          -t ${image_customer}:${TAG} -f ./production/customer/Dockerfile .
         pwd
         sudo docker push ${image_customer}:${TAG}
         docker tag ${image_customer}:${TAG} 10.239.45.10/arda/${image_customer}:${TAG}
