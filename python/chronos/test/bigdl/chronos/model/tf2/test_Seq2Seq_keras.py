@@ -21,8 +21,8 @@ import numpy as np
 from ... import op_tf2
 from bigdl.chronos.utils import LazyImport
 tf = LazyImport('tensorflow')
-LSTMSeq2Seq = LazyImport('bigdl.chronos.model.tf2.Seq2Seq_keras')
-model_creator = LazyImport('bigdl.chronos.model.tf2.Seq2Seq_keras')
+LSTMSeq2Seq = LazyImport('bigdl.chronos.model.tf2.Seq2Seq_keras.LSTMSeq2Seq')
+model_creator = LazyImport('bigdl.chronos.model.tf2.Seq2Seq_keras.model_creator')
 
 
 def create_data():
@@ -88,7 +88,11 @@ class TestSeq2Seq(TestCase):
         model_res = model.evaluate(test_data[0], test_data[1])
         restore_model_res = restore_model.evaluate(test_data[0], test_data[1])
         np.testing.assert_almost_equal(model_res, restore_model_res, decimal=5)
-        assert isinstance(restore_model, LSTMSeq2Seq)
+        temp_LSTMSeq2Seq = LSTMSeq2Seq(input_feature_num=10,
+                                       output_feature_num=2,
+                                       future_seq_len=test_data[-1].shape[1],
+                                       lstm_hidden_dim=32).__class__
+        assert isinstance(restore_model, temp_LSTMSeq2Seq)
 
     def test_seq2seq_freeze_training(self):
         train_data, test_data = create_data()

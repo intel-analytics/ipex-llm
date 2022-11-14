@@ -15,12 +15,11 @@
 #
 
 from unittest import TestCase
-from .. import op_distributed
+from bigdl.chronos.utils import LazyImport
+TCNPytorch = LazyImport('bigdl.chronos.model.tcn.TCNPytorch')
 import numpy as np
 import tempfile
 import os
-from bigdl.chronos.utils import LazyImport
-TCNPytorch = LazyImport('bigdl.chronos.model.tcn')
 
 
 def create_data():
@@ -43,12 +42,11 @@ def create_data():
     return train_data, val_data, test_data
 
 
-@op_distributed
 class TestTcn(TestCase):
     train_data, val_data, test_data = create_data()
+    model = TCNPytorch()
 
     def test_fit_evaluate(self):
-        model = TCNPytorch()
         config = {"batch_size": 128}
         self.model.fit_eval((self.train_data[0], self.train_data[1]), self.val_data,
                             metric="mse",
@@ -62,7 +60,6 @@ class TestTcn(TestCase):
         assert len(smape[0]) == self.val_data[1].shape[-1]
 
     def test_predict_save_restore(self):
-        model = TCNPytorch()
         config = {"batch_size": 128}
         self.model.fit_eval((self.train_data[0], self.train_data[1]), self.val_data,
                             metric="mse",

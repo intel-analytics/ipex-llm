@@ -1,19 +1,3 @@
-#
-# Copyright 2016 The BigDL Authors.
-#
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-#     http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
-#
-
 import pytest
 from unittest import TestCase
 from ... import op_tf2
@@ -22,8 +6,8 @@ import tempfile
 import os
 from bigdl.chronos.utils import LazyImport
 tf = LazyImport('tensorflow')
-LSTMModel = LazyImport('bigdl.chronos.model.tf2.VanillaLSTM_keras')
-model_creator = LazyImport('bigdl.chronos.model.tf2.VanillaLSTM_keras')
+LSTMModel = LazyImport('bigdl.chronos.model.tf2.VanillaLSTM_keras.LSTMModel')
+model_creator = LazyImport('bigdl.chronos.model.tf2.VanillaLSTM_keras.model_creator')
 
 
 def create_data():
@@ -88,7 +72,10 @@ class TestVanillaLSTM(TestCase):
         model_res = model.evaluate(test_data[0], test_data[1])
         restore_model_res = restore_model.evaluate(test_data[0], test_data[1])
         np.testing.assert_almost_equal(model_res, restore_model_res, decimal=5)        
-        assert isinstance(restore_model, LSTMModel)
+        temp_LSTMModel = LSTMModel(input_dim=4, hidden_dim=[32, 32],
+                                   layer_num=2, dropout=[0.2, 0.2],
+                                   output_dim=test_data[-1].shape[-1]).__class__
+        assert isinstance(restore_model, temp_LSTMModel)
 
     def test_lstm_freeze_training(self):
         # freeze dropout in layers

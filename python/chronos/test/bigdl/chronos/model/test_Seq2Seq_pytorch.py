@@ -20,7 +20,7 @@ import tempfile
 import os
 import random
 from bigdl.chronos.utils import LazyImport
-Seq2SeqPytorch = LazyImport('bigdl.chronos.model.Seq2Seq_pytorch')
+Seq2SeqPytorch = LazyImport('bigdl.chronos.model.Seq2Seq_pytorch.Seq2SeqPytorch')
 
 
 def create_data():

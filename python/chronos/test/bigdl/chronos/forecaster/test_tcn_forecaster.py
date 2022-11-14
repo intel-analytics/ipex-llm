@@ -467,6 +467,7 @@ class TestChronosModelTCNForecaster(TestCase):
             ckpt_name_q = os.path.join(tmp_dir_name, "int_openvino")
             forecaster.export_openvino_file(dirname=ckpt_name, quantized_dirname=ckpt_name_q)
 
+    @op_onnxrt16
     def test_tcn_forecaster_openvino_methods_loader(self):
         train_loader, val_loader, test_loader = create_data(loader=True)
         forecaster = TCNForecaster(past_seq_len=24,
@@ -490,6 +491,7 @@ class TestChronosModelTCNForecaster(TestCase):
         q_openvino_yhat = forecaster.predict_with_openvino(test_loader, quantize=True)
         assert openvino_yhat.shape == q_openvino_yhat.shape
 
+    @op_onnxrt16
     def test_tcn_forecaster_openvino_methods_tsdataset(self):
         train, test = create_tsdataset(roll=True, horizon=5)
         forecaster = TCNForecaster(past_seq_len=24,

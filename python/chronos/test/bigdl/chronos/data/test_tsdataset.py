@@ -28,7 +28,7 @@ from pandas.testing import assert_frame_equal
 from numpy.testing import assert_array_almost_equal
 from bigdl.chronos.utils import LazyImport
 tf = LazyImport('tensorflow')
-from .. import op_tf2
+from .. import op_tf2, op_diff_set_all
 
 def get_ts_df():
     sample_num = np.random.randint(100, 200)
@@ -194,6 +194,7 @@ class TestTSDataset(TestCase):
             tsdata = TSDataset.from_pandas(df, dt_col="datetime", target_col=["value1"],
                                            extra_feature_col="extra feature", id_col="id")
 
+    @op_diff_set_all
     def test_tsdataset_from_parquet(self):
         df = get_ts_df()
 
@@ -1007,6 +1008,7 @@ class TestTSDataset(TestCase):
         assert tsdata_valid.target_col[0] != "new value"
         assert tsdata_test.target_col[0] != "new value"
 
+    @op_diff_set_all
     def test_tsdataset_global_feature(self):
         for val in ["minimal"]:
             df = get_ts_df()
@@ -1015,6 +1017,7 @@ class TestTSDataset(TestCase):
             tsdata.gen_global_feature(settings=val)
             tsdata._check_basic_invariants()
 
+    @op_diff_set_all
     def test_tsdataset_global_feature_multiple(self):
         df = get_multi_id_ts_df()
         tsdata = TSDataset.from_pandas(df, dt_col="datetime", target_col="value",
@@ -1026,6 +1029,7 @@ class TestTSDataset(TestCase):
         tsdata.gen_global_feature(settings="minimal", n_jobs=2)
         tsdata._check_basic_invariants()
 
+    @op_diff_set_all
     def test_tsdataset_rolling_feature_multiple(self):
         df = get_multi_id_ts_df()
         horizon = random.randint(2, 10)
@@ -1115,6 +1119,7 @@ class TestTSDataset(TestCase):
         with pytest.raises(RuntimeError):
             tsdata._check_basic_invariants(strict_check=True)
 
+    @op_diff_set_all
     def test_cycle_length_est(self):
         df = get_multi_id_ts_df()
         tsdata = TSDataset.from_pandas(df,

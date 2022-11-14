@@ -23,7 +23,7 @@ import os
 from numpy.testing import assert_array_almost_equal
 import pandas as pd
 from bigdl.chronos.utils import LazyImport
-ProphetModel = LazyImport('bigdl.chronos.model.prophet')
+ProphetModel = LazyImport('bigdl.chronos.model.prophet.ProphetModel')
 
 
 @op_diff_set_all

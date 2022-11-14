@@ -22,7 +22,7 @@ from numpy.testing import assert_almost_equal
 from numpy.testing import assert_array_almost_equal
 
 from bigdl.chronos.metric.forecast_metrics import Evaluator
-from .. import op_distributed
+from .. import op_distributed, op_diff_set_all
 
 class TestChronosForecastMetrics(TestCase):
 
@@ -128,6 +128,7 @@ class TestChronosForecastMetrics(TestCase):
             assert info in latency_list
             assert isinstance(latency_list[info], float)
     
+    @op_diff_set_all
     def test_plot(self):
         # TODO: more tests
         y = np.random.randn(100, 24, 1)

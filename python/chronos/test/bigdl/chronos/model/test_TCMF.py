@@ -23,7 +23,7 @@ import os
 from numpy.testing import assert_array_almost_equal
 import pandas as pd
 from bigdl.chronos.utils import LazyImport
-TCMF = LazyImport('bigdl.chronos.model.tcmf_model')
+TCMF = LazyImport('bigdl.chronos.model.tcmf_model.TCMF')
 
 
 @op_distributed

@@ -22,7 +22,7 @@ import tempfile
 import os
 import random
 from bigdl.chronos.utils import LazyImport
-VanillaLSTMPytorch = LazyImport('bigdl.chronos.model.VanillaLSTM_pytorch')
+VanillaLSTMPytorch = LazyImport('bigdl.chronos.model.VanillaLSTM_pytorch.VanillaLSTMPytorch')
 
 
 def create_data(loader=False):
