@@ -15,6 +15,7 @@ do
 done
 
 cd /ppml
+./init.sh
 bash examples/numpy/CLI.sh -n $num -p native -t $dtype
 export sgx_command="bash examples/numpy/CLI.sh -n $num -p sgx -t $dtype"
 gramine-sgx bash 2>&1

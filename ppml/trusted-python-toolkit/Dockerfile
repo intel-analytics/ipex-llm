@@ -20,9 +20,11 @@ RUN pip3 install --upgrade pip && \
     pip install --no-cache-dir pandas && \
     mkdir -p /ppml/tests/numpy && \
     mkdir -p /ppml/tests/pandas && \
-    mkdir -p /ppml/work/start-scripts && \
     chmod +x /opt/entrypoint.sh && \
     chmod +x /sbin/tini && \
+    chmod +x /ppml/work/start-scripts/start-python-flask-sgx.sh && \
+    chmod +x /ppml/work/start-scripts/start-python-numpy-sgx.sh && \
+    chmod +x /ppml/work/start-scripts/start-python-pandas-sgx.sh && \
     cp /sbin/tini /usr/bin/tini && \
     gramine-argv-serializer bash -c 'export TF_MKL_ALLOC_MAX_BYTES=10737418240 && export _SPARK_AUTH_SECRET=$_SPARK_AUTH_SECRET && $sgx_command' > /ppml/secured_argvs
 
