@@ -156,6 +156,8 @@ class _RayLauncher(_SpawnLauncher):
         # patch Pytorch and CUDA in subprocess
         if os.environ.get('BIGDL_NANO_PATCH_TORCH') == '1':
             patch_cuda = True if os.environ.get('BIGDL_NANO_PATCH_CUDA') == '1' else False
+            os.environ['BIGDL_NANO_PATCH_TORCH'] = '0'
+            os.environ['BIGDL_NANO_PATCH_CUDA'] = '0'
             from bigdl.nano.pytorch import patch_torch
             patch_torch(cuda_to_cpu=patch_cuda)
 

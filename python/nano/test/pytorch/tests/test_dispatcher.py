@@ -99,6 +99,7 @@ class TestDispatcherPytorch(TestCase):
     def test_unpatch_cuda(self):
         from bigdl.nano.pytorch import patch_torch, unpatch_torch
         patch_torch(cuda_to_cpu=True)
+        patch_torch(cuda_to_cpu=True) # call patch twice
         import torch
         unpatch_torch()
 

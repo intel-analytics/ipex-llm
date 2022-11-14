@@ -14,6 +14,7 @@
 # limitations under the License.
 #
 
+import os
 import torch
 from logging import warning
 
@@ -145,6 +146,9 @@ def create_tensor_func(torch_create_tensor_func):
 
 
 def patch_cuda(disable_jit=True):
+    if os.environ.get('BIGDL_NANO_PATCH_CUDA', '0') == '1':
+        return
+
     # add this parameter since it's a known issue
     if disable_jit:
         warning("This CUDA patch is incompatible with JIT, JIT will be disabled!")
@@ -175,8 +179,15 @@ def patch_cuda(disable_jit=True):
         except AttributeError:
             pass
 
+    os.environ['BIGDL_NANO_PATCH_CUDA'] = '1'
+
 
 def unpatch_cuda():
+    if os.environ.get('BIGDL_NANO_PATCH_CUDA', '0') == '0':
+        return
+
     torch.jit._state.enable()
     for obj, name, torch_attr in attrs:
         setattr(obj, name, torch_attr)
+
+    os.environ['BIGDL_NANO_PATCH_CUDA'] = '0'

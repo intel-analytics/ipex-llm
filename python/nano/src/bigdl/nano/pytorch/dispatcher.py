@@ -67,6 +67,9 @@ def patch_torch(cuda_to_cpu: bool = True):
            This feature is still experimental and only valid in python layer codes.
            Default to True.
     """
+    if os.environ.get('BIGDL_NANO_PATCH_TORCH', '0') == '1':
+        return
+
     if cuda_to_cpu:
         patch_cuda()
     mapping_torch = _get_patch_map()
@@ -79,12 +82,12 @@ def patch_torch(cuda_to_cpu: bool = True):
     # we need these environment variables to know whether we should
     # call this patch in subprocess when multi-instance training
     os.environ['BIGDL_NANO_PATCH_TORCH'] = '1'
-    os.environ['BIGDL_NANO_PATCH_CUDA'] = '1' if cuda_to_cpu else '0'
 
 
 def unpatch_torch():
     """unpatch_torch is used to unpatch optimized torch classes to original ones."""
-    # TODO: unpatch_torch to support gpu-to-cpu unpatching
+    if os.environ.get('BIGDL_NANO_PATCH_TORCH', '0') == '0':
+        return
 
     mapping_torch = _get_patch_map()
 
@@ -94,4 +97,3 @@ def unpatch_torch():
     unpatch_cuda()
 
     os.environ['BIGDL_NANO_PATCH_TORCH'] = '0'
-    os.environ['BIGDL_NANO_PATCH_CUDA'] = '0'
