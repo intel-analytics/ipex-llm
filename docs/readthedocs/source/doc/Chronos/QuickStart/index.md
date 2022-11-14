@@ -353,6 +353,19 @@
         </details>
         <hr>
 
+        <details id="ServeForecaster">
+            <summary>
+                <a href="https://github.com/intel-analytics/BigDL/tree/main/python/chronos/example/serving">Serve Chronos forecaster and predict through TorchServe</a>
+                <p>Tag: 
+                    <button value="forecast">forecast</button>&nbsp;
+                    <button value="TCNForecaster" class="roundbutton">TCNForecaster</button>
+                </p>
+            </summary>
+            <img src="../../../_images/GitHub-Mark-32px.png"><a href="https://github.com/intel-analytics/BigDL/tree/main/python/chronos/example/serving">View source on GitHub</a>
+            <p>In this example, we show how to serve Chronos forecaster and predict through TorchServe.</p>
+        </details>
+        <hr>
+
     </div>
 
     <script src="../../../_static/js/chronos_tutorial.js"></script> 
