@@ -24,7 +24,6 @@ from torch.utils.data import DataLoader
 
 from mmcv.runner import EpochBasedRunner
 from mmcv.utils import get_logger
-from bigdl.orca import init_orca_context, stop_orca_context
 from bigdl.orca.learn.pytorch.experimential.mmcv.mmcv_ray_estimator import MMCVRayEstimator
 
 resource_path = os.path.join(
