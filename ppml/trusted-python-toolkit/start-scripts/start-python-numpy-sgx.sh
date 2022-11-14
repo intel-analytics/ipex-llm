@@ -1,21 +1,21 @@
 #!/bin/bash
-cd /ppml
-i=16384
-n=32768
-while [[ $i -le $n ]]
+num=4096
+dtype='int'
+
+while getopts "n:t:" opt
 do
-	bash examples/numpy/CLI.sh -n $i -p native -t float
-	export sgx_command="bash examples/numpy/CLI.sh -n $i -p sgx -t float"
-	gramine-sgx bash 2>&1
-	i=$(( $i *2 ))
+    case $opt in
+        n)
+            num=$OPTARG
+        ;;
+        t)
+            dtype=$OPTARG
+        ;;
+    esac
 done
 
-i=2048
-n=4096
-while [[ $i -le $n ]]
-do
-        bash examples/numpy/CLI.sh -n $i -p native -t int
-        export sgx_command="bash examples/numpy/CLI.sh -n $i -p sgx -t int"
-        gramine-sgx bash 2>&1
-        i=$(( $i *2 ))
-done
+cd /ppml
+bash examples/numpy/CLI.sh -n $num -p native -t $dtype
+export sgx_command="bash examples/numpy/CLI.sh -n $num -p sgx -t $dtype"
+gramine-sgx bash 2>&1
+

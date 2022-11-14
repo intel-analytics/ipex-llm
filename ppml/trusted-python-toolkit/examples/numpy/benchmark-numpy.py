@@ -37,7 +37,7 @@ def benchmark_int(size, env):
         np.dot(A, B)
     delta = time() - t
     print('Dotted two %dx%d matrices in %0.2f s.' % (size, size, delta / N))
-    f.write('Dotted two %dx%d matrices in %0.2f s.' % (size, size, delta / N))
+    f.write('Dotted two %dx%d matrices in %0.2f s.\n' % (size, size, delta / N))
     del A, B
 
     # Singular Value Decomposition (SVD)
@@ -47,7 +47,7 @@ def benchmark_int(size, env):
         np.linalg.svd(E, full_matrices = False)
     delta = time() - t
     print("SVD of a %dx%d matrix in %0.2f s." % (size, size, delta / N))
-    f.write("SVD of a %dx%d matrix in %0.2f s." % (size, size, delta / N))
+    f.write("SVD of a %dx%d matrix in %0.2f s.\n" % (size, size, delta / N))
     del E
 
     # Cholesky Decomposition
@@ -57,7 +57,7 @@ def benchmark_int(size, env):
         np.linalg.cholesky(F)
     delta = time() - t
     print("Cholesky decomposition of a %dx%d matrix in %0.2f s." % (size * 5, size * 5, delta / N))
-    f.write("Cholesky decomposition of a %dx%d matrix in %0.2f s." % (size * 5, size * 5, delta / N))
+    f.write("Cholesky decomposition of a %dx%d matrix in %0.2f s.\n" % (size * 5, size * 5, delta / N))
 
     # Eigendecomposition
     t = time()
@@ -65,7 +65,7 @@ def benchmark_int(size, env):
         np.linalg.eig(G)
     delta = time() - t
     print("Eigendecomposition of a %dx%d matrix in %0.2f s." % (size, size, delta / N))
-    f.write("Eigendecomposition of a %dx%d matrix in %0.2f s." % (size, size, delta / N))
+    f.write("Eigendecomposition of a %dx%d matrix in %0.2f s.\n" % (size, size, delta / N))
     f.close()
 
 def benchmark_float(size, env):
@@ -86,7 +86,7 @@ def benchmark_float(size, env):
         np.dot(A, B)
     delta = time() - t
     print('Dotted two %dx%d matrices in %0.2f s.' % (size, size, delta / N))
-    f.write('Dotted two %dx%d matrices in %0.2f s.' % (size, size, delta / N))
+    f.write('Dotted two %dx%d matrices in %0.2f s.\n' % (size, size, delta / N))
     del A, B
 
     # Singular Value Decomposition (SVD)
@@ -96,7 +96,7 @@ def benchmark_float(size, env):
         np.linalg.svd(E, full_matrices = False)
     delta = time() - t
     print("SVD of a %dx%d matrix in %0.2f s." % (size / 2, size / 4, delta / N))
-    f.write("SVD of a %dx%d matrix in %0.2f s." % (size / 2, size / 4, delta / N))
+    f.write("SVD of a %dx%d matrix in %0.2f s.\n" % (size / 2, size / 4, delta / N))
     del E
 
     # Cholesky Decomposition
@@ -106,7 +106,7 @@ def benchmark_float(size, env):
         np.linalg.cholesky(F)
     delta = time() - t
     print("Cholesky decomposition of a %dx%d matrix in %0.2f s." % (size, size, delta / N))
-    f.write("Cholesky decomposition of a %dx%d matrix in %0.2f s." % (size, size, delta / N))
+    f.write("Cholesky decomposition of a %dx%d matrix in %0.2f s.\n" % (size, size, delta / N))
 
     # Eigendecomposition
     t = time()
@@ -114,7 +114,7 @@ def benchmark_float(size, env):
         np.linalg.eig(G)
     delta = time() - t
     print("Eigendecomposition of a %dx%d matrix in %0.2f s." % (size / 2, size / 2, delta / N))
-    f.write("Eigendecomposition of a %dx%d matrix in %0.2f s." % (size / 2, size / 2, delta / N))
+    f.write("Eigendecomposition of a %dx%d matrix in %0.2f s.\n" % (size / 2, size / 2, delta / N))
     f.close()
 
 if __name__ == '__main__':
