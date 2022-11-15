@@ -21,6 +21,7 @@ ADD ./entrypoint.sh /opt/entrypoint.sh
 # Small examples for PyTorch
 ADD ./mnist.py       /ppml/examples/mnist.py
 ADD ./pert.py        /ppml/examples/pert.py
+ADD ./pert_test.py   /ppml/examples/pert_test.py
 # Patch for datasets
 ADD ./filelock.patch /filelock.patch
 
