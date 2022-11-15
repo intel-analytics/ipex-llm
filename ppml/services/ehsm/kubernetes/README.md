@@ -87,8 +87,8 @@ pod/dkeyserver-0                                       1/1     Running   0      
 
 NAME                             TYPE           CLUSTER-IP       EXTERNAL-IP     PORT(S)          AGE
 service/bigdl-ehsm-kms-service   LoadBalancer   10.103.152.224   172.168.0.238   9000:30011/TCP   56m
-service/couchdb                  ClusterIP      None             <none>          5984/TCP         56m
-service/dkeyserver               ClusterIP      None             <none>          8888/TCP         56m
+service/couchdb                  ClusterIP      10.103.152.212   <none>          5984/TCP         56m
+service/dkeyserver               ClusterIP      10.103.152.227   <none>          8888/TCP         56m
 
 NAME                                              READY   UP-TO-DATE   AVAILABLE   AGE
 deployment.apps/bigdl-ehsm-kms-deployment         1/1     1            1           6h52m
