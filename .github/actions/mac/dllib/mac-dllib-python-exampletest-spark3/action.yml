@@ -6,6 +6,7 @@ runs:
     - name: Run Test
       shell: bash
       run: |
+        source ~/.bash_profile
         source activate py37
         export KERAS_BACKEND=tensorflow
         chmod a+x python/dllib/examples/run-example-tests-pip.sh 
