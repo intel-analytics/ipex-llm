@@ -1,4 +1,4 @@
-# Privacy Preserving Machine Learning (PPML) on Azure User Guide
+# Privacy Preserving Machine Learning (PPML) on Azure(Graphene) User Guide
 
 ## 1. Introduction
 Protecting privacy and confidentiality is critical for large-scale data analysis and machine learning. BigDL ***PPML*** combines various low-level hardware and software security technologies (e.g., [Intel® Software Guard Extensions (Intel® SGX)](https://www.intel.com/content/www/us/en/architecture-and-technology/software-guard-extensions.html), [Library Operating System (LibOS)](https://events19.linuxfoundation.org/wp-content/uploads/2017/12/Library-OS-is-the-New-Container-Why-is-Library-OS-A-Better-Option-for-Compatibility-and-Sandboxing-Chia-Che-Tsai-UC-Berkeley.pdf) such as [Graphene](https://github.com/gramineproject/graphene) and [Occlum](https://github.com/occlum/occlum), [Federated Learning](https://en.wikipedia.org/wiki/Federated_learning), etc.), so that users can continue to apply standard Big Data and AI technologies (such as Apache Spark, Apache Flink, Tensorflow, PyTorch, etc.) without sacrificing privacy.
@@ -40,6 +40,9 @@ On `Subscribe` page, input your subscription, your Azure container registry, you
   ```bash
   docker pull myContainerRegistry.azurecr.io/intel_corporation/bigdl-ppml-trusted-big-data-ml-python-graphene
   ```
+
+* Start AESM service on VM
+
 * Start container of this image
 
   ```bash
@@ -345,6 +348,57 @@ bash bigdl-ppml-submit.sh \
     $ARGS
 ```
 
+### 3.7 Run simple query python example
+The example script to run simple query python example job on AKS is as below.
+```bash
+RUNTIME_SPARK_MASTER=
+export RUNTIME_DRIVER_MEMORY=8g
+export RUNTIME_DRIVER_PORT=54321
+
+BIGDL_VERSION=2.1.0
+DATA_LAKE_NAME=
+DATA_LAKE_ACCESS_KEY=
+KEY_VAULT_NAME=
+PRIMARY_KEY_PATH=
+DATA_KEY_PATH=
+
+secure_password=`az keyvault secret show --name "key-pass" --vault-name $KEY_VAULT_NAME --query "value" | sed -e 's/^"//' -e 's/"$//'`
+
+bash bigdl-ppml-submit.sh \
+    --master $RUNTIME_SPARK_MASTER \
+    --deploy-mode client \
+    --sgx-enabled true \
+    --sgx-log-level error \
+    --sgx-driver-memory 4g \
+    --sgx-driver-jvm-memory 2g \
+    --sgx-executor-memory 16g \
+    --sgx-executor-jvm-memory 7g \
+    --driver-memory 7g \
+    --driver-cores 4 \
+    --executor-memory 18g \
+    --executor-cores 2 \
+    --num-executors 1 \
+    --name simple-query-sgx \
+    --conf spark.kubernetes.container.image=intelanalytics/bigdl-ppml-trusted-big-data-ml-python-graphene:$BIGDL_VERSION \
+    --conf spark.kubernetes.driver.podTemplateFile=/ppml/trusted-big-data-ml/azure/spark-driver-template-az.yaml \
+    --conf spark.kubernetes.executor.podTemplateFile=/ppml/trusted-big-data-ml/azure/spark-executor-template-az.yaml \
+    --conf spark.hadoop.fs.azure.account.auth.type.${DATA_LAKE_NAME}.dfs.core.windows.net=SharedKey \
+    --conf spark.hadoop.fs.azure.account.key.${DATA_LAKE_NAME}.dfs.core.windows.net=${DATA_LAKE_ACCESS_KEY} \
+    --conf spark.hadoop.fs.azure.enable.append.support=true \
+    --properties-file /ppml/trusted-big-data-ml/work/bigdl-$BIGDL_VERSION/conf/spark-bigdl.conf \
+    --conf spark.executor.extraClassPath=/ppml/trusted-big-data-ml/work/bigdl-$BIGDL_VERSION/jars/*:/ppml/trusted-big-data-ml/work/spark-3.1.2/jars/* \
+    --conf spark.driver.extraClassPath=/ppml/trusted-big-data-ml/work/bigdl-$BIGDL_VERSION/jars/*:/ppml/trusted-big-data-ml/work/spark-3.1.2/jars/* \
+    --py-files /ppml/trusted-big-data-ml/work/bigdl-$BIGDL_VERSION/python/bigdl-ppml-spark_3.1.2-$BIGDL_VERSION-python-api.zip,/ppml/trusted-big-data-ml/work/bigdl-$BIGDL_VERSION/python/bigdl-spark_3.1.2-$BIGDL_VERSION-python-api.zip,/ppml/trusted-big-data-ml/work/bigdl-$BIGDL_VERSION/python/bigdl-dllib-spark_3.1.2-$BIGDL_VERSION-python-api.zip \
+    /ppml/trusted-big-data-ml/work/examples/simple_query_example.py \
+    --kms_type AzureKeyManagementService \
+    --azure_vault $KEY_VAULT_NAME \
+    --primary_key_path $PRIMARY_KEY_PATH \
+    --data_key_path $DATA_KEY_PATH \
+    --input_encrypt_mode aes/cbc/pkcs5padding \
+    --output_encrypt_mode plain_text \
+    --input_path $INPUT_DIR_PATH/people.csv \
+    --output_path $INPUT_DIR_PATH/simple-query-result.csv
+```
 ## 4. Run TPC-H example
 TPC-H queries are implemented using Spark DataFrames API running with BigDL PPML.
 
