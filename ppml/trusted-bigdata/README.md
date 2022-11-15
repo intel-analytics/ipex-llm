@@ -168,15 +168,32 @@ kubectl apply -f password/password.yaml
 ```bash
 kubectl create serviceaccount spark
 kubectl create clusterrolebinding spark-role --clusterrole=edit --serviceaccount=default:spark --namespace=default
+kubectl get secret|grep service-account-token # you will find a spark service account secret, format like spark-token-12345
+
+# bind service account and user
+kubectl config set-credentials spark-user \
+--token=$(kubectl get secret <spark_service_account_secret> -o jsonpath={.data.token} | base64 -d)
+
+# bind user and context
+kubectl config set-context spark-context --user=spark-user
+
+# bind context and cluster
+kubectl config get-clusters
+kubectl config set-context spark-context --cluster=<cluster_name> --user=spark-user
 ```
 #### 1.2.2 Generate k8s config file
 ```bash
+kubectl config use-context spark-context
 kubectl config view --flatten --minify > /YOUR_DIR/kubeconfig
 ```
 #### 1.2.3 Create k8s secret
 ```bash
 kubectl create secret generic spark-secret --from-literal secret=YOUR_SECRET
-kubectl create secret generic kms-secret --from-literal=app_id=your-kms-app-id --from-literal=api_key=your-kms-api-key
+kubectl create secret generic kms-secret \
+                      --from-literal=app_id=YOUR_KMS_APP_ID \
+                      --from-literal=api_key=YOUR_KMS_API_KEY \
+                      --from-literal=policy_id=YOUR_POLICY_ID
+kubectl create secret generic kubeconfig-secret --from-file=/YOUR_DIR/kubeconfig
 ```
 **The secret created (`YOUR_SECRET`) should be the same as the password you specified in section 1.1**
 
