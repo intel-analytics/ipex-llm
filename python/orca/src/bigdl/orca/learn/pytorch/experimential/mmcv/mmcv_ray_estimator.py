@@ -21,14 +21,13 @@ from bigdl.dllib.utils.log4Error import *
 from typing import (Any, Dict, List, Optional, Tuple, Callable, overload)
 
 from bigdl.orca.learn.pytorch.experimential.core.base_ray_estimator import BaseRayEstimator
-from bigdl.orca.learn.pytorch.experimential.mmcv.mmcv_ray_runner import MMCVRayRunner
+from bigdl.orca.learn.pytorch.experimential.mmcv.mmcv_ray_runner import MMCVRayEpochRunner
 
 
 class MMCVRayEstimator(BaseRayEstimator):
     def __init__(self,
                  *,
                  mmcv_runner_creator=None,
-                 runner_cls=MMCVRayRunner,
                  backend="ray",
                  workers_per_node=1,
                  config=None):
@@ -37,19 +36,21 @@ class MMCVRayEstimator(BaseRayEstimator):
 
         self.mmcv_runner_creator = mmcv_runner_creator
         self.backend = backend
+        self.runner_cls = MMCVRayEpochRunner
         self.config = {} if config is None else config
         worker_config = copy.copy(self.config)
         params = dict(
             mmcv_runner_creator=self.mmcv_runner_creator,
             config=worker_config
         )
-        self.setup(params, self.backend, runner_cls, workers_per_node)
+        self.setup(params, self.backend, self.runner_cls, workers_per_node)
         self.num_workers = len(self.remote_workers)
 
     def fit(self,
             data_loaders_creators: List[Callable],
             workflow: List[Tuple[str, int]],
             max_epochs: Optional[int] = None,  # deprecated
+            reduce_results=True,
             **kwargs):
         """Trains a MMCV model given training and val data for several epochs.
 
@@ -70,15 +71,24 @@ class MMCVRayEstimator(BaseRayEstimator):
                       **kwargs)
         success, worker_stats = self._train_epochs(**params)
 
+        epoch_stats = list(map(list, zip(*worker_stats)))
+        if reduce_results:
+            for i in range(len(epoch_stats)):
+                epoch_stats[i] = self._process_stats(epoch_stats[i])
+            return epoch_stats
+        else:
+            return epoch_stats
+
     def run(self,
             data_loaders_creators: List[Callable],
             workflow: List[Tuple[str, int]],
             max_epochs: Optional[int] = None,  # deprecated
+            reduce_results=True,
             **kwargs):
         """
         Same as fit method, keep consistent with mmcv runner.run()
         """
-        self.fit(data_loaders_creators, workflow, max_epochs, **kwargs)
+        return self.fit(data_loaders_creators, workflow, max_epochs, reduce_results, **kwargs)
 
     def predict(self, **kwargs):
         pass

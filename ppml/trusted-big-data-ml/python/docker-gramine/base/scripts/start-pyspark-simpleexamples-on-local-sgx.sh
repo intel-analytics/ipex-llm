@@ -6,7 +6,7 @@ cd /ppml/trusted-big-data-ml
 if [ $status_3_local_spark_pi -ne 0 ]; then
 echo "example.3 local spark, pi"
 export sgx_command="/opt/jdk8/bin/java \
-   -cp '/ppml/trusted-big-data-ml/work/spark-$SPARK_VERSION/conf/:/ppml/trusted-big-data-ml/work/spark-$SPARK_VERSION/jars/*:/ppml/trusted-big-data-ml/work/spark-$SPARK_VERSION/examples/jars/*' \
+   -cp /ppml/trusted-big-data-ml/work/spark-$SPARK_VERSION/conf/:/ppml/trusted-big-data-ml/work/spark-$SPARK_VERSION/jars/*:/ppml/trusted-big-data-ml/work/spark-$SPARK_VERSION/examples/jars/* \
    -Xmx1g org.apache.spark.deploy.SparkSubmit \
    --master local[4] \
    --conf spark.python.use.daemon=false \
@@ -22,7 +22,7 @@ if [ $status_4_local_spark_wordcount -ne 0 ]; then
 echo "example.4 local spark, test-wordcount"
 export PYSPARK_PYTHON=/usr/bin/python
 export sgx_command="/opt/jdk8/bin/java \
-   -cp '/ppml/trusted-big-data-ml/work/spark-$SPARK_VERSION/conf/:/ppml/trusted-big-data-ml/work/spark-$SPARK_VERSION/jars/*:/ppml/trusted-big-data-ml/work/spark-$SPARK_VERSION/examples/jars/*' \
+   -cp /ppml/trusted-big-data-ml/work/spark-$SPARK_VERSION/conf/:/ppml/trusted-big-data-ml/work/spark-$SPARK_VERSION/jars/*:/ppml/trusted-big-data-ml/work/spark-$SPARK_VERSION/examples/jars/* \
    -Xmx1g org.apache.spark.deploy.SparkSubmit \
    --master local[4] \
    --conf spark.python.use.daemon=false \

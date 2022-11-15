@@ -411,7 +411,11 @@ class TrainingOperator:
                                   "Features should be tensor, list/tuple or dict, "
                                   "but got {}".format(type(features)))
 
-            loss = self.criterion(output, target)
+            if isinstance(output, tuple) or isinstance(output, list):
+                # Then target is also assumed to be a tuple or list.
+                loss = self.criterion(*output, *target)
+            else:
+                loss = self.criterion(output, target)
 
         return output, target, loss
 

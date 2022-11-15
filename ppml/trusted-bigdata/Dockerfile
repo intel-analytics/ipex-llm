@@ -138,6 +138,7 @@ RUN mkdir -p /ppml/lib && \
     mkdir -p /ppml/apps
 
 COPY --from=bigdata /opt/spark-${SPARK_VERSION} /ppml/spark-${SPARK_VERSION}
+COPY --from=bigdata /opt/spark-${SPARK_VERSION}/examples/src/main/resources /ppml/examples/src/main/resources
 
 ADD ./bigdl-ppml-submit.sh /ppml/bigdl-ppml-submit.sh
 ADD ./spark-executor-template.yaml /ppml/spark-executor-template.yaml

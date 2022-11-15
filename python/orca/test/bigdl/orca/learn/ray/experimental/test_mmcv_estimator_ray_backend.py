@@ -14,17 +14,13 @@
 # limitations under the License.
 #
 
+import pytest
 import unittest
 import os
-import random
-import shutil
 import torch
 import torch.nn as nn
-import torch.nn.functional as F
 import torch.optim as optim
-import torchvision.transforms as transforms
 from torch.utils.data import DataLoader
-from torchvision.datasets import CIFAR10
 
 from mmcv.runner import EpochBasedRunner
 from mmcv.utils import get_logger
@@ -33,6 +29,8 @@ from bigdl.orca.learn.pytorch.experimential.mmcv.mmcv_ray_estimator import MMCVR
 
 resource_path = os.path.join(
     os.path.realpath(os.path.dirname(__file__)), "../../../resources")
+
+MAX_EPOCH = 4
 
 
 class Model(nn.Module):
@@ -58,7 +56,7 @@ class Model(nn.Module):
         y = self.out_act(a3)
         return y
 
-    def train_step(self, data, optimizer):
+    def train_step(self, data, optimizer, **kwargs):
         features, labels = data
         predicts = self(features)  # -> self.__call__() -> self.forward()
         loss = self.loss_fn(predicts, labels)
@@ -76,7 +74,7 @@ def runner_creator(config):
         optimizer=optimizer,
         work_dir='./work_dir',
         logger=logger,
-        max_epochs=4)
+        max_epochs=MAX_EPOCH)
 
     # learning rate scheduler config
     lr_config = dict(policy='step', step=[2, 3])
@@ -118,28 +116,26 @@ def train_dataloader_creator(config):
     return train_loader
 
 
+def get_estimator():
+    estimator = MMCVRayEstimator(
+        mmcv_runner_creator=runner_creator,
+        config={}
+    )
+    return estimator
+
+
 class TestMMCVRayEstimator(unittest.TestCase):
 
-    @classmethod
-    def setUpClass(cls) -> None:
-        init_orca_context(cores=8, memory="8g")
-
-    @classmethod
-    def tearDownClass(cls) -> None:
-        stop_orca_context()
-
-    def setUp(self) -> None:
-        self.estimator = MMCVRayEstimator(
-            mmcv_runner_creator=runner_creator,
-            config={}
-        )
-
     def test_fit(self):
-        self.estimator.fit([train_dataloader_creator], [('train', 1)])
+        estimator = get_estimator()
+        epoch_stats = estimator.fit([train_dataloader_creator], [('train', 1)])
+        self.assertEqual(len(epoch_stats), MAX_EPOCH)
 
     def test_run(self):
-        self.estimator.run([train_dataloader_creator], [('train', 1)])
+        estimator = get_estimator()
+        epoch_stats = estimator.run([train_dataloader_creator], [('train', 1)])
+        self.assertEqual(len(epoch_stats), MAX_EPOCH)
 
 
 if __name__ == "__main__":
-    unittest.main()
+    pytest.main([__file__])

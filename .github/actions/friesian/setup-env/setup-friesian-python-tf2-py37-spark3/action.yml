@@ -20,9 +20,13 @@ runs:
         conda create -n py37 -y python==3.7.10 setuptools==58.0.4 -c ${CONDA_CHANNEL} --override-channels
         conda info --env
         source activate py37
+        pip install wheel
         pip uninstall -y bigdl-friesian bigdl-friesian-spark3 bigdl-dllib bigdl-dllib-spark3 bigdl-orca pyspark bigdl-orca-spark3 bigdl-chronos bigdl-chronos-spark3 bigdl-friesian bigdl-friesian-spark3
-        pip uninstall -r .github/actions/python-requirements/requirements-friesian-python-tf2-spark3.txt -y
-        pip install -i ${PIP_MIRROR} --trusted-host ${TRUSTED_HOST} -r .github/actions/python-requirements/requirements-friesian-python-tf2-spark3.txt 
+        
+        wget https://raw.githubusercontent.com/analytics-zoo/BigDL/main/python/test/python-requirements/requirements-friesian-python-tf2-spark3.txt  -O ${{ github.workspace }}/requirements-friesian-python-tf2-spark3.txt
+        pip uninstall -r ${{ github.workspace }}/requirements-friesian-python-tf2-spark3.txt -y
+        pip install -i ${PIP_MIRROR} --trusted-host ${TRUSTED_HOST} -r ${{ github.workspace }}/requirements-friesian-python-tf2-spark3.txt
+        pip install deepctr==0.9.2 --no-deps
          
       env:
         BIGDL_ROOT: ${{ github.workspace }}

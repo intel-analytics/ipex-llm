@@ -275,15 +275,7 @@ class BaseTF2Forecaster(Forecaster):
         invalidInputError(self.fitted,
                           "You must call fit or restore first before calling save!")
 
-        if self.distributed:
-            # TODO: can't save and load, temporarily use save_weight instead, will fix later.
-            from bigdl.dllib.utils.file_utils import is_local_path
-            if is_local_path(checkpoint_file):
-                self.internal.save_weights(checkpoint_file)
-            else:
-                self.internal.save(checkpoint_file)
-        else:
-            self.internal.save(checkpoint_file)
+        self.internal.save(checkpoint_file)
 
     def load(self, checkpoint_file):
         """
@@ -292,12 +284,7 @@ class BaseTF2Forecaster(Forecaster):
         :params checkpoint_file: The checkpoint file location you want to load the forecaster.
         """
         if self.distributed:
-            # TODO: can't save and load, temporarily use load_weights instead, will fix later.
-            from bigdl.dllib.utils.file_utils import is_local_path
-            if is_local_path(checkpoint_file):
-                self.internal.load_weights(checkpoint_file)
-            else:
-                self.internal.load(checkpoint_file)
+            self.internal.load(checkpoint_file)
         else:
             self.internal = keras.models.load_model(checkpoint_file,
                                                     custom_objects=self.custom_objects_config)

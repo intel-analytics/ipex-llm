@@ -240,7 +240,7 @@ jobs:
           $CONDA/bin/conda create -n pytorch-ipex -y python==3.7.10 setuptools=58.0.4
           source $CONDA/bin/activate pytorch-ipex
           $CONDA/bin/conda info
-          bash python/nano/dev/build_and_install.sh linux default false pytorch
+          bash python/nano/dev/build_and_install.sh linux default false pytorch,inference
           pip install pytest
           pip uninstall -y intel_extension_for_pytorch
           if [ ! -z "${{matrix.pytorch-version}}" ]; then

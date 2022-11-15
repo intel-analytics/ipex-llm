@@ -26,8 +26,10 @@ runs:
         pip install torchvision==0.5.0
         pip install cmake
         HOROVOD_WITH_PYTORCH=1; HOROVOD_WITH_GLOO=1; pip install --no-cache-dir horovod==0.19.2
-        pip uninstall -r .github/actions/python-requirements/requirements-orca-horovod-pytorch.txt -y
-        pip install -i ${PIP_MIRROR} --trusted-host ${TRUSTED_HOST} -r .github/actions/python-requirements/requirements-orca-horovod-pytorch.txt 
+       
+        wget https://raw.githubusercontent.com/analytics-zoo/BigDL/main/python/test/python-requirements/requirements-orca-horovod-pytorch.txt -O ${{ github.workspace }}/requirements-orca-horovod-pytorch.txt
+        pip uninstall -r ${{ github.workspace }}/requirements-orca-horovod-pytorch.txt -y
+        pip install -i ${PIP_MIRROR} --trusted-host ${TRUSTED_HOST} -r ${{ github.workspace }}/requirements-orca-horovod-pytorch.txt
         pip install ray[default]==1.9.1
         pip install protobuf==3.12.0
         pip uninstall -y opencv-python-headless

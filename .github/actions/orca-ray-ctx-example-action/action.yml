@@ -21,8 +21,10 @@ runs:
         python -m pip install --upgrade setuptools==58.0.4
 
         pip uninstall -y bigdl-friesian bigdl-friesian-spark3 bigdl-dllib bigdl-dllib-spark3 bigdl-orca pyspark bigdl-orca-spark3 bigdl-chronos bigdl-chronos-spark3 bigdl-friesian bigdl-friesian-spark3
-        pip uninstall -r .github/actions/python-requirements/requirements-orca-python-ray.txt -y
-        pip install -i https://pypi.tuna.tsinghua.edu.cn/simple -r .github/actions/python-requirements/requirements-orca-python-ray.txt 
+       
+        wget https://raw.githubusercontent.com/analytics-zoo/BigDL/main/python/test/python-requirements/requirements-orca-python-ray.txt -O ${{ github.workspace }}/requirements-orca-python-ray.txt
+        pip uninstall -r ${{ github.workspace }}/requirements-orca-python-ray.txt -y
+        pip install -i https://pypi.tuna.tsinghua.edu.cn/simple -r ${{ github.workspace }}/requirements-orca-python-ray.txt 
         pip install pytest
 
         pip install cmake==3.16.3

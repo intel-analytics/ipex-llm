@@ -30,32 +30,43 @@ Now you have already had a PCCS image.
 
 
 ## 1. Deploy BigDL-PCCS on Kubernetes
-If you already have a BidDL-PCCS service on Kubernetes, please skip this step.
+If you already have a BigDL-PCCS service on Kubernetes, please skip this step.
 
 If not, please **[deploy BigDL-PCCS on Kubernetes](https://github.com/intel-analytics/BigDL/tree/main/ppml/services/pccs/kubernetes)**.
 ## 2. Start BigDL-eHSM-KMS on Kubernetes 
+### 2.1 Determine IP addresses for dkeyserver and KMS
+First of all , **two different IP addresses that unused in your subnetwork** are needed to be used as dkeyserver IP and KMS IP, and they should be different from PCCS IP that you have set in step 1. \
+**Especially,** the IP addresses chosen for dkeyserver and KMS **SHOULD NOT** be real machine IP address. \
+You could check if the IP adresses are available for dkeyserver and KMS like this
+```bash
+# assume your IP address is 1.2.3.4, and you want to use 1.2.3.227 as dkeyserver IP
+ping 1.2.3.227
 
+# information below means 1.2.3.227 is expected to be an appropriate IP addess for dkeyserver. 
+# otherwise, you are supposed to test another one.
+PING 1.2.3.227 (1.2.3.227) 56(84) bytes of data.
+From 1.2.3.4 icmp_seq=1 Destination Host Unreachable
+From 1.2.3.4 icmp_seq=2 Destination Host Unreachable
+From 1.2.3.4 icmp_seq=3 Destination Host Unreachable
+........
+
+# try another IP address (e.g 1.2.3.228) for KMS with the same approach.
+```
+
+### 2.2 Modify the script and deploy BigDL-eHSM-KMS
 Please make sure current workdir is `kubernetes`.
 
-Then modify parameters in `install-bigdl-ehsm-kms.sh` as following:
+Then modify parameters in `install-bigdl-ehsm-kms.sh` as following. \
+The `pccsIP` should be the IP address you have used in step 1. The `dkeyserverIP` and `kmsIP` should be the IP addresses you have determined in step 2.1. 
 
 ```shell
 # reset of other parameters in values.yaml is optional, please check according to your environment
 nfsServerIP: your_nfs_server_ip                   --->   <the_IP_address_of_your_NFS_server>
 nfsPath: a_nfs_shared_folder_path_on_the_server   --->   <an_existing_shared_folder_path_on_NFS_server>
 ......
-pccsIP: your_pccs_ip                              --->   <an_used_ip_address_in_your_subnetwork_you_have_assigned_to_pccs_in_step1>
-dkeyserverIP: your_dkeyserver_ip_to_use_as        --->   <an_used_ip_address_in_your_subnetwork_to_assign_to_dkeyserver>
-kmsIP: your_kms_ip_to_use_as                      --->   <an_used_ip_address_in_your_subnetwork_to_assign_to_kms>
-
-# Replace the below parameters according to your environment
-
-apiKey: your_intel_pcs_server_subscription_key_obtained_through_web_registeration
-httpsProxyUrl: your_usable_https_proxy_url
-countryName: your_country_name
-cityName: your_city_name
-organizaitonName: your_organizaition_name
-commonName: server_fqdn_or_your_name
+pccsIP: your_pccs_ip                              --->   <the_ip_address_in_your_subnetwork_you_have_assigned_to_pccs_in_step1>
+dkeyserverIP: your_dkeyserver_ip_to_use_as        --->   <an_unused_ip_address_in_your_subnetwork_to_assign_to_dkeyserver>
+kmsIP: your_kms_ip_to_use_as                      --->   <an_unused_ip_address_in_your_subnetwork_to_assign_to_kms>
 ```
 
 Then, deploy BigDL-eHSM-KMS on kubernetes:
@@ -64,7 +75,8 @@ Then, deploy BigDL-eHSM-KMS on kubernetes:
 bash install-bigdl-ehsm-kms.sh
 ```
 
-Check the service whether it has successfully been running (it may take seconds):
+Check the service whether it has successfully been running (it may take seconds). \
+**Note:** the `EXTERNAL-IP` of `service/bigdl-ehsm-kms-service` is the **KMS IP**. 
 
 ```bash
 kubectl get all -n bigdl-ehsm-kms
@@ -77,16 +89,16 @@ pod/dkeycache-57db49f98-z28t4                          1/1     Running   0      
 pod/dkeyserver-0                                       1/1     Running   0          6h52m
 
 NAME                                   TYPE           CLUSTER-IP      EXTERNAL-IP     PORT(S)          AGE
-service/bigdl-ehsm-kms-service         LoadBalancer   1.10.9.98       1.1.0.218       9000:30000/TCP   6h52m
+service/bigdl-ehsm-kms-service         LoadBalancer   1.10.9.98       1.2.3.228       9000:30000/TCP   6h52m
 service/couchdb                        ClusterIP      1.10.8.236      <none>          5984/TCP         6h52m
-service/dkeyserver                     ClusterIP      1.10.1.132      1.1.0.217       8888/TCP         6h52m
+service/dkeyserver                     ClusterIP      1.10.1.132      1.2.3.227       8888/TCP         6h52m
 
 NAME                                              READY   UP-TO-DATE   AVAILABLE   AGE
 deployment.apps/bigdl-ehsm-kms-deployment         1/1     1            1           6h52m
 deployment.apps/dkeycache                         1/1     1            1           6h52m
 
 NAME                                                         DESIRED   CURRENT   READY   AGE
-replicaset.apps/bigdl-ehsm-kms-deployment-7dd7c965d5   1         1         1       6h52m
+replicaset.apps/bigdl-ehsm-kms-deployment-7dd7c965d5         1         1         1       6h52m
 replicaset.apps/dkeycache-57db49f98                          1         1         1       6h52m
 
 NAME                          READY   AGE
@@ -133,5 +145,6 @@ deployment.apps "dkeycache" deleted
 statefulset.apps "couchdb" deleted
 statefulset.apps "dkeyserver" deleted
 persistentvolumeclaim "couch-persistent-storage-couchdb-0" deleted
+persistentvolume "ehsm-pv-nfs" deleted
 namespace "bigdl-ehsm-kms" deleted
 ```

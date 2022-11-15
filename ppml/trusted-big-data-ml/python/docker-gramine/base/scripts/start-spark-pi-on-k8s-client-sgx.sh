@@ -5,7 +5,7 @@ secure_password=`openssl rsautl -inkey /ppml/trusted-big-data-ml/work/password/k
 TF_MKL_ALLOC_MAX_BYTES=10737418240 && \
 SPARK_LOCAL_IP=$LOCAL_IP && \
 export sgx_command="/opt/jdk8/bin/java \
-  -cp '/ppml/trusted-big-data-ml/work/spark-${SPARK_VERSION}/conf/:/ppml/trusted-big-data-ml/work/spark-${SPARK_VERSION}/jars/*:ppml/trusted-big-data-ml/work/spark-${SPARK_VERSION}/examples/jars/*:/ppml/trusted-big-data-ml/work/spark-${SPARK_VERSION}/examples/jars/*' \
+  -cp /ppml/trusted-big-data-ml/work/spark-${SPARK_VERSION}/conf/:/ppml/trusted-big-data-ml/work/spark-${SPARK_VERSION}/jars/*:ppml/trusted-big-data-ml/work/spark-${SPARK_VERSION}/examples/jars/*:/ppml/trusted-big-data-ml/work/spark-${SPARK_VERSION}/examples/jars/* \
     -Xmx8g \
     org.apache.spark.deploy.SparkSubmit \
     --master $RUNTIME_SPARK_MASTER \

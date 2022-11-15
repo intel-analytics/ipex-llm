@@ -291,3 +291,44 @@ It should be similar to the following:
 2022-10-20T02:00:51Z INFO     Train Epoch: 10 [58880/60000 (98%)]       loss=0.2187
 2022-10-20T02:00:51Z INFO     Train Epoch: 10 [59520/60000 (99%)]       loss=0.3429
 ```
+
+
+### Running distributed training using Kubernetes
+
+If Kubernetes is used to boot multiple PyTorch training processes, then please pay attention to the following cluster configs, which may have a huge impact on training speed.
+
+
+#### Node CPU manager
+
+> TL;DR Set the CPU Management policy to `static` on Kubernetes nodes where you want to run Distributed PyTorch training.
+
+
+According to the [feature-highlight](https://kubernetes.io/blog/2018/07/24/feature-highlight-cpu-manager/?spm=a2c65.11461447.0.0.14399444yu2dvp#sounds-good-but-does-the-cpu-manager-help-me), the CPU manager might help workloads with the following characteristics:
+1. Sensitive to CPU throttling effects.
+2. Sensitive to context switches.
+3. Sensitive to processor cache misses.
+4. Benefits from sharing a processor resources (e.g., data and instruction caches).
+5. Sensitive to cross-socket memory traffic.
+6. Sensitive or requires hyperthreads from the same physical CPU core.
+
+The PyTorch distributed training is a CPU-intensive workloads that is sensitive to context switches when SGX is enabled.  By setting the CPU management policy to `static`, the PyTorch training process can exclusively use the provided cores, which largely reduce the overhead of context-switching and TLB flushing.
+
+Under our cluster, the training is around eight times faster on nodes with static CPU management policy than nodes with no policy set.
+
+
+#### NUMA node setting
+>TL;DR Set the Cpu Topology Management Policy to `best-effort` or `single-numa-node`
+
+
+Generally speaking, all deep learning workloads, training or inference, get better performance without accessing hardware resources across NUMA nodes. Under our cluster, the training is around four times faster on logical cores in the same NUMA node than logical cores across NUMA node.
+
+PyTorch also recommends to utilize NUMA when do PyTorch training, more details can be found [here](https://pytorch.org/tutorials/recipes/recipes/tuning_guide.html#utilize-non-uniform-memory-access-numa-controls).
+
+
+
+#### Hyper-threading setting
+>TL;DR The use of Hyper-threading can increase the computation throughput of the cluster.  However, it may have negative effects on training speed of distributed training.
+
+In native mode (with SGX disabled), the use of hyper-threading may increase the training time because two logical cores reside in the same physical core may not be able to execute fully in parallel.
+
+In SGX mode, there is a problem when using Hyper-threading combined with Gramine, which leads to the result that only one of the hyper-threads in the physical core can be fully utilized.  We are currently investigating this issue.  In this case, the use of hyper-threads may bring additional overheads to the distributed training.

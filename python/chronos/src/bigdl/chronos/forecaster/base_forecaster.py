@@ -679,7 +679,7 @@ class BasePytorchForecaster(Forecaster):
             if isinstance(data, DataLoader):
                 invalidInputError(False,
                                   "We will be support input dataloader later.")
-            data = np_to_xshard(data)
+            data = np_to_xshard(data, self.workers_per_node)
         if not is_local_data and not self.distributed:
             data = xshard_to_np(data, mode="predict")
 
@@ -715,7 +715,7 @@ class BasePytorchForecaster(Forecaster):
                                                       input_data=data,
                                                       batch_size=batch_size)
             if not is_local_data:
-                yhat = np_to_xshard(yhat, prefix="prediction")
+                yhat = np_to_xshard(yhat, self.workers_per_node, prefix="prediction")
             return yhat
 
     def predict_with_onnx(self, data, batch_size=32, quantize=False):
@@ -1002,8 +1002,20 @@ class BasePytorchForecaster(Forecaster):
                 invalidInputError(False,
                                   "You must call fit or restore first before calling evaluate!")
             if isinstance(data, DataLoader):
-                input_data = data
-                target = np.concatenate(tuple(val[1] for val in data), axis=0)
+                from torch.utils.data.sampler import RandomSampler
+                if isinstance(data.sampler, RandomSampler):
+                    # If dataloader is shuffled, convert input_data to numpy()
+                    # Avoid to iterate shuffled dataloader two times
+                    input_x = []
+                    input_y = []
+                    for val in data:
+                        input_x.append(val[0].numpy())
+                        input_y.append(val[1].numpy())
+                    input_data = np.concatenate(input_x, axis=0)
+                    target = np.concatenate(input_y, axis=0)
+                else:
+                    input_data = data
+                    target = np.concatenate(tuple(val[1] for val in data), axis=0)
             else:
                 input_data, target = data
             if quantize:
@@ -1098,8 +1110,20 @@ class BasePytorchForecaster(Forecaster):
                                              target_col=data.roll_target,
                                              shuffle=False)
         if isinstance(data, DataLoader):
-            input_data = data
-            target = np.concatenate(tuple(val[1] for val in data), axis=0)
+            from torch.utils.data.sampler import RandomSampler
+            if isinstance(data.sampler, RandomSampler):
+                # If dataloader is shuffled, convert input_data to numpy()
+                # Avoid to iterate shuffled dataloader two times
+                input_x = []
+                input_y = []
+                for val in data:
+                    input_x.append(val[0].numpy())
+                    input_y.append(val[1].numpy())
+                input_data = np.concatenate(input_x, axis=0)
+                target = np.concatenate(input_y, axis=0)
+            else:
+                input_data = data
+                target = np.concatenate(tuple(val[1] for val in data), axis=0)
         else:
             input_data, target = data
         if quantize:

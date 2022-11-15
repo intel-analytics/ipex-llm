@@ -26,6 +26,8 @@ import torchmetrics
 import torch
 import torch.nn.functional as F
 from test.pytorch.utils._train_torch_lightning import create_data_loader
+from torch.utils.data import TensorDataset, DataLoader
+from bigdl.nano.pytorch.utils import TORCH_VERSION_LESS_1_10
 
 
 data_transform = transforms.Compose([
@@ -52,6 +54,26 @@ class Net(nn.Module):
         x = F.relu(self.fc2(x))
         x = self.fc3(x)
         return x
+
+
+class MultipleInputNet(nn.Module):
+    def __init__(self):
+        super().__init__()
+        self.dense1 = nn.Linear(10, 1)
+        self.dense2 = nn.Linear(10, 1)
+
+    def forward(self, x1, x2):
+        return self.dense1(x1) + self.dense2(x2)
+
+
+class MultipleInputWithKwargsNet(nn.Module):
+    def __init__(self):
+        super().__init__()
+        self.dense1 = nn.Linear(10, 1)
+        self.dense2 = nn.Linear(10, 1)
+
+    def forward(self, x1, x2, x3=10):
+        return self.dense1(x1) + self.dense2(x2) + x3
 
 
 class TestInferencePipeline(TestCase):
@@ -285,3 +307,34 @@ class TestInferencePipeline(TestCase):
                                metric=self.metric,
                                thread_num=1,
                                latency_sample_num=10)
+
+    def test_multiple_input_dataloader(self):
+        # will not run this test if torch < 1.10
+        if TORCH_VERSION_LESS_1_10:
+            return
+
+        for model_class in [MultipleInputNet, MultipleInputWithKwargsNet]:
+            net = model_class()
+            x1 = torch.randn(32, 10)
+            x2 = torch.randn(32, 10)
+            y = torch.randn(32, 1)
+            dataloader = DataLoader(TensorDataset(x1, x2, y), batch_size=1)
+
+            # int8
+            InferenceOptimizer.quantize(net,
+                                        calib_dataloader=dataloader)
+
+            # int8-onnxruntime
+            InferenceOptimizer.quantize(net,
+                                        accelerator="onnxruntime",
+                                        calib_dataloader=dataloader)
+
+            # int8-onnxruntime
+            InferenceOptimizer.trace(net,
+                                    accelerator="onnxruntime",
+                                    input_sample=dataloader)
+
+            # int8-openvino
+            InferenceOptimizer.trace(net,
+                                    accelerator="openvino",
+                                    input_sample=dataloader)

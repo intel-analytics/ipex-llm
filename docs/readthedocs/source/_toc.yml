@@ -60,6 +60,7 @@ subtrees:
             subtrees:
               - entries:
                 - file: doc/Orca/Tutorial/yarn
+                - file: doc/Orca/Tutorial/k8s
           - file: doc/Orca/Overview/known_issues
             title: "Tips and Known Issues"
           - file: doc/PythonAPI/Orca/index
@@ -190,6 +191,7 @@ subtrees:
                 - file: doc/Chronos/Howto/how_to_export_onnx_files
                 - file: doc/Chronos/Howto/how_to_export_openvino_files
                 - file: doc/Chronos/Howto/how_to_export_torchscript_files
+                - file: doc/Chronos/Howto/how_to_preprocess_my_data
           - file: doc/Chronos/QuickStart/index
             title: "Tutorials"
             subtrees:
