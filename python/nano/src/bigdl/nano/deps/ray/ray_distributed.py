@@ -61,7 +61,7 @@ from bigdl.nano.utils.log4Error import invalidInputError
 from bigdl.nano.pytorch.strategies.ipex.ipex_api import ipex_device, ipex_optimize, \
     create_IPEXAccelerator, to_cpu
 from bigdl.nano.pytorch.utils import TORCH_VERSION_LESS_1_10
-from bigdl.nano.pytorch.dispatcher import get_patch_status
+from bigdl.nano.pytorch.dispatcher import _get_patch_status
 
 _STEP_OUTPUT_TYPE = Union[torch.Tensor, Dict[str, Any]]
 
@@ -127,7 +127,7 @@ class _RayLauncher(_SpawnLauncher):
             torch_backend = "nccl" if strategy.use_gpu else "gloo"
         strategy._process_group_backend = torch_backend
 
-        patch_status = get_patch_status()
+        patch_status = _get_patch_status()
 
         futures = [
             strategy.workers[i].execute.remote(

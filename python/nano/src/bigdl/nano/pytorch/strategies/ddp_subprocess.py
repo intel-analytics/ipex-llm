@@ -47,7 +47,7 @@ from bigdl.nano.pytorch.strategies.ddp_spawn import DDPSpawnStrategy, _DDPSpawnL
 from bigdl.nano.common.cpu_schedule import schedule_processors
 from bigdl.nano.pytorch.utils import TORCH_VERSION_LESS_1_10
 from bigdl.nano.utils.log4Error import invalidInputError
-from bigdl.nano.pytorch.dispatcher import get_patch_status
+from bigdl.nano.pytorch.dispatcher import _get_patch_status
 
 import logging
 
@@ -122,7 +122,7 @@ class _DDPSubprocessLauncher(_DDPSpawnLauncher):
                 cloudpickle.dump(sys.path, f)
 
             with open(os.path.join(temp_dir, "patch_status.pkl"), "wb") as f:
-                cloudpickle.dump(get_patch_status(), f)
+                cloudpickle.dump(_get_patch_status(), f)
 
             processes = []
             cwd_path = os.path.split(os.path.realpath(__file__))[0]

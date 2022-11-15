@@ -57,7 +57,7 @@ from pytorch_lightning.plugins.environments import LightningEnvironment
 from pytorch_lightning.utilities.distributed import ReduceOp
 
 from bigdl.nano.common.cpu_schedule import schedule_processors
-from bigdl.nano.pytorch.dispatcher import get_patch_status
+from bigdl.nano.pytorch.dispatcher import _get_patch_status
 from bigdl.nano.pytorch.strategies.ipex.ipex_api import ipex_device, \
     ipex_optimize, create_IPEXAccelerator, to_cpu
 from bigdl.nano.pytorch.utils import TORCH_VERSION_LESS_1_10
@@ -123,7 +123,7 @@ class _DDPSpawnLauncher(_SpawnLauncher):
         error_queues = []
         processes = []
         args = (trainer, function, args, kwargs, return_queue)
-        patch_status = get_patch_status()
+        patch_status = _get_patch_status()
 
         for i in range(self._strategy.num_processes):
             os.environ["KMP_AFFINITY"] = envs[i]['KMP_AFFINITY']

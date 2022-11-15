@@ -100,7 +100,7 @@ def unpatch_torch():
     is_torch_patched = False
 
 
-def get_patch_status():
+def _get_patch_status():
     return {
         "patch_torch": is_torch_patched,
         "patch_cuda": get_cuda_status(),
