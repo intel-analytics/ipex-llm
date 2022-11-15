@@ -1,0 +1,26 @@
+name: 'Mac Python AppTest part1'
+description: 'Mac Python AppTest part1'
+runs:
+  using: "composite"
+  steps:
+    - name: Run Test
+      shell: bash
+      run: |
+        source ~/.bash_profile
+        source activate py36
+        export KERAS_BACKEND=tensorflow
+        python --version
+        pip uninstall -y analytics-zoo bigdl-friesian bigdl-friesian-spark3 bigdl-dllib bigdl-orca pyspark bigdl-orca-spark3 bigdl-dllib-spark3 bigdl-chronos-spark3 pyspark
+
+        pip install -i https://pypi.org/simple --pre --upgrade bigdl-orca 
+
+        chmod a+x apps/ipynb2py.sh
+        gsed -i "s/sed/gsed/g" apps/ipynb2py.sh
+        chmod a+x apps/run-app-tests-pip.sh
+        gsed -i "s/sed/gsed/g" apps/run-app-tests-pip.sh
+        bash apps/run-app-tests-pip.sh 1
+        source deactivate
+      env:
+        BIGDL_ROOT: ${{ github.workspace }}
+        ANALYTICS_ZOO_ROOT: ${{ github.workspace }}
+        
