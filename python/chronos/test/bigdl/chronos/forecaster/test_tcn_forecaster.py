@@ -807,6 +807,7 @@ class TestChronosModelTCNForecaster(TestCase):
             distributed_eval = forecaster.evaluate(val_data, acceleration=False)
         stop_orca_context()
 
+    @op_distributed
     def test_tcn_forecaster_xshard_input_of_validation_data(self):
         from bigdl.orca import init_orca_context, stop_orca_context
         train_data, val_data, test_data = create_data()
