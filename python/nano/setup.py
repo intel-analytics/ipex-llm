@@ -73,9 +73,11 @@ def download_libs(url: str):
 
 def setup_package():
 
-    tensorflow_requires = ["intel-tensorflow==2.7.0",
-                           "keras==2.7.0",
-                           "tensorflow-estimator==2.7.0"]
+    tensorflow_requires = ["intel-tensorflow==2.7.0; platform_machine=='x86_64'",
+                           "keras==2.7.0; platform_machine=='x86_64'",
+                           "tensorflow-estimator==2.7.0; platform_machine=='x86_64'",
+                           "tensorflow-macos==2.7.0; platform_machine=='arm64' and sys_platform=='darwin'",
+                           "tensorflow-metal==0.3.0; platform_machine=='arm64' and sys_platform=='darwin'"]
 
     pytorch_requires = ["torch==1.11.0",
                         "torchvision==0.12.0",
@@ -86,7 +88,9 @@ def setup_package():
                         "opencv-transforms",
                         "intel_extension_for_pytorch==1.11.0"]
 
-    install_requires = ["intel-openmp", "cloudpickle", "protobuf==3.19.4"]
+    install_requires = ["intel-openmp; platform_machine=='x86_64'",
+                        "cloudpickle",
+                        "protobuf==3.19.4"]
 
     package_data = [
         "libs/libjemalloc.so",

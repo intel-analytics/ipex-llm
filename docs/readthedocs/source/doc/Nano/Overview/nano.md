@@ -39,6 +39,15 @@ In a conda environment, `source bigdl-nano-init` will also be added to `$CONDA_P
 
 In a pure pip environment, you need to run `source bigdl-nano-init` every time you open a new shell to get optimal performance and run `source bigdl-nano-unset-env` if you want to unset these environment variables.
 
+We also partially support M-series chip users with no guarantee of acceleration with same API. Currently only tensorflow is experimentally supported.
+
+```bash
+conda create -n env python=3.8
+conda activate env
+conda install -c apple tensorflow-deps
+pip install --pre --upgrade bigdl-nano[tensorflow]
+```
+
 ---
 
 ## **3. Get Started**
