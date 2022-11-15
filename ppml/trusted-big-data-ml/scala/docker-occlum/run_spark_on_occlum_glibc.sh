@@ -497,7 +497,7 @@ run_spark_gbt_e2e() {
                 --primaryKeyPath /host/data/key/ehsm_encrypted_primary_key \
                 --dataKeyPath /host/data/key/ehsm_encrypted_data_key \
                 --kmsType EHSMKeyManagementService \
-                --trainingDataPath /host/data/day_0_1g.csv.encrypted.cbc \
+                --trainingDataPath /host/data/encrypt/day_0_1g.csv.encrypted.cbc \
                 --modelSavePath /host/data/model/ \
                 --inputEncryptMode AES/CBC/PKCS5Padding \
                 --kmsServerIP $EHSM_KMS_IP \
@@ -571,7 +571,7 @@ case "$arg" in
         cd ../
         ;;
     gbt_e2e)
-        run_spark_gbt
+        run_spark_gbt_e2e
         cd ../
         ;;
 esac
