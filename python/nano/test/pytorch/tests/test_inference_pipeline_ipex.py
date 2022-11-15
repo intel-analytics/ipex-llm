@@ -15,6 +15,7 @@
 #
 
 import os
+import numpy as np
 from torch import nn
 import torch
 from unittest import TestCase
@@ -111,9 +112,9 @@ class TestInferencePipeline(TestCase):
 
         acc_model, option = inference_opt.get_best_model()
         acc_model, option = inference_opt.get_best_model(accelerator="onnxruntime")
-        assert option == "" or "onnxruntime" in option
+        assert option == "original" or "onnxruntime" in option
         acc_model, option = inference_opt.get_best_model(precision="int8")
-        assert option == "" or "inc" in option or "int8" in option
+        assert option == "original" or "inc" in option or "int8" in option
         acc_model, option = inference_opt.get_best_model(accuracy_criterion=0.1)
         acc_model(next(iter(self.train_loader))[0])
 
@@ -125,9 +126,9 @@ class TestInferencePipeline(TestCase):
 
         acc_model, option = inference_opt.get_best_model()
         acc_model, option = inference_opt.get_best_model(accelerator="onnxruntime")
-        assert option == "" or "onnxruntime" in option
+        assert option == "original" or "onnxruntime" in option
         acc_model, option = inference_opt.get_best_model(precision="int8")
-        assert option == "" or "inc" in option or "int8" in option
+        assert option == "original" or "inc" in option or "int8" in option
         with pytest.raises(RuntimeError) as e:
             acc_model, option = inference_opt.get_best_model(accuracy_criterion=0.1)
         error_msg = e.value.args[0]
@@ -217,11 +218,11 @@ class TestInferencePipeline(TestCase):
 
         with pytest.raises(RuntimeError):
             inference_opt.optimize(model=self.model,
-                                training_data=self.train_loader,
-                                validation_data=None,
-                                metric=metric,
-                                direction="max",
-                                thread_num=1)
+                                   training_data=self.train_loader,
+                                   validation_data=None,
+                                   metric=metric,
+                                   direction="max",
+                                   thread_num=1)
 
     def test_pipeline_with_wrong_custom_function_metric(self):
         inference_opt = InferenceOptimizer()
@@ -231,15 +232,14 @@ class TestInferencePipeline(TestCase):
 
         with pytest.raises(RuntimeError):
             inference_opt.optimize(model=self.model,
-                                training_data=self.train_loader,
-                                validation_data=self.test_loader,
-                                metric=metric,
-                                direction="max",
-                                thread_num=1)
+                                   training_data=self.train_loader,
+                                   validation_data=self.test_loader,
+                                   metric=metric,
+                                   direction="max",
+                                   thread_num=1)
 
     def test_pipeline_with_custom_function_metric_with_data_loader(self):
         inference_opt = InferenceOptimizer()
-        import numpy as np
         def metric(model, data_loader):
             metrics = []
             for input_data, target in data_loader:
@@ -331,10 +331,28 @@ class TestInferencePipeline(TestCase):
 
             # int8-onnxruntime
             InferenceOptimizer.trace(net,
-                                    accelerator="onnxruntime",
-                                    input_sample=dataloader)
+                                     accelerator="onnxruntime",
+                                     input_sample=dataloader)
 
             # int8-openvino
             InferenceOptimizer.trace(net,
-                                    accelerator="openvino",
-                                    input_sample=dataloader)
+                                     accelerator="openvino",
+                                     input_sample=dataloader)
+
+    def test_pipeline_with_tensor_accuracy(self):
+        inference_opt = InferenceOptimizer()
+
+        def metric(model, data_loader):
+            metrics = []
+            for input_data, target in data_loader:
+                pred = model(input_data)
+                metric = self.metric(pred, target)
+                metrics.append(metric)
+            return torch.FloatTensor([np.mean(metrics)])
+
+        inference_opt.optimize(model=self.model,
+                               training_data=self.train_loader,
+                               validation_data=self.test_loader,
+                               metric=metric,
+                               direction="max",
+                               thread_num=4)
