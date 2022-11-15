@@ -60,6 +60,10 @@ class PytorchIPEXJITBF16Model(PytorchIPEXJITModel):
         cpuinfo = CPUInfo()
         return cpuinfo.has_avx512
 
+    def forward_step(self, *inputs):
+        with self.forward_context():
+            return super().forward_step(*inputs)
+
     @property
     def status(self):
         status = super().status

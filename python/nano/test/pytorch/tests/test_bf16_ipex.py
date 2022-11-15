@@ -51,7 +51,6 @@ class Pytorch1_11:
         bf16_model = InferenceOptimizer.quantize(model, precision='bf16', use_ipex=True)
         with bf16_model.context_manager:
             y_hat = bf16_model(x)
-        y_hat = bf16_model(x)
 
         assert y_hat.shape == (10, 10) and y_hat.dtype == torch.bfloat16
     
