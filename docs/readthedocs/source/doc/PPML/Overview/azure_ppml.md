@@ -40,6 +40,7 @@ On `Subscribe` page, input your subscription, your Azure container registry, you
   ```bash
   docker pull myContainerRegistry.azurecr.io/intel_corporation/bigdl-ppml-trusted-big-data-ml-python-graphene
   ```
+* 
 * Start container of this image
 
   ```bash
@@ -188,54 +189,6 @@ Example command:
 ```bash
 az keyvault set-policy --name myKeyVault --object-id <systemManagedIdentityOfVMSS> --secret-permissions get --key-permissions all
 ```
-##### 2.5.3.2 Set access for AKS
-###### a. Enable Azure Key Vault Provider for Secrets Store CSI Driver support
-Example command:
-```bash
-az aks enable-addons --addons azure-keyvault-secrets-provider --name myAKSCluster --resource-group myResourceGroup
-```
-* Verify the Azure Key Vault Provider for Secrets Store CSI Driver installation
-
-  Example command:
-  ```bash
-  kubectl get pods -n kube-system -l 'app in (secrets-store-csi-driver, secrets-store-provider-azure)'
-  ```
-  Be sure that a Secrets Store CSI Driver pod and an Azure Key Vault Provider pod are running on each node in your cluster's node pools.
-* Enable Azure Key Vault Provider for Secrets Store CSI Driver to track of secret update in key vault
-  ```bash
-  az aks update -g myResourceGroup -n myAKSCluster --enable-secret-rotation
-  ```
-###### b. Provide an identity to access the Azure Key Vault
-There are several ways to provide identity for Azure Key Vault Provider for Secrets Store CSI Driver to access Azure Key Vault: `An Azure Active Directory pod identity`, `user-assigned identity` or `system-assigned managed identity`. In our solution, we use user-assigned managed identity.
-* Enable managed identity in AKS
-  ```bash
-  az aks update -g myResourceGroup -n myAKSCluster --enable-managed-identity
-  ```
-* Get user-assigned managed identity that you created when you enabled a managed identity on your AKS cluster
-
-  Run:
-  ```bash
-  az aks show -g myResourceGroup -n myAKSCluster --query addonProfiles.azureKeyvaultSecretsProvider.identity.clientId -o tsv
-  ```
-  The output would be like:
-  ```bash
-  xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
-  ```
-  Take note of this output as your user-assigned managed identity of Azure KeyVault Secrets Provider
-* Grant your user-assigned managed identity permissions that enable it to read your key vault and view its contents
-
-  Example command:
-  ```bash
-  az keyvault set-policy -n myKeyVault --key-permissions get --spn xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
-  az keyvault set-policy -n myKeyVault --secret-permissions get --spn xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
-  ```
-###### c. Create a SecretProviderClass to access your Key Vault
-On your client docker container, edit `/ppml/trusted-big-data-ml/azure/secretProviderClass.yaml` file, modify `<client-id>` to your user-assigned managed identity of Azure KeyVault Secrets Provider, and modify `<key-vault-name>` and  `<tenant-id>` to your real key vault name and tenant id.
-
-Then run:
-```bash
-kubectl apply -f /ppml/trusted-big-data-ml/azure/secretProviderClass.yaml
-```
 
 ## 3. Run Spark PPML jobs
 Login to your client VM and enter your BigDL PPML container:
@@ -252,15 +205,10 @@ Run such script to save kubeconfig to secret
 ```bash
 /ppml/trusted-big-data-ml/azure/kubeconfig-secret.sh
 ```
-### 3.2 Generate enclave key to Azure Key Vault
-Run such script to generate enclave key
-```
-/ppml/trusted-big-data-ml/azure/generate-enclave-key-az.sh myKeyVault
-```
-### 3.3 Generate keys
+### 3.2 Generate keys
 Run such scripts to generate keys:
 ```bash
-/ppml/trusted-big-data-ml/azure/generate-keys.sh
+/ppml/trusted-big-data-ml/azure/generate-keys-az.sh
 ```
 When entering the passphrase or password, you could input the same password by yourself; and these passwords could also be used for the next step of generating other passwords. Password should be longer than 6 bits and contain numbers and letters, and one sample password is "3456abcd". These passwords would be used for future remote attestations and to start SGX enclaves more securely.
 
@@ -268,10 +216,15 @@ After generate keys, run such command to save keys in Kubernetes.
 ```
 kubectl apply -f /ppml/trusted-big-data-ml/work/keys/keys.yaml
 ```
-### 3.4 Generate password
+### 3.3 Generate password
 Run such script to save the password to Azure Key Vault
 ```bash
 /ppml/trusted-big-data-ml/azure/generate-password-az.sh myKeyVault used_password_when_generate_keys
+```
+### 3.4 Create the RBAC
+```bash
+kubectl create serviceaccount spark
+kubectl create clusterrolebinding spark-role --clusterrole=edit --serviceaccount=default:spark --namespace=default
 ```
 ### 3.5 Create image pull secret from your Azure container registry
   * If you already logged in to your Azure container registry, find your docker config json file (i.e. ~/.docker/config.json), and create secret for your registry credential like below:
@@ -284,16 +237,12 @@ Run such script to save the password to Azure Key Vault
   ```bash
   kubectl create secret docker-registry regcred --docker-server=myContainerRegistry.azurecr.io --docker-username=<your-name> --docker-password=<your-pword> --docker-email=<your-email>
   ```
-### 3.6 Create the RBAC
-```bash
-kubectl create serviceaccount spark
-kubectl create clusterrolebinding spark-role --clusterrole=edit --serviceaccount=default:spark --namespace=default
-```
-### 3.7 Add image pull secret to service account
+
+### 3.6 Add image pull secret to service account
 ```bash
 kubectl patch serviceaccount spark -p '{"imagePullSecrets": [{"name": "regcred"}]}'
 ```
-### 3.8 Run PPML spark job
+### 3.7 Run PPML spark job
 The example script to run PPML spark job on AKS is as below. You can also refer to `/ppml/trusted-big-data-ml/azure/submit-spark-sgx-az.sh`
 ```bash
 RUNTIME_SPARK_MASTER=
@@ -316,10 +265,7 @@ bash bigdl-ppml-submit.sh \
     --master $RUNTIME_SPARK_MASTER \
     --deploy-mode client \
     --sgx-enabled true \
-    --sgx-log-level error \
-    --sgx-driver-memory 4g \
     --sgx-driver-jvm-memory 2g \
-    --sgx-executor-memory 16g \
     --sgx-executor-jvm-memory 7g \
     --driver-memory 8g \
     --driver-cores 4 \
@@ -377,7 +323,8 @@ The example code for generating the primary key and data key is like below:
 
 ```bash
 BIGDL_VERSION=2.1.0
-java -cp '/ppml/trusted-big-data-ml/work/bigdl-$BIGDL_VERSION/jars/*:/ppml/trusted-big-data-ml/work/spark-3.1.2/conf/:/ppml/trusted-big-data-ml/work/spark-3.1.2/jars/* \
+SPARK_VERSION=3.1.3
+java -cp /ppml/trusted-big-data-ml/work/bigdl-$BIGDL_VERSION/jars/*:/ppml/trusted-big-data-ml/work/spark-3.1.2/conf/:/ppml/trusted-big-data-ml/work/spark-$SPARK_VERSION/jars/* \
     -Xmx10g \
     com.intel.analytics.bigdl.ppml.examples.GenerateKeys \
     --kmsType AzureKeyManagementService \
@@ -393,7 +340,8 @@ The example code of encrypting data is like below:
 
 ```bash
 BIGDL_VERSION=2.1.0
-java -cp '/ppml/trusted-big-data-ml/work/bigdl-$BIGDL_VERSION/jars/*:/ppml/trusted-big-data-ml/work/spark-3.1.2/conf/:/ppml/trusted-big-data-ml/work/spark-3.1.2/jars/* \
+SPARK_VERSION=3.1.3
+java -cp /ppml/trusted-big-data-ml/work/bigdl-$BIGDL_VERSION/jars/*:/ppml/trusted-big-data-ml/work/spark-3.1.2/conf/:/ppml/trusted-big-data-ml/work/spark-$SPARK_VERSION/jars/* \
     -Xmx10g \
     com.intel.analytics.bigdl.ppml.examples.tpch.EncryptFiles \
     --kmsType AzureKeyManagementService \
@@ -425,6 +373,7 @@ export RUNTIME_DRIVER_PORT=54321
 secure_password=`az keyvault secret show --name "key-pass" --vault-name $KEY_VAULT_NAME --query "value" | sed -e 's/^"//' -e 's/"$//'`
 
 BIGDL_VERSION=2.1.0
+SPARK_VERSION=3.1.3
 DATA_LAKE_NAME=
 DATA_LAKE_ACCESS_KEY=
 KEY_VAULT_NAME=
@@ -439,10 +388,7 @@ bash bigdl-ppml-submit.sh \
     --master $RUNTIME_SPARK_MASTER \
     --deploy-mode client \
     --sgx-enabled true \
-    --sgx-log-level error \
-    --sgx-driver-memory 4g \
     --sgx-driver-jvm-memory 2g \
-    --sgx-executor-memory 16g \
     --sgx-executor-jvm-memory 7g \
     --driver-memory 8g \
     --driver-cores 4 \
@@ -464,10 +410,10 @@ bash bigdl-ppml-submit.sh \
     --conf spark.bigdl.kms.azure.vault=$KEY_VAULT_NAME \
     --conf spark.bigdl.kms.key.primary=$PRIMARY_KEY_PATH \
     --conf spark.bigdl.kms.key.data=$DATA_KEY_PATH \
-    --class $SPARK_JOB_MAIN_CLASS \
+    --class com.intel.analytics.bigdl.ppml.examples.tpch.TpchQuery \
     --verbose \
-    local:///ppml/trusted-big-data-ml/work/bigdl-$BIGDL_VERSION/jars/bigdl-ppml-spark_3.1.2-$BIGDL_VERSION-SNAPSHOT.jar \
-    $INPUT_DIR $OUTPUT_DIR aes_cbc_pkcs5padding plain_text [QUERY]
+    local:///ppml/trusted-big-data-ml/work/bigdl-$BIGDL_VERSION/jars/bigdl-ppml-spark_$SPARK_VERSION-$BIGDL_VERSION-SNAPSHOT.jar \
+    $INPUT_DIR $OUTPUT_DIR aes/cbc/pkcs5padding plain_text [QUERY]
 ```
 
 INPUT_DIR is the TPC-H's data dir.
