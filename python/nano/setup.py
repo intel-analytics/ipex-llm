@@ -36,7 +36,7 @@ nano_home = os.path.join(os.path.dirname(os.path.abspath(__file__)), "src")
 
 BIGDL_PYTHON_HOME = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 VERSION = open(os.path.join(BIGDL_PYTHON_HOME, 'version.txt'), 'r').read().strip()
-PROTOBUF_VERSION = 3.19.4
+PROTOBUF_VERSION = '3.19.5'
 
 lib_urls = [
     "https://github.com/analytics-zoo/jemalloc/releases/download/v5.3.0/libjemalloc.so",
