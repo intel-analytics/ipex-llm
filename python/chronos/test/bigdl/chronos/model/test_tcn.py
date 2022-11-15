@@ -20,6 +20,7 @@ TCNPytorch = LazyImport('bigdl.chronos.model.tcn.TCNPytorch')
 import numpy as np
 import tempfile
 import os
+from .. import op_distributed
 
 
 def create_data():
@@ -42,9 +43,15 @@ def create_data():
     return train_data, val_data, test_data
 
 
+@op_distributed
 class TestTcn(TestCase):
     train_data, val_data, test_data = create_data()
-    model = TCNPytorch()
+
+    def setUp(self):
+        self.model = TCNPytorch()
+
+    def tearDown(self):
+        del self.model
 
     def test_fit_evaluate(self):
         config = {"batch_size": 128}
