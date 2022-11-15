@@ -48,8 +48,7 @@ class OrcaRayContext(object):
 
         elif runtime == "ray":
             self.is_local = False
-            ray_args = kwargs.copy()
-            self.ray_args = ray_args
+            self.ray_args = kwargs.copy()
             self.num_ray_nodes = num_nodes
             self.ray_node_cpu_cores = cores
         else:
@@ -62,7 +61,10 @@ class OrcaRayContext(object):
     def init(self, driver_cores=0):
         if self.runtime == "ray":
             import ray
-            results = ray.init(num_cpus=self.ray_node_cpu_cores, **self.ray_args)
+            if "address" not in self.ray_args:
+                results = ray.init(num_cpus=self.ray_node_cpu_cores, **self.ray_args)
+            else:
+                results = ray.init(**self.ray_args)
         else:
             results = self._ray_on_spark_context.init(driver_cores=driver_cores)
             self.num_ray_nodes = self._ray_on_spark_context.num_ray_nodes
