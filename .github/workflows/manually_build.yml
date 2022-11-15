@@ -758,6 +758,7 @@ jobs:
         echo "######### bigdl-ppml-trusted-bigdata-gramine ###########"
         echo "########################################################"
         cd ppml/trusted-bigdata
+        export base_image=intelanalytics/bigdl-ppml-gramine-base
         export bigdata_base_image=intelanalytics/bigdl-ppml-trusted-bigdata-gramine-base
         sudo docker build \
           --build-arg http_proxy=${HTTP_PROXY} \
