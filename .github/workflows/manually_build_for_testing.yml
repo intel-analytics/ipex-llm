@@ -22,6 +22,7 @@ on:
         - bigdl-ppml-trusted-big-data-ml-python-graphene
         - bigdl-ppml-trusted-big-data-ml-scala-occlum
         - bigdl-ppml-trusted-big-data-ml-scala-occlum-production
+        - bigdl-ppml-trusted-big-data-ml-scala-occlum-production-customer
         - bigdl-ppml-trusted-realtime-ml-scala-graphene
         - bigdl-ppml-trusted-realtime-ml-scala-occlum
         - bigdl-ppml-kmsutil
@@ -451,6 +452,44 @@ jobs:
           docker tag ${final_name} 10.239.45.10/arda/${final_name}
           docker push 10.239.45.10/arda/${final_name}
           docker rmi -f ${final_name}
+  bigdl-ppml-trusted-big-data-ml-scala-occlum-production-customer:
+    if: ${{ github.event.inputs.artifact == 'bigdl-ppml-trusted-big-data-ml-scala-occlum-production-customer' || github.event.inputs.artifact == 'all' }}
+    runs-on: [ self-hosted, Shire ]
+
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          ref: ${{ github.event.inputs.sha }}
+      - name: docker login
+        run: |
+          docker login -u ${DOCKERHUB_USERNAME} -p ${DOCKERHUB_PASSWORD}
+      - name: bigdl-ppml-trusted-big-data-ml-scala-occlum-production-customer
+        run: |
+          echo "########################################"
+          echo "####### big-data-ml-scala-occlum-production-customer  ######"
+          echo "########################################"
+          cd ppml/trusted-big-data-ml/scala/docker-occlum
+          export image=intelanalytics/bigdl-ppml-trusted-big-data-ml-scala-occlum-production
+          export image_customer=${image}-customer
+          pwd
+          docker build \
+            --build-arg http_proxy=${HTTP_PROXY} \
+            --build-arg https_proxy=${HTTPS_PROXY} \
+            --build-arg HTTP_PROXY_HOST=${HTTP_PROXY_HOST_2} \
+            --build-arg HTTP_PROXY_PORT=${HTTP_PROXY_PORT_2} \
+            --build-arg HTTPS_PROXY_HOST=${HTTP_PROXY_HOST_2} \
+            --build-arg HTTPS_PROXY_PORT=${HTTP_PROXY_PORT_3} \
+            --build-arg JDK_VERSION=8u192 \
+            --build-arg JDK_URL=${JDK_URL} \
+            --build-arg no_proxy=${NO_PROXY} \
+            --build-arg FINAL_NAME=${image}:${TAG} \
+            --build-arg SPARK_JAR_REPO_URL=${SPARK_JAR_REPO_URL} \
+            -t ${image_customer}:${TAG} -f ./production/customer/Dockerfile .
+          pwd
+          sudo docker push ${image_customer}:${TAG}
+          docker tag ${image_customer}:${TAG} 10.239.45.10/arda/${image_customer}:${TAG}
+          docker push 10.239.45.10/arda/${image_customer}:${TAG}
+          docker rmi -f ${image_customer}:${TAG}
   bigdl-ppml-trusted-realtime-ml-scala-graphene:
     if: ${{ github.event.inputs.artifact == 'bigdl-ppml-trusted-realtime-ml-scala-graphene' || github.event.inputs.artifact == 'all' }}
     runs-on: [self-hosted, Shire]

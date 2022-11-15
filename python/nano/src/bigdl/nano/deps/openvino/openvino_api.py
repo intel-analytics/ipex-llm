@@ -17,7 +17,7 @@ from functools import partial
 
 
 def PytorchOpenVINOModel(model, input_sample=None, thread_num=None,
-                         logging=True, **export_kwargs):
+                         logging=True, config=None, **export_kwargs):
     """
     Create a OpenVINO model from pytorch.
 
@@ -28,11 +28,17 @@ def PytorchOpenVINOModel(model, input_sample=None, thread_num=None,
     :param thread_num: a int represents how many threads(cores) is needed for
                        inference. default: None.
     :param logging: whether to log detailed information of model conversion. default: True.
+    :param config: The config to be inputted in core.compile_model.
     :param **export_kwargs: will be passed to torch.onnx.export function.
     :return: PytorchOpenVINOModel model for OpenVINO inference.
     """
     from .pytorch.model import PytorchOpenVINOModel
-    return PytorchOpenVINOModel(model, input_sample, thread_num, logging, **export_kwargs)
+    return PytorchOpenVINOModel(model=model,
+                                input_sample=input_sample,
+                                thread_num=thread_num,
+                                logging=logging,
+                                config=config,
+                                **export_kwargs)
 
 
 def load_openvino_model(path):
@@ -40,7 +46,7 @@ def load_openvino_model(path):
     return PytorchOpenVINOModel._load(path)
 
 
-def KerasOpenVINOModel(model, input_sample=None, thread_num=None):
+def KerasOpenVINOModel(model, input_sample=None, thread_num=None, config=None):
     """
     Create a OpenVINO model from Keras.
 
@@ -50,10 +56,11 @@ def KerasOpenVINOModel(model, input_sample=None, thread_num=None):
                          model is a LightningModule with any dataloader attached, defaults to None
     :param thread_num: a int represents how many threads(cores) is needed for
                        inference. default: None.
+    :param config: The config to be inputted in core.compile_model.
     :return: KerasOpenVINOModel model for OpenVINO inference.
     """
     from .tf.model import KerasOpenVINOModel
-    return KerasOpenVINOModel(model, thread_num=thread_num)
+    return KerasOpenVINOModel(model, thread_num=thread_num, config=config)
 
 
 def OpenVINOModel(model, device='CPU'):

@@ -53,7 +53,7 @@ if ! [[ $spark_first_version =~ $re ]] ; then
    exit 1
 fi
 
-sed -i "s/pyspark==[0-9].[0-9]*.[0-9]*/pyspark==${spark_version}/g" $DLLIB_DIR/src/setup.py
+sed -i "s/'pyspark=='+PYSPARK_VERSION/'pyspark==${spark_version}'/g" $DLLIB_DIR/src/setup.py
 
 if [ ${suffix} == true ]; then
     bash ${DEV_DIR}/add_suffix_spark${spark_first_version}.sh $DLLIB_DIR/src/setup.py

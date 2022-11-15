@@ -29,7 +29,7 @@ from torch.utils.data.dataloader import DataLoader
 
 class PytorchOpenVINOModel(AcceleratedLightningModule):
     def __init__(self, model, input_sample=None, thread_num=None,
-                 logging=True, **export_kwargs):
+                 logging=True, config=None, **export_kwargs):
         """
         Create a OpenVINO model from pytorch.
 
@@ -41,6 +41,7 @@ class PytorchOpenVINOModel(AcceleratedLightningModule):
         :param thread_num: a int represents how many threads(cores) is needed for
                            inference. default: None.
         :param logging: whether to log detailed information of model conversion. default: True.
+        :param config: The config to be inputted in core.compile_model.
         :param **export_kwargs: will be passed to torch.onnx.export function.
         """
         ov_model_path = model
@@ -50,7 +51,7 @@ class PytorchOpenVINOModel(AcceleratedLightningModule):
                 export(model, input_sample, str(dir / 'tmp.xml'), logging, **export_kwargs)
                 ov_model_path = dir / 'tmp.xml'
 
-            self.ov_model = OpenVINOModel(ov_model_path, thread_num=thread_num)
+            self.ov_model = OpenVINOModel(ov_model_path, thread_num=thread_num, config=config)
             super().__init__(None)
 
     def on_forward_start(self, inputs):
@@ -102,6 +103,7 @@ class PytorchOpenVINOModel(AcceleratedLightningModule):
             max_iter_num=1,
             n_requests=None,
             thread_num=None,
+            config=None,
             sample_size=300):
         # convert torch metric/dataloader to openvino format
         if metric:
@@ -110,7 +112,7 @@ class PytorchOpenVINOModel(AcceleratedLightningModule):
         model = self.ov_model.pot(dataloader, metric=metric, drop_type=drop_type,
                                   maximal_drop=maximal_drop, max_iter_num=max_iter_num,
                                   n_requests=n_requests, sample_size=sample_size)
-        return PytorchOpenVINOModel(model, thread_num=thread_num)
+        return PytorchOpenVINOModel(model, thread_num=thread_num, config=config)
 
     def _save_model(self, path):
         """
