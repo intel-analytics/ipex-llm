@@ -21,7 +21,7 @@ pip install --upgrade pillow mock==1.0.1 "alabaster>=0.7,<0.8,!=0.7.5" commonmar
 wget https://raw.githubusercontent.com/analytics-zoo/BigDL/main/python/test/python-requirements/requirements-doc.txt
 pip install -r requirements-doc.txt
 ```
-> **Note**: When adding new sphinx extension for our documentation, the requirements file located [here](https://github.com/analytics-zoo/BigDL/blob/main/python/test/python-requirements/requirements-doc.txt) should be modified.
+> **Note**: When adding new sphinx extensions for our documentation, the requirements file located [here](https://github.com/analytics-zoo/BigDL/blob/main/python/test/python-requirements/requirements-doc.txt) should be modified.
 ### 2. Build the documentation
 You can then build the documentation locally through:
 ```bash
