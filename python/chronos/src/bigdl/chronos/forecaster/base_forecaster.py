@@ -1693,8 +1693,8 @@ class BasePytorchForecaster(Forecaster):
                quantization. You may choose from "mse", "mae", "rmse", "r2", "mape", "smape".
         :param conf: A path to conf yaml file for quantization. Default to None,
                using default config.
-        :param framework: string or list. [{'pytorch_fx'|'pytorch_ipex'},
-               {'onnxrt_integerops'|'onnxrt_qlinearops'}, {'openvino'}]
+        :param framework: A str represent the framework for quantization. You may choose from
+               "pytorch_fx", "pytorch_ipex", "onnxrt_integerops", "onnxrt_qlinearops", "openvino".
                Default: 'pytorch_fx'. Consistent with Intel Neural Compressor.
         :param approach: str, 'static' or 'dynamic'. Default to 'static'.
                OpenVINO supports static mode only, if set to 'dynamic',
@@ -1775,40 +1775,37 @@ class BasePytorchForecaster(Forecaster):
             accuracy_criterion = {'absolute': absolute_drop, 'higher_is_better': False}
 
         # quantize
-        framework = [framework] if isinstance(framework, str) else framework
-        temp_quantized_model = None
-        for framework_item in framework:
-            if '_' in framework_item:
-                accelerator, method = framework_item.split('_')
-            else:
-                accelerator = framework_item
-            if accelerator == 'pytorch':
-                accelerator = None
-            elif accelerator == 'openvino':
-                method = None
-                approach = "static"
-            else:
-                accelerator = 'onnxruntime'
-                method = method[:-3]
-            q_model = InferenceOptimizer.quantize(self.internal,
-                                                  precision='int8',
-                                                  accelerator=accelerator,
-                                                  method=method,
-                                                  calib_dataloader=calib_data,
-                                                  metric=metric,
-                                                  conf=conf,
-                                                  approach=approach,
-                                                  tuning_strategy=tuning_strategy,
-                                                  accuracy_criterion=accuracy_criterion,
-                                                  timeout=timeout,
-                                                  max_trials=max_trials,
-                                                  onnxruntime_session_options=sess_options)
-            if accelerator == 'onnxruntime':
-                self.quantize_models["onnxruntime_int8"] = q_model
-            if accelerator == 'openvino':
-                self.quantize_models["openvino_int8"] = q_model
-            if accelerator is None:
-                self.quantize_models["pytorch_int8"] = q_model
+        if '_' in framework:
+            accelerator, method = framework.split('_')
+        else:
+            accelerator = framework
+        if accelerator == 'pytorch':
+            accelerator = None
+        elif accelerator == 'openvino':
+            method = None
+            approach = "static"
+        else:
+            accelerator = 'onnxruntime'
+            method = method[:-3]
+        q_model = InferenceOptimizer.quantize(self.internal,
+                                                precision='int8',
+                                                accelerator=accelerator,
+                                                method=method,
+                                                calib_dataloader=calib_data,
+                                                metric=metric,
+                                                conf=conf,
+                                                approach=approach,
+                                                tuning_strategy=tuning_strategy,
+                                                accuracy_criterion=accuracy_criterion,
+                                                timeout=timeout,
+                                                max_trials=max_trials,
+                                                onnxruntime_session_options=sess_options)
+        if accelerator == 'onnxruntime':
+            self.quantize_models["onnxruntime_int8"] = q_model
+        if accelerator == 'openvino':
+            self.quantize_models["openvino_int8"] = q_model
+        if accelerator is None:
+            self.quantize_models["pytorch_int8"] = q_model
 
     @classmethod
     def from_tsdataset(cls, tsdataset, past_seq_len=None, future_seq_len=None, **kwargs):

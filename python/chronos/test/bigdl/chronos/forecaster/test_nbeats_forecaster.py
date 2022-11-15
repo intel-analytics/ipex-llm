@@ -135,9 +135,13 @@ class TestChronosNBeatsForecaster(TestCase):
         forecaster.quantize(calib_data=train_loader,
                     val_data=val_loader,
                     metric="mae",
-                    framework=['onnxrt_qlinearops', 'pytorch_fx'])
+                    framework='pytorch_fx')
         yhat = forecaster.predict(data=test_loader, acceleration=False)
         q_yhat = forecaster.predict(data=test_loader, quantize=True, acceleration=False)
+        forecaster.quantize(calib_data=train_loader,
+                    val_data=val_loader,
+                    metric="mae",
+                    framework='onnxrt_qlinearops')
         q_onnx_yhat = forecaster.predict_with_onnx(data=test_loader, quantize=True)
         assert yhat.shape == q_onnx_yhat.shape == q_yhat.shape == (400, 5, 1)
         forecaster.evaluate(test_loader, batch_size=32, acceleration=False)
@@ -260,7 +264,7 @@ class TestChronosNBeatsForecaster(TestCase):
                                       lr=0.01)
         forecaster.fit(train_data, epochs=2)
         # no tunning quantization
-        forecaster.quantize(train_data, framework=['onnxrt_qlinearops'])
+        forecaster.quantize(train_data, framework='onnxrt_qlinearops')
         pred_q = forecaster.predict_with_onnx(test_data[0], quantize=True)
         eval_q = forecaster.evaluate_with_onnx(test_data, quantize=True)
 
@@ -276,7 +280,7 @@ class TestChronosNBeatsForecaster(TestCase):
         # quantization with tunning
         forecaster.quantize(train_data, val_data=val_data,
                             metric="mse", relative_drop=0.1, max_trials=3,
-                            framework=['onnxrt_qlinearops'])
+                            framework='onnxrt_qlinearops')
         pred_q = forecaster.predict_with_onnx(test_data[0], quantize=True)
         eval_q = forecaster.evaluate_with_onnx(test_data, quantize=True)
         with tempfile.TemporaryDirectory() as tmp_dir_name:
@@ -504,9 +508,12 @@ class TestChronosNBeatsForecaster(TestCase):
         yhat = nbeats.predict(test, acceleration=False)
         nbeats.quantize(calib_data=loader,
                         metric='mse',
-                        framework=['pytorch_fx','onnxrt_qlinearops'])
-        onnx_yhat = nbeats.predict_with_onnx(test)
+                        framework='pytorch_fx')
         q_yhat = nbeats.predict(test, acceleration=False)
+        nbeats.quantize(calib_data=loader,
+                        metric='mse',
+                        framework='onnxrt_qlinearops')
+        onnx_yhat = nbeats.predict_with_onnx(test)
         q_onnx_yhat = nbeats.predict_with_onnx(test, quantize=True)
         assert onnx_yhat.shape == q_yhat.shape == yhat.shape == q_onnx_yhat.shape
 
