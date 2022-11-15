@@ -6,6 +6,7 @@ echo "USE_SECURE_CERT=FALSE" >> /etc/sgx_default_qcnl.conf
 EHSM_URL=${ATTESTATION_URL}
 EHSM_KMS_IP=${EHSM_URL%:*}
 EHSM_KMS_PORT=${EHSM_URL#*:}
+mkdir -p /opt/occlum_spark/data/key/
 export KMS_TYPE=ehsm
 if [ "$action" = "enroll" ]; then
   # no support
@@ -29,8 +30,8 @@ elif [ "$action" = "generatekeys" ]; then
 	    apikey=$3
 		java -cp $BIGDL_HOME/jars/bigdl-ppml-spark_${SPARK_VERSION}-${BIGDL_VERSION}.jar:$SPARK_HOME/jars/*:$SPARK_HOME/examples/jars/*:$BIGDL_HOME/jars/* \
 		com.intel.analytics.bigdl.ppml.examples.GenerateKeys \
-		--primaryKeyPath /home/key1/ehsm_encrypted_primary_key \
-		--dataKeyPath /home/key1/ehsm_encrypted_data_key \
+		--primaryKeyPath /opt/occlum_spark/data/key/ehsm_encrypted_primary_key \
+		--dataKeyPath /opt/occlum_spark/data/key/ehsm_encrypted_data_key \
 		--kmsType EHSMKeyManagementService \
 		--kmsServerIP $EHSM_KMS_IP \
 		--kmsServerPort $EHSM_KMS_PORT \
@@ -68,8 +69,8 @@ elif [ "$action" = "encrypt" ]; then
 		java -cp $BIGDL_HOME/jars/bigdl-ppml-spark_${SPARK_VERSION}-${BIGDL_VERSION}.jar:$SPARK_HOME/jars/*:$SPARK_HOME/examples/jars/*:$BIGDL_HOME/jars/* \
 		com.intel.analytics.bigdl.ppml.examples.Encrypt \
 		--inputPath $input_path \
-		--primaryKeyPath /home/key/ehsm_encrypted_primary_key \
-                --dataKeyPath /home/key/ehsm_encrypted_data_key \
+		--primaryKeyPath /opt/occlum_spark/data/key/ehsm_encrypted_primary_key \
+                --dataKeyPath /opt/occlum_spark/data/key/ehsm_encrypted_data_key \
                 --kmsType EHSMKeyManagementService \
 		--kmsServerIP $EHSM_KMS_IP \
                 --kmsServerPort $EHSM_KMS_PORT \
@@ -112,8 +113,8 @@ elif [ "$action" = "encryptwithrepartition" ]; then
 		--inputEncryptModeValue plain_text \
                 --outputEncryptModeValue AES/CBC/PKCS5Padding \
 		--outputPartitionNum 4 \
-		--primaryKeyPath /home/key/ehsm_encrypted_primary_key \
-		--dataKeyPath /home/key/ehsm_encrypted_data_key \
+		--primaryKeyPath /opt/occlum_spark/data/key/ehsm_encrypted_primary_key \
+		--dataKeyPath /opt/occlum_spark/data/key/ehsm_encrypted_data_key \
 		--kmsType EHSMKeyManagementService \
 		--kmsServerIP $EHSM_KMS_IP \
                 --kmsServerPort $EHSM_KMS_PORT \
@@ -167,8 +168,8 @@ elif [ "$action" = "decrypt" ]; then
 		--outputPartitionNum 8 \
 		--inputEncryptModeValue AES/CBC/PKCS5Padding \
 		--outputEncryptModeValue plain_text \
-		--primaryKeyPath /home/key/ehsm_encrypted_primary_key \
-		--dataKeyPath /home/key/ehsm_encrypted_data_key \
+		--primaryKeyPath /opt/occlum_spark/data/key/ehsm_encrypted_primary_key \
+		--dataKeyPath /opt/occlum_spark/data/key/ehsm_encrypted_data_key \
 		--kmsType EHSMKeyManagementService \
 		--kmsServerIP $EHSM_KMS_IP \
                 --kmsServerPort $EHSM_KMS_PORT \
