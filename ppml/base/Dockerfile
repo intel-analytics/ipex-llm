@@ -57,6 +57,7 @@ RUN env DEBIAN_FRONTEND=noninteractive apt-get update && \
     ninja -C build/ && \
     ninja -C build/ install && \
     cd /ppml/ && \
+    cp /gramine/build/subprojects/gcc-10.2.0/libgomp.so.1 /usr/local/lib/ && \
 # meson will copy the original file instead of the symlink, which enable us to delete the gramine directory entirely
     rm -rf /gramine && \
     apt-get update --fix-missing && \
