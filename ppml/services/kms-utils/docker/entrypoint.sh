@@ -4,8 +4,7 @@ echo "USE_SECURE_CERT=FALSE" >> /etc/sgx_default_qcnl.conf
 action=$1
 if [ "$action" = "enroll" ]; then
 	if [ "$KMS_TYPE" = "ehsm" ]; then
-		cd /home/ehsm/out/ehsm-kms_enroll_app/
-		./ehsm-kms_enroll_app -a http://$EHSM_KMS_IP:$EHSM_KMS_PORT/ehsm/
+		echo "ehsm does not support enroll by kms-utils, please enroll by calling rest API directly!"
 	elif [ "$KMS_TYPE" = "simple" ]; then
 		echo "Simple KMS is dummy. You can choose any appid and apikey. If you want to generate the corresponding primarykey and datakey, the appid must be 12 characters long."
 	elif [ "$KMS_TYPE" = "azure" ]; then
@@ -21,7 +20,7 @@ elif [ "$action" = "generatekeys" ]; then
 	if [ "$KMS_TYPE" = "ehsm" ]; then
 	    appid=$2
 	    apikey=$3
-		java -cp $BIGDL_HOME/jars/bigdl-ppml-spark_-${BIGDL_VERSION}.jar:$SPARK_HOME/jars/*:$SPARK_HOME/examples/jars/*:$BIGDL_HOME/jars/* \
+		java -cp $BIGDL_HOME/jars/bigdl-ppml-spark_${SPARK_VERSION}-${BIGDL_VERSION}.jar:$SPARK_HOME/jars/*:$SPARK_HOME/examples/jars/*:$BIGDL_HOME/jars/* \
 		com.intel.analytics.bigdl.ppml.examples.GenerateKeys \
 		--primaryKeyPath /home/key/ehsm_encrypted_primary_key \
 		--dataKeyPath /home/key/ehsm_encrypted_data_key \
