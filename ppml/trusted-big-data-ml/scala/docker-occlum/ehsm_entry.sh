@@ -8,6 +8,7 @@ EHSM_URL=${ATTESTATION_URL}
 EHSM_KMS_IP=${EHSM_URL%:*}
 EHSM_KMS_PORT=${EHSM_URL#*:}
 mkdir -p /opt/occlum_spark/data/key/
+mkdir -p /opt/occlum_spark/data/encrypt/
 export KMS_TYPE=ehsm
 #only support ehsm now
 if [ "$action" = "enroll" ]; then

@@ -223,9 +223,10 @@ You can enlarge the configuration in [start-spark-local.sh](https://github.com/i
 -e SGX_KERNEL_HEAP=1GB \
 ```
 
-You can change the configuration in [start-spark-local.sh](https://github.com/intel-analytics/BigDL/blob/main/ppml/trusted-big-data-ml/scala/docker-occlum/start-spark-local.sh)
+You can change the configuration If you enter image and run /opt/run_spark_on_occlum_glibc.sh xgboost in docker container.
 ``` bash
-#start-spark-local.sh
+#run_spark_on_occlum_glibc.sh
+#run_spark_xgboost()
 -i /host/data        // -i means inputpath of training data
 -s /host/data/model  // -s means savepath of model
 -t 2                 // -t means threads num
@@ -273,9 +274,10 @@ You can enlarge the configuration in [start-spark-local.sh](https://github.com/i
 -e SGX_KERNEL_HEAP=1GB \
 ```
 
-You can change the configuration in [start-spark-local.sh](https://github.com/intel-analytics/BigDL/blob/main/ppml/trusted-big-data-ml/scala/docker-occlum/start-spark-local.sh)
+You can change the configuration If you enter image and run /opt/run_spark_on_occlum_glibc.sh gbt in docker container.
 ``` bash
 #start-spark-local.sh
+#run_spark_gbt()
 -i /host/data        // -i means inputpath of training data
 -s /host/data/model  // -s means savepath of model
 -I 100               // -r means maxInter
@@ -297,7 +299,7 @@ You can find GBT result under folder `/path/to/data/`.
     └── _SUCCESS
 ```
 
-## BigDL GBT Example
+## BigDL GBT e2e Example
 
 ### Download data
 You can download the criteo-1tb-click-logs-dataset from [here](https://ailab.criteo.com/download-criteo-1tb-click-logs-dataset/). Split 1g of data from the dataset and put it into a folder. Then mount `/path/to/data/1g_data` to container's `/opt/occlum_spark/data` in `start-spark-local.sh` via:
@@ -312,22 +314,43 @@ You can enlarge the configuration in [start-spark-local.sh](https://github.com/i
 -e SGX_THREAD=1024 \
 -e SGX_HEAP=1GB \
 -e SGX_KERNEL_HEAP=1GB \
+-e PCCS_URL=https://PCCS_IP:PCCS_PORT \
+-e ATTESTATION_URL=ESHM_IP:EHSM_PORT \
+-e APP_ID=your_app_id \
+-e API_KEY=your_api_key \
 ```
 
-You can change the configuration in [start-spark-local.sh](https://github.com/intel-analytics/BigDL/blob/main/ppml/trusted-big-data-ml/scala/docker-occlum/start-spark-local.sh)
+You can change the configuration If you enter image and run /opt/run_spark_on_occlum_glibc.sh gbt_e2e in docker container.
 ``` bash
 #start-spark-local.sh
--i /host/data        // -i means inputpath of training data
+-i /host/data/encrypt  // -i means inputpath of encrypt training data
 -s /host/data/model  // -s means savepath of model
 -I 100               // -r means maxInter
 -d 5                 // -d means maxDepth
 ```
 
-Start run BigDL Spark GBT example:
+Start run BigDL Spark GBT e2e example:
+1.Input PCCS_URL,ATTESTATION_URL,APP_ID and API_KEY first. Change the file [start-spark-local.sh](https://github.com/intel-analytics/BigDL/blob/main/ppml/trusted-big-data-ml/scala/docker-occlum/start-spark-local.sh) last line from 'bash /opt/run_spark_on_occlum_glibc.sh $1' to 'bash'
+And then 'bash start-spark-local.sh' to enter docker container.
 ```
-bash start-spark-local.sh gbt
+bash start-spark-local.sh
 ```
-
+2.To generate keys for encrypt and decrypt.
+```
+bash /opt/ehsm_entry.sh generatekeys $APP_ID $API_KEY
+```
+3.To encrypt input data. For example, you mount a file called day_0_1g.csv.
+```
+bash /opt/ehsm_entry.sh  encrypt $APP_ID $API_KEY /opt/occlum_spark/data/day_0_1g.csv
+```
+4.Change the suffix of the encrypted file to cbc and move to right place.
+```
+mv /opt/occlum_spark/data/day_0_1g.csv.encrypted /opt/occlum_spark/data/encrypt/day_0_1g.csv.encrypted.cbc
+```
+5.To run the BigDL GBT e2e Example.
+```
+bash /opt/run_spark_on_occlum_glibc.sh gbt_e2e
+```
 You can find GBT result under folder `/path/to/data/`.
 ```
 /path/to/data/
