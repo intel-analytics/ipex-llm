@@ -41,7 +41,7 @@ except IOError:
     sys.exit(-1)
 
 VERSION = __version__  # noqa
-PYSPARK_VERSION = open(os.path.join(bigdl_home, 'python/default_pyspark_version.txt'), 'r').read().strip()
+PYSPARK_VERSION = open(os.path.join(bigdl_home, 'python/requirements/orca/requirement_pyspark.txt'), 'r').read().strip()
 
 building_error_msg = """
 If you are packing python API from BigDL source, you should use the release script:
