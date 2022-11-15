@@ -21,9 +21,10 @@ on:
         - all
         - Mac-Python-AppTest-Part1
         - Mac-Dllib-ScalaTest-Spark3
+        - Mac-Dllib-Python-ExampleTest-Spark3
 
 env:
-  GIST_ID: 
+  GIST_ID: 6bcf97ad277d77344b88ddbefa2dd4ad
 
 permissions:
   contents: read
@@ -52,7 +53,7 @@ jobs:
 
 
   Mac-Dllib-ScalaTest-Spark3:
-    #if: ${{ github.event.schedule || github.event.inputs.artifact == 'Mac-Dllib-ScalaTest-Spark3' || github.event.inputs.artifact == 'all' }} 
+    if: ${{ github.event.schedule || github.event.inputs.artifact == 'Mac-Dllib-ScalaTest-Spark3' || github.event.inputs.artifact == 'all' }} 
     runs-on: [self-hosted, mac, macOS]
 
     steps:
@@ -70,7 +71,27 @@ jobs:
         type: job
         job-name: Mac-Dllib-ScalaTest-Spark2.4
         runner-hosted-on: 'Shanghai'
-    
+
+  Mac-Dllib-Python-ExampleTest-Spark3:
+    #if: ${{ github.event.schedule || github.event.inputs.artifact == 'Mac-Dllib-Python-ExampleTest-Spark3' || github.event.inputs.artifact == 'all' }} 
+    runs-on: [self-hosted, mac, macOS]
+
+    steps:
+    - uses: actions/checkout@v3
+    - name: Run Test
+      uses: ./.github/actions/mac/dllib/mac-dllib-python-exampletest-spark3
+    - name: Create Job Badge
+      uses: ./.github/actions/create-job-status-badge
+      if: ${{ always() }}
+      with:
+        secret: ${{ secrets.GIST_SECRET}}
+        gist-id: ${{env.GIST_ID}}
+        is-self-hosted-runner: true
+        file-name: Mac-Dllib-Python-ExampleTest-Spark3.json
+        type: job
+        job-name: Mac-Dllib-Python-ExampleTest-Spark3
+        runner-hosted-on: 'Shanghai'
+
   # please put your test before the create-workflow-badge to make sure the badge can be displayed on the github page.
   create-workflow-badge:
     runs-on: ubuntu-latest

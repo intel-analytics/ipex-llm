@@ -1,5 +1,5 @@
-name: 'Mac Dllib ScalaTest Spark2.4'
-description: 'Mac Dllib ScalaTest Spark2.4'
+name: 'Mac Dllib ScalaTest Spark3.1'
+description: 'Mac Dllib ScalaTest Spark3.1'
 runs:
   using: "composite"
   steps:
