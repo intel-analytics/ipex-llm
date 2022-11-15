@@ -297,6 +297,47 @@ You can find GBT result under folder `/path/to/data/`.
     └── _SUCCESS
 ```
 
+## BigDL GBT Example
+
+### Download data
+You can download the criteo-1tb-click-logs-dataset from [here](https://ailab.criteo.com/download-criteo-1tb-click-logs-dataset/). Split 1g of data from the dataset and put it into a folder. Then mount `/path/to/data/1g_data` to container's `/opt/occlum_spark/data` in `start-spark-local.sh` via:
+```
+-v /path/to/data/1g_data:/opt/occlum_spark/data
+```
+
+You can enlarge the configuration in [start-spark-local.sh](https://github.com/intel-analytics/BigDL/blob/main/ppml/trusted-big-data-ml/scala/docker-occlum/start-spark-local.sh)
+``` bash
+#start-spark-local.sh
+-e SGX_MEM_SIZE=30GB \
+-e SGX_THREAD=1024 \
+-e SGX_HEAP=1GB \
+-e SGX_KERNEL_HEAP=1GB \
+```
+
+You can change the configuration in [start-spark-local.sh](https://github.com/intel-analytics/BigDL/blob/main/ppml/trusted-big-data-ml/scala/docker-occlum/start-spark-local.sh)
+``` bash
+#start-spark-local.sh
+-i /host/data        // -i means inputpath of training data
+-s /host/data/model  // -s means savepath of model
+-I 100               // -r means maxInter
+-d 5                 // -d means maxDepth
+```
+
+Start run BigDL Spark GBT example:
+```
+bash start-spark-local.sh gbt
+```
+
+You can find GBT result under folder `/path/to/data/`.
+```
+/path/to/data/
+├── data
+├── treesMetadata
+└── metadata
+    ├── part-00000
+    └── _SUCCESS
+```
+
 ## PySpark 3.1.3 Pi example
 
 To run PySpark Pi example, start the docker container with:

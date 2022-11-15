@@ -497,7 +497,7 @@ run_spark_gbt_e2e() {
                 --primaryKeyPath /host/data/key/ehsm_encrypted_primary_key \
                 --dataKeyPath /host/data/key/ehsm_encrypted_data_key \
                 --kmsType EHSMKeyManagementService \
-                --trainingDataPath /host/data/encrypt/day_0_1g.csv.encrypted.cbc \
+                --trainingDataPath /host/data/encrypt/ \
                 --modelSavePath /host/data/model/ \
                 --inputEncryptMode AES/CBC/PKCS5Padding \
                 --kmsServerIP $EHSM_KMS_IP \
