@@ -23,11 +23,11 @@ import os
 from unittest import TestCase
 from bigdl.chronos.data import TSDataset
 from bigdl.chronos.utils import LazyImport
-XShardsTSDataset = LazyImport('bigdl.chronos.data.experimental')
-read_csv = LazyImport('bigdl.orca.data.pandas')
-init_orca_context = LazyImport('bigdl.orca.data.pandas')
-stop_orca_context = LazyImport('bigdl.orca.data.pandas')
-OrcaContext = LazyImport('bigdl.orca.data.pandas')
+XShardsTSDataset = LazyImport('bigdl.chronos.data.experimental.XShardsTSDataset')
+read_csv = LazyImport('bigdl.orca.data.pandas.read_csv')
+init_orca_context = LazyImport('bigdl.orca.common.init_orca_context')
+stop_orca_context = LazyImport('bigdl.orca.common.stop_orca_context')
+OrcaContext = LazyImport('bigdl.orca.common.OrcaContext')
 from ... import op_distributed
 
 from pandas.testing import assert_frame_equal
