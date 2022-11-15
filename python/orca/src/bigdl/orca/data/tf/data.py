@@ -97,7 +97,7 @@ class Dataset(object):
         graph_rdd_and_meta = self.xshards.rdd.mapPartitions(to_dataset)
         return graph_rdd_and_meta
 
-    def as_tf_dataset_rdd(self):
+    def as_tf_dataset_rdd(self) -> "RDD[Any]":
         create_dataset_fn = self.create_dataset_fn
 
         def to_dataset(iter):
@@ -117,7 +117,7 @@ class Dataset(object):
         tf_dataset_rdd = self.xshards.rdd.mapPartitions(to_dataset)
         return tf_dataset_rdd
 
-    def get_xshards(self):
+    def get_xshards(self) -> "SparkXShards":
         if self.xshards_transform_fn is None:
             return self.xshards
         else:

@@ -38,9 +38,10 @@ from numpy import (
 if TYPE_CHECKING:
     from bigdl.orca.data.shard import SparkXShards
     from os import _Environ
-    from pyspark.rdd import PipelinedRDD
+    from pyspark.rdd import RDD
     from pyspark.sql.dataframe import DataFrame
     from ray.data.dataset import Dataset
+    from bigdl.orca.data.ray_xshards import RayXShards
 
 
 def list_s3_file(file_path, env):
@@ -357,7 +358,7 @@ def _convert_list_tuple(data, allow_tuple, allow_list):
     return data
 
 
-def process_spark_xshards(spark_xshards, num_workers):
+def process_spark_xshards(spark_xshards: "SparkXShards", num_workers: int) -> "RayXShards":
     from bigdl.orca.data.ray_xshards import RayXShards
     data = spark_xshards
     ray_xshards = RayXShards.from_spark_xshards(data)
@@ -399,7 +400,7 @@ def get_size(x):
 def spark_df_to_rdd_pd(df: "DataFrame", squeeze: bool=False, index_col: Optional[str]=None,
                        dtype: Optional[Union[str, Dict[str, str], Dict[str, Type[float32]],
                                        Dict[int, Union[Type[float32], Type[int32]]]]]=None,
-                       index_map: Optional[Dict[int, str]]=None) -> "PipelinedRDD":
+                       index_map: Optional[Dict[int, str]]=None) -> "RDD":
     from bigdl.orca.data import SparkXShards
     from bigdl.orca import OrcaContext
 
@@ -425,8 +426,8 @@ def spark_df_to_rdd_pd(df: "DataFrame", squeeze: bool=False, index_col: Optional
         return pd_rdd
 
 
-def spark_df_to_pd_sparkxshards(df: "DataFrame", squeeze: bool=False, index_col: None=None,
-                                dtype: None=None, index_map: None=None) -> "SparkXShards":
+def spark_df_to_pd_sparkxshards(df: "DataFrame", squeeze: bool=False, index_col=None,
+                                dtype=None, index_map=None) -> "SparkXShards":
     pd_rdd = spark_df_to_rdd_pd(df, squeeze, index_col, dtype, index_map)
     from bigdl.orca.data import SparkXShards
     spark_xshards = SparkXShards(pd_rdd)
@@ -485,7 +486,7 @@ def to_pandas(columns: List[str], squeeze: bool=False, index_col: Optional[str]=
                                     Dict[int, Union[Type[float32], Type[int32]]],
                                     Dict[str, str]]]=None,
               index_map: Optional[Dict[int, str]]=None,
-              batch_size: None=None) -> Callable:
+              batch_size: int=None) -> "RDD":
     def farrow(iter):
         for fileName in iter:
             from pyspark.sql.pandas.serializers import ArrowStreamSerializer

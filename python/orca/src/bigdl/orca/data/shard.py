@@ -45,10 +45,7 @@ if TYPE_CHECKING:
     from pandas.core.frame import DataFrame as PandasDataFrame
     from pandas.core.indexes.base import Index
     from pandas.core.series import Series
-    from pyspark.rdd import (
-        PipelinedRDD,
-        RDD
-    )
+    from pyspark.rdd import PipelinedRDD, RDD
     from pyspark.sql.dataframe import DataFrame as SparkDataFrame
     from pyspark.sql.column import Column
     from ray.data.dataset import Dataset
@@ -175,7 +172,7 @@ class SparkXShards(XShards):
     def __init__(self,
                  rdd: Union["PipelinedRDD", "RDD"],
                  transient: bool=False,
-                 class_name=None) -> None:
+                 class_name: str=None) -> None:
         self.rdd = rdd
         self.user_cached = False
         if transient:
@@ -837,7 +834,7 @@ class SparkXShards(XShards):
         result_rdd = self.rdd.map(lambda x: utility_func(x, func, *args, **kwargs))
         return result_rdd
 
-    def get_schema(self) -> Optional[Dict[str, Union["Index", "Series"]]]:
+    def get_schema(self) -> Optional[str]:
         if 'schema' in self.type:
             return self.type['schema']
 
@@ -908,7 +905,11 @@ class SparkXShards(XShards):
 
         return self.rdd.map(lambda x: func(x)).first()
 
-    def merge(self, right, how="inner", on=None, **kwargs):
+    def merge(self,
+              right: "SparkXShards",
+              how: str="inner",
+              on: str=None,
+              **kwargs) -> "SparkXShards":
         """
         Merge two SparkXShards into a single SparkXShards with a database-style join.
 
@@ -940,12 +941,12 @@ class SparkXShards(XShards):
             merged_withIndex_rdd = merged.rdd.zipWithIndex().map(lambda p: (p[1], p[0]))
             merged = merged_withIndex_rdd.partitionBy(nonEmptyPart.value) \
                 .map(lambda p: p[1]).toDF()
-        merged = spark_df_to_pd_sparkxshards(merged)
-        return merged
+        mergedXShards = spark_df_to_pd_sparkxshards(merged)
+        return mergedXShards
 
 
 class SharedValue(object):
-    def __init__(self, data: int) -> None:
+    def __init__(self, data) -> None:
         sc = init_nncontext()
         self.broadcast_data = sc.broadcast(data)
         self._value = None

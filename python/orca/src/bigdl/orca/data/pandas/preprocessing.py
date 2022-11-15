@@ -14,6 +14,7 @@
 # limitations under the License.
 #
 
+import os
 from bigdl.dllib.utils.common import get_node_and_core_number
 from bigdl.dllib.nncontext import init_nncontext
 from bigdl.orca import OrcaContext
@@ -25,7 +26,6 @@ from typing import TYPE_CHECKING, List, Optional
 if TYPE_CHECKING:
     from bigdl.orca.data.shard import SparkXShards
     from pyspark.sql.types import StructType
-    import os
 
 
 def read_csv(file_path: str, **kwargs) -> "SparkXShards":

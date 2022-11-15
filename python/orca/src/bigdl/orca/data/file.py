@@ -23,7 +23,7 @@ import glob
 from distutils.dir_util import copy_tree
 from bigdl.dllib.utils.log4Error import invalidOperationError
 
-from typing import TYPE_CHECKING, List
+from typing import TYPE_CHECKING, List, Callable, Union
 if TYPE_CHECKING:
     from PIL.JpegImagePlugin import JpegImageFile
     from numpy import ndarray
@@ -211,7 +211,7 @@ def makedirs(path: str) -> None:
         return os.makedirs(path)
 
 
-def write_text(path: str, text: str):
+def write_text(path: str, text: str) -> int:
     """
 
     Write text to a file. It supports local, hdfs, s3 file systems.
@@ -247,7 +247,7 @@ def write_text(path: str, text: str):
             return result
 
 
-def is_file(path):
+def is_file(path: str) -> bool:
     """
 
     Check if a path is file or not. It supports local, hdfs, s3 file systems.
@@ -276,6 +276,7 @@ def is_file(path):
                 return False
         except Exception as ex:
             invalidOperationError(False, str(ex), cause=ex)
+            return False
     elif path.startswith("hdfs://"):
         cmd = 'hdfs dfs -test -f {}; echo $?'.format(path)
         result = subprocess.getstatusoutput(cmd)
@@ -291,7 +292,7 @@ def is_file(path):
         return Path(path).is_file()
 
 
-def put_local_dir_to_remote(local_dir, remote_dir):
+def put_local_dir_to_remote(local_dir: str, remote_dir: str):
     if remote_dir.startswith("hdfs"):  # hdfs://url:port/file_path
         import pyarrow as pa
         host_port = remote_dir.split("://")[1].split("/")[0].split(":")
@@ -326,7 +327,7 @@ def put_local_dir_to_remote(local_dir, remote_dir):
         copy_tree(local_dir, remote_dir)
 
 
-def put_local_dir_tree_to_remote(local_dir, remote_dir):
+def put_local_dir_tree_to_remote(local_dir: str, remote_dir: str):
     if remote_dir.startswith("hdfs"):  # hdfs://url:port/file_path
         test_cmd = 'hdfs dfs -ls {}'.format(remote_dir)
         process = subprocess.Popen(test_cmd, shell=True,
@@ -380,7 +381,7 @@ def put_local_dir_tree_to_remote(local_dir, remote_dir):
         return 0
 
 
-def put_local_file_to_remote(local_path, remote_path, filemode=None):
+def put_local_file_to_remote(local_path: str, remote_path: str, filemode: int=None) -> int:
     if remote_path.startswith("hdfs"):  # hdfs://url:port/file_path
         try:
             cmd = 'hdfs dfs -put -f {} {}'.format(local_path, remote_path)
@@ -427,7 +428,7 @@ def put_local_file_to_remote(local_path, remote_path, filemode=None):
         return 0
 
 
-def put_local_files_with_prefix_to_remote(local_path_prefix, remote_dir):
+def put_local_files_with_prefix_to_remote(local_path_prefix: str, remote_dir: str) -> int:
     file_list = glob.glob(local_path_prefix + "*")
     if remote_dir.startswith("hdfs"):  # hdfs://url:port/file_path
         cmd = 'hdfs dfs -put -f {}* {}'.format(local_path_prefix, remote_dir)
@@ -462,7 +463,7 @@ def put_local_files_with_prefix_to_remote(local_path_prefix, remote_dir):
         return 0
 
 
-def get_remote_file_to_local(remote_path, local_path):
+def get_remote_file_to_local(remote_path: str, local_path: str) -> int:
     if remote_path.startswith("hdfs"):  # hdfs://url:port/file_path
         cmd = 'hdfs dfs -get {} {}'.format(remote_path, local_path)
         process = subprocess.Popen(cmd, shell=True)
@@ -490,7 +491,7 @@ def get_remote_file_to_local(remote_path, local_path):
         return 0
 
 
-def get_remote_dir_to_local(remote_dir, local_dir):
+def get_remote_dir_to_local(remote_dir: str, local_dir: str) -> int:
     if remote_dir.startswith("hdfs"):  # hdfs://url:port/file_path
         cmd = 'hdfs dfs -get {} {}'.format(remote_dir, local_dir)
         process = subprocess.Popen(cmd, shell=True)
@@ -508,7 +509,9 @@ def get_remote_dir_to_local(remote_dir, local_dir):
         try:
             response = s3_client.list_objects_v2(Bucket=bucket, Prefix=prefix + "/")
             keys = [item['Key'] for item in response['Contents']]
-            [s3_client.download_file(bucket, key, os.path.join(local_dir, os.path.basename(keys)))
+            [s3_client.download_file(bucket, key,
+                                     os.path.join(local_dir,
+                                                  os.path.basename(keys)))  # type: ignore
              for key in keys]
         except Exception as e:
             invalidOperationError(False, str(e), cause=e)
@@ -520,7 +523,8 @@ def get_remote_dir_to_local(remote_dir, local_dir):
         return 0
 
 
-def get_remote_files_with_prefix_to_local(remote_path_prefix, local_dir):
+def get_remote_files_with_prefix_to_local(remote_path_prefix: str,
+                                          local_dir: str) -> Union[str, int]:
     prefix = os.path.basename(remote_path_prefix)
     if remote_path_prefix.startswith("hdfs"):  # hdfs://url:port/file_path
         cmd = 'hdfs dfs -get {}* {}'.format(remote_path_prefix, local_dir)
@@ -539,14 +543,16 @@ def get_remote_files_with_prefix_to_local(remote_path_prefix, local_dir):
         try:
             response = s3_client.list_objects_v2(Bucket=bucket, Prefix=prefix)
             keys = [item['Key'] for item in response['Contents']]
-            [s3_client.download_file(bucket, key, os.path.join(local_dir, os.path.basename(keys)))
+            [s3_client.download_file(bucket, key,
+                                     os.path.join(local_dir,
+                                                  os.path.basename(keys)))  # type: ignore
              for key in keys]
         except Exception as e:
             invalidOperationError(False, str(e), cause=e)
     return os.path.join(local_dir, prefix)
 
 
-def enable_multi_fs_load_static(load_func):
+def enable_multi_fs_load_static(load_func: Callable) -> Callable:
     """
     Enable loading file or directory in multiple file systems.
     It supports local, hdfs, s3 file systems.
@@ -585,7 +591,7 @@ def enable_multi_fs_load_static(load_func):
     return fs_load
 
 
-def enable_multi_fs_save(save_func):
+def enable_multi_fs_save(save_func: Callable) -> Callable:
 
     @functools.wraps(save_func)
     def fs_save(obj, path, *args, **kwargs):
@@ -610,7 +616,7 @@ def enable_multi_fs_save(save_func):
     return fs_save
 
 
-def enable_multi_fs_load(load_func):
+def enable_multi_fs_load(load_func: Callable) -> Callable:
 
     @functools.wraps(load_func)
     def fs_load(obj, path, *args, **kwargs):

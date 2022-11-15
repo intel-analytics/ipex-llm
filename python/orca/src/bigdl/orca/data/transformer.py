@@ -327,7 +327,7 @@ class StringIndex:
         df = spark.createDataFrame((Row(**x) for x in new_indices), schema=schema)
         return cls(df, col_name)
 
-    def to_dict(self) -> Dict[str, "StringIndex"]:
+    def to_dict(self) -> Dict[str, int]:
         """
         Convert the StringIndex to a dict, with the categorical features as keys and indices
         as values.
@@ -395,7 +395,11 @@ class MinMaxScaler:
 
 
 class StandardScaler:
-    def __init__(self, withMean=False, withStd=True, inputCol=None, outputCol=None):
+    def __init__(self,
+                 withMean: bool=False,
+                 withStd: bool=True,
+                 inputCol: str=None,
+                 outputCol: str=None):
         self.withMean = withMean
         self.withStd = withStd
         self.inputCol = inputCol
@@ -415,21 +419,21 @@ class StandardScaler:
                                      inputCol=vecOutputCol, outputCol=self.outputCol)
         self.scaler = SparkPipeline(stages=[assembler, scaler])
 
-    def setInputOutputCol(self, inputCol, outputCol):
+    def setInputOutputCol(self, inputCol: str, outputCol: str):
         self.inputCol = inputCol
         self.outputCol = outputCol
         self.__createScaler__()
 
-    def fit_transform(self, shard):
+    def fit_transform(self, shard: "SparkXShards") -> "SparkXShards":
         df = shard.to_spark_df()
-        self.scalerModel = self.scaler.fit(df)
-        scaledData = self.scalerModel.transform(df)
+        self.scalerModel = self.scaler.fit(df)  # type: ignore
+        scaledData = self.scalerModel.transform(df)  # type: ignore
         data_shards = spark_df_to_pd_sparkxshards(scaledData)
         return data_shards
 
-    def transform(self, shard):
+    def transform(self, shard: "SparkXShards") -> "SparkXShards":
         invalidInputError(self.scalerModel, "Please call fit_transform first")
         df = shard.to_spark_df()
-        scaledData = self.scalerModel.transform(df)
+        scaledData = self.scalerModel.transform(df)  # type: ignore
         data_shards = spark_df_to_pd_sparkxshards(scaledData)
         return data_shards
