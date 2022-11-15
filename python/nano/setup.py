@@ -43,7 +43,6 @@ lib_urls = [
     "https://github.com/analytics-zoo/tcmalloc/releases/download/v1/libtcmalloc.so"
 ]
 
-
 def get_nano_packages():
     nano_packages = []
     for dirpath, _, _ in os.walk(os.path.join(nano_home, "bigdl")):
