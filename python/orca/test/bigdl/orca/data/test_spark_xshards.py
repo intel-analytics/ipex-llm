@@ -36,7 +36,8 @@ class TestSparkXShards(TestCase):
 
     def test_repartition(self):
         file_path = os.path.join(self.resource_path, "orca/data/json")
-        data_shard = bigdl.orca.data.pandas.read_json(file_path, orient='columns', lines=True)
+        # data_shard = bigdl.orca.data.pandas.read_json(file_path, orient='columns', lines=True)
+        data_shard = bigdl.orca.data.pandas.read_json(file_path)
         partitions_num_1 = data_shard.rdd.getNumPartitions()
         assert partitions_num_1 == 2, "number of partition should be 2"
         data_shard.cache()
@@ -64,7 +65,8 @@ class TestSparkXShards(TestCase):
 
     def test_apply(self):
         file_path = os.path.join(self.resource_path, "orca/data/json")
-        data_shard = bigdl.orca.data.pandas.read_json(file_path, orient='columns', lines=True)
+        # data_shard = bigdl.orca.data.pandas.read_json(file_path, orient='columns', lines=True)
+        data_shard = bigdl.orca.data.pandas.read_json(file_path)
         data = data_shard.collect()
         assert data[0]["value"].values[0] > 0, "value should be positive"
 
@@ -166,7 +168,8 @@ class TestSparkXShards(TestCase):
             return df
 
         file_path = os.path.join(self.resource_path, "orca/data/json")
-        data_shard = bigdl.orca.data.pandas.read_json(file_path, orient='columns', lines=True)
+        # data_shard = bigdl.orca.data.pandas.read_json(file_path, orient='columns', lines=True)
+        data_shard = bigdl.orca.data.pandas.read_json(file_path)
         data = data_shard.collect()
         assert data[0]["value"].values[0] > 0, "value should be positive"
         col_name = "value"
@@ -197,7 +200,8 @@ class TestSparkXShards(TestCase):
             return df
 
         file_path = os.path.join(self.resource_path, "orca/data/json")
-        data_shard = bigdl.orca.data.pandas.read_json(file_path, orient='columns', lines=True)
+        # data_shard = bigdl.orca.data.pandas.read_json(file_path, orient='columns', lines=True)
+        data_shard = bigdl.orca.data.pandas.read_json(file_path)
         data_shard = data_shard.repartition(2)
         data_shard.cache()
         transformed_shard = data_shard.transform_shard(negative, "value", 2)
