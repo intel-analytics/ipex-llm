@@ -42,6 +42,7 @@ CREATE_TENSOR_FUNC = ['rand', 'randint', 'randn', 'zeros', 'ones', 'empty', 'ful
                       'frombuffer', 'from_file']
 
 attrs = []
+is_cuda_patched = False
 
 
 def replace_attr(obj, name: str, value):
@@ -146,7 +147,8 @@ def create_tensor_func(torch_create_tensor_func):
 
 
 def patch_cuda(disable_jit=True):
-    if os.environ.get('BIGDL_NANO_PATCH_CUDA', '0') == '1':
+    global is_cuda_patched
+    if is_cuda_patched:
         return
 
     # add this parameter since it's a known issue
@@ -179,15 +181,20 @@ def patch_cuda(disable_jit=True):
         except AttributeError:
             pass
 
-    os.environ['BIGDL_NANO_PATCH_CUDA'] = '1'
+    is_cuda_patched = True
 
 
 def unpatch_cuda():
-    if os.environ.get('BIGDL_NANO_PATCH_CUDA', '0') == '0':
+    global is_cuda_patched
+    if not is_cuda_patched:
         return
 
     torch.jit._state.enable()
     for obj, name, torch_attr in attrs:
         setattr(obj, name, torch_attr)
 
-    os.environ['BIGDL_NANO_PATCH_CUDA'] = '0'
+    is_cuda_patched = False
+
+
+def get_cuda_status():
+    return is_cuda_patched
