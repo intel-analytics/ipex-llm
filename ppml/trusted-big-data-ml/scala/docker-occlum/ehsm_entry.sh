@@ -3,11 +3,13 @@ rm /etc/sgx_default_qcnl.conf
 #echo "PCCS_URL=$PCCS_URL" > /etc/sgx_default_qcnl.conf
 echo 'PCCS_URL='${PCCS_URL}'/sgx/certification/v3/' > /etc/sgx_default_qcnl.conf
 echo "USE_SECURE_CERT=FALSE" >> /etc/sgx_default_qcnl.conf
+action=$1
 EHSM_URL=${ATTESTATION_URL}
 EHSM_KMS_IP=${EHSM_URL%:*}
 EHSM_KMS_PORT=${EHSM_URL#*:}
 mkdir -p /opt/occlum_spark/data/key/
 export KMS_TYPE=ehsm
+#only support ehsm now
 if [ "$action" = "enroll" ]; then
   # no support
 	if [ "$KMS_TYPE" = "ehsm" ]; then
