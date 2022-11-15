@@ -2,7 +2,44 @@
 
 set -e
 
-#detect paths
+# usage
+usage() { echo "Usage: $0 [-a|--archive <string#string>]" 1>&2; exit 1; }
+
+# get options
+TEMP=`getopt -o a:h:: --long archive:,help:: -- "$@"`
+eval set -- "$TEMP"
+
+# extract options and their arguments into variables.
+archive="./environment.tar.gz"
+dir="./environment"
+while true ; do
+    case "$1" in
+        -a|--archive)
+            array=(${2//#/ }) archive=${array[0]} dir=${array[1]} ; shift 2 ;;
+        -h|--help)
+            usage ;;
+        --) shift ; break ;;
+        *) echo "Internal Error" ; exit 1 ;;
+    esac
+done
+
+# extract environment
+echo "extracting ${archive} to ${dir} ..."
+mkdir -p ${dir}
+which "pv" >/dev/null 2>&1
+
+if [ $? -eq 0 ]; then
+    echo "extracting with progress bar..."
+    pv ${archive}|tar -xz -C ${dir}
+else
+    echo "extracting without progress bar..."
+    tar -xzf ${archive} -C ${dir}
+fi
+
+# activate environment
+source ${dir}/bin/activate
+
+# detect paths
 export BIGDL_ENV=`python -c """from bigdl.dllib.utils.engine import *
 print(' ' + get_bigdl_conf(), end=' ')
 bigdl_jars = get_bigdl_jars()
@@ -10,13 +47,13 @@ print(','.join(bigdl_jars), end=' ')
 """
 `
 
-#setup env
+# setup env
 IFS=$' ' array=($(echo $BIGDL_ENV))
 len=${#array[@]}
 export BIGDL_CONF="${array[$len-2]}"
 export BIGDL_JARS="${array[$len-1]}"
 
-# Check env
+# check env
 if [ -z ${BIGDL_CONF} ]; then
     echo "Cannot find BigDL configuration file, please check your BigDL installation"
     exit 1
