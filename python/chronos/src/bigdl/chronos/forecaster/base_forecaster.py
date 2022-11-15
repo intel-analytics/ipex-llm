@@ -87,8 +87,6 @@ class BasePytorchForecaster(Forecaster):
             self.accelerated_model = None  # accelerated model obtained from various accelerators
             self.accelerate_method = None  # str indicates current accelerate method
             self.quantize_models = {}      # quantization models, format: {model_type : model}
-            self.optim_model = None        # accelarated model obtained from .optimize() 
-            self.metadata = None           # str indicates model type of optim_model
 
     def _build_automodel(self, data, validation_data=None, batch_size=32, epochs=1):
         """Build a Generic Model using config parameters."""
@@ -450,7 +448,7 @@ class BasePytorchForecaster(Forecaster):
         '''
         This method will traverse existing optimization methods(onnxruntime, openvino, jit, ...)
         and save the model with minimum latency under the given data and search
-        restrictions(accelerator, precision, accuracy_criterion) in `forecaster.optim_model`.
+        restrictions(accelerator, precision, accuracy_criterion) in `forecaster.accelerated_model`.
         This method is required to call before `predict` and `evaluate`.
         Now this function is only for non-distributed model.
 
@@ -607,8 +605,8 @@ class BasePytorchForecaster(Forecaster):
                 accelerator=accelerator,
                 precision=precision,
                 accuracy_criterion=accuracy_criterion)
-            self.optim_model = optim_model
-            self.metadata = option  # represent which model is stored in self.optim_model
+            self.accelerated_model = optim_model
+            self.accelerate_method = option
         except Exception:
             invalidInputError(False, "Unable to find an optimized model that meets your conditions."
                               "Maybe you can relax your search limit.")
@@ -708,14 +706,14 @@ class BasePytorchForecaster(Forecaster):
                                                   input_data=data,
                                                   batch_size=batch_size)
             else:
-                if acceleration is False or self.optim_model is None:
+                if acceleration is False or self.accelerated_model is None:
                     self.internal.eval()
                     yhat = _pytorch_fashion_inference(model=self.internal,
                                                       input_data=data,
                                                       batch_size=batch_size)
                 else:
-                    self.optim_model.eval()
-                    yhat = _pytorch_fashion_inference(model=self.optim_model,
+                    self.accelerated_model.eval()
+                    yhat = _pytorch_fashion_inference(model=self.accelerated_model,
                                                       input_data=data,
                                                       batch_size=batch_size)
             if not is_local_data:
@@ -1051,14 +1049,14 @@ class BasePytorchForecaster(Forecaster):
                                                   input_data=input_data,
                                                   batch_size=batch_size)
             else:
-                if acceleration is False or self.optim_model is None:
+                if acceleration is False or self.accelerated_model is None:
                     self.internal.eval()
                     yhat = _pytorch_fashion_inference(model=self.internal,
                                                       input_data=input_data,
                                                       batch_size=batch_size)
                 else:
-                    self.optim_model.eval()
-                    yhat = _pytorch_fashion_inference(model=self.optim_model,
+                    self.accelerated_model.eval()
+                    yhat = _pytorch_fashion_inference(model=self.accelerated_model,
                                                       input_data=input_data,
                                                       batch_size=batch_size)
 

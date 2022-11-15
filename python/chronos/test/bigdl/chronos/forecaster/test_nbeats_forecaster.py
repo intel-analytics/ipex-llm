@@ -630,7 +630,7 @@ class TestChronosNBeatsForecaster(TestCase):
         forecaster.fit(train_loader, epochs=2)
         forecaster.evaluate(val_loader)
         forecaster.predict(test_loader)
-        assert forecaster.optim_model is None
+        assert forecaster.accelerated_model is None
 
     def test_nbeats_forecaster_eval_shuffle_loader(self):
         from torch.utils.data import DataLoader, TensorDataset
