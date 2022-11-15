@@ -31,7 +31,6 @@ for more information.
 
 TEMP_PATH = "bigdl/share/dllib"
 dllib_src_path = os.path.abspath(__file__ + "/..")
-bigdl_home = os.path.abspath(__file__ + "/../../../..")
 
 try:
     exec(open(dllib_src_path + "/bigdl/dllib/version.py").read())
@@ -98,7 +97,6 @@ def setup_package():
     metadata = dict(
         name='bigdl-dllib',
         version=VERSION,
-        pyspark_version=PYSPARK_VERSION,
         description='Distributed Deep Learning Library for Apache Spark',
         long_description=long_description,
         long_description_content_type="text/markdown",
