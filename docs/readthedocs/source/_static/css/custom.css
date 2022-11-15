@@ -104,6 +104,6 @@ footer.bd-footer{
 }
 
 /* for right sidebar word-break */
-/* #bd-toc-nav ul li {
+#bd-toc-nav ul li {
     word-break: break-word;
-} */
+}
