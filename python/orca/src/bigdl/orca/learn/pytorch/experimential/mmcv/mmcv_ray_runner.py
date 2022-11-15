@@ -167,15 +167,15 @@ class MMCVRayEpochRunner(BaseRayRunner, EpochBasedRunner):
         if train_mode:
             if kwargs.get("metric_meters"):
                 metric_meters = kwargs["metric_meters"]
-                copy = dict()
+                outputs_copy = dict()
                 for k, v in outputs.items():
                     if isinstance(v, torch.Tensor):
-                        copy[k] = v.item()
+                        outputs_copy[k] = v.item()
                     else:
-                        copy[k] = v
-                copy.pop("log_vars", None)
-                copy.pop("num_samples", None)
-                metric_meters.update(copy, n=get_batchsize(data_batch))
+                        outputs_copy[k] = v
+                outputs_copy.pop("log_vars", None)
+                outputs_copy.pop("num_samples", None)
+                metric_meters.update(outputs_copy, n=get_batchsize(data_batch))
 
         if 'log_vars' in outputs:
             self.log_buffer.update(outputs['log_vars'], outputs['num_samples'])
