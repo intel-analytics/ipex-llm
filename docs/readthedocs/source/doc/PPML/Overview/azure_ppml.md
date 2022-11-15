@@ -17,7 +17,7 @@ Before you setup your environment, please install Azure CLI on your machine acco
 
 Then run `az login` to login to Azure system before you run the following Azure commands.
 
-### 2.2 Create Azure VM for hosting BigDL PPML image
+### 2.2 Create Azure Linux VM for hosting BigDL PPML image
 #### 2.2.1 Create Resource Group
 On your machine, create resource group or use your existing resource group. Example code to create resource group with Azure CLI:
 ```
@@ -27,11 +27,29 @@ az group create \
     --output none
 ```
 
-#### 2.2.2 Create Linux client with SGX support
+#### 2.2.2 Create Linux VM with SGX support
 Create Linux VM through Azure [CLI](https://docs.microsoft.com/en-us/azure/developer/javascript/tutorial/nodejs-virtual-machine-vm/create-linux-virtual-machine-azure-cli)/[Portal](https://docs.microsoft.com/en-us/azure/virtual-machines/linux/quick-create-portal)/Powershell.
 For size of the VM, please choose DCSv3 Series VM with more than 4 vCPU cores.
 
-#### 2.2.3 Pull BigDL PPML image and run on Linux client
+#### 2.2.3 Start AESM service on Linux VM
+* ubuntu 20.04
+```bash
+echo 'deb [arch=amd64] https://download.01.org/intel-sgx/sgx_repo/ubuntu focal main' | tee /etc/apt/sources.list.d/intelsgx.list
+wget -qO - https://download.01.org/intel-sgx/sgx_repo/ubuntu/intel-sgx-deb.key | apt-key add -
+sudo apt update
+apt-get install libsgx-dcap-ql
+apt install sgx-aesm-service
+```
+* ubuntu 18.04
+```bash
+echo 'deb [arch=amd64] https://download.01.org/intel-sgx/sgx_repo/ubuntu bionic main' | tee /etc/apt/sources.list.d/intelsgx.list
+wget -qO - https://download.01.org/intel-sgx/sgx_repo/ubuntu/intel-sgx-deb.key | apt-key add -
+sudo apt update
+apt-get install libsgx-dcap-ql
+apt install sgx-aesm-service
+```
+
+#### 2.2.4 Pull BigDL PPML image and run on Linux VM
 * Go to Azure Marketplace, search "BigDL PPML" and find `BigDL PPML: Secure Big Data AI on Intel SGX` product. Click "Create" button which will lead you to `Subscribe` page.
 On `Subscribe` page, input your subscription, your Azure container registry, your resource group and your location. Then click `Subscribe` to subscribe BigDL PPML to your container registry.
 
@@ -40,7 +58,7 @@ On `Subscribe` page, input your subscription, your Azure container registry, you
   ```bash
   docker pull myContainerRegistry.azurecr.io/intel_corporation/bigdl-ppml-trusted-big-data-ml-python-graphene
   ```
-* 
+
 * Start container of this image
 
   ```bash
@@ -290,7 +308,56 @@ bash bigdl-ppml-submit.sh \
     $SPARK_EXTRA_JAR_PATH \
     $ARGS
 ```
+### 3.8 Run simple query python example
+This is an example script to run simple query python example job on AKS with data stored in Azure data lake store.
+```bash
+RUNTIME_SPARK_MASTER=
+export RUNTIME_DRIVER_MEMORY=8g
+export RUNTIME_DRIVER_PORT=54321
+BIGDL_VERSION=2.1.0
+SPARK_VERSION=3.1.3
 
+DATA_LAKE_NAME=
+DATA_LAKE_ACCESS_KEY=
+INPUT_DIR_PATH=xxx@$DATA_LAKE_NAME.dfs.core.windows.net/xxx
+KEY_VAULT_NAME=
+PRIMARY_KEY_PATH=
+DATA_KEY_PATH=
+
+secure_password=`az keyvault secret show --name "key-pass" --vault-name $KEY_VAULT_NAME --query "value" | sed -e 's/^"//' -e 's/"$//'`
+
+bash bigdl-ppml-submit.sh \
+    --master $RUNTIME_SPARK_MASTER \
+    --deploy-mode client \
+    --sgx-enabled true \
+    --sgx-driver-jvm-memory 2g \
+    --sgx-executor-jvm-memory 7g \
+    --driver-memory 7g \
+    --driver-cores 4 \
+    --executor-memory 18g \
+    --executor-cores 2 \
+    --num-executors 1 \
+    --name simple-query-sgx \
+    --conf spark.kubernetes.container.image=intelanalytics/bigdl-ppml-trusted-big-data-ml-python-graphene:$BIGDL_VERSION \
+    --conf spark.kubernetes.driver.podTemplateFile=/ppml/trusted-big-data-ml/azure/spark-driver-template-az.yaml \
+    --conf spark.kubernetes.executor.podTemplateFile=/ppml/trusted-big-data-ml/azure/spark-executor-template-az.yaml \
+    --conf spark.hadoop.fs.azure.account.auth.type.${DATA_LAKE_NAME}.dfs.core.windows.net=SharedKey \
+    --conf spark.hadoop.fs.azure.account.key.${DATA_LAKE_NAME}.dfs.core.windows.net=${DATA_LAKE_ACCESS_KEY} \
+    --conf spark.hadoop.fs.azure.enable.append.support=true \
+    --properties-file /ppml/trusted-big-data-ml/work/bigdl-$BIGDL_VERSION/conf/spark-bigdl.conf \
+    --conf spark.executor.extraClassPath=/ppml/trusted-big-data-ml/work/bigdl-$BIGDL_VERSION/jars/*:/ppml/trusted-big-data-ml/work/spark-$SPARK_VERSION/jars/* \
+    --conf spark.driver.extraClassPath=/ppml/trusted-big-data-ml/work/bigdl-$BIGDL_VERSION/jars/*:/ppml/trusted-big-data-ml/work/spark-$SPARK_VERSION/jars/* \
+    --py-files /ppml/trusted-big-data-ml/work/bigdl-$BIGDL_VERSION/python/bigdl-ppml-spark_$SPARK_VERSION-$BIGDL_VERSION-python-api.zip,/ppml/trusted-big-data-ml/work/bigdl-$BIGDL_VERSION/python/bigdl-spark_$SPARK_VERSION-$BIGDL_VERSION-python-api.zip,/ppml/trusted-big-data-ml/work/bigdl-$BIGDL_VERSION/python/bigdl-dllib-spark_$SPARK_VERSION-$BIGDL_VERSION-python-api.zip \
+    /ppml/trusted-big-data-ml/work/examples/simple_query_example.py \
+    --kms_type AzureKeyManagementService \
+    --azure_vault $KEY_VAULT_NAME \
+    --primary_key_path $PRIMARY_KEY_PATH \
+    --data_key_path $DATA_KEY_PATH \
+    --input_encrypt_mode aes/cbc/pkcs5padding \
+    --output_encrypt_mode plain_text \
+    --input_path $INPUT_DIR_PATH/people.csv \
+    --output_path $INPUT_DIR_PATH/simple-query-result.csv
+```
 ## 4. Run TPC-H example
 TPC-H queries are implemented using Spark DataFrames API running with BigDL PPML.
 
