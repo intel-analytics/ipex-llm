@@ -433,7 +433,7 @@ class TestChronosModelAutoformerForecaster(TestCase):
         forecaster.predict(test)
 
     @op_automl
-    def test_autoformer_forecaster_first_tune_multi_processes(self):
+    def test_autoformer_forecaster_tune_multi_processes(self):
         name = "parallel-example-torch"
         storage = "sqlite:///example_autoformer.db"  # take sqlite for test, recommand to use mysql
         if os.path.exists("./example_autoformer.db"):
