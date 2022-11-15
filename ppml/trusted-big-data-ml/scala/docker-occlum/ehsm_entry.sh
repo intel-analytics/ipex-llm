@@ -3,11 +3,12 @@ rm /etc/sgx_default_qcnl.conf
 #echo "PCCS_URL=$PCCS_URL" > /etc/sgx_default_qcnl.conf
 echo 'PCCS_URL='${PCCS_URL}'/sgx/certification/v3/' > /etc/sgx_default_qcnl.conf
 echo "USE_SECURE_CERT=FALSE" >> /etc/sgx_default_qcnl.conf
-action=$1
-EHSM_KMS_IP=172.168.0.232
-EHSM_KMS_PORT=9000
-KMS_TYPE=ehsm
+EHSM_URL=${ATTESTATION_URL}
+EHSM_KMS_IP=${EHSM_URL%:*}
+EHSM_KMS_PORT=${EHSM_URL#*:}
+export KMS_TYPE=ehsm
 if [ "$action" = "enroll" ]; then
+  # no support
 	if [ "$KMS_TYPE" = "ehsm" ]; then
 		cd /home/ehsm/out/ehsm-kms_enroll_app/
 		./ehsm-kms_enroll_app -a http://$EHSM_KMS_IP:$EHSM_KMS_PORT/ehsm/
