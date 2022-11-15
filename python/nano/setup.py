@@ -36,7 +36,7 @@ nano_home = os.path.join(os.path.dirname(os.path.abspath(__file__)), "src")
 
 BIGDL_PYTHON_HOME = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 VERSION = open(os.path.join(BIGDL_PYTHON_HOME, 'version.txt'), 'r').read().strip()
-
+PROTOBUF_VERSION = 3.19.4
 
 lib_urls = [
     "https://github.com/analytics-zoo/jemalloc/releases/download/v5.3.0/libjemalloc.so",
@@ -95,7 +95,7 @@ def setup_package():
                           "neural-compressor==1.13.1",
                           "onnxsim==0.4.8"]
 
-    install_requires = ["intel-openmp", "cloudpickle", "protobuf==3.19.4"]
+    install_requires = ["intel-openmp", "cloudpickle", "protobuf=="+PROTOBUF_VERSION]
 
     package_data = [
         "libs/libjemalloc.so",
