@@ -70,11 +70,11 @@ class OrcaRayContext(object):
                     print("Creating a local Ray instance.")
                     results = ray.init(num_cpus=self.ray_node_cpu_cores, **self.ray_args)
                 else:
-                    print("Connecting to an existing ray cluster, num_cpus " 
+                    print("Connecting to an existing ray cluster, num_cpus "
                           "must not be provided.")
                     results = ray.init(**self.ray_args)
             else:
-                print("Connecting to an existing ray cluster, num_cpus " 
+                print("Connecting to an existing ray cluster, num_cpus "
                       "must not be provided.")
                 results = ray.init(**self.ray_args)
         else:
