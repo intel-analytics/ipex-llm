@@ -15,13 +15,13 @@ python quantization_tcnforecaster_nyc_taxi.py
 ```
 
 ## Sample output
-In this example, we perform post-training quantization on pytorch model for inference throughput and on onnxruntime model for inference latency. Both of them are significantly improved by 339.5% and 89.4%.
+In this example, we perform post-training quantization on pytorch model for inference throughput and on onnxruntime model for inference latency. Both of them are significantly improved by 21.75 % and 89.4%.
 ```bash
 # ... <skip some training progress bar>
 # ... <skip some Intel Neural Compressor log>
-Pytorch Quantization helps increase inference throughput by 339.49 %
-Onnx Quantization helps decrease inference latency by 89.39 %
-fp32 pytorch smape: 0.21
-int8 pytorch smape: 0.21
-int8 onnx smape: 0.21
+Pytorch Quantization helps increase inference throughput by 21.75 %
+Onnx Quantization helps decrease inference latency by 89.18 %
+fp32 pytorch smape: 10.75
+int8 pytorch smape: 10.56
+int8 onnx smape: 10.57
 ```
