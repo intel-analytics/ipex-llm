@@ -356,3 +356,18 @@ class TestInferencePipeline(TestCase):
                                metric=metric,
                                direction="max",
                                thread_num=4)
+
+    def test_multi_instance(self):
+        self.model.eval()
+        inference_opt = InferenceOptimizer()
+        multi_instance_model = inference_opt.to_multi_instance(self.model, num_processes=2)
+
+        input_data = list(map(lambda b: b[0], self.test_loader))
+
+        with torch.no_grad():
+            preds1 = multi_instance_model(input_data)
+            preds2 = [self.model(b) for b in input_data]
+
+            for (pred1, pred2) in zip(preds1, preds2):
+                np.testing.assert_allclose(pred1, pred2, atol=1e-4,
+                                           err_msg=f"\npred1: {pred1}\npred2: {pred2}\n")

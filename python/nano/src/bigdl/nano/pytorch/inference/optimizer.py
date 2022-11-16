@@ -18,6 +18,7 @@ import torch
 from torch import nn
 import time
 from copy import deepcopy
+import multiprocessing as mp
 from typing import Dict, Callable, Tuple, Optional, List, Union, Sequence
 from torch.utils.data import DataLoader
 from torchmetrics.metric import Metric
@@ -38,6 +39,10 @@ from bigdl.nano.utils.inference.pytorch.dataset import RepeatDataset, remove_bat
 from bigdl.nano.utils.inference.pytorch.dataloader import\
     transform_multiple_input_dataloader_to_inc_mode
 from bigdl.nano.pytorch.utils import TORCH_VERSION_LESS_1_10, save_model, load_model
+from bigdl.nano.common.cpu_schedule import schedule_processors
+
+from .multi_instance import _MultiInstanceModel, _multi_instance_helper
+
 import traceback
 import warnings
 # Filter out useless Userwarnings
@@ -652,6 +657,31 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                  precision(FP32/FP16/BF16/INT8).
         """
         return load_model(path, model)
+
+    @staticmethod
+    def to_multi_instance(model: nn.Module, num_processes: int) -> _MultiInstanceModel:
+        """
+        Transform a model to multi-instance inference model.
+        :param model: The model to transform.
+        :param num_processes: The number of processes which will be used.
+        :return: Model with multi-instance inference acceleration.
+        """
+        p_num = num_processes
+        mgr = mp.Manager()
+        send_queues = [mgr.Queue() for _ in range(p_num)]
+        recv_queues = [mgr.Queue() for _ in range(p_num)]
+        envs = schedule_processors(p_num)
+        ps = []
+        for i in range(p_num):
+            os.environ["KMP_AFFINITY"] = envs[i]['KMP_AFFINITY']
+            os.environ["OMP_NUM_THREADS"] = envs[i]['OMP_NUM_THREADS']
+
+            p = mp.Process(target=_multi_instance_helper,
+                           args=(model, send_queues[i], recv_queues[i]), daemon=True)
+            p.start()
+            ps.append(p)
+
+        return _MultiInstanceModel(model, ps, mgr, send_queues, recv_queues)
 
 
 def _signature_check(function):
