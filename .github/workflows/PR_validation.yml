@@ -23,7 +23,6 @@ on:
       - 'scala/ppml/**'
       - '.github/actions/ppml-scala-ut-action/action.yml'
       - 'python/orca/**'
-      - 'python/orca/src/bigdl/orca/data/**'
       - '.github/actions/orca/**'
       - 'python/ppml/**'
       - '.github/actions/ppml/**'
