@@ -361,6 +361,58 @@ You can find GBT result under folder `/path/to/data/`.
     └── _SUCCESS
 ```
 
+## BigDL SimpleQuery e2e Example
+
+```
+-v /path/to/data:/opt/occlum_spark/data
+```
+
+You can enlarge the configuration in [start-spark-local.sh](https://github.com/intel-analytics/BigDL/blob/main/ppml/trusted-big-data-ml/scala/docker-occlum/start-spark-local.sh)
+``` bash
+#start-spark-local.sh
+-e SGX_MEM_SIZE=30GB \
+-e SGX_THREAD=1024 \
+-e SGX_HEAP=1GB \
+-e SGX_KERNEL_HEAP=1GB \
+-e PCCS_URL=https://PCCS_IP:PCCS_PORT \
+-e ATTESTATION_URL=ESHM_IP:EHSM_PORT \
+-e APP_ID=your_app_id \
+-e API_KEY=your_api_key \
+```
+
+Start run BigDL Spark GBT e2e example:
+1.Input PCCS_URL,ATTESTATION_URL,APP_ID and API_KEY first. Change the file [start-spark-local.sh](https://github.com/intel-analytics/BigDL/blob/main/ppml/trusted-big-data-ml/scala/docker-occlum/start-spark-local.sh) last line from 'bash /opt/run_spark_on_occlum_glibc.sh $1' to 'bash'
+And then 'bash start-spark-local.sh' to enter docker container.
+```
+bash start-spark-local.sh
+```
+2.To generate keys for encrypt and decrypt.
+```
+bash /opt/ehsm_entry.sh generatekeys $APP_ID $API_KEY
+```
+3.To generate input data
+you can use [generate_people_csv.py](https://github.com/analytics-zoo/ppml-e2e-examples/blob/main/spark-encrypt-io/generate_people_csv.py). The usage command of the script is:
+```bash
+python generate_people.py /opt/occlum_spark/data/people.csv <num_lines>
+```
+4.To encrypt input data. For example, you mount a file called people.csv.
+```
+bash /opt/ehsm_entry.sh  encrypt $APP_ID $API_KEY /opt/occlum_spark/data/people.csv
+```
+5.Change the suffix of the encrypted file to cbc and move to right place.
+```
+mv /opt/occlum_spark/data/people.csv.encrypted /opt/occlum_spark/data/encrypt/people.csv.encrypted.cbc
+```
+5.To run the BigDL GBT e2e Example.
+```
+bash /opt/run_spark_on_occlum_glibc.sh sql_e2e
+```
+You can find sql result under folder `/opt/occlum_spark/data/model`.
+6.To decrypt the result.
+```
+bash /opt/ehsm_entry.sh decrypt $APP_ID $API_KEY /opt/occlum_spark/data/model/{result_file_name}.
+```
+
 ## PySpark 3.1.3 Pi example
 
 To run PySpark Pi example, start the docker container with:
