@@ -3,38 +3,44 @@
 set -e
 
 # usage
-usage() { echo "Usage: $0 [-a|--archive <string#string>]" 1>&2; exit 1; }
+usage() { echo "Usage: $0 [-a|--archives <string#string> -h|--help]" 1>&2; exit 1; }
 
+cmd=$@
 # get options
-TEMP=`getopt -o a:h:: --long archive:,help:: -- "$@"`
-eval set -- "$TEMP"
+set +e
+ARGS=`getopt -q -o a:h --long archives:,help -- "$@"`
+set -e
+eval set -- "$ARGS"
 
 # extract options and their arguments into variables.
-archive="./environment.tar.gz"
+archives="./environment.tar.gz"
 dir="./environment"
 while true ; do
     case "$1" in
-        -a|--archive)
-            array=(${2//#/ }) archive=${array[0]} dir=${array[1]} ; shift 2 ;;
+        -a|--archives)
+            array=(${2//#/ }) archives=${array[0]} dir=${array[1]} ; break ;;
         -h|--help)
-            usage ;;
-        --) shift ; break ;;
-        *) echo "Internal Error" ; exit 1 ;;
+            usage ; break ;;
+        *) break ;;
     esac
 done
-
-# extract environment
-echo "extracting ${archive} to ${dir} ..."
-mkdir -p ${dir}
-which "pv" >/dev/null 2>&1
-
-if [ $? -eq 0 ]; then
-    echo "extracting with progress bar..."
-    pv ${archive}|tar -xz -C ${dir}
-else
-    echo "extracting without progress bar..."
-    tar -xzf ${archive} -C ${dir}
+# check if environment exists
+if [ ! -d "${dir}" ]; then
+    # extract environment
+    echo "extracting ${archives} to ${dir} ..."
+    mkdir -p ${dir}
+    set +e
+    which "pv" >/dev/null 2>&1
+    if [ $? -eq 0 ]; then
+        echo "extracting with progress bar..."
+        pv ${archives}|tar -xz -C ${dir}
+    else
+        echo "extracting without progress bar...please install pv if you need progress bar."
+        tar -xzf ${archives} -C ${dir}
+    fi
+    set -e
 fi
+
 
 # activate environment
 source ${dir}/bin/activate
@@ -69,4 +75,4 @@ spark-submit \
   --jars ${BIGDL_JARS} \
   --conf spark.driver.extraClassPath=${BIGDL_JARS} \
   --conf spark.executor.extraClassPath=${BIGDL_JARS} \
-  $*
+  ${cmd}
