@@ -159,7 +159,7 @@ class BF16Model(LightningModule):
             max_bf16_isa = "AVX512"
         return max_bf16_isa
 
-    @autocast()
+    @autocast(enabled=True, dtype=torch.bfloat16)
     def forward(self, *args, **kwargs):  # noqa
         # self._bf16_check(*args, **kwargs)
         return self.bf16_model(*args, **kwargs)
