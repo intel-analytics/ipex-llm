@@ -241,7 +241,7 @@ Then run the script.
 #driver.yaml
     env:
     - name: DRIVER_MEMORY
-      value: "512m"
+      value: "1g"
     - name: SGX_MEM_SIZE
       value: "15GB"
     - name: SGX_THREAD
@@ -256,7 +256,7 @@ Then run the script.
 #executor.yaml
     env:
     - name: SGX_MEM_SIZE
-      value: "12GB"
+      value: "15GB"
     - name: SGX_THREAD
       value: "1024"
     - name: SGX_HEAP
