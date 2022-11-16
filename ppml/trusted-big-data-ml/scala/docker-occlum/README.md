@@ -330,6 +330,7 @@ You can change the configuration If you enter image and run /opt/run_spark_on_oc
 ```
 
 Start run BigDL Spark GBT e2e example:
+
 1.Input PCCS_URL,ATTESTATION_URL,APP_ID and API_KEY first. Change the file [start-spark-local.sh](https://github.com/intel-analytics/BigDL/blob/main/ppml/trusted-big-data-ml/scala/docker-occlum/start-spark-local.sh) last line from `bash /opt/run_spark_on_occlum_glibc.sh $1` to `bash`
 And then run `bash start-spark-local.sh` to enter docker container.
 ```
@@ -363,10 +364,6 @@ You can find GBT result under folder `/path/to/data/`.
 
 ## BigDL SimpleQuery e2e Example
 
-```
--v /path/to/data:/opt/occlum_spark/data
-```
-
 You can enlarge the configuration in [start-spark-local.sh](https://github.com/intel-analytics/BigDL/blob/main/ppml/trusted-big-data-ml/scala/docker-occlum/start-spark-local.sh)
 ``` bash
 #start-spark-local.sh
@@ -380,7 +377,8 @@ You can enlarge the configuration in [start-spark-local.sh](https://github.com/i
 -e API_KEY=your_api_key \
 ```
 
-Start run BigDL Spark GBT e2e example:
+Start run BigDL Spark SimpleQuery e2e example:
+
 1.Input PCCS_URL,ATTESTATION_URL,APP_ID and API_KEY first. Change the file [start-spark-local.sh](https://github.com/intel-analytics/BigDL/blob/main/ppml/trusted-big-data-ml/scala/docker-occlum/start-spark-local.sh) last line from `bash /opt/run_spark_on_occlum_glibc.sh $1` to `bash`
 And then run `bash start-spark-local.sh` to enter docker container.
 ```
@@ -403,12 +401,11 @@ bash /opt/ehsm_entry.sh  encrypt $APP_ID $API_KEY /opt/occlum_spark/data/people.
 ```
 mv /opt/occlum_spark/data/people.csv.encrypted /opt/occlum_spark/data/encrypt/people.csv.encrypted.cbc
 ```
-5.To run the BigDL GBT e2e Example.
+5.To run the BigDL SimpleQuery e2e Example.
 ```
 bash /opt/run_spark_on_occlum_glibc.sh sql_e2e
 ```
-You can find sql result under folder `/opt/occlum_spark/data/model`.
-6.To decrypt the result.
+6.To decrypt the result.You can find sql result under folder `/opt/occlum_spark/data/model`.
 ```
 bash /opt/ehsm_entry.sh decrypt $APP_ID $API_KEY /opt/occlum_spark/data/model/{result_file_name}.
 ```
