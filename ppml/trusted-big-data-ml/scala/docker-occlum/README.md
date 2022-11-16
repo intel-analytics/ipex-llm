@@ -401,11 +401,11 @@ bash /opt/ehsm_entry.sh  encrypt $APP_ID $API_KEY /opt/occlum_spark/data/people.
 ```
 mv /opt/occlum_spark/data/people.csv.encrypted /opt/occlum_spark/data/encrypt/people.csv.encrypted.cbc
 ```
-5.To run the BigDL SimpleQuery e2e Example.
+6.To run the BigDL SimpleQuery e2e Example.
 ```
 bash /opt/run_spark_on_occlum_glibc.sh sql_e2e
 ```
-6.To decrypt the result.You can find sql result under folder `/opt/occlum_spark/data/model`.
+7.To decrypt the result.You can find sql result under folder `/opt/occlum_spark/data/model`.
 ```
 bash /opt/ehsm_entry.sh decrypt $APP_ID $API_KEY /opt/occlum_spark/data/model/{result_file_name}.
 ```
