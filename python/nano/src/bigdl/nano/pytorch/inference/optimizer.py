@@ -39,7 +39,6 @@ from bigdl.nano.utils.inference.pytorch.dataloader import\
     transform_multiple_input_dataloader_to_inc_mode
 from bigdl.nano.pytorch.utils import TORCH_VERSION_LESS_1_10, save_model, load_model
 import traceback
-from torchmetrics import Metric
 import warnings
 # Filter out useless Userwarnings
 warnings.filterwarnings('ignore', category=UserWarning, module='pytorch_lightning')
