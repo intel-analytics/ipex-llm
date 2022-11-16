@@ -39,11 +39,11 @@ RUN env DEBIAN_FRONTEND=noninteractive apt-get update && \
     # PyTorch
     rm -rf /usr/local/lib/python3.7/dist-packages/torch && \
     git clone https://github.com/analytics-zoo/pytorch /pytorch && \
-    cd /pytorch && git checkout devel-v1.12.1-2022-10-08 && \
+    cd /pytorch && git checkout devel-v1.13.0-2022-11-16 && \
     git submodule sync && git submodule update --init --recursive --jobs 0 && \
     rm -rf ./third_party/gloo && \
     cd third_party && git clone https://github.com/analytics-zoo/gloo.git && \
-    cd gloo && git checkout devel-pt-v1.12.1-2022-10-08 && \
+    cd gloo && git checkout  devel-pt-v1.13.0-2022-11-16 && \
     cd /pytorch && \
     python3 setup.py install && \
     cd /ppml/ && \
