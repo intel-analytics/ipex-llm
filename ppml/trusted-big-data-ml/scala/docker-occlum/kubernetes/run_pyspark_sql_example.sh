@@ -14,5 +14,5 @@ ${SPARK_HOME}/bin/spark-submit \
     --conf spark.kubernetes.sgx.log.level=off \
     --executor-memory 1g \
     --conf spark.kubernetes.driverEnv.SGX_DRIVER_JVM_MEM_SIZE="1g" \
-    --conf spark.executorEnv.SGX_EXECUTOR_JVM_MEM_SIZE="3g" \
+    --conf spark.executorEnv.SGX_EXECUTOR_JVM_MEM_SIZE="4g" \
     local:/py-examples/sql_example.py
