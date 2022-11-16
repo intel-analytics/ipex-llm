@@ -45,9 +45,11 @@ import tempfile
 import numpy as np
 import pytest
 
-from bigdl.chronos.simulator import DPGANSimulator
+from bigdl.chronos.utils import LazyImport
+DPGANSimulator = LazyImport('bigdl.chronos.simulator.DPGANSimulator')
 from bigdl.chronos.simulator.doppelganger.output import Output, OutputType, Normalization
 from unittest import TestCase
+from .. import op_torch
 
 
 def get_train_data():
@@ -64,6 +66,7 @@ def get_train_data():
     return df
 
 
+@op_torch
 class TestDoppelganer(TestCase):
     def setup_method(self, method):
         pass

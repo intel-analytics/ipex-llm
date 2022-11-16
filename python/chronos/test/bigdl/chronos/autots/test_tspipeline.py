@@ -17,16 +17,18 @@
 import numpy as np
 from unittest import TestCase
 import pytest
-import torch
+from bigdl.chronos.utils import LazyImport
+torch = LazyImport('torch')
+TensorDataset = LazyImport('torch.utils.data.TensorDataset')
+DataLoader = LazyImport('torch.utils.data.DataLoader')
 import os
 import pandas as pd
 import numpy as np
 
-from torch.utils.data import TensorDataset, DataLoader
 from bigdl.chronos.autots import TSPipeline
 from bigdl.chronos.data import TSDataset
 
-from .. import op_inference
+from .. import op_torch, op_inference
 
 def train_data_creator(config):
     return DataLoader(TensorDataset(torch.randn(1000,
@@ -64,6 +66,7 @@ def get_test_tsdataset():
                                  extra_feature_col=["extra feature 1", "extra feature 2"],
                                  id_col="id")
 
+@op_torch
 class TestTSPipeline(TestCase):
 
     def setUp(self) -> None:
