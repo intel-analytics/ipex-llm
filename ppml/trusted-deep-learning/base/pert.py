@@ -139,7 +139,7 @@ def train_loop(args, dataloader, model, loss_fn, optimizer, epoch, total_loss):
         # Calculate loss
         loss = loss_fn(pred, y)
 
-        optimizer.zero_grad()
+        optimizer.zero_grad(set_to_none=True)
         loss.backward()
         optimizer.step()
 
