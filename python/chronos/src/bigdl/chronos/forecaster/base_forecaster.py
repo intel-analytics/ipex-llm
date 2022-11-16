@@ -645,9 +645,9 @@ class BasePytorchForecaster(Forecaster):
                result but will affect resources cost(e.g. memory and time).
         :param quantize: if use the quantized model to predict.
         :param acceleration: bool variable indicates whether use original model.
-               Default to True means use optim_model to predict which requires to call
-               .optimize() first to obtain an optim_model, otherwise will use original
-               model to predict.
+               Default to True means use accelerated_model to predict, which requires
+               to call one of .build_jit(), .build_onnx(), .build_openvino() and
+               .optimize(), otherwise the original model will be used to predict.
 
         :return: A numpy array with shape (num_samples, horizon, target_dim)
                  if data is a numpy ndarray or a dataloader.
@@ -981,9 +981,9 @@ class BasePytorchForecaster(Forecaster):
                non-distribtued version.
         :param quantize: if use the quantized model to predict.
         :param acceleration: bool variable indicates whether use original model.
-               Default to True means use optim_model to predict which requires to call
-               .optimize() first to obtain an optim_model, otherwise will use original
-               model to predict.
+               Default to True means use accelerated_model to predict, which requires
+               to call one of .build_jit(), .build_onnx(), .build_openvino() and
+               .optimize(), otherwise the original model will be used to predict.
 
         :return: A list of evaluation results. Each item represents a metric.
         """
