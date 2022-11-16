@@ -37,15 +37,16 @@ sc = init_orca_context()
 
 # Step 2: Define train and test datasets as PyTorch DataLoader
 def train_loader_func(config, batch_size):
-    data_X, _ = load_dataset(config['dataset_dir'],
-                             num_ng=config['num_ng'],
-                             total_cols=config['total_cols'],
-                             cal_num_embed=False)
+    data_X, user_num, item_num, cat_feats_dims, \
+        feature_cols, label_cols = load_dataset(config['dataset_dir'],
+                                                num_ng=config['num_ng'],
+                                                cal_cat_feats_dims=False)
+    total_cols = feature_cols + label_cols
 
     # train test split
     data_values = data_X.values.tolist()
     train_data, _ = train_test_split(data_values, test_size=0.2, random_state=100)
-    train_data = pd.DataFrame(train_data, columns=config['total_cols'], dtype=np.int64)
+    train_data = pd.DataFrame(train_data, columns=total_cols, dtype=np.int64)
     train_data["label"] = train_data["label"].astype(np.float)
 
     train_dataset = NCFData(train_data)
@@ -55,15 +56,16 @@ def train_loader_func(config, batch_size):
 
 
 def test_loader_func(config, batch_size):
-    data_X, _ = load_dataset(config['dataset_dir'],
-                             num_ng=config['num_ng'],
-                             total_cols=config['total_cols'],
-                             cal_num_embed=False)
+    data_X, user_num, item_num, cat_feats_dims, \
+        feature_cols, label_cols = load_dataset(config['dataset_dir'],
+                                                num_ng=config['num_ng'],
+                                                cal_cat_feats_dims=False)
+    total_cols = feature_cols + label_cols
 
     # train test split
     data_values = data_X.values.tolist()
     _, test_data = train_test_split(data_values, test_size=0.2, random_state=100)
-    test_data = pd.DataFrame(test_data, columns=config['total_cols'], dtype=np.int64)
+    test_data = pd.DataFrame(test_data, columns=total_cols, dtype=np.int64)
     test_data["label"] = test_data["label"].astype(np.float)
 
     test_dataset = NCFData(test_data)
@@ -74,17 +76,19 @@ def test_loader_func(config, batch_size):
 
 # Step 3: Define the model, optimizer and loss
 def model_creator(config):
-    _, num_embed_cat_feats = load_dataset(config['dataset_dir'],
-                                          num_ng=0,
-                                          total_cols=config['total_cols'],
-                                          cal_num_embed=True)
-    model = NCF(factor_num=config['factor_num'],
+    data_X, user_num, item_num, cat_feats_dims, \
+        feature_cols, label_cols = load_dataset(config['dataset_dir'],
+                                                num_ng=0,
+                                                cal_cat_feats_dims=True)
+
+    model = NCF(user_num=user_num,
+                item_num=item_num,
+                factor_num=config['factor_num'],
                 num_layers=config['num_layers'],
                 dropout=config['dropout'],
                 model=config['model'],
-                cat_feats_dim=config['cat_feats_dim'],
-                numeric_feats_dim=config['numeric_feats_dim'],
-                num_embed_cat_feats=num_embed_cat_feats)
+                cat_feats_dims=cat_feats_dims,
+                num_numeric_feats=config['num_numeric_feats'])
     model.train()
     return model
 
@@ -98,11 +102,6 @@ loss = nn.BCEWithLogitsLoss()
 # Step 4: Distributed training with Orca PyTorch Estimator
 dataset_dir = "./ml-1m"
 backend = "ray"  # "ray" or "spark"
-feature_cols = ['user', 'item',
-                'gender', 'occupation', 'zipcode', 'category',  # categorical feature
-                'age']  # numerical feature
-label_cols = ["label"]
-total_cols = feature_cols + label_cols
 
 est = Estimator.from_torch(model=model_creator, optimizer=optimizer_creator,
                            loss=loss,
@@ -115,9 +114,7 @@ est = Estimator.from_torch(model=model_creator, optimizer=optimizer_creator,
                                    'dropout': 0.5,
                                    'lr': 0.001,
                                    'model': "NeuMF-end",
-                                   'cat_feats_dim': 6,
-                                   'numeric_feats_dim': 1,
-                                   'total_cols': total_cols})
+                                   'num_numeric_feats': 1})
 est.fit(data=train_loader_func, epochs=10, batch_size=1024)
 
 
