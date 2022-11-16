@@ -367,6 +367,7 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                  accelerator: Optional[str] = None,
                  use_ipex: bool = False,
                  calib_data: Union[DataLoader, torch.Tensor, Tuple[torch.Tensor]] = None,
+                 calib_dataloader: Union[DataLoader] = None,
                  metric: Optional[Metric] = None,
                  accuracy_criterion: Optional[dict] = None,
                  approach: str = 'static',
@@ -403,7 +404,14 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                                 |
                                 | 3. a tuple of torch.Tensor which used for training, this case is
                                 | used to accept single sample input (x, y) or (x1, x2) et al.
+        :param calib_dataloader:    A torch.utils.data.dataloader.DataLoader object for calibration.
+                                    Required for static quantization.
+                                    It's also used as validation dataloader.
 
+               .. warning::
+                  ``calib_dataloader`` will be deprecated in future release.
+
+                  Please use ``calib_data`` instead.
         :param metric:              A torchmetrics.metric.Metric object for evaluation.
         :param accuracy_criterion:  Tolerable accuracy drop, defaults to None meaning no
                                     accuracy control.
@@ -479,7 +487,11 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                 calib_dataloader = DataLoader(dataset, batch_size=1)
                 calib_dataloader = remove_batch_dim_fn(calib_dataloader)
             else:
-                calib_dataloader = calib_data
+                if calib_data is None:
+                    # will be deprecate in future release
+                    calib_dataloader = calib_dataloader
+                else:
+                    calib_dataloader = calib_data
 
             # transform the dataloader to inc mode
             inc_calib_dataloader =\

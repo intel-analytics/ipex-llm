@@ -100,11 +100,6 @@ class TestOnnx(TestCase):
         onnx_model = InferenceOptimizer.quantize(pl_model,
                                                  accelerator='onnxruntime',
                                                  method='qlinear',
-                                                 calib_data=x)
-
-        onnx_model = InferenceOptimizer.quantize(pl_model,
-                                                 accelerator='onnxruntime',
-                                                 method='qlinear',
                                                  calib_data=(x, y))
 
         # quantization with tunning

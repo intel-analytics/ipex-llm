@@ -100,12 +100,6 @@ class TestOpenVINO(TestCase):
         x = torch.rand((10, 3, 256, 256))
         y = torch.ones((10, ), dtype=torch.long)
 
-
-        optimized_model = InferenceOptimizer.quantize(model, accelerator='openvino',
-                                                      calib_data=x)
-
-        optimized_model(x[0:1])
-
         optimized_model = InferenceOptimizer.quantize(model, accelerator='openvino',
                                                       calib_data=(x, y))
 
