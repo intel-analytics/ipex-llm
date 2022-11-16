@@ -140,17 +140,17 @@ class TestChronosModelLSTMForecaster(TestCase):
                             val_data=val_loader,
                             metric="mae",
                             framework='pytorch_fx')
-        yhat = forecaster.predict(data=test_loader, acceleration=False)
         q_yhat = forecaster.predict(data=test_loader, quantize=True, acceleration=False)
+        yhat = forecaster.predict(data=test_loader, acceleration=False)
+        forecaster.evaluate(test_loader, batch_size=32, acceleration=False)
         forecaster.quantize(calib_data=train_loader,
                             val_data=val_loader,
                             metric="mae",
                             framework='onnxrt_qlinearops')
         q_onnx_yhat = forecaster.predict_with_onnx(data=test_loader, quantize=True)
-        assert yhat.shape == q_onnx_yhat.shape == q_yhat.shape == (400, 1, 2)
-        forecaster.evaluate(test_loader, batch_size=32, acceleration=False)
-        forecaster.evaluate_with_onnx(test_loader)
         forecaster.evaluate_with_onnx(test_loader, batch_size=32, quantize=True)
+        forecaster.evaluate_with_onnx(test_loader)
+        assert yhat.shape == q_onnx_yhat.shape == q_yhat.shape == (400, 1, 2)
 
     @op_diff_set_all
     @op_onnxrt16
@@ -554,21 +554,20 @@ class TestChronosModelLSTMForecaster(TestCase):
  
         lstm.fit(loader, epochs=2, batch_size=32)
         yhat = lstm.predict(test, acceleration=False)
+        res = lstm.evaluate(test_loader, acceleration=False)
         lstm.quantize(calib_data=loader,
                       metric='mse',
                       framework='pytorch_fx')
         q_yhat = lstm.predict(test, quantize=True, acceleration=False)
+        q_res = lstm.evaluate(test_loader, quantize=True, acceleration=False)
         lstm.quantize(calib_data=loader,
                       metric='mse',
                       framework='onnxrt_qlinearops')
-        onnx_yhat = lstm.predict_with_onnx(test)
         q_onnx_yhat = lstm.predict_with_onnx(test, quantize=True)
-        assert onnx_yhat.shape == q_yhat.shape == yhat.shape == q_onnx_yhat.shape
-
-        res = lstm.evaluate(test_loader, acceleration=False)
-        q_res = lstm.evaluate(test_loader, quantize=True, acceleration=False)
-        onnx_res = lstm.evaluate_with_onnx(test_loader)
         q_onnx_res = lstm.evaluate_with_onnx(test_loader, quantize=True)
+        onnx_yhat = lstm.predict_with_onnx(test)
+        onnx_res = lstm.evaluate_with_onnx(test_loader)
+        assert onnx_yhat.shape == q_yhat.shape == yhat.shape == q_onnx_yhat.shape
 
     def test_lstm_forecaster_fit_earlystop(self):
         train_data, val_data, _ = create_data()
