@@ -73,7 +73,7 @@ def setup_package():
                                 'optuna<=2.10.1', 'configspace<=0.5.0',
                                 'bigdl-orca[automl]==' + VERSION + ';platform_system!="Windows"',
                                 'pmdarima==1.8.5',
-                                'prophet==1.1.0;platform_system!="Windows"',
+                                'prophet==1.1.0',
                                 'tsfresh==0.17.0',
                                 'pyarrow==6.0.1',
                                 'bigdl-nano[inference]==' + VERSION]},
