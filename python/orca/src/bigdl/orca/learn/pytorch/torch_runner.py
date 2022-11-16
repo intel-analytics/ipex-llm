@@ -114,7 +114,7 @@ class TorchRunner(BaseRunner):
                             format='[%(asctime)s] %(levelname)-8s %(message)s',
                             datefmt='%Y-%m-%d %H:%M:%S'
                             )
-        self.logger = logging.getLogger(__name__)
+        BaseRunner.__init__(self, logging.getLogger(__name__))
         self.model_creator = model_creator
         self.optimizer_creator = optimizer_creator
         self.loss_creator = loss_creator

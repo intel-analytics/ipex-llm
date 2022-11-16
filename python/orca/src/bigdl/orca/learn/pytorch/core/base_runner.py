@@ -23,4 +23,5 @@ from abc import ABCMeta
 
 
 class BaseRunner(Trainable, ModelIO, metaclass=ABCMeta):
-    pass
+    def __init__(self, logger) -> None:
+        ModelIO.__init__(self, logger=logger)
