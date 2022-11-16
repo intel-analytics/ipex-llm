@@ -269,7 +269,6 @@ def sql_dataframe_example(spark):
 if __name__ == "__main__":
     spark = SparkSession \
         .builder \
-    .appName("Python Spark SQL Dataframe example") \
         .config("spark.some.config.option", "some-value") \
         .getOrCreate()
 

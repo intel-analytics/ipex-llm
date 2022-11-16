@@ -320,6 +320,25 @@ You can see Pi result in logs (`docker logs -f bigdl-ppml-trusted-big-data-ml-sc
 Pi is roughly 3.1436957184785923
 ```
 
+## PySpark 3.1.3 SQL example
+
+To run PySpark SQL example, start the docker container with:
+
+``` bash
+bash start-spark-local.sh pysql
+```
+
+You can change the configuration in [start-spark-local.sh](https://github.com/intel-analytics/BigDL/blob/main/ppml/trusted-big-data-ml/scala/docker-occlum/start-spark-local.sh)
+``` bash
+#start-spark-local.sh
+-e SGX_MEM_SIZE=20GB \
+-e SGX_THREAD=1024 \
+-e SGX_HEAP=1GB \
+-e SGX_KERNEL_HEAP=1GB \
+```
+
+You can see result in logs (`docker logs -f bigdl-ppml-trusted-big-data-ml-scala-occlum`)
+
 ## How to debug
 Modify the `SGX_LOG_LEVEL` to one of `off, debug and trace` in `start-spark-local.sh`. 
 The default value is off, showing no log messages at all. The most verbose level is trace.
