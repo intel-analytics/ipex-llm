@@ -81,6 +81,28 @@ which indicates the annotations involved in the UTs. More usages about stub see 
 
 4. **Manually** check again if annotations **are** consistent
 
+## How to Check Locally
+
+1. We employ static type checker [mypy](http://mypy-lang.org/) to achieve this, so we install mypy first:
+    ```shell
+    pip install mypy
+    ```
+
+2. Append your typed module in python/orca/dev/test/run-type-check.sh:
+    ```shell
+    mypy --install-types --non-interactive --config-file ${ORCA_DEVTEST_DIR}/mypy.ini \
+                                                        $ORCA_HOME/src/bigdl/orca/data/
+                                                        # append here
+    ```
+
+3. Set `BIGDL_HOME` environment variable, and run type checking script:
+    ```python
+    export BIGDL_HOME=/path/to/BigDL
+    bash python/orca/dev/test/run-type-check.sh
+    ```
+
+4. Fix issues if you can, and annotate `# type: ignore` on it which is hard to fix now. For more details you can refer to Section#Notes.4.
+
 ## Notes
 1. `monkeytype apply` may not work for some cases. 
 
@@ -100,3 +122,36 @@ if TYPE_CHECKING:
     from pyspark.sql.types import StructType
 ```
 3. Mark `TODO` if there are methods not caught by UTs.
+
+4. Mypy FAQ:
+
+    * ```python
+      from bigdl.dllib.utils.log4Error import *  # miss definition
+      from bigdl.dllib.utils.log4Error import invalidOperationError
+      ```
+    * ```python
+      logger.error("Cannot upload file {} to {}: error: "  # mismatched placeholders
+                    .format(local_path, remote_path, str(e)))
+      logger.error("Cannot upload file {} to {}: error: {}"
+                    .format(local_path, remote_path, str(e)))
+      ```
+    * ```python
+      value = [value]  # assigned type mismatches, rename lvalue
+      new_value = [value]
+      ```
+    * ```python
+      buf = bytestream.read(num_items) # implicit type conversion
+      buf = bytestream.read(int(num_items))
+      ```
+    * ```python
+        # how to cope with duplicate name
+        from pandas.core.frame import DataFrame as PandasDataFrame
+        from pyspark.sql.dataframe import DataFrame as SparkDataFrame
+      ```
+    * ```python
+        try:
+            import xml.etree.cElementTree as ET
+        except ImportError:
+            import xml.etree.ElementTree as ET  # ambiguous names
+            import xml.etree.ElementTree as ET # type: ignore
+      ```
