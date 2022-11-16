@@ -269,11 +269,13 @@ kubectl patch serviceaccount spark -p '{"imagePullSecrets": [{"name": "regcred"}
 ### 3.7 Run PPML spark job
 The example script to run PPML spark job on AKS is as below. You can also refer to `/ppml/trusted-big-data-ml/azure/submit-spark-sgx-az.sh`
 ```bash
-RUNTIME_SPARK_MASTER=
 export RUNTIME_DRIVER_MEMORY=8g
 export RUNTIME_DRIVER_PORT=54321
 
+RUNTIME_SPARK_MASTER=
+AZ_CONTAINER_REGISTRY=myContainerRegistry
 BIGDL_VERSION=2.2.0-SNAPSHOT
+SGX_MEM=16g
 SPARK_EXTRA_JAR_PATH=
 SPARK_JOB_MAIN_CLASS=
 ARGS=
@@ -298,7 +300,7 @@ bash bigdl-ppml-submit.sh \
     --num-executors 2 \
     --conf spark.cores.max=8 \
     --name spark-decrypt-sgx \
-    --conf spark.kubernetes.container.image=myContainerRegistry.azurecr.io/intel_corporation/bigdl-ppml-trusted-big-data-ml-python-gramine:2.2.0-SNAPSHOT-16g \
+    --conf spark.kubernetes.container.image=$AZ_CONTAINER_REGISTRY.azurecr.io/intel_corporation/bigdl-ppml-trusted-big-data-ml-python-gramine:$BIGDL_VERSION-$SGX_MEM \
     --conf spark.kubernetes.driver.podTemplateFile=/ppml/trusted-big-data-ml/azure/spark-driver-template-az.yaml \
     --conf spark.kubernetes.executor.podTemplateFile=/ppml/trusted-big-data-ml/azure/spark-executor-template-az.yaml \
     --jars local://$SPARK_EXTRA_JAR_PATH \
@@ -317,10 +319,13 @@ bash bigdl-ppml-submit.sh \
 ### 3.8 Run simple query python example
 This is an example script to run simple query python example job on AKS with data stored in Azure data lake store.
 ```bash
-RUNTIME_SPARK_MASTER=
 export RUNTIME_DRIVER_MEMORY=8g
 export RUNTIME_DRIVER_PORT=54321
+
+RUNTIME_SPARK_MASTER=
+AZ_CONTAINER_REGISTRY=myContainerRegistry
 BIGDL_VERSION=2.2.0-SNAPSHOT
+SGX_MEM=16g
 SPARK_VERSION=3.1.3
 
 DATA_LAKE_NAME=
@@ -344,7 +349,7 @@ bash bigdl-ppml-submit.sh \
     --executor-cores 2 \
     --num-executors 1 \
     --name simple-query-sgx \
-    --conf spark.kubernetes.container.image=intelanalytics/bigdl-ppml-trusted-big-data-ml-python-gramine:2.2.0-SNAPSHOT-16g \
+    --conf spark.kubernetes.container.image=$AZ_CONTAINER_REGISTRY.azurecr.io/intel_corporation/bigdl-ppml-trusted-big-data-ml-python-gramine:$BIGDL_VERSION-$SGX_MEM \
     --conf spark.kubernetes.driver.podTemplateFile=/ppml/trusted-big-data-ml/azure/spark-driver-template-az.yaml \
     --conf spark.kubernetes.executor.podTemplateFile=/ppml/trusted-big-data-ml/azure/spark-executor-template-az.yaml \
     --conf spark.hadoop.fs.azure.account.auth.type.${DATA_LAKE_NAME}.dfs.core.windows.net=SharedKey \
@@ -445,15 +450,17 @@ export RUNTIME_DRIVER_PORT=54321
 
 secure_password=`az keyvault secret show --name "key-pass" --vault-name $KEY_VAULT_NAME --query "value" | sed -e 's/^"//' -e 's/"$//'`
 
+RUNTIME_SPARK_MASTER=
+AZ_CONTAINER_REGISTRY=myContainerRegistry
 BIGDL_VERSION=2.2.0-SNAPSHOT
+SGX_MEM=16g
 SPARK_VERSION=3.1.3
+
 DATA_LAKE_NAME=
 DATA_LAKE_ACCESS_KEY=
 KEY_VAULT_NAME=
 PRIMARY_KEY_PATH=
 DATA_KEY_PATH=
-
-RUNTIME_SPARK_MASTER=
 INPUT_DIR=xxx/dbgen-encrypted
 OUTPUT_DIR=xxx/output
 
@@ -470,7 +477,7 @@ bash bigdl-ppml-submit.sh \
     --num-executors 2 \
     --conf spark.cores.max=8 \
     --name spark-tpch-sgx \
-    --conf spark.kubernetes.container.image=myContainerRegistry.azurecr.io/intel_corporation/bigdl-ppml-trusted-big-data-ml-python-graphene:$BIGDL_VERSION \
+    --conf spark.kubernetes.container.image=$AZ_CONTAINER_REGISTRY.azurecr.io/intel_corporation/bigdl-ppml-trusted-big-data-ml-python-gramine:$BIGDL_VERSION-$SGX_MEM \
     --conf spark.kubernetes.driver.podTemplateFile=/ppml/trusted-big-data-ml/azure/spark-driver-template-az.yaml \
     --conf spark.kubernetes.executor.podTemplateFile=/ppml/trusted-big-data-ml/azure/spark-executor-template-az.yaml \
     --conf spark.sql.auto.repartition=true \
