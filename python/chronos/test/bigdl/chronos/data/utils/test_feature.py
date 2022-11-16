@@ -20,7 +20,9 @@ import numpy as np
 
 from unittest import TestCase
 from bigdl.chronos.data.utils.feature import generate_dt_features, generate_global_features
-import tsfresh
+from bigdl.chronos.utils import LazyImport
+tsfresh = LazyImport('tsfresh')
+from ... import op_diff_set_all
 
 
 class TestFeature(TestCase):
@@ -53,6 +55,7 @@ class TestFeature(TestCase):
                                    'values',
                                    'datetime'}
 
+    @op_diff_set_all
     def test_gen_global_feature_single_id(self):
         dates = pd.date_range('1/1/2019', periods=8)
         data = np.random.randn(8, 3)
@@ -78,6 +81,7 @@ class TestFeature(TestCase):
                 assert len(set(output_df[col])) == 1
                 assert output_df[col].isna().sum() == 0
 
+    @op_diff_set_all
     def test_gen_global_feature_multi_id(self):
         dates = pd.date_range('1/1/2019', periods=8)
         data = np.random.randn(8, 3)
