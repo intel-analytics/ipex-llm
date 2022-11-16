@@ -29,7 +29,8 @@ fi
 
 OPTIONS=$1
 echo "Running chronos tests"
-python -m pytest -v -m "${OPTIONS}" test/bigdl/chronos/data \
+python -m pytest -v -m "${OPTIONS}" test/bigdl/chronos/autots \
+                                    test/bigdl/chronos/data \
                                     test/bigdl/chronos/detector \
                                     test/bigdl/chronos/forecaster \
                                     test/bigdl/chronos/metric \
