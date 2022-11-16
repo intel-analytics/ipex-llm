@@ -36,40 +36,43 @@ class NCFData(data.Dataset):
         return tuple(self.data[idx])
 
 
-def load_dataset(dataset_dir, num_ng=4, total_cols=['user', 'item', "label"],
-                 cal_num_embed=False):
+def load_dataset(dataset_dir, num_ng=4, cal_cat_feats_dims=True):
     """
     dataset_dir: the path of the datasets;
     num_ng: number of negative samples to be sampled here;
-    total_cols: the list of total features;
-    cal_num_embed: if True, will calculate num_embed_cat_feats.
+    cal_cat_feats_dims: if True, will calculate cat_feats_dims.
     """
-    data_1 = pd.read_csv(
+    feature_cols = ['user', 'item',
+                    'gender', 'occupation', 'zipcode', 'category',  # categorical feature
+                    'age']  # numerical feature
+    label_cols = ["label"]
+
+    users = pd.read_csv(
         os.path.join(dataset_dir, 'users.dat'),
         sep="::", header=None, names=['user', 'gender', 'age', 'occupation', 'zipcode'],
         usecols=[0, 1, 2, 3, 4],
         dtype={0: np.int64, 1: np.object, 2: np.int64, 3: np.int64, 4: np.object})
-    data_2 = pd.read_csv(
+    ratings = pd.read_csv(
         os.path.join(dataset_dir, 'ratings.dat'),
         sep="::", header=None, names=['user', 'item'],
         usecols=[0, 1], dtype={0: np.int64, 1: np.int64})
-    data_3 = pd.read_csv(
+    movies = pd.read_csv(
         os.path.join(dataset_dir, 'movies.dat'),
         sep="::", header=None, names=['item', 'category'],
         usecols=[0, 2], dtype={0: np.int64, 1: np.object})
 
-    user_num = data_2['user'].max() + 1
-    item_num = data_2['item'].max() + 1
+    user_num = users['user'].max() + 1
+    item_num = movies['item'].max() + 1
 
     # category encoding
-    data_1.gender, _ = pd.Series(data_1.gender).factorize()
-    data_1.zipcode, _ = pd.Series(data_1.zipcode).factorize()
-    data_3.category, _ = pd.Series(data_3.category).factorize()
+    users.gender, _ = pd.Series(users.gender).factorize()
+    users.zipcode, _ = pd.Series(users.zipcode).factorize()
+    movies.category, _ = pd.Series(movies.category).factorize()
 
     # sample negative items for training datasets
     if num_ng > 0:
         # load ratings as a dok matrix
-        features_ps = data_2.values.tolist()
+        features_ps = ratings.values.tolist()
         train_mat = sp.dok_matrix((user_num, item_num), dtype=np.int64)
         for x in features_ps:
             train_mat[x[0], x[1]] = 1
@@ -86,27 +89,25 @@ def load_dataset(dataset_dir, num_ng=4, total_cols=['user', 'item', "label"],
         labels_ps = [1 for _ in range(len(features_ps))]
         labels_ng = [0 for _ in range(len(features_ng))]
         labels = labels_ps + labels_ng
-        data_2 = pd.DataFrame(features, columns=["user", "item"], dtype=np.int64)
-        data_2["label"] = labels
+        ratings = pd.DataFrame(features, columns=["user", "item"], dtype=np.int64)
+        ratings["label"] = labels
     else:
-        data_2["label"] = [1 for _ in range(len(data_2))]
+        ratings["label"] = [1 for _ in range(len(ratings))]
 
     # merge dataframes
-    data_X = data_1.merge(data_2, on='user')
-    data_X = data_X.merge(data_3, on='item')
-    data_X = data_X.loc[:, total_cols]
+    data_X = users.merge(ratings, on='user')
+    data_X = data_X.merge(movies, on='item')
+    data_X = data_X.loc[:, feature_cols+label_cols]
 
-    # Calculate num_embeddings for each categorical features
-    num_embed_cat_feats = []
-    if cal_num_embed:
-        num_embed_cat_feats.append(user_num)
-        num_embed_cat_feats.append(item_num)
-        num_embed_cat_feats.append(data_1['gender'].max()+1)
-        num_embed_cat_feats.append(data_1['occupation'].max()+1)
-        num_embed_cat_feats.append(data_1['zipcode'].max()+1)
-        num_embed_cat_feats.append(data_3['category'].max()+1)
+    # Calculate input_dims for each categorical features
+    cat_feats_dims = []
+    if cal_cat_feats_dims:
+        cat_feats_dims.append(users['gender'].max()+1)
+        cat_feats_dims.append(users['occupation'].max()+1)
+        cat_feats_dims.append(users['zipcode'].max()+1)
+        cat_feats_dims.append(movies['category'].max()+1)
 
-    return data_X, num_embed_cat_feats
+    return data_X, user_num, item_num, cat_feats_dims, feature_cols, label_cols
 
 
 if __name__ == "__main__":
