@@ -368,11 +368,8 @@ class TestInferencePipeline(TestCase):
 
         with torch.no_grad():
             preds1 = multi_instance_model(input_data)
-            print('one:', len(preds1))
             preds2 = [model(b) for b in input_data]
-            print('two:', len(preds2))
 
         for (pred1, pred2) in zip(preds1, preds2):
             np.testing.assert_allclose(pred1, pred2, atol=1e-4,
                                         err_msg=f"\npred1: {pred1}\npred2: {pred2}\n")
-        print('three:', len(preds1), len(preds2))
