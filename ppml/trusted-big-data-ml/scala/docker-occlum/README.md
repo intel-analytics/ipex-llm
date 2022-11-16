@@ -330,8 +330,8 @@ You can change the configuration If you enter image and run /opt/run_spark_on_oc
 ```
 
 Start run BigDL Spark GBT e2e example:
-1.Input PCCS_URL,ATTESTATION_URL,APP_ID and API_KEY first. Change the file [start-spark-local.sh](https://github.com/intel-analytics/BigDL/blob/main/ppml/trusted-big-data-ml/scala/docker-occlum/start-spark-local.sh) last line from 'bash /opt/run_spark_on_occlum_glibc.sh $1' to 'bash'
-And then 'bash start-spark-local.sh' to enter docker container.
+1.Input PCCS_URL,ATTESTATION_URL,APP_ID and API_KEY first. Change the file [start-spark-local.sh](https://github.com/intel-analytics/BigDL/blob/main/ppml/trusted-big-data-ml/scala/docker-occlum/start-spark-local.sh) last line from `bash /opt/run_spark_on_occlum_glibc.sh $1` to `bash`
+And then run `bash start-spark-local.sh` to enter docker container.
 ```
 bash start-spark-local.sh
 ```
@@ -381,8 +381,8 @@ You can enlarge the configuration in [start-spark-local.sh](https://github.com/i
 ```
 
 Start run BigDL Spark GBT e2e example:
-1.Input PCCS_URL,ATTESTATION_URL,APP_ID and API_KEY first. Change the file [start-spark-local.sh](https://github.com/intel-analytics/BigDL/blob/main/ppml/trusted-big-data-ml/scala/docker-occlum/start-spark-local.sh) last line from 'bash /opt/run_spark_on_occlum_glibc.sh $1' to 'bash'
-And then 'bash start-spark-local.sh' to enter docker container.
+1.Input PCCS_URL,ATTESTATION_URL,APP_ID and API_KEY first. Change the file [start-spark-local.sh](https://github.com/intel-analytics/BigDL/blob/main/ppml/trusted-big-data-ml/scala/docker-occlum/start-spark-local.sh) last line from `bash /opt/run_spark_on_occlum_glibc.sh $1` to `bash`
+And then run `bash start-spark-local.sh` to enter docker container.
 ```
 bash start-spark-local.sh
 ```
