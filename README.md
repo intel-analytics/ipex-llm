@@ -371,7 +371,7 @@ The *Chronos* library makes it easy to build end-to-end, large-scale **recommeda
 
 *BigDL PPML* provides a **hardware (Intel SGX) protected** *Trusted Cluster Environment* for running distributed Big Data & AI applications (in a secure fashion on private or public cloud). 
 
-*See PPML [tutorial](https://github.com/intel-analytics/BigDL/blob/main/ppml/README.md) and [user guide](https://bigdl.readthedocs.io/en/latest/doc/PPML/Overview/ppml.html) for more details.* 
+*See PPML [user guide](https://bigdl.readthedocs.io/en/latest/doc/PPML/Overview/ppml.html) and [tutorial](https://github.com/intel-analytics/BigDL/blob/main/ppml/README.md) for more details.* 
 
 ## Getting Support
 
