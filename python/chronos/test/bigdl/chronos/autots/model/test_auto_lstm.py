@@ -22,7 +22,7 @@ from unittest import TestCase
 import pytest
 import tempfile
 
-from ... import op_all, op_onnxrt16
+from ... import op_inference
 
 from bigdl.chronos.autots.model.auto_lstm import AutoLSTM
 from bigdl.orca.automl import hp
@@ -153,8 +153,7 @@ class TestAutoLSTM(TestCase):
         auto_lstm.predict(test_data_x)
         auto_lstm.evaluate((test_data_x, test_data_y))
 
-    @op_all
-    @op_onnxrt16
+    @op_inference
     def test_onnx_methods(self):
         auto_lstm = get_auto_estimator()
         auto_lstm.fit(data=train_dataloader_creator(config={"batch_size": 64}),
@@ -174,8 +173,7 @@ class TestAutoLSTM(TestCase):
         except ImportError:
             pass
 
-    @op_all
-    @op_onnxrt16
+    @op_inference
     def test_save_load(self):
         auto_lstm = get_auto_estimator()
         auto_lstm.fit(data=train_dataloader_creator(config={"batch_size": 64}),

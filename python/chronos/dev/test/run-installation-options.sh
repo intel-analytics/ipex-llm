@@ -27,16 +27,15 @@ fi
 
 # ray stop -f
 
-if [ $1 = true ]; then
-    echo "Running chronos[pytorch] tests"
-    python -m pytest -v -m "not tf2 and not onnxrt16 and not automl and not distributed and not diff_set_all" test/bigdl/chronos/data \
-                                                                                                              test/bigdl/chronos/detector \
-                                                                                                              test/bigdl/chronos/forecaster \
-                                                                                                              test/bigdl/chronos/metric \
-                                                                                                              test/bigdl/chronos/model \
-                                                                                                              test/bigdl/chronos/pytorch \
-                                                                                                              test/bigdl/chronos/simulator
-fi
+OPTIONS=$1
+echo "Running chronos tests"
+python -m pytest -v -m "${OPTIONS}" test/bigdl/chronos/data \
+                                    test/bigdl/chronos/detector \
+                                    test/bigdl/chronos/forecaster \
+                                    test/bigdl/chronos/metric \
+                                    test/bigdl/chronos/model \
+                                    test/bigdl/chronos/pytorch \
+                                    test/bigdl/chronos/simulator
 
 exit_status_0=$?
 if [ $exit_status_0 -ne 0 ];

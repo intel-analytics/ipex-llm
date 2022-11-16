@@ -26,7 +26,7 @@ from torch.utils.data import TensorDataset, DataLoader
 from bigdl.chronos.autots import TSPipeline
 from bigdl.chronos.data import TSDataset
 
-from .. import op_all, op_onnxrt16
+from .. import op_inference
 
 def train_data_creator(config):
     return DataLoader(TensorDataset(torch.randn(1000,
@@ -72,8 +72,7 @@ class TestTSPipeline(TestCase):
     def tearDown(self) -> None:
         pass
 
-    @op_all
-    @op_onnxrt16
+    @op_inference
     def test_seq2seq_tsppl_support_dataloader(self):
         # load
         tsppl_seq2seq = TSPipeline.load(
@@ -177,8 +176,7 @@ class TestTSPipeline(TestCase):
         with pytest.raises(RuntimeError):
             yhat = tsppl_lstm.predict(data=get_test_tsdataset(), batch_size=16)
 
-    @op_all
-    @op_onnxrt16
+    @op_inference
     def test_tsppl_quantize_data_creator(self):
         # s2s not support quantize
         with pytest.raises(RuntimeError):

@@ -22,7 +22,7 @@ from unittest import TestCase
 import pytest
 import tempfile
 
-from ... import op_all, op_onnxrt16
+from ... import op_inference
 
 from bigdl.chronos.autots.model.auto_seq2seq import AutoSeq2Seq
 from bigdl.orca.automl import hp
@@ -161,8 +161,7 @@ class TestAutoSeq2Seq(TestCase):
         auto_seq2seq.predict(test_data_x)
         auto_seq2seq.evaluate((test_data_x, test_data_y))
 
-    @op_all
-    @op_onnxrt16
+    @op_inference
     def test_onnx_methods(self):
         auto_seq2seq = get_auto_estimator()
         auto_seq2seq.fit(data=train_dataloader_creator(config={"batch_size": 64}),
@@ -182,8 +181,7 @@ class TestAutoSeq2Seq(TestCase):
         except ImportError:
             pass
 
-    @op_all
-    @op_onnxrt16
+    @op_inference
     def test_save_load(self):
         auto_seq2seq = get_auto_estimator()
         auto_seq2seq.fit(data=train_dataloader_creator(config={"batch_size": 64}),

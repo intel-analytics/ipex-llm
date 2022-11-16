@@ -24,7 +24,7 @@ AutoformerForecaster = LazyImport('bigdl.chronos.forecaster.autoformer_forecaste
 from bigdl.chronos.data import TSDataset
 from unittest import TestCase
 import pytest
-from .. import op_torch, op_automl, op_all
+from .. import op_torch, op_automl
 
 
 def get_ts_df():
@@ -97,7 +97,6 @@ def create_tsdataset(val_ratio=0):
                         label_len=12)
         return train, val, test
 
-@op_all
 @op_torch
 class TestChronosModelAutoformerForecaster(TestCase):
 

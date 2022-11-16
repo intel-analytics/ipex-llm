@@ -26,7 +26,7 @@ from bigdl.orca.automl import hp
 import pandas as pd
 import tensorflow as tf
 
-from .. import op_all, op_onnxrt16
+from .. import op_inference
 
 def get_ts_df():
     sample_num = np.random.randint(100, 200)
@@ -315,8 +315,7 @@ class TestAutoTrainer(TestCase):
         best_model = auto_estimator._get_best_automl_model()
         assert 4 <= best_config["past_seq_len"] <= 6
 
-    @op_all
-    @op_onnxrt16
+    @op_inference
     def test_fit_lstm_feature(self):
         from sklearn.preprocessing import StandardScaler
         scaler = StandardScaler()
@@ -383,8 +382,7 @@ class TestAutoTrainer(TestCase):
         # use tspipeline to incrementally train
         new_ts_pipeline.fit(tsdata_valid)
 
-    @op_all
-    @op_onnxrt16
+    @op_inference
     def test_fit_tcn_feature(self):
         from sklearn.preprocessing import StandardScaler
         scaler = StandardScaler()
@@ -452,8 +450,7 @@ class TestAutoTrainer(TestCase):
         # use tspipeline to incrementally train
         new_ts_pipeline.fit(tsdata_valid)
 
-    @op_all
-    @op_onnxrt16
+    @op_inference
     def test_fit_seq2seq_feature(self):
         from sklearn.preprocessing import StandardScaler
         scaler = StandardScaler()

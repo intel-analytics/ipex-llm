@@ -22,7 +22,7 @@ from unittest import TestCase
 import pytest
 import tempfile
 
-from ... import op_all, op_onnxrt16
+from ... import op_inference
 
 from bigdl.chronos.autots.model.auto_tcn import AutoTCN
 from bigdl.orca.automl import hp
@@ -196,8 +196,7 @@ class TestAutoTCN(TestCase):
         auto_tcn.predict(test_data_x)
         auto_tcn.evaluate((test_data_x, test_data_y))
 
-    @op_all
-    @op_onnxrt16
+    @op_inference
     def test_onnx_methods(self):
         auto_tcn = get_auto_estimator()
         auto_tcn.fit(data=train_dataloader_creator(config={"batch_size": 64}),
@@ -217,8 +216,7 @@ class TestAutoTCN(TestCase):
         except ImportError:
             pass
 
-    @op_all
-    @op_onnxrt16
+    @op_inference
     def test_save_load(self):
         auto_tcn = get_auto_estimator()
         auto_tcn.fit(data=train_dataloader_creator(config={"batch_size": 64}),

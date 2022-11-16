@@ -23,7 +23,7 @@ torch = LazyImport('torch')
 LSTMForecaster = LazyImport('bigdl.chronos.forecaster.lstm_forecaster.LSTMForecaster')
 from unittest import TestCase
 import pytest
-from .. import op_torch, op_distributed, op_all, op_onnxrt16, op_automl, op_diff_set_all
+from .. import op_torch, op_distributed, op_inference, op_automl, op_diff_set_all
 
 
 def create_data(loader=False):
@@ -97,7 +97,6 @@ def create_tsdataset_val(roll=True, horizon=1):
     return train, val, test
 
 
-@op_all
 @op_torch
 class TestChronosModelLSTMForecaster(TestCase):
 
@@ -124,7 +123,7 @@ class TestChronosModelLSTMForecaster(TestCase):
         assert test_mse[0].shape == test_data[1].shape[1:]
 
     @op_diff_set_all
-    @op_onnxrt16
+    @op_inference
     def test_lstm_forecaster_fit_loader(self):
         train_loader, val_loader, test_loader = create_data(loader=True)
         forecaster = LSTMForecaster(past_seq_len=24,
@@ -149,7 +148,7 @@ class TestChronosModelLSTMForecaster(TestCase):
         forecaster.evaluate_with_onnx(test_loader, batch_size=32, quantize=True)
 
     @op_diff_set_all
-    @op_onnxrt16
+    @op_inference
     def test_lstm_forecaster_onnx_methods(self):
         train_data, val_data, test_data = create_data()
         forecaster = LSTMForecaster(past_seq_len=24,
@@ -288,7 +287,7 @@ class TestChronosModelLSTMForecaster(TestCase):
         np.testing.assert_almost_equal(test_pred_save_q, test_pred_load_q)
 
     @op_diff_set_all
-    @op_onnxrt16
+    @op_inference
     def test_lstm_forecaster_quantization_onnx(self):
         train_data, val_data, test_data = create_data()
         forecaster = LSTMForecaster(past_seq_len=24,
@@ -303,7 +302,7 @@ class TestChronosModelLSTMForecaster(TestCase):
         eval_q = forecaster.evaluate_with_onnx(test_data, quantize=True)
 
     @op_diff_set_all
-    @op_onnxrt16
+    @op_inference
     def test_lstm_forecaster_quantization_onnx_tuning(self):
         train_data, val_data, test_data = create_data()
         forecaster = LSTMForecaster(past_seq_len=24,
@@ -395,7 +394,7 @@ class TestChronosModelLSTMForecaster(TestCase):
 
     @op_distributed
     @op_diff_set_all
-    @op_onnxrt16
+    @op_inference
     def test_lstm_forecaster_distributed(self):
         from bigdl.orca import init_orca_context, stop_orca_context
         train_data, val_data, test_data = create_data()
@@ -537,7 +536,7 @@ class TestChronosModelLSTMForecaster(TestCase):
         assert yhat.shape == y_test.shape
 
     @op_diff_set_all
-    @op_onnxrt16
+    @op_inference
     def test_forecaster_from_tsdataset_data_loader_onnx(self):
         train, test = create_tsdataset(roll=False)
         train.gen_dt_feature(one_hot_features=['WEEK'])
@@ -666,7 +665,7 @@ class TestChronosModelLSTMForecaster(TestCase):
         assert yhat.shape == y_test.shape
 
     @op_diff_set_all
-    @op_onnxrt16
+    @op_inference
     def test_forecaster_optimize_loader(self):
         train_loader, val_loader, test_loader = create_data(loader=True)
         forecaster = LSTMForecaster(past_seq_len=24,
@@ -723,7 +722,7 @@ class TestChronosModelLSTMForecaster(TestCase):
         eval_t = forecaster.evaluate(test_loader_shuffle_t)
         assert_almost_equal(eval_f, eval_t)
 
-    @op_onnxrt16
+    @op_inference
     def test_lstm_forecaster_eval_with_onnx_shuffle_loader(self):
         from torch.utils.data import DataLoader, TensorDataset
         from numpy.testing import assert_almost_equal
