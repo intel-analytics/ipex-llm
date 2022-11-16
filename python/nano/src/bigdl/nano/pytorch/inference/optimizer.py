@@ -392,17 +392,17 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                                 supported type: 'int8', 'bf16', 'fp16', defaults to 'int8'.
         :param accelerator:     Use accelerator 'None', 'onnxruntime', 'openvino', defaults to None.
                                 None means staying in pytorch.
-        :param calib_data:      Calibration data is required for static quantization. 
+        :param calib_data:      Calibration data is required for static quantization.
                                 It's also used as validation dataloader.
                                 calib_data support following formats:
 
                                 | 1. a torch.utils.data.dataloader.DataLoader object for training.
                                 |
-                                | 2. a single torch.Tensor which used for training, this case is used to
-                                | accept single sample input x.
+                                | 2. a single torch.Tensor which used for training, this case is
+                                | used to accept single sample input x.
                                 |
-                                | 3. a tuple of torch.Tensor which used for training, this case is used to
-                                | accept single sample input (x, y) or (x1, x2) et al.
+                                | 3. a tuple of torch.Tensor which used for training, this case is
+                                | used to accept single sample input (x, y) or (x1, x2) et al.
 
         :param metric:              A torchmetrics.metric.Metric object for evaluation.
         :param accuracy_criterion:  Tolerable accuracy drop, defaults to None meaning no
