@@ -30,7 +30,7 @@ bash bigdl-ppml-submit.sh \
 	--num-executors 2 \
 	--conf spark.cores.max=16 \
     --name spark-decrypt-sgx \
-    --conf spark.kubernetes.container.image=intelanalytics/bigdl-ppml-trusted-big-data-ml-python-graphene:$BIGDL_VERSION \
+    --conf spark.kubernetes.container.image=myContainerRegistry.azurecr.io/intel_corporation/bigdl-ppml-trusted-big-data-ml-python-graphene:$BIGDL_VERSION \
     --conf spark.kubernetes.driver.podTemplateFile=/ppml/trusted-big-data-ml/azure/spark-driver-template-az.yaml \
     --conf spark.kubernetes.executor.podTemplateFile=/ppml/trusted-big-data-ml/azure/spark-executor-template-az.yaml \
     --jars local://$SPARK_EXTRA_JAR_PATH \

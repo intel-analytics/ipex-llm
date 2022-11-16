@@ -1,8 +1,10 @@
 #set -x
-RUNTIME_SPARK_MASTER=
 export RUNTIME_DRIVER_MEMORY=8g
 
-BIGDL_VERSION=2.1.0
+RUNTIME_SPARK_MASTER=
+AZ_CONTAINER_REGISTRY=
+BIGDL_VERSION=2.2.0-SNAPSHOT
+SGX_MEM=16g
 SPARK_EXTRA_JAR_PATH=
 SPARK_JOB_MAIN_CLASS=
 ARGS=
@@ -15,19 +17,19 @@ DATA_KEY_PATH=
 secure_password=`az keyvault secret show --name "key-pass" --vault-name $KEY_VAULT_NAME --query "value" | sed -e 's/^"//' -e 's/"$//'`
 
 bash bigdl-ppml-submit.sh \
-	--master $RUNTIME_SPARK_MASTER \
-	--deploy-mode client \
-	--sgx-enabled true \
-	--sgx-driver-jvm-memory 7g \
-	--sgx-executor-jvm-memory 7g \
-	--driver-memory 18g \
-	--executor-cores 4 \
-	--driver-cores 4 \
-	--executor-cores 4 \
-	--num-executors 2 \
-	--conf spark.cores.max=8 \
+  --master $RUNTIME_SPARK_MASTER \
+  --deploy-mode client \
+  --sgx-enabled true \
+  --sgx-driver-jvm-memory 7g \
+  --sgx-executor-jvm-memory 7g \
+  --driver-memory 18g \
+  --executor-cores 4 \
+  --driver-cores 4 \
+  --executor-cores 4 \
+  --num-executors 2 \
+  --conf spark.cores.max=8 \
   --name spark-decrypt-sgx \
-  --conf spark.kubernetes.container.image=intelanalytics/bigdl-ppml-trusted-big-data-ml-python-graphene:$BIGDL_VERSION \
+  --conf spark.kubernetes.container.image=$AZ_CONTAINER_REGISTRY.azurecr.io/intel_corporation/bigdl-ppml-trusted-big-data-ml-python-gramine:$BIGDL_VERSION-$SGX_MEM \
   --conf spark.kubernetes.driver.podTemplateFile=/ppml/trusted-big-data-ml/azure/spark-driver-template-az.yaml \
   --conf spark.kubernetes.executor.podTemplateFile=/ppml/trusted-big-data-ml/azure/spark-executor-template-az.yaml \
   --jars local://$SPARK_EXTRA_JAR_PATH \
