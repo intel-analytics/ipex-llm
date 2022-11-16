@@ -22,8 +22,8 @@ import scopt.OptionParser
 
 import java.util.Base64
 
-import com.intel.analytics.bigdl.ppml.attestation.service._ 
-import com.intel.analytics.bigdl.ppml.attestation.verifier._ 
+import com.intel.analytics.bigdl.ppml.attestation.service._
+import com.intel.analytics.bigdl.ppml.attestation.verifier._
 
 /**
  * Simple Command Line tool to verify attestation service
