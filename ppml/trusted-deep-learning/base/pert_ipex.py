@@ -130,7 +130,7 @@ device = 'cpu'
 
 def train_loop(args, dataloader, model, loss_fn, optimizer, epoch, total_loss):
     finish_batch_num = (epoch-1)*len(dataloader)
-    
+
     # Set to train mode
     model.train()
     total_dataset = 0
