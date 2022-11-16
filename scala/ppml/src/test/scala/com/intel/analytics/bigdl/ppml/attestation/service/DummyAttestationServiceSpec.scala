@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.intel.analytics.bigdl.ppml.attestation
+package com.intel.analytics.bigdl.ppml.attestation.service
 
 import org.apache.logging.log4j.Logger
 import org.scalatest.{FlatSpec, Matchers}

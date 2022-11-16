@@ -15,13 +15,16 @@
  */
 
 
-package com.intel.analytics.bigdl.ppml.attestation
+package com.intel.analytics.bigdl.ppml.attestation.service
 
 import com.intel.analytics.bigdl.dllib.utils.Log4Error
 import org.apache.logging.log4j.LogManager
 import org.json.JSONObject
 
 import scala.util.Random
+
+import com.intel.analytics.bigdl.ppml.attestation._
+
 
 /**
  * Dummy Attestation Service for Test

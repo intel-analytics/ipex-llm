@@ -22,6 +22,10 @@ import scopt.OptionParser
 
 import java.util.Base64
 
+import com.intel.analytics.bigdl.ppml.attestation.generator._ 
+import com.intel.analytics.bigdl.ppml.attestation.service._ 
+import com.intel.analytics.bigdl.ppml.attestation.verifier._ 
+
 /**
  * Simple Attestation Command Line tool for attestation service
  */
