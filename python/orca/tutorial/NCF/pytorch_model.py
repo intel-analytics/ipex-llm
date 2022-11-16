@@ -22,36 +22,38 @@ import torch.nn as nn
 
 
 class NCF(nn.Module):
-    def __init__(self, factor_num, num_layers,
+    def __init__(self, user_num, item_num, factor_num, num_layers,
                  dropout, model, GMF_model=None, MLP_model=None,
-                 cat_feats_dim=0, numeric_feats_dim=0, num_embed_cat_feats=None):
+                 cat_feats_dims=0, num_numeric_feats=0):
         super(NCF, self).__init__()
         """
+        user_num: number of users;
+        item_num: number of items;
         factor_num: number of predictive factors;
         num_layers: the number of layers in MLP model;
         dropout: dropout rate between fully connected layers;
         model: 'MLP', 'GMF', 'NeuMF-end', and 'NeuMF-pre';
         GMF_model: pre-trained GMF weights;
         MLP_model: pre-trained MLP weights;
-        cat_feats_dim: number of categorical features;
-        numeric_feats_dim: number of numerical features;
-        num_embed_cat_feats: list of num_embeddings for each categorical features.
+        cat_feats_dims: the list of embedding_dims of categorical features;
+        num_numeric_feats: number of numerical features.
         """
         self.dropout = dropout
         self.model = model
         self.GMF_model = GMF_model
         self.MLP_model = MLP_model
-        self.cat_feats_dim = cat_feats_dim
-        self.numeric_feats_dim = numeric_feats_dim
+        self.cat_feats_dims = cat_feats_dims
+        self.num_numeric_feats = num_numeric_feats
+        self.num_cat_feats = len(cat_feats_dims)
 
-        user_num = num_embed_cat_feats[0]
-        item_num = num_embed_cat_feats[1]
         self.embed_user_GMF = nn.Embedding(user_num, factor_num)
         self.embed_item_GMF = nn.Embedding(item_num, factor_num)
-        self.embed_catFeats_MLP = [nn.Embedding(num_embed_cat_feats[i], factor_num)
-                                   for i in range(cat_feats_dim)]
+        self.embed_user_MLP = nn.Embedding(user_num, factor_num)
+        self.embed_item_MLP = nn.Embedding(item_num, factor_num)
+        self.embed_catFeats_MLP = [nn.Embedding(cat_feats_dims[i], factor_num)
+                                   for i in range(self.num_cat_feats)]
 
-        input_size = factor_num * cat_feats_dim + numeric_feats_dim
+        input_size = factor_num * (2 + self.num_cat_feats) + num_numeric_feats
         output_size = factor_num * (2 ** (num_layers - 1))
         MLP_modules = []
         MLP_modules.append(nn.Dropout(p=self.dropout))
@@ -76,7 +78,9 @@ class NCF(nn.Module):
         """ We leave the weights initialization here. """
         if not self.model == 'NeuMF-pre':
             nn.init.normal_(self.embed_user_GMF.weight, std=0.01)
+            nn.init.normal_(self.embed_user_MLP.weight, std=0.01)
             nn.init.normal_(self.embed_item_GMF.weight, std=0.01)
+            nn.init.normal_(self.embed_item_MLP.weight, std=0.01)
             for embed_MLP in self.embed_catFeats_MLP:
                 nn.init.normal_(embed_MLP.weight, std=0.01)
 
@@ -92,6 +96,8 @@ class NCF(nn.Module):
             # embedding layers
             self.embed_user_GMF.weight.data.copy_(self.GMF_model.embed_user_GMF.weight)
             self.embed_item_GMF.weight.data.copy_(self.GMF_model.embed_item_GMF.weight)
+            self.embed_user_MLP.weight.data.copy_(self.MLP_model.embed_user_MLP.weight)
+            self.embed_item_MLP.weight.data.copy_(self.MLP_model.embed_item_MLP.weight)
             for i in range(len(self.embed_catFeats_MLP)):
                 self.embed_catFeats_MLP[i].weight.data.copy_(
                     self.MLP_model.embed_catFeats_MLP[i].weight)
@@ -112,20 +118,20 @@ class NCF(nn.Module):
             self.predict_layer.weight.data.copy_(0.5 * predict_weight)
             self.predict_layer.bias.data.copy_(0.5 * precit_bias)
 
-    def forward(self, *args):
+    def forward(self, user, item, *args):
         if not self.model == 'MLP':
-            user, item = args[0], args[1]
             embed_user_GMF = self.embed_user_GMF(user)
             embed_item_GMF = self.embed_item_GMF(item)
             output_GMF = embed_user_GMF * embed_item_GMF
         if not self.model == 'GMF':
-            interaction = self.embed_catFeats_MLP[0](args[0])
-            if self.cat_feats_dim > 1:
-                for i in range(1, self.cat_feats_dim):
-                    embed_catFeats_MLP = self.embed_catFeats_MLP[i](args[i])
-                    interaction = torch.cat((interaction, embed_catFeats_MLP), -1)
-            if self.numeric_feats_dim > 0:
-                numeric_feats = torch.stack(args[self.cat_feats_dim:], dim=1)
+            embed_user_MLP = self.embed_user_MLP(user)
+            embed_item_MLP = self.embed_item_MLP(item)
+            interaction = torch.cat((embed_user_MLP, embed_item_MLP), -1)
+            for i in range(self.num_cat_feats):
+                embed_catFeats_MLP = self.embed_catFeats_MLP[i](args[i])
+                interaction = torch.cat((interaction, embed_catFeats_MLP), -1)
+            if self.num_numeric_feats > 0:
+                numeric_feats = torch.stack(args[self.num_cat_feats:], dim=1)
                 interaction = torch.cat((interaction, numeric_feats), -1)
             output_MLP = self.MLP_layers(interaction)
 
