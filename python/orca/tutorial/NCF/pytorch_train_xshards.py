@@ -32,24 +32,20 @@ sc = init_orca_context()
 
 # Step 2: Define train and test datasets using Orca XShards
 dataset_dir = "./ml-1m"
-feature_cols = ['user', 'item',
-                'gender', 'occupation', 'zipcode', 'category',  # categorical feature
-                'age']  # numerical feature
-label_cols = ["label"]
-total_cols = feature_cols + label_cols
-train_data, test_data, num_embed_cat_feats = prepare_data(dataset_dir,
-                                                          num_ng=4, total_cols=total_cols)
+train_data, test_data, user_num, item_num, cat_feats_dims, \
+    feature_cols, label_cols = prepare_data(dataset_dir, num_ng=4)
 
 
 # Step 3: Define the model, optimizer and loss
 def model_creator(config):
-    model = NCF(factor_num=config['factor_num'],
+    model = NCF(user_num=config['user_num'],
+                item_num=config['item_num'],
+                factor_num=config['factor_num'],
                 num_layers=config['num_layers'],
                 dropout=config['dropout'],
                 model=config['model'],
-                cat_feats_dim=config['cat_feats_dim'],
-                numeric_feats_dim=config['numeric_feats_dim'],
-                num_embed_cat_feats=num_embed_cat_feats)
+                cat_feats_dims=config['cat_feats_dims'],
+                num_numeric_feats=config['num_numeric_feats'])
     model.train()
     return model
 
@@ -69,13 +65,15 @@ est = Estimator.from_torch(model=model_creator,
                            metrics=[Accuracy(), Precision(), Recall()],
                            backend=backend,
                            config={'dataset_dir': dataset_dir,
+                                   'user_num': user_num,
+                                   'item_num': item_num,
                                    'factor_num': 16,
                                    'num_layers': 3,
                                    'dropout': 0.0,
                                    'lr': 0.001,
                                    'model': "NeuMF-end",
-                                   'cat_feats_dim': 6,
-                                   'numeric_feats_dim': 1})
+                                   'cat_feats_dims': cat_feats_dims,
+                                   'num_numeric_feats': 1})
 est.fit(data=train_data, epochs=10,
         feature_cols=feature_cols,
         label_cols=label_cols,
