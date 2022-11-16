@@ -122,7 +122,7 @@ jobs:
     steps:
     - uses: actions/checkout@v3
     - name: Run Test
-      uses: ./.github/actions/mac/fiesian/mac-friesian-python-ut-spark3
+      uses: ./.github/actions/mac/friesian/mac-friesian-python-ut-spark3
     - name: Create Job Badge
       uses: ./.github/actions/create-job-status-badge
       if: ${{ always() }}
@@ -142,7 +142,7 @@ jobs:
     steps:
     - uses: actions/checkout@v3
     - name: Run Test
-      uses: ./.github/actions/mac/fiesian/mac-friesian-python-ut-pip-spark3
+      uses: ./.github/actions/mac/friesian/mac-friesian-python-ut-pip-spark3
     - name: Create Job Badge
       uses: ./.github/actions/create-job-status-badge
       if: ${{ always() }}
