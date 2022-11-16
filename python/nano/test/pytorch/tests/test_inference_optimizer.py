@@ -376,7 +376,7 @@ class TestInferencePipeline(TestCase):
         for (pred1, pred2) in zip(preds1, preds2):
             np.testing.assert_allclose(pred1, pred2, atol=1e-4,
                                         err_msg=f"\npred1: {pred1}\npred2: {pred2}\n")
-    
+
     def test_grid_search_model_with_accelerator(self):
         inference_opt = InferenceOptimizer()
 
@@ -419,3 +419,17 @@ class TestInferencePipeline(TestCase):
                                search_mode="default")
         optim_dict = inference_opt.optimized_model_dict
         assert len(optim_dict) == 11
+
+    def test_pipeline_with_single_tensor_loader(self):
+        input_sample = torch.rand(10, 3, 32, 32)
+        dataloader = DataLoader(input_sample, batch_size=1)
+        inference_opt = InferenceOptimizer()
+        inference_opt.optimize(model=self.model,
+                               training_data=dataloader,
+                               thread_num=1,
+                               latency_sample_num=10)
+        # test automatic fill label for quantization
+        optim_dict = inference_opt._optimize_result
+        assert optim_dict["openvino_int8"]["status"] == "successful"
+        assert optim_dict["onnxruntime_int8_qlinear"]["status"] == "successful"
+        assert optim_dict["onnxruntime_int8_integer"]["status"] == "successful"
