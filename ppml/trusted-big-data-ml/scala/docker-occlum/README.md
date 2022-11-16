@@ -393,7 +393,7 @@ bash /opt/ehsm_entry.sh generatekeys $APP_ID $API_KEY
 3.To generate input data
 you can use [generate_people_csv.py](https://github.com/analytics-zoo/ppml-e2e-examples/blob/main/spark-encrypt-io/generate_people_csv.py). The usage command of the script is:
 ```bash
-python generate_people.py /opt/occlum_spark/data/people.csv <num_lines>
+python generate_people_csv.py /opt/occlum_spark/data/people.csv <num_lines>
 ```
 4.To encrypt input data. For example, you mount a file called people.csv.
 ```
