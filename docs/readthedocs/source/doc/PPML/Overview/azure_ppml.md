@@ -53,19 +53,27 @@ apt install sgx-aesm-service
 * Go to Azure Marketplace, search "BigDL PPML" and find `BigDL PPML: Secure Big Data AI on Intel SGX` product. Click "Create" button which will lead you to `Subscribe` page.
 On `Subscribe` page, input your subscription, your Azure container registry, your resource group and your location. Then click `Subscribe` to subscribe BigDL PPML to your container registry.
 
-* Go to your Azure container regsitry, check `Repostirories`, and find `intel_corporation/bigdl-ppml-trusted-big-data-ml-python-graphene`
-* Login to the created VM. Then login to your Azure container registry, pull BigDL PPML image using this command:
-  ```bash
-  docker pull myContainerRegistry.azurecr.io/intel_corporation/bigdl-ppml-trusted-big-data-ml-python-graphene
-  ```
-
+* Go to your Azure container regsitry (i.e. myContainerRegistry), check `Repostirories`, and find `intel_corporation/bigdl-ppml-trusted-big-data-ml-python-gramine`
+* Login to the created VM. Then login to your Azure container registry, pull BigDL PPML image as needed.
+  * If you want to run with 16G SGX memory, you can pull the image as below:
+    ```bash
+    docker pull myContainerRegistry.azurecr.io/intel_corporation/bigdl-ppml-trusted-big-data-ml-python-gramine:2.2.0-SNAPSHOT-16g
+    ```
+  * If you want to run with 32G SGX memory, you can pull the image as below:
+    ```bash
+    docker pull myContainerRegistry.azurecr.io/intel_corporation/bigdl-ppml-trusted-big-data-ml-python-gramine:2.2.0-SNAPSHOT-32g
+    ```
+  * If you want to run with 64G SGX memory, you can pull the image as below:
+    ```bash
+    docker pull myContainerRegistry.azurecr.io/intel_corporation/bigdl-ppml-trusted-big-data-ml-python-gramine:2.2.0-SNAPSHOT-64g
+    ```
 * Start container of this image
-
+  The example script to start the image is as below:
   ```bash
   #!/bin/bash
 
   export LOCAL_IP=YOUR_LOCAL_IP
-  export DOCKER_IMAGE=myContainerRegistry.azurecr.io/intel_corporation/bigdl-ppml-trusted-big-data-ml-python-graphene
+  export DOCKER_IMAGE=myContainerRegistry.azurecr.io/intel_corporation/bigdl-ppml-trusted-big-data-ml-python-gramine:2.2.0-SNAPSHOT-16g
 
   sudo docker run -itd \
       --privileged \
@@ -78,9 +86,7 @@ On `Subscribe` page, input your subscription, your Azure container registry, you
       -v /var/run/aesmd/aesm.socket:/var/run/aesmd/aesm.socket \
       --name=spark-local \
       -e LOCAL_IP=$LOCAL_IP \
-      -e SGX_MEM_SIZE=64G \
       $DOCKER_IMAGE bash
-
   ```
 
 ### 2.3 Create AKS(Azure Kubernetes Services) or use existing AKs
@@ -182,7 +188,7 @@ Take note of the following properties for use in the next section:
 
   Example command:
   ```bash
-  az keyvault set-policy --name myKeyVault --object-id <mySystemAssignedIdentity> --secret-permissions all --key-permissions all --certificate-permissions all
+  az keyvault set-policy --name myKeyVault --object-id <mySystemAssignedIdentity> --secret-permissions all --key-permissions all unwrapKey wrapKey
   ```
 
 #### 2.5.3 AKS access Key Vault
@@ -205,7 +211,7 @@ Take note of principalId of the first line as System Managed Identity of your VM
 ###### b. Set access policy for AKS VM ScaleSet
 Example command:
 ```bash
-az keyvault set-policy --name myKeyVault --object-id <systemManagedIdentityOfVMSS> --secret-permissions get --key-permissions all
+az keyvault set-policy --name myKeyVault --object-id <systemManagedIdentityOfVMSS> --secret-permissions get --key-permissions get unwrapKey
 ```
 
 ## 3. Run Spark PPML jobs
@@ -267,7 +273,7 @@ RUNTIME_SPARK_MASTER=
 export RUNTIME_DRIVER_MEMORY=8g
 export RUNTIME_DRIVER_PORT=54321
 
-BIGDL_VERSION=2.1.0
+BIGDL_VERSION=2.2.0-SNAPSHOT
 SPARK_EXTRA_JAR_PATH=
 SPARK_JOB_MAIN_CLASS=
 ARGS=
@@ -292,7 +298,7 @@ bash bigdl-ppml-submit.sh \
     --num-executors 2 \
     --conf spark.cores.max=8 \
     --name spark-decrypt-sgx \
-    --conf spark.kubernetes.container.image=myContainerRegistry.azurecr.io/intel_corporation/bigdl-ppml-trusted-big-data-ml-python-graphene:$BIGDL_VERSION \
+    --conf spark.kubernetes.container.image=myContainerRegistry.azurecr.io/intel_corporation/bigdl-ppml-trusted-big-data-ml-python-gramine:2.2.0-SNAPSHOT-16g \
     --conf spark.kubernetes.driver.podTemplateFile=/ppml/trusted-big-data-ml/azure/spark-driver-template-az.yaml \
     --conf spark.kubernetes.executor.podTemplateFile=/ppml/trusted-big-data-ml/azure/spark-executor-template-az.yaml \
     --jars local://$SPARK_EXTRA_JAR_PATH \
@@ -314,7 +320,7 @@ This is an example script to run simple query python example job on AKS with dat
 RUNTIME_SPARK_MASTER=
 export RUNTIME_DRIVER_MEMORY=8g
 export RUNTIME_DRIVER_PORT=54321
-BIGDL_VERSION=2.1.0
+BIGDL_VERSION=2.2.0-SNAPSHOT
 SPARK_VERSION=3.1.3
 
 DATA_LAKE_NAME=
@@ -338,7 +344,7 @@ bash bigdl-ppml-submit.sh \
     --executor-cores 2 \
     --num-executors 1 \
     --name simple-query-sgx \
-    --conf spark.kubernetes.container.image=intelanalytics/bigdl-ppml-trusted-big-data-ml-python-graphene:$BIGDL_VERSION \
+    --conf spark.kubernetes.container.image=intelanalytics/bigdl-ppml-trusted-big-data-ml-python-gramine:2.2.0-SNAPSHOT-16g \
     --conf spark.kubernetes.driver.podTemplateFile=/ppml/trusted-big-data-ml/azure/spark-driver-template-az.yaml \
     --conf spark.kubernetes.executor.podTemplateFile=/ppml/trusted-big-data-ml/azure/spark-executor-template-az.yaml \
     --conf spark.hadoop.fs.azure.account.auth.type.${DATA_LAKE_NAME}.dfs.core.windows.net=SharedKey \
@@ -389,9 +395,9 @@ Generate primary key and data key, then save to file system.
 The example code for generating the primary key and data key is like below:
 
 ```bash
-BIGDL_VERSION=2.1.0
+BIGDL_VERSION=2.2.0-SNAPSHOT
 SPARK_VERSION=3.1.3
-java -cp /ppml/trusted-big-data-ml/work/bigdl-$BIGDL_VERSION/jars/*:/ppml/trusted-big-data-ml/work/spark-3.1.2/conf/:/ppml/trusted-big-data-ml/work/spark-$SPARK_VERSION/jars/* \
+java -cp /ppml/trusted-big-data-ml/work/bigdl-$BIGDL_VERSION/jars/*:/ppml/trusted-big-data-ml/work/spark-$SPARK_VERSION/conf/:/ppml/trusted-big-data-ml/work/spark-$SPARK_VERSION/jars/* \
     -Xmx10g \
     com.intel.analytics.bigdl.ppml.examples.GenerateKeys \
     --kmsType AzureKeyManagementService \
@@ -406,9 +412,9 @@ Encrypt data with specified BigDL `AzureKeyManagementService`
 The example code of encrypting data is like below:
 
 ```bash
-BIGDL_VERSION=2.1.0
+BIGDL_VERSION=2.2.0-SNAPSHOT
 SPARK_VERSION=3.1.3
-java -cp /ppml/trusted-big-data-ml/work/bigdl-$BIGDL_VERSION/jars/*:/ppml/trusted-big-data-ml/work/spark-3.1.2/conf/:/ppml/trusted-big-data-ml/work/spark-$SPARK_VERSION/jars/* \
+java -cp /ppml/trusted-big-data-ml/work/bigdl-$BIGDL_VERSION/jars/*:/ppml/trusted-big-data-ml/work/spark-$SPARK_VERSION/conf/:/ppml/trusted-big-data-ml/work/spark-$SPARK_VERSION/jars/* \
     -Xmx10g \
     com.intel.analytics.bigdl.ppml.examples.tpch.EncryptFiles \
     --kmsType AzureKeyManagementService \
@@ -439,7 +445,7 @@ export RUNTIME_DRIVER_PORT=54321
 
 secure_password=`az keyvault secret show --name "key-pass" --vault-name $KEY_VAULT_NAME --query "value" | sed -e 's/^"//' -e 's/"$//'`
 
-BIGDL_VERSION=2.1.0
+BIGDL_VERSION=2.2.0-SNAPSHOT
 SPARK_VERSION=3.1.3
 DATA_LAKE_NAME=
 DATA_LAKE_ACCESS_KEY=
@@ -479,7 +485,7 @@ bash bigdl-ppml-submit.sh \
     --conf spark.bigdl.kms.key.data=$DATA_KEY_PATH \
     --class com.intel.analytics.bigdl.ppml.examples.tpch.TpchQuery \
     --verbose \
-    local:///ppml/trusted-big-data-ml/work/bigdl-$BIGDL_VERSION/jars/bigdl-ppml-spark_$SPARK_VERSION-$BIGDL_VERSION-SNAPSHOT.jar \
+    local:///ppml/trusted-big-data-ml/work/bigdl-$BIGDL_VERSION/jars/bigdl-ppml-spark_$SPARK_VERSION-$BIGDL_VERSION.jar \
     $INPUT_DIR $OUTPUT_DIR aes/cbc/pkcs5padding plain_text [QUERY]
 ```
 
