@@ -97,8 +97,8 @@ class TestOpenVINO(TestCase):
     def test_quantize_openvino_with_tensor(self):
         model = mobilenet_v3_small(num_classes=10)
 
-        x = torch.rand((10, 3, 256, 256))
-        y = torch.ones((10, ), dtype=torch.long)
+        x = torch.rand((1, 3, 256, 256))
+        y = torch.ones((1, ), dtype=torch.long)
 
         optimized_model = InferenceOptimizer.quantize(model, accelerator='openvino',
                                                       calib_data=(x, y))

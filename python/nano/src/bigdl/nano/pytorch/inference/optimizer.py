@@ -181,6 +181,7 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                | prediction and target then returns an accuracy value in this calling
                | method `metric(pred, target)`. This requires data in validation_data
                | is composed of (input_data, target).
+               |
                | 2. A callable object that takes model and validation_data (if
                | validation_data is not None) as input, and returns an accuracy value in
                | this calling method metric(model, data_loader) (or metric(model) if
@@ -482,7 +483,7 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                                   "Accelerator {} is invalid for BF16.".format(accelerator))
         if precision == 'int8':
             # transform non-dataloader to dataloader
-            if not isinstance(calib_data, DataLoader):
+            if calib_data is not None and not isinstance(calib_data, DataLoader):
                 dataset = RepeatDataset(sample=calib_data, num=1)
                 calib_dataloader = DataLoader(dataset, batch_size=1)
                 calib_dataloader = remove_batch_dim_fn(calib_dataloader)

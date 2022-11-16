@@ -97,6 +97,8 @@ class TestOnnx(TestCase):
             # np.testing.assert_almost_equal(y.numpy(), forward_res, decimal=5)  # same result
   
         #  quantization with tensor
+        x = torch.rand((1, 3, 256, 256))
+        y = torch.ones((1, ), dtype=torch.long)
         onnx_model = InferenceOptimizer.quantize(pl_model,
                                                  accelerator='onnxruntime',
                                                  method='qlinear',
