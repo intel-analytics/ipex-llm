@@ -433,8 +433,8 @@ class TestChronosModelTCNForecaster(TestCase):
 
         forecaster.quantize(calib_data=train_data,
                             framework="openvino")
-        openvino_yhat = forecaster.predict_with_openvino(test_data[0])
         q_openvino_yhat = forecaster.predict_with_openvino(test_data[0], quantize=True)
+        openvino_yhat = forecaster.predict_with_openvino(test_data[0])
         assert openvino_yhat.shape == q_openvino_yhat.shape == test_data[1].shape
 
         # test exporting the openvino
@@ -465,8 +465,8 @@ class TestChronosModelTCNForecaster(TestCase):
 
         forecaster.quantize(calib_data=train_data,
                             framework="openvino")
-        openvino_yhat = forecaster.predict_with_openvino(test_data[0])
         q_openvino_yhat = forecaster.predict_with_openvino(test_data[0], quantize=True)
+        openvino_yhat = forecaster.predict_with_openvino(test_data[0])
         assert openvino_yhat.shape == q_openvino_yhat.shape == test_data[1].shape
 
         # test exporting the openvino
