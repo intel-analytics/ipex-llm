@@ -64,7 +64,9 @@ class KerasOpenVINOModel(AcceleratedKerasModel):
     @property
     def status(self):
         status = super().status
-        status.update({"xml_path": 'ov_saved_model.xml', "weight_path": 'ov_saved_model.bin'})
+        status.update({"xml_path": 'ov_saved_model.xml',
+                       "weight_path": 'ov_saved_model.bin',
+                       "config": self.ov_model.final_config})
         return status
 
     def pot(self,
@@ -101,7 +103,7 @@ class KerasOpenVINOModel(AcceleratedKerasModel):
         else:
             invalidInputError(False, "nano_model_meta.yml must specify 'xml_path' for loading.")
         xml_path = Path(path) / status['xml_path']
-        return KerasOpenVINOModel(xml_path)
+        return KerasOpenVINOModel(xml_path, config=status['config'])
 
     def _save_model(self, path):
         """
