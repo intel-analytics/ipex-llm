@@ -21,6 +21,7 @@ ADD ./entrypoint.sh /opt/entrypoint.sh
 # Small examples for PyTorch
 ADD ./mnist.py       /ppml/examples/mnist.py
 ADD ./pert.py        /ppml/examples/pert.py
+ADD ./pert_ipex.py   /ppml/examples/pert_ipex.py
 # Patch for datasets
 ADD ./filelock.patch /filelock.patch
 ADD ./bash.manifest.template.patch /bash.manifest.template.patch
@@ -53,7 +54,7 @@ RUN env DEBIAN_FRONTEND=noninteractive apt-get update && \
     chmod +x /opt/entrypoint.sh && \
     cp /sbin/tini /usr/bin/tini && \
     # huggingface related
-    pip3 install --no-cache datasets==2.6.1 transformers pyarrow==6.0.1 && \
+    pip3 install --no-cache datasets==2.6.1 transformers pyarrow==6.0.1 intel_extension_for_pytorch && \
     pip3 install --pre --no-cache --upgrade bigdl-nano[pytorch] && \
     patch /usr/local/lib/python3.7/dist-packages/datasets/utils/filelock.py /filelock.patch && \
     patch /ppml/bash.manifest.template /bash.manifest.template.patch
