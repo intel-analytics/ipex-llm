@@ -33,8 +33,6 @@
 
 from filelock import FileLock
 import logging
-import io
-import itertools
 import os
 import copy
 import tempfile
@@ -43,13 +41,11 @@ import torch.nn as nn
 from torch.utils.data import DataLoader, IterableDataset
 from torch.utils.data.distributed import DistributedSampler
 from bigdl.orca import OrcaContext
-from bigdl.orca.learn.pytorch.callbacks.model_checkpoint import ModelCheckpoint
-from bigdl.orca.learn.pytorch.constants import SCHEDULER_STEP, NUM_STEPS
+from bigdl.orca.learn.pytorch.constants import SCHEDULER_STEP
 from bigdl.orca.learn.pytorch.training_operator import TrainingOperator
 from bigdl.orca.learn.pytorch import utils
-from bigdl.orca.learn.pytorch.utils import get_filesystem
 from bigdl.orca.learn.pytorch.core import BaseRunner
-from bigdl.dllib.utils.log4Error import *
+from bigdl.dllib.utils.log4Error import invalidInputError
 
 try:
     from collections.abc import Iterable
@@ -483,29 +479,6 @@ class TorchRunner(BaseRunner):
         if "operator" in state:
             self.training_operator.load_state_dict(state["operator"])
 
-    @staticmethod
-    def _state_dict2stream(state_dict):
-        _buffer = io.BytesIO()
-        torch.save(state_dict, _buffer)
-        return _buffer.getvalue()
-
-    @staticmethod
-    def _state_stream2dict(byte_obj):
-        _buffer = io.BytesIO(byte_obj)
-        state_dict = torch.load(_buffer)
-        return state_dict
-
-    def get_state_stream(self):
-        """Returns a bytes object for the state dict."""
-        state_dict = self.get_state_dict()
-        state_stream = TorchRunner._state_dict2stream(state_dict)
-        return state_stream
-
-    def load_state_stream(self, byte_obj):
-        """Loads a bytes object the training state dict."""
-        state_dict = TorchRunner._state_stream2dict(byte_obj)
-        return self.load_state_dict(state_dict)
-
     def save_checkpoint(self, filepath, save_weights_only=False):
         if self.rank == 0:
             self._save_checkpoint(filepath, save_weights_only)
@@ -525,25 +498,6 @@ class TorchRunner(BaseRunner):
         with fsspec.open(filepath, "wb") as f:
             f.write(byte_obj)
 
-    def load_checkpoint(self, filepath):
-        fs = get_filesystem(filepath)
-        if not fs.exists(filepath):
-            invalidInputError(False,
-                              f"Checkpoint at {filepath} not found. Aborting training.")
-        with fs.open(filepath, "rb") as f:
-            state_dict = torch.load(f)
-        self.load_state_dict(state_dict)
-
-    def remove_checkpoint(self, filepath):
-        if self.rank == 0:
-            self._remove_checkpoint(filepath)
-
-    def _remove_checkpoint(self, filepath):
-        fs = get_filesystem(filepath)
-        if fs.exists(filepath):
-            fs.rm(filepath, recursive=True)
-            self.logger.debug(f"Removed checkpoint: {filepath}")
-
     def apply(self, fn):
         return fn()
 
@@ -558,6 +512,14 @@ class TorchRunner(BaseRunner):
         del self.criterion
         del self.optimizers
         del self.models
+
+    @property
+    def rank(self):
+        return self.rank
+
+    @rank.setter
+    def rank(self, rank):
+        self.rank = rank
 
     @property
     def given_models(self):
