@@ -40,13 +40,23 @@ class _MultiInstanceModel(torch.nn.Module):
             invalidInputError(False, "The input should be a DataLoader or a list of input batchs")
 
         for idx, batch in enumerate(input_data):
-            self.send_queues[idx % self.p_num].put(batch)
+            try:
+                self.send_queues[idx % self.p_num].put(batch)
+            except Exception as e:
+                print(idx)
+                print(e)
+                exit(-1)
 
         outputs = []
         for idx in range(length):
-            output = self.recv_queues[idx % self.p_num].get()
-            invalidOperationError(not isinstance(output, Exception), f"{output}")
-            outputs.append(output)
+            try:
+                output = self.recv_queues[idx % self.p_num].get()
+                invalidOperationError(not isinstance(output, Exception), f"{output}")
+                outputs.append(output)
+            except Exception as e:
+                print(idx)
+                print(e)
+                exit(-1)
         return outputs
 
     def __del__(self):
