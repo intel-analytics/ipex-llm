@@ -67,7 +67,7 @@ permissions:
 
 jobs:
   Orca-Python-ExampleTest-Py37-Spark3:
-    if: ${{ github.event.schedule || github.event.inputs.artifact == 'Orca-Python-ExampleTest-Py37-Spark3' || github.event.inputs.artifact == 'all' }} 
+    #if: ${{ github.event.schedule || github.event.inputs.artifact == 'Orca-Python-ExampleTest-Py37-Spark3' || github.event.inputs.artifact == 'all' }} 
     runs-on: [self-hosted, Gondolin, ubuntu-20.04-lts]
 
     steps:
@@ -97,7 +97,7 @@ jobs:
 
 
   Orca-Python-ExampleTest-Ray-Py37-Spark3:
-    if: ${{ github.event.schedule || github.event.inputs.artifact == 'Orca-Python-ExampleTest-Ray-Py37-Spark3' || github.event.inputs.artifact == 'all' }} 
+    #if: ${{ github.event.schedule || github.event.inputs.artifact == 'Orca-Python-ExampleTest-Ray-Py37-Spark3' || github.event.inputs.artifact == 'all' }} 
     runs-on: [self-hosted, Gondolin, ubuntu-20.04-lts]
 
     steps:
@@ -155,7 +155,7 @@ jobs:
         runner-hosted-on: 'Shanghai'
 
   Orca-Python-ExampleTest-Horovod-Pytorch-Py37-Spark3:
-    if: ${{ github.event.schedule || github.event.inputs.artifact == 'Orca-Python-ExampleTest-Horovod-Pytorch-Py37-Spark3' || github.event.inputs.artifact == 'all' }}
+    #if: ${{ github.event.schedule || github.event.inputs.artifact == 'Orca-Python-ExampleTest-Horovod-Pytorch-Py37-Spark3' || github.event.inputs.artifact == 'all' }}
     runs-on: [self-hosted, Gondolin, ubuntu-20.04-lts]
 
     steps:
@@ -184,7 +184,7 @@ jobs:
         runner-hosted-on: 'Shanghai'
 
   Orca-Python-ExampleTest-Horovod-Tf-Py37-Spark3:
-    if: ${{ github.event.schedule || github.event.inputs.artifact == 'Orca-Python-ExampleTest-Horovod-Tf-Py37-Spark3' || github.event.inputs.artifact == 'all' }}
+    #if: ${{ github.event.schedule || github.event.inputs.artifact == 'Orca-Python-ExampleTest-Horovod-Tf-Py37-Spark3' || github.event.inputs.artifact == 'all' }}
     runs-on: [self-hosted, Gondolin, ubuntu-20.04-lts]
 
     steps:
@@ -213,7 +213,7 @@ jobs:
         runner-hosted-on: 'Shanghai'
 
   Orca-Python-Ray-Py37-Spark3:
-    if: ${{ github.event.schedule || github.event.inputs.artifact == 'Orca-Python-Ray-Py37-Spark3' || github.event.inputs.artifact == 'all' }}
+    #if: ${{ github.event.schedule || github.event.inputs.artifact == 'Orca-Python-Ray-Py37-Spark3' || github.event.inputs.artifact == 'all' }}
     runs-on: [self-hosted, Gondolin, ubuntu-20.04-lts]
 
     steps:
@@ -836,7 +836,7 @@ jobs:
         runner-hosted-on: 'Shanghai'
 
   Colab-Python-Py37-tf2:
-    if: ${{ github.event.schedule || github.event.inputs.artifact == 'Colab-Python-Py37-tf2' || github.event.inputs.artifact == 'all' }}
+    #if: ${{ github.event.schedule || github.event.inputs.artifact == 'Colab-Python-Py37-tf2' || github.event.inputs.artifact == 'all' }}
     runs-on: [ self-hosted, Gondolin, ubuntu-20.04-lts ]
 
     steps:
