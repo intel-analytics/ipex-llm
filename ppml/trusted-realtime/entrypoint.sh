@@ -144,9 +144,39 @@ elif [ "$1" = "taskmanager" ]; then
     echo "Starting Task Manager"
 
     exec $(drop_privs_cmd) "$FLINK_HOME/bin/taskmanager.sh" start-foreground "${args[@]}"
+elif [ "$1" = "bash"]; then
+
+    exec $(drop_privs_cmd) "${args[@]}"
+
+else
+    args=${args[@]:3}
+    
+    export _FLINK_HOME_DETERMINED='true'
+    
+    bin=`cd "${FLINK_HOME}/bin"; pwd`
+    . "$bin"/config.sh
+    
+    export FLINK_ENV_JAVA_OPTS="${FLINK_ENV_JAVA_OPTS} ${FLINK_ENV_JAVA_OPTS_JM}"
+    
+    ARGS=(${args[@]:4})
+    parseJmArgsAndExportLogs "${ARGS[@]}"
+    
+    if [ ! -z "${DYNAMIC_PARAMETERS}" ]; then
+        ARGS=(${DYNAMIC_PARAMETERS[@]} "${ARGS[@]}")
+    fi
+    
+    FLINK_ENV_JAVA_OPTS=$(eval echo ${FLINK_ENV_JAVA_OPTS})
+    CLASS_TO_RUN=org.apache.flink.kubernetes.entrypoint.KubernetesApplicationClusterEntrypoint
+
+    log="/ppml/xx.log"
+    log_setting=("-Dlog.file=${log}" "-Dlog4j.configuration=file:${FLINK_CONF_DIR}/log4j-console.properties" "-Dlog4j.configurationFile=file:${FLINK_CONF_DIR}/log4j-console.properties" "-Dlogback.configurationFile=file:${FLINK_CONF_DIR}/logback-console.xml")
+
+    classpaths=$(echo ${FLINK_HOME}/lib/* | tr ' ' ':')
+
+    exec $JAVA_RUN $JVM_ARGS ${FLINK_ENV_JAVA_OPTS} "${log_setting[@]}"  -classpath  ${classpaths}: ${CLASS_TO_RUN} "${ARGS[@]}"
 fi
 
-args=("${args[@]}")
+# args=("${args[@]}")
 
 # Running command in pass-through mode
-exec $(drop_privs_cmd) "${args[@]}"
+# exec $(drop_privs_cmd) "${args[@]}"
