@@ -612,7 +612,7 @@ case "$arg" in
         cd ../
         ;;
     sql_e2e)
-        run_spark_gbt_e2e
+        run_spark_sql_e2e
         cd ../
         ;;
 esac
