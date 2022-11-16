@@ -292,7 +292,7 @@ class TestInferencePipeline(TestCase):
                                thread_num=1,
                                latency_sample_num=10)
         # test automatic fill label for quantization
-        optim_dict = inference_opt._optimize_result
+        optim_dict = inference_opt.optimized_model_dict
         assert optim_dict["openvino_int8"]["status"] == "successful"
         assert optim_dict["onnxruntime_int8_qlinear"]["status"] == "successful"
         assert optim_dict["onnxruntime_int8_integer"]["status"] == "successful"
@@ -429,7 +429,7 @@ class TestInferencePipeline(TestCase):
                                thread_num=1,
                                latency_sample_num=10)
         # test automatic fill label for quantization
-        optim_dict = inference_opt._optimize_result
+        optim_dict = inference_opt.optimized_model_dict
         assert optim_dict["openvino_int8"]["status"] == "successful"
         assert optim_dict["onnxruntime_int8_qlinear"]["status"] == "successful"
         assert optim_dict["onnxruntime_int8_integer"]["status"] == "successful"

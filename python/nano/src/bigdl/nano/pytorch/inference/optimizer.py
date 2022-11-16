@@ -37,7 +37,7 @@ from bigdl.nano.utils.inference.pytorch.model_utils import get_forward_args, get
 from bigdl.nano.utils.inference.pytorch.metrics import NanoMetric
 from bigdl.nano.utils.inference.pytorch.dataset import RepeatDataset, remove_batch_dim_fn
 from bigdl.nano.utils.inference.pytorch.dataloader import\
-    transform_multiple_input_dataloader_to_inc_mode
+    transform_multiple_input_dataloader_to_inc_mode, automatic_add_label_in_dataloader
 from bigdl.nano.pytorch.utils import TORCH_VERSION_LESS_1_10, save_model, load_model
 from bigdl.nano.common.cpu_schedule import schedule_processors
 from .multi_instance import _MultiInstanceModel, _multi_instance_helper
@@ -570,11 +570,17 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                     calib_dataloader = calib_dataloader
                 else:
                     calib_dataloader = calib_data
+            # judge whether contains label in calib_datalaoder
+            # if not, will append label at last
+            if accelerator is not None:
+                calib_dataloader = automatic_add_label_in_dataloader(model,
+                                                                     calib_dataloader)
 
             # transform the dataloader to inc mode
             inc_calib_dataloader =\
                 transform_multiple_input_dataloader_to_inc_mode(model,
                                                                 calib_dataloader)
+
             if not accelerator or accelerator == 'onnxruntime':
                 method_map = {
                     None: {
