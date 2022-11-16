@@ -17,6 +17,7 @@
 import time
 import mmcv
 import torch
+import warnings
 from mmcv.runner import EpochBasedRunner
 from mmcv.runner.utils import get_host_info
 from mmcv.parallel.distributed import MMDistributedDataParallel
