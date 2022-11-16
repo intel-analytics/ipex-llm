@@ -322,12 +322,12 @@ class TestInferencePipeline(TestCase):
 
             # int8
             InferenceOptimizer.quantize(net,
-                                        calib_dataloader=dataloader)
+                                        calib_data=dataloader)
 
             # int8-onnxruntime
             InferenceOptimizer.quantize(net,
                                         accelerator="onnxruntime",
-                                        calib_dataloader=dataloader)
+                                        calib_data=dataloader)
 
             # int8-onnxruntime
             InferenceOptimizer.trace(net,
