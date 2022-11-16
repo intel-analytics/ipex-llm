@@ -36,6 +36,7 @@ object AttestationCLI {
                              challenge: String = "",
                              policyID: String = "",
                              OSType: String = "gramine",
+                             apiVersion: String = "2020-10-01",
                              userReport: String = "ppml")
 
         val cmdParser: OptionParser[CmdParams] = new OptionParser[CmdParams](
@@ -64,6 +65,9 @@ object AttestationCLI {
             opt[String]('O', "OSType")
               .text("OSType, default is gramine, occlum can be chose")
               .action((x, c) => c.copy(OSType = x))
+            opt[String]('v', "APIVersion")
+              .text("APIType, default is 2020-10-01")
+              .action((x, c) => c.copy(apiVersion = x))
         }
         val params = cmdParser.parse(args, CmdParams()).get
 
@@ -85,6 +89,8 @@ object AttestationCLI {
                     params.asURL.split(":")(1), params.appID, params.apiKey)
             case ATTESTATION_CONVENTION.MODE_DUMMY =>
                 new DummyAttestationService()
+            case ATTESTATION_CONVENTION.MODE_AZURE =>
+                new AzureAttestationService(params.asURL, params.apiVersion, userReportData)
             case _ => throw new AttestationRuntimeException("Wrong Attestation service type")
         }
 
