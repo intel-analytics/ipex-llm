@@ -59,7 +59,7 @@ if __name__ == '__main__':
         dropout=0.5,
     )
     epochs = 2
-    batch_size = 1024
+    batch_size = 256
 
 
     def model_creator(config):
