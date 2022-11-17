@@ -95,6 +95,13 @@ def _get_args_parser() -> ArgumentParser:
         help='A Json string specifying one volumeMount in all containers'
     )
 
+    parser.add_argument(
+        '--sgx_enabled',
+        action="store_true",
+        default=False,
+        help="If included, the SGX device plugin will be added"
+    )
+
     # TODO: Integrate with the python/nano/src/bigdl/nano/k8s/bigdl_submit.py to add the new feature --submit_pod_template?
     #
     # Positional arguments.
@@ -140,6 +147,7 @@ def _create_pod(pod_name: str,
                 pod_epc_memory: str,
                 image: str,
                 args: str,
+                sgx_enabled: bool,
                 volume_strs: List[str],
                 volume_mount_strs: List[str]) -> client.V1Pod:
     api_client = client.ApiClient()
@@ -158,20 +166,32 @@ def _create_pod(pod_name: str,
         envs.append(
             client.V1EnvVar(name=env[0], value=env[1]),
         )
+
+    # Setting pod_cpu in request equals to limits make it to use the static cpu manager
+    requests = {
+        "cpu": pod_cpu,
+        "memory": pod_memory,
+    }
+
+    limits = {
+        "cpu": pod_cpu,
+        "memory": pod_memory,
+    }
+
+
+    # Only epc memory is set to restrict how many pods can be allowed on a node
+    if sgx_enabled:
+        requests["sgx.intel.com/epc"] = pod_epc_memory
+        requests["sgx.intel.com/enclave"] = 1
+        requests["sgx.intel.com/provision"] = 1
+        limits["sgx.intel.com/enclave"] = 1
+        limits["sgx.intel.com/provision"] = 1
+        limits["sgx.intel.com/epc"] = pod_epc_memory
+
     # The arguments epc, enclave, provision are only used to restrict the number of pods allowed on a sgx node.
     # We choose to only use the epc memory to restrict that.
     # TODO: We probably need to use a argument to let the user to choose whether the sgx device-plugin is desired or not.
-    resource = client.V1ResourceRequirements(limits={"cpu": pod_cpu,
-                                                     "memory": pod_memory,
-                                                     "sgx.intel.com/epc": pod_epc_memory,
-                                                     "sgx.intel.com/enclave": 1,
-                                                     "sgx.intel.com/provision": 1},
-                                             requests={"cpu": pod_cpu,
-                                                       "memory": pod_memory,
-                                                       "sgx.intel.com/epc": pod_epc_memory,
-                                                       "sgx.intel.com/enclave": 1,
-                                                       "sgx.intel.com/provision": 1}
-                                             )
+    resource = client.V1ResourceRequirements(limits=limits,requests=requests)
     volume_mounts = [_deserialize_volume_mounts_object(json_str, api_client)
                      for json_str in volume_mount_strs]
     container = client.V1Container(name="pytorch",
@@ -289,6 +309,7 @@ def main():
                                       pod_epc_memory=args.pod_epc_memory,
                                       image=args.image,
                                       args=entrypoint_args,
+                                      sgx_enabled=args.sgx_enabled,
                                       volume_strs=args.volume,
                                       volume_mount_strs=args.volume_mount)
 
