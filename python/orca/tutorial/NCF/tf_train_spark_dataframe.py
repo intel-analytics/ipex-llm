@@ -98,7 +98,7 @@ if __name__ == '__main__':
                          num_steps=val_steps)
     print("Evaluation results:", stats)
 
-    # Step 6: Save the trained PyTorch model
+    # Step 6: Save the trained tensorflow model
     est.save("NCF_model")
 
     # Step 7: Stop Orca Context when program finishes
