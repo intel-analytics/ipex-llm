@@ -141,6 +141,9 @@ build_spark() {
     # Copy python examples and unzip python lib
     mkdir -p image/py-examples
     cp -rf /opt/py-examples/* image/py-examples
+    # Copy scala files for absolute path examples
+    mkdir -p image/examples/
+    cp -rf /opt/spark/examples/* image/examples/
     # Copy JVM and class file into Occlum instance and build
     cd /opt/occlum_spark
     mkdir -p image/usr/lib/jvm
@@ -210,8 +213,8 @@ build_spark() {
             fi
         fi
         #register error
-        if [ $? -gt 0 ]; then
-            echo "register error"
+        if [[ $? -gt 0 || -z "$policy_Id" ]]; then
+            echo "can not get policy_Id, register fail"
             exit 1;
         fi
     fi
@@ -262,6 +265,22 @@ run_pyspark_pi() {
                 -cp "$SPARK_HOME/conf/:$SPARK_HOME/jars/*" \
                 -Xmx512m org.apache.spark.deploy.SparkSubmit \
                 /py-examples/pi.py
+}
+
+run_pyspark_sql_example() {
+    init_instance spark
+    build_spark
+    cd /opt/occlum_spark
+    echo -e "${BLUE}occlum run pyspark SQL example${NC}"
+    occlum run /usr/lib/jvm/java-8-openjdk-amd64/bin/java \
+                -XX:-UseCompressedOops -XX:MaxMetaspaceSize=$META_SPACE \
+                -XX:ActiveProcessorCount=4 \
+                -Divy.home="/tmp/.ivy" \
+                -Dos.name="Linux" \
+                -Djdk.lang.Process.launchMechanism=vfork \
+                -cp "$SPARK_HOME/conf/:$SPARK_HOME/jars/*" \
+                -Xmx3g org.apache.spark.deploy.SparkSubmit \
+                /py-examples/sql_example.py
 }
 
 run_spark_pi() {
@@ -452,6 +471,80 @@ run_spark_gbt() {
                 -i /host/data -s /host/data/model -I 100 -d 5
 }
 
+run_spark_gbt_e2e() {
+    init_instance spark
+    build_spark
+    cd /opt/occlum_spark
+    echo -e "${BLUE}occlum run BigDL Spark GBT e2e${NC}"
+    EHSM_URL=${ATTESTATION_URL}
+    EHSM_KMS_IP=${EHSM_URL%:*}
+    EHSM_KMS_PORT=${EHSM_URL#*:}
+    occlum run /usr/lib/jvm/java-8-openjdk-amd64/bin/java \
+                -XX:-UseCompressedOops -XX:MaxMetaspaceSize=$META_SPACE \
+                -XX:ActiveProcessorCount=4 \
+                -Divy.home="/tmp/.ivy" \
+                -Dos.name="Linux" \
+                -cp "$SPARK_HOME/conf/:$SPARK_HOME/jars/*:/bin/jars/*" \
+                -Xmx10g -Xms10g org.apache.spark.deploy.SparkSubmit \
+                --master local[4] \
+                --conf spark.task.cpus=2 \
+                --class com.intel.analytics.bigdl.ppml.examples.gbtClassifierTrainingExampleOnCriteoClickLogsDataset \
+                --num-executors 2 \
+                --executor-cores 2 \
+                --executor-memory 9G \
+                --driver-memory 10G \
+                /bin/jars/bigdl-dllib-spark_${SPARK_VERSION}-${BIGDL_VERSION}.jar \
+                --primaryKeyPath /host/data/key/ehsm_encrypted_primary_key \
+                --dataKeyPath /host/data/key/ehsm_encrypted_data_key \
+                --kmsType EHSMKeyManagementService \
+                --trainingDataPath /host/data/encrypt/ \
+                --modelSavePath /host/data/model/ \
+                --inputEncryptMode AES/CBC/PKCS5Padding \
+                --kmsServerIP $EHSM_KMS_IP \
+                --kmsServerPort $EHSM_KMS_PORT \
+                --ehsmAPPID $APP_ID \
+                --ehsmAPIKEY $API_KEY \
+                --maxDepth 5 \
+                --maxIter 100
+}
+
+run_spark_sql_e2e() {
+    init_instance spark
+    build_spark
+    cd /opt/occlum_spark
+    echo -e "${BLUE}occlum run BigDL Spark SQL e2e${NC}"
+    EHSM_URL=${ATTESTATION_URL}
+    EHSM_KMS_IP=${EHSM_URL%:*}
+    EHSM_KMS_PORT=${EHSM_URL#*:}
+    occlum run /usr/lib/jvm/java-8-openjdk-amd64/bin/java \
+                -XX:-UseCompressedOops -XX:MaxMetaspaceSize=$META_SPACE \
+                -XX:ActiveProcessorCount=4 \
+                -Divy.home="/tmp/.ivy" \
+                -Dos.name="Linux" \
+                -cp "$SPARK_HOME/conf/:$SPARK_HOME/jars/*:/bin/jars/*" \
+                -Xmx10g -Xms10g org.apache.spark.deploy.SparkSubmit \
+                --master local[4] \
+                --conf spark.task.cpus=2 \
+                --class com.intel.analytics.bigdl.ppml.examples.SimpleQuerySparkExample \
+                --num-executors 2 \
+                --executor-cores 2 \
+                --executor-memory 9G \
+                --driver-memory 10G \
+                /bin/jars/bigdl-dllib-spark_${SPARK_VERSION}-${BIGDL_VERSION}.jar \
+                --primaryKeyPath /host/data/key/ehsm_encrypted_primary_key \
+                --dataKeyPath /host/data/key/ehsm_encrypted_data_key \
+                --kmsType EHSMKeyManagementService \
+                --inputPath /host/data/encrypt/ \
+                --outputPath /host/data/model/ \
+                --inputEncryptModeValue AES/CBC/PKCS5Padding \
+                --outputEncryptModeValue AES/CBC/PKCS5Padding \
+                --kmsServerIP $EHSM_KMS_IP \
+                --kmsServerPort $EHSM_KMS_PORT \
+                --ehsmAPPID $APP_ID \
+                --ehsmAPIKEY $API_KEY
+}
+
+
 
 id=$([ -f "$pid" ] && echo $(wc -l < "$pid") || echo "0")
 
@@ -476,6 +569,10 @@ case "$arg" in
         ;;
     pypi)
         run_pyspark_pi
+        cd ../
+        ;;
+    pysql)
+        run_pyspark_sql_example
         cd ../
         ;;
     pi)
@@ -508,6 +605,14 @@ case "$arg" in
         ;;
     gbt)
         run_spark_gbt
+        cd ../
+        ;;
+    gbt_e2e)
+        run_spark_gbt_e2e
+        cd ../
+        ;;
+    sql_e2e)
+        run_spark_sql_e2e
         cd ../
         ;;
 esac

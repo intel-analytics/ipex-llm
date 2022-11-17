@@ -161,7 +161,7 @@ RUN cd /opt && \
 ADD ./install_python_with_conda.sh /opt
 RUN cd /opt && bash ./install_python_with_conda.sh
 
-FROM occlum/occlum:0.28.1-ubuntu20.04 as ppml
+FROM occlum/occlum:0.29.2-ubuntu20.04 as ppml
 
 ARG BIGDL_VERSION=2.2.0-SNAPSHOT
 ARG SPARK_VERSION
@@ -245,8 +245,10 @@ ADD ./print_enclave_signer.sh /opt
 ADD ./register.sh /opt
 
 COPY ./entrypoint.sh /opt/
+COPY ./ehsm_entry.sh /opt/
 
 RUN chmod a+x /opt/entrypoint.sh && \
+    chmod a+x /opt/ehsm_entry.sh && \
     chmod a+x /opt/run_spark_on_occlum_glibc.sh && \
     chmod a+x /opt/verify-attestation-service.sh && \
     chmod a+x /opt/print_enclave_signer.sh && \

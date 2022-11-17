@@ -23,6 +23,7 @@ You can find more details in [Intel SGX Developer Guide](https://download.01.org
 
 ```eval_rst
 .. mermaid::
+
    graph LR
       subgraph SGX enclave
       MRENCLAVE(fa:fa-file-signature MRENCLAVE)

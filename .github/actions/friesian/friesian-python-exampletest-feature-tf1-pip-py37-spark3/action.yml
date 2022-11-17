@@ -6,12 +6,12 @@ runs:
     - name: Run Test
       shell: bash
       run: |
-        chmod a+x python/dev/release_default_linux_spark313.sh
-        ./python/dev/release_default_linux_spark313.sh default false false
-       
         source activate py37
         export SPARK_LOCAL_HOSTNAME=localhost
-        pip install wheel
+        #pip install wheel
+        chmod a+x python/dev/release_default_linux_spark313.sh
+        ./python/dev/release_default_linux_spark313.sh default false false
+
         # install dllib
         pip install python/dllib/src/dist/bigdl_dllib_spark3-*-py3-none-manylinux1_x86_64.whl
         # install orca

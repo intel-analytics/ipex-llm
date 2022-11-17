@@ -287,6 +287,18 @@ RUN cd /opt/intel && \
     apt-get update && \
     apt-get install -y libsgx-enclave-common-dev  libsgx-ae-qe3 libsgx-ae-qve libsgx-urts libsgx-dcap-ql libsgx-dcap-default-qpl libsgx-dcap-quote-verify-dev libsgx-dcap-ql-dev libsgx-dcap-default-qpl-dev libsgx-quote-ex-dev libsgx-uae-service libsgx-ra-network libsgx-ra-uefi
 
+# Azure support
+RUN curl -sL https://aka.ms/InstallAzureCLIDeb | bash
+RUN apt-get install bsdmainutils
+RUN curl -LO https://dl.k8s.io/release/v1.25.0/bin/linux/amd64/kubectl
+RUN install -o root -g root -m 0755 kubectl /usr/local/bin/kubectl
+ADD azure /ppml/trusted-big-data-ml/azure
+RUN chmod a+x /ppml/trusted-big-data-ml/azure/create-aks.sh && \
+    chmod a+x /ppml/trusted-big-data-ml/azure/generate-keys-az.sh && \
+    chmod a+x /ppml/trusted-big-data-ml/azure/generate-password-az.sh && \
+    chmod a+x /ppml/trusted-big-data-ml/azure/kubeconfig-secret.sh && \
+    chmod a+x /ppml/trusted-big-data-ml/azure/submit-spark-sgx-az.sh
+
 ENV PYTHONPATH                          /usr/lib/python3.7:/usr/lib/python3.7/lib-dynload:/usr/local/lib/python3.7/dist-packages:/usr/lib/python3/dist-packages
 WORKDIR /ppml/trusted-big-data-ml
 

@@ -53,5 +53,5 @@ class TestModelQuantize(TestCase):
 
         # Case 3: Invalid approach, dynamic or qat is not supported
         invalid_approach = 'dynamic'
-        with pytest.raises(RuntimeError, match="post_training_dynamic_quant is invalid."):
-            model.quantize(approach=invalid_approach)
+        with pytest.raises(RuntimeError, match="Only 'static' approach is supported now."):
+            model.quantize(calib_dataset=None, approach=invalid_approach)

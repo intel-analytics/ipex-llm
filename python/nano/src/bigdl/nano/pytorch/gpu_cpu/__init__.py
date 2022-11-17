@@ -14,4 +14,4 @@
 # limitations under the License.
 #
 
-from .gpu_cpu import patch_cuda
+from .gpu_cpu import patch_cuda, unpatch_cuda, get_cuda_status

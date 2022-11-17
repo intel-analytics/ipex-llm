@@ -18,6 +18,8 @@ on:
         - PPML-Spark-K8S-Example-On-Gramine
         - PPML-Spark-K8S-SimpleQuery-On-Gramine
         - PPML-Spark-PySpark-Local-Sql-UT-On-Gramine
+        - PPML-Spark-K8S-TPC-H-On-Gramine
+        - PPML-Spark-K8S-TPC-DS-On-Gramine
       image:
         description: 'docker image name'
         required: true
@@ -157,6 +159,72 @@ jobs:
         file-name: PPML-Spark-PySpark-Local-Sql-UT-On-Gramine.json
         type: job
         job-name: PPML-Spark-PySpark-Local-Sql-UT-On-Gramine
+        runner-hosted-on: 'Shanghai'
+
+  PPML-Spark-K8S-TPC-H-On-Gramine:
+    if: ${{ github.event.schedule || github.event.inputs.artifact == 'PPML-Spark-K8S-TPC-H-On-Gramine' || github.event.inputs.artifact == 'all' }}
+    runs-on: [self-hosted, Vilvarin]
+    steps:
+    - uses: actions/checkout@v3
+    - name: Set up JDK8
+      uses: ./.github/actions/jdk-setup-action
+    - name: Set up maven
+      uses: ./.github/actions/maven-setup-action
+    - name: set env
+      env:
+        DEFAULT_IMAGE: '10.239.45.10/arda/intelanalytics/bigdl-ppml-trusted-big-data-ml-python-gramine-reference'
+        DEFAULT_TAG: 'latest'
+      run: |
+        echo "IMAGE=${{ github.event.inputs.image || env.DEFAULT_IMAGE }}" >> $GITHUB_ENV
+        echo "TAG=${{ github.event.inputs.tag || env.DEFAULT_TAG }}" >> $GITHUB_ENV
+    - name: Run test
+      uses: ./.github/actions/ppml/ppml-spark-k8s-tpc-h-on-gramine-action
+      with:
+        image: ${{env.IMAGE}}
+        image-tag: ${{env.TAG}}
+    - name: Create Job Badge
+      uses: ./.github/actions/create-job-status-badge
+      if: ${{ always() }}
+      with:
+        secret: ${{ secrets.GIST_SECRET}}
+        gist-id: ${{env.GIST_ID}}
+        is-self-hosted-runner: true
+        file-name: PPML-Spark-K8S-TPC-H-On-Gramine.json
+        type: job
+        job-name: PPML-Spark-K8S-TPC-H-On-Gramine
+        runner-hosted-on: 'Shanghai'
+
+  PPML-Spark-K8S-TPC-DS-On-Gramine:
+    if: ${{ github.event.schedule || github.event.inputs.artifact == 'PPML-Spark-K8S-TPC-DS-On-Gramine' || github.event.inputs.artifact == 'all' }}
+    runs-on: [self-hosted, Vilvarin]
+    steps:
+    - uses: actions/checkout@v3
+    - name: Set up JDK8
+      uses: ./.github/actions/jdk-setup-action
+    - name: Set up maven
+      uses: ./.github/actions/maven-setup-action
+    - name: set env
+      env:
+        DEFAULT_IMAGE: '10.239.45.10/arda/intelanalytics/bigdl-ppml-trusted-big-data-ml-python-gramine-reference'
+        DEFAULT_TAG: 'latest'
+      run: |
+        echo "IMAGE=${{ github.event.inputs.image || env.DEFAULT_IMAGE }}" >> $GITHUB_ENV
+        echo "TAG=${{ github.event.inputs.tag || env.DEFAULT_TAG }}" >> $GITHUB_ENV
+    - name: Run test
+      uses: ./.github/actions/ppml/ppml-spark-k8s-tpc-ds-on-gramine-action
+      with:
+        image: ${{env.IMAGE}}
+        image-tag: ${{env.TAG}}
+    - name: Create Job Badge
+      uses: ./.github/actions/create-job-status-badge
+      if: ${{ always() }}
+      with:
+        secret: ${{ secrets.GIST_SECRET}}
+        gist-id: ${{env.GIST_ID}}
+        is-self-hosted-runner: true
+        file-name: PPML-Spark-K8S-TPC-DS-On-Gramine.json
+        type: job
+        job-name: PPML-Spark-K8S-TPC-DS-On-Gramine
         runner-hosted-on: 'Shanghai'
 
   # please put your test before the create-workflow-badge to make sure the badge can be displayed on the github page.

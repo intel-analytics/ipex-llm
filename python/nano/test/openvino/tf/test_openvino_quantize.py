@@ -21,12 +21,12 @@ from bigdl.nano.tf.keras import Model
 
 
 class TestOpenVINO(TestCase):
-    def test_model_trace_openvino(self):
+    def test_model_quantize_openvino(self):
         model = MobileNetV2(weights=None, input_shape=[40, 40, 3], classes=10)
         model = Model(inputs=model.inputs, outputs=model.outputs)
         train_examples = np.random.random((100, 40, 40, 3))
         train_labels = np.random.randint(0, 10, size=(100,))
-        train_dataset = tf.data.Dataset.from_tensor_slices((train_examples, train_labels)).batch(1)
+        train_dataset = tf.data.Dataset.from_tensor_slices((train_examples, train_labels))
 
         # Case1: Trace and quantize
         openvino_model = model.trace(accelerator='openvino')
@@ -49,5 +49,14 @@ class TestOpenVINO(TestCase):
         y_hat = openvino_quantized_model.predict(train_examples, batch_size=5)
         assert y_hat.shape == (100, 10)
 
-        openvino_quantized_model.compile(metrics=[tf.keras.metrics.CategoricalAccuracy()])
-        acc = openvino_quantized_model.evaluate(train_dataset, return_dict=True)['categorical_accuracy']
+        preds = model.predict(train_examples)
+        openvino_preds = openvino_quantized_model.predict(train_examples)
+        np.testing.assert_allclose(preds, openvino_preds, rtol=1e-2)
+
+        # Case 3: with config
+        openvino_quantized_model = model.quantize(accelerator='openvino',
+                                                  calib_dataset=train_dataset,
+                                                  openvino_config={"PERFORMANCE_HINT": "LATENCY"})
+
+        y_hat = openvino_quantized_model(train_examples[:10])
+        assert y_hat.shape == (10, 10)
