@@ -10,6 +10,7 @@ Install
 
 Forecasting
 -------------------------
+* `Use Chronos benchmark tool <how_to_use_benchmark_tool.html>`__
 * `Create a forecaster <how_to_create_forecaster.html>`__
 * `Train forecaster on single node <how_to_train_forecaster_on_one_node.html>`__
 * `Save and load a forecaster <how_to_save_and_load_forecaster.html>`__
