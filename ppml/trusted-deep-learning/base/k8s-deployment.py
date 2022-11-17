@@ -157,7 +157,9 @@ def _create_pod(pod_name: str,
         envs.append(
             client.V1EnvVar(name=env[0], value=env[1]),
         )
-    # TODO: refactor sgx.intel.com into parameters?
+    # The arguments epc, enclave, provision are only used to restrict the number of pods allowed on a sgx node.
+    # We choose to only use the epc memory to restrict that.
+    # TODO: We probably need to use a argument to let the user to choose whether the sgx device-plugin is desired or not.
     resource = client.V1ResourceRequirements(limits={"cpu": pod_cpu,
                                                      "memory": pod_memory,
                                                      "sgx.intel.com/epc": pod_epc_memory,
@@ -182,10 +184,13 @@ def _create_pod(pod_name: str,
     volumes = [_deserialize_volume_object(
         json_str, api_client) for json_str in volume_strs]
 
+    node_selector = {"label": "perf"}
+
     pod_spec = client.V1PodSpec(containers=[container],
                                 restart_policy="Never",
                                 volumes=volumes,
                                 dns_policy="ClusterFirst",
+                                node_selector=node_selector,
                                 host_network=False)
     pod_body = client.V1Pod(api_version='v1',
                             metadata=metadata,
