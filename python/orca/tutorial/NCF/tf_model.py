@@ -26,15 +26,20 @@ def ncf_model(embedding_size, user_num, item_num, dropout, lr):
         GMF = tf.keras.layers.Multiply()([user_embed_GMF, item_embed_GMF])
 
     with tf.name_scope("MLP"):
-        user_embed_MLP = tf.keras.layers.Embedding(user_num, embedding_size * 4, name='mlp_user')(user)
-        item_embed_MLP = tf.keras.layers.Embedding(item_num, embedding_size * 4, name='mlp_item')(item)
+        user_embed_MLP = tf.keras.layers.Embedding(
+            user_num, embedding_size * 4, name='mlp_user')(user)
+        item_embed_MLP = tf.keras.layers.Embedding(
+            item_num, embedding_size * 4, name='mlp_item')(item)
         interaction = tf.concat([user_embed_MLP, item_embed_MLP], axis=-1)
 
-        layer1_MLP = tf.keras.layers.Dense(units=embedding_size * 4, activation='relu')(interaction)
+        layer1_MLP = tf.keras.layers.Dense(
+            units=embedding_size * 4, activation='relu')(interaction)
         layer1_MLP = tf.keras.layers.Dropout(rate=dropout)(layer1_MLP)
-        layer2_MLP = tf.keras.layers.Dense(units=embedding_size * 2, activation='relu')(layer1_MLP)
+        layer2_MLP = tf.keras.layers.Dense(
+            units=embedding_size * 2, activation='relu')(layer1_MLP)
         layer2_MLP = tf.keras.layers.Dropout(rate=dropout)(layer2_MLP)
-        layer3_MLP = tf.keras.layers.Dense(units=embedding_size, activation='relu')(layer2_MLP)
+        layer3_MLP = tf.keras.layers.Dense(
+            units=embedding_size, activation='relu')(layer2_MLP)
         layer3_MLP = tf.keras.layers.Dropout(rate=dropout)(layer3_MLP)
 
     with tf.name_scope("concatenation"):
