@@ -65,14 +65,9 @@ class OrcaRayContext(object):
     def init(self, driver_cores=0):
         if self.runtime == "ray":
             address_env_var = os.environ.get(ray_constants.RAY_ADDRESS_ENVIRONMENT_VARIABLE)
-            if "address" not in self.ray_args:
-                if address_env_var is None:
+            if "address" not in self.ray_args and address_env_var is None:
                     print("Creating a local Ray instance.")
                     results = ray.init(num_cpus=self.ray_node_cpu_cores, **self.ray_args)
-                else:
-                    print("Connecting to an existing ray cluster, num_cpus "
-                          "must not be provided.")
-                    results = ray.init(**self.ray_args)
             else:
                 print("Connecting to an existing ray cluster, num_cpus "
                       "must not be provided.")
