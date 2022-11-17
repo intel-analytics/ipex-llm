@@ -38,6 +38,7 @@ TORCH_VERSION_LESS_1_13 = _compare_version("torch", operator.lt, "1.13")
 TORCHVISION_VERSION_LESS_1_12 = _compare_version("torchvision", operator.lt, "0.12.0")
 TORCHVISION_VERSION_LESS_1_14 = _compare_version("torchvision", operator.lt, "0.14.0")
 
+
 def batch_call(func):
     """
     Decorator to extending hook of pl_module.
