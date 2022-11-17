@@ -51,7 +51,7 @@ class KerasONNXRuntimeModel(ONNXRuntimeModel, AcceleratedKerasModel):
                 if not isinstance(input_sample, (tuple, list)):
                     input_sample = (input_sample, )
                 tf2onnx.convert.from_keras(model, input_signature=input_sample,
-                                        output_path=onnx_path, **export_kwargs)
+                                           output_path=onnx_path, **export_kwargs)
             else:
                 onnx_path = model
             AcceleratedKerasModel.__init__(self, None)

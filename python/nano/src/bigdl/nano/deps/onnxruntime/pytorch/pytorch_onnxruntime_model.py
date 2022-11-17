@@ -55,7 +55,7 @@ class PytorchONNXRuntimeModel(ONNXRuntimeModel, AcceleratedLightningModule):
                 onnx_path = Path(tmpdir) / "tmp.onnx"
                 # Typically, when model is fp32, we use this path
                 export_to_onnx(model, input_sample=input_sample, onnx_path=onnx_path,
-                            **export_kwargs)
+                               **export_kwargs)
                 if simplification is True:
                     # simplify model
                     try:
