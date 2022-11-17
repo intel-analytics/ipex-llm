@@ -26,7 +26,8 @@ def read_data(data_dir):
     schema = StructType([StructField('user', IntegerType(), False),
                          StructField('item', IntegerType(), False)])
     # Need spark3 to support delimiter with more than one character.
-    df = spark.read.csv(os.path.join(data_dir, "ratings.dat"), sep="::", schema=schema, header=False)
+    df = spark.read.csv(
+        os.path.join(data_dir, "ratings.dat"), sep="::", schema=schema, header=False)
     return df
 
 
