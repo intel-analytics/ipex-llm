@@ -22,8 +22,8 @@ import warnings
 from mmcv.runner import EpochBasedRunner
 from mmcv.runner.utils import get_host_info
 from mmcv.parallel.distributed import MMDistributedDataParallel
+from bigdl.orca.learn.pytorch.utils import get_batchsize
 from bigdl.dllib.utils.log4Error import invalidInputError
-from bigdl.orca.learn.pytorch.utils import AverageMeterCollection, get_batchsize
 from bigdl.orca.learn.pytorch.experimential.core.base_ray_runner import BaseRayRunner
 
 from typing import (Any, Dict, List, Optional, Tuple, Callable, overload)
