@@ -144,11 +144,11 @@ elif [ "$1" = "taskmanager" ]; then
     echo "Starting Task Manager"
 
     exec $(drop_privs_cmd) "$FLINK_HOME/bin/taskmanager.sh" start-foreground "${args[@]}"
-elif [ -z "$2"]; then 
+elif [ -z "$2" ]; then
+    
+    exec "$1"
 
-    exec $(drop_privs_cmd) ${args[@]}
-
-elif [ "${args[2]}"="kubernetes-jobmanager.sh"]; then
+elif [ "${args[2]}"="kubernetes-jobmanager.sh" ]; then
 
     export _FLINK_HOME_DETERMINED='true'
     
@@ -174,7 +174,7 @@ elif [ "${args[2]}"="kubernetes-jobmanager.sh"]; then
 
     exec $JAVA_RUN $JVM_ARGS ${FLINK_ENV_JAVA_OPTS} "${log_setting[@]}"  -classpath  ${classpaths}: ${CLASS_TO_RUN} "${ARGS[@]}"
 
-elif [ "${args[2]}"="kubernetes-taskmanager.sh"]; then
+elif [ "${args[2]}" = "kubernetes-taskmanager.sh" ]; then
     args=${args[@]:4}
 
     ARGS=${args[@]:4}
