@@ -274,6 +274,22 @@ run_pyspark_pi() {
                 /py-examples/pi.py
 }
 
+run_pyspark_sql_example() {
+    export RUNTIME_ENV="native"
+    attestation_init
+    cd /opt/occlum_spark
+    echo -e "${BLUE}occlum run pyspark SimpleQuery example${NC}"
+    occlum run /usr/lib/jvm/java-8-openjdk-amd64/bin/java \
+                -XX:-UseCompressedOops -XX:MaxMetaspaceSize=$META_SPACE \
+                -XX:ActiveProcessorCount=4 \
+                -Divy.home="/tmp/.ivy" \
+                -Dos.name="Linux" \
+                -Djdk.lang.Process.launchMechanism=vfork \
+                -cp "$SPARK_HOME/conf/:$SPARK_HOME/jars/*" \
+                -Xmx3g org.apache.spark.deploy.SparkSubmit \
+                /py-examples/sql_example.py
+}
+
 run_spark_pi() {
     export RUNTIME_ENV="native"
     attestation_init
@@ -484,6 +500,10 @@ case "$arg" in
         ;;
     pypi)
         run_pyspark_pi
+        cd ../
+        ;;
+    pysql)
+        run_pyspark_sql_example
         cd ../
         ;;
     pi)
