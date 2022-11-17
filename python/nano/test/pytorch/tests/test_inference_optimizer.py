@@ -291,11 +291,10 @@ class TestInferencePipeline(TestCase):
                                training_data=input_sample,
                                thread_num=1,
                                latency_sample_num=10)
-        # test automatic fill label for quantization
+        # test automatic add label for quantization
         optim_dict = inference_opt.optimized_model_dict
-        assert optim_dict["openvino_int8"]["status"] == "successful"
-        assert optim_dict["onnxruntime_int8_qlinear"]["status"] == "successful"
-        assert optim_dict["onnxruntime_int8_integer"]["status"] == "successful"
+        assert optim_dict["openvino_int8"]["status"] in ("successful", "early_stopped")
+        assert optim_dict["onnxruntime_int8_qlinear"]["status"] in ("successful", "early_stopped")
 
     def test_pipeline_with_single_tuple_of_tensor(self):
         input_sample = (torch.rand(1, 3, 32, 32), torch.Tensor([1]).int())
@@ -428,8 +427,7 @@ class TestInferencePipeline(TestCase):
                                training_data=dataloader,
                                thread_num=1,
                                latency_sample_num=10)
-        # test automatic fill label for quantization
+        # test automatic add label for quantization
         optim_dict = inference_opt.optimized_model_dict
-        assert optim_dict["openvino_int8"]["status"] == "successful"
-        assert optim_dict["onnxruntime_int8_qlinear"]["status"] == "successful"
-        assert optim_dict["onnxruntime_int8_integer"]["status"] == "successful"
+        assert optim_dict["openvino_int8"]["status"] in ("successful", "early_stopped")
+        assert optim_dict["onnxruntime_int8_qlinear"]["status"] in ("successful", "early_stopped")

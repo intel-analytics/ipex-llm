@@ -30,7 +30,8 @@ class PytorchOpenVINODataLoader(DataLoader):
     def __getitem__(self, index):
         data = self.dataset[index]
         if self.original_fn:
-            data = self.original_fn(data)
+            # turn single element into list for default colleta_fn
+            data = self.original_fn([data])
         if self.collate_fn:
             data = self.collate_fn(data)
         return data
