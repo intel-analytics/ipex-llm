@@ -28,17 +28,15 @@ from bigdl.orca.data.transformer import StringIndexer
 
 
 def ng_sampling(data, user_num, item_num, num_ng):
-    clms = ['user', 'item']
-    data = data.loc[:, clms]
-    data_values = data.values.tolist()
+    data_X = data.values.tolist()
 
     # calculate a dok matrix
     train_mat = sp.dok_matrix((user_num, item_num), dtype=np.int64)
-    for row in data_values:
+    for row in data_X:
         train_mat[row[0], row[1]] = 1
 
     # negative sampling
-    features_ps = data_values
+    features_ps = data_X
     features_ng = []
     for x in features_ps:
         u = x[0]
@@ -53,7 +51,7 @@ def ng_sampling(data, user_num, item_num, num_ng):
 
     features_fill = features_ps + features_ng
     labels_fill = labels_ps + labels_ng
-    data_XY = pd.DataFrame(data=features_fill, columns=clms, dtype=np.int64)
+    data_XY = pd.DataFrame(data=features_fill, columns=["user", "item"], dtype=np.int64)
     data_XY["label"] = labels_fill
     data_XY["label"] = data_XY["label"].astype(np.float)
     return data_XY
