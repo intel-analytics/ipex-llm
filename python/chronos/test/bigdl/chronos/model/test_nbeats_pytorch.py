@@ -45,8 +45,7 @@ def create_data(loader=False):
     test_data = get_x_y(num_test_samples)
 
     if loader:
-        DataLoader = LazyImport('torch.utils.data.DataLoader')
-        TensorDataset = LazyImport('torch.utils.data.TensorDataset')
+        from torch.utils.data import DataLoader, TensorDataset
         train_loader = DataLoader(TensorDataset(torch.from_numpy(train_data[0]),
                                                 torch.from_numpy(train_data[1])), batch_size=32)
         val_loader = DataLoader(TensorDataset(torch.from_numpy(val_data[0]),
@@ -60,13 +59,13 @@ def create_data(loader=False):
 
 @op_torch
 class TestNbeatsPytorch(TestCase):
-    train_data, val_data, test_data = create_data(loader=True)
 
     def test_fit(self):
+        train_data, val_data, test_data = create_data(loader=True)
         model = model_creator({"past_seq_len": 24,
                                "future_seq_len": 5})
         trainer = Trainer(max_epochs=1)
         pl_model = Trainer.compile(model,
                                    loss=torch.nn.MSELoss(),
                                    optimizer=torch.optim.Adam(model.parameters(), lr=0.005))
-        trainer.fit(pl_model, self.train_data)
+        trainer.fit(pl_model, train_data)

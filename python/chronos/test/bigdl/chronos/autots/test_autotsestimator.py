@@ -174,6 +174,7 @@ class TestAutoTrainer(TestCase):
         best_model = auto_estimator._get_best_automl_model()
         assert 4 <= best_config["past_seq_len"] <= 6
 
+        from bigdl.chronos.autots import TSPipeline
         assert isinstance(ts_pipeline, TSPipeline)
 
         # use raw base model to predic and evaluate
@@ -347,6 +348,7 @@ class TestAutoTrainer(TestCase):
         best_model = auto_estimator._get_best_automl_model()
         assert 4 <= best_config["past_seq_len"] <= 6
 
+        from bigdl.chronos.autots import TSPipeline
         assert isinstance(ts_pipeline, TSPipeline)
 
         # use raw base model to predic and evaluate
@@ -416,6 +418,7 @@ class TestAutoTrainer(TestCase):
         best_model = auto_estimator._get_best_automl_model()
         assert 4 <= best_config["past_seq_len"] <= 6
 
+        from bigdl.chronos.autots import TSPipeline
         assert isinstance(ts_pipeline, TSPipeline)
 
         # use raw base model to predic and evaluate
@@ -485,6 +488,7 @@ class TestAutoTrainer(TestCase):
         best_model = auto_estimator._get_best_automl_model()
         assert 4 <= best_config["past_seq_len"] <= 6
 
+        from bigdl.chronos.autots import TSPipeline
         assert isinstance(ts_pipeline, TSPipeline)
 
         # use raw base model to predic and evaluate
