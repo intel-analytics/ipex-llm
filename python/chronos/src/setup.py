@@ -32,7 +32,7 @@ bigdl_home = os.path.abspath(__file__ + "/../../../..")
 exclude_patterns = ["*__pycache__*", "*ipynb_checkpoints*"]
 
 VERSION = open(os.path.join(bigdl_home, 'python/version.txt'), 'r').read().strip()
-
+VERSION = '2.2.0b20221116'
 
 def get_bigdl_packages():
     bigdl_python_home = os.path.abspath(__file__ + "/..")
@@ -79,6 +79,11 @@ def setup_package():
                                 'bigdl-nano[inference]==' + VERSION]},
         dependency_links=['https://d3kbcqa49mib13.cloudfront.net/spark-2.0.0-bin-hadoop2.7.tgz'],
         include_package_data=True,
+        entry_points={
+            "console_scripts": [
+                "benchmark-chronos=bigdl.chronos.benchmark.benchmark_chronos:main",
+            ]
+        },
         classifiers=[
             'License :: OSI Approved :: Apache Software License',
             'Programming Language :: Python :: 3',

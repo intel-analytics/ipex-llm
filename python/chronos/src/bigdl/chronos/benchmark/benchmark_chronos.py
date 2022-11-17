@@ -204,8 +204,8 @@ def result():
             print("avg throughput: {}".format(records[framework+'_infer_throughput']))
             print(">>>>>>>>>>>>> {} throughput result >>>>>>>>>>>>>".format(framework))
 
-if __name__ == '__main__':
 
+def main():
     # read input arguments
     # currently designed arguments
     parser = argparse.ArgumentParser(description='Benchmarking Parameters')
@@ -306,3 +306,6 @@ if __name__ == '__main__':
     get_CPU_info()
     check_nano_env()
     result()
+
+if __name__ == "__main__":
+    main()
