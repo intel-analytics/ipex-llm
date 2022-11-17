@@ -15,9 +15,7 @@
 #
 import os.path
 
-import tensorflow as tf
-from pyspark.ml.feature import StringIndexer
-from pyspark.sql.types import StructField, StructType, IntegerType, ArrayType, StringType
+from pyspark.sql.types import StructField, StructType, IntegerType, ArrayType
 from pyspark.sql.functions import udf, lit, collect_list, explode
 
 from bigdl.orca import OrcaContext
@@ -29,22 +27,23 @@ def read_data(data_dir):
                          StructField('item', IntegerType(), False)])
     # Need spark3 to support delimiter with more than one character.
     df = spark.read.csv(os.path.join(data_dir, "ratings.dat"), sep="::", schema=schema, header=False)
-    df = df.withColumn('label', lit(1.0))
     return df
 
 
-def generate_neg_sample(df, embedding_in_dim):
+def generate_neg_sample(df, item_num):
     def neg_sample(x):
         import random
         neg_scale = 4
         neg_res = []
         for _ in x:
             for i in range(neg_scale):
-                neg_item_index = random.randint(1, embedding_in_dim['item'])
+                neg_item_index = random.randint(1, item_num)
                 while neg_item_index in x:
-                    neg_item_index = random.randint(1, embedding_in_dim['item'])
+                    neg_item_index = random.randint(1, item_num)
                 neg_res.append(neg_item_index)
         return neg_res
+
+    df = df.withColumn('label', lit(1.0))
 
     neg_sample_udf = udf(neg_sample, ArrayType(IntegerType(), False))
 
@@ -55,11 +54,20 @@ def generate_neg_sample(df, embedding_in_dim):
     df = df.unionByName(df_neg)
     df = df.repartition(df.rdd.getNumPartitions())
 
-    return df, embedding_in_dim
+    return df
 
 
-def split_dataset(df):
-    train_df, val_df = df.randomSplit([0.8, 0.2], 100)
-    train_size = train_df.count()
-    val_size = val_df.count()
-    return train_df, val_df, train_size, val_size
+if __name__ == "__main__":
+    from bigdl.orca import init_orca_context, stop_orca_context
+
+    sc = init_orca_context()
+    embedding_in_dim = {}
+    df = read_data('./ml-1m')
+    for i, c, in enumerate(['user', 'item']):
+        embedding_in_dim[c] = df.agg({c: "max"}).collect()[0][f"max({c})"]
+
+    df = generate_neg_sample(df, embedding_in_dim['item'])
+    train_data, test_data = df.randomSplit([0.8, 0.2], 100)
+    train_data.write.csv('./train_dataframe', header=True, sep=',', mode='overwrite')
+    test_data.write.csv('./test_dataframe', header=True, sep=',', mode='overwrite')
+    stop_orca_context()
