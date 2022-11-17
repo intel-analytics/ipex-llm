@@ -13,6 +13,10 @@ fi
 if [[ -z "$ATTESTATION_TYPE" ]]; then
     ATTESTATION_TYPE="EHSMAttestationService"
 fi
+if [[ -z "$CHALLENGE" ]]; then
+    #echo ppmltest|base64
+    CHALLENGE=cHBtbHRlc3QK
+fi
 if [[ -z "$APP_ID" ]]; then
     echo "[ERROR] APP_ID is not set!"
     echo "[INFO] PPML Application Exit!"
