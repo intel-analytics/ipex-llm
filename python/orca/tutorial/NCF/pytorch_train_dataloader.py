@@ -37,10 +37,10 @@ sc = init_orca_context()
 
 # Step 2: Define train and test datasets as PyTorch DataLoader
 def train_loader_func(config, batch_size):
-    data_X, user_num, item_num, cat_feats_dims, \
+    data_X, user_num, item_num, sparse_feats_dims, \
         feature_cols, label_cols = load_dataset(config['dataset_dir'],
                                                 num_ng=config['num_ng'],
-                                                cal_cat_feats_dims=False)
+                                                cal_sparse_feats_dims=False)
     total_cols = feature_cols + label_cols
 
     # train test split
@@ -56,10 +56,10 @@ def train_loader_func(config, batch_size):
 
 
 def test_loader_func(config, batch_size):
-    data_X, user_num, item_num, cat_feats_dims, \
+    data_X, user_num, item_num, sparse_feats_dims, \
         feature_cols, label_cols = load_dataset(config['dataset_dir'],
                                                 num_ng=config['num_ng'],
-                                                cal_cat_feats_dims=False)
+                                                cal_sparse_feats_dims=False)
     total_cols = feature_cols + label_cols
 
     # train test split
@@ -76,10 +76,10 @@ def test_loader_func(config, batch_size):
 
 # Step 3: Define the model, optimizer and loss
 def model_creator(config):
-    data_X, user_num, item_num, cat_feats_dims, \
+    data_X, user_num, item_num, sparse_feats_dims, \
         feature_cols, label_cols = load_dataset(config['dataset_dir'],
                                                 num_ng=0,
-                                                cal_cat_feats_dims=True)
+                                                cal_sparse_feats_dims=True)
 
     model = NCF(user_num=user_num,
                 item_num=item_num,
@@ -87,8 +87,8 @@ def model_creator(config):
                 num_layers=config['num_layers'],
                 dropout=config['dropout'],
                 model=config['model'],
-                cat_feats_dims=cat_feats_dims,
-                num_numeric_feats=config['num_numeric_feats'])
+                sparse_feats_dims=sparse_feats_dims,
+                num_dense_feats=config['num_dense_feats'])
     model.train()
     return model
 
@@ -114,7 +114,7 @@ est = Estimator.from_torch(model=model_creator, optimizer=optimizer_creator,
                                    'dropout': 0.5,
                                    'lr': 0.001,
                                    'model': "NeuMF-end",
-                                   'num_numeric_feats': 1})
+                                   'num_dense_feats': 1})
 est.fit(data=train_loader_func, epochs=10, batch_size=1024)
 
 
