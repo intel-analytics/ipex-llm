@@ -1,6 +1,8 @@
 #!/bin/bash
 set -x
-
+#for production
+echo 'PCCS_URL='${PCCS_URL}'/sgx/certification/v3/' > /etc/sgx_default_qcnl.conf
+echo 'USE_SECURE_CERT=FALSE' >> /etc/sgx_default_qcnl.conf
 export BIGDL_PPML_JAR=$BIGDL_HOME/jars/*
 
 if [[ -z "$ATTESTATION_URL" ]]; then
