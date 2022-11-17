@@ -62,6 +62,7 @@ jobs:
               - '.github/actions/friesian-scala-ut-action/action.yml'
               - 'python/friesian/**'
               - '.github/actions/friesian/**'
+              - 'python/orca/src/bigdl/orca/data/**'
               
             dllib:
               - 'scala/serving/pom.xml'
