@@ -46,7 +46,6 @@ def generate_neg_sample(df, item_num):
     df = df.withColumn('label', lit(1.0))
 
     neg_sample_udf = udf(neg_sample, ArrayType(IntegerType(), False))
-
     df_neg = df.groupBy('user').agg(neg_sample_udf(collect_list('item')).alias('item_list'))
     df_neg = df_neg.select(df_neg.user, explode(df_neg.item_list))
     df_neg = df_neg.withColumn('label', lit(0.0))
