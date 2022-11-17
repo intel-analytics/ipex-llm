@@ -34,7 +34,7 @@ import java.security.SecureRandom
 
 /**
  * Microsoft Azure Attestation Service
- * @param maaProviderURL 
+ * @param maaProviderURL
  * @param apiVersion
  */
 class AzureAttestationService(maaProviderURL: String, apiVersion: String, userReportData: String)
@@ -66,7 +66,7 @@ class AzureAttestationService(maaProviderURL: String, apiVersion: String, userRe
   override def setPolicy(policy: JSONObject): String = "true"
 
   def getQuoteFromServer(challenge: String): String = "true"
-  
+
   override def attestWithServer(quote: String): (Boolean, String) = {
     if (quote == null) {
       Log4Error.invalidInputError(false,
@@ -82,7 +82,7 @@ class AzureAttestationService(maaProviderURL: String, apiVersion: String, userRe
 
     System.out.println(postResult.toString)
     val token = postResult.getString(RES_TOKEN)
-    val verifyQuoteResult = token.length() > 0 
+    val verifyQuoteResult = token.length() > 0
     (verifyQuoteResult, postResult.toString)
   }
 
