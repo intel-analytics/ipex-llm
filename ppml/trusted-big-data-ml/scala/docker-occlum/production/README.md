@@ -10,5 +10,5 @@ It will build image normally, and then run occlum-build to build occlum runable 
 -e SGX_KERNEL_HEAP=1GB \
 ```
 
-The image of the intermediate process is image_name=intelanalytics/bigdl-ppml-trusted-big-data-ml-scala-occlum-production:${TAG}, the final image is
-final_name=intelanalytics/bigdl-ppml-trusted-big-data-ml-scala-occlum-production:${TAG}-build. But the final image size is too large because there are too many dependencies in this image.
+The image of the intermediate process is image_name=`intelanalytics/bigdl-ppml-trusted-big-data-ml-scala-occlum-production:${TAG}`, the final image is
+final_name=`intelanalytics/bigdl-ppml-trusted-big-data-ml-scala-occlum-production:${TAG}-build`. But the final image size is too large because there are too many dependencies in this image.
