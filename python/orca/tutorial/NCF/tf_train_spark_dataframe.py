@@ -42,7 +42,6 @@ config = dict(
     user_num=user_num,
     dropout=0.5,
 )
-batch_size = 256
 
 
 def model_creator(config):
@@ -59,6 +58,8 @@ backend = 'spark'  # 'ray' of 'spark'
 est = Estimator.from_keras(model_creator=model_creator,
                            config=config,
                            backend=backend)
+
+batch_size = 256
 train_steps = math.ceil(train_df.count() / batch_size)
 val_steps = math.ceil(val_df.count() / batch_size)
 
