@@ -171,12 +171,13 @@ def latency():
         records['openvino_percentile_latency'] = np.percentile(latency_vino, latency_percentile)
 
 
-def evaluation():
+def accuracy():
     """
     evaluate stage will record model accuracy.
     """
 
-    forecaster.fit(train_loader, validation_data=val_loader, epochs=args.training_epochs, validation_mode="best_epoch")
+    forecaster.fit(train_loader, validation_data=val_loader,
+                   epochs=args.training_epochs, validation_mode="best_epoch")
 
     metrics = forecaster.evaluate(test_loader, multioutput='uniform_average')
 
@@ -220,11 +221,11 @@ def result():
             print("\n>>>>>>>>>>>>> {} throughput result >>>>>>>>>>>>>".format(framework))
             print("avg throughput: {}".format(records[framework+'_infer_throughput']))
             print(">>>>>>>>>>>>> {} throughput result >>>>>>>>>>>>>".format(framework))
-    elif args.stage == 'evaluation':
-        print("\n>>>>>>>>>>>>> evaluation result >>>>>>>>>>>>>")
+    elif args.stage == 'accuracy':
+        print("\n>>>>>>>>>>>>> accuracy result >>>>>>>>>>>>>")
         for metric in args.metrics:
             print("{}: {}".format(metric, records[metric]))
-        print(">>>>>>>>>>>>> evaluation result >>>>>>>>>>>>>")
+        print(">>>>>>>>>>>>> accuracy result >>>>>>>>>>>>>")
 
 
 if __name__ == '__main__':
@@ -236,7 +237,7 @@ if __name__ == '__main__':
                         help=('model name, choose from tcn/lstm/seq2seq/nbeats/autoformer,'
                               ' default to "tcn".'))
     parser.add_argument('-s', '--stage', type=str, default='train', metavar='',
-                        help=('stage name, choose from train/latency/throughput/evaluation,'
+                        help=('stage name, choose from train/latency/throughput/accuracy,'
                               ' default to "train".'))
     parser.add_argument('-d', '--dataset', type=str, default="tsinghua_electricity", metavar='',
                         help=('dataset name, choose from nyc_taxi/tsinghua_electricity/'
@@ -282,7 +283,7 @@ if __name__ == '__main__':
 
     # anomaly detection for input arguments
     models = ['tcn', 'lstm', 'seq2seq', 'nbeats', 'autoformer']
-    stages = ['train', 'latency', 'throughput', 'evaluation']
+    stages = ['train', 'latency', 'throughput', 'accuracy']
     datasets = ['tsinghua_electricity', 'nyc_taxi', 'synthetic_dataset']
     frameworks = ['torch', 'tensorflow']
     quantize_types = ['pytorch_fx', 'pytorch_ipex', 'onnxrt_qlinearops', 'openvino']
@@ -329,8 +330,8 @@ if __name__ == '__main__':
         latency()
     elif args.stage == 'throughput':
         throughput()
-    elif args.stage == 'evaluation':
-        evaluation()
+    elif args.stage == 'accuracy':
+        accuracy()
 
     # print results
     get_CPU_info()
