@@ -31,7 +31,7 @@ class moving_avg(nn.Module):
     def forward(self, x):
         # padding on the both ends of time series
         front = x[:, 0:1, :].repeat(1, (self.kernel_size - 1) // 2, 1)
-        end = x[:, -1:, :].repeat(1, (self.kernel_size - 1) // 2, 1)
+        end = x[:, -1:, :].repeat(1, self.kernel_size // 2, 1)
         x = torch.cat([front, x, end], dim=1)
         x = self.avg(x.permute(0, 2, 1))
         x = x.permute(0, 2, 1)

@@ -45,9 +45,7 @@ ping 1.2.3.227
 # information below means 1.2.3.227 is expected to be an appropriate IP addess for dkeyserver. 
 # otherwise, you are supposed to test another one.
 PING 1.2.3.227 (1.2.3.227) 56(84) bytes of data.
-From 1.2.3.4 icmp_seq=1 Destination Host Unreachable
-From 1.2.3.4 icmp_seq=2 Destination Host Unreachable
-From 1.2.3.4 icmp_seq=3 Destination Host Unreachable
+From 1.2.3.4 icmp_seq=1 Destination Host **Unreachable**
 ........
 
 # try another IP address (e.g 1.2.3.228) for KMS with the same approach.
@@ -65,7 +63,6 @@ nfsServerIP: your_nfs_server_ip                   --->   <the_IP_address_of_your
 nfsPath: a_nfs_shared_folder_path_on_the_server   --->   <an_existing_shared_folder_path_on_NFS_server>
 ......
 pccsIP: your_pccs_ip                              --->   <the_ip_address_in_your_subnetwork_you_have_assigned_to_pccs_in_step1>
-dkeyserverIP: your_dkeyserver_ip_to_use_as        --->   <an_unused_ip_address_in_your_subnetwork_to_assign_to_dkeyserver>
 kmsIP: your_kms_ip_to_use_as                      --->   <an_unused_ip_address_in_your_subnetwork_to_assign_to_kms>
 ```
 
@@ -88,10 +85,10 @@ pod/couchdb-0                                          1/1     Running   0      
 pod/dkeycache-57db49f98-z28t4                          1/1     Running   0          6h52m
 pod/dkeyserver-0                                       1/1     Running   0          6h52m
 
-NAME                                   TYPE           CLUSTER-IP      EXTERNAL-IP     PORT(S)          AGE
-service/bigdl-ehsm-kms-service         LoadBalancer   1.10.9.98       1.2.3.228       9000:30000/TCP   6h52m
-service/couchdb                        ClusterIP      1.10.8.236      <none>          5984/TCP         6h52m
-service/dkeyserver                     ClusterIP      1.10.1.132      1.2.3.227       8888/TCP         6h52m
+NAME                             TYPE           CLUSTER-IP       EXTERNAL-IP     PORT(S)          AGE
+service/bigdl-ehsm-kms-service   LoadBalancer   10.103.152.224   172.168.0.238   9000:30011/TCP   56m
+service/couchdb                  ClusterIP      10.103.152.212   <none>          5984/TCP         56m
+service/dkeyserver               ClusterIP      10.103.152.227   <none>          8888/TCP         56m
 
 NAME                                              READY   UP-TO-DATE   AVAILABLE   AGE
 deployment.apps/bigdl-ehsm-kms-deployment         1/1     1            1           6h52m
@@ -104,6 +101,7 @@ replicaset.apps/dkeycache-57db49f98                          1         1        
 NAME                          READY   AGE
 statefulset.apps/couchdb      1/1     6h52m
 statefulset.apps/dkeyserver   1/1     6h52m
+
 
 # Check the status of KMS
 curl -v -k -G "https://<external_kms_ip>:9000/ehsm/?Action=GetVersion"

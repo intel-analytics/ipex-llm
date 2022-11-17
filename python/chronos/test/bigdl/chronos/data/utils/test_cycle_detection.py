@@ -21,6 +21,8 @@ import numpy as np
 from unittest import TestCase
 from bigdl.chronos.data.utils.cycle_detection import cycle_length_est
 
+from ... import op_diff_set_all
+
 class TestCycleDetectionTimeSeries(TestCase):
     def setup_method(self, method):
         pass
@@ -28,6 +30,7 @@ class TestCycleDetectionTimeSeries(TestCase):
     def teardown_method(self, method):
         pass
 
+    @op_diff_set_all
     def test_cycle_detection_timeseries_numpy(self):
         data = np.random.randn(100)
         cycle_length = cycle_length_est(data)
