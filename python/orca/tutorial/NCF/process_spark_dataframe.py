@@ -65,7 +65,7 @@ if __name__ == "__main__":
     df = read_data('./ml-1m')
     item_num = df.agg({'item': "max"}).collect()[0]["max(item)"]
     df = generate_neg_sample(df, item_num)
-    train_data, test_data = df.randomSplit([0.8, 0.2], 100)
+    train_data, test_data = df.randomSplit([0.8, 0.2], seed=100)
     train_data.write.csv('./train_dataframe', header=True, sep=',', mode='overwrite')
     test_data.write.csv('./test_dataframe', header=True, sep=',', mode='overwrite')
     stop_orca_context()
