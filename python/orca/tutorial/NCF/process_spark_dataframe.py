@@ -50,6 +50,7 @@ def generate_neg_sample(df, item_num):
     df_neg = df_neg.select(df_neg.user, explode(df_neg.item_list))
     df_neg = df_neg.withColumn('label', lit(0.0))
     df_neg = df_neg.withColumnRenamed('col', 'item')
+
     df = df.unionByName(df_neg)
     df = df.repartition(df.rdd.getNumPartitions())
 
