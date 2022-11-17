@@ -31,7 +31,6 @@ def read_data(data_dir, spark):
 
 
 def generate_neg_sample(df):
-    # cat_feature = user_feature + item_feature
     embedding_in_dim = {}
     for i, c, in enumerate(['user', 'item']):
         print(f'[INFO] ==> begin calculate {c} embedding_in_dim')
@@ -60,6 +59,7 @@ def generate_neg_sample(df):
     df = df.repartition(df.rdd.getNumPartitions())
 
     return df, embedding_in_dim
+
 
 def split_dataset(df):
     train_df, val_df = df.randomSplit([0.8, 0.2], 100)
