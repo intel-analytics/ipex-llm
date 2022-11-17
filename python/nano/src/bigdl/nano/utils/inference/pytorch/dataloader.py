@@ -52,7 +52,8 @@ def automatic_add_label_in_dataloader(model, dataloader):
         # need to add label automaticly
         # generate a warning for user first
         warnings.warn("After checking, it is found that your data does not contain a label item. "
-                      "In order to make quantification work normally, we will automatically generate a dummy label.")
+                      "In order to make quantification work normally, we will automatically "
+                      "generate a dummy label.")
 
         # define a decorator to add label
         def label_collate_fn_wrapper(func):
@@ -97,7 +98,7 @@ def _check_whether_add_label(model, dataloader):
     forward_args = get_forward_args(model)
     forward_args_len = len(forward_args)
     input_sample = next(iter(dataloader))
-    
+
     if isinstance(input_sample, torch.Tensor):
         if forward_args_len >= 1:
             return True
