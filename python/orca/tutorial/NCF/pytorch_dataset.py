@@ -36,15 +36,15 @@ class NCFData(data.Dataset):
         return tuple(self.data[idx])
 
 
-def load_dataset(dataset_dir, num_ng=4, cal_cat_feats_dims=True):
+def load_dataset(dataset_dir, num_ng=4, cal_sparse_feats_dims=True):
     """
     dataset_dir: the path of the datasets;
     num_ng: number of negative samples to be sampled here;
-    cal_cat_feats_dims: if True, will calculate cat_feats_dims.
+    cal_sparse_feats_dims: if True, will calculate sparse_feats_dims.
     """
     feature_cols = ['user', 'item',
-                    'gender', 'occupation', 'zipcode', 'category',  # categorical feature
-                    'age']  # numerical feature
+                    'gender', 'occupation', 'zipcode', 'category',  # sparse feature
+                    'age']  # dense feature
     label_cols = ["label"]
 
     users = pd.read_csv(
@@ -99,15 +99,15 @@ def load_dataset(dataset_dir, num_ng=4, cal_cat_feats_dims=True):
     data_X = data_X.merge(movies, on='item')
     data_X = data_X.loc[:, feature_cols+label_cols]
 
-    # Calculate input_dims for each categorical features
-    cat_feats_dims = []
-    if cal_cat_feats_dims:
-        cat_feats_dims.append(users['gender'].max()+1)
-        cat_feats_dims.append(users['occupation'].max()+1)
-        cat_feats_dims.append(users['zipcode'].max()+1)
-        cat_feats_dims.append(movies['category'].max()+1)
+    # Calculate input_dims for each sparse features
+    sparse_feats_dims = []
+    if cal_sparse_feats_dims:
+        sparse_feats_dims.append(users['gender'].max()+1)
+        sparse_feats_dims.append(users['occupation'].max()+1)
+        sparse_feats_dims.append(users['zipcode'].max()+1)
+        sparse_feats_dims.append(movies['category'].max()+1)
 
-    return data_X, user_num, item_num, cat_feats_dims, feature_cols, label_cols
+    return data_X, user_num, item_num, sparse_feats_dims, feature_cols, label_cols
 
 
 if __name__ == "__main__":
