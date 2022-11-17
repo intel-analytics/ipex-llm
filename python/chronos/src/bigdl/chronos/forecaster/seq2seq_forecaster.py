@@ -46,8 +46,8 @@ class Seq2SeqForecaster(BasePytorchForecaster):
                  lstm_hidden_dim=64,
                  lstm_layer_num=2,
                  teacher_forcing=False,
-                 normalization=False,
-                 decomposition_kernal_size=0,
+                 normalization=True,
+                 decomposition_kernel_size=0,
                  dropout=0.1,
                  optimizer="Adam",
                  loss="mse",
@@ -73,9 +73,9 @@ class Seq2SeqForecaster(BasePytorchForecaster):
         :param normalization: bool, Specify if to use normalization trick to
                alleviate distribution shift. It first subtractes the last value
                of the sequence and add back after the model forwarding.
-        :param decomposition_kernal_size: int, Specify the kernel size in moving
+        :param decomposition_kernel_size: int, Specify the kernel size in moving
                average. The decomposition method will be applied if and only if
-               decomposition_kernal_size is greater than 1, which first decomposes
+               decomposition_kernel_size is greater than 1, which first decomposes
                the raw sequence into a trend component by a moving average kernel
                and a remainder(seasonal) component. Then, two models are applied
                to each component and sum up the two outputs to get the final
@@ -120,7 +120,7 @@ class Seq2SeqForecaster(BasePytorchForecaster):
             "teacher_forcing": teacher_forcing,
             "dropout": dropout,
             "normalization": normalization,
-            "decomposition_kernal_size": decomposition_kernal_size
+            "decomposition_kernel_size": decomposition_kernel_size
         }
         self.loss_config = {
             "loss": loss

@@ -159,8 +159,8 @@ def model_creator(config):
 
     if config.get("normalization", False):
         model = NormalizeTSModel(model, config["output_feature_num"])
-    decomposition_kernal_size = config.get("decomposition_kernal_size", 0)
-    if decomposition_kernal_size > 1:
+    decomposition_kernel_size = config.get("decomposition_kernel_size", 0)
+    if decomposition_kernel_size > 1:
         model_copy = TemporalConvNet(past_seq_len=config["past_seq_len"],
                                      input_feature_num=config["input_feature_num"],
                                      future_seq_len=config["future_seq_len"],
@@ -172,7 +172,7 @@ def model_creator(config):
                                      seed=config.get("seed", None))
         if config.get("normalization", False):
             model_copy = NormalizeTSModel(model_copy, config["output_feature_num"])
-        model = DecompositionTSModel((model, model_copy), decomposition_kernal_size)
+        model = DecompositionTSModel((model, model_copy), decomposition_kernel_size)
 
     return model
 
