@@ -44,6 +44,7 @@ class TCNForecaster(BasePytorchForecaster):
                  future_seq_len,
                  input_feature_num,
                  output_feature_num,
+                 dummy_encoder=False,
                  num_channels=[16]*3,
                  kernel_size=3,
                  normalization=True,
@@ -69,6 +70,9 @@ class TCNForecaster(BasePytorchForecaster):
         :param future_seq_len: Specify the output time steps (i.e. horizon).
         :param input_feature_num: Specify the feature dimension.
         :param output_feature_num: Specify the output dimension.
+        :param dummy_encoder: bool, no encoder is applied if True, which will
+               turn TCNForecaster to a Linear Model. If True, input_feature_num
+               should equals to output_feature_num.
         :param num_channels: Specify the convolutional layer filter number in
                TCN's encoder. This value defaults to [16]*3.
         :param kernel_size: Specify convolutional layer filter height in TCN's
@@ -127,7 +131,8 @@ class TCNForecaster(BasePytorchForecaster):
             "dropout": dropout,
             "seed": seed,
             "normalization": normalization,
-            "decomposition_kernel_size": decomposition_kernel_size
+            "decomposition_kernel_size": decomposition_kernel_size,
+            "dummy_encoder": dummy_encoder
         }
         self.loss_config = {
             "loss": loss
