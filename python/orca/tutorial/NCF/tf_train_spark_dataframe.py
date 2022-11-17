@@ -46,7 +46,7 @@ config = dict(
     user_num=user_num,
     dropout=0.5,
 )
-epochs = 2
+epochs = 10
 batch_size = 256
 
 
