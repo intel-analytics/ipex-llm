@@ -47,7 +47,7 @@ class KerasONNXRuntimeModel(ONNXRuntimeModel, AcceleratedKerasModel):
         """
         with TemporaryDirectory() as tmpdir:
             if isinstance(model, tf.keras.Model):
-                onnx_path = Path(tmpdir) / "tmp.onnx"
+                onnx_path = os.path.join(tmpdir, "tmp.onnx")
                 if not isinstance(input_sample, (tuple, list)):
                     input_sample = (input_sample, )
                 tf2onnx.convert.from_keras(model, input_signature=input_sample,

@@ -52,7 +52,7 @@ class PytorchONNXRuntimeModel(ONNXRuntimeModel, AcceleratedLightningModule):
         # TODO: self._forward_args should be set externally
         with TemporaryDirectory() as tmpdir:
             if isinstance(model, torch.nn.Module):
-                onnx_path = Path(tmpdir) / "tmp.onnx"
+                onnx_path = os.path.join(tmpdir, "tmp.onnx")
                 # Typically, when model is fp32, we use this path
                 export_to_onnx(model, input_sample=input_sample, onnx_path=onnx_path,
                                **export_kwargs)
