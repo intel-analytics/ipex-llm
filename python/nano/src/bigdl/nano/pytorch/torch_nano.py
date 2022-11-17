@@ -311,3 +311,28 @@ class TorchNano(LightningLite):
         """Only for compatibility, don't use it."""
         # this is a abstract method, so we must implement it
         pass
+
+
+def torch_nano(num_processes: int = 1,
+               use_ipex: bool = False,
+               strategy: str = "subprocess",
+               precision: Union[str, int] = 32,
+               *args, **kwargs):
+
+    def decorator(func):
+
+        def new_func(model, optimizer, train_data_loader, val_data_loader, *inner_args, **inner_kwargs):
+            class DecoratedTorchNano(TorchNano):
+
+                def train(self):
+                    _model, _optimizer, _train_loader, _val_loader = self.setup(model, optimizer, train_data_loader, val_data_loader)
+                    return func(_model, _optimizer, _train_loader, _val_loader, *inner_args, **inner_kwargs)
+
+            return DecoratedTorchNano(num_processes=num_processes,
+                                      use_ipex=use_ipex,
+                                      strategy=strategy,
+                                      precision=precision,
+                                      *args, **kwargs).train()
+
+        return new_func
+    return decorator
