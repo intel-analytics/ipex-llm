@@ -195,8 +195,8 @@ class TestMMCVRayEstimator(unittest.TestCase):
 
         start_stats = epoch_stats[0]
         end_stats = epoch_stats[-1]
-        assert start_stats["num_samples"] == NUM_SAMPLES
-        assert end_stats["num_samples"] == NUM_SAMPLES
+        self.assertEqual(start_stats["num_samples"], NUM_SAMPLES)
+        self.assertEqual(end_stats["num_samples"], NUM_SAMPLES)
 
         dloss = end_stats["loss"] - start_stats["loss"]
         print(f"dLoss: {dloss}")
@@ -212,6 +212,10 @@ class TestMMCVRayEstimator(unittest.TestCase):
         end_stats = epoch_stats[-1]
         assert start_stats["num_samples"] == NUM_SAMPLES
         assert end_stats["num_samples"] == NUM_SAMPLES
+        self.assertEqual(start_stats["num_samples"], NUM_SAMPLES)
+        self.assertEqual(end_stats["num_samples"], NUM_SAMPLES)
+        self.assertEqual(start_stats["var1"], 1.0)
+        self.assertEqual(end_stats["var1"], 1.0)
 
         dloss = end_stats["loss"] - start_stats["loss"]
         print(f"dLoss: {dloss}")
