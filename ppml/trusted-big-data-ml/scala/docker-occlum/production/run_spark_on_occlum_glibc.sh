@@ -211,7 +211,6 @@ attestation_init() {
                             -u $ATTESTATION_URL \
                             -i $APP_ID \
                             -k $API_KEY \
-                            -c $CHALLENGE \
                             -O occlum \
                             -o $policy_Id
                 if [ $? -gt 0 ]; then
