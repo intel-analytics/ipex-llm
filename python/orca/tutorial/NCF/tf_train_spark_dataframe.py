@@ -29,17 +29,10 @@ init_orca_context(memory='4g')
 # Step 2: Read and process data using Spark DataFrame
 data_dir = './ml-1m'  # path to ml-1m
 df = read_data(data_dir)
-embedding_in_dim = {}
-for i, c, in enumerate(['user', 'item']):
-    print(f'[INFO] ==> begin calculate {c} embedding_in_dim')
-    embedding_in_dim[c] = df.agg({c: "max"}).collect()[0][f"max({c})"]
-print(embedding_in_dim)
-item_num = embedding_in_dim['item'] + 1
-user_num = embedding_in_dim['user'] + 1
+user_num = df.agg({'user': "max"}).collect()[0]["max(user)"] + 1
+item_num = df.agg({'item': "max"}).collect()[0]["max(item)"] + 1
 df = generate_neg_sample(df, item_num)
 train_df, val_df = df.randomSplit([0.8, 0.2], seed=100)
-train_steps = math.ceil(train_df.count() / 256)
-val_steps = math.ceil(val_df.count() / 256)
 
 # Step 3: Define the NCF model
 config = dict(
@@ -49,6 +42,7 @@ config = dict(
     user_num=user_num,
     dropout=0.5,
 )
+batch_size = 256
 
 
 def model_creator(config):
@@ -65,10 +59,12 @@ backend = 'spark'  # 'ray' of 'spark'
 est = Estimator.from_keras(model_creator=model_creator,
                            config=config,
                            backend=backend)
+train_steps = math.ceil(train_df.count() / batch_size)
+val_steps = math.ceil(val_df.count() / batch_size)
 
 est.fit(train_df,
         epochs=10,
-        batch_size=256,
+        batch_size=batch_size,
         feature_cols=['user', 'item'],
         label_cols=['label'],
         steps_per_epoch=train_steps,
@@ -79,7 +75,7 @@ est.fit(train_df,
 stats = est.evaluate(val_df,
                      feature_cols=['user', 'item'],
                      label_cols=['label'],
-                     batch_size=256,
+                     batch_size=batch_size,
                      num_steps=val_steps)
 print("Evaluation results:", stats)
 
