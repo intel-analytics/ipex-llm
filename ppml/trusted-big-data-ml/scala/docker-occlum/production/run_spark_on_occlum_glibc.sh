@@ -479,8 +479,8 @@ run_spark_gbt() {
 }
 
 run_spark_gbt_e2e() {
-    init_instance spark
-    build_spark
+    export RUNTIME_ENV="native"
+    attestation_init
     cd /opt/occlum_spark
     echo -e "${BLUE}occlum run BigDL Spark GBT e2e${NC}"
     EHSM_URL=${ATTESTATION_URL}
@@ -516,8 +516,8 @@ run_spark_gbt_e2e() {
 }
 
 run_spark_sql_e2e() {
-    init_instance spark
-    build_spark
+    export RUNTIME_ENV="native"
+    attestation_init
     cd /opt/occlum_spark
     echo -e "${BLUE}occlum run BigDL Spark SQL e2e${NC}"
     EHSM_URL=${ATTESTATION_URL}
