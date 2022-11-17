@@ -26,4 +26,4 @@ Forecasting
 
 Deployment
 -------------------------
-* `A whole worflow in production environment after my forecaster is developed <how_to_process_data_in_production_environment.html>`__
+* `A whole workflow in production environment after my forecaster is developed <how_to_process_data_in_production_environment.html>`__
