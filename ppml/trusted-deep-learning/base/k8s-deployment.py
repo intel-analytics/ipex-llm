@@ -62,6 +62,14 @@ def _get_args_parser() -> ArgumentParser:
     )
 
     parser.add_argument(
+        '--node_label',
+        nargs=2,
+        action='append',
+        default=[],
+        help="choose which node to run"
+    )
+
+    parser.add_argument(
         '--pod_cpu',
         type=str,
         default="2",
@@ -142,6 +150,7 @@ def _create_pod(pod_name: str,
                 driver_port: str,
                 app_id: str,
                 extra_envs: List[List[str]],
+                labels: List[List[str]],
                 pod_cpu: str,
                 pod_memory: str,
                 pod_epc_memory: str,
@@ -167,6 +176,10 @@ def _create_pod(pod_name: str,
             client.V1EnvVar(name=env[0], value=env[1]),
         )
 
+    node_selector = {}
+    for label in labels:
+        node_selector[label[0]] = label[1]
+
     # Setting pod_cpu in request equals to limits make it to use the static cpu manager
     requests = {
         "cpu": pod_cpu,
@@ -177,7 +190,6 @@ def _create_pod(pod_name: str,
         "cpu": pod_cpu,
         "memory": pod_memory,
     }
-
 
     # Only epc memory is set to restrict how many pods can be allowed on a node
     if sgx_enabled:
@@ -191,7 +203,7 @@ def _create_pod(pod_name: str,
     # The arguments epc, enclave, provision are only used to restrict the number of pods allowed on a sgx node.
     # We choose to only use the epc memory to restrict that.
     # TODO: We probably need to use a argument to let the user to choose whether the sgx device-plugin is desired or not.
-    resource = client.V1ResourceRequirements(limits=limits,requests=requests)
+    resource = client.V1ResourceRequirements(limits=limits, requests=requests)
     volume_mounts = [_deserialize_volume_mounts_object(json_str, api_client)
                      for json_str in volume_mount_strs]
     container = client.V1Container(name="pytorch",
@@ -204,9 +216,6 @@ def _create_pod(pod_name: str,
 
     volumes = [_deserialize_volume_object(
         json_str, api_client) for json_str in volume_strs]
-
-    # TODO: Shall we abstract this out to a json object?
-    node_selector = {"label": "perf"}
 
     pod_spec = client.V1PodSpec(containers=[container],
                                 restart_policy="Never",
@@ -304,6 +313,7 @@ def main():
                                       driver_port=service_port,
                                       app_id=app_id,
                                       extra_envs=args.env,
+                                      labels=args.node_label,
                                       pod_cpu=args.pod_cpu,
                                       pod_memory=args.pod_memory,
                                       pod_epc_memory=args.pod_epc_memory,
