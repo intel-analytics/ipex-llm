@@ -260,7 +260,7 @@ Run such script to generate enclave key
 ### 3.3 Generate keys
 Run such scripts to generate keys:
 ```bash
-/ppml/trusted-big-data-ml/azure/generate-keys.sh
+/ppml/trusted-big-data-ml/azure/generate-keys-az.sh
 ```
 When entering the passphrase or password, you could input the same password by yourself; and these passwords could also be used for the next step of generating other passwords. Password should be longer than 6 bits and contain numbers and letters, and one sample password is "3456abcd". These passwords would be used for future remote attestations and to start SGX enclaves more securely.
 

@@ -26,6 +26,7 @@ import subprocess
 import os
 from bigdl.nano.utils.log4Error import invalidOperationError, invalidInputError
 from bigdl.nano.pytorch.utils import TORCH_VERSION_LESS_1_10, TORCH_VERSION_LESS_1_12
+from bigdl.nano.utils import CPUInfo
 
 invalidInputError(
     not TORCH_VERSION_LESS_1_10,
@@ -123,8 +124,8 @@ class BF16Model(LightningModule):
     @property
     def _has_bf16_isa(self):
         """Indicator to verify if bf16 instructions are available."""
-        msg = subprocess.check_output(["lscpu"]).decode("utf-8")
-        return "avx512_core_bf16" in msg or "amx_bf16" in msg or "avx512_bf16" in msg
+        cpuinfo = CPUInfo()
+        return cpuinfo.has_bf16
 
     @property
     def _allow_non_bf16(self):

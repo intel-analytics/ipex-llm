@@ -48,6 +48,7 @@ from bigdl.orca.learn.pytorch.constants import SCHEDULER_STEP, NUM_STEPS
 from bigdl.orca.learn.pytorch.training_operator import TrainingOperator
 from bigdl.orca.learn.pytorch import utils
 from bigdl.orca.learn.pytorch.utils import get_filesystem
+from bigdl.orca.learn.pytorch.core import BaseRunner
 from bigdl.dllib.utils.log4Error import *
 
 try:
@@ -98,7 +99,7 @@ class TorchDistBackend(DistBackend):
                                **all_reduce_min_kwargs)
 
 
-class TorchRunner:
+class TorchRunner(BaseRunner):
     """Manages a PyTorch model for training."""
 
     def __init__(self,

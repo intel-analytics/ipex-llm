@@ -20,6 +20,7 @@ import sys
 import cloudpickle
 import multiprocessing
 from torch.multiprocessing.spawn import _wrap
+from bigdl.nano.pytorch.dispatcher import patch_torch
 
 
 if __name__ == '__main__':
@@ -35,6 +36,11 @@ if __name__ == '__main__':
     # i.e. cannot find some modules located in main process's sys.path
     with open(os.path.join(temp_dir, "sys_path.pkl"), "rb") as f:
         sys.path = cloudpickle.load(f)
+
+    with open(os.path.join(temp_dir, "patch_status.pkl"), "rb") as f:
+        patch_status = cloudpickle.load(f)
+        if patch_status['patch_torch']:
+            patch_torch(cuda_to_cpu=patch_status['patch_cuda'])
 
     with open(os.path.join(temp_dir, "args.pkl"), "rb") as f:
         (fn, args, error_queue) = cloudpickle.load(f)

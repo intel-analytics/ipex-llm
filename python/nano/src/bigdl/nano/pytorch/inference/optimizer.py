@@ -18,6 +18,7 @@ import torch
 from torch import nn
 import time
 from copy import deepcopy
+import multiprocessing as mp
 from typing import Dict, Callable, Tuple, Optional, List, Union, Sequence
 from torch.utils.data import DataLoader
 from torchmetrics.metric import Metric
@@ -38,6 +39,11 @@ from bigdl.nano.utils.inference.pytorch.dataset import RepeatDataset, remove_bat
 from bigdl.nano.utils.inference.pytorch.dataloader import\
     transform_multiple_input_dataloader_to_inc_mode
 from bigdl.nano.pytorch.utils import TORCH_VERSION_LESS_1_10, save_model, load_model
+from bigdl.nano.common.cpu_schedule import schedule_processors
+
+from .multi_instance import _MultiInstanceModel, _multi_instance_helper
+
+import traceback
 import warnings
 # Filter out useless Userwarnings
 warnings.filterwarnings('ignore', category=UserWarning, module='pytorch_lightning')
@@ -265,7 +271,7 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                 result_map[method]["status"] = "lack dependency"
             else:
                 print(f"----------Start test {method} model "
-                      f"({idx+1}/{len(self.ALL_INFERENCE_ACCELERATION_METHOD)})----------")
+                      f"({idx+1}/{len(available_dict)})----------")
                 option: AccelerationOption = self.ALL_INFERENCE_ACCELERATION_METHOD[method]
                 precision = option.get_precision()
                 try:
@@ -275,7 +281,7 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                                                  logging=logging,
                                                  sample_size_for_pot=sample_size_for_pot)
                 except Exception as e:
-                    print(e)
+                    traceback.print_exc()
                     result_map[method]["status"] = "fail to convert"
                     print(f"----------Failed to convert to {method}----------")
                     continue
@@ -299,7 +305,7 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                         torch.set_num_threads(default_threads)
                         continue
                 except Exception as e:
-                    print(e)
+                    traceback.print_exc()
                     result_map[method]["status"] = "fail to forward"
                     print(f"----------{method} failed to forward----------")
                     torch.set_num_threads(default_threads)
@@ -319,7 +325,7 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                                     _accuracy_calculate_helper(acce_model, metric,
                                                                validation_data)
                             except Exception as e:
-                                print(e)
+                                traceback.print_exc()
                                 self._calculate_accuracy = False
                                 invalidInputError(
                                     False,
@@ -341,7 +347,7 @@ class InferenceOptimizer(BaseInferenceOptimizer):
 
                 result_map[method]["model"] = acce_model
                 print(f"----------Finish test {method} model "
-                      f"({idx+1}/{len(self.ALL_INFERENCE_ACCELERATION_METHOD)})----------")
+                      f"({idx+1}/{len(available_dict)})----------")
 
         self.optimized_model_dict: Dict = result_map
         print("\n\n==========================Optimization Results==========================")
@@ -372,6 +378,7 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                  input_sample=None,
                  thread_num: Optional[int] = None,
                  onnxruntime_session_options=None,
+                 openvino_config=None,
                  simplification: bool = True,
                  sample_size: int = 100,
                  logging: bool = True,
@@ -422,6 +429,8 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                            or accelerator='openvino'.
         :param onnxruntime_session_options: The session option for onnxruntime, only valid when
                                             accelerator='onnxruntime', otherwise will be ignored.
+        :param openvino_config: The config to be inputted in core.compile_model. Only valid when
+                                accelerator='openvino', otherwise will be ignored.
         :param simplification: whether we use onnxsim to simplify the ONNX model, only valid when
                                accelerator='onnxruntime', otherwise will be ignored. If this option
                                is set to True, new dependency 'onnxsim' need to be installed.
@@ -543,7 +552,8 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                     # "n_requests": None,
                     "sample_size": sample_size
                 }
-                return model.pot(calib_dataloader, thread_num=thread_num, **kwargs)
+                return model.pot(calib_dataloader, thread_num=thread_num,
+                                 config=openvino_config, **kwargs)
             else:
                 invalidInputError(False,
                                   "Accelerator {} is invalid.".format(accelerator))
@@ -557,6 +567,7 @@ class InferenceOptimizer(BaseInferenceOptimizer):
               use_ipex: bool = False,
               thread_num: Optional[int] = None,
               onnxruntime_session_options=None,
+              openvino_config=None,
               simplification: bool = True,
               logging: bool = True,
               **export_kwargs):
@@ -576,6 +587,8 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                            or accelerator='openvino'.
         :param onnxruntime_session_options: The session option for onnxruntime, only valid when
                                             accelerator='onnxruntime', otherwise will be ignored.
+        :param openvino_config: The config to be inputted in core.compile_model. Only valid when
+                                accelerator='openvino', otherwise will be ignored.
         :param simplification: whether we use onnxsim to simplify the ONNX model, only valid when
                                accelerator='onnxruntime', otherwise will be ignored. If this option
                                is set to True, new dependency 'onnxsim' need to be installed.
@@ -595,7 +608,11 @@ class InferenceOptimizer(BaseInferenceOptimizer):
             "but got type {}".format(type(model))
         )
         if accelerator == 'openvino':  # openvino backend will not care about ipex usage
-            return PytorchOpenVINOModel(model, input_sample, thread_num, logging, **export_kwargs)
+            final_openvino_option = {"INFERENCE_PRECISION_HINT": "f32"}
+            if openvino_config is not None:
+                final_openvino_option.update(openvino_config)
+            return PytorchOpenVINOModel(model, input_sample, thread_num, logging,
+                                        final_openvino_option, **export_kwargs)
         if accelerator == 'onnxruntime':  # onnxruntime backend will not care about ipex usage
             if onnxruntime_session_options is None:
                 import onnxruntime
@@ -640,6 +657,31 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                  precision(FP32/FP16/BF16/INT8).
         """
         return load_model(path, model)
+
+    @staticmethod
+    def to_multi_instance(model: nn.Module, num_processes: int) -> _MultiInstanceModel:
+        """
+        Transform a model to multi-instance inference model.
+        :param model: The model to transform.
+        :param num_processes: The number of processes which will be used.
+        :return: Model with multi-instance inference acceleration.
+        """
+        p_num = num_processes
+        mgr = mp.Manager()
+        send_queues = [mgr.Queue() for _ in range(p_num)]
+        recv_queues = [mgr.Queue() for _ in range(p_num)]
+        envs = schedule_processors(p_num)
+        ps = []
+        for i in range(p_num):
+            os.environ["KMP_AFFINITY"] = envs[i]['KMP_AFFINITY']
+            os.environ["OMP_NUM_THREADS"] = envs[i]['OMP_NUM_THREADS']
+
+            p = mp.Process(target=_multi_instance_helper,
+                           args=(model, send_queues[i], recv_queues[i]), daemon=True)
+            p.start()
+            ps.append(p)
+
+        return _MultiInstanceModel(model, ps, mgr, send_queues, recv_queues)
 
 
 def _signature_check(function):

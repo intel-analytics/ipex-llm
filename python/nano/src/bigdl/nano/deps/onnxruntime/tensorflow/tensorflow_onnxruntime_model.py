@@ -16,6 +16,7 @@
 
 
 import os
+from pathlib import Path
 import tensorflow as tf
 from bigdl.nano.utils.inference.tf.model import AcceleratedKerasModel
 from bigdl.nano.utils.log4Error import invalidInputError
@@ -65,3 +66,32 @@ class KerasONNXRuntimeModel(ONNXRuntimeModel, AcceleratedKerasModel):
     def on_forward_end(self, outputs):
         outputs = self.numpy_to_tensors(outputs)
         return outputs
+
+    @property
+    def status(self):
+        status = super().status
+        status.update({"onnx_path": 'onnx_saved_model.onnx'})
+        return status
+
+    @staticmethod
+    def _load(path):
+        """
+        Load an ONNX model for inference from directory.
+
+        :param path: Path to model to be loaded.
+        :return: KerasONNXRuntimeModel model for ONNX Runtime inference.
+        """
+        status = KerasONNXRuntimeModel._load_status(path)
+        if status.get('onnx_path', None):
+            onnx_path = Path(status['onnx_path'])
+            invalidInputError(onnx_path.suffix == '.onnx',
+                              "Path of onnx model must be with '.onnx' suffix.")
+        else:
+            invalidInputError(False,
+                              "nano_model_meta.yml must specify 'onnx_path' for loading.")
+        onnx_path = Path(path) / status['onnx_path']
+        return KerasONNXRuntimeModel(str(onnx_path), None)
+
+    def _save_model(self, path):
+        onnx_path = Path(path) / self.status['onnx_path']
+        super()._save_model(onnx_path)

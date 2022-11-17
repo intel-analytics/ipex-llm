@@ -26,7 +26,7 @@ from ..core.utils import save
 
 
 class KerasOpenVINOModel(AcceleratedKerasModel):
-    def __init__(self, model, thread_num=None):
+    def __init__(self, model, thread_num=None, config=None):
         """
         Create a OpenVINO model from Keras.
 
@@ -34,6 +34,7 @@ class KerasOpenVINOModel(AcceleratedKerasModel):
                       path to Openvino saved model.
         :param thread_num: a int represents how many threads(cores) is needed for
                     inference. default: None.
+        :param config: The config to be inputted in core.compile_model.
         """
         ov_model_path = model
         with TemporaryDirectory() as dir:
@@ -41,7 +42,9 @@ class KerasOpenVINOModel(AcceleratedKerasModel):
             if isinstance(model, tf.keras.Model):
                 export(model, str(dir / 'tmp.xml'))
                 ov_model_path = dir / 'tmp.xml'
-            self.ov_model = OpenVINOModel(ov_model_path, thread_num=thread_num)
+            self.ov_model = OpenVINOModel(ov_model_path,
+                                          thread_num=thread_num,
+                                          config=config)
             super().__init__(None)
 
     def forward_step(self, *inputs):
@@ -61,7 +64,9 @@ class KerasOpenVINOModel(AcceleratedKerasModel):
     @property
     def status(self):
         status = super().status
-        status.update({"xml_path": 'ov_saved_model.xml', "weight_path": 'ov_saved_model.bin'})
+        status.update({"xml_path": 'ov_saved_model.xml',
+                       "weight_path": 'ov_saved_model.bin',
+                       "config": self.ov_model.final_config})
         return status
 
     def pot(self,
@@ -72,6 +77,7 @@ class KerasOpenVINOModel(AcceleratedKerasModel):
             maximal_drop=0.999,
             max_iter_num=1,
             n_requests=None,
+            config=None,
             sample_size=300):
         if metric:
             metric = KerasOpenVINOMetric(metric=metric, higher_better=higher_better)
@@ -79,7 +85,7 @@ class KerasOpenVINOModel(AcceleratedKerasModel):
         model = self.ov_model.pot(dataloader, metric=metric, drop_type=drop_type,
                                   maximal_drop=maximal_drop, max_iter_num=max_iter_num,
                                   n_requests=n_requests, sample_size=sample_size)
-        return KerasOpenVINOModel(model)
+        return KerasOpenVINOModel(model, config=config)
 
     @staticmethod
     def _load(path):
@@ -97,7 +103,7 @@ class KerasOpenVINOModel(AcceleratedKerasModel):
         else:
             invalidInputError(False, "nano_model_meta.yml must specify 'xml_path' for loading.")
         xml_path = Path(path) / status['xml_path']
-        return KerasOpenVINOModel(xml_path)
+        return KerasOpenVINOModel(xml_path, config=status['config'])
 
     def _save_model(self, path):
         """

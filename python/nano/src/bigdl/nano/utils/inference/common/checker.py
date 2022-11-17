@@ -18,6 +18,7 @@ from typing import Optional, List, Set, Dict
 from importlib.util import find_spec
 import subprocess
 from .utils import AccelerationOption
+from bigdl.nano.utils import CPUInfo
 
 
 def _inc_checker():
@@ -54,8 +55,8 @@ def _bf16_checker():
     '''
     bf16 availablity will be decided dynamically during the optimization
     '''
-    msg = subprocess.check_output(["lscpu"]).decode("utf-8")
-    return "avx512_bf16" in msg or "amx_bf16" in msg
+    cpuinfo = CPUInfo()
+    return cpuinfo.has_bf16
 
 
 def available_acceleration_combination(excludes: Optional[List[str]],

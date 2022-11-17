@@ -202,9 +202,18 @@ def convert_predict_rdd_to_dataframe(df, prediction_rdd):
     return result_df
 
 
+def _stack_arrs(arrs):
+    if isinstance(arrs, list):
+        # stack arrs if arrs is a list.
+        return np.stack(arrs)
+    else:
+        # do nothing if arrs are not a list.
+        return arrs
+
+
 def _merge_rows(results):
     try:
-        result_arrs = [np.stack(l) for l in results]
+        result_arrs = [_stack_arrs(l) for l in results]
     except ValueError:
         log4Error.invalidInputError(False, "Elements in the same column must have the same "
                                            "shape, please drop, pad or truncate the columns "
@@ -262,37 +271,57 @@ def _generate_output_pandas_df(feature_lists, label_lists, feature_cols, label_c
 
 
 def arrays2others(iter, feature_cols, label_cols, shard_size=None, generate_func=None):
-    def init_result_lists():
-        feature_lists = [[] for col in feature_cols]
-        if label_cols is not None:
-            label_lists = [[] for col in label_cols]
+    def init_result_lists(first_row, cols):
+        if shard_size:
+            # pre allocate numpy array when shard_size is provided
+            if isinstance(first_row, np.ndarray):
+                return [np.empty((shard_size,) + first_row.shape, first_row.dtype)]
+            else:
+                return [np.empty((shard_size,) + r.shape, r.dtype) for r in first_row]
         else:
-            label_lists = None
-        return feature_lists, label_lists
+            return [[] for r in cols]
 
-    def add_row(data, results):
+    def add_row(data, results, current):
         if not isinstance(data, list):
             arrays = [data]
         else:
             arrays = data
 
         for i, arr in enumerate(arrays):
-            results[i].append(arr)
+            if shard_size:
+                current = current % shard_size
+                results[i][current] = arr
+            else:
+                results[i].append(arr)
 
-    feature_lists, label_lists = init_result_lists()
+    feature_lists = None
+    label_lists = None
     counter = 0
 
     for row in iter:
-        counter += 1
-        add_row(row[0], feature_lists)
+        if feature_lists is None:
+            feature_lists = init_result_lists(row[0], feature_cols)
+        add_row(row[0], feature_lists, counter)
         if label_cols is not None:
-            add_row(row[1], label_lists)
+            if label_lists is None:
+                label_lists = init_result_lists(row[1], label_cols)
+            add_row(row[1], label_lists, counter)
+        counter += 1
 
         if shard_size and counter % shard_size == 0:
+            # output put a shard when current shard is full
             yield generate_func(feature_lists, label_lists, feature_cols, label_cols)
-            feature_lists, label_lists = init_result_lists()
+            feature_lists = None
+            label_lists = None
 
-    if feature_lists[0]:
+    if feature_lists is not None:
+        if shard_size:
+            # remove empty array in last shard
+            rest_size = counter % shard_size
+            feature_lists = [feature[0:rest_size] for feature in feature_lists]
+            if label_cols is not None:
+                label_lists = [label[0:rest_size] for label in label_lists]
+        # output last shard
         yield generate_func(feature_lists, label_lists, feature_cols, label_cols)
 
 

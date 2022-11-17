@@ -78,6 +78,7 @@ class SparkTFEstimator():
             self.config["intra_op_parallelism"] = num_core // workers_per_node
 
         self.model_weights = None
+        self.load_path = None
 
         if "batch_size" in self.config:
             invalidInputError(False,
@@ -148,6 +149,7 @@ class SparkTFEstimator():
 
         init_params = dict(
             model_creator=self.model_creator,
+            model_load=self.load_path,
             compile_args_creator=self.compile_args_creator,
             config=self.config,
             verbose=self.verbose,
@@ -272,6 +274,7 @@ class SparkTFEstimator():
 
         init_params = dict(
             model_creator=self.model_creator,
+            model_load=self.load_path,
             compile_args_creator=self.compile_args_creator,
             config=self.config,
             verbose=self.verbose,
@@ -344,6 +347,7 @@ class SparkTFEstimator():
 
         init_params = dict(
             model_creator=self.model_creator,
+            model_load=self.load_path,
             compile_args_creator=self.compile_args_creator,
             config=self.config,
             verbose=self.verbose,
@@ -513,8 +517,15 @@ class SparkTFEstimator():
         options for loading from SavedModel.
 
         """
+        sc = OrcaContext.get_spark_context()
         model = load_model(filepath, custom_objects=custom_objects, compile=compile)
         self.model_weights = model.get_weights()
+        if self.model_creator is None:
+            self.load_path = filepath
+            if is_file(self.load_path):
+                sc.addFile(self.load_path, recursive=False)
+            else:
+                sc.addFile(self.load_path, recursive=True)
         # update remote model
         if self.model_dir is not None:
             save_model(model, self._model_saved_path, save_format="h5", filemode=0o666)

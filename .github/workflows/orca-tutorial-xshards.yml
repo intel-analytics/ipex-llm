@@ -98,7 +98,10 @@ jobs:
         pip install pandas
         pip install jep==3.9.0
         pip install cloudpickle
-        pip install -i ${PIP_MIRROR} --trusted-host ${TRUSTED_HOST} -r .github/actions/python-requirements/requirements-orca-python-ray.txt 
+        
+        wget https://raw.githubusercontent.com/analytics-zoo/BigDL/main/python/test/python-requirements/requirements-orca-python-ray.txt -O ${{ github.workspace }}/requirements-orca-python-ray.txt
+        pip uninstall -r ${{ github.workspace }}/requirements-orca-python-ray.txt -y
+        pip install -i ${PIP_MIRROR} --trusted-host ${TRUSTED_HOST} -r ${{ github.workspace }}/requirements-orca-python-ray.txt
         export SPARK_LOCAL_HOSTNAME=localhost
         export FTP_URI=${FTP_URI}
         chmod a+x python/orca/dev/test/run-tutorial-xshards.sh

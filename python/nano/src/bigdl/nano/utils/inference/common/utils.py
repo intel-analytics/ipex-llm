@@ -100,7 +100,11 @@ def format_acceleration_option(method_name: str,
         elif isinstance(value, str):
             repr_str = repr_str + value + " + "
     if len(repr_str) > 0:
-        repr_str = repr_str[:-2]
+        # remove " + " at last
+        repr_str = repr_str[:-3]
+    if repr_str == "":
+        # if no acceleration is applied, just return "original"
+        repr_str = "original"
     return repr_str
 
 
@@ -124,6 +128,15 @@ def format_optimize_result(optimize_result_dict: dict,
             accuracy = result.get("accuracy", "None")
             if accuracy != "None" and isinstance(accuracy, float):
                 accuracy = round(accuracy, 3)
+            else:
+                try:
+                    import torch
+                    # turn Tensor into float
+                    if isinstance(accuracy, torch.Tensor):
+                        accuracy = accuracy.item()
+                        accuracy = round(accuracy, 3)
+                except ImportError:
+                    pass
             method_str = f"| {method:^30} | {status:^20} | " \
                          f"{latency:^12} | {accuracy:^20} |\n"
             repr_str += method_str

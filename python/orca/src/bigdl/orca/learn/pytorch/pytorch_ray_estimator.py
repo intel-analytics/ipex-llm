@@ -16,10 +16,7 @@
 
 import io
 import types
-import logging
-import numbers
 import torch
-import numpy as np
 import copy
 
 from bigdl.orca.data.ray_xshards import RayXShards
@@ -31,7 +28,7 @@ from bigdl.orca.learn.utils import maybe_dataframe_to_xshards, dataframe_to_xsha
 from bigdl.orca.ray import OrcaRayContext
 from bigdl.orca.learn.ray_estimator import Estimator as OrcaRayEstimator
 from bigdl.orca.data.file import enable_multi_fs_save, enable_multi_fs_load
-from bigdl.orca.learn.pytorch.utils import find_free_port
+from bigdl.orca.learn.pytorch.utils import find_free_port, process_stats
 
 import ray
 from ray.exceptions import RayActorError
@@ -239,10 +236,9 @@ class PyTorchRayEstimator(OrcaRayEstimator):
         :param profile: Boolean. Whether to return time stats for the training procedure.
                Default is False.
         :param reduce_results: Boolean. Whether to average all metrics across all workers into
-               one dict. If a metric is a non-numerical value (or nested dictionaries), one value
-               will be randomly selected among the workers. If False, returns a list of dicts for
-               all workers.
-               Default is True.
+               one dict. If a metric is a non-numerical value, the one value will be randomly
+               selected among the workers. If False, returns a list of dicts for
+               all workers. Default is True.
         :param info: An optional dictionary that can be passed to the TrainingOperator for
                train_epoch and train_batch.
         :param feature_cols: feature column names if data is Spark DataFrame or Ray Dataset.
@@ -367,7 +363,7 @@ class PyTorchRayEstimator(OrcaRayEstimator):
         epoch_stats = list(map(list, zip(*worker_stats)))
         if reduce_results:
             for i in range(len(epoch_stats)):
-                epoch_stats[i] = self._process_stats(epoch_stats[i])
+                epoch_stats[i] = process_stats(epoch_stats[i])
             return epoch_stats
         else:
             return epoch_stats
@@ -433,6 +429,7 @@ class PyTorchRayEstimator(OrcaRayEstimator):
                  batch_size=32,
                  num_steps=None,
                  profile=False,
+                 reduce_results=True,
                  info=None,
                  feature_cols=None,
                  label_cols=None):
@@ -454,6 +451,10 @@ class PyTorchRayEstimator(OrcaRayEstimator):
                corresponds to the number of times `TrainingOperator.validate_batch` is called.
         :param profile: Boolean. Whether to return time stats for the training procedure.
                Default is False.
+        :param reduce_results: Boolean. Whether to average all metrics across all workers into
+               one dict. If a metric is a non-numerical value, the one value will be randomly
+               selected among the workers. If False, returns a list of dicts for
+               all workers. Default is True.
         :param info: An optional dictionary that can be passed to the TrainingOperator
                for validate.
         :param feature_cols: feature column names if train data is Spark DataFrame or Ray Dataset.
@@ -509,7 +510,10 @@ class PyTorchRayEstimator(OrcaRayEstimator):
                           profile=profile, info=info)
 
             worker_stats = ray.get([w.validate.remote(**params) for w in self.remote_workers])
-        return self._process_stats(worker_stats)
+        if reduce_results:
+            return process_stats(worker_stats)
+        else:
+            return worker_stats
 
     def get_model(self):
         """
@@ -611,20 +615,6 @@ class PyTorchRayEstimator(OrcaRayEstimator):
                 ray.kill(worker)
 
         self.remote_workers = []
-
-    def _process_stats(self, worker_stats):
-        stats = {
-            "num_samples": sum(
-                stats.pop("num_samples", np.nan) for stats in worker_stats)
-        }
-
-        for stat_key in worker_stats[0]:
-            if isinstance(worker_stats[0], numbers.Number):
-                stats[stat_key] = np.nanmean(
-                    [s.get(stat_key, np.nan) for s in worker_stats])
-            else:
-                stats[stat_key] = worker_stats[0][stat_key]
-        return stats
 
     def _train_epochs(self, **params):
         remote_worker_stats = []
