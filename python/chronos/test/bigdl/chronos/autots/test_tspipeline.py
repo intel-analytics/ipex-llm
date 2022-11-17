@@ -224,6 +224,7 @@ class TestTSPipeline(TestCase):
         assert q_yhat.shape == yhat.shape == q_onnx_yhat.shape
         assert all([np.mean(q_smape)<100., np.mean(q_onnx_smape)<100., np.mean(smape)<100.])
 
+    @op_inference
     def test_tsppl_quantize_input_data(self):
         tsppl_tcn = TSPipeline.load(os.path.join(self.resource_path,
                                                  "tsppl_ckpt/tcn_tsppl_ckpt"))
@@ -244,6 +245,7 @@ class TestTSPipeline(TestCase):
                                metric='smape',
                                approach='static')
 
+    @op_inference
     def test_tsppl_quantize_public_dataset(self):
         tsppl_tcn = TSPipeline.load(os.path.join(self.resource_path,
                                                  "tsppl_ckpt/tcn_tsppl_ckpt"))
