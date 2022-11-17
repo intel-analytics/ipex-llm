@@ -15,7 +15,7 @@
 .. note::
     **Supported OS**:
 
-     PPML is thoroughly tested on Ubuntu (18.04/20.04), and should works fine on CentOS/Redhat 8.
+     PPML is thoroughly tested on Ubuntu (18.04/20.04), and should works fine on CentOS/Redhat 8. Note that UEFI (Unified Extensible Firmware Interface) is required for remote attestation registration stage.
 ```
 
 #### Enable SGX for your Cluster
@@ -36,7 +36,7 @@
 
 Please refer to [Install SGX (Software Guard Extensions) Driver for Xeon Server](https://bigdl.readthedocs.io/en/latest/doc/PPML/QuickStart/install_sgx_driver.html).
 
-##### Install AESM
+##### Install AESM (Architectural Enclave Service Manager)
 
 ```bash
 echo 'deb [arch=amd64] https://download.01.org/intel-sgx/sgx_repo/ubuntu focal main' | sudo tee /etc/apt/sources.list.d/intel-sgx.list > /dev/null
@@ -76,11 +76,10 @@ Please refer to [Deploy the Intel SGX Device Plugin for Kubernetes](https://bigd
 No. Please upgrade your OS if possible.
 
 2. Do we need Internet connection for SGX node?
-No. We can use PCCS for registration and certificates downloading. Only PCCS need Internet connection.
+No. We can use PCCS for registration and certificate download. Only PCCS need Internet connection.
 
-3. Does PCCS requires SGX?
+3. Does PCCS require SGX or other hardware?
 No. PCCS can be installed on any server with Internet connection.
 
-4. Can we turn off attestation?
-Of course. But, urnning off attestation will break integrity provided by SGX. Attestation is turned off to simplify installation for quick start.
-
+4. Can we turn off the attestation?
+Of course. But, turning off attestation will break the integrity provided by SGX. Attestation is turned off to simplify installation for quick start.

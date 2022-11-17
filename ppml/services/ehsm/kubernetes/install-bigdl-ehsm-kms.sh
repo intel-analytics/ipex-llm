@@ -9,7 +9,6 @@ export couchdbImageName=couchdb:3.2
 export dkeycacheImageName=intelccc/ehsm_dkeycache:0.3.0
 export ehsmKmsImageName=intelccc/ehsm_kms:0.3.0
 export pccsIP=your_pccs_IP
-export dkeyserverIP=your_dkeyserver_ip_to_use_as
 export kmsIP=your_kms_ip_to_use_as
 
 # Create k8s namespace and apply BigDL-eHSM-KMS

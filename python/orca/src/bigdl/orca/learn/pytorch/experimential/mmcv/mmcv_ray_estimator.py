@@ -16,7 +16,7 @@
 
 import types
 import copy
-from bigdl.dllib.utils.log4Error import *
+from bigdl.dllib.utils.log4Error import invalidInputError
 
 from typing import (Any, Dict, List, Optional, Tuple, Callable, overload)
 
@@ -44,7 +44,6 @@ class MMCVRayEstimator(BaseRayEstimator):
             config=worker_config
         )
         self.setup(params, self.backend, self.runner_cls, workers_per_node)
-        self.num_workers = len(self.remote_workers)
 
     def fit(self,
             data_loaders_creators: List[Callable],
@@ -86,7 +85,7 @@ class MMCVRayEstimator(BaseRayEstimator):
             reduce_results=True,
             **kwargs):
         """
-        Same as fit method, keep consistent with mmcv runner.run()
+        Same as fit method, the parameters are consistent with MMCV runner.run()
         """
         return self.fit(data_loaders_creators, workflow, max_epochs, reduce_results, **kwargs)
 

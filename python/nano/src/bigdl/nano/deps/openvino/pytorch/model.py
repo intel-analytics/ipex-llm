@@ -69,7 +69,9 @@ class PytorchOpenVINOModel(AcceleratedLightningModule):
     @property
     def status(self):
         status = super().status
-        status.update({"xml_path": 'ov_saved_model.xml', "weight_path": 'ov_saved_model.bin'})
+        status.update({"xml_path": 'ov_saved_model.xml',
+                       "weight_path": 'ov_saved_model.bin',
+                       "config": self.ov_model.final_config})
         return status
 
     @property  # type: ignore
@@ -92,7 +94,7 @@ class PytorchOpenVINOModel(AcceleratedLightningModule):
         else:
             invalidInputError(False, "nano_model_meta.yml must specify 'xml_path' for loading.")
         xml_path = Path(path) / status['xml_path']
-        return PytorchOpenVINOModel(xml_path)
+        return PytorchOpenVINOModel(xml_path, config=status['config'])
 
     def pot(self,
             dataloader,

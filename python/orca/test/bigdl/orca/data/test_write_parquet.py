@@ -17,6 +17,7 @@
 import tempfile
 import shutil
 
+import pytest
 import numpy as np
 import os
 from bigdl.orca.data.image.parquet_dataset import ParquetDataset
@@ -243,3 +244,6 @@ def test_write_parquet_api(orca_context_fixture):
     test_write_mnist(orca_context_fixture, True)
     test_write_voc(orca_context_fixture, True)
     test_write_from_directory(orca_context_fixture, True)
+
+if __name__ == "__main__":
+    pytest.main([__file__])
