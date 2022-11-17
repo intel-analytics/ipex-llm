@@ -92,7 +92,7 @@ def batch_processor(model, data, train_mode, **kwargs):
     features, labels = data
     loss = model(features, labels)
     log_vars = dict()
-    log_vars["var1"] = 0.0
+    log_vars["var1"] = 1.0
     return {'loss': loss, 'log_vars': log_vars, "num_samples": features.size(0)}
 
 
@@ -206,6 +206,7 @@ class TestMMCVRayEstimator(unittest.TestCase):
         estimator = get_estimator(runner_creator_with_batch_processor)
         epoch_stats = estimator.run([train_dataloader_creator], [('train', 1)])
         self.assertEqual(len(epoch_stats), MAX_EPOCH)
+        self.assertEqual(epoch_stats['var1'], 1.0)
 
         start_stats = epoch_stats[0]
         end_stats = epoch_stats[-1]
