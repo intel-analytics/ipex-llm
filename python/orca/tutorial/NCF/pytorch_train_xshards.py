@@ -32,7 +32,7 @@ sc = init_orca_context()
 
 # Step 2: Define train and test datasets using Orca XShards
 dataset_dir = "./ml-1m"
-train_data, test_data, user_num, item_num, cat_feats_dims, \
+train_data, test_data, user_num, item_num, sparse_feats_dims, \
     feature_cols, label_cols = prepare_data(dataset_dir, num_ng=4)
 
 
@@ -44,8 +44,8 @@ def model_creator(config):
                 num_layers=config['num_layers'],
                 dropout=config['dropout'],
                 model=config['model'],
-                cat_feats_dims=config['cat_feats_dims'],
-                num_numeric_feats=config['num_numeric_feats'])
+                sparse_feats_dims=config['sparse_feats_dims'],
+                num_dense_feats=config['num_dense_feats'])
     model.train()
     return model
 
@@ -69,11 +69,11 @@ est = Estimator.from_torch(model=model_creator,
                                    'item_num': item_num,
                                    'factor_num': 16,
                                    'num_layers': 3,
-                                   'dropout': 0.0,
+                                   'dropout': 0.5,
                                    'lr': 0.001,
                                    'model': "NeuMF-end",
-                                   'cat_feats_dims': cat_feats_dims,
-                                   'num_numeric_feats': 1})
+                                   'sparse_feats_dims': sparse_feats_dims,
+                                   'num_dense_feats': 1})
 est.fit(data=train_data, epochs=10,
         feature_cols=feature_cols,
         label_cols=label_cols,
