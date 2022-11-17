@@ -76,7 +76,7 @@ def _get_args_parser() -> ArgumentParser:
     parser.add_argument(
         '--pod_memory',
         type=str,
-        default="1G"
+        default="48G"
     )
 
     parser.add_argument(
@@ -139,7 +139,7 @@ def _create_pod(pod_name: str,
                 pod_memory: str,
                 pod_epc_memory: str,
                 image: str,
-                command: str,
+                args: str,
                 volume_strs: List[str],
                 volume_mount_strs: List[str]) -> client.V1Pod:
     api_client = client.ApiClient()
@@ -174,12 +174,11 @@ def _create_pod(pod_name: str,
                                              )
     volume_mounts = [_deserialize_volume_mounts_object(json_str, api_client)
                      for json_str in volume_mount_strs]
-    # TODO: We have changed here, we choose to use our own entrypoint, so we do not want to use the command to overwrite the entrypoint.
     container = client.V1Container(name="pytorch",
                                    image=image,
                                    image_pull_policy="Always",
                                    env=envs,
-                                   args=command,
+                                   args=args,
                                    resources=resource,
                                    volume_mounts=volume_mounts)
 
@@ -260,7 +259,7 @@ def main():
     print("begin of the script", flush=True)
     args = _parse_args()
 
-    command = ["python", args.main_script] + args.main_script_args
+    entrypoint_args = ["python", args.main_script] + args.main_script_args
 
     app_id = str(uuid4())[:7]
 
@@ -289,7 +288,7 @@ def main():
                                       pod_memory=args.pod_memory,
                                       pod_epc_memory=args.pod_epc_memory,
                                       image=args.image,
-                                      command=command,
+                                      args=entrypoint_args,
                                       volume_strs=args.volume,
                                       volume_mount_strs=args.volume_mount)
 
