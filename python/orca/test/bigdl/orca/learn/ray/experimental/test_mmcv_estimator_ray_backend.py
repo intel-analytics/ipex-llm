@@ -206,12 +206,9 @@ class TestMMCVRayEstimator(unittest.TestCase):
         estimator = get_estimator(runner_creator_with_batch_processor)
         epoch_stats = estimator.run([train_dataloader_creator], [('train', 1)])
         self.assertEqual(len(epoch_stats), MAX_EPOCH)
-        self.assertEqual(epoch_stats['var1'], 1.0)
 
         start_stats = epoch_stats[0]
         end_stats = epoch_stats[-1]
-        assert start_stats["num_samples"] == NUM_SAMPLES
-        assert end_stats["num_samples"] == NUM_SAMPLES
         self.assertEqual(start_stats["num_samples"], NUM_SAMPLES)
         self.assertEqual(end_stats["num_samples"], NUM_SAMPLES)
         self.assertEqual(start_stats["var1"], 1.0)
