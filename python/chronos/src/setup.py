@@ -32,7 +32,6 @@ bigdl_home = os.path.abspath(__file__ + "/../../../..")
 exclude_patterns = ["*__pycache__*", "*ipynb_checkpoints*"]
 
 VERSION = open(os.path.join(bigdl_home, 'python/version.txt'), 'r').read().strip()
-VERSION = '2.2.0b20221116'
 
 def get_bigdl_packages():
     bigdl_python_home = os.path.abspath(__file__ + "/..")
