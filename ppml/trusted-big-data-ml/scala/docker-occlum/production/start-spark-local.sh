@@ -25,4 +25,4 @@ sudo docker run -it \
 	-e SGX_LOG_LEVEL=off \
 	-e RUNTIME_ENV=native \
 	intelanalytics/bigdl-ppml-trusted-big-data-ml-scala-occlum:2.2.0-SNAPSHOT \
-	bash /opt/run_spark_on_occlum_glibc.sh $1
+	bash
