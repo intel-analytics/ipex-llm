@@ -16,6 +16,7 @@
 import torch
 import os
 from pathlib import Path
+from tempfile import TemporaryDirectory
 from ..core.onnxruntime_model import ONNXRuntimeModel
 from bigdl.nano.utils.inference.pytorch.model import AcceleratedLightningModule
 from bigdl.nano.utils.inference.pytorch.model_utils import export_to_onnx, get_forward_args
@@ -49,23 +50,23 @@ class PytorchONNXRuntimeModel(ONNXRuntimeModel, AcceleratedLightningModule):
         """
         # Typically, when model is int8, we use this path
         # TODO: self._forward_args should be set externally
-        onnx_path = model
-        if isinstance(model, torch.nn.Module):
-            # Typically, when model is fp32, we use this path
-            export_to_onnx(model, input_sample=input_sample, onnx_path='tmp.onnx',
-                           **export_kwargs)
-            onnx_path = 'tmp.onnx'
-            if simplification is True:
-                # simplify model
-                try:
-                    from bigdl.nano.deps.onnxsim.onnxsim_api import onnx_simplify
-                    onnx_simplify(onnx_path)
-                except Exception:
-                    pass
-        AcceleratedLightningModule.__init__(self, None)
-        ONNXRuntimeModel.__init__(self, onnx_path, session_options=onnxruntime_session_options)
-        if os.path.exists('tmp.onnx'):
-            os.remove('tmp.onnx')
+        with TemporaryDirectory() as tmpdir:
+            if isinstance(model, torch.nn.Module):
+                onnx_path = Path(tmpdir) / "tmp.onnx"
+                # Typically, when model is fp32, we use this path
+                export_to_onnx(model, input_sample=input_sample, onnx_path=onnx_path,
+                            **export_kwargs)
+                if simplification is True:
+                    # simplify model
+                    try:
+                        from bigdl.nano.deps.onnxsim.onnxsim_api import onnx_simplify
+                        onnx_simplify(onnx_path)
+                    except Exception:
+                        pass
+            else:
+                onnx_path = model
+            AcceleratedLightningModule.__init__(self, None)
+            ONNXRuntimeModel.__init__(self, onnx_path, session_options=onnxruntime_session_options)
 
     def on_forward_start(self, inputs):
         if self.ortsess is None:

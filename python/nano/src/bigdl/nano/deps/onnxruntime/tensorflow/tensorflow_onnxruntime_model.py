@@ -17,6 +17,7 @@
 
 import os
 from pathlib import Path
+from tempfile import TemporaryDirectory
 import tensorflow as tf
 from bigdl.nano.utils.inference.tf.model import AcceleratedKerasModel
 from bigdl.nano.utils.log4Error import invalidInputError
@@ -44,17 +45,17 @@ class KerasONNXRuntimeModel(ONNXRuntimeModel, AcceleratedKerasModel):
             the shape/dtype of the input
         :param onnxruntime_session_options: will be passed to tf2onnx.convert.from_keras function
         """
-        onnx_path = model
-        if isinstance(model, tf.keras.Model):
-            onnx_path = 'tmp.onnx'
-            if not isinstance(input_sample, (tuple, list)):
-                input_sample = (input_sample, )
-            tf2onnx.convert.from_keras(model, input_signature=input_sample,
-                                       output_path=onnx_path, **export_kwargs)
-        AcceleratedKerasModel.__init__(self, None)
-        ONNXRuntimeModel.__init__(self, onnx_path, session_options=onnxruntime_session_options)
-        if isinstance(model, tf.keras.Model) and os.path.exists(onnx_path):
-            os.remove(onnx_path)
+        with TemporaryDirectory() as tmpdir:
+            if isinstance(model, tf.keras.Model):
+                onnx_path = Path(tmpdir) / "tmp.onnx"
+                if not isinstance(input_sample, (tuple, list)):
+                    input_sample = (input_sample, )
+                tf2onnx.convert.from_keras(model, input_signature=input_sample,
+                                        output_path=onnx_path, **export_kwargs)
+            else:
+                onnx_path = model
+            AcceleratedKerasModel.__init__(self, None)
+            ONNXRuntimeModel.__init__(self, onnx_path, session_options=onnxruntime_session_options)
 
     def on_forward_start(self, inputs):
         if self.ortsess is None:
