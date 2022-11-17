@@ -53,7 +53,7 @@ if __name__ == "__main__":
     y_test_unscale = tsdata_test.unscale_numpy(y_test)
     avg_smape_fp32_pytorch = Evaluator.evaluate("smape", y_test_unscale, y_pred_unscale, aggregate='mean')[0]
 
-    forecaster.quantize((x_train, y_train), framework='pytorch_ipex')
+    forecaster.quantize((x_train, y_train), framework='pytorch_fx')
     st = time.time()
     y_pred = forecaster.predict(x_test, quantize=True, batch_size=128)
     int8_pytorch_time = time.time()-st
