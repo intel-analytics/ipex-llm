@@ -95,6 +95,7 @@ def _get_args_parser() -> ArgumentParser:
         help='A Json string specifying one volumeMount in all containers'
     )
 
+    # TODO: Integrate with the python/nano/src/bigdl/nano/k8s/bigdl_submit.py to add the new feature --submit_pod_template?
     #
     # Positional arguments.
     #
@@ -173,6 +174,7 @@ def _create_pod(pod_name: str,
                                              )
     volume_mounts = [_deserialize_volume_mounts_object(json_str, api_client)
                      for json_str in volume_mount_strs]
+    # TODO: We have changed here, we choose to use our own entrypoint, so we do not want to use the command to overwrite the entrypoint.
     container = client.V1Container(name="pytorch",
                                    image=image,
                                    image_pull_policy="Always",
@@ -184,6 +186,7 @@ def _create_pod(pod_name: str,
     volumes = [_deserialize_volume_object(
         json_str, api_client) for json_str in volume_strs]
 
+    # TODO: Shall we abstract this out to a json object?
     node_selector = {"label": "perf"}
 
     pod_spec = client.V1PodSpec(containers=[container],
