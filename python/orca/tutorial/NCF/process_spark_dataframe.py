@@ -20,8 +20,11 @@ from pyspark.ml.feature import StringIndexer
 from pyspark.sql.types import StructField, StructType, IntegerType, ArrayType, StringType
 from pyspark.sql.functions import udf, lit, collect_list, explode
 
+from bigdl.orca import OrcaContext
 
-def read_data(data_dir, spark):
+
+def read_data(data_dir):
+    spark = OrcaContext.get_spark_session()
     schema = StructType([StructField('user', IntegerType(), False),
                          StructField('item', IntegerType(), False)])
     # Need spark3 to support delimiter with more than one character.
@@ -30,13 +33,7 @@ def read_data(data_dir, spark):
     return df
 
 
-def generate_neg_sample(df):
-    embedding_in_dim = {}
-    for i, c, in enumerate(['user', 'item']):
-        print(f'[INFO] ==> begin calculate {c} embedding_in_dim')
-        embedding_in_dim[c] = df.agg({c: "max"}).collect()[0][f"max({c})"]
-    print(embedding_in_dim)
-
+def generate_neg_sample(df, embedding_in_dim):
     def neg_sample(x):
         import random
         neg_scale = 4
