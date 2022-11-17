@@ -46,8 +46,6 @@ config = dict(
     user_num=user_num,
     dropout=0.5,
 )
-epochs = 10
-batch_size = 256
 
 
 def model_creator(config):
@@ -68,20 +66,20 @@ est = Estimator.from_keras(model_creator=model_creator,
                            backend=backend)
 
 est.fit(train_df,
-        epochs=epochs,
-        batch_size=batch_size,
+        epochs=10,
+        batch_size=256,
         feature_cols=['user', 'item'],
         label_cols=['label'],
-        steps_per_epoch=math.ceil(train_df.count() / batch_size),
+        steps_per_epoch=math.ceil(train_df.count() / 256),
         validation_data=val_df,
-        validation_steps=math.ceil(val_df.count() / batch_size))
+        validation_steps=math.ceil(val_df.count() / 256))
 
 # Step 5: Distributed evaluation of the trained model
 stats = est.evaluate(val_df,
                      feature_cols=['user', 'item'],
                      label_cols=['label'],
-                     batch_size=batch_size,
-                     num_steps=math.ceil(val_df.count() / batch_size))
+                     batch_size=256,
+                     num_steps=math.ceil(val_df.count() / 256))
 print("Evaluation results:", stats)
 
 # Step 6: Save the trained tensorflow model
