@@ -243,8 +243,8 @@ ADD ./get_quote_on_ppml.sh /root/demos/remote_attestation/dcap
 ADD ./verify-attestation-service.sh /opt
 ADD ./print_enclave_signer.sh /opt
 ADD ./register.sh /opt
-ADD ./RegisterMrEnclave.sh /opt
 
+ADD ./production/RegisterMrEnclave.sh /opt
 COPY ./production/entrypoint.sh /opt/
 ADD ./production/mount.sh /opt/mount.sh
 ADD ./production/add_conf.sh /opt/occlum_spark/add_conf.sh
