@@ -37,9 +37,9 @@ def generate_neg_sample(df, item_num):
         neg_res = []
         for _ in x:
             for i in range(neg_scale):
-                neg_item_index = random.randint(1, item_num)
+                neg_item_index = random.randint(1, item_num - 1)
                 while neg_item_index in x:
-                    neg_item_index = random.randint(1, item_num)
+                    neg_item_index = random.randint(1, item_num - 1)
                 neg_res.append(neg_item_index)
         return neg_res
 
