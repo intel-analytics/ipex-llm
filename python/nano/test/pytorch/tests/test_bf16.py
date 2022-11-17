@@ -19,6 +19,7 @@ import pytest
 import torch
 from torch.utils.data import DataLoader, TensorDataset
 from bigdl.nano.pytorch import Trainer
+from bigdl.nano.pytorch import InferenceOptimizer
 from torchvision.models.resnet import resnet18
 from unittest.mock import MagicMock, Mock, PropertyMock, patch
 from bigdl.nano.pytorch.utils import TORCH_VERSION_LESS_1_10, TORCH_VERSION_LESS_1_12
@@ -137,6 +138,26 @@ class Pytorch1_12:
             bf16_model._max_bf16_isa = MagicMock(return_value="AVX512")
             y_hat = bf16_model(x)
         assert y_hat.shape == (10, 10) and y_hat.dtype == torch.bfloat16
+        
+    def test_bf16_save_load(self):
+        model = resnet18(num_classes=10)
+
+        x = torch.rand((10, 3, 256, 256))
+        y = torch.ones((10,), dtype=torch.long)
+
+        bf16_model = InferenceOptimizer.quantize(model, precision='bf16')
+        with patch.object(type(bf16_model), "_has_bf16_isa", PropertyMock(return_value=True)):
+            bf16_model._max_bf16_isa = MagicMock(return_value="AVX512")
+            y_hat = bf16_model(x)
+        assert y_hat.shape == (10, 10) and y_hat.dtype == torch.bfloat16
+        InferenceOptimizer.save(bf16_model, "bf16_model")
+        
+        load_model = InferenceOptimizer.load("bf16_model", model)
+        with patch.object(type(bf16_model), "_has_bf16_isa", PropertyMock(return_value=True)):
+            load_model._max_bf16_isa = MagicMock(return_value="AVX512")
+            y_hat = load_model(x)
+        assert y_hat.shape == (10, 10) and y_hat.dtype == torch.bfloat16
+
 
 TORCH_VERSION_CLS = Pytorch1_12
 if TORCH_VERSION_LESS_1_12:
