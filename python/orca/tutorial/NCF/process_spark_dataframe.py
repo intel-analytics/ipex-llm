@@ -61,12 +61,9 @@ if __name__ == "__main__":
     from bigdl.orca import init_orca_context, stop_orca_context
 
     sc = init_orca_context()
-    embedding_in_dim = {}
     df = read_data('./ml-1m')
-    for i, c, in enumerate(['user', 'item']):
-        embedding_in_dim[c] = df.agg({c: "max"}).collect()[0][f"max({c})"]
-
-    df = generate_neg_sample(df, embedding_in_dim['item'])
+    item_num = df.agg({'item': "max"}).collect()[0]["max(item)"]
+    df = generate_neg_sample(df, item_num)
     train_data, test_data = df.randomSplit([0.8, 0.2], 100)
     train_data.write.csv('./train_dataframe', header=True, sep=',', mode='overwrite')
     test_data.write.csv('./test_dataframe', header=True, sep=',', mode='overwrite')
