@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.intel.analytics.bigdl.ppml.attestation
+package com.intel.analytics.bigdl.ppml.attestation.generator
 
 import org.apache.logging.log4j.LogManager
 import java.io.{BufferedOutputStream, BufferedInputStream};
@@ -22,6 +22,8 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import scala.collection.Iterator
+
+import com.intel.analytics.bigdl.ppml.attestation._
 
 /**
  * QuoteGenerator for Gramine (https://github.com/gramineproject/gramine)

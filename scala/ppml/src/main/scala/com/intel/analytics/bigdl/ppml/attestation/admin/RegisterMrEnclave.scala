@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.intel.analytics.bigdl.ppml.attestation
+package com.intel.analytics.bigdl.ppml.attestation.admin
 
 import com.intel.analytics.bigdl.ppml.examples.Decrypt.timing
 import com.intel.analytics.bigdl.ppml.utils.EHSMParams
@@ -27,6 +27,7 @@ import java.security.SecureRandom
 import java.security.cert.X509Certificate
 import javax.net.ssl.{SSLContext, TrustManager, X509TrustManager}
 
+import com.intel.analytics.bigdl.ppml.attestation._
 
 object RegisterMrEnclave {
   val sslConSocFactory = {
