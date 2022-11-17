@@ -10,14 +10,14 @@ benchmark-chronos -l 96 -o 720
 .. note::
     **Required Options**:
 
-     `-l/--lookback` and `-o/--horizon` are required options for Chronos benchmark tool. Use `-l/--lookback <int>` to specify the history time steps while use `-o/--horizon <int>` to specify the output time steps.
+     **-l/--lookback** and **-o/--horizon** are required options for Chronos benchmark tool. Use **-l/--lookback** to specify the history time steps while use **-o/--horizon** to specify the output time steps.
 ```
 By default, the tool will load `tsinghua_electricity` dataset and train a `TCNForecaster` with input lookback and horizon parameters under `pytroch` framework. As it loads, it prints information about hardware, Nano environment variables and benchmark parameters. When benchmarking is completed, it reports the average throughput during training process. Users may be able to improve forecasting performance by following suggested changes on Nano environment variables.
 
 Besides the default usage, more execution parameters can be set to obtain more benchmark results. Read on to learn more about the configuration options available in Chronos benchmark tool.
 
 ## Configuration Options
-The benchmark tool provides various options for configuring execution parameters. Some key configuration options are introduced in this part and a list of all options is given in [**Advanced Options**](#Advanced Options).
+The benchmark tool provides various options for configuring execution parameters. Some key configuration options are introduced in this part and a list of all options is given in [**Advanced Options**](https://bigdl.readthedocs.io/en/latest/doc/Chronos/Howto/how_to_use_benchmark_tool.html#advanced-options).
 
 ### Model
 The tool provides several built-in time series forecasting models, including TCN, LSTM, Seq2Seq, NBeats and Autoformer. To specify which model to use, run benchmark tool with `-m/--model`. If not specified, TCN is used as the default.
@@ -82,8 +82,6 @@ Moreover, if want to benchmark inference performance of a trained model, run ben
 Running the benchmark tool with `-h/--help` yields the following usage message, which contains all configuration options:
 ```bash
 benchmark-chronos -h
-```
-
 ```
 ```eval_rst
 .. note::
