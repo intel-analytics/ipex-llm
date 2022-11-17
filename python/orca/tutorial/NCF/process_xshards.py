@@ -67,8 +67,8 @@ def split_dataset(data):
 def prepare_data(dataset_dir, num_ng=4):
     # Load the train and test datasets
     feature_cols = ['user', 'item',
-                    'gender', 'occupation', 'zipcode', 'category',  # categorical feature
-                    'age']  # numerical feature
+                    'gender', 'occupation', 'zipcode', 'category',  # sparse feature
+                    'age']  # dense feature
     label_cols = ["label"]
 
     users = read_csv(
@@ -106,27 +106,27 @@ def prepare_data(dataset_dir, num_ng=4):
     indexer.setInputCol('category')
     data = indexer.fit_transform(data)
 
-    # Calculate input_dims for each categorical features
-    cat_feats_dims = []
-    cat_feat_set = set(data["gender"].unique())
-    cat_feats_dims.append(max(cat_feat_set)+1)
-    cat_feat_set = set(data["occupation"].unique())
-    cat_feats_dims.append(max(cat_feat_set)+1)
-    cat_feat_set = set(data["zipcode"].unique())
-    cat_feats_dims.append(max(cat_feat_set)+1)
-    cat_feat_set = set(data["category"].unique())
-    cat_feats_dims.append(max(cat_feat_set)+1)
+    # Calculate input_dims for each sparse features
+    sparse_feats_dims = []
+    sparse_feat_set = set(data["gender"].unique())
+    sparse_feats_dims.append(max(sparse_feat_set)+1)
+    sparse_feat_set = set(data["occupation"].unique())
+    sparse_feats_dims.append(max(sparse_feat_set)+1)
+    sparse_feat_set = set(data["zipcode"].unique())
+    sparse_feats_dims.append(max(sparse_feat_set)+1)
+    sparse_feat_set = set(data["category"].unique())
+    sparse_feats_dims.append(max(sparse_feat_set)+1)
 
     # Split dataset
     train_data, test_data = data.transform_shard(split_dataset).split()
-    return train_data, test_data, user_num, item_num, cat_feats_dims, feature_cols, label_cols
+    return train_data, test_data, user_num, item_num, sparse_feats_dims, feature_cols, label_cols
 
 
 if __name__ == "__main__":
     from bigdl.orca import init_orca_context, stop_orca_context
 
     sc = init_orca_context()
-    train_data, test_data, user_num, item_num, cat_feats_dims, \
+    train_data, test_data, user_num, item_num, sparse_feats_dims, \
         feature_cols, label_cols = prepare_data("./ml-1m")
     train_data.save_pickle("train_xshards")
     test_data.save_pickle("test_xshards")
