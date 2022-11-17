@@ -47,7 +47,9 @@ import pytest
 
 from bigdl.chronos.utils import LazyImport
 DPGANSimulator = LazyImport('bigdl.chronos.simulator.DPGANSimulator')
-from bigdl.chronos.simulator.doppelganger.output import Output, OutputType, Normalization
+Output = LazyImport('bigdl.chronos.simulator.doppelganger.output.Output')
+OutputType = LazyImport('bigdl.chronos.simulator.doppelganger.output.OutputType')
+Normalization = LazyImport('bigdl.chronos.simulator.doppelganger.output.Normalization')
 from unittest import TestCase
 from .. import op_torch
 

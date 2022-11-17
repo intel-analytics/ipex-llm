@@ -45,7 +45,8 @@ def create_data(loader=False):
     test_data = get_x_y(num_test_samples)
 
     if loader:
-        from torch.utils.data import DataLoader, TensorDataset
+        DataLoader = LazyImport('torch.utils.data.DataLoader')
+        TensorDataset = LazyImport('torch.utils.data.TensorDataset')
         train_loader = DataLoader(TensorDataset(torch.from_numpy(train_data[0]),
                                                 torch.from_numpy(train_data[1])), batch_size=32)
         val_loader = DataLoader(TensorDataset(torch.from_numpy(val_data[0]),
