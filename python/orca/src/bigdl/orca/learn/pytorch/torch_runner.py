@@ -44,6 +44,7 @@ from bigdl.orca import OrcaContext
 from bigdl.orca.learn.pytorch.constants import SCHEDULER_STEP
 from bigdl.orca.learn.pytorch.training_operator import TrainingOperator
 from bigdl.orca.learn.pytorch import utils
+from bigdl.orca.learn.pytorch.utils import get_filesystem
 from bigdl.orca.learn.pytorch.core import BaseRunner
 from bigdl.dllib.utils.log4Error import invalidInputError
 
@@ -481,22 +482,26 @@ class TorchRunner(BaseRunner):
 
     def save_checkpoint(self, filepath, save_weights_only=False):
         if self.rank == 0:
-            self._save_checkpoint(filepath, save_weights_only)
+            import fsspec
+            if save_weights_only:
+                checkpoint = {
+                    "epoch": self.epochs,
+                    "models": [model.state_dict() for model in self.models],
+                }
+            else:
+                checkpoint = self.get_state_dict()
+            byte_obj = TorchRunner._state_dict2stream(checkpoint)
+            with fsspec.open(filepath, "wb") as f:
+                f.write(byte_obj)
             self.logger.debug(f"Saved checkpoint: {filepath}")
         return filepath
 
-    def _save_checkpoint(self, filepath, save_weights_only=False):
-        import fsspec
-        if save_weights_only:
-            checkpoint = {
-                "epoch": self.epochs,
-                "models": [model.state_dict() for model in self.models],
-            }
-        else:
-            checkpoint = self.get_state_dict()
-        byte_obj = TorchRunner._state_dict2stream(checkpoint)
-        with fsspec.open(filepath, "wb") as f:
-            f.write(byte_obj)
+    def remove_checkpoint(self, filepath):
+        if self.rank == 0:
+            fs = get_filesystem(filepath)
+            if fs.exists(filepath):
+                fs.rm(filepath, recursive=True)
+                self.logger.debug(f"Removed checkpoint: {filepath}")
 
     def apply(self, fn):
         return fn()
@@ -512,14 +517,6 @@ class TorchRunner(BaseRunner):
         del self.criterion
         del self.optimizers
         del self.models
-
-    @property
-    def rank(self):
-        return self.rank
-
-    @rank.setter
-    def rank(self, rank):
-        self.rank = rank
 
     @property
     def given_models(self):

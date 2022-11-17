@@ -40,6 +40,11 @@ class ModelIO(metaclass=ABCMeta):
         """Save checkpoint."""
         pass
 
+    @abstractmethod
+    def remove_checkpoint(self, filepath):
+        """Remove checkpoint"""
+        pass
+
     def get_state_stream(self):
         """Returns a bytes object for the state dict."""
         state_dict = self.get_state_dict()
@@ -59,27 +64,6 @@ class ModelIO(metaclass=ABCMeta):
         with fs.open(filepath, "rb") as f:
             state_dict = torch.load(f)
         self.load_state_dict(state_dict)
-
-    def remove_checkpoint(self, filepath):
-        if self.rank == 0:
-            self._remove_checkpoint(filepath)
-
-    def _remove_checkpoint(self, filepath):
-        fs = get_filesystem(filepath)
-        if fs.exists(filepath):
-            fs.rm(filepath, recursive=True)
-            self.logger.debug(f"Removed checkpoint: {filepath}")
-
-    # Internal variables must be accessible
-    @property
-    @abstractmethod
-    def rank(self):
-        pass
-
-    @rank.setter
-    @abstractmethod
-    def rank(self, rank):
-        pass
 
     @staticmethod
     def _state_dict2stream(state_dict):
