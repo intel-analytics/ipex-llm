@@ -30,7 +30,7 @@ from bigdl.orca.learn.metrics import Accuracy, Precision, Recall
 sc = init_orca_context()
 
 
-# Step 2: Define train and test datasets using Orca XShards
+# Step 2: Read and process data using Orca XShards
 dataset_dir = "./ml-1m"
 train_data, test_data, user_num, item_num, sparse_feats_dims, \
     feature_cols, label_cols = prepare_data(dataset_dir, num_ng=4)
