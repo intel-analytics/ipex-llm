@@ -188,20 +188,8 @@ def get_estimator(creator):
 
 class TestMMCVRayEstimator(unittest.TestCase):
 
-    def call_fit(self, estimator):
-        epoch_stats = estimator.fit([train_dataloader_creator], [('train', 1)])
-        self.assertEqual(len(epoch_stats), MAX_EPOCH)
-
-        start_stats = epoch_stats[0]
-        end_stats = epoch_stats[-1]
-        assert start_stats["num_samples"] == NUM_SAMPLES
-        assert end_stats["num_samples"] == NUM_SAMPLES
-
-        dloss = end_stats["loss"] - start_stats["loss"]
-        print(f"dLoss: {dloss}")
-        assert dloss < 0
-
-    def call_run(self, estimator):
+    def test_run_with_train_step(self):
+        estimator = get_estimator(runner_creator)
         epoch_stats = estimator.run([train_dataloader_creator], [('train', 1)])
         self.assertEqual(len(epoch_stats), MAX_EPOCH)
 
@@ -214,21 +202,19 @@ class TestMMCVRayEstimator(unittest.TestCase):
         print(f"dLoss: {dloss}")
         assert dloss < 0
 
-    def test_fit_with_train_step(self):
-        estimator = get_estimator(runner_creator)
-        self.call_fit(estimator)
-
-    def test_fit_with_batch_processor(self):
-        estimator = get_estimator(runner_creator_with_batch_processor)
-        self.call_fit(estimator)
-
-    def test_run_with_train_step(self):
-        estimator = get_estimator(runner_creator)
-        self.call_run(estimator)
-
     def test_run_with_batch_processor(self):
         estimator = get_estimator(runner_creator_with_batch_processor)
-        self.call_fit(estimator)
+        epoch_stats = estimator.run([train_dataloader_creator], [('train', 1)])
+        self.assertEqual(len(epoch_stats), MAX_EPOCH)
+
+        start_stats = epoch_stats[0]
+        end_stats = epoch_stats[-1]
+        assert start_stats["num_samples"] == NUM_SAMPLES
+        assert end_stats["num_samples"] == NUM_SAMPLES
+
+        dloss = end_stats["loss"] - start_stats["loss"]
+        print(f"dLoss: {dloss}")
+        assert dloss < 0
 
 
 if __name__ == "__main__":

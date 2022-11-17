@@ -16,6 +16,7 @@
 
 import time
 import mmcv
+import numpy as np
 import torch
 from mmcv.runner import EpochBasedRunner
 from mmcv.runner.utils import get_host_info
@@ -133,8 +134,7 @@ class MMCVRayEpochRunner(BaseRayRunner, EpochBasedRunner):
         self.data_loader = data_loader
         self._max_iters = self._max_epochs * len(self.data_loader)
         self.call_hook('before_train_epoch')
-        metric_meters = AverageMeterCollection()
-        kwargs["metric_meters"] = metric_meters
+        self.log_buffer.clear()
         time.sleep(2)  # Prevent possible deadlock during epoch transition
         for i, data_batch in enumerate(self.data_loader):
             self.data_batch = data_batch
@@ -145,7 +145,7 @@ class MMCVRayEpochRunner(BaseRayRunner, EpochBasedRunner):
             del self.data_batch
             self._iter += 1
 
-        stats = metric_meters.summary()
+        stats = self._get_epoch_stats()
         self.call_hook('after_train_epoch')
         self._epoch += 1
         return stats
@@ -163,22 +163,19 @@ class MMCVRayEpochRunner(BaseRayRunner, EpochBasedRunner):
             invalidInputError(False,
                               '"batch_processor()" or "model.train_step()" '
                               'and "model.val_step()" must return a dict')
-        # update the metrics
-        if train_mode:
-            if kwargs.get("metric_meters"):
-                metric_meters = kwargs["metric_meters"]
-                outputs_copy = dict()
-                for k, v in outputs.items():
-                    if isinstance(v, torch.Tensor):
-                        outputs_copy[k] = v.item()
-                    else:
-                        outputs_copy[k] = v
-                outputs_copy.pop("log_vars", None)
-                outputs_copy.pop("num_samples", None)
-                metric_meters.update(outputs_copy, n=get_batchsize(data_batch))
 
         if 'log_vars' in outputs:
-            self.log_buffer.update(outputs['log_vars'], outputs['num_samples'])
+            if 'loss' in outputs['log_vars']:
+                self.log_buffer.update(outputs['log_vars'], outputs['num_samples'])
+            else:
+                log_vars = outputs['log_vars'].copy()
+                log_vars['loss'] = outputs['loss'].item()
+                self.log_buffer.update(log_vars, outputs['num_samples'])
+        else:
+            log_vars = dict()
+            log_vars['loss'] = outputs['loss'].item()
+            self.log_buffer.update(log_vars, get_batchsize(data_batch))
+
         self.outputs = outputs
 
     def predict(self, **kwargs):
@@ -206,6 +203,19 @@ class MMCVRayEpochRunner(BaseRayRunner, EpochBasedRunner):
         for attr in self.EBR_slots:
             # todo: check necessary components
             setattr(self, attr, getattr(epoch_based_runner, attr))
+
+    def _get_epoch_stats(self):
+        # calculate epoch average stats
+        self.log_buffer.average()
+        batch_count = len(self.log_buffer.val_history['loss'])
+        num_samples = np.sum(self.log_buffer.n_history['loss'])
+        last_val_dict = dict()
+        for key, vals in self.log_buffer.val_history.items():
+            last_val_dict["last_" + str(key)] = vals[-1]
+
+        stats = dict(batch_count=batch_count, num_samples=num_samples,
+                     **self.log_buffer.output, **last_val_dict)
+        return stats
 
     @property
     def rank(self):
