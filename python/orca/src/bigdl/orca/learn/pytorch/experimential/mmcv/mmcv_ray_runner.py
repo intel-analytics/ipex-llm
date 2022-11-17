@@ -17,11 +17,12 @@
 import time
 import mmcv
 import torch
+import warnings
 from mmcv.runner import EpochBasedRunner
 from mmcv.runner.utils import get_host_info
 from mmcv.parallel.distributed import MMDistributedDataParallel
 from bigdl.orca.learn.pytorch.utils import AverageMeterCollection
-from bigdl.dllib.utils.log4Error import *
+from bigdl.dllib.utils.log4Error import invalidInputError
 from bigdl.orca.learn.pytorch.experimential.core.base_ray_runner import BaseRayRunner
 
 from typing import (Any, Dict, List, Optional, Tuple, Callable, overload)
@@ -57,6 +58,10 @@ class MMCVRayEpochRunner(BaseRayRunner, EpochBasedRunner):
     def setup_components(self):
         runner = self.mmcv_runner_creator(self.config)
         self._wrap_from_ebr(runner)
+        # MMDDP is implemented by MMCV, it has two main differences with PyTorch DDP:
+        # 1. It supports a custom type :class:`DataContainer` which allows more
+        #    flexible control of input data.
+        # 2. It implement two APIs ``train_step()`` and ``val_step()``.
         self.model = MMDistributedDataParallel(self.model)
 
     def train_epochs(self,
