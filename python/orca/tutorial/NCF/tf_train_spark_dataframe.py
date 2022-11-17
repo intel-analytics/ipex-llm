@@ -26,7 +26,7 @@ from bigdl.orca.learn.tf2 import Estimator
 # Step 1: Init Orca Context
 init_orca_context(memory='4g')
 
-# Step 2: read and process data using Spark DataFrame
+# Step 2: Read and process data using Spark DataFrame
 data_dir = './ml-1m'  # path to ml-1m
 df = read_data(data_dir)
 embedding_in_dim = {}
@@ -37,8 +37,11 @@ print(embedding_in_dim)
 item_num = embedding_in_dim['item'] + 1
 user_num = embedding_in_dim['user'] + 1
 df = generate_neg_sample(df, item_num)
+train_df, val_df = df.randomSplit([0.8, 0.2], seed=100)
+train_steps = math.ceil(train_df.count() / 256)
+val_steps = math.ceil(val_df.count() / 256)
 
-# Step 3: Define the ncf model
+# Step 3: Define the NCF model
 config = dict(
     embedding_size=16,
     lr=1e-3,
@@ -57,8 +60,6 @@ def model_creator(config):
     return model
 
 
-train_df, val_df = df.randomSplit([0.8, 0.2], 100)
-
 # Step 4: Distributed training with Orca keras Estimator
 backend = 'spark'  # 'ray' of 'spark'
 est = Estimator.from_keras(model_creator=model_creator,
@@ -70,19 +71,19 @@ est.fit(train_df,
         batch_size=256,
         feature_cols=['user', 'item'],
         label_cols=['label'],
-        steps_per_epoch=math.ceil(train_df.count() / 256),
+        steps_per_epoch=train_steps,
         validation_data=val_df,
-        validation_steps=math.ceil(val_df.count() / 256))
+        validation_steps=val_steps)
 
 # Step 5: Distributed evaluation of the trained model
 stats = est.evaluate(val_df,
                      feature_cols=['user', 'item'],
                      label_cols=['label'],
                      batch_size=256,
-                     num_steps=math.ceil(val_df.count() / 256))
+                     num_steps=val_steps)
 print("Evaluation results:", stats)
 
-# Step 6: Save the trained tensorflow model
+# Step 6: Save the trained Tensorflow model
 est.save("NCF_model")
 
 # Step 7: Stop Orca Context when program finishes
