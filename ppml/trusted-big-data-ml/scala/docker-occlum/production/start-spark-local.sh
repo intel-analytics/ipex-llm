@@ -1,10 +1,10 @@
 # Clean up old container
-sudo docker rm -f bigdl-ppml-trusted-big-data-ml-scala-occlum
+sudo docker rm -f bigdl-ppml-trusted-big-data-ml-scala-occlum-customer
 
 # Run new command in container
 sudo docker run -it \
 	--net=host \
-	--name=bigdl-ppml-trusted-big-data-ml-scala-occlum \
+	--name=bigdl-ppml-trusted-big-data-ml-scala-occlum-customer \
 	--cpuset-cpus 10-14 \
 	--device=/dev/sgx/enclave \
 	--device=/dev/sgx/provision \
@@ -24,5 +24,5 @@ sudo docker run -it \
         -e REPORT_DATA=ppml \
 	-e SGX_LOG_LEVEL=off \
 	-e RUNTIME_ENV=native \
-	intelanalytics/bigdl-ppml-trusted-big-data-ml-scala-occlum:2.2.0-SNAPSHOT \
+	intelanalytics/bigdl-ppml-trusted-big-data-ml-scala-occlum-production:2.2.0-build \
 	bash
