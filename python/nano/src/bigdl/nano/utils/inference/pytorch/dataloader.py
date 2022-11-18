@@ -58,10 +58,7 @@ def automatic_add_label_in_dataloader(model, dataloader, input_sample=None):
         # define a decorator to add label
         def label_collate_fn_wrapper(func):
             def collate_fn(batch):
-                if isinstance(batch, torch.Tensor):
-                    res = batch
-                else:
-                    res = func(batch)
+                res = func(batch)
                 # add dummy label
                 return res, torch.ones(1).long()
             return collate_fn
