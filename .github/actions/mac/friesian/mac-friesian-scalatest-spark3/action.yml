@@ -6,6 +6,7 @@ runs:
     - name: Run Test
       shell: bash
       run: |
+        source ~/.bash_profile
         source activate py36
         export SPARK_HOME=/opt/work/spark-3.1.2
         export KERAS_BACKEND=tensorflow
