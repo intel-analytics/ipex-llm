@@ -111,6 +111,8 @@ class TestInferencePipeline(TestCase):
                                thread_num=1)
 
         acc_model, option = inference_opt.get_best_model()
+        if TORCH_VERSION_LESS_1_10:
+            return
         acc_model, option = inference_opt.get_best_model(accelerator="onnxruntime")
         assert option == "original" or "onnxruntime" in option
         acc_model, option = inference_opt.get_best_model(precision="int8")
@@ -125,8 +127,10 @@ class TestInferencePipeline(TestCase):
                                thread_num=1)
 
         acc_model, option = inference_opt.get_best_model()
+        if TORCH_VERSION_LESS_1_10:
+            return
         acc_model, option = inference_opt.get_best_model(accelerator="onnxruntime")
-        assert option == "original" or "onnxruntime" in option, print(inference_opt._optimize_result)
+        assert option == "original" or "onnxruntime" in option
         acc_model, option = inference_opt.get_best_model(precision="int8")
         assert option == "original" or "inc" in option or "int8" in option
         with pytest.raises(RuntimeError) as e:
