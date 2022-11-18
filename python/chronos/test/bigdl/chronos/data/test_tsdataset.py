@@ -28,7 +28,7 @@ from pandas.testing import assert_frame_equal
 from numpy.testing import assert_array_almost_equal
 from bigdl.chronos.utils import LazyImport
 tf = LazyImport('tensorflow')
-from .. import op_tf2, op_diff_set_all
+from .. import op_torch, op_tf2, op_diff_set_all
 
 def get_ts_df():
     sample_num = np.random.randint(100, 200)
@@ -149,6 +149,7 @@ class TestTSDataset(TestCase):
     def teardown_method(self, method):
         pass
 
+    @op_torch
     def test_tsdataset_initialization(self):
         df = get_ts_df()
 
@@ -194,6 +195,7 @@ class TestTSDataset(TestCase):
             tsdata = TSDataset.from_pandas(df, dt_col="datetime", target_col=["value1"],
                                            extra_feature_col="extra feature", id_col="id")
 
+    @op_torch
     @op_diff_set_all
     def test_tsdataset_from_parquet(self):
         df = get_ts_df()
@@ -216,6 +218,7 @@ class TestTSDataset(TestCase):
         finally:
             shutil.rmtree(temp)
 
+    @op_torch
     def test_tsdataset_initialization_multiple(self):
         df = get_multi_id_ts_df()
         # legal input
@@ -268,6 +271,7 @@ class TestTSDataset(TestCase):
                                            extra_feature_col="extra feature",
                                            id_col="id", repair=False)
 
+    @op_torch
     def test_tsdataset_roll_single_id(self):
         df = get_ts_df()
         horizon = random.randint(1, 10)
@@ -328,6 +332,7 @@ class TestTSDataset(TestCase):
         assert x.shape == (len(df)-lookback-horizon+1, lookback, 2)
         tsdata._check_basic_invariants()
 
+    @op_torch
     def test_tsdataset_roll_multi_id(self):
         df = get_multi_id_ts_df()
         horizon = random.randint(1, 10)
@@ -374,6 +379,7 @@ class TestTSDataset(TestCase):
 
         tsdata._check_basic_invariants()
 
+    @op_torch
     def test_tsdataset_roll_order(self):
         df = pd.DataFrame({"datetime": np.array(['1/1/2019', '1/1/2019', '1/2/2019', '1/2/2019']),
                            "value": np.array([1.9, 2.3, 2.4, 2.6]),
@@ -395,6 +401,7 @@ class TestTSDataset(TestCase):
         assert np.array_equal(x, np.array([[[1.9, 2.3, 1, 2, 0, 9]]], dtype=np.float32))
         assert np.array_equal(y, np.array([[[2.4, 2.6]]], dtype=np.float32))
 
+    @op_torch
     def test_tsdata_roll_int_target(self):
         horizon = random.randint(1, 10)
         lookback = random.randint(1, 20)
@@ -406,6 +413,7 @@ class TestTSDataset(TestCase):
         assert y.dtype == np.float32
         tsdata._check_basic_invariants()
 
+    @op_torch
     def test_tsdata_roll_timeenc(self):
         horizon = random.randint(1, 9)
         lookback = random.randint(10, 20)
@@ -435,6 +443,7 @@ class TestTSDataset(TestCase):
         assert y_time.shape[1:] == (lookback, 3)
         assert x.shape[0] == y.shape[0] == x_time.shape[0] == y_time.shape[0]
 
+    @op_torch
     def test_tsdata_roll_timeenc_predict(self):
         horizon = 10
         lookback = random.randint(10, 20)
@@ -450,6 +459,7 @@ class TestTSDataset(TestCase):
         assert y_time.shape[1:] == (15, 3)
         assert x.shape[0] == y.shape[0] == x_time.shape[0] == y_time.shape[0] == len(df) - lookback + 1
 
+    @op_torch
     def test_tsdata_roll_timeenc_to_torch_data_loader(self):
         horizon = random.randint(1, 9)
         lookback = random.randint(10, 20)
@@ -482,6 +492,7 @@ class TestTSDataset(TestCase):
         # white box check
         assert dataloader.dataset.data_stamp_arr.shape[0] == dataloader.dataset.arr.shape[0]
 
+    @op_torch
     def test_tsdata_roll_timeenc_to_torch_data_loader_predict(self):
         horizon = 10
         lookback = random.randint(10, 20)
@@ -497,6 +508,7 @@ class TestTSDataset(TestCase):
         assert y_time.shape[1:] == (15, 3)
         assert x.shape[0] == y.shape[0] == x_time.shape[0] == y_time.shape[0] == len(df) - lookback + 1
 
+    @op_torch
     def test_tsdataset_to_torch_loader_roll(self):
         df_single_id = get_ts_df()
         df_multi_id = get_multi_id_ts_df()
@@ -563,6 +575,7 @@ class TestTSDataset(TestCase):
                 assert tuple(y_batch.size()) == (batch_size, horizon, 2)
                 break
 
+    @op_torch
     def test_tsdataset_to_torch_loader(self):
         df = get_ts_df()
         horizon = random.randint(1, 10)
@@ -585,6 +598,7 @@ class TestTSDataset(TestCase):
             assert tuple(y_batch.size()) == (batch_size, horizon, 1)
             break
 
+    @op_torch
     def test_tsdataset_to_torch_loader_lessthansample(self):
         lookback = 96
         horizon = 48
@@ -594,7 +608,7 @@ class TestTSDataset(TestCase):
         with pytest.raises(RuntimeError):
             tsdata.to_torch_data_loader(lookback=lookback, horizon=horizon)
 
-
+    @op_torch
     def test_tsdata_multi_unscale_numpy_torch_load(self):
         lookback = random.randint(1, 10)
         horizon = random.randint(1, 20)
@@ -653,6 +667,7 @@ class TestTSDataset(TestCase):
         assert val[0].numpy().shape == (batch_size, lookback, 2)
         assert val[1].numpy().shape == (batch_size, horizon, 1)
 
+    @op_torch
     def test_tsdataset_imputation(self):
         for val in ["last", "const", "linear"]:
             df = get_ugly_ts_df()
@@ -664,6 +679,7 @@ class TestTSDataset(TestCase):
             assert len(tsdata.to_pandas()) == 100
             tsdata._check_basic_invariants()
 
+    @op_torch
     def test_tsdataset_deduplicate(self):
         df = get_ugly_ts_df()
         for _ in range(20):
@@ -676,6 +692,7 @@ class TestTSDataset(TestCase):
         assert len(tsdata.to_pandas()) == 100
         tsdata._check_basic_invariants()
 
+    @op_torch
     def test_tsdataset_datetime_feature(self):
         df = get_ts_df()
         # interval = day
@@ -740,6 +757,7 @@ class TestTSDataset(TestCase):
                                            'extra feature'}
         tsdata._check_basic_invariants()
 
+    @op_torch
     def test_tsdataset_datetime_feature_multiple(self):
         df = get_multi_id_ts_df()
         # interval = day
@@ -804,6 +822,7 @@ class TestTSDataset(TestCase):
                                            'extra feature'}
         tsdata._check_basic_invariants()
 
+    @op_torch
     def test_tsdataset_scale_unscale(self):
         df = get_ts_df()
         df_test = get_ts_df()
@@ -832,6 +851,7 @@ class TestTSDataset(TestCase):
 
         tsdata._check_basic_invariants()
 
+    @op_torch
     def test_tsdataset_unscale_numpy(self):
         df = get_multi_id_ts_df()
         df_test = get_multi_id_ts_df()
@@ -876,6 +896,7 @@ class TestTSDataset(TestCase):
 
             tsdata._check_basic_invariants()
 
+    @op_torch
     def test_tsdataset_resample(self):
         df = get_ts_df()
         tsdata = TSDataset.from_pandas(df, dt_col="datetime", target_col="value",
@@ -907,6 +928,7 @@ class TestTSDataset(TestCase):
         assert set(before_sampling) == set(tsdata.df.columns)
         tsdata._check_basic_invariants()
 
+    @op_torch
     def test_tsdataset_resample_multiple(self):
         df = get_multi_id_ts_df()
         tsdata = TSDataset.from_pandas(df, dt_col="datetime", target_col="value",
@@ -947,6 +969,7 @@ class TestTSDataset(TestCase):
         assert set(before_sampling) == set(tsdata.df.columns)
         tsdata._check_basic_invariants()
 
+    @op_torch
     def test_tsdataset_split(self):
         df = get_ts_df()
         # only train and test
@@ -977,6 +1000,7 @@ class TestTSDataset(TestCase):
         assert tsdata_valid.target_col[0] != "new value"
         assert tsdata_test.target_col[0] != "new value"
 
+    @op_torch
     def test_tsdataset_split_multiple(self):
         df = get_multi_id_ts_df()
         tsdata_train, tsdata_valid, tsdata_test =\
@@ -1008,6 +1032,7 @@ class TestTSDataset(TestCase):
         assert tsdata_valid.target_col[0] != "new value"
         assert tsdata_test.target_col[0] != "new value"
 
+    @op_torch
     @op_diff_set_all
     def test_tsdataset_global_feature(self):
         for val in ["minimal"]:
@@ -1017,6 +1042,7 @@ class TestTSDataset(TestCase):
             tsdata.gen_global_feature(settings=val)
             tsdata._check_basic_invariants()
 
+    @op_torch
     @op_diff_set_all
     def test_tsdataset_global_feature_multiple(self):
         df = get_multi_id_ts_df()
@@ -1029,6 +1055,7 @@ class TestTSDataset(TestCase):
         tsdata.gen_global_feature(settings="minimal", n_jobs=2)
         tsdata._check_basic_invariants()
 
+    @op_torch
     @op_diff_set_all
     def test_tsdataset_rolling_feature_multiple(self):
         df = get_multi_id_ts_df()
@@ -1059,6 +1086,7 @@ class TestTSDataset(TestCase):
 
         tsdata._check_basic_invariants()
 
+    @op_torch
     def test_check_scale_sequence(self):
         df = get_multi_id_ts_df()
         # with split is True.
@@ -1082,6 +1110,7 @@ class TestTSDataset(TestCase):
         #     tsdata.gen_global_feature(settings="minimal")\
         #           .gen_rolling_feature(settings="minimal", window_size=5)
 
+    @op_torch
     def test_non_pd_datetime(self):
         df = get_non_dt()
         tsdata = TSDataset.from_pandas(df, dt_col="datetime",
@@ -1098,6 +1127,7 @@ class TestTSDataset(TestCase):
 
         tsdata._check_basic_invariants()
 
+    @op_torch
     def test_not_aligned(self):
         df = get_not_aligned_df()
         tsdata = TSDataset.from_pandas(df, target_col="value",
@@ -1109,6 +1139,7 @@ class TestTSDataset(TestCase):
             tsdata.roll(lookback=5, horizon=2, id_sensitive=True)
         tsdata._check_basic_invariants()
 
+    @op_torch
     def test_dt_sorted(self):
         df = pd.DataFrame({"datetime": np.array(['20000101', '20000102', '20000102', '20000101']),
                            "value": np.array([1.9, 2.3, 2.4, 2.6]),
@@ -1119,6 +1150,7 @@ class TestTSDataset(TestCase):
         with pytest.raises(RuntimeError):
             tsdata._check_basic_invariants(strict_check=True)
 
+    @op_torch
     @op_diff_set_all
     def test_cycle_length_est(self):
         df = get_multi_id_ts_df()
@@ -1161,6 +1193,7 @@ class TestTSDataset(TestCase):
         with pytest.raises(RuntimeError):
             tsdata.get_cycle_length(aggregate='min', top_k=3)
 
+    @op_torch
     def test_lookback_equal_to_one(self):
         df = get_ts_df()
         horizon = random.randint(1, 10)
@@ -1182,6 +1215,7 @@ class TestTSDataset(TestCase):
         assert data[1].shape[1] == max(lookback // 2, 1)
         assert data[3].shape[1] == max(lookback // 2, 1) + horizon
 
+    @op_torch
     def test_is_predict_for_roll_and_numpy(self):
         df = get_ts_df()
         horizon = random.randint(1, 10)
@@ -1203,6 +1237,7 @@ class TestTSDataset(TestCase):
         assert data[1].shape[1] == max(lookback // 2, 1)
         assert data[3].shape[1] == max(lookback // 2, 1) + horizon
 
+    @op_torch
     def test_is_predict_for_roll_and_to_loader(self):
         df = get_ts_df()
         horizon = random.randint(1, 10)
@@ -1231,6 +1266,7 @@ class TestTSDataset(TestCase):
         assert data[3].shape[1] == max(lookback // 2, 1) + horizon
 
 
+    @op_torch
     def test_is_predict_for_to_loader(self):
         df = get_ts_df()
         horizon = random.randint(1, 10)
@@ -1261,6 +1297,7 @@ class TestTSDataset(TestCase):
         assert data[1].shape[1] == max(lookback // 2, 1)
         assert data[3].shape[1] == max(lookback // 2, 1) + horizon
 
+    @op_torch
     def test_tsdataset_missing_check_and_repair(self):
         df = get_missing_df()
         tsdata = TSDataset.from_pandas(df, dt_col="datetime",
@@ -1269,7 +1306,8 @@ class TestTSDataset(TestCase):
                                        repair=True)
         missing_value = tsdata.df.isna().sum().sum()
         assert missing_value == 0
-    
+
+    @op_torch
     def test_tsdataset_non_std_dt_check_and_repair(self):
         df = get_non_std_dt_df()
         tsdata = TSDataset.from_pandas(df, dt_col="datetime",
@@ -1279,6 +1317,7 @@ class TestTSDataset(TestCase):
         _is_pd_datetime = pd.api.types.is_datetime64_any_dtype(tsdata.df["datetime"].dtypes)
         assert _is_pd_datetime is True
 
+    @op_torch
     def test_tsdataset_interval_check_and_repair(self):
         df = get_multi_interval_df()
         tsdata = TSDataset.from_pandas(df, dt_col="datetime",
@@ -1290,6 +1329,7 @@ class TestTSDataset(TestCase):
         unique_intervals = interval[:-1].unique()
         assert len(unique_intervals) == 1
 
+    @op_torch
     def test_tsdataset_interval_repair_for_single_and_multi_id(self):
         df = get_multi_id_ts_df_interval()
         tsdata = TSDataset.from_pandas(df, dt_col="datetime",
@@ -1308,6 +1348,7 @@ class TestTSDataset(TestCase):
         dt_col = tsdata.df["datetime"]
         assert len(dt_col) == 366*2
 
+    @op_torch
     def test_tsdataset_interval_check_and_repair_for_multi_id(self):
         df_multi_id = get_multi_id_ts_df()
         horizon = 10
