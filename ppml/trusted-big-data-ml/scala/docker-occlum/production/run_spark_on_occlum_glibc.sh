@@ -196,6 +196,9 @@ attestation_init() {
             echo "[ERROR] Attestation set to /root/demos/remote_attestation/dcaprue but NO PCCS"
             exit 1
         else
+                #PCCS for generate quote
+                echo 'PCCS_URL='${PCCS_URL}'/sgx/certification/v3/' > /etc/sgx_default_qcnl.conf
+                echo 'USE_SECURE_CERT=FALSE' >> /etc/sgx_default_qcnl.conf
                 #generate dcap quote
                 cd /opt/occlum_spark
                 occlum run /bin/dcap_c_test $REPORT_DATA
