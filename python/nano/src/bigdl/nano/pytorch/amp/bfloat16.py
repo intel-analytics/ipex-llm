@@ -197,9 +197,10 @@ class BF16Model(LightningModule):
             #                    " BF16 acceleration."
             #         )
         else:
-            if self._allow_non_bf16:
-                self._is_bf16 = False
             # close error for no BF16 instructions, just warning.
+            self._is_bf16 = False
+            # if self._allow_non_bf16:
+            #     self._is_bf16 = False
 
             # else:
             #     invalidOperationError(

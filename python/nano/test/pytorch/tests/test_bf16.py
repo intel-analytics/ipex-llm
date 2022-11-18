@@ -47,12 +47,11 @@ class Pytorch1_11:
         trainer = Trainer(max_epochs=1)
         model = resnet18(num_classes=10)
         x = torch.rand((10, 3, 256, 256))
-        bf16_model = trainer.quantize(model, precision='bf16')
         with pytest.raises(
             RuntimeError,
             match="Require torch>=1.12 to obtain bfloat16 acceleration."
         ):
-            y_hat = bf16_model(x)
+            bf16_model = trainer.quantize(model, precision='bf16')
 
 
 class Pytorch1_12:
