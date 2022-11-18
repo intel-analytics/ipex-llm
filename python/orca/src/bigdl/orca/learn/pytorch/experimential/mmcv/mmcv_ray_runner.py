@@ -139,7 +139,9 @@ class MMCVRayEpochRunner(BaseRayRunner, EpochBasedRunner):
         self.data_loader = data_loader
         self._max_iters = self._max_epochs * len(self.data_loader)
         self.call_hook('before_train_epoch')
-        self.log_buffer.clear()
+        if self.log_buffer.ready:
+            warnings.warn("log_buffer is not cleared, this may cause the return "
+                          "value of fit/run method is not correct", RuntimeWarning)
         time.sleep(2)  # Prevent possible deadlock during epoch transition
         for i, data_batch in enumerate(self.data_loader):
             self.data_batch = data_batch
