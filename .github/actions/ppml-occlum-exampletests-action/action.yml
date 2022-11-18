@@ -17,7 +17,7 @@ runs:
         export KEYS_PATH=/home/icx/glorysdj/keys
         export SECURE_PASSWORD_PATH=/home/icx/glorysdj/password
         export SGX_MEM_SIZE=60GB
-        export IMAGE=10.239.45.10/arda/intelanalytics/bigdl-ppml-trusted-big-data-ml-scala-occlum:2.1.0-SNAPSHOT
+        export IMAGE=10.239.45.10/arda/intelanalytics/bigdl-ppml-trusted-big-data-ml-scala-occlum:2.2.0-SNAPSHOT
 
         docker pull $IMAGE
 
@@ -89,7 +89,7 @@ runs:
              sed -i 's#-Xmx78g -Xms78g#-Xmx10g -Xms10g#g' run_spark_on_occlum_glibc.sh && \
              sed -i 's#/host/data /host/data/output#/host/data/tpch /host/data/output#g' run_spark_on_occlum_glibc.sh && \
              bash run_spark_on_occlum_glibc.sh tpch | tee spark-tpch.log && \
-             cat spark-tpch.log | egrep '22 finished'"
+             cat spark-tpch.log | egrep '22 finished-'"
         status_4_spark_tpch=$(echo $?)
         fi
 
@@ -109,7 +109,7 @@ runs:
         docker exec -i $CONTAINER_NAME bash -c "cd /opt && \
           sed -i 's#-i /host/data -s /host/data/model -t 2 -r 100 -d 2 -w 1#-i /host/data/xgboost -s /host/data/xgboost/model -t 2 -r 10 -d 2 -w 1#g' run_spark_on_occlum_glibc.sh && \
           bash run_spark_on_occlum_glibc.sh xgboost | tee spark-xgboost.log && \
-          cat spark-xgboost.log | egrep 'RabitTracker-akka.actor.default-dispatcher'"
+          cat spark-xgboost.log | egrep 'end time is'"
         status_6_spark_xgboost=$(echo $?)
         fi
 

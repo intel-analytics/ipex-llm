@@ -19,7 +19,7 @@ cd /ppml/trusted-big-data-ml
 if [ $status_1_pyspark_sql_api_DataFrame -ne 0 ]; then
 echo "pysaprk sql api example.1 --- DataFrame"
 export sgx_command="/opt/jdk8/bin/java \
-  -cp '/ppml/trusted-big-data-ml/work/spark-$SPARK_VERSION/conf/:/ppml/trusted-big-data-ml/work/spark-$SPARK_VERSION/jars/*:/ppml/trusted-big-data-ml/work/spark-$SPARK_VERSION/examples/jars/*' \
+  -cp /ppml/trusted-big-data-ml/work/spark-$SPARK_VERSION/conf/:/ppml/trusted-big-data-ml/work/spark-$SPARK_VERSION/jars/*:/ppml/trusted-big-data-ml/work/spark-$SPARK_VERSION/examples/jars/* \
   -Xmx1g \
   org.apache.spark.deploy.SparkSubmit \
     --master local[4] \
@@ -34,7 +34,7 @@ fi
 if [ $status_2_pyspark_sql_api_SQLContext -ne 0 ]; then
 echo "pysaprk sql api example.2 --- SQLContext"
 export sgx_command="/opt/jdk8/bin/java \
-  -cp '/ppml/trusted-big-data-ml/work/spark-$SPARK_VERSION/conf/:/ppml/trusted-big-data-ml/work/spark-$SPARK_VERSION/jars/*:/ppml/trusted-big-data-ml/work/spark-$SPARK_VERSION/examples/jars/*' \
+  -cp /ppml/trusted-big-data-ml/work/spark-$SPARK_VERSION/conf/:/ppml/trusted-big-data-ml/work/spark-$SPARK_VERSION/jars/*:/ppml/trusted-big-data-ml/work/spark-$SPARK_VERSION/examples/jars/* \
   -Xmx1g \
   org.apache.spark.deploy.SparkSubmit \
     --master local[4] \
@@ -49,7 +49,7 @@ fi
 if [ $status_3_pyspark_sql_api_UDFRegistration -ne 0 ]; then
 echo "pysaprk sql api example.3 --- UDFRegistration"
 export sgx_command="/opt/jdk8/bin/java \
-  -cp '/ppml/trusted-big-data-ml/work/spark-$SPARK_VERSION/conf/:/ppml/trusted-big-data-ml/work/spark-$SPARK_VERSION/jars/*:/ppml/trusted-big-data-ml/work/spark-$SPARK_VERSION/jars/spark-sql_2.12-$SPARK_VERSION.jar:/ppml/trusted-big-data-ml/work/spark-$SPARK_VERSION/examples/jars/*' \
+  -cp /ppml/trusted-big-data-ml/work/spark-$SPARK_VERSION/conf/:/ppml/trusted-big-data-ml/work/spark-$SPARK_VERSION/jars/*:/ppml/trusted-big-data-ml/work/spark-$SPARK_VERSION/jars/spark-sql_2.12-$SPARK_VERSION.jar:/ppml/trusted-big-data-ml/work/spark-$SPARK_VERSION/examples/jars/* \
   -Xmx1g \
     org.apache.spark.deploy.SparkSubmit \
     --master local[4] \
@@ -63,7 +63,7 @@ fi
 if [ $status_4_pyspark_sql_api_GroupedData -ne 0 ]; then
 echo "pysaprk sql api example.4 --- GroupedData"
 export sgx_command="/opt/jdk8/bin/java \
-  -cp '/ppml/trusted-big-data-ml/work/spark-$SPARK_VERSION/conf/:/ppml/trusted-big-data-ml/work/spark-$SPARK_VERSION/jars/*:/ppml/trusted-big-data-ml/work/spark-$SPARK_VERSION/examples/jars/*' \
+  -cp /ppml/trusted-big-data-ml/work/spark-$SPARK_VERSION/conf/:/ppml/trusted-big-data-ml/work/spark-$SPARK_VERSION/jars/*:/ppml/trusted-big-data-ml/work/spark-$SPARK_VERSION/examples/jars/* \
   -Xmx1g \
   org.apache.spark.deploy.SparkSubmit \
     --master local[4] \
@@ -77,7 +77,7 @@ fi
 if [ $status_5_pyspark_sql_api_Column -ne 0 ]; then
 echo "pysaprk sql api example.5 --- Column"
 export sgx_command="/opt/jdk8/bin/java \
-  -cp '/ppml/trusted-big-data-ml/work/spark-$SPARK_VERSION/conf/:/ppml/trusted-big-data-ml/work/spark-$SPARK_VERSION/jars/*:/ppml/trusted-big-data-ml/work/spark-$SPARK_VERSION/examples/jars/*' \
+  -cp /ppml/trusted-big-data-ml/work/spark-$SPARK_VERSION/conf/:/ppml/trusted-big-data-ml/work/spark-$SPARK_VERSION/jars/*:/ppml/trusted-big-data-ml/work/spark-$SPARK_VERSION/examples/jars/* \
   -Xmx1g \
   org.apache.spark.deploy.SparkSubmit \
     --master local[4] \
@@ -91,7 +91,7 @@ fi
 if [ $status_6_pyspark_sql_api_Row_and_DataFrameNaFunctions -ne 0 ]; then
 echo "pysaprk sql api example.6 --- Row_and_DataFrameNaFunctions"
 export sgx_command="/opt/jdk8/bin/java \
-  -cp '/ppml/trusted-big-data-ml/work/spark-$SPARK_VERSION/conf/:/ppml/trusted-big-data-ml/work/spark-$SPARK_VERSION/jars/*:/ppml/trusted-big-data-ml/work/spark-$SPARK_VERSION/examples/jars/*' \
+  -cp /ppml/trusted-big-data-ml/work/spark-$SPARK_VERSION/conf/:/ppml/trusted-big-data-ml/work/spark-$SPARK_VERSION/jars/*:/ppml/trusted-big-data-ml/work/spark-$SPARK_VERSION/examples/jars/* \
   -Xmx1g \
   org.apache.spark.deploy.SparkSubmit \
     --master local[4] \
@@ -105,7 +105,7 @@ fi
 if [ $status_7_pyspark_sql_api_Window -ne 0 ]; then
 echo "pysaprk sql api example.7 --- Window"
 export sgx_command="/opt/jdk8/bin/java \
-  -cp '/ppml/trusted-big-data-ml/work/spark-$SPARK_VERSION/conf/:/ppml/trusted-big-data-ml/work/spark-$SPARK_VERSION/jars/*:/ppml/trusted-big-data-ml/work/spark-$SPARK_VERSION/examples/jars/*' \
+  -cp /ppml/trusted-big-data-ml/work/spark-$SPARK_VERSION/conf/:/ppml/trusted-big-data-ml/work/spark-$SPARK_VERSION/jars/*:/ppml/trusted-big-data-ml/work/spark-$SPARK_VERSION/examples/jars/* \
   -Xmx1g \
   org.apache.spark.deploy.SparkSubmit \
     --master local[4] \
@@ -119,7 +119,7 @@ fi
 if [ $status_8_pyspark_sql_api_DataframeReader -ne 0 ]; then
 echo "pysaprk sql api example.8 --- DataframeReader"
 export sgx_command="/opt/jdk8/bin/java \
-  -cp '/ppml/trusted-big-data-ml/work/spark-$SPARK_VERSION/conf/:/ppml/trusted-big-data-ml/work/spark-$SPARK_VERSION/jars/*:/ppml/trusted-big-data-ml/work/spark-$SPARK_VERSION/examples/jars/*' \
+  -cp /ppml/trusted-big-data-ml/work/spark-$SPARK_VERSION/conf/:/ppml/trusted-big-data-ml/work/spark-$SPARK_VERSION/jars/*:/ppml/trusted-big-data-ml/work/spark-$SPARK_VERSION/examples/jars/* \
   -Xmx1g \
   org.apache.spark.deploy.SparkSubmit \
     --master local[4] \
@@ -133,7 +133,7 @@ fi
 if [ $status_9_pyspark_sql_api_DataframeWriter -ne 0 ]; then
 echo "pysaprk sql api example.9 --- DataframeWriter"
 export sgx_command="/opt/jdk8/bin/java \
-  -cp '/ppml/trusted-big-data-ml/work/spark-$SPARK_VERSION/conf/:/ppml/trusted-big-data-ml/work/spark-$SPARK_VERSION/jars/*:/ppml/trusted-big-data-ml/work/spark-$SPARK_VERSION/examples/jars/*' \
+  -cp /ppml/trusted-big-data-ml/work/spark-$SPARK_VERSION/conf/:/ppml/trusted-big-data-ml/work/spark-$SPARK_VERSION/jars/*:/ppml/trusted-big-data-ml/work/spark-$SPARK_VERSION/examples/jars/* \
   -Xmx1g \
   org.apache.spark.deploy.SparkSubmit \
     --master local[4] \
@@ -147,7 +147,7 @@ fi
 if [ $status_10_pyspark_sql_api_HiveContext -ne 0 ]; then
 echo "pysaprk sql api example.10 --- HiveContext"
 export sgx_command="/opt/jdk8/bin/java \
-  -cp '/ppml/trusted-big-data-ml/work/spark-$SPARK_VERSION/conf/:/ppml/trusted-big-data-ml/work/spark-$SPARK_VERSION/jars/*:/ppml/trusted-big-data-ml/work/spark-$SPARK_VERSION/examples/jars/*' \
+  -cp /ppml/trusted-big-data-ml/work/spark-$SPARK_VERSION/conf/:/ppml/trusted-big-data-ml/work/spark-$SPARK_VERSION/jars/*:/ppml/trusted-big-data-ml/work/spark-$SPARK_VERSION/examples/jars/* \
   -Xmx1g \
   org.apache.spark.deploy.SparkSubmit \
     --master local[4] \
@@ -161,7 +161,7 @@ fi
 if [ $status_11_pyspark_sql_api_Catalog -ne 0 ]; then
 echo "pysaprk sql api example.11 --- Catalog"
 export sgx_command="/opt/jdk8/bin/java \
-  -cp '/ppml/trusted-big-data-ml/work/spark-$SPARK_VERSION/conf/:/ppml/trusted-big-data-ml/work/spark-$SPARK_VERSION/jars/*:/ppml/trusted-big-data-ml/work/spark-$SPARK_VERSION/examples/jars/*' \
+  -cp /ppml/trusted-big-data-ml/work/spark-$SPARK_VERSION/conf/:/ppml/trusted-big-data-ml/work/spark-$SPARK_VERSION/jars/*:/ppml/trusted-big-data-ml/work/spark-$SPARK_VERSION/examples/jars/* \
   -Xmx1g \
   org.apache.spark.deploy.SparkSubmit \
     --master local[4] \
@@ -175,7 +175,7 @@ fi
 if [ $status_12_pyspark_sql_types_module -ne 0 ]; then
 echo "pysaprk sql api example.12 --- types module"
 export sgx_command="/opt/jdk8/bin/java \
-  -cp '/ppml/trusted-big-data-ml/work/spark-$SPARK_VERSION/conf/:/ppml/trusted-big-data-ml/work/spark-$SPARK_VERSION/jars/*:/ppml/trusted-big-data-ml/work/spark-$SPARK_VERSION/examples/jars/*' \
+  -cp /ppml/trusted-big-data-ml/work/spark-$SPARK_VERSION/conf/:/ppml/trusted-big-data-ml/work/spark-$SPARK_VERSION/jars/*:/ppml/trusted-big-data-ml/work/spark-$SPARK_VERSION/examples/jars/* \
   -Xmx1g \
   org.apache.spark.deploy.SparkSubmit \
     --master local[4] \
@@ -191,7 +191,7 @@ echo "pysaprk sql api example.13 --- pyspark api functions"
   for f_num in {a..g}
   do
 export sgx_command="/opt/jdk8/bin/java \
-      -cp '/ppml/trusted-big-data-ml/work/spark-$SPARK_VERSION/conf/:/ppml/trusted-big-data-ml/work/spark-$SPARK_VERSION/jars/*:/ppml/trusted-big-data-ml/work/spark-$SPARK_VERSION/examples/jars/*' \
+      -cp /ppml/trusted-big-data-ml/work/spark-$SPARK_VERSION/conf/:/ppml/trusted-big-data-ml/work/spark-$SPARK_VERSION/jars/*:/ppml/trusted-big-data-ml/work/spark-$SPARK_VERSION/examples/jars/* \
       -Xmx1g \
       org.apache.spark.deploy.SparkSubmit \
         --master local[4] \

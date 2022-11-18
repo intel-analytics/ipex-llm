@@ -18,17 +18,16 @@ runs:
 
     - name: Setup env
       shell: bash
-      run: |
-        wget -r -np -nH -N ${FTP_URL}/pkgs/* -P ~/.conda/
-        cp -n -r ~/.conda/pkgs/*.tar.bz2 /opt/conda/pkgs
-        cp -n  ~/.conda/pkgs/cache/* /opt/conda/pkgs/cache
-        
-        conda create -n py37 -y python==3.7.10 setuptools==58.0.4
+      run: |        
+        conda create -n py37 -y python==3.7.10 setuptools==58.0.4 -c ${CONDA_CHANNEL} --override-channels
         conda info --env
         source activate py37
         pip uninstall -y bigdl-friesian bigdl-friesian-spark3 bigdl-dllib bigdl-dllib-spark3 bigdl-orca pyspark bigdl-orca-spark3 bigdl-chronos bigdl-chronos-spark3 bigdl-friesian bigdl-friesian-spark3 pyspark
         pip install pytest
-        pip install -i https://pypi.tuna.tsinghua.edu.cn/simple -r .github/actions/python-requirements/requirements-ppml-python-ut-spark3.txt 
+        
+        wget https://raw.githubusercontent.com/analytics-zoo/BigDL/main/python/test/python-requirements/requirements-ppml-python-ut-spark3.txt -O ${{ github.workspace }}/requirements-ppml-python-ut-spark3.txt
+        pip uninstall -r ${{ github.workspace }}/requirements-ppml-python-ut-spark3.txt -y
+        pip install -i ${PIP_MIRROR} --trusted-host ${TRUSTED_HOST} -r ${{ github.workspace }}/requirements-ppml-python-ut-spark3.txt 
           
       env:
         BIGDL_ROOT: ${{ github.workspace }}

@@ -19,7 +19,7 @@ ${SPARK_HOME}/bin/spark-submit \
     --conf spark.kubernetes.driverEnv.SGX_DRIVER_JVM_MEM_SIZE="2G" \
     --conf spark.executorEnv.SGX_EXECUTOR_JVM_MEM_SIZE="1G" \
     --jars local:/opt/spark/examples/jars/scopt_2.12-3.7.1.jar \
-    local:/opt/spark/examples/jars/spark-examples_2.12-3.1.2.jar \
+    local:/opt/spark/examples/jars/spark-examples_2.12-3.1.3.jar \
     --regParam 0.3 --elasticNetParam 0.8 \
     /opt/spark/data/mllib/sample_libsvm_data.txt
 

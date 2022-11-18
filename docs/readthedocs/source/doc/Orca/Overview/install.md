@@ -1,6 +1,10 @@
 # Installation
 
-## Install Java
+---
+## Prepare the environment
+You can follow the commands in this section to install Java and conda before installing BigDL Orca.
+
+### Install Java
 You need to download and install JDK in the environment, and properly set the environment variable `JAVA_HOME`. JDK8 is highly recommended.
 
 ```bash
@@ -16,7 +20,7 @@ export PATH=$PATH:$JAVA_HOME/bin
 java -version  # Verify the version of JDK.
 ```
 
-## Install Anaconda
+### Install Anaconda
 We recommend using [conda](https://docs.conda.io/projects/conda/en/latest/user-guide/install/) to prepare the Python environment.
 
 You can follow the steps below to install conda:
@@ -37,7 +41,10 @@ conda create -n py37 python=3.7  # "py37" is conda environment name, you can use
 conda activate py37
 ```
 
-## To use basic Orca features
+---
+## Install BigDL Orca
+
+### To use basic Orca features
 You can install Orca in your created conda environment for distributed data processing, training and inference with the following command:
 ```bash
 pip install bigdl-orca  # For the official release version
@@ -48,7 +55,9 @@ or for the nightly build version, use:
 pip install --pre --upgrade bigdl-orca  # For the latest nightly build version
 ```
 
-## To additionally use RayOnSpark
+Note that installing Orca will automatically install the dependencies including `bigdl-dllib`, `bigdl-tf`, `bigdl-math`, `packaging`, `filelock`, `pyzmq` and their dependencies if they haven't been detected in your conda environment._
+
+### To additionally use RayOnSpark
 
 If you wish to run [RayOnSpark](ray.md) or [sklearn-style Estimator APIs in Orca](distributed-training-inference.md) with "ray" backend, use the extra key `[ray]` during the installation above:
 
@@ -64,7 +73,7 @@ pip install --pre --upgrade bigdl-orca[ray]  # For the latest nightly build vers
 Note that with the extra key of [ray], `pip` will automatically install the additional dependencies for RayOnSpark,
 including `ray[default]==1.9.2`, `aiohttp==3.8.1`, `async-timeout==4.0.1`, `aioredis==1.3.1`, `hiredis==2.0.0`, `prometheus-client==0.11.0`, `psutil`,  `setproctitle`.
 
-## To additionally use AutoML
+### To additionally use AutoML
 
 If you wish to run AutoML, use the extra key `[automl]` during the installation above:
 
@@ -83,3 +92,32 @@ including `ray[tune]==1.9.2`, `scikit-learn`, `tensorboard`, `xgboost` together 
 - To use [Pytorch AutoEstimator](distributed-tuning.md#pytorch-autoestimator), you need to install Pytorch with `pip install torch==1.8.1`.
 
 - To use [TensorFlow/Keras AutoEstimator](distributed-tuning.md#tensorflow-keras-autoestimator), you need to install TensorFlow with `pip install tensorflow==1.15.0`.
+
+### To install Orca for Spark3
+
+By default, Orca is built on top of Spark 2.4.6 (with pyspark==2.4.6 as a dependency). If you want to install Orca built on top of Spark 3.1.3 (with pyspark==3.1.3 as a dependency), you can use the following command instead:
+
+```bash
+# For the official release version
+pip install bigdl-orca-spark3
+pip install bigdl-orca-spark3[ray]
+pip install bigdl-orca-spark3[automl]
+
+# For the latest nightly build version
+pip install --pre --upgrade bigdl-orca-spark3
+pip install --pre --upgrade bigdl-orca-spark3[ray]
+pip install --pre --upgrade bigdl-orca-spark3[automl]
+```
+
+__Note__: You should only install Orca built on top of __ONE__ Spark version, but not both. If you want to switch the Spark version, please [**uninstall**](#to-uninstall-orca) Orca cleanly before reinstall.
+
+### To uninstall Orca
+```bash
+# For default Orca built on top of Spark 2.4.6
+pip uninstall bigdl-orca bigdl-dllib bigdl-tf bigdl-math bigdl-core
+
+# For Orca built on top of Spark 3.1.3
+pip uninstall bigdl-orca-spark3 bigdl-dllib-spark3 bigdl-tf bigdl-math bigdl-core
+```
+
+__Note__: If necessary, you need to manually uninstall `pyspark` and other [dependencies](https://github.com/intel-analytics/BigDL/tree/main/python/requirements/orca) introduced by Orca.

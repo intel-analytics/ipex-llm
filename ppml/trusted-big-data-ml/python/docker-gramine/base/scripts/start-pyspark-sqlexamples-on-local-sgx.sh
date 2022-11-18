@@ -9,7 +9,7 @@ export PYSPARK_PYTHON=/usr/bin/python
 if [ $status_5_local_spark_basic_sql -ne 0 ]; then
 echo "example.5 local spark, Basic SQL"
 export sgx_command="/opt/jdk8/bin/java \
-  -cp '/ppml/trusted-big-data-ml/work/spark-$SPARK_VERSION/conf/:/ppml/trusted-big-data-ml/work/spark-$SPARK_VERSION/jars/*:/ppml/trusted-big-data-ml/work/spark-$SPARK_VERSION/examples/jars/*' \
+  -cp /ppml/trusted-big-data-ml/work/spark-$SPARK_VERSION/conf/:/ppml/trusted-big-data-ml/work/spark-$SPARK_VERSION/jars/*:/ppml/trusted-big-data-ml/work/spark-$SPARK_VERSION/examples/jars/* \
   -Xmx1g org.apache.spark.deploy.SparkSubmit \
   --master local[4] \
   --conf spark.python.use.daemon=false \
@@ -23,7 +23,7 @@ fi
 if [ $status_6_local_spark_arrow -ne 0 ]; then
 echo "example.6 local spark, Arrow"
 export sgx_command="/opt/jdk8/bin/java \
-  -cp '/ppml/trusted-big-data-ml/work/spark-2.1.2/conf/:/ppml/trusted-big-data-ml/work/spark-$SPARK_VERSION/jars/*:/ppml/trusted-big-data-ml/work/spark-$SPARK_VERSION/examples/jars/*' \
+  -cp /ppml/trusted-big-data-ml/work/spark-2.1.2/conf/:/ppml/trusted-big-data-ml/work/spark-$SPARK_VERSION/jars/*:/ppml/trusted-big-data-ml/work/spark-$SPARK_VERSION/examples/jars/* \
   -Xmx2g org.apache.spark.deploy.SparkSubmit \
   --master local[4] \
   --conf spark.python.use.daemon=false \
@@ -39,7 +39,7 @@ fi
 if [ $status_7_local_spark_hive -ne 0 ]; then
 echo "example.7 local spark, Hive"
 export sgx_command="/opt/jdk8/bin/java \
-  -cp '/ppml/trusted-big-data-ml/work/spark-$SPARK_VERSION/conf/:/ppml/trusted-big-data-ml/work/spark-$SPARK_VERSION/jars/*:/ppml/trusted-big-data-ml/work/spark-$SPARK_VERSION/examples/jars/*' \
+  -cp /ppml/trusted-big-data-ml/work/spark-$SPARK_VERSION/conf/:/ppml/trusted-big-data-ml/work/spark-$SPARK_VERSION/jars/*:/ppml/trusted-big-data-ml/work/spark-$SPARK_VERSION/examples/jars/* \
   -Xmx2g org.apache.spark.deploy.SparkSubmit \
   --master local[4] \
   --conf spark.python.use.daemon=false \

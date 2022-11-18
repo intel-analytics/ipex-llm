@@ -1,4 +1,12 @@
-## 1. Build container image
+## 1. Pull/Build container image
+
+Download image as below:
+
+```bash
+docker pull intelanalytics/kms-utils:0.3.0-SNAPSHOT
+```
+
+Or you are allowed to build the image manually:
 ```
 # set the arguments inside the build script first
 bash build-docker-image.sh
@@ -18,7 +26,7 @@ Folder --> set as host_data_folder_path when creating container
         file21.txt
 ```
 
-If image is ready, you can run the container and enroll by using `run-docker-container.sh` in order to get a appid and apikey pair like below:
+If image is ready, you can run the container and enroll like below in order to get a appid and apikey pair like below:
 
 ```bash
 export KMS_TYPE=an_optional_kms_type # KMS_TYPE can be (1) ehsm, (2) simple

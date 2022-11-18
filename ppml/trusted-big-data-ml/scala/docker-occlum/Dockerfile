@@ -1,4 +1,4 @@
-ARG SPARK_VERSION=3.1.2
+ARG SPARK_VERSION=3.1.3
 ARG HADOOP_VERSION=3.2.0
 
 FROM krallin/ubuntu-tini AS tini
@@ -150,15 +150,18 @@ RUN apt-get update && \
 
 # Prepare tpch 
 ## 2.11.7 2.12.1 for scala version
-## 2.4.0 3.1.2 for spark version
+## 2.4.0 3.1.3 for spark version
 RUN cd /opt && \
     git clone https://github.com/intel-analytics/zoo-tutorials.git && \
     cd zoo-tutorials/tpch-spark && \
     sed -i 's/2.11.7/2.12.1/g' tpch.sbt && \
-    sed -i 's/2.4.0/3.1.2/g' tpch.sbt && \
+    sed -i 's/2.4.0/3.1.3/g' tpch.sbt && \
     sbt package
 
-FROM occlum/occlum:0.28.1-ubuntu20.04 as ppml
+ADD ./install_python_with_conda.sh /opt
+RUN cd /opt && bash ./install_python_with_conda.sh
+
+FROM occlum/occlum:0.29.2-ubuntu20.04 as ppml
 
 ARG BIGDL_VERSION=2.2.0-SNAPSHOT
 ARG SPARK_VERSION
@@ -242,8 +245,10 @@ ADD ./print_enclave_signer.sh /opt
 ADD ./register.sh /opt
 
 COPY ./entrypoint.sh /opt/
+COPY ./ehsm_entry.sh /opt/
 
 RUN chmod a+x /opt/entrypoint.sh && \
+    chmod a+x /opt/ehsm_entry.sh && \
     chmod a+x /opt/run_spark_on_occlum_glibc.sh && \
     chmod a+x /opt/verify-attestation-service.sh && \
     chmod a+x /opt/print_enclave_signer.sh && \
@@ -252,5 +257,10 @@ RUN chmod a+x /opt/entrypoint.sh && \
     chmod a+x /root/demos/remote_attestation/dcap/c_app/dcap_c_test.c && \
     sed -i '/aesm/d' /root/.bashrc && \
     rm -rf /var/run/aesmd
+
+# Add python lib
+ADD ./python-glibc.yaml /opt/python-glibc.yaml
+COPY --from=bigdl /opt/python-occlum /opt/python-occlum
+ADD ./py-examples /opt/py-examples
 
 ENTRYPOINT [ "/opt/entrypoint.sh" ]
