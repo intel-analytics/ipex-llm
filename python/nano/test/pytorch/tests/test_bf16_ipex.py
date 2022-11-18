@@ -41,9 +41,9 @@ class CaseWithoutAVX512:
         trainer = Trainer(max_epochs=1)
         model = resnet18(num_classes=10)
 
-        # with pytest.raises(RuntimeError,
-        #                    match="Applying IPEX BF16 optimization needs the cpu support avx512."):
-        bf16_model = trainer.quantize(model, precision='bf16', use_ipex=True)
+        with pytest.raises(RuntimeError,
+                           match="Applying IPEX BF16 optimization needs the cpu support avx512."):
+            bf16_model = trainer.quantize(model, precision='bf16', use_ipex=True)
 
 
 class Pytorch1_11:

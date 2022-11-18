@@ -46,15 +46,11 @@ class PytorchIPEXJITBF16Model(PytorchIPEXJITModel):
         :param from_load: this will only be set by _load method.
         '''
         if use_ipex:
-            # invalidInputError(
-            #     self._check_cpu_isa,
-            #     errMsg="Applying IPEX BF16 optimization needs the cpu support avx512.",
-            #     fixMsg="Please set use_ipex to False or not set precision to bf16."
-            # )
-            if self._check_cpu_isa is False:
-                warning("Your machine or OS doesn't support BF16 instructions. "
-                        "You are running BF16 model without ISA support, and the "
-                        "performance might be quite low.")
+            invalidInputError(
+                self._check_cpu_isa,
+                errMsg="Applying IPEX BF16 optimization needs the cpu support avx512.",
+                fixMsg="Please set use_ipex to False or not set precision to bf16."
+            )
 
         PytorchIPEXJITModel.__init__(self, model, input_sample=input_sample, use_ipex=use_ipex,
                                      dtype=torch.bfloat16, use_jit=use_jit,
