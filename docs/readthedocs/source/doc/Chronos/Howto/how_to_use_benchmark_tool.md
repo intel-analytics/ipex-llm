@@ -85,14 +85,15 @@ benchmark-chronos -h
 ```
 ```eval_rst
 .. note::
-    **All Configuration Options**
 
+    ```
     usage: benchmark-chronos.py [-h] [-m] [-s] [-d] [-f] [-c] -l lookback -o
                                 horizon [--training_processes]
                                 [--training_batchsize] [--training_epochs]
                                 [--inference_batchsize] [--quantize]
                                 [--inference_framework  [...]] [--ipex]
                                 [--quantize_type] [--ckpt]
+    ```
 
     Benchmarking Parameters
 
