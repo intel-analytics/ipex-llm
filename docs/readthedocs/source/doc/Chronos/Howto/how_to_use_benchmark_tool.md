@@ -84,7 +84,9 @@ Running the benchmark tool with `-h/--help` yields the following usage message, 
 benchmark-chronos -h
 ```
 ```eval_rst
-.. note::
+.. tip::
+    ** All Configuration Options **
+
     usage: benchmark-chronos.py [-h] [-m] [-s] [-d] [-f] [-c] -l lookback -o
                                 horizon [--training_processes]
                                 [--training_batchsize] [--training_epochs]
@@ -93,7 +95,7 @@ benchmark-chronos -h
                                 [--quantize_type] [--ckpt]
 
     Benchmarking Parameters
-
+    
     optional arguments:
       -h, --help            show this help message and exit
       -m, --model           model name, choose from
