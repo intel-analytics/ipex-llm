@@ -9,6 +9,22 @@ data:
     couch_root_username: $couchdbRootUsername
     couch_root_password: $couchdbRootPassword
 ---
+# bigdl-ehsm-kms PersistentVolume used by dkeyserver and couchdb
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: ehsm-pv-nfs
+spec:
+  capacity:
+    storage: 10Gi
+  accessModes:
+    - ReadWriteOnce
+  persistentVolumeReclaimPolicy: Retain
+  storageClassName: nfs
+  nfs:
+    path: $nfsPath
+    server: $nfsServerIp
+---
 # bigdl-ehsm-kms dkeyserver
 apiVersion: v1
 kind: Service
@@ -66,12 +82,26 @@ spec:
           name: dev-provision
         - mountPath: /var/run/aesmd
           name: dev-aesmd
+        - mountPath: /etc/dkey.bin
+          name: domain-key-persistent-storage
         env:
         - name: PCCS_URL
           value: "https://$pccsIP:18081"
         ports:
         - containerPort: 8888
           name: dkeyserver-port
+      nodeSelector:
+        dkeyservernode: true
+    # Annotate below if restart
+    volumeClaimTemplates:
+        - metadata:
+            name: domain-key-persistent-storage
+          spec:
+            accessModes: [ "ReadWriteOnce" ]
+            storageClassName: "nfs"
+            resources:
+              requests:
+              storage: 500Mi
 ---
 # bigdl-ehsm-kms ConfigMap
 apiVersion: v1
@@ -86,23 +116,6 @@ data:
   dkeyserver_ip: "dkeyserver-0.dkeyserver"
   dkeyserver_port: "8888"
   pccs_url: "https://$pccsIP:18081"
----
-# bigdl-ehsm-kms PersistentVolume for CouchDB
-apiVersion: v1
-kind: PersistentVolume 
-metadata:
-  name: ehsm-pv-nfs
-spec:
-  capacity:
-    storage: 10Gi 
-  accessModes:
-    - ReadWriteOnce 
-  persistentVolumeReclaimPolicy: Retain 
-  storageClassName: nfs
-  nfs:
-    path: $nfsPath
-    server: $nfsServerIp
-
 ---
 # bigdl-ehsm-kms CouchDB
 apiVersion: v1
@@ -179,7 +192,7 @@ spec:
       storageClassName: "nfs"
       resources:
         requests:
-          storage: 10Gi
+          storage: 9Gi
 
 ---
 # dkey cache          
