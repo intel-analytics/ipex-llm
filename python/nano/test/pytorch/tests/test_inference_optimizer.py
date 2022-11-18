@@ -291,6 +291,8 @@ class TestInferencePipeline(TestCase):
                                training_data=input_sample,
                                thread_num=1,
                                latency_sample_num=10)
+        if TORCH_VERSION_LESS_1_10:
+            return
         # test automatic add label for quantization
         optim_dict = inference_opt.optimized_model_dict
         assert optim_dict["openvino_int8"]["status"] in ("successful", "early_stopped")
@@ -431,6 +433,8 @@ class TestInferencePipeline(TestCase):
                                training_data=dataloader,
                                thread_num=1,
                                latency_sample_num=10)
+        if TORCH_VERSION_LESS_1_10:
+            return
         # test automatic add label for quantization
         optim_dict = inference_opt.optimized_model_dict
         assert optim_dict["openvino_int8"]["status"] in ("successful", "early_stopped")
