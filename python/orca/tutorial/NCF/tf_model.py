@@ -16,7 +16,8 @@
 import tensorflow as tf
 
 
-def ncf_model(embedding_size, user_num, item_num, dropout, lr, categorical_features_dim):
+def ncf_model(embedding_size, user_num, item_num, dropout, lr,
+              categorical_features_dim, num_feature_dim):
     user = tf.keras.layers.Input(dtype=tf.int32, shape=())
     item = tf.keras.layers.Input(dtype=tf.int32, shape=())
 
@@ -26,6 +27,15 @@ def ncf_model(embedding_size, user_num, item_num, dropout, lr, categorical_featu
         cat_feature_input_layers.append(tf.keras.layers.Input(shape=(), dtype=tf.int32))
         cat_feature_layers.append(
             tf.keras.layers.Embedding(in_dim + 1, embedding_size)(cat_feature_input_layers[i]))
+
+    num_feature_input_layers = []
+    num_feature_layers = []
+    for i, in_dim in enumerate(num_feature_dim):
+        num_feature_input_layers.append(tf.keras.layers.Input(shape=in_dim))
+        num_feature_layers.append(num_feature_input_layers[i])
+
+    add_feature_input_layers = cat_feature_input_layers + num_feature_input_layers
+    add_feature_layers = cat_feature_layers + num_feature_layers
 
     with tf.name_scope("GMF"):
         user_embed_GMF = tf.keras.layers.Embedding(user_num, embedding_size, name='gmf_user')(user)
@@ -37,7 +47,7 @@ def ncf_model(embedding_size, user_num, item_num, dropout, lr, categorical_featu
             user_num, embedding_size * 4, name='mlp_user')(user)
         item_embed_MLP = tf.keras.layers.Embedding(
             item_num, embedding_size * 4, name='mlp_item')(item)
-        interaction = tf.concat([user_embed_MLP, item_embed_MLP] + cat_feature_layers, axis=-1)
+        interaction = tf.concat([user_embed_MLP, item_embed_MLP] + add_feature_layers, axis=-1)
 
         layer1_MLP = tf.keras.layers.Dense(
             units=embedding_size * 4, activation='relu')(interaction)
@@ -53,7 +63,7 @@ def ncf_model(embedding_size, user_num, item_num, dropout, lr, categorical_featu
         concatenation = tf.concat([GMF, layer3_MLP], axis=-1)
         outputs = tf.keras.layers.Dense(1, activation='sigmoid')(concatenation)
 
-    model = tf.keras.Model(inputs=[user, item] + cat_feature_input_layers, outputs=outputs)
+    model = tf.keras.Model(inputs=[user, item] + add_feature_input_layers, outputs=outputs)
     model.compile(optimizer=tf.keras.optimizers.Adam(lr),
                   loss=tf.keras.losses.BinaryCrossentropy(),
                   metrics=['accuracy', 'AUC', 'Precision', 'Recall'])

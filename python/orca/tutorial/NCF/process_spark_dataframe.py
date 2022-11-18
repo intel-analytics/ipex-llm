@@ -15,7 +15,8 @@
 #
 import os.path
 
-from pyspark.ml.feature import StringIndexer
+from pyspark.ml.feature import StringIndexer, MinMaxScaler, VectorAssembler
+from pyspark.ml import Pipeline
 from pyspark.sql.types import StructField, StructType, IntegerType, ArrayType, StringType
 from pyspark.sql.functions import udf, lit, collect_list, explode
 
@@ -79,7 +80,7 @@ def generate_neg_sample(df, item_num):
     return df
 
 
-def add_feature(df, df_user, df_item, cat_feature):
+def add_feature(df, df_user, df_item, cat_feature, num_feature):
     df_feat = df.join(df_user, 'user', "inner")
     df_feat = df_feat.join(df_item, 'item', "inner")
     embedding_in_dim = []
@@ -89,6 +90,14 @@ def add_feature(df, df_user, df_item, cat_feature):
         df_feat = df_feat.drop(i).withColumnRenamed(i + '_index', i)
         df_feat = df_feat.withColumn(i, df_feat[i].cast('int'))
         embedding_in_dim.append(df_feat.agg({i: "max"}).collect()[0][f"max({i})"])
+    for i in num_feature:
+        assembler = VectorAssembler(inputCols=[i], outputCol=i + '_vec')
+        scaler = MinMaxScaler(inputCol=i + '_vec', outputCol=i + '_scaler')
+        pipeline = Pipeline(stages=[assembler, scaler])
+        scalerModel = pipeline.fit(df_feat)
+        df_feat = scalerModel.transform(df_feat)
+        df_feat = df_feat.drop(i, i + '_vec').withColumnRenamed(i + '_scaler', i)
+        df_feat.show()
     return df_feat, embedding_in_dim
 
 
