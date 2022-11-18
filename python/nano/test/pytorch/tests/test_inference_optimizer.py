@@ -126,7 +126,7 @@ class TestInferencePipeline(TestCase):
 
         acc_model, option = inference_opt.get_best_model()
         acc_model, option = inference_opt.get_best_model(accelerator="onnxruntime")
-        assert option == "original" or "onnxruntime" in option
+        assert option == "original" or "onnxruntime" in option, print(inference_opt._optimize_result)
         acc_model, option = inference_opt.get_best_model(precision="int8")
         assert option == "original" or "inc" in option or "int8" in option
         with pytest.raises(RuntimeError) as e:
@@ -140,6 +140,7 @@ class TestInferencePipeline(TestCase):
         inference_opt.optimize(model=self.model,
                                training_data=self.train_loader,
                                thread_num=1,
+                               search_mode="all",
                                excludes=["fp32_ipex", "original"])
 
         # original is a special method that must be included in
@@ -153,6 +154,7 @@ class TestInferencePipeline(TestCase):
         inference_opt.optimize(model=self.model,
                                training_data=self.train_loader,
                                thread_num=1,
+                               search_mode="all",
                                includes=["fp32_ipex"])
 
         assert "original" in inference_opt.optimized_model_dict
