@@ -257,7 +257,11 @@ class InferenceOptimizer(BaseInferenceOptimizer):
         invalidInputError(isinstance(model, nn.Module), "model should be a nn module.")
         invalidInputError(direction in ['min', 'max'],
                           "Only support direction 'min', 'max'.")
-        
+        invalidInputError(accelerator in [None, 'onnxruntime', 'openvino', 'jit'],
+                          "Only support accelerator 'onnxruntime', 'openvino' and 'jit'.")
+        invalidInputError(precision in [None, 'int8', 'bf16', 'fp32'],
+                          "Only support precision 'int8', 'bf16', 'fp32'.")
+    
         if accelerator is not None or precision is not None or use_ipex is not None:
             search_mode = "grid"
             # setting search scope
@@ -277,7 +281,7 @@ class InferenceOptimizer(BaseInferenceOptimizer):
             available_acceleration_combination(excludes=excludes,
                                                includes=includes,
                                                full_methods=all_acceleration_methods)
-        print(available_dict)
+
         self._direction: str = direction  # save direction as attr
         # record whether calculate accuracy in optimize by this attr
         if validation_data is None and metric is None:
@@ -336,7 +340,7 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                 result_map[method]["status"] = "lack dependency"
             else:
                 print(f"----------Start test {method} model "
-                      f"({idx+1}/{len(self.ALL_INFERENCE_ACCELERATION_METHOD)})----------")
+                      f"({idx+1}/{len(available_dict)})----------")
                 option: AccelerationOption = self.ALL_INFERENCE_ACCELERATION_METHOD[method]
                 precision = option.get_precision()
                 try:
@@ -412,7 +416,7 @@ class InferenceOptimizer(BaseInferenceOptimizer):
 
                 result_map[method]["model"] = acce_model
                 print(f"----------Finish test {method} model "
-                      f"({idx+1}/{len(self.ALL_INFERENCE_ACCELERATION_METHOD)})----------")
+                      f"({idx+1}/{len(available_dict)})----------")
 
         self.optimized_model_dict: Dict = result_map
         print("\n\n==========================Optimization Results==========================")
@@ -763,6 +767,7 @@ def _accuracy_calculate_helper(model, metric, data):
 
 def _obtain_combinations(all_combinations, precision, accelerator, use_ipex):
     new_combinations = {}
+    new_combinations["original"] = all_combinations["original"]
     for method, option in all_combinations.items():
         if precision is not None:
             if option.get_precision() != precision:
@@ -773,7 +778,6 @@ def _obtain_combinations(all_combinations, precision, accelerator, use_ipex):
         if use_ipex is not None:
             if option.ipex != use_ipex:
                 continue
+        print(option)
         new_combinations[method] = option
-    if "original" not in new_combinations:
-        new_combinations["original"] = all_combinations["original"]
     return new_combinations
