@@ -18,7 +18,6 @@ import torch
 from torch import nn
 import time
 from copy import deepcopy
-import multiprocessing as mp
 from typing import Dict, Callable, Tuple, Optional, List, Union, Sequence
 from torch.utils.data import DataLoader
 from torchmetrics.metric import Metric
@@ -39,10 +38,6 @@ from bigdl.nano.utils.inference.pytorch.dataset import RepeatDataset, remove_bat
 from bigdl.nano.utils.inference.pytorch.dataloader import\
     transform_multiple_input_dataloader_to_inc_mode
 from bigdl.nano.pytorch.utils import TORCH_VERSION_LESS_1_10, save_model, load_model
-from bigdl.nano.common.cpu_schedule import schedule_processors
-
-from .multi_instance import _MultiInstanceModel, _multi_instance_helper
-
 import traceback
 import warnings
 # Filter out useless Userwarnings
@@ -105,21 +100,21 @@ class InferenceOptimizer(BaseInferenceOptimizer):
         {
             "original": TorchAccelerationOption(),
             "fp32_ipex": TorchAccelerationOption(ipex=True),
+            "fp32_ipex_channels_last": TorchAccelerationOption(ipex=True,
+                                                               channels_last=True),
             "bf16": TorchAccelerationOption(bf16=True),
             "bf16_ipex": TorchAccelerationOption(bf16=True, ipex=True),
-            "jit_bf16_ipex": TorchAccelerationOption(jit=True, bf16=True, ipex=True),
-            "bf16_ipex_channels_last": TorchAccelerationOption(bf16=True,
-                                                               ipex=True,
+            "bf16_ipex_channels_last": TorchAccelerationOption(bf16=True, ipex=True,
                                                                channels_last=True),
-            "jit_bf16_ipex_channels_last": TorchAccelerationOption(jit=True,
-                                                                   bf16=True,
-                                                                   ipex=True,
-                                                                   channels_last=True),
             "int8": TorchAccelerationOption(inc=True),
             "int8_ipex": TorchAccelerationOption(inc=True, method="ipex"),
             "jit_fp32": TorchAccelerationOption(jit=True),
             "jit_fp32_ipex": TorchAccelerationOption(jit=True, ipex=True),
+            "jit_bf16_ipex": TorchAccelerationOption(jit=True, bf16=True, ipex=True),
             "jit_fp32_ipex_channels_last": TorchAccelerationOption(jit=True, ipex=True,
+                                                                   channels_last=True),
+            "jit_bf16_ipex_channels_last": TorchAccelerationOption(jit=True, bf16=True,
+                                                                   ipex=True,
                                                                    channels_last=True),
             "openvino_fp32": TorchAccelerationOption(openvino=True),
             "openvino_int8": TorchAccelerationOption(openvino=True, pot=True),
@@ -130,6 +125,26 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                                                                 method="integer"),
         }
 
+    DEFAULT_INFERENCE_ACCELERATION_METHOD = \
+        {
+            "original": TorchAccelerationOption(),
+            "bf16": TorchAccelerationOption(bf16=True),
+            "bf16_ipex": TorchAccelerationOption(bf16=True, ipex=True),
+            "int8": TorchAccelerationOption(inc=True),
+            "jit_fp32_ipex": TorchAccelerationOption(jit=True, ipex=True),
+            "jit_bf16_ipex": TorchAccelerationOption(jit=True, bf16=True, ipex=True),
+            "jit_fp32_ipex_channels_last": TorchAccelerationOption(jit=True, ipex=True,
+                                                                   channels_last=True),
+            "jit_bf16_ipex_channels_last": TorchAccelerationOption(jit=True, bf16=True,
+                                                                   ipex=True,
+                                                                   channels_last=True),
+            "openvino_fp32": TorchAccelerationOption(openvino=True),
+            "openvino_int8": TorchAccelerationOption(openvino=True, pot=True),
+            "onnxruntime_fp32": TorchAccelerationOption(onnxruntime=True),
+            "onnxruntime_int8_qlinear": TorchAccelerationOption(onnxruntime=True, inc=True,
+                                                                method="qlinear"),
+        }
+
     def optimize(self, model: nn.Module,
                  training_data: Union[DataLoader, torch.Tensor, Tuple[torch.Tensor]],
                  validation_data:
@@ -138,6 +153,10 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                  metric: Optional[Callable] = None,
                  direction: str = "max",
                  thread_num: Optional[int] = None,
+                 accelerator: Optional[str] = None,
+                 precision: Optional[str] = None,
+                 use_ipex: Optional[bool] = None,
+                 search_mode: str = "default",
                  logging: bool = False,
                  latency_sample_num: int = 100,
                  includes: Optional[List[str]] = None,
@@ -150,7 +169,7 @@ class InferenceOptimizer(BaseInferenceOptimizer):
         The available methods are "original", "fp32_ipex", "bf16", "bf16_ipex","int8",
         "jit_fp32", "jit_fp32_ipex", "jit_fp32_ipex_channels_last", "openvino_fp32",
         "openvino_int8", "onnxruntime_fp32", "onnxruntime_int8_qlinear"
-        and "onnxruntime_int8_integer".
+        and "onnxruntime_int8_integer". [need update.]
 
         :param model: A torch.nn.Module to be optimized
         :param training_data: training_data support following formats:
@@ -200,6 +219,29 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                higher the better. Default value is "max".
         :param thread_num: (optional) a int represents how many threads(cores) is needed for
                inference.
+        :param accelerator: (optional) Use accelerator 'None', 'onnxruntime',
+               'openvino', 'jit', defaults to None. If not None, then will
+               only try corresponding methods which use this specific accelerator.
+        :param precision: (optional) Supported type: 'int8', 'bf16', and 'fp32'.
+               Defaults to None which represents no precision limit. If not None, then will
+               only try corresponding methods which meet this specific precision.
+        :param use_ipex: (optional) if not None, then will only try methods with/without
+               this specific ipex setting.
+        :param search_model: Here are three modes for optimization:
+
+               | 1. default: This mode only traverses a subset of all combinations. This subset
+               | is a collection of methods that we select based on experience and think have
+               | better acceleration effect in general. This mode allows you to quickly obtain a
+               | good acceleration method, but it is not necessarily the global optimal. Default
+               | to this mode if you don't specify accelerator/precision/use_ipex.
+               | 
+               | 2. all: This mode will traverse all possible combinations, which can ensure 
+               | find the global optimization, but it will take a long time.
+               |
+               | 3. grid: If you have specified accelerator/precision/use_ipex, the default is 
+               | grid mode. We will sort and combine according to the value you specified to 
+               | get the search range.
+
         :param logging: whether to log detailed information of model conversion.
                Default: False.
         :param latency_sample_num: (optional) a int represents the number of repetitions
@@ -215,13 +257,27 @@ class InferenceOptimizer(BaseInferenceOptimizer):
         invalidInputError(isinstance(model, nn.Module), "model should be a nn module.")
         invalidInputError(direction in ['min', 'max'],
                           "Only support direction 'min', 'max'.")
+        
+        if accelerator is not None or precision is not None or use_ipex is not None:
+            search_mode = "grid"
+            # setting search scope
+            all_acceleration_methods = _obtain_combinations(self.ALL_INFERENCE_ACCELERATION_METHOD,
+                                                            precision,
+                                                            accelerator,
+                                                            use_ipex)
+        else:
+            if search_mode == "all":
+                all_acceleration_methods = self.ALL_INFERENCE_ACCELERATION_METHOD
+            elif search_mode == "default":
+                # which is seting based on experience, and may need periodic update
+                all_acceleration_methods = self.DEFAULT_INFERENCE_ACCELERATION_METHOD
 
         # get the available methods whose dep is met
         available_dict: Dict =\
             available_acceleration_combination(excludes=excludes,
                                                includes=includes,
-                                               full_methods=self.ALL_INFERENCE_ACCELERATION_METHOD)
-
+                                               full_methods=all_acceleration_methods)
+        print(available_dict)
         self._direction: str = direction  # save direction as attr
         # record whether calculate accuracy in optimize by this attr
         if validation_data is None and metric is None:
@@ -280,7 +336,7 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                 result_map[method]["status"] = "lack dependency"
             else:
                 print(f"----------Start test {method} model "
-                      f"({idx+1}/{len(available_dict)})----------")
+                      f"({idx+1}/{len(self.ALL_INFERENCE_ACCELERATION_METHOD)})----------")
                 option: AccelerationOption = self.ALL_INFERENCE_ACCELERATION_METHOD[method]
                 precision = option.get_precision()
                 try:
@@ -356,7 +412,7 @@ class InferenceOptimizer(BaseInferenceOptimizer):
 
                 result_map[method]["model"] = acce_model
                 print(f"----------Finish test {method} model "
-                      f"({idx+1}/{len(available_dict)})----------")
+                      f"({idx+1}/{len(self.ALL_INFERENCE_ACCELERATION_METHOD)})----------")
 
         self.optimized_model_dict: Dict = result_map
         print("\n\n==========================Optimization Results==========================")
@@ -670,36 +726,6 @@ class InferenceOptimizer(BaseInferenceOptimizer):
         """
         return load_model(path, model)
 
-    @staticmethod
-    def to_multi_instance(model: nn.Module, num_processes: int) -> _MultiInstanceModel:
-        """
-        Transform a model to multi-instance inference model.
-        :param model: The model to transform.
-        :param num_processes: The number of processes which will be used.
-        :return: Model with multi-instance inference acceleration.
-        """
-        p_num = num_processes
-        mgr = mp.Manager()
-        send_queues = [mgr.Queue() for _ in range(p_num)]
-        recv_queues = [mgr.Queue() for _ in range(p_num)]
-
-        KMP_AFFINITY = os.environ.get("KMP_AFFINITY", "")
-        OMP_NUM_THREADS = os.environ.get("OMP_NUM_THREADS", "")
-        envs = schedule_processors(p_num)
-        ps = []
-        for i in range(p_num):
-            os.environ["KMP_AFFINITY"] = envs[i]['KMP_AFFINITY']
-            os.environ["OMP_NUM_THREADS"] = envs[i]['OMP_NUM_THREADS']
-
-            p = mp.Process(target=_multi_instance_helper,
-                           args=(model, send_queues[i], recv_queues[i]))
-            p.start()
-            ps.append(p)
-        os.environ["KMP_AFFINITY"] = KMP_AFFINITY
-        os.environ["OMP_NUM_THREADS"] = OMP_NUM_THREADS
-
-        return _MultiInstanceModel(model, ps, mgr, send_queues, recv_queues)
-
 
 def _signature_check(function):
     '''
@@ -733,3 +759,21 @@ def _accuracy_calculate_helper(model, metric, data):
             return metric(model)
         else:
             return metric(model, data)
+
+
+def _obtain_combinations(all_combinations, precision, accelerator, use_ipex):
+    new_combinations = {}
+    for method, option in all_combinations.items():
+        if precision is not None:
+            if option.get_precision() != precision:
+                continue
+        if accelerator is not None:
+            if option.get_accelerator() != accelerator:
+                continue
+        if use_ipex is not None:
+            if option.ipex != use_ipex:
+                continue
+        new_combinations[method] = option
+    if "original" not in new_combinations:
+        new_combinations["original"] = all_combinations["original"]
+    return new_combinations

@@ -373,3 +373,31 @@ class TestInferencePipeline(TestCase):
         for (pred1, pred2) in zip(preds1, preds2):
             np.testing.assert_allclose(pred1, pred2, atol=1e-4,
                                         err_msg=f"\npred1: {pred1}\npred2: {pred2}\n")
+    
+    def test_grid_search_model(self):
+        inference_opt = InferenceOptimizer()
+
+        inference_opt.optimize(model=self.model,
+                               training_data=self.train_loader,
+                               validation_data=self.test_loader,
+                               metric=self.metric,
+                               direction="max",
+                               thread_num=4,
+                               accelerator="openvino")
+        optim_dict = inference_opt.optimized_model_dict
+        assert len(optim_dict) == 3
+        with pytest.raises(RuntimeError):
+            acc_model, option = inference_opt.get_best_model(accelerator="onnxruntime")
+    
+    def test_default_search_mode(self):
+        inference_opt = InferenceOptimizer()
+
+        inference_opt.optimize(model=self.model,
+                               training_data=self.train_loader,
+                               validation_data=self.test_loader,
+                               metric=self.metric,
+                               direction="max",
+                               thread_num=4,
+                               search_mode="default")
+        optim_dict = inference_opt.optimized_model_dict
+        assert len(optim_dict) == 12
