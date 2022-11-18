@@ -28,15 +28,18 @@ init_orca_context(memory='4g')
 
 # Step 2: Read and process data using Spark DataFrame
 data_dir = './ml-1m'  # path to ml-1m
-user_cat_feature = ['zipcode', 'gender', 'age', 'occupation']
+user_cat_feature = ['zipcode', 'gender', 'occupation']
 item_cat_feature = ['category']
 cat_feature = user_cat_feature + item_cat_feature
+num_feature = ['age']
+num_feature_dim = [1]
+addition_feature = cat_feature + num_feature
 
 df, df_user, df_item = read_data(data_dir)
 user_num = df.agg({'user': "max"}).collect()[0]["max(user)"] + 1
 item_num = df.agg({'item': "max"}).collect()[0]["max(item)"] + 1
 df = generate_neg_sample(df, item_num)
-df_add_feature, embedding_in_dim = add_feature(df, df_user, df_item, cat_feature)
+df_add_feature, embedding_in_dim = add_feature(df, df_user, df_item, cat_feature, num_feature)
 
 train_df, val_df = df_add_feature.randomSplit([0.8, 0.2], seed=100)
 
@@ -47,7 +50,8 @@ config = dict(
     item_num=item_num,
     user_num=user_num,
     dropout=0.5,
-    embedding_in_dim=embedding_in_dim
+    embedding_in_dim=embedding_in_dim,
+    num_feature_dim=num_feature_dim
 )
 
 
@@ -57,7 +61,8 @@ def model_creator(config):
                       item_num=config['item_num'],
                       dropout=config['dropout'],
                       lr=config['lr'],
-                      categorical_features_dim=config['embedding_in_dim'])
+                      categorical_features_dim=config['embedding_in_dim'],
+                      num_feature_dim=config['num_feature_dim'])
     return model
 
 
@@ -67,14 +72,14 @@ est = Estimator.from_keras(model_creator=model_creator,
                            config=config,
                            backend=backend)
 
-batch_size = 256
+batch_size = 1024
 train_steps = math.ceil(train_df.count() / batch_size)
 val_steps = math.ceil(val_df.count() / batch_size)
 
 est.fit(train_df,
         epochs=10,
         batch_size=batch_size,
-        feature_cols=['user', 'item'] + cat_feature,
+        feature_cols=['user', 'item'] + addition_feature,
         label_cols=['label'],
         steps_per_epoch=train_steps,
         validation_data=val_df,
@@ -82,7 +87,7 @@ est.fit(train_df,
 
 # Step 5: Distributed evaluation of the trained model
 stats = est.evaluate(val_df,
-                     feature_cols=['user', 'item'] + cat_feature,
+                     feature_cols=['user', 'item'] + addition_feature,
                      label_cols=['label'],
                      batch_size=batch_size,
                      num_steps=val_steps)
