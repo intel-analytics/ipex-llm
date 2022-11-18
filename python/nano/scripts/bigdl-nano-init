@@ -44,8 +44,8 @@ function display-help {
         echo "    -h, --help                Display this help message and exit."
         echo "    -o, --disable-openmp      Disable openMP and unset related variables"
         echo "    -j, --enable-jemalloc     Enable jemalloc and unset related variables"
-		echo "    -c, --disable-tcmalloc    Disable tcmalloc and unset related variables"
-		echo "    -f, --enable-tensorflow   Enable tensorflow specific OMP_NUM_THREADS setting"
+        echo "    -c, --disable-tcmalloc    Disable tcmalloc and unset related variables"
+        echo "    -f, --enable-tensorflow   Enable tensorflow specific OMP_NUM_THREADS setting"
 }
 
 # Init
