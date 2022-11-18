@@ -16,9 +16,16 @@
 import tensorflow as tf
 
 
-def ncf_model(embedding_size, user_num, item_num, dropout, lr):
+def ncf_model(embedding_size, user_num, item_num, dropout, lr, categorical_features_dim):
     user = tf.keras.layers.Input(dtype=tf.int32, shape=())
     item = tf.keras.layers.Input(dtype=tf.int32, shape=())
+
+    cat_feature_input_layers = []
+    cat_feature_layers = []
+    for i, in_dim in enumerate(categorical_features_dim):
+        cat_feature_input_layers.append(tf.keras.layers.Input(shape=(), dtype=tf.int32))
+        cat_feature_layers.append(
+            tf.keras.layers.Embedding(in_dim + 1, embedding_size)(cat_feature_input_layers[i]))
 
     with tf.name_scope("GMF"):
         user_embed_GMF = tf.keras.layers.Embedding(user_num, embedding_size, name='gmf_user')(user)
@@ -30,7 +37,7 @@ def ncf_model(embedding_size, user_num, item_num, dropout, lr):
             user_num, embedding_size * 4, name='mlp_user')(user)
         item_embed_MLP = tf.keras.layers.Embedding(
             item_num, embedding_size * 4, name='mlp_item')(item)
-        interaction = tf.concat([user_embed_MLP, item_embed_MLP], axis=-1)
+        interaction = tf.concat([user_embed_MLP, item_embed_MLP] + cat_feature_layers, axis=-1)
 
         layer1_MLP = tf.keras.layers.Dense(
             units=embedding_size * 4, activation='relu')(interaction)
@@ -46,7 +53,7 @@ def ncf_model(embedding_size, user_num, item_num, dropout, lr):
         concatenation = tf.concat([GMF, layer3_MLP], axis=-1)
         outputs = tf.keras.layers.Dense(1, activation='sigmoid')(concatenation)
 
-    model = tf.keras.Model(inputs=[user, item], outputs=outputs)
+    model = tf.keras.Model(inputs=[user, item] + cat_feature_input_layers, outputs=outputs)
     model.compile(optimizer=tf.keras.optimizers.Adam(lr),
                   loss=tf.keras.losses.BinaryCrossentropy(),
                   metrics=['accuracy', 'AUC', 'Precision', 'Recall'])
