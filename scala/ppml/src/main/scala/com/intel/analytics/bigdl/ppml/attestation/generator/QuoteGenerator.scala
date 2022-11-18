@@ -14,17 +14,10 @@
  * limitations under the License.
  */
 
-package com.intel.analytics.bigdl.ppml.attestation
+package com.intel.analytics.bigdl.ppml.attestation.generator
 
+trait QuoteGenerator {
 
-abstract class QuoteVerifier {
-
-  def verifyQuote(quote: Array[Byte]): Int = {
-    1
-  }
-
-  def verifyQuote(quote: Array[Byte], policy: Policy): Int = {
-    1
-  }
+  def getQuote(userReport: Array[Byte]): Array[Byte]
 
 }

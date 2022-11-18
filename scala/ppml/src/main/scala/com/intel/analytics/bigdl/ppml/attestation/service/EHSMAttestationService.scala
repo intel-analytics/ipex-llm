@@ -15,7 +15,7 @@
  */
 
 
-package com.intel.analytics.bigdl.ppml.attestation
+package com.intel.analytics.bigdl.ppml.attestation.service
 
 import com.intel.analytics.bigdl.dllib.utils.Log4Error
 import com.intel.analytics.bigdl.ppml.utils.EHSMParams
@@ -32,6 +32,8 @@ import java.security.cert.X509Certificate
 import javax.net.ssl.TrustManager
 import org.apache.http.util.EntityUtils
 import java.security.SecureRandom
+
+import com.intel.analytics.bigdl.ppml.attestation._
 
 /**
  * Attestation Service provided by ehsm

@@ -18,7 +18,6 @@ from abc import ABCMeta, abstractmethod
 import io
 import torch
 from bigdl.orca.learn.pytorch.utils import get_filesystem
-from bigdl.dllib.utils.log4Error import *
 
 
 class ModelIO(metaclass=ABCMeta):

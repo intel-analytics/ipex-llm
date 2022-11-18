@@ -14,10 +14,12 @@
  * limitations under the License.
  */
 
-package com.intel.analytics.bigdl.ppml.attestation
+package com.intel.analytics.bigdl.ppml.attestation.verifier
 
 import com.intel.analytics.bigdl.ppml.dcap.Attestation
 import org.apache.logging.log4j.LogManager
+
+import com.intel.analytics.bigdl.ppml.attestation._
 
 /**
  * Verify SGX quote with SGX SDK

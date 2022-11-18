@@ -26,7 +26,7 @@ import subprocess
 from bigdl.nano.utils.log4Error import invalidInputError
 
 
-def train():
+def train(args, model_path, forecaster, train_loader, records):
     """
     train stage will record throughput.
     """
@@ -46,10 +46,10 @@ def train():
     forecaster.save(model_path)
     records['training_time'] = training_time
     records['training_sample_num'] = training_sample_num
-    records['train_throughput'] = training_sample_num/training_time
+    records['train_throughput'] = training_sample_num / training_time
 
 
-def throughput():
+def throughput(args, model_path, forecaster, train_loader, test_loader, records):
     """
     throughput stage will record inference throughput.
     """
@@ -106,7 +106,7 @@ def throughput():
         records['openvino_infer_throughput'] = inference_sample_num / total_time
 
 
-def latency():
+def latency(args, model_path, forecaster, train_loader, test_loader, records):
     """
     latency stage will record inference latency.
     """
@@ -119,6 +119,8 @@ def latency():
         forecaster.fit(train_loader, epochs=1)
 
     latency, latency_onnx, latency_vino = [], [], []
+    latency_trim_portion = 0.1
+    latency_percentile = [50, 90, 95, 99]
 
     if args.quantize:
         import onnxruntime
@@ -171,7 +173,7 @@ def latency():
         records['openvino_percentile_latency'] = np.percentile(latency_vino, latency_percentile)
 
 
-def result():
+def result(args, records):
     print(">>>>>>>>>>>>> test-run information >>>>>>>>>>>>>")
     print("Model:", args.model)
     print("Stage:", args.stage)
@@ -204,8 +206,8 @@ def result():
             print("avg throughput: {}".format(records[framework+'_infer_throughput']))
             print(">>>>>>>>>>>>> {} throughput result >>>>>>>>>>>>>".format(framework))
 
-if __name__ == '__main__':
 
+def main():
     # read input arguments
     # currently designed arguments
     parser = argparse.ArgumentParser(description='Benchmarking Parameters')
@@ -283,8 +285,6 @@ if __name__ == '__main__':
     elif 'openvino' in args.inference_framework:
         args.quantize_type = 'openvino'
 
-    latency_trim_portion = 0.1
-    latency_percentile = [50, 90, 95, 99]
     path = os.path.abspath(os.path.dirname(__file__))
     model_path = os.path.join(path, args.ckpt)
 
@@ -296,13 +296,17 @@ if __name__ == '__main__':
 
     # running stage
     if args.stage == 'train':
-        train()
+        train(args, model_path, forecaster, train_loader, records)
     elif args.stage == 'latency':
-        latency()
+        latency(args, model_path, forecaster, train_loader, test_loader, records)
     elif args.stage == 'throughput':
-        throughput()
+        throughput(args, model_path, forecaster, train_loader, test_loader, records)
 
     # print results
     get_CPU_info()
     check_nano_env()
-    result()
+    result(args, records)
+
+
+if __name__ == "__main__":
+    main()

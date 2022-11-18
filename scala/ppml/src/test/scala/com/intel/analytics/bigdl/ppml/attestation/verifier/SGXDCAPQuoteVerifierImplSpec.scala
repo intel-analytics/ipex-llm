@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.intel.analytics.bigdl.ppml.attestation
+package com.intel.analytics.bigdl.ppml.attestation.verifier
 
 import com.intel.analytics.bigdl.dllib.common.zooUtils
 import java.io.{BufferedOutputStream, BufferedInputStream};

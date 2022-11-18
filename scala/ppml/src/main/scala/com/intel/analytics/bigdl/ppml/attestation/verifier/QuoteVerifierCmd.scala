@@ -14,13 +14,15 @@
  * limitations under the License.
  */
 
-package com.intel.analytics.bigdl.ppml.attestation
+package com.intel.analytics.bigdl.ppml.attestation.verifier
 
 import org.apache.logging.log4j.LogManager
 import scopt.OptionParser
 
 import java.io.{File, FileInputStream}
 import java.math.BigInteger
+
+import com.intel.analytics.bigdl.ppml.attestation._
 
 object QuoteVerifierCmd {
     def main(args: Array[String]): Unit = {

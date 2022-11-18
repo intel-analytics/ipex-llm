@@ -14,12 +14,13 @@
  * limitations under the License.
  */
 
-package com.intel.analytics.bigdl.ppml.attestation
+package com.intel.analytics.bigdl.ppml.attestation.generator
 
 import org.apache.logging.log4j.LogManager
 
 import java.io._
 
+import com.intel.analytics.bigdl.ppml.attestation._
 /**
  * QuoteGenerator for ppml-Occlum
  * (https://github.com/intel-analytics/BigDL/tree/main/ppml/trusted-big-data-ml/scala/docker-occlum)
