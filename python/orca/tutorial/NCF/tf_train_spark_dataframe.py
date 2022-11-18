@@ -18,7 +18,7 @@
 import math
 
 from tf_model import ncf_model
-from process_spark_dataframe import read_data, generate_neg_sample
+from process_spark_dataframe import read_data, generate_neg_sample, add_feature
 
 from bigdl.orca import init_orca_context, stop_orca_context
 from bigdl.orca.learn.tf2 import Estimator
@@ -28,11 +28,17 @@ init_orca_context(memory='4g')
 
 # Step 2: Read and process data using Spark DataFrame
 data_dir = './ml-1m'  # path to ml-1m
-df = read_data(data_dir)
+user_cat_feature = ['zipcode', 'gender', 'age', 'occupation']
+item_cat_feature = ['category']
+cat_feature = user_cat_feature + item_cat_feature
+
+df, df_user, df_item = read_data(data_dir)
 user_num = df.agg({'user': "max"}).collect()[0]["max(user)"] + 1
 item_num = df.agg({'item': "max"}).collect()[0]["max(item)"] + 1
 df = generate_neg_sample(df, item_num)
-train_df, val_df = df.randomSplit([0.8, 0.2], seed=100)
+df_add_feature, embedding_in_dim = add_feature(df, df_user, df_item, cat_feature)
+
+train_df, val_df = df_add_feature.randomSplit([0.8, 0.2], seed=100)
 
 # Step 3: Define the NCF model
 config = dict(
@@ -41,6 +47,7 @@ config = dict(
     item_num=item_num,
     user_num=user_num,
     dropout=0.5,
+    embedding_in_dim=embedding_in_dim
 )
 
 
@@ -49,7 +56,8 @@ def model_creator(config):
                       user_num=config['user_num'],
                       item_num=config['item_num'],
                       dropout=config['dropout'],
-                      lr=config['lr'])
+                      lr=config['lr'],
+                      categorical_features_dim=config['embedding_in_dim'])
     return model
 
 
@@ -66,7 +74,7 @@ val_steps = math.ceil(val_df.count() / batch_size)
 est.fit(train_df,
         epochs=10,
         batch_size=batch_size,
-        feature_cols=['user', 'item'],
+        feature_cols=['user', 'item'] + cat_feature,
         label_cols=['label'],
         steps_per_epoch=train_steps,
         validation_data=val_df,
@@ -74,7 +82,7 @@ est.fit(train_df,
 
 # Step 5: Distributed evaluation of the trained model
 stats = est.evaluate(val_df,
-                     feature_cols=['user', 'item'],
+                     feature_cols=['user', 'item'] + cat_feature,
                      label_cols=['label'],
                      batch_size=batch_size,
                      num_steps=val_steps)

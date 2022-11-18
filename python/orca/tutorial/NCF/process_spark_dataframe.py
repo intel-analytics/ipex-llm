@@ -15,7 +15,8 @@
 #
 import os.path
 
-from pyspark.sql.types import StructField, StructType, IntegerType, ArrayType
+from pyspark.ml.feature import StringIndexer
+from pyspark.sql.types import StructField, StructType, IntegerType, ArrayType, StringType
 from pyspark.sql.functions import udf, lit, collect_list, explode
 
 from bigdl.orca import OrcaContext
@@ -25,10 +26,30 @@ def read_data(data_dir):
     spark = OrcaContext.get_spark_session()
     schema = StructType([StructField('user', IntegerType(), False),
                          StructField('item', IntegerType(), False)])
+    schema_user = StructType(
+        [
+            StructField('user', IntegerType(), False),
+            StructField('gender', StringType(), False),
+            StructField('age', IntegerType(), False),
+            StructField('occupation', IntegerType(), False),
+            StructField('zipcode', StringType(), False)
+        ]
+    )
+    schema_item = StructType(
+        [
+            StructField('item', IntegerType(), False),
+            StructField('title', StringType(), False),
+            StructField('category', StringType(), False)
+        ]
+    )
     # Need spark3 to support delimiter with more than one character.
-    df = spark.read.csv(
-        os.path.join(data_dir, "ratings.dat"), sep="::", schema=schema, header=False)
-    return df
+    df = spark.read.csv(os.path.join(data_dir, 'ratings.dat'),
+                        sep="::", schema=schema, header=False)
+    df_user = spark.read.csv(os.path.join(data_dir, 'users.dat'),
+                             sep="::", schema=schema_user, header=False)
+    df_item = spark.read.csv(os.path.join(data_dir, 'movies.dat'),
+                             sep="::", schema=schema_item, header=False).drop('title')
+    return df, df_user, df_item
 
 
 def generate_neg_sample(df, item_num):
@@ -58,14 +79,30 @@ def generate_neg_sample(df, item_num):
     return df
 
 
+def add_feature(df, df_user, df_item, cat_feature):
+    df_feat = df.join(df_user, 'user', "inner")
+    df_feat = df_feat.join(df_item, 'item', "inner")
+    embedding_in_dim = []
+    for i in cat_feature:
+        indexer = StringIndexer(inputCol=i, outputCol=i + '_index').fit(df_feat)
+        df_feat = indexer.transform(df_feat)
+        df_feat = df_feat.drop(i).withColumnRenamed(i + '_index', i)
+        df_feat = df_feat.withColumn(i, df_feat[i].cast('int'))
+        embedding_in_dim.append(df_feat.agg({i: "max"}).collect()[0][f"max({i})"])
+    return df_feat, embedding_in_dim
+
+
 if __name__ == "__main__":
     from bigdl.orca import init_orca_context, stop_orca_context
 
     sc = init_orca_context()
-    df = read_data('./ml-1m')
-    item_num = df.agg({'item': "max"}).collect()[0]["max(item)"]
+    cat_feature = ['zipcode', 'gender', 'age', 'occupation', 'category']
+    df, df_user, df_item = read_data('./ml-1m')
+    item_num = df.agg({'item': "max"}).collect()[0]["max(item)"] + 1
     df = generate_neg_sample(df, item_num)
-    train_data, test_data = df.randomSplit([0.8, 0.2], seed=100)
+    df_add_feature, embedding_in_dim = add_feature(df, df_user, df_item, cat_feature)
+
+    train_data, test_data = df_add_feature.randomSplit([0.8, 0.2], seed=100)
     train_data.write.csv('./train_dataframe', header=True, sep=',', mode='overwrite')
     test_data.write.csv('./test_dataframe', header=True, sep=',', mode='overwrite')
     stop_orca_context()
