@@ -24,8 +24,8 @@ if os.getenv("LD_PRELOAD", "null") != "null":
                   "in your bash terminal")
 
 try:
-    from bigdl.chronos.utils import LazyImport
-    AutoTSEstimator = LazyImport('bigdl.chronos.autots.autotsestimator.AutoTSEstimator')
-    TSPipeline = LazyImport('bigdl.chronos.autots.tspipeline.TSPipeline')
+    # TODO: make this a LazyImport
+    from .autotsestimator import AutoTSEstimator
+    from .tspipeline import TSPipeline
 except ImportError:
     pass

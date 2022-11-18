@@ -20,8 +20,8 @@ import pytest
 from bigdl.chronos.utils import LazyImport
 torch = LazyImport('torch')
 tf = LazyImport('tensorflow')
-AutoTSEstimator = LazyImport('bigdl.chronos.autots.AutoTSEstimator')
-TSPipeline = LazyImport('bigdl.chronos.autots.TSPipeline')
+AutoTSEstimator = LazyImport('bigdl.chronos.autots.autotsestimator.AutoTSEstimator')
+TSPipeline = LazyImport('bigdl.chronos.autots.tspipeline.TSPipeline')
 hp = LazyImport('bigdl.orca.automl.hp')
 import numpy as np
 from bigdl.chronos.data import TSDataset

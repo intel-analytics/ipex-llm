@@ -21,7 +21,7 @@ from bigdl.chronos.utils import LazyImport
 torch = LazyImport('torch')
 TensorDataset = LazyImport('torch.utils.data.TensorDataset')
 DataLoader = LazyImport('torch.utils.data.DataLoader')
-TSPipeline = LazyImport('bigdl.chronos.autots.TSPipeline')
+TSPipeline = LazyImport('bigdl.chronos.autots.tspipeline.TSPipeline')
 import os
 import pandas as pd
 import numpy as np
