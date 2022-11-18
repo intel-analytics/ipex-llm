@@ -35,7 +35,7 @@ df = spark.read.format("csv")\
                 .load(dataset_path)
 tsdata_train, _, tsdata_test = XShardsTSDataset.from_sparkdf(df, dt_col="timestamp",
                                             target_col=["value"],
-                                    .        with_split=True,
+                                            with_split=True,
                                             val_ratio=0,
                                             test_ratio=0.1)
 for tsdata in [tsdata_train, tsdata_test]:
