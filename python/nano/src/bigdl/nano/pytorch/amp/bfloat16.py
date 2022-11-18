@@ -119,6 +119,7 @@ class BF16Model(LightningModule):
 
     def __init__(self, model):  # noqa
         super().__init__()
+        self._bf16_check()
         self.bf16_model = model
 
     @property
@@ -164,9 +165,9 @@ class BF16Model(LightningModule):
         # self._bf16_check(*args, **kwargs)
         return self.bf16_model(*args, **kwargs)
 
-    def _bf16_check(self, *args, **kwargs):
+    def _bf16_check(self):
         if getattr(self, "_is_bf16", None) is not None:
-            return
+            return self._is_bf16
 
         invalidInputError(
             not TORCH_VERSION_LESS_1_12,
@@ -198,14 +199,17 @@ class BF16Model(LightningModule):
         else:
             if self._allow_non_bf16:
                 self._is_bf16 = False
-            else:
-                invalidOperationError(
-                    False,
-                    errMsg="Your machine or OS doesn't support BF16 instructions.",
-                    fixMsg="Please check your machine and OS to make sure"
-                           " BF16 support is available."
-                )
+            # close error for no BF16 instructions, just warning.
+
+            # else:
+            #     invalidOperationError(
+            #         False,
+            #         errMsg="Your machine or OS doesn't support BF16 instructions.",
+            #         fixMsg="Please check your machine and OS to make sure"
+            #                " BF16 support is available."
+            #     )
 
         if not self._is_bf16:
-            warning("You are not running BF16 model with ISA support."
-                    " The performance will be quite low.")
+            warning("Your machine or OS doesn't support BF16 instructions. "
+                    "You are running BF16 model without ISA support, and the "
+                    "performance might be quite low.")
