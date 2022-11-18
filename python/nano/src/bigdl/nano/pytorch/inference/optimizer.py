@@ -198,7 +198,8 @@ class InferenceOptimizer(BaseInferenceOptimizer):
 
         :param input_sample: (optional) A set of inputs for trace, defaults to None.
                In most cases, you don't need specify this parameter, it will be obtained from
-               training_data.
+               training_data. You have to specidy this parameter only if the forward function
+               of your model contains some kwargs like `def forward(self, x1, x2, x3=1)`.
         :param metric: (optional) A callable object which is used for calculating accuracy.
                It supports two kinds of callable object:
 
@@ -574,7 +575,8 @@ class InferenceOptimizer(BaseInferenceOptimizer):
             # if not, will append label at last
             if accelerator is not None:
                 calib_dataloader = automatic_add_label_in_dataloader(model,
-                                                                     calib_dataloader)
+                                                                     calib_dataloader,
+                                                                     input_sample)
 
             # transform the dataloader to inc mode
             inc_calib_dataloader =\

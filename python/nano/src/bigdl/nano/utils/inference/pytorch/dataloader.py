@@ -47,8 +47,8 @@ def transform_multiple_input_dataloader_to_inc_mode(model, dataloader):
     return dataloader
 
 
-def automatic_add_label_in_dataloader(model, dataloader):
-    if _check_whether_add_label(model, dataloader) is True:
+def automatic_add_label_in_dataloader(model, dataloader, input_sample=None):
+    if _check_whether_add_label(model, dataloader, input_sample) is True:
         # need to add label automaticly
         # generate a warning for user first
         warnings.warn("After checking, it is found that your data does not contain a label item. "
@@ -93,25 +93,28 @@ def _need_dataloader_type_transformation(model, dataloader):
     return True, forward_args_len
 
 
-def _check_whether_add_label(model, dataloader):
+def _check_whether_add_label(model, dataloader, input_sample=None):
     # get forward method's parameter number and input sample
     forward_args = get_forward_args(model)
     forward_args_len = len(forward_args)
-    input_sample = next(iter(dataloader))
+    loader_input_sample = next(iter(dataloader))
 
-    if isinstance(input_sample, torch.Tensor):
+    if isinstance(loader_input_sample, torch.Tensor):
         if forward_args_len >= 1:
             return True
-    elif isinstance(input_sample, Sequence):
-        if len(input_sample[0]) == forward_args_len:
+    elif isinstance(loader_input_sample, Sequence):
+        if len(loader_input_sample[0]) == forward_args_len:
             return False
         else:
-            if len(input_sample) > forward_args_len:
+            if len(loader_input_sample) > forward_args_len:
                 return False
             else:
                 # test run to check if input_sample meet input requirent
                 try:
                     model(*input_sample)
+                    # additional check for kwargs paramter
+                    if input_sample is not None and len(loader_input_sample) > len(input_sample):
+                        return False
                     return True
                 except RuntimeError:
                     # input sample may contain label already

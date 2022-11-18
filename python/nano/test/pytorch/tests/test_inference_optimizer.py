@@ -320,7 +320,11 @@ class TestInferencePipeline(TestCase):
             x1 = torch.randn(32, 10)
             x2 = torch.randn(32, 10)
             y = torch.randn(32, 1)
-            dataloader = DataLoader(TensorDataset(x1, x2, y), batch_size=1)
+            if isinstance(net, MultipleInputNet):
+                dataloader = DataLoader(TensorDataset(x1, x2, y), batch_size=1)
+            else:
+                x3 = torch.randn(32, 1)
+                dataloader = DataLoader(TensorDataset(x1, x2, x3, y), batch_size=1)
 
             # int8
             InferenceOptimizer.quantize(net,
@@ -336,7 +340,7 @@ class TestInferencePipeline(TestCase):
                                      accelerator="onnxruntime",
                                      input_sample=dataloader)
 
-            # int8-openvino
+            # openvino
             InferenceOptimizer.trace(net,
                                      accelerator="openvino",
                                      input_sample=dataloader)
