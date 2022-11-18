@@ -55,7 +55,7 @@ class PytorchIPEXJITBF16Model(PytorchIPEXJITModel):
                 warning("Your machine or OS doesn't support BF16 instructions. "
                         "You are running BF16 model without ISA support, and the "
                         "performance might be quite low.")
-    
+
         PytorchIPEXJITModel.__init__(self, model, input_sample=input_sample, use_ipex=use_ipex,
                                      dtype=torch.bfloat16, use_jit=use_jit,
                                      channels_last=channels_last, from_load=from_load)
