@@ -109,8 +109,8 @@ class BaseInferenceOptimizer:
         best_metric = CompareMetric("original",
                                     self.optimized_model_dict["original"]["latency"],
                                     self.optimized_model_dict["original"]["accuracy"])
-        
-        has_limit = accelerator != None or precision != None or use_ipex != None
+
+        has_limit = (accelerator is not None) or (precision is not None) or (use_ipex is not None)
         find_model = False
 
         for method in self.optimized_model_dict.keys():

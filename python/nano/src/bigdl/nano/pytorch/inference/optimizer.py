@@ -237,12 +237,12 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                | better acceleration effect in general. This mode allows you to quickly obtain a
                | good acceleration method, but it is not necessarily the global optimal. Default
                | to this mode if you don't specify accelerator/precision/use_ipex.
-               | 
-               | 2. all: This mode will traverse all possible combinations, which can ensure 
+               |
+               | 2. all: This mode will traverse all possible combinations, which can ensure
                | find the global optimization, but it will take a long time.
                |
-               | 3. grid: If you have specified accelerator/precision/use_ipex, the default is 
-               | grid mode. We will sort and combine according to the value you specified to 
+               | 3. grid: If you have specified accelerator/precision/use_ipex, the default is
+               | grid mode. We will sort and combine according to the value you specified to
                | get the search range.
 
         :param logging: whether to log detailed information of model conversion.
@@ -264,7 +264,7 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                           "Only support accelerator 'onnxruntime', 'openvino' and 'jit'.")
         invalidInputError(precision in [None, 'int8', 'bf16', 'fp32'],
                           "Only support precision 'int8', 'bf16', 'fp32'.")
-    
+
         if accelerator is not None or precision is not None or use_ipex is not None:
             search_mode = "grid"
             # setting search scope
@@ -517,7 +517,7 @@ class InferenceOptimizer(BaseInferenceOptimizer):
         :return:            A accelerated torch.nn.Module if quantization is sucessful.
         """
         if precision == 'bf16':
-            if accelerator is None:
+            if accelerator is None or accelerator == "jit":
                 if use_ipex:
                     invalidInputError(not TORCH_VERSION_LESS_1_10,
                                       "torch version should >=1.10 to use ipex")
@@ -811,6 +811,5 @@ def _obtain_combinations(all_combinations, precision, accelerator, use_ipex):
         if use_ipex is not None:
             if option.ipex != use_ipex:
                 continue
-        print(option)
         new_combinations[method] = option
     return new_combinations
