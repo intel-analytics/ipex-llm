@@ -996,8 +996,7 @@ class SparkXShards(XShards):
 
         columns = list(self.get_schema()['columns'])
         for c in cols:
-
-            check_col_str_list_exists(columns, cols, "cols")
+            check_col_str_list_exists(columns, c, "cols")
 
         return SparkXShards(self.rdd.map(lambda df: df[cols]))
 
@@ -1024,7 +1023,7 @@ class SparkXShards(XShards):
 
         columns = list(self.get_schema()['columns'])
         for c in cols:
-            check_col_str_list_exists(columns, cols, "cols")
+            check_col_str_list_exists(columns, c, "cols")
 
         spark_df = self.to_spark_df()
 

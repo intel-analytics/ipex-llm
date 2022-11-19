@@ -450,8 +450,6 @@ class TestSparkXShards(TestCase):
         sc = get_spark_context()
         shard = SparkXShards(sc.parallelize([df1, df2]))
         selected = shard.select("id").collect()[0]
-        print(selected)
-        print(list(selected.columns) )
         assert (list(selected.columns) == ["id"])
 
     def test_concat_to_pdf(self):
@@ -502,6 +500,8 @@ class TestSparkXShards(TestCase):
         description1 = shard.describe()
         description = shard.describe("id")
         print(description)
+        columns = list(shard.get_schema()['columns'])
+        print("columns", columns)
         assert (description is not None)
         assert (description1 is not None)
 
