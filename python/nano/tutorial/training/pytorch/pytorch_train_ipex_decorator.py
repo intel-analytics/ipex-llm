@@ -67,8 +67,9 @@ def create_dataloaders():
 
     return train_dataloader, val_dataloader
 
-@nano(use_ipex=True)
-def training_loop(model, optimizer, train_loader, val_loader, num_epochs, loss_func):
+@nano(num_processes=2,
+      distributed_backend="subprocess")
+def trainingggg_loop(model, optimizer, train_loader, val_loader, num_epochs, loss_func):
 
     # EPOCH LOOP
     for epoch in range(num_epochs):
@@ -97,4 +98,4 @@ if __name__ == '__main__':
     optimizer = torch.optim.SGD(model.parameters(), lr=0.01, momentum=0.9, weight_decay=5e-4)
     loss_func = torch.nn.CrossEntropyLoss()
     train_loader, val_loader = create_dataloaders()
-    training_loop(model, optimizer, train_loader, val_loader, num_epochs=5, loss_func=loss_func)
+    trainingggg_loop(model, optimizer, train_loader, val_loader, num_epochs=5, loss_func=loss_func)
