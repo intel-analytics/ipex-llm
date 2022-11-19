@@ -946,7 +946,7 @@ class SparkXShards(XShards):
 
     def sample(self,
                frac: float,
-               replace: bool = False,
+               replace: bool=False,
                weights=None,
                random_state=None) -> "SparkXShards":
         """
@@ -1001,7 +1001,7 @@ class SparkXShards(XShards):
 
         return SparkXShards(self.rdd.map(lambda df: df[cols]))
 
-    def describe(self, cols: Union[List[str], str] = None) -> "PandasDataFrame":
+    def describe(self, cols: Union[List[str], str]=None) -> "PandasDataFrame":
         """
         Computes basic statistics for numeric and string columns.
 
@@ -1031,7 +1031,7 @@ class SparkXShards(XShards):
         description = spark_df.describe(*cols).toPandas()
         return description
 
-    def head(self, n: int = 5) -> 'PandasDataFrame':
+    def head(self, n: int=5) -> 'PandasDataFrame':
         """
         Retrun first rows of the first element of a SparkXShards.
 
@@ -1042,7 +1042,7 @@ class SparkXShards(XShards):
 
         return self.rdd.first().head(n)
 
-    def concat_to_pdf(self, axis: int = 0) -> "PandasDataFrame":
+    def concat_to_pdf(self, axis: int=0) -> "PandasDataFrame":
         """
         Concatenate all pandas dataframes in SparsXShards into one single pandas dataframe
 
@@ -1059,10 +1059,10 @@ class SparkXShards(XShards):
 
     def sample_to_pdf(self,
                       frac: float,
-                      replace: bool = False,
+                      replace: bool=False,
                       weights=None,
                       random_state=None,
-                      axis: int = 0) -> "PandasDataFrame":
+                      axis: int=0) -> "PandasDataFrame":
         """
         Samples from each pandas dataframe in old SparkXShards, then concatenate into one single
         pandas dataframe and return it
