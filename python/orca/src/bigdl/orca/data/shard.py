@@ -996,7 +996,7 @@ class SparkXShards(XShards):
 
         columns = [c for c in self.rdd.first().columns]
         for c in cols:
-            check_col_str_list_exists(columns, c, "cols")
+            check_cols_exists(columns, c, "cols")
 
         return SparkXShards(self.rdd.map(lambda df: df[cols]))
 
@@ -1023,7 +1023,7 @@ class SparkXShards(XShards):
         invalidInputError(isinstance(cols, list), "cols should be str or list")
 
         for c in cols:
-            check_col_str_list_exists(columns, c, "cols")
+            check_cols_exists(columns, c, "cols")
 
         spark_df = self.to_spark_df()
 

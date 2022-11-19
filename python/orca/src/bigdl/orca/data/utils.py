@@ -576,9 +576,9 @@ def group_by_spark_df(df,
     return result_df
 
 
-def check_col_str_list_exists(columns: List[str],
-                              column: Union[List[str], str],
-                              arg_name: str) -> None:
+def check_cols_exists(columns: List[str],
+                      column: Union[List[str], str],
+                      arg_name: str) -> None:
     if isinstance(column, str):
         invalidInputError(column in columns,
                           column + " in " + arg_name + " does not exist in SparkXShards")
