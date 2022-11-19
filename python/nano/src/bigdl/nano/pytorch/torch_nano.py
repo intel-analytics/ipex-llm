@@ -343,10 +343,10 @@ def nano(num_processes: Optional[int] = None,
 
         def _update_args(objs, obj_pos):
 
-            # obj_pos is a lists of (object, idx, args|kwargs)
+            # obj_pos is a lists of (object, args|kwargs, idx)
 
             for obj, pos in zip(objs, obj_pos):
-                _, idx, arg = pos
+                _, arg, idx = pos
                 arg[idx] = obj
 
         # todo check the func signature
@@ -357,13 +357,13 @@ def nano(num_processes: Optional[int] = None,
                 def train(self):
 
                     # search for model, optimizer and dataloaders in the param list
-                    # save the result in lists of (object, idx, args|kwargs)
+                    # save the result in lists of (object, args|kwargs, idx)
                     _model_pos = []
                     _optimizer_pos = []
                     _data_loader_pos = []
 
-                    inner_args=list(inner_args)
-                    _search_setup_args(_model_pos, _optimizer_pos, _data_loader_pos, inner_args)
+                    _inner_args=list(inner_args)
+                    _search_setup_args(_model_pos, _optimizer_pos, _data_loader_pos, _inner_args)
                     _search_setup_args(_model_pos, _optimizer_pos, _data_loader_pos, kwargs)
 
                     invalidInputError(len(_model_pos) == 1,
@@ -371,20 +371,20 @@ def nano(num_processes: Optional[int] = None,
                                       f"in the function parameter list, but got {len(_model_pos)}")
 
                     # get the objec to be setup
-                    _model = _model_pos[0]
+                    _model = _model_pos[0][0]
                     _optimizers = [opt[0] for opt in _optimizer_pos]
-                    _dataloaders = [opt[0] for opt in _optimizer_pos]
+                    _dataloaders = [opt[0] for opt in _data_loader_pos]
 
                     # call setup, the purpose of the decorator
                     _model, _optimizers = self.setup(_model, _optimizers)
-                    _dataloaders = self.setup_dataloaders(_dataloaders)
+                    _dataloaders = self.setup_dataloaders(*_dataloaders)
 
                     # update the function param list
                     _update_args([_model], _model_pos)
                     _update_args(_optimizers, _optimizer_pos)
                     _update_args(_dataloaders, _data_loader_pos)
 
-                    return func(*inner_args, **inner_kwargs)
+                    return func(*_inner_args, **inner_kwargs)
 
             return DecoratedTorchNano(num_processes=num_processes,
                                       use_ipex=use_ipex,

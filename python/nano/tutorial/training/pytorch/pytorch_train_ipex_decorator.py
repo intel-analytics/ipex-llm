@@ -20,6 +20,7 @@ from torchvision import transforms
 from torchvision.models import resnet18
 from torchvision.datasets import OxfordIIITPet
 from torchmetrics import Accuracy
+from tqdm import tqdm
 
 from bigdl.nano.pytorch import nano
 
@@ -67,7 +68,7 @@ def create_dataloaders():
     return train_dataloader, val_dataloader
 
 @nano(use_ipex=True)
-def training_loop(model, optimizer, train_data_loader, val_data_loader, num_epochs, loss_func):
+def training_loop(model, optimizer, train_loader, val_loader, num_epochs, loss_func):
 
     # EPOCH LOOP
     for epoch in range(num_epochs):
@@ -75,16 +76,19 @@ def training_loop(model, optimizer, train_data_loader, val_data_loader, num_epoc
         # TRAINING LOOP
         model.train()
         train_loss, num = 0, 0
-        for data, target in train_data_loader:
-            optimizer.zero_grad()
-            output = model(data)
-            loss = loss_func(output, target)
-            loss.backward()
-            optimizer.step()
-
-            train_loss += loss.sum()
-            num += 1
-        print(f'Train Epoch: {epoch}, avg_loss: {train_loss / num}')
+        with tqdm(train_loader, unit="batch") as tepoch:
+            for data, target in tepoch:
+                tepoch.set_description(f"Epoch {epoch}")
+                optimizer.zero_grad()
+                output = model(data)
+                loss = loss_func(output, target)
+                loss.backward()
+                optimizer.step()
+                loss_value = loss.sum()
+                train_loss += loss_value
+                num += 1
+                tepoch.set_postfix(loss=loss_value)
+            print(f'Train Epoch: {epoch}, avg_loss: {train_loss / num}')
 
 
 if __name__ == '__main__':
