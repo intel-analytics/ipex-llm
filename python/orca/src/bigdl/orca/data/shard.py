@@ -966,7 +966,7 @@ class SparkXShards(XShards):
         if self._get_class_name() != 'pandas.core.frame.DataFrame':
             invalidInputError(False,
                               "Currently only support sample() on"
-                              " XShards of Pandas DataFrame")
+                              " SparkXShards of Pandas DataFrame")
 
         def inner_sample(iter, frac, replace=False, weights=None, random_state=None):
             for df in iter:
@@ -977,7 +977,7 @@ class SparkXShards(XShards):
                                       inner_sample(iter, frac, replace, weights, random_state))
         return SparkXShards(rdd1)
 
-    def select(self, cols: Union[List[str], str]) -> "SparkXShards":
+    def select(self, cols: Union[str, List[str]]) -> "SparkXShards":
         """
         Select specific columns of each pandas dataframe in SparkXShards and
         return a new SparkXShards.
@@ -988,7 +988,7 @@ class SparkXShards(XShards):
         if self._get_class_name() != 'pandas.core.frame.DataFrame':
             invalidInputError(False,
                               "Currently only support select() on"
-                              " XShards of Pandas DataFrame")
+                              " SparkXShards of Pandas DataFrame")
 
         if isinstance(cols, str):
             cols = [cols]
@@ -1000,7 +1000,7 @@ class SparkXShards(XShards):
 
         return SparkXShards(self.rdd.map(lambda df: df[cols]))
 
-    def describe(self, cols: Union[List[str], str]=None) -> "PandasDataFrame":
+    def describe(self, cols:  Union[str, List[str]]=None) -> "PandasDataFrame":
         """
         Computes basic statistics for numeric and string columns.
 
@@ -1013,7 +1013,7 @@ class SparkXShards(XShards):
         if self._get_class_name() != 'pandas.core.frame.DataFrame':
             invalidInputError(False,
                               "Currently only support select() on"
-                              " XShards of Pandas DataFrame")
+                              " SparkXShards of Pandas DataFrame")
 
         cols = cols if cols else list(self.get_schema()['columns'])
 

@@ -589,5 +589,5 @@ def check_col_str_list_exists(columns: List[str],
                                   single_column, arg_name))
     else:
         invalidInputError(False,
-                          "elements in cat_cols should be str or list of str but"
+                          "elements in column should be str or list of str but"
                           " get " + str(column))
