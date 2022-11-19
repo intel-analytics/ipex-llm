@@ -438,6 +438,7 @@ class TestSparkXShards(TestCase):
                         in str(context.exception))
 
     def test_select(self):
+        import pandas as pd
         df1 = {'id': [1, 2, 3, 4, 5],
               'created_at': ['2020-02-01', '2020-02-02', '2020-02-02', '2020-02-02', '2020-02-03'],
               'type': ['red', None, 'blue', 'blue', 'yellow']}
@@ -454,6 +455,7 @@ class TestSparkXShards(TestCase):
         assert (list(selected.columns) == ["id"])
 
     def test_concat_to_pdf(self):
+        import pandas as pd
         df1 = {'id': [1, 2, 3, 4, 5],
               'created_at': ['2020-02-01', '2020-02-02', '2020-02-02', '2020-02-02', '2020-02-03'],
               'type': ['red', None, 'blue', 'blue', 'yellow']}
@@ -468,6 +470,7 @@ class TestSparkXShards(TestCase):
         assert(len(concated) == 10)
 
     def test_sample(self):
+        import pandas as pd
         df1 = {'id': [1, 2, 3, 4, 5],
               'created_at': ['2020-02-01', '2020-02-02', '2020-02-02', '2020-02-02', '2020-02-03'],
               'type': ['red', None, 'blue', 'blue', 'yellow']}
