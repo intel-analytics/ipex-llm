@@ -994,7 +994,7 @@ class SparkXShards(XShards):
             cols = [cols]
         invalidInputError(isinstance(cols, list), "cols should be str or list")
 
-        columns = list(self.get_schema()['columns'])
+        columns = [c for c in self.rdd.first().columns]
         for c in cols:
             check_col_str_list_exists(columns, c, "cols")
 
@@ -1015,13 +1015,13 @@ class SparkXShards(XShards):
                               "Currently only support select() on"
                               " SparkXShards of Pandas DataFrame")
 
-        cols = cols if cols else list(self.get_schema()['columns'])
+        columns = [c for c in self.rdd.first().columns]
+        cols = cols if cols else columns
 
         if isinstance(cols, str):
             cols = [cols]
         invalidInputError(isinstance(cols, list), "cols should be str or list")
 
-        columns = list(self.get_schema()['columns'])
         for c in cols:
             check_col_str_list_exists(columns, c, "cols")
 
