@@ -27,8 +27,8 @@ from bigdl.dllib.utils.log4Error import invalidInputError
 import numpy as np
 import pyspark.sql.functions as F
 from pyspark import RDD
+
 from typing import (Union, List, Dict)
-import pandas as pd
 
 from typing import TYPE_CHECKING, Any
 from typing import (
@@ -175,7 +175,6 @@ class SparkXShards(XShards):
                  transient: bool=False,
                  class_name: str=None) -> None:
         self.rdd = rdd
-        self.columns = self.rdd.first().columns
         self.user_cached = False
         if transient:
             self.eager = False
@@ -945,32 +944,23 @@ class SparkXShards(XShards):
         mergedXShards = spark_df_to_pd_sparkxshards(merged)
         return mergedXShards
 
-    def sample(self, frac, replace=False, weights=None, random_state=None):
+    def sample(self,
+               frac: float,
+               replace: bool = False,
+               weights=None,
+               random_state=None) -> "SparkXShards":
         """
-
         Samples from each pandas dataframe in old SparkXShards, Return a new SparkXShards  .
 
         :param frac: float,  Fraction of items to return.
         :param replace: bool, default False,
             Allow or disallow sampling of the same row more than once.
-        str or ndarray-like, optional
+        :param weights: str or ndarray-like, optional
             Default 'None' results in equal probability weighting.
-            If passed a Series, will align with target object on index. Index
-            values in weights not found in sampled object will be ignored and
-            index values in sampled object not in weights will be assigned
-            weights of zero.
-            If called on a DataFrame, will accept the name of a column
-            when axis = 0.
-            Unless weights are a Series, weights must be same length as axis
-            being sampled.
-            If weights do not sum to 1, they will be normalized to sum to 1.
-            Missing values in the weights column will be treated as zero.
-            Infinite values not allowed.
-        random_state : int, array-like, BitGenerator, np.random.RandomState, optional
+        :param random_state: int, array-like, BitGenerator, np.random.RandomState, optional
             If int, array-like, or BitGenerator (NumPy>=1.17), seed for
             random number generator
             If np.random.RandomState, use as numpy RandomState object.
-        the new SparkXShards would keep the current partition number.
         :return: a new SparkXShards.
         """
         if self._get_class_name() != 'pandas.core.frame.DataFrame':
@@ -987,33 +977,12 @@ class SparkXShards(XShards):
                                       inner_sample(iter, frac, replace, weights, random_state))
         return SparkXShards(rdd1)
 
-    def select(self, cols):
+    def select(self, cols: Union[List[str], str]) -> "SparkXShards":
         """
-
         Select specific columns of each pandas dataframe in SparkXShards and
         return a new SparkXShards.
 
-        :param cols: list string,  Fraction of items to return.
-        :param replace: bool, default False,
-            Allow or disallow sampling of the same row more than once.
-        str or ndarray-like, optional
-            Default 'None' results in equal probability weighting.
-            If passed a Series, will align with target object on index. Index
-            values in weights not found in sampled object will be ignored and
-            index values in sampled object not in weights will be assigned
-            weights of zero.
-            If called on a DataFrame, will accept the name of a column
-            when axis = 0.
-            Unless weights are a Series, weights must be same length as axis
-            being sampled.
-            If weights do not sum to 1, they will be normalized to sum to 1.
-            Missing values in the weights column will be treated as zero.
-            Infinite values not allowed.
-        random_state : int, array-like, BitGenerator, np.random.RandomState, optional
-            If int, array-like, or BitGenerator (NumPy>=1.17), seed for
-            random number generator
-            If np.random.RandomState, use as numpy RandomState object.
-        the new SparkXShards would keep the current partition number.
+        :param cols: string or list string.
         :return: a new SparkXShards.
         """
         if self._get_class_name() != 'pandas.core.frame.DataFrame':
@@ -1025,54 +994,56 @@ class SparkXShards(XShards):
             cols = [cols]
         invalidInputError(isinstance(cols, list), "cols should be str or list")
 
+        columns = list(self.get_schema()['columns'])
         for c in cols:
-            check_col_str_list_exists(self.columns, cols, "cols")
+
+            check_col_str_list_exists(columns, cols, "cols")
 
         return SparkXShards(self.rdd.map(lambda df: df[cols]))
 
-    def describe(self, cols=None):
+    def describe(self, cols: Union[List[str], str] = None) -> "PandasDataFrame":
         """
-
         Computes basic statistics for numeric and string columns.
 
         This include count, mean, stddev, min, and max. If no columns are
         given, this function computes statistics for all numerical or string columns.
+
+        :param cols: string or list string.
+        :return: a panda dataframe of description.
         """
         if self._get_class_name() != 'pandas.core.frame.DataFrame':
             invalidInputError(False,
                               "Currently only support select() on"
                               " XShards of Pandas DataFrame")
 
-        cols = cols if cols else self.columns[0]
+        cols = cols if cols else list(self.get_schema()['columns'])
 
         if isinstance(cols, str):
             cols = [cols]
         invalidInputError(isinstance(cols, list), "cols should be str or list")
 
+        columns = list(self.get_schema()['columns'])
         for c in cols:
-            check_col_str_list_exists(self.columns, cols, "cols")
+            check_col_str_list_exists(columns, cols, "cols")
 
         spark_df = self.to_spark_df()
 
         description = spark_df.describe(*cols).toPandas()
         return description
 
-    def head(self, n):
+    def head(self, n: int = 5) -> 'PandasDataFrame':
         """
+        Retrun first rows of the first element of a SparkXShards.
 
-        Retrun first rows of the pandas dataframe in a SparkXShards.
-
+        :param n: int, default 5
+        :return: same type as self.type['class_name']
+            The first `n` rows of the first element of this SparkXShards.
         """
-        if self._get_class_name() != 'pandas.core.frame.DataFrame':
-            invalidInputError(False,
-                              "Currently only support head() on"
-                              " XShards of Pandas DataFrame")
 
         return self.rdd.first().head(n)
 
-    def concat_to_pdf(self, axis=0):
+    def concat_to_pdf(self, axis: int = 0) -> "PandasDataFrame":
         """
-
         Concatenate all pandas dataframes in SparsXShards into one single pandas dataframe
 
         :param axis, integer, default 0
@@ -1083,27 +1054,40 @@ class SparkXShards(XShards):
                               " XShards of Pandas DataFrame")
 
         dfs = self.rdd.collect()
+        import pandas as pd
         return pd.concat(dfs, axis=axis)
 
-    def total_count(self):
+    def sample_to_pdf(self,
+                      frac: float,
+                      replace: bool = False,
+                      weights=None,
+                      random_state=None,
+                      axis: int = 0) -> "PandasDataFrame":
         """
+        Samples from each pandas dataframe in old SparkXShards, then concatenate into one single
+        pandas dataframe and return it
 
-        Count data records of all pandas dataframes in SparsXShards
+        :param frac: float,  Fraction of items to return.
+        :param replace: bool, default False,
+            Allow or disallow sampling of the same row more than once.
+        :param weights : str or ndarray-like, optional
+            Default 'None' results in equal probability weighting.
+        :param random_state : int, array-like, BitGenerator, np.random.RandomState, optional
+            If int, array-like, or BitGenerator (NumPy>=1.17), seed for
+            random number generator
+            If np.random.RandomState, use as numpy RandomState object.
+        :param axis, integer, default 0
 
+        :return: a pandas dataframe.
         """
         if self._get_class_name() != 'pandas.core.frame.DataFrame':
             invalidInputError(False,
-                              "Currently only support count() on"
+                              "Currently only support select() on"
                               " XShards of Pandas DataFrame")
-
-        def get_cnt(iter):
-            for df in iter:
-                yield len(df)
-
-        cnt_rdd = self.rdd.mapPartitions(lambda iter: get_cnt(iter))
-
-        cnt = cnt_rdd.reduce(lambda l1, l2: l1 + l2)
-        return cnt
+        sampled = self.sample(
+            frac=frac, replace=replace, weights=weights, random_state=random_state)
+        pdf = sampled.concat_to_pdf(axis=axis)
+        return pdf
 
 
 class SharedValue(object):

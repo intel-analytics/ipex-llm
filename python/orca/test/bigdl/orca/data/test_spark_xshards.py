@@ -28,7 +28,7 @@ from bigdl.orca.data import SharedValue
 from bigdl.dllib.nncontext import *
 from bigdl.orca.data import SparkXShards
 from bigdl.orca.data.transformer import *
-import pandas as pd
+from bigdl.orca import init_orca_context, stop_orca_context
 
 class TestSparkXShards(TestCase):
     def setup_method(self, method):
@@ -467,19 +467,6 @@ class TestSparkXShards(TestCase):
         concated = shard.concat_to_pdf()
         assert(len(concated) == 10)
 
-    def test_total_count(self):
-        df1 = {'id': [1, 2, 3, 4, 5],
-              'created_at': ['2020-02-01', '2020-02-02', '2020-02-02', '2020-02-02', '2020-02-03'],
-              'type': ['red', None, 'blue', 'blue', 'yellow']}
-        df1 = pd.DataFrame(df1, columns=['id', 'created_at', 'type'])
-        df2 = {'id': [6, 7, 8, 9, 10],
-              'created_at': ['2020-02-01', '2020-02-02', '2020-02-02', '2020-02-02', '2020-02-03'],
-              'type': ['red', None, 'blue', 'blue', 'yellow']}
-        df2 = pd.DataFrame(df2, columns=['id', 'created_at', 'type'])
-        sc = get_spark_context()
-        shard = SparkXShards(sc.parallelize([df1, df2]))
-        assert(shard.total_count() == 10)
-
     def test_sample(self):
         df1 = {'id': [1, 2, 3, 4, 5],
               'created_at': ['2020-02-01', '2020-02-02', '2020-02-02', '2020-02-02', '2020-02-03'],
@@ -494,7 +481,26 @@ class TestSparkXShards(TestCase):
         df1 = shard.collect()[0]
         print(len(df1))
         sampled = shard.sample(frac=0.4)
-        assert(sampled.total_count() == 4)
+        assert(len(sampled) == 4)
+
+    def test_describe(self):
+        import pandas as pd
+        df1 = {'id': [1, 2, 3, 4, 5],
+              'created_at': ['2020-02-01', '2020-02-02', '2020-02-02', '2020-02-02', '2020-02-03'],
+              'type': ['red', None, 'blue', 'blue', 'yellow']}
+        df1 = pd.DataFrame(df1, columns=['id', 'created_at', 'type'])
+        df2 = {'id': [6, 7, 8, 9, 10],
+              'created_at': ['2020-02-01', '2020-02-02', '2020-02-02', '2020-02-02', '2020-02-03'],
+              'type': ['red', None, 'blue', 'blue', 'yellow']}
+        df2 = pd.DataFrame(df2, columns=['id', 'created_at', 'type'])
+        sc = init_orca_context(cores=2)
+        rdd = sc.parallelize([df1, df2], numSlices=2)
+        shard = SparkXShards(rdd)
+        description1 = shard.describe()
+        description = shard.describe("id")
+        print(description)
+        assert (description is not None)
+        assert (description1 is not None)
 
 
 if __name__ == "__main__":
