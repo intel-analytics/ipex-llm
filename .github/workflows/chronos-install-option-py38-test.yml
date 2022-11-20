@@ -125,7 +125,7 @@ jobs:
           BIGDL_ROOT: ${{ github.workspace }}
           ANALYTICS_ZOO_ROOT: ${{ github.workspace }}
 
-chronos-pytorch-inference-automl-test:
+  chronos-pytorch-inference-automl-test:
     runs-on: [ self-hosted, Gondolin, ubuntu-20.04-lts ]
     strategy:
       fail-fast: false
