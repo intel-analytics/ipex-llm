@@ -22,9 +22,6 @@ from bigdl.dllib.utils.log4Error import invalidInputError
 
 
 class ModelIO(metaclass=ABCMeta):
-    def __init__(self, logger):
-        self.logger = logger
-
     @abstractmethod
     def get_state_dict(self):
         """Returns the state of the runner."""
