@@ -386,7 +386,7 @@ def nano(num_processes: Optional[int] = None,
                       "bigdl.nano.pytorch.nano do not support deepspeed strategy")
 
     # spawn has a wierd pickle error
-    invalidInputError(distributed_backend == "spawn",
+    invalidInputError(distributed_backend != "spawn",
                       "bigdl.nano.pytorch.nano do not support spawn")
 
     def decorator(func):
