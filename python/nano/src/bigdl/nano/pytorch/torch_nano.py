@@ -345,13 +345,13 @@ class DecoratedTorchNano(TorchNano):
         _optimizer_pos = []
         _data_loader_pos = []
 
-        _inner_args=list(inner_args)
+        _inner_args = list(inner_args)
         _search_setup_args(_model_pos, _optimizer_pos, _data_loader_pos, _inner_args)
         _search_setup_args(_model_pos, _optimizer_pos, _data_loader_pos, inner_kwargs)
 
         invalidInputError(len(_model_pos) == 1,
-                            "there should be only one nn.Module "
-                            f"in the function parameter list, but got {len(_model_pos)}")
+                          "there should be only one nn.Module "
+                          f"in the function parameter list, but got {len(_model_pos)}")
 
         # get the objec to be setup
         _model = _model_pos[0][0]
@@ -379,11 +379,10 @@ def nano(num_processes: Optional[int] = None,
          auto_lr: bool = False,
          *args, **kwargs):
 
-    deepspeed_strategy = "strategy" in kwargs
-    deepspeed_strategy = deepspeed_strategy and (kwargs["strategy"] == "deepspeed" or
-                                                 isinstance(kwargs["strategy"], DeepSpeedStrategy))
-    invalidInputError(not deepspeed_strategy,
-                      "bigdl.nano.pytorch.nano do not support deepspeed strategy")
+    if "strategy" in kwargs:
+        strategy = kwargs["strategy"]
+        if strategy == "deepspeed" or isinstance(strategy, DeepSpeedStrategy):
+            invalidInputError(False, "bigdl.nano.pytorch.nano do not support deepspeed strategy")
 
     # spawn has a wierd pickle error
     invalidInputError(distributed_backend != "spawn",
