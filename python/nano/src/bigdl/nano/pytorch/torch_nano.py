@@ -335,7 +335,7 @@ def _update_args(objs, obj_pos):
         arg[idx] = obj
 
 
-class DecoratedTorchNano(TorchNano):
+class _DecoratedTorchNano(TorchNano):
 
     def train(self, func, *inner_args, **inner_kwargs):
 
@@ -378,7 +378,7 @@ def nano(num_processes: Optional[int] = None,
          channels_last: bool = False,
          auto_lr: bool = False,
          *args, **kwargs):
-
+    """Run TorchNano.train through a convenient decorator function."""
     if "strategy" in kwargs:
         strategy = kwargs["strategy"]
         if strategy == "deepspeed" or isinstance(strategy, DeepSpeedStrategy):
@@ -394,14 +394,14 @@ def nano(num_processes: Optional[int] = None,
         @wraps(func)
         def wrapper(*inner_args, **inner_kwargs):
 
-            return DecoratedTorchNano(num_processes=num_processes,
-                                      use_ipex=use_ipex,
-                                      distributed_backend=distributed_backend,
-                                      precision=precision,
-                                      cpu_for_each_process=cpu_for_each_process,
-                                      channels_last=channels_last,
-                                      auto_lr=auto_lr,
-                                      *args, **kwargs).train(func, *inner_args, **inner_kwargs)
+            return _DecoratedTorchNano(num_processes=num_processes,
+                                       use_ipex=use_ipex,
+                                       distributed_backend=distributed_backend,
+                                       precision=precision,
+                                       cpu_for_each_process=cpu_for_each_process,
+                                       channels_last=channels_last,
+                                       auto_lr=auto_lr,
+                                       *args, **kwargs).train(func, *inner_args, **inner_kwargs)
 
         return wrapper
     return decorator
