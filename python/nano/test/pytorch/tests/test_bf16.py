@@ -152,8 +152,7 @@ class Pytorch1_12:
         bf16_model = InferenceOptimizer.load("bf16_model", model)
         y_hat2 = bf16_model(x)
         assert y_hat2.shape == (10, 10) and y_hat2.dtype == torch.bfloat16
-        np.testing.assert_allclose(y_hat1, y_hat2, atol=1e-4,
-                                   err_msg=f"\npred1: {y_hat1}\npred2: {y_hat2}\n")
+        assert y_hat1.equal(y_hat2)
     
         # test bf16 + channels_last
         bf16_model = trainer.quantize(model, precision='bf16',
@@ -164,8 +163,7 @@ class Pytorch1_12:
         bf16_model = InferenceOptimizer.load("bf16_model", model)
         y_hat2 = bf16_model(x)
         assert y_hat2.shape == (10, 10) and y_hat2.dtype == torch.bfloat16
-        np.testing.assert_allclose(y_hat1, y_hat2, atol=1e-4,
-                                   err_msg=f"\npred1: {y_hat1}\npred2: {y_hat2}\n")
+        assert y_hat1.equal(y_hat2)
     
 
 TORCH_VERSION_CLS = Pytorch1_12
