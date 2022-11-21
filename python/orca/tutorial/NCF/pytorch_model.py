@@ -24,7 +24,9 @@ import torch.nn as nn
 class NCF(nn.Module):
     def __init__(self, user_num, item_num, factor_num, num_layers,
                  dropout, model, GMF_model=None, MLP_model=None,
-                 sparse_feats_dims=0, num_dense_feats=0):
+                 sparse_feats_input_dims=None,
+                 sparse_feats_embed_dims=8,
+                 num_dense_feats=0):
         super(NCF, self).__init__()
         """
         user_num: number of users;
@@ -35,35 +37,43 @@ class NCF(nn.Module):
         model: 'MLP', 'GMF', 'NeuMF-end', and 'NeuMF-pre';
         GMF_model: pre-trained GMF weights;
         MLP_model: pre-trained MLP weights;
-        sparse_feats_dims: the list of embedding_dims of sparse features;
+        sparse_feats_input_dims: the list of input dimensions of sparse features;
+        sparse_feats_embed_dims: the list of embedding dimensions of sparse features;
         num_dense_feats: number of dense features.
         """
         self.dropout = dropout
         self.model = model
         self.GMF_model = GMF_model
         self.MLP_model = MLP_model
-        self.sparse_feats_dims = sparse_feats_dims
+        self.sparse_feats_input_dims = sparse_feats_input_dims \
+            if sparse_feats_input_dims is not None else []
         self.num_dense_feats = num_dense_feats
-        self.num_sparse_feats = len(sparse_feats_dims)
+        self.num_sparse_feats = len(self.sparse_feats_input_dims)
+        self.sparse_feats_embed_dims = sparse_feats_embed_dims \
+            if isinstance(sparse_feats_embed_dims, list) \
+            else [sparse_feats_embed_dims] * self.num_sparse_feats
 
         self.embed_user_GMF = nn.Embedding(user_num, factor_num)
         self.embed_item_GMF = nn.Embedding(item_num, factor_num)
         self.embed_user_MLP = nn.Embedding(user_num, factor_num)
         self.embed_item_MLP = nn.Embedding(item_num, factor_num)
-        self.embed_catFeats_MLP = [nn.Embedding(sparse_feats_dims[i], factor_num)
+        self.embed_catFeats_MLP = [nn.Embedding(self.sparse_feats_input_dims[i],
+                                                self.sparse_feats_embed_dims[i])
                                    for i in range(self.num_sparse_feats)]
 
-        input_size = factor_num * (2 + self.num_sparse_feats) + num_dense_feats
+        input_size = factor_num * 2 + sum(self.sparse_feats_embed_dims) + num_dense_feats
         output_size = factor_num * (2 ** (num_layers - 1))
         MLP_modules = []
         MLP_modules.append(nn.Dropout(p=self.dropout))
         MLP_modules.append(nn.Linear(input_size, output_size))
         MLP_modules.append(nn.ReLU())
         for i in range(num_layers-1):
-            MLP_modules.append(nn.Dropout(p=self.dropout))
-            MLP_modules.append(nn.Linear(output_size, output_size//2))
-            MLP_modules.append(nn.ReLU())
+            input_size = output_size
             output_size = output_size // 2
+            MLP_modules.append(nn.Dropout(p=self.dropout))
+            MLP_modules.append(nn.Linear(input_size, output_size))
+            MLP_modules.append(nn.ReLU())
+
         self.MLP_layers = nn.Sequential(*MLP_modules)
 
         if self.model in ['MLP', 'GMF']:
@@ -132,7 +142,7 @@ class NCF(nn.Module):
                 interaction = torch.cat((interaction, embed_catFeats_MLP), -1)
             if self.num_dense_feats > 0:
                 numeric_feats = torch.stack(args[self.num_sparse_feats:], dim=1)
-                interaction = torch.cat((interaction, numeric_feats), -1)
+                interaction = torch.cat((interaction, numeric_feats.float()), -1)
             output_MLP = self.MLP_layers(interaction)
 
         if self.model == 'GMF':
