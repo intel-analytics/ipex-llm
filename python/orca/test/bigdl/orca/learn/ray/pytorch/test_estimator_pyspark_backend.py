@@ -174,7 +174,7 @@ def get_optimizer(model, config):
 
 
 def get_estimator(workers_per_node=1, model_fn=get_model, sync_stats=False,
-                  log_level=logging.INFO):
+                  log_level=logging.INFO, model_dir=None):
     estimator = Estimator.from_torch(model=model_fn,
                                      optimizer=get_optimizer,
                                      loss=nn.BCELoss(),
@@ -183,6 +183,7 @@ def get_estimator(workers_per_node=1, model_fn=get_model, sync_stats=False,
                                      workers_per_node=workers_per_node,
                                      backend="spark",
                                      sync_stats=sync_stats,
+                                     model_dir=model_dir,
                                      log_level=log_level)
     return estimator
 
@@ -310,19 +311,21 @@ class TestPyTorchEstimator(TestCase):
         df = spark.createDataFrame(data=data, schema=schema)
 
         estimator = get_estimator(workers_per_node=2)
-        estimator.fit(df, batch_size=4, epochs=2,
-                      feature_cols=["feature"],
-                      label_cols=["label"])
-        worker_stats = estimator.evaluate(df, batch_size=4,
-                                          feature_cols=["feature"],
-                                          label_cols=["label"],
-                                          reduce_results=False, profile=True)
-        acc = [stat["Accuracy"].data.item() for stat in worker_stats]
-        loss = [stat["val_loss"] for stat in worker_stats]
-        validation_time = [stat["profile"]["mean_validation_s"] for stat in worker_stats]
-        forward_time = [stat["profile"]["mean_eval_fwd_s"] for stat in worker_stats]
+        train_worker_stats = estimator.fit(df, batch_size=4, epochs=2,
+                                           feature_cols=["feature"],
+                                           label_cols=["label"])
+        # Total samples for one epoch
+        assert train_worker_stats[0]["num_samples"] == 100
+        eval_worker_stats = estimator.evaluate(df, batch_size=4,
+                                               feature_cols=["feature"],
+                                               label_cols=["label"],
+                                               reduce_results=False, profile=True)
+        acc = [stat["Accuracy"].data.item() for stat in eval_worker_stats]
+        loss = [stat["val_loss"] for stat in eval_worker_stats]
+        validation_time = [stat["profile"]["mean_validation_s"] for stat in eval_worker_stats]
+        forward_time = [stat["profile"]["mean_eval_fwd_s"] for stat in eval_worker_stats]
         from bigdl.orca.learn.pytorch.utils import process_stats
-        agg_worker_stats = process_stats(worker_stats)
+        agg_worker_stats = process_stats(eval_worker_stats)
         assert round(agg_worker_stats["Accuracy"].data.item(), 4) == \
                round(sum(acc) / 2, 4)
         assert round(agg_worker_stats["val_loss"], 4) == round(sum(loss) / 2, 4)
@@ -331,6 +334,13 @@ class TestPyTorchEstimator(TestCase):
         assert round(agg_worker_stats["profile"]["mean_eval_fwd_s"], 4) == \
                round(sum(forward_time) / 2, 4)
         assert agg_worker_stats["num_samples"] == 100
+
+        # Test stats given model dir
+        estimator2 = get_estimator(workers_per_node=2, model_dir=self.model_dir)
+        train_worker_stats = estimator2.fit(df, batch_size=4, epochs=2,
+                                            feature_cols=["feature"],
+                                            label_cols=["label"])
+        assert train_worker_stats[0]["num_samples"] == 100
 
     def test_partition_num_less_than_workers(self):
         sc = init_nncontext()
