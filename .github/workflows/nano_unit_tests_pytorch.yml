@@ -29,7 +29,6 @@ jobs:
         os: ["ubuntu-20.04"]
         python-version: ["3.7"]
         pytorch-version: [
-          "torch==1.9.0+cpu torchvision==0.10.0+cpu intel_extension_for_pytorch==1.11.0 neural-compressor==1.13.1",
           "torch==1.10.1+cpu torchvision==0.11.2+cpu intel_extension_for_pytorch==1.11.0 neural-compressor==1.13.1",
           "torch==1.11.0+cpu torchvision==0.12.0+cpu intel_extension_for_pytorch==1.11.0 neural-compressor==1.13.1", 
           "torch==1.12.1+cpu torchvision==0.13.1+cpu intel_extension_for_pytorch==1.12.100 neural-compressor==1.13.1",
@@ -215,7 +214,6 @@ jobs:
         pytorch-version: [
           # The reason why ipex1.10 is not currently supported is that the optimization of ipex1.10
           # will change the require_grad attribute of layers, which will make some tests of nano fail.
-          "torch==1.9.0+cpu torchvision==0.10.0+cpu torch_ipex==1.9.0 neural-compressor==1.13.1",
           "torch==1.11.0+cpu torchvision==0.12.0+cpu intel_extension_for_pytorch==1.11.0 neural-compressor==1.13.1", 
           "torch==1.12.1+cpu torchvision==0.13.1+cpu intel_extension_for_pytorch==1.12.100 neural-compressor==1.13.1",
           "torch==1.13.0+cpu torchvision==0.14.0+cpu intel_extension_for_pytorch==1.13.0 neural-compressor==1.14.2"
@@ -244,7 +242,6 @@ jobs:
           $CONDA/bin/conda info
           bash python/nano/dev/build_and_install.sh linux default false pytorch,inference
           pip install pytest
-          pip uninstall -y intel_extension_for_pytorch
           if [ ! -z "${{matrix.pytorch-version}}" ]; then
             requirements=(${{matrix.pytorch-version}})
             pip install ${requirements[0]} ${requirements[1]} -f https://download.pytorch.org/whl/torch_stable.html
@@ -269,7 +266,6 @@ jobs:
         pytorch-version: [
           # The reason why ipex1.10 is not currently supported is that the optimization of ipex1.10
           # will change the require_grad attribute of layers, which will make some tests of nano fail.
-          "torch==1.9.0+cpu torchvision==0.10.0+cpu torch_ipex==1.9.0 neural-compressor==1.13.1",
           "torch==1.11.0+cpu torchvision==0.12.0+cpu intel_extension_for_pytorch==1.11.0 neural-compressor==1.13.1", 
           "torch==1.12.1+cpu torchvision==0.13.1+cpu intel_extension_for_pytorch==1.12.100 neural-compressor==1.13.1",
           "torch==1.13.0+cpu torchvision==0.14.0+cpu intel_extension_for_pytorch==1.13.0 neural-compressor==1.14.2"
@@ -298,7 +294,6 @@ jobs:
           $CONDA/bin/conda info
           bash python/nano/dev/build_and_install.sh linux default false pytorch,inference
           pip install pytest
-          pip uninstall -y intel_extension_for_pytorch
           if [ ! -z "${{matrix.pytorch-version}}" ]; then
             requirements=(${{matrix.pytorch-version}})
             pip install ${requirements[0]} ${requirements[1]} -f https://download.pytorch.org/whl/torch_stable.html
