@@ -46,14 +46,13 @@ def ng_sampling(data, user_num, item_num, num_ng):
                 j = np.random.randint(item_num)
             features_ng.append([u, j])
 
-    labels_ps = [1 for _ in range(len(features_ps))]
-    labels_ng = [0 for _ in range(len(features_ng))]
+    labels_ps = [1.0 for _ in range(len(features_ps))]
+    labels_ng = [0.0 for _ in range(len(features_ng))]
 
     features_fill = features_ps + features_ng
     labels_fill = labels_ps + labels_ng
     data_XY = pd.DataFrame(data=features_fill, columns=["user", "item"], dtype=np.int64)
     data_XY["label"] = labels_fill
-    data_XY["label"] = data_XY["label"].astype(np.float)
     return data_XY
 
 
@@ -63,10 +62,9 @@ def split_dataset(data):
 
 
 def prepare_data(dataset_dir, num_ng=4):
-    # Load the train and test datasets
     feature_cols = ['user', 'item',
-                    'gender', 'occupation', 'zipcode', 'category',  # sparse feature
-                    'age']  # dense feature
+                    'gender', 'occupation', 'zipcode', 'category',  # sparse features
+                    'age']  # dense features
     label_cols = ["label"]
 
     users = read_csv(
@@ -88,43 +86,56 @@ def prepare_data(dataset_dir, num_ng=4):
     user_num = max(user_set) + 1
     item_num = max(item_set) + 1
 
+    # Category encoding
+    indexer = StringIndexer('gender')
+    users = indexer.fit_transform(users)
+    indexer.setInputCol('zipcode')
+    users = indexer.fit_transform(users)
+    indexer.setInputCol('category')
+    movies = indexer.fit_transform(movies)
+
+    # Calculate input_dims for each sparse features
+    sparse_feats_input_dims = []
+    sparse_feat_set = set(users["gender"].unique())
+    sparse_feats_input_dims.append(max(sparse_feat_set)+1)
+    sparse_feat_set = set(users["occupation"].unique())
+    sparse_feats_input_dims.append(max(sparse_feat_set)+1)
+    sparse_feat_set = set(users["zipcode"].unique())
+    sparse_feats_input_dims.append(max(sparse_feat_set)+1)
+    sparse_feat_set = set(movies["category"].unique())
+    sparse_feats_input_dims.append(max(sparse_feat_set)+1)
+
+    # scale dense features
+    from bigdl.orca.data.transformer import MinMaxScaler
+    scaler = MinMaxScaler(inputCol=['age'], outputCol='age_scaled')
+    users = scaler.fit_transform(users)
+
+    def drop_column(shard):
+        shard['age'] = [i[0] for i in shard['age_scaled']]
+        shard['age'] = shard['age'].astype(np.float32)
+        return shard.drop(columns=['age_scaled'])
+
+    users = users.transform_shard(drop_column)
+
     # Negative sampling
-    ratings = ratings.partition_by("user", ratings.num_partitions())
+    ratings = ratings.partition_by("user")
     ratings = ratings.transform_shard(lambda shard: ng_sampling(shard, user_num, item_num, num_ng))
 
     # Merge XShards
     data = users.merge(ratings, on='user')
     data = data.merge(movies, on='item')
 
-    # Category encoding
-    indexer = StringIndexer('gender')
-    data = indexer.fit_transform(data)
-    indexer.setInputCol('zipcode')
-    data = indexer.fit_transform(data)
-    indexer.setInputCol('category')
-    data = indexer.fit_transform(data)
-
-    # Calculate input_dims for each sparse features
-    sparse_feats_dims = []
-    sparse_feat_set = set(data["gender"].unique())
-    sparse_feats_dims.append(max(sparse_feat_set)+1)
-    sparse_feat_set = set(data["occupation"].unique())
-    sparse_feats_dims.append(max(sparse_feat_set)+1)
-    sparse_feat_set = set(data["zipcode"].unique())
-    sparse_feats_dims.append(max(sparse_feat_set)+1)
-    sparse_feat_set = set(data["category"].unique())
-    sparse_feats_dims.append(max(sparse_feat_set)+1)
-
     # Split dataset
     train_data, test_data = data.transform_shard(split_dataset).split()
-    return train_data, test_data, user_num, item_num, sparse_feats_dims, feature_cols, label_cols
+    return train_data, test_data, user_num, item_num, sparse_feats_input_dims, \
+        feature_cols, label_cols
 
 
 if __name__ == "__main__":
     from bigdl.orca import init_orca_context, stop_orca_context
 
     sc = init_orca_context()
-    train_data, test_data, user_num, item_num, sparse_feats_dims, \
+    train_data, test_data, user_num, item_num, sparse_feats_input_dims, \
         feature_cols, label_cols = prepare_data("./ml-1m")
     train_data.save_pickle("train_xshards")
     test_data.save_pickle("test_xshards")
