@@ -12,7 +12,8 @@ A BigDL Orca program usually starts with the initialization of OrcaContext. For 
 ```python
 from bigdl.orca import init_orca_context
 
-sc = init_orca_context(cluster_mode, cores, memory, num_nodes, driver_cores, driver_memory, extra_python_lib, conf)
+sc = init_orca_context(cluster_mode, cores, memory, num_nodes,
+                       driver_cores, driver_memory, extra_python_lib, conf)
 ```
 
 In `init_orca_context`, you may specify necessary runtime configurations for running the example on YARN, including:
@@ -22,7 +23,7 @@ In `init_orca_context`, you may specify necessary runtime configurations for run
 * `num_nodes`: an integer that specifies the number of executors (default to be `1`).
 * `driver_cores`: an integer that specifies the number of cores for the driver node (default to be `4`).
 * `driver_memory`: a string that specifies the memory for the driver node (default to be `"1g"`).
-* `extra_python_lib`: a string that specifies the path to extra Python packages (default to be `None`). `.py`, `.zip` or `.egg` files are supported.
+* `extra_python_lib`: a string that specifies the path to extra Python packages, separated by comma (default to be `None`). `.py`, `.zip` or `.egg` files are supported.
 * `conf`: a dictionary to append extra conf for Spark (default to be `None`).
 
 __Note__: 
