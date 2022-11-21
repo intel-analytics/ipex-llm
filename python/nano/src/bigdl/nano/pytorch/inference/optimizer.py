@@ -455,8 +455,11 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                     return PytorchIPEXJITBF16Model(model, input_sample=input_sample,
                                                    use_ipex=use_ipex, use_jit=use_jit,
                                                    channels_last=channels_last)
-                bf16_model = BF16Model(model)
-                return bf16_model
+                else:
+                    channels_last = export_kwargs["channels_last"] \
+                        if "channels_last" in export_kwargs else None
+                    bf16_model = BF16Model(model, channels_last=channels_last)
+                    return bf16_model
             else:
                 invalidInputError(False,
                                   "Accelerator {} is invalid for BF16.".format(accelerator))

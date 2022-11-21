@@ -14,6 +14,7 @@
 # limitations under the License.
 #
 import os
+import numpy as np
 from unittest import TestCase
 import pytest
 import torch
@@ -137,7 +138,35 @@ class Pytorch1_12:
             bf16_model._max_bf16_isa = MagicMock(return_value="AVX512")
             y_hat = bf16_model(x)
         assert y_hat.shape == (10, 10) and y_hat.dtype == torch.bfloat16
+    
+    def test_bf16_save_and_load(self):
+        trainer = Trainer(max_epochs=1)
+        model = resnet18(num_classes=10)
 
+        # test bf16
+        x = torch.rand((10, 3, 256, 256))
+        bf16_model = trainer.quantize(model, precision='bf16')
+        y_hat1 = bf16_model(x)
+        assert y_hat1.shape == (10, 10) and y_hat1.dtype == torch.bfloat16
+        InferenceOptimizer.save(bf16_model, "bf16_model")
+        bf16_model = InferenceOptimizer.load("bf16_model", model)
+        y_hat2 = bf16_model(x)
+        assert y_hat2.shape == (10, 10) and y_hat2.dtype == torch.bfloat16
+        np.testing.assert_allclose(y_hat1, y_hat2, atol=1e-4,
+                                   err_msg=f"\npred1: {y_hat1}\npred2: {y_hat2}\n")
+    
+        # test bf16 + channels_last
+        bf16_model = trainer.quantize(model, precision='bf16',
+                                      channels_last=True)
+        y_hat1 = bf16_model(x)
+        assert y_hat1.shape == (10, 10) and y_hat1.dtype == torch.bfloat16
+        InferenceOptimizer.save(bf16_model, "bf16_model")
+        bf16_model = InferenceOptimizer.load("bf16_model", model)
+        y_hat2 = bf16_model(x)
+        assert y_hat2.shape == (10, 10) and y_hat2.dtype == torch.bfloat16
+        np.testing.assert_allclose(y_hat1, y_hat2, atol=1e-4,
+                                   err_msg=f"\npred1: {y_hat1}\npred2: {y_hat2}\n")
+    
 
 TORCH_VERSION_CLS = Pytorch1_12
 if TORCH_VERSION_LESS_1_12:

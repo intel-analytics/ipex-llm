@@ -28,6 +28,7 @@ from bigdl.nano.deps.openvino.openvino_api import load_openvino_model
 from bigdl.nano.deps.ipex.ipex_api import load_ipexjit_model
 from bigdl.nano.deps.onnxruntime.onnxruntime_api import load_onnxruntime_model
 from bigdl.nano.deps.neural_compressor.inc_api import load_inc_model
+from bigdl.nano.pytorch.amp.amp_api import load_bf16_model
 from bigdl.nano.utils.log4Error import invalidInputError
 from pathlib import Path
 
@@ -147,6 +148,8 @@ def load_model(path, model: pl.LightningModule = None):
         return load_inc_model(path, model, 'pytorch')
     if model_type == 'PytorchIPEXJITModel':
         return load_ipexjit_model(path, model)
+    if model_type == 'BF16Model':
+        return load_bf16_model(path, model)
     if isinstance(model, nn.Module):
         # typically for models of nn.Module, pl.LightningModule type
         model = copy.deepcopy(model)

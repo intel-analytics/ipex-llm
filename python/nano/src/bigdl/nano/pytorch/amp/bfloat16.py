@@ -119,10 +119,14 @@ def stdout_redirected(to=os.devnull):
 class BF16Model(AcceleratedLightningModule):
     """Model of BFloat16 with auto mixed precision."""
 
-    def __init__(self, model):  # noqa
-        super().__init__()
+    def __init__(self, model, channels_last=None):  # noqa
+        model.eval()
+        super().__init__(model)
         self._bf16_check()
-        self.bf16_model = model  # use mixed precision instead of complete precision
+        self.model = model  # use mixed precision instead of complete precision
+        self.channels_last = channels_last
+        if self.channels_last is True:
+            self.model = self.model.to(memory_format=torch.channels_last)
 
     @property
     def _has_bf16_isa(self):
@@ -161,11 +165,18 @@ class BF16Model(AcceleratedLightningModule):
         elif 'avx512_core_bf16' in dnnl_log:
             max_bf16_isa = "AVX512"
         return max_bf16_isa
+    
+    def on_forward_start(self, inputs):
+        return inputs
 
     @autocast(enabled=True, dtype=torch.bfloat16)
-    def forward(self, *args, **kwargs):  # noqa
-        # self._bf16_check(*args, **kwargs)
-        return self.bf16_model(*args, **kwargs)
+    def forward_step(self, *inputs):
+        if self.channels_last is True:
+            inputs = tuple(map(lambda x: x.to(memory_format=torch.channels_last), inputs))
+        return self.model(*inputs)
+
+    def on_forward_end(self, outputs):
+        return outputs
 
     def _bf16_check(self):
         if getattr(self, "_is_bf16", None) is not None:
@@ -226,22 +237,12 @@ class BF16Model(AcceleratedLightningModule):
 
     @staticmethod
     def _load(path, model):
-        status = PytorchIPEXJITModel._load_status(path)
+        status = BF16Model._load_status(path)
         checkpoint_path = path / status['checkpoint']
-        if status["use_jit"]:
-            model = torch.jit.load(checkpoint_path)
-            model.eval()
-            model = torch.jit.freeze(model)
-            from_load = True
-        else:
-            state_dict = torch.load(checkpoint_path)
-            model.eval()
-            model.load_state_dict(state_dict)
-            from_load = False
-        return PytorchIPEXJITModel(model, use_ipex=status['use_ipex'],
-                                   use_jit=status['use_jit'],
-                                   channels_last=status['channels_last'],
-                                   from_load=from_load)
+        state_dict = torch.load(checkpoint_path)
+        model.eval()
+        model.load_state_dict(state_dict)
+        return BF16Model(model, channels_last=status['channels_last'])
 
     def _save_model(self, path):
-        torch.save(self.bf16_model.original_state_dict, path / "ckpt.pth")
+        torch.save(self.model.state_dict(), path / "ckpt.pth")
