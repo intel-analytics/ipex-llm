@@ -16,7 +16,7 @@ source bigdl-nano-init
 
 To quantize model using ONNXRuntime as backend, it is required to install Intel Neural Compressor, onnxruntime-extensions as a dependency of INC and some onnx packages as below
 ```python
-pip install neural-compress==1.11
+pip install neural-compressor==1.11
 pip install onnx onnxruntime onnxruntime-extensions
 ```
 ### Step 1: Load the data

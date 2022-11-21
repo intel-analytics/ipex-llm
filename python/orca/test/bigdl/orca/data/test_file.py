@@ -16,6 +16,7 @@
 
 import os.path
 import shutil
+import pytest
 import tempfile
 
 from bigdl.orca.data.file import open_image, open_text, load_numpy, exists, makedirs, write_text, enable_multi_fs_load_static
@@ -181,3 +182,6 @@ class TestFile:
         if access_key_id and secret_access_key:
             file_path = "s3://analytics-zoo-data/hyperseg/VGGcompression/core1.npy"
             mock_func(file_path)
+            
+if __name__ == "__main__":
+    pytest.main([__file__])

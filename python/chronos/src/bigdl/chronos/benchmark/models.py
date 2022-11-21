@@ -45,14 +45,15 @@ def generate_forecaster(args):
                                        input_feature_num=input_feature_num,
                                        output_feature_num=output_feature_num,
                                        normalization=args.normalization,
-                                       decomposition_kernal_size=0,
+                                       decomposition_kernel_size=0, 
                                        metrics=metrics)
         elif args.framework == 'tensorflow':
             from bigdl.chronos.forecaster.tf import TCNForecaster as TCNForecaster_tf
             return TCNForecaster_tf(past_seq_len=args.lookback,
                                     future_seq_len=args.horizon,
                                     input_feature_num=input_feature_num,
-                                    output_feature_num=output_feature_num)
+                                    output_feature_num=output_feature_num,
+                                    metrics=metrics)
 
     elif args.model == 'seq2seq':
         if args.framework == 'torch':

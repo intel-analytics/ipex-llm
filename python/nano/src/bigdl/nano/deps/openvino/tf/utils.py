@@ -18,7 +18,7 @@ from ..core.utils import convert_pb_to_xml
 from pathlib import Path
 
 
-def export(model, xml_path="model.xml"):
+def export(model, xml_path="model.xml", logging=True):
     '''
     Function to export pytorch model into openvino and save it to local.
     Any instance of torch.nn.Module including Lightning Module is acceptable.
@@ -32,4 +32,4 @@ def export(model, xml_path="model.xml"):
         folder = Path(folder)
         pb_path = str(folder)
         model.save(str(folder))
-        convert_pb_to_xml(pb_path, xml_path)
+        convert_pb_to_xml(pb_path, xml_path, logging=logging)

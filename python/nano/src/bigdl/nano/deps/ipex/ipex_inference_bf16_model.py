@@ -22,6 +22,7 @@ from ...utils.log4Error import invalidInputError
 
 from .ipex_inference_model import PytorchIPEXJITModel
 from bigdl.nano.pytorch.amp.bfloat16 import autocast
+from bigdl.nano.utils import CPUInfo
 import torch
 
 
@@ -57,8 +58,8 @@ class PytorchIPEXJITBF16Model(PytorchIPEXJITModel):
     @property
     def _check_cpu_isa(self):
         """Indicator to verify if cpu supports avx512"""
-        msg = subprocess.check_output(["lscpu"]).decode("utf-8")
-        return 'avx512' in msg or 'amx' in msg
+        cpuinfo = CPUInfo()
+        return cpuinfo.has_avx512
 
     def autocast_context_manager(self):
         """Create autocast context"""

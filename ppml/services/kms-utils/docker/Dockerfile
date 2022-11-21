@@ -1,6 +1,6 @@
 ARG JDK_VERSION=8u192
-ARG SPARK_VERSION=3.1.2
-ARG BIGDL_VERSION=2.1.0-SNAPSHOT
+ARG SPARK_VERSION=3.1.3
+ARG BIGDL_VERSION=2.2.0-SNAPSHOT
 
 # stage.1 java & spark
 FROM ubuntu:20.04 AS builder
@@ -89,11 +89,7 @@ RUN apt-get update --fix-missing && \
     echo 'deb [trusted=yes arch=amd64] file:///opt/intel/sgx_debian_local_repo focal main' | tee /etc/apt/sources.list.d/intel-sgx.list && \
     wget -qO - https://download.01.org/intel-sgx/sgx_repo/ubuntu/intel-sgx-deb.key | apt-key add - && \
     apt-get update --fix-missing && \
-    apt-get install -y libsgx-enclave-common-dev libsgx-ae-qe3 libsgx-ae-qve libsgx-urts libsgx-dcap-ql libsgx-dcap-default-qpl libsgx-dcap-quote-verify-dev libsgx-dcap-default-qpl-dev libsgx-quote-ex-dev libsgx-uae-service libsgx-ra-network libsgx-ra-uefi libsgx-dcap-ql-dev && \
-# Step 4. Build enroll app from source
-    cd /home && \
-    git clone -b $EHSM_KMS_BRANCH_VERSION https://github.com/analytics-zoo/ehsm.git && cd ehsm && wget https://download.01.org/intel-sgx/sgx-linux/2.16/as.ld.objdump.r4.tar.gz && tar -zxf as.ld.objdump.r4.tar.gz && cp external/toolset/ubuntu20.04/* /usr/local/bin && make && cd out/ehsm-kms_enroll_app && ls ehsm-kms_enroll_app
-
+    apt-get install -y libsgx-enclave-common-dev libsgx-ae-qe3 libsgx-ae-qve libsgx-urts libsgx-dcap-ql libsgx-dcap-default-qpl libsgx-dcap-quote-verify-dev libsgx-dcap-default-qpl-dev libsgx-quote-ex-dev libsgx-uae-service libsgx-ra-network libsgx-ra-uefi libsgx-dcap-ql-dev
 
 ADD ./entrypoint.sh /home/entrypoint.sh
 COPY --from=builder /opt/jdk /opt/jdk8

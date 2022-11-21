@@ -1,13 +1,22 @@
 $(document).ready(function(){
     $("#tutorial details").attr("open",true);
+    $('#tutorial details').each(function(){
+        $(this).addClass('forecasterSelected');
+        $(this).addClass('filterSelected');
+    });
+    displaySelected();
+});
+
+//event when click the tags' buttons
+$("details p button").click(function(){
+    var id = $(this).val();
+    $("#"+id).trigger("click");
 });
 
 //func to show a tutorial
 function showTutorials(ids){
     ids.forEach(id => {
-        $("#"+id).css("display","block");
-        $("#"+id).attr("open","true");
-        $("#"+id).next().css("display","block");
+        $("#"+id).addClass("filterSelected");
     });
 }
 
@@ -23,16 +32,19 @@ function disCheck(ids){
 
 //event when click the checkboxes
 $(".checkboxes").click(function(){
+    //reset all the details 'filterSelected' class
+    $('#tutorial details').each(function(){
+        $(this).removeClass('filterSelected');
+    });
+
     //get all checked values
     //class checkboxes is specified to avoid selecting toctree checkboxes (arrows)
     var vals = [];
+
     $('.checkboxes:input:checkbox:checked').each(function (index, item) {
         vals.push($(this).val());
     });
 
-    //reset display
-    $("#tutorial details").css("display","none");
-    $("#tutorial hr").css("display","none");
     //reset checkbox and button
     $("#tutorial button").prop("disabled",false);
     $("#tutorial input[type='checkbox']").prop("disabled",false);
@@ -42,18 +54,18 @@ $(".checkboxes").click(function(){
     //show tutorial according to checked values
     if(vals.length==0){
         //choose noting, show all tutorials
-        $("#tutorial details").css("display","block");
-        $("#tutorial details").attr("open",true);
-        $("#tutorial hr").css("display","block");
+        $('#tutorial details').each(function(){
+            $(this).addClass('filterSelected');
+        });
     }
     //chose something, disable invalid checkboxes and buttons accordingly.
     else if(vals.length==1){
         if(vals.includes("forecast")){
-            var ids = ["ChronosForecaster","TuneaForecasting","AutoTSEstimator","AutoWIDE",
-            "MultvarWIDE","MultstepWIDE","LSTMForecaster","AutoProphet","AnomalyDetection",
+            var ids = ["ChronosForecaster","TuneaForecasting","AutoTS","AutoWIDE",
+            "MultvarWIDE","MultstepWIDE","LSTMF","AutoPr","AnomalyDetection",
             "DeepARmodel","TFTmodel","hyperparameter","taxiDataset","distributedFashion",
-            "ONNX","Quantize","TCMFForecaster","PenalizeUnderestimation",
-            "GPUtrainingCPUacceleration"];
+            "ONNX","Quantize","TCMF","PenalizeUnderestimation",
+            "GPUtrainingCPUacceleration","ServeForecaster"];
             showTutorials(ids);
             var disIds = ["simulation"];
             disCheck(disIds);
@@ -71,7 +83,7 @@ $(".checkboxes").click(function(){
             disCheck(disIds);
         }
         else if(vals.includes("hyperparameter_tuning")){
-            var ids = ["TuneaForecasting","AutoTSEstimator","AutoWIDE","AutoProphet",
+            var ids = ["TuneaForecasting","AutoTS","AutoWIDE","AutoPr",
             "hyperparameter","taxiDataset","ONNX"];
             showTutorials(ids);
             var disIds = ["anomaly_detection","simulation","quantization","distributed"];
@@ -90,13 +102,16 @@ $(".checkboxes").click(function(){
             disCheck(disIds);
         }
         else if(vals.includes("distributed")){
-            var ids = ["distributedFashion","TCMFForecaster"];
+            var ids = ["distributedFashion","TCMF"];
             showTutorials(ids);
             var disIds = ["anomaly_detection","simulation","hyperparameter_tuning","onnxruntime","quantization","customized_model"];
             disCheck(disIds);
         }
         else if(vals.includes("customized_model")){
-            var ids = ["AutoTSEstimator","DeepARmodel","TFTmodel", "GPUtrainingCPUacceleration"];
+            var ids = ["AutoTS","DeepARmodel","TFTmodel", "GPUtrainingCPUacceleration"];
+            ids.forEach(id => {
+                var temp=$("#"+id);
+            });
             showTutorials(ids);
             var disIds = ["anomaly_detection","simulation","onnxruntime","quantization","distributed"];
             disCheck(disIds);
@@ -104,7 +119,7 @@ $(".checkboxes").click(function(){
     }
     else if(vals.length==2){
         if(vals.includes("forecast") && vals.includes("hyperparameter_tuning")){
-            var ids = ["TuneaForecasting","AutoTSEstimator","AutoWIDE","AutoProphet","hyperparameter","taxiDataset","ONNX","AutoTSEstimator"];
+            var ids = ["TuneaForecasting","AutoTS","AutoWIDE","AutoPr","hyperparameter","taxiDataset","ONNX"];
             showTutorials(ids);
             var disIds = ["anomaly_detection","simulation","quantization","distributed"];
             disCheck(disIds);
@@ -116,13 +131,13 @@ $(".checkboxes").click(function(){
             disCheck(disIds);
         }
         else if(vals.includes("forecast") && vals.includes("customized_model")){
-            var ids = ["DeepARmodel","TFTmodel","AutoTSEstimator","GPUtrainingCPUacceleration"];
+            var ids = ["DeepARmodel","TFTmodel","AutoTS","GPUtrainingCPUacceleration"];
             showTutorials(ids);
             var disIds = ["anomaly_detection","simulation","onnxruntime","quantization","distributed"];
             disCheck(disIds);
         }
         else if(vals.includes("forecast") && vals.includes("distributed")){
-            var ids = ["distributedFashion","TCMFForecaster"];
+            var ids = ["distributedFashion","TCMF"];
             showTutorials(ids);
             var disIds = ["anomaly_detection","simulation","hyperparameter_tuning","onnxruntime","quantization","customized_model"];
             disCheck(disIds);
@@ -134,7 +149,7 @@ $(".checkboxes").click(function(){
             disCheck(disIds);
         }
         else if(vals.includes("hyperparameter_tuning") && vals.includes("customized_model")){
-            var ids = ["AutoTSEstimator"];
+            var ids = ["AutoTS"];
             showTutorials(ids);
             var disIds = ["anomaly_detection","simulation","onnxruntime","quantization","distributed"];
             disCheck(disIds);
@@ -154,7 +169,7 @@ $(".checkboxes").click(function(){
     }
     else if(vals.length==3){
         if(vals.includes("forecast") && vals.includes("hyperparameter_tuning") && vals.includes("customized_model")){
-            var ids = ["AutoTSEstimator"];
+            var ids = ["AutoTS"];
             showTutorials(ids);
             var disIds = ["anomaly_detection","simulation","onnxruntime","quantization","distributed"];
             disCheck(disIds);
@@ -166,12 +181,64 @@ $(".checkboxes").click(function(){
             disCheck(disIds);
         }
     }
+
+    displaySelected();
 });
 
-//event when click the tags' buttons
-$("details p button").click(function(){
-    var id = $(this).val();
-    $("#"+id).trigger("click");
+//event when choosing forecasters
+$(".forecasters").click(function(){ 
+    //reset all the details 'forecasterSelected' class
+    $('#tutorial details').each(function(){
+        $(this).removeClass('forecasterSelected');
+    });
+
+    //get the selected forecasters
+    var forecasters = [];
+    $('.forecasters:checked').each(function(){
+        forecasters.push($(this).val());
+    });
+
+    if(forecasters.length===0){
+        //no forecaster is checked, display all
+        $('#tutorial details').each(function(){ 
+            $(this).addClass('forecasterSelected');
+        });
+        $(".showingForecaster i").text("All Forecasters");
+    }
+    else{
+        //mark selected forecasters
+        $('#tutorial details').each(function(){
+            var sons = [];
+            $(this).find(".roundbutton").each(function(){
+                sons.push($(this).val())
+            });
+
+            if(forecasters.every(val => sons.includes(val))){
+                $(this).addClass('forecasterSelected');
+            }
+        });
+
+        let fs = "";
+        for(var i=0;i<forecasters.length;i++){
+            fs += forecasters[i]+', ';
+        }
+        fs = fs.substring(0, fs.length - 2);
+       
+        $(".showingForecaster i").text(fs);
+    }
+
+    displaySelected();
 });
 
-// var allIds = ["forecast","anomaly_detection","simulation","hyperparameter_tuning","onnxruntime","quantization","distributed","customized_model"];
+function displaySelected(){
+    $('#tutorial details').each(function(){
+        if(($(this).hasClass("forecasterSelected")) && ($(this).hasClass("filterSelected"))){
+            $(this).css("display","block");
+            $(this).next().css("display","block");
+        }
+        else{
+            $(this).css("display","none");
+            $(this).next().css("display","none");
+        }
+    });
+}

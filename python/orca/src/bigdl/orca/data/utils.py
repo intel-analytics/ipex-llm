@@ -20,7 +20,28 @@ from bigdl.dllib.utils.common import *
 from bigdl.dllib.utils.log4Error import *
 
 import pyspark.sql.functions as F
-from typing import (Union, List, Dict)
+from typing import (
+    TYPE_CHECKING,
+    Callable,
+    Dict,
+    List,
+    Optional,
+    Type,
+    Union,
+)
+
+from numpy import (
+    float32,
+    int32,
+)
+
+if TYPE_CHECKING:
+    from bigdl.orca.data.shard import SparkXShards
+    from os import _Environ
+    from pyspark.rdd import RDD
+    from pyspark.sql.dataframe import DataFrame
+    from ray.data.dataset import Dataset
+    from bigdl.orca.data.ray_xshards import RayXShards
 
 
 def list_s3_file(file_path, env):
@@ -49,7 +70,7 @@ def list_s3_file(file_path, env):
         return file_paths
 
 
-def extract_one_path(file_path, env):
+def extract_one_path(file_path: str, env: "_Environ") -> List[str]:
     file_url_splits = file_path.split("://")
     prefix = file_url_splits[0]
     if prefix == "s3":
@@ -212,7 +233,7 @@ def ray_partitions_get_data_label(partition_list,
 
 
 def ray_partitions_get_tf_dataset(partition_list, has_label=True):
-    import tensorflow as tf
+    import tensorflow as tf  # type:ignore
     partition_data = [item for partition in partition_list for item in partition]
     if len(partition_data) != 0:
 
@@ -227,7 +248,7 @@ def ray_partitions_get_tf_dataset(partition_list, has_label=True):
             dataset = tf.data.Dataset.from_tensor_slices((data, label))
         elif "ds_def" in keys and "elem_spec" in keys:
             from tensorflow.python.distribute.coordinator.values import \
-                deserialize_dataset_from_graph
+                deserialize_dataset_from_graph  # type:ignore
             from functools import reduce
             dataset_list = [deserialize_dataset_from_graph(serialized_dataset["ds_def"],
                                                            serialized_dataset["elem_spec"])
@@ -337,7 +358,7 @@ def _convert_list_tuple(data, allow_tuple, allow_list):
     return data
 
 
-def process_spark_xshards(spark_xshards, num_workers):
+def process_spark_xshards(spark_xshards: "SparkXShards", num_workers: int) -> "RayXShards":
     from bigdl.orca.data.ray_xshards import RayXShards
     data = spark_xshards
     ray_xshards = RayXShards.from_spark_xshards(data)
@@ -371,8 +392,10 @@ def get_size(x):
                           " or a list of ndarrays, please check your input")
 
 
-def spark_df_to_rdd_pd(df, squeeze=False, index_col=None,
-                       dtype=None, index_map=None):
+def spark_df_to_rdd_pd(df: "DataFrame", squeeze: bool=False, index_col: Optional[str]=None,
+                       dtype: Optional[Union[str, Dict[str, str], Dict[str, Type[float32]],
+                                       Dict[int, Union[Type[float32], Type[int32]]]]]=None,
+                       index_map: Optional[Dict[int, str]]=None) -> "RDD":
     from bigdl.orca.data import SparkXShards
     from bigdl.orca import OrcaContext
 
@@ -398,8 +421,8 @@ def spark_df_to_rdd_pd(df, squeeze=False, index_col=None,
         return pd_rdd
 
 
-def spark_df_to_pd_sparkxshards(df, squeeze=False, index_col=None,
-                                dtype=None, index_map=None):
+def spark_df_to_pd_sparkxshards(df: "DataFrame", squeeze: bool=False, index_col=None,
+                                dtype=None, index_map=None) -> "SparkXShards":
     pd_rdd = spark_df_to_rdd_pd(df, squeeze, index_col, dtype, index_map)
     from bigdl.orca.data import SparkXShards
     spark_xshards = SparkXShards(pd_rdd)
@@ -453,7 +476,12 @@ def to_pandas_without_arrow(columns, squeeze=False, index_col=None, dtype=None, 
     return f
 
 
-def to_pandas(df, squeeze=False, index_col=None, dtype=None, index_map=None, batch_size=None):
+def to_pandas(columns: List[str], squeeze: bool=False, index_col: Optional[str]=None,
+              dtype: Optional[Union[str, Dict[str, Type[float32]],
+                                    Dict[int, Union[Type[float32], Type[int32]]],
+                                    Dict[str, str]]]=None,
+              index_map: Optional[Dict[int, str]]=None,
+              batch_size: int=None) -> "RDD":
     def farrow(iter):
         for fileName in iter:
             from pyspark.sql.pandas.serializers import ArrowStreamSerializer
@@ -479,7 +507,7 @@ def to_pandas(df, squeeze=False, index_col=None, dtype=None, index_map=None, bat
     return pd_rdd
 
 
-def spark_xshards_to_ray_dataset(spark_xshards):
+def spark_xshards_to_ray_dataset(spark_xshards: "SparkXShards") -> "Dataset":
     from bigdl.orca.data.ray_xshards import RayXShards
     import ray
 
@@ -546,3 +574,20 @@ def group_by_spark_df(df,
     else:
         result_df = agg_df
     return result_df
+
+
+def check_cols_exists(columns: List[str],
+                      column: Union[List[str], str],
+                      arg_name: str) -> None:
+    if isinstance(column, str):
+        invalidInputError(column in columns,
+                          column + " in " + arg_name + " does not exist in SparkXShards")
+    elif isinstance(column, list):
+        for single_column in column:
+            invalidInputError(single_column in columns,
+                              "{} in {} does not exist in SparkXShards".format(
+                                  single_column, arg_name))
+    else:
+        invalidInputError(False,
+                          "elements in column should be str or list of str but"
+                          " get " + str(column))

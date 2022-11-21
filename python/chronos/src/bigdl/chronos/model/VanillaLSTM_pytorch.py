@@ -17,6 +17,8 @@
 import torch
 import torch.nn as nn
 from pytorch_lightning import seed_everything
+from bigdl.chronos.pytorch.model_wrapper.normalization import NormalizeTSModel
+from bigdl.chronos.pytorch.model_wrapper.decomposition import DecompositionTSModel
 
 
 class LSTMModel(nn.Module):
@@ -68,12 +70,28 @@ def model_creator(config):
         hidden_dim = [hidden_dim]*layer_num
     if isinstance(dropout, (float, int)):
         dropout = [dropout]*layer_num
-    return LSTMModel(input_dim=config["input_feature_num"],
-                     hidden_dim=hidden_dim,
-                     layer_num=layer_num,
-                     dropout=dropout,
-                     output_dim=config["output_feature_num"],
-                     seed=config.get("seed", None))
+
+    model = LSTMModel(input_dim=config["input_feature_num"],
+                      hidden_dim=hidden_dim,
+                      layer_num=layer_num,
+                      dropout=dropout,
+                      output_dim=config["output_feature_num"],
+                      seed=config.get("seed", None))
+    if config.get("normalization", False):
+        model = NormalizeTSModel(model, config["output_feature_num"])
+    decomposition_kernel_size = config.get("decomposition_kernel_size", 0)
+    if decomposition_kernel_size > 1:
+        model_copy = LSTMModel(input_dim=config["input_feature_num"],
+                               hidden_dim=hidden_dim,
+                               layer_num=layer_num,
+                               dropout=dropout,
+                               output_dim=config["output_feature_num"],
+                               seed=config.get("seed", None))
+        if config.get("normalization", False):
+            model_copy = NormalizeTSModel(model_copy, config["output_feature_num"])
+        model = DecompositionTSModel((model, model_copy), decomposition_kernel_size)
+
+    return model
 
 
 def optimizer_creator(model, config):

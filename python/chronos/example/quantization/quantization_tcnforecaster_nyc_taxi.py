@@ -20,6 +20,7 @@ from sklearn.preprocessing import StandardScaler
 from bigdl.chronos.metric.forecast_metrics import Evaluator
 import time
 import numpy as np
+import torch
 
 
 def get_tsdata(lookback=96, horizon=24):
@@ -27,9 +28,7 @@ def get_tsdata(lookback=96, horizon=24):
     tsdata_train, _, tsdata_test = get_public_dataset(name, val_ratio=0, test_ratio=0.4)
     stand_scaler = StandardScaler()
     for tsdata in [tsdata_train, tsdata_test]:
-        tsdata.gen_dt_feature(features=["HOUR"], one_hot_features=["HOUR"])\
-              .impute(mode="linear")\
-              .scale(stand_scaler, fit=(tsdata is tsdata_train))\
+        tsdata.scale(stand_scaler, fit=(tsdata is tsdata_train))\
               .roll(lookback=lookback, horizon=horizon)
     return tsdata_train, tsdata_test
 
@@ -42,32 +41,28 @@ if __name__ == "__main__":
     forecaster = TCNForecaster(past_seq_len = 96,
                                future_seq_len = 24,
                                input_feature_num = x_train.shape[-1],
-                               output_feature_num = 1,
-                               num_channels = [48] * 7,
-                               repo_initialization = False,
-                               kernel_size = 3,
-                               dropout = 0.1,
-                               lr = 0.001,
-                               seed = 0)
+                               output_feature_num = 1)
     forecaster.fit((x_train, y_train), epochs=10, batch_size=32)
 
+    torch.set_num_threads(8)  # set num threads to 8 for fair comparation
     st = time.time()
-    y_pred = forecaster.predict(x_test)
+    y_pred = forecaster.predict(x_test, batch_size=128)
     fp32_pytorch_time = time.time()-st
 
     y_pred_unscale = tsdata_test.unscale_numpy(y_pred)
     y_test_unscale = tsdata_test.unscale_numpy(y_test)
     avg_smape_fp32_pytorch = Evaluator.evaluate("smape", y_test_unscale, y_pred_unscale, aggregate='mean')[0]
 
-    forecaster.quantize((x_train, y_train), framework=['pytorch_fx', 'onnxrt_qlinearops'])
+    forecaster.quantize((x_train, y_train), framework='pytorch_fx')
     st = time.time()
-    y_pred = forecaster.predict(x_test, quantize=True)
+    y_pred = forecaster.predict(x_test, quantize=True, batch_size=128)
     int8_pytorch_time = time.time()-st
 
     y_pred_unscale = tsdata_test.unscale_numpy(y_pred)
     y_test_unscale = tsdata_test.unscale_numpy(y_test)
     avgr_smape_int8_pytorch = Evaluator.evaluate("smape", y_test_unscale, y_pred_unscale, aggregate='mean')[0]
 
+    forecaster.quantize((x_train, y_train), framework='onnxrt_qlinearops')
     y_pred = forecaster.predict_with_onnx(x_test, quantize=True)
     y_pred_unscale = tsdata_test.unscale_numpy(y_pred)
     y_test_unscale = tsdata_test.unscale_numpy(y_test)
