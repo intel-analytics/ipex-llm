@@ -389,12 +389,12 @@ class TestInferencePipeline(TestCase):
                                metric=self.metric,
                                direction="max",
                                thread_num=4,
-                               accelerator="openvino")
+                               accelerator=("openvino", ))
         optim_dict = inference_opt.optimized_model_dict
         assert len(optim_dict) == 3
         with pytest.raises(RuntimeError):
             acc_model, option = inference_opt.get_best_model(accelerator="onnxruntime")
-    
+
     def test_grid_search_model_with_precision(self):
         inference_opt = InferenceOptimizer()
 
@@ -404,12 +404,12 @@ class TestInferencePipeline(TestCase):
                                metric=self.metric,
                                direction="max",
                                thread_num=4,
-                               precision='bf16')
+                               precision=('bf16', 'int8'))
         optim_dict = inference_opt.optimized_model_dict
-        assert len(optim_dict) == 6
+        assert len(optim_dict) == 11
         with pytest.raises(RuntimeError):
-            acc_model, option = inference_opt.get_best_model(accelerator="onnxruntime")
-    
+            acc_model, option = inference_opt.get_best_model(precision="fp32")
+
     def test_default_search_mode(self):
         inference_opt = InferenceOptimizer()
 
@@ -421,4 +421,4 @@ class TestInferencePipeline(TestCase):
                                thread_num=4,
                                search_mode="default")
         optim_dict = inference_opt.optimized_model_dict
-        assert len(optim_dict) == 12
+        assert len(optim_dict) == 11

@@ -128,25 +128,13 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                                                                 method="integer"),
         }
 
-    DEFAULT_INFERENCE_ACCELERATION_METHOD = \
-        {
-            "original": TorchAccelerationOption(),
-            "bf16": TorchAccelerationOption(bf16=True),
-            "bf16_ipex": TorchAccelerationOption(bf16=True, ipex=True),
-            "int8": TorchAccelerationOption(inc=True),
-            "jit_fp32_ipex": TorchAccelerationOption(jit=True, ipex=True),
-            "jit_bf16_ipex": TorchAccelerationOption(jit=True, bf16=True, ipex=True),
-            "jit_fp32_ipex_channels_last": TorchAccelerationOption(jit=True, ipex=True,
-                                                                   channels_last=True),
-            "jit_bf16_ipex_channels_last": TorchAccelerationOption(jit=True, bf16=True,
-                                                                   ipex=True,
-                                                                   channels_last=True),
-            "openvino_fp32": TorchAccelerationOption(openvino=True),
-            "openvino_int8": TorchAccelerationOption(openvino=True, pot=True),
-            "onnxruntime_fp32": TorchAccelerationOption(onnxruntime=True),
-            "onnxruntime_int8_qlinear": TorchAccelerationOption(onnxruntime=True, inc=True,
-                                                                method="qlinear"),
-        }
+    _default_methods = ["original", "bf16", "int8",
+                        "jit_fp32_ipex", "jit_fp32_ipex_channels_last",
+                        "jit_bf16_ipex", "jit_bf16_ipex_channels_last", "openvino_fp32",
+                        "openvino_int8", "onnxruntime_fp32", "onnxruntime_int8_qlinear"]
+    DEFAULT_INFERENCE_ACCELERATION_METHOD = {}
+    for method in _default_methods:
+        DEFAULT_INFERENCE_ACCELERATION_METHOD[method] = ALL_INFERENCE_ACCELERATION_METHOD[method]
 
     def optimize(self, model: nn.Module,
                  training_data: Union[DataLoader, torch.Tensor, Tuple[torch.Tensor]],
@@ -156,8 +144,8 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                  metric: Optional[Callable] = None,
                  direction: str = "max",
                  thread_num: Optional[int] = None,
-                 accelerator: Optional[str] = None,
-                 precision: Optional[str] = None,
+                 accelerator: Optional[Tuple[str]] = None,
+                 precision: Optional[Tuple[str]] = None,
                  use_ipex: Optional[bool] = None,
                  search_mode: str = "default",
                  logging: bool = False,
@@ -223,12 +211,15 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                higher the better. Default value is "max".
         :param thread_num: (optional) a int represents how many threads(cores) is needed for
                inference.
-        :param accelerator: (optional) Use accelerator 'None', 'onnxruntime',
-               'openvino', 'jit', defaults to None. If not None, then will
-               only try corresponding methods which use this specific accelerator.
-        :param precision: (optional) Supported type: 'int8', 'bf16', and 'fp32'.
-               Defaults to None which represents no precision limit. If not None, then will
-               only try corresponding methods which meet this specific precision.
+        :param accelerator: (optional) A string tuple that specifys the accelerators to search.
+               The optional accelerators are: None, 'openvino', 'onnxruntime', 'jit'.
+               Defaults to None which represents there is no restriction on accelerators.
+               If not None, then will only travese corresponding methods whose accelerator falls
+               within the specified accelerator tuple.
+        :param precision: (optional) A string tuple that specifys the precision to search.
+               The optional precision are: 'int8', 'bf16', and 'fp32'. Defaults to None which 
+               represents no precision limit. If not None, then will only travese corresponding 
+               methods whose precision falls within the specified precision tuple.
         :param use_ipex: (optional) if not None, then will only try methods with/without
                this specific ipex setting.
         :param search_model: Here are three modes for optimization:
@@ -261,9 +252,11 @@ class InferenceOptimizer(BaseInferenceOptimizer):
         invalidInputError(isinstance(model, nn.Module), "model should be a nn module.")
         invalidInputError(direction in ['min', 'max'],
                           "Only support direction 'min', 'max'.")
-        invalidInputError(accelerator in [None, 'onnxruntime', 'openvino', 'jit'],
+        invalidInputError(accelerator is None or \
+                          all(ac in [None, 'onnxruntime', 'openvino', 'jit'] for ac in accelerator),
                           "Only support accelerator 'onnxruntime', 'openvino' and 'jit'.")
-        invalidInputError(precision in [None, 'int8', 'bf16', 'fp32'],
+        invalidInputError(precision is None or \
+                          all(p in [None, 'int8', 'bf16', 'fp32'] for p in precision),
                           "Only support precision 'int8', 'bf16', 'fp32'.")
 
         if accelerator is not None or precision is not None or use_ipex is not None:
@@ -804,10 +797,10 @@ def _obtain_combinations(all_combinations, precision, accelerator, use_ipex):
     new_combinations["original"] = all_combinations["original"]
     for method, option in all_combinations.items():
         if precision is not None:
-            if option.get_precision() != precision:
+            if option.get_precision() not in precision:
                 continue
         if accelerator is not None:
-            if option.get_accelerator() != accelerator:
+            if option.get_accelerator() not in accelerator:
                 continue
         if use_ipex is not None:
             if option.ipex != use_ipex:
