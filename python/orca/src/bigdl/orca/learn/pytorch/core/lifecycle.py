@@ -30,10 +30,22 @@ class LifeCycle(metaclass=ABCMeta):
                              world_size)
 
         self.setup_components()
+        self.setup_ddp_components()
 
     @abstractmethod
     def setup_components(self):
         """Runs the creator functions without any distributed coordination."""
+
+        # For example:
+        #
+        # self.logger.debug("Creating optimizer.")
+        # self.optimizers = self.optimizer_creator(self.given_models,
+        #                                          self.config)
+        pass
+
+    @abstractmethod
+    def setup_ddp_components(self):
+        """Runs the creator functions with distributed coordination."""
 
         # For example:
         #

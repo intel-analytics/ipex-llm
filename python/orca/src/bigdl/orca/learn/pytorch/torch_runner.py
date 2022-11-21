@@ -160,10 +160,6 @@ class TorchRunner(BaseRunner):
         if not isinstance(self.schedulers, Iterable):
             self.schedulers = [self.schedulers]
 
-    def setup(self, cores_per_node):
-        import torch
-        torch.set_num_threads(cores_per_node)
-
     def setup_components(self):
         """Runs the creator functions without any distributed coordination."""
 
@@ -183,6 +179,7 @@ class TorchRunner(BaseRunner):
         self._create_schedulers_if_available()
         self._create_loss()
 
+    def setup_ddp_components(self):
         from torch.nn.parallel import DistributedDataParallel
         training_models = [
             DistributedDataParallel(model)
