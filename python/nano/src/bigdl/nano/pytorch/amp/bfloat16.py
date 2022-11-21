@@ -24,6 +24,8 @@ from pytorch_lightning import LightningModule
 import torch
 import subprocess
 import os
+from bigdl.nano.utils.inference.model import AcceleratedModel
+from bigdl.nano.utils.inference.pytorch.model import AcceleratedLightningModule
 from bigdl.nano.utils.log4Error import invalidOperationError, invalidInputError
 from bigdl.nano.pytorch.utils import TORCH_VERSION_LESS_1_10, TORCH_VERSION_LESS_1_12
 from bigdl.nano.utils import CPUInfo
@@ -114,13 +116,13 @@ def stdout_redirected(to=os.devnull):
             _redirect_stdout(to=old_stdout)
 
 
-class BF16Model(LightningModule):
+class BF16Model(AcceleratedLightningModule):
     """Model of BFloat16 with auto mixed precision."""
 
     def __init__(self, model):  # noqa
         super().__init__()
         self._bf16_check()
-        self.bf16_model = model
+        self.bf16_model = model  # use mixed precision instead of complete precision
 
     @property
     def _has_bf16_isa(self):
@@ -214,3 +216,32 @@ class BF16Model(LightningModule):
             warning("Your machine or OS doesn't support BF16 instructions. "
                     "You are running BF16 model without ISA support, and the "
                     "performance might be quite low.")
+
+    @property
+    def status(self):
+        status = super().status
+        status.update({"channels_last": self.channels_last,
+                       "checkpoint": "ckpt.pth"})
+        return status
+
+    @staticmethod
+    def _load(path, model):
+        status = PytorchIPEXJITModel._load_status(path)
+        checkpoint_path = path / status['checkpoint']
+        if status["use_jit"]:
+            model = torch.jit.load(checkpoint_path)
+            model.eval()
+            model = torch.jit.freeze(model)
+            from_load = True
+        else:
+            state_dict = torch.load(checkpoint_path)
+            model.eval()
+            model.load_state_dict(state_dict)
+            from_load = False
+        return PytorchIPEXJITModel(model, use_ipex=status['use_ipex'],
+                                   use_jit=status['use_jit'],
+                                   channels_last=status['channels_last'],
+                                   from_load=from_load)
+
+    def _save_model(self, path):
+        torch.save(self.bf16_model.original_state_dict, path / "ckpt.pth")
