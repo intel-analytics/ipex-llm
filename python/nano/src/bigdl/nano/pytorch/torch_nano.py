@@ -319,7 +319,7 @@ def _search_setup_args(_models, _optimizers, _dataloaders, args):
         if isinstance(value, DataLoader):
             _dataloaders.append((value, args, idx))
 
-        if isinstance(value, nn.Module):
+        if isinstance(value, nn.Module) and not isinstance(value, torch.nn.modules.loss._Loss):
             _models.append((value, args, idx))
 
         if isinstance(value, Optimizer):
@@ -338,6 +338,9 @@ def _update_args(objs, obj_pos):
 class _DecoratedTorchNano(TorchNano):
 
     def train(self, func, *inner_args, **inner_kwargs):
+
+        # todo: need to be able to let user specify which arg is model|optimizer, if
+        # the search does not work.
 
         # search for model, optimizer and dataloaders in the param list
         # save the result in lists of (object, args|kwargs, idx)
@@ -359,13 +362,15 @@ class _DecoratedTorchNano(TorchNano):
         _dataloaders = [opt[0] for opt in _data_loader_pos]
 
         # call setup, the purpose of the decorator
-        _model, _optimizers = self.setup(_model, _optimizers)
-        _dataloaders = self.setup_dataloaders(*_dataloaders)
+        _setup_model, _setup_optimizers = self.setup(_model, _optimizers)
+        _setup_dataloaders = self.setup_dataloaders(*_dataloaders)
+        if len(_dataloaders) == 1:
+            _setup_dataloaders = [_setup_dataloaders]
 
         # update the function param list
-        _update_args([_model], _model_pos)
-        _update_args(_optimizers, _optimizer_pos)
-        _update_args(_dataloaders, _data_loader_pos)
+        _update_args([_setup_model], _model_pos)
+        _update_args(_setup_optimizers, _optimizer_pos)
+        _update_args(_setup_dataloaders, _data_loader_pos)
 
         return func(*_inner_args, **inner_kwargs)
 
