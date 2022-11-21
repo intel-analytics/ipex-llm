@@ -54,7 +54,7 @@ jobs:
           $CONDA/bin/conda info
           if [ ! -z "${{matrix.pytorch-version}}" ]; then
             requirements=(${{matrix.pytorch-version}})
-            bash python/nano/dev/build_and_install.sh linux default false ${requirements[0]}
+            bash python/nano/dev/build_and_install.sh linux default false ${requirements[0]} -f https://software.intel.com/ipex-whl-stable
           fi
           source bigdl-nano-init
           if [ 0"$LD_PRELOAD" = "0" ]; then
@@ -90,7 +90,7 @@ jobs:
           pip install pytest
           if [ ! -z "${{matrix.pytorch-version}}" ]; then
             requirements=(${{matrix.pytorch-version}})
-            bash python/nano/dev/build_and_install.sh linux default false ${requirements[0]}
+            bash python/nano/dev/build_and_install.sh linux default false ${requirements[0]} -f https://software.intel.com/ipex-whl-stable
           fi
           source bigdl-nano-init
           bash python/nano/test/run-nano-pytorch-tests.sh
@@ -112,7 +112,7 @@ jobs:
           pip install ray[default]==1.11.0 prometheus_client==0.13.0
           if [ ! -z "${{matrix.pytorch-version}}" ]; then
             requirements=(${{matrix.pytorch-version}})
-            bash python/nano/dev/build_and_install.sh linux default false ${requirements[0]}
+            bash python/nano/dev/build_and_install.sh linux default false ${requirements[0]} -f https://software.intel.com/ipex-whl-stable
           fi
           source bigdl-nano-init
           bash python/nano/test/run-nano-pytorch-ray-tests.sh
@@ -131,7 +131,7 @@ jobs:
           pip install pytest
           if [ ! -z "${{matrix.pytorch-version}}" ]; then
             requirements=(${{matrix.pytorch-version}})
-            bash python/nano/dev/build_and_install.sh linux default false ${requirements[0]}
+            bash python/nano/dev/build_and_install.sh linux default false ${requirements[0]} -f https://software.intel.com/ipex-whl-stable
           fi
           source bigdl-nano-init
           bash python/nano/test/run-nano-pytorch-openvino-tests.sh
@@ -186,7 +186,7 @@ jobs:
           bash python/nano/dev/build_and_install.sh linux default false pytorch,inference
           if [ ! -z "${{matrix.pytorch-version}}" ]; then
             requirements=(${{matrix.pytorch-version}})
-            bash python/nano/dev/build_and_install.sh linux default false ${requirements[0]}
+            bash python/nano/dev/build_and_install.sh linux default false ${requirements[0]} -f https://software.intel.com/ipex-whl-stable
           fi
           pip install pytest
           source bigdl-nano-init
@@ -236,7 +236,7 @@ jobs:
           pip install pytest
           if [ ! -z "${{matrix.pytorch-version}}" ]; then
             requirements=(${{matrix.pytorch-version}})
-            bash python/nano/dev/build_and_install.sh linux default false ${requirements[0]}
+            bash python/nano/dev/build_and_install.sh linux default false ${requirements[0]} -f https://software.intel.com/ipex-whl-stable
             pip install ${requirements[1]}
           fi
           source bigdl-nano-init
@@ -286,7 +286,7 @@ jobs:
           pip install pytest
           if [ ! -z "${{matrix.pytorch-version}}" ]; then
             requirements=(${{matrix.pytorch-version}})
-            bash python/nano/dev/build_and_install.sh linux default false ${requirements[0]}
+            bash python/nano/dev/build_and_install.sh linux default false ${requirements[0]} -f https://software.intel.com/ipex-whl-stable
             pip install ${requirements[1]}
           fi
           source bigdl-nano-init
