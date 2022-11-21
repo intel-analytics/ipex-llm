@@ -33,7 +33,7 @@ class Estimator(object):
                    use_tqdm=False,
                    workers_per_node=1,
                    model_dir=None,
-                   backend="bigdl",
+                   backend="spark",
                    sync_stats=False,
                    log_level=logging.INFO,
                    log_to_driver=True,
@@ -66,7 +66,7 @@ class Estimator(object):
                the training, if checkpoint_trigger is defined and triggered, the model will be
                saved to model_dir.
         :param backend: You can choose "horovod",  "ray", "bigdl" or "spark" as
-               backend. Default: `bigdl`.
+               backend. Default: `spark`.
         :param sync_stats: Whether to sync metrics across all distributed workers after each epoch.
                If set to False, only rank 0's metrics are printed. This param only works horovod,
                ray and pyspark backend. For spark backend, the metrics printed are
