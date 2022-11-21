@@ -262,7 +262,7 @@ def _abs_abnormal_value_repair(df, dt_col, threshold):
     for column in res_df.columns:
         if column == dt_col or pd.api.types.is_string_dtype(res_df[column]):
             continue
-        res_df[column] = res_df[column].apply(lambda x: np.nan if x < threshold[0] or \
+        res_df[column] = res_df[column].apply(lambda x: np.nan if x < threshold[0] or
                                               x > threshold[1] else x)
     res_df.iloc[0] = res_df.iloc[0].fillna(0)
     res_df = res_df.fillna(method='pad')
@@ -276,8 +276,8 @@ def _rel_abnormal_value_repair(df, dt_col, threshold):
             continue
         std_val = res_df[column].std()
         mean_val = res_df[column].mean()
-        res_df[column] = res_df[column].apply(lambda x: np.nan \
-                                              if x > mean_val + threshold * std_val or \
+        res_df[column] = res_df[column].apply(lambda x: np.nan
+                                              if x > mean_val + threshold * std_val or
                                               x < mean_val - threshold * std_val else x)
     res_df.iloc[0] = res_df.iloc[0].fillna(0)
     res_df = res_df.fillna(method='pad')
