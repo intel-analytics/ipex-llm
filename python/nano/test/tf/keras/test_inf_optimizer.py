@@ -34,7 +34,7 @@ class TestInferencePipeline(TestCase):
         # prepare optimizer
         opt = InferenceOptimizer()
         opt.optimize(model=model,
-                     training_data=train_dataset,
+                     x=train_dataset,
                      latency_sample_num=10,
                      thread_num=8)
         model = opt.get_best_model()
@@ -48,7 +48,7 @@ class TestInferencePipeline(TestCase):
         # prepare optimizer
         opt = InferenceOptimizer()
         opt.optimize(model=model,
-                     training_data=train_dataset,
+                     x=train_dataset,
                      latency_sample_num=10)
         model = opt.get_best_model()
 
@@ -62,7 +62,7 @@ class TestInferencePipeline(TestCase):
         # prepare optimizer
         opt = InferenceOptimizer()
         opt.optimize(model=model,
-                     training_data=train_dataset,
+                     x=train_dataset,
                      batch_size=32,
                      latency_sample_num=10)
         model = opt.get_best_model()
@@ -78,7 +78,7 @@ class TestInferencePipeline(TestCase):
         opt = InferenceOptimizer()
         from tensorflow.keras.metrics import CategoricalAccuracy
         opt.optimize(model=model,
-                     training_data=train_dataset,
+                     x=train_dataset,
                      validation_data=train_dataset, # for test
                      batch_size=32,
                      metric=CategoricalAccuracy(),

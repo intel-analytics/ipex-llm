@@ -75,7 +75,8 @@ class InferenceOptimizer(BaseInferenceOptimizer):
         }  # type: ignore
 
     def optimize(self, model: Model,
-                 training_data: Dataset,
+                 x,
+                 y=None,
                  validation_data: Optional[Dataset] = None,
                  batch_size: int = 1,
                  metric: Optional[Metric] = None,
@@ -90,15 +91,30 @@ class InferenceOptimizer(BaseInferenceOptimizer):
         and record the latency, accuracy and model instance inside the Optimizer for
         future usage. All model instance is setting to eval mode.
 
-        The available methods are "original", "openvino_fp32", "onnxruntime_fp32", "int8".
+        The available methods are "original", "openvino_fp32", "onnxruntime_fp32", "int8",
+        "openvino_int8", "onnxruntime_int8_qlinear" and "onnxruntime_int8_integer".
 
         :param model: A keras.Model to be optimized
-        :param training_data: An unbatched tf.data.Dataset object which is used for training.
-                              This dataset will be used as calibration dataset for
-                              Post-Training Static Quantization (PTQ), as well as be used for
-                              generating input_sample to calculate latency.
-                              To avoid data leak during calibration, please use training
-                              dataset as much as possible.
+        :param x: input data which is used for training. It could be:
+                  | 1. a Numpy array (or array-like), or a list of arrays (in case the model
+                  | has multiple inputs).
+                  |
+                  | 2. a TensorFlow tensor, or a list of tensors (in case the model has
+                  | multiple inputs).
+                  |
+                  | 3. a dict mapping input names to the corresponding array/tensors,
+                  | if the model has named inputs.
+                  |
+                  | 4. a tf.data dataset. Should return a tuple of either (inputs, targets).
+
+                  x will be used as calibration dataset for Post-Training Static Quantization (PTQ), 
+                  as well as be used for generating input_sample to calculate latency.
+                  To avoid data leak during calibration, please use training dataset.
+        :param y: Target data. Like the input data x, it could be either Numpy array(s) or
+                  TensorFlow tensor(s). It should be consistent with x (you cannot have Numpy inputs
+                  and tensor targets, or inversely). If x is a dataset, generator, or
+                  keras.utils.Sequence instance, y should not be specified (since targets will be
+                  obtained from x).
         :param validation_data: (optional) An unbatched tf.data.Dataset object for accuracy
                evaluation. This is only needed when users care about the possible accuracy drop.
         :param metric: (optional) A tensorflow.keras.metrics.Metric object which is used for
@@ -151,6 +167,10 @@ class InferenceOptimizer(BaseInferenceOptimizer):
         thread_num = default_threads if thread_num is None else int(thread_num)  # type: ignore
 
         result_map: Dict[str, Dict] = {}
+
+        # TODO: will add more data preprocess here.
+        if y is None:
+            training_data = x
 
         batched_training_data = training_data.batch(batch_size)
         input_sample = next(iter(batched_training_data))
