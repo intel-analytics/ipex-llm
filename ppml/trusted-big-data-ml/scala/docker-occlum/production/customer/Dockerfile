@@ -54,13 +54,14 @@ COPY --from=final /opt/intel /opt/intel
 COPY --from=tini /usr/local/bin/tini /sbin/tini
 
 # Add jdk and attestation ppml jars
-COPY --from=final /usr/lib/jvm/java-8-openjdk-amd64 /usr/lib/jvm/java-8-openjdk-amd64
-COPY --from=final ${BIGDL_HOME}/jars/bigdl* ${BIGDL_HOME}/jars/
-COPY --from=final ${BIGDL_HOME}/jars/all-* ${BIGDL_HOME}/jars/
+#COPY --from=final /usr/lib/jvm/java-8-openjdk-amd64 /usr/lib/jvm/java-8-openjdk-amd64
+#COPY --from=final ${BIGDL_HOME}/jars/bigdl* ${BIGDL_HOME}/jars/
+#COPY --from=final ${BIGDL_HOME}/jars/all-* ${BIGDL_HOME}/jars/
 
 #Add quote attest lib
 COPY --from=final /usr/lib/x86_64-linux-gnu/ /usr/lib/x86_64-linux-gnu/
 
-ENV PATH="/opt/occlum/build/bin:/usr/lib/jvm/java-8-openjdk-amd64/bin:/usr/local/occlum/bin:$PATH"
+#ENV PATH="/opt/occlum/build/bin:/usr/lib/jvm/java-8-openjdk-amd64/bin:/usr/local/occlum/bin:$PATH"
+ENV PATH="/opt/occlum/build/bin:/usr/local/occlum/bin:$PATH"
 
 ENTRYPOINT [ "/opt/entrypoint.sh" ]
