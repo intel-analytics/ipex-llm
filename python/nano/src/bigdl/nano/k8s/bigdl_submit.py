@@ -100,6 +100,13 @@ def _get_args_parser() -> ArgumentParser:
         help='If set, inidicate the main_scipt is a pod template yaml file'
     )
 
+    parser.add_argument(
+        '--use_command',
+        action="store_true",
+        default=False,
+        help="If set, the script will use the command line arguments as pod's entrypoint"
+    )
+
     #
     # Positional arguments.
     #
@@ -158,6 +165,7 @@ def _create_pod(pod_name: str,
                 pod_memory: str,
                 image: str,
                 command: str,
+                use_command: bool,
                 volume_strs: List[str],
                 volume_mount_strs: List[str],
                 pod_file_template_str: Optional[str]) -> client.V1Pod:
@@ -190,12 +198,20 @@ def _create_pod(pod_name: str,
                                                            "memory": pod_memory})
         volumn_mounts = [_deserialize_volume_mounts_object(json_str, api_client)
                          for json_str in volume_mount_strs]
-        container = client.V1Container(name="pytorch",
-                                       image=image,
-                                       env=envs,
-                                       command=command,
-                                       resources=resource,
-                                       volume_mounts=volumn_mounts)
+        if use_command:
+            container = client.V1Container(name="pytorch",
+                                          image=image,
+                                          env=envs,
+                                          command=command,
+                                          resources=resource,
+                                          volume_mounts=volumn_mounts)
+        else:
+            container = client.V1Container(name="pytorch",
+                                          image=image,
+                                          env=envs,
+                                          args=command,
+                                          resources=resource,
+                                          volume_mounts=volumn_mounts)
 
         volumes = [_deserialize_volume_object(json_str, api_client) for json_str in volume_strs]
 
@@ -295,6 +311,7 @@ def main():
                                       pod_memory=args.pod_memory,
                                       image=args.image,
                                       command=command,
+                                      use_command=args.use_command,
                                       volume_strs=args.volume,
                                       volume_mount_strs=args.volume_mount,
                                       pod_file_template_str=template_json_str
