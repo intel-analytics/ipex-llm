@@ -541,8 +541,6 @@ class SparkTFEstimator():
 
         :return: the learned model.
         """
-        import tensorflow as tf
-
         if self.model_creator is not None:
             model = self.model_creator(self.config)
         else:
