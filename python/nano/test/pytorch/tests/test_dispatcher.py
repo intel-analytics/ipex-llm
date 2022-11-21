@@ -17,7 +17,9 @@
 from unittest import TestCase
 import tempfile
 import os
+import pytest
 
+from bigdl.nano.utils.log4Error import invalidOperationError
 from bigdl.nano.pytorch.utils import TORCH_VERSION_LESS_1_10
 
 
@@ -91,3 +93,19 @@ class TestDispatcherPytorch(TestCase):
         # other utils
         torch.cuda.reset_peak_memory_stats()
         torch.cuda.reset_accumulated_memory_stats()
+
+        unpatch_torch()
+
+    def test_unpatch_cuda(self):
+        from bigdl.nano.pytorch import patch_torch, unpatch_torch
+        patch_torch(cuda_to_cpu=True)
+        patch_torch(cuda_to_cpu=True) # call patch twice
+        import torch
+        unpatch_torch()
+
+        with pytest.raises((RuntimeError, AssertionError), match="CUDA|NVIDIA"):
+            _t = torch.tensor([0], device='cuda:0')
+            invalidOperationError(False, "cuda unpatch is incorrect")
+
+        cuda_device = torch.device('cuda:0')
+        assert cuda_device.type == 'cuda'

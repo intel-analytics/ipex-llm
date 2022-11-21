@@ -2,8 +2,8 @@ name: Nightly Test
 
 on:
 
-#   pull_request:
-#     branchs: [ main ]
+  pull_request:
+    branchs: [ main ]
 
   schedule:
     - cron: '0 13 * * *' # GMT time, 13:00 GMT == 21:00 China
@@ -34,6 +34,8 @@ on:
         - Friesian-Python-Py37-Spark3-Pip
         - Friesian-Python-ExampleTest-Feature-Tf1-Py37-Spark3
         - Friesian-Python-ExampleTest-Feature-Tf1-Pip-Py37-Spark3
+        - Friesian-Python-ExampleTest-Tf2-Py37-Spark3
+        - Friesian-Python-ExampleTest-Tf2-Pip-Py37-Spark3
         - PPML-Scala-UT
         - PPML-Python-UT-Spark3
         - PPML-Occlum-ExampleTests

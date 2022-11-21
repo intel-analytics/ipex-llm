@@ -17,10 +17,10 @@
 
 # from .lifecycle import LifeCycle
 from .trainable import Trainable
-# from .model_io import ModelIO
+from .modelIO import ModelIO
 
 from abc import ABCMeta
 
 
-class BaseRunner(Trainable, metaclass=ABCMeta):
+class BaseRunner(Trainable, ModelIO, metaclass=ABCMeta):
     pass

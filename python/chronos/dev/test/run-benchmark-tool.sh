@@ -20,11 +20,11 @@
 cd "`dirname $0`"
 cd ../../script
 
-python benchmark-chronos.py -l 96 -o 720 -m tcn -s train -d nyc_taxi
-python benchmark-chronos.py -l 96 -o 720 -m tcn -s latency -d nyc_taxi
-python benchmark-chronos.py -l 96 -o 720 -m tcn -s throughput -d nyc_taxi
+benchmark-chronos -l 96 -o 720 -m tcn -s train -d nyc_taxi
+benchmark-chronos -l 96 -o 720 -m tcn -s latency -d nyc_taxi
+benchmark-chronos -l 96 -o 720 -m tcn -s throughput -d nyc_taxi
 
-python benchmark-chronos.py -l 96 -o 720 -m lstm -s train -d nyc_taxi
-python benchmark-chronos.py -l 96 -o 720 -m seq2seq -s train -d nyc_taxi
-python benchmark-chronos.py -l 96 -o 720 -m autoformer -s train -d nyc_taxi
-python benchmark-chronos.py -l 96 -o 720 -m nbeats -s train -d nyc_taxi
+benchmark-chronos -l 96 -o 720 -m lstm -s train -d nyc_taxi
+benchmark-chronos -l 96 -o 720 -m seq2seq -s train -d nyc_taxi
+benchmark-chronos -l 96 -o 720 -m autoformer -s train -d nyc_taxi
+benchmark-chronos -l 96 -o 720 -m nbeats -s train -d nyc_taxi

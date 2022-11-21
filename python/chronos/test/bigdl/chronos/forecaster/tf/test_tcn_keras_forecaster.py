@@ -25,7 +25,6 @@ from bigdl.chronos.utils import LazyImport
 tf = LazyImport('tensorflow')
 TCNForecaster = LazyImport('bigdl.chronos.forecaster.tf.tcn_forecaster.TCNForecaster')
 from test.bigdl.chronos import op_tf2, op_all
-import tensorflow as tf
 
 
 def create_data(tf_data=False, batch_size=32):

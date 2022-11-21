@@ -85,7 +85,7 @@ class TestEstimatorForSpark(TestCase):
             estimator = Estimator.from_torch(model=model, loss=loss_func,
                                              metrics=[Accuracy()],
                                              optimizer=SGD(learningrate_schedule=Default()),
-                                             model_dir=temp_dir_name)
+                                             model_dir=temp_dir_name, backend="bigdl")
             estimator.fit(data=data_shard, epochs=4, batch_size=2, validation_data=data_shard,
                           checkpoint_trigger=EveryEpoch())
             state_dict1 = estimator.get_model().state_dict()
@@ -93,7 +93,7 @@ class TestEstimatorForSpark(TestCase):
             estimator.evaluate(data_shard, batch_size=2)
             est2 = Estimator.from_torch(model=model, loss=loss_func,
                                         metrics=[Accuracy()],
-                                        optimizer=None)
+                                        optimizer=None, backend="bigdl")
             est2.load_orca_checkpoint(temp_dir_name)
             state_dict2 = est2.get_model().state_dict()
 
@@ -137,7 +137,7 @@ class TestEstimatorForSpark(TestCase):
             estimator = Estimator.from_torch(model=model, loss=loss_func,
                                              metrics=[Accuracy()],
                                              optimizer=SGD(learningrate_schedule=Default()),
-                                             model_dir=temp_dir_name)
+                                             model_dir=temp_dir_name, backend="bigdl")
             estimator.fit(data=data_shard, epochs=1, batch_size=4, feature_cols=['feature'],
                           label_cols=['label'], validation_data=data_shard,
                           checkpoint_trigger=EveryEpoch())
@@ -145,7 +145,7 @@ class TestEstimatorForSpark(TestCase):
                                label_cols=['label'])
             est2 = Estimator.from_torch(model=model, loss=loss_func,
                                         metrics=[Accuracy()],
-                                        optimizer=None)
+                                        optimizer=None, backend="bigdl")
             est2.load_orca_checkpoint(temp_dir_name)
             est2.predict(data_shard, batch_size=4, feature_cols=['feature'])
 

@@ -31,8 +31,9 @@ class TestOpenVINO(TestCase):
         # Case1: Trace and quantize
         openvino_model = model.trace(accelerator='openvino')
         openvino_quantized_model = openvino_model.quantize(accelerator='openvino',
-                                                           calib_dataset=train_dataset)
-        
+                                                           calib_dataset=train_dataset,
+                                                           thread_num=8)
+
         y_hat = openvino_quantized_model(train_examples[:10])
         assert y_hat.shape == (10, 10)
 

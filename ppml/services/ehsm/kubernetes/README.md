@@ -64,6 +64,7 @@ nfsPath: a_nfs_shared_folder_path_on_the_server   --->   <an_existing_shared_fol
 ......
 pccsIP: your_pccs_ip                              --->   <the_ip_address_in_your_subnetwork_you_have_assigned_to_pccs_in_step1>
 kmsIP: your_kms_ip_to_use_as                      --->   <an_unused_ip_address_in_your_subnetwork_to_assign_to_kms>
+dkeyserverNodeName: the_fixed_node_you_want_to_assign_dkeyserver_to --->   <a_node_name_in_k8s_cluster_to_run_dkerysever_on>
 ```
 
 Then, deploy BigDL-eHSM-KMS on kubernetes:

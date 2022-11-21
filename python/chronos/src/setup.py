@@ -73,12 +73,17 @@ def setup_package():
                                 'optuna<=2.10.1', 'configspace<=0.5.0',
                                 'bigdl-orca[automl]==' + VERSION + ';platform_system!="Windows"',
                                 'pmdarima==1.8.5',
-                                'prophet==1.1.0;platform_system!="Windows"',
+                                'prophet==1.1.0',
                                 'tsfresh==0.17.0',
                                 'pyarrow==6.0.1',
                                 'bigdl-nano[inference]==' + VERSION]},
         dependency_links=['https://d3kbcqa49mib13.cloudfront.net/spark-2.0.0-bin-hadoop2.7.tgz'],
         include_package_data=True,
+        entry_points={
+            "console_scripts": [
+                "benchmark-chronos=bigdl.chronos.benchmark.benchmark_chronos:main",
+            ]
+        },
         classifiers=[
             'License :: OSI Approved :: Apache Software License',
             'Programming Language :: Python :: 3',

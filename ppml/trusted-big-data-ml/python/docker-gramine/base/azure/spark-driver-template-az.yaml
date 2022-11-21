@@ -1,0 +1,47 @@
+apiVersion: v1
+kind: Pod
+spec:
+  containers:
+  - name: spark-driver
+    securityContext:
+      privileged: true
+    env:
+      - name: ATTESTATION
+        value: false
+    volumeMounts:
+      - name: device-plugin
+        mountPath: /var/lib/kubelet/device-plugins
+      - name: aesm-socket
+        mountPath: /var/run/aesmd/aesm.socket
+      - name: secure-keys
+        mountPath: /ppml/trusted-big-data-ml/work/keys/keystore.jks
+        subPath: keystore.jks
+      - name: kube-config
+        mountPath: /root/.kube/config
+        subPath: kubeconfig
+     #resources:
+      #requests:
+        #cpu: 16
+        #memory: 128Gi
+        #sgx.intel.com/epc: 133258905600
+        #sgx.intel.com/enclave: 10
+        #sgx.intel.com/provision: 10
+      #limits:
+        #cpu: 16
+        #memory: 128Gi
+        #sgx.intel.com/epc: 133258905600
+        #sgx.intel.com/enclave: 10
+        #sgx.intel.com/provision: 10
+  volumes:
+    - name: device-plugin
+      hostPath:
+        path: /var/lib/kubelet/device-plugins
+    - name: aesm-socket
+      hostPath:
+        path: /var/run/aesmd/aesm.socket
+    - name: secure-keys
+      secret:
+        secretName: ssl-keys
+    - name: kube-config
+      secret:
+        secretName: kubeconf

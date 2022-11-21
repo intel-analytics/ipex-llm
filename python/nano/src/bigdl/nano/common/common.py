@@ -25,15 +25,12 @@ import numpy as np
 import re
 
 from bigdl.nano.common.cpu_schedule import schedule_workers
+from bigdl.nano.utils import CPUInfo
 
 
 def check_avx512():
-    cmd = "lscpu | grep avx512"
-    try:
-        subprocess.check_output(cmd, shell=True)
-        return True
-    except subprocess.CalledProcessError:
-        return False
+    cpuinfo = CPUInfo()
+    return cpuinfo.has_avx512
 
 
 def _env_variable_is_set(variable: str,
