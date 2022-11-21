@@ -245,7 +245,7 @@ class TestChronosModelTCNForecaster(TestCase):
                                    output_feature_num=1,
                                    kernel_size=4,
                                    normalization=True,
-                                   decomposition_kernal_size=3,
+                                   decomposition_kernel_size=3,
                                    num_channels=[16, 16],
                                    loss="mae",
                                    metrics=['mae', 'mse', 'mape'],
