@@ -107,14 +107,17 @@ unset ...
 
 ---
 ## 3. Prepare Dataset 
-To run the example on YARN, you should upload the Fashion-MNIST dataset to a distributed storage (such as HDFS or S3).   
+To run the example provided by this tutorial on YARN, you should upload the Fashion-MNIST dataset to a distributed storage (such as HDFS or S3).   
 
-First, download the Fashion-MNIST dataset manually on your __Client Node__:
+First, download the Fashion-MNIST dataset manually on your __Client Node__. Note that PyTorch `FashionMNIST` Dataset requires unzipped files located in `FashionMNIST/raw/` under the root folder.
 ```bash
 # PyTorch official dataset download link
 git clone https://github.com/zalandoresearch/fashion-mnist.git
 
-mv /path/to/fashion-mnist/data/fashion /path/to/local/data/FashionMNIST/raw 
+mv /path/to/fashion-mnist/data/fashion /path/to/local/data/FashionMNIST/raw
+
+# Extract FashionMNIST archives
+gzip -dk /bigdl/nfsdata/dataset/FashionMNIST/raw/*
 ```
 Then upload it to a distributed storage. Sample command to upload data to HDFS is as follows:
 ```bash
@@ -288,7 +291,7 @@ Set the cluster_mode to "spark-submit" in `init_orca_context`.
 sc = init_orca_context(cluster_mode="spark-submit")
 ```
 
-Before submitting the application on the Client Node, you need to:
+Before submitting the application on the __Client Node__, you need to:
 
 1. Prepare the conda environment on a __Development Node__ where conda is available and pack the conda environment to an archive:
 ```bash
