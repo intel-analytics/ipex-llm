@@ -16,17 +16,20 @@
 import tensorflow as tf
 
 
-def ncf_model(embedding_size, user_num, item_num, dropout, lr,
-              categorical_features_dim, num_feature_dim):
+def ncf_model(factor_num, user_num, item_num, dropout, lr,
+              categorical_features_in_dim, categorical_features_out_dim, num_feature_dim):
     user = tf.keras.layers.Input(dtype=tf.int32, shape=())
     item = tf.keras.layers.Input(dtype=tf.int32, shape=())
 
+    if not isinstance(categorical_features_out_dim, list):
+        categorical_features_out_dim = [categorical_features_out_dim for _ in categorical_features_in_dim]
+
     cat_feature_input_layers = []
     cat_feature_layers = []
-    for i, in_dim in enumerate(categorical_features_dim):
+    for i, (in_dim, out_dim) in enumerate(zip(categorical_features_in_dim, categorical_features_out_dim)):
         cat_feature_input_layers.append(tf.keras.layers.Input(shape=(), dtype=tf.int32))
         cat_feature_layers.append(
-            tf.keras.layers.Embedding(in_dim + 1, embedding_size)(cat_feature_input_layers[i]))
+            tf.keras.layers.Embedding(in_dim + 1, out_dim)(cat_feature_input_layers[i]))
 
     num_feature_input_layers = []
     num_feature_layers = []
@@ -38,25 +41,25 @@ def ncf_model(embedding_size, user_num, item_num, dropout, lr,
     add_feature_layers = cat_feature_layers + num_feature_layers
 
     with tf.name_scope("GMF"):
-        user_embed_GMF = tf.keras.layers.Embedding(user_num, embedding_size, name='gmf_user')(user)
-        item_embed_GMF = tf.keras.layers.Embedding(item_num, embedding_size, name='gmf_item')(item)
+        user_embed_GMF = tf.keras.layers.Embedding(user_num, factor_num, name='gmf_user')(user)
+        item_embed_GMF = tf.keras.layers.Embedding(item_num, factor_num, name='gmf_item')(item)
         GMF = tf.keras.layers.Multiply()([user_embed_GMF, item_embed_GMF])
 
     with tf.name_scope("MLP"):
         user_embed_MLP = tf.keras.layers.Embedding(
-            user_num, embedding_size * 4, name='mlp_user')(user)
+            user_num, factor_num * 4, name='mlp_user')(user)
         item_embed_MLP = tf.keras.layers.Embedding(
-            item_num, embedding_size * 4, name='mlp_item')(item)
+            item_num, factor_num * 4, name='mlp_item')(item)
         interaction = tf.concat([user_embed_MLP, item_embed_MLP] + add_feature_layers, axis=-1)
 
         layer1_MLP = tf.keras.layers.Dense(
-            units=embedding_size * 4, activation='relu')(interaction)
+            units=factor_num * 4, activation='relu')(interaction)
         layer1_MLP = tf.keras.layers.Dropout(rate=dropout)(layer1_MLP)
         layer2_MLP = tf.keras.layers.Dense(
-            units=embedding_size * 2, activation='relu')(layer1_MLP)
+            units=factor_num * 2, activation='relu')(layer1_MLP)
         layer2_MLP = tf.keras.layers.Dropout(rate=dropout)(layer2_MLP)
         layer3_MLP = tf.keras.layers.Dense(
-            units=embedding_size, activation='relu')(layer2_MLP)
+            units=factor_num, activation='relu')(layer2_MLP)
         layer3_MLP = tf.keras.layers.Dropout(rate=dropout)(layer3_MLP)
 
     with tf.name_scope("concatenation"):
