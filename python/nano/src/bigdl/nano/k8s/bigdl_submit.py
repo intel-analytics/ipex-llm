@@ -103,7 +103,7 @@ def _get_args_parser() -> ArgumentParser:
         '--submit_pod_template',
         action='store_true',
         default=False,
-        help='If set, inidicate the main_scipt is a pod template yaml file'
+        help='If set, indicate the main_script is a pod template yaml file'
     )
 
     parser.add_argument(
