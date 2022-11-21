@@ -2,6 +2,7 @@
 
 This tutorial provides a step-by-step guide on how to run BigDL-Orca programs on Kubernetes (K8s) clusters, using a [PyTorch Fashin-MNIST program](https://github.com/intel-analytics/BigDL/tree/main/python/orca/tutorial/pytorch/FashionMNIST) as a working example.
 
+The **Client Container** that appears in this tutorial refer to the docker container where you launch or submit your applications.
 
 ---
 ## 1. Basic Concepts
@@ -172,67 +173,18 @@ sudo docker exec -it <containerID> bash
 
 ---
 ## 3. Prepare Environment
-In the launched BigDL K8s Container, please setup environment following steps below:
-### 3.1 Install Python Libraries
-#### 3.1.1 Install Conda
-Please use conda to prepare the Python environment on the __Client Container__ (where you submit applications), you could download and install Conda following [Conda User Guide](https://docs.conda.io/projects/conda/en/latest/user-guide/install/linux.html) or executing the command as below.
+In the launched BigDL K8s **Client Container**, please setup the environment following the steps below:
 
-```bash
-# Download Anaconda installation script 
-wget -P /tmp https://repo.anaconda.com/archive/Anaconda3-2020.02-Linux-x86_64.sh
+- See [here](../Overview/install.md#install-anaconda) to install conda and prepare the Python environment.
 
-# Execute the script to install conda
-bash /tmp/Anaconda3-2020.02-Linux-x86_64.sh
+- See [here](../Overview/install.md#install-bigdl-orca) to install BigDL Orca in the created conda environment.
 
-# Please type this command in your terminal to activate Conda environment
-source ~/.bashrc
-```
-
-#### 3.1.2 Use Conda to Install BigDL and Other Python Libraries
-Create a Conda environment, install BigDL and all needed Python libraries in the activate Conda:
-```bash
-# "env" is conda environment name, you can use any name you like.
-# Please change Python version to 3.8 if you need a Python 3.8 environment.
-conda create -n env python=3.7 
-conda activate env
-```
-
-Please install the 2.1.0 release version of BigDL (built on top of Spark 3.1.2) as follows:
-```bash
-pip install bigdl-spark3
-```
-
-When you are running in the latest BigDL image, please install the nightly build of BigDL as follows:
-```bash
-pip install --pre --upgrade bigdl-spark3
-```
-
-Please install torch and torchvision to run the Fashion-MNIST example:
+- You should install all the other Python libraries that you need in your program in the conda environment as well. `torch` and `torchvision` are needed to run the Fashion-MNIST example:
 ```bash
 pip install torch torchvision
 ```
 
-__Notes:__
-* Using Conda to install BigDL will automatically install libraries including `pyspark==3.1.2`, and etc.
-* You can install BigDL Orca built on top of Spark 3.1.2 as follows:
-    ```bash
-    # Install the latest release version
-    pip install bigdl-orca-spark3
-
-    # Install the latest nightly build version
-    pip install --pre --upgrade bigdl-spark3-orca
-
-    # You need to install torch and torchvision manually
-    pip install torch torchvision
-    ```
-
-    Installing bigdl-orca-spark3 will automatically install `pyspark==3.1.2`.
-
-* You also need to install any additional python libraries that your application depends on in the Conda environment.
-
-* It's only need for you to install needed Python libraries using Conda, since the BigDL K8s container has already setup `JAVA_HOME`, `BIGDL_HOME`, `SPARK_HOME`, `SPARK_VERSION`, etc.
-
-Please see more details in [Python User Guide](https://bigdl.readthedocs.io/en/latest/doc/UserGuide/python.html).
+- For more details, please see [Python User Guide](https://bigdl.readthedocs.io/en/latest/doc/UserGuide/python.html).
 
 
 ---

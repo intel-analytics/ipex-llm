@@ -89,7 +89,10 @@ export HADOOP_CONF_DIR=/path/to/hadoop/conf
 
 - See [here](../Overview/install.md#install-bigdl-orca) to install BigDL Orca in the created conda environment.
 
-- You should install all the other Python libraries that you need in your program in the conda environment as well.
+- You should install all the other Python libraries that you need in your program in the conda environment as well. `torch` and `torchvision` are needed to run the Fashion-MNIST example:
+```bash
+pip install torch torchvision
+```
 
 - For more details, please see [Python User Guide](https://bigdl.readthedocs.io/en/latest/doc/UserGuide/python.html).
 
