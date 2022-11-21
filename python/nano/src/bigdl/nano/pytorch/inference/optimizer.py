@@ -217,8 +217,8 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                If not None, then will only travese corresponding methods whose accelerator falls
                within the specified accelerator tuple.
         :param precision: (optional) A string tuple that specifys the precision to search.
-               The optional precision are: 'int8', 'bf16', and 'fp32'. Defaults to None which 
-               represents no precision limit. If not None, then will only travese corresponding 
+               The optional precision are: 'int8', 'bf16', and 'fp32'. Defaults to None which
+               represents no precision limit. If not None, then will only travese corresponding
                methods whose precision falls within the specified precision tuple.
         :param use_ipex: (optional) if not None, then will only try methods with/without
                this specific ipex setting.
@@ -252,11 +252,13 @@ class InferenceOptimizer(BaseInferenceOptimizer):
         invalidInputError(isinstance(model, nn.Module), "model should be a nn module.")
         invalidInputError(direction in ['min', 'max'],
                           "Only support direction 'min', 'max'.")
-        invalidInputError(accelerator is None or \
-                          all(ac in [None, 'onnxruntime', 'openvino', 'jit'] for ac in accelerator),
-                          "Only support accelerator 'onnxruntime', 'openvino' and 'jit'.")
-        invalidInputError(precision is None or \
-                          all(p in [None, 'int8', 'bf16', 'fp32'] for p in precision),
+        _check_accelerator = accelerator is None or all(
+            ac in [None, 'onnxruntime', 'openvino', 'jit'] for ac in accelerator)
+        invalidInputError(_check_accelerator is True,
+                          "Only support accelerator None, 'onnxruntime', 'openvino' and 'jit'.")
+        _check_precision = precision is None or all(
+            p in [None, 'int8', 'bf16', 'fp32'] for p in precision)
+        invalidInputError(_check_precision is True,
                           "Only support precision 'int8', 'bf16', 'fp32'.")
 
         if accelerator is not None or precision is not None or use_ipex is not None:
