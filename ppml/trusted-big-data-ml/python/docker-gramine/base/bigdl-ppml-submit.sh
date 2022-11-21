@@ -6,6 +6,7 @@ input_args=""
 LOG_FILE="bigdl-ppml-submit.log"
 DRIVER_TEMPLATE="/ppml/trusted-big-data-ml/spark-driver-template.yaml"
 EXECUTOR_TEMPLATE="/ppml/trusted-big-data-ml/spark-executor-template.yaml"
+KEY_STORE="/ppml/trusted-big-data-ml/work/keys/keystore.jks"
 
 while [[ $# -gt 0 ]]; do
   case $1 in
@@ -62,6 +63,11 @@ while [[ $# -gt 0 ]]; do
       ;;
     --driver-template)
       DRIVER_TEMPLATE="$2"
+      shift
+      shift
+      ;;
+    --key-store)
+      KEY_STORE="$2"
       shift
       shift
       ;;
@@ -132,10 +138,10 @@ if [ $secure_password ]; then
     --conf spark.ssl.enabled=true \
     --conf spark.ssl.port=8043 \
     --conf spark.ssl.keyPassword=$secure_password \
-    --conf spark.ssl.keyStore=/ppml/trusted-big-data-ml/work/keys/keystore.jks  \
+    --conf spark.ssl.keyStore=$KEY_STORE  \
     --conf spark.ssl.keyStorePassword=$secure_password \
     --conf spark.ssl.keyStoreType=JKS \
-    --conf spark.ssl.trustStore=/ppml/trusted-big-data-ml/work/keys/keystore.jks \
+    --conf spark.ssl.trustStore=$KEY_STORE \
     --conf spark.ssl.trustStorePassword=$secure_password \
     --conf spark.ssl.trustStoreType=JKS"
 else
