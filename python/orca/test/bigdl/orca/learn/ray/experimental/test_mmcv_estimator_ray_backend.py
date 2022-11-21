@@ -92,6 +92,7 @@ class LinearModel(nn.Module):
     def __init__(self):
         super(LinearModel, self).__init__()
         self.fc1 = nn.Linear(1, 1, bias=False)
+        self.loss_fn = nn.MSELoss()
 
     def forward(self, x):
         return self.fc1(x)
@@ -216,7 +217,7 @@ class LinearDataset(torch.utils.data.Dataset):
 
 class SimpleLinearDataset(torch.utils.data.Dataset):
     """ y = 2.0 * x """
-    def __init__(self, size=1000):
+    def __init__(self, size=2000):
         self.x = torch.rand(size, 1)
         Y = torch.tensor([2.0 * v for v in self.x], dtype=torch.float32)
         self.y = Y.view(Y.shape[0], 1)
