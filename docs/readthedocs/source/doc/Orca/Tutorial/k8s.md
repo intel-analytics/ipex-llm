@@ -32,7 +32,7 @@ In `init_orca_context`, you may specify necessary runtime configurations for run
 * `conf`: a dictionary to append extra conf for Spark (default to be `None`).
 
 __Note__: 
-* All arguments __except__ `cluster_mode` will be ignored when using [`spark-submit`](#use-spark-submit) and [Kubernetes deployment](#use-kubernetes-deployment-with-conda-archive) to submit and run Orca programs, in which case you are supposed to specify these configurations via the submit command or the YAML file.
+* All arguments __except__ `cluster_mode` will be ignored when using [`spark-submit`](#use-spark-submit) and [`Kubernetes deployment`](#use-kubernetes-deployment-with-conda-archive) to submit and run Orca programs, in which case you are supposed to specify these configurations via the submit command or the YAML file.
 
 After Orca programs finish, you should always call `stop_orca_context` at the end of the program to release resources and shutdown the underlying distributed runtime engine (such as Spark or Ray).
 ```python
@@ -56,7 +56,7 @@ Please see more details in [K8s-Cluster](https://spark.apache.org/docs/latest/ru
 ### 1.3 Load Data from Volumes
 When you are running programs on K8s, please load data from [Volumes](https://kubernetes.io/docs/concepts/storage/volumes/) accessible to all K8s pods. We use Network File Systems (NFS) in this tutorial as an example.
 
-After mounting the Volume (NFS) into the BigDL container (see __[Section 2.2](#create-a-k8s-client-container)__), the Fashion-MNIST example could load data from NFS as local storage.
+After mounting the Volume (NFS) into the BigDL container (see __[Section 2.2](#create-a-k8s-client-container)__ for more details), the Fashion-MNIST example could load data from NFS as local storage.
 
 ```python
 import torch
@@ -77,41 +77,38 @@ def train_data_creator(config, batch_size):
 
 
 ---
-## 2. Create & Launch BigDL K8s Container 
+## 2. Create BigDL K8s Container 
 ### 2.1 Pull Docker Image
-Please pull the BigDL 2.1.0 `bigdl-k8s` image from [Docker Hub](https://hub.docker.com/r/intelanalytics/bigdl-k8s/tags) as follows:
+Please pull the BigDL [`bigdl-k8s`]((https://hub.docker.com/r/intelanalytics/bigdl-k8s/tags)) image (built on top of Spark 3.1.3) from Docker Hub as follows:
 ```bash
+# For the latest nightly build version
+sudo docker pull intelanalytics/bigdl-k8s:latest
+
+# For the release version, e.g. 2.1.0
 sudo docker pull intelanalytics/bigdl-k8s:2.1.0
 ```
 
-__Note:__
-* If you need the nightly built BigDL, please pull the latest image as below:
-    ```bash
-    sudo docker pull intelanalytics/bigdl-k8s:latest
-    ```
-* The 2.1.0 and latest BigDL image is built on top of Spark 3.1.2.
-
 
 ### 2.2 Create a K8s Client Container
-Please launch the __Client Container__ following the script below:
+Please create the __Client Container__ using the script below:
 ```bash
 sudo docker run -itd --net=host \
     -v /etc/kubernetes:/etc/kubernetes \
     -v /root/.kube:/root/.kube \
-    intelanalytics/bigdl-k8s:2.1.0 bash
+    intelanalytics/bigdl-k8s:latest bash
 ```
 
 In the script:
-* `--net=host`: use the host network stack for the Docker container;
-* `-v /etc/kubernetes:/etc/kubernetes`: specify the path of kubernetes configurations;
-* `-v /root/.kube:/root/.kube`: specify the path of kubernetes installation;
+* **Please switch the tag according to the BigDL image you pull.**
+* `--net=host`: use the host network stack for the Docker container.
+* `-v /etc/kubernetes:/etc/kubernetes`: specify the path of Kubernetes configurations to mount into the Docker container.
+* `-v /root/.kube:/root/.kube`: specify the path of Kubernetes installation to mount into the Docker container.
 
 __Notes:__
-* Please switch the tag from `2.1.0` to `latest` if you pull the latest BigDL image.
-* The __Client Container__ contains all the required environment except K8s configs.
-* You needn't to create an __Executor Container__ manually, which is scheduled by K8s at runtime.
+* The __Client Container__ contains all the required environment except K8s configurations.
+* You don't need to create Spark executor containers manually, which is scheduled by K8s at runtime.
 
-We recommend you to specify more arguments when creating a container:
+We recommend you to specify more arguments when creating the __Client Container__:
 ```bash
 sudo docker run -itd --net=host \
     -v /etc/kubernetes:/etc/kubernetes \
@@ -123,7 +120,7 @@ sudo docker run -itd --net=host \
     -e https_proxy=https://your-proxy-host:your-proxy-port \
     -e RUNTIME_SPARK_MASTER=k8s://https://<k8s-apiserver-host>:<k8s-apiserver-port> \
     -e RUNTIME_K8S_SERVICE_ACCOUNT=spark \
-    -e RUNTIME_K8S_SPARK_IMAGE=intelanalytics/bigdl-k8s:2.1.0 \
+    -e RUNTIME_K8S_SPARK_IMAGE=intelanalytics/bigdl-k8s:latest \
     -e RUNTIME_PERSISTENT_VOLUME_CLAIM=nfsvolumeclaim \
     -e RUNTIME_DRIVER_HOST=x.x.x.x \
     -e RUNTIME_DRIVER_PORT=54321 \
@@ -133,35 +130,30 @@ sudo docker run -itd --net=host \
     -e RUNTIME_TOTAL_EXECUTOR_CORES=4 \
     -e RUNTIME_DRIVER_CORES=4 \
     -e RUNTIME_DRIVER_MEMORY=10g \
-    intelanalytics/bigdl-k8s:2.1.0 bash 
+    intelanalytics/bigdl-k8s:latest bash
 ```
 
-__Notes:__ 
-* Please make sure you are mounting the correct volumn path (e.g. NFS) in a container.
-* Please switch the `2.1.0` tag to `latest` if you pull the latest BigDL image.
-
 In the script:
-* `--net=host`: use the host network stack for the Docker container;
-* `/etc/kubernetes:/etc/kubernetes`: specify the path of kubernetes configurations;
-* `/root/.kube:/root/.kube`: specify the path of kubernetes installation;
-* `/path/to/nfsdata:/bigdl/data`: mount NFS path on host in a container as the sepcified path in value; 
-* `NOTEBOOK_PORT`: an Integer that specifies port number for Notebook (only required by notebook);
-* `NOTEBOOK_TOKEN`: a String that specifies the token for Notebook (only required by notebook);
-* `RUNTIME_SPARK_MASTER`: a URL format that specifies the Spark master;
-* `RUNTIME_K8S_SERVICE_ACCOUNT`: a String that specifies the service account for driver pod;
-* `RUNTIME_K8S_SPARK_IMAGE`: the lanuched k8s image;
-* `RUNTIME_PERSISTENT_VOLUME_CLAIM`: a String that specifies the Kubernetes volumeName;
-* `RUNTIME_DRIVER_HOST`: a URL format that specifies the driver localhost (only required by client mode);
-* `RUNTIME_DRIVER_PORT`: a String that specifies the driver port (only required by client mode);
-* `RUNTIME_EXECUTOR_INSTANCES`: an Integer that specifies the number of executors;
-* `RUNTIME_EXECUTOR_CORES`: an Integer that specifies the number of cores for each executor;
-* `RUNTIME_EXECUTOR_MEMORY`: a String that specifies the memory for each executor;
-* `RUNTIME_TOTAL_EXECUTOR_CORES`: an Integer that specifies the number of cores for all executors;
-* `RUNTIME_DRIVER_CORES`: an Integer that specifies the number of cores for the driver node;
-* `RUNTIME_DRIVER_MEMORY`: a String that specifies the memory for the driver node;
+* **Please switch the tag according to the BigDL image you pull.**
+* **Please make sure you are mounting the correct Volume path (e.g. NFS) into the container.**
+* `/path/to/nfsdata:/bigdl/nfsdata`: mount NFS path on the host into the container as the specified path (e.g. "/bigdl/nfsdata").
+* `NOTEBOOK_PORT`: an integer that specifies the port number for the Notebook (only required if you use notebook).
+* `NOTEBOOK_TOKEN`: a string that specifies the token for Notebook (only required if you use notebook).
+* `RUNTIME_SPARK_MASTER`: a URL format that specifies the Spark master.
+* `RUNTIME_K8S_SERVICE_ACCOUNT`: a string that specifies the service account for driver pod.
+* `RUNTIME_K8S_SPARK_IMAGE`: the launched k8s image for Spark.
+* `RUNTIME_PERSISTENT_VOLUME_CLAIM`: a string that specifies the Kubernetes volumeName (e.g. "nfsvolumeclaim").
+* `RUNTIME_DRIVER_HOST`: a URL format that specifies the driver localhost (only required by k8s-client mode).
+* `RUNTIME_DRIVER_PORT`: a string that specifies the driver port (only required by k8s-client mode).
+* `RUNTIME_EXECUTOR_INSTANCES`: an integer that specifies the number of executors.
+* `RUNTIME_EXECUTOR_CORES`: an integer that specifies the number of cores for each executor.
+* `RUNTIME_EXECUTOR_MEMORY`: a string that specifies the memory for each executor.
+* `RUNTIME_TOTAL_EXECUTOR_CORES`: an integer that specifies the number of cores for all executors.
+* `RUNTIME_DRIVER_CORES`: an integer that specifies the number of cores for the driver node.
+* `RUNTIME_DRIVER_MEMORY`: a string that specifies the memory for the driver node.
 
 
-### 2.3 Enter the K8s Client Container
+### 2.3 Launch the K8s Client Container
 Once the container is created, a `containerID` would be returned and with which you can enter the container following the command below:
 ```bash
 sudo docker exec -it <containerID> bash
@@ -174,7 +166,7 @@ In the launched BigDL K8s **Client Container**, please setup the environment fol
 
 - See [here](../Overview/install.md#install-anaconda) to install conda and prepare the Python environment.
 
-- See [here](../Overview/install.md#install-bigdl-orca) to install BigDL Orca in the created conda environment.
+- See [here](../Overview/install.md#to-install-orca-for-spark3) to install BigDL Orca in the created conda environment.
 
 - You should install all the other Python libraries that you need in your program in the conda environment as well. `torch` and `torchvision` are needed to run the Fashion-MNIST example:
 ```bash
@@ -186,9 +178,9 @@ pip install torch torchvision
 
 ---
 ## 4. Prepare Dataset
-To run the example provided by this tutorial on K8s, you should upload the dataset to to a K8s volumn (e.g. NFS).
+To run the example provided by this tutorial on K8s, you should upload the dataset to a K8s Volume (e.g. NFS).
 
-Please download the Fashion-MNIST dataset manually on your __Develop Node__ (where you launch the container image). 
+Please download the Fashion-MNIST dataset manually on your __Develop Node__ (where you launch the container image). Note that PyTorch `FashionMNIST` Dataset requires unzipped files located in `FashionMNIST/raw/` under the root folder.
 
 ```bash
 # PyTorch official dataset download link
@@ -200,8 +192,6 @@ mv /path/to/fashion-mnist/data/fashion /bigdl/nfsdata/dataset/FashionMNIST/raw
 # Extract FashionMNIST archives
 gzip -dk /bigdl/nfsdata/dataset/FashionMNIST/raw/*
 ```
-
-__Note:__ PyTorch requires tge directory of dataset where `FashionMNIST/raw/train-images-idx3-ubyte` and `FashionMNIST/raw/t10k-images-idx3-ubyte` exist.
 
 
 ---
