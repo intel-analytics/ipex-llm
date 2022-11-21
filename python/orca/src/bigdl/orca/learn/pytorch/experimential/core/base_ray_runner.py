@@ -14,13 +14,12 @@
 # limitations under the License.
 #
 
-
+from bigdl.orca.learn.pytorch.core.trainable import Trainable
 from .lifecycle import LifeCycle
-from .trainer import Trainer
 from .model_io import ModelIO
 
 from abc import ABCMeta
 
 
-class BaseRayRunner(Trainer, LifeCycle, ModelIO, metaclass=ABCMeta):
+class BaseRayRunner(Trainable, LifeCycle, ModelIO, metaclass=ABCMeta):
     pass
