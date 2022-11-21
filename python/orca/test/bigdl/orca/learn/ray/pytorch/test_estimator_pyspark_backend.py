@@ -330,6 +330,7 @@ class TestPyTorchEstimator(TestCase):
                round(sum(validation_time) / 2, 4)
         assert round(agg_worker_stats["profile"]["mean_eval_fwd_s"], 4) == \
                round(sum(forward_time) / 2, 4)
+        assert agg_worker_stats["num_samples"] == 100
 
     def test_partition_num_less_than_workers(self):
         sc = init_nncontext()
