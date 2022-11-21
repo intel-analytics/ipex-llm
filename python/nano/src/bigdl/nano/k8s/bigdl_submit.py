@@ -78,6 +78,12 @@ def _get_args_parser() -> ArgumentParser:
     )
 
     parser.add_argument(
+        '--pod_epc_memory',
+        type=str,
+        default="34359738368"
+    )
+
+    parser.add_argument(
         '--volume',
         type=str,
         action='append',
@@ -105,6 +111,13 @@ def _get_args_parser() -> ArgumentParser:
         action="store_true",
         default=False,
         help="If set, the script will use the command line arguments as pod's entrypoint"
+    )
+
+    parser.add_argument(
+        '--sgx_enabled',
+        action="store_true",
+        default=False,
+        help="If set, the corresponding sgx-related device-plugin arguments will be added into resources/limits"
     )
 
     #
@@ -163,9 +176,11 @@ def _create_pod(pod_name: str,
                 extra_envs: List[List[str]],
                 pod_cpu: str,
                 pod_memory: str,
+                pod_epc_memory: str,
                 image: str,
                 command: str,
                 use_command: bool,
+                sgx_enabled: bool,
                 volume_strs: List[str],
                 volume_mount_strs: List[str],
                 pod_file_template_str: Optional[str]) -> client.V1Pod:
@@ -192,10 +207,24 @@ def _create_pod(pod_name: str,
             envs.append(
                 client.V1EnvVar(name=env[0], value=env[1]),
             )
-        resource = client.V1ResourceRequirements(limits={"cpu": pod_cpu,
-                                                         "memory": pod_memory},
-                                                 requests={"cpu": pod_cpu,
-                                                           "memory": pod_memory})
+        requests = {
+                "cpu": pod_cpu,
+                "memory": pod_memory,
+        }
+
+        limits = {
+            "cpu": pod_cpu,
+            "memory": pod_memory,
+        }
+        if sgx_enabled:
+            requests["sgx.intel.com/epc"] = pod_epc_memory
+            requests["sgx.intel.com/enclave"] = 1
+            requests["sgx.intel.com/provision"] = 1
+            limits["sgx.intel.com/enclave"] = 1
+            limits["sgx.intel.com/provision"] = 1
+            limits["sgx.intel.com/epc"] = pod_epc_memory
+        resource = client.V1ResourceRequirements(limits=limits,
+                                                 requests=requests)
         volumn_mounts = [_deserialize_volume_mounts_object(json_str, api_client)
                          for json_str in volume_mount_strs]
         if use_command:
@@ -309,9 +338,11 @@ def main():
                                       extra_envs=args.env,
                                       pod_cpu=args.pod_cpu,
                                       pod_memory=args.pod_memory,
+                                      pod_epc_memory=args.pod_epc_memory,
                                       image=args.image,
                                       command=command,
                                       use_command=args.use_command,
+                                      sgx_command=args.sgx_enabled,
                                       volume_strs=args.volume,
                                       volume_mount_strs=args.volume_mount,
                                       pod_file_template_str=template_json_str
