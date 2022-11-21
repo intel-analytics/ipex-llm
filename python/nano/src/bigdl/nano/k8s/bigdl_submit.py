@@ -239,7 +239,7 @@ def _create_pod(pod_name: str,
             limits["sgx.intel.com/epc"] = pod_epc_memory
         resource = client.V1ResourceRequirements(limits=limits,
                                                  requests=requests)
-        volumn_mounts = [_deserialize_volume_mounts_object(json_str, api_client)
+        volume_mounts = [_deserialize_volume_mounts_object(json_str, api_client)
                          for json_str in volume_mount_strs]
         if use_command:
             container = client.V1Container(name="pytorch",
@@ -247,14 +247,14 @@ def _create_pod(pod_name: str,
                                           env=envs,
                                           command=command,
                                           resources=resource,
-                                          volume_mounts=volumn_mounts)
+                                          volume_mounts=volume_mounts)
         else:
             container = client.V1Container(name="pytorch",
                                           image=image,
                                           env=envs,
                                           args=command,
                                           resources=resource,
-                                          volume_mounts=volumn_mounts)
+                                          volume_mounts=volume_mounts)
 
         volumes = [_deserialize_volume_object(json_str, api_client) for json_str in volume_strs]
 
