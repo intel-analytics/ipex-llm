@@ -188,6 +188,9 @@ build_spark() {
     cp -f $BIGDL_HOME/jars/* image/bin/jars
     cp -rf /opt/spark-source image/opt/
 
+    # Add verify quote lib.so
+    bash /opt/quote_move_libs.sh
+
     # Build
     occlum build
 
