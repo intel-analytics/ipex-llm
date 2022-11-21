@@ -72,7 +72,7 @@ est = Estimator.from_keras(model_creator=model_creator,
                            config=config,
                            backend=backend)
 
-batch_size = 1024
+batch_size = 256
 train_steps = math.ceil(train_df.count() / batch_size)
 val_steps = math.ceil(val_df.count() / batch_size)
 
