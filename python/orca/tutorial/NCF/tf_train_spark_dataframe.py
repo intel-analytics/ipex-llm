@@ -18,7 +18,7 @@
 import math
 
 from tf_model import ncf_model
-from process_spark_dataframe import read_data, generate_neg_sample, add_feature
+from process_spark_dataframe import data_process
 
 from bigdl.orca import init_orca_context, stop_orca_context
 from bigdl.orca.learn.tf2 import Estimator
@@ -28,40 +28,33 @@ init_orca_context(memory='4g')
 
 # Step 2: Read and process data using Spark DataFrame
 data_dir = './ml-1m'  # path to ml-1m
-user_cat_feature = ['zipcode', 'gender', 'occupation']
-item_cat_feature = ['category']
-cat_feature = user_cat_feature + item_cat_feature
+cat_feature = ['zipcode', 'gender', 'occupation', 'category']
 num_feature = ['age']
-num_feature_dim = [1]
-addition_feature = cat_feature + num_feature
+total_features = ['user', 'item'] + cat_feature + num_feature
 
-df, df_user, df_item = read_data(data_dir)
-user_num = df.agg({'user': "max"}).collect()[0]["max(user)"] + 1
-item_num = df.agg({'item': "max"}).collect()[0]["max(item)"] + 1
-df = generate_neg_sample(df, item_num)
-df_add_feature, embedding_in_dim = add_feature(df, df_user, df_item, cat_feature, num_feature)
-
-train_df, val_df = df_add_feature.randomSplit([0.8, 0.2], seed=100)
+train_df, val_df, embedding_in_dim, user_num, item_num = data_process(data_dir, cat_feature, num_feature)
 
 # Step 3: Define the NCF model
 config = dict(
-    embedding_size=16,
+    factor_num=16,
     lr=1e-3,
     item_num=item_num,
     user_num=user_num,
     dropout=0.5,
     embedding_in_dim=embedding_in_dim,
-    num_feature_dim=num_feature_dim
+    num_feature_dim=[1],
+    embedding_out_dim=8
 )
 
 
 def model_creator(config):
-    model = ncf_model(embedding_size=config['embedding_size'],
+    model = ncf_model(factor_num=config['factor_num'],
                       user_num=config['user_num'],
                       item_num=config['item_num'],
                       dropout=config['dropout'],
                       lr=config['lr'],
-                      categorical_features_dim=config['embedding_in_dim'],
+                      categorical_features_in_dim=config['embedding_in_dim'],
+                      categorical_features_out_dim=config['embedding_out_dim'],
                       num_feature_dim=config['num_feature_dim'])
     return model
 
@@ -79,7 +72,7 @@ val_steps = math.ceil(val_df.count() / batch_size)
 est.fit(train_df,
         epochs=10,
         batch_size=batch_size,
-        feature_cols=['user', 'item'] + addition_feature,
+        feature_cols=total_features,
         label_cols=['label'],
         steps_per_epoch=train_steps,
         validation_data=val_df,
@@ -87,7 +80,7 @@ est.fit(train_df,
 
 # Step 5: Distributed evaluation of the trained model
 stats = est.evaluate(val_df,
-                     feature_cols=['user', 'item'] + addition_feature,
+                     feature_cols=total_features,
                      label_cols=['label'],
                      batch_size=batch_size,
                      num_steps=val_steps)

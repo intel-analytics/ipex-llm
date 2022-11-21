@@ -101,18 +101,28 @@ def add_feature(df, df_user, df_item, cat_feature, num_feature):
     return df_feat, embedding_in_dim
 
 
+def data_process(data_dir, cat_feature, num_feature):
+    df, df_user, df_item = read_data(data_dir)
+    user_num = df.agg({'user': "max"}).collect()[0]["max(user)"] + 1
+    item_num = df.agg({'item': "max"}).collect()[0]["max(item)"] + 1
+
+    df = generate_neg_sample(df, item_num)
+    df_add_feature, embedding_in_dim = add_feature(df, df_user, df_item, cat_feature, num_feature)
+
+    train_df, val_df = df_add_feature.randomSplit([0.8, 0.2], seed=100)
+
+    return train_df, val_df, embedding_in_dim, user_num, item_num
+
+
 if __name__ == "__main__":
     from bigdl.orca import init_orca_context, stop_orca_context
 
     sc = init_orca_context()
+
     cat_feature = ['zipcode', 'gender', 'occupation', 'category']
     num_feature = ['age']
-    df, df_user, df_item = read_data('./ml-1m')
-    item_num = df.agg({'item': "max"}).collect()[0]["max(item)"] + 1
-    df = generate_neg_sample(df, item_num)
-    df_add_feature, embedding_in_dim = add_feature(df, df_user, df_item, cat_feature, num_feature)
 
-    train_data, test_data = df_add_feature.randomSplit([0.8, 0.2], seed=100)
+    train_data, test_data, embedding_in_dim, user_num, item_num = data_process("ml-1m", cat_feature, num_feature)
     train_data.write.csv('./train_dataframe', header=True, sep=',', mode='overwrite')
     test_data.write.csv('./test_dataframe', header=True, sep=',', mode='overwrite')
     stop_orca_context()
