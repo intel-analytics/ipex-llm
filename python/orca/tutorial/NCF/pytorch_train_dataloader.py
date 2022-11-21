@@ -15,9 +15,6 @@
 #
 
 # Step 0: Import necessary libraries
-import numpy as np
-import pandas as pd
-
 import torch.nn as nn
 import torch.optim as optim
 import torch.utils.data as data
@@ -37,38 +34,28 @@ sc = init_orca_context()
 
 # Step 2: Define train and test datasets as PyTorch DataLoader
 def train_loader_func(config, batch_size):
-    data_X, user_num, item_num, sparse_feats_dims, \
-        feature_cols, label_cols = load_dataset(config['dataset_dir'],
-                                                num_ng=config['num_ng'],
-                                                cal_sparse_feats_dims=False)
-    total_cols = feature_cols + label_cols
+    data_X, user_num, item_num, train_mat = load_dataset(config['dataset_dir'])
+    data_X = data_X.values.tolist()
 
     # train test split
-    data_values = data_X.values.tolist()
-    train_data, _ = train_test_split(data_values, test_size=0.2, random_state=100)
-    train_data = pd.DataFrame(train_data, columns=total_cols, dtype=np.int64)
-    train_data["label"] = train_data["label"].astype(np.float)
+    train_data, _ = train_test_split(data_X, test_size=0.2, random_state=100)
 
-    train_dataset = NCFData(train_data)
+    train_dataset = NCFData(train_data, item_num, train_mat, config['num_ng'])
+    train_dataset.ng_sample()
     train_loader = data.DataLoader(train_dataset, batch_size=batch_size,
                                    shuffle=True, num_workers=0)
     return train_loader
 
 
 def test_loader_func(config, batch_size):
-    data_X, user_num, item_num, sparse_feats_dims, \
-        feature_cols, label_cols = load_dataset(config['dataset_dir'],
-                                                num_ng=config['num_ng'],
-                                                cal_sparse_feats_dims=False)
-    total_cols = feature_cols + label_cols
+    data_X, user_num, item_num, train_mat = load_dataset(config['dataset_dir'])
+    data_X = data_X.values.tolist()
 
     # train test split
-    data_values = data_X.values.tolist()
-    _, test_data = train_test_split(data_values, test_size=0.2, random_state=100)
-    test_data = pd.DataFrame(test_data, columns=total_cols, dtype=np.int64)
-    test_data["label"] = test_data["label"].astype(np.float)
+    _, test_data = train_test_split(data_X, test_size=0.2, random_state=100)
 
-    test_dataset = NCFData(test_data)
+    test_dataset = NCFData(test_data, item_num, train_mat, config['num_ng'])
+    test_dataset.ng_sample()
     test_loader = data.DataLoader(test_dataset, batch_size=batch_size,
                                   shuffle=False, num_workers=0)
     return test_loader
@@ -76,19 +63,12 @@ def test_loader_func(config, batch_size):
 
 # Step 3: Define the model, optimizer and loss
 def model_creator(config):
-    data_X, user_num, item_num, sparse_feats_dims, \
-        feature_cols, label_cols = load_dataset(config['dataset_dir'],
-                                                num_ng=0,
-                                                cal_sparse_feats_dims=True)
-
-    model = NCF(user_num=user_num,
-                item_num=item_num,
+    data_X, user_num, item_num, train_mat = load_dataset(config['dataset_dir'])
+    model = NCF(user_num, item_num,
                 factor_num=config['factor_num'],
                 num_layers=config['num_layers'],
                 dropout=config['dropout'],
-                model=config['model'],
-                sparse_feats_dims=sparse_feats_dims,
-                num_dense_feats=config['num_dense_feats'])
+                model=config['model'])
     model.train()
     return model
 
@@ -113,13 +93,12 @@ est = Estimator.from_torch(model=model_creator, optimizer=optimizer_creator,
                                    'num_layers': 3,
                                    'dropout': 0.5,
                                    'lr': 0.001,
-                                   'model': "NeuMF-end",
-                                   'num_dense_feats': 1})
-est.fit(data=train_loader_func, epochs=10, batch_size=1024)
+                                   'model': "NeuMF-end"})
+est.fit(data=train_loader_func, epochs=10, batch_size=256)
 
 
 # Step 5: Distributed evaluation of the trained model
-result = est.evaluate(data=test_loader_func, batch_size=1024)
+result = est.evaluate(data=test_loader_func, batch_size=256)
 print('Evaluation results:')
 for r in result:
     print(r, ":", result[r])
