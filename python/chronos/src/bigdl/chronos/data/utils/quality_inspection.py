@@ -221,11 +221,9 @@ def _abnormal_value_check(df, dt_col, threshold=10):
     This check is used to determine whether there are abnormal values in the data.
     '''
     for column in df.columns:
-        if column == dt_col:
+        if column == dt_col or pd.api.types.is_string_dtype(df[column]):
             continue
         df_col = df[column]
-        if pd.api.types.is_string_dtype(df_col):
-            break # skip columns containing str
         std_val = df_col.std()
         mean_val = df_col.mean()
         df_col = df_col.apply(lambda x: x - mean_val)
@@ -262,10 +260,8 @@ def _abnormal_value_repair(df, dt_col, mode, threshold):
 def _abs_abnormal_value_repair(df, dt_col, threshold):
     res_df = df.copy()
     for column in res_df.columns:
-        if column == dt_col:
+        if column == dt_col or pd.api.types.is_string_dtype(res_df[column]):
             continue
-        if pd.api.types.is_string_dtype(res_df[column]):
-            break # skip columns containing str
         res_df[column] = res_df[column].apply(lambda x: np.nan if x < threshold[0] or \
                                               x > threshold[1] else x)
     res_df.iloc[0] = res_df.iloc[0].fillna(0)
@@ -276,10 +272,8 @@ def _abs_abnormal_value_repair(df, dt_col, threshold):
 def _rel_abnormal_value_repair(df, dt_col, threshold):
     res_df = df.copy()
     for column in res_df.columns:
-        if column == dt_col:
+        if column == dt_col or pd.api.types.is_string_dtype(res_df[column]):
             continue
-        if pd.api.types.is_string_dtype(res_df[column]):
-            break # skip columns containing str
         std_val = res_df[column].std()
         mean_val = res_df[column].mean()
         res_df[column] = res_df[column].apply(lambda x: np.nan \
