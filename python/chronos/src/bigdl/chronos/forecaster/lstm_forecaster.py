@@ -45,6 +45,8 @@ class LSTMForecaster(BasePytorchForecaster):
                  output_feature_num,
                  hidden_dim=32,
                  layer_num=1,
+                 normalization=True,
+                 decomposition_kernel_size=0,
                  dropout=0.1,
                  optimizer="Adam",
                  loss="mse",
@@ -64,6 +66,16 @@ class LSTMForecaster(BasePytorchForecaster):
                The value defaults to 32.
         :param layer_num: Specify the number of lstm layer to be used. The value
                defaults to 1.
+        :param normalization: bool, Specify if to use normalization trick to
+               alleviate distribution shift. It first subtractes the last value
+               of the sequence and add back after the model forwarding.
+        :param decomposition_kernel_size: int, Specify the kernel size in moving
+               average. The decomposition method will be applied if and only if
+               decomposition_kernel_size is greater than 1, which first decomposes
+               the raw sequence into a trend component by a moving average kernel
+               and a remainder(seasonal) component. Then, two models are applied
+               to each component and sum up the two outputs to get the final
+               prediction. This value defaults to 0.
         :param dropout: int or list, Specify the dropout close possibility
                (i.e. the close possibility to a neuron). This value defaults to 0.1.
         :param optimizer: Specify the optimizer used for training. This value
@@ -102,7 +114,9 @@ class LSTMForecaster(BasePytorchForecaster):
             "hidden_dim": hidden_dim,
             "layer_num": layer_num,
             "dropout": dropout,
-            "seed": seed
+            "seed": seed,
+            "normalization": normalization,
+            "decomposition_kernel_size": decomposition_kernel_size
         }
         self.loss_config = {
             "loss": loss

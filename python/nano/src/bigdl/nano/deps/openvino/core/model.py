@@ -25,10 +25,11 @@ import numpy as np
 
 
 class OpenVINOModel:
-    def __init__(self, ie_network: str, device='CPU', thread_num=None):
+    def __init__(self, ie_network: str, device='CPU', thread_num=None, config=None):
         self._ie = Core()
         self._device = device
         self.thread_num = thread_num
+        self.additional_config = config
         self.ie_network = ie_network
 
     def on_forward_start(self, inputs):
@@ -70,9 +71,12 @@ class OpenVINOModel:
             config = {"CPU_THREADS_NUM": str(self.thread_num)}
         else:
             config = {}
+        if self.additional_config is not None:
+            config.update(self.additional_config)
         self._compiled_model = self._ie.compile_model(model=self.ie_network,
                                                       device_name=self._device,
                                                       config=config)
+        self.final_config = config
         self._infer_request = self._compiled_model.create_infer_request()
         input_names = [t.any_name for t in self._ie_network.inputs]
         self._forward_args = input_names

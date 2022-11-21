@@ -95,7 +95,7 @@ def setup_package():
                           "neural-compressor==1.13.1",
                           "onnxsim==0.4.8"]
 
-    install_requires = ["intel-openmp", "cloudpickle", "protobuf==3.19.4"]
+    install_requires = ["intel-openmp", "cloudpickle", "protobuf==3.19.5", "py-cpuinfo"]
 
     package_data = [
         "libs/libjemalloc.so",

@@ -685,6 +685,13 @@ class TestTFRayEstimator(TestCase):
             pred_res = np.concatenate([part["prediction"] for part in after_res])
 
             assert np.array_equal(expect_res, pred_res)
+
+            # continous training
+            res = trainer.fit(df, epochs=5, batch_size=4, steps_per_epoch=25,
+                              feature_cols=["feature"],
+                              label_cols=["label"],
+                              validation_data=df,
+                              validation_steps=1)
         finally:
             shutil.rmtree(temp_dir)
 
@@ -734,6 +741,13 @@ class TestTFRayEstimator(TestCase):
             pred_res = np.concatenate([part["prediction"] for part in after_res])
 
             assert np.array_equal(expect_res, pred_res)
+
+            # continous training
+            res = trainer.fit(df, epochs=5, batch_size=4, steps_per_epoch=25,
+                              feature_cols=["feature"],
+                              label_cols=["label"],
+                              validation_data=df,
+                              validation_steps=1)
         finally:
             shutil.rmtree(temp_dir)
     
@@ -760,11 +774,11 @@ class TestTFRayEstimator(TestCase):
                 workers_per_node=3,
                 backend="ray")
 
-            res = trainer.fit(df, epochs=5, batch_size=4, steps_per_epoch=25,
-                              feature_cols=["feature"],
-                              label_cols=["label"],
-                              validation_data=df,
-                              validation_steps=1)
+            trainer.fit(df, epochs=5, batch_size=4, steps_per_epoch=25,
+                        feature_cols=["feature"],
+                        label_cols=["label"],
+                        validation_data=df,
+                        validation_steps=1)
 
             trainer.save(os.path.join(temp_dir, "cifar10.h5"))
 
@@ -781,10 +795,18 @@ class TestTFRayEstimator(TestCase):
             est.load(os.path.join(temp_dir, "cifar10.h5"))
             est.save(os.path.join(temp_dir, "cifar10_option.h5"))
 
+            # continous predicting
             after_res = est.predict(df, feature_cols=["feature"]).collect()
             pred_res = np.concatenate([part["prediction"] for part in after_res])
 
             assert np.array_equal(expect_res, pred_res)
+
+            # continous training
+            est.fit(df, epochs=5, batch_size=4, steps_per_epoch=25,
+                    feature_cols=["feature"],
+                    label_cols=["label"],
+                    validation_data=df,
+                    validation_steps=1)
         finally:
             shutil.rmtree(temp_dir)
 

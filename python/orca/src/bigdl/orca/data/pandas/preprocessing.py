@@ -14,15 +14,21 @@
 # limitations under the License.
 #
 
+import os
 from bigdl.dllib.utils.common import get_node_and_core_number
 from bigdl.dllib.nncontext import init_nncontext
 from bigdl.orca import OrcaContext
 from bigdl.orca.data import SparkXShards
 from bigdl.orca.data.utils import *
-from bigdl.dllib.utils.log4Error import *
+from bigdl.dllib.utils.log4Error import invalidInputError
+from typing import TYPE_CHECKING, List, Optional
+
+if TYPE_CHECKING:
+    from bigdl.orca.data.shard import SparkXShards
+    from pyspark.sql.types import StructType
 
 
-def read_csv(file_path, **kwargs):
+def read_csv(file_path: str, **kwargs) -> "SparkXShards":
     """
 
     Read csv files to SparkXShards of pandas DataFrames.
@@ -35,7 +41,7 @@ def read_csv(file_path, **kwargs):
     return read_file_spark(file_path, "csv", **kwargs)
 
 
-def read_json(file_path, **kwargs):
+def read_json(file_path: str, **kwargs) -> "SparkXShards":
     """
 
     Read json files to SparkXShards of pandas DataFrames.
@@ -48,7 +54,7 @@ def read_json(file_path, **kwargs):
     return read_file_spark(file_path, "json", **kwargs)
 
 
-def read_file_spark(file_path, file_type, **kwargs):
+def read_file_spark(file_path: str, file_type: str, **kwargs) -> "SparkXShards":
     sc = init_nncontext()
     node_num, core_num = get_node_and_core_number()
     backend = OrcaContext.pandas_read_backend
@@ -246,7 +252,9 @@ def read_file_spark(file_path, file_type, **kwargs):
     return data_shards
 
 
-def read_parquet(file_path, columns=None, schema=None, **options):
+def read_parquet(file_path: str,
+                 columns: Optional[List[str]]=None,
+                 schema: Optional["StructType"]=None, **options) -> "SparkXShards":
     """
 
     Read parquet files to SparkXShards of pandas DataFrames.

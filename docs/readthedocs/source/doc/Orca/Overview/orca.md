@@ -94,8 +94,7 @@ est.fit(data=train_df,
 # Distributed inference
 prediction_df = est.predict(test_df,
                             batch_size=batch_size,
-                            feature_cols=['user', 'item'],
-                            steps=val_steps)
+                            feature_cols=['user', 'item'])
 ```
 
 Stop [Orca Context](orca-context.md) after you finish your program:

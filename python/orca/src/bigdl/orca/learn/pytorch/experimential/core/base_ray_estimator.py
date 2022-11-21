@@ -30,7 +30,7 @@ from ray.exceptions import RayActorError
 from abc import abstractmethod, ABCMeta
 
 from bigdl.orca.learn.pytorch.utils import find_free_port
-from bigdl.dllib.utils.log4Error import *
+from bigdl.dllib.utils.log4Error import invalidInputError
 
 # TODO: full path when merge
 from ..utils import check_for_failure, get_driver_node_ip
