@@ -16,6 +16,7 @@
 
 import os
 import time
+import tensorflow
 import tensorflow as tf
 from typing import Dict, Optional, List
 from bigdl.nano.utils.inference.common.base_optimizer import BaseInferenceOptimizer
@@ -168,17 +169,23 @@ class InferenceOptimizer(BaseInferenceOptimizer):
 
         result_map: Dict[str, Dict] = {}
 
-        # TODO: will add more data preprocess here.
-        if y is None:
-            training_data = x
+        training_data = _preprocess_data(x=x, y=y, batch_size=batch_size)
+        # training_data has to be an unbatched tf.data dataset
+        if isinstance(x, tensorflow.data.Dataset):
+            batched_training_data = training_data.batch(batch_size)
+        else:
+            batched_training_data = training_data
+            training_data = batched_training_data._input_dataset._input_dataset
 
-        batched_training_data = training_data.batch(batch_size)
         input_sample = next(iter(batched_training_data))
+        print(input_sample)
         # TODO: how to obtain input from output of training_data
         input_sample = input_sample[:-1]
+        # print(input_sample.shape)
 
         if isinstance(input_sample, (list, tuple)) and len(input_sample) == 1:
             input_sample = input_sample[0]
+        print(input_sample.shape)
 
         st = time.perf_counter()
         try:
@@ -284,3 +291,27 @@ def _accuracy_calculate_helper(model, metric, data):
     for data_input, target in data:
         metric.update_state(y_true=target, y_pred=model(data_input))
     return metric.result().numpy()
+
+
+def _preprocess_data(x, y, batch_size=None):
+    from keras.engine.data_adapter import ListsOfScalarsDataAdapter, TensorLikeDataAdapter, \
+        GenericArrayLikeDataAdapter, DatasetAdapter, GeneratorDataAdapter, KerasSequenceAdapter, \
+        CompositeTensorDataAdapter, DatasetCreatorAdapter, select_data_adapter
+
+    ALL_ADAPTER_CLS = [
+        ListsOfScalarsDataAdapter,
+        TensorLikeDataAdapter,
+        GenericArrayLikeDataAdapter,
+        DatasetAdapter,
+        GeneratorDataAdapter,
+        KerasSequenceAdapter,
+        CompositeTensorDataAdapter,
+        DatasetCreatorAdapter,
+    ]
+
+    applicable_adapters = [cls for cls in ALL_ADAPTER_CLS if cls.can_handle(x=x, y=y)]
+    if len(applicable_adapters) != 1:
+        raise ValueError("Expect only one adapter class to handle the input")
+    dataset = applicable_adapters[0](x=x, y=y, batch_size=batch_size).get_dataset()
+    return dataset
+    

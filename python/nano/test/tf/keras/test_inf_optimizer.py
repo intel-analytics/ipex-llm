@@ -71,8 +71,8 @@ class TestInferencePipeline(TestCase):
         model = ResNet50(weights=None, input_shape=[40, 40, 3], classes=10)
         model = NanoModel(inputs=model.inputs, outputs=model.outputs)
         # prepare dataset
-        train_examples = np.random.random((100, 40, 40, 3))
-        train_labels = np.random.randint(0, 10, size=(100,))
+        train_examples = np.random.random((40, 40, 3))
+        train_labels = np.random.randint(0, 10, size=(1,))
         train_dataset = tf.data.Dataset.from_tensor_slices((train_examples, train_labels))
         # prepare optimizer
         opt = InferenceOptimizer()
