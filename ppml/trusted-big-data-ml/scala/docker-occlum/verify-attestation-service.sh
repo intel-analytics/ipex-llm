@@ -3,6 +3,10 @@ set -x
 
 export BIGDL_PPML_JAR=$BIGDL_HOME/jars/*
 
+#for production
+echo 'PCCS_URL='${PCCS_URL}'/sgx/certification/v3/' > /etc/sgx_default_qcnl.conf
+echo 'USE_SECURE_CERT=FALSE' >> /etc/sgx_default_qcnl.conf
+
 if [[ -z "$ATTESTATION_URL" ]]; then
     echo "[ERROR] ATTESTATION_URL is not set!"
     echo "[INFO] PPML Application Exit!"
@@ -20,6 +24,10 @@ if [[ -z "$API_KEY" ]]; then
     echo "[ERROR] API_KEY is not set!"
     echo "[INFO] PPML Application Exit!"
     exit 1
+fi
+if [[ -z "$CHALLENGE" ]]; then
+    #echo ppmltest|base64
+    CHALLENGE=cHBtbHRlc3QK
 fi
 if [[ -z "$SPARK_HOME" ]]; then
     echo "[ERROR] SPARK_HOME is not set!"
