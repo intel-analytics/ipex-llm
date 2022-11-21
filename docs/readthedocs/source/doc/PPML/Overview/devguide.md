@@ -1,21 +1,34 @@
 # Develop your own Big Data & AI applications with BigDL PPML
 
-### 0. Understand E2E Security
+### 0. Understand E2E Security with PPML
 
-Please read [Secure Your Services](https://bigdl.readthedocs.io/en/latest/doc/PPML/QuickStart/secure_your_services.html).
+Basic design guidelines for PPML applications are as follows:
+
+* Data in use/computation should be protected by SGX.
+* Data in transmit/network should be protected by encryption or TLS.
+* Data at rest/storage should be protected by encryption.
+
+This design ensures plain text data only be used in SGX, while in all others stages data is fully encrypted.
+
+To our knowledge, most existing big data frameworks or systems have already provided network or storage protection. You can find more details in [Secure Your Services](https://bigdl.readthedocs.io/en/latest/doc/PPML/QuickStart/secure_your_services.html).
+
+Please check with your admin or security department for security features and services available. We recommend building PPML applications based on the following conditions:
+
+1. If you have network and storage protection enabled, and you want to secure computation with SGX. Then you can directly migrate your application into SGX with BigDL PPML. Please jump to [Migrate existing applications with BigDL PPML]()
+2. If you don't have any security features enabled, especially storage protection. Then you can use PPMLContext and recommended KMS. Please jump to [Enhance your applications with PPMLContext]()
 
 ### 1. Migrate existing applications with BigDL PPML
 
 
 
 
-### 2. 
+### 2. Enhance your applications with PPMLContext
 
 First you need to create a `PPMLContext`, which wraps `SparkSession` and provides methods to read encrypted data file into plain-text RDD/DataFrame and write DataFrame to encrypted data file. Then you can read & write data through `PPMLContext`.
 
-If you are familiar with Spark, you may find that the usage of `PPMLConext` is very similar to Spark.
+If you are familiar with Spark, you may find that the usage of `PPMLContext` is very similar to Spark.
 
-### 1. Create PPMLContext
+### 2.1 Create PPMLContext
 
 - create a PPMLContext with `appName`
 
@@ -224,7 +237,7 @@ If you are familiar with Spark, you may find that the usage of `PPMLConext` is v
 
   </details>
 
-### 2. Read and Write Files
+### 2.2 Read and Write Files
 
 To read/write data, you should set the `CryptoMode`:
 
