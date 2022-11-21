@@ -148,63 +148,66 @@ elif [ -z "$2" ]; then
     
     exec "$1"
 
-elif [ "${args[2]}"="kubernetes-jobmanager.sh" ]; then
+else
+    args=${args[2]}
+    args=(${args})
+    if [ "${args[0]}" = "kubernetes-jobmanager.sh" ]; then
 
-    export _FLINK_HOME_DETERMINED='true'
-    
-    bin=`cd "${FLINK_HOME}/bin"; pwd`
-    . "$bin"/config.sh
-    
-    export FLINK_ENV_JAVA_OPTS="${FLINK_ENV_JAVA_OPTS} ${FLINK_ENV_JAVA_OPTS_JM}"
-    
-    ARGS=(${args[@]:4})
-    parseJmArgsAndExportLogs "${ARGS[@]}"
-    
-    if [ ! -z "${DYNAMIC_PARAMETERS}" ]; then
-        ARGS=(${DYNAMIC_PARAMETERS[@]} "${ARGS[@]}")
+        export _FLINK_HOME_DETERMINED='true'
+        
+        bin=`cd "${FLINK_HOME}/bin"; pwd`
+        . "$bin"/config.sh
+        
+        export FLINK_ENV_JAVA_OPTS="${FLINK_ENV_JAVA_OPTS} ${FLINK_ENV_JAVA_OPTS_JM}"
+        
+        ARGS=(${args[@]:2})
+        parseJmArgsAndExportLogs "${ARGS[@]}"
+        
+        if [ ! -z "${DYNAMIC_PARAMETERS}" ]; then
+            ARGS=(${DYNAMIC_PARAMETERS[@]} "${ARGS[@]}")
+        fi
+        
+        FLINK_ENV_JAVA_OPTS=$(eval echo ${FLINK_ENV_JAVA_OPTS})
+        CLASS_TO_RUN=org.apache.flink.kubernetes.entrypoint.KubernetesApplicationClusterEntrypoint
+
+        log="/ppml/xx.log"
+        log_setting=("-Dlog.file=${log}" "-Dlog4j.configuration=file:${FLINK_CONF_DIR}/log4j-console.properties" "-Dlog4j.configurationFile=file:${FLINK_CONF_DIR}/log4j-console.properties" "-Dlogback.configurationFile=file:${FLINK_CONF_DIR}/logback-console.xml")
+
+        classpaths=$(echo ${FLINK_HOME}/lib/* | tr ' ' ':')
+
+        exec $JAVA_RUN $JVM_ARGS ${FLINK_ENV_JAVA_OPTS} "${log_setting[@]}"  -classpath  ${classpaths}: ${CLASS_TO_RUN} "${ARGS[@]}"
+
+    elif [ "${args[0]}" = "kubernetes-taskmanager.sh" ]; then
+        args=${args[@]:2}
+
+        ARGS=${args[@]:2}
+
+        export _FLINK_HOME_DETERMINED='true'
+        
+        bin=`cd "${FLINK_HOME}/bin"; pwd`
+        . "$bin"/config.sh
+
+        if [ -z "${FLINK_ENV_JAVA_OPTS}" ] && [ -z "${FLINK_ENV_JAVA_OPTS_TM}" ]; then
+            export JVM_ARGS="$JVM_ARGS -XX:+UseG1GC"
+        fi
+
+        export FLINK_ENV_JAVA_OPTS="${FLINK_ENV_JAVA_OPTS} ${FLINK_ENV_JAVA_OPTS_TM}"
+        export JVM_ARGS="$JVM_ARGS $FLINK_TM_JVM_MEM_OPTS"
+
+        ARGS=("--configDir" "${FLINK_CONF_DIR}" "${ARGS[@]}")
+
+        FLINK_ENV_JAVA_OPTS=$(eval echo ${FLINK_ENV_JAVA_OPTS})
+
+        CLASS_TO_RUN=org.apache.flink.kubernetes.taskmanager.KubernetesTaskExecutorRunner
+
+        log="/ppml/xx.log"
+        log_setting=("-Dlog.file=${log}" "-Dlog4j.configuration=file:${FLINK_CONF_DIR}/log4j-console.properties" "-Dlog4j.configurationFile=file:${FLINK_CONF_DIR}/log4j-console.properties" "-Dlogback.configurationFile=file:${FLINK_CONF_DIR}/logback-console.xml")
+
+        classpaths=$(echo ${FLINK_HOME}/lib/* | tr ' ' ':')
+
+        exec $JAVA_RUN $JVM_ARGS ${FLINK_ENV_JAVA_OPTS} "${log_setting[@]}"  -classpath  ${classpaths}: ${CLASS_TO_RUN} "${ARGS[@]}"
     fi
-    
-    FLINK_ENV_JAVA_OPTS=$(eval echo ${FLINK_ENV_JAVA_OPTS})
-    CLASS_TO_RUN=org.apache.flink.kubernetes.entrypoint.KubernetesApplicationClusterEntrypoint
-
-    log="/ppml/xx.log"
-    log_setting=("-Dlog.file=${log}" "-Dlog4j.configuration=file:${FLINK_CONF_DIR}/log4j-console.properties" "-Dlog4j.configurationFile=file:${FLINK_CONF_DIR}/log4j-console.properties" "-Dlogback.configurationFile=file:${FLINK_CONF_DIR}/logback-console.xml")
-
-    classpaths=$(echo ${FLINK_HOME}/lib/* | tr ' ' ':')
-
-    exec $JAVA_RUN $JVM_ARGS ${FLINK_ENV_JAVA_OPTS} "${log_setting[@]}"  -classpath  ${classpaths}: ${CLASS_TO_RUN} "${ARGS[@]}"
-
-elif [ "${args[2]}" = "kubernetes-taskmanager.sh" ]; then
-    args=${args[@]:4}
-
-    ARGS=${args[@]:4}
-
-    export _FLINK_HOME_DETERMINED='true'
-    
-    bin=`cd "${FLINK_HOME}/bin"; pwd`
-    . "$bin"/config.sh
-
-    if [ -z "${FLINK_ENV_JAVA_OPTS}" ] && [ -z "${FLINK_ENV_JAVA_OPTS_TM}" ]; then
-        export JVM_ARGS="$JVM_ARGS -XX:+UseG1GC"
-    fi
-
-    export FLINK_ENV_JAVA_OPTS="${FLINK_ENV_JAVA_OPTS} ${FLINK_ENV_JAVA_OPTS_TM}"
-    export JVM_ARGS="$JVM_ARGS $FLINK_TM_JVM_MEM_OPTS"
-
-    ARGS=("--configDir" "${FLINK_CONF_DIR}" "${ARGS[@]}")
-
-    FLINK_ENV_JAVA_OPTS=$(eval echo ${FLINK_ENV_JAVA_OPTS})
-
-    CLASS_TO_RUN=org.apache.flink.kubernetes.taskmanager.KubernetesTaskExecutorRunner
-
-    log="/ppml/xx.log"
-    log_setting=("-Dlog.file=${log}" "-Dlog4j.configuration=file:${FLINK_CONF_DIR}/log4j-console.properties" "-Dlog4j.configurationFile=file:${FLINK_CONF_DIR}/log4j-console.properties" "-Dlogback.configurationFile=file:${FLINK_CONF_DIR}/logback-console.xml")
-
-    classpaths=$(echo ${FLINK_HOME}/lib/* | tr ' ' ':')
-
-    exec $JAVA_RUN $JVM_ARGS ${FLINK_ENV_JAVA_OPTS} "${log_setting[@]}"  -classpath  ${classpaths}: ${CLASS_TO_RUN} "${ARGS[@]}"
 fi
-
 
 # args=("${args[@]}")
 
