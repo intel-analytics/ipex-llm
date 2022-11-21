@@ -9,6 +9,7 @@ from torch.utils.data import DataLoader
 from torch.utils.data.distributed import DistributedSampler
 import torch.distributed as dist
 from transformers import BertTokenizer, BertModel, AdamW
+import intel_extension_for_pytorch as ipex
 #from tqdm.auto import tqdm
 
 WORLD_SIZE = int(os.environ.get("WORLD_SIZE", 1))
@@ -129,18 +130,21 @@ device = 'cpu'
 
 def train_loop(args, dataloader, model, loss_fn, optimizer, epoch, total_loss):
     finish_batch_num = (epoch-1)*len(dataloader)
-    
+
     # Set to train mode
     model.train()
     total_dataset = 0
     for batch, (X, y) in enumerate(dataloader, start=1):
-        X, y = X.to(device), y.to(device)
-        pred = model(X)
-        # Calculate loss
-        loss = loss_fn(pred, y)
+
 
         optimizer.zero_grad(set_to_none=True)
-        loss.backward()
+        with torch.autocast("cpu", enabled=False):
+            X, y = X.to(device), y.to(device)
+            pred = model(X)
+            # Calculate loss
+            loss = loss_fn(pred, y)
+            loss.backward()
+
         optimizer.step()
 
         total_loss += loss.item()
@@ -220,6 +224,10 @@ def main():
     loss_fn = nn.CrossEntropyLoss()
     optimizer = AdamW(model.parameters(), lr=args.lr)
 
+    model.train()
+
+    model, optimizer = ipex.optimize(model, optimizer=optimizer)
+
     total_loss = 0.
     best_acc = 0.
 
@@ -235,7 +243,7 @@ def main():
         print(f"Epoch {t+1}/{args.epochs + 1} Processed dataset length:", total_dataset, flush=True)
         msg = "Epoch {}/{} Throughput: {: .4f}".format(t+1, args.epochs+1, 1.0 * total_dataset / (end-start))
         print(msg, flush=True)
-        valid_acc = test_loop(valid_dataloader, model, mode='Valid')
+        #valid_acc = test_loop(valid_dataloader, model, mode='Valid')
 
     print("[INFO]Finish all test", flush=True)
 
