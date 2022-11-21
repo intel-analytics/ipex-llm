@@ -32,6 +32,15 @@ import javax.net.ssl.TrustManager
 import org.apache.http.util.EntityUtils
 import java.security.SecureRandom
 
+import com.azure.core.util.BinaryData
+import com.azure.security.attestation.AttestationClientBuilder
+import com.azure.security.attestation.models.AttestationOptions
+import com.azure.security.attestation.models.AttestationResult
+import com.azure.security.attestation.models.AttestationData
+import com.azure.security.attestation.models.AttestationDataInterpretation
+
+import com.intel.analytics.bigdl.ppml.attestation._
+
 /**
  * Microsoft Azure Attestation Service
  * @param maaProviderURL
@@ -73,17 +82,37 @@ class AzureAttestationService(maaProviderURL: String, apiVersion: String, userRe
         "Quote should be specified")
     }
 
-    val postResult: JSONObject = timing("AzureAttestationService request for VerifyQuote") {
-      val postString: String = "{\"quote\": \"" + quote + "\", \"runtimeData\": " +
-      "{\"data\": \"" + userReportData + "\",\"dataType\": \"Binary\"}}"
-      val response: String = retrieveResponse(constructUrl(), sslConSocFactory, postString)
-      new JSONObject(response)
-    }
+    val attestationBuilder: AttestationClientBuilder = new AttestationClientBuilder();
+    val client = attestationBuilder
+            .endpoint(maaProviderURL)
+            .buildClient();
 
-    System.out.println(postResult.toString)
-    val token = postResult.getString(RES_TOKEN)
-    val verifyQuoteResult = token.length() > 0
-    (verifyQuoteResult, postResult.toString)
+    val decodedRuntimeData = BinaryData.fromBytes(userReportData.getBytes);
+    val sgxQuote = BinaryData.fromBytes(quote.getBytes);
+    System.out.println(sgxQuote)
+    
+    val result = client.attestSgxEnclave(new AttestationOptions(sgxQuote)
+            .setRunTimeData(
+                new AttestationData(decodedRuntimeData, AttestationDataInterpretation.BINARY)));
+
+    val issuer = result.getIssuer();
+
+    System.out.println("Attest Sgx Enclave completed. Issuer: " + issuer)
+    System.out.println("Runtime Data Length: %d\n", result.getEnclaveHeldData().getLength())
+    (true, "")
+    // val postResult: JSONObject = timing("AzureAttestationService request for VerifyQuote") {
+    //   val postString: String = "{\"quote\": \"" + quote + "\", \"runtimeData\": " +
+    //   "{\"data\": \"" + userReportData + "\",\"dataType\": \"Binary\"}}"
+    //   System.out.println(postString)
+    //   System.out.println(constructUrl())
+    //   val response: String = retrieveResponse(constructUrl(), sslConSocFactory, postString)
+    //   new JSONObject(response)
+    // }
+
+    // System.out.println(postResult.toString)
+    // val token = postResult.getString(RES_TOKEN)
+    // val verifyQuoteResult = token.length() > 0
+    // (verifyQuoteResult, postResult.toString)
   }
 
   override def attestWithServer(quote: String, policyID: String): (Boolean, String) = {
