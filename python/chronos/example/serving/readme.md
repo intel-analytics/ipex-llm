@@ -12,7 +12,7 @@ conda activate my_env
 pip install --pre --upgrade bigdl-chronos[pytorch]
 ```
 
-Please refer to [Chronos Install Guide](https://bigdl.readthedocs.io/en/latest/doc/Chronos/Overview/chronos.html) for more information.
+Please refer to [Chronos Install Guide](https://bigdl.readthedocs.io/en/latest/doc/Chronos/Overview/install.html) for more information.
 
 After installing Chronos, please refer to [Quick start with TorchServe](https://github.com/pytorch/serve/blob/master/README.md#serve-a-model) to install TorchServe.
 

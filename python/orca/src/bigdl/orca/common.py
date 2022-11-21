@@ -231,8 +231,6 @@ def init_orca_context(cluster_mode=None, runtime="spark", cores=None, memory="2g
         from bigdl.orca.ray import OrcaRayContext
         ray_ctx = OrcaRayContext(runtime="ray", cores=cores, num_nodes=num_nodes,
                                  **kwargs)
-        invalidInputError("address" in kwargs,
-                          "ray_address must be specified if the runtime is ray.")
         ray_ctx.init()
         return ray_ctx
     elif runtime == "spark":

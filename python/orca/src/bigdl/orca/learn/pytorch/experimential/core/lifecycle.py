@@ -14,13 +14,9 @@
 # limitations under the License.
 #
 
-
 from abc import abstractmethod, ABCMeta
 import ray
-
 from bigdl.orca.learn.pytorch.utils import find_free_port
-from bigdl.dllib.utils.log4Error import *
-
 from torch.utils.data import DataLoader, IterableDataset
 from torch.utils.data.distributed import DistributedSampler
 
