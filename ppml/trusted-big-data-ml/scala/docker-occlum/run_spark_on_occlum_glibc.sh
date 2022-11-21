@@ -62,6 +62,11 @@ init_instance() {
         echo "${edit_json}" > Occlum.json
     fi
 
+    #mount /etc/sgx_conf to set pccs url
+    edit_json="$(cat Occlum.json | jq '.mount+=[{"target": "/etc/","type": "hostfs","source": "/etc/sgx_default_qcnl.conf"}]')" && \
+    echo "${edit_json}" > Occlum.json
+    echo 'test' > /etc/sgx_default_qcnl.conf
+
     if [[ -z "$META_SPACE" ]]; then
         echo "META_SPACE not set, using default value 256m"
         META_SPACE=256m
@@ -240,6 +245,7 @@ build_spark() {
                             -u $ATTESTATION_URL \
                             -i $APP_ID \
                             -k $API_KEY \
+                            -c $CHALLENGE \
                             -O occlum \
                             -o $policy_Id
                 if [ $? -gt 0 ]; then
