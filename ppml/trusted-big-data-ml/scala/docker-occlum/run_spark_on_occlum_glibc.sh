@@ -62,11 +62,6 @@ init_instance() {
         echo "${edit_json}" > Occlum.json
     fi
 
-    #mount /etc/sgx_conf to set pccs url
-    edit_json="$(cat Occlum.json | jq '.mount+=[{"target": "/etc/","type": "hostfs","source": "/etc/sgx_default_qcnl.conf"}]')" && \
-    echo "${edit_json}" > Occlum.json
-    echo 'test' > /etc/sgx_default_qcnl.conf
-
     if [[ -z "$META_SPACE" ]]; then
         echo "META_SPACE not set, using default value 256m"
         META_SPACE=256m
@@ -111,6 +106,7 @@ init_instance() {
         else
            echo 'PCCS_URL='${PCCS_URL}'/sgx/certification/v3/' > /etc/sgx_default_qcnl.conf
            echo 'USE_SECURE_CERT=FALSE' >> /etc/sgx_default_qcnl.conf
+           cp /etc/sgx_default_qcnl.conf /opt/occlum_spark/image/etc/
            cd /root/demos/remote_attestation/dcap/
            #build .c file
            bash ./get_quote_on_ppml.sh
