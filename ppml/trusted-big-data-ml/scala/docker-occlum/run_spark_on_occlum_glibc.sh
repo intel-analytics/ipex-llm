@@ -154,7 +154,7 @@ build_spark() {
     mkdir -p image/var/run/secrets/
     cp -r /var/run/secrets/* image/var/run/secrets/
     ls image/var/run/secrets/kubernetes.io/serviceaccount/
-    # Copy libs and remove exited libs
+    # Copy libs and remove Outdated libs
     rm image/lib/*
     cp /lib/x86_64-linux-gnu/libz.so.1 image/lib
     cp /lib/x86_64-linux-gnu/libz.so.1 image/$occlum_glibc

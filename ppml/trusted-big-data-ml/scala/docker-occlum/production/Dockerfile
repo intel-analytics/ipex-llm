@@ -243,6 +243,7 @@ ADD ./get_quote_on_ppml.sh /root/demos/remote_attestation/dcap
 ADD ./verify-attestation-service.sh /opt
 ADD ./print_enclave_signer.sh /opt
 ADD ./register.sh /opt
+ADD ./quote_move_libs.sh /opt
 
 ADD ./production/RegisterMrEnclave.sh /opt/
 COPY ./production/entrypoint.sh /opt/
@@ -250,6 +251,7 @@ ADD ./production/mount.sh /opt/mount.sh
 ADD ./production/add_conf.sh /opt/occlum_spark/add_conf.sh
 
 RUN chmod a+x /opt/entrypoint.sh && \
+    chmod a+x /opt/quote_move_libs.sh && \
     chmod a+x /opt/run_spark_on_occlum_glibc.sh && \
     chmod a+x /opt/mount.sh && \
     chmod a+x /opt/occlum_spark/add_conf.sh && \
