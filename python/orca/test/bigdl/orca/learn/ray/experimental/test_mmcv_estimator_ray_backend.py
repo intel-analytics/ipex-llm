@@ -96,6 +96,12 @@ class LinearModel(nn.Module):
     def forward(self, x):
         return self.fc1(x)
 
+    def train_step(self, data, optimizer, **kwargs):
+        features, labels = data
+        predicts = self(features)  # -> self.__call__() -> self.forward()
+        loss = self.loss_fn(predicts, labels)
+        return {'loss': loss}
+
 
 def batch_processor(model, data, train_mode, **kwargs):
     features, labels = data
@@ -165,7 +171,7 @@ def runner_creator_with_batch_processor(config):
 def linear_model_runner_creator(config):
     model = LinearModel()
 
-    optimizer = optim.SGD(model.parameters(), lr=0.001, momentum=0.9)
+    optimizer = optim.SGD(model.parameters(), lr=0.01)
     logger = get_logger('mmcv')
     # runner is a scheduler to manage the training
     runner = EpochBasedRunner(
@@ -173,10 +179,10 @@ def linear_model_runner_creator(config):
         optimizer=optimizer,
         work_dir='./work_dir',
         logger=logger,
-        max_epochs=100)
+        max_epochs=30)
 
     # learning rate scheduler config
-    lr_config = dict(policy='step', step=[2, 3])
+    lr_config = dict(policy='fixed')
     # configuration of optimizer
     optimizer_config = dict(grad_clip=None)
     # save log periodically and multiple hooks can be used simultaneously
@@ -281,7 +287,7 @@ class TestMMCVRayEstimator(unittest.TestCase):
         estimator.run([simple_dataloader_creator], [('train', 1)])
 
         model_state = estimator.get_model()
-        weight = model_state["fc1.weight"].item()
+        weight = model_state["module.fc1.weight"].item()
         assert abs(weight - 2.0) < 0.0001
 
 
