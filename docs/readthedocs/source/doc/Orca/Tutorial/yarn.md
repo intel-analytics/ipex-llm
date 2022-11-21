@@ -49,19 +49,19 @@ For more details, please see [Launching Spark on YARN](https://spark.apache.org/
 __Note__:
 * When you run programs on YARN, you are highly recommended to load/write data from/to a distributed storage (e.g. [HDFS](https://hadoop.apache.org/docs/r1.2.1/hdfs_design.html) or [S3](https://aws.amazon.com/s3/)) instead of the local file system.
 
-The Fashion-MNIST example in this tutorial uses a utility function `get_remote_file_to_local` provided by BigDL to download datasets and create the PyTorch DataLoader on each executor.
+The Fashion-MNIST example in this tutorial uses a utility function `get_remote_dir_to_local` provided by BigDL to download datasets and create the PyTorch DataLoader on each executor.
 
 ```python
 import torch
 import torchvision
 import torchvision.transforms as transforms
-from bigdl.orca.data.file import get_remote_file_to_local
+from bigdl.orca.data.file import get_remote_dir_to_local
 
 def train_data_creator(config, batch_size):
     transform = transforms.Compose([transforms.ToTensor(),
                                     transforms.Normalize((0.5,), (0.5,))])
 
-    get_remote_file_to_local(remote_path="hdfs://path/to/dataset", local_path="/tmp/dataset")
+    get_remote_dir_to_local(remote_path="hdfs://path/to/dataset", local_path="/tmp/dataset")
 
     trainset = torchvision.datasets.FashionMNIST(root="/tmp/dataset", train=True,
                                                  download=False, transform=transform)

@@ -45,7 +45,7 @@ For more details, please see [OrcaContext](../Overview/orca-context.md).
 
 
 ### 1.2 K8s Client&Cluster
-The difference between k8s-client and k8s-cluster is where you run your Spark driver. 
+The difference between k8s-client mode and k8s-cluster mode is where you run your Spark driver. 
 
 For k8s-client, the Spark driver runs in the client process (outside the K8s cluster), while for k8s-cluster the Spark driver runs inside the K8s cluster.
 
@@ -53,22 +53,19 @@ Please see more details in [K8s-Cluster](https://spark.apache.org/docs/latest/ru
 
 
 
-### 1.3 Load Data from Network File Systems (NFS)
-When you are running programs on K8s, please load data from volumes and we use NFS in this tutorial as an example.
+### 1.3 Load Data from Volumes
+When you are running programs on K8s, please load data from [Volumes](https://kubernetes.io/docs/concepts/storage/volumes/) accessible to all K8s pods. We use Network File Systems (NFS) in this tutorial as an example.
 
-After mounting the volume (NFS) into BigDL container (see __[Section 2.2](#22-create-a-k8s-client-container)__), the Fashion-MNIST example could load data from NFS.
+After mounting the Volume (NFS) into the BigDL container (see __[Section 2.2](#create-a-k8s-client-container)__), the Fashion-MNIST example could load data from NFS as local storage.
 
 ```python
 import torch
 import torchvision
 import torchvision.transforms as transforms
-from bigdl.orca.data.file import get_remote_file_to_local
 
 def train_data_creator(config, batch_size):
     transform = transforms.Compose([transforms.ToTensor(),
                                     transforms.Normalize((0.5,), (0.5,))])
-    
-    get_remote_file_to_local(remote_path="/path/to/nfsdata", local_path="/tmp/dataset")
 
     trainset = torchvision.datasets.FashionMNIST(root="/bigdl/nfsdata/dataset", train=True, 
                                                  download=False, transform=transform)
@@ -80,7 +77,7 @@ def train_data_creator(config, batch_size):
 
 
 ---
-## 2. Create & Lunch BigDL K8s Container 
+## 2. Create & Launch BigDL K8s Container 
 ### 2.1 Pull Docker Image
 Please pull the BigDL 2.1.0 `bigdl-k8s` image from [Docker Hub](https://hub.docker.com/r/intelanalytics/bigdl-k8s/tags) as follows:
 ```bash
@@ -164,8 +161,8 @@ In the script:
 * `RUNTIME_DRIVER_MEMORY`: a String that specifies the memory for the driver node;
 
 
-### 2.3 Launch the K8s Client Container
-Once the container is created, docker image would return a `containerID`, please launch the container following the command below:
+### 2.3 Enter the K8s Client Container
+Once the container is created, a `containerID` would be returned and with which you can enter the container following the command below:
 ```bash
 sudo docker exec -it <containerID> bash
 ```
