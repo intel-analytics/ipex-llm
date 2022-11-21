@@ -165,7 +165,7 @@ class BF16Model(AcceleratedLightningModule):
         elif 'avx512_core_bf16' in dnnl_log:
             max_bf16_isa = "AVX512"
         return max_bf16_isa
-    
+
     def on_forward_start(self, inputs):
         return inputs
 
