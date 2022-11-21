@@ -45,7 +45,7 @@ def generate_forecaster(args):
                                        input_feature_num=input_feature_num,
                                        output_feature_num=output_feature_num,
                                        normalization=args.normalization,
-                                       decomposition_kernel_size=0, 
+                                       decomposition_kernel_size=0,
                                        metrics=metrics)
         elif args.framework == 'tensorflow':
             from bigdl.chronos.forecaster.tf import TCNForecaster as TCNForecaster_tf
