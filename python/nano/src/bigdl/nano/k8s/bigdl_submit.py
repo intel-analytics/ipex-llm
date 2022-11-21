@@ -120,6 +120,14 @@ def _get_args_parser() -> ArgumentParser:
         help="If set, the corresponding sgx-related device-plugin arguments will be added into resources/limits"
     )
 
+    parser.add_argument(
+        '--node_label',
+        nargs=2,
+        action='append',
+        default=[],
+        help="choose which node to run with labels"
+    )
+
     #
     # Positional arguments.
     #
@@ -174,6 +182,7 @@ def _create_pod(pod_name: str,
                 driver_port: str,
                 app_id: str,
                 extra_envs: List[List[str]],
+                labels: List[List[str]],
                 pod_cpu: str,
                 pod_memory: str,
                 pod_epc_memory: str,
@@ -207,6 +216,11 @@ def _create_pod(pod_name: str,
             envs.append(
                 client.V1EnvVar(name=env[0], value=env[1]),
             )
+
+        node_selector = {}
+        for label in labels:
+            node_selector[label[0]] = label[1]
+
         requests = {
                 "cpu": pod_cpu,
                 "memory": pod_memory,
@@ -246,7 +260,8 @@ def _create_pod(pod_name: str,
 
         pod_spec = client.V1PodSpec(containers=[container],
                                     restart_policy="Never",
-                                    volumes=volumes)
+                                    volumes=volumes,
+                                    node_selector=node_selector)
         pod_body = client.V1Pod(api_version='v1',
                                 metadata=metadata,
                                 kind='Pod',
@@ -336,6 +351,7 @@ def main():
                                       driver_port=service_port,
                                       app_id=app_id,
                                       extra_envs=args.env,
+                                      labels=args.node_label,
                                       pod_cpu=args.pod_cpu,
                                       pod_memory=args.pod_memory,
                                       pod_epc_memory=args.pod_epc_memory,
