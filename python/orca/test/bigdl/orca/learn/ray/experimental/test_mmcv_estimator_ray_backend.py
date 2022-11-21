@@ -88,6 +88,15 @@ class Model2(nn.Module):
         return loss
 
 
+class LinearModel(nn.Module):
+    def __init__(self):
+        super(LinearModel, self).__init__()
+        self.fc1 = nn.Linear(1, 1, bias=False)
+
+    def forward(self, x):
+        return self.fc1(x)
+
+
 def batch_processor(model, data, train_mode, **kwargs):
     features, labels = data
     loss = model(features, labels)
@@ -153,6 +162,34 @@ def runner_creator_with_batch_processor(config):
     return runner
 
 
+def linear_model_runner_creator(config):
+    model = LinearModel()
+
+    optimizer = optim.SGD(model.parameters(), lr=0.001, momentum=0.9)
+    logger = get_logger('mmcv')
+    # runner is a scheduler to manage the training
+    runner = EpochBasedRunner(
+        model,
+        optimizer=optimizer,
+        work_dir='./work_dir',
+        logger=logger,
+        max_epochs=100)
+
+    # learning rate scheduler config
+    lr_config = dict(policy='step', step=[2, 3])
+    # configuration of optimizer
+    optimizer_config = dict(grad_clip=None)
+    # save log periodically and multiple hooks can be used simultaneously
+    log_config = dict(interval=4, hooks=[dict(type='TextLoggerHook')])
+    # register hooks to runner and those hooks will be invoked automatically
+    runner.register_training_hooks(
+        lr_config=lr_config,
+        optimizer_config=optimizer_config,
+        log_config=log_config)
+
+    return runner
+
+
 class LinearDataset(torch.utils.data.Dataset):
     """y = a * x + b"""
 
@@ -171,10 +208,31 @@ class LinearDataset(torch.utils.data.Dataset):
         return len(self.x)
 
 
+class SimpleLinearDataset(torch.utils.data.Dataset):
+    """ y = 2.0 * x """
+    def __init__(self, size=1000):
+        self.x = torch.rand(size, 1)
+        Y = torch.tensor([2.0 * v for v in self.x], dtype=torch.float32)
+        self.y = Y.view(Y.shape[0], 1)
+
+    def __getitem__(self, index):
+        return self.x[index], self.y[index]
+
+    def __len__(self):
+        return len(self.x)
+
+
 def train_dataloader_creator(config):
     train_set = LinearDataset(size=NUM_SAMPLES)
     train_loader = DataLoader(
         train_set, batch_size=64, shuffle=True, num_workers=2)
+    return train_loader
+
+
+def simple_dataloader_creator(config):
+    train_set = SimpleLinearDataset(size=NUM_SAMPLES)
+    train_loader = DataLoader(
+        train_set, batch_size=32, shuffle=True, num_workers=2)
     return train_loader
 
 
@@ -217,6 +275,14 @@ class TestMMCVRayEstimator(unittest.TestCase):
         dloss = end_stats["loss"] - start_stats["loss"]
         print(f"dLoss: {dloss}")
         assert dloss < 0
+
+    def test_get_model(self):
+        estimator = get_estimator(linear_model_runner_creator)
+        estimator.run([simple_dataloader_creator], [('train', 1)])
+
+        model_state = estimator.get_model()
+        weight = model_state["fc1.weight"].item()
+        assert abs(weight - 2.0) < 0.0001
 
 
 if __name__ == "__main__":

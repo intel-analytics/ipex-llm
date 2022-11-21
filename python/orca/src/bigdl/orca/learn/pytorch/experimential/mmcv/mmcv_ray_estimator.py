@@ -96,4 +96,6 @@ class MMCVRayEstimator(BaseRayEstimator):
         pass
 
     def get_model(self):
-        pass
+        state = self.get_state_dict()
+        model_state = state["model"]
+        return model_state

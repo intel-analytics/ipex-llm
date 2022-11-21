@@ -198,11 +198,19 @@ class MMCVRayEpochRunner(BaseRayRunner, EpochBasedRunner):
 
     def get_state_dict(self):
         """Returns the state of the runner."""
-        pass
+        state = {
+            "epoch": self._epoch,
+            "model": self.model.state_dict(),
+            "optimizer": self.optimizer.state_dict()
+        }
+        return state
 
     def load_state_dict(self, state):
         """Sets the state of the model."""
-        pass
+        self.model.load_state_dict(state["model"])
+        if "optimizer" in state:
+            self.optimizer.load_state_dict(state["optimizer"])
+        self._epoch = state["epoch"]
 
     def _save_checkpoint(self, filepath, save_weights_only=False):
         """Save checkpoint."""
