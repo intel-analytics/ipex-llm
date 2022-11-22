@@ -12,7 +12,8 @@ A BigDL Orca program usually starts with the initialization of OrcaContext. For 
 ```python
 from bigdl.orca import init_orca_context
 
-sc = init_orca_context(cluster_mode, cores, memory, num_nodes, driver_cores, driver_memory, extra_python_lib, conf)
+sc = init_orca_context(cluster_mode, cores, memory, num_nodes,
+                       driver_cores, driver_memory, extra_python_lib, conf)
 ```
 
 In `init_orca_context`, you may specify necessary runtime configurations for running the example on YARN, including:
@@ -22,7 +23,7 @@ In `init_orca_context`, you may specify necessary runtime configurations for run
 * `num_nodes`: an integer that specifies the number of executors (default to be `1`).
 * `driver_cores`: an integer that specifies the number of cores for the driver node (default to be `4`).
 * `driver_memory`: a string that specifies the memory for the driver node (default to be `"1g"`).
-* `extra_python_lib`: a string that specifies the path to extra Python packages (default to be `None`). `.py`, `.zip` or `.egg` files are supported.
+* `extra_python_lib`: a string that specifies the path to extra Python packages, separated by comma (default to be `None`). `.py`, `.zip` or `.egg` files are supported.
 * `conf`: a dictionary to append extra conf for Spark (default to be `None`).
 
 __Note__: 
@@ -48,19 +49,19 @@ For more details, please see [Launching Spark on YARN](https://spark.apache.org/
 __Note__:
 * When you run programs on YARN, you are highly recommended to load/write data from/to a distributed storage (e.g. [HDFS](https://hadoop.apache.org/docs/r1.2.1/hdfs_design.html) or [S3](https://aws.amazon.com/s3/)) instead of the local file system.
 
-The Fashion-MNIST example in this tutorial uses a utility function `get_remote_file_to_local` provided by BigDL to download datasets and create the PyTorch DataLoader on each executor.
+The Fashion-MNIST example in this tutorial uses a utility function `get_remote_dir_to_local` provided by BigDL to download datasets and create the PyTorch DataLoader on each executor.
 
 ```python
 import torch
 import torchvision
 import torchvision.transforms as transforms
-from bigdl.orca.data.file import get_remote_file_to_local
+from bigdl.orca.data.file import get_remote_dir_to_local
 
 def train_data_creator(config, batch_size):
     transform = transforms.Compose([transforms.ToTensor(),
                                     transforms.Normalize((0.5,), (0.5,))])
 
-    get_remote_file_to_local(remote_path="hdfs://path/to/dataset", local_path="/tmp/dataset")
+    get_remote_dir_to_local(remote_path="hdfs://path/to/dataset", local_path="/tmp/dataset")
 
     trainset = torchvision.datasets.FashionMNIST(root="/tmp/dataset", train=True,
                                                  download=False, transform=transform)
@@ -88,7 +89,10 @@ export HADOOP_CONF_DIR=/path/to/hadoop/conf
 
 - See [here](../Overview/install.md#install-bigdl-orca) to install BigDL Orca in the created conda environment.
 
-- You should install all the other Python libraries that you need in your program in the conda environment as well.
+- You should install all the other Python libraries that you need in your program in the conda environment as well. `torch` and `torchvision` are needed to run the Fashion-MNIST example:
+```bash
+pip install torch torchvision
+```
 
 - For more details, please see [Python User Guide](https://bigdl.readthedocs.io/en/latest/doc/UserGuide/python.html).
 
@@ -103,14 +107,17 @@ unset ...
 
 ---
 ## 3. Prepare Dataset 
-To run the example on YARN, you should upload the Fashion-MNIST dataset to a distributed storage (such as HDFS or S3).   
+To run the example provided by this tutorial on YARN, you should upload the Fashion-MNIST dataset to a distributed storage (such as HDFS or S3).   
 
-First, download the Fashion-MNIST dataset manually on your __Client Node__:
+First, download the Fashion-MNIST dataset manually on your __Client Node__. Note that PyTorch `FashionMNIST` Dataset requires unzipped files located in `FashionMNIST/raw/` under the root folder.
 ```bash
 # PyTorch official dataset download link
 git clone https://github.com/zalandoresearch/fashion-mnist.git
 
-mv /path/to/fashion-mnist/data/fashion /path/to/local/data/FashionMNIST/raw 
+mv /path/to/fashion-mnist/data/fashion /path/to/local/data/FashionMNIST/raw
+
+# Extract FashionMNIST archives
+gzip -dk /bigdl/nfsdata/dataset/FashionMNIST/raw/*
 ```
 Then upload it to a distributed storage. Sample command to upload data to HDFS is as follows:
 ```bash
@@ -284,7 +291,7 @@ Set the cluster_mode to "spark-submit" in `init_orca_context`.
 sc = init_orca_context(cluster_mode="spark-submit")
 ```
 
-Before submitting the application on the Client Node, you need to:
+Before submitting the application on the __Client Node__, you need to:
 
 1. Prepare the conda environment on a __Development Node__ where conda is available and pack the conda environment to an archive:
 ```bash

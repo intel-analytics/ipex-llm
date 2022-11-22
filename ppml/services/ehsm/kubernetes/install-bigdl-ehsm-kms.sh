@@ -10,7 +10,9 @@ export dkeycacheImageName=intelccc/ehsm_dkeycache:0.3.0
 export ehsmKmsImageName=intelccc/ehsm_kms:0.3.0
 export pccsIP=your_pccs_IP
 export kmsIP=your_kms_ip_to_use_as
+export dkeyserverNodeName=the_fixed_node_you_want_to_assign_dkeyserver_to #kubectl get nodes, and choose one
 
 # Create k8s namespace and apply BigDL-eHSM-KMS
 kubectl create namespace bigdl-ehsm-kms
+kubectl label nodes $dkeyserverNodeName dkeyservernode=true
 envsubst < bigdl-ehsm-kms.yaml | kubectl apply -f -

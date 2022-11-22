@@ -306,8 +306,9 @@ class PyTorchPySparkEstimator(BaseEstimator):
             self.state_dict = PyTorchPySparkEstimator._get_state_dict_from_remote(self.model_dir)
             worker_stats = res
         else:
-            self.state_dict = res[0]
-            worker_stats = res[1]
+            self.state_dict = res[0]  # state dicts of all runners would be the same
+            # Each runner would return a list of worker stats for different epochs
+            worker_stats = [item for item in res if isinstance(item, list)]
 
         epoch_stats = list(map(list, zip(*worker_stats)))
         if reduce_results:
@@ -477,6 +478,7 @@ class PyTorchPySparkEstimator(BaseEstimator):
                                              mode="evaluate",
                                              num_workers=self.num_workers)
         if isinstance(data, SparkXShards):
+            params["wrap_dataloader"] = False
             if data._get_class_name() == 'pandas.core.frame.DataFrame':
                 data = process_xshards_of_pandas_dataframe(data, feature_cols, label_cols)
             # set train/validation data

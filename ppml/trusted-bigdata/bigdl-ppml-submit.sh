@@ -1,8 +1,12 @@
 #!/bin/bash
 SGX_ENABLED=false
-LOG_FILE="bigdl-ppml-submit.log"
 application_args=""
 input_args=""
+
+LOG_FILE="bigdl-ppml-submit.log"
+DRIVER_TEMPLATE="/ppml/spark-driver-template.yaml"
+EXECUTOR_TEMPLATE="/ppml/spark-executor-template.yaml"
+KEY_STORE="/ppml/keys/keystore.jks"
 
 while [[ $# -gt 0 ]]; do
   case $1 in
@@ -49,6 +53,21 @@ while [[ $# -gt 0 ]]; do
       ;;
     --log-file)
       LOG_FILE="$2"
+      shift
+      shift
+      ;;
+    --executor-template)
+      EXECUTOR_TEMPLATE="$2"
+      shift
+      shift
+      ;;
+    --driver-template)
+      DRIVER_TEMPLATE="$2"
+      shift
+      shift
+      ;;
+    --key-store)
+      KEY_STORE="$2"
       shift
       shift
       ;;
@@ -100,8 +119,8 @@ default_config="${default_config} --conf spark.driver.host=$LOCAL_IP \
         --conf spark.python.use.daemon=false \
         --conf spark.python.worker.reuse=false \
         --conf spark.kubernetes.authenticate.driver.serviceAccountName=spark \
-        --conf spark.kubernetes.driver.podTemplateFile=/ppml/spark-driver-template.yaml \
-        --conf spark.kubernetes.executor.podTemplateFile=/ppml/spark-executor-template.yaml \
+        --conf spark.kubernetes.driver.podTemplateFile=$DRIVER_TEMPLATE \
+        --conf spark.kubernetes.executor.podTemplateFile=$EXECUTOR_TEMPLATE \
         --conf spark.kubernetes.executor.deleteOnTermination=false"
 
 if [ $secure_password ]; then
@@ -119,10 +138,10 @@ if [ $secure_password ]; then
     --conf spark.ssl.enabled=true \
     --conf spark.ssl.port=8043 \
     --conf spark.ssl.keyPassword=$secure_password \
-    --conf spark.ssl.keyStore=/ppml/keys/keystore.jks  \
+    --conf spark.ssl.keyStore=$KEY_STORE  \
     --conf spark.ssl.keyStorePassword=$secure_password \
     --conf spark.ssl.keyStoreType=JKS \
-    --conf spark.ssl.trustStore=/ppml/keys/keystore.jks \
+    --conf spark.ssl.trustStore=$KEY_STORE \
     --conf spark.ssl.trustStorePassword=$secure_password \
     --conf spark.ssl.trustStoreType=JKS"
 else

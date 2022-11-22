@@ -190,48 +190,14 @@ attestation_init() {
     cd /opt/occlum_spark
     bash /opt/mount.sh
 
-    #before start occlum app after occlum build
-    if [[ $ATTESTATION == "true" ]]; then
-        if [[ $PCCS_URL == "" ]]; then
-            echo "[ERROR] Attestation set to true but NO PCCS"
-            exit 1
-        else
-            # when running
-            echo 'PCCS_URL='${PCCS_URL}'/sgx/certification/v3/' > /etc/sgx_default_qcnl.conf
-            echo 'USE_SECURE_CERT=FALSE' >> /etc/sgx_default_qcnl.conf
-            if [[ $RUNTIME_ENV == "driver" || $RUNTIME_ENV == "native" ]]; then
-                #verify ehsm service
-                cd /opt/
-                bash verify-attestation-service.sh
-                #register application
-
-                #get mrenclave mrsigner
-                MR_ENCLAVE_temp=$(bash print_enclave_signer.sh | grep mr_enclave)
-                MR_ENCLAVE_temp_arr=(${MR_ENCLAVE_temp})
-                export MR_ENCLAVE=${MR_ENCLAVE_temp_arr[1]}
-                MR_SIGNER_temp=$(bash print_enclave_signer.sh | grep mr_signer)
-                MR_SIGNER_temp_arr=(${MR_SIGNER_temp})
-                export MR_SIGNER=${MR_SIGNER_temp_arr[1]}
-
-                #register and get policy_Id
-                policy_Id_temp=$(bash register.sh | grep policy_Id)
-                policy_Id_temp_arr=(${policy_Id_temp})
-                export policy_Id=${policy_Id_temp_arr[1]}
-            fi
-        fi
-        #register error
-        if [[ $? -gt 0 || -z "$policy_Id" ]]; then
-            echo "can not get policy_Id, register fail"
-            exit 1;
-        fi
-    fi
-
     #attestation
     if [[ $ATTESTATION == "true" ]]; then
         if [[ $PCCS_URL == "" ]]; then
             echo "[ERROR] Attestation set to /root/demos/remote_attestation/dcaprue but NO PCCS"
             exit 1
         else
+                echo 'PCCS_URL='${PCCS_URL}'/sgx/certification/v3/' > /etc/sgx_default_qcnl.conf
+                echo 'USE_SECURE_CERT=FALSE' >> /etc/sgx_default_qcnl.conf
                 #generate dcap quote
                 cd /opt/occlum_spark
                 occlum run /bin/dcap_c_test $REPORT_DATA
