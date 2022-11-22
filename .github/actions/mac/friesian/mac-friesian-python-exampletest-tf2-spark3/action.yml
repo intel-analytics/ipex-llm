@@ -7,7 +7,7 @@ runs:
       shell: bash
       run: |
         source ~/.bash_profile
-        source python/friesian/dev/prepare_env.sh
+        #source python/friesian/dev/prepare_env.sh
         source activate py37-tf2
         pip uninstall -y bigdl-dllib bigdl-orca bigdl-chronos bigdl-orca-spark3 bigdl-dllib-spark3 bigdl-chronos-spark3  pyspark
         
