@@ -70,7 +70,6 @@ def available_acceleration_combination(excludes: Optional[List[str]],
                           "onnxruntime": _onnxruntime_checker,
                           "openvino": _openvino_checker,
                           "pot": _openvino_checker}
-                          # "bf16": _bf16_checker}
     if excludes is None:
         exclude_set: Set[str] = set()
     else:
