@@ -64,7 +64,7 @@ class PytorchIPEXJITBF16Model(PytorchIPEXJITModel):
 
     def autocast_context_manager(self):
         """Create autocast context"""
-        return autocast(enabled=True, dtype=torch.bfloat16)
+        return autocast(enabled=True, dtype=torch.bfloat16, cache_enabled=True)
 
     @contextlib.contextmanager
     def forward_context(self):

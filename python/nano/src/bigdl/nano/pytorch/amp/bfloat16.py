@@ -169,7 +169,7 @@ class BF16Model(AcceleratedLightningModule):
     def on_forward_start(self, inputs):
         return inputs
 
-    @autocast(enabled=True, dtype=torch.bfloat16)
+    @autocast(enabled=True, dtype=torch.bfloat16, cache_enabled=True)
     def forward_step(self, *inputs):
         if self.channels_last is True:
             inputs = tuple(map(lambda x: x.to(memory_format=torch.channels_last), inputs))

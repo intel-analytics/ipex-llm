@@ -398,7 +398,7 @@ class TestInferencePipeline(TestCase):
                                thread_num=4,
                                precision=('bf16', 'int8'))
         optim_dict = inference_opt.optimized_model_dict
-        assert len(optim_dict) == 12
+        assert len(optim_dict) == 13
         with pytest.raises(RuntimeError):
             acc_model, option = inference_opt.get_best_model(precision="fp32")
 

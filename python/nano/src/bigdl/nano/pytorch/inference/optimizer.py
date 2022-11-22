@@ -102,6 +102,7 @@ class InferenceOptimizer(BaseInferenceOptimizer):
     ALL_INFERENCE_ACCELERATION_METHOD = \
         {
             "original": TorchAccelerationOption(),
+            "fp32_channels_last": TorchAccelerationOption(channels_last=True),
             "fp32_ipex": TorchAccelerationOption(ipex=True),
             "fp32_ipex_channels_last": TorchAccelerationOption(ipex=True,
                                                                channels_last=True),
@@ -114,6 +115,7 @@ class InferenceOptimizer(BaseInferenceOptimizer):
             "int8": TorchAccelerationOption(inc=True),
             "int8_ipex": TorchAccelerationOption(inc=True, method="ipex"),
             "jit_fp32": TorchAccelerationOption(jit=True),
+            "jit_bf16": TorchAccelerationOption(jit=True, bf16=True),
             "jit_fp32_ipex": TorchAccelerationOption(jit=True, ipex=True),
             "jit_fp32_ipex_channels_last": TorchAccelerationOption(jit=True, ipex=True,
                                                                    channels_last=True),
@@ -159,11 +161,12 @@ class InferenceOptimizer(BaseInferenceOptimizer):
         and record the latency, accuracy and model instance inside the Optimizer for
         future usage. All model instance is setting to eval mode.
 
-        The available methods are "original", "fp32_ipex", "fp32_ipex_channels_last",
-        "bf16", "bf16_channels_last", "bf16_ipex", "bf16_ipex_channels_last",
-        "int8", "int8_ipex", "jit_fp32", "jit_fp32_ipex", "jit_fp32_ipex_channels_last",
-        "jit_bf16_ipex", "jit_bf16_ipex_channels_last", "openvino_fp32", "openvino_int8",
-        "onnxruntime_fp32", "onnxruntime_int8_qlinear" and "onnxruntime_int8_integer".
+        The available methods are "original", "fp32_channels_last", "fp32_ipex",
+        "fp32_ipex_channels_last", "bf16", "bf16_channels_last", "bf16_ipex",
+        "bf16_ipex_channels_last", "int8", "int8_ipex", "jit_fp32", "jit_bf16", "jit_fp32_ipex",
+        "jit_fp32_ipex_channels_last", "jit_bf16_ipex", "jit_bf16_ipex_channels_last",
+        "openvino_fp32", "openvino_int8", "onnxruntime_fp32", "onnxruntime_int8_qlinear"
+        and "onnxruntime_int8_integer".
 
         :param model: A torch.nn.Module to be optimized
         :param training_data: training_data support following formats:
@@ -350,7 +353,7 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                                                  thread_num=thread_num,
                                                  logging=logging,
                                                  sample_size_for_pot=sample_size_for_pot)
-                except Exception as e:
+                except Exception:
                     traceback.print_exc()
                     result_map[method]["status"] = "fail to convert"
                     print(f"----------Failed to convert to {method}----------")
@@ -374,7 +377,7 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                         result_map[method]["status"] = "early stopped"
                         torch.set_num_threads(default_threads)
                         continue
-                except Exception as e:
+                except Exception:
                     traceback.print_exc()
                     result_map[method]["status"] = "fail to forward"
                     print(f"----------{method} failed to forward----------")
@@ -394,7 +397,7 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                                 result_map[method]["accuracy"] =\
                                     _accuracy_calculate_helper(acce_model, metric,
                                                                validation_data)
-                            except Exception as e:
+                            except Exception:
                                 traceback.print_exc()
                                 self._calculate_accuracy = False
                                 invalidInputError(
@@ -516,9 +519,10 @@ class InferenceOptimizer(BaseInferenceOptimizer):
         """
         if precision == 'bf16':
             if accelerator is None or accelerator == "jit":
-                if use_ipex:
-                    invalidInputError(not TORCH_VERSION_LESS_1_10,
-                                      "torch version should >=1.10 to use ipex")
+                if use_ipex or accelerator == "jit":
+                    if use_ipex is True:
+                        invalidInputError(not TORCH_VERSION_LESS_1_10,
+                                          "torch version should >=1.10 to use ipex")
                     use_jit = (accelerator == "jit")
                     channels_last = export_kwargs["channels_last"] \
                         if "channels_last" in export_kwargs else None
@@ -695,13 +699,13 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                     onnxruntime_session_options.inter_op_num_threads = thread_num
             return PytorchONNXRuntimeModel(model, input_sample, onnxruntime_session_options,
                                            simplification=simplification, **export_kwargs)
-        if accelerator == 'jit' or use_ipex:
+        channels_last = export_kwargs["channels_last"]\
+                if "channels_last" in export_kwargs else None
+        if accelerator == 'jit' or use_ipex or channels_last == True:
             if use_ipex:
                 invalidInputError(not TORCH_VERSION_LESS_1_10,
                                   "torch version should >=1.10 to use ipex")
             use_jit = (accelerator == "jit")
-            channels_last = export_kwargs["channels_last"]\
-                if "channels_last" in export_kwargs else None
             return PytorchIPEXJITModel(model, input_sample=input_sample, use_ipex=use_ipex,
                                        use_jit=use_jit, channels_last=channels_last)
         invalidInputError(False, "Accelerator {} is invalid.".format(accelerator))
