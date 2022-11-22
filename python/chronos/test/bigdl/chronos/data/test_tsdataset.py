@@ -126,6 +126,16 @@ def get_missing_df():
     return df
 
 
+def get_abnormal_df():
+    data = np.random.random_sample((50, 5))
+    # two abnormal data
+    data[ data == data.max()] = 5
+    data[ data == data.min()] = -5
+    df = pd.DataFrame(data, columns=['a', 'b', 'c', 'd', 'e'])
+    df["datetime"] = pd.date_range('1/1/2019', periods=50)
+    return df
+
+
 def get_multi_interval_df():
     data = np.random.random_sample((50, 5))
     df = pd.DataFrame(data, columns=['a', 'b', 'c', 'd', 'e'])
@@ -1392,3 +1402,24 @@ class TestTSDataset(TestCase):
                                         lookback=lookback,
                                         horizon=horizon,
                                         target_col=['value', 'extra feature'])
+
+    @op_torch
+    def test_tsdataset_abnormal_check_and_repair(self):
+        from bigdl.chronos.data.utils.quality_inspection import _abnormal_value_check
+        for val in ['absolute', 'relative']:
+            df = get_abnormal_df()
+            tsdata = TSDataset.from_pandas(df, dt_col="datetime",
+                                           target_col=['a', 'b', 'c', 'd', 'e'],
+                                           extra_feature_col=None,
+                                           repair=False)
+            flag = _abnormal_value_check(tsdata.df, tsdata.dt_col, threshold=3)
+            assert flag == False
+
+            if val is 'relative':
+                tsdata = tsdata.repair_abnormal_data()
+                flag = _abnormal_value_check(tsdata.df, tsdata.dt_col, threshold=3)
+                assert flag == True
+            else:
+                tsdata = tsdata.repair_abnormal_data(mode=val, threshold=(-1, 2))
+                flag = _abnormal_value_check(tsdata.df, tsdata.dt_col, threshold=3)
+                assert flag == True
