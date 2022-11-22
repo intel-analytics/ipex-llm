@@ -52,7 +52,11 @@ runs:
         pip config set global.index-url https://mirrors.aliyun.com/pypi/simple/
         pip uninstall -y bigdl-dllib bigdl-orca bigdl-orca-spark3 bigdl-dllib-spark3  bigdl-chronos-sparks bigdl-chronos
         pip install --pre --upgrade bigdl-dllib -i https://pypi.python.org/simple
-        pip install keras
+        pip3 uninstall keras-nightly
+        pip3 uninstall -y tensorflow
+        pip3 install keras==2.1.6
+        pip3 install tensorflow==1.15.0
+        pip3 install h5py==2.10.0
         python/dllib/examples/run-example-tests-pip.sh 
         pip uninstall -y bigdl-dllib 
         source deactivate
