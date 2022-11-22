@@ -1621,7 +1621,8 @@ class BasePytorchForecaster(Forecaster):
                  absolute_drop=None,
                  timeout=0,
                  max_trials=1,
-                 sess_options=None):
+                 sess_options=None,
+                 thread_num=None):
         """
         Quantize the forecaster.
 
@@ -1692,6 +1693,8 @@ class BasePytorchForecaster(Forecaster):
         :param sess_options: The session option for onnxruntime, only valid when
                              framework contains 'onnxrt_integerops' or 'onnxrt_qlinearops',
                              otherwise will be ignored.
+        :param thread_num: int, the num of thread limit. The value is set to None by
+               default where no limit is set
         """
         # check model support for quantization
         from bigdl.nano.utils.log4Error import invalidInputError
@@ -1779,7 +1782,8 @@ class BasePytorchForecaster(Forecaster):
                                               accuracy_criterion=accuracy_criterion,
                                               timeout=timeout,
                                               max_trials=max_trials,
-                                              onnxruntime_session_options=sess_options)
+                                              onnxruntime_session_options=sess_options,
+                                              thread_num=thread_num)
         if accelerator == 'onnxruntime':
             self.accelerated_model = q_model
             self.accelerate_method = "onnxruntime_int8"
