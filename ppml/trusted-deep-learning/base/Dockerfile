@@ -36,6 +36,10 @@ RUN env DEBIAN_FRONTEND=noninteractive apt-get update && \
     ln -s libmkl_gnu_thread.so.2 libmkl_gnu_thread.so && \
     ln -s libmkl_intel_lp64.so.2 libmkl_intel_lp64.so && \
     ln -s libmkl_core.so.2 libmkl_core.so && \
+# huggingface related
+    pip3 install --no-cache datasets==2.6.1 transformers intel_extension_for_pytorch && \
+# Optimization related
+    pip3 install --pre --no-cache --upgrade bigdl-nano[pytorch] && \
 # PyTorch
     rm -rf /usr/local/lib/python3.7/dist-packages/torch && \
     git clone https://github.com/analytics-zoo/pytorch /pytorch && \
@@ -53,13 +57,10 @@ RUN env DEBIAN_FRONTEND=noninteractive apt-get update && \
     chmod +x /sbin/tini && \
     chmod +x /opt/entrypoint.sh && \
     cp /sbin/tini /usr/bin/tini && \
-# huggingface related
-    pip3 install --no-cache datasets==2.6.1 transformers pyarrow==6.0.1 intel_extension_for_pytorch && \
-    pip3 install --pre --no-cache --upgrade bigdl-nano[pytorch] && \
 # We need to downgrade markupsafe, the markupsafe required by bigdl-nano removed `soft_unicode`
 # which is then required by our third-layer gramine make command
     patch /usr/local/lib/python3.7/dist-packages/datasets/utils/filelock.py /filelock.patch && \
-    pip3 install --no-cache markupsafe==2.0.1 && \
+    pip3 install --no-cache markupsafe==2.0.1 pyarrow==6.0.1 && \
     patch /ppml/bash.manifest.template /bash.manifest.template.patch
 
 
