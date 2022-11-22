@@ -15,7 +15,7 @@
 ```bash
 conda create -n py37 python=3.7  # "py37" is conda environment name, you can use any name you like.
 conda activate py37
-pip install bigdl-orca[ray]
+pip install bigdl-orca
 pip install torch==1.7.1 torchvision==0.8.2
 ```
 
