@@ -142,7 +142,7 @@ class NCF(nn.Module):
                 interaction = torch.cat((interaction, embed_catFeats_MLP), -1)
             if self.num_dense_feats > 0:
                 numeric_feats = torch.stack(args[self.num_sparse_feats:], dim=1)
-                interaction = torch.cat((interaction, numeric_feats), -1)
+                interaction = torch.cat((interaction, numeric_feats.float()), -1)
             output_MLP = self.MLP_layers(interaction)
 
         if self.model == 'GMF':
