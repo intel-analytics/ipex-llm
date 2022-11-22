@@ -157,7 +157,7 @@ View the related [Python API doc](https://bigdl.readthedocs.io/en/latest/doc/Pyt
 
 **Using *BigDL* backend**
 
-Users may create a PyTorch `Estimator` using the *BigDL* backend (currently default for PyTorch) as follows:
+Users may create a PyTorch `Estimator` using the *Spark* backend (currently default for PyTorch) as follows:
 
 ```python
 model = LeNet() # a torch.nn.Module
