@@ -106,6 +106,7 @@ init_instance() {
         else
            echo 'PCCS_URL='${PCCS_URL}'/sgx/certification/v3/' > /etc/sgx_default_qcnl.conf
            echo 'USE_SECURE_CERT=FALSE' >> /etc/sgx_default_qcnl.conf
+           cp /etc/sgx_default_qcnl.conf /opt/occlum_spark/image/etc/
            cd /root/demos/remote_attestation/dcap/
            #build .c file
            bash ./get_quote_on_ppml.sh
@@ -162,6 +163,10 @@ build_spark() {
     cp $occlum_glibc/libdl.so.2 image/$occlum_glibc
     cp $occlum_glibc/librt.so.1 image/$occlum_glibc
     cp $occlum_glibc/libm.so.6 image/$occlum_glibc
+    rm image/lib/*
+    cp -f /usr/lib/x86_64-linux-gnu/*sgx* /opt/occlum_spark/image/opt/occlum/glibc/lib --remove-destination
+    cp -f /usr/lib/x86_64-linux-gnu/*dcap* /opt/occlum_spark/image/opt/occlum/glibc/lib --remove-destination
+    bash quote_move_libs.sh
     # Copy libhadoop
     cp /opt/libhadoop.so image/lib
     # Prepare Spark
@@ -240,6 +245,7 @@ build_spark() {
                             -u $ATTESTATION_URL \
                             -i $APP_ID \
                             -k $API_KEY \
+                            -c $CHALLENGE \
                             -O occlum \
                             -o $policy_Id
                 if [ $? -gt 0 ]; then
