@@ -118,7 +118,7 @@ def _get_args_parser() -> ArgumentParser:
         '--sgx_enabled',
         action="store_true",
         default=False,
-        help="If set, the corresponding sgx-related device-plugin arguments will be added into resources/limits"
+        help="If set, the corresponding sgx-related device-plugin arguments will be added"
     )
 
     parser.add_argument(
@@ -223,8 +223,8 @@ def _create_pod(pod_name: str,
             node_selector[label[0]] = label[1]
 
         requests = {
-                "cpu": pod_cpu,
-                "memory": pod_memory,
+            "cpu": pod_cpu,
+            "memory": pod_memory,
         }
 
         limits = {
@@ -244,18 +244,18 @@ def _create_pod(pod_name: str,
                          for json_str in volume_mount_strs]
         if use_command:
             container = client.V1Container(name="pytorch",
-                                          image=image,
-                                          env=envs,
-                                          command=command,
-                                          resources=resource,
-                                          volume_mounts=volume_mounts)
+                                           image=image,
+                                           env=envs,
+                                           command=command,
+                                           resources=resource,
+                                           volume_mounts=volume_mounts)
         else:
             container = client.V1Container(name="pytorch",
-                                          image=image,
-                                          env=envs,
-                                          args=command,
-                                          resources=resource,
-                                          volume_mounts=volume_mounts)
+                                           image=image,
+                                           env=envs,
+                                           args=command,
+                                           resources=resource,
+                                           volume_mounts=volume_mounts)
 
         volumes = [_deserialize_volume_object(json_str, api_client) for json_str in volume_strs]
 
