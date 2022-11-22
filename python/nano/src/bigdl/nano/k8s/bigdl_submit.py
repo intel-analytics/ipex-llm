@@ -80,7 +80,8 @@ def _get_args_parser() -> ArgumentParser:
     parser.add_argument(
         '--pod_epc_memory',
         type=str,
-        default="34359738368"
+        default="34359738368",
+        help="The EPC memory allocated to the container (in bytes) if SGX mode is enabled"
     )
 
     parser.add_argument(
