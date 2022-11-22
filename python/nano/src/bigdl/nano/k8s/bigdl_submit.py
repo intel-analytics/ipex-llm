@@ -359,7 +359,7 @@ def main():
                                       image=args.image,
                                       command=command,
                                       use_command=args.use_command,
-                                      sgx_command=args.sgx_enabled,
+                                      sgx_enabled=args.sgx_enabled,
                                       volume_strs=args.volume,
                                       volume_mount_strs=args.volume_mount,
                                       pod_file_template_str=template_json_str
