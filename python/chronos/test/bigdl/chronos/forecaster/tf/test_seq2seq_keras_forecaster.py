@@ -23,7 +23,7 @@ import numpy as np
 from bigdl.chronos.utils import LazyImport
 tf = LazyImport('tensorflow')
 Seq2SeqForecaster = LazyImport('bigdl.chronos.forecaster.tf.seq2seq_forecaster.Seq2SeqForecaster')
-from test.bigdl.chronos import op_tf2, op_all
+from test.bigdl.chronos import op_tf2, op_distributed
 
 
 def create_data(tf_data=False, batch_size=32):
@@ -78,7 +78,6 @@ def create_tsdataset(roll=True):
     return train, valid, test
 
 
-@op_all
 @op_tf2
 class TestSeq2SeqForecaster(TestCase):
     
@@ -90,8 +89,6 @@ class TestSeq2SeqForecaster(TestCase):
                                             output_feature_num=2)
 
     def tearDown(self):
-        from bigdl.orca import stop_orca_context
-        stop_orca_context()
         del self.forecaster
 
     def test_seq2seq_fit_predict_evaluate(self):
@@ -184,6 +181,7 @@ class TestSeq2SeqForecaster(TestCase):
         _, y_test = test.to_numpy()
         assert yhat.shape == y_test.shape
 
+    @op_distributed
     def test_s2s_forecaster_distributed(self):
         from bigdl.orca import init_orca_context, stop_orca_context
         train_data, val_data, test_data = create_data()
@@ -219,6 +217,7 @@ class TestSeq2SeqForecaster(TestCase):
         np.testing.assert_almost_equal(distributed_pred, local_pred, decimal=5)
         stop_orca_context()
 
+    @op_distributed
     def test_s2s_forecaster_distributed_illegal_input(self):
         from bigdl.orca import init_orca_context, stop_orca_context
 

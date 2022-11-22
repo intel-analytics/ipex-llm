@@ -17,7 +17,7 @@
 import pytest
 
 from unittest import TestCase
-from .. import op_distributed
+from .. import op_torch, op_distributed
 import numpy as np
 import os
 from numpy.testing import assert_array_almost_equal
@@ -26,6 +26,7 @@ from bigdl.chronos.utils import LazyImport
 TCMF = LazyImport('bigdl.chronos.model.tcmf_model.TCMF')
 
 
+@op_torch
 @op_distributed
 class TestTCMF(TestCase):
     def setup_method(self, method):

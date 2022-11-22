@@ -23,7 +23,7 @@ import pytest
 from bigdl.chronos.utils import LazyImport
 torch = LazyImport('torch')
 NBeatsForecaster = LazyImport('bigdl.chronos.forecaster.nbeats_forecaster.NBeatsForecaster')
-from .. import op_all, op_torch, op_distributed, op_onnxrt16, op_diff_set_all
+from .. import op_torch, op_distributed, op_inference, op_diff_set_all
 
 
 def create_data(loader=False):
@@ -97,7 +97,6 @@ def create_tsdataset_val(roll=True, horizon=5):
     return train, val, test
 
 
-@op_all
 @op_torch
 class TestChronosNBeatsForecaster(TestCase):
     def setUp(self):
@@ -123,7 +122,7 @@ class TestChronosNBeatsForecaster(TestCase):
         assert eva[0].shape == test_data[1].shape[1:]
 
     @op_diff_set_all
-    @op_onnxrt16
+    @op_inference
     def test_nbeats_forecaster_fit_loader(self):
         train_loader, val_loader, test_loader = create_data(loader=True)
         forecaster = NBeatsForecaster(past_seq_len=24,
@@ -145,7 +144,7 @@ class TestChronosNBeatsForecaster(TestCase):
         forecaster.evaluate_with_onnx(test_loader, batch_size=32, quantize=True)
 
     @op_diff_set_all
-    @op_onnxrt16
+    @op_inference
     def test_nbeats_forecaster_onnx_methods(self):
         train_data, val_data, test_data = create_data()
         forecaster = NBeatsForecaster(past_seq_len=24,
@@ -251,7 +250,7 @@ class TestChronosNBeatsForecaster(TestCase):
         np.testing.assert_almost_equal(test_pred_save_q, test_pred_load_q)
 
     @op_diff_set_all
-    @op_onnxrt16
+    @op_inference
     def test_nbeats_forecaster_quantization_onnx(self):
         train_data, val_data, test_data = create_data()
         forecaster = NBeatsForecaster(past_seq_len=24,
@@ -265,7 +264,7 @@ class TestChronosNBeatsForecaster(TestCase):
         eval_q = forecaster.evaluate_with_onnx(test_data, quantize=True)
 
     @op_diff_set_all
-    @op_onnxrt16
+    @op_inference
     def test_nbeats_forecaster_quantization_onnx_tuning(self):
         train_data, val_data, test_data = create_data()
         forecaster = NBeatsForecaster(past_seq_len=24,
@@ -345,7 +344,7 @@ class TestChronosNBeatsForecaster(TestCase):
 
     @op_distributed
     @op_diff_set_all
-    @op_onnxrt16
+    @op_inference
     def test_nbeats_forecaster_distributed(self):
         train_data, val_data, test_data = create_data()
         _train_loader, _, _test_loader = create_data(loader=True)
@@ -492,7 +491,7 @@ class TestChronosNBeatsForecaster(TestCase):
         assert yhat.shape == y_test.shape
 
     @op_diff_set_all
-    @op_onnxrt16
+    @op_inference
     def test_forecaster_from_tsdataset_data_loader_onnx(self):
         train, test = create_tsdataset(roll=False)
         loader = train.to_torch_data_loader(lookback=24,
@@ -601,7 +600,7 @@ class TestChronosNBeatsForecaster(TestCase):
         assert yhat.shape == y_test.shape
 
     @op_diff_set_all
-    @op_onnxrt16
+    @op_inference
     def test_forecaster_optimize_loader(self):
         train_loader, val_loader, test_loader = create_data(loader=True)
         forecaster = NBeatsForecaster(past_seq_len=24,
@@ -653,7 +652,7 @@ class TestChronosNBeatsForecaster(TestCase):
         eval_t = forecaster.evaluate(test_loader_shuffle_t)
         assert_almost_equal(eval_f, eval_t)
 
-    @op_onnxrt16
+    @op_inference
     def test_nbeats_forecaster_eval_with_onnx_shuffle_loader(self):
         from torch.utils.data import DataLoader, TensorDataset
         from numpy.testing import assert_almost_equal
