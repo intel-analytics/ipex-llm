@@ -17,6 +17,7 @@
 import torch
 from bigdl.chronos.forecaster.base_forecaster import BasePytorchForecaster
 from bigdl.chronos.model.tcn import model_creator, optimizer_creator, loss_creator
+from bigdl.nano.utils.log4Error import invalidInputError
 
 
 class TCNForecaster(BasePytorchForecaster):
@@ -117,6 +118,13 @@ class TCNForecaster(BasePytorchForecaster):
         :param distributed_backend: str, select from "ray" or
                "horovod". The value defaults to "ray".
         """
+        # config check
+        if dummy_encoder:
+            invalidInputError(input_feature_num == output_feature_num,
+                              "if dummy_encoder is set to True, then the "
+                              "model should have equal input_feature_num "
+                              "and output_feature_num.")
+
         # config setting
         self.data_config = {
             "past_seq_len": past_seq_len,
