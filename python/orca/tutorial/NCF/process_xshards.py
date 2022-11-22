@@ -21,10 +21,11 @@ import os
 import numpy as np
 import pandas as pd
 import scipy.sparse as sp
+
 from sklearn.model_selection import train_test_split
 
 from bigdl.orca.data.pandas import read_csv
-from bigdl.orca.data.transformer import StringIndexer
+from bigdl.orca.data.transformer import StringIndexer, MinMaxScaler
 
 
 def ng_sampling(data, user_num, item_num, num_ng):
@@ -86,12 +87,12 @@ def prepare_data(dataset_dir, num_ng=4):
     user_num = max(user_set) + 1
     item_num = max(item_set) + 1
 
-    # Category encoding
+    # Categorical encoding
     indexer = StringIndexer('gender')
     users = indexer.fit_transform(users)
-    indexer.setInputCol('zipcode')
+    indexer = StringIndexer('zipcode')
     users = indexer.fit_transform(users)
-    indexer.setInputCol('category')
+    indexer = StringIndexer('category')
     movies = indexer.fit_transform(movies)
 
     # Calculate input_dims for each sparse features
@@ -106,16 +107,15 @@ def prepare_data(dataset_dir, num_ng=4):
     sparse_feats_input_dims.append(max(sparse_feat_set)+1)
 
     # scale dense features
-    from bigdl.orca.data.transformer import MinMaxScaler
     scaler = MinMaxScaler(inputCol=['age'], outputCol='age_scaled')
     users = scaler.fit_transform(users)
 
-    def drop_column(shard):
-        shard['age'] = [i[0] for i in shard['age_scaled']]
-        shard['age'] = shard['age'].astype(np.float32)
+    def process_age(shard):
+        # Convert DenseVector of double to float
+        shard['age'] = shard['age'][0].astype(np.float32)
         return shard.drop(columns=['age_scaled'])
 
-    users = users.transform_shard(drop_column)
+    users = users.transform_shard(process_age)
 
     # Negative sampling
     ratings = ratings.partition_by("user")
