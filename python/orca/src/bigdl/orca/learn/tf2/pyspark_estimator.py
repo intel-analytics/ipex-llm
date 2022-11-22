@@ -413,8 +413,7 @@ class SparkTFEstimator():
         # allreduce communication protocol.
         # So we need to call get_state on every remote workers, otherwise
         # it might get stuck
-        model = self.model_creator(self.config)
-        model.set_weights(self.model_weights)
+        model = self.get_model()
         if is_local_path(filepath):
             model.save_weights(filepath, overwrite, save_format)
         else:
@@ -442,7 +441,7 @@ class SparkTFEstimator():
                order. Only topological loading is supported for weight files in
                TensorFlow format.
         """
-        model = self.model_creator(self.config)
+        model = self.get_model(set_weights=False)
         if is_file(filepath):
             # h5 format
             if is_local_path(filepath):
@@ -535,7 +534,7 @@ class SparkTFEstimator():
         if self.model_dir is not None:
             save_model(model, self._model_saved_path, save_format="h5", filemode=0o666)
 
-    def get_model(self):
+    def get_model(self, set_weights=True):
         """
         Returns the learned model.
 
@@ -546,7 +545,8 @@ class SparkTFEstimator():
         else:
             model = load_model(**self.load_params)
 
-        model.set_weights(self.model_weights)
+        if set_weights:
+            model.set_weights(self.model_weights)
         return model
 
     @property
