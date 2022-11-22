@@ -178,7 +178,7 @@ In the following part, we will illustrate three ways to submit and run BigDL Orc
 
 You can choose one of them based on your preference or cluster settings.
 
-We provide the running command for the [Fashion-MNIST example](https://github.com/intel-analytics/BigDL/blob/main/python/orca/tutorial/pytorch/FashionMNIST/) in this section.
+We provide the running command for the [Fashion-MNIST example](https://github.com/intel-analytics/BigDL/blob/main/python/orca/tutorial/pytorch/FashionMNIST/) on the __Client Node__ in this section.
 
 ### 5.1 Use `python` Command
 This is the easiest and most recommended way to run BigDL Orca on YARN as a normal Python program. Using this way, you only need to prepare the environment on the __Client Node__ and the environment would be automatically packaged and distributed to the YARN cluster. 
@@ -208,8 +208,8 @@ jupyter notebook --notebook-dir=/path/to/notebook/directory --ip=* --no-browser
 
 You can copy the code in [train.py](https://github.com/intel-analytics/BigDL/blob/main/python/orca/tutorial/pytorch/FashionMNIST/train.py) to the notebook and run the cells. Set the cluster_mode to "yarn-client" in `init_orca_context`.
 ```python
-sc = init_orca_context(cluster_mode="yarn-client", cores=4, memory="10g", num_nodes=2, 
-                       driver_cores=2, driver_memory="4g",
+sc = init_orca_context(cluster_mode="yarn-client", cores=4, memory="2g", num_nodes=2, 
+                       driver_cores=2, driver_memory="2g",
                        extra_python_lib="model.py")
 ```
 Note that Jupyter Notebook cannot run on `yarn-cluster` mode, as the driver is not running on the __Client Node__ (where you run the notebook).
@@ -243,8 +243,8 @@ Submit and run the example for `yarn-client` mode following the `bigdl-submit` s
 bigdl-submit \
     --master yarn \
     --deploy-mode client \
-    --executor-memory 10g \
-    --driver-memory 4g \
+    --executor-memory 2g \
+    --driver-memory 2g \
     --executor-cores 4 \
     --num-executors 2 \
     --py-files model.py \
@@ -255,7 +255,7 @@ bigdl-submit \
 ```
 In the `bigdl-submit` script:
 * `--master`: the spark master, set it to "yarn".
-* `--deploy-mode`: set it to "client" when running programs on yarn-client mode.
+* `--deploy-mode`: set it to `client` when running programs on yarn-client mode.
 * `--conf spark.pyspark.driver.python`: set the activate Python location on __Client Node__ as the driver's Python environment. You can find it by running `which python`.
 * `--conf spark.pyspark.python`: set the Python location in conda archive as each executor's Python environment.
 
@@ -266,8 +266,8 @@ Submit and run the program for `yarn-cluster` mode following the `bigdl-submit` 
 bigdl-submit \
     --master yarn \
     --deploy-mode cluster \
-    --executor-memory 10g \
-    --driver-memory 4g \
+    --executor-memory 2g \
+    --driver-memory 2g \
     --executor-cores 4 \
     --num-executors 2 \
     --py-files model.py \
@@ -278,7 +278,7 @@ bigdl-submit \
 ```
 In the `bigdl-submit` script:
 * `--master`: the spark master, set it to "yarn".
-* `--deploy-mode`: set it to "cluster" when running programs on yarn-cluster mode.
+* `--deploy-mode`: set it to `cluster` when running programs on yarn-cluster mode.
 * `--conf spark.yarn.appMasterEnv.PYSPARK_PYTHON`: set the Python location in conda archive as the Python environment of the Application Master.
 * `--conf spark.executorEnv.PYSPARK_PYTHON`: also set the Python location in conda archive as each executor's Python environment. The Application Master and the executors will all use the archive for the Python environment.
 
@@ -323,43 +323,17 @@ Some runtime configurations for Spark are as follows:
 * `--num_executors`: the number of executors.
 * `--py-files`: the extra Python dependency files to be uploaded to YARN.
 * `--archives`: the conda archive to be uploaded to YARN.
-
-
-#### 5.3.1 Yarn Client
-Submit and run the program for `yarn-client` mode following the `spark-submit` script below: 
-```bash
-${SPARK_HOME}/bin/spark-submit \
-    --master yarn \
-    --deploy-mode client \
-    --executor-memory 10g \
-    --driver-memory 4g \
-    --executor-cores 4 \
-    --num-executors 2 \
-    --archives /path/to/environment.tar.gz#environment \
-    --properties-file ${BIGDL_HOME}/conf/spark-bigdl.conf \
-    --conf spark.pyspark.driver.python=/path/to/python \
-    --conf spark.pyspark.python=environment/bin/python \
-    --py-files ${BIGDL_HOME}/python/bigdl-spark_${SPARK_VERSION}-${BIGDL_VERSION}-python-api.zip,model.py \
-    --jars ${BIGDL_HOME}/jars/bigdl-assembly-spark_${SPARK_VERSION}-${BIGDL_VERSION}-jar-with-dependencies.jar \
-    train.py --cluster_mode spark-submit --remote_dir hdfs://path/to/remote/data
-```
-In the `spark-submit` script:
-* `--master`: the spark master, set it to "yarn".
-* `--deploy-mode`: set it to "client" when running programs on yarn-client mode.
 * `--properties-file`: the BigDL configuration properties to be uploaded to YARN.
-* `--conf spark.pyspark.driver.python`: set the activate Python location on __Client Node__ as the driver's Python environment. You can find the location by running `which python`.
-* `--conf spark.pyspark.python`: set the Python location in conda archive as each executor's Python environment.
 * `--jars`: upload and register BigDL jars to YARN.
 
-
-#### 5.3.2 Yarn Cluster
+#### 5.3.1 Yarn Cluster
 Submit and run the program for `yarn-cluster` mode following the `spark-submit` script below:
 ```bash
 ${SPARK_HOME}/bin/spark-submit \
     --master yarn \
     --deploy-mode cluster \
-    --executor-memory 4g \
-    --driver-memory 4g \
+    --executor-memory 2g \
+    --driver-memory 2g \
     --executor-cores 4 \
     --num-executors 2 \
     --archives /path/to/environment.tar.gz#environment \
@@ -372,8 +346,31 @@ ${SPARK_HOME}/bin/spark-submit \
 ```
 In the `spark-submit` script:
 * `--master`: the spark master, set it to "yarn".
-* `--deploy-mode`: set it to "cluster" when running programs on yarn-cluster mode.
-* `--properties-file`: the BigDL configuration properties to be uploaded to YARN.
+* `--deploy-mode`: set it to `cluster` when running programs on yarn-cluster mode.
 * `--conf spark.yarn.appMasterEnv.PYSPARK_PYTHON`: set the Python location in conda archive as the Python environment of the Application Master.
 * `--conf spark.executorEnv.PYSPARK_PYTHON`: also set the Python location in conda archive as each executor's Python environment. The Application Master and the executors will all use the archive for the Python environment.
-* `--jars`: upload and register BigDL jars to YARN.
+
+
+#### 5.3.2 Yarn Client
+Submit and run the program for `yarn-client` mode following the `spark-submit` script below: 
+```bash
+${SPARK_HOME}/bin/spark-submit \
+    --master yarn \
+    --deploy-mode client \
+    --executor-memory 2g \
+    --driver-memory 2g \
+    --executor-cores 4 \
+    --num-executors 2 \
+    --archives /path/to/environment.tar.gz#environment \
+    --properties-file ${BIGDL_HOME}/conf/spark-bigdl.conf \
+    --conf spark.pyspark.driver.python=/path/to/python \
+    --conf spark.pyspark.python=environment/bin/python \
+    --py-files ${BIGDL_HOME}/python/bigdl-spark_${SPARK_VERSION}-${BIGDL_VERSION}-python-api.zip,model.py \
+    --jars ${BIGDL_HOME}/jars/bigdl-assembly-spark_${SPARK_VERSION}-${BIGDL_VERSION}-jar-with-dependencies.jar \
+    train.py --cluster_mode spark-submit --remote_dir hdfs://path/to/remote/data
+```
+In the `spark-submit` script:
+* `--master`: the spark master, set it to "yarn".
+* `--deploy-mode`: set it to `client` when running programs on yarn-client mode.
+* `--conf spark.pyspark.driver.python`: set the activate Python location on __Client Node__ as the driver's Python environment. You can find the location by running `which python`.
+* `--conf spark.pyspark.python`: set the Python location in conda archive as each executor's Python environment.
