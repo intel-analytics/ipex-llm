@@ -44,7 +44,7 @@ runs:
         export CLASSPATH=.:${JAVA_HOME}/lib:${JAVA_HOME}/jre/lib:${JAVA_HOME}/lib/tools.jar:${JAVA_HOME}/lib/dt.jar
         export PATH=${JAVA_HOME}/bin/:${JAVA_HOME}/jre/bin:${PATH}
         export PATH=/opt/work/apache-maven-3.6.3/bin:$PATH
-        export SPARK_HOME=$SPARK_2_4_HOME
+        export SPARK_HOME=$/opt/work/spark-3.1.3
         cd scala
         ./make-dist.sh -P spark_3.x -Dspark.version=3.1.2
         cd -
