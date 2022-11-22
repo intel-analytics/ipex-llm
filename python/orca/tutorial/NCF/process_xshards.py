@@ -88,12 +88,12 @@ def prepare_data(dataset_dir, num_ng=4):
     item_num = max(item_set) + 1
 
     # Categorical encoding
-    indexer = StringIndexer('gender')
-    users = indexer.fit_transform(users)
-    indexer = StringIndexer('zipcode')
-    users = indexer.fit_transform(users)
-    indexer = StringIndexer('category')
-    movies = indexer.fit_transform(movies)
+    gender_indexer = StringIndexer('gender')
+    users = gender_indexer.fit_transform(users)
+    zipcode_indexer = StringIndexer('zipcode')
+    users = zipcode_indexer.fit_transform(users)
+    category_indexer = StringIndexer('category')
+    movies = category_indexer.fit_transform(movies)
 
     # Calculate input_dims for each sparse features
     sparse_feats_input_dims = []
