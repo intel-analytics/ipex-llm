@@ -53,10 +53,9 @@ def read_data(data_dir):
     return df, df_user, df_item
 
 
-def generate_neg_sample(df, item_num):
+def generate_neg_sample(df, item_num, neg_scale):
     def neg_sample(x):
         import random
-        neg_scale = 4
         neg_res = []
         for _ in x:
             for i in range(neg_scale):
@@ -101,13 +100,15 @@ def add_feature(df, df_user, df_item, cat_feature, num_feature):
     return df_feat, embedding_in_dim
 
 
-def data_process(data_dir, cat_feature, num_feature):
+def data_process(data_dir, cat_feature, num_feature, neg_scale=4):
     df, df_user, df_item = read_data(data_dir)
     user_num = df.agg({'user': "max"}).collect()[0]["max(user)"] + 1
     item_num = df.agg({'item': "max"}).collect()[0]["max(item)"] + 1
 
-    df = generate_neg_sample(df, item_num)
-    df_add_feature, embedding_in_dim = add_feature(df, df_user, df_item, cat_feature, num_feature)
+    df = generate_neg_sample(df, item_num, neg_scale=neg_scale)
+    df_add_feature, embedding_in_dim = add_feature(df, df_user,
+                                                   df_item, cat_feature,
+                                                   num_feature)
 
     train_df, val_df = df_add_feature.randomSplit([0.8, 0.2], seed=100)
 

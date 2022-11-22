@@ -17,16 +17,16 @@ import tensorflow as tf
 
 
 def ncf_model(factor_num, user_num, item_num, dropout, lr,
-              categorical_features_in_dim, categorical_features_out_dim, num_feature_dim):
+              cat_features_in_dim, cat_features_out_dim, num_feature_dim):
     user = tf.keras.layers.Input(dtype=tf.int32, shape=())
     item = tf.keras.layers.Input(dtype=tf.int32, shape=())
 
-    if not isinstance(categorical_features_out_dim, list):
-        categorical_features_out_dim = [categorical_features_out_dim for _ in categorical_features_in_dim]
+    if not isinstance(cat_features_out_dim, list):
+        cat_features_out_dim = [cat_features_out_dim for _ in cat_features_in_dim]
 
     cat_feature_input_layers = []
     cat_feature_layers = []
-    for i, (in_dim, out_dim) in enumerate(zip(categorical_features_in_dim, categorical_features_out_dim)):
+    for i, (in_dim, out_dim) in enumerate(zip(cat_features_in_dim, cat_features_out_dim)):
         cat_feature_input_layers.append(tf.keras.layers.Input(shape=(), dtype=tf.int32))
         cat_feature_layers.append(
             tf.keras.layers.Embedding(in_dim + 1, out_dim)(cat_feature_input_layers[i]))
