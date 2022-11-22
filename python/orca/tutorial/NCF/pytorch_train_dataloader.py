@@ -23,7 +23,7 @@ import torch.optim as optim
 import torch.utils.data as data
 from sklearn.model_selection import train_test_split
 
-from pytorch_dataset import NCFData, load_dataset
+from pytorch_dataset import load_dataset
 from pytorch_model import NCF
 
 from bigdl.orca import init_orca_context, stop_orca_context
@@ -37,34 +37,30 @@ sc = init_orca_context()
 
 # Step 2: Define train and test datasets as PyTorch DataLoader
 def train_loader_func(config, batch_size):
-    data_X, user_num, item_num, sparse_feats_input_dims, \
-        feature_cols, label_cols = load_dataset(config['dataset_dir'],
-                                                num_ng=config['num_ng'],
-                                                cal_sparse_feats_input_dims=False)
-    total_cols = feature_cols + label_cols
+    dataset, user_num, item_num, \
+        sparse_feats_input_dims = load_dataset(config['dataset_dir'],
+                                               cal_sparse_feats_input_dims=False,
+                                               num_ng=config['num_ng'],       
+                                               merge_features=True)
 
     # train test split
-    data_values = list(map(lambda row: list(row[1:]), data_X.itertuples()))
-    train_data, _ = train_test_split(data_values, test_size=0.2, random_state=100)
+    train_dataset, _ = train_test_split(dataset, test_size=0.2, random_state=100)
 
-    train_dataset = NCFData(train_data)
     train_loader = data.DataLoader(train_dataset, batch_size=batch_size,
                                    shuffle=True, num_workers=0)
     return train_loader
 
 
 def test_loader_func(config, batch_size):
-    data_X, user_num, item_num, sparse_feats_input_dims, \
-        feature_cols, label_cols = load_dataset(config['dataset_dir'],
-                                                num_ng=config['num_ng'],
-                                                cal_sparse_feats_input_dims=False)
-    total_cols = feature_cols + label_cols
+    dataset, user_num, item_num, \
+        sparse_feats_input_dims = load_dataset(config['dataset_dir'],
+                                               cal_sparse_feats_input_dims=False,
+                                               num_ng=config['num_ng'],       
+                                               merge_features=True)
 
     # train test split
-    data_values = list(map(lambda row: list(row[1:]), data_X.itertuples()))
-    _, test_data = train_test_split(data_values, test_size=0.2, random_state=100)
+    _, test_dataset = train_test_split(dataset, test_size=0.2, random_state=100)
 
-    test_dataset = NCFData(test_data)
     test_loader = data.DataLoader(test_dataset, batch_size=batch_size,
                                   shuffle=False, num_workers=0)
     return test_loader
@@ -72,10 +68,11 @@ def test_loader_func(config, batch_size):
 
 # Step 3: Define the model, optimizer and loss
 def model_creator(config):
-    data_X, user_num, item_num, sparse_feats_input_dims, \
-        feature_cols, label_cols = load_dataset(config['dataset_dir'],
-                                                num_ng=0,
-                                                cal_sparse_feats_input_dims=True)
+    dataset, user_num, item_num, \
+        sparse_feats_input_dims = load_dataset(config['dataset_dir'],
+                                               cal_sparse_feats_input_dims=True,
+                                               num_ng=0,       
+                                               merge_features=False)
 
     model = NCF(user_num=user_num,
                 item_num=item_num,
