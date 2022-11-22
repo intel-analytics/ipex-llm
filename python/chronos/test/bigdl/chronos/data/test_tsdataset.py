@@ -1403,6 +1403,7 @@ class TestTSDataset(TestCase):
                                         horizon=horizon,
                                         target_col=['value', 'extra feature'])
 
+    @op_torch
     def test_tsdataset_abnormal_check_and_repair(self):
         from bigdl.chronos.data.utils.quality_inspection import _abnormal_value_check
         for val in ['absolute', 'relative']:
