@@ -29,7 +29,6 @@ from sklearn.preprocessing import MinMaxScaler
 class NCFData(data.Dataset):
     def __init__(self, data):
         self.data = data
-        self.data["label"] = [1.0 for _ in range(len(self.data))]
 
     def __len__(self):
         return len(self.data)
@@ -118,6 +117,8 @@ def load_dataset(dataset_dir, cal_sparse_feats_input_dims=True,
     dataset = NCFData(ratings)
     if num_ng > 0:
         dataset.ng_sampling(num_ng, user_num, item_num)
+    else:
+        dataset.data["label"] = [1.0 for _ in range(len(dataset.data))]
     if merge_features:
         dataset.merge_features(users, movies, feature_cols+label_cols)
     dataset.data = list(map(lambda row: list(row[1:]), dataset.data.itertuples()))
