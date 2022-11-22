@@ -107,13 +107,14 @@ unset ...
 
 ---
 ## 3. Prepare Dataset 
-To run the example provided by this tutorial on YARN, you should upload the Fashion-MNIST dataset to a distributed storage (such as HDFS or S3).   
+To run the Fashion-MNIST example provided by this tutorial on YARN, you should upload the Fashion-MNIST dataset to a distributed storage (such as HDFS or S3).   
 
-First, download the Fashion-MNIST dataset manually on your __Client Node__. Note that PyTorch `FashionMNIST` Dataset requires unzipped files located in `FashionMNIST/raw/` under the root folder.
+First, download the Fashion-MNIST dataset manually on your __Client Node__. Note that PyTorch `FashionMNIST Dataset` requires unzipped files located in `FashionMNIST/raw/` under the root folder.
 ```bash
 # PyTorch official dataset download link
 git clone https://github.com/zalandoresearch/fashion-mnist.git
 
+# Move the dataset under the folder FashionMNIST/raw
 mv /path/to/fashion-mnist/data/fashion /path/to/local/data/FashionMNIST/raw
 
 # Extract FashionMNIST archives
@@ -140,10 +141,9 @@ For more details, please see [BigDL Python Dependencies](https://bigdl.readthedo
 * When using [`bigdl-submit`](#use-bigdl-submit) or [`spark-submit`](#use-spark-submit), please specify `--py-files` option in the submit command.
 ```bash
 bigdl-submit # or spark-submit
-    --master yarn \
-    --delopy-mode client \
+    ...
     --py-files model.py
-    train.py
+    ...
 ```
 
 For more details, please see [Spark Python Dependencies](https://spark.apache.org/docs/latest/submitting-applications.html). 
