@@ -96,6 +96,9 @@ class MMCVRayEstimator(BaseRayEstimator):
         pass
 
     def get_model(self):
+        """
+        Returns the learned PyTorch model state dict
+        """
         state = self.get_state_dict()
         model_state = state["model"]
         return model_state
