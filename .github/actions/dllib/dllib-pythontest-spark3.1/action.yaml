@@ -46,7 +46,7 @@ runs:
         export PATH=/opt/work/apache-maven-3.6.3/bin:$PATH
         export SPARK_LOCAL_HOSTNAME=localhost
         cd scala
-        ./make-dist.sh -P spark_3.x -Dspark.version=3.1.2
+        ./make-dist.sh -P spark_3.x -Dspark.version=3.1.3
         cd -
         source activate py37
         pip uninstall -y bigdl bigdl-dllib bigdl-orca pyspark 
