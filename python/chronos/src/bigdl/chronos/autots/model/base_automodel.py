@@ -324,7 +324,6 @@ class BaseAutomodel:
                               "build_onnx has not been supported for distributed "
                               "forecaster. You can call .to_local() to transform the "
                               "forecaster to a non-distributed version.")
-        
         try:
             OMP_NUM_THREADS = os.getenv("OMP_NUM_THREADS")
         except KeyError:
