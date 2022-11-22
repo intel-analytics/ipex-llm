@@ -57,7 +57,7 @@ class NCF(nn.Module):
         self.embed_item_GMF = nn.Embedding(item_num, factor_num)
         self.embed_user_MLP = nn.Embedding(user_num,
                                            factor_num * (2 ** (num_layers - 1)))
-        self.embed_item_MLP = nn.Embedding(user_num,
+        self.embed_item_MLP = nn.Embedding(item_num,
                                            factor_num * (2 ** (num_layers - 1)))
         self.embed_catFeats_MLP = [nn.Embedding(self.sparse_feats_input_dims[i],
                                                 self.sparse_feats_embed_dims[i])
@@ -142,7 +142,7 @@ class NCF(nn.Module):
                 interaction = torch.cat((interaction, embed_catFeats_MLP), -1)
             if self.num_dense_feats > 0:
                 numeric_feats = torch.stack(args[self.num_sparse_feats:], dim=1)
-                interaction = torch.cat((interaction, numeric_feats.float()), -1)
+                interaction = torch.cat((interaction, numeric_feats), -1)
             output_MLP = self.MLP_layers(interaction)
 
         if self.model == 'GMF':
