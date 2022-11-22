@@ -76,7 +76,7 @@ def main():
             }
             init_orca_context(cluster_mode="k8s-client", num_nodes=2, cores=2, memory="2g",
                               master=os.environ.get("RUNTIME_SPARK_MASTER"),
-                              container_image="intelanalytics/bigdl-k8s:2.1.0",
+                              container_image=os.environ.get("RUNTIME_K8S_SPARK_IMAGE"),
                               extra_python_lib="model.py", conf=conf)
         elif args.cluster_mode == "k8s-cluster":
             conf = {
@@ -93,7 +93,7 @@ def main():
             }
             init_orca_context(cluster_mode="k8s-cluster", num_nodes=2, cores=2, memory="2g",
                               master=os.environ.get("RUNTIME_SPARK_MASTER"),
-                              container_image="intelanalytics/bigdl-k8s:2.1.0",
+                              container_image=os.environ.get("RUNTIME_K8S_SPARK_IMAGE"),
                               penv_archive="file:///bigdl/nfsdata/environment.tar.gz",
                               extra_python_lib="/bigdl/nfsdata/model.py", conf=conf)
     elif args.cluster_mode == "bigdl-submit":
