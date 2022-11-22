@@ -4,6 +4,7 @@ import os
 import logging
 import time
 from torch import nn
+from contextlib import nullcontext
 from datasets import load_dataset
 from torch.utils.data import DataLoader
 from torch.utils.data.distributed import DistributedSampler
@@ -37,6 +38,11 @@ parser.add_argument("--model-path", type=str, default="/ppml/model",
 # Only for test purpose
 parser.add_argument("--load-model", action="store_true", default=False,
                     help="For loading the current model")
+
+# Set mini-batch will result in that the first M backward will not trigger
+# backward propagation.  Only the M+1 backward will trigger the backward propagation.
+parser.add_argument("--mini-batch", type=int, default=0, metavar="M",
+                    help="If set, the gradient accumulation will be used")
 
 parser.add_argument("--log-interval", type=int, default=2, metavar="N",
                     help="how many batches to wait before logging training status")
@@ -134,38 +140,23 @@ device = 'cpu'
 
 
 def train_loop(args, dataloader, model, loss_fn, optimizer, epoch, total_loss):
-    finish_batch_num = (epoch-1)*len(dataloader)
-
     # Set to train mode
     model.train()
     total_dataset = 0
-    accumulate = True
-    accumulate_counter = 0
     optimizer.zero_grad(set_to_none=True)
     enumerator = enumerate(dataloader, start=1)
     for batch, (X, y) in enumerator:
-        # Load the data
-        X, y = X.to(device), y.to(device)
+        my_context = model.no_sync if WORLD_SIZE > 1 and args.mini_batch > 0 and batch % args.mini_batch != 0 else nullcontext
+        with my_context():
+            X, y = X.to(device), y.to(device)
         # Forward pass
-        pred = model(X)
-
-        if accumulate:
-            with model.no_sync():
-                # Calculate without backward for 4 batches
-                loss = loss_fn(pred, y)
-                loss.backward()
-                total_loss += loss.item()
-            accumulate_counter += 1
-            if accumulate_counter >= 3:
-                accumulate = False
-        else:
+            pred = model(X)
             loss = loss_fn(pred, y)
             loss.backward()
-            # We are not accumulating
+            total_loss += loss.item()
+        if args.mini_batch == 0 or batch % args.mini_batch == 0:
             optimizer.step()
             optimizer.zero_grad(set_to_none=True)
-            accumulate = True
-            total_loss += loss.item()
 
         total_dataset += args.batch_size
         if batch % args.log_interval == 0:
