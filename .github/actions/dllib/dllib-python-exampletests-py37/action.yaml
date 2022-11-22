@@ -27,8 +27,8 @@ runs:
         pip install wheel
         pip uninstall -y bigdl-friesian bigdl-friesian-spark3 bigdl-dllib bigdl-dllib-spark3 bigdl-orca pyspark bigdl-orca-spark3 bigdl-chronos bigdl-chronos-spark3 bigdl-friesian bigdl-friesian-spark3
         wget https://raw.githubusercontent.com/Romanticoseu/BigDL/patch-1/python/test/python-requirements/requirements-dllib-python.txt
-        pip uninstall -r ${{ github.workspace }}/requirements-friesian-python-ut-spark3.txt -y
-        pip install -i ${PIP_MIRROR} --trusted-host ${TRUSTED_HOST} -r ${{ github.workspace }}/requirements-friesian-python-ut-spark3.txt 
+        pip uninstall -r ${{ github.workspace }}/requirements-dllib-python.txt -y
+        pip install -i ${PIP_MIRROR} --trusted-host ${TRUSTED_HOST} -r ${{ github.workspace }}/requirements-dllib-python.txt
       env:
         BIGDL_ROOT: ${{ github.workspace }}
         ANALYTICS_ZOO_ROOT: ${{ github.workspace }}
