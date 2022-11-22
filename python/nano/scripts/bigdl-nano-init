@@ -165,7 +165,7 @@ fi
 
 # set env variables
 echo "Setting MALLOC_CONF..."
-export MALLOC_CONF="oversize_threshold:1,background_thread:true,metadata_thp:auto,dirty_decay_ms:-1,muzzy_decay_ms:-1"
+export MALLOC_CONF="oversize_threshold:1,background_thread:false,metadata_thp:always,dirty_decay_ms:-1,muzzy_decay_ms:-1"
 
 # Set LD_PRELOAD
 if [ -z "${LD_PRELOAD:-}" ]; then
