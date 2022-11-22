@@ -233,10 +233,10 @@ def _create_pod(pod_name: str,
         }
         if sgx_enabled:
             requests["sgx.intel.com/epc"] = pod_epc_memory
-            requests["sgx.intel.com/enclave"] = 1
-            requests["sgx.intel.com/provision"] = 1
-            limits["sgx.intel.com/enclave"] = 1
-            limits["sgx.intel.com/provision"] = 1
+            requests["sgx.intel.com/enclave"] = "1"
+            requests["sgx.intel.com/provision"] = "1"
+            limits["sgx.intel.com/enclave"] = "1"
+            limits["sgx.intel.com/provision"] = "1"
             limits["sgx.intel.com/epc"] = pod_epc_memory
         resource = client.V1ResourceRequirements(limits=limits,
                                                  requests=requests)
