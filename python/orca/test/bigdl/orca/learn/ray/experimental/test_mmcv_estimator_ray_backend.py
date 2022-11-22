@@ -237,7 +237,7 @@ def train_dataloader_creator(config):
 
 
 def simple_dataloader_creator(config):
-    train_set = SimpleLinearDataset(size=NUM_SAMPLES)
+    train_set = SimpleLinearDataset()
     train_loader = DataLoader(
         train_set, batch_size=32, shuffle=True, num_workers=2)
     return train_loader

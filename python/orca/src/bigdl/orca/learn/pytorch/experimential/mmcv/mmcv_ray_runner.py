@@ -153,7 +153,7 @@ class MMCVRayEpochRunner(BaseRayRunner, EpochBasedRunner):
             self._iter += 1
 
         # do not call log_buffer.clear() during an epoch,
-        # otherwise, the dirver will not be able to fetch the data.
+        # otherwise, the driver will not be able to fetch the data.
         stats = self._get_epoch_stats()
         self.call_hook('after_train_epoch')
         self._epoch += 1
@@ -175,7 +175,7 @@ class MMCVRayEpochRunner(BaseRayRunner, EpochBasedRunner):
 
         if 'log_vars' in outputs:
             # ensure the key 'loss' is in the log_vars, so the driver can fetch
-            # loss infos from log_buffer, if log_vars['loss'] is not existed, add
+            # loss info from log_buffer, if log_vars['loss'] is not existed, add
             # it to log_vars from outputs['loss']
             if 'loss' in outputs['log_vars']:
                 self.log_buffer.update(outputs['log_vars'], outputs['num_samples'])
