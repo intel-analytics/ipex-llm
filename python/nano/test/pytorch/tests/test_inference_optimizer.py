@@ -111,8 +111,6 @@ class TestInferencePipeline(TestCase):
                                thread_num=1)
 
         acc_model, option = inference_opt.get_best_model()
-        if TORCH_VERSION_LESS_1_10:
-            return
         acc_model, option = inference_opt.get_best_model(accelerator="onnxruntime")
         assert option == "original" or "onnxruntime" in option
         acc_model, option = inference_opt.get_best_model(precision="int8")
@@ -127,8 +125,6 @@ class TestInferencePipeline(TestCase):
                                thread_num=1)
 
         acc_model, option = inference_opt.get_best_model()
-        if TORCH_VERSION_LESS_1_10:
-            return
         acc_model, option = inference_opt.get_best_model(accelerator="onnxruntime")
         assert option == "original" or "onnxruntime" in option
         acc_model, option = inference_opt.get_best_model(precision="int8")
@@ -315,10 +311,6 @@ class TestInferencePipeline(TestCase):
                                latency_sample_num=10)
 
     def test_multiple_input_dataloader(self):
-        # will not run this test if torch < 1.10
-        if TORCH_VERSION_LESS_1_10:
-            return
-
         for model_class in [MultipleInputNet, MultipleInputWithKwargsNet]:
             net = model_class()
             x1 = torch.randn(32, 10)

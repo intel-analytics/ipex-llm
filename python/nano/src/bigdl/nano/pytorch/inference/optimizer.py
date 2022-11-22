@@ -106,6 +106,8 @@ class InferenceOptimizer(BaseInferenceOptimizer):
             "fp32_ipex_channels_last": TorchAccelerationOption(ipex=True,
                                                                channels_last=True),
             "bf16": TorchAccelerationOption(bf16=True),
+            "bf16_channels_last": TorchAccelerationOption(bf16=True,
+                                                          channels_last=True),
             "bf16_ipex": TorchAccelerationOption(bf16=True, ipex=True),
             "bf16_ipex_channels_last": TorchAccelerationOption(bf16=True, ipex=True,
                                                                channels_last=True),
@@ -222,7 +224,7 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                methods whose precision falls within the specified precision tuple.
         :param use_ipex: (optional) if not None, then will only try methods with/without
                this specific ipex setting.
-        :param search_model: Here are three modes for optimization:
+        :param search_mode: Here are three modes for optimization:
 
                | 1. default: This mode only traverses a subset of all combinations. This subset
                | is a collection of methods that we select based on experience and think have
