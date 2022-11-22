@@ -32,7 +32,8 @@ cat_feature = ['zipcode', 'gender', 'occupation', 'category']
 num_feature = ['age']
 total_features = ['user', 'item'] + cat_feature + num_feature
 
-train_df, val_df, embedding_in_dim, user_num, item_num = data_process(data_dir, cat_feature, num_feature)
+train_df, val_df, embedding_in_dim, user_num, item_num = data_process(
+    data_dir, cat_feature, num_feature, neg_scale=4)
 
 # Step 3: Define the NCF model
 config = dict(
@@ -53,8 +54,8 @@ def model_creator(config):
                       item_num=config['item_num'],
                       dropout=config['dropout'],
                       lr=config['lr'],
-                      categorical_features_in_dim=config['embedding_in_dim'],
-                      categorical_features_out_dim=config['embedding_out_dim'],
+                      cat_features_in_dim=config['embedding_in_dim'],
+                      cat_features_out_dim=config['embedding_out_dim'],
                       num_feature_dim=config['num_feature_dim'])
     return model
 
@@ -74,17 +75,17 @@ est.fit(train_df,
         batch_size=batch_size,
         feature_cols=total_features,
         label_cols=['label'],
-        steps_per_epoch=train_steps,
-        validation_data=val_df,
-        validation_steps=val_steps)
+        steps_per_epoch=train_steps)
 
 # Step 5: Distributed evaluation of the trained model
-stats = est.evaluate(val_df,
-                     feature_cols=total_features,
-                     label_cols=['label'],
-                     batch_size=batch_size,
-                     num_steps=val_steps)
-print("Evaluation results:", stats)
+result = est.evaluate(val_df,
+                      feature_cols=total_features,
+                      label_cols=['label'],
+                      batch_size=batch_size,
+                      num_steps=val_steps)
+print('Evaluation results:')
+for r in result:
+    print(r, ":", result[r])
 
 # Step 6: Save the trained Tensorflow model
 est.save("NCF_model")
