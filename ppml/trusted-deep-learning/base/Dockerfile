@@ -60,7 +60,7 @@ RUN env DEBIAN_FRONTEND=noninteractive apt-get update && \
 # We need to downgrade markupsafe, the markupsafe required by bigdl-nano removed `soft_unicode`
 # which is then required by our third-layer gramine make command
     patch /usr/local/lib/python3.7/dist-packages/datasets/utils/filelock.py /filelock.patch && \
-    pip3 install --no-cache markupsafe==2.0.1 && pyarrow==6.0.1 \
+    pip3 install --no-cache markupsafe==2.0.1 pyarrow==6.0.1 \
     patch /ppml/bash.manifest.template /bash.manifest.template.patch
 
 
