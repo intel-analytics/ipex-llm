@@ -51,6 +51,7 @@ class PytorchIPEXJITBF16Model(PytorchIPEXJITModel):
                 errMsg="Applying IPEX BF16 optimization needs the cpu support avx512.",
                 fixMsg="Please set use_ipex to False or not set precision to bf16."
             )
+
         PytorchIPEXJITModel.__init__(self, model, input_sample=input_sample, use_ipex=use_ipex,
                                      dtype=torch.bfloat16, use_jit=use_jit,
                                      channels_last=channels_last, from_load=from_load)
@@ -63,7 +64,7 @@ class PytorchIPEXJITBF16Model(PytorchIPEXJITModel):
 
     def autocast_context_manager(self):
         """Create autocast context"""
-        return autocast(enabled=self._check_cpu_isa)
+        return autocast(enabled=True, dtype=torch.bfloat16)
 
     @contextlib.contextmanager
     def forward_context(self):
