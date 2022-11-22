@@ -287,9 +287,23 @@ class TestMMCVRayEstimator(unittest.TestCase):
         estimator = get_estimator(linear_model_runner_creator)
         estimator.run([simple_dataloader_creator], [('train', 1)])
 
+        # test get_state_dict()
+        state_dict = estimator.get_state_dict()
+        assert 'epoch' in state_dict
+        assert 'model' in state_dict
+        assert 'optimizer' in state_dict
+        self.assertEqual(state_dict['epoch'], 30)
+
+        # test get_model()
         model_state = estimator.get_model()
         weight = model_state["module.fc1.weight"].item()
         assert abs(weight - 2.0) < 0.0001
+
+        # test load_state_dict()
+        state_dict['model']['module.fc1.weight'] = torch.tensor([[3.0]], dtype=torch.float32)
+        estimator.load_state_dict(state_dict)
+        model_state = estimator.get_model()
+        self.assertEqual(model_state["module.fc1.weight"].item(), 3.0)
 
 
 if __name__ == "__main__":
