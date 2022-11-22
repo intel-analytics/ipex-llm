@@ -140,6 +140,7 @@ class TestInferencePipeline(TestCase):
         inference_opt.optimize(model=self.model,
                                training_data=self.train_loader,
                                thread_num=1,
+                               search_mode="all",
                                excludes=["fp32_ipex", "original"])
 
         # original is a special method that must be included in
@@ -153,6 +154,7 @@ class TestInferencePipeline(TestCase):
         inference_opt.optimize(model=self.model,
                                training_data=self.train_loader,
                                thread_num=1,
+                               search_mode="all",
                                includes=["fp32_ipex"])
 
         assert "original" in inference_opt.optimized_model_dict
@@ -309,10 +311,6 @@ class TestInferencePipeline(TestCase):
                                latency_sample_num=10)
 
     def test_multiple_input_dataloader(self):
-        # will not run this test if torch < 1.10
-        if TORCH_VERSION_LESS_1_10:
-            return
-
         for model_class in [MultipleInputNet, MultipleInputWithKwargsNet]:
             net = model_class()
             x1 = torch.randn(32, 10)
@@ -363,7 +361,7 @@ class TestInferencePipeline(TestCase):
         inference_opt = InferenceOptimizer()
         multi_instance_model = inference_opt.to_multi_instance(model, num_processes=2)
 
-        test_loader = create_data_loader(self.data_dir, 1, self.num_workers, data_transform, subset=50, shuffle=False)
+        test_loader = create_data_loader(self.data_dir, 1, self.num_workers, data_transform, subset=10, shuffle=False)
         input_data = list(map(lambda b: b[0], test_loader))
 
         with torch.no_grad():
@@ -373,3 +371,46 @@ class TestInferencePipeline(TestCase):
         for (pred1, pred2) in zip(preds1, preds2):
             np.testing.assert_allclose(pred1, pred2, atol=1e-4,
                                         err_msg=f"\npred1: {pred1}\npred2: {pred2}\n")
+    
+    def test_grid_search_model_with_accelerator(self):
+        inference_opt = InferenceOptimizer()
+
+        inference_opt.optimize(model=self.model,
+                               training_data=self.train_loader,
+                               validation_data=self.test_loader,
+                               metric=self.metric,
+                               direction="max",
+                               thread_num=4,
+                               accelerator=("openvino", ))
+        optim_dict = inference_opt.optimized_model_dict
+        assert len(optim_dict) == 3
+        with pytest.raises(RuntimeError):
+            acc_model, option = inference_opt.get_best_model(accelerator="onnxruntime")
+
+    def test_grid_search_model_with_precision(self):
+        inference_opt = InferenceOptimizer()
+
+        inference_opt.optimize(model=self.model,
+                               training_data=self.train_loader,
+                               validation_data=self.test_loader,
+                               metric=self.metric,
+                               direction="max",
+                               thread_num=4,
+                               precision=('bf16', 'int8'))
+        optim_dict = inference_opt.optimized_model_dict
+        assert len(optim_dict) == 13
+        with pytest.raises(RuntimeError):
+            acc_model, option = inference_opt.get_best_model(precision="fp32")
+
+    def test_default_search_mode(self):
+        inference_opt = InferenceOptimizer()
+
+        inference_opt.optimize(model=self.model,
+                               training_data=self.train_loader,
+                               validation_data=self.test_loader,
+                               metric=self.metric,
+                               direction="max",
+                               thread_num=4,
+                               search_mode="default")
+        optim_dict = inference_opt.optimized_model_dict
+        assert len(optim_dict) == 11
