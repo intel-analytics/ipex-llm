@@ -24,6 +24,7 @@ import warnings
 # Filter out useless Userwarnings
 warnings.filterwarnings('ignore', category=UserWarning, module='pytorch_lightning')
 warnings.filterwarnings('ignore', category=UserWarning, module='torch')
+import os
 import torch
 
 from torch.utils.data import TensorDataset, DataLoader
@@ -1446,7 +1447,8 @@ class BasePytorchForecaster(Forecaster):
              for the first time.
 
         :param thread_num: int, the num of thread limit. The value is set to None by
-               default where no limit is set.
+               default where no limit is set. Besides, the environment variable
+               `OMP_NUM_THREADS` is suggested to be same as `thread_num`.
         :param sess_options: an onnxruntime.SessionOptions instance, if you set this
                other than None, a new onnxruntime session will be built on this setting
                and ignore other settings you assigned(e.g. thread_num...).
@@ -1477,6 +1479,13 @@ class BasePytorchForecaster(Forecaster):
                               "build_onnx has not been supported for distributed "
                               "forecaster. You can call .to_local() to transform the "
                               "forecaster to a non-distributed version.")
+        try:
+            OMP_NUM_THREADS = os.getenv("OMP_NUM_THREADS")
+        except KeyError:
+            OMP_NUM_THREADS = 0
+        if OMP_NUM_THREADS != str(thread_num):
+            warnings.warn("The environment variable OMP_NUM_THREADS is suggested to be same "
+                          f"as thread_num.You can use 'export OMP_NUM_THREADS={thread_num}'.")
         dummy_input = torch.rand(1, self.data_config["past_seq_len"],
                                  self.data_config["input_feature_num"])
         self.accelerated_model = InferenceOptimizer.trace(self.internal,
@@ -1497,7 +1506,8 @@ class BasePytorchForecaster(Forecaster):
              for the first time.
 
         :param thread_num: int, the num of thread limit. The value is set to 1 by
-               default where no limit is set.
+               default where no limit is set. Besides, the environment variable
+               `OMP_NUM_THREADS` is suggested to be same as `thread_num`.
         '''
         from bigdl.chronos.pytorch import TSInferenceOptimizer as InferenceOptimizer
         from bigdl.nano.utils.log4Error import invalidInputError
@@ -1507,6 +1517,13 @@ class BasePytorchForecaster(Forecaster):
                               "build_openvino has not been supported for distributed "
                               "forecaster. You can call .to_local() to transform the "
                               "forecaster to a non-distributed version.")
+        try:
+            OMP_NUM_THREADS = os.getenv("OMP_NUM_THREADS")
+        except KeyError:
+            OMP_NUM_THREADS = 0
+        if OMP_NUM_THREADS != str(thread_num):
+            warnings.warn("The environment variable OMP_NUM_THREADS is suggested to be same "
+                          f"as thread_num.You can use 'export OMP_NUM_THREADS={thread_num}'.")
         dummy_input = torch.rand(1, self.data_config["past_seq_len"],
                                  self.data_config["input_feature_num"])
         self.accelerated_model = InferenceOptimizer.trace(self.internal,
@@ -1531,7 +1548,8 @@ class BasePytorchForecaster(Forecaster):
                 intel-pytorch-extension will bring some acceleration while causing some
                 unexpected error as well.
          :param thread_num: int, the num of thread limit. The value is set to 1 by
-                default where no limit is set.
+                default where no limit is set.Besides, the environment variable
+               `OMP_NUM_THREADS` is suggested to be same as `thread_num`.
          '''
         from bigdl.nano.pytorch import InferenceOptimizer
         from bigdl.nano.utils.log4Error import invalidInputError
@@ -1541,6 +1559,13 @@ class BasePytorchForecaster(Forecaster):
                               "build_jit has not been supported for distributed "
                               "forecaster. You can call .to_local() to transform the "
                               "forecaster to a non-distributed version.")
+        try:
+            OMP_NUM_THREADS = os.getenv("OMP_NUM_THREADS")
+        except KeyError:
+            OMP_NUM_THREADS = 0
+        if OMP_NUM_THREADS != str(thread_num):
+            warnings.warn("The environment variable OMP_NUM_THREADS is suggested to be same "
+                          f"as thread_num.You can use 'export OMP_NUM_THREADS={thread_num}'.")
         dummy_input = torch.rand(1, self.data_config["past_seq_len"],
                                  self.data_config["input_feature_num"])
         self.accelerated_model = InferenceOptimizer.trace(self.internal,
