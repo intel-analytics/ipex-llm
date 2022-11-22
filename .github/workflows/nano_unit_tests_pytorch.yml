@@ -167,7 +167,7 @@ jobs:
           pip install pytest
           if [ ! -z "${{matrix.pytorch-version}}" ]; then
             requirements=(${{matrix.pytorch-version}})
-            bash python/nano/dev/build_and_install.sh linux default false ${requirements[0]}
+            bash python/nano/dev/build_and_install.sh linux default false ${requirements[0]} -f https://software.intel.com/ipex-whl-stable
             pip install ${requirements[1]}
           fi
           source bigdl-nano-init
