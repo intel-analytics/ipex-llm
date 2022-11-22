@@ -55,6 +55,8 @@ TCMALLOC=1
 # Set TF_ENABLE_ONEDNN_OPTS
 export TF_ENABLE_ONEDNN_OPTS=1
 
+OPTIND=1
+
 while getopts ":ojhc-:" opt; do
 	case ${opt} in
 		- )
