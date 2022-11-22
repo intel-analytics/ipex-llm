@@ -227,9 +227,8 @@ def _create_pod(pod_name: str,
             "memory": pod_memory,
         }
 
-        limits = {
-            "cpu": pod_cpu,
-            "memory": pod_memory,
+        limits = {"cpu": pod_cpu,
+                  "memory": pod_memory,
         }
         if sgx_enabled:
             requests["sgx.intel.com/epc"] = pod_epc_memory
