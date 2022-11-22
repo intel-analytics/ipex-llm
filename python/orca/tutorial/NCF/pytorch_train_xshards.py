@@ -79,14 +79,14 @@ est = Estimator.from_torch(model=model_creator,
 est.fit(data=train_data, epochs=10,
         feature_cols=feature_cols,
         label_cols=label_cols,
-        batch_size=1024)
+        batch_size=256)
 
 
 # Step 5: Distributed evaluation of the trained model
 result = est.evaluate(data=test_data,
                       feature_cols=feature_cols,
                       label_cols=label_cols,
-                      batch_size=1024)
+                      batch_size=256)
 print('Evaluation results:')
 for r in result:
     print(r, ":", result[r])
