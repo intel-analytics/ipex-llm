@@ -14,7 +14,7 @@ from bigdl.orca import init_orca_context
 
 init_orca_context(cluster_mode, master, container_image, 
                   cores, memory, num_nodes, driver_cores, driver_memory, 
-                  extra_python_lib, penv_archive, jars, conf)
+                  extra_python_lib, penv_archive, conf)
 ```
 
 In `init_orca_context`, you may specify necessary runtime configurations for running the example on K8s, including:
@@ -28,11 +28,10 @@ In `init_orca_context`, you may specify necessary runtime configurations for run
 * `driver_memory`: a string that specifies the memory for the driver node (default to be `"1g"`).
 * `extra_python_lib`: a string that specifies the path to extra Python packages, separated by comma (default to be `None`). `.py`, `.zip` or `.egg` files are supported.
 * `penv_archive`: a string that specifies the path to a packed conda archive (default to be `None`).
-* `jars`: a string that specifies the path to extra jars files, separated by comma (default to be `None`).
 * `conf`: a dictionary to append extra conf for Spark (default to be `None`).
 
 __Note__: 
-* All arguments __except__ `cluster_mode` will be ignored when using [`spark-submit`](#use-spark-submit) and [`Kubernetes deployment`](#use-kubernetes-deployment-with-conda-archive) to submit and run Orca programs, in which case you are supposed to specify these configurations via the submit command or the YAML file.
+* All arguments __except__ `cluster_mode` will be ignored when using [`spark-submit`](#use-spark-submit) or [`Kubernetes deployment`](#use-kubernetes-deployment-with-conda-archive) to submit and run Orca programs, in which case you are supposed to specify these configurations via the submit command or the YAML file.
 
 After Orca programs finish, you should always call `stop_orca_context` at the end of the program to release resources and shutdown the underlying distributed runtime engine (such as Spark or Ray).
 ```python
@@ -44,7 +43,7 @@ stop_orca_context()
 For more details, please see [OrcaContext](../Overview/orca-context.md).
 
 
-### 1.2 K8s Client&Cluster
+### 1.2 K8s-Client & K8s-Cluster
 The difference between k8s-client mode and k8s-cluster mode is where you run your Spark driver. 
 
 For k8s-client, the Spark driver runs in the client process (outside the K8s cluster), while for k8s-cluster the Spark driver runs inside the K8s cluster.
@@ -106,7 +105,7 @@ In the script:
 
 __Notes:__
 * The __Client Container__ contains all the required environment except K8s configurations.
-* You don't need to create Spark executor containers manually, which is scheduled by K8s at runtime.
+* You don't need to create Spark executor containers manually, which are scheduled by K8s at runtime.
 
 We recommend you to specify more arguments when creating the __Client Container__:
 ```bash
@@ -136,7 +135,7 @@ sudo docker run -itd --net=host \
 In the script:
 * **Please switch the tag according to the BigDL image you pull.**
 * **Please make sure you are mounting the correct Volume path (e.g. NFS) into the container.**
-* `/path/to/nfsdata:/bigdl/nfsdata`: mount NFS path on the host into the container as the specified path (e.g. "/bigdl/nfsdata").
+* `-v /path/to/nfsdata:/bigdl/nfsdata`: mount NFS path on the host into the container as the specified path (e.g. "/bigdl/nfsdata").
 * `NOTEBOOK_PORT`: an integer that specifies the port number for the Notebook (only required if you use notebook).
 * `NOTEBOOK_TOKEN`: a string that specifies the token for Notebook (only required if you use notebook).
 * `RUNTIME_SPARK_MASTER`: a URL format that specifies the Spark master.
@@ -158,6 +157,7 @@ Once the container is created, a `containerID` would be returned and with which 
 ```bash
 sudo docker exec -it <containerID> bash
 ```
+In the remaining part of this tutorial, you are supposed to operate and run commands inside this __Client Container__.
 
 
 ---
@@ -178,15 +178,15 @@ pip install torch torchvision
 
 ---
 ## 4. Prepare Dataset
-To run the example provided by this tutorial on K8s, you should upload the dataset to a K8s Volume (e.g. NFS).
+To run the Fashion-MNIST example provided by this tutorial on K8s, you should upload the dataset to a K8s Volume (e.g. NFS).
 
-Please download the Fashion-MNIST dataset manually on your __Develop Node__ (where you launch the container image). Note that PyTorch `FashionMNIST` Dataset requires unzipped files located in `FashionMNIST/raw/` under the root folder.
+Please download the Fashion-MNIST dataset manually on your __Develop Node__ (where you launch the container image) and put the data into the Volume. Note that PyTorch `FashionMNIST Dataset` requires unzipped files located in `FashionMNIST/raw/` under the root folder.
 
 ```bash
 # PyTorch official dataset download link
 git clone https://github.com/zalandoresearch/fashion-mnist.git
 
-# Move the dataset to NFS
+# Move the dataset to NFS under the folder FashionMNIST/raw
 mv /path/to/fashion-mnist/data/fashion /bigdl/nfsdata/dataset/FashionMNIST/raw
 
 # Extract FashionMNIST archives
@@ -196,66 +196,62 @@ gzip -dk /bigdl/nfsdata/dataset/FashionMNIST/raw/*
 
 ---
 ## 5. Prepare Custom Modules
-Spark allows to upload Python files(`.py`), and zipped Python packages(`.zip`) to the executors by setting `--py-files` option in Spark scripts or `extra_python_lib` in `init_orca_context`. 
+Spark allows to upload Python files(`.py`), and zipped Python packages(`.zip`) across the cluster by setting `--py-files` option in Spark scripts or specifying `extra_python_lib` in `init_orca_context`. 
 
 The FasionMNIST example needs to import modules from `model.py`.
 
-__Note:__ Please upload the extra Python dependency files to NFS when running the program on k8s-cluster mode (see more details in __[Section 6.2.2](#622-k8s-cluster)__).
+__Note:__ Please upload the extra Python dependency files to the Volume (e.g. NFS) when running the program on k8s-cluster mode (see __[Section 6.2.2](#id2)__ for more details).
 
-* When using `python` command, please specify `extra_python_lib` in `init_orca_context`.
-    ```python
-    import os
-    from bigdl.orca import init_orca_context, stop_orca_context
-    from model import model_creator, optimizer_creator
+* When using [`python` command](#use-python-command), please specify `extra_python_lib` in `init_orca_context`.
+```python
+init_orca_context(..., extra_python_lib="/bigdl/nfsdata/model.py")
+```
+For more details, please see [BigDL Python Dependencies](https://bigdl.readthedocs.io/en/latest/doc/Orca/Overview/orca-context.html#python-dependencies).
 
-    conf={
-          "spark.kubernetes.executor.volumes.persistentVolumeClaim.nfsvolumeclaim.options.claimName":"nfsvolumeclaim",
-          "spark.kubernetes.executor.volumes.persistentVolumeClaim.nfsvolumeclaim.mount.path": "/bigdl/nfsdata",
-        }
 
-    init_orca_context(cluster_mode="k8s-client", num_nodes=2, cores=2, memory="2g",
-                      master="k8s://https://<k8s-apiserver-host>:<k8s-apiserver-port>",
-                      container_image="intelanalytics/bigdl-k8s:latest",
-                      extra_python_lib="/path/to/model.py", conf=conf)
-    ```
-    
-    Please see more details in [Orca Document](https://bigdl.readthedocs.io/en/latest/doc/Orca/Overview/orca-context.html#python-dependencies).
+* When using [`spark-submit`](#use-spark-submit), please specify `--py-files` option in the submit command.    
+```bash
+spark-submit
+    ...
+    --py-files file:///bigdl/nfsdata/model.py
+    ...
+```
+For more details, please see [Spark Python Dependencies](https://spark.apache.org/docs/latest/submitting-applications.html). 
 
-* When using `spark-submit` script, please specify `--py-files` option in the script.    
-    ```bash
-    --py-files ${BIGDL_HOME}/python/bigdl-spark_${SPARK_VERSION}-${BIGDL_VERSION}-python-api.zip,file:///bigdl/nfsdata/model.py
-    ```
 
-    Then import custom modules:
-    ```python
-    from bigdl.orca import init_orca_context, stop_orca_context
-    from model import model_creator, optimizer_creator
+* After uploading `model.py` to K8s, you can import this custom module as follows:
+```python
+from model import model_creator, optimizer_creator
+```
 
-    init_orca_context(cluster_mode="spark-submit")
-    ```
+__Note__:
 
-    Please see more details in [Spark Document](https://spark.apache.org/docs/latest/submitting-applications.html). 
+If your program depends on a nested directory of Python files, you are recommended to follow the steps below to use a zipped package instead.
 
-__Notes:__
-* You could follow the steps below to use a zipped package instead (recommended if your program depends on a nested directory of Python files) :
-    1. Compress the directory into a Zipped Package.
-        ```bash
-        zip -q -r FashionMNIST_zipped.zip FashionMNIST
-        ```
-    2. Please follow the same method as above (using `.py` files) to upload the zipped package (`FashionMNIST_zipped.zip`) to K8s. 
-    3. You should import custom modules from the unzipped file as below.
-        ```python
-        from FashionMNIST.model import model_creator, optimizer_creator
-        ```
+1. Compress the directory into a zipped package.
+```bash
+zip -q -r FashionMNIST_zipped.zip FashionMNIST
+```
+2. Upload the zipped package (`FashionMNIST_zipped.zip`) to K8s by setting `--py-files` or specifying `extra_python_lib` as discussed above.
+
+3. You can then import the custom modules from the unzipped file in your program as follows:
+```python
+from FashionMNIST.model import model_creator, optimizer_creator
+```
 
 
 ---
 ## 6. Run Jobs on K8s
-In the following part, we will show you how to submit and run the Orca example on K8s:
+In the following part, we will illustrate four ways to submit and run BigDL Orca applications on K8s.
+
 * Use `python` command
-* Use `spark-submit` script
+* Use `spark-submit`
 * Use Kubernetes Deployment (with Conda Archive)
 * Use Kubernetes Deployment (with Integrated Image)
+
+You can choose one of them based on your preference or cluster settings.
+
+We provide the running command for the [Fashion-MNIST example](https://github.com/intel-analytics/BigDL/blob/main/python/orca/tutorial/pytorch/FashionMNIST/) in this section.
 
 ### 6.1 Use `python` command
 #### 6.1.1 K8s-Client
