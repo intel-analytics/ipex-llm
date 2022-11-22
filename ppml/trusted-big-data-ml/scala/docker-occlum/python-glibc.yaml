@@ -10,3 +10,8 @@ targets:
     copy:
       - dirs:
           - /opt/python-occlum
+  # for attestation
+  - target: /opt/occlum/glibc/lib
+    copy:
+      - files:
+          - /usr/lib/x86_64-linux-gnu/libdcap_quoteprov.so.1
