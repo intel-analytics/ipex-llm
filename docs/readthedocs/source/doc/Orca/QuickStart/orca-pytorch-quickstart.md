@@ -116,7 +116,7 @@ First, Create an Estimator
 from bigdl.orca.learn.pytorch import Estimator 
 from bigdl.orca.learn.metrics import Accuracy
 
-est = Estimator.from_torch(model=model, optimizer=adam, loss=criterion, metrics=[Accuracy()])
+est = Estimator.from_torch(model=model, optimizer=adam, loss=criterion, metrics=[Accuracy()], backend="bigdl")
 ```
 
 Next, fit and evaluate using the Estimator
