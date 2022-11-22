@@ -87,7 +87,7 @@ class TorchAccelerationOption(AccelerationOption):
                                             precision=self.get_precision(),
                                             accelerator=accelerator,
                                             use_ipex=self.ipex,
-                                            calib_dataloader=training_data,
+                                            calib_data=training_data,
                                             input_sample=input_sample,
                                             method=ort_method,
                                             thread_num=thread_num,
@@ -181,6 +181,7 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                | prediction and target then returns an accuracy value in this calling
                | method `metric(pred, target)`. This requires data in validation_data
                | is composed of (input_data, target).
+               |
                | 2. A callable object that takes model and validation_data (if
                | validation_data is not None) as input, and returns an accuracy value in
                | this calling method metric(model, data_loader) (or metric(model) if
@@ -366,7 +367,8 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                  precision: str = 'int8',
                  accelerator: Optional[str] = None,
                  use_ipex: bool = False,
-                 calib_dataloader: Optional[DataLoader] = None,
+                 calib_data: Union[DataLoader, torch.Tensor, Tuple[torch.Tensor]] = None,
+                 calib_dataloader: Union[DataLoader] = None,
                  metric: Optional[Metric] = None,
                  accuracy_criterion: Optional[dict] = None,
                  approach: str = 'static',
@@ -392,9 +394,25 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                                 supported type: 'int8', 'bf16', 'fp16', defaults to 'int8'.
         :param accelerator:     Use accelerator 'None', 'onnxruntime', 'openvino', defaults to None.
                                 None means staying in pytorch.
+        :param calib_data:      Calibration data is required for static quantization.
+                                It's also used as validation dataloader.
+                                calib_data support following formats:
+
+                                | 1. a torch.utils.data.dataloader.DataLoader object for training.
+                                |
+                                | 2. a single torch.Tensor which used for training, this case is
+                                | used to accept single sample input x.
+                                |
+                                | 3. a tuple of torch.Tensor which used for training, this case is
+                                | used to accept single sample input (x, y) or (x1, x2) et al.
         :param calib_dataloader:    A torch.utils.data.dataloader.DataLoader object for calibration.
                                     Required for static quantization.
                                     It's also used as validation dataloader.
+
+               .. warning::
+                  ``calib_dataloader`` will be deprecated in future release.
+
+                  Please use ``calib_data`` instead.
         :param metric:              A torchmetrics.metric.Metric object for evaluation.
         :param accuracy_criterion:  Tolerable accuracy drop, defaults to None meaning no
                                     accuracy control.
@@ -423,7 +441,7 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                             Combine with timeout field to decide when to exit.
                             "timeout=0, max_trials=1" means it will try quantization only once and
                             return satisfying best model.
-        :param input_sample:      An input example to convert pytorch model into ONNX/OpenVINO.
+        :param input_sample:      An input example to convert pytorch model into ONNX/OpenVINO/JIT.
         :param thread_num: (optional) a int represents how many threads(cores) is needed for
                            inference, only valid for accelerator='onnxruntime'
                            or accelerator='openvino'.
@@ -464,6 +482,21 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                 invalidInputError(False,
                                   "Accelerator {} is invalid for BF16.".format(accelerator))
         if precision == 'int8':
+            # transform non-dataloader to dataloader
+            if calib_data is not None and not isinstance(calib_data, DataLoader):
+                dataset = RepeatDataset(sample=calib_data, num=1)
+                calib_dataloader = DataLoader(dataset, batch_size=1)
+                calib_dataloader = remove_batch_dim_fn(calib_dataloader)
+            else:
+                if calib_data is None and calib_dataloader is not None:
+                    # will be deprecate in future release
+                    warnings.warn("`calib_dataloader` will be deprecated in future release, please"
+                                  "use `calib_data` instead.",
+                                  category=DeprecationWarning)
+                    calib_dataloader = calib_dataloader
+                else:
+                    calib_dataloader = calib_data
+
             # transform the dataloader to inc mode
             inc_calib_dataloader =\
                 transform_multiple_input_dataloader_to_inc_mode(model,
