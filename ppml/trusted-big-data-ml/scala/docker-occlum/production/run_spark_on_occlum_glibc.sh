@@ -168,8 +168,6 @@ build_spark() {
     cp -f /usr/lib/x86_64-linux-gnu/*sgx* /opt/occlum_spark/image/opt/occlum/glibc/lib --remove-destination
     cp -f /usr/lib/x86_64-linux-gnu/*dcap* /opt/occlum_spark/image/opt/occlum/glibc/lib --remove-destination
     cp -f /usr/lib/x86_64-linux-gnu/libcrypt.so.1 /opt/occlum_spark/image/opt/occlum/glibc/lib --remove-destination
-
-    bash /opt/quote_move_libs.sh
     # Copy libhadoop
     cp /opt/libhadoop.so image/lib
     # Prepare Spark
