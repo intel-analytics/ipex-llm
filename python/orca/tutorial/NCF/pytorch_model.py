@@ -55,24 +55,24 @@ class NCF(nn.Module):
 
         self.embed_user_GMF = nn.Embedding(user_num, factor_num)
         self.embed_item_GMF = nn.Embedding(item_num, factor_num)
-        self.embed_user_MLP = nn.Embedding(user_num, factor_num)
-        self.embed_item_MLP = nn.Embedding(item_num, factor_num)
+        self.embed_user_MLP = nn.Embedding(user_num,
+                                           factor_num * (2 ** (num_layers - 1)))
+        self.embed_item_MLP = nn.Embedding(user_num,
+                                           factor_num * (2 ** (num_layers - 1)))
         self.embed_catFeats_MLP = [nn.Embedding(self.sparse_feats_input_dims[i],
                                                 self.sparse_feats_embed_dims[i])
                                    for i in range(self.num_sparse_feats)]
 
-        input_size = factor_num * 2 + sum(self.sparse_feats_embed_dims) + num_dense_feats
+        input_size = factor_num * (2 ** num_layers) + \
+            sum(self.sparse_feats_embed_dims) + num_dense_feats
         output_size = factor_num * (2 ** (num_layers - 1))
         MLP_modules = []
-        MLP_modules.append(nn.Dropout(p=self.dropout))
-        MLP_modules.append(nn.Linear(input_size, output_size))
-        MLP_modules.append(nn.ReLU())
-        for i in range(num_layers-1):
-            input_size = output_size
-            output_size = output_size // 2
+        for i in range(num_layers):
             MLP_modules.append(nn.Dropout(p=self.dropout))
             MLP_modules.append(nn.Linear(input_size, output_size))
             MLP_modules.append(nn.ReLU())
+            input_size = output_size
+            output_size = output_size // 2
 
         self.MLP_layers = nn.Sequential(*MLP_modules)
 
