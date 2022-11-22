@@ -106,9 +106,7 @@ def data_process(data_dir, cat_feature, num_feature, neg_scale=4):
     item_num = df.agg({'item': "max"}).collect()[0]["max(item)"] + 1
 
     df = generate_neg_sample(df, item_num, neg_scale=neg_scale)
-    df_add_feature, embedding_in_dim = add_feature(df, df_user,
-                                                   df_item, cat_feature,
-                                                   num_feature)
+    df_add_feature, embedding_in_dim = add_feature(df, df_user, df_item, cat_feature, num_feature)
 
     train_df, val_df = df_add_feature.randomSplit([0.8, 0.2], seed=100)
 
@@ -123,7 +121,8 @@ if __name__ == "__main__":
     cat_feature = ['zipcode', 'gender', 'occupation', 'category']
     num_feature = ['age']
 
-    train_data, test_data, embedding_in_dim, user_num, item_num = data_process("ml-1m", cat_feature, num_feature)
+    train_data, test_data, embedding_in_dim, user_num, item_num = \
+        data_process("ml-1m", cat_feature, num_feature, neg_scale=4)
     train_data.write.csv('./train_dataframe', header=True, sep=',', mode='overwrite')
     test_data.write.csv('./test_dataframe', header=True, sep=',', mode='overwrite')
     stop_orca_context()

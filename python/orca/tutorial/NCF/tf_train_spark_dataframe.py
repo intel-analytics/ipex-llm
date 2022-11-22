@@ -32,8 +32,8 @@ cat_feature = ['zipcode', 'gender', 'occupation', 'category']
 num_feature = ['age']
 total_features = ['user', 'item'] + cat_feature + num_feature
 
-train_df, val_df, embedding_in_dim, user_num, item_num = data_process(
-    data_dir, cat_feature, num_feature, neg_scale=4)
+train_df, val_df, embedding_in_dim, user_num, item_num = \
+    data_process(data_dir, cat_feature, num_feature, neg_scale=4)
 
 # Step 3: Define the NCF model
 config = dict(
