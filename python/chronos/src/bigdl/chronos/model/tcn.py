@@ -60,7 +60,7 @@ class Chomp1d(nn.Module):
 class DummyEncoder(nn.Module):
     def __init__(self):
         super().__init__()
-    
+
     def forward(self, x):
         return x
 
