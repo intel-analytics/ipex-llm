@@ -84,8 +84,7 @@ import torch
 from torchvision import datasets, transforms
 
 torch.manual_seed(0)
-batch_size = 320
-test_batch_size = 320
+batch_size = 64
 dir = '/tmp/dataset'
 
 def train_loader_creator(config, batch_size):
@@ -129,7 +128,7 @@ est.fit(data=train_loader_creator, epochs=1, batch_size=batch_size)
 Finally, evaluate using the Estimator.
 
 ```python
-result = est.evaluate(data=test_loader_creator, batch_size=test_batch_size)
+result = est.evaluate(data=test_loader_creator, batch_size=batch_size)
 for r in result:
     print(r, ":", result[r])
 ```
