@@ -75,10 +75,9 @@ Select your preferences in the panel below to find the proper install command. T
 
                 <tr>
                     <td colspan="1">Inference</td>
-                    <td colspan="2" title="Non inference."><button
-                            id="inferenceno">No</button></td>
-                    <td colspan="2" title="Inference model."><button
-                            id="inferenceyes">Yes</button></td>
+                    <td colspan="2" title="Non inference."><button id="inferenceno">No</button></td>
+                    <td colspan="2" title="Inference model."><button id="inferenceyes">Yes</button></td>
+                </tr>
 
                 <tr>
                     <td colspan="1">Hardware</td>
