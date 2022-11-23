@@ -62,20 +62,6 @@ class PytorchIPEXJITBF16Model(PytorchIPEXJITModel):
         cpuinfo = CPUInfo()
         return cpuinfo.has_avx512
 
-    def autocast_context_manager(self):
-        """Create autocast context"""
-        return autocast(enabled=True, dtype=torch.bfloat16, cache_enabled=True)
-
-    @contextlib.contextmanager
-    def forward_context(self):
-        """Enable autocast context"""
-        with self.autocast_context_manager():
-            yield
-
-    def forward_step(self, *inputs):
-        with self.forward_context():
-            return super().forward_step(*inputs)
-
     @property
     def status(self):
         status = super().status
