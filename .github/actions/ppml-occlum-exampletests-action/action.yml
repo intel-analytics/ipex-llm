@@ -1,6 +1,14 @@
 name: 'Run PPML Occlum ExampleTests'
 description: 'Run PPML Occlum ExampleTests'
-
+inputs:
+  image:
+    description: 'image'
+    required: true
+    default: '10.239.45.10/arda/intelanalytics/bigdl-ppml-trusted-big-data-ml-scala-occlum'
+  image-tag:
+    description: 'image tag'
+    required: true
+    default: '2.2.0-SNAPSHOT'
 runs:
   using: "composite"
   steps:
