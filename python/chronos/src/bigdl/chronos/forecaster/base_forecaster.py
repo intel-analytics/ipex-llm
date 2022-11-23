@@ -422,13 +422,17 @@ class BasePytorchForecaster(Forecaster):
                 if isinstance(validation_data, tuple):
                     validation_data = np_to_dataloader(validation_data, batch_size,
                                                        self.num_processes)
+                if os.path.exists("./forecaster_tmp_log"):
+                    delete_folder("./forecaster_tmp_log")  # clean the log before fitting
+                if os.path.exists("./validation_tmp_ckpt"):
+                    delete_folder("./validation_tmp_ckpt")  # clean the ckpt before fitting
                 self.trainer.fit(self.internal, data, validation_data)
                 self.fitted = True
                 fit_out = read_csv('./forecaster_tmp_log/version_0/metrics.csv')
                 delete_folder("./forecaster_tmp_log")
                 if validation_mode == 'best_epoch':
-                    self.load('validation/best.ckpt')
-                    delete_folder("./validation")
+                    self.load('validation_tmp_ckpt/best.ckpt')
+                    delete_folder("./validation_tmp_ckpt")
                 # modify logger attr in trainer, otherwise predict will report error
                 self.trainer._logger_connector.on_trainer_init(
                     False,
