@@ -52,7 +52,7 @@ class Estimator(object):
                Default: None if no validation is involved.
         :param backend: The distributed backend for the Estimator. One of "spark",  "ray",
                "bigdl" or "horovod".
-               Default: `spark`.
+               Default: "spark".
         :param config: A parameter config dict, CfgNode or any class instance that plays a role of
                configuration to create model, loss, optimizer, scheduler and data.
                Default: None if no config is needed.
