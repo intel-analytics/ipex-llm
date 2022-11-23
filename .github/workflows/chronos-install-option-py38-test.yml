@@ -39,7 +39,7 @@ jobs:
         shell: bash
         run: |
           conda remove -n chronos-py38-env -y --all
-          conda create -n chronos-py38-env -y python==3.8 setuptools==58.0.4 -c ${CONDA_CHANNEL} --override-channels
+          conda create -n chronos-py38-env -y python==3.8 setuptools==58.0.4 -c ${GONDOLIN_CONDA_CHANNEL} --override-channels
           source activate chronos-py38-env
           pip install pytest==5.4.1
           apt-get update
@@ -75,7 +75,7 @@ jobs:
         shell: bash
         run: |
           conda remove -n chronos-py38-env -y --all
-          conda create -n chronos-py38-env -y python==3.8 setuptools==58.0.4 -c ${CONDA_CHANNEL} --override-channels
+          conda create -n chronos-py38-env -y python==3.8 setuptools==58.0.4 -c ${GONDOLIN_CONDA_CHANNEL} --override-channels
           source activate chronos-py38-env
           pip install pytest==5.4.1
           apt-get update
@@ -111,7 +111,7 @@ jobs:
         shell: bash
         run: |
           conda remove -n chronos-py38-env -y --all
-          conda create -n chronos-py38-env -y python==3.8 setuptools==58.0.4 -c ${CONDA_CHANNEL} --override-channels
+          conda create -n chronos-py38-env -y python==3.8 setuptools==58.0.4 -c ${GONDOLIN_CONDA_CHANNEL} --override-channels
           source activate chronos-py38-env
           pip install pytest==5.4.1
           apt-get update
@@ -147,7 +147,7 @@ jobs:
         shell: bash
         run: |
           conda remove -n chronos-py38-env -y --all
-          conda create -n chronos-py38-env -y python==3.8 setuptools==58.0.4 -c ${CONDA_CHANNEL} --override-channels
+          conda create -n chronos-py38-env -y python==3.8 setuptools==58.0.4 -c ${GONDOLIN_CONDA_CHANNEL} --override-channels
           source activate chronos-py38-env
           pip install pytest==5.4.1
           apt-get update
