@@ -55,9 +55,9 @@ COPY --from=tini /usr/local/bin/tini /sbin/tini
 #COPY --from=final /etc /etc
 
 # Add jdk and attestation ppml jars
-#COPY --from=final /usr/lib/jvm/java-8-openjdk-amd64 /usr/lib/jvm/java-8-openjdk-amd64
-#COPY --from=final ${BIGDL_HOME}/jars/bigdl* ${BIGDL_HOME}/jars/
-#COPY --from=final ${BIGDL_HOME}/jars/all-* ${BIGDL_HOME}/jars/
+COPY --from=final /usr/lib/jvm/java-8-openjdk-amd64 /usr/lib/jvm/java-8-openjdk-amd64
+COPY --from=final ${BIGDL_HOME}/jars/bigdl* ${BIGDL_HOME}/jars/
+COPY --from=final ${BIGDL_HOME}/jars/all-* ${BIGDL_HOME}/jars/
 
 #Add quote attest lib
 COPY --from=final /usr/lib/x86_64-linux-gnu/ /usr/lib/x86_64-linux-gnu/
