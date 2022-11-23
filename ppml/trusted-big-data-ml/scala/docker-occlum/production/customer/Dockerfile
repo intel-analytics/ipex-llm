@@ -52,6 +52,7 @@ COPY --from=final /opt/spark /opt/spark
 COPY --from=final /var/run/secrets /var/run/secrets
 COPY --from=final /opt/intel /opt/intel
 COPY --from=tini /usr/local/bin/tini /sbin/tini
+COPY --from=final /etc /etc
 
 # Add jdk and attestation ppml jars
 #COPY --from=final /usr/lib/jvm/java-8-openjdk-amd64 /usr/lib/jvm/java-8-openjdk-amd64
