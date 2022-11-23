@@ -27,42 +27,46 @@ from sklearn.preprocessing import MinMaxScaler
 
 
 class NCFData(data.Dataset):
-    def __init__(self, data):
+    def __init__(self, data,
+                 num_item=0, train_mat=None, num_ng=0):
+        super(NCFData, self).__init__()
         self.data = data
+        self.num_item = num_item
+        self.train_mat = train_mat
+        self.num_ng = num_ng
+        self.is_sampling = False
+        self.data['label'] = [1.0 for _ in range(len(self.data))]
+
+    def ng_sample(self):
+        self.is_sampling = True
+
+        features_ps = self.data.values[:, :-1].tolist()
+        features_ng = []
+        for x in features_ps:
+            u = x[0]
+            for t in range(self.num_ng):
+                j = np.random.randint(self.num_item)
+                while (u, j) in self.train_mat:
+                    j = np.random.randint(self.num_item)
+                features_ng.append([u, j])
+        labels_ps = [1.0 for _ in range(len(features_ps))]
+        labels_ng = [0.0 for _ in range(len(features_ng))]
+        features_fill = features_ps + features_ng
+        labels_fill = labels_ps + labels_ng
+        self.data = pd.DataFrame(features_fill,
+                                 columns=["user", "item"], dtype=np.int64)
+        self.data['label'] = labels_fill
+
+    def merge_features(self, users, movies, total_cols):
+        self.data = users.merge(self.data, on='user')
+        self.data = self.data.merge(movies, on='item')
+        self.data = self.data.loc[:, total_cols]
 
     def __len__(self):
         return len(self.data)
 
     def __getitem__(self, idx):
         return tuple(self.data[idx])
-
-    # sample negative items for datasets
-    def ng_sampling(self, num_ng, user_num, item_num):
-        # load ratings as a dok matrix
-        features_ps = self.data.values.tolist()
-        train_mat = sp.dok_matrix((user_num, item_num), dtype=np.int64)
-        for x in features_ps:
-            train_mat[x[0], x[1]] = 1
-
-        features_ng = []
-        for x in features_ps:
-            u = x[0]
-            for t in range(num_ng):
-                j = np.random.randint(item_num)
-                while (u, j) in train_mat:
-                    j = np.random.randint(item_num)
-                features_ng.append([u, j])
-        features = features_ps + features_ng
-        labels_ps = [1.0 for _ in range(len(features_ps))]
-        labels_ng = [0.0 for _ in range(len(features_ng))]
-        labels = labels_ps + labels_ng
-        self.data = pd.DataFrame(features, columns=["user", "item"], dtype=np.int64)
-        self.data["label"] = labels
-            
-    def merge_features(self, users, movies, total_cols):
-        self.data = users.merge(self.data, on='user')
-        self.data = self.data.merge(movies, on='item')
-        self.data = self.data.loc[:, total_cols]
 
 
 def load_dataset(dataset_dir, cal_sparse_feats_input_dims=True,
@@ -110,18 +114,21 @@ def load_dataset(dataset_dir, cal_sparse_feats_input_dims=True,
 
     # scale dense features
     scaler = MinMaxScaler()
-    age = users.age.values.reshape(-1, 1) 
+    age = users.age.values.reshape(-1, 1)
     age = scaler.fit_transform(age)
     users.age = pd.Series(age[:, 0], dtype=np.float32)
 
-    dataset = NCFData(ratings)
+    # load ratings as a dok matrix
+    features_ps = ratings.values.tolist()
+    train_mat = sp.dok_matrix((user_num, item_num), dtype=np.int64)
+    for x in features_ps:
+        train_mat[x[0], x[1]] = 1
+
+    dataset = NCFData(ratings, item_num, train_mat, num_ng)
     if num_ng > 0:
-        dataset.ng_sampling(num_ng, user_num, item_num)
-    else:
-        dataset.data["label"] = [1.0 for _ in range(len(dataset.data))]
+        dataset.ng_sample()
     if merge_features:
         dataset.merge_features(users, movies, feature_cols+label_cols)
-    dataset.data = list(map(lambda row: list(row[1:]), dataset.data.itertuples()))
     return dataset, user_num, item_num, sparse_feats_input_dims
 
 
