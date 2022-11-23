@@ -24,8 +24,11 @@ from pytorch_lightning import LightningModule
 import torch
 import subprocess
 import os
+from bigdl.nano.utils.inference.model import AcceleratedModel
+from bigdl.nano.utils.inference.pytorch.model import AcceleratedLightningModule
 from bigdl.nano.utils.log4Error import invalidOperationError, invalidInputError
 from bigdl.nano.pytorch.utils import TORCH_VERSION_LESS_1_10, TORCH_VERSION_LESS_1_12
+from bigdl.nano.utils import CPUInfo
 
 invalidInputError(
     not TORCH_VERSION_LESS_1_10,
@@ -113,18 +116,23 @@ def stdout_redirected(to=os.devnull):
             _redirect_stdout(to=old_stdout)
 
 
-class BF16Model(LightningModule):
+class BF16Model(AcceleratedLightningModule):
     """Model of BFloat16 with auto mixed precision."""
 
-    def __init__(self, model):  # noqa
-        super().__init__()
-        self.bf16_model = model.bfloat16()
+    def __init__(self, model, channels_last=None):  # noqa
+        model.eval()
+        super().__init__(model)
+        self._bf16_check()
+        self.model = model  # use mixed precision instead of complete precision
+        self.channels_last = channels_last
+        if self.channels_last is True:
+            self.model = self.model.to(memory_format=torch.channels_last)
 
     @property
     def _has_bf16_isa(self):
         """Indicator to verify if bf16 instructions are available."""
-        msg = subprocess.check_output(["lscpu"]).decode("utf-8")
-        return "avx512_core_bf16" in msg or "amx_bf16" in msg or "avx512_bf16" in msg
+        cpuinfo = CPUInfo()
+        return cpuinfo.has_bf16
 
     @property
     def _allow_non_bf16(self):
@@ -158,14 +166,21 @@ class BF16Model(LightningModule):
             max_bf16_isa = "AVX512"
         return max_bf16_isa
 
-    @autocast()
-    def forward(self, *args, **kwargs):  # noqa
-        self._bf16_check(*args, **kwargs)
-        return self.bf16_model(*args, **kwargs)
+    def on_forward_start(self, inputs):
+        return inputs
 
-    def _bf16_check(self, *args, **kwargs):
+    @autocast(enabled=True, dtype=torch.bfloat16, cache_enabled=True)
+    def forward_step(self, *inputs):
+        if self.channels_last is True:
+            inputs = tuple(map(lambda x: x.to(memory_format=torch.channels_last), inputs))
+        return self.model(*inputs)
+
+    def on_forward_end(self, outputs):
+        return outputs
+
+    def _bf16_check(self):
         if getattr(self, "_is_bf16", None) is not None:
-            return
+            return self._is_bf16
 
         invalidInputError(
             not TORCH_VERSION_LESS_1_12,
@@ -195,16 +210,39 @@ class BF16Model(LightningModule):
             #                    " BF16 acceleration."
             #         )
         else:
-            if self._allow_non_bf16:
-                self._is_bf16 = False
-            else:
-                invalidOperationError(
-                    False,
-                    errMsg="Your machine or OS doesn't support BF16 instructions.",
-                    fixMsg="Please check your machine and OS to make sure"
-                           " BF16 support is available."
-                )
+            # close error for no BF16 instructions, just warning.
+            self._is_bf16 = False
+            # if self._allow_non_bf16:
+            #     self._is_bf16 = False
+
+            # else:
+            #     invalidOperationError(
+            #         False,
+            #         errMsg="Your machine or OS doesn't support BF16 instructions.",
+            #         fixMsg="Please check your machine and OS to make sure"
+            #                " BF16 support is available."
+            #     )
 
         if not self._is_bf16:
-            warning("You are not running BF16 model with ISA support."
-                    " The performance will be quite low.")
+            warning("Your machine or OS doesn't support BF16 instructions. "
+                    "You are running BF16 model without ISA support, and the "
+                    "performance might be quite low.")
+
+    @property
+    def status(self):
+        status = super().status
+        status.update({"channels_last": self.channels_last,
+                       "checkpoint": "ckpt.pth"})
+        return status
+
+    @staticmethod
+    def _load(path, model):
+        status = BF16Model._load_status(path)
+        checkpoint_path = path / status['checkpoint']
+        state_dict = torch.load(checkpoint_path)
+        model.eval()
+        model.load_state_dict(state_dict)
+        return BF16Model(model, channels_last=status['channels_last'])
+
+    def _save_model(self, path):
+        torch.save(self.model.state_dict(), path / "ckpt.pth")

@@ -65,6 +65,9 @@ init_instance() {
         echo "${edit_json}" > Occlum.json
     fi
 
+    edit_json="$(cat Occlum.json | jq '.mount+=[{"target": "/etc","type": "hostfs","source": "/etc"}]')" && \
+    echo "${edit_json}" > Occlum.json
+
     if [[ -z "$META_SPACE" ]]; then
         echo "META_SPACE not set, using default value 256m"
         META_SPACE=256m
@@ -109,6 +112,7 @@ init_instance() {
            cd /opt/occlum_spark
            # dir need to exit when writing quote
            mkdir -p /opt/occlum_spark/image/etc/occlum_attestation/
+           mkdir -p /etc/occlum_attestation/
            #copy bom to generate quote
            copy_bom -f /root/demos/remote_attestation/dcap/dcap-ppml.yaml --root image --include-dir /opt/occlum/etc/template
     fi
@@ -158,6 +162,12 @@ build_spark() {
     cp $occlum_glibc/libdl.so.2 image/$occlum_glibc
     cp $occlum_glibc/librt.so.1 image/$occlum_glibc
     cp $occlum_glibc/libm.so.6 image/$occlum_glibc
+
+    #copy libs for attest quote in occlum
+    rm image/lib/*
+    cp -f /usr/lib/x86_64-linux-gnu/*sgx* /opt/occlum_spark/image/opt/occlum/glibc/lib --remove-destination
+    cp -f /usr/lib/x86_64-linux-gnu/*dcap* /opt/occlum_spark/image/opt/occlum/glibc/lib --remove-destination
+    cp -f /usr/lib/x86_64-linux-gnu/libcrypt.so.1 /opt/occlum_spark/image/opt/occlum/glibc/lib --remove-destination
     # Copy libhadoop
     cp /opt/libhadoop.so image/lib
     # Prepare Spark
@@ -190,48 +200,14 @@ attestation_init() {
     cd /opt/occlum_spark
     bash /opt/mount.sh
 
-    #before start occlum app after occlum build
-    if [[ $ATTESTATION == "true" ]]; then
-        if [[ $PCCS_URL == "" ]]; then
-            echo "[ERROR] Attestation set to true but NO PCCS"
-            exit 1
-        else
-            # when running
-            echo 'PCCS_URL='${PCCS_URL}'/sgx/certification/v3/' > /etc/sgx_default_qcnl.conf
-            echo 'USE_SECURE_CERT=FALSE' >> /etc/sgx_default_qcnl.conf
-            if [[ $RUNTIME_ENV == "driver" || $RUNTIME_ENV == "native" ]]; then
-                #verify ehsm service
-                cd /opt/
-                bash verify-attestation-service.sh
-                #register application
-
-                #get mrenclave mrsigner
-                MR_ENCLAVE_temp=$(bash print_enclave_signer.sh | grep mr_enclave)
-                MR_ENCLAVE_temp_arr=(${MR_ENCLAVE_temp})
-                export MR_ENCLAVE=${MR_ENCLAVE_temp_arr[1]}
-                MR_SIGNER_temp=$(bash print_enclave_signer.sh | grep mr_signer)
-                MR_SIGNER_temp_arr=(${MR_SIGNER_temp})
-                export MR_SIGNER=${MR_SIGNER_temp_arr[1]}
-
-                #register and get policy_Id
-                policy_Id_temp=$(bash register.sh | grep policy_Id)
-                policy_Id_temp_arr=(${policy_Id_temp})
-                export policy_Id=${policy_Id_temp_arr[1]}
-            fi
-        fi
-        #register error
-        if [[ $? -gt 0 || -z "$policy_Id" ]]; then
-            echo "can not get policy_Id, register fail"
-            exit 1;
-        fi
-    fi
-
     #attestation
     if [[ $ATTESTATION == "true" ]]; then
         if [[ $PCCS_URL == "" ]]; then
             echo "[ERROR] Attestation set to /root/demos/remote_attestation/dcaprue but NO PCCS"
             exit 1
         else
+                echo 'PCCS_URL='${PCCS_URL}'/sgx/certification/v3/' > /etc/sgx_default_qcnl.conf
+                echo 'USE_SECURE_CERT=FALSE' >> /etc/sgx_default_qcnl.conf
                 #generate dcap quote
                 cd /opt/occlum_spark
                 occlum run /bin/dcap_c_test $REPORT_DATA
@@ -247,6 +223,7 @@ attestation_init() {
                             -u $ATTESTATION_URL \
                             -i $APP_ID \
                             -k $API_KEY \
+                            -c $CHALLENGE \
                             -O occlum \
                             -o $policy_Id
                 if [ $? -gt 0 ]; then
@@ -272,6 +249,22 @@ run_pyspark_pi() {
                 -cp "$SPARK_HOME/conf/:$SPARK_HOME/jars/*" \
                 -Xmx512m org.apache.spark.deploy.SparkSubmit \
                 /py-examples/pi.py
+}
+
+run_pyspark_sql_example() {
+    export RUNTIME_ENV="native"
+    attestation_init
+    cd /opt/occlum_spark
+    echo -e "${BLUE}occlum run pyspark SQL example${NC}"
+    occlum run /usr/lib/jvm/java-8-openjdk-amd64/bin/java \
+                -XX:-UseCompressedOops -XX:MaxMetaspaceSize=$META_SPACE \
+                -XX:ActiveProcessorCount=4 \
+                -Divy.home="/tmp/.ivy" \
+                -Dos.name="Linux" \
+                -Djdk.lang.Process.launchMechanism=vfork \
+                -cp "$SPARK_HOME/conf/:$SPARK_HOME/jars/*" \
+                -Xmx3g org.apache.spark.deploy.SparkSubmit \
+                /py-examples/sql_example.py
 }
 
 run_spark_pi() {
@@ -462,6 +455,79 @@ run_spark_gbt() {
                 -i /host/data -s /host/data/model -I 100 -d 5
 }
 
+run_spark_gbt_e2e() {
+    export RUNTIME_ENV="native"
+    attestation_init
+    cd /opt/occlum_spark
+    echo -e "${BLUE}occlum run BigDL Spark GBT e2e${NC}"
+    EHSM_URL=${ATTESTATION_URL}
+    EHSM_KMS_IP=${EHSM_URL%:*}
+    EHSM_KMS_PORT=${EHSM_URL#*:}
+    occlum run /usr/lib/jvm/java-8-openjdk-amd64/bin/java \
+                -XX:-UseCompressedOops -XX:MaxMetaspaceSize=$META_SPACE \
+                -XX:ActiveProcessorCount=4 \
+                -Divy.home="/tmp/.ivy" \
+                -Dos.name="Linux" \
+                -cp "$SPARK_HOME/conf/:$SPARK_HOME/jars/*:/bin/jars/*" \
+                -Xmx10g -Xms10g org.apache.spark.deploy.SparkSubmit \
+                --master local[4] \
+                --conf spark.task.cpus=2 \
+                --class com.intel.analytics.bigdl.ppml.examples.gbtClassifierTrainingExampleOnCriteoClickLogsDataset \
+                --num-executors 2 \
+                --executor-cores 2 \
+                --executor-memory 9G \
+                --driver-memory 10G \
+                /bin/jars/bigdl-dllib-spark_${SPARK_VERSION}-${BIGDL_VERSION}.jar \
+                --primaryKeyPath /host/data/key/ehsm_encrypted_primary_key \
+                --dataKeyPath /host/data/key/ehsm_encrypted_data_key \
+                --kmsType EHSMKeyManagementService \
+                --trainingDataPath /host/data/encrypt/ \
+                --modelSavePath /host/data/model/ \
+                --inputEncryptMode AES/CBC/PKCS5Padding \
+                --kmsServerIP $EHSM_KMS_IP \
+                --kmsServerPort $EHSM_KMS_PORT \
+                --ehsmAPPID $APP_ID \
+                --ehsmAPIKEY $API_KEY \
+                --maxDepth 5 \
+                --maxIter 100
+}
+
+run_spark_sql_e2e() {
+    export RUNTIME_ENV="native"
+    attestation_init
+    cd /opt/occlum_spark
+    echo -e "${BLUE}occlum run BigDL Spark SQL e2e${NC}"
+    EHSM_URL=${ATTESTATION_URL}
+    EHSM_KMS_IP=${EHSM_URL%:*}
+    EHSM_KMS_PORT=${EHSM_URL#*:}
+    occlum run /usr/lib/jvm/java-8-openjdk-amd64/bin/java \
+                -XX:-UseCompressedOops -XX:MaxMetaspaceSize=$META_SPACE \
+                -XX:ActiveProcessorCount=4 \
+                -Divy.home="/tmp/.ivy" \
+                -Dos.name="Linux" \
+                -cp "$SPARK_HOME/conf/:$SPARK_HOME/jars/*:/bin/jars/*" \
+                -Xmx10g -Xms10g org.apache.spark.deploy.SparkSubmit \
+                --master local[4] \
+                --conf spark.task.cpus=2 \
+                --class com.intel.analytics.bigdl.ppml.examples.SimpleQuerySparkExample \
+                --num-executors 2 \
+                --executor-cores 2 \
+                --executor-memory 9G \
+                --driver-memory 10G \
+                /bin/jars/bigdl-dllib-spark_${SPARK_VERSION}-${BIGDL_VERSION}.jar \
+                --primaryKeyPath /host/data/key/ehsm_encrypted_primary_key \
+                --dataKeyPath /host/data/key/ehsm_encrypted_data_key \
+                --kmsType EHSMKeyManagementService \
+                --inputPath /host/data/encrypt/ \
+                --outputPath /host/data/model/ \
+                --inputEncryptModeValue AES/CBC/PKCS5Padding \
+                --outputEncryptModeValue AES/CBC/PKCS5Padding \
+                --kmsServerIP $EHSM_KMS_IP \
+                --kmsServerPort $EHSM_KMS_PORT \
+                --ehsmAPPID $APP_ID \
+                --ehsmAPIKEY $API_KEY
+}
+
 
 id=$([ -f "$pid" ] && echo $(wc -l < "$pid") || echo "0")
 
@@ -484,6 +550,10 @@ case "$arg" in
         ;;
     pypi)
         run_pyspark_pi
+        cd ../
+        ;;
+    pysql)
+        run_pyspark_sql_example
         cd ../
         ;;
     pi)
@@ -516,6 +586,14 @@ case "$arg" in
         ;;
     gbt)
         run_spark_gbt
+        cd ../
+        ;;
+    gbt_e2e)
+        run_spark_gbt_e2e
+        cd ../
+        ;;
+    sql_e2e)
+        run_spark_sql_e2e
         cd ../
         ;;
 esac

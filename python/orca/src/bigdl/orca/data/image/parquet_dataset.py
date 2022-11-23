@@ -31,12 +31,26 @@ import random
 import pyarrow.parquet as pq
 import io
 import math
-from bigdl.dllib.utils.log4Error import *
+from bigdl.dllib.utils.log4Error import invalidInputError
+from numpy import ndarray, uint32
+
+from typing import TYPE_CHECKING, Callable, Dict, List, Optional, Tuple, Union, Any
+if TYPE_CHECKING:
+    import tensorflow as tf
+    from torch.utils.data import DataLoader
+    from bigdl.orca.data.shard import SparkXShards
+    from pyspark.rdd import RDD
+    from bigdl.orca.data.tf.data import TensorSliceDataset, Dataset
 
 
 class ParquetDataset:
     @staticmethod
-    def write(path, generator, schema, block_size=1000, write_mode="overwrite", **kwargs):
+    def write(path: str,
+              generator: List[Dict[str, Union[str, int, float, ndarray]]],
+              schema: Dict[str, SchemaField],
+              block_size: int=1000,
+              write_mode: str="overwrite",
+              **kwargs) -> None:
         """
         Take each record in the generator and write it to a parquet file.
 
@@ -79,7 +93,7 @@ class ParquetDataset:
         write_text(metadata_path, encode_schema(schema))
 
     @staticmethod
-    def _read_as_dict_rdd(path):
+    def _read_as_dict_rdd(path: str) -> Tuple["RDD[Any]", Dict[str, SchemaField]]:
         sc = SparkContext.getOrCreate()
         spark = SparkSession(sc)
 
@@ -94,7 +108,7 @@ class ParquetDataset:
         return rdd, schema
 
     @staticmethod
-    def _read_as_xshards(path):
+    def _read_as_xshards(path: str) -> "SparkXShards":
         rdd, schema = ParquetDataset._read_as_dict_rdd(path)
 
         def merge_records(schema, iter):
@@ -118,7 +132,7 @@ class ParquetDataset:
         return xshards
 
     @staticmethod
-    def read_as_tf(path):
+    def read_as_tf(path: str) -> "TensorSliceDataset":
         """
         return a orca.data.tf.data.Dataset
         :param path:
@@ -201,12 +215,12 @@ class ParquetIterable:
         return self
 
 
-def _read32(bytestream):
+def _read32(bytestream: io.BufferedReader) -> uint32:
     dt = np.dtype(np.uint32).newbyteorder('>')
     return np.frombuffer(bytestream.read(4), dtype=dt)[0]
 
 
-def _extract_mnist_images(image_filepath):
+def _extract_mnist_images(image_filepath: str) -> ndarray:
     with open(image_filepath, "rb") as bytestream:
         magic = _read32(bytestream)
         if magic != 2051:
@@ -216,26 +230,30 @@ def _extract_mnist_images(image_filepath):
         num_images = _read32(bytestream)
         rows = _read32(bytestream)
         cols = _read32(bytestream)
-        buf = bytestream.read(rows * cols * num_images)
+        buf = bytestream.read(int(rows * cols * num_images))
         data = np.frombuffer(buf, dtype=np.uint8)
         data = data.reshape(num_images, rows, cols, 1)
         return data
 
 
-def _extract_mnist_labels(labels_filepath):
+def _extract_mnist_labels(labels_filepath: str) -> ndarray:
     with open(labels_filepath, "rb") as bytestream:
         magic = _read32(bytestream)
         if magic != 2049:
             invalidInputError(False,
                               'Invalid magic number %d in MNIST label file: %s' %
-                              (magic, labels_filepath.name))
+                              (magic, labels_filepath))
         num_items = _read32(bytestream)
-        buf = bytestream.read(num_items)
+        buf = bytestream.read(int(num_items))
         labels = np.frombuffer(buf, dtype=np.uint8)
         return labels
 
 
-def write_from_directory(directory, label_map, output_path, shuffle=True, **kwargs):
+def write_from_directory(directory: str,
+                         label_map: Dict[str, int],
+                         output_path: str,
+                         shuffle: bool=True,
+                         **kwargs) -> None:
     labels = os.listdir(directory)
     valid_labels = [label for label in labels if label in label_map]
     generator = []
@@ -264,10 +282,10 @@ def write_from_directory(directory, label_map, output_path, shuffle=True, **kwar
                                        dtype=DType.STRING,
                                        shape=())}
 
-    ParquetDataset.write(output_path, generator, schema, **kwargs)
+    ParquetDataset.write(output_path, generator, schema, **kwargs)  # type: ignore
 
 
-def _write_ndarrays(images, labels, output_path, **kwargs):
+def _write_ndarrays(images: ndarray, labels: ndarray, output_path: str, **kwargs) -> None:
     images_shape = [int(x) for x in images.shape[1:]]
     labels_shape = [int(x) for x in labels.shape[1:]]
     schema = {
@@ -286,13 +304,16 @@ def _write_ndarrays(images, labels, output_path, **kwargs):
     ParquetDataset.write(output_path, make_generator(), schema, **kwargs)
 
 
-def write_mnist(image_file, label_file, output_path, **kwargs):
+def write_mnist(image_file: str, label_file: str, output_path: str, **kwargs) -> None:
     images = _extract_mnist_images(image_filepath=image_file)
     labels = _extract_mnist_labels(labels_filepath=label_file)
     _write_ndarrays(images, labels, output_path, **kwargs)
 
 
-def write_voc(voc_root_path, splits_names, output_path, **kwargs):
+def write_voc(voc_root_path: str,
+              splits_names: List[Tuple[int, str]],
+              output_path: str,
+              **kwargs) -> None:
     custom_classes = kwargs.get("classes", None)
     voc_datasets = VOCDatasets(
         voc_root_path, splits_names, classes=custom_classes)
@@ -319,13 +340,15 @@ def write_voc(voc_root_path, splits_names, output_path, **kwargs):
     ParquetDataset.write(output_path, make_generator(), schema, **kwargs)
 
 
-def _check_arguments(_format, kwargs, args):
+def _check_arguments(_format: str,
+                     kwargs: Dict[str, Any],
+                     args: Union[List[str], Tuple[str]]) -> None:
     for keyword in args:
         invalidInputError(keyword in kwargs,
                           keyword + " is not specified for format " + _format + ".")
 
 
-def write_parquet(format, output_path, *args, **kwargs):
+def write_parquet(format: str, output_path: str, *args, **kwargs) -> None:
     supported_format = {"mnist", "image_folder", "voc"}
     if format not in supported_format:
         invalidInputError(False,
@@ -340,7 +363,11 @@ def write_parquet(format, output_path, *args, **kwargs):
     func(output_path=output_path, *args, **kwargs)
 
 
-def read_as_tfdataset(path, output_types, config=None, output_shapes=None, *args, **kwargs):
+def read_as_tfdataset(path: str,
+                      output_types: Dict[str, 'tf.Dtype'],
+                      config: Dict[str, int],
+                      output_shapes: Dict[str, 'tf.TensorShape']=None,
+                      *args, **kwargs) -> "tf.data.Dataset":
     """
     return a orca.data.tf.data.Dataset
     :param path:
@@ -369,7 +396,11 @@ def read_as_tfdataset(path, output_types, config=None, output_shapes=None, *args
                                           output_shapes=output_shapes)
 
 
-def read_as_dataloader(path, config=None, transforms=None, batch_size=1, *args, **kwargs):
+def read_as_dataloader(path: str,
+                       config: Dict[str, int],
+                       transforms: Callable=None,
+                       batch_size: int=1,
+                       *args, **kwargs) -> "DataLoader":
     path, _ = pa_fs(path)
     import tensorflow as tf
     import torch
@@ -419,14 +450,21 @@ def read_as_dataloader(path, config=None, transforms=None, batch_size=1, *args, 
                                        batch_size=batch_size, worker_init_fn=worker_init_fn)
 
 
-def read_parquet(format, path, transforms=None, config=None, batch_size=1, *args, **kwargs):
+def read_parquet(format: str,
+                 path: str,
+                 transforms: Optional[Callable]=None,
+                 config: Optional[Dict[str, int]]=None,
+                 batch_size: int=1,
+                 *args, **kwargs) -> Union["tf.data.Dataset", "DataLoader"]:
     supported_format = {"tf_dataset", "dataloader"}
     if format not in supported_format:
         invalidInputError(False,
                           format + " is not supported, should be 'tf_dataset' or 'dataloader'.")
 
-    format_to_function = {"tf_dataset": (read_as_tfdataset, ["output_types"]),
-                          "dataloader": (read_as_dataloader, [])}
+    format_to_function = {"tf_dataset": (read_as_tfdataset,
+                                         ["output_types"]),
+                          "dataloader": (read_as_dataloader,
+                                         [])}  # type: Dict[str, Tuple]
     func, required_args = format_to_function[format]
     _check_arguments(format, kwargs, required_args)
     return func(path=path, config=config or {},

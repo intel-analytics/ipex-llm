@@ -18,14 +18,20 @@ from bigdl.dllib.utils.common import get_node_and_core_number
 from bigdl.dllib.utils.file_utils import callZooFunc
 from bigdl.dllib.feature.common import FeatureSet
 from bigdl.orca.tfpark import TFDataset
-from bigdl.dllib.utils.log4Error import *
+from bigdl.dllib.utils.log4Error import invalidInputError
+
+from typing import TYPE_CHECKING, Optional, Any
+if TYPE_CHECKING:
+    from bigdl.orca.data.tf.data import MapDataset
+    from pyspark.rdd import RDD
 
 
 class TF1Dataset(TFDataset):
 
-    def __init__(self, dataset, batch_size,
-                 batch_per_thread,
-                 validation_dataset=None, intra_threads=None, inter_threads=None):
+    def __init__(self, dataset: "MapDataset", batch_size: int,
+                 batch_per_thread: int,
+                 validation_dataset: "MapDataset"=None,
+                 intra_threads: int=None, inter_threads: int=None) -> None:
 
         node_num, core_num = get_node_and_core_number()
 
@@ -69,7 +75,7 @@ class TF1Dataset(TFDataset):
             self.val_output_names = meta_info["output_names"]
             self.val_output_types = meta_info["output_types"]
         else:
-            self.val_rdd = None
+            self.val_rdd = None  # type: ignore
             self.val_init_op_name = None
             self.val_output_names = None
             self.val_output_types = None
@@ -105,7 +111,7 @@ class TF1Dataset(TFDataset):
                              self.inter_threads, self.intra_threads)
         return FeatureSet(jvalue=jvalue)
 
-    def _get_validation_data(self):
+    def _get_validation_data(self) -> Optional["FeatureSet"]:
         if self.validation_dataset is not None:
             jvalue = callZooFunc("float", "createTFDataFeatureSet",
                                  self.val_rdd.map(lambda x: x[0]), self.init_op_name,
@@ -115,5 +121,5 @@ class TF1Dataset(TFDataset):
             return FeatureSet(jvalue=jvalue)
         return None
 
-    def get_num_partitions(self):
+    def get_num_partitions(self) -> int:
         return self.rdd.getNumPartitions()

@@ -3,7 +3,7 @@ export HTTP_PROXY=your_http_proxy
 export HTTPS_PROXY=your_https_proxy
 export ENROLL_IMAGE_VERSION=latest
 export ENROLL_IMAGE_NAME=bigdl-ppml-e2e-enroll
-
+export JDK_URL=your_jdk_url
 
 sudo docker build \
     --no-cache=true \

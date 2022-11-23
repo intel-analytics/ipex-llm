@@ -28,7 +28,7 @@ class AcceleratedKerasModel(AcceleratedModel, tf.keras.Model):
     def __call__(self, *args, **kwds):
         invalidInputError(
             not kwds.get('training', False),
-            "Model of AcceleratedKerasModel is not trainable. Please set `trainning=False`."
+            "Model of AcceleratedKerasModel is not trainable. Please set `training=False`."
         )
         kwds['training'] = False
         return super().__call__(*args, **kwds)

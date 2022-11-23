@@ -80,6 +80,11 @@ jobs:
       - name: Orca style checking
         run: bash python/orca/dev/test/lint-python
 
+      - name: Orca type checking
+        run: bash python/orca/dev/test/run-type-check.sh
+        env:
+            BIGDL_HOME: ${{ github.workspace }}
+
       - name: Friesian style checking
         run: bash python/friesian/dev/test/lint-python
 

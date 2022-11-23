@@ -40,7 +40,7 @@ from typing import Any, List, Optional, Callable, Union, Dict
 import torch
 from torch import nn
 from torch import Tensor
-from torch.multiprocessing.spawn import _wrap, ProcessContext
+from torch.multiprocessing.spawn import ProcessContext
 from torch.nn.parallel.distributed import DistributedDataParallel
 from torch.optim.lr_scheduler import _LRScheduler
 
@@ -57,6 +57,7 @@ from pytorch_lightning.plugins.environments import LightningEnvironment
 from pytorch_lightning.utilities.distributed import ReduceOp
 
 from bigdl.nano.common.cpu_schedule import schedule_processors
+from bigdl.nano.pytorch.dispatcher import _get_patch_status
 from bigdl.nano.pytorch.strategies.ipex.ipex_api import ipex_device, \
     ipex_optimize, create_IPEXAccelerator, to_cpu
 from bigdl.nano.pytorch.utils import TORCH_VERSION_LESS_1_10
@@ -122,6 +123,7 @@ class _DDPSpawnLauncher(_SpawnLauncher):
         error_queues = []
         processes = []
         args = (trainer, function, args, kwargs, return_queue)
+        patch_status = _get_patch_status()
 
         for i in range(self._strategy.num_processes):
             os.environ["KMP_AFFINITY"] = envs[i]['KMP_AFFINITY']
@@ -130,8 +132,8 @@ class _DDPSpawnLauncher(_SpawnLauncher):
             log.debug(f"[Process {i}]: using OMP_NUM_THREADS: {os.environ['OMP_NUM_THREADS']}")
             error_queue = mp.SimpleQueue()
             process = mp.Process(   # type: ignore
-                target=_wrap,
-                args=(self._wrapping_function, i, args, error_queue),
+                target=self._wrap,
+                args=(self._wrapping_function, i, args, error_queue, patch_status),
                 daemon=False,
             )
             process.start()
@@ -157,13 +159,14 @@ class _DDPSpawnLauncher(_SpawnLauncher):
         self._recover_results_in_main_process(spawn_output, trainer)
         return spawn_output.trainer_results
 
-    def _wrapping_function(self, *args, **kwargs):    # type: ignore
-        # patch Pytorch and CUDA in subprocess
-        if os.environ.get('BIGDL_NANO_PATCH_TORCH') == '1':
-            patch_cuda = True if os.environ.get('BIGDL_NANO_PATCH_CUDA') == '1' else False
-            from bigdl.nano.pytorch import patch_torch
-            patch_torch(cuda_to_cpu=patch_cuda)
-        super()._wrapping_function(*args, **kwargs)
+    @staticmethod
+    def _wrap(fn, i, args, error_queue, patch_status):
+        if patch_status['patch_torch']:
+            from bigdl.nano.pytorch.dispatcher import patch_torch
+            patch_torch(cuda_to_cpu=patch_status['patch_cuda'])
+
+        from torch.multiprocessing.spawn import _wrap
+        _wrap(fn, i, args, error_queue)
 
 
 class DDPSpawnStrategy(_DDPSpawnStrategy):

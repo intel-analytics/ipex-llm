@@ -42,11 +42,11 @@ subtrees:
             title: "Quickstarts"
             subtrees:
               - entries:
-                - file: doc/Orca/QuickStart/orca-tf-quickstart
                 - file: doc/Orca/QuickStart/orca-tf2keras-quickstart
-                - file: doc/Orca/QuickStart/orca-keras-quickstart
                 - file: doc/Orca/QuickStart/orca-pytorch-quickstart
                 - file: doc/Orca/QuickStart/ray-quickstart
+                - file: doc/Orca/QuickStart/orca-tf-quickstart
+                - file: doc/Orca/QuickStart/orca-keras-quickstart
           - file: doc/Orca/Howto/index
             title: "How-to Guides"
             subtrees:
@@ -192,6 +192,7 @@ subtrees:
                 - file: doc/Chronos/Howto/how_to_export_openvino_files
                 - file: doc/Chronos/Howto/how_to_export_torchscript_files
                 - file: doc/Chronos/Howto/how_to_preprocess_my_data
+                - file: doc/Chronos/Howto/how_to_process_data_in_production_environment
           - file: doc/Chronos/QuickStart/index
             title: "Tutorials"
             subtrees:

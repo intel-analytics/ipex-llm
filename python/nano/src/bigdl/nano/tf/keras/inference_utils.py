@@ -30,20 +30,22 @@ class InferenceUtils:
                  calib_dataset: tf.data.Dataset,
                  precision: str = 'int8',
                  accelerator: Optional[str] = None,
-                 metric: Metric = None,
-                 accuracy_criterion: dict = None,
+                 metric: Optional[Metric] = None,
+                 accuracy_criterion: Optional[dict] = None,
                  approach: str = 'static',
-                 method: str = None,
-                 conf: str = None,
-                 tuning_strategy: str = None,
-                 timeout: int = None,
-                 max_trials: int = None,
-                 batch=None,
+                 method: Optional[str] = None,
+                 conf: Optional[str] = None,
+                 tuning_strategy: Optional[str] = None,
+                 timeout: Optional[int] = None,
+                 max_trials: Optional[int] = None,
+                 batch: Optional[int] = None,
+                 thread_num: Optional[int] = None,
                  inputs: List[str] = None,
                  outputs: List[str] = None,
                  sample_size: int = 100,
                  onnxruntime_session_options=None,
-                 openvino_config=None):
+                 openvino_config=None,
+                 logging: bool = True):
         """
         Post-training quantization on a keras model.
 
@@ -82,6 +84,9 @@ class InferenceUtils:
         :param batch:       Batch size of dataloader for calib_dataset. Defaults to None, if the
                             dataset is not a BatchDataset, batchsize equals to 1. Otherwise,
                             batchsize complies with the dataset._batch_size.
+        :param thread_num:  (optional) a int represents how many threads(cores) is needed for
+                            inference, only valid for accelerator='onnxruntime'
+                            or accelerator='openvino'.
         :param inputs:      A list of input names.
                             Default: None, automatically get names from graph.
         :param outputs:     A list of output names.
@@ -95,13 +100,16 @@ class InferenceUtils:
                                             accelerator='onnxruntime', otherwise will be ignored.
         :param openvino_config: The config to be inputted in core.compile_model. Only valid when
                                 accelerator='openvino', otherwise will be ignored.
+        :param logging: whether to log detailed information of model conversion, only valid when
+                        accelerator='openvino', otherwise will be ignored. Default: ``True``.
         :return:            A TensorflowBaseModel for INC. If there is no model found, return None.
         """
         invalidInputError(approach == 'static', "Only 'static' approach is supported now.")
         if accelerator is None:
             if batch:
                 calib_dataset = calib_dataset.batch(batch)
-            return inc_quantzie(self, dataloader=calib_dataset, metric=metric,
+            return inc_quantzie(self, dataloader=calib_dataset,
+                                metric=metric,
                                 framework='tensorflow',
                                 conf=conf,
                                 approach=approach,
@@ -116,7 +124,10 @@ class InferenceUtils:
             if isinstance(self, KerasOpenVINOModel):    # type: ignore
                 openvino_model = self
             else:
-                openvino_model = self.trace(accelerator='openvino')
+                openvino_model = self.trace(accelerator='openvino',
+                                            thread_num=thread_num,
+                                            logging=logging,
+                                            openvino_config=openvino_config)
             if metric:
                 if not isinstance(accuracy_criterion, dict):
                     accuracy_criterion = {'relative': 0.99, 'higher_is_better': True}
@@ -132,7 +143,8 @@ class InferenceUtils:
                                       maximal_drop=maximal_drop,
                                       max_iter_num=max_trials,
                                       sample_size=sample_size,
-                                      config=openvino_config)
+                                      config=openvino_config,
+                                      thread_num=thread_num)
         elif accelerator == 'onnxruntime':
             # convert tensorflow model to onnx model
             from bigdl.nano.deps.onnxruntime.tensorflow.tensorflow_onnxruntime_model \
@@ -141,7 +153,9 @@ class InferenceUtils:
                 onnx_model = self
             else:
                 spec = tf.TensorSpec((self.input_shape), self.dtype)    # type: ignore
-                onnx_model = self.trace(accelerator='onnxruntime', input_sample=spec)
+                onnx_model = self.trace(accelerator='onnxruntime',
+                                        input_sample=spec,
+                                        thread_num=thread_num)
 
             # trace onnx model
             method_map = {
@@ -171,7 +185,8 @@ class InferenceUtils:
               input_sample=None,
               thread_num: Optional[int] = None,
               onnxruntime_session_options=None,
-              openvino_config=None):
+              openvino_config=None,
+              logging=True):
         """
         Trace a Keras model and convert it into an accelerated module for inference.
 
@@ -188,14 +203,18 @@ class InferenceUtils:
                                             accelerator='onnxruntime', otherwise will be ignored.
         :param openvino_config: The config to be inputted in core.compile_model. Only valid when
                                 accelerator='openvino', otherwise will be ignored.
+        :param logging: whether to log detailed information of model conversion, only valid when
+                        accelerator='openvino', otherwise will be ignored. Default: ``True``.
         :return: Model with different acceleration(OpenVINO/ONNX Runtime).
         """
         if accelerator == 'openvino':
             final_openvino_option = {"INFERENCE_PRECISION_HINT": "f32"}
             if openvino_config is not None:
                 final_openvino_option.update(openvino_config)
-            return KerasOpenVINOModel(self, input_sample=input_sample,
-                                      thread_num=thread_num, config=final_openvino_option)
+            return KerasOpenVINOModel(self,
+                                      thread_num=thread_num,
+                                      config=final_openvino_option,
+                                      logging=logging)
         elif accelerator == 'onnxruntime':
             if onnxruntime_session_options is None:
                 import onnxruntime

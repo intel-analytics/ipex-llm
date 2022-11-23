@@ -69,7 +69,9 @@ class PytorchOpenVINOModel(AcceleratedLightningModule):
     @property
     def status(self):
         status = super().status
-        status.update({"xml_path": 'ov_saved_model.xml', "weight_path": 'ov_saved_model.bin'})
+        status.update({"xml_path": 'ov_saved_model.xml',
+                       "weight_path": 'ov_saved_model.bin',
+                       "config": self.ov_model.final_config})
         return status
 
     @property  # type: ignore
@@ -92,7 +94,7 @@ class PytorchOpenVINOModel(AcceleratedLightningModule):
         else:
             invalidInputError(False, "nano_model_meta.yml must specify 'xml_path' for loading.")
         xml_path = Path(path) / status['xml_path']
-        return PytorchOpenVINOModel(xml_path)
+        return PytorchOpenVINOModel(xml_path, config=status['config'])
 
     def pot(self,
             dataloader,
@@ -108,7 +110,8 @@ class PytorchOpenVINOModel(AcceleratedLightningModule):
         # convert torch metric/dataloader to openvino format
         if metric:
             metric = PytorchOpenVINOMetric(metric=metric, higher_better=higher_better)
-        dataloader = PytorchOpenVINODataLoader(dataloader, collate_fn=self.tensors_to_numpy)
+        dataloader = PytorchOpenVINODataLoader(dataloader, collate_fn=self.tensors_to_numpy,
+                                               original_collate_fn=dataloader.collate_fn)
         model = self.ov_model.pot(dataloader, metric=metric, drop_type=drop_type,
                                   maximal_drop=maximal_drop, max_iter_num=max_iter_num,
                                   n_requests=n_requests, sample_size=sample_size)

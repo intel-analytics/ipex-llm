@@ -1,6 +1,6 @@
 # Orca PyTorch Super Resolution example on BSDS300 dataset
 
-We demonstrate how to easily run synchronous distributed Pytorch training using Pytorch Estimator of Project Orca in BigDL. This is an example using the efficient sub-pixel convolution layer to train on [BSDS3000 dataset](https://www2.eecs.berkeley.edu/Research/Projects/CS/vision/bsds/), using crops from the 200 training images, and evaluating on crops of the 100 test images. See [here](https://github.com/pytorch/examples/tree/master/super_resolution) for the original single-node version of this example provided by Pytorch. We provide three distributed PyTorch training backends for this example, namely "bigdl", "ray" and "spark". You can run with either backend as you wish.
+We demonstrate how to easily run synchronous distributed Pytorch training using Pytorch Estimator of Project Orca in BigDL. This is an example using the efficient sub-pixel convolution layer to train on [BSDS3000 dataset](https://www2.eecs.berkeley.edu/Research/Projects/CS/vision/bsds/), using crops from the 200 training images, and evaluating on crops of the 100 test images. See [here](https://github.com/pytorch/examples/tree/master/super_resolution) for the original single-node version of this example provided by Pytorch. We provide three distributed PyTorch training backends for this example, namely "spark", "ray" and "bigdl".
 
 ## Prepare the environment
 We recommend you to use [Anaconda](https://www.anaconda.com/distribution/#linux) to prepare the environment, especially if you want to run on a yarn cluster (yarn-client mode only).
@@ -11,18 +11,18 @@ pip install pillow
 conda install pytorch torchvision cpuonly -c pytorch  # command for linux
 conda install pytorch torchvision -c pytorch  # command for macOS
 
-# For bigdl backend:
-pip install bigdl-orca
-pip install jep==3.9.0
-pip install six cloudpickle
-
-# For ray backend:
-pip install bigdl-orca[ray]
-pip install tqdm  # progress bar
-
 # For spark backend
 pip install bigdl-orca
 pip install tqdm  # progress bar
+
+# For ray backend
+pip install bigdl-orca[ray]
+pip install tqdm  # progress bar
+
+# For bigdl backend
+pip install bigdl-orca
+pip install jep==3.9.0
+pip install six cloudpickle
 ```
 
 ## Prepare Dataset
@@ -46,11 +46,11 @@ python super_resolution.py --cluster_mode local
 python super_resolution.py --cluster_mode yarn
 ```
 
-You can run this example with bigdl backend (default), ray backend, or spark backend. 
+You can run this example with spark backend (default), ray backend, or bigdl backend. 
 
-- Run with bigdl backend:
+- Run with spark backend:
 ```bash
-python super_resolution.py --backend bigdl
+python super_resolution.py --backend spark
 ```
 
 - Run with ray backend:
@@ -58,10 +58,11 @@ python super_resolution.py --backend bigdl
 python super_resolution.py --backend ray
 ```
 
-- Run with spark backend:
+- Run with bigdl backend:
 ```bash
-python super_resolution.py --backend spark
+python super_resolution.py --backend bigdl
 ```
+
 
 **Options**
 * `--upscale_factor` The upscale factor of super resolution. Default is 3.
@@ -75,6 +76,17 @@ python super_resolution.py --backend spark
 
 ## Results
 
+**For "ray" and "spark" backend**
+
+You can find the result for training as follows:
+```
+===> Epoch 1 Complete: Avg. Loss: 9.2172
+```
+You can find the result for validation as follows:
+```
+===> Validation Complete: Avg. PSNR: 11.8249 dB, Avg. Loss: 0.0657
+```
+
 **For "bigdl" backend**
 
 You can find the result for training as follows:
@@ -85,15 +97,4 @@ You can find the result for validation as follows:
 ```
 2021-03-31 18:02:45 INFO  DistriOptimizer$:1759 - MSE is (Loss: 0.1174012, count: 2, Average Loss: 0.0587006)
 ===> Validation Complete: Avg. PSNR: 12.3136 dB, Avg. Loss: 0.0587
-```
-
-**For "ray" and "spark" backend**
-
-You can find the result for training as follows:
-```
-===> Epoch 1 Complete: Avg. Loss: 9.2172
-```
-You can find the result for validation as follows:
-```
-===> Validation Complete: Avg. PSNR: 11.8249 dB, Avg. Loss: 0.0657
 ```

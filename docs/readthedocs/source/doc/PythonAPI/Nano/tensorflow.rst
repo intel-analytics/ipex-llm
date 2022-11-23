@@ -13,6 +13,10 @@ bigdl.nano.tf.keras
     :undoc-members:
     :inherited-members: Sequential
 
+.. autoclass:: bigdl.nano.tf.keras.InferenceOptimizer
+    :members:
+    :undoc-members:
+
 .. autoclass:: bigdl.nano.tf.keras.layers.Embedding
     :members:
     :undoc-members:
