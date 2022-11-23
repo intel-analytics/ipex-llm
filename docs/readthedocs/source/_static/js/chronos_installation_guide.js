@@ -4,6 +4,7 @@ var models = ["Prophet", "ARIMA","Deep_learning_models","Machine_learning_models
 var ais = ["pytorch", "tensorflow"];
 var oss=["linux", "win"];
 var automls=["automlyes", "automlno"];
+var inferneces=["inferenceyes", "inferenceno"];
 var hardwares=["singlenode", "cluster"];
 var packages=["pypi", "docker"];
 var versions=["stable", "nightly"];
@@ -14,6 +15,7 @@ var model="Deep_learning_models";
 var ai="pytorch";
 var os="linux";
 var automl="automlno";
+var inference="inferenceno";
 var hardware="singlenode";
 var package="pypi";
 var version="nightly";
@@ -25,6 +27,7 @@ function refresh_cmd(){
     reset_color(ais);
     reset_color(oss);
     reset_color(automls);
+    reset_color(inferneces);
     reset_color(hardwares);
     reset_color(packages);
     reset_color(versions);
@@ -33,6 +36,7 @@ function refresh_cmd(){
     set_color(ai);
     set_color(os);
     set_color(automl);
+    set_color(inference);
     set_color(hardware);
     set_color(package);
     set_color(version);
