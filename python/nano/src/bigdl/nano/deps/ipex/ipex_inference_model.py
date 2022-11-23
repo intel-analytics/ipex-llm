@@ -67,7 +67,7 @@ class PytorchIPEXJITModel(AcceleratedLightningModule):
             else:
                 with torch.no_grad():
                     self.model = torch.jit.trace(self.model, input_sample,
-                                                    check_trace=False)
+                                                 check_trace=False)
                     self.model = torch.jit.freeze(self.model)
 
     @property
