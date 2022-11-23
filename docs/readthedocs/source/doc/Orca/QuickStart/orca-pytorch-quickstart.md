@@ -63,8 +63,6 @@ class LeNet(nn.Module):
         x = F.relu(self.fc1(x))
         x = self.fc2(x)
         return F.log_softmax(x, dim=1)
-
-criterion = nn.NLLLoss()
 ```
 After defining your model, you need to define a *Model Creator Function* that returns an instance of your model, and a *Optimizer Creator Function* that returns a PyTorch optimizer.
 
@@ -119,7 +117,7 @@ First, Create an Estimator
 from bigdl.orca.learn.pytorch import Estimator 
 from bigdl.orca.learn.metrics import Accuracy
 
-est = Estimator.from_torch(model=model_creator, optimizer=optim_creator, loss=criterion, metrics=[Accuracy()], use_tqdm=True)
+est = Estimator.from_torch(model=model_creator, optimizer=optim_creator, loss=nn.NLLLoss(), metrics=[Accuracy()], use_tqdm=True)
 ```
 
 Next, fit and evaluate using the Estimator
