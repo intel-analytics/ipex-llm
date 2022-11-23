@@ -69,3 +69,8 @@ def PytorchIPEXJITBF16Model(model, input_sample=None, use_ipex=False,
 def load_ipexjit_model(path, model):
     from .ipex_inference_model import PytorchIPEXJITModel
     return PytorchIPEXJITModel._load(path, model)
+
+
+def load_ipexjitbf16_model(path, model):
+    from .ipex_inference_bf16_model import PytorchIPEXJITBF16Model
+    return PytorchIPEXJITBF16Model._load(path, model)
