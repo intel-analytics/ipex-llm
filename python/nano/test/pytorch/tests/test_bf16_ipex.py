@@ -16,7 +16,7 @@
 from unittest import TestCase
 import pytest
 import torch
-from bigdl.nano.pytorch import Trainer
+from bigdl.nano.pytorch import InferenceOptimizer
 from torchvision.models.resnet import resnet18
 from unittest.mock import MagicMock, Mock, PropertyMock, patch
 from bigdl.nano.pytorch.utils import TORCH_VERSION_LESS_1_10, TORCH_VERSION_LESS_1_11
@@ -50,24 +50,55 @@ class Pytorch1_11:
     @patch('bigdl.nano.deps.ipex.ipex_inference_bf16_model.PytorchIPEXJITBF16Model._check_cpu_isa', new_callable=PropertyMock)
     def test_unsupported_HW_or_OS(self, mocked_check_cpu_isa):
         mocked_check_cpu_isa.return_value = False
-        trainer = Trainer(max_epochs=1)
         model = resnet18(num_classes=10)
 
         with pytest.raises(RuntimeError,
                            match="Applying IPEX BF16 optimization needs the cpu support avx512."):
-            bf16_model = trainer.quantize(model, precision='bf16', use_ipex=True)
+            bf16_model = InferenceOptimizer.quantize(model, precision='bf16', use_ipex=True)
 
     def test_bf16_with_avx512_core(self):
-        trainer = Trainer(max_epochs=1)
         model = resnet18(num_classes=10)
 
         x = torch.rand((10, 3, 256, 256))
         y = torch.ones((10,), dtype=torch.long)
 
-        bf16_model = trainer.quantize(model, precision='bf16', use_ipex=True)
+        bf16_model = InferenceOptimizer.quantize(model, precision='bf16', use_ipex=True)
         y_hat = bf16_model(x)
 
         assert y_hat.shape == (10, 10) and y_hat.dtype == torch.bfloat16
+    
+    def test_bf16_ipex_save_load(self):
+        model = resnet18(num_classes=10)
+
+        x = torch.rand((10, 3, 256, 256))
+        bf16_model = InferenceOptimizer.quantize(model, precision='bf16',
+                                                 use_ipex=True)
+        y_hat = bf16_model(x)
+
+        assert y_hat.shape == (10, 10) and y_hat.dtype == torch.bfloat16
+        InferenceOptimizer.save(bf16_model, "bf16_model")
+        
+        load_model = InferenceOptimizer.load("bf16_model")
+        y_hat_ = load_model(x)
+        assert y_hat_.shape == (10, 10) and y_hat_.dtype == torch.bfloat16
+        assert y_hat.equal(y_hat_)
+
+    def test_bf16_ipex_jit_save_load(self):
+        model = resnet18(num_classes=10)
+
+        x = torch.rand((10, 3, 256, 256))
+        bf16_model = InferenceOptimizer.quantize(model, precision='bf16',
+                                                 use_ipex=True, accelerator="jit",
+                                                 input_sample=x)
+        y_hat = bf16_model(x)
+
+        assert y_hat.shape == (10, 10) and y_hat.dtype == torch.bfloat16
+        InferenceOptimizer.save(bf16_model, "bf16_model")
+        
+        load_model = InferenceOptimizer.load("bf16_model")
+        y_hat_ = load_model(x)
+        assert y_hat_.shape == (10, 10) and y_hat_.dtype == torch.bfloat16
+        assert y_hat.equal(y_hat_)
 
 
 TORCH_VERSION_CLS = Pytorch1_11
