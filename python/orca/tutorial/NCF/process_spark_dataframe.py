@@ -44,13 +44,13 @@ def read_data(data_dir):
         ]
     )
     # Need spark3 to support delimiter with more than one character.
-    df = spark.read.csv(os.path.join(data_dir, 'ratings.dat'),
+    df_rating = spark.read.csv(os.path.join(data_dir, 'ratings.dat'),
                         sep="::", schema=schema, header=False)
     df_user = spark.read.csv(os.path.join(data_dir, 'users.dat'),
                              sep="::", schema=schema_user, header=False)
     df_item = spark.read.csv(os.path.join(data_dir, 'movies.dat'),
                              sep="::", schema=schema_item, header=False).drop('title')
-    return df, df_user, df_item
+    return df_rating, df_user, df_item
 
 
 def generate_neg_sample(df, item_num, neg_scale):
@@ -101,12 +101,12 @@ def add_feature(df, df_user, df_item, cat_feature, num_feature):
 
 
 def data_process(data_dir, cat_feature, num_feature, neg_scale=4):
-    df, df_user, df_item = read_data(data_dir)
-    user_num = df.agg({'user': "max"}).collect()[0]["max(user)"] + 1
-    item_num = df.agg({'item': "max"}).collect()[0]["max(item)"] + 1
+    df_rating, df_user, df_item = read_data(data_dir)
+    user_num = df_rating.agg({'user': "max"}).collect()[0]["max(user)"] + 1
+    item_num = df_rating.agg({'item': "max"}).collect()[0]["max(item)"] + 1
 
-    df = generate_neg_sample(df, item_num, neg_scale=neg_scale)
-    df_add_feature, embedding_in_dim = add_feature(df, df_user, df_item, cat_feature, num_feature)
+    df_rating = generate_neg_sample(df_rating, item_num, neg_scale=neg_scale)
+    df_add_feature, embedding_in_dim = add_feature(df_rating, df_user, df_item, cat_feature, num_feature)
 
     train_df, val_df = df_add_feature.randomSplit([0.8, 0.2], seed=100)
 
