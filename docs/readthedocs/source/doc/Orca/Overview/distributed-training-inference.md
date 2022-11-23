@@ -151,8 +151,6 @@ The `data` argument in `fit` method can be a spark DataFrame, an *XShards* or a 
 
 View the related [Python API doc](https://bigdl.readthedocs.io/en/latest/doc/PythonAPI/Orca/orca.html#orca-learn-tf2-tf2-spark-estimator) for more details.
 
-***For more details, view the distributed TensorFlow training/inference [page]()<TODO: link to be added>.***
-
 ### 3. PyTorch Estimator
 
 **Using *BigDL* backend**
@@ -217,8 +215,6 @@ The input to `fit` methods can be a Spark DataFrame, an *XShards*, or a *Data Cr
 
 View the related [Python API doc](https://bigdl.readthedocs.io/en/latest/doc/PythonAPI/Orca/orca.html#orca-learn-pytorch-pytorch-ray-estimator) for more details.
 
-***For more details, view the distributed PyTorch training/inference [page]()<TODO: link to be added>.***
-
 ### 4. MXNet Estimator
 
 The user may create a MXNet `Estimator` as follows:
@@ -253,8 +249,6 @@ est.fit(get_train_data_iter, epochs=2)
 ```
 
 The input to `fit` methods can be an *XShards*, or a *Data Creator Function* (that returns an `MXNet DataIter/DataLoader`). See the *data-parallel processing pipeline* [page](./data-parallel-processing.html) for more details.
-
-View the related [Python API doc]()<TODO: link to be added> for more details.
 
 ### 5. BigDL Estimator
 
