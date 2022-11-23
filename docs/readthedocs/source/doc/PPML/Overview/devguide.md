@@ -14,17 +14,17 @@ To our knowledge, most existing big data frameworks or systems have already prov
 
 Please check with your admin or security department for security features and services available. We recommend building PPML applications based on the following conditions:
 
-1. If you have network and storage protection enabled, and you want to secure computation with SGX. Then you can directly migrate your application into SGX with BigDL PPML. Please jump to [Migrate existing applications with BigDL PPML]()
-2. If you don't have any security features enabled, especially storage protection. Then you can use PPMLContext and recommended KMS. Please jump to [Enhance your applications with PPMLContext]()
+1. If you have network and storage protection enabled, and you want to secure computation with SGX. Then you can directly migrate your application into SGX with BigDL PPML. Please jump to [Migrate existing applications with BigDL PPML](#1-migrate-existing-applications-with-bigdl-ppml).
+2. If you don't have any security features enabled, especially storage protection. Then you can use PPMLContext and recommended KMS. Please jump to [Enhance your applications with PPMLContext](#2-enhance-your-applications-with-ppmlcontext).
 
 ### 1. Migrate existing applications with BigDL PPML
 
-
+This working model doesn't require any code change. You can reuse existing code and applications. The only difference is that your cluster manager/admin needs to set up a new execution environment for PPML applications.
 
 
 ### 2. Enhance your applications with PPMLContext
 
-First you need to create a `PPMLContext`, which wraps `SparkSession` and provides methods to read encrypted data file into plain-text RDD/DataFrame and write DataFrame to encrypted data file. Then you can read & write data through `PPMLContext`.
+First, you need to create a `PPMLContext`, which wraps `SparkSession` and provides methods to read encrypted data file into plain-text RDD/DataFrame and write DataFrame to encrypted data file. Then you can read & write data through `PPMLContext`.
 
 If you are familiar with Spark, you may find that the usage of `PPMLContext` is very similar to Spark.
 
@@ -249,8 +249,8 @@ To read/write data, you should set the `CryptoMode`:
 To write data, you should set the `write` mode:
 
 - `overwrite`: Overwrite existing data with the content of dataframe.
-- `append`: Append content of the dataframe to existing data or table.
-- `ignore`: Ignore current write operation if data / table already exists without any error.
+- `append`: Append new content of the dataframe to existing data or table.
+- `ignore: Ignore the current write operation if data/table already exists without any error.
 - `error`: Throw an exception if data or table already exists.
 - `errorifexists`: Throw an exception if data or table already exists.
 
@@ -292,7 +292,7 @@ sc.write(dataframe = df, crypto_mode = CryptoMode.AES_CBC_PKCS5PADDING)
 
 <details><summary>expand to see the examples of reading/writing CSV, PARQUET, JSON and text file</summary>
 
-The following examples use `sc` to represent a initialized `PPMLContext`
+The following examples use `sc` to represent an initialized `PPMLContext`
 
 **read/write CSV file**
 
@@ -525,4 +525,4 @@ rdd2 = sc.textfile(path=encrypted_csv_path, crypto_mode=CryptoMode.AES_CBC_PKCS5
 
 </details>
 
-More usage with `PPMLContext` Python API, please refer to [PPMLContext Python API](https://github.com/intel-analytics/BigDL/blob/main/python/ppml/src/bigdl/ppml/README.md).
+For more usage with `PPMLContext` Python API, please refer to [PPMLContext Python API](https://github.com/intel-analytics/BigDL/blob/main/python/ppml/src/bigdl/ppml/README.md).
