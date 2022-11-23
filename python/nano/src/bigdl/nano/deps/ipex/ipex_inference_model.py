@@ -92,8 +92,7 @@ class PytorchIPEXJITModel(AcceleratedLightningModule):
         status.update({"use_ipex": self.use_ipex,
                        "use_jit": self.use_jit,
                        "channels_last": self.channels_last,
-                       "checkpoint": "ckpt.pth",
-                       "precision": self.precision})
+                       "checkpoint": "ckpt.pth"})
         return status
 
     @staticmethod
