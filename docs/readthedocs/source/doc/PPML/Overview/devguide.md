@@ -21,10 +21,18 @@ Please check with your admin or security department for security features and se
 
 This working model doesn't require any code change. You can reuse existing code and applications. The only difference is that your cluster manager/admin needs to set up a new execution environment for PPML applications.
 
+You can find more details for 
+
+* [Installation for PPML](https://bigdl.readthedocs.io/en/latest/doc/PPML/Overview/install.html).
+* [Hello World Example](https://bigdl.readthedocs.io/en/latest/doc/PPML/Overview/quicktour.html).
+* [Deployment for production](https://bigdl.readthedocs.io/en/latest/doc/PPML/QuickStart/deploy_ppml_in_production.html).
+
 
 ### 2. Enhance your applications with PPMLContext
 
-First, you need to create a `PPMLContext`, which wraps `SparkSession` and provides methods to read encrypted data file into plain-text RDD/DataFrame and write DataFrame to encrypted data file. Then you can read & write data through `PPMLContext`.
+In this section, we will introduce how to secure your applications with `PPMLContext`. It requires a few code changes and configurations for your applications.
+
+First, you need to create a `PPMLContext`, which wraps `SparkSession` and provides methods to read encrypted data files into plain-text RDD/DataFrame and write DataFrame to encrypted data files. Then you can read & write data through `PPMLContext`.
 
 If you are familiar with Spark, you may find that the usage of `PPMLContext` is very similar to Spark.
 
