@@ -200,14 +200,14 @@ class MMCVRayEpochRunner(BaseRayRunner, EpochBasedRunner):
         """Returns the state of the runner."""
         state = {
             "epoch": self._epoch,
-            "model": self.model.state_dict(),
+            "model": self.model.module.state_dict(),
             "optimizer": self.optimizer.state_dict()
         }
         return state
 
     def load_state_dict(self, state):
         """Sets the state of the model."""
-        self.model.load_state_dict(state["model"])
+        self.model.module.load_state_dict(state["model"])
         if "optimizer" in state:
             self.optimizer.load_state_dict(state["optimizer"])
         self._epoch = state["epoch"]
