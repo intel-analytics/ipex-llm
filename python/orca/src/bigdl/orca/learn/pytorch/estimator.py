@@ -26,23 +26,23 @@ class Estimator(object):
                    loss=None,
                    metrics=None,
                    scheduler_creator=None,
+                   backend="spark",
+                   config=None,
                    training_operator_cls=TrainingOperator,
                    initialization_hook=None,
-                   config=None,
                    scheduler_step_freq="batch",
                    use_tqdm=False,
                    workers_per_node=1,
                    model_dir=None,
-                   backend="spark",
                    sync_stats=False,
                    log_level=logging.INFO,
                    log_to_driver=True,
                    ):
         """
-        Create an Estimator for torch.
+        Create an Estimator for PyTorch.
 
-        :param model: PyTorch model or model creator function if backend="bigdl", PyTorch
-               model creator function if backend="horovod" or "ray"
+        :param model: A model creator function that returns a PyTorch model.
+               You can directly input a PyTorch model instance for bigdl backend.
         :param optimizer: Orca/PyTorch optimizer or optimizer creator function if backend="bigdl"
                , PyTorch optimizer creator function if backend="horovod" or "ray"
         :param loss: PyTorch loss or loss creator function if backend="bigdl", PyTorch loss creator
@@ -51,7 +51,9 @@ class Estimator(object):
         :param scheduler_creator: parameter for `horovod` and `ray` backends. a
                learning rate scheduler wrapping the optimizer. You will need to set
                ``scheduler_step_freq="epoch"`` for the scheduler to be incremented correctly.
-        :param config: parameter config dict, CfgNode or any class that plays a role of
+        :param backend: The distributed backend for the Estimator.
+               One of "spark",  "ray", "bigdl" or "horovod". Default: `spark`.
+        :param config: Parameter config dict, CfgNode or any class that plays a role of
                configuration to create model, optimizer loss and data.
         :param scheduler_step_freq: parameter for `horovod` and `ray` backends.
                "batch", "epoch" or None. This will determine when ``scheduler.step`` is called. If
@@ -65,8 +67,6 @@ class Estimator(object):
         :param model_dir: parameter for `bigdl` and `spark` backend. The path to save model. During
                the training, if checkpoint_trigger is defined and triggered, the model will be
                saved to model_dir.
-        :param backend: You can choose "horovod",  "ray", "bigdl" or "spark" as
-               backend. Default: `spark`.
         :param sync_stats: Whether to sync metrics across all distributed workers after each epoch.
                If set to False, only rank 0's metrics are printed. This param only works horovod,
                ray and pyspark backend. For spark backend, the metrics printed are
@@ -76,7 +76,8 @@ class Estimator(object):
                horovod, ray and pyspark backend.
         :param log_to_driver: (bool) Whether display executor log on driver in cluster mode.
                Default: True. This option is only for "spark" backend.
-        :return: an Estimator object.
+
+        :return: A Estimator object for PyTorch.
         """
         if backend in {"horovod", "ray"}:
             from bigdl.orca.learn.pytorch.pytorch_ray_estimator import PyTorchRayEstimator
