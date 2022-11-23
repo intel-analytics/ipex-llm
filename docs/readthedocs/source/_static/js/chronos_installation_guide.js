@@ -567,7 +567,7 @@ $(document).on('click',"button",function(){
         ai=id;
     }
     else if (inferneces.indexOf(id)>=0){
-        infernece=id;
+        inference=id;
     }
     else if (oss.indexOf(id)>=0){
         os=id;
