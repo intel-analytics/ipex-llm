@@ -61,7 +61,7 @@ def model_creator(config):
 
 
 # Step 4: Distributed training with Orca keras Estimator
-backend = 'spark'  # 'ray' of 'spark'
+backend = 'spark'  # 'ray' or 'spark'
 est = Estimator.from_keras(model_creator=model_creator,
                            config=config,
                            backend=backend)
