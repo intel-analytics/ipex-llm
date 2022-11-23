@@ -1,4 +1,4 @@
-# Use `torch.distributed` in Orca
+# PyTorch Quickstart
 
 ---
 
@@ -6,29 +6,31 @@
 
 ---
 
-**In this guide we will describe how to scale out _PyTorch_ programs using the `torch.distributed` package in Orca.**
-
-### Step 0: Prepare Environment
+### Prepare Environment
 
 [Conda](https://docs.conda.io/projects/conda/en/latest/user-guide/install/) is needed to prepare the Python environment for running this example. Please refer to the [install guide](../../UserGuide/python.md) for more details.
 
 ```bash
 conda create -n py37 python=3.7  # "py37" is conda environment name, you can use any name you like.
 conda activate py37
-pip install bigdl-orca
-pip install torch==1.7.1 torchvision==0.8.2
+pip install --pre --upgrade bigdl-orca 
+pip install torch torchvision
+pip install tqdm
 ```
+
+**In this guide we will describe how to scale out _PyTorch_ programs using Orca in 5 simple steps.**
 
 ### Step 1: Init Orca Context
 ```python
 from bigdl.orca import init_orca_context, stop_orca_context
 
+cluster_mode = "local"
 if cluster_mode == "local":  # For local machine
     init_orca_context(cores=4, memory="10g")
 elif cluster_mode == "k8s":  # For K8s cluster
     init_orca_context(cluster_mode="k8s", num_nodes=2, cores=2, memory="10g", driver_memory="10g", driver_cores=1)
 elif cluster_mode == "yarn":  # For Hadoop/YARN cluster
-    init_orca_context(cluster_mode="yarn", cores=2, num_nodes=2, memory="10g", driver_memory="10g", driver_cores=1)
+    init_orca_context(cluster_mode="yarn", num_nodes=2, cores=2, memory="10g", driver_memory="10g", driver_cores=1)
 ```
 
 This is the only place where you need to specify local or distributed mode. View [Orca Context](./../Overview/orca-context.md) for more details.
@@ -86,7 +88,7 @@ from torchvision import datasets, transforms
 torch.manual_seed(0)
 batch_size = 320
 test_batch_size = 320
-dir = './dataset'
+dir = '/tmp/dataset'
 
 def train_loader_creator(config, batch_size):
     train_loader = torch.utils.data.DataLoader(
@@ -117,30 +119,32 @@ First, Create an Estimator
 from bigdl.orca.learn.pytorch import Estimator 
 from bigdl.orca.learn.metrics import Accuracy
 
-est = Estimator.from_torch(model=model_creator, optimizer=optim_creator, loss=criterion, metrics=[Accuracy()], backend="bigdl")
+est = Estimator.from_torch(model=model_creator, optimizer=optim_creator, loss=criterion, metrics=[Accuracy()], use_tqdm=True)
 ```
 
 Next, fit and evaluate using the Estimator
 
 ```python
 est.fit(data=train_loader_creator, epochs=1, batch_size=batch_size)
+```
+
+Finally, evaluate using the Estimator.
+
+```python
 result = est.evaluate(data=test_loader_creator, batch_size=test_batch_size)
 for r in result:
     print(r, ":", result[r])
 ```
 
-### Step 5: Save and Load the Model
+### Step 5: Save the Model
 
 Save the Estimator states (including model and optimizer) to the provided model path.
 
 ```python
 est.save("mnist_model")
-```
 
-Load the Estimator states (model and possibly with optimizer) from provided model path. 
-
-```python
-est.load("mnist_model") 
+# stop orca context when program finishes
+stop_orca_context()
 ```
 
 **Note:** You should call `stop_orca_context()` when your application finishes.
