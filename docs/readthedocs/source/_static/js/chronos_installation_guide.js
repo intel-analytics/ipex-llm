@@ -78,7 +78,7 @@ function refresh_cmd(){
         disable(ais);
         disable(versions);
         disable(oss);
-        disable(inferences);
+        disable(inference);
         disable(hardwares);
         disable(automls);
         cmd="Please refer to <a href=' https://github.com/intel-analytics/BigDL/tree/main/docker/chronos-nightly'>docker installation guide.</a>";
@@ -87,7 +87,7 @@ function refresh_cmd(){
         enable(models);
         enable(versions);
         enable(oss);
-        enable(inferences);
+        enable(inference);
         enable(packages);
         enable(hardwares);
         enable(automls);
@@ -498,17 +498,6 @@ function refresh_cmd(){
                         }
                     } 
                 }
-            }
-        }else if(model=="Machine_learning_models"){
-            if(version=="nightly"){
-                cmd="pip install --pre --upgrade bigdl-chronos";
-            }else if(version=="stable"){
-                if(os=="win"){
-                    cmd="Not supported, please refer to <a href='https://bigdl.readthedocs.io/en/latest/doc/Chronos/Howto/windows_guide.html'>windows_guide.</a>";
-                }
-                else{
-                    cmd="pip install bigdl-chronos";
-                }   
             }
         }
     }
