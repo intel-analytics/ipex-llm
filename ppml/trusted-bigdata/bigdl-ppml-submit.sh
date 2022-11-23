@@ -87,7 +87,7 @@ echo "input_args $input_args"
 echo "app_args $application_args"
 echo $MASTER
 
-if [ "$MASTER" == k8s* ]; then
+if [[ "$MASTER" =~ ^k8s ]]; then
   if [ "$DEPLOY_MODE" = "" ]; then
      echo "--deploy-mode should be specified for k8s"
      exit 1
