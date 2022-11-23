@@ -19,31 +19,16 @@ import torch
 from bigdl.nano.pytorch import InferenceOptimizer
 from torchvision.models.resnet import resnet18
 from unittest.mock import MagicMock, Mock, PropertyMock, patch
-from bigdl.nano.pytorch.utils import TORCH_VERSION_LESS_1_10, TORCH_VERSION_LESS_1_11
 from bigdl.nano.common import check_avx512
-
-
-class Pytorch1_9:
-    """Pytorch version < 1.10, bfloat16 precision is not supported."""
-    def test_bf16_pytorch_less_1_10(self):
-        trainer = Trainer(max_epochs=1)
-        model = resnet18(num_classes=10)
-
-        with pytest.raises(
-            RuntimeError,
-            match="torch version should >=1.10 to use ipex"
-        ):
-            trainer.quantize(model, precision='bf16', use_ipex=True)
 
 
 class CaseWithoutAVX512:
     def test_unsupported_HW_or_OS(self):
-        trainer = Trainer(max_epochs=1)
         model = resnet18(num_classes=10)
 
         with pytest.raises(RuntimeError,
                            match="Applying IPEX BF16 optimization needs the cpu support avx512."):
-            bf16_model = trainer.quantize(model, precision='bf16', use_ipex=True)
+            bf16_model = InferenceOptimizer.quantize(model, precision='bf16', use_ipex=True)
 
 
 class Pytorch1_11:
@@ -103,10 +88,8 @@ class Pytorch1_11:
 
 TORCH_VERSION_CLS = Pytorch1_11
 
-if TORCH_VERSION_LESS_1_10:
-    print("ipex 1.9")
-    TORCH_VERSION_CLS = Pytorch1_9
-elif not check_avx512():
+
+if not check_avx512():
     print("IPEX Inference Model Without AVX512")
     TORCH_VERSION_CLS = CaseWithoutAVX512
 
