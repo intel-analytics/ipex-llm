@@ -58,7 +58,7 @@ class Estimator(object):
                Default: None if no config is needed.
         :param workers_per_node: The number of PyTorch workers on each node.
                Default: 1.
-        :param scheduler_creator: An scheduler creator function that has two parameters "optimizer"
+        :param scheduler_creator: A scheduler creator function that has two parameters "optimizer"
                and "config" and returns a PyTorch learning rate scheduler wrapping the optimizer.
                Note that if you specify this parameter, you need to take care of the argument
                scheduler_step_freq accordingly as well.
