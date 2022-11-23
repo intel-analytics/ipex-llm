@@ -87,7 +87,7 @@ function refresh_cmd(){
         enable(models);
         enable(versions);
         enable(oss);
-        enable(inference);
+        enable(inferences);
         enable(packages);
         enable(hardwares);
         enable(automls);
