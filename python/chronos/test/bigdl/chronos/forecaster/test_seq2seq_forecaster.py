@@ -132,11 +132,11 @@ class TestChronosModelSeq2SeqForecaster(TestCase):
                                        lr=0.01)
         train_loss = forecaster.fit(train_loader, epochs=2)
         yhat = forecaster.predict(data=test_loader, acceleration=False)
-        onnx_yhat = forecaster.predict_with_onnx(data=test_loader)
-        assert yhat.shape == onnx_yhat.shape == (400, 5, 1)
         forecaster.evaluate(test_loader, batch_size=32, acceleration=False)
+        onnx_yhat = forecaster.predict_with_onnx(data=test_loader)
         forecaster.evaluate_with_onnx(test_loader)
         forecaster.evaluate_with_onnx(test_loader, batch_size=32)
+        assert yhat.shape == onnx_yhat.shape == (400, 5, 1)
 
     @op_inference
     def test_s2s_forecaster_onnx_methods(self):

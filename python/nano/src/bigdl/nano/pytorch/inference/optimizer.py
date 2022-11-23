@@ -37,7 +37,7 @@ from bigdl.nano.utils.inference.pytorch.model_utils import get_forward_args, get
 from bigdl.nano.utils.inference.pytorch.metrics import NanoMetric
 from bigdl.nano.utils.inference.pytorch.dataset import RepeatDataset, remove_batch_dim_fn
 from bigdl.nano.utils.inference.pytorch.dataloader import\
-    transform_multiple_input_dataloader_to_inc_mode
+    transform_multiple_input_dataloader_to_inc_mode, automatic_add_label_in_dataloader
 from bigdl.nano.pytorch.utils import TORCH_VERSION_LESS_1_10, save_model, load_model
 from bigdl.nano.common.cpu_schedule import schedule_processors
 from .multi_instance import _MultiInstanceModel, _multi_instance_helper
@@ -198,7 +198,8 @@ class InferenceOptimizer(BaseInferenceOptimizer):
 
         :param input_sample: (optional) A set of inputs for trace, defaults to None.
                In most cases, you don't need specify this parameter, it will be obtained from
-               training_data.
+               training_data. You have to specidy this parameter only if the forward function
+               of your model contains some kwargs like `def forward(self, x1, x2, x3=1)`.
         :param metric: (optional) A callable object which is used for calculating accuracy.
                It supports two kinds of callable object:
 
@@ -570,11 +571,18 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                     calib_dataloader = calib_dataloader
                 else:
                     calib_dataloader = calib_data
+            # judge whether contains label in calib_datalaoder
+            # if not, will append label at last
+            if accelerator is not None:
+                calib_dataloader = automatic_add_label_in_dataloader(model,
+                                                                     calib_dataloader,
+                                                                     input_sample)
 
             # transform the dataloader to inc mode
             inc_calib_dataloader =\
                 transform_multiple_input_dataloader_to_inc_mode(model,
                                                                 calib_dataloader)
+
             if not accelerator or accelerator == 'onnxruntime':
                 method_map = {
                     None: {

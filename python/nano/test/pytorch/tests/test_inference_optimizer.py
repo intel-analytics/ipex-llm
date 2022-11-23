@@ -291,6 +291,12 @@ class TestInferencePipeline(TestCase):
                                training_data=input_sample,
                                thread_num=1,
                                latency_sample_num=10)
+        if TORCH_VERSION_LESS_1_10:
+            return
+        # test automatic add label for quantization
+        optim_dict = inference_opt.optimized_model_dict
+        assert optim_dict["openvino_int8"]["status"] in ("successful", "early_stopped")
+        assert optim_dict["onnxruntime_int8_qlinear"]["status"] in ("successful", "early_stopped")
 
     def test_pipeline_with_single_tuple_of_tensor(self):
         input_sample = (torch.rand(1, 3, 32, 32), torch.Tensor([1]).int())
@@ -316,7 +322,11 @@ class TestInferencePipeline(TestCase):
             x1 = torch.randn(32, 10)
             x2 = torch.randn(32, 10)
             y = torch.randn(32, 1)
-            dataloader = DataLoader(TensorDataset(x1, x2, y), batch_size=1)
+            if isinstance(net, MultipleInputNet):
+                dataloader = DataLoader(TensorDataset(x1, x2, y), batch_size=1)
+            else:
+                x3 = torch.randn(32, 1)
+                dataloader = DataLoader(TensorDataset(x1, x2, x3, y), batch_size=1)
 
             # int8
             InferenceOptimizer.quantize(net,
@@ -332,7 +342,7 @@ class TestInferencePipeline(TestCase):
                                      accelerator="onnxruntime",
                                      input_sample=dataloader)
 
-            # int8-openvino
+            # openvino
             InferenceOptimizer.trace(net,
                                      accelerator="openvino",
                                      input_sample=dataloader)
@@ -371,7 +381,7 @@ class TestInferencePipeline(TestCase):
         for (pred1, pred2) in zip(preds1, preds2):
             np.testing.assert_allclose(pred1, pred2, atol=1e-4,
                                         err_msg=f"\npred1: {pred1}\npred2: {pred2}\n")
-    
+
     def test_grid_search_model_with_accelerator(self):
         inference_opt = InferenceOptimizer()
 
@@ -414,3 +424,18 @@ class TestInferencePipeline(TestCase):
                                search_mode="default")
         optim_dict = inference_opt.optimized_model_dict
         assert len(optim_dict) == 11
+
+    def test_pipeline_with_single_tensor_loader(self):
+        input_sample = torch.rand(10, 3, 32, 32)
+        dataloader = DataLoader(input_sample, batch_size=1)
+        inference_opt = InferenceOptimizer()
+        inference_opt.optimize(model=self.model,
+                               training_data=dataloader,
+                               thread_num=1,
+                               latency_sample_num=10)
+        if TORCH_VERSION_LESS_1_10:
+            return
+        # test automatic add label for quantization
+        optim_dict = inference_opt.optimized_model_dict
+        assert optim_dict["openvino_int8"]["status"] in ("successful", "early_stopped")
+        assert optim_dict["onnxruntime_int8_qlinear"]["status"] in ("successful", "early_stopped")
