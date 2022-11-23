@@ -21,7 +21,7 @@ Please check with your admin or security department for security features and se
 
 This working model doesn't require any code change. You can reuse existing code and applications. The only difference is that your cluster manager/admin needs to set up a new execution environment for PPML applications.
 
-You can find more details for 
+You can find more details in these articles: 
 
 * [Installation for PPML](https://bigdl.readthedocs.io/en/latest/doc/PPML/Overview/install.html).
 * [Hello World Example](https://bigdl.readthedocs.io/en/latest/doc/PPML/Overview/quicktour.html).
