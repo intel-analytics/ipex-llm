@@ -24,6 +24,7 @@ import warnings
 
 from .utils_env import get_bytesize, _find_path, get_nano_env_var
 from bigdl.nano.common.common import _env_variable_is_set, _find_library
+from psutil import cpu_count
 
 
 def get_CPU_info():
@@ -40,9 +41,9 @@ def get_CPU_info():
     print(">"*20, "Hardware Information", ">"*20)
     print('\033[1m\tCPU architecture\033[0m:', platform.processor())
     print('\033[1m\tCPU model name\033[0m:', model_name.lstrip())
-    print('\033[1m\tLogical Core(s)\033[0m:', psutil.cpu_count())
-    print('\033[1m\tPhysical Core(s)\033[0m:', psutil.cpu_count(logical=False))
-    print('\033[1m\tPhysical Core(s) per socket\033[0m:', int(psutil.cpu_count(logical=False)/socket_num))
+    print('\033[1m\tLogical Core(s)\033[0m:', cpu_count())
+    print('\033[1m\tPhysical Core(s)\033[0m:', cpu_count(logical=False))
+    print('\033[1m\tPhysical Core(s) per socket\033[0m:', int(cpu_count(logical=False)/socket_num))
     print('\033[1m\tSocket(s)\033[0m:', socket_num)
     print('\033[1m\tCPU usage\033[0m:', str(psutil.cpu_percent()) + '%')
     print('\033[1m\tCPU MHz\033[0m:', format(psutil.cpu_freq().current, '.2f'))
@@ -150,7 +151,7 @@ def check_nano_env(use_malloc: str = "tc", use_openmp: bool = True) -> None:
         print(" ")
         print("+" * 20, "Suggested change: ", "+" * 20)
         for info in output_list:
-            pprint.pprint(info, width=20, depth=1)
+            print(info)
         print("+" * 60, "\n")
 
     print("<"*20, "Environment Variables", "<"*20, "\n")

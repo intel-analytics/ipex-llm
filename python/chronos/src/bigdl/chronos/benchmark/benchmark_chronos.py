@@ -207,7 +207,7 @@ def result(args, records):
 
     if args.stage == 'train':
         print("\n>>>>>>>>>>>>> train result >>>>>>>>>>>>>")
-        print("\033[1m\tavg throughput\033[0m: \033[0;34m{}\033[0m".format(records['train_throughput']))
+        print(f"\033[1m\tavg throughput\033[0m: \033[0;34m{records['train_throughput']}\033[0m")
         print(">>>>>>>>>>>>> train result >>>>>>>>>>>>>")
     elif args.stage == 'latency':
         for framework in args.inference_framework:
