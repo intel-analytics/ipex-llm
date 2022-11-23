@@ -412,6 +412,7 @@ jobs:
         job-name: Dllib-Scala-UT
         runner-hosted-on: 'Shanghai'
       
+      
   Friesian-Scala-UT:
     if: ${{ github.event.schedule || github.event.inputs.artifact == 'Friesian-Scala-UT' || github.event.inputs.artifact == 'all' }} 
     runs-on: [ self-hosted, ubuntu-20.04-lts, CLX, AVX512, Ettenmoors ]
