@@ -73,7 +73,7 @@ COPY --from=final  /etc/group /etc/group
 COPY --from=final  /etc/nsswitch.conf /etc/nsswitch.conf
 
 
-#ENV PATH="/opt/occlum/build/bin:/usr/lib/jvm/java-8-openjdk-amd64/bin:/usr/local/occlum/bin:$PATH"
-ENV PATH="/opt/occlum/build/bin:/usr/local/occlum/bin:$PATH"
+ENV PATH="/opt/occlum/build/bin:/usr/lib/jvm/java-8-openjdk-amd64/bin:/usr/local/occlum/bin:$PATH"
+#ENV PATH="/opt/occlum/build/bin:/usr/local/occlum/bin:$PATH"
 
 ENTRYPOINT [ "/opt/entrypoint.sh" ]
