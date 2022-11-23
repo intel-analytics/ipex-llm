@@ -60,6 +60,7 @@ COPY --from=tini /usr/local/bin/tini /sbin/tini
 
 #Add quote attest lib
 COPY --from=final /usr/lib/x86_64-linux-gnu/ /usr/lib/x86_64-linux-gnu/
+RUN mkdir -p /etc/occlum_attestation/
 
 #ENV PATH="/opt/occlum/build/bin:/usr/lib/jvm/java-8-openjdk-amd64/bin:/usr/local/occlum/bin:$PATH"
 ENV PATH="/opt/occlum/build/bin:/usr/local/occlum/bin:$PATH"
