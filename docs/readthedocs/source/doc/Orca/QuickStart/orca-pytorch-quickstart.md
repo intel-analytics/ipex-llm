@@ -77,7 +77,7 @@ def optim_creator(model, config):
 
 ### Step 3: Define Train Dataset
 
-You can define the dataset using a *Data Creator Function* that returns a PyTorch `DataLoader`. Orca also supports [Orca SparkXShards](../Overview/data-parallel-processing).
+You can define the dataset using a *Data Creator Function* that has two parameters `config` and `batch_size` and returns a PyTorch `DataLoader`. Orca also supports [Spark Dataframes and Orca XShards](../Overview/data-parallel-processing).
 
 ```python
 import torch
