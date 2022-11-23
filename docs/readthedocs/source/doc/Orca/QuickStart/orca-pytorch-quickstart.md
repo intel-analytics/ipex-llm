@@ -6,7 +6,9 @@
 
 ---
 
-### Prepare Environment
+**In this guide we will describe how to scale out _PyTorch_ programs using Orca in 6 simple steps.**
+
+### Step 0: Prepare Environment
 
 [Conda](https://docs.conda.io/projects/conda/en/latest/user-guide/install/) is needed to prepare the Python environment for running this example. Please refer to the [install guide](../../UserGuide/python.md) for more details.
 
@@ -17,8 +19,6 @@ pip install --pre --upgrade bigdl-orca
 pip install torch torchvision
 pip install tqdm
 ```
-
-**In this guide we will describe how to scale out _PyTorch_ programs using Orca in 5 simple steps.**
 
 ### Step 1: Init Orca Context
 ```python
@@ -64,7 +64,7 @@ class LeNet(nn.Module):
         x = self.fc2(x)
         return F.log_softmax(x, dim=1)
 ```
-After defining your model, you need to define a *Model Creator Function* that returns an instance of your model, and a *Optimizer Creator Function* that returns a PyTorch optimizer.
+After defining your model, you need to define a *Model Creator Function* that takes the parameter `config` and returns an instance of your model, and a *Optimizer Creator Function* that has two parameters `model` and `config` and returns a PyTorch optimizer.
 
 ```python
 def model_creator(config):
@@ -77,13 +77,12 @@ def optim_creator(model, config):
 
 ### Step 3: Define Train Dataset
 
-You can define the dataset using a *Data Creator Function* that has two parameters `config` and `batch_size` and returns a PyTorch `DataLoader`. Orca also supports [Spark Dataframes](../Overview/data-parallel-processing#spark-dataframes) and [XShards](../Overview/data-parallel-processing#xshards-distributed-data-parallel-python-processing).
+You can define the dataset using a *Data Creator Function* that has two parameters `config` and `batch_size` and returns a PyTorch `DataLoader`. Orca also supports [Spark DataFrames](https://bigdl.readthedocs.io/en/latest/doc/Orca/Overview/data-parallel-processing.html#spark-dataframes) and [XShards](https://bigdl.readthedocs.io/en/latest/doc/Orca/Overview/data-parallel-processing.html#xshards-distributed-data-parallel-python-processing).
 
 ```python
 import torch
 from torchvision import datasets, transforms
 
-torch.manual_seed(0)
 batch_size = 64
 dir = '/tmp/dataset'
 
@@ -123,11 +122,6 @@ Next, fit and evaluate using the Estimator
 
 ```python
 est.fit(data=train_loader_creator, epochs=1, batch_size=batch_size)
-```
-
-Finally, evaluate using the Estimator.
-
-```python
 result = est.evaluate(data=test_loader_creator, batch_size=batch_size)
 for r in result:
     print(r, ":", result[r])
