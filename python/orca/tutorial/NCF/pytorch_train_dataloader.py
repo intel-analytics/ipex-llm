@@ -40,10 +40,11 @@ def train_loader_func(config, batch_size):
     dataset, user_num, item_num, \
         sparse_feats_input_dims = load_dataset(config['dataset_dir'],
                                                cal_sparse_feats_input_dims=False,
-                                               num_ng=config['num_ng'],       
+                                               num_ng=config['num_ng'],
                                                merge_features=True)
 
     # train test split
+    dataset.data = list(map(lambda row: list(row[1:]), dataset.data.itertuples()))
     train_dataset, _ = train_test_split(dataset, test_size=0.2, random_state=100)
 
     train_loader = data.DataLoader(train_dataset, batch_size=batch_size,
@@ -55,10 +56,11 @@ def test_loader_func(config, batch_size):
     dataset, user_num, item_num, \
         sparse_feats_input_dims = load_dataset(config['dataset_dir'],
                                                cal_sparse_feats_input_dims=False,
-                                               num_ng=config['num_ng'],       
+                                               num_ng=config['num_ng'],
                                                merge_features=True)
 
     # train test split
+    dataset.data = list(map(lambda row: list(row[1:]), dataset.data.itertuples()))
     _, test_dataset = train_test_split(dataset, test_size=0.2, random_state=100)
 
     test_loader = data.DataLoader(test_dataset, batch_size=batch_size,
@@ -71,7 +73,7 @@ def model_creator(config):
     dataset, user_num, item_num, \
         sparse_feats_input_dims = load_dataset(config['dataset_dir'],
                                                cal_sparse_feats_input_dims=True,
-                                               num_ng=0,       
+                                               num_ng=0,
                                                merge_features=False)
 
     model = NCF(user_num=user_num,
