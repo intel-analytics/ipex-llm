@@ -18,7 +18,7 @@ conda activate bigdl
 pip install bigdl-orca[ray]
 ```
 
-### Step 1: Initialize
+### Step 1: Init Orca Context
 
 We recommend using `init_orca_context` to initiate and run BigDL on the underlying cluster. The Ray cluster would be launched automatically by specifying `init_ray_on_spark=True`.
 
