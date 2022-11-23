@@ -119,9 +119,8 @@ def load_dataset(dataset_dir, cal_sparse_feats_input_dims=True,
     users.age = pd.Series(age[:, 0], dtype=np.float32)
 
     # load ratings as a dok matrix
-    features_ps = ratings.values.tolist()
     train_mat = sp.dok_matrix((user_num, item_num), dtype=np.int64)
-    for x in features_ps:
+    for x in ratings.values.tolist():
         train_mat[x[0], x[1]] = 1
 
     dataset = NCFData(ratings, item_num, train_mat, num_ng)
