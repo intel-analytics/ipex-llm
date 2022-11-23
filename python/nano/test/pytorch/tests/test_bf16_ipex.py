@@ -53,7 +53,7 @@ class Pytorch1_11:
             y_hat = bf16_model(x)
 
         assert y_hat.shape == (10, 10) and y_hat.dtype == torch.bfloat16
-    
+
     def test_bf16_ipex_save_load(self):
         model = resnet18(num_classes=10)
 
