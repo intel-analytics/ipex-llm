@@ -6,7 +6,7 @@
 
 ---
 
-**In this guide we will describe how to scale out _PyTorch_ programs using Orca in 6 simple steps.**
+**In this guide we will describe how to scale out _PyTorch_ programs using Orca in 5 simple steps.**
 
 ### Step 0: Prepare Environment
 
