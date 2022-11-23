@@ -95,7 +95,7 @@ class Pytorch1_11:
         assert y_hat.shape == (10, 10) and y_hat.dtype == torch.bfloat16
         InferenceOptimizer.save(bf16_model, "bf16_model")
         
-        load_model = InferenceOptimizer.load("bf16_model")
+        load_model = InferenceOptimizer.load("bf16_model", model)
         y_hat_ = load_model(x)
         assert y_hat_.shape == (10, 10) and y_hat_.dtype == torch.bfloat16
         assert y_hat.equal(y_hat_)
