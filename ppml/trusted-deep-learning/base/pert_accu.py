@@ -39,10 +39,8 @@ parser.add_argument("--model-path", type=str, default="/ppml/model",
 parser.add_argument("--load-model", action="store_true", default=False,
                     help="For loading the current model")
 
-# Set mini-batch will result in that the first M backward will not trigger
-# backward propagation.  Only the M+1 backward will trigger the backward propagation.
 parser.add_argument("--mini-batch", type=int, default=0, metavar="M",
-                    help="If set, the gradient accumulation will be used")
+                    help="If set, the PyTorch will conduct M local-batch computation before doing a all_reduce sync")
 
 parser.add_argument("--log-interval", type=int, default=2, metavar="N",
                     help="how many batches to wait before logging training status")
