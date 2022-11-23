@@ -4,7 +4,7 @@ var models = ["Prophet", "ARIMA","Deep_learning_models","Machine_learning_models
 var ais = ["pytorch", "tensorflow"];
 var oss=["linux", "win"];
 var automls=["automlyes", "automlno"];
-var inferneces=["inferenceyes", "inferenceno"];
+var inferences=["inferenceyes", "inferenceno"];
 var hardwares=["singlenode", "cluster"];
 var packages=["pypi", "docker"];
 var versions=["stable", "nightly"];
@@ -27,7 +27,7 @@ function refresh_cmd(){
     reset_color(ais);
     reset_color(oss);
     reset_color(automls);
-    reset_color(inferneces);
+    reset_color(inferences);
     reset_color(hardwares);
     reset_color(packages);
     reset_color(versions);
@@ -78,7 +78,7 @@ function refresh_cmd(){
         disable(ais);
         disable(versions);
         disable(oss);
-        disable(inferneces);
+        disable(inferences);
         disable(hardwares);
         disable(automls);
         cmd="Please refer to <a href=' https://github.com/intel-analytics/BigDL/tree/main/docker/chronos-nightly'>docker installation guide.</a>";
@@ -87,7 +87,7 @@ function refresh_cmd(){
         enable(models);
         enable(versions);
         enable(oss);
-        enable(inferneces);
+        enable(inferences);
         enable(packages);
         enable(hardwares);
         enable(automls);
@@ -566,7 +566,7 @@ $(document).on('click',"button",function(){
     else if (ais.indexOf(id)>=0){
         ai=id;
     }
-    else if (inferneces.indexOf(id)>=0){
+    else if (inferences.indexOf(id)>=0){
         inference=id;
     }
     else if (oss.indexOf(id)>=0){
