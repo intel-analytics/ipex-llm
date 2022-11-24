@@ -262,7 +262,8 @@ def main():
     parser.add_argument('--inference_batchsize', type=int, default=1, metavar='',
                         help='batch size when infering, default to 1.')
     parser.add_argument('--quantize', action='store_true',
-                        help='if use the quantized model to predict, default to False.')
+                        help='if use the quantized model to predict, default to False.'
+                        'tensorflow will support quantize later.')
     parser.add_argument('--inference_framework', nargs='+', default=['torch'], metavar='',
                         help=('predict without/with accelerator, choose from torch/onnx/openvino,'
                         ' default to "torch" (i.e. predict without accelerator).'))

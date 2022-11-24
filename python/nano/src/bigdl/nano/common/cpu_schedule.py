@@ -15,6 +15,7 @@
 #
 
 
+import os
 from copy import deepcopy
 import subprocess
 import re
@@ -30,17 +31,20 @@ def get_cgroup_cpuset():
         cpu_set = [i for i in range(int(subprocess.check_output(
             get_physical_core_args, universal_newlines=True).splitlines()[4].split("=")[1]))]
     else:
-        with open("/sys/fs/cgroup/cpuset/cpuset.cpus", "r") as f:
-            content = f.readlines()
-        cpu_set = []
-        values = content[0].strip().split(",")
-        for value in values:
-            if "-" in value:
-                # Parse the value like "2-4"
-                start, end = value.split("-")
-                cpu_set.extend([i for i in range(int(start), int(end) + 1)])
-            else:
-                cpu_set.append(int(value))
+        try:
+            with open("/sys/fs/cgroup/cpuset/cpuset.cpus", "r") as f:
+                content = f.readlines()
+            cpu_set = []
+            values = content[0].strip().split(",")
+            for value in values:
+                if "-" in value:
+                    # Parse the value like "2-4"
+                    start, end = value.split("-")
+                    cpu_set.extend([i for i in range(int(start), int(end) + 1)])
+                else:
+                    cpu_set.append(int(value))
+        except FileNotFoundError:
+            cpu_set = list(range(os.cpu_count()))
     return cpu_set
 
 
