@@ -116,9 +116,9 @@ def main():
     parser.add_argument('--address', type=str, default="",
                         help='The cluster address if the driver connects to an existing '
                              'ray cluster. If it is empty, a new Ray cluster will be created.')
-    parser.add_argument('--backend', type=str, default="bigdl",
+    parser.add_argument('--backend', type=str, default="spark",
                         help='The backend of PyTorch Estimator; '
-                             'bigdl, ray and spark are supported.')
+                             'spark, ray and bigdl are supported.')
     parser.add_argument('--batch_size', type=int, default=4, help='The training batch size')
     parser.add_argument('--epochs', type=int, default=2, help='The number of epochs to train for')
     parser.add_argument('--data_dir', type=str, default="./data", help='The path of dataset')

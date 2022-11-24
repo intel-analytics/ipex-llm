@@ -30,18 +30,23 @@ from bigdl.orca.learn.metrics import Accuracy, Precision, Recall
 sc = init_orca_context()
 
 
-# Step 2: Define train and test datasets using Orca XShards
+# Step 2: Read and process data using Orca XShards
 dataset_dir = "./ml-1m"
-train_data, test_data, user_num, item_num = prepare_data(dataset_dir)
+train_data, test_data, user_num, item_num, sparse_feats_input_dims, \
+    feature_cols, label_cols = prepare_data(dataset_dir, num_ng=4)
 
 
 # Step 3: Define the model, optimizer and loss
 def model_creator(config):
-    model = NCF(config['user_num'], config['item_num'],
+    model = NCF(user_num=config['user_num'],
+                item_num=config['item_num'],
                 factor_num=config['factor_num'],
                 num_layers=config['num_layers'],
                 dropout=config['dropout'],
-                model=config['model'])
+                model=config['model'],
+                sparse_feats_input_dims=config['sparse_feats_input_dims'],
+                sparse_feats_embed_dims=config['sparse_feats_embed_dims'],
+                num_dense_feats=config['num_dense_feats'])
     model.train()
     return model
 
@@ -55,24 +60,33 @@ loss = nn.BCEWithLogitsLoss()
 # Step 4: Distributed training with Orca PyTorch Estimator
 backend = "spark"  # "ray" or "spark"
 
-est = Estimator.from_torch(model=model_creator, optimizer=optimizer_creator,
+est = Estimator.from_torch(model=model_creator,
+                           optimizer=optimizer_creator,
                            loss=loss,
                            metrics=[Accuracy(), Precision(), Recall()],
                            backend=backend,
-                           config={'user_num': user_num, 'item_num': item_num,
-                                   'dataset_dir': dataset_dir,
+                           config={'dataset_dir': dataset_dir,
+                                   'user_num': user_num,
+                                   'item_num': item_num,
                                    'factor_num': 16,
                                    'num_layers': 3,
-                                   'dropout': 0.0,
+                                   'dropout': 0.5,
                                    'lr': 0.001,
-                                   'model': "NeuMF-end"})
-est.fit(data=train_data, epochs=10, batch_size=256,
-        feature_cols=["user", "item"], label_cols=["label"])
+                                   'model': "NeuMF-end",
+                                   'sparse_feats_input_dims': sparse_feats_input_dims,
+                                   'sparse_feats_embed_dims': 8,
+                                   'num_dense_feats': 1})
+est.fit(data=train_data, epochs=10,
+        feature_cols=feature_cols,
+        label_cols=label_cols,
+        batch_size=256)
 
 
 # Step 5: Distributed evaluation of the trained model
-result = est.evaluate(data=test_data, batch_size=256,
-                      feature_cols=["user", "item"], label_cols=["label"])
+result = est.evaluate(data=test_data,
+                      feature_cols=feature_cols,
+                      label_cols=label_cols,
+                      batch_size=256)
 print('Evaluation results:')
 for r in result:
     print(r, ":", result[r])

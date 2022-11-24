@@ -2,24 +2,22 @@
 
 ---
 
-![](../../../../image/colab_logo_32px.png)[Run in Google Colab](https://colab.research.google.com/github/intel-analytics/BigDL/blob/main/python/orca/colab-notebook/quickstart/pytorch_lenet_mnist.ipynb) &nbsp;![](../../../../image/GitHub-Mark-32px.png)[View source on GitHub](https://github.com/intel-analytics/BigDL/blob/main/python/orca/colab-notebook/quickstart/pytorch_lenet_mnist.ipynb)
+![](../../../../image/colab_logo_32px.png)[Run in Google Colab](https://colab.research.google.com/github/intel-analytics/BigDL/blob/main/python/orca/colab-notebook/quickstart/pytorch_lenet_mnist_spark.ipynb) &nbsp;![](../../../../image/GitHub-Mark-32px.png)[View source on GitHub](https://github.com/intel-analytics/BigDL/blob/main/python/orca/colab-notebook/quickstart/pytorch_lenet_mnist_spark.ipynb)
 
 ---
 
-**In this guide we will describe how to scale out _PyTorch_ programs using Orca in 4 simple steps.**
+**In this guide we will describe how to scale out _PyTorch_ programs using Orca in 5 simple steps.**
 
 ### Step 0: Prepare Environment
 
 [Conda](https://docs.conda.io/projects/conda/en/latest/user-guide/install/) is needed to prepare the Python environment for running this example. Please refer to the [install guide](../../UserGuide/python.md) for more details.
 
-
 ```bash
 conda create -n py37 python=3.7  # "py37" is conda environment name, you can use any name you like.
 conda activate py37
-pip install bigdl-orca
-pip install torch==1.7.1 torchvision==0.8.2
-pip install six cloudpickle
-pip install jep==3.9.0
+pip install --pre --upgrade bigdl-orca 
+pip install torch torchvision
+pip install tqdm
 ```
 
 ### Step 1: Init Orca Context
@@ -32,12 +30,7 @@ if cluster_mode == "local":  # For local machine
 elif cluster_mode == "k8s":  # For K8s cluster
     init_orca_context(cluster_mode="k8s", num_nodes=2, cores=2, memory="10g", driver_memory="10g", driver_cores=1)
 elif cluster_mode == "yarn":  # For Hadoop/YARN cluster
-    init_orca_context(
-    cluster_mode="yarn", cores=2, num_nodes=2, memory="10g",
-    driver_memory="10g", driver_cores=1,
-    conf={"spark.rpc.message.maxSize": "1024",
-        "spark.task.maxFailures": "1",
-        "spark.driver.extraJavaOptions": "-Dbigdl.failure.retryTimes=1"})
+    init_orca_context(cluster_mode="yarn", num_nodes=2, cores=2, memory="10g", driver_memory="10g", driver_cores=1)
 ```
 
 This is the only place where you need to specify local or distributed mode. View [Orca Context](./../Overview/orca-context.md) for more details.
@@ -60,7 +53,7 @@ class LeNet(nn.Module):
         self.conv2 = nn.Conv2d(20, 50, 5, 1)
         self.fc1 = nn.Linear(4*4*50, 500)
         self.fc2 = nn.Linear(500, 10)
-        
+
     def forward(self, x):
         x = F.relu(self.conv1(x))
         x = F.max_pool2d(x, 2, 2)
@@ -70,43 +63,49 @@ class LeNet(nn.Module):
         x = F.relu(self.fc1(x))
         x = self.fc2(x)
         return F.log_softmax(x, dim=1)
+```
+After defining your model, you need to define a *Model Creator Function* that takes the parameter `config` and returns an instance of your model, and a *Optimizer Creator Function* that has two parameters `model` and `config` and returns a PyTorch optimizer.
 
-model = LeNet()
-model.train()
-criterion = nn.NLLLoss()
-adam = torch.optim.Adam(model.parameters(), 0.001)
+```python
+def model_creator(config):
+    model = LeNet()
+    return model
+
+def optim_creator(model, config):
+    return torch.optim.Adam(model.parameters(), lr=0.001)
 ```
 
 ### Step 3: Define Train Dataset
 
-You can define the dataset using standard [Pytorch DataLoader](https://pytorch.org/docs/stable/data.html). 
+You can define the dataset using a *Data Creator Function* that has two parameters `config` and `batch_size` and returns a [Pytorch DataLoader](https://pytorch.org/docs/stable/data.html). Orca also supports [Spark DataFrames](../Overview/data-parallel-processing.html#spark-dataframes) and [XShards](../Overview/data-parallel-processing.html#xshards-distributed-data-parallel-python-processing).
 
 ```python
 import torch
 from torchvision import datasets, transforms
 
-torch.manual_seed(0)
-dir='./'
+batch_size = 64
+dir = '/tmp/dataset'
 
-batch_size=64
-test_batch_size=64
-train_loader = torch.utils.data.DataLoader(
-    datasets.MNIST(dir, train=True, download=True,
-                   transform=transforms.Compose([
-                       transforms.ToTensor(),
-                       transforms.Normalize((0.1307,), (0.3081,))
-                   ])),
-    batch_size=batch_size, shuffle=True)
-test_loader = torch.utils.data.DataLoader(
-    datasets.MNIST(dir, train=False,
-                   transform=transforms.Compose([
-                       transforms.ToTensor(),
-                       transforms.Normalize((0.1307,), (0.3081,))
-                   ])),
-    batch_size=test_batch_size, shuffle=False)
+def train_loader_creator(config, batch_size):
+    train_loader = torch.utils.data.DataLoader(
+        datasets.MNIST(dir, train=True, download=True,
+                       transform=transforms.Compose([
+                           transforms.ToTensor(),
+                           transforms.Normalize((0.1307,), (0.3081,))
+                       ])),
+        batch_size=batch_size, shuffle=True)
+    return train_loader
+
+def test_loader_creator(config, batch_size):
+    test_loader = torch.utils.data.DataLoader(
+        datasets.MNIST(dir, train=False,
+                       transform=transforms.Compose([
+                           transforms.ToTensor(),
+                           transforms.Normalize((0.1307,), (0.3081,))
+                       ])),
+        batch_size=batch_size, shuffle=False)
+    return test_loader
 ```
-
-Alternatively, we can also use a [Data Creator Function](https://github.com/intel-analytics/BigDL/blob/main/docs/docs/colab-notebook/orca/quickstart/pytorch_lenet_mnist_data_creator_func.ipynb) or [Orca XShards](../Overview/data-parallel-processing) as the input data, especially when the data size is very large)
 
 ### Step 4: Fit with Orca Estimator
 
@@ -116,34 +115,27 @@ First, Create an Estimator
 from bigdl.orca.learn.pytorch import Estimator 
 from bigdl.orca.learn.metrics import Accuracy
 
-est = Estimator.from_torch(model=model, optimizer=adam, loss=criterion, metrics=[Accuracy()])
+est = Estimator.from_torch(model=model_creator, optimizer=optim_creator, loss=nn.NLLLoss(), metrics=[Accuracy()], use_tqdm=True)
 ```
 
 Next, fit and evaluate using the Estimator
 
 ```python
-from bigdl.orca.learn.trigger import EveryEpoch 
-
-est.fit(data=train_loader, epochs=10, validation_data=test_loader,
-        checkpoint_trigger=EveryEpoch())
-
-result = est.evaluate(data=test_loader)
+est.fit(data=train_loader_creator, epochs=1, batch_size=batch_size)
+result = est.evaluate(data=test_loader_creator, batch_size=batch_size)
 for r in result:
     print(r, ":", result[r])
 ```
 
-### Step 5: Save and Load the Model
+### Step 5: Save the Model
 
 Save the Estimator states (including model and optimizer) to the provided model path.
 
 ```python
 est.save("mnist_model")
-```
 
-Load the Estimator states (model and possibly with optimizer) from the provided model path.
-
-```python
-est.load("mnist_model")
+# stop orca context when program finishes
+stop_orca_context()
 ```
 
 **Note:** You should call `stop_orca_context()` when your application finishes.

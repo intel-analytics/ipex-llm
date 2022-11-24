@@ -51,6 +51,7 @@ class PytorchIPEXJITBF16Model(PytorchIPEXJITModel):
                 errMsg="Applying IPEX BF16 optimization needs the cpu support avx512.",
                 fixMsg="Please set use_ipex to False or not set precision to bf16."
             )
+
         PytorchIPEXJITModel.__init__(self, model, input_sample=input_sample, use_ipex=use_ipex,
                                      dtype=torch.bfloat16, use_jit=use_jit,
                                      channels_last=channels_last, from_load=from_load)
@@ -63,7 +64,7 @@ class PytorchIPEXJITBF16Model(PytorchIPEXJITModel):
 
     def autocast_context_manager(self):
         """Create autocast context"""
-        return autocast(enabled=self._check_cpu_isa)
+        return autocast(enabled=True, dtype=torch.bfloat16, cache_enabled=True)
 
     @contextlib.contextmanager
     def forward_context(self):
@@ -80,3 +81,22 @@ class PytorchIPEXJITBF16Model(PytorchIPEXJITModel):
         status = super().status
         status.update({"precision": "bfloat16"})
         return status
+
+    @staticmethod
+    def _load(path, model):
+        status = PytorchIPEXJITBF16Model._load_status(path)
+        checkpoint_path = path / status['checkpoint']
+        if status["use_jit"]:
+            model = torch.jit.load(checkpoint_path)
+            model.eval()
+            model = torch.jit.freeze(model)
+            from_load = True
+        else:
+            state_dict = torch.load(checkpoint_path)
+            model.eval()
+            model.load_state_dict(state_dict)
+            from_load = False
+        return PytorchIPEXJITBF16Model(model, use_ipex=status['use_ipex'],
+                                       use_jit=status['use_jit'],
+                                       channels_last=status['channels_last'],
+                                       from_load=from_load)

@@ -11,15 +11,7 @@ We recommend you to use [Miniconda](https://docs.conda.io/en/latest/miniconda.ht
 ```bash
 conda create -n nano python=3.7 setuptools=58.0.4  # "nano" is conda environment name, you can use any name you like.
 conda activate nano
-pip install --pre --upgrade bigdl-nano[pytorch] # install the nightly-bulit version
-
-# bf16 is available only on torch1.12
-pip install torch==1.12.0 torchvision --extra-index-url https://download.pytorch.org/whl/cpu 
-# Necessary packages for inference accelaration
-pip install --upgrade intel-extension-for-pytorch
-pip install onnx==1.12.0 onnxruntime==1.12.1 onnxruntime-extensions
-pip install openvino-dev
-pip install neural-compressor==1.12
+pip install --pre --upgrade bigdl-nano[pytorch,inference]  # install the nightly-bulit version
 ```
 Initialize environment variables with script `bigdl-nano-init` installed with bigdl-nano.
 ```

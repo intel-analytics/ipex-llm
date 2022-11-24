@@ -27,6 +27,7 @@ from bigdl.dllib.utils.log4Error import invalidInputError
 import numpy as np
 import pyspark.sql.functions as F
 from pyspark import RDD
+
 from typing import (Union, List, Dict)
 
 from typing import TYPE_CHECKING, Any
@@ -195,7 +196,6 @@ class SparkXShards(XShards):
         :param args: other arguments in this function.
         :return: a new SparkXShards.
         """
-
         def transform(iter, func, *args):
             for x in iter:
                 yield func(x, *args)
@@ -517,7 +517,7 @@ class SparkXShards(XShards):
         """
         if self._get_class_name() != 'pandas.core.frame.DataFrame':
             invalidInputError(False,
-                              "Currently only support assembleFeatureLabelCols() on"
+                              "Currently only support get_null_sum() on"
                               " XShards of Pandas DataFrame")
 
         def get_na_sum(iter):
@@ -943,6 +943,150 @@ class SparkXShards(XShards):
                 .map(lambda p: p[1]).toDF()
         mergedXShards = spark_df_to_pd_sparkxshards(merged)
         return mergedXShards
+
+    def sample(self,
+               frac: float,
+               replace: bool=False,
+               weights=None,
+               random_state=None) -> "SparkXShards":
+        """
+        Samples from each pandas dataframe in old SparkXShards, Return a new SparkXShards  .
+
+        :param frac: float,  Fraction of items to return.
+        :param replace: bool, default False,
+            Allow or disallow sampling of the same row more than once.
+        :param weights: str or ndarray-like, optional
+            Default 'None' results in equal probability weighting.
+        :param random_state: int, array-like, BitGenerator, np.random.RandomState, optional
+            If int, array-like, or BitGenerator (NumPy>=1.17), seed for
+            random number generator
+            If np.random.RandomState, use as numpy RandomState object.
+        :return: a new SparkXShards.
+        """
+        if self._get_class_name() != 'pandas.core.frame.DataFrame':
+            invalidInputError(False,
+                              "Currently only support sample() on"
+                              " SparkXShards of Pandas DataFrame")
+
+        def inner_sample(iter, frac, replace=False, weights=None, random_state=None):
+            for df in iter:
+                yield df.sample(
+                    frac=frac, replace=replace, weights=weights, random_state=random_state)
+
+        rdd1 = self.rdd.mapPartitions(lambda iter:
+                                      inner_sample(iter, frac, replace, weights, random_state))
+        return SparkXShards(rdd1)
+
+    def select(self, cols: Union[str, List[str]]) -> "SparkXShards":
+        """
+        Select specific columns of each pandas dataframe in SparkXShards and
+        return a new SparkXShards.
+
+        :param cols: string or list string.
+        :return: a new SparkXShards.
+        """
+        if self._get_class_name() != 'pandas.core.frame.DataFrame':
+            invalidInputError(False,
+                              "Currently only support select() on"
+                              " SparkXShards of Pandas DataFrame")
+
+        if isinstance(cols, str):
+            cols = [cols]
+        invalidInputError(isinstance(cols, list), "cols should be str or list")
+
+        columns = [c for c in self.rdd.first().columns]
+        for c in cols:
+            check_cols_exists(columns, c, "cols")
+
+        return SparkXShards(self.rdd.map(lambda df: df[cols]))
+
+    def describe(self, cols:  Union[str, List[str]]=None) -> "PandasDataFrame":
+        """
+        Computes basic statistics for numeric and string columns.
+
+        This include count, mean, stddev, min, and max. If no columns are
+        given, this function computes statistics for all numerical or string columns.
+
+        :param cols: string or list string.
+        :return: a panda dataframe of description.
+        """
+        if self._get_class_name() != 'pandas.core.frame.DataFrame':
+            invalidInputError(False,
+                              "Currently only support select() on"
+                              " SparkXShards of Pandas DataFrame")
+
+        columns = [c for c in self.rdd.first().columns]
+        cols = cols if cols else columns
+
+        if isinstance(cols, str):
+            cols = [cols]
+        invalidInputError(isinstance(cols, list), "cols should be str or list")
+
+        for c in cols:
+            check_cols_exists(columns, c, "cols")
+
+        spark_df = self.to_spark_df()
+
+        description = spark_df.describe(*cols).toPandas()
+        return description
+
+    def head(self, n: int=5) -> 'PandasDataFrame':
+        """
+        Retrun first rows of the first element of a SparkXShards.
+
+        :param n: int, default 5
+        :return: same type as self.type['class_name']
+            The first `n` rows of the first element of this SparkXShards.
+        """
+
+        return self.rdd.first().head(n)
+
+    def concat_to_pdf(self, axis: int=0) -> "PandasDataFrame":
+        """
+        Concatenate all pandas dataframes in SparsXShards into one single pandas dataframe
+
+        :param axis, integer, default 0
+        """
+        if self._get_class_name() != 'pandas.core.frame.DataFrame':
+            invalidInputError(False,
+                              "Currently only support concat_to_pdf() on"
+                              " XShards of Pandas DataFrame")
+
+        dfs = self.rdd.collect()
+        import pandas as pd
+        return pd.concat(dfs, axis=axis)
+
+    def sample_to_pdf(self,
+                      frac: float,
+                      replace: bool=False,
+                      weights=None,
+                      random_state=None,
+                      axis: int=0) -> "PandasDataFrame":
+        """
+        Samples from each pandas dataframe in old SparkXShards, then concatenate into one single
+        pandas dataframe and return it
+
+        :param frac: float,  Fraction of items to return.
+        :param replace: bool, default False,
+            Allow or disallow sampling of the same row more than once.
+        :param weights : str or ndarray-like, optional
+            Default 'None' results in equal probability weighting.
+        :param random_state : int, array-like, BitGenerator, np.random.RandomState, optional
+            If int, array-like, or BitGenerator (NumPy>=1.17), seed for
+            random number generator
+            If np.random.RandomState, use as numpy RandomState object.
+        :param axis, integer, default 0
+
+        :return: a pandas dataframe.
+        """
+        if self._get_class_name() != 'pandas.core.frame.DataFrame':
+            invalidInputError(False,
+                              "Currently only support select() on"
+                              " XShards of Pandas DataFrame")
+        sampled = self.sample(
+            frac=frac, replace=replace, weights=weights, random_state=random_state)
+        pdf = sampled.concat_to_pdf(axis=axis)
+        return pdf
 
 
 class SharedValue(object):

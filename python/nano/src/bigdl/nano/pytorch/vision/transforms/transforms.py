@@ -28,6 +28,7 @@ import torchvision.transforms as tv_t
 from torchvision.transforms.functional import InterpolationMode
 import opencv_transforms.transforms as cv_t
 from bigdl.nano.utils.log4Error import invalidInputError
+from bigdl.nano.pytorch.utils import TORCHVISION_VERSION_LESS_1_14
 
 
 __all__ = [
@@ -69,6 +70,17 @@ __all__ = [
     'RandomEqualize',
     'InterpolationMode'
 ]
+
+if not TORCHVISION_VERSION_LESS_1_14:
+    __all__.extend(['ElasticTransform'])
+
+    class ElasticTransform(tv_t.ElasticTransform):
+
+        def __call__(self, img):
+            if type(img) == np.ndarray:
+                img = tv_t.ToTensor()(img)
+
+            return super(ElasticTransform, self).__call__(img)
 
 _cv_strToModes_mapping = {
     'nearest': cv2.INTER_NEAREST,

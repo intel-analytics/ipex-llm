@@ -16,7 +16,7 @@
 
 import pytest
 from unittest import TestCase
-from .. import op_distributed
+from .. import op_torch, op_distributed
 import numpy as np
 import tempfile
 import os
@@ -45,6 +45,7 @@ def create_data(loader=False):
     return train_data, val_data, test_data
 
 
+@op_torch
 @op_distributed
 class TestVanillaLSTMPytorch(TestCase):
     train_data, val_data, test_data = create_data()

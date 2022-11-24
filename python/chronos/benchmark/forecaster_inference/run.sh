@@ -1,3 +1,5 @@
+#!/usr/bin/env bash
+
 #
 # Copyright 2016 The BigDL Authors.
 #
@@ -14,19 +16,21 @@
 # limitations under the License.
 #
 
+# Enviroment Settings
+export ANALYTICS_ZOO_ROOT=${ANALYTICS_ZOO_ROOT}
+export CHRONOS_HOME=${ANALYTICS_ZOO_ROOT}/python/chronos/src
+export CHRONOS_BENCHMARK_DIR=${ANALYTICS_ZOO_ROOT}/python/chronos/benchmark
 
-from abc import abstractmethod, ABCMeta
+set -e
+echo "# Start testing"
+start=$(date "+%s")
 
+# Boot-up commands 
+# e.g. python benchmark_program.py 
+bash $CHRONOS_BENCHMARK_DIR/forecaster_inference/forecaster_inference_benchmark.sh
+#
 
-class Trainer(metaclass=ABCMeta):
-    @abstractmethod
-    def train_epochs(self, **kwargs):
-        pass
-
-    @abstractmethod
-    def predict(self, **kwargs):
-        pass
-
-    @abstractmethod
-    def validate(self, **kwargs):
-        pass
+now=$(date "+%s")
+time=$((now-start))
+echo ">> All Benchmark test finished"
+echo ">> Time used:$time sec"
