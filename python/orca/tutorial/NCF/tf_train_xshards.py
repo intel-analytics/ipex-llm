@@ -13,9 +13,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-import math
 
 # Step 0: Import necessary libraries
+import math
+
 from tf_model import ncf_model
 from process_xshards import prepare_data
 
