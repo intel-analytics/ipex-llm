@@ -129,13 +129,13 @@ __Note__: If necessary, you need to manually uninstall `pyspark` and other [depe
 
 You can also download the BigDL package via the download links below. Besides, you can use the [script](https://github.com/intel-analytics/BigDL/blob/main/scripts/download-bigdl.sh) to download.
 
-<table border="1"
-cellpadding="10"
+<table border="5"
+cellpadding="1"
 >
     <tr>
         <td></td>
         <td>BigDL 2.1.0</td>
-        <td>BigDL 2.2.0-SNAPSHOT nightly build</td>
+        <td>BigDL 2.2.0-SNAPSHOT nightly</td>
     </tr>
     <tr>
        <td>Spark 2.4 </td>
