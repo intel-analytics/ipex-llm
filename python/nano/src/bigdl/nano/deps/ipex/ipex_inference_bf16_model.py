@@ -14,14 +14,11 @@
 # limitations under the License.
 #
 
-import contextlib
-import subprocess
-from logging import info, warning
 
 from ...utils.log4Error import invalidInputError
 
 from .ipex_inference_model import PytorchIPEXJITModel
-from bigdl.nano.pytorch.amp.bfloat16 import autocast
+from bigdl.nano.pytorch.context_manager import AutocastContextManager
 from bigdl.nano.utils import CPUInfo
 import torch
 
@@ -55,6 +52,7 @@ class PytorchIPEXJITBF16Model(PytorchIPEXJITModel):
         PytorchIPEXJITModel.__init__(self, model, input_sample=input_sample, use_ipex=use_ipex,
                                      dtype=torch.bfloat16, use_jit=use_jit,
                                      channels_last=channels_last, from_load=from_load)
+        self.context_manager = AutocastContextManager()
 
     @property
     def _check_cpu_isa(self):
