@@ -40,7 +40,7 @@ runs:
         cd /home/sdp/heyang/data/occlum-k8s
         #git clone https://github.com/intel-analytics/BigDL.git
         cd BigDL/ppml/trusted-realtime-ml/scala/docker-occlum/kubernetes
-        sudo docker pull $IMAGE
+        docker pull $IMAGE
         echo "Download finish."
 
         unset http_proxy
