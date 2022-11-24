@@ -18,7 +18,7 @@ from scipy.fftpack import fft, fftfreq
 import numpy as np
 
 
-def cycle_length_est(data, top_k=3, return_acf_score=False, adjust=False):
+def cycle_length_est(data, top_k=3, adjust=False):
     '''
     Detect the cycle of a time series.
     code adaptted from https://zhuanlan.zhihu.com/p/394327245
@@ -27,6 +27,7 @@ def cycle_length_est(data, top_k=3, return_acf_score=False, adjust=False):
     :param top_k: The freq with top top_k power after fft will be
            used to check the autocorrelation. Higher top_k might be time-consuming.
            The value is default to 3.
+    :param adjust: if normalization is applied to the final result.
     '''
     from bigdl.nano.utils.log4Error import invalidInputError
     invalidInputError((data.size//2) > abs(top_k)+1,
@@ -56,10 +57,7 @@ def cycle_length_est(data, top_k=3, return_acf_score=False, adjust=False):
             cycle_length_est = lag
             largest_acf_score = acf_score
 
-    if return_acf_score:
-        return cycle_length_est, largest_acf_score
-    else:
-        return cycle_length_est
+    return cycle_length_est
 
 
 def acf(x, lag, adjust):
