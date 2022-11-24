@@ -38,9 +38,9 @@ def ncf_model(user_num, item_num, factor_num, dropout, lr, num_layers,
         cat_feature_input_layers = []
         cat_feature_layers = []
         for in_dim, out_dim in zip(sparse_feats_input_dims, sparse_feats_embed_dims):
-            cat_feature_input_layers.append(tf.keras.layers.Input(shape=(), dtype=tf.int32))
-            cat_feature_layers.append(
-                tf.keras.layers.Embedding(in_dim, out_dim)(cat_feature_input_layers[-1]))
+            input_layer = tf.keras.layers.Input(shape=(), dtype=tf.int32)
+            cat_feature_input_layers.append(input_layer)
+            cat_feature_layers.append(tf.keras.layers.Embedding(in_dim, out_dim)(input_layer))
 
         num_feature_input_layers = []
         num_feature_layers = []
