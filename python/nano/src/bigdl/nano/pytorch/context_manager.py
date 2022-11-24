@@ -16,14 +16,16 @@
 
 import torch
 
+
 class BaseContextManager(object):
     no_grad = torch.no_grad()
+
     def __init__(self):
         pass
 
     def __enter__(self):
         self.no_grad.__enter__()
-    
+
     def __exit__(self, exc_type, exc_value, exc_tb):
         self.no_grad.__exit__(exc_type, exc_value, exc_tb)
 
