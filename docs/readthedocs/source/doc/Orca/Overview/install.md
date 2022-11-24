@@ -44,7 +44,7 @@ conda activate py37
 ---
 ## Install BigDL Orca
 
-In this section, you can use `pip install` to install BigDL Orca package, which is the most recommended way to install.
+This section demonstrates how to install BigDL Orca via `pip`, which is the most recommended way.
 
 ### To use basic Orca features
 You can install Orca in your created conda environment for distributed data processing, training and inference with the following command:
