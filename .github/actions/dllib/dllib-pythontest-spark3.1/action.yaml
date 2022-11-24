@@ -44,13 +44,13 @@ runs:
         export CLASSPATH=.:${JAVA_HOME}/lib:${JAVA_HOME}/jre/lib:${JAVA_HOME}/lib/tools.jar:${JAVA_HOME}/lib/dt.jar
         export PATH=${JAVA_HOME}/bin/:${JAVA_HOME}/jre/bin:${PATH}
         export PATH=/opt/work/apache-maven-3.6.3/bin:$PATH
+        cd scala
+        ./make-dist.sh -P spark_3.x -Dspark.version=3.1.3
+        cd -
         wget https://archive.apache.org/dist/spark/spark-3.1.3/spark-3.1.3-bin-hadoop2.7.tgz -O ${{ github.workspace }}/spark-3.1.3-bin-hadoop2.7.tgz 
         tar -xf spark-3.1.3-bin-hadoop2.7.tgz -C ${{ github.workspace }}/ 
         rm -rf ${{ github.workspace }}/spark-3.1.3-bin-hadoop2.7.tgz 
         export SPARK_HOME=${{ github.workspace }}/spark-3.1.3-bin-hadoop2.7
-        cd scala
-        ./make-dist.sh -P spark_3.x -Dspark.version=3.1.3
-        cd -
         source activate py37
         pip uninstall -y bigdl bigdl-dllib bigdl-orca pyspark 
         export KERAS_BACKEND=tensorflow
