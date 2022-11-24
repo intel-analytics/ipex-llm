@@ -458,9 +458,9 @@ class TSDataset:
         if not self.evaluate:
             from bigdl.nano.utils.log4Error import invalidInputError
             invalidInputError(self._is_pd_datetime,
-                            "The time series data does not have a Pandas datetime format"
-                            "(you can use pandas.to_datetime to convert a string into"
-                            " a datetime format.)")
+                              "The time series data does not have a Pandas datetime format"
+                              "(you can use pandas.to_datetime to convert a string into"
+                              " a datetime format.)")
         features_generated = []
         self.df = generate_dt_features(input_df=self.df,
                                        dt_col=self.dt_col,
@@ -691,12 +691,12 @@ class TSDataset:
             from bigdl.nano.utils.log4Error import invalidInputError
             if id_sensitive and not _check_is_aligned(self.df, self.id_col, self.dt_col):
                 invalidInputError(False,
-                                "The time series data should be "
-                                "aligned if id_sensitive is set to True.")
-        feature_col = _to_list(feature_col, "feature_col", evaluate=self.evaluate) if feature_col is not None \
-            else self.feature_col
-        target_col = _to_list(target_col, "target_col", evaluate=self.evaluate) if target_col is not None \
-            else self.target_col
+                                  "The time series data should be "
+                                  "aligned if id_sensitive is set to True.")
+        feature_col = _to_list(feature_col, "feature_col", evaluate=self.evaluate) \
+            if feature_col is not None else self.feature_col
+        target_col = _to_list(target_col, "target_col", evaluate=self.evaluate) \
+            if target_col is not None else self.target_col
         if self.roll_additional_feature:
             additional_feature_col =\
                 list(set(feature_col).intersection(set(self.roll_additional_feature)))
@@ -997,8 +997,8 @@ class TSDataset:
             from bigdl.nano.utils.log4Error import invalidInputError
             if self.numpy_x is None:
                 invalidInputError(False,
-                                "Please call 'roll' method "
-                                "before transform a TSDataset to numpy ndarray!")
+                                  "Please call 'roll' method "
+                                  "before transform a TSDataset to numpy ndarray!")
         if self.numpy_y is None and self.numpy_x_timeenc is None:
             return self.numpy_x
         elif self.numpy_x_timeenc is None:
@@ -1052,8 +1052,8 @@ class TSDataset:
                     invalidInputError(not check_is_fitted(scaler), "scaler is not fittedd")
                 except Exception:
                     invalidInputError(False,
-                                    "When calling scale for the first time, "
-                                    "you need to set fit=True.")
+                                      "When calling scale for the first time, "
+                                      "you need to set fit=True.")
             self.df[self.target_col + feature_col] = \
                 scaler.transform(self.df[self.target_col + feature_col])
         self.scaler = scaler
