@@ -140,7 +140,7 @@ if __name__ == "__main__":
 
     sc = init_orca_context()
 
-    train_data, test_data, embedding_in_dim, user_num, item_num, total_feature, label_cols = \
+    train_data, test_data, embedding_in_dim, user_num, item_num, feature_cols, label_cols = \
         prepare_data("ml-1m", neg_scale=4)
     train_data.write.csv('./train_dataframe', header=True, sep=',', mode='overwrite')
     test_data.write.csv('./test_dataframe', header=True, sep=',', mode='overwrite')
