@@ -20,14 +20,18 @@ from bigdl.nano.utils.log4Error import invalidInputError
 
 
 class PytorchOpenVINODataLoader(DataLoader):
-    def __init__(self, dataloader, collate_fn=None):
+    def __init__(self, dataloader, collate_fn=None, original_collate_fn=None):
         invalidInputError(isinstance(dataloader, TorchLoader),
                           "Please provide an instance of torch.utils.data.dataloader.Dataloader.")
         self.dataset = dataloader.dataset
         self.collate_fn = collate_fn
+        self.original_fn = original_collate_fn
 
     def __getitem__(self, index):
         data = self.dataset[index]
+        if self.original_fn:
+            # turn single element into list for default colleta_fn
+            data = self.original_fn([data])
         if self.collate_fn:
             data = self.collate_fn(data)
         return data

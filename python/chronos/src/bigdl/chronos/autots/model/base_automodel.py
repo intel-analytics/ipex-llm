@@ -18,6 +18,7 @@
 import os
 import json
 from bigdl.chronos.autots.utils import recalculate_n_sampling
+import warnings
 
 
 class BaseAutomodel:
@@ -281,7 +282,7 @@ class BaseAutomodel:
         with open(best_config_path, "r") as f:
             self.best_config = json.load(f)
 
-    def build_onnx(self, thread_num=None, sess_options=None):
+    def build_onnx(self, thread_num=1, sess_options=None):
         '''
         Build onnx model to speed up inference and reduce latency.
         The method is Not required to call before predict_with_onnx,
@@ -292,18 +293,20 @@ class BaseAutomodel:
         | 2. Alleviate the cold start problem when you call predict_with_onnx
              for the first time.
 
-        :param thread_num: int, the num of thread limit. The value is set to None by
-               default where no limit is set.
+        :param thread_num: int, the num of thread limit. The value is set to 1 by
+               default where no limit is set. Besides, the environment variable
+               `OMP_NUM_THREADS` is suggested to be same as `thread_num`.
         :param sess_options: an onnxruntime.SessionOptions instance, if you set this
                other than None, a new onnxruntime session will be built on this setting
                and ignore other settings you assigned(e.g. thread_num...).
 
         Example:
             >>> # to pre build onnx sess
-            >>> automodel.build_onnx(thread_num=1)  # build onnx runtime sess for single thread
+            >>> automodel.build_onnx(thread_num=2)  # build onnx runtime sess for two threads
             >>> pred = automodel.predict_with_onnx(data)
             >>> # ------------------------------------------------------
             >>> # directly call onnx related method is also supported
+            >>> # default to build onnx runtime sess for single thread
             >>> pred = automodel.predict_with_onnx(data)
         '''
         from bigdl.nano.utils.log4Error import invalidInputError
@@ -321,6 +324,14 @@ class BaseAutomodel:
                               "build_onnx has not been supported for distributed "
                               "forecaster. You can call .to_local() to transform the "
                               "forecaster to a non-distributed version.")
+        try:
+            OMP_NUM_THREADS = os.getenv("OMP_NUM_THREADS")
+        except KeyError:
+            OMP_NUM_THREADS = 0
+        if OMP_NUM_THREADS != str(thread_num):
+            warnings.warn("The environment variable OMP_NUM_THREADS is suggested to be same "
+                          f"as thread_num.You can use 'export OMP_NUM_THREADS={thread_num}'.")
+
         import torch
         dummy_input = torch.rand(1, self.best_config["past_seq_len"],
                                  self.best_config["input_feature_num"])

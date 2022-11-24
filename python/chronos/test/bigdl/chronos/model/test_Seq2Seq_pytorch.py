@@ -14,7 +14,7 @@
 # limitations under the License.
 #
 from unittest import TestCase
-from .. import op_distributed
+from .. import op_torch, op_distributed
 import numpy as np
 import tempfile
 import os
@@ -43,6 +43,7 @@ def create_data():
     return train_data, val_data, test_data
 
 
+@op_torch
 @op_distributed
 class TestSeq2SeqPytorch(TestCase):
     train_data, val_data, test_data = create_data()

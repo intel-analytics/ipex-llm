@@ -21,8 +21,10 @@ ADD ./entrypoint.sh /opt/entrypoint.sh
 # Small examples for PyTorch
 ADD ./mnist.py       /ppml/examples/mnist.py
 ADD ./pert.py        /ppml/examples/pert.py
+ADD ./pert_ipex.py   /ppml/examples/pert_ipex.py
 # Patch for datasets
 ADD ./filelock.patch /filelock.patch
+ADD ./bash.manifest.template.patch /bash.manifest.template.patch
 
 
 # PyTorch Dependencies
@@ -34,26 +36,32 @@ RUN env DEBIAN_FRONTEND=noninteractive apt-get update && \
     ln -s libmkl_gnu_thread.so.2 libmkl_gnu_thread.so && \
     ln -s libmkl_intel_lp64.so.2 libmkl_intel_lp64.so && \
     ln -s libmkl_core.so.2 libmkl_core.so && \
-    # PyTorch
+# huggingface related
+    pip3 install --no-cache datasets==2.6.1 transformers intel_extension_for_pytorch && \
+# Optimization related
+    pip3 install --pre --no-cache --upgrade bigdl-nano[pytorch] && \
+# PyTorch
     rm -rf /usr/local/lib/python3.7/dist-packages/torch && \
     git clone https://github.com/analytics-zoo/pytorch /pytorch && \
-    cd /pytorch && git checkout devel-v1.12.1-2022-10-08 && \
+    cd /pytorch && git checkout devel-v1.13.0-2022-11-16 && \
     git submodule sync && git submodule update --init --recursive --jobs 0 && \
     rm -rf ./third_party/gloo && \
     cd third_party && git clone https://github.com/analytics-zoo/gloo.git && \
-    cd gloo && git checkout devel-pt-v1.12.1-2022-10-08 && \
+    cd gloo && git checkout  devel-pt-v1.13.0-2022-11-16 && \
     cd /pytorch && \
     python3 setup.py install && \
     cd /ppml/ && \
     rm -rf /pytorch && \
-    # generate secured_argvs
+# generate secured_argvs
     gramine-argv-serializer bash -c 'export TF_MKL_ALLOC_MAX_BYTES=10737418240 && $sgx_command' > /ppml/secured_argvs && \
     chmod +x /sbin/tini && \
     chmod +x /opt/entrypoint.sh && \
     cp /sbin/tini /usr/bin/tini && \
-    # huggingface related
-    pip3 install --no-cache datasets==2.6.1 transformers pyarrow==6.0.1 && \
-    patch /usr/local/lib/python3.7/dist-packages/datasets/utils/filelock.py /filelock.patch
+# We need to downgrade markupsafe, the markupsafe required by bigdl-nano removed `soft_unicode`
+# which is then required by our third-layer gramine make command
+    patch /usr/local/lib/python3.7/dist-packages/datasets/utils/filelock.py /filelock.patch && \
+    pip3 install --no-cache markupsafe==2.0.1 pyarrow==6.0.1 && \
+    patch /ppml/bash.manifest.template /bash.manifest.template.patch
 
 
 ENTRYPOINT [ "/opt/entrypoint.sh" ]

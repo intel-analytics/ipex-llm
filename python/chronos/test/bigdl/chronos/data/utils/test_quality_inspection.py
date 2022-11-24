@@ -20,6 +20,7 @@ import numpy as np
 
 from unittest import TestCase
 from bigdl.chronos.data.utils.quality_inspection import quality_check_timeseries_dataframe
+from ... import op_torch, op_tf2
 
 
 def get_missing_df():
@@ -52,6 +53,8 @@ def get_non_dt_df():
     return df
 
 
+@op_torch
+@op_tf2
 class TestCheckAndRepairTimeSeries(TestCase):
     def setup_method(self, method):
         pass

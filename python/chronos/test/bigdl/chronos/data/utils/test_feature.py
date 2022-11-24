@@ -22,9 +22,11 @@ from unittest import TestCase
 from bigdl.chronos.data.utils.feature import generate_dt_features, generate_global_features
 from bigdl.chronos.utils import LazyImport
 tsfresh = LazyImport('tsfresh')
-from ... import op_diff_set_all
+from ... import op_torch, op_tf2, op_diff_set_all
 
 
+@op_torch
+@op_tf2
 class TestFeature(TestCase):
     def setup_method(self, method):
         pass
