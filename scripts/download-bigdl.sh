@@ -18,7 +18,18 @@
 
 set -x
 
+if [ -z "$BIGDL_VERSION" ]; then
+  echo "Please specify BIGDL_VERSION"
+  exit 1
+fi
+
 echo $BIGDL_VERSION
+
+if [ -z "$SPARK_VERSION" ]; then
+  echo "Please specify SPARK_VERSION"
+  exit 1
+fi
+
 echo $SPARK_VERSION
 
 if [[ $BIGDL_VERSION == *"SNAPSHOT"* ]]; then
