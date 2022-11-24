@@ -129,9 +129,13 @@ __Note__: If necessary, you need to manually uninstall `pyspark` and other [depe
 
 You can also download the BigDL package via the download links below. Besides, you can use the [script](https://github.com/intel-analytics/BigDL/blob/main/scripts/download-bigdl.sh) to download.
 
+|           | BigDL 2.1.0 | BigDL 2.2.0-SNAPSHOT nightly |
+| :-------: | :---------: | :--------------------------: |
+| Spark 2.4 | [download](https://repo1.maven.org/maven2/com/intel/analytics/bigdl/bigdl-assembly-spark_2.4.6/2.1.0/bigdl-assembly-spark_2.4.6-2.1.0-fat-jars.zip) | [download](https://oss.sonatype.org/content/repositories/snapshots/com/intel/analytics/bigdl/bigdl-assembly-spark_2.4.6/2.2.0-SNAPSHOT/) |
+| Spark 3.1 | [download](https://repo1.maven.org/maven2/com/intel/analytics/bigdl/bigdl-assembly-spark_3.1.2/2.1.0/bigdl-assembly-spark_3.1.2-2.1.0-fat-jars.zip) | [download](https://oss.sonatype.org/content/repositories/snapshots/com/intel/analytics/bigdl/bigdl-assembly-spark_3.1.2/2.2.0-SNAPSHOT/) |
+
 <table border="2"
 cellpadding="1"
-class="center"
 >
     <tr>
         <td></td>
@@ -140,12 +144,12 @@ class="center"
     </tr>
     <tr>
        <td>Spark 2.4 </td>
-       <td><a href="https://repo1.maven.org/maven2/com/intel/analytics/bigdl/bigdl-assembly-spark_2.4.6/2.1.0/bigdl-assembly-spark_2.4.6-2.1.0-fat-jars.zip">download</a></td>
-       <td><a href="https://oss.sonatype.org/content/repositories/snapshots/com/intel/analytics/bigdl/bigdl-assembly-spark_2.4.6/2.2.0-SNAPSHOT/">download</a></td>
+       <td style="text-align:center"><a href="https://repo1.maven.org/maven2/com/intel/analytics/bigdl/bigdl-assembly-spark_2.4.6/2.1.0/bigdl-assembly-spark_2.4.6-2.1.0-fat-jars.zip">download</a></td>
+       <td style="text-align:center"><a href="https://oss.sonatype.org/content/repositories/snapshots/com/intel/analytics/bigdl/bigdl-assembly-spark_2.4.6/2.2.0-SNAPSHOT/">download</a></td>
     </tr>
     <tr>
        <td>Spark 3.1 </td>
-       <td><a href="https://repo1.maven.org/maven2/com/intel/analytics/bigdl/bigdl-assembly-spark_3.1.2/2.1.0/bigdl-assembly-spark_3.1.2-2.1.0-fat-jars.zip">download</a></td>
-       <td><a href="https://oss.sonatype.org/content/repositories/snapshots/com/intel/analytics/bigdl/bigdl-assembly-spark_3.1.2/2.2.0-SNAPSHOT/">download</a></td> 
+       <td style="text-align:center"><a href="https://repo1.maven.org/maven2/com/intel/analytics/bigdl/bigdl-assembly-spark_3.1.2/2.1.0/bigdl-assembly-spark_3.1.2-2.1.0-fat-jars.zip">download</a></td>
+       <td style="text-align:center"><a href="https://oss.sonatype.org/content/repositories/snapshots/com/intel/analytics/bigdl/bigdl-assembly-spark_3.1.2/2.2.0-SNAPSHOT/">download</a></td> 
     </tr>
 </table>
