@@ -54,7 +54,7 @@ init_instance() {
     # add mount conf and mkdir source mount files
     bash add_conf.sh
 
-    #copy python lib
+    #copy python lib and attestation lib
     copy_bom -f /opt/python-glibc.yaml --root image --include-dir /opt/occlum/etc/template
     # enable tmp hostfs
     # --conf spark.executorEnv.USING_TMP_HOSTFS=true \

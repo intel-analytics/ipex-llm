@@ -51,7 +51,7 @@ init_instance() {
     echo "${new_json}" > Occlum.json
     echo "SGX_MEM_SIZE ${SGX_MEM_SIZE}"
 
-    #copy python lib
+    #copy python lib and attestation lib
     copy_bom -f /opt/python-glibc.yaml --root image --include-dir /opt/occlum/etc/template
     # enable tmp hostfs
     # --conf spark.executorEnv.USING_TMP_HOSTFS=true \
