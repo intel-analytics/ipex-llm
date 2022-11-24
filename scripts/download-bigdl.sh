@@ -19,14 +19,14 @@
 set -x
 
 if [ -z "$BIGDL_VERSION" ]; then
-  echo "Please specify BIGDL_VERSION"
+  echo "Please specify BIGDL_VERSION, e.g. 2.1.0, 2.2.0-SNAPSHOT."
   exit 1
 fi
 
 echo $BIGDL_VERSION
 
 if [ -z "$SPARK_VERSION" ]; then
-  echo "Please specify SPARK_VERSION"
+  echo "Please specify SPARK_VERSION, e.g. 2.4.6, 3.1.2 and 3.1.3."
   exit 1
 fi
 
