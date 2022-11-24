@@ -166,7 +166,7 @@ function refresh_cmd(){
                                 if(version=="nightly"){
                                     cmd="pip install --pre --upgrade bigdl-chronos[pytorch,distributed,inference]";
                                 }else if(version=="stable"){
-                                    cmd="pip install bigdl-chronos[pytorch,distributed,inference]";
+                                    cmd="pip install bigdl-chronos[pytorch,distributed]";
                                 }
                             }
                         }
@@ -179,7 +179,7 @@ function refresh_cmd(){
                                     cmd="Not supported, please refer to <a href='https://bigdl.readthedocs.io/en/latest/doc/Chronos/Howto/windows_guide.html'>windows_guide.</a>";
                                 }
                                 else{
-                                    cmd="pip install bigdl-chronos[pytorch,automl,inference]";
+                                    cmd="pip install bigdl-chronos[pytorch,automl]";
                                 }
                             }
                         }else if(hardware=="cluster"){
