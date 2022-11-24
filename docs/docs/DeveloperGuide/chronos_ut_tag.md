@@ -18,7 +18,7 @@ Now, we have added six ops to divide uts according to different installation opt
 
 ·`op_inference`: corresponds to bigdl-chronos[inference]
 
-·`op_diff_set_all`: corresponds to dependencies after removing bigdl-chronos[pytorch,tensorflow,automl,inference,distributed] in bigdl-chronos[all]
+·`op_diff_set_all`: corresponds to dependencies after removing bigdl-chronos[pytorch,tensorflow,automl,inference,distributed] in bigdl-chronos[all] (i.e. pmdarima, prophet, tsfresh and pyarrow)
 
 ## How to add tags
 
@@ -49,3 +49,7 @@ class TestAutoLSTM(TestCase):
 ```
 
 This ut is deselected when run `pytest -v -m "torch and not distributed" /test/bigdl/chronos/autots/`. Meanwhile, this ut is selected when run `pytest -v -m "torch and distributed" /test/bigdl/chronos/autots/` or `pytest -v -m "torch" /test/bigdl/chronos/autots/`.
+
+> **Note**:
+> 
+> If all tests of one class require same tag, we can directly add the tag to the class instead of adding to all functions, just like `@op_distributed` in above example.
