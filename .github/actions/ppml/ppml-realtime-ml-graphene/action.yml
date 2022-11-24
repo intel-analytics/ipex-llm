@@ -47,21 +47,21 @@ runs:
         docker pull ${IMAGE}
         echo "Check whether ports has been used:"
         echo "Check redis port 6379:"
-        netstat -anp |grep 6379
+        #netstat -anp |grep 6379
         echo ""
         echo "check job manager port 6123:"
-        netstat -anp |grep 6123
+        #netstat -anp |grep 6123
         echo ""
         echo "check task manager port 6125:"
-        netstat -anp |grep 6125
+        #netstat -anp |grep 6125
         echo ""
         echo "If there is conflict above, please refer to kill command."
         echo ""
         echo "Check whether there is remaining container:"
-        #docker stop /${CONTAINER_NAME}
-        sudo docker rm -f /${CONTAINER_NAME}
+        docker stop /${CONTAINER_NAME}
+        docker rm -f /${CONTAINER_NAME}
         echo ""
-        sudo docker run -itd \
+        docker run -itd \
             --privileged \
             --net=host \
             --cpuset-cpus="0-30" \
@@ -93,19 +93,19 @@ runs:
 
 
         echo "## Checking redis"
-        sudo docker exec -i $CONTAINER_NAME \
+        docker exec -i $CONTAINER_NAME \
             bash -c "bash /ppml/trusted-realtime-ml/check-status.sh redis"
         echo "## Checking flinkjm"
-        sudo docker exec -i $CONTAINER_NAME \
+        docker exec -i $CONTAINER_NAME \
             bash -c "bash /ppml/trusted-realtime-ml/check-status.sh flinkjm"
         echo "## Checking flinktm"
-        sudo docker exec -i $CONTAINER_NAME \
+        docker exec -i $CONTAINER_NAME \
             bash -c "bash /ppml/trusted-realtime-ml/check-status.sh flinktm"
         echo "## Checking frontend"
-        sudo docker exec -i $CONTAINER_NAME \
+        docker exec -i $CONTAINER_NAME \
             bash -c "bash /ppml/trusted-realtime-ml/check-status.sh frontend"
         echo "## Checking serving"
-        sudo docker exec -i $CONTAINER_NAME \
+        docker exec -i $CONTAINER_NAME \
             bash -c "bash /ppml/trusted-realtime-ml/check-status.sh serving"
         echo "## Checked."
 

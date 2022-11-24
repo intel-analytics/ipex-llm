@@ -582,7 +582,7 @@ jobs:
         runner-hosted-on: 'Shanghai'
 
   PPML-RealTime-ML-Occlum:
-    #if: ${{ github.event.schedule || github.event.inputs.artifact == 'PPML-RealTime-ML-Occlum' || github.event.inputs.artifact == 'all' }} 
+    if: ${{ github.event.schedule || github.event.inputs.artifact == 'PPML-RealTime-ML-Occlum' || github.event.inputs.artifact == 'all' }} 
     runs-on: [self-hosted, Vilvarin]
 
     steps:
@@ -642,7 +642,7 @@ jobs:
         runner-hosted-on: 'Shanghai'
 
   PPML-RealTime-ML-Graphene:
-    if: ${{ github.event.schedule || github.event.inputs.artifact == 'PPML-RealTime-ML-Graphene' || github.event.inputs.artifact == 'all' }} 
+    #if: ${{ github.event.schedule || github.event.inputs.artifact == 'PPML-RealTime-ML-Graphene' || github.event.inputs.artifact == 'all' }} 
     runs-on: [self-hosted, Vilvarin]
 
     steps:
