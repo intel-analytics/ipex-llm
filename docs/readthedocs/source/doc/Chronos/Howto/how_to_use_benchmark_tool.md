@@ -12,7 +12,7 @@ benchmark-chronos -l 96 -o 720
 .. note::
     **Required Options**:
 
-     **-l/--lookback** and **-o/--horizon** are required options for Chronos benchmark tool. Use **-l/--lookback** to specify the history time steps while use **-o/--horizon** to specify the output time steps. For more details, please refer to [here](https://bigdl.readthedocs.io/en/latest/doc/Chronos/Overview/forecasting.html#regular-regression-rr-style).
+     ``-l/--lookback`` and ``-o/--horizon`` are required options for Chronos benchmark tool. Use ``-l/--lookback`` to specify the history time steps while use ``-o/--horizon`` to specify the output time steps. For more details, please refer to `here <https://bigdl.readthedocs.io/en/latest/doc/Chronos/Overview/forecasting.html#regular-regression-rr-style>`_.
 ```
 By default, the tool will load `tsinghua_electricity` dataset and train a `TCNForecaster` with input lookback and horizon parameters under `PyTorch` framework. As it loads, it prints information about hardware, environment variables and benchmark parameters. When benchmarking is completed, it reports the average throughput during training process. Users may be able to improve forecasting performance by following suggested changes on Nano environment variables.
 
@@ -42,7 +42,7 @@ benchmark-chronos -d nyc_taxi -l 96 -o 720
 .. note::
     **Download tsinghua_electricity Dataset**:
 
-     The tsinghua_electricity dataset does not support automatic downloading. Users can download manually from "https://github.com/thuml/Autoformer#get-started" to path "~/.chronos/dataset/".
+     The tsinghua_electricity dataset does not support automatic downloading. Users can download manually from `here <https://github.com/thuml/Autoformer#get-started>`_ to path "~/.chronos/dataset/".
 ```
 
 ### Framework
