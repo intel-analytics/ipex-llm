@@ -15,10 +15,7 @@
 #
 
 import types
-import logging
-import numbers
 import torch
-import numpy as np
 import copy
 import os
 import shutil
@@ -27,6 +24,7 @@ import tempfile
 from bigdl.dllib.utils.file_utils import is_local_path
 from bigdl.orca.learn.pytorch.training_operator import TrainingOperator
 from bigdl.orca.learn.pytorch.pytorch_pyspark_worker import PytorchPysparkWorker
+from bigdl.orca.learn.pytorch.utils import process_stats
 from bigdl.orca.learn.utils import maybe_dataframe_to_xshards, dataframe_to_xshards, \
     convert_predict_xshards_to_dataframe, make_data_creator, update_predict_xshards, \
     reload_dataloader_creator, process_xshards_of_pandas_dataframe
@@ -114,19 +112,17 @@ class PyTorchPySparkEstimator(BaseEstimator):
 
         sc = OrcaContext.get_spark_context()
 
-        if self.model_creator is not None:
-            if not (isinstance(model_creator, types.FunctionType) and
-                    isinstance(optimizer_creator, types.FunctionType)):  # Torch model is also callable.
-                invalidInputError(False,
-                                "Must provide a function for both model_creator and"
-                                " optimizer_creator")
+        if not (isinstance(model_creator, types.FunctionType) and
+                isinstance(optimizer_creator, types.FunctionType)):  # Torch model is also callable.
+            invalidInputError(False,
+                              "Must provide a function for both model_creator and"
+                              " optimizer_creator")
 
         if not training_operator_cls and not loss_creator:
             invalidInputError(False,
                               "If a loss_creator is not provided, you must "
                               "provide a custom training operator.")
 
-        self.load_path = None
         self.model_dir = parse_model_dir(model_dir)
 
         self.model_creator = model_creator
@@ -152,7 +148,6 @@ class PyTorchPySparkEstimator(BaseEstimator):
         self.worker_init_params = dict(
             model_creator=self.model_creator,
             optimizer_creator=optimizer_creator,
-            load_path=self.load_path,
             loss_creator=loss_creator,
             scheduler_creator=scheduler_creator,
             training_operator_cls=training_operator_cls,
@@ -218,8 +213,7 @@ class PyTorchPySparkEstimator(BaseEstimator):
         :param reduce_results: Boolean. Whether to average all metrics across all workers into
                one dict. If a metric is a non-numerical value (or nested dictionaries), one value
                will be randomly selected among the workers. If False, returns a list of dicts for
-               all workers.
-               Default is True.
+               all workers. Default is True.
         :param info: An optional dictionary that can be passed to the TrainingOperator for
                train_epoch and train_batch.
         :param feature_cols: feature column names if data is Spark DataFrame.
@@ -323,7 +317,7 @@ class PyTorchPySparkEstimator(BaseEstimator):
         epoch_stats = list(map(list, zip(*worker_stats)))
         if reduce_results:
             for i in range(len(epoch_stats)):
-                epoch_stats[i] = self._process_stats(epoch_stats[i])
+                epoch_stats[i] = process_stats(epoch_stats[i])
             return epoch_stats
         else:
             return epoch_stats
@@ -429,6 +423,7 @@ class PyTorchPySparkEstimator(BaseEstimator):
                  batch_size=32,
                  num_steps=None,
                  profile=False,
+                 reduce_results=True,
                  info=None,
                  feature_cols=None,
                  label_cols=None):
@@ -450,6 +445,10 @@ class PyTorchPySparkEstimator(BaseEstimator):
                corresponds to the number of times `TrainingOperator.validate_batch` is called.
         :param profile: Boolean. Whether to return time stats for the training procedure.
                Default is False.
+        :param reduce_results: Boolean. Whether to average all metrics across all workers into
+               one dict. If a metric is a non-numerical value, the one value will be randomly
+               selected among the workers. If False, returns a list of dicts for
+               all workers. Default is True.
         :param info: An optional dictionary that can be passed to the TrainingOperator
                for validate.
         :param feature_cols: feature column names if train data is Spark DataFrame.
@@ -503,7 +502,10 @@ class PyTorchPySparkEstimator(BaseEstimator):
             res = self.workerRDD.barrier().mapPartitions(
                 lambda iter: transform_func(iter, init_params, params)).collect()
 
-        return self._process_stats(res)
+        if reduce_results:
+            return process_stats(res)
+        else:
+            return res
 
     def get_model(self):
         """
@@ -594,20 +596,6 @@ class PyTorchPySparkEstimator(BaseEstimator):
         else:
             self.driver_runner.load_checkpoint(filepath=model_path)
             self.state_dict = self.driver_runner.get_state_dict()
-
-    def _process_stats(self, worker_stats):
-        stats = {
-            "num_samples": sum(
-                stats.pop("num_samples", np.nan) for stats in worker_stats)
-        }
-
-        for stat_key in worker_stats[0]:
-            if isinstance(worker_stats[0], numbers.Number):
-                stats[stat_key] = np.nanmean(
-                    [s.get(stat_key, np.nan) for s in worker_stats])
-            else:
-                stats[stat_key] = worker_stats[0][stat_key]
-        return stats
 
     def shutdown(self):
         """
