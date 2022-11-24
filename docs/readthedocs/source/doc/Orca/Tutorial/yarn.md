@@ -309,7 +309,7 @@ On the __Client Node__:
 export SPARK_HOME=/path/to/spark # the folder path where you extract the Spark package
 export SPARK_VERSION="downloaded spark version"
 ```
-2. Download and unzip a BigDL assembly package from [Download BigDL Orca](../Overview/install.html#download-bigdl-orca), then setup the environment variables `${BIGDL_HOME}` and `${BIGDL_VERSION}`.
+2. Refer to [here](../Overview/install.html#download-bigdl-orca) to download and unzip a BigDL assembly package. Make sure the Spark version of your downloaded BigDL matches your downloaded Spark. Then setup the environment variables `${BIGDL_HOME}` and `${BIGDL_VERSION}`.
 ```bash
 export BIGDL_HOME=/path/to/unzipped_BigDL
 export BIGDL_VERSION="downloaded BigDL version"
