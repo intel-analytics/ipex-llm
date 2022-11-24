@@ -165,8 +165,7 @@ if __name__ == '__main__':
 
     predictions = estimator.predict(test.df,
                                     batch_size=args.batch_size,
-                                    feature_cols=['user', 'item'],
-                                    steps=val_steps)
+                                    feature_cols=['user', 'item'])
     print("Predictions on validation dataset:")
     predictions.show(5, truncate=False)
 

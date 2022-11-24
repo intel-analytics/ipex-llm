@@ -18,9 +18,6 @@
 import os
 from threading import Lock
 
-import ray
-import ray.ray_constants as ray_constants
-
 from bigdl.dllib.utils.log4Error import invalidInputError
 
 
@@ -64,6 +61,8 @@ class OrcaRayContext(object):
 
     def init(self, driver_cores=0):
         if self.runtime == "ray":
+            import ray
+            import ray.ray_constants as ray_constants
             address_env_var = os.environ.get(ray_constants.RAY_ADDRESS_ENVIRONMENT_VARIABLE)
             if "address" not in self.ray_args and address_env_var is None:
                     print("Creating a local Ray instance.")
@@ -88,6 +87,7 @@ class OrcaRayContext(object):
         if not self.initialized:
             print("The Ray cluster has not been launched.")
             return
+        import ray
         ray.shutdown()
         self.initialized = False
         with OrcaRayContext._lock:

@@ -22,6 +22,7 @@ from unittest import TestCase
 from bigdl.chronos.data.utils.impute import impute_timeseries_dataframe, \
     _last_impute_timeseries_dataframe, _const_impute_timeseries_dataframe, \
     _linear_impute_timeseries_dataframe
+from ... import op_torch, op_tf2
 
 
 def get_ugly_ts_df():
@@ -38,6 +39,8 @@ def get_ugly_ts_df():
     return df
 
 
+@op_torch
+@op_tf2
 class TestImputeTimeSeries(TestCase):
     def setup_method(self, method):
         self.df = get_ugly_ts_df()

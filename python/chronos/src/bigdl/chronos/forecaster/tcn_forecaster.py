@@ -17,6 +17,7 @@
 import torch
 from bigdl.chronos.forecaster.base_forecaster import BasePytorchForecaster
 from bigdl.chronos.model.tcn import model_creator, optimizer_creator, loss_creator
+from bigdl.nano.utils.log4Error import invalidInputError
 
 
 class TCNForecaster(BasePytorchForecaster):
@@ -44,10 +45,11 @@ class TCNForecaster(BasePytorchForecaster):
                  future_seq_len,
                  input_feature_num,
                  output_feature_num,
+                 dummy_encoder=False,
                  num_channels=[16]*3,
                  kernel_size=3,
-                 normalization=False,
-                 decomposition_kernal_size=0,
+                 normalization=True,
+                 decomposition_kernel_size=0,
                  repo_initialization=True,
                  dropout=0.1,
                  optimizer="Adam",
@@ -69,6 +71,9 @@ class TCNForecaster(BasePytorchForecaster):
         :param future_seq_len: Specify the output time steps (i.e. horizon).
         :param input_feature_num: Specify the feature dimension.
         :param output_feature_num: Specify the output dimension.
+        :param dummy_encoder: bool, no encoder is applied if True, which will
+               turn TCNForecaster to a Linear Model. If True, input_feature_num
+               should equals to output_feature_num.
         :param num_channels: Specify the convolutional layer filter number in
                TCN's encoder. This value defaults to [16]*3.
         :param kernel_size: Specify convolutional layer filter height in TCN's
@@ -76,9 +81,9 @@ class TCNForecaster(BasePytorchForecaster):
         :param normalization: bool, Specify if to use normalization trick to
                alleviate distribution shift. It first subtractes the last value
                of the sequence and add back after the model forwarding.
-        :param decomposition_kernal_size: int, Specify the kernel size in moving
+        :param decomposition_kernel_size: int, Specify the kernel size in moving
                average. The decomposition method will be applied if and only if
-               decomposition_kernal_size is greater than 1, which first decomposes
+               decomposition_kernel_size is greater than 1, which first decomposes
                the raw sequence into a trend component by a moving average kernel
                and a remainder(seasonal) component. Then, two models are applied
                to each component and sum up the two outputs to get the final
@@ -113,6 +118,13 @@ class TCNForecaster(BasePytorchForecaster):
         :param distributed_backend: str, select from "ray" or
                "horovod". The value defaults to "ray".
         """
+        # config check
+        if dummy_encoder:
+            invalidInputError(input_feature_num == output_feature_num,
+                              "if dummy_encoder is set to True, then the "
+                              "model should have equal input_feature_num "
+                              "and output_feature_num.")
+
         # config setting
         self.data_config = {
             "past_seq_len": past_seq_len,
@@ -127,7 +139,8 @@ class TCNForecaster(BasePytorchForecaster):
             "dropout": dropout,
             "seed": seed,
             "normalization": normalization,
-            "decomposition_kernal_size": decomposition_kernal_size
+            "decomposition_kernel_size": decomposition_kernel_size,
+            "dummy_encoder": dummy_encoder
         }
         self.loss_config = {
             "loss": loss

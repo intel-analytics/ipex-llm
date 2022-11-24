@@ -20,7 +20,7 @@ import numpy as np
 from bigdl.orca.data import XShards
 
 
-class TestSparkBackend(TestCase):
+class TestXshardsPartition(TestCase):
 
     def test_partition_ndarray(self):
 

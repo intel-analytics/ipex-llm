@@ -23,7 +23,7 @@ import numpy as np
 from bigdl.chronos.utils import LazyImport
 LSTMForecaster = LazyImport('bigdl.chronos.forecaster.tf.lstm_forecaster.LSTMForecaster')
 tf = LazyImport('tensorflow')
-from test.bigdl.chronos import op_tf2, op_all
+from test.bigdl.chronos import op_tf2, op_distributed
 
 
 def create_data(tf_data=False, batch_size=32):
@@ -78,7 +78,6 @@ def create_tsdataset(roll=True):
     return train, valid, test
 
 
-@op_all
 @op_tf2
 class TestLSTMForecaster(TestCase):
     def setUp(self):
@@ -88,8 +87,6 @@ class TestLSTMForecaster(TestCase):
                                          output_feature_num=2)
 
     def tearDown(self):
-        from bigdl.orca import stop_orca_context
-        stop_orca_context()
         del self.forecaster
 
     def test_lstm_forecaster_fit_predict_evaluate(self):
@@ -182,6 +179,7 @@ class TestLSTMForecaster(TestCase):
         _, y_test = test.to_numpy()
         assert yhat.shape == y_test.shape
 
+    @op_distributed
     def test_lstm_forecaster_distributed(self):
         from bigdl.orca import init_orca_context, stop_orca_context
         init_orca_context(cores=2, memory="2g")
@@ -216,6 +214,7 @@ class TestLSTMForecaster(TestCase):
         np.testing.assert_array_almost_equal(distributed_pred, local_pred, decimal=5)
         stop_orca_context()
 
+    @op_distributed
     def test_lstm_forecaster_distributed_illegal_input(self):
         from bigdl.orca import init_orca_context, stop_orca_context
         init_orca_context(cores=2, memory="2g")

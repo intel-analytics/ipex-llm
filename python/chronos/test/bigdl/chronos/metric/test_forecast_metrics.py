@@ -22,8 +22,10 @@ from numpy.testing import assert_almost_equal
 from numpy.testing import assert_array_almost_equal
 
 from bigdl.chronos.metric.forecast_metrics import Evaluator
-from .. import op_distributed, op_diff_set_all
+from .. import op_torch, op_tf2, op_distributed, op_diff_set_all
 
+@op_torch
+@op_tf2
 class TestChronosForecastMetrics(TestCase):
 
     def setUp(self):

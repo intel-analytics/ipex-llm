@@ -33,7 +33,8 @@ class TestONNX(TestCase):
 
         # quantize a Keras model
         onnx_quantized_model = model.quantize(accelerator='onnxruntime',
-                                              calib_dataset=train_dataset)
+                                              calib_dataset=train_dataset,
+                                              thread_num=8)
 
         y_hat = onnx_quantized_model(input_examples[:10])
         assert y_hat.shape == (10, 10)

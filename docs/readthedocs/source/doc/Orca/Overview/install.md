@@ -59,7 +59,7 @@ Note that installing Orca will automatically install the dependencies including 
 
 ### To additionally use RayOnSpark
 
-If you wish to run [RayOnSpark](ray.md) or [sklearn-style Estimator APIs in Orca](distributed-training-inference.md) with "ray" backend, use the extra key `[ray]` during the installation above:
+If you wish to run [RayOnSpark](ray.md) or [sklearn-style Estimator APIs in Orca](distributed-training-inference.md) with **"ray" backend**, use the extra key `[ray]` during the installation above:
 
 ```bash
 pip install bigdl-orca[ray]  # For the official release version

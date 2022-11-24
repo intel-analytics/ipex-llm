@@ -95,7 +95,7 @@ class TestDataloader(TestCase):
         assert isinstance(x1, torch.Tensor) and isinstance(x2, torch.Tensor) \
             and isinstance(y1, torch.Tensor) and isinstance(y2, torch.Tensor)
 
-        trainer.quantize(model, calib_dataloader=loader)
+        trainer.quantize(model, calib_data=loader)
 
     def test_legal_data_format(self):
         # we can now easily support this test!
@@ -104,7 +104,7 @@ class TestDataloader(TestCase):
         trainer = Trainer()
         model = ModelWithMultipleInputs()
 
-        trainer.quantize(model, calib_dataloader=dataloader, metric=torchmetrics.F1())
+        trainer.quantize(model, calib_data=dataloader, metric=torchmetrics.F1())
 
     def test_no_output_check(self):
         # dataloader 1: torch.Tensor, numpy.ndarray
@@ -116,10 +116,10 @@ class TestDataloader(TestCase):
         model = trainer.compile(model, loss,
                                 optimizer=torch.optim.SGD(params=model.parameters(), lr=0.01))
         # no tuning
-        trainer.quantize(model, calib_dataloader=loader)
+        trainer.quantize(model, calib_data=loader)
         # tuning
         with pytest.raises(RuntimeError):
-            trainer.quantize(model, calib_dataloader=loader,
+            trainer.quantize(model, calib_data=loader,
                              metric=torchmetrics.F1(10))
 
 

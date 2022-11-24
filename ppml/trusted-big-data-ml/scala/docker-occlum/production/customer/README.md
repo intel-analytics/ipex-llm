@@ -6,3 +6,33 @@ You can see building command in [manually_build.yaml](https://github.com/intel-a
 It will build image by coping occlum runable instance (/opt/occlum_spark) and install necessary dependencies.
 
 the final image is called `intelanalytics/bigdl-ppml-trusted-big-data-ml-scala-occlum-production-customer:${TAG}`.
+
+
+### Run application in docker and k8s
+
+#### Docker
+Set policy_Id to ENV.
+```
+export policy_Id=${policy_Id}
+```
+or
+```bash
+#start-spark-local.sh
+-e ${policy_Id}
+```
+
+#### K8s
+Add policy_Id to driver and executor ENV.
+```yaml
+#driver.yaml
+env:
+  - name: policy_Id
+    value: "${policy_Id}"
+```
+
+```yaml
+#executor.yaml
+env:
+  - name: policy_Id
+    value: "${policy_Id}"
+```
