@@ -48,7 +48,7 @@ def ncf_model(user_num, item_num, factor_num, dropout, lr, num_layers,
             num_feature_input_layers.append(tf.keras.layers.Input(shape=1))
             num_feature_layers.append(num_feature_input_layers[i])
 
-        add_feature_input_layers = cat_feature_input_layers + num_feature_input_layers
+        all_feature_input_layers = cat_feature_input_layers + num_feature_input_layers
         all_feature_layers = cat_feature_layers + num_feature_layers
 
         interaction = tf.concat([user_embed_MLP, item_embed_MLP] + all_feature_layers, axis=-1)
@@ -62,7 +62,7 @@ def ncf_model(user_num, item_num, factor_num, dropout, lr, num_layers,
         concatenation = tf.concat([GMF, interaction], axis=-1)
         outputs = tf.keras.layers.Dense(1, activation='sigmoid')(concatenation)
 
-    model = tf.keras.Model(inputs=[user, item] + add_feature_input_layers, outputs=outputs)
+    model = tf.keras.Model(inputs=[user, item] + all_feature_input_layers, outputs=outputs)
     model.compile(optimizer=tf.keras.optimizers.Adam(lr),
                   loss=tf.keras.losses.BinaryCrossentropy(),
                   metrics=['accuracy', 'AUC', 'Precision', 'Recall'])
