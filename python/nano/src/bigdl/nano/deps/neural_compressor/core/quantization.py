@@ -16,6 +16,7 @@
 from bigdl.nano.utils.log4Error import invalidInputError
 from neural_compressor.conf.config import Quantization_Conf
 from neural_compressor.experimental import Quantization, common
+from bigdl.nano.pytorch.context_manager import BaseContextManager
 
 
 class BaseQuantization(Quantization):
@@ -79,7 +80,10 @@ class BaseQuantization(Quantization):
         model, calib_dataloader, metric = self._pre_execution(model, calib_dataloader,
                                                               metric)
         q_model = self._execution(model, calib_dataloader, metric)
-        return self._post_execution(q_model)
+        q_model = self._post_execution(q_model)
+        # add context_manaager at last
+        q_model.context_manager = BaseContextManager()
+        return q_model
 
     def _pre_execution(self, model, calib_dataloader, metric):
         return model, calib_dataloader, metric

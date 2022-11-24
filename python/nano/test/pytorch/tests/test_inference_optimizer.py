@@ -439,3 +439,18 @@ class TestInferencePipeline(TestCase):
         optim_dict = inference_opt.optimized_model_dict
         assert optim_dict["openvino_int8"]["status"] in ("successful", "early_stopped")
         assert optim_dict["onnxruntime_int8_qlinear"]["status"] in ("successful", "early_stopped")
+
+    def test_context_manager(self):
+        inference_opt = InferenceOptimizer()
+        inference_opt.optimize(model=self.model,
+                               training_data=self.train_loader,
+                               validation_data=self.test_loader,
+                               metric=self.metric,
+                               direction="max",
+                               search_mode="all")
+        optim_dict = inference_opt.optimized_model_dict
+        for method, option in optim_dict:
+            if option["status"] == "successful":
+                model = option["model"]
+                with model.context_manager:
+                    pass
