@@ -11,7 +11,7 @@ runs:
     - name: Install dependencies
       shell: bash
       run: |
-        apt-get update
+        #apt-get update
         apt-get install wget
 
     - name: Setup env
