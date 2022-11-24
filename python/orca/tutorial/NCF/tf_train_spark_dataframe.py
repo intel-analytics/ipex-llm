@@ -40,7 +40,7 @@ config = dict(
     user_num=user_num,
     dropout=0.5,
     sparse_feats_input_dims=sparse_feats_input_dims,
-    num_dense_feats=[1],
+    num_dense_feats=['age'],
     sparse_feats_embed_dims=8
 )
 
