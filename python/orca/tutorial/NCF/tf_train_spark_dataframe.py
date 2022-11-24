@@ -29,7 +29,7 @@ init_orca_context(memory='4g')
 # Step 2: Read and process data using Spark DataFrame
 data_dir = './ml-1m'  # path to ml-1m
 
-train_df, val_df, sparse_feats_input_dims, user_num, item_num, total_features = \
+train_df, val_df, sparse_feats_input_dims, user_num, item_num, total_features, label_cols = \
     prepare_data(data_dir, neg_scale=4)
 
 # Step 3: Define the NCF model
@@ -41,14 +41,15 @@ config = dict(
     dropout=0.5,
     sparse_feats_input_dims=sparse_feats_input_dims,
     num_dense_feats=['age'],
-    sparse_feats_embed_dims=8
+    sparse_feats_embed_dims=8,
+    num_layers=3
 )
 
 
 def model_creator(config):
     model = ncf_model(user_num=config['user_num'],
                       item_num=config['item_num'],
-                      num_layers=3,
+                      num_layers=config['num_layers'],
                       factor_num=config['factor_num'],
                       dropout=config['dropout'],
                       lr=config['lr'],
@@ -72,13 +73,13 @@ est.fit(train_df,
         epochs=10,
         batch_size=batch_size,
         feature_cols=total_features,
-        label_cols=['label'],
+        label_cols=label_cols,
         steps_per_epoch=train_steps)
 
 # Step 5: Distributed evaluation of the trained model
 result = est.evaluate(val_df,
                       feature_cols=total_features,
-                      label_cols=['label'],
+                      label_cols=label_cols,
                       batch_size=batch_size,
                       num_steps=val_steps)
 print('Evaluation results:')

@@ -31,16 +31,16 @@ def ncf_model(user_num, item_num, factor_num, dropout, lr, num_layers,
 
     with tf.name_scope("MLP"):
         user_embed_MLP = tf.keras.layers.Embedding(
-            user_num, factor_num * 4, name='mlp_user')(user)
+            user_num, factor_num * (2 ** (num_layers - 1)), name='mlp_user')(user)
         item_embed_MLP = tf.keras.layers.Embedding(
-            item_num, factor_num * 4, name='mlp_item')(item)
+            item_num, factor_num * (2 ** (num_layers - 1)), name='mlp_item')(item)
 
         cat_feature_input_layers = []
         cat_feature_layers = []
-        for i, (in_dim, out_dim) in enumerate(zip(sparse_feats_input_dims, sparse_feats_embed_dims)):
+        for in_dim, out_dim in zip(sparse_feats_input_dims, sparse_feats_embed_dims):
             cat_feature_input_layers.append(tf.keras.layers.Input(shape=(), dtype=tf.int32))
             cat_feature_layers.append(
-                tf.keras.layers.Embedding(in_dim, out_dim)(cat_feature_input_layers[i]))
+                tf.keras.layers.Embedding(in_dim, out_dim)(cat_feature_input_layers[-1]))
 
         num_feature_input_layers = []
         num_feature_layers = []
@@ -49,9 +49,9 @@ def ncf_model(user_num, item_num, factor_num, dropout, lr, num_layers,
             num_feature_layers.append(num_feature_input_layers[i])
 
         add_feature_input_layers = cat_feature_input_layers + num_feature_input_layers
-        add_feature_layers = cat_feature_layers + num_feature_layers
+        all_feature_layers = cat_feature_layers + num_feature_layers
 
-        interaction = tf.concat([user_embed_MLP, item_embed_MLP] + add_feature_layers, axis=-1)
+        interaction = tf.concat([user_embed_MLP, item_embed_MLP] + all_feature_layers, axis=-1)
         output_size = factor_num * (2 ** (num_layers - 1))
         for i in range(num_layers):
             layer_MLP = tf.keras.layers.Dense(units=output_size, activation='relu')(interaction)

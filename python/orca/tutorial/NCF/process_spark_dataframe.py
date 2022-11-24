@@ -119,20 +119,20 @@ def add_feature(df, df_user, df_item, sparse_features, dense_features):
 def prepare_data(data_dir, neg_scale=4):
     sparse_features = ['zipcode', 'gender', 'occupation', 'category']
     dense_features = ['age']
-    total_features = ['user', 'item'] + sparse_features + dense_features
-
+    feature_cols = ['user', 'item'] + sparse_features + dense_features
+    label_cols = ['label']
     df_rating, df_user, df_item = read_data(data_dir)
 
     user_num = df_rating.agg({'user': "max"}).collect()[0]["max(user)"] + 1
     item_num = df_rating.agg({'item': "max"}).collect()[0]["max(item)"] + 1
 
     df_rating = generate_neg_sample(df_rating, item_num, neg_scale=neg_scale)
-    df_add_feature, sparse_feats_input_dims = \
+    df, sparse_feats_input_dims = \
         add_feature(df_rating, df_user, df_item, sparse_features, dense_features)
 
-    train_df, val_df = df_add_feature.randomSplit([0.8, 0.2], seed=100)
+    train_df, val_df = df.randomSplit([0.8, 0.2], seed=100)
 
-    return train_df, val_df, sparse_feats_input_dims, user_num, item_num, total_features
+    return train_df, val_df, sparse_feats_input_dims, user_num, item_num, feature_cols, label_cols
 
 
 if __name__ == "__main__":
@@ -140,7 +140,7 @@ if __name__ == "__main__":
 
     sc = init_orca_context()
 
-    train_data, test_data, embedding_in_dim, user_num, item_num, total_feature = \
+    train_data, test_data, embedding_in_dim, user_num, item_num, total_feature, label_cols = \
         prepare_data("ml-1m", neg_scale=4)
     train_data.write.csv('./train_dataframe', header=True, sep=',', mode='overwrite')
     test_data.write.csv('./test_dataframe', header=True, sep=',', mode='overwrite')
