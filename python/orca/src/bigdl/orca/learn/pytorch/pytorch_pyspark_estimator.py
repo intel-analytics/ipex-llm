@@ -209,8 +209,8 @@ class PyTorchPySparkEstimator(BaseEstimator):
         :param profile: Boolean. Whether to return time stats for the training procedure.
                Default is False.
         :param reduce_results: Boolean. Whether to average all metrics across all workers into
-               one dict. If a metric is a non-numerical value (or nested dictionaries), one value
-               will be randomly selected among the workers. If False, returns a list of dicts for
+               one dict. If a metric is a non-numerical value, the one value will be randomly
+               selected among the workers. If False, returns a list of dicts for
                all workers. Default is True.
         :param info: An optional dictionary that can be passed to the TrainingOperator for
                train_epoch and train_batch.
@@ -531,8 +531,7 @@ class PyTorchPySparkEstimator(BaseEstimator):
         """
         if is_local_path(model_path):
             if entire:
-                model = self.get_model()
-                torch.save(model, model_path)
+                torch.save(self.get_model(), model_path)
             else:
                 torch.save(self.state_dict, model_path)
         else:
@@ -541,8 +540,7 @@ class PyTorchPySparkEstimator(BaseEstimator):
             temp_path = os.path.join(temp_dir, file_name)
             try:
                 if entire:
-                    model = self.get_model()
-                    torch.save(model, temp_path)
+                    torch.save(self.get_model(), temp_path)
                 else:
                     torch.save(self.state_dict, temp_path)
                 put_local_file_to_remote(temp_path, model_path)
