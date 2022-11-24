@@ -44,13 +44,13 @@ def read_data(data_dir):
         ]
     )
     # Need spark3 to support delimiter with more than one character.
-    df = spark.read.csv(os.path.join(data_dir, 'ratings.dat'),
-                        sep="::", schema=schema, header=False)
+    df_rating = spark.read.csv(os.path.join(data_dir, 'ratings.dat'),
+                               sep="::", schema=schema, header=False)
     df_user = spark.read.csv(os.path.join(data_dir, 'users.dat'),
                              sep="::", schema=schema_user, header=False)
     df_item = spark.read.csv(os.path.join(data_dir, 'movies.dat'),
-                             sep="::", schema=schema_item, header=False).drop('title')
-    return df, df_user, df_item
+                             sep="::", schema=schema_item, header=False)
+    return df_rating, df_user, df_item
 
 
 def generate_neg_sample(df, item_num, neg_scale):
@@ -79,38 +79,60 @@ def generate_neg_sample(df, item_num, neg_scale):
     return df
 
 
-def add_feature(df, df_user, df_item, cat_feature, num_feature):
+def string_index(df, col):
+    indexer = StringIndexer(inputCol=col, outputCol=col + '_index').fit(df)
+    df = indexer.transform(df)
+    df = df.drop(col).withColumnRenamed(col + '_index', col)
+    df = df.withColumn(col, df[col].cast('int'))
+    embed_dim = df.agg({col: "max"}).collect()[0][f"max({col})"] + 1
+    return df, embed_dim
+
+
+def num_scale(df, col):
+    assembler = VectorAssembler(inputCols=[col], outputCol=col + '_vec')
+    scaler = MinMaxScaler(inputCol=col + '_vec', outputCol=col + '_scaled')
+    pipeline = Pipeline(stages=[assembler, scaler])
+    scalerModel = pipeline.fit(df)
+    df = scalerModel.transform(df)
+    df = df.drop(col, col + '_vec').withColumnRenamed(col + '_scaled', col)
+    return df
+
+
+def add_feature(df, df_user, df_item, sparse_features, dense_features):
+    sparse_feats_input_dims = []
+    for i in sparse_features:
+        if i in df_user.columns:
+            df_user, embed_dim = string_index(df_user, i)
+        else:
+            df_item, embed_dim = string_index(df_item, i)
+        sparse_feats_input_dims.append(embed_dim)
+    for i in dense_features:
+        if i in df_user.columns:
+            df_user = num_scale(df_user, i)
+        else:
+            df_item = num_scale(df_item, i)
     df_feat = df.join(df_user, 'user', "inner")
     df_feat = df_feat.join(df_item, 'item', "inner")
-    embedding_in_dim = []
-    for i in cat_feature:
-        indexer = StringIndexer(inputCol=i, outputCol=i + '_index').fit(df_feat)
-        df_feat = indexer.transform(df_feat)
-        df_feat = df_feat.drop(i).withColumnRenamed(i + '_index', i)
-        df_feat = df_feat.withColumn(i, df_feat[i].cast('int'))
-        embedding_in_dim.append(df_feat.agg({i: "max"}).collect()[0][f"max({i})"])
-    for i in num_feature:
-        assembler = VectorAssembler(inputCols=[i], outputCol=i + '_vec')
-        scaler = MinMaxScaler(inputCol=i + '_vec', outputCol=i + '_scaler')
-        pipeline = Pipeline(stages=[assembler, scaler])
-        scalerModel = pipeline.fit(df_feat)
-        df_feat = scalerModel.transform(df_feat)
-        df_feat = df_feat.drop(i, i + '_vec').withColumnRenamed(i + '_scaler', i)
-        df_feat.show()
-    return df_feat, embedding_in_dim
+    return df_feat, sparse_feats_input_dims
 
 
-def data_process(data_dir, cat_feature, num_feature, neg_scale=4):
-    df, df_user, df_item = read_data(data_dir)
-    user_num = df.agg({'user': "max"}).collect()[0]["max(user)"] + 1
-    item_num = df.agg({'item': "max"}).collect()[0]["max(item)"] + 1
+def prepare_data(data_dir, neg_scale=4):
+    sparse_features = ['zipcode', 'gender', 'occupation', 'category']
+    dense_features = ['age']
+    feature_cols = ['user', 'item'] + sparse_features + dense_features
+    label_cols = ['label']
+    df_rating, df_user, df_item = read_data(data_dir)
 
-    df = generate_neg_sample(df, item_num, neg_scale=neg_scale)
-    df_add_feature, embedding_in_dim = add_feature(df, df_user, df_item, cat_feature, num_feature)
+    user_num = df_rating.agg({'user': "max"}).collect()[0]["max(user)"] + 1
+    item_num = df_rating.agg({'item': "max"}).collect()[0]["max(item)"] + 1
 
-    train_df, val_df = df_add_feature.randomSplit([0.8, 0.2], seed=100)
+    df_rating = generate_neg_sample(df_rating, item_num, neg_scale=neg_scale)
+    df, sparse_feats_input_dims = \
+        add_feature(df_rating, df_user, df_item, sparse_features, dense_features)
 
-    return train_df, val_df, embedding_in_dim, user_num, item_num
+    train_df, val_df = df.randomSplit([0.8, 0.2], seed=100)
+
+    return train_df, val_df, sparse_feats_input_dims, user_num, item_num, feature_cols, label_cols
 
 
 if __name__ == "__main__":
@@ -118,11 +140,8 @@ if __name__ == "__main__":
 
     sc = init_orca_context()
 
-    cat_feature = ['zipcode', 'gender', 'occupation', 'category']
-    num_feature = ['age']
-
-    train_data, test_data, embedding_in_dim, user_num, item_num = \
-        data_process("ml-1m", cat_feature, num_feature, neg_scale=4)
+    train_data, test_data, embedding_in_dim, user_num, item_num, feature_cols, label_cols = \
+        prepare_data("ml-1m", neg_scale=4)
     train_data.write.csv('./train_dataframe', header=True, sep=',', mode='overwrite')
     test_data.write.csv('./test_dataframe', header=True, sep=',', mode='overwrite')
     stop_orca_context()

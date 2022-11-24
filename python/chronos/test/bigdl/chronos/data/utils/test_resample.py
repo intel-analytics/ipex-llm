@@ -20,6 +20,7 @@ import numpy as np
 
 from unittest import TestCase
 from bigdl.chronos.data.utils.resample import resample_timeseries_dataframe
+from ... import op_torch, op_tf2
 
 
 def get_ugly_ts_df():
@@ -36,6 +37,8 @@ def get_ugly_ts_df():
     return df
 
 
+@op_torch
+@op_tf2
 class TestResampleTimeSeries(TestCase):
     def setup_method(self, method):
         self.df = get_ugly_ts_df()

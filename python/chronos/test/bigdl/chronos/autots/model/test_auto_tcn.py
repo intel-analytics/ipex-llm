@@ -16,16 +16,16 @@
 
 from bigdl.chronos.utils import LazyImport
 torch = LazyImport('torch')
-import tensorflow as tf
+tf = LazyImport('tensorflow')
 import numpy as np
 from unittest import TestCase
 import pytest
 import tempfile
 
-from ... import op_all, op_onnxrt16
+from ... import op_torch, op_tf2, op_distributed, op_inference
 
-from bigdl.chronos.autots.model.auto_tcn import AutoTCN
-from bigdl.orca.automl import hp
+AutoTCN = LazyImport('bigdl.chronos.autots.model.auto_tcn.AutoTCN')
+hp = LazyImport('bigdl.orca.automl.hp')
 
 input_feature_dim = 10
 output_feature_dim = 2
@@ -96,6 +96,7 @@ def get_auto_estimator(backend='torch'):
     return auto_tcn
 
 
+@op_distributed
 class TestAutoTCN(TestCase):
     def setUp(self) -> None:
         from bigdl.orca import init_orca_context
@@ -105,6 +106,7 @@ class TestAutoTCN(TestCase):
         from bigdl.orca import stop_orca_context
         stop_orca_context()
 
+    @op_torch
     def test_fit_np(self):
         auto_tcn = get_auto_estimator()
         auto_tcn.fit(data=get_x_y(size=1000),
@@ -119,7 +121,7 @@ class TestAutoTCN(TestCase):
         assert best_config['batch_size'] in (32, 64)
         assert 1 <= best_config['levels'] < 3
 
-    @pytest.mark.skipif(tf.__version__ < '2.0.0', reason="Run only when tf > 2.0.0.")
+    @op_tf2
     def test_fit_np_keras(self):
         keras_auto_tcn = get_auto_estimator("keras")
         keras_auto_tcn.fit(data=get_x_y(size=1000),
@@ -133,6 +135,7 @@ class TestAutoTCN(TestCase):
         assert best_config['batch_size'] in (32, 64)
         assert 1 <= best_config['levels'] < 3
 
+    @op_torch
     def test_fit_loader(self):
         auto_tcn = get_auto_estimator()
         auto_tcn.fit(data=train_dataloader_creator(config={"batch_size": 64}),
@@ -145,6 +148,7 @@ class TestAutoTCN(TestCase):
         assert 0.1 <= best_config['dropout'] <= 0.2
         assert 1 <= best_config['levels'] < 3
 
+    @op_torch
     def test_fit_data_creator(self):
         auto_tcn = get_auto_estimator()
         auto_tcn.fit(data=train_dataloader_creator,
@@ -159,6 +163,7 @@ class TestAutoTCN(TestCase):
         assert best_config['batch_size'] in (32, 64)
         assert 1 <= best_config['levels'] < 3
 
+    @op_torch
     def test_num_channels(self):
         auto_tcn = AutoTCN(input_feature_num=input_feature_dim,
                            output_target_num=output_feature_dim,
@@ -186,6 +191,7 @@ class TestAutoTCN(TestCase):
         best_config = auto_tcn.get_best_config()
         assert best_config['num_channels'] == [8]*2
 
+    @op_torch
     def test_predict_evaluation(self):
         auto_tcn = get_auto_estimator()
         auto_tcn.fit(data=train_dataloader_creator(config={"batch_size": 64}),
@@ -196,8 +202,8 @@ class TestAutoTCN(TestCase):
         auto_tcn.predict(test_data_x)
         auto_tcn.evaluate((test_data_x, test_data_y))
 
-    @op_all
-    @op_onnxrt16
+    @op_torch
+    @op_inference
     def test_onnx_methods(self):
         auto_tcn = get_auto_estimator()
         auto_tcn.fit(data=train_dataloader_creator(config={"batch_size": 64}),
@@ -217,8 +223,8 @@ class TestAutoTCN(TestCase):
         except ImportError:
             pass
 
-    @op_all
-    @op_onnxrt16
+    @op_torch
+    @op_inference
     def test_save_load(self):
         auto_tcn = get_auto_estimator()
         auto_tcn.fit(data=train_dataloader_creator(config={"batch_size": 64}),
@@ -241,7 +247,7 @@ class TestAutoTCN(TestCase):
         except ImportError:
             pass
     
-    @pytest.mark.skipif(tf.__version__ < '2.0.0', reason="Run only when tf > 2.0.0.")
+    @op_tf2
     def test_save_load_keras(self):
         auto_keras_tcn = get_auto_estimator(backend='keras')
         auto_keras_tcn.fit(data=get_x_y(size=1000),

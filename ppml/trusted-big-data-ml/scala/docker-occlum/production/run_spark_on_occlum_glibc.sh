@@ -54,7 +54,7 @@ init_instance() {
     # add mount conf and mkdir source mount files
     bash add_conf.sh
 
-    #copy python lib
+    #copy python lib and attestation lib
     copy_bom -f /opt/python-glibc.yaml --root image --include-dir /opt/occlum/etc/template
     # enable tmp hostfs
     # --conf spark.executorEnv.USING_TMP_HOSTFS=true \
@@ -64,6 +64,9 @@ init_instance() {
         edit_json="$(cat Occlum.json | jq '.mount+=[{"target": "/tmp","type": "hostfs","source": "./shuffle"}]')" && \
         echo "${edit_json}" > Occlum.json
     fi
+
+    edit_json="$(cat Occlum.json | jq '.mount+=[{"target": "/etc","type": "hostfs","source": "/etc"}]')" && \
+    echo "${edit_json}" > Occlum.json
 
     if [[ -z "$META_SPACE" ]]; then
         echo "META_SPACE not set, using default value 256m"
@@ -109,6 +112,7 @@ init_instance() {
            cd /opt/occlum_spark
            # dir need to exit when writing quote
            mkdir -p /opt/occlum_spark/image/etc/occlum_attestation/
+           mkdir -p /etc/occlum_attestation/
            #copy bom to generate quote
            copy_bom -f /root/demos/remote_attestation/dcap/dcap-ppml.yaml --root image --include-dir /opt/occlum/etc/template
     fi
@@ -134,50 +138,20 @@ init_instance() {
 }
 
 build_spark() {
-    # Copy python examples and unzip python lib
-    mkdir -p image/py-examples
-    cp -rf /opt/py-examples/* image/py-examples
-    # Copy scala files for absolute path examples
-    mkdir -p image/examples/
-    cp -rf /opt/spark/examples/* image/examples/
-    # Copy JVM and class file into Occlum instance and build
-    cd /opt/occlum_spark
-    mkdir -p image/usr/lib/jvm
-    cp -r /usr/lib/jvm/java-8-openjdk-amd64 image/usr/lib/jvm
-    cp -rf /etc/java-8-openjdk image/etc/
     # Copy K8s secret
     mkdir -p image/var/run/secrets/
     cp -r /var/run/secrets/* image/var/run/secrets/
-    ls image/var/run/secrets/kubernetes.io/serviceaccount/
-    # Copy libs
-    cp /lib/x86_64-linux-gnu/libz.so.1 image/lib
-    cp /lib/x86_64-linux-gnu/libz.so.1 image/$occlum_glibc
-    cp /lib/x86_64-linux-gnu/libtinfo.so.5 image/$occlum_glibc
-    cp /lib/x86_64-linux-gnu/libnss*.so.2 image/$occlum_glibc
-    cp /lib/x86_64-linux-gnu/libresolv.so.2 image/$occlum_glibc
-    cp $occlum_glibc/libdl.so.2 image/$occlum_glibc
-    cp $occlum_glibc/librt.so.1 image/$occlum_glibc
-    cp $occlum_glibc/libm.so.6 image/$occlum_glibc
-    # Copy libhadoop
-    cp /opt/libhadoop.so image/lib
-    # Prepare Spark
-    mkdir -p image/opt/spark
-    cp -rf $SPARK_HOME/* image/opt/spark/
-    # Copy etc files
-    cp -rf /etc/hosts image/etc/
-    echo "$HOST_IP occlum-node" >> image/etc/hosts
-    # cat image/etc/hosts
 
-    cp -rf /etc/hostname image/etc/
-    cp -rf /etc/ssl image/etc/
-    cp -rf /etc/passwd image/etc/
-    cp -rf /etc/group image/etc/
-    cp -rf /etc/nsswitch.conf image/etc/
+    #copy libs for attest quote in occlum
+    cp -f /opt/occlum_spark/image/lib/libgomp.so.1 /opt/occlum_spark/image/opt/occlum/glibc/lib --remove-destination
+    cp -f /opt/occlum_spark/image/lib/libc.so /opt/occlum_spark/image/opt/occlum/glibc/lib --remove-destination
+    rm image/lib/*
+    cp -f /usr/lib/x86_64-linux-gnu/*sgx* /opt/occlum_spark/image/opt/occlum/glibc/lib --remove-destination
+    cp -f /usr/lib/x86_64-linux-gnu/*dcap* /opt/occlum_spark/image/opt/occlum/glibc/lib --remove-destination
+    cp -f /usr/lib/x86_64-linux-gnu/libcrypt.so.1 /opt/occlum_spark/image/opt/occlum/glibc/lib --remove-destination
 
-    # Prepare BigDL
-    mkdir -p image/bin/jars
-    cp -f $BIGDL_HOME/jars/* image/bin/jars
-    cp -rf /opt/spark-source image/opt/
+    # copy spark and bigdl and others dependencies
+    copy_bom -f /opt/spark.yaml --root image --include-dir /opt/occlum/etc/template
 
     # Build
     occlum build
@@ -213,6 +187,7 @@ attestation_init() {
                             -u $ATTESTATION_URL \
                             -i $APP_ID \
                             -k $API_KEY \
+                            -c $CHALLENGE \
                             -O occlum \
                             -o $policy_Id
                 if [ $? -gt 0 ]; then

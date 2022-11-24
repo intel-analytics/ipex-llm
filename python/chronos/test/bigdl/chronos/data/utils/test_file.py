@@ -19,7 +19,7 @@ import tempfile
 from bigdl.chronos.data.utils.file import parquet2pd
 import pandas as pd
 import numpy as np
-from ... import op_diff_set_all
+from ... import op_torch, op_tf2, op_diff_set_all
 
 
 def get_ts_df():
@@ -31,6 +31,8 @@ def get_ts_df():
     return train_df
 
 
+@op_torch
+@op_tf2
 class TestFile:
 
     @op_diff_set_all

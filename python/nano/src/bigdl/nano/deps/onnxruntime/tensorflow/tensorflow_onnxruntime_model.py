@@ -23,6 +23,7 @@ from bigdl.nano.utils.inference.tf.model import AcceleratedKerasModel
 from bigdl.nano.utils.log4Error import invalidInputError
 
 from ..core.onnxruntime_model import ONNXRuntimeModel
+import onnxruntime  # should be put behind core's import
 
 try:
     import tf2onnx
@@ -71,7 +72,9 @@ class KerasONNXRuntimeModel(ONNXRuntimeModel, AcceleratedKerasModel):
     @property
     def status(self):
         status = super().status
-        status.update({"onnx_path": 'onnx_saved_model.onnx'})
+        status.update({"onnx_path": 'onnx_saved_model.onnx',
+                       "intra_op_num_threads": self.session_options.intra_op_num_threads,
+                       "inter_op_num_threads": self.session_options.inter_op_num_threads})
         return status
 
     @staticmethod
@@ -91,7 +94,12 @@ class KerasONNXRuntimeModel(ONNXRuntimeModel, AcceleratedKerasModel):
             invalidInputError(False,
                               "nano_model_meta.yml must specify 'onnx_path' for loading.")
         onnx_path = Path(path) / status['onnx_path']
-        return KerasONNXRuntimeModel(str(onnx_path), None)
+        onnxruntime_session_options = onnxruntime.SessionOptions()
+        onnxruntime_session_options.intra_op_num_threads = status['intra_op_num_threads']
+        onnxruntime_session_options.inter_op_num_threads = status['inter_op_num_threads']
+        return KerasONNXRuntimeModel(model=str(onnx_path),
+                                     input_sample=None,
+                                     onnxruntime_session_options=onnxruntime_session_options)
 
     def _save_model(self, path):
         onnx_path = Path(path) / self.status['onnx_path']

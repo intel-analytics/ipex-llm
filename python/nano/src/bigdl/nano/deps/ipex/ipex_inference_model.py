@@ -58,8 +58,17 @@ class PytorchIPEXJITModel(AcceleratedLightningModule):
         if self.use_ipex:
             self.model = ipex.optimize(self.model, dtype=dtype)
         if self.use_jit:
-            self.model = torch.jit.trace(self.model, input_sample, check_trace=False)
-            self.model = torch.jit.freeze(self.model)
+            if dtype == torch.bfloat16:
+                with torch.no_grad():
+                    with torch.cpu.amp.autocast():
+                        self.model = torch.jit.trace(self.model, input_sample,
+                                                     check_trace=False)
+                        self.model = torch.jit.freeze(self.model)
+            else:
+                with torch.no_grad():
+                    self.model = torch.jit.trace(self.model, input_sample,
+                                                 check_trace=False)
+                    self.model = torch.jit.freeze(self.model)
 
     @property
     def forward_args(self):

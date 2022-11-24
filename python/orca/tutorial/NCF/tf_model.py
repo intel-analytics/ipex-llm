@@ -16,29 +16,13 @@
 import tensorflow as tf
 
 
-def ncf_model(factor_num, user_num, item_num, dropout, lr,
-              cat_features_in_dim, cat_features_out_dim, num_feature_dim):
+def ncf_model(user_num, item_num, factor_num, dropout, lr, num_layers,
+              sparse_feats_input_dims, sparse_feats_embed_dims, num_dense_feats):
     user = tf.keras.layers.Input(dtype=tf.int32, shape=())
     item = tf.keras.layers.Input(dtype=tf.int32, shape=())
 
-    if not isinstance(cat_features_out_dim, list):
-        cat_features_out_dim = [cat_features_out_dim for _ in cat_features_in_dim]
-
-    cat_feature_input_layers = []
-    cat_feature_layers = []
-    for i, (in_dim, out_dim) in enumerate(zip(cat_features_in_dim, cat_features_out_dim)):
-        cat_feature_input_layers.append(tf.keras.layers.Input(shape=(), dtype=tf.int32))
-        cat_feature_layers.append(
-            tf.keras.layers.Embedding(in_dim + 1, out_dim)(cat_feature_input_layers[i]))
-
-    num_feature_input_layers = []
-    num_feature_layers = []
-    for i, in_dim in enumerate(num_feature_dim):
-        num_feature_input_layers.append(tf.keras.layers.Input(shape=in_dim))
-        num_feature_layers.append(num_feature_input_layers[i])
-
-    add_feature_input_layers = cat_feature_input_layers + num_feature_input_layers
-    add_feature_layers = cat_feature_layers + num_feature_layers
+    if not isinstance(sparse_feats_embed_dims, list):
+        sparse_feats_embed_dims = [sparse_feats_embed_dims] * len(sparse_feats_input_dims)
 
     with tf.name_scope("GMF"):
         user_embed_GMF = tf.keras.layers.Embedding(user_num, factor_num, name='gmf_user')(user)
@@ -47,26 +31,38 @@ def ncf_model(factor_num, user_num, item_num, dropout, lr,
 
     with tf.name_scope("MLP"):
         user_embed_MLP = tf.keras.layers.Embedding(
-            user_num, factor_num * 4, name='mlp_user')(user)
+            user_num, factor_num * (2 ** (num_layers - 1)), name='mlp_user')(user)
         item_embed_MLP = tf.keras.layers.Embedding(
-            item_num, factor_num * 4, name='mlp_item')(item)
-        interaction = tf.concat([user_embed_MLP, item_embed_MLP] + add_feature_layers, axis=-1)
+            item_num, factor_num * (2 ** (num_layers - 1)), name='mlp_item')(item)
 
-        layer1_MLP = tf.keras.layers.Dense(
-            units=factor_num * 4, activation='relu')(interaction)
-        layer1_MLP = tf.keras.layers.Dropout(rate=dropout)(layer1_MLP)
-        layer2_MLP = tf.keras.layers.Dense(
-            units=factor_num * 2, activation='relu')(layer1_MLP)
-        layer2_MLP = tf.keras.layers.Dropout(rate=dropout)(layer2_MLP)
-        layer3_MLP = tf.keras.layers.Dense(
-            units=factor_num, activation='relu')(layer2_MLP)
-        layer3_MLP = tf.keras.layers.Dropout(rate=dropout)(layer3_MLP)
+        cat_feature_input_layers = []
+        cat_feature_layers = []
+        for in_dim, out_dim in zip(sparse_feats_input_dims, sparse_feats_embed_dims):
+            input_layer = tf.keras.layers.Input(shape=(), dtype=tf.int32)
+            cat_feature_input_layers.append(input_layer)
+            cat_feature_layers.append(tf.keras.layers.Embedding(in_dim, out_dim)(input_layer))
+
+        num_feature_input_layers = []
+        num_feature_layers = []
+        for i, in_dim in enumerate(num_dense_feats):
+            num_feature_input_layers.append(tf.keras.layers.Input(shape=1))
+            num_feature_layers.append(num_feature_input_layers[i])
+
+        all_feature_input_layers = cat_feature_input_layers + num_feature_input_layers
+        all_feature_layers = cat_feature_layers + num_feature_layers
+
+        interaction = tf.concat([user_embed_MLP, item_embed_MLP] + all_feature_layers, axis=-1)
+        output_size = factor_num * (2 ** (num_layers - 1))
+        for i in range(num_layers):
+            layer_MLP = tf.keras.layers.Dense(units=output_size, activation='relu')(interaction)
+            interaction = tf.keras.layers.Dropout(rate=dropout)(layer_MLP)
+            output_size //= 2
 
     with tf.name_scope("concatenation"):
-        concatenation = tf.concat([GMF, layer3_MLP], axis=-1)
+        concatenation = tf.concat([GMF, interaction], axis=-1)
         outputs = tf.keras.layers.Dense(1, activation='sigmoid')(concatenation)
 
-    model = tf.keras.Model(inputs=[user, item] + add_feature_input_layers, outputs=outputs)
+    model = tf.keras.Model(inputs=[user, item] + all_feature_input_layers, outputs=outputs)
     model.compile(optimizer=tf.keras.optimizers.Adam(lr),
                   loss=tf.keras.losses.BinaryCrossentropy(),
                   metrics=['accuracy', 'AUC', 'Precision', 'Recall'])

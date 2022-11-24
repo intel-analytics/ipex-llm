@@ -246,6 +246,7 @@ ADD ./register.sh /opt
 
 COPY ./entrypoint.sh /opt/
 COPY ./ehsm_entry.sh /opt/
+COPY ./spark.yaml /opt/
 
 RUN chmod a+x /opt/entrypoint.sh && \
     chmod a+x /opt/ehsm_entry.sh && \
