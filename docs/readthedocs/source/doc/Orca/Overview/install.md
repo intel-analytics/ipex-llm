@@ -129,8 +129,9 @@ __Note__: If necessary, you need to manually uninstall `pyspark` and other [depe
 
 You can also download the BigDL package via the download links below. Besides, you can use the [script](https://github.com/intel-analytics/BigDL/blob/main/scripts/download-bigdl.sh) to download.
 
-<table border="5"
+<table border="2"
 cellpadding="1"
+class="center"
 >
     <tr>
         <td></td>
