@@ -41,7 +41,7 @@ runs:
     - name: Start Container
       shell: bash
       run: |
-        #set -x
+        set -x
         echo "Install SGX..."
         docker pull ${IMAGE}
         echo "Check whether ports has been used:"
@@ -87,6 +87,6 @@ runs:
             echo "Checked."
 
             docker stop /${CONTAINER_NAME}
-            sudo docker container rm /${CONTAINER_NAME}
+            docker container rm /${CONTAINER_NAME}
 
     
