@@ -4,7 +4,7 @@ This director is for production, and build occlum runable instance first.
 You can see building command in [manually_build.yaml](https://github.com/intel-analytics/BigDL/blob/main/.github/workflows/manually_build.yml#L485) : bigdl-ppml-trusted-big-data-ml-scala-occlum-production.
 It will build image normally, and then run occlum-build to build occlum runable instance (by running occlum init and build first) in /opt/occlum_spark. The default configuration is:
 ```bash
--e SGX_MEM_SIZE=20GB \
+-e SGX_MEM_SIZE=30GB \
 -e SGX_THREAD=2048 \
 -e SGX_HEAP=1GB \
 -e SGX_KERNEL_HEAP=1GB \
