@@ -45,11 +45,13 @@ class TSDataset:
         Cascade call is supported for most of the transform methods.
         '''
         self.df = data
-        # detect low-quality data and automatic repair (optional)
-        _, self.df = quality_check_timeseries_dataframe(df=self.df,
-                                                        dt_col=schema["dt_col"],
-                                                        id_col=schema["id_col"],
-                                                        repair=repair)
+        self.evaluate = schema["evaluate"]
+        if not self.evaluate:
+            # detect low-quality data and automatic repair (optional)
+            _, self.df = quality_check_timeseries_dataframe(df=self.df,
+                                                            dt_col=schema["dt_col"],
+                                                            id_col=schema["id_col"],
+                                                            repair=repair)
         self.id_col = schema["id_col"]
         self.dt_col = schema["dt_col"]
         self.feature_col = schema["feature_col"].copy()
@@ -68,7 +70,8 @@ class TSDataset:
         self.scaler_index = [i for i in range(len(self.target_col))]
         self.id_sensitive = None
         self._has_generate_agg_feature = False
-        self._check_basic_invariants()
+        if not self.evaluate:
+            self._check_basic_invariants()
 
         self._id_list = list(np.unique(self.df[self.id_col]))
         self._freq_certainty = False
@@ -89,7 +92,8 @@ class TSDataset:
                     with_split=False,
                     val_ratio=0,
                     test_ratio=0.1,
-                    repair=False):
+                    repair=False,
+                    evaluate=False):
         '''
         Initialize tsdataset(s) from pandas dataframe.
 
@@ -113,6 +117,9 @@ class TSDataset:
         :param repair: a bool indicates whether automaticly repair low quality data,
                which may call .impute()/.resample() or modify datetime column on dataframe.
                The value defaults to False.
+        :param evaluate: a bool indicates whether to use evaluate mode, which will be used in
+               production environment to improve the latency of data processing. The value
+               defaults to False.
 
         :return: a TSDataset instance when with_split is set to False,
                  three TSDataset instances when with_split is set to True.
@@ -131,11 +138,14 @@ class TSDataset:
         >>>                                                      "extra feature 2"])
         '''
 
-        _check_type(df, "df", pd.DataFrame)
+        if not evaluate:
+            _check_type(df, "df", pd.DataFrame)
+            tsdataset_df = df.copy(deep=True)
+        else:
+            tsdataset_df = df
 
-        tsdataset_df = df.copy(deep=True)
-        target_col = _to_list(target_col, name="target_col")
-        feature_col = _to_list(extra_feature_col, name="extra_feature_col")
+        target_col = _to_list(target_col, name="target_col", evaluate=evaluate)
+        feature_col = _to_list(extra_feature_col, name="extra_feature_col", evaluate=evaluate)
 
         if id_col is None:
             tsdataset_df[_DEFAULT_ID_COL_NAME] = _DEFAULT_ID_PLACEHOLDER
@@ -151,14 +161,16 @@ class TSDataset:
                               id_col=id_col,
                               dt_col=dt_col,
                               target_col=target_col,
-                              feature_col=feature_col) for i in range(3)]
+                              feature_col=feature_col,
+                              evaluate=evaluate) for i in range(3)]
 
         return TSDataset(data=tsdataset_df,
                          repair=repair,
                          id_col=id_col,
                          dt_col=dt_col,
                          target_col=target_col,
-                         feature_col=feature_col)
+                         feature_col=feature_col,
+                         evaluate=evaluate)
 
     @staticmethod
     def from_parquet(path,
@@ -442,11 +454,12 @@ class TSDataset:
 
         :return: the tsdataset instance.
         '''
-        from bigdl.nano.utils.log4Error import invalidInputError
-        invalidInputError(self._is_pd_datetime,
-                          "The time series data does not have a Pandas datetime format"
-                          "(you can use pandas.to_datetime to convert a string into"
-                          " a datetime format.)")
+        if not self.evaluate:
+            from bigdl.nano.utils.log4Error import invalidInputError
+            invalidInputError(self._is_pd_datetime,
+                            "The time series data does not have a Pandas datetime format"
+                            "(you can use pandas.to_datetime to convert a string into"
+                            " a datetime format.)")
         features_generated = []
         self.df = generate_dt_features(input_df=self.df,
                                        dt_col=self.dt_col,
@@ -673,14 +686,15 @@ class TSDataset:
         >>> print(x.shape, y.shape) # x.shape = (1, 1, 6) y.shape = (1, 1, 2)
 
         '''
-        from bigdl.nano.utils.log4Error import invalidInputError
-        if id_sensitive and not _check_is_aligned(self.df, self.id_col, self.dt_col):
-            invalidInputError(False,
-                              "The time series data should be "
-                              "aligned if id_sensitive is set to True.")
-        feature_col = _to_list(feature_col, "feature_col") if feature_col is not None \
+        if not self.evaluate:
+            from bigdl.nano.utils.log4Error import invalidInputError
+            if id_sensitive and not _check_is_aligned(self.df, self.id_col, self.dt_col):
+                invalidInputError(False,
+                                "The time series data should be "
+                                "aligned if id_sensitive is set to True.")
+        feature_col = _to_list(feature_col, "feature_col", evaluate=self.evaluate) if feature_col is not None \
             else self.feature_col
-        target_col = _to_list(target_col, "target_col") if target_col is not None \
+        target_col = _to_list(target_col, "target_col", evaluate=self.evaluate) if target_col is not None \
             else self.target_col
         if self.roll_additional_feature:
             additional_feature_col =\
@@ -720,7 +734,8 @@ class TSDataset:
                                                             horizon=self.horizon,
                                                             feature_col=feature_col,
                                                             target_col=target_col,
-                                                            label_len=label_len))
+                                                            label_len=label_len,
+                                                            evaluate=self.evaluate))
 
         # concat the result on required axis
         concat_axis = 2 if id_sensitive else 0
@@ -977,11 +992,12 @@ class TSDataset:
                  when time_enc=True.
                  The ndarray is casted to float32.
         '''
-        from bigdl.nano.utils.log4Error import invalidInputError
-        if self.numpy_x is None:
-            invalidInputError(False,
-                              "Please call 'roll' method "
-                              "before transform a TSDataset to numpy ndarray!")
+        if not self.evaluate:
+            from bigdl.nano.utils.log4Error import invalidInputError
+            if self.numpy_x is None:
+                invalidInputError(False,
+                                "Please call 'roll' method "
+                                "before transform a TSDataset to numpy ndarray!")
         if self.numpy_y is None and self.numpy_x_timeenc is None:
             return self.numpy_x
         elif self.numpy_x_timeenc is None:
@@ -1028,14 +1044,15 @@ class TSDataset:
             self.df[self.target_col + feature_col] = \
                 scaler.fit_transform(self.df[self.target_col + feature_col])
         else:
-            from sklearn.utils.validation import check_is_fitted
-            from bigdl.nano.utils.log4Error import invalidInputError
-            try:
-                invalidInputError(not check_is_fitted(scaler), "scaler is not fittedd")
-            except Exception:
-                invalidInputError(False,
-                                  "When calling scale for the first time, "
-                                  "you need to set fit=True.")
+            if not self.evaluate:
+                from sklearn.utils.validation import check_is_fitted
+                from bigdl.nano.utils.log4Error import invalidInputError
+                try:
+                    invalidInputError(not check_is_fitted(scaler), "scaler is not fittedd")
+                except Exception:
+                    invalidInputError(False,
+                                    "When calling scale for the first time, "
+                                    "you need to set fit=True.")
             self.df[self.target_col + feature_col] = \
                 scaler.transform(self.df[self.target_col + feature_col])
         self.scaler = scaler
