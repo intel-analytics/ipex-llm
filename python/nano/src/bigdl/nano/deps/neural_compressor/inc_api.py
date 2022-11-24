@@ -65,4 +65,9 @@ def quantize(model, dataloader=None, metric=None, **kwargs):
         # default quantization
         from .core import BaseQuantization
         quantizer = BaseQuantization(**not_none_kwargs)
-    return quantizer.post_training_quantize(model, dataloader, metric)
+    model = quantizer.post_training_quantize(model, dataloader, metric)
+    if 'pytorch' in not_none_kwargs['framework'] or \
+        ('onnx' in not_none_kwargs['framework'] and onnx_option != 'tensorflow'):
+            from bigdl.nano.pytorch.context_manager import BaseContextManager
+            model.context_manager = BaseContextManager()
+    return model
