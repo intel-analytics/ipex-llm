@@ -41,7 +41,7 @@ runs:
     - name: Start Container
       shell: bash
       run: |
-        set -x
+        #set -x
         echo "Install SGX..."
         docker pull ${IMAGE}
         echo "Check whether ports has been used:"
