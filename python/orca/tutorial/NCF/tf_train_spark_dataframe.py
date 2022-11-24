@@ -18,7 +18,7 @@
 import math
 
 from tf_model import ncf_model
-from process_spark_dataframe import data_process
+from process_spark_dataframe import prepare_data
 
 from bigdl.orca import init_orca_context, stop_orca_context
 from bigdl.orca.learn.tf2 import Estimator
@@ -28,12 +28,9 @@ init_orca_context(memory='4g')
 
 # Step 2: Read and process data using Spark DataFrame
 data_dir = './ml-1m'  # path to ml-1m
-cat_feature = ['zipcode', 'gender', 'occupation', 'category']
-num_feature = ['age']
-total_features = ['user', 'item'] + cat_feature + num_feature
 
-train_df, val_df, embedding_in_dim, user_num, item_num = \
-    data_process(data_dir, cat_feature, num_feature, neg_scale=4)
+train_df, val_df, sparse_feats_input_dims, user_num, item_num, total_features = \
+    prepare_data(data_dir, neg_scale=4)
 
 # Step 3: Define the NCF model
 config = dict(
@@ -42,21 +39,22 @@ config = dict(
     item_num=item_num,
     user_num=user_num,
     dropout=0.5,
-    embedding_in_dim=embedding_in_dim,
-    num_feature_dim=[1],
-    embedding_out_dim=8
+    sparse_feats_input_dims=sparse_feats_input_dims,
+    num_dense_feats=[1],
+    sparse_feats_embed_dims=8
 )
 
 
 def model_creator(config):
-    model = ncf_model(factor_num=config['factor_num'],
-                      user_num=config['user_num'],
+    model = ncf_model(user_num=config['user_num'],
                       item_num=config['item_num'],
+                      num_layers=3,
+                      factor_num=config['factor_num'],
                       dropout=config['dropout'],
                       lr=config['lr'],
-                      cat_features_in_dim=config['embedding_in_dim'],
-                      cat_features_out_dim=config['embedding_out_dim'],
-                      num_feature_dim=config['num_feature_dim'])
+                      sparse_feats_input_dims=config['sparse_feats_input_dims'],
+                      sparse_feats_embed_dims=config['sparse_feats_embed_dims'],
+                      num_dense_feats=config['num_dense_feats'])
     return model
 
 
