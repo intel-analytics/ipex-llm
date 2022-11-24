@@ -22,6 +22,7 @@ import warnings
 from mmcv.runner import EpochBasedRunner
 from mmcv.runner.utils import get_host_info
 from mmcv.parallel.distributed import MMDistributedDataParallel
+from mmcv.parallel.utils import is_module_wrapper
 from bigdl.orca.learn.pytorch.utils import get_batchsize
 from bigdl.dllib.utils.log4Error import invalidInputError
 from bigdl.orca.learn.pytorch.experimential.core.base_ray_runner import BaseRayRunner
@@ -198,16 +199,22 @@ class MMCVRayEpochRunner(BaseRayRunner, EpochBasedRunner):
 
     def get_state_dict(self):
         """Returns the state of the runner."""
+        model = self.model
+        if is_module_wrapper(model):
+            model = model.module
         state = {
             "epoch": self._epoch,
-            "model": self.model.module.state_dict(),
+            "model": model.state_dict(),
             "optimizer": self.optimizer.state_dict()
         }
         return state
 
     def load_state_dict(self, state):
         """Sets the state of the model."""
-        self.model.module.load_state_dict(state["model"])
+        model = self.model
+        if is_module_wrapper(model):
+            model = model.module
+        model.load_state_dict(state["model"])
         if "optimizer" in state:
             self.optimizer.load_state_dict(state["optimizer"])
         self._epoch = state["epoch"]
