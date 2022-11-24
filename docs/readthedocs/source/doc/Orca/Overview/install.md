@@ -127,7 +127,7 @@ __Note__: If necessary, you need to manually uninstall `pyspark` and other [depe
 ---
 ## Download BigDL Orca
 
-If you need BigDL release package, you can find the download link of LTS version and nightly build version for both Spark 2.4.6 and Spark 3.1.2 in the form below. Besides, you can use the [script](https://github.com/intel-analytics/BigDL/blob/main/docker/bigdl-k8s/download-bigdl.sh) to download by specifying the environment variables `BIGDL_VERSION` and `SPARK_VERSION`.
+If you need BigDL release packages, you can find the download links of LTS versions and nightly build version for both Spark 2.4.6 and Spark 3.1.2 in the form below. Besides, you can use the [script](https://github.com/intel-analytics/BigDL/blob/main/docker/bigdl-k8s/download-bigdl.sh) to download by specifying the environment variables `BIGDL_VERSION` and `SPARK_VERSION`.
 
 <table border="1"
 cellpadding="10"
