@@ -18,7 +18,7 @@ runs:
       env:
         DEFAULT_IMAGE: ${{ inputs.image }}:${{ inputs.image-tag }}
       run: |
-      whoami
+        whoami
         export LOCAL_IP=172.168.0.205
         export CONTAINER_FLINK_JM_NAME="flink-jm-occlum-jenkins"
         export CONTAINER_NAME=flink-occlum
