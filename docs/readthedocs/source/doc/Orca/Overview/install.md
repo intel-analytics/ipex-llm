@@ -44,6 +44,8 @@ conda activate py37
 ---
 ## Install BigDL Orca
 
+In this section, we use `pip install` to install BigDL Orca package, which is the most recommended way to install.
+
 ### To use basic Orca features
 You can install Orca in your created conda environment for distributed data processing, training and inference with the following command:
 ```bash
@@ -121,3 +123,28 @@ pip uninstall bigdl-orca-spark3 bigdl-dllib-spark3 bigdl-tf bigdl-math bigdl-cor
 ```
 
 __Note__: If necessary, you need to manually uninstall `pyspark` and other [dependencies](https://github.com/intel-analytics/BigDL/tree/main/python/requirements/orca) introduced by Orca.
+
+---
+## Download BigDL Orca
+<table border="1"
+cellpadding="10"
+>
+    <tr>
+        <td></td>
+        <td>BigDL 2.0.0</td>
+        <td>BigDL 2.1.0</td>
+        <td>BigDL 2.2.0-SNAPSHOT nightly build</td>
+    </tr>
+    <tr>
+       <td>Spark 2.4.6 </td>
+       <td><a href="https://repo1.maven.org/maven2/com/intel/analytics/bigdl/bigdl-assembly-spark_2.4.6/2.0.0/bigdl-assembly-spark_2.4.6-2.0.0.zip">download</a></td>
+       <td><a href="https://repo1.maven.org/maven2/com/intel/analytics/bigdl/bigdl-assembly-spark_2.4.6/2.1.0/">download</a></td>
+       <td><a href="https://oss.sonatype.org/content/repositories/snapshots/com/intel/analytics/bigdl/bigdl-assembly-spark_2.4.6/2.2.0-SNAPSHOT/">download</a> or <a href="https://github.com/intel-analytics/BigDL/blob/main/docker/bigdl-k8s/download-bigdl.sh">script</a></td>
+    </tr>
+    <tr>
+       <td>Spark 3.1.2 </td>
+       <td><a href="https://repo1.maven.org/maven2/com/intel/analytics/bigdl/bigdl-assembly-spark_3.1.2/2.0.0/bigdl-assembly-spark_3.1.2-2.0.0.zip">download</a></td>
+       <td><a href="https://repo1.maven.org/maven2/com/intel/analytics/bigdl/bigdl-assembly-spark_3.1.2/2.1.0/">download</a></td>
+       <td><a href="https://oss.sonatype.org/content/repositories/snapshots/com/intel/analytics/bigdl/bigdl-assembly-spark_3.1.2/2.2.0-SNAPSHOT/">download</a> or <a href="https://github.com/intel-analytics/BigDL/blob/main/docker/bigdl-k8s/download-bigdl.sh">script</a></td> 
+    </tr>
+</table>
