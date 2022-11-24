@@ -19,7 +19,7 @@ By default, the tool will load `tsinghua_electricity` dataset and train a `TCNFo
 Besides the default usage, more execution parameters can be set to obtain more benchmark results. Read on to learn more about the configuration options available in Chronos benchmark tool.
 
 ## Configuration Options
-The benchmark tool provides various options for configuring execution parameters. Some key configuration options are introduced in this part and a list of all options is given in [**Advanced Options**](https://bigdl.readthedocs.io/en/latest/doc/Chronos/Howto/how_to_use_benchmark_tool.html#advanced-options).
+The benchmark tool provides various options for configuring execution parameters. Some key configuration options are introduced in this part and a list of all options is given in [**Advanced Options**](#advanced-options).
 
 ### Model
 The tool provides several built-in time series forecasting models, including TCN, LSTM, Seq2Seq, NBeats and Autoformer. To specify which model to use, run benchmark tool with `-m/--model`. If not specified, TCN is used as the default.
@@ -42,7 +42,7 @@ benchmark-chronos -d nyc_taxi -l 96 -o 720
 .. note::
     **Download tsinghua_electricity Dataset**:
 
-     The tsinghua_electricity dataset does not support automatic downloading. Users can download manually from "https://github.com/thuml/Autoformer#get-started" to "~/.chronos/dataset/" path.
+     The tsinghua_electricity dataset does not support automatic downloading. Users can download manually from "https://github.com/thuml/Autoformer#get-started" to path "~/.chronos/dataset/".
 ```
 
 ### Framework
@@ -84,7 +84,7 @@ To speed up inference, accelerators like ONNXRuntime and OpenVINO are usually us
 benchmark-chronos --inference_framework onnx -l 96 -o 720
 ```
 
-When benchmark tool is run with `--ipex` enabled, then intel-extension-for-pytorch is used as accelerator for trainer. 
+When benchmark tool is run with `--ipex` enabled, intel-extension-for-pytorch will be used as accelerator for trainer. 
 
 If want to use quantized model to predict, just run the benchmark tool with `--quantize` enabled and the quantize framework can be specified by `--quantize_type`. The parameter`--quantize_type` need to be set as pytorch_ipex when users want to use pytorch_ipex as quantize type. Otherwise, the defaut quantize type will be selected according to `--inference_framework`. If pytorch is the inference framework, then pytorch_fx will be the default. If users choose ONNXRuntime as inference framework, onnxrt_qlinearops will be quantize type. And if OpenVINO is chosen, the openvino quantize type will be selected.
 ```bash
