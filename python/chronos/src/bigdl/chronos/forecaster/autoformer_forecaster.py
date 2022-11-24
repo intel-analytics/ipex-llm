@@ -778,7 +778,8 @@ class AutoformerForecaster(Forecaster):
         """
         :param data: The data support following formats:
                numpy ndarrays: generate from `TSDataset.roll`,
-               be sure to set label_len > 0 and time_enc = True
+               be sure to set label_len > 0 and time_enc = True.
+               Doing so will recompile the inference model.
         """
         from bigdl.nano.pytorch.inference import InferenceOptimizer
         self._jit_fp32 = InferenceOptimizer.trace(self.internal, input_sample=data,

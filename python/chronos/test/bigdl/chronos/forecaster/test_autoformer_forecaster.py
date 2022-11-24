@@ -476,3 +476,11 @@ class TestChronosModelAutoformerForecaster(TestCase):
         pred = forecaster.predict(test_data)
         jit_pred = forecaster.predict_with_jit(test_data)
         assert pred[0].shape == jit_pred[0].shape
+
+        import torch
+        forecaster._jit_fp32 = None
+        dummy_input = torch.rand(1, 24, 2), torch.rand(1, 17, 2), \
+            torch.rand(1, 24, 6), torch.rand(1, 17, 6)
+        forecaster.jit_fp32 = dummy_input
+        jit_yhat = forecaster.predict_with_jit(test_data)
+        assert jit_yhat[0].shape == pred[0].shape
