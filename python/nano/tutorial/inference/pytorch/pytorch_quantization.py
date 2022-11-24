@@ -94,7 +94,7 @@ if __name__ == "__main__":
     # Static Quantization for PyTorch
     from bigdl.nano.pytorch import InferenceOptimizer
     q_model = InferenceOptimizer.quantize(model, 
-                                          calib_dataloader=DataLoader(train_dataset, batch_size=32))
+                                          calib_data=DataLoader(train_dataset, batch_size=32))
 
     # Inference with Quantized Model
     y_hat = q_model(x)

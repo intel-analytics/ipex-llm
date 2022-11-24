@@ -151,21 +151,25 @@ The `data` argument in `fit` method can be a spark DataFrame, an *XShards* or a 
 
 View the related [Python API doc](https://bigdl.readthedocs.io/en/latest/doc/PythonAPI/Orca/orca.html#orca-learn-tf2-tf2-spark-estimator) for more details.
 
-***For more details, view the distributed TensorFlow training/inference [page]()<TODO: link to be added>.***
-
 ### 3. PyTorch Estimator
 
 **Using *BigDL* backend**
 
-Users may create a PyTorch `Estimator` using the *BigDL* backend (currently default for PyTorch) as follows:
+Users may create a PyTorch `Estimator` using the *Spark* backend (currently default for PyTorch) as follows:
 
 ```python
-model = LeNet() # a torch.nn.Module
-model.train()
-criterion = nn.NLLLoss()
+def model_creator(config):
+    model = LeNet() # a torch.nn.Module
+    model.train()
+    return model
 
-adam = torch.optim.Adam(model.parameters(), args.lr)
-est = Estimator.from_torch(model=model, optimizer=adam, loss=criterion)
+def optimizer_creator(model, config):
+    return torch.optim.Adam(model.parameters(), config["lr"])
+
+est = Estimator.from_torch(model=model_creator,
+                           optimizer=optimizer_creator,
+                           loss=nn.NLLLoss(),
+                           config={"lr": 1e-2})
 ```
 
 Then users can perform distributed model training and inference as follows:
@@ -192,7 +196,7 @@ def model_creator(config):
 def optimizer_creator(model, config):
     return torch.optim.Adam(model.parameters(), config["lr"])
 
-est = Estimator.from_torch(model=model,
+est = Estimator.from_torch(model=model_creator,
                            optimizer=optimizer_creator,
                            loss=nn.NLLLoss(),
                            config={"lr": 1e-2},
@@ -210,8 +214,6 @@ predictions = est.predict(data=df,
 The input to `fit` methods can be a Spark DataFrame, an *XShards*, or a *Data Creator Function* (that returns a `torch.utils.data.DataLoader`). The `data` argument in `predict` method can be a Spark DataFrame or an *XShards*. See the *data-parallel processing pipeline* [page](./data-parallel-processing.md) for more details.
 
 View the related [Python API doc](https://bigdl.readthedocs.io/en/latest/doc/PythonAPI/Orca/orca.html#orca-learn-pytorch-pytorch-ray-estimator) for more details.
-
-***For more details, view the distributed PyTorch training/inference [page]()<TODO: link to be added>.***
 
 ### 4. MXNet Estimator
 
@@ -247,8 +249,6 @@ est.fit(get_train_data_iter, epochs=2)
 ```
 
 The input to `fit` methods can be an *XShards*, or a *Data Creator Function* (that returns an `MXNet DataIter/DataLoader`). See the *data-parallel processing pipeline* [page](./data-parallel-processing.html) for more details.
-
-View the related [Python API doc]()<TODO: link to be added> for more details.
 
 ### 5. BigDL Estimator
 

@@ -28,7 +28,8 @@ from bigdl.chronos.data.utils.scale import unscale_timeseries_numpy
 from bigdl.chronos.data.utils.resample import resample_timeseries_dataframe
 from bigdl.chronos.data.utils.split import split_timeseries_dataframe
 from bigdl.chronos.data.utils.cycle_detection import cycle_length_est
-from bigdl.chronos.data.utils.quality_inspection import quality_check_timeseries_dataframe
+from bigdl.chronos.data.utils.quality_inspection import quality_check_timeseries_dataframe,\
+    _abnormal_value_repair
 from bigdl.chronos.data.utils.utils import _to_list, _check_type,\
     _check_col_within, _check_col_no_na, _check_is_aligned, _check_dt_is_sorted
 
@@ -386,6 +387,27 @@ class TSDataset:
         self._freq = pd.Timedelta(interval)
         self._freq_certainty = True
         self.df.reset_index(drop=True, inplace=True)
+        return self
+
+    def repair_abnormal_data(self, mode="relative", threshold=3.0):
+        '''
+        Repair the tsdataset by replacing abnormal data detected based on threshold
+        with the last non N/A number.
+
+        :param mode: detect abnormal data mode, select from "absolute" or "relative".
+
+            "absolute": detect abnormal data by comparing with max and min value.
+
+            "relative": detect abnormal data by comparing with mean value plus/minus several
+            times standard deviation.
+        :param threshold: indicates the range of comparison. It is a 2-dim tuple of float
+               (min_value, max_value) when mode is set to "absolute" while it is a float
+               number when mode is set to "relative".
+
+        :return: the tsdataset instance.
+        '''
+        self.df = _abnormal_value_repair(df=self.df, dt_col=self.dt_col,
+                                         mode=mode, threshold=threshold)
         return self
 
     def gen_dt_feature(self, features="auto", one_hot_features=None):

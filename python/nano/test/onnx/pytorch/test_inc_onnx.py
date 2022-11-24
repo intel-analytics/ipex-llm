@@ -28,6 +28,7 @@ import torchmetrics
 import numpy as np
 
 from bigdl.nano.pytorch import Trainer
+from bigdl.nano.pytorch import InferenceOptimizer
 from bigdl.nano.pytorch.vision.models import vision
 
 batch_size = 256
@@ -87,23 +88,31 @@ class TestOnnx(TestCase):
         trainer.fit(pl_model, train_loader)
 
         # normal usage without tunning
-        onnx_model = trainer.quantize(pl_model,
-                                      accelerator='onnxruntime',
-                                      method='qlinear',
-                                      calib_dataloader=train_loader)
+        onnx_model = InferenceOptimizer.quantize(pl_model,
+                                                 accelerator='onnxruntime',
+                                                 method='qlinear',
+                                                 calib_data=train_loader)
         for x, y in train_loader:
             forward_res = onnx_model(x).numpy()
             # np.testing.assert_almost_equal(y.numpy(), forward_res, decimal=5)  # same result
+  
+        #  quantization with tensor
+        x = torch.rand((1, 3, 256, 256))
+        y = torch.ones((1, ), dtype=torch.long)
+        onnx_model = InferenceOptimizer.quantize(pl_model,
+                                                 accelerator='onnxruntime',
+                                                 method='qlinear',
+                                                 calib_data=(x, y))
 
         # quantization with tunning
         pl_model.eval()
-        onnx_model = trainer.quantize(pl_model,
-                                      accelerator='onnxruntime',
-                                      method='qlinear',
-                                      calib_dataloader=train_loader,
-                                      metric=torchmetrics.F1(10),
-                                      accuracy_criterion={'relative': 0.99,
-                                                          'higher_is_better': True})
+        onnx_model = InferenceOptimizer.quantize(pl_model,
+                                                 accelerator='onnxruntime',
+                                                 method='qlinear',
+                                                 calib_data=train_loader,
+                                                 metric=torchmetrics.F1(10),
+                                                 accuracy_criterion={'relative': 0.99,
+                                                                    'higher_is_better': True})
         for x, y in train_loader:
             forward_res = onnx_model(x).numpy()
             # np.testing.assert_almost_equal(y.numpy(), forward_res, decimal=5)  # same result
@@ -115,8 +124,8 @@ class TestOnnx(TestCase):
 
         # save the quantized model
         with tempfile.TemporaryDirectory() as tmp_dir_name:
-            trainer.save(onnx_model, tmp_dir_name)
-            loaded_onnx_model = trainer.load(tmp_dir_name)
+            InferenceOptimizer.save(onnx_model, tmp_dir_name)
+            loaded_onnx_model = InferenceOptimizer.load(tmp_dir_name)
 
         for x, y in train_loader:
             forward_res = loaded_onnx_model(x)
@@ -135,31 +144,31 @@ class TestOnnx(TestCase):
         trainer.fit(pl_model, train_loader)
 
         # normal usage without tunning
-        onnx_model = trainer.quantize(pl_model,
-                                      accelerator='onnxruntime',
-                                      method='qlinear',
-                                      calib_dataloader=train_loader)
+        onnx_model = InferenceOptimizer.quantize(pl_model,
+                                                 accelerator='onnxruntime',
+                                                 method='qlinear',
+                                                 calib_data=train_loader)
         for x, y in train_loader:
             forward_res = onnx_model(x).numpy()
             # np.testing.assert_almost_equal(y.numpy(), forward_res, decimal=5)  # same result
 
         # quantization with tunning
         pl_model.eval()
-        onnx_model = trainer.quantize(pl_model,
-                                      accelerator='onnxruntime',
-                                      method='qlinear',
-                                      calib_dataloader=train_loader,
-                                      metric=torchmetrics.F1(10),
-                                      accuracy_criterion={'relative': 0.99,
-                                                          'higher_is_better': True})
+        onnx_model = InferenceOptimizer.quantize(pl_model,
+                                                 accelerator='onnxruntime',
+                                                 method='qlinear',
+                                                 calib_data=train_loader,
+                                                 metric=torchmetrics.F1(10),
+                                                 accuracy_criterion={'relative': 0.99,
+                                                                     'higher_is_better': True})
         for x, y in train_loader:
             forward_res = onnx_model(x).numpy()
             # np.testing.assert_almost_equal(y.numpy(), forward_res, decimal=5)  # same result
 
         # save the quantized model
         with tempfile.TemporaryDirectory() as tmp_dir_name:
-            trainer.save(onnx_model, tmp_dir_name)
-            loaded_onnx_model = trainer.load(tmp_dir_name)
+            InferenceOptimizer.save(onnx_model, tmp_dir_name)
+            loaded_onnx_model = InferenceOptimizer.load(tmp_dir_name)
 
         for x, y in train_loader:
             forward_res = loaded_onnx_model(x)

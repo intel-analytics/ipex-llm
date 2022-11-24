@@ -6,7 +6,7 @@ on:
     branchs: [ main ]
 
   schedule:
-    - cron: '0 13 * * *' # GMT time, 13:00 GMT == 21:00 China
+    - cron: '0 15 * * *' # GMT time, 15:00 GMT == 23:00 China
   workflow_dispatch:
     inputs:
       artifact:
@@ -523,8 +523,18 @@ jobs:
       uses: ./.github/actions/jdk-setup-action
     - name: Set up maven
       uses: ./.github/actions/maven-setup-action
+    - name: set env
+      env:
+        DEFAULT_IMAGE: '10.239.45.10/arda/intelanalytics/bigdl-ppml-trusted-big-data-ml-scala-occlum'
+        DEFAULT_TAG: '2.2.0-SNAPSHOT'
+      run: |
+        echo "TAG=${{ github.event.inputs.tag || env.DEFAULT_TAG }}" >> $GITHUB_ENV
+        echo "IMAGE=${{ github.event.inputs.image || env.DEFAULT_IMAGE }}" >> $GITHUB_ENV
     - name: Run Test
       uses: ./.github/actions/ppml-occlum-exampletests-action
+      with:
+        image: ${{env.IMAGE}}
+        image-tag: ${{env.TAG}}
     - name: Create Job Badge
       uses: ./.github/actions/create-job-status-badge
       if: ${{ always() }}

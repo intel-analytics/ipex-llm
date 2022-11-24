@@ -86,7 +86,6 @@ class PyTorchPySparkEstimator(BaseEstimator):
             metrics=None,
             scheduler_creator=None,
             training_operator_cls=TrainingOperator,
-            initialization_hook=None,
             config=None,
             scheduler_step_freq="batch",
             use_tqdm=False,
@@ -121,7 +120,6 @@ class PyTorchPySparkEstimator(BaseEstimator):
         self.model_dir = parse_model_dir(model_dir)
 
         self.model_creator = model_creator
-        self.initialization_hook = initialization_hook
 
         num_nodes, cores_per_node = get_node_and_core_number()
         self.num_workers = num_nodes * workers_per_node
