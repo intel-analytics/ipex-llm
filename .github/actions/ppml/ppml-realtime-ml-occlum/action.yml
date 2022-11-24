@@ -60,7 +60,7 @@ runs:
         #docker stop /${CONTAINER_NAME}
         #sudo docker rm /${CONTAINER_NAME}
         echo ""
-        sudo docker run -itd \
+        docker run -itd \
             -e REDIS_HOST=$LOCAL_IP \
             -e FLINK_JOB_MANAGER_IP=$LOCAL_IP \
             -e FLINK_TASK_MANAGER_IP=$LOCAL_IP \
