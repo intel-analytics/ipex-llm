@@ -647,5 +647,41 @@ class TestPyTorchEstimator(TestCase):
 
         estimator.shutdown()
 
+    def test_entire_model_save_load(self):
+        sc = OrcaContext.get_spark_context()
+        spark = SparkSession.builder.getOrCreate()
+        rdd = sc.parallelize(range(20))
+        data = rdd.map(lambda x: (np.random.randn(50).astype(np.float).tolist(),
+                                        [float(np.random.randint(0, 2, size=()))])
+                            )
+
+        schema = StructType([
+                    StructField("feature", ArrayType(FloatType()), True),
+                    StructField("label", ArrayType(FloatType()), True)
+                ])
+
+        df = spark.createDataFrame(data=data, schema=schema)
+
+        estimator = get_estimator(workers_per_node=2, log_level=logging.DEBUG)
+
+        estimator.fit(df, batch_size=4, epochs=2,
+                      validation_data=df,
+                      feature_cols=["feature"],
+                      label_cols=["label"])
+        pre_result = estimator.predict(df, batch_size=4, feature_cols=["feature"])
+        expect_res = [res["prediction"] for res in pre_result.collect()]
+
+        path = "/tmp/model.pth"
+        try:
+            estimator.save(path, entire=True)
+            estimator.load(path)
+
+            after_result = estimator.predict(df, batch_size=4, feature_cols=["feature"])
+            predict_res = [res["prediction"] for res in after_result.collect()]
+        finally:
+            os.remove(path)
+
+        assert np.array_equal(expect_res, predict_res)
+
 if __name__ == "__main__":
     pytest.main([__file__])
