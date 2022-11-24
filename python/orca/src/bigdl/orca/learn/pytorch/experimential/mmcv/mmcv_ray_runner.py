@@ -212,8 +212,12 @@ class MMCVRayEpochRunner(BaseRayRunner, EpochBasedRunner):
             self.optimizer.load_state_dict(state["optimizer"])
         self._epoch = state["epoch"]
 
-    def _save_checkpoint(self, filepath, save_weights_only=False):
+    def save_checkpoint(self, filepath, save_weights_only=False):
         """Save checkpoint."""
+        pass
+
+    def remove_checkpoint(self, filepath):
+        """Remove checkpoint"""
         pass
 
     def shutdown(self):

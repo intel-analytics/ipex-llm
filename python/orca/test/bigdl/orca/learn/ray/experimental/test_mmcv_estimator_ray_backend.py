@@ -283,27 +283,30 @@ class TestMMCVRayEstimator(unittest.TestCase):
         print(f"dLoss: {dloss}")
         assert dloss < 0
 
-    def test_get_model(self):
+    def test_model_convergence(self):
         estimator = get_estimator(linear_model_runner_creator)
         estimator.run([simple_dataloader_creator], [('train', 1)])
+
+        model_state = estimator.get_model()
+        weight = model_state["fc1.weight"].item()
+        assert abs(weight - 2.0) < 0.0001
+
+    def test_get_model(self):
+        estimator = get_estimator(runner_creator)
+        estimator.run([train_dataloader_creator], [('train', 1)])
 
         # test get_state_dict()
         state_dict = estimator.get_state_dict()
         assert 'epoch' in state_dict
         assert 'model' in state_dict
         assert 'optimizer' in state_dict
-        self.assertEqual(state_dict['epoch'], 30)
+        self.assertEqual(state_dict['epoch'], MAX_EPOCH)
 
-        # test get_model()
-        model_state = estimator.get_model()
-        weight = model_state["fc1.weight"].item()
-        assert abs(weight - 2.0) < 0.0001
-
-        # test load_state_dict()
-        state_dict['model']['fc1.weight'] = torch.tensor([[3.0]], dtype=torch.float32)
+        # test load_state_dict() and get_model()
+        state_dict['model']['out.bias'] = torch.tensor([1.0], dtype=torch.float32)
         estimator.load_state_dict(state_dict)
         model_state = estimator.get_model()
-        self.assertEqual(model_state["fc1.weight"].item(), 3.0)
+        assert model_state['out.bias'].item() == 1.0
 
 
 if __name__ == "__main__":

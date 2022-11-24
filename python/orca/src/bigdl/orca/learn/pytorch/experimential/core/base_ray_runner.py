@@ -15,8 +15,8 @@
 #
 
 from bigdl.orca.learn.pytorch.core.trainable import Trainable
+from bigdl.orca.learn.pytorch.core.modelIO import ModelIO
 from .lifecycle import LifeCycle
-from .model_io import ModelIO
 
 from abc import ABCMeta
 
