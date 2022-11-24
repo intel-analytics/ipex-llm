@@ -46,13 +46,13 @@ runs:
         docker pull ${IMAGE}
         echo "Check whether ports has been used:"
         echo "Check redis port 6379:"
-        netstat -anp |grep 6379
+        #netstat -anp |grep 6379
         echo ""
         echo "check job manager port 6123:"
-        netstat -anp |grep 6123
+        #netstat -anp |grep 6123
         echo ""
         echo "check task manager port 6125:"
-        netstat -anp |grep 6125
+        #netstat -anp |grep 6125
         echo ""
         echo "If there is conflict above, please refer to kill command."
         echo ""
