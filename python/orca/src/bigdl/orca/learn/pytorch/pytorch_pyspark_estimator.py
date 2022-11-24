@@ -531,7 +531,8 @@ class PyTorchPySparkEstimator(BaseEstimator):
         """
         if is_local_path(model_path):
             if entire:
-                torch.save(self.get_model(), model_path)
+                model = self.get_model()
+                torch.save(model, model_path)
             else:
                 torch.save(self.state_dict, model_path)
         else:
@@ -540,7 +541,8 @@ class PyTorchPySparkEstimator(BaseEstimator):
             temp_path = os.path.join(temp_dir, file_name)
             try:
                 if entire:
-                    torch.save(self.get_model(), temp_path)
+                    model = self.get_model()
+                    torch.save(model, temp_path)
                 else:
                     torch.save(self.state_dict, temp_path)
                 put_local_file_to_remote(temp_path, model_path)
