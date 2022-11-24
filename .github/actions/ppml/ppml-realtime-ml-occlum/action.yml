@@ -57,8 +57,8 @@ runs:
         echo "If there is conflict above, please refer to kill command."
         echo ""
         echo "Check whether there is remaining container:"
-        #docker stop /${CONTAINER_NAME}
-        #sudo docker rm /${CONTAINER_NAME}
+        docker stop /${CONTAINER_NAME}
+        docker rm /${CONTAINER_NAME}
         echo ""
         docker run -itd \
             -e REDIS_HOST=$LOCAL_IP \
