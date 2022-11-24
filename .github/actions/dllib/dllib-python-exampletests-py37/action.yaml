@@ -45,6 +45,7 @@ runs:
         export PATH=${JAVA_HOME}/bin/:${JAVA_HOME}/jre/bin:${PATH}
         export PATH=/opt/work/apache-maven-3.6.3/bin:$PATH 
         export MASTER=local[4]
+        export SPARK_LOCAL_HOSTNAME=localhost
         chmod a+x python/dllib/examples/run-example-tests-pip.sh 
         echo "### start PY36 example tests"
         source activate py37

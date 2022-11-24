@@ -21,6 +21,7 @@
 #
 
 set -e
+set -x
 
 RUN_SCRIPT_DIR=$(cd $(dirname $0) ; pwd)
 echo $RUN_SCRIPT_DIR
