@@ -45,6 +45,7 @@ class TSDataset:
         Cascade call is supported for most of the transform methods.
         '''
         self.df = data
+        # whether to use evaluate mode to improve latency in production environment
         self.evaluate = schema["evaluate"]
         if not self.evaluate:
             # detect low-quality data and automatic repair (optional)
