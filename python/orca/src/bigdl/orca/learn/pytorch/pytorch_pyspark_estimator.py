@@ -15,12 +15,18 @@
 #
 
 import types
+import logging
+import numbers
 import torch
+import numpy as np
 import copy
+import os
+import shutil
+import tempfile
 
+from bigdl.dllib.utils.file_utils import is_local_path
 from bigdl.orca.learn.pytorch.training_operator import TrainingOperator
 from bigdl.orca.learn.pytorch.pytorch_pyspark_worker import PytorchPysparkWorker
-from bigdl.orca.learn.pytorch.utils import process_stats
 from bigdl.orca.learn.utils import maybe_dataframe_to_xshards, dataframe_to_xshards, \
     convert_predict_xshards_to_dataframe, make_data_creator, update_predict_xshards, \
     reload_dataloader_creator, process_xshards_of_pandas_dataframe
@@ -28,7 +34,7 @@ from bigdl.orca.data import SparkXShards
 from bigdl.orca import OrcaContext
 from bigdl.orca.learn.base_estimator import BaseEstimator
 from bigdl.orca.data.file import get_remote_file_to_local, enable_multi_fs_save, \
-    enable_multi_fs_load
+    enable_multi_fs_load, put_local_file_to_remote
 from bigdl.dllib.utils.common import get_node_and_core_number
 from bigdl.orca.learn.log_monitor import start_log_server, stop_log_server
 
@@ -107,17 +113,20 @@ class PyTorchPySparkEstimator(BaseEstimator):
         self.config = {} if config is None else config
 
         sc = OrcaContext.get_spark_context()
-        if not (isinstance(model_creator, types.FunctionType) and
-                isinstance(optimizer_creator, types.FunctionType)):  # Torch model is also callable.
-            invalidInputError(False,
-                              "Must provide a function for both model_creator and"
-                              " optimizer_creator")
+
+        if self.model_creator is not None:
+            if not (isinstance(model_creator, types.FunctionType) and
+                    isinstance(optimizer_creator, types.FunctionType)):  # Torch model is also callable.
+                invalidInputError(False,
+                                "Must provide a function for both model_creator and"
+                                " optimizer_creator")
 
         if not training_operator_cls and not loss_creator:
             invalidInputError(False,
                               "If a loss_creator is not provided, you must "
                               "provide a custom training operator.")
 
+        self.load_path = None
         self.model_dir = parse_model_dir(model_dir)
 
         self.model_creator = model_creator
@@ -143,6 +152,7 @@ class PyTorchPySparkEstimator(BaseEstimator):
         self.worker_init_params = dict(
             model_creator=self.model_creator,
             optimizer_creator=optimizer_creator,
+            load_path=self.load_path,
             loss_creator=loss_creator,
             scheduler_creator=scheduler_creator,
             training_operator_cls=training_operator_cls,
@@ -206,9 +216,10 @@ class PyTorchPySparkEstimator(BaseEstimator):
         :param profile: Boolean. Whether to return time stats for the training procedure.
                Default is False.
         :param reduce_results: Boolean. Whether to average all metrics across all workers into
-               one dict. If a metric is a non-numerical value, the one value will be randomly
-               selected among the workers. If False, returns a list of dicts for
-               all workers. Default is True.
+               one dict. If a metric is a non-numerical value (or nested dictionaries), one value
+               will be randomly selected among the workers. If False, returns a list of dicts for
+               all workers.
+               Default is True.
         :param info: An optional dictionary that can be passed to the TrainingOperator for
                train_epoch and train_batch.
         :param feature_cols: feature column names if data is Spark DataFrame.
@@ -312,7 +323,7 @@ class PyTorchPySparkEstimator(BaseEstimator):
         epoch_stats = list(map(list, zip(*worker_stats)))
         if reduce_results:
             for i in range(len(epoch_stats)):
-                epoch_stats[i] = process_stats(epoch_stats[i])
+                epoch_stats[i] = self._process_stats(epoch_stats[i])
             return epoch_stats
         else:
             return epoch_stats
@@ -418,7 +429,6 @@ class PyTorchPySparkEstimator(BaseEstimator):
                  batch_size=32,
                  num_steps=None,
                  profile=False,
-                 reduce_results=True,
                  info=None,
                  feature_cols=None,
                  label_cols=None):
@@ -440,10 +450,6 @@ class PyTorchPySparkEstimator(BaseEstimator):
                corresponds to the number of times `TrainingOperator.validate_batch` is called.
         :param profile: Boolean. Whether to return time stats for the training procedure.
                Default is False.
-        :param reduce_results: Boolean. Whether to average all metrics across all workers into
-               one dict. If a metric is a non-numerical value, the one value will be randomly
-               selected among the workers. If False, returns a list of dicts for
-               all workers. Default is True.
         :param info: An optional dictionary that can be passed to the TrainingOperator
                for validate.
         :param feature_cols: feature column names if train data is Spark DataFrame.
@@ -497,10 +503,7 @@ class PyTorchPySparkEstimator(BaseEstimator):
             res = self.workerRDD.barrier().mapPartitions(
                 lambda iter: transform_func(iter, init_params, params)).collect()
 
-        if reduce_results:
-            return process_stats(res)
-        else:
-            return res
+        return self._process_stats(res)
 
     def get_model(self):
         """
@@ -517,27 +520,53 @@ class PyTorchPySparkEstimator(BaseEstimator):
     def get_state_dict(self):
         return self.state_dict
 
-    @enable_multi_fs_save
-    def save(self, model_path):
+    def save(self, model_path, entire=False):
         """
         Saves the Estimator state (including model and optimizer) to the provided model_path.
 
         :param model_path: (str) Path to save the model.
         :return:
         """
-        state_dict = self.state_dict
-        torch.save(state_dict, model_path)
+        if is_local_path(model_path):
+            if entire:
+                torch.save(self.get_model(), model_path)
+            else:
+                torch.save(self.state_dict, model_path)
+        else:
+            file_name = os.path.basename(model_path)
+            temp_dir = tempfile.mkdtemp()
+            temp_path = os.path.join(temp_dir, file_name)
+            try:
+                if entire:
+                    torch.save(self.get_model(), temp_path)
+                else:
+                    torch.save(self.state_dict, temp_path)
+                put_local_file_to_remote(temp_path, model_path)
+            finally:
+                shutil.rmtree(temp_dir)
         return model_path
 
-    @enable_multi_fs_load
     def load(self, model_path):
         """
         Loads the Estimator state (including model and optimizer) from the provided model_path.
 
         :param model_path: (str) Path to the existing model.
         """
-        state_dict = torch.load(model_path)
-        self.state_dict = state_dict
+        if is_local_path(model_path):
+            res = torch.load(model_path)
+        else:
+            file_name = os.path.basename(model_path)
+            temp_dir = tempfile.mkdtemp()
+            temp_path = os.path.join(temp_dir, file_name)
+            try:
+                get_remote_file_to_local(model_path, temp_path)
+                res = torch.load(temp_path)
+            finally:
+                shutil.rmtree(temp_dir)
+        if isinstance(res, dict):
+            self.state_dict = res
+        else:
+            self.state_dict = res.state_dict()
 
     def save_checkpoint(self, model_path):
         """
@@ -547,7 +576,6 @@ class PyTorchPySparkEstimator(BaseEstimator):
                e.g. "/tmp/estimator.ckpt" or "hdfs:///tmp/estimator.ckpt"
         :return: None
         """
-        from bigdl.dllib.utils.file_utils import is_local_path
         if is_local_path(model_path):
             self.save(model_path)
         else:
@@ -561,12 +589,25 @@ class PyTorchPySparkEstimator(BaseEstimator):
                supported. e.g. "/tmp/estimator.ckpt" or "hdfs:///tmp/estimator.ckpt"
         :return: None
         """
-        from bigdl.dllib.utils.file_utils import is_local_path
         if is_local_path(model_path):
             self.load(model_path)
         else:
             self.driver_runner.load_checkpoint(filepath=model_path)
             self.state_dict = self.driver_runner.get_state_dict()
+
+    def _process_stats(self, worker_stats):
+        stats = {
+            "num_samples": sum(
+                stats.pop("num_samples", np.nan) for stats in worker_stats)
+        }
+
+        for stat_key in worker_stats[0]:
+            if isinstance(worker_stats[0], numbers.Number):
+                stats[stat_key] = np.nanmean(
+                    [s.get(stat_key, np.nan) for s in worker_stats])
+            else:
+                stats[stat_key] = worker_stats[0][stat_key]
+        return stats
 
     def shutdown(self):
         """
