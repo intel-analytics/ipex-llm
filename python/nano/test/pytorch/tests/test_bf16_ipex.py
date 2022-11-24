@@ -59,6 +59,8 @@ class Pytorch1_11:
         x = torch.rand((10, 3, 256, 256))
         bf16_model = InferenceOptimizer.quantize(model, precision='bf16',
                                                  use_ipex=True)
+        print("context manager")
+        print(type(bf16_model.context_manager))
         with bf16_model.context_manager:
             y_hat = bf16_model(x)
 

@@ -449,7 +449,7 @@ class TestInferencePipeline(TestCase):
                                direction="max",
                                search_mode="all")
         optim_dict = inference_opt.optimized_model_dict
-        for method, option in optim_dict:
+        for method, option in optim_dict.items():
             if option["status"] == "successful":
                 model = option["model"]
                 with model.context_manager:

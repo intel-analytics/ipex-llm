@@ -18,10 +18,13 @@ import torch
 
 
 class BaseContextManager(object):
-    no_grad = torch.no_grad()
+    """
+    No grad context manager for Pytorch Model Inference.
 
-    def __init__(self):
-        pass
+    This context manager is used for providing no_grad context only.
+    """
+
+    no_grad = torch.no_grad()
 
     def __enter__(self):
         self.no_grad.__enter__()
@@ -31,6 +34,13 @@ class BaseContextManager(object):
 
 
 class AutocastContextManager(BaseContextManager):
+    """
+    Autocast context manager for Pytorch Model Inference.
+
+    This context manager is used for providing no grad and autocast context,
+    which is used for bf16 model.
+    """
+
     autocast = torch.cpu.amp.autocast(enabled=True, dtype=torch.bfloat16)
 
     def __enter__(self):
