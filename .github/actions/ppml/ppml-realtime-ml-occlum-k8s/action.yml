@@ -38,7 +38,7 @@ runs:
         set -x
         echo "Download BigDL and image..."
         cd /home/sdp/heyang/data/occlum-k8s
-        git clone https://github.com/intel-analytics/BigDL.git
+        #git clone https://github.com/intel-analytics/BigDL.git
         cd BigDL/ppml/trusted-realtime-ml/scala/docker-occlum/kubernetes
         sudo docker pull $IMAGE
         echo "Download finish."
@@ -73,5 +73,5 @@ runs:
         echo "Modify config.yaml in master deployment pod..."
 
         kubectl get pods
-        rm -r /home/sdp/heyang/data/occlum-k8s/BigDL
+        #rm -r /home/sdp/heyang/data/occlum-k8s/BigDL
         helm uninstall $RELEASE_NAME
