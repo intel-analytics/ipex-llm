@@ -44,7 +44,7 @@ conda activate py37
 ---
 ## Install BigDL Orca
 
-In this section, we use `pip install` to install BigDL Orca package, which is the most recommended way to install.
+In this section, you can use `pip install` to install BigDL Orca package, which is the most recommended way to install.
 
 ### To use basic Orca features
 You can install Orca in your created conda environment for distributed data processing, training and inference with the following command:
@@ -126,6 +126,9 @@ __Note__: If necessary, you need to manually uninstall `pyspark` and other [depe
 
 ---
 ## Download BigDL Orca
+
+If you need BigDL release package, you can find the download link of LTS version and nightly build version for both Spark 2.4.6 and Spark 3.1.2 in the form below. Besides, you can use the [script](https://github.com/intel-analytics/BigDL/blob/main/docker/bigdl-k8s/download-bigdl.sh) to download by specifying the environment variables `BIGDL_VERSION` and `SPARK_VERSION`.
+
 <table border="1"
 cellpadding="10"
 >
@@ -139,12 +142,12 @@ cellpadding="10"
        <td>Spark 2.4.6 </td>
        <td><a href="https://repo1.maven.org/maven2/com/intel/analytics/bigdl/bigdl-assembly-spark_2.4.6/2.0.0/bigdl-assembly-spark_2.4.6-2.0.0.zip">download</a></td>
        <td><a href="https://repo1.maven.org/maven2/com/intel/analytics/bigdl/bigdl-assembly-spark_2.4.6/2.1.0/">download</a></td>
-       <td><a href="https://oss.sonatype.org/content/repositories/snapshots/com/intel/analytics/bigdl/bigdl-assembly-spark_2.4.6/2.2.0-SNAPSHOT/">download</a> or <a href="https://github.com/intel-analytics/BigDL/blob/main/docker/bigdl-k8s/download-bigdl.sh">script</a></td>
+       <td><a href="https://oss.sonatype.org/content/repositories/snapshots/com/intel/analytics/bigdl/bigdl-assembly-spark_2.4.6/2.2.0-SNAPSHOT/">download</a></td>
     </tr>
     <tr>
        <td>Spark 3.1.2 </td>
        <td><a href="https://repo1.maven.org/maven2/com/intel/analytics/bigdl/bigdl-assembly-spark_3.1.2/2.0.0/bigdl-assembly-spark_3.1.2-2.0.0.zip">download</a></td>
        <td><a href="https://repo1.maven.org/maven2/com/intel/analytics/bigdl/bigdl-assembly-spark_3.1.2/2.1.0/">download</a></td>
-       <td><a href="https://oss.sonatype.org/content/repositories/snapshots/com/intel/analytics/bigdl/bigdl-assembly-spark_3.1.2/2.2.0-SNAPSHOT/">download</a> or <a href="https://github.com/intel-analytics/BigDL/blob/main/docker/bigdl-k8s/download-bigdl.sh">script</a></td> 
+       <td><a href="https://oss.sonatype.org/content/repositories/snapshots/com/intel/analytics/bigdl/bigdl-assembly-spark_3.1.2/2.2.0-SNAPSHOT/">download</a></td> 
     </tr>
 </table>
