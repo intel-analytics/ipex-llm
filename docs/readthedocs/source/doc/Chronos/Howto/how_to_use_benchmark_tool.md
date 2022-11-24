@@ -2,7 +2,9 @@
 This page demonstrates how to use Chronos benchmark tool to benchmark forecasting performance on platforms.
 
 ## Basic Usage
-The benchmark tool is installed automatically when Chronos is installed using conda. To get preliminary knowledge of forecasting performance on platform, run benchmark tool with default options using following command:
+The benchmark tool is installed automatically when `bigdl-chronos` is installed. To get information about performance (currently for forecasting only) on the your own machine.
+
+Run benchmark tool with default options using following command:
 ```bash
 benchmark-chronos -l 96 -o 720
 ```
@@ -10,9 +12,9 @@ benchmark-chronos -l 96 -o 720
 .. note::
     **Required Options**:
 
-     **-l/--lookback** and **-o/--horizon** are required options for Chronos benchmark tool. Use **-l/--lookback** to specify the history time steps while use **-o/--horizon** to specify the output time steps.
+     **-l/--lookback** and **-o/--horizon** are required options for Chronos benchmark tool. Use **-l/--lookback** to specify the history time steps while use **-o/--horizon** to specify the output time steps. For more details, please refer to [here](https://bigdl.readthedocs.io/en/latest/doc/Chronos/Overview/forecasting.html#regular-regression-rr-style).
 ```
-By default, the tool will load `tsinghua_electricity` dataset and train a `TCNForecaster` with input lookback and horizon parameters under `pytroch` framework. As it loads, it prints information about hardware, Nano environment variables and benchmark parameters. When benchmarking is completed, it reports the average throughput during training process. Users may be able to improve forecasting performance by following suggested changes on Nano environment variables.
+By default, the tool will load `tsinghua_electricity` dataset and train a `TCNForecaster` with input lookback and horizon parameters under `PyTorch` framework. As it loads, it prints information about hardware, environment variables and benchmark parameters. When benchmarking is completed, it reports the average throughput during training process. Users may be able to improve forecasting performance by following suggested changes on Nano environment variables.
 
 Besides the default usage, more execution parameters can be set to obtain more benchmark results. Read on to learn more about the configuration options available in Chronos benchmark tool.
 
@@ -29,18 +31,28 @@ benchmark-chronos -m lstm -l 96 -o 720
 Regarding a model, training and inference stages are most concerned. By setting `-s/--stage` parameter, users can obtain knowledge of throughput during training (`-s train`), throughput during inference (`-s throughput`) and latency of inference (`-s latency`). If not specified, train is used as the default.
 ```bash
 benchmark-chronos -s latency -l 96 -o 720
-``` 
+```
 
 ### Dataset
 Several built-in datasets can be chosen, including nyc_taxi and tsinghua_electricity. If users are with poor Internet connection and hard to download dataset, run benchmark tool with `-d synthetic_dataset` to use synthetic dataset. Default to be tsinghua_electricity if `-d/--dataset` parameter is not specified.
 ```bash
 benchmark-chronos -d nyc_taxi -l 96 -o 720
-```  
+```
+```eval_rst
+.. note::
+    **Download tsinghua_electricity Dataset**:
+
+     The tsinghua_electricity dataset does not support automatic downloading. Users can download manually from "https://github.com/thuml/Autoformer#get-started" to "~/.chronos/dataset/" path.
+```
 
 ### Framework
-Pytorch and tensorflow are both supported and can be specified by setting `-f torch` or `-f tensorflow`. But Autoformer does not support tensorflow backend now. The default framework is pytorch.
+Pytorch and tensorflow are both supported and can be specified by setting `-f torch` or `-f tensorflow`. And the default framework is pytorch.
 ```bash
 benchmark-chronos -f tensorflow -l 96 -o 720
+```
+```eval_rst
+.. note::
+     NBeats and Autoformer does not support tensorflow backend now.
 ```
 
 ### Core number
@@ -67,15 +79,18 @@ Besides, number of processes and epoches can be set by `--training_processes` an
 benchmark-chronos --training_processes 2 --training_epochs 3 --training_batchsize 32 --inference_batchsize 128 -l 96 -o 720
 ```
 
-In order to benchmark the performance with accelerator, run the benchmark tool with `--ipex` enabled, then use intel-extension-for-pytorch as accelerator for trainer. If want to use quantized model to predict, just run the benchmark tool with `--quantize` enabled and the quantize framework can be specified by setting `--quantize_type`. Pytorch_fx, pytorch_ipex, onnxrt_qlinearops and openvino are supported currently while default quantize framework is pytorch_fx.
-```bash
-benchmark-chronos --ipex --quantize --quantize_type pytorch_ipex -l 96 -o 720
-```
-
 To speed up inference, accelerators like ONNXRuntime and OpenVINO are usually used. To benchmark inference performance with or without accelerator, run tool with `--inference_framework` to specify without accelerator (`--inference_framework torch`)or with ONNXRuntime (`--inference_framework onnx`) or with OpenVINO (`--inference_framework openvino`).
 ```bash
 benchmark-chronos --inference_framework onnx -l 96 -o 720
 ```
+
+When benchmark tool is run with `--ipex` enabled, then intel-extension-for-pytorch is used as accelerator for trainer. 
+
+If want to use quantized model to predict, just run the benchmark tool with `--quantize` enabled and the quantize framework can be specified by `--quantize_type`. The parameter`--quantize_type` need to be set as pytorch_ipex when users want to use pytorch_ipex as quantize type. Otherwise, the defaut quantize type will be selected according to `--inference_framework`. If pytorch is the inference framework, then pytorch_fx will be the default. If users choose ONNXRuntime as inference framework, onnxrt_qlinearops will be quantize type. And if OpenVINO is chosen, the openvino quantize type will be selected.
+```bash
+benchmark-chronos --ipex --quantize --quantize_type pytorch_ipex -l 96 -o 720
+```
+
 
 Moreover, if want to benchmark inference performance of a trained model, run benchmark tool with `--ckpt` to specify the checkpoint path of model. By default, the model for inference will be trained first according to input parameters.
 
