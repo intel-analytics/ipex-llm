@@ -43,7 +43,7 @@ if [ $framework == "basic" ];
 then
   # when framework is specified to "basic", nano will be installed without
   # any framework like Pytorch and TensorFlow
-  pip install --force-reinstall $install_options dist/${whl_name}
+  pip install $install_options dist/${whl_name}
 else
-  pip install --force-reinstall $install_options dist/${whl_name}[${framework}]
+  pip install $install_options dist/${whl_name}[${framework}]
 fi

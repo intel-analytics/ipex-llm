@@ -23,7 +23,7 @@ export WORKLOAD_DIR=${NANO_BENCHMARK_DIR}/torch_inference_optimizer
 set -e
 
 # install dependencies
-bash $ANALYTICS_ZOO_ROOT/python/nano/dev/build_and_install.sh linux default false pytorch,inference
+bash $ANALYTICS_ZOO_ROOT/python/nano/dev/build_and_install.sh linux default false pytorch,inference --force-reinstall
 
 # set nano's environment variables
 source bigdl-nano-unset-env
