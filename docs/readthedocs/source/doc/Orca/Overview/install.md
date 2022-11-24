@@ -127,7 +127,7 @@ __Note__: If necessary, you need to manually uninstall `pyspark` and other [depe
 ---
 ## Download BigDL Orca
 
-You can also download the BigDL package via the download links below. Besides, you can use the [script](https://github.com/intel-analytics/BigDL/blob/main/scripts/download-bigdl.sh) to download by specifying the environment variables `BIGDL_VERSION` and `SPARK_VERSION`.
+You can also download the BigDL package via the download links below. Besides, you can use the [script](https://github.com/intel-analytics/BigDL/blob/main/scripts/download-bigdl.sh) to download.
 
 <table border="1"
 cellpadding="10"
