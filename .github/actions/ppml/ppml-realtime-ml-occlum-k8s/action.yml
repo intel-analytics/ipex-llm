@@ -36,6 +36,7 @@ runs:
         export SGX_MEM_SIZE=32GB
         echo "Download BigDL and image..."
         cd /home/sdp/heyang/data/occlum-k8s
+        rm -rf BigDL
         git clone https://github.com/intel-analytics/BigDL.git
         cd BigDL/ppml/trusted-realtime-ml/scala/docker-occlum/kubernetes
         docker pull $IMAGE
