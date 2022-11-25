@@ -524,9 +524,12 @@ class PyTorchPySparkEstimator(BaseEstimator):
 
     def save(self, model_path, entire=False):
         """
-        Saves the Estimator state (including model and optimizer) to the provided model_path.
+        Saves the Estimator state (including model and optimizer) or the entire model
+        to the provided model_path.
 
         :param model_path: (str) Path to save the model.
+        :param entire: (boolean) Whether to save the entire model. If False, saves the
+               Estimator state. Default is False.
         :return:
         """
         if is_local_path(model_path):
@@ -550,7 +553,8 @@ class PyTorchPySparkEstimator(BaseEstimator):
 
     def load(self, model_path):
         """
-        Loads the Estimator state (including model and optimizer) from the provided model_path.
+        Loads the Estimator state (including model and optimizer) or the entire model
+        from the provided model_path.
 
         :param model_path: (str) Path to the existing model.
         """

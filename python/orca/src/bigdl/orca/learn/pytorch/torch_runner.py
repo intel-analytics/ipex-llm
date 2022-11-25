@@ -466,8 +466,13 @@ class TorchRunner(BaseRunner):
 
     def load_state_dict(self, state):
         """Sets the state of the model."""
-        for model, state_dict in zip(self.models, state["models"]):
-            model.load_state_dict(state_dict)
+        import collections
+        if isinstance(state, collections.OrderedDict):
+            for model, state_dict in zip(self.models, [state]):
+                model.load_state_dict(state_dict)
+        else:
+            for model, state_dict in zip(self.models, state["models"]):
+                model.load_state_dict(state_dict)
         if "optimizers" in state:
             for optimizer, state_dict in zip(self.optimizers, state["optimizers"]):
                 optimizer.load_state_dict(state_dict)
@@ -475,8 +480,8 @@ class TorchRunner(BaseRunner):
             for scheduler, state_dict in zip(self.schedulers,
                                              state["schedulers"]):
                 scheduler.load_state_dict(state_dict)
-
-        self.epochs = state["epoch"]
+        if "epoch" in state:
+            self.epochs = state["epoch"]
         if "operator" in state:
             self.training_operator.load_state_dict(state["operator"])
 
