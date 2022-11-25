@@ -1200,8 +1200,8 @@ class TestTSDataset(TestCase):
         tsdata = TSDataset.from_pandas(df,
                                        target_col='value',
                                        dt_col='datetime')
-        with pytest.raises(RuntimeError):
-            tsdata.get_cycle_length(aggregate='min', top_k=3)
+        # not meaningful, but no error should be raised.
+        tsdata.get_cycle_length(aggregate='min', top_k=3)
 
     @op_torch
     def test_lookback_equal_to_one(self):
