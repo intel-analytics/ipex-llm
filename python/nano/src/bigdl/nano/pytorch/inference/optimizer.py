@@ -345,7 +345,6 @@ class InferenceOptimizer(BaseInferenceOptimizer):
         print("==========================Start Optimization==========================")
         start_time = time.perf_counter()
         for idx, (method, available) in enumerate(available_dict.items()):
-            print(method, id(model))
             result_map[method] = {}
             if available is False:
                 result_map[method]["status"] = "lack dependency"
@@ -405,7 +404,7 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                                 try:
                                     result_map[method]["accuracy"] =\
                                         _accuracy_calculate_helper(acce_model, metric,
-                                                                validation_data)
+                                                                   validation_data)
                                 except Exception:
                                     traceback.print_exc()
                                     self._calculate_accuracy = False
@@ -413,17 +412,18 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                                         False,
                                         "Your metric is incompatible with validation_data or don't "
                                         "follow our given pattern. Our expected metric pattern is "
-                                        "as follows:\n1. a torchmetrics.Metric object\n2. a callable "
-                                        "object which takes prediction and target then returns a value"
-                                        " in this calling method `metric(pred, target)`\n3. a callable"
-                                        " object that takes model and validation_data (if "
-                                        "validation_data is not None) as input, and returns an accuracy"
-                                        " value in this calling method metric(model, data_loader) "
-                                        "(or metric(model) if validation_data is None).")
+                                        "as follows:\n1. a torchmetrics.Metric object\n2. a "
+                                        "callable object which takes prediction and target then "
+                                        "returns a value in this calling method: `metric(pred, "
+                                        "target)`\n3. a callable object that takes model and "
+                                        "validation_data (if validation_data is not None) as input,"
+                                        "and returns an accuracy value in this calling method: "
+                                        "metric(model, data_loader) (or metric(model) if "
+                                        "validation_data is None).")
                             else:
                                 result_map[method]["accuracy"] =\
                                     _accuracy_calculate_helper(acce_model, metric,
-                                                            validation_data)
+                                                               validation_data)
                     else:
                         result_map[method]["accuracy"] = None
 
