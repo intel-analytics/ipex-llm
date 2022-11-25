@@ -14,7 +14,6 @@ This design ensures plain text data only be used in SGX, while in all others sta
 
 To our knowledge, most existing big data frameworks or systems have already provided network or storage protection. You can find more details in [Secure Your Services](https://bigdl.readthedocs.io/en/latest/doc/PPML/QuickStart/secure_your_services.html).
 
-
 Please check with your admin or security department for security features and services available. We recommend building PPML applications based on the following conditions:
 
 1. If you have network and storage protection enabled, and you want to secure computation with SGX. Then you can directly migrate your application into SGX with BigDL PPML. Please jump to [Migrate existing applications with BigDL PPML](#1-migrate-existing-applications-with-bigdl-ppml).
