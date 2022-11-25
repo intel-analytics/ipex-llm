@@ -790,8 +790,8 @@ class InferenceOptimizer(BaseInferenceOptimizer):
         :return: Model with multi-instance inference acceleration.
         """
         p_num = num_processes
-        send_queues = [mp.SimpleQueue() for _ in range(p_num)]
-        recv_queues = [mp.SimpleQueue() for _ in range(p_num)]
+        send_queues = [mp.Queue() for _ in range(p_num)]
+        recv_queues = [mp.Queue() for _ in range(p_num)]
 
         KMP_AFFINITY = os.environ.get("KMP_AFFINITY", "")
         OMP_NUM_THREADS = os.environ.get("OMP_NUM_THREADS", "")
