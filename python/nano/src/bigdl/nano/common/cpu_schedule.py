@@ -15,23 +15,17 @@
 #
 
 
-import os
 from copy import deepcopy
 import subprocess
 import re
 from typing import Optional
 import platform
+import cpuinfo
 from bigdl.nano.utils.log4Error import invalidInputError
 
 
 def get_cgroup_cpuset():
-    if platform.system() == "Windows":
-        get_physical_core_args = ["wmic", "CPU",
-                                  "GET", "NumberOfCores", "/VALUE"]
-        cpu_set = [i for i in range(int(subprocess.check_output(
-            get_physical_core_args, universal_newlines=True).splitlines()[4].split("=")[1]))]
-    else:
-        cpu_set = list(range(os.cpu_count()))
+    cpu_set = list(range(cpuinfo.get_cpu_info()["count"]))
     return cpu_set
 
 
