@@ -114,8 +114,13 @@ subtrees:
                   - file: doc/Nano/Howto/Training/General/choose_num_processes_training
                   - file: doc/Nano/Howto/Inference/PyTorch/accelerate_pytorch_inference_onnx
                   - file: doc/Nano/Howto/Inference/PyTorch/accelerate_pytorch_inference_openvino
+                  - file: doc/Nano/Howto/Inference/PyTorch/accelerate_pytorch_inference_jit_ipex
                   - file: doc/Nano/Howto/Inference/PyTorch/quantize_pytorch_inference_inc
                   - file: doc/Nano/Howto/Inference/PyTorch/quantize_pytorch_inference_pot
+                  - file: doc/Nano/Howto/Inference/PyTorch/pytorch_save_and_load_ipex
+                  - file: doc/Nano/Howto/Inference/PyTorch/pytorch_save_and_load_jit
+                  - file: doc/Nano/Howto/Inference/PyTorch/pytorch_save_and_load_onnx
+                  - file: doc/Nano/Howto/Inference/PyTorch/pytorch_save_and_load_openvino
                   - file: doc/Nano/Howto/Inference/PyTorch/inference_optimizer_optimize
                   - file: doc/Nano/Howto/install_in_colab
                   - file: doc/Nano/Howto/windows_guide
