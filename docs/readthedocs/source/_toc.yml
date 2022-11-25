@@ -179,6 +179,7 @@ subtrees:
               - entries:
                 - file: doc/Chronos/Howto/windows_guide
                 - file: doc/Chronos/Howto/docker_guide_single_node
+                - file: doc/Chronos/Howto/how_to_use_benchmark_tool
                 - file: doc/Chronos/Howto/how_to_create_forecaster
                 - file: doc/Chronos/Howto/how_to_train_forecaster_on_one_node
                 - file: doc/Chronos/Howto/how_to_save_and_load_forecaster
