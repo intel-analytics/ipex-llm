@@ -162,7 +162,7 @@ def load_model(path, model: pl.LightningModule = None):
             state_dict = torch.load(checkpoint_path, map_location='cpu')
             model.load_state_dict(state_dict)
             # patch BaseContextMagager to original model to keep behaviour consitent
-            model.context_manager = BaseContextManager()
+            model.context_manager = BaseContextManager()  # type: ignore
             return model
         else:
             invalidInputError(False, "Key 'checkpoint' must be specified.")
