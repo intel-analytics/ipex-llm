@@ -677,7 +677,7 @@ jobs:
         runner-hosted-on: 'Shanghai'
 
   PPML-RealTime-ML-Graphene-K8s:
-    if: ${{ github.event.schedule || github.event.inputs.artifact == 'PPML-RealTime-ML-Graphene-K8s' || github.event.inputs.artifact == 'all' }} 
+    #if: ${{ github.event.schedule || github.event.inputs.artifact == 'PPML-RealTime-ML-Graphene-K8s' || github.event.inputs.artifact == 'all' }} 
     runs-on: [self-hosted, Vilvarin-root]
 
     steps:
