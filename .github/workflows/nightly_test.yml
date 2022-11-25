@@ -41,6 +41,10 @@ on:
         - PPML-Occlum-ExampleTests
         - PPML-spark-Local-Example-Tests-on-Gramine
         - PPML-spark-Local-SimpleQuery-Tests-on-Gramine
+        - PPML-RealTime-ML-Occlum
+        - PPML-RealTime-ML-Occlum-K8s
+        - PPML-RealTime-ML-Graphene
+        - PPML-RealTime-ML-Graphene-K8s
         - Colab-Python-Py37-Pytorch
         - Colab-Python-Py37-tf1
         - Colab-Python-Py37-tf2
@@ -612,7 +616,7 @@ jobs:
         runner-hosted-on: 'Shanghai'
 
   PPML-RealTime-ML-Occlum-K8s:
-    #if: ${{ github.event.schedule || github.event.inputs.artifact == 'PPML-RealTime-ML-Occlum-K8s' || github.event.inputs.artifact == 'all' }} 
+    if: ${{ github.event.schedule || github.event.inputs.artifact == 'PPML-RealTime-ML-Occlum-K8s' || github.event.inputs.artifact == 'all' }} 
     runs-on: [self-hosted, Vilvarin-root]
 
     steps:
@@ -672,8 +676,8 @@ jobs:
         runner-hosted-on: 'Shanghai'
 
   PPML-RealTime-ML-Graphene-K8s:
-    if: ${{ github.event.schedule || github.event.inputs.artifact == 'PPML-RealTime-ML-Graphene-K8s' || github.event.inputs.artifact == 'all' }} 
-    runs-on: [self-hosted, Vilvarin]
+    #if: ${{ github.event.schedule || github.event.inputs.artifact == 'PPML-RealTime-ML-Graphene-K8s' || github.event.inputs.artifact == 'all' }} 
+    runs-on: [self-hosted, Vilvarin-root]
 
     steps:
     - uses: actions/checkout@v3
@@ -908,6 +912,7 @@ jobs:
         type: job
         job-name: PPML-spark-Local-SimpleQuery-Tests-on-Gramine
         runner-hosted-on: 'Shanghai'
+
   Colab-Python-Py37-Pytorch:
     if: ${{ github.event.schedule || github.event.inputs.artifact == 'Colab-Python-Py37-Pytorch' || github.event.inputs.artifact == 'all' }}
     runs-on: [ self-hosted, Gondolin, ubuntu-20.04-lts ]
