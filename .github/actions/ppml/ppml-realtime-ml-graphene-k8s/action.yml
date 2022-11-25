@@ -17,9 +17,11 @@ runs:
       shell: bash
       env:
         DEFAULT_IMAGE: ${{ inputs.image }}:${{ inputs.image-tag }}
+      
+    - name: Test
+      shell: bash
       run: |
-        whoami
-        #export BRANCH=main
+        set -x
         export ENCLAVE_KEY_PATH=/home/icx/glorysdj/enclave-key.pem
         export DATA_PATH=/home/icx/glorysdj/data
         export KEYS_PATH=/home/icx/glorysdj/keys
@@ -32,10 +34,6 @@ runs:
         export https_proxy="$HTTPS_PROXY"
         source /etc/environment
 
-    - name: Test
-      shell: bash
-      run: |
-        set -x
         echo "### 1/5 Download BigDL and image..."
         cd /home/sdp/heyang/data
         rm -rf BigDL
