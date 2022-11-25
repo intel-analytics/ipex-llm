@@ -790,9 +790,8 @@ class InferenceOptimizer(BaseInferenceOptimizer):
         :return: Model with multi-instance inference acceleration.
         """
         p_num = num_processes
-        mgr = mp.Manager()
-        send_queues = [mgr.Queue() for _ in range(p_num)]
-        recv_queues = [mgr.Queue() for _ in range(p_num)]
+        send_queues = [mp.SimpleQueue() for _ in range(p_num)]
+        recv_queues = [mp.SimpleQueue() for _ in range(p_num)]
 
         KMP_AFFINITY = os.environ.get("KMP_AFFINITY", "")
         OMP_NUM_THREADS = os.environ.get("OMP_NUM_THREADS", "")
@@ -803,13 +802,13 @@ class InferenceOptimizer(BaseInferenceOptimizer):
             os.environ["OMP_NUM_THREADS"] = envs[i]['OMP_NUM_THREADS']
 
             p = mp.Process(target=_multi_instance_helper,
-                           args=(model, send_queues[i], recv_queues[i]))
+                           args=(model, send_queues[i], recv_queues[i]), daemon=True)
             p.start()
             ps.append(p)
         os.environ["KMP_AFFINITY"] = KMP_AFFINITY
         os.environ["OMP_NUM_THREADS"] = OMP_NUM_THREADS
 
-        return _MultiInstanceModel(model, ps, mgr, send_queues, recv_queues)
+        return _MultiInstanceModel(model, ps, send_queues, recv_queues)
 
 
 def _signature_check(function):
