@@ -72,10 +72,10 @@ function refresh_cmd(){
     }
 
     if(version=="stable"){
-        disable(inferences);
+        disable(inference);
     }
     else{
-        enable(inferences);
+        enable(inference);
     }
 
     //disable other buttons in cases
