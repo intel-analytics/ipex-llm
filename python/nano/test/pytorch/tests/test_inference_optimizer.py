@@ -462,6 +462,6 @@ class TestInferencePipeline(TestCase):
                 with model.context_manager:
                     pass
         # test get_best_model
-        model = inference_opt.get_best_model()
+        model, option = inference_opt.get_best_model()
         with model.context_manager:
             pass
