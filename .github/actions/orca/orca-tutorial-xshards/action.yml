@@ -4,6 +4,7 @@ runs:
   using: "composite"
   steps:
     - name: Setup Env
+      shell: bash
       run: |
         apt-get update
         apt-get install wget
@@ -12,7 +13,7 @@ runs:
       uses: actions/setup-python@v2
       with:
         python-version: '3.7'
-        
+
     - name: Install dependencies
       shell: bash
       run: |
@@ -20,6 +21,7 @@ runs:
         python -m pip install --upgrade setuptools==58.0.4
         
     - name: Run Test
+      shell: bash
       run: |
         conda remove -n orca-tutorial-xshards-py37 -y --all
         conda create -n orca-tutorial-xshards-py37 -y python==3.7.10 setuptools==58.0.4 -c ${GONDOLIN_CONDA_CHANNEL} --override-channels
