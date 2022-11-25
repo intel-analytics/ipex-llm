@@ -19,6 +19,7 @@ runs:
         DEFAULT_IMAGE: ${{ inputs.image }}:${{ inputs.image-tag }}
       run: |
         set -x
+        export IMAGE=${{ env.DEFAULT_IMAGE }}
         export http_proxy="$HTTP_PROXY"
         export https_proxy="$HTTPS_PROXY"
         source /etc/environment
@@ -33,7 +34,6 @@ runs:
         export SECURE_PASSWORD_PATH=/home/icx/glorysdj/password
         export RELEASE_NAME=ppml-graphene-k8s
         export SGX_MEM_SIZE=32GB
-        export IMAGE=${{ env.DEFAULT_IMAGE }}
 
         echo "### 1/5 Download BigDL and image..."
         cd /home/sdp/heyang/data
