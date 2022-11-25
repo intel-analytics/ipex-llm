@@ -230,7 +230,6 @@ def result(args, records):
         print(">>>>>>>>>>>>> accuracy result >>>>>>>>>>>>>")
 
 
-
 def main():
     # read input arguments
     # currently designed arguments
