@@ -84,6 +84,11 @@ class NCFData(data.Dataset):
 
 
 def process_users_items(dataset_dir):
+    sparse_features = ['gender', 'occupation', 'zipcode', 'category']
+    dense_features = ['age']
+    feature_cols = ['user', 'item'] + sparse_features + dense_features
+    label_cols = ["label"]
+
     users = pd.read_csv(
         os.path.join(dataset_dir, 'users.dat'),
         sep="::", header=None, names=['user', 'gender', 'age', 'occupation', 'zipcode'],
@@ -98,26 +103,31 @@ def process_users_items(dataset_dir):
     item_num = items['item'].max() + 1
 
     # categorical encoding
-    users.gender, _ = pd.Series(users.gender).factorize()
-    users.zipcode, _ = pd.Series(users.zipcode).factorize()
-    items.category, _ = pd.Series(items.category).factorize()
+    for i in sparse_features:
+        df = users if i in users.columns else items
+        df[i], _ = pd.Series(df[i]).factorize()
 
     # scale dense features
-    scaler = MinMaxScaler()
-    age = users.age.values.reshape(-1, 1)
-    age = scaler.fit_transform(age)
-    users.age = pd.Series(age[:, 0], dtype=np.float32)
-    return users, items, user_num, item_num
+    for i in dense_features:
+        scaler = MinMaxScaler()
+        df = users if i in users.columns else items
+        values = df[i].values.reshape(-1, 1)
+        values = scaler.fit_transform(values)
+        df[i] = pd.Series(values[:, 0], dtype=np.float32)
+
+    return users, items, user_num, item_num, \
+        sparse_features, dense_features, feature_cols+label_cols
 
 
-def get_sparse_feats_input_dims(users, items):
+def get_input_dims(users, items, sparse_features, dense_features):
     # Calculate input_dims for each sparse features
     sparse_feats_input_dims = []
-    sparse_feats_input_dims.append(users['gender'].max()+1)
-    sparse_feats_input_dims.append(users['occupation'].max()+1)
-    sparse_feats_input_dims.append(users['zipcode'].max()+1)
-    sparse_feats_input_dims.append(items['category'].max()+1)
-    return sparse_feats_input_dims
+    for i in sparse_features:
+        df = users if i in users.columns else items
+        sparse_feats_input_dims.append(df[i].max()+1)
+
+    num_dense_feats = len(dense_features)
+    return sparse_feats_input_dims, num_dense_feats
 
 
 def process_ratings(dataset_dir, user_num, item_num):
@@ -138,12 +148,8 @@ def load_dataset(dataset_dir, num_ng=4):
     dataset_dir: the path of the datasets;
     num_ng: number of negative samples to be sampled here.
     """
-    feature_cols = ['user', 'item',
-                    'gender', 'occupation', 'zipcode', 'category',  # sparse features
-                    'age']  # dense features
-    label_cols = ["label"]
-
-    users, items, user_num, item_num = process_users_items(dataset_dir)
+    users, items, user_num, item_num, sparse_features, dense_features, \
+        total_cols = process_users_items(dataset_dir)
     ratings, train_mat = process_ratings(dataset_dir, user_num, item_num)
 
     # sample negative items
@@ -154,7 +160,7 @@ def load_dataset(dataset_dir, num_ng=4):
     dataset.train_test_split()
 
     # merge features
-    dataset.merge_features(users, items, feature_cols+label_cols)
+    dataset.merge_features(users, items, total_cols)
 
     # convert datasets to list
     train_dataset, test_dataset = dataset.datasets_tolist()
