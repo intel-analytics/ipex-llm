@@ -58,9 +58,10 @@ class TorchAccelerationOption(AccelerationOption):
                  thread_num=None, logging=False, sample_size_for_pot=100):
         accelerator = self.get_accelerator()
         if self.get_precision() == "fp32":
-            # trace
-            if accelerator is None and self.ipex is False:
+            if accelerator is None and self.ipex is False and \
+                    self.channels_last is False:
                 return model
+            # trace
             if accelerator in ("jit", None):
                 acce_model = \
                     InferenceOptimizer.trace(model=model,
