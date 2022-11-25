@@ -365,6 +365,9 @@ class BasePytorchForecaster(Forecaster):
             if isinstance(data, tuple):
                 data = np_to_dataloader(data, batch_size, self.num_processes)
 
+            # training process
+            # forecaster_log_dir is a temp directory for training log
+            # validation_ckpt_dir is a temp directory for best checkpoint on validation data
             with TemporaryDirectory() as forecaster_log_dir:
                 with TemporaryDirectory() as validation_ckpt_dir:
                     from pytorch_lightning.loggers import CSVLogger
@@ -403,8 +406,11 @@ class BasePytorchForecaster(Forecaster):
                                       "otherwise performance will be degraded.")
 
                     # build internal according to use_trail_id for multi-objective HPO
-                    mo_hpo = self.tune_trainer.hposearcher.objective.mo_hpo
-                    if hasattr(self, "tune_trainer") and mo_hpo:
+                    mo_hpo = False
+                    if hasattr(self, "tune_trainer"):
+                        if self.tune_trainer.hposearcher.objective.mo_hpo:
+                            mo_hpo = True
+                    if mo_hpo:
                         invalidOperationError(self.tune_trainer.hposearcher.study,
                                               "You must tune before fit the model.")
                         invalidInputError(use_trial_id is not None,
