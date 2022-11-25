@@ -116,7 +116,11 @@ class InferenceOptimizer(BaseInferenceOptimizer):
             "int8": TorchAccelerationOption(inc=True),
             "int8_ipex": TorchAccelerationOption(inc=True, method="ipex"),
             "jit_fp32": TorchAccelerationOption(jit=True),
+            "jit_fp32_channels_last": TorchAccelerationOption(jit=True,
+                                                              channels_last=True),
             "jit_bf16": TorchAccelerationOption(jit=True, bf16=True),
+            "jit_bf16_channels_last": TorchAccelerationOption(jit=True, bf16=True,
+                                                              channels_last=True),
             "jit_fp32_ipex": TorchAccelerationOption(jit=True, ipex=True),
             "jit_fp32_ipex_channels_last": TorchAccelerationOption(jit=True, ipex=True,
                                                                    channels_last=True),
@@ -260,6 +264,10 @@ class InferenceOptimizer(BaseInferenceOptimizer):
         invalidInputError(isinstance(model, nn.Module), "model should be a nn module.")
         invalidInputError(direction in ['min', 'max'],
                           "Only support direction 'min', 'max'.")
+        invalidInputError(accelerator is None or isinstance(accelerator, tuple),
+                          "accelerator must be a tuple.")
+        invalidInputError(precision is None or isinstance(precision, tuple),
+                          "precison must be a tuple.")
         _check_accelerator = accelerator is None or all(
             ac in [None, 'onnxruntime', 'openvino', 'jit'] for ac in accelerator)
         invalidInputError(_check_accelerator is True,
