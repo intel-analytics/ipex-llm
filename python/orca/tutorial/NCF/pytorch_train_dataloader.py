@@ -22,7 +22,7 @@ import torch.nn as nn
 import torch.optim as optim
 import torch.utils.data as data
 
-from pytorch_dataset import load_dataset, process_users_items, get_sparse_feats_input_dims
+from pytorch_dataset import load_dataset, process_users_items, get_input_dims
 from pytorch_model import NCF
 
 from bigdl.orca import init_orca_context, stop_orca_context
@@ -51,8 +51,10 @@ def test_loader_func(config, batch_size):
 
 # Step 3: Define the model, optimizer and loss
 def model_creator(config):
-    users, items, user_num, item_num = process_users_items(config['dataset_dir'])
-    sparse_feats_input_dims = get_sparse_feats_input_dims(users, items)
+    users, items, user_num, item_num, sparse_features, dense_features, \
+        total_cols = process_users_items(config['dataset_dir'])
+    sparse_feats_input_dims, num_dense_feats = get_input_dims(users, items,
+                                                              sparse_features, dense_features)
     model = NCF(user_num=user_num,
                 item_num=item_num,
                 factor_num=config['factor_num'],
@@ -61,7 +63,7 @@ def model_creator(config):
                 model=config['model'],
                 sparse_feats_input_dims=sparse_feats_input_dims,
                 sparse_feats_embed_dims=config['sparse_feats_embed_dims'],
-                num_dense_feats=config['num_dense_feats'])
+                num_dense_feats=num_dense_feats)
     model.train()
     return model
 
@@ -87,8 +89,7 @@ est = Estimator.from_torch(model=model_creator, optimizer=optimizer_creator,
                                    'dropout': 0.5,
                                    'lr': 0.001,
                                    'model': "NeuMF-end",
-                                   'sparse_feats_embed_dims': 8,
-                                   'num_dense_feats': 1})
+                                   'sparse_feats_embed_dims': 8})
 est.fit(data=train_loader_func, epochs=10, batch_size=256)
 
 
