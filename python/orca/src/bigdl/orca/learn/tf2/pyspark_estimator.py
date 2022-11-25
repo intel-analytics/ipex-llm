@@ -545,7 +545,7 @@ class SparkTFEstimator():
         else:
             model = load_model(**self.load_params)
 
-        if set_weights:
+        if set_weights and self.model_weights is not None:
             model.set_weights(self.model_weights)
         return model
 
