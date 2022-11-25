@@ -74,7 +74,7 @@ Select your preferences in the panel below to find the proper install command. T
                 </tr>
 
                 <tr>
-                    <td colspan="1">Inference</td>
+                    <td colspan="1">Inference Optimization</td>
                     <td colspan="2" title="No need for low-latency inference models"><button id="inferenceno">No</button></td>
                     <td colspan="2" title="Get low-latency inference models with onnx\openvino\inc"><button id="inferenceyes">Yes</button></td>
                 </tr>

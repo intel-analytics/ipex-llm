@@ -71,6 +71,13 @@ function refresh_cmd(){
         enable(ais);
     }
 
+    if(version=="stable"){
+        disable(inferences);
+    }
+    else{
+        enable(inferences);
+    }
+
     //disable other buttons in cases
     if(package=="docker"){
         disable(functionalities);
