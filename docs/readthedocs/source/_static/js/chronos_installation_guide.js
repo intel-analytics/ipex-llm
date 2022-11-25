@@ -92,12 +92,12 @@ function refresh_cmd(){
         enable(hardwares);
         enable(automls);
 
-        if(version=="stable"){
-            disable(inferences);
-        }
-        else{
-            enable(inferences);
-        }
+    if(version=="stable"){
+        disable(inferences);
+    }
+    else{
+        enable(inferences);
+    }
 
         //change cmd according to different choices
         if(model=="Deep_learning_models"){
