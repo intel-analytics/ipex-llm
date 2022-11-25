@@ -37,7 +37,7 @@ First, you need to create a `PPMLContext`, which wraps `SparkSession` and provid
 
 If you are familiar with Spark, you may find that the usage of `PPMLContext` is very similar to Spark.
 
-### 2.1 Create PPMLContext
+#### 2.1 Create PPMLContext
 
 - create a PPMLContext with `appName`
 
@@ -246,7 +246,7 @@ If you are familiar with Spark, you may find that the usage of `PPMLContext` is 
 
   </details>
 
-### 2.2 Read and Write Files
+#### 2.2 Read and Write Files
 
 To read/write data, you should set the `CryptoMode`:
 
