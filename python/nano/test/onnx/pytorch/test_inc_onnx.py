@@ -173,6 +173,34 @@ class TestOnnx(TestCase):
         for x, y in train_loader:
             forward_res = loaded_onnx_model(x)
 
+    def text_onnx_quantize_context_manager(self):
+                model = ResNet18(10, pretrained=False, include_top=False, freeze=True)
+        loss = nn.CrossEntropyLoss()
+        optimizer = torch.optim.Adam(model.parameters(), lr=0.01)
+        trainer = Trainer(max_epochs=1)
+
+        pl_model = Trainer.compile(model, loss, optimizer)
+        x = torch.rand((10, 256, 256, 3))
+        y = torch.ones((10, ), dtype=torch.long)
+        ds = TensorDataset(x, y)
+        train_loader = DataLoader(ds, batch_size=2, collate_fn=customized_collate_fn)
+        trainer.fit(pl_model, train_loader)
+
+        # normal usage without tunning
+        onnx_model = InferenceOptimizer.quantize(pl_model,
+                                                 accelerator='onnxruntime',
+                                                 method='qlinear',
+                                                 calib_data=train_loader)
+        with onnx_model.context_manager:
+            output = onnx_model(x)
+        
+        with tempfile.TemporaryDirectory() as tmp_dir_name:
+            InferenceOptimizer.save(onnx_model, tmp_dir_name)
+            model = InferenceOptimizer.load(tmp_dir_name)
+
+        with model.context_manager:
+            output = model(x)
+
 
 if __name__ == '__main__':
     pytest.main([__file__])

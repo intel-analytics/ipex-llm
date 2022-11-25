@@ -20,6 +20,7 @@ from bigdl.nano.pytorch import InferenceOptimizer
 from torchvision.models.resnet import resnet18
 from unittest.mock import MagicMock, Mock, PropertyMock, patch
 from bigdl.nano.common import check_avx512
+import tempfile
 
 
 class CaseWithoutAVX512:
@@ -65,9 +66,11 @@ class Pytorch1_11:
             y_hat = bf16_model(x)
 
         assert y_hat.shape == (10, 10) and y_hat.dtype == torch.bfloat16
-        InferenceOptimizer.save(bf16_model, "bf16_model")
-        
-        load_model = InferenceOptimizer.load("bf16_model", model)
+
+        with tempfile.TemporaryDirectory() as tmp_dir_name:
+            InferenceOptimizer.save(bf16_model, tmp_dir_name)
+            load_model = InferenceOptimizer.load(tmp_dir_name)
+
         with load_model.context_manager:
             y_hat_ = load_model(x)
         assert y_hat_.shape == (10, 10) and y_hat_.dtype == torch.bfloat16
@@ -84,10 +87,12 @@ class Pytorch1_11:
             y_hat = bf16_model(x)
 
         assert y_hat.shape == (10, 10) and y_hat.dtype == torch.bfloat16
-        InferenceOptimizer.save(bf16_model, "bf16_model")
         
-        load_model = InferenceOptimizer.load("bf16_model")
-        with bf16_model.context_manager:
+        with tempfile.TemporaryDirectory() as tmp_dir_name:
+            InferenceOptimizer.save(bf16_model, tmp_dir_name)
+            load_model = InferenceOptimizer.load(tmp_dir_name)
+
+        with load_model.context_manager:
             y_hat_ = load_model(x)
         assert y_hat_.shape == (10, 10) and y_hat_.dtype == torch.bfloat16
         assert y_hat.equal(y_hat_)

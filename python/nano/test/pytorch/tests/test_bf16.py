@@ -21,6 +21,7 @@ from bigdl.nano.pytorch import InferenceOptimizer
 from torchvision.models.resnet import resnet18
 from unittest.mock import MagicMock, PropertyMock, patch
 from bigdl.nano.pytorch.utils import TORCH_VERSION_LESS_1_12
+import tempfile
 
 
 class Pytorch1_11:
@@ -124,21 +125,27 @@ class Pytorch1_12:
         with bf16_model.context_manager:
             y_hat1 = bf16_model(x)
         assert y_hat1.shape == (10, 10) and y_hat1.dtype == torch.bfloat16
-        InferenceOptimizer.save(bf16_model, "bf16_model")
-        bf16_model = InferenceOptimizer.load("bf16_model", model)
+
+        with tempfile.TemporaryDirectory() as tmp_dir_name:
+            InferenceOptimizer.save(bf16_model, tmp_dir_name)
+            bf16_model = InferenceOptimizer.load(tmp_dir_name)
+
         with bf16_model.context_manager:
             y_hat2 = bf16_model(x)
         assert y_hat2.shape == (10, 10) and y_hat2.dtype == torch.bfloat16
         assert y_hat1.equal(y_hat2)
-    
+
         # test bf16 + channels_last
         bf16_model = InferenceOptimizer.quantize(model, precision='bf16',
                                       channels_last=True)
         with bf16_model.context_manager:
             y_hat1 = bf16_model(x)
         assert y_hat1.shape == (10, 10) and y_hat1.dtype == torch.bfloat16
-        InferenceOptimizer.save(bf16_model, "bf16_model")
-        bf16_model = InferenceOptimizer.load("bf16_model", model)
+
+        with tempfile.TemporaryDirectory() as tmp_dir_name:
+            InferenceOptimizer.save(bf16_model, tmp_dir_name)
+            bf16_model = InferenceOptimizer.load(tmp_dir_name)
+
         with bf16_model.context_manager:
             y_hat2 = bf16_model(x)
         assert y_hat2.shape == (10, 10) and y_hat2.dtype == torch.bfloat16
