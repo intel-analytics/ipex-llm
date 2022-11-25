@@ -57,13 +57,6 @@ class ResNet18(nn.Module):
         return self.model(x)
 
 
-options = ["original", "fp32_channels_last", "fp32_ipex", "fp32_ipex_channels_last", "bf16",
-           "bf16_channels_last", "bf16_ipex", "bf16_ipex_channels_last", "int8", "int8_ipex",
-           "jit_fp32", "jit_bf16", "jit_fp32_ipex", "jit_fp32_ipex_channels_last",
-           "jit_bf16_ipex", "jit_bf16_ipex_channels_last", "openvino_fp32", "openvino_int8",
-           "onnxruntime_fp32", "onnxruntime_int8_qlinear", "onnxruntime_int8_integer"]
-
-
 def optimize():
     data_dir = "data"
     save_dir = "models"
@@ -75,6 +68,7 @@ def optimize():
         thread_num = int(os.environ["OMP_NUM_THREADS"])
     else:
         thread_num = None
+
     opt.optimize(
         model=model,
         training_data=loader,
@@ -83,6 +77,7 @@ def optimize():
     )
 
     os.makedirs(save_dir, exist_ok=True)
+    options = list(InferenceOptimizer.ALL_INFERENCE_ACCELERATION_METHOD.keys())
     for option in options:
         try:
             model = opt.get_model(option)

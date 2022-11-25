@@ -35,11 +35,7 @@ cd $WORKLOAD_DIR
 export OMP_NUM_THREADS=4
 taskset -c 0-3 python optimize.py
 
-options="original fp32_channels_last fp32_ipex fp32_ipex_channels_last bf16 \
-         bf16_channels_last bf16_ipex bf16_ipex_channels_last int8 int8_ipex \
-         jit_fp32 jit_bf16 jit_fp32_ipex jit_fp32_ipex_channels_last \
-         jit_bf16_ipex jit_bf16_ipex_channels_last openvino_fp32 openvino_int8 \
-         onnxruntime_fp32 onnxruntime_int8_qlinear onnxruntime_int8_integer"
+options=`python -c 'from bigdl.nano.pytorch import InferenceOptimizer; print(" ".join(InferenceOptimizer.ALL_INFERENCE_ACCELERATION_METHOD.keys()))'`
 
 for option in $options;
 do

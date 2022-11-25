@@ -39,44 +39,40 @@ class ResNet18(nn.Module):
         return self.model(x)
 
 
-options1 = ["original", "fp32_channels_last", "fp32_ipex", "fp32_ipex_channels_last", "bf16",
-            "bf16_channels_last", "bf16_ipex", "bf16_ipex_channels_last", "int8", "int8_ipex",
-            "jit_fp32", "jit_bf16", "jit_fp32_ipex", "jit_fp32_ipex_channels_last",
-            "jit_bf16_ipex", "jit_bf16_ipex_channels_last", ]
-options2 = ["openvino_fp32", "openvino_int8", "onnxruntime_fp32", "onnxruntime_int8_qlinear",
-            "onnxruntime_int8_integer"]
+options = list(InferenceOptimizer.ALL_INFERENCE_ACCELERATION_METHOD.keys())
+# if option is in sub_options, we can load it without original model,
+# otherwise, we have to load it with original model
+sub_options = ["openvino_fp32", "openvino_int8", "onnxruntime_fp32",
+               "onnxruntime_int8_qlinear", "onnxruntime_int8_integer"]
 
 
 def run(args):
     save_dir = "models"
     imgs = torch.rand((1000, 1, 3, 128, 128))
     opt = InferenceOptimizer()
-    if args.option in options1:
+    if args.option in options:
         try:
-            model = ResNet18(10)
-            model = opt.load(os.path.join(save_dir, args.option), model)
+            if args.option not in sub_options:
+                model = ResNet18(10)
+                model = opt.load(os.path.join(save_dir, args.option), model)
+            else:
+                model = opt.load(os.path.join(save_dir, args.option))
+            with torch.no_grad():
+                # warmup
+                for img in imgs[:10]:   
+                    _ = model(img)
+
+                st = time.time()
+                for img in imgs:
+                    _ = model(img)
+                end = time.time()
+            throughput = len(imgs) / (end - st)
         except Exception:
-            model = None
-    elif args.option in options2:
-        try:
-            model = opt.load(os.path.join(save_dir, args.option))
-        except Exception:
-            model = None
+            throughput = 0
+        print(f"Throughput: {throughput}")
     else:
         print(f"unkonwn option: {args.option}")
         sys.exit(-1)
-
-    if model is None:
-        throughput = 0
-    else:
-        st = time.time()
-        with torch.no_grad():
-            for img in imgs:
-                _ = model(img)
-        end = time.time()
-        throughput = len(imgs) / (end - st)
-
-    print(f"Throughput: {throughput}")
 
 
 if __name__ == '__main__':
