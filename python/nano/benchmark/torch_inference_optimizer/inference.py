@@ -59,7 +59,7 @@ def run(args):
                 model = opt.load(os.path.join(save_dir, args.option))
             with torch.no_grad():
                 # warmup
-                for img in imgs[:10]:   
+                for img in imgs[:10]:
                     _ = model(img)
 
                 st = time.time()
