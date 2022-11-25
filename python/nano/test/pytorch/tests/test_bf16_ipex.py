@@ -68,7 +68,7 @@ class Pytorch1_11:
 
         with tempfile.TemporaryDirectory() as tmp_dir_name:
             InferenceOptimizer.save(bf16_model, tmp_dir_name)
-            load_model = InferenceOptimizer.load(tmp_dir_name, bf16_model)
+            load_model = InferenceOptimizer.load(tmp_dir_name, model)
 
         with load_model.context_manager:
             y_hat_ = load_model(x)

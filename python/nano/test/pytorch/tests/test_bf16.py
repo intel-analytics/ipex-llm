@@ -128,25 +128,25 @@ class Pytorch1_12:
 
         with tempfile.TemporaryDirectory() as tmp_dir_name:
             InferenceOptimizer.save(bf16_model, tmp_dir_name)
-            bf16_model = InferenceOptimizer.load(tmp_dir_name)
+            load_model = InferenceOptimizer.load(tmp_dir_name, model)
 
-        with bf16_model.context_manager:
-            y_hat2 = bf16_model(x)
+        with load_model.context_manager:
+            y_hat2 = load_model(x)
         assert y_hat2.shape == (10, 10) and y_hat2.dtype == torch.bfloat16
         assert y_hat1.equal(y_hat2)
 
         # test bf16 + channels_last
         bf16_model = InferenceOptimizer.quantize(model, precision='bf16',
-                                      channels_last=True)
+                                                 channels_last=True)
         with bf16_model.context_manager:
             y_hat1 = bf16_model(x)
         assert y_hat1.shape == (10, 10) and y_hat1.dtype == torch.bfloat16
 
         with tempfile.TemporaryDirectory() as tmp_dir_name:
             InferenceOptimizer.save(bf16_model, tmp_dir_name)
-            bf16_model = InferenceOptimizer.load(tmp_dir_name)
+            load_model = InferenceOptimizer.load(tmp_dir_name, model)
 
-        with bf16_model.context_manager:
+        with load_model.context_manager:
             y_hat2 = bf16_model(x)
         assert y_hat2.shape == (10, 10) and y_hat2.dtype == torch.bfloat16
         assert y_hat1.equal(y_hat2)
