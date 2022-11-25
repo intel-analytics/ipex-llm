@@ -71,14 +71,6 @@ function refresh_cmd(){
         enable(ais);
     }
 
-    if(version!="nightly"){
-        disable(inferences);
-    }
-    else{
-        enable(inferences);
-    }
-
-
     //disable other buttons in cases
     if(package=="docker"){
         disable(functionalities);
@@ -99,6 +91,13 @@ function refresh_cmd(){
         enable(packages);
         enable(hardwares);
         enable(automls);
+        
+        if(version!="nightly"){
+            disable(inferences);
+        }
+        else{
+            enable(inferences);
+        }
 
         //change cmd according to different choices
         if(model=="Deep_learning_models"){
