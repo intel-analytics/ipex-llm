@@ -19,7 +19,7 @@ import numpy as np
 from unittest import TestCase
 
 from bigdl.chronos.detector.anomaly.ae_detector import AEDetector
-from ... import op_tf2
+from ... import op_torch, op_tf2
 
 
 class TestAEDetector(TestCase):
@@ -47,6 +47,7 @@ class TestAEDetector(TestCase):
         anomaly_indexes = ad.anomaly_indexes()
         assert len(anomaly_indexes) == int(ad.ratio * len(y))
 
+    @op_torch
     def test_ae_fit_score_rolled_pytorch(self):
         y = self.create_data()
         ad = AEDetector(roll_len=314, backend="torch")
@@ -66,6 +67,8 @@ class TestAEDetector(TestCase):
         anomaly_indexes = ad.anomaly_indexes()
         assert len(anomaly_indexes) == int(ad.ratio * len(y))
 
+    @op_torch
+    @op_tf2
     def test_corner_cases(self):
         y = self.create_data()
         ad = AEDetector(roll_len=314, backend="dummy")

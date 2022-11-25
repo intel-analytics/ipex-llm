@@ -129,11 +129,17 @@ class TestOnnx(TestCase):
         train_loader = DataLoader(ds, batch_size=2)
         trainer.fit(pl_model, train_loader)
 
-        onnx_model = trainer.trace(pl_model, accelerator="onnxruntime", input_sample=train_loader)
+        onnx_model = trainer.trace(pl_model,
+                                   accelerator="onnxruntime",
+                                   input_sample=train_loader,
+                                   thread_num=1)
 
         with tempfile.TemporaryDirectory() as tmp_dir_name:
             Trainer.save(onnx_model, tmp_dir_name)
             onnx_model_new = Trainer.load(tmp_dir_name)
+
+        assert onnx_model_new.session_options.intra_op_num_threads == 1
+        assert onnx_model_new.session_options.inter_op_num_threads == 1
 
         for x, y in train_loader:
             forward_res_onnx = onnx_model(x).numpy()

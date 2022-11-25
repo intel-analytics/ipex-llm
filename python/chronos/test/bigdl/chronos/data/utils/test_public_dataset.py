@@ -19,8 +19,11 @@ import pytest
 
 from unittest import TestCase
 from bigdl.chronos.data.utils.public_dataset import PublicDataset
+from ... import op_torch, op_tf2
 
 
+@op_torch
+@op_tf2
 class TestPublicDataset(TestCase):
     def setup_method(self, method):
         pass

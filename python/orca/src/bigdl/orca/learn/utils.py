@@ -165,19 +165,17 @@ def convert_predict_xshards_to_dataframe(df, pred_shards):
 
 def convert_predict_rdd_to_dataframe(df, prediction_rdd):
     from pyspark.sql import Row
-    from pyspark.sql.types import StructType, StructField, FloatType, ArrayType
-    from pyspark.ml.linalg import VectorUDT, Vectors
+    from pyspark.sql.types import FloatType, ArrayType
+    from pyspark.ml.linalg import Vectors
 
     def combine(pair):
         # list of np array
         if isinstance(pair[1], list):
             row = Row(*([pair[0][col] for col in pair[0].__fields__] +
                         [[Vectors.dense(elem) for elem in pair[1]]]))
-            return row, ArrayType(VectorUDT())
         # scalar
         elif len(pair[1].shape) == 0:
             row = Row(*([pair[0][col] for col in pair[0].__fields__] + [float(pair[1].item(0))]))
-            return row, FloatType()
         # np ndarray
         else:
             dim = len(pair[1].shape)
@@ -185,20 +183,17 @@ def convert_predict_rdd_to_dataframe(df, prediction_rdd):
                 # np 1-D array
                 row = Row(*([pair[0][col] for col in pair[0].__fields__] +
                             [Vectors.dense(pair[1])]))
-                return row, VectorUDT()
             else:
                 # multi-dimensional array
                 structType = FloatType()
                 for _ in range(dim):
                     structType = ArrayType(structType)
                 row = Row(*([pair[0][col] for col in pair[0].__fields__] + [pair[1].tolist()]))
-                return row, structType
+        return row
 
     combined_rdd = df.rdd.zip(prediction_rdd).map(combine)
-    type = combined_rdd.map(lambda data: data[1]).first()
-    result_rdd = combined_rdd.map(lambda data: data[0])
-    schema = StructType(df.schema.fields + [StructField('prediction', type)])
-    result_df = result_rdd.toDF(schema)
+    columns = df.columns + ["prediction"]
+    result_df = combined_rdd.toDF(columns)
     return result_df
 
 

@@ -78,6 +78,13 @@ def _get_args_parser() -> ArgumentParser:
     )
 
     parser.add_argument(
+        '--pod_epc_memory',
+        type=str,
+        default="34359738368",
+        help="The EPC memory allocated to the container (in bytes) if SGX mode is enabled"
+    )
+
+    parser.add_argument(
         '--volume',
         type=str,
         action='append',
@@ -97,7 +104,29 @@ def _get_args_parser() -> ArgumentParser:
         '--submit_pod_template',
         action='store_true',
         default=False,
-        help='If set, inidicate the main_scipt is a pod template yaml file'
+        help='If set, indicate the main_script is a pod template yaml file'
+    )
+
+    parser.add_argument(
+        '--use_command',
+        action="store_true",
+        default=False,
+        help="If set, the script will use the command line arguments as pod's entrypoint"
+    )
+
+    parser.add_argument(
+        '--sgx_enabled',
+        action="store_true",
+        default=False,
+        help="If set, the corresponding sgx-related device-plugin arguments will be added"
+    )
+
+    parser.add_argument(
+        '--node_label',
+        nargs=2,
+        action='append',
+        default=[],
+        help="choose which node to run with labels"
     )
 
     #
@@ -154,10 +183,14 @@ def _create_pod(pod_name: str,
                 driver_port: str,
                 app_id: str,
                 extra_envs: List[List[str]],
+                labels: List[List[str]],
                 pod_cpu: str,
                 pod_memory: str,
+                pod_epc_memory: str,
                 image: str,
                 command: str,
+                use_command: bool,
+                sgx_enabled: bool,
                 volume_strs: List[str],
                 volume_mount_strs: List[str],
                 pod_file_template_str: Optional[str]) -> client.V1Pod:
@@ -184,24 +217,52 @@ def _create_pod(pod_name: str,
             envs.append(
                 client.V1EnvVar(name=env[0], value=env[1]),
             )
-        resource = client.V1ResourceRequirements(limits={"cpu": pod_cpu,
-                                                         "memory": pod_memory},
-                                                 requests={"cpu": pod_cpu,
-                                                           "memory": pod_memory})
-        volumn_mounts = [_deserialize_volume_mounts_object(json_str, api_client)
+
+        node_selector = {}
+        for label in labels:
+            node_selector[label[0]] = label[1]
+
+        requests = {
+            "cpu": pod_cpu,
+            "memory": pod_memory,
+        }
+
+        limits = {
+            "cpu": pod_cpu,
+            "memory": pod_memory,
+        }
+        if sgx_enabled:
+            requests["sgx.intel.com/epc"] = pod_epc_memory
+            requests["sgx.intel.com/enclave"] = "1"
+            requests["sgx.intel.com/provision"] = "1"
+            limits["sgx.intel.com/enclave"] = "1"
+            limits["sgx.intel.com/provision"] = "1"
+            limits["sgx.intel.com/epc"] = pod_epc_memory
+        resource = client.V1ResourceRequirements(limits=limits,
+                                                 requests=requests)
+        volume_mounts = [_deserialize_volume_mounts_object(json_str, api_client)
                          for json_str in volume_mount_strs]
-        container = client.V1Container(name="pytorch",
-                                       image=image,
-                                       env=envs,
-                                       command=command,
-                                       resources=resource,
-                                       volume_mounts=volumn_mounts)
+        if use_command:
+            container = client.V1Container(name="pytorch",
+                                           image=image,
+                                           env=envs,
+                                           command=command,
+                                           resources=resource,
+                                           volume_mounts=volume_mounts)
+        else:
+            container = client.V1Container(name="pytorch",
+                                           image=image,
+                                           env=envs,
+                                           args=command,
+                                           resources=resource,
+                                           volume_mounts=volume_mounts)
 
         volumes = [_deserialize_volume_object(json_str, api_client) for json_str in volume_strs]
 
         pod_spec = client.V1PodSpec(containers=[container],
                                     restart_policy="Never",
-                                    volumes=volumes)
+                                    volumes=volumes,
+                                    node_selector=node_selector)
         pod_body = client.V1Pod(api_version='v1',
                                 metadata=metadata,
                                 kind='Pod',
@@ -291,10 +352,14 @@ def main():
                                       driver_port=service_port,
                                       app_id=app_id,
                                       extra_envs=args.env,
+                                      labels=args.node_label,
                                       pod_cpu=args.pod_cpu,
                                       pod_memory=args.pod_memory,
+                                      pod_epc_memory=args.pod_epc_memory,
                                       image=args.image,
                                       command=command,
+                                      use_command=args.use_command,
+                                      sgx_enabled=args.sgx_enabled,
                                       volume_strs=args.volume,
                                       volume_mount_strs=args.volume_mount,
                                       pod_file_template_str=template_json_str
