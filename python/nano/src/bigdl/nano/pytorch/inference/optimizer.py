@@ -377,6 +377,8 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                                                     func_test, acce_model, input_sample)
                     if status is False and method != "original":
                         result_map[method]["status"] = "early stopped"
+                        # save model even early stop
+                        result_map[method]["model"] = acce_model
                         torch.set_num_threads(default_threads)
                         continue
                 except Exception:
@@ -452,6 +454,7 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                  timeout: Optional[int] = None,
                  max_trials: Optional[int] = None,
                  input_sample=None,
+                 channels_last: bool = False,
                  thread_num: Optional[int] = None,
                  onnxruntime_session_options=None,
                  openvino_config=None,
@@ -516,6 +519,11 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                             "timeout=0, max_trials=1" means it will try quantization only once and
                             return satisfying best model.
         :param input_sample:      An input example to convert pytorch model into ONNX/OpenVINO/JIT.
+        :param channels_last: Whether use channels last memory format, i.e. NHWC (batch size,
+                              height, width, channels), as an alternative way to store tensors in
+                              classic/contiguous NCHW order, only valid when precision='bf16',
+                              otherwise will be ignored. This setting only works for 4-dim Tensor.
+                              Default: ``False``.
         :param thread_num: (optional) a int represents how many threads(cores) is needed for
                            inference, only valid for accelerator='onnxruntime'
                            or accelerator='openvino'.
@@ -543,14 +551,10 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                         invalidInputError(not TORCH_VERSION_LESS_1_10,
                                           "torch version should >=1.10 to use ipex")
                     use_jit = (accelerator == "jit")
-                    channels_last = export_kwargs["channels_last"] \
-                        if "channels_last" in export_kwargs else None
                     return PytorchIPEXJITBF16Model(model, input_sample=input_sample,
                                                    use_ipex=use_ipex, use_jit=use_jit,
                                                    channels_last=channels_last)
                 else:
-                    channels_last = export_kwargs["channels_last"] \
-                        if "channels_last" in export_kwargs else None
                     bf16_model = BF16Model(model, channels_last=channels_last)
                     return bf16_model
             else:
@@ -683,6 +687,7 @@ class InferenceOptimizer(BaseInferenceOptimizer):
               input_sample=None,
               accelerator: Optional[str] = None,
               use_ipex: bool = False,
+              channels_last: bool = False,
               thread_num: Optional[int] = None,
               onnxruntime_session_options=None,
               openvino_config=None,
@@ -694,30 +699,31 @@ class InferenceOptimizer(BaseInferenceOptimizer):
 
         For example, this function returns a PytorchOpenVINOModel when accelerator=='openvino'.
 
-        :param model: An torch.nn.Module model, including pl.LightningModule.
+        :param model: A torch.nn.Module model, including pl.LightningModule.
         :param input_sample: A set of inputs for trace, defaults to None if you have trace before or
                              model is a LightningModule with any dataloader attached.
         :param accelerator: The accelerator to use, defaults to None meaning staying in Pytorch
                             backend. 'openvino', 'onnxruntime' and 'jit' are supported for now.
-        :param use_ipex: whether we use ipex as accelerator for inferencing. default: False.
-        :param thread_num: (optional) a int represents how many threads(cores) is needed for
+        :param use_ipex: Whether we use ipex as accelerator for inferencing. default: False.
+        :param channels_last: Whether use channels last memory format, i.e. NHWC (batch size,
+                              height, width, channels), as an alternative way to store tensors in
+                              classic/contiguous NCHW order. This setting only works for 4-dim
+                              Tensor. Default: ``False``.
+        :param thread_num: (optional) A int represents how many threads(cores) is needed for
                            inference, only valid for accelerator='onnxruntime'
                            or accelerator='openvino'.
         :param onnxruntime_session_options: The session option for onnxruntime, only valid when
                                             accelerator='onnxruntime', otherwise will be ignored.
         :param openvino_config: The config to be inputted in core.compile_model. Only valid when
                                 accelerator='openvino', otherwise will be ignored.
-        :param simplification: whether we use onnxsim to simplify the ONNX model, only valid when
+        :param simplification: Whether we use onnxsim to simplify the ONNX model, only valid when
                                accelerator='onnxruntime', otherwise will be ignored. If this option
                                is set to True, new dependency 'onnxsim' need to be installed.
-        :param logging: whether to log detailed information of model conversion, only valid when
+        :param logging: Whether to log detailed information of model conversion, only valid when
                         accelerator='openvino', otherwise will be ignored. Default: ``True``.
-        :param **kwargs: other extra advanced settings include
-                         1. those be passed to torch.onnx.export function, only valid when
-                         accelerator='onnxruntime'/'openvino', otherwise will be ignored.
-                         2. if channels_last is set and `use_ipex=True`, we will transform the
-                         data to be channels last according to the setting. Defaultly, channels_last
-                         will be set to ``True`` if `use_ipex=True`.
+        :param **kwargs: Other extra advanced settings include those be passed to torch.onnx.export
+                         function, only valid when accelerator='onnxruntime'/'openvino', otherwise
+                         will be ignored.
         :return: Model with different acceleration.
         """
         invalidInputError(
@@ -740,8 +746,6 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                     onnxruntime_session_options.inter_op_num_threads = thread_num
             return PytorchONNXRuntimeModel(model, input_sample, onnxruntime_session_options,
                                            simplification=simplification, **export_kwargs)
-        channels_last = export_kwargs["channels_last"]\
-            if "channels_last" in export_kwargs else None
         if accelerator == 'jit' or use_ipex is True or channels_last is True:
             if use_ipex:
                 invalidInputError(not TORCH_VERSION_LESS_1_10,
