@@ -28,6 +28,7 @@ on:
         - Orca-Python-ExampleTest-Ray-Py37-Spark3
         - Orca-Python-ExampleTest-Horovod-Pytorch-Py37-Spark3
         - Orca-Python-ExampleTest-Horovod-Tf-Py37-Spark3
+        - Orca-Python-Rayonspark-Tf2-Py37
         - Dllib-Scala-UT
         - Friesian-Scala-UT
         - Friesian-Python-Py37-Spark3
@@ -331,7 +332,7 @@ jobs:
         runner-hosted-on: 'Shanghai'
 
   Orca-Python-Rayonspark-Tf2-Py37:
-    if: ${{ github.event.schedule || github.event.inputs.artifact == 'Orca-Python-Rayonspark-Tf2-Py37' || github.event.inputs.artifact == 'all' }}
+    #if: ${{ github.event.schedule || github.event.inputs.artifact == 'Orca-Python-Rayonspark-Tf2-Py37' || github.event.inputs.artifact == 'all' }}
     runs-on: [self-hosted, Gondolin, ubuntu-20.04-lts]
 
     steps:

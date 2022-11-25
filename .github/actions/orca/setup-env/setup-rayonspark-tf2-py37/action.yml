@@ -11,7 +11,7 @@ runs:
     - name: Install dependencies
       shell: bash
       run: |
-        apt-get update
+        #apt-get update
         apt-get install wget
 
     - name: Setup env
@@ -29,7 +29,7 @@ runs:
         wget https://raw.githubusercontent.com/analytics-zoo/BigDL/main/python/test/python-requirements/requirements-orca-python-ray.txt -O ${{ github.workspace }}/requirements-orca-python-ray.txt
         pip uninstall -r ${{ github.workspace }}/requirements-orca-python-ray.txt -y
         pip install -i ${GONDOLIN_PIP_MIRROR} --trusted-host ${GONDOLIN_TRUSTED_HOST} -r ${{ github.workspace }}/requirements-orca-python-ray.txt 
-        pip install cmake==3.16.3
+        pip install -i ${GONDOLIN_PIP_MIRROR} --trusted-host ${GONDOLIN_TRUSTED_HOST} cmake==3.16.3
  
       env:
         BIGDL_ROOT: ${{ github.workspace }}
