@@ -184,7 +184,7 @@ class TestTrainer(TestCase):
         
         with tempfile.TemporaryDirectory() as tmp_dir_name:
             InferenceOptimizer.save(qmodel, tmp_dir_name)
-            model = InferenceOptimizer.load(tmp_dir_name)
+            model = InferenceOptimizer.load(tmp_dir_name, pl_model)
 
         with model.context_manager:
             out = model(x)

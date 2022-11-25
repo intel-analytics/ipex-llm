@@ -60,8 +60,7 @@ class Pytorch1_11:
         x = torch.rand((10, 3, 256, 256))
         bf16_model = InferenceOptimizer.quantize(model, precision='bf16',
                                                  use_ipex=True)
-        print("context manager")
-        print(type(bf16_model.context_manager))
+
         with bf16_model.context_manager:
             y_hat = bf16_model(x)
 
@@ -69,7 +68,7 @@ class Pytorch1_11:
 
         with tempfile.TemporaryDirectory() as tmp_dir_name:
             InferenceOptimizer.save(bf16_model, tmp_dir_name)
-            load_model = InferenceOptimizer.load(tmp_dir_name)
+            load_model = InferenceOptimizer.load(tmp_dir_name, bf16_model)
 
         with load_model.context_manager:
             y_hat_ = load_model(x)
