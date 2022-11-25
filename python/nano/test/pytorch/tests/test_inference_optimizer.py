@@ -458,10 +458,10 @@ class TestInferencePipeline(TestCase):
         # test get_model
         for method in list(InferenceOptimizer.ALL_INFERENCE_ACCELERATION_METHOD.keys()):
             if "model" in optim_dict[method]:
-                model = optim_dict.get_model(method)
+                model = inference_opt.get_model(method)
                 with model.context_manager:
-                        pass
+                    pass
         # test get_best_model
-        model = optim_dict.get_best_model()
+        model = inference_opt.get_best_model()
         with model.context_manager:
-                        pass
+            pass
