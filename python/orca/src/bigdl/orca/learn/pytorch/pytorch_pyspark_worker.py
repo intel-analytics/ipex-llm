@@ -147,7 +147,7 @@ class PytorchPysparkWorker(TorchRunner):
         if self.model_dir is not None:
             return [stats_list]
         else:
-            return state_dict, [stats_list]
+            return [state_dict, stats_list]
 
     def validate(self, data_creator, batch_size=32, num_steps=None, profile=False,
                  info=None, wrap_dataloader=None):

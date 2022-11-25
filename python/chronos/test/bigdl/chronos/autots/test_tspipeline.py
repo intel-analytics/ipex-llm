@@ -17,16 +17,18 @@
 import numpy as np
 from unittest import TestCase
 import pytest
-import torch
+from bigdl.chronos.utils import LazyImport
+torch = LazyImport('torch')
+TensorDataset = LazyImport('torch.utils.data.TensorDataset')
+DataLoader = LazyImport('torch.utils.data.DataLoader')
+TSPipeline = LazyImport('bigdl.chronos.autots.tspipeline.TSPipeline')
 import os
 import pandas as pd
 import numpy as np
 
-from torch.utils.data import TensorDataset, DataLoader
-from bigdl.chronos.autots import TSPipeline
 from bigdl.chronos.data import TSDataset
 
-from .. import op_all, op_onnxrt16
+from .. import op_torch, op_inference
 
 def train_data_creator(config):
     return DataLoader(TensorDataset(torch.randn(1000,
@@ -64,6 +66,7 @@ def get_test_tsdataset():
                                  extra_feature_col=["extra feature 1", "extra feature 2"],
                                  id_col="id")
 
+@op_torch
 class TestTSPipeline(TestCase):
 
     def setUp(self) -> None:
@@ -72,8 +75,7 @@ class TestTSPipeline(TestCase):
     def tearDown(self) -> None:
         pass
 
-    @op_all
-    @op_onnxrt16
+    @op_inference
     def test_seq2seq_tsppl_support_dataloader(self):
         # load
         tsppl_seq2seq = TSPipeline.load(
@@ -177,8 +179,7 @@ class TestTSPipeline(TestCase):
         with pytest.raises(RuntimeError):
             yhat = tsppl_lstm.predict(data=get_test_tsdataset(), batch_size=16)
 
-    @op_all
-    @op_onnxrt16
+    @op_inference
     def test_tsppl_quantize_data_creator(self):
         # s2s not support quantize
         with pytest.raises(RuntimeError):
@@ -223,6 +224,7 @@ class TestTSPipeline(TestCase):
         assert q_yhat.shape == yhat.shape == q_onnx_yhat.shape
         assert all([np.mean(q_smape)<100., np.mean(q_onnx_smape)<100., np.mean(smape)<100.])
 
+    @op_inference
     def test_tsppl_quantize_input_data(self):
         tsppl_tcn = TSPipeline.load(os.path.join(self.resource_path,
                                                  "tsppl_ckpt/tcn_tsppl_ckpt"))
@@ -243,6 +245,7 @@ class TestTSPipeline(TestCase):
                                metric='smape',
                                approach='static')
 
+    @op_inference
     def test_tsppl_quantize_public_dataset(self):
         tsppl_tcn = TSPipeline.load(os.path.join(self.resource_path,
                                                  "tsppl_ckpt/tcn_tsppl_ckpt"))

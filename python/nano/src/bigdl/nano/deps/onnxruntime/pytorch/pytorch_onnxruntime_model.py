@@ -18,6 +18,7 @@ import os
 from pathlib import Path
 from tempfile import TemporaryDirectory
 from ..core.onnxruntime_model import ONNXRuntimeModel
+import onnxruntime  # should be put behind core's import
 from bigdl.nano.utils.inference.pytorch.model import AcceleratedLightningModule
 from bigdl.nano.utils.inference.pytorch.model_utils import export_to_onnx, get_forward_args
 from bigdl.nano.utils.log4Error import invalidInputError
@@ -82,7 +83,9 @@ class PytorchONNXRuntimeModel(ONNXRuntimeModel, AcceleratedLightningModule):
     @property
     def status(self):
         status = super().status
-        status.update({"onnx_path": 'onnx_saved_model.onnx'})
+        status.update({"onnx_path": 'onnx_saved_model.onnx',
+                       "intra_op_num_threads": self.session_options.intra_op_num_threads,
+                       "inter_op_num_threads": self.session_options.inter_op_num_threads})
         return status
 
     @staticmethod
@@ -102,7 +105,11 @@ class PytorchONNXRuntimeModel(ONNXRuntimeModel, AcceleratedLightningModule):
             invalidInputError(False,
                               "nano_model_meta.yml must specify 'onnx_path' for loading.")
         onnx_path = Path(path) / status['onnx_path']
-        return PytorchONNXRuntimeModel(str(onnx_path))
+        onnxruntime_session_options = onnxruntime.SessionOptions()
+        onnxruntime_session_options.intra_op_num_threads = status['intra_op_num_threads']
+        onnxruntime_session_options.inter_op_num_threads = status['inter_op_num_threads']
+        return PytorchONNXRuntimeModel(str(onnx_path),
+                                       onnxruntime_session_options=onnxruntime_session_options)
 
     def _save_model(self, path):
         onnx_path = Path(path) / self.status['onnx_path']

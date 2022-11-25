@@ -108,7 +108,6 @@ class PyTorchRayEstimator(OrcaRayEstimator):
             metrics=None,
             scheduler_creator=None,
             training_operator_cls=TrainingOperator,
-            initialization_hook=None,
             config=None,
             scheduler_step_freq="batch",
             use_tqdm=False,
@@ -144,7 +143,6 @@ class PyTorchRayEstimator(OrcaRayEstimator):
                               "If a loss_creator is not provided, you must "
                               "provide a custom training operator.")
 
-        self.initialization_hook = initialization_hook
         self.config = {} if config is None else config
         worker_config = copy.copy(self.config)
         params = dict(

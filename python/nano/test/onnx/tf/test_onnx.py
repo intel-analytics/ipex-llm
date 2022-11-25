@@ -52,11 +52,14 @@ class TestONNX(TestCase):
 
         # trace a Keras model
         spec = tf.TensorSpec((None, 224, 224, 3), tf.float32)
-        onnx_model = model.trace(accelerator='onnxruntime', input_sample=spec)
+        onnx_model = model.trace(accelerator='onnxruntime', input_sample=spec, thread_num=1)
 
         with tempfile.TemporaryDirectory() as tmp_dir_name:
             onnx_model._save(tmp_dir_name)
             new_onnx_model = KerasONNXRuntimeModel._load(tmp_dir_name)
+
+        assert new_onnx_model.session_options.intra_op_num_threads == 1
+        assert new_onnx_model.session_options.inter_op_num_threads == 1
 
         preds1 = onnx_model(input_examples).numpy()
         preds2 = new_onnx_model(input_examples).numpy()

@@ -20,6 +20,7 @@ import numpy as np
 
 from unittest import TestCase
 from bigdl.chronos.data.utils.deduplicate import deduplicate_timeseries_dataframe
+from ... import op_torch, op_tf2
 
 
 def get_duplicated_ugly_ts_df():
@@ -32,6 +33,8 @@ def get_duplicated_ugly_ts_df():
     return df
 
 
+@op_torch
+@op_tf2
 class TestDeduplicateTimeSeries(TestCase):
     def setup_method(self, method):
         self.df = get_duplicated_ugly_ts_df()

@@ -89,7 +89,7 @@ def throughput(args, model_path, forecaster, train_loader, test_loader, records)
 
     # predict with onnx
     if 'onnx' in args.inference_framework:
-        if args.cores:
+        if args.cores and not args.quantize:
             forecaster.build_onnx(thread_num=args.cores)
         st = time.time()
         yhat = forecaster.predict_with_onnx(test_loader, quantize=args.quantize)
@@ -98,7 +98,7 @@ def throughput(args, model_path, forecaster, train_loader, test_loader, records)
 
     # predict with openvino
     if 'openvino' in args.inference_framework:
-        if args.cores:
+        if args.cores and not args.quantize:
             forecaster.build_openvino(thread_num=args.cores)
         st = time.time()
         yhat = forecaster.predict_with_openvino(test_loader, quantize=args.quantize)
@@ -152,7 +152,7 @@ def latency(args, model_path, forecaster, train_loader, test_loader, records):
 
     # predict with onnx
     if 'onnx' in args.inference_framework:
-        if args.cores:
+        if args.cores and not args.quantize:
             forecaster.build_onnx(thread_num=args.cores)
         for x, y in test_loader:
             st = time.time()
@@ -163,7 +163,7 @@ def latency(args, model_path, forecaster, train_loader, test_loader, records):
 
     # predict with openvino
     if 'openvino' in args.inference_framework:
-        if args.cores:
+        if args.cores and not args.quantize:
             forecaster.build_openvino(thread_num=args.cores)
         for x, y in test_loader:
             st = time.time()

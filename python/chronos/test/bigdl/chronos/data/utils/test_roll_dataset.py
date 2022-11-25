@@ -19,7 +19,9 @@ import numpy as np
 import pandas as pd
 import random
 from bigdl.chronos.data import TSDataset
-from bigdl.chronos.data.utils.roll_dataset import RollDataset
+from bigdl.chronos.utils import LazyImport
+RollDataset = LazyImport('bigdl.chronos.data.utils.roll_dataset.RollDataset')
+from ... import op_torch
 
 
 def get_ts_df():
@@ -41,6 +43,7 @@ def get_multi_id_ts_df():
     return train_df
 
 
+@op_torch
 class TestRollDataset:
 
     @staticmethod

@@ -14,14 +14,16 @@
 # limitations under the License.
 #
 
-from bigdl.chronos.autots.model.auto_prophet import AutoProphet
+from bigdl.chronos.utils import LazyImport
+AutoProphet = LazyImport('bigdl.chronos.autots.model.auto_prophet.AutoProphet')
+hp = LazyImport('bigdl.orca.automl.hp')
 
 import os
 import numpy as np
 import pandas as pd
 import tempfile
 from unittest import TestCase
-from bigdl.orca.automl import hp
+from ... import op_distributed, op_diff_set_all
 
 
 def get_data():
@@ -32,6 +34,8 @@ def get_data():
     return data, expect_horizon
 
 
+@op_distributed
+@op_diff_set_all
 class TestAutoProphet(TestCase):
     def setUp(self) -> None:
         from bigdl.orca import init_orca_context
