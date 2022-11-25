@@ -19,15 +19,7 @@ runs:
         DEFAULT_IMAGE: ${{ inputs.image }}:${{ inputs.image-tag }}
       run: |
         whoami
-        
-        export ENCLAVE_KEY_PATH=/home/icx/glorysdj/enclave-key.pem
-        export DATA_PATH=/home/icx/glorysdj/data
-        export KEYS_PATH=/home/icx/glorysdj/keys
-        export SECURE_PASSWORD_PATH=/home/icx/glorysdj/password
-        export RELEASE_NAME=ppml-occlum-k8s
-        export SGX_MEM_SIZE=32GB
         export IMAGE=${{ env.DEFAULT_IMAGE }}
-
         export http_proxy="$HTTP_PROXY"
         export https_proxy="$HTTPS_PROXY"
         
@@ -36,6 +28,12 @@ runs:
       shell: bash
       run: |
         set -x
+        export ENCLAVE_KEY_PATH=/home/icx/glorysdj/enclave-key.pem
+        export DATA_PATH=/home/icx/glorysdj/data
+        export KEYS_PATH=/home/icx/glorysdj/keys
+        export SECURE_PASSWORD_PATH=/home/icx/glorysdj/password
+        export RELEASE_NAME=ppml-occlum-k8s
+        export SGX_MEM_SIZE=32GB
         echo "Download BigDL and image..."
         cd /home/sdp/heyang/data/occlum-k8s
         git clone https://github.com/intel-analytics/BigDL.git
