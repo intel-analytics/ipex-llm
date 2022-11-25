@@ -448,9 +448,20 @@ class TestInferencePipeline(TestCase):
                                metric=self.metric,
                                direction="max",
                                search_mode="all")
+        # test builtin optimized_model_dict
         optim_dict = inference_opt.optimized_model_dict
         for method, option in optim_dict.items():
             if option["status"] == "successful":
                 model = option["model"]
                 with model.context_manager:
                     pass
+        # test get_model
+        for method in list(InferenceOptimizer.ALL_INFERENCE_ACCELERATION_METHOD.keys()):
+            if "model" in optim_dict[method]:
+                model = optim_dict.get_model(method)
+                with model.context_manager:
+                        pass
+        # test get_best_model
+        model = optim_dict.get_best_model()
+        with model.context_manager:
+                        pass

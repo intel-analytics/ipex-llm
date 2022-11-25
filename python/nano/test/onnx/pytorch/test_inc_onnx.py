@@ -174,7 +174,7 @@ class TestOnnx(TestCase):
             forward_res = loaded_onnx_model(x)
 
     def text_onnx_quantize_context_manager(self):
-                model = ResNet18(10, pretrained=False, include_top=False, freeze=True)
+        model = ResNet18(10, pretrained=False, include_top=False, freeze=True)
         loss = nn.CrossEntropyLoss()
         optimizer = torch.optim.Adam(model.parameters(), lr=0.01)
         trainer = Trainer(max_epochs=1)
