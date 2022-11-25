@@ -10,9 +10,9 @@ Basic design guidelines for PPML applications are as follows:
 
 This design ensures plain text data only be used in SGX, while in all others stages data is fully encrypted.
 
-To our knowledge, most existing big data frameworks or systems have already provided network or storage protection. You can find more details in [Secure Your Services](https://bigdl.readthedocs.io/en/latest/doc/PPML/QuickStart/secure_your_services.html).
-
 ![](../images/ppml_dev_basic.png)
+
+To our knowledge, most existing big data frameworks or systems have already provided network or storage protection. You can find more details in [Secure Your Services](https://bigdl.readthedocs.io/en/latest/doc/PPML/QuickStart/secure_your_services.html).
 
 
 Please check with your admin or security department for security features and services available. We recommend building PPML applications based on the following conditions:
@@ -29,7 +29,6 @@ You can find more details in these articles:
 * [Installation for PPML](https://bigdl.readthedocs.io/en/latest/doc/PPML/Overview/install.html).
 * [Hello World Example](https://bigdl.readthedocs.io/en/latest/doc/PPML/Overview/quicktour.html).
 * [Deployment for production](https://bigdl.readthedocs.io/en/latest/doc/PPML/QuickStart/deploy_ppml_in_production.html).
-
 
 ### 2. Enhance your applications with PPMLContext
 
