@@ -19,7 +19,7 @@ runs:
         DEFAULT_IMAGE: ${{ inputs.image }}:${{ inputs.image-tag }}
       run: |
         whoami
-        export BRANCH=main
+        #export BRANCH=main
         export ENCLAVE_KEY_PATH=/home/icx/glorysdj/enclave-key.pem
         export DATA_PATH=/home/icx/glorysdj/data
         export KEYS_PATH=/home/icx/glorysdj/keys
@@ -39,7 +39,7 @@ runs:
         echo "### 1/5 Download BigDL and image..."
         cd /home/sdp/heyang/data
         rm -rf BigDL
-        git clone --branch $BRANCH https://github.com/intel-analytics/BigDL.git
+        git clone https://github.com/intel-analytics/BigDL.git
         cd BigDL/ppml/trusted-realtime-ml/scala/docker-graphene/kubernetes
         sudo docker pull $IMAGE
         echo "Download finish."
