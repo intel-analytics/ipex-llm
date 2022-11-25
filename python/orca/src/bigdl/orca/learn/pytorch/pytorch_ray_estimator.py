@@ -26,34 +26,12 @@ from bigdl.orca.learn.utils import maybe_dataframe_to_xshards, dataframe_to_xsha
     convert_predict_xshards_to_dataframe, update_predict_xshards, \
     process_xshards_of_pandas_dataframe, reload_dataloader_creator
 from bigdl.orca.ray import OrcaRayContext
-from bigdl.orca.learn.ray_estimator import Estimator as OrcaRayEstimator
+from bigdl.orca.learn.pytorch.core import BaseRayEstimator
 from bigdl.orca.data.file import enable_multi_fs_save, enable_multi_fs_load
-from bigdl.orca.learn.pytorch.utils import find_free_port, process_stats
+from bigdl.orca.learn.pytorch.utils import find_free_port, process_stats, check_for_failure
 
 import ray
-from ray.exceptions import RayActorError
 from bigdl.dllib.utils.log4Error import *
-
-
-logger = logging.getLogger(__name__)
-
-
-def check_for_failure(remote_values):
-    """Checks remote values for any that returned and failed.
-    :param remote_values: List of object IDs representing functions
-            that may fail in the middle of execution. For example, running
-            a SGD training loop in multiple parallel actor calls.
-    :return Bool for success in executing given remote tasks.
-    """
-    unfinished = remote_values
-    try:
-        while len(unfinished) > 0:
-            finished, unfinished = ray.wait(unfinished)
-            finished = ray.get(finished)
-        return True
-    except RayActorError as exc:
-        logger.exception(str(exc))
-    return False
 
 
 def partition_refs_to_creator(partition_refs):
@@ -89,16 +67,7 @@ def partition_refs_to_creator(partition_refs):
     return data_creator
 
 
-def get_driver_node_ip():
-    """
-    Returns the IP address of the current node.
-
-    :return: the IP address of the current node.
-    """
-    return ray._private.services.get_node_ip_address()
-
-
-class PyTorchRayEstimator(OrcaRayEstimator):
+class PyTorchRayEstimator(BaseRayEstimator):
     def __init__(
             self,
             *,
@@ -158,54 +127,11 @@ class PyTorchRayEstimator(OrcaRayEstimator):
             sync_stats=sync_stats,
             log_level=log_level
         )
-
-        if backend == "ray":
-            import torch.distributed as dist
-            cores_per_node = ray_ctx.ray_node_cpu_cores // workers_per_node
-            num_nodes = ray_ctx.num_ray_nodes * workers_per_node
-            RemoteRunner = ray.remote(num_cpus=cores_per_node)(PytorchRayWorker)
-            self.remote_workers = [
-                RemoteRunner.remote(**params) for i in range(num_nodes)
-            ]
-            ray.get([
-                worker.setup.remote(cores_per_node)
-                for i, worker in enumerate(self.remote_workers)
-            ])
-
-            driver_ip = get_driver_node_ip()
-            driver_tcp_store_port = find_free_port()
-
-            _ = dist.TCPStore(driver_ip, driver_tcp_store_port, -1, True,
-                              dist.constants.default_pg_timeout)
-
-            ray.get([
-                worker.setup_torch_distribute.remote(
-                    driver_ip, driver_tcp_store_port, i, num_nodes)
-                for i, worker in enumerate(self.remote_workers)
-            ])
-
-        elif backend == "horovod":
-            from bigdl.orca.learn.horovod.horovod_ray_runner import HorovodRayRunner
-            self.horovod_runner = HorovodRayRunner(ray_ctx,
-                                                   worker_cls=PytorchRayWorker,
-                                                   worker_param=params,
-                                                   workers_per_node=workers_per_node)
-            self.remote_workers = self.horovod_runner.remote_workers
-            cores_per_node = self.horovod_runner.cores_per_node
-            ray.get([
-                worker.setup.remote(cores_per_node)
-                for i, worker in enumerate(self.remote_workers)
-            ])
-
-            ray.get([
-                worker.setup_horovod.remote()
-                for i, worker in enumerate(self.remote_workers)
-            ])
-        else:
-            invalidInputError(False,
-                              "Only \"ray\" and \"horovod\" are supported "
-                              "values of backend, but got {}".format(backend))
-        self.num_workers = len(self.remote_workers)
+        
+        self.setup(params=params,
+                   backend=self.backend,
+                   runner_cls=PytorchRayWorker,
+                   workers_per_node=workers_per_node)
 
     def fit(self,
             data,
@@ -525,107 +451,6 @@ class PyTorchRayEstimator(OrcaRayEstimator):
         model.load_state_dict(model_state)
         return model.module if hasattr(model, "module") else model
 
-    @enable_multi_fs_save
-    def save(self, model_path):
-        """
-        Saves the Estimator state (including model and optimizer) to the provided model_path.
-
-        :param model_path: (str) Path to save the model.
-        :return:
-        """
-        state_dict = self.get_state_dict()
-        torch.save(state_dict, model_path)
-        return model_path
-
-    @enable_multi_fs_load
-    def load(self, model_path):
-        """
-        Loads the Estimator state (including model and optimizer) from the provided model_path.
-
-        :param model_path: (str) Path to the existing model.
-        """
-        state_dict = torch.load(model_path)
-        self.load_state_dict(state_dict)
-
-    def save_checkpoint(self, model_path):
-        """
-        Manually saves the Estimator state (including model and optimizer) to the provided
-        model_path.
-
-        :param model_path: (str) Path to save the model. Both local and remote path are supported.
-               e.g. "/tmp/estimator.ckpt" or "hdfs:///tmp/estimator.ckpt"
-        :return: None
-        """
-        from bigdl.dllib.utils.file_utils import is_local_path
-        if is_local_path(model_path):
-            self.save(model_path)
-        else:
-            results = [
-                worker.save_checkpoint.remote(model_path)
-                for worker in self.remote_workers
-            ]
-            ray.get(results)
-
-    def load_checkpoint(self, model_path):
-        """
-        Loads the Estimator state (including model and optimizer) from the provided model_path.
-
-        :param model_path: (str) Path to the existing model. Both local and remote path are
-               supported. e.g. "/tmp/estimator.ckpt" or "hdfs:///tmp/estimator.ckpt"
-        :return: None
-        """
-        from bigdl.dllib.utils.file_utils import is_local_path
-        if is_local_path(model_path):
-            self.load(model_path)
-        else:
-            results = [
-                worker.load_checkpoint.remote(model_path)
-                for worker in self.remote_workers
-            ]
-            ray.get(results)
-
-    def shutdown(self, force=False):
-        """
-        Shuts down workers and releases resources.
-
-        :return:
-        """
-        if not force:
-            cleanup = [
-                worker.shutdown.remote() for worker in self.remote_workers
-            ]
-            try:
-                ray.get(cleanup)
-                [
-                    worker.__ray_terminate__.remote()
-                    for worker in self.remote_workers
-                ]
-            except RayActorError:
-                logger.warning(
-                    "Failed to shutdown gracefully, forcing a shutdown.")
-
-                for worker in self.remote_workers:
-                    logger.warning("Killing worker {}.".format(worker))
-                    ray.kill(worker)
-        else:
-            for worker in self.remote_workers:
-                logger.debug("Killing worker {}.".format(worker))
-                ray.kill(worker)
-
-        self.remote_workers = []
-
-    def _train_epochs(self, **params):
-        remote_worker_stats = []
-        for i, w in enumerate(self.remote_workers):
-            stats = w.train_epochs.remote(**params)
-            remote_worker_stats.append(stats)
-
-        success = check_for_failure(remote_worker_stats)
-        if success:
-            return success, ray.get(remote_worker_stats)
-        else:
-            return success, None
-
     def _predict_spark_xshards(self, xshards, param):
         ray_xshards = RayXShards.from_spark_xshards(xshards)
 
@@ -638,30 +463,3 @@ class PyTorchRayEstimator(OrcaRayEstimator):
                                                                transform_func)
         spark_xshards = pred_shards.to_spark_xshards()
         return spark_xshards
-
-    def get_state_dict(self):
-        stream_ids = [
-            worker.get_state_stream.remote()
-            for worker in self.remote_workers
-        ]
-        # get the first task id that finished executing.
-        [stream_id], stream_ids = ray.wait(stream_ids, num_returns=1, timeout=None)
-        byte_obj = ray.get(stream_id)
-        _buffer = io.BytesIO(byte_obj)
-        state_dict = torch.load(
-            _buffer,
-            map_location="cpu")
-        return state_dict
-
-    def load_state_dict(self, state_dict, blocking=True):
-        _buffer = io.BytesIO()
-        torch.save(state_dict, _buffer)
-        state_stream = _buffer.getvalue()
-        state_id = ray.put(state_stream)
-
-        remote_calls = [
-            worker.load_state_stream.remote(state_id)
-            for worker in self.remote_workers
-        ]
-        if blocking:
-            ray.get(remote_calls)

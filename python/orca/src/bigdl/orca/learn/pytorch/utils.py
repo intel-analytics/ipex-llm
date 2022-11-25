@@ -37,6 +37,7 @@ import socket
 import collections
 import numpy as np
 from contextlib import closing, contextmanager
+import ray
 
 
 import torch
@@ -318,3 +319,12 @@ def mean_reduce_stats(worker_stats, res_stats=None):
         else:
             res_stats[stat_key] = stat_value
     return res_stats
+
+
+def get_driver_node_ip():
+    """
+    Returns the IP address of the current node.
+
+    :return: the IP address of the current node.
+    """
+    return ray._private.services.get_node_ip_address()
