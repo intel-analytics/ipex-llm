@@ -371,7 +371,8 @@ class TestInferencePipeline(TestCase):
         inference_opt = InferenceOptimizer()
         multi_instance_model = inference_opt.to_multi_instance(model, num_processes=2)
 
-        test_loader = create_data_loader(self.data_dir, 1, self.num_workers, data_transform, subset=10, shuffle=False)
+        test_loader = create_data_loader(self.data_dir, 1, self.num_workers, data_transform,
+                                         subset=50, shuffle=False)
         input_data = list(map(lambda b: b[0], test_loader))
 
         with torch.no_grad():
