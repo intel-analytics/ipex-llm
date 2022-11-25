@@ -2,8 +2,8 @@ name: Nightly Test
 
 on:
 
-  pull_request:
-    branches: [ main ]
+  #pull_request:
+    #branchs: [ main ]
 
   schedule:
     - cron: '0 15 * * *' # GMT time, 15:00 GMT == 23:00 China
@@ -28,6 +28,7 @@ on:
         - Orca-Python-ExampleTest-Ray-Py37-Spark3
         - Orca-Python-ExampleTest-Horovod-Pytorch-Py37-Spark3
         - Orca-Python-ExampleTest-Horovod-Tf-Py37-Spark3
+        - Orca-Python-Rayonspark-Tf2-Py37
         - Dllib-Scala-UT
         - Friesian-Scala-UT
         - Friesian-Python-Py37-Spark3
