@@ -24,12 +24,11 @@ from bigdl.nano.utils.log4Error import invalidInputError, invalidOperationError
 
 
 class _MultiInstanceModel(torch.nn.Module):
-    def __init__(self, model, ps, mgr, send_queues, recv_queues):
+    def __init__(self, model, ps, send_queues, recv_queues):
         super().__init__()
         self.model = model
         self.ps = ps
         self.p_num = len(ps)
-        self.mgr = mgr
         self.send_queues = send_queues
         self.recv_queues = recv_queues
 
@@ -49,19 +48,12 @@ class _MultiInstanceModel(torch.nn.Module):
             outputs.append(output)
         return outputs
 
-    def __del__(self):
-        for i in range(self.p_num):
-            self.send_queues[i].put('exit')
-        _ = [p.join() for p in self.ps]
-
 
 def _multi_instance_helper(model, recv_queue, send_queue):
     with torch.no_grad():
         while True:
             try:
                 args = recv_queue.get()
-                if isinstance(args, str) and args == 'exit':
-                    return
                 if isinstance(args, tuple):
                     output = model(*args)
                 else:
