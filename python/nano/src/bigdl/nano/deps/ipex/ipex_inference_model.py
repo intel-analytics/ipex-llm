@@ -16,7 +16,6 @@
 
 from bigdl.nano.utils.inference.pytorch.model import AcceleratedLightningModule
 from bigdl.nano.pytorch.context_manager import BaseContextManager
-from bigdl.nano.utils.log4Error import invalidOperationError
 import torch
 
 
