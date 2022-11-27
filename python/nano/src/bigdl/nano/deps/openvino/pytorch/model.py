@@ -25,6 +25,7 @@ import torch
 from bigdl.nano.utils.log4Error import invalidInputError
 from ..core.utils import save
 from torch.utils.data.dataloader import DataLoader
+from bigdl.nano.pytorch.context_manager import BaseContextManager
 
 
 class PytorchOpenVINOModel(AcceleratedLightningModule):
@@ -53,6 +54,7 @@ class PytorchOpenVINOModel(AcceleratedLightningModule):
 
             self.ov_model = OpenVINOModel(ov_model_path, thread_num=thread_num, config=config)
             super().__init__(None)
+        self.context_manager = BaseContextManager()
 
     def on_forward_start(self, inputs):
         self.ov_model._model_exists_or_err()

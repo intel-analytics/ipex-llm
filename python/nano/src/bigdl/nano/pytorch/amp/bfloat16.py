@@ -16,104 +16,22 @@
 
 import contextlib
 import io
-from logging import info, warning
+from logging import warning
 import sys
 import fcntl
 
-from pytorch_lightning import LightningModule
 import torch
-import subprocess
 import os
-from bigdl.nano.utils.inference.model import AcceleratedModel
 from bigdl.nano.utils.inference.pytorch.model import AcceleratedLightningModule
-from bigdl.nano.utils.log4Error import invalidOperationError, invalidInputError
+from bigdl.nano.utils.log4Error import invalidInputError
 from bigdl.nano.pytorch.utils import TORCH_VERSION_LESS_1_10, TORCH_VERSION_LESS_1_12
 from bigdl.nano.utils import CPUInfo
+from bigdl.nano.pytorch.context_manager import AutocastContextManager
 
 invalidInputError(
     not TORCH_VERSION_LESS_1_10,
     errMsg="Require torch>=1.10 to convert type as bfloat16."
 )
-
-
-class autocast(torch.cpu.amp.autocast):  # noqa
-    """
-    Customized autocast to verify BF16 support.
-    """
-
-    def __enter__(self):
-        self.global_max_cpu_isa = os.environ.get("ONEDNN_MAX_CPU_ISA", "ALL")
-        os.environ["ONEDNN_MAX_CPU_ISA"] = "ALL"
-        super().__enter__()
-
-    def __exit__(self, exc_type, exc_val, exc_tb):
-        os.environ["ONEDNN_MAX_CPU_ISA"] = self.global_max_cpu_isa
-        return super().__exit__(exc_type, exc_val, exc_tb)
-
-
-class RedirectStream(object):
-    """Context manager to capture output of shared library"""
-    def __init__(self, stream=sys.stdout, target=None):
-        self.origin_stream = stream
-        self.origin_stream_fileno = stream.fileno()
-        self.target = io.StringIO() if target is None else target
-        # Create a pipe to capture the stream
-        self.pipe_out, self.pipe_in = os.pipe()
-
-    def __enter__(self):
-        # Save a copy of the original stream
-        self.origin_stream_fileno_dup = os.dup(self.origin_stream_fileno)
-        # Replace the original stream with the write pipe
-        os.dup2(self.pipe_in, self.origin_stream_fileno)
-        os.close(self.pipe_in)
-        return self
-
-    def __exit__(self, exc_type, exc_value, traceback):
-        self.origin_stream.flush()
-        # Make pipe_out non-blocking
-        fcntl.fcntl(self.pipe_out, fcntl.F_SETFL, os.O_NONBLOCK)
-        while True:
-            try:
-                buf = os.read(self.pipe_out, 1024)
-                if not buf:
-                    break
-                self.target.write(buf.decode('utf-8'))
-            except OSError as e:
-                break
-        os.close(self.pipe_out)
-        os.dup2(self.origin_stream_fileno_dup, self.origin_stream_fileno)
-        os.close(self.origin_stream_fileno_dup)
-
-
-@contextlib.contextmanager
-def stdout_redirected(to=os.devnull):
-    """
-    Only redirect cpp stdout to file or os.devnull
-    import os
-
-    with stdout_redirected(to=filename):
-        print("from Python")
-        os.system("echo non-Python applications are also supported")
-    """
-    fd = sys.stdout.fileno()
-
-    def _redirect_stdout(to):
-        sys.stdout.close()
-        os.dup2(to.fileno(), fd)
-        # Python writes to fd
-        sys.stdout = os.fdopen(fd, 'w')
-
-    with os.fdopen(os.dup(fd), 'w') as old_stdout:
-        with open(to, 'w') as file:
-            _redirect_stdout(to=file)
-        try:
-            # allow code to be run with the redirected stdout
-            yield
-        finally:
-            # restore stdout.
-            # buffering and flags such as
-            # CLOEXEC may be different
-            _redirect_stdout(to=old_stdout)
 
 
 class BF16Model(AcceleratedLightningModule):
@@ -127,6 +45,7 @@ class BF16Model(AcceleratedLightningModule):
         self.channels_last = channels_last
         if self.channels_last is True:
             self.model = self.model.to(memory_format=torch.channels_last)
+        self.context_manager = AutocastContextManager()
 
     @property
     def _has_bf16_isa(self):
@@ -169,7 +88,6 @@ class BF16Model(AcceleratedLightningModule):
     def on_forward_start(self, inputs):
         return inputs
 
-    @autocast(enabled=True, dtype=torch.bfloat16, cache_enabled=True)
     def forward_step(self, *inputs):
         if self.channels_last is True:
             inputs = tuple(map(lambda x: x.to(memory_format=torch.channels_last), inputs))

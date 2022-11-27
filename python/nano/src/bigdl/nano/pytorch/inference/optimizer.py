@@ -40,6 +40,7 @@ from bigdl.nano.utils.inference.pytorch.dataloader import\
     transform_multiple_input_dataloader_to_inc_mode, automatic_add_label_in_dataloader
 from bigdl.nano.pytorch.utils import TORCH_VERSION_LESS_1_10, save_model, load_model
 from bigdl.nano.common.cpu_schedule import schedule_processors
+from bigdl.nano.pytorch.context_manager import BaseContextManager
 from .multi_instance import _MultiInstanceModel, _multi_instance_helper
 import traceback
 import warnings
@@ -339,6 +340,9 @@ class InferenceOptimizer(BaseInferenceOptimizer):
         else:
             sample_size_for_pot = 100
 
+        # patch context manager
+        model.context_manager = BaseContextManager()
+
         print("==========================Start Optimization==========================")
         start_time = time.perf_counter()
         for idx, (method, available) in enumerate(available_dict.items()):
@@ -365,63 +369,64 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                 result_map[method]["status"] = "successful"
 
                 def func_test(model, input_sample):
-                    with torch.no_grad():
-                        if isinstance(input_sample, (Dict, torch.Tensor)):
-                            model(input_sample)
-                        else:
-                            model(*input_sample)
+                    if isinstance(input_sample, (Dict, torch.Tensor)):
+                        model(input_sample)
+                    else:
+                        model(*input_sample)
 
-                torch.set_num_threads(thread_num)
-                try:
-                    result_map[method]["latency"], status =\
-                        throughput_calculate_helper(latency_sample_num, baseline_time,
-                                                    func_test, acce_model, input_sample)
-                    if status is False and method != "original":
-                        result_map[method]["status"] = "early stopped"
-                        # save model even early stop
-                        result_map[method]["model"] = acce_model
+                with acce_model.context_manager:
+                    torch.set_num_threads(thread_num)
+                    try:
+                        result_map[method]["latency"], status =\
+                            throughput_calculate_helper(latency_sample_num, baseline_time,
+                                                        func_test, acce_model, input_sample)
+                        if status is False and method != "original":
+                            result_map[method]["status"] = "early stopped"
+                            # save model even early stop
+                            result_map[method]["model"] = acce_model
+                            torch.set_num_threads(default_threads)
+                            continue
+                    except Exception:
+                        traceback.print_exc()
+                        result_map[method]["status"] = "fail to forward"
+                        print(f"----------{method} failed to forward----------")
                         torch.set_num_threads(default_threads)
                         continue
-                except Exception:
-                    traceback.print_exc()
-                    result_map[method]["status"] = "fail to forward"
-                    print(f"----------{method} failed to forward----------")
-                    torch.set_num_threads(default_threads)
-                    continue
 
-                torch.set_num_threads(default_threads)
-                if self._calculate_accuracy:
-                    # here we suppose trace don't change accuracy,
-                    # so we jump it to reduce time cost of optimize
-                    if precision == "fp32" and method != "original":
-                        result_map[method]["accuracy"] = "not recomputed"
-                    else:
-                        if method == "original":
-                            # test whether metric works
-                            try:
+                    torch.set_num_threads(default_threads)
+                    if self._calculate_accuracy:
+                        # here we suppose trace don't change accuracy,
+                        # so we jump it to reduce time cost of optimize
+                        if precision == "fp32" and method != "original":
+                            result_map[method]["accuracy"] = "not recomputed"
+                        else:
+                            if method == "original":
+                                # test whether metric works
+                                try:
+                                    result_map[method]["accuracy"] =\
+                                        _accuracy_calculate_helper(acce_model, metric,
+                                                                   validation_data)
+                                except Exception:
+                                    traceback.print_exc()
+                                    self._calculate_accuracy = False
+                                    invalidInputError(
+                                        False,
+                                        "Your metric is incompatible with validation_data or don't "
+                                        "follow our given pattern. Our expected metric pattern is "
+                                        "as follows:\n1. a torchmetrics.Metric object\n2. a "
+                                        "callable object which takes prediction and target then "
+                                        "returns a value in this calling method: `metric(pred, "
+                                        "target)`\n3. a callable object that takes model and "
+                                        "validation_data (if validation_data is not None) as input,"
+                                        "and returns an accuracy value in this calling method: "
+                                        "metric(model, data_loader) (or metric(model) if "
+                                        "validation_data is None).")
+                            else:
                                 result_map[method]["accuracy"] =\
                                     _accuracy_calculate_helper(acce_model, metric,
                                                                validation_data)
-                            except Exception:
-                                traceback.print_exc()
-                                self._calculate_accuracy = False
-                                invalidInputError(
-                                    False,
-                                    "Your metric is incompatible with validation_data or don't "
-                                    "follow our given pattern. Our expected metric pattern is "
-                                    "as follows:\n1. a torchmetrics.Metric object\n2. a callable "
-                                    "object which takes prediction and target then returns a value"
-                                    " in this calling method `metric(pred, target)`\n3. a callable"
-                                    " object that takes model and validation_data (if "
-                                    "validation_data is not None) as input, and returns an accuracy"
-                                    " value in this calling method metric(model, data_loader) "
-                                    "(or metric(model) if validation_data is None).")
-                        else:
-                            result_map[method]["accuracy"] =\
-                                _accuracy_calculate_helper(acce_model, metric,
-                                                           validation_data)
-                else:
-                    result_map[method]["accuracy"] = None
+                    else:
+                        result_map[method]["accuracy"] = None
 
                 result_map[method]["model"] = acce_model
                 print(f"----------Finish test {method} model "
