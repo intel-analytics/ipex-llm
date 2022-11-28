@@ -31,19 +31,17 @@ and modify `APP_ID`, `API_KEY` to the value you have get  when enroll, and then 
 -e REPORT_DATA=ppml \ A random String to generator a quote which will be send to attestation service and use for attest. Default is ppml.
 ```
 ### Register and get policy_Id
-1. Fill in the configuration above and Enter the occlum runable image.
+1. Verify that the attestation server is trusted.
 ```bash
-bash start-spark-local.sh
+bash start-spark-local.sh verify
 ```
-2. Verify that the attestation server is trusted.
+2. Register application on attestation server
 ```bash
-bash verify-attestation-service.sh
+bash start-spark-local.sh register
 ```
-3. Register application on attestation server
-```bash
-bash RegisterMrEnclave.sh
-```
-4. Get the policy_Id and save for running this occlum application.
+3. Get the policy_Id and save for running this occlum application.
 ```bash
 policy_Id ${policy_Id}
 ```
+
+Then set policy_Id and run application in docker or k8s.
