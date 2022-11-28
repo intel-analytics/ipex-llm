@@ -1,5 +1,5 @@
 BigDL: fast, distributed, secure AI for Big Data
-===========================
+=================================================
 
 `BigDL <https://github.com/intel-analytics/bigdl>`_ seamlessly scales your data analytics & AI applications from laptop to cloud, with the following libraries:
 
@@ -13,7 +13,7 @@ BigDL: fast, distributed, secure AI for Big Data
 ------
 
 Choosing the right BigDL library
----------------------------
+---------------------------------
 
 .. graphviz::
 
