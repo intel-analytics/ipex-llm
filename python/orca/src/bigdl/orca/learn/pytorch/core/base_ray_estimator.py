@@ -15,7 +15,7 @@
 #
 
 
-from bigdl.orca.learn.base_estimator import Estimator
+from bigdl.orca.learn.ray_estimator import BaseEstimator
 from bigdl.orca.ray import OrcaRayContext
 from bigdl.orca.learn.pytorch.pytorch_ray_worker import PytorchRayWorker
 from bigdl.orca.data.file import enable_multi_fs_save, enable_multi_fs_load
@@ -35,7 +35,7 @@ from bigdl.dllib.utils.log4Error import invalidInputError, logging
 logger = logging.getLogger(__name__)
 
 
-class BaseRayEstimator(Estimator, metaclass=ABCMeta):
+class BaseRayEstimator(BaseEstimator, metaclass=ABCMeta):
     def __init__(self, backend='ray', runner_cls=PytorchRayWorker, workers_per_node=1, **kwargs):
         # Implement logic to struct parameters
         #
