@@ -71,6 +71,11 @@ With this attestation service design, we can avoid adding malicious applications
 
 #### Attestation Service for Cloud Service Provider (CSP)
 
+
+### Advanced Usage
+
+During remote attestation, the attestation protocol will build a secure channel. It can help build [TLS connection with integirty](https://arxiv.org/pdf/1801.05863.pdf). Meanwhile, attestation can be [integrated with HTTP protocol to provide trusted end-to-end web service](https://arxiv.org/abs/2205.01052).
+
 ### References
 
 1. https://sgx101.gitbook.io/sgx101/sgx-bootstrap/attestation
@@ -78,3 +83,5 @@ With this attestation service design, we can avoid adding malicious applications
 3. https://download.01.org/intel-sgx/sgx-dcap/1.9/linux/docs/Intel_SGX_DCAP_ECDSA_Orientation.pdf
 4. https://azure.microsoft.com/en-us/products/azure-attestation/
 5. https://en.wikipedia.org/wiki/Trusted_Computing
+6. [Integrating Intel SGX Remote Attestation with Transport Layer Security](https://arxiv.org/pdf/1801.05863.pdf)
+7. [HTTPA/2: a Trusted End-to-End Protocol for Web Services](https://arxiv.org/abs/2205.01052)
