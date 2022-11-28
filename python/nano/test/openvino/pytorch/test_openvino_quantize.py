@@ -21,6 +21,7 @@ from torchvision.models.mobilenetv3 import mobilenet_v3_small
 import torch
 from torch.utils.data.dataset import TensorDataset
 from torch.utils.data.dataloader import DataLoader
+import tempfile
 
 
 class TestOpenVINO(TestCase):
@@ -104,3 +105,27 @@ class TestOpenVINO(TestCase):
                                                       calib_data=(x, y))
 
         optimized_model(x[0:1])
+
+    def test_pytorch_openvino_model_context_manager(self):
+        model = mobilenet_v3_small(num_classes=10)
+
+        x = torch.rand((10, 3, 256, 256))
+        y = torch.ones((10, ), dtype=torch.long)
+
+        ds = TensorDataset(x, y)
+        dataloader = DataLoader(ds, batch_size=2)
+
+        openvino_model = InferenceOptimizer.quantize(model, 
+                                                     accelerator='openvino',
+                                                     calib_data=dataloader,
+                                                     metric=F1(10))
+
+        with openvino_model.context_manager:
+            y1 = openvino_model(x[0:1])
+    
+        with tempfile.TemporaryDirectory() as tmp_dir_name:
+            InferenceOptimizer.save(openvino_model, tmp_dir_name)
+            model = InferenceOptimizer.load(tmp_dir_name)
+
+        with model.context_manager:
+            y2 = model(x[0:1])

@@ -20,12 +20,14 @@ from ..core import version as inc_version
 from neural_compressor.utils.pytorch import load
 from neural_compressor.model.model import PyTorchModel
 from bigdl.nano.utils.log4Error import invalidInputError
+from bigdl.nano.pytorch.context_manager import BaseContextManager
 
 
 class PytorchQuantizedModel(AcceleratedLightningModule):
     def __init__(self, model):
         super().__init__(model.model)
         self.quantized = model
+        self.context_manager = BaseContextManager()
 
     @property
     def _nargs(self):

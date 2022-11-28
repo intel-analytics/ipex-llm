@@ -11,7 +11,8 @@ runs:
     - name: Install dependencies
       shell: bash
       run: |
-        #apt-get update
+        dpkg --configure -a
+        apt-get update
         apt-get install -y zip
         python -m pip install --upgrade pip
         python -m pip install --upgrade setuptools==58.0.4
@@ -19,10 +20,10 @@ runs:
     - name: Setup env
       shell: bash
       run: |
-        if [ ! -d "/opt/conda/envs/py37" ]
-        then
-          conda create -n py37 -y python==3.7.10 setuptools==58.0.4 -c ${GONDOLIN_CONDA_CHANNEL} --override-channels
+        if [ -d "/opt/conda/envs/py37" ];then
+          rm -rf /opt/conda/envs/py37
         fi
+        conda create -n py37 -y python==3.7.10 setuptools==58.0.4 -c ${GONDOLIN_CONDA_CHANNEL} --override-channels
         source activate py37
         pip install wheel
         pip uninstall -y bigdl-friesian bigdl-friesian-spark3 bigdl-dllib bigdl-dllib-spark3 bigdl-orca pyspark bigdl-orca-spark3 bigdl-chronos bigdl-chronos-spark3 bigdl-friesian bigdl-friesian-spark3

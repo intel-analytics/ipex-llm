@@ -15,6 +15,7 @@
 #
 
 from bigdl.nano.utils.inference.pytorch.model import AcceleratedLightningModule
+from bigdl.nano.pytorch.context_manager import BaseContextManager
 import intel_extension_for_pytorch as ipex
 import torch
 
@@ -63,12 +64,14 @@ class PytorchIPEXJITModel(AcceleratedLightningModule):
                     with torch.cpu.amp.autocast():
                         self.model = torch.jit.trace(self.model, input_sample,
                                                      check_trace=False)
-                        self.model = torch.jit.freeze(self.model)
+                        if self.use_ipex:
+                            self.model = torch.jit.freeze(self.model)
             else:
                 with torch.no_grad():
                     self.model = torch.jit.trace(self.model, input_sample,
                                                  check_trace=False)
                     self.model = torch.jit.freeze(self.model)
+        self.context_manager = BaseContextManager()
 
     @property
     def forward_args(self):
