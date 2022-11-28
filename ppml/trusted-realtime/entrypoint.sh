@@ -168,9 +168,14 @@ else
         fi
         
         FLINK_ENV_JAVA_OPTS=$(eval echo ${FLINK_ENV_JAVA_OPTS})
-        CLASS_TO_RUN=org.apache.flink.kubernetes.entrypoint.KubernetesApplicationClusterEntrypoint
 
-        log="/ppml/xx.log"
+        if [ "${args[1]}" = "kubernetes-application" ]; then
+            CLASS_TO_RUN=org.apache.flink.kubernetes.entrypoint.KubernetesApplicationClusterEntrypoint
+        elif [ "${args[1]}" = "kubernetes-session" ]
+            CLASS_TO_RUN=org.apache.flink.kubernetes.entrypoint.KubernetesSessionClusterEntrypoint
+        fi
+
+        log="/ppml/flink/log/${JOB_MANAGER_RPC_ADDRESS}.log"
         log_setting=("-Dlog.file=${log}" "-Dlog4j.configuration=file:${FLINK_CONF_DIR}/log4j-console.properties" "-Dlog4j.configurationFile=file:${FLINK_CONF_DIR}/log4j-console.properties" "-Dlogback.configurationFile=file:${FLINK_CONF_DIR}/logback-console.xml")
 
         classpaths=$(echo ${FLINK_HOME}/lib/* | tr ' ' ':')
@@ -178,9 +183,9 @@ else
         exec $JAVA_RUN $JVM_ARGS ${FLINK_ENV_JAVA_OPTS} "${log_setting[@]}"  -classpath  ${classpaths}: ${CLASS_TO_RUN} "${ARGS[@]}"
 
     elif [ "${args[0]}" = "kubernetes-taskmanager.sh" ]; then
-        args=${args[@]:2}
+        args=${args[@]:1}
 
-        ARGS=${args[@]:2}
+        ARGS=${args[@]:1}
 
         export _FLINK_HOME_DETERMINED='true'
         
@@ -200,7 +205,7 @@ else
 
         CLASS_TO_RUN=org.apache.flink.kubernetes.taskmanager.KubernetesTaskExecutorRunner
 
-        log="/ppml/xx.log"
+        log="/ppml/flink/log/${JOB_MANAGER_RPC_ADDRESS}.log"
         log_setting=("-Dlog.file=${log}" "-Dlog4j.configuration=file:${FLINK_CONF_DIR}/log4j-console.properties" "-Dlog4j.configurationFile=file:${FLINK_CONF_DIR}/log4j-console.properties" "-Dlogback.configurationFile=file:${FLINK_CONF_DIR}/logback-console.xml")
 
         classpaths=$(echo ${FLINK_HOME}/lib/* | tr ' ' ':')

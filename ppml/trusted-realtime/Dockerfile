@@ -16,8 +16,8 @@ RUN set -ex; \
 
 # Install Flink
 RUN set -ex; \
-  mkdir /opt/flink; \
-  export FLINK_HOME=/opt/flink; \
+  mkdir /ppml/flink; \
+  export FLINK_HOME=/ppml/flink; \
   cd $FLINK_HOME; \
   wget -nv -O flink.tgz "https://www.apache.org/dyn/closer.cgi?action=download&filename=flink/flink-${FLINK_VERSION}/flink-${FLINK_VERSION}-bin-scala_${SCALA_VERSION}.tgz"; \
   tar -xf flink.tgz --strip-components=1; \
@@ -51,7 +51,7 @@ COPY --from=flink /opt/flink /ppml/flink
 COPY --from=flink /usr/local/bin/gosu /usr/local/bin/gosu
 
 RUN set -ex && \
-    env DEBIAN_FRONTEND=noninteractive apt-get install -y gpg libsnappy1v5 gettext-base libjemalloc-dev
+    env DEBIAN_FRONTEND=noninteractive apt-get install -y libsnappy1v5 gettext-base libjemalloc-dev
     
 RUN set -ex && \ 
     groupadd --system --gid=9999 flink && \
@@ -59,8 +59,9 @@ RUN set -ex && \
     chmod +x /usr/local/bin/gosu; \
     chown -R flink:flink /ppml; \
     gosu nobody true
+    chmod -R 777 ${FLINK_HOME}
 
-RUN chmod -R 777 ${FLINK_HOME}
+
 ADD ./entrypoint.sh /docker-entrypoint.sh
 
 
