@@ -47,7 +47,7 @@ Then, you are allowed to generate primary and data keys, and use them to encrypt
 export INPUT_DIR_PATH=YOUR_DATA_FILE_DIRECTORY_PATH # For example, multiple CSV files are in this directory
 export KMS_SERVER_IP=YOUR_KMS_SERVER_IP # IP address of node where the previous KMS server is deployed
 export APPID=YOUR_APPID
-export APPKEY=YOUR_APPKEY
+export APIKEY=YOUR_APPKEY
 
 # Step 1. Generate Primary Key And Data Key
 # Keys in ciphertext are saved at current path as default
