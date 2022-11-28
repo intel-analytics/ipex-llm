@@ -122,7 +122,8 @@ class Pytorch1_12:
         # test bf16
         x = torch.rand((10, 3, 256, 256))
         bf16_model = InferenceOptimizer.quantize(model, precision='bf16')
-        with bf16_model.context_manager:
+        context_manager = InferenceOptimizer.get_context_magaer(bf16_model)
+        with context_manager:
             y_hat1 = bf16_model(x)
         assert y_hat1.shape == (10, 10) and y_hat1.dtype == torch.bfloat16
 
