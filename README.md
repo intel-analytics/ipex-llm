@@ -404,7 +404,7 @@ If you've found BigDL useful for your project, you may cite our papers as follow
       booktitle = {Proceedings of the ACM Symposium on Cloud Computing (SoCC)},
       year = {2019},
       pages = {50–60},
-      doi = {10.1145/3357223.3362707},
+      doi = {10.1145/3357223.3362707}
   }
   ```
   
