@@ -231,6 +231,22 @@ run_pyspark_sql_example() {
                 /py-examples/sql_example.py
 }
 
+run_pyspark_sklearn_example() {
+    init_instance spark
+    build_spark
+    cd /opt/occlum_spark
+    echo -e "${BLUE}occlum run pyspark sklearn example${NC}"
+    occlum run /usr/lib/jvm/java-8-openjdk-amd64/bin/java \
+                -XX:-UseCompressedOops -XX:MaxMetaspaceSize=$META_SPACE \
+                -XX:ActiveProcessorCount=4 \
+                -Divy.home="/tmp/.ivy" \
+                -Dos.name="Linux" \
+                -Djdk.lang.Process.launchMechanism=vfork \
+                -cp "$SPARK_HOME/conf/:$SPARK_HOME/jars/*" \
+                -Xmx3g org.apache.spark.deploy.SparkSubmit \
+                /py-examples/sklearn_example.py
+}
+
 run_spark_pi() {
     export RUNTIME_ENV="native"
     attestation_init
@@ -529,6 +545,10 @@ case "$arg" in
         ;;
     pysql)
         run_pyspark_sql_example
+        cd ../
+        ;;
+    pysklearn)
+        run_pyspark_sklearn_example
         cd ../
         ;;
     pi)
