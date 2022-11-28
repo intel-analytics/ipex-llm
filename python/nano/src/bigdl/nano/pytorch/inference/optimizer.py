@@ -763,7 +763,7 @@ class InferenceOptimizer(BaseInferenceOptimizer):
         invalidInputError(False, "Accelerator {} is invalid.".format(accelerator))
 
     @staticmethod
-    def get_context_manager(model: nn.Module):
+    def get_context(model: nn.Module):
         """
         Obtain corresponding context manager from model, defaults to BaseContextManager().
 

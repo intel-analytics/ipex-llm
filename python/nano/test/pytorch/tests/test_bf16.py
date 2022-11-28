@@ -52,7 +52,7 @@ class Pytorch1_12:
         x = torch.rand((10, 3, 256, 256))
         y = torch.ones((10,), dtype=torch.long)
         bf16_model = InferenceOptimizer.quantize(model, precision='bf16')
-        with bf16_model.context_manager:
+        with InferenceOptimizer.get_context(bf16_model):
             y_hat = bf16_model(x)
 
     @patch("bigdl.nano.pytorch.amp.bfloat16.BF16Model._max_bf16_isa", return_value=None)
@@ -71,7 +71,7 @@ class Pytorch1_12:
         x = torch.rand((10, 3, 256, 256))
 
         bf16_model = InferenceOptimizer.quantize(model, precision='bf16')
-        with bf16_model.context_manager:
+        with InferenceOptimizer.get_context(bf16_model):
             bf16_model(x)
 
     @patch.dict('os.environ', {"ALLOW_NON_BF16_ISA": "1"})
@@ -86,7 +86,7 @@ class Pytorch1_12:
 
         bf16_model = InferenceOptimizer.quantize(model, precision='bf16')
         # Debug mode to test functionality, make sure forward is called sucessfully
-        with bf16_model.context_manager:
+        with InferenceOptimizer.get_context(bf16_model):
             y_hat = bf16_model(x)
         assert y_hat.shape == (10, 10) and y_hat.dtype == torch.bfloat16
 
@@ -99,7 +99,7 @@ class Pytorch1_12:
         bf16_model = InferenceOptimizer.quantize(model, precision='bf16')
         with patch.object(type(bf16_model), "_has_bf16_isa", PropertyMock(return_value=True)):
             bf16_model._max_bf16_isa = MagicMock(return_value="AMX")
-            with bf16_model.context_manager:
+            with InferenceOptimizer.get_context(bf16_model):
                 y_hat = bf16_model(x)
         assert y_hat.shape == (10, 10) and y_hat.dtype == torch.bfloat16
 
@@ -112,7 +112,7 @@ class Pytorch1_12:
         bf16_model = InferenceOptimizer.quantize(model, precision='bf16')
         with patch.object(type(bf16_model), "_has_bf16_isa", PropertyMock(return_value=True)):
             bf16_model._max_bf16_isa = MagicMock(return_value="AVX512")
-            with bf16_model.context_manager:
+            with InferenceOptimizer.get_context(bf16_model):
                 y_hat = bf16_model(x)
         assert y_hat.shape == (10, 10) and y_hat.dtype == torch.bfloat16
 
@@ -122,8 +122,7 @@ class Pytorch1_12:
         # test bf16
         x = torch.rand((10, 3, 256, 256))
         bf16_model = InferenceOptimizer.quantize(model, precision='bf16')
-        context_manager = InferenceOptimizer.get_context_magaer(bf16_model)
-        with context_manager:
+        with InferenceOptimizer.get_context(bf16_model):
             y_hat1 = bf16_model(x)
         assert y_hat1.shape == (10, 10) and y_hat1.dtype == torch.bfloat16
 
@@ -131,7 +130,7 @@ class Pytorch1_12:
             InferenceOptimizer.save(bf16_model, tmp_dir_name)
             load_model = InferenceOptimizer.load(tmp_dir_name, model)
 
-        with load_model.context_manager:
+        with InferenceOptimizer.get_context(load_model):
             y_hat2 = load_model(x)
         assert y_hat2.shape == (10, 10) and y_hat2.dtype == torch.bfloat16
         assert y_hat1.equal(y_hat2)
@@ -139,7 +138,7 @@ class Pytorch1_12:
         # test bf16 + channels_last
         bf16_model = InferenceOptimizer.quantize(model, precision='bf16',
                                                  channels_last=True)
-        with bf16_model.context_manager:
+        with InferenceOptimizer.get_context(bf16_model):
             y_hat1 = bf16_model(x)
         assert y_hat1.shape == (10, 10) and y_hat1.dtype == torch.bfloat16
 
@@ -147,8 +146,8 @@ class Pytorch1_12:
             InferenceOptimizer.save(bf16_model, tmp_dir_name)
             load_model = InferenceOptimizer.load(tmp_dir_name, model)
 
-        with load_model.context_manager:
-            y_hat2 = bf16_model(x)
+        with InferenceOptimizer.get_context(load_model):
+            y_hat2 = load_model(x)
         assert y_hat2.shape == (10, 10) and y_hat2.dtype == torch.bfloat16
         assert y_hat1.equal(y_hat2)
 

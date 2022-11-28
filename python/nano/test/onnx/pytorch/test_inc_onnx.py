@@ -191,14 +191,14 @@ class TestOnnx(TestCase):
                                                  accelerator='onnxruntime',
                                                  method='qlinear',
                                                  calib_data=train_loader)
-        with onnx_model.context_manager:
+        with InferenceOptimizer.get_context(onnx_model):
             output = onnx_model(x)
         
         with tempfile.TemporaryDirectory() as tmp_dir_name:
             InferenceOptimizer.save(onnx_model, tmp_dir_name)
             model = InferenceOptimizer.load(tmp_dir_name)
 
-        with model.context_manager:
+        with InferenceOptimizer.get_context(model):
             output = model(x)
 
 
