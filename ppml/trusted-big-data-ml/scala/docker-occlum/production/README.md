@@ -12,6 +12,12 @@ It will build image normally, and then run occlum-build to build occlum runable 
 
 final_name=`intelanalytics/bigdl-ppml-trusted-big-data-ml-scala-occlum-production:${TAG}-build`. But the final image size is too large because there are too many dependencies in this image.
 
+### Pull usable production image from dockerhub.
+
+```bash
+docker pull intelanalytics/bigdl-ppml-trusted-big-data-ml-scala-occlum-production:2.2.0-build
+```
+
 ## Using BigDL PPML Occlum EHSM Attestation
 Bigdl ppml use EHSM as reference KMS&AS, you can deploy EHSM following the [guide](https://github.com/intel-analytics/BigDL/tree/main/ppml/services/ehsm/kubernetes#deploy-bigdl-ehsm-kms-on-kubernetes-with-helm-charts)
 We assume you have already set up environment and enroll yourself on EHSM.

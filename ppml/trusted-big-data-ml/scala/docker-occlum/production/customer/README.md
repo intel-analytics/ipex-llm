@@ -7,6 +7,12 @@ It will build image by coping occlum runable instance (/opt/occlum_spark) and in
 
 the final image is called `intelanalytics/bigdl-ppml-trusted-big-data-ml-scala-occlum-production-customer:${TAG}`.
 
+### Pull usable customer image from dockerhub.
+
+```bash
+docker pull intelanalytics/bigdl-ppml-trusted-big-data-ml-scala-occlum-production-customer:2.2.0-build
+```
+
 ## Using BigDL PPML Occlum EHSM Attestation
 Bigdl ppml use EHSM as reference KMS&AS, you can deploy EHSM following the [guide](https://github.com/intel-analytics/BigDL/tree/main/ppml/services/ehsm/kubernetes#deploy-bigdl-ehsm-kms-on-kubernetes-with-helm-charts)
 We assume you have already set up environment and enroll yourself on EHSM.
