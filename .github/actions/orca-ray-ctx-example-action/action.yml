@@ -32,7 +32,7 @@ runs:
         pip install tensorflow==2.3.0
         HOROVOD_WITH_TENSORFLOW=1; HOROVOD_WITH_GLOO=1; pip install --no-cache-dir horovod==0.19.2
 
-        pip install -i ${GONDOLIN_PIP_MIRROR} --trusted-host ${GONDOLIN_TRUSTED_HOST} ray==1.11.0
+        pip install ray==1.11.0
         pip install --pre --upgrade bigdl-orca
         
     - name: Run Test
