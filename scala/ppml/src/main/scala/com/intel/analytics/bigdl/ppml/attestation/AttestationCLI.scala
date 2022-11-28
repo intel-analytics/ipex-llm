@@ -102,7 +102,7 @@ object AttestationCLI {
             case ATTESTATION_CONVENTION.MODE_DUMMY =>
                 new DummyAttestationService()
             case ATTESTATION_CONVENTION.MODE_AZURE =>
-                new AzureAttestationService(params.asURL, params.apiVersion, Base64.getUrlEncoder.encodeToString(userReportData.getBytes))
+                new AzureAttestationService(params.asURL, params.apiVersion, Base64.getUrlEncoder.encodeToString(params.userReport.getBytes))
             case _ => throw new AttestationRuntimeException("Wrong Attestation service type")
         }
 
