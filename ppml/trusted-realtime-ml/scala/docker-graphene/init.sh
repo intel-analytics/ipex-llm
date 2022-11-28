@@ -1,7 +1,7 @@
 #!/bin/bash
 
 set -x
-if [[ $sgx_mode == "sgx" || $sgx_mode == "SGX" ]];then
+if [[ $sgx_mode == "sgx" || $sgx_mode == "SGX" || $sgx_mode == "" ]];then
   if [ -c "/dev/sgx/enclave" ]; then
       echo "/dev/sgx/enclave is ready"
   elif [ -c "/dev/sgx_enclave" ]; then
