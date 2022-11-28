@@ -387,22 +387,24 @@ If you've found BigDL useful for your project, you may cite our papers as follow
 - *[BigDL 2.0](https://arxiv.org/abs/2204.01715): Seamless Scaling of AI Pipelines from Laptops to Distributed Cluster*
   ```
   @INPROCEEDINGS{9880257,
-    title={BigDL 2.0: Seamless Scaling of AI Pipelines from Laptops to Distributed Cluster}, 
-    author={Dai, Jason Jinquan and Ding, Ding and Shi, Dongjie and Huang, Shengsheng and Wang, Jiao and Qiu, Xin and Huang, Kai and Song, Guoqiong and Wang, Yang and Gong, Qiyuan and Song, Jiaming and Yu, Shan and Zheng, Le and Chen, Yina and Deng, Junwei and Song, Ge},
-    booktitle={2022 IEEE/CVF Conference on Computer Vision and Pattern Recognition (CVPR)}, 
-    year={2022},
-    pages={21407-21414},
-    doi={10.1109/CVPR52688.2022.02076}}
+      title={BigDL 2.0: Seamless Scaling of AI Pipelines from Laptops to Distributed Cluster}, 
+      author={Dai, Jason Jinquan and Ding, Ding and Shi, Dongjie and Huang, Shengsheng and Wang, Jiao and Qiu, Xin and Huang, Kai and Song, Guoqiong and Wang, Yang and Gong, Qiyuan and Song, Jiaming and Yu, Shan and Zheng, Le and Chen, Yina and Deng, Junwei and Song, Ge},
+      booktitle={2022 IEEE/CVF Conference on Computer Vision and Pattern Recognition (CVPR)}, 
+      year={2022},
+      pages={21407-21414},
+      doi={10.1109/CVPR52688.2022.02076}
+  }
   ```
 
 - *[BigDL](https://arxiv.org/abs/1804.05839): A Distributed Deep Learning Framework for Big Data*
   ```
   @INPROCEEDINGS{10.1145/3357223.3362707,
-    title = {BigDL: A Distributed Deep Learning Framework for Big Data},
-    author = {Dai, Jason Jinquan and Wang, Yiheng and Qiu, Xin and Ding, Ding and Zhang, Yao and Wang, Yanzhang and Jia, Xianyan and Zhang, Cherry Li and Wan, Yan and Li, Zhichao and Wang, Jiao and Huang, Shengsheng and Wu, Zhongyuan and Wang, Yang and Yang, Yuhao and She, Bowen and Shi, Dongjie and Lu, Qi and Huang, Kai and Song, Guoqiong},
-    booktitle = {Proceedings of the ACM Symposium on Cloud Computing (SoCC)},
-    year = {2019},
-    pages = {50–60},
-    doi = {10.1145/3357223.3362707},
+      title = {BigDL: A Distributed Deep Learning Framework for Big Data},
+      author = {Dai, Jason Jinquan and Wang, Yiheng and Qiu, Xin and Ding, Ding and Zhang, Yao and Wang, Yanzhang and Jia, Xianyan and Zhang, Cherry Li and Wan, Yan and Li, Zhichao and Wang, Jiao and Huang, Shengsheng and Wu, Zhongyuan and Wang, Yang and Yang, Yuhao and She, Bowen and Shi, Dongjie and Lu, Qi and Huang, Kai and Song, Guoqiong},
+      booktitle = {Proceedings of the ACM Symposium on Cloud Computing (SoCC)},
+      year = {2019},
+      pages = {50–60},
+      doi = {10.1145/3357223.3362707},
   }
   ```
+  
