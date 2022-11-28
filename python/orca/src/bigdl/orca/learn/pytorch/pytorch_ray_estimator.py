@@ -127,7 +127,6 @@ class PyTorchRayEstimator(BaseRayEstimator):
             sync_stats=sync_stats,
             log_level=log_level
         )
-        
         self.setup(params=params,
                    backend=self.backend,
                    runner_cls=PytorchRayWorker,
