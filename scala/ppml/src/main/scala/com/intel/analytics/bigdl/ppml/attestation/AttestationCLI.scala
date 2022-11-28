@@ -21,6 +21,7 @@ import org.apache.logging.log4j.LogManager
 import scopt.OptionParser
 
 import java.util.Base64
+import java.security.MessageDigest
 
 import com.intel.analytics.bigdl.ppml.attestation.generator._
 import com.intel.analytics.bigdl.ppml.attestation.service._
@@ -77,6 +78,11 @@ object AttestationCLI {
 
         // Generate quote
         val userReportData = params.userReport
+        if (params.asType == ATTESTATION_CONVENTION.MODE_AZURE){
+          val userReportData = MessageDigest.getInstance("SHA-256")
+            .digest(params.userReport.getBytes("UTF-8"))
+            .map("%02x".format(_)).mkString
+        }
 
         if (params.OSType == "gramine") {
           val quoteGenerator = new GramineQuoteGeneratorImpl()
