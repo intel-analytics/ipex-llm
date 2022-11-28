@@ -35,7 +35,7 @@ The basic workflow of attestation:
 ```
 
 The key steps in attestation:
-* Quote Generation. Generate a Quote/Evidence with SDK/API. This quote is signed by a pre-defined key, and it cannot be modified. You can add 128b its user data into a SGX quote.
+* Quote Generation. Generate a Quote/Evidence with SDK/API. This quote is signed by a pre-defined key, and it cannot be modified. You can add 128bits user data into a SGX quote.
 * Quote Verification. Verify a Quote/Evidence with SDK/API. 
 
 ### Attestation in E2E PPML applications
@@ -71,10 +71,19 @@ With this attestation service design, we can avoid adding malicious applications
 
 #### Attestation Service for Cloud Service Provider (CSP)
 
+Before we submit our applications to a cloud service, we need to verify the identity and security posture of the platform. Azure Attestation receives evidence from the platform, validates it with security standards, evaluates it against configurable policies, and produces an attestation token for claims-based applications.
+
+The involved actors in Azure Attestation workflow:
+* Relying party: The component which relies on Azure Attestation to verify enclave validity.
+* Client: The component which collects information from an enclave and sends requests to Azure Attestation.
+* Azure Attestation: The component which accepts enclave evidence from client, validates it and returns attestation token to the client
+
+![Azure Attestation Workflow](../images/azure_attestation_workflow.png)
+
 
 ### Advanced Usage
 
-During remote attestation, the attestation protocol will build a secure channel. It can help build [TLS connection with integirty](https://arxiv.org/pdf/1801.05863.pdf). Meanwhile, attestation can be [integrated with HTTP protocol to provide trusted end-to-end web service](https://arxiv.org/abs/2205.01052).
+During remote attestation, the attestation protocol will build a secure channel. It can help build [TLS connection with integrity](https://arxiv.org/pdf/1801.05863.pdf). Meanwhile, attestation can be [integrated with HTTP protocol to provide trusted end-to-end web service](https://arxiv.org/abs/2205.01052).
 
 ### References
 
