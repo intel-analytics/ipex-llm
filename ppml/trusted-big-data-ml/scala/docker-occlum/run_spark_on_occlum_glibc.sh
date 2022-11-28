@@ -258,7 +258,7 @@ run_pyspark_sklearn_example() {
     init_instance spark
     build_spark
     cd /opt/occlum_spark
-    echo -e "${BLUE}occlum run pyspark SQL example${NC}"
+    echo -e "${BLUE}occlum run pyspark sklearn example${NC}"
     occlum run /usr/lib/jvm/java-8-openjdk-amd64/bin/java \
                 -XX:-UseCompressedOops -XX:MaxMetaspaceSize=$META_SPACE \
                 -XX:ActiveProcessorCount=4 \
