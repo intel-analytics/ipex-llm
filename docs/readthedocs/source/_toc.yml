@@ -247,6 +247,7 @@ subtrees:
               subtrees:
                 - entries:
                   - file: doc/PPML/Overview/ppml
+                  - file: doc/PPML/Overview/attestation_basic
                   - file: doc/PPML/Overview/trusted_big_data_analytics_and_ml
                   - file: doc/PPML/Overview/trusted_fl
                   - file: doc/PPML/QuickStart/secure_your_services
