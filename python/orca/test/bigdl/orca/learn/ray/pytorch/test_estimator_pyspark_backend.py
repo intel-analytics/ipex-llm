@@ -649,39 +649,29 @@ class TestPyTorchEstimator(TestCase):
 
     def test_entire_model_save_load(self):
         sc = OrcaContext.get_spark_context()
-        spark = SparkSession.builder.getOrCreate()
-        rdd = sc.parallelize(range(20))
-        data = rdd.map(lambda x: (np.random.randn(50).astype(np.float).tolist(),
-                                        [float(np.random.randint(0, 2, size=()))])
-                            )
+        rdd = sc.range(0, 110).map(lambda x: np.array([x] * 50))
+        shards = rdd.mapPartitions(lambda iter: chunks(iter, 5)).map(lambda x: {"x": np.stack(x)})
+        shards = SparkXShards(shards)
 
-        schema = StructType([
-                    StructField("feature", ArrayType(FloatType()), True),
-                    StructField("label", ArrayType(FloatType()), True)
-                ])
+        estimator = get_estimator(model_fn=lambda config: IdentityNet())
 
-        df = spark.createDataFrame(data=data, schema=schema)
+        result_shards = estimator.predict(shards, batch_size=4)
+        result_before = np.concatenate([shard["prediction"] for shard in result_shards.collect()])
+        expected_result = np.concatenate([shard["x"] for shard in result_shards.collect()])
+        assert np.array_equal(result_before, expected_result)
 
-        estimator = get_estimator(workers_per_node=2, log_level=logging.DEBUG)
-
-        estimator.fit(df, batch_size=4, epochs=2,
-                      validation_data=df,
-                      feature_cols=["feature"],
-                      label_cols=["label"])
-        pre_result = estimator.predict(df, batch_size=4, feature_cols=["feature"])
-        expect_res = [res["prediction"] for res in pre_result.collect()]
-
-        path = "/tmp/model.pth"
+        path = "/tmp/entire_model.pth"
         try:
             estimator.save(path, entire=True)
             estimator.load(path)
 
-            after_result = estimator.predict(df, batch_size=4, feature_cols=["feature"])
-            predict_res = [res["prediction"] for res in after_result.collect()]
+            result_shards = estimator.predict(shards, batch_size=4)
+            result_after = np.concatenate([shard["prediction"]
+                                           for shard in result_shards.collect()])
         finally:
             os.remove(path)
 
-        assert np.array_equal(expect_res, predict_res)
+        assert np.array_equal(expected_result, result_after)
 
 if __name__ == "__main__":
     pytest.main([__file__])
