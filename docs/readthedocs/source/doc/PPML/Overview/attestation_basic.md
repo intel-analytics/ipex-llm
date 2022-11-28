@@ -69,9 +69,9 @@ When working with an attestation service, we can define a policy/requirement for
 
 With this attestation service design, we can avoid adding malicious applications or modules to distributed applications.
 
-#### Attestation Service for Cloud Service Provider (CSP)
+#### Attestation Service from Cloud Service Provider (CSP)
 
-Before we submit our applications to a cloud service, we need to verify the identity and security posture of the platform. Azure Attestation receives evidence from the platform, validates it with security standards, evaluates it against configurable policies, and produces an attestation token for claims-based applications.
+Azure provides an Attestation Service for applications running in TEE VM or containers provided by Azure. Before we submit our applications to a cloud service, we need to verify the identity and security posture of the platform. Azure Attestation receives evidence from the platform, validates it with security standards, evaluates it against configurable policies, and produces an attestation token for claims-based applications.
 
 The involved actors in Azure Attestation workflow:
 * Relying party: The component which relies on Azure Attestation to verify enclave validity.
