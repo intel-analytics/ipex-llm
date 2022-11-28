@@ -1,6 +1,6 @@
 import numpy as np
-from sklearn_example.linear_model import LinearRegression
-from sklearn_example.metrics import r2_score, mean_squared_error, mean_absolute_error, median_absolute_error
+from sklearn.linear_model import LinearRegression
+from sklearn.metrics import r2_score, mean_squared_error, mean_absolute_error, median_absolute_error
 
 # Generate test data:
 nSample = 100
