@@ -31,6 +31,8 @@ import java.security.cert.X509Certificate
 import javax.net.ssl.TrustManager
 import org.apache.http.util.EntityUtils
 import java.security.SecureRandom
+import java.util.Base64
+import java.util.Arrays;
 
 import com.azure.core.util.BinaryData
 import com.azure.security.attestation.AttestationClientBuilder
@@ -82,37 +84,40 @@ class AzureAttestationService(maaProviderURL: String, apiVersion: String, userRe
         "Quote should be specified")
     }
 
-    val attestationBuilder: AttestationClientBuilder = new AttestationClientBuilder();
-    val client = attestationBuilder
-            .endpoint(maaProviderURL)
-            .buildClient();
-
-    val decodedRuntimeData = BinaryData.fromBytes(userReportData.getBytes);
-    val sgxQuote = BinaryData.fromBytes(quote.getBytes);
-    System.out.println(sgxQuote)
+    // val attestationBuilder = new AttestationClientBuilder()
+    // val client = attestationBuilder
+    //         .endpoint(maaProviderURL)
+    //         .buildClient()
     
-    val result = client.attestSgxEnclave(new AttestationOptions(sgxQuote)
-            .setRunTimeData(
-                new AttestationData(decodedRuntimeData, AttestationDataInterpretation.BINARY)));
+    // val decodedRuntimeData = BinaryData.fromBytes(Base64.getDecoder().decode(userReportData.getBytes))
+    // val sgxQuote = BinaryData.fromBytes(Base64.getDecoder().decode(quote.getBytes))
+    // System.out.println("222222222222222222222222222222")
+    // System.out.println(sgxQuote)
+    // System.out.println("222222222222222222222222222222")
+    // val result = client.attestSgxEnclave(new AttestationOptions(sgxQuote)
+    //         .setRunTimeData(
+    //             new AttestationData(decodedRuntimeData, AttestationDataInterpretation.BINARY)));
 
-    val issuer = result.getIssuer();
+    // val issuer = result.getIssuer();
 
-    System.out.println("Attest Sgx Enclave completed. Issuer: " + issuer)
-    System.out.println("Runtime Data Length: %d\n", result.getEnclaveHeldData().getLength())
-    (true, "")
-    // val postResult: JSONObject = timing("AzureAttestationService request for VerifyQuote") {
-    //   val postString: String = "{\"quote\": \"" + quote + "\", \"runtimeData\": " +
-    //   "{\"data\": \"" + userReportData + "\",\"dataType\": \"Binary\"}}"
-    //   System.out.println(postString)
-    //   System.out.println(constructUrl())
-    //   val response: String = retrieveResponse(constructUrl(), sslConSocFactory, postString)
-    //   new JSONObject(response)
-    // }
+    // System.out.println("Attest Sgx Enclave completed. Issuer: " + issuer)
+    // System.out.println("Runtime Data Length: %d\n", result.getEnclaveHeldData().getLength())
+    // (true, "")
+    val quote1=Base64.getDecoder().decode(quote.getBytes)
+    val quote2=Base64.getUrlEncoder.encodeToString(quote1)
+    val postResult: JSONObject = timing("AzureAttestationService request for VerifyQuote") {
+      val postString: String = "{\"quote\": \"" + quote2 + "\", \"runtimeData\": " +
+      "{\"data\": \"" + userReportData + "\",\"dataType\": \"Binary\"}}"
+      System.out.println(postString)
+      System.out.println(constructUrl())
+      val response: String = retrieveResponse(constructUrl(), sslConSocFactory, postString)
+      new JSONObject(response)
+    }
 
-    // System.out.println(postResult.toString)
-    // val token = postResult.getString(RES_TOKEN)
-    // val verifyQuoteResult = token.length() > 0
-    // (verifyQuoteResult, postResult.toString)
+    System.out.println(postResult.toString)
+    val token = postResult.getString(RES_TOKEN)
+    val verifyQuoteResult = token.length() > 0
+    (verifyQuoteResult, postResult.toString)
   }
 
   override def attestWithServer(quote: String, policyID: String): (Boolean, String) = {

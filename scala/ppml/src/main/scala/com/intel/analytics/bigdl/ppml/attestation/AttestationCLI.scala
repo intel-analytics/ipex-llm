@@ -85,7 +85,9 @@ object AttestationCLI {
           val quoteGenerator = new OcclumQuoteGeneratorImpl()
           quote = quoteGenerator.getQuote(userReportData.getBytes)
         }
-
+        System.out.println("*********************")
+        System.out.println(new String(quote))
+        System.out.println("*********************")
         // Attestation Client
         val as = params.asType match {
             case ATTESTATION_CONVENTION.MODE_EHSM_KMS =>
@@ -94,7 +96,7 @@ object AttestationCLI {
             case ATTESTATION_CONVENTION.MODE_DUMMY =>
                 new DummyAttestationService()
             case ATTESTATION_CONVENTION.MODE_AZURE =>
-                new AzureAttestationService(params.asURL, params.apiVersion, Base64.getEncoder.encodeToString(userReportData.getBytes))
+                new AzureAttestationService(params.asURL, params.apiVersion, Base64.getUrlEncoder.encodeToString(userReportData.getBytes))
             case _ => throw new AttestationRuntimeException("Wrong Attestation service type")
         }
 
