@@ -78,7 +78,7 @@ The involved actors in Azure Attestation workflow:
 * Client: The component which collects information from an enclave and sends requests to Azure Attestation.
 * Azure Attestation: The component which accepts enclave evidence from client, validates it and returns attestation token to the client
 
-![Azure Attestation Workflow](../images/azure_attestation_workflow.png)
+![Azure Attestation Workflow](https://learn.microsoft.com/en-us/azure/attestation/media/sgx-validation-flow.png)
 
 Here are the general steps in a typical SGX enclave attestation workflow (using Azure Attestation): The client collect the evidence from the enclave by generating a quote and send it to an URI which refers to an instance of Azure Attestation. Azure Attestation validates the submitted information and evaluates it against a configured policy. If the verification succeeds, Azure Attestation issues an attestation token and returns it to the client. The client sends the attestation token to relying party. The relying party calls public key metadata endpoint of Azure Attestation to retrieve signing certificates. The relying party then verifies the signature of the attestation token and ensures the enclave trustworthiness. 
 
