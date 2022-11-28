@@ -41,6 +41,7 @@ from bigdl.nano.utils.inference.pytorch.dataloader import\
 from bigdl.nano.pytorch.utils import TORCH_VERSION_LESS_1_10, save_model, load_model
 from bigdl.nano.common.cpu_schedule import schedule_processors
 from bigdl.nano.pytorch.context_manager import BaseContextManager
+from ._acceleration_option import ChannelsLastOption, IpexOption
 from .multi_instance import _MultiInstanceModel, _multi_instance_helper
 import traceback
 import warnings
@@ -94,11 +95,12 @@ class InferenceOptimizer(BaseInferenceOptimizer):
 
     # acceleration method combinations, developers may want to register some new
     # combinations here
+
     ALL_INFERENCE_ACCELERATION_METHOD = \
         {
             "original": TorchAccelerationOption(),
-            "fp32_channels_last": TorchAccelerationOption(channels_last=True),
-            "fp32_ipex": TorchAccelerationOption(ipex=True),
+            "fp32_channels_last": ChannelsLastOption(),
+            "fp32_ipex": IpexOption(),
             "fp32_ipex_channels_last": TorchAccelerationOption(ipex=True,
                                                                channels_last=True),
             "bf16": TorchAccelerationOption(bf16=True),
