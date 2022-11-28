@@ -17,11 +17,8 @@
 
 from bigdl.orca.learn.ray_estimator import BaseEstimator
 from bigdl.orca.ray import OrcaRayContext
-from bigdl.orca.learn.pytorch.pytorch_ray_worker import PytorchRayWorker
 from bigdl.orca.data.file import enable_multi_fs_save, enable_multi_fs_load
 
-import numbers
-import numpy as np
 import io
 import torch
 
@@ -36,7 +33,7 @@ logger = logging.getLogger(__name__)
 
 
 class BaseRayEstimator(BaseEstimator, metaclass=ABCMeta):
-    def __init__(self, backend='ray', runner_cls=PytorchRayWorker, workers_per_node=1, **kwargs):
+    def __init__(self, **kwargs):
         # Implement logic to struct parameters
         #
         # self.remote_workers=[]
@@ -87,7 +84,7 @@ class BaseRayEstimator(BaseEstimator, metaclass=ABCMeta):
         # Need to preprocess params as pytorch_ray_estimator does.
         pass
 
-    def setup(self, params, backend='ray', runner_cls=PytorchRayWorker, workers_per_node=1):
+    def setup(self, params, backend='ray', runner_cls=None, workers_per_node=1):
         ray_ctx = OrcaRayContext.get()
         if backend == "ray":
             import torch.distributed as dist
