@@ -69,6 +69,7 @@ if [ "$SGX_ENABLED" == "true" ]; then
   else 
     # TODO: ATTESTATION is false, only for test purpose, modify this later
     if [ "$ENCRYPTEDFSD" == "true" ]; then
+      echo "[INFO] distributed encrypted file system is enabled"
       bash encryptedfsd.sh
       echo $runtime_command >> temp_command_file
       export sgx_command="bash temp_command_file && rm temp_command_file"

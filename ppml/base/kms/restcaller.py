@@ -23,7 +23,7 @@ import hmac
 from hashlib import sha256
 import os
 from collections import OrderedDict
-import urllib.parase
+import urllib.parse
 from requests.packages import urllib3
 
 # default app auth conf
