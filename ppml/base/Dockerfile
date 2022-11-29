@@ -113,6 +113,7 @@ RUN env DEBIAN_FRONTEND=noninteractive apt-get update && \
 
 ADD ./download_jars.sh /ppml
 ADD ./attestation.sh /ppml
+ADD ./encryptedfsd.sh /ppml
 # Copy the kms folder to /ppml/kms
 ADD ../../python/ppml/src/bigdl/ppml/kms /ppml/kms
 
