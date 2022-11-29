@@ -31,6 +31,7 @@ ADD ./verify-attestation-service.sh /ppml/verify-attestation-service.sh
 ADD ./_dill.py.patch /_dill.py.patch
 ADD ./python-uuid.patch /python-uuid.patch
 ADD ./python-pslinux.patch /python-pslinux.patch
+ADD ./kms /ppml/kms
 
 # Python3.7
 RUN env DEBIAN_FRONTEND=noninteractive apt-get update && \
@@ -116,7 +117,6 @@ ADD ./attestation.sh /ppml
 ADD ./encryptedfsd.sh /ppml
 # Copy the kms folder to /ppml/kms
 # TODO: later change to use nightly build bigdl
-ADD ./kms /ppml/kms
 
 RUN cd /ppml && \
     bash ./download_jars.sh
