@@ -235,7 +235,7 @@ class OpenvinoEstimator(SparkEstimator):
             for key, shape in self.output_dict.items():
                 struct_type = FloatType()
                 for _ in range(len(shape)):
-                    struct_type = ArrayType(struct_type)
+                    struct_type = ArrayType(struct_type)  # type: ignore
                 result_struct.append(StructField(key, struct_type))
 
             schema = StructType(schema.fields + result_struct)
@@ -259,7 +259,7 @@ class OpenvinoEstimator(SparkEstimator):
             elif isinstance(data, list):
                 flattened = nest.flatten(data)
                 data_length = len(flattened[0])
-                data_to_be_rdd = []
+                data_to_be_rdd = []  # type: ignore
                 split_num = math.ceil(flattened[0].shape[0]/batch_size)
                 num_slices = min(split_num, self.node_num)
                 for i in range(split_num):
@@ -288,7 +288,7 @@ class OpenvinoEstimator(SparkEstimator):
                               for i in range(len(result_arr_list[0]))]
             elif isinstance(result_arr_list[0], np.ndarray):
                 result_arr = np.concatenate(result_arr_list, axis=0)
-            return result_arr
+            return result_arr  # type: ignore
         else:
             invalidInputError(False,
                               "Only XShards, Spark DataFrame, a numpy array and a list of numpy"

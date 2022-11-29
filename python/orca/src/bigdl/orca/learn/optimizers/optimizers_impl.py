@@ -14,14 +14,17 @@
 # limitations under the License.
 #
 
-import numpy as np
 from abc import ABC, abstractmethod
 
 from bigdl.dllib.utils.common import DOUBLEMAX
 from bigdl.orca.learn.optimizers.schedule import Scheduler
 from bigdl.dllib.utils.log4Error import invalidInputError
 
-from typing import (Any, Optional)
+from typing import (Any, Optional, Dict, TYPE_CHECKING)
+
+if TYPE_CHECKING:
+    import bigdl
+    import numpy as np
 
 
 class Optimizer(ABC):
@@ -69,7 +72,7 @@ class SGD(Optimizer):
                               momentum,
                               dampening,
                               nesterov,
-                              learningrate_schedule.get_scheduler(),
+                              learningrate_schedule.get_scheduler(),  # type: ignore
                               learningrates,
                               weightdecays,
                               bigdl_type="float")
@@ -136,7 +139,7 @@ class LBFGS(Optimizer):
                  learningrate: Optional[float] = 1.0,
                  verbose: Optional[bool] = False,
                  linesearch: Any = None,
-                 linesearch_options: Optional[dict[Any, Any]]=None) -> None:
+                 linesearch_options: Optional[Dict[Any, Any]] = None) -> None:
         from bigdl.dllib.optim.optimizer import LBFGS as BLBFGS
         self.optimizer = BLBFGS(
             max_iter,
