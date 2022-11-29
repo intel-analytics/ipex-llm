@@ -103,11 +103,17 @@ RUN env DEBIAN_FRONTEND=noninteractive apt-get update && \
     mkdir -p /root/.zinc && \
     mkdir -p /root/.m2 && \
     mkdir -p /root/.kube/ && \
-    mkdir -p /ppml/encrypted
+    mkdir -p /ppml/encrypted && \
+# folder required for distributed encrypted file system
+    mkdir -p /ppml/encryptedfsd && \
+# folder to contain the keys (primary key and data key)
+    mkdir -p /ppml/encrypted_keys
 
 
 ADD ./download_jars.sh /ppml
 ADD ./attestation.sh /ppml
+# Copy the kms folder to /ppml/kms
+ADD ../../python/ppml/src/bigdl/ppml/kms /ppml/kms
 
 RUN cd /ppml && \
     bash ./download_jars.sh
