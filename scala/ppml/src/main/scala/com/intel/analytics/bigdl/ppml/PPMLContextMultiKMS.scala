@@ -36,10 +36,30 @@ import org.apache.hadoop.fs.Path
  * @param kms
  * @param sparkSession
  */
-class PPMLContextMultiKMS protected(kms: List[KeyManagementService], sparkSession: SparkSession) {
+class PPMLContextMultiKMS protected(sparkSession: SparkSession) {
 
   protected var dataKeyPlainText: String = ""
-  val kms = new scala.collection.mutable.list[KeyManagementService]
+  val multiKms = new scala.collection.mutable.HashMap[String, KeyManagementService]
+  val dataSources = new scala.collection.mutable.HashMap[String, String]
+  
+
+
+
+  def addKMS(kmsName: String, kms: KeyManagementService): this.type {
+    this.multiKms +=  (kmsName -> kms)
+    this
+  }
+
+
+  def addDataSource(dataSourceName:String, kmsName:String): this.type [
+    this.dataSources += (dataSourceName->kmsName)
+    this
+  ]
+
+  def getKMS(dataSourceName:String): KeyManagementService{
+    this.multiKms.get(this.dataSources.get(dataSourceName))
+  }
+
   /**
    * Load keys from a local file system.
    * @param primaryKeyPath
@@ -47,6 +67,7 @@ class PPMLContextMultiKMS protected(kms: List[KeyManagementService], sparkSessio
    * @return
    */
   def loadKeys(primaryKeyPath: String, dataKeyPath: String, dataSourceName: String): this.type = {
+    var kms=getKMS(dataSourceName)
     dataKeyPlainText = kms.retrieveDataKeyPlainText(
       new Path(primaryKeyPath).toString, new Path(dataKeyPath).toString,
       sparkSession.sparkContext.hadoopConfiguration)
@@ -285,18 +306,21 @@ object PPMLContext{
    * @param appNames the names of this Applications
    * @return a array of PPMLContext
    */
-  def initPPMLContextMultiKMS(sparkSession: SparkSession): Array[PPMLContext] = {
+  def initPPMLContextMultiKMS(sparkSession: SparkSession): PPMLContextMultiKMS = {
+    // get sparkconf and init ppml context
     val conf = sparkSession.sparkContext.getConf
     // conf.set("spark.hadoop.io.compression.codecs",
     //     "com.intel.analytics.bigdl.ppml.crypto.CryptoCodec")
     // val sc = initNNContext(conf, appName)
     // val sparkSession: SparkSession = SparkSession.builder().getOrCreate()
-    val instance= conf.getInt(s"spark.bigdl.kms.multikms.instance", defaultValue = 2)
-    val ppmlScs = Array[PPMLContext](instance)
 
-    val kms = new scala.collection.mutable.List[KeyManagementService]
-    for (i <- 1 to instance) ){
+    val ppmlSc=new PPMLContextMultiKMS(sparkSession)
+
+    //init kms
+    val instance= conf.getInt(s"spark.bigdl.kms.multikms.instance", defaultValue = 2)
+    for (i <- 1 to instance){
       val kmsType = conf.get(s"spark.bigdl.kms.multikms.type${i}", defaultValue = "SimpleKeyManagementService")
+      val kmsName = conf.get(s"spark.bigdl.kms.multikms.name${i}", defaultValue = s"KMS${i}")
       val kms = kmsType match {
       case KMS_CONVENTION.MODE_EHSM_KMS =>
         val ip = conf.get(s"spark.bigdl.kms.multikms.ehs.ip${i}", defaultValue = "0.0.0.0")
@@ -316,18 +340,34 @@ object PPMLContext{
         new AzureKeyManagementService(vaultName, clientId)
       case _ =>
         throw new EncryptRuntimeException("Wrong kms type")
-    val ppmlSc = new PPMLContext(kms, sparkSession)
-    if (conf.contains("spark.bigdl.kms.multikms.key.primary")) {
-      Log4Error.invalidInputError(conf.contains("spark.bigdl.kms.multikms.key.data"),
+    // if (conf.contains("spark.bigdl.kms.multikms.key.primary")) {
+    //   Log4Error.invalidInputError(conf.contains("spark.bigdl.kms.multikms.key.data"),
+    //     "Data key not found, please provide" +
+    //     " both spark.bigdl.kms.multikms.key.primary and spark.bigdl.kms.multikms.key.data.")
+    //   val primaryKey = conf.get("spark.bigdl.kms.multikms.key.primary")
+    //   val dataKey = conf.get("spark.bigdl.kms.multikms.key.data")
+    //   ppmlSc.loadKeys(primaryKey, dataKey)
+      }
+    } 
+  
+    //init data sources
+    val dataSourceInstance = conf.getInt("spark.bigdl.kms.datasource.instance", defaultValue=2)
+    for (i<-1 to dataSourceInstance ){
+      val dataSourceName = conf.get(s"spark.bigdl.kms.datasouce${i}.name",defaultValue = s"dataSource${i}")
+      val kms=conf.get(s"spark.bigdl.kms.datasouce${i}.kms")
+      Log4Error.invalidInputError(conf.contains(s"spark.bigdl.kms.datasource${i}.primary"),
+        "Primary key not found, please provide" +
+        " both spark.bigdl.kms.multikms.key.primary and spark.bigdl.kms.multikms.key.data.")
+      Log4Error.invalidInputError(conf.contains(s"spark.bigdl.kms.datasource${i}.data"),
         "Data key not found, please provide" +
         " both spark.bigdl.kms.multikms.key.primary and spark.bigdl.kms.multikms.key.data.")
-      val primaryKey = conf.get("spark.bigdl.kms.multikms.key.primary")
-      val dataKey = conf.get("spark.bigdl.kms.multikms.key.data")
+      val primaryKey = conf.get(s"spark.bigdl.kms.datasource${i}.primary")
+      val dataKey = conf.get(s"spark.bigdl.kms.datasource${i}.data")
+      ppmlSc.addDataSource(dataSourceName,kms)
       ppmlSc.loadKeys(primaryKey, dataKey)
     }
-    } 
-    ppmlScs(i)=ppmlSc
-    }
+
+  }
 
     
 }
