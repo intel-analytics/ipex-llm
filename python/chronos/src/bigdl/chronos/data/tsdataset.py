@@ -329,11 +329,14 @@ class TSDataset:
 
         :return: the tsdataset instance.
         '''
-        self.df = self.df.groupby([self.id_col]) \
-            .apply(lambda df: impute_timeseries_dataframe(df=df,
-                                                          dt_col=self.dt_col,
-                                                          mode=mode,
-                                                          const_num=const_num))
+        result = []
+        groups = self.df.groupby([self.id_col])
+        for _, group in groups:
+            result.append(impute_timeseries_dataframe(df=group,
+                                                      dt_col=self.dt_col,
+                                                      mode=mode,
+                                                      const_num=const_num))
+        self.df = pd.concat(result, axis=0)
         self.df.reset_index(drop=True, inplace=True)
         return self
 
