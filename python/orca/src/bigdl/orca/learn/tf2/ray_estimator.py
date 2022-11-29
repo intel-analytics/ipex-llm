@@ -195,7 +195,8 @@ class TensorFlow2Estimator(OrcaRayEstimator):
                                                            feature_cols, label_cols,
                                                            mode="fit",
                                                            num_workers=self.num_workers,
-                                                           accept_str_col=True)
+                                                           accept_str_col=True,
+                                                           shard_size=batch_size)
 
         if isinstance(data, SparkXShards):
             if data._get_class_name() == 'pandas.core.frame.DataFrame':
@@ -333,7 +334,8 @@ class TensorFlow2Estimator(OrcaRayEstimator):
                                              label_cols=label_cols,
                                              mode="evaluate",
                                              num_workers=self.num_workers,
-                                             accept_str_col=True)
+                                             accept_str_col=True,
+                                             shard_size=batch_size)
 
         if isinstance(data, SparkXShards):
             if data._get_class_name() == 'pandas.core.frame.DataFrame':
@@ -459,7 +461,8 @@ class TensorFlow2Estimator(OrcaRayEstimator):
                                               feature_cols=feature_cols,
                                               label_cols=None,
                                               mode="predict",
-                                              accept_str_col=True)
+                                              accept_str_col=True,
+                                              shard_size=batch_size)
             pred_shards = self._predict_spark_xshards(xshards, params)
             result = convert_predict_xshards_to_dataframe(data, pred_shards)
         elif isinstance(data, SparkXShards):

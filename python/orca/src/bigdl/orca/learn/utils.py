@@ -311,7 +311,7 @@ def arrays2others(iter, feature_cols, label_cols, shard_size=None, generate_func
 
     if feature_lists is not None:
         if shard_size:
-            # remove empty array in last shard
+            # remove empty part of the ndarray in the last shard
             rest_size = counter % shard_size
             feature_lists = [feature[0:rest_size] for feature in feature_lists]
             if label_cols is not None:
@@ -358,10 +358,11 @@ def process_xshards_of_pandas_dataframe(data, feature_cols, label_cols=None, val
         return data
 
 
-def _dataframe_to_xshards(data, feature_cols, label_cols=None, accept_str_col=False):
+def _dataframe_to_xshards(data, feature_cols, label_cols=None, accept_str_col=False, shard_size=None):
     from bigdl.orca import OrcaContext
     schema = data.schema
-    shard_size = OrcaContext._shard_size
+    if OrcaContext._shard_size:
+        shard_size = OrcaContext._shard_size
     numpy_rdd = data.rdd.map(lambda row: convert_row_to_numpy(row,
                                                               schema,
                                                               feature_cols,
@@ -431,7 +432,7 @@ def dataframe_to_xshards_of_pandas_df(data, feature_cols, label_cols=None, accep
 
 
 def dataframe_to_xshards(data, validation_data, feature_cols, label_cols, mode="fit",
-                         num_workers=None, accept_str_col=False):
+                         num_workers=None, accept_str_col=False, shard_size=None):
     from pyspark.sql import DataFrame
     valid_mode = {"fit", "evaluate", "predict"}
     invalidInputError(mode in valid_mode,
@@ -452,16 +453,16 @@ def dataframe_to_xshards(data, validation_data, feature_cols, label_cols, mode="
             num_data_part = data.rdd.getNumPartitions()
             validation_data = validation_data.repartition(num_data_part)
 
-    data = _dataframe_to_xshards(data, feature_cols, label_cols, accept_str_col)
+    data = _dataframe_to_xshards(data, feature_cols, label_cols, accept_str_col, shard_size)
     if validation_data is not None:
         validation_data = _dataframe_to_xshards(validation_data, feature_cols, label_cols,
-                                                accept_str_col)
+                                                accept_str_col, shard_size)
 
     return data, validation_data
 
 
 def maybe_dataframe_to_xshards(data, validation_data, feature_cols, label_cols, mode="fit",
-                               num_workers=None, accept_str_col=False):
+                               num_workers=None, accept_str_col=False, shard_size=None):
     from pyspark.sql import DataFrame
     if isinstance(data, DataFrame):
         data, validation_data = dataframe_to_xshards(data, validation_data,
@@ -469,7 +470,8 @@ def maybe_dataframe_to_xshards(data, validation_data, feature_cols, label_cols, 
                                                      label_cols=label_cols,
                                                      mode=mode,
                                                      num_workers=num_workers,
-                                                     accept_str_col=accept_str_col)
+                                                     accept_str_col=accept_str_col,
+                                                     shard_size=shard_size)
     return data, validation_data
 
 

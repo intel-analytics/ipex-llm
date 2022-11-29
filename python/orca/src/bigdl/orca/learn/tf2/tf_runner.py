@@ -42,7 +42,7 @@ import numpy as np
 from contextlib import closing
 
 from bigdl.dllib.utils import log4Error
-from bigdl.orca.data.utils import ray_partitions_get_data_label, ray_partitions_get_tf_dataset
+from bigdl.orca.data.utils import partitions_get_data_label, partitions_get_tf_dataset
 from bigdl.orca.data.file import is_file, get_remote_file_to_local, get_remote_dir_to_local, \
     get_remote_files_with_prefix_to_local, put_local_file_to_remote, \
     put_local_dir_tree_to_remote, put_local_files_with_prefix_to_remote
@@ -153,9 +153,9 @@ class HorovodDatasetHanlder(DatasetHandler):
 
     def _handle_xshards(self, dataset, steps, local_batch_size, shuffle):
         import tensorflow as tf
-        data, label = ray_partitions_get_data_label(ray.get(dataset),
-                                                    allow_tuple=True,
-                                                    allow_list=False)
+        data, label = partitions_get_data_label(ray.get(dataset),
+                                                allow_tuple=True,
+                                                allow_list=False)
         dataset = tf.data.Dataset.from_tensor_slices((data, label))
         options = tf.data.Options()
         options.experimental_distribute.auto_shard_policy = tf.data.experimental.AutoShardPolicy.OFF
@@ -182,7 +182,7 @@ class TFDistributedDatasetHandler(DatasetHandler):
 
     def _handle_xshards(self, dataset, steps, local_batch_size, shuffle):
         import tensorflow as tf
-        tf_dataset = ray_partitions_get_tf_dataset(ray.get(dataset))
+        tf_dataset = partitions_get_tf_dataset(ray.get(dataset))
 
         def dataset_fn(input_context):
             options = tf.data.Options()
@@ -214,9 +214,9 @@ class LocalDatasetHandler(DatasetHandler):
 
     def _handle_xshards(self, dataset, steps, local_batch_size, shuffle):
         import tensorflow as tf
-        data, label = ray_partitions_get_data_label(ray.get(dataset),
-                                                    allow_tuple=True,
-                                                    allow_list=False)
+        data, label = partitions_get_data_label(ray.get(dataset),
+                                                allow_tuple=True,
+                                                allow_list=False)
         dataset = tf.data.Dataset.from_tensor_slices((data, label))
         dataset = dataset.repeat()
         dataset = dataset.take(steps * local_batch_size)
