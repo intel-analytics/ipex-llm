@@ -22,8 +22,8 @@ def generate_primary_key(ip, port):
     keymanager.generate_primary_key_ciphertext(ip, port)
 
 
-def generate_data_key(ip, port, encrypted_primary_key_path):
-    keymanager.generate_data_key_ciphertext(ip, port, encrypted_primary_key_path)
+def generate_data_key(ip, port, encrypted_primary_key_path, data_key_length):
+    keymanager.generate_data_key_ciphertext(ip, port, encrypted_primary_key_path, data_key_length)
 
 
 def encrypt_file_without_key(data_file_path, ip, port):
@@ -64,12 +64,13 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument('-api', '--api', type=str, help='name of the API to use', required=True)
     parser.add_argument('-ip', '--ip', type=str, help='ip address of the ehsm_kms_server', required=True)
-    parser.add_argument('-port', '--port', type=str, help='port of the ehsm_kms_server',default='3000', required=False)
+    parser.add_argument('-port', '--port', type=str, help='port of the ehsm_kms_server', default='3000', required=False)
     parser.add_argument('-pkp', '--pkp', type=str, help='path of the primary key storage file', required=False)
     parser.add_argument('-dkp', '--dkp', type=str, help='path of the data key storage file', required=False)
     parser.add_argument('-dfp', '--dfp', type=str, help='path of the data file to encrypt', required=False)
     parser.add_argument('-dir', '--dir', type=str, help='path of the directory containing column-encrypted CSVs or the directory to be encrypted', required=False)
     parser.add_argument('-sdp', '--sdp', type=str, help='path of the save directory output to',required=False)
+    parser.add_argument('-klen', '--klen', type=str, help='length of data key, e.g. 16 or 32', default=32, required=False)
     args = parser.parse_args()
 
     api = args.api
@@ -91,7 +92,8 @@ if __name__ == "__main__":
         generate_primary_key(ip, port)
     elif api == 'generate_data_key':
         encrypted_primary_key_path = args.pkp
-        generate_data_key(ip, port, encrypted_primary_key_path)
+        data_key_length = args.klen
+        generate_data_key(ip, port, encrypted_primary_key_path, data_key_length)
     elif api == 'encrypt_file_with_key':
         data_file_path = args.dfp
         encrypted_primary_key_path = args.pkp
@@ -111,7 +113,7 @@ if __name__ == "__main__":
         encrypted_primary_key_path = args.pkp
         encrypted_data_key_path = args.dkp
         save_path = args.sdp
-        encrypt_directory_with_key(dir_path, ip, port, encrypted_primary_key_path, encrypted_data_key_path,save_path)
+        encrypt_directory_with_key(dir_path, ip, port, encrypted_primary_key_path, encrypted_data_key_path, save_path)
     elif api == 'get_data_key_plaintext':
         encrypted_primary_key_path = args.pkp
         encrypted_data_key_path = args.dkp

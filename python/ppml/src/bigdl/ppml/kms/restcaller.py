@@ -66,11 +66,11 @@ def request_parimary_key_ciphertext(ip, port):
     primary_key_ciphertext = post_request(ip, port, action, payload)['keyid']
     return primary_key_ciphertext
 
-def request_data_key_ciphertext(ip, port, encrypted_primary_key):
+def request_data_key_ciphertext(ip, port, encrypted_primary_key, data_key_length):
     action = "GenerateDataKeyWithoutPlaintext"
     payload = {
         "keyid":encrypted_primary_key,
-        "keylen": 32,
+        "keylen": data_key_length,
         "aad": "test",
     }
     data_key_ciphertext = post_request(ip, port, action, payload)['ciphertext']

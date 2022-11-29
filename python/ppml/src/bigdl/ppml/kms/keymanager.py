@@ -38,8 +38,8 @@ def generate_primary_key_ciphertext(ip, port):
     print('[INFO] Primary Key Generated Successfully at ./encrypted_primary_key')
 
 
-def generate_data_key_ciphertext(ip, port, encrypted_primary_key_path):
+def generate_data_key_ciphertext(ip, port, encrypted_primary_key_path, data_key_length = 32):
     encrypted_primary_key=read_encrypted_key_file(encrypted_primary_key_path)
-    data_key_ciphertext = request_data_key_ciphertext(ip, port, encrypted_primary_key)
+    data_key_ciphertext = request_data_key_ciphertext(ip, port, encrypted_primary_key, data_key_length)
     write_encrypted_key_file('./encrypted_data_key', data_key_ciphertext)
     print('[INFO] Data Key Generated Successfully at ./encrypted_data_key')
