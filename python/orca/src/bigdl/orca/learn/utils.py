@@ -358,7 +358,8 @@ def process_xshards_of_pandas_dataframe(data, feature_cols, label_cols=None, val
         return data
 
 
-def _dataframe_to_xshards(data, feature_cols, label_cols=None, accept_str_col=False, shard_size=None):
+def _dataframe_to_xshards(data, feature_cols, label_cols=None,
+                          accept_str_col=False, shard_size=None):
     from bigdl.orca import OrcaContext
     schema = data.schema
     if OrcaContext._shard_size:
