@@ -17,37 +17,46 @@
 
 from openvino.tools.pot import DataLoader
 import tensorflow as tf
-from tensorflow.python.data.ops.dataset_ops import BatchDataset
 
 from bigdl.nano.utils.log4Error import invalidInputError
 
 
 class KerasOpenVINODataLoader(DataLoader):
-    def __init__(self, dataset, collate_fn=None):
-        invalidInputError(isinstance(dataset, tf.data.Dataset),
-                          "Please provide an instance of tf.data.Dataset")
-        self.dataset = dataset
+    def __init__(self, x, y, collate_fn=None):
+        self.x = x
+        self.y = y
         self.collate_fn = collate_fn
-        self.next_index = 0
-        self.iter = iter(self.dataset)
+        self._reset()
 
     def __getitem__(self, index):
         if index > len(self):
             invalidInputError(False, f"index out of bounds, index:{index}, length:{len(self)}")
 
         if index < self.next_index:
-            self.next_index = 0
-            self.iter = iter(self.dataset)
+            self._reset()
         if index > self.next_index:
             for _ in range(index - self.next_index):
-                _ = next(self.iter)
-            self.next_index = index
+                self._next()
 
-        data = next(self.iter)
+        data = self._next()
         if self.collate_fn:
             data = self.collate_fn(data)
-        self.next_index += 1
         return data
 
     def __len__(self):
-        return len(self.dataset)
+        return len(self.x)
+
+    def _reset(self):
+        self.next_index = 0
+        if isinstance(self.x, tf.data.Dataset):
+            self.x_iter = iter(self.x)
+        else:
+            self.x_iter = iter(self.x)
+            self.y_iter = iter(self.y)
+
+    def _next(self):
+        self.next_index += 1
+        if isinstance(self.x, tf.data.Dataset):
+            return next(self.x_iter)
+        else:
+            return next(self.x_iter), next(self.y_iter)
