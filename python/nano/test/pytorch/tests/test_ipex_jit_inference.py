@@ -81,18 +81,6 @@ class IPEXJITInference_gt_1_10:
             new_model = InferenceOptimizer.load(tmp_dir_name)
         with new_model.context_manager:
             new_model(self.data_sample)
-    
-    def test_resnest_ipex_jit_inference(self):
-        model = torch.hub.load('zhanghang1989/ResNeSt', 'resnest50', pretrained=False)
-        model = InferenceOptimizer.trace(model, accelerator="jit",
-                                         use_ipex=True, input_sample=self.data_sample)
-        with model.context_manager:
-            model(self.data_sample)
-        with tempfile.TemporaryDirectory() as tmp_dir_name:
-            InferenceOptimizer.save(model, tmp_dir_name)
-            new_model = InferenceOptimizer.load(tmp_dir_name)
-        with new_model.context_manager:
-            new_model(self.data_sample)
 
 
 class IPEXJITInference_lt_1_10:

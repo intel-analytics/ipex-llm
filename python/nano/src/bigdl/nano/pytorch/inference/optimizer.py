@@ -63,22 +63,14 @@ class TorchAccelerationOption(AccelerationOption):
                     self.channels_last is False:
                 return model
             # trace
-            if accelerator in ("jit", None):
-                acce_model = \
-                    InferenceOptimizer.trace(model=model,
-                                             accelerator=accelerator,
-                                             use_ipex=self.ipex,
-                                             # channels_last is only for jit
-                                             channels_last=self.channels_last,
-                                             input_sample=input_sample)
-            else:
-                acce_model = \
-                    InferenceOptimizer.trace(model=model,
-                                             accelerator=accelerator,
-                                             input_sample=input_sample,
-                                             thread_num=thread_num,
-                                             # remove output of openvino
-                                             logging=logging)
+            acce_model = \
+                InferenceOptimizer.trace(model=model,
+                                         accelerator=accelerator,
+                                         input_sample=input_sample,
+                                         thread_num=thread_num,
+                                         channels_last=self.channels_last,
+                                         # remove output of openvino
+                                         logging=logging)
         else:
             # quantize
             ort_method: str = self.method
@@ -87,6 +79,7 @@ class TorchAccelerationOption(AccelerationOption):
                                             precision=self.get_precision(),
                                             accelerator=accelerator,
                                             use_ipex=self.ipex,
+                                            channels_last=self.channels_last,
                                             calib_data=training_data,
                                             input_sample=input_sample,
                                             method=ort_method,
