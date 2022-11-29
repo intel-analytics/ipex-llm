@@ -13,10 +13,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+
 import math
 import os.path
 
 from pyspark.sql import DataFrame
+import ray
 
 from bigdl.orca.data import SparkXShards
 from bigdl.orca.learn.spark_estimator import Estimator as SparkEstimator
@@ -26,12 +28,14 @@ from bigdl.dllib.nncontext import init_nncontext
 
 from openvino.inference_engine import IECore
 import numpy as np
-from bigdl.dllib.utils.log4Error import *
+from bigdl.dllib.utils.log4Error import invalidInputError
+
+from typing import (List, Optional, Union)
 
 
 class Estimator(object):
     @staticmethod
-    def from_openvino(*, model_path):
+    def from_openvino(*, model_path: str) -> OpenvinoEstimator:
         """
         Load an openVINO Estimator.
 
@@ -43,7 +47,7 @@ class Estimator(object):
 class OpenvinoEstimator(SparkEstimator):
     def __init__(self,
                  *,
-                 model_path):
+                 model_path: str) -> None:
         self.load(model_path)
 
     def fit(self, data, epochs, batch_size=32, feature_cols=None, label_cols=None,
@@ -53,7 +57,12 @@ class OpenvinoEstimator(SparkEstimator):
         """
         invalidInputError(False, "not implemented")
 
-    def predict(self, data, feature_cols=None, batch_size=4, input_cols=None):
+    def predict(self,
+                data: Union[SparkXShards, DataFrame, np.ndarray, List[np.ndarray]],
+                feature_cols: Optional[List[str]] = None,
+                batch_size: Optional[int] = 4,
+                input_cols: Optional[Union[str, List[str]]] = None
+                ) -> Union[SparkXShards, DataFrame, np.ndarray, List[np.ndarray]]:
         """
         Predict input data
 
@@ -298,13 +307,13 @@ class OpenvinoEstimator(SparkEstimator):
         """
         invalidInputError(False, "not implemented")
 
-    def save(self, model_path):
+    def save(self, model_path: str):
         """
         Save is not supported in OpenVINOEstimator
         """
         invalidInputError(False, "not implemented")
 
-    def load(self, model_path):
+    def load(self, model_path: str) -> None:
         """
         Load an openVINO model.
 
@@ -328,7 +337,7 @@ class OpenvinoEstimator(SparkEstimator):
         self.inputs = list(net.input_info.keys())
         self.output_dict = {k: v.shape for k, v in net.outputs.items()}
 
-    def set_tensorboard(self, log_dir, app_name):
+    def set_tensorboard(self, log_dir: str, app_name: str):
         """
         Set_tensorboard is not supported in OpenVINOEstimator
         """
