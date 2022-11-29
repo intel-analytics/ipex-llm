@@ -22,6 +22,7 @@ import numpy as np
 import pandas as pd
 import scipy.sparse as sp
 
+import torch
 import torch.utils.data as data
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import MinMaxScaler
@@ -36,7 +37,9 @@ class NCFData(data.Dataset):
         self.train_mat = train_mat
         self.num_ng = num_ng
         self.is_sampling = False
-        self.data['label'] = [1.0 for _ in range(len(self.data))]
+
+        if 'label' not in data.columns:
+            self.data['label'] = [1.0 for _ in range(len(self.data))]
 
     def ng_sample(self):
         self.is_sampling = True
@@ -59,28 +62,19 @@ class NCFData(data.Dataset):
         self.data['label'] = labels_fill
 
     def train_test_split(self):
-        self.train_dataset, self.test_dataset = train_test_split(self.data,
-                                                                 test_size=0.2, random_state=100)
+        train_dataset, test_dataset = train_test_split(self.data, test_size=0.2, random_state=100)
+        return NCFData(train_dataset), NCFData(test_dataset)
 
     def merge_features(self, users, items, total_cols):
-        self.train_dataset = users.merge(self.train_dataset, on='user')
-        self.train_dataset = self.train_dataset.merge(items, on='item')
-        self.train_dataset = self.train_dataset.loc[:, total_cols]
-
-        self.test_dataset = users.merge(self.test_dataset, on='user')
-        self.test_dataset = self.test_dataset.merge(items, on='item')
-        self.test_dataset = self.test_dataset.loc[:, total_cols]
-
-    def datasets_tolist(self):
-        train_dataset = list(map(lambda row: list(row[1:]), self.train_dataset.itertuples()))
-        test_dataset = list(map(lambda row: list(row[1:]), self.test_dataset.itertuples()))
-        return train_dataset, test_dataset
+        self.data = users.merge(self.data, on='user')
+        self.data = self.data.merge(items, on='item')
+        self.data = self.data.loc[:, total_cols]
 
     def __len__(self):
         return len(self.data)
 
     def __getitem__(self, idx):
-        return tuple(self.data.iloc[idx, :])
+        return tuple(self.data.at[idx, i] for i in self.data.columns)
 
 
 def process_users_items(dataset_dir):
@@ -113,7 +107,8 @@ def process_users_items(dataset_dir):
         df = users if i in users.columns else items
         values = df[i].values.reshape(-1, 1)
         values = scaler.fit_transform(values)
-        df[i] = pd.Series(values[:, 0], dtype=np.float32)
+        values = [torch.tensor(v, dtype=torch.float32) for v in values]
+        df[i] = values
 
     return users, items, user_num, item_num, \
         sparse_features, dense_features, feature_cols+label_cols
@@ -157,13 +152,11 @@ def load_dataset(dataset_dir, num_ng=4):
     dataset.ng_sample()
 
     # train test split
-    dataset.train_test_split()
+    train_dataset, test_dataset = dataset.train_test_split()
 
     # merge features
-    dataset.merge_features(users, items, total_cols)
-
-    # convert datasets to list
-    train_dataset, test_dataset = dataset.datasets_tolist()
+    train_dataset.merge_features(users, items, total_cols)
+    test_dataset.merge_features(users, items, total_cols)
     return train_dataset, test_dataset
 
 
