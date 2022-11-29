@@ -2,7 +2,7 @@ Advanced Topic
 ====================
 
 * `PPML User Guide <ppml.html>`_
-* `Develop your own Big Data & AI applications with BigDL PPML <devguide.html>`_
+* `Ensure Integrity and Build Trust with Attestation <attestation_basic.html>`_
 * `Trusted Big Data Analytics and ML <trusted_big_data_analytics_and_ml.html>`_
 * `Trusted FL (Federated Learning) <trusted_fl.html>`_
 * `Secure Your Services <../QuickStart/secure_your_services.html>`_
