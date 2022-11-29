@@ -232,8 +232,8 @@ run_pyspark_sql_example() {
 }
 
 run_pyspark_sklearn_example() {
-    init_instance spark
-    build_spark
+    export RUNTIME_ENV="native"
+    attestation_init
     cd /opt/occlum_spark
     echo -e "${BLUE}occlum run pyspark sklearn example${NC}"
     occlum run /usr/lib/jvm/java-8-openjdk-amd64/bin/java \
