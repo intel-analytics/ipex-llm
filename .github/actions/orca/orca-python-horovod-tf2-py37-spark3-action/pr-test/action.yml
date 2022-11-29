@@ -11,10 +11,10 @@ runs:
         bash python/dev/release_default_linux_spark313.sh default false false false -Ddata-store-url=$HTTP_URI -U
         
         # install dllib
-        pip install python/dllib/src/dist/bigdl_dllib*-py3-none-manylinux1_x86_64.whl
+        pip install -i https://pypi.org/simple python/dllib/src/dist/bigdl_dllib*-py3-none-manylinux1_x86_64.whl
 
         # install orca
-        pip install python/orca/src/dist/bigdl_orca*-py3-none-manylinux1_x86_64.whl
+        pip install -i https://pypi.org/simple python/orca/src/dist/bigdl_orca*-py3-none-manylinux1_x86_64.whl
         
         chmod a+x python/orca/dev/test/run-pytests-horovod-tf.sh
         python/orca/dev/test/run-pytests-horovod-tf.sh

@@ -95,8 +95,7 @@ jobs:
               - 'scala/pom.xml'
               - 'python/orca/**'
               - '.github/actions/orca/**'
-              
-           
+                    
   Friesian-Scala-UT:
     needs: changes
     if: ${{ needs.changes.outputs.friesian == 'true' }}
@@ -252,6 +251,20 @@ jobs:
     - name: Remove Env
       if: ${{ always() }}
       uses: ./.github/actions/remove-env
+
+  Orca-Tutorial-Xshards:
+    needs: changes
+    if: ${{ needs.changes.outputs.orca == 'true' }}
+    runs-on: [self-hosted, Gondolin, ubuntu-20.04-lts]
+
+    steps:
+    - uses: actions/checkout@v3
+    - name: Set up JDK8
+      uses: ./.github/actions/jdk-setup-action
+    - name: Set up maven
+      uses: ./.github/actions/maven-setup-action 
+    - name: Run Test
+      uses: ./.github/actions/orca/orca-tutorial-xshards
 
   PPML-Python-UT-Spark3:
     needs: changes
