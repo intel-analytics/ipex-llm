@@ -131,12 +131,12 @@ class InferenceModel(JavaValue):
 
     # TODO: Add UT
     def load_tensorflow_graph(self, model_path: str,
-                             model_type: str,
-                             inputs: List[str],
-                             outputs: List[str],
-                             intra_op_parallelism_threads: int = 1,
-                             inter_op_parallelism_threads: int = 1,
-                             use_per_session_threads: bool = True) -> None:
+                              model_type: str,
+                              inputs: List[str],
+                              outputs: List[str],
+                              intra_op_parallelism_threads: int = 1,
+                              inter_op_parallelism_threads: int = 1,
+                              use_per_session_threads: bool = True) -> None:
         """
         Load a TensorFlow model using tensorflow.
 
