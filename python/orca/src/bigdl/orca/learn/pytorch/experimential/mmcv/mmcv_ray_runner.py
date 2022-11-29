@@ -14,19 +14,44 @@
 # limitations under the License.
 #
 
+import io
+import os.path as osp
 import time
 import mmcv
 import numpy as np
 import torch
 import warnings
+import fsspec
 from mmcv.runner import EpochBasedRunner
 from mmcv.runner.utils import get_host_info
 from mmcv.parallel.distributed import MMDistributedDataParallel
+from mmcv.parallel.utils import is_module_wrapper
+from mmcv import BaseStorageBackend, FileClient
 from bigdl.orca.learn.pytorch.utils import get_batchsize
 from bigdl.dllib.utils.log4Error import invalidInputError
 from bigdl.orca.learn.pytorch.experimential.core.base_ray_runner import BaseRayRunner
 
 from typing import (Any, Dict, List, Optional, Tuple, Callable, overload)
+
+
+class HDFSBackend(BaseStorageBackend):
+    """HDFS storage backend for save/load ckpt"""
+
+    def get(self, filepath):
+        pass
+
+    def get_text(self, filepath):
+        pass
+
+    def put(self, obj, filepath):
+        with fsspec.open(filepath, "wb") as f:
+            f.write(obj)
+
+    def put_text(self, obj, filepath):
+        pass
+
+    def join_path(self, filepath, *filepaths):
+        return osp.join(filepath, *filepaths)
 
 
 class MMCVRayEpochRunner(BaseRayRunner, EpochBasedRunner):
@@ -64,6 +89,7 @@ class MMCVRayEpochRunner(BaseRayRunner, EpochBasedRunner):
         #    flexible control of input data.
         # 2. It implement two APIs ``train_step()`` and ``val_step()``.
         self.model = MMDistributedDataParallel(self.model)
+        FileClient.register_backend('hdfs_backend', HDFSBackend, prefixes="hdfs")
 
     def train_epochs(self,
                      data_loaders_creators: List[Callable],
@@ -196,16 +222,36 @@ class MMCVRayEpochRunner(BaseRayRunner, EpochBasedRunner):
     def validate(self, **kwargs):
         pass
 
+    def save_checkpoint(self,
+                        out_dir: str,
+                        filename_tmpl: str = 'epoch_{}.pth',
+                        save_optimizer: bool = True,
+                        meta: Optional[Dict] = None,
+                        create_symlink: bool = True) -> None:
+        """Save the checkpoint.
+
+        Args:
+            out_dir (str): The directory that checkpoints are saved.
+            filename_tmpl (str, optional): The checkpoint filename template,
+                which contains a placeholder for the epoch number.
+                Defaults to 'epoch_{}.pth'.
+            save_optimizer (bool, optional): Whether to save the optimizer to
+                the checkpoint. Defaults to True.
+            meta (dict, optional): The meta information to be saved in the
+                checkpoint. Defaults to None.
+            create_symlink (bool, optional): Whether to create a symlink
+                "latest.pth" to point to the latest checkpoint.
+                Defaults to True.
+        """
+        EpochBasedRunner.save_checkpoint(self, out_dir, filename_tmpl,
+                                         save_optimizer, meta, create_symlink)
+
     def get_state_dict(self):
         """Returns the state of the runner."""
         pass
 
     def load_state_dict(self, state):
         """Sets the state of the model."""
-        pass
-
-    def _save_checkpoint(self, filepath, save_weights_only=False):
-        """Save checkpoint."""
         pass
 
     def shutdown(self):
