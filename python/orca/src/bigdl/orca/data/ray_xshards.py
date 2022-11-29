@@ -204,17 +204,14 @@ class RayXShards(XShards):
     def to_spark_xshards(self) -> "SparkXShards":
         from bigdl.orca.data import SparkXShards
         ray_ctx = OrcaRayContext.get()
-        sc = ray_ctx.sc
-        address = ray_ctx.redis_address
-        password = ray_ctx.redis_password
-        num_parts = self.num_partitions()
+        address = ray_ctx.redis_address  # type: ignore
+        password = ray_ctx.redis_password  # type: ignore
         partition2store = self.partition2store_name
         rdd = self.rdd.mapPartitionsWithIndex(
             lambda idx, _: get_from_ray(idx, address, password, partition2store))
 
         # the reason why we trigger computation here is to ensure we get the data
         # from ray before the RayXShards goes out of scope and the data get garbage collected
-        from pyspark.storagelevel import StorageLevel
         rdd = rdd.cache()
         result_rdd = rdd.map(lambda x: x)  # sparkxshards will uncache the rdd when gc
         spark_xshards = SparkXShards(result_rdd)
