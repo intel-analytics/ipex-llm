@@ -83,7 +83,7 @@ def string_index(df, col):
     indexer = StringIndexer(inputCol=col, outputCol=col + '_index').fit(df)
     df = indexer.transform(df)
     df = df.drop(col).withColumnRenamed(col + '_index', col)
-    df = df.withColumn(col, df[col].cast('int'))
+    df = df.withColumn(col, df[col].cast('int') + 1)
     embed_dim = df.agg({col: "max"}).collect()[0][f"max({col})"] + 1
     return df, embed_dim
 
@@ -117,7 +117,7 @@ def add_feature(df, df_user, df_item, sparse_features, dense_features):
 
 
 def prepare_data(data_dir, neg_scale=4):
-    sparse_features = ['zipcode', 'gender', 'occupation', 'category']
+    sparse_features = ['zipcode', 'gender', 'category']
     dense_features = ['age']
     feature_cols = ['user', 'item'] + sparse_features + dense_features
     label_cols = ['label']
@@ -129,7 +129,8 @@ def prepare_data(data_dir, neg_scale=4):
     df_rating = generate_neg_sample(df_rating, item_num, neg_scale=neg_scale)
     df, sparse_feats_input_dims = \
         add_feature(df_rating, df_user, df_item, sparse_features, dense_features)
-
+    sparse_features.append('occupation')
+    sparse_feats_input_dims.append(21)
     train_df, val_df = df.randomSplit([0.8, 0.2], seed=100)
 
     return train_df, val_df, sparse_feats_input_dims, user_num, item_num, feature_cols, label_cols
@@ -142,6 +143,6 @@ if __name__ == "__main__":
 
     train_data, test_data, embedding_in_dim, user_num, item_num, feature_cols, label_cols = \
         prepare_data("ml-1m", neg_scale=4)
-    train_data.write.csv('./train_dataframe', header=True, sep=',', mode='overwrite')
-    test_data.write.csv('./test_dataframe', header=True, sep=',', mode='overwrite')
+    train_data.write.parquet('./train_dataframe', mode='overwrite')
+    test_data.write.parquet('./test_dataframe', mode='overwrite')
     stop_orca_context()
