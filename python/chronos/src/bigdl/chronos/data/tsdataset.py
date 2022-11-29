@@ -1134,8 +1134,9 @@ class TSDataset:
             res = []
             groups = self.df.groupby(self.id_col)
             for _, group in groups:
-                res.append(pd.DataFrame({'cycle_length' : [cycle_length_est(group[col].values,
-                                                    top_k)for col in self.target_col]}))
+                res.append(pd.DataFrame({'cycle_length':
+                           [cycle_length_est(group[col].values,
+                                             top_k)for col in self.target_col]}))
             res = pd.concat(res, axis=0)
             res = res.cycle_length
 
