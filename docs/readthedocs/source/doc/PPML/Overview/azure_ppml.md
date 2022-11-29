@@ -285,7 +285,7 @@ KEY_VAULT_NAME=
 PRIMARY_KEY_PATH=
 DATA_KEY_PATH=
 
-secure_password=`az keyvault secret show --name "key-pass" --vault-name $KEY_VAULT_NAME --query "value" | sed -e 's/^"//' -e 's/"$//'`
+export secure_password=`az keyvault secret show --name "key-pass" --vault-name $KEY_VAULT_NAME --query "value" | sed -e 's/^"//' -e 's/"$//'`
 
 bash bigdl-ppml-submit.sh \
     --master $RUNTIME_SPARK_MASTER \
@@ -301,8 +301,8 @@ bash bigdl-ppml-submit.sh \
     --conf spark.cores.max=8 \
     --name spark-decrypt-sgx \
     --conf spark.kubernetes.container.image=$AZ_CONTAINER_REGISTRY.azurecr.io/intel_corporation/bigdl-ppml-trusted-big-data-ml-python-gramine:$BIGDL_VERSION-$SGX_MEM \
-    --conf spark.kubernetes.driver.podTemplateFile=/ppml/trusted-big-data-ml/azure/spark-driver-template-az.yaml \
-    --conf spark.kubernetes.executor.podTemplateFile=/ppml/trusted-big-data-ml/azure/spark-executor-template-az.yaml \
+    --driver-template /ppml/trusted-big-data-ml/azure/spark-driver-template-az.yaml \
+    --executor-template /ppml/trusted-big-data-ml/azure/spark-executor-template-az.yaml \
     --jars local://$SPARK_EXTRA_JAR_PATH \
     --conf spark.hadoop.fs.azure.account.auth.type.${DATA_LAKE_NAME}.dfs.core.windows.net=SharedKey \
     --conf spark.hadoop.fs.azure.account.key.${DATA_LAKE_NAME}.dfs.core.windows.net=${DATA_LAKE_ACCESS_KEY} \
@@ -319,7 +319,7 @@ bash bigdl-ppml-submit.sh \
 ### 3.8 Run simple query python example
 This is an example script to run simple query python example job on AKS with data stored in Azure data lake store.
 ```bash
-export RUNTIME_DRIVER_MEMORY=8g
+export RUNTIME_DRIVER_MEMORY=6g
 export RUNTIME_DRIVER_PORT=54321
 
 RUNTIME_SPARK_MASTER=
@@ -335,7 +335,7 @@ KEY_VAULT_NAME=
 PRIMARY_KEY_PATH=
 DATA_KEY_PATH=
 
-secure_password=`az keyvault secret show --name "key-pass" --vault-name $KEY_VAULT_NAME --query "value" | sed -e 's/^"//' -e 's/"$//'`
+export secure_password=`az keyvault secret show --name "key-pass" --vault-name $KEY_VAULT_NAME --query "value" | sed -e 's/^"//' -e 's/"$//'`
 
 bash bigdl-ppml-submit.sh \
     --master $RUNTIME_SPARK_MASTER \
@@ -343,15 +343,15 @@ bash bigdl-ppml-submit.sh \
     --sgx-enabled true \
     --sgx-driver-jvm-memory 2g \
     --sgx-executor-jvm-memory 7g \
-    --driver-memory 7g \
+    --driver-memory 6g \
     --driver-cores 4 \
-    --executor-memory 18g \
+    --executor-memory 24g \
     --executor-cores 2 \
     --num-executors 1 \
     --name simple-query-sgx \
     --conf spark.kubernetes.container.image=$AZ_CONTAINER_REGISTRY.azurecr.io/intel_corporation/bigdl-ppml-trusted-big-data-ml-python-gramine:$BIGDL_VERSION-$SGX_MEM \
-    --conf spark.kubernetes.driver.podTemplateFile=/ppml/trusted-big-data-ml/azure/spark-driver-template-az.yaml \
-    --conf spark.kubernetes.executor.podTemplateFile=/ppml/trusted-big-data-ml/azure/spark-executor-template-az.yaml \
+    --driver-template /ppml/trusted-big-data-ml/azure/spark-driver-template-az.yaml \
+    --executor-template /ppml/trusted-big-data-ml/azure/spark-executor-template-az.yaml \
     --conf spark.hadoop.fs.azure.account.auth.type.${DATA_LAKE_NAME}.dfs.core.windows.net=SharedKey \
     --conf spark.hadoop.fs.azure.account.key.${DATA_LAKE_NAME}.dfs.core.windows.net=${DATA_LAKE_ACCESS_KEY} \
     --conf spark.hadoop.fs.azure.enable.append.support=true \
@@ -448,7 +448,7 @@ The example script to run a query is like:
 export RUNTIME_DRIVER_MEMORY=8g
 export RUNTIME_DRIVER_PORT=54321
 
-secure_password=`az keyvault secret show --name "key-pass" --vault-name $KEY_VAULT_NAME --query "value" | sed -e 's/^"//' -e 's/"$//'`
+export secure_password=`az keyvault secret show --name "key-pass" --vault-name $KEY_VAULT_NAME --query "value" | sed -e 's/^"//' -e 's/"$//'`
 
 RUNTIME_SPARK_MASTER=
 AZ_CONTAINER_REGISTRY=myContainerRegistry
@@ -478,8 +478,8 @@ bash bigdl-ppml-submit.sh \
     --conf spark.cores.max=8 \
     --name spark-tpch-sgx \
     --conf spark.kubernetes.container.image=$AZ_CONTAINER_REGISTRY.azurecr.io/intel_corporation/bigdl-ppml-trusted-big-data-ml-python-gramine:$BIGDL_VERSION-$SGX_MEM \
-    --conf spark.kubernetes.driver.podTemplateFile=/ppml/trusted-big-data-ml/azure/spark-driver-template-az.yaml \
-    --conf spark.kubernetes.executor.podTemplateFile=/ppml/trusted-big-data-ml/azure/spark-executor-template-az.yaml \
+    --driver-template /ppml/trusted-big-data-ml/azure/spark-driver-template-az.yaml \
+    --executor-template /ppml/trusted-big-data-ml/azure/spark-executor-template-az.yaml \
     --conf spark.sql.auto.repartition=true \
     --conf spark.default.parallelism=400 \
     --conf spark.sql.shuffle.partitions=400 \
