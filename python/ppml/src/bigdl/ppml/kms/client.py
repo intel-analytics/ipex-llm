@@ -70,7 +70,7 @@ if __name__ == "__main__":
     parser.add_argument('-dfp', '--dfp', type=str, help='path of the data file to encrypt', required=False)
     parser.add_argument('-dir', '--dir', type=str, help='path of the directory containing column-encrypted CSVs or the directory to be encrypted', required=False)
     parser.add_argument('-sdp', '--sdp', type=str, help='path of the save directory output to',required=False)
-    parser.add_argument('-klen', '--klen', type=str, help='length of data key, e.g. 16 or 32', default=32, required=False)
+    parser.add_argument('-klen', '--klen', type=int, help='length of data key, e.g. 16 or 32', default=32, required=False)
     args = parser.parse_args()
 
     api = args.api
