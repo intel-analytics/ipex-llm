@@ -40,6 +40,7 @@ RUN env DEBIAN_FRONTEND=noninteractive apt-get update && \
     rm /usr/bin/python3 && \
     ln -s /usr/bin/python3.7 /usr/bin/python3 && \
     pip3 install --upgrade pip && \
+    pip3 install --no-cache requests argparse cryptography==3.3.2 urllib3 && \
     pip install setuptools==58.4.0 && \
     ln -s /usr/bin/python3 /usr/bin/python && \
 # Gramine
