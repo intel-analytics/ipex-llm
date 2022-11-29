@@ -16,9 +16,10 @@
 
 from abc import ABC, abstractmethod
 
-import bigdl.dllib.optim.optimizer
+from typing import (List, Optional, TYPE_CHECKING)
 
-from typing import (List, Optional)
+if TYPE_CHECKING:
+    import bigdl
 
 class Scheduler(ABC):
 
