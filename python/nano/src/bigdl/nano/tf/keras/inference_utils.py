@@ -57,15 +57,14 @@ class InferenceUtils:
                   | 2. a TensorFlow tensor, or a list of tensors (in case the model has
                   | multiple inputs).
                   |
-                  | 3. an unbatched tf.data.dataset. Should return a tuple of (inputs, targets).
+                  | 3. an unbatched tf.data.Dataset. Should return a tuple of (inputs, targets).
 
                   X will be used as calibration dataset for Post-Training Static Quantization (PTQ),
                   as well as be used for generating input_sample to calculate latency.
                   To avoid data leak during calibration, please use training dataset.
         :param y: Target data. Like the input data x, it could be either Numpy array(s) or
-                  TensorFlow tensor(s). It should be consistent with x (you cannot have Numpy inputs
-                  and tensor targets, or inversely). If x is a dataset, y will be ignored (since
-                  targets will be obtained from x).
+                  TensorFlow tensor(s). Its length should be consistent with x.
+                  If x is a dataset, y will be ignored (since targets will be obtained from x).
         :param precision:       Global precision of quantized model,
                                 supported type: 'int8', defaults to 'int8'.
         :param accelerator:     Use accelerator 'None', 'onnxruntime', 'openvino', defaults to None.

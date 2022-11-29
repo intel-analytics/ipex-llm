@@ -102,7 +102,7 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                   | 2. a TensorFlow tensor, or a list of tensors (in case the model has
                   | multiple inputs).
                   |
-                  | 3. an unbatched tf.data.dataset. Should return a tuple of (inputs, targets).
+                  | 3. an unbatched tf.data.Dataset. Should return a tuple of (inputs, targets).
 
                   X will be used as calibration dataset for Post-Training Static Quantization (PTQ),
                   as well as be used for generating input_sample to calculate latency.
