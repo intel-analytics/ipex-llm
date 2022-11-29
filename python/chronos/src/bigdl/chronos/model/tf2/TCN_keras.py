@@ -136,6 +136,7 @@ class TemporalConvNet(Model):
         self.future_seq_len = future_seq_len
         self.input_feature_num = input_feature_num
         self.output_feature_num = output_feature_num
+        self.dummy_encoder = dummy_encoder
         self.kernel_size = kernel_size
         self.num_channels = num_channels
         self.dropout = dropout
@@ -164,11 +165,11 @@ class TemporalConvNet(Model):
 
     def call(self, x, training=False):
         for layer in self.network:
-            y = layer(x, training=training)
-        y = self.permute(y)
-        y = self.linear(y)
-        y = self.permute(y)
-        return y
+            x = layer(x, training=training)
+        x = self.permute(x)
+        x = self.linear(x)
+        x = self.permute(x)
+        return x
 
     def get_config(self):
         return {"past_seq_len": self.past_seq_len,

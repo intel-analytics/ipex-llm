@@ -30,14 +30,15 @@ class moving_avg(Layer):
         self.avg = tf.keras.layers.AveragePooling1D(pool_size=kernel_size, strides=stride,
                                                     padding='valid',
                                                     data_format='channels_first')
+        self.permute = tf.keras.layers.Permute((2, 1))
 
     def call(self, x):
         # padding on the both ends of time series
-        front = x[:, 0:1, :].repeat(1, (self.kernel_size - 1) // 2, 1)
-        end = x[:, -1:, :].repeat(1, self.kernel_size // 2, 1)
-        x = tf.concat([front, x, end], dim=1)
-        x = self.avg(x.permute(0, 2, 1))
-        x = x.permute(0, 2, 1)
+        front = tf.tile(x[:, 0:1, :], [1, (self.kernel_size - 1) // 2, 1])
+        end = tf.tile(x[:, -1:, :], [1, self.kernel_size // 2, 1])
+        x = tf.concat([front, x, end], axis=1)
+        x = self.avg(self.permute(x))
+        x = self.permute(x)
         return x
 
 
