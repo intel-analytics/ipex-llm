@@ -45,6 +45,8 @@ import tensorflow as tf
 from bigdl.nano.tf.keras import Model
 from tensorflow.keras.layers import Conv1D, BatchNormalization,\
     Activation, Dropout, Input, Layer
+from bigdl.chronos.model.tf2.normalization import NormalizeTSModel
+from bigdl.chronos.model.tf2.decomposition import DecompositionTSModel
 
 
 class TemporalBlock(Layer):
@@ -121,6 +123,7 @@ class TemporalConvNet(Model):
                  future_seq_len,
                  input_feature_num,
                  output_feature_num,
+                 dummy_encoder=False,
                  num_channels=[30]*8,
                  kernel_size=3,
                  dropout=0.1,
@@ -147,13 +150,14 @@ class TemporalConvNet(Model):
         self.network = []
 
         # The model contains "num_levels" TemporalBlock
-        num_levels = len(num_channels)
+        num_levels = 0 if dummy_encoder else len(num_channels)
         for i in range(num_levels):
             dilation_rate = 2 ** i
             self.network.append(TemporalBlock(dilation_rate, num_channels[i], kernel_size,
                                               padding='causal', dropout_rate=dropout))
-        self.network.append(TemporalBlock(dilation_rate, self.output_feature_num, kernel_size,
-                                          padding='causal', dropout_rate=dropout))
+        if not dummy_encoder:
+            self.network.append(TemporalBlock(dilation_rate, self.output_feature_num, kernel_size,
+                                              padding='causal', dropout_rate=dropout))
 
         self.linear = tf.keras.layers.Dense(future_seq_len, kernel_initializer=init)
         self.permute = tf.keras.layers.Permute((2, 1))
@@ -171,6 +175,7 @@ class TemporalConvNet(Model):
                 "future_seq_len": self.future_seq_len,
                 "input_feature_num": self.input_feature_num,
                 "output_feature_num": self.output_feature_num,
+                "dummy_encoder": self.dummy_encoder,
                 "kernel_size": self.kernel_size,
                 "num_channels": self.num_channels,
                 "dropout": self.dropout,
@@ -194,9 +199,28 @@ def model_creator(config):
                             input_feature_num=config["input_feature_num"],
                             output_feature_num=config["output_feature_num"],
                             num_channels=num_channels.copy(),
+                            dummy_encoder=config.get("dummy_encoder", False),
                             kernel_size=config.get("kernel_size", 7),
                             dropout=config.get("dropout", 0.2),
                             repo_initialization=config.get("repo_initialization", True))
+
+    if config.get("normalization", False):
+        model = NormalizeTSModel(model, config["output_feature_num"])
+    decomposition_kernel_size = config.get("decomposition_kernel_size", 0)
+    if decomposition_kernel_size > 1:
+        model_copy = TemporalConvNet(past_seq_len=config["past_seq_len"],
+                                     input_feature_num=config["input_feature_num"],
+                                     future_seq_len=config["future_seq_len"],
+                                     output_feature_num=config["output_feature_num"],
+                                     num_channels=num_channels.copy(),
+                                     dummy_encoder=config.get("dummy_encoder", False),
+                                     kernel_size=config.get("kernel_size", 7),
+                                     dropout=config.get("dropout", 0.2),
+                                     repo_initialization=config.get("repo_initialization", True))
+        if config.get("normalization", False):
+            model_copy = NormalizeTSModel(model_copy, config["output_feature_num"])
+        model = DecompositionTSModel((model, model_copy), decomposition_kernel_size)
+
     inputs = np.zeros(shape=(1, config["past_seq_len"], config["input_feature_num"]))
     # init weights matrix
     model(inputs)
