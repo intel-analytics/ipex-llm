@@ -34,7 +34,6 @@ sc = init_orca_context()
 dataset_dir = "./ml-1m"
 train_data, test_data, sparse_feats_input_dims, user_num, item_num, feature_cols, label_cols = \
     prepare_data("ml-1m", neg_scale=4)
-print(train_data)
 
 
 # Step 3: Define the model, optimizer and loss
