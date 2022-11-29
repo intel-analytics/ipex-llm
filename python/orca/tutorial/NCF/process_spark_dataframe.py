@@ -83,6 +83,7 @@ def string_index(df, col):
     indexer = StringIndexer(inputCol=col, outputCol=col + '_index').fit(df)
     df = indexer.transform(df)
     df = df.drop(col).withColumnRenamed(col + '_index', col)
+    # the StringIndexer output is float type.
     df = df.withColumn(col, df[col].cast('int') + 1)
     embed_dim = df.agg({col: "max"}).collect()[0][f"max({col})"] + 1
     return df, embed_dim
@@ -130,7 +131,8 @@ def prepare_data(data_dir, neg_scale=4):
     df, sparse_feats_input_dims = \
         add_feature(df_rating, df_user, df_item, sparse_features, dense_features)
     sparse_features.append('occupation')
-    sparse_feats_input_dims.append(21)
+    occupation_num = df.agg({'occupation': 'max'}).collect()[0]['max(occupation)'] + 1
+    sparse_feats_input_dims.append(occupation_num)
     train_df, val_df = df.randomSplit([0.8, 0.2], seed=100)
 
     return train_df, val_df, sparse_feats_input_dims, user_num, item_num, feature_cols, label_cols
