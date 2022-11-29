@@ -115,7 +115,8 @@ ADD ./download_jars.sh /ppml
 ADD ./attestation.sh /ppml
 ADD ./encryptedfsd.sh /ppml
 # Copy the kms folder to /ppml/kms
-ADD ../../python/ppml/src/bigdl/ppml/kms /ppml/kms
+# TODO: later change to use nightly build bigdl
+ADD ./kms /ppml/kms
 
 RUN cd /ppml && \
     bash ./download_jars.sh
