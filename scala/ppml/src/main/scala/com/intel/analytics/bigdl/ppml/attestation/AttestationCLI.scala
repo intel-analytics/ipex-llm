@@ -77,12 +77,18 @@ object AttestationCLI {
         val params = cmdParser.parse(args, CmdParams()).get
 
         // Generate quote
-        val userReportData = params.userReport
+        var userReportData = new String(params.userReport)
         if (params.asType == ATTESTATION_CONVENTION.MODE_AZURE){
-          val userReportData = MessageDigest.getInstance("SHA-256")
+          userReportData = MessageDigest.getInstance("SHA-256")
             .digest(params.userReport.getBytes("UTF-8"))
             .map("%02x".format(_)).mkString
+          System.out.println("*********************")
+          System.out.println(new String(userReportData))
+          System.out.println("*********************")
         }
+        System.out.println("*********************")
+        System.out.println(new String(userReportData))
+        System.out.println("*********************")
 
         if (params.OSType == "gramine") {
           val quoteGenerator = new GramineQuoteGeneratorImpl()

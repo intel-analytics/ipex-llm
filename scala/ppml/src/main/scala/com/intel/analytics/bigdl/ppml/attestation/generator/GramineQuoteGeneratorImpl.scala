@@ -37,7 +37,7 @@ class GramineQuoteGeneratorImpl extends QuoteGenerator {
   @throws(classOf[AttestationRuntimeException])
   override def getQuote(userReportData: Array[Byte]): Array[Byte] = {
 
-    if (userReportData.length == 0 || userReportData.length > 32) {
+    if (userReportData.length == 0 || userReportData.length > 128) {
       logger.error("Incorrect userReport size!")
       throw new AttestationRuntimeException("Incorrect userReportData size!")
     }
