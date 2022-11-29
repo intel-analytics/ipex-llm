@@ -20,17 +20,11 @@ from bigdl.dllib.utils.log4Error import invalidInputError
 from typing import TYPE_CHECKING
 from typing import Callable
 if TYPE_CHECKING:
-    from bigdl.dllib.keras.metrics import AUC as KerasAUC
-    from bigdl.dllib.keras.metrics import MAE as KerasMAE
-    from bigdl.dllib.keras.metrics import MSE as KerasMSE
-    from bigdl.dllib.keras.metrics import Accuracy as KerasAccuracy
-    from bigdl.dllib.keras.metrics import Top5Accuracy as KerasTop5Accuracy
-    from bigdl.dllib.keras.metrics import BinaryAccuracy as KerasBinaryAccuracy
-    from bigdl.dllib.keras.metrics import CategoricalAccuracy as KerasCategoricalAccuracy
-    from bigdl.dllib.keras.metrics import \
+    from bigdl.dllib.keras.metrics import AUC as KerasAUC, MAE as KerasMAE,\
+        MSE as KerasMSE, Accuracy as KerasAccuracy, Top5Accuracy as KerasTop5Accuracy,\
+        BinaryAccuracy as KerasBinaryAccuracy, CategoricalAccuracy as KerasCategoricalAccuracy,\
         SparseCategoricalAccuracy as KerasSparseCategoricalAccuracy
-    from bigdl.orca.learn.pytorch.pytorch_metrics import PytorchMetric
-    from bigdl.orca.learn.pytorch.pytorch_metrics import AUROC,\
+    from bigdl.orca.learn.pytorch.pytorch_metrics import PytorchMetric, AUROC,\
         MAE as PyTorchMAE, MSE as PyTorchMSE, Accuracy as PyTorchAccuracy,\
         SparseCategoricalCrossEntropy as PyTorchSparseCategoricalCrossEntropy,\
         PrecisionRecallCurve as PyTorchPrecisionRecallCurve,\
