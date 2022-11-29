@@ -18,6 +18,7 @@ from bigdl.chronos.forecaster.tf.base_forecaster import BaseTF2Forecaster
 from bigdl.chronos.model.tf2.TCN_keras import model_creator, TemporalBlock, TemporalConvNet
 from bigdl.nano.utils.log4Error import invalidInputError
 
+
 class TCNForecaster(BaseTF2Forecaster):
     """
     Example:
