@@ -23,7 +23,7 @@ from bigdl.dllib.utils.log4Error import invalidInputError
 from typing import (Any, Optional, Dict, TYPE_CHECKING)
 
 if TYPE_CHECKING:
-    import bigdl
+    import bigdl.dllib.optim.optimizer
     import numpy as np
 
 
