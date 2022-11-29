@@ -99,7 +99,7 @@ jobs:
         pip install jep==3.9.0
         pip install cloudpickle
         
-        wget https://raw.githubusercontent.com/analytics-zoo/BigDL/main/python/test/python-requirements/requirements-orca-python-ray.txt -O ${{ github.workspace }}/requirements-orca-python-ray.txt
+        wget https://raw.githubusercontent.com/analytics-zoo/gha-cicd-env/main/python-requrirements/requirements-orca-python-ray.txt -O ${{ github.workspace }}/requirements-orca-python-ray.txt
         pip uninstall -r ${{ github.workspace }}/requirements-orca-python-ray.txt -y
         pip install -i ${GONDOLIN_PIP_MIRROR} --trusted-host ${GONDOLIN_TRUSTED_HOST} -r ${{ github.workspace }}/requirements-orca-python-ray.txt
         export SPARK_LOCAL_HOSTNAME=localhost

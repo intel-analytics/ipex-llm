@@ -167,3 +167,25 @@ class TestTrainer(TestCase):
         assert qmodel
         out = qmodel(x)
         assert out.shape == torch.Size([256, 10])
+
+    def test_quantize_inc_ptq_compiled_context_manager(self):
+        # Test if a Lightning Module compiled by nano works
+        train_loader_iter = iter(self.train_loader)
+        trainer = Trainer(max_epochs=1)
+        pl_model = Trainer.compile(self.model, self.loss, self.optimizer)
+        x = next(train_loader_iter)[0]
+
+        qmodel = InferenceOptimizer.quantize(pl_model,
+                                             calib_data=self.train_loader)
+        assert qmodel
+        with qmodel.context_manager:
+            out = qmodel(x)
+        assert out.shape == torch.Size([256, 10])
+        
+        with tempfile.TemporaryDirectory() as tmp_dir_name:
+            InferenceOptimizer.save(qmodel, tmp_dir_name)
+            model = InferenceOptimizer.load(tmp_dir_name, pl_model)
+
+        with model.context_manager:
+            out = model(x)
+        assert out.shape == torch.Size([256, 10])

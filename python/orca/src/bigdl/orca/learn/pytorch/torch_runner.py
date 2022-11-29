@@ -160,30 +160,6 @@ class TorchRunner(BaseRunner):
         if not isinstance(self.schedulers, Iterable):
             self.schedulers = [self.schedulers]
 
-    def setup(self, cores_per_node):
-        import torch
-        torch.set_num_threads(cores_per_node)
-
-    def setup_torch_distribute(self, tcp_store_host, tcp_store_port, world_rank,
-                               world_size):
-        import torch.distributed as dist
-        from torch.nn.parallel import DistributedDataParallel
-        client_store = dist.TCPStore(tcp_store_host, tcp_store_port, -1, False)
-        dist.init_process_group(
-            backend="gloo",
-            store=client_store,
-            rank=world_rank,
-            world_size=world_size)
-        self.backend = "torch-distributed"
-        self.rank = world_rank
-        self.size = world_size
-        self.setup_components()
-        training_models = [
-            DistributedDataParallel(model)
-            for model in self.models
-        ]
-        self.setup_operator(training_models)
-
     def setup_components(self):
         """Runs the creator functions without any distributed coordination."""
 
@@ -203,6 +179,14 @@ class TorchRunner(BaseRunner):
         self._create_schedulers_if_available()
         self._create_loss()
 
+    def setup_ddp_components(self):
+        from torch.nn.parallel import DistributedDataParallel
+        training_models = [
+            DistributedDataParallel(model)
+            for model in self.models
+        ]
+        self.setup_operator(training_models)
+
     def setup_operator(self, training_models):
         """Create the training operator."""
         if self.backend == "horovod":
@@ -221,35 +205,6 @@ class TorchRunner(BaseRunner):
                 use_tqdm=self.use_tqdm,
                 sync_stats=self.sync_stats,
                 dist_backend=self.dist_backend)
-
-    def with_sampler(self, loader):
-        self.logger.debug("Wrapping DistributedSampler on DataLoader")
-        data_loader_args = {
-            "dataset": loader.dataset,
-            "batch_size": loader.batch_size,
-            "shuffle": False,
-            "num_workers": loader.num_workers,
-            "collate_fn": loader.collate_fn,
-            "pin_memory": loader.pin_memory,
-            "drop_last": loader.drop_last,
-            "timeout": loader.timeout,
-            "worker_init_fn": loader.worker_init_fn,
-            "sampler": DistributedSampler(loader.dataset,
-                                          num_replicas=self.size,
-                                          rank=self.rank)
-        }
-        return DataLoader(**data_loader_args)
-
-    @staticmethod
-    def should_wrap_dataloader(loader):
-        from torch.utils.data import DataLoader
-        try:
-            from torch.utils.data import IterableDataset
-            not_iterable = not isinstance(loader.dataset, IterableDataset)
-        except Exception as e:
-            not_iterable = TorchRunner
-        return (isinstance(loader, DataLoader)
-                and not_iterable)
 
     def train_epochs(self, data_creator, epochs=1, batch_size=32, profile=False,
                      info=None, wrap_dataloader=None, callbacks=None,

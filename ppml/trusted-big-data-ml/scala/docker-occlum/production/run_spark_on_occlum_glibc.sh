@@ -492,6 +492,17 @@ run_spark_sql_e2e() {
                 --ehsmAPIKEY $API_KEY
 }
 
+verify() { #verify ehsm quote
+  cd /opt
+  bash verify-attestation-service.sh
+}
+
+register() { #register and get policy_Id
+  cd /opt
+  bash RegisterMrEnclave.sh
+}
+
+
 
 id=$([ -f "$pid" ] && echo $(wc -l < "$pid") || echo "0")
 
@@ -558,6 +569,14 @@ case "$arg" in
         ;;
     sql_e2e)
         run_spark_sql_e2e
+        cd ../
+        ;;
+    verify)
+        verify
+        cd ../
+        ;;
+    register)
+        register
         cd ../
         ;;
 esac

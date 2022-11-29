@@ -20,8 +20,9 @@ from tempfile import TemporaryDirectory
 from ..core.onnxruntime_model import ONNXRuntimeModel
 import onnxruntime  # should be put behind core's import
 from bigdl.nano.utils.inference.pytorch.model import AcceleratedLightningModule
-from bigdl.nano.utils.inference.pytorch.model_utils import export_to_onnx, get_forward_args
+from bigdl.nano.utils.inference.pytorch.model_utils import export_to_onnx
 from bigdl.nano.utils.log4Error import invalidInputError
+from bigdl.nano.pytorch.context_manager import BaseContextManager
 
 
 class PytorchONNXRuntimeModel(ONNXRuntimeModel, AcceleratedLightningModule):
@@ -68,6 +69,7 @@ class PytorchONNXRuntimeModel(ONNXRuntimeModel, AcceleratedLightningModule):
                 onnx_path = model
             AcceleratedLightningModule.__init__(self, None)
             ONNXRuntimeModel.__init__(self, onnx_path, session_options=onnxruntime_session_options)
+        self.context_manager = BaseContextManager()
 
     def on_forward_start(self, inputs):
         if self.ortsess is None:

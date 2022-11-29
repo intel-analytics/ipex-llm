@@ -23,6 +23,7 @@ from torch.utils.data.dataset import TensorDataset
 from torch.utils.data.dataloader import DataLoader
 import os
 import pytest
+import tempfile
 
 
 class TestOpenVINO(TestCase):
@@ -105,3 +106,23 @@ class TestOpenVINO(TestCase):
                                                   openvino_config={"PERFORMANCE_HINT": "LATENCY"})
 
         result = openvino_model(x[0:1])
+
+    def test_pytorch_openvino_model_context_manager(self):
+        trainer = Trainer(max_epochs=1)
+        model = mobilenet_v3_small(num_classes=10)
+
+        x = torch.rand((10, 3, 256, 256))
+        y = torch.ones((10, ), dtype=torch.long)
+
+        openvino_model = InferenceOptimizer.trace(model, input_sample=x,
+                                                  accelerator='openvino')
+
+        with openvino_model.context_manager:
+            y1 = openvino_model(x[0:1])
+    
+        with tempfile.TemporaryDirectory() as tmp_dir_name:
+            InferenceOptimizer.save(openvino_model, tmp_dir_name)
+            model = InferenceOptimizer.load(tmp_dir_name)
+
+        with model.context_manager:
+            y2 = model(x[0:1])

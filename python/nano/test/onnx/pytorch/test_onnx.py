@@ -27,7 +27,7 @@ import torchmetrics
 
 import numpy as np
 
-from bigdl.nano.pytorch import Trainer
+from bigdl.nano.pytorch import Trainer, InferenceOptimizer
 from bigdl.nano.pytorch.vision.models import vision
 
 batch_size = 256
@@ -77,7 +77,7 @@ class TestOnnx(TestCase):
         train_loader = DataLoader(ds, batch_size=2)
         trainer.fit(pl_model, train_loader)
 
-        onnx_model = trainer.trace(pl_model, accelerator="onnxruntime", input_sample=train_loader)
+        onnx_model = InferenceOptimizer.trace(pl_model, accelerator="onnxruntime", input_sample=train_loader)
 
         for x, y in train_loader:
             model.eval()
@@ -103,7 +103,8 @@ class TestOnnx(TestCase):
         train_loader = DataLoader(TensorDataset(x1, x2, y), batch_size=32, shuffle=True)
         trainer.fit(pl_model, train_loader)
 
-        onnx_model = trainer.trace(pl_model, accelerator="onnxruntime", input_sample=train_loader)
+        onnx_model = InferenceOptimizer.trace(pl_model, accelerator="onnxruntime",
+                                              input_sample=train_loader)
 
         for x1, x2, y in train_loader:
             model.eval()
@@ -129,14 +130,14 @@ class TestOnnx(TestCase):
         train_loader = DataLoader(ds, batch_size=2)
         trainer.fit(pl_model, train_loader)
 
-        onnx_model = trainer.trace(pl_model,
-                                   accelerator="onnxruntime",
-                                   input_sample=train_loader,
-                                   thread_num=1)
+        onnx_model = InferenceOptimizer.trace(pl_model,
+                                              accelerator="onnxruntime",
+                                              input_sample=train_loader,
+                                              thread_num=1)
 
         with tempfile.TemporaryDirectory() as tmp_dir_name:
-            Trainer.save(onnx_model, tmp_dir_name)
-            onnx_model_new = Trainer.load(tmp_dir_name)
+            InferenceOptimizer.save(onnx_model, tmp_dir_name)
+            onnx_model_new = InferenceOptimizer.load(tmp_dir_name)
 
         assert onnx_model_new.session_options.intra_op_num_threads == 1
         assert onnx_model_new.session_options.inter_op_num_threads == 1
@@ -145,6 +146,34 @@ class TestOnnx(TestCase):
             forward_res_onnx = onnx_model(x).numpy()
             forward_res_onnx_new = onnx_model_new(x).numpy()
             np.testing.assert_almost_equal(forward_res_onnx, forward_res_onnx_new, decimal=5)
+
+    def test_onnx_context_manager(self):
+        model = ResNet18(10, pretrained=False, include_top=False, freeze=True)
+        loss = nn.CrossEntropyLoss()
+        optimizer = torch.optim.Adam(model.parameters(), lr=0.01)
+        trainer = Trainer(max_epochs=1)
+
+        pl_model = Trainer.compile(model, loss, optimizer)
+        x = torch.rand((10, 3, 256, 256))
+        y = torch.ones((10, ), dtype=torch.long)
+        ds = TensorDataset(x, y)
+        train_loader = DataLoader(ds, batch_size=2)
+        trainer.fit(pl_model, train_loader)
+
+        onnx_model = InferenceOptimizer.trace(pl_model,
+                                              accelerator="onnxruntime",
+                                              input_sample=train_loader,
+                                              thread_num=1)
+
+        with onnx_model.context_manager:
+            output = onnx_model(x)
+        
+        with tempfile.TemporaryDirectory() as tmp_dir_name:
+            InferenceOptimizer.save(onnx_model, tmp_dir_name)
+            model = InferenceOptimizer.load(tmp_dir_name)
+        
+        with model.context_manager:
+            output = onnx_model(x)
 
 
 if __name__ == '__main__':

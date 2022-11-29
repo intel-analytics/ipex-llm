@@ -369,9 +369,10 @@ class TestInferencePipeline(TestCase):
         model = Net()
         model.eval()
         inference_opt = InferenceOptimizer()
-        multi_instance_model = inference_opt.to_multi_instance(model, num_processes=2)
+        multi_instance_model = inference_opt.to_multi_instance(model, num_processes=4)
 
-        test_loader = create_data_loader(self.data_dir, 1, self.num_workers, data_transform, subset=10, shuffle=False)
+        test_loader = create_data_loader(self.data_dir, 1, self.num_workers, data_transform,
+                                         subset=50, shuffle=False)
         input_data = list(map(lambda b: b[0], test_loader))
 
         with torch.no_grad():
@@ -408,7 +409,7 @@ class TestInferencePipeline(TestCase):
                                thread_num=4,
                                precision=('bf16', 'int8'))
         optim_dict = inference_opt.optimized_model_dict
-        assert len(optim_dict) == 13
+        assert len(optim_dict) == 14
         with pytest.raises(RuntimeError):
             acc_model, option = inference_opt.get_best_model(precision="fp32")
 
@@ -439,3 +440,29 @@ class TestInferencePipeline(TestCase):
         optim_dict = inference_opt.optimized_model_dict
         assert optim_dict["openvino_int8"]["status"] in ("successful", "early_stopped")
         assert optim_dict["onnxruntime_int8_qlinear"]["status"] in ("successful", "early_stopped")
+
+    def test_context_manager(self):
+        inference_opt = InferenceOptimizer()
+        inference_opt.optimize(model=self.model,
+                               training_data=self.train_loader,
+                               validation_data=self.test_loader,
+                               metric=self.metric,
+                               direction="max",
+                               search_mode="all")
+        # test builtin optimized_model_dict
+        optim_dict = inference_opt.optimized_model_dict
+        for method, option in optim_dict.items():
+            if option["status"] == "successful":
+                model = option["model"]
+                with model.context_manager:
+                    pass
+        # test get_model
+        for method in list(InferenceOptimizer.ALL_INFERENCE_ACCELERATION_METHOD.keys()):
+            if "model" in optim_dict[method]:
+                model = inference_opt.get_model(method)
+                with model.context_manager:
+                    pass
+        # test get_best_model
+        model, option = inference_opt.get_best_model()
+        with model.context_manager:
+            pass
