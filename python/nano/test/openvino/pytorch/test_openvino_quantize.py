@@ -118,12 +118,17 @@ class TestOpenVINO(TestCase):
         openvino_model = InferenceOptimizer.quantize(model, 
                                                      accelerator='openvino',
                                                      calib_data=dataloader,
-                                                     metric=F1(10))
+                                                     metric=F1(10),
+                                                     thread_num=2)
+
         with InferenceOptimizer.get_context(openvino_model):
+            assert torch.get_num_threads() == 2
             y1 = openvino_model(x[0:1])
     
         with tempfile.TemporaryDirectory() as tmp_dir_name:
             InferenceOptimizer.save(openvino_model, tmp_dir_name)
             model = InferenceOptimizer.load(tmp_dir_name)
+
         with InferenceOptimizer.get_context(model):
+            assert torch.get_num_threads() == 2
             y2 = model(x[0:1])

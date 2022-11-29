@@ -30,7 +30,7 @@ from bigdl.nano.deps.onnxruntime.onnxruntime_api import load_onnxruntime_model
 from bigdl.nano.deps.neural_compressor.inc_api import load_inc_model
 from bigdl.nano.pytorch.amp.amp_api import load_bf16_model
 from bigdl.nano.utils.log4Error import invalidInputError
-from bigdl.nano.pytorch.context_manager import BaseContextManager
+from bigdl.nano.pytorch.context_manager import generate_context_manager
 from pathlib import Path
 
 TORCH_VERSION_LESS_1_10 = _compare_version("torch", operator.lt, "1.10")
@@ -161,8 +161,9 @@ def load_model(path, model: pl.LightningModule = None):
             checkpoint_path = path / metadata['checkpoint']
             state_dict = torch.load(checkpoint_path, map_location='cpu')
             model.load_state_dict(state_dict)
-            # patch BaseContextMagager to original model to keep behaviour consitent
-            model.context_manager = BaseContextManager()  # type: ignore
+            # patch ContextMagager to original model to keep behaviour consitent
+            model.context_manager = generate_context_manager(accelerator=None, precision="fp32",
+                                                             thread_num=thread_num)  # type: ignore
             return model
         else:
             invalidInputError(False, "Key 'checkpoint' must be specified.")

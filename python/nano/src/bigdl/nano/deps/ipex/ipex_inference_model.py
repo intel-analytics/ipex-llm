@@ -15,13 +15,13 @@
 #
 
 from bigdl.nano.utils.inference.pytorch.model import AcceleratedLightningModule
-from bigdl.nano.pytorch.context_manager import BaseContextManager
+from bigdl.nano.pytorch.context_manager import generate_context_manager
 import torch
 
 
 class PytorchIPEXJITModel(AcceleratedLightningModule):
     def __init__(self, model: torch.nn.Module, input_sample=None, use_ipex=False, dtype=None,
-                 use_jit=False, channels_last=None, from_load=False):
+                 use_jit=False, channels_last=None, thread_num=None, from_load=False):
         """
         This is the accelerated model for pytorch and ipex/jit.
         All the external API is based on Trainer, so what we have here is
@@ -40,6 +40,7 @@ class PytorchIPEXJITModel(AcceleratedLightningModule):
         :param use_jit: if use jit to accelerate the model
         :param channels_last: if set model and data to be channels-last mode.
                the parameter will be ignored if use_ipex is False.
+        :param thread_num: the thread num allocated for this model.
         :param from_load: this will only be set by _load method.
         """
         model.eval()
@@ -72,7 +73,10 @@ class PytorchIPEXJITModel(AcceleratedLightningModule):
                     self.model = torch.jit.trace(self.model, input_sample,
                                                  check_trace=False)
                     self.model = torch.jit.freeze(self.model)
-        self.context_manager = BaseContextManager()
+        self.context_manager = generate_context_manager(accelerator=None,
+                                                        precision="fp32",
+                                                        thread_num=thread_num)
+        self.thread_num = thread_num
 
     @property
     def forward_args(self):
@@ -96,7 +100,8 @@ class PytorchIPEXJITModel(AcceleratedLightningModule):
         status.update({"use_ipex": self.use_ipex,
                        "use_jit": self.use_jit,
                        "channels_last": self.channels_last,
-                       "checkpoint": "ckpt.pth"})
+                       "checkpoint": "ckpt.pth",
+                       "thread_num": self.thread_num})
         return status
 
     @staticmethod
@@ -118,7 +123,8 @@ class PytorchIPEXJITModel(AcceleratedLightningModule):
         return PytorchIPEXJITModel(model, use_ipex=status['use_ipex'],
                                    use_jit=status['use_jit'],
                                    channels_last=status['channels_last'],
-                                   from_load=from_load)
+                                   from_load=from_load,
+                                   thread_num=int(status['thread_num']))
 
     def _save_model(self, path):
         if self.use_jit:

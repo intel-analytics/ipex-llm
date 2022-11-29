@@ -176,9 +176,12 @@ class TestTrainer(TestCase):
         x = next(train_loader_iter)[0]
 
         qmodel = InferenceOptimizer.quantize(pl_model,
-                                             calib_data=self.train_loader)
+                                             calib_data=self.train_loader,
+                                             thread_num=2)
         assert qmodel
+
         with InferenceOptimizer.get_context(qmodel):
+            assert torch.get_num_threads() == 2
             out = qmodel(x)
         assert out.shape == torch.Size([256, 10])
         
@@ -187,5 +190,6 @@ class TestTrainer(TestCase):
             model = InferenceOptimizer.load(tmp_dir_name, pl_model)
 
         with InferenceOptimizer.get_context(model):
+            assert torch.get_num_threads() == 2
             out = model(x)
         assert out.shape == torch.Size([256, 10])

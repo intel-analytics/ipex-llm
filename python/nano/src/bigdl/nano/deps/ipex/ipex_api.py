@@ -35,7 +35,7 @@ def ipex_device():
 
 
 def PytorchIPEXJITModel(model, input_sample=None, use_ipex=False,
-                        use_jit=False, channels_last=None):
+                        use_jit=False, channels_last=None, thread_num=None):
     '''
     :param model: the model(nn.module) to be transform.
     :param input_sample: torch tensor indicate the data sample to be used
@@ -44,14 +44,16 @@ def PytorchIPEXJITModel(model, input_sample=None, use_ipex=False,
     :param use_jit: if use jit to accelerate the model
     :param channels_last: if set model and data to be channels-last mode.
             the parameter will be ignored if use_ipex is False.
+    :param thread_num: the thread num allocated for this model.
     '''
     from .ipex_inference_model import PytorchIPEXJITModel
     return PytorchIPEXJITModel(model, input_sample=input_sample, use_ipex=use_ipex,
-                               use_jit=use_jit, channels_last=channels_last)
+                               use_jit=use_jit, channels_last=channels_last,
+                               thread_num=thread_num)
 
 
 def PytorchIPEXJITBF16Model(model, input_sample=None, use_ipex=False,
-                            use_jit=False, channels_last=None):
+                            use_jit=False, channels_last=None, thread_num=None):
     '''
     :param model: the model(nn.module) to be transform.
     :param input_sample: torch tensor indicate the data sample to be used
@@ -60,10 +62,12 @@ def PytorchIPEXJITBF16Model(model, input_sample=None, use_ipex=False,
     :param use_jit: if use jit to accelerate the model
     :param channels_last: if set model and data to be channels-last mode.
             the parameter will be ignored if use_ipex is False.
+    :param thread_num: the thread num allocated for this model.
     '''
     from .ipex_inference_bf16_model import PytorchIPEXJITBF16Model
     return PytorchIPEXJITBF16Model(model, input_sample=input_sample, use_ipex=use_ipex,
-                                   use_jit=use_jit, channels_last=channels_last)
+                                   use_jit=use_jit, channels_last=channels_last,
+                                   thread_num=thread_num)
 
 
 def load_ipexjit_model(path, model):

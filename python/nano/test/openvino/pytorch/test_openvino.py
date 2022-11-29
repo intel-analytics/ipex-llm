@@ -115,8 +115,11 @@ class TestOpenVINO(TestCase):
         y = torch.ones((10, ), dtype=torch.long)
 
         openvino_model = InferenceOptimizer.trace(model, input_sample=x,
-                                                  accelerator='openvino')
+                                                  accelerator='openvino',
+                                                  thread_num=2)
+
         with InferenceOptimizer.get_context(openvino_model):
+            assert torch.get_num_threads() == 2
             y1 = openvino_model(x[0:1])
     
         with tempfile.TemporaryDirectory() as tmp_dir_name:
@@ -124,4 +127,5 @@ class TestOpenVINO(TestCase):
             model = InferenceOptimizer.load(tmp_dir_name)
 
         with InferenceOptimizer.get_context(model):
+            assert torch.get_num_threads() == 2
             y2 = model(x[0:1])

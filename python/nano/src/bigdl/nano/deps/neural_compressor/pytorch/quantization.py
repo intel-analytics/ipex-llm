@@ -25,16 +25,17 @@ import torch
 
 
 class PytorchQuantization(BaseQuantization):
-    def __init__(self, framework='pytorch_fx', **kwargs):
+    def __init__(self, framework='pytorch_fx', thread_num=None, **kwargs):
         """
         Create a Intel Neural Compressor Quantization object for Pytorch.
         """
         kwargs['framework'] = framework
         super().__init__(**kwargs)
         self._inc_metric_cls = PytorchINCMetric
+        self.thread_num = thread_num
 
     def _post_execution(self, q_model):
-        return PytorchQuantizedModel(q_model)
+        return PytorchQuantizedModel(q_model, self.thread_num)
 
     @property
     def valid_frameworks(self):
