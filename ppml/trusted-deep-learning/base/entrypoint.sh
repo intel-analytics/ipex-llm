@@ -67,7 +67,14 @@ if [ "$SGX_ENABLED" == "true" ]; then
     echo $runtime_command >> temp_command_file
     export sgx_command="bash temp_command_file && rm temp_command_file"
   else 
-    export sgx_command=$runtime_command
+    # TODO: ATTESTATION is false, only for test purpose, modify this later
+    if [ "$ENCRYPTEDFSD" == "true" ]; then
+      bash encryptedfsd.sh
+      echo $runtime_command >> temp_command_file
+      export sgx_command="bash temp_command_file && rm temp_command_file"
+    else
+      export sgx_command=$runtime_command
+    fi
   fi
   ./init.sh && \
   gramine-sgx bash 2>&1
