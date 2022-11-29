@@ -28,6 +28,7 @@ on:
         - Orca-Python-ExampleTest-Ray-Py37-Spark3
         - Orca-Python-ExampleTest-Horovod-Pytorch-Py37-Spark3
         - Orca-Python-ExampleTest-Horovod-Tf-Py37-Spark3
+        - Orca-Tutorial-Xshards
         - Dllib-Scala-UT
         - Friesian-Scala-UT
         - Friesian-Python-Py37-Spark3
@@ -96,7 +97,6 @@ jobs:
         type: job
         job-name: Orca-Python-ExampleTest-Py37-Spark3
         runner-hosted-on: 'Shanghai'
-
 
   Orca-Python-ExampleTest-Ray-Py37-Spark3:
     if: ${{ github.event.schedule || github.event.inputs.artifact == 'Orca-Python-ExampleTest-Ray-Py37-Spark3' || github.event.inputs.artifact == 'all' }} 
@@ -388,6 +388,30 @@ jobs:
         job-name: Orca-Jep-Python-Py37-Spark2
         runner-hosted-on: 'Shanghai'
       
+  Orca-Tutorial-Xshards:
+    if: ${{ github.event.schedule || github.event.inputs.artifact == 'Orca-Tutorial-Xshards' || github.event.inputs.artifact == 'all' }} 
+    runs-on: [self-hosted, Gondolin, ubuntu-20.04-lts]
+
+    steps:
+    - uses: actions/checkout@v3
+    - name: Set up JDK8
+      uses: ./.github/actions/jdk-setup-action
+    - name: Set up maven
+      uses: ./.github/actions/maven-setup-action 
+    - name: Run Test
+      uses: ./.github/actions/orca/orca-tutorial-xshards
+    - name: Create Job Badge
+      uses: ./.github/actions/create-job-status-badge
+      if: ${{ always() }}
+      with:
+        secret: ${{ secrets.GIST_SECRET}}
+        gist-id: ${{env.GIST_ID}}
+        is-self-hosted-runner: true
+        file-name: Orca-Tutorial-Xshards.json
+        type: job
+        job-name: Orca-Tutorial-Xshards
+        runner-hosted-on: 'Shanghai'  
+
   Dllib-Scala-UT:
     if: ${{ github.event.schedule || github.event.inputs.artifact == 'Dllib-Scala-UT' || github.event.inputs.artifact == 'all' }} 
     runs-on: [ self-hosted, Gondolin, ubuntu-20.04-lts ]
