@@ -11,4 +11,6 @@ export PYTHONPATH=${ORCA_HOME}/src:${PYTHONPATH}
 mypy --install-types --non-interactive --config-file ${ORCA_DEVTEST_DIR}/mypy.ini \
                                                      $ORCA_HOME/src/bigdl/orca/data/ \
                                                      $ORCA_HOME/src/bigdl/orca/ray/ \
-                                                     $ORCA_HOME/src/bigdl/orca/inference/
+                                                     $ORCA_HOME/src/bigdl/orca/inference/ \
+                                                     $ORCA_HOME/src/bigdl/orca/learn/trigger.py \
+                                                     $ORCA_HOME/src/bigdl/orca/learn/metrics.py
