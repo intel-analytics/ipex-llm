@@ -55,10 +55,10 @@ jobs:
           bash python/dev/release_default_linux_spark246.sh default false false
           bash python/nano/dev/build_and_install.sh linux default false pytorch --force-reinstall --no-deps -U
           whl_name=`ls python/nano/dist/`
-          pip install python/nano/dist/${whl_name}[tensorflow,pytorch,inference]
-          pip install python/dllib/src/dist/bigdl_dllib-*-py3-none-manylinux1_x86_64.whl
-          pip install python/orca/src/dist/bigdl_orca-*-py3-none-manylinux1_x86_64.whl
-          pip install python/chronos/src/dist/bigdl_chronos-*-py3-none-manylinux1_x86_64.whl
+          pip install python/nano/dist/${whl_name}[tensorflow,pytorch,inference] -i ${GONDOLIN_PIP_MIRROR} --trusted-host ${GONDOLIN_TRUSTED_HOST}
+          pip install python/dllib/src/dist/bigdl_dllib-*-py3-none-manylinux1_x86_64.whl -i ${GONDOLIN_PIP_MIRROR} --trusted-host ${GONDOLIN_TRUSTED_HOST}
+          pip install python/orca/src/dist/bigdl_orca-*-py3-none-manylinux1_x86_64.whl -i ${GONDOLIN_PIP_MIRROR} --trusted-host ${GONDOLIN_TRUSTED_HOST}
+          pip install python/chronos/src/dist/bigdl_chronos-*-py3-none-manylinux1_x86_64.whl -i ${GONDOLIN_PIP_MIRROR} --trusted-host ${GONDOLIN_TRUSTED_HOST}
           export SPARK_LOCAL_HOSTNAME=localhost
           export KERAS_BACKEND=tensorflow
           bash python/chronos/dev/test/run-pytests.sh 1
@@ -101,10 +101,10 @@ jobs:
           bash python/dev/release_default_linux_spark246.sh default false false
           bash python/nano/dev/build_and_install.sh linux default false pytorch --force-reinstall --no-deps -U
           whl_name=`ls python/nano/dist/`
-          pip install python/nano/dist/${whl_name}[tensorflow,pytorch,inference]
-          pip install python/dllib/src/dist/bigdl_dllib-*-py3-none-manylinux1_x86_64.whl
-          pip install python/orca/src/dist/bigdl_orca-*-py3-none-manylinux1_x86_64.whl
-          pip install python/chronos/src/dist/bigdl_chronos-*-py3-none-manylinux1_x86_64.whl
+          pip install python/nano/dist/${whl_name}[tensorflow,pytorch,inference] -i ${GONDOLIN_PIP_MIRROR} --trusted-host ${GONDOLIN_TRUSTED_HOST}
+          pip install python/dllib/src/dist/bigdl_dllib-*-py3-none-manylinux1_x86_64.whl -i ${GONDOLIN_PIP_MIRROR} --trusted-host ${GONDOLIN_TRUSTED_HOST}
+          pip install python/orca/src/dist/bigdl_orca-*-py3-none-manylinux1_x86_64.whl -i ${GONDOLIN_PIP_MIRROR} --trusted-host ${GONDOLIN_TRUSTED_HOST}
+          pip install python/chronos/src/dist/bigdl_chronos-*-py3-none-manylinux1_x86_64.whl -i ${GONDOLIN_PIP_MIRROR} --trusted-host ${GONDOLIN_TRUSTED_HOST}
           export SPARK_LOCAL_HOSTNAME=localhost
           export KERAS_BACKEND=tensorflow
           bash python/chronos/dev/test/run-pytests.sh 2
@@ -147,10 +147,10 @@ jobs:
           bash python/dev/release_default_linux_spark246.sh default false false
           bash python/nano/dev/build_and_install.sh linux default false pytorch --force-reinstall --no-deps -U
           whl_name=`ls python/nano/dist/`
-          pip install python/nano/dist/${whl_name}[tensorflow,pytorch,inference]
-          pip install python/dllib/src/dist/bigdl_dllib-*-py3-none-manylinux1_x86_64.whl
-          pip install python/orca/src/dist/bigdl_orca-*-py3-none-manylinux1_x86_64.whl
-          pip install python/chronos/src/dist/bigdl_chronos-*-py3-none-manylinux1_x86_64.whl
+          pip install python/nano/dist/${whl_name}[tensorflow,pytorch,inference] -i ${GONDOLIN_PIP_MIRROR} --trusted-host ${GONDOLIN_TRUSTED_HOST}
+          pip install python/dllib/src/dist/bigdl_dllib-*-py3-none-manylinux1_x86_64.whl -i ${GONDOLIN_PIP_MIRROR} --trusted-host ${GONDOLIN_TRUSTED_HOST}
+          pip install python/orca/src/dist/bigdl_orca-*-py3-none-manylinux1_x86_64.whl -i ${GONDOLIN_PIP_MIRROR} --trusted-host ${GONDOLIN_TRUSTED_HOST}
+          pip install python/chronos/src/dist/bigdl_chronos-*-py3-none-manylinux1_x86_64.whl -i ${GONDOLIN_PIP_MIRROR} --trusted-host ${GONDOLIN_TRUSTED_HOST}
           export SPARK_LOCAL_HOSTNAME=localhost
           export KERAS_BACKEND=tensorflow
           bash python/chronos/dev/test/run-pytests.sh 3
@@ -193,10 +193,10 @@ jobs:
           bash python/dev/release_default_linux_spark246.sh default false false
           bash python/nano/dev/build_and_install.sh linux default false pytorch --force-reinstall --no-deps -U
           whl_name=`ls python/nano/dist/`
-          pip install python/nano/dist/${whl_name}[tensorflow,pytorch,inference]
-          pip install python/dllib/src/dist/bigdl_dllib-*-py3-none-manylinux1_x86_64.whl
-          pip install python/orca/src/dist/bigdl_orca-*-py3-none-manylinux1_x86_64.whl
-          pip install python/chronos/src/dist/bigdl_chronos-*-py3-none-manylinux1_x86_64.whl
+          pip install python/nano/dist/${whl_name}[tensorflow,pytorch,inference] -i ${GONDOLIN_PIP_MIRROR} --trusted-host ${GONDOLIN_TRUSTED_HOST}
+          pip install python/dllib/src/dist/bigdl_dllib-*-py3-none-manylinux1_x86_64.whl -i ${GONDOLIN_PIP_MIRROR} --trusted-host ${GONDOLIN_TRUSTED_HOST}
+          pip install python/orca/src/dist/bigdl_orca-*-py3-none-manylinux1_x86_64.whl -i ${GONDOLIN_PIP_MIRROR} --trusted-host ${GONDOLIN_TRUSTED_HOST}
+          pip install python/chronos/src/dist/bigdl_chronos-*-py3-none-manylinux1_x86_64.whl -i ${GONDOLIN_PIP_MIRROR} --trusted-host ${GONDOLIN_TRUSTED_HOST}
           export SPARK_LOCAL_HOSTNAME=localhost
           export KERAS_BACKEND=tensorflow
           bash python/chronos/dev/test/run-pytests.sh 4
