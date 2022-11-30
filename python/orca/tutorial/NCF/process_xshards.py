@@ -65,7 +65,7 @@ def split_dataset(data):
 def prepare_data(dataset_dir, num_ng=4):
     sparse_features = ['gender', 'zipcode', 'category']
     dense_features = ['age']
-
+    num_dense_feats = len(dense_features)
     users = read_csv(
         os.path.join(dataset_dir, 'users.dat'),
         sep="::", header=None, names=['user', 'gender', 'age', 'occupation', 'zipcode'],
@@ -130,7 +130,7 @@ def prepare_data(dataset_dir, num_ng=4):
     feature_cols = ['user', 'item'] + sparse_features + dense_features
     label_cols = ["label"]
     return train_data, test_data, user_num, item_num, \
-        sparse_feats_input_dims, len(dense_features), feature_cols, label_cols
+        sparse_feats_input_dims, num_dense_feats, feature_cols, label_cols
 
 
 if __name__ == "__main__":

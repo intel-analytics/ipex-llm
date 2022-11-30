@@ -135,12 +135,12 @@ def prepare_data(data_dir, neg_scale=4):
     sparse_feats_input_dims.append(occupation_num)
     feature_cols = ['user', 'item'] + sparse_features + dense_features
     label_cols = ['label']
-    num_dense_feature = len(dense_features)
+    num_dense_feats = len(dense_features)
 
     train_df, val_df = df.randomSplit([0.8, 0.2], seed=100)
 
-    return train_df, val_df, sparse_feats_input_dims, num_dense_feature,\
-           user_num, item_num, feature_cols, label_cols
+    return train_df, val_df, user_num, item_num, sparse_feats_input_dims, num_dense_feats, \
+           feature_cols, label_cols
 
 
 if __name__ == "__main__":
@@ -148,8 +148,8 @@ if __name__ == "__main__":
 
     sc = init_orca_context()
 
-    train_data, test_data, embedding_in_dim, user_num, item_num, feature_cols, label_cols = \
-        prepare_data("ml-1m", neg_scale=4)
+    train_data, test_data, user_num, item_num, sparse_feats_input_dims, num_dense_feats, \
+        feature_cols, label_cols = prepare_data("./ml-1m")
     train_data.write.parquet('./train_dataframe', mode='overwrite')
     test_data.write.parquet('./test_dataframe', mode='overwrite')
     stop_orca_context()
