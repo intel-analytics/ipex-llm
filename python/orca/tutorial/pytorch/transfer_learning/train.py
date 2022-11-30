@@ -29,7 +29,7 @@ import torchvision
 from torchvision import datasets, transforms
 
 from bigdl.orca import init_orca_context, stop_orca_context
-from bigdl.orca.learn.pytorch import Estimator 
+from bigdl.orca.learn.pytorch import Estimator
 from bigdl.orca.learn.metrics import Accuracy
 
 plt.ion()  # interactive mode
@@ -74,7 +74,7 @@ def load_dataset(dataset_dir, batch_size=4):
 
 def imshow(inp, title=None):
     """
-    Visualize a few training images 
+    Visualize a few training images
     so as to understand the data augmentations.
     """
     inp = inp.numpy().transpose((1, 2, 0))
@@ -90,7 +90,7 @@ def imshow(inp, title=None):
 
 def train_loader_func(config, batch_size):
     train_loader, test_loader, class_names = load_dataset(config['data_dir'], batch_size)
-    
+
     inputs, classes = next(iter(train_loader))  # Get a batch of training data
     out = torchvision.utils.make_grid(inputs)  # Make a grid from batch
     imshow(out, title=[class_names[x] for x in classes])
