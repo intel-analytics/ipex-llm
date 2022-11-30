@@ -15,19 +15,20 @@
 #
 
 # Step 0: Import necessary libraries
-import pickle
+import math
 
-from bigdl.orca import init_orca_context, stop_orca_context
+from bigdl.orca.data import XShards
 from bigdl.orca.learn.tf2 import Estimator
+from bigdl.orca import init_orca_context, stop_orca_context
 
+from tf_model import ncf_model
 # Step 1: Init Orca Context
 init_orca_context(memory='4g')
 
 # Step 2: Load the model and data
 est = Estimator.from_keras()
 est.load('NCF_model')
-with open('test_xshards', 'r') as f:
-    data = pickle.load(f)
+data = XShards.load_pickle('val_data_xshards')
 
 # Step 3: Define the input feature columns
 feature_cols = ['user', 'item',
@@ -37,12 +38,12 @@ feature_cols = ['user', 'item',
 # Step 4: Predict the result
 res = est.predict(
     data,
-    batch_size=32,
-    steps=data.count() // 32,
+    batch_size=256,
+    steps=math.ceil(len(data) / 256),
     feature_cols=feature_cols
 )
 # Step 5: Save the prediction result
 res.write.parquet('predict_xshards_result')
-
+res.to_spark_df().show()
 # Step 7: Stop Orca Context when program finishes
 stop_orca_context()
