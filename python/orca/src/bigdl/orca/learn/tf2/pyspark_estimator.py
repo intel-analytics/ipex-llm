@@ -413,8 +413,7 @@ class SparkTFEstimator():
         # allreduce communication protocol.
         # So we need to call get_state on every remote workers, otherwise
         # it might get stuck
-        model = self.model_creator(self.config)
-        model.set_weights(self.model_weights)
+        model = self.get_model()
         if is_local_path(filepath):
             model.save_weights(filepath, overwrite, save_format)
         else:
@@ -442,7 +441,7 @@ class SparkTFEstimator():
                order. Only topological loading is supported for weight files in
                TensorFlow format.
         """
-        model = self.model_creator(self.config)
+        model = self.get_model(set_weights=False)
         if is_file(filepath):
             # h5 format
             if is_local_path(filepath):
@@ -518,7 +517,12 @@ class SparkTFEstimator():
 
         """
         sc = OrcaContext.get_spark_context()
-        model = load_model(filepath, custom_objects=custom_objects, compile=compile)
+        self.load_params = dict(
+            filepath=filepath,
+            custom_objects=custom_objects,
+            compile=compile
+        )
+        model = load_model(**self.load_params)
         self.model_weights = model.get_weights()
         if self.model_creator is None:
             self.load_path = filepath
@@ -530,14 +534,19 @@ class SparkTFEstimator():
         if self.model_dir is not None:
             save_model(model, self._model_saved_path, save_format="h5", filemode=0o666)
 
-    def get_model(self):
+    def get_model(self, set_weights=True):
         """
         Returns the learned model.
 
         :return: the learned model.
         """
-        model = self.model_creator(self.config)
-        model.set_weights(self.model_weights)
+        if self.model_creator is not None:
+            model = self.model_creator(self.config)
+        else:
+            model = load_model(**self.load_params)
+
+        if set_weights and self.model_weights is not None:
+            model.set_weights(self.model_weights)
         return model
 
     @property
