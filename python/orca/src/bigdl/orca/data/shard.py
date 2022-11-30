@@ -17,7 +17,6 @@ from py4j.protocol import Py4JError
 
 from bigdl.orca.data.utils import *
 from bigdl.orca import OrcaContext
-from bigdl.dllib.nncontext import init_nncontext, ZooContext
 from bigdl.dllib.utils.common import (get_node_and_core_number,
                                       get_spark_sql_context,
                                       get_spark_context)
@@ -25,10 +24,6 @@ from bigdl.dllib.utils import nest
 from bigdl.dllib.utils.log4Error import invalidInputError
 
 import numpy as np
-import pyspark.sql.functions as F
-from pyspark import RDD
-
-from typing import (Union, List, Dict)
 
 from typing import TYPE_CHECKING, Any
 from typing import (
@@ -44,8 +39,6 @@ from typing import (
 if TYPE_CHECKING:
     from numpy import ndarray
     from pandas.core.frame import DataFrame as PandasDataFrame
-    from pandas.core.indexes.base import Index
-    from pandas.core.series import Series
     from pyspark.rdd import PipelinedRDD, RDD
     from pyspark.sql.dataframe import DataFrame as SparkDataFrame
     from pyspark.sql.column import Column
@@ -96,7 +89,7 @@ class XShards(object):
         :param minPartitions: The minimum partitions for the XShards
         :return: SparkXShards object
         """
-        sc = init_nncontext()
+        sc = OrcaContext.get_spark_context()
         return SparkXShards(sc.pickleFile(path, minPartitions))
 
     @staticmethod
@@ -116,7 +109,7 @@ class XShards(object):
         :param num_shards: the number of shards that the data will be partitioned into
         :return: a SparkXShards
         """
-        sc = init_nncontext()
+        sc = OrcaContext.get_spark_context()
         node_num, core_num = get_node_and_core_number()
         shard_num = node_num * core_num if num_shards is None else num_shards
         import numpy as np
@@ -186,7 +179,7 @@ class SparkXShards(XShards):
         self.type = {}
         if class_name:
             self.type['class_name'] = class_name
-    
+
     @classmethod
     def _create(cls,
                 rdd: Union["PipelinedRDD", "RDD"],
@@ -195,10 +188,10 @@ class SparkXShards(XShards):
         Create a non-transient SparkXShards.
         """
         return cls(rdd, False, class_name)
-    
+
     def lazy(self) -> "LazySparkXShards":
         """
-        Making the current SparkXShards lazy doesn't change the behavior of the current SparkXShards.
+        Making the current SparkXShards lazy won't change the behavior of the current SparkXShards.
         Cached data won't be uncached unless uncache is explicitly invoked.
         After converting to LazySparkXShards, future operations would be performed lazily.
 
@@ -220,7 +213,7 @@ class SparkXShards(XShards):
                 yield func(x, *args)
 
         transformed_shard = self._create(self.rdd.mapPartitions(lambda iter:
-                                                               transform(iter, func, *args)))
+                                                                transform(iter, func, *args)))
         self._uncache()
         return transformed_shard
 
@@ -336,13 +329,13 @@ class SparkXShards(XShards):
 
                     repartitioned_shard = self._create(rdd.mapPartitions(
                         lambda iter: np.stack([list(iter)], axis=0).astype(dtype)),
-                    class_name=class_name)
+                        class_name=class_name)
                 else:
                     rdd = self.rdd.coalesce(num_partitions)
                     from functools import reduce
                     repartitioned_shard = self._create(rdd.mapPartitions(
                         lambda iter: [np.concatenate(list(iter), axis=0)]),
-                    class_name=class_name)
+                        class_name=class_name)
             else:
                 repartitioned_shard = self._create(self.rdd.repartition(num_partitions),
                                                    class_name=class_name)
@@ -1117,7 +1110,7 @@ class LazySparkXShards(SparkXShards):
         # Setting user_caching to be True means uncache must be explicitly invoked by
         # users to uncache the data.
         self.user_caching = True
-    
+
     @classmethod
     def _create(cls,
                 rdd: Union["PipelinedRDD", "RDD"],
@@ -1130,7 +1123,7 @@ class LazySparkXShards(SparkXShards):
 
 class SharedValue(object):
     def __init__(self, data) -> None:
-        sc = init_nncontext()
+        sc = OrcaContext.get_spark_context()
         self.broadcast_data = sc.broadcast(data)
         self._value = None
 
