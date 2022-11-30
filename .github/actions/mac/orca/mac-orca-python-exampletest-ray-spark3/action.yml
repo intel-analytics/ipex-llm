@@ -1,5 +1,5 @@
-name: 'Mac Friesian Python UT Pip Spark3.1'
-description: 'Mac Friesian Python Pip Spark3.1'
+name: 'Mac Orca Python ExampleTest Ray Spark3.1'
+description: 'Mac Orca Python ExampleTest Ray Spark3.1'
 runs:
   using: "composite"
   steps:
