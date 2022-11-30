@@ -110,8 +110,8 @@ runs:
             bash -c "bash /ppml/trusted-realtime-ml/check-status.sh serving"
         echo "## Checked."
 
-        #docker stop ${CONTAINER_NAME}
-        docker rm -f ${CONTAINER_NAME}
+        docker stop ${CONTAINER_NAME}
+        docker rm  ${CONTAINER_NAME}
         exit 0           
 
             
