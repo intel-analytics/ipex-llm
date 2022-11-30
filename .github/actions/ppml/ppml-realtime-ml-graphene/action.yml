@@ -80,7 +80,7 @@ runs:
             -e LOCAL_IP=$LOCAL_IP \
             -e CORE_NUM=30 \
             $IMAGE \
-            bash  -c "export LOCAL_IP=172.168.0.208 && \
+            bash  -c "export LOCAL_IP=172.168.0.205 && \
             export FLINK_JOB_MANAGER_IP=$LOCAL_IP && \
             export FINK_TASK_MANAGER_IP=$LOCAL_IP && \
             export SGX_MODE=$SGXMODE && \
