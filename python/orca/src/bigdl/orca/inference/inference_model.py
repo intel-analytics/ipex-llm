@@ -174,7 +174,8 @@ class InferenceModel(JavaValue):
                     self.value, bys.getvalue())
 
     # TODO: Add UT for different inputs
-    def predict(self, inputs: Union["ndarray", List["ndarray"], "JTensor", List["JTensor"]]):
+    def predict(self, inputs: Union["ndarray", List["ndarray"], "JTensor", List["JTensor"]]) \
+            -> Union["ndarray", List["ndarray"]]:
         """
         Do prediction on inputs.
 
@@ -189,7 +190,7 @@ class InferenceModel(JavaValue):
         return KerasNet.convert_output(output)
 
     # TODO: Add UT
-    def distributed_predict(self, inputs: "RDD[Any]", sc: "SparkContext"):
+    def distributed_predict(self, inputs: "RDD[Any]", sc: "SparkContext") -> "RDD[Any]":
         data_type = inputs.map(lambda x: x.__class__.__name__).first()
         input_is_table = False
         if data_type == "list":
