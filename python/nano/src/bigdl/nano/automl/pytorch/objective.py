@@ -15,19 +15,18 @@
 #
 
 from collections import namedtuple
-from typing import Optional, Tuple, Union
+from typing import Optional, Union
 
 import pytorch_lightning as pl
 
-from pytorch_lightning.utilities.exceptions import MisconfigurationException
 from pytorch_lightning.utilities.types import EVAL_DATALOADERS, TRAIN_DATALOADERS
 from pytorch_lightning.utilities import rank_zero_deprecation
 from pytorch_lightning.core.datamodule import LightningDataModule
 
-from bigdl.nano.pytorch.trainer import Trainer
+from bigdl.nano.pytorch import InferenceOptimizer
 from bigdl.nano.automl.hpo.backend import create_pl_pruning_callback
 from bigdl.nano.utils.log4Error import invalidInputError
-from ._helper import LatencyCallback,createModelCheckpoint, _remove_metric_prefix
+from ._helper import LatencyCallback, createModelCheckpoint, _remove_metric_prefix
 import inspect
 import copy
 import os
@@ -66,6 +65,7 @@ class Objective(object):
             effect if target_metric contains "latency". Default value is False.
         throw: ValueError: _description_
         """
+        # TODO: how to expose mode parameter
         self.searcher = searcher
         self.model_ = model
         self.target_metric = target_metric
@@ -131,6 +131,7 @@ class Objective(object):
 
             self.tmp_dir = "./"
             self.tmp_filename = "best_model"
+            # TODO: How to get the mode value ?
             ModelCallback = createModelCheckpoint(metric=self.metric, mode='min',
                                                   dirpath=self.tmp_dir,
                                                   filename=self.tmp_filename)
@@ -187,12 +188,15 @@ class Objective(object):
             # may enable more optimizations later
             try:
                 if optimization == 'jit':
-                    optim_model = Trainer.trace(original_model, input_sample=self.input_sample,
-                                                accelerator=optimization,
-                                                use_ipex=True, channels_last=False)
+                    optim_model = InferenceOptimizer.trace(original_model,
+                                                           input_sample=self.input_sample,
+                                                           accelerator=optimization,
+                                                           use_ipex=True,
+                                                           channels_last=False)
                 else:
-                    optim_model = Trainer.trace(original_model, input_sample=self.input_sample,
-                                                accelerator=optimization)
+                    optim_model = InferenceOptimizer.trace(original_model,
+                                                           input_sample=self.input_sample,
+                                                           accelerator=optimization)
             except Exception:
                 # some optimizations may fail, just skip and try next
                 continue
