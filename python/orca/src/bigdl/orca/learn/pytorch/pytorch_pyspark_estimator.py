@@ -83,7 +83,7 @@ class PyTorchPySparkEstimator(BaseEstimator):
             self,
             *,
             model_creator,
-            optimizer_creator,
+            optimizer_creator=None,
             loss_creator=None,
             metrics=None,
             scheduler_creator=None,

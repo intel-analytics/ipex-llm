@@ -200,7 +200,7 @@ class TorchRunner:
             self.logger.debug("Creating optimizer.")
             self.optimizers = self.optimizer_creator(self.given_models,
                                                     self.config)
-            if not isinstance(self.optimizers, Iterable):
+            if self.optimizers is not None and not isinstance(self.optimizers, Iterable):
                 self.optimizers = [self.optimizers]
 
         self._create_schedulers_if_available()
@@ -458,7 +458,7 @@ class TorchRunner:
             "operator": self.training_operator.state_dict(),
             "models": [model.state_dict() for model in self.models]
         }
-        if self.optimizers:
+        if self.optimizers is not None:
             state.update({
                 "optimizers": [
                     opt.state_dict() for opt in self.optimizers

@@ -95,8 +95,9 @@ class TrainingOperator:
         invalidInputError(isinstance(models, collections.Iterable),
                           "Components need to be iterable. Got: {}".format(type(models)))
         self._optimizers = optimizers  # List of optimizers
-        invalidInputError(isinstance(optimizers, collections.Iterable),
-                          "Components need to be iterable. Got: {}".format(type(optimizers)))
+        if optimizers:
+            invalidInputError(isinstance(optimizers, collections.Iterable),
+                            "Components need to be iterable. Got: {}".format(type(optimizers)))
         self._world_rank = world_rank
         self._criterion = criterion
         self._schedulers = schedulers
@@ -287,14 +288,15 @@ class TrainingOperator:
             else:
                 loss = self.criterion(output, target)
 
-        # Compute gradients in a backward pass.
-        with self.timers.record("grad"):
-            self.optimizer.zero_grad()
-            loss.backward()
+        if self.optimizer:
+            # Compute gradients in a backward pass.
+            with self.timers.record("grad"):
+                self.optimizer.zero_grad()
+                loss.backward()
 
-        # Call step of optimizer to update model params.
-        with self.timers.record("apply"):
-            self.optimizer.step()
+            # Call step of optimizer to update model params.
+            with self.timers.record("apply"):
+                self.optimizer.step()
 
         return {"train_loss": loss.item(), NUM_SAMPLES: get_batchsize(features)}
 
@@ -411,7 +413,11 @@ class TrainingOperator:
                                   "Features should be tensor, list/tuple or dict, "
                                   "but got {}".format(type(features)))
 
-            loss = self.criterion(output, target)
+            if isinstance(output, tuple) or isinstance(output, list):
+                # Then target is also assumed to be a tuple or list.
+                loss = self.criterion(*output, *target)
+            else:
+                loss = self.criterion(output, target)
 
         return output, target, loss
 
@@ -447,12 +453,14 @@ class TrainingOperator:
     @property
     def optimizer(self):
         """First or only optimizer(s) created by the ``optimizer_creator``."""
-        return self._optimizers[0]
+        if self._optimizers:
+            return self._optimizers[0]
 
     @property
     def optimizers(self):
         """List of optimizers created by the ``optimizer_creator``."""
-        return self._optimizers
+        if self._optimizers:
+            return self._optimizers
 
     @property
     def world_rank(self):
