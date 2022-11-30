@@ -395,7 +395,7 @@ class TSDataset:
                               " into a datetime format).")
             from pandas.api.types import is_numeric_dtype
             type_error_list = [val for val in self.target_col + self.feature_col
-                            if not is_numeric_dtype(self.df[val])]
+                               if not is_numeric_dtype(self.df[val])]
             try:
                 for val in type_error_list:
                     self.df[val] = self.df[val].astype(np.float32)
