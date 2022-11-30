@@ -89,7 +89,7 @@ def _maxabs_scaler_scale_timeseries_numpy(data, scaler):
     data_scale = np.zeros(data.shape)
     for i in range(data.shape[1]):
         value_max_abs = scaler.scale_[i]
-        data_scale[:, i] /= value_max_abs
+        data_scale[:, i] = data[:, i] / value_max_abs
     return data_scale
 
 
@@ -98,7 +98,7 @@ def _minmax_scaler_scale_timeseries_numpy(data, scaler):
     for i in range(data.shape[1]):
         value_min = scaler.min_[i]
         value_scale = scaler.scale_[i]
-        data_scale[:, i] = data_scale[:, i] * value_scale + value_min
+        data_scale[:, i] = data[:, i] * value_scale + value_min
     return data_scale
 
 
@@ -107,7 +107,7 @@ def _robust_scaler_scale_timeseries_numpy(data, scaler):
     for i in range(data.shape[1]):
         value_center = scaler.center_[i] if scaler.with_centering else 0
         value_scale = scaler.scale_[i] if scaler.with_scaling else 1
-        data_scale[:, i] = (data_scale[:, i] - value_center) / value_scale
+        data_scale[:, i] = (data[:, i] - value_center) / value_scale
     return data_scale
 
 
