@@ -140,7 +140,6 @@ class TestInferencePipeline(TestCase):
         inference_opt.optimize(model=self.model,
                                training_data=self.train_loader,
                                thread_num=1,
-                               search_mode="all",
                                excludes=["fp32_ipex", "original"])
 
         # original is a special method that must be included in
@@ -154,7 +153,6 @@ class TestInferencePipeline(TestCase):
         inference_opt.optimize(model=self.model,
                                training_data=self.train_loader,
                                thread_num=1,
-                               search_mode="all",
                                includes=["fp32_ipex"])
 
         assert "original" in inference_opt.optimized_model_dict

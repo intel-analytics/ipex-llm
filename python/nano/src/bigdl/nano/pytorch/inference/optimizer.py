@@ -290,7 +290,8 @@ class InferenceOptimizer(BaseInferenceOptimizer):
         available_dict: Dict =\
             available_acceleration_combination(excludes=excludes,
                                                includes=includes,
-                                               full_methods=all_acceleration_methods)
+                                               full_methods=all_acceleration_methods,
+                                               all_methods=self.ALL_INFERENCE_ACCELERATION_METHOD)
 
         self._direction: str = direction  # save direction as attr
         # record whether calculate accuracy in optimize by this attr
