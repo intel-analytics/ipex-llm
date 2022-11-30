@@ -102,19 +102,19 @@ def prepare_data(dataset_dir, num_ng=4):
         sparse_feats_input_dims.append(max(sparse_feat_set)+1)
 
     # scale dense features
-    def process_df(shard, col):
+    def rename(shard, col):
         shard.drop(columns=[col], inplace=True)
         shard = shard.rename(columns={col+"_scaled": col})
         return shard
 
     for i in dense_features:
-        scaler = MinMaxScaler(inputCol=[i], outputCol=i+'_scaled')
+        scaler = MinMaxScaler(inputCol=i, outputCol=i+'_scaled')
         if i in users.get_schema()['columns']:
             users = scaler.fit_transform(users)
-            users = users.transform_shard(lambda shard: process_df(shard, i))
+            users = users.transform_shard(lambda shard: rename(shard, i))
         else:
             items = scaler.fit_transform(items)
-            items = items.transform_shard(lambda shard: process_df(shard, i))
+            items = items.transform_shard(lambda shard: rename(shard, i))
 
     # Negative sampling
     ratings = ratings.partition_by("user")
