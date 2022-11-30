@@ -49,7 +49,9 @@ class PytorchIPEXJITModel(AcceleratedLightningModule):
             self.use_ipex = use_ipex
             self.use_jit = use_jit
             self.channels_last = channels_last
-            self.context_manager = BaseContextManager()
+            self.context_manager = generate_context_manager(accelerator=None,
+                                                            precision="fp32",
+                                                            thread_num=thread_num)
             return
         self.channels_last = channels_last
         self.original_state_dict = model.state_dict()
