@@ -78,10 +78,8 @@ class NCFData(data.Dataset):
 
 
 def process_users_items(dataset_dir):
-    sparse_features = ['gender', 'occupation', 'zipcode', 'category']
+    sparse_features = ['gender', 'zipcode', 'category']
     dense_features = ['age']
-    feature_cols = ['user', 'item'] + sparse_features + dense_features
-    label_cols = ["label"]
 
     users = pd.read_csv(
         os.path.join(dataset_dir, 'users.dat'),
@@ -100,6 +98,7 @@ def process_users_items(dataset_dir):
     for i in sparse_features:
         df = users if i in users.columns else items
         df[i], _ = pd.Series(df[i]).factorize()
+    sparse_features.append('occupation')  # occupation is already indexed.
 
     # scale dense features
     for i in dense_features:
@@ -110,6 +109,8 @@ def process_users_items(dataset_dir):
         values = [torch.tensor(v, dtype=torch.float32) for v in values]
         df[i] = values
 
+    feature_cols = ['user', 'item'] + sparse_features + dense_features
+    label_cols = ["label"]
     return users, items, user_num, item_num, \
         sparse_features, dense_features, feature_cols+label_cols
 
