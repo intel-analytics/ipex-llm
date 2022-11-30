@@ -108,7 +108,7 @@ def prepare_data(dataset_dir, num_ng=4):
         return shard
 
     for i in dense_features:
-        scaler = MinMaxScaler(inputCol=i, outputCol=i+'_scaled')
+        scaler = MinMaxScaler(inputCol=[i], outputCol=i+'_scaled')
         if i in users.get_schema()['columns']:
             users = scaler.fit_transform(users)
             users = users.transform_shard(lambda shard: rename(shard, i))
