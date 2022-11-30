@@ -188,15 +188,19 @@ class SparkXShards(XShards):
             self.type['class_name'] = class_name
     
     @classmethod
-    def create(cls,
-               rdd: Union["PipelinedRDD", "RDD"],
-               class_name: str = None) -> "SparkXShards":
+    def _create(cls,
+                rdd: Union["PipelinedRDD", "RDD"],
+                class_name: str = None) -> "SparkXShards":
+        """
+        Create a non-transient SparkXShards.
+        """
         return cls(rdd, False, class_name)
     
     def lazy(self) -> "LazySparkXShards":
         """
-        Making the current SparkXShards won't affect the current cached rdd.
-        But future operations would be performed lazily.
+        Making the current SparkXShards lazy doesn't change the behavior of the current SparkXShards.
+        Cached data won't be uncached unless uncache is explicitly invoked.
+        After converting to LazySparkXShards, future operations would be performed lazily.
 
         :return: An instance of LazySparkXShards.
         """
@@ -215,7 +219,7 @@ class SparkXShards(XShards):
             for x in iter:
                 yield func(x, *args)
 
-        transformed_shard = self.create(self.rdd.mapPartitions(lambda iter:
+        transformed_shard = self._create(self.rdd.mapPartitions(lambda iter:
                                                                transform(iter, func, *args)))
         self._uncache()
         return transformed_shard
@@ -304,20 +308,20 @@ class SparkXShards(XShards):
                     # no data in this partition
                     return iter
 
-            repartitioned_shard = self.create(rdd.mapPartitions(merge_rows),
-                                              class_name=class_name)
+            repartitioned_shard = self._create(rdd.mapPartitions(merge_rows),
+                                               class_name=class_name)
         elif class_name == 'builtins.list':
             if num_partitions > self.rdd.getNumPartitions():
                 rdd = self.rdd \
                     .flatMap(lambda data: data) \
                     .repartition(num_partitions)
 
-                repartitioned_shard = self.create(rdd.mapPartitions(
+                repartitioned_shard = self._create(rdd.mapPartitions(
                     lambda iter: [list(iter)]), class_name=class_name)
             else:
                 rdd = self.rdd.coalesce(num_partitions)
                 from functools import reduce
-                repartitioned_shard = self.create(rdd.mapPartitions(
+                repartitioned_shard = self._create(rdd.mapPartitions(
                     lambda iter: [reduce(lambda l1, l2: l1 + l2, iter)]),
                     class_name=class_name)  # type:ignore
         elif class_name == 'numpy.ndarray':
@@ -330,18 +334,18 @@ class SparkXShards(XShards):
                         .flatMap(lambda data: list(data)) \
                         .repartition(num_partitions)
 
-                    repartitioned_shard = self.create(rdd.mapPartitions(
+                    repartitioned_shard = self._create(rdd.mapPartitions(
                         lambda iter: np.stack([list(iter)], axis=0).astype(dtype)),
                     class_name=class_name)
                 else:
                     rdd = self.rdd.coalesce(num_partitions)
                     from functools import reduce
-                    repartitioned_shard = self.create(rdd.mapPartitions(
+                    repartitioned_shard = self._create(rdd.mapPartitions(
                         lambda iter: [np.concatenate(list(iter), axis=0)]),
                     class_name=class_name)
             else:
-                repartitioned_shard = self.create(self.rdd.repartition(num_partitions),
-                                                  class_name=class_name)
+                repartitioned_shard = self._create(self.rdd.repartition(num_partitions),
+                                                   class_name=class_name)
         elif class_name == "builtins.dict":
             elem = self.rdd.first()
             keys = list(elem.keys())
@@ -371,7 +375,7 @@ class SparkXShards(XShards):
                     # If number of records in a partition <= 10, may produce empty partition
                     rdd = self.rdd.flatMap(lambda data: dict_to_unbatched_list(data)) \
                         .repartition(num_partitions)
-                    repartitioned_shard = self.create(rdd.mapPartitions(
+                    repartitioned_shard = self._create(rdd.mapPartitions(
                         lambda iter: to_batched_dict(iter)), class_name=class_name)
                 else:
                     rdd = self.rdd.coalesce(num_partitions)
@@ -381,11 +385,11 @@ class SparkXShards(XShards):
                         return [{k: np.concatenate([d[k] for d in iter_list], axis=0)
                                  for k in keys}]
 
-                    repartitioned_shard = self.create(rdd.mapPartitions(
+                    repartitioned_shard = self._create(rdd.mapPartitions(
                         lambda iter: merge_list_of_dict(iter)), class_name=class_name)
             else:
-                repartitioned_shard = self.create(self.rdd.repartition(num_partitions),
-                                                  class_name=class_name)
+                repartitioned_shard = self._create(self.rdd.repartition(num_partitions),
+                                                   class_name=class_name)
         else:
             repartitioned_shard = SparkXShards(self.rdd.repartition(num_partitions),
                                                class_name=class_name)
@@ -1113,9 +1117,12 @@ class LazySparkXShards(SparkXShards):
         self.user_cached = True
     
     @classmethod
-    def create(cls,
-               rdd: Union["PipelinedRDD", "RDD"],
-               class_name: str = None) -> "LazySparkXShards":
+    def _create(cls,
+                rdd: Union["PipelinedRDD", "RDD"],
+                class_name: str = None) -> "LazySparkXShards":
+        """
+        Create a LazySparkXShards.
+        """
         return cls(rdd, class_name)
 
 

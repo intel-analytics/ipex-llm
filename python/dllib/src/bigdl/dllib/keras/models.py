@@ -120,7 +120,7 @@ class Sequential(KerasNet):
                 input_shapes = model.input_shape
             else:
                 input_shapes = self.get_output_shape()
-            model = model.create(remove_batch(input_shapes))
+            model = model._create(remove_batch(input_shapes))
         self.value.add(model.value)
         return self
 

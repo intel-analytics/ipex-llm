@@ -45,7 +45,7 @@ class MXNetRunner(object):
 
         if self.is_worker:
             os.environ.update(env)
-            self.kv = mx.kv.create("dist_sync")
+            self.kv = mx.kv._create("dist_sync")
             # Set seed so that the model on each worker is initialized with the same weights.
             if "seed" in self.config:
                 mx.random.seed(self.config["seed"])
