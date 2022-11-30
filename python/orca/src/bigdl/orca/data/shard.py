@@ -32,8 +32,7 @@ from typing import (
     List,
     Optional,
     Tuple,
-    Union,
-    NoReturn
+    Union
 )
 
 if TYPE_CHECKING:
