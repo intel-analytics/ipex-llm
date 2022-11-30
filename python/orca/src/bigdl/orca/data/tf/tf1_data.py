@@ -28,10 +28,13 @@ if TYPE_CHECKING:
 
 class TF1Dataset(TFDataset):
 
-    def __init__(self, dataset: "MapDataset", batch_size: int,
+    def __init__(self,
+                 dataset: "MapDataset",
+                 batch_size: int,
                  batch_per_thread: int,
-                 validation_dataset: "MapDataset"=None,
-                 intra_threads: int=None, inter_threads: int=None) -> None:
+                 validation_dataset: Optional["MapDataset"] = None,
+                 intra_threads: Optional[int] = None,
+                 inter_threads: Optional[int] = None) -> None:
 
         node_num, core_num = get_node_and_core_number()
 

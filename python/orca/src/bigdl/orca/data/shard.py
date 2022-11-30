@@ -87,7 +87,7 @@ class XShards(object):
         pass
 
     @classmethod
-    def load_pickle(cls, path: str, minPartitions: int = None) -> "SparkXShards":
+    def load_pickle(cls, path: str, minPartitions: Optional[int] = None) -> "SparkXShards":
         """
 
         Load XShards from pickle files.
@@ -172,8 +172,8 @@ class SparkXShards(XShards):
     """
     def __init__(self,
                  rdd: Union["PipelinedRDD", "RDD"],
-                 transient: bool=False,
-                 class_name: str=None) -> None:
+                 transient: bool = False,
+                 class_name: Optional[str] = None) -> None:
         self.rdd = rdd
         self.user_cached = False
         if transient:
@@ -464,8 +464,8 @@ class SparkXShards(XShards):
                               "Currently only support dedup() on XShards of Pandas DataFrame")
         return None
 
-    def sort_values(self, col_names: Union[str, List[str]]=None,
-                    ascending: bool=True) -> Optional["SparkXShards"]:
+    def sort_values(self, col_names: Optional[Union[str, List[str]]] = None,
+                    ascending: bool = True) -> Optional["SparkXShards"]:
         """
         Sort the value of shards. This is only applicable for SparkXShards of Pandas Series.
 
@@ -907,8 +907,8 @@ class SparkXShards(XShards):
 
     def merge(self,
               right: "SparkXShards",
-              how: str="inner",
-              on: str=None,
+              how: str = "inner",
+              on: Optional[str] = None,
               **kwargs) -> "SparkXShards":
         """
         Merge two SparkXShards into a single SparkXShards with a database-style join.
@@ -1000,7 +1000,7 @@ class SparkXShards(XShards):
 
         return SparkXShards(self.rdd.map(lambda df: df[cols]))
 
-    def describe(self, cols:  Union[str, List[str]]=None) -> "PandasDataFrame":
+    def describe(self, cols: Optional[Union[str, List[str]]] = None) -> "PandasDataFrame":
         """
         Computes basic statistics for numeric and string columns.
 
