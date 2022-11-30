@@ -21,7 +21,6 @@ function refresh_cmd(){
 
     var cmd="NA";
 
-    $("framework").empty();
     if(build=="stable"){
         disable(builds);
     }else{
@@ -70,7 +69,6 @@ function refresh_cmd(){
             }
         }
     }
-
     $("#cmd").html(cmd);
 }
 
@@ -116,9 +114,6 @@ $(document).on('click',"button",function(){
     if (frameworks.indexOf(id)>=0){
         framework=id;
     }
-    // else if (versions.indexOf(id)>=0){
-    //     version=id;
-    // }
     else if (builds.indexOf(id)>=0){
         build=id;
     }
