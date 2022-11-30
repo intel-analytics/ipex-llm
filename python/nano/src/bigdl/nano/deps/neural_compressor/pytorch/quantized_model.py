@@ -57,7 +57,10 @@ class PytorchQuantizedModel(AcceleratedLightningModule):
             with open(tune_cfg_file, 'r') as f:
                 tune_cfg = yaml.safe_load(f)
                 qmodel.tune_cfg = tune_cfg
-        return PytorchQuantizedModel(qmodel, thread_num=status["thread_num"])
+        thread_num = None
+        if status["thread_num"] is not None:
+            thread_num = int(status["thread_num"])
+        return PytorchQuantizedModel(qmodel, thread_num=thread_num)
 
     def _save_model(self, path):
         self.quantized.save(path)
