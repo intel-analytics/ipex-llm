@@ -216,8 +216,8 @@ class HPOSearcher:
         # last `_run` call might have set it to `FINISHED`
         self.trainer.state.status = TrainerStatus.RUNNING
         self.trainer.training = True
+        self.trainer.state.fn = TrainerFn.FITTING
         if self.num_process > 1:
-            self.trainer.state.fn = TrainerFn.FITTING  # add in lightning 1.6
             self.trainer.fit(*args, **kwargs)
         else:
             self.trainer._run(*args, **kwargs)

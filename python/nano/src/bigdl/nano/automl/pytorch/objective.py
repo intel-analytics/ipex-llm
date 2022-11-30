@@ -27,9 +27,10 @@ from pytorch_lightning.core.datamodule import LightningDataModule
 from bigdl.nano.pytorch.trainer import Trainer
 from bigdl.nano.automl.hpo.backend import create_pl_pruning_callback
 from bigdl.nano.utils.log4Error import invalidInputError
-from ._helper import LatencyCallback, _remove_metric_prefix
+from ._helper import LatencyCallback,createModelCheckpoint, _remove_metric_prefix
 import inspect
 import copy
+import os
 
 
 def _is_creator(model):
@@ -44,19 +45,22 @@ class Objective(object):
                  model=None,
                  target_metric=None,
                  pruning=False,
+                 mode='best',
                  acceleration=False,
                  input_sample=None,
                  **fit_kwargs):
         """
         Init the objective.
 
-        :param: searcher: an HPOSearcher object which does the actual work.
-        :param: model: a model instance or a creator function.
+        :param searcher: an HPOSearcher object which does the actual work.
+        :param model: a model instance or a creator function.
             Defaults to None.
-        :param: target_metric: str(optional): target metric to optimize.
+        :param target_metric: str(optional): target metric to optimize.
             Defaults to None.
-        :param: pruning: bool (optional): whether to enable pruning.
+        :param pruning: bool (optional): whether to enable pruning.
             Defaults to False.
+        :param mode: use last epoch's result as trial's score or use best epoch's.
+            Defaults to 'best', you can change it to 'last'.
         :param acceleration: Whether to automatically consider the model after
             inference acceleration in the search process. It will only take
             effect if target_metric contains "latency". Default value is False.
@@ -65,6 +69,7 @@ class Objective(object):
         self.searcher = searcher
         self.model_ = model
         self.target_metric = target_metric
+        self.mode = mode
         self.mo_hpo = isinstance(target_metric, (list, tuple)) \
             and len(self.target_metric) > 1
         # add automatic support for latency
@@ -76,6 +81,18 @@ class Objective(object):
             self.input_sample = input_sample
         else:
             self.acceleration = False
+
+        if mode == 'best':
+            if self.mo_hpo:
+                if self.target_metric[0] != 'latency':
+                    self.metric = self.target_metric[0]
+                else:
+                    self.metric = self.target_metric[1]
+            else:
+                self.metric = self.target_metric
+
+            self.tmp_dir = "./"
+            self.tmp_filename = "best_model"
 
         self.pruning = pruning
         self.fit_kwargs = fit_kwargs
@@ -106,8 +123,27 @@ class Objective(object):
             datamodule=self.datamodule
         )
 
+        if self.mode == 'best':
+            ckpt_path = os.path.join(self.tmp_dir, self.tmp_filename) + '.ckpt'
+            if os.path.exists(ckpt_path):
+                os.remove(ckpt_path)
+            os.makedirs(self.tmp_dir, exist_ok=True)
+
+            self.tmp_dir = "./"
+            self.tmp_filename = "best_model"
+            ModelCallback = createModelCheckpoint(metric=self.metric, mode='min',
+                                                  dirpath=self.tmp_dir,
+                                                  filename=self.tmp_filename)
+            callbacks = self.searcher.trainer.callbacks or []
+            callbacks.append(ModelCallback)
+            self.searcher.trainer.callbacks = callbacks
+
     def _post_train(self, model):
-        pass
+        if self.mode == "best":
+            ckpt_path = os.path.join(self.tmp_dir, self.tmp_filename) + '.ckpt'
+            if os.path.exists(ckpt_path):
+                os.remove(ckpt_path)
+            self.searcher.trainer.callbacks.pop()
 
     def _fix_data_args(self,
         model: "pl.LightningModule",
@@ -210,6 +246,16 @@ class Objective(object):
                 scores.append(score)
         else:
             scores = self.searcher.trainer.callback_metrics[self.target_metric].item()
+        self.searcher._validate(model, self.val_dataloaders)
+        self.searcher._validate(model, self.val_dataloaders)
+        if self.mode == "best":
+            # obtain score from loaded best model
+            checkpoint_path = self.tmp_dir + self.tmp_filename + ".ckpt"
+            # checkpoint_path = self.tmp_filename + ".ckpt"
+            model.load_from_checkpoint(checkpoint_path)  
+            self.searcher.trainer.validate(model)
+            scores = self.searcher.trainer.callback_metrics[self.target_metric].item()
+
         if self.acceleration:
             scores, optimization = self._auto_acceleration(model, scores)
             # via user_attr returns the choosed optimization corresponding

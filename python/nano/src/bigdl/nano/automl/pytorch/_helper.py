@@ -75,6 +75,19 @@ class LatencyCallback(Callback):
         pl_module.time_avg(batch_latency)
 
 
+def createModelCheckpoint(metric, filename, dirpath=None, mode='min'):
+    from pytorch_lightning.callbacks import ModelCheckpoint
+    checkpoint_callback = ModelCheckpoint(
+        monitor=metric,
+        save_top_k=1,
+        save_last=False,
+        mode=mode,
+        dirpath=dirpath,
+        filename=filename
+    )
+    return checkpoint_callback
+
+
 class CustomEvaluationLoop(EvaluationLoop):
     def __init__(self, verbose: bool = True) -> None:
         super().__init__(verbose=verbose)
