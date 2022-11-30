@@ -195,8 +195,10 @@ class SparkXShards(XShards):
     
     def lazy(self) -> "LazySparkXShards":
         """
-        Won't affect the current cached rdd. But will perform lazily in future operations.
-        :return: 
+        Making the current SparkXShards won't affect the current cached rdd.
+        But future operations would be performed lazily.
+
+        :return: An instance of LazySparkXShards.
         """
         return LazySparkXShards(self.rdd, self._get_class_name())
 
