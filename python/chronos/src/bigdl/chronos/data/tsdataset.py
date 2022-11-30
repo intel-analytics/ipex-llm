@@ -146,7 +146,8 @@ class TSDataset:
             tsdataset_df = df
 
         target_col = _to_list(target_col, name="target_col", evaluate_mode=evaluate_mode)
-        feature_col = _to_list(extra_feature_col, name="extra_feature_col", evaluate_mode=evaluate_mode)
+        feature_col = _to_list(extra_feature_col, name="extra_feature_col",
+                               evaluate_mode=evaluate_mode)
 
         if id_col is None:
             tsdataset_df[_DEFAULT_ID_COL_NAME] = _DEFAULT_ID_PLACEHOLDER
@@ -318,7 +319,8 @@ class TSDataset:
         # Only test locally at present
         from bigdl.chronos.data.utils.prometheus_df import GetRangeDataframe
         query_list = _to_list(query, name="query", evaluate_mode=evaluate_mode)
-        columns = {"target_col": _to_list(target_col, name="target_col", evaluate_mode=evaluate_mode),
+        columns = {"target_col": _to_list(target_col, name="target_col",
+                                          evaluate_mode=evaluate_mode),
                    "id_col": _to_list(id_col, name="id_col", evaluate_mode=evaluate_mode),
                    "extra_feature_col": _to_list(extra_feature_col, name="extra_feature_col",
                                                  evaluate_mode=evaluate_mode)}
@@ -388,9 +390,9 @@ class TSDataset:
         if not self.evaluate_mode:
             from bigdl.nano.utils.log4Error import invalidInputError
             invalidInputError(self._is_pd_datetime,
-                            "The time series data does not have a Pandas datetime format "
-                            "(you can use pandas.to_datetime to convert a string"
-                            " into a datetime format).")
+                              "The time series data does not have a Pandas datetime format "
+                              "(you can use pandas.to_datetime to convert a string"
+                              " into a datetime format).")
             from pandas.api.types import is_numeric_dtype
             type_error_list = [val for val in self.target_col + self.feature_col
                             if not is_numeric_dtype(self.df[val])]
@@ -399,8 +401,8 @@ class TSDataset:
                     self.df[val] = self.df[val].astype(np.float32)
             except Exception:
                 invalidInputError(False,
-                                "All the columns of target_col "
-                                "and extra_feature_col should be of numeric type.")
+                                  "All the columns of target_col "
+                                  "and extra_feature_col should be of numeric type.")
         self.df = self.df.groupby([self.id_col]) \
             .apply(lambda df: resample_timeseries_dataframe(df=df,
                                                             dt_col=self.dt_col,
