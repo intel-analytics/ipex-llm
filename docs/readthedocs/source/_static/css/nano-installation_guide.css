@@ -19,10 +19,6 @@
     padding: 5px;
 }
 
-#table-1 tr td:first-child{
-    font-weight: 600;
-}
-
 #table-1 td{
     font-size: 16px;
     font-family: Verdana;

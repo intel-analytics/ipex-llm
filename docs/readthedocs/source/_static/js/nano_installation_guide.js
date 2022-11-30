@@ -114,7 +114,7 @@ $(document).on('click',"button",function(){
     var id = $(this).attr("id");
 
     if (frameworks.indexOf(id)>=0){
-        framework="pytorch";
+        framework=id;
     }
     // else if (versions.indexOf(id)>=0){
     //     version=id;
