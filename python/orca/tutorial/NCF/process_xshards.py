@@ -63,10 +63,8 @@ def split_dataset(data):
 
 
 def prepare_data(dataset_dir, num_ng=4):
-    sparse_features = ['gender', 'occupation', 'zipcode', 'category']
+    sparse_features = ['gender', 'zipcode', 'category']
     dense_features = ['age']
-    feature_cols = ['user', 'item'] + sparse_features + dense_features
-    label_cols = ["label"]
 
     users = read_csv(
         os.path.join(dataset_dir, 'users.dat'),
@@ -94,6 +92,7 @@ def prepare_data(dataset_dir, num_ng=4):
             users = indexer.fit_transform(users)
         else:
             items = indexer.fit_transform(items)
+    sparse_features.append('occupation')  # occupation is already indexed.
 
     # Calculate input_dims for each sparse features
     sparse_feats_input_dims = []
@@ -127,6 +126,9 @@ def prepare_data(dataset_dir, num_ng=4):
 
     # Split dataset
     train_data, test_data = data.transform_shard(split_dataset).split()
+
+    feature_cols = ['user', 'item'] + sparse_features + dense_features
+    label_cols = ["label"]
     return train_data, test_data, user_num, item_num, \
         sparse_feats_input_dims, len(dense_features), feature_cols, label_cols
 
