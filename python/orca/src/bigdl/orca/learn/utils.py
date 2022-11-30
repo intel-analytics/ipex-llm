@@ -340,6 +340,7 @@ def transform_to_shard_dict(data, feature_cols, label_cols=None):
         return result
 
     data = data.transform_shard(to_shard_dict)
+    data._set_class_name("builtins.dict")
     return data
 
 
