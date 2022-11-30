@@ -148,7 +148,7 @@ def visualize_model(model, num_images=6):
     model.eval()
     images_so_far = 0
     fig = plt.figure()
-    train_loader, test_loader, class_names = load_dataset(config['data_dir'], batch_size)
+    train_loader, test_loader, class_names = load_dataset(data_dir)
 
     with torch.no_grad():
         for i, (inputs, labels) in enumerate(test_loader):
