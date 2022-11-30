@@ -48,6 +48,7 @@ class PytorchIPEXJITModel(AcceleratedLightningModule):
             self.use_ipex = use_ipex
             self.use_jit = use_jit
             self.channels_last = channels_last
+            self.context_manager = BaseContextManager()
             return
         self.channels_last = channels_last
         self.original_state_dict = model.state_dict()
@@ -57,7 +58,6 @@ class PytorchIPEXJITModel(AcceleratedLightningModule):
             self.model = self.model.to(memory_format=torch.channels_last)
         if self.use_ipex:
             import intel_extension_for_pytorch as ipex
-
             self.model = ipex.optimize(self.model, dtype=dtype)
         if self.use_jit:
             if dtype == torch.bfloat16:
@@ -104,6 +104,8 @@ class PytorchIPEXJITModel(AcceleratedLightningModule):
         status = PytorchIPEXJITModel._load_status(path)
         checkpoint_path = path / status['checkpoint']
         if status["use_jit"]:
+            if status["use_ipex"]:
+                import intel_extension_for_pytorch as ipex
             model = torch.jit.load(checkpoint_path)
             model.eval()
             model = torch.jit.freeze(model)

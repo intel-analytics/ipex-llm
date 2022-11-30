@@ -1,5 +1,5 @@
-name: 'Mac Friesian Python UT Pip Spark3.1'
-description: 'Mac Friesian Python Pip Spark3.1'
+name: 'Mac Friesian Python ExampleTest Tf2 Pip Spark3.1'
+description: 'Mac Friesian Python ExampleTest Tf2 Pip Spark3.1'
 runs:
   using: "composite"
   steps:
@@ -7,11 +7,11 @@ runs:
       shell: bash
       run: |
         source ~/.bash_profile
-        source activate py37
+        source activate py37-tf2
         pip uninstall -y bigdl-dllib bigdl-orca bigdl-chronos bigdl-orca-spark3 bigdl-dllib-spark3 bigdl-chronos-spark3  pyspark
         export KERAS_BACKEND=tensorflow
         export SPARK_HOME=/opt/work/spark-3.1.3
-
+        PATH="/usr/local/opt/gnu-tar/libexec/gnubin:$PATH"
         gsed -i "s/'pyspark=='+PYSPARK_VERSION/'pyspark==3.1.2'/g" python/dllib/src/setup.py
         gsed -i "s/name='bigdl-dllib'/name='bigdl-dllib-spark3'/g" python/dllib/src/setup.py
         gsed -i "s/dist\/bigdl_dllib-/dist\/bigdl_dllib_spark3-/g" python/dllib/dev/release/release.sh
@@ -33,8 +33,11 @@ runs:
         # install orca
         pip install -i https://pypi.org/simple python/orca/src/dist/bigdl_orca*-py3-none-macosx_10_11_x86_64.whl		
         # install friesian
-        pip install -i https://pypi.org/simple python/friesian/src/dist/bigdl_friesian*-py3-none-macosx_10_11_x86_64.whl
-        python -m pytest -v python/friesian/test/bigdl/friesian/feature/
+        pip install python/friesian/src/dist/bigdl_friesian*-py3-none-macosx_10_11_x86_64.whl
+
+        cd python/friesian/dev/test
+        gsed -i "s/sed/gsed/g" run-example-tests-tf2.6.0.sh
+        bash run-example-tests-tf2.6.0.sh
         source deactivate
       env:
         BIGDL_ROOT: ${{ github.workspace }}
