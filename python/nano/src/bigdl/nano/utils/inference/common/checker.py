@@ -16,7 +16,6 @@
 
 from typing import Optional, List, Set, Dict
 from importlib.util import find_spec
-import subprocess
 from .utils import AccelerationOption
 from bigdl.nano.utils import CPUInfo
 
@@ -62,7 +61,7 @@ def _bf16_checker():
 def available_acceleration_combination(excludes: Optional[List[str]],
                                        includes: Optional[List[str]],
                                        full_methods: Dict[str, AccelerationOption],
-                                       all_methods: Dict[str, AccelerationOption]):
+                                       all_methods: Dict[str, AccelerationOption] = None):
     '''
     :return: a dictionary states the availablity (if meet depdencies)
     '''
@@ -82,10 +81,11 @@ def available_acceleration_combination(excludes: Optional[List[str]],
     else:
         include_set: Set[str] = set(includes)
         include_set.add("original")
-        for method in include_set:
-            if method not in full_methods:
-                # append include method into full methods
-                full_methods[method] = all_methods[method]
+        if all_methods is not None:
+            for method in include_set:
+                if method not in full_methods:
+                    # append include method into full methods
+                    full_methods[method] = all_methods[method]
 
     available_dict = {}
     for method, option in full_methods.items():
