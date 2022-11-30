@@ -56,10 +56,10 @@ runs:
         echo ""
         echo "Check whether there is remaining container:"
         #export container_check=$(docker ps|grep ${CONTAINER_NAME})
-        #if [ "$container_check" != "" ];then
-          #docker stop /${CONTAINER_NAME}
-          #docker rm /${CONTAINER_NAME}
-        #fi
+        if [ "$container_check" != "" ];then
+          docker stop ${CONTAINER_NAME}
+          docker rm -f ${CONTAINER_NAME}
+        fi
         
         echo ""
         docker run -itd \
@@ -110,8 +110,8 @@ runs:
             bash -c "bash /ppml/trusted-realtime-ml/check-status.sh serving"
         echo "## Checked."
 
-        docker stop /${CONTAINER_NAME}
-        docker rm /${CONTAINER_NAME}
+        docker stop ${CONTAINER_NAME}
+        docker rm ${CONTAINER_NAME}
         exit 0           
 
             
