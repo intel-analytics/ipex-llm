@@ -456,8 +456,7 @@ class TorchRunner:
         state = {
             "epoch": self.epochs,
             "operator": self.training_operator.state_dict(),
-            "models": [model.state_dict() for model in self.models],
-            "optimizers": [opt.state_dict() for opt in self.optimizers]
+            "models": [model.state_dict() for model in self.models]
         }
         if self.optimizers:
             state.update({
