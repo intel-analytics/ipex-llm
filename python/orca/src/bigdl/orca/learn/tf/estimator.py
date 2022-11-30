@@ -14,9 +14,27 @@
 # limitations under the License.
 #
 from pyspark.sql import DataFrame
+from pyspark.rdd import PipelinedRDD
+from pyspark.sql.dataframe import DataFrame
+from tensorflow.core.protobuf.config_pb2 import ConfigProto
+from tensorflow.python.data.ops.dataset_ops import (
+    DatasetV1Adapter,
+    TensorSliceDataset,
+)
+from tensorflow.python.keras.engine.training import Model
+import tensorflow as tf
+import collections
+from typing import (
+    Any,
+    Dict,
+    List,
+    Optional,
+    Union,
+)
+
 
 from bigdl.dllib.optim.optimizer import MaxEpoch
-
+from bigdl.dllib.utils.log4Error import invalidInputError
 from bigdl.orca.tfpark.tf_dataset import _standardize_keras_target_data
 from bigdl.dllib.utils.file_utils import enable_multi_fs_load, enable_multi_fs_load_static, \
     enable_multi_fs_save
@@ -36,6 +54,19 @@ from bigdl.dllib.utils import nest
 from bigdl.dllib.utils.tf import save_tf_checkpoint, load_tf_checkpoint
 from bigdl.orca.learn.spark_estimator import Estimator as SparkEstimator
 from bigdl.dllib.utils.log4Error import *
+from bigdl.dllib.optim.optimizer import SeveralIteration
+from bigdl.dllib.utils.triggers import TriggerAnd
+from bigdl.orca.data.shard import SparkXShards
+from bigdl.orca.data.tf.data import TensorSliceDataset
+from bigdl.orca.data.tf.tf1_data import TF1Dataset
+from bigdl.orca.learn.optimizers import Optimizer
+from bigdl.orca.learn.metrics import Metric
+from bigdl.orca.learn.trigger import SeveralIteration
+from bigdl.orca.tfpark.tf_dataset import (
+    DataFrameDataset,
+    TFDataDataset,
+    TFNdarrayDataset,
+)
 
 
 class Estimator(SparkEstimator):
@@ -167,7 +198,7 @@ class Estimator(SparkEstimator):
         """
         invalidInputError(False, "not implemented")
 
-    def get_train_summary(self, tag=None):
+    def get_train_summary(self, tag: Optional[str]=None) -> Optional[List[List[float]]]:
         """
         Get the scalar from model train summary.
 
@@ -181,7 +212,7 @@ class Estimator(SparkEstimator):
 
         return None
 
-    def get_validation_summary(self, tag=None):
+    def get_validation_summary(self, tag: Optional[str]=None) -> Optional[List[List[float]]]:
         """
         Get the scalar from model validation summary.
 
@@ -270,7 +301,7 @@ class Estimator(SparkEstimator):
         """
         invalidInputError(False, "not implemented")
 
-    def load_orca_checkpoint(self, path, version=None):
+    def load_orca_checkpoint(self, path: str, version: Optional[int]=None) -> None:
         """
         Load Orca checkpoint. To load a specific checkpoint, please provide a `version`.
         If `version` is None, then the latest checkpoint will be loaded.
@@ -292,10 +323,21 @@ class Estimator(SparkEstimator):
         self.checkpoint_version = version
 
     @staticmethod
-    def from_graph(*, inputs, outputs=None,
-                   labels=None, loss=None, optimizer=None,
-                   metrics=None, clip_norm=None, clip_value=None,
-                   updates=None, sess=None, model_dir=None, backend="bigdl"):
+    def from_graph(
+        *, 
+        inputs: tf.Tensor, 
+        outputs: Optional[tf.Tensor]=None,
+        labels: Optional[tf.Tensor]=None,
+        loss: Optional[tf.Tensor]=None,
+        optimizer: Optional[str]=None,
+        metrics: Optional[tf.Tensor]=None,
+        clip_norm: Optional[float]=None,
+        clip_value: Optional[float]=None,
+        updates: Optional[List[tf.Variable]]=None,#not sure
+        sess: Optional[tf.Session]=None,
+        model_dir: Optional[str]=None,
+        backend: str="bigdl"
+        ) -> SparkEstimator:
         """
         Create an Estimator for tesorflow graph.
 
@@ -336,7 +378,13 @@ class Estimator(SparkEstimator):
                                    )
 
     @staticmethod
-    def from_keras(keras_model, metrics=None, model_dir=None, optimizer=None, backend="bigdl"):
+    def from_keras(
+        keras_model: Model,
+        metrics: Optional[Metric] = None,
+        model_dir: Optional[str] = None,
+        optimizer: Optional[Optimizer] = None,
+        backend: str = "bigdl"
+    ) -> SparkEstimator:
         """
         Create an Estimator from a tensorflow.keras model. The model must be compiled.
 
@@ -353,7 +401,7 @@ class Estimator(SparkEstimator):
 
     @staticmethod
     @enable_multi_fs_load_static
-    def load_keras_model(path):
+    def load_keras_model(path: str) -> SparkEstimator:
         """
         Create Estimator by loading an existing keras model (with weights) from HDF5 file.
 
@@ -365,15 +413,23 @@ class Estimator(SparkEstimator):
         return Estimator.from_keras(keras_model=model)
 
 
-def is_tf_data_dataset(data):
+def is_tf_data_dataset(data: Any) -> bool:
     is_dataset = isinstance(data, tf.data.Dataset)
     is_dataset_v2 = isinstance(data, tf.python.data.ops.dataset_ops.DatasetV2)
     return is_dataset or is_dataset_v2
 
 
-def to_dataset(data, batch_size, batch_per_thread, validation_data,
-               feature_cols, label_cols, hard_code_batch_size,
-               sequential_order, shuffle, auto_shard_files, memory_type="DRAM"):
+def to_dataset(data: Union[SparkXShards, Dataset, DataFrame, tf.data.Dataset],
+    batch_size: int,
+    batch_per_thread: int,
+    validation_data: Union[SparkXShards, Dataset, DataFrame, tf.data.Dataset, None],
+    feature_cols: List[str],
+    label_cols: List[str],
+    hard_code_batch_size: bool,
+    sequential_order: bool,
+    shuffle: bool,
+    auto_shard_files: bool,
+    memory_type: str="DRAM") -> Union[TFNdarrayDataset, TF1Dataset, DataFrameDataset, TFDataDataset]:
     # todo wrap argument into kwargs
     if validation_data:
         if isinstance(data, SparkXShards):
@@ -429,16 +485,28 @@ def to_dataset(data, batch_size, batch_per_thread, validation_data,
     return dataset
 
 
-def save_model_dir(model_dir):
+def save_model_dir(model_dir: str) -> str:
     if model_dir.startswith("dbfs:/"):
         model_dir = "/dbfs/" + model_dir[len("dbfs:/"):]
     return model_dir
 
 
 class TensorFlowEstimator(Estimator):
-    def __init__(self, *, inputs, outputs, labels, loss,
-                 optimizer, clip_norm, clip_value,
-                 metrics, updates, sess, model_dir):
+    def __init__(
+        self,
+        *,
+        inputs: tf.Tensor,
+        outputs: tf.Tensor,
+        labels: tf.Tensor,
+        loss: tf.Tensor,
+        optimizer: Optimizer,
+        clip_norm: float,
+        clip_value: float,
+        metrics: Metric,
+        updates: List[tf.Variables],
+        sess: tf.Session,
+        model_dir: str
+    ) -> Estimator:
         self.inputs = inputs
         self.outputs = outputs
         self.labels = labels
@@ -495,17 +563,19 @@ class TensorFlowEstimator(Estimator):
         self.log_dir = None
         self.app_name = None
 
-    def fit(self, data,
-            epochs=1,
-            batch_size=32,
-            feature_cols=None,
-            label_cols=None,
-            validation_data=None,
-            session_config=None,
-            checkpoint_trigger=None,
-            auto_shard_files=False,
-            feed_dict=None
-            ):
+    def fit(
+        self,
+        data: Union[TensorSliceDataset, DataFrame, TensorSliceDataset, DatasetV1Adapter, SparkXShards],
+        epochs: int=1,
+        batch_size: int=32,
+        feature_cols: Optional[List[str]]=None,
+        label_cols: Optional[List[str]]=None,
+        validation_data: Optional[Any]=None,
+        session_config: Optional[tf.ConfigProto]=None,
+        checkpoint_trigger: Optional[SeveralIteration]=None,
+        auto_shard_files: bool=False,
+        feed_dict: Dict[tf.Tensor, tuple(tf.Tensor, tf.Tensor)]=None
+    ) -> Estimator:
         """
         Train this graph model with train data.
 
@@ -607,10 +677,13 @@ class TensorFlowEstimator(Estimator):
                                    checkpoint_trigger=checkpoint_trigger)
         return self
 
-    def predict(self, data, batch_size=4,
-                feature_cols=None,
-                auto_shard_files=False,
-                ):
+    def predict(
+        self,
+        data: Union[DataFrame, SparkXShards, TensorSliceDataset],
+        batch_size: int=4,
+        feature_cols: Optional[List[str]]=None,
+        auto_shard_files: bool=False
+    ) -> Union[DataFrame, SparkXShards, PipelinedRDD]:
         """
         Predict input data
 
@@ -664,11 +737,14 @@ class TensorFlowEstimator(Estimator):
         else:
             return predicted_rdd
 
-    def evaluate(self, data, batch_size=32,
-                 feature_cols=None,
-                 label_cols=None,
-                 auto_shard_files=False,
-                 ):
+    def evaluate(
+        self,
+        data: Union[TensorSliceDataset, DataFrame, TensorSliceDataset, DatasetV1Adapter, SparkXShards],
+        batch_size: int=32,
+        feature_cols: Optional[List[str]]=None,
+        label_cols: Optional[List[str]]=None,
+        auto_shard_files: bool=False
+    ) -> Dict[str, float]:
         """
         Evaluate model.
 
@@ -720,7 +796,7 @@ class TensorFlowEstimator(Estimator):
                                 sess=self.sess,
                                 dataset=dataset, metrics=self.metrics)
 
-    def save_tf_checkpoint(self, path):
+    def save_tf_checkpoint(self, path: str) -> None:
         """
         Save tensorflow checkpoint in this estimator.
 
@@ -728,7 +804,7 @@ class TensorFlowEstimator(Estimator):
         """
         save_tf_checkpoint(self.sess, path)
 
-    def load_tf_checkpoint(self, path):
+    def load_tf_checkpoint(self, path: str) -> None:
         """
         Load tensorflow checkpoint to this estimator.
         :param path: tensorflow checkpoint path.
@@ -741,7 +817,7 @@ class TensorFlowEstimator(Estimator):
         """
         invalidInputError(False, "not implemented")
 
-    def save(self, model_path):
+    def save(self, model_path: str) -> None:
         """
         Save model (tensorflow checkpoint) to model_path
 
@@ -750,7 +826,7 @@ class TensorFlowEstimator(Estimator):
         """
         self.save_tf_checkpoint(model_path)
 
-    def load(self, model_path):
+    def load(self, model_path: str) -> None:
         """
         Load existing model (tensorflow checkpoint) from model_path
         :param model_path: Path to the existing tensorflow checkpoint.
@@ -778,7 +854,7 @@ class TensorFlowEstimator(Estimator):
         """
         invalidInputError(False, "not implemented")
 
-    def shutdown(self):
+    def shutdown(self) -> None:
         """
         Close TensorFlow session and release resources.
         """
@@ -786,7 +862,13 @@ class TensorFlowEstimator(Estimator):
 
 
 class KerasEstimator(Estimator):
-    def __init__(self, keras_model, metrics, model_dir, optimizer):
+    def __init__(
+        self,
+        keras_model: Model,
+        metrics: Optional[Metric],
+        model_dir: Optional[str],
+        optimizer: Optional[Optimizer]
+    ) -> Estimator:
         if model_dir and model_dir.startswith("dbfs:/"):
             model_dir = save_model_dir(model_dir)
         self.model = KerasModel(keras_model, model_dir)
@@ -803,16 +885,18 @@ class KerasEstimator(Estimator):
         self.clip_min = None
         self.clip_max = None
 
-    def fit(self, data,
-            epochs=1,
-            batch_size=32,
-            feature_cols=None,
-            label_cols=None,
-            validation_data=None,
-            session_config=None,
-            checkpoint_trigger=None,
-            auto_shard_files=False
-            ):
+    def fit(
+        self,
+        data: Union[DataFrame, DatasetV1Adapter, SparkXShards],
+        epochs: int=1,
+        batch_size: int=32,
+        feature_cols: Optional[List[str]]=None,
+        label_cols: Optional[List[str]]=None,
+        validation_data: Optional[Union[DatasetV1Adapter, SparkXShards, DataFrame]]=None,
+        session_config: Optional[ConfigProto]=None,
+        checkpoint_trigger: Optional[Union[TriggerAnd, SeveralIteration, SeveralIteration]]=None,
+        auto_shard_files: bool=False
+    ) -> Estimator:
         """
         Train this keras model with train data.
 
@@ -907,10 +991,13 @@ class KerasEstimator(Estimator):
 
         return self
 
-    def predict(self, data, batch_size=4,
-                feature_cols=None,
-                auto_shard_files=False,
-                ):
+    def predict(
+        self,
+        data: Union[DataFrame, SparkXShards],
+        batch_size: int=4,
+        feature_cols: Optional[List[str]]=None,
+        auto_shard_files: bool=False
+    ) -> Union[DataFrame, SparkXShards]:
         """
         Predict input data
 
@@ -962,11 +1049,14 @@ class KerasEstimator(Estimator):
         else:
             return predicted_rdd
 
-    def evaluate(self, data, batch_size=32,
-                 feature_cols=None,
-                 label_cols=None,
-                 auto_shard_files=False
-                 ):
+    def evaluate(
+        self,
+        data: Union[DatasetV1Adapter, SparkXShards, DataFrame],
+        batch_size: int=32,
+        feature_cols: Optional[List[str]]=None,
+        label_cols: Optional[List[str]]=None,
+        auto_shard_files: bool=False
+    ) -> Dict[str, float]:
         """
         Evaluate model.
 
@@ -1011,7 +1101,7 @@ class KerasEstimator(Estimator):
         return self.model.evaluate(dataset, batch_per_thread=batch_size)
 
     @enable_multi_fs_save
-    def save_keras_model(self, path, overwrite=True):
+    def save_keras_model(self, path: str, overwrite: bool=True) -> None:
         """
         Save tensorflow keras model in this estimator.
 
@@ -1020,7 +1110,7 @@ class KerasEstimator(Estimator):
         """
         self.model.save_model(path, overwrite=overwrite)
 
-    def get_model(self):
+    def get_model(self) -> Model:
         """
         Get the trained Keras model
 
@@ -1029,7 +1119,7 @@ class KerasEstimator(Estimator):
         return self.model.model
 
     @enable_multi_fs_save
-    def save(self, model_path, overwrite=True):
+    def save(self, model_path, overwrite=True) -> None:
         """
         Save model to model_path
 
@@ -1041,7 +1131,7 @@ class KerasEstimator(Estimator):
         self.save_keras_model(model_path, overwrite=overwrite)
 
     @enable_multi_fs_load
-    def load(self, model_path):
+    def load(self, model_path: str) -> None:
         """
         Load existing keras model
 
@@ -1050,7 +1140,7 @@ class KerasEstimator(Estimator):
         """
         self.model = KerasModel.load_model(model_path)
 
-    def clear_gradient_clipping(self):
+    def clear_gradient_clipping(self) -> None:
         """
         Clear gradient clipping parameters. In this case, gradient clipping will not be applied.
         In order to take effect, it needs to be called before fit.
@@ -1061,7 +1151,7 @@ class KerasEstimator(Estimator):
         self.clip_min = None
         self.clip_max = None
 
-    def set_constant_gradient_clipping(self, min, max):
+    def set_constant_gradient_clipping(self, min: float, max: float) -> None:
         """
         Set constant gradient clipping during the training process.
         In order to take effect, it needs to be called before fit.
@@ -1075,7 +1165,7 @@ class KerasEstimator(Estimator):
         self.clip_min = min
         self.clip_max = max
 
-    def set_l2_norm_gradient_clipping(self, clip_norm):
+    def set_l2_norm_gradient_clipping(self, clip_norm: float) -> None:
         """
         Clip gradient to a maximum L2-Norm during the training process.
         In order to take effect, it needs to be called before fit.
@@ -1086,7 +1176,7 @@ class KerasEstimator(Estimator):
         self.clip_norm = clip_norm
 
     @enable_multi_fs_save
-    def save_keras_weights(self, filepath, overwrite=True, save_format=None):
+    def save_keras_weights(self, filepath: str, overwrite: bool=True, save_format: Optional[str]=None) -> None:
         """
         Save tensorflow keras model weights in this estimator.
 
@@ -1099,7 +1189,7 @@ class KerasEstimator(Estimator):
         self.model.save_weights(filepath, overwrite, save_format)
 
     @enable_multi_fs_load
-    def load_keras_weights(self, filepath, by_name=False):
+    def load_keras_weights(self, filepath: str, by_name: bool=False) -> None:
         """
         Save tensorflow keras model in this estimator.
 
