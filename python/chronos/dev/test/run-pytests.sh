@@ -75,7 +75,8 @@ echo "Running chronos tests Part 3"
 python -m pytest -v test/bigdl/chronos/detector\
                     test/bigdl/chronos/metric \
                     test/bigdl/chronos/model \
-                    test/bigdl/chronos/simulator
+                    test/bigdl/chronos/pytorch \
+                    test/bigdl/chronos/simulator \
        -k "not test_ae_fit_score_unrolled"
 exit_status_0=$?
 if [ $exit_status_0 -ne 0 ];
@@ -87,8 +88,7 @@ fi
 if [ $RUN_PART4 = 1 ]; then
 echo "Running chronos tests Part 4"
 python -m pytest -v test/bigdl/chronos/autots\
-                    test/bigdl/chronos/data \
-                    test/bigdl/chronos/pytorch
+                    test/bigdl/chronos/data
 exit_status_0=$?
 if [ $exit_status_0 -ne 0 ];
 then
