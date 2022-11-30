@@ -157,6 +157,9 @@ def load_model(path, model: pl.LightningModule = None):
         # typically for models of nn.Module, pl.LightningModule type
         model = copy.deepcopy(model)
         checkpoint_path = metadata.get('checkpoint', None)
+        thread_num = None
+        if metadata["thread_num"] is not None:
+            thread_num = int(metadata["thread_num"])
         if checkpoint_path:
             checkpoint_path = path / metadata['checkpoint']
             state_dict = torch.load(checkpoint_path, map_location='cpu')
