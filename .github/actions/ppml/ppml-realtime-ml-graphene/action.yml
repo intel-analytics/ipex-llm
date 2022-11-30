@@ -55,8 +55,12 @@ runs:
         echo "If there is conflict above, please refer to kill command."
         echo ""
         echo "Check whether there is remaining container:"
-        docker stop /${CONTAINER_NAME}
-        docker rm -f /${CONTAINER_NAME}
+        export container_check=$(docker ps|grep ${CONTAINER_NAME})
+        if [ "$container_check" != "" ];then
+          docker stop /${CONTAINER_NAME}
+          docker rm /${CONTAINER_NAME}
+        fi
+        
         echo ""
         docker run -itd \
             --privileged \
