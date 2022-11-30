@@ -65,7 +65,7 @@ class Exponential(Scheduler):
     def __init__(self,
                  decay_step: int,
                  decay_rate: float,
-                 stair_case: Optional[bool] = False) -> None:
+                 stair_case: bool = False) -> None:
         from bigdl.dllib.optim.optimizer import Exponential as BExponential
         self.scheduler = BExponential(decay_step, decay_rate, stair_case)
 
@@ -138,12 +138,12 @@ class Plateau(Scheduler):
     """
     def __init__(self,
                  monitor: str,
-                 factor: Optional[float] = 0.1,
-                 patience: Optional[int] = 10,
-                 mode: Optional[str] = "min",
-                 epsilon: Optional[float] = 1e-4,
-                 cooldown: Optional[int] = 0,
-                 min_lr: Optional[float] = 0.0) -> None:
+                 factor: float = 0.1,
+                 patience: int = 10,
+                 mode: str = "min",
+                 epsilon: float = 1e-4,
+                 cooldown: int = 0,
+                 min_lr: float = 0.0) -> None:
         from bigdl.dllib.optim.optimizer import Plateau as BPlateau
 
         self.scheduler = BPlateau(monitor, factor, patience, mode, epsilon,

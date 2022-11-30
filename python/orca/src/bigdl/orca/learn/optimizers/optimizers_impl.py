@@ -52,12 +52,12 @@ class SGD(Optimizer):
     """
 
     def __init__(self,
-                 learningrate: Optional[float] = 1e-3,
-                 learningrate_decay: Optional[float] = 0.0,
-                 weightdecay: Optional[float] = 0.0,
-                 momentum: Optional[float] = 0.0,
-                 dampening: Optional[float] = DOUBLEMAX,
-                 nesterov: Optional[bool] = False,
+                 learningrate: float = 1e-3,
+                 learningrate_decay: float = 0.0,
+                 weightdecay: float = 0.0,
+                 momentum: float = 0.0,
+                 dampening: float = DOUBLEMAX,
+                 nesterov: bool = False,
                  learningrate_schedule: Optional[Scheduler] = None,
                  learningrates: Optional[np.ndarray] = None,
                  weightdecays: Optional[np.ndarray] = None) -> None:
@@ -94,9 +94,9 @@ class Adagrad(Optimizer):
     """
 
     def __init__(self,
-                 learningrate: Optional[float] = 1e-3,
-                 learningrate_decay: Optional[float] = 0.0,
-                 weightdecay: Optional[float] = 0.0) -> None:
+                 learningrate: float = 1e-3,
+                 learningrate_decay: float = 0.0,
+                 weightdecay: float = 0.0) -> None:
         from bigdl.dllib.optim.optimizer import Adagrad as BAdagrad
         self.optimizer = BAdagrad(learningrate, learningrate_decay,
                                   weightdecay, bigdl_type="float")
@@ -131,13 +131,13 @@ class LBFGS(Optimizer):
     """
 
     def __init__(self,
-                 max_iter: Optional[int] = 20,
-                 max_eval: Optional[float] = DOUBLEMAX,
-                 tolfun: Optional[float] = 1e-5,
-                 tolx: Optional[float] = 1e-9,
-                 ncorrection: Optional[int] = 100,
-                 learningrate: Optional[float] = 1.0,
-                 verbose: Optional[bool] = False,
+                 max_iter: int = 20,
+                 max_eval: float = DOUBLEMAX,
+                 tolfun: float = 1e-5,
+                 tolx: float = 1e-9,
+                 ncorrection: int = 100,
+                 learningrate: float = 1.0,
+                 verbose: bool = False,
                  linesearch: Any = None,
                  linesearch_options: Optional[Dict[Any, Any]] = None) -> None:
         from bigdl.dllib.optim.optimizer import LBFGS as BLBFGS
@@ -169,8 +169,8 @@ class Adadelta(Optimizer):
     """
 
     def __init__(self,
-                 decayrate: Optional[float] = 0.9,
-                 epsilon: Optional[float] = 1e-10) -> None:
+                 decayrate: float = 0.9,
+                 epsilon: float = 1e-10) -> None:
         from bigdl.dllib.optim.optimizer import Adadelta as BAdadelta
         self.optimizer = BAdadelta(decayrate,
                                    epsilon,
@@ -193,11 +193,11 @@ class Adam(Optimizer):
     """
 
     def __init__(self,
-                 learningrate: Optional[float] = 1e-3,
-                 learningrate_decay: Optional[float] = 0.0,
-                 beta1: Optional[float] = 0.9,
-                 beta2: Optional[float] = 0.999,
-                 epsilon: Optional[float] = 1e-8) -> None:
+                 learningrate: float = 1e-3,
+                 learningrate_decay: float = 0.0,
+                 beta1: float = 0.9,
+                 beta2: float = 0.999,
+                 epsilon: float = 1e-8) -> None:
         from bigdl.dllib.optim.optimizer import Adam as BAdam
         self.optimizer = BAdam(learningrate,
                                learningrate_decay,
@@ -223,12 +223,12 @@ class ParallelAdam(Optimizer):
     """
 
     def __init__(self,
-                 learningrate: Optional[float] = 1e-3,
-                 learningrate_decay: Optional[float] = 0.0,
-                 beta1: Optional[float] = 0.9,
-                 beta2: Optional[float] = 0.999,
-                 epsilon: Optional[float] = 1e-8,
-                 parallel_num: Optional[int] = -1):
+                 learningrate: float = 1e-3,
+                 learningrate_decay: float = 0.0,
+                 beta1: float = 0.9,
+                 beta2: float = 0.999,
+                 epsilon: float = 1e-8,
+                 parallel_num: int = -1):
         from bigdl.dllib.optim.optimizer import ParallelAdam as BParallelAdam
         self.optimizer = BParallelAdam(learningrate,
                                        learningrate_decay,
@@ -263,12 +263,12 @@ class Ftrl(Optimizer):
     """
 
     def __init__(self,
-                 learningrate: Optional[float] = 1e-3,
-                 learningrate_power: Optional[float] = -0.5,
-                 initial_accumulator_value: Optional[float] = 0.1,
-                 l1_regularization_strength: Optional[float] = 0.0,
-                 l2_regularization_strength: Optional[float] = 0.0,
-                 l2_shrinkage_regularization_strength: Optional[float] = 0.0) -> None:
+                 learningrate: float = 1e-3,
+                 learningrate_power: float = -0.5,
+                 initial_accumulator_value: float = 0.1,
+                 l1_regularization_strength: float = 0.0,
+                 l2_regularization_strength: float = 0.0,
+                 l2_shrinkage_regularization_strength: float = 0.0) -> None:
         from bigdl.dllib.optim.optimizer import Ftrl as BFtrl
         self.optimizer = BFtrl(learningrate,
                                learningrate_power,
@@ -294,10 +294,10 @@ class Adamax(Optimizer):
     """
 
     def __init__(self,
-                 learningrate: Optional[float] = 0.002,
-                 beta1: Optional[float] = 0.9,
-                 beta2: Optional[float] = 0.999,
-                 epsilon: Optional[float] = 1e-38) -> None:
+                 learningrate: float = 0.002,
+                 beta1: float = 0.9,
+                 beta2: float = 0.999,
+                 epsilon: float = 1e-38) -> None:
         from bigdl.dllib.optim.optimizer import Adamax as BAdamax
         self.optimizer = BAdamax(learningrate,
                                  beta1,
@@ -321,10 +321,10 @@ class RMSprop(Optimizer):
     """
 
     def __init__(self,
-                 learningrate: Optional[float] = 1e-2,
-                 learningrate_decay: Optional[float] = 0.0,
-                 decayrate: Optional[float] = 0.99,
-                 epsilon: Optional[float] = 1e-8) -> None:
+                 learningrate: float = 1e-2,
+                 learningrate_decay: float = 0.0,
+                 decayrate: float = 0.99,
+                 epsilon: float = 1e-8) -> None:
         from bigdl.dllib.optim.optimizer import RMSprop as BRMSprop
         self.optimizer = BRMSprop(learningrate,
                                   learningrate_decay,
