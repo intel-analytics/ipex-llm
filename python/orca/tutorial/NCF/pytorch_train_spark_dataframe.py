@@ -32,8 +32,8 @@ sc = init_orca_context()
 
 # Step 2: Read and process data using Orca XShards
 dataset_dir = "./ml-1m"
-train_data, test_data, sparse_feats_input_dims, user_num, item_num, feature_cols, label_cols = \
-    prepare_data("ml-1m", neg_scale=4)
+train_data, test_data, user_num, item_num, sparse_feats_input_dims, num_dense_feats, \
+    feature_cols, label_cols = prepare_data("ml-1m", neg_scale=4)
 
 
 # Step 3: Define the model, optimizer and loss
@@ -75,7 +75,7 @@ est = Estimator.from_torch(model=model_creator,
                                    'model': "NeuMF-end",
                                    'sparse_feats_input_dims': sparse_feats_input_dims,
                                    'sparse_feats_embed_dims': 8,
-                                   'num_dense_feats': 1})
+                                   'num_dense_feats': num_dense_feats})
 est.fit(data=train_data, epochs=10,
         feature_cols=feature_cols,
         label_cols=label_cols,
