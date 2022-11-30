@@ -14,7 +14,7 @@
 # limitations under the License.
 #
 
-
+import numpy as np
 import tensorflow as tf
 
 from bigdl.nano.deps.onnxruntime.tensorflow.tensorflow_onnxruntime_model \
@@ -68,4 +68,5 @@ class KerasNumpyDataset():
                 yield AcceleratedKerasModel.tensors_to_numpy(batch, self.dtype)
         else:
             for x, y in zip(self.x, self.y):
-                yield AcceleratedKerasModel.tensors_to_numpy((x, y), self.dtype)
+                x, y = AcceleratedKerasModel.tensors_to_numpy((x, y), self.dtype)
+                yield np.expand_dims(x, axis=0), np.expand_dims(y, axis=0)
