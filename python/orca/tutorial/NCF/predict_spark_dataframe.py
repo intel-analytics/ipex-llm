@@ -29,7 +29,7 @@ spark = OrcaContext.get_spark_session()
 # Step 2: Load the model and data
 est = Estimator.from_keras()
 est.load('NCF_model')
-data = spark.read.parquet('val_data')
+data = spark.read.parquet('test_dataframe')
 
 # Step 3: Define the input feature columns
 sparse_features = ['zipcode', 'gender', 'category', 'occupation']
