@@ -31,10 +31,20 @@ from bigdl.orca.ray.process import session_execute, ProcessMonitor
 from bigdl.orca.ray.utils import is_local
 from bigdl.orca.ray.utils import resource_to_bytes
 from bigdl.orca.ray.utils import get_parent_pid
-from bigdl.dllib.utils.log4Error import *
+from bigdl.dllib.utils.log4Error import invalidInputError
+
+from typing import TYPE_CHECKING
+from typing import (
+    Any,
+    Dict,
+    Optional,
+    List
+)
+if TYPE_CHECKING:
+    from pyspark.context import SparkContext
 
 
-def kill_redundant_log_monitors(redis_address):
+def kill_redundant_log_monitors(redis_address: str) -> None:
 
     """
     Killing redundant log_monitor.py processes.
@@ -334,9 +344,17 @@ class RayServiceFuncGenerator(object):
 class RayOnSparkContext(object):
     _active_ray_context = None
 
-    def __init__(self, sc, redis_port=None, redis_password=None, object_store_memory=None,
-                 verbose=False, env=None, extra_params=None, include_webui=True,
-                 num_ray_nodes=None, ray_node_cpu_cores=None, system_config=None):
+    def __init__(self, sc: "SparkContext",
+                 redis_port: Optional[int] = None,
+                 redis_password: Optional[str] = None,
+                 object_store_memory: Optional[str] = None,
+                 verbose: bool = False,
+                 env: Optional[Dict[str, str]]=None,
+                 extra_params: Optional[Dict[str, Any]]=None,
+                 include_webui: bool = True,
+                 num_ray_nodes: Optional[int] = None,
+                 ray_node_cpu_cores: Optional[int] = None,
+                 system_config: Optional[Dict[str, str]]=None):
         """
         The RayOnSparkContext would initiate a ray cluster on top of the configuration of
         SparkContext.
@@ -394,12 +412,12 @@ class RayOnSparkContext(object):
             invalidInputError(isinstance(extra_params, dict),
                               "extra_params should be a dict for extra options to launch ray")
             if self.system_config:
-                self.extra_params.pop("system_config", None)
-                self.extra_params.pop("_system_config", None)
+                self.extra_params.pop("system_config", None)  # type: ignore
+                self.extra_params.pop("_system_config", None)  # type: ignore
             elif "system_config" in self.extra_params:
-                self.system_config = self.extra_params.pop("system_config")
+                self.system_config = self.extra_params.pop("system_config")  # type: ignore
             elif "_system_config" in self.extra_params:
-                self.system_config = self.extra_params.pop("_system_config")
+                self.system_config = self.extra_params.pop("_system_config")  # type: ignore
         self.include_webui = include_webui
         self._address_info = None
         self.redis_port = random.randint(20000, 65535) if not redis_port else int(redis_port)
@@ -407,7 +425,7 @@ class RayOnSparkContext(object):
         self.num_ray_nodes = num_ray_nodes
         RayOnSparkContext._active_ray_context = self
 
-    def setup(self):
+    def setup(self) -> None:
         if self.is_local:
             self.num_ray_nodes = 1
             spark_cores = self._get_spark_local_cores()
@@ -478,7 +496,7 @@ class RayOnSparkContext(object):
         self.total_cores = self.num_ray_nodes * self.ray_node_cpu_cores
 
     @classmethod
-    def get(cls, initialize=True):
+    def get(cls, initialize: bool = True) -> Optional["RayOnSparkContext"]:
         if RayOnSparkContext._active_ray_context:
             ray_ctx = RayOnSparkContext._active_ray_context
             if initialize and not ray_ctx.initialized:
@@ -488,8 +506,9 @@ class RayOnSparkContext(object):
             invalidInputError(False,
                               "No active RayOnSparkContext. "
                               "Please create a RayOnSparkContext and init it first")
+        return None
 
-    def _gather_cluster_ips(self):
+    def _gather_cluster_ips(self) -> List[str]:
         """
         Get the ips of all Spark executors in the cluster. The first ip returned would be the
         ray master.
@@ -503,7 +522,7 @@ class RayOnSparkContext(object):
         ips = list(set(ips))
         return ips
 
-    def stop(self):
+    def stop(self) -> None:
         if not self.initialized:
             print("The Ray cluster has not been launched.")
             return
@@ -511,7 +530,7 @@ class RayOnSparkContext(object):
         ray.shutdown()
         self.initialized = False
 
-    def purge(self):
+    def purge(self) -> None:
         """
         Invoke ray stop to clean ray processes.
         """
@@ -527,14 +546,14 @@ class RayOnSparkContext(object):
                 self.ray_service.gen_stop()).collect()
         self.initialized = False
 
-    def _get_spark_local_cores(self):
-        local_symbol = re.match(r"local\[(.*)\]", self.sc.master).group(1)
+    def _get_spark_local_cores(self) -> int:
+        local_symbol = re.match(r"local\[(.*)\]", self.sc.master).group(1)  # type: ignore
         if local_symbol == "*":
             return multiprocessing.cpu_count()
         else:
             return int(local_symbol)
 
-    def _update_extra_params(self, extra_params):
+    def _update_extra_params(self, extra_params: Optional[Dict[str, str]]) -> Dict[str, str]:
         kwargs = {}
         if extra_params is not None:
             for k, v in extra_params.items():
@@ -542,7 +561,7 @@ class RayOnSparkContext(object):
                 kwargs[kw] = v
         return kwargs
 
-    def init(self, driver_cores=0):
+    def init(self, driver_cores: int = 0):
         """
         Initiate the ray cluster.
         :param driver_cores: The number of cores for the raylet on driver for Spark cluster mode.
@@ -580,7 +599,7 @@ class RayOnSparkContext(object):
                                                         redis_address=redis_address)
 
             print(self._address_info)
-            kill_redundant_log_monitors(self._address_info["redis_address"])
+            kill_redundant_log_monitors(self._address_info["redis_address"])  # type: ignore
             self.initialized = True
         return self._address_info
 
@@ -593,10 +612,10 @@ class RayOnSparkContext(object):
                               "The Ray cluster has not been launched yet. Please call init first")
 
     @property
-    def redis_address(self):
+    def redis_address(self) -> str:
         return self.address_info["redis_address"]
 
-    def _start_cluster(self):
+    def _start_cluster(self) -> str:
         ray_rdd = self.sc.range(0, self.num_ray_nodes,
                                 numSlices=self.num_ray_nodes)
         from bigdl.dllib.nncontext import ZooContext
@@ -623,11 +642,12 @@ class RayOnSparkContext(object):
                               " {}".format(self.num_ray_nodes - 1, len(raylet_process_infos)))
             process_infos = master_process_infos + raylet_process_infos
 
-        self.ray_processesMonitor = ProcessMonitor(process_infos, self.sc, ray_rdd, self,
-                                                   verbose=self.verbose)
-        return self.ray_processesMonitor.master.master_addr
+        self.ray_processesMonitor = ProcessMonitor(process_infos, self.sc, ray_rdd,  # type: ignore
+                                                   self, verbose=self.verbose)
+        return self.ray_processesMonitor.master.master_addr  # type: ignore
 
-    def _start_restricted_worker(self, num_cores, node_ip_address, redis_address):
+    def _start_restricted_worker(self, num_cores: int, node_ip_address: str,
+                                 redis_address: str) -> None:
         extra_param = {"node-ip-address": node_ip_address}
         if self.extra_params is not None:
             extra_param.update(self.extra_params)
@@ -646,7 +666,7 @@ class RayOnSparkContext(object):
                                                  pid_to_watch=os.getpid(),
                                                  pgid_to_kill=process_info.pgid)
 
-    def _start_driver(self, num_cores, redis_address):
+    def _start_driver(self, num_cores: int, redis_address: str):
         print("Start to launch ray driver")
         import ray._private.services
         node_ip = ray._private.services.get_node_ip_address(redis_address)
