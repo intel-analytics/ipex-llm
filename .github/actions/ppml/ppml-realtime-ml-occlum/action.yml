@@ -57,7 +57,8 @@ runs:
         echo "If there is conflict above, please refer to kill command."
         echo ""
         echo "Check whether there is remaining container:"
-        if [ ${CONTAINER_NAME}==flink-occlum ];then
+        container_check=$(docker ps|grep ${CONTAINER_NAME})
+        if [ "$container_check" != "" ];then
           docker stop /${CONTAINER_NAME}
           docker rm /${CONTAINER_NAME}
         fi
