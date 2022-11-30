@@ -57,12 +57,12 @@ class OpenvinoEstimator(SparkEstimator):
         """
         invalidInputError(False, "not implemented")
 
-    def predict(self,
+    def predict(self,  # type: ignore[override]
                 data: Union[SparkXShards, DataFrame, np.ndarray, List[np.ndarray]],
                 feature_cols: Optional[List[str]] = None,
                 batch_size: Optional[int] = 4,
                 input_cols: Optional[Union[str, List[str]]] = None
-                ) -> Union[SparkXShards, DataFrame, np.ndarray, List[np.ndarray]]:
+                ) -> Optional[Union[SparkXShards, DataFrame, np.ndarray, List[np.ndarray]]]:
         """
         Predict input data
 
@@ -288,7 +288,7 @@ class OpenvinoEstimator(SparkEstimator):
                               for i in range(len(result_arr_list[0]))]
             elif isinstance(result_arr_list[0], np.ndarray):
                 result_arr = np.concatenate(result_arr_list, axis=0)
-            return result_arr  # type: ignore
+            return result_arr
         else:
             invalidInputError(False,
                               "Only XShards, Spark DataFrame, a numpy array and a list of numpy"
