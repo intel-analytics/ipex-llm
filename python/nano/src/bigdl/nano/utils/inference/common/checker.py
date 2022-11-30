@@ -61,7 +61,8 @@ def _bf16_checker():
 
 def available_acceleration_combination(excludes: Optional[List[str]],
                                        includes: Optional[List[str]],
-                                       full_methods: Dict[str, AccelerationOption]):
+                                       full_methods: Dict[str, AccelerationOption],
+                                       all_methods: Dict[str, AccelerationOption]):
     '''
     :return: a dictionary states the availablity (if meet depdencies)
     '''
@@ -81,6 +82,10 @@ def available_acceleration_combination(excludes: Optional[List[str]],
     else:
         include_set: Set[str] = set(includes)
         include_set.add("original")
+        for method in include_set:
+            if method not in full_methods:
+                # append include method into full methods
+                full_methods[method] = all_methods[method]
 
     available_dict = {}
     for method, option in full_methods.items():
