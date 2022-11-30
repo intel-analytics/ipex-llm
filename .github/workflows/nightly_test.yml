@@ -612,7 +612,7 @@ jobs:
 
   PPML-RealTime-ML-Occlum:
     if: ${{ github.event.schedule || github.event.inputs.artifact == 'PPML-RealTime-ML-Occlum' || github.event.inputs.artifact == 'all' }} 
-    runs-on: [self-hosted, Vilvarin]
+    runs-on: [self-hosted, Vilvarin-root]
 
     steps:
     - uses: actions/checkout@v3
@@ -672,7 +672,7 @@ jobs:
 
   PPML-RealTime-ML-Graphene:
     #if: ${{ github.event.schedule || github.event.inputs.artifact == 'PPML-RealTime-ML-Graphene' || github.event.inputs.artifact == 'all' }} 
-    runs-on: [self-hosted, Vilvarin]
+    runs-on: [self-hosted, Vilvarin-root]
 
     steps:
     - uses: actions/checkout@v3
