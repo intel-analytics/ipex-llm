@@ -14,22 +14,25 @@
 # limitations under the License.
 #
 
-from bigdl.orca.ray import RayContext
-from bigdl.orca.learn.tf.tf_runner import TFRunner
-import ray
-from bigdl.orca.learn.dl_cluster import RayDLCluster
+from typing import Any, Dict, Optional, Callable
 
+import ray
+import tensorflow as tf
+
+from bigdl.orca.ray import OrcaRayContext
+from bigdl.orca.learn.tf.tf_runner import TFRunner
+from bigdl.orca.learn.dl_cluster import RayDLCluster
 
 class TFEstimator():
     def __init__(self,
-                 model_fn,
-                 model_dir=None,
-                 config=None,
-                 params=None,
-                 warm_start_from=None,
-                 workers_per_node=1,
-                 cpu_binding=False,
-                 ):
+                 model_fn: Callable,
+                 model_dir: Optional[str]=None,
+                 config: Optional[Dict[str, Any]]=None,
+                 params: Optional[Dict[str, Any]]=None,
+                 warm_start_from: Optional[str]=None,
+                 workers_per_node: int=1,
+                 cpu_binding: bool=False,
+                 ) -> None:
         """
         :param model_fn: Model function. Follows the signature:
 
@@ -79,7 +82,7 @@ class TFEstimator():
         """
         self.config = {} if config is None else config
 
-        ray_ctx = RayContext.get()
+        ray_ctx = OrcaRayContext.get()
         if "batch_size" in self.config:
             from bigdl.dllib.utils.log4Error import invalidInputError
             invalidInputError(False,
@@ -126,8 +129,8 @@ class TFEstimator():
         self.num_workers = len(self.remote_workers)
 
     def train_and_evaluate(self,
-                           train_spec,
-                           eval_spec):
+                           train_spec: tf.estimator.TrainSpec,
+                           eval_spec: tf.estimator.EvalSpec) -> Any:
         """
         Train and evaluate the estimator.
 

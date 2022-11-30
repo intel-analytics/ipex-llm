@@ -23,13 +23,13 @@ from tensorflow.python.data.ops.dataset_ops import (
 )
 from tensorflow.python.keras.engine.training import Model
 import tensorflow as tf
-import collections
 from typing import (
     Any,
     Dict,
     List,
     Optional,
     Union,
+    Tuple
 )
 
 
@@ -39,7 +39,7 @@ from bigdl.orca.tfpark.tf_dataset import _standardize_keras_target_data
 from bigdl.dllib.utils.file_utils import enable_multi_fs_load, enable_multi_fs_load_static, \
     enable_multi_fs_save
 from bigdl.orca import OrcaContext
-from bigdl.orca.data.tf.data import Dataset
+from bigdl.orca.data.tf.data import MapDataset
 from bigdl.orca.data.tf.tf1_data import TF1Dataset
 from bigdl.orca.data import SparkXShards
 from bigdl.orca.learn.tf.utils import *
@@ -58,7 +58,6 @@ from bigdl.dllib.optim.optimizer import SeveralIteration
 from bigdl.dllib.utils.triggers import TriggerAnd
 from bigdl.orca.data.shard import SparkXShards
 from bigdl.orca.data.tf.data import TensorSliceDataset
-from bigdl.orca.data.tf.tf1_data import TF1Dataset
 from bigdl.orca.learn.optimizers import Optimizer
 from bigdl.orca.learn.metrics import Metric
 from bigdl.orca.learn.trigger import SeveralIteration
@@ -207,7 +206,7 @@ class Estimator(SparkEstimator):
 
         :param tag: The string variable represents the scalar wanted
         """
-        if self.tf_optimizer:
+        if hasattr(self, "tf_optimizer") and self.tf_optimizer:
             return self.tf_optimizer.estimator.get_train_summary(tag)
 
         return None
@@ -241,7 +240,7 @@ class Estimator(SparkEstimator):
 
         :param tag: The string variable represents the scalar wanted
         """
-        if self.tf_optimizer:
+        if hasattr(self, "tf_optimizer") and self.tf_optimizer:
             for val_method in self.tf_optimizer.tf_model.val_methods:
                 if isinstance(val_method, StatelessMetric):
                     if tag == val_method.name:
@@ -329,15 +328,15 @@ class Estimator(SparkEstimator):
         outputs: Optional[tf.Tensor]=None,
         labels: Optional[tf.Tensor]=None,
         loss: Optional[tf.Tensor]=None,
-        optimizer: Optional[str]=None,
-        metrics: Optional[tf.Tensor]=None,
+        optimizer: Optional[Optimizer]=None,
+        metrics: Optional[Metric]=None,
         clip_norm: Optional[float]=None,
-        clip_value: Optional[float]=None,
+        clip_value: Union[float, Tuple[float, float], None]=None,
         updates: Optional[List[tf.Variable]]=None,#not sure
         sess: Optional[tf.Session]=None,
         model_dir: Optional[str]=None,
         backend: str="bigdl"
-        ) -> SparkEstimator:
+        ) -> TensorFlowEstimator:
         """
         Create an Estimator for tesorflow graph.
 
@@ -384,7 +383,7 @@ class Estimator(SparkEstimator):
         model_dir: Optional[str] = None,
         optimizer: Optional[Optimizer] = None,
         backend: str = "bigdl"
-    ) -> SparkEstimator:
+    ) -> KerasEstimator:
         """
         Create an Estimator from a tensorflow.keras model. The model must be compiled.
 
@@ -419,12 +418,12 @@ def is_tf_data_dataset(data: Any) -> bool:
     return is_dataset or is_dataset_v2
 
 
-def to_dataset(data: Union[SparkXShards, Dataset, DataFrame, tf.data.Dataset],
+def to_dataset(data: Union[SparkXShards, MapDataset, DataFrame, tf.data.Dataset],
     batch_size: int,
     batch_per_thread: int,
-    validation_data: Union[SparkXShards, Dataset, DataFrame, tf.data.Dataset, None],
-    feature_cols: List[str],
-    label_cols: List[str],
+    validation_data: Union[SparkXShards, MapDataset, DataFrame, tf.data.Dataset, None],
+    feature_cols: Optional[List[str]],
+    label_cols: Optional[List[str]],
     hard_code_batch_size: bool,
     sequential_order: bool,
     shuffle: bool,
@@ -435,8 +434,8 @@ def to_dataset(data: Union[SparkXShards, Dataset, DataFrame, tf.data.Dataset],
         if isinstance(data, SparkXShards):
             invalidInputError(isinstance(validation_data, SparkXShards),
                               "train data and validation data should be both SparkXShards")
-        if isinstance(data, Dataset):
-            invalidInputError(isinstance(validation_data, Dataset),
+        if isinstance(data, MapDataset):
+            invalidInputError(isinstance(validation_data, MapDataset),
                               "train data and validation data should be both"
                               " orca.data.tf.Dataset")
         if isinstance(data, DataFrame):
@@ -455,7 +454,7 @@ def to_dataset(data: Union[SparkXShards, Dataset, DataFrame, tf.data.Dataset],
                                         memory_type=memory_type,
                                         sequential_order=sequential_order,
                                         shuffle=shuffle)
-    elif isinstance(data, Dataset):
+    elif isinstance(data, MapDataset):
         dataset = TF1Dataset(data, batch_size=batch_size,
                              batch_per_thread=batch_per_thread,
                              validation_dataset=validation_data)
@@ -496,17 +495,17 @@ class TensorFlowEstimator(Estimator):
         self,
         *,
         inputs: tf.Tensor,
-        outputs: tf.Tensor,
-        labels: tf.Tensor,
-        loss: tf.Tensor,
-        optimizer: Optimizer,
-        clip_norm: float,
-        clip_value: float,
-        metrics: Metric,
-        updates: List[tf.Variables],
-        sess: tf.Session,
-        model_dir: str
-    ) -> Estimator:
+        outputs: Optional[tf.Tensor],
+        labels: Optional[tf.Tensor],
+        loss: Optional[tf.Tensor],
+        optimizer: Optional[Optimizer],
+        clip_norm: Optional[float],
+        clip_value: Union[float, Tuple[float, float], None],
+        metrics: Optional[Metric],
+        updates: Optional[List[tf.Variables]],
+        sess: Optional[tf.Session],
+        model_dir: Optional[str]
+    ) -> None:
         self.inputs = inputs
         self.outputs = outputs
         self.labels = labels
@@ -574,8 +573,8 @@ class TensorFlowEstimator(Estimator):
         session_config: Optional[tf.ConfigProto]=None,
         checkpoint_trigger: Optional[SeveralIteration]=None,
         auto_shard_files: bool=False,
-        feed_dict: Dict[tf.Tensor, tuple(tf.Tensor, tf.Tensor)]=None
-    ) -> Estimator:
+        feed_dict: Optional[Dict[tf.Tensor, Tuple[tf.Tensor, tf.Tensor]]]=None
+    ) -> TensorFlowEstimator:
         """
         Train this graph model with train data.
 
@@ -868,7 +867,7 @@ class KerasEstimator(Estimator):
         metrics: Optional[Metric],
         model_dir: Optional[str],
         optimizer: Optional[Optimizer]
-    ) -> Estimator:
+    ) -> None:
         if model_dir and model_dir.startswith("dbfs:/"):
             model_dir = save_model_dir(model_dir)
         self.model = KerasModel(keras_model, model_dir)
@@ -896,7 +895,7 @@ class KerasEstimator(Estimator):
         session_config: Optional[ConfigProto]=None,
         checkpoint_trigger: Optional[Union[TriggerAnd, SeveralIteration, SeveralIteration]]=None,
         auto_shard_files: bool=False
-    ) -> Estimator:
+    ) -> KerasEstimator:
         """
         Train this keras model with train data.
 
