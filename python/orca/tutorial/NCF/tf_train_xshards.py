@@ -28,8 +28,8 @@ init_orca_context(memory='4g')
 
 # Step 2: Read and process data using Spark DataFrame
 dataset_dir = "./ml-1m"
-train_data, test_data, user_num, item_num, sparse_feats_input_dims, feature_cols, label_cols = \
-    prepare_data(dataset_dir, num_ng=4)
+train_data, test_data, user_num, item_num, sparse_feats_input_dims, num_dense_feats, \
+    feature_cols, label_cols = prepare_data(dataset_dir, num_ng=4)
 
 # Step 3: Define the NCF model
 config = dict(
@@ -39,7 +39,7 @@ config = dict(
     user_num=user_num,
     dropout=0.5,
     sparse_feats_input_dims=sparse_feats_input_dims,
-    num_dense_feats=['age'],
+    num_dense_feats=num_dense_feats,
     sparse_feats_embed_dims=8,
     num_layers=3
 )
