@@ -69,7 +69,7 @@ class PPMLContext protected(kms: KeyManagementService = null, sparkSession: Spar
     dataKeyPlainText = kms.retrieveDataKeyPlainText(
       new Path(primaryKeyPath).toString, new Path(dataKeyPath).toString,
       sparkSession.sparkContext.hadoopConfiguration)
-    sparkSession.sparkContext.hadoopConfiguration.set("bigdl.kms.data.key", dataKeyPlainText)
+    sparkSession.sparkContext.hadoopConfiguration.set("bigdl.kms."+dataSourceName+".key", dataKeyPlainText)
     this
   }
   
