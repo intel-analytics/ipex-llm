@@ -28,8 +28,8 @@ init_orca_context(memory='4g')
 
 # Step 2: Read and process data using Spark DataFrame
 dataset_dir = "./ml-1m"
-train_data, test_data, user_num, item_num, sparse_feats_input_dims, num_dense_feats, \
-    feature_cols, label_cols = prepare_data(dataset_dir, num_ng=4)
+train_df, test_df, user_num, item_num, sparse_feats_input_dims, num_dense_feats, \
+feature_cols, label_cols = prepare_data(dataset_dir, num_ng=4)
 
 # Step 3: Define the NCF model
 config = dict(
@@ -65,10 +65,10 @@ est = Estimator.from_keras(model_creator=model_creator,
                            backend=backend)
 
 batch_size = 256
-train_steps = math.ceil(len(train_data) / batch_size)
-val_steps = math.ceil(len(test_data) / batch_size)
+train_steps = math.ceil(len(train_df) / batch_size)
+val_steps = math.ceil(len(test_df) / batch_size)
 
-est.fit(train_data,
+est.fit(train_df,
         epochs=10,
         batch_size=batch_size,
         feature_cols=feature_cols,
@@ -76,7 +76,7 @@ est.fit(train_data,
         steps_per_epoch=train_steps)
 
 # Step 5: Distributed evaluation of the trained model
-result = est.evaluate(test_data,
+result = est.evaluate(test_df,
                       feature_cols=feature_cols,
                       label_cols=label_cols,
                       batch_size=batch_size,
