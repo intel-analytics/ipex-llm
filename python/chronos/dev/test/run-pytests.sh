@@ -45,6 +45,7 @@ fi
 if [ $RUN_PART1 = 1 ]; then
 echo "Running chronos tests Part 1"
 python -m pytest -v test/bigdl/chronos/forecaster/test_lstm_forecaster.py \
+                    test/bigdl/chronos/forecaster/test_nbeats_forecaster.py \
                     test/bigdl/chronos/forecaster/test_seq2seq_forecaster.py \
                     test/bigdl/chronos/forecaster/test_tcn_forecaster.py
 exit_status_0=$?
@@ -58,6 +59,7 @@ if [ $RUN_PART2 = 1 ]; then
 echo "Running chronos tests Part 2"
 python -m pytest -v test/bigdl/chronos/forecaster \
        -k "not TestChronosModelLSTMForecaster and \
+           not TestChronosNBeatsForecaster and \
            not TestChronosModelSeq2SeqForecaster and \
            not TestChronosModelTCNForecaster and \
            not test_forecast_tcmf_distributed"
