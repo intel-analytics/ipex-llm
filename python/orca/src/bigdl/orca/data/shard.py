@@ -175,7 +175,7 @@ class SparkXShards(XShards):
                  transient: bool=False,
                  class_name: str=None) -> None:
         self.rdd = rdd
-        self.user_cached = False
+        self.user_caching = False
         if transient:
             self.eager = False
         else:
@@ -240,7 +240,7 @@ class SparkXShards(XShards):
 
         :return:
         """
-        self.user_cached = True
+        self.user_caching = True
         self.rdd.cache()
         return self
 
@@ -251,7 +251,7 @@ class SparkXShards(XShards):
 
         :return:
         """
-        self.user_cached = False
+        self.user_caching = False
         if self.is_cached():
             try:
                 self.rdd.unpersist()
@@ -260,7 +260,7 @@ class SparkXShards(XShards):
         return self
 
     def _uncache(self) -> None:
-        if not self.user_cached:
+        if not self.user_caching:
             self.uncache()
 
     def is_cached(self) -> bool:
@@ -1114,7 +1114,9 @@ class LazySparkXShards(SparkXShards):
                  rdd: Union["PipelinedRDD", "RDD"],
                  class_name: str = None) -> None:
         super(LazySparkXShards, self).__init__(rdd, True, class_name)
-        self.user_cached = True
+        # Setting user_caching to be True means uncache must be explicitly invoked by
+        # users to uncache the data.
+        self.user_caching = True
     
     @classmethod
     def _create(cls,
