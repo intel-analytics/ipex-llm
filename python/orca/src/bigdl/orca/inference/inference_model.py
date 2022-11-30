@@ -30,9 +30,9 @@ from typing import (
 )
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
+    from numpy import ndarray
     from pyspark import RDD
     from pyspark.context import SparkContext
-    from numpy import ndarray
     from bigdl.dllib.utils.common import JTensor
 
 
@@ -174,7 +174,7 @@ class InferenceModel(JavaValue):
                     self.value, bys.getvalue())
 
     # TODO: Add UT for different inputs
-    def predict(self, inputs: Union[ndarray, List[ndarray], JTensor, List[JTensor]]):
+    def predict(self, inputs: Union["ndarray", List["ndarray"], "JTensor", List["JTensor"]]):
         """
         Do prediction on inputs.
 
