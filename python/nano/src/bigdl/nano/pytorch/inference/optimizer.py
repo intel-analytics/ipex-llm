@@ -69,6 +69,7 @@ class TorchAccelerationOption(AccelerationOption):
                                          input_sample=input_sample,
                                          thread_num=thread_num,
                                          channels_last=self.channels_last,
+                                         use_ipex=self.ipex,
                                          # remove output of openvino
                                          logging=logging)
         else:
