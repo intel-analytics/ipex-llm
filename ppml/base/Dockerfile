@@ -31,7 +31,6 @@ ADD ./verify-attestation-service.sh /ppml/verify-attestation-service.sh
 ADD ./_dill.py.patch /_dill.py.patch
 ADD ./python-uuid.patch /python-uuid.patch
 ADD ./python-pslinux.patch /python-pslinux.patch
-ADD ./kms /ppml/kms
 
 # Python3.7
 RUN env DEBIAN_FRONTEND=noninteractive apt-get update && \
@@ -109,14 +108,19 @@ RUN env DEBIAN_FRONTEND=noninteractive apt-get update && \
 # folder required for distributed encrypted file system
     mkdir -p /ppml/encrypted-fsd && \
 # folder to contain the keys (primary key and data key)
-    mkdir -p /ppml/encrypted_keys
+    mkdir -p /ppml/encrypted_keys && \
+# kms client
+    mkdir -p /ppml/kms && \
+    wget https://raw.githubusercontent.com/intel-analytics/BigDL/main/python/ppml/src/bigdl/ppml/kms/client.py  /ppml/kms/ && \
+    wget https://raw.githubusercontent.com/intel-analytics/BigDL/main/python/ppml/src/bigdl/ppml/kms/__init__.py /ppml/kms/ && \
+    wget https://raw.githubusercontent.com/intel-analytics/BigDL/main/python/ppml/src/bigdl/ppml/kms/fileoperator.py /ppml/kms/ && \
+    wget https://raw.githubusercontent.com/intel-analytics/BigDL/main/python/ppml/src/bigdl/ppml/kms/keymanager.py /ppml/kms/ && \
+    wget https://raw.githubusercontent.com/intel-analytics/BigDL/main/python/ppml/src/bigdl/ppml/kms/restcaller.py /ppml/kms/
 
 
 ADD ./download_jars.sh /ppml
 ADD ./attestation.sh /ppml
 ADD ./encryptedfsd.sh /ppml
-# Copy the kms folder to /ppml/kms
-# TODO: later change to use nightly build bigdl
 
 RUN cd /ppml && \
     bash ./download_jars.sh
