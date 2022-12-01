@@ -73,21 +73,25 @@ function refresh_cmd(){
                 }
             }
         }else if(framework="tensorflow"){
-            if(release="stable"){
-                cmd="pip install bigdl-nano[tensorflow]==2.1.0";
-            }else if(release=="nightly"){
-                if(inference=="inferenceyes"){
-                    if (version=="tf2_270"){
+            if(inference=="inferenceyes"){
+                if (version=="tf2_270"){
+                    if (release=="nightly"){
                         cmd="pip install --pre --upgrade bigdl-nano[tensorflow,inference]";
-                    }else{
-                        cmd="Please select the version.";
+                    }else if(release=="stable"){
+                        cmd="pip install bigdl-nano[tensorflow]==2.1.0";
                     }
-                }else if(inference=="inferenceno"){
-                    if(version=="tf2_270"){
+                }else{
+                    cmd="Please select the version.";
+                }
+            }else if(inference=="inferenceno"){
+                if(version=="tf2_270"){
+                    if(release=="nightly"){
                         cmd="pip install --pre --upgrade bigdl-nano[tensorflow]";
-                    }else{
-                        cmd="Please select the version.";
+                    }else if(release=="stable"){
+                        cmd="pip install bigdl-nano[tensorflow]==2.1.0";
                     }
+                }else{
+                    cmd="Please select the version.";
                 }
             }
         }
