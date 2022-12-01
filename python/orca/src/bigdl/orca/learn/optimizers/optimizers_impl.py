@@ -23,7 +23,7 @@ from bigdl.dllib.utils.log4Error import invalidInputError
 from typing import (Any, Optional, Dict, TYPE_CHECKING)
 
 if TYPE_CHECKING:
-    import bigdl.dllib.optim.optimizer
+    from bigdl.dllib.optim import optimizer
     import numpy as np
 
 
@@ -58,9 +58,9 @@ class SGD(Optimizer):
                  momentum: float = 0.0,
                  dampening: float = DOUBLEMAX,
                  nesterov: bool = False,
-                 learningrate_schedule: Optional[Scheduler] = None,
-                 learningrates: Optional[np.ndarray] = None,
-                 weightdecays: Optional[np.ndarray] = None) -> None:
+                 learningrate_schedule: Optional["Scheduler"] = None,
+                 learningrates: Optional["np.ndarray"] = None,
+                 weightdecays: Optional["np.ndarray"] = None) -> None:
         from bigdl.dllib.optim.optimizer import SGD as BSGD
         invalidInputError(isinstance(learningrate_schedule, Scheduler),
                           "learningrate_schedule should be an "
@@ -77,7 +77,7 @@ class SGD(Optimizer):
                               weightdecays,
                               bigdl_type="float")
 
-    def get_optimizer(self) -> bigdl.dllib.optim.optimizer.SGD:
+    def get_optimizer(self) -> "optimizer.SGD":
         return self.optimizer
 
 
@@ -101,7 +101,7 @@ class Adagrad(Optimizer):
         self.optimizer = BAdagrad(learningrate, learningrate_decay,
                                   weightdecay, bigdl_type="float")
 
-    def get_optimizer(self) -> bigdl.dllib.optim.optimizer.Adagrad:
+    def get_optimizer(self) -> "optimizer.Adagrad":
         return self.optimizer
 
 
@@ -154,7 +154,7 @@ class LBFGS(Optimizer):
             bigdl_type="float"
         )
 
-    def get_optimizer(self) -> bigdl.dllib.optim.optimizer.LBFGS:
+    def get_optimizer(self) -> "optimizer.LBFGS":
         return self.optimizer
 
 
@@ -176,7 +176,7 @@ class Adadelta(Optimizer):
                                    epsilon,
                                    bigdl_type="float")
 
-    def get_optimizer(self) -> bigdl.dllib.optim.optimizer.Adadelta:
+    def get_optimizer(self) -> "optimizer.Adadelta":
         return self.optimizer
 
 
@@ -206,7 +206,7 @@ class Adam(Optimizer):
                                epsilon,
                                bigdl_type="float")
 
-    def get_optimizer(self) -> bigdl.dllib.optim.optimizer.Adam:
+    def get_optimizer(self) -> "optimizer.Adam":
         return self.optimizer
 
 
@@ -228,7 +228,7 @@ class ParallelAdam(Optimizer):
                  beta1: float = 0.9,
                  beta2: float = 0.999,
                  epsilon: float = 1e-8,
-                 parallel_num: int = -1):
+                 parallel_num: int = -1) -> None:
         from bigdl.dllib.optim.optimizer import ParallelAdam as BParallelAdam
         self.optimizer = BParallelAdam(learningrate,
                                        learningrate_decay,
@@ -238,7 +238,7 @@ class ParallelAdam(Optimizer):
                                        parallel_num,
                                        bigdl_type="float")
 
-    def get_optimizer(self) -> bigdl.dllib.optim.optimizer.ParallelAdam:
+    def get_optimizer(self) -> "optimizer.ParallelAdam":
         return self.optimizer
 
 
@@ -278,7 +278,7 @@ class Ftrl(Optimizer):
                                l2_shrinkage_regularization_strength,
                                bigdl_type="float")
 
-    def get_optimizer(self) -> bigdl.dllib.optim.optimizer.Ftrl:
+    def get_optimizer(self) -> "optimizer.Ftrl":
         return self.optimizer
 
 
@@ -305,7 +305,7 @@ class Adamax(Optimizer):
                                  epsilon,
                                  bigdl_type="float")
 
-    def get_optimizer(self) -> bigdl.dllib.optim.optimizer.Adamax:
+    def get_optimizer(self) -> "optimizer.Adamax":
         return self.optimizer
 
 
@@ -332,5 +332,5 @@ class RMSprop(Optimizer):
                                   epsilon,
                                   bigdl_type="float")
 
-    def get_optimizer(self) -> bigdl.dllib.optim.optimizer.RMSprop:
+    def get_optimizer(self) -> "optimizer.RMSprop":
         return self.optimizer

@@ -35,7 +35,7 @@ from typing import (List, Optional, Union)
 
 class Estimator(object):
     @staticmethod
-    def from_openvino(*, model_path: str) -> OpenvinoEstimator:
+    def from_openvino(*, model_path: str) -> "OpenvinoEstimator":
         """
         Load an openVINO Estimator.
 
@@ -58,11 +58,11 @@ class OpenvinoEstimator(SparkEstimator):
         invalidInputError(False, "not implemented")
 
     def predict(self,  # type: ignore[override]
-                data: Union[SparkXShards, DataFrame, np.ndarray, List[np.ndarray]],
+                data: Union["SparkXShards", "DataFrame", "np.ndarray", List["np.ndarray"]],
                 feature_cols: Optional[List[str]] = None,
                 batch_size: Optional[int] = 4,
                 input_cols: Optional[Union[str, List[str]]]=None
-                ) -> Optional[Union[SparkXShards, DataFrame, np.ndarray, List[np.ndarray]]]:
+                ) -> Optional[Union["SparkXShards", "DataFrame", "np.ndarray", List["np.ndarray"]]]:
         """
         Predict input data
 
