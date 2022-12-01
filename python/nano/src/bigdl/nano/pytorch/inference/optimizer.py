@@ -765,12 +765,25 @@ class InferenceOptimizer(BaseInferenceOptimizer):
         invalidInputError(False, "Accelerator {} is invalid.".format(accelerator))
 
     @staticmethod
+    def get_context(model: nn.Module):
+        """
+        Obtain corresponding context manager from model, defaults to BaseContextManager().
+
+        :param model: Any model of torch.nn.Module, including all models accelareted by
+               InferenceOptimizer.trace/InferenceOptimizer.quantize.
+        :return: a context manager.
+        """
+        if hasattr(model, "context_manager"):
+            return model.context_manager
+        return BaseContextManager()
+
+    @staticmethod
     def save(model: nn.Module, path):
         """
         Save the model to local file.
 
         :param model: Any model of torch.nn.Module, including all models accelareted by
-               Trainer.trace/Trainer.quantize.
+               InferenceOptimizer.trace/InferenceOptimizer.quantize.
         :param path: Path to saved model. Path should be a directory.
         """
         save_model(model, path)
@@ -782,8 +795,9 @@ class InferenceOptimizer(BaseInferenceOptimizer):
 
         :param path: Path to model to be loaded. Path should be a directory.
         :param model: Required FP32 model to load pytorch model, it is needed if you accelerated
-               the model with accelerator=None by Trainer.trace/Trainer.quantize. model
-               should be set to None if you choose accelerator="onnxruntime"/"openvino"/"jit".
+               the model with accelerator=None by InferenceOptimizer.trace/
+               InferenceOptimizer.quantize. model should be set to None if you choose
+               accelerator="onnxruntime"/"openvino"/"jit".
         :return: Model with different acceleration(None/OpenVINO/ONNX Runtime/JIT) or
                  precision(FP32/FP16/BF16/INT8).
         """

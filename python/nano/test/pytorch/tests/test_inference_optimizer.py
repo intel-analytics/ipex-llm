@@ -452,15 +452,15 @@ class TestInferencePipeline(TestCase):
         for method, option in optim_dict.items():
             if option["status"] == "successful":
                 model = option["model"]
-                with model.context_manager:
+                with InferenceOptimizer.get_context(model):
                     pass
         # test get_model
         for method in list(InferenceOptimizer.ALL_INFERENCE_ACCELERATION_METHOD.keys()):
             if "model" in optim_dict[method]:
                 model = inference_opt.get_model(method)
-                with model.context_manager:
+                with InferenceOptimizer.get_context(model):
                     pass
         # test get_best_model
         model, option = inference_opt.get_best_model()
-        with model.context_manager:
+        with InferenceOptimizer.get_context(model):
             pass
