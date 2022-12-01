@@ -63,6 +63,7 @@ runtime_command="$@"
 
 if [ "$SGX_ENABLED" == "true" ]; then
   if [ "$ATTESTATION" ==  "true" ]; then 
+    rm /ppml/temp_command_file
     bash attestation.sh
     # We need to also test if encryptedfsd is true or not.
     if [ "$ENCRYPTEDFSD" == "true" ]; then
