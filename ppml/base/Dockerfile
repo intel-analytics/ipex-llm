@@ -111,11 +111,11 @@ RUN env DEBIAN_FRONTEND=noninteractive apt-get update && \
     mkdir -p /ppml/encrypted_keys && \
 # kms client
     mkdir -p /ppml/kms && \
-    wget https://raw.githubusercontent.com/intel-analytics/BigDL/main/python/ppml/src/bigdl/ppml/kms/client.py  /ppml/kms/ && \
-    wget https://raw.githubusercontent.com/intel-analytics/BigDL/main/python/ppml/src/bigdl/ppml/kms/__init__.py /ppml/kms/ && \
-    wget https://raw.githubusercontent.com/intel-analytics/BigDL/main/python/ppml/src/bigdl/ppml/kms/fileoperator.py /ppml/kms/ && \
-    wget https://raw.githubusercontent.com/intel-analytics/BigDL/main/python/ppml/src/bigdl/ppml/kms/keymanager.py /ppml/kms/ && \
-    wget https://raw.githubusercontent.com/intel-analytics/BigDL/main/python/ppml/src/bigdl/ppml/kms/restcaller.py /ppml/kms/
+    wget https://raw.githubusercontent.com/intel-analytics/BigDL/main/python/ppml/src/bigdl/ppml/kms/client.py -P /ppml/kms/ && \
+    wget https://raw.githubusercontent.com/intel-analytics/BigDL/main/python/ppml/src/bigdl/ppml/kms/__init__.py -P /ppml/kms/ && \
+    wget https://raw.githubusercontent.com/intel-analytics/BigDL/main/python/ppml/src/bigdl/ppml/kms/fileoperator.py -P /ppml/kms/ && \
+    wget https://raw.githubusercontent.com/intel-analytics/BigDL/main/python/ppml/src/bigdl/ppml/kms/keymanager.py -P /ppml/kms/ && \
+    wget https://raw.githubusercontent.com/intel-analytics/BigDL/main/python/ppml/src/bigdl/ppml/kms/restcaller.py -P /ppml/kms/
 
 
 ADD ./download_jars.sh /ppml
