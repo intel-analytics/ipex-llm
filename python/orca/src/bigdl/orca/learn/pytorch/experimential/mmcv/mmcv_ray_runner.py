@@ -15,13 +15,13 @@
 #
 
 import io
-import os.path as osp
+import os
+import tempfile
 import time
 import mmcv
 import numpy as np
 import torch
 import warnings
-import fsspec
 from mmcv.runner import EpochBasedRunner
 from mmcv.runner.utils import get_host_info
 from mmcv.parallel.distributed import MMDistributedDataParallel
@@ -31,27 +31,39 @@ from bigdl.orca.learn.pytorch.utils import get_batchsize
 from bigdl.dllib.utils.log4Error import invalidInputError
 from bigdl.orca.learn.pytorch.experimential.core.base_ray_runner import BaseRayRunner
 
-from typing import (Any, Dict, List, Optional, Tuple, Callable, overload)
+from typing import (Union, Any, Dict, List, Optional, Tuple, Callable, overload)
 
 
 class HDFSBackend(BaseStorageBackend):
-    """HDFS storage backend for save/load ckpt"""
+    """
+    HDFS storage backend for save/load ckpt
 
-    def get(self, filepath):
+    This backend will be used when runner contains a CheckpointHook and
+    CheckpointHook's out_dir starts with hdfs://
+    """
+
+    def get(self, filepath: str) -> bytes:
         pass
 
-    def get_text(self, filepath):
+    def get_text(self, filepath: str, encoding: str = 'utf-8') -> str:
         pass
 
-    def put(self, obj, filepath):
-        with fsspec.open(filepath, "wb") as f:
+    def put(self, obj: bytes, filepath: str) -> None:
+        filename = os.path.basename(filepath)
+        temp_dir = tempfile.mkdtemp()
+        temp_path = os.path.join(temp_dir, filename)
+        with open(temp_path, "wb") as f:
             f.write(obj)
 
-    def put_text(self, obj, filepath):
+        from bigdl.orca.data.file import put_local_file_to_remote
+        put_local_file_to_remote(temp_path, filepath)
+
+    def put_text(self, obj: str, filepath: str, encoding: str = 'utf-8') -> None:
         pass
 
-    def join_path(self, filepath, *filepaths):
-        return osp.join(filepath, *filepaths)
+    def join_path(self, filepath: str,
+                  *filepaths: str) -> str:
+        return os.path.join(filepath, *filepaths)
 
 
 class MMCVRayEpochRunner(BaseRayRunner, EpochBasedRunner):
@@ -89,6 +101,7 @@ class MMCVRayEpochRunner(BaseRayRunner, EpochBasedRunner):
         #    flexible control of input data.
         # 2. It implement two APIs ``train_step()`` and ``val_step()``.
         self.model = MMDistributedDataParallel(self.model)
+        # register hdfs backend to support save ckpt to hdfs for mmcv.
         FileClient.register_backend('hdfs_backend', HDFSBackend, prefixes="hdfs")
 
     def train_epochs(self,
