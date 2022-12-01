@@ -83,7 +83,6 @@ def find_latest_checkpoint(model_dir, model_type="bigdl"):
 
 def convert_predict_rdd_to_xshard(data, prediction_rdd):
     import numpy as np
-    from bigdl.orca.data import SparkXShards
 
     def group_index(iter):
         for data in iter:
