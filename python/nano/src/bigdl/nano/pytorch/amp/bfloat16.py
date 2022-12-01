@@ -19,7 +19,6 @@ from logging import warning
 import torch
 import os
 from bigdl.nano.utils.inference.pytorch.model import AcceleratedLightningModule
-from bigdl.nano.utils.inference.pytorch.model import AcceleratedModel
 from bigdl.nano.utils.log4Error import invalidInputError
 from bigdl.nano.pytorch.utils import TORCH_VERSION_LESS_1_10, TORCH_VERSION_LESS_1_12
 from bigdl.nano.utils import CPUInfo
@@ -43,7 +42,6 @@ class BF16Model(AcceleratedLightningModule):
         :param thread_num: the thread num allocated for this model.
         """
         super().__init__(model)
-        self._is_bf16 = None
         self._bf16_check()
         self.model = model  # use mixed precision instead of complete precision
         self.channels_last = channels_last
