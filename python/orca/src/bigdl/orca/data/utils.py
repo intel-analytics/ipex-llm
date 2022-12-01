@@ -195,10 +195,10 @@ def combine(data_list):
     return res
 
 
-def ray_partition_get_data_label(partition_data,
-                                 allow_tuple=True,
-                                 allow_list=True,
-                                 has_label=True):
+def partition_get_data_label(partition_data,
+                             allow_tuple=True,
+                             allow_list=True,
+                             has_label=True):
     """
     :param partition_data: The data partition from Spark RDD, which should be a list of records.
     :param allow_tuple: Boolean. Whether the model accepts a tuple as input. Default is True.
@@ -220,19 +220,22 @@ def ray_partition_get_data_label(partition_data,
     return data, label
 
 
-def ray_partitions_get_data_label(partition_list,
-                                  allow_tuple=True,
-                                  allow_list=True,
-                                  has_label=True):
+def partitions_get_data_label(partition_list,
+                              allow_tuple=True,
+                              allow_list=True,
+                              has_label=True):
+    """
+    Get data and label for multiple partitions.
+    """
     partition_data = [item for partition in partition_list for item in partition]
-    data, label = ray_partition_get_data_label(partition_data,
-                                               allow_tuple=allow_tuple,
-                                               allow_list=allow_list,
-                                               has_label=has_label)
+    data, label = partition_get_data_label(partition_data,
+                                           allow_tuple=allow_tuple,
+                                           allow_list=allow_list,
+                                           has_label=has_label)
     return data, label
 
 
-def ray_partitions_get_tf_dataset(partition_list, has_label=True):
+def partitions_get_tf_dataset(partition_list, has_label=True):
     import tensorflow as tf  # type:ignore
     partition_data = [item for partition in partition_list for item in partition]
     if len(partition_data) != 0:
@@ -242,9 +245,9 @@ def ray_partitions_get_tf_dataset(partition_list, has_label=True):
         if "x" in keys:
             if has_label:
                 invalidInputError("y" in keys, "key y should in each shard if has_label=True")
-            data, label = ray_partition_get_data_label(partition_data,
-                                                       allow_tuple=True,
-                                                       allow_list=False)
+            data, label = partition_get_data_label(partition_data,
+                                                   allow_tuple=True,
+                                                   allow_list=False)
             dataset = tf.data.Dataset.from_tensor_slices((data, label))
         elif "ds_def" in keys and "elem_spec" in keys:
             from tensorflow.python.distribute.coordinator.values import \

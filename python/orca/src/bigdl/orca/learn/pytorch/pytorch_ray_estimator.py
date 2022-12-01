@@ -58,7 +58,7 @@ def check_for_failure(remote_values):
 
 def partition_refs_to_creator(partition_refs):
     def data_creator(config, batch_size):
-        from bigdl.orca.data.utils import ray_partitions_get_data_label, index_data, get_size
+        from bigdl.orca.data.utils import partitions_get_data_label, index_data, get_size
         from torch.utils.data import Dataset, DataLoader
 
         class NDArrayDataset(Dataset):
@@ -78,9 +78,9 @@ def partition_refs_to_creator(partition_refs):
                     "multiprocessing_context"]:
             if arg in config:
                 params[arg] = config[arg]
-        data, label = ray_partitions_get_data_label(ray.get(partition_refs),
-                                                    allow_tuple=False,
-                                                    allow_list=False)
+        data, label = partitions_get_data_label(ray.get(partition_refs),
+                                                allow_tuple=False,
+                                                allow_list=False)
         print("Data size on worker: ", len(label))
         dataset = NDArrayDataset(data, label)
         data_loader = DataLoader(dataset, **params)
@@ -267,7 +267,8 @@ class PyTorchRayEstimator(OrcaRayEstimator):
                                                            feature_cols=feature_cols,
                                                            label_cols=label_cols,
                                                            mode="fit",
-                                                           num_workers=self.num_workers)
+                                                           num_workers=self.num_workers,
+                                                           shard_size=batch_size)
 
         if isinstance(data, SparkXShards):
             # Should not wrap DistributedSampler on DataLoader for SparkXShards input.
@@ -393,7 +394,8 @@ class PyTorchRayEstimator(OrcaRayEstimator):
                                               validation_data=None,
                                               feature_cols=feature_cols,
                                               label_cols=None,
-                                              mode="predict")
+                                              mode="predict",
+                                              shard_size=batch_size)
             pred_shards = self._predict_spark_xshards(xshards, param)
             result = convert_predict_xshards_to_dataframe(data, pred_shards)
         elif isinstance(data, SparkXShards):
@@ -468,7 +470,8 @@ class PyTorchRayEstimator(OrcaRayEstimator):
                                              feature_cols=feature_cols,
                                              label_cols=label_cols,
                                              mode="evaluate",
-                                             num_workers=self.num_workers)
+                                             num_workers=self.num_workers,
+                                             shard_size=batch_size)
         if isinstance(data, SparkXShards):
             if data._get_class_name() == 'pandas.core.frame.DataFrame':
                 data = process_xshards_of_pandas_dataframe(data, feature_cols, label_cols)
