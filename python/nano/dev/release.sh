@@ -46,7 +46,7 @@ if [ "$platform" ==  "mac" ]; then
     verbose_pname="macosx_10_11_x86_64"
     sed -i 's/intel-tensorflow/tensorflow/' $BIGDL_PYTHON_DIR/setup.py
 
-if [ "$platform" ==  "mac_m1" ]; then
+if [ "$platform" ==  "mac_mseries" ]; then
     verbose_pname="macosx_12_0_arm64"
 
 elif [ "$platform" == "linux" ]; then

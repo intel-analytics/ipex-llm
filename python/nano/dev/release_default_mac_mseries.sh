@@ -21,13 +21,13 @@ RUN_SCRIPT_DIR=$(cd $(dirname $0) ; pwd)
 echo $RUN_SCRIPT_DIR
 
 if (( $# < 2)); then
-  echo "Usage: release_default_mac_m1.sh version upload"
-  echo "Usage example: bash release_default_mac_m1.sh default true"
-  echo "Usage example: bash release_default_mac_m1.sh 0.14.0.dev1 true"
+  echo "Usage: release_default_mac_mseries.sh version upload"
+  echo "Usage example: bash release_default_mac_mseries.sh default true"
+  echo "Usage example: bash release_default_mac_mseries.sh 0.14.0.dev1 true"
   exit -1
 fi
 
 version=$1
 upload=$2
 
-bash ${RUN_SCRIPT_DIR}/release.sh mac_m1 ${version} ${upload}
+bash ${RUN_SCRIPT_DIR}/release.sh mac_mseries ${version} ${upload}
