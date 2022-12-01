@@ -52,5 +52,6 @@ if __name__ == "__main__":
     print("When accuracy drop less than 5%, the model with minimal latency is: ", option)
 
     # 5. Inference with accelerated model
-    x_input = next(iter(datamodule.train_dataloader(batch_size=1)))[0]
-    output = acc_model(x_input)
+    with InferenceOptimizer.get_context(acc_model):  # make sure set context manager
+        x_input = next(iter(datamodule.train_dataloader(batch_size=1)))[0]
+        output = acc_model(x_input)

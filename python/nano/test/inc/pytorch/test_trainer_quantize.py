@@ -178,7 +178,7 @@ class TestTrainer(TestCase):
         qmodel = InferenceOptimizer.quantize(pl_model,
                                              calib_data=self.train_loader)
         assert qmodel
-        with qmodel.context_manager:
+        with InferenceOptimizer.get_context(qmodel):
             out = qmodel(x)
         assert out.shape == torch.Size([256, 10])
         
@@ -186,6 +186,6 @@ class TestTrainer(TestCase):
             InferenceOptimizer.save(qmodel, tmp_dir_name)
             model = InferenceOptimizer.load(tmp_dir_name, pl_model)
 
-        with model.context_manager:
+        with InferenceOptimizer.get_context(model):
             out = model(x)
         assert out.shape == torch.Size([256, 10])

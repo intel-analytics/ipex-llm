@@ -18,7 +18,7 @@ import pytest
 import torch
 from bigdl.nano.pytorch import InferenceOptimizer
 from torchvision.models.resnet import resnet18
-from unittest.mock import MagicMock, Mock, PropertyMock, patch
+from unittest.mock import PropertyMock, patch
 from bigdl.nano.common import check_avx512
 import tempfile
 
@@ -49,7 +49,7 @@ class Pytorch1_11:
         y = torch.ones((10,), dtype=torch.long)
 
         bf16_model = InferenceOptimizer.quantize(model, precision='bf16', use_ipex=True)
-        with bf16_model.context_manager:
+        with InferenceOptimizer.get_context(bf16_model):
             y_hat = bf16_model(x)
 
         assert y_hat.shape == (10, 10) and y_hat.dtype == torch.bfloat16
@@ -60,8 +60,7 @@ class Pytorch1_11:
         x = torch.rand((10, 3, 256, 256))
         bf16_model = InferenceOptimizer.quantize(model, precision='bf16',
                                                  use_ipex=True)
-
-        with bf16_model.context_manager:
+        with InferenceOptimizer.get_context(bf16_model):
             y_hat = bf16_model(x)
 
         assert y_hat.shape == (10, 10) and y_hat.dtype == torch.bfloat16
@@ -70,7 +69,7 @@ class Pytorch1_11:
             InferenceOptimizer.save(bf16_model, tmp_dir_name)
             load_model = InferenceOptimizer.load(tmp_dir_name, model)
 
-        with load_model.context_manager:
+        with InferenceOptimizer.get_context(load_model):
             y_hat_ = load_model(x)
         assert y_hat_.shape == (10, 10) and y_hat_.dtype == torch.bfloat16
         assert y_hat.equal(y_hat_)
@@ -82,7 +81,8 @@ class Pytorch1_11:
         bf16_model = InferenceOptimizer.quantize(model, precision='bf16',
                                                  use_ipex=True, accelerator="jit",
                                                  input_sample=x)
-        with bf16_model.context_manager:
+
+        with InferenceOptimizer.get_context(bf16_model):
             y_hat = bf16_model(x)
 
         assert y_hat.shape == (10, 10) and y_hat.dtype == torch.bfloat16
@@ -90,8 +90,7 @@ class Pytorch1_11:
         with tempfile.TemporaryDirectory() as tmp_dir_name:
             InferenceOptimizer.save(bf16_model, tmp_dir_name)
             load_model = InferenceOptimizer.load(tmp_dir_name)
-
-        with load_model.context_manager:
+        with InferenceOptimizer.get_context(load_model):
             y_hat_ = load_model(x)
         assert y_hat_.shape == (10, 10) and y_hat_.dtype == torch.bfloat16
         assert y_hat.equal(y_hat_)

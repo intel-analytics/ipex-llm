@@ -39,6 +39,7 @@ if __name__ == "__main__":
     loaded_model = InferenceOptimizer.load("./optimized_model_jit")
 
     # Inference with the Loaded Model
-    y_hat = loaded_model(x)
-    predictions = y_hat.argmax(dim=1)
-    print(predictions)
+    with InferenceOptimizer.get_context(loaded_model):
+        y_hat = loaded_model(x)
+        predictions = y_hat.argmax(dim=1)
+        print(predictions)

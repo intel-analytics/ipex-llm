@@ -116,13 +116,12 @@ class TestOpenVINO(TestCase):
 
         openvino_model = InferenceOptimizer.trace(model, input_sample=x,
                                                   accelerator='openvino')
-
-        with openvino_model.context_manager:
+        with InferenceOptimizer.get_context(openvino_model):
             y1 = openvino_model(x[0:1])
     
         with tempfile.TemporaryDirectory() as tmp_dir_name:
             InferenceOptimizer.save(openvino_model, tmp_dir_name)
             model = InferenceOptimizer.load(tmp_dir_name)
 
-        with model.context_manager:
+        with InferenceOptimizer.get_context(model):
             y2 = model(x[0:1])

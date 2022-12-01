@@ -139,7 +139,8 @@ class SparkTFEstimator():
                                                            feature_cols, label_cols,
                                                            mode="fit",
                                                            num_workers=self.num_workers,
-                                                           accept_str_col=True)
+                                                           accept_str_col=True,
+                                                           shard_size=batch_size)
 
         # for continuous training
         if self.model_weights:
@@ -265,7 +266,8 @@ class SparkTFEstimator():
                                              label_cols=label_cols,
                                              mode="evaluate",
                                              num_workers=self.num_workers,
-                                             accept_str_col=True)
+                                             accept_str_col=True,
+                                             shard_size=batch_size)
 
         if self.model_weights:
             weights = sc.broadcast(self.model_weights)
@@ -377,7 +379,8 @@ class SparkTFEstimator():
                                               feature_cols=feature_cols,
                                               label_cols=None,
                                               mode="predict",
-                                              accept_str_col=True)
+                                              accept_str_col=True,
+                                              shard_size=batch_size)
 
             def transform_func(iter, init_param, param):
                 partition_data = list(iter)
