@@ -22,10 +22,10 @@ function refresh_cmd(){
     $("#version").empty();
     if(framework=="pytorch"){
         $("#version").append("<td colspan='1'>Versions</td>\
-        <td colspan='1'><button id='pytorch_113'>torch_113</button>\
-        <td colspan='1'><button id='pytorch_112'>torch_112(default)</button>\
-        <td colspan='1'><button id='pytorch_111'>torch_111</button>\
-        <td colspan='1'><button id='pytorch_110'>torch_110</button></td>");
+        <td colspan='1'><button id='pytorch_113'>torch_113</button></td>\
+        <td colspan='2'><button id='pytorch_112'>torch_112(default)</button></td>\
+        <td colspan='1'><button id='pytorch_111'>torch_111</button></td>\
+        <td colspan='2'><button id='pytorch_110'>torch_110</button></td>");
     }
     else if(framework=="tensorflow"){
         $("#version").append("<td colspan='1'>Versions</td>\
@@ -42,53 +42,53 @@ function refresh_cmd(){
         enable(inferences);
     }
 
-        if(framework=="pytorch"){
-            if(release=="stable"){
-                cmd="pip install bigdl-nano[pytorch]==2.1.0";
-            }else if(release=="nightly"){
-                if(inference=="inferenceyes"){
-                    if(version=="pytorch_110"){
-                        cmd="pip install --pre --upgrade bigdl-nano[pytorch_110,inference]";
-                    }else if(version=="pytorch_111"){
-                        cmd="pip install --pre --upgrade bigdl-nano[pytorch_111,inference]";
-                    }else if(version=="pytorch_112"){
-                        cmd="pip install --pre --upgrade bigdl-nano[pytroch_112,inference]";
-                    }else if(version=="pytorch_113"){
-                        cmd="pip install --pre --upgrade bigdl-nano[pytroch_113,inference]";
-                    }
-                    cmd="pip install --pre --upgrade bigdl-nano[inference]";
-                }else if(inference="inferenceno"){
-                    if(version=="pytorch_110"){
-                        cmd="pip install --pre --upgrade bigdl-nano[pytorch_110]";
-                    }else if(version=="pytorch_111"){
-                        cmd="pip install --pre --upgrade bigdl-nano[pytorch_111]";
-                    }else if(version=="pytorch_112"){
-                        cmd="pip install --pre --upgrade bigdl-nano[pytroch_112]";
-                    }else if(version=="pytorch_113"){
-                        cmd="pip install --pre --upgrade bigdl-nano[pytroch_113]";
-                    }
-                    cmd="pip install --pre --upgrade bigdl-nano";
+    if(framework=="pytorch"){
+        if(release=="stable"){
+            cmd="pip install bigdl-nano[pytorch]==2.1.0";
+        }else if(release=="nightly"){
+            if(inference=="inferenceyes"){
+                if(version=="pytorch_110"){
+                    cmd="pip install --pre --upgrade bigdl-nano[pytorch_110,inference]";
+                }else if(version=="pytorch_111"){
+                    cmd="pip install --pre --upgrade bigdl-nano[pytorch_111,inference]";
+                }else if(version=="pytorch_112"){
+                    cmd="pip install --pre --upgrade bigdl-nano[pytroch_112,inference]";
+                }else if(version=="pytorch_113"){
+                    cmd="pip install --pre --upgrade bigdl-nano[pytroch_113,inference]";
                 }
+                cmd="pip install --pre --upgrade bigdl-nano[inference]";
+            }else if(inference="inferenceno"){
+                if(version=="pytorch_110"){
+                    cmd="pip install --pre --upgrade bigdl-nano[pytorch_110]";
+                }else if(version=="pytorch_111"){
+                    cmd="pip install --pre --upgrade bigdl-nano[pytorch_111]";
+                }else if(version=="pytorch_112"){
+                    cmd="pip install --pre --upgrade bigdl-nano[pytroch_112]";
+                }else if(version=="pytorch_113"){
+                    cmd="pip install --pre --upgrade bigdl-nano[pytroch_113]";
+                }
+                cmd="pip install --pre --upgrade bigdl-nano";
             }
-        }else if(framework="tensorflow"){
-            if(release="stable"){
-                cmd="pip install bigdl-nano[tensorflow]==2.1.0";
-            }else if(release=="nightly"){
-                if(inference=="inferenceyes"){
-                    if (version=="tf2_270"){
-                        cmd="pip install --pre --upgrade bigdl-nano[tensorflow,inference]";
-                    }else{
-                        cmd="pip install --pre --upgrade bigdl-nano[tensorflow,infernece]";
-                    }
-                }else if(inference=="inferenceno"){
-                    if(version=="tf2_270"){
-                        cmd="pip install --pre --upgrade bigdl-nano[tensorflow]";
-                    }else{
-                        cmd="pip install --pre --upgrade bigdl-nano[tensorflow]";
-                    }
+        }
+    }else if(framework="tensorflow"){
+        if(release="stable"){
+            cmd="pip install bigdl-nano[tensorflow]==2.1.0";
+        }else if(release=="nightly"){
+            if(inference=="inferenceyes"){
+                if (version=="tf2_270"){
+                    cmd="pip install --pre --upgrade bigdl-nano[tensorflow,inference]";
+                }else{
+                    cmd="pip install --pre --upgrade bigdl-nano[tensorflow,infernece]";
+                }
+            }else if(inference=="inferenceno"){
+                if(version=="tf2_270"){
+                    cmd="pip install --pre --upgrade bigdl-nano[tensorflow]";
+                }else{
+                    cmd="pip install --pre --upgrade bigdl-nano[tensorflow]";
                 }
             }
         }
+    }
     $("#cmd").html(cmd);
 }
 
