@@ -34,7 +34,7 @@ runs:
         # install orca
         pip install -i https://pypi.org/simple python/orca/src/dist/bigdl_orca*-py3-none-macosx_10_11_x86_64.whl		
         # install friesian
-        pip install python/friesian/src/dist/bigdl_friesian*-py3-none-macosx_10_11_x86_64.whl
+        pip install -i https://pypi.python.org/simple python/friesian/src/dist/bigdl_friesian*-py3-none-macosx_10_11_x86_64.whl
 
         cd python/friesian/dev/test
         bash run-feature-example-tests.sh
