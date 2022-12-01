@@ -63,19 +63,18 @@ runtime_command="$@"
 
 if [ "$SGX_ENABLED" == "true" ]; then
   if [ "$ATTESTATION" ==  "true" ]; then 
-    rm /ppml/temp_command_file
+    rm /ppml/temp_command_file || true
     bash attestation.sh
-    # We need to also test if encryptedfsd is true or not.
     if [ "$ENCRYPTEDFSD" == "true" ]; then
-      # We know that we want to use the encrypted-fsd folder
-      echo "[INFO] distributed encrypted file system is enabled"
+      echo "[INFO] Distributed encrypted file system is enabled"
       bash encryptedfsd.sh
     fi
     echo $runtime_command >> temp_command_file
     export sgx_command="bash temp_command_file && rm temp_command_file"
   else 
     if [ "$ENCRYPTEDFSD" == "true" ]; then
-      echo "[INFO] distributed encrypted file system is enabled"
+      rm /ppml/temp_command_file || true
+      echo "[INFO] Distributed encrypted file system is enabled"
       bash encryptedfsd.sh
       echo $runtime_command >> temp_command_file
       export sgx_command="bash temp_command_file && rm temp_command_file"
@@ -85,6 +84,7 @@ if [ "$SGX_ENABLED" == "true" ]; then
   fi
   ./init.sh && \
   gramine-sgx bash 2>&1
+  rm /ppml/temp_command_file || true
 else
   exec $runtime_command
 fi
