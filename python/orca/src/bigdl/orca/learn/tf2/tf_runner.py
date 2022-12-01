@@ -60,7 +60,7 @@ def find_free_port():
 
 
 def _try_import_strategy():
-    """Late import for Tesnorflow"""
+    """Late import for TensorFlow"""
     import tensorflow as tf
     return tf.distribute.experimental.MultiWorkerMirroredStrategy
 
