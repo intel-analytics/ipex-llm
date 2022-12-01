@@ -778,7 +778,7 @@ class InferenceOptimizer(BaseInferenceOptimizer):
         """
         if hasattr(model, "context_manager"):
             return model.context_manager
-        return BaseContextManager()
+        return generate_context_manager(accelerator=None, precision="fp32")
 
     @staticmethod
     def save(model: nn.Module, path):
