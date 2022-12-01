@@ -94,7 +94,7 @@ class BF16Model(AcceleratedLightningModule):
         # automatically unwrap attributes access of model
         try:
             return super().__getattr__(name)
-        except:
+        except AttributeError:
             try:
                 return getattr(self.model, name)
             except AttributeError:

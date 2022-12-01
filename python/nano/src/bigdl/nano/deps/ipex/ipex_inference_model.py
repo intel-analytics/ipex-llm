@@ -102,6 +102,17 @@ class PytorchIPEXJITModel(AcceleratedLightningModule):
     def on_forward_end(self, outputs):
         return outputs
 
+    def __getattr__(self, name: str):
+        # automatically unwrap attributes access of model
+        print(name)
+        try:
+            return super().__getattr__(name)
+        except:
+            try:
+                return getattr(self.model, name)
+            except AttributeError:
+                pass
+
     @property
     def status(self):
         status = super().status

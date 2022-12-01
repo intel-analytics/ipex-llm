@@ -178,6 +178,8 @@ class Pytorch1_12:
         assert y_hat1.shape == (10, 10) and y_hat1.dtype == torch.bfloat16
         assert bf16_model.channels == 3
         bf16_model.hello()
+        with pytest.raises(AttributeError):
+            bf16_model.width
 
 
 TORCH_VERSION_CLS = Pytorch1_12
