@@ -19,6 +19,7 @@ function refresh_cmd(){
 
     var cmd="NA";
 
+    $("#version").empty();
     if(framework=="pytorch"){
         $("#version").append("<td colspan='1'>Versions</td>\
         <td colspan='1'><button id='pytorch_113'>torch_113</button>\
@@ -28,7 +29,7 @@ function refresh_cmd(){
     }
     else if(framework=="tensorflow"){
         $("#version").append("<td colspan='1'>Versions</td>\
-        <td colspan='4'><button id='tf2_270'>tf2_270</button>");
+        <td colspan='8'><button id='tf2_270'>tf2_270</button>");
     }
     reset_color(versions);
     set_color(version);
