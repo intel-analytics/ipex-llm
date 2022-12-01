@@ -21,7 +21,8 @@ import torch
 
 class PytorchIPEXJITModel(AcceleratedLightningModule):
     def __init__(self, model: torch.nn.Module, input_sample=None, use_ipex=False, dtype=None,
-                 use_jit=False, channels_last=None, thread_num=None, from_load=False):
+                 use_jit=False, channels_last=None, thread_num=None, from_load=False,
+                 inplace=False):
         """
         This is the accelerated model for pytorch and ipex/jit.
         All the external API is based on Trainer, so what we have here is
@@ -42,6 +43,7 @@ class PytorchIPEXJITModel(AcceleratedLightningModule):
                the parameter will be ignored if use_ipex is False.
         :param thread_num: the thread num allocated for this model.
         :param from_load: this will only be set by _load method.
+        :param inplace: whether to perform inplace optimization. Default: ``False``.
         """
         model.eval()
         super().__init__(model)
@@ -61,7 +63,7 @@ class PytorchIPEXJITModel(AcceleratedLightningModule):
             self.model = self.model.to(memory_format=torch.channels_last)
         if self.use_ipex:
             import intel_extension_for_pytorch as ipex
-            self.model = ipex.optimize(self.model, dtype=dtype)
+            self.model = ipex.optimize(self.model, dtype=dtype, inplace=inplace)
         if self.use_jit:
             if dtype == torch.bfloat16:
                 with torch.no_grad():
@@ -107,7 +109,7 @@ class PytorchIPEXJITModel(AcceleratedLightningModule):
         return status
 
     @staticmethod
-    def _load(path, model):
+    def _load(path, model, inplace=False):
         status = PytorchIPEXJITModel._load_status(path)
         checkpoint_path = path / status['checkpoint']
         if status["use_jit"]:
@@ -129,7 +131,8 @@ class PytorchIPEXJITModel(AcceleratedLightningModule):
                                    use_jit=status['use_jit'],
                                    channels_last=status['channels_last'],
                                    from_load=from_load,
-                                   thread_num=thread_num)
+                                   thread_num=thread_num,
+                                   inplace=inplace)
 
     def _save_model(self, path):
         if self.use_jit:
