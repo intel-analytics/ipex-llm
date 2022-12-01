@@ -183,8 +183,7 @@ class SparkTFEstimator():
             data_config=data_config
         )
 
-        if isinstance(data, SparkXShards):
-            # set train/validation data
+        if isinstance(data, SparkXShards):  # Computation triggered when collect
             if data._get_class_name() == 'pandas.core.frame.DataFrame':
                 data, validation_data = process_xshards_of_pandas_dataframe(data,
                                                                             feature_cols,
@@ -307,8 +306,7 @@ class SparkTFEstimator():
             data_config=data_config,
         )
 
-        if isinstance(data, SparkXShards):
-            # set train/validation data
+        if isinstance(data, SparkXShards):  # Computation triggered when collect
             if data._get_class_name() == 'pandas.core.frame.DataFrame':
                 data = process_xshards_of_pandas_dataframe(data, feature_cols, label_cols)
 
@@ -385,7 +383,7 @@ class SparkTFEstimator():
             param["data_creator"] = make_data_creator(partition_data)
             return SparkRunner(**init_param).predict(**param)
 
-        if isinstance(data, DataFrame):
+        if isinstance(data, DataFrame):  # Computation would be triggered by the user
             xshards, _ = dataframe_to_xshards(data,
                                               validation_data=None,
                                               feature_cols=feature_cols,
@@ -397,7 +395,7 @@ class SparkTFEstimator():
             pred_shards = LazySparkXShards(xshards.rdd.mapPartitions(
                 lambda iter: transform_func(iter, init_params, params)))
             result = convert_predict_xshards_to_dataframe(data, pred_shards)
-        elif isinstance(data, SparkXShards):
+        elif isinstance(data, SparkXShards):  # Computation triggered when updating XShards
             xshards = data.lazy()
             if data._get_class_name() == 'pandas.core.frame.DataFrame':
                 xshards = process_xshards_of_pandas_dataframe(data, feature_cols)
@@ -408,6 +406,7 @@ class SparkTFEstimator():
                 pred_shards = SparkXShards(xshards.rdd.mapPartitions(
                     lambda iter: transform_func(iter, init_params, params)))
                 result = update_predict_xshards(data, pred_shards)
+            # Uncache the original data since it is already included in the result
             data.uncache()
         else:
             invalidInputError(False,

@@ -127,12 +127,12 @@ def convert_predict_rdd_to_xshard(data, prediction_rdd):
 
 
 def update_predict_xshards(xshards, pred_xshards):
-    def updates(d1_d2):
+    def update_dict(d1_d2):
         d1, d2 = d1_d2
         d1.update(d2)
         return d1
 
-    result = SparkXShards(xshards.rdd.zip(pred_xshards.rdd).map(updates))
+    result = SparkXShards(xshards.rdd.zip(pred_xshards.rdd).map(update_dict))
     return result
 
 def add_predict_to_pd_xshards(xshards, pred_xshards):
