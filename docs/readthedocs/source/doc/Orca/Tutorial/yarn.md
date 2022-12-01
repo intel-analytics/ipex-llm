@@ -296,7 +296,6 @@ sc = init_orca_context(cluster_mode="spark-submit")
 ```
 
 Before submitting the application on the __Client Node__, you need to:
-
 1. Prepare the conda environment on a __Development Node__ where conda is available and pack the conda environment to an archive:
 ```bash
 conda pack -o environment.tar.gz
@@ -307,8 +306,8 @@ conda pack -o environment.tar.gz
 scp /path/to/environment.tar.gz username@client_ip:/path/to/
 ```
 
-On the __Client Node__:
 
+On the __Client Node__:
 1. Download and extract [Spark](https://archive.apache.org/dist/spark/). Then setup the environment variables `${SPARK_HOME}` and `${SPARK_VERSION}`.
 ```bash
 export SPARK_HOME=/path/to/spark # the folder path where you extract the Spark package
