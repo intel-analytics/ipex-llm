@@ -57,22 +57,18 @@ In a pure pip environment, you need to run `source bigdl-nano-init` every time y
             <td colspan="2"><button id="pytorch">Pytorch</button></td>
             <td colspan="2"><button id="tensorflow">Tensorflow</button></td>
           </tr>
+          <tr id="version" class="taller_tr>
+            <td colspan="1">Versions</td>
+            <td colspan="1"><button id="pytorch_113">torch_113</button></td>
+            <td colspan="2"><button id="pytorch_112">torch_112(default)</td>
+            <td colspan="1"><button id="pytorch_111">torch_111</td>
+            <td colspan="2"><button id="pytorch_110>torch_110</td>
+          </tr>
           <tr>
             <td colspan="1">Infernece Optimization</td>
             <td colspan="2"><button id="inferenceno">No</button></td>
             <td colspan="2"><button id="inferenceyes">Yes</button></td>
             </td>
-          </tr>
-          <tr>
-            <td colspan="1">PyTorchVersions</td>
-            <td colspan="2"><button id="pytorch_113">torch_113</td>
-            <td colspan="2"><button id="pytorch_112">torch_112(default)</td>
-            <td colspan="2"><button id="pytorch_111">torch_111</td>
-            <td colspan="2"><button id="pytorch_110">torch_110</td>
-          </tr>
-          <tr>
-            <td colspan="1">TF2Versions</td>
-            <td colspan="2"><button id="tf2_270>tf2_270</td>
           </tr>
           <tr>
             <td colspan="1">Builds</td>
