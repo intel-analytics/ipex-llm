@@ -185,6 +185,7 @@ def listdir(path: str) -> List[str]:
     """
     if path.startswith("s3"):  # s3://bucket/file_path
         invalidOperationError(False, "not implement")
+        return []
     elif path.startswith("hdfs://"):
         cmd = 'hdfs dfs -ls {}; echo $?'.format(path)
         result = subprocess.getstatusoutput(cmd)
