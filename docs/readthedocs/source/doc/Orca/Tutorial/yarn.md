@@ -77,7 +77,7 @@ def train_data_creator(config, batch_size):
 Before running BigDL Orca programs on YARN, you need to properly setup the environment following the steps in this section.
 
 __Note__:
-* When using [`python` command](#use-python-command) or [`bigdl-submit`](#use-bigdl-submit), we directly use the corresponding `pyspark` instead, which is a dependency of BigDL Orca. To avoid possible version conflicts, you *DON'T* need to download Spark by yourself or set the environment variable `SPARK_HOME` unless you [`spark-submit`](#use-spark-submit). 
+* When using [`python` command](#use-python-command) or [`bigdl-submit`](#use-bigdl-submit), we would directly use the corresponding `pyspark`, which is a dependency of BigDL Orca. Thus to avoid possible conflicts, you *DON'T* need to download Spark by yourself or set the environment variable `SPARK_HOME` unless you [`spark-submit`](#use-spark-submit). 
 
 
 ### 2.1 Setup JAVA & Hadoop Environment
