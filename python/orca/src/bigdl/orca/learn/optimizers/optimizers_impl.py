@@ -139,7 +139,7 @@ class LBFGS(Optimizer):
                  learningrate: float = 1.0,
                  verbose: bool = False,
                  linesearch: Any = None,
-                 linesearch_options: Optional[Dict[Any, Any]] = None) -> None:
+                 linesearch_options: Optional[Dict[Any, Any]]=None) -> None:
         from bigdl.dllib.optim.optimizer import LBFGS as BLBFGS
         self.optimizer = BLBFGS(
             max_iter,

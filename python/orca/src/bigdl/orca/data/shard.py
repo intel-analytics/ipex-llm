@@ -464,7 +464,7 @@ class SparkXShards(XShards):
                               "Currently only support dedup() on XShards of Pandas DataFrame")
         return None
 
-    def sort_values(self, col_names: Optional[Union[str, List[str]]] = None,
+    def sort_values(self, col_names: Optional[Union[str, List[str]]]=None,
                     ascending: bool = True) -> Optional["SparkXShards"]:
         """
         Sort the value of shards. This is only applicable for SparkXShards of Pandas Series.
@@ -1000,7 +1000,7 @@ class SparkXShards(XShards):
 
         return SparkXShards(self.rdd.map(lambda df: df[cols]))
 
-    def describe(self, cols: Optional[Union[str, List[str]]] = None) -> "PandasDataFrame":
+    def describe(self, cols: Optional[Union[str, List[str]]]=None) -> "PandasDataFrame":
         """
         Computes basic statistics for numeric and string columns.
 

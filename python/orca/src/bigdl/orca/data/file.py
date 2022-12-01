@@ -381,7 +381,8 @@ def put_local_dir_tree_to_remote(local_dir: str, remote_dir: str):
         return 0
 
 
-def put_local_file_to_remote(local_path: str, remote_path: str, filemode: Optional[int] = None) -> int:
+def put_local_file_to_remote(local_path: str, remote_path: str,
+                             filemode: Optional[int] = None) -> int:
     if remote_path.startswith("hdfs"):  # hdfs://url:port/file_path
         try:
             cmd = 'hdfs dfs -put -f {} {}'.format(local_path, remote_path)

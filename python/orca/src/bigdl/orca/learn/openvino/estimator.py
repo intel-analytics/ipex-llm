@@ -61,7 +61,7 @@ class OpenvinoEstimator(SparkEstimator):
                 data: Union[SparkXShards, DataFrame, np.ndarray, List[np.ndarray]],
                 feature_cols: Optional[List[str]] = None,
                 batch_size: Optional[int] = 4,
-                input_cols: Optional[Union[str, List[str]]] = None
+                input_cols: Optional[Union[str, List[str]]]=None
                 ) -> Optional[Union[SparkXShards, DataFrame, np.ndarray, List[np.ndarray]]]:
         """
         Predict input data
