@@ -44,7 +44,7 @@ class TestSaveLoad(FLTest):
     server_model_path = '/tmp/vfl_server_model'
     client_model_path = '/tmp/vfl_client_model.h5'
     tf.config.run_functions_eagerly(True) # enable step-by-step debug
-    tf.keras.utils.set_random_seed(22)
+    tf.random.set_seed(22)
     def setUp(self) -> None:        
         self.fl_server = FLServer()
         self.fl_server.set_port(self.port)
