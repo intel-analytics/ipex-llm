@@ -64,10 +64,15 @@ runtime_command="$@"
 if [ "$SGX_ENABLED" == "true" ]; then
   if [ "$ATTESTATION" ==  "true" ]; then 
     bash attestation.sh
+    # We need to also test if encryptedfsd is true or not.
+    if [ "$ENCRYPTEDFSD" == "true" ]; then
+      # We know that we want to use the encrypted-fsd folder
+      echo "[INFO] distributed encrypted file system is enabled"
+      bash encryptedfsd.sh
+    fi
     echo $runtime_command >> temp_command_file
     export sgx_command="bash temp_command_file && rm temp_command_file"
   else 
-    # TODO: ATTESTATION is false, only for test purpose, modify this later
     if [ "$ENCRYPTEDFSD" == "true" ]; then
       echo "[INFO] distributed encrypted file system is enabled"
       bash encryptedfsd.sh
