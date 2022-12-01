@@ -151,7 +151,7 @@ class Pytorch1_12:
         assert y_hat2.shape == (10, 10) and y_hat2.dtype == torch.bfloat16
         assert y_hat1.equal(y_hat2)
 
-    def test_model_attr(self):
+    def test_bf16_additional_attrs(self):
         model = resnet18(num_classes=10)
         x = torch.rand((10, 3, 256, 256))
         # patch a attribute

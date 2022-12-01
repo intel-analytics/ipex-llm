@@ -45,7 +45,6 @@ class PytorchIPEXJITModel(AcceleratedLightningModule):
         :param inplace: whether to perform inplace optimization. Default: ``False``.
         :param jit_strict: Whether recording your mutable container types.
         """
-        model.eval()
         super().__init__(model)
         if from_load:
             self.use_ipex = use_ipex
@@ -57,6 +56,7 @@ class PytorchIPEXJITModel(AcceleratedLightningModule):
                                                                   thread_num=thread_num)
             return
         self.channels_last = channels_last
+        self.original_model = model
         self.original_state_dict = model.state_dict()
         self.use_ipex = use_ipex
         self.use_jit = use_jit
@@ -104,12 +104,11 @@ class PytorchIPEXJITModel(AcceleratedLightningModule):
 
     def __getattr__(self, name: str):
         # automatically unwrap attributes access of model
-        print(name)
         try:
             return super().__getattr__(name)
-        except:
+        except AttributeError:
             try:
-                return getattr(self.model, name)
+                return getattr(self.original_model, name)
             except AttributeError:
                 pass
 
