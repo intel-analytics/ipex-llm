@@ -294,6 +294,7 @@ class OpenvinoEstimator(SparkEstimator):
                               "Only XShards, Spark DataFrame, a numpy array and a list of numpy"
                               " arrays are supported as input data, but"
                               " get " + data.__class__.__name__)
+        return None
 
     def evaluate(self, data, batch_size=32, feature_cols=None, label_cols=None):
         """
