@@ -95,10 +95,7 @@ class BF16Model(AcceleratedLightningModule):
         try:
             return super().__getattr__(name)
         except AttributeError:
-            try:
-                return getattr(self.model, name)
-            except AttributeError:
-                pass
+            return getattr(self.model, name)
 
     def on_forward_start(self, inputs):
         return inputs

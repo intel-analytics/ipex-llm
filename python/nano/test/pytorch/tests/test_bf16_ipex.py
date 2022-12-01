@@ -147,6 +147,8 @@ class Pytorch1_11:
             new_model(x)
         assert new_model.channels == 3
         new_model.hello()
+        with pytest.raises(AttributeError):
+            new_model.width
 
 
 TORCH_VERSION_CLS = Pytorch1_11

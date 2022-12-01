@@ -107,10 +107,7 @@ class PytorchIPEXJITModel(AcceleratedLightningModule):
         try:
             return super().__getattr__(name)
         except AttributeError:
-            try:
-                return getattr(self.original_model, name)
-            except AttributeError:
-                pass
+            return getattr(self.original_model, name)
 
     @property
     def status(self):

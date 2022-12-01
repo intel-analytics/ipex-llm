@@ -110,6 +110,8 @@ class IPEXJITInference_gt_1_10:
             new_model(self.data_sample)
         assert new_model.channels == 3
         new_model.hello()
+        with pytest.raises(AttributeError):
+            new_model.width
 
     def test_ipex_jit_inference_strict(self):
         model = InferenceOptimizer.trace(self.model, accelerator="jit",
