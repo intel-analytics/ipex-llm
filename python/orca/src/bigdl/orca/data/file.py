@@ -192,7 +192,7 @@ def listdir(path: str) -> List[str]:
             return result[1].split('\n')[:-1]
         else:
             invalidOperationError(False, result[1])
-        return False
+        return []
     else:
         if path.startswith("file://"):
             path = path[len("file://"):]
@@ -223,11 +223,10 @@ def makedirs(path: str) -> None:
         result = subprocess.getstatusoutput(cmd)
         if result[0] != 0:
             invalidOperationError(False, result[1])
-        return False
     else:
         if path.startswith("file://"):
             path = path[len("file://"):]
-        return os.makedirs(path)
+        os.makedirs(path)
 
 
 def rmdir(path: str) -> None:
@@ -245,11 +244,10 @@ def rmdir(path: str) -> None:
         result = subprocess.getstatusoutput(cmd)
         if result[0] != 0:
             invalidOperationError(False, result[1])
-        return False
     else:
         if path.startswith("file://"):
             path = path[len("file://"):]
-        return os.rmdir(path)
+        os.rmdir(path)
 
 
 def write_text(path: str, text: str) -> int:
