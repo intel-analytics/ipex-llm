@@ -31,18 +31,30 @@ path = '/Users/guoqiong/intelWork/data/dogs-vs-cats/small/'
 
 data_shard = bigdl.orca.data.image_shard.read_images(path)
 
+def crop(data):
+    im = data['x']
+    width, height = im.size  # Get dimensions
+    left = width / 4
+    top = height / 4
+    right = 3 * width / 4
+    bottom = 3 * height / 4
+    cropped = im.crop((left, top, right, bottom))
+    return {'x': cropped, 'y': data['y']}
+
+
 def resize(im):
     size = (80, 80)
     return {'x': im['x'].resize(size), 'y': im['y']}
 
+
 to_nparray = lambda x: {'x': np.array([np.asarray(x['x'])]), 'y': np.array([x['y']])}
 
+data_shard = data_shard.transform_shard(crop)
 data_shard = data_shard.transform_shard(resize)
 data_shard = data_shard.transform_shard(to_nparray)
 
 
 def model_creator(config):
-
     model = Sequential()
     # Adds a densely-connected layer with 64 units to the model:
     model.add(Conv2D(64,(3,3), activation = 'relu', input_shape = (80, 80, 3)))

@@ -61,6 +61,11 @@ def read_im_file(filepath):
     im = Image.open(filepath)
     return im
 
+def read_im_file_cv(filepath):
+    import cv2
+    im = cv2.imread(filepath, mode='RGB')
+    return im
+
 
 def read_images(file_path):
     sc = OrcaContext.get_spark_context()
