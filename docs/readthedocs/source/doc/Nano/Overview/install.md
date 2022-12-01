@@ -60,9 +60,9 @@ In a pure pip environment, you need to run `source bigdl-nano-init` every time y
           <tr id="version" class="taller_tr>
             <td colspan="1">Versions</td>
             <td colspan="1"><button id="pytorch_113">torch_113</button></td>
-            <td colspan="2"><button id="pytorch_112">torch_112(default)</td>
-            <td colspan="1"><button id="pytorch_111">torch_111</td>
-            <td colspan="2"><button id="pytorch_110>torch_110</td>
+            <td colspan="1"><button id="pytorch_112">torch_112(default)</button</td>
+            <td colspan="1"><button id="pytorch_111">torch_111</button></td>
+            <td colspan="1"><button id="pytorch_110">torch_110</button></td>
           </tr>
           <tr>
             <td colspan="1">Infernece Optimization</td>
@@ -71,9 +71,9 @@ In a pure pip environment, you need to run `source bigdl-nano-init` every time y
             </td>
           </tr>
           <tr>
-            <td colspan="1">Builds</td>
-            <td colspan="2"><button id="stable">Stable</button></td>
+            <td colspan="1">Releases</td>
             <td colspan="2"><button id="nightly">Nightly</button></td>
+            <td colspan="2"><button id="stable">Stable</button></td>
           </tr>
           <tr class="tallet_tr">
             <td colspan="1">Install CMD</td>

@@ -1,21 +1,21 @@
 var inferences=["inferenceyes", "inferenceno"];
 var frameworks=["pytorch", "tensorflow"];
 var versions=["pytorch_110", "pytorch_111", "pytorch_112", "pytorch_113", "tf2_270"];
-var builds=["stable", "nightly"];
+var releases=["stable", "nightly"];
 
 var inference="inferenceno";
 var framework="pytorch";
 var version="pytorch_112";
-var build="nightly";
+var release="nightly";
 
 function refresh_cmd(){
     reset_color(frameworks);
     reset_color(inferences);
-    reset_color(builds);
+    reset_color(releases);
 
     set_color(framework);
     set_color(inference);
-    set_color(build);
+    set_color(release);
 
     var cmd="NA";
 
@@ -29,21 +29,21 @@ function refresh_cmd(){
     }
     else if(framework=="tensorflow"){
         $("#version").append("<td colspan='1'>Versions</td>\
-        <td colspan='8'><button id='tf2_270'>tf2_270</button>");
+        <td colspan='4'><button id='tf2_270'>tf2_270</button>");
     }
     reset_color(versions);
     set_color(version);
 
-    if(build=="stable"){
+    if(release=="stable"){
         disable(versions);
     }else{
         enable(versions);
     }
 
         if(framework=="pytorch"){
-            if(build=="stable"){
+            if(release=="stable"){
                 cmd="pip install bigdl-nano[pytorch]==2.1.0";
-            }else if(build=="nightly"){
+            }else if(release=="nightly"){
                 if(inference=="inferenceyes"){
                     if(version=="pytorch_110"){
                         cmd="pip install --pre --upgrade bigdl-nano[pytorch_110,inference]";
@@ -69,9 +69,9 @@ function refresh_cmd(){
                 }
             }
         }else if(framework="tensorflow"){
-            if(build="stable"){
+            if(release="stable"){
                 cmd="pip install bigdl-nano[tensorflow]==2.1.0";
-            }else if(build=="nightly"){
+            }else if(release=="nightly"){
                 if(inference=="inferenceyes"){
                     if (version=="tf2_270"){
                         cmd="pip install --pre --upgrade bigdl-nano[tensorflow,inference]";
@@ -128,17 +128,14 @@ $(document).on('click',"button",function(){
     if (frameworks.indexOf(id)>=0){
         framework=id;
     }
-    else if (builds.indexOf(id)>=0){
-        build=id;
+    else if (releases.indexOf(id)>=0){
+        release=id;
     }
     else if (inferences.indexOf(id)>=0){
         inference=id;
     }
-    else if (tf2_versions.indexOf(id)>=0){
-        tf2_version=id;
-    }
-    else if (torch_versions.indexOf(id)>=0){
-        torch_version=id;
+    else if (versions.indexOf(id)>=0){
+        version=id;
     }
 
     refresh_cmd();
