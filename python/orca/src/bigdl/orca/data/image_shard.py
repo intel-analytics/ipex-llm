@@ -90,20 +90,24 @@ def read_images(file_path):
     total_cores = node_num * core_num
     num_partitions = num_files if num_files < total_cores else total_cores
     rdd = sc.parallelize(file_paths, num_partitions)
-    label_rdd = rdd.map(lambda x: [1] if 'dog' in x.split('/')[-1] else [0])
-
-    print(label_rdd.collect()[:10])
 
     def loadImage(iterator):
         images = []
-        for x in iterator:
-            image = read_im_file(x)
+        files = []
+        for f in iterator:
+            image = read_im_file(f)
             images.append(image)
-        return images
+            files.append(f)
+        return [files, images]
 
-    feature_rdd = rdd.mapPartitions(loadImage)
+    def loadImage1(f):
+        image = read_im_file(f)
+        return {'file': f, 'x': image}
 
-    im_rdd = feature_rdd.zip(label_rdd).map(lambda x: {'x': x[0], 'y': x[1]})
+    im_rdd = rdd.mapPartitions(loadImage)
+
+    im_rdd = rdd.map(loadImage1)
+
     return ImageShards(im_rdd)
 
 
