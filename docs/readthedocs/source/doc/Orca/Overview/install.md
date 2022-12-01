@@ -46,7 +46,7 @@ conda activate py37
 
 This section demonstrates how to install BigDL Orca via `pip`, which is the most recommended way.
 
-__Note:__
+__Notes:__
 * Installing BigDL Orca from pip will automatically install `pyspark`. To avoid possible conflicts, you are highly recommended to  **unset the environment variable `SPARK_HOME`**  if it exists in your environment.
 
 * If you are using a custom URL of Python Package Index to install the latest version, you may need to check whether the latest packages have been sync'ed with pypi. Or you can add the option `-i https://pypi.python.org/simple` when pip install to use pypi as the index-url.

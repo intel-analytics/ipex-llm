@@ -301,6 +301,7 @@ Before submitting the application on the __Client Node__, you need to:
 ```bash
 conda pack -o environment.tar.gz
 ```
+
 2. Send the Conda archive to the __Client Node__;
 ```bash
 scp /path/to/environment.tar.gz username@client_ip:/path/to/
@@ -313,6 +314,7 @@ On the __Client Node__:
 export SPARK_HOME=/path/to/spark # the folder path where you extract the Spark package
 export SPARK_VERSION="downloaded spark version"
 ```
+
 2. Refer to [here](../Overview/install.html#download-bigdl-orca) to download and unzip a BigDL assembly package. Make sure the Spark version of your downloaded BigDL matches your downloaded Spark. Then setup the environment variables `${BIGDL_HOME}` and `${BIGDL_VERSION}`.
 ```bash
 export BIGDL_HOME=/path/to/unzipped_BigDL
