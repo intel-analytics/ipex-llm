@@ -129,22 +129,22 @@ class Pytorch1_11:
                                              accelerator="jit", use_ipex=True,
                                              input_sample=x)
         with InferenceOptimizer.get_context(new_model):
-            new_model(self.data_sample)
+            new_model(x)
         assert new_model.channels == 3
         new_model.hello()
 
         new_model = InferenceOptimizer.trace(model, precision='bf16',
                                              accelerator="jit",
-                                             input_sample=self.data_sample)
+                                             input_sample=x)
         with InferenceOptimizer.get_context(new_model):
-            new_model(self.data_sample)
+            new_model(x)
         assert new_model.channels == 3
         new_model.hello()
 
         new_model = InferenceOptimizer.trace(model, precision='bf16',
                                              use_ipex=True)
         with InferenceOptimizer.get_context(new_model):
-            new_model(self.data_sample)
+            new_model(x)
         assert new_model.channels == 3
         new_model.hello()
 
