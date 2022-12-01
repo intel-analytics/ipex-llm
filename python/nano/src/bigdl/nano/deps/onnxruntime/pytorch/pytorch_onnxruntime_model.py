@@ -69,7 +69,10 @@ class PytorchONNXRuntimeModel(ONNXRuntimeModel, AcceleratedLightningModule):
                 onnx_path = model
             AcceleratedLightningModule.__init__(self, None)
             ONNXRuntimeModel.__init__(self, onnx_path, session_options=onnxruntime_session_options)
-        self.thread_num = onnxruntime_session_options.intra_op_num_threads
+        if onnxruntime_session_options.intra_op_num_threads > 0:
+            self.thread_num = onnxruntime_session_options.intra_op_num_threads
+        else:
+            self.thread_num = None
         self.context_manager = generate_context_manager(accelerator=None,
                                                         precision="fp32",
                                                         thread_num=self.thread_num)
