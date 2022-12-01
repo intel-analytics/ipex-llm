@@ -21,14 +21,14 @@ function refresh_cmd(){
 
     $("#version").empty();
     if(framework=="pytorch"){
-        $("#version").append("<td colspan='1'>Versions</td>\
+        $("#version").append("<td colspan='1'>Pytorch Version</td>\
         <td colspan='1'><button id='pytorch_113'>torch_113</button></td>\
-        <td colspan='1'><button id='pytorch_112'>torch_112(default)</button></td>\
+        <td colspan='1'><button id='pytorch_112'>torch_112</button></td>\
         <td colspan='1'><button id='pytorch_111'>torch_111</button></td>\
         <td colspan='1'><button id='pytorch_110'>torch_110</button></td>");
     }
     else if(framework=="tensorflow"){
-        $("#version").append("<td colspan='1'>Versions</td>\
+        $("#version").append("<td colspan='1'>Tensorflow Version</td>\
         <td colspan='4'><button id='tf2_270'>tf2_270</button></td>");
     }
     reset_color(versions);
@@ -37,7 +37,8 @@ function refresh_cmd(){
     if(release!="nightly"){
         disable(versions);
         disable(inferences);
-    }else{
+    }
+    else{
         enable(versions);
         enable(inferences);
     }
