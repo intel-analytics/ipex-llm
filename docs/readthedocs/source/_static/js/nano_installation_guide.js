@@ -29,15 +29,17 @@ function refresh_cmd(){
     }
     else if(framework=="tensorflow"){
         $("#version").append("<td colspan='1'>Versions</td>\
-        <td colspan='4'><button id='tf2_270'>tf2_270</button>");
+        <td colspan='4'><button id='tf2_270'>tf2_270</button></td>");
     }
     reset_color(versions);
     set_color(version);
 
     if(release=="stable"){
         disable(versions);
+        disable(inferences);
     }else{
         enable(versions);
+        enable(inference);
     }
 
         if(framework=="pytorch"){
