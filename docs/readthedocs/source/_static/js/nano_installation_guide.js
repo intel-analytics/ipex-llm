@@ -39,7 +39,7 @@ function refresh_cmd(){
         disable(inferences);
     }else{
         enable(versions);
-        enable(inference);
+        enable(inferences);
     }
 
         if(framework=="pytorch"){
@@ -77,9 +77,13 @@ function refresh_cmd(){
                 if(inference=="inferenceyes"){
                     if (version=="tf2_270"){
                         cmd="pip install --pre --upgrade bigdl-nano[tensorflow,inference]";
+                    }else{
+                        cmd="pip install --pre --upgrade bigdl-nano[tensorflow,infernece]";
                     }
                 }else if(inference=="inferenceno"){
                     if(version=="tf2_270"){
+                        cmd="pip install --pre --upgrade bigdl-nano[tensorflow]";
+                    }else{
                         cmd="pip install --pre --upgrade bigdl-nano[tensorflow]";
                     }
                 }
