@@ -24,7 +24,7 @@ from bigdl.chronos.data.utils.impute import impute_timeseries_dataframe
 from bigdl.chronos.data.utils.deduplicate import deduplicate_timeseries_dataframe
 from bigdl.chronos.data.utils.roll import roll_timeseries_dataframe
 from bigdl.chronos.data.utils.time_feature import time_features, gen_time_enc_arr
-from bigdl.chronos.data.utils.scale import unscale_timeseries_numpy
+from bigdl.chronos.data.utils.scale import unscale_timeseries_numpy, scale_timeseries_numpy
 from bigdl.chronos.data.utils.resample import resample_timeseries_dataframe
 from bigdl.chronos.data.utils.split import split_timeseries_dataframe
 from bigdl.chronos.data.utils.cycle_detection import cycle_length_est
@@ -1038,6 +1038,24 @@ class TSDataset:
                                   "you need to set fit=True.")
             self.df[self.target_col + feature_col] = \
                 scaler.transform(self.df[self.target_col + feature_col])
+        self.scaler = scaler
+        return self
+
+    def scale_numpy(self, scaler, fit=True):
+        '''
+        Scale the time series dataset using numpy.
+
+        :param scaler: sklearn scaler instance, StandardScaler, MaxAbsScaler,
+               MinMaxScaler and RobustScaler are supported.
+        :param fit: if we need to fit the scaler. Typically, the value should
+               be set to True for training set, while False for validation and
+               test set. The value is defaulted to True.
+        '''
+        col_list = self.target_col + self.feature_col
+        if fit:
+            scaler.fit(self.df[col_list])
+        scaled_data_numpy = scale_timeseries_numpy(self.df[col_list].values, scaler)
+        self.df[col_list] = pd.DataFrame(scaled_data_numpy, columns=col_list)
         self.scaler = scaler
         return self
 
