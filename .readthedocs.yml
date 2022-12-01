@@ -13,7 +13,7 @@ build:
     - graphviz
   jobs:
     pre_install:
-      - wget https://raw.githubusercontent.com/analytics-zoo/gha-cicd-env/main/python-requrirements/requirements-doc.txt
+      - wget https://raw.githubusercontent.com/analytics-zoo/gha-cicd-env/main/python-requirements/requirements-doc.txt
 
 sphinx:
   configuration: docs/readthedocs/source/conf.py

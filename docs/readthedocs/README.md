@@ -18,7 +18,7 @@ pip install --upgrade pip "setuptools<58.3.0"
 pip install --upgrade pillow mock==1.0.1 "alabaster>=0.7,<0.8,!=0.7.5" commonmark==0.9.1 recommonmark==0.5.0 sphinx sphinx-rtd-theme "readthedocs-sphinx-ext<2.3"
 
 # for other documentation related dependencies
-wget https://raw.githubusercontent.com/analytics-zoo/gha-cicd-env/main/python-requrirements/requirements-doc.txt
+wget https://raw.githubusercontent.com/analytics-zoo/gha-cicd-env/main/python-requirements/requirements-doc.txt
 pip install -r requirements-doc.txt
 ```
 > **Note**: When adding new sphinx extensions for our documentation, the requirements file located [here](https://raw.githubusercontent.com/analytics-zoo/gha-cicd-env/main/python-requrirements/requirements-doc.txt) should be modified.
