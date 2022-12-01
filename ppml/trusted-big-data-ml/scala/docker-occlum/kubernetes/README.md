@@ -199,7 +199,7 @@ Then run the script.
 
 ## PySpark Example
 The following three simple PySpark examples can run directly.
-If you want to run another example, please make sure that PPML-Occlum have installed the relevant dependencies.
+If you want to run another example, please make sure that PPML-Occlum image have installed the relevant dependencies.
 ```bash
 #default dependencies
 -y python=3.8.10 numpy=1.21.5 scipy=1.7.3 scikit-learn=1.0 pandas=1.3 Cython
