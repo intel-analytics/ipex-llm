@@ -19,6 +19,7 @@ from logging import warning
 import torch
 import os
 from bigdl.nano.utils.inference.pytorch.model import AcceleratedLightningModule
+from bigdl.nano.utils.inference.pytorch.model import AcceleratedModel
 from bigdl.nano.utils.log4Error import invalidInputError
 from bigdl.nano.pytorch.utils import TORCH_VERSION_LESS_1_10, TORCH_VERSION_LESS_1_12
 from bigdl.nano.utils import CPUInfo
@@ -41,8 +42,8 @@ class BF16Model(AcceleratedLightningModule):
         :param channels_last: if set model and data to be channels-last mode.
         :param thread_num: the thread num allocated for this model.
         """
-        model.eval()
         super().__init__(model)
+        self._is_bf16 = None
         self._bf16_check()
         self.model = model  # use mixed precision instead of complete precision
         self.channels_last = channels_last
@@ -90,6 +91,16 @@ class BF16Model(AcceleratedLightningModule):
         elif 'avx512_core_bf16' in dnnl_log:
             max_bf16_isa = "AVX512"
         return max_bf16_isa
+
+    def __getattr__(self, name: str):
+        # automatically unwrap attributes access of model
+        try:
+            return super().__getattr__(name)
+        except:
+            try:
+                return getattr(self.model, name)
+            except AttributeError:
+                pass
 
     def on_forward_start(self, inputs):
         return inputs
