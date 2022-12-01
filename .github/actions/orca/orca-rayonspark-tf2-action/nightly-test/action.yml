@@ -10,11 +10,11 @@ runs:
         export SPARK_LOCAL_HOSTNAME=localhost
         pip install tensorflow==2.8.0 ray[default]==1.9.2
         ./python/dllib/dev/release/release.sh linux default false false
-        pip install ./python/dllib/src/dist/bigdl_dllib*-py3-none-manylinux1_x86_64.whl
+        pip install -i https://pypi.python.org/simple ./python/dllib/src/dist/bigdl_dllib*-py3-none-manylinux1_x86_64.whl
 
         #build orca whl without make_dist
         ./python/orca/dev/release/release.sh linux default true false
-        pip install ./python/orca/src/dist/bigdl_orca*-py3-none-manylinux1_x86_64.whl
+        pip install -i https://pypi.python.org/simple ./python/orca/src/dist/bigdl_orca*-py3-none-manylinux1_x86_64.whl
         
         chmod a+x python/orca/dev/test/run-pytests-tf2-rayonspark.sh
         python/orca/dev/test/run-pytests-tf2-rayonspark.sh
