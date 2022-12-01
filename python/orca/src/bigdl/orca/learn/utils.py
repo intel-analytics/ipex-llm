@@ -203,6 +203,8 @@ def convert_predict_rdd_to_dataframe(df, prediction_rdd):
 
     combined_rdd = df.rdd.zip(prediction_rdd).map(combine)
     columns = df.columns + ["prediction"]
+    # Converting to DataFrame will trigger the computation
+    # to infer the schema of the prediction column.
     result_df = combined_rdd.toDF(columns)
     return result_df
 
