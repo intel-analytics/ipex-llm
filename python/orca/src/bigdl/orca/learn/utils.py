@@ -127,13 +127,23 @@ def convert_predict_rdd_to_xshard(data, prediction_rdd):
     return SparkXShards(result_rdd)
 
 
-def update_predict_xshards(xshard, pred_xshards):
+def update_predict_xshards(xshards, pred_xshards):
     def updates(d1_d2):
         d1, d2 = d1_d2
         d1.update(d2)
         return d1
 
-    result = SparkXShards(xshard.rdd.zip(pred_xshards.rdd).map(updates))
+    result = SparkXShards(xshards.rdd.zip(pred_xshards.rdd).map(updates))
+    return result
+
+def add_predict_to_pd_xshards(xshards, pred_xshards):
+    def add_prediction(df_preds):
+        df, preds = df_preds
+        preds = preds["prediction"]
+        df["prediction"] = [pred for pred in preds]
+        return df
+
+    result = SparkXShards(xshards.rdd.zip(pred_xshards.rdd).map(add_prediction))
     return result
 
 
@@ -373,7 +383,7 @@ def _dataframe_to_xshards(data, feature_cols, label_cols=None,
                                                               feature_cols,
                                                               label_cols,
                                                               shard_size))
-    return SparkXShards(shard_rdd)
+    return SparkXShards(shard_rdd, transient=True)
 
 
 def dataframe_to_xshards_of_feature_dict(data, feature_cols, label_cols=None,
