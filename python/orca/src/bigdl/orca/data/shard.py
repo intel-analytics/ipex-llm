@@ -351,34 +351,23 @@ class SparkXShards(XShards):
                 else:
                     dtypes.append(v.dtype)
             if dict_of_batched_ndarray:
-                if num_partitions > self.rdd.getNumPartitions():
-                    def dict_to_unbatched_list(d):
-                        values = [list(d[k]) for k in keys]
-                        return list(zip(*values))
+                def dict_to_unbatched_list(d):
+                    values = [list(d[k]) for k in keys]
+                    return list(zip(*values))
 
-                    def to_batched_dict(iter):
-                        batch_values = list(zip(*iter))
-                        if not batch_values:
-                            return []
-                        batch_ndarrays = [np.stack(v, axis=0).astype(dtype)
-                                          for v, dtype in zip(batch_values, dtypes)]
-                        return [dict(zip(keys, batch_ndarrays))]
+                def to_batched_dict(iter):
+                    batch_values = list(zip(*iter))
+                    if not batch_values:
+                        return []
+                    batch_ndarrays = [np.stack(v, axis=0).astype(dtype)
+                                      for v, dtype in zip(batch_values, dtypes)]
+                    return [dict(zip(keys, batch_ndarrays))]
 
-                    # If number of records in a partition <= 10, may produce empty partition
-                    rdd = self.rdd.flatMap(lambda data: dict_to_unbatched_list(data)) \
-                        .repartition(num_partitions)
-                    repartitioned_shard = self._create(rdd.mapPartitions(
-                        lambda iter: to_batched_dict(iter)), class_name=class_name)
-                else:
-                    rdd = self.rdd.coalesce(num_partitions)
-
-                    def merge_list_of_dict(iter):
-                        iter_list = list(iter)
-                        return [{k: np.concatenate([d[k] for d in iter_list], axis=0)
-                                 for k in keys}]
-
-                    repartitioned_shard = self._create(rdd.mapPartitions(
-                        lambda iter: merge_list_of_dict(iter)), class_name=class_name)
+                # If number of records in a partition <= 10, may produce empty partition
+                rdd = self.rdd.flatMap(lambda data: dict_to_unbatched_list(data)) \
+                    .repartition(num_partitions)
+                repartitioned_shard = self._create(rdd.mapPartitions(
+                    lambda iter: to_batched_dict(iter)), class_name=class_name)
             else:
                 repartitioned_shard = self._create(self.rdd.repartition(num_partitions),
                                                    class_name=class_name)
