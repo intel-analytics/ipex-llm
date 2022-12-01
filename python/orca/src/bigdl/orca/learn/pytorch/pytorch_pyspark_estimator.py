@@ -40,6 +40,11 @@ from bigdl.orca.learn.utils import find_free_port, find_ip_and_free_port
 from bigdl.dllib.utils.utils import get_node_ip
 from bigdl.dllib.utils.log4Error import *
 
+try:
+    from collections.abc import Iterable
+except ImportError:
+    from collections import Iterable
+
 
 def partition_to_creator(partition):
     def data_creator(config, batch_size):
@@ -558,6 +563,7 @@ class PyTorchPySparkEstimator(BaseEstimator):
 
         :param model_path: (str) Path to the existing model.
         """
+        import torch.nn as nn
         if is_local_path(model_path):
             res = torch.load(model_path)
         else:
@@ -569,9 +575,12 @@ class PyTorchPySparkEstimator(BaseEstimator):
                 res = torch.load(temp_path)
             finally:
                 shutil.rmtree(temp_dir)
-        if isinstance(res, dict):
-            self.state_dict = res
-        else:
+        if isinstance(res, Iterable) and not isinstance(res, nn.Sequential):
+            if "models" in res:
+                self.state_dict = res
+            else:
+                self.state_dict = [re.state_dict() for re in res]
+        elif isinstance(res, nn.Module):
             self.state_dict = res.state_dict()
 
     def save_checkpoint(self, model_path):

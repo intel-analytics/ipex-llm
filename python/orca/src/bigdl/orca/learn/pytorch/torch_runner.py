@@ -471,8 +471,12 @@ class TorchRunner(BaseRunner):
             for model, state_dict in zip(self.models, [state]):
                 model.load_state_dict(state_dict)
         else:
-            for model, state_dict in zip(self.models, state["models"]):
-                model.load_state_dict(state_dict)
+            if "models" in state:
+                for model, state_dict in zip(self.models, state["models"]):
+                    model.load_state_dict(state_dict)
+            else:
+                for model, state_dict in zip(self.models, state):
+                    model.load_state_dict(state_dict)
         if "optimizers" in state:
             for optimizer, state_dict in zip(self.optimizers, state["optimizers"]):
                 optimizer.load_state_dict(state_dict)
