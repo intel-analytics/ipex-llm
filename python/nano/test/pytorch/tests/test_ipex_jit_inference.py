@@ -52,34 +52,34 @@ class IPEXJITInference_gt_1_10:
 
     def test_ipex_inference(self):
         model = InferenceOptimizer.trace(self.model, accelerator=None, use_ipex=True)
-        with model.context_manager:
+        with InferenceOptimizer.get_context(model):
             model(self.data_sample)
         with tempfile.TemporaryDirectory() as tmp_dir_name:
             InferenceOptimizer.save(model, tmp_dir_name)
             new_model = InferenceOptimizer.load(tmp_dir_name, self.model)
-        with new_model.context_manager:
+        with InferenceOptimizer.get_context(new_model):
             new_model(self.data_sample)
 
     def test_jit_inference(self):
         model = InferenceOptimizer.trace(self.model, accelerator="jit",
                                          use_ipex=False, input_sample=self.data_sample)
-        with model.context_manager:
+        with InferenceOptimizer.get_context(model):
             model(self.data_sample)
         with tempfile.TemporaryDirectory() as tmp_dir_name:
             InferenceOptimizer.save(model, tmp_dir_name)
             new_model = InferenceOptimizer.load(tmp_dir_name)
-        with new_model.context_manager:
+        with InferenceOptimizer.get_context(new_model):
             new_model(self.data_sample)
 
     def test_ipex_jit_inference(self):
         model = InferenceOptimizer.trace(self.model, accelerator="jit",
                                          use_ipex=True, input_sample=self.data_sample)
-        with model.context_manager:
+        with InferenceOptimizer.get_context(model):
             model(self.data_sample)
         with tempfile.TemporaryDirectory() as tmp_dir_name:
             InferenceOptimizer.save(model, tmp_dir_name)
             new_model = InferenceOptimizer.load(tmp_dir_name)
-        with new_model.context_manager:
+        with InferenceOptimizer.get_context(new_model):
             new_model(self.data_sample)
 
 
