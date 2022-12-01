@@ -23,13 +23,13 @@ function refresh_cmd(){
     if(framework=="pytorch"){
         $("#version").append("<td colspan='1'>Versions</td>\
         <td colspan='1'><button id='pytorch_113'>torch_113</button></td>\
-        <td colspan='2'><button id='pytorch_112'>torch_112(default)</button></td>\
+        <td colspan='1'><button id='pytorch_112'>torch_112(default)</button></td>\
         <td colspan='1'><button id='pytorch_111'>torch_111</button></td>\
-        <td colspan='2'><button id='pytorch_110'>torch_110</button></td>");
+        <td colspan='1'><button id='pytorch_110'>torch_110</button></td>");
     }
     else if(framework=="tensorflow"){
         $("#version").append("<td colspan='1'>Versions</td>\
-        <td colspan='2'><button id='tf2_270'>tf2_270</button></td>");
+        <td colspan='4'><button id='tf2_270'>tf2_270</button></td>");
     }
     reset_color(versions);
     set_color(version);
@@ -56,7 +56,6 @@ function refresh_cmd(){
                 }else if(version=="pytorch_113"){
                     cmd="pip install --pre --upgrade bigdl-nano[pytroch_113,inference]";
                 }
-                cmd="pip install --pre --upgrade bigdl-nano[inference]";
             }else if(inference="inferenceno"){
                 if(version=="pytorch_110"){
                     cmd="pip install --pre --upgrade bigdl-nano[pytorch_110]";
@@ -67,7 +66,6 @@ function refresh_cmd(){
                 }else if(version=="pytorch_113"){
                     cmd="pip install --pre --upgrade bigdl-nano[pytroch_113]";
                 }
-                cmd="pip install --pre --upgrade bigdl-nano";
             }
         }
     }else if(framework="tensorflow"){
