@@ -22,7 +22,7 @@ from bigdl.chronos.data import TSDataset
 from bigdl.chronos.utils import LazyImport
 tf = LazyImport('tensorflow')
 from unittest import TestCase
-from test.bigdl.chronos import op_tf2, op_all
+from test.bigdl.chronos import op_tf2
 
 
 def create_data():
@@ -51,7 +51,6 @@ def create_data():
     return tsdata_train, tsdata_test
 
 
-@op_all
 @op_tf2
 class TestChronosModelMTNetForecaster(TestCase):
 

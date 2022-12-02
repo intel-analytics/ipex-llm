@@ -89,7 +89,7 @@ def throughput(args, model_path, forecaster, train_loader, test_loader, records)
 
     # predict with onnx
     if 'onnx' in args.inference_framework:
-        if args.cores:
+        if args.cores and not args.quantize:
             forecaster.build_onnx(thread_num=args.cores)
         st = time.time()
         yhat = forecaster.predict_with_onnx(test_loader, quantize=args.quantize)
@@ -98,7 +98,7 @@ def throughput(args, model_path, forecaster, train_loader, test_loader, records)
 
     # predict with openvino
     if 'openvino' in args.inference_framework:
-        if args.cores:
+        if args.cores and not args.quantize:
             forecaster.build_openvino(thread_num=args.cores)
         st = time.time()
         yhat = forecaster.predict_with_openvino(test_loader, quantize=args.quantize)
@@ -152,7 +152,7 @@ def latency(args, model_path, forecaster, train_loader, test_loader, records):
 
     # predict with onnx
     if 'onnx' in args.inference_framework:
-        if args.cores:
+        if args.cores and not args.quantize:
             forecaster.build_onnx(thread_num=args.cores)
         for x, y in test_loader:
             st = time.time()
@@ -163,7 +163,7 @@ def latency(args, model_path, forecaster, train_loader, test_loader, records):
 
     # predict with openvino
     if 'openvino' in args.inference_framework:
-        if args.cores:
+        if args.cores and not args.quantize:
             forecaster.build_openvino(thread_num=args.cores)
         for x, y in test_loader:
             st = time.time()
@@ -173,7 +173,25 @@ def latency(args, model_path, forecaster, train_loader, test_loader, records):
         records['openvino_percentile_latency'] = np.percentile(latency_vino, latency_percentile)
 
 
+def accuracy(args, records, forecaster, train_loader, val_loader, test_loader):
+    """
+    evaluate stage will record model accuracy.
+    """
+
+    forecaster.fit(train_loader, validation_data=val_loader,
+                   epochs=args.training_epochs, validation_mode="best_epoch")
+
+    metrics = forecaster.evaluate(test_loader, multioutput='uniform_average')
+
+    for i in range(len(metrics)):
+        records[args.metrics[i]] = metrics[i]
+
+
 def result(args, records):
+    """
+    print benchmark information
+    """
+
     print(">>>>>>>>>>>>> test-run information >>>>>>>>>>>>>")
     print("Model:", args.model)
     print("Stage:", args.stage)
@@ -200,11 +218,16 @@ def result(args, records):
             print("p95 latency: {}ms".format(records[framework+'_percentile_latency'][2] * 1000))
             print("p99 latency: {}ms".format(records[framework+'_percentile_latency'][3] * 1000))
             print(">>>>>>>>>>>>> {} latency result >>>>>>>>>>>>>".format(framework))
-    else:
+    elif args.stage == 'throughput':
         for framework in args.inference_framework:
             print("\n>>>>>>>>>>>>> {} throughput result >>>>>>>>>>>>>".format(framework))
             print("avg throughput: {}".format(records[framework+'_infer_throughput']))
             print(">>>>>>>>>>>>> {} throughput result >>>>>>>>>>>>>".format(framework))
+    elif args.stage == 'accuracy':
+        print("\n>>>>>>>>>>>>> accuracy result >>>>>>>>>>>>>")
+        for metric in args.metrics:
+            print("{}: {}".format(metric, records[metric]))
+        print(">>>>>>>>>>>>> accuracy result >>>>>>>>>>>>>")
 
 
 def main():
@@ -215,7 +238,7 @@ def main():
                         help=('model name, choose from tcn/lstm/seq2seq/nbeats/autoformer,'
                               ' default to "tcn".'))
     parser.add_argument('-s', '--stage', type=str, default='train', metavar='',
-                        help=('stage name, choose from train/latency/throughput,'
+                        help=('stage name, choose from train/latency/throughput/accuracy,'
                               ' default to "train".'))
     parser.add_argument('-d', '--dataset', type=str, default="tsinghua_electricity", metavar='',
                         help=('dataset name, choose from nyc_taxi/tsinghua_electricity/'
@@ -251,12 +274,17 @@ def main():
     parser.add_argument('--ckpt', type=str, default='checkpoints/tcn', metavar='',
                         help=('checkpoint path of a trained model, e.g. "checkpoints/tcn",'
                               ' default to "checkpoints/tcn".'))
+    parser.add_argument('--metrics', type=str, nargs='+', default=['mse', 'mae'], metavar='',
+                        help=('evaluation metrics of a trained model, e.g. "mse"/"mae",'
+                              ' default to "mse, mae".'))
+    parser.add_argument('--normalization', action='store_true',
+                        help='if to use normalization trick to alleviate distribution shift.')
     args = parser.parse_args()
     records = vars(args)
 
     # anomaly detection for input arguments
     models = ['tcn', 'lstm', 'seq2seq', 'nbeats', 'autoformer']
-    stages = ['train', 'latency', 'throughput']
+    stages = ['train', 'latency', 'throughput', 'accuracy']
     datasets = ['tsinghua_electricity', 'nyc_taxi', 'synthetic_dataset']
     frameworks = ['torch', 'tensorflow']
     quantize_types = ['pytorch_fx', 'pytorch_ipex', 'onnxrt_qlinearops', 'openvino']
@@ -289,7 +317,7 @@ def main():
     model_path = os.path.join(path, args.ckpt)
 
     # generate data
-    train_loader, test_loader = generate_data(args)
+    train_loader, val_loader, test_loader = generate_data(args)
 
     # initialize forecaster
     forecaster = generate_forecaster(args)
@@ -301,6 +329,8 @@ def main():
         latency(args, model_path, forecaster, train_loader, test_loader, records)
     elif args.stage == 'throughput':
         throughput(args, model_path, forecaster, train_loader, test_loader, records)
+    elif args.stage == 'accuracy':
+        accuracy(args, records, forecaster, train_loader, val_loader, test_loader)
 
     # print results
     get_CPU_info()

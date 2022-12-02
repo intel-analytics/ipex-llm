@@ -23,7 +23,7 @@ import torch
 from test.pytorch.utils._train_torch_lightning import create_data_loader, data_transform
 from torch import nn
 
-from bigdl.nano.pytorch import Trainer
+from bigdl.nano.pytorch import InferenceOptimizer
 from bigdl.nano.pytorch.vision.models import vision
 from bigdl.nano.pytorch.utils import TORCH_VERSION_LESS_1_10
 import tempfile
@@ -51,30 +51,36 @@ class IPEXJITInference_gt_1_10:
     data_sample = next(iter(data_loader))[0]
 
     def test_ipex_inference(self):
-        model = Trainer.trace(self.model, accelerator=None, use_ipex=True)
-        model(self.data_sample)
+        model = InferenceOptimizer.trace(self.model, accelerator=None, use_ipex=True)
+        with InferenceOptimizer.get_context(model):
+            model(self.data_sample)
         with tempfile.TemporaryDirectory() as tmp_dir_name:
-            Trainer.save(model, tmp_dir_name)
-            new_model = Trainer.load(tmp_dir_name, self.model)
-        new_model(self.data_sample)
+            InferenceOptimizer.save(model, tmp_dir_name)
+            new_model = InferenceOptimizer.load(tmp_dir_name, self.model)
+        with InferenceOptimizer.get_context(new_model):
+            new_model(self.data_sample)
 
     def test_jit_inference(self):
-        model = Trainer.trace(self.model, accelerator="jit",
-                              use_ipex=False, input_sample=self.data_sample)
-        model(self.data_sample)
+        model = InferenceOptimizer.trace(self.model, accelerator="jit",
+                                         use_ipex=False, input_sample=self.data_sample)
+        with InferenceOptimizer.get_context(model):
+            model(self.data_sample)
         with tempfile.TemporaryDirectory() as tmp_dir_name:
-            Trainer.save(model, tmp_dir_name)
-            new_model = Trainer.load(tmp_dir_name)
-        new_model(self.data_sample)
+            InferenceOptimizer.save(model, tmp_dir_name)
+            new_model = InferenceOptimizer.load(tmp_dir_name)
+        with InferenceOptimizer.get_context(new_model):
+            new_model(self.data_sample)
 
     def test_ipex_jit_inference(self):
-        model = Trainer.trace(self.model, accelerator="jit",
-                              use_ipex=True, input_sample=self.data_sample)
-        model(self.data_sample)
+        model = InferenceOptimizer.trace(self.model, accelerator="jit",
+                                         use_ipex=True, input_sample=self.data_sample)
+        with InferenceOptimizer.get_context(model):
+            model(self.data_sample)
         with tempfile.TemporaryDirectory() as tmp_dir_name:
-            Trainer.save(model, tmp_dir_name)
-            new_model = Trainer.load(tmp_dir_name)
-        new_model(self.data_sample)
+            InferenceOptimizer.save(model, tmp_dir_name)
+            new_model = InferenceOptimizer.load(tmp_dir_name)
+        with InferenceOptimizer.get_context(new_model):
+            new_model(self.data_sample)
 
 
 class IPEXJITInference_lt_1_10:

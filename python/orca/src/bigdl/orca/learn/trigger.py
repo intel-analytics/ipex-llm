@@ -15,6 +15,15 @@
 #
 from abc import ABC, abstractmethod
 
+from typing import TYPE_CHECKING
+from typing import (
+    Union,
+    Optional
+)
+if TYPE_CHECKING:
+    from bigdl.dllib.optim.optimizer import EveryEpoch as DLlibEveryEpoch
+    from bigdl.dllib.optim.optimizer import SeveralIteration as DLlibSeveralIteration
+
 
 class Trigger(ABC):
     @abstractmethod
@@ -22,7 +31,7 @@ class Trigger(ABC):
         pass
 
     @staticmethod
-    def convert_trigger(trigger):
+    def convert_trigger(trigger: Optional[Union[str, "Trigger"]]):
         if trigger is None:
             return None
         if isinstance(trigger, str):
@@ -50,11 +59,11 @@ class EveryEpoch(Trigger):
 
     >>> everyEpoch = EveryEpoch()
     """
-    def __init__(self):
+    def __init__(self) -> None:
         from bigdl.dllib.optim.optimizer import EveryEpoch
         self.trigger = EveryEpoch()
 
-    def get_trigger(self):
+    def get_trigger(self) -> "DLlibEveryEpoch":
         return self.trigger
 
 
@@ -70,9 +79,9 @@ class SeveralIteration(Trigger):
 
     >>> serveralIteration = SeveralIteration(2)
     """
-    def __init__(self, interval):
+    def __init__(self, interval: int) -> None:
         from bigdl.dllib.optim.optimizer import SeveralIteration
         self.trigger = SeveralIteration(interval)
 
-    def get_trigger(self):
+    def get_trigger(self) -> "DLlibSeveralIteration":
         return self.trigger

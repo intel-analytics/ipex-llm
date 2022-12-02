@@ -28,7 +28,7 @@ def load_inc_model(path, model, framework):
                           " Please choose from 'pytorch'/'tensorflow'.")
 
 
-def quantize(model, dataloader=None, metric=None, **kwargs):
+def quantize(model, dataloader=None, metric=None, thread_num=None, **kwargs):
     if kwargs['approach'] not in ['static', 'dynamic']:
         invalidInputError(False,
                           "Approach should be 'static' or 'dynamic', "
@@ -47,7 +47,7 @@ def quantize(model, dataloader=None, metric=None, **kwargs):
     onnxruntime_session_options = not_none_kwargs.pop('onnxruntime_session_options', None)
     if 'pytorch' in not_none_kwargs['framework']:
         from .pytorch.quantization import PytorchQuantization
-        quantizer = PytorchQuantization(**not_none_kwargs)
+        quantizer = PytorchQuantization(thread_num=thread_num, **not_none_kwargs)
     if 'onnx' in not_none_kwargs['framework']:
         onnx_option = not_none_kwargs.pop('onnx_option', None)
         if onnx_option == 'tensorflow':

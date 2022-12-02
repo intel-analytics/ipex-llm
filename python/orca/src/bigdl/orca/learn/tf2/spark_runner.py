@@ -22,7 +22,7 @@ import copy
 import numpy as np
 import tensorflow as tf
 
-from bigdl.orca.data.utils import ray_partition_get_data_label
+from bigdl.orca.data.utils import partition_get_data_label
 from bigdl.orca.data.file import exists
 from bigdl.orca.learn.utils import save_pkl, duplicate_stdout_stderr_to_file,\
     get_rank, process_tensorboard_in_callbacks, save_model, load_model, \
@@ -122,9 +122,9 @@ class TFDistributedDatasetHandler(DatasetHandler):
     def _handle_xshards(self, dataset, steps, local_batch_size, shuffle):
         import tensorflow as tf
 
-        data, label = ray_partition_get_data_label(dataset,
-                                                   allow_tuple=True,
-                                                   allow_list=False)
+        data, label = partition_get_data_label(dataset,
+                                               allow_tuple=True,
+                                               allow_list=False)
 
         def dataset_fn(input_context):
             dataset = tf.data.Dataset.from_tensor_slices((data, label))
@@ -157,9 +157,9 @@ class LocalDatasetHandler(DatasetHandler):
 
     def _handle_xshards(self, dataset, steps, local_batch_size, shuffle):
         import tensorflow as tf
-        data, label = ray_partition_get_data_label(dataset,
-                                                   allow_tuple=True,
-                                                   allow_list=False)
+        data, label = partition_get_data_label(dataset,
+                                               allow_tuple=True,
+                                               allow_list=False)
         dataset = tf.data.Dataset.from_tensor_slices((data, label))
         dataset = dataset.repeat()
         dataset = dataset.take(steps * local_batch_size)

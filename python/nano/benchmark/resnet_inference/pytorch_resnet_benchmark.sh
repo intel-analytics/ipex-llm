@@ -17,7 +17,7 @@
 
 set -e
 
-bash $ANALYTICS_ZOO_ROOT/python/nano/dev/build_and_install.sh linux default false pytorch,inference
+bash $ANALYTICS_ZOO_ROOT/python/nano/dev/build_and_install.sh linux default false pytorch,inference --force-reinstall
 
 apt-get update && apt-get install -y libgl1
 

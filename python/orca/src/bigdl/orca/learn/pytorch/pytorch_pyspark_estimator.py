@@ -39,7 +39,7 @@ from bigdl.dllib.utils.log4Error import *
 
 def partition_to_creator(partition):
     def data_creator(config, batch_size):
-        from bigdl.orca.data.utils import ray_partition_get_data_label, index_data, get_size
+        from bigdl.orca.data.utils import partition_get_data_label, index_data, get_size
         from torch.utils.data import Dataset, DataLoader
 
         class NDArrayDataset(Dataset):
@@ -59,9 +59,9 @@ def partition_to_creator(partition):
                     "multiprocessing_context"]:
             if arg in config:
                 params[arg] = config[arg]
-        data, label = ray_partition_get_data_label(partition,
-                                                   allow_tuple=False,
-                                                   allow_list=False)
+        data, label = partition_get_data_label(partition,
+                                               allow_tuple=False,
+                                               allow_list=False)
         print("Data size on worker: ", len(label))
         dataset = NDArrayDataset(data, label)
         data_loader = DataLoader(dataset, **params)
@@ -86,7 +86,6 @@ class PyTorchPySparkEstimator(BaseEstimator):
             metrics=None,
             scheduler_creator=None,
             training_operator_cls=TrainingOperator,
-            initialization_hook=None,
             config=None,
             scheduler_step_freq="batch",
             use_tqdm=False,
@@ -121,7 +120,6 @@ class PyTorchPySparkEstimator(BaseEstimator):
         self.model_dir = parse_model_dir(model_dir)
 
         self.model_creator = model_creator
-        self.initialization_hook = initialization_hook
 
         num_nodes, cores_per_node = get_node_and_core_number()
         self.num_workers = num_nodes * workers_per_node
@@ -228,7 +226,8 @@ class PyTorchPySparkEstimator(BaseEstimator):
                                                            feature_cols=feature_cols,
                                                            label_cols=label_cols,
                                                            mode="fit",
-                                                           num_workers=self.num_workers)
+                                                           num_workers=self.num_workers,
+                                                           shard_size=batch_size)
 
         sc = OrcaContext.get_spark_context()
         _ = self.create_tcpstore_server()
@@ -306,8 +305,9 @@ class PyTorchPySparkEstimator(BaseEstimator):
             self.state_dict = PyTorchPySparkEstimator._get_state_dict_from_remote(self.model_dir)
             worker_stats = res
         else:
-            self.state_dict = res[0]
-            worker_stats = res[1]
+            self.state_dict = res[0]  # state dicts of all runners would be the same
+            # Each runner would return a list of worker stats for different epochs
+            worker_stats = [item for item in res if isinstance(item, list)]
 
         epoch_stats = list(map(list, zip(*worker_stats)))
         if reduce_results:
@@ -397,7 +397,8 @@ class PyTorchPySparkEstimator(BaseEstimator):
                                               validation_data=None,
                                               feature_cols=feature_cols,
                                               label_cols=None,
-                                              mode="predict")
+                                              mode="predict",
+                                              shard_size=batch_size)
 
             pred_shards = self._predict_spark_xshards(xshards, init_params, params)
             result = convert_predict_xshards_to_dataframe(data, pred_shards)
@@ -475,8 +476,10 @@ class PyTorchPySparkEstimator(BaseEstimator):
                                              feature_cols=feature_cols,
                                              label_cols=label_cols,
                                              mode="evaluate",
-                                             num_workers=self.num_workers)
+                                             num_workers=self.num_workers,
+                                             shard_size=batch_size)
         if isinstance(data, SparkXShards):
+            params["wrap_dataloader"] = False
             if data._get_class_name() == 'pandas.core.frame.DataFrame':
                 data = process_xshards_of_pandas_dataframe(data, feature_cols, label_cols)
             # set train/validation data
