@@ -22,7 +22,6 @@ import numpy as np
 import pandas as pd
 import scipy.sparse as sp
 
-import torch
 import torch.utils.data as data
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import MinMaxScaler
