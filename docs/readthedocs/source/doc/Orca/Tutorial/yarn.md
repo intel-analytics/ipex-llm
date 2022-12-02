@@ -2,7 +2,7 @@
 
 This tutorial provides a step-by-step guide on how to run BigDL-Orca programs on Apache Hadoop/YARN clusters, using a [PyTorch Fashion-MNIST program](https://github.com/intel-analytics/BigDL/blob/main/python/orca/tutorial/pytorch/FashionMNIST/) as a working example.
 
-The **Client Node** that appears in this tutorial refer to the machine where you launch or submit your applications. 
+The **Client Node** that appears in this tutorial refer to the machine where you launch or submit your applications.
 
 ---
 ## 1. Basic Concepts
@@ -91,7 +91,7 @@ __Note__:
 ### 2.2 Install Python Libraries
 - See [here](../Overview/install.md#install-anaconda) to install conda and prepare the Python environment on the __Client Node__.
 
-- See [here](../Overview/install.md#install-bigdl-orca) to install BigDL Orca in the created conda environment. Note that if you use `spark-submit`, it is unnecessary to install BigDL Orca.
+- See [here](../Overview/install.md#install-bigdl-orca) to install BigDL Orca in the created conda environment. Note that if you use `spark-submit`, please do not install BigDL Orca.
 
 - You should install all the other Python libraries that you need in your program in the conda environment as well. `torch` and `torchvision` are needed to run the Fashion-MNIST example:
     ```bash
@@ -295,7 +295,7 @@ If you prefer to use the `spark-submit` instead of `bigdl-submit`, please follow
     sc = init_orca_context(cluster_mode="spark-submit")
     ```
 
-2. Download requirement file [here](https://github.com/lalalapotter/BigDL/tree/main/python/requirements/orca) and install required Python libraries of BigDL according to your needs.
+2. Download requirement file [here](https://github.com/intel-analytics/BigDL/tree/main/python/requirements/orca) and install required Python libraries of BigDL according to your needs.
     ```bash
     pip install -r /path/to/requirements.txt
     ```
