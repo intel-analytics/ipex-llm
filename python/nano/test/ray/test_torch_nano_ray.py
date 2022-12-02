@@ -123,7 +123,7 @@ class TestLite(TestCase):
         MyNano(num_processes=2, distributed_backend="ray").train()
 
     def test_torch_nano_ray_correctness(self):
-        MyNanoCorrectness(num_processes=2, distributed_backend="ray").train(0.5)
+        MyNanoCorrectness(num_processes=2, distributed_backend="ray", auto_lr=False).train(0.5)
 
     def test_torch_nano_cuda_patch_ray(self):
         from bigdl.nano.pytorch import patch_torch, unpatch_torch
