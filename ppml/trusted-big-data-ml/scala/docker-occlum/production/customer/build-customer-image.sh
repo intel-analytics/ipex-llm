@@ -3,13 +3,19 @@ export HTTP_PROXY_PORT=your_http_proxy_port
 export HTTPS_PROXY_HOST=your_https_proxy_host
 export HTTPS_PROXY_PORT=your_https_proxy_port
 
-sudo docker build \
-    --build-arg http_proxy=http://$HTTP_PROXY_HOST:$HTTP_PROXY_PORT \
-    --build-arg https_proxy=http://$HTTPS_PROXY_HOST:$HTTPS_PROXY_PORT \
-    --build-arg HTTP_PROXY_HOST=$HTTP_PROXY_HOST \
-    --build-arg HTTP_PROXY_PORT=$HTTP_PROXY_PORT \
-    --build-arg HTTPS_PROXY_HOST=$HTTPS_PROXY_HOST \
-    --build-arg HTTPS_PROXY_PORT=$HTTPS_PROXY_PORT \
-    --build-arg no_proxy=x.x.x.x \
-    --build-arg SPARK_JAR_REPO_URL=$SPARK_JAR_REPO_URL \
-    -t intelanalytics/bigdl-ppml-trusted-big-data-ml-scala-occlum:2.1.0-SNAPSHOT -f ./Dockerfile .
+export image=intelanalytics/bigdl-ppml-trusted-big-data-ml-scala-occlum-production
+export TAG=2.2.0-build
+export image_customer=${image}-customer
+pwd
+docker build \
+  --no-cache=true \
+  --build-arg http_proxy=${HTTP_PROXY} \
+  --build-arg https_proxy=${HTTPS_PROXY} \
+  --build-arg HTTP_PROXY_HOST=${HTTP_PROXY_HOST_2} \
+  --build-arg HTTP_PROXY_PORT=${HTTP_PROXY_PORT_2} \
+  --build-arg HTTPS_PROXY_HOST=${HTTP_PROXY_HOST_2} \
+  --build-arg HTTPS_PROXY_PORT=${HTTP_PROXY_PORT_3} \
+  --build-arg no_proxy=${NO_PROXY} \
+  --build-arg FINAL_NAME=${image}:${TAG} \
+  --build-arg SPARK_JAR_REPO_URL=${SPARK_JAR_REPO_URL} \
+  -t ${image_customer}:${TAG} -f ./production/customer/Dockerfile .
