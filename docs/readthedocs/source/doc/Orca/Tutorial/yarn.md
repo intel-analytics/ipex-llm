@@ -85,9 +85,9 @@ __Note__:
 - See [here](../Overview/install.md#install-java) to prepare Java in your cluster.
 
 - Check the Hadoop setup and configurations of your cluster. Make sure you correctly set the environment variable `HADOOP_CONF_DIR`, which is needed to initialize Spark on YARN:
-```bash
-export HADOOP_CONF_DIR=/path/to/hadoop/conf
-```
+    ```bash
+    export HADOOP_CONF_DIR=/path/to/hadoop/conf
+    ```
 
 ### 2.2 Install Python Libraries
 - See [here](../Overview/install.md#install-anaconda) to install conda and prepare the Python environment on the __Client Node__ or __Deployment Node__.
@@ -137,41 +137,41 @@ Spark allows to upload Python files (`.py`), and zipped Python packages (`.zip`)
 
 The FasionMNIST example needs to import modules from [`model.py`](https://github.com/intel-analytics/BigDL/blob/main/python/orca/tutorial/pytorch/FashionMNIST/model.py).
 * When using [`python` command](#use-python-command), please specify `extra_python_lib` in `init_orca_context`.
-```python
-init_orca_context(..., extra_python_lib="model.py")
-```
+    ```python
+    init_orca_context(..., extra_python_lib="model.py")
+    ```
 
 For more details, please see [BigDL Python Dependencies](https://bigdl.readthedocs.io/en/latest/doc/Orca/Overview/orca-context.html#python-dependencies).
 
 * When using [`bigdl-submit`](#use-bigdl-submit) or [`spark-submit`](#use-spark-submit), please specify `--py-files` option in the submit command.
-```bash
-bigdl-submit # or spark-submit
-    ...
-    --py-files model.py
-    ...
-```
+    ```bash
+    bigdl-submit # or spark-submit
+        ...
+        --py-files model.py
+        ...
+    ```
 
 For more details, please see [Spark Python Dependencies](https://spark.apache.org/docs/latest/submitting-applications.html). 
 
 * After uploading `model.py` to YARN, you can import this custom module as follows:
-```python
-from model import model_creator, optimizer_creator
-```
+    ```python
+    from model import model_creator, optimizer_creator
+    ```
 
 __Note__:
 
 If your program depends on a nested directory of Python files, you are recommended to follow the steps below to use a zipped package instead.
 
 1. Compress the directory into a zipped package.
-```bash
-zip -q -r FashionMNIST_zipped.zip FashionMNIST
-```
+    ```bash
+    zip -q -r FashionMNIST_zipped.zip FashionMNIST
+    ```
 2. Upload the zipped package (`FashionMNIST_zipped.zip`) to YARN by setting `--py-files` or specifying `extra_python_lib` as discussed above.
 
 3. You can then import the custom modules from the unzipped file in your program as follows:
-```python
-from FashionMNIST.model import model_creator, optimizer_creator
-```
+    ```python
+    from FashionMNIST.model import model_creator, optimizer_creator
+    ```
 
 ---
 ## 5. Run Jobs on YARN
