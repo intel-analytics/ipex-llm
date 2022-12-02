@@ -106,7 +106,7 @@ def process_users_items(dataset_dir):
         df = users if i in users.columns else items
         values = df[i].values.reshape(-1, 1)
         values = scaler.fit_transform(values)
-        values = [torch.tensor(v, dtype=torch.float32) for v in values]
+        values = [np.array(v, dtype=np.float32) for v in values]
         df[i] = values
 
     feature_cols = ['user', 'item'] + sparse_features + dense_features
@@ -152,12 +152,11 @@ def load_dataset(dataset_dir, num_ng=4):
     dataset = NCFData(ratings, item_num, train_mat, num_ng)
     dataset.ng_sample()
 
+    # merge features
+    dataset.merge_features(users, items, total_cols)
+
     # train test split
     train_dataset, test_dataset = dataset.train_test_split()
-
-    # merge features
-    train_dataset.merge_features(users, items, total_cols)
-    test_dataset.merge_features(users, items, total_cols)
     return train_dataset, test_dataset
 
 
