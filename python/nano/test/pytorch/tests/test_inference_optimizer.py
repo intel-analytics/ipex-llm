@@ -499,12 +499,12 @@ class TestInferencePipeline(TestCase):
         
         # test thread
         ipex_thread_model = InferenceOptimizer.trace(self.model,
-                                                     use_iepx=True,
+                                                     use_ipex=True,
                                                      thread_num=4)
         with InferenceOptimizer.get_context(ipex_model, ipex_thread_model):
             ipex_model(input_sample)
             assert torch.get_num_threads() == 4
-        
+
         jit_thread_model = InferenceOptimizer.trace(self.model,
                                                     accelerator='jit',
                                                     input_sample=input_sample,
@@ -512,6 +512,6 @@ class TestInferencePipeline(TestCase):
         with InferenceOptimizer.get_context(ipex_model, jit_thread_model):
             ipex_model(input_sample)
             assert torch.get_num_threads() == 2
-        
+
         with pytest.raises(RuntimeError):
             InferenceOptimizer.get_context(jit_thread_model, ipex_thread_model)
