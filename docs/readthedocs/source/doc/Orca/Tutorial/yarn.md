@@ -91,7 +91,7 @@ __Note__:
 ### 2.2 Install Python Libraries
 - See [here](../Overview/install.md#install-anaconda) to install conda and prepare the Python environment on the __Client Node__.
 
-- See [here](../Overview/install.md#install-bigdl-orca) to install BigDL Orca in the created conda environment. Note that if you use `spark-submit`, please do not install BigDL Orca.
+- See [here](../Overview/install.md#install-bigdl-orca) to install BigDL Orca in the created conda environment. Note that if you use [`spark-submit`](#use-spark-submit), please __DO NOT__ install BigDL Orca.
 
 - You should install all the other Python libraries that you need in your program in the conda environment as well. `torch` and `torchvision` are needed to run the Fashion-MNIST example:
     ```bash
@@ -288,19 +288,19 @@ In the `bigdl-submit` script:
 
 
 ### 5.3 Use `spark-submit`
-If you prefer to use the `spark-submit` instead of `bigdl-submit`, please follow the steps below. 
+If you prefer to use `spark-submit` instead of `bigdl-submit`, please follow the steps below to prepare the environment on the __Client Node__. 
 
 1. Set the cluster_mode to "spark-submit" in `init_orca_context`.
     ```python
     sc = init_orca_context(cluster_mode="spark-submit")
     ```
 
-2. Download requirement file [here](https://github.com/intel-analytics/BigDL/tree/main/python/requirements/orca) and install required Python libraries of BigDL according to your needs.
+2. Download requirement file [here](https://github.com/intel-analytics/BigDL/tree/main/python/requirements/orca) and install required Python libraries of BigDL Orca according to your needs.
     ```bash
     pip install -r /path/to/requirements.txt
     ```
 
-3. Pack the current activate conda environment to an archive on the __Client Node__ before submitting the example:
+3. Pack the current activate conda environment to an archive before submitting the example:
     ```bash
     conda pack -o environment.tar.gz
     ```
