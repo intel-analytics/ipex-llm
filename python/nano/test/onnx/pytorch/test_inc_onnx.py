@@ -190,8 +190,10 @@ class TestOnnx(TestCase):
         onnx_model = InferenceOptimizer.quantize(pl_model,
                                                  accelerator='onnxruntime',
                                                  method='qlinear',
-                                                 calib_data=train_loader)
+                                                 calib_data=train_loader,
+                                                 thread_num=2)
         with InferenceOptimizer.get_context(onnx_model):
+            assert torch.get_num_threads() == 2
             output = onnx_model(x)
         
         with tempfile.TemporaryDirectory() as tmp_dir_name:
@@ -199,6 +201,7 @@ class TestOnnx(TestCase):
             model = InferenceOptimizer.load(tmp_dir_name)
 
         with InferenceOptimizer.get_context(model):
+            assert torch.get_num_threads() == 2
             output = model(x)
 
 

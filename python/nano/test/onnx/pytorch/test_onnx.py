@@ -166,13 +166,15 @@ class TestOnnx(TestCase):
                                               thread_num=1)
 
         with InferenceOptimizer.get_context(onnx_model):
+            assert torch.get_num_threads() == 1
             output = onnx_model(x)
         
         with tempfile.TemporaryDirectory() as tmp_dir_name:
             InferenceOptimizer.save(onnx_model, tmp_dir_name)
             model = InferenceOptimizer.load(tmp_dir_name)
-        
+
         with InferenceOptimizer.get_context(model):
+            assert torch.get_num_threads() == 1
             output = onnx_model(x)
 
 

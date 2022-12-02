@@ -25,7 +25,7 @@ import torch
 from bigdl.nano.utils.log4Error import invalidInputError
 from ..core.utils import save
 from torch.utils.data.dataloader import DataLoader
-from bigdl.nano.pytorch.context_manager import BaseContextManager
+from bigdl.nano.pytorch.context_manager import generate_context_manager
 
 
 class PytorchOpenVINOModel(AcceleratedLightningModule):
@@ -54,7 +54,9 @@ class PytorchOpenVINOModel(AcceleratedLightningModule):
 
             self.ov_model = OpenVINOModel(ov_model_path, thread_num=thread_num, config=config)
             super().__init__(None)
-        self.context_manager = BaseContextManager()
+        self.context_manager = generate_context_manager(accelerator="openvino",
+                                                        precision="fp32",
+                                                        thread_num=thread_num)
 
     def on_forward_start(self, inputs):
         self.ov_model._model_exists_or_err()
@@ -96,7 +98,10 @@ class PytorchOpenVINOModel(AcceleratedLightningModule):
         else:
             invalidInputError(False, "nano_model_meta.yml must specify 'xml_path' for loading.")
         xml_path = Path(path) / status['xml_path']
-        return PytorchOpenVINOModel(xml_path, config=status['config'])
+        thread_num = None
+        if "CPU_THREADS_NUM" in status['config']:
+            thread_num = int(status['config']["CPU_THREADS_NUM"])
+        return PytorchOpenVINOModel(xml_path, config=status['config'], thread_num=thread_num)
 
     def pot(self,
             dataloader,

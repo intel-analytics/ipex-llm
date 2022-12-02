@@ -40,7 +40,7 @@ from bigdl.nano.utils.inference.pytorch.dataloader import\
     transform_multiple_input_dataloader_to_inc_mode, automatic_add_label_in_dataloader
 from bigdl.nano.pytorch.utils import TORCH_VERSION_LESS_1_10, save_model, load_model
 from bigdl.nano.common.cpu_schedule import schedule_processors
-from bigdl.nano.pytorch.context_manager import BaseContextManager
+from bigdl.nano.pytorch.context_manager import generate_context_manager
 from .multi_instance import _MultiInstanceModel, _multi_instance_helper
 import traceback
 import warnings
@@ -344,7 +344,8 @@ class InferenceOptimizer(BaseInferenceOptimizer):
             sample_size_for_pot = 100
 
         # patch context manager
-        model.context_manager = BaseContextManager()
+        model.context_manager = generate_context_manager(accelerator=None, precision="fp32",
+                                                         thread_num=thread_num)
 
         print("==========================Start Optimization==========================")
         start_time = time.perf_counter()
@@ -378,7 +379,6 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                         model(*input_sample)
 
                 with acce_model.context_manager:
-                    torch.set_num_threads(thread_num)
                     try:
                         result_map[method]["latency"], status =\
                             throughput_calculate_helper(latency_sample_num, baseline_time,
@@ -562,7 +562,8 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                     use_jit = (accelerator == "jit")
                     return PytorchIPEXJITBF16Model(model, input_sample=input_sample,
                                                    use_ipex=use_ipex, use_jit=use_jit,
-                                                   channels_last=channels_last)
+                                                   channels_last=channels_last,
+                                                   thread_num=thread_num)
                 else:
                     bf16_model = BF16Model(model, channels_last=channels_last)
                     return bf16_model
@@ -638,6 +639,7 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                 `quantized_model.model`.
                 """
                 return inc_quantize(model, inc_calib_dataloader, metric,
+                                    thread_num=thread_num,
                                     framework=framework,
                                     conf=conf,
                                     approach=approach,
@@ -761,7 +763,8 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                                   "torch version should >=1.10 to use ipex")
             use_jit = (accelerator == "jit")
             return PytorchIPEXJITModel(model, input_sample=input_sample, use_ipex=use_ipex,
-                                       use_jit=use_jit, channels_last=channels_last)
+                                       use_jit=use_jit, channels_last=channels_last,
+                                       thread_num=thread_num)
         invalidInputError(False, "Accelerator {} is invalid.".format(accelerator))
 
     @staticmethod
@@ -775,7 +778,7 @@ class InferenceOptimizer(BaseInferenceOptimizer):
         """
         if hasattr(model, "context_manager"):
             return model.context_manager
-        return BaseContextManager()
+        return generate_context_manager(accelerator=None, precision="fp32")
 
     @staticmethod
     def save(model: nn.Module, path):
