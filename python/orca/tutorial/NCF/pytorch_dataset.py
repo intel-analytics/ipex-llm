@@ -62,13 +62,18 @@ class NCFData(data.Dataset):
         self.data['label'] = labels_fill
 
     def train_test_split(self, test_size=0.2):
-        train_dataset, test_dataset = train_test_split(self.data, test_size=test_size, random_state=100)
+        train_dataset, test_dataset = train_test_split(self.data, test_size=test_size,
+                                                       random_state=100)
+        train_dataset.reset_index(drop=True, inplace=True)
+        test_dataset.reset_index(drop=True, inplace=True)
         return NCFData(train_dataset), NCFData(test_dataset)
 
-    def merge_features(self, users, items, total_cols):
+    def merge_features(self, users, items, total_cols=None):
         self.data = users.merge(self.data, on='user')
         self.data = self.data.merge(items, on='item')
-        self.data = self.data.loc[:, total_cols]
+        # To make the order of data columns as expected.
+        if total_cols is not None:
+            self.data = self.data.loc[:, total_cols]
 
     def __len__(self):
         return len(self.data)
@@ -104,7 +109,8 @@ def process_users_items(dataset_dir):
     for i in dense_features:
         scaler = MinMaxScaler()
         df = users if i in users.columns else items
-        values = df[i].values.reshape(-1, 1)  # MinMaxScaler needs the input to be 2-dim tensor, not 1-dim.
+        # MinMaxScaler needs the input to be 2-dim tensor, not 1-dim.
+        values = df[i].values.reshape(-1, 1)
         values = scaler.fit_transform(values)
         values = [np.array(v, dtype=np.float32) for v in values]
         df[i] = values
