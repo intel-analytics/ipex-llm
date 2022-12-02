@@ -76,6 +76,10 @@ class PytorchONNXRuntimeModel(ONNXRuntimeModel, AcceleratedLightningModule):
         self._nano_context_manager = generate_context_manager(accelerator=None,
                                                               precision="fp32",
                                                               thread_num=self.thread_num)
+        # patch original model's attr to current new model
+        for attr in dir(model):
+            if attr not in dir(self) and not attr.startswith('_'):
+                setattr(self, attr, getattr(model, attr))
 
     def on_forward_start(self, inputs):
         if self.ortsess is None:

@@ -17,6 +17,7 @@
 from bigdl.nano.utils.inference.pytorch.model import AcceleratedLightningModule
 from bigdl.nano.pytorch.context_manager import generate_context_manager
 import torch
+from copy import deepcopy
 
 
 class PytorchIPEXJITModel(AcceleratedLightningModule):
@@ -56,7 +57,7 @@ class PytorchIPEXJITModel(AcceleratedLightningModule):
                                                                   thread_num=thread_num)
             return
         self.channels_last = channels_last
-        self.original_model = model
+        self.original_model = model if inplace is False else deepcopy(model)
         self.original_state_dict = model.state_dict()
         self.use_ipex = use_ipex
         self.use_jit = use_jit
@@ -85,6 +86,11 @@ class PytorchIPEXJITModel(AcceleratedLightningModule):
                                                               precision="fp32",
                                                               thread_num=thread_num)
         self.thread_num = thread_num
+        # patch original model's attr to current new model
+        for attr in dir(self.original_model):
+            if attr not in dir(self) and not attr.startswith('_'):
+                setattr(self, attr, getattr(self.original_model, attr))
+        del self.original_model  # save memory
 
     @property
     def forward_args(self):
@@ -101,13 +107,6 @@ class PytorchIPEXJITModel(AcceleratedLightningModule):
 
     def on_forward_end(self, outputs):
         return outputs
-
-    def __getattr__(self, name: str):
-        # automatically unwrap attributes access of model
-        try:
-            return super().__getattr__(name)
-        except AttributeError:
-            return getattr(self.original_model, name)
 
     @property
     def status(self):

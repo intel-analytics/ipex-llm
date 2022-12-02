@@ -91,7 +91,11 @@ class BF16Model(AcceleratedLightningModule):
         return max_bf16_isa
 
     def __getattr__(self, name: str):
-        # automatically unwrap attributes access of model
+        # the search order is:
+        # 1. current instance, like channels_last will be found at this place
+        # 2. super class, like model will be found at this place
+        # 3. original model, like additional attributes of original model
+        #    will be found at this place
         try:
             return super().__getattr__(name)
         except AttributeError:
