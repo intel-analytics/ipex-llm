@@ -57,9 +57,9 @@ class PytorchIPEXJITBF16Model(PytorchIPEXJITModel):
                                      dtype=torch.bfloat16, use_jit=use_jit,
                                      channels_last=channels_last, from_load=from_load,
                                      inplace=inplace, jit_strict=jit_strict)
-        self.context_manager = generate_context_manager(accelerator=None,
-                                                        precision="bf16",
-                                                        thread_num=thread_num)
+        self._nano_context_manager = generate_context_manager(accelerator=None,
+                                                              precision="bf16",
+                                                              thread_num=thread_num)
 
     @property
     def _check_cpu_isa(self):

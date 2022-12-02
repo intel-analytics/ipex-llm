@@ -478,3 +478,40 @@ class TestInferencePipeline(TestCase):
 
         inference_opt.save(ipex_model, "ipex")
         ipex_model = inference_opt.load("ipex", model, inplace=True)
+    
+    def test_multi_context_manager(self):
+        inference_opt = InferenceOptimizer()
+        input_sample = torch.rand(10, 3, 32, 32)
+        inference_opt.optimize(model=self.model,
+                               training_data=self.train_loader)
+
+        ipex_model = inference_opt.get_model("jit_fp32_ipex")
+        with InferenceOptimizer.get_context(self.model, ipex_model):
+            ipex_model(input_sample)
+
+        # test bf16 and non bf16 model
+        bf16_model = inference_opt.get_model("bf16")
+        with pytest.raises(RuntimeError):
+            InferenceOptimizer.get_context(self.model, bf16_model)
+        
+        with pytest.raises(RuntimeError):
+            InferenceOptimizer.get_context(ipex_model, bf16_model)
+        
+        # test thread
+        ipex_thread_model = InferenceOptimizer.trace(self.model,
+                                                     use_iepx=True,
+                                                     thread_num=4)
+        with InferenceOptimizer.get_context(ipex_model, ipex_thread_model):
+            ipex_model(input_sample)
+            assert torch.get_num_threads() == 4
+        
+        jit_thread_model = InferenceOptimizer.trace(self.model,
+                                                    accelerator='jit',
+                                                    input_sample=input_sample,
+                                                    thread_num=2)
+        with InferenceOptimizer.get_context(ipex_model, jit_thread_model):
+            ipex_model(input_sample)
+            assert torch.get_num_threads() == 2
+        
+        with pytest.raises(RuntimeError):
+            InferenceOptimizer.get_context(jit_thread_model, ipex_thread_model)
