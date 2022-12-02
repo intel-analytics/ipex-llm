@@ -302,7 +302,7 @@ class InferenceOptimizer(BaseInferenceOptimizer):
             self._calculate_accuracy = True
 
         default_threads: int = torch.get_num_threads()
-        thread_num: int = default_threads if thread_num is None else int(thread_num)
+        thread_num: int = None if thread_num is None else int(thread_num)
 
         result_map: Dict[str, Dict] = {}
 
