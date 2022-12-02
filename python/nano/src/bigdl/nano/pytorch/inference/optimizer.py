@@ -109,7 +109,7 @@ class InferenceOptimizer(BaseInferenceOptimizer):
             "bf16_ipex_channels_last": TorchAccelerationOption(bf16=True, ipex=True,
                                                                channels_last=True),
             "int8": TorchAccelerationOption(inc=True),
-            "int8_ipex": TorchAccelerationOption(inc=True, method="ipex"),
+            "int8_ipex": TorchAccelerationOption(inc=True, method="ipex", ipex=True),
             "jit_fp32": TorchAccelerationOption(jit=True),
             "jit_fp32_channels_last": TorchAccelerationOption(jit=True,
                                                               channels_last=True),
