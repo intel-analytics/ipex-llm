@@ -333,6 +333,7 @@ object PPMLContext{
         new AzureKeyManagementService(vaultName, clientId)
       case _ =>
         throw new EncryptRuntimeException("Wrong kms type")
+     }
     } 
   
     //init data sources
@@ -340,10 +341,20 @@ object PPMLContext{
     for (i<-1 to dataSourceInstance ){
       val dataSourceName = conf.get(s"spark.bigdl.kms.datasouce${i}.name",defaultValue = s"dataSource${i}")
       val kms=conf.get(s"spark.bigdl.kms.datasouce${i}.kms")
-     Log4Error.invalidInputError(conf.contains(s"spark.bigdl.kms.datasource${i}.primary"),
+      
+      // get input and output path 
+      Log4Error.invalidInputError(conf.contains(s"spark.bigdl.kms.datasource${i}.inputpath"),
+      s"input path of data source${i} not found, please provide input path")
+      Log4Error.invalidInputError(conf.contains(s"spark.bigdl.kms.datasource${i}.outputpath"),
+      s"output path of data source${i} not found, please provide output path")
+      val inputPath=conf.get(s"spark.bigdl.kms.datasource${i}.inputpath")
+      val outputPath=conf.get(s"spark.bigdl.kms.datasource${i}.outputpath")
+
+      // get primary key and data key
+      Log4Error.invalidInputError(conf.contains(s"spark.bigdl.kms.datasource${i}.primary"),
        "Primary key not found, please provide" +
        " both spark.bigdl.kms.multikms.key.primary and spark.bigdl.kms.multikms.key.data.")
-     Log4Error.invalidInputError(conf.contains(s"spark.bigdl.kms.datasource${i}.data"),
+      Log4Error.invalidInputError(conf.contains(s"spark.bigdl.kms.datasource${i}.data"),
        "Data key not found, please provide" +
       " both spark.bigdl.kms.multikms.key.primary and spark.bigdl.kms.multikms.key.data.")
       val primaryKey = conf.get(s"spark.bigdl.kms.datasource${i}.primary")
