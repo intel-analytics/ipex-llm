@@ -37,14 +37,14 @@ sc = init_orca_context()
 
 # Step 2: Define train and test datasets as PyTorch DataLoader
 def train_loader_func(config, batch_size):
-    train_dataset, _ = load_dataset(config['dataset_dir'], config['num_ng'])
+    train_dataset, _ = load_dataset(config['dataset_dir'], config['num_ng'], config['test_size'])
     train_loader = data.DataLoader(train_dataset, batch_size=batch_size,
                                    shuffle=True, num_workers=0)
     return train_loader
 
 
 def test_loader_func(config, batch_size):
-    _, test_dataset = load_dataset(config['dataset_dir'], config['num_ng'])
+    _, test_dataset = load_dataset(config['dataset_dir'], config['num_ng'], config['test_size'])
     test_loader = data.DataLoader(test_dataset, batch_size=batch_size,
                                   shuffle=False, num_workers=0)
     return test_loader
@@ -87,6 +87,7 @@ est = Estimator.from_torch(model=model_creator, optimizer=optimizer_creator,
                            backend=backend,
                            config={'dataset_dir': dataset_dir,
                                    'num_ng': 4,
+                                   'test_size': 0.2,
                                    'factor_num': 16,
                                    'num_layers': 3,
                                    'dropout': 0.5,
