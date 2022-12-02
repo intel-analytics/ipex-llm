@@ -139,7 +139,7 @@ def process_ratings(dataset_dir, user_num, item_num):
     return ratings, train_mat
 
 
-def load_dataset(dataset_dir, num_ng=4, test_size=0.2):
+def load_dataset(dataset_dir, num_ng=4):
     """
     dataset_dir: the path of the datasets;
     num_ng: number of negative samples to be sampled here.
@@ -156,7 +156,7 @@ def load_dataset(dataset_dir, num_ng=4, test_size=0.2):
     dataset.merge_features(users, items, total_cols)
 
     # train test split
-    train_dataset, test_dataset = dataset.train_test_split(test_size)
+    train_dataset, test_dataset = dataset.train_test_split()
     return train_dataset, test_dataset
 
 
