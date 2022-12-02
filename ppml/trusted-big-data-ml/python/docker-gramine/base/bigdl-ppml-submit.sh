@@ -1,8 +1,12 @@
 #!/bin/bash
 SGX_ENABLED=false
-LOG_FILE="bigdl-ppml-submit.log"
 application_args=""
 input_args=""
+
+LOG_FILE="bigdl-ppml-submit.log"
+DRIVER_TEMPLATE="/ppml/trusted-big-data-ml/spark-driver-template.yaml"
+EXECUTOR_TEMPLATE="/ppml/trusted-big-data-ml/spark-executor-template.yaml"
+KEY_STORE="/ppml/trusted-big-data-ml/work/keys/keystore.jks"
 
 while [[ $# -gt 0 ]]; do
   case $1 in
@@ -23,8 +27,18 @@ while [[ $# -gt 0 ]]; do
       shift # past argument
       shift # past value
       ;;
+    --driver-memory)
+      DRIVER_MEM="$2"
+      shift # past argument
+      shift # past value
+      ;;
     --sgx-driver-jvm-memory)
       SGX_DRIVER_JVM_MEM="$2"
+      shift # past argument
+      shift # past value
+      ;;
+    --executor-memory)
+      EXECUTOR_MEM="$2"
       shift # past argument
       shift # past value
       ;;
@@ -39,6 +53,21 @@ while [[ $# -gt 0 ]]; do
       ;;
     --log-file)
       LOG_FILE="$2"
+      shift
+      shift
+      ;;
+    --executor-template)
+      EXECUTOR_TEMPLATE="$2"
+      shift
+      shift
+      ;;
+    --driver-template)
+      DRIVER_TEMPLATE="$2"
+      shift
+      shift
+      ;;
+    --key-store)
+      KEY_STORE="$2"
       shift
       shift
       ;;
@@ -57,11 +86,18 @@ done
 echo "input_args $input_args"
 echo "app_args $application_args"
 echo $MASTER
-if [ "$MASTER" == k8s* ] && [ "$DEPLOY_MODE" = "" ]; then
-  echo "--deploy-mode should be specified for k8s cluster"
-  exit 1
-fi
 
+if [[ "$MASTER" =~ ^k8s ]]; then
+  if [ "$DEPLOY_MODE" = "" ]; then
+     echo "--deploy-mode should be specified for k8s"
+     exit 1
+  elif [ "$DRIVER_MEM" = "" ] || [ "$EXECUTOR_MEM" = "" ]; then
+     echo "--driver-memory and --executor-memory should be specified for k8s"
+     exit 1
+  fi
+  default_config="--executor-memory $EXECUTOR_MEM \
+                  --driver-memory $DRIVER_MEM"
+fi
 
 if [ "$SGX_ENABLED" = "true" ]; then
   if [ "$SGX_DRIVER_JVM_MEM" = "" ] || [ "$SGX_EXECUTOR_JVM_MEM" = "" ]; then
@@ -76,15 +112,15 @@ else
   sgx_commands=""
 fi
 
-default_config="--conf spark.driver.host=$LOCAL_IP \
+default_config="${default_config} --conf spark.driver.host=$LOCAL_IP \
         --conf spark.driver.port=$RUNTIME_DRIVER_PORT \
         --conf spark.network.timeout=10000000 \
         --conf spark.executor.heartbeatInterval=10000000 \
         --conf spark.python.use.daemon=false \
         --conf spark.python.worker.reuse=false \
         --conf spark.kubernetes.authenticate.driver.serviceAccountName=spark \
-        --conf spark.kubernetes.driver.podTemplateFile=/ppml/trusted-big-data-ml/spark-driver-template.yaml \
-        --conf spark.kubernetes.executor.podTemplateFile=/ppml/trusted-big-data-ml/spark-executor-template.yaml \
+        --conf spark.kubernetes.driver.podTemplateFile=$DRIVER_TEMPLATE \
+        --conf spark.kubernetes.executor.podTemplateFile=$EXECUTOR_TEMPLATE \
         --conf spark.kubernetes.executor.deleteOnTermination=false"
 
 if [ $secure_password ]; then
@@ -102,10 +138,10 @@ if [ $secure_password ]; then
     --conf spark.ssl.enabled=true \
     --conf spark.ssl.port=8043 \
     --conf spark.ssl.keyPassword=$secure_password \
-    --conf spark.ssl.keyStore=/ppml/trusted-big-data-ml/work/keys/keystore.jks  \
+    --conf spark.ssl.keyStore=$KEY_STORE  \
     --conf spark.ssl.keyStorePassword=$secure_password \
     --conf spark.ssl.keyStoreType=JKS \
-    --conf spark.ssl.trustStore=/ppml/trusted-big-data-ml/work/keys/keystore.jks \
+    --conf spark.ssl.trustStore=$KEY_STORE \
     --conf spark.ssl.trustStorePassword=$secure_password \
     --conf spark.ssl.trustStoreType=JKS"
 else
@@ -126,6 +162,7 @@ spark_submit_command="${spark_submit_command} ${input_args} ${application_args}"
 echo "[INFO] spark_submit_command: ${spark_submit_command}"
 if [ "$SGX_ENABLED" == "true" ] && [ "$DEPLOY_MODE" != "cluster" ]; then
     echo "[INFO] sgx enabled and convert spark submit command to sgx command"
+    ./init.sh
     export sgx_command=${spark_submit_command}
     gramine-sgx bash 2>&1 | tee $LOG_FILE
 else

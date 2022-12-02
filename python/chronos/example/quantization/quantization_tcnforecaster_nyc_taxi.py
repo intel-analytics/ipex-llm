@@ -22,7 +22,7 @@ import time
 import numpy as np
 
 
-def get_tsdata(lookback=96, horizon=24):
+def get_tsdata(lookback=96, horizon=320):
     name = 'nyc_taxi'
     tsdata_train, _, tsdata_test = get_public_dataset(name, val_ratio=0, test_ratio=0.4)
     stand_scaler = StandardScaler()
@@ -40,30 +40,28 @@ if __name__ == "__main__":
     x_test, y_test = tsdata_test.to_numpy()
     print(x_train.shape, y_train.shape, x_test.shape, y_test.shape)
     forecaster = TCNForecaster(past_seq_len = 96,
-                               future_seq_len = 24,
+                               future_seq_len = 320,
                                input_feature_num = x_train.shape[-1],
                                output_feature_num = 1,
-                               num_channels = [48] * 7,
-                               repo_initialization = False,
-                               kernel_size = 3,
-                               dropout = 0.1,
-                               lr = 0.001,
-                               seed = 0)
-    forecaster.fit((x_train, y_train), epochs=10, batch_size=32)
+                               normalization=True,
+                               num_channels = [48] * 7)
+    forecaster.fit((x_train, y_train), epochs=1, batch_size=32)
+    forecaster.num_processes = 1
 
     st = time.time()
-    y_pred = forecaster.predict(x_test)
+    y_pred = forecaster.predict(x_test, batch_size=256)
     fp32_pytorch_time = time.time()-st
 
     y_pred_unscale = tsdata_test.unscale_numpy(y_pred)
     y_test_unscale = tsdata_test.unscale_numpy(y_test)
     avg_smape_fp32_pytorch = Evaluator.evaluate("smape", y_test_unscale, y_pred_unscale, aggregate='mean')[0]
 
-    forecaster.quantize((x_train, y_train), framework=['pytorch_fx', 'onnxrt_qlinearops'])
+    forecaster.quantize((x_train, y_train), framework='pytorch_fx')
     st = time.time()
-    y_pred = forecaster.predict(x_test, quantize=True)
+    y_pred = forecaster.predict(x_test, quantize=True, batch_size=256)
     int8_pytorch_time = time.time()-st
 
+    forecaster.quantize((x_train, y_train), framework='onnxrt_qlinearops')
     y_pred_unscale = tsdata_test.unscale_numpy(y_pred)
     y_test_unscale = tsdata_test.unscale_numpy(y_test)
     avgr_smape_int8_pytorch = Evaluator.evaluate("smape", y_test_unscale, y_pred_unscale, aggregate='mean')[0]
@@ -77,7 +75,7 @@ if __name__ == "__main__":
     for i in range(x_test.shape[0]):
         x = x_test[i:i+1]
         st = time.time()
-        y_pred = forecaster.predict(x)
+        y_pred = forecaster.predict(x, acceleration=False)
         fp32_pytorch_latency.append(time.time()-st)
 
     int8_onnx_latency = []

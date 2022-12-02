@@ -78,6 +78,7 @@ class SparkTFEstimator():
             self.config["intra_op_parallelism"] = num_core // workers_per_node
 
         self.model_weights = None
+        self.load_path = None
 
         if "batch_size" in self.config:
             invalidInputError(False,
@@ -138,7 +139,8 @@ class SparkTFEstimator():
                                                            feature_cols, label_cols,
                                                            mode="fit",
                                                            num_workers=self.num_workers,
-                                                           accept_str_col=True)
+                                                           accept_str_col=True,
+                                                           shard_size=batch_size)
 
         # for continuous training
         if self.model_weights:
@@ -148,6 +150,7 @@ class SparkTFEstimator():
 
         init_params = dict(
             model_creator=self.model_creator,
+            model_load=self.load_path,
             compile_args_creator=self.compile_args_creator,
             config=self.config,
             verbose=self.verbose,
@@ -263,7 +266,8 @@ class SparkTFEstimator():
                                              label_cols=label_cols,
                                              mode="evaluate",
                                              num_workers=self.num_workers,
-                                             accept_str_col=True)
+                                             accept_str_col=True,
+                                             shard_size=batch_size)
 
         if self.model_weights:
             weights = sc.broadcast(self.model_weights)
@@ -272,6 +276,7 @@ class SparkTFEstimator():
 
         init_params = dict(
             model_creator=self.model_creator,
+            model_load=self.load_path,
             compile_args_creator=self.compile_args_creator,
             config=self.config,
             verbose=self.verbose,
@@ -344,6 +349,7 @@ class SparkTFEstimator():
 
         init_params = dict(
             model_creator=self.model_creator,
+            model_load=self.load_path,
             compile_args_creator=self.compile_args_creator,
             config=self.config,
             verbose=self.verbose,
@@ -373,7 +379,8 @@ class SparkTFEstimator():
                                               feature_cols=feature_cols,
                                               label_cols=None,
                                               mode="predict",
-                                              accept_str_col=True)
+                                              accept_str_col=True,
+                                              shard_size=batch_size)
 
             def transform_func(iter, init_param, param):
                 partition_data = list(iter)
@@ -409,8 +416,7 @@ class SparkTFEstimator():
         # allreduce communication protocol.
         # So we need to call get_state on every remote workers, otherwise
         # it might get stuck
-        model = self.model_creator(self.config)
-        model.set_weights(self.model_weights)
+        model = self.get_model()
         if is_local_path(filepath):
             model.save_weights(filepath, overwrite, save_format)
         else:
@@ -438,7 +444,7 @@ class SparkTFEstimator():
                order. Only topological loading is supported for weight files in
                TensorFlow format.
         """
-        model = self.model_creator(self.config)
+        model = self.get_model(set_weights=False)
         if is_file(filepath):
             # h5 format
             if is_local_path(filepath):
@@ -513,20 +519,37 @@ class SparkTFEstimator():
         options for loading from SavedModel.
 
         """
-        model = load_model(filepath, custom_objects=custom_objects, compile=compile)
+        sc = OrcaContext.get_spark_context()
+        self.load_params = dict(
+            filepath=filepath,
+            custom_objects=custom_objects,
+            compile=compile
+        )
+        model = load_model(**self.load_params)
         self.model_weights = model.get_weights()
+        if self.model_creator is None:
+            self.load_path = filepath
+            if is_file(self.load_path):
+                sc.addFile(self.load_path, recursive=False)
+            else:
+                sc.addFile(self.load_path, recursive=True)
         # update remote model
         if self.model_dir is not None:
             save_model(model, self._model_saved_path, save_format="h5", filemode=0o666)
 
-    def get_model(self):
+    def get_model(self, set_weights=True):
         """
         Returns the learned model.
 
         :return: the learned model.
         """
-        model = self.model_creator(self.config)
-        model.set_weights(self.model_weights)
+        if self.model_creator is not None:
+            model = self.model_creator(self.config)
+        else:
+            model = load_model(**self.load_params)
+
+        if set_weights and self.model_weights is not None:
+            model.set_weights(self.model_weights)
         return model
 
     @property

@@ -33,8 +33,6 @@
 
 from filelock import FileLock
 import logging
-import io
-import itertools
 import os
 import copy
 import tempfile
@@ -43,12 +41,12 @@ import torch.nn as nn
 from torch.utils.data import DataLoader, IterableDataset
 from torch.utils.data.distributed import DistributedSampler
 from bigdl.orca import OrcaContext
-from bigdl.orca.learn.pytorch.callbacks.model_checkpoint import ModelCheckpoint
-from bigdl.orca.learn.pytorch.constants import SCHEDULER_STEP, NUM_STEPS
+from bigdl.orca.learn.pytorch.constants import SCHEDULER_STEP
 from bigdl.orca.learn.pytorch.training_operator import TrainingOperator
 from bigdl.orca.learn.pytorch import utils
 from bigdl.orca.learn.pytorch.utils import get_filesystem
-from bigdl.dllib.utils.log4Error import *
+from bigdl.orca.learn.pytorch.core import BaseRunner
+from bigdl.dllib.utils.log4Error import invalidInputError
 
 try:
     from collections.abc import Iterable
@@ -98,7 +96,7 @@ class TorchDistBackend(DistBackend):
                                **all_reduce_min_kwargs)
 
 
-class TorchRunner:
+class TorchRunner(BaseRunner):
     """Manages a PyTorch model for training."""
 
     def __init__(self,
@@ -162,30 +160,6 @@ class TorchRunner:
         if not isinstance(self.schedulers, Iterable):
             self.schedulers = [self.schedulers]
 
-    def setup(self, cores_per_node):
-        import torch
-        torch.set_num_threads(cores_per_node)
-
-    def setup_torch_distribute(self, tcp_store_host, tcp_store_port, world_rank,
-                               world_size):
-        import torch.distributed as dist
-        from torch.nn.parallel import DistributedDataParallel
-        client_store = dist.TCPStore(tcp_store_host, tcp_store_port, -1, False)
-        dist.init_process_group(
-            backend="gloo",
-            store=client_store,
-            rank=world_rank,
-            world_size=world_size)
-        self.backend = "torch-distributed"
-        self.rank = world_rank
-        self.size = world_size
-        self.setup_components()
-        training_models = [
-            DistributedDataParallel(model)
-            for model in self.models
-        ]
-        self.setup_operator(training_models)
-
     def setup_components(self):
         """Runs the creator functions without any distributed coordination."""
 
@@ -206,6 +180,14 @@ class TorchRunner:
         self._create_schedulers_if_available()
         self._create_loss()
 
+    def setup_ddp_components(self):
+        from torch.nn.parallel import DistributedDataParallel
+        training_models = [
+            DistributedDataParallel(model)
+            for model in self.models
+        ]
+        self.setup_operator(training_models)
+
     def setup_operator(self, training_models):
         """Create the training operator."""
         if self.backend == "horovod":
@@ -224,35 +206,6 @@ class TorchRunner:
                 use_tqdm=self.use_tqdm,
                 sync_stats=self.sync_stats,
                 dist_backend=self.dist_backend)
-
-    def with_sampler(self, loader):
-        self.logger.debug("Wrapping DistributedSampler on DataLoader")
-        data_loader_args = {
-            "dataset": loader.dataset,
-            "batch_size": loader.batch_size,
-            "shuffle": False,
-            "num_workers": loader.num_workers,
-            "collate_fn": loader.collate_fn,
-            "pin_memory": loader.pin_memory,
-            "drop_last": loader.drop_last,
-            "timeout": loader.timeout,
-            "worker_init_fn": loader.worker_init_fn,
-            "sampler": DistributedSampler(loader.dataset,
-                                          num_replicas=self.size,
-                                          rank=self.rank)
-        }
-        return DataLoader(**data_loader_args)
-
-    @staticmethod
-    def should_wrap_dataloader(loader):
-        from torch.utils.data import DataLoader
-        try:
-            from torch.utils.data import IterableDataset
-            not_iterable = not isinstance(loader.dataset, IterableDataset)
-        except Exception as e:
-            not_iterable = TorchRunner
-        return (isinstance(loader, DataLoader)
-                and not_iterable)
 
     def train_epochs(self, data_creator, epochs=1, batch_size=32, profile=False,
                      info=None, wrap_dataloader=None, callbacks=None,
@@ -488,66 +441,28 @@ class TorchRunner:
         if "operator" in state:
             self.training_operator.load_state_dict(state["operator"])
 
-    @staticmethod
-    def _state_dict2stream(state_dict):
-        _buffer = io.BytesIO()
-        torch.save(state_dict, _buffer)
-        return _buffer.getvalue()
-
-    @staticmethod
-    def _state_stream2dict(byte_obj):
-        _buffer = io.BytesIO(byte_obj)
-        state_dict = torch.load(_buffer)
-        return state_dict
-
-    def get_state_stream(self):
-        """Returns a bytes object for the state dict."""
-        state_dict = self.get_state_dict()
-        state_stream = TorchRunner._state_dict2stream(state_dict)
-        return state_stream
-
-    def load_state_stream(self, byte_obj):
-        """Loads a bytes object the training state dict."""
-        state_dict = TorchRunner._state_stream2dict(byte_obj)
-        return self.load_state_dict(state_dict)
-
     def save_checkpoint(self, filepath, save_weights_only=False):
         if self.rank == 0:
-            self._save_checkpoint(filepath, save_weights_only)
+            import fsspec
+            if save_weights_only:
+                checkpoint = {
+                    "epoch": self.epochs,
+                    "models": [model.state_dict() for model in self.models],
+                }
+            else:
+                checkpoint = self.get_state_dict()
+            byte_obj = TorchRunner._state_dict2stream(checkpoint)
+            with fsspec.open(filepath, "wb") as f:
+                f.write(byte_obj)
             self.logger.debug(f"Saved checkpoint: {filepath}")
         return filepath
 
-    def _save_checkpoint(self, filepath, save_weights_only=False):
-        import fsspec
-        if save_weights_only:
-            checkpoint = {
-                "epoch": self.epochs,
-                "models": [model.state_dict() for model in self.models],
-            }
-        else:
-            checkpoint = self.get_state_dict()
-        byte_obj = TorchRunner._state_dict2stream(checkpoint)
-        with fsspec.open(filepath, "wb") as f:
-            f.write(byte_obj)
-
-    def load_checkpoint(self, filepath):
-        fs = get_filesystem(filepath)
-        if not fs.exists(filepath):
-            invalidInputError(False,
-                              f"Checkpoint at {filepath} not found. Aborting training.")
-        with fs.open(filepath, "rb") as f:
-            state_dict = torch.load(f)
-        self.load_state_dict(state_dict)
-
     def remove_checkpoint(self, filepath):
         if self.rank == 0:
-            self._remove_checkpoint(filepath)
-
-    def _remove_checkpoint(self, filepath):
-        fs = get_filesystem(filepath)
-        if fs.exists(filepath):
-            fs.rm(filepath, recursive=True)
-            self.logger.debug(f"Removed checkpoint: {filepath}")
+            fs = get_filesystem(filepath)
+            if fs.exists(filepath):
+                fs.rm(filepath, recursive=True)
+                self.logger.debug(f"Removed checkpoint: {filepath}")
 
     def apply(self, fn):
         return fn()

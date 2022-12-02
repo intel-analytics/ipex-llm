@@ -19,8 +19,11 @@ import random
 
 from unittest import TestCase
 from bigdl.chronos.data import get_public_dataset, gen_synthetic_data
+from .. import op_torch, op_tf2
 
 
+@op_torch
+@op_tf2
 class TestRepoDataset(TestCase):
     def setup_method(self, method):
         pass

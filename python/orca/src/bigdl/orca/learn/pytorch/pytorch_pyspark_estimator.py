@@ -15,14 +15,12 @@
 #
 
 import types
-import logging
-import numbers
 import torch
-import numpy as np
 import copy
 
 from bigdl.orca.learn.pytorch.training_operator import TrainingOperator
 from bigdl.orca.learn.pytorch.pytorch_pyspark_worker import PytorchPysparkWorker
+from bigdl.orca.learn.pytorch.utils import process_stats
 from bigdl.orca.learn.utils import maybe_dataframe_to_xshards, dataframe_to_xshards, \
     convert_predict_xshards_to_dataframe, make_data_creator, update_predict_xshards, \
     reload_dataloader_creator, process_xshards_of_pandas_dataframe
@@ -41,7 +39,7 @@ from bigdl.dllib.utils.log4Error import *
 
 def partition_to_creator(partition):
     def data_creator(config, batch_size):
-        from bigdl.orca.data.utils import ray_partition_get_data_label, index_data, get_size
+        from bigdl.orca.data.utils import partition_get_data_label, index_data, get_size
         from torch.utils.data import Dataset, DataLoader
 
         class NDArrayDataset(Dataset):
@@ -61,9 +59,9 @@ def partition_to_creator(partition):
                     "multiprocessing_context"]:
             if arg in config:
                 params[arg] = config[arg]
-        data, label = ray_partition_get_data_label(partition,
-                                                   allow_tuple=False,
-                                                   allow_list=False)
+        data, label = partition_get_data_label(partition,
+                                               allow_tuple=False,
+                                               allow_list=False)
         print("Data size on worker: ", len(label))
         dataset = NDArrayDataset(data, label)
         data_loader = DataLoader(dataset, **params)
@@ -88,7 +86,6 @@ class PyTorchPySparkEstimator(BaseEstimator):
             metrics=None,
             scheduler_creator=None,
             training_operator_cls=TrainingOperator,
-            initialization_hook=None,
             config=None,
             scheduler_step_freq="batch",
             use_tqdm=False,
@@ -124,7 +121,6 @@ class PyTorchPySparkEstimator(BaseEstimator):
 
         self.model_creator = model_creator
         self.optimizer_creator = optimizer_creator
-        self.initialization_hook = initialization_hook
 
         num_nodes, cores_per_node = get_node_and_core_number()
         self.num_workers = num_nodes * workers_per_node
@@ -209,10 +205,9 @@ class PyTorchPySparkEstimator(BaseEstimator):
         :param profile: Boolean. Whether to return time stats for the training procedure.
                Default is False.
         :param reduce_results: Boolean. Whether to average all metrics across all workers into
-               one dict. If a metric is a non-numerical value (or nested dictionaries), one value
-               will be randomly selected among the workers. If False, returns a list of dicts for
-               all workers.
-               Default is True.
+               one dict. If a metric is a non-numerical value, the one value will be randomly
+               selected among the workers. If False, returns a list of dicts for
+               all workers. Default is True.
         :param info: An optional dictionary that can be passed to the TrainingOperator for
                train_epoch and train_batch.
         :param feature_cols: feature column names if data is Spark DataFrame.
@@ -232,7 +227,8 @@ class PyTorchPySparkEstimator(BaseEstimator):
                                                            feature_cols=feature_cols,
                                                            label_cols=label_cols,
                                                            mode="fit",
-                                                           num_workers=self.num_workers)
+                                                           num_workers=self.num_workers,
+                                                           shard_size=batch_size)
 
         sc = OrcaContext.get_spark_context()
         _ = self.create_tcpstore_server()
@@ -314,13 +310,14 @@ class PyTorchPySparkEstimator(BaseEstimator):
             self.state_dict = PyTorchPySparkEstimator._get_state_dict_from_remote(self.model_dir)
             worker_stats = res
         else:
-            self.state_dict = res[0]
-            worker_stats = res[1]
+            self.state_dict = res[0]  # state dicts of all runners would be the same
+            # Each runner would return a list of worker stats for different epochs
+            worker_stats = [item for item in res if isinstance(item, list)]
 
         epoch_stats = list(map(list, zip(*worker_stats)))
         if reduce_results:
             for i in range(len(epoch_stats)):
-                epoch_stats[i] = self._process_stats(epoch_stats[i])
+                epoch_stats[i] = process_stats(epoch_stats[i])
             return epoch_stats
         else:
             return epoch_stats
@@ -405,7 +402,8 @@ class PyTorchPySparkEstimator(BaseEstimator):
                                               validation_data=None,
                                               feature_cols=feature_cols,
                                               label_cols=None,
-                                              mode="predict")
+                                              mode="predict",
+                                              shard_size=batch_size)
 
             pred_shards = self._predict_spark_xshards(xshards, init_params, params)
             result = convert_predict_xshards_to_dataframe(data, pred_shards)
@@ -426,6 +424,7 @@ class PyTorchPySparkEstimator(BaseEstimator):
                  batch_size=32,
                  num_steps=None,
                  profile=False,
+                 reduce_results=True,
                  info=None,
                  feature_cols=None,
                  label_cols=None):
@@ -447,6 +446,10 @@ class PyTorchPySparkEstimator(BaseEstimator):
                corresponds to the number of times `TrainingOperator.validate_batch` is called.
         :param profile: Boolean. Whether to return time stats for the training procedure.
                Default is False.
+        :param reduce_results: Boolean. Whether to average all metrics across all workers into
+               one dict. If a metric is a non-numerical value, the one value will be randomly
+               selected among the workers. If False, returns a list of dicts for
+               all workers. Default is True.
         :param info: An optional dictionary that can be passed to the TrainingOperator
                for validate.
         :param feature_cols: feature column names if train data is Spark DataFrame.
@@ -478,8 +481,10 @@ class PyTorchPySparkEstimator(BaseEstimator):
                                              feature_cols=feature_cols,
                                              label_cols=label_cols,
                                              mode="evaluate",
-                                             num_workers=self.num_workers)
+                                             num_workers=self.num_workers,
+                                             shard_size=batch_size)
         if isinstance(data, SparkXShards):
+            params["wrap_dataloader"] = False
             if data._get_class_name() == 'pandas.core.frame.DataFrame':
                 data = process_xshards_of_pandas_dataframe(data, feature_cols, label_cols)
             # set train/validation data
@@ -500,7 +505,10 @@ class PyTorchPySparkEstimator(BaseEstimator):
             res = self.workerRDD.barrier().mapPartitions(
                 lambda iter: transform_func(iter, init_params, params)).collect()
 
-        return self._process_stats(res)
+        if reduce_results:
+            return process_stats(res)
+        else:
+            return res
 
     def get_model(self):
         """
@@ -567,20 +575,6 @@ class PyTorchPySparkEstimator(BaseEstimator):
         else:
             self.driver_runner.load_checkpoint(filepath=model_path)
             self.state_dict = self.driver_runner.get_state_dict()
-
-    def _process_stats(self, worker_stats):
-        stats = {
-            "num_samples": sum(
-                stats.pop("num_samples", np.nan) for stats in worker_stats)
-        }
-
-        for stat_key in worker_stats[0]:
-            if isinstance(worker_stats[0], numbers.Number):
-                stats[stat_key] = np.nanmean(
-                    [s.get(stat_key, np.nan) for s in worker_stats])
-            else:
-                stats[stat_key] = worker_stats[0][stat_key]
-        return stats
 
     def shutdown(self):
         """

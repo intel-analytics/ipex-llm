@@ -334,7 +334,7 @@ ADD azure /ppml/trusted-big-data-ml/azure
 RUN chmod a+x /ppml/trusted-big-data-ml/azure/create-aks.sh && \
     chmod a+x /ppml/trusted-big-data-ml/azure/deploy-local-spark-sgx.sh && \
     chmod a+x /ppml/trusted-big-data-ml/azure/generate-enclave-key-az.sh && \
-    chmod a+x /ppml/trusted-big-data-ml/azure/generate-keys.sh && \
+    chmod a+x /ppml/trusted-big-data-ml/azure/generate-keys-az.sh && \
     chmod a+x /ppml/trusted-big-data-ml/azure/generate-password-az.sh && \
     chmod a+x /ppml/trusted-big-data-ml/azure/kubeconfig-secret.sh && \
     chmod a+x /ppml/trusted-big-data-ml/azure/submit-spark-sgx-az.sh

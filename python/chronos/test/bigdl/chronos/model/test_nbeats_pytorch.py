@@ -15,12 +15,14 @@
 #
 
 from unittest import TestCase
-from bigdl.chronos.model.nbeats_pytorch import model_creator
-from bigdl.nano.pytorch.trainer import Trainer
+from bigdl.chronos.utils import LazyImport
+model_creator = LazyImport('bigdl.chronos.model.nbeats_pytorch.model_creator')
+Trainer = LazyImport('bigdl.nano.pytorch.trainer.Trainer')
+torch = LazyImport('torch')
 import numpy as np
 import tempfile
 import os
-import torch
+from .. import op_torch
 
 
 def create_data(loader=False):
@@ -55,14 +57,15 @@ def create_data(loader=False):
         return train_data, val_data, test_data
 
 
+@op_torch
 class TestNbeatsPytorch(TestCase):
-    train_data, val_data, test_data = create_data(loader=True)
 
     def test_fit(self):
+        train_data, val_data, test_data = create_data(loader=True)
         model = model_creator({"past_seq_len": 24,
                                "future_seq_len": 5})
         trainer = Trainer(max_epochs=1)
         pl_model = Trainer.compile(model,
                                    loss=torch.nn.MSELoss(),
                                    optimizer=torch.optim.Adam(model.parameters(), lr=0.005))
-        trainer.fit(pl_model, self.train_data)
+        trainer.fit(pl_model, train_data)

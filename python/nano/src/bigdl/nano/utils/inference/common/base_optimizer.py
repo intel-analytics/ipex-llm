@@ -15,7 +15,7 @@
 #
 
 
-from typing import Dict, Tuple, Optional, Callable
+from typing import Dict, Optional
 from bigdl.nano.utils.log4Error import invalidInputError, invalidOperationError
 from .utils import CompareMetric, AccelerationOption, format_acceleration_option
 from abc import abstractmethod
@@ -99,7 +99,6 @@ class BaseInferenceOptimizer:
                               "before get_best_model()")
         invalidInputError(accelerator in [None, 'onnxruntime', 'openvino', 'jit'],
                           "Only support accelerator 'onnxruntime', 'openvino' and 'jit'.")
-        # TODO: include fp16?
         invalidInputError(precision in [None, 'int8', 'bf16', 'fp32'],
                           "Only support precision 'int8', 'bf16', 'fp32'.")
         if accuracy_criterion is not None and not self._calculate_accuracy:
@@ -110,6 +109,9 @@ class BaseInferenceOptimizer:
         best_metric = CompareMetric("original",
                                     self.optimized_model_dict["original"]["latency"],
                                     self.optimized_model_dict["original"]["accuracy"])
+
+        has_limit = (accelerator is not None) or (precision is not None) or (use_ipex is not None)
+        find_model = False
 
         for method in self.optimized_model_dict.keys():
             if method == "original" or self.optimized_model_dict[method]["status"] != "successful":
@@ -129,7 +131,7 @@ class BaseInferenceOptimizer:
             if use_ipex:
                 if not option.ipex:
                     continue
-
+            find_model = True
             if accuracy_criterion is not None:
                 accuracy = result["accuracy"]
                 compare_acc: float = best_metric.accuracy
@@ -150,6 +152,10 @@ class BaseInferenceOptimizer:
                 else:
                     accuracy = self.optimized_model_dict["original"]["accuracy"]
                 best_metric = CompareMetric(method, result["latency"], accuracy)
+
+        if has_limit and not find_model:
+            invalidInputError(False,
+                              "Don't find related model in optimize's results.")
 
         return best_model, format_acceleration_option(best_metric.method_name,
                                                       self.ALL_INFERENCE_ACCELERATION_METHOD)

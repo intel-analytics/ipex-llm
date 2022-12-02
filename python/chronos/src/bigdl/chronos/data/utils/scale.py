@@ -73,3 +73,13 @@ UNSCALE_HELPER_MAP = {StandardScaler: _standard_scaler_unscale_timeseries_numpy,
 
 def unscale_timeseries_numpy(data, scaler, scaler_index):
     return UNSCALE_HELPER_MAP[type(scaler)](data, scaler, scaler_index)
+
+
+def _standard_scaler_scale_timeseries_numpy(data, scaler):
+    data_scale = np.zeros(data.shape)
+    feature_counter = 0
+    for i in range(data.shape[1]):
+        value_mean = scaler.mean_[i] if scaler.with_mean else 0
+        value_scale = scaler.scale_[i] if scaler.with_std else 1
+        data_scale[:, i] = (data[:, i] - value_mean) / value_scale
+    return data_scale

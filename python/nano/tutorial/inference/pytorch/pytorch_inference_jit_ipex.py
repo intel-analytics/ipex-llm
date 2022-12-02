@@ -35,22 +35,25 @@ if __name__ == "__main__":
     jit_model = InferenceOptimizer.trace(model_ft,
                                          accelerator="jit",
                                          input_sample=torch.rand(1, 3, 224, 224))
-    y_hat = jit_model(x)
-    predictions = y_hat.argmax(dim=1)
-    print(predictions)
+    with InferenceOptimizer.get_context(jit_model):
+        y_hat = jit_model(x)
+        predictions = y_hat.argmax(dim=1)
+        print(predictions)
 
     # IPEX
     ipex_model = InferenceOptimizer.trace(model_ft,
                                           use_ipex=True)
-    y_hat = ipex_model(x)
-    predictions = y_hat.argmax(dim=1)
-    print(predictions)
+    with InferenceOptimizer.get_context(ipex_model):
+        y_hat = ipex_model(x)
+        predictions = y_hat.argmax(dim=1)
+        print(predictions)
 
     # IPEX + JIT
     jit_ipex_model = InferenceOptimizer.trace(model_ft,
                                               accelerator="jit",
                                               use_ipex=True,
                                               input_sample=torch.rand(1, 3, 224, 224))
-    y_hat = jit_ipex_model(x)
-    predictions = y_hat.argmax(dim=1)
-    print(predictions)
+    with InferenceOptimizer.get_context(jit_ipex_model):
+        y_hat = jit_ipex_model(x)
+        predictions = y_hat.argmax(dim=1)
+        print(predictions)

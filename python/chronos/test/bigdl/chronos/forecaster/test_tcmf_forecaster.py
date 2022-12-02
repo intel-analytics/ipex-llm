@@ -23,10 +23,9 @@ from unittest import TestCase
 import tempfile
 import pandas as pd
 
-from .. import op_all, op_distributed, op_torch, op_diff_set_all
+from .. import op_distributed, op_torch, op_diff_set_all
 
 
-@op_all
 @op_torch
 @op_distributed
 class TestChronosModelTCMFForecaster(TestCase):

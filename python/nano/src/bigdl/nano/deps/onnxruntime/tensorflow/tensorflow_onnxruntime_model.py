@@ -16,11 +16,14 @@
 
 
 import os
+from pathlib import Path
+from tempfile import TemporaryDirectory
 import tensorflow as tf
 from bigdl.nano.utils.inference.tf.model import AcceleratedKerasModel
 from bigdl.nano.utils.log4Error import invalidInputError
 
 from ..core.onnxruntime_model import ONNXRuntimeModel
+import onnxruntime  # should be put behind core's import
 
 try:
     import tf2onnx
@@ -43,17 +46,17 @@ class KerasONNXRuntimeModel(ONNXRuntimeModel, AcceleratedKerasModel):
             the shape/dtype of the input
         :param onnxruntime_session_options: will be passed to tf2onnx.convert.from_keras function
         """
-        onnx_path = model
-        if isinstance(model, tf.keras.Model):
-            onnx_path = 'tmp.onnx'
-            if not isinstance(input_sample, (tuple, list)):
-                input_sample = (input_sample, )
-            tf2onnx.convert.from_keras(model, input_signature=input_sample,
-                                       output_path=onnx_path, **export_kwargs)
-        AcceleratedKerasModel.__init__(self, None)
-        ONNXRuntimeModel.__init__(self, onnx_path, session_options=onnxruntime_session_options)
-        if isinstance(model, tf.keras.Model) and os.path.exists(onnx_path):
-            os.remove(onnx_path)
+        with TemporaryDirectory() as tmpdir:
+            if isinstance(model, tf.keras.Model):
+                onnx_path = os.path.join(tmpdir, "tmp.onnx")
+                if not isinstance(input_sample, (tuple, list)):
+                    input_sample = (input_sample, )
+                tf2onnx.convert.from_keras(model, input_signature=input_sample,
+                                           output_path=onnx_path, **export_kwargs)
+            else:
+                onnx_path = model
+            AcceleratedKerasModel.__init__(self, None)
+            ONNXRuntimeModel.__init__(self, onnx_path, session_options=onnxruntime_session_options)
 
     def on_forward_start(self, inputs):
         if self.ortsess is None:
@@ -65,3 +68,39 @@ class KerasONNXRuntimeModel(ONNXRuntimeModel, AcceleratedKerasModel):
     def on_forward_end(self, outputs):
         outputs = self.numpy_to_tensors(outputs)
         return outputs
+
+    @property
+    def status(self):
+        status = super().status
+        status.update({"onnx_path": 'onnx_saved_model.onnx',
+                       "intra_op_num_threads": self.session_options.intra_op_num_threads,
+                       "inter_op_num_threads": self.session_options.inter_op_num_threads})
+        return status
+
+    @staticmethod
+    def _load(path):
+        """
+        Load an ONNX model for inference from directory.
+
+        :param path: Path to model to be loaded.
+        :return: KerasONNXRuntimeModel model for ONNX Runtime inference.
+        """
+        status = KerasONNXRuntimeModel._load_status(path)
+        if status.get('onnx_path', None):
+            onnx_path = Path(status['onnx_path'])
+            invalidInputError(onnx_path.suffix == '.onnx',
+                              "Path of onnx model must be with '.onnx' suffix.")
+        else:
+            invalidInputError(False,
+                              "nano_model_meta.yml must specify 'onnx_path' for loading.")
+        onnx_path = Path(path) / status['onnx_path']
+        onnxruntime_session_options = onnxruntime.SessionOptions()
+        onnxruntime_session_options.intra_op_num_threads = status['intra_op_num_threads']
+        onnxruntime_session_options.inter_op_num_threads = status['inter_op_num_threads']
+        return KerasONNXRuntimeModel(model=str(onnx_path),
+                                     input_sample=None,
+                                     onnxruntime_session_options=onnxruntime_session_options)
+
+    def _save_model(self, path):
+        onnx_path = Path(path) / self.status['onnx_path']
+        super()._save_model(onnx_path)

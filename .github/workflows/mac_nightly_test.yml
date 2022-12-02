@@ -1,0 +1,319 @@
+name: Mac Nightly Test
+# Cancel previous runs in the PR when you push new commits
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.run_id }}
+  cancel-in-progress: true
+on:
+
+  #pull_request:
+    #branchs: [ main ]
+
+  schedule:
+    - cron: '0 11 * * *' # GMT time, 13:00 GMT == 21:00 China
+  workflow_dispatch:
+    inputs:
+      artifact:
+        description: 'select which job to run("all" will make all jobs run)'
+        required: true
+        default: 'all'
+        type: choice
+        options:
+        - all
+        - Mac-Python-AppTest-Part1
+        - Mac-Dllib-ScalaTest-Spark3
+        - Mac-Dllib-Python-ExampleTest-Spark3
+        - Mac-Friesian-Python-UT-Spark3
+        - Mac-Friesian-Python-UT-Pip-Spark3
+        - Mac-Friesian-Python-ExampleTest-tf2-Spark3
+        - Mac-Friesian-Python-ExampleTest-tf2-pip-Spark3
+        - Mac-Friesian-Python-ExampleTest-feature-tf1-Spark3
+        - Mac-Friesian-Python-ExampleTest-feature-tf1-pip-Spark3
+        - Mac-Orca-Python-UT-Spark3
+        - Mac-Orca-Python-UT-Ray-Spark3
+        - Mac-Orca-Python-ExampleTest-Spark3
+        - Mac-Orca-Python-ExampleTest-Ray-Spark3
+
+env:
+  GIST_ID: 6bcf97ad277d77344b88ddbefa2dd4ad
+
+permissions:
+  contents: read
+  packages: write
+
+jobs:
+  Mac-Python-AppTest-Part1:
+    if: ${{ github.event.schedule || github.event.inputs.artifact == 'Mac-Python-AppTest-Part1' || github.event.inputs.artifact == 'all' }} 
+    runs-on: [self-hosted, mac, macOS]
+
+    steps:
+    - uses: actions/checkout@v3
+    - name: Run Test
+      uses: ./.github/actions/mac/app/mac-python-apptest-part1
+    - name: Create Job Badge
+      uses: ./.github/actions/create-job-status-badge
+      if: ${{ always() }}
+      with:
+        secret: ${{ secrets.GIST_SECRET}}
+        gist-id: ${{env.GIST_ID}}
+        is-self-hosted-runner: true
+        file-name: Mac-Python-AppTest-Part1.json
+        type: job
+        job-name: Mac-Python-AppTest-Part1
+        runner-hosted-on: 'Shanghai'
+
+
+  Mac-Dllib-ScalaTest-Spark3:
+    if: ${{ github.event.schedule || github.event.inputs.artifact == 'Mac-Dllib-ScalaTest-Spark3' || github.event.inputs.artifact == 'all' }} 
+    runs-on: [self-hosted, mac, macOS]
+
+    steps:
+    - uses: actions/checkout@v3
+    - name: Run Test
+      uses: ./.github/actions/mac/dllib/mac-dllib-scalatest-spark3
+    - name: Create Job Badge
+      uses: ./.github/actions/create-job-status-badge
+      if: ${{ always() }}
+      with:
+        secret: ${{ secrets.GIST_SECRET}}
+        gist-id: ${{env.GIST_ID}}
+        is-self-hosted-runner: true
+        file-name: Mac-Dllib-ScalaTest-Spark2.4.json
+        type: job
+        job-name: Mac-Dllib-ScalaTest-Spark2.4
+        runner-hosted-on: 'Shanghai'
+
+  Mac-Dllib-Python-ExampleTest-Spark3:
+    if: ${{ github.event.schedule || github.event.inputs.artifact == 'Mac-Dllib-Python-ExampleTest-Spark3' || github.event.inputs.artifact == 'all' }} 
+    runs-on: [self-hosted, mac, macOS]
+
+    steps:
+    - uses: actions/checkout@v3
+    - name: Run Test
+      uses: ./.github/actions/mac/dllib/mac-dllib-python-exampletest-spark3
+    - name: Create Job Badge
+      uses: ./.github/actions/create-job-status-badge
+      if: ${{ always() }}
+      with:
+        secret: ${{ secrets.GIST_SECRET}}
+        gist-id: ${{env.GIST_ID}}
+        is-self-hosted-runner: true
+        file-name: Mac-Dllib-Python-ExampleTest-Spark3.json
+        type: job
+        job-name: Mac-Dllib-Python-ExampleTest-Spark3
+        runner-hosted-on: 'Shanghai'
+  
+  Mac-Friesian-Python-UT-Spark3:
+    if: ${{ github.event.schedule || github.event.inputs.artifact == 'Mac-Friesian-Python-UT-Spark3' || github.event.inputs.artifact == 'all' }} 
+    runs-on: [self-hosted, mac, macOS]
+
+    steps:
+    - uses: actions/checkout@v3
+    - name: Run Test
+      uses: ./.github/actions/mac/friesian/mac-friesian-python-ut-spark3
+    - name: Create Job Badge
+      uses: ./.github/actions/create-job-status-badge
+      if: ${{ always() }}
+      with:
+        secret: ${{ secrets.GIST_SECRET}}
+        gist-id: ${{env.GIST_ID}}
+        is-self-hosted-runner: true
+        file-name: Mac-Friesian-Python-UT-Spark3.json
+        type: job
+        job-name: Mac-Friesian-Python-UT-Spark3
+        runner-hosted-on: 'Shanghai'
+
+  Mac-Friesian-Python-UT-Pip-Spark3:
+    if: ${{ github.event.schedule || github.event.inputs.artifact == 'Mac-Friesian-Python-UT-Pip-Spark3' || github.event.inputs.artifact == 'all' }} 
+    runs-on: [self-hosted, mac, macOS]
+
+    steps:
+    - uses: actions/checkout@v3
+    - name: Run Test
+      uses: ./.github/actions/mac/friesian/mac-friesian-python-ut-pip-spark3
+    - name: Create Job Badge
+      uses: ./.github/actions/create-job-status-badge
+      if: ${{ always() }}
+      with:
+        secret: ${{ secrets.GIST_SECRET}}
+        gist-id: ${{env.GIST_ID}}
+        is-self-hosted-runner: true
+        file-name: Mac-Friesian-Python-UT-Pip-Spark3.json
+        type: job
+        job-name: Mac-Friesian-Python-UT-Pip-Spark3
+        runner-hosted-on: 'Shanghai'
+  
+  Mac-Friesian-Python-ExampleTest-Tf2-Spark3:
+    if: ${{ github.event.schedule || github.event.inputs.artifact == 'Mac-Friesian-Python-ExampleTest-Tf2-Spark3' || github.event.inputs.artifact == 'all' }} 
+    runs-on: [self-hosted, mac, macOS]
+
+    steps:
+    - uses: actions/checkout@v3
+    - name: Run Test
+      uses: ./.github/actions/mac/friesian/mac-friesian-python-exampletest-tf2-spark3
+    - name: Create Job Badge
+      uses: ./.github/actions/create-job-status-badge
+      if: ${{ always() }}
+      with:
+        secret: ${{ secrets.GIST_SECRET}}
+        gist-id: ${{env.GIST_ID}}
+        is-self-hosted-runner: true
+        file-name: Mac-Friesian-Python-ExampleTest-Tf2-Spark3.json
+        type: job
+        job-name: Mac-Friesian-Python-ExampleTest-Tf2-Spark3
+        runner-hosted-on: 'Shanghai'
+
+  Mac-Friesian-Python-ExampleTest-Tf2-Pip-Spark3:
+    if: ${{ github.event.schedule || github.event.inputs.artifact == 'Mac-Friesian-Python-ExampleTest-Tf2-Pip-Spark3' || github.event.inputs.artifact == 'all' }} 
+    runs-on: [self-hosted, mac, macOS]
+
+    steps:
+    - uses: actions/checkout@v3
+    - name: Run Test
+      uses: ./.github/actions/mac/friesian/mac-friesian-python-exampletest-tf2-pip-spark3
+    - name: Create Job Badge
+      uses: ./.github/actions/create-job-status-badge
+      if: ${{ always() }}
+      with:
+        secret: ${{ secrets.GIST_SECRET}}
+        gist-id: ${{env.GIST_ID}}
+        is-self-hosted-runner: true
+        file-name: Mac-Friesian-Python-ExampleTest-Tf2-Pip-Spark3.json
+        type: job
+        job-name: Mac-Friesian-Python-ExampleTest-Tf2-Pip-Spark3
+        runner-hosted-on: 'Shanghai'
+
+  Mac-Friesian-Python-ExampleTest-feature-tf1-Spark3:
+    if: ${{ github.event.schedule || github.event.inputs.artifact == 'Mac-Friesian-Python-ExampleTest-feature-tf1-Spark3' || github.event.inputs.artifact == 'all' }} 
+    runs-on: [self-hosted, mac, macOS]
+
+    steps:
+    - uses: actions/checkout@v3
+    - name: Run Test
+      uses: ./.github/actions/mac/friesian/mac-friesian-python-exampletest-feature-tf1-spark3
+    - name: Create Job Badge
+      uses: ./.github/actions/create-job-status-badge
+      if: ${{ always() }}
+      with:
+        secret: ${{ secrets.GIST_SECRET}}
+        gist-id: ${{env.GIST_ID}}
+        is-self-hosted-runner: true
+        file-name: Mac-Friesian-Python-ExampleTest-feature-tf1-Spark3.json
+        type: job
+        job-name: Mac-Friesian-Python-ExampleTest-feature-tf1-Spark3
+        runner-hosted-on: 'Shanghai'
+
+  Mac-Friesian-Python-ExampleTest-feature-tf1-pip-Spark3:
+    if: ${{ github.event.schedule || github.event.inputs.artifact == 'Mac-Friesian-Python-ExampleTest-feature-tf1-pip-Spark3' || github.event.inputs.artifact == 'all' }} 
+    runs-on: [self-hosted, mac, macOS]
+
+    steps:
+    - uses: actions/checkout@v3
+    - name: Run Test
+      uses: ./.github/actions/mac/friesian/mac-friesian-python-exampletest-feature-tf1-pip-spark3
+    - name: Create Job Badge
+      uses: ./.github/actions/create-job-status-badge
+      if: ${{ always() }}
+      with:
+        secret: ${{ secrets.GIST_SECRET}}
+        gist-id: ${{env.GIST_ID}}
+        is-self-hosted-runner: true
+        file-name: Mac-Friesian-Python-ExampleTest-feature-tf1-pip-Spark3.json
+        type: job
+        job-name: Mac-Friesian-Python-ExampleTest-feature-tf1-pip-Spark3
+        runner-hosted-on: 'Shanghai'
+
+  Mac-Orca-Python-UT-Spark3:
+    if: ${{ github.event.schedule || github.event.inputs.artifact == 'Mac-Orca-Python-UT-Spark3' || github.event.inputs.artifact == 'all' }} 
+    runs-on: [self-hosted, mac, macOS]
+
+    steps:
+    - uses: actions/checkout@v3
+    - name: Run Test
+      uses: ./.github/actions/mac/orca/mac-orca-python-ut-spark3
+    - name: Create Job Badge
+      uses: ./.github/actions/create-job-status-badge
+      if: ${{ always() }}
+      with:
+        secret: ${{ secrets.GIST_SECRET}}
+        gist-id: ${{env.GIST_ID}}
+        is-self-hosted-runner: true
+        file-name: Mac-Orca-Python-UT-Spark3.json
+        type: job
+        job-name: Mac-Orca-Python-UT-Spark3
+        runner-hosted-on: 'Shanghai'
+
+  Mac-Orca-Python-UT-Ray-Spark3:
+    if: ${{ github.event.schedule || github.event.inputs.artifact == 'Mac-Orca-Python-UT-Ray-Spark3' || github.event.inputs.artifact == 'all' }} 
+    runs-on: [self-hosted, mac, macOS]
+
+    steps:
+    - uses: actions/checkout@v3
+    - name: Run Test
+      uses: ./.github/actions/mac/orca/mac-orca-python-ut-ray-spark3
+    - name: Create Job Badge
+      uses: ./.github/actions/create-job-status-badge
+      if: ${{ always() }}
+      with:
+        secret: ${{ secrets.GIST_SECRET}}
+        gist-id: ${{env.GIST_ID}}
+        is-self-hosted-runner: true
+        file-name: Mac-Orca-Python-UT-Ray-Spark3.json
+        type: job
+        job-name: Mac-Orca-Python-UT-Ray-Spark3
+        runner-hosted-on: 'Shanghai'
+
+  Mac-Orca-Python-ExampleTest-Spark3:
+    if: ${{ github.event.schedule || github.event.inputs.artifact == 'Mac-Orca-Python-ExampleTest-Spark3' || github.event.inputs.artifact == 'all' }} 
+    runs-on: [self-hosted, mac, macOS]
+
+    steps:
+    - uses: actions/checkout@v3
+    - name: Run Test
+      uses: ./.github/actions/mac/orca/mac-orca-python-exampletest-spark3
+    - name: Create Job Badge
+      uses: ./.github/actions/create-job-status-badge
+      if: ${{ always() }}
+      with:
+        secret: ${{ secrets.GIST_SECRET}}
+        gist-id: ${{env.GIST_ID}}
+        is-self-hosted-runner: true
+        file-name: Mac-Orca-Python-ExampleTest-Spark3.json
+        type: job
+        job-name: Mac-Orca-Python-ExampleTest-Spark3
+        runner-hosted-on: 'Shanghai'
+
+  Mac-Orca-Python-ExampleTest-Ray-Spark3:
+    if: ${{ github.event.schedule || github.event.inputs.artifact == 'Mac-Orca-Python-ExampleTest-Ray-Spark3' || github.event.inputs.artifact == 'all' }} 
+    runs-on: [self-hosted, mac, macOS]
+
+    steps:
+    - uses: actions/checkout@v3
+    - name: Run Test
+      uses: ./.github/actions/mac/orca/mac-orca-python-exampletest-ray-spark3
+    - name: Create Job Badge
+      uses: ./.github/actions/create-job-status-badge
+      if: ${{ always() }}
+      with:
+        secret: ${{ secrets.GIST_SECRET}}
+        gist-id: ${{env.GIST_ID}}
+        is-self-hosted-runner: true
+        file-name: Mac-Orca-Python-ExampleTest-Ray-Spark3.json
+        type: job
+        job-name: Mac-Orca-Python-ExampleTest-Ray-Spark3
+        runner-hosted-on: 'Shanghai'
+
+  # please put your test before the create-workflow-badge to make sure the badge can be displayed on the github page.
+  create-workflow-badge:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+    - name: create workflow badge
+      if: ${{ always() }}
+      uses: ./.github/actions/create-job-status-badge
+      with:
+        secret: ${{ secrets.GIST_SECRET }}
+        gist-id: ${{env.GIST_ID}}
+        file-name: mac-nightly-test.json
+        type: workflow
+  
+

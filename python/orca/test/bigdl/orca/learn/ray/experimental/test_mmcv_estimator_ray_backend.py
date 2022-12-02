@@ -14,25 +14,23 @@
 # limitations under the License.
 #
 
+import pytest
 import unittest
 import os
-import random
-import shutil
 import torch
 import torch.nn as nn
-import torch.nn.functional as F
 import torch.optim as optim
-import torchvision.transforms as transforms
 from torch.utils.data import DataLoader
-from torchvision.datasets import CIFAR10
 
 from mmcv.runner import EpochBasedRunner
 from mmcv.utils import get_logger
-from bigdl.orca import init_orca_context, stop_orca_context
 from bigdl.orca.learn.pytorch.experimential.mmcv.mmcv_ray_estimator import MMCVRayEstimator
 
 resource_path = os.path.join(
     os.path.realpath(os.path.dirname(__file__)), "../../../resources")
+
+MAX_EPOCH = 4
+NUM_SAMPLES = 1000
 
 
 class Model(nn.Module):
@@ -58,11 +56,44 @@ class Model(nn.Module):
         y = self.out_act(a3)
         return y
 
-    def train_step(self, data, optimizer):
+    def train_step(self, data, optimizer, **kwargs):
         features, labels = data
         predicts = self(features)  # -> self.__call__() -> self.forward()
         loss = self.loss_fn(predicts, labels)
         return {'loss': loss}
+
+
+class Model2(nn.Module):
+
+    def __init__(self):
+        super().__init__()
+        self.fc1 = nn.Linear(50, 50)
+        self.relu1 = nn.ReLU()
+        self.dout = nn.Dropout(0.2)
+        self.fc2 = nn.Linear(50, 100)
+        self.prelu = nn.PReLU(1)
+        self.out = nn.Linear(100, 1)
+        self.out_act = nn.Sigmoid()
+        self.loss_fn = nn.BCELoss()
+
+    def forward(self, input_, labels):
+        a1 = self.fc1(input_)
+        h1 = self.relu1(a1)
+        dout = self.dout(h1)
+        a2 = self.fc2(dout)
+        h2 = self.prelu(a2)
+        a3 = self.out(h2)
+        y = self.out_act(a3)
+        loss = self.loss_fn(y, labels)
+        return loss
+
+
+def batch_processor(model, data, train_mode, **kwargs):
+    features, labels = data
+    loss = model(features, labels)
+    log_vars = dict()
+    log_vars["var1"] = 1.0
+    return {'loss': loss, 'log_vars': log_vars, "num_samples": features.size(0)}
 
 
 def runner_creator(config):
@@ -76,7 +107,36 @@ def runner_creator(config):
         optimizer=optimizer,
         work_dir='./work_dir',
         logger=logger,
-        max_epochs=4)
+        max_epochs=MAX_EPOCH)
+
+    # learning rate scheduler config
+    lr_config = dict(policy='step', step=[2, 3])
+    # configuration of optimizer
+    optimizer_config = dict(grad_clip=None)
+    # save log periodically and multiple hooks can be used simultaneously
+    log_config = dict(interval=4, hooks=[dict(type='TextLoggerHook')])
+    # register hooks to runner and those hooks will be invoked automatically
+    runner.register_training_hooks(
+        lr_config=lr_config,
+        optimizer_config=optimizer_config,
+        log_config=log_config)
+
+    return runner
+
+
+def runner_creator_with_batch_processor(config):
+    model = Model2()
+
+    optimizer = optim.SGD(model.parameters(), lr=0.001, momentum=0.9)
+    logger = get_logger('mmcv')
+    # runner is a scheduler to manage the training
+    runner = EpochBasedRunner(
+        model,
+        batch_processor=batch_processor,
+        optimizer=optimizer,
+        work_dir='./work_dir',
+        logger=logger,
+        max_epochs=MAX_EPOCH)
 
     # learning rate scheduler config
     lr_config = dict(policy='step', step=[2, 3])
@@ -112,34 +172,52 @@ class LinearDataset(torch.utils.data.Dataset):
 
 
 def train_dataloader_creator(config):
-    train_set = LinearDataset()
+    train_set = LinearDataset(size=NUM_SAMPLES)
     train_loader = DataLoader(
         train_set, batch_size=64, shuffle=True, num_workers=2)
     return train_loader
 
 
+def get_estimator(creator):
+    estimator = MMCVRayEstimator(
+        mmcv_runner_creator=creator,
+        config={}
+    )
+    return estimator
+
+
 class TestMMCVRayEstimator(unittest.TestCase):
 
-    @classmethod
-    def setUpClass(cls) -> None:
-        init_orca_context(cores=8, memory="8g")
+    def test_run_with_train_step(self):
+        estimator = get_estimator(runner_creator)
+        epoch_stats = estimator.run([train_dataloader_creator], [('train', 1)])
+        self.assertEqual(len(epoch_stats), MAX_EPOCH)
 
-    @classmethod
-    def tearDownClass(cls) -> None:
-        stop_orca_context()
+        start_stats = epoch_stats[0]
+        end_stats = epoch_stats[-1]
+        self.assertEqual(start_stats["num_samples"], NUM_SAMPLES)
+        self.assertEqual(end_stats["num_samples"], NUM_SAMPLES)
 
-    def setUp(self) -> None:
-        self.estimator = MMCVRayEstimator(
-            mmcv_runner_creator=runner_creator,
-            config={}
-        )
+        dloss = end_stats["loss"] - start_stats["loss"]
+        print(f"dLoss: {dloss}")
+        assert dloss < 0
 
-    def test_fit(self):
-        self.estimator.fit([train_dataloader_creator], [('train', 1)])
+    def test_run_with_batch_processor(self):
+        estimator = get_estimator(runner_creator_with_batch_processor)
+        epoch_stats = estimator.run([train_dataloader_creator], [('train', 1)])
+        self.assertEqual(len(epoch_stats), MAX_EPOCH)
 
-    def test_run(self):
-        self.estimator.run([train_dataloader_creator], [('train', 1)])
+        start_stats = epoch_stats[0]
+        end_stats = epoch_stats[-1]
+        self.assertEqual(start_stats["num_samples"], NUM_SAMPLES)
+        self.assertEqual(end_stats["num_samples"], NUM_SAMPLES)
+        self.assertEqual(start_stats["var1"], 1.0)
+        self.assertEqual(end_stats["var1"], 1.0)
+
+        dloss = end_stats["loss"] - start_stats["loss"]
+        print(f"dLoss: {dloss}")
+        assert dloss < 0
 
 
 if __name__ == "__main__":
-    unittest.main()
+    pytest.main([__file__])

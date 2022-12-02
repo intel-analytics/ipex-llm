@@ -118,7 +118,6 @@ if [ -d data/multi_task_data.csv ]; then
   echo "data/multi_task_data.csv already exists"
 else
   wget -nv $FTP_URI/analytics-zoo-data/multi_task_data.csv -P data
-  echo "ls multi_task_data"
 fi
 
 python ../../example/multi_task/data_processing.py \
@@ -130,8 +129,8 @@ start=$(date "+%s")
 
 python ../../example/multi_task/run_multi_task.py \
     --model_save_path ./result/multi_task \
-    --train_data_path ./data/train_processed \
-    --test_data_path ./data/test_processed \
+    --train_data_path ./data/train_multi_task \
+    --test_data_path ./data/test_multi_task \
 
 now=$(date "+%s")
 time6=$((now - start))

@@ -5,17 +5,19 @@ on:
     - cron: '0 16 * * *'
   issue_comment:
     types: [created]
-  # Allows you to run this workflow manually from the Actions tab
-  workflow_dispatch:
+  pull_request:
+    branches: [ main ]
+    paths:
+      - '.github/workflows/performance-regression-test.yml'
 
 jobs:
   performace-regression-test:
     runs-on: [Rohan, ubuntu-20.04-lts]
-    if: github.event.schedule || github.event.issue.pull_request && github.event.comment.body=='APRT'
+    if: github.event.pull_request || github.event.schedule || github.event.issue.pull_request && github.event.comment.body=='APRT'
     steps:
-      # trigged by scheduling or commenting 'APRT' in a closed PR
-      - name: checkout (schedule or closed pr comments)
-        if: github.event.schedule || github.event.issue.pull_request.merged_at
+      # trigged by opening a PR which modifies this file or scheduling or commenting 'APRT' in a closed PR
+      - name: checkout (open pr or schedule or closed pr comments)
+        if: github.event.pull_request || github.event.schedule || github.event.issue.pull_request.merged_at
         uses: actions/checkout@v3
 
       # trigged by commenting 'APRT' in an opening PR
@@ -41,12 +43,17 @@ jobs:
 
       - name: Run benchmark
         run: |
-          python python/nano/benchmark/run.py resnet_inference
-          python python/nano/benchmark/run.py resnet50
+          python python/benchmark/run.py chronos tsdataset_processing
+          python python/benchmark/run.py chronos forecaster_training
+          python python/benchmark/run.py chronos forecaster_inference
+          python python/benchmark/run.py nano torch_inference_optimizer
+          python python/benchmark/run.py nano resnet_inference
+          python python/benchmark/run.py nano resnet50
         env:
           USER: ${{ github.actor }}
           PR_URL: ${{ github.event.comment.issue_url }}/comments
           COMMENT_URL: ${{ github.event.comment.html_url }}
           JOB_URL: https://github.com/intel-analytics/BigDL/actions/runs/${{ github.run_id }}
           ANALYTICS_ZOO_ROOT: ${{ github.workspace }}
-          IS_PR: ${{ github.event.issue.pull_request != null}}
+          IS_PR: ${{ github.event.pull_request != null || github.event.issue.pull_request != null }}
+          IS_COMMENTS: ${{ github.event.issue.pull_request != null }}

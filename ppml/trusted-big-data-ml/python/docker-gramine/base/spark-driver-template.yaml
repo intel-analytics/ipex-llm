@@ -3,8 +3,6 @@ kind: Pod
 spec:
   containers:
   - name: spark-driver
-    securityContext:
-      privileged: true
     env:
       - name: ATTESTATION
         value: false
@@ -37,20 +35,20 @@ spec:
       - name: secure-keys
         mountPath: /ppml/trusted-big-data-ml/work/keys
       - name: kubeconfig
-        mountPath: /root/.kube/config
-     #resources:
-      #requests:
-        #cpu: 16
-        #memory: 128Gi
-        #sgx.intel.com/epc: 133258905600
-        #sgx.intel.com/enclave: 10
-        #sgx.intel.com/provision: 10
-      #limits:
-        #cpu: 16
-        #memory: 128Gi
-        #sgx.intel.com/epc: 133258905600
-        #sgx.intel.com/enclave: 10
-        #sgx.intel.com/provision: 10
+        mountPath: /root/.kube
+    resources:
+      requests:
+        cpu: 8
+        memory: 32Gi
+        sgx.intel.com/epc: 34359738368
+        sgx.intel.com/enclave: 1
+        sgx.intel.com/provision: 1
+      limits:
+        cpu: 10
+        memory: 40Gi
+        sgx.intel.com/epc: 34359738368
+        sgx.intel.com/enclave: 1
+        sgx.intel.com/provision: 1
   volumes:
     - name: device-plugin
       hostPath:

@@ -1,0 +1,28 @@
+name: 'Mac Orca Python ExampleTest Spark3.1'
+description: 'Mac Orca Python ExampleTest Spark3.1'
+runs:
+  using: "composite"
+  steps:
+    - name: Run Test
+      shell: bash
+      run: |
+        source ~/.bash_profile
+        source activate py36
+        pip uninstall -y bigdl-dllib bigdl-orca bigdl-chronos bigdl-orca-spark3 bigdl-dllib-spark3 bigdl-chronos-spark3  pyspark
+        export KERAS_BACKEND=tensorflow
+        #export SPARK_HOME=/opt/work/spark-3.1.3
+        export MASTER=local[4]
+        export HDFS_URI=/Users/arda/data
+        
+        pip install -i https://pypi.org/simple  bigdl-orca
+        FILE=python/orca/dev/example/run-example-tests.sh
+        if [ -f $FILE ];then
+          chmod a+x python/orca/dev/example/run-example-tests.sh
+          python/orca/dev/example/run-example-tests.sh  
+  
+        fi
+        source deactivate
+      env:
+        BIGDL_ROOT: ${{ github.workspace }}
+        ANALYTICS_ZOO_ROOT: ${{ github.workspace }}
+        
