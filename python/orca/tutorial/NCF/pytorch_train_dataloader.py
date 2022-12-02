@@ -27,6 +27,7 @@ from pytorch_model import NCF
 
 from bigdl.orca import init_orca_context, stop_orca_context
 from bigdl.orca.learn.pytorch import Estimator
+from bigdl.orca.learn.pytorch.callbacks.tensorboard import TensorBoardCallback
 from bigdl.orca.learn.metrics import Accuracy, Precision, Recall
 
 
@@ -77,6 +78,8 @@ loss = nn.BCEWithLogitsLoss()
 # Step 4: Distributed training with Orca PyTorch Estimator
 dataset_dir = "./ml-1m"
 backend = "ray"  # "ray" or "spark"
+callbacks = [TensorBoardCallback(log_dir="runs",
+                                 freq="epoch")]
 
 est = Estimator.from_torch(model=model_creator, optimizer=optimizer_creator,
                            loss=loss,
@@ -90,7 +93,7 @@ est = Estimator.from_torch(model=model_creator, optimizer=optimizer_creator,
                                    'lr': 0.001,
                                    'model': "NeuMF-end",
                                    'sparse_feats_embed_dims': 8})
-est.fit(data=train_loader_func, epochs=10, batch_size=256)
+est.fit(data=train_loader_func, epochs=10, batch_size=256, callbacks=callbacks)
 
 
 # Step 5: Distributed evaluation of the trained model
