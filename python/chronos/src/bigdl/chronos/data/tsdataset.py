@@ -45,9 +45,9 @@ class TSDataset:
         Cascade call is supported for most of the transform methods.
         '''
         self.df = data
-        # whether to use evaluate mode to improve latency in production environment
-        self.evaluate_mode = schema["evaluate_mode"]
-        if not self.evaluate_mode:
+        # whether to use deploy mode to improve latency in production environment
+        self.deploy_mode = schema["deploy_mode"]
+        if not self.deploy_mode:
             # detect low-quality data and automatic repair (optional)
             _, self.df = quality_check_timeseries_dataframe(df=self.df,
                                                             dt_col=schema["dt_col"],
@@ -71,7 +71,7 @@ class TSDataset:
         self.scaler_index = [i for i in range(len(self.target_col))]
         self.id_sensitive = None
         self._has_generate_agg_feature = False
-        if not self.evaluate_mode:
+        if not self.deploy_mode:
             self._check_basic_invariants()
 
         self._id_list = list(np.unique(self.df[self.id_col]))
@@ -94,7 +94,7 @@ class TSDataset:
                     val_ratio=0,
                     test_ratio=0.1,
                     repair=False,
-                    evaluate_mode=False):
+                    deploy_mode=False):
         '''
         Initialize tsdataset(s) from pandas dataframe.
 
@@ -118,8 +118,8 @@ class TSDataset:
         :param repair: a bool indicates whether automaticly repair low quality data,
                which may call .impute()/.resample() or modify datetime column on dataframe.
                The value defaults to False.
-        :param evaluate_mode: a bool indicates whether to use evaluate mode, which will be used in
-               production environment to improve the latency of data processing. The value
+        :param deploy_mode: a bool indicates whether to use deploy mode, which will be used in
+               production environment to reduce the latency of data processing. The value
                defaults to False.
 
         :return: a TSDataset instance when with_split is set to False,
@@ -139,15 +139,15 @@ class TSDataset:
         >>>                                                      "extra feature 2"])
         '''
 
-        if not evaluate_mode:
+        if not deploy_mode:
             _check_type(df, "df", pd.DataFrame)
             tsdataset_df = df.copy(deep=True)
         else:
             tsdataset_df = df
 
-        target_col = _to_list(target_col, name="target_col", evaluate_mode=evaluate_mode)
+        target_col = _to_list(target_col, name="target_col", deploy_mode=deploy_mode)
         feature_col = _to_list(extra_feature_col, name="extra_feature_col",
-                               evaluate_mode=evaluate_mode)
+                               deploy_mode=deploy_mode)
 
         if id_col is None:
             tsdataset_df[_DEFAULT_ID_COL_NAME] = _DEFAULT_ID_PLACEHOLDER
@@ -164,7 +164,7 @@ class TSDataset:
                               dt_col=dt_col,
                               target_col=target_col,
                               feature_col=feature_col,
-                              evaluate_mode=evaluate_mode) for i in range(3)]
+                              deploy_mode=deploy_mode) for i in range(3)]
 
         return TSDataset(data=tsdataset_df,
                          repair=repair,
@@ -172,7 +172,7 @@ class TSDataset:
                          dt_col=dt_col,
                          target_col=target_col,
                          feature_col=feature_col,
-                         evaluate_mode=evaluate_mode)
+                         deploy_mode=deploy_mode)
 
     @staticmethod
     def from_parquet(path,
@@ -184,7 +184,7 @@ class TSDataset:
                      val_ratio=0,
                      test_ratio=0.1,
                      repair=False,
-                     evaluate_mode=False,
+                     deploy_mode=False,
                      **kwargs):
         """
         Initialize tsdataset(s) from path of parquet file.
@@ -212,8 +212,8 @@ class TSDataset:
         :param repair: a bool indicates whether automaticly repair low quality data,
                which may call .impute()/.resample() or modify datetime column on dataframe.
                The value defaults to False.
-        :param evaluate_mode: a bool indicates whether to use evaluate mode, which will be used in
-               production environment to improve the latency of data processing. The value
+        :param deploy_mode: a bool indicates whether to use deploy mode, which will be used in
+               production environment to reduce the latency of data processing. The value
                defaults to False.
         :param kwargs: Any additional kwargs are passed to the pd.read_parquet
                and pyarrow.parquet.read_table.
@@ -235,10 +235,10 @@ class TSDataset:
         >>>                                                      "extra feature 2"])
         """
         from bigdl.chronos.data.utils.file import parquet2pd
-        columns = _to_list(dt_col, name="dt_col", evaluate_mode=evaluate_mode) + \
-            _to_list(target_col, name="target_col", evaluate_mode=evaluate_mode) + \
-            _to_list(id_col, name="id_col", evaluate_mode=evaluate_mode) + \
-            _to_list(extra_feature_col, name="extra_feature_col", evaluate_mode=evaluate_mode)
+        columns = _to_list(dt_col, name="dt_col", deploy_mode=deploy_mode) + \
+            _to_list(target_col, name="target_col", deploy_mode=deploy_mode) + \
+            _to_list(id_col, name="id_col", deploy_mode=deploy_mode) + \
+            _to_list(extra_feature_col, name="extra_feature_col", deploy_mode=deploy_mode)
         df = parquet2pd(path, columns=columns, **kwargs)
         return TSDataset.from_pandas(df,
                                      repair=repair,
@@ -249,7 +249,7 @@ class TSDataset:
                                      with_split=with_split,
                                      val_ratio=val_ratio,
                                      test_ratio=test_ratio,
-                                     evaluate_mode=evaluate_mode)
+                                     deploy_mode=deploy_mode)
 
     @staticmethod
     def from_prometheus(prometheus_url,
@@ -264,7 +264,7 @@ class TSDataset:
                         val_ratio=0,
                         test_ratio=0.1,
                         repair=False,
-                        evaluate_mode=False,
+                        deploy_mode=False,
                         **kwargs):
         """
         Initialize tsdataset(s) from Prometheus data for specified time period via url.
@@ -297,8 +297,8 @@ class TSDataset:
         :param repair: a bool indicates whether automaticly repair low quality data,
                which may call .impute()/.resample() or modify datetime column on dataframe.
                The value defaults to False.
-        :param evaluate_mode: a bool indicates whether to use evaluate mode, which will be used in
-               production environment to improve the latency of data processing. The value
+        :param deploy_mode: a bool indicates whether to use deploy mode, which will be used in
+               production environment to reduce the latency of data processing. The value
                defaults to False.
         :param kwargs: Any additional kwargs are passed to the Prometheus query, such as
                timeout.
@@ -318,12 +318,12 @@ class TSDataset:
         # TODO: Corresponding unit test should be added
         # Only test locally at present
         from bigdl.chronos.data.utils.prometheus_df import GetRangeDataframe
-        query_list = _to_list(query, name="query", evaluate_mode=evaluate_mode)
+        query_list = _to_list(query, name="query", deploy_mode=deploy_mode)
         columns = {"target_col": _to_list(target_col, name="target_col",
-                                          evaluate_mode=evaluate_mode),
-                   "id_col": _to_list(id_col, name="id_col", evaluate_mode=evaluate_mode),
+                                          deploy_mode=deploy_mode),
+                   "id_col": _to_list(id_col, name="id_col", deploy_mode=deploy_mode),
                    "extra_feature_col": _to_list(extra_feature_col, name="extra_feature_col",
-                                                 evaluate_mode=evaluate_mode)}
+                                                 deploy_mode=deploy_mode)}
         df, df_columns = GetRangeDataframe(prometheus_url, query_list, starttime, endtime,
                                            step, columns=columns, **kwargs)
         return TSDataset.from_pandas(df,
@@ -335,7 +335,7 @@ class TSDataset:
                                      val_ratio=val_ratio,
                                      test_ratio=test_ratio,
                                      repair=repair,
-                                     evaluate_mode=evaluate_mode)
+                                     deploy_mode=deploy_mode)
 
     def impute(self, mode="last", const_num=0):
         '''
@@ -387,7 +387,7 @@ class TSDataset:
 
         :return: the tsdataset instance.
         '''
-        if not self.evaluate_mode:
+        if not self.deploy_mode:
             from bigdl.nano.utils.log4Error import invalidInputError
             invalidInputError(self._is_pd_datetime,
                               "The time series data does not have a Pandas datetime format "
@@ -411,7 +411,7 @@ class TSDataset:
                                                             end_time=end_time,
                                                             id_col=self.id_col,
                                                             merge_mode=merge_mode,
-                                                            evaluate_mode=self.evaluate_mode))
+                                                            deploy_mode=self.deploy_mode))
         self._freq = pd.Timedelta(interval)
         self._freq_certainty = True
         self.df.reset_index(drop=True, inplace=True)
@@ -470,7 +470,7 @@ class TSDataset:
 
         :return: the tsdataset instance.
         '''
-        if not self.evaluate_mode:
+        if not self.deploy_mode:
             from bigdl.nano.utils.log4Error import invalidInputError
             invalidInputError(self._is_pd_datetime,
                               "The time series data does not have a Pandas datetime format"
@@ -702,7 +702,7 @@ class TSDataset:
         >>> print(x.shape, y.shape) # x.shape = (1, 1, 6) y.shape = (1, 1, 2)
 
         '''
-        if not self.evaluate_mode:
+        if not self.deploy_mode:
             from bigdl.nano.utils.log4Error import invalidInputError
             if id_sensitive and not _check_is_aligned(self.df, self.id_col, self.dt_col):
                 invalidInputError(False,
@@ -711,9 +711,9 @@ class TSDataset:
         else:
             is_predict = True
 
-        feature_col = _to_list(feature_col, "feature_col", evaluate_mode=self.evaluate_mode) \
+        feature_col = _to_list(feature_col, "feature_col", deploy_mode=self.deploy_mode) \
             if feature_col is not None else self.feature_col
-        target_col = _to_list(target_col, "target_col", evaluate_mode=self.evaluate_mode) \
+        target_col = _to_list(target_col, "target_col", deploy_mode=self.deploy_mode) \
             if target_col is not None else self.target_col
         if self.roll_additional_feature:
             additional_feature_col =\
@@ -754,7 +754,7 @@ class TSDataset:
                                                             feature_col=feature_col,
                                                             target_col=target_col,
                                                             label_len=label_len,
-                                                            evaluate_mode=self.evaluate_mode))
+                                                            deploy_mode=self.deploy_mode))
 
         # concat the result on required axis
         concat_axis = 2 if id_sensitive else 0
@@ -1011,7 +1011,7 @@ class TSDataset:
                  when time_enc=True.
                  The ndarray is casted to float32.
         '''
-        if not self.evaluate_mode:
+        if not self.deploy_mode:
             from bigdl.nano.utils.log4Error import invalidInputError
             if self.numpy_x is None:
                 invalidInputError(False,
@@ -1059,11 +1059,11 @@ class TSDataset:
             for feature in self.feature_col:
                 if feature not in self.roll_additional_feature:
                     feature_col.append(feature)
-        if fit and not self.evaluate_mode:
+        if fit and not self.deploy_mode:
             self.df[self.target_col + feature_col] = \
                 scaler.fit_transform(self.df[self.target_col + feature_col])
         else:
-            if not self.evaluate_mode:
+            if not self.deploy_mode:
                 from sklearn.utils.validation import check_is_fitted
                 from bigdl.nano.utils.log4Error import invalidInputError
                 try:

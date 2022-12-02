@@ -15,12 +15,12 @@
 #
 
 
-def _to_list(item, name, expect_type=str, evaluate_mode=False):
+def _to_list(item, name, expect_type=str, deploy_mode=False):
     if isinstance(item, list):
         return item
     if item is None:
         return []
-    if not evaluate_mode:
+    if not deploy_mode:
         _check_type(item, name, expect_type)
     return [item]
 

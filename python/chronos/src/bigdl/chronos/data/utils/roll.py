@@ -27,7 +27,7 @@ def roll_timeseries_dataframe(df,
                               id_col=None,
                               label_len=0,
                               contain_id=False,
-                              evaluate_mode=False):
+                              deploy_mode=False):
     """
     roll dataframe into numpy ndarray sequence samples.
 
@@ -45,15 +45,15 @@ def roll_timeseries_dataframe(df,
     :param id_col: str, indicate the id col name, only needed when contain_id is True.
     :param label_len: This parameter is only for transformer-based model.
     :param contain_id: This parameter is only for XShardsTSDataset
-    :param evaluate_mode: a bool indicates whether to use evaluate mode, which will be used in
-           production environment to improve the latency of data processing. The value
+    :param deploy_mode: a bool indicates whether to use deploy mode, which will be used in
+           production environment to reduce the latency of data processing. The value
            defaults to False.
     :return: x, y
         x: 3-d numpy array in format (no. of samples, lookback, feature_col length)
         y: 3-d numpy array in format (no. of samples, horizon, target_col length)
     Note: Specially, if `horizon` is set to 0, then y will be None.
     """
-    if evaluate_mode:
+    if deploy_mode:
         return _roll_timeseries_dataframe_test(df,
                                                roll_feature_df,
                                                lookback,

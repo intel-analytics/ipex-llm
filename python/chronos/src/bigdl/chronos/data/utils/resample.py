@@ -24,7 +24,7 @@ def resample_timeseries_dataframe(df,
                                   end_time=None,
                                   id_col=None,
                                   merge_mode="mean",
-                                  evaluate_mode=False):
+                                  deploy_mode=False):
     '''
     resample and return a dataframe with a new time interval.
     :param df: input dataframe.
@@ -36,11 +36,11 @@ def resample_timeseries_dataframe(df,
     :param merge_mode: if current interval is smaller than output interval,
         we need to merge the values in a mode. "max", "min", "mean"
         or "sum" are supported for now.
-    :param evaluate_mode: a bool indicates whether to use evaluate mode, which will be used in
-           production environment to improve the latency of data processing. The value
+    :param deploy_mode: a bool indicates whether to use deploy mode, which will be used in
+           production environment to reduce the latency of data processing. The value
            defaults to False.
     '''
-    if not evaluate_mode:
+    if not deploy_mode:
         from bigdl.nano.utils.log4Error import invalidInputError
         invalidInputError(dt_col in df.columns, f"dt_col {dt_col} can not be found in df.")
         invalidInputError(pd.isna(df[dt_col]).sum() == 0, "There is N/A in datetime col")
@@ -67,7 +67,7 @@ def resample_timeseries_dataframe(df,
 
     start_time_stamp = pd.Timestamp(start_time) if start_time else res_df.index[0]
     end_time_stamp = pd.Timestamp(end_time) if end_time else res_df.index[-1]
-    if not evaluate_mode:
+    if not deploy_mode:
         invalidInputError(start_time_stamp <= end_time_stamp,
                           "end time must be later than start time.")
 
