@@ -22,11 +22,13 @@ import mmcv
 import numpy as np
 import torch
 import warnings
+from collections import OrderedDict
 from mmcv.runner import EpochBasedRunner
 from mmcv.runner.utils import get_host_info
 from mmcv.parallel.distributed import MMDistributedDataParallel
 from mmcv.parallel.utils import is_module_wrapper
 from mmcv import BaseStorageBackend, FileClient
+from mmcv.runner.checkpoint import CheckpointLoader
 from bigdl.orca.learn.pytorch.utils import get_batchsize
 from bigdl.dllib.utils.log4Error import invalidInputError
 from bigdl.orca.learn.pytorch.experimential.core.base_ray_runner import BaseRayRunner
@@ -36,7 +38,7 @@ from typing import (Union, Any, Dict, List, Optional, Tuple, Callable, overload)
 
 class HDFSBackend(BaseStorageBackend):
     """
-    HDFS storage backend for save/load ckpt
+    HDFS storage backend for saving ckpt
 
     This backend will be used when runner contains a CheckpointHook and
     CheckpointHook's out_dir starts with hdfs://
@@ -67,6 +69,37 @@ class HDFSBackend(BaseStorageBackend):
     def join_path(self, filepath: str,
                   *filepaths: str) -> str:
         return os.path.join(filepath, *filepaths)
+
+
+@CheckpointLoader.register_scheme(prefixes='hdfs://')
+def load_from_hdfs(filename: str,
+                   map_location: Union[str, Callable, None] = None) -> Union[dict, OrderedDict]:
+    """
+    load checkpoint by HDFS file path
+
+    Args:
+        filename (str): HDFS checkpoint file path
+        map_location (str, optional): Same as :func:`torch.load`.
+
+    Returns:
+        dict or OrderedDict: The loaded checkpoint.
+    """
+
+    import uuid
+    from bigdl.dllib.utils.file_utils import append_suffix
+    from bigdl.orca.data.file import exists, get_remote_file_to_local
+    if not exists(filename):
+        invalidInputError(False, f"checkpoint at {filename} not found.")
+
+    temp_file_name = append_suffix(str(uuid.uuid1()), filename)
+    temp_path = os.path.join(tempfile.gettempdir(), temp_file_name)
+    get_remote_file_to_local(filename, temp_path)
+
+    with open(temp_path, "rb") as f:
+        checkpoint = f.read()
+
+    checkpoint = torch.load(io.BytesIO(checkpoint))
+    return checkpoint
 
 
 class MMCVRayEpochRunner(BaseRayRunner, EpochBasedRunner):
@@ -261,6 +294,32 @@ class MMCVRayEpochRunner(BaseRayRunner, EpochBasedRunner):
         """
         EpochBasedRunner.save_checkpoint(self, out_dir, filename_tmpl,
                                          save_optimizer, meta, create_symlink)
+
+    def load_checkpoint(
+            self,
+            filename: str,
+            map_location: Union[str, Callable] = 'cpu',
+            strict: bool = False,
+            revise_keys: List = [(r'^module.', '')],
+    ) -> Union[Dict, OrderedDict]:
+        """Load checkpoint from a file or URI.
+
+        Args:
+            model (Module): Module to load checkpoint.
+            filename (str): Accept local filepath, URL, ``hdfs://xxx``.
+            map_location (str): Same as :func:`torch.load`.
+            strict (bool): Whether to allow different params for the model and
+                checkpoint.
+            revise_keys (list): A list of customized keywords to modify the
+                state_dict in checkpoint. Each item is a (pattern, replacement)
+                pair of the regular expression operations. Default: strip
+                the prefix 'module.' by [(r'^module\\.', '')].
+
+        Returns:
+            dict or OrderedDict: The loaded checkpoint.
+        """
+        return EpochBasedRunner.load_checkpoint(self, filename, map_location,
+                                                strict, revise_keys)
 
     def get_state_dict(self):
         """Returns the state of the runner."""
