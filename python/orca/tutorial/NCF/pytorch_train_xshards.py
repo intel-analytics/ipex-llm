@@ -15,7 +15,6 @@
 #
 
 # Step 0: Import necessary libraries
-import os
 import torch.nn as nn
 import torch.optim as optim
 
@@ -61,8 +60,7 @@ loss = nn.BCEWithLogitsLoss()
 
 # Step 4: Distributed training with Orca PyTorch Estimator
 backend = "spark"  # "ray" or "spark"
-callbacks = [TensorBoardCallback(log_dir=os.path.join("runs_epoch"),
-                                 freq="batch")]
+callbacks = [TensorBoardCallback(log_dir="runs", freq="epoch")]
 
 est = Estimator.from_torch(model=model_creator,
                            optimizer=optimizer_creator,
