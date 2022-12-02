@@ -17,7 +17,6 @@
 import torch
 from torch import nn
 import time
-from copy import deepcopy
 import multiprocessing as mp
 from typing import Dict, Callable, Tuple, Optional, List, Union, Sequence
 from torch.utils.data import DataLoader
@@ -640,9 +639,6 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                 model which is able to run on Pytorch or ONNXRuntime can be fetched by
                 `quantized_model.model`.
                 """
-                # deepcopy model when using int8 quantize and inplace=False
-                if accelerator is None and not inplace:
-                    model = deepcopy(model)
                 return inc_quantize(model, inc_calib_dataloader, metric,
                                     thread_num=thread_num,
                                     framework=framework,

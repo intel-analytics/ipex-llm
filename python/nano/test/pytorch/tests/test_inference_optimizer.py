@@ -471,13 +471,15 @@ class TestInferencePipeline(TestCase):
             def __deepcopy__(self, memo):
                 invalidOperationError(False, "The `deepcopy` function shouldn't be called")
 
-        model = CannotCopyNet()
         inference_opt = InferenceOptimizer()
         # int8
+        model = CannotCopyNet()
         int8_model = inference_opt.quantize(model, calib_data=self.train_loader, inplace=True)
         # bf16+ipex
+        model = CannotCopyNet()
         bf16_ipex_model = inference_opt.quantize(model, calib_data=self.train_loader, precision='bf16', use_ipex=True, inplace=True)
         # ipex
+        model = CannotCopyNet()
         ipex_model = inference_opt.trace(model, input_sample=self.train_loader, use_ipex=True, inplace=True)
 
         inference_opt.save(int8_model, "int8")

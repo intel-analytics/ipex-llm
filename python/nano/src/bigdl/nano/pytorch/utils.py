@@ -147,8 +147,6 @@ def load_model(path, model: pl.LightningModule = None, inplace=False):
                           "Argument 'model' must be None for ONNX Runtime loading.")
         return load_onnxruntime_model(path)
     if model_type == 'PytorchQuantizedModel':
-        if not inplace:
-            model = copy.deepcopy(model)
         return load_inc_model(path, model, 'pytorch')
     if model_type == 'PytorchIPEXJITModel':
         return load_ipexjit_model(path, model, inplace=inplace)
