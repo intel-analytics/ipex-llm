@@ -78,8 +78,7 @@ loss = nn.BCEWithLogitsLoss()
 # Step 4: Distributed training with Orca PyTorch Estimator
 dataset_dir = "./ml-1m"
 backend = "ray"  # "ray" or "spark"
-callbacks = [TensorBoardCallback(log_dir="runs",
-                                 freq="epoch")]
+callbacks = [TensorBoardCallback(log_dir="runs", freq="epoch")]
 
 est = Estimator.from_torch(model=model_creator, optimizer=optimizer_creator,
                            loss=loss,
