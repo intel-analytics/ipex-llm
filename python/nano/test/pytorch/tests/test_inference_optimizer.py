@@ -490,13 +490,19 @@ class TestInferencePipeline(TestCase):
             ipex_model(input_sample)
 
         # test bf16 and non bf16 model
-        bf16_model = inference_opt.get_model("jit_bf16_ipex")
-        with pytest.raises(RuntimeError):
-            InferenceOptimizer.get_context(self.model, bf16_model)
-        
-        with pytest.raises(RuntimeError):
-            InferenceOptimizer.get_context(ipex_model, bf16_model)
-        
+        has_bf16 = True
+        try:
+            bf16_model = inference_opt.get_model("bf16")
+        except RuntimeError:
+            has_bf16 = False
+
+        if has_bf16:
+            with pytest.raises(RuntimeError):
+                InferenceOptimizer.get_context(self.model, bf16_model)
+            
+            with pytest.raises(RuntimeError):
+                InferenceOptimizer.get_context(ipex_model, bf16_model)
+
         # test thread
         ipex_thread_model = InferenceOptimizer.trace(self.model,
                                                      use_ipex=True,
