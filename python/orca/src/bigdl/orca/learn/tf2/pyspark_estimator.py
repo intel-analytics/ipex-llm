@@ -137,9 +137,9 @@ class SparkTFEstimator():
         # Repartition on SparkXShards will result in empty partitions.
         if isinstance(data, DataFrame) or isinstance(data, SparkXShards):
             if data.rdd.getNumPartitions() != self.num_workers:
-                data = data.repartition(self.num_workers)
+                data1 = data.repartition(self.num_workers)
             if validation_data and validation_data.rdd.getNumPartitions() != self.num_workers:
-                validation_data = validation_data.repartition(self.num_workers)
+                validation_data1 = validation_data.repartition(self.num_workers)
         data, validation_data = maybe_dataframe_to_xshards(data, validation_data,
                                                            feature_cols, label_cols,
                                                            mode="fit",
@@ -249,14 +249,9 @@ class SparkTFEstimator():
                If data is XShards, each partition can be a Pandas DataFrame or a dictionary of
                {'x': feature, 'y': label}, where feature(label) is a numpy array or a tuple of
                numpy arrays.
-        :param validation_data: validation data. Validation data type should be the same
-               as train data.
         :param batch_size: Batch size used for evaluation. Default: 32.
         :param verbose: Prints output of one model if true.
         :param callbacks: List of Keras compatible callbacks to apply during evaluation.
-        :param class_weight: Optional dictionary mapping class indices (integers) to a weight
-               (float) value, used for weighting the loss function. This can be useful to tell
-               the model to "pay more attention" to samples from an under-represented class.
         :return: validation result
         """
         sc = OrcaContext.get_spark_context()

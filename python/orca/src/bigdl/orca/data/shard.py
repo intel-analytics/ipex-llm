@@ -159,7 +159,6 @@ But got data of type {}
 
 class SparkXShards(XShards):
     """
-
     A collection of data which can be pre-processed in parallel on Spark
     """
     def __init__(self,
@@ -197,6 +196,10 @@ class SparkXShards(XShards):
         :return: An instance of LazySparkXShards.
         """
         return LazySparkXShards(self.rdd, self._get_class_name())
+
+    @property
+    def is_lazy(self):
+        return isinstance(self, LazySparkXShards)
 
     def transform_shard(self, func: Callable, *args) -> "SparkXShards":
         """
@@ -372,7 +375,7 @@ class SparkXShards(XShards):
                 repartitioned_shard = self._create(self.rdd.repartition(num_partitions),
                                                    class_name=class_name)
         else:
-            repartitioned_shard = SparkXShards(self.rdd.repartition(num_partitions),
+            repartitioned_shard = self._create(self.rdd.repartition(num_partitions),
                                                class_name=class_name)
         self._uncache()
         return repartitioned_shard
