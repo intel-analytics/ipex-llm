@@ -708,6 +708,9 @@ class TSDataset:
                 invalidInputError(False,
                                   "The time series data should be "
                                   "aligned if id_sensitive is set to True.")
+        else:
+            is_predict = True
+
         feature_col = _to_list(feature_col, "feature_col", evaluate_mode=self.evaluate_mode) \
             if feature_col is not None else self.feature_col
         target_col = _to_list(target_col, "target_col", evaluate_mode=self.evaluate_mode) \
@@ -1056,7 +1059,7 @@ class TSDataset:
             for feature in self.feature_col:
                 if feature not in self.roll_additional_feature:
                     feature_col.append(feature)
-        if fit:
+        if fit and not self.evaluate_mode:
             self.df[self.target_col + feature_col] = \
                 scaler.fit_transform(self.df[self.target_col + feature_col])
         else:
