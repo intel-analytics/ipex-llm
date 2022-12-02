@@ -467,6 +467,7 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                  onnxruntime_session_options=None,
                  openvino_config=None,
                  simplification: bool = True,
+                 jit_strict: bool = True,
                  sample_size: int = 100,
                  logging: bool = True,
                  inplace: bool = False,
@@ -543,6 +544,9 @@ class InferenceOptimizer(BaseInferenceOptimizer):
         :param simplification: whether we use onnxsim to simplify the ONNX model, only valid when
                                accelerator='onnxruntime', otherwise will be ignored. If this option
                                is set to True, new dependency 'onnxsim' need to be installed.
+        :param jit_strict: Whether recording your mutable container types. This parameter will be
+                           passed to torch.jit.trace. if accelerator != 'jit', it will be ignored.
+                           Default to True.
         :param sample_size: (optional) a int represents how many samples will be used for
                             Post-training Optimization Tools (POT) from OpenVINO toolkit,
                             only valid for accelerator='openvino'. Default to 100.
@@ -564,7 +568,8 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                     return PytorchIPEXJITBF16Model(model, input_sample=input_sample,
                                                    use_ipex=use_ipex, use_jit=use_jit,
                                                    channels_last=channels_last,
-                                                   thread_num=thread_num, inplace=inplace)
+                                                   thread_num=thread_num, inplace=inplace,
+                                                   jit_strict=jit_strict)
                 else:
                     bf16_model = BF16Model(model, channels_last=channels_last)
                     return bf16_model
@@ -704,6 +709,7 @@ class InferenceOptimizer(BaseInferenceOptimizer):
               onnxruntime_session_options=None,
               openvino_config=None,
               simplification: bool = True,
+              jit_strict: bool = True,
               logging: bool = True,
               inplace: bool = False,
               **export_kwargs):
@@ -732,6 +738,9 @@ class InferenceOptimizer(BaseInferenceOptimizer):
         :param simplification: Whether we use onnxsim to simplify the ONNX model, only valid when
                                accelerator='onnxruntime', otherwise will be ignored. If this option
                                is set to True, new dependency 'onnxsim' need to be installed.
+        :param jit_strict: Whether recording your mutable container types. This parameter will be
+                           passed to torch.jit.trace. if accelerator != 'jit', it will be ignored.
+                           Default to True.
         :param logging: Whether to log detailed information of model conversion, only valid when
                         accelerator='openvino', otherwise will be ignored. Default: ``True``.
         :param inplace: whether to perform inplace optimization. Default: ``False``.
@@ -768,7 +777,8 @@ class InferenceOptimizer(BaseInferenceOptimizer):
             use_jit = (accelerator == "jit")
             return PytorchIPEXJITModel(model, input_sample=input_sample, use_ipex=use_ipex,
                                        use_jit=use_jit, channels_last=channels_last,
-                                       thread_num=thread_num, inplace=inplace)
+                                       thread_num=thread_num, inplace=inplace,
+                                       jit_strict=jit_strict)
         invalidInputError(False, "Accelerator {} is invalid.".format(accelerator))
 
     @staticmethod

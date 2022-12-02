@@ -82,6 +82,18 @@ class IPEXJITInference_gt_1_10:
         with InferenceOptimizer.get_context(new_model):
             new_model(self.data_sample)
 
+    def test_ipex_jit_inference_strict(self):
+        model = InferenceOptimizer.trace(self.model, accelerator="jit",
+                                         jit_strict=False, input_sample=self.data_sample)
+        with InferenceOptimizer.get_context(model):
+            model(self.data_sample)
+        with tempfile.TemporaryDirectory() as tmp_dir_name:
+            InferenceOptimizer.save(model, tmp_dir_name)
+            new_model = InferenceOptimizer.load(tmp_dir_name)
+        with InferenceOptimizer.get_context(new_model):
+            new_model(self.data_sample)
+            assert new_model.jit_strict is False
+
 
 class IPEXJITInference_lt_1_10:
     def test_placeholder(self):
