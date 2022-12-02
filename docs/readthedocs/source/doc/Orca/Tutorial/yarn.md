@@ -2,8 +2,7 @@
 
 This tutorial provides a step-by-step guide on how to run BigDL-Orca programs on Apache Hadoop/YARN clusters, using a [PyTorch Fashion-MNIST program](https://github.com/intel-analytics/BigDL/blob/main/python/orca/tutorial/pytorch/FashionMNIST/) as a working example.
 
-The **Client Node** that appears in this tutorial refer to the machine where you launch or submit your applications. Because the **Client Node** is in the **Cluster**, there may be some limitation of using it. In such situation, the **Deployment Node**, which is outside the **Cluster**, is used to prepare environment package and upload it to the **Client Node**. Please refer to the following deployment diagram for better understanding.
-![deployment](../../../../image/deployment.svg)
+The **Client Node** that appears in this tutorial refer to the machine where you launch or submit your applications. 
 
 ---
 ## 1. Basic Concepts
@@ -90,9 +89,9 @@ __Note__:
     ```
 
 ### 2.2 Install Python Libraries
-- See [here](../Overview/install.md#install-anaconda) to install conda and prepare the Python environment on the __Client Node__ or __Deployment Node__.
+- See [here](../Overview/install.md#install-anaconda) to install conda and prepare the Python environment on the __Client Node__.
 
-- See [here](../Overview/install.md#install-bigdl-orca) to install BigDL Orca in the created conda environment.
+- See [here](../Overview/install.md#install-bigdl-orca) to install BigDL Orca in the created conda environment. Note that if you use `spark-submit`, it is unnecessary to install BigDL Orca.
 
 - You should install all the other Python libraries that you need in your program in the conda environment as well. `torch` and `torchvision` are needed to run the Fashion-MNIST example:
     ```bash
@@ -228,7 +227,7 @@ Set the cluster_mode to "bigdl-submit" in `init_orca_context`.
 sc = init_orca_context(cluster_mode="bigdl-submit")
 ```
 
-Pack the current activate conda environment to an archive on the __Client Node__ before submitting the example, or directyly use the environemnt package uploaded by __Deployment Node__:
+Pack the current activate conda environment to an archive on the __Client Node__ before submitting the example:
 ```bash
 conda pack -o environment.tar.gz
 ```
@@ -301,7 +300,7 @@ If you prefer to use the `spark-submit` instead of `bigdl-submit`, please follow
     pip install -r /path/to/requirements.txt
     ```
 
-3. Pack the current activate conda environment to an archive on the __Client Node__ before submitting the example, or directyly use the environemnt package uploaded by __Deployment Node__ if conda is not available on __Client Node__:
+3. Pack the current activate conda environment to an archive on the __Client Node__ before submitting the example:
     ```bash
     conda pack -o environment.tar.gz
     ```
