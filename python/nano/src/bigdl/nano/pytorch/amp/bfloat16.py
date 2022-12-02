@@ -46,6 +46,7 @@ class BF16Model(AcceleratedLightningModule):
         self._bf16_check()
         self.model = model  # use mixed precision instead of complete precision
         self.channels_last = channels_last
+        self.thread_num = thread_num
         if self.channels_last is True:
             self.model = self.model.to(memory_format=torch.channels_last)
         self._nano_context_manager = generate_context_manager(accelerator=None,
@@ -155,7 +156,8 @@ class BF16Model(AcceleratedLightningModule):
     def status(self):
         status = super().status
         status.update({"channels_last": self.channels_last,
-                       "checkpoint": "ckpt.pth"})
+                       "checkpoint": "ckpt.pth",
+                       "thread_num": self.thread_num})
         return status
 
     @staticmethod
@@ -165,7 +167,11 @@ class BF16Model(AcceleratedLightningModule):
         state_dict = torch.load(checkpoint_path)
         model.eval()
         model.load_state_dict(state_dict)
-        return BF16Model(model, channels_last=status['channels_last'])
+        thread_num = None
+        if status["thread_num"] is not None:
+            thread_num = int(status['thread_num'])
+        return BF16Model(model, channels_last=status['channels_last'],
+                         thread_num=thread_num)
 
     def _save_model(self, path):
         torch.save(self.model.state_dict(), path / "ckpt.pth")

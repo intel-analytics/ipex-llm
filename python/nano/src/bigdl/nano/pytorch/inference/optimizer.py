@@ -572,7 +572,8 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                                                    thread_num=thread_num, inplace=inplace,
                                                    jit_strict=jit_strict)
                 else:
-                    bf16_model = BF16Model(model, channels_last=channels_last)
+                    bf16_model = BF16Model(model, channels_last=channels_last,
+                                           thread_num=thread_num)
                     return bf16_model
             else:
                 invalidInputError(False,
