@@ -60,7 +60,6 @@ class PytorchIPEXJITBF16Model(PytorchIPEXJITModel):
                                                         precision="bf16",
                                                         thread_num=thread_num)
 
-
     @property
     def _check_cpu_isa(self):
         """Indicator to verify if cpu supports avx512"""
