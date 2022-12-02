@@ -25,7 +25,8 @@ import torch
 
 class PytorchIPEXJITBF16Model(PytorchIPEXJITModel):
     def __init__(self, model, input_sample=None, use_ipex=False,
-                 use_jit=False, channels_last=None, thread_num=None, from_load=False):
+                 use_jit=False, channels_last=None, thread_num=None, from_load=False,
+                 inplace=False):
         '''
         This is the accelerated model for pytorch and ipex/jit.
         All the external API is based on Trainer, so what we have here is
@@ -42,6 +43,7 @@ class PytorchIPEXJITBF16Model(PytorchIPEXJITModel):
                the parameter will be ignored if use_ipex is False.
         :param thread_num: the thread num allocated for this model.
         :param from_load: this will only be set by _load method.
+        :param inplace: whether to perform inplace optimization. Default: ``False``.
         '''
         if use_ipex:
             invalidInputError(
@@ -52,7 +54,8 @@ class PytorchIPEXJITBF16Model(PytorchIPEXJITModel):
 
         PytorchIPEXJITModel.__init__(self, model, input_sample=input_sample, use_ipex=use_ipex,
                                      dtype=torch.bfloat16, use_jit=use_jit,
-                                     channels_last=channels_last, from_load=from_load)
+                                     channels_last=channels_last, from_load=from_load,
+                                     inplace=inplace)
         self.context_manager = generate_context_manager(accelerator=None,
                                                         precision="bf16",
                                                         thread_num=thread_num)
@@ -70,7 +73,7 @@ class PytorchIPEXJITBF16Model(PytorchIPEXJITModel):
         return status
 
     @staticmethod
-    def _load(path, model):
+    def _load(path, model, inplace=False):
         status = PytorchIPEXJITBF16Model._load_status(path)
         checkpoint_path = path / status['checkpoint']
         if status["use_jit"]:
@@ -92,4 +95,5 @@ class PytorchIPEXJITBF16Model(PytorchIPEXJITModel):
                                        use_jit=status['use_jit'],
                                        channels_last=status['channels_last'],
                                        from_load=from_load,
-                                       thread_num=thread_num)
+                                       thread_num=thread_num,
+                                       inplace=inplace)

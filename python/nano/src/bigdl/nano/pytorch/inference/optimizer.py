@@ -17,7 +17,6 @@
 import torch
 from torch import nn
 import time
-from copy import deepcopy
 import multiprocessing as mp
 from typing import Dict, Callable, Tuple, Optional, List, Union, Sequence
 from torch.utils.data import DataLoader
@@ -76,7 +75,7 @@ class TorchAccelerationOption(AccelerationOption):
             # quantize
             ort_method: str = self.method
             acce_model = \
-                InferenceOptimizer.quantize(model=deepcopy(model),
+                InferenceOptimizer.quantize(model=model,
                                             precision=self.get_precision(),
                                             accelerator=accelerator,
                                             use_ipex=self.ipex,
@@ -470,6 +469,7 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                  simplification: bool = True,
                  sample_size: int = 100,
                  logging: bool = True,
+                 inplace: bool = False,
                  **export_kwargs):
         """
         Calibrate a torch.nn.Module for post-training quantization.
@@ -550,6 +550,7 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                             the lower the performance degradation, but the longer the time.
         :param logging: whether to log detailed information of model conversion, only valid when
                         accelerator='openvino', otherwise will be ignored. Default: ``True``.
+        :param inplace: whether to perform inplace optimization. Default: ``False``.
         :param **export_kwargs: will be passed to torch.onnx.export function.
         :return:            A accelerated torch.nn.Module if quantization is sucessful.
         """
@@ -563,7 +564,7 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                     return PytorchIPEXJITBF16Model(model, input_sample=input_sample,
                                                    use_ipex=use_ipex, use_jit=use_jit,
                                                    channels_last=channels_last,
-                                                   thread_num=thread_num)
+                                                   thread_num=thread_num, inplace=inplace)
                 else:
                     bf16_model = BF16Model(model, channels_last=channels_last)
                     return bf16_model
@@ -704,6 +705,7 @@ class InferenceOptimizer(BaseInferenceOptimizer):
               openvino_config=None,
               simplification: bool = True,
               logging: bool = True,
+              inplace: bool = False,
               **export_kwargs):
         """
         Trace a torch.nn.Module and convert it into an accelerated module for inference.
@@ -732,9 +734,11 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                                is set to True, new dependency 'onnxsim' need to be installed.
         :param logging: Whether to log detailed information of model conversion, only valid when
                         accelerator='openvino', otherwise will be ignored. Default: ``True``.
-        :param **kwargs: Other extra advanced settings include those be passed to torch.onnx.export
-                         function, only valid when accelerator='onnxruntime'/'openvino', otherwise
-                         will be ignored.
+        :param inplace: whether to perform inplace optimization. Default: ``False``.
+        :param **export_kwargs: Other extra advanced settings include those be passed to
+                                torch.onnx.export function, only valid when
+                                accelerator='onnxruntime'/'openvino', otherwise
+                                will be ignored.
         :return: Model with different acceleration.
         """
         invalidInputError(
@@ -764,7 +768,7 @@ class InferenceOptimizer(BaseInferenceOptimizer):
             use_jit = (accelerator == "jit")
             return PytorchIPEXJITModel(model, input_sample=input_sample, use_ipex=use_ipex,
                                        use_jit=use_jit, channels_last=channels_last,
-                                       thread_num=thread_num)
+                                       thread_num=thread_num, inplace=inplace)
         invalidInputError(False, "Accelerator {} is invalid.".format(accelerator))
 
     @staticmethod
@@ -792,7 +796,7 @@ class InferenceOptimizer(BaseInferenceOptimizer):
         save_model(model, path)
 
     @staticmethod
-    def load(path, model: Optional[nn.Module] = None):
+    def load(path, model: Optional[nn.Module] = None, inplace=False):
         """
         Load a model from local.
 
@@ -801,10 +805,11 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                the model with accelerator=None by InferenceOptimizer.trace/
                InferenceOptimizer.quantize. model should be set to None if you choose
                accelerator="onnxruntime"/"openvino"/"jit".
+        :param inplace: whether to perform inplace optimization. Default: ``False``.
         :return: Model with different acceleration(None/OpenVINO/ONNX Runtime/JIT) or
                  precision(FP32/FP16/BF16/INT8).
         """
-        return load_model(path, model)
+        return load_model(path, model, inplace=inplace)
 
     @staticmethod
     def to_multi_instance(model: nn.Module, num_processes: int) -> _MultiInstanceModel:

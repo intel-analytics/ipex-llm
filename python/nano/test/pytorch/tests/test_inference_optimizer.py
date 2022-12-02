@@ -29,6 +29,7 @@ import torch.nn.functional as F
 from test.pytorch.utils._train_torch_lightning import create_data_loader
 from torch.utils.data import TensorDataset, DataLoader
 from bigdl.nano.pytorch.utils import TORCH_VERSION_LESS_1_10
+from bigdl.nano.utils.log4Error import invalidOperationError
 
 
 data_transform = transforms.Compose([
@@ -464,3 +465,22 @@ class TestInferencePipeline(TestCase):
         model, option = inference_opt.get_best_model()
         with InferenceOptimizer.get_context(model):
             pass
+
+    def test_inplace(self):
+        class CannotCopyNet(Net):
+            def __deepcopy__(self, memo):
+                invalidOperationError(False, "The `deepcopy` function shouldn't be called")
+
+        inference_opt = InferenceOptimizer()
+        # bf16+ipex
+        model = CannotCopyNet()
+        bf16_ipex_model = inference_opt.quantize(model, calib_data=self.train_loader, precision='bf16', use_ipex=True, inplace=True)
+        # ipex
+        model = CannotCopyNet()
+        ipex_model = inference_opt.trace(model, input_sample=self.train_loader, use_ipex=True, inplace=True)
+
+        inference_opt.save(bf16_ipex_model, "bf16_ipex")
+        inference_opt.save(ipex_model, "ipex")
+
+        bf16_ipex_model = inference_opt.load("bf16_ipex", model, inplace=True)
+        ipex_model = inference_opt.load("ipex", model, inplace=True)

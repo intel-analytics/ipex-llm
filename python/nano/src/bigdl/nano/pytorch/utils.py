@@ -117,7 +117,7 @@ def save_model(model: pl.LightningModule, path):
         torch.save(model.state_dict(), checkpoint_path)
 
 
-def load_model(path, model: pl.LightningModule = None):
+def load_model(path, model: pl.LightningModule = None, inplace=False):
     """
     Load a model from local.
 
@@ -125,6 +125,7 @@ def load_model(path, model: pl.LightningModule = None):
     :param model: Required FP32 model to load pytorch model, it is needed if you accelerated
             the model with accelerator=None by Trainer.trace/Trainer.quantize. model
             should be set to None if you choose accelerator="onnxruntime"/"openvino"/"jit".
+    :param inplace: whether to perform inplace optimization. Default: ``False``.
     :return: Model with different acceleration(None/OpenVINO/ONNX Runtime/JIT) or
                 precision(FP32/FP16/BF16/INT8).
     """
@@ -148,9 +149,9 @@ def load_model(path, model: pl.LightningModule = None):
     if model_type == 'PytorchQuantizedModel':
         return load_inc_model(path, model, 'pytorch')
     if model_type == 'PytorchIPEXJITModel':
-        return load_ipexjit_model(path, model)
+        return load_ipexjit_model(path, model, inplace=inplace)
     if model_type == 'PytorchIPEXJITBF16Model':
-        return load_ipexjitbf16_model(path, model)
+        return load_ipexjitbf16_model(path, model, inplace=inplace)
     if model_type == 'BF16Model':
         return load_bf16_model(path, model)
     if isinstance(model, nn.Module):

@@ -35,7 +35,8 @@ def ipex_device():
 
 
 def PytorchIPEXJITModel(model, input_sample=None, use_ipex=False,
-                        use_jit=False, channels_last=None, thread_num=None):
+                        use_jit=False, channels_last=None, thread_num=None,
+                        inplace=False):
     '''
     :param model: the model(nn.module) to be transform.
     :param input_sample: torch tensor indicate the data sample to be used
@@ -45,15 +46,16 @@ def PytorchIPEXJITModel(model, input_sample=None, use_ipex=False,
     :param channels_last: if set model and data to be channels-last mode.
             the parameter will be ignored if use_ipex is False.
     :param thread_num: the thread num allocated for this model.
+    :param inplace: whether to perform inplace optimization. Default: ``False``.
     '''
     from .ipex_inference_model import PytorchIPEXJITModel
     return PytorchIPEXJITModel(model, input_sample=input_sample, use_ipex=use_ipex,
                                use_jit=use_jit, channels_last=channels_last,
-                               thread_num=thread_num)
+                               thread_num=thread_num, inplace=inplace)
 
 
 def PytorchIPEXJITBF16Model(model, input_sample=None, use_ipex=False,
-                            use_jit=False, channels_last=None, thread_num=None):
+                            use_jit=False, channels_last=None, thread_num=None, inplace=False):
     '''
     :param model: the model(nn.module) to be transform.
     :param input_sample: torch tensor indicate the data sample to be used
@@ -63,18 +65,19 @@ def PytorchIPEXJITBF16Model(model, input_sample=None, use_ipex=False,
     :param channels_last: if set model and data to be channels-last mode.
             the parameter will be ignored if use_ipex is False.
     :param thread_num: the thread num allocated for this model.
+    :param inplace: whether to perform inplace optimization. Default: ``False``.
     '''
     from .ipex_inference_bf16_model import PytorchIPEXJITBF16Model
     return PytorchIPEXJITBF16Model(model, input_sample=input_sample, use_ipex=use_ipex,
                                    use_jit=use_jit, channels_last=channels_last,
-                                   thread_num=thread_num)
+                                   thread_num=thread_num, inplace=inplace)
 
 
-def load_ipexjit_model(path, model):
+def load_ipexjit_model(path, model, inplace=False):
     from .ipex_inference_model import PytorchIPEXJITModel
-    return PytorchIPEXJITModel._load(path, model)
+    return PytorchIPEXJITModel._load(path, model, inplace=inplace)
 
 
-def load_ipexjitbf16_model(path, model):
+def load_ipexjitbf16_model(path, model, inplace=False):
     from .ipex_inference_bf16_model import PytorchIPEXJITBF16Model
-    return PytorchIPEXJITBF16Model._load(path, model)
+    return PytorchIPEXJITBF16Model._load(path, model, inplace=inplace)
