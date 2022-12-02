@@ -793,7 +793,8 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                InferenceOptimizer.trace/InferenceOptimizer.quantize.
         :param args: Any model of torch.nn.Module or list of torch.nn.Module, including all models
                accelareted by InferenceOptimizer.trace/InferenceOptimizer.quantize.
-        :return: a context manager or raise error when multi context managers conflict.
+        :return: a context manager if there is no conflict between context managers,
+                 otherwise will report RuntimeError.
         """
         def obtain_manager(input_model):
             if hasattr(input_model, "_nano_context_manager"):
@@ -804,7 +805,8 @@ class InferenceOptimizer(BaseInferenceOptimizer):
             return _context_manager
 
         def join_manager(manager, new_manager):
-            is_bf16=lambda x: isinstance(x, AutocastContextManager)
+            def is_bf16(x):
+                return isinstance(x, AutocastContextManager)
             if (is_bf16(manager) ^ is_bf16(new_manager)) is True:
                 invalidInputError(False, "Can't obtain a new context manager for BF16 model"
                                   "and non BF16 model.")
@@ -812,8 +814,9 @@ class InferenceOptimizer(BaseInferenceOptimizer):
             thread_num2 = new_manager.thread_num
             if thread_num1 != thread_num2:
                 if thread_num1 is None or thread_num2 is None:
-                    warnings.warn("One of the two models has thread control and the other does not. "
-                                  "The returned context manager will be dominated by the non-None one.")
+                    warnings.warn("One of the two models has thread control and the other "
+                                  "does not. The returned context manager will be dominated "
+                                  "by the non-None one.")
                     if thread_num1 is None:
                         return new_manager
                     else:
