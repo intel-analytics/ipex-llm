@@ -22,13 +22,13 @@ You can install bigdl-nano along with some dependencies specific to PyTorch or T
           </tr>
           <tr id="version" class="taller_tr">
             <td colspan="1">Version</td>
-            <td colspan="1"><button id="pytorch_113">torch_113</button></td>
-            <td colspan="1"><button id="pytorch_112">torch_112</button></td>
-            <td colspan="1"><button id="pytorch_111">torch_111</button></td>
-            <td colspan="1"><button id="pytorch_110">torch_110</button></td>
+            <td colspan="1"><button id="pytorch_113">1.13</button></td>
+            <td colspan="1"><button id="pytorch_112">1.12</button></td>
+            <td colspan="1"><button id="pytorch_111">1.11</button></td>
+            <td colspan="1"><button id="pytorch_110">1.10</button></td>
           </tr>
           <tr>
-            <td colspan="1">Infernece Optimization</td>
+            <td colspan="1">Inference Optimization</td>
             <td colspan="2"><button id="inferenceno">No</button></td>
             <td colspan="2"><button id="inferenceyes">Yes</button></td>
             </td>

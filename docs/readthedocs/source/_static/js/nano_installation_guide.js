@@ -22,14 +22,14 @@ function refresh_cmd(){
     $("#version").empty();
     if(framework=="pytorch"){
         $("#version").append("<td colspan='1'>Pytorch Version</td>\
-        <td colspan='1'><button id='pytorch_113'>torch_113</button></td>\
-        <td colspan='1'><button id='pytorch_112'>torch_112</button></td>\
-        <td colspan='1'><button id='pytorch_111'>torch_111</button></td>\
-        <td colspan='1'><button id='pytorch_110'>torch_110</button></td>");
+        <td colspan='1'><button id='pytorch_113'>1.13</button></td>\
+        <td colspan='1'><button id='pytorch_112'>1.12</button></td>\
+        <td colspan='1'><button id='pytorch_111'>1.11</button></td>\
+        <td colspan='1'><button id='pytorch_110'>1.10</button></td>");
     }
     else if(framework=="tensorflow"){
         $("#version").append("<td colspan='1'>Tensorflow Version</td>\
-        <td colspan='6'><button id='tf2_270'>tf2_270</button></td>");
+        <td colspan='6'><button id='tf2_270'>2.70</button></td>");
     }
     reset_color(versions);
     set_color(version);
@@ -53,9 +53,9 @@ function refresh_cmd(){
                     }else if(version=="pytorch_111"){
                         cmd="pip install --pre --upgrade bigdl-nano[pytorch_111,inference]";
                     }else if(version=="pytorch_112"){
-                        cmd="pip install --pre --upgrade bigdl-nano[pytroch_112,inference]";
+                        cmd="pip install --pre --upgrade bigdl-nano[pytorch,inference]";
                     }else if(version=="pytorch_113"){
-                        cmd="pip install --pre --upgrade bigdl-nano[pytroch_113,inference]";
+                        cmd="pip install --pre --upgrade bigdl-nano[pytorch_113,inference]";
                     }else{
                         cmd="Please select the version."
                     }
@@ -65,9 +65,9 @@ function refresh_cmd(){
                     }else if(version=="pytorch_111"){
                         cmd="pip install --pre --upgrade bigdl-nano[pytorch_111]";
                     }else if(version=="pytorch_112"){
-                        cmd="pip install --pre --upgrade bigdl-nano[pytroch_112]";
+                        cmd="pip install --pre --upgrade bigdl-nano[pytorch]";
                     }else if(version=="pytorch_113"){
-                        cmd="pip install --pre --upgrade bigdl-nano[pytroch_113]";
+                        cmd="pip install --pre --upgrade bigdl-nano[pytorch_113]";
                     }else{
                         cmd="Please select the version.";
                     }
