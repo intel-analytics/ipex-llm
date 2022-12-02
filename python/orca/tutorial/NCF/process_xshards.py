@@ -108,6 +108,7 @@ def prepare_data(dataset_dir, num_ng=4):
         shard.rename(columns={col+"_scaled": col}, inplace=True)
         values = shard[col].values
         values = [np.array(v, dtype=np.float32) for v in values]
+        shard[col] = values
         return shard
 
     for i in dense_features:
