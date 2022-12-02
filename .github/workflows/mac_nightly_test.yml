@@ -5,8 +5,8 @@ concurrency:
   cancel-in-progress: true
 on:
 
-  pull_request:
-    branchs: [ main ]
+  #pull_request:
+    #branchs: [ main ]
 
   schedule:
     - cron: '0 11 * * *' # GMT time, 13:00 GMT == 21:00 China
@@ -223,7 +223,7 @@ jobs:
         runner-hosted-on: 'Shanghai'
 
   Mac-Orca-Python-UT-Spark3:
-    #if: ${{ github.event.schedule || github.event.inputs.artifact == 'Mac-Orca-Python-UT-Spark3' || github.event.inputs.artifact == 'all' }} 
+    if: ${{ github.event.schedule || github.event.inputs.artifact == 'Mac-Orca-Python-UT-Spark3' || github.event.inputs.artifact == 'all' }} 
     runs-on: [self-hosted, mac, macOS]
 
     steps:
