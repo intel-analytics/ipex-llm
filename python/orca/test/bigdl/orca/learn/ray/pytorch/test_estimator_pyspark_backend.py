@@ -637,8 +637,6 @@ class TestPyTorchEstimator(TestCase):
                                          sync_stats=False,
                                          log_level=logging.DEBUG)
 
-        estimator = get_estimator(workers_per_node=2,
-                                  model_fn=lambda config: IdentityNet())
         result_shards = estimator.predict(shards, batch_size=4)
         result_before = np.concatenate([shard["prediction"] for shard in result_shards.collect()])
         expected_result = np.concatenate([shard["x"] for shard in result_shards.collect()])
