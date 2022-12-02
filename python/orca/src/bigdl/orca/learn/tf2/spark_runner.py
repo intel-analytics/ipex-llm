@@ -19,6 +19,7 @@ import tempfile
 import shutil
 import copy
 
+import numpy as np
 import tensorflow as tf
 
 from bigdl.orca.data.utils import ray_partition_get_data_label
@@ -174,6 +175,70 @@ class LocalDatasetHandler(DatasetHandler):
         invalidInputError("batch_size" in config, "batch_size must be set in config")
         return config, config["batch_size"]
 
+def data_generator(iter, steps, shard_size=None, batch_size=32, mode="fit"):
+    from itertools import tee
+    original_iter, current_iter = tee(iter)
+    current_shard = next(current_iter, None)
+    offset = 0
+    # loop indefinitely
+    while True:
+        # initial batch data
+        x_list = []
+        y_list = []
+        remain = batch_size
+        while current_shard is not None:
+            remain = remain - (len(current_shard['x'][0]) - offset)
+            if remain > 0:
+                # not enough in this shard, copy rest shard and go to next shard
+                x_list.append(
+                    [col_arr[offset:] for col_arr in current_shard['x']])
+                if mode != 'predict':
+                    y_list.append(
+                        [col_arr[offset:] for col_arr in current_shard['y']])
+                current_shard = next(current_iter, None)
+                if current_shard is None:
+                    # no more data
+                    if mode != 'fit':
+                        # yield batch for evaluate and predict
+                        x_np = np.concatenate(x_list)
+                        if mode != 'predict':
+                            y_np = np.concatenate(y_list)
+                            yield x_np, y_np
+                        else:
+                            yield x_np
+                    else:
+                        # loop to head of iterator for train
+                        current_iter = original_iter
+                        current_shard = next(current_iter, None)
+                        offset = 0
+                        continue
+                else:
+                    # continue to get rest batch
+                    current_shard = next(current_iter, None)
+                    offset = 0
+                    continue
+            else:
+                # this shard has enough data
+                x_list.append(
+                    [col_arr[offset:offset + batch_size] for col_arr in current_shard['x']])
+                x_np = np.concatenate(x_list)
+                if mode != 'predict':
+                    y_list.append(
+                        [col_arr[offset:offset + batch_size] for col_arr in current_shard['y']])
+                    y_np = np.concatenate(y_list)
+                offset += batch_size
+                if remain == 0:
+                    # move to next shard
+                    current_shard = next(current_iter, None)
+                    offset = 0
+                if mode != 'predict':
+                    yield x_np, y_np
+                else:
+                    yield x_np
+                x_list = []
+                y_list = []
+                continue
+        break
 
 class SparkRunner:
     def __init__(self,
@@ -230,18 +295,43 @@ class SparkRunner:
                                              driver_port=driver_port,
                                              log_path=self.log_path,
                                              partition_id=self.partition_id)
+        self.model_dir = model_dir
+        self.application_id = application_id
 
         if self.backend == "tf-distributed":
             if mode == "fit" or mode == "evaluate":
                 self.setup_distributed(self.cluster)
-        self.model_dir = model_dir
-        self.application_id = application_id
+                if mode == 'fit':
+                    with self.strategy.scope():
+                        if self.model_dir is not None and exists(self._model_saved_path):
+                            # for continous training
+                            self.model = load_model(self._model_saved_path)
+                        else:
+                            if self.model_creator is not None:
+                                self.model = self.model_creator(self.config)
+                            else:
+                                self.model = tf.keras.models.load_model(self.model_load)
+                            if self.model_weights:
+                                self.model.set_weights(self.model_weights.value)
+
+                        if not self.model._is_compiled and self.compile_args_creator:
+                            self.model.compile(**self.compile_args_creator(config))
+                else:
+                    with self.strategy.scope():
+                        if self.model_creator is not None:
+                            self.model = self.model_creator(self.config)
+                        else:
+                            self.model = tf.keras.models.load_model(self.model_load)
+                        if self.model_weights:
+                            self.model.set_weights(self.model_weights.value)
 
         if self.model_creator is None:
             from pyspark import SparkFiles
             if self.model_load.startswith("hdfs") or self.model_load.startswith("s3"):
                 self.model_load = self.model_load.split("/")[-1]
             self.model_load = SparkFiles.get(self.model_load)
+        # create model
+
 
     def setup(self):
         import tensorflow as tf
@@ -280,19 +370,19 @@ class SparkRunner:
         runs a training epoch and updates the model parameters
         """
         with self.strategy.scope():
-            if self.model_dir is not None and exists(self._model_saved_path):
-                # for continous training
-                model = load_model(self._model_saved_path)
-            else:
-                if self.model_creator is not None:
-                    model = self.model_creator(self.config)
-                else:
-                    model = tf.keras.models.load_model(self.model_load)
-                if self.model_weights:
-                    model.set_weights(self.model_weights.value)
-
-            if not model._is_compiled and self.compile_args_creator:
-                model.compile(**self.compile_args_creator(config))
+            # if self.model_dir is not None and exists(self._model_saved_path):
+            #     # for continous training
+            #     model = load_model(self._model_saved_path)
+            # else:
+            #     if self.model_creator is not None:
+            #         model = self.model_creator(self.config)
+            #     else:
+            #         model = tf.keras.models.load_model(self.model_load)
+            #     if self.model_weights:
+            #         model.set_weights(self.model_weights.value)
+            #
+            # if not model._is_compiled and self.compile_args_creator:
+            #     model.compile(**self.compile_args_creator(config))
 
             dataset_handler = DatasetHandler.get_handler(self.backend, self.rank, self.size)
             train_dataset, test_dataset = dataset_handler \
@@ -309,7 +399,7 @@ class SparkRunner:
 
             replaced_log_dir = process_tensorboard_in_callbacks(callbacks, "fit", self.rank)
 
-        history = model.fit(train_dataset,
+        history = self.model.fit(train_dataset,
                             epochs=epochs,
                             verbose=verbose,
                             callbacks=callbacks,
@@ -324,7 +414,7 @@ class SparkRunner:
             if replaced_log_dir and os.path.exists(replaced_log_dir):
                 shutil.rmtree(replaced_log_dir)
 
-        return (model, history)
+        return (self.model, history)
 
     def step(self, data_creator, epochs=1, batch_size=32, verbose=1,
              callbacks=None, validation_data_creator=None, class_weight=None,
@@ -339,7 +429,7 @@ class SparkRunner:
         config["batch_size"] = batch_size
         val_data_creator = validation_data_creator
 
-        model, history = self.distributed_train_func(data_creator,
+        self.model, history = self.distributed_train_func(data_creator,
                                                      config,
                                                      epochs=epochs,
                                                      verbose=verbose,
@@ -357,14 +447,14 @@ class SparkRunner:
             stats = {k: v[-1] for k, v in history.history.items()}
         if self.rank == 0:
             if self.model_dir is not None:
-                save_model(model, self._model_saved_path, save_format="h5")
+                save_model(self.model, self._model_saved_path, save_format="h5")
                 model_state = {
-                    "weights": model.get_weights(),
-                    "optimizer_weights": model.optimizer.get_weights()
+                    "weights": self.model.get_weights(),
+                    "optimizer_weights": self.model.optimizer.get_weights()
                 }
                 save_pkl(model_state, os.path.join(self.model_dir, "state.pkl"))
             else:
-                weights = model.get_weights()
+                weights = self.model.get_weights()
 
             if self.need_to_log_to_driver:
                 LogMonitor.stop_log_monitor(self.log_path, self.logger_thread, self.thread_stop)
@@ -375,7 +465,7 @@ class SparkRunner:
         else:
             temp_dir = tempfile.mkdtemp()
             try:
-                save_model(model, os.path.join(temp_dir, "model.h5"))
+                save_model(self.model, os.path.join(temp_dir, "model.h5"))
             finally:
                 shutil.rmtree(temp_dir)
             if self.need_to_log_to_driver:
@@ -392,13 +482,13 @@ class SparkRunner:
             config.update(data_config)
         config["batch_size"] = batch_size
 
-        with self.strategy.scope():
-            if self.model_creator is not None:
-                model = self.model_creator(self.config)
-            else:
-                model = tf.keras.models.load_model(self.model_load)
-            if self.model_weights:
-                model.set_weights(self.model_weights.value)
+        # with self.strategy.scope():
+        #     if self.model_creator is not None:
+        #         model = self.model_creator(self.config)
+        #     else:
+        #         model = tf.keras.models.load_model(self.model_load)
+        #     if self.model_weights:
+        #         model.set_weights(self.model_weights.value)
 
         with self.strategy.scope():
             dataset_handler = DatasetHandler.get_handler(self.backend,
@@ -417,7 +507,7 @@ class SparkRunner:
             steps=steps,
             callbacks=callbacks,
         )
-        results = model.evaluate(dataset, **params)
+        results = self.model.evaluate(dataset, **params)
 
         if results is None:
             if self.model_creator is not None:
@@ -431,7 +521,7 @@ class SparkRunner:
         if isinstance(results, list):
             stats = {
                 "validation_" + k: v
-                for k, v in zip(model.metrics_names, results)
+                for k, v in zip(self.model.metrics_names, results)
             }
         else:
             stats = {"results": results}
