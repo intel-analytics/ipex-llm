@@ -812,7 +812,8 @@ class InferenceOptimizer(BaseInferenceOptimizer):
         return load_model(path, model, inplace=inplace)
 
     @staticmethod
-    def to_multi_instance(model: nn.Module, num_processes: int) -> _MultiInstanceModel:
+    def to_multi_instance(model: nn.Module, num_processes: int,
+                          cpu_for_each_process: List[List] = None) -> _MultiInstanceModel:
         """
         Transform a model to multi-instance inference model.
         :param model: The model to transform.
