@@ -7,10 +7,17 @@ It will build image by coping occlum runable instance (/opt/occlum_spark) and in
 
 the final image is called `intelanalytics/bigdl-ppml-trusted-big-data-ml-scala-occlum-production-customer:${TAG}`.
 
-### Pull usable customer image from dockerhub.
+## Get customer image.
 
+### Pull customer image from dockerhub
 ```bash
 docker pull intelanalytics/bigdl-ppml-trusted-big-data-ml-scala-occlum-production-customer:2.2.0-build
+```
+### Build customer image from production-build image
+```bash
+cd /path/BigDL/ppml/trusted-big-data-ml/scala/docker-occlum/
+#update config
+bash build-customer-image.sh
 ```
 
 ## Using BigDL PPML Occlum EHSM Attestation
