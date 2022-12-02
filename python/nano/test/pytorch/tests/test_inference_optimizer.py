@@ -490,7 +490,7 @@ class TestInferencePipeline(TestCase):
             ipex_model(input_sample)
 
         # test bf16 and non bf16 model
-        bf16_model = inference_opt.get_model("bf16")
+        bf16_model = inference_opt.get_model("jit_bf16_ipex")
         with pytest.raises(RuntimeError):
             InferenceOptimizer.get_context(self.model, bf16_model)
         
