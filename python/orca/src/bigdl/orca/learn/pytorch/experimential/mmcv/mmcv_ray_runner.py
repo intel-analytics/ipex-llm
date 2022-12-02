@@ -55,7 +55,10 @@ class HDFSBackend(BaseStorageBackend):
         with open(temp_path, "wb") as f:
             f.write(obj)
 
-        from bigdl.orca.data.file import put_local_file_to_remote
+        from bigdl.orca.data.file import exists, makedirs, put_local_file_to_remote
+        work_dir = os.path.dirname(filepath)
+        if not exists(work_dir):
+            makedirs(work_dir)
         put_local_file_to_remote(temp_path, filepath)
 
     def put_text(self, obj: str, filepath: str, encoding: str = 'utf-8') -> None:
