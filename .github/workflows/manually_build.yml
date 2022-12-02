@@ -526,6 +526,7 @@ jobs:
           sudo docker push ${final_name}
           docker tag ${final_name} 10.239.45.10/arda/${final_name}
           docker push 10.239.45.10/arda/${final_name}
+          docker rmi -f ${image_name} 10.239.45.10/arda/${image_name}
           docker rmi -f ${final_name} 10.239.45.10/arda/${final_name}
 
   bigdl-ppml-trusted-big-data-ml-scala-occlum-production-customer:
