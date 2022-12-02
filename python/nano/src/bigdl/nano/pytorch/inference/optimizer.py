@@ -343,8 +343,9 @@ class InferenceOptimizer(BaseInferenceOptimizer):
             sample_size_for_pot = 100
 
         # patch context manager
-        model.context_manager = generate_context_manager(accelerator=None, precision="fp32",
-                                                         thread_num=thread_num)
+        model._nano_context_manager = generate_context_manager(accelerator=None,
+                                                               precision="fp32",
+                                                               thread_num=thread_num)
 
         print("==========================Start Optimization==========================")
         start_time = time.perf_counter()
@@ -791,7 +792,7 @@ class InferenceOptimizer(BaseInferenceOptimizer):
         :return: a context manager.
         """
         if hasattr(model, "context_manager"):
-            return model.context_manager
+            return model._nano_context_manager
         return generate_context_manager(accelerator=None, precision="fp32")
 
     @staticmethod

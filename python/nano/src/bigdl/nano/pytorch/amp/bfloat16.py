@@ -14,19 +14,15 @@
 # limitations under the License.
 #
 
-import contextlib
-import io
-from logging import warning
-import sys
-import fcntl
 
+from logging import warning
 import torch
 import os
 from bigdl.nano.utils.inference.pytorch.model import AcceleratedLightningModule
 from bigdl.nano.utils.log4Error import invalidInputError
 from bigdl.nano.pytorch.utils import TORCH_VERSION_LESS_1_10, TORCH_VERSION_LESS_1_12
 from bigdl.nano.utils import CPUInfo
-from bigdl.nano.pytorch.context_manager import AutocastContextManager
+from bigdl.nano.pytorch.context_manager import generate_context_manager
 
 invalidInputError(
     not TORCH_VERSION_LESS_1_10,
@@ -37,7 +33,14 @@ invalidInputError(
 class BF16Model(AcceleratedLightningModule):
     """Model of BFloat16 with auto mixed precision."""
 
-    def __init__(self, model, channels_last=None):  # noqa
+    def __init__(self, model, channels_last=None, thread_num=None):  # noqa
+        """
+        This is the accelerated model for BFloat16 with auto mixed precision.
+
+        :param model: the model(nn.module) to be transform.
+        :param channels_last: if set model and data to be channels-last mode.
+        :param thread_num: the thread num allocated for this model.
+        """
         model.eval()
         super().__init__(model)
         self._bf16_check()
@@ -45,7 +48,9 @@ class BF16Model(AcceleratedLightningModule):
         self.channels_last = channels_last
         if self.channels_last is True:
             self.model = self.model.to(memory_format=torch.channels_last)
-        self.context_manager = AutocastContextManager()
+        self._nano_context_manager = generate_context_manager(accelerator=None,
+                                                              precision="bf16",
+                                                              thread_num=thread_num)
 
     @property
     def _has_bf16_isa(self):

@@ -28,9 +28,9 @@ class PytorchQuantizedModel(AcceleratedLightningModule):
         super().__init__(model.model)
         self.quantized = model
         self.thread_num = thread_num
-        self.context_manager = generate_context_manager(accelerator=None,
-                                                        precision="int8",
-                                                        thread_num=thread_num)
+        self._nano_context_manager = generate_context_manager(accelerator=None,
+                                                              precision="int8",
+                                                              thread_num=thread_num)
 
     @property
     def _nargs(self):
