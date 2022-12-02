@@ -2,7 +2,8 @@
 
 This tutorial provides a step-by-step guide on how to run BigDL-Orca programs on Apache Hadoop/YARN clusters, using a [PyTorch Fashion-MNIST program](https://github.com/intel-analytics/BigDL/blob/main/python/orca/tutorial/pytorch/FashionMNIST/) as a working example.
 
-The **Client Node** that appears in this tutorial refer to the machine where you launch or submit your applications.
+The **Client Node** that appears in this tutorial refer to the machine where you launch or submit your applications. Because the **Client Node** is in the **Cluster**, there may be some limitation of using it. In such situation, the **Deployment Node**, which is outside the **Cluster**, is used to prepare environment package and upload it to the **Client Node**. Please refer to the following deployment diagram for better understanding.
+![deployment](../../../../image/deployment.svg)
 
 ---
 ## 1. Basic Concepts
@@ -77,7 +78,7 @@ def train_data_creator(config, batch_size):
 Before running BigDL Orca programs on YARN, you need to properly setup the environment following the steps in this section.
 
 __Note__:
-* When using [`python` command](#use-python-command) or [`bigdl-submit`](#use-bigdl-submit), we would directly use the corresponding `pyspark` (which is a dependency of BigDL Orca) for the Spark environment. Thus to avoid possible conflicts, you *DON'T* need to download Spark by yourself or set the environment variable `SPARK_HOME` unless you [`spark-submit`](#use-spark-submit). 
+* When using [`python` command](#use-python-command) or [`bigdl-submit`](#use-bigdl-submit), we would directly use the corresponding `pyspark` (which is a dependency of BigDL Orca) for the Spark environment. Thus to avoid possible conflicts, you *DON'T* need to download Spark by yourself or set the environment variable `SPARK_HOME` unless you use [`spark-submit`](#use-spark-submit). 
 
 
 ### 2.1 Setup JAVA & Hadoop Environment
@@ -89,14 +90,14 @@ export HADOOP_CONF_DIR=/path/to/hadoop/conf
 ```
 
 ### 2.2 Install Python Libraries
-- See [here](../Overview/install.md#install-anaconda) to install conda and prepare the Python environment on the __Client Node__.
+- See [here](../Overview/install.md#install-anaconda) to install conda and prepare the Python environment on the __Client Node__ or __Deployment Node__.
 
 - See [here](../Overview/install.md#install-bigdl-orca) to install BigDL Orca in the created conda environment.
 
 - You should install all the other Python libraries that you need in your program in the conda environment as well. `torch` and `torchvision` are needed to run the Fashion-MNIST example:
-```bash
-pip install torch torchvision
-```
+    ```bash
+    pip install torch torchvision
+    ```
 
 - For more details, please see [Python User Guide](https://bigdl.readthedocs.io/en/latest/doc/UserGuide/python.html).
 
@@ -104,10 +105,10 @@ pip install torch torchvision
 * For [CDH](https://www.cloudera.com/products/open-source/apache-hadoop/key-cdh-components.html) users, the environment variable `HADOOP_CONF_DIR` should be `/etc/hadoop/conf` by default.
 
 * The __Client Node__ may have already installed a different version of Spark than the one installed with BigDL. To avoid conflicts, unset all Spark-related environment variables (you may use use `env | grep SPARK` to find all of them):
-```bash
-unset SPARK_HOME
-unset ...
-```
+    ```bash
+    unset SPARK_HOME
+    unset ...
+    ```
 
 ---
 ## 3. Prepare Dataset 
@@ -227,7 +228,7 @@ Set the cluster_mode to "bigdl-submit" in `init_orca_context`.
 sc = init_orca_context(cluster_mode="bigdl-submit")
 ```
 
-Pack the current activate conda environment to an archive on the __Client Node__ before submitting the example:
+Pack the current activate conda environment to an archive on the __Client Node__ before submitting the example, or directyly use the environemnt package uploaded by __Deployment Node__:
 ```bash
 conda pack -o environment.tar.gz
 ```
@@ -288,37 +289,34 @@ In the `bigdl-submit` script:
 
 
 ### 5.3 Use `spark-submit`
-When you are not able to install BigDL using conda on the __Client Node__ , please use the `spark-submit` script instead. 
+If you prefer to use the `spark-submit` instead of `bigdl-submit`, please follow the steps below. 
 
-Set the cluster_mode to "spark-submit" in `init_orca_context`.
-```python
-sc = init_orca_context(cluster_mode="spark-submit")
-```
+1. Set the cluster_mode to "spark-submit" in `init_orca_context`.
+    ```python
+    sc = init_orca_context(cluster_mode="spark-submit")
+    ```
 
-Before submitting the application on the __Client Node__, you need to:
-- First, prepare the conda environment on a __Development Node__ where conda is available and pack the conda environment to an archive:
-```bash
-conda pack -o environment.tar.gz
-```
+2. Download requirement file [here](https://github.com/lalalapotter/BigDL/tree/main/python/requirements/orca) and install required Python libraries of BigDL according to your needs.
+    ```bash
+    pip install -r /path/to/requirements.txt
+    ```
 
-- Then send the conda archive to the __Client Node__;
-```bash
-scp /path/to/environment.tar.gz username@client_ip:/path/to/
-```
+3. Pack the current activate conda environment to an archive on the __Client Node__ before submitting the example, or directyly use the environemnt package uploaded by __Deployment Node__ if conda is not available on __Client Node__:
+    ```bash
+    conda pack -o environment.tar.gz
+    ```
 
+4. Download and extract [Spark](https://archive.apache.org/dist/spark/). Then setup the environment variables `${SPARK_HOME}` and `${SPARK_VERSION}`.
+    ```bash
+    export SPARK_HOME=/path/to/spark # the folder path where you extract the Spark package
+    export SPARK_VERSION="downloaded spark version"
+    ```
 
-On the __Client Node__:
-- Download and extract [Spark](https://archive.apache.org/dist/spark/). Then setup the environment variables `${SPARK_HOME}` and `${SPARK_VERSION}`.
-```bash
-export SPARK_HOME=/path/to/spark # the folder path where you extract the Spark package
-export SPARK_VERSION="downloaded spark version"
-```
-
-- Refer to [here](../Overview/install.html#download-bigdl-orca) to download and unzip a BigDL assembly package. Make sure the Spark version of your downloaded BigDL matches your downloaded Spark. Then setup the environment variables `${BIGDL_HOME}` and `${BIGDL_VERSION}`.
-```bash
-export BIGDL_HOME=/path/to/unzipped_BigDL
-export BIGDL_VERSION="downloaded BigDL version"
-```
+5. Refer to [here](../Overview/install.html#download-bigdl-orca) to download and unzip a BigDL assembly package. Make sure the Spark version of your downloaded BigDL matches your downloaded Spark. Then setup the environment variables `${BIGDL_HOME}` and `${BIGDL_VERSION}`.
+    ```bash
+    export BIGDL_HOME=/path/to/unzipped_BigDL
+    export BIGDL_VERSION="downloaded BigDL version"
+    ```
 
 Some runtime configurations for Spark are as follows:
 
