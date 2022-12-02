@@ -378,7 +378,7 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                     else:
                         model(*input_sample)
 
-                with acce_model.context_manager:
+                with InferenceOptimizer.get_context(acce_model):
                     try:
                         result_map[method]["latency"], status =\
                             throughput_calculate_helper(latency_sample_num, baseline_time,
@@ -791,7 +791,7 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                InferenceOptimizer.trace/InferenceOptimizer.quantize.
         :return: a context manager.
         """
-        if hasattr(model, "context_manager"):
+        if hasattr(model, "_nano_context_manager"):
             return model._nano_context_manager
         return generate_context_manager(accelerator=None, precision="fp32")
 
