@@ -35,7 +35,7 @@ If you already have a BigDL-PCCS service on Kubernetes, please skip this step.
 If not, please **[deploy BigDL-PCCS on Kubernetes](https://github.com/intel-analytics/BigDL/tree/main/ppml/services/pccs/kubernetes)**.
 ## 2. Start BigDL-eHSM-KMS on Kubernetes 
 ### 2.1 Determine IP addresses for dkeyserver and KMS
-First of all , **two different IP addresses that unused in your subnetwork** are needed to be used as dkeyserver IP and KMS IP, and they should be different from PCCS IP that you have set in step 1. \
+First of all , **IP address that unused in your subnetwork** is needed as KMS external service IP, and it should be different from PCCS IP that you have set in step 1. \
 **Especially,** the IP addresses chosen for dkeyserver and KMS **SHOULD NOT** be real machine IP address. \
 You could check if the IP adresses are available for dkeyserver and KMS like this
 ```bash
