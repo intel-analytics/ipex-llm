@@ -46,7 +46,7 @@ class TestScaleNumpy(TestCase):
     @op_tf2
     @op_diff_set_all
     def test_scale_timeseries_numpy(self):
-        scalers = [MaxAbsScaler(), MinMaxScaler(), RobustScaler()]
+        scalers = [StandardScaler(), MaxAbsScaler(), MinMaxScaler(), RobustScaler()]
         col_list = ["value", "extra feature"]
         for scaler in scalers:
             df = get_ts_df()

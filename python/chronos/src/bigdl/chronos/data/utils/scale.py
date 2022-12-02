@@ -111,7 +111,8 @@ def _robust_scaler_scale_timeseries_numpy(data, scaler):
     return data_scale
 
 
-SCALE_HELPER_MAP = {MaxAbsScaler: _maxabs_scaler_scale_timeseries_numpy,
+SCALE_HELPER_MAP = {StandardScaler: _standard_scaler_scale_timeseries_numpy,
+                    MaxAbsScaler: _maxabs_scaler_scale_timeseries_numpy,
                     MinMaxScaler: _minmax_scaler_scale_timeseries_numpy,
                     RobustScaler: _robust_scaler_scale_timeseries_numpy}
 

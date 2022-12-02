@@ -1037,25 +1037,7 @@ class TSDataset:
                                   "When calling scale for the first time, "
                                   "you need to set fit=True.")
             self.df[self.target_col + feature_col] = \
-                scaler.transform(self.df[self.target_col + feature_col])
-        self.scaler = scaler
-        return self
-
-    def scale_numpy(self, scaler, fit=True):
-        '''
-        Scale the time series dataset using numpy.
-
-        :param scaler: sklearn scaler instance, StandardScaler, MaxAbsScaler,
-               MinMaxScaler and RobustScaler are supported.
-        :param fit: if we need to fit the scaler. Typically, the value should
-               be set to True for training set, while False for validation and
-               test set. The value is defaulted to True.
-        '''
-        col_list = self.target_col + self.feature_col
-        if fit:
-            scaler.fit(self.df[col_list])
-        scaled_data_numpy = scale_timeseries_numpy(self.df[col_list].values, scaler)
-        self.df[col_list] = pd.DataFrame(scaled_data_numpy, columns=col_list)
+                scale_timeseries_numpy(self.df[self.target_col + feature_col].values, scaler)
         self.scaler = scaler
         return self
 

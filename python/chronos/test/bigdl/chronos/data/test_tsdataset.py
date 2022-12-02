@@ -907,54 +907,6 @@ class TestTSDataset(TestCase):
             tsdata._check_basic_invariants()
 
     @op_torch
-    def test_tsdataset_scale_numpy(self):
-        df = get_multi_id_ts_df()
-        df_test = get_multi_id_ts_df()
-
-        from sklearn.preprocessing import MaxAbsScaler, MinMaxScaler, RobustScaler
-        scalers = [MaxAbsScaler(),
-                   MinMaxScaler(),
-                   MinMaxScaler(feature_range=(1, 3)),
-                   RobustScaler(),
-                   RobustScaler(with_centering=False),
-                   RobustScaler(with_scaling=False),
-                   RobustScaler(quantile_range=(20, 80))]
-        col_list = ["value", "extra feature"]
-        for scaler in scalers:
-            tsdata = TSDataset.from_pandas(df, dt_col="datetime", target_col="value",
-                                           extra_feature_col=["extra feature"], id_col="id")
-            tsdata_scale_numpy = TSDataset.from_pandas(df, dt_col="datetime", target_col="value",
-                                                       extra_feature_col=["extra feature"],
-                                                       id_col="id")
-            tsdata_test = TSDataset.from_pandas(df_test, dt_col="datetime", target_col="value",
-                                                extra_feature_col=["extra feature"], id_col="id")
-            tsdata_test_scale_numpy = TSDataset.from_pandas(df_test, dt_col="datetime",
-                                                            target_col="value",
-                                                            extra_feature_col=["extra feature"],
-                                                            id_col="id")
-            tsdata.gen_dt_feature()\
-                  .scale(scaler)
-
-            tsdata_scale_numpy.gen_dt_feature()\
-                              .scale_numpy(scaler)
-
-            tsdata_test.gen_dt_feature()\
-                       .scale(scaler, fit=False)
-            
-            tsdata_test_scale_numpy.gen_dt_feature()\
-                                   .scale_numpy(scaler, fit=False)
-
-            assert_array_almost_equal(tsdata.df[col_list].values,
-                                      tsdata_scale_numpy.df[col_list].values)
-            assert_array_almost_equal(tsdata_test.df[col_list].values,
-                                      tsdata_test_scale_numpy.df[col_list].values)
-
-            tsdata._check_basic_invariants()
-            tsdata_scale_numpy._check_basic_invariants()
-            tsdata_test._check_basic_invariants()
-            tsdata_test_scale_numpy._check_basic_invariants()
-
-    @op_torch
     def test_tsdataset_resample(self):
         df = get_ts_df()
         tsdata = TSDataset.from_pandas(df, dt_col="datetime", target_col="value",
