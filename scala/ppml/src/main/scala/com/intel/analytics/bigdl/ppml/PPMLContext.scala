@@ -64,7 +64,7 @@ class PPMLContext protected(kms: KeyManagementService = null, sparkSession: Spar
    */
   def loadKeys(primaryKeyPath: String, dataKeyPath: String, dataSourceName: String = "dataSource"): this.type = {
     var kms=this.kms
-    if (dataSourceName==null) {
+    if (kms==null) {
       val kmsName=this.dataSources.get(dataSourceName).get
       kms= this.multiKms.get(kmsName).get
     }
@@ -333,14 +333,6 @@ object PPMLContext{
         new AzureKeyManagementService(vaultName, clientId)
       case _ =>
         throw new EncryptRuntimeException("Wrong kms type")
-    // if (conf.contains("spark.bigdl.kms.multikms.key.primary")) {
-    //   Log4Error.invalidInputError(conf.contains("spark.bigdl.kms.multikms.key.data"),
-    //     "Data key not found, please provide" +
-    //     " both spark.bigdl.kms.multikms.key.primary and spark.bigdl.kms.multikms.key.data.")
-    //   val primaryKey = conf.get("spark.bigdl.kms.multikms.key.primary")
-    //   val dataKey = conf.get("spark.bigdl.kms.multikms.key.data")
-    //   ppmlSc.loadKeys(primaryKey, dataKey)
-     }
     } 
   
     //init data sources
