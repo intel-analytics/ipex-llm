@@ -110,13 +110,10 @@ class PyTorchPySparkEstimator(BaseEstimator):
 
         sc = OrcaContext.get_spark_context()
 
-        if optimizer_creator is not None:
-            if not (isinstance(model_creator, types.FunctionType) and
-                    isinstance(optimizer_creator, types.FunctionType)): 
-                # Torch model is also callable.
-                invalidInputError(False,
-                                "Must provide a function for both model_creator and"
-                                " optimizer_creator")
+        if not isinstance(model_creator, types.FunctionType): 
+            # Torch model is also callable.
+            invalidInputError(False,
+                              "Must provide a function for model_creator")
 
         if not training_operator_cls and not loss_creator:
             invalidInputError(False,
@@ -126,6 +123,7 @@ class PyTorchPySparkEstimator(BaseEstimator):
         self.model_dir = parse_model_dir(model_dir)
 
         self.model_creator = model_creator
+        self.optimizer_creator = optimizer_creator
         self.initialization_hook = initialization_hook
 
         num_nodes, cores_per_node = get_node_and_core_number()
@@ -253,6 +251,10 @@ class PyTorchPySparkEstimator(BaseEstimator):
             info=info,
             callbacks=callbacks,
         )
+
+        if not isinstance(self.optimizer_creator, types.FunctionType):
+            invalidInputError(False,
+                              "Must provide a function for optimizer_creator")
 
         if isinstance(data, SparkXShards):
             # set train/validation
