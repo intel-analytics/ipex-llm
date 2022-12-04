@@ -90,6 +90,8 @@ class IPEXJITInference_gt_1_10:
             print("hello world!")
         # patch a function
         model.hello = hello
+        
+        # test jit + ipex
         new_model = InferenceOptimizer.trace(model, accelerator="jit",
                                              use_ipex=True,
                                              input_sample=self.data_sample)
@@ -98,14 +100,25 @@ class IPEXJITInference_gt_1_10:
         assert new_model.channels == 3
         new_model.hello()
 
+        # test jit
         new_model = InferenceOptimizer.trace(model, accelerator="jit",
                                              input_sample=self.data_sample)
         with InferenceOptimizer.get_context(new_model):
             new_model(self.data_sample)
         assert new_model.channels == 3
         new_model.hello()
-        
+
+        # test ipex
         new_model = InferenceOptimizer.trace(model, use_ipex=True)
+        with InferenceOptimizer.get_context(new_model):
+            new_model(self.data_sample)
+        assert new_model.channels == 3
+        new_model.hello()
+        with pytest.raises(AttributeError):
+            new_model.width
+        
+        # test channels_last
+        new_model = InferenceOptimizer.trace(model, channels_last=True)
         with InferenceOptimizer.get_context(new_model):
             new_model(self.data_sample)
         assert new_model.channels == 3

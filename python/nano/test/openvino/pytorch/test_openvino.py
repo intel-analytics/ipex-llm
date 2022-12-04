@@ -22,8 +22,8 @@ import torch
 from torch.utils.data.dataset import TensorDataset
 from torch.utils.data.dataloader import DataLoader
 import os
-import pytest
 import tempfile
+import pytest
 
 
 class TestOpenVINO(TestCase):
@@ -35,7 +35,7 @@ class TestOpenVINO(TestCase):
         y = torch.ones((10, ), dtype=torch.long)
 
         # trace a torch model
-        openvino_model = trainer.trace(model, x, 'openvino')
+        openvino_model = InferenceOptimizer.trace(model, x, 'openvino')
         y_hat = openvino_model(x)
         assert y_hat.shape == (10, 10)
 
@@ -64,9 +64,9 @@ class TestOpenVINO(TestCase):
         # save and load pytorch model
         openvino_model = InferenceOptimizer.trace(model, accelerator='openvino', input_sample=x)
         with TemporaryDirectory() as saved_root:
-            trainer.save(openvino_model, saved_root)
+            InferenceOptimizer.save(openvino_model, saved_root)
             assert len(os.listdir(saved_root)) > 0
-            loaded_openvino_model = trainer.load(saved_root)
+            loaded_openvino_model = InferenceOptimizer.load(saved_root)
             y_hat = loaded_openvino_model(x[0:3])
             assert y_hat.shape == (3, 10)
             y_hat = loaded_openvino_model(x)
@@ -121,7 +121,40 @@ class TestOpenVINO(TestCase):
         with InferenceOptimizer.get_context(openvino_model):
             assert torch.get_num_threads() == 2
             y1 = openvino_model(x[0:1])
-    
+
+        with tempfile.TemporaryDirectory() as tmp_dir_name:
+            InferenceOptimizer.save(openvino_model, tmp_dir_name)
+            model = InferenceOptimizer.load(tmp_dir_name)
+
+        with InferenceOptimizer.get_context(model):
+            assert torch.get_num_threads() == 2
+            y2 = model(x[0:1])
+
+    def test_pytorch_openvino_model_additional_attrs(self):
+        trainer = Trainer(max_epochs=1)
+        model = mobilenet_v3_small(num_classes=10)
+        # patch a attribute
+        model.channels = 3
+        def hello():
+            print("hello world!")
+        # patch a function
+        model.hello = hello
+
+        x = torch.rand((10, 3, 256, 256))
+        y = torch.ones((10, ), dtype=torch.long)
+
+        openvino_model = InferenceOptimizer.trace(model, input_sample=x,
+                                                  accelerator='openvino',
+                                                  thread_num=2)
+        assert openvino_model.channels == 3
+        openvino_model.hello()
+        with pytest.raises(AttributeError):
+            openvino_model.width
+
+        with InferenceOptimizer.get_context(openvino_model):
+            assert torch.get_num_threads() == 2
+            y1 = openvino_model(x[0:1])
+
         with tempfile.TemporaryDirectory() as tmp_dir_name:
             InferenceOptimizer.save(openvino_model, tmp_dir_name)
             model = InferenceOptimizer.load(tmp_dir_name)

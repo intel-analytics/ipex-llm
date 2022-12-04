@@ -57,11 +57,12 @@ class PytorchIPEXJITModel(AcceleratedLightningModule):
                                                                   thread_num=thread_num)
             return
         self.channels_last = channels_last
-        self.original_model = model if inplace is False else deepcopy(model)
         self.original_state_dict = model.state_dict()
         self.use_ipex = use_ipex
         self.use_jit = use_jit
         self.jit_strict = jit_strict
+        if self.use_ipex is True or self.use_jit is True:
+            self.original_model = model if inplace is False else deepcopy(model)
         if self.channels_last:
             self.model = self.model.to(memory_format=torch.channels_last)
         if self.use_ipex:
@@ -86,11 +87,13 @@ class PytorchIPEXJITModel(AcceleratedLightningModule):
                                                               precision="fp32",
                                                               thread_num=thread_num)
         self.thread_num = thread_num
-        # patch original model's attr to current new model
-        for attr in dir(self.original_model):
-            if attr not in dir(self) and not attr.startswith('_'):
-                setattr(self, attr, getattr(self.original_model, attr))
-        del self.original_model  # save memory
+        if self.use_ipex is True or self.use_jit is True:
+            # patch original model's attr to current new model
+            for attr in dir(self.original_model):
+                if attr not in dir(self) and not attr.startswith('_') and not\
+                        isinstance(getattr(self.original_model, attr), torch.nn.Module):
+                    setattr(self, attr, getattr(self.original_model, attr))
+            del self.original_model  # save memory
 
     @property
     def forward_args(self):
@@ -108,6 +111,17 @@ class PytorchIPEXJITModel(AcceleratedLightningModule):
     def on_forward_end(self, outputs):
         return outputs
 
+    def __getattr__(self, name: str):
+        # the search order is:
+        # 1. current instance, like channels_last will be found at this place
+        # 2. super class, like model will be found at this place
+        # 3. original model, like additional attributes of original model
+        #    will be found at this place
+        try:
+            return super().__getattr__(name)
+        except AttributeError:
+            return getattr(self.model, name)
+    
     @property
     def status(self):
         status = super().status

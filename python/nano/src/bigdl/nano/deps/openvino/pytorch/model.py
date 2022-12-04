@@ -46,11 +46,11 @@ class PytorchOpenVINOModel(AcceleratedLightningModule):
         :param **export_kwargs: will be passed to torch.onnx.export function.
         """
         ov_model_path = model
-        with TemporaryDirectory() as dir:
-            dir = Path(dir)
+        with TemporaryDirectory() as tmpdir:
+            tmpdir = Path(tmpdir)
             if isinstance(model, torch.nn.Module):
-                export(model, input_sample, str(dir / 'tmp.xml'), logging, **export_kwargs)
-                ov_model_path = dir / 'tmp.xml'
+                export(model, input_sample, str(tmpdir / 'tmp.xml'), logging, **export_kwargs)
+                ov_model_path = tmpdir / 'tmp.xml'
 
             self.ov_model = OpenVINOModel(ov_model_path, thread_num=thread_num, config=config)
             super().__init__(None)
@@ -59,7 +59,8 @@ class PytorchOpenVINOModel(AcceleratedLightningModule):
                                                               thread_num=thread_num)
         # patch original model's attr to current new model
         for attr in dir(model):
-            if attr not in dir(self) and not attr.startswith('_'):
+            if attr not in dir(self) and not attr.startswith('_') and not\
+                    isinstance(getattr(model, attr), torch.nn.Module):
                 setattr(self, attr, getattr(model, attr))
 
     def on_forward_start(self, inputs):

@@ -78,7 +78,8 @@ class PytorchONNXRuntimeModel(ONNXRuntimeModel, AcceleratedLightningModule):
                                                               thread_num=self.thread_num)
         # patch original model's attr to current new model
         for attr in dir(model):
-            if attr not in dir(self) and not attr.startswith('_'):
+            if attr not in dir(self) and not attr.startswith('_') and not\
+                    isinstance(getattr(model, attr), torch.nn.Module):
                 setattr(self, attr, getattr(model, attr))
 
     def on_forward_start(self, inputs):
