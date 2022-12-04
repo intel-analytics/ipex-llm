@@ -13,7 +13,7 @@ on:
 
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
-  chronos-PRVN-ray:
+  chronos-NB-pytorch-test:
     runs-on: [ self-hosted, Gondolin, ubuntu-20.04-lts ]
     strategy:
       fail-fast: false
@@ -30,12 +30,6 @@ jobs:
         uses: actions/setup-python@v2
         with:
           python-version: ${{ matrix.python-version }}
-      
-      - name: Install dependencies
-        run: |
-          python -m pip install --upgrade pip
-          python -m pip install --upgrade setuptools==58.0.4
-          python -m pip install --upgrade wheel
 
       - name: Run Chronos NB (pytorch) python 3.7
         shell: bash
@@ -58,6 +52,24 @@ jobs:
           BIGDL_ROOT: ${{ github.workspace }}
           ANALYTICS_ZOO_ROOT: ${{ github.workspace }}
 
+  chronos-NB-pytorch-inference-test:
+    runs-on: [ self-hosted, Gondolin, ubuntu-20.04-lts ]
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.7.10"]
+    steps:
+      - uses: actions/checkout@v2
+      - name: Set up JDK 8
+        uses: ./.github/actions/jdk-setup-action
+      - name: Set up Maven
+        uses: ./.github/actions/maven-setup-action
+
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v2
+        with:
+          python-version: ${{ matrix.python-version }}
+
       - name: Run Chronos NB (pytorch,inference) python 3.7
         shell: bash
         run: |
@@ -78,6 +90,24 @@ jobs:
         env:
           BIGDL_ROOT: ${{ github.workspace }}
           ANALYTICS_ZOO_ROOT: ${{ github.workspace }}
+
+  chronos-NB-pytorch-inference-automl-test:
+    runs-on: [ self-hosted, Gondolin, ubuntu-20.04-lts ]
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.7.10"]
+    steps:
+      - uses: actions/checkout@v2
+      - name: Set up JDK 8
+        uses: ./.github/actions/jdk-setup-action
+      - name: Set up Maven
+        uses: ./.github/actions/maven-setup-action
+
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v2
+        with:
+          python-version: ${{ matrix.python-version }}
 
       - name: Run Chronos NB (pytorch,inference,automl) python 3.7
         shell: bash
@@ -100,7 +130,25 @@ jobs:
           BIGDL_ROOT: ${{ github.workspace }}
           ANALYTICS_ZOO_ROOT: ${{ github.workspace }}
 
-        - name: Run Chronos NB (pytorch,inference,automl,distributed) python 3.7
+  chronos-NB-pytorch-inference-automl-distributed-test:
+    runs-on: [ self-hosted, Gondolin, ubuntu-20.04-lts ]
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.7.10"]
+    steps:
+      - uses: actions/checkout@v2
+      - name: Set up JDK 8
+        uses: ./.github/actions/jdk-setup-action
+      - name: Set up Maven
+        uses: ./.github/actions/maven-setup-action
+
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v2
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Run Chronos NB (pytorch,inference,automl,distributed) python 3.7
         shell: bash
         run: |
           if conda info --env | grep "chronos-nb-env-py37"; then
