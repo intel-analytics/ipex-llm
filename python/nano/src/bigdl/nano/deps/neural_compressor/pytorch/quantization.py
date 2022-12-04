@@ -33,9 +33,22 @@ class PytorchQuantization(BaseQuantization):
         super().__init__(**kwargs)
         self._inc_metric_cls = PytorchINCMetric
         self.thread_num = thread_num
+    
+    def _pre_execution(self, model, calib_dataloader=None, metric=None):
+        if isinstance(model, torch.nn.Module):
+            self.original_model = model
+        return model, calib_dataloader, metric
 
     def _post_execution(self, q_model):
-        return PytorchQuantizedModel(q_model, self.thread_num)
+        quantized_model = PytorchQuantizedModel(q_model, self.thread_num)
+        if hasattr(self, "original_model"):
+            # patch original model's attr to current new model
+            for attr in dir(self.original_model):
+                if attr not in dir(quantized_model) and not attr.startswith('_') and not\
+                        isinstance(getattr(self.original_model, attr), torch.nn.Module):
+                    setattr(quantized_model, attr, getattr(self.original_model, attr))
+            del self.original_model
+        return quantized_model
 
     @property
     def valid_frameworks(self):

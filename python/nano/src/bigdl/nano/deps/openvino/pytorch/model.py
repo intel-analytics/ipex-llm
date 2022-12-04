@@ -58,10 +58,11 @@ class PytorchOpenVINOModel(AcceleratedLightningModule):
                                                               precision="fp32",
                                                               thread_num=thread_num)
         # patch original model's attr to current new model
-        for attr in dir(model):
-            if attr not in dir(self) and not attr.startswith('_') and not\
-                    isinstance(getattr(model, attr), torch.nn.Module):
-                setattr(self, attr, getattr(model, attr))
+        if isinstance(model, torch.nn.Module):
+            for attr in dir(model):
+                if attr not in dir(self) and not attr.startswith('_') and not\
+                        isinstance(getattr(model, attr), torch.nn.Module):
+                    setattr(self, attr, getattr(model, attr))
 
     def on_forward_start(self, inputs):
         self.ov_model._model_exists_or_err()
@@ -127,7 +128,10 @@ class PytorchOpenVINOModel(AcceleratedLightningModule):
         model = self.ov_model.pot(dataloader, metric=metric, drop_type=drop_type,
                                   maximal_drop=maximal_drop, max_iter_num=max_iter_num,
                                   n_requests=n_requests, sample_size=sample_size)
-        return PytorchOpenVINOModel(model, thread_num=thread_num, config=config)
+        # below code will re-define a new object, and original attrs will be lost.
+        # return PytorchOpenVINOModel(model, thread_num=thread_num, config=config)
+        self.__init__(model, thread_num=thread_num, config=config)
+        return self
 
     def _save_model(self, path):
         """
