@@ -81,7 +81,8 @@ class PytorchIPEXJITBF16Model(PytorchIPEXJITModel):
                 import intel_extension_for_pytorch as ipex
             model = torch.jit.load(checkpoint_path)
             model.eval()
-            model = torch.jit.freeze(model)
+            if status["use_ipex"]:
+                model = torch.jit.freeze(model)
             from_load = True
         else:
             state_dict = torch.load(checkpoint_path)
