@@ -355,11 +355,14 @@ class TSDataset:
 
         :return: the tsdataset instance.
         '''
-        self.df = self.df.groupby([self.id_col]) \
-            .apply(lambda df: impute_timeseries_dataframe(df=df,
-                                                          dt_col=self.dt_col,
-                                                          mode=mode,
-                                                          const_num=const_num))
+        result = []
+        groups = self.df.groupby([self.id_col])
+        for _, group in groups:
+            result.append(impute_timeseries_dataframe(df=group,
+                                                      dt_col=self.dt_col,
+                                                      mode=mode,
+                                                      const_num=const_num))
+        self.df = pd.concat(result, axis=0)
         self.df.reset_index(drop=True, inplace=True)
         return self
 
@@ -745,9 +748,10 @@ class TSDataset:
 
         if self.lookback == 'auto':
             self.lookback = self.get_cycle_length('mode', top_k=3)
-        rolling_result = \
-            self.df.groupby([self.id_col]) \
-                .apply(lambda df: roll_timeseries_dataframe(df=df,
+        groups = self.df.groupby([self.id_col])
+        rolling_result = []
+        for _, group in groups:
+            rolling_result.append(roll_timeseries_dataframe(df=group,
                                                             roll_feature_df=roll_feature_df,
                                                             lookback=self.lookback,
                                                             horizon=self.horizon,
@@ -759,31 +763,31 @@ class TSDataset:
         # concat the result on required axis
         concat_axis = 2 if id_sensitive else 0
         self.numpy_x = np.concatenate([rolling_result[i][0]
-                                       for i in self._id_list],
+                                       for i in range(len(self._id_list))],
                                       axis=concat_axis).astype(np.float32)
         if (horizon != 0 and is_predict is False) or time_enc:
             self.numpy_y = np.concatenate([rolling_result[i][1]
-                                           for i in self._id_list],
+                                           for i in range(len(self._id_list))],
                                           axis=concat_axis).astype(np.float32)
         else:
             self.numpy_y = None
 
         # time_enc
         if time_enc:
-            time_enc_arr = \
-                self.df.groupby([self.id_col]) \
-                    .apply(lambda df: gen_time_enc_arr(df=df,
-                                                       dt_col=self.dt_col,
-                                                       freq=self._freq,
-                                                       horizon_time=horizon_time,
-                                                       is_predict=is_predict,
-                                                       lookback=lookback,
-                                                       label_len=label_len))
+            time_enc_arr = []
+            for _, group in groups:
+                time_enc_arr.append(gen_time_enc_arr(df=group,
+                                                     dt_col=self.dt_col,
+                                                     freq=self._freq,
+                                                     horizon_time=horizon_time,
+                                                     is_predict=is_predict,
+                                                     lookback=lookback,
+                                                     label_len=label_len))
             self.numpy_x_timeenc = np.concatenate([time_enc_arr[i][0]
-                                                   for i in self._id_list],
+                                                   for i in range(len(self._id_list))],
                                                   axis=0).astype(np.float32)
             self.numpy_y_timeenc = np.concatenate([time_enc_arr[i][1]
-                                                   for i in self._id_list],
+                                                   for i in range(len(self._id_list))],
                                                   axis=0).astype(np.float32)
         else:
             self.numpy_x_timeenc = None
@@ -1160,13 +1164,19 @@ class TSDataset:
                           f" but found {aggregate}.")
 
         if len(self.target_col) == 1:
-            res = self.df.groupby(self.id_col)\
-                         .apply(lambda x: (cycle_length_est(x[self.target_col[0]].values, top_k)))
+            res = []
+            groups = self.df.groupby(self.id_col)
+            for _, group in groups:
+                res.append(cycle_length_est(group[self.target_col[0]].values, top_k))
+            res = pd.Series(res)
         else:
-            res = self.df.groupby(self.id_col)\
-                         .apply(lambda x: pd.DataFrame({'cycle_length':
-                                [cycle_length_est(x[col].values,
-                                                  top_k)for col in self.target_col]}))
+            res = []
+            groups = self.df.groupby(self.id_col)
+            for _, group in groups:
+                res.append(pd.DataFrame({'cycle_length':
+                           [cycle_length_est(group[col].values,
+                                             top_k)for col in self.target_col]}))
+            res = pd.concat(res, axis=0)
             res = res.cycle_length
 
         if aggregate.lower().strip() == 'mode':
