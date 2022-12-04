@@ -61,8 +61,8 @@ class PytorchIPEXJITModel(AcceleratedLightningModule):
         self.use_ipex = use_ipex
         self.use_jit = use_jit
         self.jit_strict = jit_strict
-        if self.use_ipex is True or self.use_jit is True:
-            self.original_model = model if inplace is False else deepcopy(model)
+        if (self.use_ipex is True or self.use_jit is True) and inplace is False:
+            self.original_model = model
         if self.channels_last:
             self.model = self.model.to(memory_format=torch.channels_last)
         if self.use_ipex:
@@ -87,7 +87,7 @@ class PytorchIPEXJITModel(AcceleratedLightningModule):
                                                               precision="fp32",
                                                               thread_num=thread_num)
         self.thread_num = thread_num
-        if self.use_ipex is True or self.use_jit is True:
+        if (self.use_ipex is True or self.use_jit is True) and inplace is False:
             # patch original model's attr to current new model
             for attr in dir(self.original_model):
                 if attr not in dir(self) and not attr.startswith('_') and not\
@@ -121,7 +121,7 @@ class PytorchIPEXJITModel(AcceleratedLightningModule):
             return super().__getattr__(name)
         except AttributeError:
             return getattr(self.model, name)
-    
+
     @property
     def status(self):
         status = super().status
