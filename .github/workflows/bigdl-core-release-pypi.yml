@@ -76,10 +76,13 @@ jobs:
         python-version: '3.7'
     - name: Install dependencies
       run: |
+        apt-get update
+        apt-get install wget
         python -m pip install --upgrade pip
         pip install build
         pip install wheel
         pip install twine
+        
     
     - name: Build package
       run: |
