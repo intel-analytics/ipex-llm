@@ -27,6 +27,10 @@ def get_forward_args(model):
     '''
     This function is to get all the arguments(excepts *args and **kwargs)
     It will return a list of arg name
+    E.g.
+    def forward(self, a, b=1, c: int = 3, *args, **kwargs):
+        pass
+    it will return ['a', 'b', 'c']
     '''
     forward_args = inspect.getfullargspec(model.forward).args[1:]
     if isinstance(model, LightningModule):
@@ -40,6 +44,10 @@ def get_forward_defaults(model):
     '''
     This function is to get all the defaults
     It will return a list of default values
+    E.g.
+    def forward(self, a, b=1, c: int = 3, *args, **kwargs):
+        pass
+    it will return (1, 3)
     '''
     forward_defaults = inspect.getfullargspec(model.forward).defaults
     if isinstance(model, LightningModule):
@@ -53,6 +61,10 @@ def get_forward_annotations(model):
     '''
     This function is to get all the annotations
     It will return a dict of {args: annotations}
+    E.g.
+    def forward(self, a, b=1, c: int = 3, *args, **kwargs):
+        pass
+    it will return {'c': <class 'int'>}
     '''
     forward_annotations = inspect.getfullargspec(model.forward).annotations
     if isinstance(model, LightningModule):
@@ -66,6 +78,10 @@ def get_tensor_args(model):
     '''
     This function will return all the parameters that (might) be a tensor type
     It will return a list or tensor args name
+    E.g.
+    def forward(self, a, b=1, c: int = 3, *args, **kwargs):
+        pass
+    it will return ['a']
     '''
     forward_args = get_forward_args(model)
     forward_defaults = get_forward_defaults(model)
