@@ -159,7 +159,7 @@ But got data of type {}
 
 class SparkXShards(XShards):
     """
-    A collection of data which can be pre-processed in parallel on Spark
+    A collection of data which can be pre-processed in parallel on Spark.
     """
     def __init__(self,
                  rdd: Union["PipelinedRDD", "RDD"],
@@ -174,32 +174,42 @@ class SparkXShards(XShards):
             self.rdd.cache()
         if self.eager:
             self.compute()
+            self.is_lazy = False
+        else:
+            self.is_lazy = True
         self.type = {}
         if class_name:
             self.type['class_name'] = class_name
 
     @classmethod
-    def _create(cls,
+    def lazy(cls,
+             rdd: Union["PipelinedRDD", "RDD"],
+             class_name: str = None) -> "SparkXShards":
+        return SparkXShards(rdd, transient=True, class_name=class_name).to_lazy()
+
+    def _create(self,
                 rdd: Union["PipelinedRDD", "RDD"],
                 class_name: str = None) -> "SparkXShards":
         """
-        Create a non-transient SparkXShards.
+        Create an instance of SparkXShards after transformation.
         """
-        return cls(rdd, False, class_name)
+        if self.is_lazy:
+            return SparkXShards(rdd, transient=True, class_name=class_name).to_lazy()
+        else:
+            return SparkXShards(rdd, class_name=class_name)
 
-    def lazy(self) -> "LazySparkXShards":
+    def to_lazy(self) -> "SparkXShards":
         """
         Making the current SparkXShards lazy won't change the behavior of the current SparkXShards.
         Cached data won't be uncached unless uncache is explicitly invoked.
-        After converting to LazySparkXShards, future operations would be performed lazily.
+        After being marked as lazy, future operations would be performed lazily.
 
-        :return: An instance of LazySparkXShards.
+        :return: An instance of SparkXShards that computes lazily.
         """
-        return LazySparkXShards(self.rdd, self._get_class_name())
-
-    @property
-    def is_lazy(self):
-        return isinstance(self, LazySparkXShards)
+        self.eager = False
+        self.is_lazy = True
+        self.user_caching = True
+        return self
 
     def transform_shard(self, func: Callable, *args) -> "SparkXShards":
         """
@@ -1091,25 +1101,6 @@ class SparkXShards(XShards):
             frac=frac, replace=replace, weights=weights, random_state=random_state)
         pdf = sampled.concat_to_pdf(axis=axis)
         return pdf
-
-
-class LazySparkXShards(SparkXShards):
-    def __init__(self,
-                 rdd: Union["PipelinedRDD", "RDD"],
-                 class_name: str = None) -> None:
-        super(LazySparkXShards, self).__init__(rdd, True, class_name)
-        # Setting user_caching to be True means uncache must be explicitly invoked by
-        # users to uncache the data.
-        self.user_caching = True
-
-    @classmethod
-    def _create(cls,
-                rdd: Union["PipelinedRDD", "RDD"],
-                class_name: str = None) -> "LazySparkXShards":
-        """
-        Create a LazySparkXShards.
-        """
-        return cls(rdd, class_name)
 
 
 class SharedValue(object):

@@ -35,7 +35,7 @@ from bigdl.orca.learn.utils import maybe_dataframe_to_xshards, dataframe_to_xsha
     save_model, process_xshards_of_pandas_dataframe, \
     add_predict_to_pd_xshards, update_predict_xshards
 from bigdl.orca.learn.log_monitor import start_log_server, stop_log_server
-from bigdl.orca.data.shard import SparkXShards, LazySparkXShards
+from bigdl.orca.data.shard import SparkXShards
 from bigdl.orca import OrcaContext
 from bigdl.dllib.utils.log4Error import invalidInputError
 
@@ -129,17 +129,17 @@ class SparkTFEstimator():
         sc = OrcaContext.get_spark_context()
 
         if isinstance(data, SparkXShards):
-            data = data.lazy()
-            if validation_data:
-                validation_data = validation_data.lazy()
+            data = data.to_lazy()
+            if validation_data and isinstance(validation_data, SparkXShards):
+                validation_data = validation_data.to_lazy()
         # Data partition should be equal to num workers.
         # Repartition Spark DataFrame before converting to SparkXShards.
         # Repartition on SparkXShards will result in empty partitions.
         if isinstance(data, DataFrame) or isinstance(data, SparkXShards):
             if data.rdd.getNumPartitions() != self.num_workers:
-                data1 = data.repartition(self.num_workers)
+                data = data.repartition(self.num_workers)
             if validation_data and validation_data.rdd.getNumPartitions() != self.num_workers:
-                validation_data1 = validation_data.repartition(self.num_workers)
+                validation_data = validation_data.repartition(self.num_workers)
         data, validation_data = maybe_dataframe_to_xshards(data, validation_data,
                                                            feature_cols, label_cols,
                                                            mode="fit",
@@ -258,7 +258,7 @@ class SparkTFEstimator():
         logger.info("Starting validation step.")
 
         if isinstance(data, SparkXShards):
-            data = data.lazy()
+            data = data.to_lazy()
         if isinstance(data, DataFrame) or isinstance(data, SparkXShards):
             if data.rdd.getNumPartitions() != self.num_workers:
                 data = data.repartition(self.num_workers)
@@ -387,14 +387,14 @@ class SparkTFEstimator():
                                               accept_str_col=True,
                                               shard_size=batch_size)
 
-            pred_shards = LazySparkXShards(xshards.rdd.mapPartitions(
+            pred_shards = SparkXShards.lazy(xshards.rdd.mapPartitions(
                 lambda iter: transform_func(iter, init_params, params)))
             result = convert_predict_xshards_to_dataframe(data, pred_shards)
         elif isinstance(data, SparkXShards):  # Computation triggered when updating XShards
-            xshards = data.lazy()
+            xshards = data.to_lazy()
             if data._get_class_name() == 'pandas.core.frame.DataFrame':
                 xshards = process_xshards_of_pandas_dataframe(data, feature_cols)
-                pred_shards = LazySparkXShards(xshards.rdd.mapPartitions(
+                pred_shards = SparkXShards.lazy(xshards.rdd.mapPartitions(
                     lambda iter: transform_func(iter, init_params, params)))
                 result = add_predict_to_pd_xshards(data, pred_shards)
             else:

@@ -372,7 +372,6 @@ def process_xshards_of_pandas_dataframe(data, feature_cols, label_cols=None, val
 def _dataframe_to_xshards(data, feature_cols, label_cols=None,
                           accept_str_col=False, shard_size=None):
     from bigdl.orca import OrcaContext
-    from bigdl.orca.data.shard import LazySparkXShards
     schema = data.schema
     if OrcaContext._shard_size:
         shard_size = OrcaContext._shard_size
@@ -385,7 +384,7 @@ def _dataframe_to_xshards(data, feature_cols, label_cols=None,
                                                               feature_cols,
                                                               label_cols,
                                                               shard_size))
-    return LazySparkXShards(shard_rdd, class_name="builtins.dict")
+    return SparkXShards.lazy(shard_rdd, class_name="builtins.dict")
 
 
 def dataframe_to_xshards_of_feature_dict(data, feature_cols, label_cols=None,
