@@ -29,7 +29,7 @@ function refresh_cmd(){
     }
     else if(framework=="tensorflow"){
         $("#version").append("<td colspan='1'>Tensorflow Version</td>\
-        <td colspan='6'><button id='tf2_270'>2.70</button></td>");
+        <td colspan='4'><button id='tf2_270'>2.7</button></td>");
     }
     reset_color(versions);
     set_color(version);
@@ -55,9 +55,7 @@ function refresh_cmd(){
                     }else if(version=="pytorch_112"){
                         cmd="pip install --pre --upgrade bigdl-nano[pytorch,inference]";
                     }else if(version=="pytorch_113"){
-                        cmd="pip install --pre --upgrade bigdl-nano[pytorch_113,inference]";
-                    }else{
-                        cmd="Please select the version."
+                        cmd="pip install --pre --upgrade bigdl-nano[pytorch_113,inference]  pip install neural_compressor==1.14";
                     }
                 }else if(inference="inferenceno"){
                     if(version=="pytorch_110"){
@@ -68,8 +66,6 @@ function refresh_cmd(){
                         cmd="pip install --pre --upgrade bigdl-nano[pytorch]";
                     }else if(version=="pytorch_113"){
                         cmd="pip install --pre --upgrade bigdl-nano[pytorch_113]";
-                    }else{
-                        cmd="Please select the version.";
                     }
                 }
             }
@@ -81,8 +77,6 @@ function refresh_cmd(){
                     }else if(release=="stable"){
                         cmd="pip install bigdl-nano[tensorflow]==2.1.0";
                     }
-                }else{
-                    cmd="Please select the version.";
                 }
             }else if(inference=="inferenceno"){
                 if(version=="tf2_270"){
@@ -91,8 +85,6 @@ function refresh_cmd(){
                     }else if(release=="stable"){
                         cmd="pip install bigdl-nano[tensorflow]==2.1.0";
                     }
-                }else{
-                    cmd="Please select the version.";
                 }
             }
         }
@@ -140,6 +132,11 @@ $(document).on('click',"button",function(){
 
     if (frameworks.indexOf(id)>=0){
         framework=id;
+        if (framework=="tensorflow"){
+            version="tensorflow_270";
+        }else{
+            version="pytorch_112";
+        }
     }
     else if (releases.indexOf(id)>=0){
         release=id;
