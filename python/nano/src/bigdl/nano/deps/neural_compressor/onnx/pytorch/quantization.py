@@ -64,4 +64,4 @@ class PytorchONNXRuntimeQuantization(BaseONNXRuntimeQuantization, PytorchQuantiz
         else:
             # below code will re-define a new object, and original attrs will be lost.
             return PytorchONNXRuntimeModel(q_model.model,
-                                        onnxruntime_session_options=self.session_options)
+                                           onnxruntime_session_options=self.session_options)

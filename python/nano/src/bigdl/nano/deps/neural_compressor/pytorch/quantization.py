@@ -33,7 +33,7 @@ class PytorchQuantization(BaseQuantization):
         super().__init__(**kwargs)
         self._inc_metric_cls = PytorchINCMetric
         self.thread_num = thread_num
-    
+
     def _pre_execution(self, model, calib_dataloader=None, metric=None):
         if isinstance(model, torch.nn.Module):
             self.original_model = model
