@@ -23,8 +23,8 @@ on:
 
 env:
   PYPI_VERSION: ${{ github.event.inputs.version }}
-  #Branch: ${{ github.event.inputs.branch }}
-  Branch: master
+  Branch: ${{ github.event.inputs.branch }}
+  
   JAR_URL: ${{ github.event.inputs.jarurl }}
 
 permissions:
@@ -39,7 +39,7 @@ jobs:
     - uses: actions/checkout@v3
       with:
         repository: intel-analytics/BigDL-core
-        ref: master
+        ref: ${{ env.Branch }}
     - name: Set up JDK8
       uses: ./.github/actions/jdk-setup-action
 
@@ -61,11 +61,11 @@ jobs:
       run: |
         export TIMESTAMP=`date '+%Y%m%d'`
         echo ${PYPI_VERSION}
-        
+        #export PYPI_VERSION=2.2.0b20221205
         export ORIGINAL_PATH=$PATH
         #export JAR_URL=https://oss.sonatype.org/content/repositories/snapshots/com/intel/analytics/bigdl/core/dist/all/2.2.0-SNAPSHOT/all-2.2.0-20220919.010507-1.jar
         echo ${JAR_URL}
-
+        
         cd python/dev/
         ## linux ##
         bash release_default_linux.sh ${JAR_URL} ${PYPI_VERSION} true
