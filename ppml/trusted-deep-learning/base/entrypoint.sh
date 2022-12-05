@@ -67,7 +67,7 @@ if [ "$SGX_ENABLED" == "true" ]; then
     bash attestation.sh
     if [ "$ENCRYPTEDFSD" == "true" ]; then
       echo "[INFO] Distributed encrypted file system is enabled"
-      bash encryptedfsd.sh
+      bash encrypted-fsd.sh
     fi
     echo $runtime_command >> temp_command_file
     export sgx_command="bash temp_command_file && rm temp_command_file"
@@ -75,7 +75,7 @@ if [ "$SGX_ENABLED" == "true" ]; then
     if [ "$ENCRYPTEDFSD" == "true" ]; then
       rm /ppml/temp_command_file || true
       echo "[INFO] Distributed encrypted file system is enabled"
-      bash encryptedfsd.sh
+      bash encrypted-fsd.sh
       echo $runtime_command >> temp_command_file
       export sgx_command="bash temp_command_file && rm temp_command_file"
     else

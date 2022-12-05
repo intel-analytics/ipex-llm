@@ -90,4 +90,4 @@ The architecture for `/ppml/encrypted-fsd` can be found here:
 
 ![encrypted-fsd architecture](gramine-encrypted-fs-architecture.png "Architecture")
 
-To see how to enable the usage of `/ppml/encrypted-fsd`, you can refer to file `../trusted-deep-learning/entrypoint.sh` and file `./encryptedfsd.sh`.
+To see how to enable the usage of `/ppml/encrypted-fsd`, you can refer to file `../trusted-deep-learning/entrypoint.sh` and file `./encrypted-fsd.sh`.
