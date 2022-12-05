@@ -85,7 +85,7 @@ def get_tensor_args(model):
         # check if defaults is Tensor
         default_args_start_from = args_length - defaults_length
         if i >= default_args_start_from:
-            if type(forward_defaults[i-default_args_start_from]) == torch.Tensor:
+            if type(forward_defaults[i - default_args_start_from]) == torch.Tensor:
                 tensor_args.append(arg)
             continue
         # nothing is provided, we assume it is a Tensor
@@ -115,11 +115,12 @@ def complement_input_sample(model, input_sample):
     # complement the input sample by defaults
     if isinstance(input_sample, Sequence):
         input_sample_complement = input_sample
-        input_sample_complement += forward_defaults[-(len(forward_args)-input_sample_length):]
+        input_sample_complement += forward_defaults[-(len(forward_args) - input_sample_length):]
     else:
         input_sample_complement = []
         input_sample_complement.append(input_sample)
-        input_sample_complement += list(forward_defaults[-(len(forward_args)-input_sample_length):])
+        input_sample_complement +=\
+            list(forward_defaults[-(len(forward_args) - input_sample_length):])
 
     return tuple(input_sample_complement)
 
