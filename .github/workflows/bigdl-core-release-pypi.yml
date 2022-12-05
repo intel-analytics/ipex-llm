@@ -37,7 +37,7 @@ jobs:
     steps:
     - uses: actions/checkout@v3
       with:
-        name: intel-analytics/BigDL-core
+        repository: intel-analytics/BigDL-core
         ref: ${Branch}
     - name: Set up JDK8
       uses: ./.github/actions/jdk-setup-action
@@ -64,7 +64,7 @@ jobs:
         export ORIGINAL_PATH=$PATH
         #export JAR_URL=https://oss.sonatype.org/content/repositories/snapshots/com/intel/analytics/bigdl/core/dist/all/2.2.0-SNAPSHOT/all-2.2.0-20220919.010507-1.jar
         echo ${JAR_URL}
-        
+
         cd python/dev/
         ## linux ##
         bash release_default_linux.sh ${JAR_URL} ${PYPI_VERSION} true
