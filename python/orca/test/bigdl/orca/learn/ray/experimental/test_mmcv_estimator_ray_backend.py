@@ -17,6 +17,7 @@
 import pytest
 import unittest
 import os
+import tempfile
 import torch
 import torch.nn as nn
 import torch.optim as optim
@@ -31,6 +32,8 @@ resource_path = os.path.join(
 
 MAX_EPOCH = 4
 NUM_SAMPLES = 1000
+LAST_EVAL_LOSS = 0.0
+TEMP_WORK_DIR = os.path.join(tempfile.gettempdir(), "mmcv_test_work_dir")
 
 
 class Model(nn.Module):
@@ -96,58 +99,32 @@ def batch_processor(model, data, train_mode, **kwargs):
     return {'loss': loss, 'log_vars': log_vars, "num_samples": features.size(0)}
 
 
-def runner_creator(config):
-    model = Model()
-
-    optimizer = optim.SGD(model.parameters(), lr=0.001, momentum=0.9)
+def runner_creator(cfg):
+    model = cfg['model']
+    optimizer = cfg['optimizer']
+    batch_processor_fn = cfg['batch_processor']
     logger = get_logger('mmcv')
-    # runner is a scheduler to manage the training
     runner = EpochBasedRunner(
         model,
         optimizer=optimizer,
-        work_dir='./work_dir',
+        batch_processor=batch_processor_fn,
+        work_dir=TEMP_WORK_DIR,
         logger=logger,
         max_epochs=MAX_EPOCH)
 
     # learning rate scheduler config
-    lr_config = dict(policy='step', step=[2, 3])
+    lr_config = cfg['lr_config']
+    # configuration of saving checkpoints periodically
+    checkpoint_config = cfg['checkpoint_config']
     # configuration of optimizer
-    optimizer_config = dict(grad_clip=None)
+    optimizer_config = cfg['optimizer_config']
     # save log periodically and multiple hooks can be used simultaneously
-    log_config = dict(interval=4, hooks=[dict(type='TextLoggerHook')])
+    log_config = cfg['log_config']
     # register hooks to runner and those hooks will be invoked automatically
     runner.register_training_hooks(
         lr_config=lr_config,
         optimizer_config=optimizer_config,
-        log_config=log_config)
-
-    return runner
-
-
-def runner_creator_with_batch_processor(config):
-    model = Model2()
-
-    optimizer = optim.SGD(model.parameters(), lr=0.001, momentum=0.9)
-    logger = get_logger('mmcv')
-    # runner is a scheduler to manage the training
-    runner = EpochBasedRunner(
-        model,
-        batch_processor=batch_processor,
-        optimizer=optimizer,
-        work_dir='./work_dir',
-        logger=logger,
-        max_epochs=MAX_EPOCH)
-
-    # learning rate scheduler config
-    lr_config = dict(policy='step', step=[2, 3])
-    # configuration of optimizer
-    optimizer_config = dict(grad_clip=None)
-    # save log periodically and multiple hooks can be used simultaneously
-    log_config = dict(interval=4, hooks=[dict(type='TextLoggerHook')])
-    # register hooks to runner and those hooks will be invoked automatically
-    runner.register_training_hooks(
-        lr_config=lr_config,
-        optimizer_config=optimizer_config,
+        checkpoint_config=checkpoint_config,
         log_config=log_config)
 
     return runner
@@ -178,18 +155,31 @@ def train_dataloader_creator(config):
     return train_loader
 
 
-def get_estimator(creator):
+def get_estimator(creator, cfg=None):
+    if cfg is None:
+        cfg = {}
     estimator = MMCVRayEstimator(
         mmcv_runner_creator=creator,
-        config={}
+        config=cfg
     )
     return estimator
 
 
 class TestMMCVRayEstimator(unittest.TestCase):
 
-    def test_run_with_train_step(self):
-        estimator = get_estimator(runner_creator)
+    def test_01_run_with_train_step(self):
+        model = Model()
+        optimizer = optim.SGD(model.parameters(), lr=0.001, momentum=0.9)
+        cfg = dict(
+            model=model,
+            optimizer=optimizer,
+            batch_processor=None,
+            lr_config=dict(policy='step', step=[2, 3]),
+            optimizer_config=dict(grad_clip=None),
+            checkpoint_config=None,
+            log_config=dict(interval=4, hooks=[dict(type='TextLoggerHook')])
+        )
+        estimator = get_estimator(runner_creator, cfg)
         epoch_stats = estimator.run([train_dataloader_creator], [('train', 1)])
         self.assertEqual(len(epoch_stats), MAX_EPOCH)
 
@@ -202,8 +192,19 @@ class TestMMCVRayEstimator(unittest.TestCase):
         print(f"dLoss: {dloss}")
         assert dloss < 0
 
-    def test_run_with_batch_processor(self):
-        estimator = get_estimator(runner_creator_with_batch_processor)
+    def test_02_run_with_batch_processor(self):
+        model = Model2()
+        optimizer = optim.SGD(model.parameters(), lr=0.001, momentum=0.9)
+        cfg = dict(
+            model=model,
+            optimizer=optimizer,
+            batch_processor=batch_processor,
+            lr_config=dict(policy='step', step=[2, 3]),
+            optimizer_config=dict(grad_clip=None),
+            checkpoint_config=None,
+            log_config=dict(interval=4, hooks=[dict(type='TextLoggerHook')])
+        )
+        estimator = get_estimator(runner_creator, cfg)
         epoch_stats = estimator.run([train_dataloader_creator], [('train', 1)])
         self.assertEqual(len(epoch_stats), MAX_EPOCH)
 
@@ -217,6 +218,41 @@ class TestMMCVRayEstimator(unittest.TestCase):
         dloss = end_stats["loss"] - start_stats["loss"]
         print(f"dLoss: {dloss}")
         assert dloss < 0
+
+    def test_03_save_ckpt(self):
+        model = Model()
+        optimizer = optim.SGD(model.parameters(), lr=0.001, momentum=0.9)
+        cfg = dict(
+            model=model,
+            optimizer=optimizer,
+            batch_processor=None,
+            lr_config=dict(policy='step', step=[2, 3]),
+            optimizer_config=dict(grad_clip=None),
+            checkpoint_config=dict(interval=1),
+            log_config=dict(interval=4, hooks=[dict(type='TextLoggerHook')])
+        )
+        estimator = get_estimator(runner_creator, cfg)
+        estimator.run([train_dataloader_creator], [('train', 1)])
+        assert os.path.exists(os.path.join(TEMP_WORK_DIR, "epoch_1.pth"))
+        assert os.path.exists(os.path.join(TEMP_WORK_DIR, "epoch_2.pth"))
+        assert os.path.exists(os.path.join(TEMP_WORK_DIR, "epoch_3.pth"))
+        assert os.path.exists(os.path.join(TEMP_WORK_DIR, "epoch_4.pth"))
+
+    def test_04_load_ckpt(self):
+        model = Model()
+        optimizer = optim.SGD(model.parameters(), lr=0.001, momentum=0.9)
+        cfg = dict(
+            model=model,
+            optimizer=optimizer,
+            batch_processor=None,
+            lr_config=dict(policy='step', step=[2, 3]),
+            optimizer_config=dict(grad_clip=None),
+            checkpoint_config=None,
+            log_config=dict(interval=4, hooks=[dict(type='TextLoggerHook')])
+        )
+        estimator = get_estimator(runner_creator, cfg)
+        estimator.load_checkpoint(os.path.join(TEMP_WORK_DIR, "epoch_4.pth"))
+        estimator.run([train_dataloader_creator], [('train', 1)])
 
 
 if __name__ == "__main__":

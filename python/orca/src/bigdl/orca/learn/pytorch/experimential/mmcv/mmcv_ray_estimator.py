@@ -16,9 +16,10 @@
 
 import types
 import copy
+import ray
 from bigdl.dllib.utils.log4Error import invalidInputError
 
-from typing import (Any, Dict, List, Optional, Tuple, Callable, overload)
+from typing import (Any, Dict, List, Optional, Tuple, Callable, overload, Union)
 
 from bigdl.orca.learn.pytorch.experimential.core.base_ray_estimator import BaseRayEstimator
 from bigdl.orca.learn.pytorch.experimential.mmcv.mmcv_ray_runner import MMCVRayEpochRunner
@@ -97,3 +98,32 @@ class MMCVRayEstimator(BaseRayEstimator):
 
     def get_model(self):
         pass
+
+    def load_checkpoint(
+            self,
+            filename: str,
+            map_location: Union[str, Callable] = 'cpu',
+            strict: bool = False,
+            revise_keys: List = [(r'^module.', '')],
+    ) -> Union[Dict, OrderedDict]:
+        """Load checkpoint from a file or URI.
+
+        Args:
+            model (Module): Module to load checkpoint.
+            filename (str): Accept local filepath, URL, ``hdfs://xxx``.
+            map_location (str): Same as :func:`torch.load`.
+            strict (bool): Whether to allow different params for the model and
+                checkpoint.
+            revise_keys (list): A list of customized keywords to modify the
+                state_dict in checkpoint. Each item is a (pattern, replacement)
+                pair of the regular expression operations. Default: strip
+                the prefix 'module.' by [(r'^module\\.', '')].
+
+        Returns:
+            dict or OrderedDict: The loaded checkpoint.
+        """
+        ray.get([
+            worker.load_checkpoint.remote(filename, map_location, strict, revise_keys)
+            for i, worker in enumerate(self.remote_workers)
+        ])
+
