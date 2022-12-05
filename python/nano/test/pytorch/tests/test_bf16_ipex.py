@@ -49,7 +49,7 @@ class Pytorch1_11:
         y = torch.ones((10,), dtype=torch.long)
 
         bf16_model = InferenceOptimizer.quantize(model, precision='bf16',
-                                                 acceleraot='jit',
+                                                 accelerator="jit",
                                                  input_sample=x)
         with InferenceOptimizer.get_context(bf16_model):
             for i in range(10):
