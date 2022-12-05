@@ -17,6 +17,7 @@
 import types
 import copy
 import ray
+from collections import OrderedDict
 from bigdl.dllib.utils.log4Error import invalidInputError
 
 from typing import (Any, Dict, List, Optional, Tuple, Callable, overload, Union)
