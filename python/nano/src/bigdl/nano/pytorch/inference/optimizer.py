@@ -833,14 +833,14 @@ class InferenceOptimizer(BaseInferenceOptimizer):
         OMP_NUM_THREADS = os.environ.get("OMP_NUM_THREADS", "")
         if cpu_for_each_process is None:
             if cores_per_process is None:
+                envs = schedule_processors(p_num)
+            else:
                 envs = [{
                     "KMP_AFFINITY": f"granularity=fine,proclist="
                                     f"[{i*cores_per_process}-{(i+1)*cores_per_process-1}]"
                                     f",explicit",
                     "OMP_NUM_THREADS": str(cores_per_process)
                 } for i in range(p_num)]
-            else:
-                envs = schedule_processors(p_num)
         else:
             envs = [{
                 "KMP_AFFINITY": f"granularity=fine,proclist="
