@@ -78,11 +78,11 @@ class LatencyCallback(Callback):
 def is_better(score, current_score, direction):
     if current_score is None:
         return True
-    elif direction == "min":
+    elif direction == 'minimize' or direction == 'min':
         if score < current_score:
             return True
         return False
-    elif direction == "max":
+    else:
         if score < current_score:
             return False
         return True
@@ -104,19 +104,6 @@ class BestMetricCallback(Callback):
         if is_better(score, self.best_score, self.direction):
             self.best_score = score
         pl_module.log('_best_score', self.best_score)
-
-
-def createModelCheckpoint(metric, filename, dirpath=None, mode='min'):
-    from pytorch_lightning.callbacks import ModelCheckpoint
-    checkpoint_callback = ModelCheckpoint(
-        monitor=metric,
-        save_top_k=1,
-        save_last=False,
-        mode=mode,
-        dirpath=dirpath,
-        filename=filename
-    )
-    return checkpoint_callback
 
 
 class CustomEvaluationLoop(EvaluationLoop):

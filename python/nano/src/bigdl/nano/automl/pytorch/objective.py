@@ -26,12 +26,9 @@ from pytorch_lightning.core.datamodule import LightningDataModule
 from bigdl.nano.pytorch import InferenceOptimizer
 from bigdl.nano.automl.hpo.backend import create_pl_pruning_callback
 from bigdl.nano.utils.log4Error import invalidInputError
-from ._helper import LatencyCallback, createModelCheckpoint, _remove_metric_prefix,\
-    BestMetricCallback
+from ._helper import LatencyCallback, _remove_metric_prefix, BestMetricCallback
 import inspect
 import copy
-import os
-import torch
 
 
 def _is_creator(model):
@@ -45,8 +42,10 @@ class Objective(object):
                  searcher,
                  model=None,
                  target_metric=None,
-                 pruning=False,
                  mode='best',
+                 pruning=False,
+                 direction='minimize',
+                 directions=None,
                  acceleration=False,
                  input_sample=None,
                  **fit_kwargs):
@@ -58,10 +57,14 @@ class Objective(object):
             Defaults to None.
         :param target_metric: str(optional): target metric to optimize.
             Defaults to None.
-        :param pruning: bool (optional): whether to enable pruning.
-            Defaults to False.
         :param mode: use last epoch's result as trial's score or use best epoch's.
             Defaults to 'best', you can change it to 'last'.
+        :param pruning: bool (optional): whether to enable pruning.
+            Defaults to False.
+        :param direction: direction for target metric, used when there is only
+            one target metric. Dafaults to 'minimize'.
+        :param directions: directions for target metrics, used when there are multi
+            target metrics. Dafaults to None.
         :param acceleration: Whether to automatically consider the model after
             inference acceleration in the search process. It will only take
             effect if target_metric contains "latency". Default value is False.
@@ -88,10 +91,13 @@ class Objective(object):
             if self.mo_hpo:
                 if self.target_metric[0] != 'latency':
                     self.metric = self.target_metric[0]
+                    self.direction = directions[0]
                 else:
                     self.metric = self.target_metric[1]
+                    self.direction = directions[1]
             else:
                 self.metric = self.target_metric
+                self.direction = direction
 
         self.pruning = pruning
         self.fit_kwargs = fit_kwargs
@@ -121,10 +127,11 @@ class Objective(object):
             val_dataloaders=self.val_dataloaders,
             datamodule=self.datamodule
         )
-        
+
         if self.mode == "best":
             callbacks = self.searcher.trainer.callbacks or []
-            callbacks.append(BestMetricCallback(self.metric, direction="min"))
+            callbacks.append(BestMetricCallback(self.metric,
+                                                direction=self.direction))
             self.searcher.trainer.callbacks = callbacks
 
     def _post_train(self, model):
@@ -231,13 +238,19 @@ class Objective(object):
         if self.mo_hpo:
             scores = []
             for metric in self.target_metric:
-                score = self.searcher.trainer.callback_metrics[metric].item()
+                if metric == self.metric:
+                    if self.mode == "last":
+                        score = self.searcher.trainer.callback_metrics[self.target_metric].item()
+                    elif self.mode == "best":
+                        score = self.searcher.trainer.callback_metrics["_best_score"].item()
+                else:
+                    score = self.searcher.trainer.callback_metrics[metric].item()
                 scores.append(score)
         else:
-            scores = self.searcher.trainer.callback_metrics[self.target_metric].item()
-
-        if self.mode == "best":
-            scores = self.searcher.trainer.callback_metrics["_best_score"].item()
+            if self.mode == "last":
+                scores = self.searcher.trainer.callback_metrics[self.target_metric].item()
+            elif self.mode == "best":
+                scores = self.searcher.trainer.callback_metrics["_best_score"].item()
 
         if self.acceleration:
             scores, optimization = self._auto_acceleration(model, scores)

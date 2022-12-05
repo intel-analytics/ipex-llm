@@ -216,6 +216,7 @@ class Trainer(pl.Trainer):
                model,
                resume: bool = False,
                target_metric=None,
+               mode: str = 'best',
                n_parallels=1,
                acceleration=False,
                input_sample=None,
@@ -228,6 +229,8 @@ class Trainer(pl.Trainer):
             defaults to False.
         :param target_metric: the object metric to optimize,
             defaults to None.
+        :param mode: use last epoch's result as trial's score or use best epoch's.
+            defaults to 'best', you can change it to 'last'.
         :param n_parallels: the number of parallel processes for running trials.
         :param acceleration: Whether to automatically consider the model after
             inference acceleration in the search process. It will only take
@@ -243,6 +246,7 @@ class Trainer(pl.Trainer):
         return self.hposearcher.search(model,
                                        resume=resume,
                                        target_metric=target_metric,
+                                       mode=mode,
                                        n_parallels=n_parallels,
                                        acceleration=acceleration,
                                        input_sample=input_sample,
