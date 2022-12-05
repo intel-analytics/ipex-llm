@@ -387,7 +387,7 @@ class TestInferencePipeline(TestCase):
         model.eval()
         inference_opt = InferenceOptimizer()
         multi_instance_model = inference_opt.to_multi_instance(model, num_processes=2,
-                                                               cpu_for_each_process=[[0], [1]])
+                                                               cores_per_process=1)
 
         test_loader = create_data_loader(self.data_dir, 1, self.num_workers, data_transform,
                                          subset=50, shuffle=False)

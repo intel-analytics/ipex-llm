@@ -813,14 +813,16 @@ class InferenceOptimizer(BaseInferenceOptimizer):
 
     @staticmethod
     def to_multi_instance(model: nn.Module, num_processes: int,
+                          cores_per_process: int = None,
                           cpu_for_each_process: List[List] = None) -> _MultiInstanceModel:
         """
         Transform a model to multi-instance inference model.
         :param model: The model to transform.
-        :param num_processes: The number of processes which will be used.
-        :param cpu_for_each_process: specify the CPU cores which will be used by each process,
-            if `None`, CPU cores will be distributed evenly by all processes,
-            only take effect when `num_processes` > 1
+        :param num_processes: The number of processes to use.
+        :param cores_per_process: Number of CPU cores used by each process,
+            default to `None`, means decided automatically.
+        :param cpu_for_each_process: Specify the CPU cores used by each process,
+            default to `None`, if set, it will override `num_processes` and `cores_per_process`.
         :return: Model with multi-instance inference acceleration.
         """
         p_num = num_processes if cpu_for_each_process is None else len(cpu_for_each_process)
@@ -830,7 +832,15 @@ class InferenceOptimizer(BaseInferenceOptimizer):
         KMP_AFFINITY = os.environ.get("KMP_AFFINITY", "")
         OMP_NUM_THREADS = os.environ.get("OMP_NUM_THREADS", "")
         if cpu_for_each_process is None:
-            envs = schedule_processors(p_num)
+            if cores_per_process is None:
+                envs = [{
+                    "KMP_AFFINITY": f"granularity=fine,proclist="
+                                    f"[{','.join(range(i*cores_per_process, (i+1)*cores_per_process))}]"
+                                    f",explicit",
+                    "OMP_NUM_THREADS": str(cores_per_process)
+                } for i in range(p_num)]
+            else:
+                envs = schedule_processors(p_num)
         else:
             envs = [{
                 "KMP_AFFINITY": f"granularity=fine,proclist="
