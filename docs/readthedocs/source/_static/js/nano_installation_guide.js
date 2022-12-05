@@ -133,7 +133,7 @@ $(document).on('click',"button",function(){
     if (frameworks.indexOf(id)>=0){
         framework=id;
         if (framework=="tensorflow"){
-            version="tensorflow_270";
+            version="tf2_270";
         }else{
             version="pytorch_112";
         }
