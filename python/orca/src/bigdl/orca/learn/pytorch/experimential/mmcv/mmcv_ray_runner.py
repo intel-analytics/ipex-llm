@@ -95,10 +95,7 @@ def load_from_hdfs(filename: str,
     temp_path = os.path.join(tempfile.gettempdir(), temp_file_name)
     get_remote_file_to_local(filename, temp_path)
 
-    with open(temp_path, "rb") as f:
-        checkpoint = f.read()
-
-    checkpoint = torch.load(io.BytesIO(checkpoint))
+    checkpoint = torch.load(temp_path)
     return checkpoint
 
 
@@ -320,6 +317,9 @@ class MMCVRayEpochRunner(BaseRayRunner, EpochBasedRunner):
         """
         return EpochBasedRunner.load_checkpoint(self, filename, map_location,
                                                 strict, revise_keys)
+
+    def remove_checkpoint(self, filepath):
+        pass
 
     def get_state_dict(self):
         """Returns the state of the runner."""
