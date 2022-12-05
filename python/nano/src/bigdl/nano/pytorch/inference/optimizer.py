@@ -818,15 +818,26 @@ class InferenceOptimizer(BaseInferenceOptimizer):
         Transform a model to multi-instance inference model.
         :param model: The model to transform.
         :param num_processes: The number of processes which will be used.
+        :param cpu_for_each_process: specify the CPU cores which will be used by each process,
+            if `None`, CPU cores will be distributed evenly by all processes,
+            only take effect when `num_processes` > 1
         :return: Model with multi-instance inference acceleration.
         """
-        p_num = num_processes
+        p_num = num_processes if cpu_for_each_process is None else len(cpu_for_each_process)
         send_queues = [mp.Queue() for _ in range(p_num)]
         recv_queues = [mp.Queue() for _ in range(p_num)]
 
         KMP_AFFINITY = os.environ.get("KMP_AFFINITY", "")
         OMP_NUM_THREADS = os.environ.get("OMP_NUM_THREADS", "")
-        envs = schedule_processors(p_num)
+        if cpu_for_each_process is None:
+            envs = schedule_processors(p_num)
+        else:
+            envs = [{
+                "KMP_AFFINITY": f"granularity=fine,proclist="
+                                f"[{','.join([str(i) for i in cpu_for_each_process[i]])}]"
+                                f",explicit",
+                "OMP_NUM_THREADS": str(len(cpu_for_each_process[i]))
+            } for i in range(p_num)]
         ps = []
         for i in range(p_num):
             os.environ["KMP_AFFINITY"] = envs[i]['KMP_AFFINITY']
