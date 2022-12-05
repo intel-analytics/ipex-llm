@@ -26,6 +26,7 @@ from bigdl.nano.utils.log4Error import invalidInputError
 from ..core.utils import save
 from torch.utils.data.dataloader import DataLoader
 from bigdl.nano.pytorch.context_manager import generate_context_manager
+from bigdl.nano.pytorch.utils import patch_attrs_from_model_to_object
 
 
 class PytorchOpenVINOModel(AcceleratedLightningModule):
@@ -57,12 +58,9 @@ class PytorchOpenVINOModel(AcceleratedLightningModule):
         self._nano_context_manager = generate_context_manager(accelerator="openvino",
                                                               precision="fp32",
                                                               thread_num=thread_num)
-        # patch original model's attr to current new model
         if isinstance(model, torch.nn.Module):
-            for attr in dir(model):
-                if attr not in dir(self) and not attr.startswith('_') and not\
-                        isinstance(getattr(model, attr), torch.nn.Module):
-                    setattr(self, attr, getattr(model, attr))
+            # patch original model's attr to current new model
+            patch_attrs_from_model_to_object(model, self)
 
     def on_forward_start(self, inputs):
         self.ov_model._model_exists_or_err()

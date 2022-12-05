@@ -177,3 +177,10 @@ def load_model(path, model: pl.LightningModule = None, inplace=False):
         invalidInputError(False,
                           "ModelType {} or argument 'model={}' is not acceptable for pytorch"
                           " loading.".format(model_type, type(model)))
+
+
+def patch_attrs_from_model_to_object(model, instance):
+    for attr in dir(model):
+        if attr not in dir(instance) and not attr.startswith('_') and not\
+                isinstance(getattr(model, attr), torch.nn.Module):
+            setattr(instance, attr, getattr(model, attr))

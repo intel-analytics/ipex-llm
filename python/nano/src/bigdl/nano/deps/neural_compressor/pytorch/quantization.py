@@ -22,6 +22,7 @@ from .metric import PytorchINCMetric
 from .quantized_model import PytorchQuantizedModel
 from torchmetrics import Metric
 import torch
+from bigdl.nano.pytorch.utils import patch_attrs_from_model_to_object
 
 
 class PytorchQuantization(BaseQuantization):
@@ -43,10 +44,7 @@ class PytorchQuantization(BaseQuantization):
         quantized_model = PytorchQuantizedModel(q_model, self.thread_num)
         if hasattr(self, "original_model"):
             # patch original model's attr to current new model
-            for attr in dir(self.original_model):
-                if attr not in dir(quantized_model) and not attr.startswith('_') and not\
-                        isinstance(getattr(self.original_model, attr), torch.nn.Module):
-                    setattr(quantized_model, attr, getattr(self.original_model, attr))
+            patch_attrs_from_model_to_object(self.original_model, quantized_model)
             del self.original_model
         return quantized_model
 

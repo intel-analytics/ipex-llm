@@ -17,7 +17,7 @@
 from bigdl.nano.utils.inference.pytorch.model import AcceleratedLightningModule
 from bigdl.nano.pytorch.context_manager import generate_context_manager
 import torch
-from copy import deepcopy
+from bigdl.nano.pytorch.utils import patch_attrs_from_model_to_object
 
 
 class PytorchIPEXJITModel(AcceleratedLightningModule):
@@ -89,11 +89,8 @@ class PytorchIPEXJITModel(AcceleratedLightningModule):
         self.thread_num = thread_num
         if (self.use_ipex is True or self.use_jit is True) and inplace is False:
             # patch original model's attr to current new model
-            for attr in dir(self.original_model):
-                if attr not in dir(self) and not attr.startswith('_') and not\
-                        isinstance(getattr(self.original_model, attr), torch.nn.Module):
-                    setattr(self, attr, getattr(self.original_model, attr))
-            del self.original_model  # save memory
+            patch_attrs_from_model_to_object(self.original_model, self)
+            del self.original_model
 
     @property
     def forward_args(self):
