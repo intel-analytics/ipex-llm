@@ -89,8 +89,7 @@ class TrainingOperator:
                  use_fp16=False,
                  use_tqdm=False,
                  sync_stats=False,
-                 dist_backend=None,
-                 timers=None):
+                 dist_backend=None):
         # You are not expected to override this method.
         self._models = models  # List of models
         invalidInputError(isinstance(models, collections.Iterable),
