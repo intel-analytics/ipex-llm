@@ -315,7 +315,7 @@ class TorchRunner(BaseRunner):
         })
         with self.timers.record("train_epoch"):
             data_loader = iter(data_loader)
-            train_stats = self.training_operator_train_epoch(data_loader, info, callbacks)
+            train_stats = self._train_epoch(data_loader, info, callbacks)
 
         if val_loader:
             with self.timers.record("validation"):
@@ -343,7 +343,7 @@ class TorchRunner(BaseRunner):
 
         return stats
 
-    def training_operator_train_epoch(self, iterator, info, callbacks=None):
+    def _train_epoch(self, iterator, info, callbacks=None):
         """Runs one standard training pass over the training dataloader.
 
         By default, this method will iterate over the given iterator and
@@ -403,8 +403,12 @@ class TorchRunner(BaseRunner):
         # TODO: Discuss the situation when there are multiple components,
         #       It is best for the user to write this part of the logic in a hook func.
         self.training_model.train()
-        # self.training_models must be DDPModel
-        with self.training_model.join():
+        # self.training_models may not be DDP if horovod.
+        from torch.nn.parallel import DistributedDataParallel as DDP
+        if isinstance(self.training_model, DDP):
+            with self.training_model.join():
+                self._train_loop(iterator, info, _progress_bar, metric_meters, callbacks)
+        else:
             self._train_loop(iterator, info, _progress_bar, metric_meters, callbacks)
 
         if self.scheduler and info.get(SCHEDULER_STEP) == SCHEDULER_STEP_EPOCH:
@@ -423,7 +427,7 @@ class TorchRunner(BaseRunner):
             if callbacks is not None:
                 for callback in callbacks:
                     callback.on_batch_begin(batch_idx)
-            metrics = self.train_batch(batch, batch_info=batch_info)
+            metrics = self._train_batch(batch, batch_info=batch_info)
             if self.use_tqdm and self.rank == 0:
                 _progress_bar.n = batch_idx + 1
                 postfix = {}
@@ -441,7 +445,7 @@ class TorchRunner(BaseRunner):
                 for callback in callbacks:
                     callback.on_batch_end(batch_idx, logs=metrics)
 
-    def train_batch(self, batch, batch_info=None):
+    def _train_batch(self, batch, batch_info=None):
         """Computes loss and updates the model over one batch.
 
         This method is responsible for computing the loss and gradient and
