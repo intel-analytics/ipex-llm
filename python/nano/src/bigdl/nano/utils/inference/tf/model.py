@@ -13,6 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+import numpy as np
 import tensorflow as tf
 from bigdl.nano.utils.log4Error import invalidInputError
 from ..model import AcceleratedModel
@@ -42,8 +43,22 @@ class AcceleratedKerasModel(AcceleratedModel, tf.keras.Model):
         return self.on_forward_end(outputs)
 
     @staticmethod
-    def tensors_to_numpy(tensors):
-        return tuple(map(lambda x: x.numpy(), tensors))
+    def tensors_to_numpy(tensors, dtype=None):
+        if isinstance(tensors, (list, tuple)):
+            return type(tensors)(AcceleratedKerasModel.tensors_to_numpy(tensor, dtype)
+                                 for tensor in tensors)
+        elif isinstance(tensors, dict):
+            return {key: AcceleratedKerasModel.tensors_to_numpy(value, dtype)
+                    for key, value in tensors.items()}
+        elif isinstance(tensors, tf.Tensor):
+            if dtype is None:
+                return tensors.numpy()
+            else:
+                return tensors.numpy().astype(dtype)
+        elif isinstance(tensors, np.ndarray) and dtype is not None:
+            return tensors.astype(dtype)
+        else:
+            return tensors
 
     @staticmethod
     def numpy_to_tensors(np_arrays):

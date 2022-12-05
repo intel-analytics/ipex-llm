@@ -101,11 +101,10 @@ if __name__ == "__main__":
     # Quantization using Intel Neural Compressor
     # pip install 'neural-compressor'
 
-    # calib_dataset only accept tf.data.Dataset object
     tune_dataset = tf.data.Dataset.from_tensor_slices((x_train, y_train))
 
     # Execute quantization
-    q_model = model.quantize(calib_dataset=tune_dataset)
+    q_model = model.quantize(x=tune_dataset)
 
     # Inference using quantized model
     y_test_hat = q_model(x_test)

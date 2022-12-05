@@ -16,8 +16,9 @@
 
 import os
 import time
+import numpy as np
 import tensorflow as tf
-from typing import Dict, Optional, List
+from typing import Dict, Optional, List, Union
 from bigdl.nano.utils.inference.common.base_optimizer import BaseInferenceOptimizer
 from bigdl.nano.utils.inference.common.checker import available_acceleration_combination
 from bigdl.nano.utils.inference.common.utils import AccelerationOption,\
@@ -30,7 +31,7 @@ from tensorflow.keras.metrics import Metric
 
 
 class TFAccelerationOption(AccelerationOption):
-    def optimize(self, model, training_data=None, input_sample=None,
+    def optimize(self, model, x=None, y=None,
                  thread_num=None, logging=False, sample_size_for_pot=100):
         accelerator = self.get_accelerator()
         if self.get_precision() == "fp32":
@@ -39,7 +40,6 @@ class TFAccelerationOption(AccelerationOption):
                 return model
             else:
                 acce_model = model.trace(accelerator=accelerator,
-                                         input_sample=input_sample,
                                          thread_num=thread_num,
                                          # remove output of openvino
                                          logging=logging)
@@ -48,7 +48,8 @@ class TFAccelerationOption(AccelerationOption):
             ort_method: str = self.method
             acce_model = model.quantize(precision=self.get_precision(),
                                         accelerator=accelerator,
-                                        calib_dataset=training_data,
+                                        x=x,
+                                        y=y,
                                         method=ort_method,
                                         thread_num=thread_num,
                                         sample_size=sample_size_for_pot,
@@ -75,7 +76,8 @@ class InferenceOptimizer(BaseInferenceOptimizer):
         }  # type: ignore
 
     def optimize(self, model: Model,
-                 training_data: Dataset,
+                 x: Union[tf.Tensor, np.ndarray, tf.data.Dataset],
+                 y: Union[tf.Tensor, np.ndarray] = None,
                  validation_data: Optional[Dataset] = None,
                  batch_size: int = 1,
                  metric: Optional[Metric] = None,
@@ -93,12 +95,21 @@ class InferenceOptimizer(BaseInferenceOptimizer):
         The available methods are "original", "openvino_fp32", "onnxruntime_fp32", "int8".
 
         :param model: A keras.Model to be optimized
-        :param training_data: An unbatched tf.data.Dataset object which is used for training.
-                              This dataset will be used as calibration dataset for
-                              Post-Training Static Quantization (PTQ), as well as be used for
-                              generating input_sample to calculate latency.
-                              To avoid data leak during calibration, please use training
-                              dataset as much as possible.
+        :param x: Input data which is used for training. It could be:
+                  | 1. a Numpy array (or array-like), or a list of arrays (in case the model
+                  | has multiple inputs).
+                  |
+                  | 2. a TensorFlow tensor, or a list of tensors (in case the model has
+                  | multiple inputs).
+                  |
+                  | 3. an unbatched tf.data.Dataset. Should return a tuple of (inputs, targets).
+
+                  X will be used as calibration dataset for Post-Training Static Quantization (PTQ),
+                  as well as be used for generating input_sample to calculate latency.
+                  To avoid data leak during calibration, please use training dataset.
+        :param y: Target data. Like the input data x, it could be either Numpy array(s) or
+                  TensorFlow tensor(s). Its length should be consistent with x.
+                  If x is a dataset, y will be ignored (since targets will be obtained from x).
         :param validation_data: (optional) An unbatched tf.data.Dataset object for accuracy
                evaluation. This is only needed when users care about the possible accuracy drop.
         :param metric: (optional) A tensorflow.keras.metrics.Metric object which is used for
@@ -122,6 +133,9 @@ class InferenceOptimizer(BaseInferenceOptimizer):
         invalidInputError(isinstance(model, Model), "model should be a Keras Model.")
         invalidInputError(direction in ['min', 'max'],
                           "Only support direction 'min', 'max'.")
+        invalidInputError(y is not None or isinstance(x, tf.data.Dataset),
+                          "y can be omitted only when x is a Dataset which returns \
+                              tuples of (inputs, targets)")
 
         if not isinstance(model, NanoModel):
             # turn model into NanoModel to obtain trace and quantize method
@@ -152,10 +166,13 @@ class InferenceOptimizer(BaseInferenceOptimizer):
 
         result_map: Dict[str, Dict] = {}
 
-        batched_training_data = training_data.batch(batch_size)
-        input_sample = next(iter(batched_training_data))
-        # TODO: how to obtain input from output of training_data
-        input_sample = input_sample[:-1]
+        if isinstance(x, Dataset):
+            batched_training_dataset = x.batch(batch_size)
+            input_sample = next(iter(batched_training_dataset))
+            # TODO: how to obtain input from output of training_dataset
+            input_sample = input_sample[:-1]
+        else:
+            input_sample = tf.convert_to_tensor(x[:batch_size])
 
         if isinstance(input_sample, (list, tuple)) and len(input_sample) == 1:
             input_sample = input_sample[0]
@@ -168,7 +185,7 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                 model(*input_sample)
         except Exception:
             invalidInputError(False,
-                              "training_data is incompatible with your model input.")
+                              "x is incompatible with your model input.")
         baseline_time = time.perf_counter() - st
         if baseline_time > 0.1:  # 100ms
             sample_size_for_pot = 15
@@ -188,10 +205,8 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                 precision: str = option.get_precision()
                 try:
                     acce_model = option.optimize(model=model,
-                                                 training_data=training_data,
-                                                 input_sample=tf.TensorSpec(
-                                                     shape=input_sample.shape,
-                                                     dtype=tf.float32),
+                                                 x=x,
+                                                 y=y,
                                                  thread_num=thread_num,
                                                  logging=logging,
                                                  sample_size_for_pot=sample_size_for_pot)
