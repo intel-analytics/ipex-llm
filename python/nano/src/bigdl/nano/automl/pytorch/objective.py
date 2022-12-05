@@ -237,7 +237,7 @@ class Objective(object):
             scores = self.searcher.trainer.callback_metrics[self.target_metric].item()
 
         if self.mode == "best":
-            scores = self.searcher.trainer.callback_metrics["best_score"].item()
+            scores = self.searcher.trainer.callback_metrics["_best_score"].item()
 
         if self.acceleration:
             scores, optimization = self._auto_acceleration(model, scores)

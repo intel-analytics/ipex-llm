@@ -99,12 +99,11 @@ class BestMetricCallback(Callback):
         super().on_validation_start(trainer, pl_module)
 
     def on_validation_epoch_end(self, trainer, pl_module) -> None:
-        super().on_validation_start(trainer, pl_module)
+        super().on_validation_end(trainer, pl_module)
         score = trainer.callback_metrics[self.target_metric].item()
         if is_better(score, self.best_score, self.direction):
             self.best_score = score
-        print("log best value is : ", self.best_score)
-        pl_module.log('best_score', self.best_score)
+        pl_module.log('_best_score', self.best_score)
 
 
 def createModelCheckpoint(metric, filename, dirpath=None, mode='min'):
