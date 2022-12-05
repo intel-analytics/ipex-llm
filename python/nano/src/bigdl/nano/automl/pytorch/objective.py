@@ -26,7 +26,8 @@ from pytorch_lightning.core.datamodule import LightningDataModule
 from bigdl.nano.pytorch import InferenceOptimizer
 from bigdl.nano.automl.hpo.backend import create_pl_pruning_callback
 from bigdl.nano.utils.log4Error import invalidInputError
-from ._helper import LatencyCallback, createModelCheckpoint, _remove_metric_prefix
+from ._helper import LatencyCallback, createModelCheckpoint, _remove_metric_prefix,\
+    BestMetricCallback
 import inspect
 import copy
 import os
@@ -92,9 +93,6 @@ class Objective(object):
             else:
                 self.metric = self.target_metric
 
-            self.tmp_dir = "./"
-            self.tmp_filename = "best_model"
-
         self.pruning = pruning
         self.fit_kwargs = fit_kwargs
 
@@ -123,28 +121,14 @@ class Objective(object):
             val_dataloaders=self.val_dataloaders,
             datamodule=self.datamodule
         )
-
-        if self.mode == 'best':
-            ckpt_path = os.path.join(self.tmp_dir, self.tmp_filename) + '.ckpt'
-            if os.path.exists(ckpt_path):
-                os.remove(ckpt_path)
-            os.makedirs(self.tmp_dir, exist_ok=True)
-
-            self.tmp_dir = "./"
-            self.tmp_filename = "best_model"
-            # TODO: How to get the mode value ?
-            ModelCallback = createModelCheckpoint(metric=self.metric, mode='min',
-                                                  dirpath=self.tmp_dir,
-                                                  filename=self.tmp_filename)
+        
+        if self.mode == "best":
             callbacks = self.searcher.trainer.callbacks or []
-            callbacks.append(ModelCallback)
+            callbacks.append(BestMetricCallback(self.metric, direction="min"))
             self.searcher.trainer.callbacks = callbacks
 
     def _post_train(self, model):
         if self.mode == "best":
-            ckpt_path = os.path.join(self.tmp_dir, self.tmp_filename) + '.ckpt'
-            if os.path.exists(ckpt_path):
-                os.remove(ckpt_path)
             self.searcher.trainer.callbacks.pop()
 
     def _fix_data_args(self,
@@ -253,13 +237,7 @@ class Objective(object):
             scores = self.searcher.trainer.callback_metrics[self.target_metric].item()
 
         if self.mode == "best":
-            # obtain score from loaded best model
-            checkpoint_path = self.tmp_dir + self.tmp_filename + ".ckpt"
-            # model.load_from_checkpoint(checkpoint_path)
-            state_dict = torch.load(checkpoint_path, map_location='cpu')
-            model.load_state_dict(state_dict['state_dict'])
-            self.searcher.trainer.validate(model)
-            scores = self.searcher.trainer.callback_metrics[self.target_metric].item()
+            scores = self.searcher.trainer.callback_metrics["best_score"].item()
 
         if self.acceleration:
             scores, optimization = self._auto_acceleration(model, scores)

@@ -75,6 +75,38 @@ class LatencyCallback(Callback):
         pl_module.time_avg(batch_latency)
 
 
+def is_better(score, current_score, direction):
+    if current_score is None:
+        return True
+    elif direction == "min":
+        if score < current_score:
+            return True
+        return False
+    elif direction == "max":
+        if score < current_score:
+            return False
+        return True
+
+
+class BestMetricCallback(Callback):
+    def __init__(self, target_metric, direction="min") -> None:
+        super().__init__()
+        self.target_metric = target_metric
+        self.direction = direction
+        self.best_score = None
+
+    def on_validation_start(self, trainer, pl_module) -> None:
+        super().on_validation_start(trainer, pl_module)
+
+    def on_validation_epoch_end(self, trainer, pl_module) -> None:
+        super().on_validation_start(trainer, pl_module)
+        score = trainer.callback_metrics[self.target_metric].item()
+        if is_better(score, self.best_score, self.direction):
+            self.best_score = score
+        print("log best value is : ", self.best_score)
+        pl_module.log('best_score', self.best_score)
+
+
 def createModelCheckpoint(metric, filename, dirpath=None, mode='min'):
     from pytorch_lightning.callbacks import ModelCheckpoint
     checkpoint_callback = ModelCheckpoint(
