@@ -20,7 +20,7 @@ if [  "$USING_LOCAL_DKEY" == "true" ]; then
     fi
     cmd='data_key=$(cat $LOCAL_DKEY | head -c 15)'
     echo $cmd >> temp_command_file
-    echo 'echo $data_key > /dev/attestation/keys/default' >> temp_command_file
+    echo 'echo $data_key > /dev/attestation/keys/sgx_data_key' >> temp_command_file
 else
     echo "[INFO] Using EHSM KMS service to acquire keys"
     # Check if the user set EHSM_URL or not
@@ -67,5 +67,5 @@ else
     echo '  exit 1' >> temp_command_file
     echo 'fi' >> temp_command_file
     echo 'data_key_u=$(echo $data_key | head -c 15)' >> temp_command_file
-    echo 'echo $data_key_u > /dev/attestation/keys/default' >> temp_command_file
+    echo 'echo $data_key_u > /dev/attestation/keys/sgx_data_key' >> temp_command_file
 fi
