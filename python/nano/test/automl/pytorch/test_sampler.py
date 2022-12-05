@@ -64,7 +64,7 @@ class TestHPOSearcher(TestCase):
             max_epochs=3,
             use_hpo=True,
         )
-        
+
         from bigdl.nano.automl.hpo.backend import SamplerType
         trainer.search(
             model,
@@ -76,7 +76,7 @@ class TestHPOSearcher(TestCase):
         study = trainer.search_summary()
         assert(study)
         assert(study.best_trial)
-    
+
     def test_random_sampler(self):
     
         @hpo.plmodel()

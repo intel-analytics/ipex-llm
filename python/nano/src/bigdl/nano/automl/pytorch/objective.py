@@ -30,6 +30,7 @@ from ._helper import LatencyCallback, createModelCheckpoint, _remove_metric_pref
 import inspect
 import copy
 import os
+import torch
 
 
 def _is_creator(model):
@@ -250,13 +251,13 @@ class Objective(object):
                 scores.append(score)
         else:
             scores = self.searcher.trainer.callback_metrics[self.target_metric].item()
-        self.searcher._validate(model, self.val_dataloaders)
-        self.searcher._validate(model, self.val_dataloaders)
+
         if self.mode == "best":
             # obtain score from loaded best model
             checkpoint_path = self.tmp_dir + self.tmp_filename + ".ckpt"
-            # checkpoint_path = self.tmp_filename + ".ckpt"
-            model.load_from_checkpoint(checkpoint_path)  
+            # model.load_from_checkpoint(checkpoint_path)
+            state_dict = torch.load(checkpoint_path, map_location='cpu')
+            model.load_state_dict(state_dict['state_dict'])
             self.searcher.trainer.validate(model)
             scores = self.searcher.trainer.callback_metrics[self.target_metric].item()
 
