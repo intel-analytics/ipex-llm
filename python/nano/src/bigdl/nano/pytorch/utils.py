@@ -182,7 +182,7 @@ def load_model(path, model: pl.LightningModule = None, inplace=False):
 def patch_attrs_from_model_to_object(model: nn.Module, instance):
     '''
     Patch non nn.Module public attributes of original nn.Module to a new instance.
-    
+
     :param model: a torch.nn.Module
     :param instance: a instance of any object
     '''
