@@ -69,6 +69,13 @@ jobs:
               }
           }]
         mirrors: '[{"id": "ardaNexus", "name": "ardaNexus", "mirrorOf": "*", "url": "${NEXUS_URL}" }]'
+    
+    - name: Set up Env
+        shell: bash
+        run: |
+          apt-get update
+          apt-get install wget -y
+          apt-get install zip uzip -y
 
     - name: Set up Python 
       uses: actions/setup-python@v2
@@ -76,9 +83,6 @@ jobs:
         python-version: '3.7'
     - name: Install dependencies
       run: |
-        apt-get update
-        apt-get install wget
-        apt-get zip uzip
         python -m pip install --upgrade pip
         pip install build
         pip install wheel
