@@ -5,7 +5,7 @@ Note: For windows users, we recommend using Windows Subsystem for Linux 2 (WSL2)
 
 BigDL-Nano can be installed using pip and we recommend installing BigDL-Nano in a conda environment.
 
-You can install bigdl-nano along with some dependencies specific to PyTorch or Tensorflow using the following commands.
+You can select bigdl-nano along with some dependencies specific to PyTorch or Tensorflow using the following panel.
 
 ```eval_rst
 .. raw:: html
