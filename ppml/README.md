@@ -112,7 +112,7 @@ sudo docker run -itd \
 
 **d. Run Python HelloWorld in BigDL PPML Local Container**
 
-Run the [script](https://github.com/intel-analytics/BigDL/blob/main/ppml/trusted-big-data-ml/python/docker-gramine/base/scripts/start-python-helloword-on-sgx.sh) to run trusted [Python HelloWorld](https://github.com/intel-analytics/BigDL/blob/main/ppml/trusted-big-data-ml/python/docker-graphene/examples/helloworld.py) in BigDL PPML client container:
+Run the [script](https://github.com/intel-analytics/BigDL/blob/main/ppml/trusted-big-data-ml/python/docker-gramine/base/scripts/start-python-helloword-on-sgx.sh) to run trusted [Python HelloWorld](https://github.com/intel-analytics/BigDL/blob/main/ppml/trusted-big-data-ml/python/docker-gramine/base/examples/helloworld.py) in BigDL PPML client container:
 ```
 sudo docker exec -it bigdl-ppml-client-local bash work/scripts/start-python-helloword-on-sgx.sh
 ```
