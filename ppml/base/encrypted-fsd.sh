@@ -2,23 +2,23 @@
 
 set -x
 
-if [  "$USING_LOCAL_DKEY" == "true" ]; then
+if [  "$USING_LOCAL_DATA_KEY" == "true" ]; then
     echo "[INFO] Using local key"
-    if [ -z "$LOCAL_DKEY" ]; then
-        echo "[ERROR] LOCAL_DKEY is not set!"
+    if [ -z "$LOCAL_DATA_KEY" ]; then
+        echo "[ERROR] LOCAL_DATA_KEY is not set!"
         exit 1
     fi
     # Ensure that the file have at least 16 bytes
-    filesize=$(stat --printf="%s" $LOCAL_DKEY)
+    filesize=$(stat --printf="%s" $LOCAL_DATA_KEY)
     if [ $? -gt 0 ]; then
-        echo "[ERROR] Failed to get the size of $LOCAL_DKEY"
+        echo "[ERROR] Failed to get the size of $LOCAL_DATA_KEY"
         exit 1
     fi
     if [ $filesize -lt 15 ]; then
         echo "[ERROR] The key should be at least 15 bytes"
         exit 1
     fi
-    cmd='data_key=$(cat $LOCAL_DKEY | head -c 15)'
+    cmd='data_key=$(cat $LOCAL_DATA_KEY | head -c 15)'
     echo $cmd >> temp_command_file
     echo 'echo $data_key > /dev/attestation/keys/sgx_data_key' >> temp_command_file
 else
