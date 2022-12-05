@@ -785,13 +785,13 @@ class InferenceOptimizer(BaseInferenceOptimizer):
         invalidInputError(False, "Accelerator {} is invalid.".format(accelerator))
 
     @staticmethod
-    def get_context(model: nn.Module, *args):
+    def get_context(model: nn.Module, *models):
         """
         Obtain corresponding context manager from (multi) model, defaults to BaseContextManager().
 
         :param model: Any model of torch.nn.Module, including all models accelareted by
                InferenceOptimizer.trace/InferenceOptimizer.quantize.
-        :param args: Any model of torch.nn.Module or list of torch.nn.Module, including all models
+        :param models: Any model of torch.nn.Module or list of torch.nn.Module, including all models
                accelareted by InferenceOptimizer.trace/InferenceOptimizer.quantize.
         :return: a context manager if there is no conflict between context managers,
                  otherwise will report RuntimeError.
@@ -827,11 +827,11 @@ class InferenceOptimizer(BaseInferenceOptimizer):
             return manager
 
         _context_manager = obtain_manager(model)
-        if len(args) == 0:
+        if len(models) == 0:
             # only single model
             return _context_manager
         else:
-            for model_ in args:
+            for model_ in models:
                 if isinstance(model_, nn.Module):
                     new_manager = obtain_manager(model_)
                     _context_manager = join_manager(_context_manager, new_manager)
