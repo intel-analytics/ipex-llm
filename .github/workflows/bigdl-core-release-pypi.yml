@@ -24,7 +24,6 @@ on:
 env:
   PYPI_VERSION: ${{ github.event.inputs.version }}
   Branch: ${{ github.event.inputs.branch }}
-  
   JAR_URL: ${{ github.event.inputs.jarurl }}
 
 permissions:
@@ -84,6 +83,7 @@ jobs:
     
     - name: Build package
       run: |
+        set -x
         export TIMESTAMP=`date '+%Y%m%d'`
         echo ${PYPI_VERSION}
         #export PYPI_VERSION=2.2.0b20221205
@@ -93,7 +93,7 @@ jobs:
         
         cd python/dev/
         ## linux ##
-        bash release_default_linux.sh ${{ env.JAR_URL }} ${{ env.PYPI_VERSION }} true
+        bash release_default_linux.sh ${JAR_URL} ${PYPI_VERSION} true
 
         ## mac ##
-        bash release_default_mac.sh ${{ env.JAR_URL }} ${{ env.PYPI_VERSION }} true
+        bash release_default_mac.sh ${JAR_URL} ${PYPI_VERSION} true
