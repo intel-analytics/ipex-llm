@@ -835,7 +835,7 @@ class InferenceOptimizer(BaseInferenceOptimizer):
             if cores_per_process is None:
                 envs = [{
                     "KMP_AFFINITY": f"granularity=fine,proclist="
-                                    f"[{','.join(range(i*cores_per_process, (i+1)*cores_per_process))}]"
+                                    f"[{i*cores_per_process}-{(i+1)*cores_per_process-1}]"
                                     f",explicit",
                     "OMP_NUM_THREADS": str(cores_per_process)
                 } for i in range(p_num)]
