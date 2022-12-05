@@ -42,11 +42,11 @@ from torch.utils.data import DataLoader, IterableDataset
 from torch.utils.data.distributed import DistributedSampler
 from bigdl.orca import OrcaContext
 from bigdl.orca.learn.pytorch.constants import (SCHEDULER_STEP, SCHEDULER_STEP_EPOCH,
-                                               SCHEDULER_STEP_BATCH)
+                                                SCHEDULER_STEP_BATCH)
 from bigdl.orca.learn.pytorch.training_operator import TrainingOperator
 from bigdl.orca.learn.pytorch import utils
 from bigdl.orca.learn.pytorch.utils import (get_filesystem, AverageMeterCollection,
-                                           NUM_SAMPLES, get_batchsize)
+                                            NUM_SAMPLES, get_batchsize)
 from bigdl.orca.learn.pytorch.core import BaseRunner
 from bigdl.dllib.utils.log4Error import invalidInputError
 
@@ -61,6 +61,7 @@ try:
     from tqdm import tqdm
 except ImportError:
     pass
+
 
 class DistBackend:
 
