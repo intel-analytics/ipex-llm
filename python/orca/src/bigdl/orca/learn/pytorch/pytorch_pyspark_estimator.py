@@ -93,6 +93,7 @@ class PyTorchPySparkEstimator(BaseEstimator):
             sync_stats=True,
             log_level=logging.INFO,
             model_dir=None,
+            torch_model=None,
             log_to_driver=True):
         logging.basicConfig(level=log_level,
                             format='[%(asctime)s] %(levelname)-8s %(message)s',
@@ -120,6 +121,7 @@ class PyTorchPySparkEstimator(BaseEstimator):
         self.model_dir = parse_model_dir(model_dir)
 
         self.model_creator = model_creator
+        self.torch_model = torch_model
 
         num_nodes, cores_per_node = get_node_and_core_number()
         self.num_workers = num_nodes * workers_per_node
@@ -236,7 +238,8 @@ class PyTorchPySparkEstimator(BaseEstimator):
         init_params = dict(
             mode="fit",
             state_dict=state_dict,
-            cluster_info=cluster_info)
+            cluster_info=cluster_info,
+            torch_model=self.torch_model)
         init_params.update(self.worker_init_params)
 
         params = dict(
@@ -244,7 +247,7 @@ class PyTorchPySparkEstimator(BaseEstimator):
             batch_size=batch_size,
             profile=profile,
             info=info,
-            callbacks=callbacks,
+            callbacks=callbacks
         )
 
         if isinstance(data, SparkXShards):
@@ -384,6 +387,7 @@ class PyTorchPySparkEstimator(BaseEstimator):
             mode="predict",
             state_dict=state_dict,
             cluster_info=cluster_info,
+            torch_model=self.torch_model
         )
         init_params.update(self.worker_init_params)
 
@@ -460,7 +464,9 @@ class PyTorchPySparkEstimator(BaseEstimator):
         init_params = dict(
             mode="evaluate",
             state_dict=state_dict,
-            cluster_info=cluster_info)
+            cluster_info=cluster_info,
+            torch_model=self.torch_model
+            )
 
         init_params.update(self.worker_init_params)
 

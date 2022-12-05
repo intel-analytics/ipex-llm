@@ -58,6 +58,7 @@ class PytorchPysparkWorker(TorchRunner):
                  cluster_info,
                  cores_per_worker,
                  loss_creator=None,
+                 torch_model=None,
                  metrics=None,
                  scheduler_creator=None,
                  training_operator_cls=None,
@@ -77,7 +78,7 @@ class PytorchPysparkWorker(TorchRunner):
                  ):
         super().__init__(model_creator, optimizer_creator, loss_creator, metrics, scheduler_creator,
                          training_operator_cls, config, use_tqdm, scheduler_step_freq, sync_stats,
-                         log_level=log_level)
+                         torch_model, log_level=log_level)
 
         self.state_dict = state_dict
         self.size = size
