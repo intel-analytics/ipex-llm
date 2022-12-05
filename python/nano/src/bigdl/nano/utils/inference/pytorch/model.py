@@ -44,6 +44,7 @@ class AcceleratedLightningModule(AcceleratedModel, LightningModule):
 
     @staticmethod
     def tensors_to_numpy(tensors):
+        # TODO: add more type transformation here
         np_data = tuple(map(
             lambda x: x.cpu().numpy() if isinstance(x, torch.Tensor) else x,
             tensors))
