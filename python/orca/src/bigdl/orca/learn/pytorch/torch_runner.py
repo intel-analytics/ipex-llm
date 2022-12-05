@@ -173,7 +173,7 @@ class TorchRunner(BaseRunner):
         if self.optimizer_creator is not None:
             self.logger.debug("Creating optimizer.")
             self.optimizers = self.optimizer_creator(self.given_models,
-                                                    self.config)
+                                                     self.config)
             if self.optimizers is not None and not isinstance(self.optimizers, Iterable):
                 self.optimizers = [self.optimizers]
 
