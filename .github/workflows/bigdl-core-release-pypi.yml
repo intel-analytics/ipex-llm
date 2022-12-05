@@ -23,7 +23,8 @@ on:
 
 env:
   PYPI_VERSION: ${{ github.event.inputs.version }}
-  Branch: ${{ github.event.inputs.branch }}
+  #Branch: ${{ github.event.inputs.branch }}
+  Branch: master
   JAR_URL: ${{ github.event.inputs.jarurl }}
 
 permissions:
