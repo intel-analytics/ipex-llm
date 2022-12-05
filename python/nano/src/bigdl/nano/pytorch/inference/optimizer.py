@@ -39,7 +39,8 @@ from bigdl.nano.utils.inference.pytorch.dataloader import\
     transform_multiple_input_dataloader_to_inc_mode, automatic_add_label_in_dataloader
 from bigdl.nano.pytorch.utils import TORCH_VERSION_LESS_1_10, save_model, load_model
 from bigdl.nano.common.cpu_schedule import schedule_processors
-from bigdl.nano.pytorch.context_manager import generate_context_manager
+from bigdl.nano.pytorch.context_manager import generate_context_manager,\
+    BaseContextManager, AutocastContextManager
 from .multi_instance import _MultiInstanceModel, _multi_instance_helper
 import traceback
 import warnings
@@ -301,7 +302,7 @@ class InferenceOptimizer(BaseInferenceOptimizer):
             self._calculate_accuracy = True
 
         default_threads: int = torch.get_num_threads()
-        thread_num: int = default_threads if thread_num is None else int(thread_num)
+        thread_num: int = None if thread_num is None else int(thread_num)
 
         result_map: Dict[str, Dict] = {}
 
@@ -343,8 +344,9 @@ class InferenceOptimizer(BaseInferenceOptimizer):
             sample_size_for_pot = 100
 
         # patch context manager
-        model.context_manager = generate_context_manager(accelerator=None, precision="fp32",
-                                                         thread_num=thread_num)
+        model._nano_context_manager = generate_context_manager(accelerator=None,
+                                                               precision="fp32",
+                                                               thread_num=thread_num)
 
         print("==========================Start Optimization==========================")
         start_time = time.perf_counter()
@@ -377,7 +379,7 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                     else:
                         model(*input_sample)
 
-                with acce_model.context_manager:
+                with InferenceOptimizer.get_context(acce_model):
                     try:
                         result_map[method]["latency"], status =\
                             throughput_calculate_helper(latency_sample_num, baseline_time,
@@ -571,7 +573,8 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                                                    thread_num=thread_num, inplace=inplace,
                                                    jit_strict=jit_strict)
                 else:
-                    bf16_model = BF16Model(model, channels_last=channels_last)
+                    bf16_model = BF16Model(model, channels_last=channels_last,
+                                           thread_num=thread_num)
                     return bf16_model
             else:
                 invalidInputError(False,
@@ -782,17 +785,57 @@ class InferenceOptimizer(BaseInferenceOptimizer):
         invalidInputError(False, "Accelerator {} is invalid.".format(accelerator))
 
     @staticmethod
-    def get_context(model: nn.Module):
+    def get_context(model: nn.Module, *models):
         """
-        Obtain corresponding context manager from model, defaults to BaseContextManager().
+        Obtain corresponding context manager from (multi) model, defaults to BaseContextManager().
 
         :param model: Any model of torch.nn.Module, including all models accelareted by
                InferenceOptimizer.trace/InferenceOptimizer.quantize.
-        :return: a context manager.
+        :param models: Any model of torch.nn.Module or list of torch.nn.Module, including all models
+               accelareted by InferenceOptimizer.trace/InferenceOptimizer.quantize.
+        :return: a context manager if there is no conflict between context managers,
+                 otherwise will report RuntimeError.
         """
-        if hasattr(model, "context_manager"):
-            return model.context_manager
-        return generate_context_manager(accelerator=None, precision="fp32")
+        def obtain_manager(input_model):
+            if hasattr(input_model, "_nano_context_manager"):
+                _context_manager = input_model._nano_context_manager
+            else:
+                _context_manager = generate_context_manager(accelerator=None,
+                                                            precision="fp32")
+            return _context_manager
+
+        def join_manager(manager, new_manager):
+            def is_bf16(x):
+                return isinstance(x, AutocastContextManager)
+            if (is_bf16(manager) ^ is_bf16(new_manager)) is True:
+                invalidInputError(False, "Can't obtain a new context manager for BF16 model"
+                                  "and non BF16 model.")
+            thread_num1 = manager.thread_num
+            thread_num2 = new_manager.thread_num
+            if thread_num1 != thread_num2:
+                if thread_num1 is None or thread_num2 is None:
+                    warnings.warn("One of the two models has thread control and the other "
+                                  "does not. The returned context manager will be dominated "
+                                  "by the non-None one.")
+                    if thread_num1 is None:
+                        return new_manager
+                    else:
+                        return manager
+                else:
+                    invalidInputError(False, "Can't obtain a new context manager for model"
+                                      "with different thread_num.")
+            return manager
+
+        _context_manager = obtain_manager(model)
+        if len(models) == 0:
+            # only single model
+            return _context_manager
+        else:
+            for model_ in models:
+                if isinstance(model_, nn.Module):
+                    new_manager = obtain_manager(model_)
+                    _context_manager = join_manager(_context_manager, new_manager)
+            return _context_manager
 
     @staticmethod
     def save(model: nn.Module, path):

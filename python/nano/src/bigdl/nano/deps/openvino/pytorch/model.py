@@ -54,9 +54,9 @@ class PytorchOpenVINOModel(AcceleratedLightningModule):
 
             self.ov_model = OpenVINOModel(ov_model_path, thread_num=thread_num, config=config)
             super().__init__(None)
-        self.context_manager = generate_context_manager(accelerator="openvino",
-                                                        precision="fp32",
-                                                        thread_num=thread_num)
+        self._nano_context_manager = generate_context_manager(accelerator="openvino",
+                                                              precision="fp32",
+                                                              thread_num=thread_num)
 
     def on_forward_start(self, inputs):
         self.ov_model._model_exists_or_err()

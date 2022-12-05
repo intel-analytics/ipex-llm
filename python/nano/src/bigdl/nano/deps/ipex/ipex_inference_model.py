@@ -25,7 +25,7 @@ class PytorchIPEXJITModel(AcceleratedLightningModule):
                  inplace=False, jit_strict=True):
         """
         This is the accelerated model for pytorch and ipex/jit.
-        All the external API is based on Trainer, so what we have here is
+        All the external API is based on InferenceOptimizer, so what we have here is
         basically internal APIs and subject to change.
 
         This PytorchIPEXJITModel will serve for fp32 and ipex>1.9 models.
@@ -40,7 +40,6 @@ class PytorchIPEXJITModel(AcceleratedLightningModule):
                                     meaning do nothing.
         :param use_jit: if use jit to accelerate the model
         :param channels_last: if set model and data to be channels-last mode.
-               the parameter will be ignored if use_ipex is False.
         :param thread_num: the thread num allocated for this model.
         :param from_load: this will only be set by _load method.
         :param inplace: whether to perform inplace optimization. Default: ``False``.
@@ -53,9 +52,9 @@ class PytorchIPEXJITModel(AcceleratedLightningModule):
             self.use_jit = use_jit
             self.channels_last = channels_last
             self.jit_strict = jit_strict
-            self.context_manager = generate_context_manager(accelerator=None,
-                                                            precision="fp32",
-                                                            thread_num=thread_num)
+            self._nano_context_manager = generate_context_manager(accelerator=None,
+                                                                  precision="fp32",
+                                                                  thread_num=thread_num)
             return
         self.channels_last = channels_last
         self.original_state_dict = model.state_dict()
@@ -82,9 +81,9 @@ class PytorchIPEXJITModel(AcceleratedLightningModule):
                                                  check_trace=False,
                                                  strict=jit_strict)
                     self.model = torch.jit.freeze(self.model)
-        self.context_manager = generate_context_manager(accelerator=None,
-                                                        precision="fp32",
-                                                        thread_num=thread_num)
+        self._nano_context_manager = generate_context_manager(accelerator=None,
+                                                              precision="fp32",
+                                                              thread_num=thread_num)
         self.thread_num = thread_num
 
     @property

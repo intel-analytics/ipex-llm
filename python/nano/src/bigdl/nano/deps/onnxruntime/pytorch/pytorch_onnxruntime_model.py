@@ -73,9 +73,9 @@ class PytorchONNXRuntimeModel(ONNXRuntimeModel, AcceleratedLightningModule):
             self.thread_num = onnxruntime_session_options.intra_op_num_threads
         else:
             self.thread_num = None
-        self.context_manager = generate_context_manager(accelerator=None,
-                                                        precision="fp32",
-                                                        thread_num=self.thread_num)
+        self._nano_context_manager = generate_context_manager(accelerator=None,
+                                                              precision="fp32",
+                                                              thread_num=self.thread_num)
 
     def on_forward_start(self, inputs):
         if self.ortsess is None:

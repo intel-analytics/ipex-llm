@@ -29,10 +29,10 @@ class PytorchIPEXJITBF16Model(PytorchIPEXJITModel):
                  inplace=False, jit_strict=True):
         '''
         This is the accelerated model for pytorch and ipex/jit.
-        All the external API is based on Trainer, so what we have here is
+        All the external API is based on InferenceOptimizer, so what we have here is
         basically internal APIs and subject to change.
 
-        This PytorchIPEXJITModel will serve for fp32 and ipex>1.9 models.
+        This PytorchIPEXJITBF16Model will serve for bf16 and ipex>1.9 models.
         :param model: the model(nn.module) to be transform if from_load is False
                the accelerated model if from_load is True.
         :param input_sample: torch tensor indicate the data sample to be used
@@ -57,9 +57,9 @@ class PytorchIPEXJITBF16Model(PytorchIPEXJITModel):
                                      dtype=torch.bfloat16, use_jit=use_jit,
                                      channels_last=channels_last, from_load=from_load,
                                      inplace=inplace, jit_strict=jit_strict)
-        self.context_manager = generate_context_manager(accelerator=None,
-                                                        precision="bf16",
-                                                        thread_num=thread_num)
+        self._nano_context_manager = generate_context_manager(accelerator=None,
+                                                              precision="bf16",
+                                                              thread_num=thread_num)
 
     @property
     def _check_cpu_isa(self):
