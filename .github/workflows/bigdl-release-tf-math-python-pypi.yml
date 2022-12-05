@@ -19,8 +19,7 @@ on:
 env:
   PYPI_VERSION: ${{ github.event.inputs.version }}
   Branch: ${{ github.event.inputs.branch }}
-  J
-
+  
 permissions:
   contents: read
   packages: write
