@@ -22,7 +22,7 @@ import torch
 class PytorchIPEXJITModel(AcceleratedLightningModule):
     def __init__(self, model: torch.nn.Module, input_sample=None, use_ipex=False, dtype=None,
                  use_jit=False, channels_last=None, thread_num=None, from_load=False,
-                 inplace=False):
+                 inplace=False, jit_strict=True):
         """
         This is the accelerated model for pytorch and ipex/jit.
         All the external API is based on Trainer, so what we have here is
@@ -44,6 +44,7 @@ class PytorchIPEXJITModel(AcceleratedLightningModule):
         :param thread_num: the thread num allocated for this model.
         :param from_load: this will only be set by _load method.
         :param inplace: whether to perform inplace optimization. Default: ``False``.
+        :param jit_strict: Whether recording your mutable container types.
         """
         model.eval()
         super().__init__(model)
@@ -51,6 +52,7 @@ class PytorchIPEXJITModel(AcceleratedLightningModule):
             self.use_ipex = use_ipex
             self.use_jit = use_jit
             self.channels_last = channels_last
+            self.jit_strict = jit_strict
             self.context_manager = generate_context_manager(accelerator=None,
                                                             precision="fp32",
                                                             thread_num=thread_num)
@@ -59,6 +61,7 @@ class PytorchIPEXJITModel(AcceleratedLightningModule):
         self.original_state_dict = model.state_dict()
         self.use_ipex = use_ipex
         self.use_jit = use_jit
+        self.jit_strict = jit_strict
         if self.channels_last:
             self.model = self.model.to(memory_format=torch.channels_last)
         if self.use_ipex:
@@ -69,13 +72,15 @@ class PytorchIPEXJITModel(AcceleratedLightningModule):
                 with torch.no_grad():
                     with torch.cpu.amp.autocast():
                         self.model = torch.jit.trace(self.model, input_sample,
-                                                     check_trace=False)
+                                                     check_trace=False,
+                                                     strict=jit_strict)
                         if self.use_ipex:
                             self.model = torch.jit.freeze(self.model)
             else:
                 with torch.no_grad():
                     self.model = torch.jit.trace(self.model, input_sample,
-                                                 check_trace=False)
+                                                 check_trace=False,
+                                                 strict=jit_strict)
                     self.model = torch.jit.freeze(self.model)
         self.context_manager = generate_context_manager(accelerator=None,
                                                         precision="fp32",
@@ -105,7 +110,8 @@ class PytorchIPEXJITModel(AcceleratedLightningModule):
                        "use_jit": self.use_jit,
                        "channels_last": self.channels_last,
                        "checkpoint": "ckpt.pth",
-                       "thread_num": self.thread_num})
+                       "thread_num": self.thread_num,
+                       "jit_strict": self.jit_strict})
         return status
 
     @staticmethod
@@ -132,7 +138,8 @@ class PytorchIPEXJITModel(AcceleratedLightningModule):
                                    channels_last=status['channels_last'],
                                    from_load=from_load,
                                    thread_num=thread_num,
-                                   inplace=inplace)
+                                   inplace=inplace,
+                                   jit_strict=status["jit_strict"])
 
     def _save_model(self, path):
         if self.use_jit:
