@@ -65,14 +65,14 @@ if [ "$SGX_ENABLED" == "true" ]; then
   if [ "$ATTESTATION" ==  "true" ]; then 
     rm /ppml/temp_command_file || true
     bash attestation.sh
-    if [ "$ENCRYPTEDFSD" == "true" ]; then
+    if [ "$ENCRYPTED_FSD" == "true" ]; then
       echo "[INFO] Distributed encrypted file system is enabled"
       bash encrypted-fsd.sh
     fi
     echo $runtime_command >> temp_command_file
     export sgx_command="bash temp_command_file && rm temp_command_file"
   else 
-    if [ "$ENCRYPTEDFSD" == "true" ]; then
+    if [ "$ENCRYPTED_FSD" == "true" ]; then
       rm /ppml/temp_command_file || true
       echo "[INFO] Distributed encrypted file system is enabled"
       bash encrypted-fsd.sh
