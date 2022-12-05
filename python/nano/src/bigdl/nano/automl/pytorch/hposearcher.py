@@ -72,8 +72,6 @@ class HPOSearcher:
                           acceleration, input_sample, fit_kwargs):
         # target_metric = self._fix_target_metric(target_metric, search_kwargs)
         isprune = True if create_kwargs.get('pruner', None) else False
-        print("_create_objective: ")
-        print(self.create_kwargs)
         direction = create_kwargs.get('direction', None)
         directions = create_kwargs.get('directions', None)
         self.objective = Objective(

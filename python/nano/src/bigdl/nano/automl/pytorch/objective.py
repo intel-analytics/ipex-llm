@@ -61,10 +61,10 @@ class Objective(object):
             Defaults to 'best', you can change it to 'last'.
         :param pruning: bool (optional): whether to enable pruning.
             Defaults to False.
-        :param direction: direction for target metric, used when there is only
-            one target metric. Dafaults to 'minimize'.
-        :param directions: directions for target metrics, used when there are multi
-            target metrics. Dafaults to None.
+        :param direction: direction for target metric, which is used when there is
+            only one target metric. Dafaults to 'minimize'.
+        :param directions: directions for target metrics, which is used when there
+            are multi target metrics. Dafaults to None.
         :param acceleration: Whether to automatically consider the model after
             inference acceleration in the search process. It will only take
             effect if target_metric contains "latency". Default value is False.
