@@ -26,7 +26,8 @@ import ray
 from ray.exceptions import RayActorError
 from abc import abstractmethod, ABCMeta
 
-from bigdl.orca.learn.pytorch.utils import find_free_port, check_for_failure, get_driver_node_ip
+from bigdl.orca.learn.pytorch.utils import find_free_port, check_for_failure
+from bigdl.orca.learn.utils import get_driver_node_ip
 from bigdl.dllib.utils.log4Error import invalidInputError, logging
 
 logger = logging.getLogger(__name__)
@@ -185,7 +186,6 @@ class BaseRayEstimator(BaseEstimator, metaclass=ABCMeta):
 
     def save_checkpoint(self, model_path):
         """
-
         Manually saves the Estimator state (including model and optimizer) to the provided
         model_path.
 
