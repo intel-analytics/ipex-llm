@@ -85,15 +85,16 @@ jobs:
       run: |
         set -x
         export TIMESTAMP=`date '+%Y%m%d'`
-        echo ${{ github.event.inputs.PYPI_VERSION }}
-        #export PYPI_VERSION=2.2.0b20221205
+        echo ${{ env.PYPI_VERSION }}
         export ORIGINAL_PATH=$PATH
-        #export JAR_URL=https://oss.sonatype.org/content/repositories/snapshots/com/intel/analytics/bigdl/core/dist/all/2.2.0-SNAPSHOT/all-2.2.0-20220919.010507-1.jar
-        echo ${{ github.event.inputs.JAR_URL }}
         
+        echo ${{ env.JAR_URL }}
+        export JAR_URL=https://oss.sonatype.org/content/repositories/snapshots/com/intel/analytics/bigdl/core/dist/all/2.2.0-SNAPSHOT/all-2.2.0-20220919.010507-1.jar
+        export PYPI_VERSION=2.2.0b20221205
         cd python/dev/
         ## linux ##
-        bash release_default_linux.sh ${{ github.event.inputs.JAR_URL }} ${{ github.event.inputs.PYPI_VERSION }} true
-
+        bash release_default_linux.sh ${JAR_URL} ${PYPI_VERSION} true
+        
         ## mac ##
-        bash release_default_mac.sh ${{ github.event.inputs.JAR_URL }} ${{ github.event.inputs.PYPI_VERSION }} true
+        bash release_default_mac.sh ${JAR_URL} ${PYPI_VERSION} true
+        
