@@ -220,7 +220,7 @@ class TestOnnx(TestCase):
         class Net(nn.Module):
             def __init__(self):
                 super().__init__()
-            def forward(self, x: torch.Tensor, y: int):
+            def forward(self, x: torch.Tensor, y: int = 3):
                 return x+y
 
         model = Net()
@@ -229,6 +229,13 @@ class TestOnnx(TestCase):
         y = 3
         result_true = model(x, y)
         # sample with only required parameters (in a tuple)
+        accmodel = InferenceOptimizer.trace(model,
+                                            accelerator="onnxruntime",
+                                            input_sample=torch.rand(2,3,1,1))
+        result_m = accmodel(x, np.array([y]))  # TODO: make y work here
+        assert torch.equal(result_true, result_m)
+
+        # sample with only all parameters (in a tuple)
         accmodel = InferenceOptimizer.trace(model,
                                             accelerator="onnxruntime",
                                             input_sample=(torch.rand(2,3,1,1),3))
