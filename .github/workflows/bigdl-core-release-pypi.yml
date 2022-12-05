@@ -40,11 +40,14 @@ jobs:
       with:
         repository: intel-analytics/BigDL-core
         ref: ${{ env.Branch }}
+    - uses: actions/checkout@v3
+      with:
+        path: ../${{ github.workspace }}
     - name: Set up JDK8
-      uses: ./.github/actions/jdk-setup-action
+      uses: ../.github/actions/jdk-setup-action
 
     - name: Set up maven
-      uses: ./.github/actions/maven-setup-action
+      uses: ../.github/actions/maven-setup-action
 
     - name: Set up Python 
       uses: actions/setup-python@v2
