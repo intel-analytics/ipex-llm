@@ -25,8 +25,10 @@ import matplotlib.pyplot as plt
 
 import torch
 import torch.nn as nn
+import torch.optim as optim
+from torch.optim import lr_scheduler
 import torchvision
-from torchvision import datasets, transforms
+from torchvision import datasets, transforms, models
 
 from bigdl.orca import init_orca_context, stop_orca_context
 from bigdl.orca.learn.pytorch import Estimator
@@ -109,7 +111,30 @@ def test_loader_func(config, batch_size):
 
 
 # Step 3.1: Define the model, optimizer and loss
-from model import ConvNetModel
+class ConvNetModel:
+    def __init__(self):
+        return
+
+    # Create the model
+    @staticmethod
+    def model_creator(config):
+        model = models.resnet18(pretrained=True)
+        num_ftrs = model.fc.in_features
+        # Here the size of each output sample is set to 2.
+        # Alternatively, it can be generalized to nn.Linear(num_ftrs, len(class_names)).
+        model.fc = nn.Linear(num_ftrs, 2)
+        model = model.to(config['device'])
+        return model
+
+    # Create the optimizer
+    @staticmethod
+    def optimizer_creator(model, config):
+        return optim.SGD(model.parameters(), lr=0.001, momentum=0.9)
+
+    # Decay LR by a factor of 0.1 every 7 epochs
+    @staticmethod
+    def scheduler_creator(optimizer, config):
+        return lr_scheduler.StepLR(optimizer, step_size=7, gamma=0.1)
 
 
 # Step 3.2: Finetune with Orca PyTorch Estimator
@@ -185,7 +210,34 @@ est.shutdown()
 
 
 # Step 4.1: Define the model, optimizer and loss
-from model import FixedConvNetModel
+class FixedConvNetModel:
+    def __init__(self):
+        return
+
+    # Create the model
+    @staticmethod
+    def model_creator(config):
+        model = torchvision.models.resnet18(pretrained=True)
+        # Freeze all the network except the final layer.
+        for param in model.parameters():
+            param.requires_grad = False
+        # Parameters of newly constructed modules have requires_grad=True by default
+        num_ftrs = model.fc.in_features
+        model.fc = nn.Linear(num_ftrs, 2)
+        model = model.to(config['device'])
+        return model
+
+    # Create the optimizer
+    # Observe that only parameters of final layer are being optimized as
+    # opposed to before.
+    @staticmethod
+    def optimizer_creator(model, config):
+        return optim.SGD(model.fc.parameters(), lr=0.001, momentum=0.9)
+
+    # Decay LR by a factor of 0.1 every 7 epochs
+    @staticmethod
+    def scheduler_creator(optimizer, config):
+        return lr_scheduler.StepLR(optimizer, step_size=7, gamma=0.1)
 
 
 # Step 4.2: Finetune with Orca PyTorch Estimator
