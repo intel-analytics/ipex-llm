@@ -13,59 +13,49 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-from pyspark.sql import DataFrame
-from pyspark.rdd import PipelinedRDD
-from pyspark.sql.dataframe import DataFrame
-from tensorflow.core.protobuf.config_pb2 import ConfigProto
-from tensorflow.python.data.ops.dataset_ops import (
-    DatasetV1Adapter,
-    TensorSliceDataset,
-)
-from tensorflow.python.keras.engine.training import Model
-import tensorflow as tf
-from typing import (
-    Any,
-    Dict,
-    List,
-    Optional,
-    Union,
-    Tuple
-)
 
+import tensorflow as tf
 
 from bigdl.dllib.optim.optimizer import MaxEpoch
+from bigdl.dllib.utils import nest
 from bigdl.dllib.utils.log4Error import invalidInputError
-from bigdl.orca.tfpark.tf_dataset import _standardize_keras_target_data
 from bigdl.dllib.utils.file_utils import enable_multi_fs_load, enable_multi_fs_load_static, \
     enable_multi_fs_save
+from bigdl.dllib.utils.tf import save_tf_checkpoint, load_tf_checkpoint
 from bigdl.orca import OrcaContext
+from bigdl.orca.data.shard import SparkXShards
 from bigdl.orca.data.tf.data import MapDataset
 from bigdl.orca.data.tf.tf1_data import TF1Dataset
-from bigdl.orca.data import SparkXShards
+from bigdl.orca.learn.spark_estimator import Estimator as SparkEstimator
 from bigdl.orca.learn.tf.utils import *
 from bigdl.orca.learn.trigger import Trigger
 from bigdl.orca.learn.utils import find_latest_checkpoint, convert_predict_rdd_to_xshard, \
     convert_predict_rdd_to_dataframe, process_xshards_of_pandas_dataframe
-from bigdl.orca.tfpark import KerasModel
-from bigdl.orca.tfpark import TFOptimizer, TFNet, ZooOptimizer
+from bigdl.orca.tfpark import KerasModel, TFOptimizer, TFNet, ZooOptimizer
+from bigdl.orca.tfpark.tf_dataset import _standardize_keras_target_data
 from bigdl.orca.tfpark.tf_optimizer import StatelessMetric
 from bigdl.orca.tfpark.utils import evaluate_metrics
-from bigdl.dllib.utils import nest
-from bigdl.dllib.utils.tf import save_tf_checkpoint, load_tf_checkpoint
-from bigdl.orca.learn.spark_estimator import Estimator as SparkEstimator
-from bigdl.dllib.utils.log4Error import *
-from bigdl.dllib.optim.optimizer import SeveralIteration
-from bigdl.dllib.utils.triggers import TriggerAnd
-from bigdl.orca.data.shard import SparkXShards
-from bigdl.orca.data.tf.data import TensorSliceDataset
-from bigdl.orca.learn.optimizers import Optimizer
-from bigdl.orca.learn.metrics import Metric
-from bigdl.orca.learn.trigger import SeveralIteration
-from bigdl.orca.tfpark.tf_dataset import (
-    DataFrameDataset,
-    TFDataDataset,
-    TFNdarrayDataset,
-)
+
+from typing import TYPE_CHECKING
+if TYPE_CHECKING:
+    from typing import Any, Dict, List, Optional, Union, Tuple
+    from pyspark.rdd import PipelinedRDD
+    from pyspark.sql import DataFrame
+    from tensorflow import Tensor, Session, Variable
+    from tensorflow.core.protobuf.config_pb2 import ConfigProto
+    from tensorflow.python.data.ops.dataset_ops import DatasetV1Adapter
+    from tensorflow.python.keras.engine.training import Model
+    from bigdl.dllib.optim.optimizer import SeveralIteration
+    from bigdl.dllib.utils.triggers import TriggerAnd
+    from bigdl.orca.data.tf.data import TensorSliceDataset
+    from bigdl.orca.learn.metrics import Metric
+    from bigdl.orca.learn.optimizers import Optimizer
+    from bigdl.orca.learn.trigger import SeveralIteration
+    from bigdl.orca.tfpark.tf_dataset import (
+        DataFrameDataset,
+        TFDataDataset,
+        TFNdarrayDataset,
+    )
 
 
 class Estimator(SparkEstimator):
@@ -324,16 +314,16 @@ class Estimator(SparkEstimator):
     @staticmethod
     def from_graph(
         *, 
-        inputs: tf.Tensor, 
-        outputs: Optional[tf.Tensor]=None,
-        labels: Optional[tf.Tensor]=None,
-        loss: Optional[tf.Tensor]=None,
-        optimizer: Optional[Optimizer]=None,
-        metrics: Optional[Metric]=None,
+        inputs: "Tensor", 
+        outputs: Optional["Tensor"]=None,
+        labels: Optional["Tensor"]=None,
+        loss: Optional["Tensor"]=None,
+        optimizer: Optional["Optimizer"]=None,
+        metrics: Optional["Metric"]=None,
         clip_norm: Optional[float]=None,
         clip_value: Union[float, Tuple[float, float], None]=None,
-        updates: Optional[List[tf.Variable]]=None,#not sure
-        sess: Optional[tf.Session]=None,
+        updates: Optional[List["Variable"]]=None,#not sure
+        sess: Optional["Session"]=None,
         model_dir: Optional[str]=None,
         backend: str="bigdl"
         ) -> TensorFlowEstimator:
@@ -378,10 +368,10 @@ class Estimator(SparkEstimator):
 
     @staticmethod
     def from_keras(
-        keras_model: Model,
-        metrics: Optional[Metric] = None,
+        keras_model: "Model",
+        metrics: Optional["Metric"] = None,
         model_dir: Optional[str] = None,
-        optimizer: Optional[Optimizer] = None,
+        optimizer: Optional["Optimizer"] = None,
         backend: str = "bigdl"
     ) -> KerasEstimator:
         """
@@ -418,17 +408,17 @@ def is_tf_data_dataset(data: Any) -> bool:
     return is_dataset or is_dataset_v2
 
 
-def to_dataset(data: Union[SparkXShards, MapDataset, DataFrame, tf.data.Dataset],
+def to_dataset(data: Union["SparkXShards", "MapDataset", "DataFrame", "tf.data.Dataset"],
     batch_size: int,
     batch_per_thread: int,
-    validation_data: Union[SparkXShards, MapDataset, DataFrame, tf.data.Dataset, None],
+    validation_data: Union["SparkXShards", "MapDataset", "DataFrame", "tf.data.Dataset", None],
     feature_cols: Optional[List[str]],
     label_cols: Optional[List[str]],
     hard_code_batch_size: bool,
     sequential_order: bool,
     shuffle: bool,
     auto_shard_files: bool,
-    memory_type: str="DRAM") -> Union[TFNdarrayDataset, TF1Dataset, DataFrameDataset, TFDataDataset]:
+    memory_type: str="DRAM") -> Union["TFNdarrayDataset", "TF1Dataset", "DataFrameDataset", "TFDataDataset"]:
     # todo wrap argument into kwargs
     if validation_data:
         if isinstance(data, SparkXShards):
@@ -494,16 +484,16 @@ class TensorFlowEstimator(Estimator):
     def __init__(
         self,
         *,
-        inputs: tf.Tensor,
-        outputs: Optional[tf.Tensor],
-        labels: Optional[tf.Tensor],
-        loss: Optional[tf.Tensor],
-        optimizer: Optional[Optimizer],
+        inputs: "Tensor",
+        outputs: Optional["Tensor"],
+        labels: Optional["Tensor"],
+        loss: Optional["Tensor"],
+        optimizer: Optional["Optimizer"],
         clip_norm: Optional[float],
         clip_value: Union[float, Tuple[float, float], None],
-        metrics: Optional[Metric],
-        updates: Optional[List[tf.Variables]],
-        sess: Optional[tf.Session],
+        metrics: Optional["Metric"],
+        updates: Optional[List["Variables"]],
+        sess: Optional["Session"],
         model_dir: Optional[str]
     ) -> None:
         self.inputs = inputs
@@ -863,10 +853,10 @@ class TensorFlowEstimator(Estimator):
 class KerasEstimator(Estimator):
     def __init__(
         self,
-        keras_model: Model,
-        metrics: Optional[Metric],
+        keras_model: "Model",
+        metrics: Optional["Metric"],
         model_dir: Optional[str],
-        optimizer: Optional[Optimizer]
+        optimizer: Optional["Optimizer"]
     ) -> None:
         if model_dir and model_dir.startswith("dbfs:/"):
             model_dir = save_model_dir(model_dir)
@@ -892,7 +882,7 @@ class KerasEstimator(Estimator):
         feature_cols: Optional[List[str]]=None,
         label_cols: Optional[List[str]]=None,
         validation_data: Optional[Union[DatasetV1Adapter, SparkXShards, DataFrame]]=None,
-        session_config: Optional[ConfigProto]=None,
+        session_config: Optional["ConfigProto"]=None,
         checkpoint_trigger: Optional[Union[TriggerAnd, SeveralIteration, SeveralIteration]]=None,
         auto_shard_files: bool=False
     ) -> KerasEstimator:
@@ -1109,7 +1099,7 @@ class KerasEstimator(Estimator):
         """
         self.model.save_model(path, overwrite=overwrite)
 
-    def get_model(self) -> Model:
+    def get_model(self) -> "Model":
         """
         Get the trained Keras model
 

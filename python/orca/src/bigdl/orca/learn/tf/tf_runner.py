@@ -28,19 +28,20 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import logging
+from contextlib import closing
 import json
+import logging
 import os
-from typing import Any, Dict, List, Optional, Callable
+import socket
 
 import ray
-import tensorflow as tf
-from contextlib import closing
-import logging
-import socket
-from bigdl.dllib.utils.log4Error import *
+
 from bigdl.dllib.utils.log4Error import invalidInputError
 
+from typing import TYPE_CHECKING
+if TYPE_CHECKING:
+    from typing import Any, Dict, List, Optional, Callable
+    from tensorflow.compat.v1.estimator import TrainSpec, EvalSpec
 
 logger = logging.getLogger(__name__)
 
@@ -166,8 +167,8 @@ class TFRunner:
         self.rank = world_rank
 
     def train_and_evaluate(self,
-                           train_spec: tf.estimator.TrainSpec,
-                           eval_spec: tf.estimator.EvalSpec) -> Any:
+                           train_spec: "TrainSpec",
+                           eval_spec: "EvalSpec") -> Any:
         import tensorflow.compat.v1 as tf
         result = tf.estimator.train_and_evaluate(self.estimator, train_spec, eval_spec)
         return result

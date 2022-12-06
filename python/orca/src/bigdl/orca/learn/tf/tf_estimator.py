@@ -14,14 +14,16 @@
 # limitations under the License.
 #
 
-from typing import Any, Dict, Optional, Callable
-
 import ray
-import tensorflow as tf
 
 from bigdl.orca.ray import OrcaRayContext
 from bigdl.orca.learn.tf.tf_runner import TFRunner
 from bigdl.orca.learn.dl_cluster import RayDLCluster
+from typing import TYPE_CHECKING
+if TYPE_CHECKING:
+    from typing import Any, Dict, Optional, Callable
+    from tensorflow.compat.v1.estimator import TrainSpec, EvalSpec
+
 
 class TFEstimator():
     def __init__(self,
@@ -129,8 +131,8 @@ class TFEstimator():
         self.num_workers = len(self.remote_workers)
 
     def train_and_evaluate(self,
-                           train_spec: tf.estimator.TrainSpec,
-                           eval_spec: tf.estimator.EvalSpec) -> Any:
+                           train_spec: "TrainSpec",
+                           eval_spec: "EvalSpec") -> Any:
         """
         Train and evaluate the estimator.
 
