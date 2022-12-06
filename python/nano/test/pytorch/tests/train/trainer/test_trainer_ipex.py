@@ -33,7 +33,7 @@ from bigdl.nano.common import check_avx512
 batch_size = 256
 max_epochs = 2
 num_workers = 0
-data_dir = os.path.join(os.path.dirname(__file__), "../data")
+data_dir = "/tmp/data"
 
 
 class ResNet18(nn.Module):

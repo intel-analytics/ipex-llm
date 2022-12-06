@@ -30,13 +30,13 @@ from bigdl.nano.pytorch.utils import TORCH_VERSION_LESS_1_10
 from test.pytorch.utils._train_torch_lightning import create_data_loader, data_transform
 from test.pytorch.utils._train_torch_lightning import create_test_data_loader
 from test.pytorch.utils._train_ipex_callback import CheckIPEXCallback, CheckIPEXFusedStepCallback
-from test.pytorch.tests.test_lightning import ResNet18
+from test.pytorch.tests.train.trainer.test_lightning import ResNet18
 
 num_classes = 10
 batch_size = 32
 dataset_size = 256
 num_workers = 0
-data_dir = os.path.join(os.path.dirname(__file__), "../data")
+data_dir = "/tmp/data"
 
 
 class TestPlugin(TestCase):
@@ -50,8 +50,9 @@ class TestPlugin(TestCase):
 
     def setUp(self):
         test_dir = os.path.dirname(__file__)
+        # project_test_dir = BigDL/python/nano
         project_test_dir = os.path.abspath(
-            os.path.join(os.path.join(os.path.join(test_dir, ".."), ".."), "..")
+            os.path.join(test_dir, "..", "..", "..", "..", "..")
         )
         os.environ['PYTHONPATH'] = project_test_dir
 

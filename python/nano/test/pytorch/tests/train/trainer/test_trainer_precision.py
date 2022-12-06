@@ -29,7 +29,6 @@ from bigdl.nano.pytorch import Trainer
 from bigdl.nano.pytorch.vision.models import vision
 from bigdl.nano.pytorch.utils import TORCH_VERSION_LESS_1_10
 
-from test.pytorch.tests.test_scale_lr import ResNetBase
 from test.pytorch.utils._train_torch_lightning import (create_data_loader,
                                                        create_test_data_loader,
                                                        data_transform)
@@ -37,7 +36,7 @@ from test.pytorch.utils._train_torch_lightning import (create_data_loader,
 batch_size = 32
 dataset_size = 256
 num_workers = 0
-data_dir = os.path.join(os.path.dirname(__file__), "../data")
+data_dir = "/tmp/data"
 
 
 class ResNet18(nn.Module):

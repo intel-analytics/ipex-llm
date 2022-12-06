@@ -29,7 +29,7 @@ import pytest
 
 
 class TestOpenVINO(TestCase):
-    def test_trainer_trace_openvino(self):
+    def test_trace_openvino(self):
         trainer = Trainer(max_epochs=1)
         model = mobilenet_v3_small(num_classes=10)
 
@@ -58,8 +58,7 @@ class TestOpenVINO(TestCase):
         trainer.test(openvino_model, dataloader)
         trainer.predict(openvino_model, dataloader)
 
-    def test_trainer_save_openvino(self):
-        trainer = Trainer(max_epochs=1)
+    def test_save_openvino(self):
         model = mobilenet_v3_small(num_classes=10)
         x = torch.rand((10, 3, 256, 256))
 
@@ -75,7 +74,6 @@ class TestOpenVINO(TestCase):
             assert y_hat.shape == (10, 10)
 
     def test_pytorch_openvino_model_async_predict(self):
-        trainer = Trainer(max_epochs=1)
         model = mobilenet_v3_small(num_classes=10)
 
         x = torch.rand((10, 3, 256, 256))
@@ -97,7 +95,6 @@ class TestOpenVINO(TestCase):
             assert res.shape == (10, 10)
 
     def test_pytorch_openvino_model_option(self):
-        trainer = Trainer(max_epochs=1)
         model = mobilenet_v3_small(num_classes=10)
 
         x = torch.rand((10, 3, 256, 256))
@@ -110,7 +107,6 @@ class TestOpenVINO(TestCase):
         result = openvino_model(x[0:1])
 
     def test_pytorch_openvino_model_context_manager(self):
-        trainer = Trainer(max_epochs=1)
         model = mobilenet_v3_small(num_classes=10)
 
         x = torch.rand((10, 3, 256, 256))
@@ -133,7 +129,6 @@ class TestOpenVINO(TestCase):
             y2 = model(x[0:1])
 
     def test_pytorch_openvino_model_additional_attrs(self):
-        trainer = Trainer(max_epochs=1)
         model = mobilenet_v3_small(num_classes=10)
         # patch a attribute
         model.channels = 3

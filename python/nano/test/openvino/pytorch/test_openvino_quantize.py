@@ -26,7 +26,7 @@ import pytest
 
 
 class TestOpenVINO(TestCase):
-    def test_trainer_quantize_openvino(self):
+    def test_quantize_openvino(self):
         trainer = Trainer()
         model = mobilenet_v3_small(num_classes=10)
 
@@ -58,7 +58,7 @@ class TestOpenVINO(TestCase):
         trainer.test(optimized_model, dataloader)
         trainer.predict(optimized_model, dataloader)
 
-    def test_trainer_quantize_openvino_with_tuning(self):
+    def test_quantize_openvino_with_tuning(self):
         trainer = Trainer()
         model = mobilenet_v3_small(num_classes=10)
 
@@ -81,7 +81,7 @@ class TestOpenVINO(TestCase):
         trainer.test(optimized_model, dataloader)
         trainer.predict(optimized_model, dataloader)
 
-    def test_trainer_quantize_openvino_option(self):
+    def test_quantize_openvino_option(self):
         model = mobilenet_v3_small(num_classes=10)
 
         x = torch.rand((10, 3, 256, 256))
