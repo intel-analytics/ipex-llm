@@ -58,7 +58,6 @@ if TYPE_CHECKING:
     from bigdl.orca.learn.trigger import SeveralIteration
 
 
-
 class Estimator(SparkEstimator):
 
     def fit(self, data, epochs, batch_size=32, feature_cols=None, label_cols=None,
