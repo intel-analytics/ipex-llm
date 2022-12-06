@@ -38,9 +38,9 @@ import ray
 
 from bigdl.dllib.utils.log4Error import invalidInputError
 
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 if TYPE_CHECKING:
-    from typing import Any, Dict, List, Optional, Callable
+    from typing import Dict, List, Optional, Callable
     from tensorflow.compat.v1.estimator import TrainSpec, EvalSpec
 
 logger = logging.getLogger(__name__)

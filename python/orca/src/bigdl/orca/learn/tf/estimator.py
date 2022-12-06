@@ -32,13 +32,18 @@ from bigdl.orca.learn.trigger import Trigger
 from bigdl.orca.learn.utils import find_latest_checkpoint, convert_predict_rdd_to_xshard, \
     convert_predict_rdd_to_dataframe, process_xshards_of_pandas_dataframe
 from bigdl.orca.tfpark import KerasModel, TFOptimizer, TFNet, ZooOptimizer
-from bigdl.orca.tfpark.tf_dataset import _standardize_keras_target_data
+from bigdl.orca.tfpark.tf_dataset import (
+    _standardize_keras_target_data,
+    DataFrameDataset,
+    TFDataDataset,
+    TFNdarrayDataset,
+)
 from bigdl.orca.tfpark.tf_optimizer import StatelessMetric
 from bigdl.orca.tfpark.utils import evaluate_metrics
 
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, List, Optional, Union
 if TYPE_CHECKING:
-    from typing import Any, Dict, List, Optional, Union, Tuple
+    from typing import Any, Dict, Tuple
     from pyspark.rdd import PipelinedRDD
     from pyspark.sql import DataFrame
     from tensorflow import Tensor, Session, Variable
@@ -51,11 +56,7 @@ if TYPE_CHECKING:
     from bigdl.orca.learn.metrics import Metric
     from bigdl.orca.learn.optimizers import Optimizer
     from bigdl.orca.learn.trigger import SeveralIteration
-    from bigdl.orca.tfpark.tf_dataset import (
-        DataFrameDataset,
-        TFDataDataset,
-        TFNdarrayDataset,
-    )
+
 
 
 class Estimator(SparkEstimator):
