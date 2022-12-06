@@ -1,7 +1,7 @@
-name: BigDL Core Release Pypi
+name: BigDL Release TF Math Python Pypi
 
 on:
-  pull_request:
+  #pull_request:
   
   workflow_dispatch:
     inputs:
@@ -11,7 +11,7 @@ on:
         default: '2.2.0b20221205'
         type: string
       branch:
-        description: 'bigdl core branch (e.g. master, branch-2.1)'
+        description: 'bigdl core branch (e.g. main, branch-2.1)'
         required: true
         default: 'main'
         type: string
@@ -97,12 +97,11 @@ jobs:
         curl -v --noproxy ${NOPROXY} -l "${RELEASE_URL_PREFIX}/v${TF_VERSION}/osx/libtensorflow_jni-cpu-darwin-x86_64.tar.gz" | tar -xvz -C src/bigdl/share/tflibs/darwin-x86_64
         cd -
         
-        export PYPI_VERSION=2.2.0b20221205
         cd python/dev/
         ## linux ##
-        bash release_orca_dependencies_default_linux.sh ${PYPI_VERSION} true
+        bash release_orca_dependencies_default_linux.sh ${{ env.PYPI_VERSION }} true
 
         ## mac ##
-        bash release_orca_dependencies_default_mac.sh ${PYPI_VERSION} true
+        bash release_orca_dependencies_default_mac.sh ${{ env.PYPI_VERSION }} true
 
         
