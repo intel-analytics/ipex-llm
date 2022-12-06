@@ -804,26 +804,33 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                                                             precision="fp32")
             return _context_manager
 
-        def join_manager(manager, new_manager):
+        def join_manager(manager1, manager2):
             def is_bf16(x):
                 return isinstance(x, AutocastContextManager)
-            if (is_bf16(manager) ^ is_bf16(new_manager)) is True:
-                invalidInputError(False, "Can't obtain a new context manager for BF16 model"
-                                  "and non BF16 model.")
-            thread_num1 = manager.thread_num
-            thread_num2 = new_manager.thread_num
+            if (is_bf16(manager1) ^ is_bf16(manager2)) is True:
+                warnings.warn("Only one of the context managers uses mixed precision, "
+                              "and we will return the context manager with mixed precision.")
+            manager = None
+            if is_bf16(manager1) or is_bf16(manager2):
+                manager = AutocastContextManager()
+            else:
+                manager = BaseContextManager()
+            thread_num1 = manager1.thread_num
+            thread_num2 = manager2.thread_num
             if thread_num1 != thread_num2:
                 if thread_num1 is None or thread_num2 is None:
                     warnings.warn("One of the two models has thread control and the other "
                                   "does not. The returned context manager will be dominated "
                                   "by the non-None one.")
-                    if thread_num1 is None:
-                        return new_manager
-                    else:
-                        return manager
                 else:
-                    invalidInputError(False, "Can't obtain a new context manager for model"
-                                      "with different thread_num.")
+                    warnings.warn("These context managers have different thread_num.  We will "
+                                  "set thread_num to the larger one.")
+                if thread_num1 is None or thread_num2 > thread_num1:
+                    manager.thread_num = thread_num2
+                else:
+                    manager.thread_num = thread_num1
+            else:
+                manager.thread_num = thread_num1
             return manager
 
         _context_manager = obtain_manager(model)
