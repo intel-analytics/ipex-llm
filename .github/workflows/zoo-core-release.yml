@@ -28,7 +28,7 @@ jobs:
       with:
         repository: intel-analytics/analytics-zoo-core
         ref: ${{ env.Branch }}
-        token: ${{ env.Token }}
+        token: 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
     
     - name: Build package
       run: |
