@@ -28,9 +28,15 @@ benchmark-chronos -m lstm -l 96 -o 720
 ```
 
 ### Stage
-Regarding a model, training and inference stages are most concerned. By setting `-s/--stage` parameter, users can obtain knowledge of throughput during training (`-s train`), throughput during inference (`-s throughput`) and latency of inference (`-s latency`). If not specified, train is used as the default.
+Regarding a model, training and inference stages are most concerned. By setting `-s/--stage` parameter, users can obtain knowledge of throughput during training (`-s train`), accuracy after training(`-s accuracy`). throughput during inference (`-s throughput`) and latency of inference (`-s latency`). If not specified, train is used as the default.
 ```bash
 benchmark-chronos -s latency -l 96 -o 720
+```
+```eval_rst
+.. note::
+    **More About Accuracy Results**:
+
+     After setting ``-s accuracy``, the tool will load dataset and split it to train, validation and test set with ratio of 7:1:2. Then validation loss is monitored during training epoches and checkpoint of the epoch with smallest loss is loaded after training. With the trained forecaster, obtain evaluation results corresponding to ``--metrics``.
 ```
 
 ### Dataset
@@ -74,6 +80,20 @@ benchmark-chronos -l 96 -o 720
 ```
 
 ## Advanced Options
+When `-s/--stage accuracy` is set, users can further specify evaluation metrics through `--metrics` which default to be mse and mae.
+```bash
+benchmark-chronos --stage accuracy --metrics mse rmse  -l 96 -o 720
+```
+
+To improve model accuracy, the tool provides with normalization trick to alleviate distribution shift. Once enable `--normalization`, normalization trick will be applied to forecaster.
+```bash
+benchmark-chronos --stage accuracy --normalization -l 96 -o 720
+```
+```eval_rst
+.. note::
+     Only TCNForecaster supports normalization trick now.
+```
+
 Besides, number of processes and epoches can be set by `--training_processes` and `--training_epochs`. Users can also tune batchsize during training and inference through `--training_batchsize` and `--inference_batchsize` respectively.
 ```bash
 benchmark-chronos --training_processes 2 --training_epochs 3 --training_batchsize 32 --inference_batchsize 128 -l 96 -o 720
@@ -101,21 +121,21 @@ benchmark-chronos -h
 ```eval_rst
 .. code-block:: python
 
-    usage: benchmark-chronos.py [-h] [-m] [-s] [-d] [-f] [-c] -l lookback -o
-                                horizon [--training_processes]
-                                [--training_batchsize] [--training_epochs]
-                                [--inference_batchsize] [--quantize]
-                                [--inference_framework  [...]] [--ipex]
-                                [--quantize_type] [--ckpt]
+     usage: benchmark-chronos [-h] [-m] [-s] [-d] [-f] [-c] -l lookback -o horizon
+                             [--training_processes] [--training_batchsize]
+                             [--training_epochs] [--inference_batchsize]
+                             [--quantize] [--inference_framework  [...]] [--ipex]
+                             [--quantize_type] [--ckpt] [--metrics  [...]]
+                             [--normalization]
 
-    Benchmarking Parameters
+     Benchmarking Parameters
 
-    optional arguments:
+     optional arguments:
       -h, --help            show this help message and exit
       -m, --model           model name, choose from
                             tcn/lstm/seq2seq/nbeats/autoformer, default to "tcn".
-      -s, --stage           stage name, choose from train/latency/throughput,
-                            default to "train".
+      -s, --stage           stage name, choose from
+                            train/latency/throughput/accuracy, default to "train".
       -d, --dataset         dataset name, choose from
                             nyc_taxi/tsinghua_electricity/synthetic_dataset,
                             default to "tsinghua_electricity".
@@ -146,5 +166,9 @@ benchmark-chronos -h
                             default to "pytorch_fx".
       --ckpt                checkpoint path of a trained model, e.g.
                             "checkpoints/tcn", default to "checkpoints/tcn".
+      --metrics  [ ...]     evaluation metrics of a trained model, e.g.
+                            "mse"/"mae", default to "mse, mae".
+      --normalization       if to use normalization trick to alleviate
+                            distribution shift.
 ```
 
