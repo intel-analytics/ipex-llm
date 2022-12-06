@@ -233,6 +233,7 @@ case "$SPARK_K8S_CMD" in
       echo $sgx_command && \
       ./init.sh && \
       gramine-sgx bash  1>&2
+      rm /ppml/temp_command_file || true
     fi
     ;;
 
