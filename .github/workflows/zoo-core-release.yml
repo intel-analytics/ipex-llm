@@ -12,7 +12,8 @@ on:
         type: string
 
 env:
-  Branch: ${{ github.event.inputs.branch }}
+  #Branch: ${{ github.event.inputs.branch }}
+  Token: ${{ secrets.GITHUB_ACCESS_TOKEN }}
 
 permissions:
   contents: read
@@ -27,7 +28,7 @@ jobs:
       with:
         repository: intel-analytics/analytics-zoo-core
         ref: ${{ env.Branch }}
-        token: ${{ secrets.GITHUB_ACCESS_TOKEN }}
+        token: ${{ env.Token }}
     
     - name: Build package
       run: |
