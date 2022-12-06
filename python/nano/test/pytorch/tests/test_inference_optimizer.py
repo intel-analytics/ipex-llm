@@ -382,6 +382,25 @@ class TestInferencePipeline(TestCase):
             np.testing.assert_allclose(pred1, pred2, atol=1e-4,
                                         err_msg=f"\npred1: {pred1}\npred2: {pred2}\n")
 
+    def test_multi_instance_with_specify_cores(self):
+        model = Net()
+        model.eval()
+        inference_opt = InferenceOptimizer()
+        multi_instance_model = inference_opt.to_multi_instance(model, num_processes=2,
+                                                               cores_per_process=1)
+
+        test_loader = create_data_loader(self.data_dir, 1, self.num_workers, data_transform,
+                                         subset=50, shuffle=False)
+        input_data = list(map(lambda b: b[0], test_loader))
+
+        with torch.no_grad():
+            preds1 = multi_instance_model(input_data)
+            preds2 = [model(b) for b in input_data]
+
+        for (pred1, pred2) in zip(preds1, preds2):
+            np.testing.assert_allclose(pred1, pred2, atol=1e-4,
+                                        err_msg=f"\npred1: {pred1}\npred2: {pred2}\n")
+
     def test_grid_search_model_with_accelerator(self):
         inference_opt = InferenceOptimizer()
 
