@@ -25,7 +25,7 @@ permissions:
   packages: write
 
 jobs:
-  bigdl-core-release-python-pypi:
+  bigdl-release-tf-math-python-pypi:
     runs-on: [self-hosted, ubuntu-20.04-lts, Bree-core]
     
     steps:
