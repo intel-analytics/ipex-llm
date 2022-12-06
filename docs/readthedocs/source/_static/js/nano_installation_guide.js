@@ -134,6 +134,7 @@ $(document).on('click',"button",function(){
         framework=id;
         if (framework=="tensorflow"){
             version="tf2_270";
+            document.getElementById("cmd").style.whiteSpace = "nowrap";
         }else{
             version="pytorch_112";
         }

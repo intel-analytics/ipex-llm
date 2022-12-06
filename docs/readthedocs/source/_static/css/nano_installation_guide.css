@@ -44,6 +44,7 @@
 
 #table-1 #cmd {
     height: 2em;
+    white-space: normal;
     text-align: left;
 }
 
