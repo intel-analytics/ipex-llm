@@ -465,8 +465,7 @@ class PyTorchPySparkEstimator(BaseEstimator):
             mode="evaluate",
             state_dict=state_dict,
             cluster_info=cluster_info,
-            torch_model=self.torch_model
-            )
+            torch_model=self.torch_model)
 
         init_params.update(self.worker_init_params)
 

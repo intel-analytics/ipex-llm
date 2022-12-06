@@ -173,7 +173,7 @@ class TorchRunner(BaseRunner):
         if isinstance(self.models, nn.Sequential) or not isinstance(self.models, Iterable):
             self.models = [self.models]
         invalidInputError(all(isinstance(model, nn.Module) for model in self.models),
-                            ("All models must be PyTorch models: {}.".format(self.models)))
+                             ("All models must be PyTorch models: {}.".format(self.models)))
 
         self.logger.debug("Creating optimizer.")
         self.optimizers = self.optimizer_creator(self.given_models,
