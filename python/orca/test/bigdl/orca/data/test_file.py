@@ -19,7 +19,7 @@ import shutil
 import pytest
 import tempfile
 
-from bigdl.orca.data.file import open_image, open_text, load_numpy, exists, makedirs, write_text, enable_multi_fs_load_static
+from bigdl.orca.data.file import open_image, open_text, load_numpy, exists, listdir, makedirs, rmdir, write_text, enable_multi_fs_load_static
 
 
 class TestFile:
@@ -97,6 +97,10 @@ class TestFile:
             assert exists(file_path)
             file_path = "s3://analytics-zoo-data/abc.csv"
             assert not exists(file_path)
+    
+    def test_listdir_local(self):
+        file_list = listdir(self.resource_path)
+        assert len(file_list) > 0
 
     def test_mkdirs_local(self):
         temp = tempfile.mkdtemp()
@@ -130,6 +134,14 @@ class TestFile:
                 aws_access_key_id=access_key_id,
                 aws_secret_access_key=secret_access_key).client('s3', verify=False)
             s3_client.delete_object(Bucket='analytics-zoo-data', Key='temp/abc/')
+
+    def test_rmdir_local(self):
+        temp = tempfile.mkdtemp()
+        path = os.path.join(temp, "dir1")
+        makedirs(path)
+        assert exists(path)
+        rmdir(path)
+        assert not exists(path)
 
     def test_write_text_local(self):
         temp = tempfile.mkdtemp()
