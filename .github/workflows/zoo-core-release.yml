@@ -1,0 +1,48 @@
+name: Analytics Zoo Core Release 
+
+on:
+  pull_request:
+  
+  workflow_dispatch:
+    inputs:
+      branch:
+        description: 'bigdl core branch (e.g. master, branch-2.1)'
+        required: true
+        default: 'master'
+        type: string
+
+env:
+  Branch: ${{ github.event.inputs.branch }}
+
+permissions:
+  contents: read
+  packages: write
+
+jobs:
+  analytics-core-release-mac:
+    runs-on: [self-hosted, bigdl-mac]
+    
+    steps:
+    - uses: actions/checkout@v3
+      with:
+        repository: intel-analytics/BigDL-core
+        ref: ${{ env.Branch }}
+    
+    - name: Build package
+      run: |
+        set -x
+        export PATH=/Users/test/workspace/maven/bin:/usr/local/bin:$PATH
+        echo $PATH
+
+        source /opt/intel/mkl/bin/mklvars.sh intel64
+        export JAVA_HOME=/Library/Java/JavaVirtualMachines/jdk1.7.0_80.jdk/Contents/Home
+        export _JAVA_OPTIONS="-Xmx100G -XX:MaxPermSize=3G"
+        # export MAVEN_OPTS="-XX:MaxPermSize=3G -Xmx100G"
+        export http_proxy=http://child-prc.intel.com:913
+        export https_proxy=https://child-prc.intel.com:913
+
+        java -version
+        javac -version
+
+        mvn -f ./mkl2017-xeon-blas/mkl-java-mac -B clean package 
+        
