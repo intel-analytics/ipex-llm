@@ -322,10 +322,10 @@ class TorchRunner(BaseRunner):
         if val_loader:
             with self.timers.record("validation"):
                 info = info or {}
-                validation_results = self.training_operator.validate(val_loader,
-                                                                     info=info,
-                                                                     metrics=self.metrics,
-                                                                     num_steps=val_steps)
+                validation_results = self._validate(val_loader,
+                                                    info=info,
+                                                    metrics=self.metrics,
+                                                    num_steps=val_steps)
                 # add prefix of "val_" for validation_stats
                 validation_stats = {}
                 for name, value in validation_results.items():
