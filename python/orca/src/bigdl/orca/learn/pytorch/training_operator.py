@@ -95,8 +95,9 @@ class TrainingOperator:
         invalidInputError(isinstance(models, collections.Iterable),
                           "Components need to be iterable. Got: {}".format(type(models)))
         self._optimizers = optimizers  # List of optimizers
-        invalidInputError(isinstance(optimizers, collections.Iterable),
-                          "Components need to be iterable. Got: {}".format(type(optimizers)))
+        if optimizers:
+            invalidInputError(isinstance(optimizers, collections.Iterable),
+                              "Components need to be iterable. Got: {}".format(type(optimizers)))
         self._world_rank = world_rank
         self._criterion = criterion
         self._schedulers = schedulers

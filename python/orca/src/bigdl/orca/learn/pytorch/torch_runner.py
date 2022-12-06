@@ -170,11 +170,12 @@ class TorchRunner(BaseRunner):
         invalidInputError(all(isinstance(model, nn.Module) for model in self.models),
                           ("All models must be PyTorch models: {}.".format(self.models)))
 
-        self.logger.debug("Creating optimizer.")
-        self.optimizers = self.optimizer_creator(self.given_models,
-                                                 self.config)
-        if not isinstance(self.optimizers, Iterable):
-            self.optimizers = [self.optimizers]
+        if self.optimizer_creator is not None:
+            self.logger.debug("Creating optimizer.")
+            self.optimizers = self.optimizer_creator(self.given_models,
+                                                     self.config)
+            if self.optimizers is not None and not isinstance(self.optimizers, Iterable):
+                self.optimizers = [self.optimizers]
 
         self._create_schedulers_if_available()
         self._create_loss()
@@ -408,9 +409,14 @@ class TorchRunner(BaseRunner):
         state = {
             "epoch": self.epochs,
             "operator": self.training_operator.state_dict(),
-            "models": [model.state_dict() for model in self.models],
-            "optimizers": [opt.state_dict() for opt in self.optimizers]
+            "models": [model.state_dict() for model in self.models]
         }
+        if self.optimizers is not None:
+            state.update({
+                "optimizers": [
+                    opt.state_dict() for opt in self.optimizers
+                ]
+            })
         if self.schedulers:
             state.update({
                 "schedulers": [
