@@ -13,9 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+
 from copy import deepcopy
-from pathlib import Path
-from tempfile import TemporaryDirectory
 from bigdl.nano.deps.onnxruntime.pytorch.pytorch_onnxruntime_model import PytorchONNXRuntimeModel
 from ..quantization import BaseONNXRuntimeQuantization
 from ...pytorch import PytorchQuantization
@@ -53,10 +52,16 @@ class PytorchONNXRuntimeQuantization(BaseONNXRuntimeQuantization, PytorchQuantiz
             calib_dataloader.collate_fn = numpy_collate_fn_wrapper(calib_dataloader.collate_fn)
 
         if isinstance(model, PytorchONNXRuntimeModel):
+            self.nano_model = model
             model = model.onnx_model
-
         return model, calib_dataloader, metric
 
     def _post_execution(self, q_model):
-        return PytorchONNXRuntimeModel(q_model.model,
-                                       onnxruntime_session_options=self.session_options)
+        if hasattr(self, "nano_model") and isinstance(self.nano_model, PytorchONNXRuntimeModel):
+            self.nano_model.__init__(q_model.model,
+                                     onnxruntime_session_options=self.session_options)
+            return self.nano_model
+        else:
+            # below code will re-define a new object, and original attrs will be lost.
+            return PytorchONNXRuntimeModel(q_model.model,
+                                           onnxruntime_session_options=self.session_options)

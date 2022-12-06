@@ -176,6 +176,39 @@ class TestOnnx(TestCase):
         with InferenceOptimizer.get_context(model):
             assert torch.get_num_threads() == 1
             output = onnx_model(x)
+    
+    def test_onnx_additional_attributes(self):
+        model = ResNet18(10, pretrained=False, include_top=False, freeze=True)
+        loss = nn.CrossEntropyLoss()
+        optimizer = torch.optim.Adam(model.parameters(), lr=0.01)
+        trainer = Trainer(max_epochs=1)
+
+        pl_model = Trainer.compile(model, loss, optimizer)
+        x = torch.rand((10, 3, 256, 256))
+        y = torch.ones((10, ), dtype=torch.long)
+        ds = TensorDataset(x, y)
+        train_loader = DataLoader(ds, batch_size=2)
+        trainer.fit(pl_model, train_loader)
+        # patch a attribute
+        pl_model.channels = 3
+        def hello():
+            print("hello world!")
+        # patch a function
+        pl_model.hello = hello
+
+        onnx_model = InferenceOptimizer.trace(pl_model,
+                                              accelerator="onnxruntime",
+                                              input_sample=train_loader,
+                                              thread_num=1)
+
+        with InferenceOptimizer.get_context(onnx_model):
+            assert torch.get_num_threads() == 1
+            output = onnx_model(x)
+
+        assert onnx_model.channels == 3
+        onnx_model.hello()
+        with pytest.raises(AttributeError):
+            onnx_model.width
 
     def test_onnx_default_values(self):
         # default bool values

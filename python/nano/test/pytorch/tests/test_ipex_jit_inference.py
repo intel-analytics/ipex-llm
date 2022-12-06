@@ -81,6 +81,50 @@ class IPEXJITInference_gt_1_10:
             new_model = InferenceOptimizer.load(tmp_dir_name)
         with InferenceOptimizer.get_context(new_model):
             new_model(self.data_sample)
+    
+    def test_ipex_jit_inference_additional_attrs(self):
+        model = ResNet18(10, pretrained=False, include_top=False, freeze=True)
+        #  patch a attr
+        model.channels = 3
+        def hello():
+            print("hello world!")
+        # patch a function
+        model.hello = hello
+        
+        # test jit + ipex
+        new_model = InferenceOptimizer.trace(model, accelerator="jit",
+                                             use_ipex=True,
+                                             input_sample=self.data_sample)
+        with InferenceOptimizer.get_context(new_model):
+            new_model(self.data_sample)
+        assert new_model.channels == 3
+        new_model.hello()
+
+        # test jit
+        new_model = InferenceOptimizer.trace(model, accelerator="jit",
+                                             input_sample=self.data_sample)
+        with InferenceOptimizer.get_context(new_model):
+            new_model(self.data_sample)
+        assert new_model.channels == 3
+        new_model.hello()
+
+        # test ipex
+        new_model = InferenceOptimizer.trace(model, use_ipex=True)
+        with InferenceOptimizer.get_context(new_model):
+            new_model(self.data_sample)
+        assert new_model.channels == 3
+        new_model.hello()
+        with pytest.raises(AttributeError):
+            new_model.width
+        
+        # test channels_last
+        new_model = InferenceOptimizer.trace(model, channels_last=True)
+        with InferenceOptimizer.get_context(new_model):
+            new_model(self.data_sample)
+        assert new_model.channels == 3
+        new_model.hello()
+        with pytest.raises(AttributeError):
+            new_model.width
 
     def test_ipex_jit_inference_strict(self):
         model = InferenceOptimizer.trace(self.model, accelerator="jit",
