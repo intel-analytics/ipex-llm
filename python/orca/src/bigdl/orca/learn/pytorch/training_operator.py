@@ -288,15 +288,14 @@ class TrainingOperator:
             else:
                 loss = self.criterion(output, target)
 
-        if self.optimizer:
-            # Compute gradients in a backward pass.
-            with self.timers.record("grad"):
-                self.optimizer.zero_grad()
-                loss.backward()
+        # Compute gradients in a backward pass.
+        with self.timers.record("grad"):
+            self.optimizer.zero_grad()
+            loss.backward()
 
-            # Call step of optimizer to update model params.
-            with self.timers.record("apply"):
-                self.optimizer.step()
+        # Call step of optimizer to update model params.
+        with self.timers.record("apply"):
+            self.optimizer.step()
 
         return {"train_loss": loss.item(), NUM_SAMPLES: get_batchsize(features)}
 
@@ -453,14 +452,12 @@ class TrainingOperator:
     @property
     def optimizer(self):
         """First or only optimizer(s) created by the ``optimizer_creator``."""
-        if self._optimizers:
-            return self._optimizers[0]
+        return self._optimizers[0]
 
     @property
     def optimizers(self):
         """List of optimizers created by the ``optimizer_creator``."""
-        if self._optimizers:
-            return self._optimizers
+        return self._optimizers
 
     @property
     def world_rank(self):
