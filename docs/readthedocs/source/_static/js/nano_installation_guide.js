@@ -43,7 +43,7 @@ function refresh_cmd(){
         enable(inferences);
     }
 
-    if (version=="pytorch_113"){
+    if (framework=="pytorch"){
         document.getElementById("cmd").style.whiteSpace = "normal";
     }
     else{
