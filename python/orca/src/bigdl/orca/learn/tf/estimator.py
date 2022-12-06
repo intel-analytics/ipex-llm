@@ -562,7 +562,7 @@ class TensorFlowEstimator(Estimator):
             TensorSliceDataset,
             DatasetV1Adapter,
             SparkXShards
-            ],
+        ],
         epochs: int=1,
         batch_size: int=32,
         feature_cols: Optional[List[str]]=None,
@@ -742,7 +742,7 @@ class TensorFlowEstimator(Estimator):
             TensorSliceDataset,
             DatasetV1Adapter,
             SparkXShards
-            ],
+        ],
         batch_size: int=32,
         feature_cols: Optional[List[str]]=None,
         label_cols: Optional[List[str]]=None,
