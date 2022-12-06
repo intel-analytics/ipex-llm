@@ -37,13 +37,15 @@ def convert_pb_to_xml(pb_file_path, xml_path, logging=True, batch_size=1):
     xml_path = Path(xml_path)
     model_name, output_dir = str(xml_path.stem), str(xml_path.parent)
     if logging:
-        mo_cmd = "mo --saved_model_dir {} -n {} -o {}".format(str(pb_file_path),
+        mo_cmd = "mo --saved_model_dir {} -n {} -o {} -b".format(str(pb_file_path),
                                                               model_name,
-                                                              output_dir)
+                                                              output_dir,
+                                                              batch_size)
     else:
-        mo_cmd = "mo --saved_model_dir {} --silent -n {} -o {}".format(str(pb_file_path),
+        mo_cmd = "mo --saved_model_dir {} --silent -n {} -o {} -b".format(str(pb_file_path),
                                                                        model_name,
-                                                                       output_dir)
+                                                                       output_dir,
+                                                                       batch_size)
 
     p = subprocess.Popen(mo_cmd.split())
     p.communicate()
