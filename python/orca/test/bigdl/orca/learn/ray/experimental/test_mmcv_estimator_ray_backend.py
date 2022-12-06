@@ -253,6 +253,7 @@ class TestMMCVRayEstimator(unittest.TestCase):
         estimator = get_estimator(runner_creator, cfg)
         estimator.load_checkpoint(os.path.join(TEMP_WORK_DIR, "epoch_4.pth"))
         estimator.run([train_dataloader_creator], [('train', 1)])
+        # TODO: evaluate model after load checkpoint
 
 
 if __name__ == "__main__":
