@@ -19,6 +19,8 @@ from bigdl.nano.pytorch import Trainer
 from bigdl.nano.pytorch import InferenceOptimizer
 from torchvision.models.mobilenetv3 import mobilenet_v3_small
 import torch
+import torch.nn as nn
+import numpy as np
 from torch.utils.data.dataset import TensorDataset
 from torch.utils.data.dataloader import DataLoader
 import os
@@ -129,3 +131,68 @@ class TestOpenVINO(TestCase):
         with InferenceOptimizer.get_context(model):
             assert torch.get_num_threads() == 2
             y2 = model(x[0:1])
+
+    def test_openvino_default_values(self):
+        # default bool values
+        class Net(nn.Module):
+            def __init__(self):
+                super().__init__()
+            def forward(self, x, a=True, b=False):
+                if a:
+                    return x+1
+                if b:
+                    return x-1
+                return x
+
+        model = Net()
+
+        data = torch.rand(1,3,1,1)
+        result_true = model(data)
+        # sample with only required parameters (in a tuple)
+        accmodel = InferenceOptimizer.trace(model,
+                                            accelerator="openvino",
+                                            input_sample=(torch.rand(2,3,1,1),))
+        result_m = accmodel(data)
+        assert torch.equal(result_true, result_m)
+
+        # sample with only required parameters
+        accmodel = InferenceOptimizer.trace(model,
+                                            accelerator="openvino",
+                                            input_sample=torch.rand(2,3,1,1))
+        result_m = accmodel(data)
+        assert torch.equal(result_true, result_m)
+
+        data = torch.rand(1,3,1,1)
+        result_true = model(data, False, True)
+        # sample with only required parameters
+        accmodel = InferenceOptimizer.trace(model,
+                                            accelerator="openvino",
+                                            input_sample=(torch.rand(2,3,1,1),False,True))
+        result_m = accmodel(data)
+        assert torch.equal(result_true, result_m)
+
+        # typehint model
+        class Net(nn.Module):
+            def __init__(self):
+                super().__init__()
+            def forward(self, x: torch.Tensor, y: int = 3):
+                return x+y
+
+        model = Net()
+
+        x = torch.rand(1,3,1,1)
+        y = 3
+        result_true = model(x, y)
+        # sample with only required parameters (in a tuple)
+        accmodel = InferenceOptimizer.trace(model,
+                                            accelerator="openvino",
+                                            input_sample=torch.rand(2,3,1,1))
+        result_m = accmodel(x, y)
+        assert torch.equal(result_true, result_m)
+
+        # sample with only all parameters (in a tuple)
+        accmodel = InferenceOptimizer.trace(model,
+                                            accelerator="openvino",
+                                            input_sample=(torch.rand(2,3,1,1), 3))
+        result_m = accmodel(x, y)
+        assert torch.equal(result_true, result_m)
