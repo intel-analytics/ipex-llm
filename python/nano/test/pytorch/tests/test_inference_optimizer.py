@@ -500,9 +500,10 @@ class TestInferencePipeline(TestCase):
             with InferenceOptimizer.get_context(self.model, bf16_model):
                 output = self.model(input_sample)
                 assert output.dtype == torch.bfloat16
-            
-            with pytest.raises(RuntimeError):
-                InferenceOptimizer.get_context(ipex_model, bf16_model)
+
+            with InferenceOptimizer.get_context(ipex_model, bf16_model):
+                output = bf16_model(input_sample)
+                assert output.dtype == torch.bfloat16
 
         # test thread
         ipex_thread_model = InferenceOptimizer.trace(self.model,
