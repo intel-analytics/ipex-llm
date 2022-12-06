@@ -808,8 +808,13 @@ class InferenceOptimizer(BaseInferenceOptimizer):
             def is_bf16(x):
                 return isinstance(x, AutocastContextManager)
             if (is_bf16(manager1) ^ is_bf16(manager2)) is True:
-                invalidInputError(False, "Can't obtain a new context manager for BF16 model"
-                                  "and non BF16 model.")
+                warnings.warn("Only one of the context managers uses mixed precision, "
+                              "and we will return the context manager with mixed precision.")
+            manager = None
+            if is_bf16(manager1) or is_bf16(manager2):
+                manager = AutocastContextManager()
+            else:
+                manager = BaseContextManager()
             thread_num1 = manager1.thread_num
             thread_num2 = manager2.thread_num
             if thread_num1 != thread_num2:
@@ -817,18 +822,16 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                     warnings.warn("One of the two models has thread control and the other "
                                   "does not. The returned context manager will be dominated "
                                   "by the non-None one.")
-                    if thread_num1 is None:
-                        return manager2
-                    else:
-                        return manager1
                 else:
                     warnings.warn("These context managers have different thread_num.  We will "
                                   "set thread_num to the larger one.")
-                    if thread_num1 > thread_num2:
-                        return manager1
-                    else:
-                        return manager2
-            return manager1
+                if thread_num1 is None or thread_num2 > thread_num1:
+                    manager.thread_num = thread_num2
+                else:
+                    manager.thread_num = thread_num1
+            else:
+                manager.thread_num = thread_num1
+            return manager
 
         _context_manager = obtain_manager(model)
         if len(models) == 0:
