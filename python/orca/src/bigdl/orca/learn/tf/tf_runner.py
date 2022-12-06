@@ -69,7 +69,7 @@ class TFRunner:
         config: Optional[Dict[str, Any]]=None,
         params: Optional[Dict[str, Any]]=None,
         warm_start_from: Optional[str]=None
-        ) -> None:
+    ) -> None:
         """Initializes the runner.
         Args:
             model_creator (dict -> Model): see tf_trainer.py.
@@ -109,7 +109,7 @@ class TFRunner:
         urls: List[str],
         world_rank: int,
         world_size: int
-        ) -> None:
+    ) -> None:
         """Sets up TensorFLow distributed environment and initializes the model.
         Args:
             urls (str): the URLs that each node uses to connect.

@@ -313,8 +313,8 @@ class Estimator(SparkEstimator):
 
     @staticmethod
     def from_graph(
-        *, 
-        inputs: "Tensor", 
+        *,
+        inputs: "Tensor",
         outputs: Optional["Tensor"]=None,
         labels: Optional["Tensor"]=None,
         loss: Optional["Tensor"]=None,
@@ -322,11 +322,11 @@ class Estimator(SparkEstimator):
         metrics: Optional["Metric"]=None,
         clip_norm: Optional[float]=None,
         clip_value: Union[float, Tuple[float, float], None]=None,
-        updates: Optional[List["Variable"]]=None,#not sure
+        updates: Optional[List["Variable"]]=None,
         sess: Optional["Session"]=None,
         model_dir: Optional[str]=None,
         backend: str="bigdl"
-        ) -> TensorFlowEstimator:
+    ) -> TensorFlowEstimator:
         """
         Create an Estimator for tesorflow graph.
 
@@ -408,7 +408,8 @@ def is_tf_data_dataset(data: Any) -> bool:
     return is_dataset or is_dataset_v2
 
 
-def to_dataset(data: Union["SparkXShards", "MapDataset", "DataFrame", "tf.data.Dataset"],
+def to_dataset(
+    data: Union["SparkXShards", "MapDataset", "DataFrame", "tf.data.Dataset"],
     batch_size: int,
     batch_per_thread: int,
     validation_data: Union["SparkXShards", "MapDataset", "DataFrame", "tf.data.Dataset", None],
@@ -418,7 +419,8 @@ def to_dataset(data: Union["SparkXShards", "MapDataset", "DataFrame", "tf.data.D
     sequential_order: bool,
     shuffle: bool,
     auto_shard_files: bool,
-    memory_type: str="DRAM") -> Union["TFNdarrayDataset", "TF1Dataset", "DataFrameDataset", "TFDataDataset"]:
+    memory_type: str="DRAM"
+) -> Union["TFNdarrayDataset", "TF1Dataset", "DataFrameDataset", "TFDataDataset"]:
     # todo wrap argument into kwargs
     if validation_data:
         if isinstance(data, SparkXShards):
