@@ -103,7 +103,7 @@ class MMCVRayEstimator(BaseRayEstimator):
     def load_checkpoint(
             self,
             filename: str,
-            map_location: Union[str, Callable] = 'cpu',
+            map_location: Union[str, Callable]='cpu',
             strict: bool = False,
             revise_keys: List = [(r'^module.', '')],
     ) -> Union[Dict, OrderedDict]:
@@ -127,4 +127,3 @@ class MMCVRayEstimator(BaseRayEstimator):
             worker.load_checkpoint.remote(filename, map_location, strict, revise_keys)
             for i, worker in enumerate(self.remote_workers)
         ])
-

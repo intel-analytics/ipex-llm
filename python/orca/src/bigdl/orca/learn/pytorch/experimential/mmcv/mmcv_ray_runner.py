@@ -73,7 +73,7 @@ class HDFSBackend(BaseStorageBackend):
 
 @CheckpointLoader.register_scheme(prefixes='hdfs://')
 def load_from_hdfs(filename: str,
-                   map_location: Union[str, Callable, None] = None) -> Union[dict, OrderedDict]:
+                   map_location: Union[str, Callable, None]=None) -> Union[dict, OrderedDict]:
     """
     load checkpoint by HDFS file path
 
@@ -295,7 +295,7 @@ class MMCVRayEpochRunner(BaseRayRunner, EpochBasedRunner):
     def load_checkpoint(
             self,
             filename: str,
-            map_location: Union[str, Callable] = 'cpu',
+            map_location: Union[str, Callable]='cpu',
             strict: bool = False,
             revise_keys: List = [(r'^module.', '')],
     ) -> Union[Dict, OrderedDict]:
