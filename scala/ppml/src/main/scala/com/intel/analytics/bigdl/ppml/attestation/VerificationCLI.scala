@@ -80,7 +80,7 @@ object VerificationCLI {
                 System.out.println("Quote Verification Success!")
             } else if (verifyQuoteResult == 0xa001 || verifyQuoteResult == 0xa002 ||
               verifyQuoteResult == 0xa003 || verifyQuoteResult == 0xa007 || verifyQuoteResult == 0xa008) {
-                System.out.println("Quote verification passed but BIOS is not up to date. reresult=" + verifyQuoteResult)
+                System.out.println("Quote verification passed but BIOS is not up to date. result=" + verifyQuoteResult)
             }
             else {
                 System.out.println("Quote Verification Fail! Application killed")
