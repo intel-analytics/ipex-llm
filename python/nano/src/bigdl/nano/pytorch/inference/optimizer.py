@@ -44,7 +44,6 @@ from bigdl.nano.pytorch.context_manager import generate_context_manager,\
 from .multi_instance import _MultiInstanceModel, _multi_instance_helper
 import traceback
 import warnings
-from copy import deepcopy
 # Filter out useless Userwarnings
 warnings.filterwarnings('ignore', category=UserWarning, module='pytorch_lightning')
 warnings.filterwarnings('ignore', category=DeprecationWarning, module='pytorch_lightning')
