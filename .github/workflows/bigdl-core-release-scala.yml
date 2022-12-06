@@ -26,7 +26,7 @@ permissions:
 
 jobs:
   bigdl-core-release-mac:
-    runs-on: [self-hosted, bigdl-core]
+    runs-on: [self-hosted, bigdl-mac]
     
     steps:
     - uses: actions/checkout@v3
