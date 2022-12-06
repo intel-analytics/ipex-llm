@@ -44,6 +44,7 @@ from bigdl.nano.pytorch.context_manager import generate_context_manager,\
 from .multi_instance import _MultiInstanceModel, _multi_instance_helper
 import traceback
 import warnings
+from copy import deepcopy
 # Filter out useless Userwarnings
 warnings.filterwarnings('ignore', category=UserWarning, module='pytorch_lightning')
 warnings.filterwarnings('ignore', category=DeprecationWarning, module='pytorch_lightning')
@@ -804,27 +805,31 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                                                             precision="fp32")
             return _context_manager
 
-        def join_manager(manager, new_manager):
+        def join_manager(manager1, manager2):
             def is_bf16(x):
                 return isinstance(x, AutocastContextManager)
-            if (is_bf16(manager) ^ is_bf16(new_manager)) is True:
+            if (is_bf16(manager1) ^ is_bf16(manager2)) is True:
                 invalidInputError(False, "Can't obtain a new context manager for BF16 model"
                                   "and non BF16 model.")
-            thread_num1 = manager.thread_num
-            thread_num2 = new_manager.thread_num
+            thread_num1 = manager1.thread_num
+            thread_num2 = manager2.thread_num
             if thread_num1 != thread_num2:
                 if thread_num1 is None or thread_num2 is None:
                     warnings.warn("One of the two models has thread control and the other "
                                   "does not. The returned context manager will be dominated "
                                   "by the non-None one.")
                     if thread_num1 is None:
-                        return new_manager
+                        return manager2
                     else:
-                        return manager
+                        return manager1
                 else:
-                    invalidInputError(False, "Can't obtain a new context manager for model"
-                                      "with different thread_num.")
-            return manager
+                    warnings.warn("These context managers have different thread_num.  We will "
+                                  "set thread_num to the larger one.")
+                    if thread_num1 > thread_num2:
+                        return manager1
+                    else:
+                        return manager2
+            return manager1
 
         _context_manager = obtain_manager(model)
         if len(models) == 0:
