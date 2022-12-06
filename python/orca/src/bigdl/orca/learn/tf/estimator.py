@@ -556,7 +556,13 @@ class TensorFlowEstimator(Estimator):
 
     def fit(
         self,
-        data: Union[TensorSliceDataset, DataFrame, TensorSliceDataset, DatasetV1Adapter, SparkXShards],
+        data: Union[
+            TensorSliceDataset,
+            DataFrame,
+            TensorSliceDataset,
+            DatasetV1Adapter,
+            SparkXShards
+            ],
         epochs: int=1,
         batch_size: int=32,
         feature_cols: Optional[List[str]]=None,
@@ -730,7 +736,13 @@ class TensorFlowEstimator(Estimator):
 
     def evaluate(
         self,
-        data: Union[TensorSliceDataset, DataFrame, TensorSliceDataset, DatasetV1Adapter, SparkXShards],
+        data: Union[
+            TensorSliceDataset,
+            DataFrame,
+            TensorSliceDataset,
+            DatasetV1Adapter,
+            SparkXShards
+            ],
         batch_size: int=32,
         feature_cols: Optional[List[str]]=None,
         label_cols: Optional[List[str]]=None,
@@ -1167,7 +1179,12 @@ class KerasEstimator(Estimator):
         self.clip_norm = clip_norm
 
     @enable_multi_fs_save
-    def save_keras_weights(self, filepath: str, overwrite: bool=True, save_format: Optional[str]=None) -> None:
+    def save_keras_weights(
+        self,
+        filepath: str,
+        overwrite: bool=True,
+        save_format: Optional[str]=None
+    ) -> None:
         """
         Save tensorflow keras model weights in this estimator.
 
