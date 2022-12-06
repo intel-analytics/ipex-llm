@@ -132,7 +132,8 @@ def update_predict_xshards(xshards, pred_xshards):
         d1.update(d2)
         return d1
 
-    result = SparkXShards(xshards.rdd.zip(pred_xshards.rdd).map(update_dict))
+    result = SparkXShards(xshards.rdd.zip(pred_xshards.rdd).map(update_dict),
+                          class_name="builtins.dict")
     return result
 
 
@@ -143,7 +144,8 @@ def add_predict_to_pd_xshards(xshards, pred_xshards):
         df["prediction"] = [pred for pred in preds]
         return df
 
-    result = SparkXShards(xshards.rdd.zip(pred_xshards.rdd).map(add_prediction))
+    result = SparkXShards(xshards.rdd.zip(pred_xshards.rdd).map(add_prediction),
+                          class_name="pandas.core.frame.DataFrame")
     return result
 
 
