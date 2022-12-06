@@ -135,6 +135,7 @@ def update_predict_xshards(xshards, pred_xshards):
     result = SparkXShards(xshards.rdd.zip(pred_xshards.rdd).map(update_dict))
     return result
 
+
 def add_predict_to_pd_xshards(xshards, pred_xshards):
     def add_prediction(df_preds):
         df, preds = df_preds

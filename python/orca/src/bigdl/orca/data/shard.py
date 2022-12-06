@@ -185,6 +185,9 @@ class SparkXShards(XShards):
     def lazy(cls,
              rdd: Union["PipelinedRDD", "RDD"],
              class_name: str = None) -> "SparkXShards":
+        """
+        Create an instance of SparkXShards that computes lazily.
+        """
         return SparkXShards(rdd, transient=True, class_name=class_name).to_lazy()
 
     def _create(self,
