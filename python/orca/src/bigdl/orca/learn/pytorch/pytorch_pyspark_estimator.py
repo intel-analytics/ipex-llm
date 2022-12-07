@@ -580,7 +580,7 @@ class PyTorchPySparkEstimator(BaseEstimator):
                 self.state_dict = res
             else:
                 self.state_dict = [re.state_dict() for re in res]
-        elif isinstance(res, nn.Module):
+        else:
             self.state_dict = res.state_dict()
 
     def save_checkpoint(self, model_path):
