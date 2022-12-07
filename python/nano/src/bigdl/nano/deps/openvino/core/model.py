@@ -31,6 +31,7 @@ class OpenVINOModel:
         self.thread_num = thread_num
         self.additional_config = config
         self.ie_network = ie_network
+        self._infer_request = None
 
     def on_forward_start(self, inputs):
         self._model_exists_or_err()
