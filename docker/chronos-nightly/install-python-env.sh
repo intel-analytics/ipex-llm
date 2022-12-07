@@ -4,16 +4,17 @@ source activate chronos
 model=$1
 auto_tuning=$2
 hardware=$3
-extra_dep=$4
+inference=$4
+extra_dep=$5
 options=()
 
 if [ $model == "pytorch" ] || [ $model == "tensorflow" ];
 then
-    options[0]=$model
+    options+=($model)
 
     if [ $auto_tuning == "y" ];
     then
-        options[1]="automl"
+        options+=("automl")
     elif [ $auto_tuning != "n" ];
     then
         # invalid args
@@ -24,12 +25,23 @@ then
 
     if [ $hardware == "cluster" ];
     then
-        options[2]="distributed"
+        options+=("distributed")
     elif [ $hardware != "single" ];
     then
         # invalid args
         echo "Invalid argument."
         echo "Argument hardware can be single or cluster, please check."
+        exit -1
+    fi
+
+    if [ $inference == "y" ];
+    then
+        options+=("inference")
+    elif [ $inference != "n" ];
+    then
+        # invalid args
+        echo "Invalid argument."
+        echo "Argument inference can be y or n, please check."
         exit -1
     fi
 elif [ $model == "prophet" ] || [ $model == "arima" ];
@@ -85,14 +97,13 @@ fi
 
 if [ $extra_dep == "y" ];
 then
-    pip install --no-cache-dir neural_compressor==1.8.1 && \
-    pip install --no-cache-dir onnxruntime==1.6.0 && \
-    pip install --no-cache-dir onnx==1.8.0 && \
     pip install --no-cache-dir tsfresh==0.17.0 && \
+    pip install --no-cache-dir pyarrow==6.0.1 && \
 
     pip install --no-cache-dir prometheus_pandas==0.3.1 && \
     pip install --no-cache-dir xgboost==1.2.0 && \
-    pip install --no-cache-dir jupyter==1.0.0
+    pip install --no-cache-dir jupyter==1.0.0 && \
+    pip install --no-cache-dir matplotlib
 elif [ $extra_dep != "n" ];
 then
     # invalid args
