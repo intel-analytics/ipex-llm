@@ -32,7 +32,8 @@ from bigdl.orca.learn.tf2.spark_runner import SparkRunner
 from bigdl.orca.learn.utils import find_free_port, find_ip_and_free_port
 from bigdl.orca.learn.utils import maybe_dataframe_to_xshards, dataframe_to_xshards, \
     convert_predict_xshards_to_dataframe, make_data_creator, load_model, \
-    save_model, process_xshards_of_pandas_dataframe
+    save_model, process_xshards_of_pandas_dataframe, \
+    add_predict_to_pd_xshards, update_predict_xshards
 from bigdl.orca.learn.log_monitor import start_log_server, stop_log_server
 from bigdl.orca.data.shard import SparkXShards
 from bigdl.orca import OrcaContext
@@ -127,6 +128,10 @@ class SparkTFEstimator():
         """
         sc = OrcaContext.get_spark_context()
 
+        if isinstance(data, SparkXShards):
+            data = data.to_lazy()
+            if validation_data and isinstance(validation_data, SparkXShards):
+                validation_data = validation_data.to_lazy()
         # Data partition should be equal to num workers.
         # Repartition Spark DataFrame before converting to SparkXShards.
         # Repartition on SparkXShards will result in empty partitions.
@@ -178,8 +183,7 @@ class SparkTFEstimator():
             data_config=data_config
         )
 
-        if isinstance(data, SparkXShards):
-            # set train/validation data
+        if isinstance(data, SparkXShards):  # Computation triggered when collect
             if data._get_class_name() == 'pandas.core.frame.DataFrame':
                 data, validation_data = process_xshards_of_pandas_dataframe(data,
                                                                             feature_cols,
@@ -245,19 +249,16 @@ class SparkTFEstimator():
                If data is XShards, each partition can be a Pandas DataFrame or a dictionary of
                {'x': feature, 'y': label}, where feature(label) is a numpy array or a tuple of
                numpy arrays.
-        :param validation_data: validation data. Validation data type should be the same
-               as train data.
         :param batch_size: Batch size used for evaluation. Default: 32.
         :param verbose: Prints output of one model if true.
         :param callbacks: List of Keras compatible callbacks to apply during evaluation.
-        :param class_weight: Optional dictionary mapping class indices (integers) to a weight
-               (float) value, used for weighting the loss function. This can be useful to tell
-               the model to "pay more attention" to samples from an under-represented class.
         :return: validation result
         """
         sc = OrcaContext.get_spark_context()
         logger.info("Starting validation step.")
 
+        if isinstance(data, SparkXShards):
+            data = data.to_lazy()
         if isinstance(data, DataFrame) or isinstance(data, SparkXShards):
             if data.rdd.getNumPartitions() != self.num_workers:
                 data = data.repartition(self.num_workers)
@@ -300,8 +301,7 @@ class SparkTFEstimator():
             data_config=data_config,
         )
 
-        if isinstance(data, SparkXShards):
-            # set train/validation data
+        if isinstance(data, SparkXShards):  # Computation triggered when collect
             if data._get_class_name() == 'pandas.core.frame.DataFrame':
                 data = process_xshards_of_pandas_dataframe(data, feature_cols, label_cols)
 
@@ -372,9 +372,14 @@ class SparkTFEstimator():
             data_config=data_config
         )
 
-        if isinstance(data, DataFrame):
-            pre_predict_data = data.repartition(self.num_workers)
-            xshards, _ = dataframe_to_xshards(pre_predict_data,
+        def transform_func(iter, init_param, param):
+            partition_data = list(iter)
+            # res = combine_in_partition(partition_data)
+            param["data_creator"] = make_data_creator(partition_data)
+            return SparkRunner(**init_param).predict(**param)
+
+        if isinstance(data, DataFrame):  # Computation would be triggered by the user
+            xshards, _ = dataframe_to_xshards(data,
                                               validation_data=None,
                                               feature_cols=feature_cols,
                                               label_cols=None,
@@ -382,19 +387,25 @@ class SparkTFEstimator():
                                               accept_str_col=True,
                                               shard_size=batch_size)
 
-            def transform_func(iter, init_param, param):
-                partition_data = list(iter)
-                # res = combine_in_partition(partition_data)
-                param["data_creator"] = make_data_creator(partition_data)
-                return SparkRunner(**init_param).predict(**param)
-
-            pred_shards = SparkXShards(xshards.rdd.mapPartitions(
+            pred_shards = SparkXShards.lazy(xshards.rdd.mapPartitions(
                 lambda iter: transform_func(iter, init_params, params)))
-            result = convert_predict_xshards_to_dataframe(pre_predict_data, pred_shards)
+            result = convert_predict_xshards_to_dataframe(data, pred_shards)
+        elif isinstance(data, SparkXShards):  # Computation triggered when updating XShards
+            xshards = data.to_lazy()
+            if data._get_class_name() == 'pandas.core.frame.DataFrame':
+                xshards = process_xshards_of_pandas_dataframe(data, feature_cols)
+                pred_shards = SparkXShards.lazy(xshards.rdd.mapPartitions(
+                    lambda iter: transform_func(iter, init_params, params)))
+                result = add_predict_to_pd_xshards(data, pred_shards)
+            else:
+                pred_shards = SparkXShards(xshards.rdd.mapPartitions(
+                    lambda iter: transform_func(iter, init_params, params)))
+                result = update_predict_xshards(data, pred_shards)
+            # Uncache the original data since it is already included in the result
+            data.uncache()
         else:
             invalidInputError(False,
-                              "Only xshards or Spark DataFrame is supported for predict")
-
+                              "Only XShards or Spark DataFrame are supported for predict")
         return result
 
     def save_weights(self, filepath, overwrite=True, save_format=None):
