@@ -34,7 +34,7 @@ ARG hardware=single
 ARG inference=n
 
 # extra_dep: install extra dependencies (e.g. jupyter, matplotlib, ...)
-#          y (for yes) or n (default, for no)
+#            y (for yes) or n (default, for no)
 ARG extra_dep=n
 
 ADD ./docker/chronos-nightly/install-python-env.sh /opt
