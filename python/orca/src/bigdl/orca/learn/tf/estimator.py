@@ -43,18 +43,12 @@ from bigdl.orca.tfpark.utils import evaluate_metrics
 
 from typing import TYPE_CHECKING, List, Optional, Union, Tuple, Any, Dict
 if TYPE_CHECKING:
-    from pyspark.rdd import PipelinedRDD
     from pyspark.sql import DataFrame
     from tensorflow import Tensor, Session, Variable
     from tensorflow.core.protobuf.config_pb2 import ConfigProto
-    from tensorflow.python.data.ops.dataset_ops import DatasetV1Adapter
     from tensorflow.python.keras.engine.training import Model
-    from bigdl.dllib.optim.optimizer import SeveralIteration
-    from bigdl.dllib.utils.triggers import TriggerAnd
-    from bigdl.orca.data.tf.data import TensorSliceDataset
     from bigdl.orca.learn.metrics import Metric
     from bigdl.orca.learn.optimizers import Optimizer
-    from bigdl.orca.learn.trigger import SeveralIteration
 
 
 class Estimator(SparkEstimator):
@@ -556,21 +550,19 @@ class TensorFlowEstimator(Estimator):
     def fit(
         self,
         data: Union[
-            TensorSliceDataset,
-            DataFrame,
-            TensorSliceDataset,
-            DatasetV1Adapter,
-            SparkXShards
+            "DataFrame",
+            "SparkXShards",
+            "tf.data.Dataset"
         ],
         epochs: int=1,
         batch_size: int=32,
         feature_cols: Optional[List[str]]=None,
         label_cols: Optional[List[str]]=None,
         validation_data: Optional[Any]=None,
-        session_config: Optional[tf.ConfigProto]=None,
-        checkpoint_trigger: Optional[SeveralIteration]=None,
+        session_config: Optional["ConfigProto"]=None,
+        checkpoint_trigger: Optional["Trigger"]=None,
         auto_shard_files: bool=False,
-        feed_dict: Optional[Dict[tf.Tensor, Tuple[tf.Tensor, tf.Tensor]]]=None
+        feed_dict: Optional[Dict["Tensor", Tuple["Tensor", "Tensor"]]]=None
     ) -> Estimator:
         """
         Train this graph model with train data.
@@ -675,11 +667,11 @@ class TensorFlowEstimator(Estimator):
 
     def predict(
         self,
-        data: Union[DataFrame, SparkXShards, TensorSliceDataset],
+        data: Union["DataFrame", "SparkXShards", "tf.data.Dataset"],
         batch_size: int=4,
         feature_cols: Optional[List[str]]=None,
         auto_shard_files: bool=False
-    ) -> Union[DataFrame, SparkXShards, PipelinedRDD]:
+    ) -> Union["DataFrame", "SparkXShards"]:
         """
         Predict input data
 
@@ -735,13 +727,7 @@ class TensorFlowEstimator(Estimator):
 
     def evaluate(
         self,
-        data: Union[
-            TensorSliceDataset,
-            DataFrame,
-            TensorSliceDataset,
-            DatasetV1Adapter,
-            SparkXShards
-        ],
+        data: Union["DataFrame", "SparkXShards", "tf.data.Dataset"],
         batch_size: int=32,
         feature_cols: Optional[List[str]]=None,
         label_cols: Optional[List[str]]=None,
@@ -889,14 +875,14 @@ class KerasEstimator(Estimator):
 
     def fit(
         self,
-        data: Union[DataFrame, DatasetV1Adapter, SparkXShards],
+        data: Union["DataFrame", "SparkXShards", "tf.data.Dataset"],
         epochs: int=1,
         batch_size: int=32,
         feature_cols: Optional[List[str]]=None,
         label_cols: Optional[List[str]]=None,
-        validation_data: Optional[Union[DatasetV1Adapter, SparkXShards, DataFrame]]=None,
+        validation_data: Optional[Union["DataFrame", "SparkXShards", "tf.data.Dataset"]]=None,
         session_config: Optional["ConfigProto"]=None,
-        checkpoint_trigger: Optional[Union[TriggerAnd, SeveralIteration, SeveralIteration]]=None,
+        checkpoint_trigger: Optional[Trigger]=None,
         auto_shard_files: bool=False
     ) -> Estimator:
         """
