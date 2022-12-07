@@ -174,20 +174,20 @@ class OpenVINOModel:
         invalidInputError(self.ie_network is not None, "self.ie_network shouldn't be None.")
         if self._infer_request is None:
             self._compile_model()
-            
+
     def _compile_model(self):
         # Compile model & create infer request
-            if self.thread_num is not None:
-                config = {"CPU_THREADS_NUM": str(self.thread_num)}
-            else:
-                config = {}
-            if self.additional_config is not None:
-                config.update(self.additional_config)
-            self._compiled_model = self._ie.compile_model(model=self.ie_network, 
-                                                          device_name=self._device, 
-                                                          config=config)
-            self.final_config = config
-            self._infer_request = self._compiled_model.create_infer_request()
+        if self.thread_num is not None:
+            config = {"CPU_THREADS_NUM": str(self.thread_num)}
+        else:
+            config = {}
+        if self.additional_config is not None:
+            config.update(self.additional_config)
+        self._compiled_model = self._ie.compile_model(model=self.ie_network, 
+                                                      device_name=self._device, 
+                                                      config=config)
+        self.final_config = config
+        self._infer_request = self._compiled_model.create_infer_request()
 
     def async_predict(self,
                       input_data: Union[List[np.ndarray], List[List[np.ndarray]]],
