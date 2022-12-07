@@ -112,7 +112,7 @@ class TorchRunner(BaseRunner):
                  model_creator,
                  optimizer_creator,
                  loss_creator=None,
-                 torch_model=None,
+                 model_class=None,
                  metrics=None,
                  scheduler_creator=None,
                  training_operator_cls=None,
@@ -132,7 +132,7 @@ class TorchRunner(BaseRunner):
         self.scheduler_creator = scheduler_creator
         self.training_operator_cls = training_operator_cls or TrainingOperator
         self.config = {} if config is None else config
-        self.torch_model = torch_model
+        self.model_class = model_class
 
         self.timers = utils.TimerCollection()
         self.epochs = 0
@@ -176,8 +176,8 @@ class TorchRunner(BaseRunner):
         """Runs the creator functions without any distributed coordination."""
 
         self.logger.debug("Creating model")
-        if self.torch_model is not None:
-            self.models = self.torch_model
+        if self.model_class is not None:
+            self.models = self.model_class
         else:
             self.models = self.model_creator(self.config)
         if isinstance(self.models, nn.Sequential) or not isinstance(self.models, Iterable):

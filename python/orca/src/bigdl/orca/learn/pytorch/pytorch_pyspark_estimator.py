@@ -102,7 +102,7 @@ class PyTorchPySparkEstimator(BaseEstimator):
             sync_stats=True,
             log_level=logging.INFO,
             model_dir=None,
-            torch_model=None,
+            model_class=None,
             log_to_driver=True):
         logging.basicConfig(level=log_level,
                             format='[%(asctime)s] %(levelname)-8s %(message)s',
@@ -130,7 +130,7 @@ class PyTorchPySparkEstimator(BaseEstimator):
         self.model_dir = parse_model_dir(model_dir)
 
         self.model_creator = model_creator
-        self.torch_model = torch_model
+        self.model_class = model_class
         self.optimizer_creator = optimizer_creator
 
         num_nodes, cores_per_node = get_node_and_core_number()
@@ -249,7 +249,7 @@ class PyTorchPySparkEstimator(BaseEstimator):
             mode="fit",
             state_dict=state_dict,
             cluster_info=cluster_info,
-            torch_model=self.torch_model)
+            model_class=self.model_class)
         init_params.update(self.worker_init_params)
 
         params = dict(
@@ -401,7 +401,7 @@ class PyTorchPySparkEstimator(BaseEstimator):
             mode="predict",
             state_dict=state_dict,
             cluster_info=cluster_info,
-            torch_model=self.torch_model
+            model_class=self.model_class
         )
         init_params.update(self.worker_init_params)
 
@@ -479,7 +479,7 @@ class PyTorchPySparkEstimator(BaseEstimator):
             mode="evaluate",
             state_dict=state_dict,
             cluster_info=cluster_info,
-            torch_model=self.torch_model)
+            model_class=self.model_class)
 
         init_params.update(self.worker_init_params)
 
@@ -594,6 +594,8 @@ class PyTorchPySparkEstimator(BaseEstimator):
                 self.state_dict = [re.state_dict() for re in res]
         else:
             self.state_dict = res.state_dict()
+        if self.model_creator is None:
+            self.model_class = torch.load(model_path)
 
     def save_checkpoint(self, model_path):
         """
