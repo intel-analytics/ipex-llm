@@ -18,7 +18,7 @@ from unittest import TestCase
 import tensorflow as tf
 from tensorflow.keras.applications.resnet50 import ResNet50
 import numpy as np
-from bigdl.nano.tf.keras import Model
+from bigdl.nano.tf.keras import Model, InferenceOptimizer
 
 
 class TestONNX(TestCase):
@@ -32,9 +32,10 @@ class TestONNX(TestCase):
                                                             input_features))
 
         # quantize a Keras model
-        onnx_quantized_model = model.quantize(accelerator='onnxruntime',
-                                              x=train_dataset,
-                                              thread_num=8)
+        onnx_quantized_model = InferenceOptimizer.quantize(model,
+                                                           accelerator='onnxruntime',
+                                                           x=train_dataset,
+                                                           thread_num=8)
 
         y_hat = onnx_quantized_model(input_examples[:10])
         assert y_hat.shape == (10, 10)
@@ -53,10 +54,11 @@ class TestONNX(TestCase):
         input_features = np.random.randint(0, 10, size=100)
 
         # quantize a Keras model
-        onnx_quantized_model = model.quantize(accelerator='onnxruntime',
-                                              x=input_examples,
-                                              y=input_features,
-                                              thread_num=8)
+        onnx_quantized_model = InferenceOptimizer.quantize(model,
+                                                           accelerator='onnxruntime',
+                                                           x=input_examples,
+                                                           y=input_features,
+                                                           thread_num=8)
 
         preds = model.predict(input_examples)
         onnx_preds = onnx_quantized_model.predict(input_examples)
