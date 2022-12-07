@@ -228,3 +228,40 @@ InferenceOptimizer.quantize(model,
                             max_trials=10,
                             ):
 ```
+
+## Multi-instance Acceleration
+
+BigDL-Nano also provides multi-instance inference. To use it, you should call `multi_model = InferenceOptimizer.to_multi_instance(model, num_processes=n)` first, where `num_processes` specifies the number of processes you want to use.
+
+After calling it, `multi_model` will receive a `DataLoader` or a list of batches instead of a batch, and produce a list of inference result instead of a single result. You can use it as following:
+
+```python
+multi_model = InferenceOptimizer.to_multi_instance(model, num_processes=4)
+
+# predict a DataLoader
+y_hat_list = multi_model(dataloader)
+
+# or predict a list of batches instead of entire DataLoader
+it = iter(dataloader)
+batch_list = []
+for i in range(10):
+    batch = next(it)
+    batch_list.append(batch)
+y_hat_list = multi_model(batch_list)
+
+# y_hat_list is a list of inference result, you can use it like this
+for y_hat in y_hat_list:
+    do_something(y_hat)
+```
+
+`InferenceOptimizer.to_multi_instance` also has a parameter named `cores_per_process` to specify the number of CPU cores used by each process, and a parameter named `cpu_for_each_process` to specify the CPU cores used by each process. Normally you don't need to set them manually, BigDL-Nano will find the best configuration automatically. But if you want, you can use them as following:
+```python
+# Use 4 processes to run inference,
+# each process will use 2 CPU cores
+multi_model = InferenceOptimizer.to_multi_instance(model, num_processes=4, cores_per_process=2)
+
+# Use 4 processes to run inference,
+# the first process will use core 0, the second process will use core 1,
+# the third process will use core 2 and 3, the fourth process will use core 4 and 5
+multi_model = InferenceOptimizer.to_multi_instance(model, cpu_for_each_process=[[0], [1], [2,3], [4,5]])
+```
