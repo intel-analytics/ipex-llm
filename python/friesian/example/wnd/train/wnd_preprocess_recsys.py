@@ -21,8 +21,8 @@ import tempfile
 import pickle
 from time import time
 
-from bigdl.orca import init_orca_context, stop_orca_context, OrcaContext
-from bigdl.orca.data.file import makedirs, write_text, exists
+from bigdl.orca import init_orca_context, stop_orca_context
+from bigdl.orca.data.file import makedirs, exists
 from bigdl.dllib.utils.file_utils import put_local_file_to_remote
 from bigdl.friesian.feature import FeatureTable
 from bigdl.dllib.utils.log4Error import *
