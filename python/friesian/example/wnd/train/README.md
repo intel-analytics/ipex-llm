@@ -52,19 +52,19 @@ The files are with the name "part-00xxx.parquet" (x=000-269).
 
 * Spark local, we can use the first several partitions train data to have a trial, example command:
 ```bash
-python wnd_preprocessing_recsys.py \
+python wnd_preprocess_recsys.py \
     --executor_cores 36 \
     --executor_memory 50g \
     --train_files 0-1 \
     --input_train_folder /path/to/the/folder/of/train/parquet_files \
-    --input_test_folder /path/to/the/folder/of/train/parquet_files /
-    --output_foler /path/to/the/folder/to/save/preprocessed/parquet_files \
+    --input_test_folder /path/to/the/folder/of/train/parquet_files \
+    --output_folder /path/to/the/folder/to/save/preprocessed/parquet_files \
     --cross_sizes 600
 ```
 
 * Spark standalone, example command to run on the full dataset:
 ```bash
-python wnd_preprocessing_recsys.py \
+python wnd_preprocess_recsys.py \
     --cluster_mode standalone \
     --master spark://master-url:port \
     --executor_cores 44 \
@@ -72,22 +72,22 @@ python wnd_preprocessing_recsys.py \
     --num_executor 8 \
     --train_files 0-269 \
     --input_train_folder /path/to/the/folder/of/train/parquet_files \
-    --input_test_folder /path/to/the/folder/of/train/parquet_files /
-    --output_foler /path/to/the/folder/to/save/preprocessed/parquet_files \
+    --input_test_folder /path/to/the/folder/of/train/parquet_files \
+    --output_folder /path/to/the/folder/to/save/preprocessed/parquet_files \
     --cross_sizes 600
 ```
 
 * Spark yarn client mode, example command to run on the full dataset:
 ```bash
-python wnd_preprocessing_recsys.py \
+python wnd_preprocess_recsys.py \
     --cluster_mode yarn \
     --executor_cores 44 \
     --executor_memory 150g \
     --num_nodes 8 \
     --train_files 0-269 \
     --input_train_folder /path/to/the/folder/of/train/parquet_files \
-    --input_test_folder /path/to/the/folder/of/train/parquet_files /
-    --output_foler /path/to/the/folder/to/save/preprocessed/parquet_files \
+    --input_test_folder /path/to/the/folder/of/train/parquet_files \
+    --output_folder /path/to/the/folder/to/save/preprocessed/parquet_files \
     --cross_sizes 600
 ```
 
