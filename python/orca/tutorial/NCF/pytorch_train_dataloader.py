@@ -97,7 +97,7 @@ est.fit(data=train_loader_func, epochs=1, batch_size=10240, callbacks=callbacks)
 
 
 # Step 5: Distributed evaluation of the trained model
-result = est.evaluate(data=test_loader_func, batch_size=8000)
+result = est.evaluate(data=test_loader_func, batch_size=10240)
 print('Evaluation results:')
 for r in result:
     print(r, ":", result[r])
