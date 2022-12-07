@@ -276,7 +276,7 @@ BigDL-Nano provides ``InferenceOptimizer.get_context(model=...)`` API to enable 
 3. torch.set_num_threads() to control thread number, which will be used only if you specify thread_num when `trace/quantize/optimize`
 
 For model accelerated by ``InferenceOptimizer.trace``, usage now looks like below codes, here we just take `ipex` for example:
-```
+```python
 from bigdl.nano.pytorch import InferenceOptimizer
 ipex_model = InferenceOptimizer.trace(model,
                                       use_ipex=True,
@@ -291,12 +291,20 @@ For ``InferenceOptimizer.quantize`` and ``InferenceOptimizer.optimize``, usage i
 
 ``InferenceOptimizer.get_context(model=...)`` can be used for muiti models. If you have a model pipeline, you can also get a common context manager by passing multi models to `get_context`.
 ```python
-from bigdl.nano.pytorch import InferenceOptimizer
-ipex_model = InferenceOptimizer.trace(model,
-                                      use_ipex=True,
-                                      thread_num=4)
+from torch import nn
+class Classifier(nn.Module):
+    def __init__(self):
+        super().__init__()
+        self.linear = nn.Linear(1000, 1)
+    
+    def forward(self, x):
+        return self.linear(x)
 
-with InferenceOptimizer.get_context(ipex_model):
-    output = ipex_model(x)
+classifer = Classifier()
+
+with InferenceOptimizer.get_context(ipex_model, classifer):
+    # a pipeline consists of backbone and classifier
+    x = ipex_model(input_sample)
+    output = classifer(x) 
     assert torch.get_num_threads() == 4  # this line just to let you know Nano has provided thread control automatically : )
 ```
