@@ -27,7 +27,7 @@ RUN pip3 install --upgrade pip && \
     pip install --no-cache-dir torchserve==0.6.1 torch-model-archiver==0.6.1 torch-workflow-archiver==0.2.5 && \
     apt-get install -y openjdk-${JDK_VERSION}-jdk && \
     sed -i '/module = importlib.import_module/i\\tsys.path.append(model_dir)' /usr/local/lib/python3.7/dist-packages/ts/torch_handler/base_handler.py && \
-    sed -i 's/SOCKET_ACCEPT_TIMEOUT = 30.0/SOCKET_ACCEPT_TIMEOUT = 300.0/' /usr/local/lib/python3.7/dist-packages/ts/model_service_worker.py
+    sed -i 's/SOCKET_ACCEPT_TIMEOUT = 30.0/SOCKET_ACCEPT_TIMEOUT = 300.0/' /usr/local/lib/python3.7/dist-packages/ts/model_service_worker.py && \
     mkdir -p /ppml/tests/numpy && \
     mkdir -p /ppml/tests/pandas && \
     mkdir -p ${JAVA_HOME} && \
