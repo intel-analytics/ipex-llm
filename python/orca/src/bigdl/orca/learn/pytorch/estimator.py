@@ -14,6 +14,7 @@
 # limitations under the License.
 #
 
+import time
 import logging
 from bigdl.orca.learn.pytorch.training_operator import TrainingOperator
 
