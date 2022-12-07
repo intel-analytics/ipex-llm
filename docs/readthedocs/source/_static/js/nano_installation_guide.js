@@ -3,7 +3,7 @@ var frameworks=["pytorch", "tensorflow"];
 var versions=["pytorch_110", "pytorch_111", "pytorch_112", "pytorch_113", "tf2_270"];
 var releases=["stable", "nightly"];
 
-var inference="inferenceno";
+var inference="inferenceyes";
 var framework="pytorch";
 var version="pytorch_112";
 var release="nightly";
