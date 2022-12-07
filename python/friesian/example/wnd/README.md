@@ -18,7 +18,7 @@ After you download the files, convert them to parquet files with the name `day_x
 - The first 23 days (day_0 to day_22) are used for WND training with 4,195,197,692 records in total.
 - The first half (89,137,319 records in total) of the last day (day_23) is used for test. To prepare the test dataset, you need to split the first half of day_23 into a new file (e.g. using command `head -n 89137319 day_23 > day_23_test`) and finally convert to parquet files with the name `day_23_test.parquet` under the same folder with the train parquet files.
 
-If you want to use some sample data for test, you can download `dac_sample` from [here](https://labs.criteo.com/2014/02/download-dataset/), unzip and rename it to day_0 and convert to parquet `day_0.parquet`.
+If you want to use some sample data for test, you can download `dac_sample` from [here](https://labs.criteo.com/2014/02/download-dataset/), unzip and convert `dac_sample.txt` to parquet with name `day_0.parquet`.
 
 ## Running command
 * Spark local, we can use the first (several) day(s) or the sample data to have a trial, example command:
