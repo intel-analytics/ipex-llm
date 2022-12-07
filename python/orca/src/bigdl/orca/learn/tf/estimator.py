@@ -41,9 +41,8 @@ from bigdl.orca.tfpark.tf_dataset import (
 from bigdl.orca.tfpark.tf_optimizer import StatelessMetric
 from bigdl.orca.tfpark.utils import evaluate_metrics
 
-from typing import TYPE_CHECKING, List, Optional, Union, Tuple
+from typing import TYPE_CHECKING, List, Optional, Union, Tuple, Any, Dict
 if TYPE_CHECKING:
-    from typing import Any, Dict
     from pyspark.rdd import PipelinedRDD
     from pyspark.sql import DataFrame
     from tensorflow import Tensor, Session, Variable
