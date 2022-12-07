@@ -55,8 +55,8 @@ object VerificationCLI {
             opt[String]('c', "challenge")
               .text("challenge to attestation service, default is '' which skip bi-attestation")
               .action((x, c) => c.copy(challenge = x))
-            opt[String]('d', "ATTESTATION_DEBUG")
-              .text("ATTESTATION_DEBUG, default is false, set to true will skip verify warning")
+            opt[String]('d', "debug")
+              .text("ATTESTATION_DEBUG, default is false, set it to true will skip verify warning")
               .action((x, c) => c.copy(debug = x))
         }
         val params = cmdParser.parse(args, CmdParams()).get

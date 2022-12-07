@@ -69,8 +69,8 @@ object AttestationCLI {
             opt[String]('O', "OSType")
               .text("OSType, default is gramine, occlum can be chose")
               .action((x, c) => c.copy(OSType = x))
-            opt[String]('d', "ATTESTATION_DEBUG")
-              .text("ATTESTATION_DEBUG, default is false, set to true will skip verify warning")
+            opt[String]('d', "debug")
+              .text("ATTESTATION_DEBUG, default is false, set it to true will skip verify warning")
               .action((x, c) => c.copy(debug = x))
         }
         val params = cmdParser.parse(args, CmdParams()).get
