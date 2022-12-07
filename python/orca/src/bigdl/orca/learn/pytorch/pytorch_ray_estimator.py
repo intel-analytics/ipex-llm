@@ -14,11 +14,10 @@
 # limitations under the License.
 #
 
-import io
 import types
-import torch
 import copy
 
+from bigdl.orca import OrcaContext
 from bigdl.orca.data.ray_xshards import RayXShards
 from bigdl.orca.learn.pytorch.training_operator import TrainingOperator
 from bigdl.orca.learn.pytorch.pytorch_ray_worker import PytorchRayWorker
@@ -27,8 +26,7 @@ from bigdl.orca.learn.utils import maybe_dataframe_to_xshards, dataframe_to_xsha
     process_xshards_of_pandas_dataframe, reload_dataloader_creator
 from bigdl.orca.ray import OrcaRayContext
 from bigdl.orca.learn.pytorch.core import BaseRayEstimator
-from bigdl.orca.data.file import enable_multi_fs_save, enable_multi_fs_load
-from bigdl.orca.learn.pytorch.utils import find_free_port, process_stats, check_for_failure
+from bigdl.orca.learn.pytorch.utils import process_stats, check_for_failure
 
 import ray
 from bigdl.dllib.utils.log4Error import *
@@ -187,13 +185,14 @@ class PyTorchRayEstimator(BaseRayEstimator):
         from bigdl.orca.data import SparkXShards
         from ray.data import Dataset
 
+        shard_size = OrcaContext._shard_size if OrcaContext._shard_size else batch_size
         data, validation_data = maybe_dataframe_to_xshards(data,
                                                            validation_data=validation_data,
                                                            feature_cols=feature_cols,
                                                            label_cols=label_cols,
                                                            mode="fit",
                                                            num_workers=self.num_workers,
-                                                           shard_size=batch_size)
+                                                           shard_size=shard_size)
 
         if isinstance(data, SparkXShards):
             # Should not wrap DistributedSampler on DataLoader for SparkXShards input.
@@ -315,12 +314,13 @@ class PyTorchRayEstimator(BaseRayEstimator):
         )
         from pyspark.sql import DataFrame
         if isinstance(data, DataFrame):
+            shard_size = OrcaContext._shard_size if OrcaContext._shard_size else batch_size
             xshards, _ = dataframe_to_xshards(data,
                                               validation_data=None,
                                               feature_cols=feature_cols,
                                               label_cols=None,
                                               mode="predict",
-                                              shard_size=batch_size)
+                                              shard_size=shard_size)
             pred_shards = self._predict_spark_xshards(xshards, param)
             result = convert_predict_xshards_to_dataframe(data, pred_shards)
         elif isinstance(data, SparkXShards):
@@ -390,13 +390,14 @@ class PyTorchRayEstimator(BaseRayEstimator):
                 when creating the Estimator.
         """
         from bigdl.orca.data import SparkXShards
+        shard_size = OrcaContext._shard_size if OrcaContext._shard_size else batch_size
         data, _ = maybe_dataframe_to_xshards(data,
                                              validation_data=None,
                                              feature_cols=feature_cols,
                                              label_cols=label_cols,
                                              mode="evaluate",
                                              num_workers=self.num_workers,
-                                             shard_size=batch_size)
+                                             shard_size=shard_size)
         if isinstance(data, SparkXShards):
             if data._get_class_name() == 'pandas.core.frame.DataFrame':
                 data = process_xshards_of_pandas_dataframe(data, feature_cols, label_cols)

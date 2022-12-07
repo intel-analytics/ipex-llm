@@ -13,20 +13,19 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+
 import os
 import itertools
-import logging
 import pickle
 import shutil
 import tempfile
 
-import numpy as np
 import ray
 
 from bigdl.dllib.utils import log4Error
 from bigdl.dllib.utils.file_utils import is_local_path
+from bigdl.orca import OrcaContext
 from bigdl.orca.data.file import enable_multi_fs_save, enable_multi_fs_load
-
 from bigdl.orca.data.ray_xshards import RayXShards
 from bigdl.orca.learn.dl_cluster import RayDLCluster
 from bigdl.orca.learn.tf2.tf_runner import TFRunner
@@ -34,8 +33,7 @@ from bigdl.orca.learn.ray_estimator import Estimator as OrcaRayEstimator
 from bigdl.orca.learn.utils import maybe_dataframe_to_xshards, dataframe_to_xshards, \
     convert_predict_xshards_to_dataframe, update_predict_xshards, \
     process_xshards_of_pandas_dataframe, make_data_creator
-from bigdl.orca.data.file import put_local_file_to_remote, put_local_dir_tree_to_remote, \
-    put_local_files_with_prefix_to_remote, get_remote_file_to_local, get_remote_dir_to_local, \
+from bigdl.orca.data.file import get_remote_file_to_local, get_remote_dir_to_local, \
     is_file
 from bigdl.orca.data.utils import process_spark_xshards
 from bigdl.dllib.utils.log4Error import *
@@ -191,12 +189,13 @@ class TensorFlow2Estimator(OrcaRayEstimator):
         from bigdl.orca.data import SparkXShards
         from bigdl.orca.data.tf.data import Dataset
         from bigdl.orca.data.tf.tf2_data import TF2Dataset
+        shard_size = OrcaContext._shard_size if OrcaContext._shard_size else batch_size
         data, validation_data = maybe_dataframe_to_xshards(data, validation_data,
                                                            feature_cols, label_cols,
                                                            mode="fit",
                                                            num_workers=self.num_workers,
                                                            accept_str_col=True,
-                                                           shard_size=batch_size)
+                                                           shard_size=shard_size)
 
         if isinstance(data, SparkXShards):
             if data._get_class_name() == 'pandas.core.frame.DataFrame':
@@ -328,6 +327,7 @@ class TensorFlow2Estimator(OrcaRayEstimator):
         from bigdl.orca.data.tf.data import Dataset
         from bigdl.orca.data.tf.tf2_data import TF2Dataset
 
+        shard_size = OrcaContext._shard_size if OrcaContext._shard_size else batch_size
         data, _ = maybe_dataframe_to_xshards(data,
                                              validation_data=None,
                                              feature_cols=feature_cols,
@@ -335,7 +335,7 @@ class TensorFlow2Estimator(OrcaRayEstimator):
                                              mode="evaluate",
                                              num_workers=self.num_workers,
                                              accept_str_col=True,
-                                             shard_size=batch_size)
+                                             shard_size=shard_size)
 
         if isinstance(data, SparkXShards):
             if data._get_class_name() == 'pandas.core.frame.DataFrame':
@@ -456,13 +456,14 @@ class TensorFlow2Estimator(OrcaRayEstimator):
         from bigdl.orca.data.tf.data import Dataset
 
         if isinstance(data, DataFrame):
+            shard_size = OrcaContext._shard_size if OrcaContext._shard_size else batch_size
             xshards, _ = dataframe_to_xshards(data,
                                               validation_data=None,
                                               feature_cols=feature_cols,
                                               label_cols=None,
                                               mode="predict",
                                               accept_str_col=True,
-                                              shard_size=batch_size)
+                                              shard_size=shard_size)
             pred_shards = self._predict_spark_xshards(xshards, params)
             result = convert_predict_xshards_to_dataframe(data, pred_shards)
         elif isinstance(data, SparkXShards):

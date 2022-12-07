@@ -222,13 +222,14 @@ class PyTorchPySparkEstimator(BaseEstimator):
                 You can also provide custom metrics by passing in a custom training_operator_cls
                 when creating the Estimator.
         """
+        shard_size = OrcaContext._shard_size if OrcaContext._shard_size else batch_size
         data, validation_data = maybe_dataframe_to_xshards(data,
                                                            validation_data=validation_data,
                                                            feature_cols=feature_cols,
                                                            label_cols=label_cols,
                                                            mode="fit",
                                                            num_workers=self.num_workers,
-                                                           shard_size=batch_size)
+                                                           shard_size=shard_size)
 
         sc = OrcaContext.get_spark_context()
         _ = self.create_tcpstore_server()
@@ -398,12 +399,13 @@ class PyTorchPySparkEstimator(BaseEstimator):
         )
 
         if isinstance(data, DataFrame):
+            shard_size = OrcaContext._shard_size if OrcaContext._shard_size else batch_size
             xshards, _ = dataframe_to_xshards(data,
                                               validation_data=None,
                                               feature_cols=feature_cols,
                                               label_cols=None,
                                               mode="predict",
-                                              shard_size=batch_size)
+                                              shard_size=shard_size)
 
             pred_shards = self._predict_spark_xshards(xshards, init_params, params)
             result = convert_predict_xshards_to_dataframe(data, pred_shards)
@@ -476,13 +478,14 @@ class PyTorchPySparkEstimator(BaseEstimator):
             info=info)
 
         from bigdl.orca.data import SparkXShards
+        shard_size = OrcaContext._shard_size if OrcaContext._shard_size else batch_size
         data, _ = maybe_dataframe_to_xshards(data,
                                              validation_data=None,
                                              feature_cols=feature_cols,
                                              label_cols=label_cols,
                                              mode="evaluate",
                                              num_workers=self.num_workers,
-                                             shard_size=batch_size)
+                                             shard_size=shard_size)
         if isinstance(data, SparkXShards):
             params["wrap_dataloader"] = False
             if data._get_class_name() == 'pandas.core.frame.DataFrame':

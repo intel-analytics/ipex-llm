@@ -140,12 +140,13 @@ class SparkTFEstimator():
                 data = data.repartition(self.num_workers)
             if validation_data and validation_data.rdd.getNumPartitions() != self.num_workers:
                 validation_data = validation_data.repartition(self.num_workers)
+        shard_size = OrcaContext._shard_size if OrcaContext._shard_size else batch_size
         data, validation_data = maybe_dataframe_to_xshards(data, validation_data,
                                                            feature_cols, label_cols,
                                                            mode="fit",
                                                            num_workers=self.num_workers,
                                                            accept_str_col=True,
-                                                           shard_size=batch_size)
+                                                           shard_size=shard_size)
 
         # for continuous training
         if self.model_weights:
@@ -262,13 +263,14 @@ class SparkTFEstimator():
         if isinstance(data, DataFrame) or isinstance(data, SparkXShards):
             if data.rdd.getNumPartitions() != self.num_workers:
                 data = data.repartition(self.num_workers)
+        shard_size = OrcaContext._shard_size if OrcaContext._shard_size else batch_size
         data, _ = maybe_dataframe_to_xshards(data, validation_data=None,
                                              feature_cols=feature_cols,
                                              label_cols=label_cols,
                                              mode="evaluate",
                                              num_workers=self.num_workers,
                                              accept_str_col=True,
-                                             shard_size=batch_size)
+                                             shard_size=shard_size)
 
         if self.model_weights:
             weights = sc.broadcast(self.model_weights)
@@ -379,13 +381,14 @@ class SparkTFEstimator():
             return SparkRunner(**init_param).predict(**param)
 
         if isinstance(data, DataFrame):  # Computation would be triggered by the user
+            shard_size = OrcaContext._shard_size if OrcaContext._shard_size else batch_size
             xshards, _ = dataframe_to_xshards(data,
                                               validation_data=None,
                                               feature_cols=feature_cols,
                                               label_cols=None,
                                               mode="predict",
                                               accept_str_col=True,
-                                              shard_size=batch_size)
+                                              shard_size=shard_size)
 
             pred_shards = SparkXShards.lazy(xshards.rdd.mapPartitions(
                 lambda iter: transform_func(iter, init_params, params)))
