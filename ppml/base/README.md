@@ -64,3 +64,30 @@ The image only contains these important components:
 3. Three patches applied to the Python source code and its packages.
 4. Package sgxsdk and dcap, required by remote attestation.
 5. Script for register MREnclave and verify remote EHSM (The jars required are not fully provided).
+
+
+## How to use the encryption/decryption function provided by Gramine?
+
+This image provides two folders which can be used to encrypt/decrypt data, which are:
+
+1. /ppml/encrypted-fs
+2. /ppml/encrypted-fsd
+
+### encrypted-fs
+
+The `/ppml/encrypted-fs` folder uses **mr_signer** for encryption/decryption.  The **mr_signer** is co-related to the machine.  Therefore, the content encrypted on one node cannot be decrypted by another node.
+
+To do the encryption, just simply copy files into the `/ppml/encrypted-fs` directory within the Gramine instance.
+
+The decryption is done automatically when you perform the read operation in Gramine instance.
+
+
+### encrypted-fsd
+
+The `/ppml/encrypted-fsd` folder provides the functionality to encrypt on one node and decrypt on any nodes with the same key file.
+
+The architecture for `/ppml/encrypted-fsd` can be found here:
+
+![encrypted-fsd architecture](gramine-encrypted-fs-architecture.png "Architecture")
+
+To see how to enable the usage of `/ppml/encrypted-fsd`, you can refer to file `../trusted-deep-learning/entrypoint.sh` and file `./encrypted-fsd.sh`.
