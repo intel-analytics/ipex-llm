@@ -67,6 +67,7 @@ est = Estimator.from_torch(model=model_creator,
                            loss=loss,
                            metrics=[Accuracy(), Precision(), Recall()],
                            backend=backend,
+                           use_tqdm=True,
                            config={'dataset_dir': dataset_dir,
                                    'user_num': user_num,
                                    'item_num': item_num,
@@ -78,10 +79,10 @@ est = Estimator.from_torch(model=model_creator,
                                    'sparse_feats_input_dims': sparse_feats_input_dims,
                                    'sparse_feats_embed_dims': 8,
                                    'num_dense_feats': num_dense_feats})
-est.fit(data=train_data, epochs=10,
+est.fit(data=train_data, epochs=3,
         feature_cols=feature_cols,
         label_cols=label_cols,
-        batch_size=256,
+        batch_size=10240,
         callbacks=callbacks)
 
 
@@ -89,7 +90,7 @@ est.fit(data=train_data, epochs=10,
 result = est.evaluate(data=test_data,
                       feature_cols=feature_cols,
                       label_cols=label_cols,
-                      batch_size=256)
+                      batch_size=8000)
 print('Evaluation results:')
 for r in result:
     print(r, ":", result[r])
