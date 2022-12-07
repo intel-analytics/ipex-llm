@@ -76,9 +76,7 @@ def setup_package():
     tensorflow_requires = ["intel-tensorflow==2.7.0; platform_machine=='x86_64'",
                            "keras==2.7.0; platform_machine=='x86_64'",
                            "tensorflow-estimator==2.7.0; platform_machine=='x86_64'",
-                           "tf2onnx==1.12.1; platform_machine=='x86_64'",
-                           "tensorflow-macos==2.7.0; platform_machine=='arm64' and sys_platform=='darwin'",
-                           "tensorflow-metal==0.3.0; platform_machine=='arm64' and sys_platform=='darwin'"]
+                           "tf2onnx==1.12.1; platform_machine=='x86_64'"]
 
     # ipex is only avaliable for linux now
     pytorch_113_requires = ["torch==1.13.0",
