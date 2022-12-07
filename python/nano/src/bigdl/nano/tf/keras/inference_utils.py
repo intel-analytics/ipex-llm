@@ -17,7 +17,6 @@ from typing import Optional, List, Union
 import numpy as np
 import tensorflow as tf
 from tensorflow.keras.metrics import Metric
-from bigdl.nano.tf.keras import InferenceOptimizer
 from bigdl.nano.utils import deprecated
 
 
@@ -117,6 +116,8 @@ class InferenceUtils:
                         accelerator='openvino', otherwise will be ignored. Default: ``True``.
         :return:            A TensorflowBaseModel for INC. If there is no model found, return None.
         """
+        from bigdl.nano.tf.keras import InferenceOptimizer
+
         return InferenceOptimizer.quantize(
             model=self,
             x=x,
@@ -169,6 +170,8 @@ class InferenceUtils:
                         accelerator='openvino', otherwise will be ignored. Default: ``True``.
         :return: Model with different acceleration(OpenVINO/ONNX Runtime).
         """
+        from bigdl.nano.tf.keras import InferenceOptimizer
+
         return InferenceOptimizer.trace(
             model=self,
             accelerator=accelerator,
