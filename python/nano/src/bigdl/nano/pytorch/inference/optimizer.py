@@ -872,19 +872,21 @@ class InferenceOptimizer(BaseInferenceOptimizer):
         return load_model(path, model, inplace=inplace)
 
     @staticmethod
-    def to_multi_instance(model: nn.Module, num_processes: int,
+    def to_multi_instance(model: nn.Module, num_processes: int = 1,
                           cores_per_process: int = None,
                           cpu_for_each_process: List[List] = None) -> _MultiInstanceModel:
         """
         Transform a model to multi-instance inference model.
         :param model: The model to transform.
-        :param num_processes: The number of processes to use.
+        :param num_processes: The number of processes to use, default to 1.
         :param cores_per_process: Number of CPU cores used by each process,
             default to `None`, means decided automatically.
         :param cpu_for_each_process: Specify the CPU cores used by each process,
             default to `None`, if set, it will override `num_processes` and `cores_per_process`.
         :return: Model with multi-instance inference acceleration.
         """
+        invalidInputError(isinstance(num_processes, int) and num_processes > 0,
+                          "num_processes must be a positive integer")
         p_num = num_processes if cpu_for_each_process is None else len(cpu_for_each_process)
         send_queue = mp.Queue()
         recv_queue = mp.Queue()
