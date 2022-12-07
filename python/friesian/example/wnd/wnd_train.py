@@ -169,11 +169,11 @@ if __name__ == "__main__":
                         help='The cluster mode, such as local, yarn or standalone.')
     parser.add_argument('--master', type=str, default=None,
                         help='The master url, only used when cluster mode is standalone.')
-    parser.add_argument('--executor_cores', type=int, default=44,
+    parser.add_argument('--executor_cores', type=int, default=48,
                         help='The executor core number.')
     parser.add_argument('--executor_memory', type=str, default="30g",
                         help='The executor memory.')
-    parser.add_argument('--num_executor', type=int, default=8,
+    parser.add_argument('--num_executors', type=int, default=8,
                         help='The number of executor.')
     parser.add_argument('--driver_cores', type=int, default=4,
                         help='The driver core number.')
@@ -184,7 +184,6 @@ if __name__ == "__main__":
     parser.add_argument("--batch_size", "-b", dest="batch_size", default=1024, type=int)
     parser.add_argument("--epoch", "-e", dest="epochs", default=2, type=int)
     parser.add_argument("--learning_rate", "-l", dest="learning_rate", default=1e-4, type=float)
-    parser.add_argument('--early_stopping', type=int, default=3, dest="early_stopping")
     parser.add_argument('--hidden_units', dest="hidden_units", type=str,
                         help='hidden units for deep mlp', default="1024, 1024")
 
@@ -196,13 +195,13 @@ if __name__ == "__main__":
                           init_ray_on_spark=True)
     elif args.cluster_mode == "standalone":
         init_orca_context("standalone", master=args.master,
-                          cores=args.executor_cores, num_nodes=args.num_executor,
+                          cores=args.executor_cores, num_nodes=args.num_executors,
                           memory=args.executor_memory,
                           driver_cores=args.driver_cores, driver_memory=args.driver_memory,
                           init_ray_on_spark=True)
     elif args.cluster_mode == "yarn":
         init_orca_context("yarn-client", cores=args.executor_cores,
-                          num_nodes=args.num_executor, memory=args.executor_memory,
+                          num_nodes=args.num_executors, memory=args.executor_memory,
                           driver_cores=args.driver_cores, driver_memory=args.driver_memory,
                           init_ray_on_spark=True)
     elif args.cluster_mode == "spark-submit":
@@ -240,21 +239,10 @@ if __name__ == "__main__":
     if not exists(args.model_dir):
         makedirs(args.model_dir)
 
-    callbacks = []
-
-    # early stopping
-    earlystopping = args.early_stopping
-    if earlystopping:
-        from tensorflow.keras.callbacks import EarlyStopping
-
-        callbacks.append(EarlyStopping(monitor='val_auc', mode='max',
-                                       verbose=1, patience=earlystopping))
-
     start = time()
     est.fit(data=train_tbl.df,
             epochs=args.epochs,
             batch_size=args.batch_size,
-            callbacks=callbacks,
             steps_per_epoch=steps,
             validation_data=test_tbl.df,
             validation_steps=val_steps,
