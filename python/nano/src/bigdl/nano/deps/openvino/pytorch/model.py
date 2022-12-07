@@ -105,7 +105,8 @@ class PytorchOpenVINOModel(AcceleratedLightningModule):
         xml_path = Path(path) / status['xml_path']
         thread_num = None
         origin_config = status['config']
-        origin_config.update(config)
+        if config is not None:
+            origin_config.update(config)
         if "CPU_THREADS_NUM" in origin_config:
             thread_num = int(origin_config["CPU_THREADS_NUM"])
         return PytorchOpenVINOModel(xml_path, config=origin_config, thread_num=thread_num)
