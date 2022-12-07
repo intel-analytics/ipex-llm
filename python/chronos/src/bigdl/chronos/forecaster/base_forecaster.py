@@ -1492,8 +1492,7 @@ class BasePytorchForecaster(Forecaster):
                                                           input_sample=dummy_input,
                                                           accelerator="onnxruntime",
                                                           onnxruntime_session_options=sess_options)
-        with InferenceOptimizer.get_context(self.accelerated_model):
-            self.accelerate_method = "onnxruntime_fp32"
+        self.accelerate_method = "onnxruntime_fp32"
 
     def build_openvino(self, thread_num=1):
         '''
@@ -1531,8 +1530,7 @@ class BasePytorchForecaster(Forecaster):
                                                           input_sample=dummy_input,
                                                           accelerator="openvino",
                                                           thread_num=thread_num)
-        with InferenceOptimizer.get_context(self.accelerated_model):
-            self.accelerate_method = "openvino_fp32"
+        self.accelerate_method = "openvino_fp32"
 
     def build_jit(self, thread_num=1, use_ipex=False):
         '''
@@ -1576,8 +1574,7 @@ class BasePytorchForecaster(Forecaster):
                                                           use_ipex=use_ipex,
                                                           channels_last=False,
                                                           thread_num=thread_num)
-        with InferenceOptimizer.get_context(self.accelerated_model):
-            self.accelerate_method = "jit_fp32"
+        self.accelerate_method = "jit_fp32"
 
     def export_onnx_file(self, dirname="fp32_onnx", quantized_dirname=None):
         """
