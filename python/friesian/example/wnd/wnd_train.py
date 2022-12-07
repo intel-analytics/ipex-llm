@@ -213,9 +213,9 @@ if __name__ == "__main__":
                           " 'spark-submit', but got " + args.cluster_mode)
 
     train_tbl, test_tbl, column_info = get_data(args.data_dir)
-    feature_cols = column_info["wide_base_cols"] + column_info["wide_cross_cols"] + \
-                   column_info["indicator_cols"] + column_info["embed_cols"] + \
-                   column_info["continuous_cols"]
+    feature_cols = \
+        column_info["wide_base_cols"] + column_info["wide_cross_cols"] + \
+        column_info["indicator_cols"] + column_info["embed_cols"] + column_info["continuous_cols"]
     label_cols = [column_info["label"]]
 
     config = {
