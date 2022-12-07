@@ -40,7 +40,8 @@ object AttestationCLI {
                              challenge: String = "",
                              policyID: String = "",
                              OSType: String = "gramine",
-                             userReport: String = "ppml")
+                             userReport: String = "ppml",
+                             debug: String = "false")
 
         val cmdParser: OptionParser[CmdParams] = new OptionParser[CmdParams](
           "PPML Attestation Quote Generation Cmd tool") {
@@ -68,6 +69,9 @@ object AttestationCLI {
             opt[String]('O', "OSType")
               .text("OSType, default is gramine, occlum can be chose")
               .action((x, c) => c.copy(OSType = x))
+            opt[String]('d', "ATTESTATION_DEBUG")
+              .text("ATTESTATION_DEBUG, default is false, set to true will skip verify warning")
+              .action((x, c) => c.copy(debug = x))
         }
         val params = cmdParser.parse(args, CmdParams()).get
 
@@ -101,9 +105,10 @@ object AttestationCLI {
             }
             val quoteVerifier = new SGXDCAPQuoteVerifierImpl()
             val verifyQuoteResult = quoteVerifier.verifyQuote(asQuote)
+            val debug=params.debug
             if (verifyQuoteResult == 0) {
               System.out.println("Quote Verification Success!")
-            } else if (verifyQuoteResult == 1) {
+            } else if (debug == true && verifyQuoteResult == 1) {
               System.out.println("Quote verification passed but BIOS is not up to date." +
                 " result=" + verifyQuoteResult)
             }

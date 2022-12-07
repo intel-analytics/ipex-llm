@@ -36,7 +36,8 @@ object VerificationCLI {
                              apiKey: String = "test",
                              attestationType: String = ATTESTATION_CONVENTION.MODE_EHSM_KMS,
                              attestationURL: String = "127.0.0.1:9000",
-                             challenge: String = "test")
+                             challenge: String = "test",
+                             debug: String = "false")
 
         val cmdParser = new OptionParser[CmdParams]("PPML Quote Verification Cmd tool") {
             opt[String]('i', "appID")
@@ -54,6 +55,9 @@ object VerificationCLI {
             opt[String]('c', "challenge")
               .text("challenge to attestation service, default is '' which skip bi-attestation")
               .action((x, c) => c.copy(challenge = x))
+            opt[String]('d', "ATTESTATION_DEBUG")
+              .text("ATTESTATION_DEBUG, default is false, set to true will skip verify warning")
+              .action((x, c) => c.copy(debug = x))
         }
         val params = cmdParser.parse(args, CmdParams()).get
 
@@ -76,9 +80,10 @@ object VerificationCLI {
             }
             val quoteVerifier = new SGXDCAPQuoteVerifierImpl()
             val verifyQuoteResult = quoteVerifier.verifyQuote(asQuote)
+            val debug = params.debug
             if (verifyQuoteResult == 0) {
                 System.out.println("Quote Verification Success!")
-            } else if (verifyQuoteResult == 1) {
+            } else if (debug == true && verifyQuoteResult == 1) {
                 System.out.println("Quote verification passed but BIOS is not up to date." +
                   " result=" + verifyQuoteResult)
             }
