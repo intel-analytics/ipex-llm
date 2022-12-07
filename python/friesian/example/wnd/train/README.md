@@ -1,6 +1,6 @@
 # Train the Twitter Recsys Challenge 2021 dataset for WideAndDeep Model
 This example demonstrates how to use BigDL Friesian to train [WideAndDeep](https://arxiv.org/abs/1606.07792) model with the
-[Twitter Recsys Challenge 2021](https://recsys-twitter.com/data/show-downloads#) dataset.
+[Twitter Recsys Challenge 2021](http://www.recsyschallenge.com/2021/) dataset.
 
 ## Prepare the environment
 We recommend you to use [Anaconda](https://www.anaconda.com/distribution/#linux) to prepare the environments, especially if you want to run on a yarn cluster (yarn-client mode only).
@@ -12,7 +12,7 @@ pip install --pre --upgrade bigdl-friesian[train]
 ```
 
 ## Prepare the data
-You can download the full Twitter dataset from [here](https://recsys-twitter.com/data/show-downloads#), which includes around 1 billion records, more than 40 million records each day over 28 days.
+You can download the full Twitter dataset from [here](http://www.recsyschallenge.com/2021/), which includes around 1 billion records, more than 40 million records each day over 28 days.
  Week 1 - 3 will be used for training and week 4 for evaluation and testing. Each record contains the tweet along with engagement features, user features, and tweet features.
 
 After you download and decompress the files, there is a train parquet directory and validation csv file.
