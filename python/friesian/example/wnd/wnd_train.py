@@ -179,13 +179,18 @@ if __name__ == "__main__":
                         help='The driver core number.')
     parser.add_argument('--driver_memory', type=str, default="36g",
                         help='The driver memory.')
-    parser.add_argument("--data_dir", type=str, required=True, dest="data_dir")
-    parser.add_argument("--model_dir", dest="model_dir", type=str, default="./wnd_model")
-    parser.add_argument("--batch_size", "-b", dest="batch_size", default=1024, type=int)
-    parser.add_argument("--epoch", "-e", dest="epochs", default=2, type=int)
-    parser.add_argument("--learning_rate", "-l", dest="learning_rate", default=1e-4, type=float)
-    parser.add_argument('--hidden_units', dest="hidden_units", type=str,
-                        help='hidden units for deep mlp', default="1024, 1024")
+    parser.add_argument("--data_dir", type=str, required=True, dest="data_dir",
+                        help="The path to the folder of preprocessed parquet files and meta data")
+    parser.add_argument("--model_dir", type=str, default="./wnd_model",
+                        help="The path to saved the trained model")
+    parser.add_argument("--batch_size", "-b", type=int, default=1024,
+                        help="The batch size to train the model.")
+    parser.add_argument("--epochs", "-e", type=int, default=2,
+                        help="The number of epochs to train the model.")
+    parser.add_argument("--lr", type=float, default=1e-4,
+                        help="The learning rate to train the model.")
+    parser.add_argument('--hidden_units', type=str, default="1024, 1024",
+                        help='The hidden units for the MLP part of the WideAndDeep model')
 
     args = parser.parse_args()
     args.hidden_units = [int(x) for x in args.hidden_units.split(',')]

@@ -118,7 +118,7 @@ __Options:__
 * `driver_cores`: The number of cores to use for the driver. Default to be 4.
 * `driver_memory`: The amount of memory to allocate for the driver. Default to be 36g.
 * `data_dir`: The path to the folder of preprocessed parquet files and meta data, either a local path or an HDFS path.
-* `model_dir`: The path to saved the trained model, either a local path or an HDFS path.
+* `model_dir`: The path to saved the trained model, either a local path or an HDFS path. Default to be "./wnd_model".
 * `batch_size`: The batch size to train the model. Default to be 1024.
 * `epoch`: The number of epochs to train the model. Default to be 2.
 * `learning_rate`: The learning rate to train the model. Default to be 0.0001.
