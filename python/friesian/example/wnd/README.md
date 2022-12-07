@@ -63,6 +63,8 @@ python wnd_preprocessing.py \
 ```
 
 __Options:__
+* `input_folder`: The path to the folder of parquet files, either a local path or an HDFS path.
+* `output_folder`: The path to save the preprocessed data to parquet files and meta data. HDFS path is recommended for yarn cluster_mode.
 * `cluster_mode`: The cluster mode to run the data preprocessing, one of local, yarn, standalone or spark-submit. Default to be local.
 * `master`: The master URL, only used when cluster_mode is standalone.
 * `executor_cores`: The number of cores to use on each executor. Default to be 48.
@@ -72,8 +74,6 @@ __Options:__
 * `driver_memory`: The amount of memory to allocate for the driver. Default to be 36g.
 * `days`: The day range for data preprocessing, such as 0-23 for the full Criteo dataset, 0-0 for the first day, 0-1 for the first two days, etc. Default to be 0-23.
 * `frequency_limit`: Categories with frequency below this value will be omitted from encoding. We recommend using 15 when you preprocess the full 1TB dataset. Default to be 15.
-* `input_folder`: The path to the folder of parquet files, either a local path or an HDFS path.
-* `output_folder`: The path to save the preprocessed data to parquet files and meta data. HDFS path is recommended for yarn cluster_mode.
 * `cross_sizes`: The bucket sizes for cross columns (`c14-c15` and `c16-c17`) separated by comma. Default to be 10000,10000. Please pay attention that there must NOT be a blank space between the two numbers.
 
 ## Model training
@@ -110,6 +110,7 @@ python wnd_train.py \
 ```
 
 __Options:__
+* `data_dir`: The path to the folder of preprocessed parquet files and meta data, either a local path or an HDFS path.
 * `cluster_mode`: The cluster mode to run the data preprocessing, one of local, yarn, standalone or spark-submit. Default to be local.
 * `master`: The master URL, only used when cluster_mode is standalone.
 * `executor_cores`: The number of cores to use on each executor. Default to be 48.
@@ -117,7 +118,6 @@ __Options:__
 * `num_executors`: The number of executors to use in the cluster. Default to be 8.
 * `driver_cores`: The number of cores to use for the driver. Default to be 4.
 * `driver_memory`: The amount of memory to allocate for the driver. Default to be 36g.
-* `data_dir`: The path to the folder of preprocessed parquet files and meta data, either a local path or an HDFS path.
 * `model_dir`: The path to saved the trained model, either a local path or an HDFS path. Default to be "./wnd_model".
 * `batch_size`: The batch size to train the model. Default to be 1024.
 * `epoch`: The number of epochs to train the model. Default to be 2.
