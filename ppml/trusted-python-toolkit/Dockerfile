@@ -39,8 +39,8 @@ RUN pip3 install --upgrade pip && \
     chmod +x /ppml/work/start-scripts/start-python-numpy-sgx.sh && \
     chmod +x /ppml/work/start-scripts/start-python-pandas-sgx.sh && \
     chmod +x /ppml/work/start-scripts/start-torchserve-sgx.sh && \
-    chmod +x /ppml/work/start-scripts/start-python-frontend-sgx.sh && \
-    chmod +x /ppml/work/start-scripts/start-python-backend-sgx.sh && \
+    chmod +x /ppml/work/start-scripts/start-frontend-sgx.sh && \
+    chmod +x /ppml/work/start-scripts/start-backend-sgx.sh && \
     cp /sbin/tini /usr/bin/tini && \
     gramine-argv-serializer bash -c 'export TF_MKL_ALLOC_MAX_BYTES=10737418240 && export _SPARK_AUTH_SECRET=$_SPARK_AUTH_SECRET && $sgx_command' > /ppml/secured_argvs
 
