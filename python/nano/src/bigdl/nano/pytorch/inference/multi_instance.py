@@ -41,14 +41,14 @@ class _MultiInstanceModel(torch.nn.Module):
         for idx_and_batch in enumerate(input_data):
             self.send_queue.put(idx_and_batch)
 
-        outputs = []
+        outputs = [None] * length
         for _i in range(length):
-            idx_and_output = self.recv_queue.get()
-            invalidOperationError(not isinstance(idx_and_output, Exception), f"{idx_and_output}")
-            outputs.append(idx_and_output)
+            idx, output = self.recv_queue.get()
+            invalidOperationError(not isinstance(output, Exception),
+                                  f"forward error: {output}\ninput tensor: {input_data[idx]}")
+            outputs[idx] = output
 
-        outputs = sorted(outputs, key=lambda x: x[0])
-        return [x[1] for x in outputs]
+        return outputs
 
 
 def _multi_instance_helper(model, recv_queue, send_queue):
@@ -62,4 +62,4 @@ def _multi_instance_helper(model, recv_queue, send_queue):
                     output = model(args)
                 send_queue.put((idx, output))
             except Exception as e:
-                send_queue.put(e)
+                send_queue.put((idx, e))
