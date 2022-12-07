@@ -339,7 +339,7 @@ class SparkTFEstimator():
                 lambda iter: transform_func(iter, init_params, params)).collect()
         return res[0]
 
-    def predict(self, data, batch_size=None, verbose=1,
+    def predict(self, data, batch_size=32, verbose=1,
                 steps=None, callbacks=None, data_config=None,
                 feature_cols=None):
         """

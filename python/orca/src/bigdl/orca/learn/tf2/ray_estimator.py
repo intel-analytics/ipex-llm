@@ -429,7 +429,7 @@ class TensorFlow2Estimator(OrcaRayEstimator):
         spark_xshards = pred_shards.to_spark_xshards()
         return spark_xshards
 
-    def predict(self, data, batch_size=None, verbose=1,
+    def predict(self, data, batch_size=32, verbose=1,
                 steps=None, callbacks=None, data_config=None,
                 feature_cols=None, min_partition_num=None):
         """
