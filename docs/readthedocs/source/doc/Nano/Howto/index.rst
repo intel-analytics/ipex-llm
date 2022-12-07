@@ -53,6 +53,7 @@ PyTorch
 * `How to accelerate a PyTorch inference pipeline through multiple instances <Inference/PyTorch/multi_instance_pytorch_inference.html>`_
 * `How to quantize your PyTorch model for inference using Intel Neural Compressor <Inference/PyTorch/quantize_pytorch_inference_inc.html>`_
 * `How to quantize your PyTorch model for inference using OpenVINO Post-training Optimization Tools <Inference/PyTorch/quantize_pytorch_inference_pot.html>`_
+* `How to use context manager through get_context <Inference/PyTorch/pytorch_context_manager.html>`_
 * `How to save and load optimized IPEX model <Inference/PyTorch/pytorch_save_and_load_ipex.html>`_
 * `How to save and load optimized JIT model <Inference/PyTorch/pytorch_save_and_load_jit.html>`_
 * `How to save and load optimized ONNXRuntime model <Inference/PyTorch/pytorch_save_and_load_onnx.html>`_
