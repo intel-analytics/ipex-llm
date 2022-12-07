@@ -183,8 +183,8 @@ class OpenVINOModel:
             config = {}
         if self.additional_config is not None:
             config.update(self.additional_config)
-        self._compiled_model = self._ie.compile_model(model=self.ie_network, 
-                                                      device_name=self._device, 
+        self._compiled_model = self._ie.compile_model(model=self.ie_network,
+                                                      device_name=self._device,
                                                       config=config)
         self.final_config = config
         self._infer_request = self._compiled_model.create_infer_request()
