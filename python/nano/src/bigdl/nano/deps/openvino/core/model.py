@@ -32,6 +32,7 @@ class OpenVINOModel:
         self.additional_config = config
         self.ie_network = ie_network
         self._infer_request = None
+        self._compiled_model = None
 
     def on_forward_start(self, inputs):
         self._model_exists_or_err()
@@ -172,16 +173,19 @@ class OpenVINOModel:
     def _model_exists_or_err(self):
         invalidInputError(self.ie_network is not None, "self.ie_network shouldn't be None.")
         if self._infer_request is None:
-            # Compile model & create infer request
+            self._compile_model()
+            
+    def _compile_model(self):
+        # Compile model & create infer request
             if self.thread_num is not None:
                 config = {"CPU_THREADS_NUM": str(self.thread_num)}
             else:
                 config = {}
             if self.additional_config is not None:
                 config.update(self.additional_config)
-            self._compiled_model = self._ie.compile_model(model=self.ie_network,
-                                                        device_name=self._device,
-                                                        config=config)
+            self._compiled_model = self._ie.compile_model(model=self.ie_network, 
+                                                          device_name=self._device, 
+                                                          config=config)
             self.final_config = config
             self._infer_request = self._compiled_model.create_infer_request()
 
@@ -210,6 +214,8 @@ class OpenVINOModel:
         def call_back(requests, idx):
             results[idx] = self.on_forward_end(requests.results)
 
+        if self._compiled_model is None:
+            self._compile_model()
         infer_queue = AsyncInferQueue(self._compiled_model, jobs=num_requests)
         infer_queue.set_callback(call_back)
 
