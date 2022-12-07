@@ -76,12 +76,17 @@ object VerificationCLI {
             }
             val quoteVerifier = new SGXDCAPQuoteVerifierImpl()
             val verifyQuoteResult = quoteVerifier.verifyQuote(asQuote)
+            val debug = System.getenv("ATTESTATION_DEBUG")
             if (verifyQuoteResult == 0) {
-              System.out.println("Quote Verification Success!")
-              System.exit(0)
-            } else {
-              System.out.println("Quote Verification Fail! Application killed")
-              System.exit(1)
+                System.out.println("Quote Verification Success!")
+            } else if (debug == "true" && verifyQuoteResult == 1) {
+                System.out.println("Quote verification passed but BIOS is not up to date." +
+                  " result=" + verifyQuoteResult)
+            }
+            else {
+                System.out.println("Quote Verification Fail! Application killed." +
+                  " result=" + verifyQuoteResult)
+                System.exit(1)
             }
         } else {
             System.out.println("Dummy attestation service cannot be verified!")
