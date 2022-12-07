@@ -73,10 +73,12 @@ def download_libs(url: str):
 
 def setup_package():
 
-    tensorflow_requires = ["intel-tensorflow==2.7.0",
-                           "keras==2.7.0",
-                           "tensorflow-estimator==2.7.0",
-                           "tf2onnx==1.12.1"]
+    tensorflow_requires = ["intel-tensorflow==2.7.0; platform_machine=='x86_64'",
+                           "keras==2.7.0; platform_machine=='x86_64'",
+                           "tensorflow-estimator==2.7.0; platform_machine=='x86_64'",
+                           "tf2onnx==1.12.1; platform_machine=='x86_64'",
+                           "tensorflow-macos==2.7.0; platform_machine=='arm64' and sys_platform=='darwin'",
+                           "tensorflow-metal==0.3.0; platform_machine=='arm64' and sys_platform=='darwin'"]
 
     # ipex is only avaliable for linux now
     pytorch_113_requires = ["torch==1.13.0",
@@ -85,7 +87,7 @@ def setup_package():
 
     pytorch_112_requires = ["torch==1.12.1",
                             "torchvision==0.13.1",
-                            "intel_extension_for_pytorch==1.12.100;platform_system!='Windows'"]
+                            "intel_extension_for_pytorch==1.12.300;platform_system!='Windows'"]
 
     pytorch_111_requires = ["torch==1.11.0",
                             "torchvision==0.12.0",
@@ -120,7 +122,10 @@ def setup_package():
                           "neural-compressor==1.13.1",
                           "onnxsim==0.4.8"]
 
-    install_requires = ["intel-openmp", "cloudpickle", "protobuf==3.19.5", "py-cpuinfo"]
+    install_requires = ["intel-openmp; platform_machine=='x86_64'",
+                        "cloudpickle",
+                        "protobuf==3.19.5",
+                        "py-cpuinfo"]
 
     package_data = [
         "libs/libjemalloc.so",

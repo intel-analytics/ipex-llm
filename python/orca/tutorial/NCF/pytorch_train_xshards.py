@@ -32,7 +32,7 @@ sc = init_orca_context()
 
 # Step 2: Read and process data using Orca XShards
 dataset_dir = "./ml-1m"
-train_data, test_data, user_num, item_num, sparse_feats_input_dims, \
+train_data, test_data, user_num, item_num, sparse_feats_input_dims, num_dense_feats, \
     feature_cols, label_cols = prepare_data(dataset_dir, num_ng=4)
 
 
@@ -75,7 +75,7 @@ est = Estimator.from_torch(model=model_creator,
                                    'model': "NeuMF-end",
                                    'sparse_feats_input_dims': sparse_feats_input_dims,
                                    'sparse_feats_embed_dims': 8,
-                                   'num_dense_feats': 1})
+                                   'num_dense_feats': num_dense_feats})
 est.fit(data=train_data, epochs=10,
         feature_cols=feature_cols,
         label_cols=label_cols,

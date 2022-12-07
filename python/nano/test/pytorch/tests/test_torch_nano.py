@@ -247,13 +247,13 @@ class TestLite(TestCase):
         MyNano(num_processes=2, cpu_for_each_process=[[0,1], [2,3]]).train()
 
     def test_torch_nano_correctness(self):
-        MyNanoCorrectness().train(0.25)
+        MyNanoCorrectness(auto_lr=False).train(0.25)
 
     def test_torch_nano_spawn_correctness(self):
-        MyNanoCorrectness(num_processes=2, distributed_backend="spawn").train(0.5)
+        MyNanoCorrectness(num_processes=2, distributed_backend="spawn", auto_lr=False).train(0.5)
 
     def test_torch_nano_subprocess_correctness(self):
-        MyNanoCorrectness(num_processes=2, distributed_backend="subprocess").train(0.5)
+        MyNanoCorrectness(num_processes=2, distributed_backend="subprocess", auto_lr=False).train(0.5)
 
     def test_torch_nano_attribute_access(self):
         MyNanoAccess().train()

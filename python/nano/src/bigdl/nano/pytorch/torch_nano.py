@@ -147,7 +147,7 @@ class TorchNano(LightningLite):
                  precision: Union[str, int] = 32,
                  cpu_for_each_process: Optional[List[List[int]]] = None,
                  channels_last: bool = False,
-                 auto_lr: bool = False,
+                 auto_lr: bool = True,
                  *args, **kwargs) -> None:
         """
         Create a TorchNano with nano acceleration.
@@ -381,7 +381,7 @@ def nano(num_processes: Optional[int] = None,
          precision: Union[str, int] = 32,
          cpu_for_each_process: Optional[List[List[int]]] = None,
          channels_last: bool = False,
-         auto_lr: bool = False,
+         auto_lr: bool = True,
          *args, **kwargs):
     """Run TorchNano.train through a convenient decorator function."""
     if "strategy" in kwargs:

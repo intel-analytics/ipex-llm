@@ -73,7 +73,8 @@ class KerasOpenVINOModel(AcceleratedKerasModel):
         return status
 
     def pot(self,
-            dataset,
+            x,
+            y,
             metric=None,
             higher_better=True,
             drop_type="relative",
@@ -85,7 +86,7 @@ class KerasOpenVINOModel(AcceleratedKerasModel):
             thread_num=None):
         if metric:
             metric = KerasOpenVINOMetric(metric=metric, higher_better=higher_better)
-        dataloader = KerasOpenVINODataLoader(dataset, collate_fn=self.tensors_to_numpy)
+        dataloader = KerasOpenVINODataLoader(x, y, collate_fn=self.tensors_to_numpy)
         model = self.ov_model.pot(dataloader, metric=metric, drop_type=drop_type,
                                   maximal_drop=maximal_drop, max_iter_num=max_iter_num,
                                   n_requests=n_requests, sample_size=sample_size)

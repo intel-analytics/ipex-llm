@@ -17,7 +17,7 @@
 # Required Dependecies
 
 # ```bash
-# pip install neural-compressor==1.11.0 onnx onnxruntime onnxruntime_extensions
+# pip install --pre --upgrade bigdl-nano[pytorch,inference]
 # ```
 
 
@@ -99,13 +99,14 @@ if __name__ == "__main__":
                                  calib_dataloader=DataLoader(train_dataset, batch_size=32))
 
     # Inference with Quantized Model
-    y_hat = q_model(x)
-    predictions = y_hat.argmax(dim=1)
-    print(predictions)
+    with InferenceOptimizer.get_context(q_model):
+        y_hat = q_model(x)
+        predictions = y_hat.argmax(dim=1)
+        print(predictions)
 
     # Save Quantized Model
-    Trainer.save(q_model, "./quantized_model")
+    InferenceOptimizer.save(q_model, "./quantized_model")
 
     # Load the Quantized Model
-    # loaded_model = Trainer.load("./quantized_model")
+    # loaded_model = InferenceOptimizer.load("./quantized_model")
     # print(loaded_model(x).argmax(dim=1))

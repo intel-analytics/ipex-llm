@@ -29,6 +29,7 @@ import torch.nn.functional as F
 from test.pytorch.utils._train_torch_lightning import create_data_loader
 from torch.utils.data import TensorDataset, DataLoader
 from bigdl.nano.pytorch.utils import TORCH_VERSION_LESS_1_10
+from bigdl.nano.utils.log4Error import invalidOperationError
 
 
 data_transform = transforms.Compose([
@@ -140,21 +141,19 @@ class TestInferencePipeline(TestCase):
         inference_opt.optimize(model=self.model,
                                training_data=self.train_loader,
                                thread_num=1,
-                               search_mode="all",
-                               excludes=["fp32_ipex", "original"])
+                               excludes=["bf16", "original"])
 
         # original is a special method that must be included in
         # the search
         assert "original" in inference_opt.optimized_model_dict
         assert "jit_fp32_ipex" in inference_opt.optimized_model_dict
-        assert "fp32_ipex" not in inference_opt.optimized_model_dict
+        assert "bf16" not in inference_opt.optimized_model_dict
 
     def test_pipeline_with_includes(self):
         inference_opt = InferenceOptimizer()
         inference_opt.optimize(model=self.model,
                                training_data=self.train_loader,
                                thread_num=1,
-                               search_mode="all",
                                includes=["fp32_ipex"])
 
         assert "original" in inference_opt.optimized_model_dict
@@ -369,9 +368,29 @@ class TestInferencePipeline(TestCase):
         model = Net()
         model.eval()
         inference_opt = InferenceOptimizer()
-        multi_instance_model = inference_opt.to_multi_instance(model, num_processes=2)
+        multi_instance_model = inference_opt.to_multi_instance(model, num_processes=4)
 
-        test_loader = create_data_loader(self.data_dir, 1, self.num_workers, data_transform, subset=10, shuffle=False)
+        test_loader = create_data_loader(self.data_dir, 1, self.num_workers, data_transform,
+                                         subset=50, shuffle=False)
+        input_data = list(map(lambda b: b[0], test_loader))
+
+        with torch.no_grad():
+            preds1 = multi_instance_model(input_data)
+            preds2 = [model(b) for b in input_data]
+
+        for (pred1, pred2) in zip(preds1, preds2):
+            np.testing.assert_allclose(pred1, pred2, atol=1e-4,
+                                        err_msg=f"\npred1: {pred1}\npred2: {pred2}\n")
+
+    def test_multi_instance_with_specify_cores(self):
+        model = Net()
+        model.eval()
+        inference_opt = InferenceOptimizer()
+        multi_instance_model = inference_opt.to_multi_instance(model, num_processes=2,
+                                                               cores_per_process=1)
+
+        test_loader = create_data_loader(self.data_dir, 1, self.num_workers, data_transform,
+                                         subset=50, shuffle=False)
         input_data = list(map(lambda b: b[0], test_loader))
 
         with torch.no_grad():
@@ -408,7 +427,7 @@ class TestInferencePipeline(TestCase):
                                thread_num=4,
                                precision=('bf16', 'int8'))
         optim_dict = inference_opt.optimized_model_dict
-        assert len(optim_dict) == 13
+        assert len(optim_dict) == 14
         with pytest.raises(RuntimeError):
             acc_model, option = inference_opt.get_best_model(precision="fp32")
 
@@ -439,3 +458,88 @@ class TestInferencePipeline(TestCase):
         optim_dict = inference_opt.optimized_model_dict
         assert optim_dict["openvino_int8"]["status"] in ("successful", "early_stopped")
         assert optim_dict["onnxruntime_int8_qlinear"]["status"] in ("successful", "early_stopped")
+
+    def test_context_manager(self):
+        inference_opt = InferenceOptimizer()
+        inference_opt.optimize(model=self.model,
+                               training_data=self.train_loader,
+                               validation_data=self.test_loader,
+                               metric=self.metric,
+                               direction="max",
+                               search_mode="all")
+        # test builtin optimized_model_dict
+        optim_dict = inference_opt.optimized_model_dict
+        for method, option in optim_dict.items():
+            if option["status"] == "successful":
+                model = option["model"]
+                with InferenceOptimizer.get_context(model):
+                    pass
+        # test get_model
+        for method in list(InferenceOptimizer.ALL_INFERENCE_ACCELERATION_METHOD.keys()):
+            if "model" in optim_dict[method]:
+                model = inference_opt.get_model(method)
+                with InferenceOptimizer.get_context(model):
+                    pass
+        # test get_best_model
+        model, option = inference_opt.get_best_model()
+        with InferenceOptimizer.get_context(model):
+            pass
+
+    def test_inplace(self):
+        class CannotCopyNet(Net):
+            def __deepcopy__(self, memo):
+                invalidOperationError(False, "The `deepcopy` function shouldn't be called")
+
+        inference_opt = InferenceOptimizer()
+        # ipex
+        model = CannotCopyNet()
+        ipex_model = inference_opt.trace(model, input_sample=self.train_loader, use_ipex=True, inplace=True)
+
+        inference_opt.save(ipex_model, "ipex")
+        ipex_model = inference_opt.load("ipex", model, inplace=True)
+    
+    def test_multi_context_manager(self):
+        inference_opt = InferenceOptimizer()
+        input_sample = torch.rand(10, 3, 32, 32)
+        inference_opt.optimize(model=self.model,
+                               training_data=self.train_loader)
+
+        ipex_model = inference_opt.get_model("jit_fp32_ipex")
+        with InferenceOptimizer.get_context(self.model, ipex_model):
+            ipex_model(input_sample)
+
+        # test bf16 and non bf16 model
+        has_bf16 = True
+        try:
+            bf16_model = inference_opt.get_model("bf16")
+        except RuntimeError:
+            has_bf16 = False
+
+        if has_bf16:
+            with InferenceOptimizer.get_context(self.model, bf16_model):
+                output = self.model(input_sample)
+                assert output.dtype == torch.bfloat16
+
+            with InferenceOptimizer.get_context(ipex_model, bf16_model):
+                output = bf16_model(input_sample)
+                assert output.dtype == torch.bfloat16
+
+        # test thread
+        ipex_thread_model = InferenceOptimizer.trace(self.model,
+                                                     use_ipex=True,
+                                                     thread_num=4)
+        with InferenceOptimizer.get_context(ipex_model, ipex_thread_model):
+            ipex_model(input_sample)
+            assert torch.get_num_threads() == 4
+
+        jit_thread_model = InferenceOptimizer.trace(self.model,
+                                                    accelerator='jit',
+                                                    input_sample=input_sample,
+                                                    thread_num=2)
+        with InferenceOptimizer.get_context(ipex_model, jit_thread_model):
+            ipex_model(input_sample)
+            assert torch.get_num_threads() == 2
+
+        with InferenceOptimizer.get_context(jit_thread_model, ipex_thread_model):
+            ipex_model(input_sample)
+            assert torch.get_num_threads() == 4

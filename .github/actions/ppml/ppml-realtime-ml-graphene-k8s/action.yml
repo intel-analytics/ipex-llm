@@ -1,0 +1,85 @@
+name: 'PPML RealTime ML Graphene K8s'
+description: 'PPML RealTime ML Graphene K8s'
+inputs:
+  image:
+    description: 'image'
+    required: true
+    default: '10.239.45.10/arda/intelanalytics/bigdl-ppml-trusted-realtime-ml-scala-graphene'
+  image-tag:
+    description: 'image tag'
+    required: true
+    default: 'latest'
+runs:
+  using: "composite"
+  steps:
+    - uses: actions/checkout@v3
+    - name: Set Variable
+      shell: bash
+      env:
+        DEFAULT_IMAGE: ${{ inputs.image }}:${{ inputs.image-tag }}
+      run: |
+        set -x
+        export IMAGE=${{ env.DEFAULT_IMAGE }}
+        export http_proxy="$HTTP_PROXY"
+        export https_proxy="$HTTPS_PROXY"
+        source /etc/environment
+      
+    - name: Test
+      shell: bash
+      run: |
+        set -x
+        export ENCLAVE_KEY_PATH=/home/icx/glorysdj/enclave-key.pem
+        export DATA_PATH=/home/icx/glorysdj/data
+        export KEYS_PATH=/home/icx/glorysdj/keys
+        export SECURE_PASSWORD_PATH=/home/icx/glorysdj/password
+        export RELEASE_NAME=ppml-graphene-k8s
+        export SGX_MEM_SIZE=32GB
+
+        echo "### 1/5 Download BigDL and image..."
+        cd /home/sdp/heyang/data
+        rm -rf BigDL
+        git clone https://github.com/intel-analytics/BigDL.git
+        cd BigDL/ppml/trusted-realtime-ml/scala/docker-graphene/kubernetes
+        sudo docker pull $IMAGE
+        echo "Download finish."
+
+        unset http_proxy
+        unset https_proxy
+        source /etc/profile
+        export KUBECONFIG=/etc/kubernetes/admin.conf
+        export no_proxy=172.168.0.205
+
+        echo "### 2/5 Kubctl apply keys and password..."
+        kubectl apply -f ${KEYS_PATH}/keys.yaml
+        kubectl apply -f ${SECURE_PASSWORD_PATH}/password.yaml
+        echo "enclaveKeysPath: ${ENCLAVE_KEY_PATH}
+        startAllButFlinkPath: /home/sdp/glorysdj/start-all-but-flink.sh
+        image: ${IMAGE}" > values.yaml
+
+        cat values.yaml
+
+
+        echo "Apply finish."
+        echo "Check whether benchmark files exist:"
+        ls -al /home/sdp/heyang/data/Testkit/benchmark
+
+        echo "### 3/5 Helm start redis/flink..."
+        #helm uninstall $RELEASE_NAME
+        helm install $RELEASE_NAME ./
+        sleep 360
+        kubectl get pods|grep -e master -e flink -e redis
+        kubectl get svc|grep -e master -e flink -e redis
+        export MASTER_DEPLOYMENT_POD_NAME=$(kubectl get pods|grep master-deployment|awk '{print $1}')
+        echo "Master deployment pod name is  $MASTER_DEPLOYMENT_POD_NAME."
+        echo ""
+        echo "Helm Chart Redis/Flink started."
+
+        echo "### 4/5 Check job status..."
+        kubectl exec $MASTER_DEPLOYMENT_POD_NAME -- bash -c 'cat /ppml/trusted-realtime-ml/java/cluster-serving-job-*.log'
+
+        echo "### 5/5 clean env"
+        helm uninstall $RELEASE_NAME
+        sleep 40
+        kubectl get pods|grep -e master -e flink
+            
+    

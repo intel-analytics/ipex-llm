@@ -57,13 +57,13 @@ if __name__ == '__main__':
     #
     # Use `Model` or `Sequential` in `bigdl.nano.tf.keras` to create model,
     # then call its `trace` method with `accelerator='onnxruntime'` and
-    # pass a `TensorSpec` defining the shape of input to `input_sample` parameter,
+    # pass a `TensorSpec` defining the shape of input to `input_spec` parameter,
     # then you can use the returned model for inference, all inference will be 
     # accelerated automatically after that.
     #
     model = Model(inputs=model.inputs, outputs=model.outputs)
     spec = tf.TensorSpec((None, 224, 224, 3), tf.float32)
-    onnx_model = model.trace(accelerator='onnxruntime', input_sample=spec)
+    onnx_model = model.trace(accelerator='onnxruntime', input_spec=spec)
     onnx_preds = onnx_model.predict(dataset)
 
     # Using ONNX to accelerate inference will cause a very tiny loss of precision,

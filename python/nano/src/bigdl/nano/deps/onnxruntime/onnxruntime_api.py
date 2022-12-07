@@ -44,19 +44,19 @@ def load_onnxruntime_model(path):
     return PytorchONNXRuntimeModel._load(path)
 
 
-def KerasONNXRuntimeModel(model, input_sample,
+def KerasONNXRuntimeModel(model, input_spec,
                           onnxruntime_session_options=None,
                           **export_kwargs):
     """
     Create a ONNX Runtime model from tensorflow.
 
     :param model: 1. Keras model to be converted to ONNXRuntime for inference
-                    2. Path to ONNXRuntime saved model
-    :param input_sample: (a tuple or list of) tf.TensorSpec or numpy array defining
-        the shape/dtype of the input
+                  2. Path to ONNXRuntime saved model
+    :param input_spec: A (tuple or list of) tf.TensorSpec or numpy array defining
+                       the shape/dtype of the input
     :param onnxruntime_session_options: will be passed to tf2onnx.convert.from_keras function
     """
     from .tensorflow.tensorflow_onnxruntime_model import KerasONNXRuntimeModel
-    return KerasONNXRuntimeModel(model, input_sample,
+    return KerasONNXRuntimeModel(model, input_spec,
                                  onnxruntime_session_options=onnxruntime_session_options,
                                  **export_kwargs)

@@ -518,10 +518,14 @@ jobs:
           export image_name=${image}:${TAG}
           export final_name=${image_name}-build
           export container_name=${TAG}-container
+          sudo docker push ${image_name}
+          docker tag ${image_name} 10.239.45.10/arda/${image_name}
+          docker push 10.239.45.10/arda/${image_name}
           bash ./production/occlum-build.sh -c $container_name -i $image_name -f $final_name
           sudo docker push ${final_name}
           docker tag ${final_name} 10.239.45.10/arda/${final_name}
           docker push 10.239.45.10/arda/${final_name}
+          docker rmi -f ${image_name} 10.239.45.10/arda/${image_name}
           docker rmi -f ${final_name} 10.239.45.10/arda/${final_name}
 
   bigdl-ppml-trusted-big-data-ml-scala-occlum-production-customer:

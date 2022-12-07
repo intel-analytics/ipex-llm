@@ -3,7 +3,7 @@
 ${SPARK_HOME}/bin/spark-submit \
     --master k8s://https://${kubernetes_master_url}:6443 \
     --deploy-mode cluster \
-    --name pyspark-pi \
+    --name pyspark-sql \
     --conf spark.executor.instances=1 \
     --conf spark.rpc.netty.dispatcher.numThreads=32 \
     --conf spark.kubernetes.container.image=intelanalytics/bigdl-ppml-trusted-big-data-ml-scala-occlum:2.2.0-SNAPSHOT \

@@ -40,6 +40,7 @@ RUN env DEBIAN_FRONTEND=noninteractive apt-get update && \
     rm /usr/bin/python3 && \
     ln -s /usr/bin/python3.7 /usr/bin/python3 && \
     pip3 install --upgrade pip && \
+    pip3 install --no-cache requests argparse cryptography==3.3.2 urllib3 && \
     pip install setuptools==58.4.0 && \
     ln -s /usr/bin/python3 /usr/bin/python && \
 # Gramine
@@ -103,11 +104,23 @@ RUN env DEBIAN_FRONTEND=noninteractive apt-get update && \
     mkdir -p /root/.zinc && \
     mkdir -p /root/.m2 && \
     mkdir -p /root/.kube/ && \
-    mkdir -p /ppml/encrypted
+    mkdir -p /ppml/encrypted-fs && \
+# folder required for distributed encrypted file system
+    mkdir -p /ppml/encrypted-fsd && \
+# folder to contain the keys (primary key and data key)
+    mkdir -p /ppml/encrypted_keys && \
+# kms client
+    mkdir -p /ppml/kms && \
+    wget https://raw.githubusercontent.com/intel-analytics/BigDL/main/python/ppml/src/bigdl/ppml/kms/client.py -P /ppml/kms/ && \
+    wget https://raw.githubusercontent.com/intel-analytics/BigDL/main/python/ppml/src/bigdl/ppml/kms/__init__.py -P /ppml/kms/ && \
+    wget https://raw.githubusercontent.com/intel-analytics/BigDL/main/python/ppml/src/bigdl/ppml/kms/fileoperator.py -P /ppml/kms/ && \
+    wget https://raw.githubusercontent.com/intel-analytics/BigDL/main/python/ppml/src/bigdl/ppml/kms/keymanager.py -P /ppml/kms/ && \
+    wget https://raw.githubusercontent.com/intel-analytics/BigDL/main/python/ppml/src/bigdl/ppml/kms/restcaller.py -P /ppml/kms/
 
 
 ADD ./download_jars.sh /ppml
 ADD ./attestation.sh /ppml
+ADD ./encrypted-fsd.sh /ppml
 
 RUN cd /ppml && \
     bash ./download_jars.sh

@@ -20,7 +20,7 @@ jupyter notebook
 ```
 
 ## Run Demo
-This demo uses Twitter Recsys Challenge 2021 dataset, you can download it from [here](https://recsys-twitter.com/data/show-downloads#). If you fail to download it, please run [`generate_dummy_data.py`](./generate_dummy_data.py) to generate a dummy dataset.
+This demo uses Twitter Recsys Challenge 2021 dataset, you can download it from [here](http://www.recsyschallenge.com/2021/). If you fail to download it, please run [`generate_dummy_data.py`](./generate_dummy_data.py) to generate a dummy dataset.
 
 After having a dataset, modify the paths in following notebooks, both HDFS path and local path are acceptable.
 
