@@ -189,11 +189,8 @@ if __name__ == "__main__":
                         help="The number of epochs to train the model.")
     parser.add_argument("--lr", type=float, default=1e-4,
                         help="The learning rate to train the model.")
-    parser.add_argument('--hidden_units', type=str, default="1024, 1024",
-                        help='The hidden units for the MLP part of the WideAndDeep model')
 
     args = parser.parse_args()
-    args.hidden_units = [int(x) for x in args.hidden_units.split(',')]
 
     if args.cluster_mode == "local":
         init_orca_context("local", cores=args.executor_cores, memory=args.executor_memory,
@@ -223,8 +220,8 @@ if __name__ == "__main__":
     label_cols = [column_info["label"]]
 
     config = {
-        "lr": args.learning_rate,
-        "hidden_units": args.hidden_units,
+        "lr": args.lr,
+        "hidden_units": [1024, 512],
         "column_info": column_info,
     }
 

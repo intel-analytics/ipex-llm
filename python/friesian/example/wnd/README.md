@@ -122,4 +122,3 @@ __Options:__
 * `batch_size`: The batch size to train the model. Default to be 1024.
 * `epoch`: The number of epochs to train the model. Default to be 2.
 * `learning_rate`: The learning rate to train the model. Default to be 0.0001.
-* `hidden_units`: The hidden units for the MLP part of the WideAndDeep model, in the format of a string with units separated by space. Default to be "1024, 1024".
