@@ -140,6 +140,7 @@ class EHSMAttestationService(kmsServerIP: String, kmsServerPort: String,
       val postString: String = ehsmParams.getPostJSONString()
       postRequest(constructUrl(action), sslConSocFactory, postString)
     }
+    println("postResult:" + postResult)
     // Check sign with nonce
     val sign = postResult.getString(RES_SIGN)
     val verifyQuoteResult = postResult.getBoolean(RES_RESULT)
