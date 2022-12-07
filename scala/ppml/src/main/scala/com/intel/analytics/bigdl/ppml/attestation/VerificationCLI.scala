@@ -36,8 +36,7 @@ object VerificationCLI {
                              apiKey: String = "test",
                              attestationType: String = ATTESTATION_CONVENTION.MODE_EHSM_KMS,
                              attestationURL: String = "127.0.0.1:9000",
-                             challenge: String = "test",
-                             debug: String = "false")
+                             challenge: String = "test")
 
         val cmdParser = new OptionParser[CmdParams]("PPML Quote Verification Cmd tool") {
             opt[String]('i', "appID")
@@ -55,9 +54,6 @@ object VerificationCLI {
             opt[String]('c', "challenge")
               .text("challenge to attestation service, default is '' which skip bi-attestation")
               .action((x, c) => c.copy(challenge = x))
-            opt[String]('d', "debug")
-              .text("ATTESTATION_DEBUG, default is false, set it to true will skip verify warning")
-              .action((x, c) => c.copy(debug = x))
         }
         val params = cmdParser.parse(args, CmdParams()).get
 
@@ -80,7 +76,7 @@ object VerificationCLI {
             }
             val quoteVerifier = new SGXDCAPQuoteVerifierImpl()
             val verifyQuoteResult = quoteVerifier.verifyQuote(asQuote)
-            val debug = params.debug
+            val debug = System.getenv("ATTESTATION_DEBUG")
             if (verifyQuoteResult == 0) {
                 System.out.println("Quote Verification Success!")
             } else if (debug == "true" && verifyQuoteResult == 1) {

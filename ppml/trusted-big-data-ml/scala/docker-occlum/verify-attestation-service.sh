@@ -45,4 +45,4 @@ fi
 
 JARS="$SPARK_HOME/jars/*:$SPARK_HOME/examples/jars/*:$BIGDL_PPML_JAR"
 
-java -cp $JARS com.intel.analytics.bigdl.ppml.attestation.VerificationCLI -i $APP_ID -k $API_KEY -c $CHALLENGE -u $ATTESTATION_URL -t $ATTESTATION_TYPE -d $ATTESTATION_DEBUG
+java -cp $JARS com.intel.analytics.bigdl.ppml.attestation.VerificationCLI -i $APP_ID -k $API_KEY -c $CHALLENGE -u $ATTESTATION_URL -t $ATTESTATION_TYPE
