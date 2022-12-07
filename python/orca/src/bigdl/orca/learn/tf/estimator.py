@@ -326,7 +326,7 @@ class Estimator(SparkEstimator):
         sess: Optional["Session"]=None,
         model_dir: Optional[str]=None,
         backend: str="bigdl"
-    ) -> TensorFlowEstimator:
+    ) -> SparkEstimator:
         """
         Create an Estimator for tesorflow graph.
 
@@ -373,7 +373,7 @@ class Estimator(SparkEstimator):
         model_dir: Optional[str] = None,
         optimizer: Optional["Optimizer"] = None,
         backend: str = "bigdl"
-    ) -> KerasEstimator:
+    ) -> SparkEstimator:
         """
         Create an Estimator from a tensorflow.keras model. The model must be compiled.
 
@@ -572,7 +572,7 @@ class TensorFlowEstimator(Estimator):
         checkpoint_trigger: Optional[SeveralIteration]=None,
         auto_shard_files: bool=False,
         feed_dict: Optional[Dict[tf.Tensor, Tuple[tf.Tensor, tf.Tensor]]]=None
-    ) -> TensorFlowEstimator:
+    ) -> Estimator:
         """
         Train this graph model with train data.
 
@@ -899,7 +899,7 @@ class KerasEstimator(Estimator):
         session_config: Optional["ConfigProto"]=None,
         checkpoint_trigger: Optional[Union[TriggerAnd, SeveralIteration, SeveralIteration]]=None,
         auto_shard_files: bool=False
-    ) -> KerasEstimator:
+    ) -> Estimator:
         """
         Train this keras model with train data.
 
