@@ -10,7 +10,7 @@ ARG http_proxy
 ARG https_proxy
 ARG JDK_VERSION
 ARG TINI_VERSION
-ENV JAVA_HOME				/opt/jdk11
+ENV JAVA_HOME				/opt/jdk${JDK_VERSION}
 ENV TINI_VERSION                        $TINI_VERSION
 
 ADD ./examples/ /ppml/examples
@@ -30,8 +30,8 @@ RUN pip3 install --upgrade pip && \
     sed -i 's/SOCKET_ACCEPT_TIMEOUT = 30.0/SOCKET_ACCEPT_TIMEOUT = 300.0/' /usr/local/lib/python3.7/dist-packages/ts/model_service_worker.py
     mkdir -p /ppml/tests/numpy && \
     mkdir -p /ppml/tests/pandas && \
-    mkdir -p /opt/jdk11 && \
-    cp -r /usr/lib/jvm/java-${JDK_VERSION}-openjdk-amd64/* /opt/jdk11 && \
+    mkdir -p ${JAVA_HOME} && \
+    cp -r /usr/lib/jvm/java-${JDK_VERSION}-openjdk-amd64/* ${JAVA_HOME} && \
     cp /usr/local/lib/python3.7/dist-packages/ts/configs/metrics.yaml /ppml && \
     chmod +x /opt/entrypoint.sh && \
     chmod +x /sbin/tini && \
