@@ -521,7 +521,7 @@ class TestSparkXShards(TestCase):
         assert not data_shard1.is_cached()
         assert data_shard2.is_cached()
 
-        lazy_shard = data_shard2.lazy()
+        lazy_shard = data_shard2.to_lazy()
         lazy_shard1 = lazy_shard.transform_shard(increment)
         assert lazy_shard.is_cached()  # Same as data_shard2
         assert not lazy_shard1.is_cached()
