@@ -1,5 +1,5 @@
 # Gramine
-This image contains Gramine and some popular python toolkits including numpy, pandas and flask.
+This image contains Gramine and some popular python toolkits including numpy, pandas, flask and torchserve.
 
 *Please mind the IP and file path settings. They should be changed to the IP/path of your own sgx server on which you are running.*
 
@@ -50,12 +50,11 @@ mr_enclave       : c7a8a42af......
 mr_signer        : 6f0627955......
 ````
 
-## 2. Demo
+## 2. Examples
 
 *WARNING: We are currently actively developing our images, which indicate that the ENTRYPOINT of the docker image may be changed accordingly.  We will do our best to update our documentation in time.*
 
-### 2.1 Examples
-#### 2.1.1 Numpy Examples
+### 2.1 Numpy Examples
 
 Use the following code to build a container and run the numpy example based on the image built before.
 ```shell
@@ -71,6 +70,7 @@ sudo docker run -itd \
 	--device=/dev/sgx/provision \
 	-v /var/run/aesmd/aesm.socket:/var/run/aesmd/aesm.socket \
 	-e LOCAL_IP=$LOCAL_IP \
+	-e SGX_ENABLED=true \
 	-e ATTESTATION=false \
 	$DOCKER_IMAGE python /ppml/examples/numpy/hello-numpy.py
 docker logs -f your_docker_image
@@ -82,7 +82,7 @@ numpy version: 1.21.6
 numpy.dot: 0.010580737050622702 sec
 ```
 
-#### 2.1.2 Pandas Examples
+### 2.2 Pandas Examples
 
 Use the following code to build a container and run the pandas example based on the image built before.
 ```shell
@@ -98,6 +98,7 @@ sudo docker run -itd \
 	--device=/dev/sgx/provision \
 	-v /var/run/aesmd/aesm.socket:/var/run/aesmd/aesm.socket \
 	-e LOCAL_IP=$LOCAL_IP \
+	-e SGX_ENABLED=true \
 	-e ATTESTATION=false \
 	$DOCKER_IMAGE python /ppml/examples/pandas/hello-pandas.py
 docker logs -f your_docker_image
@@ -122,10 +123,9 @@ Random Dataframe:
 [10 rows x 10 columns]
 ```
 
-### 2.2 Benchmark
-#### 2.2.1 Numpy Benchmark
+#### 2.3 Flask Examples
 
-Use the following code to build a container and test the performance of numpy. Set `-n` to tune the size of array and set `-t` to select the type of data.
+Use the following code to build a container and run the flask example based on the image built before. The flask example will receive a GET/POST request from clients and return the feature of the url and the method of the request.
 ```shell
 export LOCAL_IP=your_local_ip
 export DOCKER_IMAGE=your_docker_image
@@ -139,24 +139,33 @@ sudo docker run -itd \
 	--device=/dev/sgx/provision \
 	-v /var/run/aesmd/aesm.socket:/var/run/aesmd/aesm.socket \
 	-e LOCAL_IP=$LOCAL_IP \
+	-e SGX_ENABLED=false \
 	-e ATTESTATION=false \
-	$DOCKER_IMAGE /ppml/work/start-scripts/start-python-numpy-sgx.sh -n 4096 -t int
+	$DOCKER_IMAGE /ppml/work/start-scripts/start-python-flask-sgx.sh
 docker logs -f your_docker_image
 ```
-You will see the result of the performance test.
+
+You can use python to send a request and assign the request method.
+If you send a GET request, you can use the following script.
+```python
+import requests
+
+flask_address = your_flask_address
+url = flask_address + '/World!'
+res = requests.get(url=url)
+print(res.text)
+```
+Run it and you will get:
 ```shell
-Dotted two 100x100 matrices in ... s.
-SVD of a 100x100 matrix in ... s.
-Cholesky decomposition of a 500x500 matrix in ... s.
-Eigendecomposition of a 100x100 matrix in ... s.
+Hello World! GET
 ```
 
-#### 2.2.2 Pandas Benchmark
+You can try POST similarly. 
 
-Before testing the performance of pandas, download the [dataset](https://www.kaggle.com/datasets/rdwstats/open-data-rdw-gekentekende-voertuigen/download?datasetVersionNumber=1) and put it under `your_nfs_input_path` first.
-Use the following code to build a container and test the performance of pandas.
+### 2.4 Torchserve Example
+
+Use the following code to build a container and run the torchserve example based on the image built before. 
 ```shell
-export NFS_INPUT_PATH=your_nfs_input_path
 export LOCAL_IP=your_local_ip
 export DOCKER_IMAGE=your_docker_image
 sudo docker run -itd \
@@ -168,25 +177,72 @@ sudo docker run -itd \
 	--device=/dev/sgx/enclave \
 	--device=/dev/sgx/provision \
 	-v /var/run/aesmd/aesm.socket:/var/run/aesmd/aesm.socket \
-	-v $NFS_INPUT_PATH:/ppml/work/data \
+	-v /ppml/work/data:your_data_path \
 	-e LOCAL_IP=$LOCAL_IP \
+	-e SGX_ENABLED=false \
 	-e ATTESTATION=false \
-	$DOCKER_IMAGE /ppml/work/start-scripts/start-python/pandas-sgx.sh -d your_data
+	$DOCKER_IMAGE /ppml/work/start-scripts/start-torchserve-sgx.sh -c your_config_file_path
 docker logs -f your_docker_image
 ```
 
-You will see the result of the performance test.
+Before run torchserve on SGX, prepare the config file in which you can assign ip address, model location, worker thread number and so on. Please make sure that your config file is under your_data_path. The following script shows a simple example of config file. Refer to [5.3. config.properties file](https://pytorch.org/serve/configuration.html#config-properties-file) for more information.
 ```shell
-Complex select
-Time elapsed:  ...s
-Sorting the dataset
-Time elapsed:  ...s
-Joining the dataset
-Time elapsed:  ...s
-Self join
-Time elapsed:  ...s
-Grouping the data
-Time elapsed:  ...s
+inference_address=your_inference_address
+management_address=your_management_address
+metrics_address=your_metrics_address
+model_store=/ppml/work/data/your_model_store
+load_models=all
+models={\
+  "densenet161": {\
+    "1.0": {\
+        "defaultVersion": true,\
+        "marName": "densenet161.mar",\
+        "minWorkers": 2,\
+        "maxWorkers": 2,\
+        "batchSize": 4,\
+        "maxBatchDelay": 100,\
+        "responseTimeout": 1200\
+    }\
+  }\
+}
 ```
 
+Note that store your model under your_data_path/your_model_store while set `model_store` to /ppml/work/data/your_model_store.
+Refer to [Torch Model archiver for TorchServe](https://github.com/pytorch/serve/blob/master/model-archiver/README.md)to see how to archive your own model.
+To test the model server, send a request to the server's predictions API through gRPC or HTTP/REST.
 
+#### For gRPC
+First, download the torchserve project and install grpc python dependencies:
+```shell
+git clone https://github.com/analytics-zoo/pytorch-serve.git
+pip install -U grpcio protobuf grpcio-tools
+```
+Then, generate inference client using proto files:
+```shell
+python -m grpc_tools.protoc --proto_path=frontend/server/src/main/resources/proto/ --python_out=ts_scripts --grpc_python_out=ts_scripts frontend/server/src/main/resources/proto/inference.proto frontend/server/src/main/resources/proto/management.proto
+```
+Finally, run inference using a sample client:
+```shell
+python ts_scripts/torchserve_grpc_client.py infer densenet161 examples/image_classifier/kitten.jpg
+```
+
+#### For HTTP/REST
+Download a picture:
+```shell
+curl -O https://raw.githubusercontent.com/pytorch/serve/master/docs/images/kitten_small.jpg
+```
+Send it to pytorch server:
+```shell
+curl http://your_local_ip:your_inference_address/predictions/densenet161 -T kitten_small.jpg
+```
+
+The format of results is similar to the followings.
+```shell
+{
+  "tabby": ...,
+  "lynx": ...,
+  "tiger_cat": ...,
+  "tiger": ...,
+  "Egyptian_cat": ...
+}
+```
