@@ -14,6 +14,7 @@ ENV JAVA_HOME				/opt/jdk11
 ENV TINI_VERSION                        $TINI_VERSION
 
 ADD ./examples/ /ppml/examples
+ADD ./frontend.jar /ppml/torchserve
 ADD ./entrypoint.sh /opt/entrypoint.sh
 ADD ./start-scripts/ /ppml/work/start-scripts
 ADD https://github.com/krallin/tini/releases/download/${TINI_VERSION}/tini /sbin/tini
