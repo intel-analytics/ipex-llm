@@ -29,8 +29,8 @@ You can select bigdl-nano along with some dependencies specific to PyTorch or Te
           </tr>
           <tr>
             <td colspan="1">Inference Optimization</td>
-            <td colspan="2"><button id="inferenceno">No</button></td>
             <td colspan="2"><button id="inferenceyes">Yes</button></td>
+            <td colspan="2"><button id="inferenceno">No</button></td>
             </td>
           </tr>
           <tr>
