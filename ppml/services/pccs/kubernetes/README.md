@@ -1,10 +1,9 @@
-# Deploy BigDL-PCCS on Kubernetes with Helm Charts
+# Deploy BigDL-PCCS on Kubernetes
 
 ## Prerequests
 
 - Please make sure you have a workable **Kubernetes cluster/machine**.
 - Please make sure you have a usable https proxy.
-- Please make sure you have already installed **[helm](https://helm.sh/)**.
 - Please make sure you have an usable PCCS ApiKey for your platform. The PCCS uses this API key to request collaterals from Intel's Provisioning Certificate Service. User needs to subscribe first to obtain an API key. For how to subscribe to Intel Provisioning Certificate Service and receive an API key, goto https://api.portal.trustedservices.intel.com/provisioning-certification and click on 'Subscribe'.
 
 ## 1. Pull/Build the PCCS Image
@@ -26,14 +25,31 @@ bash build-docker-image.sh
 cd ../kubernetes
 ```
 ## 2. Start BigDL-PCCS on Kubernetes 
-Please make sure current workdir is `kubernetes`.
+### 2.1 Determine PCCS IP address
+First of all, Please note that an **IP address that unused in your subnetwork** is needed to be used as PCCS IP. \
+**Especially,** this IP address chosen for PCCS **SHOULD NOT** be the real machine IP address. \
+You could check if the IP address is available like this.
 
-Then modify parameters in `values.yaml` as following:
-```shell
+```bash
+# assume your IP address is 1.2.3.4, and you want to use 1.2.3.226 as PCCS IP
+ping 1.2.3.226
+
+# information below means 1.2.3.226 is expected to be an appropriate IP addess for PCCS. 
+# otherwise, you are supposed to test another one.
+PING 1.2.3.226 (1.2.3.226) 56(84) bytes of data.
+From 1.2.3.4 icmp_seq=1 Destination Host Unreachable
+From 1.2.3.4 icmp_seq=2 Destination Host Unreachable
+From 1.2.3.4 icmp_seq=3 Destination Host Unreachable
+........
+```
+
+### 2.2 Modify the script and deploy BigDL-PCCS
+Then, modify parameters in `install-bigdl-pccs.sh` as following, and `pccsIP` should be the IP address you have determined in step 2.1.
+```bash
 # reset of other parameters in values.yaml is optional, please check according to your environment
 pccsIP: your_pccs_ip_to_use_as                    --->   <an_used_ip_address_in_your_subnetwork_to_assign_to_pccs>
 
-# Replace the below parameters according to your environment
+# replace the below parameters according to your environment
 apiKey: your_intel_pcs_server_subscription_key_obtained_through_web_registeration
 countryName: your_country_name
 cityName: your_city_name
@@ -45,8 +61,7 @@ serverPassword: your_server_password_to_use
 Then, deploy BigDL-PCCS on kubernetes:
 
 ```bash
-kubectl create namespace bigdl-pccs
-helm install pccs . # pccs can be modified to any name as you like
+bash install-bigdl-pccs.sh
 ```
 Check the service whether it has successfully been running (it may take seconds):
 
@@ -120,5 +135,15 @@ curl -v -k -G "https://<your_pccs_ip>:<your_pccs_port>/sgx/certification/v3/root
 308201213081c80********************************************************************************************************************************************************************************************************************************
 ```
 
+## 4. Delete BigDL-PCCS from Kuberbets
+Run the uninstall script as below
+```bash
+bash uninstall-bigdl-pccs.sh
 
+# you will get similar to below if success
+service "pccs" deleted
+statefulset.apps "pccs" deleted
+namespace "bigdl-pccs" deleted
+
+``` 
 

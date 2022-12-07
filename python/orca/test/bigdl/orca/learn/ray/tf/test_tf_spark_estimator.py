@@ -187,6 +187,11 @@ class TestTFEstimator(TestCase):
             res = trainer.evaluate(data=xshards, num_steps=25, batch_size=4,
                                    feature_cols=["user", "item"], label_cols=["label"])
             print("validation result: ", res)
+            predictions = trainer.predict(data=xshards, batch_size=4,
+                                          feature_cols=["user", "item"])
+            assert predictions._get_class_name() == "pandas.core.frame.DataFrame"
+            prediction_df = predictions.collect()[0]
+            assert "prediction" in prediction_df
         finally:
             shutil.rmtree(temp_dir)
 
@@ -600,7 +605,174 @@ class TestTFEstimator(TestCase):
             if os.path.exists(model_path):
                 os.remove(model_path)
 
+    def test_optional_model_creator_h5(self):
+        sc = OrcaContext.get_spark_context()
+        rdd = sc.range(0, 100)
+        spark = OrcaContext.get_spark_session()
 
+        from pyspark.ml.linalg import DenseVector
+        df = rdd.map(lambda x: (DenseVector(np.random.randn(1, ).astype(np.float)),
+                                int(np.random.randint(0, 2, size=())))).toDF(["feature", "label"])
+        config = {"lr": 0.2}
+
+        try:
+            temp_dir = tempfile.mkdtemp()
+
+            trainer = Estimator.from_keras(
+                model_creator=model_creator,
+                verbose=True,
+                config=config,
+                workers_per_node=2,
+                backend="spark")
+
+            trainer.fit(df, epochs=5, batch_size=4, steps_per_epoch=25,
+                        feature_cols=["feature"],
+                        label_cols=["label"],
+                        validation_data=df,
+                        validation_steps=1)
+
+            # save model as h5 format
+            trainer.save(os.path.join(temp_dir, "saved_model.h5"))
+            before_res = trainer.predict(df, feature_cols=["feature"]).collect()
+            expect_res = np.concatenate([part["prediction"] for part in before_res])
+            trainer.shutdown()
+
+            est = Estimator.from_keras(
+                verbose=True,
+                config=config,
+                workers_per_node=2,
+                backend="spark")
+
+            est.load(os.path.join(temp_dir, "saved_model.h5"))
+            # test continous predicting
+            after_res = est.predict(df, feature_cols=["feature"]).collect()
+            pred_res = np.concatenate([part["prediction"] for part in after_res])
+            assert np.array_equal(expect_res, pred_res)
+
+            # test continuous training
+            est.fit(df, epochs=5, batch_size=4, steps_per_epoch=25,
+                    feature_cols=["feature"],
+                    label_cols=["label"],
+                    validation_data=df,
+                    validation_steps=1)
+            # test continuous evaluation
+            res = est.evaluate(df, batch_size=4, num_steps=25, feature_cols=["feature"],
+                               label_cols=["label"])
+            print("validation result: ", res)
+        finally:
+            shutil.rmtree(temp_dir)
+
+    def test_optional_model_creator_savemodel(self):
+        sc = OrcaContext.get_spark_context()
+        rdd = sc.range(0, 100)
+        spark = OrcaContext.get_spark_session()
+
+        from pyspark.ml.linalg import DenseVector
+        df = rdd.map(lambda x: (DenseVector(np.random.randn(1, ).astype(np.float)),
+                                int(np.random.randint(0, 2, size=())))).toDF(["feature", "label"])
+        config = {"lr": 0.2}
+
+        try:
+            temp_dir = tempfile.mkdtemp()
+
+            trainer = Estimator.from_keras(
+                model_creator=model_creator,
+                verbose=True,
+                config=config,
+                workers_per_node=2,
+                backend="spark")
+
+            trainer.fit(df, epochs=5, batch_size=4, steps_per_epoch=25,
+                        feature_cols=["feature"],
+                        label_cols=["label"],
+                        validation_data=df,
+                        validation_steps=1)
+
+            # save model as savemodel format
+            trainer.save(os.path.join(temp_dir, "saved_model"))
+            before_res = trainer.predict(df, feature_cols=["feature"]).collect()
+            expect_res = np.concatenate([part["prediction"] for part in before_res])
+            trainer.shutdown()
+
+            est = Estimator.from_keras(
+                verbose=True,
+                config=config,
+                workers_per_node=2,
+                backend="spark")
+
+            est.load(os.path.join(temp_dir, "saved_model"))
+            # test continous predicting
+            after_res = est.predict(df, feature_cols=["feature"]).collect()
+            pred_res = np.concatenate([part["prediction"] for part in after_res])
+            assert np.array_equal(expect_res, pred_res)
+
+            # test continuous training
+            est.fit(df, epochs=5, batch_size=4, steps_per_epoch=25,
+                    feature_cols=["feature"],
+                    label_cols=["label"],
+                    validation_data=df,
+                    validation_steps=1)
+            # test continuous evaluation
+            res = est.evaluate(df, batch_size=4, num_steps=25, feature_cols=["feature"],
+                               label_cols=["label"])
+            print("validation result: ", res)
+        finally:
+            shutil.rmtree(temp_dir)
+
+    def test_get_model(self):   
+        sc = OrcaContext.get_spark_context()
+        rdd = sc.range(0, 100)
+        spark = OrcaContext.get_spark_session()
+
+        from pyspark.ml.linalg import DenseVector
+        df = rdd.map(lambda x: (DenseVector(np.random.randn(1, ).astype(np.float)),
+                                int(np.random.randint(0, 2, size=())))).toDF(["feature", "label"])
+
+        config = {"lr": 0.2}
+
+        try:
+            temp_dir = tempfile.mkdtemp()
+
+            trainer = Estimator.from_keras(
+                model_creator=model_creator,
+                verbose=True,
+                config=config,
+                workers_per_node=3,
+                backend="spark")
+
+            trainer.fit(df, epochs=5, batch_size=4, steps_per_epoch=25,
+                        feature_cols=["feature"],
+                        label_cols=["label"],
+                        validation_data=df,
+                        validation_steps=1)
+
+            trainer.save(os.path.join(temp_dir, "cifar10.h5"))
+            pre_model_weights = trainer.get_model().get_weights()
+
+            after_res = trainer.predict(df, feature_cols=["feature"]).collect()
+            expect_res = np.concatenate([part["prediction"] for part in after_res])
+
+            trainer.shutdown()
+
+            est = Estimator.from_keras(
+                verbose=True,
+                config=config,
+                workers_per_node=3,
+                backend="spark")
+
+            est.load(os.path.join(temp_dir, "cifar10.h5"))
+            after_model_weights = est.get_model().get_weights()
+            est.save(os.path.join(temp_dir, "cifar10_new.h5"))
+
+            # continous predicting
+            after_res = est.predict(df, feature_cols=["feature"]).collect()
+            pred_res = np.concatenate([part["prediction"] for part in after_res])
+            assert np.array_equal(expect_res, pred_res)
+
+            for pre_tensor, after_tensor in list(zip(pre_model_weights, after_model_weights)):
+                assert np.allclose(pre_tensor, after_tensor)
+        finally:
+            shutil.rmtree(temp_dir)
 
 if __name__ == "__main__":
     pytest.main([__file__])

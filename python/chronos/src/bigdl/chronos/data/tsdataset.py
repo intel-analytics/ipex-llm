@@ -28,7 +28,8 @@ from bigdl.chronos.data.utils.scale import unscale_timeseries_numpy
 from bigdl.chronos.data.utils.resample import resample_timeseries_dataframe
 from bigdl.chronos.data.utils.split import split_timeseries_dataframe
 from bigdl.chronos.data.utils.cycle_detection import cycle_length_est
-from bigdl.chronos.data.utils.quality_inspection import quality_check_timeseries_dataframe
+from bigdl.chronos.data.utils.quality_inspection import quality_check_timeseries_dataframe,\
+    _abnormal_value_repair
 from bigdl.chronos.data.utils.utils import _to_list, _check_type,\
     _check_col_within, _check_col_no_na, _check_is_aligned, _check_dt_is_sorted
 
@@ -44,11 +45,14 @@ class TSDataset:
         Cascade call is supported for most of the transform methods.
         '''
         self.df = data
-        # detect low-quality data and automatic repair (optional)
-        _, self.df = quality_check_timeseries_dataframe(df=self.df,
-                                                        dt_col=schema["dt_col"],
-                                                        id_col=schema["id_col"],
-                                                        repair=repair)
+        # whether to use deploy mode to improve latency in production environment
+        self.deploy_mode = schema["deploy_mode"]
+        if not self.deploy_mode:
+            # detect low-quality data and automatic repair (optional)
+            _, self.df = quality_check_timeseries_dataframe(df=self.df,
+                                                            dt_col=schema["dt_col"],
+                                                            id_col=schema["id_col"],
+                                                            repair=repair)
         self.id_col = schema["id_col"]
         self.dt_col = schema["dt_col"]
         self.feature_col = schema["feature_col"].copy()
@@ -67,7 +71,8 @@ class TSDataset:
         self.scaler_index = [i for i in range(len(self.target_col))]
         self.id_sensitive = None
         self._has_generate_agg_feature = False
-        self._check_basic_invariants()
+        if not self.deploy_mode:
+            self._check_basic_invariants()
 
         self._id_list = list(np.unique(self.df[self.id_col]))
         self._freq_certainty = False
@@ -88,7 +93,8 @@ class TSDataset:
                     with_split=False,
                     val_ratio=0,
                     test_ratio=0.1,
-                    repair=False):
+                    repair=False,
+                    deploy_mode=False):
         '''
         Initialize tsdataset(s) from pandas dataframe.
 
@@ -112,6 +118,9 @@ class TSDataset:
         :param repair: a bool indicates whether automaticly repair low quality data,
                which may call .impute()/.resample() or modify datetime column on dataframe.
                The value defaults to False.
+        :param deploy_mode: a bool indicates whether to use deploy mode, which will be used in
+               production environment to reduce the latency of data processing. The value
+               defaults to False.
 
         :return: a TSDataset instance when with_split is set to False,
                  three TSDataset instances when with_split is set to True.
@@ -130,11 +139,15 @@ class TSDataset:
         >>>                                                      "extra feature 2"])
         '''
 
-        _check_type(df, "df", pd.DataFrame)
+        if not deploy_mode:
+            _check_type(df, "df", pd.DataFrame)
+            tsdataset_df = df.copy(deep=True)
+        else:
+            tsdataset_df = df
 
-        tsdataset_df = df.copy(deep=True)
-        target_col = _to_list(target_col, name="target_col")
-        feature_col = _to_list(extra_feature_col, name="extra_feature_col")
+        target_col = _to_list(target_col, name="target_col", deploy_mode=deploy_mode)
+        feature_col = _to_list(extra_feature_col, name="extra_feature_col",
+                               deploy_mode=deploy_mode)
 
         if id_col is None:
             tsdataset_df[_DEFAULT_ID_COL_NAME] = _DEFAULT_ID_PLACEHOLDER
@@ -150,14 +163,16 @@ class TSDataset:
                               id_col=id_col,
                               dt_col=dt_col,
                               target_col=target_col,
-                              feature_col=feature_col) for i in range(3)]
+                              feature_col=feature_col,
+                              deploy_mode=deploy_mode) for i in range(3)]
 
         return TSDataset(data=tsdataset_df,
                          repair=repair,
                          id_col=id_col,
                          dt_col=dt_col,
                          target_col=target_col,
-                         feature_col=feature_col)
+                         feature_col=feature_col,
+                         deploy_mode=deploy_mode)
 
     @staticmethod
     def from_parquet(path,
@@ -169,6 +184,7 @@ class TSDataset:
                      val_ratio=0,
                      test_ratio=0.1,
                      repair=False,
+                     deploy_mode=False,
                      **kwargs):
         """
         Initialize tsdataset(s) from path of parquet file.
@@ -196,6 +212,9 @@ class TSDataset:
         :param repair: a bool indicates whether automaticly repair low quality data,
                which may call .impute()/.resample() or modify datetime column on dataframe.
                The value defaults to False.
+        :param deploy_mode: a bool indicates whether to use deploy mode, which will be used in
+               production environment to reduce the latency of data processing. The value
+               defaults to False.
         :param kwargs: Any additional kwargs are passed to the pd.read_parquet
                and pyarrow.parquet.read_table.
 
@@ -216,10 +235,10 @@ class TSDataset:
         >>>                                                      "extra feature 2"])
         """
         from bigdl.chronos.data.utils.file import parquet2pd
-        columns = _to_list(dt_col, name="dt_col") + \
-            _to_list(target_col, name="target_col") + \
-            _to_list(id_col, name="id_col") + \
-            _to_list(extra_feature_col, name="extra_feature_col")
+        columns = _to_list(dt_col, name="dt_col", deploy_mode=deploy_mode) + \
+            _to_list(target_col, name="target_col", deploy_mode=deploy_mode) + \
+            _to_list(id_col, name="id_col", deploy_mode=deploy_mode) + \
+            _to_list(extra_feature_col, name="extra_feature_col", deploy_mode=deploy_mode)
         df = parquet2pd(path, columns=columns, **kwargs)
         return TSDataset.from_pandas(df,
                                      repair=repair,
@@ -229,7 +248,8 @@ class TSDataset:
                                      extra_feature_col=extra_feature_col,
                                      with_split=with_split,
                                      val_ratio=val_ratio,
-                                     test_ratio=test_ratio)
+                                     test_ratio=test_ratio,
+                                     deploy_mode=deploy_mode)
 
     @staticmethod
     def from_prometheus(prometheus_url,
@@ -244,6 +264,7 @@ class TSDataset:
                         val_ratio=0,
                         test_ratio=0.1,
                         repair=False,
+                        deploy_mode=False,
                         **kwargs):
         """
         Initialize tsdataset(s) from Prometheus data for specified time period via url.
@@ -276,6 +297,9 @@ class TSDataset:
         :param repair: a bool indicates whether automaticly repair low quality data,
                which may call .impute()/.resample() or modify datetime column on dataframe.
                The value defaults to False.
+        :param deploy_mode: a bool indicates whether to use deploy mode, which will be used in
+               production environment to reduce the latency of data processing. The value
+               defaults to False.
         :param kwargs: Any additional kwargs are passed to the Prometheus query, such as
                timeout.
 
@@ -294,10 +318,12 @@ class TSDataset:
         # TODO: Corresponding unit test should be added
         # Only test locally at present
         from bigdl.chronos.data.utils.prometheus_df import GetRangeDataframe
-        query_list = _to_list(query, name="query")
-        columns = {"target_col": _to_list(target_col, name="target_col"),
-                   "id_col": _to_list(id_col, name="id_col"),
-                   "extra_feature_col": _to_list(extra_feature_col, name="extra_feature_col")}
+        query_list = _to_list(query, name="query", deploy_mode=deploy_mode)
+        columns = {"target_col": _to_list(target_col, name="target_col",
+                                          deploy_mode=deploy_mode),
+                   "id_col": _to_list(id_col, name="id_col", deploy_mode=deploy_mode),
+                   "extra_feature_col": _to_list(extra_feature_col, name="extra_feature_col",
+                                                 deploy_mode=deploy_mode)}
         df, df_columns = GetRangeDataframe(prometheus_url, query_list, starttime, endtime,
                                            step, columns=columns, **kwargs)
         return TSDataset.from_pandas(df,
@@ -308,7 +334,8 @@ class TSDataset:
                                      with_split=with_split,
                                      val_ratio=val_ratio,
                                      test_ratio=test_ratio,
-                                     repair=repair)
+                                     repair=repair,
+                                     deploy_mode=deploy_mode)
 
     def impute(self, mode="last", const_num=0):
         '''
@@ -328,11 +355,14 @@ class TSDataset:
 
         :return: the tsdataset instance.
         '''
-        self.df = self.df.groupby([self.id_col]) \
-            .apply(lambda df: impute_timeseries_dataframe(df=df,
-                                                          dt_col=self.dt_col,
-                                                          mode=mode,
-                                                          const_num=const_num))
+        result = []
+        groups = self.df.groupby([self.id_col])
+        for _, group in groups:
+            result.append(impute_timeseries_dataframe(df=group,
+                                                      dt_col=self.dt_col,
+                                                      mode=mode,
+                                                      const_num=const_num))
+        self.df = pd.concat(result, axis=0)
         self.df.reset_index(drop=True, inplace=True)
         return self
 
@@ -360,21 +390,22 @@ class TSDataset:
 
         :return: the tsdataset instance.
         '''
-        from bigdl.nano.utils.log4Error import invalidInputError
-        invalidInputError(self._is_pd_datetime,
-                          "The time series data does not have a Pandas datetime format "
-                          "(you can use pandas.to_datetime to convert a string"
-                          " into a datetime format).")
-        from pandas.api.types import is_numeric_dtype
-        type_error_list = [val for val in self.target_col + self.feature_col
-                           if not is_numeric_dtype(self.df[val])]
-        try:
-            for val in type_error_list:
-                self.df[val] = self.df[val].astype(np.float32)
-        except Exception:
-            invalidInputError(False,
-                              "All the columns of target_col "
-                              "and extra_feature_col should be of numeric type.")
+        if not self.deploy_mode:
+            from bigdl.nano.utils.log4Error import invalidInputError
+            invalidInputError(self._is_pd_datetime,
+                              "The time series data does not have a Pandas datetime format "
+                              "(you can use pandas.to_datetime to convert a string"
+                              " into a datetime format).")
+            from pandas.api.types import is_numeric_dtype
+            type_error_list = [val for val in self.target_col + self.feature_col
+                               if not is_numeric_dtype(self.df[val])]
+            try:
+                for val in type_error_list:
+                    self.df[val] = self.df[val].astype(np.float32)
+            except Exception:
+                invalidInputError(False,
+                                  "All the columns of target_col "
+                                  "and extra_feature_col should be of numeric type.")
         self.df = self.df.groupby([self.id_col]) \
             .apply(lambda df: resample_timeseries_dataframe(df=df,
                                                             dt_col=self.dt_col,
@@ -382,10 +413,32 @@ class TSDataset:
                                                             start_time=start_time,
                                                             end_time=end_time,
                                                             id_col=self.id_col,
-                                                            merge_mode=merge_mode))
+                                                            merge_mode=merge_mode,
+                                                            deploy_mode=self.deploy_mode))
         self._freq = pd.Timedelta(interval)
         self._freq_certainty = True
         self.df.reset_index(drop=True, inplace=True)
+        return self
+
+    def repair_abnormal_data(self, mode="relative", threshold=3.0):
+        '''
+        Repair the tsdataset by replacing abnormal data detected based on threshold
+        with the last non N/A number.
+
+        :param mode: detect abnormal data mode, select from "absolute" or "relative".
+
+            "absolute": detect abnormal data by comparing with max and min value.
+
+            "relative": detect abnormal data by comparing with mean value plus/minus several
+            times standard deviation.
+        :param threshold: indicates the range of comparison. It is a 2-dim tuple of float
+               (min_value, max_value) when mode is set to "absolute" while it is a float
+               number when mode is set to "relative".
+
+        :return: the tsdataset instance.
+        '''
+        self.df = _abnormal_value_repair(df=self.df, dt_col=self.dt_col,
+                                         mode=mode, threshold=threshold)
         return self
 
     def gen_dt_feature(self, features="auto", one_hot_features=None):
@@ -420,11 +473,12 @@ class TSDataset:
 
         :return: the tsdataset instance.
         '''
-        from bigdl.nano.utils.log4Error import invalidInputError
-        invalidInputError(self._is_pd_datetime,
-                          "The time series data does not have a Pandas datetime format"
-                          "(you can use pandas.to_datetime to convert a string into"
-                          " a datetime format.)")
+        if not self.deploy_mode:
+            from bigdl.nano.utils.log4Error import invalidInputError
+            invalidInputError(self._is_pd_datetime,
+                              "The time series data does not have a Pandas datetime format"
+                              "(you can use pandas.to_datetime to convert a string into"
+                              " a datetime format.)")
         features_generated = []
         self.df = generate_dt_features(input_df=self.df,
                                        dt_col=self.dt_col,
@@ -651,15 +705,19 @@ class TSDataset:
         >>> print(x.shape, y.shape) # x.shape = (1, 1, 6) y.shape = (1, 1, 2)
 
         '''
-        from bigdl.nano.utils.log4Error import invalidInputError
-        if id_sensitive and not _check_is_aligned(self.df, self.id_col, self.dt_col):
-            invalidInputError(False,
-                              "The time series data should be "
-                              "aligned if id_sensitive is set to True.")
-        feature_col = _to_list(feature_col, "feature_col") if feature_col is not None \
-            else self.feature_col
-        target_col = _to_list(target_col, "target_col") if target_col is not None \
-            else self.target_col
+        if not self.deploy_mode:
+            from bigdl.nano.utils.log4Error import invalidInputError
+            if id_sensitive and not _check_is_aligned(self.df, self.id_col, self.dt_col):
+                invalidInputError(False,
+                                  "The time series data should be "
+                                  "aligned if id_sensitive is set to True.")
+        else:
+            is_predict = True
+
+        feature_col = _to_list(feature_col, "feature_col", deploy_mode=self.deploy_mode) \
+            if feature_col is not None else self.feature_col
+        target_col = _to_list(target_col, "target_col", deploy_mode=self.deploy_mode) \
+            if target_col is not None else self.target_col
         if self.roll_additional_feature:
             additional_feature_col =\
                 list(set(feature_col).intersection(set(self.roll_additional_feature)))
@@ -690,44 +748,46 @@ class TSDataset:
 
         if self.lookback == 'auto':
             self.lookback = self.get_cycle_length('mode', top_k=3)
-        rolling_result = \
-            self.df.groupby([self.id_col]) \
-                .apply(lambda df: roll_timeseries_dataframe(df=df,
+        groups = self.df.groupby([self.id_col])
+        rolling_result = []
+        for _, group in groups:
+            rolling_result.append(roll_timeseries_dataframe(df=group,
                                                             roll_feature_df=roll_feature_df,
                                                             lookback=self.lookback,
                                                             horizon=self.horizon,
                                                             feature_col=feature_col,
                                                             target_col=target_col,
-                                                            label_len=label_len))
+                                                            label_len=label_len,
+                                                            deploy_mode=self.deploy_mode))
 
         # concat the result on required axis
         concat_axis = 2 if id_sensitive else 0
         self.numpy_x = np.concatenate([rolling_result[i][0]
-                                       for i in self._id_list],
+                                       for i in range(len(self._id_list))],
                                       axis=concat_axis).astype(np.float32)
         if (horizon != 0 and is_predict is False) or time_enc:
             self.numpy_y = np.concatenate([rolling_result[i][1]
-                                           for i in self._id_list],
+                                           for i in range(len(self._id_list))],
                                           axis=concat_axis).astype(np.float32)
         else:
             self.numpy_y = None
 
         # time_enc
         if time_enc:
-            time_enc_arr = \
-                self.df.groupby([self.id_col]) \
-                    .apply(lambda df: gen_time_enc_arr(df=df,
-                                                       dt_col=self.dt_col,
-                                                       freq=self._freq,
-                                                       horizon_time=horizon_time,
-                                                       is_predict=is_predict,
-                                                       lookback=lookback,
-                                                       label_len=label_len))
+            time_enc_arr = []
+            for _, group in groups:
+                time_enc_arr.append(gen_time_enc_arr(df=group,
+                                                     dt_col=self.dt_col,
+                                                     freq=self._freq,
+                                                     horizon_time=horizon_time,
+                                                     is_predict=is_predict,
+                                                     lookback=lookback,
+                                                     label_len=label_len))
             self.numpy_x_timeenc = np.concatenate([time_enc_arr[i][0]
-                                                   for i in self._id_list],
+                                                   for i in range(len(self._id_list))],
                                                   axis=0).astype(np.float32)
             self.numpy_y_timeenc = np.concatenate([time_enc_arr[i][1]
-                                                   for i in self._id_list],
+                                                   for i in range(len(self._id_list))],
                                                   axis=0).astype(np.float32)
         else:
             self.numpy_x_timeenc = None
@@ -955,11 +1015,12 @@ class TSDataset:
                  when time_enc=True.
                  The ndarray is casted to float32.
         '''
-        from bigdl.nano.utils.log4Error import invalidInputError
-        if self.numpy_x is None:
-            invalidInputError(False,
-                              "Please call 'roll' method "
-                              "before transform a TSDataset to numpy ndarray!")
+        if not self.deploy_mode:
+            from bigdl.nano.utils.log4Error import invalidInputError
+            if self.numpy_x is None:
+                invalidInputError(False,
+                                  "Please call 'roll' method "
+                                  "before transform a TSDataset to numpy ndarray!")
         if self.numpy_y is None and self.numpy_x_timeenc is None:
             return self.numpy_x
         elif self.numpy_x_timeenc is None:
@@ -1002,18 +1063,19 @@ class TSDataset:
             for feature in self.feature_col:
                 if feature not in self.roll_additional_feature:
                     feature_col.append(feature)
-        if fit:
+        if fit and not self.deploy_mode:
             self.df[self.target_col + feature_col] = \
                 scaler.fit_transform(self.df[self.target_col + feature_col])
         else:
-            from sklearn.utils.validation import check_is_fitted
-            from bigdl.nano.utils.log4Error import invalidInputError
-            try:
-                invalidInputError(not check_is_fitted(scaler), "scaler is not fittedd")
-            except Exception:
-                invalidInputError(False,
-                                  "When calling scale for the first time, "
-                                  "you need to set fit=True.")
+            if not self.deploy_mode:
+                from sklearn.utils.validation import check_is_fitted
+                from bigdl.nano.utils.log4Error import invalidInputError
+                try:
+                    invalidInputError(not check_is_fitted(scaler), "scaler is not fittedd")
+                except Exception:
+                    invalidInputError(False,
+                                      "When calling scale for the first time, "
+                                      "you need to set fit=True.")
             self.df[self.target_col + feature_col] = \
                 scaler.transform(self.df[self.target_col + feature_col])
         self.scaler = scaler
@@ -1102,13 +1164,19 @@ class TSDataset:
                           f" but found {aggregate}.")
 
         if len(self.target_col) == 1:
-            res = self.df.groupby(self.id_col)\
-                         .apply(lambda x: (cycle_length_est(x[self.target_col[0]].values, top_k)))
+            res = []
+            groups = self.df.groupby(self.id_col)
+            for _, group in groups:
+                res.append(cycle_length_est(group[self.target_col[0]].values, top_k))
+            res = pd.Series(res)
         else:
-            res = self.df.groupby(self.id_col)\
-                         .apply(lambda x: pd.DataFrame({'cycle_length':
-                                [cycle_length_est(x[col].values,
-                                                  top_k)for col in self.target_col]}))
+            res = []
+            groups = self.df.groupby(self.id_col)
+            for _, group in groups:
+                res.append(pd.DataFrame({'cycle_length':
+                           [cycle_length_est(group[col].values,
+                                             top_k)for col in self.target_col]}))
+            res = pd.concat(res, axis=0)
             res = res.cycle_length
 
         if aggregate.lower().strip() == 'mode':

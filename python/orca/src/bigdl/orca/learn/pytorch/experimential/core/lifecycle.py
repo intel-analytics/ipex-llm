@@ -14,13 +14,9 @@
 # limitations under the License.
 #
 
-
 from abc import abstractmethod, ABCMeta
 import ray
-
 from bigdl.orca.learn.pytorch.utils import find_free_port
-from bigdl.dllib.utils.log4Error import *
-
 from torch.utils.data import DataLoader, IterableDataset
 from torch.utils.data.distributed import DistributedSampler
 
@@ -41,8 +37,8 @@ class LifeCycle(metaclass=ABCMeta):
 
     def setup_torch_distribute(self, tcp_store_host, tcp_store_port, world_rank,
                                world_size):
-        self._init_torchDDP(tcp_store_host, tcp_store_port, world_rank,
-                            world_size)
+        self._init_torch_ddp(tcp_store_host, tcp_store_port, world_rank,
+                             world_size)
 
         self.setup_components()
 
@@ -57,8 +53,8 @@ class LifeCycle(metaclass=ABCMeta):
         # self.setup_operator(training_models)
         pass
 
-    def _init_torchDDP(self, tcp_store_host, tcp_store_port, world_rank,
-                       world_size):
+    def _init_torch_ddp(self, tcp_store_host, tcp_store_port, world_rank,
+                        world_size):
         import torch.distributed as dist
         client_store = dist.TCPStore(tcp_store_host, tcp_store_port, -1, False)
         dist.init_process_group(
@@ -122,7 +118,7 @@ class LifeCycle(metaclass=ABCMeta):
 
     @backend.setter
     @abstractmethod
-    def backend(self, rank):
+    def backend(self, backend):
         pass
 
     @property
@@ -132,5 +128,5 @@ class LifeCycle(metaclass=ABCMeta):
 
     @size.setter
     @abstractmethod
-    def size(self, rank):
+    def size(self, size):
         pass

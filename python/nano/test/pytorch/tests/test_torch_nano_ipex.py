@@ -161,10 +161,10 @@ class TestLite(TestCase):
         MyNanoCorrectness(use_ipex=True).train(0.25)
 
     def test_torch_nano_spawn_correctness(self):
-        MyNanoCorrectness(use_ipex=True, num_processes=2, distributed_backend="spawn").train(0.5)
+        MyNanoCorrectness(use_ipex=True, num_processes=2, distributed_backend="spawn", auto_lr=False).train(0.5)
 
     def test_torch_nano_subprocess_correctness(self):
-        MyNanoCorrectness(use_ipex=True, num_processes=2, distributed_backend="subprocess").train(0.5)
+        MyNanoCorrectness(use_ipex=True, num_processes=2, distributed_backend="subprocess", auto_lr=False).train(0.5)
 
     def test_torch_nano_bf16_support_opt(self):
         MyNano(use_ipex=True, precision='bf16').train(optimizer_supported=True)

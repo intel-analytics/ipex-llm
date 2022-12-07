@@ -21,7 +21,7 @@ import copy
 
 import tensorflow as tf
 
-from bigdl.orca.data.utils import ray_partition_get_data_label
+from bigdl.orca.data.utils import partition_get_data_label
 from bigdl.orca.data.file import exists
 from bigdl.orca.learn.utils import save_pkl, duplicate_stdout_stderr_to_file,\
     get_rank, process_tensorboard_in_callbacks, save_model, load_model, \
@@ -121,9 +121,9 @@ class TFDistributedDatasetHandler(DatasetHandler):
     def _handle_xshards(self, dataset, steps, local_batch_size, shuffle):
         import tensorflow as tf
 
-        data, label = ray_partition_get_data_label(dataset,
-                                                   allow_tuple=True,
-                                                   allow_list=False)
+        data, label = partition_get_data_label(dataset,
+                                               allow_tuple=True,
+                                               allow_list=False)
 
         def dataset_fn(input_context):
             dataset = tf.data.Dataset.from_tensor_slices((data, label))
@@ -156,9 +156,9 @@ class LocalDatasetHandler(DatasetHandler):
 
     def _handle_xshards(self, dataset, steps, local_batch_size, shuffle):
         import tensorflow as tf
-        data, label = ray_partition_get_data_label(dataset,
-                                                   allow_tuple=True,
-                                                   allow_list=False)
+        data, label = partition_get_data_label(dataset,
+                                               allow_tuple=True,
+                                               allow_list=False)
         dataset = tf.data.Dataset.from_tensor_slices((data, label))
         dataset = dataset.repeat()
         dataset = dataset.take(steps * local_batch_size)
@@ -176,9 +176,12 @@ class LocalDatasetHandler(DatasetHandler):
 
 
 class SparkRunner:
-    def __init__(self, model_creator, compile_args_creator,
-                 size,
-                 cluster_info,
+    def __init__(self,
+                 model_creator=None,
+                 model_load=None,
+                 compile_args_creator=None,
+                 size=None,
+                 cluster_info=None,
                  config=None,
                  verbose=False,
                  model_weights=None,
@@ -199,6 +202,7 @@ class SparkRunner:
                 """
 
         self.model_creator = model_creator
+        self.model_load = model_load
         self.compile_args_creator = compile_args_creator
         self.config = {} if config is None else config
         self.inter_op_parallelism = self.config.get("inter_op_parallelism", 1)
@@ -232,6 +236,12 @@ class SparkRunner:
                 self.setup_distributed(self.cluster)
         self.model_dir = model_dir
         self.application_id = application_id
+
+        if self.model_creator is None:
+            from pyspark import SparkFiles
+            if self.model_load.startswith("hdfs") or self.model_load.startswith("s3"):
+                self.model_load = self.model_load.split("/")[-1]
+            self.model_load = SparkFiles.get(self.model_load)
 
     def setup(self):
         import tensorflow as tf
@@ -274,7 +284,10 @@ class SparkRunner:
                 # for continous training
                 model = load_model(self._model_saved_path)
             else:
-                model = self.model_creator(self.config)
+                if self.model_creator is not None:
+                    model = self.model_creator(self.config)
+                else:
+                    model = tf.keras.models.load_model(self.model_load)
                 if self.model_weights:
                     model.set_weights(self.model_weights.value)
 
@@ -380,7 +393,10 @@ class SparkRunner:
         config["batch_size"] = batch_size
 
         with self.strategy.scope():
-            model = self.model_creator(self.config)
+            if self.model_creator is not None:
+                model = self.model_creator(self.config)
+            else:
+                model = tf.keras.models.load_model(self.model_load)
             if self.model_weights:
                 model.set_weights(self.model_weights.value)
 
@@ -404,7 +420,10 @@ class SparkRunner:
         results = model.evaluate(dataset, **params)
 
         if results is None:
-            local_model = self.model_creator(self.config)
+            if self.model_creator is not None:
+                local_model = self.model_creator(self.config)
+            else:
+                local_model = tf.keras.models.load_model(self.model_load)
             if self.model_weights:
                 local_model = local_model.set_weights(self.model_weights.value)
             results = local_model.evaluate(dataset, **params)
@@ -445,12 +464,12 @@ class SparkRunner:
             callbacks=callbacks,
         )
 
-        if self.backend == "tf-distributed":
+        if self.model_creator is not None:
             local_model = self.model_creator(self.config)
-            if self.model_weights:
-                local_model.set_weights(self.model_weights.value)
         else:
-            local_model = self.model_creator(self.config)
+            local_model = tf.keras.models.load_model(self.model_load)
+        if self.model_weights:
+            local_model.set_weights(self.model_weights.value)
 
         def predict_fn(shard):
             y = local_model.predict(shard["x"], **params)

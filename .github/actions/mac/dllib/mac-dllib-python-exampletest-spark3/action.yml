@@ -1,0 +1,22 @@
+name: 'Mac Dllib Python ExampleTest Spark3.1'
+description: 'Mac Dllib Pythom ExampleTest Spark3.1'
+runs:
+  using: "composite"
+  steps:
+    - name: Run Test
+      shell: bash
+      run: |
+        source ~/.bash_profile
+        source activate py37
+        pip uninstall -y bigdl-dllib bigdl-orca bigdl-chronos bigdl-orca-spark3 bigdl-dllib-spark3 bigdl-chronos-spark3  pyspark
+        export KERAS_BACKEND=tensorflow
+      
+        chmod a+x python/dllib/examples/run-example-tests-pip.sh 
+        pip install -i https://pypi.python.org/simple --pre --upgrade bigdl-dllib
+        python/dllib/examples/run-example-tests-pip.sh 
+
+        source deactivate
+      env:
+        BIGDL_ROOT: ${{ github.workspace }}
+        ANALYTICS_ZOO_ROOT: ${{ github.workspace }}
+        

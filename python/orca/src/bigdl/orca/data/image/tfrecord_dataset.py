@@ -18,10 +18,14 @@ import os
 from bigdl.orca.data.image.imagenet_dataset import *
 from bigdl.orca.data.image.parquet_dataset import _check_arguments
 from bigdl.dllib.utils.log4Error import invalidInputError
+from typing import TYPE_CHECKING, List
+
+if TYPE_CHECKING:
+    from tensorflow.data import Dataset
 
 
 def write_imagenet(imagenet_path: str,
-                   output_path: str, **kwargs):
+                   output_path: str, **kwargs) -> None:
     """
     Write ImageNet data to TFRecords file format. The train and validation data will be
     converted into 1024 and 128 TFRecord files, respectively. Each train TFRecord file
@@ -59,11 +63,11 @@ def write_imagenet(imagenet_path: str,
                           'ImageNet data path should not be empty. Please download '
                           'from http://image-net.org/download-images and extract .tar '
                           'and provide raw data directory path')
-    return convert_imagenet_to_tf_records(imagenet_path, output_path, **kwargs)
+    convert_imagenet_to_tf_records(imagenet_path, output_path, **kwargs)
 
 
 def read_imagenet(path: str,
-                  is_training: bool):
+                  is_training: bool) -> "Dataset":
     """
     Convert ImageNet TFRecords files to tf.data.Dataset
 
@@ -85,7 +89,7 @@ def read_imagenet(path: str,
     return dataset
 
 
-def get_filenames(is_training, data_dir):
+def get_filenames(is_training: bool, data_dir: str) -> List[str]:
     """Return filenames for dataset."""
 
     _NUM_IMAGENET_TRAIN_FILES = 1024
@@ -100,7 +104,7 @@ def get_filenames(is_training, data_dir):
             for i in range(_NUM_IMAGENET_VAL_FILES)]
 
 
-def write_tfrecord(format, output_path, *args, **kwargs):
+def write_tfrecord(format: str, output_path: str, *args, **kwargs) -> None:
     """
     Convert input dataset to TFRecords
 
@@ -117,10 +121,12 @@ def write_tfrecord(format, output_path, *args, **kwargs):
     format_to_function = {"imagenet": (write_imagenet, ["imagenet_path"])}
     func, required_args = format_to_function[format]
     _check_arguments(format, kwargs, required_args)
-    func(output_path=output_path, *args, **kwargs)
+
+    kwargs["output_path"] = output_path
+    func(*args, **kwargs)
 
 
-def read_tfrecord(format, path, *args, **kwargs):
+def read_tfrecord(format: str, path: str, *args, **kwargs) -> "Dataset":
     """
     Read TFRecords files
 
@@ -137,4 +143,6 @@ def read_tfrecord(format, path, *args, **kwargs):
     format_to_function = {"imagenet": (read_imagenet, ["is_training"])}
     func, required_args = format_to_function[format]
     _check_arguments(format, kwargs, required_args)
-    return func(path=path, *args, **kwargs)
+
+    kwargs["path"] = path
+    return func(*args, **kwargs)

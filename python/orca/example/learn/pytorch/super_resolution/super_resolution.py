@@ -61,9 +61,9 @@ parser.add_argument('--runtime', type=str, default="spark",
 parser.add_argument('--address', type=str, default="",
                     help='The cluster address if the driver connects to an existing ray cluster. '
                          'If it is empty, a new Ray cluster will be created.')
-parser.add_argument('--backend', type=str, default="bigdl",
+parser.add_argument('--backend', type=str, default="spark",
                     help='The backend of PyTorch Estimator; '
-                         'bigdl, ray and spark are supported.')
+                         'spark, ray and bigdl are supported.')
 parser.add_argument('--data_dir', type=str, default="./dataset", help='The path of datesets.')
 opt = parser.parse_args()
 

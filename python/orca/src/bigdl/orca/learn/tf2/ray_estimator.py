@@ -35,7 +35,8 @@ from bigdl.orca.learn.utils import maybe_dataframe_to_xshards, dataframe_to_xsha
     convert_predict_xshards_to_dataframe, update_predict_xshards, \
     process_xshards_of_pandas_dataframe, make_data_creator
 from bigdl.orca.data.file import put_local_file_to_remote, put_local_dir_tree_to_remote, \
-    put_local_files_with_prefix_to_remote
+    put_local_files_with_prefix_to_remote, get_remote_file_to_local, get_remote_dir_to_local, \
+    is_file
 from bigdl.orca.data.utils import process_spark_xshards
 from bigdl.dllib.utils.log4Error import *
 from bigdl.orca.ray import OrcaRayContext
@@ -194,7 +195,8 @@ class TensorFlow2Estimator(OrcaRayEstimator):
                                                            feature_cols, label_cols,
                                                            mode="fit",
                                                            num_workers=self.num_workers,
-                                                           accept_str_col=True)
+                                                           accept_str_col=True,
+                                                           shard_size=batch_size)
 
         if isinstance(data, SparkXShards):
             if data._get_class_name() == 'pandas.core.frame.DataFrame':
@@ -332,7 +334,8 @@ class TensorFlow2Estimator(OrcaRayEstimator):
                                              label_cols=label_cols,
                                              mode="evaluate",
                                              num_workers=self.num_workers,
-                                             accept_str_col=True)
+                                             accept_str_col=True,
+                                             shard_size=batch_size)
 
         if isinstance(data, SparkXShards):
             if data._get_class_name() == 'pandas.core.frame.DataFrame':
@@ -458,7 +461,8 @@ class TensorFlow2Estimator(OrcaRayEstimator):
                                               feature_cols=feature_cols,
                                               label_cols=None,
                                               mode="predict",
-                                              accept_str_col=True)
+                                              accept_str_col=True,
+                                              shard_size=batch_size)
             pred_shards = self._predict_spark_xshards(xshards, params)
             result = convert_predict_xshards_to_dataframe(data, pred_shards)
         elif isinstance(data, SparkXShards):
@@ -552,26 +556,15 @@ class TensorFlow2Estimator(OrcaRayEstimator):
                `tf.saved_model.SaveOptions` object that specifies options for
                saving to SavedModel.
         """
-        # get current trained model
-        model = self.get_model()
-
-        if is_local_path(filepath):
-            model.save(filepath, overwrite, include_optimizer, save_format, signatures, options)
-        else:
-            file_name = os.path.basename(filepath)
-            temp_dir = tempfile.mkdtemp()
-            temp_path = os.path.join(temp_dir, file_name)
-            try:
-                model.save(temp_path, overwrite, include_optimizer, save_format, signatures,
-                           options)
-                if save_format == 'h5' or filepath.endswith('.h5') or filepath.endswith('.keras'):
-                    # hdf5 format
-                    put_local_file_to_remote(temp_path, filepath)
-                else:
-                    # tf format
-                    put_local_dir_tree_to_remote(temp_path, filepath)
-            finally:
-                shutil.rmtree(temp_dir)
+        params = dict(
+            filepath=filepath,
+            overwrite=overwrite,
+            include_optimizer=include_optimizer,
+            save_format=save_format,
+            signatures=signatures,
+            options=options
+        )
+        ray.get([w.save_model.remote(**params) for w in self.remote_workers])
 
     def load(self,
              filepath,
@@ -590,17 +583,17 @@ class TensorFlow2Estimator(OrcaRayEstimator):
                options for loading from SavedModel.
 
         """
-        params = dict(
+        self.load_params = dict(
             filepath=filepath,
             custom_objects=custom_objects,
             compile=compile,
             options=options
         )
         if is_local_path(filepath):
-            ray.get([worker.load_model.remote(**params)
+            ray.get([worker.load_model.remote(**self.load_params)
                      for worker in self.remote_workers])
         else:
-            ray.get([worker.load_remote_model.remote(**params)
+            ray.get([worker.load_remote_model.remote(**self.load_params)
                      for worker in self.remote_workers])
 
     def save_weights(self, filepath, overwrite=True, save_format=None, options=None):
@@ -619,25 +612,13 @@ class TensorFlow2Estimator(OrcaRayEstimator):
               weights.
         :return:
         """
-        model = self.get_model()
-
-        if is_local_path(filepath):
-            model.save_weights(filepath, overwrite, save_format, options)
-        else:
-            file_name = os.path.basename(filepath)
-            temp_dir = tempfile.mkdtemp()
-            temp_path = os.path.join(temp_dir, file_name)
-            try:
-                model.save_weights(temp_path, overwrite, save_format, options)
-                if save_format == 'h5' or filepath.endswith('.h5') or filepath.endswith('.keras'):
-                    # hdf5 format
-                    put_local_file_to_remote(temp_path, filepath)
-                else:
-                    # tf format
-                    remote_dir = os.path.dirname(filepath)
-                    put_local_files_with_prefix_to_remote(temp_path, remote_dir)
-            finally:
-                shutil.rmtree(temp_dir)
+        params = dict(
+            filepath=filepath,
+            overwrite=overwrite,
+            save_format=save_format,
+            options=options
+        )
+        ray.get([w.save_weights.remote(**params) for w in self.remote_workers])
 
     def load_weights(self, filepath, by_name=False, skip_mismatch=False, options=None):
         """
@@ -677,9 +658,28 @@ class TensorFlow2Estimator(OrcaRayEstimator):
 
     def _get_model_from_state(self, state, sample_input=None):
         """Creates model and load weights from state"""
+        import tensorflow as tf
 
         # keep the same behavior as `set_state` in `load` do
-        model = self.model_creator(self.config)
+        if self.model_creator is not None:
+            model = self.model_creator(self.config)
+        else:
+            file_name = os.path.basename(self.load_params["filepath"])
+            temp_dir = tempfile.mkdtemp()
+            temp_path = os.path.join(temp_dir, file_name)
+
+            if is_file(self.load_params["filepath"]):
+                get_remote_file_to_local(self.load_params["filepath"], temp_path)
+            else:
+                if os.path.exists(temp_path):
+                    os.makedirs(temp_path)
+                get_remote_dir_to_local(self.load_params["filepath"], temp_path)
+            try:
+                self.load_params["filepath"] = temp_path
+                model = tf.keras.models.load_model(**self.load_params)
+            finally:
+                shutil.rmtree(temp_dir)
+
         if sample_input:
             model(sample_input)
         try:

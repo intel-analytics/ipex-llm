@@ -33,8 +33,6 @@
 
 from filelock import FileLock
 import logging
-import io
-import itertools
 import os
 import copy
 import tempfile
@@ -43,17 +41,26 @@ import torch.nn as nn
 from torch.utils.data import DataLoader, IterableDataset
 from torch.utils.data.distributed import DistributedSampler
 from bigdl.orca import OrcaContext
-from bigdl.orca.learn.pytorch.callbacks.model_checkpoint import ModelCheckpoint
-from bigdl.orca.learn.pytorch.constants import SCHEDULER_STEP, NUM_STEPS
+from bigdl.orca.learn.pytorch.constants import (SCHEDULER_STEP, SCHEDULER_STEP_EPOCH,
+                                                SCHEDULER_STEP_BATCH)
 from bigdl.orca.learn.pytorch.training_operator import TrainingOperator
 from bigdl.orca.learn.pytorch import utils
-from bigdl.orca.learn.pytorch.utils import get_filesystem
-from bigdl.dllib.utils.log4Error import *
+from bigdl.orca.learn.pytorch.utils import (get_filesystem, AverageMeterCollection,
+                                            NUM_SAMPLES, get_batchsize)
+from bigdl.orca.learn.pytorch.core import BaseRunner
+from bigdl.dllib.utils.log4Error import invalidInputError
 
 try:
     from collections.abc import Iterable
 except ImportError:
     from collections import Iterable
+
+# TrainingOperator Import
+tqdm = None
+try:
+    from tqdm import tqdm
+except ImportError:
+    pass
 
 
 class DistBackend:
@@ -98,7 +105,7 @@ class TorchDistBackend(DistBackend):
                                **all_reduce_min_kwargs)
 
 
-class TorchRunner:
+class TorchRunner(BaseRunner):
     """Manages a PyTorch model for training."""
 
     def __init__(self,
@@ -127,6 +134,7 @@ class TorchRunner:
 
         self.timers = utils.TimerCollection()
         self.epochs = 0
+        self.global_step = 0
         self.models = None
         self.optimizers = None
         self.metrics = metrics
@@ -162,30 +170,6 @@ class TorchRunner:
         if not isinstance(self.schedulers, Iterable):
             self.schedulers = [self.schedulers]
 
-    def setup(self, cores_per_node):
-        import torch
-        torch.set_num_threads(cores_per_node)
-
-    def setup_torch_distribute(self, tcp_store_host, tcp_store_port, world_rank,
-                               world_size):
-        import torch.distributed as dist
-        from torch.nn.parallel import DistributedDataParallel
-        client_store = dist.TCPStore(tcp_store_host, tcp_store_port, -1, False)
-        dist.init_process_group(
-            backend="gloo",
-            store=client_store,
-            rank=world_rank,
-            world_size=world_size)
-        self.backend = "torch-distributed"
-        self.rank = world_rank
-        self.size = world_size
-        self.setup_components()
-        training_models = [
-            DistributedDataParallel(model)
-            for model in self.models
-        ]
-        self.setup_operator(training_models)
-
     def setup_components(self):
         """Runs the creator functions without any distributed coordination."""
 
@@ -196,14 +180,23 @@ class TorchRunner:
         invalidInputError(all(isinstance(model, nn.Module) for model in self.models),
                           ("All models must be PyTorch models: {}.".format(self.models)))
 
-        self.logger.debug("Creating optimizer.")
-        self.optimizers = self.optimizer_creator(self.given_models,
-                                                 self.config)
-        if not isinstance(self.optimizers, Iterable):
-            self.optimizers = [self.optimizers]
+        if self.optimizer_creator is not None:
+            self.logger.debug("Creating optimizer.")
+            self.optimizers = self.optimizer_creator(self.given_models,
+                                                     self.config)
+            if self.optimizers is not None and not isinstance(self.optimizers, Iterable):
+                self.optimizers = [self.optimizers]
 
         self._create_schedulers_if_available()
         self._create_loss()
+
+    def setup_ddp_components(self):
+        from torch.nn.parallel import DistributedDataParallel
+        self.training_models = [
+            DistributedDataParallel(model)
+            for model in self.models
+        ]
+        self.setup_operator(self.training_models)
 
     def setup_operator(self, training_models):
         """Create the training operator."""
@@ -223,35 +216,6 @@ class TorchRunner:
                 use_tqdm=self.use_tqdm,
                 sync_stats=self.sync_stats,
                 dist_backend=self.dist_backend)
-
-    def with_sampler(self, loader):
-        self.logger.debug("Wrapping DistributedSampler on DataLoader")
-        data_loader_args = {
-            "dataset": loader.dataset,
-            "batch_size": loader.batch_size,
-            "shuffle": False,
-            "num_workers": loader.num_workers,
-            "collate_fn": loader.collate_fn,
-            "pin_memory": loader.pin_memory,
-            "drop_last": loader.drop_last,
-            "timeout": loader.timeout,
-            "worker_init_fn": loader.worker_init_fn,
-            "sampler": DistributedSampler(loader.dataset,
-                                          num_replicas=self.size,
-                                          rank=self.rank)
-        }
-        return DataLoader(**data_loader_args)
-
-    @staticmethod
-    def should_wrap_dataloader(loader):
-        from torch.utils.data import DataLoader
-        try:
-            from torch.utils.data import IterableDataset
-            not_iterable = not isinstance(loader.dataset, IterableDataset)
-        except Exception as e:
-            not_iterable = TorchRunner
-        return (isinstance(loader, DataLoader)
-                and not_iterable)
 
     def train_epochs(self, data_creator, epochs=1, batch_size=32, profile=False,
                      info=None, wrap_dataloader=None, callbacks=None,
@@ -352,7 +316,7 @@ class TorchRunner:
         })
         with self.timers.record("train_epoch"):
             data_loader = iter(data_loader)
-            train_stats = self.training_operator.train_epoch(data_loader, info, callbacks)
+            train_stats = self._train_epoch(data_loader, info, callbacks)
 
         if val_loader:
             with self.timers.record("validation"):
@@ -379,6 +343,172 @@ class TorchRunner:
             stats.update(profile=self.timers.stats())
 
         return stats
+
+    def _train_epoch(self, iterator, info, callbacks=None):
+        """Runs one standard training pass over the training dataloader.
+
+        By default, this method will iterate over the given iterator and
+        call ``self.train_batch`` over each batch. If ``scheduler_step_freq``
+        is set, this default method will also step the scheduler accordingly.
+
+        You do not need to call ``train_batch`` in this method if you plan
+        to implement a custom optimization/training routine here.
+
+        You may find ``ray.util.sgd.utils.AverageMeterCollection`` useful
+        when overriding this method. See example below:
+
+        .. code-block:: python
+
+            def train_epoch(self, ...):
+                meter_collection = AverageMeterCollection()
+                self.model.train()
+                for batch in iterator:
+                    # do some processing
+                    metrics = {"metric_1": 1, "metric_2": 3} # dict of metrics
+
+                    # This keeps track of all metrics across multiple batches
+                    meter_collection.update(metrics, n=len(batch))
+
+                # Returns stats of the meters.
+                stats = meter_collection.summary()
+                return stats
+
+
+        Args:
+            iterator (iter): Iterator over the training data for the entire
+                epoch. This iterator is expected to be entirely consumed.
+            info (dict): Dictionary for information to be used for custom
+                training operations.
+
+        Returns:
+            A dict of metrics from training.
+        """
+        if self.use_tqdm and self.rank == 0:
+            desc = ""
+            if info is not None and "epoch_idx" in info:
+                if "num_epochs" in info:
+                    desc = "{}/{}e".format(info["epoch_idx"] + 1,
+                                           info["num_epochs"])
+                else:
+                    desc = "{}e".format(info["epoch_idx"] + 1)
+            _progress_bar = tqdm(
+                total=len(iterator),
+                desc=desc,
+                unit="batch",
+                leave=False)
+        else:
+            _progress_bar = None
+
+        metric_meters = AverageMeterCollection()
+
+        # TODO: Discuss the situation when there are multiple components,
+        #       It is best for the user to write this part of the logic in a hook func.
+        self.training_model.train()
+        # self.training_models may not be DDP if horovod.
+        from torch.nn.parallel import DistributedDataParallel as DDP
+        if isinstance(self.training_model, DDP):
+            with self.training_model.join():
+                self._train_loop(iterator, info, _progress_bar, metric_meters, callbacks)
+        else:
+            self._train_loop(iterator, info, _progress_bar, metric_meters, callbacks)
+
+        if self.scheduler and info.get(SCHEDULER_STEP) == SCHEDULER_STEP_EPOCH:
+            self.scheduler.step()
+
+        return metric_meters.summary(sync_stats=self.sync_stats,
+                                     dist_backend=self.dist_backend)
+
+    def _train_loop(self, iterator, info, _progress_bar, metric_meters, callbacks):
+        for batch_idx, batch in enumerate(iterator):
+            batch_info = {
+                "batch_idx": batch_idx,
+                "global_step": self.global_step
+            }
+            batch_info.update(info)
+            if callbacks is not None:
+                for callback in callbacks:
+                    callback.on_batch_begin(batch_idx)
+            metrics = self._train_batch(batch, batch_info=batch_info)
+            if self.use_tqdm and self.rank == 0:
+                _progress_bar.n = batch_idx + 1
+                postfix = {}
+                if "train_loss" in metrics:
+                    postfix.update(loss=metrics["train_loss"])
+                _progress_bar.set_postfix(postfix)
+
+            if self.scheduler and batch_info.get(
+                    SCHEDULER_STEP) == SCHEDULER_STEP_BATCH:
+                self.scheduler.step()
+
+            metric_meters.update(metrics, n=metrics.pop(NUM_SAMPLES, 1))
+            self.global_step += 1
+            if callbacks is not None:
+                for callback in callbacks:
+                    callback.on_batch_end(batch_idx, logs=metrics)
+
+    def _train_batch(self, batch, batch_info=None):
+        """Computes loss and updates the model over one batch.
+
+        This method is responsible for computing the loss and gradient and
+        updating the model.
+
+        By default, this method implementation assumes that batches
+        are in (\*features, labels) format. So we also support multiple inputs
+        model. If using amp/fp16 training, it will also scale the loss
+        automatically.
+
+        You can provide custom loss metrics and training operations if you
+        override this method. If overriding this method, you can access model,
+        optimizer, criterion via ``self.model``, ``self.optimizer``,
+        and ``self.criterion``.
+
+        You do not need to override this method if you plan to
+        override ``train_epoch``.
+
+        Args:
+            batch: One item of the validation iterator.
+            batch_info (dict): Information dict passed in from ``train_epoch``.
+
+        Returns:
+            A dictionary of metrics.
+                By default, this dictionary contains "loss" and "num_samples".
+                "num_samples" corresponds to number of datapoints in the batch.
+                However, you can provide any number of other values.
+                Consider returning "num_samples" in the metrics because
+                by default, ``train_epoch`` uses "num_samples" to
+                calculate averages.
+
+        """
+        # unpack features into list to support multiple inputs model
+        features, target = batch
+
+        # Compute output.
+        with self.timers.record("fwd"):
+            if torch.is_tensor(features):
+                output = self.training_model(features)
+            elif isinstance(features, (tuple, list)):
+                output = self.training_model(*features)
+            else:
+                invalidInputError(False,
+                                  "Features should be tensor, list/tuple or dict, "
+                                  "but got {}".format(type(features)))
+
+            if isinstance(output, tuple) or isinstance(output, list):
+                # Then target is also assumed to be a tuple or list.
+                loss = self.criterion(*output, *target)
+            else:
+                loss = self.criterion(output, target)
+
+        # Compute gradients in a backward pass.
+        with self.timers.record("grad"):
+            self.optimizer.zero_grad()
+            loss.backward()
+
+        # Call step of optimizer to update model params.
+        with self.timers.record("apply"):
+            self.optimizer.step()
+
+        return {"train_loss": loss.item(), NUM_SAMPLES: get_batchsize(features)}
 
     def validate(self, data_creator, batch_size=32, num_steps=None, profile=False,
                  info=None, wrap_dataloader=None):
@@ -455,9 +585,14 @@ class TorchRunner:
         state = {
             "epoch": self.epochs,
             "operator": self.training_operator.state_dict(),
-            "models": [model.state_dict() for model in self.models],
-            "optimizers": [opt.state_dict() for opt in self.optimizers]
+            "models": [model.state_dict() for model in self.models]
         }
+        if self.optimizers is not None:
+            state.update({
+                "optimizers": [
+                    opt.state_dict() for opt in self.optimizers
+                ]
+            })
         if self.schedulers:
             state.update({
                 "schedulers": [
@@ -482,66 +617,28 @@ class TorchRunner:
         if "operator" in state:
             self.training_operator.load_state_dict(state["operator"])
 
-    @staticmethod
-    def _state_dict2stream(state_dict):
-        _buffer = io.BytesIO()
-        torch.save(state_dict, _buffer)
-        return _buffer.getvalue()
-
-    @staticmethod
-    def _state_stream2dict(byte_obj):
-        _buffer = io.BytesIO(byte_obj)
-        state_dict = torch.load(_buffer)
-        return state_dict
-
-    def get_state_stream(self):
-        """Returns a bytes object for the state dict."""
-        state_dict = self.get_state_dict()
-        state_stream = TorchRunner._state_dict2stream(state_dict)
-        return state_stream
-
-    def load_state_stream(self, byte_obj):
-        """Loads a bytes object the training state dict."""
-        state_dict = TorchRunner._state_stream2dict(byte_obj)
-        return self.load_state_dict(state_dict)
-
     def save_checkpoint(self, filepath, save_weights_only=False):
         if self.rank == 0:
-            self._save_checkpoint(filepath, save_weights_only)
+            import fsspec
+            if save_weights_only:
+                checkpoint = {
+                    "epoch": self.epochs,
+                    "models": [model.state_dict() for model in self.models],
+                }
+            else:
+                checkpoint = self.get_state_dict()
+            byte_obj = TorchRunner._state_dict2stream(checkpoint)
+            with fsspec.open(filepath, "wb") as f:
+                f.write(byte_obj)
             self.logger.debug(f"Saved checkpoint: {filepath}")
         return filepath
 
-    def _save_checkpoint(self, filepath, save_weights_only=False):
-        import fsspec
-        if save_weights_only:
-            checkpoint = {
-                "epoch": self.epochs,
-                "models": [model.state_dict() for model in self.models],
-            }
-        else:
-            checkpoint = self.get_state_dict()
-        byte_obj = TorchRunner._state_dict2stream(checkpoint)
-        with fsspec.open(filepath, "wb") as f:
-            f.write(byte_obj)
-
-    def load_checkpoint(self, filepath):
-        fs = get_filesystem(filepath)
-        if not fs.exists(filepath):
-            invalidInputError(False,
-                              f"Checkpoint at {filepath} not found. Aborting training.")
-        with fs.open(filepath, "rb") as f:
-            state_dict = torch.load(f)
-        self.load_state_dict(state_dict)
-
     def remove_checkpoint(self, filepath):
         if self.rank == 0:
-            self._remove_checkpoint(filepath)
-
-    def _remove_checkpoint(self, filepath):
-        fs = get_filesystem(filepath)
-        if fs.exists(filepath):
-            fs.rm(filepath, recursive=True)
-            self.logger.debug(f"Removed checkpoint: {filepath}")
+            fs = get_filesystem(filepath)
+            if fs.exists(filepath):
+                fs.rm(filepath, recursive=True)
+                self.logger.debug(f"Removed checkpoint: {filepath}")
 
     def apply(self, fn):
         return fn()
@@ -573,10 +670,18 @@ class TorchRunner:
             return self.optimizers[0]
 
     @property
-    def given_schedulers(self):
-        if not self.schedulers:
-            return self.schedulers
-        if len(self.schedulers) > 1:
-            return self.schedulers
-        else:
+    def optimizer(self):
+        """First or only optimizer(s) created by the ``optimizer_creator``."""
+        return self.optimizers[0]
+
+    @property
+    def scheduler(self):
+        """First or only scheduler(s) created by the ``scheduler_creator``."""
+        if self.schedulers:
             return self.schedulers[0]
+
+    @property
+    def training_model(self):
+        """First or only training_model(s) wrapped by the torchDDP."""
+        if self.training_models:
+            return self.training_models[0]

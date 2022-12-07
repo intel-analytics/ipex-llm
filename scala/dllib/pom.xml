@@ -35,7 +35,7 @@
         <dependency>
             <groupId>com.google.protobuf</groupId>
             <artifactId>protobuf-java</artifactId>
-            <version>3.19.2</version>
+            <version>3.19.6</version>
         </dependency>
         <dependency>
             <groupId>org.apache.hadoop</groupId>
@@ -76,7 +76,7 @@
         <dependency>
             <groupId>org.apache.hadoop</groupId>
             <artifactId>hadoop-common</artifactId>
-            <version>3.2.3</version>
+            <version>3.2.4</version>
             <scope>provided</scope>
             <exclusions>
                 <exclusion>
@@ -370,12 +370,6 @@
                     <artifactId>protobuf-java</artifactId>
                 </exclusion>
             </exclusions>
-        </dependency>
-        <dependency>
-            <groupId>log4j</groupId>
-            <artifactId>log4j</artifactId>
-            <version>1.2.17</version>
-            <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.slf4j</groupId>

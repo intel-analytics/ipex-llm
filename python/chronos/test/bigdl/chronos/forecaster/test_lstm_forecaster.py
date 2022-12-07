@@ -23,7 +23,7 @@ torch = LazyImport('torch')
 LSTMForecaster = LazyImport('bigdl.chronos.forecaster.lstm_forecaster.LSTMForecaster')
 from unittest import TestCase
 import pytest
-from .. import op_torch, op_distributed, op_all, op_onnxrt16, op_automl, op_diff_set_all
+from .. import op_torch, op_distributed, op_inference, op_automl, op_diff_set_all
 
 
 def create_data(loader=False):
@@ -97,7 +97,6 @@ def create_tsdataset_val(roll=True, horizon=1):
     return train, val, test
 
 
-@op_all
 @op_torch
 class TestChronosModelLSTMForecaster(TestCase):
 
@@ -124,7 +123,7 @@ class TestChronosModelLSTMForecaster(TestCase):
         assert test_mse[0].shape == test_data[1].shape[1:]
 
     @op_diff_set_all
-    @op_onnxrt16
+    @op_inference
     def test_lstm_forecaster_fit_loader(self):
         train_loader, val_loader, test_loader = create_data(loader=True)
         forecaster = LSTMForecaster(past_seq_len=24,
@@ -139,17 +138,21 @@ class TestChronosModelLSTMForecaster(TestCase):
         forecaster.quantize(calib_data=train_loader,
                             val_data=val_loader,
                             metric="mae",
-                            framework=['onnxrt_qlinearops', 'pytorch_fx'])
-        yhat = forecaster.predict(data=test_loader, acceleration=False)
+                            framework='pytorch_fx')
         q_yhat = forecaster.predict(data=test_loader, quantize=True, acceleration=False)
-        q_onnx_yhat = forecaster.predict_with_onnx(data=test_loader, quantize=True)
-        assert yhat.shape == q_onnx_yhat.shape == q_yhat.shape == (400, 1, 2)
+        yhat = forecaster.predict(data=test_loader, acceleration=False)
         forecaster.evaluate(test_loader, batch_size=32, acceleration=False)
-        forecaster.evaluate_with_onnx(test_loader)
+        forecaster.quantize(calib_data=train_loader,
+                            val_data=val_loader,
+                            metric="mae",
+                            framework='onnxrt_qlinearops')
+        q_onnx_yhat = forecaster.predict_with_onnx(data=test_loader, quantize=True)
         forecaster.evaluate_with_onnx(test_loader, batch_size=32, quantize=True)
+        forecaster.evaluate_with_onnx(test_loader)
+        assert yhat.shape == q_onnx_yhat.shape == q_yhat.shape == (400, 1, 2)
 
     @op_diff_set_all
-    @op_onnxrt16
+    @op_inference
     def test_lstm_forecaster_onnx_methods(self):
         train_data, val_data, test_data = create_data()
         forecaster = LSTMForecaster(past_seq_len=24,
@@ -288,7 +291,7 @@ class TestChronosModelLSTMForecaster(TestCase):
         np.testing.assert_almost_equal(test_pred_save_q, test_pred_load_q)
 
     @op_diff_set_all
-    @op_onnxrt16
+    @op_inference
     def test_lstm_forecaster_quantization_onnx(self):
         train_data, val_data, test_data = create_data()
         forecaster = LSTMForecaster(past_seq_len=24,
@@ -298,12 +301,12 @@ class TestChronosModelLSTMForecaster(TestCase):
                                     lr=0.01)
         forecaster.fit(train_data, epochs=2)
         # no tunning quantization
-        forecaster.quantize(train_data, framework=['onnxrt_qlinearops'])
+        forecaster.quantize(train_data, framework='onnxrt_qlinearops')
         pred_q = forecaster.predict_with_onnx(test_data[0], quantize=True)
         eval_q = forecaster.evaluate_with_onnx(test_data, quantize=True)
 
     @op_diff_set_all
-    @op_onnxrt16
+    @op_inference
     def test_lstm_forecaster_quantization_onnx_tuning(self):
         train_data, val_data, test_data = create_data()
         forecaster = LSTMForecaster(past_seq_len=24,
@@ -315,7 +318,7 @@ class TestChronosModelLSTMForecaster(TestCase):
         # quantization with tunning
         forecaster.quantize(train_data, val_data=val_data,
                             metric="mse", relative_drop=0.1, max_trials=3,
-                            framework=['onnxrt_qlinearops'])
+                            framework='onnxrt_qlinearops')
         pred_q = forecaster.predict_with_onnx(test_data[0], quantize=True)
         eval_q = forecaster.evaluate_with_onnx(test_data, quantize=True)
         with tempfile.TemporaryDirectory() as tmp_dir_name:
@@ -395,7 +398,7 @@ class TestChronosModelLSTMForecaster(TestCase):
 
     @op_distributed
     @op_diff_set_all
-    @op_onnxrt16
+    @op_inference
     def test_lstm_forecaster_distributed(self):
         from bigdl.orca import init_orca_context, stop_orca_context
         train_data, val_data, test_data = create_data()
@@ -537,7 +540,7 @@ class TestChronosModelLSTMForecaster(TestCase):
         assert yhat.shape == y_test.shape
 
     @op_diff_set_all
-    @op_onnxrt16
+    @op_inference
     def test_forecaster_from_tsdataset_data_loader_onnx(self):
         train, test = create_tsdataset(roll=False)
         train.gen_dt_feature(one_hot_features=['WEEK'])
@@ -550,18 +553,20 @@ class TestChronosModelLSTMForecaster(TestCase):
  
         lstm.fit(loader, epochs=2, batch_size=32)
         yhat = lstm.predict(test, acceleration=False)
+        res = lstm.evaluate(test_loader, acceleration=False)
         lstm.quantize(calib_data=loader,
                       metric='mse',
-                      framework=['pytorch_fx','onnxrt_qlinearops'])
-        onnx_yhat = lstm.predict_with_onnx(test)
+                      framework='pytorch_fx')
         q_yhat = lstm.predict(test, quantize=True, acceleration=False)
-        q_onnx_yhat = lstm.predict_with_onnx(test, quantize=True)
-        assert onnx_yhat.shape == q_yhat.shape == yhat.shape == q_onnx_yhat.shape
-
-        res = lstm.evaluate(test_loader, acceleration=False)
         q_res = lstm.evaluate(test_loader, quantize=True, acceleration=False)
-        onnx_res = lstm.evaluate_with_onnx(test_loader)
+        lstm.quantize(calib_data=loader,
+                      metric='mse',
+                      framework='onnxrt_qlinearops')
+        q_onnx_yhat = lstm.predict_with_onnx(test, quantize=True)
         q_onnx_res = lstm.evaluate_with_onnx(test_loader, quantize=True)
+        onnx_yhat = lstm.predict_with_onnx(test)
+        onnx_res = lstm.evaluate_with_onnx(test_loader)
+        assert onnx_yhat.shape == q_yhat.shape == yhat.shape == q_onnx_yhat.shape
 
     def test_lstm_forecaster_fit_earlystop(self):
         train_data, val_data, _ = create_data()
@@ -666,7 +671,7 @@ class TestChronosModelLSTMForecaster(TestCase):
         assert yhat.shape == y_test.shape
 
     @op_diff_set_all
-    @op_onnxrt16
+    @op_inference
     def test_forecaster_optimize_loader(self):
         train_loader, val_loader, test_loader = create_data(loader=True)
         forecaster = LSTMForecaster(past_seq_len=24,
@@ -699,4 +704,49 @@ class TestChronosModelLSTMForecaster(TestCase):
         forecaster.fit(train_loader, epochs=2)
         forecaster.evaluate(val_loader)
         forecaster.predict(test_loader)
-        assert forecaster.optim_model is None
+        assert forecaster.accelerated_model is None
+
+    def test_lstm_forecaster_eval_shuffle_loader(self):
+        from torch.utils.data import DataLoader, TensorDataset
+        from numpy.testing import assert_almost_equal
+        train_data, val_data, test_data = create_data()
+        forecaster = LSTMForecaster(past_seq_len=24,
+                                    input_feature_num=2,
+                                    output_feature_num=2,
+                                    loss="mse",
+                                    lr=0.01)
+        forecaster.fit(train_data, epochs=2)
+        test_loader_shuffle_f = DataLoader(TensorDataset(torch.from_numpy(test_data[0]),
+                                                         torch.from_numpy(test_data[1])),
+                                           batch_size=32,
+                                           shuffle=False)
+        test_loader_shuffle_t = DataLoader(TensorDataset(torch.from_numpy(test_data[0]),
+                                                         torch.from_numpy(test_data[1])),
+                                           batch_size=32,
+                                           shuffle=True)
+        eval_f = forecaster.evaluate(test_loader_shuffle_f)
+        eval_t = forecaster.evaluate(test_loader_shuffle_t)
+        assert_almost_equal(eval_f, eval_t)
+
+    @op_inference
+    def test_lstm_forecaster_eval_with_onnx_shuffle_loader(self):
+        from torch.utils.data import DataLoader, TensorDataset
+        from numpy.testing import assert_almost_equal
+        train_data, val_data, test_data = create_data()
+        forecaster = LSTMForecaster(past_seq_len=24,
+                                    input_feature_num=2,
+                                    output_feature_num=2,
+                                    loss="mse",
+                                    lr=0.01)
+        forecaster.fit(train_data, epochs=2)
+        test_loader_shuffle_f = DataLoader(TensorDataset(torch.from_numpy(test_data[0]),
+                                                         torch.from_numpy(test_data[1])),
+                                           batch_size=32,
+                                           shuffle=False)
+        test_loader_shuffle_t = DataLoader(TensorDataset(torch.from_numpy(test_data[0]),
+                                                         torch.from_numpy(test_data[1])),
+                                           batch_size=32,
+                                           shuffle=True)
+        eval_f = forecaster.evaluate_with_onnx(test_loader_shuffle_f)
+        eval_t = forecaster.evaluate_with_onnx(test_loader_shuffle_t)
+        assert_almost_equal(eval_f, eval_t)

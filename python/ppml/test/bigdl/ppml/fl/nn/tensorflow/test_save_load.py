@@ -44,6 +44,7 @@ class TestSaveLoad(FLTest):
     server_model_path = '/tmp/vfl_server_model'
     client_model_path = '/tmp/vfl_client_model.h5'
     tf.config.run_functions_eagerly(True) # enable step-by-step debug
+    tf.random.set_seed(22)
     def setUp(self) -> None:        
         self.fl_server = FLServer()
         self.fl_server.set_port(self.port)
@@ -101,9 +102,9 @@ class TestSaveLoad(FLTest):
                                              optimizer_args={'lr':1e-3})
         ppl_from_file.load_server_model(TestSaveLoad.server_model_path)
         ppl_from_file.fit(train_ds)
-        assert ppl_from_file.loss_history[-1] < 2.1, \
+        assert ppl_from_file.loss_history[-1] < 2.10, \
             f"Validation failed, incremental training loss does not meet requirement, \
-            required < 2.1, current {ppl_from_file.loss_history[-1]}"
+            required < 2.10, current {ppl_from_file.loss_history[-1]}"
 
 def build_client_model():
     inputs = Input(shape=(28, 28, 1))

@@ -9,7 +9,11 @@
 .. note::
     **Supported OS**:
 
-     Chronos is thoroughly tested on Ubuntu (16.04/18.04/20.04), and should works fine on CentOS. If you are a Windows user, the most convenient way to use Chronos on a windows laptop might be using WSL2, you may refer to https://docs.microsoft.com/en-us/windows/wsl/setup/environment or just install a ubuntu virtual machine.
+     Chronos is thoroughly tested on Ubuntu (16.04/18.04/20.04), and should works fine on CentOS. If you are a Windows user, there are 2 ways to use Chronos:
+     
+     1. You could use Chronos on a windows laptop with WSL2 (you may refer to https://docs.microsoft.com/en-us/windows/wsl/setup/environment) or just install a ubuntu virtual machine.
+
+     2. You could use Chronos on native Windows, but some features are unavailable in this case, the limitations will be shown below.
 ```
 ```eval_rst
 .. note::
@@ -69,6 +73,11 @@ Select your preferences in the panel below to find the proper install command. T
                             id="automlyes">Yes</button></td>
                 </tr>
 
+                <tr>
+                    <td colspan="1">Inference Optimization</td>
+                    <td colspan="2" title="No need for low-latency inference models"><button id="inferenceno">No</button></td>
+                    <td colspan="2" title="Get low-latency inference models with onnx\openvino\inc"><button id="inferenceyes">Yes</button></td>
+                </tr>
 
                 <tr>
                     <td colspan="1">Hardware</td>
@@ -118,4 +127,12 @@ pip install --pre --upgrade bigdl-chronos[pytorch]
 source bigdl-nano-init  # accelerate the conda env
 ```
 
+##### Install Chronos on native Windows
 
+Chronos can be simply installed using pip on native Windows, you could use the same command as Linux to install, but unfortunately, some features are unavailable now:
+
+1. `bigdl-chronos[distributed]` is not supported.
+
+2. `intel_extension_for_pytorch (ipex)` is unavailable for Windows now, so the related feature is not supported.
+
+For some known issues when installing and using Chronos on native Windows, you could refer to [windows_guide](https://bigdl.readthedocs.io/en/latest/doc/Chronos/Howto/windows_guide.html).

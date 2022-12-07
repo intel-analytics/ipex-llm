@@ -95,8 +95,9 @@ class TrainingOperator:
         invalidInputError(isinstance(models, collections.Iterable),
                           "Components need to be iterable. Got: {}".format(type(models)))
         self._optimizers = optimizers  # List of optimizers
-        invalidInputError(isinstance(optimizers, collections.Iterable),
-                          "Components need to be iterable. Got: {}".format(type(optimizers)))
+        if optimizers:
+            invalidInputError(isinstance(optimizers, collections.Iterable),
+                              "Components need to be iterable. Got: {}".format(type(optimizers)))
         self._world_rank = world_rank
         self._criterion = criterion
         self._schedulers = schedulers
@@ -135,170 +136,6 @@ class TrainingOperator:
                 all creator and operator constructors. Same as ``self.config``.
         """
         pass
-
-    def train_epoch(self, iterator, info, callbacks=None):
-        """Runs one standard training pass over the training dataloader.
-
-        By default, this method will iterate over the given iterator and
-        call ``self.train_batch`` over each batch. If ``scheduler_step_freq``
-        is set, this default method will also step the scheduler accordingly.
-
-        You do not need to call ``train_batch`` in this method if you plan
-        to implement a custom optimization/training routine here.
-
-        You may find ``ray.util.sgd.utils.AverageMeterCollection`` useful
-        when overriding this method. See example below:
-
-        .. code-block:: python
-
-            def train_epoch(self, ...):
-                meter_collection = AverageMeterCollection()
-                self.model.train()
-                for batch in iterator:
-                    # do some processing
-                    metrics = {"metric_1": 1, "metric_2": 3} # dict of metrics
-
-                    # This keeps track of all metrics across multiple batches
-                    meter_collection.update(metrics, n=len(batch))
-
-                # Returns stats of the meters.
-                stats = meter_collection.summary()
-                return stats
-
-
-        Args:
-            iterator (iter): Iterator over the training data for the entire
-                epoch. This iterator is expected to be entirely consumed.
-            info (dict): Dictionary for information to be used for custom
-                training operations.
-
-        Returns:
-            A dict of metrics from training.
-        """
-        if self.use_tqdm and self.world_rank == 0:
-            desc = ""
-            if info is not None and "epoch_idx" in info:
-                if "num_epochs" in info:
-                    desc = "{}/{}e".format(info["epoch_idx"] + 1,
-                                           info["num_epochs"])
-                else:
-                    desc = "{}e".format(info["epoch_idx"] + 1)
-            _progress_bar = tqdm(
-                total=len(iterator),
-                desc=desc,
-                unit="batch",
-                leave=False)
-        else:
-            _progress_bar = None
-
-        metric_meters = AverageMeterCollection()
-
-        self.model.train()
-        if isinstance(self.model, DDP):
-            with self.model.join():
-                self._train_loop(iterator, info, _progress_bar, metric_meters, callbacks)
-        else:
-            self._train_loop(iterator, info, _progress_bar, metric_meters, callbacks)
-
-        if self.scheduler and info.get(SCHEDULER_STEP) == SCHEDULER_STEP_EPOCH:
-            self.scheduler.step()
-
-        return metric_meters.summary(sync_stats=self.sync_stats,
-                                     dist_backend=self.dist_backend)
-
-    def _train_loop(self, iterator, info, _progress_bar, metric_meters, callbacks):
-        for batch_idx, batch in enumerate(iterator):
-            batch_info = {
-                "batch_idx": batch_idx,
-                "global_step": self.global_step
-            }
-            batch_info.update(info)
-            if callbacks is not None:
-                for callback in callbacks:
-                    callback.on_batch_begin(batch_idx)
-            metrics = self.train_batch(batch, batch_info=batch_info)
-            if self.use_tqdm and self.world_rank == 0:
-                _progress_bar.n = batch_idx + 1
-                postfix = {}
-                if "train_loss" in metrics:
-                    postfix.update(loss=metrics["train_loss"])
-                _progress_bar.set_postfix(postfix)
-
-            if self.scheduler and batch_info.get(
-                    SCHEDULER_STEP) == SCHEDULER_STEP_BATCH:
-                self.scheduler.step()
-
-            metric_meters.update(metrics, n=metrics.pop(NUM_SAMPLES, 1))
-            self.global_step += 1
-            if callbacks is not None:
-                for callback in callbacks:
-                    callback.on_batch_end(batch_idx, logs=metrics)
-
-    def train_batch(self, batch, batch_info):
-        """Computes loss and updates the model over one batch.
-
-        This method is responsible for computing the loss and gradient and
-        updating the model.
-
-        By default, this method implementation assumes that batches
-        are in (\*features, labels) format. So we also support multiple inputs
-        model. If using amp/fp16 training, it will also scale the loss
-        automatically.
-
-        You can provide custom loss metrics and training operations if you
-        override this method. If overriding this method, you can access model,
-        optimizer, criterion via ``self.model``, ``self.optimizer``,
-        and ``self.criterion``.
-
-        You do not need to override this method if you plan to
-        override ``train_epoch``.
-
-        Args:
-            batch: One item of the validation iterator.
-            batch_info (dict): Information dict passed in from ``train_epoch``.
-
-        Returns:
-            A dictionary of metrics.
-                By default, this dictionary contains "loss" and "num_samples".
-                "num_samples" corresponds to number of datapoints in the batch.
-                However, you can provide any number of other values.
-                Consider returning "num_samples" in the metrics because
-                by default, ``train_epoch`` uses "num_samples" to
-                calculate averages.
-
-        """
-        # unpack features into list to support multiple inputs model
-        features, target = batch
-
-        # Compute output.
-        with self.timers.record("fwd"):
-            if torch.is_tensor(features):
-                output = self.model(features)
-            elif isinstance(features, dict):
-                output = self.model(**features)
-            elif isinstance(features, (tuple, list)):
-                output = self.model(*features)
-            else:
-                invalidInputError(False,
-                                  "Features should be tensor, list/tuple or dict, "
-                                  "but got {}".format(type(features)))
-
-            if isinstance(output, tuple) or isinstance(output, list):
-                # Then target is also assumed to be a tuple or list.
-                loss = self.criterion(*output, *target)
-            else:
-                loss = self.criterion(output, target)
-
-        # Compute gradients in a backward pass.
-        with self.timers.record("grad"):
-            self.optimizer.zero_grad()
-            loss.backward()
-
-        # Call step of optimizer to update model params.
-        with self.timers.record("apply"):
-            self.optimizer.step()
-
-        return {"train_loss": loss.item(), NUM_SAMPLES: get_batchsize(features)}
 
     def validate(self, val_iterator, info, metrics, num_steps=None):
         """Runs one standard validation pass over the val_iterator.
@@ -406,8 +243,6 @@ class TrainingOperator:
         with self.timers.record("eval_fwd"):
             if torch.is_tensor(features):
                 output = self.model(features)
-            elif isinstance(features, dict):
-                output = self.model(**features)
             elif isinstance(features, (tuple, list)):
                 output = self.model(*features)
             else:
@@ -415,7 +250,11 @@ class TrainingOperator:
                                   "Features should be tensor, list/tuple or dict, "
                                   "but got {}".format(type(features)))
 
-            loss = self.criterion(output, target)
+            if isinstance(output, tuple) or isinstance(output, list):
+                # Then target is also assumed to be a tuple or list.
+                loss = self.criterion(*output, *target)
+            else:
+                loss = self.criterion(output, target)
 
         return output, target, loss
 

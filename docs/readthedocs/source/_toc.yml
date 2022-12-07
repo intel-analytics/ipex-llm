@@ -39,20 +39,28 @@ subtrees:
                 - file: doc/Orca/Overview/distributed-tuning
                 - file: doc/Orca/Overview/ray
           - file: doc/Orca/QuickStart/index
-            title: "Quick Examples"
+            title: "Quickstarts"
             subtrees:
               - entries:
-                - file: doc/UseCase/spark-dataframe
-                - file: doc/UseCase/xshards-pandas
+                - file: doc/Orca/QuickStart/orca-tf2keras-quickstart
+                - file: doc/Orca/QuickStart/orca-pytorch-quickstart
                 - file: doc/Orca/QuickStart/ray-quickstart
-                - file: doc/Orca/QuickStart/orca-pytorch-distributed-quickstart
-                - file: doc/Orca/QuickStart/orca-autoestimator-pytorch-quickstart
-                - file: doc/Orca/QuickStart/orca-autoxgboost-quickstart
+                - file: doc/Orca/QuickStart/orca-tf-quickstart
+                - file: doc/Orca/QuickStart/orca-keras-quickstart
+          - file: doc/Orca/Howto/index
+            title: "How-to Guides"
+            subtrees:
+              - entries:
+                - file: doc/Orca/Howto/spark-dataframe
+                - file: doc/Orca/Howto/xshards-pandas
+                - file: doc/Orca/Howto/orca-autoestimator-pytorch-quickstart
+                - file: doc/Orca/Howto/orca-autoxgboost-quickstart
           - file: doc/Orca/Tutorial/index
             title: "Tutorials"
             subtrees:
               - entries:
                 - file: doc/Orca/Tutorial/yarn
+                - file: doc/Orca/Tutorial/k8s
           - file: doc/Orca/Overview/known_issues
             title: "Tips and Known Issues"
           - file: doc/PythonAPI/Orca/index
@@ -106,8 +114,13 @@ subtrees:
                   - file: doc/Nano/Howto/Training/General/choose_num_processes_training
                   - file: doc/Nano/Howto/Inference/PyTorch/accelerate_pytorch_inference_onnx
                   - file: doc/Nano/Howto/Inference/PyTorch/accelerate_pytorch_inference_openvino
+                  - file: doc/Nano/Howto/Inference/PyTorch/accelerate_pytorch_inference_jit_ipex
                   - file: doc/Nano/Howto/Inference/PyTorch/quantize_pytorch_inference_inc
                   - file: doc/Nano/Howto/Inference/PyTorch/quantize_pytorch_inference_pot
+                  - file: doc/Nano/Howto/Inference/PyTorch/pytorch_save_and_load_ipex
+                  - file: doc/Nano/Howto/Inference/PyTorch/pytorch_save_and_load_jit
+                  - file: doc/Nano/Howto/Inference/PyTorch/pytorch_save_and_load_onnx
+                  - file: doc/Nano/Howto/Inference/PyTorch/pytorch_save_and_load_openvino
                   - file: doc/Nano/Howto/Inference/PyTorch/inference_optimizer_optimize
                   - file: doc/Nano/Howto/install_in_colab
                   - file: doc/Nano/Howto/windows_guide
@@ -171,15 +184,21 @@ subtrees:
               - entries:
                 - file: doc/Chronos/Howto/windows_guide
                 - file: doc/Chronos/Howto/docker_guide_single_node
+                - file: doc/Chronos/Howto/how_to_use_benchmark_tool
                 - file: doc/Chronos/Howto/how_to_create_forecaster
                 - file: doc/Chronos/Howto/how_to_train_forecaster_on_one_node
+                - file: doc/Chronos/Howto/how_to_save_and_load_forecaster
                 - file: doc/Chronos/Howto/how_to_tune_forecaster_model
                 - file: doc/Chronos/Howto/how_to_speedup_inference_of_forecaster_through_ONNXRuntime
                 - file: doc/Chronos/Howto/how_to_speedup_inference_of_forecaster_through_OpenVINO
                 - file: doc/Chronos/Howto/how_to_evaluate_a_forecaster
+                - file: doc/Chronos/Howto/how_to_use_forecaster_to_predict_future_data
                 - file: doc/Chronos/Howto/how_to_generate_confidence_interval_for_prediction
                 - file: doc/Chronos/Howto/how_to_export_onnx_files
                 - file: doc/Chronos/Howto/how_to_export_openvino_files
+                - file: doc/Chronos/Howto/how_to_export_torchscript_files
+                - file: doc/Chronos/Howto/how_to_preprocess_my_data
+                - file: doc/Chronos/Howto/how_to_process_data_in_production_environment
           - file: doc/Chronos/QuickStart/index
             title: "Tutorials"
             subtrees:
@@ -213,29 +232,31 @@ subtrees:
         - entries:
             - file: doc/PPML/Overview/intro
               title: "PPML Introduction"
-            - file: doc/PPML/Overview/userguide
-              title: 'User Guide'
+            - file: doc/PPML/Overview/install
+              title: 'Installation'
             - file: doc/PPML/Overview/examples
               title: "Tutorials"
               subtrees:
                 - entries:
                   - file: doc/PPML/Overview/quicktour
                   - file: doc/PPML/QuickStart/end-to-end
+                  - file: doc/PPML/Overview/devguide
+                  - file: doc/PPML/Overview/azure_ppml
             - file: doc/PPML/Overview/misc
               title: "Advanced Topics"
               subtrees:
                 - entries:
                   - file: doc/PPML/Overview/ppml
+                  - file: doc/PPML/Overview/attestation_basic
                   - file: doc/PPML/Overview/trusted_big_data_analytics_and_ml
                   - file: doc/PPML/Overview/trusted_fl
                   - file: doc/PPML/QuickStart/secure_your_services
+                  - file: doc/PPML/QuickStart/deploy_ppml_in_production
                   - file: doc/PPML/QuickStart/install_sgx_driver
                   - file: doc/PPML/QuickStart/deploy_intel_sgx_device_plugin_for_kubernetes
                   - file: doc/PPML/QuickStart/trusted-serving-on-k8s-guide
                   - file: doc/PPML/QuickStart/tpc-h_with_sparksql_on_k8s
                   - file: doc/PPML/QuickStart/tpc-ds_with_sparksql_on_k8s
-                  - file: doc/PPML/QuickStart/deploy_ppml_in_production
-                  - file: doc/PPML/Overview/azure_ppml
                   - file: doc/PPML/Overview/azure_ppml_occlum
 
   - entries:

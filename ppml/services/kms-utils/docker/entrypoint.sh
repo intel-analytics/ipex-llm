@@ -4,8 +4,7 @@ echo "USE_SECURE_CERT=FALSE" >> /etc/sgx_default_qcnl.conf
 action=$1
 if [ "$action" = "enroll" ]; then
 	if [ "$KMS_TYPE" = "ehsm" ]; then
-		cd /home/ehsm/out/ehsm-kms_enroll_app/
-		./ehsm-kms_enroll_app -a http://$EHSM_KMS_IP:$EHSM_KMS_PORT/ehsm/
+		echo "ehsm does not support enroll by kms-utils, please enroll by calling rest API directly!"
 	elif [ "$KMS_TYPE" = "simple" ]; then
 		echo "Simple KMS is dummy. You can choose any appid and apikey. If you want to generate the corresponding primarykey and datakey, the appid must be 12 characters long."
 	elif [ "$KMS_TYPE" = "azure" ]; then
@@ -21,7 +20,7 @@ elif [ "$action" = "generatekeys" ]; then
 	if [ "$KMS_TYPE" = "ehsm" ]; then
 	    appid=$2
 	    apikey=$3
-		java -cp $BIGDL_HOME/jars/bigdl-ppml-spark_3.1.2-2.1.0-SNAPSHOT.jar:$SPARK_HOME/jars/*:$SPARK_HOME/examples/jars/*:$BIGDL_HOME/jars/* \
+		java -cp $BIGDL_HOME/jars/bigdl-ppml-spark_${SPARK_VERSION}-${BIGDL_VERSION}.jar:$SPARK_HOME/jars/*:$SPARK_HOME/examples/jars/*:$BIGDL_HOME/jars/* \
 		com.intel.analytics.bigdl.ppml.examples.GenerateKeys \
 		--primaryKeyPath /home/key/ehsm_encrypted_primary_key \
 		--dataKeyPath /home/key/ehsm_encrypted_data_key \
@@ -33,7 +32,7 @@ elif [ "$action" = "generatekeys" ]; then
 	elif [ "$KMS_TYPE" = "simple" ]; then
 	    appid=$2
 	    apikey=$3
-		java -cp $BIGDL_HOME/jars/bigdl-ppml-spark_3.1.2-2.1.0-SNAPSHOT.jar:$SPARK_HOME/jars/*:$SPARK_HOME/examples/jars/*:$BIGDL_HOME/jars/* \
+		java -cp $BIGDL_HOME/jars/bigdl-ppml-spark_${SPARK_VERSION}-${BIGDL_VERSION}.jar:$SPARK_HOME/jars/*:$SPARK_HOME/examples/jars/*:$BIGDL_HOME/jars/* \
 		com.intel.analytics.bigdl.ppml.examples.GenerateKeys \
 		--primaryKeyPath /home/key/simple_encrypted_primary_key \
 		--dataKeyPath /home/key/simple_encrypted_data_key \
@@ -42,7 +41,7 @@ elif [ "$action" = "generatekeys" ]; then
 		--simpleAPIKEY $apikey
 	elif [ "$KMS_TYPE" = "azure" ]; then
 	    keyVaultName=$2
-		java -cp $BIGDL_HOME/jars/bigdl-ppml-spark_3.1.2-2.1.0-SNAPSHOT.jar:$SPARK_HOME/jars/*:$SPARK_HOME/examples/jars/*:$BIGDL_HOME/jars/* \
+		java -cp $BIGDL_HOME/jars/bigdl-ppml-spark_${SPARK_VERSION}-${BIGDL_VERSION}.jar:$SPARK_HOME/jars/*:$SPARK_HOME/examples/jars/*:$BIGDL_HOME/jars/* \
 		com.intel.analytics.bigdl.ppml.examples.GenerateKeys \
 		--primaryKeyPath /home/key/simple_encrypted_primary_key \
 		--dataKeyPath /home/key/simple_encrypted_data_key \
@@ -59,7 +58,7 @@ elif [ "$action" = "encrypt" ]; then
 	if [ "$KMS_TYPE" = "ehsm" ]; then
 	    appid=$2
 	    apikey=$3
-		java -cp $BIGDL_HOME/jars/bigdl-ppml-spark_3.1.2-2.1.0-SNAPSHOT.jar:$SPARK_HOME/jars/*:$SPARK_HOME/examples/jars/*:$BIGDL_HOME/jars/* \
+		java -cp $BIGDL_HOME/jars/bigdl-ppml-spark_${SPARK_VERSION}-${BIGDL_VERSION}.jar:$SPARK_HOME/jars/*:$SPARK_HOME/examples/jars/*:$BIGDL_HOME/jars/* \
 		com.intel.analytics.bigdl.ppml.examples.Encrypt \
 		--inputPath $input_path \
 		--primaryKeyPath /home/key/ehsm_encrypted_primary_key \
@@ -72,7 +71,7 @@ elif [ "$action" = "encrypt" ]; then
 	elif [ "$KMS_TYPE" = "simple" ]; then
 	    appid=$2
 	    apikey=$3
-		java -cp $BIGDL_HOME/jars/bigdl-ppml-spark_3.1.2-2.1.0-SNAPSHOT.jar:$SPARK_HOME/jars/*:$SPARK_HOME/examples/jars/*:$BIGDL_HOME/jars/* \
+		java -cp $BIGDL_HOME/jars/bigdl-ppml-spark_${SPARK_VERSION}-${BIGDL_VERSION}.jar:$SPARK_HOME/jars/*:$SPARK_HOME/examples/jars/*:$BIGDL_HOME/jars/* \
 		com.intel.analytics.bigdl.ppml.examples.Encrypt \
                 --inputPath $input_path \
                 --primaryKeyPath /home/key/simple_encrypted_primary_key \
@@ -82,7 +81,7 @@ elif [ "$action" = "encrypt" ]; then
                 --simpleAPIKEY $apikey
     elif [ "$KMS_TYPE" = "azure" ]; then
         keyVaultName=$2
-		java -cp $BIGDL_HOME/jars/bigdl-ppml-spark_3.1.2-2.1.0-SNAPSHOT.jar:$SPARK_HOME/jars/*:$SPARK_HOME/examples/jars/*:$BIGDL_HOME/jars/* \
+		java -cp $BIGDL_HOME/jars/bigdl-ppml-spark_${SPARK_VERSION}-${BIGDL_VERSION}.jar:$SPARK_HOME/jars/*:$SPARK_HOME/examples/jars/*:$BIGDL_HOME/jars/* \
 		com.intel.analytics.bigdl.ppml.examples.Encrypt \
                 --inputPath $input_path \
                 --primaryKeyPath /home/key/simple_encrypted_primary_key \
@@ -99,7 +98,7 @@ elif [ "$action" = "encryptwithrepartition" ]; then
             apikey=$3
 	    input_path=$4
 	    output_path=$input_path.encrypted
-		java -cp $BIGDL_HOME/jars/bigdl-ppml-spark_3.1.2-2.1.0-SNAPSHOT.jar:$SPARK_HOME/jars/*:$SPARK_HOME/examples/jars/*:$BIGDL_HOME/jars/* \
+		java -cp $BIGDL_HOME/jars/bigdl-ppml-spark_${SPARK_VERSION}-${BIGDL_VERSION}.jar:$SPARK_HOME/jars/*:$SPARK_HOME/examples/jars/*:$BIGDL_HOME/jars/* \
 		com.intel.analytics.bigdl.ppml.examples.EncryptWithRepartition   \
 		--inputPath $input_path \
 		--outputPath $output_path \
@@ -118,7 +117,7 @@ elif [ "$action" = "encryptwithrepartition" ]; then
             apikey=$3
 	    input_path=$4
 	    output_path=$input_path.encrypted
-		java -cp $BIGDL_HOME/jars/bigdl-ppml-spark_3.1.2-2.1.0-SNAPSHOT.jar:$SPARK_HOME/jars/*:$SPARK_HOME/examples/jars/*:$BIGDL_HOME/jars/* \
+		java -cp $BIGDL_HOME/jars/bigdl-ppml-spark_${SPARK_VERSION}-${BIGDL_VERSION}.jar:$SPARK_HOME/jars/*:$SPARK_HOME/examples/jars/*:$BIGDL_HOME/jars/* \
 		com.intel.analytics.bigdl.ppml.examples.EncryptWithRepartition   \
 		--inputPath $input_path \
 		--outputPath $output_path \
@@ -134,7 +133,7 @@ elif [ "$action" = "encryptwithrepartition" ]; then
         keyVaultName=$2
         input_path=$3
 	    output_path=$input_path.encrypted
-		java -cp $BIGDL_HOME/jars/bigdl-ppml-spark_3.1.2-2.1.0-SNAPSHOT.jar:$SPARK_HOME/jars/*:$SPARK_HOME/examples/jars/*:$BIGDL_HOME/jars/* \
+		java -cp $BIGDL_HOME/jars/bigdl-ppml-spark_${SPARK_VERSION}-${BIGDL_VERSION}.jar:$SPARK_HOME/jars/*:$SPARK_HOME/examples/jars/*:$BIGDL_HOME/jars/* \
 		com.intel.analytics.bigdl.ppml.examples.EncryptWithRepartition   \
 		--inputPath $input_path \
 		--outputPath $output_path \
@@ -154,7 +153,7 @@ elif [ "$action" = "decrypt" ]; then
 	appid=$2
         apikey=$3
         input_path=$4
-		java -cp $BIGDL_HOME/jars/bigdl-ppml-spark_3.1.2-2.1.0-SNAPSHOT.jar:$SPARK_HOME/jars/*:$SPARK_HOME/examples/jars/*:$BIGDL_HOME/jars/* \
+		java -cp $BIGDL_HOME/jars/bigdl-ppml-spark_${SPARK_VERSION}-${BIGDL_VERSION}.jar:$SPARK_HOME/jars/*:$SPARK_HOME/examples/jars/*:$BIGDL_HOME/jars/* \
 		com.intel.analytics.bigdl.ppml.examples.Decrypt \
 		--inputPath $input_path \
 		--inputPartitionNum 8 \
@@ -172,7 +171,7 @@ elif [ "$action" = "decrypt" ]; then
 	appid=$2
         apikey=$3
         input_path=$4
-		java -cp $BIGDL_HOME/jars/bigdl-ppml-spark_3.1.2-2.1.0-SNAPSHOT.jar:$SPARK_HOME/jars/*:$SPARK_HOME/examples/jars/*:$BIGDL_HOME/jars/* \
+		java -cp $BIGDL_HOME/jars/bigdl-ppml-spark_${SPARK_VERSION}-${BIGDL_VERSION}.jar:$SPARK_HOME/jars/*:$SPARK_HOME/examples/jars/*:$BIGDL_HOME/jars/* \
 		com.intel.analytics.bigdl.ppml.examples.Decrypt \
                 --inputPath $input_path \
                 --inputPartitionNum 8 \
@@ -187,7 +186,7 @@ elif [ "$action" = "decrypt" ]; then
     elif [ "$KMS_TYPE" = "azure" ]; then
         keyVaultName=$2
         input_path=$3
-		java -cp $BIGDL_HOME/jars/bigdl-ppml-spark_3.1.2-2.1.0-SNAPSHOT.jar:$SPARK_HOME/jars/*:$SPARK_HOME/examples/jars/*:$BIGDL_HOME/jars/* \
+		java -cp $BIGDL_HOME/jars/bigdl-ppml-spark_${SPARK_VERSION}-${BIGDL_VERSION}.jar:$SPARK_HOME/jars/*:$SPARK_HOME/examples/jars/*:$BIGDL_HOME/jars/* \
 		com.intel.analytics.bigdl.ppml.examples.Decrypt \
                 --inputPath $input_path \
                 --inputPartitionNum 8 \

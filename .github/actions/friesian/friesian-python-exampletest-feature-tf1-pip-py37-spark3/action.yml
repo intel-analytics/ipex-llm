@@ -6,17 +6,18 @@ runs:
     - name: Run Test
       shell: bash
       run: |
-        chmod a+x python/dev/release_default_linux_spark313.sh
-        ./python/dev/release_default_linux_spark313.sh default false false
-       
         source activate py37
         export SPARK_LOCAL_HOSTNAME=localhost
+        #pip install wheel
+        chmod a+x python/dev/release_default_linux_spark313.sh
+        ./python/dev/release_default_linux_spark313.sh default false false
+
         # install dllib
-        pip install python/dllib/src/dist/bigdl_dllib_spark3-*-py3-none-manylinux1_x86_64.whl
+        pip install -i https://pypi.org/simple python/dllib/src/dist/bigdl_dllib_spark3-*-py3-none-manylinux1_x86_64.whl
         # install orca
-        pip install python/orca/src/dist/bigdl_orca_spark3-*-py3-none-manylinux1_x86_64.whl
+        pip install -i https://pypi.org/simple python/orca/src/dist/bigdl_orca_spark3-*-py3-none-manylinux1_x86_64.whl
         # install friesian
-        pip install python/friesian/src/dist/bigdl_friesian_spark3-*-py3-none-manylinux1_x86_64.whl
+        pip install -i https://pypi.org/simple python/friesian/src/dist/bigdl_friesian_spark3-*-py3-none-manylinux1_x86_64.whl
 
         cd python/friesian/dev/test
         bash run-feature-example-tests.sh 

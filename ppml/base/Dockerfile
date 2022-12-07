@@ -40,11 +40,12 @@ RUN env DEBIAN_FRONTEND=noninteractive apt-get update && \
     rm /usr/bin/python3 && \
     ln -s /usr/bin/python3.7 /usr/bin/python3 && \
     pip3 install --upgrade pip && \
+    pip3 install --no-cache requests argparse cryptography==3.3.2 urllib3 && \
     pip install setuptools==58.4.0 && \
     ln -s /usr/bin/python3 /usr/bin/python && \
 # Gramine
     apt-get update --fix-missing && \
-    env DEBIAN_FRONTEND=noninteractive TZ=Etc/UTC apt-get install -y apt-utils wget unzip protobuf-compiler && \
+    env DEBIAN_FRONTEND=noninteractive TZ=Etc/UTC apt-get install -y apt-utils wget unzip protobuf-compiler libgmp3-dev libmpfr-dev libmpfr-doc libmpc-dev && \
     pip install --no-cache-dir meson==0.63.2 cmake==3.24.1.1 toml==0.10.2 pyelftools cffi dill==0.3.4 psutil && \
 # Create a link to cmake, upgrade cmake version so that it is compatible with latest meson build (require version >= 3.17)
     ln -s /usr/local/bin/cmake /usr/bin/cmake && \
@@ -53,10 +54,13 @@ RUN env DEBIAN_FRONTEND=noninteractive apt-get update && \
     git clone https://github.com/intel/SGXDataCenterAttestationPrimitives.git /opt/intel/SGXDataCenterAttestationPrimitives && \
     cd /gramine && \
     git checkout devel-v1.3.1-2022-10-08 && \
-    meson setup build/ --buildtype=release  -Dsgx=enabled   -Dsgx_driver=dcap1.10 && \
+# Also create the patched gomp
+    meson setup build/ --buildtype=release  -Dsgx=enabled   -Dsgx_driver=dcap1.10 -Dlibgomp=enabled && \
     ninja -C build/ && \
     ninja -C build/ install && \
     cd /ppml/ && \
+    mkdir -p /ppml/lib/ && \
+    mv /usr/local/lib/x86_64-linux-gnu/gramine/runtime/glibc/libgomp.so.1 /ppml/lib/ && \
 # meson will copy the original file instead of the symlink, which enable us to delete the gramine directory entirely
     rm -rf /gramine && \
     apt-get update --fix-missing && \
@@ -100,11 +104,23 @@ RUN env DEBIAN_FRONTEND=noninteractive apt-get update && \
     mkdir -p /root/.zinc && \
     mkdir -p /root/.m2 && \
     mkdir -p /root/.kube/ && \
-    mkdir -p /ppml/encrypted
+    mkdir -p /ppml/encrypted-fs && \
+# folder required for distributed encrypted file system
+    mkdir -p /ppml/encrypted-fsd && \
+# folder to contain the keys (primary key and data key)
+    mkdir -p /ppml/encrypted_keys && \
+# kms client
+    mkdir -p /ppml/kms && \
+    wget https://raw.githubusercontent.com/intel-analytics/BigDL/main/python/ppml/src/bigdl/ppml/kms/client.py -P /ppml/kms/ && \
+    wget https://raw.githubusercontent.com/intel-analytics/BigDL/main/python/ppml/src/bigdl/ppml/kms/__init__.py -P /ppml/kms/ && \
+    wget https://raw.githubusercontent.com/intel-analytics/BigDL/main/python/ppml/src/bigdl/ppml/kms/fileoperator.py -P /ppml/kms/ && \
+    wget https://raw.githubusercontent.com/intel-analytics/BigDL/main/python/ppml/src/bigdl/ppml/kms/keymanager.py -P /ppml/kms/ && \
+    wget https://raw.githubusercontent.com/intel-analytics/BigDL/main/python/ppml/src/bigdl/ppml/kms/restcaller.py -P /ppml/kms/
 
 
 ADD ./download_jars.sh /ppml
 ADD ./attestation.sh /ppml
+ADD ./encrypted-fsd.sh /ppml
 
 RUN cd /ppml && \
     bash ./download_jars.sh

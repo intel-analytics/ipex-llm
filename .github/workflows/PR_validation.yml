@@ -1,27 +1,21 @@
 name: PR Validation
 
+# Cancel previous runs in the PR when you push new commits
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.run_id }}
+  cancel-in-progress: true
+
 on:
-  push:
-    paths:
-      - 'scala/friesian/**'
-      - '.github/actions/friesian-scala-ut-action/action.yml'
-      - 'scala/dllib/**'
-      - '.github/actions/dllib-scala-ut-action/action.yml'
-      - 'scala/ppml/**'
-      - '.github/actions/ppml-scala-ut-action/action.yml'
-      - 'python/orca/**'
-      - '.github/actions/orca-ray-ctx-example-action/action.yml'
-      - '.github/actions/orca/**'
-      - 'python/ppml/**'
-      - '.github/actions/ppml/**'
-      - 'python/friesian/**'
-      - '.github/actions/friesian/**'
-      - '.github/workflows/PR_validation.yml'
-      - '.github/actions/python-requirements/**'
-      
+
   pull_request:
     branches: [ main ]
     paths:
+      - 'scala/serving/pom.xml'
+      - 'scala/ppml/pom.xml'
+      - 'scala/orca/pom.xml'
+      - 'scala/friesian/pom.xml'
+      - 'scala/dllib/pom.xml'
+      - 'scala/pom.xml'
       - 'scala/friesian/**'
       - '.github/actions/friesian-scala-ut-action/action.yml'
       - 'scala/dllib/**'
@@ -29,15 +23,35 @@ on:
       - 'scala/ppml/**'
       - '.github/actions/ppml-scala-ut-action/action.yml'
       - 'python/orca/**'
-      - '.github/actions/orca-ray-ctx-example-action/action.yml'
       - '.github/actions/orca/**'
       - 'python/ppml/**'
       - '.github/actions/ppml/**'
       - 'python/friesian/**'
       - '.github/actions/friesian/**'
       - '.github/workflows/PR_validation.yml'
-      - '.github/actions/python-requirements/**'
-
+      
+  push:
+    branches: [ main ]
+    paths:
+      - 'scala/serving/pom.xml'
+      - 'scala/ppml/pom.xml'
+      - 'scala/orca/pom.xml'
+      - 'scala/friesian/pom.xml'
+      - 'scala/dllib/pom.xml'
+      - 'scala/pom.xml'
+      - 'scala/friesian/**'
+      - '.github/actions/friesian-scala-ut-action/action.yml'
+      - 'scala/dllib/**'
+      - '.github/actions/dllib-scala-ut-action/action.yml'
+      - 'scala/ppml/**'
+      - '.github/actions/ppml-scala-ut-action/action.yml'
+      - 'python/orca/**'
+      - '.github/actions/orca/**'
+      - 'python/ppml/**'
+      - '.github/actions/ppml/**'
+      - 'python/friesian/**'
+      - '.github/actions/friesian/**'
+      - '.github/workflows/PR_validation.yml'
 
 permissions:
   contents: read
@@ -59,27 +73,50 @@ jobs:
         with:
           filters: |
             friesian:
+              - 'scala/serving/pom.xml'
+              - 'scala/ppml/pom.xml'
+              - 'scala/orca/pom.xml'
+              - 'scala/friesian/pom.xml'
+              - 'scala/dllib/pom.xml'
+              - 'scala/pom.xml'
               - 'scala/friesian/**'
               - '.github/actions/friesian-scala-ut-action/action.yml'
               - 'python/friesian/**'
               - '.github/actions/friesian/**'
-              - '.github/actions/python-requirements/**'
+              - 'python/orca/src/bigdl/orca/data/**'
+              
             dllib:
+              - 'scala/serving/pom.xml'
+              - 'scala/ppml/pom.xml'
+              - 'scala/orca/pom.xml'
+              - 'scala/friesian/pom.xml'
+              - 'scala/dllib/pom.xml'
+              - 'scala/pom.xml'
               - 'scala/dllib/**'
               - '.github/actions/dllib-scala-ut-action/action.yml'
-              - '.github/actions/python-requirements/**'
+              
             ppml:
+              - 'scala/serving/pom.xml'
+              - 'scala/ppml/pom.xml'
+              - 'scala/orca/pom.xml'
+              - 'scala/friesian/pom.xml'
+              - 'scala/dllib/pom.xml'
+              - 'scala/pom.xml'
               - 'scala/ppml/**'
               - '.github/actions/ppml-scala-ut-action/action.yml'
               - 'python/ppml/**'
               - '.github/actions/ppml/**'
-              - '.github/actions/python-requirements/**'
+              
             orca:
+              - 'scala/serving/pom.xml'
+              - 'scala/ppml/pom.xml'
+              - 'scala/orca/pom.xml'
+              - 'scala/friesian/pom.xml'
+              - 'scala/dllib/pom.xml'
+              - 'scala/pom.xml'
               - 'python/orca/**'
-              - '.github/actions/orca-ray-ctx-example-action/action.yml'
               - '.github/actions/orca/**'
-              - '.github/actions/python-requirements/**'
-           
+                    
   Friesian-Scala-UT:
     needs: changes
     if: ${{ needs.changes.outputs.friesian == 'true' }}
@@ -121,115 +158,6 @@ jobs:
         uses: ./.github/actions/maven-setup-action
       - name: Run test
         uses: ./.github/actions/ppml-scala-ut-action
-
-  Orca-Ray-Ctx-Example:
-    needs: changes
-    if: ${{ needs.changes.outputs.orca == 'true' }}
-    runs-on: [self-hosted, Gondolin-resources, ubuntu-20.04-lts]
-
-    steps:
-    - uses: actions/checkout@v3
-    - name: Set up JDK8
-      uses: ./.github/actions/jdk-setup-action
-    - name: Set up maven
-      uses: ./.github/actions/maven-setup-action
-    - name: Run test
-      uses: ./.github/actions/orca-ray-ctx-example-action
-
-  Orca-Python-ExampleTest-Py37-Spark3:
-    needs: changes
-    if: ${{ needs.changes.outputs.orca == 'true' }}
-    runs-on: [self-hosted, Gondolin, ubuntu-20.04-lts]
-
-    steps:
-    - uses: actions/checkout@v3
-    - name: Set up JDK8
-      uses: ./.github/actions/jdk-setup-action
-    - name: Set up maven
-      uses: ./.github/actions/maven-setup-action
-    - name: Setup env
-      uses: ./.github/actions/orca/setup-env/setup-orca-python-py37-spark3
-    - name: Run Test
-      uses: ./.github/actions/orca/orca-python-exampletest-action/pr-test
-    - name: Remove Env
-      if: ${{ always() }}
-      uses: ./.github/actions/remove-env
-
-  Orca-Python-ExampleTest-Ray-Py37-Spark3:
-    needs: changes
-    if: ${{ needs.changes.outputs.orca == 'true' }}
-    runs-on: [self-hosted, Gondolin, ubuntu-20.04-lts]
-
-    steps:
-    - uses: actions/checkout@v3
-    - name: Set up JDK8
-      uses: ./.github/actions/jdk-setup-action
-    - name: Set up maven
-      uses: ./.github/actions/maven-setup-action
-    - name: Setup env
-      uses: ./.github/actions/orca/setup-env/setup-orca-python-py37-spark3
-    - name: Run Test
-      uses: ./.github/actions/orca/orca-python-exampletest-ray-action/pr-test
-    - name: Remove Env
-      if: ${{ always() }}
-      uses: ./.github/actions/remove-env
-
-  Orca-Python-ExampleTest-Horovod-Pytorch-Py37-Spark3:
-    needs: changes
-    if: ${{ needs.changes.outputs.orca == 'true' }}
-    runs-on: [self-hosted, Gondolin, ubuntu-20.04-lts]
-
-    steps:
-    - uses: actions/checkout@v3
-    - name: Set up JDK8
-      uses: ./.github/actions/jdk-setup-action
-    - name: Set up maven
-      uses: ./.github/actions/maven-setup-action 
-    - name: Setup env
-      uses: ./.github/actions/orca/setup-env/setup-orca-horovod-pytorch-py37
-    - name: Run Test
-      uses: ./.github/actions/orca/orca-python-exampletest-horovod-pytorch-py37-spark3-action/pr-test
-    - name: Remove Env
-      if: ${{ always() }}
-      uses: ./.github/actions/remove-env
-
-  Orca-Python-ExampleTest-Horovod-Tf-Py37-Spark3:
-    needs: changes
-    if: ${{ needs.changes.outputs.orca == 'true' }}
-    runs-on: [self-hosted, Gondolin, ubuntu-20.04-lts]
-
-    steps:
-    - uses: actions/checkout@v3
-    - name: Set up JDK8
-      uses: ./.github/actions/jdk-setup-action
-    - name: Set up maven
-      uses: ./.github/actions/maven-setup-action 
-    - name: Setup env
-      uses: ./.github/actions/orca/setup-env/setup-horovod-tf2-py37
-    - name: Run Test
-      uses: ./.github/actions/orca/orca-python-exampletest-horovod-tf2-py37-spark3-action/pr-test
-    - name: Remove Env
-      if: ${{ always() }}
-      uses: ./.github/actions/remove-env
-
-  Orca-Jep-ExampleTest-Py37-Spark2:
-    needs: changes
-    if: ${{ needs.changes.outputs.orca == 'true' }}
-    runs-on: [self-hosted, Gondolin, ubuntu-20.04-lts]
-
-    steps:
-    - uses: actions/checkout@v3
-    - name: Set up JDK8
-      uses: ./.github/actions/jdk-setup-action
-    - name: Set up maven
-      uses: ./.github/actions/maven-setup-action
-    - name: Setup env
-      uses: ./.github/actions/orca/setup-env/setup-jep-exampletest-py37
-    - name: Run Test
-      uses: ./.github/actions/orca/orca-jep-exampletest-action/pr-test
-    - name: Remove Env
-      if: ${{ always() }}
-      uses: ./.github/actions/remove-env
   
   Orca-Python-Py37-Spark3:
     needs: changes
@@ -344,6 +272,20 @@ jobs:
     - name: Remove Env
       if: ${{ always() }}
       uses: ./.github/actions/remove-env
+
+  Orca-Tutorial-Xshards:
+    needs: changes
+    if: ${{ needs.changes.outputs.orca == 'true' }}
+    runs-on: [self-hosted, Gondolin, ubuntu-20.04-lts]
+
+    steps:
+    - uses: actions/checkout@v3
+    - name: Set up JDK8
+      uses: ./.github/actions/jdk-setup-action
+    - name: Set up maven
+      uses: ./.github/actions/maven-setup-action 
+    - name: Run Test
+      uses: ./.github/actions/orca/orca-tutorial-xshards
 
   PPML-Python-UT-Spark3:
     needs: changes

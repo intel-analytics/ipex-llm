@@ -1,5 +1,5 @@
 # Train a DeepFM model using recsys data
-This example demonstrates how to use our Friesian to train a DeepFM model using [Twitter Recsys Challenge 2021 data](https://recsys-twitter.com/data/show-downloads#).
+This example demonstrates how to use our Friesian to train a DeepFM model using [Twitter Recsys Challenge 2021 data](http://www.recsyschallenge.com/2021/).
 
 ## Prepare the environment
 We recommend you to use [Anaconda](https://www.anaconda.com/distribution/#linux) to prepare the environments, especially if you want to run on a yarn cluster (yarn-client mode only).
@@ -12,7 +12,7 @@ pip install numba
 ```
 
 ## Preprocess data
-You can download the full Twitter dataset from [here](https://recsys-twitter.com/data/show-downloads#) and then follow the [WideAndDeep Preprocessing](https://github.com/intel-analytics/BigDL/tree/branch-2.0/python/friesian/example/wnd) to preprocess the orginal data.
+You can download the full Twitter dataset from [here](http://www.recsyschallenge.com/2021/) and then follow the [WideAndDeep Preprocessing](https://github.com/intel-analytics/BigDL/tree/branch-2.0/python/friesian/example/wnd) to preprocess the orginal data.
 
 ## Training  tower model
 * Spark local, we can use some sample data to have a trial, example command:

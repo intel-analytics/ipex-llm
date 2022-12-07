@@ -21,7 +21,7 @@ import subprocess
 import ray
 from dmlc_tracker.tracker import get_host_ip
 
-from bigdl.orca.data.utils import ray_partitions_get_data_label, process_spark_xshards
+from bigdl.orca.data.utils import partitions_get_data_label, process_spark_xshards
 from bigdl.orca.ray import OrcaRayContext
 from bigdl.orca.learn.mxnet.mxnet_runner import MXNetRunner
 from bigdl.orca.learn.mxnet.utils import find_free_port
@@ -35,9 +35,9 @@ def partition_refs_to_creator(partition_refs, shuffle=False):
         import mxnet as mx
         invalidInputError("batch_size" in config,
                           "batch_size must be set in config")
-        data, label = ray_partitions_get_data_label(ray.get(partition_refs),
-                                                    allow_tuple=False,
-                                                    allow_list=False)
+        data, label = partitions_get_data_label(ray.get(partition_refs),
+                                                allow_tuple=False,
+                                                allow_list=False)
 
         train_data_iter = mx.io.NDArrayIter(data=data, label=label,
                                             batch_size=config["batch_size"],

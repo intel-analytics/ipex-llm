@@ -24,8 +24,7 @@ import numpy as np
 from bigdl.chronos.utils import LazyImport
 tf = LazyImport('tensorflow')
 TCNForecaster = LazyImport('bigdl.chronos.forecaster.tf.tcn_forecaster.TCNForecaster')
-from test.bigdl.chronos import op_tf2, op_all
-import tensorflow as tf
+from test.bigdl.chronos import op_tf2, op_distributed
 
 
 def create_data(tf_data=False, batch_size=32):
@@ -81,7 +80,6 @@ def create_tsdataset(roll=True):
     return train, valid, test
 
 
-@op_all
 @op_tf2
 class TestTCNForecaster(TestCase):
     def setUp(self):
@@ -93,8 +91,6 @@ class TestTCNForecaster(TestCase):
                                         num_channels=[15]*7)
 
     def tearDown(self):
-        from bigdl.orca import stop_orca_context
-        stop_orca_context()
         del self.forecaster
 
     def test_tcn_forecaster_fit_predict_evaluate(self):
@@ -189,6 +185,7 @@ class TestTCNForecaster(TestCase):
         _, y_test = test.to_numpy()
         assert yhat.shape == y_test.shape
 
+    @op_distributed
     def test_tcn_forecaster_distributed(self):
         from bigdl.orca import init_orca_context, stop_orca_context
         train_data, val_data, test_data = create_data()
@@ -225,6 +222,7 @@ class TestTCNForecaster(TestCase):
         np.testing.assert_almost_equal(distributed_pred, local_pred, decimal=5)
         stop_orca_context()
 
+    @op_distributed
     def test_tcn_forecaster_distributed_illegal_input(self):
         from bigdl.orca import init_orca_context, stop_orca_context
 

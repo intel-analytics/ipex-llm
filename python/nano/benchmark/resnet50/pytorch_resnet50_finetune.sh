@@ -17,7 +17,7 @@
 
 set -e
 
-bash $ANALYTICS_ZOO_ROOT/python/nano/dev/build_and_install.sh linux default false pytorch
+bash $ANALYTICS_ZOO_ROOT/python/nano/dev/build_and_install.sh linux default false pytorch --force-reinstall
 
 cd $ANALYTICS_ZOO_ROOT/python/nano/benchmark/resnet50/
 

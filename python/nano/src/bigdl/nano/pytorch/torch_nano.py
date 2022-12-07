@@ -17,7 +17,7 @@
 
 from typing import Any, Union, List, Optional
 from logging import warning
-from functools import partial
+from functools import partial, wraps
 from abc import abstractmethod
 
 import torch
@@ -29,6 +29,7 @@ from pytorch_lightning.lite import LightningLite
 from pytorch_lightning.lite.wrappers import _LiteModule, _LiteOptimizer
 from pytorch_lightning.utilities.apply_func import apply_to_collection
 from pytorch_lightning.strategies import Strategy
+from pytorch_lightning.strategies import DeepSpeedStrategy
 
 from bigdl.nano.common import check_avx512
 from bigdl.nano.utils.log4Error import invalidInputError
@@ -146,7 +147,7 @@ class TorchNano(LightningLite):
                  precision: Union[str, int] = 32,
                  cpu_for_each_process: Optional[List[List[int]]] = None,
                  channels_last: bool = False,
-                 auto_lr: bool = False,
+                 auto_lr: bool = True,
                  *args, **kwargs) -> None:
         """
         Create a TorchNano with nano acceleration.
@@ -311,3 +312,101 @@ class TorchNano(LightningLite):
         """Only for compatibility, don't use it."""
         # this is a abstract method, so we must implement it
         pass
+
+
+def _search_setup_args(_models, _optimizers, _dataloaders, args):
+    for idx, value in enumerate(args):
+        if isinstance(value, DataLoader):
+            _dataloaders.append((value, args, idx))
+
+        if isinstance(value, nn.Module) and not isinstance(value, torch.nn.modules.loss._Loss):
+            _models.append((value, args, idx))
+
+        if isinstance(value, Optimizer):
+            _optimizers.append((value, args, idx))
+
+
+def _update_args(objs, obj_pos):
+
+    # obj_pos is a lists of (object, args|kwargs, idx)
+
+    for obj, pos in zip(objs, obj_pos):
+        _, arg, idx = pos
+        arg[idx] = obj
+
+
+class _DecoratedTorchNano(TorchNano):
+
+    def train(self, func, *inner_args, **inner_kwargs):
+
+        # todo: need to be able to let user specify which arg is model|optimizer, if
+        # the search does not work.
+
+        # search for model, optimizer and dataloaders in the param list
+        # save the result in lists of (object, args|kwargs, idx)
+        _model_pos = []
+        _optimizer_pos = []
+        _data_loader_pos = []
+
+        _inner_args = list(inner_args)
+        _search_setup_args(_model_pos, _optimizer_pos, _data_loader_pos, _inner_args)
+        _search_setup_args(_model_pos, _optimizer_pos, _data_loader_pos, inner_kwargs)
+
+        invalidInputError(len(_model_pos) == 1,
+                          "there should be only one nn.Module "
+                          f"in the function parameter list, but got {len(_model_pos)}")
+
+        # get the objec to be setup
+        _model = _model_pos[0][0]
+        _optimizers = [opt[0] for opt in _optimizer_pos]
+        _dataloaders = [opt[0] for opt in _data_loader_pos]
+
+        # call setup, the purpose of the decorator
+        _setup_model, _setup_optimizers = self.setup(_model, _optimizers)
+        _setup_dataloaders = self.setup_dataloaders(*_dataloaders)
+        if len(_dataloaders) == 1:
+            _setup_dataloaders = [_setup_dataloaders]
+
+        # update the function param list
+        _update_args([_setup_model], _model_pos)
+        _update_args(_setup_optimizers, _optimizer_pos)
+        _update_args(_setup_dataloaders, _data_loader_pos)
+
+        return func(*_inner_args, **inner_kwargs)
+
+
+def nano(num_processes: Optional[int] = None,
+         use_ipex: bool = False,
+         distributed_backend: str = "subprocess",
+         precision: Union[str, int] = 32,
+         cpu_for_each_process: Optional[List[List[int]]] = None,
+         channels_last: bool = False,
+         auto_lr: bool = True,
+         *args, **kwargs):
+    """Run TorchNano.train through a convenient decorator function."""
+    if "strategy" in kwargs:
+        strategy = kwargs["strategy"]
+        if strategy == "deepspeed" or isinstance(strategy, DeepSpeedStrategy):
+            invalidInputError(False, "bigdl.nano.pytorch.nano do not support deepspeed strategy")
+
+    # spawn has a wierd pickle error
+    invalidInputError(distributed_backend != "spawn",
+                      "bigdl.nano.pytorch.nano do not support spawn")
+
+    def decorator(func):
+
+        # todo check the func signature
+        @wraps(func)
+        def wrapper(*inner_args, **inner_kwargs):
+
+            return _DecoratedTorchNano(num_processes=num_processes,
+                                       use_ipex=use_ipex,
+                                       distributed_backend=distributed_backend,
+                                       precision=precision,
+                                       cpu_for_each_process=cpu_for_each_process,
+                                       channels_last=channels_last,
+                                       auto_lr=auto_lr,
+                                       *args, **kwargs).train(func, *inner_args, **inner_kwargs)
+
+        return wrapper
+    return decorator

@@ -14,11 +14,15 @@
 # limitations under the License.
 #
 
+
+import tempfile
 from unittest import TestCase
 import tensorflow as tf
 from tensorflow.keras.applications.resnet50 import ResNet50
 import numpy as np
 from bigdl.nano.tf.keras import Model
+from bigdl.nano.deps.onnxruntime.tensorflow.tensorflow_onnxruntime_model \
+    import KerasONNXRuntimeModel
 
 
 class TestONNX(TestCase):
@@ -29,7 +33,7 @@ class TestONNX(TestCase):
 
         # trace a Keras model
         spec = tf.TensorSpec((None, 224, 224, 3), tf.float32)
-        onnx_model = model.trace(accelerator='onnxruntime', input_sample=spec)
+        onnx_model = model.trace(accelerator='onnxruntime', input_spec=spec, thread_num=4)
 
         y_hat = onnx_model(input_examples[:10])
         assert y_hat.shape == (10, 10)
@@ -40,3 +44,24 @@ class TestONNX(TestCase):
         preds = model.predict(input_examples)
         onnx_preds = onnx_model.predict(input_examples)
         np.testing.assert_allclose(preds, onnx_preds, rtol=1e-5)
+
+    def test_tf_onnx_save_load(self):
+        model = ResNet50(weights=None, input_shape=[224, 224, 3], classes=10)
+        model = Model(inputs=model.inputs, outputs=model.outputs)
+        input_examples = np.random.random((100, 224, 224, 3))
+
+        # trace a Keras model
+        spec = tf.TensorSpec((None, 224, 224, 3), tf.float32)
+        onnx_model = model.trace(accelerator='onnxruntime', input_spec=spec, thread_num=1)
+
+        with tempfile.TemporaryDirectory() as tmp_dir_name:
+            onnx_model._save(tmp_dir_name)
+            new_onnx_model = KerasONNXRuntimeModel._load(tmp_dir_name)
+
+        assert new_onnx_model.session_options.intra_op_num_threads == 1
+        assert new_onnx_model.session_options.inter_op_num_threads == 1
+
+        preds1 = onnx_model(input_examples).numpy()
+        preds2 = new_onnx_model(input_examples).numpy()
+
+        np.testing.assert_almost_equal(preds1, preds2, decimal=5)

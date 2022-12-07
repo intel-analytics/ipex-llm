@@ -13,10 +13,9 @@ You can refer to [Chronos Install Guide](https://bigdl.readthedocs.io/en/latest/
 
 First, `get_public_dataset` automatically download the specified data set and return the tsdata that can be used directly after preprocessing.
 ```python
-# Just specify the name and path, (e.g. network_traffic)
+# Just specify the name, (e.g. network_traffic)
 name = 'network_traffic'
-path = '~/.chronos/dataset/'
-tsdata_train, _, tsdata_test = get_public_dataset(name, path, with_split=True, test_ratio=0.1)
+tsdata_train, _, tsdata_test = get_public_dataset(name)
 minmax = MinMaxScaler()
 for tsdata in [tsdata_train, tsdata_test]:
     tsdata.gen_dt_feature(one_hot_features=["HOUR", "WEEK"])\

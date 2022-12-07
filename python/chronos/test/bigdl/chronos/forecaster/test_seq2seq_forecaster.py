@@ -23,7 +23,7 @@ torch = LazyImport('torch')
 Seq2SeqForecaster = LazyImport('bigdl.chronos.forecaster.seq2seq_forecaster.Seq2SeqForecaster')
 from unittest import TestCase
 import pytest
-from .. import op_torch, op_distributed, op_all, op_onnxrt16, op_automl, op_diff_set_all
+from .. import op_torch, op_distributed, op_inference, op_automl, op_diff_set_all
 
 
 def create_data(loader=False):
@@ -97,7 +97,6 @@ def create_tsdataset_val(roll=True, horizon=5):
     return train, val, test
 
 
-@op_all
 @op_torch
 class TestChronosModelSeq2SeqForecaster(TestCase):
 
@@ -122,7 +121,7 @@ class TestChronosModelSeq2SeqForecaster(TestCase):
         assert test_mse[0].shape == test_data[1].shape[1:]
 
     @op_diff_set_all
-    @op_onnxrt16
+    @op_inference
     def test_s2s_forecaster_fit_loader(self):
         train_loader, val_loader, test_loader = create_data(loader=True)
         forecaster = Seq2SeqForecaster(past_seq_len=24,
@@ -133,13 +132,13 @@ class TestChronosModelSeq2SeqForecaster(TestCase):
                                        lr=0.01)
         train_loss = forecaster.fit(train_loader, epochs=2)
         yhat = forecaster.predict(data=test_loader, acceleration=False)
-        onnx_yhat = forecaster.predict_with_onnx(data=test_loader)
-        assert yhat.shape == onnx_yhat.shape == (400, 5, 1)
         forecaster.evaluate(test_loader, batch_size=32, acceleration=False)
+        onnx_yhat = forecaster.predict_with_onnx(data=test_loader)
         forecaster.evaluate_with_onnx(test_loader)
         forecaster.evaluate_with_onnx(test_loader, batch_size=32)
+        assert yhat.shape == onnx_yhat.shape == (400, 5, 1)
 
-    @op_onnxrt16
+    @op_inference
     def test_s2s_forecaster_onnx_methods(self):
         train_data, val_data, test_data = create_data()
         forecaster = Seq2SeqForecaster(past_seq_len=24,
@@ -302,7 +301,7 @@ class TestChronosModelSeq2SeqForecaster(TestCase):
 
     @op_distributed
     @op_diff_set_all
-    @op_onnxrt16
+    @op_inference
     def test_s2s_forecaster_distributed(self):
         from bigdl.orca import init_orca_context, stop_orca_context
         train_data, val_data, test_data = create_data()
@@ -445,7 +444,7 @@ class TestChronosModelSeq2SeqForecaster(TestCase):
         assert yhat.shape == y_test.shape
 
     @op_diff_set_all
-    @op_onnxrt16
+    @op_inference
     def test_forecaster_from_tsdataset_data_loader_onnx(self):
         train, test = create_tsdataset(roll=False)
         train.gen_dt_feature(one_hot_features=['WEEK'])
@@ -559,7 +558,7 @@ class TestChronosModelSeq2SeqForecaster(TestCase):
         assert yhat.shape == y_test.shape
 
     @op_diff_set_all
-    @op_onnxrt16
+    @op_inference
     def test_s2s_optimize_loader(self):
         train_loader, val_loader, test_loader = create_data(loader=True)
         forecaster = Seq2SeqForecaster(past_seq_len=24,
@@ -586,4 +585,51 @@ class TestChronosModelSeq2SeqForecaster(TestCase):
         forecaster.fit(train_loader, epochs=2)
         forecaster.evaluate(val_loader)
         forecaster.predict(test_loader)
-        assert forecaster.optim_model is None
+        assert forecaster.accelerated_model is None
+
+    def test_s2s_forecaster_eval_shuffle_loader(self):
+        from torch.utils.data import DataLoader, TensorDataset
+        from numpy.testing import assert_almost_equal
+        train_data, val_data, test_data = create_data()
+        forecaster = Seq2SeqForecaster(past_seq_len=24,
+                                       future_seq_len=5,
+                                       input_feature_num=1,
+                                       output_feature_num=1,
+                                       loss="mse",
+                                       lr=0.01)
+        forecaster.fit(train_data, epochs=2)
+        test_loader_shuffle_f = DataLoader(TensorDataset(torch.from_numpy(test_data[0]),
+                                                         torch.from_numpy(test_data[1])),
+                                           batch_size=32,
+                                           shuffle=False)
+        test_loader_shuffle_t = DataLoader(TensorDataset(torch.from_numpy(test_data[0]),
+                                                         torch.from_numpy(test_data[1])),
+                                           batch_size=32,
+                                           shuffle=True)
+        eval_f = forecaster.evaluate(test_loader_shuffle_f)
+        eval_t = forecaster.evaluate(test_loader_shuffle_t)
+        assert_almost_equal(eval_f, eval_t)
+
+    @op_inference
+    def test_s2s_forecaster_eval_with_onnx_shuffle_loader(self):
+        from torch.utils.data import DataLoader, TensorDataset
+        from numpy.testing import assert_almost_equal
+        train_data, val_data, test_data = create_data()
+        forecaster = Seq2SeqForecaster(past_seq_len=24,
+                                       future_seq_len=5,
+                                       input_feature_num=1,
+                                       output_feature_num=1,
+                                       loss="mse",
+                                       lr=0.01)
+        forecaster.fit(train_data, epochs=2)
+        test_loader_shuffle_f = DataLoader(TensorDataset(torch.from_numpy(test_data[0]),
+                                                         torch.from_numpy(test_data[1])),
+                                           batch_size=32,
+                                           shuffle=False)
+        test_loader_shuffle_t = DataLoader(TensorDataset(torch.from_numpy(test_data[0]),
+                                                         torch.from_numpy(test_data[1])),
+                                           batch_size=32,
+                                           shuffle=True)
+        eval_f = forecaster.evaluate_with_onnx(test_loader_shuffle_f)
+        eval_t = forecaster.evaluate_with_onnx(test_loader_shuffle_t)
+        assert_almost_equal(eval_f, eval_t)

@@ -2,11 +2,11 @@ name: Nightly Test
 
 on:
 
-  # pull_request:
-  #   branchs: [ main ]
+  #pull_request:
+    #branchs: [ main ]
 
   schedule:
-    - cron: '0 13 * * *' # GMT time, 13:00 GMT == 21:00 China
+    - cron: '0 15 * * *' # GMT time, 15:00 GMT == 23:00 China
   workflow_dispatch:
     inputs:
       artifact:
@@ -28,17 +28,25 @@ on:
         - Orca-Python-ExampleTest-Ray-Py37-Spark3
         - Orca-Python-ExampleTest-Horovod-Pytorch-Py37-Spark3
         - Orca-Python-ExampleTest-Horovod-Tf-Py37-Spark3
+        - Orca-Python-Rayonspark-Tf2-Py37
+        - Orca-Tutorial-Xshards
         - Dllib-Scala-UT
         - Friesian-Scala-UT
         - Friesian-Python-Py37-Spark3
         - Friesian-Python-Py37-Spark3-Pip
         - Friesian-Python-ExampleTest-Feature-Tf1-Py37-Spark3
         - Friesian-Python-ExampleTest-Feature-Tf1-Pip-Py37-Spark3
+        - Friesian-Python-ExampleTest-Tf2-Py37-Spark3
+        - Friesian-Python-ExampleTest-Tf2-Pip-Py37-Spark3
         - PPML-Scala-UT
         - PPML-Python-UT-Spark3
         - PPML-Occlum-ExampleTests
         - PPML-spark-Local-Example-Tests-on-Gramine
         - PPML-spark-Local-SimpleQuery-Tests-on-Gramine
+        - PPML-RealTime-ML-Occlum
+        - PPML-RealTime-ML-Occlum-K8s
+        - PPML-RealTime-ML-Graphene
+        - PPML-RealTime-ML-Graphene-K8s
         - Colab-Python-Py37-Pytorch
         - Colab-Python-Py37-tf1
         - Colab-Python-Py37-tf2
@@ -94,7 +102,6 @@ jobs:
         type: job
         job-name: Orca-Python-ExampleTest-Py37-Spark3
         runner-hosted-on: 'Shanghai'
-
 
   Orca-Python-ExampleTest-Ray-Py37-Spark3:
     if: ${{ github.event.schedule || github.event.inputs.artifact == 'Orca-Python-ExampleTest-Ray-Py37-Spark3' || github.event.inputs.artifact == 'all' }} 
@@ -386,6 +393,30 @@ jobs:
         job-name: Orca-Jep-Python-Py37-Spark2
         runner-hosted-on: 'Shanghai'
       
+  Orca-Tutorial-Xshards:
+    if: ${{ github.event.schedule || github.event.inputs.artifact == 'Orca-Tutorial-Xshards' || github.event.inputs.artifact == 'all' }} 
+    runs-on: [self-hosted, Gondolin, ubuntu-20.04-lts]
+
+    steps:
+    - uses: actions/checkout@v3
+    - name: Set up JDK8
+      uses: ./.github/actions/jdk-setup-action
+    - name: Set up maven
+      uses: ./.github/actions/maven-setup-action 
+    - name: Run Test
+      uses: ./.github/actions/orca/orca-tutorial-xshards
+    - name: Create Job Badge
+      uses: ./.github/actions/create-job-status-badge
+      if: ${{ always() }}
+      with:
+        secret: ${{ secrets.GIST_SECRET}}
+        gist-id: ${{env.GIST_ID}}
+        is-self-hosted-runner: true
+        file-name: Orca-Tutorial-Xshards.json
+        type: job
+        job-name: Orca-Tutorial-Xshards
+        runner-hosted-on: 'Shanghai'  
+
   Dllib-Scala-UT:
     if: ${{ github.event.schedule || github.event.inputs.artifact == 'Dllib-Scala-UT' || github.event.inputs.artifact == 'all' }} 
     runs-on: [ self-hosted, Gondolin, ubuntu-20.04-lts ]
@@ -521,8 +552,18 @@ jobs:
       uses: ./.github/actions/jdk-setup-action
     - name: Set up maven
       uses: ./.github/actions/maven-setup-action
+    - name: set env
+      env:
+        DEFAULT_IMAGE: '10.239.45.10/arda/intelanalytics/bigdl-ppml-trusted-big-data-ml-scala-occlum'
+        DEFAULT_TAG: 'latest'
+      run: |
+        echo "TAG=${{ github.event.inputs.tag || env.DEFAULT_TAG }}" >> $GITHUB_ENV
+        echo "IMAGE=${{ github.event.inputs.image || env.DEFAULT_IMAGE }}" >> $GITHUB_ENV
     - name: Run Test
       uses: ./.github/actions/ppml-occlum-exampletests-action
+      with:
+        image: ${{env.IMAGE}}
+        image-tag: ${{env.TAG}}
     - name: Create Job Badge
       uses: ./.github/actions/create-job-status-badge
       if: ${{ always() }}
@@ -569,6 +610,125 @@ jobs:
         job-name: PPML-spark-Local-Example-Tests-on-Gramine
         runner-hosted-on: 'Shanghai'
 
+  PPML-RealTime-ML-Occlum:
+    if: ${{ github.event.schedule || github.event.inputs.artifact == 'PPML-RealTime-ML-Occlum' || github.event.inputs.artifact == 'all' }} 
+    runs-on: [self-hosted, Vilvarin]
+
+    steps:
+    - uses: actions/checkout@v3
+    - name: set env
+      env:
+        DEFAULT_IMAGE: '10.239.45.10/arda/intelanalytics/bigdl-ppml-trusted-realtime-ml-scala-occlum'
+        DEFAULT_TAG: 'latest'
+      run: |
+        echo "TAG=${{ github.event.inputs.tag || env.DEFAULT_TAG }}" >> $GITHUB_ENV
+        echo "IMAGE=${{ github.event.inputs.image || env.DEFAULT_IMAGE }}" >> $GITHUB_ENV
+    - name: Run test
+      uses: ./.github/actions/ppml/ppml-realtime-ml-occlum
+      with:
+        image: ${{env.IMAGE}}
+        image-tag: ${{env.TAG}}
+    - name: Create Job Badge
+      uses: ./.github/actions/create-job-status-badge
+      if: ${{ always() }}
+      with:
+        secret: ${{ secrets.GIST_SECRET}}
+        gist-id: ${{env.GIST_ID}}
+        is-self-hosted-runner: true
+        file-name: PPML-RealTime-ML-Occlum.json
+        type: job
+        job-name: PPML-RealTime-ML-Occlum
+        runner-hosted-on: 'Shanghai'
+
+  PPML-RealTime-ML-Occlum-K8s:
+    if: ${{ github.event.schedule || github.event.inputs.artifact == 'PPML-RealTime-ML-Occlum-K8s' || github.event.inputs.artifact == 'all' }} 
+    runs-on: [self-hosted, Vilvarin-root]
+
+    steps:
+    - uses: actions/checkout@v3
+    - name: set env
+      env:
+        DEFAULT_IMAGE: '10.239.45.10/arda/intelanalytics/bigdl-ppml-trusted-realtime-ml-scala-occlum'
+        DEFAULT_TAG: 'latest'
+      run: |
+        echo "TAG=${{ github.event.inputs.tag || env.DEFAULT_TAG }}" >> $GITHUB_ENV
+        echo "IMAGE=${{ github.event.inputs.image || env.DEFAULT_IMAGE }}" >> $GITHUB_ENV
+    - name: Run test
+      uses: ./.github/actions/ppml/ppml-realtime-ml-occlum-k8s
+      with:
+        image: ${{env.IMAGE}}
+        image-tag: ${{env.TAG}}
+    - name: Create Job Badge
+      uses: ./.github/actions/create-job-status-badge
+      if: ${{ always() }}
+      with:
+        secret: ${{ secrets.GIST_SECRET}}
+        gist-id: ${{env.GIST_ID}}
+        is-self-hosted-runner: true
+        file-name: PPML-RealTime-ML-Occlum-K8s.json
+        type: job
+        job-name: PPML-RealTime-ML-Occlum-K8s
+        runner-hosted-on: 'Shanghai'
+
+  PPML-RealTime-ML-Graphene:
+    if: ${{ github.event.schedule || github.event.inputs.artifact == 'PPML-RealTime-ML-Graphene' || github.event.inputs.artifact == 'all' }} 
+    runs-on: [self-hosted, Vilvarin]
+
+    steps:
+    - uses: actions/checkout@v3
+    - name: set env
+      env:
+        DEFAULT_IMAGE: '10.239.45.10/arda/intelanalytics/bigdl-ppml-trusted-realtime-ml-scala-graphene'
+        DEFAULT_TAG: 'latest'
+      run: |
+        echo "TAG=${{ github.event.inputs.tag || env.DEFAULT_TAG }}" >> $GITHUB_ENV
+        echo "IMAGE=${{ github.event.inputs.image || env.DEFAULT_IMAGE }}" >> $GITHUB_ENV
+    - name: Run test
+      uses: ./.github/actions/ppml/ppml-realtime-ml-graphene
+      with:
+        image: ${{env.IMAGE}}
+        image-tag: ${{env.TAG}}
+    - name: Create Job Badge
+      uses: ./.github/actions/create-job-status-badge
+      if: ${{ always() }}
+      with:
+        secret: ${{ secrets.GIST_SECRET}}
+        gist-id: ${{env.GIST_ID}}
+        is-self-hosted-runner: true
+        file-name: PPML-RealTime-ML-Graphene.json
+        type: job
+        job-name: PPML-RealTime-ML-Graphene
+        runner-hosted-on: 'Shanghai'
+
+  PPML-RealTime-ML-Graphene-K8s:
+    if: ${{ github.event.schedule || github.event.inputs.artifact == 'PPML-RealTime-ML-Graphene-K8s' || github.event.inputs.artifact == 'all' }} 
+    runs-on: [self-hosted, Vilvarin-root]
+
+    steps:
+    - uses: actions/checkout@v3
+    - name: set env
+      env:
+        DEFAULT_IMAGE: '10.239.45.10/arda/intelanalytics/bigdl-ppml-trusted-realtime-ml-scala-graphene'
+        DEFAULT_TAG: 'latest'
+      run: |
+        echo "TAG=${{ github.event.inputs.tag || env.DEFAULT_TAG }}" >> $GITHUB_ENV
+        echo "IMAGE=${{ github.event.inputs.image || env.DEFAULT_IMAGE }}" >> $GITHUB_ENV
+    - name: Run test
+      uses: ./.github/actions/ppml/ppml-realtime-ml-graphene-k8s
+      with:
+        image: ${{env.IMAGE}}
+        image-tag: ${{env.TAG}}
+    - name: Create Job Badge
+      uses: ./.github/actions/create-job-status-badge
+      if: ${{ always() }}
+      with:
+        secret: ${{ secrets.GIST_SECRET}}
+        gist-id: ${{env.GIST_ID}}
+        is-self-hosted-runner: true
+        file-name: PPML-RealTime-ML-Graphene-K8s.json
+        type: job
+        job-name: PPML-RealTime-ML-Graphene-K8s
+        runner-hosted-on: 'Shanghai'
 
   Friesian-Python-Py37-Spark3:
     if: ${{ github.event.schedule || github.event.inputs.artifact == 'Friesian-Python-Py37-Spark3' || github.event.inputs.artifact == 'all' }}
@@ -777,6 +937,7 @@ jobs:
         type: job
         job-name: PPML-spark-Local-SimpleQuery-Tests-on-Gramine
         runner-hosted-on: 'Shanghai'
+
   Colab-Python-Py37-Pytorch:
     if: ${{ github.event.schedule || github.event.inputs.artifact == 'Colab-Python-Py37-Pytorch' || github.event.inputs.artifact == 'all' }}
     runs-on: [ self-hosted, Gondolin, ubuntu-20.04-lts ]

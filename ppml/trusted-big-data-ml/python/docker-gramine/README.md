@@ -191,7 +191,7 @@ sudo docker exec -it gramine-test bash
 
 Run the example with SGX with the following command in the terminal.
 ```
-sudo docker exec -it gramine-test bash work/start-scripts/start-python-helloworld-sgx.sh
+sudo docker exec -it gramine-test bash work/scripts/start-python-helloword-on-sgx.sh
 ```
 The result should be:
 > Hello World
@@ -199,7 +199,7 @@ The result should be:
 
 Run the example with SGX with the following command in the terminal.
 ```
-sudo docker exec -it gramine-test bash work/start-scripts/start-python-numpy-sgx.sh
+sudo docker exec -it gramine-test bash work/scripts/start-python-numpy-on-sgx.sh
 ```
 The result should be like:
 > numpy.dot: 0.04753961563110352 sec

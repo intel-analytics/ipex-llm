@@ -22,8 +22,10 @@ from numpy.testing import assert_almost_equal
 from numpy.testing import assert_array_almost_equal
 
 from bigdl.chronos.metric.forecast_metrics import Evaluator
-from bigdl.orca.automl.metrics import sMAPE
+from .. import op_torch, op_tf2, op_distributed, op_diff_set_all
 
+@op_torch
+@op_tf2
 class TestChronosForecastMetrics(TestCase):
 
     def setUp(self):
@@ -104,8 +106,10 @@ class TestChronosForecastMetrics(TestCase):
         y_true = [10, 2, 5]
         with pytest.raises(RuntimeError):
             Evaluator.evaluate('mse', y_true, y_true)
-            
+
+    @op_distributed
     def test_smape_equal_orca(self):
+        from bigdl.orca.automl.metrics import sMAPE
         y_true = np.random.randn(100, 4)
         y_pred = np.random.randn(100, 4)
         smape = Evaluator.evaluate("smape", y_true, y_pred, aggregate="mean")[0]
@@ -126,6 +130,7 @@ class TestChronosForecastMetrics(TestCase):
             assert info in latency_list
             assert isinstance(latency_list[info], float)
     
+    @op_diff_set_all
     def test_plot(self):
         # TODO: more tests
         y = np.random.randn(100, 24, 1)

@@ -18,7 +18,7 @@ import glob
 import shutil
 import urllib
 
-autodoc_mock_imports = ["openvino", "pytorch_lightning", "keras"]
+autodoc_mock_imports = ["openvino", "pytorch_lightning", "keras", "cpuinfo"]
 
 # documentation root, use os.path.abspath to make it absolute, like shown here.
 #sys.path.insert(0, '.')
@@ -113,7 +113,8 @@ extensions = [
     'sphinx_design',
     'nbsphinx',
     'nbsphinx_link',
-    'sphinx.ext.graphviz' # for embedded graphviz diagram
+    'sphinx.ext.graphviz', # for embedded graphviz diagram
+    'sphinxcontrib.mermaid' # for Mermaid diagram
 ]
 
 # Add any paths that contain templates here, relative to this directory.
@@ -159,7 +160,7 @@ exclude_patterns = ['_build']
 html_static_path = ['_static']
 # add js/css for customizing each page
 html_js_files = [
-    'js/custom.js',
+    'js/custom.js'
 ]
 html_css_files = [
     'css/custom.css',
@@ -278,3 +279,6 @@ nbsphinx_execute = 'never'
 
 # make output of graphviz diagram to svg
 graphviz_output_format = 'svg'
+
+# disable automatically included mermaid.js from sphinxcontrib-mermaid to load it before require.js
+mermaid_version=""

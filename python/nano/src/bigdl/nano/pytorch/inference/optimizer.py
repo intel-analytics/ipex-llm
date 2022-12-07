@@ -14,23 +14,18 @@
 # limitations under the License.
 #
 
-from collections import namedtuple
 import torch
-import pytorch_lightning as pl
 from torch import nn
-import subprocess
-from importlib.util import find_spec
 import time
-import numpy as np
-from copy import deepcopy
-from typing import Dict, Callable, Tuple, Optional, List, Set, Union
+import multiprocessing as mp
+from typing import Dict, Callable, Tuple, Optional, List, Union, Sequence
 from torch.utils.data import DataLoader
 from torchmetrics.metric import Metric
 from bigdl.nano.utils.inference.common.checker import available_acceleration_combination
 from bigdl.nano.utils.inference.common.utils import AccelerationOption,\
     throughput_calculate_helper, format_optimize_result
 from bigdl.nano.utils.inference.common.base_optimizer import BaseInferenceOptimizer
-from bigdl.nano.utils.log4Error import invalidInputError, invalidOperationError
+from bigdl.nano.utils.log4Error import invalidInputError
 from bigdl.nano.pytorch.amp import BF16Model
 from bigdl.nano.deps.openvino.openvino_api import PytorchOpenVINOModel
 from bigdl.nano.deps.ipex.ipex_api import PytorchIPEXJITModel, PytorchIPEXJITBF16Model
@@ -39,8 +34,15 @@ from bigdl.nano.deps.neural_compressor.inc_api import quantize as inc_quantize
 from bigdl.nano.utils.inference.pytorch.model import AcceleratedLightningModule
 from bigdl.nano.utils.inference.pytorch.model_utils import get_forward_args, get_input_example
 from bigdl.nano.utils.inference.pytorch.metrics import NanoMetric
+from bigdl.nano.utils.inference.pytorch.dataset import RepeatDataset, remove_batch_dim_fn
+from bigdl.nano.utils.inference.pytorch.dataloader import\
+    transform_multiple_input_dataloader_to_inc_mode, automatic_add_label_in_dataloader
 from bigdl.nano.pytorch.utils import TORCH_VERSION_LESS_1_10, save_model, load_model
-from torchmetrics import Metric
+from bigdl.nano.common.cpu_schedule import schedule_processors
+from bigdl.nano.pytorch.context_manager import generate_context_manager,\
+    BaseContextManager, AutocastContextManager
+from .multi_instance import _MultiInstanceModel, _multi_instance_helper
+import traceback
 import warnings
 # Filter out useless Userwarnings
 warnings.filterwarnings('ignore', category=UserWarning, module='pytorch_lightning')
@@ -52,37 +54,104 @@ import os
 os.environ['LOGLEVEL'] = 'ERROR'  # remove parital output of inc
 
 
+class TorchAccelerationOption(AccelerationOption):
+    def optimize(self, model, training_data=None, input_sample=None,
+                 thread_num=None, logging=False, sample_size_for_pot=100):
+        accelerator = self.get_accelerator()
+        if self.get_precision() == "fp32":
+            if accelerator is None and self.ipex is False and \
+                    self.channels_last is False:
+                return model
+            # trace
+            acce_model = \
+                InferenceOptimizer.trace(model=model,
+                                         accelerator=accelerator,
+                                         input_sample=input_sample,
+                                         thread_num=thread_num,
+                                         channels_last=self.channels_last,
+                                         use_ipex=self.ipex,
+                                         # remove output of openvino
+                                         logging=logging)
+        else:
+            # quantize
+            ort_method: str = self.method
+            acce_model = \
+                InferenceOptimizer.quantize(model=model,
+                                            precision=self.get_precision(),
+                                            accelerator=accelerator,
+                                            use_ipex=self.ipex,
+                                            channels_last=self.channels_last,
+                                            calib_data=training_data,
+                                            input_sample=input_sample,
+                                            method=ort_method,
+                                            thread_num=thread_num,
+                                            sample_size=sample_size_for_pot,
+                                            # remove output of openvino
+                                            logging=logging)
+        return acce_model
+
+
 class InferenceOptimizer(BaseInferenceOptimizer):
 
     # acceleration method combinations, developers may want to register some new
     # combinations here
     ALL_INFERENCE_ACCELERATION_METHOD = \
         {
-            "original": AccelerationOption(),
-            "fp32_ipex": AccelerationOption(ipex=True),
-            "bf16": AccelerationOption(bf16=True),
-            "bf16_ipex": AccelerationOption(bf16=True, ipex=True),
-            "int8": AccelerationOption(inc=True),
-            "jit_fp32": AccelerationOption(jit=True),
-            "jit_fp32_ipex": AccelerationOption(jit=True, ipex=True),
-            "jit_fp32_ipex_channels_last": AccelerationOption(jit=True, ipex=True,
+            "original": TorchAccelerationOption(),
+            "fp32_channels_last": TorchAccelerationOption(channels_last=True),
+            "fp32_ipex": TorchAccelerationOption(ipex=True),
+            "fp32_ipex_channels_last": TorchAccelerationOption(ipex=True,
+                                                               channels_last=True),
+            "bf16": TorchAccelerationOption(bf16=True),
+            "bf16_channels_last": TorchAccelerationOption(bf16=True,
+                                                          channels_last=True),
+            "bf16_ipex": TorchAccelerationOption(bf16=True, ipex=True),
+            "bf16_ipex_channels_last": TorchAccelerationOption(bf16=True, ipex=True,
+                                                               channels_last=True),
+            "int8": TorchAccelerationOption(inc=True),
+            "int8_ipex": TorchAccelerationOption(inc=True, method="ipex", ipex=True),
+            "jit_fp32": TorchAccelerationOption(jit=True),
+            "jit_fp32_channels_last": TorchAccelerationOption(jit=True,
                                                               channels_last=True),
-            "openvino_fp32": AccelerationOption(openvino=True),
-            "openvino_int8": AccelerationOption(openvino=True, pot=True),
-            "onnxruntime_fp32": AccelerationOption(onnxruntime=True),
-            "onnxruntime_int8_qlinear": AccelerationOption(onnxruntime=True, inc=True,
-                                                           method="qlinear"),
-            "onnxruntime_int8_integer": AccelerationOption(onnxruntime=True, inc=True,
-                                                           method="integer"),
+            "jit_bf16": TorchAccelerationOption(jit=True, bf16=True),
+            "jit_bf16_channels_last": TorchAccelerationOption(jit=True, bf16=True,
+                                                              channels_last=True),
+            "jit_fp32_ipex": TorchAccelerationOption(jit=True, ipex=True),
+            "jit_fp32_ipex_channels_last": TorchAccelerationOption(jit=True, ipex=True,
+                                                                   channels_last=True),
+            "jit_bf16_ipex": TorchAccelerationOption(jit=True, bf16=True, ipex=True),
+            "jit_bf16_ipex_channels_last": TorchAccelerationOption(jit=True, bf16=True,
+                                                                   ipex=True,
+                                                                   channels_last=True),
+            "openvino_fp32": TorchAccelerationOption(openvino=True),
+            "openvino_int8": TorchAccelerationOption(openvino=True, pot=True),
+            "onnxruntime_fp32": TorchAccelerationOption(onnxruntime=True),
+            "onnxruntime_int8_qlinear": TorchAccelerationOption(onnxruntime=True, inc=True,
+                                                                method="qlinear"),
+            "onnxruntime_int8_integer": TorchAccelerationOption(onnxruntime=True, inc=True,
+                                                                method="integer"),
         }
 
+    _default_methods = ["original", "bf16", "int8",
+                        "jit_fp32_ipex", "jit_fp32_ipex_channels_last",
+                        "jit_bf16_ipex", "jit_bf16_ipex_channels_last", "openvino_fp32",
+                        "openvino_int8", "onnxruntime_fp32", "onnxruntime_int8_qlinear"]
+    DEFAULT_INFERENCE_ACCELERATION_METHOD = {}
+    for method in _default_methods:
+        DEFAULT_INFERENCE_ACCELERATION_METHOD[method] = ALL_INFERENCE_ACCELERATION_METHOD[method]
+
     def optimize(self, model: nn.Module,
-                 training_data: DataLoader,
-                 validation_data: Optional[DataLoader] = None,
+                 training_data: Union[DataLoader, torch.Tensor, Tuple[torch.Tensor]],
+                 validation_data:
+                     Optional[Union[DataLoader, torch.Tensor, Tuple[torch.Tensor]]] = None,
                  input_sample: Union[torch.Tensor, Dict, Tuple[torch.Tensor], None] = None,
                  metric: Optional[Callable] = None,
                  direction: str = "max",
                  thread_num: Optional[int] = None,
+                 accelerator: Optional[Tuple[str]] = None,
+                 precision: Optional[Tuple[str]] = None,
+                 use_ipex: Optional[bool] = None,
+                 search_mode: str = "default",
                  logging: bool = False,
                  latency_sample_num: int = 100,
                  includes: Optional[List[str]] = None,
@@ -92,25 +161,45 @@ class InferenceOptimizer(BaseInferenceOptimizer):
         and record the latency, accuracy and model instance inside the Optimizer for
         future usage. All model instance is setting to eval mode.
 
-        The available methods are "original", "fp32_ipex", "bf16", "bf16_ipex","int8",
-        "jit_fp32", "jit_fp32_ipex", "jit_fp32_ipex_channels_last", "openvino_fp32",
-        "openvino_int8", "onnxruntime_fp32", "onnxruntime_int8_qlinear"
+        The available methods are "original", "fp32_channels_last", "fp32_ipex",
+        "fp32_ipex_channels_last", "bf16", "bf16_channels_last", "bf16_ipex",
+        "bf16_ipex_channels_last", "int8", "int8_ipex", "jit_fp32", "jit_bf16", "jit_fp32_ipex",
+        "jit_fp32_ipex_channels_last", "jit_bf16_ipex", "jit_bf16_ipex_channels_last",
+        "openvino_fp32", "openvino_int8", "onnxruntime_fp32", "onnxruntime_int8_qlinear"
         and "onnxruntime_int8_integer".
 
         :param model: A torch.nn.Module to be optimized
-        :param training_data: A torch.utils.data.dataloader.DataLoader object for training
-               dataset. Users should be careful with this parameter since this dataloader
-               might be exposed to the model, which causing data leak. The
-               batch_size of this dataloader is important as well, users may
-               want to set it to the same batch size you may want to use the model
-               in real deploy environment. E.g. batch size should be set to 1
-               if you would like to use the accelerated model in an online service.
-        :param validation_data: (optional) A torch.utils.data.dataloader.DataLoader object
-               for accuracy evaluation. This is only needed when users care about the possible
-               accuracy drop.
+        :param training_data: training_data support following formats:
+
+                | 1. a torch.utils.data.dataloader.DataLoader object for training dataset.
+                | Users should be careful with this parameter since this dataloader
+                | might be exposed to the model, which causing data leak. The
+                | batch_size of this dataloader is important as well, users may
+                | want to set it to the same batch size you may want to use the model
+                | in real deploy environment. E.g. batch size should be set to 1
+                | if you would like to use the accelerated model in an online service.
+                |
+                | 2. a single torch.Tensor which used for training, this case is used to
+                | accept single sample input x.
+                |
+                | 3. a tuple of torch.Tensor which used for training, this case is used to
+                | accept single sample input (x, y) or (x1, x2) et al.
+
+        :param validation_data: (optional) validation_data is only needed when users care
+                                about the possible accuracy drop. It support following formats:
+
+                | 1. a torch.utils.data.dataloader.DataLoader object for accuracy evaluation.
+                |
+                | 2. a single torch.Tensor which used for training, this case is used to
+                | accept single sample input x.
+                |
+                | 3. a tuple of torch.Tensor which used for training, this case is used to
+                | accept single sample input (x, y) or (x1, x2) et al.
+
         :param input_sample: (optional) A set of inputs for trace, defaults to None.
                In most cases, you don't need specify this parameter, it will be obtained from
-               training_data.
+               training_data. You have to specidy this parameter only if the forward function
+               of your model contains some kwargs like `def forward(self, x1, x2, x3=1)`.
         :param metric: (optional) A callable object which is used for calculating accuracy.
                It supports two kinds of callable object:
 
@@ -118,6 +207,7 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                | prediction and target then returns an accuracy value in this calling
                | method `metric(pred, target)`. This requires data in validation_data
                | is composed of (input_data, target).
+               |
                | 2. A callable object that takes model and validation_data (if
                | validation_data is not None) as input, and returns an accuracy value in
                | this calling method metric(model, data_loader) (or metric(model) if
@@ -128,6 +218,32 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                higher the better. Default value is "max".
         :param thread_num: (optional) a int represents how many threads(cores) is needed for
                inference.
+        :param accelerator: (optional) A string tuple that specifys the accelerators to search.
+               The optional accelerators are: None, 'openvino', 'onnxruntime', 'jit'.
+               Defaults to None which represents there is no restriction on accelerators.
+               If not None, then will only travese corresponding methods whose accelerator falls
+               within the specified accelerator tuple.
+        :param precision: (optional) A string tuple that specifys the precision to search.
+               The optional precision are: 'int8', 'bf16', and 'fp32'. Defaults to None which
+               represents no precision limit. If not None, then will only travese corresponding
+               methods whose precision falls within the specified precision tuple.
+        :param use_ipex: (optional) if not None, then will only try methods with/without
+               this specific ipex setting.
+        :param search_mode: Here are three modes for optimization:
+
+               | 1. default: This mode only traverses a subset of all combinations. This subset
+               | is a collection of methods that we select based on experience and think have
+               | better acceleration effect in general. This mode allows you to quickly obtain a
+               | good acceleration method, but it is not necessarily the global optimal. Default
+               | to this mode if you don't specify accelerator/precision/use_ipex.
+               |
+               | 2. all: This mode will traverse all possible combinations, which can ensure
+               | find the global optimization, but it will take a long time.
+               |
+               | 3. grid: If you have specified accelerator/precision/use_ipex, the default is
+               | grid mode. We will sort and combine according to the value you specified to
+               | get the search range.
+
         :param logging: whether to log detailed information of model conversion.
                Default: False.
         :param latency_sample_num: (optional) a int represents the number of repetitions
@@ -143,12 +259,39 @@ class InferenceOptimizer(BaseInferenceOptimizer):
         invalidInputError(isinstance(model, nn.Module), "model should be a nn module.")
         invalidInputError(direction in ['min', 'max'],
                           "Only support direction 'min', 'max'.")
+        invalidInputError(accelerator is None or isinstance(accelerator, tuple),
+                          "accelerator must be a tuple.")
+        invalidInputError(precision is None or isinstance(precision, tuple),
+                          "precison must be a tuple.")
+        _check_accelerator = accelerator is None or all(
+            ac in [None, 'onnxruntime', 'openvino', 'jit'] for ac in accelerator)
+        invalidInputError(_check_accelerator is True,
+                          "Only support accelerator None, 'onnxruntime', 'openvino' and 'jit'.")
+        _check_precision = precision is None or all(
+            p in [None, 'int8', 'bf16', 'fp32'] for p in precision)
+        invalidInputError(_check_precision is True,
+                          "Only support precision 'int8', 'bf16', 'fp32'.")
+
+        if accelerator is not None or precision is not None or use_ipex is not None:
+            search_mode = "grid"
+            # setting search scope
+            all_acceleration_methods = _obtain_combinations(self.ALL_INFERENCE_ACCELERATION_METHOD,
+                                                            precision,
+                                                            accelerator,
+                                                            use_ipex)
+        else:
+            if search_mode == "all":
+                all_acceleration_methods = self.ALL_INFERENCE_ACCELERATION_METHOD
+            elif search_mode == "default":
+                # which is seting based on experience, and may need periodic update
+                all_acceleration_methods = self.DEFAULT_INFERENCE_ACCELERATION_METHOD
 
         # get the available methods whose dep is met
         available_dict: Dict =\
             available_acceleration_combination(excludes=excludes,
                                                includes=includes,
-                                               full_methods=self.ALL_INFERENCE_ACCELERATION_METHOD)
+                                               full_methods=all_acceleration_methods,
+                                               all_methods=self.ALL_INFERENCE_ACCELERATION_METHOD)
 
         self._direction: str = direction  # save direction as attr
         # record whether calculate accuracy in optimize by this attr
@@ -159,7 +302,7 @@ class InferenceOptimizer(BaseInferenceOptimizer):
             self._calculate_accuracy = True
 
         default_threads: int = torch.get_num_threads()
-        thread_num: int = default_threads if thread_num is None else int(thread_num)
+        thread_num: int = None if thread_num is None else int(thread_num)
 
         result_map: Dict[str, Dict] = {}
 
@@ -167,7 +310,23 @@ class InferenceOptimizer(BaseInferenceOptimizer):
 
         if input_sample is None:
             forward_args = get_forward_args(model)
-            input_sample = get_input_example(model, training_data, forward_args)
+            if isinstance(training_data, DataLoader):
+                input_sample = get_input_example(model, training_data, forward_args)
+            else:
+                if isinstance(training_data, Sequence):
+                    input_sample = tuple(list(training_data)[:len(forward_args)])
+                else:
+                    input_sample = training_data
+                # turn training_data into dataset
+                dataset = RepeatDataset(sample=training_data, num=1)
+                training_data = DataLoader(dataset, batch_size=1)
+                training_data = remove_batch_dim_fn(training_data)
+                if validation_data is not None and not isinstance(validation_data, DataLoader):
+                    # turn validation_data into dataset
+                    val_dataset = RepeatDataset(sample=validation_data, num=1)
+                    validation_data = DataLoader(val_dataset, batch_size=1)
+                    validation_data = remove_batch_dim_fn(validation_data)
+
         st = time.perf_counter()
         try:
             with torch.no_grad():
@@ -184,6 +343,11 @@ class InferenceOptimizer(BaseInferenceOptimizer):
         else:
             sample_size_for_pot = 100
 
+        # patch context manager
+        model._nano_context_manager = generate_context_manager(accelerator=None,
+                                                               precision="fp32",
+                                                               thread_num=thread_num)
+
         print("==========================Start Optimization==========================")
         start_time = time.perf_counter()
         for idx, (method, available) in enumerate(available_dict.items()):
@@ -192,123 +356,85 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                 result_map[method]["status"] = "lack dependency"
             else:
                 print(f"----------Start test {method} model "
-                      f"({idx+1}/{len(self.ALL_INFERENCE_ACCELERATION_METHOD)})----------")
+                      f"({idx+1}/{len(available_dict)})----------")
                 option: AccelerationOption = self.ALL_INFERENCE_ACCELERATION_METHOD[method]
-                use_ipex: bool = option.ipex
-                use_channels_last: bool = option.channels_last
-                accelerator: str = option.get_accelerator()
-                precision: str = option.get_precision()
-                # if precision is fp32, then we will use trace method
-                if precision == "fp32":
-                    try:
-                        if accelerator is None and use_ipex is False:
-                            acce_model = model
-                        else:
-                            if accelerator in ("jit", None):
-                                acce_model = \
-                                    InferenceOptimizer.trace(model=model,
-                                                             accelerator=accelerator,
-                                                             use_ipex=use_ipex,
-                                                             # channels_last is only for jit
-                                                             channels_last=use_channels_last,
-                                                             input_sample=input_sample)
-                            else:
-                                acce_model = \
-                                    InferenceOptimizer.trace(model=model,
-                                                             accelerator=accelerator,
-                                                             input_sample=input_sample,
-                                                             thread_num=thread_num,
-                                                             # remove output of openvino
-                                                             logging=logging)
-                    except Exception as e:
-                        print(e)
-                        result_map[method]["status"] = "fail to convert"
-                        print(f"----------Failed to convert to {method}----------")
-                        continue
-
-                # if precision is int8 or bf16, then we will use quantize method
-                elif precision in ("int8", "bf16"):
-                    ort_method: str = option.method
-                    try:
-                        acce_model = \
-                            InferenceOptimizer.quantize(model=deepcopy(model),
-                                                        precision=precision,
-                                                        accelerator=accelerator,
-                                                        use_ipex=use_ipex,
-                                                        calib_dataloader=training_data,
-                                                        input_sample=input_sample,
-                                                        method=ort_method,
-                                                        thread_num=thread_num,
-                                                        sample_size=sample_size_for_pot,
-                                                        # remove output of openvino
-                                                        logging=logging)
-                    except Exception as e:
-                        print(e)
-                        result_map[method]["status"] = "fail to convert"
-                        print(f"----------Failed to convert to {method}----------")
-                        continue
+                precision = option.get_precision()
+                try:
+                    acce_model = option.optimize(model, training_data=training_data,
+                                                 input_sample=input_sample,
+                                                 thread_num=thread_num,
+                                                 logging=logging,
+                                                 sample_size_for_pot=sample_size_for_pot)
+                except Exception:
+                    traceback.print_exc()
+                    result_map[method]["status"] = "fail to convert"
+                    print(f"----------Failed to convert to {method}----------")
+                    continue
 
                 result_map[method]["status"] = "successful"
 
                 def func_test(model, input_sample):
-                    with torch.no_grad():
-                        if isinstance(input_sample, (Dict, torch.Tensor)):
-                            model(input_sample)
-                        else:
-                            model(*input_sample)
+                    if isinstance(input_sample, (Dict, torch.Tensor)):
+                        model(input_sample)
+                    else:
+                        model(*input_sample)
 
-                torch.set_num_threads(thread_num)
-                try:
-                    result_map[method]["latency"], status =\
-                        throughput_calculate_helper(latency_sample_num, baseline_time,
-                                                    func_test, acce_model, input_sample)
-                    if status is False and method != "original":
-                        result_map[method]["status"] = "early stopped"
+                with InferenceOptimizer.get_context(acce_model):
+                    try:
+                        result_map[method]["latency"], status =\
+                            throughput_calculate_helper(latency_sample_num, baseline_time,
+                                                        func_test, acce_model, input_sample)
+                        if status is False and method != "original":
+                            result_map[method]["status"] = "early stopped"
+                            # save model even early stop
+                            result_map[method]["model"] = acce_model
+                            torch.set_num_threads(default_threads)
+                            continue
+                    except Exception:
+                        traceback.print_exc()
+                        result_map[method]["status"] = "fail to forward"
+                        print(f"----------{method} failed to forward----------")
                         torch.set_num_threads(default_threads)
                         continue
-                except Exception as e:
-                    result_map[method]["status"] = "fail to forward"
-                    print(f"----------{method} failed to forward----------")
-                    torch.set_num_threads(default_threads)
-                    continue
 
-                torch.set_num_threads(default_threads)
-                if self._calculate_accuracy:
-                    # here we suppose trace don't change accuracy,
-                    # so we jump it to reduce time cost of optimize
-                    if precision == "fp32" and method != "original":
-                        result_map[method]["accuracy"] = "not recomputed"
-                    else:
-                        if method == "original":
-                            # test whether metric works
-                            try:
+                    torch.set_num_threads(default_threads)
+                    if self._calculate_accuracy:
+                        # here we suppose trace don't change accuracy,
+                        # so we jump it to reduce time cost of optimize
+                        if precision == "fp32" and method != "original":
+                            result_map[method]["accuracy"] = "not recomputed"
+                        else:
+                            if method == "original":
+                                # test whether metric works
+                                try:
+                                    result_map[method]["accuracy"] =\
+                                        _accuracy_calculate_helper(acce_model, metric,
+                                                                   validation_data)
+                                except Exception:
+                                    traceback.print_exc()
+                                    self._calculate_accuracy = False
+                                    invalidInputError(
+                                        False,
+                                        "Your metric is incompatible with validation_data or don't "
+                                        "follow our given pattern. Our expected metric pattern is "
+                                        "as follows:\n1. a torchmetrics.Metric object\n2. a "
+                                        "callable object which takes prediction and target then "
+                                        "returns a value in this calling method: `metric(pred, "
+                                        "target)`\n3. a callable object that takes model and "
+                                        "validation_data (if validation_data is not None) as input,"
+                                        "and returns an accuracy value in this calling method: "
+                                        "metric(model, data_loader) (or metric(model) if "
+                                        "validation_data is None).")
+                            else:
                                 result_map[method]["accuracy"] =\
                                     _accuracy_calculate_helper(acce_model, metric,
                                                                validation_data)
-                            except Exception as e:
-                                print(e)
-                                self._calculate_accuracy = False
-                                invalidInputError(
-                                    False,
-                                    "Your metric is incompatible with validation_data or don't "
-                                    "follow our given pattern. Our expected metric pattern is "
-                                    "as follows:\n1. a torchmetrics.Metric object\n2. a callable "
-                                    "object which takes prediction and target then returns a value"
-                                    " in this calling method `metric(pred, target)`\n3. a callable"
-                                    " object that takes model and validation_data (if "
-                                    "validation_data is not None) as input, and returns an accuracy"
-                                    " value in this calling method metric(model, data_loader) "
-                                    "(or metric(model) if validation_data is None).")
-                        else:
-                            result_map[method]["accuracy"] =\
-                                _accuracy_calculate_helper(acce_model, metric,
-                                                           validation_data)
-                else:
-                    result_map[method]["accuracy"] = None
+                    else:
+                        result_map[method]["accuracy"] = None
 
                 result_map[method]["model"] = acce_model
                 print(f"----------Finish test {method} model "
-                      f"({idx+1}/{len(self.ALL_INFERENCE_ACCELERATION_METHOD)})----------")
+                      f"({idx+1}/{len(available_dict)})----------")
 
         self.optimized_model_dict: Dict = result_map
         print("\n\n==========================Optimization Results==========================")
@@ -327,7 +453,8 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                  precision: str = 'int8',
                  accelerator: Optional[str] = None,
                  use_ipex: bool = False,
-                 calib_dataloader: Optional[DataLoader] = None,
+                 calib_data: Union[DataLoader, torch.Tensor, Tuple[torch.Tensor]] = None,
+                 calib_dataloader: Union[DataLoader] = None,
                  metric: Optional[Metric] = None,
                  accuracy_criterion: Optional[dict] = None,
                  approach: str = 'static',
@@ -337,11 +464,15 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                  timeout: Optional[int] = None,
                  max_trials: Optional[int] = None,
                  input_sample=None,
+                 channels_last: bool = False,
                  thread_num: Optional[int] = None,
                  onnxruntime_session_options=None,
+                 openvino_config=None,
                  simplification: bool = True,
+                 jit_strict: bool = True,
                  sample_size: int = 100,
                  logging: bool = True,
+                 inplace: bool = False,
                  **export_kwargs):
         """
         Calibrate a torch.nn.Module for post-training quantization.
@@ -352,9 +483,25 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                                 supported type: 'int8', 'bf16', 'fp16', defaults to 'int8'.
         :param accelerator:     Use accelerator 'None', 'onnxruntime', 'openvino', defaults to None.
                                 None means staying in pytorch.
+        :param calib_data:      Calibration data is required for static quantization.
+                                It's also used as validation dataloader.
+                                calib_data support following formats:
+
+                                | 1. a torch.utils.data.dataloader.DataLoader object for training.
+                                |
+                                | 2. a single torch.Tensor which used for training, this case is
+                                | used to accept single sample input x.
+                                |
+                                | 3. a tuple of torch.Tensor which used for training, this case is
+                                | used to accept single sample input (x, y) or (x1, x2) et al.
         :param calib_dataloader:    A torch.utils.data.dataloader.DataLoader object for calibration.
                                     Required for static quantization.
                                     It's also used as validation dataloader.
+
+               .. warning::
+                  ``calib_dataloader`` will be deprecated in future release.
+
+                  Please use ``calib_data`` instead.
         :param metric:              A torchmetrics.metric.Metric object for evaluation.
         :param accuracy_criterion:  Tolerable accuracy drop, defaults to None meaning no
                                     accuracy control.
@@ -383,15 +530,25 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                             Combine with timeout field to decide when to exit.
                             "timeout=0, max_trials=1" means it will try quantization only once and
                             return satisfying best model.
-        :param input_sample:      An input example to convert pytorch model into ONNX/OpenVINO.
+        :param input_sample:      An input example to convert pytorch model into ONNX/OpenVINO/JIT.
+        :param channels_last: Whether use channels last memory format, i.e. NHWC (batch size,
+                              height, width, channels), as an alternative way to store tensors in
+                              classic/contiguous NCHW order, only valid when precision='bf16',
+                              otherwise will be ignored. This setting only works for 4-dim Tensor.
+                              Default: ``False``.
         :param thread_num: (optional) a int represents how many threads(cores) is needed for
                            inference, only valid for accelerator='onnxruntime'
                            or accelerator='openvino'.
         :param onnxruntime_session_options: The session option for onnxruntime, only valid when
                                             accelerator='onnxruntime', otherwise will be ignored.
+        :param openvino_config: The config to be inputted in core.compile_model. Only valid when
+                                accelerator='openvino', otherwise will be ignored.
         :param simplification: whether we use onnxsim to simplify the ONNX model, only valid when
                                accelerator='onnxruntime', otherwise will be ignored. If this option
                                is set to True, new dependency 'onnxsim' need to be installed.
+        :param jit_strict: Whether recording your mutable container types. This parameter will be
+                           passed to torch.jit.trace. if accelerator != 'jit', it will be ignored.
+                           Default to True.
         :param sample_size: (optional) a int represents how many samples will be used for
                             Post-training Optimization Tools (POT) from OpenVINO toolkit,
                             only valid for accelerator='openvino'. Default to 100.
@@ -399,26 +556,56 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                             the lower the performance degradation, but the longer the time.
         :param logging: whether to log detailed information of model conversion, only valid when
                         accelerator='openvino', otherwise will be ignored. Default: ``True``.
+        :param inplace: whether to perform inplace optimization. Default: ``False``.
         :param **export_kwargs: will be passed to torch.onnx.export function.
         :return:            A accelerated torch.nn.Module if quantization is sucessful.
         """
         if precision == 'bf16':
-            if accelerator is None:
-                if use_ipex:
-                    invalidInputError(not TORCH_VERSION_LESS_1_10,
-                                      "torch version should >=1.10 to use ipex")
+            if accelerator is None or accelerator == "jit":
+                if use_ipex or accelerator == "jit":
+                    if use_ipex is True:
+                        invalidInputError(not TORCH_VERSION_LESS_1_10,
+                                          "torch version should >=1.10 to use ipex")
                     use_jit = (accelerator == "jit")
-                    channels_last = export_kwargs["channels_last"] \
-                        if "channels_last" in export_kwargs else None
                     return PytorchIPEXJITBF16Model(model, input_sample=input_sample,
                                                    use_ipex=use_ipex, use_jit=use_jit,
-                                                   channels_last=channels_last)
-                bf16_model = BF16Model(model)
-                return bf16_model
+                                                   channels_last=channels_last,
+                                                   thread_num=thread_num, inplace=inplace,
+                                                   jit_strict=jit_strict)
+                else:
+                    bf16_model = BF16Model(model, channels_last=channels_last,
+                                           thread_num=thread_num)
+                    return bf16_model
             else:
                 invalidInputError(False,
                                   "Accelerator {} is invalid for BF16.".format(accelerator))
         if precision == 'int8':
+            # transform non-dataloader to dataloader
+            if calib_data is not None and not isinstance(calib_data, DataLoader):
+                dataset = RepeatDataset(sample=calib_data, num=1)
+                calib_dataloader = DataLoader(dataset, batch_size=1)
+                calib_dataloader = remove_batch_dim_fn(calib_dataloader)
+            else:
+                if calib_data is None and calib_dataloader is not None:
+                    # will be deprecate in future release
+                    warnings.warn("`calib_dataloader` will be deprecated in future release, please"
+                                  "use `calib_data` instead.",
+                                  category=DeprecationWarning)
+                    calib_dataloader = calib_dataloader
+                else:
+                    calib_dataloader = calib_data
+            # judge whether contains label in calib_datalaoder
+            # if not, will append label at last
+            if accelerator is not None:
+                calib_dataloader = automatic_add_label_in_dataloader(model,
+                                                                     calib_dataloader,
+                                                                     input_sample)
+
+            # transform the dataloader to inc mode
+            inc_calib_dataloader =\
+                transform_multiple_input_dataloader_to_inc_mode(model,
+                                                                calib_dataloader)
+
             if not accelerator or accelerator == 'onnxruntime':
                 method_map = {
                     None: {
@@ -460,7 +647,8 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                 model which is able to run on Pytorch or ONNXRuntime can be fetched by
                 `quantized_model.model`.
                 """
-                return inc_quantize(model, calib_dataloader, metric,
+                return inc_quantize(model, inc_calib_dataloader, metric,
+                                    thread_num=thread_num,
                                     framework=framework,
                                     conf=conf,
                                     approach=approach,
@@ -506,7 +694,8 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                     # "n_requests": None,
                     "sample_size": sample_size
                 }
-                return model.pot(calib_dataloader, thread_num=thread_num, **kwargs)
+                return model.pot(calib_dataloader, thread_num=thread_num,
+                                 config=openvino_config, **kwargs)
             else:
                 invalidInputError(False,
                                   "Accelerator {} is invalid.".format(accelerator))
@@ -518,38 +707,50 @@ class InferenceOptimizer(BaseInferenceOptimizer):
               input_sample=None,
               accelerator: Optional[str] = None,
               use_ipex: bool = False,
+              channels_last: bool = False,
               thread_num: Optional[int] = None,
               onnxruntime_session_options=None,
+              openvino_config=None,
               simplification: bool = True,
+              jit_strict: bool = True,
               logging: bool = True,
+              inplace: bool = False,
               **export_kwargs):
         """
         Trace a torch.nn.Module and convert it into an accelerated module for inference.
 
         For example, this function returns a PytorchOpenVINOModel when accelerator=='openvino'.
 
-        :param model: An torch.nn.Module model, including pl.LightningModule.
+        :param model: A torch.nn.Module model, including pl.LightningModule.
         :param input_sample: A set of inputs for trace, defaults to None if you have trace before or
                              model is a LightningModule with any dataloader attached.
         :param accelerator: The accelerator to use, defaults to None meaning staying in Pytorch
                             backend. 'openvino', 'onnxruntime' and 'jit' are supported for now.
-        :param use_ipex: whether we use ipex as accelerator for inferencing. default: False.
-        :param thread_num: (optional) a int represents how many threads(cores) is needed for
+        :param use_ipex: Whether we use ipex as accelerator for inferencing. default: False.
+        :param channels_last: Whether use channels last memory format, i.e. NHWC (batch size,
+                              height, width, channels), as an alternative way to store tensors in
+                              classic/contiguous NCHW order. This setting only works for 4-dim
+                              Tensor. Default: ``False``.
+        :param thread_num: (optional) A int represents how many threads(cores) is needed for
                            inference, only valid for accelerator='onnxruntime'
                            or accelerator='openvino'.
         :param onnxruntime_session_options: The session option for onnxruntime, only valid when
                                             accelerator='onnxruntime', otherwise will be ignored.
-        :param simplification: whether we use onnxsim to simplify the ONNX model, only valid when
+        :param openvino_config: The config to be inputted in core.compile_model. Only valid when
+                                accelerator='openvino', otherwise will be ignored.
+        :param simplification: Whether we use onnxsim to simplify the ONNX model, only valid when
                                accelerator='onnxruntime', otherwise will be ignored. If this option
                                is set to True, new dependency 'onnxsim' need to be installed.
-        :param logging: whether to log detailed information of model conversion, only valid when
+        :param jit_strict: Whether recording your mutable container types. This parameter will be
+                           passed to torch.jit.trace. if accelerator != 'jit', it will be ignored.
+                           Default to True.
+        :param logging: Whether to log detailed information of model conversion, only valid when
                         accelerator='openvino', otherwise will be ignored. Default: ``True``.
-        :param **kwargs: other extra advanced settings include
-                         1. those be passed to torch.onnx.export function, only valid when
-                         accelerator='onnxruntime'/'openvino', otherwise will be ignored.
-                         2. if channels_last is set and `use_ipex=True`, we will transform the
-                         data to be channels last according to the setting. Defaultly, channels_last
-                         will be set to ``True`` if `use_ipex=True`.
+        :param inplace: whether to perform inplace optimization. Default: ``False``.
+        :param **export_kwargs: Other extra advanced settings include those be passed to
+                                torch.onnx.export function, only valid when
+                                accelerator='onnxruntime'/'openvino', otherwise
+                                will be ignored.
         :return: Model with different acceleration.
         """
         invalidInputError(
@@ -558,7 +759,11 @@ class InferenceOptimizer(BaseInferenceOptimizer):
             "but got type {}".format(type(model))
         )
         if accelerator == 'openvino':  # openvino backend will not care about ipex usage
-            return PytorchOpenVINOModel(model, input_sample, thread_num, logging, **export_kwargs)
+            final_openvino_option = {"INFERENCE_PRECISION_HINT": "f32"}
+            if openvino_config is not None:
+                final_openvino_option.update(openvino_config)
+            return PytorchOpenVINOModel(model, input_sample, thread_num, logging,
+                                        final_openvino_option, **export_kwargs)
         if accelerator == 'onnxruntime':  # onnxruntime backend will not care about ipex usage
             if onnxruntime_session_options is None:
                 import onnxruntime
@@ -568,16 +773,76 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                     onnxruntime_session_options.inter_op_num_threads = thread_num
             return PytorchONNXRuntimeModel(model, input_sample, onnxruntime_session_options,
                                            simplification=simplification, **export_kwargs)
-        if accelerator == 'jit' or use_ipex:
+        if accelerator == 'jit' or use_ipex is True or channels_last is True:
             if use_ipex:
                 invalidInputError(not TORCH_VERSION_LESS_1_10,
                                   "torch version should >=1.10 to use ipex")
             use_jit = (accelerator == "jit")
-            channels_last = export_kwargs["channels_last"]\
-                if "channels_last" in export_kwargs else None
             return PytorchIPEXJITModel(model, input_sample=input_sample, use_ipex=use_ipex,
-                                       use_jit=use_jit, channels_last=channels_last)
+                                       use_jit=use_jit, channels_last=channels_last,
+                                       thread_num=thread_num, inplace=inplace,
+                                       jit_strict=jit_strict)
         invalidInputError(False, "Accelerator {} is invalid.".format(accelerator))
+
+    @staticmethod
+    def get_context(model: nn.Module, *models):
+        """
+        Obtain corresponding context manager from (multi) model, defaults to BaseContextManager().
+
+        :param model: Any model of torch.nn.Module, including all models accelareted by
+               InferenceOptimizer.trace/InferenceOptimizer.quantize.
+        :param models: Any model of torch.nn.Module or list of torch.nn.Module, including all models
+               accelareted by InferenceOptimizer.trace/InferenceOptimizer.quantize.
+        :return: a context manager if there is no conflict between context managers,
+                 otherwise will report RuntimeError.
+        """
+        def obtain_manager(input_model):
+            if hasattr(input_model, "_nano_context_manager"):
+                _context_manager = input_model._nano_context_manager
+            else:
+                _context_manager = generate_context_manager(accelerator=None,
+                                                            precision="fp32")
+            return _context_manager
+
+        def join_manager(manager1, manager2):
+            def is_bf16(x):
+                return isinstance(x, AutocastContextManager)
+            if (is_bf16(manager1) ^ is_bf16(manager2)) is True:
+                warnings.warn("Only one of the context managers uses mixed precision, "
+                              "and we will return the context manager with mixed precision.")
+            manager = None
+            if is_bf16(manager1) or is_bf16(manager2):
+                manager = AutocastContextManager()
+            else:
+                manager = BaseContextManager()
+            thread_num1 = manager1.thread_num
+            thread_num2 = manager2.thread_num
+            if thread_num1 != thread_num2:
+                if thread_num1 is None or thread_num2 is None:
+                    warnings.warn("One of the two models has thread control and the other "
+                                  "does not. The returned context manager will be dominated "
+                                  "by the non-None one.")
+                else:
+                    warnings.warn("These context managers have different thread_num.  We will "
+                                  "set thread_num to the larger one.")
+                if thread_num1 is None or thread_num2 > thread_num1:
+                    manager.thread_num = thread_num2
+                else:
+                    manager.thread_num = thread_num1
+            else:
+                manager.thread_num = thread_num1
+            return manager
+
+        _context_manager = obtain_manager(model)
+        if len(models) == 0:
+            # only single model
+            return _context_manager
+        else:
+            for model_ in models:
+                if isinstance(model_, nn.Module):
+                    new_manager = obtain_manager(model_)
+                    _context_manager = join_manager(_context_manager, new_manager)
+            return _context_manager
 
     @staticmethod
     def save(model: nn.Module, path):
@@ -585,24 +850,77 @@ class InferenceOptimizer(BaseInferenceOptimizer):
         Save the model to local file.
 
         :param model: Any model of torch.nn.Module, including all models accelareted by
-               Trainer.trace/Trainer.quantize.
+               InferenceOptimizer.trace/InferenceOptimizer.quantize.
         :param path: Path to saved model. Path should be a directory.
         """
         save_model(model, path)
 
     @staticmethod
-    def load(path, model: Optional[nn.Module] = None):
+    def load(path, model: Optional[nn.Module] = None, inplace=False):
         """
         Load a model from local.
 
         :param path: Path to model to be loaded. Path should be a directory.
         :param model: Required FP32 model to load pytorch model, it is needed if you accelerated
-               the model with accelerator=None by Trainer.trace/Trainer.quantize. model
-               should be set to None if you choose accelerator="onnxruntime"/"openvino"/"jit".
+               the model with accelerator=None by InferenceOptimizer.trace/
+               InferenceOptimizer.quantize. model should be set to None if you choose
+               accelerator="onnxruntime"/"openvino"/"jit".
+        :param inplace: whether to perform inplace optimization. Default: ``False``.
         :return: Model with different acceleration(None/OpenVINO/ONNX Runtime/JIT) or
                  precision(FP32/FP16/BF16/INT8).
         """
-        return load_model(path, model)
+        return load_model(path, model, inplace=inplace)
+
+    @staticmethod
+    def to_multi_instance(model: nn.Module, num_processes: int,
+                          cores_per_process: int = None,
+                          cpu_for_each_process: List[List] = None) -> _MultiInstanceModel:
+        """
+        Transform a model to multi-instance inference model.
+        :param model: The model to transform.
+        :param num_processes: The number of processes to use.
+        :param cores_per_process: Number of CPU cores used by each process,
+            default to `None`, means decided automatically.
+        :param cpu_for_each_process: Specify the CPU cores used by each process,
+            default to `None`, if set, it will override `num_processes` and `cores_per_process`.
+        :return: Model with multi-instance inference acceleration.
+        """
+        p_num = num_processes if cpu_for_each_process is None else len(cpu_for_each_process)
+        send_queue = mp.Queue()
+        recv_queue = mp.Queue()
+
+        KMP_AFFINITY = os.environ.get("KMP_AFFINITY", "")
+        OMP_NUM_THREADS = os.environ.get("OMP_NUM_THREADS", "")
+        if cpu_for_each_process is None:
+            if cores_per_process is None:
+                envs = schedule_processors(p_num)
+            else:
+                envs = [{
+                    "KMP_AFFINITY": f"granularity=fine,proclist="
+                                    f"[{i*cores_per_process}-{(i+1)*cores_per_process-1}]"
+                                    f",explicit",
+                    "OMP_NUM_THREADS": str(cores_per_process)
+                } for i in range(p_num)]
+        else:
+            envs = [{
+                "KMP_AFFINITY": f"granularity=fine,proclist="
+                                f"[{','.join([str(i) for i in cpu_for_each_process[i]])}]"
+                                f",explicit",
+                "OMP_NUM_THREADS": str(len(cpu_for_each_process[i]))
+            } for i in range(p_num)]
+        ps = []
+        for i in range(p_num):
+            os.environ["KMP_AFFINITY"] = envs[i]['KMP_AFFINITY']
+            os.environ["OMP_NUM_THREADS"] = envs[i]['OMP_NUM_THREADS']
+
+            p = mp.Process(target=_multi_instance_helper,
+                           args=(model, send_queue, recv_queue), daemon=True)
+            p.start()
+            ps.append(p)
+        os.environ["KMP_AFFINITY"] = KMP_AFFINITY
+        os.environ["OMP_NUM_THREADS"] = OMP_NUM_THREADS
+
+        return _MultiInstanceModel(model, ps, send_queue, recv_queue)
 
 
 def _signature_check(function):
@@ -637,3 +955,20 @@ def _accuracy_calculate_helper(model, metric, data):
             return metric(model)
         else:
             return metric(model, data)
+
+
+def _obtain_combinations(all_combinations, precision, accelerator, use_ipex):
+    new_combinations = {}
+    new_combinations["original"] = all_combinations["original"]
+    for method, option in all_combinations.items():
+        if precision is not None:
+            if option.get_precision() not in precision:
+                continue
+        if accelerator is not None:
+            if option.get_accelerator() not in accelerator:
+                continue
+        if use_ipex is not None:
+            if option.ipex != use_ipex:
+                continue
+        new_combinations[method] = option
+    return new_combinations

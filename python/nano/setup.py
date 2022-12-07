@@ -73,21 +73,48 @@ def download_libs(url: str):
 
 def setup_package():
 
-    tensorflow_requires = ["intel-tensorflow==2.7.0",
-                           "keras==2.7.0",
-                           "tensorflow-estimator==2.7.0",
-                           "tf2onnx==1.12.1"]
+    tensorflow_requires = ["intel-tensorflow==2.7.0; platform_machine=='x86_64'",
+                           "keras==2.7.0; platform_machine=='x86_64'",
+                           "tensorflow-estimator==2.7.0; platform_machine=='x86_64'",
+                           "tf2onnx==1.12.1; platform_machine=='x86_64'",
+                           "tensorflow-macos==2.7.0; platform_machine=='arm64' and sys_platform=='darwin'",
+                           "tensorflow-metal==0.3.0; platform_machine=='arm64' and sys_platform=='darwin'"]
 
     # ipex is only avaliable for linux now
-    pytorch_requires = ["torch==1.12.1",
-                        "torchvision==0.13.1",
-                        "pytorch_lightning==1.6.4",
-                        "torchmetrics==0.7.2",
-                        "opencv-python-headless",
-                        "PyTurboJPEG",
-                        "opencv-transforms",
-                        "intel_extension_for_pytorch==1.12.100;platform_system!='Windows'"]
-    
+    pytorch_113_requires = ["torch==1.13.0",
+                            "torchvision==0.14.0",
+                            "intel_extension_for_pytorch==1.13.0;platform_system!='Windows'"]
+
+    pytorch_112_requires = ["torch==1.12.1",
+                            "torchvision==0.13.1",
+                            "intel_extension_for_pytorch==1.12.300;platform_system!='Windows'"]
+
+    pytorch_111_requires = ["torch==1.11.0",
+                            "torchvision==0.12.0",
+                            "intel_extension_for_pytorch==1.11.0;platform_system!='Windows'"]
+
+    pytorch_110_requires = ["torch==1.10.1",
+                            "torchvision==0.11.2",
+                            "intel_extension_for_pytorch==1.10.100;platform_system!='Windows'"]
+
+    # this require install option --extra-index-url https://download.pytorch.org/whl/nightly/
+    pytorch_nightly_requires = ["torch~=1.14.0.dev",
+                                "torchvision~=0.15.0.dev"]
+
+    pytorch_common_requires = ["pytorch_lightning==1.6.4",
+                               "torchmetrics==0.7.2",
+                               "opencv-python-headless",
+                               "PyTurboJPEG",
+                               "opencv-transforms"]
+
+    # default pytorch_dep
+    pytorch_requires = pytorch_112_requires + pytorch_common_requires
+    pytorch_113_requires += pytorch_common_requires
+    pytorch_112_requires += pytorch_common_requires
+    pytorch_111_requires += pytorch_common_requires
+    pytorch_110_requires += pytorch_common_requires
+    pytorch_nightly_requires += pytorch_common_requires
+
     inference_requires = ["onnx==1.12.0",
                           "onnxruntime==1.12.1",
                           "onnxruntime-extensions==0.4.2",
@@ -95,7 +122,10 @@ def setup_package():
                           "neural-compressor==1.13.1",
                           "onnxsim==0.4.8"]
 
-    install_requires = ["intel-openmp", "cloudpickle", "protobuf==3.19.4"]
+    install_requires = ["intel-openmp; platform_machine=='x86_64'",
+                        "cloudpickle",
+                        "protobuf==3.19.5",
+                        "py-cpuinfo"]
 
     package_data = [
         "libs/libjemalloc.so",
@@ -108,7 +138,8 @@ def setup_package():
 
     scripts = ["scripts/bigdl-nano-init",
                "scripts/bigdl-nano-init.ps1",
-               "scripts/bigdl-nano-unset-env"]
+               "scripts/bigdl-nano-unset-env",
+               "scripts/bigdl-nano-unset-env.ps1"]
 
     metadata = dict(
         name='bigdl-nano',
@@ -122,6 +153,11 @@ def setup_package():
         install_requires=install_requires,
         extras_require={"tensorflow": tensorflow_requires,
                         "pytorch": pytorch_requires,
+                        "pytorch_113": pytorch_113_requires,
+                        "pytorch_112": pytorch_112_requires,
+                        "pytorch_111": pytorch_111_requires,
+                        "pytorch_110": pytorch_110_requires,
+                        "pytorch_nightly": pytorch_nightly_requires,
                         "inference": inference_requires},
         package_data={"bigdl.nano": package_data},
         scripts=scripts,

@@ -1,5 +1,10 @@
 name: Nano Unit Tests for Notebooks
 
+# Cancel previous runs in the PR when you push new commits
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.run_id }}
+  cancel-in-progress: true
+  
 # Controls when the workflow will run
 on:
   # Triggers the workflow on push or pull request events but only for the main branch
@@ -64,7 +69,7 @@ jobs:
             bash python/nano/dev/build_and_install.sh linux default false pytorch,inference
             source bigdl-nano-init
             pip install pytest nbmake
-            pip install lightning-bolts
+            pip install lightning-bolts==0.5.0
             bash python/nano/notebooks/pytorch/tutorial/run-nano-notebooks-pytorch-tutorial-tests.sh false
             bash python/nano/tutorial/inference/pytorch/run_nano_pytorch_inference_tests_onnx.sh
             bash python/nano/tutorial/training/pytorch-lightning/run_nano_pytorch_lightning_test.sh

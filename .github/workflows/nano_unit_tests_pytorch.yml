@@ -1,5 +1,10 @@
 name: Nano Unit Tests PyTorch
 
+# Cancel previous runs in the PR when you push new commits
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.run_id }}
+  cancel-in-progress: true
+
 # Controls when the action will run. 
 on:
   # Triggers the workflow on push or pull request events but only for the main branch
@@ -24,10 +29,10 @@ jobs:
         os: ["ubuntu-20.04"]
         python-version: ["3.7"]
         pytorch-version: [
-          "torch==1.9.0+cpu torchvision==0.10.0+cpu intel_extension_for_pytorch==1.11.0",
-          "torch==1.10.1+cpu torchvision==0.11.2+cpu intel_extension_for_pytorch==1.11.0",
-          "torch==1.11.0+cpu torchvision==0.12.0+cpu intel_extension_for_pytorch==1.11.0", 
-          "torch==1.12.1+cpu torchvision==0.13.1+cpu intel_extension_for_pytorch==1.12.100"
+          "pytorch_110 neural-compressor==1.13.1",
+          "pytorch_111 neural-compressor==1.13.1",
+          "pytorch_112 neural-compressor==1.13.1",
+          "pytorch_113 neural-compressor==1.14.2",
           ]
     steps:
       - uses: actions/checkout@v2
@@ -47,11 +52,9 @@ jobs:
           $CONDA/bin/conda create -n bigdl-init -y python==3.7.10 setuptools==58.0.4
           source $CONDA/bin/activate bigdl-init
           $CONDA/bin/conda info
-          bash python/nano/dev/build_and_install.sh linux default false pytorch
           if [ ! -z "${{matrix.pytorch-version}}" ]; then
             requirements=(${{matrix.pytorch-version}})
-            pip install ${requirements[0]} ${requirements[1]} -f https://download.pytorch.org/whl/torch_stable.html
-            pip install ${requirements[2]} -f https://software.intel.com/ipex-whl-stable
+            bash python/nano/dev/build_and_install.sh linux default false ${requirements[0]} -f https://software.intel.com/ipex-whl-stable
           fi
           source bigdl-nano-init
           if [ 0"$LD_PRELOAD" = "0" ]; then
@@ -87,8 +90,7 @@ jobs:
           pip install pytest
           if [ ! -z "${{matrix.pytorch-version}}" ]; then
             requirements=(${{matrix.pytorch-version}})
-            pip install ${requirements[0]} ${requirements[1]} -f https://download.pytorch.org/whl/torch_stable.html
-            pip install ${requirements[2]} -f https://software.intel.com/ipex-whl-stable
+            bash python/nano/dev/build_and_install.sh linux default false ${requirements[0]} -f https://software.intel.com/ipex-whl-stable
           fi
           source bigdl-nano-init
           bash python/nano/test/run-nano-pytorch-tests.sh
@@ -110,8 +112,7 @@ jobs:
           pip install ray[default]==1.11.0 prometheus_client==0.13.0
           if [ ! -z "${{matrix.pytorch-version}}" ]; then
             requirements=(${{matrix.pytorch-version}})
-            pip install ${requirements[0]} ${requirements[1]} -f https://download.pytorch.org/whl/torch_stable.html
-            pip install ${requirements[2]} -f https://software.intel.com/ipex-whl-stable
+            bash python/nano/dev/build_and_install.sh linux default false ${requirements[0]} -f https://software.intel.com/ipex-whl-stable
           fi
           source bigdl-nano-init
           bash python/nano/test/run-nano-pytorch-ray-tests.sh
@@ -130,8 +131,7 @@ jobs:
           pip install pytest
           if [ ! -z "${{matrix.pytorch-version}}" ]; then
             requirements=(${{matrix.pytorch-version}})
-            pip install ${requirements[0]} ${requirements[1]} -f https://download.pytorch.org/whl/torch_stable.html
-            pip install ${requirements[2]} -f https://software.intel.com/ipex-whl-stable
+            bash python/nano/dev/build_and_install.sh linux default false ${requirements[0]} -f https://software.intel.com/ipex-whl-stable
           fi
           source bigdl-nano-init
           bash python/nano/test/run-nano-pytorch-openvino-tests.sh
@@ -167,10 +167,9 @@ jobs:
           pip install pytest
           if [ ! -z "${{matrix.pytorch-version}}" ]; then
             requirements=(${{matrix.pytorch-version}})
-            pip install ${requirements[0]} ${requirements[1]} -f https://download.pytorch.org/whl/torch_stable.html
-            pip install ${requirements[2]} -f https://software.intel.com/ipex-whl-stable
+            bash python/nano/dev/build_and_install.sh linux default false ${requirements[0]} -f https://software.intel.com/ipex-whl-stable
+            pip install ${requirements[1]}
           fi
-          pip install neural-compressor==1.13.1
           source bigdl-nano-init
           bash python/nano/test/run-nano-pytorch-inc-tests.sh
           source $CONDA/bin/deactivate
@@ -187,8 +186,7 @@ jobs:
           bash python/nano/dev/build_and_install.sh linux default false pytorch,inference
           if [ ! -z "${{matrix.pytorch-version}}" ]; then
             requirements=(${{matrix.pytorch-version}})
-            pip install ${requirements[0]} ${requirements[1]} -f https://download.pytorch.org/whl/torch_stable.html
-            pip install ${requirements[2]} -f https://software.intel.com/ipex-whl-stable
+            bash python/nano/dev/build_and_install.sh linux default false ${requirements[0]} -f https://software.intel.com/ipex-whl-stable
           fi
           pip install pytest
           source bigdl-nano-init
@@ -209,10 +207,10 @@ jobs:
         pytorch-version: [
           # The reason why ipex1.10 is not currently supported is that the optimization of ipex1.10
           # will change the require_grad attribute of layers, which will make some tests of nano fail.
-          "torch==1.9.0+cpu torchvision==0.10.0+cpu torch_ipex==1.9.0",
-          "torch==1.11.0+cpu torchvision==0.12.0+cpu intel_extension_for_pytorch==1.11.0", 
-          "torch==1.12.1+cpu torchvision==0.13.1+cpu intel_extension_for_pytorch==1.12.100"
-          # "torch==1.10.1+cpu torchvision==0.11.2+cpu intel_extension_for_pytorch==1.10.0 psutil"
+          # The reason why ipex1.11 is not currently supported is that the optimization of ipex
+          # seems will cause strange behaior of context manager, which will make some tests of nano fail.
+          "pytorch_112 neural-compressor==1.13.1",
+          "pytorch_113 neural-compressor==1.14.2",
           ]
 
     # Steps represent a sequence of tasks that will be executed as part of the job
@@ -235,17 +233,66 @@ jobs:
           $CONDA/bin/conda create -n pytorch-ipex -y python==3.7.10 setuptools=58.0.4
           source $CONDA/bin/activate pytorch-ipex
           $CONDA/bin/conda info
-          bash python/nano/dev/build_and_install.sh linux default false pytorch
+          bash python/nano/dev/build_and_install.sh linux default false pytorch,inference
           pip install pytest
-          pip uninstall -y intel_extension_for_pytorch
           if [ ! -z "${{matrix.pytorch-version}}" ]; then
             requirements=(${{matrix.pytorch-version}})
-            pip install ${requirements[0]} ${requirements[1]} -f https://download.pytorch.org/whl/torch_stable.html
-            pip install ${requirements[2]} -f https://software.intel.com/ipex-whl-stable
+            bash python/nano/dev/build_and_install.sh linux default false ${requirements[0]} -f https://software.intel.com/ipex-whl-stable
+            pip install ${requirements[1]}
           fi
           source bigdl-nano-init
           bash python/nano/test/run-nano-pytorch-tests-ipex.sh
           source $CONDA/bin/deactivate
           $CONDA/bin/conda remove -n pytorch-ipex --all
+        env:
+          ANALYTICS_ZOO_ROOT: ${{ github.workspace }}
+
+  nano-unit-test-optimizer:
+    # The type of runner that the job will run on
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: ["ubuntu-20.04"]
+        python-version: ["3.7"]
+        pytorch-version: [
+          # The reason why ipex1.10 is not currently supported is that the optimization of ipex1.10
+          # will change the require_grad attribute of layers, which will make some tests of nano fail.
+          "pytorch_111 neural-compressor==1.13.1",
+          "pytorch_112 neural-compressor==1.13.1",
+          "pytorch_113 neural-compressor==1.14.2",
+          ]
+
+    # Steps represent a sequence of tasks that will be executed as part of the job
+    steps:
+      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
+      - uses: actions/checkout@v2
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v2
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install --upgrade setuptools==58.0.4
+          python -m pip install --upgrade wheel
+
+      - name: Run PyTorch InferenceOptimizer unit tests
+        shell: bash
+        run: |
+          $CONDA/bin/conda create -n pytorch-inf -y python==3.7.10 setuptools=58.0.4
+          source $CONDA/bin/activate pytorch-inf
+          $CONDA/bin/conda info
+          bash python/nano/dev/build_and_install.sh linux default false pytorch,inference
+          pip install pytest
+          if [ ! -z "${{matrix.pytorch-version}}" ]; then
+            requirements=(${{matrix.pytorch-version}})
+            bash python/nano/dev/build_and_install.sh linux default false ${requirements[0]} -f https://software.intel.com/ipex-whl-stable
+            pip install ${requirements[1]}
+          fi
+          source bigdl-nano-init
+          bash python/nano/test/run-nano-pytorch-tests-optimizer.sh
+          source $CONDA/bin/deactivate
+          $CONDA/bin/conda remove -n pytorch-inf --all
         env:
           ANALYTICS_ZOO_ROOT: ${{ github.workspace }}

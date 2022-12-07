@@ -88,7 +88,7 @@ bash bigdl-ppml-submit.sh \
         --class org.apache.spark.examples.SparkPi \
         --name spark-pi \
         --verbose \
-        local:///ppml/trusted-big-data-ml/work/spark-3.1.2/examples/jars/spark-examples_2.12-3.1.2.jar 3000
+        local:///ppml/trusted-big-data-ml/work/spark-${SPARK_VERSION}/examples/jars/spark-examples_2.12-${SPARK_VERSION}.jar 3000
 ```
 #### Submit Spark-Pi job (k8s client mode, sgx enabled)
 <p align="left">
@@ -114,7 +114,7 @@ bash bigdl-ppml-submit.sh \
         --class org.apache.spark.examples.SparkPi \
         --name spark-pi \
         --verbose \
-        local:///ppml/trusted-big-data-ml/work/spark-3.1.2/examples/jars/spark-examples_2.12-3.1.2.jar 3000
+        local:///ppml/trusted-big-data-ml/work/spark-${SPARK_VERSION}/examples/jars/spark-examples_2.12-${SPARK_VERSION}.jar 3000
 ```
 
 If you want to enable the spark security configurations as in [Spark security configurations](https://github.com/intel-analytics/BigDL/edit/main/ppml/trusted-big-data-ml/python/docker-graphene/README.md#2-spark-security-configurations), export secure_password before invokeing PPML CLI to enable it.
@@ -146,7 +146,7 @@ bash bigdl-ppml-submit.sh \
         --class org.apache.spark.examples.SparkPi \
         --name spark-pi \
         --verbose \
-        local:///ppml/trusted-big-data-ml/work/spark-3.1.2/examples/jars/spark-examples_2.12-3.1.2.jar 3000
+        local:///ppml/trusted-big-data-ml/work/spark-${SPARK_VERSION}/examples/jars/spark-examples_2.12-${SPARK_VERSION}.jar 3000
 ```
 If you want to enable the spark security configurations as in [Spark security configurations](https://github.com/intel-analytics/BigDL/edit/main/ppml/trusted-big-data-ml/python/docker-graphene/README.md#2-spark-security-configurations), export secure_password before invokeing PPML CLI to enable it.
 ```

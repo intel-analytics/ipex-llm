@@ -16,7 +16,7 @@
 # Required Dependecies
 
 # ```bash
-# pip install neural-compressor==1.11.0
+# pip install neural-compressor==1.13.1
 # ```
 
 
@@ -94,15 +94,16 @@ if __name__ == "__main__":
     # Static Quantization for PyTorch
     from bigdl.nano.pytorch import InferenceOptimizer
     q_model = InferenceOptimizer.quantize(model, 
-                                          calib_dataloader=DataLoader(train_dataset, batch_size=32))
+                                          calib_data=DataLoader(train_dataset, batch_size=32))
 
     # Inference with Quantized Model
-    y_hat = q_model(x)
-    predictions = y_hat.argmax(dim=1)
-    print(predictions)
+    with InferenceOptimizer.get_context(q_model):
+        y_hat = q_model(x)
+        predictions = y_hat.argmax(dim=1)
+        print(predictions)
 
     # Save Quantized Model
-    Trainer.save(q_model, "./quantized_model")
+    InferenceOptimizer.save(q_model, "./quantized_model")
 
     # Load the Quantized Model
     # a original fp32 model is required, as the saved format only contains weights

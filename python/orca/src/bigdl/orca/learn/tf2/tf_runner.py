@@ -42,9 +42,10 @@ import numpy as np
 from contextlib import closing
 
 from bigdl.dllib.utils import log4Error
-from bigdl.orca.data.utils import ray_partitions_get_data_label, ray_partitions_get_tf_dataset
+from bigdl.orca.data.utils import partitions_get_data_label, partitions_get_tf_dataset
 from bigdl.orca.data.file import is_file, get_remote_file_to_local, get_remote_dir_to_local, \
-    get_remote_files_with_prefix_to_local
+    get_remote_files_with_prefix_to_local, put_local_file_to_remote, \
+    put_local_dir_tree_to_remote, put_local_files_with_prefix_to_remote
 from bigdl.orca.learn.utils import process_tensorboard_in_callbacks
 from bigdl.dllib.utils.log4Error import *
 
@@ -59,7 +60,7 @@ def find_free_port():
 
 
 def _try_import_strategy():
-    """Late import for Tesnorflow"""
+    """Late import for TensorFlow"""
     import tensorflow as tf
     return tf.distribute.experimental.MultiWorkerMirroredStrategy
 
@@ -152,9 +153,9 @@ class HorovodDatasetHanlder(DatasetHandler):
 
     def _handle_xshards(self, dataset, steps, local_batch_size, shuffle):
         import tensorflow as tf
-        data, label = ray_partitions_get_data_label(ray.get(dataset),
-                                                    allow_tuple=True,
-                                                    allow_list=False)
+        data, label = partitions_get_data_label(ray.get(dataset),
+                                                allow_tuple=True,
+                                                allow_list=False)
         dataset = tf.data.Dataset.from_tensor_slices((data, label))
         options = tf.data.Options()
         options.experimental_distribute.auto_shard_policy = tf.data.experimental.AutoShardPolicy.OFF
@@ -181,7 +182,7 @@ class TFDistributedDatasetHandler(DatasetHandler):
 
     def _handle_xshards(self, dataset, steps, local_batch_size, shuffle):
         import tensorflow as tf
-        tf_dataset = ray_partitions_get_tf_dataset(ray.get(dataset))
+        tf_dataset = partitions_get_tf_dataset(ray.get(dataset))
 
         def dataset_fn(input_context):
             options = tf.data.Options()
@@ -213,9 +214,9 @@ class LocalDatasetHandler(DatasetHandler):
 
     def _handle_xshards(self, dataset, steps, local_batch_size, shuffle):
         import tensorflow as tf
-        data, label = ray_partitions_get_data_label(ray.get(dataset),
-                                                    allow_tuple=True,
-                                                    allow_list=False)
+        data, label = partitions_get_data_label(ray.get(dataset),
+                                                allow_tuple=True,
+                                                allow_list=False)
         dataset = tf.data.Dataset.from_tensor_slices((data, label))
         dataset = dataset.repeat()
         dataset = dataset.take(steps * local_batch_size)
@@ -491,8 +492,23 @@ class TFRunner:
                           "Please input a model_creator when creating estimator "
                           "or use load function of the estimator to load a model.")
 
-        if self.backend == "tf-distributed" and self.model_creator is not None:
-            local_model = self.model_creator(self.config)
+        if self.backend == "tf-distributed":
+            if self.model_creator is not None:
+                local_model = self.model_creator(self.config)
+            else:
+                filepath = self.load_params["filepath"]
+                file_name = os.path.basename(filepath)
+                temp_path = os.path.join(tempfile.mkdtemp(), file_name)
+                if is_file(filepath):
+                    # h5 format
+                    get_remote_file_to_local(filepath, temp_path)
+                else:
+                    # savemodel format
+                    if os.path.exists(temp_path):
+                        os.makedirs(temp_path)
+                    get_remote_dir_to_local(filepath, temp_path)
+                self.load_params["filepath"] = temp_path
+                local_model = self.process_model_load(**self.load_params)
             try:
                 local_model.set_weights(self.model.get_weights())
             except Exception:
@@ -543,17 +559,56 @@ class TFRunner:
                                         "data (of the correct dtype) as sample_input in the load "
                                         "method.")
 
-    def load_model(self, filepath, custom_objects, compile, options):
+    def save_model(self, filepath, overwrite, include_optimizer, save_format, signatures, options):
+        file_name = os.path.basename(filepath)
+        temp_dir = tempfile.mkdtemp()
+        temp_path = os.path.join(temp_dir, file_name)
+        try:
+            self.model.save(temp_path, overwrite, include_optimizer, save_format, signatures,
+                            options)
+            if self.rank == 0:
+                if save_format == 'h5' or filepath.endswith('.h5') or filepath.endswith('.keras'):
+                    # hdf5 format
+                    put_local_file_to_remote(temp_path, filepath)
+                else:
+                    # savemodel format
+                    put_local_dir_tree_to_remote(temp_path, filepath)
+        finally:
+            shutil.rmtree(temp_dir)
+
+    def process_model_load(self, filepath, custom_objects, compile, options):
         """Load the model from provided local filepath."""
         import tensorflow as tf
         if options:
-            self.model = tf.keras.models.load_model(filepath, custom_objects, compile, options)
+            model = tf.keras.models.load_model(filepath, custom_objects, compile, options)
         else:  # To support older TensorFlow versions such as 2.1
-            self.model = tf.keras.models.load_model(filepath, custom_objects, compile)
+            model = tf.keras.models.load_model(filepath, custom_objects, compile)
+        return model
+
+    def load_model(self, filepath, custom_objects, compile, options):
+        """Load the model from provided local filepath."""
+        self.load_params = dict(
+            filepath=filepath,
+            custom_objects=custom_objects,
+            compile=compile,
+            options=options
+        )
+        if self.backend == "tf-distributed":
+            with self.strategy.scope():
+                self.model = self.process_model_load(**self.load_params)
+        else:
+            self.model = self.process_model_load(**self.load_params)
 
     def load_remote_model(self, filepath, custom_objects, compile, options):
         """Load the model from provided remote filepath."""
         import tensorflow as tf
+        params = dict(
+            filepath=filepath,
+            custom_objects=custom_objects,
+            compile=compile,
+            options=options
+        )
+        self.load_params = params
         file_name = os.path.basename(filepath)
         temp_path = os.path.join(tempfile.mkdtemp(), file_name)
         if is_file(filepath):
@@ -565,15 +620,34 @@ class TFRunner:
                 os.makedirs(temp_path)
             get_remote_dir_to_local(filepath, temp_path)
         try:
-            if options:
-                self.model = tf.keras.models.load_model(temp_path, custom_objects, compile, options)
-            else:  # To support older TensorFlow versions such as 2.1
-                self.model = tf.keras.models.load_model(temp_path, custom_objects, compile)
+            params["filepath"] = temp_path
+            if self.backend == "tf-distributed":
+                with self.strategy.scope():
+                    self.model = self.process_model_load(**params)
+            else:
+                self.model = self.process_model_load(**params)
         finally:
             if os.path.isdir(temp_path):
                 shutil.rmtree(temp_path)
             else:
                 os.remove(temp_path)
+
+    def save_weights(self, filepath, overwrite, save_format, options):
+        file_name = os.path.basename(filepath)
+        temp_dir = tempfile.mkdtemp()
+        temp_path = os.path.join(temp_dir, file_name)
+        try:
+            self.model.save_weights(temp_path, overwrite, save_format, options)
+            if self.rank == 0:
+                if save_format == 'h5' or filepath.endswith('.h5') or filepath.endswith('.keras'):
+                    # hdf5 format
+                    put_local_file_to_remote(temp_path, filepath)
+                else:
+                    # tf format
+                    remote_dir = os.path.dirname(filepath)
+                    put_local_files_with_prefix_to_remote(temp_path, remote_dir)
+        finally:
+            shutil.rmtree(temp_dir)
 
     def load_weights(self, filepath, by_name, skip_mismatch, options):
         """Loads all layer weights from a TensorFlow or an HDF5 weight file."""

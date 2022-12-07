@@ -25,13 +25,18 @@ if [ -z "${OMP_NUM_THREADS}" ]; then
     export OMP_NUM_THREADS=1
 fi
 
-ray stop -f
+# ray stop -f
 
-MOPTIONS=$1
-
-echo "Running chronos tests TF1 and Deprecated API"
-echo $MOPTIONS
-python -m pytest -v -m "${MOPTIONS}" test/bigdl/chronos/forecaster
+OPTIONS=$1
+echo "Running chronos tests"
+python -m pytest -v -m "${OPTIONS}" test/bigdl/chronos/autots \
+                                    test/bigdl/chronos/data \
+                                    test/bigdl/chronos/detector \
+                                    test/bigdl/chronos/forecaster \
+                                    test/bigdl/chronos/metric \
+                                    test/bigdl/chronos/model \
+                                    test/bigdl/chronos/pytorch \
+                                    test/bigdl/chronos/simulator
 
 exit_status_0=$?
 if [ $exit_status_0 -ne 0 ];
@@ -39,4 +44,4 @@ then
     exit $exit_status_0
 fi
 
-ray stop -f
+# ray stop -f

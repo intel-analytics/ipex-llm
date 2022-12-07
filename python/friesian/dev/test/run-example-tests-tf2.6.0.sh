@@ -112,6 +112,29 @@ python ../../example/deep_fm/deepFM_train.py \
 now=$(date "+%s")
 time5=$((now - start))
 
+echo "#6 start example test for multi task train"
+
+if [ -d data/multi_task_data.csv ]; then
+  echo "data/multi_task_data.csv already exists"
+else
+  wget -nv $FTP_URI/analytics-zoo-data/multi_task_data.csv -P data
+fi
+
+python ../../example/multi_task/data_processing.py \
+    --input_path ./data/multi_task_data.csv \
+    --output_path ./data
+
+
+start=$(date "+%s")
+
+python ../../example/multi_task/run_multi_task.py \
+    --model_save_path ./result/multi_task \
+    --train_data_path ./data/train_multi_task \
+    --test_data_path ./data/test_multi_task \
+
+now=$(date "+%s")
+time6=$((now - start))
+
 rm -rf data
 rm -rf result
 
@@ -120,3 +143,4 @@ echo "#2 wnd train time used: $time2 seconds"
 echo "#3 xgboost train time used: $time3 seconds"
 echo "#4 ncf train time used: $time4 seconds"
 echo "#5 deepfm train time used: $time5 seconds"
+echo "#6 multi_task train time used: $time6 seconds"

@@ -17,8 +17,8 @@ runs:
         source activate py37
         source python/friesian/dev/prepare_env.sh
         export SPARK_LOCAL_HOSTNAME=localhost
-        pip install pyspark==3.1.3 pytest
-        pip install bigdl-math bigdl-tf
+        pip install pyspark==3.1.3 
+        pip install -i https://pypi.org/simple bigdl-math bigdl-tf
         cd python/friesian/dev/test
         bash run-feature-example-tests.sh 
         bash run-example-tests-tf1.15.0.sh

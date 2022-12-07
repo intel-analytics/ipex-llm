@@ -17,18 +17,9 @@
 
 set -e
 
-bash $ANALYTICS_ZOO_ROOT/python/nano/dev/build_and_install.sh linux default false pytorch
+bash $ANALYTICS_ZOO_ROOT/python/nano/dev/build_and_install.sh linux default false pytorch,inference --force-reinstall
 
 apt-get update && apt-get install -y libgl1
-
-pip install torch==1.11
-pip install onnxruntime==1.11.1
-pip install onnx==1.11.0
-pip install onnxruntime_extensions==0.4.2
-pip install neural-compressor==1.11
-pip install intel-extension-for-pytorch==1.11
-pip install openvino
-pip install openvino-dev
 
 cd $ANALYTICS_ZOO_ROOT/python/nano/benchmark/resnet_inference/
 

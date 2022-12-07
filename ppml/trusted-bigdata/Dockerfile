@@ -138,6 +138,7 @@ RUN mkdir -p /ppml/lib && \
     mkdir -p /ppml/apps
 
 COPY --from=bigdata /opt/spark-${SPARK_VERSION} /ppml/spark-${SPARK_VERSION}
+COPY --from=bigdata /opt/spark-${SPARK_VERSION}/examples/src/main/resources /ppml/examples/src/main/resources
 
 ADD ./bigdl-ppml-submit.sh /ppml/bigdl-ppml-submit.sh
 ADD ./spark-executor-template.yaml /ppml/spark-executor-template.yaml
@@ -152,6 +153,7 @@ RUN rm $SPARK_HOME/jars/okhttp-*.jar && \
     chmod +x /ppml/bigdl-ppml-submit.sh && \
     cp /sbin/tini /usr/bin/tini && \
     gramine-argv-serializer bash -c 'export TF_MKL_ALLOC_MAX_BYTES=10737418240 && export _SPARK_AUTH_SECRET=$_SPARK_AUTH_SECRET && $sgx_command' > /ppml/secured_argvs
+RUN cp /ppml/jars/*.jar ${SPARK_HOME}/jars
 
 
 ENTRYPOINT [ "/opt/entrypoint.sh" ]

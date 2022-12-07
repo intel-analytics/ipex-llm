@@ -7,7 +7,7 @@ Protecting privacy and confidentiality is critical for large-scale data analysis
 &ensp;&ensp;[3.1 BigDL PPML Hello World](#31-bigdl-ppml-hello-world) \
 &ensp;&ensp;[3.2 BigDL PPML End-to-End Workflow](#32-bigdl-ppml-end-to-end-workflow) \
 &ensp;&ensp;&ensp;&ensp;&ensp;&ensp;[Step 0. Preparation your environment](#step-0-preparation-your-environment): detailed steps in [Prepare Environment](./docs/prepare_environment.md) \
-&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;[Step 1. Build your PPML image for production environment](#step-1-build-your-ppml-image-for-production-environment) \
+&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;[Step 1. Prepare your PPML image for production environment](#step-1-prepare-your-ppml-image-for-production-environment) \
 &ensp;&ensp;&ensp;&ensp;&ensp;&ensp;[Step 2. Encrypt and Upload Data](#step-2-encrypt-and-upload-data) \
 &ensp;&ensp;&ensp;&ensp;&ensp;&ensp;[Step 3. Build Big Data & AI applications](#step-3-build-big-data--ai-applications) \
 &ensp;&ensp;&ensp;&ensp;&ensp;&ensp;[Step 4. Attestation ](#step-4-attestation) \
@@ -69,7 +69,7 @@ In this section, you can get started with running a simple native python HelloWo
 
 For demo purpose, we will skip building the custom image here and use the public reference image provided by BigDL PPML `intelanalytics/bigdl-ppml-trusted-big-data-ml-python-gramine-reference:2.2.0-SNAPSHOT` to have a quick start.
 
-Note: This public image is only for demo purposes, it is non-production. For security concern, you are strongly recommended to generate your encalve key and build your own custom image for your production environment. Refer to [How to Build Your PPML image for production environment](#step-1-build-your-ppml-image-for-production-environment).
+Note: This public image is only for demo purposes, it is non-production. For security concern, you are strongly recommended to generate your encalve key and build your own custom image for your production environment. Refer to [How to Prepare Your PPML image for production environment](#step-1-prepare-your-ppml-image-for-production-environment).
 
 **b. Prepare Keys**
 
@@ -89,7 +89,8 @@ Note: This public image is only for demo purposes, it is non-production. For sec
 # LOCAL_IP means your local IP address.
 export KEYS_PATH=YOUR_LOCAL_KEYS_PATH
 export LOCAL_IP=YOUR_LOCAL_IP
-export DOCKER_IMAGE=intelanalytics/bigdl-ppml-trusted-big-data-ml-python-graphene:devel
+# ppml graphene image is deprecated, please use the gramine version
+export DOCKER_IMAGE=intelanalytics/bigdl-ppml-trusted-big-data-ml-python-gramine-reference:2.2.0-SNAPSHOT
 
 sudo docker pull $DOCKER_IMAGE
 
@@ -111,9 +112,9 @@ sudo docker run -itd \
 
 **d. Run Python HelloWorld in BigDL PPML Local Container**
 
-Run the [script](https://github.com/intel-analytics/BigDL/blob/main/ppml/trusted-big-data-ml/python/docker-graphene/start-scripts/start-python-helloworld-sgx.sh) to run trusted [Python HelloWorld](https://github.com/intel-analytics/BigDL/blob/main/ppml/trusted-big-data-ml/python/docker-graphene/examples/helloworld.py) in BigDL PPML client container:
+Run the [script](https://github.com/intel-analytics/BigDL/blob/main/ppml/trusted-big-data-ml/python/docker-gramine/base/scripts/start-python-helloword-on-sgx.sh) to run trusted [Python HelloWorld](https://github.com/intel-analytics/BigDL/blob/main/ppml/trusted-big-data-ml/python/docker-gramine/base/examples/helloworld.py) in BigDL PPML client container:
 ```
-sudo docker exec -it bigdl-ppml-client-local bash work/start-scripts/start-python-helloworld-sgx.sh
+sudo docker exec -it bigdl-ppml-client-local bash work/scripts/start-python-helloword-on-sgx.sh
 ```
 Check the log:
 ```
@@ -125,10 +126,10 @@ The result should look something like this:
 
 **e. Run Spark Pi in BigDL PPML Local Container**
 
-Run the [script](https://github.com/intel-analytics/BigDL/blob/main/ppml/trusted-big-data-ml/python/docker-graphene/start-scripts/start-spark-local-pi-sgx.sh) to run trusted [Spark Pi](https://github.com/apache/spark/blob/v3.1.2/examples/src/main/python/pi.py) in BigDL PPML client container:
+Run the [script](https://github.com/intel-analytics/BigDL/blob/main/ppml/trusted-big-data-ml/python/docker-gramine/base/scripts/start-spark-pi-on-local-sgx.sh) to run trusted [Spark Pi](https://github.com/apache/spark/blob/v3.1.2/examples/src/main/python/pi.py) in BigDL PPML client container:
 
 ```bash
-sudo docker exec -it bigdl-ppml-client-local bash work/start-scripts/start-spark-local-pi-sgx.sh
+sudo docker exec -it bigdl-ppml-client-local bash work/scripts/start-spark-pi-on-local-sgx.sh
 ```
 
 Check the log:
@@ -163,7 +164,7 @@ Next, you are going to build a base image, and a custom image on top of it in or
 
 Start your application with the following guide step by step:
 
-#### Step 1. Build your PPML image for production environment
+#### Step 1. Prepare your PPML image for production environment
 To build a secure PPML image which can be used in production environment, BigDL prepared a public base image that does not contain any secrets. You can customize your own image on top of this base image.
 
 1. Prepare BigDL Base Image
@@ -252,7 +253,7 @@ To build a secure PPML image which can be used in production environment, BigDL 
 Encrypt the input data of your Big Data & AI applications (here we use SimpleQuery) and then upload encrypted data to the nfs server. More details in [Encrypt Your Data](./services/kms-utils/docker/README.md#3-enroll-generate-key-encrypt-and-decrypt).
 
 1. Generate the input data `people.csv` for SimpleQuery application
-you can use [generate_people_csv.py](https://github.com/analytics-zoo/ppml-e2e-examples/blob/main/spark-encrypt-io/generate_people_csv.py). The usage command of the script is `python generate_people.py </save/path/of/people.csv> <num_lines>`.
+you can use [generate_people_csv.py](https://github.com/intel-analytics/BigDL/tree/main/ppml/scripts/generate_people_csv.py). The usage command of the script is `python generate_people.py </save/path/of/people.csv> <num_lines>`.
 
 2. Encrypt `people.csv`
     ```

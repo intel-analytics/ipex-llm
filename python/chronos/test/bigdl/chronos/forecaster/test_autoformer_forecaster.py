@@ -24,7 +24,7 @@ AutoformerForecaster = LazyImport('bigdl.chronos.forecaster.autoformer_forecaste
 from bigdl.chronos.data import TSDataset
 from unittest import TestCase
 import pytest
-from .. import op_torch, op_automl, op_all
+from .. import op_torch, op_automl
 
 
 def get_ts_df():
@@ -97,7 +97,6 @@ def create_tsdataset(val_ratio=0):
                         label_len=12)
         return train, val, test
 
-@op_all
 @op_torch
 class TestChronosModelAutoformerForecaster(TestCase):
 
@@ -437,6 +436,8 @@ class TestChronosModelAutoformerForecaster(TestCase):
     def test_autoformer_forecaster_tune_multi_processes(self):
         name = "parallel-example-torch"
         storage = "sqlite:///example_autoformer.db"  # take sqlite for test, recommand to use mysql
+        if os.path.exists("./example_autoformer.db"):
+            os.remove("./example_autoformer.db")
         import bigdl.nano.automl.hpo.space as space
         train_data, val_data, test_data = create_data(loader=False)
         forecaster = AutoformerForecaster(past_seq_len=24,

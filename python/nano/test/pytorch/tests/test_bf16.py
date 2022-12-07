@@ -13,28 +13,15 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-import os
+
 from unittest import TestCase
 import pytest
 import torch
-from torch.utils.data import DataLoader, TensorDataset
-from bigdl.nano.pytorch import Trainer
+from bigdl.nano.pytorch import InferenceOptimizer
 from torchvision.models.resnet import resnet18
-from unittest.mock import MagicMock, Mock, PropertyMock, patch
-from bigdl.nano.pytorch.utils import TORCH_VERSION_LESS_1_10, TORCH_VERSION_LESS_1_12
-
-
-class Pytorch1_9:
-    """Pytorch version < 1.10, bfloat16 precision is not supported."""
-    def test_bf16_pytorch_less_1_10(self):
-        trainer = Trainer(max_epochs=1)
-        model = resnet18(num_classes=10)
-
-        with pytest.raises(
-            RuntimeError,
-            match="Require torch>=1.10 to convert type as bfloat16."
-        ):
-            trainer.quantize(model, precision='bf16')
+from unittest.mock import MagicMock, PropertyMock, patch
+from bigdl.nano.pytorch.utils import TORCH_VERSION_LESS_1_12
+import tempfile
 
 
 class Pytorch1_11:
@@ -43,15 +30,13 @@ class Pytorch1_11:
     But there is no optimization on bfloat16.
     """
     def test_bf16_pytorch_1_11(self):
-        trainer = Trainer(max_epochs=1)
         model = resnet18(num_classes=10)
         x = torch.rand((10, 3, 256, 256))
-        bf16_model = trainer.quantize(model, precision='bf16')
         with pytest.raises(
             RuntimeError,
             match="Require torch>=1.12 to obtain bfloat16 acceleration."
         ):
-            y_hat = bf16_model(x)
+            bf16_model = InferenceOptimizer.quantize(model, precision='bf16')
 
 
 class Pytorch1_12:
@@ -62,14 +47,12 @@ class Pytorch1_12:
     @patch("bigdl.nano.pytorch.amp.bfloat16.BF16Model._has_bf16_isa", new_callable=PropertyMock)
     def test_unsupported_HW_or_OS(self, mocked_has_bf16_isa):
         mocked_has_bf16_isa.return_value = False
-        trainer = Trainer(max_epochs=1)
         model = resnet18(num_classes=10)
 
         x = torch.rand((10, 3, 256, 256))
         y = torch.ones((10,), dtype=torch.long)
-        bf16_model = trainer.quantize(model, precision='bf16')
-        with pytest.raises(RuntimeError,
-                           match="Your machine or OS doesn't support BF16 instructions."):
+        bf16_model = InferenceOptimizer.quantize(model, precision='bf16')
+        with InferenceOptimizer.get_context(bf16_model):
             y_hat = bf16_model(x)
 
     @patch("bigdl.nano.pytorch.amp.bfloat16.BF16Model._max_bf16_isa", return_value=None)
@@ -82,17 +65,13 @@ class Pytorch1_12:
         """
         mocked_has_bf16_isa.return_value = True
         mocked_max_bf16_isa.return_value = None
-        
-        trainer = Trainer(max_epochs=1)
+
         model = resnet18(num_classes=10)
 
         x = torch.rand((10, 3, 256, 256))
 
-        bf16_model = trainer.quantize(model, precision='bf16')
-        with pytest.raises(
-            RuntimeError,
-            match="BF16 ISA support is not enabled under current context."
-        ):
+        bf16_model = InferenceOptimizer.quantize(model, precision='bf16')
+        with InferenceOptimizer.get_context(bf16_model):
             bf16_model(x)
 
     @patch.dict('os.environ', {"ALLOW_NON_BF16_ISA": "1"})
@@ -100,51 +79,113 @@ class Pytorch1_12:
         """
         Debug mode. Allow run bf16 forward without bf16 instruction support.
         """
-        trainer = Trainer(max_epochs=1)
         model = resnet18(num_classes=10)
 
         x = torch.rand((10, 3, 256, 256))
         y = torch.ones((10,), dtype=torch.long)
 
-        bf16_model = trainer.quantize(model, precision='bf16')
+        bf16_model = InferenceOptimizer.quantize(model, precision='bf16')
         # Debug mode to test functionality, make sure forward is called sucessfully
-        y_hat = bf16_model(x)
+        with InferenceOptimizer.get_context(bf16_model):
+            y_hat = bf16_model(x)
         assert y_hat.shape == (10, 10) and y_hat.dtype == torch.bfloat16
 
-
     def test_bf16_with_amx_bf16(self):
-        trainer = Trainer(max_epochs=1)
         model = resnet18(num_classes=10)
 
         x = torch.rand((10, 3, 256, 256))
         y = torch.ones((10,), dtype=torch.long)
 
-        bf16_model = trainer.quantize(model, precision='bf16')
+        bf16_model = InferenceOptimizer.quantize(model, precision='bf16')
         with patch.object(type(bf16_model), "_has_bf16_isa", PropertyMock(return_value=True)):
             bf16_model._max_bf16_isa = MagicMock(return_value="AMX")
-            y_hat = bf16_model(x)
+            with InferenceOptimizer.get_context(bf16_model):
+                y_hat = bf16_model(x)
         assert y_hat.shape == (10, 10) and y_hat.dtype == torch.bfloat16
 
     def test_bf16_with_avx512_bf16(self):
-        trainer = Trainer(max_epochs=1)
         model = resnet18(num_classes=10)
 
         x = torch.rand((10, 3, 256, 256))
         y = torch.ones((10,), dtype=torch.long)
 
-        bf16_model = trainer.quantize(model, precision='bf16')
+        bf16_model = InferenceOptimizer.quantize(model, precision='bf16')
         with patch.object(type(bf16_model), "_has_bf16_isa", PropertyMock(return_value=True)):
             bf16_model._max_bf16_isa = MagicMock(return_value="AVX512")
-            y_hat = bf16_model(x)
+            with InferenceOptimizer.get_context(bf16_model):
+                y_hat = bf16_model(x)
         assert y_hat.shape == (10, 10) and y_hat.dtype == torch.bfloat16
+
+    def test_bf16_save_and_load(self):
+        model = resnet18(num_classes=10)
+
+        # test bf16
+        x = torch.rand((10, 3, 256, 256))
+        bf16_model = InferenceOptimizer.quantize(model, precision='bf16')
+        with InferenceOptimizer.get_context(bf16_model):
+            y_hat1 = bf16_model(x)
+        assert y_hat1.shape == (10, 10) and y_hat1.dtype == torch.bfloat16
+
+        with tempfile.TemporaryDirectory() as tmp_dir_name:
+            InferenceOptimizer.save(bf16_model, tmp_dir_name)
+            load_model = InferenceOptimizer.load(tmp_dir_name, model)
+
+        with InferenceOptimizer.get_context(load_model):
+            y_hat2 = load_model(x)
+        assert y_hat2.shape == (10, 10) and y_hat2.dtype == torch.bfloat16
+        assert y_hat1.equal(y_hat2)
+
+        # test bf16 + channels_last
+        bf16_model = InferenceOptimizer.quantize(model, precision='bf16',
+                                                 channels_last=True)
+        with InferenceOptimizer.get_context(bf16_model):
+            y_hat1 = bf16_model(x)
+        assert y_hat1.shape == (10, 10) and y_hat1.dtype == torch.bfloat16
+
+        with tempfile.TemporaryDirectory() as tmp_dir_name:
+            InferenceOptimizer.save(bf16_model, tmp_dir_name)
+            load_model = InferenceOptimizer.load(tmp_dir_name, model)
+
+        with InferenceOptimizer.get_context(load_model):
+            y_hat2 = load_model(x)
+        assert y_hat2.shape == (10, 10) and y_hat2.dtype == torch.bfloat16
+        assert y_hat1.equal(y_hat2)
+
+    def test_bf16_additional_attrs(self):
+        model = resnet18(num_classes=10)
+        x = torch.rand((10, 3, 256, 256))
+        # patch a attribute
+        model.channels = 3
+        def hello():
+            print("hello world!")
+        # patch a function
+        model.hello = hello
+
+        # test bf16
+        bf16_model = InferenceOptimizer.quantize(model,
+                                                 precision='bf16')
+        with InferenceOptimizer.get_context(bf16_model):
+            y_hat1 = bf16_model(x)
+        assert y_hat1.shape == (10, 10) and y_hat1.dtype == torch.bfloat16
+        assert bf16_model.channels == 3
+        bf16_model.hello()
+
+        # test bf16 + channels_last
+        bf16_model = InferenceOptimizer.quantize(model, precision='bf16',
+                                                 channels_last=True)
+        with InferenceOptimizer.get_context(bf16_model):
+            y_hat1 = bf16_model(x)
+        assert y_hat1.shape == (10, 10) and y_hat1.dtype == torch.bfloat16
+        assert bf16_model.channels == 3
+        bf16_model.hello()
+        with pytest.raises(AttributeError):
+            bf16_model.width
+
 
 TORCH_VERSION_CLS = Pytorch1_12
 if TORCH_VERSION_LESS_1_12:
     print("1.11")
     TORCH_VERSION_CLS = Pytorch1_11
-if TORCH_VERSION_LESS_1_10:
-    print("1.9")
-    TORCH_VERSION_CLS = Pytorch1_9
 
 
 class TestBF16(TORCH_VERSION_CLS, TestCase):

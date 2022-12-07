@@ -139,7 +139,6 @@ if __name__ == '__main__':
         import tensorflow as tf
 
         model = build_model(num_users, num_items, 5)
-        print(model.summary())
         optimizer = tf.keras.optimizers.Adam(config["lr"])
         model.compile(optimizer=optimizer,
                       loss='sparse_categorical_crossentropy',
@@ -150,7 +149,6 @@ if __name__ == '__main__':
     val_steps = math.ceil(test.size() / args.batch_size)
 
     estimator = Estimator.from_keras(model_creator=model_creator,
-                                     verbose=False,
                                      config=config,
                                      backend=args.backend,
                                      model_dir=args.model_dir)
@@ -162,12 +160,17 @@ if __name__ == '__main__':
                   steps_per_epoch=steps_per_epoch,
                   validation_data=test.df,
                   validation_steps=val_steps)
+    result = estimator.evaluate(test.df,
+                                batch_size=args.batch_size,
+                                feature_cols=['user', 'item'],
+                                label_cols=['label'],
+                                num_steps=val_steps)
+    print('Evaluation results:', result)
 
     predictions = estimator.predict(test.df,
                                     batch_size=args.batch_size,
-                                    feature_cols=['user', 'item'],
-                                    steps=val_steps)
-    print("Predictions on validation dataset:")
+                                    feature_cols=['user', 'item'])
+    print("Predictions on the validation dataset:")
     predictions.show(5, truncate=False)
 
     print("Saving model to: ", save_path)

@@ -12,11 +12,16 @@ conda activate docs
 Then inside [`BigDL/docs/readthedocs`](.) folder, install required packages:
 
 ```bash
-pip install --upgrade -r requirements-rtd.txt
+cd docs/readthedocs
+# for reproducing ReadtheDocs deployment environment
+pip install --upgrade pip "setuptools<58.3.0"
+pip install --upgrade pillow mock==1.0.1 "alabaster>=0.7,<0.8,!=0.7.5" commonmark==0.9.1 recommonmark==0.5.0 sphinx sphinx-rtd-theme "readthedocs-sphinx-ext<2.3"
+
+# for other documentation related dependencies
+wget https://raw.githubusercontent.com/analytics-zoo/gha-cicd-env/main/python-requirements/requirements-doc.txt
 pip install -r requirements-doc.txt
 ```
-> **Note**: `requirements-rtd.txt` is for reproducing ReadtheDocs deployment environment. No need to modify this file when adding new sphinx extension for our documentation. New packages should be added in `requirements-doc.txt`.
-
+> **Note**: When adding new sphinx extensions for our documentation, the requirements file located [here](https://raw.githubusercontent.com/analytics-zoo/gha-cicd-env/main/python-requrirements/requirements-doc.txt) should be modified.
 ### 2. Build the documentation
 You can then build the documentation locally through:
 ```bash

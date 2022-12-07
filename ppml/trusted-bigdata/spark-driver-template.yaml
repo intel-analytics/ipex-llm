@@ -8,18 +8,29 @@ spec:
         value: false
       - name: ATTESTATION_URL
         value: your_attestation_url
+      # - name: USING_LOCAL_DATA_KEY
+      #   value: true
+      # - name: LOCAL_DATA_KEY
+      #   value: /ppml/encrypted_keys/plaintextkey
+      # - name: ENCRYPTED_FSD
+      #   value: true
       #- name: PCCS_URL
       #  value: your_pccs_url
-      #- name: ATTESTATION_ID
+      #- name: APP_ID
       #  valueFrom:
       #    secretKeyRef:
       #      name: kms-secret
       #      key: app_id
-      #- name: ATTESTATION_KEY
+      #- name: API_KEY
       #  valueFrom:
       #    secretKeyRef:
       #      name: kms-secret
       #      key: app_key
+      #- name: ATTESTATION_POLICYID
+      #  valueFrom:
+      #    secretKeyRef:
+      #      name: kms-secret
+      #      key: policy_id
     volumeMounts:
       - name: device-plugin
         mountPath: /var/lib/kubelet/device-plugins
@@ -29,9 +40,17 @@ spec:
         mountPath: /ppml/data
       - name: secure-keys
         mountPath: /ppml/keys
-      - name: nfs-storage
-        mountPath: /root/.kube/config
-        subPath: kubeconfig
+      - name: kubeconfig
+        mountPath: /root/.kube
+      # - name: nfs-storage
+      #   mountPath: /ppml/encrypted
+      #   subPath: encrypted
+      # - name: nfs-storage
+      #   mountPath: /ppml/encrypted-fsd
+      #   subPath: encrypted-fsd
+      # - name: nfs-storage
+      #   mountPath: /ppml/encrypted_keys
+      #   subPath: test_key
     resources:
       requests:
         cpu: 8
@@ -58,3 +77,6 @@ spec:
     - name: nfs-storage
       persistentVolumeClaim:
         claimName: nfsvolumeclaim
+    - name: kubeconfig
+      secret:
+        secretName: kubeconfig-secret

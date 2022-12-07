@@ -1,5 +1,10 @@
 name: Nano Unit Tests Tensorflow
 
+# Cancel previous runs in the PR when you push new commits
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.run_id }}
+  cancel-in-progress: true
+
 # Controls when the action will run. 
 on:
   # Triggers the workflow on push or pull request events but only for the main branch
@@ -51,7 +56,7 @@ jobs:
           $CONDA/bin/conda create -n nano-tensorflow -y python==3.7.10 setuptools=58.0.4
           source $CONDA/bin/activate nano-tensorflow
           $CONDA/bin/conda info
-          bash python/nano/dev/build_and_install.sh linux default false tensorflow
+          bash python/nano/dev/build_and_install.sh linux default false tensorflow,inference
           pip install pytest
           source bigdl-nano-init
           bash python/nano/test/run-nano-tf-tests.sh
@@ -154,12 +159,11 @@ jobs:
           $CONDA/bin/conda create -n onnx-tensorflow -y python==3.7.10 setuptools=58.0.4
           source $CONDA/bin/activate onnx-tensorflow
           $CONDA/bin/conda info
-          bash python/nano/dev/build_and_install.sh linux default false tensorflow
+          bash python/nano/dev/build_and_install.sh linux default false tensorflow,inference
           if [ ! -z "${{matrix.tf-version}}" ]; then
             pip install ${{matrix.tf-version}}
           fi
           pip install pytest
-          pip install onnx onnxruntime tf2onnx pyyaml
           source bigdl-nano-init
           bash python/nano/test/run-nano-tf-onnx-tests.sh
           source $CONDA/bin/deactivate

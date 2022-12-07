@@ -11,6 +11,7 @@ runs:
     - name: Install dependencies
       shell: bash
       run: |
+        dpkg --configure -a
         apt-get update
         apt-get install -y zip
         python -m pip install --upgrade pip
@@ -19,11 +20,10 @@ runs:
     - name: Setup env
       shell: bash
       run: |
-        if [ ! -d "/opt/conda/envs/py37" ]
-        then
-          conda create -n py37 -y python==3.7.10 setuptools==58.0.4
+        if [ -d "/opt/conda/envs/py37" ];then
+          rm -rf /opt/conda/envs/py37
         fi
-
+        conda create -n py37 -y python==3.7.10 setuptools==58.0.4 -c ${GONDOLIN_CONDA_CHANNEL} --override-channels
       env:
         BIGDL_ROOT: ${{ github.workspace }}
         ANALYTICS_ZOO_ROOT: ${{ github.workspace }}
