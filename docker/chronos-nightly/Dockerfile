@@ -33,7 +33,7 @@ ARG hardware=single
 #            y (for yes) or n (default, for no)
 ARG inference=n
 
-# jupyter: install extra dependencies (e.g. jupyter, matplotlib, ...)
+# extra_dep: install extra dependencies (e.g. jupyter, matplotlib, ...)
 #          y (for yes) or n (default, for no)
 ARG extra_dep=n
 
