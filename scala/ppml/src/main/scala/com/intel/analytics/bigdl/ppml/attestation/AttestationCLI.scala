@@ -105,7 +105,7 @@ object AttestationCLI {
             }
             val quoteVerifier = new SGXDCAPQuoteVerifierImpl()
             val verifyQuoteResult = quoteVerifier.verifyQuote(asQuote)
-            val debug=params.debug
+            val debug = params.debug
             if (verifyQuoteResult == 0) {
               System.out.println("Quote Verification Success!")
             } else if (debug == "true" && verifyQuoteResult == 1) {
