@@ -1,0 +1,104 @@
+name: BigDL Core Release Pypi
+
+on:
+  #pull_request:
+  
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'pypi version (e.g. 2.1.0, 2.2.0b20220927)'
+        required: true
+        default: '2.2.0b20221205'
+        type: string
+      branch:
+        description: 'bigdl core branch (e.g. master, branch-2.1)'
+        required: true
+        default: 'master'
+        type: string
+      jarurl:
+        description: 'jar url (e.g. https://oss.sonatype.org/content/repositories/snapshots/com/intel/analytics/bigdl/core/dist/all/2.2.0-SNAPSHOT/all-2.2.0-20220919.010507-1.jar)'
+        required: true
+        default: 'https://oss.sonatype.org/content/repositories/snapshots/com/intel/analytics/bigdl/core/dist/all/2.2.0-SNAPSHOT/all-2.2.0-20220919.010507-1.jar'
+        type: string
+
+env:
+  PYPI_VERSION: ${{ github.event.inputs.version }}
+  Branch: ${{ github.event.inputs.branch }}
+  JAR_URL: ${{ github.event.inputs.jarurl }}
+
+permissions:
+  contents: read
+  packages: write
+
+jobs:
+  bigdl-core-release-python-pypi:
+    runs-on: [self-hosted, ubuntu-20.04-lts, Bree-core]
+    
+    steps:
+    - uses: actions/checkout@v3
+      with:
+        repository: intel-analytics/BigDL-core
+        ref: ${{ env.Branch }}
+    - name: Set up JDK 8
+      uses: actions/setup-java@v3
+      with:
+        java-version: '8'
+        distribution: 'temurin'
+        settings-path: ${{ github.workspace }} # location for the settings.xml file
+
+    - name: Set up Maven
+      uses: stCarolas/setup-maven@v4.4
+      with:
+        maven-version: 3.6.3
+
+    - name: Set up Maven Settings
+      uses: s4u/maven-settings-action@v2.6.0
+      with:
+        sonatypeSnapshots: true
+        apacheSnapshots: true
+        servers: |
+          [{
+            "id": "central",
+            "configuration": {
+              "httpConfiguration": {
+                "all": {
+                  "connectionTimeout": "3600000",
+                  "readTimeout": "3600000"
+                  }
+                }
+              }
+          }]
+        mirrors: '[{"id": "ardaNexus", "name": "ardaNexus", "mirrorOf": "*", "url": "${NEXUS_URL}" }]'
+    
+    - name: Set up Python 
+      uses: actions/setup-python@v2
+      with:
+        python-version: '3.7'
+    - name: Install dependencies
+      run: |
+        apt-get update
+        apt-get install wget -y
+        apt-get install zip -y
+        python -m pip install --upgrade pip
+        pip install build
+        pip install wheel
+        pip install twine
+        
+    
+    - name: Build package
+      run: |
+        set -x
+        export TIMESTAMP=`date '+%Y%m%d'`
+        echo ${{ env.PYPI_VERSION }}
+        export ORIGINAL_PATH=$PATH
+        
+        echo ${{ env.JAR_URL }}
+        #export JAR_URL=https://oss.sonatype.org/content/repositories/snapshots/com/intel/analytics/bigdl/core/dist/all/2.2.0-SNAPSHOT/all-2.2.0-20220919.010507-1.jar
+        #export PYPI_VERSION=2.2.0b20221205
+        cd python/dev/
+        ## linux ##
+        bash release_default_linux.sh ${{ env.JAR_URL }} ${{ env.PYPI_VERSION }} true
+        
+        ## mac ##
+        bash release_default_mac.sh ${{ env.JAR_URL }} ${{ env.PYPI_VERSION }} true
+        

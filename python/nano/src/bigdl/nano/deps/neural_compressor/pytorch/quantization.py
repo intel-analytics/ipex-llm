@@ -22,19 +22,31 @@ from .metric import PytorchINCMetric
 from .quantized_model import PytorchQuantizedModel
 from torchmetrics import Metric
 import torch
+from bigdl.nano.pytorch.utils import patch_attrs_from_model_to_object
 
 
 class PytorchQuantization(BaseQuantization):
-    def __init__(self, framework='pytorch_fx', **kwargs):
+    def __init__(self, framework='pytorch_fx', thread_num=None, **kwargs):
         """
         Create a Intel Neural Compressor Quantization object for Pytorch.
         """
         kwargs['framework'] = framework
         super().__init__(**kwargs)
         self._inc_metric_cls = PytorchINCMetric
+        self.thread_num = thread_num
+
+    def _pre_execution(self, model, calib_dataloader=None, metric=None):
+        if isinstance(model, torch.nn.Module):
+            self.original_model = model
+        return model, calib_dataloader, metric
 
     def _post_execution(self, q_model):
-        return PytorchQuantizedModel(q_model)
+        quantized_model = PytorchQuantizedModel(q_model, self.thread_num)
+        if hasattr(self, "original_model"):
+            # patch original model's attr to current new model
+            patch_attrs_from_model_to_object(self.original_model, quantized_model)
+            del self.original_model
+        return quantized_model
 
     @property
     def valid_frameworks(self):

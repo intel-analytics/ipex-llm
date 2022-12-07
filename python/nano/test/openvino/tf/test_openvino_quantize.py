@@ -31,7 +31,7 @@ class TestOpenVINO(TestCase):
         # Case1: Trace and quantize
         openvino_model = model.trace(accelerator='openvino')
         openvino_quantized_model = openvino_model.quantize(accelerator='openvino',
-                                                           calib_dataset=train_dataset,
+                                                           x=train_dataset,
                                                            thread_num=8)
 
         y_hat = openvino_quantized_model(train_examples[:10])
@@ -42,7 +42,7 @@ class TestOpenVINO(TestCase):
 
         # Case2: Quantize directly from tensorflow
         openvino_quantized_model = model.quantize(accelerator='openvino',
-                                                  calib_dataset=train_dataset)
+                                                  x=train_dataset)
         
         y_hat = openvino_quantized_model(train_examples[:10])
         assert y_hat.shape == (10, 10)
@@ -56,8 +56,22 @@ class TestOpenVINO(TestCase):
 
         # Case 3: with config
         openvino_quantized_model = model.quantize(accelerator='openvino',
-                                                  calib_dataset=train_dataset,
+                                                  x=train_dataset,
                                                   openvino_config={"PERFORMANCE_HINT": "LATENCY"})
 
         y_hat = openvino_quantized_model(train_examples[:10])
         assert y_hat.shape == (10, 10)
+
+    def test_model_quantize_openvino_without_dataset(self):
+        model = MobileNetV2(weights=None, input_shape=[40, 40, 3], classes=10)
+        model = Model(inputs=model.inputs, outputs=model.outputs)
+        train_examples = np.random.random((100, 40, 40, 3))
+        train_labels = np.random.randint(0, 10, size=(100,))
+
+        openvino_quantized_model = model.quantize(accelerator='openvino',
+                                                  x=train_examples,
+                                                  y=train_labels)
+
+        preds = model.predict(train_examples)
+        openvino_preds = openvino_quantized_model.predict(train_examples)
+        np.testing.assert_allclose(preds, openvino_preds, rtol=1e-2)

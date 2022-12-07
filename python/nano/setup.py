@@ -87,7 +87,7 @@ def setup_package():
 
     pytorch_112_requires = ["torch==1.12.1",
                             "torchvision==0.13.1",
-                            "intel_extension_for_pytorch==1.12.100;platform_system!='Windows'"]
+                            "intel_extension_for_pytorch==1.12.300;platform_system!='Windows'"]
 
     pytorch_111_requires = ["torch==1.11.0",
                             "torchvision==0.12.0",

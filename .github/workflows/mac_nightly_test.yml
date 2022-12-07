@@ -9,7 +9,7 @@ on:
     #branchs: [ main ]
 
   schedule:
-    - cron: '0 13 * * *' # GMT time, 13:00 GMT == 21:00 China
+    - cron: '0 11 * * *' # GMT time, 13:00 GMT == 21:00 China
   workflow_dispatch:
     inputs:
       artifact:
@@ -28,6 +28,10 @@ on:
         - Mac-Friesian-Python-ExampleTest-tf2-pip-Spark3
         - Mac-Friesian-Python-ExampleTest-feature-tf1-Spark3
         - Mac-Friesian-Python-ExampleTest-feature-tf1-pip-Spark3
+        - Mac-Orca-Python-UT-Spark3
+        - Mac-Orca-Python-UT-Ray-Spark3
+        - Mac-Orca-Python-ExampleTest-Spark3
+        - Mac-Orca-Python-ExampleTest-Ray-Spark3
 
 env:
   GIST_ID: 6bcf97ad277d77344b88ddbefa2dd4ad
@@ -216,6 +220,86 @@ jobs:
         file-name: Mac-Friesian-Python-ExampleTest-feature-tf1-pip-Spark3.json
         type: job
         job-name: Mac-Friesian-Python-ExampleTest-feature-tf1-pip-Spark3
+        runner-hosted-on: 'Shanghai'
+
+  Mac-Orca-Python-UT-Spark3:
+    if: ${{ github.event.schedule || github.event.inputs.artifact == 'Mac-Orca-Python-UT-Spark3' || github.event.inputs.artifact == 'all' }} 
+    runs-on: [self-hosted, mac, macOS]
+
+    steps:
+    - uses: actions/checkout@v3
+    - name: Run Test
+      uses: ./.github/actions/mac/orca/mac-orca-python-ut-spark3
+    - name: Create Job Badge
+      uses: ./.github/actions/create-job-status-badge
+      if: ${{ always() }}
+      with:
+        secret: ${{ secrets.GIST_SECRET}}
+        gist-id: ${{env.GIST_ID}}
+        is-self-hosted-runner: true
+        file-name: Mac-Orca-Python-UT-Spark3.json
+        type: job
+        job-name: Mac-Orca-Python-UT-Spark3
+        runner-hosted-on: 'Shanghai'
+
+  Mac-Orca-Python-UT-Ray-Spark3:
+    if: ${{ github.event.schedule || github.event.inputs.artifact == 'Mac-Orca-Python-UT-Ray-Spark3' || github.event.inputs.artifact == 'all' }} 
+    runs-on: [self-hosted, mac, macOS]
+
+    steps:
+    - uses: actions/checkout@v3
+    - name: Run Test
+      uses: ./.github/actions/mac/orca/mac-orca-python-ut-ray-spark3
+    - name: Create Job Badge
+      uses: ./.github/actions/create-job-status-badge
+      if: ${{ always() }}
+      with:
+        secret: ${{ secrets.GIST_SECRET}}
+        gist-id: ${{env.GIST_ID}}
+        is-self-hosted-runner: true
+        file-name: Mac-Orca-Python-UT-Ray-Spark3.json
+        type: job
+        job-name: Mac-Orca-Python-UT-Ray-Spark3
+        runner-hosted-on: 'Shanghai'
+
+  Mac-Orca-Python-ExampleTest-Spark3:
+    if: ${{ github.event.schedule || github.event.inputs.artifact == 'Mac-Orca-Python-ExampleTest-Spark3' || github.event.inputs.artifact == 'all' }} 
+    runs-on: [self-hosted, mac, macOS]
+
+    steps:
+    - uses: actions/checkout@v3
+    - name: Run Test
+      uses: ./.github/actions/mac/orca/mac-orca-python-exampletest-spark3
+    - name: Create Job Badge
+      uses: ./.github/actions/create-job-status-badge
+      if: ${{ always() }}
+      with:
+        secret: ${{ secrets.GIST_SECRET}}
+        gist-id: ${{env.GIST_ID}}
+        is-self-hosted-runner: true
+        file-name: Mac-Orca-Python-ExampleTest-Spark3.json
+        type: job
+        job-name: Mac-Orca-Python-ExampleTest-Spark3
+        runner-hosted-on: 'Shanghai'
+
+  Mac-Orca-Python-ExampleTest-Ray-Spark3:
+    if: ${{ github.event.schedule || github.event.inputs.artifact == 'Mac-Orca-Python-ExampleTest-Ray-Spark3' || github.event.inputs.artifact == 'all' }} 
+    runs-on: [self-hosted, mac, macOS]
+
+    steps:
+    - uses: actions/checkout@v3
+    - name: Run Test
+      uses: ./.github/actions/mac/orca/mac-orca-python-exampletest-ray-spark3
+    - name: Create Job Badge
+      uses: ./.github/actions/create-job-status-badge
+      if: ${{ always() }}
+      with:
+        secret: ${{ secrets.GIST_SECRET}}
+        gist-id: ${{env.GIST_ID}}
+        is-self-hosted-runner: true
+        file-name: Mac-Orca-Python-ExampleTest-Ray-Spark3.json
+        type: job
+        job-name: Mac-Orca-Python-ExampleTest-Ray-Spark3
         runner-hosted-on: 'Shanghai'
 
   # please put your test before the create-workflow-badge to make sure the badge can be displayed on the github page.

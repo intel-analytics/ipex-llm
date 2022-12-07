@@ -154,6 +154,3 @@ def check_nano_env(use_malloc: str = "tc", use_openmp: bool = True) -> None:
         print("+" * 60, "\n")
 
     print("<"*20, "Environment Variables", "<"*20, "\n")
-
-get_CPU_info()
-check_nano_env()

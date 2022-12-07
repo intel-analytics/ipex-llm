@@ -22,6 +22,7 @@ import torch
 from torch.utils.data.dataset import TensorDataset
 from torch.utils.data.dataloader import DataLoader
 import tempfile
+import pytest
 
 
 class TestOpenVINO(TestCase):
@@ -115,15 +116,49 @@ class TestOpenVINO(TestCase):
         ds = TensorDataset(x, y)
         dataloader = DataLoader(ds, batch_size=2)
 
-        openvino_model = InferenceOptimizer.quantize(model, 
+        openvino_model = InferenceOptimizer.quantize(model,
                                                      accelerator='openvino',
                                                      calib_data=dataloader,
-                                                     metric=F1(10))
+                                                     metric=F1(10),
+                                                     thread_num=2)
+
         with InferenceOptimizer.get_context(openvino_model):
+            assert torch.get_num_threads() == 2
             y1 = openvino_model(x[0:1])
     
         with tempfile.TemporaryDirectory() as tmp_dir_name:
             InferenceOptimizer.save(openvino_model, tmp_dir_name)
             model = InferenceOptimizer.load(tmp_dir_name)
+
         with InferenceOptimizer.get_context(model):
+            assert torch.get_num_threads() == 2
             y2 = model(x[0:1])
+
+    def test_pytorch_openvino_model_additional_attrs(self):
+        model = mobilenet_v3_small(num_classes=10)
+        # patch a attribute
+        model.channels = 3
+        def hello():
+            print("hello world!")
+        # patch a function
+        model.hello = hello
+
+        x = torch.rand((10, 3, 256, 256))
+        y = torch.ones((10, ), dtype=torch.long)
+
+        ds = TensorDataset(x, y)
+        dataloader = DataLoader(ds, batch_size=2)
+
+        openvino_model = InferenceOptimizer.quantize(model,
+                                                     accelerator='openvino',
+                                                     calib_data=dataloader,
+                                                     metric=F1(10),
+                                                     thread_num=2)
+        assert openvino_model.channels == 3
+        openvino_model.hello()
+        with pytest.raises(AttributeError):
+            openvino_model.width
+
+        with InferenceOptimizer.get_context(openvino_model):
+            assert torch.get_num_threads() == 2
+            y1 = openvino_model(x[0:1])

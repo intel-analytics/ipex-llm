@@ -12,7 +12,7 @@ runs:
         export KERAS_BACKEND=tensorflow
       
         chmod a+x python/dllib/examples/run-example-tests-pip.sh 
-        pip install --pre --upgrade bigdl-dllib -i https://pypi.python.org/simple
+        pip install -i https://pypi.python.org/simple --pre --upgrade bigdl-dllib
         python/dllib/examples/run-example-tests-pip.sh 
 
         source deactivate

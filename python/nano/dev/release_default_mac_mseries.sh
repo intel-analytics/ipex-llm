@@ -16,25 +16,18 @@
 # limitations under the License.
 #
 
-cd "`dirname $0`"
-cd ../..
+set -e
+RUN_SCRIPT_DIR=$(cd $(dirname $0) ; pwd)
+echo $RUN_SCRIPT_DIR
 
-export PYSPARK_PYTHON=python
-export PYSPARK_DRIVER_PYTHON=python
-if [ -z "${OMP_NUM_THREADS}" ]; then
-    export OMP_NUM_THREADS=1
+if (( $# < 2)); then
+  echo "Usage: release_default_mac_mseries.sh version upload"
+  echo "Usage example: bash release_default_mac_mseries.sh default true"
+  echo "Usage example: bash release_default_mac_mseries.sh 0.14.0.dev1 true"
+  exit -1
 fi
 
-ray stop -f
+version=$1
+upload=$2
 
-echo "Running chronos tests onnxrt16"
-python -m pytest -v -m "inference" test/bigdl/chronos/forecaster \
-                                   test/bigdl/chronos/autots
-
-exit_status_0=$?
-if [ $exit_status_0 -ne 0 ];
-then
-    exit $exit_status_0
-fi
-
-ray stop -f
+bash ${RUN_SCRIPT_DIR}/release.sh mac_mseries ${version} ${upload}

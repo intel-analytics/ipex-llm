@@ -761,3 +761,13 @@ def save_model(model, filepath, overwrite=True, include_optimizer=True, save_for
                 put_local_dir_tree_to_remote(temp_path, filepath)
         finally:
             shutil.rmtree(temp_dir)
+
+
+def get_driver_node_ip():
+    """
+    Returns the IP address of the current node.
+
+    :return: the IP address of the current node.
+    """
+    import ray
+    return ray._private.services.get_node_ip_address()
