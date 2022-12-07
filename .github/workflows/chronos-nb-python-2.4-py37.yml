@@ -165,7 +165,7 @@ jobs:
           pip install -i https://pypi.python.org/simple --pre --upgrade bigdl-chronos[pytorch,inference,automl,distributed]
           export SPARK_LOCAL_HOSTNAME=localhost
           export KERAS_BACKEND=tensorflow
-          bash python/chronos/dev/test/run-installation-options.sh "torch and not diff_set_all"
+          bash python/chronos/dev/test/run-installation-options.sh "torch and not automl and not diff_set_all"
           source deactivate
           conda remove -n chronos-nb-env-py37 -y --all
         env:
