@@ -74,12 +74,13 @@ y_hat.argmax(dim=1)
 ```
 
 ### Step 3: Quantization using Intel Neural Compressor
-Quantization is widely used to compress models to a lower precision, which not only reduces the model size but also accelerates inference. BigDL-Nano provides `Trainer.quantize()` API for users to quickly obtain a quantized model with accuracy control by specifying a few arguments.
+Quantization is widely used to compress models to a lower precision, which not only reduces the model size but also accelerates inference. BigDL-Nano provides `InferenceOptimizer.quantize()` API for users to quickly obtain a quantized model with accuracy control by specifying a few arguments.
 
-Without extra accelerator, `Trainer.quantize()` returns a pytorch module with desired precision and accuracy. You can add quantization as below:
+Without extra accelerator, `InferenceOptimizer.quantize()` returns a pytorch module with desired precision and accuracy. You can add quantization as below:
 ```python
+from bigdl.nano.pytorch import InferenceOptimizer
 from torchmetrics.functional import accuracy
-q_model = trainer.quantize(model, calib_dataloader=train_dataloader, metric=accuracy)
+q_model = InferenceOptimizer.quantize(model, calib_data=train_dataloader, metric=accuracy)
 
 # run simple prediction
 y_hat = q_model(x)

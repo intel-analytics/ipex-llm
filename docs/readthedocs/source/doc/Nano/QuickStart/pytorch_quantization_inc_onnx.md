@@ -73,12 +73,13 @@ y_hat.argmax(dim=1)
 ```
 
 ### Step 3: Quantization with ONNXRuntime accelerator
-With the ONNXRuntime accelerator, `Trainer.quantize()` will return a model with compressed precision but running inference in the ONNXRuntime engine.
+With the ONNXRuntime accelerator, `InferenceOptimizer.quantize()` will return a model with compressed precision but running inference in the ONNXRuntime engine.
 
 you can add quantization as below:
 ```python
+from bigdl.nano.pytorch import InferenceOptimizer
 from torchmetrics.functional import accuracy
-ort_q_model = trainer.quantize(model, accelerator='onnxruntime', calib_dataloader=train_dataloader, metric=accuracy)
+ort_q_model = InferenceOptimizer.quantize(model, accelerator='onnxruntime', calib_data=train_dataloader, metric=accuracy)
 
 # run simple prediction
 y_hat = ort_q_model(x)

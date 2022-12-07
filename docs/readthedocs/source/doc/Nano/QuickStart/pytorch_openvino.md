@@ -78,8 +78,8 @@ When you're ready, you can simply append the following part to enable your OpenV
 # The argument `input_sample` is not required in the following cases:
 # you have run `trainer.fit` before trace
 # The Model has `example_input_array` set
-from bigdl.nano.pytorch import Trainer
-ov_model = Trainer.trace(model_ft, accelerator="openvino", input_sample=torch.rand(1, 3, 224, 224))
+from bigdl.nano.pytorch import InferenceOptimizer
+ov_model = InferenceOptimizer.trace(model_ft, accelerator="openvino", input_sample=torch.rand(1, 3, 224, 224))
 
 # The usage is almost the same with any PyTorch module
 y_hat = ov_model(x)
