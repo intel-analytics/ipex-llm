@@ -15,6 +15,7 @@
 #
 
 import os
+import types
 import logging
 import tempfile
 import shutil
@@ -126,6 +127,14 @@ class SparkTFEstimator():
                the model to "pay more attention" to samples from an under-represented class.
         :return:
         """
+        if not isinstance(data, types.FunctionType):
+            invalidInputError(isinstance(batch_size, int) and batch_size > 0,
+                              "batch_size should be a positive integer")
+        else:
+            # batch_size can be None if the return of data_creator already generates batches
+            if batch_size:
+                invalidInputError(isinstance(batch_size, int) and batch_size > 0,
+                                  "batch_size should be a positive integer")
         sc = OrcaContext.get_spark_context()
 
         if isinstance(data, SparkXShards):
@@ -140,13 +149,12 @@ class SparkTFEstimator():
                 data = data.repartition(self.num_workers)
             if validation_data and validation_data.rdd.getNumPartitions() != self.num_workers:
                 validation_data = validation_data.repartition(self.num_workers)
-        shard_size = OrcaContext._shard_size if OrcaContext._shard_size else batch_size
         data, validation_data = maybe_dataframe_to_xshards(data, validation_data,
                                                            feature_cols, label_cols,
                                                            mode="fit",
                                                            num_workers=self.num_workers,
                                                            accept_str_col=True,
-                                                           shard_size=shard_size)
+                                                           shard_size=batch_size)
 
         # for continuous training
         if self.model_weights:
@@ -255,6 +263,14 @@ class SparkTFEstimator():
         :param callbacks: List of Keras compatible callbacks to apply during evaluation.
         :return: validation result
         """
+        if not isinstance(data, types.FunctionType):
+            invalidInputError(isinstance(batch_size, int) and batch_size > 0,
+                              "batch_size should be a positive integer")
+        else:
+            # batch_size can be None if the return of data_creator already generates batches
+            if batch_size:
+                invalidInputError(isinstance(batch_size, int) and batch_size > 0,
+                                  "batch_size should be a positive integer")
         sc = OrcaContext.get_spark_context()
         logger.info("Starting validation step.")
 
@@ -263,14 +279,13 @@ class SparkTFEstimator():
         if isinstance(data, DataFrame) or isinstance(data, SparkXShards):
             if data.rdd.getNumPartitions() != self.num_workers:
                 data = data.repartition(self.num_workers)
-        shard_size = OrcaContext._shard_size if OrcaContext._shard_size else batch_size
         data, _ = maybe_dataframe_to_xshards(data, validation_data=None,
                                              feature_cols=feature_cols,
                                              label_cols=label_cols,
                                              mode="evaluate",
                                              num_workers=self.num_workers,
                                              accept_str_col=True,
-                                             shard_size=shard_size)
+                                             shard_size=batch_size)
 
         if self.model_weights:
             weights = sc.broadcast(self.model_weights)
@@ -342,6 +357,8 @@ class SparkTFEstimator():
                DataFrame or an XShards of Pandas DataFrame. Default: None.
         :return:
         """
+        invalidInputError(isinstance(batch_size, int) and batch_size > 0,
+                          "batch_size should be a positive integer")
         logger.info("Starting predict step.")
         sc = OrcaContext.get_spark_context()
         if self.model_weights:
@@ -381,14 +398,13 @@ class SparkTFEstimator():
             return SparkRunner(**init_param).predict(**param)
 
         if isinstance(data, DataFrame):  # Computation would be triggered by the user
-            shard_size = OrcaContext._shard_size if OrcaContext._shard_size else batch_size
             xshards, _ = dataframe_to_xshards(data,
                                               validation_data=None,
                                               feature_cols=feature_cols,
                                               label_cols=None,
                                               mode="predict",
                                               accept_str_col=True,
-                                              shard_size=shard_size)
+                                              shard_size=batch_size)
 
             pred_shards = SparkXShards.lazy(xshards.rdd.mapPartitions(
                 lambda iter: transform_func(iter, init_params, params)))

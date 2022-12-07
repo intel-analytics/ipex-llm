@@ -174,6 +174,8 @@ class PyTorchRayEstimator(BaseRayEstimator):
                 You can also provide custom metrics by passing in a custom training_operator_cls
                 when creating the Estimator.
         """
+        invalidInputError(isinstance(batch_size, int) and batch_size > 0, 
+                          "batch_size should be a positive integer")
         params = dict(
             epochs=epochs,
             batch_size=batch_size,
@@ -185,14 +187,13 @@ class PyTorchRayEstimator(BaseRayEstimator):
         from bigdl.orca.data import SparkXShards
         from ray.data import Dataset
 
-        shard_size = OrcaContext._shard_size if OrcaContext._shard_size else batch_size
         data, validation_data = maybe_dataframe_to_xshards(data,
                                                            validation_data=validation_data,
                                                            feature_cols=feature_cols,
                                                            label_cols=label_cols,
                                                            mode="fit",
                                                            num_workers=self.num_workers,
-                                                           shard_size=shard_size)
+                                                           shard_size=batch_size)
 
         if isinstance(data, SparkXShards):
             # Should not wrap DistributedSampler on DataLoader for SparkXShards input.
@@ -307,6 +308,8 @@ class PyTorchRayEstimator(BaseRayEstimator):
         :return: A SparkXShards or a list that contains the predictions with key "prediction"
                in each shard
         """
+        invalidInputError(isinstance(batch_size, int) and batch_size > 0, 
+                          "batch_size should be a positive integer")
         from bigdl.orca.data import SparkXShards
         param = dict(
             batch_size=batch_size,
@@ -314,13 +317,12 @@ class PyTorchRayEstimator(BaseRayEstimator):
         )
         from pyspark.sql import DataFrame
         if isinstance(data, DataFrame):
-            shard_size = OrcaContext._shard_size if OrcaContext._shard_size else batch_size
             xshards, _ = dataframe_to_xshards(data,
                                               validation_data=None,
                                               feature_cols=feature_cols,
                                               label_cols=None,
                                               mode="predict",
-                                              shard_size=shard_size)
+                                              shard_size=batch_size)
             pred_shards = self._predict_spark_xshards(xshards, param)
             result = convert_predict_xshards_to_dataframe(data, pred_shards)
         elif isinstance(data, SparkXShards):
@@ -389,15 +391,16 @@ class PyTorchRayEstimator(BaseRayEstimator):
                 You can also provide custom metrics by passing in a custom training_operator_cls
                 when creating the Estimator.
         """
+        invalidInputError(isinstance(batch_size, int) and batch_size > 0, 
+                          "batch_size should be a positive integer")
         from bigdl.orca.data import SparkXShards
-        shard_size = OrcaContext._shard_size if OrcaContext._shard_size else batch_size
         data, _ = maybe_dataframe_to_xshards(data,
                                              validation_data=None,
                                              feature_cols=feature_cols,
                                              label_cols=label_cols,
                                              mode="evaluate",
                                              num_workers=self.num_workers,
-                                             shard_size=shard_size)
+                                             shard_size=batch_size)
         if isinstance(data, SparkXShards):
             if data._get_class_name() == 'pandas.core.frame.DataFrame':
                 data = process_xshards_of_pandas_dataframe(data, feature_cols, label_cols)

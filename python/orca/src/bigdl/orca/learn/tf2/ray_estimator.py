@@ -15,6 +15,7 @@
 #
 
 import os
+import types
 import itertools
 import pickle
 import shutil
@@ -174,6 +175,14 @@ class TensorFlow2Estimator(OrcaRayEstimator):
                Default: None.
         :return:
         """
+        if not isinstance(data, types.FunctionType):
+            invalidInputError(isinstance(batch_size, int) and batch_size > 0,
+                              "batch_size should be a positive integer")
+        else:
+            # batch_size can be None if the return of data_creator already generates batches
+            if batch_size:
+                invalidInputError(isinstance(batch_size, int) and batch_size > 0,
+                                  "batch_size should be a positive integer")
         params = dict(
             epochs=epochs,
             batch_size=batch_size,
@@ -189,13 +198,12 @@ class TensorFlow2Estimator(OrcaRayEstimator):
         from bigdl.orca.data import SparkXShards
         from bigdl.orca.data.tf.data import Dataset
         from bigdl.orca.data.tf.tf2_data import TF2Dataset
-        shard_size = OrcaContext._shard_size if OrcaContext._shard_size else batch_size
         data, validation_data = maybe_dataframe_to_xshards(data, validation_data,
                                                            feature_cols, label_cols,
                                                            mode="fit",
                                                            num_workers=self.num_workers,
                                                            accept_str_col=True,
-                                                           shard_size=shard_size)
+                                                           shard_size=batch_size)
 
         if isinstance(data, SparkXShards):
             if data._get_class_name() == 'pandas.core.frame.DataFrame':
@@ -314,6 +322,14 @@ class TensorFlow2Estimator(OrcaRayEstimator):
                Default: None.
         :return: validation result
         """
+        if not isinstance(data, types.FunctionType):
+            invalidInputError(isinstance(batch_size, int) and batch_size > 0,
+                              "batch_size should be a positive integer")
+        else:
+            # batch_size can be None if the return of data_creator already generates batches
+            if batch_size:
+                invalidInputError(isinstance(batch_size, int) and batch_size > 0,
+                                  "batch_size should be a positive integer")
         logger.info("Starting validation step.")
         params = dict(
             batch_size=batch_size,
@@ -327,7 +343,6 @@ class TensorFlow2Estimator(OrcaRayEstimator):
         from bigdl.orca.data.tf.data import Dataset
         from bigdl.orca.data.tf.tf2_data import TF2Dataset
 
-        shard_size = OrcaContext._shard_size if OrcaContext._shard_size else batch_size
         data, _ = maybe_dataframe_to_xshards(data,
                                              validation_data=None,
                                              feature_cols=feature_cols,
@@ -335,7 +350,7 @@ class TensorFlow2Estimator(OrcaRayEstimator):
                                              mode="evaluate",
                                              num_workers=self.num_workers,
                                              accept_str_col=True,
-                                             shard_size=shard_size)
+                                             shard_size=batch_size)
 
         if isinstance(data, SparkXShards):
             if data._get_class_name() == 'pandas.core.frame.DataFrame':
@@ -443,6 +458,8 @@ class TensorFlow2Estimator(OrcaRayEstimator):
                Default: None.
         :return:
         """
+        invalidInputError(isinstance(batch_size, int) and batch_size > 0,
+                          "batch_size should be a positive integer")
         logger.info("Starting predict step.")
         params = dict(
             verbose=verbose,
@@ -456,14 +473,13 @@ class TensorFlow2Estimator(OrcaRayEstimator):
         from bigdl.orca.data.tf.data import Dataset
 
         if isinstance(data, DataFrame):
-            shard_size = OrcaContext._shard_size if OrcaContext._shard_size else batch_size
             xshards, _ = dataframe_to_xshards(data,
                                               validation_data=None,
                                               feature_cols=feature_cols,
                                               label_cols=None,
                                               mode="predict",
                                               accept_str_col=True,
-                                              shard_size=shard_size)
+                                              shard_size=batch_size)
             pred_shards = self._predict_spark_xshards(xshards, params)
             result = convert_predict_xshards_to_dataframe(data, pred_shards)
         elif isinstance(data, SparkXShards):
