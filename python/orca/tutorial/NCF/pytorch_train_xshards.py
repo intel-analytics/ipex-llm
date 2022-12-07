@@ -79,7 +79,7 @@ est = Estimator.from_torch(model=model_creator,
                                    'sparse_feats_input_dims': sparse_feats_input_dims,
                                    'sparse_feats_embed_dims': 8,
                                    'num_dense_feats': num_dense_feats})
-est.fit(data=train_data, epochs=3,
+est.fit(data=train_data, epochs=1,
         feature_cols=feature_cols,
         label_cols=label_cols,
         batch_size=10240,
@@ -90,7 +90,7 @@ est.fit(data=train_data, epochs=3,
 result = est.evaluate(data=test_data,
                       feature_cols=feature_cols,
                       label_cols=label_cols,
-                      batch_size=8000)
+                      batch_size=10240)
 print('Evaluation results:')
 for r in result:
     print(r, ":", result[r])
