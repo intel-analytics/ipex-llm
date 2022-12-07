@@ -174,7 +174,7 @@ class PyTorchRayEstimator(BaseRayEstimator):
                 You can also provide custom metrics by passing in a custom training_operator_cls
                 when creating the Estimator.
         """
-        invalidInputError(isinstance(batch_size, int) and batch_size > 0, 
+        invalidInputError(isinstance(batch_size, int) and batch_size > 0,
                           "batch_size should be a positive integer")
         params = dict(
             epochs=epochs,
@@ -308,7 +308,7 @@ class PyTorchRayEstimator(BaseRayEstimator):
         :return: A SparkXShards or a list that contains the predictions with key "prediction"
                in each shard
         """
-        invalidInputError(isinstance(batch_size, int) and batch_size > 0, 
+        invalidInputError(isinstance(batch_size, int) and batch_size > 0,
                           "batch_size should be a positive integer")
         from bigdl.orca.data import SparkXShards
         param = dict(
@@ -391,7 +391,7 @@ class PyTorchRayEstimator(BaseRayEstimator):
                 You can also provide custom metrics by passing in a custom training_operator_cls
                 when creating the Estimator.
         """
-        invalidInputError(isinstance(batch_size, int) and batch_size > 0, 
+        invalidInputError(isinstance(batch_size, int) and batch_size > 0,
                           "batch_size should be a positive integer")
         from bigdl.orca.data import SparkXShards
         data, _ = maybe_dataframe_to_xshards(data,
