@@ -188,6 +188,7 @@ attestation_init() {
                             -i $APP_ID \
                             -k $API_KEY \
                             -c $CHALLENGE \
+                            -d $ATTESTATION_DEBUG \
                             -O occlum \
                             -o $policy_Id
                 if [ $? -gt 0 ]; then

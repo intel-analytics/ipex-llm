@@ -83,7 +83,7 @@ object VerificationCLI {
             val debug = params.debug
             if (verifyQuoteResult == 0) {
                 System.out.println("Quote Verification Success!")
-            } else if (debug == true && verifyQuoteResult == 1) {
+            } else if (debug == "true" && verifyQuoteResult == 1) {
                 System.out.println("Quote verification passed but BIOS is not up to date." +
                   " result=" + verifyQuoteResult)
             }
