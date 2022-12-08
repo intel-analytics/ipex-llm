@@ -25,7 +25,7 @@ from bigdl.dllib.utils.file_utils import enable_multi_fs_load, enable_multi_fs_l
 from bigdl.dllib.utils.tf import save_tf_checkpoint, load_tf_checkpoint
 from bigdl.orca import OrcaContext
 from bigdl.orca.data.shard import SparkXShards
-from bigdl.orca.data.tf.data import MapDataset
+from bigdl.orca.data.tf.data import Dataset
 from bigdl.orca.data.tf.tf1_data import TF1Dataset
 from bigdl.orca.learn.spark_estimator import Estimator as SparkEstimator
 from bigdl.orca.learn.tf.utils import *
@@ -402,10 +402,10 @@ def is_tf_data_dataset(data: Any) -> bool:
 
 
 def to_dataset(
-    data: Union["SparkXShards", "MapDataset", "DataFrame", "tf.data.Dataset"],
+    data: Union["SparkXShards", "Dataset", "DataFrame", "tf.data.Dataset"],
     batch_size: int,
     batch_per_thread: int,
-    validation_data: Union["SparkXShards", "MapDataset", "DataFrame", "tf.data.Dataset", None],
+    validation_data: Union["SparkXShards", "Dataset", "DataFrame", "tf.data.Dataset", None],
     feature_cols: Optional[List[str]],
     label_cols: Optional[List[str]],
     hard_code_batch_size: bool,
@@ -419,8 +419,8 @@ def to_dataset(
         if isinstance(data, SparkXShards):
             invalidInputError(isinstance(validation_data, SparkXShards),
                               "train data and validation data should be both SparkXShards")
-        if isinstance(data, MapDataset):
-            invalidInputError(isinstance(validation_data, MapDataset),
+        if isinstance(data, Dataset):
+            invalidInputError(isinstance(validation_data, Dataset),
                               "train data and validation data should be both"
                               " orca.data.tf.Dataset")
         if isinstance(data, DataFrame):
@@ -439,7 +439,7 @@ def to_dataset(
                                         memory_type=memory_type,
                                         sequential_order=sequential_order,
                                         shuffle=shuffle)
-    elif isinstance(data, MapDataset):
+    elif isinstance(data, Dataset):
         dataset = TF1Dataset(data, batch_size=batch_size,
                              batch_per_thread=batch_per_thread,
                              validation_dataset=validation_data)
