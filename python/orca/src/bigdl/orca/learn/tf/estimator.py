@@ -14,6 +14,7 @@
 # limitations under the License.
 #
 
+from pyspark.sql import DataFrame
 import tensorflow as tf
 
 from bigdl.dllib.optim.optimizer import MaxEpoch
@@ -43,7 +44,6 @@ from bigdl.orca.tfpark.utils import evaluate_metrics
 
 from typing import TYPE_CHECKING, List, Optional, Union, Tuple, Any, Dict
 if TYPE_CHECKING:
-    from pyspark.sql import DataFrame
     from tensorflow import Tensor, Session, Variable
     from tensorflow.core.protobuf.config_pb2 import ConfigProto
     from tensorflow.python.keras.engine.training import Model
