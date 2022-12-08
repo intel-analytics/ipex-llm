@@ -81,7 +81,6 @@ class BaseInferenceOptimizer:
         '''
         According to results of `optimize`, obtain the model with minimum latency under
         specific restrictions or without restrictions.
-
         :param accelerator: (optional) Use accelerator 'None', 'onnxruntime',
                'openvino', 'jit', defaults to None. If not None, then will only find the
                model with this specific accelerator.
@@ -134,10 +133,10 @@ class BaseInferenceOptimizer:
             find_model = True
             if accuracy_criterion is not None:
                 accuracy = result["accuracy"]
+                if isinstance(accuracy, str):
+                    accuracy: float = self.optimized_model_dict["original"]["accuracy"]
                 compare_acc: float = best_metric.accuracy
-                if accuracy == "not recomputed":
-                    pass
-                elif self._direction == "min":
+                if self._direction == "min":
                     if (accuracy - compare_acc) / compare_acc > accuracy_criterion:
                         continue
                 else:
@@ -147,7 +146,7 @@ class BaseInferenceOptimizer:
             # After the above conditions are met, the latency comparison is performed
             if result["latency"] < best_metric.latency:
                 best_model = result["model"]
-                if result["accuracy"] != "not recomputed":
+                if not isinstance(result["accuracy"], str):
                     accuracy = result["accuracy"]
                 else:
                     accuracy = self.optimized_model_dict["original"]["accuracy"]
@@ -159,3 +158,4 @@ class BaseInferenceOptimizer:
 
         return best_model, format_acceleration_option(best_metric.method_name,
                                                       self.ALL_INFERENCE_ACCELERATION_METHOD)
+        
