@@ -14,6 +14,7 @@
 # limitations under the License.
 #
 import os
+import math
 from unittest import TestCase
 
 import numpy as np
@@ -202,6 +203,10 @@ class TestPyTorchEstimator(TestCase):
         train_stats = estimator.fit(train_data_loader, epochs=4, batch_size=128,
                                     validation_data=val_data_loader)
         print(train_stats)
+        # 1000 // 2 is the data size for each worker
+        # batch_count is the average batches of all workers.
+        # In this unit test, two workers have the same data size.
+        assert train_stats[0]["batch_count"] == math.ceil(1000 // 2 / (128 // 2))
         end_val_stats = estimator.evaluate(val_data_loader, batch_size=64)
         print(end_val_stats)
         assert 0 < end_val_stats["Accuracy"] < 1
