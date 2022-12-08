@@ -19,5 +19,5 @@ export sgx_command="/opt/jdk11/bin/java \
         --python /usr/bin/python3 \
         -f /ppml/work/data/$configFile \
         -ncs"
-gramine-sgx bash 2>&1 | tee frontend.log
+gramine-sgx bash 2>&1 | tee frontend-sgx.log
 

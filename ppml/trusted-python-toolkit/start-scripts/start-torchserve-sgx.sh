@@ -7,6 +7,8 @@ do
         ;;
     esac
 done
+cd /ppml
+./init.sh
 cd /ppml/work/data
 cat $configFile | while read line
 do
