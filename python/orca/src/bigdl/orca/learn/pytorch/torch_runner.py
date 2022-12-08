@@ -34,6 +34,7 @@
 from filelock import FileLock
 import logging
 import os
+import time
 import copy
 import tempfile
 import torch
@@ -46,6 +47,7 @@ from bigdl.orca.learn.pytorch.training_operator import TrainingOperator
 from bigdl.orca.learn.pytorch import utils
 from bigdl.orca.learn.pytorch.utils import get_filesystem
 from bigdl.orca.learn.pytorch.core import BaseRunner
+from bigdl.orca.logger_info import logger_creator
 from bigdl.dllib.utils.log4Error import invalidInputError
 
 try:
@@ -137,6 +139,7 @@ class TorchRunner(BaseRunner):
         self.scheduler_step_freq = scheduler_step_freq
         self.sync_stats = sync_stats
         self.epochs_stats = None  # The state saved in every epoch
+        self.orca_logger = logger_creator()
 
     def _create_loss(self):
         if not self.loss_creator:
@@ -164,7 +167,11 @@ class TorchRunner(BaseRunner):
         """Runs the creator functions without any distributed coordination."""
 
         self.logger.debug("Creating model")
-        self.models = self.model_creator(self.config)
+        try:
+            self.models = self.model_creator(self.config)
+            self.orca_logger.info("{} : Model Creating : Completed!".format(time.time()))
+        except Exception as e:
+            self.orca_logger.info("{} : Model Creating : Failed!".format(time.time()))
         if isinstance(self.models, nn.Sequential) or not isinstance(self.models, Iterable):
             self.models = [self.models]
         invalidInputError(all(isinstance(model, nn.Module) for model in self.models),
@@ -340,12 +347,16 @@ class TorchRunner(BaseRunner):
         info = info or {}
         self._toggle_profiling(profile=profile)
 
-        if OrcaContext.serialize_data_creator:
-            with FileLock(
-                    os.path.join(tempfile.gettempdir(), ".orcadata.lock")):
+        try:
+            if OrcaContext.serialize_data_creator:
+                with FileLock(
+                        os.path.join(tempfile.gettempdir(), ".orcadata.lock")):
+                    loader = data_creator(config, batch_size)
+            else:
                 loader = data_creator(config, batch_size)
-        else:
-            loader = data_creator(config, batch_size)
+            self.orca_logger.info("{} : Data Creating : Completed!".format(time.time()))
+        except Exception as e:
+            self.orca_logger.info("{} : Data Creating : Failed!".format(time.time()))
 
         if wrap_dataloader is None:
             if TorchRunner.should_wrap_dataloader(loader):

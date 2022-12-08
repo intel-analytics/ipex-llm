@@ -125,10 +125,10 @@ class Estimator(object):
                                                   log_level=log_level,
                                                   model_dir=model_dir,
                                                   log_to_driver=log_to_driver)
-              orca_logger.info("{} : Init Orca Context : Succeed!".format(time.time()))
+              orca_logger.info("{} : Estimator Creating : Completed!".format(time.time()))
               return Estimator
             except Exception as e:
-              orca_logger.info("{} : Init Orca Context : Failed!".format(time.time()))
+              orca_logger.info("{} : Estimator Creating : Failed!".format(time.time()))
         else:
             from bigdl.dllib.utils.log4Error import invalidInputError
             invalidInputError(False,

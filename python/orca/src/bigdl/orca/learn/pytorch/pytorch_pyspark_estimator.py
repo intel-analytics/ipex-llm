@@ -17,6 +17,7 @@
 import types
 import torch
 import copy
+import time
 
 from bigdl.orca.learn.pytorch.training_operator import TrainingOperator
 from bigdl.orca.learn.pytorch.pytorch_pyspark_worker import PytorchPysparkWorker
@@ -31,6 +32,7 @@ from bigdl.orca.data.file import get_remote_file_to_local, enable_multi_fs_save,
     enable_multi_fs_load
 from bigdl.dllib.utils.common import get_node_and_core_number
 from bigdl.orca.learn.log_monitor import start_log_server, stop_log_server
+from bigdl.orca.logger_info import logger_creator
 
 from bigdl.orca.learn.utils import find_free_port, find_ip_and_free_port
 from bigdl.dllib.utils.utils import get_node_ip
@@ -137,6 +139,7 @@ class PyTorchPySparkEstimator(BaseEstimator):
         if self.need_to_log_to_driver:
             self.log_server_thread = start_log_server(self.ip, self.log_port)
         self.tcp_store_port = find_free_port()
+        self.orca_logger = logger_creator()
 
         self.worker_init_params = dict(
             model_creator=self.model_creator,
@@ -497,8 +500,12 @@ class PyTorchPySparkEstimator(BaseEstimator):
             def transform_func(iter, init_param, param):
                 return PytorchPysparkWorker(**init_param).validate(**param)
 
-            res = self.workerRDD.barrier().mapPartitions(
-                lambda iter: transform_func(iter, init_params, params)).collect()
+            try:
+                res = self.workerRDD.barrier().mapPartitions(
+                    lambda iter: transform_func(iter, init_params, params)).collect()
+                self.orca_logger.info("{} : Model Training : Completed!".format(time.time()))
+            except Exception as e:
+                self.orca_logger.info("{} : Model Training : Failed!".format(time.time()))
 
         if reduce_results:
             return process_stats(res)

@@ -318,7 +318,7 @@ def init_orca_context(cluster_mode=None, runtime="spark", cores=None, memory="2g
                                                        executor_cores=cores,
                                                        executor_memory=memory,
                                                        **spark_args)
-                        orca_logger.info("{} : Init Orca Context : Succeed!".format(time.time()))
+                        orca_logger.info("{} : Init Orca Context : Completed!".format(time.time()))
                     except Exception as e:
                         orca_logger.info("{} : Init Orca Context : Failed!".format(time.time()))
                 else:
