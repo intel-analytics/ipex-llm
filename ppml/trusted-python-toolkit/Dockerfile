@@ -11,6 +11,7 @@ FROM $BASE_IMAGE_NAME:$BASE_IMAGE_TAG as temp
 ARG http_proxy
 ARG https_proxy
 ARG JDK_VERSION
+ENV JDK_HOME				/opt/jdk${JDK_VERSION}
 ENV JAVA_HOME                           /opt/jdk${JDK_VERSION}
 
 #build frontend.jar
