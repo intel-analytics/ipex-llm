@@ -105,6 +105,15 @@ def throughput(args, model_path, forecaster, train_loader, test_loader, records)
         total_time = time.time()-st
         records['openvino_infer_throughput'] = inference_sample_num / total_time
 
+    # predict with jit
+    if 'jit' in args.inference_framework:
+        if args.cores:
+            forecaster.build_jit(thread_num=args.cores)
+        st = time.time()
+        yhat = forecaster.predict_with_jit(test_loader, quantize=args.quantize)
+        total_time = time.time()-st
+        records['jit_infer_throughput'] = inference_sample_num / total_time
+
 
 def latency(args, model_path, forecaster, train_loader, test_loader, records):
     """
@@ -118,7 +127,7 @@ def latency(args, model_path, forecaster, train_loader, test_loader, records):
         # if no ckpt can be used, then train a new one
         forecaster.fit(train_loader, epochs=1)
 
-    latency, latency_onnx, latency_vino = [], [], []
+    latency, latency_onnx, latency_vino, latency_jit = [], [], [], []
     latency_trim_portion = 0.1
     latency_percentile = [50, 90, 95, 99]
 
@@ -171,6 +180,17 @@ def latency(args, model_path, forecaster, train_loader, test_loader, records):
             latency_vino.append(time.time()-st)
         records['openvino_latency'] = stats.trim_mean(latency_vino, latency_trim_portion)
         records['openvino_percentile_latency'] = np.percentile(latency_vino, latency_percentile)
+
+    # predict with jit
+    if 'jit' in args.inference_framework:
+        if args.cores:
+            forecaster.build_jit(thread_num=args.cores)
+        for x, y in test_loader:
+            st = time.time()
+            yhat = forecaster.predict_with_jit(x.numpy(), quantize=args.quantize)
+            latency_jit.append(time.time()-st)
+        records['jit_latency'] = stats.trim_mean(latency_jit, latency_trim_portion)
+        records['jit_percentile_latency'] = np.percentile(latency_jit, latency_percentile)
 
 
 def accuracy(args, records, forecaster, train_loader, val_loader, test_loader):
@@ -264,8 +284,8 @@ def main():
     parser.add_argument('--quantize', action='store_true',
                         help='if use the quantized model to predict, default to False.')
     parser.add_argument('--inference_framework', nargs='+', default=['torch'], metavar='',
-                        help=('predict without/with accelerator, choose from torch/onnx/openvino,'
-                        ' default to "torch" (i.e. predict without accelerator).'))
+                        help=('predict without/with accelerator, choose from torch/onnx/openvino'
+                        '/jit, default to "torch" (i.e. predict without accelerator).'))
     parser.add_argument('--ipex', action='store_true',
                         help='if use ipex as accelerator for trainer, default to False.')
     parser.add_argument('--quantize_type', type=str, default='pytorch_fx', metavar='',
