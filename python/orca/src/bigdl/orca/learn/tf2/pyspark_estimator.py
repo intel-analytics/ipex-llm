@@ -349,9 +349,8 @@ class SparkTFEstimator():
         :param data: predict input data.  It can be XShards or Spark DataFrame.
                If data is XShards, each partition can be a Pandas DataFrame or a dictionary of
                {'x': feature}, where feature is a numpy array or a tuple of numpy arrays.
-        :param batch_size: Total batch size for all workers used for inference. Default: None.
-               If not None, each worker's batch size would be this value divide the total
-               number of workers.
+        :param batch_size: Total batch size for all workers used for evaluation. Each worker's batch
+               size would be this value divide the total number of workers. Default: 32.
         :param verbose: Prints output of one model if true.
         :param steps: Total number of steps (batches of samples) before declaring the prediction
                round finished. Ignored with the default value of None.
@@ -361,8 +360,9 @@ class SparkTFEstimator():
                DataFrame or an XShards of Pandas DataFrame. Default: None.
         :return:
         """
-        invalidInputError(isinstance(batch_size, int) and batch_size > 0,
-                          "batch_size should be a positive integer")
+        if batch_size:
+            invalidInputError(isinstance(batch_size, int) and batch_size > 0,
+                              "batch_size should be a positive integer")
         logger.info("Starting predict step.")
         sc = OrcaContext.get_spark_context()
         if self.model_weights:
