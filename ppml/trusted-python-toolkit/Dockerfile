@@ -1,3 +1,5 @@
+ARG http_proxy
+ARG https_proxy
 ARG BASE_IMAGE_NAME
 ARG BASE_IMAGE_TAG
 ARG BIGDL_VERSION=2.2.0-SNAPSHOT
@@ -12,7 +14,8 @@ ARG JDK_VERSION
 ENV JAVA_HOME                           /opt/jdk${JDK_VERSION}
 
 #build frontend.jar
-RUN apt-get install -y openjdk-${JDK_VERSION}-jdk && \
+RUN echo ${http_proxy} && \
+    apt-get install -y openjdk-${JDK_VERSION}-jdk && \
     mkdir -p ${JAVA_HOME} && \
     cp -r /usr/lib/jvm/java-${JDK_VERSION}-openjdk-amd64/* ${JAVA_HOME} && \
     git clone https://github.com/analytics-zoo/pytorch-serve.git && \
@@ -36,12 +39,13 @@ ADD ./start-scripts/ /ppml/work/start-scripts
 ADD https://github.com/krallin/tini/releases/download/${TINI_VERSION}/tini /sbin/tini
 COPY --from=temp /ppml/torchserve/frontend.jar /ppml/torchserve/frontend.jar
 COPY --from=temp /opt/jdk11/* /opt/jdk11/
-RUN pip3 install --upgrade pip && \
+RUN echo ${http_proxy} && \
+    pip3 install --upgrade pip && \
     pip install --no-cache-dir flask && \
     pip install --no-cache-dir numpy && \
     pip install --no-cache-dir pandas && \
     pip install --no-cache-dir torch torchvision torchaudio --extra-index-url https://download.pytorch.org/whl/cpu && \
-    pip install --no-cache-dir future cython requests pillow==9.0.1 captum packaging numpy nvgpu && \
+    pip install --no-cache-dir future cython requests pillow==9.0.1 captum packaging numpy nvgpu pyyaml && \
     pip install --no-cache-dir torchserve==0.6.1 torch-model-archiver==0.6.1 torch-workflow-archiver==0.2.5 && \
     sed -i '/module = importlib.import_module/i\\tsys.path.append(model_dir)' /usr/local/lib/python3.7/dist-packages/ts/torch_handler/base_handler.py && \
     sed -i 's/SOCKET_ACCEPT_TIMEOUT = 30.0/SOCKET_ACCEPT_TIMEOUT = 300.0/' /usr/local/lib/python3.7/dist-packages/ts/model_service_worker.py && \
