@@ -126,6 +126,8 @@ subtrees:
                   - file: doc/Nano/Howto/windows_guide
             - file: doc/Nano/Overview/known_issues
               title: "Tips and Known Issues"
+            - file: doc/Nano/Overview/troubshooting
+              title: "Troubleshooting Guide"
             - file: doc/PythonAPI/Nano/index
               title: "API Reference"
 
