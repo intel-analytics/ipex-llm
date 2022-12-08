@@ -76,9 +76,9 @@ class PytorchPysparkWorker(TorchRunner):
                  driver_log_port=None,
                  driver_tcp_store_port=None
                  ):
-        super().__init__(model_creator, optimizer_creator, loss_creator, metrics, scheduler_creator,
-                         training_operator_cls, config, use_tqdm, scheduler_step_freq, sync_stats,
-                         model_class, log_level=log_level)
+        super().__init__(model_creator, optimizer_creator, loss_creator, model_class, metrics,
+                         scheduler_creator, training_operator_cls, config, use_tqdm,
+                         scheduler_step_freq, sync_stats, log_level=log_level)
 
         self.state_dict = state_dict
         self.size = size
