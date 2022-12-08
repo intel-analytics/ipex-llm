@@ -126,6 +126,7 @@ class Estimator(object):
                                                   model_dir=model_dir,
                                                   log_to_driver=log_to_driver)
               orca_logger.info("{} : Init Orca Context : Succeed!".format(time.time()))
+              return Estimator
             except Exception as e:
               orca_logger.info("{} : Init Orca Context : Failed!".format(time.time()))
         else:
