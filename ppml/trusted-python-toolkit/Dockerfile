@@ -24,12 +24,13 @@ RUN apt-get install -y openjdk-${JDK_VERSION}-jdk && \
     mkdir -p /ppml/torchserve && \
     mv server/build/libs/server-1.0.jar /ppml/torchserve/frontend.jar
 
-#Stage.1 Flask & Numpy & Pandas
+#Stage.2 Flask & Numpy & Pandas
 FROM $BASE_IMAGE_NAME:$BASE_IMAGE_TAG
 ARG http_proxy
 ARG https_proxy
 ARG JDK_VERSION
 ARG TINI_VERSION
+ENV JDK_HOME				/opt/jdk${JDK_VERSION}
 ENV JAVA_HOME				/opt/jdk${JDK_VERSION}
 ENV TINI_VERSION                        $TINI_VERSION
 
