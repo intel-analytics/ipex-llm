@@ -102,7 +102,7 @@ The `entrypoint.sh` and `encrypted-fsd.sh` will try to write the same key into `
 
 **USING_LOCAL_DATA_KEY**: If set to true, the gramine instance will not use KMS but read the key from **LOCAL_DATA_KEY** which is a file.
 
-> Warning: Please be noted that **USING_LOCAL_DATA_KEY** is only a test feature and should not be used in any **production environment**.
+> Warning: Please be noted that **USING_LOCAL_DATA_KEY** is only a test feature and should not be used in any **production environment** due to security consideration.
 
 **EHSM_URL**: The URL for the Key management service.  The EHSM_URL will be used for constructing a https url.
 
