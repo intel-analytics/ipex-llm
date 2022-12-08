@@ -176,8 +176,9 @@ class TorchRunner(BaseRunner):
         """Runs the creator functions without any distributed coordination."""
 
         self.logger.debug("Creating model")
-        if self.model_class is not None:
-            self.models = self.model_class
+        if self.model_creator is None:
+            if self.model_class is not None:
+                self.models = [self.model_class]
         else:
             self.models = self.model_creator(self.config)
         if isinstance(self.models, nn.Sequential) or not isinstance(self.models, Iterable):
