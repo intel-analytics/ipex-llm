@@ -64,7 +64,7 @@ class MultiInputModel(nn.Module):
 
 
 class TestOnnx(TestCase):
-    def test_trainer_trace_onnx(self):
+    def test_trace_onnx(self):
         model = ResNet18(10, pretrained=False, include_top=False, freeze=True)
         loss = nn.CrossEntropyLoss()
         optimizer = torch.optim.Adam(model.parameters(), lr=0.01)
@@ -89,7 +89,7 @@ class TestOnnx(TestCase):
         trainer.validate(onnx_model, train_loader)
         trainer.test(onnx_model, train_loader)
 
-    def test_trainer_trace_multiple_input_onnx(self):
+    def test_trace_multiple_input_onnx(self):
         model = MultiInputModel()
         loss = nn.CrossEntropyLoss()
         optimizer = torch.optim.Adam(model.parameters(), lr=0.01)
@@ -117,7 +117,7 @@ class TestOnnx(TestCase):
         trainer.test(onnx_model, train_loader)
         trainer.predict(onnx_model, train_loader)
 
-    def test_onnx_trainer_save_load(self):
+    def test_onnx_save_load(self):
         model = ResNet18(10, pretrained=False, include_top=False, freeze=True)
         loss = nn.CrossEntropyLoss()
         optimizer = torch.optim.Adam(model.parameters(), lr=0.01)

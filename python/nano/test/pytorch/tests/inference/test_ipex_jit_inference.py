@@ -30,7 +30,7 @@ import tempfile
 
 batch_size = 256
 num_workers = 0
-data_dir = os.path.join(os.path.dirname(__file__), "../data")
+data_dir = "/tmp/data"
 
 
 class ResNet18(nn.Module):
