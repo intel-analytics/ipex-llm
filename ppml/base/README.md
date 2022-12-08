@@ -91,3 +91,26 @@ The architecture for `/ppml/encrypted-fsd` can be found here:
 ![encrypted-fsd architecture](gramine-encrypted-fs-architecture.png "Architecture")
 
 To see how to enable the usage of `/ppml/encrypted-fsd`, you can refer to file `../trusted-deep-learning/entrypoint.sh` and file `./encrypted-fsd.sh`.
+
+Basically, the reason why contents encrypted on one node can be decrypted on another node is that the keys used for encryption/decryption are the same.
+
+The `entrypoint.sh` and `encrypted-fsd.sh` will try to write the same key into `/dev/attestation/keys/sgx_data_key` in the gramine instance. Currently, there are two ways to write the key into `/dev/attestation/keys/sgx_data_key`. Please refer to the following figure.
+
+![environment variable settings](env_settings.png)
+
+**ENCRYPTED_FSD**: If set to true, the gramine instance will try to acquire the key from **KMS** or **local filesystem** and write the first 16 bytes into **/dev/attestation/keys/sgx_data_key**.
+
+**USING_LOCAL_DATA_KEY**: If set to true, the gramine instance will not use KMS but read the key from **LOCAL_DATA_KEY** which is a file.
+
+> Warning: Please be noted that **USING_LOCAL_DATA_KEY** is only a test feature and should not be used in any **production environment** due to security consideration.
+
+**EHSM_URL**: The URL for the Key management service.  The EHSM_URL will be used for constructing a https url.
+
+**EHSM_PORT**: The port for the key management service.  Default to 3000.
+
+**APPID, APIKEY**: These are required by the KMS and also the remote attestation service.
+
+**EHSM_PRIMARY_KEY**: Primary key required by KMS service, this key is encrypted, so it is safe to write it on disk.
+Default to  `/ppml/encrypted_keys/encrypted_primary_key`
+
+**EHSM_DATA_KEY**: Data key required by KMS service, also used for encryption/decryption.  This key is encrypted, so it is safe to write it on disk.  Default to `/ppml/encrypted_keys/encrypted_data_key`
