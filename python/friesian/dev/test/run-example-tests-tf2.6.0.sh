@@ -50,10 +50,10 @@ else
   tar -xvzf data/recsys_sample.tar.gz -C data
 fi
 
-echo "#2 start example test for wnd train"
+echo "#2 start example test for wnd recsys2021 train"
 #timer
 start=$(date "+%s")
-python ../../example/wnd/train/wnd_train_recsys.py \
+python ../../example/wnd/recsys2021/wnd_train_recsys.py \
     --executor_cores 4 \
     --executor_memory 10g \
     --data_dir ./data/recsys_sample \
@@ -135,12 +135,43 @@ python ../../example/multi_task/run_multi_task.py \
 now=$(date "+%s")
 time6=$((now - start))
 
+echo "#7 start example test for wnd preprocessing and train"
+#timer
+start=$(date "+%s")
+if [ -f data/dac_sample.txt ]; then
+  echo "data/dac_sample.txt already exists"
+else
+  wget -nv $FTP_URI/analytics-zoo-data/dac_sample.tar.gz -P data
+  tar -xvzf data/dac_sample.tar.gz -C data
+fi
+python ../../example/wnd/csv_to_parquet.py \
+        --input ./data/dac_sample.txt \
+        --output ./data/day_0.parquet
+cp -r ./data/day_0.parquet ./data/day_1.parquet
+python ../../example/wnd/wnd_preprocessing.py \
+    --executor_cores 6 \
+    --executor_memory 50g \
+    --days 0-1 \
+    --input_folder ./data \
+    --output_folder ./result \
+    --frequency_limit 15 \
+    --cross_sizes 10000,10000
+
+python wnd_train.py \
+    --executor_cores 6 \
+    --executor_memory 50g \
+    --data_dir ./data \
+    --model_dir ./wnd_model
+now=$(date "+%s")
+time7=$((now - start))
+
 rm -rf data
 rm -rf result
 
 echo "#1 two tower train time used: $time1 seconds"
-echo "#2 wnd train time used: $time2 seconds"
+echo "#2 wnd recsys2021 train time used: $time2 seconds"
 echo "#3 xgboost train time used: $time3 seconds"
 echo "#4 ncf train time used: $time4 seconds"
 echo "#5 deepfm train time used: $time5 seconds"
 echo "#6 multi_task train time used: $time6 seconds"
+echo "#7 wnd preprocessing and train time used: $time7 seconds"
