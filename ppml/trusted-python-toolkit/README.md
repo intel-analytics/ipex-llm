@@ -177,7 +177,7 @@ sudo docker run -itd \
 	--device=/dev/sgx/enclave \
 	--device=/dev/sgx/provision \
 	-v /var/run/aesmd/aesm.socket:/var/run/aesmd/aesm.socket \
-	-v /ppml/work/data:your_data_path \
+	-v your_data_path:/ppml/work/data \
 	-e LOCAL_IP=$LOCAL_IP \
 	-e SGX_ENABLED=false \
 	-e ATTESTATION=false \
