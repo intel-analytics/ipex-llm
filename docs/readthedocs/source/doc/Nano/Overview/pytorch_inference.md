@@ -266,8 +266,8 @@ multi_model = InferenceOptimizer.to_multi_instance(model, num_processes=4, cores
 multi_model = InferenceOptimizer.to_multi_instance(model, cpu_for_each_process=[[0], [1], [2,3], [4,5]])
 ```
 
-## Context Manager
-BigDL-Nano provides ``InferenceOptimizer.get_context(model=...)`` API to enable automatic context management for PyTorch inference. With only one line of code change, BigDL-Nano will automatically provide suitable context management for each accelerated model, it usually contains part of or all of following three types of context manager:
+## Automatic Context Management
+BigDL-Nano provides ``InferenceOptimizer.get_context(model=...)`` API to enable automatic context management for PyTorch inference. With only one line of code change, BigDL-Nano will automatically provide suitable context management for each accelerated model, it usually contains part of or all of following three types of context managers:
 
 1. ``torch.no_grad()`` to disable gradients, which will be used for all model
    
@@ -289,7 +289,7 @@ with InferenceOptimizer.get_context(ipex_model):
 
 For ``InferenceOptimizer.quantize`` and ``InferenceOptimizer.optimize``, usage is the same.
 
-``InferenceOptimizer.get_context(model=...)`` can be used for muiti-models. If you have a model pipeline, you can also get a common context manager by passing multi-models to `get_context`.
+``InferenceOptimizer.get_context(model=...)`` can be used for muitiple models. If you have a model pipeline, you can also get a common context manager by passing multiple models to `get_context`.
 ```python
 from torch import nn
 class Classifier(nn.Module):
