@@ -403,8 +403,11 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                         # here we suppose trace don't change accuracy,
                         # so we jump it to reduce time cost of optimize
                         if precision == "fp32" and method != "original":
-                            result_map[method]["accuracy"] =\
-                                str(round(result_map["original"]["accuracy"], 3)) + "*"
+                            _accuracy = result_map["original"]["accuracy"]
+                            if isinstance(_accuracy, torch.Tensor):
+                                _accuracy = _accuracy.item()
+                            _accuracy = round(_accuracy, 3)
+                            result_map[method]["accuracy"] = str(_accuracy) + '*'
                         else:
                             if method == "original":
                                 # test whether metric works
