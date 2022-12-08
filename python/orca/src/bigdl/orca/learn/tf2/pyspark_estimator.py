@@ -117,7 +117,8 @@ class SparkTFEstimator():
                {'x': feature, 'y': label}, where feature(label) is a numpy array or a tuple of
                numpy arrays.
         :param epochs: Number of epochs to train the model. Default: 1.
-        :param batch_size: Batch size used for training. Default: 32.
+        :param batch_size: Total batch size for all workers used for training. Each worker's batch
+               size would be this value divide the total number of workers. Default: 32.
         :param verbose: Prints output of one model if true.
         :param callbacks: List of Keras compatible callbacks to apply during training.
         :param validation_data: validation data. Validation data type should be the same
@@ -258,7 +259,8 @@ class SparkTFEstimator():
                If data is XShards, each partition can be a Pandas DataFrame or a dictionary of
                {'x': feature, 'y': label}, where feature(label) is a numpy array or a tuple of
                numpy arrays.
-        :param batch_size: Batch size used for evaluation. Default: 32.
+        :param batch_size: Total batch size for all workers used for evaluation. Each worker's batch
+               size would be this value divide the total number of workers. Default: 32.
         :param verbose: Prints output of one model if true.
         :param callbacks: List of Keras compatible callbacks to apply during evaluation.
         :return: validation result
@@ -347,7 +349,9 @@ class SparkTFEstimator():
         :param data: predict input data.  It can be XShards or Spark DataFrame.
                If data is XShards, each partition can be a Pandas DataFrame or a dictionary of
                {'x': feature}, where feature is a numpy array or a tuple of numpy arrays.
-        :param batch_size: Batch size used for inference. Default: None.
+        :param batch_size: Total batch size for all workers used for inference. Default: None.
+               If not None, each worker's batch size would be this value divide the total
+               number of workers.
         :param verbose: Prints output of one model if true.
         :param steps: Total number of steps (batches of samples) before declaring the prediction
                round finished. Ignored with the default value of None.

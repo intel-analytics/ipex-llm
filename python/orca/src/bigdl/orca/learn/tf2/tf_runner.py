@@ -174,8 +174,11 @@ class HorovodDatasetHanlder(DatasetHandler):
 
     def _handle_batch_size(self, config):
         invalidInputError("batch_size" in config, "batch_size must be set in config")
-        config["batch_size"] = config["batch_size"] // self.size
-        return config, config["batch_size"]
+        if config["batch_size"]:
+            local_batch_size = config["batch_size"] // self.size
+        else:  # batch_size default to be None for predict
+            local_batch_size = config["batch_size"]
+        return config, local_batch_size
 
 
 class TFDistributedDatasetHandler(DatasetHandler):
@@ -206,7 +209,10 @@ class TFDistributedDatasetHandler(DatasetHandler):
 
     def _handle_batch_size(self, config):
         invalidInputError("batch_size" in config, "batch_size must be set in config")
-        local_batch_size = config["batch_size"] // self.size
+        if config["batch_size"]:
+            local_batch_size = config["batch_size"] // self.size
+        else:  # batch_size default to be None for predict
+            local_batch_size = None
         return config, local_batch_size
 
 
@@ -472,8 +478,13 @@ class TFRunner:
         config = copy.copy(self.config)
         if data_config is not None:
             config.update(data_config)
+        config["batch_size"] = batch_size
+        dataset_handler = DatasetHandler.get_handler(self.backend,
+                                                     self.rank,
+                                                     self.size)
+        config, local_batch_size = dataset_handler._handle_batch_size(config)
 
-        dataset = data_creator(config, batch_size)
+        dataset = data_creator(config, local_batch_size)
         if not isinstance(dataset, ray.ObjectID):
             invalidInputError(False, "Only xshards is supported for predict")
 
@@ -481,7 +492,7 @@ class TFRunner:
         if len(partition) == 0:
             return []
         params = dict(
-            batch_size=batch_size,
+            batch_size=local_batch_size,
             verbose=verbose,
             steps=steps,
             callbacks=callbacks,
