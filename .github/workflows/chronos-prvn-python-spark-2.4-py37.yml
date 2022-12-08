@@ -40,6 +40,16 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
 
+      - name: "Set flag from Commit"
+        env:
+          COMMIT_VAR: ${{ contains(github.event.head_commit.message, 'quick') }}
+        run: |
+          if ${COMMIT_VAR} == true; then
+            echo "flag set to true"
+          else
+            echo "flag set to false"
+          fi
+
       - name: Run Chronos python test
         shell: bash
         run: |
@@ -85,6 +95,16 @@ jobs:
         uses: actions/setup-python@v2
         with:
           python-version: ${{ matrix.python-version }}
+
+      - name: "Set flag from Commit"
+        env:
+          COMMIT_VAR: ${{ contains(github.event.head_commit.message, 'quick') }}
+        run: |
+          if ${COMMIT_VAR} == true; then
+            echo "flag set to true"
+          else
+            echo "flag set to false"
+          fi
 
       - name: Run Chronos python test
         shell: bash
@@ -132,6 +152,16 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
 
+      - name: "Set flag from Commit"
+        env:
+          COMMIT_VAR: ${{ contains(github.event.head_commit.message, 'quick') }}
+        run: |
+          if ${COMMIT_VAR} == true; then
+            echo "flag set to true"
+          else
+            echo "flag set to false"
+          fi
+
       - name: Run Chronos python test
         shell: bash
         run: |
@@ -177,6 +207,16 @@ jobs:
         uses: actions/setup-python@v2
         with:
           python-version: ${{ matrix.python-version }}
+
+      - name: "Set flag from Commit"
+        env:
+          COMMIT_VAR: ${{ contains(github.event.head_commit.message, 'quick') }}
+        run: |
+          if ${COMMIT_VAR} == true; then
+            echo "flag set to true"
+          else
+            echo "flag set to false"
+          fi
 
       - name: Run Chronos python test
         shell: bash
