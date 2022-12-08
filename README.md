@@ -363,7 +363,7 @@ pred = tsppl.predict(tsdata_test)
 *See Chronos [user guide](https://bigdl.readthedocs.io/en/latest/doc/Chronos/index.html) and [quick start](https://bigdl.readthedocs.io/en/latest/doc/Chronos/QuickStart/chronos-autotsest-quickstart.html) for more details.*
 
 ### Friesian
-The *Chronos* library makes it easy to build end-to-end, large-scale **recommedation system** (including *offline* feature transformation and traning, *near-line* feature and model update, and *online* serving pipeline). 
+The *Friesian* library makes it easy to build end-to-end, large-scale **recommedation system** (including *offline* feature transformation and traning, *near-line* feature and model update, and *online* serving pipeline). 
 
 *See Freisian [readme](https://github.com/intel-analytics/BigDL/blob/main/python/friesian/README.md) for more details.* 
 
