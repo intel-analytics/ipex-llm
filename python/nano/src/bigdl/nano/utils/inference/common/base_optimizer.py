@@ -81,6 +81,7 @@ class BaseInferenceOptimizer:
         '''
         According to results of `optimize`, obtain the model with minimum latency under
         specific restrictions or without restrictions.
+
         :param accelerator: (optional) Use accelerator 'None', 'onnxruntime',
                'openvino', 'jit', defaults to None. If not None, then will only find the
                model with this specific accelerator.
