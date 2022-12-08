@@ -42,7 +42,7 @@ jobs:
 
       - name: "Set flag from Commit"
         env:
-          COMMIT_VAR: ${{ contains(github.event.head_commit.message, 'quick') }}
+          COMMIT_VAR: ${{ contains(github.event.head_commit.message, '[commit var]') }}
         run: |
           if ${COMMIT_VAR} == true; then
             echo "flag set to true"
@@ -98,7 +98,7 @@ jobs:
 
       - name: "Set flag from Commit"
         env:
-          COMMIT_VAR: ${{ contains(github.event.head_commit.message, 'quick') }}
+          COMMIT_VAR: ${{ contains(github.event.head_commit.message, '[commit var]') }}
         run: |
           if ${COMMIT_VAR} == true; then
             echo "flag set to true"
@@ -154,7 +154,7 @@ jobs:
 
       - name: "Set flag from Commit"
         env:
-          COMMIT_VAR: ${{ contains(github.event.head_commit.message, 'quick') }}
+          COMMIT_VAR: ${{ contains(github.event.head_commit.message, '[commit var]') }}
         run: |
           if ${COMMIT_VAR} == true; then
             echo "flag set to true"
@@ -210,7 +210,7 @@ jobs:
 
       - name: "Set flag from Commit"
         env:
-          COMMIT_VAR: ${{ contains(github.event.head_commit.message, 'quick') }}
+          COMMIT_VAR: ${{ contains(github.event.head_commit.message, '[commit var]') }}
         run: |
           if ${COMMIT_VAR} == true; then
             echo "flag set to true"
