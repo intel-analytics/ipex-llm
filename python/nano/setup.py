@@ -97,7 +97,7 @@ def setup_package():
     tensorflow_common_requires = ["tf2onnx==1.13.0; platform_machine=='x86_64'"]
 
     # default pytorch_dep
-    tensorflow_requires = tensorflow_211_requires + tensorflow_common_requires
+    tensorflow_requires = tensorflow_210_requires + tensorflow_common_requires
     tensorflow_211_requires += tensorflow_common_requires
     tensorflow_210_requires += tensorflow_common_requires
     tensorflow_29_requires += tensorflow_common_requires
