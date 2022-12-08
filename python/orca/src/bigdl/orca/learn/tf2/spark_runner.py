@@ -459,7 +459,7 @@ class SparkRunner:
             config.update(data_config)
         config["batch_size"] = batch_size
         dataset_handler = DatasetHandler.get_handler(self.backend,
-                                                     self.rank,
+                                                     0,  # no rank for predict
                                                      self.size)
         config, local_batch_size = dataset_handler._handle_batch_size(config)
 
