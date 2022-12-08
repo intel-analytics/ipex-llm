@@ -60,7 +60,7 @@ PyTorch
 * `How to save and load optimized OpenVINO model <Inference/PyTorch/pytorch_save_and_load_openvino.html>`_
 * `How to find accelerated method with minimal latency using InferenceOptimizer <Inference/PyTorch/inference_optimizer_optimize.html>`_
 
-.. |pytorch_inference_context_manager_link| replace:: How to use context manager through `get_context`
+.. |pytorch_inference_context_manager_link| replace:: How to use context manager through ``get_context``
 .. _pytorch_inference_context_manager_link: Inference/PyTorch/pytorch_context_manager.html
 
 Install
