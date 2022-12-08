@@ -55,8 +55,10 @@ RUN pip3 install --upgrade pip && \
     chmod +x /opt/entrypoint.sh && \
     chmod +x /sbin/tini && \
     chmod +x /ppml/work/start-scripts/start-python-flask-sgx.sh && \
-    chmod +x /ppml/work/start-scripts/start-python-numpy-sgx.sh && \
-    chmod +x /ppml/work/start-scripts/start-python-pandas-sgx.sh && \
+    chmod +x /ppml/work/start-scripts/start-python-numpy-example-sgx.sh && \
+    chmod +x /ppml/work/start-scripts/start-python-numpy-performance-sgx.sh && \
+    chmod +x /ppml/work/start-scripts/start-python-pandas-example-sgx.sh && \
+    chmod +x /ppml/work/start-scripts/start-python-pandas-performance-sgx.sh && \
     chmod +x /ppml/work/start-scripts/start-torchserve-sgx.sh && \
     chmod +x /ppml/work/start-scripts/start-frontend-sgx.sh && \
     chmod +x /ppml/work/start-scripts/start-backend-sgx.sh && \
