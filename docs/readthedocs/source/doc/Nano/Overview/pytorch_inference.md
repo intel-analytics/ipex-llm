@@ -229,16 +229,16 @@ InferenceOptimizer.quantize(model,
                             ):
 ```
 
-## Context manager
+## Context Manager
 BigDL-Nano provides ``InferenceOptimizer.get_context(model=...)`` API to enable automatic context management for PyTorch inference. Only one line of code change, then Nano will automatically provide suitable context management for each accelerated model, it usually contains part of or all of following three types of context manager:
 
-1. torch.no_grad() to disable gradients, which will be used for all model
+1. ``torch.no_grad()`` to disable gradients, which will be used for all model
    
-2. torch.cpu.amp.autocast(dtype=torch.bfloat16) to run in mixed precision, which will be provided for bf16 related model
+2. ``torch.cpu.amp.autocast(dtype=torch.bfloat16)`` to run in mixed precision, which will be provided for bf16 related model
    
-3. torch.set_num_threads() to control thread number, which will be used only if you specify thread_num when `trace/quantize/optimize`
+3. ``torch.set_num_threads()`` to control thread number, which will be used only if you specify thread_num when ``trace/quantize/optimize``
 
-For model accelerated by ``InferenceOptimizer.trace``, usage now looks like below codes, here we just take `ipex` for example:
+For model accelerated by ``InferenceOptimizer.trace``, usage now looks like below codes, here we just take ``ipex`` for example:
 ```python
 from bigdl.nano.pytorch import InferenceOptimizer
 ipex_model = InferenceOptimizer.trace(model,
@@ -252,7 +252,7 @@ with InferenceOptimizer.get_context(ipex_model):
 
 For ``InferenceOptimizer.quantize`` and ``InferenceOptimizer.optimize``, usage is the same.
 
-``InferenceOptimizer.get_context(model=...)`` can be used for muiti models. If you have a model pipeline, you can also get a common context manager by passing multi models to `get_context`.
+``InferenceOptimizer.get_context(model=...)`` can be used for muiti-models. If you have a model pipeline, you can also get a common context manager by passing multi-models to `get_context`.
 ```python
 from torch import nn
 class Classifier(nn.Module):
