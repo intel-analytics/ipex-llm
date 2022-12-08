@@ -284,8 +284,8 @@ def main():
     parser.add_argument('--quantize', action='store_true',
                         help='if use the quantized model to predict, default to False.')
     parser.add_argument('--inference_framework', nargs='+', default=['torch'], metavar='',
-                        help=('predict without/with accelerator, choose from torch/onnx/openvino/jit,'
-                        ' default to "torch" (i.e. predict without accelerator).'))
+                        help=('predict without/with accelerator, choose from torch/onnx/openvino'
+                        '/jit, default to "torch" (i.e. predict without accelerator).'))
     parser.add_argument('--ipex', action='store_true',
                         help='if use ipex as accelerator for trainer, default to False.')
     parser.add_argument('--quantize_type', type=str, default='pytorch_fx', metavar='',
