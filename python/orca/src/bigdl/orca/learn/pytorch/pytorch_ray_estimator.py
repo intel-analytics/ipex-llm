@@ -174,10 +174,11 @@ class PyTorchRayEstimator(BaseRayEstimator):
                 You can also provide custom metrics by passing in a custom training_operator_cls
                 when creating the Estimator.
         """
-        if batch_size:
-            batch_size = batch_size // self.num_workers  # Local batch size for each worker
         invalidInputError(isinstance(batch_size, int) and batch_size > 0,
                           "batch_size should be a positive integer")
+        batch_size = batch_size // self.num_workers  # Local batch size for each worker
+        if batch_size <= 0:
+            batch_size = 1
         params = dict(
             epochs=epochs,
             batch_size=batch_size,
@@ -313,8 +314,9 @@ class PyTorchRayEstimator(BaseRayEstimator):
         """
         invalidInputError(isinstance(batch_size, int) and batch_size > 0,
                           "batch_size should be a positive integer")
-        if batch_size:
-            batch_size = batch_size // self.num_workers  # Local batch size for each worker
+        batch_size = batch_size // self.num_workers  # Local batch size for each worker
+        if batch_size <= 0:
+            batch_size = 1
         from bigdl.orca.data import SparkXShards
         param = dict(
             batch_size=batch_size,
@@ -398,8 +400,9 @@ class PyTorchRayEstimator(BaseRayEstimator):
         """
         invalidInputError(isinstance(batch_size, int) and batch_size > 0,
                           "batch_size should be a positive integer")
-        if batch_size:
-            batch_size = batch_size // self.num_workers  # Local batch size for each worker
+        batch_size = batch_size // self.num_workers  # Local batch size for each worker
+        if batch_size <= 0:
+            batch_size = 1
         from bigdl.orca.data import SparkXShards
         data, _ = maybe_dataframe_to_xshards(data,
                                              validation_data=None,
