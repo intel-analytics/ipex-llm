@@ -108,8 +108,9 @@ class InferenceOptimizer(BaseInferenceOptimizer):
             "bf16_ipex": TorchAccelerationOption(bf16=True, ipex=True),
             "bf16_ipex_channels_last": TorchAccelerationOption(bf16=True, ipex=True,
                                                                channels_last=True),
-            "int8": TorchAccelerationOption(inc=True),
-            "int8_ipex": TorchAccelerationOption(inc=True, method="ipex", ipex=True),
+            "static_int8": TorchAccelerationOption(inc=True),
+            "static_int8_ipex": TorchAccelerationOption(inc=True, method="ipex",
+                                                        ipex=True),
             "jit_fp32": TorchAccelerationOption(jit=True),
             "jit_fp32_channels_last": TorchAccelerationOption(jit=True,
                                                               channels_last=True),
@@ -132,7 +133,7 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                                                                 method="integer"),
         }
 
-    _default_methods = ["original", "bf16", "int8",
+    _default_methods = ["original", "bf16", "static_int8",
                         "jit_fp32_ipex", "jit_fp32_ipex_channels_last",
                         "jit_bf16_ipex", "jit_bf16_ipex_channels_last", "openvino_fp32",
                         "openvino_int8", "onnxruntime_fp32", "onnxruntime_int8_qlinear"]
@@ -163,10 +164,10 @@ class InferenceOptimizer(BaseInferenceOptimizer):
 
         The available methods are "original", "fp32_channels_last", "fp32_ipex",
         "fp32_ipex_channels_last", "bf16", "bf16_channels_last", "bf16_ipex",
-        "bf16_ipex_channels_last", "int8", "int8_ipex", "jit_fp32", "jit_bf16", "jit_fp32_ipex",
-        "jit_fp32_ipex_channels_last", "jit_bf16_ipex", "jit_bf16_ipex_channels_last",
-        "openvino_fp32", "openvino_int8", "onnxruntime_fp32", "onnxruntime_int8_qlinear"
-        and "onnxruntime_int8_integer".
+        "bf16_ipex_channels_last", "static_int8", "static_int8_ipex", "jit_fp32", "jit_bf16",
+        "jit_fp32_ipex", "jit_fp32_ipex_channels_last", "jit_bf16_ipex",
+        "jit_bf16_ipex_channels_last", "openvino_fp32", "openvino_int8", "onnxruntime_fp32",
+        "onnxruntime_int8_qlinear" and "onnxruntime_int8_integer".
 
         :param model: A torch.nn.Module to be optimized
         :param training_data: training_data support following formats:
@@ -402,7 +403,8 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                         # here we suppose trace don't change accuracy,
                         # so we jump it to reduce time cost of optimize
                         if precision == "fp32" and method != "original":
-                            result_map[method]["accuracy"] = "not recomputed"
+                            result_map[method]["accuracy"] =\
+                                str(round(result_map["original"]["accuracy"], 3)) + "*"
                         else:
                             if method == "original":
                                 # test whether metric works
@@ -441,6 +443,8 @@ class InferenceOptimizer(BaseInferenceOptimizer):
 
         self._optimize_result = format_optimize_result(self.optimized_model_dict,
                                                        self._calculate_accuracy)
+        self._optimize_result += "* means we assume the precision of the traced model does "\
+                                 "not change, so we don't recompute accuracy to save time.\n"
         # save time cost to self._optimize_result
         time_cost = time.perf_counter() - start_time
         time_cost_str = f"Optimization cost {time_cost:.1f}s in total."
