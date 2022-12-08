@@ -150,8 +150,8 @@ class PyTorchRayEstimator(BaseRayEstimator):
                that takes config and batch_size as argument and returns a PyTorch DataLoader for
                training.
         :param epochs: The number of epochs to train the model. Default is 1.
-        :param batch_size: The number of samples per batch for each worker. Default is 32.
-               The total batch size would be workers_per_node*num_nodes.
+        :param batch_size: Total batch size for all workers used for training. Each worker's batch
+               size would be this value divide the total number of workers. Default is 32.
                If your training data is a function, you can set batch_size to be the input
                batch_size of the function for the PyTorch DataLoader.
         :param profile: Boolean. Whether to return time stats for the training procedure.
@@ -174,6 +174,8 @@ class PyTorchRayEstimator(BaseRayEstimator):
                 You can also provide custom metrics by passing in a custom training_operator_cls
                 when creating the Estimator.
         """
+        if batch_size:
+            batch_size = batch_size // self.num_workers  # Local batch size for each worker
         invalidInputError(isinstance(batch_size, int) and batch_size > 0,
                           "batch_size should be a positive integer")
         params = dict(
@@ -301,7 +303,8 @@ class PyTorchRayEstimator(BaseRayEstimator):
         Using this PyTorch model to make predictions on the data.
 
         :param data: An instance of SparkXShards, a Ray Dataset or a Spark DataFrame
-        :param batch_size: The number of samples per batch for each worker. Default is 32.
+        :param batch_size: Total batch size for all workers used for inference. Each worker's batch
+               size would be this value divide the total number of workers. Default is 32.
         :param profile: Boolean. Whether to return time stats for the training procedure.
                Default is False.
         :param feature_cols: feature column names if data is a Spark DataFrame or Ray Dataset.
@@ -310,6 +313,8 @@ class PyTorchRayEstimator(BaseRayEstimator):
         """
         invalidInputError(isinstance(batch_size, int) and batch_size > 0,
                           "batch_size should be a positive integer")
+        if batch_size:
+            batch_size = batch_size // self.num_workers  # Local batch size for each worker
         from bigdl.orca.data import SparkXShards
         param = dict(
             batch_size=batch_size,
@@ -370,8 +375,8 @@ class PyTorchRayEstimator(BaseRayEstimator):
         :param data: An instance of SparkXShards, a Spark DataFrame, a Ray Dataset or a function
                that takes config and batch_size as argument and returns a PyTorch DataLoader for
                validation.
-        :param batch_size: The number of samples per batch for each worker. Default is 32.
-               The total batch size would be workers_per_node*num_nodes.
+        :param batch_size: Total batch size for all workers used for evaluation. Each worker's batch
+               size would be this value divide the total number of workers. Default: 32.
                If your validation data is a function, you can set batch_size to be the input
                batch_size of the function for the PyTorch DataLoader.
         :param num_steps: The number of batches to compute the validation results on. This
@@ -393,6 +398,8 @@ class PyTorchRayEstimator(BaseRayEstimator):
         """
         invalidInputError(isinstance(batch_size, int) and batch_size > 0,
                           "batch_size should be a positive integer")
+        if batch_size:
+            batch_size = batch_size // self.num_workers  # Local batch size for each worker
         from bigdl.orca.data import SparkXShards
         data, _ = maybe_dataframe_to_xshards(data,
                                              validation_data=None,
