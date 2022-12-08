@@ -155,6 +155,7 @@ management_address=your_management_address
 metrics_address=your_metrics_address
 model_store=your_model_store
 load_models=all
+enable_metrics_api=false
 models={\
   "densenet161": {\
     "1.0": {\
