@@ -8,7 +8,7 @@ ARG JDK_VERSION=11
 FROM $BASE_IMAGE_NAME:$BASE_IMAGE_TAG as temp
 ARG http_proxy
 ARG https_proxy
-ARG JKD_VERSION
+ARG JDK_VERSION
 ENV JAVA_HOME                           /opt/jdk${JDK_VERSION}
 
 #build frontend.jar
