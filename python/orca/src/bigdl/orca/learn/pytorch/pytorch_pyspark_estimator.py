@@ -207,8 +207,8 @@ class PyTorchPySparkEstimator(BaseEstimator):
                takes config and batch_size as argument and returns a PyTorch DataLoader for
                training.
         :param epochs: The number of epochs to train the model. Default is 1.
-        :param batch_size: The number of samples per batch for each worker. Default is 32.
-               The total batch size would be workers_per_node*num_nodes.
+        :param batch_size: Total batch size for all workers used for training. Each worker's batch
+               size would be this value divide the total number of workers. Default is 32.
                If your training data is a function, you can set batch_size to be the input
                batch_size of the function for the PyTorch DataLoader.
         :param profile: Boolean. Whether to return time stats for the training procedure.
@@ -233,6 +233,9 @@ class PyTorchPySparkEstimator(BaseEstimator):
         """
         invalidInputError(isinstance(batch_size, int) and batch_size > 0,
                           "batch_size should be a positive integer")
+        batch_size = batch_size // self.num_workers  # Local batch size for each worker
+        if batch_size <= 0:
+            batch_size = 1
         data, validation_data = maybe_dataframe_to_xshards(data,
                                                            validation_data=validation_data,
                                                            feature_cols=feature_cols,
@@ -383,7 +386,8 @@ class PyTorchPySparkEstimator(BaseEstimator):
         Using this PyTorch model to make predictions on the data.
 
         :param data: An instance of SparkXShards or a Spark DataFrame
-        :param batch_size: The number of samples per batch for each worker. Default is 32.
+        :param batch_size: Total batch size for all workers used for inference. Each worker's batch
+               size would be this value divide the total number of workers. Default is 32.
         :param profile: Boolean. Whether to return time stats for the training procedure.
                Default is False.
         :param feature_cols: feature column names if data is a Spark DataFrame.
@@ -391,6 +395,9 @@ class PyTorchPySparkEstimator(BaseEstimator):
         """
         invalidInputError(isinstance(batch_size, int) and batch_size > 0,
                           "batch_size should be a positive integer")
+        batch_size = batch_size // self.num_workers  # Local batch size for each worker
+        if batch_size <= 0:
+            batch_size = 1
         from bigdl.orca.data import SparkXShards
         from pyspark.sql import DataFrame
 
@@ -451,8 +458,8 @@ class PyTorchPySparkEstimator(BaseEstimator):
         :param data: An instance of SparkXShards, a Spark DataFrame or a function that
                takes config and batch_size as argument and returns a PyTorch DataLoader for
                validation.
-        :param batch_size: The number of samples per batch for each worker. Default is 32.
-               The total batch size would be workers_per_node*num_nodes.
+        :param batch_size: Total batch size for all workers used for evaluation. Each worker's batch
+               size would be this value divide the total number of workers. Default: 32.
                If your validation data is a function, you can set batch_size to be the input
                batch_size of the function for the PyTorch DataLoader.
         :param num_steps: The number of batches to compute the validation results on. This
@@ -474,6 +481,9 @@ class PyTorchPySparkEstimator(BaseEstimator):
         """
         invalidInputError(isinstance(batch_size, int) and batch_size > 0,
                           "batch_size should be a positive integer")
+        batch_size = batch_size // self.num_workers  # Local batch size for each worker
+        if batch_size <= 0:
+            batch_size = 1
         sc = OrcaContext.get_spark_context()
         cluster_info = self._get_cluster_info(sc)
         state_dict = self._get_broadcasted_state_dict(sc)
