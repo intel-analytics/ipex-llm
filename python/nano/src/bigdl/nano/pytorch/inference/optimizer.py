@@ -56,7 +56,7 @@ os.environ['LOGLEVEL'] = 'ERROR'  # remove parital output of inc
 
 class TorchAccelerationOption(AccelerationOption):
     def optimize(self, model, training_data=None, input_sample=None,
-                 thread_num=None, logging=False, channels_last_available=[], sample_size_for_pot=100):
+                 thread_num=None, logging=False, sample_size_for_pot=100):
         accelerator = self.get_accelerator()
         if self.get_precision() == "fp32":
             if accelerator is None and self.ipex is False and \
@@ -69,7 +69,6 @@ class TorchAccelerationOption(AccelerationOption):
                                          input_sample=input_sample,
                                          thread_num=thread_num,
                                          channels_last=self.channels_last,
-                                         channels_last_available=channels_last_available,
                                          use_ipex=self.ipex,
                                          # remove output of openvino
                                          logging=logging)
@@ -82,7 +81,6 @@ class TorchAccelerationOption(AccelerationOption):
                                             accelerator=accelerator,
                                             use_ipex=self.ipex,
                                             channels_last=self.channels_last,
-                                            channels_last_available=channels_last_available,
                                             calib_data=training_data,
                                             input_sample=input_sample,
                                             method=ort_method,
@@ -258,9 +256,6 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                search. "original" will be ignored in the excludes.
         '''
 
-        #!======================START: my nano remind======================
-        print("*********************junw's nano***************************")
-        #!====================== END : my nano remind======================
         # check if model is a nn.Module or inherited from a nn.Module
         invalidInputError(isinstance(model, nn.Module), "model should be a nn module.")
         invalidInputError(direction in ['min', 'max'],
@@ -318,16 +313,6 @@ class InferenceOptimizer(BaseInferenceOptimizer):
             forward_args = get_forward_args(model)
             if isinstance(training_data, DataLoader):
                 input_sample = get_input_example(model, training_data, forward_args)
-                #!======================START: try channels_last available======================
-                channels_last_available = [False]*len(forward_args)
-                for idx in range(len(forward_args)):
-                    try:
-                        input_sample[idx].to(memory_format=torch.channels_last)
-                    except:
-                        channels_last_available[idx] = False
-                    else:
-                        channels_last_available[idx] = True
-                #!====================== END : try channels_last available======================
             else:
                 if isinstance(training_data, Sequence):
                     input_sample = tuple(list(training_data)[:len(forward_args)])
@@ -380,7 +365,6 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                                                  input_sample=input_sample,
                                                  thread_num=thread_num,
                                                  logging=logging,
-                                                 channels_last_available=channels_last_available,
                                                  sample_size_for_pot=sample_size_for_pot)
                 except Exception:
                     traceback.print_exc()
@@ -488,7 +472,6 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                  max_trials: Optional[int] = None,
                  input_sample=None,
                  channels_last: bool = False,
-                 channels_last_available: Optional[list] = [],
                  thread_num: Optional[int] = None,
                  onnxruntime_session_options=None,
                  openvino_config=None,
@@ -584,6 +567,19 @@ class InferenceOptimizer(BaseInferenceOptimizer):
         :param **export_kwargs: will be passed to torch.onnx.export function.
         :return:            A accelerated torch.nn.Module if quantization is sucessful.
         """
+
+        # try channels_last available
+        channels_last_available = []
+        if input_sample:
+            channels_last_available = [True]*len(input_sample)
+            for idx in range(len(input_sample)):
+                try:
+                    input_sample[idx].to(memory_format=torch.channels_last)
+                except:
+                    channels_last_available[idx] = False
+                else:
+                    channels_last_available[idx] = True
+
         if precision == 'bf16':
             if accelerator is None or accelerator == "jit":
                 if use_ipex or accelerator == "jit":
@@ -734,7 +730,6 @@ class InferenceOptimizer(BaseInferenceOptimizer):
               accelerator: Optional[str] = None,
               use_ipex: bool = False,
               channels_last: bool = False,
-              channels_last_available: Optional[list] = [],
               thread_num: Optional[int] = None,
               onnxruntime_session_options=None,
               openvino_config=None,
@@ -758,6 +753,7 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                               height, width, channels), as an alternative way to store tensors in
                               classic/contiguous NCHW order. This setting only works for 4-dim
                               Tensor. Default: ``False``.
+
         :param thread_num: (optional) A int represents how many threads(cores) is needed for
                            inference, only valid for accelerator='onnxruntime'
                            or accelerator='openvino'.
@@ -780,6 +776,20 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                                 will be ignored.
         :return: Model with different acceleration.
         """
+
+        # try channels_last available
+        channels_last_available = []
+        if input_sample:
+            channels_last_available = [True]*len(input_sample)
+            for idx in range(len(input_sample)):
+                try:
+                    input_sample[idx].to(memory_format=torch.channels_last)
+                except:
+                    channels_last_available[idx] = False
+                else:
+                    channels_last_available[idx] = True
+
+
         invalidInputError(
             isinstance(model, nn.Module) and not isinstance(model, AcceleratedLightningModule),
             "Expect a nn.Module instance that is not traced or quantized"

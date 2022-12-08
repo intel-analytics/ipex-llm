@@ -107,9 +107,16 @@ class BF16Model(AcceleratedLightningModule):
 
     def forward_step(self, *inputs):
         if self.channels_last is True:
-            for idx, input in enumerate(inputs):
-                if self.channels_last_available[idx]:
-                    input.to(memory_format=torch.channels_last)
+            if self.channels_last_available: # it mean the input_sample is not None
+                for idx, input in enumerate(inputs):
+                    if self.channels_last_available[idx]:
+                        input.to(memory_format=torch.channels_last)
+            else:
+                try:
+                    inputs = tuple(map(lambda x: x.to(memory_format=torch.channels_last), inputs))
+                except:
+                    print("************************error:***************************\n")
+                    print("You should pass in a non_empty input_sample")
         # if self.channels_last is True:
         #     inputs = tuple(map(lambda x: x.to(memory_format=torch.channels_last), inputs))
         return self.model(*inputs)
