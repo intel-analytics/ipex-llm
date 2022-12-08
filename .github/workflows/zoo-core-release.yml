@@ -28,7 +28,7 @@ jobs:
       with:
         repository: intel-analytics/analytics-zoo-core
         ref: main
-        token: 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
+        token: 
     
     - name: Build package
       run: |
