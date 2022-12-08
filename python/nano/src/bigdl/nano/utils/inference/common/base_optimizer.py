@@ -158,4 +158,3 @@ class BaseInferenceOptimizer:
 
         return best_model, format_acceleration_option(best_metric.method_name,
                                                       self.ALL_INFERENCE_ACCELERATION_METHOD)
-        
