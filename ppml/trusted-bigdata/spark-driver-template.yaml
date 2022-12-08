@@ -43,8 +43,8 @@ spec:
       - name: kubeconfig
         mountPath: /root/.kube
       # - name: nfs-storage
-      #   mountPath: /ppml/encrypted
-      #   subPath: encrypted
+      #   mountPath: /ppml/encrypted-fs
+      #   subPath: encrypted-fs
       # - name: nfs-storage
       #   mountPath: /ppml/encrypted-fsd
       #   subPath: encrypted-fsd
