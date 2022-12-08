@@ -136,6 +136,10 @@ class SparkTFEstimator():
             if batch_size:
                 invalidInputError(isinstance(batch_size, int) and batch_size > 0,
                                   "batch_size should be a positive integer")
+        if batch_size:
+            batch_size = batch_size // self.num_workers  # Local batch size for each worker
+            if batch_size <= 0:
+                batch_size = 1
         sc = OrcaContext.get_spark_context()
 
         if isinstance(data, SparkXShards):
@@ -273,6 +277,10 @@ class SparkTFEstimator():
             if batch_size:
                 invalidInputError(isinstance(batch_size, int) and batch_size > 0,
                                   "batch_size should be a positive integer")
+        if batch_size:
+            batch_size = batch_size // self.num_workers  # Local batch size for each worker
+            if batch_size <= 0:
+                batch_size = 1
         sc = OrcaContext.get_spark_context()
         logger.info("Starting validation step.")
 
@@ -363,6 +371,9 @@ class SparkTFEstimator():
         if batch_size:
             invalidInputError(isinstance(batch_size, int) and batch_size > 0,
                               "batch_size should be a positive integer")
+            batch_size = batch_size // self.num_workers  # Local batch size for each worker
+            if batch_size <= 0:
+                batch_size = 1
         logger.info("Starting predict step.")
         sc = OrcaContext.get_spark_context()
         if self.model_weights:

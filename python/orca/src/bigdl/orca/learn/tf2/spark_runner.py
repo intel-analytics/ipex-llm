@@ -44,10 +44,11 @@ class DatasetHandler:
                               config, epochs, steps_per_epoch,
                               validation_steps):
 
-        config, local_batch_size = self._handle_batch_size(config)
+        # batch_size has already been divided by the number of workers.
+        local_batch_size = config["batch_size"]
         config['rank'] = self.rank
         config['size'] = self.size
-        train_dataset = data_creator(config, config["batch_size"])
+        train_dataset = data_creator(config, local_batch_size)
         if isinstance(train_dataset, list) and \
            all([isinstance(x, dict) for x in train_dataset]):
             invalidInputError(steps_per_epoch is not None,
@@ -60,7 +61,7 @@ class DatasetHandler:
             train_dataset = self._handle_sharding(train_dataset)
 
         if validation_data_creator is not None:
-            test_dataset = validation_data_creator(config, config["batch_size"])
+            test_dataset = validation_data_creator(config, local_batch_size)
             if isinstance(test_dataset, list) and \
                     all([isinstance(x, dict) for x in test_dataset]):
                 invalidInputError(validation_steps is not None,
@@ -78,10 +79,11 @@ class DatasetHandler:
         return train_dataset, test_dataset
 
     def handle_dataset_validation(self, data_creator, config, steps):
-        config, local_batch_size = self._handle_batch_size(config)
+        # batch_size has already been divided by the number of workers.
+        local_batch_size = config["batch_size"]
         config['rank'] = self.rank
         config['size'] = self.size
-        dataset = data_creator(config, config["batch_size"])
+        dataset = data_creator(config, local_batch_size)
         if isinstance(dataset, list) and all([isinstance(x, dict) for x in dataset]):
             invalidInputError(steps is not None,
                               "steps must be provided for xshard")
@@ -98,9 +100,6 @@ class DatasetHandler:
         invalidInputError(False, "not implemented")
 
     def _handle_sharding(self, dataset):
-        invalidInputError(False, "not implemented")
-
-    def _handle_batch_size(self, config):
         invalidInputError(False, "not implemented")
 
     @staticmethod
@@ -146,14 +145,6 @@ class TFDistributedDatasetHandler(DatasetHandler):
     def _handle_sharding(self, dataset):
         return dataset
 
-    def _handle_batch_size(self, config):
-        invalidInputError("batch_size" in config, "batch_size must be set in config")
-        if config["batch_size"]:
-            local_batch_size = config["batch_size"] // self.size
-        else:  # batch_size default to be None for predict
-            local_batch_size = None
-        return config, local_batch_size
-
 
 class LocalDatasetHandler(DatasetHandler):
 
@@ -172,10 +163,6 @@ class LocalDatasetHandler(DatasetHandler):
 
     def _handle_sharding(self, dataset):
         return dataset
-
-    def _handle_batch_size(self, config):
-        invalidInputError("batch_size" in config, "batch_size must be set in config")
-        return config, config["batch_size"]
 
 
 class SparkRunner:
@@ -457,16 +444,12 @@ class SparkRunner:
         config = copy.copy(self.config)
         if data_config is not None:
             config.update(data_config)
-        config["batch_size"] = batch_size
-        dataset_handler = DatasetHandler.get_handler(self.backend,
-                                                     0,  # no rank for predict
-                                                     self.size)
-        config, local_batch_size = dataset_handler._handle_batch_size(config)
 
-        dataset = data_creator(config, local_batch_size)
+        # batch_size has already been divided by the number of workers.
+        dataset = data_creator(config, batch_size)
         partition = dataset
         params = dict(
-            batch_size=local_batch_size,
+            batch_size=batch_size,
             verbose=verbose,
             steps=steps,
             callbacks=callbacks,
