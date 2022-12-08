@@ -17,7 +17,7 @@ export sgx_command="/opt/jdk11/bin/java \
         -Xms30g \
         org.pytorch.serve.ModelServer \
         --python /usr/bin/python3 \
-        -f /ppml/work/data/$configFile \
+        -f $configFile \
         -ncs"
 gramine-sgx bash 2>&1 | tee frontend-sgx.log
 
