@@ -21,9 +21,20 @@ from bigdl.nano.pytorch.utils import patch_attrs_from_model_to_object
 
 
 class PytorchIPEXJITModel(AcceleratedLightningModule):
-    def __init__(self, model: torch.nn.Module, input_sample=None, use_ipex=False, dtype=None,
-                 use_jit=False, channels_last=None, thread_num=None, from_load=False,
-                 inplace=False, jit_strict=True):
+    def __init__(
+        self,
+        model: torch.nn.Module,
+        input_sample=None,
+        use_ipex=False,
+        dtype=None,
+        use_jit=False,
+        channels_last=None,
+        channels_last_available=[],
+        thread_num=None,
+        from_load=False,
+        inplace=False,
+        jit_strict=True,
+    ):
         """
         This is the accelerated model for pytorch and ipex/jit.
         All the external API is based on InferenceOptimizer, so what we have here is
@@ -52,11 +63,12 @@ class PytorchIPEXJITModel(AcceleratedLightningModule):
             self.use_jit = use_jit
             self.channels_last = channels_last
             self.jit_strict = jit_strict
-            self._nano_context_manager = generate_context_manager(accelerator=None,
-                                                                  precision="fp32",
-                                                                  thread_num=thread_num)
+            self._nano_context_manager = generate_context_manager(
+                accelerator=None, precision="fp32", thread_num=thread_num
+            )
             return
         self.channels_last = channels_last
+        self.channels_last_available = channels_last_available
         self.original_state_dict = model.state_dict()
         self.use_ipex = use_ipex
         self.use_jit = use_jit
@@ -66,39 +78,51 @@ class PytorchIPEXJITModel(AcceleratedLightningModule):
             self.model = self.model.to(memory_format=torch.channels_last)
         if self.use_ipex:
             import intel_extension_for_pytorch as ipex
+
             self.model = ipex.optimize(self.model, dtype=dtype, inplace=inplace)
         if self.use_jit:
             if dtype == torch.bfloat16:
                 with torch.no_grad():
                     with torch.cpu.amp.autocast():
-                        self.model = torch.jit.trace(self.model, input_sample,
-                                                     check_trace=False,
-                                                     strict=jit_strict)
+                        self.model = torch.jit.trace(
+                            self.model,
+                            input_sample,
+                            check_trace=False,
+                            strict=jit_strict,
+                        )
                         if self.use_ipex:
                             self.model = torch.jit.freeze(self.model)
             else:
                 with torch.no_grad():
-                    self.model = torch.jit.trace(self.model, input_sample,
-                                                 check_trace=False,
-                                                 strict=jit_strict)
+                    self.model = torch.jit.trace(
+                        self.model, input_sample, check_trace=False, strict=jit_strict
+                    )
                     self.model = torch.jit.freeze(self.model)
-        self._nano_context_manager = generate_context_manager(accelerator=None,
-                                                              precision="fp32",
-                                                              thread_num=thread_num)
+        self._nano_context_manager = generate_context_manager(
+            accelerator=None, precision="fp32", thread_num=thread_num
+        )
         self.thread_num = thread_num
 
     @property
     def forward_args(self):
-        return [input_value.debugName() for input_value in self.model.graph.inputs()
-                if not input_value.debugName().startswith('self')]
+        return [
+            input_value.debugName()
+            for input_value in self.model.graph.inputs()
+            if not input_value.debugName().startswith("self")
+        ]
 
     def on_forward_start(self, inputs):
         return inputs
 
     def forward_step(self, *inputs):
         if self.channels_last is True:
-            inputs = tuple(map(lambda x: x.to(memory_format=torch.channels_last), inputs))
-        return self.model(*inputs)
+            for idx, input in enumerate(inputs):
+                if self.channels_last_available[idx]:
+                    input.to(memory_format=torch.channels_last)
+            # inputs = tuple(
+            #     map(lambda x: x.to(memory_format=torch.channels_last), inputs)
+            # )
+        return self.model(*tuple(inputs))
 
     def on_forward_end(self, outputs):
         return outputs
@@ -117,18 +141,22 @@ class PytorchIPEXJITModel(AcceleratedLightningModule):
     @property
     def status(self):
         status = super().status
-        status.update({"use_ipex": self.use_ipex,
-                       "use_jit": self.use_jit,
-                       "channels_last": self.channels_last,
-                       "checkpoint": "ckpt.pth",
-                       "thread_num": self.thread_num,
-                       "jit_strict": self.jit_strict})
+        status.update(
+            {
+                "use_ipex": self.use_ipex,
+                "use_jit": self.use_jit,
+                "channels_last": self.channels_last,
+                "checkpoint": "ckpt.pth",
+                "thread_num": self.thread_num,
+                "jit_strict": self.jit_strict,
+            }
+        )
         return status
 
     @staticmethod
     def _load(path, model, inplace=False):
         status = PytorchIPEXJITModel._load_status(path)
-        checkpoint_path = path / status['checkpoint']
+        checkpoint_path = path / status["checkpoint"]
         if status["use_jit"]:
             if status["use_ipex"]:
                 import intel_extension_for_pytorch as ipex
@@ -142,15 +170,18 @@ class PytorchIPEXJITModel(AcceleratedLightningModule):
             model.load_state_dict(state_dict)
             from_load = False
         thread_num = None
-        if status["thread_num"] is not None and status['thread_num'] != {}:
-            thread_num = int(status['thread_num'])
-        return PytorchIPEXJITModel(model, use_ipex=status['use_ipex'],
-                                   use_jit=status['use_jit'],
-                                   channels_last=status['channels_last'],
-                                   from_load=from_load,
-                                   thread_num=thread_num,
-                                   inplace=inplace,
-                                   jit_strict=status["jit_strict"])
+        if status["thread_num"] is not None and status["thread_num"] != {}:
+            thread_num = int(status["thread_num"])
+        return PytorchIPEXJITModel(
+            model,
+            use_ipex=status["use_ipex"],
+            use_jit=status["use_jit"],
+            channels_last=status["channels_last"],
+            from_load=from_load,
+            thread_num=thread_num,
+            inplace=inplace,
+            jit_strict=status["jit_strict"],
+        )
 
     def _save_model(self, path):
         if self.use_jit:
