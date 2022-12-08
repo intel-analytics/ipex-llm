@@ -22,11 +22,18 @@ ENV TZ=Asia/Shanghai
 
 # model: select from pytorch (default), tensorflow, prophet, arima, ml
 ARG model=pytorch
+
 # auto_tuning: y (for yes) or n (default, for no)
 ARG auto_tuning=n
+
 # hardware: single (default) or cluster
 ARG hardware=single
-# extra_dep: install extra dependencies(e.g. onnxruntime, jupyter, ...)
+
+# inference: install dependencies for inference optimization (e.g. onnxruntime, openvino, ...)
+#            y (for yes) or n (default, for no)
+ARG inference=n
+
+# extra_dep: install extra dependencies (e.g. jupyter, matplotlib, ...)
 #            y (for yes) or n (default, for no)
 ARG extra_dep=n
 
@@ -49,7 +56,7 @@ RUN apt-get update --fix-missing && \
     ./Miniconda3-py37_4.12.0-Linux-x86_64.sh -b -f -p /usr/local && \
     rm Miniconda3-py37_4.12.0-Linux-x86_64.sh && \
 # python
-    /opt/install-python-env.sh ${model} ${auto_tuning} ${hardware} ${extra_dep}
+    /opt/install-python-env.sh ${model} ${auto_tuning} ${hardware} ${inference} ${extra_dep}
 
 RUN echo "source activate chronos" > ~/.bashrc
 RUN echo "export JAVA_HOME=/usr/lib/jvm/java-8-openjdk-amd64/" >> ~/.bashrc
