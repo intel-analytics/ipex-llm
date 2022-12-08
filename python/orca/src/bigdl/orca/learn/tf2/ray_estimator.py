@@ -25,7 +25,6 @@ import ray
 
 from bigdl.dllib.utils import log4Error
 from bigdl.dllib.utils.file_utils import is_local_path
-from bigdl.orca import OrcaContext
 from bigdl.orca.data.file import enable_multi_fs_save, enable_multi_fs_load
 from bigdl.orca.data.ray_xshards import RayXShards
 from bigdl.orca.learn.dl_cluster import RayDLCluster
@@ -184,6 +183,10 @@ class TensorFlow2Estimator(OrcaRayEstimator):
             if batch_size:
                 invalidInputError(isinstance(batch_size, int) and batch_size > 0,
                                   "batch_size should be a positive integer")
+        if batch_size:
+            batch_size = batch_size // self.num_workers  # Local batch size for each worker
+            if batch_size <= 0:
+                batch_size = 1
         params = dict(
             epochs=epochs,
             batch_size=batch_size,
@@ -332,6 +335,10 @@ class TensorFlow2Estimator(OrcaRayEstimator):
             if batch_size:
                 invalidInputError(isinstance(batch_size, int) and batch_size > 0,
                                   "batch_size should be a positive integer")
+        if batch_size:
+            batch_size = batch_size // self.num_workers  # Local batch size for each worker
+            if batch_size <= 0:
+                batch_size = 1
         logger.info("Starting validation step.")
         params = dict(
             batch_size=batch_size,
@@ -464,6 +471,9 @@ class TensorFlow2Estimator(OrcaRayEstimator):
         if batch_size:
             invalidInputError(isinstance(batch_size, int) and batch_size > 0,
                               "batch_size should be a positive integer")
+            batch_size = batch_size // self.num_workers  # Local batch size for each worker
+            if batch_size <= 0:
+                batch_size = 1
         logger.info("Starting predict step.")
         params = dict(
             verbose=verbose,
