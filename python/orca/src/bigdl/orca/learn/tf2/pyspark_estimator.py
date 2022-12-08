@@ -15,6 +15,7 @@
 #
 
 import os
+import types
 import logging
 import tempfile
 import shutil
@@ -126,6 +127,14 @@ class SparkTFEstimator():
                the model to "pay more attention" to samples from an under-represented class.
         :return:
         """
+        if not isinstance(data, types.FunctionType):
+            invalidInputError(isinstance(batch_size, int) and batch_size > 0,
+                              "batch_size should be a positive integer")
+        else:
+            # batch_size can be None if the return of data_creator already generates batches
+            if batch_size:
+                invalidInputError(isinstance(batch_size, int) and batch_size > 0,
+                                  "batch_size should be a positive integer")
         sc = OrcaContext.get_spark_context()
 
         if isinstance(data, SparkXShards):
@@ -254,6 +263,14 @@ class SparkTFEstimator():
         :param callbacks: List of Keras compatible callbacks to apply during evaluation.
         :return: validation result
         """
+        if not isinstance(data, types.FunctionType):
+            invalidInputError(isinstance(batch_size, int) and batch_size > 0,
+                              "batch_size should be a positive integer")
+        else:
+            # batch_size can be None if the return of data_creator already generates batches
+            if batch_size:
+                invalidInputError(isinstance(batch_size, int) and batch_size > 0,
+                                  "batch_size should be a positive integer")
         sc = OrcaContext.get_spark_context()
         logger.info("Starting validation step.")
 
@@ -322,7 +339,7 @@ class SparkTFEstimator():
                 lambda iter: transform_func(iter, init_params, params)).collect()
         return res[0]
 
-    def predict(self, data, batch_size=None, verbose=1,
+    def predict(self, data, batch_size=32, verbose=1,
                 steps=None, callbacks=None, data_config=None,
                 feature_cols=None):
         """
@@ -340,6 +357,8 @@ class SparkTFEstimator():
                DataFrame or an XShards of Pandas DataFrame. Default: None.
         :return:
         """
+        invalidInputError(isinstance(batch_size, int) and batch_size > 0,
+                          "batch_size should be a positive integer")
         logger.info("Starting predict step.")
         sc = OrcaContext.get_spark_context()
         if self.model_weights:

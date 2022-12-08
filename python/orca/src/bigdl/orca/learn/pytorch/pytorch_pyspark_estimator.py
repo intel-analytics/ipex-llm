@@ -231,6 +231,8 @@ class PyTorchPySparkEstimator(BaseEstimator):
                 You can also provide custom metrics by passing in a custom training_operator_cls
                 when creating the Estimator.
         """
+        invalidInputError(isinstance(batch_size, int) and batch_size > 0,
+                          "batch_size should be a positive integer")
         data, validation_data = maybe_dataframe_to_xshards(data,
                                                            validation_data=validation_data,
                                                            feature_cols=feature_cols,
@@ -387,6 +389,8 @@ class PyTorchPySparkEstimator(BaseEstimator):
         :param feature_cols: feature column names if data is a Spark DataFrame.
         :return: A SparkXShards that contains the predictions with key "prediction" in each shard
         """
+        invalidInputError(isinstance(batch_size, int) and batch_size > 0,
+                          "batch_size should be a positive integer")
         from bigdl.orca.data import SparkXShards
         from pyspark.sql import DataFrame
 
@@ -468,6 +472,8 @@ class PyTorchPySparkEstimator(BaseEstimator):
                 You can also provide custom metrics by passing in a custom training_operator_cls
                 when creating the Estimator.
         """
+        invalidInputError(isinstance(batch_size, int) and batch_size > 0,
+                          "batch_size should be a positive integer")
         sc = OrcaContext.get_spark_context()
         cluster_info = self._get_cluster_info(sc)
         state_dict = self._get_broadcasted_state_dict(sc)

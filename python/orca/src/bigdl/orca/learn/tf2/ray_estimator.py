@@ -13,20 +13,20 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+
 import os
+import types
 import itertools
-import logging
 import pickle
 import shutil
 import tempfile
 
-import numpy as np
 import ray
 
 from bigdl.dllib.utils import log4Error
 from bigdl.dllib.utils.file_utils import is_local_path
+from bigdl.orca import OrcaContext
 from bigdl.orca.data.file import enable_multi_fs_save, enable_multi_fs_load
-
 from bigdl.orca.data.ray_xshards import RayXShards
 from bigdl.orca.learn.dl_cluster import RayDLCluster
 from bigdl.orca.learn.tf2.tf_runner import TFRunner
@@ -34,8 +34,7 @@ from bigdl.orca.learn.ray_estimator import Estimator as OrcaRayEstimator
 from bigdl.orca.learn.utils import maybe_dataframe_to_xshards, dataframe_to_xshards, \
     convert_predict_xshards_to_dataframe, update_predict_xshards, \
     process_xshards_of_pandas_dataframe, make_data_creator
-from bigdl.orca.data.file import put_local_file_to_remote, put_local_dir_tree_to_remote, \
-    put_local_files_with_prefix_to_remote, get_remote_file_to_local, get_remote_dir_to_local, \
+from bigdl.orca.data.file import get_remote_file_to_local, get_remote_dir_to_local, \
     is_file
 from bigdl.orca.data.utils import process_spark_xshards
 from bigdl.dllib.utils.log4Error import *
@@ -176,6 +175,14 @@ class TensorFlow2Estimator(OrcaRayEstimator):
                Default: None.
         :return:
         """
+        if not isinstance(data, types.FunctionType):
+            invalidInputError(isinstance(batch_size, int) and batch_size > 0,
+                              "batch_size should be a positive integer")
+        else:
+            # batch_size can be None if the return of data_creator already generates batches
+            if batch_size:
+                invalidInputError(isinstance(batch_size, int) and batch_size > 0,
+                                  "batch_size should be a positive integer")
         params = dict(
             epochs=epochs,
             batch_size=batch_size,
@@ -315,6 +322,14 @@ class TensorFlow2Estimator(OrcaRayEstimator):
                Default: None.
         :return: validation result
         """
+        if not isinstance(data, types.FunctionType):
+            invalidInputError(isinstance(batch_size, int) and batch_size > 0,
+                              "batch_size should be a positive integer")
+        else:
+            # batch_size can be None if the return of data_creator already generates batches
+            if batch_size:
+                invalidInputError(isinstance(batch_size, int) and batch_size > 0,
+                                  "batch_size should be a positive integer")
         logger.info("Starting validation step.")
         params = dict(
             batch_size=batch_size,
@@ -414,7 +429,7 @@ class TensorFlow2Estimator(OrcaRayEstimator):
         spark_xshards = pred_shards.to_spark_xshards()
         return spark_xshards
 
-    def predict(self, data, batch_size=None, verbose=1,
+    def predict(self, data, batch_size=32, verbose=1,
                 steps=None, callbacks=None, data_config=None,
                 feature_cols=None, min_partition_num=None):
         """
@@ -443,6 +458,8 @@ class TensorFlow2Estimator(OrcaRayEstimator):
                Default: None.
         :return:
         """
+        invalidInputError(isinstance(batch_size, int) and batch_size > 0,
+                          "batch_size should be a positive integer")
         logger.info("Starting predict step.")
         params = dict(
             verbose=verbose,
