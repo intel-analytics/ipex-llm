@@ -549,11 +549,7 @@ class TensorFlowEstimator(Estimator):
 
     def fit(
         self,
-        data: Union[
-            "DataFrame",
-            "SparkXShards",
-            "tf.data.Dataset"
-        ],
+        data: Union["SparkXShards", "DataFrame", "tf.data.Dataset"],
         epochs: int=1,
         batch_size: int=32,
         feature_cols: Optional[List[str]]=None,
@@ -667,11 +663,11 @@ class TensorFlowEstimator(Estimator):
 
     def predict(
         self,
-        data: Union["DataFrame", "SparkXShards", "tf.data.Dataset"],
+        data: Union["SparkXShards", "DataFrame", "tf.data.Dataset"],
         batch_size: int=4,
         feature_cols: Optional[List[str]]=None,
         auto_shard_files: bool=False
-    ) -> Union["DataFrame", "SparkXShards"]:
+    ) -> Union["SparkXShards", "DataFrame", "tf.data.Dataset"]:
         """
         Predict input data
 
@@ -727,7 +723,7 @@ class TensorFlowEstimator(Estimator):
 
     def evaluate(
         self,
-        data: Union["DataFrame", "SparkXShards", "tf.data.Dataset"],
+        data: Union["SparkXShards", "DataFrame", "tf.data.Dataset"],
         batch_size: int=32,
         feature_cols: Optional[List[str]]=None,
         label_cols: Optional[List[str]]=None,
@@ -875,12 +871,12 @@ class KerasEstimator(Estimator):
 
     def fit(
         self,
-        data: Union["DataFrame", "SparkXShards", "tf.data.Dataset"],
+        data: Union["SparkXShards", "DataFrame", "tf.data.Dataset"],
         epochs: int=1,
         batch_size: int=32,
         feature_cols: Optional[List[str]]=None,
         label_cols: Optional[List[str]]=None,
-        validation_data: Optional[Union["DataFrame", "SparkXShards", "tf.data.Dataset"]]=None,
+        validation_data: Optional[Union["SparkXShards", "DataFrame", "tf.data.Dataset"]]=None,
         session_config: Optional["ConfigProto"]=None,
         checkpoint_trigger: Optional[Trigger]=None,
         auto_shard_files: bool=False
@@ -981,11 +977,11 @@ class KerasEstimator(Estimator):
 
     def predict(
         self,
-        data: Union[DataFrame, SparkXShards],
+        data: Union["SparkXShards", "DataFrame", "tf.data.Dataset"],
         batch_size: int=4,
         feature_cols: Optional[List[str]]=None,
         auto_shard_files: bool=False
-    ) -> Union[DataFrame, SparkXShards]:
+    ) -> Union["SparkXShards", "DataFrame", "tf.data.Dataset"]:
         """
         Predict input data
 
@@ -1039,7 +1035,7 @@ class KerasEstimator(Estimator):
 
     def evaluate(
         self,
-        data: Union[DatasetV1Adapter, SparkXShards, DataFrame],
+        data: Union["SparkXShards", "DataFrame", "tf.data.Dataset"],
         batch_size: int=32,
         feature_cols: Optional[List[str]]=None,
         label_cols: Optional[List[str]]=None,
