@@ -21,13 +21,13 @@ do
                 for ((i=0;i<line;i++,port++))
                 do
                 (
-                        bash /ppml/work/start-scripts/start-python-backend-sgx.sh -p $port
+                        bash /ppml/work/start-scripts/start-backend-sgx.sh -p $port
                 )&
                 done
         fi
 done
 (
-        bash /ppml/work/start-scripts/start-python-frontend-sgx.sh -c $configFile
+        bash /ppml/work/start-scripts/start-frontend-sgx.sh -c $configFile
 )&
 wait
 
