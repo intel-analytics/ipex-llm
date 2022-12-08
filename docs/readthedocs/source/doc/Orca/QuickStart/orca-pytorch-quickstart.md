@@ -134,7 +134,7 @@ Save the Estimator states (including model and optimizer) to the provided model 
 est.save("mnist_model")
 ```
 
-Save the entire model toto the provided model path.
+Save the entire model to the provided model path.
 ```python
 est.save("mnist_model", entire=True)
 ```
