@@ -160,7 +160,7 @@ python ../../example/wnd/wnd_preprocessing.py \
 python ../../example/wnd/wnd_train.py \
     --executor_cores 6 \
     --executor_memory 50g \
-    --data_dir ./data \
+    --data_dir ./result \
     --model_dir ./wnd_model
 now=$(date "+%s")
 time7=$((now - start))
