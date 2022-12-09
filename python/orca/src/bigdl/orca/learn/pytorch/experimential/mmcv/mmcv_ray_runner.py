@@ -303,8 +303,8 @@ class MMCVRayEpochRunner(BaseRayRunner, EpochBasedRunner):
         """Load checkpoint from a file or URI.
 
         Args:
-            model (Module): Module to load checkpoint.
             filename (str): Accept local filepath, URL, ``hdfs://xxx``.
+            ckpt_dict (dict): Checkpoint dict from driver
             map_location (str): Same as :func:`torch.load`.
             strict (bool): Whether to allow different params for the model and
                 checkpoint.
