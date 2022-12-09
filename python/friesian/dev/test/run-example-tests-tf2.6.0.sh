@@ -157,7 +157,7 @@ python ../../example/wnd/wnd_preprocessing.py \
     --frequency_limit 15 \
     --cross_sizes 10000,10000
 
-python wnd_train.py \
+python ../../example/wnd/wnd_train.py \
     --executor_cores 6 \
     --executor_memory 50g \
     --data_dir ./data \
