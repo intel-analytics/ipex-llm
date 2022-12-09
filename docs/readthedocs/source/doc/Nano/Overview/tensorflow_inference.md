@@ -22,32 +22,30 @@ For quantization, BigDL-Nano provides only post-training quantization in `Infere
 
 Before you go ahead with these APIs, you have to make sure BigDL-Nano is correctly installed for TensorFlow. If not, please follow [this](../Overview/nano.md) to set up your environment.
 
-## Runtime Acceleration
-
-All available runtime accelerations are integrated in `InferenceOptimizer.trace(accelerator='onnxruntime'/'openvino')` with different accelerator values.
-
 ```eval_rst
 .. note::
-    Please install ``openvino-dev`` before using OpenVINO acceleration
-
-    ::
-
-        pip install openvino-dev
-
-    Please install ``onnx``, ``onnxruntime``, ``onnxruntime-extensions`` and ``tf2onnx``  before using ONNXRuntime acceleration
-
-    ::
-
-        pip install onnx onnxruntime onnxruntime-extensions tf2onnx
-
-    Or you can install all of them by
+    You can install all required dependencies by
 
     ::
 
         pip install bigdl-nano[tensorflow,inference]
 
     This will install all dependencies required by BigDL-Nano tensorflow inference.
+
+    Or if you just want to use one of supported optimizations:
+
+    - INC (Intel Neural Compressor): ``pip install neural-compressor``
+
+    - OpenVINO: ``pip install openvino-dev``
+
+    - ONNXRuntime: ``pip install onnx onnxruntime onnxruntime-extensions tf2onnx neural-compressor``
+
+    We recommand installing all dependencies by ``pip install bigdl-nano[tensorflow,inference]``, because you may run into version issues if you install dependencies manually.
 ```
+
+## Runtime Acceleration
+
+All available runtime accelerations are integrated in `InferenceOptimizer.trace(accelerator='onnxruntime'/'openvino')` with different accelerator values.
 
 Taking MobileNetV2 as an example, you can use runtime acceleration as below:
 
@@ -85,36 +83,7 @@ traced_model.predict(train_dataset)
 
 Quantization is widely used to compress models to a lower precision, which not only reduces the model size but also accelerates inference. BigDL-Nano provides `InferenceOptimizer.quantize()` API for users to quickly obtain a quantized model with accuracy control by specifying a few arguments. `Sequential` has similar usage, so we will only show how to use an instance of `Model` to enable quantization pipeline here.
 
-To use INC (Intel Neural Compressor) as your quantization engine, you can choose `accelerator=None/'onnxruntime'`. Otherwise, `accelerator='openvino'` means using OpenVINO POT (Post-training Optimization) to do quantization.
-
-```eval_rst
-.. note::
-    Please install ``neural-compressor`` before using Intel Neural Compressor quantization
-
-    ::
-
-        pip install neural-compressor==1.13.1
-
-    Please install ``openvino-dev`` before using OpenVINO acceleration
-
-    ::
-
-        pip install openvino-dev
-
-    Please install ``onnx``, ``onnxruntime``, ``onnxruntime-extensions``, ``tf2onnx`` and ``neural-compressor`` before using ONNXRuntime quantization
-
-    ::
-
-        pip install onnx onnxruntime onnxruntime-extensions tf2onnx neural-compressor==1.13.1
-
-    Or you can install all of them by
-
-    ::
-
-        pip install bigdl-nano[tensorflow,inference]
-
-    This will install all dependencies required by BigDL-Nano tensorflow inference.
-```
+To use INC as your quantization engine, you can choose `accelerator=None/'onnxruntime'`. Otherwise, `accelerator='openvino'` means using OpenVINO POT (Post-training Optimization) to do quantization.
 
 ### Quantization without extra accelerator
 
@@ -144,12 +113,12 @@ This is a most basic usage to quantize a model with defaults, INT8 precision, an
 
 ```eval_rst
 .. note::
-    To use quantization, you must use functional API to create a keras model. This is a known limitation of .
+    To use quantization, you must use functional API to create a keras model. This is a known limitation of INC.
 ```
 
 ```eval_rst
 .. tip::
-    Now BigDL-Nano only support static quantization, which needs training data to do calibration. We use parameter `x` and `y` to receive calibration data.
+    Now BigDL-Nano only support static quantization, which needs training data to do calibration. Parameter `x` and `y` are used to receive calibration data.
 
     - ``x``: Input data which is used for training. It could be
 
@@ -205,4 +174,32 @@ q_model = InferenceOptimizer.quantize(model,
 # use the quantized model as before
 y_hat = q_model(train_examples)
 q_model.predict(train_dataset)
+```
+
+### Automatically Choose the Best Optimization
+
+If you have no idea about which one optimization to choose or you just want to compare them and choose the best one, you can use `InferenceOptimizer.optimize`.
+
+Still taking the example in [Runtime Acceleration](#runtime-acceleration), you can use it as following:
+
+```python
+# try all supproted optimizations
+opt = InferenceOptimizer()
+opt.optimize(model, x=train_dataset)
+
+# get the best optimization
+best_model = opt.get_best_model()
+
+# use the quantized model as before
+y_hat = best_model(train_examples)
+best_model.predict(train_dataset)
+```
+
+`InferenceOptimizer.optimize` will try all supported optimizations and choose the best one. It also uses parameter `x` and `y` to receive calibration data like `InferenceOptimizer.quantize`.
+
+```eval_rst
+.. tip::
+    You can use ``includes`` or ``excludes`` parameter to include or exclude some specified optimization.
+
+    You can see its API document for more advanced usage.
 ```
