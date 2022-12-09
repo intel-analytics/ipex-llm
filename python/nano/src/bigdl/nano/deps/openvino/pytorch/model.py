@@ -31,7 +31,8 @@ from bigdl.nano.pytorch.utils import patch_attrs_from_model_to_object
 
 class PytorchOpenVINOModel(AcceleratedLightningModule):
     def __init__(self, model, input_sample=None, thread_num=None,
-                 logging=True, config=None, **export_kwargs):
+                 dynamic_axes=True, logging=True, config=None,
+                 **export_kwargs):
         """
         Create a OpenVINO model from pytorch.
 
@@ -42,6 +43,16 @@ class PytorchOpenVINOModel(AcceleratedLightningModule):
                              defaults to None.
         :param thread_num: a int represents how many threads(cores) is needed for
                            inference. default: None.
+        :param dynamic_axes: dict or boolean, default to True. By default the exported onnx model
+                        will have the first dim of each input as a dynamic batch_size. If 
+                        dynamic_axes=False, the exported model will have the shapes of all input
+                        and output tensors set to exactly match those given in input_sample.
+                        To specify axes of tensors as dynamic (i.e. known only at run-time),
+                        set dynamic_axes to a dict with schema:
+                            KEY (str): an input or output name. Each name must also be provided
+                            in input_names or output_names.
+                            VALUE (dict or list): If a dict, keys are axis indices and values are
+                            axis names. If a list, each element is an axis index.
         :param logging: whether to log detailed information of model conversion. default: True.
         :param config: The config to be inputted in core.compile_model.
         :param **export_kwargs: will be passed to torch.onnx.export function.
@@ -50,7 +61,9 @@ class PytorchOpenVINOModel(AcceleratedLightningModule):
         with TemporaryDirectory() as tmpdir:
             tmpdir = Path(tmpdir)
             if isinstance(model, torch.nn.Module):
-                export(model, input_sample, str(tmpdir / 'tmp.xml'), logging, **export_kwargs)
+                export(model, input_sample, str(tmpdir / 'tmp.xml'),
+                       dynamic_axes=dynamic_axes, logging=logging,
+                       **export_kwargs)
                 ov_model_path = tmpdir / 'tmp.xml'
 
             self.ov_model = OpenVINOModel(ov_model_path, thread_num=thread_num, config=config)

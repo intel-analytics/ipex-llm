@@ -56,7 +56,8 @@ os.environ['LOGLEVEL'] = 'ERROR'  # remove parital output of inc
 
 class TorchAccelerationOption(AccelerationOption):
     def optimize(self, model, training_data=None, input_sample=None,
-                 thread_num=None, logging=False, sample_size_for_pot=100):
+                 thread_num=None, dynamic_axes=True, logging=False,
+                 sample_size_for_pot=100):
         accelerator = self.get_accelerator()
         if self.get_precision() == "fp32":
             if accelerator is None and self.ipex is False and \
@@ -70,6 +71,7 @@ class TorchAccelerationOption(AccelerationOption):
                                          thread_num=thread_num,
                                          channels_last=self.channels_last,
                                          use_ipex=self.ipex,
+                                         dynamic_axes=dynamic_axes,
                                          # remove output of openvino
                                          logging=logging)
         else:
@@ -85,6 +87,7 @@ class TorchAccelerationOption(AccelerationOption):
                                             input_sample=input_sample,
                                             method=ort_method,
                                             thread_num=thread_num,
+                                            dynamic_axes=dynamic_axes,
                                             sample_size=sample_size_for_pot,
                                             # remove output of openvino
                                             logging=logging)
@@ -245,6 +248,17 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                | grid mode. We will sort and combine according to the value you specified to
                | get the search range.
 
+        :param dynamic_axes: dict or boolean, default to True. By default the exported onnx model
+                             will have the first dim of each input as a dynamic batch_size. If
+                             dynamic_axes=False, the exported model will have the shapes of all
+                             input and output tensors set to exactly match those given in
+                             input_sample. To specify axes of tensors as dynamic (i.e. known only
+                             at run-time), set dynamic_axes to a dict with schema:
+                               KEY (str): an input or output name. Each name must also be provided
+                               in input_names or output_names.
+                               VALUE (dict or list): If a dict, keys are axis indices and values are
+                               axis names. If a list, each element is an axis index.
+                             If accelerator != 'openvino'/'onnxruntime', it will be ignored.
         :param logging: whether to log detailed information of model conversion.
                Default: False.
         :param latency_sample_num: (optional) a int represents the number of repetitions
@@ -364,6 +378,7 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                     acce_model = option.optimize(model, training_data=training_data,
                                                  input_sample=input_sample,
                                                  thread_num=thread_num,
+                                                 dynamic_axes=dynamic_axes,
                                                  logging=logging,
                                                  sample_size_for_pot=sample_size_for_pot)
                 except Exception:
@@ -477,6 +492,7 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                  openvino_config=None,
                  simplification: bool = True,
                  jit_strict: bool = True,
+                 dynamic_axes: Union[bool, dict] = True,
                  sample_size: int = 100,
                  logging: bool = True,
                  inplace: bool = False,
@@ -556,6 +572,17 @@ class InferenceOptimizer(BaseInferenceOptimizer):
         :param jit_strict: Whether recording your mutable container types. This parameter will be
                            passed to torch.jit.trace. if accelerator != 'jit', it will be ignored.
                            Default to True.
+        :param dynamic_axes: dict or boolean, default to True. By default the exported onnx model will
+                             have the first dim of each input as a dynamic batch_size. If 
+                             dynamic_axes=False, the exported model will have the shapes of all input 
+                             and output tensors set to exactly match those given in input_sample. 
+                             To specify axes of tensors as dynamic (i.e. known only at run-time), 
+                             set dynamic_axes to a dict with schema:
+                                KEY (str): an input or output name. Each name must also be provided
+                                in input_names or output_names.
+                                VALUE (dict or list): If a dict, keys are axis indices and values are
+                                axis names. If a list, each element is an axis index.
+                             If accelerator != 'openvino'/'onnxruntime', it will be ignored.
         :param sample_size: (optional) a int represents how many samples will be used for
                             Post-training Optimization Tools (POT) from OpenVINO toolkit,
                             only valid for accelerator='openvino'. Default to 100.
@@ -646,6 +673,7 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                             accelerator='onnxruntime',
                             onnxruntime_session_options=onnxruntime_session_options,
                             simplification=simplification,
+                            dynamic_axes=dynamic_axes,
                             **export_kwargs)
                 """
                 If accelerator==None, quantized model returned should be an object of PytorchModel
@@ -675,6 +703,7 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                                                      input_sample=input_sample,
                                                      accelerator='openvino',
                                                      thread_num=thread_num,
+                                                     dynamic_axes=dynamic_axes,
                                                      logging=logging,
                                                      **export_kwargs)
                 invalidInputError(type(model).__name__ == 'PytorchOpenVINOModel',
@@ -720,6 +749,7 @@ class InferenceOptimizer(BaseInferenceOptimizer):
               openvino_config=None,
               simplification: bool = True,
               jit_strict: bool = True,
+              dynamic_axes: Union[bool, dict] = True,
               logging: bool = True,
               inplace: bool = False,
               **export_kwargs):
@@ -751,6 +781,17 @@ class InferenceOptimizer(BaseInferenceOptimizer):
         :param jit_strict: Whether recording your mutable container types. This parameter will be
                            passed to torch.jit.trace. if accelerator != 'jit', it will be ignored.
                            Default to True.
+        :param dynamic_axes: dict or boolean, default to True. By default the exported onnx model will
+                             have the first dim of each input as a dynamic batch_size. If
+                             dynamic_axes=False, the exported model will have the shapes of all input
+                             and output tensors set to exactly match those given in input_sample.
+                             To specify axes of tensors as dynamic (i.e. known only at run-time),
+                             set dynamic_axes to a dict with schema:
+                               KEY (str): an input or output name. Each name must also be provided
+                               in input_names or output_names.
+                               VALUE (dict or list): If a dict, keys are axis indices and values are
+                               axis names. If a list, each element is an axis index.
+                            If accelerator != 'openvino'/'onnxruntime', it will be ignored.
         :param logging: Whether to log detailed information of model conversion, only valid when
                         accelerator='openvino', otherwise will be ignored. Default: ``True``.
         :param inplace: whether to perform inplace optimization. Default: ``False``.
@@ -769,8 +810,12 @@ class InferenceOptimizer(BaseInferenceOptimizer):
             final_openvino_option = {"INFERENCE_PRECISION_HINT": "f32"}
             if openvino_config is not None:
                 final_openvino_option.update(openvino_config)
-            return PytorchOpenVINOModel(model, input_sample, thread_num, logging,
-                                        final_openvino_option, **export_kwargs)
+            return PytorchOpenVINOModel(model, input_sample,
+                                        thread_num=thread_num,
+                                        dynamic_axes=dynamic_axes,
+                                        logging=logging,
+                                        config=final_openvino_option,
+                                        **export_kwargs)
         if accelerator == 'onnxruntime':  # onnxruntime backend will not care about ipex usage
             if onnxruntime_session_options is None:
                 import onnxruntime
@@ -778,8 +823,11 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                 if thread_num is not None:
                     onnxruntime_session_options.intra_op_num_threads = thread_num
                     onnxruntime_session_options.inter_op_num_threads = thread_num
-            return PytorchONNXRuntimeModel(model, input_sample, onnxruntime_session_options,
-                                           simplification=simplification, **export_kwargs)
+            return PytorchONNXRuntimeModel(model, input_sample,
+                                           onnxruntime_session_options,
+                                           simplification=simplification,
+                                           dynamic_axes=dynamic_axes,
+                                           **export_kwargs)
         if accelerator == 'jit' or use_ipex is True or channels_last is True:
             if use_ipex:
                 invalidInputError(not TORCH_VERSION_LESS_1_10,
