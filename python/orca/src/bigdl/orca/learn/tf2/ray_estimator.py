@@ -184,6 +184,13 @@ class TensorFlow2Estimator(OrcaRayEstimator):
             if batch_size:
                 invalidInputError(isinstance(batch_size, int) and batch_size > 0,
                                   "batch_size should be a positive integer")
+        # Use the local batch size for each worker to convert to XShards
+        if batch_size:
+            local_batch_size = batch_size // self.num_workers
+            if local_batch_size <= 0:
+                local_batch_size = 1
+        else:
+            local_batch_size = None
         params = dict(
             epochs=epochs,
             batch_size=batch_size,
@@ -204,7 +211,7 @@ class TensorFlow2Estimator(OrcaRayEstimator):
                                                            mode="fit",
                                                            num_workers=self.num_workers,
                                                            accept_str_col=True,
-                                                           shard_size=batch_size)
+                                                           shard_size=local_batch_size)
 
         if isinstance(data, SparkXShards):
             if data._get_class_name() == 'pandas.core.frame.DataFrame':
@@ -332,6 +339,13 @@ class TensorFlow2Estimator(OrcaRayEstimator):
             if batch_size:
                 invalidInputError(isinstance(batch_size, int) and batch_size > 0,
                                   "batch_size should be a positive integer")
+        # Use the local batch size for each worker to convert to XShards
+        if batch_size:
+            local_batch_size = batch_size // self.num_workers
+            if local_batch_size <= 0:
+                local_batch_size = 1
+        else:
+            local_batch_size = None
         logger.info("Starting validation step.")
         params = dict(
             batch_size=batch_size,
@@ -352,7 +366,7 @@ class TensorFlow2Estimator(OrcaRayEstimator):
                                              mode="evaluate",
                                              num_workers=self.num_workers,
                                              accept_str_col=True,
-                                             shard_size=batch_size)
+                                             shard_size=local_batch_size)
 
         if isinstance(data, SparkXShards):
             if data._get_class_name() == 'pandas.core.frame.DataFrame':
@@ -461,9 +475,15 @@ class TensorFlow2Estimator(OrcaRayEstimator):
                Default: None.
         :return:
         """
+        # Use the local batch size for each worker to convert to XShards
         if batch_size:
             invalidInputError(isinstance(batch_size, int) and batch_size > 0,
                               "batch_size should be a positive integer")
+            local_batch_size = batch_size // self.num_workers
+            if local_batch_size <= 0:
+                local_batch_size = 1
+        else:
+            local_batch_size = None
         logger.info("Starting predict step.")
         params = dict(
             verbose=verbose,
@@ -483,7 +503,7 @@ class TensorFlow2Estimator(OrcaRayEstimator):
                                               label_cols=None,
                                               mode="predict",
                                               accept_str_col=True,
-                                              shard_size=batch_size)
+                                              shard_size=local_batch_size)
             pred_shards = self._predict_spark_xshards(xshards, params)
             result = convert_predict_xshards_to_dataframe(data, pred_shards)
         elif isinstance(data, SparkXShards):

@@ -27,18 +27,15 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-import copy
-import logging
+
 import json
 import os
 import socket
 import shutil
 import tempfile
-import subprocess
 import copy
 
 import ray
-import numpy as np
 from contextlib import closing
 
 from bigdl.dllib.utils import log4Error
@@ -79,6 +76,9 @@ class DatasetHandler:
         config, local_batch_size = self._handle_batch_size(config)
         config['rank'] = self.rank
         config['size'] = self.size
+        # Use global batch size here for data_creator since TensorFlow
+        # will shard the dataset.
+        # batch_size won't be used in data_creator for RayXShards.
         train_dataset = data_creator(config, config["batch_size"])
         if isinstance(train_dataset, list) and \
                 all([isinstance(x, ray.ObjectID) for x in train_dataset]):
@@ -176,6 +176,8 @@ class HorovodDatasetHanlder(DatasetHandler):
         invalidInputError("batch_size" in config, "batch_size must be set in config")
         if config["batch_size"]:
             local_batch_size = config["batch_size"] // self.size
+            if local_batch_size <= 0:
+                local_batch_size = 1
         else:  # batch_size default to be None for predict
             local_batch_size = config["batch_size"]
         return config, local_batch_size
@@ -211,6 +213,8 @@ class TFDistributedDatasetHandler(DatasetHandler):
         invalidInputError("batch_size" in config, "batch_size must be set in config")
         if config["batch_size"]:
             local_batch_size = config["batch_size"] // self.size
+            if local_batch_size <= 0:
+                local_batch_size = 1
         else:  # batch_size default to be None for predict
             local_batch_size = None
         return config, local_batch_size
