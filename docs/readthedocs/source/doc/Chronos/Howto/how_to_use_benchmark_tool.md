@@ -99,7 +99,7 @@ Besides, number of processes and epoches can be set by `--training_processes` an
 benchmark-chronos --training_processes 2 --training_epochs 3 --training_batchsize 32 --inference_batchsize 128 -l 96 -o 720
 ```
 
-To speed up inference, accelerators like ONNXRuntime and OpenVINO are usually used. To benchmark inference performance with or without accelerator, run tool with `--inference_framework` to specify without accelerator (`--inference_framework torch`)or with ONNXRuntime (`--inference_framework onnx`) or with OpenVINO (`--inference_framework openvino`).
+To speed up inference, accelerators like ONNXRuntime and OpenVINO are usually used. To benchmark inference performance with or without accelerator, run tool with `--inference_framework` to specify without accelerator (`--inference_framework torch`)or with ONNXRuntime (`--inference_framework onnx`) or with OpenVINO (`--inference_framework openvino`) or with jit (`--inference_framework jit`).
 ```bash
 benchmark-chronos --inference_framework onnx -l 96 -o 720
 ```
@@ -157,7 +157,7 @@ benchmark-chronos -h
                             False.
       --inference_framework  [ ...]
                             predict without/with accelerator, choose from
-                            torch/onnx/openvino, default to "torch" (i.e. predict
+                            torch/onnx/openvino/jit, default to "torch" (i.e. predict
                             without accelerator).
       --ipex                if use ipex as accelerator for trainer, default to
                             False.
