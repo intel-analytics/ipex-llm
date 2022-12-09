@@ -186,7 +186,7 @@ class TorchRunner(BaseRunner):
             invalidInputError(all(isinstance(model, nn.Module) for model in self.models),
                                  ("All models must be PyTorch models: {}.".format(self.models)))
 
-        if self.optimizer_creator is not None:
+        if self.optimizer_creator is not None and self.models is not None:
             self.logger.debug("Creating optimizer.")
             self.optimizers = self.optimizer_creator(self.given_models,
                                                      self.config)

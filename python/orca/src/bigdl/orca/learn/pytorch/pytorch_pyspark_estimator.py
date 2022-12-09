@@ -177,7 +177,8 @@ class PyTorchPySparkEstimator(BaseEstimator):
             cluster_info=self._get_cluster_info(sc),
             **local_init_params)
 
-        self.state_dict = self.driver_runner.get_state_dict()
+        if self.model_creator is not None and self.model_class is not None:
+            self.state_dict = self.driver_runner.get_state_dict()
 
     def create_tcpstore_server(self):
         import torch.distributed as dist
@@ -587,15 +588,16 @@ class PyTorchPySparkEstimator(BaseEstimator):
                 res = torch.load(temp_path)
             finally:
                 shutil.rmtree(temp_dir)
-        if isinstance(res, Iterable) and not isinstance(res, nn.Sequential):
-            if "models" in res:
-                self.state_dict = res
-            else:
-                self.state_dict = [re.state_dict() for re in res]
-        else:
-            self.state_dict = res.state_dict()
         if self.model_creator is None:
-            self.model_class = torch.load(model_path)
+            self.model_class = res
+        else:
+            if isinstance(res, Iterable) and not isinstance(res, nn.Sequential):
+                if "models" in res:
+                    self.state_dict = res
+                else:
+                    self.state_dict = [re.state_dict() for re in res]
+            else:
+                self.state_dict = res.state_dict()
 
     def save_checkpoint(self, model_path):
         """
