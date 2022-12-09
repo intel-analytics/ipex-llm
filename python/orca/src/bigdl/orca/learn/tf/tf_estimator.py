@@ -19,9 +19,8 @@ import ray
 from bigdl.orca.ray import OrcaRayContext
 from bigdl.orca.learn.tf.tf_runner import TFRunner
 from bigdl.orca.learn.dl_cluster import RayDLCluster
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING, Any, Dict, Optional, Callable
 if TYPE_CHECKING:
-    from typing import Dict, Optional, Callable
     from tensorflow.compat.v1.estimator import TrainSpec, EvalSpec
 
 

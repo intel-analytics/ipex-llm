@@ -1103,7 +1103,7 @@ class KerasEstimator(Estimator):
         return self.model.model
 
     @enable_multi_fs_save
-    def save(self, model_path, overwrite=True) -> None:
+    def save(self, model_path: str, overwrite: bool=True) -> None:
         """
         Save model to model_path
 
