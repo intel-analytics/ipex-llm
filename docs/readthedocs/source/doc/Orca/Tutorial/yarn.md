@@ -128,7 +128,7 @@ Then upload it to a distributed storage. Sample command to upload data to HDFS i
 ```bash
 hdfs dfs -put /path/to/local/data/FashionMNIST hdfs://path/to/remote/data
 ```
-In the given example, you can specify the argument `--remote_dir` to be the directory on a distributed storage for the Fashion-MNIST dataset. The structure `FashionMNIST/raw/train-images-idx3-ubyte` and `FashionMNIST/raw/t10k-images-idx3` 
+In the given example, you can specify the argument `--remote_dir` to be the directory on a distributed storage for the Fashion-MNIST dataset which contains `FashionMNIST/raw/train-images-idx3-ubyte` and `FashionMNIST/raw/t10k-images-idx3`.
 
 ---
 ## 4. Prepare Custom Modules
