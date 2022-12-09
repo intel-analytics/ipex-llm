@@ -119,7 +119,7 @@ First, download the Fashion-MNIST dataset manually on your __Client Node__. Note
 git clone https://github.com/zalandoresearch/fashion-mnist.git
 
 # Move the dataset under the folder FashionMNIST/raw
-mv /path/to/fashion-mnist/data/fashion /path/to/local/data/FashionMNIST/raw
+mv /path/to/fashion-mnist/data/fashion/* /path/to/local/data/FashionMNIST/raw
 
 # Extract FashionMNIST archives
 gzip -dk /bigdl/nfsdata/dataset/FashionMNIST/raw/*
@@ -128,7 +128,7 @@ Then upload it to a distributed storage. Sample command to upload data to HDFS i
 ```bash
 hdfs dfs -put /path/to/local/data/FashionMNIST hdfs://path/to/remote/data
 ```
-In the given example, you can specify the argument `--remote_dir` to be the directory on a distributed storage for the Fashion-MNIST dataset.
+In the given example, you can specify the argument `--remote_dir` to be the directory on a distributed storage for the Fashion-MNIST dataset. The structure `FashionMNIST/raw/train-images-idx3-ubyte` and `FashionMNIST/raw/t10k-images-idx3` 
 
 ---
 ## 4. Prepare Custom Modules
