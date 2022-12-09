@@ -14,7 +14,8 @@
 # limitations under the License.
 #
 
-from bigdl.nano.utils.inference.pytorch.model_utils import get_forward_args
+from bigdl.nano.utils.inference.pytorch.model_utils import get_forward_args, \
+    get_tensor_args
 from typing import Sequence
 from copy import deepcopy
 import torch
@@ -72,7 +73,7 @@ def automatic_add_label_in_dataloader(model, dataloader, input_sample=None):
 
 def _need_dataloader_type_transformation(model, dataloader):
     # get forward method's parameter number
-    forward_args = get_forward_args(model)
+    forward_args = get_tensor_args(model)
     forward_args_len = len(forward_args)
 
     # if the model is a simple model(x) format
