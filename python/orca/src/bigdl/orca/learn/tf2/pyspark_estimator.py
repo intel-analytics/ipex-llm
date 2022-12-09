@@ -136,6 +136,13 @@ class SparkTFEstimator():
             if batch_size:
                 invalidInputError(isinstance(batch_size, int) and batch_size > 0,
                                   "batch_size should be a positive integer")
+        # Use the local batch size for each worker to convert to XShards
+        if batch_size:
+            local_batch_size = batch_size // self.num_workers
+            if local_batch_size <= 0:
+                local_batch_size = 1
+        else:
+            local_batch_size = None
         sc = OrcaContext.get_spark_context()
 
         if isinstance(data, SparkXShards):
@@ -155,7 +162,7 @@ class SparkTFEstimator():
                                                            mode="fit",
                                                            num_workers=self.num_workers,
                                                            accept_str_col=True,
-                                                           shard_size=batch_size)
+                                                           shard_size=local_batch_size)
 
         # for continuous training
         if self.model_weights:
@@ -273,6 +280,13 @@ class SparkTFEstimator():
             if batch_size:
                 invalidInputError(isinstance(batch_size, int) and batch_size > 0,
                                   "batch_size should be a positive integer")
+        # Use the local batch size for each worker to convert to XShards
+        if batch_size:
+            local_batch_size = batch_size // self.num_workers
+            if local_batch_size <= 0:
+                local_batch_size = 1
+        else:
+            local_batch_size = None
         sc = OrcaContext.get_spark_context()
         logger.info("Starting validation step.")
 
@@ -287,7 +301,7 @@ class SparkTFEstimator():
                                              mode="evaluate",
                                              num_workers=self.num_workers,
                                              accept_str_col=True,
-                                             shard_size=batch_size)
+                                             shard_size=local_batch_size)
 
         if self.model_weights:
             weights = sc.broadcast(self.model_weights)
@@ -360,9 +374,15 @@ class SparkTFEstimator():
                DataFrame or an XShards of Pandas DataFrame. Default: None.
         :return:
         """
+        # Use the local batch size for each worker to convert to XShards
         if batch_size:
             invalidInputError(isinstance(batch_size, int) and batch_size > 0,
                               "batch_size should be a positive integer")
+            local_batch_size = batch_size // self.num_workers
+            if local_batch_size <= 0:
+                local_batch_size = 1
+        else:
+            local_batch_size = None
         logger.info("Starting predict step.")
         sc = OrcaContext.get_spark_context()
         if self.model_weights:
@@ -408,7 +428,7 @@ class SparkTFEstimator():
                                               label_cols=None,
                                               mode="predict",
                                               accept_str_col=True,
-                                              shard_size=batch_size)
+                                              shard_size=local_batch_size)
 
             pred_shards = SparkXShards.lazy(xshards.rdd.mapPartitions(
                 lambda iter: transform_func(iter, init_params, params)))
