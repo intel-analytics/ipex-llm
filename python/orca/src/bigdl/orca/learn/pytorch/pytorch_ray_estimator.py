@@ -25,7 +25,7 @@ from bigdl.orca.learn.utils import maybe_dataframe_to_xshards, dataframe_to_xsha
     convert_predict_xshards_to_dataframe, update_predict_xshards, \
     process_xshards_of_pandas_dataframe, reload_dataloader_creator
 from bigdl.orca.ray import OrcaRayContext
-from bigdl.orca.learn.pytorch.core import BaseRayEstimator
+from bigdl.orca.learn.pytorch.core.base_ray_estimator import BaseRayEstimator
 from bigdl.orca.learn.pytorch.utils import process_stats, check_for_failure
 
 import ray
