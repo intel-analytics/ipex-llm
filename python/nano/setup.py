@@ -73,6 +73,7 @@ def download_libs(url: str):
 
 def setup_package():
 
+
     # all intel-tensorflow is only avaliable for linux now
     tensorflow_27_requires = ["intel-tensorflow==2.7.0; platform_machine=='x86_64' and \
                               platform_system!='Darwin'",
@@ -106,6 +107,7 @@ def setup_package():
     tensorflow_29_requires += tensorflow_common_requires
     tensorflow_28_requires += tensorflow_common_requires
     tensorflow_27_requires += tensorflow_common_requires
+
 
     # ipex is only avaliable for linux now
     pytorch_113_requires = ["torch==1.13.0",
@@ -144,12 +146,16 @@ def setup_package():
 
     inference_requires = ["onnx==1.12.0",
                           "onnxruntime==1.12.1",
-                          "onnxruntime-extensions==0.4.2;platform_system!='Darwin'",
-                          "onnxruntime-extensions==0.3.1;platform_system=='Darwin'",
+                          "onnxruntime-extensions==0.4.2; platform_machine=='x86_64' and \
+                          platform_system!='Darwin'",
+                          "onnxruntime-extensions==0.3.1; platform_machine=='x86_64' and \
+                          platform_system=='Darwin'",
                           "openvino-dev==2022.2.0",
                           "neural-compressor==1.13.1",
-                          "onnxsim==0.4.8;platform_system!='Darwin'",
-                          "onnxsim==0.4.1;platform_system=='Darwin'"]
+                          "onnxsim==0.4.8; platform_machine=='x86_64' and \
+                          platform_system!='Darwin'",
+                          "onnxsim==0.4.1; platform_machine=='x86_64' and \
+                          platform_system=='Darwin'"]
 
     install_requires = ["intel-openmp; platform_machine=='x86_64'",
                         "cloudpickle",
