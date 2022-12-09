@@ -117,7 +117,7 @@ class PyTorchPySparkEstimator(BaseEstimator):
 
         sc = OrcaContext.get_spark_context()
 
-        if not isinstance(model_creator, types.FunctionType):
+        if model_creator is not None and not isinstance(model_creator, types.FunctionType):
             # Torch model is also callable.
             invalidInputError(False,
                               "Must provide a function for model_creator")
