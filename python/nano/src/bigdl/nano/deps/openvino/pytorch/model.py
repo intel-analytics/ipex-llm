@@ -44,7 +44,7 @@ class PytorchOpenVINOModel(AcceleratedLightningModule):
         :param thread_num: a int represents how many threads(cores) is needed for
                            inference. default: None.
         :param dynamic_axes: dict or boolean, default to True. By default the exported onnx model
-                        will have the first dim of each input as a dynamic batch_size. If 
+                        will have the first dim of each input as a dynamic batch_size. If
                         dynamic_axes=False, the exported model will have the shapes of all input
                         and output tensors set to exactly match those given in input_sample.
                         To specify axes of tensors as dynamic (i.e. known only at run-time),

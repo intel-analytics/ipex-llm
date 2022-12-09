@@ -581,8 +581,8 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                              at run-time), set dynamic_axes to a dict with schema:
                                 KEY (str): an input or output name. Each name must also be provided
                                 in input_names or output_names.
-                                VALUE (dict or list): If a dict, keys are axis indices and values are
-                                axis names. If a list, each element is an axis index.
+                                VALUE (dict or list): If a dict, keys are axis indices and values
+                                are axis names. If a list, each element is an axis index.
                              If accelerator != 'openvino'/'onnxruntime', it will be ignored.
         :param sample_size: (optional) a int represents how many samples will be used for
                             Post-training Optimization Tools (POT) from OpenVINO toolkit,
@@ -782,16 +782,16 @@ class InferenceOptimizer(BaseInferenceOptimizer):
         :param jit_strict: Whether recording your mutable container types. This parameter will be
                            passed to torch.jit.trace. if accelerator != 'jit', it will be ignored.
                            Default to True.
-        :param dynamic_axes: dict or boolean, default to True. By default the exported onnx model will
-                             have the first dim of each input as a dynamic batch_size. If
-                             dynamic_axes=False, the exported model will have the shapes of all input
-                             and output tensors set to exactly match those given in input_sample.
-                             To specify axes of tensors as dynamic (i.e. known only at run-time),
-                             set dynamic_axes to a dict with schema:
+        :param dynamic_axes: dict or boolean, default to True. By default the exported onnx model
+                             will have the first dim of each input as a dynamic batch_size. If
+                             dynamic_axes=False, the exported model will have the shapes of all
+                             input and output tensors set to exactly match those given in
+                             input_sample. To specify axes of tensors as dynamic (i.e. known only
+                             at run-time), set dynamic_axes to a dict with schema:
                                KEY (str): an input or output name. Each name must also be provided
                                in input_names or output_names.
-                               VALUE (dict or list): If a dict, keys are axis indices and values are
-                               axis names. If a list, each element is an axis index.
+                               VALUE (dict or list): If a dict, keys are axis indices and values
+                               are axis names. If a list, each element is an axis index.
                             If accelerator != 'openvino'/'onnxruntime', it will be ignored.
         :param logging: Whether to log detailed information of model conversion, only valid when
                         accelerator='openvino', otherwise will be ignored. Default: ``True``.
