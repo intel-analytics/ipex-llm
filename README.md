@@ -190,7 +190,7 @@ The output of `optimizer.summary()` will be something like:
 |        onnxruntime_fp32        |      successful      |    20.838    |        0.975*        |
 |    onnxruntime_int8_qlinear    |      successful      |    7.123     |        0.981         |
  -------------------------------- ---------------------- -------------- ----------------------
-* means we assume the precision of the traced model does not change, so we don't recompute accuracy to save time.
+* means we assume the accuracy of the traced model does not change, so we don't recompute accuracy to save time.
 Optimization cost 60.8s in total.
 ```
 
