@@ -18,6 +18,9 @@ import types
 import copy
 import ray
 from collections import OrderedDict
+
+import torch
+
 from bigdl.dllib.utils.log4Error import invalidInputError
 
 from typing import (Any, Dict, List, Optional, Tuple, Callable, overload, Union)
@@ -107,11 +110,11 @@ class MMCVRayEstimator(BaseRayEstimator):
             strict: bool = False,
             revise_keys: List = [(r'^module.', '')],
     ) -> Union[Dict, OrderedDict]:
-        """Load checkpoint from a file or URI.
+        """Load checkpoint from a file or URI. The filename should either be a
+        local path on driver or a HDFS path
 
         Args:
-            model (Module): Module to load checkpoint.
-            filename (str): Accept local filepath, URL, ``hdfs://xxx``.
+            filename (str): Local path on Driver or HDFS path.
             map_location (str): Same as :func:`torch.load`.
             strict (bool): Whether to allow different params for the model and
                 checkpoint.
@@ -123,7 +126,19 @@ class MMCVRayEstimator(BaseRayEstimator):
         Returns:
             dict or OrderedDict: The loaded checkpoint.
         """
+        params = dict(
+            map_location=map_location,
+            strict=strict,
+            revise_keys=revise_keys
+        )
+        from bigdl.dllib.utils.file_utils import is_local_path
+        if is_local_path(filename):
+            ckpt_dict = torch.load(filename)
+            params["ckpt_dict"] = ckpt_dict
+        else:
+            params["filename"] = filename
+
         ray.get([
-            worker.load_checkpoint.remote(filename, map_location, strict, revise_keys)
+            worker.load_checkpoint.remote(**params)
             for i, worker in enumerate(self.remote_workers)
         ])

@@ -15,12 +15,7 @@
 #
 
 import pytest
-import os
-import tempfile
-import shutil
 from bigdl.orca import init_orca_context, stop_orca_context
-
-TEMP_WORK_DIR = os.path.join(tempfile.gettempdir(), "mmcv_test_work_dir")
 
 
 @pytest.fixture(autouse=True, scope='package')
@@ -28,5 +23,3 @@ def orca_context_fixture():
     init_orca_context(cores=8, init_ray_on_spark=True)
     yield
     stop_orca_context()
-    if os.path.exists(TEMP_WORK_DIR):
-        shutil.rmtree(TEMP_WORK_DIR)

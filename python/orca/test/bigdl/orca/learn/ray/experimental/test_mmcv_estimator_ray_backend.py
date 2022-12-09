@@ -18,6 +18,7 @@ import pytest
 import unittest
 import os
 import tempfile
+import shutil
 import torch
 import torch.nn as nn
 import torch.optim as optim
@@ -167,7 +168,7 @@ def get_estimator(creator, cfg=None):
 
 class TestMMCVRayEstimator(unittest.TestCase):
 
-    def test_01_run_with_train_step(self):
+    def test_run_with_train_step(self):
         model = Model()
         optimizer = optim.SGD(model.parameters(), lr=0.001, momentum=0.9)
         cfg = dict(
@@ -192,7 +193,10 @@ class TestMMCVRayEstimator(unittest.TestCase):
         print(f"dLoss: {dloss}")
         assert dloss < 0
 
-    def test_02_run_with_batch_processor(self):
+        if os.path.exists(TEMP_WORK_DIR):
+            shutil.rmtree(TEMP_WORK_DIR)
+
+    def test_run_with_batch_processor(self):
         model = Model2()
         optimizer = optim.SGD(model.parameters(), lr=0.001, momentum=0.9)
         cfg = dict(
@@ -219,7 +223,10 @@ class TestMMCVRayEstimator(unittest.TestCase):
         print(f"dLoss: {dloss}")
         assert dloss < 0
 
-    def test_03_save_ckpt(self):
+        if os.path.exists(TEMP_WORK_DIR):
+            shutil.rmtree(TEMP_WORK_DIR)
+
+    def test_save_load_ckpt(self):
         model = Model()
         optimizer = optim.SGD(model.parameters(), lr=0.001, momentum=0.9)
         cfg = dict(
@@ -238,22 +245,10 @@ class TestMMCVRayEstimator(unittest.TestCase):
         assert os.path.exists(os.path.join(TEMP_WORK_DIR, "epoch_3.pth"))
         assert os.path.exists(os.path.join(TEMP_WORK_DIR, "epoch_4.pth"))
 
-    def test_04_load_ckpt(self):
-        model = Model()
-        optimizer = optim.SGD(model.parameters(), lr=0.001, momentum=0.9)
-        cfg = dict(
-            model=model,
-            optimizer=optimizer,
-            batch_processor=None,
-            lr_config=dict(policy='step', step=[2, 3]),
-            optimizer_config=dict(grad_clip=None),
-            checkpoint_config=None,
-            log_config=dict(interval=4, hooks=[dict(type='TextLoggerHook')])
-        )
-        estimator = get_estimator(runner_creator, cfg)
         estimator.load_checkpoint(os.path.join(TEMP_WORK_DIR, "epoch_4.pth"))
-        estimator.run([train_dataloader_creator], [('train', 1)])
-        # TODO: evaluate model after load checkpoint
+
+        if os.path.exists(TEMP_WORK_DIR):
+            shutil.rmtree(TEMP_WORK_DIR)
 
 
 if __name__ == "__main__":
