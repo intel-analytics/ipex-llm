@@ -181,10 +181,10 @@ class TorchRunner(BaseRunner):
                 self.models = [self.model_class]
         else:
             self.models = self.model_creator(self.config)
-        if isinstance(self.models, nn.Sequential) or not isinstance(self.models, Iterable):
-            self.models = [self.models]
-        invalidInputError(all(isinstance(model, nn.Module) for model in self.models),
-                             ("All models must be PyTorch models: {}.".format(self.models)))
+            if isinstance(self.models, nn.Sequential) or not isinstance(self.models, Iterable):
+                self.models = [self.models]
+            invalidInputError(all(isinstance(model, nn.Module) for model in self.models),
+                                 ("All models must be PyTorch models: {}.".format(self.models)))
 
         if self.optimizer_creator is not None:
             self.logger.debug("Creating optimizer.")
