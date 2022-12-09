@@ -26,6 +26,7 @@ from bigdl.nano.utils.log4Error import invalidInputError
 from ..core.utils import save
 from torch.utils.data.dataloader import DataLoader
 from bigdl.nano.pytorch.context_manager import generate_context_manager
+from bigdl.nano.pytorch.utils import patch_attrs_from_model_to_object
 
 
 class PytorchOpenVINOModel(AcceleratedLightningModule):
@@ -46,17 +47,20 @@ class PytorchOpenVINOModel(AcceleratedLightningModule):
         :param **export_kwargs: will be passed to torch.onnx.export function.
         """
         ov_model_path = model
-        with TemporaryDirectory() as dir:
-            dir = Path(dir)
+        with TemporaryDirectory() as tmpdir:
+            tmpdir = Path(tmpdir)
             if isinstance(model, torch.nn.Module):
-                export(model, input_sample, str(dir / 'tmp.xml'), logging, **export_kwargs)
-                ov_model_path = dir / 'tmp.xml'
+                export(model, input_sample, str(tmpdir / 'tmp.xml'), logging, **export_kwargs)
+                ov_model_path = tmpdir / 'tmp.xml'
 
             self.ov_model = OpenVINOModel(ov_model_path, thread_num=thread_num, config=config)
             super().__init__(None)
         self._nano_context_manager = generate_context_manager(accelerator="openvino",
                                                               precision="fp32",
                                                               thread_num=thread_num)
+        if isinstance(model, torch.nn.Module):
+            # patch original model's attr to current new model
+            patch_attrs_from_model_to_object(model, self)
 
     def on_forward_start(self, inputs):
         self.ov_model._model_exists_or_err()
@@ -122,7 +126,10 @@ class PytorchOpenVINOModel(AcceleratedLightningModule):
         model = self.ov_model.pot(dataloader, metric=metric, drop_type=drop_type,
                                   maximal_drop=maximal_drop, max_iter_num=max_iter_num,
                                   n_requests=n_requests, sample_size=sample_size)
-        return PytorchOpenVINOModel(model, thread_num=thread_num, config=config)
+        # below code will re-define a new object, and original attrs will be lost.
+        # return PytorchOpenVINOModel(model, thread_num=thread_num, config=config)
+        self.__init__(model, thread_num=thread_num, config=config)
+        return self
 
     def _save_model(self, path):
         """

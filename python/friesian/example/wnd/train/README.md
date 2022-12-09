@@ -1,6 +1,6 @@
 # Train the Twitter Recsys Challenge 2021 dataset for WideAndDeep Model
 This example demonstrates how to use BigDL Friesian to train [WideAndDeep](https://arxiv.org/abs/1606.07792) model with the
-[Twitter Recsys Challenge 2021](https://recsys-twitter.com/data/show-downloads#) dataset.
+[Twitter Recsys Challenge 2021](http://www.recsyschallenge.com/2021/) dataset.
 
 ## Prepare the environment
 We recommend you to use [Anaconda](https://www.anaconda.com/distribution/#linux) to prepare the environments, especially if you want to run on a yarn cluster (yarn-client mode only).
@@ -12,7 +12,7 @@ pip install --pre --upgrade bigdl-friesian[train]
 ```
 
 ## Prepare the data
-You can download the full Twitter dataset from [here](https://recsys-twitter.com/data/show-downloads#), which includes around 1 billion records, more than 40 million records each day over 28 days.
+You can download the full Twitter dataset from [here](http://www.recsyschallenge.com/2021/), which includes around 1 billion records, more than 40 million records each day over 28 days.
  Week 1 - 3 will be used for training and week 4 for evaluation and testing. Each record contains the tweet along with engagement features, user features, and tweet features.
 
 After you download and decompress the files, there is a train parquet directory and validation csv file.
@@ -52,19 +52,19 @@ The files are with the name "part-00xxx.parquet" (x=000-269).
 
 * Spark local, we can use the first several partitions train data to have a trial, example command:
 ```bash
-python wnd_preprocessing_recsys.py \
+python wnd_preprocess_recsys.py \
     --executor_cores 36 \
     --executor_memory 50g \
     --train_files 0-1 \
     --input_train_folder /path/to/the/folder/of/train/parquet_files \
-    --input_test_folder /path/to/the/folder/of/train/parquet_files /
-    --output_foler /path/to/the/folder/to/save/preprocessed/parquet_files \
+    --input_test_folder /path/to/the/folder/of/train/parquet_files \
+    --output_folder /path/to/the/folder/to/save/preprocessed/parquet_files \
     --cross_sizes 600
 ```
 
 * Spark standalone, example command to run on the full dataset:
 ```bash
-python wnd_preprocessing_recsys.py \
+python wnd_preprocess_recsys.py \
     --cluster_mode standalone \
     --master spark://master-url:port \
     --executor_cores 44 \
@@ -72,22 +72,22 @@ python wnd_preprocessing_recsys.py \
     --num_executor 8 \
     --train_files 0-269 \
     --input_train_folder /path/to/the/folder/of/train/parquet_files \
-    --input_test_folder /path/to/the/folder/of/train/parquet_files /
-    --output_foler /path/to/the/folder/to/save/preprocessed/parquet_files \
+    --input_test_folder /path/to/the/folder/of/train/parquet_files \
+    --output_folder /path/to/the/folder/to/save/preprocessed/parquet_files \
     --cross_sizes 600
 ```
 
 * Spark yarn client mode, example command to run on the full dataset:
 ```bash
-python wnd_preprocessing_recsys.py \
+python wnd_preprocess_recsys.py \
     --cluster_mode yarn \
     --executor_cores 44 \
     --executor_memory 150g \
     --num_nodes 8 \
     --train_files 0-269 \
     --input_train_folder /path/to/the/folder/of/train/parquet_files \
-    --input_test_folder /path/to/the/folder/of/train/parquet_files /
-    --output_foler /path/to/the/folder/to/save/preprocessed/parquet_files \
+    --input_test_folder /path/to/the/folder/of/train/parquet_files \
+    --output_folder /path/to/the/folder/to/save/preprocessed/parquet_files \
     --cross_sizes 600
 ```
 

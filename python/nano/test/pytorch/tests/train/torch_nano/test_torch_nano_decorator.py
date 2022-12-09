@@ -31,7 +31,7 @@ from bigdl.nano.pytorch import nano
 
 batch_size = 256
 num_workers = 0
-data_dir = os.path.join(os.path.dirname(__file__), "../data")
+data_dir = "/tmp/data"
 
 
 class ResNet18(nn.Module):
@@ -226,8 +226,9 @@ def subprocess_train_loop(model, optimizer, train_loader, loss_func):
 class TestLite(TestCase):
     def setUp(self):
         test_dir = os.path.dirname(__file__)
+        # project_test_dir = BigDL/python/nano
         project_test_dir = os.path.abspath(
-            os.path.join(os.path.join(os.path.join(test_dir, ".."), ".."), "..")
+            os.path.join(test_dir, "..", "..", "..", "..", "..")
         )
         os.environ['PYTHONPATH'] = project_test_dir
 

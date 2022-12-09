@@ -193,3 +193,27 @@ class TestTrainer(TestCase):
             assert torch.get_num_threads() == 2
             out = model(x)
         assert out.shape == torch.Size([256, 10])
+
+    def test_quantize_inc_ptq_compiled_additional_attributes(self):
+        # Test if a Lightning Module compiled by nano works
+        train_loader_iter = iter(self.train_loader)
+        pl_model = Trainer.compile(self.model, self.loss, self.optimizer)
+        # patch a attribute
+        pl_model.channels = 3
+        def hello():
+            print("hello world!")
+        # patch a function
+        pl_model.hello = hello
+        x = next(train_loader_iter)[0]
+
+        qmodel = InferenceOptimizer.quantize(pl_model,
+                                             calib_data=self.train_loader,
+                                             thread_num=2)
+        assert qmodel
+        assert qmodel.channels == 3
+        qmodel.hello()
+
+        with InferenceOptimizer.get_context(qmodel):
+            assert torch.get_num_threads() == 2
+            out = qmodel(x)
+        assert out.shape == torch.Size([256, 10])

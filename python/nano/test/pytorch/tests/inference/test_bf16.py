@@ -151,6 +151,36 @@ class Pytorch1_12:
         assert y_hat2.shape == (10, 10) and y_hat2.dtype == torch.bfloat16
         assert y_hat1.equal(y_hat2)
 
+    def test_bf16_additional_attrs(self):
+        model = resnet18(num_classes=10)
+        x = torch.rand((10, 3, 256, 256))
+        # patch a attribute
+        model.channels = 3
+        def hello():
+            print("hello world!")
+        # patch a function
+        model.hello = hello
+
+        # test bf16
+        bf16_model = InferenceOptimizer.quantize(model,
+                                                 precision='bf16')
+        with InferenceOptimizer.get_context(bf16_model):
+            y_hat1 = bf16_model(x)
+        assert y_hat1.shape == (10, 10) and y_hat1.dtype == torch.bfloat16
+        assert bf16_model.channels == 3
+        bf16_model.hello()
+
+        # test bf16 + channels_last
+        bf16_model = InferenceOptimizer.quantize(model, precision='bf16',
+                                                 channels_last=True)
+        with InferenceOptimizer.get_context(bf16_model):
+            y_hat1 = bf16_model(x)
+        assert y_hat1.shape == (10, 10) and y_hat1.dtype == torch.bfloat16
+        assert bf16_model.channels == 3
+        bf16_model.hello()
+        with pytest.raises(AttributeError):
+            bf16_model.width
+
 
 TORCH_VERSION_CLS = Pytorch1_12
 if TORCH_VERSION_LESS_1_12:

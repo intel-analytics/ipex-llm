@@ -23,6 +23,7 @@ from bigdl.nano.utils.inference.pytorch.model import AcceleratedLightningModule
 from bigdl.nano.utils.inference.pytorch.model_utils import export_to_onnx
 from bigdl.nano.utils.log4Error import invalidInputError
 from bigdl.nano.pytorch.context_manager import generate_context_manager
+from bigdl.nano.pytorch.utils import patch_attrs_from_model_to_object
 
 
 class PytorchONNXRuntimeModel(ONNXRuntimeModel, AcceleratedLightningModule):
@@ -76,6 +77,9 @@ class PytorchONNXRuntimeModel(ONNXRuntimeModel, AcceleratedLightningModule):
         self._nano_context_manager = generate_context_manager(accelerator=None,
                                                               precision="fp32",
                                                               thread_num=self.thread_num)
+        if isinstance(model, torch.nn.Module):
+            # patch original model's attr to current new model
+            patch_attrs_from_model_to_object(model, self)
 
     def on_forward_start(self, inputs):
         if self.ortsess is None:

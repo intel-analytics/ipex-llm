@@ -80,7 +80,7 @@ class MultipleInputWithKwargsNet(nn.Module):
 
 class TestInferencePipeline(TestCase):
     num_workers = 0
-    data_dir = os.path.join(os.path.dirname(__file__), "data")
+    data_dir = "/tmp/data"
     metric = torchmetrics.Accuracy(num_classes=10, top_k=1)
     max_epochs = 5
 
@@ -382,6 +382,25 @@ class TestInferencePipeline(TestCase):
             np.testing.assert_allclose(pred1, pred2, atol=1e-4,
                                         err_msg=f"\npred1: {pred1}\npred2: {pred2}\n")
 
+    def test_multi_instance_with_specify_cores(self):
+        model = Net()
+        model.eval()
+        inference_opt = InferenceOptimizer()
+        multi_instance_model = inference_opt.to_multi_instance(model, num_processes=2,
+                                                               cores_per_process=1)
+
+        test_loader = create_data_loader(self.data_dir, 1, self.num_workers, data_transform,
+                                         subset=50, shuffle=False)
+        input_data = list(map(lambda b: b[0], test_loader))
+
+        with torch.no_grad():
+            preds1 = multi_instance_model(input_data)
+            preds2 = [model(b) for b in input_data]
+
+        for (pred1, pred2) in zip(preds1, preds2):
+            np.testing.assert_allclose(pred1, pred2, atol=1e-4,
+                                        err_msg=f"\npred1: {pred1}\npred2: {pred2}\n")
+
     def test_grid_search_model_with_accelerator(self):
         inference_opt = InferenceOptimizer()
 
@@ -497,11 +516,13 @@ class TestInferencePipeline(TestCase):
             has_bf16 = False
 
         if has_bf16:
-            with pytest.raises(RuntimeError):
-                InferenceOptimizer.get_context(self.model, bf16_model)
-            
-            with pytest.raises(RuntimeError):
-                InferenceOptimizer.get_context(ipex_model, bf16_model)
+            with InferenceOptimizer.get_context(self.model, bf16_model):
+                output = self.model(input_sample)
+                assert output.dtype == torch.bfloat16
+
+            with InferenceOptimizer.get_context(ipex_model, bf16_model):
+                output = bf16_model(input_sample)
+                assert output.dtype == torch.bfloat16
 
         # test thread
         ipex_thread_model = InferenceOptimizer.trace(self.model,
@@ -519,5 +540,6 @@ class TestInferencePipeline(TestCase):
             ipex_model(input_sample)
             assert torch.get_num_threads() == 2
 
-        with pytest.raises(RuntimeError):
-            InferenceOptimizer.get_context(jit_thread_model, ipex_thread_model)
+        with InferenceOptimizer.get_context(jit_thread_model, ipex_thread_model):
+            ipex_model(input_sample)
+            assert torch.get_num_threads() == 4

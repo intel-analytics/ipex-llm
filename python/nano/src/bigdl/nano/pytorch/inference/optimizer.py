@@ -108,8 +108,9 @@ class InferenceOptimizer(BaseInferenceOptimizer):
             "bf16_ipex": TorchAccelerationOption(bf16=True, ipex=True),
             "bf16_ipex_channels_last": TorchAccelerationOption(bf16=True, ipex=True,
                                                                channels_last=True),
-            "int8": TorchAccelerationOption(inc=True),
-            "int8_ipex": TorchAccelerationOption(inc=True, method="ipex", ipex=True),
+            "static_int8": TorchAccelerationOption(inc=True),
+            "static_int8_ipex": TorchAccelerationOption(inc=True, method="ipex",
+                                                        ipex=True),
             "jit_fp32": TorchAccelerationOption(jit=True),
             "jit_fp32_channels_last": TorchAccelerationOption(jit=True,
                                                               channels_last=True),
@@ -132,7 +133,7 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                                                                 method="integer"),
         }
 
-    _default_methods = ["original", "bf16", "int8",
+    _default_methods = ["original", "bf16", "static_int8",
                         "jit_fp32_ipex", "jit_fp32_ipex_channels_last",
                         "jit_bf16_ipex", "jit_bf16_ipex_channels_last", "openvino_fp32",
                         "openvino_int8", "onnxruntime_fp32", "onnxruntime_int8_qlinear"]
@@ -163,10 +164,10 @@ class InferenceOptimizer(BaseInferenceOptimizer):
 
         The available methods are "original", "fp32_channels_last", "fp32_ipex",
         "fp32_ipex_channels_last", "bf16", "bf16_channels_last", "bf16_ipex",
-        "bf16_ipex_channels_last", "int8", "int8_ipex", "jit_fp32", "jit_bf16", "jit_fp32_ipex",
-        "jit_fp32_ipex_channels_last", "jit_bf16_ipex", "jit_bf16_ipex_channels_last",
-        "openvino_fp32", "openvino_int8", "onnxruntime_fp32", "onnxruntime_int8_qlinear"
-        and "onnxruntime_int8_integer".
+        "bf16_ipex_channels_last", "static_int8", "static_int8_ipex", "jit_fp32", "jit_bf16",
+        "jit_fp32_ipex", "jit_fp32_ipex_channels_last", "jit_bf16_ipex",
+        "jit_bf16_ipex_channels_last", "openvino_fp32", "openvino_int8", "onnxruntime_fp32",
+        "onnxruntime_int8_qlinear" and "onnxruntime_int8_integer".
 
         :param model: A torch.nn.Module to be optimized
         :param training_data: training_data support following formats:
@@ -402,7 +403,11 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                         # here we suppose trace don't change accuracy,
                         # so we jump it to reduce time cost of optimize
                         if precision == "fp32" and method != "original":
-                            result_map[method]["accuracy"] = "not recomputed"
+                            _accuracy = result_map["original"]["accuracy"]
+                            if isinstance(_accuracy, torch.Tensor):
+                                _accuracy = _accuracy.item()
+                            _accuracy = round(_accuracy, 3)
+                            result_map[method]["accuracy"] = str(_accuracy) + '*'
                         else:
                             if method == "original":
                                 # test whether metric works
@@ -441,6 +446,8 @@ class InferenceOptimizer(BaseInferenceOptimizer):
 
         self._optimize_result = format_optimize_result(self.optimized_model_dict,
                                                        self._calculate_accuracy)
+        self._optimize_result += "* means we assume the precision of the traced model does "\
+                                 "not change, so we don't recompute accuracy to save time.\n"
         # save time cost to self._optimize_result
         time_cost = time.perf_counter() - start_time
         time_cost_str = f"Optimization cost {time_cost:.1f}s in total."
@@ -804,26 +811,33 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                                                             precision="fp32")
             return _context_manager
 
-        def join_manager(manager, new_manager):
+        def join_manager(manager1, manager2):
             def is_bf16(x):
                 return isinstance(x, AutocastContextManager)
-            if (is_bf16(manager) ^ is_bf16(new_manager)) is True:
-                invalidInputError(False, "Can't obtain a new context manager for BF16 model"
-                                  "and non BF16 model.")
-            thread_num1 = manager.thread_num
-            thread_num2 = new_manager.thread_num
+            if (is_bf16(manager1) ^ is_bf16(manager2)) is True:
+                warnings.warn("Only one of the context managers uses mixed precision, "
+                              "and we will return the context manager with mixed precision.")
+            manager = None
+            if is_bf16(manager1) or is_bf16(manager2):
+                manager = AutocastContextManager()
+            else:
+                manager = BaseContextManager()
+            thread_num1 = manager1.thread_num
+            thread_num2 = manager2.thread_num
             if thread_num1 != thread_num2:
                 if thread_num1 is None or thread_num2 is None:
                     warnings.warn("One of the two models has thread control and the other "
                                   "does not. The returned context manager will be dominated "
                                   "by the non-None one.")
-                    if thread_num1 is None:
-                        return new_manager
-                    else:
-                        return manager
                 else:
-                    invalidInputError(False, "Can't obtain a new context manager for model"
-                                      "with different thread_num.")
+                    warnings.warn("These context managers have different thread_num.  We will "
+                                  "set thread_num to the larger one.")
+                if thread_num1 is None or thread_num2 > thread_num1:
+                    manager.thread_num = thread_num2
+                else:
+                    manager.thread_num = thread_num1
+            else:
+                manager.thread_num = thread_num1
             return manager
 
         _context_manager = obtain_manager(model)
@@ -865,33 +879,57 @@ class InferenceOptimizer(BaseInferenceOptimizer):
         return load_model(path, model, inplace=inplace)
 
     @staticmethod
-    def to_multi_instance(model: nn.Module, num_processes: int) -> _MultiInstanceModel:
+    def to_multi_instance(model: nn.Module, num_processes: int = 4,
+                          cores_per_process: int = None,
+                          cpu_for_each_process: List[List] = None) -> _MultiInstanceModel:
         """
         Transform a model to multi-instance inference model.
         :param model: The model to transform.
-        :param num_processes: The number of processes which will be used.
+        :param num_processes: The number of processes to use, default to 4.
+        :param cores_per_process: Number of CPU cores used by each process,
+            default to `None`, means decided automatically.
+        :param cpu_for_each_process: Specify the CPU cores used by each process,
+            default to `None`, if set, it will override `num_processes` and `cores_per_process`.
         :return: Model with multi-instance inference acceleration.
         """
-        p_num = num_processes
-        send_queues = [mp.Queue() for _ in range(p_num)]
-        recv_queues = [mp.Queue() for _ in range(p_num)]
+        invalidInputError(isinstance(num_processes, int) and num_processes > 0,
+                          "num_processes must be a positive integer")
+        p_num = num_processes if cpu_for_each_process is None else len(cpu_for_each_process)
+        send_queue = mp.Queue()
+        recv_queue = mp.Queue()
 
         KMP_AFFINITY = os.environ.get("KMP_AFFINITY", "")
         OMP_NUM_THREADS = os.environ.get("OMP_NUM_THREADS", "")
-        envs = schedule_processors(p_num)
+        if cpu_for_each_process is None:
+            if cores_per_process is None:
+                envs = schedule_processors(p_num)
+            else:
+                envs = [{
+                    "KMP_AFFINITY": f"granularity=fine,proclist="
+                                    f"[{i*cores_per_process}-{(i+1)*cores_per_process-1}]"
+                                    f",explicit",
+                    "OMP_NUM_THREADS": str(cores_per_process)
+                } for i in range(p_num)]
+        else:
+            envs = [{
+                "KMP_AFFINITY": f"granularity=fine,proclist="
+                                f"[{','.join([str(i) for i in cpu_for_each_process[i]])}]"
+                                f",explicit",
+                "OMP_NUM_THREADS": str(len(cpu_for_each_process[i]))
+            } for i in range(p_num)]
         ps = []
         for i in range(p_num):
             os.environ["KMP_AFFINITY"] = envs[i]['KMP_AFFINITY']
             os.environ["OMP_NUM_THREADS"] = envs[i]['OMP_NUM_THREADS']
 
             p = mp.Process(target=_multi_instance_helper,
-                           args=(model, send_queues[i], recv_queues[i]), daemon=True)
+                           args=(model, send_queue, recv_queue), daemon=True)
             p.start()
             ps.append(p)
         os.environ["KMP_AFFINITY"] = KMP_AFFINITY
         os.environ["OMP_NUM_THREADS"] = OMP_NUM_THREADS
 
-        return _MultiInstanceModel(model, ps, send_queues, recv_queues)
+        return _MultiInstanceModel(model, ps, send_queue, recv_queue)
 
 
 def _signature_check(function):

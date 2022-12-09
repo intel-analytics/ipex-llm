@@ -19,8 +19,8 @@ import pandas as pd
 import numpy as np
 
 from unittest import TestCase
-from sklearn.preprocessing import StandardScaler
-from bigdl.chronos.data.utils.scale import _standard_scaler_scale_timeseries_numpy
+from sklearn.preprocessing import StandardScaler, MaxAbsScaler, MinMaxScaler, RobustScaler
+from bigdl.chronos.data.utils.scale import scale_timeseries_numpy
 from numpy.testing import assert_array_almost_equal
 
 from ... import op_torch, op_tf2, op_diff_set_all
@@ -45,12 +45,12 @@ class TestScaleNumpy(TestCase):
     @op_torch
     @op_tf2
     @op_diff_set_all
-    def test_unscale_timeseries_numpy(self):
-        df = get_ts_df()
-        scaler = StandardScaler()
+    def test_scale_timeseries_numpy(self):
+        scalers = [StandardScaler(), MaxAbsScaler(), MinMaxScaler(), RobustScaler()]
         col_list = ["value", "extra feature"]
-        scaler.fit(df[col_list])
-        scaled_data_scaler = scaler.transform(df[col_list])
-        scaled_data_numpy = \
-            _standard_scaler_scale_timeseries_numpy(df[col_list].values, scaler)
-        assert_array_almost_equal(scaled_data_scaler, scaled_data_numpy)
+        for scaler in scalers:
+            df = get_ts_df()
+            scaler.fit(df[col_list])
+            scaled_data_scaler = scaler.transform(df[col_list])
+            scaled_data_numpy = scale_timeseries_numpy(df[col_list].values, scaler)
+            assert_array_almost_equal(scaled_data_scaler, scaled_data_numpy)

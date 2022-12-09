@@ -23,7 +23,7 @@ import glob
 from distutils.dir_util import copy_tree
 from bigdl.dllib.utils.log4Error import invalidOperationError
 
-from typing import TYPE_CHECKING, List, Callable, Union
+from typing import TYPE_CHECKING, List, Callable, Union, Optional
 if TYPE_CHECKING:
     from PIL.JpegImagePlugin import JpegImageFile
     from numpy import ndarray
@@ -381,7 +381,8 @@ def put_local_dir_tree_to_remote(local_dir: str, remote_dir: str):
         return 0
 
 
-def put_local_file_to_remote(local_path: str, remote_path: str, filemode: int=None) -> int:
+def put_local_file_to_remote(local_path: str, remote_path: str,
+                             filemode: Optional[int] = None) -> int:
     if remote_path.startswith("hdfs"):  # hdfs://url:port/file_path
         try:
             cmd = 'hdfs dfs -put -f {} {}'.format(local_path, remote_path)

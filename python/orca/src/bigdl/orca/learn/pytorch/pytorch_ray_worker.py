@@ -75,7 +75,8 @@ class PytorchRayWorker(TorchRunner):
         self.rank = hvd.rank()
         self.size = hvd.size()
         self.setup_components_horovod()
-        self.setup_operator(self.models)
+        self.training_models = self.models
+        self.setup_operator(self.training_models)
 
     def get_node_ip_port(self):
         ip = self.get_node_ip()
