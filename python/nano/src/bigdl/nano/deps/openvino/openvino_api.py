@@ -34,10 +34,14 @@ def PytorchOpenVINOModel(model, input_sample=None, thread_num=None,
                          input and output tensors set to exactly match those given in
                          input_sample. To specify axes of tensors as dynamic (i.e. known only
                          at run-time), set dynamic_axes to a dict with schema:
-                            KEY (str): an input or output name. Each name must also be provided
-                            in input_names or output_names.
-                            VALUE (dict or list): If a dict, keys are axis indices and values are
-                            axis names. If a list, each element is an axis index.
+
+                        | KEY (str): an input or output name. Each name must also be provided
+                        | in input_names or output_names.
+                        |
+                        | VALUE (dict or list): If a dict, keys are axis indices and values
+                        | are axis names. If a list, each element is an axis index.
+
+                         If accelerator != 'openvino'/'onnxruntime', it will be ignored.
     :param logging: whether to log detailed information of model conversion. default: True.
     :param config: The config to be inputted in core.compile_model.
     :param **export_kwargs: will be passed to torch.onnx.export function.
