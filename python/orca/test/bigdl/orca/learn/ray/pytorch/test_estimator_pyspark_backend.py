@@ -685,7 +685,12 @@ class TestPyTorchEstimator(TestCase):
             estimator.save(path, entire=True)
             estimator.shutdown()
 
-            trainer = get_estimator()
+            trainer = Estimator.from_torch(optimizer=get_optimizer,
+                                           loss=nn.BCELoss(),
+                                           metrics=Accuracy(),
+                                           config={"lr": 1e-2},
+                                           workers_per_node=2,
+                                           backend="spark",)
             trainer.load(path)
 
             result_shards = trainer.predict(shards, batch_size=4)
