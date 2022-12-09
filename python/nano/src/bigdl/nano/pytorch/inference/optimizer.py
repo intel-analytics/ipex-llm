@@ -156,6 +156,7 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                  precision: Optional[Tuple[str]] = None,
                  use_ipex: Optional[bool] = None,
                  search_mode: str = "default",
+                 dynamic_axes: Union[bool, dict] = True,
                  logging: bool = False,
                  latency_sample_num: int = 100,
                  includes: Optional[List[str]] = None,
