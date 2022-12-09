@@ -21,7 +21,7 @@ from bigdl.orca.learn.pytorch.training_operator import TrainingOperator
 class Estimator(object):
     @staticmethod
     def from_torch(*,
-                   model,
+                   model=None,
                    optimizer=None,
                    loss=None,
                    metrics=None,
