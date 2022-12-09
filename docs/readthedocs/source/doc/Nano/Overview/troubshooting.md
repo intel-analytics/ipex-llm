@@ -21,13 +21,13 @@ It's known issue for [Intel® Neural Compressor](https://github.com/intel/neural
 
 Please check your torch version and ipex version first. Now we only have CI/CD for ipex>=1.12, and we can't guarantee 100% normal operation when the version is lower than this.
 
-### ``TypeError: cannot serialize xxx object`` when ``InfenreceOptimizer.optimize()`` calling all ipex related methods or when ``InfenreceOptimizer.trace(use_ipex=True)`` / ``InfenreceOptimizer.quantize(use_ipex=True)``
+### ``TypeError: cannot serialize xxx object`` when ``InferenceOptimizer.optimize()`` calling all ipex related methods or when ``InferenceOptimizer.trace(use_ipex=True)`` / ``InferenceOptimizer.quantize(use_ipex=True)``
 
-In ``InfenreceOptimizer.optimize()``, actually we use ``ipex.optimize(model, dtype=torch.bfloat16, inplace=False)`` to make sure not change original model. If your model can't be deepcopy, you should use ``InfenreceOptimizer.trace(use_ipex=True, xxx, inplace=True)`` or ``InfenreceOptimizer.quatize(use_ipex=True, xxx, inplace=True)`` instead and make sure setting ``inplace=True``.
+In ``InferenceOptimizer.optimize()``, actually we use ``ipex.optimize(model, dtype=torch.bfloat16, inplace=False)`` to make sure not change original model. If your model can't be deepcopy, you should use ``InferenceOptimizer.trace(use_ipex=True, xxx, inplace=True)`` or ``InferenceOptimizer.quatize(use_ipex=True, xxx, inplace=True)`` instead and make sure setting ``inplace=True``.
 
-### error message like ``set strict=False`` when ``InfenreceOptimizer.trace(accelerator='jit')`` or ``InfenreceOptimizer.quantize(accelerator='jit')``
+### error message like ``set strict=False`` when ``InferenceOptimizer.trace(accelerator='jit')`` or ``InferenceOptimizer.quantize(accelerator='jit')``
 
-You can set ``strict=False`` for ``torch.jit.trace`` by setting ``jit_strict=False`` in ``InfenreceOptimizer.trace(accelerator='jit', xxx, jit_strict=False)`` or ``InfenreceOptimizer.quantize(accelerator='jit', xxx, jit_strict=False)``. 
+You can set ``strict=False`` for ``torch.jit.trace`` by setting ``jit_strict=False`` in ``InferenceOptimizer.trace(accelerator='jit', xxx, jit_strict=False)`` or ``InferenceOptimizer.quantize(accelerator='jit', xxx, jit_strict=False)``. 
 Refer [API usage of torch.jit.trace](https://pytorch.org/docs/stable/generated/torch.jit.trace.html#torch.jit.trace) for more details.
 
 
@@ -53,3 +53,5 @@ dynamic_axes['x'] = {0: 'batch_size', 2: 'width', 3: 'height'}  # this means the
 input_sample = torch.randn(1, 3, 224, 224)
 acce_model = trace(model=model, input_sample=x, dynamic_axes=dynamic_axes)
 ```
+
+You can refer to [API usage of torch.onnx.export](https://pytorch.org/docs/stable/onnx.html#functions) for more details.
