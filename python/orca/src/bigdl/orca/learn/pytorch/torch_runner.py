@@ -178,9 +178,11 @@ class TorchRunner(BaseRunner):
         self.logger.debug("Creating model")
         if self.model_creator is None:
             if self.model_class is not None:
-                self.models = [self.model_class]
+                self.models = self.model_class
         else:
             self.models = self.model_creator(self.config)
+
+        if self.models is not None:
             if isinstance(self.models, nn.Sequential) or not isinstance(self.models, Iterable):
                 self.models = [self.models]
             invalidInputError(all(isinstance(model, nn.Module) for model in self.models),

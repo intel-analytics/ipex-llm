@@ -690,7 +690,7 @@ class TestPyTorchEstimator(TestCase):
                                            metrics=Accuracy(),
                                            config={"lr": 1e-2},
                                            workers_per_node=2,
-                                           backend="spark",)
+                                           backend="spark")
             trainer.load(path)
 
             result_shards = trainer.predict(shards, batch_size=4)
