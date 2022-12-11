@@ -114,7 +114,7 @@ jobs:
           source $CONDA/bin/activate nano-automl-tf
           $CONDA/bin/conda info
           if [ ! -z "${{matrix.tf-version}}" ]; then
-            bash python/nano/dev/build_and_install.sh linux default false {{matrix.tf-version}}
+            bash python/nano/dev/build_and_install.sh linux default false ${{matrix.tf-version}}
           fi
           pip install pytest
           pip install ConfigSpace
