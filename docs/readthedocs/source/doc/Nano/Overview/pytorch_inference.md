@@ -111,7 +111,7 @@ trainer.predict(ort_model, dataloader)
 ```
 
 ### TorchScript Acceleration
-The [TorchScript](https://pytorch.org/docs/stable/jit.html) usage is a little different from above two cases. In addition to specifying `accelerator=jit`, you can also set `use_ Ipex=True` to enable the additional acceleration provided by [IPEX (Intel® Extension for PyTorch*)](https://www.intel.com/content/www/us/en/developer/tools/oneapi/extension-for-pytorch.html), we generally recommend the combination of `jit` and `ipex`.The following usage is for TorchScript:
+The [TorchScript](https://pytorch.org/docs/stable/jit.html) usage is a little different from above two cases. In addition to specifying `accelerator=jit`, you can also set `use_ipex=True` to enable the additional acceleration provided by [IPEX (Intel® Extension for PyTorch*)](https://www.intel.com/content/www/us/en/developer/tools/oneapi/extension-for-pytorch.html), we generally recommend the combination of `jit` and `ipex`.The following usage is for TorchScript:
 ```python
 # step 4: trace your model as a JIT model
 jit_model = InferenceOptimizer.trace(model, accelerator='jit', input_sample=x)
@@ -129,7 +129,7 @@ y_hat = jit_model(x)
 Quantization is widely used to compress models to a lower precision, which not only reduces the model size but also accelerates inference. For quantization precision, BigDL-Nano supports two common choices: `int8` and `bfloat16`. The usage of the two kinds of precision is quite different.
 
 ### Int8 Quantization
-BigDL-Nano provides `InferenceOptimizer.quantize()` API for users to quickly obtain a int8 quantized model with accuracy control by specifying a few arguments. Intel Neural Compressor (INC) and Post-training Optimization Tools (POT) from OpenVINO toolkit are enabled as options. In the meantime, runtime acceleration is also included directly in the quantization pipeline when using `accelerator='onnxruntime'/'openvino'` so you don't have to run `InferenceOptimizer.trace` before quantization.
+BigDL-Nano provides `InferenceOptimizer.quantize()` API for users to quickly obtain a int8 quantized model with accuracy control by specifying a few arguments. Intel Neural Compressor (INC) and Post-training Optimization Tools (POT) from OpenVINO toolkit are enabled as options.
 
 To use INC as your quantization engine, you can choose accelerator as `None` or `'onnxruntime'`. Otherwise, `accelerator='openvino'` means using OpenVINO POT to do quantization.
 
@@ -165,17 +165,6 @@ trainer.validate(ort_q_model, dataloader)
 trainer.test(ort_q_model, dataloader)
 trainer.predict(ort_q_model, dataloader)
 ```
-Using `accelerator='onnxruntime'` actually equals to converting the model from PyTorch to ONNX firstly and then do quantization on the converted ONNX model:
-```python
-ort_model = InferenceOptimizer.trace(model, accelerator='onnruntime', input_sample=x):
-ort_q_model = InferenceOptimizer.quantize(ort_model, accelerator='onnxruntime', calib_data=dataloader)
-
-# run inference with transparent acceleration
-y_hat = ort_q_model(x)
-trainer.validate(ort_q_model, dataloader)
-trainer.test(ort_q_model, dataloader)
-trainer.predict(ort_q_model, dataloader)
-```
 
 #### Quantization using Post-training Optimization Tools
 The POT (Post-training Optimization Tools) is provided by OpenVINO toolkit.
@@ -186,17 +175,6 @@ ov_q_model = InferenceOptimizer.quantize(model, accelerator='openvino', calib_da
 y_hat = ov_q_model(x)
 
 # validate, predict, test in Trainer also support acceleration
-trainer.validate(ov_q_model, dataloader)
-trainer.test(ov_q_model, dataloader)
-trainer.predict(ov_q_model, dataloader)
-```
-Same as using ONNXRuntime accelerator, it equals to converting the model from PyTorch to OpenVINO firstly and then doing quantization on the converted OpenVINO model:
-```python
-ov_model = InferenceOptimizer.trace(model, accelerator='openvino', input_sample=x):
-ov_q_model = InferenceOptimizer.quantize(ov_model, accelerator='onnxruntime', calib_data=dataloader)
-
-# run inference with transparent acceleration
-y_hat = ov_q_model(x)
 trainer.validate(ov_q_model, dataloader)
 trainer.test(ov_q_model, dataloader)
 trainer.predict(ov_q_model, dataloader)
@@ -233,7 +211,7 @@ InferenceOptimizer.quantize(model,
                             tuning_strategy='bayesian',
                             timeout=0,
                             max_trials=10,
-                            ):
+                            )
 ```
 **Accuracy Control with POT**
 Similar to INC, we can run quantization like:
@@ -247,7 +225,7 @@ InferenceOptimizer.quantize(model,
                             accuracy_criterion={'relative': 0.01, 'higher_is_better': True},
                             approach='static',
                             max_trials=10,
-                            ):
+                            )
 ```
 
 ## Multi-instance Acceleration
@@ -337,13 +315,13 @@ It's quite easy for you use BFloat16 Quantization as below:
 bf16_model = InferenceOptimizer.quantize(model,
                                          precision='bf16')
 # run simple prediction with transparent acceleration
-with InferenceOptimizer.get_context():
+with InferenceOptimizer.get_context(bf16_model):
     y_hat = bf16_model(x)
 ```
 
 ```eval_rst
 .. note::
-    For BFloat16 quantization, make sure your inference is under ``with InferenceOptimizer.get_context():``. Otherwise, the whole inference process is actually FP32 precision.
+    For BFloat16 quantization, make sure your inference is under ``with InferenceOptimizer.get_context(bf16_model):``. Otherwise, the whole inference process is actually FP32 precision.
 
     For more details about the context manager provided by ``InferenceOptimizer.get_context()``, you could refer related [How-to guide]().
 ```
@@ -356,7 +334,7 @@ bf16_model = InferenceOptimizer.quantize(model,
                                          precision='bf16',
                                          channels_last=True)
 # run simple prediction with transparent acceleration
-with InferenceOptimizer.get_context():
+with InferenceOptimizer.get_context(bf16_model):
     y_hat = bf16_model(x)
 ```
 
@@ -370,7 +348,7 @@ bf16_model = InferenceOptimizer.quantize(model,
                                          use_ipex=True,
                                          channels_last=True)
 # run simple prediction with transparent acceleration
-with InferenceOptimizer.get_context():
+with InferenceOptimizer.get_context(bf16_model):
     y_hat = bf16_model(x)
 ```
 
