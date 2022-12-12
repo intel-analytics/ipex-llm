@@ -102,7 +102,6 @@ class PyTorchPySparkEstimator(BaseEstimator):
             sync_stats=True,
             log_level=logging.INFO,
             model_dir=None,
-            model_class=None,
             log_to_driver=True):
         logging.basicConfig(level=log_level,
                             format='[%(asctime)s] %(levelname)-8s %(message)s',
@@ -117,7 +116,7 @@ class PyTorchPySparkEstimator(BaseEstimator):
 
         sc = OrcaContext.get_spark_context()
 
-        if model_creator is not None and not isinstance(model_creator, types.FunctionType):
+        if model_creator and not isinstance(model_creator, types.FunctionType):
             # Torch model is also callable.
             invalidInputError(False,
                               "Must provide a function for model_creator")
@@ -130,8 +129,8 @@ class PyTorchPySparkEstimator(BaseEstimator):
         self.model_dir = parse_model_dir(model_dir)
 
         self.model_creator = model_creator
-        self.model_class = model_class
         self.optimizer_creator = optimizer_creator
+        self.model_class = None
 
         num_nodes, cores_per_node = get_node_and_core_number()
         self.num_workers = num_nodes * workers_per_node
@@ -177,7 +176,7 @@ class PyTorchPySparkEstimator(BaseEstimator):
             cluster_info=self._get_cluster_info(sc),
             **local_init_params)
 
-        if self.model_creator is not None or self.model_class is not None:
+        if self.model_creator or self.model_class:
             self.state_dict = self.driver_runner.get_state_dict()
 
     def create_tcpstore_server(self):

@@ -122,7 +122,7 @@ class PytorchPysparkWorker(TorchRunner):
         else:
             self.rank = 0
             self.setup_components()
-            if self.model_creator is not None or self.model_class is not None:
+            if self.model_creator or self.model_class:
                 self.setup_operator(self.models)
 
     def train_epochs(self, data_creator, epochs=1, batch_size=32, profile=False,
