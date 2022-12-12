@@ -16,6 +16,7 @@
 
 import io
 import os
+import re
 import tempfile
 import time
 import mmcv
@@ -316,10 +317,11 @@ class MMCVRayEpochRunner(BaseRayRunner, EpochBasedRunner):
         Returns:
             dict or OrderedDict: The loaded checkpoint.
         """
+        checkpoint = {}
         if filename:
             checkpoint = CheckpointLoader.load_checkpoint(filename, map_location, self.logger)
         elif ckpt_dict:
-            checkpont = ckpt_dict
+            checkpoint = ckpt_dict
         else:
             invalidInputError(False, "either provide a checkpoint filename"
                                      "or a checkpoint dict")
