@@ -20,8 +20,8 @@ from tensorflow import keras
 from keras import layers
 from keras import losses, metrics
 
-# keras.Model is injected with customized functions
-from bigdl.nano.tf.keras import Model
+# Use `InferenceOptimizer` for quantization
+from bigdl.nano.tf.keras import Model, InferenceOptimizer
 
 # Model / data parameters
 num_classes = 10
@@ -104,7 +104,7 @@ if __name__ == "__main__":
     tune_dataset = tf.data.Dataset.from_tensor_slices((x_train, y_train))
 
     # Execute quantization
-    q_model = model.quantize(x=tune_dataset)
+    q_model = InferenceOptimizer.quantize(model, x=tune_dataset)
 
     # Inference using quantized model
     y_test_hat = q_model(x_test)
