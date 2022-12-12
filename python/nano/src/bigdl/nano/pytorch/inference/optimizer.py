@@ -250,10 +250,11 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                | get the search range.
 
         :param dynamic_axes: dict or boolean, default to True. By default the exported onnx model
-               will have the first dim of each input as a dynamic batch_size. If dynamic_axes=False,
-               the exported model will have the shapes of all input and output tensors set to
-               exactly match those given in input_sample. To specify axes of tensors as dynamic
-               (i.e. known only at run-time), set dynamic_axes to a dict with schema:
+               will have the first dim of each Tensor input as a dynamic batch_size. If
+               dynamic_axes=False, the exported model will have the shapes of all input and output
+               tensors set to exactly match those given in input_sample. To specify axes of
+               tensors as dynamic (i.e. known only at run-time), set dynamic_axes to a dict with
+               schema:
 
                | KEY (str): an input or output name. Each name must also be provided
                | in input_names or output_names.
@@ -576,8 +577,8 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                            passed to torch.jit.trace. if accelerator != 'jit', it will be ignored.
                            Default to True.
         :param dynamic_axes: dict or boolean, default to True. By default the exported onnx model
-                             will have the first dim of each input as a dynamic batch_size. If
-                             dynamic_axes=False, the exported model will have the shapes of all
+                             will have the first dim of each Tensor input as a dynamic batch_size.
+                             If dynamic_axes=False, the exported model will have the shapes of all
                              input and output tensors set to exactly match those given in
                              input_sample. To specify axes of tensors as dynamic (i.e. known only
                              at run-time), set dynamic_axes to a dict with schema:
@@ -788,8 +789,8 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                            passed to torch.jit.trace. if accelerator != 'jit', it will be ignored.
                            Default to True.
         :param dynamic_axes: dict or boolean, default to True. By default the exported onnx model
-                             will have the first dim of each input as a dynamic batch_size. If
-                             dynamic_axes=False, the exported model will have the shapes of all
+                             will have the first dim of each Tensor input as a dynamic batch_size.
+                             If dynamic_axes=False, the exported model will have the shapes of all
                              input and output tensors set to exactly match those given in
                              input_sample. To specify axes of tensors as dynamic (i.e. known only
                              at run-time), set dynamic_axes to a dict with schema:
