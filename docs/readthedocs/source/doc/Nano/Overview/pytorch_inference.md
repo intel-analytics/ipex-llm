@@ -34,11 +34,11 @@ Before you go ahead with these APIs, you have to make sure BigDL-Nano is correct
 
     Or if you just want to use one of supported optimizations:
 
-    - [INC (Intel Neural Compressor)](https://github.com/intel/neural-compressor): ``pip install neural-compressor``
+    - `INC (Intel Neural Compressor) <https://github.com/intel/neural-compressor>`_: ``pip install neural-compressor``
 
-    - [OpenVINO](https://www.intel.com/content/www/us/en/developer/tools/openvino-toolkit/overview.html): ``pip install openvino-dev``
+    - `OpenVINO <https://www.intel.com/content/www/us/en/developer/tools/openvino-toolkit/overview.html>`_: ``pip install openvino-dev``
 
-    - [ONNXRuntime](https://onnxruntime.ai/): ``pip install onnx onnxruntime onnxruntime-extensions onnxsim neural-compressor``
+    - `ONNXRuntime <https://onnxruntime.ai/>`_: ``pip install onnx onnxruntime onnxruntime-extensions onnxsim neural-compressor``
 
     We recommand installing all dependencies by ``pip install --pre --upgrade bigdl-nano[pytorch,inference]``, because you may run into version issues if you install dependencies manually.
 ```
