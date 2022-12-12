@@ -19,12 +19,9 @@ import logging
 import tempfile
 import shutil
 
-from pyspark.sql.dataframe import DataFrame
-
 from bigdl.dllib.utils.common import get_node_and_core_number
 from bigdl.dllib.utils.file_utils import is_local_path
 from bigdl.dllib.utils.utils import get_node_ip
-
 from bigdl.orca.data.file import is_file, exists, get_remote_file_to_local, \
     get_remote_files_with_prefix_to_local, put_local_file_to_remote, \
     put_local_files_with_prefix_to_remote
@@ -34,14 +31,22 @@ from bigdl.orca.learn.utils import maybe_dataframe_to_xshards, dataframe_to_xsha
     convert_predict_xshards_to_dataframe, make_data_creator, load_model, \
     save_model, process_xshards_of_pandas_dataframe
 from bigdl.orca.learn.log_monitor import start_log_server, stop_log_server
-from bigdl.orca.data.shard import SparkXShards
 from bigdl.orca import OrcaContext
+from bigdl.orca.data.shard import SparkXShards
 from bigdl.dllib.utils.log4Error import invalidInputError
+
+from pyspark.sql.dataframe import DataFrame
+
+from typing import TYPE_CHECKING, Any, Dict, List, Callable, Union, Optional
+if TYPE_CHECKING:
+    from tensorflow.python.saved_model.save_options import SaveOptions
+    from tensorflow.python.keras.callbacks import Callback
+    from tensorflow.python.keras.engine.training import Model
 
 logger = logging.getLogger(__name__)
 
 
-def parse_model_dir(model_dir):
+def parse_model_dir(model_dir: str) -> str:
     if model_dir and model_dir.startswith("dbfs:/"):
         model_dir = "/dbfs/" + model_dir[len("dbfs:/"):]
     return model_dir
@@ -49,14 +54,14 @@ def parse_model_dir(model_dir):
 
 class SparkTFEstimator():
     def __init__(self,
-                 model_creator,
-                 config=None,
-                 compile_args_creator=None,
-                 verbose=False,
-                 workers_per_node=1,
-                 model_dir=None,
-                 log_to_driver=True,
-                 **kwargs):
+                 model_creator: Callable,
+                 config: Optional[Dict[str, Any]]=None,
+                 compile_args_creator: Optional[Callable]=None,
+                 verbose: bool=False,
+                 workers_per_node: int=1,
+                 model_dir: Optional[str]=None,
+                 log_to_driver: bool=True,
+                 **kwargs) -> None:
         self.model_creator = model_creator
         self.compile_args_creator = compile_args_creator
         self.config = {} if config is None else config
@@ -102,11 +107,21 @@ class SparkTFEstimator():
         cluster_info = self.workerRDD.barrier().mapPartitions(find_ip_and_free_port).collect()
         return cluster_info
 
-    def fit(self, data, epochs=1, batch_size=32, verbose=1,
-            callbacks=None, validation_data=None, class_weight=None, initial_epoch=0,
-            steps_per_epoch=None, validation_steps=None, validation_freq=1,
-            data_config=None, feature_cols=None,
-            label_cols=None):
+    def fit(self,
+            data: Union["SparkXShards", "Dataframe", Callable],
+            epochs: int=1,
+            batch_size: int=32,
+            verbose: int=1,
+            callbacks: Optional[str]=None,
+            validation_data: Optional[Union["SparkXShards", "Dataframe", Callable]]=None,
+            class_weight: Optional[Dict[int, float]]=None,
+            initial_epoch: int=0,
+            steps_per_epoch: Optional[int]=None,
+            validation_steps: Optional[int]=None,
+            validation_freq: int=1,
+            data_config: Optional[Dict[str, Any]]=None,
+            feature_cols: Optional[List[str]]=None,
+            label_cols: Optional[List[str]]=None):
         """
         Train this tensorflow model with train data.
         :param data: train data. It can be XShards, Spark DataFrame or creator function which
@@ -235,9 +250,16 @@ class SparkTFEstimator():
 
         return result[0]
 
-    def evaluate(self, data, batch_size=32, num_steps=None, verbose=1,
-                 sample_weight=None, callbacks=None, data_config=None,
-                 feature_cols=None, label_cols=None):
+    def evaluate(self,
+                 data: Union["SparkXShards", "DataFrame", Callable],
+                 batch_size: int=32,
+                 num_steps: Optional[int]=None,
+                 verbose: int=1,
+                 sample_weight: Optional["np.ndarray"]=None,
+                 callbacks: Optional[List["Callback"]]=None,
+                 data_config: Optional[Dict[str, Any]]=None,
+                 feature_cols: Optional[List[str]]=None,
+                 label_cols: Optional[List[str]]=None):
         """
         Evaluates the model on the validation data set.
         :param data: evaluate data. It can be XShards, Spark DataFrame or creator function which
@@ -322,9 +344,14 @@ class SparkTFEstimator():
                 lambda iter: transform_func(iter, init_params, params)).collect()
         return res[0]
 
-    def predict(self, data, batch_size=None, verbose=1,
-                steps=None, callbacks=None, data_config=None,
-                feature_cols=None):
+    def predict(self,
+                data: Union["SparkXShards", "DataFrame"],
+                batch_size: Optional[int]=None,
+                verbose: int=1,
+                steps: Optional[int]=None,
+                callbacks: Optional[List["Callback"]]=None,
+                data_config: Optional[Dict[str, Any]]=None,
+                feature_cols: Optional[List[str]]=None):
         """
         Predict the input data
         :param data: predict input data.  It can be XShards or Spark DataFrame.
@@ -397,7 +424,10 @@ class SparkTFEstimator():
 
         return result
 
-    def save_weights(self, filepath, overwrite=True, save_format=None):
+    def save_weights(self,
+                     filepath: str,
+                     overwrite: bool=True,
+                     save_format: Optional[str]=None) -> None:
         """
         Save model weights at the provided path.
         :param filepath: String or PathLike, path to the file to save the weights to.
@@ -435,7 +465,9 @@ class SparkTFEstimator():
             finally:
                 shutil.rmtree(temp_dir)
 
-    def load_weights(self, filepath, by_name=False):
+    def load_weights(self,
+                     filepath: str,
+                     by_name: bool=False) -> None:
         """
         Load tensorflow keras model weights in this estimator.
 
@@ -473,12 +505,12 @@ class SparkTFEstimator():
         self.model_weights = model.get_weights()
 
     def save(self,
-             filepath,
-             overwrite=True,
-             include_optimizer=True,
-             save_format=None,
-             signatures=None,
-             options=None):
+             filepath: str,
+             overwrite: bool=True,
+             include_optimizer: bool=True,
+             save_format: Optional[str]=None,
+             signatures: Optional[str]=None,
+             options: Optional["SaveOptions"]=None) -> None:
         """
         Saves the model to Tensorflow SavedModel or a single HDF5 file.
 
@@ -506,7 +538,10 @@ class SparkTFEstimator():
         save_model(model, filepath, overwrite=overwrite, include_optimizer=include_optimizer,
                    save_format=save_format, signatures=signatures, options=options)
 
-    def load(self, filepath, custom_objects=None, compile=True):
+    def load(self,
+             filepath: str,
+             custom_objects=None,
+             compile: bool=True) -> None:
         """
         Loads a model saved via `estimator.save()
 
@@ -537,7 +572,8 @@ class SparkTFEstimator():
         if self.model_dir is not None:
             save_model(model, self._model_saved_path, save_format="h5", filemode=0o666)
 
-    def get_model(self, set_weights=True):
+    def get_model(self,
+                  set_weights: bool=True) -> "Model":
         """
         Returns the learned model.
 
@@ -553,10 +589,10 @@ class SparkTFEstimator():
         return model
 
     @property
-    def _model_saved_path(self):
+    def _model_saved_path(self) -> str:
         return os.path.join(self.model_dir, "{}_model.h5".format(self.application_id))
 
-    def shutdown(self):
+    def shutdown(self) -> None:
         """
         Shutdown estimator and release resources.
         """

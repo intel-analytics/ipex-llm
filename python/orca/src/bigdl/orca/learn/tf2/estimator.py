@@ -20,6 +20,8 @@ import numpy as np
 from bigdl.orca.learn.utils import get_latest_checkpoint
 from bigdl.dllib.utils.log4Error import invalidInputError
 
+from typing import Dict, Callable, Optional, Any
+
 
 logger = logging.getLogger(__name__)
 
@@ -27,17 +29,17 @@ logger = logging.getLogger(__name__)
 class Estimator(object):
     @staticmethod
     def from_keras(*,
-                   model_creator=None,
-                   config=None,
-                   verbose=False,
-                   workers_per_node=1,
-                   compile_args_creator=None,
-                   backend="ray",
-                   cpu_binding=False,
-                   log_to_driver=True,
-                   model_dir=None,
+                   model_creator: Optional[Callable]=None,
+                   config: Dict[str, Any]=None,
+                   verbose: bool=False,
+                   workers_per_node: int=1,
+                   compile_args_creator: Optional[Callable]=None,
+                   backend: str="ray",
+                   cpu_binding: bool=False,
+                   log_to_driver: bool=True,
+                   model_dir: Optional[str]=None,
                    **kwargs
-                   ):
+                   ) -> None:
         """
         Create an Estimator for tensorflow 2.
 
@@ -86,11 +88,11 @@ class Estimator(object):
                               f" for now, got backend: {backend}")
 
     @staticmethod
-    def latest_checkpoint(checkpoint_dir):
+    def latest_checkpoint(checkpoint_dir: str) -> str:
         return get_latest_checkpoint(checkpoint_dir)
 
 
-def make_data_creator(refs):
+def make_data_creator(refs: Any) -> Callable:
     def data_creator(config, batch_size):
         return refs
 
