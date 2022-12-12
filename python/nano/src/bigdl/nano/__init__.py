@@ -39,3 +39,16 @@ def _check_nano_envs():
 
 # disable env check for now, as it does not work for tf and windows
 # _check_nano_envs()
+
+try:
+    import intel_extension_for_pytorch
+except ModuleNotFoundError:
+    import torch
+    import platform
+    import warnings
+    _torch_version = torch.__version__.rpartition('.')[0]
+    _py_version = platform.python_version().split('.')[1]
+    _link = "https://github.com/intel/intel-extension-for-pytorch#installation"
+    if _torch_version == '1.10' and _py_version != '9':
+        warnings.warn("If you want to use the acceleration feature of ipex, "
+                      f"install it from this link: {_link}")
