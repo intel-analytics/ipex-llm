@@ -19,7 +19,7 @@ source bigdl-nano-init
 BigDL-Nano will export a few environment variables, such as `OMP_NUM_THREADS` and `KMP_AFFINITY`, according to your current hardware. Empirically, these environment variables work best for most PyTorch applications. After setting these environment variables, you can just run your applications as usual (e.g., `python app.py` or `jupyter notebook`).
 
 ## Accelerate `nn.Module`'s training
-`nn.Module` is the abstraction used in PyTorch for AI Model. It's common that users' model is easy enough to be handled by a ragulr training loop. In other cases, users may have highly costomized training loop. Nano could support the acceleration for both cases.
+`nn.Module` is the abstraction used in PyTorch for AI Model. It's common that users' model is easy enough to be handled by a regular training loop. In other cases, users may have highly customized training loop. Nano could support the acceleration for both cases.
 
 ### `nn.Module` with regular training loop
 Most of the AI model defined in `nn.Module` could be trained in a similar regular training loop. Any `nn.Module` that 
@@ -39,7 +39,7 @@ trainer = Trainer(max_epoch=10)
 trainer.fit(lightning_module, train_loader)
 ```
 
-`trainer.fit` will applied all the acceleration methods that could generally applied to any models. While there are some optional acceleration method for which you could easily enable.
+`trainer.fit` will apply all the acceleration methods that could generally be applied to any models. While there are some optional acceleration method for which you could easily enable.
 
 ### `nn.Module` with customized training loop
 
@@ -78,7 +78,7 @@ trainer.fit(lightning_module, train_loader)
 
 [Intel Extension for PyTorch](https://github.com/intel/intel-extension-for-pytorch) (a.k.a. IPEX) extends PyTorch with optimizations for an extra performance boost on Intel hardware.
 
-BigDL-Nano integrates IPEX through the `Trainer`. Users can turn on IPEX by setting `use_ipex=True`.
+BigDL-Nano integrates IPEX in `Trainer` and `TorchNano`. Users can turn on IPEX by setting `use_ipex=True`.
 
 ```eval_rst
 
@@ -111,7 +111,7 @@ BigDL-Nano integrates IPEX through the `Trainer`. Users can turn on IPEX by sett
 
 When training on a server with dozens of CPU cores, it is often beneficial to use multiple training instances in a data-parallel fashion to make full use of the CPU cores. However, using PyTorch's DDP API is a little cumbersome and error-prone, and if not configured correctly, it will make the training even slow.
 
-You can just set the `num_processes` parameter in the `Trainer` constructor and BigDL-Nano will launch the specific number of processes to perform data-parallel training. Each process will be automatically pinned to a different subset of CPU cores to avoid conflict and maximize training throughput.
+You can just set the `num_processes` parameter in the `Trainer` or `TorchNano` constructor and BigDL-Nano will launch the specific number of processes to perform data-parallel training. Each process will be automatically pinned to a different subset of CPU cores to avoid conflict and maximize training throughput.
 
 ```eval_rst
 
@@ -145,7 +145,7 @@ Note that the effective batch size in multi-instance training is the `batch_size
 ### BFloat16 Mixed Precision
 BFloat16 Mixed Precison combines BFloat16 and FP32 during training, which could lead to increased performance and reduced memory usage. Compared to FP16 mixed precison, BFloat16 mixed precision has better numerical stability.
 
-`bigdl.nano.pytorch.Trainer` API extends PyTorch Lightning Trainer with multiple integrated optimizations. You could instantiate a BigDL-Nano Trainer with `precision='bf16'` to use BFloat16 mixed precision for training.
+ You could instantiate a BigDL-Nano `Trainer` or `TorchNano` with `precision='bf16'` to use BFloat16 mixed precision for training.
 
 
 ```eval_rst
@@ -176,7 +176,7 @@ BFloat16 Mixed Precison combines BFloat16 and FP32 during training, which could 
 ```
 
 ### Channels Last Memory Format
-`bigdl.nano.pytorch.Trainer` API extends PyTorch Lightning Trainer with multiple integrated optimizations. You could instantiate a BigDL-Nano Trainer with channels_last=True to use the channels last memory format, i.e. NHWC (batch size, height, width, channels), as an alternative way to store tensors in classic/contiguous NCHW order.
+ You could instantiate a BigDL-Nano `Trainer` or `TorchNano` with `channels_last=True` to use the channels last memory format, i.e. NHWC (batch size, height, width, channels), as an alternative way to store tensors in classic/contiguous NCHW order.
 
 ```eval_rst
 
