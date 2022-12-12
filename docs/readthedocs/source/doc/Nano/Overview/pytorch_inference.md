@@ -2,7 +2,7 @@
 
 BigDL-Nano provides several APIs which can help users easily apply optimizations on inference pipelines to improve latency and throughput. Currently, performance accelerations are achieved by integrating extra runtimes as inference backend engines or using quantization methods on full-precision trained models to reduce computation during inference. InferenceOptimizer (`bigdl.nano.pytorch.InferenceOptimizer`) provides the APIs for all optimizations that you need for inference.
 
-For runtime acceleration, BigDL-Nano has enabled three kinds of runtime for users in `InferenceOptimizer.trace()`, ONNXRuntime, OpenVINO and jit.
+For runtime acceleration, BigDL-Nano has enabled four kinds of runtime for users in `InferenceOptimizer.trace()`, ONNXRuntime, OpenVINO, and jit.
 
 ```eval_rst
 .. warning::
@@ -21,6 +21,27 @@ For quantization, BigDL-Nano provides only post-training quantization in `Infere
 ```
 
 Before you go ahead with these APIs, you have to make sure BigDL-Nano is correctly installed for PyTorch. If not, please follow [this](../Overview/nano.md) to set up your environment.
+
+```eval_rst
+.. note::
+    You can install all required dependencies by
+
+    ::
+
+        pip install --pre --upgrade bigdl-nano[pytorch,inference]
+
+    This will install all dependencies required by BigDL-Nano PyTorch inference.
+
+    Or if you just want to use one of supported optimizations:
+
+    - INC (Intel Neural Compressor): ``pip install neural-compressor``
+
+    - OpenVINO: ``pip install openvino-dev``
+
+    - ONNXRuntime: ``pip install onnx onnxruntime onnxruntime-extensions onnxsim neural-compressor``
+
+    We recommand installing all dependencies by ``pip install bigdl-nano[pytorch,inference]``, because you may run into version issues if you install dependencies manually.
+```
 
 ##  Runtime Acceleration
 All available runtime accelerations are integrated in `InferenceOptimizer.trace(accelerator='onnxruntime'/'openvino'/'jit')` with different accelerator values. Let's take mobilenetv3 as an example model and here is a short script that you might have before applying any BigDL-Nano's optimizations:
@@ -52,11 +73,7 @@ trainer.test(ort_model, dataloader)
 trainer.predict(ort_model, dataloader)
 ```
 ### ONNXRuntime Acceleration
-Before you start with ONNXRuntime accelerator, you are required to install some ONNX packages as follows to set up your environment with ONNXRuntime acceleration.
-```shell
-pip install onnx onnxruntime
-```
-When you're ready, you can simply append the following part to enable your ONNXRuntime acceleration.
+You can simply append the following part to enable your ONNXRuntime acceleration.
 ```python
 # step 4: trace your model as an ONNXRuntime model
 # if you have run `trainer.fit` before trace, then argument `input_sample` is not required.
@@ -74,10 +91,6 @@ trainer.predict(ort_model, dataloader)
 # trainer.fit(ort_model, dataloader) # this is illegal
 ```
 ### OpenVINO Acceleration
-To use OpenVINO acceleration, you have to install the OpenVINO toolkit:
-```shell
-pip install openvino-dev
-```
 The OpenVINO usage is quite similar to ONNXRuntime, the following usage is for OpenVINO:
 ```python
 # step 4: trace your model as a openvino model
@@ -96,6 +109,9 @@ trainer.predict(ort_model, dataloader)
 # note that `ort_model` is not trainable any more, so you can't use like
 # trainer.fit(ort_model, dataloader) # this is illegal
 ```
+
+### Jit Acceleration
+
 
 ## Quantization
 Quantization is widely used to compress models to a lower precision, which not only reduces the model size but also accelerates inference. BigDL-Nano provides `InferenceOptimizer.quantize()` API for users to quickly obtain a quantized model with accuracy control by specifying a few arguments. Intel Neural Compressor (INC) and Post-training Optimization Tools (POT) from OpenVINO toolkit are enabled as options. In the meantime, runtime acceleration is also included directly in the quantization pipeline when using `accelerator='onnxruntime'/'openvino'` so you don't have to run `InferenceOptimizer.trace` before quantization.
