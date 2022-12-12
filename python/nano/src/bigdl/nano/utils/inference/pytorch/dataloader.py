@@ -15,7 +15,7 @@
 #
 
 from bigdl.nano.utils.inference.pytorch.model_utils import get_forward_args, \
-    get_tensor_args
+    get_conditional_args
 from typing import Sequence
 from copy import deepcopy
 import torch
@@ -73,7 +73,7 @@ def automatic_add_label_in_dataloader(model, dataloader, input_sample=None):
 
 def _need_dataloader_type_transformation(model, dataloader):
     # get forward method's parameter number
-    forward_args = get_tensor_args(model)
+    forward_args = get_conditional_args(model, include="all", exclude=(bool,))
     forward_args_len = len(forward_args)
 
     # if the model is a simple model(x) format
@@ -92,19 +92,26 @@ def _need_dataloader_type_transformation(model, dataloader):
 
 
 def _check_whether_add_label(model, dataloader, input_sample=None):
+    '''
+    This function is used to check if the dataloader(calib_data) needs
+    to add a (dummy) label at last.
+    '''
     # get forward method's parameter number and input sample
-    forward_args = get_forward_args(model)
+    forward_args = get_conditional_args(model, include="all", exclude=(bool,))
     forward_args_len = len(forward_args)
     loader_input_sample = next(iter(dataloader))
 
     if isinstance(loader_input_sample, torch.Tensor):
+        # only one tensor provided, clearly we need a dummy label
         if forward_args_len >= 1:
             return True
     elif isinstance(loader_input_sample, Sequence):
         if len(loader_input_sample[0]) == forward_args_len:
+            # this means user returns a (x1, x2, ...), y
             return False
         else:
             if len(loader_input_sample) > forward_args_len:
+                # this means users dataset returns at least 1 label
                 return False
             else:
                 # test run to check if input_sample meet input requirent
@@ -114,7 +121,7 @@ def _check_whether_add_label(model, dataloader, input_sample=None):
                     if input_sample is not None and len(loader_input_sample) > len(input_sample):
                         return False
                     return True
-                except RuntimeError:
+                except Exception:
                     # input sample may contain label already
                     pass
     return False

@@ -24,6 +24,7 @@ import torch
 from torch import nn
 from torch.utils.data import TensorDataset, DataLoader
 import torchmetrics
+import numpy as np
 
 from bigdl.nano.pytorch import Trainer
 from bigdl.nano.pytorch import InferenceOptimizer
@@ -301,6 +302,22 @@ class TestOnnx(TestCase):
                                                calib_data=torch.rand(2,3,1,1),
                                                input_sample=(torch.rand(2,3,1,1), False, True))
         result_m = accmodel(data)
+
+        # default bool values
+        class Net(nn.Module):
+            def __init__(self):
+                super().__init__()
+            def forward(self, x, a=3):
+                return x + a
+        model = Net()
+
+        data = torch.rand(1,3,1,1)
+
+        # sample with only required parameters (in a tuple)
+        accmodel = InferenceOptimizer.quantize(model,
+                                               accelerator="onnxruntime",
+                                               calib_data=(torch.rand(2,3,1,1), 5))
+        result_m = accmodel(data, np.array([5]))  # TODO: make this 5
 
 
 if __name__ == '__main__':
