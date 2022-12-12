@@ -201,8 +201,8 @@ best_model.predict(train_dataset)
 .. tip::
     Some useful parameters of ``InferenceOptimizer.optimize``:
 
-    - ``includes``: A str list. If set, it will only try optimizations in this parameter.
-    - ``excludes``: A str list. If set, it will try all optimizations (or optimizations specified by ``includes``) except for those in this parameter.
+    - ``includes``: A str list. If set, ``optimize`` will only try optimizations in this parameter.
+    - ``excludes``: A str list. If set, ``optimize`` will try all optimizations (or optimizations specified by ``includes``) except for those in this parameter.
 
     See its (API document)[https://bigdl.readthedocs.io/en/latest/doc/PythonAPI/Nano/tensorflow.html#bigdl.nano.tf.keras.InferenceOptimizer.optimize] for more advanced usage.
 ```
