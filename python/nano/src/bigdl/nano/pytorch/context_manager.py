@@ -24,13 +24,19 @@ class BaseContextManager(object):
     This context manager is used for providing no_grad context only.
     """
 
-    no_grad = torch.no_grad()
+    def __init__(self, thread_num=None):
+        self.no_grad = torch.no_grad()
+        self.thread_num = thread_num
+        self.original_thread_num = torch.get_num_threads()
 
     def __enter__(self):
+        if self.thread_num is not None:
+            torch.set_num_threads(self.thread_num)
         self.no_grad.__enter__()
 
     def __exit__(self, exc_type, exc_value, exc_tb):
         self.no_grad.__exit__(exc_type, exc_value, exc_tb)
+        torch.set_num_threads(self.original_thread_num)
 
 
 class AutocastContextManager(BaseContextManager):
@@ -40,8 +46,9 @@ class AutocastContextManager(BaseContextManager):
     This context manager is used for providing no grad and autocast context,
     which is used for bf16 model.
     """
-
-    autocast = torch.cpu.amp.autocast(enabled=True, dtype=torch.bfloat16)
+    def __init__(self, thread_num=None):
+        super().__init__(thread_num=thread_num)
+        self.autocast = torch.cpu.amp.autocast(enabled=True, dtype=torch.bfloat16)
 
     def __enter__(self):
         super().__enter__()
@@ -50,3 +57,17 @@ class AutocastContextManager(BaseContextManager):
     def __exit__(self, exc_type, exc_value, exc_tb):
         self.autocast.__exit__(exc_type, exc_value, exc_tb)
         super().__exit__(exc_type, exc_value, exc_tb)
+
+
+def generate_context_manager(accelerator=None, precision="fp32", thread_num=None):
+    '''
+    generate correct context manager according to different situation
+    :param acclerator: str, the accelerator to use, we support "onnxruntime", "openvino"
+           and None for pytorch framework.
+    :param precision: str, the precision to use, we support "fp32", "bf16" and "int8".
+    :param thread_num: int, the thread number to allocate, None for no limit.
+    '''
+    if precision != "bf16":
+        return BaseContextManager(thread_num=thread_num)
+    else:
+        return AutocastContextManager(thread_num=thread_num)

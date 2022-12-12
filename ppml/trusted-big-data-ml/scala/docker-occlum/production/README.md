@@ -12,7 +12,42 @@ It will build image normally, and then run occlum-build to build occlum runable 
 
 final_name=`intelanalytics/bigdl-ppml-trusted-big-data-ml-scala-occlum-production:${TAG}-build`. But the final image size is too large because there are too many dependencies in this image.
 
-### Pull usable production image from dockerhub.
+### Pull production image from dockerhub and add self libs or source code.
+```bash
+docker pull intelanalytics/bigdl-ppml-trusted-big-data-ml-scala-occlum-production:2.2.0
+```
+1. enter image
+```bash
+# Clean up old container 
+export container_name=bigdl-ppml-trusted-big-data-ml-scala-occlum-production 
+sudo docker rm -f $container_name 
+
+# Run new command in container 
+sudo docker run -it \
+        --net=host \
+        --name=$container_name \
+        --cpuset-cpus 3-5 \
+        -e LOCAL_IP=$LOCAL_IP \
+        -e SGX_MEM_SIZE=30GB \
+        -e SGX_THREAD=2048 \
+        -e SGX_HEAP=1GB \
+        -e SGX_KERNEL_HEAP=1GB \
+        -e ENABLE_SGX_DEBUG=true \
+        -e ATTESTATION=true \
+        intelanalytics/bigdl-ppml-trusted-big-data-ml-scala-occlum-production:2.2.0 \
+        bash 
+```
+2. Add python code into /opt/py-examples, add python libs in to /opt/python-occlum, add jars into $BIGDL_HOME/jars.
+3. build runable image
+```bash
+bash /opt/run_spark_on_occlum_glibc.sh init 
+```
+4. commit and get runable image
+```bash
+docker commit $container_name $container_name-build
+```
+
+### Pull production-build image from dockerhub.
 
 ```bash
 docker pull intelanalytics/bigdl-ppml-trusted-big-data-ml-scala-occlum-production:2.2.0-build

@@ -57,7 +57,7 @@ def run(args):
                 model = opt.load(os.path.join(save_dir, args.option), model)
             else:
                 model = opt.load(os.path.join(save_dir, args.option))
-            with model.context_manager:
+            with InferenceOptimizer.get_context(model):
                 # warmup
                 for img in imgs[:10]:
                     _ = model(img)

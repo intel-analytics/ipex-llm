@@ -17,7 +17,11 @@
 import types
 import torch
 import copy
+import os
+import shutil
+import tempfile
 
+from bigdl.dllib.utils.file_utils import is_local_path
 from bigdl.orca.learn.pytorch.training_operator import TrainingOperator
 from bigdl.orca.learn.pytorch.pytorch_pyspark_worker import PytorchPysparkWorker
 from bigdl.orca.learn.pytorch.utils import process_stats
@@ -28,7 +32,7 @@ from bigdl.orca.data import SparkXShards
 from bigdl.orca import OrcaContext
 from bigdl.orca.learn.base_estimator import BaseEstimator
 from bigdl.orca.data.file import get_remote_file_to_local, enable_multi_fs_save, \
-    enable_multi_fs_load
+    enable_multi_fs_load, put_local_file_to_remote
 from bigdl.dllib.utils.common import get_node_and_core_number
 from bigdl.orca.learn.log_monitor import start_log_server, stop_log_server
 
@@ -36,10 +40,15 @@ from bigdl.orca.learn.utils import find_free_port, find_ip_and_free_port
 from bigdl.dllib.utils.utils import get_node_ip
 from bigdl.dllib.utils.log4Error import *
 
+try:
+    from collections.abc import Iterable
+except ImportError:
+    from collections import Iterable
+
 
 def partition_to_creator(partition):
     def data_creator(config, batch_size):
-        from bigdl.orca.data.utils import ray_partition_get_data_label, index_data, get_size
+        from bigdl.orca.data.utils import partition_get_data_label, index_data, get_size
         from torch.utils.data import Dataset, DataLoader
 
         class NDArrayDataset(Dataset):
@@ -59,9 +68,9 @@ def partition_to_creator(partition):
                     "multiprocessing_context"]:
             if arg in config:
                 params[arg] = config[arg]
-        data, label = ray_partition_get_data_label(partition,
-                                                   allow_tuple=False,
-                                                   allow_list=False)
+        data, label = partition_get_data_label(partition,
+                                               allow_tuple=False,
+                                               allow_list=False)
         print("Data size on worker: ", len(label))
         dataset = NDArrayDataset(data, label)
         data_loader = DataLoader(dataset, **params)
@@ -81,7 +90,7 @@ class PyTorchPySparkEstimator(BaseEstimator):
             self,
             *,
             model_creator,
-            optimizer_creator,
+            optimizer_creator=None,
             loss_creator=None,
             metrics=None,
             scheduler_creator=None,
@@ -106,11 +115,11 @@ class PyTorchPySparkEstimator(BaseEstimator):
         self.config = {} if config is None else config
 
         sc = OrcaContext.get_spark_context()
-        if not (isinstance(model_creator, types.FunctionType) and
-                isinstance(optimizer_creator, types.FunctionType)):  # Torch model is also callable.
+
+        if not isinstance(model_creator, types.FunctionType):
+            # Torch model is also callable.
             invalidInputError(False,
-                              "Must provide a function for both model_creator and"
-                              " optimizer_creator")
+                              "Must provide a function for model_creator")
 
         if not training_operator_cls and not loss_creator:
             invalidInputError(False,
@@ -120,6 +129,7 @@ class PyTorchPySparkEstimator(BaseEstimator):
         self.model_dir = parse_model_dir(model_dir)
 
         self.model_creator = model_creator
+        self.optimizer_creator = optimizer_creator
 
         num_nodes, cores_per_node = get_node_and_core_number()
         self.num_workers = num_nodes * workers_per_node
@@ -197,8 +207,8 @@ class PyTorchPySparkEstimator(BaseEstimator):
                takes config and batch_size as argument and returns a PyTorch DataLoader for
                training.
         :param epochs: The number of epochs to train the model. Default is 1.
-        :param batch_size: The number of samples per batch for each worker. Default is 32.
-               The total batch size would be workers_per_node*num_nodes.
+        :param batch_size: Total batch size for all workers used for training. Each worker's batch
+               size would be this value divide the total number of workers. Default is 32.
                If your training data is a function, you can set batch_size to be the input
                batch_size of the function for the PyTorch DataLoader.
         :param profile: Boolean. Whether to return time stats for the training procedure.
@@ -221,12 +231,18 @@ class PyTorchPySparkEstimator(BaseEstimator):
                 You can also provide custom metrics by passing in a custom training_operator_cls
                 when creating the Estimator.
         """
+        invalidInputError(isinstance(batch_size, int) and batch_size > 0,
+                          "batch_size should be a positive integer")
+        batch_size = batch_size // self.num_workers  # Local batch size for each worker
+        if batch_size <= 0:
+            batch_size = 1
         data, validation_data = maybe_dataframe_to_xshards(data,
                                                            validation_data=validation_data,
                                                            feature_cols=feature_cols,
                                                            label_cols=label_cols,
                                                            mode="fit",
-                                                           num_workers=self.num_workers)
+                                                           num_workers=self.num_workers,
+                                                           shard_size=batch_size)
 
         sc = OrcaContext.get_spark_context()
         _ = self.create_tcpstore_server()
@@ -245,6 +261,10 @@ class PyTorchPySparkEstimator(BaseEstimator):
             info=info,
             callbacks=callbacks,
         )
+
+        if not isinstance(self.optimizer_creator, types.FunctionType):
+            invalidInputError(False,
+                              "Must provide a function for optimizer_creator")
 
         if isinstance(data, SparkXShards):
             # set train/validation
@@ -366,12 +386,18 @@ class PyTorchPySparkEstimator(BaseEstimator):
         Using this PyTorch model to make predictions on the data.
 
         :param data: An instance of SparkXShards or a Spark DataFrame
-        :param batch_size: The number of samples per batch for each worker. Default is 32.
+        :param batch_size: Total batch size for all workers used for inference. Each worker's batch
+               size would be this value divide the total number of workers. Default is 32.
         :param profile: Boolean. Whether to return time stats for the training procedure.
                Default is False.
         :param feature_cols: feature column names if data is a Spark DataFrame.
         :return: A SparkXShards that contains the predictions with key "prediction" in each shard
         """
+        invalidInputError(isinstance(batch_size, int) and batch_size > 0,
+                          "batch_size should be a positive integer")
+        batch_size = batch_size // self.num_workers  # Local batch size for each worker
+        if batch_size <= 0:
+            batch_size = 1
         from bigdl.orca.data import SparkXShards
         from pyspark.sql import DataFrame
 
@@ -396,7 +422,8 @@ class PyTorchPySparkEstimator(BaseEstimator):
                                               validation_data=None,
                                               feature_cols=feature_cols,
                                               label_cols=None,
-                                              mode="predict")
+                                              mode="predict",
+                                              shard_size=batch_size)
 
             pred_shards = self._predict_spark_xshards(xshards, init_params, params)
             result = convert_predict_xshards_to_dataframe(data, pred_shards)
@@ -431,8 +458,8 @@ class PyTorchPySparkEstimator(BaseEstimator):
         :param data: An instance of SparkXShards, a Spark DataFrame or a function that
                takes config and batch_size as argument and returns a PyTorch DataLoader for
                validation.
-        :param batch_size: The number of samples per batch for each worker. Default is 32.
-               The total batch size would be workers_per_node*num_nodes.
+        :param batch_size: Total batch size for all workers used for evaluation. Each worker's batch
+               size would be this value divide the total number of workers. Default: 32.
                If your validation data is a function, you can set batch_size to be the input
                batch_size of the function for the PyTorch DataLoader.
         :param num_steps: The number of batches to compute the validation results on. This
@@ -452,6 +479,11 @@ class PyTorchPySparkEstimator(BaseEstimator):
                 You can also provide custom metrics by passing in a custom training_operator_cls
                 when creating the Estimator.
         """
+        invalidInputError(isinstance(batch_size, int) and batch_size > 0,
+                          "batch_size should be a positive integer")
+        batch_size = batch_size // self.num_workers  # Local batch size for each worker
+        if batch_size <= 0:
+            batch_size = 1
         sc = OrcaContext.get_spark_context()
         cluster_info = self._get_cluster_info(sc)
         state_dict = self._get_broadcasted_state_dict(sc)
@@ -474,7 +506,8 @@ class PyTorchPySparkEstimator(BaseEstimator):
                                              feature_cols=feature_cols,
                                              label_cols=label_cols,
                                              mode="evaluate",
-                                             num_workers=self.num_workers)
+                                             num_workers=self.num_workers,
+                                             shard_size=batch_size)
         if isinstance(data, SparkXShards):
             params["wrap_dataloader"] = False
             if data._get_class_name() == 'pandas.core.frame.DataFrame':
@@ -517,27 +550,61 @@ class PyTorchPySparkEstimator(BaseEstimator):
     def get_state_dict(self):
         return self.state_dict
 
-    @enable_multi_fs_save
-    def save(self, model_path):
+    def save(self, model_path, entire=False):
         """
-        Saves the Estimator state (including model and optimizer) to the provided model_path.
+        Saves the Estimator state (including model and optimizer) or the entire model
+        to the provided model_path.
 
         :param model_path: (str) Path to save the model.
+        :param entire: (boolean) Whether to save the entire model. If False, saves the
+               Estimator state. Default is False.
         :return:
         """
-        state_dict = self.state_dict
-        torch.save(state_dict, model_path)
+        if is_local_path(model_path):
+            if entire:
+                torch.save(self.get_model(), model_path)
+            else:
+                torch.save(self.state_dict, model_path)
+        else:
+            file_name = os.path.basename(model_path)
+            temp_dir = tempfile.mkdtemp()
+            temp_path = os.path.join(temp_dir, file_name)
+            try:
+                if entire:
+                    torch.save(self.get_model(), temp_path)
+                else:
+                    torch.save(self.state_dict, temp_path)
+                put_local_file_to_remote(temp_path, model_path)
+            finally:
+                shutil.rmtree(temp_dir)
         return model_path
 
-    @enable_multi_fs_load
     def load(self, model_path):
         """
-        Loads the Estimator state (including model and optimizer) from the provided model_path.
+        Loads the Estimator state (including model and optimizer) or the entire model
+        from the provided model_path.
 
         :param model_path: (str) Path to the existing model.
         """
-        state_dict = torch.load(model_path)
-        self.state_dict = state_dict
+        import torch.nn as nn
+        if is_local_path(model_path):
+            res = torch.load(model_path)
+        else:
+            file_name = os.path.basename(model_path)
+            temp_dir = tempfile.mkdtemp()
+            temp_path = os.path.join(temp_dir, file_name)
+            try:
+                get_remote_file_to_local(model_path, temp_path)
+                res = torch.load(temp_path)
+            finally:
+                shutil.rmtree(temp_dir)
+        if isinstance(res, Iterable) and not isinstance(res, nn.Sequential):
+            if "models" in res:
+                self.state_dict = res
+            else:
+                self.state_dict = [re.state_dict() for re in res]
+        else:
+            self.state_dict = res.state_dict()
 
     def save_checkpoint(self, model_path):
         """
@@ -547,7 +614,6 @@ class PyTorchPySparkEstimator(BaseEstimator):
                e.g. "/tmp/estimator.ckpt" or "hdfs:///tmp/estimator.ckpt"
         :return: None
         """
-        from bigdl.dllib.utils.file_utils import is_local_path
         if is_local_path(model_path):
             self.save(model_path)
         else:
@@ -561,7 +627,6 @@ class PyTorchPySparkEstimator(BaseEstimator):
                supported. e.g. "/tmp/estimator.ckpt" or "hdfs:///tmp/estimator.ckpt"
         :return: None
         """
-        from bigdl.dllib.utils.file_utils import is_local_path
         if is_local_path(model_path):
             self.load(model_path)
         else:

@@ -17,7 +17,6 @@
 import torch
 from torch import nn
 import time
-from copy import deepcopy
 import multiprocessing as mp
 from typing import Dict, Callable, Tuple, Optional, List, Union, Sequence
 from torch.utils.data import DataLoader
@@ -40,7 +39,8 @@ from bigdl.nano.utils.inference.pytorch.dataloader import\
     transform_multiple_input_dataloader_to_inc_mode, automatic_add_label_in_dataloader
 from bigdl.nano.pytorch.utils import TORCH_VERSION_LESS_1_10, save_model, load_model
 from bigdl.nano.common.cpu_schedule import schedule_processors
-from bigdl.nano.pytorch.context_manager import BaseContextManager
+from bigdl.nano.pytorch.context_manager import generate_context_manager,\
+    BaseContextManager, AutocastContextManager
 from .multi_instance import _MultiInstanceModel, _multi_instance_helper
 import traceback
 import warnings
@@ -76,7 +76,7 @@ class TorchAccelerationOption(AccelerationOption):
             # quantize
             ort_method: str = self.method
             acce_model = \
-                InferenceOptimizer.quantize(model=deepcopy(model),
+                InferenceOptimizer.quantize(model=model,
                                             precision=self.get_precision(),
                                             accelerator=accelerator,
                                             use_ipex=self.ipex,
@@ -108,8 +108,9 @@ class InferenceOptimizer(BaseInferenceOptimizer):
             "bf16_ipex": TorchAccelerationOption(bf16=True, ipex=True),
             "bf16_ipex_channels_last": TorchAccelerationOption(bf16=True, ipex=True,
                                                                channels_last=True),
-            "int8": TorchAccelerationOption(inc=True),
-            "int8_ipex": TorchAccelerationOption(inc=True, method="ipex"),
+            "static_int8": TorchAccelerationOption(inc=True),
+            "static_int8_ipex": TorchAccelerationOption(inc=True, method="ipex",
+                                                        ipex=True),
             "jit_fp32": TorchAccelerationOption(jit=True),
             "jit_fp32_channels_last": TorchAccelerationOption(jit=True,
                                                               channels_last=True),
@@ -132,7 +133,7 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                                                                 method="integer"),
         }
 
-    _default_methods = ["original", "bf16", "int8",
+    _default_methods = ["original", "bf16", "static_int8",
                         "jit_fp32_ipex", "jit_fp32_ipex_channels_last",
                         "jit_bf16_ipex", "jit_bf16_ipex_channels_last", "openvino_fp32",
                         "openvino_int8", "onnxruntime_fp32", "onnxruntime_int8_qlinear"]
@@ -163,10 +164,10 @@ class InferenceOptimizer(BaseInferenceOptimizer):
 
         The available methods are "original", "fp32_channels_last", "fp32_ipex",
         "fp32_ipex_channels_last", "bf16", "bf16_channels_last", "bf16_ipex",
-        "bf16_ipex_channels_last", "int8", "int8_ipex", "jit_fp32", "jit_bf16", "jit_fp32_ipex",
-        "jit_fp32_ipex_channels_last", "jit_bf16_ipex", "jit_bf16_ipex_channels_last",
-        "openvino_fp32", "openvino_int8", "onnxruntime_fp32", "onnxruntime_int8_qlinear"
-        and "onnxruntime_int8_integer".
+        "bf16_ipex_channels_last", "static_int8", "static_int8_ipex", "jit_fp32", "jit_bf16",
+        "jit_fp32_ipex", "jit_fp32_ipex_channels_last", "jit_bf16_ipex",
+        "jit_bf16_ipex_channels_last", "openvino_fp32", "openvino_int8", "onnxruntime_fp32",
+        "onnxruntime_int8_qlinear" and "onnxruntime_int8_integer".
 
         :param model: A torch.nn.Module to be optimized
         :param training_data: training_data support following formats:
@@ -290,7 +291,8 @@ class InferenceOptimizer(BaseInferenceOptimizer):
         available_dict: Dict =\
             available_acceleration_combination(excludes=excludes,
                                                includes=includes,
-                                               full_methods=all_acceleration_methods)
+                                               full_methods=all_acceleration_methods,
+                                               all_methods=self.ALL_INFERENCE_ACCELERATION_METHOD)
 
         self._direction: str = direction  # save direction as attr
         # record whether calculate accuracy in optimize by this attr
@@ -301,7 +303,7 @@ class InferenceOptimizer(BaseInferenceOptimizer):
             self._calculate_accuracy = True
 
         default_threads: int = torch.get_num_threads()
-        thread_num: int = default_threads if thread_num is None else int(thread_num)
+        thread_num: int = None if thread_num is None else int(thread_num)
 
         result_map: Dict[str, Dict] = {}
 
@@ -343,7 +345,9 @@ class InferenceOptimizer(BaseInferenceOptimizer):
             sample_size_for_pot = 100
 
         # patch context manager
-        model.context_manager = BaseContextManager()
+        model._nano_context_manager = generate_context_manager(accelerator=None,
+                                                               precision="fp32",
+                                                               thread_num=thread_num)
 
         print("==========================Start Optimization==========================")
         start_time = time.perf_counter()
@@ -376,8 +380,7 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                     else:
                         model(*input_sample)
 
-                with acce_model.context_manager:
-                    torch.set_num_threads(thread_num)
+                with InferenceOptimizer.get_context(acce_model):
                     try:
                         result_map[method]["latency"], status =\
                             throughput_calculate_helper(latency_sample_num, baseline_time,
@@ -400,7 +403,11 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                         # here we suppose trace don't change accuracy,
                         # so we jump it to reduce time cost of optimize
                         if precision == "fp32" and method != "original":
-                            result_map[method]["accuracy"] = "not recomputed"
+                            _accuracy = result_map["original"]["accuracy"]
+                            if isinstance(_accuracy, torch.Tensor):
+                                _accuracy = _accuracy.item()
+                            _accuracy = round(_accuracy, 3)
+                            result_map[method]["accuracy"] = str(_accuracy) + '*'
                         else:
                             if method == "original":
                                 # test whether metric works
@@ -439,6 +446,8 @@ class InferenceOptimizer(BaseInferenceOptimizer):
 
         self._optimize_result = format_optimize_result(self.optimized_model_dict,
                                                        self._calculate_accuracy)
+        self._optimize_result += "* means we assume the precision of the traced model does "\
+                                 "not change, so we don't recompute accuracy to save time.\n"
         # save time cost to self._optimize_result
         time_cost = time.perf_counter() - start_time
         time_cost_str = f"Optimization cost {time_cost:.1f}s in total."
@@ -467,8 +476,10 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                  onnxruntime_session_options=None,
                  openvino_config=None,
                  simplification: bool = True,
+                 jit_strict: bool = True,
                  sample_size: int = 100,
                  logging: bool = True,
+                 inplace: bool = False,
                  **export_kwargs):
         """
         Calibrate a torch.nn.Module for post-training quantization.
@@ -542,6 +553,9 @@ class InferenceOptimizer(BaseInferenceOptimizer):
         :param simplification: whether we use onnxsim to simplify the ONNX model, only valid when
                                accelerator='onnxruntime', otherwise will be ignored. If this option
                                is set to True, new dependency 'onnxsim' need to be installed.
+        :param jit_strict: Whether recording your mutable container types. This parameter will be
+                           passed to torch.jit.trace. if accelerator != 'jit', it will be ignored.
+                           Default to True.
         :param sample_size: (optional) a int represents how many samples will be used for
                             Post-training Optimization Tools (POT) from OpenVINO toolkit,
                             only valid for accelerator='openvino'. Default to 100.
@@ -549,6 +563,7 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                             the lower the performance degradation, but the longer the time.
         :param logging: whether to log detailed information of model conversion, only valid when
                         accelerator='openvino', otherwise will be ignored. Default: ``True``.
+        :param inplace: whether to perform inplace optimization. Default: ``False``.
         :param **export_kwargs: will be passed to torch.onnx.export function.
         :return:            A accelerated torch.nn.Module if quantization is sucessful.
         """
@@ -561,9 +576,12 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                     use_jit = (accelerator == "jit")
                     return PytorchIPEXJITBF16Model(model, input_sample=input_sample,
                                                    use_ipex=use_ipex, use_jit=use_jit,
-                                                   channels_last=channels_last)
+                                                   channels_last=channels_last,
+                                                   thread_num=thread_num, inplace=inplace,
+                                                   jit_strict=jit_strict)
                 else:
-                    bf16_model = BF16Model(model, channels_last=channels_last)
+                    bf16_model = BF16Model(model, channels_last=channels_last,
+                                           thread_num=thread_num)
                     return bf16_model
             else:
                 invalidInputError(False,
@@ -637,6 +655,7 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                 `quantized_model.model`.
                 """
                 return inc_quantize(model, inc_calib_dataloader, metric,
+                                    thread_num=thread_num,
                                     framework=framework,
                                     conf=conf,
                                     approach=approach,
@@ -700,7 +719,9 @@ class InferenceOptimizer(BaseInferenceOptimizer):
               onnxruntime_session_options=None,
               openvino_config=None,
               simplification: bool = True,
+              jit_strict: bool = True,
               logging: bool = True,
+              inplace: bool = False,
               **export_kwargs):
         """
         Trace a torch.nn.Module and convert it into an accelerated module for inference.
@@ -727,11 +748,16 @@ class InferenceOptimizer(BaseInferenceOptimizer):
         :param simplification: Whether we use onnxsim to simplify the ONNX model, only valid when
                                accelerator='onnxruntime', otherwise will be ignored. If this option
                                is set to True, new dependency 'onnxsim' need to be installed.
+        :param jit_strict: Whether recording your mutable container types. This parameter will be
+                           passed to torch.jit.trace. if accelerator != 'jit', it will be ignored.
+                           Default to True.
         :param logging: Whether to log detailed information of model conversion, only valid when
                         accelerator='openvino', otherwise will be ignored. Default: ``True``.
-        :param **kwargs: Other extra advanced settings include those be passed to torch.onnx.export
-                         function, only valid when accelerator='onnxruntime'/'openvino', otherwise
-                         will be ignored.
+        :param inplace: whether to perform inplace optimization. Default: ``False``.
+        :param **export_kwargs: Other extra advanced settings include those be passed to
+                                torch.onnx.export function, only valid when
+                                accelerator='onnxruntime'/'openvino', otherwise
+                                will be ignored.
         :return: Model with different acceleration.
         """
         invalidInputError(
@@ -760,8 +786,70 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                                   "torch version should >=1.10 to use ipex")
             use_jit = (accelerator == "jit")
             return PytorchIPEXJITModel(model, input_sample=input_sample, use_ipex=use_ipex,
-                                       use_jit=use_jit, channels_last=channels_last)
+                                       use_jit=use_jit, channels_last=channels_last,
+                                       thread_num=thread_num, inplace=inplace,
+                                       jit_strict=jit_strict)
         invalidInputError(False, "Accelerator {} is invalid.".format(accelerator))
+
+    @staticmethod
+    def get_context(model: nn.Module, *models):
+        """
+        Obtain corresponding context manager from (multi) model, defaults to BaseContextManager().
+
+        :param model: Any model of torch.nn.Module, including all models accelareted by
+               InferenceOptimizer.trace/InferenceOptimizer.quantize.
+        :param models: Any model of torch.nn.Module or list of torch.nn.Module, including all models
+               accelareted by InferenceOptimizer.trace/InferenceOptimizer.quantize.
+        :return: a context manager if there is no conflict between context managers,
+                 otherwise will report RuntimeError.
+        """
+        def obtain_manager(input_model):
+            if hasattr(input_model, "_nano_context_manager"):
+                _context_manager = input_model._nano_context_manager
+            else:
+                _context_manager = generate_context_manager(accelerator=None,
+                                                            precision="fp32")
+            return _context_manager
+
+        def join_manager(manager1, manager2):
+            def is_bf16(x):
+                return isinstance(x, AutocastContextManager)
+            if (is_bf16(manager1) ^ is_bf16(manager2)) is True:
+                warnings.warn("Only one of the context managers uses mixed precision, "
+                              "and we will return the context manager with mixed precision.")
+            manager = None
+            if is_bf16(manager1) or is_bf16(manager2):
+                manager = AutocastContextManager()
+            else:
+                manager = BaseContextManager()
+            thread_num1 = manager1.thread_num
+            thread_num2 = manager2.thread_num
+            if thread_num1 != thread_num2:
+                if thread_num1 is None or thread_num2 is None:
+                    warnings.warn("One of the two models has thread control and the other "
+                                  "does not. The returned context manager will be dominated "
+                                  "by the non-None one.")
+                else:
+                    warnings.warn("These context managers have different thread_num.  We will "
+                                  "set thread_num to the larger one.")
+                if thread_num1 is None or thread_num2 > thread_num1:
+                    manager.thread_num = thread_num2
+                else:
+                    manager.thread_num = thread_num1
+            else:
+                manager.thread_num = thread_num1
+            return manager
+
+        _context_manager = obtain_manager(model)
+        if len(models) == 0:
+            # only single model
+            return _context_manager
+        else:
+            for model_ in models:
+                if isinstance(model_, nn.Module):
+                    new_manager = obtain_manager(model_)
+                    _context_manager = join_manager(_context_manager, new_manager)
+            return _context_manager
 
     @staticmethod
     def save(model: nn.Module, path):
@@ -769,53 +857,79 @@ class InferenceOptimizer(BaseInferenceOptimizer):
         Save the model to local file.
 
         :param model: Any model of torch.nn.Module, including all models accelareted by
-               Trainer.trace/Trainer.quantize.
+               InferenceOptimizer.trace/InferenceOptimizer.quantize.
         :param path: Path to saved model. Path should be a directory.
         """
         save_model(model, path)
 
     @staticmethod
-    def load(path, model: Optional[nn.Module] = None):
+    def load(path, model: Optional[nn.Module] = None, inplace=False):
         """
         Load a model from local.
 
         :param path: Path to model to be loaded. Path should be a directory.
         :param model: Required FP32 model to load pytorch model, it is needed if you accelerated
-               the model with accelerator=None by Trainer.trace/Trainer.quantize. model
-               should be set to None if you choose accelerator="onnxruntime"/"openvino"/"jit".
+               the model with accelerator=None by InferenceOptimizer.trace/
+               InferenceOptimizer.quantize. model should be set to None if you choose
+               accelerator="onnxruntime"/"openvino"/"jit".
+        :param inplace: whether to perform inplace optimization. Default: ``False``.
         :return: Model with different acceleration(None/OpenVINO/ONNX Runtime/JIT) or
                  precision(FP32/FP16/BF16/INT8).
         """
-        return load_model(path, model)
+        return load_model(path, model, inplace=inplace)
 
     @staticmethod
-    def to_multi_instance(model: nn.Module, num_processes: int) -> _MultiInstanceModel:
+    def to_multi_instance(model: nn.Module, num_processes: int = 4,
+                          cores_per_process: int = None,
+                          cpu_for_each_process: List[List] = None) -> _MultiInstanceModel:
         """
         Transform a model to multi-instance inference model.
         :param model: The model to transform.
-        :param num_processes: The number of processes which will be used.
+        :param num_processes: The number of processes to use, default to 4.
+        :param cores_per_process: Number of CPU cores used by each process,
+            default to `None`, means decided automatically.
+        :param cpu_for_each_process: Specify the CPU cores used by each process,
+            default to `None`, if set, it will override `num_processes` and `cores_per_process`.
         :return: Model with multi-instance inference acceleration.
         """
-        p_num = num_processes
-        send_queues = [mp.Queue() for _ in range(p_num)]
-        recv_queues = [mp.Queue() for _ in range(p_num)]
+        invalidInputError(isinstance(num_processes, int) and num_processes > 0,
+                          "num_processes must be a positive integer")
+        p_num = num_processes if cpu_for_each_process is None else len(cpu_for_each_process)
+        send_queue = mp.Queue()
+        recv_queue = mp.Queue()
 
         KMP_AFFINITY = os.environ.get("KMP_AFFINITY", "")
         OMP_NUM_THREADS = os.environ.get("OMP_NUM_THREADS", "")
-        envs = schedule_processors(p_num)
+        if cpu_for_each_process is None:
+            if cores_per_process is None:
+                envs = schedule_processors(p_num)
+            else:
+                envs = [{
+                    "KMP_AFFINITY": f"granularity=fine,proclist="
+                                    f"[{i*cores_per_process}-{(i+1)*cores_per_process-1}]"
+                                    f",explicit",
+                    "OMP_NUM_THREADS": str(cores_per_process)
+                } for i in range(p_num)]
+        else:
+            envs = [{
+                "KMP_AFFINITY": f"granularity=fine,proclist="
+                                f"[{','.join([str(i) for i in cpu_for_each_process[i]])}]"
+                                f",explicit",
+                "OMP_NUM_THREADS": str(len(cpu_for_each_process[i]))
+            } for i in range(p_num)]
         ps = []
         for i in range(p_num):
             os.environ["KMP_AFFINITY"] = envs[i]['KMP_AFFINITY']
             os.environ["OMP_NUM_THREADS"] = envs[i]['OMP_NUM_THREADS']
 
             p = mp.Process(target=_multi_instance_helper,
-                           args=(model, send_queues[i], recv_queues[i]), daemon=True)
+                           args=(model, send_queue, recv_queue), daemon=True)
             p.start()
             ps.append(p)
         os.environ["KMP_AFFINITY"] = KMP_AFFINITY
         os.environ["OMP_NUM_THREADS"] = OMP_NUM_THREADS
 
-        return _MultiInstanceModel(model, ps, send_queues, recv_queues)
+        return _MultiInstanceModel(model, ps, send_queue, recv_queue)
 
 
 def _signature_check(function):

@@ -3,7 +3,7 @@ This example shows the usage of pytorch quantization based on Intel Neural Compr
 
 ## Environment Setup
 ```shell
-pip install --pre --upgrade bigdl-nano[pytorch] # install the nightly-bulit version
+pip install --pre --upgrade bigdl-nano[pytorch,inference]  # install the nightly-bulit version
 pip install lightning-bolts
 ```
 

@@ -35,23 +35,25 @@ class KerasONNXRuntimeModel(ONNXRuntimeModel, AcceleratedKerasModel):
     '''
         This is the accelerated model for tensorflow and onnxruntime.
     '''
-    def __init__(self, model, input_sample, onnxruntime_session_options=None,
+    def __init__(self, model, input_spec=None, onnxruntime_session_options=None,
                  **export_kwargs):
         """
         Create a ONNX Runtime model from tensorflow.
 
         :param model: 1. Keras model to be converted to ONNXRuntime for inference
                       2. Path to ONNXRuntime saved model
-        :param input_sample: a (tuple or list of) tf.TensorSpec or numpy array defining
-            the shape/dtype of the input
+        :param input_spec: A (tuple or list of) tf.TensorSpec or numpy array defining
+                           the shape/dtype of the input
         :param onnxruntime_session_options: will be passed to tf2onnx.convert.from_keras function
         """
         with TemporaryDirectory() as tmpdir:
             if isinstance(model, tf.keras.Model):
                 onnx_path = os.path.join(tmpdir, "tmp.onnx")
-                if not isinstance(input_sample, (tuple, list)):
-                    input_sample = (input_sample, )
-                tf2onnx.convert.from_keras(model, input_signature=input_sample,
+                if input_spec is None:
+                    input_spec = tf.TensorSpec((model.input_shape), model.dtype)
+                if not isinstance(input_spec, (tuple, list)):
+                    input_spec = (input_spec, )
+                tf2onnx.convert.from_keras(model, input_signature=input_spec,
                                            output_path=onnx_path, **export_kwargs)
             else:
                 onnx_path = model

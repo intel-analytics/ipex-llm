@@ -8,6 +8,12 @@ spec:
         value: false
       - name: ATTESTATION_URL
         value: your_attestation_url
+      # - name: USING_LOCAL_DATA_KEY
+      #   value: true
+      # - name: LOCAL_DATA_KEY
+      #   value: /ppml/encrypted_keys/plaintextkey
+      # - name: ENCRYPTED_FSD
+      #   value: true
       #- name: PCCS_URL
       #  value: your_pccs_url
       #- name: APP_ID
@@ -32,9 +38,15 @@ spec:
         mountPath: /var/run/aesmd/aesm.socket
       - name: nfs-storage
         mountPath: /ppml/data
-      - name: nfs-storage
-        mountPath: /ppml/encrypted
-        subPath: encrypted
+      # - name: nfs-storage
+      #   mountPath: /ppml/encrypted-fs
+      #   subPath: encrypted-fs
+      # - name: nfs-storage
+      #   mountPath: /ppml/encrypted-fsd
+      #   subPath: encrypted-fsd
+      # - name: nfs-storage
+      #   mountPath: /ppml/encrypted_keys
+      #   subPath: test_key
     resources:
       requests:
         cpu: 8

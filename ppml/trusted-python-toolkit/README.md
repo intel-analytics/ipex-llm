@@ -1,5 +1,5 @@
-# Gramine
-This image contains Gramine and some popular python toolkits including numpy, pandas and flask.
+# trusted-python-toolkit
+This image contains Gramine and some popular python toolkits including numpy, pandas, flask and torchserve.
 
 *Please mind the IP and file path settings. They should be changed to the IP/path of your own sgx server on which you are running.*
 
@@ -54,53 +54,56 @@ mr_signer        : 6f0627955......
 
 *WARNING: We are currently actively developing our images, which indicate that the ENTRYPOINT of the docker image may be changed accordingly.  We will do our best to update our documentation in time.*
 
-### 2.1 Examples
-#### 2.1.1 Numpy Examples
+### 2.1 Start the container
 
-Use the following code to build a container and run the numpy example based on the image built before.
+Use the following code to start the container.
 ```shell
 export LOCAL_IP=your_local_ip
 export DOCKER_IMAGE=your_docker_image
 sudo docker run -itd \
 	--privileged \
 	--net=host \
-	--name= \
+	--name= your_container_name\
 	--cpus=10 \
 	--oom-kill-disable \
 	--device=/dev/sgx/enclave \
 	--device=/dev/sgx/provision \
 	-v /var/run/aesmd/aesm.socket:/var/run/aesmd/aesm.socket \
 	-e LOCAL_IP=$LOCAL_IP \
+	-e SGX_ENABLED=false \
 	-e ATTESTATION=false \
-	$DOCKER_IMAGE python /ppml/examples/numpy/hello-numpy.py
-docker logs -f your_docker_image
+	$DOCKER_IMAGE bash
+```
+
+Get into your container and run examples.
+```shell
+	docker exec -it your_container_name bash
+```
+
+### 2.2 Examples
+
+The native python toolkit examples are put under `/ppml/examples`. You can run them on SGX through shell scripts under `/ppml/work/start-scripts`.
+
+#### 2.2.1 Numpy Examples
+
+Change directory to `/ppml/work/start-scripts` and run `start-python-numpy-example-sgx.sh`.
+```shell
+cd /ppml/work/start-scripts
+bash start-python-numpy-example-sgx.sh
 ```
 
 You will see the version of numpy and the time of numpy dot.
 ```shell
 numpy version: 1.21.6
-numpy.dot: 0.010580737050622702 sec
+numpy.dot: ... sec
 ```
 
-#### 2.1.2 Pandas Examples
+#### 2.2.2 Pandas Examples
 
-Use the following code to build a container and run the pandas example based on the image built before.
+Change directory to `/ppml/work/start-scripts` and run `start-python-pandas-example-sgx.sh`.
 ```shell
-export LOCAL_IP=your_local_ip
-export DOCKER_IMAGE=your_docker_image
-sudo docker run -itd \
-	--privileged \
-	--net=host \
-	--name= \
-	--cpus=10 \
-	--oom-kill-disable \
-	--device=/dev/sgx/enclave \
-	--device=/dev/sgx/provision \
-	-v /var/run/aesmd/aesm.socket:/var/run/aesmd/aesm.socket \
-	-e LOCAL_IP=$LOCAL_IP \
-	-e ATTESTATION=false \
-	$DOCKER_IMAGE python /ppml/examples/pandas/hello-pandas.py
-docker logs -f your_docker_image
+cd /ppml/work/start-scripts
+bash start-python-pandas-example-sgx.sh
 ```
 
 You will see the version of pandas and a random dataframe.
@@ -122,17 +125,108 @@ Random Dataframe:
 [10 rows x 10 columns]
 ```
 
-### 2.2 Benchmark
-#### 2.2.1 Numpy Benchmark
+#### 2.2.3 Flask Examples
 
-Use the following code to build a container and test the performance of numpy. Set `-n` to tune the size of array and set `-t` to select the type of data.
+Change directory to `/ppml/work/start-scripts` and run `start-python-flask-sgx.sh`. The flask example will receive a GET/POST request from clients and return the feature of the url and the method of the request.
+```shell
+cd /ppml/work/start-scripts
+bash start-python-flask-sgx.sh
+```
+
+You can find the python code that send GET/POST request under `/ppml/examples/flask`.
+Run `get.py`. (Remember to modify the ip address to your_local_ip)
+```shell
+cd /ppml/examples/flask
+python get.py
+```
+You will get:
+```shell
+Hello World! GET
+```
+
+You can try `post.py` similarly. 
+
+#### 2.2.4 Torchserve Example
+
+Before run torchserve on SGX, prepare the config file in which you can assign ip address, model location, worker thread number and so on. The following script shows a simple example of config file. Refer to [5.3. config.properties file](https://pytorch.org/serve/configuration.html#config-properties-file) for more information.
+```shell
+inference_address=your_inference_address
+management_address=your_management_address
+metrics_address=your_metrics_address
+model_store=your_model_store
+load_models=all
+enable_metrics_api=false
+models={\
+  "densenet161": {\
+    "1.0": {\
+        "defaultVersion": true,\
+        "marName": "densenet161.mar",\
+        "minWorkers": 2,\
+        "maxWorkers": 2,\
+        "batchSize": 4,\
+        "maxBatchDelay": 100,\
+        "responseTimeout": 1200\
+    }\
+  }\
+}
+```
+
+Note that store your model under your_model_store while set `model_store` to /ppml/work/data/your_model_store.
+Refer to [Torch Model archiver for TorchServe](https://github.com/pytorch/serve/blob/master/model-archiver/README.md)to see how to archive your own model.
+Start pytorch server.
+```shell
+cd /ppml/work/start-scripts
+bash start-torchserve-sgx.sh -c your_config_file_path
+```
+
+To test the model server, send a request to the server's predictions API through gRPC or HTTP/REST.
+
+#### For gRPC
+First, download the torchserve project and install grpc python dependencies:
+```shell
+git clone https://github.com/analytics-zoo/pytorch-serve.git
+pip install -U grpcio protobuf grpcio-tools
+```
+Then, generate inference client using proto files:
+```shell
+python -m grpc_tools.protoc --proto_path=frontend/server/src/main/resources/proto/ --python_out=ts_scripts --grpc_python_out=ts_scripts frontend/server/src/main/resources/proto/inference.proto frontend/server/src/main/resources/proto/management.proto
+```
+Finally, run inference using a sample client:
+```shell
+python ts_scripts/torchserve_grpc_client.py infer densenet161 examples/image_classifier/kitten.jpg
+```
+
+#### For HTTP/REST
+Download a picture:
+```shell
+curl -O https://raw.githubusercontent.com/pytorch/serve/master/docs/images/kitten_small.jpg
+```
+Send it to pytorch server:
+```shell
+curl http://your_local_ip:your_inference_address/predictions/densenet161 -T kitten_small.jpg
+```
+
+The format of results is similar to the followings.
+```shell
+{
+  "tabby": ...,
+  "lynx": ...,
+  "tiger_cat": ...,
+  "tiger": ...,
+  "Egyptian_cat": ...
+}
+```
+
+### 2.3 Run Examples Through Entrypoint
+
+You can also run examples with entrypoint.sh. Take numpy for example:
 ```shell
 export LOCAL_IP=your_local_ip
 export DOCKER_IMAGE=your_docker_image
 sudo docker run -itd \
 	--privileged \
 	--net=host \
-	--name= \
+	--name=your_container_name \
 	--cpus=10 \
 	--oom-kill-disable \
 	--device=/dev/sgx/enclave \
@@ -140,53 +234,13 @@ sudo docker run -itd \
 	-v /var/run/aesmd/aesm.socket:/var/run/aesmd/aesm.socket \
 	-e LOCAL_IP=$LOCAL_IP \
 	-e ATTESTATION=false \
-	$DOCKER_IMAGE /ppml/work/start-scripts/start-python-numpy-sgx.sh -n 4096 -t int
-docker logs -f your_docker_image
+	$DOCKER_IMAGE /ppml/work/start-scripts/start-python-numpy-example-sgx.sh
+docker logs -f your_container_name
 ```
-You will see the result of the performance test.
+
+You will get the same result.
 ```shell
-Dotted two 100x100 matrices in ... s.
-SVD of a 100x100 matrix in ... s.
-Cholesky decomposition of a 500x500 matrix in ... s.
-Eigendecomposition of a 100x100 matrix in ... s.
+numpy version: 1.21.6
+numpy.dot: ... sec
 ```
-
-#### 2.2.2 Pandas Benchmark
-
-Before testing the performance of pandas, download the [dataset](https://www.kaggle.com/datasets/rdwstats/open-data-rdw-gekentekende-voertuigen/download?datasetVersionNumber=1) and put it under `your_nfs_input_path` first.
-Use the following code to build a container and test the performance of pandas.
-```shell
-export NFS_INPUT_PATH=your_nfs_input_path
-export LOCAL_IP=your_local_ip
-export DOCKER_IMAGE=your_docker_image
-sudo docker run -itd \
-	--privileged \
-	--net=host \
-	--name= \
-	--cpus=10 \
-	--oom-kill-disable \
-	--device=/dev/sgx/enclave \
-	--device=/dev/sgx/provision \
-	-v /var/run/aesmd/aesm.socket:/var/run/aesmd/aesm.socket \
-	-v $NFS_INPUT_PATH:/ppml/work/data \
-	-e LOCAL_IP=$LOCAL_IP \
-	-e ATTESTATION=false \
-	$DOCKER_IMAGE /ppml/work/start-scripts/start-python/pandas-sgx.sh -d your_data
-docker logs -f your_docker_image
-```
-
-You will see the result of the performance test.
-```shell
-Complex select
-Time elapsed:  ...s
-Sorting the dataset
-Time elapsed:  ...s
-Joining the dataset
-Time elapsed:  ...s
-Self join
-Time elapsed:  ...s
-Grouping the data
-Time elapsed:  ...s
-```
-
 
