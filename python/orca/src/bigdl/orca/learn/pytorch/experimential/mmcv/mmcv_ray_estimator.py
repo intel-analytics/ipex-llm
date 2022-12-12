@@ -109,7 +109,7 @@ class MMCVRayEstimator(BaseRayEstimator):
             map_location: Union[str, Callable]='cpu',
             strict: bool = False,
             revise_keys: List = [(r'^module.', '')],
-    ) -> Union[Dict, OrderedDict]:
+    ) -> None:
         """Load checkpoint from a file or URI. The filename should either be a
         local path on driver or a HDFS path
 
@@ -124,7 +124,7 @@ class MMCVRayEstimator(BaseRayEstimator):
                 the prefix 'module.' by [(r'^module\\.', '')].
 
         Returns:
-            dict or OrderedDict: The loaded checkpoint.
+            None
         """
         params = dict(
             map_location=map_location,
