@@ -126,22 +126,21 @@ y_hat = jit_model(x)
 ```
 
 ## Quantization
-Quantization is widely used to compress models to a lower precision, which not only reduces the model size but also accelerates inference. BigDL-Nano provides `InferenceOptimizer.quantize()` API for users to quickly obtain a quantized model with accuracy control by specifying a few arguments. Intel Neural Compressor (INC) and Post-training Optimization Tools (POT) from OpenVINO toolkit are enabled as options. In the meantime, runtime acceleration is also included directly in the quantization pipeline when using `accelerator='onnxruntime'/'openvino'` so you don't have to run `InferenceOptimizer.trace` before quantization.
+Quantization is widely used to compress models to a lower precision, which not only reduces the model size but also accelerates inference. For quantization precision, BigDL-Nano supports two common choices: `int8` and `bfloat16`. The usage of the two kinds of precision is quite different.
+
+### Int8 Quantization
+BigDL-Nano provides `InferenceOptimizer.quantize()` API for users to quickly obtain a int8 quantized model with accuracy control by specifying a few arguments. Intel Neural Compressor (INC) and Post-training Optimization Tools (POT) from OpenVINO toolkit are enabled as options. In the meantime, runtime acceleration is also included directly in the quantization pipeline when using `accelerator='onnxruntime'/'openvino'` so you don't have to run `InferenceOptimizer.trace` before quantization.
 
 To use INC as your quantization engine, you can choose accelerator as `None` or `'onnxruntime'`. Otherwise, `accelerator='openvino'` means using OpenVINO POT to do quantization.
 
 By default, `InferenceOptimizer.quantize()` doesn't search the tuning space and returns the fully-quantized model without considering the accuracy drop. If you need to search quantization tuning space for a model with accuracy control, you'll have to specify a few arguments to define the tuning space. More instructions in [Quantization with Accuracy Control](#quantization-with-accuracy-control)
 
-### Quantization using Intel Neural Compressor
-By default, Intel Neural Compressor is not installed with BigDL-Nano. So if you determine to use it as your quantization backend, you'll need to install it first:
-```shell
-pip install neural-compressor==1.11.0
-```
+#### Quantization using Intel Neural Compressor
 **Quantization without extra accelerator**
 
 Without extra accelerator, `InferenceOptimizer.quantize()` returns a PyTorch module with desired precision and accuracy. Following the example in [Runtime Acceleration](#runtime-acceleration), you can add quantization as below:
 ```python
-q_model = InferenceOptimizer.quantize(model, calib_dataloader=dataloader)
+q_model = InferenceOptimizer.quantize(model, calib_data=dataloader)
 # run simple prediction with transparent acceleration
 y_hat = q_model(x)
 
@@ -154,13 +153,10 @@ This is a most basic usage to quantize a model with defaults, INT8 precision, an
 
 **Quantization with ONNXRuntime accelerator**
 
-With the ONNXRuntime accelerator, `InferenceOptimizer.quantize()` will return a model with compressed precision and running inference in the ONNXRuntime engine. It's also required to install onnxruntime-extensions as a dependency of INC when using ONNXRuntime as backend as well as the dependencies required in [ONNXRuntime Acceleration](#onnxruntime-acceleration):
-```shell
-pip install onnx onnxruntime onnxruntime-extensions
-```
+With the ONNXRuntime accelerator, `InferenceOptimizer.quantize()` will return a model with compressed precision and running inference in the ONNXRuntime engine.
 Still taking the example in [Runtime Acceleration](pytorch_inference.md#runtime-acceleration), you can add quantization as below:
 ```python
-ort_q_model = InferenceOptimizer.quantize(model, accelerator='onnxruntime', calib_dataloader=dataloader)
+ort_q_model = InferenceOptimizer.quantize(model, accelerator='onnxruntime', calib_data=dataloader)
 # run simple prediction with transparent acceleration
 y_hat = ort_q_model(x)
 
@@ -172,7 +168,7 @@ trainer.predict(ort_q_model, dataloader)
 Using `accelerator='onnxruntime'` actually equals to converting the model from PyTorch to ONNX firstly and then do quantization on the converted ONNX model:
 ```python
 ort_model = InferenceOptimizer.trace(model, accelerator='onnruntime', input_sample=x):
-ort_q_model = InferenceOptimizer.quantize(ort_model, accelerator='onnxruntime', calib_dataloader=dataloader)
+ort_q_model = InferenceOptimizer.quantize(ort_model, accelerator='onnxruntime', calib_data=dataloader)
 
 # run inference with transparent acceleration
 y_hat = ort_q_model(x)
@@ -181,14 +177,11 @@ trainer.test(ort_q_model, dataloader)
 trainer.predict(ort_q_model, dataloader)
 ```
 
-### Quantization using Post-training Optimization Tools
-The POT (Post-training Optimization Tools) is provided by OpenVINO toolkit. To use POT, you need to install OpenVINO as the same in [OpenVINO acceleration](#openvino-acceleration):
-```shell
-pip install openvino-dev
-```
+#### Quantization using Post-training Optimization Tools
+The POT (Post-training Optimization Tools) is provided by OpenVINO toolkit.
 Take the example in [Runtime Acceleration](#runtime-acceleration), and add quantization:
 ```python
-ov_q_model = InferenceOptimizer.quantize(model, accelerator='openvino', calib_dataloader=dataloader)
+ov_q_model = InferenceOptimizer.quantize(model, accelerator='openvino', calib_data=dataloader)
 # run simple prediction with transparent acceleration
 y_hat = ov_q_model(x)
 
@@ -200,7 +193,7 @@ trainer.predict(ov_q_model, dataloader)
 Same as using ONNXRuntime accelerator, it equals to converting the model from PyTorch to OpenVINO firstly and then doing quantization on the converted OpenVINO model:
 ```python
 ov_model = InferenceOptimizer.trace(model, accelerator='openvino', input_sample=x):
-ov_q_model = InferenceOptimizer.quantize(ov_model, accelerator='onnxruntime', calib_dataloader=dataloader)
+ov_q_model = InferenceOptimizer.quantize(ov_model, accelerator='onnxruntime', calib_data=dataloader)
 
 # run inference with transparent acceleration
 y_hat = ov_q_model(x)
@@ -209,10 +202,10 @@ trainer.test(ov_q_model, dataloader)
 trainer.predict(ov_q_model, dataloader)
 ```
 
-### Quantization with Accuracy Control
+#### Quantization with Accuracy Control
 A set of arguments that helps to tune the results for both INC and POT quantization:
 
-- `calib_dataloader`: A calibration dataloader is required for static post-training quantization. And for POT, it's also used for evaluation
+- `calib_data`: A calibration dataloader is required for static post-training quantization. And for POT, it's also used for evaluation
 - `metric`: A metric of `torchmetric` to run evaluation and compare with baseline
 
 - `accuracy_criterion`: A dictionary to specify the acceptable accuracy drop, e.g. `{'relative': 0.01, 'higher_is_better': True}`
@@ -232,7 +225,7 @@ from torchmetrics.classification import Accuracy
 InferenceOptimizer.quantize(model,
                             precision='int8',
                             accelerator=None,
-                            calib_dataloader= dataloader,
+                            calib_data=dataloader,
                             metric=Accuracy()
                             accuracy_criterion={'relative': 0.01, 'higher_is_better': True},
                             approach='static',
@@ -249,7 +242,7 @@ from torchmetrics.classification import Accuracy
 InferenceOptimizer.quantize(model,
                             precision='int8',
                             accelerator='openvino',
-                            calib_dataloader= dataloader,
+                            calib_data=dataloader,
                             metric=Accuracy()
                             accuracy_criterion={'relative': 0.01, 'higher_is_better': True},
                             approach='static',
@@ -336,3 +329,103 @@ with InferenceOptimizer.get_context(ipex_model, classifer):
     output = classifer(x) 
     assert torch.get_num_threads() == 4  # this line just to let you know Nano has provided thread control automatically : )
 ```
+### BFloat16 Quantization
+
+BigDL-Nano has support [mixed precision inference](https://pytorch.org/docs/stable/amp.html?highlight=mixed+precision) with BFloat16 and a series of additional performance tricks. BFloat16 Mixed Precison inference combines BFloat16 and FP32 during inference, which could lead to increased performance and reduced memory usage. Compared to FP16 mixed precison, BFloat16 mixed precision has better numerical stability.
+It's quite easy for you use BFloat16 Quantization as below:
+```python
+bf16_model = InferenceOptimizer.quantize(model,
+                                         precision='bf16')
+# run simple prediction with transparent acceleration
+with InferenceOptimizer.get_context():
+    y_hat = bf16_model(x)
+```
+
+```eval_rst
+.. note::
+    For BFloat16 quantization, make sure your inference is under ``with InferenceOptimizer.get_context():``. Otherwise, the whole inference process is actually FP32 precision.
+
+    For more details about the context manager provided by ``InferenceOptimizer.get_context()``, you could refer related [How-to guide]().
+```
+
+#### Channels Last Memory Format
+You could experience Bfloat16 Quantization with `channels_last=True` to use the channels last memory format, i.e. NHWC (batch size, height, width, channels), as an alternative way to store tensors in classic/contiguous NCHW order.
+The usage for this is as below:
+```python
+bf16_model = InferenceOptimizer.quantize(model,
+                                         precision='bf16',
+                                         channels_last=True)
+# run simple prediction with transparent acceleration
+with InferenceOptimizer.get_context():
+    y_hat = bf16_model(x)
+```
+
+#### Intel® Extension for PyTorch
+[Intel Extension for PyTorch](https://github.com/intel/intel-extension-for-pytorch) (a.k.a. IPEX) extends PyTorch with optimizations for an extra performance boost on Intel hardware.
+
+BigDL-Nano integrates IPEX through `InferenceOptimizer.quantize()`. Users can turn on IPEX by setting `use_ipex=True`:
+```python
+bf16_model = InferenceOptimizer.quantize(model,
+                                         precision='bf16',
+                                         use_ipex=True,
+                                         channels_last=True)
+# run simple prediction with transparent acceleration
+with InferenceOptimizer.get_context():
+    y_hat = bf16_model(x)
+```
+
+#### TorchScript Acceleration
+The [TorchScript](https://pytorch.org/docs/stable/jit.html) can also be used for Bfloat16 quantization. We recommend you take advantage of IPEX with TorchScript for further optimizations. The following usage is for TorchScript:
+```python
+bf16_model = InferenceOptimizer.quantize(model,
+                                         precision='bf16',
+                                         accelerator='jit',
+                                         input_sample=x,
+                                         use_ipex=True,
+                                         channels_last=True)
+# run simple prediction with transparent acceleration
+with InferenceOptimizer.get_context(bf16_model):
+    y_hat = bf16_model(x)
+```
+
+## Automatically Choose the Best Optimization
+
+If you have no idea about which one optimization to choose or you just want to compare them and choose the best one, you can use `InferenceOptimizer.optimize`.
+
+Still taking the example in [Runtime Acceleration](#runtime-acceleration), you can use it as following:
+```python
+# try all supproted optimizations
+opt = InferenceOptimizer()
+opt.optimize(model, training_data=dataloader, thread_num=4)
+
+# get the best optimization
+best_model, option = opt.get_best_model()
+
+# use the quantized model as before
+with InferenceOptimizer.get_context(best_model):
+    y_hat = best_model(x)
+```
+
+`InferenceOptimizer.optimize()` will try all supported optimizations and choose the best one by `get_best_model()`.
+The output table of `optimize()` looks like:
+```bash
+ -------------------------------- ---------------------- --------------
+|             method             |        status        | latency(ms)  |
+ -------------------------------- ---------------------- --------------
+|            original            |      successful      |    9.337     |
+|              bf16              |      successful      |    8.974     |
+|          static_int8           |      successful      |    8.934     |
+|         jit_fp32_ipex          |      successful      |    10.013    |
+|  jit_fp32_ipex_channels_last   |      successful      |    4.955     |
+|         jit_bf16_ipex          |      successful      |    2.563     |
+|  jit_bf16_ipex_channels_last   |      successful      |    3.135     |
+|         openvino_fp32          |      successful      |    1.727     |
+|         openvino_int8          |      successful      |    1.635     |
+|        onnxruntime_fp32        |      successful      |    3.801     |
+|    onnxruntime_int8_qlinear    |      successful      |    4.727     |
+ -------------------------------- ---------------------- --------------
+* means we assume the accuracy of the traced model does not change, so we don't recompute accuracy to save time.
+Optimization cost 58.3s in total.
+```
+
+For more details, you can refer [How-to guide]() and [API Doc](https://bigdl.readthedocs.io/en/latest/doc/PythonAPI/Nano/pytorch.html#bigdl-nano-pytorch-inferenceoptimizer). 
