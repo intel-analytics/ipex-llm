@@ -2,7 +2,7 @@
 
 BigDL-Nano provides several APIs which can help users easily apply optimizations on inference pipelines to improve latency and throughput. Currently, performance accelerations are achieved by integrating extra runtimes as inference backend engines or using quantization methods on full-precision trained models to reduce computation during inference. InferenceOptimizer (`bigdl.nano.pytorch.InferenceOptimizer`) provides the APIs for all optimizations that you need for inference.
 
-For runtime acceleration, BigDL-Nano has enabled three kinds of runtime for users in `InferenceOptimizer.trace()`, ONNXRuntime, OpenVINO and jit.
+For runtime acceleration, BigDL-Nano has enabled three kinds of runtime for users in `InferenceOptimizer.trace()`, ONNXRuntime, OpenVINO and TorchScript.
 
 ```eval_rst
 .. warning::
@@ -34,13 +34,13 @@ Before you go ahead with these APIs, you have to make sure BigDL-Nano is correct
 
     Or if you just want to use one of supported optimizations:
 
-    - INC (Intel Neural Compressor): ``pip install neural-compressor``
+    - [INC (Intel Neural Compressor)](https://github.com/intel/neural-compressor): ``pip install neural-compressor``
 
-    - OpenVINO: ``pip install openvino-dev``
+    - [OpenVINO](https://www.intel.com/content/www/us/en/developer/tools/openvino-toolkit/overview.html): ``pip install openvino-dev``
 
-    - ONNXRuntime: ``pip install onnx onnxruntime onnxruntime-extensions onnxsim neural-compressor``
+    - [ONNXRuntime](https://onnxruntime.ai/): ``pip install onnx onnxruntime onnxruntime-extensions onnxsim neural-compressor``
 
-    We recommand installing all dependencies by ``pip install bigdl-nano[pytorch,inference]``, because you may run into version issues if you install dependencies manually.
+    We recommand installing all dependencies by ``pip install --pre --upgrade bigdl-nano[pytorch,inference]``, because you may run into version issues if you install dependencies manually.
 ```
 
 ##  Runtime Acceleration
@@ -73,7 +73,7 @@ trainer.test(ort_model, dataloader)
 trainer.predict(ort_model, dataloader)
 ```
 ### ONNXRuntime Acceleration
-You can simply append the following part to enable your ONNXRuntime acceleration.
+You can simply append the following part to enable your [ONNXRuntime](https://onnxruntime.ai/) acceleration.
 ```python
 # step 4: trace your model as an ONNXRuntime model
 # if you have run `trainer.fit` before trace, then argument `input_sample` is not required.
@@ -91,7 +91,7 @@ trainer.predict(ort_model, dataloader)
 # trainer.fit(ort_model, dataloader) # this is illegal
 ```
 ### OpenVINO Acceleration
-The OpenVINO usage is quite similar to ONNXRuntime, the following usage is for OpenVINO:
+The [OpenVINO](https://www.intel.com/content/www/us/en/developer/tools/openvino-toolkit/overview.html) usage is quite similar to ONNXRuntime, the following usage is for OpenVINO:
 ```python
 # step 4: trace your model as a openvino model
 # if you have run `trainer.fit` before trace, then argument `input_sample` is not required.
@@ -110,8 +110,20 @@ trainer.predict(ort_model, dataloader)
 # trainer.fit(ort_model, dataloader) # this is illegal
 ```
 
-### Jit Acceleration
+### TorchScript Acceleration
+The [TorchScript](https://pytorch.org/docs/stable/jit.html) usage is a little different from above two cases. In addition to specifying `accelerator=jit`, you can also set `use_ Ipex=True` to enable the additional acceleration provided by [IPEX (Intel® Extension for PyTorch*)](https://www.intel.com/content/www/us/en/developer/tools/oneapi/extension-for-pytorch.html), we generally recommend the combination of `jit` and `ipex`.The following usage is for TorchScript:
+```python
+# step 4: trace your model as a JIT model
+jit_model = InferenceOptimizer.trace(model, accelerator='jit', input_sample=x)
 
+# or you can combine jit with ipex
+jit_model = InferenceOptimizer.trace(model, accelerator='jit',
+                                     use_ipex=True, input_sample=x)
+
+# step 5: use returned model for transparent acceleration
+# The usage is almost the same with any PyTorch module
+y_hat = jit_model(x)
+```
 
 ## Quantization
 Quantization is widely used to compress models to a lower precision, which not only reduces the model size but also accelerates inference. BigDL-Nano provides `InferenceOptimizer.quantize()` API for users to quickly obtain a quantized model with accuracy control by specifying a few arguments. Intel Neural Compressor (INC) and Post-training Optimization Tools (POT) from OpenVINO toolkit are enabled as options. In the meantime, runtime acceleration is also included directly in the quantization pipeline when using `accelerator='onnxruntime'/'openvino'` so you don't have to run `InferenceOptimizer.trace` before quantization.
