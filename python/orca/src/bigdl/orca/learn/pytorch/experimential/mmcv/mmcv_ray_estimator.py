@@ -126,19 +126,18 @@ class MMCVRayEstimator(BaseRayEstimator):
         Returns:
             None
         """
-        params = dict(
-            map_location=map_location,
-            strict=strict,
-            revise_keys=revise_keys
-        )
         from bigdl.dllib.utils.file_utils import is_local_path
         if is_local_path(filename):
-            ckpt_dict = torch.load(filename)
-            params["ckpt_dict"] = ckpt_dict
+            self.load(filename)
         else:
-            params["filename"] = filename
-
-        ray.get([
-            worker.load_checkpoint.remote(**params)
-            for i, worker in enumerate(self.remote_workers)
-        ])
+            params = dict(
+                filename=filename,
+                map_location=map_location,
+                strict=strict,
+                revise_keys=revise_keys
+            )
+            results = [
+                worker.load_checkpoint.remote(**params)
+                for worker in self.remote_workers
+            ]
+            ray.get(results)

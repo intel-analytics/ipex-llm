@@ -293,8 +293,7 @@ class MMCVRayEpochRunner(BaseRayRunner, EpochBasedRunner):
 
     def load_checkpoint(
             self,
-            filename: Optional[str] = None,
-            ckpt_dict: Optional[Union[Dict, OrderedDict]]=None,
+            filename: str,
             map_location: Union[str, Callable]='cpu',
             strict: bool = False,
             revise_keys: List = [(r'^module.', '')],
@@ -302,8 +301,7 @@ class MMCVRayEpochRunner(BaseRayRunner, EpochBasedRunner):
         """Load checkpoint from a file or URI.
 
         Args:
-            filename (str): Accept local filepath, URL, ``hdfs://xxx``.
-            ckpt_dict (dict): Checkpoint dict from driver
+            filename (str): HDFS file path, ``hdfs://xxx``.
             map_location (str): Same as :func:`torch.load`.
             strict (bool): Whether to allow different params for the model and
                 checkpoint.
@@ -315,19 +313,20 @@ class MMCVRayEpochRunner(BaseRayRunner, EpochBasedRunner):
         Returns:
             dict or OrderedDict: The loaded checkpoint.
         """
-        checkpoint = {}
-        if filename:
-            checkpoint = CheckpointLoader.load_checkpoint(filename, map_location, self.logger)
-        elif ckpt_dict:
-            checkpoint = ckpt_dict
-        else:
-            invalidInputError(False, "either provide a checkpoint filename"
-                                     "or a checkpoint dict")
 
-        if not isinstance(checkpoint, dict):
-            invalidInputError(False,
-                              f'No state_dict found in checkpoint file {filename}'
-                              f'or ckpt_dict is not a dict')
+        checkpoint = CheckpointLoader.load_checkpoint(filename, map_location, self.logger)
+        self.load_state_dict(checkpoint, strict, revise_keys)
+        return checkpoint
+
+    def remove_checkpoint(self, filepath):
+        pass
+
+    def get_state_dict(self):
+        """Returns the state of the runner."""
+        pass
+
+    def load_state_dict(self, checkpoint, strict=False, revise_keys=[(r'^module.', '')]):
+        """Sets the state of the model."""
 
         if 'state_dict' in checkpoint:
             state_dict = checkpoint['state_dict']
@@ -345,18 +344,6 @@ class MMCVRayEpochRunner(BaseRayRunner, EpochBasedRunner):
 
         from mmcv.runner.checkpoint import load_state_dict
         load_state_dict(self.model, state_dict, strict, self.logger)
-        return checkpoint
-
-    def remove_checkpoint(self, filepath):
-        pass
-
-    def get_state_dict(self):
-        """Returns the state of the runner."""
-        pass
-
-    def load_state_dict(self, state):
-        """Sets the state of the model."""
-        pass
 
     def shutdown(self):
         pass
