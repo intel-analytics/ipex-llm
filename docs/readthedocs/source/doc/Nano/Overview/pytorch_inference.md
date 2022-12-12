@@ -2,7 +2,7 @@
 
 BigDL-Nano provides several APIs which can help users easily apply optimizations on inference pipelines to improve latency and throughput. Currently, performance accelerations are achieved by integrating extra runtimes as inference backend engines or using quantization methods on full-precision trained models to reduce computation during inference. InferenceOptimizer (`bigdl.nano.pytorch.InferenceOptimizer`) provides the APIs for all optimizations that you need for inference.
 
-For runtime acceleration, BigDL-Nano has enabled four kinds of runtime for users in `InferenceOptimizer.trace()`, ONNXRuntime, OpenVINO, and jit.
+For runtime acceleration, BigDL-Nano has enabled three kinds of runtime for users in `InferenceOptimizer.trace()`, ONNXRuntime, OpenVINO and jit.
 
 ```eval_rst
 .. warning::
