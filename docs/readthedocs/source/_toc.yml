@@ -109,6 +109,7 @@ subtrees:
                   - file: doc/Nano/Howto/Training/PyTorchLightning/pytorch_lightning_training_channels_last
                   - file: doc/Nano/Howto/Training/PyTorchLightning/pytorch_lightning_training_bf16
                   - file: doc/Nano/Howto/Training/PyTorchLightning/pytorch_lightning_cv_data_pipeline
+                  - file: doc/Nano/Howto/Training/PyTorch/convert_pytorch_training_torchnano
                   - file: doc/Nano/Howto/Training/TensorFlow/accelerate_tensorflow_training_multi_instance
                   - file: doc/Nano/Howto/Training/TensorFlow/tensorflow_training_embedding_sparseadam
                   - file: doc/Nano/Howto/Training/General/choose_num_processes_training

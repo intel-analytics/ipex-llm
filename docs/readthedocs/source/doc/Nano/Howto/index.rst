@@ -16,6 +16,13 @@ PyTorch Lightning
 * `How to conduct BFloat16 Mixed Precision training in your PyTorch Lightning application <Training/PyTorchLightning/pytorch_lightning_training_bf16.html>`_
 * `How to accelerate a computer vision data processing pipeline <Training/PyTorchLightning/pytorch_lightning_cv_data_pipeline.html>`_
 
+PyTorch
+~~~~~~~~~~~~~~~~~~~~~~~~~
+* |convert_pytorch_training_torchnano|_
+
+.. |convert_pytorch_training_torchnano| replace:: How to convert your PyTorch code to use ``TorchNano`` for training acceleration
+.. _convert_pytorch_training_torchnano: Training/PyTorch/convert_pytorch_training_torchnano.html
+
 TensorFlow
 ~~~~~~~~~~~~~~~~~~~~~~~~~
 * `How to accelerate a TensorFlow Keras application on training workloads through multiple instances <Training/TensorFlow/accelerate_tensorflow_training_multi_instance.html>`_
