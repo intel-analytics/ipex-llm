@@ -90,7 +90,7 @@ class IPEXJITInference_gt_1_10:
             print("hello world!")
         # patch a function
         model.hello = hello
-        
+
         # test jit + ipex
         new_model = InferenceOptimizer.trace(model, accelerator="jit",
                                              use_ipex=True,
@@ -99,6 +99,24 @@ class IPEXJITInference_gt_1_10:
             new_model(self.data_sample)
         assert new_model.channels == 3
         new_model.hello()
+
+        # test jit + ipex + inplace
+        new_model = InferenceOptimizer.trace(model, accelerator="jit",
+                                             use_ipex=True,
+                                             inplace=True,
+                                             input_sample=self.data_sample)
+        with InferenceOptimizer.get_context(new_model):
+            new_model(self.data_sample)
+        assert new_model.channels == 3
+        new_model.hello()
+
+        model = ResNet18(10, pretrained=False, include_top=False, freeze=True)
+        #  patch a attr
+        model.channels = 3
+        def hello():
+            print("hello world!")
+        # patch a function
+        model.hello = hello
 
         # test jit
         new_model = InferenceOptimizer.trace(model, accelerator="jit",
@@ -116,7 +134,24 @@ class IPEXJITInference_gt_1_10:
         new_model.hello()
         with pytest.raises(AttributeError):
             new_model.width
-        
+
+        # test ipex inplace
+        new_model = InferenceOptimizer.trace(model, use_ipex=True, inplace=True)
+        with InferenceOptimizer.get_context(new_model):
+            new_model(self.data_sample)
+        assert new_model.channels == 3
+        new_model.hello()
+        with pytest.raises(AttributeError):
+            new_model.width
+
+        model = ResNet18(10, pretrained=False, include_top=False, freeze=True)
+        #  patch a attr
+        model.channels = 3
+        def hello():
+            print("hello world!")
+        # patch a function
+        model.hello = hello
+
         # test channels_last
         new_model = InferenceOptimizer.trace(model, channels_last=True)
         with InferenceOptimizer.get_context(new_model):
