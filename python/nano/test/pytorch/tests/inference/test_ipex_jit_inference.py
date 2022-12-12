@@ -110,6 +110,14 @@ class IPEXJITInference_gt_1_10:
         assert new_model.channels == 3
         new_model.hello()
 
+        model = ResNet18(10, pretrained=False, include_top=False, freeze=True)
+        #  patch a attr
+        model.channels = 3
+        def hello():
+            print("hello world!")
+        # patch a function
+        model.hello = hello
+
         # test jit
         new_model = InferenceOptimizer.trace(model, accelerator="jit",
                                              input_sample=self.data_sample)
@@ -135,6 +143,14 @@ class IPEXJITInference_gt_1_10:
         new_model.hello()
         with pytest.raises(AttributeError):
             new_model.width
+
+        model = ResNet18(10, pretrained=False, include_top=False, freeze=True)
+        #  patch a attr
+        model.channels = 3
+        def hello():
+            print("hello world!")
+        # patch a function
+        model.hello = hello
 
         # test channels_last
         new_model = InferenceOptimizer.trace(model, channels_last=True)
