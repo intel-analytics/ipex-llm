@@ -51,7 +51,6 @@ RUN env DEBIAN_FRONTEND=noninteractive apt-get update && \
     cd /pytorch && \
     python3 setup.py install && \
     cd /ppml/ && \
-    rm -rf /pytorch && \
 # generate secured_argvs
     gramine-argv-serializer bash -c 'export TF_MKL_ALLOC_MAX_BYTES=10737418240 && $sgx_command' > /ppml/secured_argvs && \
     chmod +x /sbin/tini && \
