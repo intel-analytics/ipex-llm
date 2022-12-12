@@ -44,7 +44,6 @@ def PytorchIPEXJITModel(model, input_sample=None, use_ipex=False,
     :param use_ipex: if use ipex to optimize the model
     :param use_jit: if use jit to accelerate the model
     :param channels_last: if set model and data to be channels-last mode.
-            the parameter will be ignored if use_ipex is False.
     :param thread_num: the thread num allocated for this model.
     :param inplace: whether to perform inplace optimization. Default: ``False``.
     :param jit_strict: Whether recording your mutable container types.
@@ -65,7 +64,6 @@ def PytorchIPEXJITBF16Model(model, input_sample=None, use_ipex=False,
     :param use_ipex: if use ipex to optimize the model
     :param use_jit: if use jit to accelerate the model
     :param channels_last: if set model and data to be channels-last mode.
-            the parameter will be ignored if use_ipex is False.
     :param thread_num: the thread num allocated for this model.
     :param inplace: whether to perform inplace optimization. Default: ``False``.
     :param jit_strict: Whether recording your mutable container types.
@@ -74,6 +72,26 @@ def PytorchIPEXJITBF16Model(model, input_sample=None, use_ipex=False,
     return PytorchIPEXJITBF16Model(model, input_sample=input_sample, use_ipex=use_ipex,
                                    use_jit=use_jit, channels_last=channels_last,
                                    thread_num=thread_num, inplace=inplace, jit_strict=jit_strict)
+
+
+def PytorchIPEXQuantizationModel(model, input_sample=None, use_ipex=False,
+                                 use_jit=False, channels_last=None, thread_num=None,
+                                 inplace=False, jit_strict=True):
+    '''
+    :param model: the model(nn.module) to be transform.
+    :param input_sample: torch tensor indicate the data sample to be used
+            for tracing.
+    :param use_ipex: if use ipex to optimize the model
+    :param use_jit: if use jit to accelerate the model
+    :param channels_last: if set model and data to be channels-last mode.
+    :param thread_num: the thread num allocated for this model.
+    :param inplace: whether to perform inplace optimization. Default: ``False``.
+    :param jit_strict: Whether recording your mutable container types.
+    '''
+    from .ipex_quantization_model import PytorchIPEXQuantizationModel
+    return PytorchIPEXQuantizationModel(model, input_sample=input_sample, use_ipex=use_ipex,
+                               use_jit=use_jit, channels_last=channels_last,
+                               thread_num=thread_num, inplace=inplace, jit_strict=jit_strict)
 
 
 def load_ipexjit_model(path, model, inplace=False):

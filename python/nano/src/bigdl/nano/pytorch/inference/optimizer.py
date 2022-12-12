@@ -28,7 +28,8 @@ from bigdl.nano.utils.inference.common.base_optimizer import BaseInferenceOptimi
 from bigdl.nano.utils.log4Error import invalidInputError
 from bigdl.nano.pytorch.amp import BF16Model
 from bigdl.nano.deps.openvino.openvino_api import PytorchOpenVINOModel
-from bigdl.nano.deps.ipex.ipex_api import PytorchIPEXJITModel, PytorchIPEXJITBF16Model
+from bigdl.nano.deps.ipex.ipex_api import PytorchIPEXJITModel, PytorchIPEXJITBF16Model ,\
+    PytorchIPEXQuantizationModel
 from bigdl.nano.deps.onnxruntime.onnxruntime_api import PytorchONNXRuntimeModel
 from bigdl.nano.deps.neural_compressor.inc_api import quantize as inc_quantize
 from bigdl.nano.utils.inference.pytorch.model import AcceleratedLightningModule
@@ -689,17 +690,40 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                 model which is able to run on Pytorch or ONNXRuntime can be fetched by
                 `quantized_model.model`.
                 """
-                return inc_quantize(model, inc_calib_dataloader, metric,
-                                    thread_num=thread_num,
-                                    framework=framework,
-                                    conf=conf,
-                                    approach=approach,
-                                    tuning_strategy=tuning_strategy,
-                                    accuracy_criterion=accuracy_criterion,
-                                    timeout=timeout,
-                                    max_trials=max_trials,
-                                    onnxruntime_session_options=onnxruntime_session_options)
-
+                if framework != 'pytorch_ipex':
+                    return inc_quantize(model, inc_calib_dataloader, metric,
+                                        thread_num=thread_num,
+                                        framework=framework,
+                                        conf=conf,
+                                        approach=approach,
+                                        tuning_strategy=tuning_strategy,
+                                        accuracy_criterion=accuracy_criterion,
+                                        timeout=timeout,
+                                        max_trials=max_trials,
+                                        onnxruntime_session_options=onnxruntime_session_options)
+                else:
+                    try:
+                        return inc_quantize(model, inc_calib_dataloader, metric,
+                                            thread_num=thread_num,
+                                            framework=framework,
+                                            conf=conf,
+                                            approach=approach,
+                                            tuning_strategy=tuning_strategy,
+                                            accuracy_criterion=accuracy_criterion,
+                                            timeout=timeout,
+                                            max_trials=max_trials,
+                                            onnxruntime_session_options=onnxruntime_session_options)
+                    except (RuntimeError, AssertionError):
+                        # use pure ipex quantization as a backup for inc ipex quantization
+                        return PytorchIPEXQuantizationModel(model,
+                                                            inc_calib_dataloader,
+                                                            input_sample=input_sample,
+                                                            use_ipex=use_ipex,
+                                                            use_jit=use_jit,
+                                                            channels_last=channels_last,
+                                                            thread_num=thread_num,
+                                                            inplace=inplace,
+                                                            jit_strict=jit_strict)
             elif accelerator == 'openvino':
                 model_type = type(model).__name__
                 if not model_type == 'PytorchOpenVINOModel':
