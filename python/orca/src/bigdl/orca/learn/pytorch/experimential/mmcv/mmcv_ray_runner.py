@@ -28,7 +28,7 @@ from mmcv.runner import EpochBasedRunner
 from mmcv.runner.utils import get_host_info
 from mmcv.parallel.distributed import MMDistributedDataParallel
 from mmcv.parallel.utils import is_module_wrapper
-from mmcv import BaseStorageBackend, FileClient
+from mmcv import BaseStorageBackend
 from mmcv.runner.checkpoint import CheckpointLoader
 from bigdl.orca.learn.pytorch.utils import get_batchsize
 from bigdl.dllib.utils.log4Error import invalidInputError
@@ -135,8 +135,6 @@ class MMCVRayEpochRunner(BaseRayRunner, EpochBasedRunner):
         #    flexible control of input data.
         # 2. It implement two APIs ``train_step()`` and ``val_step()``.
         self.model = MMDistributedDataParallel(self.model)
-        # register hdfs backend to support save ckpt to hdfs for mmcv.
-        FileClient.register_backend('hdfs_backend', HDFSBackend, prefixes="hdfs")
 
     def train_epochs(self,
                      data_loaders_creators: List[Callable],
@@ -328,8 +326,8 @@ class MMCVRayEpochRunner(BaseRayRunner, EpochBasedRunner):
 
         if not isinstance(checkpoint, dict):
             invalidInputError(False,
-                f'No state_dict found in checkpoint file {filename} or '
-                f'ckpt_dict is not a dict')
+                              f'No state_dict found in checkpoint file {filename}'
+                              f'or ckpt_dict is not a dict')
 
         if 'state_dict' in checkpoint:
             state_dict = checkpoint['state_dict']
