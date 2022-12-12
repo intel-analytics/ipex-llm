@@ -350,6 +350,8 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                                                                thread_num=thread_num)
 
         print("==========================Start Optimization==========================")
+        print('======================DEBUG START: Junes nano======================')
+        print('======================DEBUG  END : Junes nano======================')
         start_time = time.perf_counter()
         for idx, (method, available) in enumerate(available_dict.items()):
             result_map[method] = {}
@@ -568,18 +570,6 @@ class InferenceOptimizer(BaseInferenceOptimizer):
         :return:            A accelerated torch.nn.Module if quantization is sucessful.
         """
 
-        # try channels_last available
-        channels_last_available = []
-        if input_sample:
-            channels_last_available = [True]*len(input_sample)
-            for idx in range(len(input_sample)):
-                try:
-                    input_sample[idx].to(memory_format=torch.channels_last)
-                except:
-                    channels_last_available[idx] = False
-                else:
-                    channels_last_available[idx] = True
-
         if precision == 'bf16':
             if accelerator is None or accelerator == "jit":
                 if use_ipex or accelerator == "jit":
@@ -590,12 +580,11 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                     return PytorchIPEXJITBF16Model(model, input_sample=input_sample,
                                                    use_ipex=use_ipex, use_jit=use_jit,
                                                    channels_last=channels_last,
-                                                   channels_last_available=channels_last_available,
                                                    thread_num=thread_num, inplace=inplace,
                                                    jit_strict=jit_strict)
                 else:
                     bf16_model = BF16Model(model, channels_last=channels_last,
-                                           channels_last_available=channels_last_available,
+                                           input_sample=input_sample,
                                            thread_num=thread_num)
                     return bf16_model
             else:
@@ -777,17 +766,6 @@ class InferenceOptimizer(BaseInferenceOptimizer):
         :return: Model with different acceleration.
         """
 
-        # try channels_last available
-        channels_last_available = []
-        if input_sample:
-            channels_last_available = [True]*len(input_sample)
-            for idx in range(len(input_sample)):
-                try:
-                    input_sample[idx].to(memory_format=torch.channels_last)
-                except:
-                    channels_last_available[idx] = False
-                else:
-                    channels_last_available[idx] = True
 
 
         invalidInputError(
@@ -817,7 +795,6 @@ class InferenceOptimizer(BaseInferenceOptimizer):
             use_jit = (accelerator == "jit")
             return PytorchIPEXJITModel(model, input_sample=input_sample, use_ipex=use_ipex,
                                        use_jit=use_jit, channels_last=channels_last,
-                                       channels_last_available=channels_last_available,
                                        thread_num=thread_num, inplace=inplace,
                                        jit_strict=jit_strict)
         invalidInputError(False, "Accelerator {} is invalid.".format(accelerator))

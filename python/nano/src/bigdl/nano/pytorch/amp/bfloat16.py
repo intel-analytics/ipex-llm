@@ -33,7 +33,7 @@ invalidInputError(
 class BF16Model(AcceleratedLightningModule):
     """Model of BFloat16 with auto mixed precision."""
 
-    def __init__(self, model, channels_last=None, channels_last_available=[],thread_num=None):  # noqa
+    def __init__(self, model, input_sample=None, channels_last=None, thread_num=None):  # noqa
         """
         This is the accelerated model for BFloat16 with auto mixed precision.
 
@@ -45,7 +45,19 @@ class BF16Model(AcceleratedLightningModule):
         self._bf16_check()
         self.model = model  # use mixed precision instead of complete precision
         self.channels_last = channels_last
-        self.channels_last_available = channels_last_available
+        if self.channels_last:
+            # try channels_last available
+            channels_last_available = []
+            if input_sample:
+                channels_last_available = [True]*len(input_sample)
+                for idx, input in enumerate(input_sample):
+                    try:
+                        input.to(memory_format=torch.channels_last)
+                    except:
+                        channels_last_available[idx] = False
+                    else:
+                        channels_last_available[idx] = True
+            self.channels_last_available = channels_last_available
         self.thread_num = thread_num
         if self.channels_last is True:
             self.model = self.model.to(memory_format=torch.channels_last)
@@ -107,7 +119,8 @@ class BF16Model(AcceleratedLightningModule):
 
     def forward_step(self, *inputs):
         if self.channels_last is True:
-            if self.channels_last_available: # it mean the input_sample is not None
+            # check if `channels_last_available` has been generated
+            if self.channels_last_available:
                 for idx, input in enumerate(inputs):
                     if self.channels_last_available[idx]:
                         input.to(memory_format=torch.channels_last)
@@ -117,9 +130,8 @@ class BF16Model(AcceleratedLightningModule):
                 except:
                     print("************************error:***************************\n")
                     print("You should pass in a non_empty input_sample")
-        # if self.channels_last is True:
-        #     inputs = tuple(map(lambda x: x.to(memory_format=torch.channels_last), inputs))
         return self.model(*inputs)
+
 
     def on_forward_end(self, outputs):
         return outputs

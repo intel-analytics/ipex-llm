@@ -29,7 +29,6 @@ class PytorchIPEXJITModel(AcceleratedLightningModule):
         dtype=None,
         use_jit=False,
         channels_last=None,
-        channels_last_available=[],
         thread_num=None,
         from_load=False,
         inplace=False,
@@ -68,7 +67,19 @@ class PytorchIPEXJITModel(AcceleratedLightningModule):
             )
             return
         self.channels_last = channels_last
-        self.channels_last_available = channels_last_available
+        if self.channels_last:
+            # try channels_last available
+            channels_last_available = []
+            if input_sample:
+                channels_last_available = [True]*len(input_sample)
+                for idx, input in enumerate(input_sample):
+                    try:
+                        input.to(memory_format=torch.channels_last)
+                    except:
+                        channels_last_available[idx] = False
+                    else:
+                        channels_last_available[idx] = True
+            self.channels_last_available = channels_last_available
         self.original_state_dict = model.state_dict()
         self.use_ipex = use_ipex
         self.use_jit = use_jit
@@ -116,7 +127,8 @@ class PytorchIPEXJITModel(AcceleratedLightningModule):
 
     def forward_step(self, *inputs):
         if self.channels_last is True:
-            if self.channels_last_available: # it mean the input_sample is not None
+            # check if `channels_last_available` has been generated
+            if self.channels_last_available:
                 for idx, input in enumerate(inputs):
                     if self.channels_last_available[idx]:
                         input.to(memory_format=torch.channels_last)
@@ -126,7 +138,7 @@ class PytorchIPEXJITModel(AcceleratedLightningModule):
                 except:
                     print("************************error:***************************\n")
                     print("You should pass in a non_empty input_sample")
-        return self.model(*tuple(inputs))
+        return self.model(*inputs)
 
     def on_forward_end(self, outputs):
         return outputs

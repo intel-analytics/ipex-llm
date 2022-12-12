@@ -26,7 +26,6 @@ import torch
 class PytorchIPEXJITBF16Model(PytorchIPEXJITModel):
     def __init__(self, model, input_sample=None, use_ipex=False,
                  use_jit=False, channels_last=None, thread_num=None, from_load=False,
-                 channels_last_available=[],
                  inplace=False, jit_strict=True):
         '''
         This is the accelerated model for pytorch and ipex/jit.
@@ -57,7 +56,6 @@ class PytorchIPEXJITBF16Model(PytorchIPEXJITModel):
         PytorchIPEXJITModel.__init__(self, model, input_sample=input_sample, use_ipex=use_ipex,
                                      dtype=torch.bfloat16, use_jit=use_jit,
                                      channels_last=channels_last, from_load=from_load,
-                                     channels_last_available=channels_last_available,
                                      inplace=inplace, jit_strict=jit_strict)
         self._nano_context_manager = generate_context_manager(accelerator=None,
                                                               precision="bf16",
