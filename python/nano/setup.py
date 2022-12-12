@@ -90,15 +90,10 @@ def setup_package():
                                "keras==2.10.0; platform_machine=='x86_64'",
                                "tensorflow-estimator==2.10.0; platform_machine=='x86_64'"]
     
-    tensorflow_211_requires = ["intel-tensorflow==2.11.0; platform_machine=='x86_64'",
-                               "keras==2.11.0; platform_machine=='x86_64'",
-                               "tensorflow-estimator==2.11.0; platform_machine=='x86_64'"]
-    
     tensorflow_common_requires = ["tf2onnx==1.13.0; platform_machine=='x86_64'"]
 
     # default pytorch_dep
     tensorflow_requires = tensorflow_29_requires + tensorflow_common_requires
-    tensorflow_211_requires += tensorflow_common_requires
     tensorflow_210_requires += tensorflow_common_requires
     tensorflow_29_requires += tensorflow_common_requires
     tensorflow_28_requires += tensorflow_common_requires
@@ -180,7 +175,6 @@ def setup_package():
                         "tensorflow_28": tensorflow_28_requires,
                         "tensorflow_29": tensorflow_29_requires,
                         "tensorflow_210": tensorflow_210_requires,
-                        "tensorflow_211": tensorflow_211_requires,
                         "pytorch": pytorch_requires,
                         "pytorch_113": pytorch_113_requires,
                         "pytorch_112": pytorch_112_requires,
