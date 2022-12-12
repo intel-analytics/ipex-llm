@@ -23,14 +23,12 @@ import pickle
 from time import time
 from argparse import ArgumentParser
 
-import tensorflow as tf
-
+from bigdl.dllib.utils.file_utils import get_remote_file_to_local
+from bigdl.dllib.utils.log4Error import invalidInputError
 from bigdl.orca import init_orca_context, stop_orca_context
 from bigdl.orca.data.file import exists, makedirs
 from bigdl.friesian.feature import FeatureTable
-from bigdl.dllib.utils.file_utils import get_remote_file_to_local
 from bigdl.orca.learn.tf2.estimator import Estimator
-from bigdl.dllib.utils.log4Error import *
 
 
 INT_COLS = ["c{}".format(i) for i in list(range(1, 14))]
@@ -83,6 +81,8 @@ def get_data(data_dir):
 
 def build_model(column_info, hidden_units=[100, 50, 25]):
     """Build an estimator appropriate for the given model type."""
+    import tensorflow as tf
+
     wide_base_input_layers = []
     wide_base_layers = []
     for i in range(len(column_info["wide_base_cols"])):
@@ -154,6 +154,8 @@ def build_model(column_info, hidden_units=[100, 50, 25]):
 
 
 def model_creator(config):
+    import tensorflow as tf
+
     model = build_model(column_info=config["column_info"],
                         hidden_units=config['hidden_units'])
     optimizer = tf.keras.optimizers.Adam(config["lr"])
