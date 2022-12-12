@@ -180,8 +180,7 @@ class TestOpenVINO(TestCase):
 
         accmodel = InferenceOptimizer.quantize(model,
                                                accelerator="openvino",
-                                               calib_data=torch.rand(1, 3, 14, 14),
-                                               metric=F1(10))
+                                               calib_data=torch.rand(1, 3, 14, 14))
         accmodel(x1)
         accmodel(x2)
         try:
@@ -192,7 +191,6 @@ class TestOpenVINO(TestCase):
         accmodel = InferenceOptimizer.quantize(model,
                                                accelerator="openvino",
                                                calib_data=torch.rand(1, 3, 14, 14),
-                                               metric=F1(10),
                                                dynamic_axes={"x": [0, 2, 3]})
         accmodel(x1)
         accmodel(x2)
