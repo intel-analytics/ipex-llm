@@ -32,7 +32,7 @@ jobs:
           commit-message: update url
           title: Update download URL
           body: Update download URL
-          branch: wip/liusha/test1
+          branch: wip/liusha/test2
       - run: |
           echo ${{ steps.cpr.outputs.pull-request-number }}
           echo ${{ steps.cpr.outputs.pull-request-operation }}
