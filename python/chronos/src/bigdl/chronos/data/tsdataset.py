@@ -24,7 +24,7 @@ from bigdl.chronos.data.utils.impute import impute_timeseries_dataframe
 from bigdl.chronos.data.utils.deduplicate import deduplicate_timeseries_dataframe
 from bigdl.chronos.data.utils.roll import roll_timeseries_dataframe
 from bigdl.chronos.data.utils.time_feature import time_features, gen_time_enc_arr
-from bigdl.chronos.data.utils.scale import unscale_timeseries_numpy
+from bigdl.chronos.data.utils.scale import unscale_timeseries_numpy, scale_timeseries_numpy
 from bigdl.chronos.data.utils.resample import resample_timeseries_dataframe
 from bigdl.chronos.data.utils.split import split_timeseries_dataframe
 from bigdl.chronos.data.utils.cycle_detection import cycle_length_est
@@ -1077,7 +1077,7 @@ class TSDataset:
                                       "When calling scale for the first time, "
                                       "you need to set fit=True.")
             self.df[self.target_col + feature_col] = \
-                scaler.transform(self.df[self.target_col + feature_col])
+                scale_timeseries_numpy(self.df[self.target_col + feature_col].values, scaler)
         self.scaler = scaler
         return self
 

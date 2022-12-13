@@ -208,7 +208,8 @@ class TestUtil(TestCase):
 
         from bigdl.orca import OrcaContext
         OrcaContext._shard_size = 1
-        shards = _dataframe_to_xshards(df, feature_cols=["feature"], label_cols=["label"])
+        shards = _dataframe_to_xshards(df, feature_cols=["feature"], label_cols=["label"],
+                                       shard_size=OrcaContext._shard_size)
         num_shards = shards.rdd.count()
         assert num_shards == df.rdd.count()
         OrcaContext._shard_size = None

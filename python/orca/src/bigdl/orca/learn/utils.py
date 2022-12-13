@@ -376,8 +376,6 @@ def _dataframe_to_xshards(data, feature_cols, label_cols=None,
                           accept_str_col=False, shard_size=None):
     from bigdl.orca import OrcaContext
     schema = data.schema
-    if OrcaContext._shard_size:
-        shard_size = OrcaContext._shard_size
     numpy_rdd = data.rdd.map(lambda row: convert_row_to_numpy(row,
                                                               schema,
                                                               feature_cols,

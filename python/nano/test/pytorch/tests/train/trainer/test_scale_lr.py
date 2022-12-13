@@ -33,7 +33,7 @@ num_classes = 10
 batch_size = 32
 dataset_size = 256
 num_workers = 0
-data_dir = os.path.join(os.path.dirname(__file__), "../data")
+data_dir = "/tmp/data"
 
 
 class ResNetBase(pl.LightningModule):
@@ -172,8 +172,9 @@ class TestScaleLr(TestCase):
 
     def setUp(self):
         test_dir = os.path.dirname(__file__)
+        # project_test_dir = BigDL/python/nano
         project_test_dir = os.path.abspath(
-            os.path.join(os.path.join(os.path.join(test_dir, ".."), ".."), "..")
+            os.path.join(test_dir, "..", "..", "..", "..", "..")
         )
         os.environ['PYTHONPATH'] = project_test_dir
 

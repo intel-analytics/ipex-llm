@@ -63,6 +63,30 @@ You could follow below steps to workaround:
 
 2. If you really need to use ray on spark, please install bigdl-orca under a conda environment. Detailed information please refer to [here](./orca.html).
 
+## Ray Issues
+
+### ValueError: Ray component worker_ports is trying to use a port number ... that is used by other components.
+
+This error is because that some port in worker port list is occupied by other processes. To handle this issue, you can set range of the worker port list by using the parameters `min-worker-port` and `max-worker-port` in `init_orca_context` as follows:
+
+```python
+init_orca_context(extra_params={"min-worker-port": "30000", "max-worker-port": "30033"})
+```
+
+### ValueError: Failed to bind to 0.0.0.0:8265 because it's already occupied. You can use `ray start --dashboard-port ...` or `ray.init(dashboard_port=...)` to select a different port.
+
+This error is because that ray dashboard port is occupied by other processes. To handle this issue, you can end the process that occupies the port or you can manually set the ray dashboard port by using the parameter `dashboard-port` in `init_orca_context` as follows:
+
+```python
+init_orca_context(extra_params={"dashboard-port": "50005"})
+```
+
+Note that, the similar error can happen to ray redis port as well, you can also set the ray redis port by using the parameter `redis_port` in `init_orca_context` as follows:
+
+```python
+init_orca_context(redis_port=50006)
+```
+
 ## Other Issues
 
 ### OSError: Unable to load libhdfs: ./libhdfs.so: cannot open shared object file: No such file or directory
@@ -85,7 +109,6 @@ To solve this issue, you need to set the path of `libhdfs.so` in Cloudera to the
    # For yarn-cluster mode
    spark-submit --conf spark.executorEnv.ARROW_LIBHDFS_DIR=/opt/cloudera/parcels/CDH-5.15.2-1.cdh5.15.2.p0.3/lib64 \
                 --conf spark.yarn.appMasterEnv.ARROW_LIBHDFS_DIR=/opt/cloudera/parcels/CDH-5.15.2-1.cdh5.15.2.p0.3/lib64
-
 
 ### Spark Dynamic Allocation
 

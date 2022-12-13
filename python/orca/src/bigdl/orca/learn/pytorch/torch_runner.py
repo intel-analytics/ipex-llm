@@ -38,7 +38,9 @@ import copy
 import tempfile
 import torch
 import torch.nn as nn
+import numpy as np
 from torch.utils.data import DataLoader, IterableDataset
+from bigdl.orca.learn.metrics import Metric
 from torch.utils.data.distributed import DistributedSampler
 from bigdl.orca import OrcaContext
 from bigdl.orca.learn.pytorch.constants import (SCHEDULER_STEP, SCHEDULER_STEP_EPOCH,
@@ -324,10 +326,10 @@ class TorchRunner(BaseRunner):
         if val_loader:
             with self.timers.record("validation"):
                 info = info or {}
-                validation_results = self.training_operator.validate(val_loader,
-                                                                     info=info,
-                                                                     metrics=self.metrics,
-                                                                     num_steps=val_steps)
+                validation_results = self._validate(val_loader,
+                                                    info=info,
+                                                    metrics=self.metrics,
+                                                    num_steps=val_steps)
                 # add prefix of "val_" for validation_stats
                 validation_stats = {}
                 for name, value in validation_results.items():
@@ -534,13 +536,106 @@ class TorchRunner(BaseRunner):
             loader = self.with_sampler(loader)
         loader = iter(loader)
         with self.timers.record("validation"):
-            validation_stats = self.training_operator.validate(loader,
-                                                               info=info,
-                                                               metrics=self.metrics,
-                                                               num_steps=num_steps)
+            validation_stats = self._validate(loader,
+                                              info=info,
+                                              metrics=self.metrics,
+                                              num_steps=num_steps)
         if profile:
             validation_stats.update(profile=self.timers.stats())
         return validation_stats
+
+    def _validate(self, val_iterator, info, metrics, num_steps=None):
+        """Runs one standard validation pass over the val_iterator.
+
+        This will call ``model.eval()`` and ``torch.no_grad`` when iterating
+        over the validation dataloader.
+
+        If overriding this method, you can access model, criterion via
+        ``self.model`` and ``self.criterion``. You also do not need to call
+        ``validate_batch`` if overriding this method.
+
+        Args:
+            val_iterator (iter): Iterable constructed from the
+                validation dataloader.
+            info: (dict): Dictionary for information to be used for custom
+                validation operations.
+
+        Returns:
+            A dict of metrics from the evaluation.
+                By default, returns "val_accuracy" and "val_loss"
+                which is computed by aggregating "loss" and "correct" values
+                from ``validate_batch`` and dividing it by the sum of
+                ``num_samples`` from all calls to ``self.validate_batch``.
+        """
+        # switch to evaluate mode
+        self.model.eval()
+        metrics = Metric.convert_metrics_dict(metrics, backend="pytorch")
+        losses = []
+        total_samples = 0
+        with torch.no_grad():
+            for batch_idx, batch in enumerate(val_iterator):
+                if num_steps and batch_idx == num_steps:
+                    break
+                batch_info = {"batch_idx": batch_idx}
+                batch_info.update(info)
+                output, target, loss = self.forward_batch(batch, batch_info)
+                num_samples = get_batchsize(target)
+                total_samples += num_samples
+                losses.append(loss.item() * num_samples)
+                for metric in metrics.values():
+                    metric(output, target)
+
+        result = {name: metric.compute() for name, metric in metrics.items()}
+
+        result["val_loss"] = sum(losses) / total_samples
+
+        result["num_samples"] = total_samples
+
+        return result
+
+    def forward_batch(self, batch, batch_info):
+        """Calculates the loss and accuracy over a given batch.
+
+        You can override this method to provide arbitrary metrics.
+
+        Same as ``train_batch``, this method implementation assumes that
+        batches are in (\*features, labels) format by default. So we also
+        support multiple inputs model.
+
+        Args:
+            batch: One item of the validation iterator.
+            batch_info (dict): Contains information per batch from
+                ``validate()``.
+
+        Returns:
+            A dict of metrics.
+                By default, returns "val_loss", "val_accuracy", and
+                "num_samples". When overriding, consider returning
+                "num_samples" in the metrics because
+                by default, ``validate`` uses "num_samples" to
+                calculate averages.
+        """
+        # unpack features into list to support multiple inputs model
+        features, target = batch
+
+        # compute output
+        with self.timers.record("eval_fwd"):
+            if torch.is_tensor(features):
+                output = self.model(features)
+            elif isinstance(features, (tuple, list)):
+                output = self.model(*features)
+            else:
+                invalidInputError(False,
+                                  "Features should be tensor, list/tuple or dict, "
+                                  "but got {}".format(type(features)))
+
+            if isinstance(output, tuple) or isinstance(output, list):
+                # Then target is also assumed to be a tuple or list.
+                loss = self.criterion(*output, *target)
+            else:
+                loss = self.criterion(output, target)
+
+        return output, target, loss
 
     def predict(self, partition, batch_size=32, profile=False):
         """Evaluates the model on the validation data set."""
@@ -556,7 +651,7 @@ class TorchRunner(BaseRunner):
 
         def predict_fn(shard):
             if isinstance(partition, IterableDataset):
-                y = self.training_operator.predict(shard)
+                y = self._predict(shard)
             else:
                 if isinstance(shard["x"], tuple) or isinstance(shard["x"], list):
                     tensors = [torch.from_numpy(arr) for arr in shard["x"]]
@@ -564,7 +659,7 @@ class TorchRunner(BaseRunner):
                     tensors = [torch.from_numpy(shard["x"])]
                 dataset = torch.utils.data.TensorDataset(*tensors)
                 data_loader = DataLoader(dataset, **params)
-                y = self.training_operator.predict(iter(data_loader))
+                y = self._predict(iter(data_loader))
             return {"prediction": y}
 
         with self.timers.record("predict"):
@@ -573,6 +668,34 @@ class TorchRunner(BaseRunner):
             else:
                 new_part = [predict_fn(shard) for shard in partition]
         return new_part
+
+    def _predict(self, pred_iterator):
+        # switch to evaluate mode
+        self.model.eval()
+        result = []
+        with torch.no_grad():
+            for batch in pred_iterator:
+                result.append(self.predict_batch(batch))
+
+        return np.concatenate(result, axis=0)
+
+    def predict_batch(self, batch):
+
+        if isinstance(batch, torch.Tensor):
+            batch = [batch]
+
+        # compute output
+        with self.timers.record("pred_fwd"):
+            output = self.model(*batch)
+
+            if len(output.size()) > 1:
+                # In case there is extra trailing dimensions.
+                for i in reversed(range(1, len(output.size()))):
+                    output = torch.squeeze(output, i)
+
+        # todo support multi-output model
+        np_output = output.detach().numpy()
+        return np_output
 
     def _toggle_profiling(self, profile=False):
         """Enables/Disables and resets timing profiles."""
@@ -680,6 +803,12 @@ class TorchRunner(BaseRunner):
             return self.optimizers
         else:
             return self.optimizers[0]
+
+    @property
+    def model(self):
+        """First or only model(s) created by the ``model_creator``."""
+        if self.models:
+            return self.models[0]
 
     @property
     def optimizer(self):

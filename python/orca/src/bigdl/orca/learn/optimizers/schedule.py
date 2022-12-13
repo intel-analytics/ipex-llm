@@ -13,7 +13,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+
 from abc import ABC, abstractmethod
+
+from typing import (List, Optional, TYPE_CHECKING)
+
+if TYPE_CHECKING:
+    from bigdl.dllib.optim import optimizer
 
 
 class Scheduler(ABC):
@@ -36,11 +42,11 @@ class Poly(Scheduler):
     >>> poly = Poly(0.5, 2)
     creating: createPoly
     """
-    def __init__(self, power, max_iteration):
+    def __init__(self, power: float, max_iteration: int) -> None:
         from bigdl.dllib.optim.optimizer import Poly as BPoly
         self.scheduler = BPoly(power, max_iteration)
 
-    def get_scheduler(self):
+    def get_scheduler(self) -> "optimizer.Poly":
         return self.scheduler
 
 
@@ -56,11 +62,14 @@ class Exponential(Scheduler):
     >>> exponential = Exponential(100, 0.1)
     creating: createExponential
     """
-    def __init__(self, decay_step, decay_rate, stair_case=False):
+    def __init__(self,
+                 decay_step: int,
+                 decay_rate: float,
+                 stair_case: bool = False) -> None:
         from bigdl.dllib.optim.optimizer import Exponential as BExponential
         self.scheduler = BExponential(decay_step, decay_rate, stair_case)
 
-    def get_scheduler(self):
+    def get_scheduler(self) -> "optimizer.Exponential":
         return self.scheduler
 
 
@@ -77,12 +86,12 @@ class Step(Scheduler):
     >>> step = Step(2, 0.3)
     creating: createStep
     """
-    def __init__(self, step_size, gamma):
+    def __init__(self, step_size: int, gamma: float) -> None:
         from bigdl.dllib.optim.optimizer import Step as BStep
 
         self.scheduler = BStep(step_size, gamma)
 
-    def get_scheduler(self):
+    def get_scheduler(self) -> "optimizer.Step":
         return self.scheduler
 
 
@@ -97,12 +106,12 @@ class Default(Scheduler):
     >>> step = Default()
     creating: createDefault
     """
-    def __init__(self):
+    def __init__(self) -> None:
         from bigdl.dllib.optim.optimizer import Default as BDefault
 
         self.scheduler = BDefault()
 
-    def get_scheduler(self):
+    def get_scheduler(self) -> "optimizer.Default":
         return self.scheduler
 
 
@@ -128,19 +137,19 @@ class Plateau(Scheduler):
     creating: createPlateau
     """
     def __init__(self,
-                 monitor,
-                 factor=0.1,
-                 patience=10,
-                 mode="min",
-                 epsilon=1e-4,
-                 cooldown=0,
-                 min_lr=0.0):
+                 monitor: str,
+                 factor: float = 0.1,
+                 patience: int = 10,
+                 mode: str = "min",
+                 epsilon: float = 1e-4,
+                 cooldown: int = 0,
+                 min_lr: float = 0.0) -> None:
         from bigdl.dllib.optim.optimizer import Plateau as BPlateau
 
         self.scheduler = BPlateau(monitor, factor, patience, mode, epsilon,
                                   cooldown, min_lr)
 
-    def get_scheduler(self):
+    def get_scheduler(self) -> "optimizer.Plateau":
         return self.scheduler
 
 
@@ -155,12 +164,12 @@ class Warmup(Scheduler):
     >>> warmup = Warmup(0.05)
     creating: createWarmup
     """
-    def __init__(self, delta):
+    def __init__(self, delta: float) -> None:
         from bigdl.dllib.optim.optimizer import Warmup as BWarmup
 
         self.scheduler = BWarmup(delta)
 
-    def get_scheduler(self):
+    def get_scheduler(self) -> "optimizer.Warmup":
         return self.scheduler
 
 
@@ -176,12 +185,12 @@ class MultiStep(Scheduler):
     >>> step = MultiStep([2, 5], 0.3)
     creating: createMultiStep
     """
-    def __init__(self, step_sizes, gamma):
+    def __init__(self, step_sizes: List[int], gamma: float) -> None:
         from bigdl.dllib.optim.optimizer import MultiStep as BMultiStep
 
         self.scheduler = BMultiStep(step_sizes, gamma)
 
-    def get_scheduler(self):
+    def get_scheduler(self) -> "optimizer.MultiStep":
         return self.scheduler
 
 
@@ -200,15 +209,15 @@ class SequentialSchedule(Scheduler):
 
 
     """
-    def __init__(self, iteration_per_epoch):
+    def __init__(self, iteration_per_epoch: int) -> None:
         from bigdl.dllib.optim.optimizer import SequentialSchedule as BSequentialSchedule
 
         self.scheduler = BSequentialSchedule(iteration_per_epoch)
 
-    def get_scheduler(self):
+    def get_scheduler(self) -> "optimizer.SequentialSchedule":
         return self.scheduler
 
-    def add(self, scheduler, max_iteration):
+    def add(self, scheduler: Scheduler, max_iteration: int) -> "SequentialSchedule":
         """
         Add a learning rate scheduler to the contained `schedules`
 
