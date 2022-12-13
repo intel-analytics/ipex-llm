@@ -14,7 +14,7 @@
 # limitations under the License.
 #
 # This example is adapted from
-# https://machinelearningmastery.com/tutorial-first-neural-network-python-keras
+# https://www.kaggle.com/code/ruchibahl18/cats-vs-dogs-basic-cnn-tutorial
 
 from tensorflow.keras.models import Sequential
 from tensorflow.keras.layers import Dense, Flatten, Dropout, Activation, Conv2D, MaxPooling2D
@@ -31,9 +31,10 @@ path = '/Users/guoqiong/intelWork/data/dogs-vs-cats/small/'
 
 data_shard = bigdl.orca.data.image_shard.read_images(path)
 
+
 def get_label(im):
-    file = im['file']
-    label = [1] if 'dog' in file.split('/')[-1] else [0]
+    filename = im['filename']
+    label = [1] if 'dog' in filename.split('/')[-1] else [0]
     return {'x': im['x'], 'y': [label]}
 
 
@@ -52,6 +53,7 @@ def resize(im):
     size = (80, 80)
     return {'x': im['x'].resize(size), 'y': im['y']}
 
+
 to_nparray = lambda x: {'x': np.array([np.asarray(x['x'])]), 'y': np.array([x['y']])}
 
 
@@ -64,11 +66,11 @@ data_shard = data_shard.transform_shard(to_nparray)
 def model_creator(config):
     model = Sequential()
     # Adds a densely-connected layer with 64 units to the model:
-    model.add(Conv2D(64,(3,3), activation = 'relu', input_shape = (80, 80, 3)))
-    model.add(MaxPooling2D(pool_size = (2,2)))
+    model.add(Conv2D(64,(3, 3), activation='relu', input_shape=(80, 80, 3)))
+    model.add(MaxPooling2D(pool_size=(2,2)))
     # Add another:
-    model.add(Conv2D(64,(3,3), activation = 'relu'))
-    model.add(MaxPooling2D(pool_size = (2,2)))
+    model.add(Conv2D(64, (3, 3), activation='relu'))
+    model.add(MaxPooling2D(pool_size=(2, 2)))
 
     model.add(Flatten())
     model.add(Dense(64, activation='relu'))
@@ -79,6 +81,7 @@ def model_creator(config):
                   loss='binary_crossentropy',
                   metrics=['accuracy'])
     return model
+
 
 est = Estimator.from_keras(model_creator=model_creator)
 est.fit(data=data_shard,
