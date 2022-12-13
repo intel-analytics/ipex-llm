@@ -30,12 +30,15 @@ hardware: run chronos on a single machine or a cluster.
           value: single (default)
                  cluster
 
-extra_dep: whether to install some extra dependencies like onnx and jupyter.
+inference: whether to install dependencies for inference optimization (e.g. onnx, openvino, ...).
+           value: y (for yes)
+                  n (default, for no)
+
+extra_dep: whether to install some extra dependencies.
            value: y (for yes)
                   n (default, for no)
            if specified to y, the following dependencies will be installed:
-           neural_compressor, onnxruntime, onnx, tsfresh, 
-           prometheus_pandas, xgboost, jupyter
+           tsfresh, pyarrow, prometheus_pandas, xgboost, jupyter, matplotlib
 ```
 
 If you want to build image with the default options, you can simply use the following command:
@@ -49,6 +52,7 @@ sudo docker build \
     --build-arg model=pytorch \
     --build-arg auto_tuning=y \
     --build-arg hardware=single \
+    --build-arg inference=n \
     --build-arg extra_dep=n \
      -t chronos-nightly:b1 . # You may choose any NAME:TAG you want.
 ```

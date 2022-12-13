@@ -80,7 +80,7 @@ class MultipleInputWithKwargsNet(nn.Module):
 
 class TestInferencePipeline(TestCase):
     num_workers = 0
-    data_dir = os.path.join(os.path.dirname(__file__), "data")
+    data_dir = "/tmp/data"
     metric = torchmetrics.Accuracy(num_classes=10, top_k=1)
     max_epochs = 5
 

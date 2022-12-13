@@ -15,7 +15,6 @@
 #
 
 import os
-import math
 import pytest
 from unittest import TestCase
 
@@ -30,7 +29,7 @@ from bigdl.nano.pytorch.vision.models import vision
 
 batch_size = 256
 num_workers = 0
-data_dir = os.path.join(os.path.dirname(__file__), "../data")
+data_dir = "/tmp/data"
 
 
 class ResNet18(nn.Module):
@@ -44,16 +43,15 @@ class ResNet18(nn.Module):
     def forward(self, x):
         return self.model(x)
 
-    def do_nothing(self):
-        # test whether we can access this method after calling `self.setup`
-        pass
-
 
 class MyNano(TorchNano):
-    def train(self):
+    def train(self, optimizer_supported: bool = False):
         model = ResNet18(10, pretrained=False, include_top=False, freeze=True)
         loss_func = nn.CrossEntropyLoss()
-        optimizer = torch.optim.Adam(model.parameters(), lr=0.01)
+        if optimizer_supported:
+            optimizer = torch.optim.SGD(model.parameters(), lr=0.01)
+        else:
+            optimizer = torch.optim.Adam(model.parameters(), lr=0.01)
         train_loader = create_data_loader(data_dir, batch_size, num_workers, data_transform)
 
         model, optimizer, train_loader = self.setup(model, optimizer, train_loader)
@@ -68,7 +66,6 @@ class MyNano(TorchNano):
                 loss = loss_func(model(X), y)
                 self.backward(loss)
                 optimizer.step()
-                
                 total_loss += loss.sum()
                 num += 1
             print(f'avg_loss: {total_loss / num}')
@@ -110,45 +107,6 @@ class MyNanoCorrectness(TorchNano):
         assert model.fc1.weight.data == 0.25, f"wrong weights: {model.fc1.weight.data}"
 
 
-class MyNanoAccess(TorchNano):
-    def train(self):
-        model = ResNet18(10, pretrained=False, include_top=False, freeze=True)
-        optimizer = torch.optim.Adam(model.parameters(), lr=0.01)
-        train_loader = create_data_loader(data_dir, batch_size, num_workers, data_transform)
-        model, optimizer, train_loader = self.setup(model, optimizer, train_loader)
-
-        # access a custom attribute
-        model.do_nothing()
-
-
-class MyNanoMultiOptimizer(TorchNano):
-    def train(self):
-        model = ResNet18(10, pretrained=False, include_top=False, freeze=True)
-        loss_func = nn.CrossEntropyLoss()
-        optimizers = [torch.optim.Adam(model.parameters(), lr=0.005),
-                      torch.optim.Adam(model.parameters(), lr=0.01)]
-        train_loader = create_data_loader(data_dir, batch_size, num_workers, data_transform)
-
-        model, optimizers, train_loader = self.setup(model, optimizers, train_loader)
-
-        model.train()
-
-        num_epochs = 1
-        for _i in range(num_epochs):
-            total_loss, num = 0, 0
-            for X, y in train_loader:
-                for optimizer in optimizers:
-                    optimizer.zero_grad()
-                loss = loss_func(model(X), y)
-                self.backward(loss)
-                for optimizer in optimizers:
-                    optimizer.step()
-                
-                total_loss += loss.sum()
-                num += 1
-            print(f'avg_loss: {total_loss / num}')
-
-
 class MyNanoLoadStateDict(TorchNano):
     def train(self, lr):
         dataset=TensorDataset(
@@ -182,108 +140,47 @@ class MyNanoLoadStateDict(TorchNano):
         assert model.fc1.weight.data == 0.25, f"wrong weights: {model.fc1.weight.data}"
 
 
-class MyNanoAutoLRCorrectness(TorchNano):
-    def train(self, lr):
-        dataset=TensorDataset(
-            torch.tensor([[0.0],[0.0],[1.0],[1.0]]),
-            torch.tensor([[0.0],[0.0],[0.0],[0.0]]),
-        )
-        train_loader = DataLoader(dataset=dataset, batch_size=2, shuffle=False)
-        origin_model = LinearModel()
-        loss_func = nn.MSELoss()
-        optimizer = torch.optim.SGD(origin_model.parameters(), lr=lr)
-
-        model, optimizer, train_loader = self.setup(origin_model, optimizer, train_loader)
-
-        model.train()
-
-        expect_weight = torch.tensor([[1.0]])
-        cur_lr_ratio = 1.0
-        max_lr_ratio = self.num_processes
-        cur_step = 0
-        max_step = optimizer.max_step
-        num_epochs = max_step + 10
-        for _i in range(num_epochs):
-            for X, y in train_loader:
-                optimizer.zero_grad()
-                loss = loss_func(model(X), y)
-                self.backward(loss)
-                optimizer.step()
-
-                expect_weight = expect_weight - expect_weight * lr * cur_lr_ratio
-                expect = expect_weight.item()
-                real = model.fc1.weight.data.item()
-                assert math.isclose(expect, real, rel_tol=1e-5), \
-                    f"step: {_i}, expect: {expect}, real: {real}"
-                if cur_step < max_step:
-                    cur_step += 1
-                    cur_lr_ratio = (max_lr_ratio - 1.0) * cur_step / max_step + 1
-
-
-class MyNanoCUDA(TorchNano):
-    def train(self):
-        t = torch.tensor([0], device='cuda:0')
-        assert t.device.type == "cpu"
-
-
 class TestLite(TestCase):
     def setUp(self):
         test_dir = os.path.dirname(__file__)
+        # project_test_dir = BigDL/python/nano
         project_test_dir = os.path.abspath(
-            os.path.join(os.path.join(os.path.join(test_dir, ".."), ".."), "..")
+            os.path.join(test_dir, "..", "..", "..", "..", "..")
         )
         os.environ['PYTHONPATH'] = project_test_dir
 
     def test_torch_nano(self):
-        MyNano().train()
+        MyNano(use_ipex=True).train()
 
     def test_torch_nano_spawn(self):
-        MyNano(num_processes=2, distributed_backend="spawn").train()
+        MyNano(use_ipex=True, num_processes=2, distributed_backend="spawn").train()
 
     def test_torch_nano_subprocess(self):
-        MyNano(num_processes=2, distributed_backend="subprocess").train()
-
-    def test_torch_nano_specify_cpu_cores(self):
-        MyNano(num_processes=2, cpu_for_each_process=[[0,1], [2,3]]).train()
+        MyNano(use_ipex=True, num_processes=2, distributed_backend="subprocess").train()
 
     def test_torch_nano_correctness(self):
-        MyNanoCorrectness(auto_lr=False).train(0.25)
+        MyNanoCorrectness(use_ipex=True).train(0.25)
 
     def test_torch_nano_spawn_correctness(self):
-        MyNanoCorrectness(num_processes=2, distributed_backend="spawn", auto_lr=False).train(0.5)
+        MyNanoCorrectness(use_ipex=True, num_processes=2, distributed_backend="spawn", auto_lr=False).train(0.5)
 
     def test_torch_nano_subprocess_correctness(self):
-        MyNanoCorrectness(num_processes=2, distributed_backend="subprocess", auto_lr=False).train(0.5)
+        MyNanoCorrectness(use_ipex=True, num_processes=2, distributed_backend="subprocess", auto_lr=False).train(0.5)
 
-    def test_torch_nano_attribute_access(self):
-        MyNanoAccess().train()
+    def test_torch_nano_bf16_support_opt(self):
+        MyNano(use_ipex=True, precision='bf16').train(optimizer_supported=True)
 
-    def test_torch_nano_attribute_access_ddp(self):
-        MyNanoAccess(num_processes=2).train()
+    def test_torch_nano_bf16_unsupport_opt(self):
+        MyNano(use_ipex=True, precision='bf16').train()
 
-    def test_torch_nano_multi_optimizer(self):
-        MyNanoMultiOptimizer().train()
+    def test_torch_nano_bf16_spawn(self):
+        MyNano(use_ipex=True, precision='bf16', num_processes=2, distributed_backend="spawn").train()
+
+    def test_torch_nano_bf16_subprocess(self):
+        MyNano(use_ipex=True, precision='bf16', num_processes=2, distributed_backend="subprocess").train()
 
     def test_torch_nano_load_state_dict(self):
-        MyNanoLoadStateDict().train(0.25)
-
-    def test_torch_nano_load_state_dict_ddp(self):
-        MyNanoLoadStateDict(num_processes=2).train(0.5)
-
-    def test_torch_nano_auto_lr(self):
-        MyNanoAutoLRCorrectness(num_processes=2, distributed_backend='spawn', auto_lr=True).train(0.01)
-
-    def test_torch_nano_cuda_patch_spawn(self):
-        from bigdl.nano.pytorch import patch_torch, unpatch_torch
-        patch_torch(cuda_to_cpu=True)
-        MyNanoCUDA(num_processes=2, distributed_backend='spawn').train()
-        unpatch_torch()
-
-    def test_torch_nano_cuda_patch_subprocess(self):
-        from bigdl.nano.pytorch import patch_torch, unpatch_torch
-        patch_torch(cuda_to_cpu=True)
-        MyNanoCUDA(num_processes=2, distributed_backend='subprocess').train()
-        unpatch_torch()
+        MyNanoLoadStateDict(use_ipex=True).train(0.25)
 
 
 if __name__ == '__main__':

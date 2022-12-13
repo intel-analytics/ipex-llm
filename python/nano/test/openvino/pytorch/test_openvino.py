@@ -29,7 +29,7 @@ import pytest
 
 
 class TestOpenVINO(TestCase):
-    def test_trainer_trace_openvino(self):
+    def test_trace_openvino(self):
         trainer = Trainer(max_epochs=1)
         model = mobilenet_v3_small(num_classes=10)
 
@@ -58,8 +58,7 @@ class TestOpenVINO(TestCase):
         trainer.test(openvino_model, dataloader)
         trainer.predict(openvino_model, dataloader)
 
-    def test_trainer_save_openvino(self):
-        trainer = Trainer(max_epochs=1)
+    def test_save_openvino(self):
         model = mobilenet_v3_small(num_classes=10)
         x = torch.rand((10, 3, 256, 256))
 
@@ -75,7 +74,6 @@ class TestOpenVINO(TestCase):
             assert y_hat.shape == (10, 10)
 
     def test_pytorch_openvino_model_async_predict(self):
-        trainer = Trainer(max_epochs=1)
         model = mobilenet_v3_small(num_classes=10)
 
         x = torch.rand((10, 3, 256, 256))
@@ -97,7 +95,6 @@ class TestOpenVINO(TestCase):
             assert res.shape == (10, 10)
 
     def test_pytorch_openvino_model_option(self):
-        trainer = Trainer(max_epochs=1)
         model = mobilenet_v3_small(num_classes=10)
 
         x = torch.rand((10, 3, 256, 256))
@@ -110,7 +107,6 @@ class TestOpenVINO(TestCase):
         result = openvino_model(x[0:1])
 
     def test_pytorch_openvino_model_context_manager(self):
-        trainer = Trainer(max_epochs=1)
         model = mobilenet_v3_small(num_classes=10)
 
         x = torch.rand((10, 3, 256, 256))
@@ -133,7 +129,6 @@ class TestOpenVINO(TestCase):
             y2 = model(x[0:1])
 
     def test_pytorch_openvino_model_additional_attrs(self):
-        trainer = Trainer(max_epochs=1)
         model = mobilenet_v3_small(num_classes=10)
         # patch a attribute
         model.channels = 3
@@ -229,3 +224,35 @@ class TestOpenVINO(TestCase):
                                             input_sample=(torch.rand(2,3,1,1), 3))
         result_m = accmodel(x, y)
         assert torch.equal(result_true, result_m)
+
+    def test_openvino_dynamic_axes(self):
+        class CustomModel(nn.Module):
+            def __init__(self):
+                super().__init__()
+                self.pool = nn.AvgPool2d(kernel_size=3, stride=3)
+
+            def forward(self, x):
+                return self.pool(x)
+
+        model = CustomModel()
+        x1 = torch.rand(1, 3, 14, 14)
+        x2 = torch.rand(4, 3, 14, 14)
+        x3 = torch.rand(1, 3, 12, 12)
+
+        accmodel = InferenceOptimizer.trace(model,
+                                            accelerator="openvino",
+                                            input_sample=torch.rand(1, 3, 14, 14))
+        accmodel(x1)
+        accmodel(x2)
+        try:
+            accmodel(x3)
+        except Exception as e:
+            assert e
+
+        accmodel = InferenceOptimizer.trace(model,
+                                            accelerator="openvino",
+                                            input_sample=torch.rand(1, 3, 14, 14),
+                                            dynamic_axes={"x": [0, 2, 3]})
+        accmodel(x1)
+        accmodel(x2)
+        accmodel(x3)

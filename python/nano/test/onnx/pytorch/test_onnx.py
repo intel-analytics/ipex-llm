@@ -64,7 +64,7 @@ class MultiInputModel(nn.Module):
 
 
 class TestOnnx(TestCase):
-    def test_trainer_trace_onnx(self):
+    def test_trace_onnx(self):
         model = ResNet18(10, pretrained=False, include_top=False, freeze=True)
         loss = nn.CrossEntropyLoss()
         optimizer = torch.optim.Adam(model.parameters(), lr=0.01)
@@ -89,7 +89,7 @@ class TestOnnx(TestCase):
         trainer.validate(onnx_model, train_loader)
         trainer.test(onnx_model, train_loader)
 
-    def test_trainer_trace_multiple_input_onnx(self):
+    def test_trace_multiple_input_onnx(self):
         model = MultiInputModel()
         loss = nn.CrossEntropyLoss()
         optimizer = torch.optim.Adam(model.parameters(), lr=0.01)
@@ -117,7 +117,7 @@ class TestOnnx(TestCase):
         trainer.test(onnx_model, train_loader)
         trainer.predict(onnx_model, train_loader)
 
-    def test_onnx_trainer_save_load(self):
+    def test_onnx_save_load(self):
         model = ResNet18(10, pretrained=False, include_top=False, freeze=True)
         loss = nn.CrossEntropyLoss()
         optimizer = torch.optim.Adam(model.parameters(), lr=0.01)
@@ -274,6 +274,38 @@ class TestOnnx(TestCase):
                                             input_sample=(torch.rand(2,3,1,1),3))
         result_m = accmodel(x, np.array([y]))  # TODO: make y work here
         assert torch.equal(result_true, result_m)
+    
+    def test_onnx_dynamic_axes(self):
+        class CustomModel(nn.Module):
+            def __init__(self):
+                super().__init__()
+                self.pool = nn.AvgPool2d(kernel_size=3, stride=3)
+
+            def forward(self, x):
+                return self.pool(x)
+
+        model = CustomModel()
+        x1 = torch.rand(1, 3, 14, 14)
+        x2 = torch.rand(4, 3, 14, 14)
+        x3 = torch.rand(1, 3, 12, 12)
+
+        accmodel = InferenceOptimizer.trace(model,
+                                            accelerator="onnxruntime",
+                                            input_sample=torch.rand(1, 3, 14, 14))
+        accmodel(x1)
+        accmodel(x2)
+        try:
+            accmodel(x3)
+        except Exception as e:
+            assert e
+
+        accmodel = InferenceOptimizer.trace(model,
+                                            accelerator="onnxruntime",
+                                            input_sample=torch.rand(1, 3, 14, 14),
+                                            dynamic_axes={"x": [0, 2, 3]})
+        accmodel(x1)
+        accmodel(x2)
+        accmodel(x3)
 
 
 if __name__ == '__main__':

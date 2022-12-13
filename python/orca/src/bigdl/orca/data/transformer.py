@@ -112,7 +112,7 @@ class StringIndexer:
                                   "freq_limit only supports int, dict or None, but get " +
                                   freq_limit.__class__.__name__)
         out_columns = []
-        simple_columns = []
+        simple_columns = []  # type: ignore
         df_id_list = []
         for c in columns:
             # union column
@@ -396,10 +396,10 @@ class MinMaxScaler:
 
 class StandardScaler:
     def __init__(self,
-                 withMean: bool=False,
-                 withStd: bool=True,
-                 inputCol: str=None,
-                 outputCol: str=None):
+                 withMean: bool = False,
+                 withStd: bool = True,
+                 inputCol: Optional[str] = None,
+                 outputCol: Optional[str] = None):
         self.withMean = withMean
         self.withStd = withStd
         self.inputCol = inputCol

@@ -78,8 +78,8 @@ When you're ready, you can simply append the following part to enable your ONNXR
 # you have run `trainer.fit` before trace
 # Model has `example_input_array` set
 # Model is a LightningModule with any dataloader attached.
-from bigdl.nano.pytorch import Trainer
-ort_model = Trainer.trace(model_ft, accelerator="onnxruntime", input_sample=torch.rand(1, 3, 224, 224))
+from bigdl.nano.pytorch import InferenceOptimizer
+ort_model = InferenceOptimizer.trace(model_ft, accelerator="onnxruntime", input_sample=torch.rand(1, 3, 224, 224))
 
 # The usage is almost the same with any PyTorch module
 y_hat = ort_model(x)
