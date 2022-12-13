@@ -13,7 +13,7 @@ on:
     paths:
       - 'python/chronos/src/**'
       - 'python/chronos/example/**'
-      - 'python/nano/stc/**'
+      - 'python/nano/src/**'
       - 'python/orca/src/bigdl/orca/automl/**'
       - 'python/orca/src/bigdl/orca/data/**'
       - '.github/workflows/chronos-example-python-spark3.yml'
@@ -22,7 +22,7 @@ on:
 
 jobs:
   Chronos-example:
-    runs-on: [ self-hosted, Gondolin, ubuntu-20.04-lts]
+    runs-on: [ self-hosted, Gondolin, ubuntu-20.04-lts ]
     strategy:
       fail-fast: false
       matrix:
