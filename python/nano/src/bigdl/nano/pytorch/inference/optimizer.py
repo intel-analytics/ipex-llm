@@ -939,9 +939,10 @@ class InferenceOptimizer(BaseInferenceOptimizer):
     @staticmethod
     def to_multi_instance(model: nn.Module, num_processes: int = 4,
                           cores_per_process: int = None,
-                          cpu_for_each_process: List[List] = None) -> _MultiInstanceModel:
+                          cpu_for_each_process: List[List[int]] = None) -> _MultiInstanceModel:
         """
         Transform a model to multi-instance inference model.
+
         :param model: The model to transform.
         :param num_processes: The number of processes to use, default to 4.
         :param cores_per_process: Number of CPU cores used by each process,
