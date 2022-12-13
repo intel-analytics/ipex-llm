@@ -137,34 +137,6 @@ class TrainingOperator:
         """
         pass
 
-    def predict(self, pred_iterator):
-        # switch to evaluate mode
-        self.model.eval()
-        result = []
-        with torch.no_grad():
-            for batch in pred_iterator:
-                result.append(self.predict_batch(batch))
-
-        return np.concatenate(result, axis=0)
-
-    def predict_batch(self, batch):
-
-        if isinstance(batch, torch.Tensor):
-            batch = [batch]
-
-        # compute output
-        with self.timers.record("pred_fwd"):
-            output = self.model(*batch)
-
-            if len(output.size()) > 1:
-                # In case there is extra trailing dimensions.
-                for i in reversed(range(1, len(output.size()))):
-                    output = torch.squeeze(output, i)
-
-        # todo support multi-output model
-        np_output = output.detach().numpy()
-        return np_output
-
     def state_dict(self):
         """Override this to return a representation of the operator state.
 

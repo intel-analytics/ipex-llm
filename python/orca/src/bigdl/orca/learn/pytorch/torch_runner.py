@@ -38,6 +38,7 @@ import copy
 import tempfile
 import torch
 import torch.nn as nn
+import numpy as np
 from torch.utils.data import DataLoader, IterableDataset
 from bigdl.orca.learn.metrics import Metric
 from torch.utils.data.distributed import DistributedSampler
@@ -647,7 +648,7 @@ class TorchRunner(BaseRunner):
 
         def predict_fn(shard):
             if isinstance(partition, IterableDataset):
-                y = self.training_operator.predict(shard)
+                y = self._predict(shard)
             else:
                 if isinstance(shard["x"], tuple) or isinstance(shard["x"], list):
                     tensors = [torch.from_numpy(arr) for arr in shard["x"]]
@@ -655,7 +656,7 @@ class TorchRunner(BaseRunner):
                     tensors = [torch.from_numpy(shard["x"])]
                 dataset = torch.utils.data.TensorDataset(*tensors)
                 data_loader = DataLoader(dataset, **params)
-                y = self.training_operator.predict(iter(data_loader))
+                y = self._predict(iter(data_loader))
             return {"prediction": y}
 
         with self.timers.record("predict"):
@@ -664,6 +665,34 @@ class TorchRunner(BaseRunner):
             else:
                 new_part = [predict_fn(shard) for shard in partition]
         return new_part
+
+    def _predict(self, pred_iterator):
+        # switch to evaluate mode
+        self.model.eval()
+        result = []
+        with torch.no_grad():
+            for batch in pred_iterator:
+                result.append(self.predict_batch(batch))
+
+        return np.concatenate(result, axis=0)
+
+    def predict_batch(self, batch):
+
+        if isinstance(batch, torch.Tensor):
+            batch = [batch]
+
+        # compute output
+        with self.timers.record("pred_fwd"):
+            output = self.model(*batch)
+
+            if len(output.size()) > 1:
+                # In case there is extra trailing dimensions.
+                for i in reversed(range(1, len(output.size()))):
+                    output = torch.squeeze(output, i)
+
+        # todo support multi-output model
+        np_output = output.detach().numpy()
+        return np_output
 
     def _toggle_profiling(self, profile=False):
         """Enables/Disables and resets timing profiles."""
