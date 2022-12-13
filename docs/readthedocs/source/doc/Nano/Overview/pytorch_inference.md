@@ -265,3 +265,46 @@ multi_model = InferenceOptimizer.to_multi_instance(model, num_processes=4, cores
 # the third process will use core 2 and 3, the fourth process will use core 4 and 5
 multi_model = InferenceOptimizer.to_multi_instance(model, cpu_for_each_process=[[0], [1], [2,3], [4,5]])
 ```
+
+## Automatic Context Management
+BigDL-Nano provides ``InferenceOptimizer.get_context(model=...)`` API to enable automatic context management for PyTorch inference. With only one line of code change, BigDL-Nano will automatically provide suitable context management for each accelerated model, it usually contains part of or all of following three types of context managers:
+
+1. ``torch.no_grad()`` to disable gradients, which will be used for all model
+   
+2. ``torch.cpu.amp.autocast(dtype=torch.bfloat16)`` to run in mixed precision, which will be provided for bf16 related model
+   
+3. ``torch.set_num_threads()`` to control thread number, which will be used only if you specify thread_num when applying ``InferenceOptimizer.trace``/``quantize``/``optimize``
+
+For model accelerated by ``InferenceOptimizer.trace``, usage now looks like below codes, here we just take ``ipex`` for example:
+```python
+from bigdl.nano.pytorch import InferenceOptimizer
+ipex_model = InferenceOptimizer.trace(model,
+                                      use_ipex=True,
+                                      thread_num=4)
+
+with InferenceOptimizer.get_context(ipex_model):
+    output = ipex_model(x)
+    assert torch.get_num_threads() == 4  # this line just to let you know Nano has provided thread control automatically : )
+```
+
+For ``InferenceOptimizer.quantize`` and ``InferenceOptimizer.optimize``, usage is the same.
+
+``InferenceOptimizer.get_context(model=...)`` can be used for muitiple models. If you have a model pipeline, you can also get a common context manager by passing multiple models to `get_context`.
+```python
+from torch import nn
+class Classifier(nn.Module):
+    def __init__(self):
+        super().__init__()
+        self.linear = nn.Linear(1000, 1)
+    
+    def forward(self, x):
+        return self.linear(x)
+
+classifer = Classifier()
+
+with InferenceOptimizer.get_context(ipex_model, classifer):
+    # a pipeline consists of backbone and classifier
+    x = ipex_model(input_sample)
+    output = classifer(x) 
+    assert torch.get_num_threads() == 4  # this line just to let you know Nano has provided thread control automatically : )
+```
