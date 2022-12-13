@@ -156,6 +156,7 @@ metrics_address=your_metrics_address
 model_store=your_model_store
 load_models=all
 enable_metrics_api=false
+enable_grpc_ssl=false
 models={\
   "densenet161": {\
     "1.0": {\
@@ -203,7 +204,28 @@ curl -O https://raw.githubusercontent.com/pytorch/serve/master/docs/images/kitte
 ```
 Send it to pytorch server:
 ```shell
-curl http://your_local_ip:your_inference_address/predictions/densenet161 -T kitten_small.jpg
+curl your_inference_address/predictions/densenet161 -T kitten_small.jpg
+```
+
+#### Enable SSL
+Generate your self signed cert and key with OpenSSL.
+```shell
+#Remember to set CN which is important to gRPC with SSL.
+openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout mykey.key -out mycert.pem
+```
+
+##### For gRPC
+Set `enable_grpc_ssl=true` in config file. Run inference using the sample client:
+```shell
+#Remember to modify the name of key and CN in torchserve_grpc_client_ssl.py
+python ts_scripts/torchserve_grpc_client_ssl.py infer densenet161 examples/image_classifier/kitten.jpg
+```
+
+##### For HTTP/REST
+Modify the IP addresses from `http` to `https` in config file.
+Then, send requests:
+```shell
+curl --insecure your_inference_address/predictions/densenet161 -T kitten_small.jpg --cert mycert.pem --key mykey.key
 ```
 
 The format of results is similar to the followings.
