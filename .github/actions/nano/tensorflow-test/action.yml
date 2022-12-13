@@ -36,7 +36,7 @@ runs:
         source $CONDA/bin/activate nano-tensorflow
         source bigdl-nano-init
 
-        bash python/nano/test/run-nano-tf-ray-tests.sh
+        # bash python/nano/test/run-nano-tf-ray-tests.sh
 
         source bigdl-nano-unset-env
         source $CONDA/bin/deactivate
