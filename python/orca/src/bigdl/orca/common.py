@@ -234,8 +234,9 @@ def init_orca_context(cluster_mode=None, runtime="spark", cores=None, memory="2g
         ray_ctx.init()
         return ray_ctx
     elif runtime == "spark":
-        from pyspark import SparkContext
+        import time
         import warnings
+        from pyspark import SparkContext
         spark_args = {}
         for key in ["conf", "spark_log_level", "redirect_spark_log"]:
             if key in kwargs:
@@ -306,24 +307,34 @@ def init_orca_context(cluster_mode=None, runtime="spark", cores=None, memory="2g
                             "extra_python_lib", "penv_archive", "jars", "python_location"]:
                     if key in kwargs:
                         spark_args[key] = kwargs[key]
+                from bigdl.orca.logger_info import logger_creator
                 from bigdl.dllib.nncontext import init_spark_on_k8s, init_spark_on_k8s_cluster
+                orca_logger = logger_creator()
                 if cluster_mode == "k8s-cluster":
-                    sc = init_spark_on_k8s_cluster(master=kwargs["master"],
-                                                   container_image=kwargs["container_image"],
-                                                   num_executors=num_nodes,
-                                                   executor_cores=cores,
-                                                   executor_memory=memory,
-                                                   **spark_args)
+                    try:
+                        sc = init_spark_on_k8s_cluster(master=kwargs["master"],
+                                                       container_image=kwargs["container_image"],
+                                                       num_executors=num_nodes,
+                                                       executor_cores=cores,
+                                                       executor_memory=memory,
+                                                       **spark_args)
+                        orca_logger.info("{} : Init Orca Context : Completed!".format(time.time()))
+                    except Exception as e:
+                        orca_logger.info("{} : Init Orca Context : Failed!".format(time.time()))
                 else:
                     from bigdl.dllib.utils.utils import detect_conda_env_name
                     conda_env_name = detect_conda_env_name()
-                    sc = init_spark_on_k8s(master=kwargs["master"],
-                                           container_image=kwargs["container_image"],
-                                           conda_name=conda_env_name,
-                                           num_executors=num_nodes,
-                                           executor_cores=cores,
-                                           executor_memory=memory,
-                                           **spark_args)
+                    try:
+                        sc = init_spark_on_k8s(master=kwargs["master"],
+                                               container_image=kwargs["container_image"],
+                                               conda_name=conda_env_name,
+                                               num_executors=num_nodes,
+                                               executor_cores=cores,
+                                               executor_memory=memory,
+                                               **spark_args)
+                        orca_logger.info("{} : Init Orca Context : Succeed!".format(time.time()))
+                    except Exception as e:
+                        orca_logger.info("{} : Init Orca Context : Failed!".format(time.time()))
             elif cluster_mode == "standalone":
                 for key in ["driver_cores", "driver_memory", "extra_executor_memory_for_ray",
                             "extra_python_lib", "jars", "master", "python_location",

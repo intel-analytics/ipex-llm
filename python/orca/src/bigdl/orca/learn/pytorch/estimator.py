@@ -14,6 +14,7 @@
 # limitations under the License.
 #
 
+import time
 import logging
 from bigdl.orca.learn.pytorch.training_operator import TrainingOperator
 
@@ -107,21 +108,27 @@ class Estimator(object):
                                          bigdl_type="float")
         elif backend == "spark":
             from bigdl.orca.learn.pytorch.pytorch_pyspark_estimator import PyTorchPySparkEstimator
-            return PyTorchPySparkEstimator(model_creator=model,
-                                           optimizer_creator=optimizer,
-                                           loss_creator=loss,
-                                           metrics=metrics,
-                                           scheduler_creator=scheduler_creator,
-                                           training_operator_cls=training_operator_cls,
-                                           config=config,
-                                           scheduler_step_freq=scheduler_step_freq,
-                                           use_tqdm=use_tqdm,
-                                           workers_per_node=workers_per_node,
-                                           sync_stats=sync_stats,
-                                           log_level=log_level,
-                                           model_dir=model_dir,
-                                           log_to_driver=log_to_driver,
-                                           )
+            from bigdl.orca.logger_info import logger_creator
+            orca_logger = logger_creator()
+            try:
+              Estimator = PyTorchPySparkEstimator(model_creator=model,
+                                                  optimizer_creator=optimizer,
+                                                  loss_creator=loss,
+                                                  metrics=metrics,
+                                                  scheduler_creator=scheduler_creator,
+                                                  training_operator_cls=training_operator_cls,
+                                                  config=config,
+                                                  scheduler_step_freq=scheduler_step_freq,
+                                                  use_tqdm=use_tqdm,
+                                                  workers_per_node=workers_per_node,
+                                                  sync_stats=sync_stats,
+                                                  log_level=log_level,
+                                                  model_dir=model_dir,
+                                                  log_to_driver=log_to_driver)
+              orca_logger.info("{} : Estimator Creating : Completed!".format(time.time()))
+              return Estimator
+            except Exception as e:
+              orca_logger.info("{} : Estimator Creating : Failed!".format(time.time()))
         else:
             from bigdl.dllib.utils.log4Error import invalidInputError
             invalidInputError(False,
