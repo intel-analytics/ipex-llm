@@ -701,30 +701,21 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                 model which is able to run on Pytorch or ONNXRuntime can be fetched by
                 `quantized_model.model`.
                 """
-
+                inc_quantize_arguments = {"model": model, "dataloader": inc_calib_dataloader,
+                                          "metric": metric, "thread_num": thread_num,
+                                          "framework": framework, "conf": conf,
+                                          "approach": approach,
+                                          "tuning_strategy": tuning_strategy,
+                                          "accuracy_criterion": accuracy_criterion,
+                                          "timeout": timeout,
+                                          "max_trials": max_trials,
+                                          "onnxruntime_session_options": onnxruntime_session_options
+                                          }
                 if framework != 'pytorch_ipex':
-                    return inc_quantize(model, inc_calib_dataloader, metric,
-                                        thread_num=thread_num,
-                                        framework=framework,
-                                        conf=conf,
-                                        approach=approach,
-                                        tuning_strategy=tuning_strategy,
-                                        accuracy_criterion=accuracy_criterion,
-                                        timeout=timeout,
-                                        max_trials=max_trials,
-                                        onnxruntime_session_options=onnxruntime_session_options)
+                    return inc_quantize(**inc_quantize_arguments)
                 else:
                     try:
-                        return inc_quantize(model, inc_calib_dataloader, metric,
-                                            thread_num=thread_num,
-                                            framework=framework,
-                                            conf=conf,
-                                            approach=approach,
-                                            tuning_strategy=tuning_strategy,
-                                            accuracy_criterion=accuracy_criterion,
-                                            timeout=timeout,
-                                            max_trials=max_trials,
-                                            onnxruntime_session_options=onnxruntime_session_options)
+                        return inc_quantize(**inc_quantize_arguments)
                     except Exception:
                         # use pure ipex quantization as a backup for inc ipex quantization
                         return PytorchIPEXQuantizationModel(model,
