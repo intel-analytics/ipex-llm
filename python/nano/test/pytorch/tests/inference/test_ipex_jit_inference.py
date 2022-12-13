@@ -172,6 +172,23 @@ class IPEXJITInference_gt_1_10:
         with InferenceOptimizer.get_context(new_model):
             new_model(self.data_sample)
             assert new_model.jit_strict is False
+    
+    def test_ipex_quantization(self):
+        model = ResNet18(10, pretrained=False, include_top=False, freeze=True)
+        # dataloader contains x+y
+        data_loader = create_data_loader(data_dir, batch_size, num_workers, data_transform)
+        model = InferenceOptimizer.quantize(model,
+                                            precision='int8',
+                                            accelerator=None,
+                                            method='ipex',
+                                            calib_data=data_loader)
+        with InferenceOptimizer.get_context(model):
+            model(self.data_sample)
+        with tempfile.TemporaryDirectory() as tmp_dir_name:
+            InferenceOptimizer.save(model, tmp_dir_name)
+            new_model = InferenceOptimizer.load(tmp_dir_name)
+        with InferenceOptimizer.get_context(new_model):
+            new_model(self.data_sample)
 
 
 class IPEXJITInference_lt_1_10:

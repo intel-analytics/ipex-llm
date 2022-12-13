@@ -690,6 +690,7 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                 model which is able to run on Pytorch or ONNXRuntime can be fetched by
                 `quantized_model.model`.
                 """
+
                 if framework != 'pytorch_ipex':
                     return inc_quantize(model, inc_calib_dataloader, metric,
                                         thread_num=thread_num,
@@ -718,8 +719,6 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                         return PytorchIPEXQuantizationModel(model,
                                                             inc_calib_dataloader,
                                                             input_sample=input_sample,
-                                                            use_ipex=use_ipex,
-                                                            use_jit=use_jit,
                                                             channels_last=channels_last,
                                                             thread_num=thread_num,
                                                             inplace=inplace,
