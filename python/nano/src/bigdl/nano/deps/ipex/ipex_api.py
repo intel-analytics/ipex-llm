@@ -74,12 +74,16 @@ def PytorchIPEXJITBF16Model(model, input_sample=None, use_ipex=False,
                                    thread_num=thread_num, inplace=inplace, jit_strict=jit_strict)
 
 
-def PytorchIPEXQuantizationModel(model, calib_data, input_sample=None,
-                                 channels_last=None, thread_num=None,
-                                 inplace=False, jit_strict=True):
+def PytorchIPEXQuantizationModel(model, calib_data, q_config=None,
+                                 input_sample=None, channels_last=None,
+                                 thread_num=None, inplace=False,
+                                 jit_strict=True):
     '''
     :param model: the model(nn.module) to be transform.
     :param calib_data: calibration data is required for static quantization.
+    :param q_config: describes how to quantize a layer or a part of the network
+            by providing settings (observer classes) for activations and weights
+            respectively. 
     :param input_sample: torch tensor indicate the data sample to be used
             for tracing.
     :param channels_last: if set model and data to be channels-last mode.
@@ -88,9 +92,10 @@ def PytorchIPEXQuantizationModel(model, calib_data, input_sample=None,
     :param jit_strict: Whether recording your mutable container types.
     '''
     from .ipex_quantization_model import PytorchIPEXQuantizationModel
-    return PytorchIPEXQuantizationModel(model, calib_data, input_sample=input_sample,
-                                        channels_last=channels_last, thread_num=thread_num,
-                                        inplace=inplace, jit_strict=jit_strict)
+    return PytorchIPEXQuantizationModel(model, calib_data, q_config=q_config,
+                                        input_sample=input_sample, channels_last=channels_last,
+                                        thread_num=thread_num, inplace=inplace,
+                                        jit_strict=jit_strict)
 
 
 def load_ipexjit_model(path, model, inplace=False):

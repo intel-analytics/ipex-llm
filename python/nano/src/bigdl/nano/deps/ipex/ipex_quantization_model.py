@@ -66,6 +66,8 @@ class PytorchIPEXQuantizationModel(AcceleratedLightningModule):
         self.jit_strict = jit_strict
         self.original_model = model
         if self.channels_last:
+            print("channels last is true")
+            print("change model")
             self.model = self.model.to(memory_format=torch.channels_last)
         self._nano_context_manager = generate_context_manager(accelerator="jit",
                                                               precision="int8",
@@ -82,10 +84,14 @@ class PytorchIPEXQuantizationModel(AcceleratedLightningModule):
             # data transform : remove y
             if isinstance(input_sample, (tuple, list)) and len(input_sample) > 1:
                 input_sample = input_sample[0]
+                if self.channels_last:
+                    if isinstance(input_sample, torch.Tensor):
+                        input_sample = input_sample.to(memory_format=torch.channels_last)
+                    else:
+                        input_sample = tuple(map(lambda x: x.to(memory_format=torch.channels_last),
+                                                 input_sample))
 
         # prepare model
-        if isinstance(input_sample, tuple):
-            self.model(*input_sample)
         self.model = prepare(self.model, self.q_config,
                              example_inputs=input_sample,
                              inplace=inplace)
