@@ -3,6 +3,15 @@ on:
   push:
     branches:
       - wip/test/automerge
+      - wip/wip/liusha/test2
+    paths:
+      - docs/readthedocs/source/doc/Orca/Overview/install.md
+  pull_request:
+    branches:
+      - wip/wip/liusha/test2
+    paths:
+      - docs/readthedocs/source/doc/Orca/Overview/install.md
+      
 jobs:
   fakejob:
     runs-on: ubuntu-latest
