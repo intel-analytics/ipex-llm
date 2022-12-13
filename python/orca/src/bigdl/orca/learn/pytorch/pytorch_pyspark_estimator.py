@@ -89,7 +89,7 @@ class PyTorchPySparkEstimator(BaseEstimator):
     def __init__(
             self,
             *,
-            model_creator,
+            model_creator=None,
             optimizer_creator=None,
             loss_creator=None,
             metrics=None,
@@ -130,7 +130,6 @@ class PyTorchPySparkEstimator(BaseEstimator):
 
         self.model_creator = model_creator
         self.optimizer_creator = optimizer_creator
-        self.model_class = None
 
         num_nodes, cores_per_node = get_node_and_core_number()
         self.num_workers = num_nodes * workers_per_node
@@ -176,7 +175,7 @@ class PyTorchPySparkEstimator(BaseEstimator):
             cluster_info=self._get_cluster_info(sc),
             **local_init_params)
 
-        if self.model_creator or self.model_class:
+        if self.model_creator:
             self.state_dict = self.driver_runner.get_state_dict()
 
     def create_tcpstore_server(self):
@@ -241,6 +240,11 @@ class PyTorchPySparkEstimator(BaseEstimator):
                                                            num_workers=self.num_workers,
                                                            shard_size=batch_size)
 
+        if self.model_creator is None:
+            invalidInputError(False,
+                              "Must provide callable function for model_creator "
+                              "or load a saved model.")
+
         sc = OrcaContext.get_spark_context()
         _ = self.create_tcpstore_server()
         cluster_info = self._get_cluster_info(sc)
@@ -248,8 +252,7 @@ class PyTorchPySparkEstimator(BaseEstimator):
         init_params = dict(
             mode="fit",
             state_dict=state_dict,
-            cluster_info=cluster_info,
-            model_class=self.model_class)
+            cluster_info=cluster_info)
         init_params.update(self.worker_init_params)
 
         params = dict(
@@ -393,6 +396,11 @@ class PyTorchPySparkEstimator(BaseEstimator):
         from bigdl.orca.data import SparkXShards
         from pyspark.sql import DataFrame
 
+        if self.model_creator is None:
+            invalidInputError(False,
+                              "Must provide callable function for model_creator "
+                              "or load a saved model.")
+
         sc = OrcaContext.get_spark_context()
         cluster_info = self._get_cluster_info(sc)
         state_dict = self._get_broadcasted_state_dict(sc)
@@ -400,9 +408,7 @@ class PyTorchPySparkEstimator(BaseEstimator):
         init_params = dict(
             mode="predict",
             state_dict=state_dict,
-            cluster_info=cluster_info,
-            model_class=self.model_class
-        )
+            cluster_info=cluster_info)
         init_params.update(self.worker_init_params)
 
         params = dict(
@@ -472,22 +478,26 @@ class PyTorchPySparkEstimator(BaseEstimator):
                 You can also provide custom metrics by passing in a custom training_operator_cls
                 when creating the Estimator.
         """
+        if self.model_creator is None:
+            invalidInputError(False,
+                              "Must provide callable function for model_creator "
+                              "or load a saved model.")
+
         sc = OrcaContext.get_spark_context()
         cluster_info = self._get_cluster_info(sc)
         state_dict = self._get_broadcasted_state_dict(sc)
         init_params = dict(
             mode="evaluate",
             state_dict=state_dict,
-            cluster_info=cluster_info,
-            model_class=self.model_class)
-
+            cluster_info=cluster_info)
         init_params.update(self.worker_init_params)
 
         params = dict(
             batch_size=batch_size,
             num_steps=num_steps,
             profile=profile,
-            info=info)
+            info=info
+        )
 
         from bigdl.orca.data import SparkXShards
         data, _ = maybe_dataframe_to_xshards(data,
@@ -595,7 +605,8 @@ class PyTorchPySparkEstimator(BaseEstimator):
         else:
             self.state_dict = res.state_dict()
         if self.model_creator is None:
-            self.model_class = res
+            self.model_creator = lambda config: res
+            self.worker_init_params["model_creator"] = self.model_creator
 
     def save_checkpoint(self, model_path):
         """

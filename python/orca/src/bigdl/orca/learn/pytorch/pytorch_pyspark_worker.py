@@ -58,7 +58,6 @@ class PytorchPysparkWorker(TorchRunner):
                  cluster_info,
                  cores_per_worker,
                  loss_creator=None,
-                 model_class=None,
                  metrics=None,
                  scheduler_creator=None,
                  training_operator_cls=None,
@@ -76,7 +75,7 @@ class PytorchPysparkWorker(TorchRunner):
                  driver_log_port=None,
                  driver_tcp_store_port=None
                  ):
-        super().__init__(model_creator, optimizer_creator, loss_creator, model_class, metrics,
+        super().__init__(model_creator, optimizer_creator, loss_creator, metrics,
                          scheduler_creator, training_operator_cls, config, use_tqdm,
                          scheduler_step_freq, sync_stats, log_level=log_level)
 
@@ -122,7 +121,7 @@ class PytorchPysparkWorker(TorchRunner):
         else:
             self.rank = 0
             self.setup_components()
-            if self.model_creator or self.model_class:
+            if self.model_creator:
                 self.setup_operator(self.models)
 
     def train_epochs(self, data_creator, epochs=1, batch_size=32, profile=False,
