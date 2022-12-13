@@ -3,20 +3,19 @@
 set -e
 
 # usage
-usage() { echo "Usage: $0 [-a|--archives <string#string> -h|--help]" 1>&2; exit 1; }
+usage() { echo "Usage: $0 [-a|--archives <string#string,...> -d|--deploy-mode <string> -c|--conf <string=string> -h|--help]" 1>&2; exit 1; }
 
 cmd=$@
 # get options
 set +e
-ARGS=`getopt -q -o a:h --long archives:,help -- "$@"`
+ARGS=`getopt -o a:d:c:h: --long archives:,deploy-mode:,conf:,help -- "$@"`
 set -e
 eval set -- "$ARGS"
 
 # extract options and their arguments into variables.
-archive-array=()
-dir-array=()
-dir=$PYSPARK_PYTHON
-deploy-mode=""
+declare -A archives_map
+declare -A conf_map
+dir="environment"
 while true ; do
     case "$1" in
         -a|--archives)
@@ -24,22 +23,18 @@ while true ; do
             for archive in $archives
             do
                 array=(${archive//#/ })
-                archive-array[${#archive-array[@]}]=${array[0]}
-                dir-array[${dir-array[@]}]=${array[1]}
+                archives_map[${array[1]}]=${array[0]}
             done
             shift 2
             ;;
         -d|--deploy-mode)
-            deploy-mode=$2
+            deploy_mode=$2
             shift 2
             ;;
         -c|--conf)
-            echo $deploy-mode
-            if [ $2 =~ "spark.pyspark.driver.python" -o $2 =~ "spark.yarn.appMasterEnv.PYSPARK_PYTHON" -o $2 =~ "spark.executorEnv.PYSPARK_PYTHON"  ]
-            then
-                array=(${2//=/ })
-                dir=${array[1]}
-            fi
+            array=(${2//=/ })
+            array2=(${array[1]///bin/ })
+            conf_map[${array[0]}]=${array2[0]}
             shift 2
             ;;
         -h|--help)
@@ -51,33 +46,38 @@ while true ; do
     esac
 done
 
-echo $archive-array
-echo $dir-array
-echo $dir
-echo $deploy-mode
-exit 1
-# check if environment exists
-if [ ! -d "${dir}" ]
+if [ $deploy_mode == "client" ]
 then
-    # extract environment
-    echo "extracting ${archives} to ${dir} ..."
-    mkdir -p ${dir}
-    set +e
-    which "pv" >/dev/null 2>&1
-    if [ $? -eq 0 ]
-    then
-        echo "extracting with progress bar..."
-        pv ${archives}|tar -xz -C ${dir}
-    else
-        echo "extracting without progress bar...please install pv if you need progress bar."
-        tar -xzf ${archives} -C ${dir}
-    fi
-    set -e
+    dir=${conf_map["spark.pyspark.driver.python"]} # todo: deal with corner case.
+else
+    dir=${conf_map["spark.yarn.appMasterEnv.PYSPARK_PYTHON"]}
 fi
 
+archive=${archives_map[$dir]}
 
-# activate environment
-source ${dir}/bin/activate
+set +e
+which "conda" >/dev/null 2>&1
+if [ $? -eq 0 ]
+    # check if environment exists
+    if [ ! -d "${dir}" ]
+    then
+        # extract environment
+        echo "extracting ${archive} to ${dir} ..."
+        mkdir -p ${dir}
+        which "pv" >/dev/null 2>&1
+        if [ $? -eq 0 ]
+        then
+            echo "extracting with progress bar..."
+            pv ${archive}|tar -xz -C ${dir}
+        else
+            echo "extracting without progress bar...please install pv if you need progress bar."
+            tar -xzf ${archive} -C ${dir}
+        fi
+    fi
+    # activate environment
+    source ${dir}/bin/activate
+fi
+set -e
 
 # detect paths
 export BIGDL_ENV=`python -c """from bigdl.dllib.utils.engine import *
