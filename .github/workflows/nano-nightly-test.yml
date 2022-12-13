@@ -33,7 +33,7 @@ jobs:
       uses: ./.github/actions/nano/remove-pytorch-env
 
   Nano-Tensorflow-UT-Test:
-    runs-on: [ self-hosted, Gondolin, ubuntu-20.04-lts ]
+    runs-on: [ "ubuntu-20.04" ]
 
     strategy:
       fail-fast: false
