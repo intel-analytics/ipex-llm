@@ -188,18 +188,35 @@ opt = InferenceOptimizer()
 opt.optimize(model, x=train_dataset)
 
 # get the best optimization
-best_model = opt.get_best_model()
+best_model, _option = opt.get_best_model()
 
 # use the quantized model as before
 y_hat = best_model(train_examples)
 best_model.predict(train_dataset)
 ```
 
-`InferenceOptimizer.optimize` will try all supported optimizations and choose the best one. It also uses parameter `x` and `y` to receive calibration data like `InferenceOptimizer.quantize`.
+`InferenceOptimizer.optimize` will try all supported optimizations and choose the best one. e.g. the output may like this
+
+```
+==========================Optimization Results==========================
+ -------------------------------- ---------------------- --------------
+|             method             |        status        | latency(ms)  |
+ -------------------------------- ---------------------- --------------
+|            original            |      successful      |    82.109    |
+|              int8              |      successful      |    4.398     |
+|         openvino_fp32          |      successful      |    3.847     |
+|         openvino_int8          |      successful      |    2.177     |
+|        onnxruntime_fp32        |      successful      |     3.28     |
+|    onnxruntime_int8_qlinear    |      successful      |    3.071     |
+|    onnxruntime_int8_integer    |   fail to convert    |     None     |
+ -------------------------------- ---------------------- --------------
+```
 
 ```eval_rst
 .. tip::
-    Some useful parameters of ``InferenceOptimizer.optimize``:
+    It also uses parameter `x` and `y` to receive calibration data like `InferenceOptimizer.quantize`.
+
+    There are some other useful parameters
 
     - ``includes``: A str list. If set, ``optimize`` will only try optimizations in this parameter.
     - ``excludes``: A str list. If set, ``optimize`` will try all optimizations (or optimizations specified by ``includes``) except for those in this parameter.
