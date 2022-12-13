@@ -23,7 +23,7 @@ runs:
         source activate nano-tensorflow
         source bigdl-nano-init
 
-        bash python/nano/test/run-nano-tf-tests.sh
+        # bash python/nano/test/run-nano-tf-tests.sh
 
         source bigdl-nano-unset-env
         source deactivate

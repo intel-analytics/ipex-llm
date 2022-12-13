@@ -21,8 +21,9 @@ runs:
         pip install pytest
         pip install --pre --upgrade bigdl-nano[tensorflow,inference]
 
-        # required by Horovod test
-        HOROVOD_WITH_MPI=1 HOROVOD_WITH_TENSORFLOW=1 HOROVOD_WITHOUT_PYTORCH=1 pip install --no-cache-dir horovod==0.25.0
+        # fail to install horovod
+        # # required by Horovod test
+        # HOROVOD_WITH_MPI=1 HOROVOD_WITH_TENSORFLOW=1 HOROVOD_WITHOUT_PYTORCH=1 pip install --no-cache-dir horovod==0.25.0
 
         # required by Ray test
         pip install google-api-core==2.8.2
