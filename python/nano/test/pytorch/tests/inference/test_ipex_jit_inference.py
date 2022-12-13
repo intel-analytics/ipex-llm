@@ -173,6 +173,56 @@ class IPEXJITInference_gt_1_10:
             new_model(self.data_sample)
             assert new_model.jit_strict is False
 
+    def test_jit_inference_converter(self):
+        class Net(nn.Module):
+            def __init__(self):
+                super().__init__()
+            def forward(self, x):
+                return torch.arange(len(x))
+
+        model = Net()
+
+        input_sample = torch.rand(1,3,1,1)
+        input = torch.rand(2,3,1,1)
+        expected_output = torch.tensor([0])
+
+        # test with jit.script
+        accmodel = InferenceOptimizer.trace(model, accelerator='jit', 
+                                            input_sample=input_sample, 
+                                            jit_converter='script')
+        with InferenceOptimizer.get_context(model):
+            output = accmodel(input)
+        assert output == expected_output
+
+        with tempfile.TemporaryDirectory() as tmp_dir_name:
+            InferenceOptimizer.save(acc_model, tmp_dir_name)
+            loaded_model = InferenceOptimizer.load(tmp_dir_name)
+        with InferenceOptimizer.get_context(new_model):
+            loaded_model(input)
+            assert output == expected_output
+            assert loaded_model.jit_converter == 'script'
+
+
+        # test with jit.trace
+        accmodel = InferenceOptimizer.trace(model, accelerator='jit', 
+                                      input_sample=input_sample, 
+                                      jit_converter='trace')
+        with InferenceOptimizer.get_context(model):
+            output = accmodel(input)
+        assert output != expected_output
+
+        # test with deafult jit_converter
+        accmodel = InferenceOptimizer.trace(model, accelerator='jit', 
+                                      input_sample=input_sample)
+        with InferenceOptimizer.get_context(model):
+            output = accmodel(input)
+        assert output != expected_output
+
+        # test with invalidInputError
+        with pytest.raises(RuntimeError):
+            InferenceOptimizer.trace(model, accelerator='jit', 
+                               input_sample=input_sample,
+                               jit_converter='scriptttt')
 
 class IPEXJITInference_lt_1_10:
     def test_placeholder(self):
