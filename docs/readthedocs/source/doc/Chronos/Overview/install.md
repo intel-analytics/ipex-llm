@@ -19,8 +19,9 @@
 .. note::
     **Supported Python Version**:
 
-     1.Chronos supports all installation options on Python 3.7.2 ~ latest 3.7.x. For details about different installation options, refer to `here <# Install using Conda>`_.
-     2.``bigdl-chronos[distributed]`` is not supported on Python 3.8.
+     1.Chronos supports all installation options on Python 3.7.2 ~ latest 3.7.x. For details about different installation options, refer to `here <#install-using-conda>`_.
+
+     2.``bigdl-chronos[pytorch]``, ``bigdl-chronos[tensorflow]``, ``bigdl-chronos[automl]`` and ``bigdl-chronos[inference]`` are supported on Python 3.8.
 ```
 
 
