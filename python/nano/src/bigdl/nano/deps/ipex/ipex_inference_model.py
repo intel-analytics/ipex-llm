@@ -45,7 +45,7 @@ class PytorchIPEXJITModel(AcceleratedLightningModule):
         :param from_load: this will only be set by _load method.
         :param inplace: whether to perform inplace optimization. Default: ``False``.
         :param jit_strict: Whether recording your mutable container types.
-        :param jit_converter: use ``jit.trace`` or ``jit.script`` to 
+        :param jit_converter: use ``jit.trace`` or ``jit.script`` to
                convert a model to TorchScript.
         """
         super().__init__(model)
@@ -77,16 +77,16 @@ class PytorchIPEXJITModel(AcceleratedLightningModule):
                     with torch.cpu.amp.autocast():
                         if self.jit_converter == 'trace':
                             self.model = torch.jit.trace(self.model, input_sample,
-                                                        check_trace=False,
-                                                        strict=jit_strict)
+                                                         check_trace=False,
+                                                         strict=jit_strict)
                         elif self.jit_converter == 'script':
                             self.model = torch.jit.script(self.model)
                         else:
                             try:
                                 self.model = torch.jit.trace(self.model, input_sample,
-                                                        check_trace=False,
-                                                        strict=jit_strict)
-                            except:
+                                                             check_trace=False,
+                                                             strict=jit_strict)
+                            except Exception:
                                 self.model = torch.jit.script(self.model)
                         if self.use_ipex:
                             self.model = torch.jit.freeze(self.model)
@@ -94,16 +94,16 @@ class PytorchIPEXJITModel(AcceleratedLightningModule):
                 with torch.no_grad():
                     if self.jit_converter == 'trace':
                         self.model = torch.jit.trace(self.model, input_sample,
-                                                    check_trace=False,
-                                                    strict=jit_strict)
+                                                     check_trace=False,
+                                                     strict=jit_strict)
                     elif self.jit_converter == 'script':
                         self.model = torch.jit.script(self.model)
                     else:
                         try:
                             self.model = torch.jit.trace(self.model, input_sample,
-                                                    check_trace=False,
-                                                    strict=jit_strict)
-                        except:
+                                                         check_trace=False,
+                                                         strict=jit_strict)
+                        except Exception:
                             self.model = torch.jit.script(self.model)
                     self.model = torch.jit.freeze(self.model)
         self._nano_context_manager = generate_context_manager(accelerator=None,

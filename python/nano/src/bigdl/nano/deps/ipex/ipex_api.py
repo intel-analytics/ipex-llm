@@ -48,7 +48,7 @@ def PytorchIPEXJITModel(model, input_sample=None, use_ipex=False,
     :param thread_num: the thread num allocated for this model.
     :param inplace: whether to perform inplace optimization. Default: ``False``.
     :param jit_strict: Whether recording your mutable container types.
-    :param jit_converter: use ``jit.trace`` or ``jit.script`` to 
+    :param jit_converter: use ``jit.trace`` or ``jit.script`` to
            convert a model to TorchScript.
     '''
     from .ipex_inference_model import PytorchIPEXJITModel
@@ -72,7 +72,7 @@ def PytorchIPEXJITBF16Model(model, input_sample=None, use_ipex=False,
     :param thread_num: the thread num allocated for this model.
     :param inplace: whether to perform inplace optimization. Default: ``False``.
     :param jit_strict: Whether recording your mutable container types.
-    :param jit_converter: use ``jit.trace`` or ``jit.script`` to 
+    :param jit_converter: use ``jit.trace`` or ``jit.script`` to
            convert a model to TorchScript.
     '''
     from .ipex_inference_bf16_model import PytorchIPEXJITBF16Model

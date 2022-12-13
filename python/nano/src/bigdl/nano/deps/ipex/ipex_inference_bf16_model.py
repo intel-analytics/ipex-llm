@@ -45,7 +45,7 @@ class PytorchIPEXJITBF16Model(PytorchIPEXJITModel):
         :param from_load: this will only be set by _load method.
         :param inplace: whether to perform inplace optimization. Default: ``False``.
         :param jit_strict: Whether recording your mutable container types.
-        :param jit_converter: use ``jit.trace`` or ``jit.script`` to 
+        :param jit_converter: use ``jit.trace`` or ``jit.script`` to
                convert a model to TorchScript.
         '''
         if use_ipex:
