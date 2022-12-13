@@ -19,6 +19,7 @@ from bigdl.nano.pytorch import Trainer
 from bigdl.nano.pytorch import InferenceOptimizer
 from torchvision.models.mobilenetv3 import mobilenet_v3_small
 import torch
+from torch import nn
 from torch.utils.data.dataset import TensorDataset
 from torch.utils.data.dataloader import DataLoader
 import tempfile
@@ -162,3 +163,35 @@ class TestOpenVINO(TestCase):
         with InferenceOptimizer.get_context(openvino_model):
             assert torch.get_num_threads() == 2
             y1 = openvino_model(x[0:1])
+
+    def test_openvino_quantize_dynamic_axes(self):
+        class CustomModel(nn.Module):
+            def __init__(self):
+                super().__init__()
+                self.pool = nn.AvgPool2d(kernel_size=3, stride=3)
+
+            def forward(self, x):
+                return self.pool(x)
+
+        model = CustomModel()
+        x1 = torch.rand(1, 3, 14, 14)
+        x2 = torch.rand(4, 3, 14, 14)
+        x3 = torch.rand(1, 3, 12, 12)
+
+        accmodel = InferenceOptimizer.quantize(model,
+                                               accelerator="openvino",
+                                               calib_data=torch.rand(1, 3, 14, 14))
+        accmodel(x1)
+        accmodel(x2)
+        try:
+            accmodel(x3)
+        except Exception as e:
+            assert e
+
+        accmodel = InferenceOptimizer.quantize(model,
+                                               accelerator="openvino",
+                                               calib_data=torch.rand(1, 3, 14, 14),
+                                               dynamic_axes={"x": [0, 2, 3]})
+        accmodel(x1)
+        accmodel(x2)
+        accmodel(x3)
