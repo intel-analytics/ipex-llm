@@ -101,3 +101,8 @@ def load_ipexjit_model(path, model, inplace=False):
 def load_ipexjitbf16_model(path, model, inplace=False):
     from .ipex_inference_bf16_model import PytorchIPEXJITBF16Model
     return PytorchIPEXJITBF16Model._load(path, model, inplace=inplace)
+
+
+def load_ipex_quantization_model(path, model, inplace=False):
+    from .ipex_quantization_model import PytorchIPEXQuantizationModel
+    return PytorchIPEXQuantizationModel._load(path, model, inplace=inplace)

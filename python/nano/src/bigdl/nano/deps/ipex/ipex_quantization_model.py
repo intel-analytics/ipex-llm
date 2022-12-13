@@ -57,8 +57,8 @@ class PytorchIPEXQuantizationModel(AcceleratedLightningModule):
         if from_load:
             self.channels_last = channels_last
             self.jit_strict = jit_strict
-            self._nano_context_manager = generate_context_manager(accelerator=None,
-                                                                  precision="fp32",
+            self._nano_context_manager = generate_context_manager(accelerator="jit",
+                                                                  precision="int8",
                                                                   thread_num=thread_num)
             return
         self.channels_last = channels_last
@@ -152,6 +152,7 @@ class PytorchIPEXQuantizationModel(AcceleratedLightningModule):
         if status["thread_num"] is not None and status['thread_num'] != {}:
             thread_num = int(status['thread_num'])
         return PytorchIPEXQuantizationModel(model,
+                                            calib_data=None,
                                             channels_last=status['channels_last'],
                                             from_load=from_load,
                                             thread_num=thread_num,
