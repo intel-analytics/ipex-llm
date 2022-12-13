@@ -28,7 +28,7 @@ from bigdl.nano.utils.inference.common.base_optimizer import BaseInferenceOptimi
 from bigdl.nano.utils.log4Error import invalidInputError
 from bigdl.nano.pytorch.amp import BF16Model
 from bigdl.nano.deps.openvino.openvino_api import PytorchOpenVINOModel
-from bigdl.nano.deps.ipex.ipex_api import PytorchIPEXJITModel, PytorchIPEXJITBF16Model ,\
+from bigdl.nano.deps.ipex.ipex_api import PytorchIPEXJITModel, PytorchIPEXJITBF16Model,\
     PytorchIPEXQuantizationModel
 from bigdl.nano.deps.onnxruntime.onnxruntime_api import PytorchONNXRuntimeModel
 from bigdl.nano.deps.neural_compressor.inc_api import quantize as inc_quantize
