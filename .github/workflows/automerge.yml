@@ -14,13 +14,13 @@ on:
       
 jobs:
   fakejob:
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, Gondolin, ubuntu-20.04-lts]
     steps:
       - name: Update time
         run: |
           BIGDL_VERSION="2.2.0-SNAPSHOT"
   updateURL:
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, Gondolin, ubuntu-20.04-lts]
     steps:
       - uses: actions/checkout@v3
         with:
