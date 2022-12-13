@@ -580,6 +580,24 @@ class TestTFEstimator(TestCase):
         finally:
             shutil.rmtree(temp_dir)
     
+    def test_save_load_model_from_json(self):
+        config = {
+            "lr": 0.2
+        }
+        import uuid
+        model_path = os.path.join(tempfile.gettempdir(), str(uuid.uuid1()) + ".json")
+        try:
+            model = simple_model(config)
+            with open(model_path, "w") as f:
+                f.write(model.to_json())
+
+            from bigdl.orca.learn.utils import load_model_from_json
+            model_load = load_model_from_json(model_path)
+            assert model.summary() == model_load.summary()
+        finally:
+            if os.path.exists(model_path):
+                os.remove(model_path)
+
     def test_save_load_model_architecture(self):
         config = {
             "lr": 0.2

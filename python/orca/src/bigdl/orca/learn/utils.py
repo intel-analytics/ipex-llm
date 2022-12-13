@@ -777,30 +777,6 @@ def load_model_from_json(filepath, custom_objects=None):
     return model
 
 
-def load_model_from_yaml(filepath, custom_objects=None):
-    import tensorflow as tf
-    if is_local_path(filepath):
-        with open(filepath, "rb") as f:
-            json_string = f.read()
-            model = tf.keras.models.model_from_yaml(json_string,
-                                            custom_objects=custom_objects
-                                            )
-    else:
-        file_name = os.path.basename(filepath)
-        temp_dir = tempfile.mkdtemp()
-        temp_path = os.path.join(temp_dir, file_name)
-        try:
-            get_remote_file_to_local(filepath, temp_path)
-            with open(temp_path, "rb") as f:
-                json_string = f.read()
-                model = tf.keras.models.model_from_yaml(json_string,
-                                                custom_objects=custom_objects
-                                                )
-        finally:
-            shutil.rmtree(temp_dir)
-    return model
-
-
 def save_model(model, filepath, overwrite=True, include_optimizer=True, save_format=None,
                signatures=None, options=None, filemode=None):
     if is_local_path(filepath):
