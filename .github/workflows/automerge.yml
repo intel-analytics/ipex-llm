@@ -3,13 +3,13 @@ on:
   push:
     branches:
       - wip/test/automerge
-      - wip/wip/liusha/test2
+      - wip/liusha/test2
     paths:
       - .github/workflows/automerge.yml
       - docs/readthedocs/source/doc/Orca/Overview/install.md
   pull_request:
     branches:
-      - wip/wip/liusha/test2
+      - wip/liusha/test2
     paths:
       - docs/readthedocs/source/doc/Orca/Overview/install.md
       
