@@ -50,8 +50,8 @@ RUN pip3 install --upgrade pip && \
     mkdir -p ${JAVA_HOME} && \
     cp -r /usr/lib/jvm/java-${JDK_VERSION}-openjdk-amd64/* ${JAVA_HOME} && \
     sed -i '/MAX_FAILURE_THRESHOLD = 5/ios.environ\[\"MPLCONFIGDIR\"\]=\"\/tmp\/matplotlib\"' /usr/local/lib/python3.7/dist-packages/ts/model_service_worker.py && \
-    sed -i '/import abc/iimport sys' /usr/local/lib/python3.7/dist-packages/ts/torch_handler/base_handler.py && \
-    sed -i '/module = importlib.import_module/i\ \ \ \ \ \ \ \ sys.path.append(model_dir)' /usr/local/lib/python3.7/dist-packages/ts/torch_handler/base_handler.py && \
+    sed -i '/import json/iimport sys' /usr/local/lib/python3.7/dist-packages/ts/model_loader.py && \
+    sed -i '/manifest_file\ =\ os.path.join/i\ \ \ \ \ \ \ \ sys.path.append(model_dir)' /usr/local/lib/python3.7/dist-packages/ts/model_loader.py && \
     sed -i 's/SOCKET_ACCEPT_TIMEOUT = 30.0/SOCKET_ACCEPT_TIMEOUT = 3000.0/' /usr/local/lib/python3.7/dist-packages/ts/model_service_worker.py && \
     mkdir -p /ppml/tests/numpy && \
     mkdir -p /ppml/tests/pandas && \
