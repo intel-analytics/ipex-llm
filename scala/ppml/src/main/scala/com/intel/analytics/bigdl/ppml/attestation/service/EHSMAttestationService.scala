@@ -143,7 +143,15 @@ class EHSMAttestationService(kmsServerIP: String, kmsServerPort: String,
     println("postResult:" + postResult)
     // Check sign with nonce
     val sign = postResult.getString(RES_SIGN)
-    val verifyQuoteResult = postResult.getBoolean(RES_RESULT)
+    var verifyQuoteResult = postResult.getBoolean(RES_RESULT)
+    if (!verifyQuoteResult) { //fail
+      //warning
+      val error_code = postResult.getInt("error_code")
+      if (error_code == 0xa001 || error_code == 0xa002 ) {
+        println("warning: Attestation pass but xx is out of date")
+        verifyQuoteResult = true;
+      }
+    }
     (verifyQuoteResult, postResult.toString)
   }
 

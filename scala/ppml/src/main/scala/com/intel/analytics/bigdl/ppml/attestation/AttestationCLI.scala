@@ -105,8 +105,8 @@ object AttestationCLI {
             if (verifyQuoteResult == 0) {
               System.out.println("Quote Verification Success!")
             } else if (verifyQuoteResult == 1) {
-              System.out.println("WARNING:Quote verification passed but BIOS is not up to date." +
-                " result=" + verifyQuoteResult)
+              System.out.println("WARNING:Quote verification passed but BIOS or the software" +
+                " is not up to date. result=" + verifyQuoteResult)
             } else if (debug == "true") {
               System.out.println("ERROR:Quote Verification Fail! In debug mode, continue." +
                 " result=" + verifyQuoteResult)
