@@ -173,7 +173,7 @@ class IPEXJITInference_gt_1_10:
             new_model(self.data_sample)
             assert new_model.jit_strict is False
 
-    def test_jit_inference_converter(self):
+    def test_ipex_jit_inference_converter(self):
         class Net(nn.Module):
             def __init__(self):
                 super().__init__()
@@ -183,40 +183,42 @@ class IPEXJITInference_gt_1_10:
         model = Net()
 
         input_sample = torch.rand(1,3,1,1)
-        input = torch.rand(2,3,1,1)
-        expected_output = torch.tensor([0])
+        input = torch.rand(5,3,1,1)
+        expected_output_len = 5
 
-        # test with jit.script
-        accmodel = InferenceOptimizer.trace(model, accelerator='jit', 
+        # test with jit.script (with ipex)
+        accmodel = InferenceOptimizer.trace(model, accelerator='jit',
+                                            use_ipex=True, 
                                             input_sample=input_sample, 
                                             jit_converter='script')
-        with InferenceOptimizer.get_context(model):
+        with InferenceOptimizer.get_context(accmodel):
             output = accmodel(input)
-        assert output == expected_output
+        assert output.shape[0] == expected_output_len
 
         with tempfile.TemporaryDirectory() as tmp_dir_name:
-            InferenceOptimizer.save(acc_model, tmp_dir_name)
+            InferenceOptimizer.save(accmodel, tmp_dir_name)
             loaded_model = InferenceOptimizer.load(tmp_dir_name)
-        with InferenceOptimizer.get_context(new_model):
-            loaded_model(input)
-            assert output == expected_output
-            assert loaded_model.jit_converter == 'script'
+        with InferenceOptimizer.get_context(loaded_model):
+            output = loaded_model(input)
+        assert output.shape[0] == expected_output_len
+        assert loaded_model.jit_converter == 'script'
 
 
-        # test with jit.trace
+        # test with jit.trace (with ipex)
         accmodel = InferenceOptimizer.trace(model, accelerator='jit', 
+                                      use_ipex=True,
                                       input_sample=input_sample, 
                                       jit_converter='trace')
-        with InferenceOptimizer.get_context(model):
+        with InferenceOptimizer.get_context(accmodel):
             output = accmodel(input)
-        assert output != expected_output
+        assert output.shape[0] != expected_output_len
 
         # test with deafult jit_converter
         accmodel = InferenceOptimizer.trace(model, accelerator='jit', 
                                       input_sample=input_sample)
-        with InferenceOptimizer.get_context(model):
+        with InferenceOptimizer.get_context(accmodel):
             output = accmodel(input)
-        assert output != expected_output
+        assert output != output.shape[0] != expected_output_len
 
         # test with invalidInputError
         with pytest.raises(RuntimeError):
