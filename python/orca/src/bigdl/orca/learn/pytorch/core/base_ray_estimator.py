@@ -34,6 +34,7 @@ logger = logging.getLogger(__name__)
 
 from typing import Dict
 
+
 class BaseRayEstimator(BaseEstimator, metaclass=ABCMeta):
     def __init__(self, **kwargs):
         # Implement logic to struct parameters

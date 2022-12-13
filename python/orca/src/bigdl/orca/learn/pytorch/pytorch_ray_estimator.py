@@ -34,17 +34,17 @@ from bigdl.dllib.utils.log4Error import invalidInputError
 
 from typing import TYPE_CHECKING, Union, Optional, Callable, Dict, List, Type
 if TYPE_CHECKING:
-       from torch.nn import Module
-       from torch.optim import Optimizer
-       from torch.nn.modules.loss import _Loss as Loss
-       from torch.optim.lr_scheduler import _LRScheduler as LRScheduler
-       from torch.distributed import TCPStore
-       from torch.utils.data import DataLoader
-       from pyspark.sql.dataframe import DataFrame as SparkDataFrame
-       from ray.data import Dataset as RayDataset
+    from torch.nn import Module
+    from torch.optim import Optimizer
+    from torch.nn.modules.loss import _Loss as Loss
+    from torch.optim.lr_scheduler import _LRScheduler as LRScheduler
+    from torch.distributed import TCPStore
+    from torch.utils.data import DataLoader
+    from pyspark.sql.dataframe import DataFrame as SparkDataFrame
+    from ray.data import Dataset as RayDataset
+    from bigdl.orca.learn.pytorch.callbacks import Callback
+    from bigdl.orca.data import SparkXShards
 
-       from bigdl.orca.learn.pytorch.callbacks import Callback
-       from bigdl.orca.data import SparkXShards
 
 def partition_refs_to_creator(partition_refs):
     def data_creator(config, batch_size):
@@ -84,7 +84,7 @@ class PyTorchRayEstimator(BaseRayEstimator):
             self,
             *,
             model_creator: Callable[[Dict], 'Module'],
-            optimizer_creator: Union[Callable[['Module', Dict],'Optimizer'],
+            optimizer_creator: Union[Callable[['Module', Dict], 'Optimizer'],
                                      None]=None,
             loss_creator: Union['Loss', Callable[[Dict], 'Loss'], None]=None,
             metrics: Union[Callable, List[Callable], None]=None,
@@ -145,7 +145,7 @@ class PyTorchRayEstimator(BaseRayEstimator):
                    runner_cls=PytorchRayWorker,
                    workers_per_node=workers_per_node)
 
-    def fit(self, # type:ignore[override]
+    def fit(self,  # type:ignore[override]
             data: Union['SparkXShards',
                         'SparkDataFrame',
                         'RayDataset',
@@ -159,7 +159,7 @@ class PyTorchRayEstimator(BaseRayEstimator):
             label_cols: Optional[List[str]]=None,
             validation_data: Union['SparkXShards',
                                    'SparkDataFrame',
-                                   Callable[[Dict, int],'DataLoader'],
+                                   Callable[[Dict, int], 'DataLoader'],
                                    None]=None,
             callbacks: List['Callback']=[]) -> List:
         """
@@ -227,7 +227,7 @@ class PyTorchRayEstimator(BaseRayEstimator):
                                                                             label_cols,
                                                                             validation_data, "fit")
             from bigdl.orca.data.utils import process_spark_xshards
-            ray_xshards = process_spark_xshards(data, self.num_workers) # type:ignore
+            ray_xshards = process_spark_xshards(data, self.num_workers)  # type:ignore
 
             if validation_data is None:
                 def transform_func(worker, partition_refs):
@@ -242,7 +242,7 @@ class PyTorchRayEstimator(BaseRayEstimator):
                     invalidInputError(False,
                                       "Currently, we don't support input validation_data"
                                       " for horovod backend")
-                val_ray_xshards = process_spark_xshards(validation_data, # type:ignore
+                val_ray_xshards = process_spark_xshards(validation_data,  # type:ignore
                                                         self.num_workers)
 
                 def zip_func(worker, this_partition_refs, that_partition_refs):
@@ -283,9 +283,11 @@ class PyTorchRayEstimator(BaseRayEstimator):
                                       "Validation data type should be the same as train data,"
                                       " but got type: {}".format(type(validation_data)))
 
-                val_shards = validation_data.split(n=self.num_workers, # type:ignore
+                val_shards = validation_data.split(n=self.num_workers,  # type:ignore
                                                    locality_hints=self.remote_workers)
-                for shard, val_shard, worker in zip(shards, val_shards, self.num_workers): # type:ignore
+                for shard, val_shard, worker in zip(shards,
+                                                    val_shards,
+                                                    self.num_workers):  # type:ignore
                     params["data_creator"] = make_data_creator(shard, feature_cols, label_cols)
 
                     params["validation_data_creator"] = make_data_creator(val_shard,
@@ -309,7 +311,7 @@ class PyTorchRayEstimator(BaseRayEstimator):
             params["validation_data_creator"] = reload_dataloader_creator(validation_data)
             success, worker_stats = self._train_epochs(**params)
 
-        epoch_stats = list(map(list, zip(*worker_stats))) # type:ignore
+        epoch_stats = list(map(list, zip(*worker_stats)))  # type:ignore
         if reduce_results:
             for i in range(len(epoch_stats)):
                 epoch_stats[i] = process_stats(epoch_stats[i])
@@ -317,7 +319,7 @@ class PyTorchRayEstimator(BaseRayEstimator):
         else:
             return epoch_stats
 
-    def predict(self, # type:ignore[override]
+    def predict(self,  # type:ignore[override]
                 data: Union['SparkXShards', 'SparkDataFrame'],
                 batch_size: int=32,
                 feature_cols: Optional[List[str]]=None,
@@ -380,7 +382,7 @@ class PyTorchRayEstimator(BaseRayEstimator):
 
         return result
 
-    def evaluate(self, # type:ignore[override]
+    def evaluate(self,  # type:ignore[override]
                  data: Union['SparkXShards',
                              'SparkDataFrame',
                              'RayDataset',
@@ -440,7 +442,7 @@ class PyTorchRayEstimator(BaseRayEstimator):
             if data._get_class_name() == 'pandas.core.frame.DataFrame':
                 data = process_xshards_of_pandas_dataframe(data, feature_cols, label_cols)
             from bigdl.orca.data.utils import process_spark_xshards
-            ray_xshards = process_spark_xshards(data, self.num_workers) # type:ignore
+            ray_xshards = process_spark_xshards(data, self.num_workers)  # type:ignore
 
             def transform_func(worker, partition_refs):
                 data_creator = partition_refs_to_creator(partition_refs)
@@ -490,7 +492,7 @@ class PyTorchRayEstimator(BaseRayEstimator):
         model = self.model_creator(self.config)
         model_state = state["models"][0]
         model.load_state_dict(model_state)
-        return model.module if hasattr(model, "module") else model # type:ignore
+        return model.module if hasattr(model, "module") else model  # type:ignore
 
     def _predict_spark_xshards(self, xshards, param):
         ray_xshards = RayXShards.from_spark_xshards(xshards)

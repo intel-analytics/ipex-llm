@@ -19,13 +19,13 @@ from bigdl.orca.learn.pytorch.training_operator import TrainingOperator
 
 from typing import TYPE_CHECKING, Union, Optional, Callable, Dict, List, Type
 if TYPE_CHECKING:
-       from torch.nn import Module
-       from torch.optim import Optimizer
-       from torch.nn.modules.loss import _Loss as Loss
-       from torch.optim.lr_scheduler import _LRScheduler as LRScheduler
-       from bigdl.orca.learn.pytorch.pytorch_ray_estimator import PyTorchRayEstimator
-       from bigdl.orca.learn.pytorch.pytorch_spark_estimator import PyTorchSparkEstimator
-       from bigdl.orca.learn.pytorch.pytorch_pyspark_estimator import PyTorchPySparkEstimator
+    from torch.nn import Module
+    from torch.optim import Optimizer
+    from torch.nn.modules.loss import _Loss as Loss
+    from torch.optim.lr_scheduler import _LRScheduler as LRScheduler
+    from bigdl.orca.learn.pytorch.pytorch_ray_estimator import PyTorchRayEstimator
+    from bigdl.orca.learn.pytorch.pytorch_spark_estimator import PyTorchSparkEstimator
+    from bigdl.orca.learn.pytorch.pytorch_pyspark_estimator import PyTorchPySparkEstimator
 
 
 class Estimator(object):
@@ -33,7 +33,7 @@ class Estimator(object):
     def from_torch(*,
                    model: Union['Module', Callable[[Dict], 'Module']],
                    optimizer: Union['Optimizer',
-                                    Callable[['Module', Dict],'Optimizer'],
+                                    Callable[['Module', Dict], 'Optimizer'],
                                     None]=None,
                    loss: Union['Loss', Callable[[Dict], 'Loss'], None]=None,
                    metrics: Union[Callable, List[Callable], None]=None,
@@ -99,7 +99,7 @@ class Estimator(object):
         if backend in {"horovod", "ray"}:
             from bigdl.orca.learn.pytorch.pytorch_ray_estimator import PyTorchRayEstimator
             return PyTorchRayEstimator(model_creator=model,
-                                       optimizer_creator=optimizer, # type:ignore
+                                       optimizer_creator=optimizer,  # type:ignore
                                        loss_creator=loss,
                                        metrics=metrics,
                                        scheduler_creator=scheduler_creator,

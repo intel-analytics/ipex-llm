@@ -48,16 +48,17 @@ except ImportError:
 
 from typing import TYPE_CHECKING, Union, Optional, Callable, Dict, List, Type
 if TYPE_CHECKING:
-       from torch.nn import Module
-       from torch.optim import Optimizer
-       from torch.nn.modules.loss import _Loss as Loss
-       from torch.optim.lr_scheduler import _LRScheduler as LRScheduler
-       from torch.distributed import TCPStore
-       from torch.utils.data import DataLoader
-       from pyspark.sql.dataframe import DataFrame as SparkDataFrame
-       from pyspark.rdd import RDD
+    from torch.nn import Module
+    from torch.optim import Optimizer
+    from torch.nn.modules.loss import _Loss as Loss
+    from torch.optim.lr_scheduler import _LRScheduler as LRScheduler
+    from torch.distributed import TCPStore
+    from torch.utils.data import DataLoader
+    from pyspark.sql.dataframe import DataFrame as SparkDataFrame
+    from pyspark.rdd import RDD
 
-       from bigdl.orca.learn.pytorch.callbacks import Callback
+from bigdl.orca.learn.pytorch.callbacks import Callback
+
 
 def partition_to_creator(partition):
     def data_creator(config, batch_size):
@@ -103,7 +104,7 @@ class PyTorchPySparkEstimator(BaseEstimator):
             self,
             *,
             model_creator: Callable[[Dict], 'Module'],
-            optimizer_creator: Union[Callable[['Module', Dict],'Optimizer'],
+            optimizer_creator: Union[Callable[['Module', Dict], 'Optimizer'],
                                      None]=None,
             loss_creator: Union['Loss', Callable[[Dict], 'Loss'], None]=None,
             metrics: Union[Callable, List[Callable], None]=None,
@@ -211,9 +212,9 @@ class PyTorchPySparkEstimator(BaseEstimator):
             feature_cols: Optional[List[str]]=None,
             label_cols: Optional[List[str]]=None,
             validation_data: Union['SparkXShards',
-                                  'SparkDataFrame',
-                                  Callable[[Dict, int],'DataLoader'],
-                                  None]=None,
+                                   'SparkDataFrame',
+                                   Callable[[Dict, int], 'DataLoader'],
+                                   None]=None,
             callbacks: List['Callback']=[]) -> List:
         """
         Trains a PyTorch model given training data for several epochs.
@@ -299,8 +300,8 @@ class PyTorchPySparkEstimator(BaseEstimator):
                     result = runner.train_epochs(**param)
                     runner.shutdown()
                     return result
-                
-                data_rdd:'RDD' = data.rdd  # type:ignore
+
+                data_rdd = data.rdd  # type:ignore
                 res = data_rdd.repartition(self.num_workers).barrier() \
                     .mapPartitions(
                     lambda iter: transform_func(iter, init_params, params)).collect()
@@ -317,8 +318,9 @@ class PyTorchPySparkEstimator(BaseEstimator):
                     runner.shutdown()
                     return result
 
-                train_rdd = data.rdd.mapPartitions(lambda iter: [list(iter)]) # type:ignore
-                val_rdd = validation_data.rdd.mapPartitions(lambda iter: [list(iter)]) # type:ignore
+                train_rdd = data.rdd.mapPartitions(lambda iter: [list(iter)])  # type:ignore
+                val_rdd = validation_data.rdd  # type:ignore
+                val_rdd = val_rdd.mapPartitions(lambda iter: [list(iter)])
                 res = train_rdd.zip(val_rdd).repartition(self.num_workers).barrier() \
                     .mapPartitions(
                     lambda iter: transform_func(iter, init_params, params)).collect()
@@ -332,7 +334,7 @@ class PyTorchPySparkEstimator(BaseEstimator):
             params["data_creator"] = reload_dataloader_creator(data)
             params["validation_data_creator"] = reload_dataloader_creator(validation_data)
 
-            def transform_func(iter, init_param, param): # type:ignore
+            def transform_func(iter, init_param, param):  # type:ignore
                 return PytorchPysparkWorker(**init_param).train_epochs(**param)
 
             res = self.workerRDD.barrier().mapPartitions(
@@ -532,7 +534,7 @@ class PyTorchPySparkEstimator(BaseEstimator):
                 param["data_creator"] = partition_to_creator(partition_data)
                 return PytorchPysparkWorker(**init_param).validate(**param)
 
-            data_rdd:'RDD' = data.rdd  # type:ignore
+            data_rdd = data.rdd  # type:ignore
             res = data_rdd.repartition(self.num_workers).barrier() \
                 .mapPartitions(lambda iter: transform_func(iter, init_params, params)).collect()
         else:
@@ -559,7 +561,7 @@ class PyTorchPySparkEstimator(BaseEstimator):
         model = self.model_creator(self.config)
         model_state = state["models"][0]
         model.load_state_dict(model_state)
-        return model.module if hasattr(model, "module") else model # type:ignore
+        return model.module if hasattr(model, "module") else model  # type:ignore
 
     def get_state_dict(self) -> Dict:
         return self.state_dict
