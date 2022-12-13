@@ -83,7 +83,7 @@ def PytorchIPEXQuantizationModel(model, calib_data, q_config=None,
     :param calib_data: calibration data is required for static quantization.
     :param q_config: describes how to quantize a layer or a part of the network
             by providing settings (observer classes) for activations and weights
-            respectively. 
+            respectively.
     :param input_sample: torch tensor indicate the data sample to be used
             for tracing.
     :param channels_last: if set model and data to be channels-last mode.
