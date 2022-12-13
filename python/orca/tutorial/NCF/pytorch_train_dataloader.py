@@ -84,6 +84,7 @@ est = Estimator.from_torch(model=model_creator, optimizer=optimizer_creator,
                            loss=loss,
                            metrics=[Accuracy(), Precision(), Recall()],
                            backend=backend,
+                           use_tqdm=True,
                            config={'dataset_dir': dataset_dir,
                                    'num_ng': 4,
                                    'factor_num': 16,
@@ -92,11 +93,11 @@ est = Estimator.from_torch(model=model_creator, optimizer=optimizer_creator,
                                    'lr': 0.001,
                                    'model': "NeuMF-end",
                                    'sparse_feats_embed_dims': 8})
-est.fit(data=train_loader_func, epochs=10, batch_size=256, callbacks=callbacks)
+est.fit(data=train_loader_func, epochs=1, batch_size=10240, callbacks=callbacks)
 
 
 # Step 5: Distributed evaluation of the trained model
-result = est.evaluate(data=test_loader_func, batch_size=256)
+result = est.evaluate(data=test_loader_func, batch_size=10240)
 print('Evaluation results:')
 for r in result:
     print(r, ":", result[r])

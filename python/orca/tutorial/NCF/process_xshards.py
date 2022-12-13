@@ -22,6 +22,7 @@ import numpy as np
 import pandas as pd
 import scipy.sparse as sp
 
+import torch
 from sklearn.model_selection import train_test_split
 
 from bigdl.orca.data.pandas import read_csv
@@ -103,8 +104,7 @@ def prepare_data(dataset_dir, num_ng=4):
 
     # scale dense features
     def rename(shard, col):
-        shard.drop(columns=[col], inplace=True)
-        shard = shard.rename(columns={col+"_scaled": col})
+        shard = shard.drop(columns=[col]).rename(columns={col+"_scaled": col})
         return shard
 
     for i in dense_features:
@@ -123,6 +123,16 @@ def prepare_data(dataset_dir, num_ng=4):
     # Merge XShards
     data = users.merge(ratings, on='user')
     data = data.merge(items, on='item')
+
+    # Process dense features
+    def convert_to_float(shard, col):
+        values = shard[col].values
+        values = [np.array(v, dtype=np.float32) for v in values]
+        shard[col] = values
+        return shard
+
+    for i in dense_features:
+        data = data.transform_shard(lambda shard: convert_to_float(shard, i))
 
     # Split dataset
     train_data, test_data = data.transform_shard(split_dataset).split()
