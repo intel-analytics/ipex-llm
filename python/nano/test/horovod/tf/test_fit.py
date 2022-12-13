@@ -18,6 +18,7 @@ import pathlib
 import tensorflow as tf
 from tensorflow.keras import layers
 from bigdl.nano.tf.keras import Sequential
+from distutils.version import LooseVersion
 
 if "FTP_URI" in os.environ:
     URI = os.environ['FTP_URI']
@@ -80,6 +81,8 @@ def model_init(num_classes):
 
 
 def test_fit_function():
+    if LooseVersion(tf.__version__) >= LooseVersion('2.10.0'):
+        return
     num_classes, train_ds, val_ds = dataset_generation()
 
     model_multiprocess = model_init(num_classes)
