@@ -714,7 +714,7 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                                             timeout=timeout,
                                             max_trials=max_trials,
                                             onnxruntime_session_options=onnxruntime_session_options)
-                    except (RuntimeError, AssertionError):
+                    except (RuntimeError, AssertionError, AttributeError):
                         # use pure ipex quantization as a backup for inc ipex quantization
                         return PytorchIPEXQuantizationModel(model,
                                                             inc_calib_dataloader,

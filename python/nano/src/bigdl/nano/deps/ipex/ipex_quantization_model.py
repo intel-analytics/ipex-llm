@@ -82,7 +82,10 @@ class PytorchIPEXQuantizationModel(AcceleratedLightningModule):
             # data transform : remove y
             if isinstance(input_sample, (tuple, list)) and len(input_sample) > 1:
                 input_sample = input_sample[0]
+
         # prepare model
+        if isinstance(input_sample, tuple):
+            self.model(*input_sample)
         self.model = prepare(self.model, self.q_config,
                              example_inputs=input_sample,
                              inplace=inplace)

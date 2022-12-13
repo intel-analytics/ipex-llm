@@ -20,6 +20,7 @@ from unittest import TestCase
 
 import pytest
 import torch
+from torch.utils.data import TensorDataset, DataLoader
 from test.pytorch.utils._train_torch_lightning import create_data_loader, data_transform
 from torch import nn
 
@@ -43,6 +44,26 @@ class ResNet18(nn.Module):
 
     def forward(self, x):
         return self.model(x)
+
+
+class MultipleInputNet(nn.Module):
+    def __init__(self):
+        super().__init__()
+        self.dense1 = nn.Linear(10, 1)
+        self.dense2 = nn.Linear(10, 1)
+
+    def forward(self, x1, x2):
+        return self.dense1(x1) + self.dense2(x2)
+
+
+class MultipleInputWithKwargsNet(nn.Module):
+    def __init__(self):
+        super().__init__()
+        self.dense1 = nn.Linear(10, 1)
+        self.dense2 = nn.Linear(10, 1)
+
+    def forward(self, x1, x2, x3=10):
+        return self.dense1(x1) + self.dense2(x2) + x3
 
 
 class IPEXJITInference_gt_1_10:
@@ -175,20 +196,71 @@ class IPEXJITInference_gt_1_10:
     
     def test_ipex_quantization(self):
         model = ResNet18(10, pretrained=False, include_top=False, freeze=True)
-        # dataloader contains x+y
+        # test dataloader contains x+y
         data_loader = create_data_loader(data_dir, batch_size, num_workers, data_transform)
         model = InferenceOptimizer.quantize(model,
                                             precision='int8',
                                             accelerator=None,
                                             method='ipex',
                                             calib_data=data_loader)
+        # test context manager
         with InferenceOptimizer.get_context(model):
             model(self.data_sample)
+        # test save & load
         with tempfile.TemporaryDirectory() as tmp_dir_name:
             InferenceOptimizer.save(model, tmp_dir_name)
             new_model = InferenceOptimizer.load(tmp_dir_name)
         with InferenceOptimizer.get_context(new_model):
             new_model(self.data_sample)
+
+        # test dataloader only contains x
+        from torchvision.models import resnet18
+        model = resnet18()
+        x = torch.rand((10, 3, 256, 256))
+        ds = TensorDataset(x)
+        dataloader = DataLoader(ds, batch_size=2)
+        model = InferenceOptimizer.quantize(model,
+                                            precision='int8',
+                                            accelerator=None,
+                                            method='ipex',
+                                            calib_data=dataloader)
+        with InferenceOptimizer.get_context(model):
+            model(x)
+        
+        # test single sample
+        from torchvision.models import resnet18
+        model = resnet18()
+        x = torch.rand((10, 3, 256, 256))
+        model = InferenceOptimizer.quantize(model,
+                                            precision='int8',
+                                            accelerator=None,
+                                            method='ipex',
+                                            calib_data=x)
+        with InferenceOptimizer.get_context(model):
+            model(x)
+        
+        # test multi input
+        for model_class in [MultipleInputNet, MultipleInputWithKwargsNet]:
+            net = model_class()
+            x1 = torch.randn(32, 10)
+            x2 = torch.randn(32, 10)
+            y = torch.randn(32, 1)
+            if isinstance(net, MultipleInputNet):
+                dataloader = DataLoader(TensorDataset(x1, x2, y), batch_size=1)
+            else:
+                x3 = torch.randn(32, 1)
+                dataloader = DataLoader(TensorDataset(x1, x2, x3, y), batch_size=1)
+
+            model = InferenceOptimizer.quantize(net,
+                                                precision='int8',
+                                                accelerator=None,
+                                                method='ipex',
+                                                calib_data=dataloader)
+            with InferenceOptimizer.get_context(model):
+                if isinstance(net, MultipleInputNet):
+                    model(x1, x2)
+                else:
+                    model(x1, x2, x3)
 
 
 class IPEXJITInference_lt_1_10:
