@@ -7,4 +7,4 @@ runs:
     - name: Remove Conda Env
       shell: bash
       run: |
-        conda remove -n nano-pytorch -y --all
+        $CONDA/bin/conda remove -n nano-pytorch -y --all

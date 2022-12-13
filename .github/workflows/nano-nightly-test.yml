@@ -14,7 +14,7 @@ on:
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
   Nano-PyTorch-UT-Test:
-    runs-on: [ self-hosted, Gondolin, ubuntu-20.04-lts ]
+    runs-on: [ "ubuntu-20.04" ]
 
     strategy:
       fail-fast: false
