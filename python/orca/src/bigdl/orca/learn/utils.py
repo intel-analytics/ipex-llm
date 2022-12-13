@@ -759,8 +759,8 @@ def load_model_from_json(filepath, custom_objects=None):
         with open(filepath, "rb") as f:
             json_string = f.read()
             model = tf.keras.models.model_from_json(json_string,
-                                            custom_objects=custom_objects
-                                            )
+                                                    custom_objects=custom_objects
+                                                    )
     else:
         file_name = os.path.basename(filepath)
         temp_dir = tempfile.mkdtemp()
@@ -770,8 +770,8 @@ def load_model_from_json(filepath, custom_objects=None):
             with open(temp_path, "rb") as f:
                 json_string = f.read()
                 model = tf.keras.models.model_from_json(json_string,
-                                                custom_objects=custom_objects
-                                                )
+                                                        custom_objects=custom_objects
+                                                        )
         finally:
             shutil.rmtree(temp_dir)
     return model
