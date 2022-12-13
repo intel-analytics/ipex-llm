@@ -86,7 +86,7 @@ def setup_package():
                               "keras==2.8.0; platform_machine=='x86_64'",
                               "tensorflow-estimator==2.8.0; platform_machine=='x86_64'"]
     
-    tensorflow_29_requires = ["intel-tensorflow==2.9.0; platform_machine=='x86_64' and \
+    tensorflow_29_requires = ["intel-tensorflow==2.9.1; platform_machine=='x86_64' and \
                               platform_system!='Darwin'",
                               "tensorflow==2.9.0;platform_system=='Darwin'",
                               "keras==2.9.0; platform_machine=='x86_64'",
