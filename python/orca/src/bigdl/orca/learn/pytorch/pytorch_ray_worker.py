@@ -52,7 +52,6 @@ class PytorchRayWorker(TorchRunner):
                  model_creator,
                  optimizer_creator,
                  loss_creator=None,
-                 model_class=None,
                  metrics=None,
                  scheduler_creator=None,
                  training_operator_cls=None,
@@ -61,7 +60,7 @@ class PytorchRayWorker(TorchRunner):
                  scheduler_step_freq=None,
                  sync_stats=True,
                  log_level=logging.INFO):
-        super().__init__(model_creator, optimizer_creator, loss_creator, model_class, metrics,
+        super().__init__(model_creator, optimizer_creator, loss_creator, metrics,
                          scheduler_creator, training_operator_cls, config, use_tqdm,
                          scheduler_step_freq, sync_stats, log_level=log_level)
 

@@ -106,7 +106,6 @@ class PyTorchRayEstimator(BaseRayEstimator):
         self.use_tqdm = use_tqdm
         self.sync_stats = sync_stats
         self.backend = backend
-        self.model_class = None
 
         if not training_operator_cls and not loss_creator:
             invalidInputError(False,
