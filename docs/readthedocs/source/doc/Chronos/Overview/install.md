@@ -19,7 +19,8 @@
 .. note::
     **Supported Python Version**:
 
-     Chronos only supports Python 3.7.2 ~ latest 3.7.x. We are validating more Python versions.
+     1.Chronos supports all installation options on Python 3.7.2 ~ latest 3.7.x. For details about different installation options, refer to `here <# Install using Conda>`_.
+     2.``bigdl-chronos[distributed]`` is not supported on Python 3.8.
 ```
 
 
