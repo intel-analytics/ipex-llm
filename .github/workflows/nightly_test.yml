@@ -53,8 +53,6 @@ on:
         - Python-AppTests-part1
         - Python-AppTests-part2
         - Scala-AppTests
-        - Nano-PyTorch-UT-Test
-        - Nano-Tensorflow-UT-Test
 
       image:
         description: 'docker image name'
@@ -1113,70 +1111,7 @@ jobs:
         type: job
         job-name: Scala-AppTests
         runner-hosted-on: 'Shanghai'
-
-  Nano-PyTorch-UT-Test:
-    if: ${{ github.event.schedule || github.event.inputs.artifact == 'Nano-PyTorch-UT-Test' || github.event.inputs.artifact == 'all' }}
-    runs-on: [ self-hosted, Gondolin, ubuntu-20.04-lts ]
-
-    strategy:
-      fail-fast: false
-      matrix:
-        python-version: ["3.7", "3.8", "3.9"]
-
-    steps:
-    - uses: actions/checkout@v3
-    - name: Set up Nano PyTorch Env
-      uses: ./.github/actions/nano/setup-pytorch-env
-      with:
-        python-version: ${{ matrix.python-version }}
-    - name: Run Nano PyTorch Test
-      uses: ./.github/actions/nano/pytorch-test
-    - name: Remove Nano PyTorch Env
-      if: ${{ always() }}
-      uses: ./.github/actions/nano/remove-pytorch-env
-    - name: Create Job Badge
-      uses: ./.github/actions/create-job-status-badge
-      if: ${{ always() }}
-      with:
-        secret: ${{secrets.GIST_SECRET}}
-        gist-id: ${{env.GIST_ID}}
-        is-self-hosted-runner: true
-        file-name: Nano-PyTorch-UT-Test.json
-        type: job
-        job-name: Nano-PyTorch-UT-Test (Python=${{ matrix.python-version }})
-        runner-hosted-on: 'Shanghai'
-
-  Nano-Tensorflow-UT-Test:
-    if: ${{ github.event.schedule || github.event.inputs.artifact == 'Nano-Tensorflow-UT-Test' || github.event.inputs.artifact == 'all' }}
-    runs-on: [ self-hosted, Gondolin, ubuntu-20.04-lts ]
-
-    strategy:
-      fail-fast: false
-      matrix:
-        python-version: ["3.7", "3.8", "3.9"]
-
-    steps:
-    - uses: actions/checkout@v3
-    - name: Set up Nano Tensorflow Env
-      uses: ./.github/actions/nano/setup-tensorflow-env
-      with:
-        python-version: ${{ matrix.python-version }}
-    - name: Run Nano Tensorflow Test
-      uses: ./.github/actions/nano/tensorflow-test
-    - name: Remove Nano Tensorflow Env
-      if: ${{ always() }}
-      uses: ./.github/actions/nano/remove-tensorflow-env
-    - name: Create Job Badge
-      uses: ./.github/actions/create-job-status-badge
-      if: ${{ always() }}
-      with:
-        secret: ${{secrets.GIST_SECRET}}
-        gist-id: ${{env.GIST_ID}}
-        is-self-hosted-runner: true
-        file-name: Nano-Tensorflow-UT-Test.json
-        type: job
-        job-name: Nano-Tensorflow-UT-Test (Python=${{ matrix.python-version }})
-        runner-hosted-on: 'Shanghai'
+    
     
   # please put your test before the create-workflow-badge to make sure the badge can be displayed on the github page.
   create-workflow-badge:
