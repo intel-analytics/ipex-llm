@@ -330,7 +330,7 @@ class SparkXShards(XShards):
                 rdd = self.rdd.coalesce(num_partitions)
                 from functools import reduce
                 repartitioned_shard = self._create(rdd.mapPartitions(
-                    lambda iter: [reduce(lambda l1, l2: l1 + l2, iter)]),
+                    lambda iter: [reduce(lambda l1, l2: l1 + l2, iter)]),  # type:ignore
                     class_name=class_name)  # type:ignore
         elif class_name == 'numpy.ndarray':
             elem = self.rdd.first()

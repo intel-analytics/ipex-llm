@@ -80,15 +80,13 @@ object VerificationCLI {
             if (verifyQuoteResult == 0) {
                 System.out.println("Quote Verification Success!")
             } else if (verifyQuoteResult == 1) {
-                System.out.println("WARNING:Quote verification passed but BIOS is not up to date." +
-                  " result=" + verifyQuoteResult)
+                System.out.println("WARNING:Quote verification passed but BIOS or the software"
+                  + " is not up to date.")
             } else if (debug == "true") {
-                System.out.println("ERROR:Quote Verification Fail! In debug mode, continue." +
-                  " result=" + verifyQuoteResult)
+                System.out.println("ERROR:Quote Verification Fail! In debug mode, continue.")
             }
             else {
-                System.out.println("ERROR:Quote Verification Fail! Application killed." +
-                  " result=" + verifyQuoteResult)
+                System.out.println("ERROR:Quote Verification Fail! Application killed.")
                 System.exit(1)
             }
         } else {

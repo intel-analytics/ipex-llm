@@ -25,7 +25,8 @@ import copy
 import yaml
 from logging import warning
 from bigdl.nano.deps.openvino.openvino_api import load_openvino_model
-from bigdl.nano.deps.ipex.ipex_api import load_ipexjit_model, load_ipexjitbf16_model
+from bigdl.nano.deps.ipex.ipex_api import load_ipexjit_model, load_ipexjitbf16_model,\
+    load_ipex_quantization_model
 from bigdl.nano.deps.onnxruntime.onnxruntime_api import load_onnxruntime_model
 from bigdl.nano.deps.neural_compressor.inc_api import load_inc_model
 from bigdl.nano.pytorch.amp.amp_api import load_bf16_model
@@ -152,6 +153,8 @@ def load_model(path, model: pl.LightningModule = None, inplace=False):
         return load_ipexjit_model(path, model, inplace=inplace)
     if model_type == 'PytorchIPEXJITBF16Model':
         return load_ipexjitbf16_model(path, model, inplace=inplace)
+    if model_type == 'PytorchIPEXQuantizationModel':
+        return load_ipex_quantization_model(path, model, inplace=inplace)
     if model_type == 'BF16Model':
         return load_bf16_model(path, model)
     if isinstance(model, nn.Module):
