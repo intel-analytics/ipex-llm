@@ -20,7 +20,7 @@ For quantization, BigDL-Nano provides only post-training quantization in `Infere
     Please use ``bigdl.nano.tf.keras.InferenceOptimizer.quantize`` instead.
 ```
 
-Before you go ahead with these APIs, you have to make sure BigDL-Nano is correctly installed for TensorFlow. If not, please follow [this](../Overview/nano.md) to set up your environment.
+Before you go ahead with these APIs, you have to make sure BigDL-Nano is correctly installed for TensorFlow. If not, please follow [this](./install.md) to set up your environment.
 
 ```eval_rst
 .. note::
@@ -30,14 +30,12 @@ Before you go ahead with these APIs, you have to make sure BigDL-Nano is correct
 
         pip install bigdl-nano[tensorflow,inference]
 
-    This will install all dependencies required by BigDL-Nano tensorflow inference.
+    This will install all dependencies required by BigDL-Nano TensorFlow inference.
 
     Or if you just want to use one of supported optimizations:
 
     - INC (Intel Neural Compressor): ``pip install neural-compressor``
-
     - OpenVINO: ``pip install openvino-dev``
-
     - ONNXRuntime: ``pip install onnx onnxruntime onnxruntime-extensions tf2onnx neural-compressor``
 
     We recommand installing all dependencies by ``pip install bigdl-nano[tensorflow,inference]``, because you may run into version issues if you install dependencies manually.
@@ -85,7 +83,7 @@ Quantization is widely used to compress models to a lower precision, which not o
 
 To use INC as your quantization engine, you can choose `accelerator=None/'onnxruntime'`. Otherwise, `accelerator='openvino'` means using OpenVINO POT (Post-training Optimization) to do quantization.
 
-### Quantization without extra accelerator
+### Quantization without Accuracy Control
 
 By default, `InferenceOptimizer.quantize()` doesn't search the tuning space and returns the fully-quantized model without considering the accuracy drop. If you need to search quantization tuning space for a model with accuracy control, you'll have to specify a few arguments to define the tuning space. More instructions in [Quantization with Accuracy Control](#quantization-with-accuracy-control)
 
@@ -122,11 +120,9 @@ This is a most basic usage to quantize a model with defaults, INT8 precision, an
 
     - ``x``: Input data which is used for training. It could be
 
-        - A Numpy array (or array-like), or a list of arrays (in case the model has multiple inputs).
-
-        - A TensorFlow tensor, or a list of tensors (in case the model has multiple inputs).
-
-        - An unbatched ``tf.data.Dataset``. Should return tuples of (inputs, targets). (In this case there is no need to pass the parameter ``y``)
+      - A Numpy array (or array-like), or a list of arrays (in case the model has multiple inputs).
+      - A TensorFlow tensor, or a list of tensors (in case the model has multiple inputs).
+      - An unbatched ``tf.data.Dataset``. Should return tuples of (inputs, targets). (In this case there is no need to pass the parameter ``y``)
 
     - ``y``: Target data. Like the input data ``x``, it could be either Numpy array(s) or TensorFlow tensor(s). Its length should be consistent with ``x``. If ``x`` is a ``Dataset``, ``y`` will be ignored (since targets will be obtained from ``x``)
 ```
@@ -136,15 +132,12 @@ This is a most basic usage to quantize a model with defaults, INT8 precision, an
 A set of arguments that helps to tune the results for both INC and POT quantization:
 
 - `metric`:  A `tensorflow.keras.metrics.Metric` object for evaluation.
-
 - `accuracy_criterion`: A dictionary to specify the acceptable accuracy drop, e.g. `{'relative': 0.01, 'higher_is_better': True}`
 
     - `relative` / `absolute`: Drop type, the accuracy drop should be relative or absolute to baseline
-
     - `higher_is_better`: Indicate if a larger value of metric means better accuracy
 
 - `max_trials`: Maximum trails on the search, if the algorithm can't find a satisfying model, it will exit and raise the error.
-
 - `batch`: Specify the batch size of the dataset. This will only take effect on evaluation. If it's not set, then we use `batch=1` for evaluation.
 
 **Accuracy Control with INC**
@@ -214,12 +207,12 @@ best_model.predict(train_dataset)
 
 ```eval_rst
 .. tip::
-    It also uses parameter `x` and `y` to receive calibration data like `InferenceOptimizer.quantize`.
+    It also uses parameter ``x`` and ``y`` to receive calibration data like ``InferenceOptimizer.quantize``.
 
     There are some other useful parameters
 
     - ``includes``: A str list. If set, ``optimize`` will only try optimizations in this parameter.
     - ``excludes``: A str list. If set, ``optimize`` will try all optimizations (or optimizations specified by ``includes``) except for those in this parameter.
 
-    See its (API document)[https://bigdl.readthedocs.io/en/latest/doc/PythonAPI/Nano/tensorflow.html#bigdl.nano.tf.keras.InferenceOptimizer.optimize] for more advanced usage.
+    See its `API document <../../PythonAPI/Nano/tensorflow.html#bigdl.nano.tf.keras.InferenceOptimizer.optimize>`_ for more advanced usage.
 ```
