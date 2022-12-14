@@ -338,7 +338,7 @@ def main():
 
     if args.framework == "tensorflow":
         if not os.path.exists(model_path):
-            os.makedirs(model_path)
+            os.makedirs(model_path, exist_ok=True)
 
     # generate data
     train_loader, val_loader, test_loader = generate_data(args)
