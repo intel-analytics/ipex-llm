@@ -600,7 +600,8 @@ class PyTorchPySparkEstimator(BaseEstimator):
         Loads the Estimator state (including model and optimizer) or the entire model
         from the provided model_path.
 
-        :param model_path: (str) Path to the existing model.
+        :param model_path: (str) Path to the existing model. Model class must be defined
+               on the driver when loading the entire model.
         """
         import torch.nn as nn
         if is_local_path(model_path):
