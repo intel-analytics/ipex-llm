@@ -389,6 +389,7 @@ class TestPyTorchEstimator(TestCase):
         expr = "sum(cast(feature <> to_array(prediction) as int)) as error"
         assert result.selectExpr(expr).first()["error"] == 0
         predictions = result.collect()
+        assert len(predictions) == 20
 
     def test_xshards_predict_save_load(self):
 

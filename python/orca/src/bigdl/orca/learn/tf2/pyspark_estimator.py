@@ -439,11 +439,12 @@ class SparkTFEstimator():
                 xshards = process_xshards_of_pandas_dataframe(xshards, feature_cols)
                 pred_shards = SparkXShards.lazy(xshards.rdd.mapPartitions(
                     lambda iter: transform_func(iter, init_params, params)))
-                result = add_predict_to_pd_xshards(xshards, pred_shards)
+                # Should add to the original SparkXShards of Pandas DataFrames
+                result = add_predict_to_pd_xshards(data, pred_shards)
             else:
                 pred_shards = SparkXShards.lazy(xshards.rdd.mapPartitions(
                     lambda iter: transform_func(iter, init_params, params)))
-                result = update_predict_xshards(xshards, pred_shards)
+                result = update_predict_xshards(data, pred_shards)
             # Uncache the original data since it is already included in the result
             data.uncache()
         else:
