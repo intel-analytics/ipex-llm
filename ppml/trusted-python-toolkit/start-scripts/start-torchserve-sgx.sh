@@ -9,21 +9,22 @@ do
 done
 cd /ppml
 ./init.sh
+port=9000
 cat $configFile | while read line
 do
-        if [[ $line =~ "minWorkers" ]]
-        then
+        while [[ $line =~ "minWorkers" ]]
+        do
                 line=${line#*\"minWorkers\": }
-                line=${line%%,*}
+                num=${line%%,*}
+                line=${line#*,}
 
-                port=9000
-                for ((i=0;i<line;i++,port++))
+                for ((i=0;i<num;i++,port++))
                 do
                 (
                         bash /ppml/work/start-scripts/start-backend-sgx.sh -p $port
                 )&
                 done
-        fi
+        done
 done
 (
         bash /ppml/work/start-scripts/start-frontend-sgx.sh -c $configFile

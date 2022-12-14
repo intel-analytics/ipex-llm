@@ -115,8 +115,10 @@ subtrees:
                   - file: doc/Nano/Howto/Inference/PyTorch/accelerate_pytorch_inference_onnx
                   - file: doc/Nano/Howto/Inference/PyTorch/accelerate_pytorch_inference_openvino
                   - file: doc/Nano/Howto/Inference/PyTorch/accelerate_pytorch_inference_jit_ipex
+                  - file: doc/Nano/Howto/Inference/PyTorch/multi_instance_pytorch_inference
                   - file: doc/Nano/Howto/Inference/PyTorch/quantize_pytorch_inference_inc
                   - file: doc/Nano/Howto/Inference/PyTorch/quantize_pytorch_inference_pot
+                  - file: doc/Nano/Howto/Inference/PyTorch/pytorch_context_manager
                   - file: doc/Nano/Howto/Inference/PyTorch/pytorch_save_and_load_ipex
                   - file: doc/Nano/Howto/Inference/PyTorch/pytorch_save_and_load_jit
                   - file: doc/Nano/Howto/Inference/PyTorch/pytorch_save_and_load_onnx

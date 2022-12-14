@@ -1,4 +1,4 @@
-# bigdl-kms Sekmscret
+# bigdl-ehsm-kms Secret used by couchdb
 apiVersion: v1
 kind: Secret
 metadata:

@@ -16,6 +16,7 @@
 
 # Step 0: Import necessary libraries
 import math
+import tensorflow as tf
 
 from tf_model import ncf_model
 from process_xshards import prepare_data
@@ -64,16 +65,18 @@ est = Estimator.from_keras(model_creator=model_creator,
                            config=config,
                            backend=backend)
 
-batch_size = 256
+batch_size = 10240
 train_steps = math.ceil(len(train_data) / batch_size)
 val_steps = math.ceil(len(test_data) / batch_size)
+tf_callback = tf.keras.callbacks.TensorBoard(log_dir="./log")
 
 est.fit(train_data,
-        epochs=10,
+        epochs=5,
         batch_size=batch_size,
         feature_cols=feature_cols,
         label_cols=label_cols,
-        steps_per_epoch=train_steps)
+        steps_per_epoch=train_steps,
+        callbacks=[tf_callback])
 
 # Step 5: Distributed evaluation of the trained model
 result = est.evaluate(test_data,

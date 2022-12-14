@@ -240,6 +240,39 @@ class TestOnnx(TestCase):
         with pytest.raises(AttributeError):
             onnx_model.width
 
+    def test_onnx_quantize_dynamic_axes(self):
+        class CustomModel(nn.Module):
+            def __init__(self):
+                super().__init__()
+                self.pool = nn.AvgPool2d(kernel_size=3, stride=3)
+
+            def forward(self, x):
+                return self.pool(x)
+
+        model = CustomModel()
+        x1 = torch.rand(1, 3, 14, 14)
+        x2 = torch.rand(4, 3, 14, 14)
+        x3 = torch.rand(1, 3, 12, 12)
+
+        accmodel = InferenceOptimizer.quantize(model,
+                                               accelerator="onnxruntime",
+                                               method='qlinear',
+                                               calib_data=torch.rand(1, 3, 14, 14))
+        accmodel(x1)
+        accmodel(x2)
+        try:
+            accmodel(x3)
+        except Exception as e:
+            assert e
+
+        accmodel = InferenceOptimizer.quantize(model,
+                                               accelerator="onnxruntime",
+                                               calib_data=torch.rand(1, 3, 14, 14),
+                                               dynamic_axes={"x": [0, 2, 3]})
+        accmodel(x1)
+        accmodel(x2)
+        accmodel(x3)
+
 
 if __name__ == '__main__':
     pytest.main([__file__])
