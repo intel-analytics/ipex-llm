@@ -663,11 +663,11 @@ class TensorFlowEstimator(Estimator):
 
     def predict(
         self,
-        data: Union["SparkXShards", "DataFrame", "tf.data.Dataset"],
+        data: Union["SparkXShards", "DataFrame"],
         batch_size: int=4,
         feature_cols: Optional[List[str]]=None,
         auto_shard_files: bool=False
-    ) -> Union["SparkXShards", "DataFrame", "tf.data.Dataset"]:
+    ) -> Union["SparkXShards", "DataFrame"]:
         """
         Predict input data
 
@@ -977,11 +977,11 @@ class KerasEstimator(Estimator):
 
     def predict(
         self,
-        data: Union["SparkXShards", "DataFrame", "tf.data.Dataset"],
+        data: Union["SparkXShards", "DataFrame"],
         batch_size: int=4,
         feature_cols: Optional[List[str]]=None,
         auto_shard_files: bool=False
-    ) -> Union["SparkXShards", "DataFrame", "tf.data.Dataset"]:
+    ) -> Union["SparkXShards", "DataFrame"]:
         """
         Predict input data
 
