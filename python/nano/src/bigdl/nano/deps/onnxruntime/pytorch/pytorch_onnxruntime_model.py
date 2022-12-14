@@ -132,10 +132,10 @@ class PytorchONNXRuntimeModel(ONNXRuntimeModel, AcceleratedLightningModule):
                               "nano_model_meta.yml must specify 'onnx_path' for loading.")
         onnx_path = Path(path) / status['onnx_path']
         onnxruntime_session_options = onnxruntime.SessionOptions()
-        if hasattr(status, 'intra_op_num_threads'):
-            onnxruntime_session_options.intra_op_num_threads = status['intra_op_num_threads']
-        if hasattr(status, 'inter_op_num_threads'):
-            onnxruntime_session_options.inter_op_num_threads = status['inter_op_num_threads']
+        if status.get('intra_op_num_threads', None):
+            onnxruntime_session_options.intra_op_num_threads = status.get('intra_op_num_threads', None)
+        if status.get('inter_op_num_threads', None):
+            onnxruntime_session_options.inter_op_num_threads = status.get('inter_op_num_threads', None)
         return PytorchONNXRuntimeModel(str(onnx_path),
                                        onnxruntime_session_options=onnxruntime_session_options)
 
