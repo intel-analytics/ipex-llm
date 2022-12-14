@@ -19,7 +19,11 @@ runs:
         source $CONDA/bin/activate nano-pytorch
 
         pip install pytest
-        pip install --pre --upgrade bigdl-nano[pytorch,inference]
+        if [ $IS_PR = "true" ]; then
+          bash python/nano/dev/build_and_install.sh linux default false pytorch,inference
+        else
+          pip install --pre --upgrade bigdl-nano[pytorch,inference]
+        fi
 
         # required by Ray test
         pip install google-api-core==2.8.2
@@ -34,3 +38,4 @@ runs:
         source $CONDA/bin/deactivate
       env:
         PYTHON_VERSION: ${{ inputs.python-version }}
+        IS_PR: ${{ github.event.pull_request }}

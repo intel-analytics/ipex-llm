@@ -19,7 +19,11 @@ runs:
         source $CONDA/bin/activate nano-tensorflow
 
         pip install pytest
-        pip install --pre --upgrade bigdl-nano[tensorflow,inference]
+        if [ $IS_PR = "true" ]; then
+          bash python/nano/dev/build_and_install.sh linux default false tensorflow,inference
+        else
+          pip install --pre --upgrade bigdl-nano[tensorflow,inference]
+        fi
 
         # fail to install horovod
         # # required by Horovod test
@@ -38,3 +42,4 @@ runs:
         source $CONDA/bin/deactivate
       env:
         PYTHON_VERSION: ${{ inputs.python-version }}
+        IS_PR: ${{ github.event.pull_request }}
