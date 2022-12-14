@@ -42,4 +42,4 @@ runs:
         source $CONDA/bin/deactivate
       env:
         PYTHON_VERSION: ${{ inputs.python-version }}
-        IS_PR: ${{ github.event.pull_request }}
+        IS_PR: ${{ github.event.pull_request != null }}
