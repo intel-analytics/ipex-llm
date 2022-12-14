@@ -159,7 +159,7 @@ jobs:
       - name: Run test
         uses: ./.github/actions/ppml-scala-ut-action
 
-  Orca-Notebook_Test:
+  Orca-Notebook-Test:
     needs: changes
     if: ${{ needs.changes.outputs.ppml == 'true' }}
     runs-on: [ self-hosted, Gondolin, ubuntu-20.04-lts ]

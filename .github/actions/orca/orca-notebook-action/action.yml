@@ -34,9 +34,7 @@ runs:
         export SPARK_LOCAL_HOSTNAME=localhost
         export FTP_URI=${FTP_URI}
 
-        chmod a+x python/orca/dev/test/run-tutorial-xshards.sh
-        python/orca/dev/test/run-tutorial-xshards.sh
-
+        
         source deactivate
         conda remove -n orca-notebook-py37 -y --all
       env:
