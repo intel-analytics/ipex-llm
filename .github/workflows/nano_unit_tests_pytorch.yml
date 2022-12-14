@@ -207,7 +207,8 @@ jobs:
         pytorch-version: [
           # The reason why ipex1.10 is not currently supported is that the optimization of ipex1.10
           # will change the require_grad attribute of layers, which will make some tests of nano fail.
-          "pytorch_111 neural-compressor==1.13.1",
+          # The reason why ipex1.11 is not currently supported is that the optimization of ipex
+          # seems will cause strange behaior of context manager, which will make some tests of nano fail.
           "pytorch_112 neural-compressor==1.13.1",
           "pytorch_113 neural-compressor==1.14.2",
           ]

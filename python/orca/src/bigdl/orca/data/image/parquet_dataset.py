@@ -366,7 +366,7 @@ def write_parquet(format: str, output_path: str, *args, **kwargs) -> None:
 def read_as_tfdataset(path: str,
                       output_types: Dict[str, 'tf.Dtype'],
                       config: Dict[str, int],
-                      output_shapes: Dict[str, 'tf.TensorShape']=None,
+                      output_shapes: Optional[Dict[str, 'tf.TensorShape']]=None,
                       *args, **kwargs) -> "tf.data.Dataset":
     """
     return a orca.data.tf.data.Dataset
@@ -398,7 +398,7 @@ def read_as_tfdataset(path: str,
 
 def read_as_dataloader(path: str,
                        config: Dict[str, int],
-                       transforms: Callable=None,
+                       transforms: Optional[Callable] = None,
                        batch_size: int=1,
                        *args, **kwargs) -> "DataLoader":
     path, _ = pa_fs(path)

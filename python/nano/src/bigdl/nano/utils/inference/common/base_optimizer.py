@@ -134,10 +134,10 @@ class BaseInferenceOptimizer:
             find_model = True
             if accuracy_criterion is not None:
                 accuracy = result["accuracy"]
+                if isinstance(accuracy, str):
+                    accuracy: float = self.optimized_model_dict["original"]["accuracy"]
                 compare_acc: float = best_metric.accuracy
-                if accuracy == "not recomputed":
-                    pass
-                elif self._direction == "min":
+                if self._direction == "min":
                     if (accuracy - compare_acc) / compare_acc > accuracy_criterion:
                         continue
                 else:
@@ -147,7 +147,7 @@ class BaseInferenceOptimizer:
             # After the above conditions are met, the latency comparison is performed
             if result["latency"] < best_metric.latency:
                 best_model = result["model"]
-                if result["accuracy"] != "not recomputed":
+                if not isinstance(result["accuracy"], str):
                     accuracy = result["accuracy"]
                 else:
                     accuracy = self.optimized_model_dict["original"]["accuracy"]

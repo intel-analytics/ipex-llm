@@ -22,6 +22,7 @@ import numpy as np
 import pandas as pd
 import scipy.sparse as sp
 
+import torch
 from sklearn.model_selection import train_test_split
 
 from bigdl.orca.data.pandas import read_csv
@@ -63,10 +64,8 @@ def split_dataset(data):
 
 
 def prepare_data(dataset_dir, num_ng=4):
-    feature_cols = ['user', 'item',
-                    'gender', 'occupation', 'zipcode', 'category',  # sparse features
-                    'age']  # dense features
-    label_cols = ["label"]
+    sparse_features = ['gender', 'zipcode', 'category']
+    dense_features = ['age']
 
     users = read_csv(
         os.path.join(dataset_dir, 'users.dat'),
@@ -76,46 +75,46 @@ def prepare_data(dataset_dir, num_ng=4):
         os.path.join(dataset_dir, 'ratings.dat'),
         sep="::", header=None, names=['user', 'item'],
         usecols=[0, 1])
-    movies = read_csv(
+    items = read_csv(
         os.path.join(dataset_dir, 'movies.dat'),
         sep="::", header=None, names=['item', 'category'],
         usecols=[0, 2])
 
     # calculate numbers of user and item
     user_set = set(users["user"].unique())
-    item_set = set(movies["item"].unique())
+    item_set = set(items["item"].unique())
     user_num = max(user_set) + 1
     item_num = max(item_set) + 1
 
     # Categorical encoding
-    gender_indexer = StringIndexer('gender')
-    users = gender_indexer.fit_transform(users)
-    zipcode_indexer = StringIndexer('zipcode')
-    users = zipcode_indexer.fit_transform(users)
-    category_indexer = StringIndexer('category')
-    movies = category_indexer.fit_transform(movies)
+    for i in sparse_features:
+        indexer = StringIndexer(i)
+        if i in users.get_schema()['columns']:
+            users = indexer.fit_transform(users)
+        else:
+            items = indexer.fit_transform(items)
+    sparse_features.append('occupation')  # occupation is already indexed.
 
     # Calculate input_dims for each sparse features
     sparse_feats_input_dims = []
-    sparse_feat_set = set(users["gender"].unique())
-    sparse_feats_input_dims.append(max(sparse_feat_set)+1)
-    sparse_feat_set = set(users["occupation"].unique())
-    sparse_feats_input_dims.append(max(sparse_feat_set)+1)
-    sparse_feat_set = set(users["zipcode"].unique())
-    sparse_feats_input_dims.append(max(sparse_feat_set)+1)
-    sparse_feat_set = set(movies["category"].unique())
-    sparse_feats_input_dims.append(max(sparse_feat_set)+1)
+    for i in sparse_features:
+        df = users if i in users.get_schema()['columns'] else items
+        sparse_feat_set = set(df[i].unique())
+        sparse_feats_input_dims.append(max(sparse_feat_set)+1)
 
     # scale dense features
-    scaler = MinMaxScaler(inputCol=['age'], outputCol='age_scaled')
-    users = scaler.fit_transform(users)
+    def rename(shard, col):
+        shard = shard.drop(columns=[col]).rename(columns={col+"_scaled": col})
+        return shard
 
-    def process_age(shard):
-        # Convert DenseVector of double to float
-        shard['age'] = shard['age'][0].astype(np.float32)
-        return shard.drop(columns=['age_scaled'])
-
-    users = users.transform_shard(process_age)
+    for i in dense_features:
+        scaler = MinMaxScaler(inputCol=[i], outputCol=i+'_scaled')
+        if i in users.get_schema()['columns']:
+            users = scaler.fit_transform(users)
+            users = users.transform_shard(lambda shard: rename(shard, i))
+        else:
+            items = scaler.fit_transform(items)
+            items = items.transform_shard(lambda shard: rename(shard, i))
 
     # Negative sampling
     ratings = ratings.partition_by("user")
@@ -123,19 +122,32 @@ def prepare_data(dataset_dir, num_ng=4):
 
     # Merge XShards
     data = users.merge(ratings, on='user')
-    data = data.merge(movies, on='item')
+    data = data.merge(items, on='item')
+
+    # Process dense features
+    def convert_to_float(shard, col):
+        values = shard[col].values
+        values = [np.array(v, dtype=np.float32) for v in values]
+        shard[col] = values
+        return shard
+
+    for i in dense_features:
+        data = data.transform_shard(lambda shard: convert_to_float(shard, i))
 
     # Split dataset
     train_data, test_data = data.transform_shard(split_dataset).split()
-    return train_data, test_data, user_num, item_num, sparse_feats_input_dims, \
-        feature_cols, label_cols
+
+    feature_cols = ['user', 'item'] + sparse_features + dense_features
+    label_cols = ["label"]
+    return train_data, test_data, user_num, item_num, \
+        sparse_feats_input_dims, len(dense_features), feature_cols, label_cols
 
 
 if __name__ == "__main__":
     from bigdl.orca import init_orca_context, stop_orca_context
 
     sc = init_orca_context()
-    train_data, test_data, user_num, item_num, sparse_feats_input_dims, \
+    train_data, test_data, user_num, item_num, sparse_feats_input_dims, num_dense_feats, \
         feature_cols, label_cols = prepare_data("./ml-1m")
     train_data.save_pickle("train_xshards")
     test_data.save_pickle("test_xshards")

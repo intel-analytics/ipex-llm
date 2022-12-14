@@ -46,7 +46,7 @@ init_instance() {
         .metadata.debuggable = "ENABLE_SGX_DEBUG" |
         .resource_limits.kernel_space_heap_size="SGX_KERNEL_HEAP" |
         .entry_points = [ "/usr/lib/jvm/java-8-openjdk-amd64/bin", "/bin" ] |
-        .env.untrusted = [ "DMLC_TRACKER_URI", "SPARK_DRIVER_URL", "SPARK_TESTING" , "_SPARK_AUTH_SECRET" ] |
+        .env.untrusted = [ "ATTESTATION_DEBUG", "DMLC_TRACKER_URI", "SPARK_DRIVER_URL", "SPARK_TESTING" , "_SPARK_AUTH_SECRET" ] |
         .env.default = [ "PYTHONHOME=/opt/python-occlum","LD_LIBRARY_PATH=/usr/lib/jvm/java-8-openjdk-amd64/lib/server:/usr/lib/jvm/java-8-openjdk-amd64/lib:/usr/lib/jvm/java-8-openjdk-amd64/../lib:/lib","SPARK_CONF_DIR=/opt/spark/conf","SPARK_ENV_LOADED=1","PYTHONHASHSEED=0","SPARK_HOME=/opt/spark","SPARK_SCALA_VERSION=2.12","SPARK_JARS_DIR=/opt/spark/jars","LAUNCH_CLASSPATH=/bin/jars/*",""]' Occlum.json)" && \
     echo "${new_json}" > Occlum.json
     echo "SGX_MEM_SIZE ${SGX_MEM_SIZE}"
@@ -229,6 +229,22 @@ run_pyspark_sql_example() {
                 -cp "$SPARK_HOME/conf/:$SPARK_HOME/jars/*" \
                 -Xmx3g org.apache.spark.deploy.SparkSubmit \
                 /py-examples/sql_example.py
+}
+
+run_pyspark_sklearn_example() {
+    export RUNTIME_ENV="native"
+    attestation_init
+    cd /opt/occlum_spark
+    echo -e "${BLUE}occlum run pyspark sklearn example${NC}"
+    occlum run /usr/lib/jvm/java-8-openjdk-amd64/bin/java \
+                -XX:-UseCompressedOops -XX:MaxMetaspaceSize=$META_SPACE \
+                -XX:ActiveProcessorCount=4 \
+                -Divy.home="/tmp/.ivy" \
+                -Dos.name="Linux" \
+                -Djdk.lang.Process.launchMechanism=vfork \
+                -cp "$SPARK_HOME/conf/:$SPARK_HOME/jars/*" \
+                -Xmx3g org.apache.spark.deploy.SparkSubmit \
+                /py-examples/sklearn_example.py
 }
 
 run_spark_pi() {
@@ -492,6 +508,17 @@ run_spark_sql_e2e() {
                 --ehsmAPIKEY $API_KEY
 }
 
+verify() { #verify ehsm quote
+  cd /opt
+  bash verify-attestation-service.sh
+}
+
+register() { #register and get policy_Id
+  cd /opt
+  bash RegisterMrEnclave.sh
+}
+
+
 
 id=$([ -f "$pid" ] && echo $(wc -l < "$pid") || echo "0")
 
@@ -518,6 +545,10 @@ case "$arg" in
         ;;
     pysql)
         run_pyspark_sql_example
+        cd ../
+        ;;
+    pysklearn)
+        run_pyspark_sklearn_example
         cd ../
         ;;
     pi)
@@ -558,6 +589,14 @@ case "$arg" in
         ;;
     sql_e2e)
         run_spark_sql_e2e
+        cd ../
+        ;;
+    verify)
+        verify
+        cd ../
+        ;;
+    register)
+        register
         cd ../
         ;;
 esac

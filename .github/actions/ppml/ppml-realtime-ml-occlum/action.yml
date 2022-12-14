@@ -1,0 +1,96 @@
+name: 'PPML RealTime ML Occlum'
+description: 'PPML RealTime ML Occlum'
+inputs:
+  image:
+    description: 'image'
+    required: true
+    default: '10.239.45.10/arda/intelanalytics/bigdl-ppml-trusted-realtime-ml-scala-occlum'
+  image-tag:
+    description: 'image tag'
+    required: true
+    default: 'latest'
+runs:
+  using: "composite"
+  steps:
+    - uses: actions/checkout@v3
+    - name: Set Variable
+      shell: bash
+      env:
+        DEFAULT_IMAGE: ${{ inputs.image }}:${{ inputs.image-tag }}
+      run: |
+        whoami
+        export IMAGE=${{ env.DEFAULT_IMAGE }}
+        export http_proxy="$HTTP_PROXY"
+        export https_proxy="$HTTPS_PROXY"
+
+    - name: Start Container
+      shell: bash
+      run: |
+        set -x
+        export LOCAL_IP=172.168.0.205
+        export CONTAINER_FLINK_JM_NAME="flink-jm-occlum-jenkins"
+        export CONTAINER_NAME=flink-occlum
+
+        export ENCLAVE_KEY_PATH=/home/icx/glorysdj/enclave-key.pem
+        export DATA_PATH=/home/icx/glorysdj/data
+        export KEYS_PATH=/home/icx/glorysdj/keys
+        export SECURE_PASSWORD_PATH=/home/icx/glorysdj/password
+        export SGX_MEM_SIZE=32GB
+        export HTTP_PROXY_HOST=child-prc.intel.com
+        export HTTP_PROXY_PORT=912
+        export HTTPS_PROXY_HOST=child-prc.intel.com
+        export HTTPS_PROXY_PORT=912
+        export JDK_URL=http://10.239.45.10:8081/repository/raw/jdk/jdk-8u192-linux-x64.tar.gz
+
+        echo "Install SGX..."
+        docker pull ${IMAGE}
+        echo "Check whether ports has been used:"
+        echo "Check redis port 6379:"
+        #netstat -anp |grep 6379
+        echo ""
+        echo "check job manager port 6123:"
+        #netstat -anp |grep 6123
+        echo ""
+        echo "check task manager port 6125:"
+        #netstat -anp |grep 6125
+        echo ""
+        echo "If there is conflict above, please refer to kill command."
+        echo ""
+        echo "Check whether there is remaining container:"
+        export container_check=$(docker ps|grep ${CONTAINER_NAME})
+        if [ "$container_check" != "" ];then
+          docker stop /${CONTAINER_NAME}
+          docker rm /${CONTAINER_NAME}
+        fi
+        
+        echo ""
+        docker run -itd \
+            -e REDIS_HOST=$LOCAL_IP \
+            -e FLINK_JOB_MANAGER_IP=$LOCAL_IP \
+            -e FLINK_TASK_MANAGER_IP=$LOCAL_IP \
+            --net=host \
+            --cpuset-cpus="0-30" \
+            --oom-kill-disable \
+            --device=/dev/sgx/enclave \
+            --device=/dev/sgx/provision \
+            -v /var/run/aesmd/aesm.socket:/var/run/aesmd/aesm.socket \
+            -v $KEYS_PATH:/opt/keys \
+            -v $KEYS_PATH:/ppml/trusted-realtime-ml/java/work/keys \
+            -v $SECURE_PASSWORD_PATH:/opt/password \
+            --name=${CONTAINER_NAME} \
+            -e LOCAL_IP=$LOCAL_IP \
+            -e CORE_NUM=30 \
+            $IMAGE \
+            bash -c "export PATH=/opt/occlum/build/bin:$PATH && cd /opt/ && ./start-all.sh && tail -f /dev/null" 
+
+            sleep 240
+            echo "Checking..."
+
+            docker exec -i ${CONTAINER_NAME} bash /opt/check-status.sh
+
+            echo "Checked."
+
+            docker stop /${CONTAINER_NAME}
+            docker container rm /${CONTAINER_NAME}
+
+    

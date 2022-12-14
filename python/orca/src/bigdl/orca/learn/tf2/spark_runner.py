@@ -21,7 +21,7 @@ import copy
 
 import tensorflow as tf
 
-from bigdl.orca.data.utils import ray_partition_get_data_label
+from bigdl.orca.data.utils import partition_get_data_label
 from bigdl.orca.data.file import exists
 from bigdl.orca.learn.utils import save_pkl, duplicate_stdout_stderr_to_file,\
     get_rank, process_tensorboard_in_callbacks, save_model, load_model, \
@@ -47,6 +47,9 @@ class DatasetHandler:
         config, local_batch_size = self._handle_batch_size(config)
         config['rank'] = self.rank
         config['size'] = self.size
+        # Use global batch size here for data_creator since TensorFlow
+        # will shard the dataset.
+        # batch_size won't be used in data_creator for SparkXShards.
         train_dataset = data_creator(config, config["batch_size"])
         if isinstance(train_dataset, list) and \
            all([isinstance(x, dict) for x in train_dataset]):
@@ -121,9 +124,9 @@ class TFDistributedDatasetHandler(DatasetHandler):
     def _handle_xshards(self, dataset, steps, local_batch_size, shuffle):
         import tensorflow as tf
 
-        data, label = ray_partition_get_data_label(dataset,
-                                                   allow_tuple=True,
-                                                   allow_list=False)
+        data, label = partition_get_data_label(dataset,
+                                               allow_tuple=True,
+                                               allow_list=False)
 
         def dataset_fn(input_context):
             dataset = tf.data.Dataset.from_tensor_slices((data, label))
@@ -148,7 +151,12 @@ class TFDistributedDatasetHandler(DatasetHandler):
 
     def _handle_batch_size(self, config):
         invalidInputError("batch_size" in config, "batch_size must be set in config")
-        local_batch_size = config["batch_size"] // self.size
+        if config["batch_size"]:
+            local_batch_size = config["batch_size"] // self.size
+            if local_batch_size <= 0:
+                local_batch_size = 1
+        else:  # batch_size default to be None for predict
+            local_batch_size = None
         return config, local_batch_size
 
 
@@ -156,9 +164,9 @@ class LocalDatasetHandler(DatasetHandler):
 
     def _handle_xshards(self, dataset, steps, local_batch_size, shuffle):
         import tensorflow as tf
-        data, label = ray_partition_get_data_label(dataset,
-                                                   allow_tuple=True,
-                                                   allow_list=False)
+        data, label = partition_get_data_label(dataset,
+                                               allow_tuple=True,
+                                               allow_list=False)
         dataset = tf.data.Dataset.from_tensor_slices((data, label))
         dataset = dataset.repeat()
         dataset = dataset.take(steps * local_batch_size)
@@ -454,11 +462,16 @@ class SparkRunner:
         config = copy.copy(self.config)
         if data_config is not None:
             config.update(data_config)
+        config["batch_size"] = batch_size
+        dataset_handler = DatasetHandler.get_handler(self.backend,
+                                                     0,  # no rank for predict
+                                                     self.size)
+        config, local_batch_size = dataset_handler._handle_batch_size(config)
 
-        dataset = data_creator(config, batch_size)
+        dataset = data_creator(config, local_batch_size)
         partition = dataset
         params = dict(
-            batch_size=batch_size,
+            batch_size=local_batch_size,
             verbose=verbose,
             steps=steps,
             callbacks=callbacks,

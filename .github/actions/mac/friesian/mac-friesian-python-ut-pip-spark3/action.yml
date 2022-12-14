@@ -33,7 +33,7 @@ runs:
         # install orca
         pip install -i https://pypi.org/simple python/orca/src/dist/bigdl_orca*-py3-none-macosx_10_11_x86_64.whl		
         # install friesian
-        pip install python/friesian/src/dist/bigdl_friesian*-py3-none-macosx_10_11_x86_64.whl
+        pip install -i https://pypi.org/simple python/friesian/src/dist/bigdl_friesian*-py3-none-macosx_10_11_x86_64.whl
         python -m pytest -v python/friesian/test/bigdl/friesian/feature/
         source deactivate
       env:

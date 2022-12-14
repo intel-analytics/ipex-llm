@@ -114,8 +114,15 @@ subtrees:
                   - file: doc/Nano/Howto/Training/General/choose_num_processes_training
                   - file: doc/Nano/Howto/Inference/PyTorch/accelerate_pytorch_inference_onnx
                   - file: doc/Nano/Howto/Inference/PyTorch/accelerate_pytorch_inference_openvino
+                  - file: doc/Nano/Howto/Inference/PyTorch/accelerate_pytorch_inference_jit_ipex
+                  - file: doc/Nano/Howto/Inference/PyTorch/multi_instance_pytorch_inference
                   - file: doc/Nano/Howto/Inference/PyTorch/quantize_pytorch_inference_inc
                   - file: doc/Nano/Howto/Inference/PyTorch/quantize_pytorch_inference_pot
+                  - file: doc/Nano/Howto/Inference/PyTorch/pytorch_context_manager
+                  - file: doc/Nano/Howto/Inference/PyTorch/pytorch_save_and_load_ipex
+                  - file: doc/Nano/Howto/Inference/PyTorch/pytorch_save_and_load_jit
+                  - file: doc/Nano/Howto/Inference/PyTorch/pytorch_save_and_load_onnx
+                  - file: doc/Nano/Howto/Inference/PyTorch/pytorch_save_and_load_openvino
                   - file: doc/Nano/Howto/Inference/PyTorch/inference_optimizer_optimize
                   - file: doc/Nano/Howto/install_in_colab
                   - file: doc/Nano/Howto/windows_guide
@@ -179,6 +186,7 @@ subtrees:
               - entries:
                 - file: doc/Chronos/Howto/windows_guide
                 - file: doc/Chronos/Howto/docker_guide_single_node
+                - file: doc/Chronos/Howto/how_to_use_benchmark_tool
                 - file: doc/Chronos/Howto/how_to_create_forecaster
                 - file: doc/Chronos/Howto/how_to_train_forecaster_on_one_node
                 - file: doc/Chronos/Howto/how_to_save_and_load_forecaster
@@ -234,13 +242,14 @@ subtrees:
                 - entries:
                   - file: doc/PPML/Overview/quicktour
                   - file: doc/PPML/QuickStart/end-to-end
+                  - file: doc/PPML/Overview/devguide
                   - file: doc/PPML/Overview/azure_ppml
             - file: doc/PPML/Overview/misc
               title: "Advanced Topics"
               subtrees:
                 - entries:
                   - file: doc/PPML/Overview/ppml
-                  - file: doc/PPML/Overview/devguide
+                  - file: doc/PPML/Overview/attestation_basic
                   - file: doc/PPML/Overview/trusted_big_data_analytics_and_ml
                   - file: doc/PPML/Overview/trusted_fl
                   - file: doc/PPML/QuickStart/secure_your_services

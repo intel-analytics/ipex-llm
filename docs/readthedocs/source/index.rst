@@ -1,7 +1,7 @@
-BigDL Documentation
-===========================
+BigDL: fast, distributed, secure AI for Big Data
+=================================================
 
-BigDL seamlessly scales your data analytics & AI applications from laptop to cloud, with the following libraries:
+`BigDL <https://github.com/intel-analytics/bigdl>`_ seamlessly scales your data analytics & AI applications from laptop to cloud, with the following libraries:
 
 - `Orca <doc/Orca/index.html>`_: Distributed Big Data & AI (TF & PyTorch) Pipeline on Spark and Ray
 - `Nano <doc/Nano/index.html>`_: Transparent Acceleration of Tensorflow & PyTorch Programs
@@ -13,7 +13,7 @@ BigDL seamlessly scales your data analytics & AI applications from laptop to clo
 ------
 
 Choosing the right BigDL library
----------------------------
+---------------------------------
 
 .. graphviz::
 

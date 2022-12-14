@@ -44,6 +44,14 @@ conda activate py37
 ---
 ## Install BigDL Orca
 
+This section demonstrates how to install BigDL Orca via `pip`, which is the most recommended way.
+
+__Notes:__
+* Installing BigDL Orca from pip will automatically install `pyspark`. To avoid possible conflicts, you are highly recommended to  **unset the environment variable `SPARK_HOME`**  if it exists in your environment.
+
+* If you are using a custom URL of Python Package Index to install the latest version, you may need to check whether the latest packages have been sync'ed with pypi. Or you can add the option `-i https://pypi.python.org/simple` when pip install to use pypi as the index-url.
+
+
 ### To use basic Orca features
 You can install Orca in your created conda environment for distributed data processing, training and inference with the following command:
 ```bash
@@ -121,3 +129,13 @@ pip uninstall bigdl-orca-spark3 bigdl-dllib-spark3 bigdl-tf bigdl-math bigdl-cor
 ```
 
 __Note__: If necessary, you need to manually uninstall `pyspark` and other [dependencies](https://github.com/intel-analytics/BigDL/tree/main/python/requirements/orca) introduced by Orca.
+
+---
+## Download BigDL Orca
+
+You can also download the BigDL package via the download links below. Besides, you can use the [script](https://github.com/intel-analytics/BigDL/blob/main/scripts/download-bigdl.sh) to download.
+
+|           | BigDL 2.1.0 | BigDL 2.2.0-SNAPSHOT nightly |
+| :-------: | :---------: | :--------------------------: |
+| Spark 2.4 | [download](https://repo1.maven.org/maven2/com/intel/analytics/bigdl/bigdl-assembly-spark_2.4.6/2.1.0/bigdl-assembly-spark_2.4.6-2.1.0-fat-jars.zip) | [download](https://oss.sonatype.org/content/repositories/snapshots/com/intel/analytics/bigdl/bigdl-assembly-spark_2.4.6/2.2.0-SNAPSHOT/) |
+| Spark 3.1 | [download](https://repo1.maven.org/maven2/com/intel/analytics/bigdl/bigdl-assembly-spark_3.1.2/2.1.0/bigdl-assembly-spark_3.1.2-2.1.0-fat-jars.zip) | [download](https://oss.sonatype.org/content/repositories/snapshots/com/intel/analytics/bigdl/bigdl-assembly-spark_3.1.3/2.2.0-SNAPSHOT/) |

@@ -450,6 +450,23 @@ You can change the configuration in [start-spark-local.sh](https://github.com/in
 -e SGX_KERNEL_HEAP=1GB \
 ```
 
+## PySpark sklearn LinearRegression example
+
+To run PySpark sklearn example, start the docker container with:
+
+``` bash
+bash start-spark-local.sh pysklearn
+```
+
+You can change the configuration in [start-spark-local.sh](https://github.com/intel-analytics/BigDL/blob/main/ppml/trusted-big-data-ml/scala/docker-occlum/start-spark-local.sh)
+``` bash
+#start-spark-local.sh
+-e SGX_MEM_SIZE=20GB \
+-e SGX_THREAD=1024 \
+-e SGX_HEAP=1GB \
+-e SGX_KERNEL_HEAP=1GB \
+```
+
 You can see result in logs (`docker logs -f bigdl-ppml-trusted-big-data-ml-scala-occlum`)
 
 ## How to debug

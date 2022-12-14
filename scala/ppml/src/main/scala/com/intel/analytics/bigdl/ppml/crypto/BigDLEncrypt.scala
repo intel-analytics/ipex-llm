@@ -56,7 +56,7 @@ class BigDLEncrypt extends Crypto {
     val secret = dataKeyPlaintext.getBytes()
     // key encrypt
     val signingKey = Arrays.copyOfRange(secret, 0, 16)
-    val encryptKey = Arrays.copyOfRange(secret, 16, 48)
+    val encryptKey = Arrays.copyOfRange(secret, 16, 32)
 //    initializationVector = Arrays.copyOfRange(secret, 0, 16)
     val r = new SecureRandom()
     initializationVector = Array.tabulate(16)(_ => (r.nextInt(256) - 128).toByte)

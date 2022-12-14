@@ -326,8 +326,6 @@ class TestTFRayEstimator(TestCase):
 
         sc = init_nncontext()
         rdd = sc.range(0, 10)
-        from pyspark.sql import SparkSession
-        spark = SparkSession(sc)
         from pyspark.ml.linalg import DenseVector
         df = rdd.map(lambda x: (DenseVector(np.random.randn(1,).astype(np.float)),
                                 int(np.random.randint(0, 1, size=())))).toDF(["feature", "label"])

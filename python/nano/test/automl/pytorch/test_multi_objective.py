@@ -149,7 +149,7 @@ class TestMOHPO(TestCase):
             max_epochs=2,
             use_hpo=True,
         )
-        
+
         best_trials = trainer.search(
             model,
             target_metric=['val_loss', 'latency'],
@@ -216,7 +216,7 @@ class TestMOHPO(TestCase):
             num_processes=2,
             # distributed_backend="ray",
         )
-        
+
         best_trials = trainer.search(
             model,
             target_metric=['val_loss', 'latency'],
@@ -349,7 +349,7 @@ class TestMOHPO(TestCase):
             max_epochs=2,
             use_hpo=True,
         )
-        
+
         best_trials = trainer.search(
             model,
             target_metric=['val_loss', 'latency'],

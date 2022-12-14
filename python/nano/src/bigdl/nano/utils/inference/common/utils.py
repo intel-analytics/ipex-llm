@@ -63,6 +63,9 @@ def throughput_calculate_helper(iterrun, baseline_time, func, *args):
     '''
     A simple helper to calculate average latency
     '''
+    # test run two times for more accurate latency
+    for i in range(2):
+        func(*args)
     start_time = time.perf_counter()
     time_list = []
     for i in range(iterrun):

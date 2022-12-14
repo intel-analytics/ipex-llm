@@ -1,0 +1,29 @@
+name: 'Mac Orca Python ExampleTest Ray Spark3.1'
+description: 'Mac Orca Python ExampleTest Ray Spark3.1'
+runs:
+  using: "composite"
+  steps:
+    - name: Run Test
+      shell: bash
+      run: |
+        source ~/.bash_profile
+        source activate py37
+        pip uninstall -y bigdl-dllib bigdl-orca bigdl-chronos bigdl-orca-spark3 bigdl-dllib-spark3 bigdl-chronos-spark3  pyspark
+        export KERAS_BACKEND=tensorflow
+        export MASTER=local[4]
+        export HDFS_URI=/Users/arda/data
+        export PATH=/opt/maven/apache-maven-3.6.3/bin:$PATH
+        mvn -version
+        
+        pip install -i https://pypi.org/simple --pre --upgrade bigdl-orca
+        pip install albumentations
+        pip install xgboost==1.5.1
+        GLOO_SOCKET_IFNAME=en0 
+        chmod a+x python/orca/dev/example/run-example-test-ray.sh
+        python/orca/dev/example/run-example-test-ray.sh 
+        pip install xgboost==1.2.0
+        source deactivate
+      env:
+        BIGDL_ROOT: ${{ github.workspace }}
+        ANALYTICS_ZOO_ROOT: ${{ github.workspace }}
+        

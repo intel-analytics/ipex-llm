@@ -11,6 +11,7 @@ runs:
     - name: Install dependencies
       shell: bash
       run: |
+        dpkg --configure -a
         apt-get update
         apt-get install -y zip
         python -m pip install --upgrade pip

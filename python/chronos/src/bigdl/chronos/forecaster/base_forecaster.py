@@ -25,6 +25,7 @@ import warnings
 warnings.filterwarnings('ignore', category=UserWarning, module='pytorch_lightning')
 warnings.filterwarnings('ignore', category=UserWarning, module='torch')
 import os
+from tempfile import TemporaryDirectory
 import torch
 
 from torch.utils.data import TensorDataset, DataLoader
@@ -363,79 +364,95 @@ class BasePytorchForecaster(Forecaster):
             # data transformation
             if isinstance(data, tuple):
                 data = np_to_dataloader(data, batch_size, self.num_processes)
-            from pytorch_lightning.loggers import CSVLogger
-            logger = False if validation_data is None else CSVLogger(".",
-                                                                     flush_logs_every_n_steps=10,
-                                                                     name="forecaster_tmp_log")
-            from pytorch_lightning.callbacks import EarlyStopping
-            early_stopping = EarlyStopping('val/loss', patience=earlystop_patience)
-            from pytorch_lightning.callbacks import ModelCheckpoint
-            checkpoint_callback = ModelCheckpoint(monitor="val/loss", dirpath='validation',
-                                                  filename='best', save_on_train_epoch_end=True)
-            if validation_mode == 'earlystop':
-                callbacks = [early_stopping]
-            elif validation_mode == 'best_epoch':
-                callbacks = [checkpoint_callback]
-            else:
-                callbacks = None
-            # Trainer init
-            self.trainer = Trainer(logger=logger, max_epochs=epochs, callbacks=callbacks,
-                                   enable_checkpointing=self.checkpoint_callback,
-                                   num_processes=self.num_processes, use_ipex=self.use_ipex,
-                                   log_every_n_steps=10,
-                                   distributed_backend=self.local_distributed_backend)
 
-            # This error is only triggered when the python interpreter starts additional processes.
-            # num_process=1 and subprocess will be safely started in the main process,
-            # so this error will not be triggered.
-            invalidInputError(is_main_process(),
-                              "Make sure new Python interpreters can "
-                              "safely import the main module. ",
-                              fixMsg="you should use if __name__ == '__main__':, "
-                              "otherwise performance will be degraded.")
+            # training process
+            # forecaster_log_dir is a temp directory for training log
+            # validation_ckpt_dir is a temp directory for best checkpoint on validation data
+            with TemporaryDirectory() as forecaster_log_dir:
+                with TemporaryDirectory() as validation_ckpt_dir:
+                    from pytorch_lightning.loggers import CSVLogger
+                    logger = False if validation_data is None else CSVLogger(
+                        save_dir=forecaster_log_dir,
+                        flush_logs_every_n_steps=10,
+                        name="forecaster_tmp_log")
+                    from pytorch_lightning.callbacks import EarlyStopping
+                    early_stopping = EarlyStopping('val/loss', patience=earlystop_patience)
+                    from pytorch_lightning.callbacks import ModelCheckpoint
+                    checkpoint_callback = ModelCheckpoint(monitor="val/loss",
+                                                          dirpath=validation_ckpt_dir,
+                                                          filename='best',
+                                                          save_on_train_epoch_end=True)
+                    if validation_mode == 'earlystop':
+                        callbacks = [early_stopping]
+                    elif validation_mode == 'best_epoch':
+                        callbacks = [checkpoint_callback]
+                    else:
+                        callbacks = None
+                    # Trainer init
+                    self.trainer = Trainer(logger=logger, max_epochs=epochs, callbacks=callbacks,
+                                           enable_checkpointing=self.checkpoint_callback,
+                                           num_processes=self.num_processes, use_ipex=self.use_ipex,
+                                           log_every_n_steps=10,
+                                           distributed_backend=self.local_distributed_backend)
 
-            # build internal according to use_trail_id for multi-objective HPO
-            if hasattr(self, "tune_trainer") and self.tune_trainer.hposearcher.objective.mo_hpo:
-                invalidOperationError(self.tune_trainer.hposearcher.study,
-                                      "You must tune before fit the model.")
-                invalidInputError(use_trial_id is not None,
-                                  "For multibojective HPO, you must specify a trial id for fit.")
-                trial = self.tune_trainer.hposearcher.study.trials[use_trial_id]
-                self.internal = self.tune_internal._model_build(trial)
+                    # This error is only triggered when the python
+                    # interpreter starts additional processes.
+                    # num_process=1 and subprocess will be safely started in the main process,
+                    # so this error will not be triggered.
+                    invalidInputError(is_main_process(),
+                                      "Make sure new Python interpreters can "
+                                      "safely import the main module. ",
+                                      fixMsg="you should use if __name__ == '__main__':, "
+                                      "otherwise performance will be degraded.")
 
-            # fitting
-            if not validation_data:
-                self.trainer.fit(self.internal, data)
-                self.fitted = True
-            else:
-                if isinstance(validation_data, TSDataset):
-                    _rolled = validation_data.numpy_x is None
-                    validation_data =\
-                        validation_data.to_torch_data_loader(
-                            batch_size=batch_size,
-                            roll=_rolled,
-                            lookback=self.data_config['past_seq_len'],
-                            horizon=self.data_config['future_seq_len'],
-                            feature_col=validation_data.roll_feature,
-                            target_col=validation_data.roll_target,
-                            shuffle=False)
-                if isinstance(validation_data, tuple):
-                    validation_data = np_to_dataloader(validation_data, batch_size,
-                                                       self.num_processes)
-                self.trainer.fit(self.internal, data, validation_data)
-                self.fitted = True
-                fit_out = read_csv('./forecaster_tmp_log/version_0/metrics.csv')
-                delete_folder("./forecaster_tmp_log")
-                if validation_mode == 'best_epoch':
-                    self.load('validation/best.ckpt')
-                    delete_folder("./validation")
-                # modify logger attr in trainer, otherwise predict will report error
-                self.trainer._logger_connector.on_trainer_init(
-                    False,
-                    self.trainer.flush_logs_every_n_steps,
-                    self.trainer.log_every_n_steps,
-                    self.trainer.move_metrics_to_cpu)
-                return fit_out
+                    # build internal according to use_trail_id for multi-objective HPO
+                    mo_hpo = False
+                    if hasattr(self, "tune_trainer"):
+                        if self.tune_trainer.hposearcher.objective.mo_hpo:
+                            mo_hpo = True
+                    if mo_hpo:
+                        invalidOperationError(self.tune_trainer.hposearcher.study,
+                                              "You must tune before fit the model.")
+                        invalidInputError(use_trial_id is not None,
+                                          "For multibojective HPO, "
+                                          "you must specify a trial id for fit.")
+                        trial = self.tune_trainer.hposearcher.study.trials[use_trial_id]
+                        self.internal = self.tune_internal._model_build(trial)
+
+                    # fitting
+                    if not validation_data:
+                        self.trainer.fit(self.internal, data)
+                        self.fitted = True
+                    else:
+                        if isinstance(validation_data, TSDataset):
+                            _rolled = validation_data.numpy_x is None
+                            validation_data =\
+                                validation_data.to_torch_data_loader(
+                                    batch_size=batch_size,
+                                    roll=_rolled,
+                                    lookback=self.data_config['past_seq_len'],
+                                    horizon=self.data_config['future_seq_len'],
+                                    feature_col=validation_data.roll_feature,
+                                    target_col=validation_data.roll_target,
+                                    shuffle=False)
+                        if isinstance(validation_data, tuple):
+                            validation_data = np_to_dataloader(validation_data, batch_size,
+                                                               self.num_processes)
+                        self.trainer.fit(self.internal, data, validation_data)
+                        self.fitted = True
+                        fit_csv = os.path.join(forecaster_log_dir,
+                                               "forecaster_tmp_log/version_0/metrics.csv")
+                        best_path = os.path.join(validation_ckpt_dir, "best.ckpt")
+                        fit_out = read_csv(fit_csv)
+                        if validation_mode == 'best_epoch':
+                            self.load(best_path)
+                        # modify logger attr in trainer, otherwise predict will report error
+                        self.trainer._logger_connector.on_trainer_init(
+                            False,
+                            self.trainer.flush_logs_every_n_steps,
+                            self.trainer.log_every_n_steps,
+                            self.trainer.move_metrics_to_cpu)
+                        return fit_out
 
     def optimize(self, train_data,
                  validation_data=None,

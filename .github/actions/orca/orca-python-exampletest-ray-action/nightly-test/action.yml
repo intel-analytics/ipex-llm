@@ -8,7 +8,7 @@ runs:
       run: |
         source activate py37
         export SPARK_LOCAL_HOSTNAME=localhost
-        pip install --pre --upgrade bigdl-orca-spark3
+        pip install -i https://pypi.python.org/simple --pre --upgrade bigdl-orca-spark3
         chmod a+x python/orca/dev/example/run-example-test-ray.sh
         python/orca/dev/example/run-example-test-ray.sh
         source deactivate

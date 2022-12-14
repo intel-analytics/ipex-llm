@@ -1,0 +1,76 @@
+name: 'PPML RealTime ML Occlum K8s'
+description: 'PPML RealTime ML Occlum K8s'
+inputs:
+  image:
+    description: 'image'
+    required: true
+    default: '10.239.45.10/arda/intelanalytics/bigdl-ppml-trusted-realtime-ml-scala-occlum'
+  image-tag:
+    description: 'image tag'
+    required: true
+    default: 'latest'
+runs:
+  using: "composite"
+  steps:
+    - uses: actions/checkout@v3
+    - name: Set Variable
+      shell: bash
+      env:
+        DEFAULT_IMAGE: ${{ inputs.image }}:${{ inputs.image-tag }}
+      run: |
+        whoami
+        export IMAGE=${{ env.DEFAULT_IMAGE }}
+        export http_proxy="$HTTP_PROXY"
+        export https_proxy="$HTTPS_PROXY"
+        
+
+    - name: Test
+      shell: bash
+      run: |
+        set -x
+        export ENCLAVE_KEY_PATH=/home/icx/glorysdj/enclave-key.pem
+        export DATA_PATH=/home/icx/glorysdj/data
+        export KEYS_PATH=/home/icx/glorysdj/keys
+        export SECURE_PASSWORD_PATH=/home/icx/glorysdj/password
+        export RELEASE_NAME=ppml-occlum-k8s
+        export SGX_MEM_SIZE=32GB
+        echo "Download BigDL and image..."
+        cd /home/sdp/heyang/data/occlum-k8s
+        rm -rf BigDL
+        git clone https://github.com/intel-analytics/BigDL.git
+        cd BigDL/ppml/trusted-realtime-ml/scala/docker-occlum/kubernetes
+        docker pull $IMAGE
+        echo "Download finish."
+
+        unset http_proxy
+        unset https_proxy
+        source /etc/profile
+        export KUBECONFIG=/etc/kubernetes/admin.conf
+        export no_proxy=172.168.0.205
+
+        echo "Kubctl apply keys and password..."
+        kubectl apply -f ${KEYS_PATH}/keys.yaml
+        kubectl apply -f ${SECURE_PASSWORD_PATH}/password.yaml
+        echo "enclaveKeysPath: ${ENCLAVE_KEY_PATH}
+        startAllButFlinkPath: /home/sdp/heyang/BigDL/ppml/trusted-realtime-ml/scala/docker-graphene/kubernetes/start-all-but-flink.sh
+        image: ${IMAGE}" > values.yaml
+        echo "Apply finish."
+        echo "Check whether benchmark files exist:"
+        ls -al /home/sdp/heyang/data/Testkit/benchmark
+
+        echo "Start Kubernets cluster..."
+        #helm uninstall $RELEASE_NAME
+        helm install $RELEASE_NAME ./
+        sleep 20
+        kubectl get pods
+        export MASTER_DEPLOYMENT_POD_NAME=$(kubectl get pods|grep master-deployment|awk '{print $1}')
+        echo "Master deployment pod name is  $MASTER_DEPLOYMENT_POD_NAME."
+        echo ""
+        echo "Kubetnets Cluster started."
+        echo "Enter the master deployment pod inside..."
+        echo "Initialization and test..."
+        echo "Modify config.yaml in master deployment pod..."
+
+        kubectl get pods
+        rm -r /home/sdp/heyang/data/occlum-k8s/BigDL
+        helm uninstall $RELEASE_NAME

@@ -197,6 +197,19 @@ Then run the script.
 ./run_spark_tpch.sh
 ```
 
+## PySpark Example
+The following three simple PySpark examples can run directly.
+If you want to run another example, please make sure that PPML-Occlum image have installed the relevant dependencies.
+```bash
+#default dependencies
+-y python=3.8.10 numpy=1.21.5 scipy=1.7.3 scikit-learn=1.0 pandas=1.3 Cython
+```
+And upload source file by hdfs in the last line to replace local file.For example:
+```bash
+#run_pyspark_sql_example.sh
+    #local:/py-examples/sql_example.py
+    hdfs://${IP}:${PORT}/${PATH}/sql_example.py
+```
 ### PySparkPi example
 
 ```bash
@@ -235,6 +248,40 @@ Then run the script.
 
 ```bash
 ./run_pyspark_sql_example.sh
+```
+
+```yaml
+#driver.yaml
+    env:
+    - name: DRIVER_MEMORY
+      value: "1g"
+    - name: SGX_MEM_SIZE
+      value: "15GB"
+    - name: SGX_THREAD
+      value: "1024"
+    - name: SGX_HEAP
+      value: "1GB"
+    - name: SGX_KERNEL_HEAP
+      value: "1GB"
+```
+
+```yaml
+#executor.yaml
+    env:
+    - name: SGX_MEM_SIZE
+      value: "15GB"
+    - name: SGX_THREAD
+      value: "1024"
+    - name: SGX_HEAP
+      value: "1GB"
+    - name: SGX_KERNEL_HEAP
+      value: "1GB"
+```
+
+### PySpark sklearn LinearRegression example
+
+```bash
+./run_pyspark_sklearn_example.sh
 ```
 
 ```yaml

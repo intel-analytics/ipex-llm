@@ -12,6 +12,47 @@ It will build image normally, and then run occlum-build to build occlum runable 
 
 final_name=`intelanalytics/bigdl-ppml-trusted-big-data-ml-scala-occlum-production:${TAG}-build`. But the final image size is too large because there are too many dependencies in this image.
 
+### Pull production image from dockerhub and add self libs or source code.
+```bash
+docker pull intelanalytics/bigdl-ppml-trusted-big-data-ml-scala-occlum-production:2.2.0
+```
+1. enter image
+```bash
+# Clean up old container 
+export container_name=bigdl-ppml-trusted-big-data-ml-scala-occlum-production 
+sudo docker rm -f $container_name 
+
+# Run new command in container 
+sudo docker run -it \
+        --net=host \
+        --name=$container_name \
+        --cpuset-cpus 3-5 \
+        -e LOCAL_IP=$LOCAL_IP \
+        -e SGX_MEM_SIZE=30GB \
+        -e SGX_THREAD=2048 \
+        -e SGX_HEAP=1GB \
+        -e SGX_KERNEL_HEAP=1GB \
+        -e ENABLE_SGX_DEBUG=true \
+        -e ATTESTATION=true \
+        intelanalytics/bigdl-ppml-trusted-big-data-ml-scala-occlum-production:2.2.0 \
+        bash 
+```
+2. Add python code into /opt/py-examples, add python libs in to /opt/python-occlum, add jars into $BIGDL_HOME/jars.
+3. build runable image
+```bash
+bash /opt/run_spark_on_occlum_glibc.sh init 
+```
+4. commit and get runable image
+```bash
+docker commit $container_name $container_name-build
+```
+
+### Pull production-build image from dockerhub.
+
+```bash
+docker pull intelanalytics/bigdl-ppml-trusted-big-data-ml-scala-occlum-production:2.2.0-build
+```
+
 ## Using BigDL PPML Occlum EHSM Attestation
 Bigdl ppml use EHSM as reference KMS&AS, you can deploy EHSM following the [guide](https://github.com/intel-analytics/BigDL/tree/main/ppml/services/ehsm/kubernetes#deploy-bigdl-ehsm-kms-on-kubernetes-with-helm-charts)
 We assume you have already set up environment and enroll yourself on EHSM.
@@ -31,19 +72,17 @@ and modify `APP_ID`, `API_KEY` to the value you have get  when enroll, and then 
 -e REPORT_DATA=ppml \ A random String to generator a quote which will be send to attestation service and use for attest. Default is ppml.
 ```
 ### Register and get policy_Id
-1. Fill in the configuration above and Enter the occlum runable image.
+1. Verify that the attestation server is trusted.
 ```bash
-bash start-spark-local.sh
+bash start-spark-local.sh verify
 ```
-2. Verify that the attestation server is trusted.
+2. Register application on attestation server
 ```bash
-bash verify-attestation-service.sh
+bash start-spark-local.sh register
 ```
-3. Register application on attestation server
-```bash
-bash RegisterMrEnclave.sh
-```
-4. Get the policy_Id and save for running this occlum application.
+3. Get the policy_Id and save for running this occlum application.
 ```bash
 policy_Id ${policy_Id}
 ```
+
+Then set policy_Id and run application in docker or k8s.

@@ -4,7 +4,7 @@
 echo "orca test start"
 
 dir=${ANALYTICS_ZOO_HOME}/python/orca/colab-notebook/quickstart
-pytorchFiles=("pytorch_lenet_mnist_data_creator_func" "pytorch_lenet_mnist" "pytorch_distributed_lenet_mnist" "autoestimator_pytorch_lenet_mnist" "autoxgboost_regressor_sklearn_boston")
+pytorchFiles=("pytorch_lenet_mnist_data_creator_func" "pytorch_lenet_mnist_bigdl" "pytorch_lenet_mnist_ray" "pytorch_lenet_mnist_spark" "autoestimator_pytorch_lenet_mnist" "autoxgboost_regressor_sklearn_boston")
 index=1
 
 set -e

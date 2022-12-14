@@ -19,6 +19,7 @@ from bigdl.chronos.model.tcn import model_creator
 from bigdl.chronos.metric.forecast_metrics import Evaluator
 from bigdl.chronos.data import get_public_dataset
 from sklearn.preprocessing import StandardScaler
+from bigdl.chronos.pytorch import TSInferenceOptimizer as InferenceOptimizer
 
 def gen_dataloader():
     tsdata_train, tsdata_val,\
@@ -42,7 +43,8 @@ def gen_dataloader():
     return tsdata_traindataloader, tsdata_valdataloader, tsdata_testdataloader
 
 def predict_wraper(model, input_sample):
-    model(input_sample)
+    with InferenceOptimizer.get_context(model):
+        model(input_sample)
 
 if __name__ == '__main__':
 
@@ -82,8 +84,8 @@ if __name__ == '__main__':
         break
     input_sample = x[0].unsqueeze(0)
     
-    # speed up the model using Chronos TSTrainer
-    speed_model = Trainer.trace(lit_model, accelerator="onnxruntime", input_sample=input_sample)
+    # speed up the model using Chronos InferenceOptimizer
+    speed_model = InferenceOptimizer.trace(lit_model, accelerator="onnxruntime", input_sample=input_sample)
 
     # evaluate the model's latency
     print("original pytorch latency (ms):", Evaluator.get_latency(predict_wraper, lit_model, input_sample))

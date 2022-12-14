@@ -33,23 +33,23 @@ def generate_data(args):
 
     # read data
     if args.dataset == 'tsinghua_electricity':
-        tsdata_train, _, tsdata_test = get_public_dataset(name='tsinghua_electricity',
-                                                          with_split=True,
-                                                          val_ratio=0.1,
-                                                          test_ratio=0.2)
+        tsdata_train, tsdata_val, tsdata_test = get_public_dataset(name='tsinghua_electricity',
+                                                                   with_split=True,
+                                                                   val_ratio=0.1,
+                                                                   test_ratio=0.2)
     elif args.dataset == 'nyc_taxi':
-        tsdata_train, _, tsdata_test = get_public_dataset(name='nyc_taxi',
-                                                          with_split=True,
-                                                          val_ratio=0.1,
-                                                          test_ratio=0.2)
+        tsdata_train, tsdata_val, tsdata_test = get_public_dataset(name='nyc_taxi',
+                                                                   with_split=True,
+                                                                   val_ratio=0.1,
+                                                                   test_ratio=0.2)
     else:
-        tsdata_train, _, tsdata_test = gen_synthetic_data(with_split=True,
-                                                          val_ratio=0.1,
-                                                          test_ratio=0.2)
+        tsdata_train, tsdata_val, tsdata_test = gen_synthetic_data(with_split=True,
+                                                                   val_ratio=0.1,
+                                                                   test_ratio=0.2)
 
     # preprocessing data
     standard_scaler = StandardScaler()
-    for tsdata in [tsdata_train, tsdata_test]:
+    for tsdata in [tsdata_train, tsdata_val, tsdata_test]:
         tsdata.deduplicate()\
               .impute(mode="last")\
               .scale(standard_scaler, fit=(tsdata is tsdata_train))
@@ -59,6 +59,7 @@ def generate_data(args):
         for tsdata in [tsdata_train, tsdata_test]:
             tsdata.roll(lookback=args.lookback, horizon=args.horizon)
         train_loader = tsdata_train.to_tf_dataset(batch_size=args.training_batchsize)
+        val_loader = tsdata_val.to_tf_dataset(batch_size=args.training_batchsize)
         test_loader = tsdata_test.to_tf_dataset(batch_size=args.inference_batchsize)
     else:
         add_args = {}
@@ -69,10 +70,15 @@ def generate_data(args):
                                                          lookback=args.lookback,
                                                          horizon=args.horizon,
                                                          **add_args)
+        val_loader = tsdata_val.to_torch_data_loader(batch_size=args.training_batchsize,
+                                                     roll=True,
+                                                     lookback=args.lookback,
+                                                     horizon=args.horizon,
+                                                     **add_args)
         test_loader = tsdata_test.to_torch_data_loader(batch_size=args.inference_batchsize,
                                                        roll=True,
                                                        lookback=args.lookback,
                                                        horizon=args.horizon,
                                                        **add_args)
 
-    return train_loader, test_loader
+    return train_loader, val_loader, test_loader

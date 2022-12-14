@@ -127,15 +127,22 @@ for r in result:
     print(r, ":", result[r])
 ```
 
-### Step 5: Save the Model
+### Step 5: Save and Load the Model
 
-Save the Estimator states (including model and optimizer) to the provided model path.
-
+Save the Estimator states (including the model and optimizer) to the provided model path.
 ```python
 est.save("mnist_model")
+```
 
-# stop orca context when program finishes
-stop_orca_context()
+Save the entire model to the provided model path.
+```python
+est.save("mnist_model", entire=True)
+```
+
+Load the Estimator states (including the model and optimizer) or the entire model from the provided model path.
+
+```python
+est.load("mnist_model")
 ```
 
 **Note:** You should call `stop_orca_context()` when your application finishes.

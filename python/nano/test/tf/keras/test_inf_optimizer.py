@@ -34,7 +34,7 @@ class TestInferencePipeline(TestCase):
         # prepare optimizer
         opt = InferenceOptimizer()
         opt.optimize(model=model,
-                     training_data=train_dataset,
+                     x=train_dataset,
                      latency_sample_num=10,
                      thread_num=8)
         model = opt.get_best_model()
@@ -48,7 +48,7 @@ class TestInferencePipeline(TestCase):
         # prepare optimizer
         opt = InferenceOptimizer()
         opt.optimize(model=model,
-                     training_data=train_dataset,
+                     x=train_dataset,
                      latency_sample_num=10)
         model = opt.get_best_model()
 
@@ -62,7 +62,7 @@ class TestInferencePipeline(TestCase):
         # prepare optimizer
         opt = InferenceOptimizer()
         opt.optimize(model=model,
-                     training_data=train_dataset,
+                     x=train_dataset,
                      batch_size=32,
                      latency_sample_num=10)
         model = opt.get_best_model()
@@ -78,10 +78,25 @@ class TestInferencePipeline(TestCase):
         opt = InferenceOptimizer()
         from tensorflow.keras.metrics import CategoricalAccuracy
         opt.optimize(model=model,
-                     training_data=train_dataset,
+                     x=train_dataset,
                      validation_data=train_dataset, # for test
                      batch_size=32,
                      metric=CategoricalAccuracy(),
                      latency_sample_num=10)
         opt.summary()
+        model = opt.get_best_model()
+
+    def test_optimize_model_without_dataset(self):
+        model = ResNet50(weights=None, input_shape=[40, 40, 3], classes=10)
+        model = NanoModel(inputs=model.inputs, outputs=model.outputs)
+
+        train_examples = np.random.random((100, 40, 40, 3))
+        train_labels = np.random.randint(0, 10, size=(100,))
+
+        opt = InferenceOptimizer()
+        opt.optimize(model=model,
+                     x=train_examples,
+                     y=train_labels,
+                     latency_sample_num=10,
+                     thread_num=8)
         model = opt.get_best_model()

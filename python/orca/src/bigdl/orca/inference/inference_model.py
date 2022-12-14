@@ -14,12 +14,26 @@
 # limitations under the License.
 #
 
+import warnings
+
 from bigdl.dllib.utils.common import JavaValue
 from bigdl.dllib.utils.file_utils import callZooFunc
 from bigdl.dllib.keras.engine.topology import KerasNet
 from bigdl.dllib.nn.layer import Layer
-import warnings
-from bigdl.dllib.utils.log4Error import *
+from bigdl.dllib.utils.log4Error import invalidInputError
+
+from typing import (
+    Any,
+    Union,
+    Optional,
+    List
+)
+from typing import TYPE_CHECKING
+if TYPE_CHECKING:
+    from numpy import ndarray
+    from pyspark import RDD
+    from pyspark.context import SparkContext
+    from bigdl.dllib.utils.common import JTensor
 
 
 class InferenceModel(JavaValue):
@@ -32,10 +46,12 @@ class InferenceModel(JavaValue):
     supported_concurrent_num: Int. How many concurrent threads to invoke. Default is 1.
     """
 
-    def __init__(self, supported_concurrent_num=1, bigdl_type="float"):
+    def __init__(self,
+                 supported_concurrent_num: int = 1,
+                 bigdl_type: str = "float") -> None:
         super(InferenceModel, self).__init__(None, bigdl_type, supported_concurrent_num)
 
-    def load_bigdl(self, model_path, weight_path=None):
+    def load_bigdl(self, model_path: str, weight_path: Optional[str] = None) -> None:
         """
         Load a pre-trained BigDL model.
 
@@ -46,7 +62,7 @@ class InferenceModel(JavaValue):
                     self.value, model_path, weight_path)
 
     # deprecated in "0.8.0"
-    def load(self, model_path, weight_path=None):
+    def load(self, model_path: str, weight_path: Optional[str] = None) -> None:
         """
         Load a pre-trained BigDL model.
 
@@ -57,7 +73,7 @@ class InferenceModel(JavaValue):
         callZooFunc(self.bigdl_type, "inferenceModelLoad",
                     self.value, model_path, weight_path)
 
-    def load_caffe(self, model_path, weight_path):
+    def load_caffe(self, model_path: str, weight_path: str) -> None:
         """
         Load a pre-trained Caffe model.
 
@@ -67,7 +83,8 @@ class InferenceModel(JavaValue):
         callZooFunc(self.bigdl_type, "inferenceModelLoadCaffe",
                     self.value, model_path, weight_path)
 
-    def load_openvino(self, model_path, weight_path, batch_size=0):
+    def load_openvino(self, model_path: str, weight_path: str,
+                      batch_size: int = 0) -> None:
         """
         Load an OpenVINI IR.
 
@@ -78,7 +95,9 @@ class InferenceModel(JavaValue):
         callZooFunc(self.bigdl_type, "inferenceModelLoadOpenVINO",
                     self.value, model_path, weight_path, batch_size)
 
-    def load_openvino_ng(self, model_path, weight_path, batch_size=0):
+    # TODO: Add UT
+    def load_openvino_ng(self, model_path: str, weight_path: str,
+                         batch_size: int = 0) -> None:
         """
         Load an OpenVINI IR.
 
@@ -89,8 +108,12 @@ class InferenceModel(JavaValue):
         callZooFunc(self.bigdl_type, "inferenceModelLoadOpenVINONg",
                     self.value, model_path, weight_path, batch_size)
 
-    def load_tensorflow(self, model_path, model_type="frozenModel", intra_op_parallelism_threads=1,
-                        inter_op_parallelism_threads=1, use_per_session_threads=True):
+    # TODO: Add UT
+    def load_tensorflow(self, model_path: str,
+                        model_type: str = "frozenModel",
+                        intra_op_parallelism_threads: int = 1,
+                        inter_op_parallelism_threads: int = 1,
+                        use_per_session_threads: bool = True) -> None:
         """
         Load a TensorFlow model using tensorflow.
 
@@ -106,9 +129,14 @@ class InferenceModel(JavaValue):
                     self.value, model_path, model_type, intra_op_parallelism_threads,
                     inter_op_parallelism_threads, use_per_session_threads)
 
-    def load_tensorflow(self, model_path, model_type,
-                        inputs, outputs, intra_op_parallelism_threads=1,
-                        inter_op_parallelism_threads=1, use_per_session_threads=True):
+    # TODO: Add UT
+    def load_tensorflow_graph(self, model_path: str,
+                              model_type: str,
+                              inputs: List[str],
+                              outputs: List[str],
+                              intra_op_parallelism_threads: int = 1,
+                              inter_op_parallelism_threads: int = 1,
+                              use_per_session_threads: bool = True) -> None:
         """
         Load a TensorFlow model using tensorflow.
 
@@ -128,14 +156,14 @@ class InferenceModel(JavaValue):
                     inputs, outputs, intra_op_parallelism_threads,
                     inter_op_parallelism_threads, use_per_session_threads)
 
-    def load_torch(self, model_path):
+    # TODO: Add UT
+    def load_torch(self, model_path: str) -> None:
         """
         Load a pytorch model.
 
         :param model_path: the path of saved pytorch model
            """
         invalidInputError(isinstance(model_path, str), "model_path should be string")
-        import os
         import io
         import torch
         from bigdl.orca.torch import zoo_pickle_module
@@ -145,7 +173,9 @@ class InferenceModel(JavaValue):
         callZooFunc(self.bigdl_type, "inferenceModelLoadPytorch",
                     self.value, bys.getvalue())
 
-    def predict(self, inputs):
+    # TODO: Add UT for different inputs
+    def predict(self, inputs: Union["ndarray", List["ndarray"], "JTensor", List["JTensor"]]) \
+            -> Union["ndarray", List["ndarray"]]:
         """
         Do prediction on inputs.
 
@@ -159,7 +189,8 @@ class InferenceModel(JavaValue):
                              input_is_table)
         return KerasNet.convert_output(output)
 
-    def distributed_predict(self, inputs, sc):
+    # TODO: Add UT
+    def distributed_predict(self, inputs: "RDD[Any]", sc: "SparkContext") -> "RDD[Any]":
         data_type = inputs.map(lambda x: x.__class__.__name__).first()
         input_is_table = False
         if data_type == "list":

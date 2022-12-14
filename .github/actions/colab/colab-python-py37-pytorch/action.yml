@@ -11,7 +11,8 @@ runs:
     - name: Install dependencies
       shell: bash
       run: |
-        #apt-get update
+        dpkg --configure -a
+        apt-get update
         apt-get install -y zip
         python -m pip install --upgrade pip
         python -m pip install --upgrade setuptools==58.0.4
@@ -47,12 +48,12 @@ runs:
         export LD_LIBRARY_PATH=/opt/conda/envs/py37/lib:$LD_LIBRARY_PATH
         export PYTHONHOME=/opt/conda/envs/py37 
         pip uninstall -y bigdl-dllib bigdl-orca bigdl-chronos
-        pip install jupyter bigdl-orca matplotlib
-        pip install --pre bigdl
-        pip install torch==1.7.1 torchvision==0.8.2
-        pip install six cloudpickle
-        pip install jep==3.9.0 xgboost
-        pip install --pre --upgrade bigdl-chronos[pytorch,distributed]
+        pip install -i ${GONDOLIN_PIP_MIRROR} --trusted-host ${GONDOLIN_TRUSTED_HOST} jupyter bigdl-orca matplotlib
+        pip install -i https://pypi.org/simple --pre bigdl
+        pip install -i ${GONDOLIN_PIP_MIRROR} --trusted-host ${GONDOLIN_TRUSTED_HOST} torch==1.7.1 torchvision==0.8.2
+        pip install -i ${GONDOLIN_PIP_MIRROR} --trusted-host ${GONDOLIN_TRUSTED_HOST} six cloudpickle
+        pip install -i ${GONDOLIN_PIP_MIRROR} --trusted-host ${GONDOLIN_TRUSTED_HOST} jep==3.9.0 xgboost
+        pip install -i https://pypi.org/simple --pre --upgrade bigdl-chronos[pytorch,distributed]
         pip uninstall -y torchtext 
         if [ -f python/chronos/dev/colab-notebook/run-notebook-pytorch.sh ]
         then

@@ -155,3 +155,23 @@ if TYPE_CHECKING:
             import xml.etree.ElementTree as ET  # ambiguous names
             import xml.etree.ElementTree as ET # type: ignore
       ```
+    * ```python
+        # cope with Missing return statement Error
+        def func() -> return_type:
+            if condition:
+                return return_type
+            else:
+                invalidInputError()
+            return None  # add return none at the end of the func
+      ```
+    * ```python
+        # cope with method signature incompatible with supertype
+        class Base:
+            @abstractmethod
+            def method(self):
+                pass
+      
+        class Derive(Base):
+            def method(self, param):  # type: ignore[override]
+                pass
+      ```
