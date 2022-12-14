@@ -39,7 +39,7 @@ class Estimator(object):
                    loss: Union['Loss', Callable[[Dict], 'Loss'], None]=None,
                    metrics: Union['Metric', List['Metric'], None]=None,
                    backend: str="spark",
-                   config: Dict=None,
+                   config: Optional[Dict]=None,
                    workers_per_node: int=1,
                    scheduler_creator: Optional[Callable[[Dict], 'LRScheduler']]=None,
                    scheduler_step_freq: str="batch",
