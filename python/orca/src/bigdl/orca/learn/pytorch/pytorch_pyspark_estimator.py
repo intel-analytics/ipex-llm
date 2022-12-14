@@ -104,7 +104,7 @@ class PyTorchPySparkEstimator(BaseEstimator):
     def __init__(
             self,
             *,
-            model_creator: Callable[[Dict], 'Module']=None,
+            model_creator: Union[Callable[[Dict], 'Module'], None]=None,
             optimizer_creator: Union[Callable[['Module', Dict], 'Optimizer'],
                                      None]=None,
             loss_creator: Union['Loss', Callable[[Dict], 'Loss'], None]=None,
