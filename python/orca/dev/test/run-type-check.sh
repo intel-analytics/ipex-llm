@@ -13,4 +13,7 @@ mypy --install-types --non-interactive --config-file ${ORCA_DEVTEST_DIR}/mypy.in
                                                      $ORCA_HOME/src/bigdl/orca/ray/ \
                                                      $ORCA_HOME/src/bigdl/orca/inference/ \
                                                      $ORCA_HOME/src/bigdl/orca/learn/trigger.py \
-                                                     $ORCA_HOME/src/bigdl/orca/learn/metrics.py
+                                                     $ORCA_HOME/src/bigdl/orca/learn/metrics.py \
+                                                     $ORCA_HOME/src/bigdl/orca/learn/tf2/estimator.py \
+                                                     $ORCA_HOME/src/bigdl/orca/learn/tf2/pyspark_estimator.py \
+                                                     $ORCA_HOME/src/bigdl/orca/learn/tf2/ray_estimator.py
