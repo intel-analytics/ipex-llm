@@ -171,7 +171,7 @@ jobs:
       - name: Set up maven
         uses: ./.github/actions/maven-setup-action
       - name: Run test
-        uses: ./.github/actions/orca-notebook-xshards-action
+        uses: ./.github/actions/orca/orca-notebook-xshards-action
 
   Orca-Python-Py37-Spark3:
     needs: changes
