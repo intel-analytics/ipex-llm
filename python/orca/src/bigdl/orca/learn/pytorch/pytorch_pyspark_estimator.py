@@ -105,14 +105,14 @@ class PyTorchPySparkEstimator(BaseEstimator):
     def __init__(
             self,
             *,
-            model_creator: Callable[[Dict], 'Module'],
+            model_creator: Union[Callable[[Dict], 'Module'], None]=None,
             optimizer_creator: Union[Callable[['Module', Dict], 'Optimizer'],
                                      None]=None,
             loss_creator: Union['Loss', Callable[[Dict], 'Loss'], None]=None,
             metrics: Union['Metric', List['Metric'], None]=None,
             scheduler_creator: Optional[Callable[[Dict], 'LRScheduler']]=None,
             training_operator_cls: Type[TrainingOperator]=TrainingOperator,
-            config: Dict=None,
+            config: Optional[Dict]=None,
             scheduler_step_freq: str="batch",
             use_tqdm: bool=False,
             workers_per_node: int=1,
@@ -133,7 +133,7 @@ class PyTorchPySparkEstimator(BaseEstimator):
 
         sc = OrcaContext.get_spark_context()
 
-        if not isinstance(model_creator, types.FunctionType):
+        if model_creator and not isinstance(model_creator, types.FunctionType):
             # Torch model is also callable.
             invalidInputError(False,
                               "Must provide a function for model_creator")
@@ -192,7 +192,8 @@ class PyTorchPySparkEstimator(BaseEstimator):
             cluster_info=self._get_cluster_info(sc),
             **local_init_params)
 
-        self.state_dict = self.driver_runner.get_state_dict()
+        if self.model_creator:
+            self.state_dict = self.driver_runner.get_state_dict()
 
     def create_tcpstore_server(self) -> 'TCPStore':
         import torch.distributed as dist
@@ -281,6 +282,11 @@ class PyTorchPySparkEstimator(BaseEstimator):
                                                            num_workers=self.num_workers,
                                                            shard_size=batch_size)
 
+        if self.model_creator is None:
+            invalidInputError(False,
+                              "Must provide callable function for model_creator "
+                              "or load a saved model.")
+
         sc = OrcaContext.get_spark_context()
         _ = self.create_tcpstore_server()
         cluster_info = self._get_cluster_info(sc)
@@ -296,7 +302,7 @@ class PyTorchPySparkEstimator(BaseEstimator):
             batch_size=batch_size,
             profile=profile,
             info=info,
-            callbacks=callbacks,
+            callbacks=callbacks
         )
 
         if not isinstance(self.optimizer_creator, types.FunctionType):
@@ -428,6 +434,11 @@ class PyTorchPySparkEstimator(BaseEstimator):
         if batch_size <= 0:
             batch_size = 1
 
+        if self.model_creator is None:
+            invalidInputError(False,
+                              "Must provide callable function for model_creator "
+                              "or load a saved model.")
+
         sc = OrcaContext.get_spark_context()
         cluster_info = self._get_cluster_info(sc)
         state_dict = self._get_broadcasted_state_dict(sc)
@@ -435,8 +446,7 @@ class PyTorchPySparkEstimator(BaseEstimator):
         init_params = dict(
             mode="predict",
             state_dict=state_dict,
-            cluster_info=cluster_info,
-        )
+            cluster_info=cluster_info)
         init_params.update(self.worker_init_params)
 
         params = dict(
@@ -519,6 +529,12 @@ class PyTorchPySparkEstimator(BaseEstimator):
         batch_size = batch_size // self.num_workers  # Local batch size for each worker
         if batch_size <= 0:
             batch_size = 1
+
+        if self.model_creator is None:
+            invalidInputError(False,
+                              "Must provide callable function for model_creator "
+                              "or load a saved model.")
+
         sc = OrcaContext.get_spark_context()
         cluster_info = self._get_cluster_info(sc)
         state_dict = self._get_broadcasted_state_dict(sc)
@@ -526,14 +542,14 @@ class PyTorchPySparkEstimator(BaseEstimator):
             mode="evaluate",
             state_dict=state_dict,
             cluster_info=cluster_info)
-
         init_params.update(self.worker_init_params)
 
         params = dict(
             batch_size=batch_size,
             num_steps=num_steps,
             profile=profile,
-            info=info)
+            info=info
+        )
 
         if isinstance(data, SparkXShards):
             data = data.to_lazy()
@@ -580,10 +596,15 @@ class PyTorchPySparkEstimator(BaseEstimator):
 
         :return: The learned PyTorch model.
         """
-        state = self.state_dict
-        model = self.model_creator(self.config)
-        model_state = state["models"][0]
-        model.load_state_dict(model_state)
+        if self.model_creator:
+            state = self.state_dict
+            model = self.model_creator(self.config)
+            model_state = state["models"][0]
+            model.load_state_dict(model_state)
+        else:
+            invalidInputError(False,
+                              "Must provide callable function for model_creator "
+                              "or load a saved model.")
         return model.module if hasattr(model, "module") else model  # type:ignore
 
     def get_state_dict(self) -> Dict:
@@ -623,7 +644,8 @@ class PyTorchPySparkEstimator(BaseEstimator):
         Loads the Estimator state (including model and optimizer) or the entire model
         from the provided model_path.
 
-        :param model_path: (str) Path to the existing model.
+        :param model_path: (str) Path to the existing model. Model class must be defined
+               on the driver when loading the entire model.
         """
         import torch.nn as nn
         if is_local_path(model_path):
@@ -644,6 +666,9 @@ class PyTorchPySparkEstimator(BaseEstimator):
                 self.state_dict = [re.state_dict() for re in res]
         else:
             self.state_dict = res.state_dict()
+        if self.model_creator is None:
+            self.model_creator = lambda config: res
+            self.worker_init_params["model_creator"] = self.model_creator
 
     def save_checkpoint(self, model_path: str):
         """
