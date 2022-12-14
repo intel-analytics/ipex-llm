@@ -38,6 +38,7 @@ from bigdl.dllib.utils.log4Error import invalidInputError
 from pyspark.sql.dataframe import DataFrame
 from typing import TYPE_CHECKING, Any, Dict, List, Callable, Union, Optional
 if TYPE_CHECKING:
+    import numpy as np
     from tensorflow.python.saved_model.save_options import SaveOptions
     from tensorflow.python.keras.callbacks import Callback
     from tensorflow.python.keras.engine.training import Model
@@ -344,7 +345,7 @@ class SparkTFEstimator():
         return res[0]
 
     def predict(self,
-                data: Union["SparkXShards", "DataFrame"],
+                data: "DataFrame",
                 batch_size: Optional[int]=None,
                 verbose: int=1,
                 steps: Optional[int]=None,
@@ -539,7 +540,7 @@ class SparkTFEstimator():
 
     def load(self,
              filepath: str,
-             custom_objects=None,
+             custom_objects: Optional[Dict]=None,
              compile: bool=True) -> None:
         """
         Loads a model saved via `estimator.save()

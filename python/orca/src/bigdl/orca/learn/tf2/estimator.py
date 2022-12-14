@@ -20,8 +20,11 @@ import numpy as np
 from bigdl.orca.learn.utils import get_latest_checkpoint
 from bigdl.dllib.utils.log4Error import invalidInputError
 
-from typing import Dict, Callable, Optional, Any
-
+from typing import TYPE_CHECKING, Dict, Union, Callable, Optional, Any
+if TYPE_CHECKING:
+    from bigdl.orca.data.shard import SparkXShards
+    from bigdl.orca.learn.tf2.ray_estimator import TensorFlow2Estimator
+    from bigdl.orca.learn.tf2.pyspark_estimator import SparkTFEstimator
 
 logger = logging.getLogger(__name__)
 
@@ -39,7 +42,7 @@ class Estimator(object):
                    log_to_driver: bool=True,
                    model_dir: Optional[str]=None,
                    **kwargs
-                   ) -> None:
+                   ) -> Union["TensorFlow2Estimator", "SparkTFEstimator", None]:
         """
         Create an Estimator for tensorflow 2.
 
@@ -99,9 +102,10 @@ def make_data_creator(refs: Any) -> Callable:
     return data_creator
 
 
-def data_length(data):
+def data_length(data: "SparkXShards"):
     x = data["x"]
     if isinstance(x, np.ndarray):
         return x.shape[0]
     else:
         return x[0].shape[0]
+ 
