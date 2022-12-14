@@ -104,11 +104,12 @@ class PytorchOpenVINOModel(AcceleratedLightningModule):
         return self.ov_model.forward_args
 
     @staticmethod
-    def _load(path):
+    def _load(path, config=None):
         """
         Load an OpenVINO model for inference from directory.
 
         :param path: Path to model to be loaded.
+        :param config: The config to be inputted in core.compile_model.
         :return: PytorchOpenVINOModel model for OpenVINO inference.
         """
         status = PytorchOpenVINOModel._load_status(path)
@@ -120,9 +121,12 @@ class PytorchOpenVINOModel(AcceleratedLightningModule):
             invalidInputError(False, "nano_model_meta.yml must specify 'xml_path' for loading.")
         xml_path = Path(path) / status['xml_path']
         thread_num = None
-        if "CPU_THREADS_NUM" in status['config']:
-            thread_num = int(status['config']["CPU_THREADS_NUM"])
-        return PytorchOpenVINOModel(xml_path, config=status['config'], thread_num=thread_num)
+        origin_config = status['config']
+        if config is not None:
+            origin_config.update(config)
+        if "CPU_THREADS_NUM" in origin_config:
+            thread_num = int(origin_config["CPU_THREADS_NUM"])
+        return PytorchOpenVINOModel(xml_path, config=origin_config, thread_num=thread_num)
 
     def pot(self,
             dataloader,
