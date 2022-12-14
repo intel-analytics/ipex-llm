@@ -171,7 +171,7 @@ def setup_package():
         url='https://github.com/intel-analytics/BigDL',
         install_requires=install_requires,
         # "" means user run `pip install bigdl-nano`, install all dependencies in this case
-        extras_require={"": pytorch_requires + tensorflow_requires + inference_requires,
+        extras_require={" ": ["bigdl-nano[pytorch,tensorflow,inference]"],
                         "tensorflow": tensorflow_requires,
                         "tensorflow_27": tensorflow_27_requires,
                         "tensorflow_28": tensorflow_28_requires,
