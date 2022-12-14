@@ -36,7 +36,6 @@ from bigdl.orca.data.shard import SparkXShards
 from bigdl.dllib.utils.log4Error import invalidInputError
 
 from pyspark.sql.dataframe import DataFrame
-
 from typing import TYPE_CHECKING, Any, Dict, List, Callable, Union, Optional
 if TYPE_CHECKING:
     from tensorflow.python.saved_model.save_options import SaveOptions
@@ -54,7 +53,7 @@ def parse_model_dir(model_dir: str) -> str:
 
 class SparkTFEstimator():
     def __init__(self,
-                 model_creator: Callable,
+                 model_creator: Optional[Callable]=None,
                  config: Optional[Dict[str, Any]]=None,
                  compile_args_creator: Optional[Callable]=None,
                  verbose: bool=False,
@@ -111,7 +110,7 @@ class SparkTFEstimator():
             data: Union["SparkXShards", "Dataframe", Callable],
             epochs: int=1,
             batch_size: int=32,
-            verbose: int=1,
+            verbose: Union[str, int]=1,
             callbacks: Optional[str]=None,
             validation_data: Optional[Union["SparkXShards", "Dataframe", Callable]]=None,
             class_weight: Optional[Dict[int, float]]=None,
@@ -121,7 +120,7 @@ class SparkTFEstimator():
             validation_freq: int=1,
             data_config: Optional[Dict[str, Any]]=None,
             feature_cols: Optional[List[str]]=None,
-            label_cols: Optional[List[str]]=None):
+            label_cols: Optional[List[str]]=None) -> List[Dict[str, float]]:
         """
         Train this tensorflow model with train data.
         :param data: train data. It can be XShards, Spark DataFrame or creator function which
@@ -259,7 +258,7 @@ class SparkTFEstimator():
                  callbacks: Optional[List["Callback"]]=None,
                  data_config: Optional[Dict[str, Any]]=None,
                  feature_cols: Optional[List[str]]=None,
-                 label_cols: Optional[List[str]]=None):
+                 label_cols: Optional[List[str]]=None) -> List[Dict[str, float]]:
         """
         Evaluates the model on the validation data set.
         :param data: evaluate data. It can be XShards, Spark DataFrame or creator function which
@@ -351,7 +350,7 @@ class SparkTFEstimator():
                 steps: Optional[int]=None,
                 callbacks: Optional[List["Callback"]]=None,
                 data_config: Optional[Dict[str, Any]]=None,
-                feature_cols: Optional[List[str]]=None):
+                feature_cols: Optional[List[str]]=None) -> "DataFrame":
         """
         Predict the input data
         :param data: predict input data.  It can be XShards or Spark DataFrame.
