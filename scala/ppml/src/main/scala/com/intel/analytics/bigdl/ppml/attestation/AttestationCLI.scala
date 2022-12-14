@@ -93,6 +93,7 @@ object AttestationCLI {
         }
 
         val challengeString = params.challenge
+        val debug = System.getenv("ATTESTATION_DEBUG")
         if (challengeString.length() > 0 && params.asType != ATTESTATION_CONVENTION.MODE_DUMMY) {
             val asQuote = params.asType match {
               case ATTESTATION_CONVENTION.MODE_EHSM_KMS =>
@@ -101,19 +102,16 @@ object AttestationCLI {
             }
             val quoteVerifier = new SGXDCAPQuoteVerifierImpl()
             val verifyQuoteResult = quoteVerifier.verifyQuote(asQuote)
-            val debug = System.getenv("ATTESTATION_DEBUG")
             if (verifyQuoteResult == 0) {
               System.out.println("Quote Verification Success!")
             } else if (verifyQuoteResult == 1) {
-              System.out.println("WARNING:Quote verification passed but BIOS is not up to date." +
-                " result=" + verifyQuoteResult)
+              System.out.println("WARNING:Quote verification passed but BIOS or the software" +
+                " is not up to date.")
             } else if (debug == "true") {
-              System.out.println("ERROR:Quote Verification Fail! In debug mode, continue." +
-                " result=" + verifyQuoteResult)
+              System.out.println("DEBUG:Quote Verification Fail! In debug mode, continue.")
             }
             else {
-              System.out.println("ERROR:Quote Verification Fail! Application killed." +
-                " result=" + verifyQuoteResult)
+              System.out.println("ERROR:Quote Verification Fail! Application killed.")
               System.exit(1)
             }
         }
@@ -122,12 +120,14 @@ object AttestationCLI {
           case "" => as.attestWithServer(Base64.getEncoder.encodeToString(quote))
           case _ => as.attestWithServer(Base64.getEncoder.encodeToString(quote), params.policyID)
         }
-
         if (attResult._1) {
             System.out.println("Attestation Success!")
             // Bash success
             System.exit(0)
-        } else {
+        } else if (debug == "true") {
+          System.out.println("DEBUG:Attestation Fail! In debug mode, continue.")
+        }
+        else {
             System.out.println("Attestation Fail! Application killed!")
             // bash fail
             System.exit(1)

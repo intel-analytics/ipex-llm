@@ -113,9 +113,19 @@ class EHSMAttestationService(kmsServerIP: String, kmsServerPort: String,
       val postString: String = ehsmParams.getPostJSONString()
       postRequest(constructUrl(action), sslConSocFactory, postString)
     }
+    println("postResult:" + postResult)
     // Check sign with nonce
     val sign = postResult.getString(RES_SIGN)
-    val verifyQuoteResult = postResult.getBoolean(RES_RESULT)
+    val result = postResult.getInt(RES_RESULT)
+    var verifyQuoteResult = false;
+    if (result == 0xa000) {
+      verifyQuoteResult = true;
+    } else if (result == 0xa001 || result == 0xa002 || result == 0xa003
+      || result == 0xa007 || result == 0xa008) {
+      println("warning: Attestation pass but BIOS or the software" +
+        " is out of date. Result=" + result)
+      verifyQuoteResult = true;
+    }
     (verifyQuoteResult, postResult.toString)
   }
 
@@ -143,7 +153,16 @@ class EHSMAttestationService(kmsServerIP: String, kmsServerPort: String,
     println("postResult:" + postResult)
     // Check sign with nonce
     val sign = postResult.getString(RES_SIGN)
-    val verifyQuoteResult = postResult.getBoolean(RES_RESULT)
+    val result = postResult.getInt(RES_RESULT)
+    var verifyQuoteResult = false;
+    if (result == 0xa000) {
+      verifyQuoteResult = true;
+    } else if (result == 0xa001 || result == 0xa002 || result == 0xa003
+      || result == 0xa007 || result == 0xa008) {
+      println("warning: Attestation pass but BIOS or the software" +
+        " is out of date. Result=" + result)
+      verifyQuoteResult = true;
+    }
     (verifyQuoteResult, postResult.toString)
   }
 
