@@ -50,6 +50,7 @@ from typing import TYPE_CHECKING, Union, Optional, Callable, Dict, List, Type
 if TYPE_CHECKING:
     from torch.nn import Module
     from torch.optim import Optimizer
+    from bigdl.orca.learn.metrics import Metric
     from torch.nn.modules.loss import _Loss as Loss
     from torch.optim.lr_scheduler import _LRScheduler as LRScheduler
     from torch.distributed import TCPStore
@@ -107,7 +108,7 @@ class PyTorchPySparkEstimator(BaseEstimator):
             optimizer_creator: Union[Callable[['Module', Dict], 'Optimizer'],
                                      None]=None,
             loss_creator: Union['Loss', Callable[[Dict], 'Loss'], None]=None,
-            metrics: Union[Callable, List[Callable], None]=None,
+            metrics: Union['Metric', List['Metric'], None]=None,
             scheduler_creator: Optional[Callable[[Dict], 'LRScheduler']]=None,
             training_operator_cls: Type[TrainingOperator]=TrainingOperator,
             config: Dict=None,
@@ -462,7 +463,7 @@ class PyTorchPySparkEstimator(BaseEstimator):
                  reduce_results: bool=True,
                  info: Optional[Dict]=None,
                  feature_cols: Optional[List[str]]=None,
-                 label_cols: Optional[List[str]]=None) -> List[Dict]:
+                 label_cols: Optional[List[str]]=None) -> Union[List[Dict], Dict]:
         """
         Evaluates a PyTorch model given validation data.
         Note that only accuracy for classification with zero-based label is supported by

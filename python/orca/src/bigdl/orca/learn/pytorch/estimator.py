@@ -23,6 +23,7 @@ if TYPE_CHECKING:
     from torch.optim import Optimizer
     from torch.nn.modules.loss import _Loss as Loss
     from torch.optim.lr_scheduler import _LRScheduler as LRScheduler
+    from bigdl.orca.learn.metrics import Metric
     from bigdl.orca.learn.pytorch.pytorch_ray_estimator import PyTorchRayEstimator
     from bigdl.orca.learn.pytorch.pytorch_spark_estimator import PyTorchSparkEstimator
     from bigdl.orca.learn.pytorch.pytorch_pyspark_estimator import PyTorchPySparkEstimator
@@ -36,7 +37,7 @@ class Estimator(object):
                                     Callable[['Module', Dict], 'Optimizer'],
                                     None]=None,
                    loss: Union['Loss', Callable[[Dict], 'Loss'], None]=None,
-                   metrics: Union[Callable, List[Callable], None]=None,
+                   metrics: Union['Metric', List['Metric'], None]=None,
                    backend: str="spark",
                    config: Dict=None,
                    workers_per_node: int=1,

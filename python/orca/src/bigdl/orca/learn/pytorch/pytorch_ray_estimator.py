@@ -36,6 +36,7 @@ from typing import TYPE_CHECKING, Union, Optional, Callable, Dict, List, Type
 if TYPE_CHECKING:
     from torch.nn import Module
     from torch.optim import Optimizer
+    from bigdl.orca.learn.metrics import Metric
     from torch.nn.modules.loss import _Loss as Loss
     from torch.optim.lr_scheduler import _LRScheduler as LRScheduler
     from torch.distributed import TCPStore
@@ -87,7 +88,7 @@ class PyTorchRayEstimator(BaseRayEstimator):
             optimizer_creator: Union[Callable[['Module', Dict], 'Optimizer'],
                                      None]=None,
             loss_creator: Union['Loss', Callable[[Dict], 'Loss'], None]=None,
-            metrics: Union[Callable, List[Callable], None]=None,
+            metrics: Union['Metric', List['Metric'], None]=None,
             scheduler_creator: Optional[Callable[[Dict], 'LRScheduler']]=None,
             training_operator_cls: Type[TrainingOperator]=TrainingOperator,
             config: Dict=None,
@@ -286,8 +287,8 @@ class PyTorchRayEstimator(BaseRayEstimator):
                 val_shards = validation_data.split(n=self.num_workers,  # type:ignore
                                                    locality_hints=self.remote_workers)
                 for shard, val_shard, worker in zip(shards,
-                                                    val_shards,
-                                                    self.num_workers):  # type:ignore
+                                                    val_shards,  # type:ignore
+                                                    self.num_workers):
                     params["data_creator"] = make_data_creator(shard, feature_cols, label_cols)
 
                     params["validation_data_creator"] = make_data_creator(val_shard,
@@ -393,7 +394,7 @@ class PyTorchRayEstimator(BaseRayEstimator):
                  reduce_results: bool=True,
                  info: Dict=None,
                  feature_cols: Optional[List[str]]=None,
-                 label_cols:  Optional[List[str]]=None) -> List[Dict]:
+                 label_cols:  Optional[List[str]]=None) -> Union[List[Dict], Dict]:
         """
         Evaluates a PyTorch model given validation data.
         Note that only accuracy for classification with zero-based label is supported by
