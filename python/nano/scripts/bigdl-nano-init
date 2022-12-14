@@ -154,7 +154,7 @@ if [ -f "${LIB_DIR}/libiomp5.so" ]; then
 	fi
 
 	echo "Setting KMP_AFFINITY..."
-	export KMP_AFFINITY=granularity=fine
+	export KMP_AFFINITY=granularity=fine,none
 
 	echo "Setting KMP_BLOCKTIME..."
 	export KMP_BLOCKTIME=1
