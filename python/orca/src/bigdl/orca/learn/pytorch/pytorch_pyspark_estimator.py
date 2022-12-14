@@ -111,7 +111,7 @@ class PyTorchPySparkEstimator(BaseEstimator):
             metrics: Union['Metric', List['Metric'], None]=None,
             scheduler_creator: Optional[Callable[[Dict], 'LRScheduler']]=None,
             training_operator_cls: Type[TrainingOperator]=TrainingOperator,
-            config: Dict=None,
+            config: Optional[Dict]=None,
             scheduler_step_freq: str="batch",
             use_tqdm: bool=False,
             workers_per_node: int=1,
