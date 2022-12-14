@@ -66,7 +66,7 @@ data_shard = data_shard.transform_shard(to_nparray)
 def model_creator(config):
     model = Sequential()
     # Adds a densely-connected layer with 64 units to the model:
-    model.add(Conv2D(64,(3, 3), activation='relu', input_shape=(80, 80, 3)))
+    model.add(Conv2D(64, (3, 3), activation='relu', input_shape=(80, 80, 3)))
     model.add(MaxPooling2D(pool_size=(2,2)))
     # Add another:
     model.add(Conv2D(64, (3, 3), activation='relu'))
