@@ -51,7 +51,7 @@ while true ; do
 done
 
 # check if there is conda command
-if [ $? -eq 0 ]
+if [ $? -eq 0 ]# check dllib & spark-submit & master == yarn?
     if [ $deploy_mode == "client" ]
     then
         if [ conf_map["spark.pyspark.driver.python"] ]
