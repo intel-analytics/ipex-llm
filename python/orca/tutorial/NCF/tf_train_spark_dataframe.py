@@ -36,7 +36,7 @@ train_df, test_df, user_num, item_num, sparse_feats_input_dims, num_dense_feats,
 # Step 3: Define the NCF model
 config = dict(
     factor_num=16,
-    lr=1e-3,
+    lr=1e-2,
     item_num=item_num,
     user_num=user_num,
     dropout=0.5,
@@ -72,7 +72,7 @@ val_steps = math.ceil(test_df.count() / batch_size)
 tf_callback = tf.keras.callbacks.TensorBoard(log_dir="./log")
 
 est.fit(train_df,
-        epochs=5,
+        epochs=2,
         batch_size=batch_size,
         feature_cols=feature_cols,
         label_cols=label_cols,
