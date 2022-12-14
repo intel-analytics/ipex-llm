@@ -83,7 +83,7 @@ object VerificationCLI {
                 System.out.println("WARNING:Quote verification passed but BIOS or the software"
                   + " is not up to date.")
             } else if (debug == "true") {
-                System.out.println("DEBUG:Quote Verification Fail! In debug mode, continue.")
+                System.out.println("ERROR:Quote Verification Fail! In debug mode, continue.")
             }
             else {
                 System.out.println("ERROR:Quote Verification Fail! Application killed.")
