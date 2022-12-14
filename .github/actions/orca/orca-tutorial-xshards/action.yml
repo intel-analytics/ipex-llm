@@ -44,6 +44,8 @@ runs:
         export FTP_URI=${FTP_URI}
         chmod a+x python/orca/dev/test/run-tutorial-xshards.sh
         python/orca/dev/test/run-tutorial-xshards.sh
+        chmod a+x python/orca/dev/test/run-tutorial-xshards-notebooks.sh
+        python/orca/dev/test/run-tutorial-xshards-notebooks.sh
 
         source deactivate
         conda remove -n orca-tutorial-xshards-py37 -y --all
