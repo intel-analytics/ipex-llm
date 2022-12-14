@@ -776,7 +776,6 @@ class TorchRunner(BaseRunner):
             state_dict (dict): State dict as returned by the TorchRunner. """
         pass
 
-
     @property
     def given_models(self):
         if len(self.models) > 1:
