@@ -490,7 +490,7 @@ class PyTorchRayEstimator(BaseRayEstimator):
         :return: The learned PyTorch model.
         """
         state = self.get_state_dict()
-        model = self.model_creator(self.config) # type:ignore
+        model = self.model_creator(self.config)  # type:ignore
         model_state = state["models"][0]
         model.load_state_dict(model_state)
         return model.module if hasattr(model, "module") else model  # type:ignore
