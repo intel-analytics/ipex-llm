@@ -319,6 +319,25 @@ class TestOnnx(TestCase):
                                                calib_data=(torch.rand(2,3,1,1), 5))
         result_m = accmodel(data, np.array([5]))  # TODO: make this 5
 
+        # default None values
+        class Net(nn.Module):
+            def __init__(self):
+                super().__init__()
+            def forward(self, x, a=None):
+                if a is None:
+                    return x
+                else:
+                    return x + 1
+        model = Net()
+
+        data = torch.rand(1,3,1,1)
+
+        # sample with only required parameters (in a tuple)
+        accmodel = InferenceOptimizer.quantize(model,
+                                               accelerator="onnxruntime",
+                                               calib_data=torch.rand(2,3,1,1))
+        result_m = accmodel(data)
+
 
 if __name__ == '__main__':
     pytest.main([__file__])
