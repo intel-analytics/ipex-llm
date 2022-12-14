@@ -13,9 +13,13 @@ set -e
 eval set -- "$ARGS"
 
 # extract options and their arguments into variables.
+# declare dir -> archive map
 declare -A archives_map
+# declare spark conf map
 declare -A conf_map
-dir="environment"
+# parse PYSPARK_PYTHON for default value of environment directory.
+array=(${PYSPARK_PYTHON///bin/ })
+dir=${array[0]}
 while true ; do
     case "$1" in
         -a|--archives)
@@ -46,31 +50,55 @@ while true ; do
     esac
 done
 
-if [ $deploy_mode == "client" ]
-then
-    dir=${conf_map["spark.pyspark.driver.python"]} # todo: deal with corner case.
-else
-    dir=${conf_map["spark.yarn.appMasterEnv.PYSPARK_PYTHON"]}
-fi
-
-archive=${archives_map[$dir]}
-
-set +e
-which "conda" >/dev/null 2>&1
+# check if there is conda command
 if [ $? -eq 0 ]
+    if [ $deploy_mode == "client" ]
+    then
+        if [ conf_map["spark.pyspark.driver.python"] ]
+        then
+            dir=${conf_map["spark.pyspark.driver.python"]}
+        else
+            if [ conf_map["spark.pyspark.python"] ]
+            then
+                dir=${conf_map["spark.pyspark.python"]}
+            fi
+        fi
+    else
+        if [ $deploy_mode == "cluster" ]
+        then
+            if [ conf_map["spark.yarn.appMasterEnv.PYSPARK_PYTHON"]]
+                dir=${conf_map["spark.yarn.appMasterEnv.PYSPARK_PYTHON"]}
+            fi
+        fi
+    fi
+    # check environment directory.
+    if [ ! $dir ]
+    then
+        echo "Please specify python environment directory." 
+        echo "You can specify environment variable 'PYSPARK_PYTHON' or specify it in SparkConf."
+        exit 1
+    fi
+    # obtain archive file.
+    archive=${archives_map[$dir]}
+    # check archive file.
+    if [ ! archive ]
+    then
+        echo "Please specify the archive file for environment."
+        exit 1
+    fi
     # check if environment exists
     if [ ! -d "${dir}" ]
     then
         # extract environment
-        echo "extracting ${archive} to ${dir} ..."
+        echo "Extracting ${archive} to ${dir} ..."
         mkdir -p ${dir}
         which "pv" >/dev/null 2>&1
         if [ $? -eq 0 ]
         then
-            echo "extracting with progress bar..."
+            echo "Extracting with progress bar..."
             pv ${archive}|tar -xz -C ${dir}
         else
-            echo "extracting without progress bar...please install pv if you need progress bar."
+            echo "Extracting without progress bar...please install pv if you need progress bar."
             tar -xzf ${archive} -C ${dir}
         fi
     fi
