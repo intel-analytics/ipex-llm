@@ -385,8 +385,11 @@ class TestPyTorchEstimator(TestCase):
                                   model_fn=lambda config: IdentityNet())
         result = estimator.predict(df, batch_size=4,
                                    feature_cols=["feature"])
+        assert "prediction" in result.columns
         expr = "sum(cast(feature <> to_array(prediction) as int)) as error"
         assert result.selectExpr(expr).first()["error"] == 0
+        predictions = result.collect()
+        assert len(predictions) == 20
 
     def test_xshards_predict_save_load(self):
 
