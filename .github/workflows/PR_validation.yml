@@ -161,7 +161,7 @@ jobs:
 
   Orca-Notebook-Test:
     needs: changes
-    if: ${{ needs.changes.outputs.ppml == 'true' }}
+    if: ${{ needs.changes.outputs.orca == 'true' }}
     runs-on: [ self-hosted, Gondolin, ubuntu-20.04-lts ]
 
     steps:
