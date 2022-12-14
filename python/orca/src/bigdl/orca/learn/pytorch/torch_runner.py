@@ -179,18 +179,17 @@ class TorchRunner(BaseRunner):
         if self.model_creator:
             self.models = self.model_creator(self.config)
 
-        if self.models:
             if isinstance(self.models, nn.Sequential) or not isinstance(self.models, Iterable):
                 self.models = [self.models]
             invalidInputError(all(isinstance(model, nn.Module) for model in self.models),
                                  ("All models must be PyTorch models: {}.".format(self.models)))
 
-        if self.optimizer_creator and self.models:
-            self.logger.debug("Creating optimizer.")
-            self.optimizers = self.optimizer_creator(self.given_models,
-                                                     self.config)
-            if self.optimizers and not isinstance(self.optimizers, Iterable):
-                self.optimizers = [self.optimizers]
+            if self.optimizer_creator:
+                self.logger.debug("Creating optimizer.")
+                self.optimizers = self.optimizer_creator(self.given_models,
+                                                         self.config)
+                if self.optimizers and not isinstance(self.optimizers, Iterable):
+                    self.optimizers = [self.optimizers]
 
         self._create_schedulers_if_available()
         self._create_loss()
