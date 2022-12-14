@@ -56,7 +56,7 @@ def generate_data(args):
 
     # transfer to tensorflow or torch dataset
     if args.framework == "tensorflow":
-        for tsdata in [tsdata_train, tsdata_test]:
+        for tsdata in [tsdata_train, tsdata_val, tsdata_test]:
             tsdata.roll(lookback=args.lookback, horizon=args.horizon)
         train_loader = tsdata_train.to_tf_dataset(batch_size=args.training_batchsize)
         val_loader = tsdata_val.to_tf_dataset(batch_size=args.training_batchsize)
