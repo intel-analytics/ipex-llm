@@ -178,7 +178,9 @@ class BF16Model(AcceleratedLightningModule):
         model.eval()
         model.load_state_dict(state_dict)
         thread_num = status.get('thread_num', None)
-        if thread_num is not None and thread_num != {}:
+        if thread_num == {}:
+            thread_num = None
+        if thread_num is not None:
             thread_num = int(status['thread_num'])
         return BF16Model(model, channels_last=status['channels_last'],
                          thread_num=thread_num)

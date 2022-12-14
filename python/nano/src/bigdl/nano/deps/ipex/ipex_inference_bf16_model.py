@@ -94,7 +94,9 @@ class PytorchIPEXJITBF16Model(PytorchIPEXJITModel):
             model.load_state_dict(state_dict)
             from_load = False
         thread_num = status.get('thread_num', None)
-        if thread_num is not None and thread_num != {}:
+        if thread_num == {}:
+            thread_num = None
+        if thread_num is not None:
             thread_num = int(status['thread_num'])
         return PytorchIPEXJITBF16Model(model, use_ipex=status['use_ipex'],
                                        use_jit=status['use_jit'],
