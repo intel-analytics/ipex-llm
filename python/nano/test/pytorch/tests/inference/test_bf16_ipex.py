@@ -165,7 +165,7 @@ class Pytorch1_11:
         input = torch.rand(5,3,1,1)
         expected_output_len = 5
 
-        # test with jit.script
+        # test with jit.script (with ipex)
         accmodel = InferenceOptimizer.quantize(model, precision='bf16',
                                                accelerator='jit', 
                                                use_ipex=True,
@@ -184,7 +184,7 @@ class Pytorch1_11:
         assert loaded_model.jit_converter == 'script'
 
 
-        # test with jit.trace
+        # test with jit.trace (with ipex)
         accmodel = InferenceOptimizer.quantize(model, precision='bf16',
                                                accelerator='jit', 
                                                use_ipex=True,
@@ -197,7 +197,6 @@ class Pytorch1_11:
         # test with deafult jit_converter
         accmodel = InferenceOptimizer.quantize(model, precision='bf16',
                                                accelerator='jit',
-                                               use_ipex=True,
                                                input_sample=input_sample)
         with InferenceOptimizer.get_context(accmodel):
             output = accmodel(input)
@@ -207,7 +206,6 @@ class Pytorch1_11:
         with pytest.raises(RuntimeError):
             InferenceOptimizer.quantize(model, precision='bf16',
                                         accelerator='jit',
-                                        use_ipex=True,
                                         input_sample=input_sample,
                                         jit_converter='scriptttt')
 

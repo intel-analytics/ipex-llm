@@ -17,7 +17,6 @@
 from unittest import TestCase
 import pytest
 import torch
-from torch import nn
 from bigdl.nano.pytorch import InferenceOptimizer
 from torchvision.models.resnet import resnet18
 from unittest.mock import MagicMock, PropertyMock, patch
@@ -181,62 +180,6 @@ class Pytorch1_12:
         bf16_model.hello()
         with pytest.raises(AttributeError):
             bf16_model.width
-
-    def test_bf16_jit_converter(self):
-
-        class Net(nn.Module):
-            def __init__(self):
-                super().__init__()
-            def forward(self, x):
-                return torch.arange(len(x))
-
-        model = Net()
-
-        input_sample = torch.rand(1,3,1,1)
-        input = torch.rand(5,3,1,1)
-        expected_output_len = 5
-
-        # test with jit.script
-        accmodel = InferenceOptimizer.quantize(model, precision='bf16',
-                                               accelerator='jit', 
-                                               input_sample=input_sample, 
-                                               jit_converter='script')
-        with InferenceOptimizer.get_context(accmodel):
-            output = accmodel(input)
-        assert output.shape[0] == expected_output_len
-
-        with tempfile.TemporaryDirectory() as tmp_dir_name:
-            InferenceOptimizer.save(accmodel, tmp_dir_name)
-            loaded_model = InferenceOptimizer.load(tmp_dir_name)
-        with InferenceOptimizer.get_context(loaded_model):
-            output = loaded_model(input)
-        assert output.shape[0] == expected_output_len
-        assert loaded_model.jit_converter == 'script'
-
-
-        # test with jit.trace
-        accmodel = InferenceOptimizer.quantize(model, precision='bf16',
-                                               accelerator='jit', 
-                                               input_sample=input_sample, 
-                                               jit_converter='trace')
-        with InferenceOptimizer.get_context(accmodel):
-            output = accmodel(input)
-        assert output.shape[0] != expected_output_len
-
-        # test with deafult jit_converter
-        accmodel = InferenceOptimizer.quantize(model, precision='bf16',
-                                               accelerator='jit', 
-                                               input_sample=input_sample)
-        with InferenceOptimizer.get_context(accmodel):
-            output = accmodel(input)
-        assert output.shape[0] != expected_output_len
-
-        # test with invalidInputError
-        with pytest.raises(RuntimeError):
-            InferenceOptimizer.quantize(model, precision='bf16',
-                                        accelerator='jit', 
-                                        input_sample=input_sample,
-                                        jit_converter='scriptttt')
 
 
 TORCH_VERSION_CLS = Pytorch1_12
