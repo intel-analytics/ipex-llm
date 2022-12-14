@@ -2,7 +2,7 @@
 
 BigDL-Nano provides several APIs which can help users easily apply optimizations on inference pipelines to improve latency and throughput. Currently, performance accelerations are achieved by integrating extra runtimes as inference backend engines or using quantization methods on full-precision trained models to reduce computation during inference. InferenceOptimizer(`bigdl.nano.tf.keras.InferenceOptimizer`) provides the APIs for all optimizations that you need for inference.
 
-For runtime acceleration, BigDL-Nano has enabled two kinds of runtime for users in `InferenceOptimizer.trace()`, ONNXRuntime, OpenVINO.
+For runtime acceleration, BigDL-Nano has enabled two kinds of runtime (OpenVINO and ONNXRuntime) for users in `InferenceOptimizer.trace()`.
 
 ```eval_rst
 .. warning::
@@ -11,7 +11,7 @@ For runtime acceleration, BigDL-Nano has enabled two kinds of runtime for users 
     Please use ``bigdl.nano.tf.keras.InferenceOptimizer.trace`` instead.
 ```
 
-For quantization, BigDL-Nano provides only post-training quantization in `InferenceOptimizer.quantize()` for users to infer with models of 8-bit precision. Quantization-Aware Training is not available for now. Model conversion to 16-bit like BF16, and FP16 will be coming soon.
+For quantization, BigDL-Nano provides only post-training quantization in `InferenceOptimizer.quantize()` for users to infer with models of 8-bit precision. Quantization-Aware Training is not available for now. Model conversion to 16-bit like BF16 and FP16 is coming soon.
 
 ```eval_rst
 .. warning::
@@ -51,11 +51,10 @@ Taking MobileNetV2 as an example, you can use runtime acceleration as below:
 import tensorflow as tf
 from tensorflow.keras.applications.mobilenet_v2 import MobileNetV2
 import numpy as np
-from bigdl.nano.tf.keras import Model, InferenceOptimizer
+from bigdl.nano.tf.keras import InferenceOptimizer
 
 # step 1: create your model
 model = MobileNetV2(weights=None, input_shape=[40, 40, 3], classes=10)
-model = Model(inputs=model.inputs, outputs=model.outputs)
 
 # step 2: prepare your data and dataset
 train_examples = np.random.random((100, 40, 40, 3))
@@ -79,13 +78,11 @@ traced_model.predict(train_dataset)
 
 ## Quantization
 
-Quantization is widely used to compress models to a lower precision, which not only reduces the model size but also accelerates inference. BigDL-Nano provides `InferenceOptimizer.quantize()` API for users to quickly obtain a quantized model with accuracy control by specifying a few arguments. `Sequential` has similar usage, so we will only show how to use an instance of `Model` to enable quantization pipeline here.
+Quantization is widely used to compress models to a lower precision, which not only reduces the model size but also accelerates inference. BigDL-Nano provides `InferenceOptimizer.quantize()` API for users to quickly obtain a quantized model with accuracy control by specifying a few arguments.
 
 To use INC as your quantization engine, you can choose `accelerator=None/'onnxruntime'`. Otherwise, `accelerator='openvino'` means using OpenVINO POT (Post-training Optimization) to do quantization.
 
 ### Quantization without Accuracy Control
-
-By default, `InferenceOptimizer.quantize()` doesn't search the tuning space and returns the fully-quantized model without considering the accuracy drop. If you need to search quantization tuning space for a model with accuracy control, you'll have to specify a few arguments to define the tuning space. More instructions in [Quantization with Accuracy Control](#quantization-with-accuracy-control)
 
 Taking the example in [Runtime Acceleration](#runtime-acceleration), you can use quantization as following:
 
@@ -111,11 +108,6 @@ This is a most basic usage to quantize a model with defaults, INT8 precision, an
 
 ```eval_rst
 .. note::
-    To use quantization, you must use functional API to create a keras model. This is a known limitation of INC.
-```
-
-```eval_rst
-.. tip::
     Now BigDL-Nano only support static quantization, which needs training data to do calibration. Parameter `x` and `y` are used to receive calibration data.
 
     - ``x``: Input data which is used for training. It could be
@@ -129,7 +121,9 @@ This is a most basic usage to quantize a model with defaults, INT8 precision, an
 
 ### Quantization with Accuracy Control
 
-A set of arguments that helps to tune the results for both INC and POT quantization:
+By default, `InferenceOptimizer.quantize()` doesn't search the tuning space and returns the fully-quantized model without considering the accuracy drop. If you need to search quantization tuning space for a model with accuracy control, you may need to specify a few parameters.
+
+Following parameters can help you tune the results for both INC and POT quantization:
 
 - `metric`:  A `tensorflow.keras.metrics.Metric` object for evaluation.
 - `accuracy_criterion`: A dictionary to specify the acceptable accuracy drop, e.g. `{'relative': 0.01, 'higher_is_better': True}`
@@ -142,7 +136,7 @@ A set of arguments that helps to tune the results for both INC and POT quantizat
 
 **Accuracy Control with INC**
 
-There are a few arguments required only by INC.
+There are a few arguments that only take effect when using INC.
 - `tuning_strategy` (optional): it specifies the algorithm to search the tuning space. In most cases, you don't need to change it.
 - `timeout`: Timeout of your tuning. Default: 0, means endless time for tuning.
 - `inputs`:      A list of input names. Default: None, automatically get names from the graph.
@@ -156,7 +150,7 @@ from torchmetrics.classification import MulticlassAccuracy
 q_model = InferenceOptimizer.quantize(model,
                                       x=train_dataset,
                                       accelerator=None,
-                                      metric=Accuracy(),
+                                      metric=MulticlassAccuracy(num_classes=10),
                                       accuracy_criterion={'relative': 0.01,
                                                           'higher_is_better': True},
                                       approach='static',
