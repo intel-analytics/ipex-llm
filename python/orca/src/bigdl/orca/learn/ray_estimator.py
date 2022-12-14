@@ -48,7 +48,7 @@ class Estimator(BaseEstimator):
         :param data: evaluation data.
         :param batch_size: batch size per thread.
         :param num_steps: Number of batches to compute update steps on. This corresponds also to
-        the number of times TrainingOperator.validate_batch is called.
+        the number of times TorchRunner.validate_batch is called.
         :return: evaluation result as a dictionary of {'metric name': metric value}
         """
         pass

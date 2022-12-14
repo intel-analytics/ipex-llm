@@ -15,9 +15,8 @@
 #
 
 import logging
-from bigdl.orca.learn.pytorch.training_operator import TrainingOperator
 
-from typing import TYPE_CHECKING, Union, Optional, Callable, Dict, List, Type
+from typing import TYPE_CHECKING, Union, Optional, Callable, Dict, List
 if TYPE_CHECKING:
     from torch.nn import Module
     from torch.optim import Optimizer
@@ -48,7 +47,6 @@ class Estimator(object):
                    sync_stats: bool=False,
                    log_level: int=logging.INFO,
                    log_to_driver: bool=True,
-                   training_operator_cls: Type[TrainingOperator]=TrainingOperator,
                    ) -> Union['PyTorchRayEstimator',
                               'PyTorchSparkEstimator',
                               'PyTorchPySparkEstimator',
@@ -104,7 +102,6 @@ class Estimator(object):
                                        loss_creator=loss,
                                        metrics=metrics,
                                        scheduler_creator=scheduler_creator,
-                                       training_operator_cls=training_operator_cls,
                                        config=config,
                                        scheduler_step_freq=scheduler_step_freq,
                                        use_tqdm=use_tqdm,
@@ -128,7 +125,6 @@ class Estimator(object):
                                            loss_creator=loss,
                                            metrics=metrics,
                                            scheduler_creator=scheduler_creator,
-                                           training_operator_cls=training_operator_cls,
                                            config=config,
                                            scheduler_step_freq=scheduler_step_freq,
                                            use_tqdm=use_tqdm,
