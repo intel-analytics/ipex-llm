@@ -5,7 +5,7 @@ metadata:
 spec:
   containers:
   - name: bigdl-tdx-ehsm
-    image: clxgateway.sh.intel.com/intelanalytics/bigdl-tdx-client-spark-3.1.3:2.2.0-SNAPSHOT
+    image: intelanalytics/kms-utils:0.3.0-SNAPSHOT
     securityContext:
        privileged: true
     command: ["/bin/sleep", "3650d"]
