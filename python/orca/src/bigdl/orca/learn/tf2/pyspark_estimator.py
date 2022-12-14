@@ -155,8 +155,12 @@ class SparkTFEstimator():
         if isinstance(data, DataFrame) or isinstance(data, SparkXShards):
             if data.rdd.getNumPartitions() != self.num_workers:
                 data = data.repartition(self.num_workers)
-            if validation_data and validation_data.rdd.getNumPartitions() != self.num_workers:
-                validation_data = validation_data.repartition(self.num_workers)
+            if validation_data:
+                assert isinstance(validation_data, DataFrame) or \
+                       isinstance(validation_data, SparkXShards),\
+                    "validation_data should have the same type with train data"
+                if validation_data.rdd.getNumPartitions() != self.num_workers:
+                    validation_data = validation_data.repartition(self.num_workers)
         data, validation_data = maybe_dataframe_to_xshards(data, validation_data,
                                                            feature_cols, label_cols,
                                                            mode="fit",
