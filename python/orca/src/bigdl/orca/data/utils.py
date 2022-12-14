@@ -399,7 +399,6 @@ def spark_df_to_rdd_pd(df: "DataFrame", squeeze: bool=False, index_col: Optional
                        dtype: Optional[Union[str, Dict[str, str], Dict[str, Type[float32]],
                                        Dict[int, Union[Type[float32], Type[int32]]]]]=None,
                        index_map: Optional[Dict[int, str]]=None) -> "RDD":
-    from bigdl.orca.data import SparkXShards
     from bigdl.orca import OrcaContext
 
     import pyspark.sql.functions as F
