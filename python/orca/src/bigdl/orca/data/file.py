@@ -187,7 +187,7 @@ def listdir(path: str) -> List[str]:
         invalidOperationError(False, "not implement")
         return []
     elif path.startswith("hdfs://"):
-        cmd = 'hdfs dfs -ls {}; echo $?'.format(path)
+        cmd = 'hdfs dfs -ls -C {}'.format(path)
         result = subprocess.getstatusoutput(cmd)
         if result[0] == 0:
             return result[1].split('\n')[:-1]
@@ -220,7 +220,7 @@ def makedirs(path: str) -> None:
         key = "/".join(path_parts)
         return s3_client.put_object(Bucket=bucket, Key=key, Body='')
     elif path.startswith("hdfs://"):
-        cmd = 'hdfs dfs -mkdir {}; echo $?'.format(path)
+        cmd = 'hdfs dfs -mkdir {}'.format(path)
         result = subprocess.getstatusoutput(cmd)
         if result[0] != 0:
             invalidOperationError(False, result[1])
@@ -241,7 +241,7 @@ def rmdir(path: str) -> None:
     if path.startswith("s3"):  # s3://bucket/file_path
         invalidOperationError(False, "not implement")
     elif path.startswith("hdfs://"):
-        cmd = 'hdfs dfs -rm -r {}; echo $?'.format(path)
+        cmd = 'hdfs dfs -rm -r {}'.format(path)
         result = subprocess.getstatusoutput(cmd)
         if result[0] != 0:
             invalidOperationError(False, result[1])
