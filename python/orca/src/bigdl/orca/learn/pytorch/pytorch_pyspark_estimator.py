@@ -22,18 +22,19 @@ import shutil
 import tempfile
 import logging
 
+from pyspark.sql.dataframe import DataFrame
+
 from bigdl.dllib.utils.file_utils import is_local_path
 from bigdl.orca.learn.pytorch.training_operator import TrainingOperator
 from bigdl.orca.learn.pytorch.pytorch_pyspark_worker import PytorchPysparkWorker
 from bigdl.orca.learn.pytorch.utils import process_stats
 from bigdl.orca.learn.utils import maybe_dataframe_to_xshards, dataframe_to_xshards, \
     convert_predict_xshards_to_dataframe, make_data_creator, update_predict_xshards, \
-    reload_dataloader_creator, process_xshards_of_pandas_dataframe
+    reload_dataloader_creator, process_xshards_of_pandas_dataframe, add_predict_to_pd_xshards
 from bigdl.orca.data import SparkXShards
 from bigdl.orca import OrcaContext
 from bigdl.orca.learn.base_estimator import BaseEstimator
-from bigdl.orca.data.file import get_remote_file_to_local, enable_multi_fs_save, \
-    enable_multi_fs_load, put_local_file_to_remote
+from bigdl.orca.data.file import get_remote_file_to_local, put_local_file_to_remote
 from bigdl.dllib.utils.common import get_node_and_core_number
 from bigdl.orca.learn.log_monitor import start_log_server, stop_log_server
 
@@ -255,6 +256,18 @@ class PyTorchPySparkEstimator(BaseEstimator):
         batch_size = batch_size // self.num_workers  # Local batch size for each worker
         if batch_size <= 0:
             batch_size = 1
+        if isinstance(data, SparkXShards):
+            data = data.to_lazy()
+            if validation_data and isinstance(validation_data, SparkXShards):
+                validation_data = validation_data.to_lazy()
+        # Data partition should be equal to num workers.
+        # Repartition Spark DataFrame before converting to SparkXShards.
+        # Repartition on SparkXShards will result in empty partitions.
+        if isinstance(data, DataFrame) or isinstance(data, SparkXShards):
+            if data.rdd.getNumPartitions() != self.num_workers:
+                data = data.repartition(self.num_workers)
+            if validation_data and validation_data.rdd.getNumPartitions() != self.num_workers:
+                validation_data = validation_data.repartition(self.num_workers)
         data, validation_data = maybe_dataframe_to_xshards(data,
                                                            validation_data=validation_data,
                                                            feature_cols=feature_cols,
@@ -285,8 +298,7 @@ class PyTorchPySparkEstimator(BaseEstimator):
             invalidInputError(False,
                               "Must provide a function for optimizer_creator")
 
-        if isinstance(data, SparkXShards):
-            # set train/validation
+        if isinstance(data, SparkXShards):  # Computation triggered when collect
             params["wrap_dataloader"] = False
             if data._get_class_name() == 'pandas.core.frame.DataFrame':
                 data, validation_data = process_xshards_of_pandas_dataframe(data, feature_cols,
@@ -303,8 +315,7 @@ class PyTorchPySparkEstimator(BaseEstimator):
                     return result
 
                 data_rdd = data.rdd  # type:ignore
-                res = data_rdd.repartition(self.num_workers).barrier() \
-                    .mapPartitions(
+                res = data_rdd.barrier().mapPartitions(
                     lambda iter: transform_func(iter, init_params, params)).collect()
 
             else:
@@ -322,8 +333,7 @@ class PyTorchPySparkEstimator(BaseEstimator):
                 train_rdd = data.rdd.mapPartitions(lambda iter: [list(iter)])  # type:ignore
                 val_rdd = validation_data.rdd  # type:ignore
                 val_rdd = val_rdd.mapPartitions(lambda iter: [list(iter)])
-                res = train_rdd.zip(val_rdd).repartition(self.num_workers).barrier() \
-                    .mapPartitions(
+                res = train_rdd.zip(val_rdd).barrier().mapPartitions(
                     lambda iter: transform_func(iter, init_params, params)).collect()
 
         else:
@@ -387,7 +397,7 @@ class PyTorchPySparkEstimator(BaseEstimator):
             param["data_creator"] = make_data_creator(partition_data)
             return PytorchPysparkWorker(**init_param).predict(**params)
 
-        pred_shards = SparkXShards(xshards.rdd.mapPartitions(
+        pred_shards = SparkXShards.lazy(xshards.rdd.mapPartitions(
             lambda iter: transform_func(iter, init_params, params)))
         return pred_shards
 
@@ -412,8 +422,6 @@ class PyTorchPySparkEstimator(BaseEstimator):
         batch_size = batch_size // self.num_workers  # Local batch size for each worker
         if batch_size <= 0:
             batch_size = 1
-        from bigdl.orca.data import SparkXShards
-        from pyspark.sql import DataFrame
 
         sc = OrcaContext.get_spark_context()
         cluster_info = self._get_cluster_info(sc)
@@ -431,7 +439,7 @@ class PyTorchPySparkEstimator(BaseEstimator):
             profile=profile
         )
 
-        if isinstance(data, DataFrame):
+        if isinstance(data, DataFrame):  # Computation would be triggered by the user
             xshards, _ = dataframe_to_xshards(data,
                                               validation_data=None,
                                               feature_cols=feature_cols,
@@ -441,15 +449,20 @@ class PyTorchPySparkEstimator(BaseEstimator):
 
             pred_shards = self._predict_spark_xshards(xshards, init_params, params)
             result = convert_predict_xshards_to_dataframe(data, pred_shards)
-
-        elif isinstance(data, SparkXShards):
-            if data._get_class_name() == 'pandas.core.frame.DataFrame':
-                data = process_xshards_of_pandas_dataframe(data, feature_cols)
-            pred_shards = self._predict_spark_xshards(data, init_params, params)
-            result = update_predict_xshards(data, pred_shards)
+        elif isinstance(data, SparkXShards):  # Computation triggered when updating XShards
+            xshards = data.to_lazy()
+            if xshards._get_class_name() == 'pandas.core.frame.DataFrame':
+                xshards = process_xshards_of_pandas_dataframe(xshards, feature_cols)
+                pred_shards = self._predict_spark_xshards(xshards, init_params, params)
+                result = add_predict_to_pd_xshards(xshards, pred_shards)
+            else:
+                pred_shards = self._predict_spark_xshards(xshards, init_params, params)
+                result = update_predict_xshards(xshards, pred_shards)
+            # Uncache the original data since it is already included in the result
+            data.uncache()
         else:
             invalidInputError(False,
-                              "Only xshards or Spark DataFrame is supported for predict")
+                              "Only XShards or Spark DataFrame are supported for predict")
 
         return result
 
@@ -516,7 +529,11 @@ class PyTorchPySparkEstimator(BaseEstimator):
             profile=profile,
             info=info)
 
-        from bigdl.orca.data import SparkXShards
+        if isinstance(data, SparkXShards):
+            data = data.to_lazy()
+        if isinstance(data, DataFrame) or isinstance(data, SparkXShards):
+            if data.rdd.getNumPartitions() != self.num_workers:
+                data = data.repartition(self.num_workers)
         data, _ = maybe_dataframe_to_xshards(data,
                                              validation_data=None,
                                              feature_cols=feature_cols,
@@ -524,11 +541,10 @@ class PyTorchPySparkEstimator(BaseEstimator):
                                              mode="evaluate",
                                              num_workers=self.num_workers,
                                              shard_size=batch_size)
-        if isinstance(data, SparkXShards):
+        if isinstance(data, SparkXShards):  # Computation triggered when collect
             params["wrap_dataloader"] = False
             if data._get_class_name() == 'pandas.core.frame.DataFrame':
                 data = process_xshards_of_pandas_dataframe(data, feature_cols, label_cols)
-            # set train/validation data
 
             def transform_func(iter, init_param, param):
                 partition_data = list(iter)
@@ -536,8 +552,8 @@ class PyTorchPySparkEstimator(BaseEstimator):
                 return PytorchPysparkWorker(**init_param).validate(**param)
 
             data_rdd = data.rdd  # type:ignore
-            res = data_rdd.repartition(self.num_workers).barrier() \
-                .mapPartitions(lambda iter: transform_func(iter, init_params, params)).collect()
+            res = data_rdd.barrier().mapPartitions(
+                lambda iter: transform_func(iter, init_params, params)).collect()
         else:
             params["data_creator"] = reload_dataloader_creator(data)
 

@@ -435,15 +435,15 @@ class SparkTFEstimator():
             result = convert_predict_xshards_to_dataframe(data, pred_shards)
         elif isinstance(data, SparkXShards):  # Computation triggered when updating XShards
             xshards = data.to_lazy()
-            if data._get_class_name() == 'pandas.core.frame.DataFrame':
-                xshards = process_xshards_of_pandas_dataframe(data, feature_cols)
+            if xshards._get_class_name() == 'pandas.core.frame.DataFrame':
+                xshards = process_xshards_of_pandas_dataframe(xshards, feature_cols)
                 pred_shards = SparkXShards.lazy(xshards.rdd.mapPartitions(
                     lambda iter: transform_func(iter, init_params, params)))
-                result = add_predict_to_pd_xshards(data, pred_shards)
+                result = add_predict_to_pd_xshards(xshards, pred_shards)
             else:
-                pred_shards = SparkXShards(xshards.rdd.mapPartitions(
+                pred_shards = SparkXShards.lazy(xshards.rdd.mapPartitions(
                     lambda iter: transform_func(iter, init_params, params)))
-                result = update_predict_xshards(data, pred_shards)
+                result = update_predict_xshards(xshards, pred_shards)
             # Uncache the original data since it is already included in the result
             data.uncache()
         else:
