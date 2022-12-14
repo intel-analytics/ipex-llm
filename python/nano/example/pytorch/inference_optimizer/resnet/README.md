@@ -1,7 +1,7 @@
 # Bigdl-nano InferenceOptimizer example on Cat vs. Dog dataset
 
 This example illustrates how to apply InferenceOptimizer to quickly find acceleration method with the minimum inference latency under specific restrictions or without restrictions for a trained model. 
-For the sake of this example, we first train the proposed network(by default, a ResNet18 is used) on the [cats and dogs dataset](https://storage.googleapis.com/mledu-datasets/cats_and_dogs_filtered.zip), which consists both [frozen and unfrozen stages](https://github.com/PyTorchLightning/pytorch-lightning/blob/495812878dfe2e31ec2143c071127990afbb082b/pl_examples/domain_templates/computer_vision_fine_tuning.py#L21-L35). Then, by calling `optimize()`, we can obtain all available accelaration combinations provided by BigDL-Nano for inference. By calling `get_best_mdoel()` , we could get an accelerated model whose inference is 5x times faster.
+For the sake of this example, we first train the proposed network(by default, a ResNet18 is used) on the [cats and dogs dataset](https://storage.googleapis.com/mledu-datasets/cats_and_dogs_filtered.zip), which consists both [frozen and unfrozen stages](https://github.com/PyTorchLightning/pytorch-lightning/blob/495812878dfe2e31ec2143c071127990afbb082b/pl_examples/domain_templates/computer_vision_fine_tuning.py#L21-L35). Then, by calling `optimize()`, we can obtain all available accelaration combinations provided by BigDL-Nano for inference. By calling `get_best_mdoel()` , we could get an accelerated model whose inference is 8x times faster.
 
 
 ## Prepare the environment
@@ -57,21 +57,20 @@ Then you may find the result for inference as follows. The actual number may var
  -------------------------------- ---------------------- -------------- ----------------------
 |             method             |        status        | latency(ms)  |       accuracy       |
  -------------------------------- ---------------------- -------------- ----------------------
-|            original            |      successful      |   1162.768   |         1.0          |
-|           fp32_ipex            |    early stopped     |   1143.545   |         None         |
-|              bf16              |      successful      |   747.366    |         1.0          |
-|           bf16_ipex            |      successful      |   596.062    |         1.0          |
-|              int8              |      successful      |   306.137    |         1.0          |
-|            jit_fp32            |    early stopped     |   1007.57    |         None         |
-|         jit_fp32_ipex          |    early stopped     |   1008.285   |         None         |
-|  jit_fp32_ipex_channels_last   |      successful      |   628.462    |    not recomputed    |
-|         openvino_fp32          |      successful      |   339.543    |    not recomputed    |
-|         openvino_int8          |      successful      |    42.436    |        0.994         |
-|        onnxruntime_fp32        |      successful      |   644.439    |    not recomputed    |
-|    onnxruntime_int8_qlinear    |      successful      |   268.766    |        0.994         |
-|    onnxruntime_int8_integer    |   fail to convert    |     None     |         None         |
+|            original            |      successful      |    45.145    |        0.975         |
+|              bf16              |      successful      |    27.549    |        0.975         |
+|          static_int8           |      successful      |    11.339    |        0.975         |
+|         jit_fp32_ipex          |      successful      |    40.618    |        0.975*        |
+|  jit_fp32_ipex_channels_last   |      successful      |    19.247    |        0.975*        |
+|         jit_bf16_ipex          |      successful      |    10.149    |        0.975         |
+|  jit_bf16_ipex_channels_last   |      successful      |    9.782     |        0.975         |
+|         openvino_fp32          |      successful      |    22.721    |        0.975*        |
+|         openvino_int8          |      successful      |    5.846     |        0.962         |
+|        onnxruntime_fp32        |      successful      |    20.838    |        0.975*        |
+|    onnxruntime_int8_qlinear    |      successful      |    7.123     |        0.981         |
  -------------------------------- ---------------------- -------------- ----------------------
-Optimization cost 104.4s in total.
+* means we assume the precision of the traced model does not change, so we don't recompute accuracy to save time.
+Optimization cost 60.8s in total.
 ===========================Stop Optimization===========================
 When accuracy drop less than 5%, the model with minimal latency is:  openvino + int8
 ```

@@ -75,6 +75,37 @@ class LatencyCallback(Callback):
         pl_module.time_avg(batch_latency)
 
 
+def is_better(score, current_score, direction):
+    if current_score is None:
+        return True
+    elif direction == 'minimize' or direction == 'min':
+        if score < current_score:
+            return True
+        return False
+    else:
+        if score < current_score:
+            return False
+        return True
+
+
+class BestMetricCallback(Callback):
+    def __init__(self, target_metric, direction="min") -> None:
+        super().__init__()
+        self.target_metric = target_metric
+        self.direction = direction
+        self.best_score = None
+
+    def on_validation_start(self, trainer, pl_module) -> None:
+        super().on_validation_start(trainer, pl_module)
+
+    def on_validation_epoch_end(self, trainer, pl_module) -> None:
+        super().on_validation_end(trainer, pl_module)
+        score = trainer.callback_metrics[self.target_metric].item()
+        if is_better(score, self.best_score, self.direction):
+            self.best_score = score
+        pl_module.log('_best_score', self.best_score)
+
+
 class CustomEvaluationLoop(EvaluationLoop):
     def __init__(self, verbose: bool = True) -> None:
         super().__init__(verbose=verbose)

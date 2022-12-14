@@ -21,8 +21,6 @@ import java.io.{File, FileInputStream}
 import com.fasterxml.jackson.databind.{DeserializationFeature, MapperFeature, ObjectMapper, SerializationFeature}
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory
 import com.intel.analytics.bigdl.serving.ClusterServingHelper
-import org.yaml.snakeyaml.Yaml
-import org.yaml.snakeyaml.constructor.Constructor
 
 
 class ConfigParser(configPath: String) {

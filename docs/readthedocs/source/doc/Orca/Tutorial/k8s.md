@@ -214,13 +214,13 @@ Please download the Fashion-MNIST dataset manually on your __Develop Node__ and 
 git clone https://github.com/zalandoresearch/fashion-mnist.git
 
 # Move the dataset to NFS under the folder FashionMNIST/raw
-mv /path/to/fashion-mnist/data/fashion /bigdl/nfsdata/dataset/FashionMNIST/raw
+mv /path/to/fashion-mnist/data/fashion/* /bigdl/nfsdata/dataset/FashionMNIST/raw
 
 # Extract FashionMNIST archives
 gzip -dk /bigdl/nfsdata/dataset/FashionMNIST/raw/*
 ```
 
-In the given example, you can specify the argument `--remote_dir` to be the directory on NFS for the Fashion-MNIST dataset.
+In the given example, you can specify the argument `--remote_dir` to be the directory on NFS for the Fashion-MNIST dataset. The directory should contain `FashionMNIST/raw/train-images-idx3-ubyte` and `FashionMNIST/raw/t10k-images-idx3`.
 
 
 ---

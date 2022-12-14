@@ -24,7 +24,8 @@ from tensorflow.keras.applications import ResNet50
 import tensorflow_datasets as tfds
 
 # Use `Model` and `Sequential` in `bigdl.nano.tf.keras` instead of tensorflow's
-from bigdl.nano.tf.keras import Model
+# Use `InferenceOptimizer` for OpenVINO acceleration
+from bigdl.nano.tf.keras import Model, InferenceOptimizer
 
 
 def create_datasets(img_size, batch_size):
@@ -72,8 +73,7 @@ if __name__ == '__main__':
     model = create_model(num_classes, img_size)
 
     # trace the tensorflow.keras model to an openvino model
-    # there is no need to set an input_sample for openvino accelerator
-    openvino_model = model.trace(accelerator="openvino")
+    openvino_model = InferenceOptimizer.trace(model, accelerator="openvino")
 
     # use the traced model same as the origial model
     data_example = np.random.random((1, 224, 224, 3))

@@ -15,11 +15,14 @@
 #
 
 import os
+import tempfile
+import pickle
 from time import time
 from argparse import ArgumentParser
 
+from bigdl.dllib.utils.file_utils import put_local_file_to_remote
 from bigdl.orca import init_orca_context, stop_orca_context
-from bigdl.orca.data.file import makedirs, write_text, exists
+from bigdl.orca.data.file import makedirs, exists
 from bigdl.friesian.feature import FeatureTable
 from bigdl.dllib.utils.log4Error import *
 
@@ -55,7 +58,7 @@ def _parse_args():
                         help='The executor core number.')
     parser.add_argument('--executor_memory', type=str, default="160g",
                         help='The executor memory.')
-    parser.add_argument('--num_executor', type=int, default=8,
+    parser.add_argument('--num_executors', type=int, default=8,
                         help='The number of executor.')
     parser.add_argument('--driver_cores', type=int, default=4,
                         help='The driver core number.')
@@ -91,8 +94,7 @@ def preprocess_and_save(data_tbl, models, save_path):
         .fillna(0, INT_COLS + CAT_COLS)
     data_tbl, min_max = data_tbl.min_max_scale(INT_COLS)
 
-    data_tbl = data_tbl.cross_columns([CAT_COLS[0:2], CAT_COLS[2:4]],
-                                      cross_sizes)
+    data_tbl = data_tbl.cross_hash_encode(cross_cols, cross_sizes)
 
     data_tbl = data_tbl.ordinal_shuffle_partition()
 
@@ -105,13 +107,13 @@ if __name__ == '__main__':
         init_orca_context("local", cores=args.executor_cores, memory=args.executor_memory)
     elif args.cluster_mode == "standalone":
         init_orca_context("standalone", master=args.master,
-                          cores=args.executor_cores, num_nodes=args.num_executor,
+                          cores=args.executor_cores, num_nodes=args.num_executors,
                           memory=args.executor_memory,
                           driver_cores=args.driver_cores,
                           driver_memory=args.driver_memory, conf=conf)
     elif args.cluster_mode == "yarn":
         init_orca_context("yarn-client", cores=args.executor_cores,
-                          num_nodes=args.num_executor, memory=args.executor_memory,
+                          num_nodes=args.num_executors, memory=args.executor_memory,
                           driver_cores=args.driver_cores, driver_memory=args.driver_memory,
                           conf=conf)
     elif args.cluster_mode == "spark-submit":
@@ -129,29 +131,37 @@ if __name__ == '__main__':
     columns = dict([("_c{}".format(i), "c{}".format(i)) for i in range(40)])
     tbl = tbl.rename(columns)
     idx_list = tbl.gen_string_idx(CAT_COLS, freq_limit=args.frequency_limit)
-    cat_sizes = [idx.size() for idx in idx_list]
+    cat_sizes_dict = dict([(col, idx.size()) for col, idx in zip(CAT_COLS, idx_list)])
 
     cross_sizes = args.cross_sizes
+    cross_cols = [CAT_COLS[0:2], CAT_COLS[2:4]]
+    cross_col_names = ["_".join(cols) for cols in cross_cols]
+    cross_sizes_dict = dict([(col, size) for col, size in zip(cross_col_names, cross_sizes)])
 
     # save meta
     if not exists(os.path.join(args.output_folder, "meta")):
         makedirs(os.path.join(args.output_folder, "meta"))
-    cate_sizes_text = "\n".join([str(s) for s in cat_sizes])
-    write_text(os.path.join(args.output_folder, "meta/categorical_sizes.txt"), cate_sizes_text)
-
-    cross_sizes_text = "\n".join([str(s) for s in cross_sizes])
-    write_text(os.path.join(args.output_folder, "meta/cross_sizes.txt"), cross_sizes_text)
+    with tempfile.TemporaryDirectory() as local_path:
+        with open(os.path.join(local_path, "categorical_sizes.pkl"), 'wb') as f:
+            pickle.dump(cat_sizes_dict, f)
+        put_local_file_to_remote(os.path.join(local_path, "categorical_sizes.pkl"),
+                                 os.path.join(args.output_folder, "meta/categorical_sizes.pkl"),
+                                 over_write=True)
+        with open(os.path.join(local_path, "cross_sizes.pkl"), 'wb') as f:
+            pickle.dump(cross_sizes_dict, f)
+        put_local_file_to_remote(os.path.join(local_path, "cross_sizes.pkl"),
+                                 os.path.join(args.output_folder, "meta/cross_sizes.pkl"),
+                                 over_write=True)
 
     if args.days == 24:  # Full Criteo dataset
         train_data = FeatureTable.read_parquet(paths[:-1])
-        preprocess_and_save(train_data, idx_list, os.path.join(args.output_folder, "train_parquet"))
-
         test_data = FeatureTable.read_parquet(
             os.path.join(args.input_folder, "day_23_test.parquet"))
-        preprocess_and_save(test_data, idx_list, os.path.join(args.output_folder, "test_parquet"))
     else:  # Sample data
         data = FeatureTable.read_parquet(paths)
-        preprocess_and_save(data, idx_list, os.path.join(args.output_folder, "data_parquet"))
+        train_data, test_data = data.random_split([0.8, 0.2])
+    preprocess_and_save(train_data, idx_list, os.path.join(args.output_folder, "train_parquet"))
+    preprocess_and_save(test_data, idx_list, os.path.join(args.output_folder, "test_parquet"))
 
     time_end = time()
     print("Total data loading and preprocessing time: ", time_end - time_start)
