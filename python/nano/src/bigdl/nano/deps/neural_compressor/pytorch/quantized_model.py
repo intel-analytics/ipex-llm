@@ -58,7 +58,8 @@ class PytorchQuantizedModel(AcceleratedLightningModule):
                 tune_cfg = yaml.safe_load(f)
                 qmodel.tune_cfg = tune_cfg
         thread_num = None
-        if status["thread_num"] is not None and status['thread_num'] != {}:
+        if hasattr(status, 'thread_num') and status["thread_num"] is not None and\
+                status['thread_num'] != {}:
             thread_num = int(status["thread_num"])
         return PytorchQuantizedModel(qmodel, thread_num=thread_num)
 
