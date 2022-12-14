@@ -271,8 +271,8 @@ class PyTorchPySparkEstimator(BaseEstimator):
                     isinstance(validation_data, DataFrame) or
                     isinstance(validation_data, SparkXShards),
                     "validation_data should have the same type with train data")
-                if validation_data.rdd.getNumPartitions() != self.num_workers:
-                    validation_data = validation_data.repartition(self.num_workers)
+                if validation_data.rdd.getNumPartitions() != self.num_workers:  # type:ignore
+                    validation_data = validation_data.repartition(self.num_workers)  # type:ignore
         data, validation_data = maybe_dataframe_to_xshards(data,
                                                            validation_data=validation_data,
                                                            feature_cols=feature_cols,
