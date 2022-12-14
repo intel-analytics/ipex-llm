@@ -1,4 +1,4 @@
-# Gramine
+# BigDL PPML Trusted Deep Learning Toolkit
 SGX-based Trusted Deep Learning allows the user to run end-to-end deep-learning training application in a secure environment.
 
 The following sections will show how to run a small demo using our currently-developed image.

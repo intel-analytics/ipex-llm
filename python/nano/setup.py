@@ -73,12 +73,31 @@ def download_libs(url: str):
 
 def setup_package():
 
-    tensorflow_requires = ["intel-tensorflow==2.7.0; platform_machine=='x86_64'",
-                           "keras==2.7.0; platform_machine=='x86_64'",
-                           "tensorflow-estimator==2.7.0; platform_machine=='x86_64'",
-                           "tf2onnx==1.12.1; platform_machine=='x86_64'",
-                           "tensorflow-macos==2.7.0; platform_machine=='arm64' and sys_platform=='darwin'",
-                           "tensorflow-metal==0.3.0; platform_machine=='arm64' and sys_platform=='darwin'"]
+    # all intel-tensorflow is only avaliable for linux now
+    tensorflow_27_requires = ["intel-tensorflow==2.7.0; platform_machine=='x86_64'",
+                              "keras==2.7.0; platform_machine=='x86_64'",
+                              "tensorflow-estimator==2.7.0; platform_machine=='x86_64'"]
+    
+    tensorflow_28_requires = ["intel-tensorflow==2.8.0; platform_machine=='x86_64'",
+                              "keras==2.8.0; platform_machine=='x86_64'",
+                              "tensorflow-estimator==2.8.0; platform_machine=='x86_64'"]
+    
+    tensorflow_29_requires = ["intel-tensorflow==2.9.1; platform_machine=='x86_64'",
+                              "keras==2.9.0; platform_machine=='x86_64'",
+                              "tensorflow-estimator==2.9.0; platform_machine=='x86_64'"]
+    
+    tensorflow_210_requires = ["intel-tensorflow==2.10.0; platform_machine=='x86_64'",
+                               "keras==2.10.0; platform_machine=='x86_64'",
+                               "tensorflow-estimator==2.10.0; platform_machine=='x86_64'"]
+    
+    tensorflow_common_requires = ["tf2onnx==1.13.0; platform_machine=='x86_64'"]
+
+    # default pytorch_dep
+    tensorflow_requires = tensorflow_29_requires + tensorflow_common_requires
+    tensorflow_210_requires += tensorflow_common_requires
+    tensorflow_29_requires += tensorflow_common_requires
+    tensorflow_28_requires += tensorflow_common_requires
+    tensorflow_27_requires += tensorflow_common_requires
 
     # ipex is only avaliable for linux now
     pytorch_113_requires = ["torch==1.13.0",
@@ -152,6 +171,10 @@ def setup_package():
         url='https://github.com/intel-analytics/BigDL',
         install_requires=install_requires,
         extras_require={"tensorflow": tensorflow_requires,
+                        "tensorflow_27": tensorflow_27_requires,
+                        "tensorflow_28": tensorflow_28_requires,
+                        "tensorflow_29": tensorflow_29_requires,
+                        "tensorflow_210": tensorflow_210_requires,
                         "pytorch": pytorch_requires,
                         "pytorch_113": pytorch_113_requires,
                         "pytorch_112": pytorch_112_requires,

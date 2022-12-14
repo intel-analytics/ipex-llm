@@ -13,20 +13,20 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+
 import os
+import types
 import itertools
-import logging
 import pickle
 import shutil
 import tempfile
 
-import numpy as np
 import ray
 
 from bigdl.dllib.utils import log4Error
 from bigdl.dllib.utils.file_utils import is_local_path
+from bigdl.orca import OrcaContext
 from bigdl.orca.data.file import enable_multi_fs_save, enable_multi_fs_load
-
 from bigdl.orca.data.ray_xshards import RayXShards
 from bigdl.orca.learn.dl_cluster import RayDLCluster
 from bigdl.orca.learn.tf2.tf_runner import TFRunner
@@ -34,8 +34,7 @@ from bigdl.orca.learn.ray_estimator import Estimator as OrcaRayEstimator
 from bigdl.orca.learn.utils import maybe_dataframe_to_xshards, dataframe_to_xshards, \
     convert_predict_xshards_to_dataframe, update_predict_xshards, \
     process_xshards_of_pandas_dataframe, make_data_creator
-from bigdl.orca.data.file import put_local_file_to_remote, put_local_dir_tree_to_remote, \
-    put_local_files_with_prefix_to_remote, get_remote_file_to_local, get_remote_dir_to_local, \
+from bigdl.orca.data.file import get_remote_file_to_local, get_remote_dir_to_local, \
     is_file
 from bigdl.orca.data.utils import process_spark_xshards
 from bigdl.dllib.utils.log4Error import *
@@ -165,7 +164,8 @@ class TensorFlow2Estimator(OrcaRayEstimator):
                {'x': feature, 'y': label}, where feature(label) is a numpy array or a tuple of
                numpy arrays.
         :param epochs: Number of epochs to train the model. Default: 1.
-        :param batch_size: Batch size used for training. Default: 32.
+        :param batch_size: Total batch size for all workers used for training. Each worker's batch
+               size would be this value divide the total number of workers. Default: 32.
         :param verbose: Prints output of one model if true.
         :param callbacks: List of Keras compatible callbacks to apply during training.
         :param validation_data: validation data. Validation data type should be the same
@@ -197,6 +197,21 @@ class TensorFlow2Estimator(OrcaRayEstimator):
                Default: None.
         :return:
         """
+        if not isinstance(data, types.FunctionType):
+            invalidInputError(isinstance(batch_size, int) and batch_size > 0,
+                              "batch_size should be a positive integer")
+        else:
+            # batch_size can be None if the return of data_creator already generates batches
+            if batch_size:
+                invalidInputError(isinstance(batch_size, int) and batch_size > 0,
+                                  "batch_size should be a positive integer")
+        # Use the local batch size for each worker to convert to XShards
+        if batch_size:
+            local_batch_size = batch_size // self.num_workers
+            if local_batch_size <= 0:
+                local_batch_size = 1
+        else:
+            local_batch_size = None
         params = dict(
             epochs=epochs,
             batch_size=batch_size,
@@ -217,7 +232,7 @@ class TensorFlow2Estimator(OrcaRayEstimator):
                                                            mode="fit",
                                                            num_workers=self.num_workers,
                                                            accept_str_col=True,
-                                                           shard_size=batch_size)
+                                                           shard_size=local_batch_size)
 
         if isinstance(data, SparkXShards):
             if data._get_class_name() == 'pandas.core.frame.DataFrame':
@@ -321,7 +336,8 @@ class TensorFlow2Estimator(OrcaRayEstimator):
                If data is XShards, each partition can be a Pandas DataFrame or a dictionary of
                {'x': feature, 'y': label}, where feature(label) is a numpy array or a tuple of
                numpy arrays.
-        :param batch_size: Batch size used for evaluation. Default: 32.
+        :param batch_size: Total batch size for all workers used for evaluation. Each worker's batch
+               size would be this value divide the total number of workers. Default: 32.
         :param num_steps: Total number of steps (batches of samples) before declaring the evaluation
                round finished. Ignored with the default value of `None`.
         :param verbose: Prints output of one model if true.
@@ -343,6 +359,21 @@ class TensorFlow2Estimator(OrcaRayEstimator):
                Default: None.
         :return: validation result
         """
+        if not isinstance(data, types.FunctionType):
+            invalidInputError(isinstance(batch_size, int) and batch_size > 0,
+                              "batch_size should be a positive integer")
+        else:
+            # batch_size can be None if the return of data_creator already generates batches
+            if batch_size:
+                invalidInputError(isinstance(batch_size, int) and batch_size > 0,
+                                  "batch_size should be a positive integer")
+        # Use the local batch size for each worker to convert to XShards
+        if batch_size:
+            local_batch_size = batch_size // self.num_workers
+            if local_batch_size <= 0:
+                local_batch_size = 1
+        else:
+            local_batch_size = None
         logger.info("Starting validation step.")
         params = dict(
             batch_size=batch_size,
@@ -363,7 +394,7 @@ class TensorFlow2Estimator(OrcaRayEstimator):
                                              mode="evaluate",
                                              num_workers=self.num_workers,
                                              accept_str_col=True,
-                                             shard_size=batch_size)
+                                             shard_size=local_batch_size)
 
         if isinstance(data, SparkXShards):
             if data._get_class_name() == 'pandas.core.frame.DataFrame':
@@ -460,7 +491,8 @@ class TensorFlow2Estimator(OrcaRayEstimator):
                orca.data.tf.data.Dataset. If data is XShards, each partition can be a Pandas
                DataFrame or a dictionary of {'x': feature}, where feature is a numpy array or a
                tuple of numpy arrays.
-        :param batch_size: Batch size used for inference. Default: None.
+        :param batch_size: Total batch size for all workers used for evaluation. Each worker's batch
+               size would be this value divide the total number of workers. Default: 32.
         :param verbose: Prints output of one model if true.
         :param steps: Total number of steps (batches of samples) before declaring the prediction
                round finished. Ignored with the default value of None.
@@ -479,6 +511,15 @@ class TensorFlow2Estimator(OrcaRayEstimator):
                Default: None.
         :return:
         """
+        # Use the local batch size for each worker to convert to XShards
+        if batch_size:
+            invalidInputError(isinstance(batch_size, int) and batch_size > 0,
+                              "batch_size should be a positive integer")
+            local_batch_size = batch_size // self.num_workers
+            if local_batch_size <= 0:
+                local_batch_size = 1
+        else:
+            local_batch_size = None
         logger.info("Starting predict step.")
         params = dict(
             verbose=verbose,
@@ -498,7 +539,7 @@ class TensorFlow2Estimator(OrcaRayEstimator):
                                               label_cols=None,
                                               mode="predict",
                                               accept_str_col=True,
-                                              shard_size=batch_size)
+                                              shard_size=local_batch_size)
             pred_shards = self._predict_spark_xshards(xshards, params)
             result = convert_predict_xshards_to_dataframe(data, pred_shards)
         elif isinstance(data, SparkXShards):

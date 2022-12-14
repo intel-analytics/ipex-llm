@@ -1,4 +1,4 @@
-# bigdl-kms Sekmscret
+# bigdl-ehsm-kms Secret used by couchdb
 apiVersion: v1
 kind: Secret
 metadata:
@@ -16,7 +16,7 @@ metadata:
   name: domain-key-nfs-pv
 spec:
   capacity:
-    storage: 100Mi
+    storage: 1Gi
   accessModes:
     - ReadWriteOnce
   persistentVolumeReclaimPolicy: Retain
@@ -82,11 +82,13 @@ spec:
           name: dev-provision
         - mountPath: /var/run/aesmd
           name: dev-aesmd
-        - mountPath: /etc/dkey.bin
+        - mountPath: /etc
           name: domain-key-persistent-storage
         env:
         - name: PCCS_URL
           value: "https://$pccsIP:18081"
+        - name: DKEYSERVER_ROLE
+          value: root
         ports:
         - containerPort: 8888
           name: dkeyserver-port
@@ -101,7 +103,7 @@ spec:
           storageClassName: "nfs"
           resources:
             requests:
-              storage: 100Mi
+              storage: 1Gi
 ---
 # bigdl-ehsm-kms ConfigMap
 apiVersion: v1

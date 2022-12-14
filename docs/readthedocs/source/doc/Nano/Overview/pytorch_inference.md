@@ -228,3 +228,83 @@ InferenceOptimizer.quantize(model,
                             max_trials=10,
                             ):
 ```
+
+## Multi-instance Acceleration
+
+BigDL-Nano also provides multi-instance inference. To use it, you should call `multi_model = InferenceOptimizer.to_multi_instance(model, num_processes=n)` first, where `num_processes` specifies the number of processes you want to use.
+
+After calling it, `multi_model` will receive a `DataLoader` or a list of batches instead of a batch, and produce a list of inference result instead of a single result. You can use it as following:
+
+```python
+multi_model = InferenceOptimizer.to_multi_instance(model, num_processes=4)
+
+# predict a DataLoader
+y_hat_list = multi_model(dataloader)
+
+# or predict a list of batches instead of entire DataLoader
+it = iter(dataloader)
+batch_list = []
+for i in range(10):
+    batch = next(it)
+    batch_list.append(batch)
+y_hat_list = multi_model(batch_list)
+
+# y_hat_list is a list of inference result, you can use it like this
+for y_hat in y_hat_list:
+    do_something(y_hat)
+```
+
+`InferenceOptimizer.to_multi_instance` also has a parameter named `cores_per_process` to specify the number of CPU cores used by each process, and a parameter named `cpu_for_each_process` to specify the CPU cores used by each process. Normally you don't need to set them manually, BigDL-Nano will find the best configuration automatically. But if you want, you can use them as following:
+```python
+# Use 4 processes to run inference,
+# each process will use 2 CPU cores
+multi_model = InferenceOptimizer.to_multi_instance(model, num_processes=4, cores_per_process=2)
+
+# Use 4 processes to run inference,
+# the first process will use core 0, the second process will use core 1,
+# the third process will use core 2 and 3, the fourth process will use core 4 and 5
+multi_model = InferenceOptimizer.to_multi_instance(model, cpu_for_each_process=[[0], [1], [2,3], [4,5]])
+```
+
+## Automatic Context Management
+BigDL-Nano provides ``InferenceOptimizer.get_context(model=...)`` API to enable automatic context management for PyTorch inference. With only one line of code change, BigDL-Nano will automatically provide suitable context management for each accelerated model, it usually contains part of or all of following three types of context managers:
+
+1. ``torch.no_grad()`` to disable gradients, which will be used for all model
+   
+2. ``torch.cpu.amp.autocast(dtype=torch.bfloat16)`` to run in mixed precision, which will be provided for bf16 related model
+   
+3. ``torch.set_num_threads()`` to control thread number, which will be used only if you specify thread_num when applying ``InferenceOptimizer.trace``/``quantize``/``optimize``
+
+For model accelerated by ``InferenceOptimizer.trace``, usage now looks like below codes, here we just take ``ipex`` for example:
+```python
+from bigdl.nano.pytorch import InferenceOptimizer
+ipex_model = InferenceOptimizer.trace(model,
+                                      use_ipex=True,
+                                      thread_num=4)
+
+with InferenceOptimizer.get_context(ipex_model):
+    output = ipex_model(x)
+    assert torch.get_num_threads() == 4  # this line just to let you know Nano has provided thread control automatically : )
+```
+
+For ``InferenceOptimizer.quantize`` and ``InferenceOptimizer.optimize``, usage is the same.
+
+``InferenceOptimizer.get_context(model=...)`` can be used for muitiple models. If you have a model pipeline, you can also get a common context manager by passing multiple models to `get_context`.
+```python
+from torch import nn
+class Classifier(nn.Module):
+    def __init__(self):
+        super().__init__()
+        self.linear = nn.Linear(1000, 1)
+    
+    def forward(self, x):
+        return self.linear(x)
+
+classifer = Classifier()
+
+with InferenceOptimizer.get_context(ipex_model, classifer):
+    # a pipeline consists of backbone and classifier
+    x = ipex_model(input_sample)
+    output = classifer(x) 
+    assert torch.get_num_threads() == 4  # this line just to let you know Nano has provided thread control automatically : )
+```

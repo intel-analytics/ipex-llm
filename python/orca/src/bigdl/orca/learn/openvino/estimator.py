@@ -13,10 +13,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+
 import math
 import os.path
 
 from pyspark.sql import DataFrame
+import ray
 
 from bigdl.orca.data import SparkXShards
 from bigdl.orca.learn.spark_estimator import Estimator as SparkEstimator
@@ -26,12 +28,14 @@ from bigdl.dllib.nncontext import init_nncontext
 
 from openvino.inference_engine import IECore
 import numpy as np
-from bigdl.dllib.utils.log4Error import *
+from bigdl.dllib.utils.log4Error import invalidInputError
+
+from typing import (List, Optional, Union)
 
 
 class Estimator(object):
     @staticmethod
-    def from_openvino(*, model_path):
+    def from_openvino(*, model_path: str) -> "OpenvinoEstimator":
         """
         Load an openVINO Estimator.
 
@@ -43,7 +47,7 @@ class Estimator(object):
 class OpenvinoEstimator(SparkEstimator):
     def __init__(self,
                  *,
-                 model_path):
+                 model_path: str) -> None:
         self.load(model_path)
 
     def fit(self, data, epochs, batch_size=32, feature_cols=None, label_cols=None,
@@ -53,7 +57,12 @@ class OpenvinoEstimator(SparkEstimator):
         """
         invalidInputError(False, "not implemented")
 
-    def predict(self, data, feature_cols=None, batch_size=4, input_cols=None):
+    def predict(self,  # type: ignore[override]
+                data: Union["SparkXShards", "DataFrame", "np.ndarray", List["np.ndarray"]],
+                feature_cols: Optional[List[str]] = None,
+                batch_size: Optional[int] = 4,
+                input_cols: Optional[Union[str, List[str]]]=None
+                ) -> Optional[Union["SparkXShards", "DataFrame", "np.ndarray", List["np.ndarray"]]]:
         """
         Predict input data
 
@@ -226,7 +235,7 @@ class OpenvinoEstimator(SparkEstimator):
             for key, shape in self.output_dict.items():
                 struct_type = FloatType()
                 for _ in range(len(shape)):
-                    struct_type = ArrayType(struct_type)
+                    struct_type = ArrayType(struct_type)  # type: ignore
                 result_struct.append(StructField(key, struct_type))
 
             schema = StructType(schema.fields + result_struct)
@@ -250,7 +259,7 @@ class OpenvinoEstimator(SparkEstimator):
             elif isinstance(data, list):
                 flattened = nest.flatten(data)
                 data_length = len(flattened[0])
-                data_to_be_rdd = []
+                data_to_be_rdd = []  # type: ignore
                 split_num = math.ceil(flattened[0].shape[0]/batch_size)
                 num_slices = min(split_num, self.node_num)
                 for i in range(split_num):
@@ -285,6 +294,7 @@ class OpenvinoEstimator(SparkEstimator):
                               "Only XShards, Spark DataFrame, a numpy array and a list of numpy"
                               " arrays are supported as input data, but"
                               " get " + data.__class__.__name__)
+        return None
 
     def evaluate(self, data, batch_size=32, feature_cols=None, label_cols=None):
         """
@@ -298,13 +308,13 @@ class OpenvinoEstimator(SparkEstimator):
         """
         invalidInputError(False, "not implemented")
 
-    def save(self, model_path):
+    def save(self, model_path: str):
         """
         Save is not supported in OpenVINOEstimator
         """
         invalidInputError(False, "not implemented")
 
-    def load(self, model_path):
+    def load(self, model_path: str) -> None:
         """
         Load an openVINO model.
 
@@ -328,7 +338,7 @@ class OpenvinoEstimator(SparkEstimator):
         self.inputs = list(net.input_info.keys())
         self.output_dict = {k: v.shape for k, v in net.outputs.items()}
 
-    def set_tensorboard(self, log_dir, app_name):
+    def set_tensorboard(self, log_dir: str, app_name: str):
         """
         Set_tensorboard is not supported in OpenVINOEstimator
         """
