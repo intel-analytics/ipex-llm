@@ -112,10 +112,10 @@ class TestDispatcherPytorch(TestCase):
         assert cuda_device.type == 'cuda'
 
     def test_patch_fp64(self):
-        from bigdl.nano.pytorch.dtype_patching import patch_dtype
-        patch_dtype(original_dtype=torch.float64,
-                    target_dtype=torch.float32)
-        
+        from bigdl.nano.pytorch.patching import patch_dtype
+        patch_dtype(original_dtype="fp64",
+                    target_dtype="fp32")
+
         # default dtype
         assert torch.rand(1, 2).dtype == torch.float32
 

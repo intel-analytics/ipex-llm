@@ -15,6 +15,9 @@
 #
 
 import torch
+from typing import Any, List, Optional, Union
+from bigdl.nano.utils.log4Error import invalidInputError
+
 
 CREATE_TENSOR_FUNC = ['rand', 'randint', 'randn', 'zeros', 'ones', 'empty', 'full',
                       'rand_like', 'randint_like', 'randn_like', 'zeros_like',
@@ -30,6 +33,16 @@ CREATE_TENSOR_FUNC = ['rand', 'randint', 'randn', 'zeros', 'ones', 'empty', 'ful
                       'hann_window', 'kaiser_window',
                       'empty_quantized', 'empty_strided',
                       'frombuffer', 'from_file']
+
+
+STR_TO_DTYPE = {'fp32': torch.float32,
+                'float32': torch.float32,
+                'fp64': torch.float64,
+                'float64': torch.float64,
+                'bf16': torch.bfloat16,
+                'bfloat16': torch.bfloat16,
+                'fp16': torch.float16,
+                'float16': torch.float16}
 
 
 def create_tensor_func(torch_create_tensor_func, original_dtype, target_dtype):
@@ -50,7 +63,34 @@ def replace_attr(obj, name: str, value):
     setattr(obj, name, value)
 
 
-def patch_dtype(original_dtype=torch.float64, target_dtype=torch.float32):
+def patch_dtype(original_dtype: Union[str, torch.dtype] = "fp64",
+                target_dtype: Union[str, torch.dtype] = "fp32"):
+
+    '''
+    patch_dtype is used to change the tensor's dtype in users' application
+    from `original_dtype` to `target_dtype`.
+
+    e.g.
+        >>> from bigdl.nano.pytorch.patching import patch_dtype
+        >>> patch_dtype(original_dtype="fp64", target_dtype="fp32")
+        >>> # will replace all tensors that has fp64 precision to fp32.
+
+    :param original_dtype: the tensors' dtype to be replaced. default to "fp64"
+    :param target_dtype: the tensors' dtype to use. default to "fp32"
+    '''
+
+    if isinstance(original_dtype, str):
+        invalidInputError(original_dtype.lower() in STR_TO_DTYPE.keys(),
+                          f"original_dtype should be one of {STR_TO_DTYPE.keys()}, "
+                          f"while get {original_dtype}.")
+        original_dtype = STR_TO_DTYPE[original_dtype.lower()]
+
+    if isinstance(target_dtype, str):
+        invalidInputError(target_dtype.lower() in STR_TO_DTYPE.keys(),
+                          f"target_dtype should be one of {STR_TO_DTYPE.keys()}, "
+                          f"while get {target_dtype}.")
+        target_dtype = STR_TO_DTYPE[target_dtype.lower()]
+
     # set default dtype
     torch.set_default_dtype(target_dtype)
 
