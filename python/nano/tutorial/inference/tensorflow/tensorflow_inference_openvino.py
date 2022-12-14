@@ -19,7 +19,7 @@
 import os
 import numpy as np
 import tensorflow as tf
-from tensorflow.keras import layers
+from tensorflow.keras import layers, Model
 from tensorflow.keras.applications import ResNet50
 import tensorflow_datasets as tfds
 
@@ -56,6 +56,7 @@ def create_model(num_classes, img_size):
     x = layers.Dense(512, activation='relu')(x)
     outputs = layers.Dense(num_classes, activation='softmax')(x)
 
+    model = Model(inputs=inputs, outputs=outputs)
     model.compile(loss="categorical_crossentropy", optimizer="adam", metrics=['accuracy'])
     return model
 
