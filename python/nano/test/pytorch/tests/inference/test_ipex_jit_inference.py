@@ -173,7 +173,7 @@ class IPEXJITInference_gt_1_10:
             new_model(self.data_sample)
             assert new_model.jit_strict is False
 
-    def test_ipex_jit_inference_converter(self):
+    def test_ipex_jit_inference_jit_method(self):
         class Net(nn.Module):
             def __init__(self):
                 super().__init__()
@@ -190,7 +190,7 @@ class IPEXJITInference_gt_1_10:
         accmodel = InferenceOptimizer.trace(model, accelerator='jit',
                                             use_ipex=True, 
                                             input_sample=input_sample, 
-                                            jit_converter='script')
+                                            jit_method='script')
         with InferenceOptimizer.get_context(accmodel):
             output = accmodel(input)
         assert output.shape[0] == expected_output_len
@@ -201,19 +201,19 @@ class IPEXJITInference_gt_1_10:
         with InferenceOptimizer.get_context(loaded_model):
             output = loaded_model(input)
         assert output.shape[0] == expected_output_len
-        assert loaded_model.jit_converter == 'script'
+        assert loaded_model.jit_method == 'script'
 
 
         # test with jit.trace (with ipex)
         accmodel = InferenceOptimizer.trace(model, accelerator='jit', 
                                       use_ipex=True,
                                       input_sample=input_sample, 
-                                      jit_converter='trace')
+                                      jit_method='trace')
         with InferenceOptimizer.get_context(accmodel):
             output = accmodel(input)
         assert output.shape[0] != expected_output_len
 
-        # test with deafult jit_converter
+        # test with deafult jit_method
         accmodel = InferenceOptimizer.trace(model, accelerator='jit', 
                                       input_sample=input_sample)
         with InferenceOptimizer.get_context(accmodel):
@@ -224,7 +224,7 @@ class IPEXJITInference_gt_1_10:
         with pytest.raises(RuntimeError):
             InferenceOptimizer.trace(model, accelerator='jit', 
                                input_sample=input_sample,
-                               jit_converter='scriptttt')
+                               jit_method='scriptttt')
 
 class IPEXJITInference_lt_1_10:
     def test_placeholder(self):

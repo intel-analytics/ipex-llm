@@ -151,7 +151,7 @@ class Pytorch1_11:
         with pytest.raises(AttributeError):
             new_model.width
 
-    def test_bf16_ipex_jit_converter(self):
+    def test_bf16_ipex_jit_method(self):
 
         class Net(nn.Module):
             def __init__(self):
@@ -170,7 +170,7 @@ class Pytorch1_11:
                                                accelerator='jit', 
                                                use_ipex=True,
                                                input_sample=input_sample, 
-                                               jit_converter='script')
+                                               jit_method='script')
         with InferenceOptimizer.get_context(accmodel):
             output = accmodel(input)
         assert output.shape[0] == expected_output_len
@@ -181,7 +181,7 @@ class Pytorch1_11:
         with InferenceOptimizer.get_context(loaded_model):
             output = loaded_model(input)
         assert output.shape[0] == expected_output_len
-        assert loaded_model.jit_converter == 'script'
+        assert loaded_model.jit_method == 'script'
 
 
         # test with jit.trace (with ipex)
@@ -189,12 +189,12 @@ class Pytorch1_11:
                                                accelerator='jit', 
                                                use_ipex=True,
                                                input_sample=input_sample, 
-                                               jit_converter='trace')
+                                               jit_method='trace')
         with InferenceOptimizer.get_context(accmodel):
             output = accmodel(input)
         assert output.shape[0] != expected_output_len
 
-        # test with deafult jit_converter
+        # test with deafult jit_method
         accmodel = InferenceOptimizer.quantize(model, precision='bf16',
                                                accelerator='jit',
                                                input_sample=input_sample)
@@ -207,7 +207,7 @@ class Pytorch1_11:
             InferenceOptimizer.quantize(model, precision='bf16',
                                         accelerator='jit',
                                         input_sample=input_sample,
-                                        jit_converter='scriptttt')
+                                        jit_method='scriptttt')
 
 TORCH_VERSION_CLS = Pytorch1_11
 

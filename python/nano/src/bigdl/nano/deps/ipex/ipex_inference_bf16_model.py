@@ -26,7 +26,7 @@ import torch
 class PytorchIPEXJITBF16Model(PytorchIPEXJITModel):
     def __init__(self, model, input_sample=None, use_ipex=False,
                  use_jit=False, channels_last=None, thread_num=None, from_load=False,
-                 inplace=False, jit_strict=True, jit_converter=None):
+                 inplace=False, jit_strict=True, jit_method=None):
         '''
         This is the accelerated model for pytorch and ipex/jit.
         All the external API is based on InferenceOptimizer, so what we have here is
@@ -45,7 +45,7 @@ class PytorchIPEXJITBF16Model(PytorchIPEXJITModel):
         :param from_load: this will only be set by _load method.
         :param inplace: whether to perform inplace optimization. Default: ``False``.
         :param jit_strict: Whether recording your mutable container types.
-        :param jit_converter: use ``jit.trace`` or ``jit.script`` to
+        :param jit_method: use ``jit.trace`` or ``jit.script`` to
                convert a model to TorchScript.
         '''
         if use_ipex:
@@ -59,7 +59,7 @@ class PytorchIPEXJITBF16Model(PytorchIPEXJITModel):
                                      dtype=torch.bfloat16, use_jit=use_jit,
                                      channels_last=channels_last, from_load=from_load,
                                      inplace=inplace, jit_strict=jit_strict,
-                                     jit_converter=jit_converter)
+                                     jit_method=jit_method)
         self._nano_context_manager = generate_context_manager(accelerator=None,
                                                               precision="bf16",
                                                               thread_num=thread_num)
@@ -103,4 +103,4 @@ class PytorchIPEXJITBF16Model(PytorchIPEXJITModel):
                                        thread_num=thread_num,
                                        inplace=inplace,
                                        jit_strict=status["jit_strict"],
-                                       jit_converter=status["jit_converter"])
+                                       jit_method=status["jit_method"])

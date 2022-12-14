@@ -23,7 +23,7 @@ from bigdl.nano.pytorch.utils import patch_attrs_from_model_to_object
 class PytorchIPEXJITModel(AcceleratedLightningModule):
     def __init__(self, model: torch.nn.Module, input_sample=None, use_ipex=False, dtype=None,
                  use_jit=False, channels_last=None, thread_num=None, from_load=False,
-                 inplace=False, jit_strict=True, jit_converter=None):
+                 inplace=False, jit_strict=True, jit_method=None):
         """
         This is the accelerated model for pytorch and ipex/jit.
         All the external API is based on InferenceOptimizer, so what we have here is
@@ -45,7 +45,7 @@ class PytorchIPEXJITModel(AcceleratedLightningModule):
         :param from_load: this will only be set by _load method.
         :param inplace: whether to perform inplace optimization. Default: ``False``.
         :param jit_strict: Whether recording your mutable container types.
-        :param jit_converter: use ``jit.trace`` or ``jit.script`` to
+        :param jit_method: use ``jit.trace`` or ``jit.script`` to
                convert a model to TorchScript.
         """
         super().__init__(model)
@@ -54,7 +54,7 @@ class PytorchIPEXJITModel(AcceleratedLightningModule):
             self.use_jit = use_jit
             self.channels_last = channels_last
             self.jit_strict = jit_strict
-            self.jit_converter = jit_converter
+            self.jit_method = jit_method
             self._nano_context_manager = generate_context_manager(accelerator=None,
                                                                   precision="fp32",
                                                                   thread_num=thread_num)
@@ -64,7 +64,7 @@ class PytorchIPEXJITModel(AcceleratedLightningModule):
         self.use_ipex = use_ipex
         self.use_jit = use_jit
         self.jit_strict = jit_strict
-        self.jit_converter = jit_converter
+        self.jit_method = jit_method
         self.original_model = model
         if self.channels_last:
             self.model = self.model.to(memory_format=torch.channels_last)
@@ -75,11 +75,11 @@ class PytorchIPEXJITModel(AcceleratedLightningModule):
             if dtype == torch.bfloat16:
                 with torch.no_grad():
                     with torch.cpu.amp.autocast():
-                        if self.jit_converter == 'trace':
+                        if self.jit_method == 'trace':
                             self.model = torch.jit.trace(self.model, input_sample,
                                                          check_trace=False,
                                                          strict=jit_strict)
-                        elif self.jit_converter == 'script':
+                        elif self.jit_method == 'script':
                             self.model = torch.jit.script(self.model)
                         else:
                             try:
@@ -92,11 +92,11 @@ class PytorchIPEXJITModel(AcceleratedLightningModule):
                             self.model = torch.jit.freeze(self.model)
             else:
                 with torch.no_grad():
-                    if self.jit_converter == 'trace':
+                    if self.jit_method == 'trace':
                         self.model = torch.jit.trace(self.model, input_sample,
                                                      check_trace=False,
                                                      strict=jit_strict)
-                    elif self.jit_converter == 'script':
+                    elif self.jit_method == 'script':
                         self.model = torch.jit.script(self.model)
                     else:
                         try:
@@ -147,7 +147,7 @@ class PytorchIPEXJITModel(AcceleratedLightningModule):
                        "checkpoint": "ckpt.pth",
                        "thread_num": self.thread_num,
                        "jit_strict": self.jit_strict,
-                       'jit_converter': self.jit_converter})
+                       'jit_method': self.jit_method})
         return status
 
     @staticmethod
@@ -176,7 +176,7 @@ class PytorchIPEXJITModel(AcceleratedLightningModule):
                                    thread_num=thread_num,
                                    inplace=inplace,
                                    jit_strict=status["jit_strict"],
-                                   jit_converter=status["jit_converter"])
+                                   jit_method=status["jit_method"])
 
     def _save_model(self, path):
         if self.use_jit:
