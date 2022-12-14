@@ -122,7 +122,8 @@ class EHSMAttestationService(kmsServerIP: String, kmsServerPort: String,
       verifyQuoteResult = true;
     } else if (result == 0xa001 || result == 0xa002 || result == 0xa003
       || result == 0xa007 || result == 0xa008) {
-      println("warning: Attestation pass but BIOS or the software is out of date")
+      println("warning: Attestation pass but BIOS or the software" +
+        " is out of date. Result=" + result)
       verifyQuoteResult = true;
     }
     (verifyQuoteResult, postResult.toString)
@@ -158,7 +159,8 @@ class EHSMAttestationService(kmsServerIP: String, kmsServerPort: String,
       verifyQuoteResult = true;
     } else if (result == 0xa001 || result == 0xa002 || result == 0xa003
       || result == 0xa007 || result == 0xa008) {
-      println("warning: Attestation pass but BIOS or the software is out of date")
+      println("warning: Attestation pass but BIOS or the software" +
+        " is out of date. Result=" + result)
       verifyQuoteResult = true;
     }
     (verifyQuoteResult, postResult.toString)
