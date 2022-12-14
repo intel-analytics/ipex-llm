@@ -102,7 +102,7 @@ class ModelCheckpoint(Callback):
         dirname = os.path.dirname(self.filepath)
         from bigdl.orca.data.file import exists, listdir, makedirs
         if exists(dirname):
-            files = [os.path.basename(f["name"]) for f in listdir(dirname)]
+            files = [os.path.basename(f) for f in listdir(dirname)]
             files = [x for x in files if "ckpt" in x]
             if len(files) == 0:
                 return None
