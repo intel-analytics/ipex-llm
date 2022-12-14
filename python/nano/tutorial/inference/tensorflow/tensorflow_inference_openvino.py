@@ -25,7 +25,7 @@ import tensorflow_datasets as tfds
 
 # Use `Model` and `Sequential` in `bigdl.nano.tf.keras` instead of tensorflow's
 # Use `InferenceOptimizer` for OpenVINO acceleration
-from bigdl.nano.tf.keras import Model, InferenceOptimizer
+from bigdl.nano.tf.keras import InferenceOptimizer
 
 
 def create_datasets(img_size, batch_size):
@@ -56,7 +56,6 @@ def create_model(num_classes, img_size):
     x = layers.Dense(512, activation='relu')(x)
     outputs = layers.Dense(num_classes, activation='softmax')(x)
 
-    model = Model(inputs=inputs, outputs=outputs)
     model.compile(loss="categorical_crossentropy", optimizer="adam", metrics=['accuracy'])
     return model
 
