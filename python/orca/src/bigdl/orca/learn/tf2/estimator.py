@@ -102,10 +102,9 @@ def make_data_creator(refs: Any) -> Callable:
     return data_creator
 
 
-def data_length(data: "SparkXShards"):
+def data_length(data):
     x = data["x"]
     if isinstance(x, np.ndarray):
         return x.shape[0]
     else:
         return x[0].shape[0]
- 
