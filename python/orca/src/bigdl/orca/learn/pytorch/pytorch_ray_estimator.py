@@ -16,6 +16,7 @@
 
 import types
 import copy
+import logging
 
 from bigdl.orca import OrcaContext
 from bigdl.orca.data.ray_xshards import RayXShards
@@ -29,7 +30,21 @@ from bigdl.orca.learn.pytorch.core.base_ray_estimator import BaseRayEstimator
 from bigdl.orca.learn.pytorch.utils import process_stats, check_for_failure
 
 import ray
-from bigdl.dllib.utils.log4Error import *
+from bigdl.dllib.utils.log4Error import invalidInputError
+
+from typing import TYPE_CHECKING, Union, Optional, Callable, Dict, List, Type
+if TYPE_CHECKING:
+    from torch.nn import Module
+    from torch.optim import Optimizer
+    from bigdl.orca.learn.metrics import Metric
+    from torch.nn.modules.loss import _Loss as Loss
+    from torch.optim.lr_scheduler import _LRScheduler as LRScheduler
+    from torch.distributed import TCPStore
+    from torch.utils.data import DataLoader
+    from pyspark.sql.dataframe import DataFrame as SparkDataFrame
+    from ray.data import Dataset as RayDataset
+    from bigdl.orca.learn.pytorch.callbacks import Callback
+    from bigdl.orca.data import SparkXShards
 
 
 def partition_refs_to_creator(partition_refs):
@@ -69,19 +84,20 @@ class PyTorchRayEstimator(BaseRayEstimator):
     def __init__(
             self,
             *,
-            model_creator,
-            optimizer_creator,
-            loss_creator=None,
-            metrics=None,
-            scheduler_creator=None,
-            training_operator_cls=TrainingOperator,
-            config=None,
-            scheduler_step_freq="batch",
-            use_tqdm=False,
-            backend="ray",
-            workers_per_node=1,
-            sync_stats=True,
-            log_level=logging.INFO):
+            model_creator: Callable[[Dict], 'Module'],
+            optimizer_creator: Union[Callable[['Module', Dict], 'Optimizer'],
+                                     None]=None,
+            loss_creator: Union['Loss', Callable[[Dict], 'Loss'], None]=None,
+            metrics: Union['Metric', List['Metric'], None]=None,
+            scheduler_creator: Optional[Callable[[Dict], 'LRScheduler']]=None,
+            training_operator_cls: Type[TrainingOperator]=TrainingOperator,
+            config: Dict=None,
+            scheduler_step_freq: str="batch",
+            use_tqdm: bool=False,
+            backend: str="ray",
+            workers_per_node: int=1,
+            sync_stats: bool=True,
+            log_level: int=logging.INFO):
         if config is not None and "batch_size" in config:
             invalidInputError(False,
                               "Please do not specify batch_size in config. Input batch_size in the"
@@ -130,17 +146,23 @@ class PyTorchRayEstimator(BaseRayEstimator):
                    runner_cls=PytorchRayWorker,
                    workers_per_node=workers_per_node)
 
-    def fit(self,
-            data,
-            epochs=1,
-            batch_size=32,
-            profile=False,
-            reduce_results=True,
-            info=None,
-            feature_cols=None,
-            label_cols=None,
-            validation_data=None,
-            callbacks=[]):
+    def fit(self,  # type:ignore[override]
+            data: Union['SparkXShards',
+                        'SparkDataFrame',
+                        'RayDataset',
+                        Callable[[Dict, int], 'DataLoader']],
+            epochs: int=1,
+            batch_size: int=32,
+            profile: bool=False,
+            reduce_results: bool=True,
+            info: Optional[Dict]=None,
+            feature_cols: Optional[List[str]]=None,
+            label_cols: Optional[List[str]]=None,
+            validation_data: Union['SparkXShards',
+                                   'SparkDataFrame',
+                                   Callable[[Dict, int], 'DataLoader'],
+                                   None]=None,
+            callbacks: List['Callback']=[]) -> List:
         """
         Trains a PyTorch model given training data for several epochs.
         Calls `TrainingOperator.train_epoch()` on N parallel workers simultaneously
@@ -206,7 +228,7 @@ class PyTorchRayEstimator(BaseRayEstimator):
                                                                             label_cols,
                                                                             validation_data, "fit")
             from bigdl.orca.data.utils import process_spark_xshards
-            ray_xshards = process_spark_xshards(data, self.num_workers)
+            ray_xshards = process_spark_xshards(data, self.num_workers)  # type:ignore
 
             if validation_data is None:
                 def transform_func(worker, partition_refs):
@@ -221,7 +243,8 @@ class PyTorchRayEstimator(BaseRayEstimator):
                     invalidInputError(False,
                                       "Currently, we don't support input validation_data"
                                       " for horovod backend")
-                val_ray_xshards = process_spark_xshards(validation_data, self.num_workers)
+                val_ray_xshards = process_spark_xshards(validation_data,  # type:ignore
+                                                        self.num_workers)
 
                 def zip_func(worker, this_partition_refs, that_partition_refs):
                     params["data_creator"] = partition_refs_to_creator(this_partition_refs)
@@ -261,9 +284,11 @@ class PyTorchRayEstimator(BaseRayEstimator):
                                       "Validation data type should be the same as train data,"
                                       " but got type: {}".format(type(validation_data)))
 
-                val_shards = validation_data.split(n=self.num_workers,
+                val_shards = validation_data.split(n=self.num_workers,  # type:ignore
                                                    locality_hints=self.remote_workers)
-                for shard, val_shard, worker in zip(shards, val_shards, self.num_workers):
+                for shard, val_shard, worker in zip(shards,
+                                                    val_shards,  # type:ignore
+                                                    self.num_workers):
                     params["data_creator"] = make_data_creator(shard, feature_cols, label_cols)
 
                     params["validation_data_creator"] = make_data_creator(val_shard,
@@ -287,7 +312,7 @@ class PyTorchRayEstimator(BaseRayEstimator):
             params["validation_data_creator"] = reload_dataloader_creator(validation_data)
             success, worker_stats = self._train_epochs(**params)
 
-        epoch_stats = list(map(list, zip(*worker_stats)))
+        epoch_stats = list(map(list, zip(*worker_stats)))  # type:ignore
         if reduce_results:
             for i in range(len(epoch_stats)):
                 epoch_stats[i] = process_stats(epoch_stats[i])
@@ -295,11 +320,11 @@ class PyTorchRayEstimator(BaseRayEstimator):
         else:
             return epoch_stats
 
-    def predict(self,
-                data,
-                batch_size=32,
-                feature_cols=None,
-                profile=False):
+    def predict(self,  # type:ignore[override]
+                data: Union['SparkXShards', 'SparkDataFrame'],
+                batch_size: int=32,
+                feature_cols: Optional[List[str]]=None,
+                profile: bool=False) -> Union['SparkXShards', 'SparkDataFrame']:
         """
         Using this PyTorch model to make predictions on the data.
 
@@ -358,15 +383,18 @@ class PyTorchRayEstimator(BaseRayEstimator):
 
         return result
 
-    def evaluate(self,
-                 data,
-                 batch_size=32,
-                 num_steps=None,
-                 profile=False,
-                 reduce_results=True,
-                 info=None,
-                 feature_cols=None,
-                 label_cols=None):
+    def evaluate(self,  # type:ignore[override]
+                 data: Union['SparkXShards',
+                             'SparkDataFrame',
+                             'RayDataset',
+                             Callable[[Dict, int], 'DataLoader']],
+                 batch_size: int=32,
+                 num_steps: int=None,
+                 profile: bool=False,
+                 reduce_results: bool=True,
+                 info: Dict=None,
+                 feature_cols: Optional[List[str]]=None,
+                 label_cols:  Optional[List[str]]=None) -> Union[List[Dict], Dict]:
         """
         Evaluates a PyTorch model given validation data.
         Note that only accuracy for classification with zero-based label is supported by
@@ -415,7 +443,7 @@ class PyTorchRayEstimator(BaseRayEstimator):
             if data._get_class_name() == 'pandas.core.frame.DataFrame':
                 data = process_xshards_of_pandas_dataframe(data, feature_cols, label_cols)
             from bigdl.orca.data.utils import process_spark_xshards
-            ray_xshards = process_spark_xshards(data, self.num_workers)
+            ray_xshards = process_spark_xshards(data, self.num_workers)  # type:ignore
 
             def transform_func(worker, partition_refs):
                 data_creator = partition_refs_to_creator(partition_refs)
@@ -455,7 +483,7 @@ class PyTorchRayEstimator(BaseRayEstimator):
         else:
             return worker_stats
 
-    def get_model(self):
+    def get_model(self) -> 'Module':
         """
         Returns the learned PyTorch model.
 
@@ -465,7 +493,7 @@ class PyTorchRayEstimator(BaseRayEstimator):
         model = self.model_creator(self.config)
         model_state = state["models"][0]
         model.load_state_dict(model_state)
-        return model.module if hasattr(model, "module") else model
+        return model.module if hasattr(model, "module") else model  # type:ignore
 
     def _predict_spark_xshards(self, xshards, param):
         ray_xshards = RayXShards.from_spark_xshards(xshards)
