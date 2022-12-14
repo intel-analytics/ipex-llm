@@ -32,7 +32,7 @@ if TYPE_CHECKING:
 class Estimator(object):
     @staticmethod
     def from_torch(*,
-                   model: Optional[Union['Module', Callable[[Dict], 'Module'], None]]=None,
+                   model: Union['Module', Callable[[Dict], 'Module'], None]=None,
                    optimizer: Optional[Union['Optimizer',
                                        Callable[['Module', Dict], 'Optimizer'],
                                        None]]=None,

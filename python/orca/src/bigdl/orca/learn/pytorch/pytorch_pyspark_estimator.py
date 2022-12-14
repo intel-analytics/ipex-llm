@@ -574,10 +574,15 @@ class PyTorchPySparkEstimator(BaseEstimator):
 
         :return: The learned PyTorch model.
         """
-        state = self.state_dict
-        model = self.model_creator(self.config)
-        model_state = state["models"][0]
-        model.load_state_dict(model_state)
+        if self.model_creator:
+            state = self.state_dict
+            model = self.model_creator(self.config)
+            model_state = state["models"][0]
+            model.load_state_dict(model_state)
+        else:
+            invalidInputError(False,
+                              "Must provide callable function for model_creator "
+                              "or load a saved model.")
         return model.module if hasattr(model, "module") else model  # type:ignore
 
     def get_state_dict(self) -> Dict:
