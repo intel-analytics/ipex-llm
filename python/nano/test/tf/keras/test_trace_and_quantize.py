@@ -46,7 +46,7 @@ class TestTraceAndQuantize(TestCase):
         x = 100
         model = MyModel(x)
         traced_model = InferenceOptimizer.trace(model, accelerator="onnxruntime",
-                                                input_spec=tf.TensorSpec(shape=(None, 4), dtype=tf.float64))
+                                                input_spec=tf.TensorSpec(shape=(None, 4), dtype=tf.float32))
         # try to access some custom attributes
         traced_model.do_nothing()
         assert traced_model.get_x() == traced_model.x == x
@@ -64,3 +64,4 @@ class TestTraceAndQuantize(TestCase):
         # try to access some custom attributes
         quantized_model.do_nothing()
         assert quantized_model.get_x() == quantized_model.x == x
+
