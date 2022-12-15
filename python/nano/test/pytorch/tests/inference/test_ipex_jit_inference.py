@@ -315,7 +315,7 @@ class IPEXJITInference_gt_1_10:
                                input_sample=input_sample,
                                jit_method='scriptttt')
 
-    def test_ipex_jit_inference_strict(self):
+    def test_ipex_jit_inference_weights_prepack(self):
         # test jit + ipex
         model = InferenceOptimizer.trace(self.model, accelerator="jit",
                                          use_ipex=True, input_sample=self.data_sample,
@@ -336,7 +336,7 @@ class IPEXJITInference_gt_1_10:
             model(self.data_sample)
         with tempfile.TemporaryDirectory() as tmp_dir_name:
             InferenceOptimizer.save(model, tmp_dir_name)
-            new_model = InferenceOptimizer.load(tmp_dir_name)
+            new_model = InferenceOptimizer.load(tmp_dir_name, self.model)
         with InferenceOptimizer.get_context(new_model):
             new_model(self.data_sample)
             assert new_model.weights_prepack is False
