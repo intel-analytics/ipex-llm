@@ -14,8 +14,10 @@
 # ==============================================================================
 
 from unittest import TestCase
-import tensorflow as tf
+
 import numpy as np
+import tensorflow as tf
+
 from bigdl.nano.tf.keras import InferenceOptimizer
 
 
@@ -39,7 +41,7 @@ class MyModel(tf.keras.Model):
         pass
 
 
-class TestInferencePipeline(TestCase):
+class TestTraceAndQuantize(TestCase):
     def test_attribute_access_after_trace(self):
         x = 100
         model = MyModel(x)
