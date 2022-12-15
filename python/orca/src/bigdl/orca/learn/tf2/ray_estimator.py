@@ -44,6 +44,7 @@ from typing import TYPE_CHECKING, Any, Dict, List, Callable, Union, Optional
 if TYPE_CHECKING:
     import numpy as np
     import tensorflow as tf
+    from tensorflow import Tensor
     from tensorflow.python.saved_model.save_options import SaveOptions
     from tensorflow.python.keras.callbacks import Callback
     from tensorflow.python.keras.engine.training import Model
@@ -578,7 +579,7 @@ class TensorFlow2Estimator(OrcaRayEstimator):
 
         return result
 
-    def get_model(self, sample_input=None) -> "Model":
+    def get_model(self, sample_input: Optional["Tensor"]=None) -> "Model":
         """
         Returns the learned model.
 

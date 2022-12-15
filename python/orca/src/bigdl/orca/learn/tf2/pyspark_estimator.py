@@ -281,7 +281,7 @@ class SparkTFEstimator():
                  data: Union["SparkXShards", "SparkDataFrame", Callable],
                  batch_size: int=32,
                  num_steps: Optional[int]=None,
-                 verbose: int=1,
+                 verbose: Union[str, int]=1,
                  sample_weight: Optional["np.ndarray"]=None,
                  callbacks: Optional[List["Callback"]]=None,
                  data_config: Optional[Dict]=None,
