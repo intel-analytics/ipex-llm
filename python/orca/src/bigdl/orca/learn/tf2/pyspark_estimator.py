@@ -107,7 +107,7 @@ class SparkTFEstimator():
             callbacks=None, validation_data=None, class_weight=None, initial_epoch=0,
             steps_per_epoch=None, validation_steps=None, validation_freq=1,
             data_config=None, feature_cols=None,
-            label_cols=None, split_num=1):
+            label_cols=None):
         """
         Train this tensorflow model with train data.
         :param data: train data. It can be XShards, Spark DataFrame or creator function which
@@ -151,13 +151,6 @@ class SparkTFEstimator():
             driver_port=self.port
         )
 
-        if steps_per_epoch is not None:
-            quote = steps_per_epoch // split_num
-            reminder = steps_per_epoch % split_num
-        else:
-            quote = None
-            reminder = None
-
         params = dict(
             epochs=epochs,
             batch_size=batch_size,
@@ -175,33 +168,11 @@ class SparkTFEstimator():
         # Repartition Spark DataFrame before converting to SparkXShards.
         # Repartition on SparkXShards will result in empty partitions.
         if isinstance(data, DataFrame) or isinstance(data, SparkXShards):
-            for i in range(0, split_num):
-                if steps_per_epoch is not None:
-                    if i < reminder:
-                        params['steps_per_epoch'] = quote + 1
-                    else:
-                        params['steps_per_epoch'] = quote
-                if i > 0:
-                    # from second split to train, renews weights
-                    if self.model_weights:
-                        weights = sc.broadcast(self.model_weights)
-                    else:
-                        weights = None
-                    init_params['model_weights'] = weights
-                    init_params['cluster_info'] = self._get_cluster_info(sc)
-                if isinstance(data, DataFrame):
-                    data_slice = data.sample(withReplacement=False, fraction=1/split_num)
-                else:
-                    if data._get_class_name() == 'pandas.core.frame.DataFrame':
-                        data_slice = data.sample(frac=1/split_num, replace=False)
-                    else:
-                        data_slice = SparkXShards(data.rdd.sample(withReplacement=False, fraction=1/split_num))
-
-                if data_slice.rdd.getNumPartitions() != self.num_workers:
-                    data_slice = data_slice.repartition(self.num_workers)
+                if data.rdd.getNumPartitions() != self.num_workers:
+                    data = data.repartition(self.num_workers)
                 if validation_data and validation_data.rdd.getNumPartitions() != self.num_workers:
                     validation_data = validation_data.repartition(self.num_workers)
-                data_slice, validation_shards = maybe_dataframe_to_xshards(data_slice, validation_data,
+                data, validation_data = maybe_dataframe_to_xshards(data, validation_data,
                                                                    feature_cols, label_cols,
                                                                    mode="fit",
                                                                    num_workers=self.num_workers,
@@ -209,27 +180,26 @@ class SparkTFEstimator():
                                                                    shard_size=batch_size
                                                                    )
 
-                if isinstance(data_slice, SparkXShards):
+        if isinstance(data, SparkXShards):
                     # set train/validation data
-                    if data_slice._get_class_name() == 'pandas.core.frame.DataFrame':
-                        data, validation_shards = process_xshards_of_pandas_dataframe(data_slice,
+                    if data._get_class_name() == 'pandas.core.frame.DataFrame':
+                        data, validation_data = process_xshards_of_pandas_dataframe(data,
                                                                                     feature_cols,
                                                                                     label_cols,
-                                                                                    validation_shards,
+                                                                                    validation_data,
                                                                                     "fit")
 
-                    if validation_shards is None:
+                    if validation_data is None:
                         def transform_func(iter, init_param, param):
                             partition_data = list(iter)
                             param["data_creator"] = make_data_creator(partition_data)
                             # param["data_creator"] = make_data_creator(iter)
                             return SparkRunner(**init_param).step(**param)
 
-                        res = data_slice.rdd.barrier().mapPartitions(
+                        res = data.rdd.barrier().mapPartitions(
                             lambda iter: transform_func(iter, init_params, params)).collect()
                         result = self._update_weights(res)
                     else:
-
                         def transform_func(iter, init_param, param):
                             data_tuple_list = list(iter)
                             data_list = [x for data_tuple in data_tuple_list for x in data_tuple[0]]
@@ -238,8 +208,8 @@ class SparkTFEstimator():
                             param["validation_data_creator"] = make_data_creator(valid_list)
                             return SparkRunner(**init_param).step(**param)
 
-                        train_rdd = data_slice.rdd.mapPartitions(lambda iter: [list(iter)])
-                        val_rdd = validation_shards.rdd.mapPartitions(lambda iter: [list(iter)])
+                        train_rdd = data.rdd.mapPartitions(lambda iter: [list(iter)])
+                        val_rdd = validation_data.rdd.mapPartitions(lambda iter: [list(iter)])
                         res = train_rdd.zip(val_rdd).barrier().mapPartitions(
                                 lambda iter: transform_func(iter, init_params, params)).collect()
                         result = self._update_weights(res)

@@ -86,8 +86,7 @@ class TestTFEstimator(TestCase):
                               feature_cols=["feature"],
                               label_cols=["label"],
                               validation_data=df,
-                              validation_steps=1,
-                              split_num=2)
+                              validation_steps=1)
 
             print("start saving")
             trainer.save_weights(os.path.join(temp_dir, "cifar10_keras.h5"))
