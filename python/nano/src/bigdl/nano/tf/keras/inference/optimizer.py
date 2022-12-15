@@ -17,6 +17,7 @@
 import os
 import time
 import numpy as np
+import traceback
 import tensorflow as tf
 from typing import Dict, Optional, List, Union
 from bigdl.nano.utils.inference.common.base_optimizer import BaseInferenceOptimizer
@@ -91,7 +92,8 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                  logging: bool = False,
                  latency_sample_num: int = 100,
                  includes: Optional[List[str]] = None,
-                 excludes: Optional[List[str]] = None) -> None:
+                 excludes: Optional[List[str]] = None,
+                 output_filename: Optional[str] = None) -> None:
         '''
         This function will give all available inference acceleration methods a try
         and record the latency, accuracy and model instance inside the Optimizer for
@@ -133,6 +135,8 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                will be automatically add to includes.
         :param excludes: (optional) a list of acceleration methods that will be excluded from the
                search. "original" will be ignored in the excludes.
+        :param output_filename: (optional) a string filename is used to specify the file which the
+               optimized table will be writed. The default is None which means don't write to file.
         '''
         # check if model is a nn.Module or inherited from a nn.Module
         invalidInputError(isinstance(model, Model), "model should be a Keras Model.")
@@ -215,8 +219,8 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                                                  thread_num=thread_num,
                                                  logging=logging,
                                                  sample_size_for_pot=sample_size_for_pot)
-                except Exception as e:
-                    print(e)
+                except Exception:
+                    traceback.print_exc()
                     result_map[method]["status"] = "fail to convert"
                     print(f"----------Failed to convert to {method}----------")
                     continue
@@ -232,8 +236,8 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                     if status is False and method != "original":
                         result_map[method]["status"] = "early stopped"
                         continue
-                except Exception as e:
-                    print(e)
+                except Exception:
+                    traceback.print_exc()
                     result_map[method]["status"] = "fail to forward"
                     print(f"----------{method} failed to forward----------")
                     continue
@@ -242,7 +246,9 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                     # here we suppose trace don't change accuracy,
                     # so we jump it to reduce time cost of optimize
                     if precision == "fp32" and method != "original":
-                        result_map[method]["accuracy"] = "not recomputed"
+                        _accuracy = result_map["original"]["accuracy"]
+                        _accuracy = round(_accuracy, 3)
+                        result_map[method]["accuracy"] = str(_accuracy) + '*'
                     else:
                         if method == "original":
                             # test whether metric works
@@ -250,8 +256,8 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                                 result_map[method]["accuracy"] =\
                                     _accuracy_calculate_helper(acce_model, metric,
                                                                batched_validation_data)
-                            except Exception as e:
-                                print(e)
+                            except Exception:
+                                traceback.print_exc()
                                 self._calculate_accuracy = False
                         else:
                             result_map[method]["accuracy"] =\
@@ -269,10 +275,17 @@ class InferenceOptimizer(BaseInferenceOptimizer):
 
         self._optimize_result = format_optimize_result(self.optimized_model_dict,
                                                        self._calculate_accuracy)
+        if self._calculate_accuracy:
+            # only show this line when there is accuracy data
+            self._optimize_result += "* means we assume the accuracy of the traced model does "\
+                                    "not change, so we don't recompute accuracy to save time.\n"
         # save time cost to self._optimize_result
         time_cost = time.perf_counter() - start_time
         time_cost_str = f"Optimization cost {time_cost:.1f}s in total."
         self._optimize_result += time_cost_str
+        if output_filename is not None:
+            with open(output_filename, "w") as f:
+                f.write(self._optimize_result)
         print(self._optimize_result)
         print("===========================Stop Optimization===========================")
 
