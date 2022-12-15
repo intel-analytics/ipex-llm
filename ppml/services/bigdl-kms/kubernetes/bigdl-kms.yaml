@@ -23,7 +23,7 @@ metadata:
   labels:
     app: keywhiz
 spec:
-  type: ClusterIP
+  clusterIP: None
   ports:
     - name: keywhiz-port
       port: 4444
@@ -56,12 +56,21 @@ spec:
         - mountPath: /var/lib/mysql
           name: mysql-persitent-storage
         env:
-        - name: MYSQL_ROOT_PASSWORD
-          value: ""
+        - name: MYSQL_ALLOW_EMPTY_PASSWORD
+          value: "true"
+        - name: MYSQL_DATABASE
+          value: "keywhizdb_development"
       - name: keywhiz-server
         image: $keywhizServerImage
         imagePullPolicy: IfNotPresent
         args: ["server"]
+        lifecycle:
+          postStart:
+            exec:
+              command:
+              - sh
+              - -c
+              - "bash /usr/src/app/entry.sh migrate"
   volumeClaimTemplates:
       - metadata:
           name: mysql-persitent-storage
@@ -113,4 +122,4 @@ spec:
       - name: bigdl-kms-frontend
         image: $bigdlKmsFrontendImage
         imagePullPolicy: IfNotPresent
-        command: ['sh' , '-c' , 'alias keywhiz.cli="/usr/src/app/cli/target/keywhiz-cli-*-SNAPSHOT-shaded.jar --devTrustStore"; alias key.provider="java -jar server/target/keywhiz-server-*-SNAPSHOT-shaded.jar"; sleep 10s']
+        command: ['sh' , '-c' , 'alias keywhiz.cli="/usr/src/app/cli/target/keywhiz-cli-*-SNAPSHOT-shaded.jar --devTrustStore"; alias key.provider="java -jar server/target/keywhiz-server-*-SNAPSHOT-shaded.jar"; while true; do sleep 30s; done;']
