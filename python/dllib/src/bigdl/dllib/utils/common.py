@@ -14,6 +14,7 @@
 # limitations under the License.
 #
 
+import re
 import os
 import sys
 import six
@@ -628,8 +629,12 @@ def callBigDlFunc(bigdl_type, name, *args):
             result = callJavaFunc(api, *args)
         except Exception as e:
             error = e
-            if "does not exist" not in str(e):
+            regex = re.compile(r'Method\s' + name + r'.*does not exist')
+            if regex.match(str(e)):
                 invalidOperationError(False, str(e), cause=e)
+            else:
+                # if the invoked method exist but something else went wrong, raise the exception 
+                raise e
         else:
             return result
     invalidOperationError(False, "Cannot find function: %s" % name, cause=error)
