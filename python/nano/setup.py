@@ -126,7 +126,10 @@ def setup_package():
 
     pytorch_110_requires = ["torch==1.10.1",
                             "torchvision==0.11.2",
-                            "intel_extension_for_pytorch==1.10.100;platform_system=='Linux'"]
+                            "intel_extension_for_pytorch==1.10.100;platform_system=='Linux' and \
+                            python_version>=3.9",
+                            "intel_extension_for_pytorch==1.11.0;platform_system=='Linux' and \
+                            python_version<3.9",]
 
     # this require install option --extra-index-url https://download.pytorch.org/whl/nightly/
     pytorch_nightly_requires = ["torch~=1.14.0.dev",
