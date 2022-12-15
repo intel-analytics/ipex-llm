@@ -63,6 +63,11 @@ class NCFData(data.Dataset):
         df['label'] = labels_fill
         self.data = tuple(map(tuple, df.itertuples(index=False)))
 
+    def train_test_split(self, test_size=0.2):
+        train_dataset, test_dataset = train_test_split(self.data, test_size=test_size,
+                                                       random_state=100)
+        return NCFData(train_dataset, self.columns), NCFData(test_dataset, self.columns)
+
     def merge_features(self, users, items, total_cols=None):
         df = pd.DataFrame(self.data, columns=self.columns)
         df = users.merge(df, on='user')
@@ -74,11 +79,6 @@ class NCFData(data.Dataset):
         df = df.loc[:, total_cols]
         self.data = tuple(map(tuple, df.itertuples(index=False)))
         self.columns = total_cols
-
-    def train_test_split(self, test_size=0.2):
-        train_dataset, test_dataset = train_test_split(self.data, test_size=test_size,
-                                                       random_state=100)
-        return NCFData(train_dataset, self.columns), NCFData(test_dataset, self.columns)
 
     def __len__(self):
         return len(self.data)
