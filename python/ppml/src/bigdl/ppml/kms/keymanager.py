@@ -14,7 +14,7 @@
 # limitations under the License.
 #
 
-from restcaller import request_parimary_key_ciphertext,request_data_key_ciphertext, request_data_key_plaintext
+from . restcaller import request_primary_key_ciphertext,request_data_key_ciphertext, request_data_key_plaintext
 
 def read_encrypted_key_file(encrypted_key_path):
     with open(encrypted_key_path, 'r') as file:
@@ -33,7 +33,7 @@ def retrieve_data_key_plaintext(ip, port, encrypted_primary_key_path, encrypted_
 
 
 def generate_primary_key_ciphertext(ip, port):
-    primary_key_ciphertext = request_parimary_key_ciphertext(ip, port)
+    primary_key_ciphertext = request_primary_key_ciphertext(ip, port)
     write_encrypted_key_file('./encrypted_primary_key', primary_key_ciphertext)
     print('[INFO] Primary Key Generated Successfully at ./encrypted_primary_key')
 

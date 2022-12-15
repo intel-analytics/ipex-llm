@@ -14,9 +14,9 @@
 # limitations under the License.
 #
 
-from keymanager import retrieve_data_key_plaintext
+from . keymanager import retrieve_data_key_plaintext
 from cryptography.fernet import Fernet
-import os, sqlite3, csv
+import os, sqlite3, csv, io
 
 def read_data_file(data_file_path):
     with open(data_file_path, 'rb') as file:
@@ -45,6 +45,12 @@ def decrypt_data_file(ip, port, data_file_path, encrypted_primary_key_path, encr
     write_data_file(save_path, decrypted)
     print('[INFO] Decrypt Successfully! Decrypted Output Is ' + save_path)
 
+def decrypt_buf(ip, port, buf: io.BytesIO, decrypted_buf: io.BytesIO, encrypted_primary_key_path, encrypted_data_key_path):
+    data_key = retrieve_data_key_plaintext(ip, port, encrypted_primary_key_path, encrypted_data_key_path)
+    fernet = Fernet(data_key)
+    decrypted_content = fernet.decrypt(buf.getvalue())
+    decrypted_buf.write(decrypted_content)
+
 def encrypt_directory_automation(ip, port, input_dir, encrypted_primary_key_path, encrypted_data_key_path, save_dir):
     print('[INFO] Encrypt Files Start...')
     if save_dir is None:
@@ -62,6 +68,15 @@ def encrypt_directory_automation(ip, port, input_dir, encrypted_primary_key_path
         write_data_file(save_path, encrypted)
         print('[INFO] Encrypt Successfully! Encrypted Output Is ' + save_path)
     print('[INFO] Encrypted Files.')
+
+# TODO: do we release buf here or leave it to upper caller?
+# TODO: consider remove the io.BytesIO here
+def encrypt_buf_automation(ip, port, buf: io.BytesIO, encrypted_buf: io.BytesIO, encrypted_primary_key_path, encrypted_data_key_path):
+    data_key = retrieve_data_key_plaintext(ip, port, encrypted_primary_key_path, encrypted_data_key_path)
+    fernet = Fernet(data_key)
+    content = buf.getvalue()
+    encrypted_content = fernet.encrypt(content)
+    encrypted_buf.write(encrypted_content)
 
 def decrypt_csv_columns_automation(ip, port, encrypted_primary_key_path, encrypted_data_key_path, input_dir):
     from glob import glob

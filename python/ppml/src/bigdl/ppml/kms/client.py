@@ -16,7 +16,8 @@
 
 import argparse
 import os
-import fileoperator, keymanager
+import kms.fileoperator as fileoperator
+import kms.keymanager as keymanager
 
 def generate_primary_key(ip, port):
     keymanager.generate_primary_key_ciphertext(ip, port)
@@ -35,6 +36,9 @@ def encrypt_file_without_key(data_file_path, ip, port):
 def encrypt_file_with_key(data_file_path, ip, port, encrypted_primary_key_path, encrypted_data_key_path):
     fileoperator.encrypt_data_file(ip, port, data_file_path, encrypted_primary_key_path, encrypted_data_key_path)
 
+def decrypt_buf_with_key(buf, decrypted_buf, ip, port, encrypted_primary_key_path, encrypted_data_key_path):
+    fileoperator.decrypt_buf(ip, port, buf, decrypted_buf, encrypted_primary_key_path, encrypted_data_key_path)
+
 
 def decrypt_file(data_file_path, ip, port, encrypted_primary_key_path, encrypted_data_key_path):
     fileoperator.decrypt_data_file(ip, port, data_file_path, encrypted_primary_key_path, encrypted_data_key_path)
@@ -43,6 +47,8 @@ def decrypt_file(data_file_path, ip, port, encrypted_primary_key_path, encrypted
 def encrypt_directory_with_key(dir_path, ip, port,encrypted_primary_key_path, encrypted_data_key_path, save_dir=None):
     fileoperator.encrypt_directory_automation(ip, port, dir_path, encrypted_primary_key_path, encrypted_data_key_path,save_dir)
 
+def encrypt_buf_with_key(buf, encrypted_buf, ip, port, encrypted_primary_key_path, encrypted_data_key_path):
+    fileoperator.encrypt_buf_automation(ip, port, buf, encrypted_buf, encrypted_primary_key_path, encrypted_data_key_path)
 
 def encrypt_directory_without_key(dir_path, ip, port, save_dir=None):
     keymanager.generate_primary_key_ciphertext(ip, port)
