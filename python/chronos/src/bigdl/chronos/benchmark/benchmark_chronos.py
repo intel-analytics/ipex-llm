@@ -336,6 +336,10 @@ def main():
     path = os.path.abspath(os.path.dirname(__file__))
     model_path = os.path.join(path, args.ckpt)
 
+    if args.framework == "tensorflow":
+        if not os.path.exists(model_path):
+            os.makedirs(model_path, exist_ok=True)
+
     # generate data
     train_loader, val_loader, test_loader = generate_data(args)
 
