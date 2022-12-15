@@ -19,4 +19,5 @@ mypy --install-types --non-interactive --config-file ${ORCA_DEVTEST_DIR}/mypy.in
                                                      $ORCA_HOME/src/bigdl/orca/learn/pytorch/pytorch_pyspark_estimator.py \
                                                      $ORCA_HOME/src/bigdl/orca/learn/pytorch/pytorch_ray_estimator.py \
                                                      $ORCA_HOME/src/bigdl/orca/learn/pytorch/estimator.py \
-                                                     $ORCA_HOME/src/bigdl/orca/learn/pytorch/core/base_ray_estimator.py
+                                                     $ORCA_HOME/src/bigdl/orca/learn/pytorch/core/base_ray_estimator.py \
+                                                     $ORCA_HOME/src/bigdl/orca/learn/pytorch/experimential/mmcv

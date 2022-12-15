@@ -23,7 +23,7 @@ import torch
 
 from bigdl.dllib.utils.log4Error import invalidInputError
 
-from typing import (Any, Dict, List, Optional, Tuple, Callable, overload, Union)
+from typing import (Dict, List, Optional, Tuple, Callable, Union)
 
 from bigdl.orca.learn.pytorch.experimential.core.base_ray_estimator import BaseRayEstimator
 from bigdl.orca.learn.pytorch.experimential.mmcv.mmcv_ray_runner import MMCVRayEpochRunner
@@ -32,10 +32,10 @@ from bigdl.orca.learn.pytorch.experimential.mmcv.mmcv_ray_runner import MMCVRayE
 class MMCVRayEstimator(BaseRayEstimator):
     def __init__(self,
                  *,
-                 mmcv_runner_creator=None,
-                 backend="ray",
-                 workers_per_node=1,
-                 config=None):
+                 mmcv_runner_creator: Optional[Callable]=None,
+                 backend: str = "ray",
+                 workers_per_node: int = 1,
+                 config: Optional[Dict]=None) -> None:
         if not (isinstance(mmcv_runner_creator, types.FunctionType)):
             invalidInputError(False, "Must provide a function for mmcv_runner_creator")
 
@@ -55,7 +55,7 @@ class MMCVRayEstimator(BaseRayEstimator):
             workflow: List[Tuple[str, int]],
             max_epochs: Optional[int] = None,  # deprecated
             reduce_results=True,
-            **kwargs):
+            **kwargs) -> List[Dict]:
         """Trains a MMCV model given training and val data for several epochs.
 
         :param data_loaders_creators: Dataloader creators for training and validation.
@@ -88,7 +88,7 @@ class MMCVRayEstimator(BaseRayEstimator):
             workflow: List[Tuple[str, int]],
             max_epochs: Optional[int] = None,  # deprecated
             reduce_results=True,
-            **kwargs):
+            **kwargs) -> List[Dict]:
         """
         Same as fit method, the parameters are consistent with MMCV runner.run()
         """
