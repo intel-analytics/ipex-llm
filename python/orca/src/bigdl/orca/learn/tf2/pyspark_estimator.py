@@ -171,8 +171,13 @@ class SparkTFEstimator():
         if isinstance(data, DataFrame) or isinstance(data, SparkXShards):
             if data.rdd.getNumPartitions() != self.num_workers:
                 data = data.repartition(self.num_workers)
-            if validation_data and validation_data.rdd.getNumPartitions() != self.num_workers:  # type:ignore
-                validation_data = validation_data.repartition(self.num_workers)  # type:ignore
+            if validation_data:
+                invalidInputError(
+                    isinstance(validation_data, DataFrame) or
+                    isinstance(validation_data, SparkXShards),
+                    "validation_data should have the same type with train data")
+                if validation_data.rdd.getNumPartitions() != self.num_workers:  # type:ignore
+                    validation_data = validation_data.repartition(self.num_workers)  # type:ignore
         data, validation_data = maybe_dataframe_to_xshards(data, validation_data,
                                                            feature_cols, label_cols,
                                                            mode="fit",
@@ -463,13 +468,14 @@ class SparkTFEstimator():
             result = convert_predict_xshards_to_dataframe(data, pred_shards)
         elif isinstance(data, SparkXShards):  # Computation triggered when updating XShards
             xshards = data.to_lazy()
-            if data._get_class_name() == 'pandas.core.frame.DataFrame':
-                xshards = process_xshards_of_pandas_dataframe(data, feature_cols)
+            if xshards._get_class_name() == 'pandas.core.frame.DataFrame':
+                xshards = process_xshards_of_pandas_dataframe(xshards, feature_cols)
                 pred_shards = SparkXShards.lazy(xshards.rdd.mapPartitions(
                     lambda iter: transform_func(iter, init_params, params)))
+                # Should add to the original SparkXShards of Pandas DataFrames
                 result = add_predict_to_pd_xshards(data, pred_shards)
             else:
-                pred_shards = SparkXShards(xshards.rdd.mapPartitions(
+                pred_shards = SparkXShards.lazy(xshards.rdd.mapPartitions(
                     lambda iter: transform_func(iter, init_params, params)))
                 result = update_predict_xshards(data, pred_shards)
             # Uncache the original data since it is already included in the result
