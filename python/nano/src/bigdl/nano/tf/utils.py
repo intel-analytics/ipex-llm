@@ -15,6 +15,7 @@
 #
 import inspect
 import operator
+from tensorflow.keras import Model
 from functools import partial
 from bigdl.nano.common.compare_version import _compare_version
 
@@ -43,6 +44,8 @@ def patch_attrs(target_obj: object, source_obj: object) -> object:
         elif isinstance(attr, _NanoPartial):     # replaced method by Nano
             static_method = attr.func
             setattr(target_obj, name, _NanoPartial(static_method, target_obj))
+        elif isinstance(attr, Model):
+            pass
         else:
             setattr(target_obj, name, attr)
     return target_obj
