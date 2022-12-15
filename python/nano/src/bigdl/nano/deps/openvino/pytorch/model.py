@@ -120,9 +120,10 @@ class PytorchOpenVINOModel(AcceleratedLightningModule):
             invalidInputError(False, "nano_model_meta.yml must specify 'xml_path' for loading.")
         xml_path = Path(path) / status['xml_path']
         thread_num = None
-        if "CPU_THREADS_NUM" in status['config']:
-            thread_num = int(status['config']["CPU_THREADS_NUM"])
-        return PytorchOpenVINOModel(xml_path, config=status['config'], thread_num=thread_num)
+        config = status.get('config', {})
+        if "CPU_THREADS_NUM" in config:
+            thread_num = int(config["CPU_THREADS_NUM"])
+        return PytorchOpenVINOModel(xml_path, config=config, thread_num=thread_num)
 
     def pot(self,
             dataloader,
