@@ -497,6 +497,7 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                  openvino_config=None,
                  simplification: bool = True,
                  jit_strict: bool = True,
+                 jit_method: Optional[str] = None,
                  dynamic_axes: Union[bool, dict] = True,
                  sample_size: int = 100,
                  logging: bool = True,
@@ -576,8 +577,13 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                                accelerator='onnxruntime', otherwise will be ignored. If this option
                                is set to True, new dependency 'onnxsim' need to be installed.
         :param jit_strict: Whether recording your mutable container types. This parameter will be
-                           passed to torch.jit.trace. if accelerator != 'jit', it will be ignored.
-                           Default to True.
+                           passed to ``torch.jit.trace``. if ``accelerator != 'jit'`` or
+                           ``jit_method='script'``, it will be ignored. Default to True.
+        :param jit_method: Whether to use ``jit.trace`` or ``jit.script`` to convert a model
+                           to TorchScript. Accepected values are ``'trace'``, ``'script'``,
+                           and ``None``. Default to be ``None`` meaning the try-except logic
+                           to use ``jit.trace`` or ``jit.script``. If ``accelerator != 'jit'``,
+                           this parameter will be ignored.
         :param dynamic_axes: dict or boolean, default to True. By default the exported onnx model
                              will have the first dim of each Tensor input as a dynamic batch_size.
                              If dynamic_axes=False, the exported model will have the shapes of all
@@ -620,11 +626,15 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                         invalidInputError(not TORCH_VERSION_LESS_1_10,
                                           "torch version should >=1.10 to use ipex")
                     use_jit = (accelerator == "jit")
+                    if use_jit:
+                        invalidInputError(jit_method in [None, 'trace', 'script'],
+                                          "jit_method {} is invalid.".format(jit_method))
                     return PytorchIPEXJITBF16Model(model, input_sample=input_sample,
                                                    use_ipex=use_ipex, use_jit=use_jit,
                                                    channels_last=channels_last,
                                                    thread_num=thread_num, inplace=inplace,
-                                                   jit_strict=jit_strict)
+                                                   jit_strict=jit_strict,
+                                                   jit_method=jit_method)
                 else:
                     bf16_model = BF16Model(model, channels_last=channels_last,
                                            thread_num=thread_num)
@@ -782,6 +792,7 @@ class InferenceOptimizer(BaseInferenceOptimizer):
               openvino_config=None,
               simplification: bool = True,
               jit_strict: bool = True,
+              jit_method: Optional[str] = None,
               dynamic_axes: Union[bool, dict] = True,
               logging: bool = True,
               inplace: bool = False,
@@ -812,8 +823,13 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                                accelerator='onnxruntime', otherwise will be ignored. If this option
                                is set to True, new dependency 'onnxsim' need to be installed.
         :param jit_strict: Whether recording your mutable container types. This parameter will be
-                           passed to torch.jit.trace. if accelerator != 'jit', it will be ignored.
-                           Default to True.
+                           passed to ``torch.jit.trace``. if ``accelerator != 'jit'`` or
+                           ``jit_method='script'``, it will be ignored. Default to True.
+        :param jit_method: Whether to use ``jit.trace`` or ``jit.script`` to convert a model
+                           to TorchScript. Accepected values are ``'trace'``, ``'script'``,
+                           and ``None``. Default to be ``None`` meaning the try-except logic
+                           to use ``jit.trace`` or ``jit.script``. If ``accelerator != 'jit'``,
+                           this parameter will be ignored.
         :param dynamic_axes: dict or boolean, default to True. By default the exported onnx model
                              will have the first dim of each Tensor input as a dynamic batch_size.
                              If dynamic_axes=False, the exported model will have the shapes of all
@@ -869,10 +885,13 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                 invalidInputError(not TORCH_VERSION_LESS_1_10,
                                   "torch version should >=1.10 to use ipex")
             use_jit = (accelerator == "jit")
+            if use_jit:
+                invalidInputError(jit_method in [None, 'trace', 'script'],
+                                  "jit_method {} is invalid.".format(jit_method))
             return PytorchIPEXJITModel(model, input_sample=input_sample, use_ipex=use_ipex,
                                        use_jit=use_jit, channels_last=channels_last,
                                        thread_num=thread_num, inplace=inplace,
-                                       jit_strict=jit_strict)
+                                       jit_strict=jit_strict, jit_method=jit_method)
         invalidInputError(False, "Accelerator {} is invalid.".format(accelerator))
 
     @staticmethod

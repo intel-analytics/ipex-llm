@@ -399,7 +399,6 @@ def spark_df_to_rdd_pd(df: "DataFrame", squeeze: bool=False, index_col: Optional
                        dtype: Optional[Union[str, Dict[str, str], Dict[str, Type[float32]],
                                        Dict[int, Union[Type[float32], Type[int32]]]]]=None,
                        index_map: Optional[Dict[int, str]]=None) -> "RDD":
-    from bigdl.orca.data import SparkXShards
     from bigdl.orca import OrcaContext
 
     import pyspark.sql.functions as F
@@ -479,12 +478,12 @@ def to_pandas_without_arrow(columns, squeeze=False, index_col=None, dtype=None, 
     return f
 
 
-def to_pandas(columns: List[str], squeeze: bool=False, index_col: Optional[str]=None,
+def to_pandas(df: "DataFrame", squeeze: bool=False, index_col: Optional[str]=None,
               dtype: Optional[Union[str, Dict[str, Type[float32]],
                                     Dict[int, Union[Type[float32], Type[int32]]],
                                     Dict[str, str]]]=None,
               index_map: Optional[Dict[int, str]]=None,
-              batch_size: int=None) -> "RDD":
+              batch_size: Optional[int]=None) -> "RDD":
     def farrow(iter):
         for fileName in iter:
             from pyspark.sql.pandas.serializers import ArrowStreamSerializer

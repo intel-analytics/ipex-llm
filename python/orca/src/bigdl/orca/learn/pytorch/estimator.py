@@ -31,10 +31,10 @@ if TYPE_CHECKING:
 class Estimator(object):
     @staticmethod
     def from_torch(*,
-                   model: Union['Module', Callable[[Dict], 'Module']],
-                   optimizer: Union['Optimizer',
-                                    Callable[['Module', Dict], 'Optimizer'],
-                                    None]=None,
+                   model: Union['Module', Callable[[Dict], 'Module'], None]=None,
+                   optimizer: Optional[Union['Optimizer',
+                                       Callable[['Module', Dict], 'Optimizer'],
+                                       None]]=None,
                    loss: Union['Loss', Callable[[Dict], 'Loss'], None]=None,
                    metrics: Union['Metric', List['Metric'], None]=None,
                    backend: str="spark",

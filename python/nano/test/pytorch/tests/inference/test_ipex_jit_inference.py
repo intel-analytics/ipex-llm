@@ -262,6 +262,58 @@ class IPEXJITInference_gt_1_10:
                 else:
                     model(x1, x2, x3)
 
+    def test_ipex_jit_inference_jit_method(self):
+        class Net(nn.Module):
+            def __init__(self):
+                super().__init__()
+            def forward(self, x):
+                return torch.arange(len(x))
+
+        model = Net()
+
+        input_sample = torch.rand(1,3,1,1)
+        input = torch.rand(5,3,1,1)
+        expected_output_len = 5
+
+        # test with jit.script (with ipex)
+        accmodel = InferenceOptimizer.trace(model, accelerator='jit',
+                                            use_ipex=True, 
+                                            input_sample=input_sample, 
+                                            jit_method='script')
+        with InferenceOptimizer.get_context(accmodel):
+            output = accmodel(input)
+        assert output.shape[0] == expected_output_len
+
+        with tempfile.TemporaryDirectory() as tmp_dir_name:
+            InferenceOptimizer.save(accmodel, tmp_dir_name)
+            loaded_model = InferenceOptimizer.load(tmp_dir_name)
+        with InferenceOptimizer.get_context(loaded_model):
+            output = loaded_model(input)
+        assert output.shape[0] == expected_output_len
+        assert loaded_model.jit_method == 'script'
+
+
+        # test with jit.trace (with ipex)
+        accmodel = InferenceOptimizer.trace(model, accelerator='jit', 
+                                      use_ipex=True,
+                                      input_sample=input_sample, 
+                                      jit_method='trace')
+        with InferenceOptimizer.get_context(accmodel):
+            output = accmodel(input)
+        assert output.shape[0] != expected_output_len
+
+        # test with deafult jit_method
+        accmodel = InferenceOptimizer.trace(model, accelerator='jit', 
+                                      input_sample=input_sample)
+        with InferenceOptimizer.get_context(accmodel):
+            output = accmodel(input)
+        assert output != output.shape[0] != expected_output_len
+
+        # test with invalidInputError
+        with pytest.raises(RuntimeError):
+            InferenceOptimizer.trace(model, accelerator='jit', 
+                               input_sample=input_sample,
+                               jit_method='scriptttt')
 
 class IPEXJITInference_lt_1_10:
     def test_placeholder(self):

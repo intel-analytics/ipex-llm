@@ -83,7 +83,7 @@ class PyTorchRayEstimator(BaseRayEstimator):
     def __init__(
             self,
             *,
-            model_creator: Callable[[Dict], 'Module'],
+            model_creator: Union[Callable[[Dict], 'Module'], None],
             optimizer_creator: Union[Callable[['Module', Dict], 'Optimizer'],
                                      None]=None,
             loss_creator: Union['Loss', Callable[[Dict], 'Loss'], None]=None,
@@ -485,7 +485,7 @@ class PyTorchRayEstimator(BaseRayEstimator):
         :return: The learned PyTorch model.
         """
         state = self.get_state_dict()
-        model = self.model_creator(self.config)
+        model = self.model_creator(self.config)  # type:ignore
         model_state = state["models"][0]
         model.load_state_dict(model_state)
         return model.module if hasattr(model, "module") else model  # type:ignore

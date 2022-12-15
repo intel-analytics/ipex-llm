@@ -36,7 +36,7 @@ def ipex_device():
 
 def PytorchIPEXJITModel(model, input_sample=None, use_ipex=False,
                         use_jit=False, channels_last=None, thread_num=None,
-                        inplace=False, jit_strict=True):
+                        inplace=False, jit_strict=True, jit_method=None):
     '''
     :param model: the model(nn.module) to be transform.
     :param input_sample: torch tensor indicate the data sample to be used
@@ -47,16 +47,19 @@ def PytorchIPEXJITModel(model, input_sample=None, use_ipex=False,
     :param thread_num: the thread num allocated for this model.
     :param inplace: whether to perform inplace optimization. Default: ``False``.
     :param jit_strict: Whether recording your mutable container types.
+    :param jit_method: use ``jit.trace`` or ``jit.script`` to
+           convert a model to TorchScript.
     '''
     from .ipex_inference_model import PytorchIPEXJITModel
     return PytorchIPEXJITModel(model, input_sample=input_sample, use_ipex=use_ipex,
                                use_jit=use_jit, channels_last=channels_last,
-                               thread_num=thread_num, inplace=inplace, jit_strict=jit_strict)
+                               thread_num=thread_num, inplace=inplace, jit_strict=jit_strict,
+                               jit_method=jit_method)
 
 
 def PytorchIPEXJITBF16Model(model, input_sample=None, use_ipex=False,
                             use_jit=False, channels_last=None, thread_num=None,
-                            inplace=False, jit_strict=True):
+                            inplace=False, jit_strict=True, jit_method=None):
     '''
     :param model: the model(nn.module) to be transform.
     :param input_sample: torch tensor indicate the data sample to be used
@@ -67,11 +70,14 @@ def PytorchIPEXJITBF16Model(model, input_sample=None, use_ipex=False,
     :param thread_num: the thread num allocated for this model.
     :param inplace: whether to perform inplace optimization. Default: ``False``.
     :param jit_strict: Whether recording your mutable container types.
+    :param jit_method: use ``jit.trace`` or ``jit.script`` to
+           convert a model to TorchScript.
     '''
     from .ipex_inference_bf16_model import PytorchIPEXJITBF16Model
     return PytorchIPEXJITBF16Model(model, input_sample=input_sample, use_ipex=use_ipex,
                                    use_jit=use_jit, channels_last=channels_last,
-                                   thread_num=thread_num, inplace=inplace, jit_strict=jit_strict)
+                                   thread_num=thread_num, inplace=inplace, jit_strict=jit_strict,
+                                   jit_method=jit_method)
 
 
 def PytorchIPEXQuantizationModel(model, calib_data, q_config=None,
