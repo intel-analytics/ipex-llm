@@ -47,8 +47,8 @@ if TYPE_CHECKING:
     from tensorflow.python.saved_model.save_options import SaveOptions
     from tensorflow.python.keras.callbacks import Callback
     from tensorflow.python.keras.engine.training import Model
-    from pyspark.sql import DataFrame
-    from bigdl.orca.data.tf.data import Dataset
+    from pyspark.sql import DataFrame as SparkDataFrame
+    from bigdl.orca.data.tf.data import Dataset as TFDataset
     from bigdl.orca.data import SparkXShards
 
 logger = logging.getLogger(__name__)
@@ -142,13 +142,18 @@ class TensorFlow2Estimator(OrcaRayEstimator):
         self.num_workers = len(self.remote_workers)
 
     def fit(self,
-            data: Union["SparkXShards", "Dataset", "ray.data.Dataset", Callable],
+            data: Union["SparkXShards",
+                        "SparkDataFrame",
+                        "TFDataset",
+                        "ray.data.Dataset",
+                        Callable],
             epochs: int=1,
             batch_size: int=32,
             verbose: Union[str, int]=1,
             callbacks: Optional[str]=None,
             validation_data: Optional[Union["SparkXShards",
-                                            "Dataset",
+                                            "SparkDataFrame",
+                                            "TFDataset",
                                             "ray.data.Dataset",
                                             Callable]]=None,
             class_weight: Optional[Dict[int, float]]=None,
@@ -328,7 +333,8 @@ class TensorFlow2Estimator(OrcaRayEstimator):
 
     def evaluate(self,
                  data: Union["SparkXShards",
-                             "Dataset",
+                             "SparkDataFrame",
+                             "TFDataset",
                              "ray.data.Dataset",
                              Callable],
                  batch_size: int=32,
@@ -485,7 +491,7 @@ class TensorFlow2Estimator(OrcaRayEstimator):
         return spark_xshards
 
     def predict(self,
-                data: Union["SparkXShards", "DataFrame", "Dataset"],
+                data: Union["SparkXShards", "SparkDataFrame", "TFDataset"],
                 batch_size: Optional[int]=None,
                 verbose: Union[str, int]=1,
                 steps: Optional[int]=None,
@@ -493,8 +499,7 @@ class TensorFlow2Estimator(OrcaRayEstimator):
                 data_config: Optional[Dict[str, Any]]=None,
                 feature_cols: Optional[List[str]]=None,
                 min_partition_num: Optional[int]=None) -> Union["SparkXShards",
-                                                                "DataFrame",
-                                                                "Dataset"]:
+                                                                "SparkDataFrame"]:
         """
         Predict the input data
 
@@ -584,7 +589,7 @@ class TensorFlow2Estimator(OrcaRayEstimator):
         return self._get_model_from_state(state, sample_input=sample_input)
 
     @enable_multi_fs_save
-    def save_checkpoint(self, checkpoint: str):
+    def save_checkpoint(self, checkpoint: str) -> str:
         """
         Saves the model at the provided checkpoint.
 
