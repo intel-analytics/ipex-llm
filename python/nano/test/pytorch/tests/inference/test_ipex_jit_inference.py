@@ -82,6 +82,40 @@ class IPEXJITInference_gt_1_10:
         with InferenceOptimizer.get_context(new_model):
             new_model(self.data_sample)
     
+    def test_ipex_channels_last_inference(self):
+        model = InferenceOptimizer.trace(self.model, accelerator=None, channels_last=True, use_ipex=True)
+        with InferenceOptimizer.get_context(model):
+            model(self.data_sample)
+        with tempfile.TemporaryDirectory() as tmp_dir_name:
+            InferenceOptimizer.save(model, tmp_dir_name)
+            new_model = InferenceOptimizer.load(tmp_dir_name, self.model)
+        with InferenceOptimizer.get_context(new_model):
+            new_model(self.data_sample)
+
+    def test_jit_channels_last_inference(self):
+        model = InferenceOptimizer.trace(self.model, accelerator="jit",
+                                         channels_last=True,
+                                         use_ipex=False, input_sample=self.data_sample)
+        with InferenceOptimizer.get_context(model):
+            model(self.data_sample)
+        with tempfile.TemporaryDirectory() as tmp_dir_name:
+            InferenceOptimizer.save(model, tmp_dir_name)
+            new_model = InferenceOptimizer.load(tmp_dir_name)
+        with InferenceOptimizer.get_context(new_model):
+            new_model(self.data_sample)
+
+    def test_ipex_jit_channels_last_inference(self):
+        model = InferenceOptimizer.trace(self.model, accelerator="jit",
+                                         channels_last=True,
+                                         use_ipex=True, input_sample=self.data_sample)
+        with InferenceOptimizer.get_context(model):
+            model(self.data_sample)
+        with tempfile.TemporaryDirectory() as tmp_dir_name:
+            InferenceOptimizer.save(model, tmp_dir_name)
+            new_model = InferenceOptimizer.load(tmp_dir_name)
+        with InferenceOptimizer.get_context(new_model):
+            new_model(self.data_sample)
+
     def test_ipex_jit_inference_additional_attrs(self):
         model = ResNet18(10, pretrained=False, include_top=False, freeze=True)
         #  patch a attr
@@ -92,6 +126,7 @@ class IPEXJITInference_gt_1_10:
         model.hello = hello
 
         # test jit + ipex
+        # ? why test again
         new_model = InferenceOptimizer.trace(model, accelerator="jit",
                                              use_ipex=True,
                                              input_sample=self.data_sample)
@@ -101,6 +136,7 @@ class IPEXJITInference_gt_1_10:
         new_model.hello()
 
         # test jit + ipex + inplace
+        # ? what's inplace mean
         new_model = InferenceOptimizer.trace(model, accelerator="jit",
                                              use_ipex=True,
                                              inplace=True,

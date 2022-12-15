@@ -41,6 +41,7 @@ class Pytorch1_11:
         with pytest.raises(RuntimeError,
                            match="Applying IPEX BF16 optimization needs the cpu support avx512."):
             bf16_model = InferenceOptimizer.quantize(model, precision='bf16', use_ipex=True)
+            # ? Need channels_last
     
     def test_bf16_inference_with_jit(self):
         model = resnet18(num_classes=10)
@@ -151,6 +152,116 @@ class Pytorch1_11:
             new_model.width
 
 
+    def test_bf16_channels_last_inference_with_jit(self):
+        model = resnet18(num_classes=10)
+
+        x = torch.rand((10, 3, 256, 256))
+        y = torch.ones((10,), dtype=torch.long)
+
+        bf16_model = InferenceOptimizer.quantize(model, precision='bf16',
+                                                 accelerator="jit",
+                                                 channels_last=True,
+                                                 input_sample=x)
+        with InferenceOptimizer.get_context(bf16_model):
+            for i in range(10):
+                y_hat = bf16_model(x)
+        assert y_hat.shape == (10, 10) and y_hat.dtype == torch.bfloat16
+        
+        with tempfile.TemporaryDirectory() as tmp_dir_name:
+            InferenceOptimizer.save(bf16_model, tmp_dir_name)
+            load_model = InferenceOptimizer.load(tmp_dir_name)
+        with InferenceOptimizer.get_context(load_model):
+            for i in range(10):
+                y_hat_ = load_model(x)
+        assert y_hat_.shape == (10, 10) and y_hat_.dtype == torch.bfloat16
+        assert y_hat.equal(y_hat_)
+
+    def test_bf16_ipex_channels_last_with_avx512_core(self):
+        model = resnet18(num_classes=10)
+
+        x = torch.rand((10, 3, 256, 256))
+        y = torch.ones((10,), dtype=torch.long)
+
+        bf16_model = InferenceOptimizer.quantize(model, precision='bf16', channels_last=True, use_ipex=True)
+        with InferenceOptimizer.get_context(bf16_model):
+            y_hat = bf16_model(x)
+
+        assert y_hat.shape == (10, 10) and y_hat.dtype == torch.bfloat16
+
+    def test_bf16_ipex_channels_last_save_load(self):
+        model = resnet18(num_classes=10)
+        x = torch.rand((10, 3, 256, 256))
+        bf16_model = InferenceOptimizer.quantize(model, precision='bf16',
+                                                 channels_last=True,
+                                                 use_ipex=True)
+        with InferenceOptimizer.get_context(bf16_model):
+            y_hat = bf16_model(x)
+
+        assert y_hat.shape == (10, 10) and y_hat.dtype == torch.bfloat16
+
+        with tempfile.TemporaryDirectory() as tmp_dir_name:
+            InferenceOptimizer.save(bf16_model, tmp_dir_name)
+            load_model = InferenceOptimizer.load(tmp_dir_name, model)
+
+        with InferenceOptimizer.get_context(load_model):
+            y_hat_ = load_model(x)
+        assert y_hat_.shape == (10, 10) and y_hat_.dtype == torch.bfloat16
+        assert y_hat.equal(y_hat_)
+
+    def test_bf16_ipex_jit_channels_last_save_load(self):
+        model = resnet18(num_classes=10)
+        x = torch.rand((10, 3, 256, 256))
+        bf16_model = InferenceOptimizer.quantize(model, precision='bf16',
+                                                 channels_last=True,
+                                                 use_ipex=True, accelerator="jit",
+                                                 input_sample=x)
+
+        with InferenceOptimizer.get_context(bf16_model):
+            y_hat = bf16_model(x)
+
+        assert y_hat.shape == (10, 10) and y_hat.dtype == torch.bfloat16
+        
+        with tempfile.TemporaryDirectory() as tmp_dir_name:
+            InferenceOptimizer.save(bf16_model, tmp_dir_name)
+            load_model = InferenceOptimizer.load(tmp_dir_name)
+        with InferenceOptimizer.get_context(load_model):
+            y_hat_ = load_model(x)
+        assert y_hat_.shape == (10, 10) and y_hat_.dtype == torch.bfloat16
+        assert y_hat.equal(y_hat_)
+
+    def test_bf16_ipex_jit_additional_attrs(self):
+        model = resnet18(num_classes=10)
+        x = torch.rand((10, 3, 256, 256))
+        #  patch a attr
+        model.channels = 3
+        def hello():
+            print("hello world!")
+        # patch a function
+        model.hello = hello
+        new_model = InferenceOptimizer.trace(model, precision='bf16',
+                                             accelerator="jit", use_ipex=True,
+                                             input_sample=x)
+        with InferenceOptimizer.get_context(new_model):
+            new_model(x)
+        assert new_model.channels == 3
+        new_model.hello()
+
+        new_model = InferenceOptimizer.trace(model, precision='bf16',
+                                             accelerator="jit",
+                                             input_sample=x)
+        with InferenceOptimizer.get_context(new_model):
+            new_model(x)
+        assert new_model.channels == 3
+        new_model.hello()
+
+        new_model = InferenceOptimizer.trace(model, precision='bf16',
+                                             use_ipex=True)
+        with InferenceOptimizer.get_context(new_model):
+            new_model(x)
+        assert new_model.channels == 3
+        new_model.hello()
+        with pytest.raises(AttributeError):
+            new_model.width
 TORCH_VERSION_CLS = Pytorch1_11
 
 

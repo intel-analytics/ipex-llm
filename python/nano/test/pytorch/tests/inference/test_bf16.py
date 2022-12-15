@@ -171,6 +171,7 @@ class Pytorch1_12:
         bf16_model.hello()
 
         # test bf16 + channels_last
+        # ? depulicate the bf16 test above neccessary
         bf16_model = InferenceOptimizer.quantize(model, precision='bf16',
                                                  channels_last=True)
         with InferenceOptimizer.get_context(bf16_model):
@@ -180,6 +181,84 @@ class Pytorch1_12:
         bf16_model.hello()
         with pytest.raises(AttributeError):
             bf16_model.width
+
+
+
+    def test_bf16_channels_last_common(self):
+        """
+        ? Debug mode. Allow run bf16 forward without bf16 instruction support.
+        """
+        model = resnet18(num_classes=10)
+
+        x = torch.rand((10, 3, 256, 256))
+        y = torch.ones((10,), dtype=torch.long)
+
+        bf16_model = InferenceOptimizer.quantize(model, precision='bf16', channels_last=True)
+        # Debug mode to test functionality, make sure forward is called sucessfully
+        with InferenceOptimizer.get_context(bf16_model):
+            y_hat = bf16_model(x)
+        assert y_hat.shape == (10, 10) and y_hat.dtype == torch.bfloat16
+
+    def test_bf16_channels_last_with_amx_bf16(self):
+        model = resnet18(num_classes=10)
+
+        x = torch.rand((10, 3, 256, 256))
+        y = torch.ones((10,), dtype=torch.long)
+
+        bf16_model = InferenceOptimizer.quantize(model, precision='bf16', channels_last=True)
+        with patch.object(type(bf16_model), "_has_bf16_isa", PropertyMock(return_value=True)):
+            bf16_model._max_bf16_isa = MagicMock(return_value="AMX")
+            with InferenceOptimizer.get_context(bf16_model):
+                y_hat = bf16_model(x)
+        assert y_hat.shape == (10, 10) and y_hat.dtype == torch.bfloat16
+
+    def test_bf16_channels_last_with_avx512_bf16(self):
+        model = resnet18(num_classes=10)
+
+        x = torch.rand((10, 3, 256, 256))
+        y = torch.ones((10,), dtype=torch.long)
+
+        bf16_model = InferenceOptimizer.quantize(model, precision='bf16', channels_last=True)
+        with patch.object(type(bf16_model), "_has_bf16_isa", PropertyMock(return_value=True)):
+            bf16_model._max_bf16_isa = MagicMock(return_value="AVX512")
+            with InferenceOptimizer.get_context(bf16_model):
+                y_hat = bf16_model(x)
+        assert y_hat.shape == (10, 10) and y_hat.dtype == torch.bfloat16
+
+    def test_bf16_channels_last_save_and_load(self):
+        model = resnet18(num_classes=10)
+
+        # test bf16
+        x = torch.rand((10, 3, 256, 256))
+        bf16_model = InferenceOptimizer.quantize(model, precision='bf16', channels_last=True)
+        with InferenceOptimizer.get_context(bf16_model):
+            y_hat1 = bf16_model(x)
+        assert y_hat1.shape == (10, 10) and y_hat1.dtype == torch.bfloat16
+
+        with tempfile.TemporaryDirectory() as tmp_dir_name:
+            InferenceOptimizer.save(bf16_model, tmp_dir_name)
+            load_model = InferenceOptimizer.load(tmp_dir_name, model)
+
+        with InferenceOptimizer.get_context(load_model):
+            y_hat2 = load_model(x)
+        assert y_hat2.shape == (10, 10) and y_hat2.dtype == torch.bfloat16
+        assert y_hat1.equal(y_hat2)
+
+        # test bf16 + channels_last
+        bf16_model = InferenceOptimizer.quantize(model, precision='bf16',
+                                                 channels_last=True)
+        with InferenceOptimizer.get_context(bf16_model):
+            y_hat1 = bf16_model(x)
+        assert y_hat1.shape == (10, 10) and y_hat1.dtype == torch.bfloat16
+
+        with tempfile.TemporaryDirectory() as tmp_dir_name:
+            InferenceOptimizer.save(bf16_model, tmp_dir_name)
+            load_model = InferenceOptimizer.load(tmp_dir_name, model)
+
+        with InferenceOptimizer.get_context(load_model):
+            y_hat2 = load_model(x)
+        assert y_hat2.shape == (10, 10) and y_hat2.dtype == torch.bfloat16
+        assert y_hat1.equal(y_hat2)
 
 
 TORCH_VERSION_CLS = Pytorch1_12
