@@ -50,8 +50,26 @@ while true ; do
     esac
 done
 
-# check if there is conda command
-if [ $? -eq 0 ]# check dllib & spark-submit & master == yarn?
+flag=0
+set +e
+# check bigdl.dllib
+python -c "from bigdl import dllib" >/dev/null 2>&1
+if [ $? -ne 0 ]
+then
+    echo "no bigdl.dllib in local environment."
+    flag=1
+fi
+
+# check spark-submit
+which "spark-submit" >/dev/null 2>&1
+if [ $? -ne 0 ]
+then
+    echo "no spark-submit in local environment."
+    flag=1
+fi
+
+set -e
+if [ $flag -eq 1 ]
     if [ $deploy_mode == "client" ]
     then
         if [ conf_map["spark.pyspark.driver.python"] ]
@@ -92,6 +110,7 @@ if [ $? -eq 0 ]# check dllib & spark-submit & master == yarn?
         # extract environment
         echo "Extracting ${archive} to ${dir} ..."
         mkdir -p ${dir}
+        set +e
         which "pv" >/dev/null 2>&1
         if [ $? -eq 0 ]
         then
@@ -102,10 +121,10 @@ if [ $? -eq 0 ]# check dllib & spark-submit & master == yarn?
             tar -xzf ${archive} -C ${dir}
         fi
     fi
+    set -e
     # activate environment
     source ${dir}/bin/activate
 fi
-set -e
 
 # detect paths
 export BIGDL_ENV=`python -c """from bigdl.dllib.utils.engine import *
