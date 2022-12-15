@@ -40,7 +40,7 @@
         <dependency>
             <groupId>org.apache.hadoop</groupId>
 	    <artifactId>hadoop-client</artifactId>
-	    <version>2.10.2</version>
+	    <version>3.2.4</version>
             <scope>${spark-scope}</scope>
             <exclusions>
                 <exclusion>
