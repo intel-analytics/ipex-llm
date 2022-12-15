@@ -74,11 +74,14 @@ class NCFData(data.Dataset):
         if total_cols is not None:
             self.data = self.data.loc[:, total_cols]
 
+    def pandasDF_tolist(self):
+        self.data = tuple(map(tuple, self.data.itertuples(index=False)))
+
     def __len__(self):
         return len(self.data)
 
     def __getitem__(self, idx):
-        return tuple(self.data.at[idx, i] for i in self.data.columns)
+        return self.data[idx]
 
 
 def process_users_items(dataset_dir):
@@ -162,6 +165,8 @@ def load_dataset(dataset_dir, num_ng=4):
 
     # train test split
     train_dataset, test_dataset = dataset.train_test_split()
+    train_dataset.pandasDF_tolist()
+    test_dataset.pandasDF_tolist()
     return train_dataset, test_dataset
 
 
