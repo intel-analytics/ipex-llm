@@ -607,11 +607,12 @@ class InferenceOptimizer(BaseInferenceOptimizer):
         :param logging: whether to log detailed information of model conversion, only valid when
                         accelerator='openvino', otherwise will be ignored. Default: ``True``.
         :param inplace: whether to perform inplace optimization. Default: ``False``.
-        :param weights_prepack: Whether to perform weight prepack for convolution and linear to avoid
-                                oneDNN weights reorder. The default value is None. Explicitly setting
-                                this knob overwrites the configuration set by level knob. Only valid
-                                when ``use_ipex=True``, otherwise will be ignored. You can try to
-                                reduce the occupied memory size by setting this parameter to ``False``.
+        :param weights_prepack: Whether to perform weight prepack for convolution and linear to
+                                avoid oneDNN weights reorder. The default value is None. Explicitly
+                                setting this knob overwrites the configuration set by level knob.
+                                Only valid when ``use_ipex=True``, otherwise will be ignored.
+                                You can try to reduce the occupied memory size by setting this
+                                parameter to ``False``.
         :param q_config: describes how to quantize a layer or a part of the network
                          by providing settings (observer classes) for activations and weights
                          respectively. Note that QConfig needs to contain observer classes
@@ -855,11 +856,12 @@ class InferenceOptimizer(BaseInferenceOptimizer):
         :param logging: Whether to log detailed information of model conversion, only valid when
                         accelerator='openvino', otherwise will be ignored. Default: ``True``.
         :param inplace: whether to perform inplace optimization. Default: ``False``.
-        :param weights_prepack: Whether to perform weight prepack for convolution and linear to avoid
-                                oneDNN weights reorder. The default value is None. Explicitly setting
-                                this knob overwrites the configuration set by level knob. Only valid
-                                when ``use_ipex=True``, otherwise will be ignored. You can try to
-                                reduce the occupied memory size by setting this parameter to ``False``.
+        :param weights_prepack: Whether to perform weight prepack for convolution and linear to
+                                avoid oneDNN weights reorder. The default value is None. Explicitly
+                                setting this knob overwrites the configuration set by level knob.
+                                Only valid when ``use_ipex=True``, otherwise will be ignored.
+                                You can try to reduce the occupied memory size by setting this
+                                parameter to ``False``.
         :param **export_kwargs: Other extra advanced settings include those be passed to
                                 torch.onnx.export function, only valid when
                                 accelerator='onnxruntime'/'openvino', otherwise
