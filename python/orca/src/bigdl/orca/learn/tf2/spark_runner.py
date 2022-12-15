@@ -53,14 +53,6 @@ class DatasetHandler:
         # will shard the dataset.
         # batch_size won't be used in data_creator for SparkXShards.
         train_dataset = data_creator(config, config["batch_size"])
-        # if isinstance(train_dataset, collections.Iterable):
-        #     invalidInputError(steps_per_epoch is not None,
-        #                           "steps_per_epoch must be provided for xshard")
-        #     train_dataset = self._handle_xshards(train_dataset,
-        #                                          steps=steps_per_epoch * epochs,
-        #                                          local_batch_size=local_batch_size,
-        #                                          shuffle=True,
-        #                                          mode='fit')
         if isinstance(train_dataset, list) and \
            all([isinstance(x, dict) for x in train_dataset]):
             invalidInputError(steps_per_epoch is not None,
@@ -98,9 +90,6 @@ class DatasetHandler:
         config['size'] = self.size
         dataset = data_creator(config, config["batch_size"])
         if isinstance(dataset, list) and all([isinstance(x, dict) for x in dataset]):
-        # if isinstance(dataset, collections.Iterable):
-        #     invalidInputError(steps is not None,
-        #                       "steps must be provided for xshard")
             dataset = self._handle_xshards(dataset,
                                            steps=steps,
                                            local_batch_size=local_batch_size,
@@ -132,46 +121,6 @@ class DatasetHandler:
                           f"invalid backend: {backend}")
 
 
-class TFDistributedDatasetHandler2(DatasetHandler):
-
-    def _handle_xshards(self, dataset, steps, local_batch_size, shuffle, mode):
-        import tensorflow as tf
-
-        # data, label = partition_get_data_label(dataset,
-        #                                        allow_tuple=True,
-        #                                        allow_list=False)
-
-        generator = data_generator(dataset, local_batch_size, mode)
-
-        # def dataset_fn(input_context):
-        #     # dataset = tf.data.Dataset.from_tensor_slices((data, label))
-        #     dataset = tf.data.Dataset.from_generator(generator=generator)
-        #     options = tf.data.Options()
-        #     options.experimental_distribute.auto_shard_policy = \
-        #         tf.data.experimental.AutoShardPolicy.OFF
-        #     dataset = dataset.with_options(options)
-        #     # dataset = dataset.repeat()
-        #     # dataset = dataset.take(steps * local_batch_size)
-        #     if shuffle:
-        #         dataset = dataset.shuffle(min(steps, 10))
-        #     dataset = dataset.batch(local_batch_size)
-        #     return dataset
-        #
-        #
-        # from tensorflow.python.distribute import distribution_strategy_context as ds_context
-        # strategy = ds_context.get_strategy()
-        # dataset = strategy.experimental_distribute_datasets_from_function(dataset_fn)
-        # return dataset
-        return generator
-
-    def _handle_sharding(self, dataset):
-        return dataset
-
-    def _handle_batch_size(self, config):
-        invalidInputError("batch_size" in config, "batch_size must be set in config")
-        local_batch_size = config["batch_size"] // self.size
-        return config, local_batch_size
-
 class TFDistributedDatasetHandler(DatasetHandler):
 
     def _handle_xshards(self, dataset, steps, local_batch_size, shuffle):
@@ -182,7 +131,6 @@ class TFDistributedDatasetHandler(DatasetHandler):
                                                allow_list=False)
         def dataset_fn(input_context):
             dataset = tf.data.Dataset.from_tensor_slices((data, label))
-            # dataset = tf.data.Dataset.from_generator(generator=generator)
             options = tf.data.Options()
             options.experimental_distribute.auto_shard_policy = \
                 tf.data.experimental.AutoShardPolicy.OFF
@@ -214,33 +162,6 @@ class TFDistributedDatasetHandler(DatasetHandler):
         return config, local_batch_size
 
 
-class LocalDatasetHandler2(DatasetHandler):
-
-    def _handle_xshards(self, dataset, steps, local_batch_size, shuffle, mode):
-        import tensorflow as tf
-
-        generator = data_generator(dataset, local_batch_size, mode)
-        dataset = tf.data.Dataset.from_generator(generator)
-
-        # data, label = partition_get_data_label(dataset,
-        #                                        allow_tuple=True,
-        #                                        allow_list=False)
-        # dataset = tf.data.Dataset.from_tensor_slices((data, label))
-        # dataset = dataset.repeat()
-        # dataset = dataset.take(steps * local_batch_size)
-        if shuffle:
-            dataset = dataset.shuffle(min(steps, 10))
-        # dataset = dataset.batch(local_batch_size)
-        return dataset
-
-    def _handle_sharding(self, dataset):
-        return dataset
-
-    def _handle_batch_size(self, config):
-        invalidInputError("batch_size" in config, "batch_size must be set in config")
-        return config, config["batch_size"]
-
-
 class LocalDatasetHandler(DatasetHandler):
 
     def _handle_xshards(self, dataset, steps, local_batch_size, shuffle):
@@ -263,114 +184,6 @@ class LocalDatasetHandler(DatasetHandler):
     def _handle_batch_size(self, config):
         invalidInputError("batch_size" in config, "batch_size must be set in config")
         return config, config["batch_size"]
-
-def data_generator(iter, batch_size=32, mode="fit"):
-    from itertools import tee
-    original_iter, current_iter = tee(iter)
-    current_shard = next(current_iter, None)
-    offset = 0
-    # loop indefinitely
-    while True:
-        # initial batch data
-        x_list = []
-        y_list = []
-        remain = batch_size
-        if isinstance(current_shard['x'], tuple):
-            # multiple columns
-            x_type = 'tuple'
-        else:
-            x_type = 'numpy array'
-        if isinstance(current_shard['y'], tuple):
-            # multiple columns
-            y_type = 'tuple'
-        else:
-            y_type = 'numpy array'
-        x_list = _init_list(current_shard['x'])
-        y_list = _init_list(current_shard['y'])
-        while current_shard is not None:
-            expected_remain = remain - (len(current_shard['x'][0]) - offset)
-            if expected_remain > 0:
-                # not enough in this shard, copy rest shard and go to next shard
-                if x_type == 'tuple':
-                    arrays = [col_arr[offset:] for col_arr in current_shard['x']]
-                    for i, arr in enumerate(arrays):
-                        x_list[i].append(arr)
-                else:
-                    x_list[0].append([current_shard['x'][offset:]])
-                if mode != 'predict':
-                    if y_type == 'tuple':
-                        arrays = [col_arr[offset:] for col_arr in current_shard['y']]
-                        for i, arr in enumerate(arrays):
-                            y_list[i].append(arr)
-                    else:
-                        y_list[0].append([current_shard['y'][offset:]])
-                remain = expected_remain
-                current_shard = next(current_iter, None)
-                if current_shard is None:
-                    # no more data
-                    if mode != 'fit':
-                        # yield batch for evaluate and predict
-                        x_np = _merge_rows(x_list)
-                        if mode != 'predict':
-                            y_np = _merge_rows(y_list)
-                            yield x_np, y_np
-                        else:
-                            yield x_np
-                    else:
-                        # loop to head of iterator for train
-                        current_iter = original_iter
-                        current_shard = next(current_iter, None)
-                        offset = 0
-                        continue
-                else:
-                    # continue to get rest batch
-                    offset = 0
-            else:
-                # this shard has enough data
-                if x_type == 'tuple':
-                    arrays = [col_arr[offset:offset+remain] for col_arr in current_shard['x']]
-                    for i, arr in enumerate(arrays):
-                        x_list[i].append(arr)
-                else:
-                    x_list[0].append([current_shard['x'][offset:offset+remain]])
-                x_np = _merge_rows(x_list)
-                if mode != 'predict':
-                    if y_type == 'tuple':
-                        arrays = [col_arr[offset:offset + remain] for col_arr in current_shard['y']]
-                        for i, arr in enumerate(arrays):
-                            y_list[i].append(arr)
-                    else:
-                        y_list[0].append([current_shard['y'][offset:offset + remain]])
-                    y_np = _merge_rows(y_list)
-                offset += remain
-                remain = batch_size
-                if mode != 'predict':
-                    yield x_np, y_np
-                else:
-                    yield x_np
-                x_list = _init_list(current_shard['x'])
-                y_list = _init_list(current_shard['y'])
-                if expected_remain == 0:
-                    # move to next shard for next batch
-                    current_shard = next(current_iter, None)
-                    offset = 0
-                    if current_shard is None:
-                        # no more data, train from head of iterator
-                        if mode == 'fit':
-                            # loop to head of iterator for train
-                            current_iter = original_iter
-                            current_shard = next(current_iter, None)
-                            continue
-        break
-
-def _init_list(features):
-    if isinstance(features, tuple):
-        # multiple columns
-        feature_cols = len(features)
-        feature_list = [[] for l in range(feature_cols)]
-    else:
-        feature_list = [[]]
-    return feature_list
 
 
 class SparkRunner:
