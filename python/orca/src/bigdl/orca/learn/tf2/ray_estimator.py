@@ -163,7 +163,8 @@ class TensorFlow2Estimator(OrcaRayEstimator):
             validation_freq: int=1,
             data_config: Optional[Dict]=None,
             feature_cols: Optional[List[str]]=None,
-            label_cols: Optional[List[str]]=None) -> List[Dict[str, float]]:
+            label_cols: Optional[List[str]]=None) -> Union[List[Dict[str, float]],
+                                                           Dict[str, float]]:
         """
         Train this tensorflow model with train data.
 
@@ -284,20 +285,18 @@ class TensorFlow2Estimator(OrcaRayEstimator):
                                   "Validation data type should be the same as train data,"
                                   " but got type: {}".format(type(validation_data)))
 
-                val_shards = validation_data.split(n=self.num_workers,  # type:ignore
+                val_shards = validation_data.split(n=self.num_workers,
                                                    locality_hints=self.remote_workers)
 
                 for i in range(self.num_workers):
-                    params["data_creator"] = self.process_ray_dataset(
-                        shards[i],
-                        label_cols,
-                        feature_cols,
-                        data_config)
-                    params["validation_data_creator"] = self.process_ray_dataset(
-                        val_shards[i],  # type:ignore
-                        label_cols,
-                        feature_cols,
-                        data_config)
+                    params["data_creator"] = self.process_ray_dataset(shards[i],
+                                                                      label_cols,
+                                                                      feature_cols,
+                                                                      data_config)
+                    params["validation_data_creator"] = self.process_ray_dataset(val_shards[i],
+                                                                                 label_cols,
+                                                                                 feature_cols,
+                                                                                 data_config)
                     remote_worker_stats.append(self.remote_workers[i].step.remote(**params))
                 worker_stats = ray.get(remote_worker_stats)
                 worker_stats = list(itertools.chain.from_iterable(worker_stats))
@@ -345,7 +344,8 @@ class TensorFlow2Estimator(OrcaRayEstimator):
                  callbacks: Optional[List["Callback"]]=None,
                  data_config: Optional[Dict]=None,
                  feature_cols: Optional[List[str]]=None,
-                 label_cols: Optional[List[str]]=None) -> List[Dict[str, float]]:
+                 label_cols: Optional[List[str]]=None) -> Union[List[Dict[str, float]],
+                                                                Dict[str, float]]:
         """
         Evaluates the model on the validation data set.
 

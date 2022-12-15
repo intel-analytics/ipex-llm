@@ -124,7 +124,7 @@ class SparkTFEstimator():
             validation_freq: int=1,
             data_config: Optional[Dict]=None,
             feature_cols: Optional[List[str]]=None,
-            label_cols: Optional[List[str]]=None) -> List[Dict[str, float]]:
+            label_cols: Optional[List[str]]=None) -> Dict[str, float]:
         """
         Train this tensorflow model with train data.
         :param data: train data. It can be XShards, Spark DataFrame or creator function which
@@ -286,7 +286,7 @@ class SparkTFEstimator():
                  callbacks: Optional[List["Callback"]]=None,
                  data_config: Optional[Dict]=None,
                  feature_cols: Optional[List[str]]=None,
-                 label_cols: Optional[List[str]]=None) -> List[Dict[str, float]]:
+                 label_cols: Optional[List[str]]=None) -> Dict[str, float]:
         """
         Evaluates the model on the validation data set.
         :param data: evaluate data. It can be XShards, Spark DataFrame or creator function which
@@ -386,7 +386,7 @@ class SparkTFEstimator():
     def predict(self,
                 data: Union["SparkXShards", "SparkDataFrame"],
                 batch_size: Optional[int]=None,
-                verbose: int=1,
+                verbose: Union[str, int]=1,
                 steps: Optional[int]=None,
                 callbacks: Optional[List["Callback"]]=None,
                 data_config: Optional[Dict]=None,
