@@ -59,7 +59,7 @@ class NCFData(data.Dataset):
         labels_ng = [0.0 for _ in range(len(features_ng))]
         features_fill = features_ps + features_ng
         labels_fill = labels_ps + labels_ng
-        self.data = pd.DataFrame(features_fill, columns=self.columns, dtype=np.int32)
+        self.data = pd.DataFrame(features_fill, columns=self.columns)
         self.data['label'] = labels_fill
         self.data = tuple(map(tuple, self.data.itertuples(index=False)))
 
@@ -69,11 +69,10 @@ class NCFData(data.Dataset):
         return NCFData(train_dataset, self.columns), NCFData(test_dataset, self.columns)
 
     def merge_features(self, users, items, total_cols=None):
-        df = pd.DataFrame(self.data, columns=self.columns)
+        df = pd.DataFrame(self.data, columns=self.columns,
+                          dtype={0: np.int32, 1: np.int32, 2: np.float32})
         df = users.merge(df, on='user')
         df = df.merge(items, on='item')
-        df['user'] = df['user'].astype(np.int32)
-        df['item'] = df['item'].astype(np.int32)
 
         # To make the order of data columns as expected.
         df = df.loc[:, total_cols]
