@@ -32,7 +32,7 @@ from bigdl.orca.learn.pytorch.experimential.mmcv.mmcv_ray_runner import MMCVRayE
 class MMCVRayEstimator(BaseRayEstimator):
     def __init__(self,
                  *,
-                 mmcv_runner_creator: Optional[Callable]=None,
+                 mmcv_runner_creator: Callable,
                  backend: str = "ray",
                  workers_per_node: int = 1,
                  config: Optional[Dict]=None) -> None:
@@ -50,12 +50,12 @@ class MMCVRayEstimator(BaseRayEstimator):
         )
         self.setup(params, self.backend, self.runner_cls, workers_per_node)
 
-    def fit(self,
+    def fit(self,  # type:ignore[override]
             data_loaders_creators: List[Callable],
             workflow: List[Tuple[str, int]],
             max_epochs: Optional[int] = None,  # deprecated
             reduce_results=True,
-            **kwargs) -> List[Dict]:
+            **kwargs) -> List:
         """Trains a MMCV model given training and val data for several epochs.
 
         :param data_loaders_creators: Dataloader creators for training and validation.
@@ -88,7 +88,7 @@ class MMCVRayEstimator(BaseRayEstimator):
             workflow: List[Tuple[str, int]],
             max_epochs: Optional[int] = None,  # deprecated
             reduce_results=True,
-            **kwargs) -> List[Dict]:
+            **kwargs) -> List:
         """
         Same as fit method, the parameters are consistent with MMCV runner.run()
         """

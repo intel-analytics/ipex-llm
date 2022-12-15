@@ -34,7 +34,7 @@ from bigdl.orca.learn.pytorch.utils import get_batchsize
 from bigdl.dllib.utils.log4Error import invalidInputError
 from bigdl.orca.learn.pytorch.core.base_runner import BaseRunner
 
-from typing import (TYPE_CHECKING, Union, Any, Dict, List, Optional, Tuple, Callable, overload)
+from typing import (TYPE_CHECKING, Union, Any, Dict, List, Optional, Tuple, Callable)
 
 if TYPE_CHECKING:
     from torch.utils.data import DataLoader
@@ -48,10 +48,10 @@ class HDFSBackend(BaseStorageBackend):
     CheckpointHook's out_dir starts with hdfs://
     """
 
-    def get(self, filepath: str) -> bytes:
+    def get(self, filepath: str) -> bytes:  # type:ignore
         pass
 
-    def get_text(self, filepath: str, encoding: str = 'utf-8') -> str:
+    def get_text(self, filepath: str, encoding: str = 'utf-8') -> str:  # type:ignore
         pass
 
     def put(self, obj: bytes, filepath: str) -> None:
@@ -126,7 +126,7 @@ class MMCVRayEpochRunner(BaseRunner, EpochBasedRunner):
     )
 
     def __init__(self,
-                 mmcv_runner_creator: Optional[Callable]=None,
+                 mmcv_runner_creator: Callable,
                  config: Optional[Dict]=None) -> None:
         self.mmcv_runner_creator = mmcv_runner_creator
         self.config = config
@@ -141,9 +141,9 @@ class MMCVRayEpochRunner(BaseRunner, EpochBasedRunner):
         # 1. It supports a custom type :class:`DataContainer` which allows more
         #    flexible control of input data.
         # 2. It implement two APIs ``train_step()`` and ``val_step()``.
-        self.model = MMDistributedDataParallel(self.model)
+        self.model = MMDistributedDataParallel(self.model)  # type:ignore
 
-    def train_epochs(self,
+    def train_epochs(self,  # type:ignore[override]
                      data_loaders_creators: List[Callable],
                      workflow: List[Tuple[str, int]],
                      max_epochs: Optional[int] = None,  # deprecated
