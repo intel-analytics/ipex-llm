@@ -18,7 +18,6 @@ import os
 import re
 import warnings
 
-from bigdl.orca.learn.pytorch.utils import get_filesystem
 from bigdl.dllib.utils.log4Error import invalidInputError
 
 
@@ -101,16 +100,16 @@ class ModelCheckpoint(Callback):
         """
         # todo: support resume training
         dirname = os.path.dirname(self.filepath)
-        fs = get_filesystem(dirname)
-        if fs.exists(dirname):
-            files = [os.path.basename(f["name"]) for f in fs.listdir(dirname)]
+        from bigdl.orca.data.file import exists, listdir, makedirs
+        if exists(dirname):
+            files = [os.path.basename(f) for f in listdir(dirname)]
             files = [x for x in files if "ckpt" in x]
             if len(files) == 0:
                 return None
             invalidInputError(False,
                               f"Find non-empty dirname with filepath of {self.filepath}.")
         else:
-            fs.mkdirs(dirname)
+            makedirs(dirname)
 
     def on_train_end(self, logs=None):
         """
@@ -143,8 +142,8 @@ class ModelCheckpoint(Callback):
         return: The full path to the latest checkpoint or `None` if no checkpoint was found.
         """
         ckpt_path = cls._format_checkpoint_name(dirname, filename=cls.CHECKPOINT_NAME_LAST)
-        fs = get_filesystem(ckpt_path)
-        if not fs.exists(ckpt_path):
+        from bigdl.orca.data.file import exists
+        if not exists(ckpt_path):
             invalidInputError(False,
                               f"Latest checkpoint at {ckpt_path} not found.")
         return ckpt_path

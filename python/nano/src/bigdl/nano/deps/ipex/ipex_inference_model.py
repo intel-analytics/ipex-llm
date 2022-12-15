@@ -166,8 +166,10 @@ class PytorchIPEXJITModel(AcceleratedLightningModule):
             model.eval()
             model.load_state_dict(state_dict)
             from_load = False
-        thread_num = None
-        if status["thread_num"] is not None and status['thread_num'] != {}:
+        thread_num = status.get('thread_num', None)
+        if thread_num == {}:
+            thread_num = None
+        if thread_num is not None:
             thread_num = int(status['thread_num'])
         return PytorchIPEXJITModel(model, use_ipex=status['use_ipex'],
                                    use_jit=status['use_jit'],
@@ -175,8 +177,8 @@ class PytorchIPEXJITModel(AcceleratedLightningModule):
                                    from_load=from_load,
                                    thread_num=thread_num,
                                    inplace=inplace,
-                                   jit_strict=status["jit_strict"],
-                                   jit_method=status["jit_method"])
+                                   jit_strict=status.get('jit_strict', True),
+                                   jit_method=status.get('jit_method', None))
 
     def _save_model(self, path):
         if self.use_jit:
