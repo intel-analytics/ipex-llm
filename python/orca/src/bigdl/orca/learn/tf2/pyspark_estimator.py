@@ -384,13 +384,13 @@ class SparkTFEstimator():
         return res[0]
 
     def predict(self,
-                data: "DataFrame",
+                data: Union["SparkXShards", "DataFrame"],
                 batch_size: Optional[int]=None,
                 verbose: int=1,
                 steps: Optional[int]=None,
                 callbacks: Optional[List["Callback"]]=None,
                 data_config: Optional[Dict[str, Any]]=None,
-                feature_cols: Optional[List[str]]=None) -> "DataFrame":
+                feature_cols: Optional[List[str]]=None) -> Union["SparkXShards", "DataFrame"]:
         """
         Predict the input data
         :param data: predict input data.  It can be XShards or Spark DataFrame.

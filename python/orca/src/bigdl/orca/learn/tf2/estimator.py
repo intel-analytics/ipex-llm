@@ -22,7 +22,6 @@ from bigdl.dllib.utils.log4Error import invalidInputError
 
 from typing import TYPE_CHECKING, Dict, Union, Callable, Optional, Any
 if TYPE_CHECKING:
-    from bigdl.orca.data.shard import SparkXShards
     from bigdl.orca.learn.tf2.ray_estimator import TensorFlow2Estimator
     from bigdl.orca.learn.tf2.pyspark_estimator import SparkTFEstimator
 
