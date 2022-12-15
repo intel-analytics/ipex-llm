@@ -59,27 +59,26 @@ class NCFData(data.Dataset):
         self.labels = labels_ps + labels_ng
 
     def train_test_split(self, test_size=0.2):
-        train_features, test_features = train_test_split(self.features, test_size=test_size,
-                                                         random_state=100)
-        train_labels, test_labels = train_test_split(self.labels, test_size=test_size,
-                                                     random_state=100)
-        return NCFData(train_features, train_labels), NCFData(test_features, test_labels)
+        X_train, X_test, y_train, y_test = train_test_split(self.features, self.labels,
+                                                            test_size=test_size, random_state=100)
+        return NCFData(X_train, y_train), NCFData(X_test, y_test)
 
-    def merge_features(self, users, items, total_cols=None):
+    def merge_features(self, users, items, feature_cols=None):
         df = pd.DataFrame(self.features, columns=['user', 'item'], dtype=np.int32)
+        df['labels'] = self.labels
         df = users.merge(df, on='user')
         df = df.merge(items, on='item')
 
         # To make the order of data columns as expected.
-        df = df.loc[:, total_cols]
-        self.features = list(map(tuple, df.itertuples(index=False)))
+        self.features = df.loc[:, feature_cols]
+        self.features = tuple(map(list, self.features.itertuples(index=False)))
+        self.labels = df['labels'].values.tolist()
 
     def __len__(self):
         return len(self.features)
 
     def __getitem__(self, idx):
-        sample = tuple(self.features[idx] + self.labels[idx])
-        return sample
+        return self.features[idx] + [self.labels[idx]]
 
 
 def process_users_items(dataset_dir):
