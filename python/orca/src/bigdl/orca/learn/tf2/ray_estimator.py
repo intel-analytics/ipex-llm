@@ -58,7 +58,7 @@ class TensorFlow2Estimator(OrcaRayEstimator):
     def __init__(self,
                  model_creator: Optional["Callable"]=None,
                  compile_args_creator: Optional["Callable"]=None,
-                 config: Optional[Dict[str, Any]]=None,
+                 config: Optional[Dict]=None,
                  verbose: bool=False,
                  backend: str="ray",
                  workers_per_node: int=1,
@@ -150,7 +150,7 @@ class TensorFlow2Estimator(OrcaRayEstimator):
             epochs: int=1,
             batch_size: int=32,
             verbose: Union[str, int]=1,
-            callbacks: Optional[str]=None,
+            callbacks: Optional[List["Callback"]]=None,
             validation_data: Optional[Union["SparkXShards",
                                             "SparkDataFrame",
                                             "TFDataset",
@@ -160,7 +160,7 @@ class TensorFlow2Estimator(OrcaRayEstimator):
             steps_per_epoch: Optional[int]=None,
             validation_steps: Optional[int]=None,
             validation_freq: int=1,
-            data_config: Optional[Dict[str, Any]]=None,
+            data_config: Optional[Dict]=None,
             feature_cols: Optional[List[str]]=None,
             label_cols: Optional[List[str]]=None) -> List[Dict[str, float]]:
         """
@@ -342,7 +342,7 @@ class TensorFlow2Estimator(OrcaRayEstimator):
                  verbose: Union[str, int]=1,
                  sample_weight: Optional["np.ndarray"]=None,
                  callbacks: Optional[List["Callback"]]=None,
-                 data_config: Optional[Dict[str, Any]]=None,
+                 data_config: Optional[Dict]=None,
                  feature_cols: Optional[List[str]]=None,
                  label_cols: Optional[List[str]]=None) -> List[Dict[str, float]]:
         """
@@ -496,7 +496,7 @@ class TensorFlow2Estimator(OrcaRayEstimator):
                 verbose: Union[str, int]=1,
                 steps: Optional[int]=None,
                 callbacks: Optional[List["Callback"]]=None,
-                data_config: Optional[Dict[str, Any]]=None,
+                data_config: Optional[Dict]=None,
                 feature_cols: Optional[List[str]]=None,
                 min_partition_num: Optional[int]=None) -> Union["SparkXShards",
                                                                 "SparkDataFrame"]:

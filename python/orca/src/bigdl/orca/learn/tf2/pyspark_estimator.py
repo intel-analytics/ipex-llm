@@ -115,14 +115,14 @@ class SparkTFEstimator():
             epochs: int=1,
             batch_size: int=32,
             verbose: Union[str, int]=1,
-            callbacks: Optional[str]=None,
+            callbacks: Optional[List["Callback"]]=None,
             validation_data: Union["SparkXShards", "SparkDataFrame", Callable, None]=None,
             class_weight: Optional[Dict[int, float]]=None,
             initial_epoch: int=0,
             steps_per_epoch: Optional[int]=None,
             validation_steps: Optional[int]=None,
             validation_freq: int=1,
-            data_config: Optional[Dict[str, Any]]=None,
+            data_config: Optional[Dict]=None,
             feature_cols: Optional[List[str]]=None,
             label_cols: Optional[List[str]]=None) -> List[Dict[str, float]]:
         """
@@ -284,7 +284,7 @@ class SparkTFEstimator():
                  verbose: int=1,
                  sample_weight: Optional["np.ndarray"]=None,
                  callbacks: Optional[List["Callback"]]=None,
-                 data_config: Optional[Dict[str, Any]]=None,
+                 data_config: Optional[Dict]=None,
                  feature_cols: Optional[List[str]]=None,
                  label_cols: Optional[List[str]]=None) -> List[Dict[str, float]]:
         """
@@ -389,7 +389,7 @@ class SparkTFEstimator():
                 verbose: int=1,
                 steps: Optional[int]=None,
                 callbacks: Optional[List["Callback"]]=None,
-                data_config: Optional[Dict[str, Any]]=None,
+                data_config: Optional[Dict]=None,
                 feature_cols: Optional[List[str]]=None) -> Union["SparkXShards", "SparkDataFrame"]:
         """
         Predict the input data
