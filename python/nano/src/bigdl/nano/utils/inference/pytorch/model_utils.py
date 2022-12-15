@@ -74,19 +74,29 @@ def get_forward_annotations(model):
     return forward_annotations
 
 
-def get_tensor_args(model):
+def get_conditional_args(model, include=(torch.Tensor,), exclude=()):
     '''
-    This function will return all the parameters that (might) be a tensor type
+    This function will return all the parameters that (might) in `condition`
     It will return a list or tensor args name
     E.g.
     def forward(self, a, b=1, c: int = 3, *args, **kwargs):
         pass
-    it will return ['a']
+    it will return ['a'] if include=(torch.Tensor)
+
+    :param include: tuple of type or "all".
+    :param exclude: tuple of type or "all".
+
+    Note: "all" means all the types are allowed or disallowed, except those
+          stated in the opposite parameter.
+    Note: exclude has higher priority if conflict instruction is provided
     '''
+    include_all = True if include == "all" else False
+    exclude_all = True if exclude == "all" else False
+
     forward_args = get_forward_args(model)
     forward_defaults = get_forward_defaults(model)
     forward_annotations = get_forward_annotations(model)
-    tensor_args = []
+    fitted_args = []
     if forward_defaults is None:
         defaults_length = 0
     else:
@@ -94,19 +104,29 @@ def get_tensor_args(model):
     args_length = len(forward_args)
     for i, arg in enumerate(forward_args):
         # check if type hint is provided
+        flag = False
         if arg in forward_annotations:
-            if forward_annotations[arg] == torch.Tensor:
-                tensor_args.append(arg)
+            if include_all or forward_annotations[arg] in include:
+                flag = True
+            if exclude_all or forward_annotations[arg] in exclude:
+                flag = False
+            if flag:
+                fitted_args.append(arg)
             continue
-        # check if defaults is Tensor
+        # check if defaults is meets requirement
         default_args_start_from = args_length - defaults_length
         if i >= default_args_start_from:
-            if type(forward_defaults[i - default_args_start_from]) == torch.Tensor:
-                tensor_args.append(arg)
+            flag = False
+            if include_all or type(forward_defaults[i - default_args_start_from]) in include:
+                flag = True
+            if exclude_all or type(forward_defaults[i - default_args_start_from]) in exclude:
+                flag = False
+            if flag:
+                fitted_args.append(arg)
             continue
-        # nothing is provided, we assume it is a Tensor
-        tensor_args.append(arg)
-    return tensor_args
+        # nothing is provided, we assume it meets requirement
+        fitted_args.append(arg)
+    return fitted_args
 
 
 def complement_input_sample(model, input_sample):
@@ -196,7 +216,7 @@ def export_to_onnx(model, input_sample=None, onnx_path="model.onnx", dynamic_axe
     :param **kwargs: will be passed to torch.onnx.export function.
     '''
     forward_args = get_forward_args(model)
-    tensor_args = get_tensor_args(model)
+    tensor_args = get_conditional_args(model)
     input_sample = get_input_example(model, input_sample, forward_args)
     input_sample = complement_input_sample(model, input_sample)
 

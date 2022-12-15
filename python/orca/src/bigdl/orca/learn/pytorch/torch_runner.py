@@ -176,18 +176,20 @@ class TorchRunner(BaseRunner):
         """Runs the creator functions without any distributed coordination."""
 
         self.logger.debug("Creating model")
-        self.models = self.model_creator(self.config)
-        if isinstance(self.models, nn.Sequential) or not isinstance(self.models, Iterable):
-            self.models = [self.models]
-        invalidInputError(all(isinstance(model, nn.Module) for model in self.models),
-                          ("All models must be PyTorch models: {}.".format(self.models)))
+        if self.model_creator:
+            self.models = self.model_creator(self.config)
 
-        if self.optimizer_creator is not None:
-            self.logger.debug("Creating optimizer.")
-            self.optimizers = self.optimizer_creator(self.given_models,
-                                                     self.config)
-            if self.optimizers is not None and not isinstance(self.optimizers, Iterable):
-                self.optimizers = [self.optimizers]
+            if isinstance(self.models, nn.Sequential) or not isinstance(self.models, Iterable):
+                self.models = [self.models]
+            invalidInputError(all(isinstance(model, nn.Module) for model in self.models),
+                                 ("All models must be PyTorch models: {}.".format(self.models)))
+
+            if self.optimizer_creator:
+                self.logger.debug("Creating optimizer.")
+                self.optimizers = self.optimizer_creator(self.given_models,
+                                                         self.config)
+                if self.optimizers and not isinstance(self.optimizers, Iterable):
+                    self.optimizers = [self.optimizers]
 
         self._create_schedulers_if_available()
         self._create_loss()
@@ -760,16 +762,21 @@ class TorchRunner(BaseRunner):
             else:
                 checkpoint = self.get_state_dict()
             byte_obj = TorchRunner._state_dict2stream(checkpoint)
-            with fsspec.open(filepath, "wb") as f:
+            file_name = os.path.basename(filepath)
+            temp_dir = tempfile.mkdtemp()
+            temp_path = os.path.join(temp_dir, file_name)
+            with fsspec.open(temp_path, "wb") as f:
                 f.write(byte_obj)
+            from bigdl.orca.data.file import put_local_file_to_remote
+            put_local_file_to_remote(temp_path, filepath)
             self.logger.debug(f"Saved checkpoint: {filepath}")
         return filepath
 
     def remove_checkpoint(self, filepath):
         if self.rank == 0:
-            fs = get_filesystem(filepath)
-            if fs.exists(filepath):
-                fs.rm(filepath, recursive=True)
+            from bigdl.orca.data.file import exists, rmdir
+            if exists(filepath):
+                rmdir(filepath)
                 self.logger.debug(f"Removed checkpoint: {filepath}")
 
     def apply(self, fn):

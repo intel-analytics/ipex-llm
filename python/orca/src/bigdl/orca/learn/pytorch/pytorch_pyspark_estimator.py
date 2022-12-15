@@ -20,6 +20,9 @@ import copy
 import os
 import shutil
 import tempfile
+import logging
+
+from pyspark.sql.dataframe import DataFrame
 
 from bigdl.dllib.utils.file_utils import is_local_path
 from bigdl.orca.learn.pytorch.training_operator import TrainingOperator
@@ -27,23 +30,36 @@ from bigdl.orca.learn.pytorch.pytorch_pyspark_worker import PytorchPysparkWorker
 from bigdl.orca.learn.pytorch.utils import process_stats
 from bigdl.orca.learn.utils import maybe_dataframe_to_xshards, dataframe_to_xshards, \
     convert_predict_xshards_to_dataframe, make_data_creator, update_predict_xshards, \
-    reload_dataloader_creator, process_xshards_of_pandas_dataframe
+    reload_dataloader_creator, process_xshards_of_pandas_dataframe, add_predict_to_pd_xshards
 from bigdl.orca.data import SparkXShards
 from bigdl.orca import OrcaContext
 from bigdl.orca.learn.base_estimator import BaseEstimator
-from bigdl.orca.data.file import get_remote_file_to_local, enable_multi_fs_save, \
-    enable_multi_fs_load, put_local_file_to_remote
+from bigdl.orca.data.file import get_remote_file_to_local, put_local_file_to_remote
 from bigdl.dllib.utils.common import get_node_and_core_number
 from bigdl.orca.learn.log_monitor import start_log_server, stop_log_server
 
 from bigdl.orca.learn.utils import find_free_port, find_ip_and_free_port
 from bigdl.dllib.utils.utils import get_node_ip
-from bigdl.dllib.utils.log4Error import *
+from bigdl.dllib.utils.log4Error import invalidInputError
 
 try:
     from collections.abc import Iterable
 except ImportError:
     from collections import Iterable
+
+from typing import TYPE_CHECKING, Union, Optional, Callable, Dict, List, Type
+if TYPE_CHECKING:
+    from torch.nn import Module
+    from torch.optim import Optimizer
+    from bigdl.orca.learn.metrics import Metric
+    from torch.nn.modules.loss import _Loss as Loss
+    from torch.optim.lr_scheduler import _LRScheduler as LRScheduler
+    from torch.distributed import TCPStore
+    from torch.utils.data import DataLoader
+    from pyspark.sql.dataframe import DataFrame as SparkDataFrame
+    from pyspark.rdd import RDD
+
+from bigdl.orca.learn.pytorch.callbacks import Callback
 
 
 def partition_to_creator(partition):
@@ -89,20 +105,21 @@ class PyTorchPySparkEstimator(BaseEstimator):
     def __init__(
             self,
             *,
-            model_creator,
-            optimizer_creator=None,
-            loss_creator=None,
-            metrics=None,
-            scheduler_creator=None,
-            training_operator_cls=TrainingOperator,
-            config=None,
-            scheduler_step_freq="batch",
-            use_tqdm=False,
-            workers_per_node=1,
-            sync_stats=True,
-            log_level=logging.INFO,
-            model_dir=None,
-            log_to_driver=True):
+            model_creator: Union[Callable[[Dict], 'Module'], None]=None,
+            optimizer_creator: Union[Callable[['Module', Dict], 'Optimizer'],
+                                     None]=None,
+            loss_creator: Union['Loss', Callable[[Dict], 'Loss'], None]=None,
+            metrics: Union['Metric', List['Metric'], None]=None,
+            scheduler_creator: Optional[Callable[[Dict], 'LRScheduler']]=None,
+            training_operator_cls: Type[TrainingOperator]=TrainingOperator,
+            config: Optional[Dict]=None,
+            scheduler_step_freq: str="batch",
+            use_tqdm: bool=False,
+            workers_per_node: int=1,
+            sync_stats: bool=True,
+            log_level: int=logging.INFO,
+            model_dir: Optional[str]=None,
+            log_to_driver: bool=True):
         logging.basicConfig(level=log_level,
                             format='[%(asctime)s] %(levelname)-8s %(message)s',
                             datefmt='%Y-%m-%d %H:%M:%S'
@@ -116,7 +133,7 @@ class PyTorchPySparkEstimator(BaseEstimator):
 
         sc = OrcaContext.get_spark_context()
 
-        if not isinstance(model_creator, types.FunctionType):
+        if model_creator and not isinstance(model_creator, types.FunctionType):
             # Torch model is also callable.
             invalidInputError(False,
                               "Must provide a function for model_creator")
@@ -175,9 +192,10 @@ class PyTorchPySparkEstimator(BaseEstimator):
             cluster_info=self._get_cluster_info(sc),
             **local_init_params)
 
-        self.state_dict = self.driver_runner.get_state_dict()
+        if self.model_creator:
+            self.state_dict = self.driver_runner.get_state_dict()
 
-    def create_tcpstore_server(self):
+    def create_tcpstore_server(self) -> 'TCPStore':
         import torch.distributed as dist
         server_store = dist.TCPStore(self.ip, self.tcp_store_port, -1, True,
                                      dist.constants.default_pg_timeout)
@@ -188,16 +206,19 @@ class PyTorchPySparkEstimator(BaseEstimator):
         return cluster_info
 
     def fit(self,
-            data,
-            epochs=1,
-            batch_size=32,
-            profile=False,
-            reduce_results=True,
-            info=None,
-            feature_cols=None,
-            label_cols=None,
-            validation_data=None,
-            callbacks=[]):
+            data: Union['SparkXShards', 'SparkDataFrame', Callable[[Dict, int], 'DataLoader']],
+            epochs: int=1,
+            batch_size: int=32,
+            profile: bool=False,
+            reduce_results: bool=True,
+            info: Optional[Dict]=None,
+            feature_cols: Optional[List[str]]=None,
+            label_cols: Optional[List[str]]=None,
+            validation_data: Union['SparkXShards',
+                                   'SparkDataFrame',
+                                   Callable[[Dict, int], 'DataLoader'],
+                                   None]=None,
+            callbacks: List['Callback']=[]) -> List:
         """
         Trains a PyTorch model given training data for several epochs.
         Calls `TrainingOperator.train_epoch()` on N parallel workers simultaneously
@@ -236,6 +257,23 @@ class PyTorchPySparkEstimator(BaseEstimator):
         batch_size = batch_size // self.num_workers  # Local batch size for each worker
         if batch_size <= 0:
             batch_size = 1
+        if isinstance(data, SparkXShards):
+            data = data.to_lazy()
+            if validation_data and isinstance(validation_data, SparkXShards):
+                validation_data = validation_data.to_lazy()
+        # Data partition should be equal to num workers.
+        # Repartition Spark DataFrame before converting to SparkXShards.
+        # Repartition on SparkXShards will result in empty partitions.
+        if isinstance(data, DataFrame) or isinstance(data, SparkXShards):
+            if data.rdd.getNumPartitions() != self.num_workers:
+                data = data.repartition(self.num_workers)
+            if validation_data:
+                invalidInputError(
+                    isinstance(validation_data, DataFrame) or
+                    isinstance(validation_data, SparkXShards),
+                    "validation_data should have the same type with train data")
+                if validation_data.rdd.getNumPartitions() != self.num_workers:  # type:ignore
+                    validation_data = validation_data.repartition(self.num_workers)  # type:ignore
         data, validation_data = maybe_dataframe_to_xshards(data,
                                                            validation_data=validation_data,
                                                            feature_cols=feature_cols,
@@ -243,6 +281,11 @@ class PyTorchPySparkEstimator(BaseEstimator):
                                                            mode="fit",
                                                            num_workers=self.num_workers,
                                                            shard_size=batch_size)
+
+        if self.model_creator is None:
+            invalidInputError(False,
+                              "Must provide callable function for model_creator "
+                              "or load a saved model.")
 
         sc = OrcaContext.get_spark_context()
         _ = self.create_tcpstore_server()
@@ -259,15 +302,14 @@ class PyTorchPySparkEstimator(BaseEstimator):
             batch_size=batch_size,
             profile=profile,
             info=info,
-            callbacks=callbacks,
+            callbacks=callbacks
         )
 
         if not isinstance(self.optimizer_creator, types.FunctionType):
             invalidInputError(False,
                               "Must provide a function for optimizer_creator")
 
-        if isinstance(data, SparkXShards):
-            # set train/validation
+        if isinstance(data, SparkXShards):  # Computation triggered when collect
             params["wrap_dataloader"] = False
             if data._get_class_name() == 'pandas.core.frame.DataFrame':
                 data, validation_data = process_xshards_of_pandas_dataframe(data, feature_cols,
@@ -283,8 +325,8 @@ class PyTorchPySparkEstimator(BaseEstimator):
                     runner.shutdown()
                     return result
 
-                res = data.rdd.repartition(self.num_workers).barrier() \
-                    .mapPartitions(
+                data_rdd = data.rdd  # type:ignore
+                res = data_rdd.barrier().mapPartitions(
                     lambda iter: transform_func(iter, init_params, params)).collect()
 
             else:
@@ -299,10 +341,10 @@ class PyTorchPySparkEstimator(BaseEstimator):
                     runner.shutdown()
                     return result
 
-                train_rdd = data.rdd.mapPartitions(lambda iter: [list(iter)])
-                val_rdd = validation_data.rdd.mapPartitions(lambda iter: [list(iter)])
-                res = train_rdd.zip(val_rdd).repartition(self.num_workers).barrier() \
-                    .mapPartitions(
+                train_rdd = data.rdd.mapPartitions(lambda iter: [list(iter)])  # type:ignore
+                val_rdd = validation_data.rdd  # type:ignore
+                val_rdd = val_rdd.mapPartitions(lambda iter: [list(iter)])
+                res = train_rdd.zip(val_rdd).barrier().mapPartitions(
                     lambda iter: transform_func(iter, init_params, params)).collect()
 
         else:
@@ -314,7 +356,7 @@ class PyTorchPySparkEstimator(BaseEstimator):
             params["data_creator"] = reload_dataloader_creator(data)
             params["validation_data_creator"] = reload_dataloader_creator(validation_data)
 
-            def transform_func(iter, init_param, param):
+            def transform_func(iter, init_param, param):  # type:ignore
                 return PytorchPysparkWorker(**init_param).train_epochs(**param)
 
             res = self.workerRDD.barrier().mapPartitions(
@@ -359,13 +401,6 @@ class PyTorchPySparkEstimator(BaseEstimator):
             state_dict_b = None
         return state_dict_b
 
-    def _get_broadcasted_state_dict(self, sc):
-        if self.state_dict:
-            state_dict_b = sc.broadcast(self.state_dict)
-        else:
-            state_dict_b = None
-        return state_dict_b
-
     def _predict_spark_xshards(self, xshards, init_params, params):
         def transform_func(iter, init_param, param):
             partition_data = list(iter)
@@ -373,15 +408,15 @@ class PyTorchPySparkEstimator(BaseEstimator):
             param["data_creator"] = make_data_creator(partition_data)
             return PytorchPysparkWorker(**init_param).predict(**params)
 
-        pred_shards = SparkXShards(xshards.rdd.mapPartitions(
+        pred_shards = SparkXShards.lazy(xshards.rdd.mapPartitions(
             lambda iter: transform_func(iter, init_params, params)))
         return pred_shards
 
     def predict(self,
-                data,
-                batch_size=32,
-                feature_cols=None,
-                profile=False):
+                data: Union['SparkXShards', 'SparkDataFrame'],
+                batch_size: int=32,
+                feature_cols: Optional[List[str]]=None,
+                profile: bool=False) -> Union['SparkXShards', 'SparkDataFrame']:
         """
         Using this PyTorch model to make predictions on the data.
 
@@ -398,8 +433,11 @@ class PyTorchPySparkEstimator(BaseEstimator):
         batch_size = batch_size // self.num_workers  # Local batch size for each worker
         if batch_size <= 0:
             batch_size = 1
-        from bigdl.orca.data import SparkXShards
-        from pyspark.sql import DataFrame
+
+        if self.model_creator is None:
+            invalidInputError(False,
+                              "Must provide callable function for model_creator "
+                              "or load a saved model.")
 
         sc = OrcaContext.get_spark_context()
         cluster_info = self._get_cluster_info(sc)
@@ -408,8 +446,7 @@ class PyTorchPySparkEstimator(BaseEstimator):
         init_params = dict(
             mode="predict",
             state_dict=state_dict,
-            cluster_info=cluster_info,
-        )
+            cluster_info=cluster_info)
         init_params.update(self.worker_init_params)
 
         params = dict(
@@ -417,7 +454,7 @@ class PyTorchPySparkEstimator(BaseEstimator):
             profile=profile
         )
 
-        if isinstance(data, DataFrame):
+        if isinstance(data, DataFrame):  # Computation would be triggered by the user
             xshards, _ = dataframe_to_xshards(data,
                                               validation_data=None,
                                               feature_cols=feature_cols,
@@ -427,27 +464,35 @@ class PyTorchPySparkEstimator(BaseEstimator):
 
             pred_shards = self._predict_spark_xshards(xshards, init_params, params)
             result = convert_predict_xshards_to_dataframe(data, pred_shards)
-
-        elif isinstance(data, SparkXShards):
-            if data._get_class_name() == 'pandas.core.frame.DataFrame':
-                data = process_xshards_of_pandas_dataframe(data, feature_cols)
-            pred_shards = self._predict_spark_xshards(data, init_params, params)
-            result = update_predict_xshards(data, pred_shards)
+        elif isinstance(data, SparkXShards):  # Computation triggered when updating XShards
+            xshards = data.to_lazy()
+            if xshards._get_class_name() == 'pandas.core.frame.DataFrame':
+                xshards = process_xshards_of_pandas_dataframe(xshards, feature_cols)
+                pred_shards = self._predict_spark_xshards(xshards, init_params, params)
+                # Should add to the original SparkXShards of Pandas DataFrames
+                result = add_predict_to_pd_xshards(data, pred_shards)
+            else:
+                pred_shards = self._predict_spark_xshards(xshards, init_params, params)
+                result = update_predict_xshards(data, pred_shards)
+            # Uncache the original data since it is already included in the result
+            data.uncache()
         else:
             invalidInputError(False,
-                              "Only xshards or Spark DataFrame is supported for predict")
+                              "Only XShards or Spark DataFrame are supported for predict")
 
         return result
 
     def evaluate(self,
-                 data,
-                 batch_size=32,
-                 num_steps=None,
-                 profile=False,
-                 reduce_results=True,
-                 info=None,
-                 feature_cols=None,
-                 label_cols=None):
+                 data: Union['SparkXShards',
+                             'SparkDataFrame',
+                             Callable[[Dict, int], 'DataLoader']],
+                 batch_size: int=32,
+                 num_steps: Optional[int]=None,
+                 profile: bool=False,
+                 reduce_results: bool=True,
+                 info: Optional[Dict]=None,
+                 feature_cols: Optional[List[str]]=None,
+                 label_cols: Optional[List[str]]=None) -> Union[List[Dict], Dict]:
         """
         Evaluates a PyTorch model given validation data.
         Note that only accuracy for classification with zero-based label is supported by
@@ -484,6 +529,12 @@ class PyTorchPySparkEstimator(BaseEstimator):
         batch_size = batch_size // self.num_workers  # Local batch size for each worker
         if batch_size <= 0:
             batch_size = 1
+
+        if self.model_creator is None:
+            invalidInputError(False,
+                              "Must provide callable function for model_creator "
+                              "or load a saved model.")
+
         sc = OrcaContext.get_spark_context()
         cluster_info = self._get_cluster_info(sc)
         state_dict = self._get_broadcasted_state_dict(sc)
@@ -491,16 +542,20 @@ class PyTorchPySparkEstimator(BaseEstimator):
             mode="evaluate",
             state_dict=state_dict,
             cluster_info=cluster_info)
-
         init_params.update(self.worker_init_params)
 
         params = dict(
             batch_size=batch_size,
             num_steps=num_steps,
             profile=profile,
-            info=info)
+            info=info
+        )
 
-        from bigdl.orca.data import SparkXShards
+        if isinstance(data, SparkXShards):
+            data = data.to_lazy()
+        if isinstance(data, DataFrame) or isinstance(data, SparkXShards):
+            if data.rdd.getNumPartitions() != self.num_workers:
+                data = data.repartition(self.num_workers)
         data, _ = maybe_dataframe_to_xshards(data,
                                              validation_data=None,
                                              feature_cols=feature_cols,
@@ -508,19 +563,19 @@ class PyTorchPySparkEstimator(BaseEstimator):
                                              mode="evaluate",
                                              num_workers=self.num_workers,
                                              shard_size=batch_size)
-        if isinstance(data, SparkXShards):
+        if isinstance(data, SparkXShards):  # Computation triggered when collect
             params["wrap_dataloader"] = False
             if data._get_class_name() == 'pandas.core.frame.DataFrame':
                 data = process_xshards_of_pandas_dataframe(data, feature_cols, label_cols)
-            # set train/validation data
 
             def transform_func(iter, init_param, param):
                 partition_data = list(iter)
                 param["data_creator"] = partition_to_creator(partition_data)
                 return PytorchPysparkWorker(**init_param).validate(**param)
 
-            res = data.rdd.repartition(self.num_workers).barrier() \
-                .mapPartitions(lambda iter: transform_func(iter, init_params, params)).collect()
+            data_rdd = data.rdd  # type:ignore
+            res = data_rdd.barrier().mapPartitions(
+                lambda iter: transform_func(iter, init_params, params)).collect()
         else:
             params["data_creator"] = reload_dataloader_creator(data)
 
@@ -535,22 +590,27 @@ class PyTorchPySparkEstimator(BaseEstimator):
         else:
             return res
 
-    def get_model(self):
+    def get_model(self) -> 'Module':
         """
         Returns the learned PyTorch model.
 
         :return: The learned PyTorch model.
         """
-        state = self.state_dict
-        model = self.model_creator(self.config)
-        model_state = state["models"][0]
-        model.load_state_dict(model_state)
-        return model.module if hasattr(model, "module") else model
+        if self.model_creator:
+            state = self.state_dict
+            model = self.model_creator(self.config)
+            model_state = state["models"][0]
+            model.load_state_dict(model_state)
+        else:
+            invalidInputError(False,
+                              "Must provide callable function for model_creator "
+                              "or load a saved model.")
+        return model.module if hasattr(model, "module") else model  # type:ignore
 
-    def get_state_dict(self):
+    def get_state_dict(self) -> Dict:
         return self.state_dict
 
-    def save(self, model_path, entire=False):
+    def save(self, model_path: str, entire: bool=False) -> str:
         """
         Saves the Estimator state (including model and optimizer) or the entire model
         to the provided model_path.
@@ -579,12 +639,13 @@ class PyTorchPySparkEstimator(BaseEstimator):
                 shutil.rmtree(temp_dir)
         return model_path
 
-    def load(self, model_path):
+    def load(self, model_path: str):
         """
         Loads the Estimator state (including model and optimizer) or the entire model
         from the provided model_path.
 
-        :param model_path: (str) Path to the existing model.
+        :param model_path: (str) Path to the existing model. Model class must be defined
+               on the driver when loading the entire model.
         """
         import torch.nn as nn
         if is_local_path(model_path):
@@ -605,8 +666,11 @@ class PyTorchPySparkEstimator(BaseEstimator):
                 self.state_dict = [re.state_dict() for re in res]
         else:
             self.state_dict = res.state_dict()
+        if self.model_creator is None:
+            self.model_creator = lambda config: res
+            self.worker_init_params["model_creator"] = self.model_creator
 
-    def save_checkpoint(self, model_path):
+    def save_checkpoint(self, model_path: str):
         """
         Manually saves the Estimator state (including model and optimizer) to the provided
         model_path.
@@ -620,7 +684,7 @@ class PyTorchPySparkEstimator(BaseEstimator):
             self.driver_runner.load_state_dict(self.state_dict)
             self.driver_runner.save_checkpoint(filepath=model_path)
 
-    def load_checkpoint(self, model_path):
+    def load_checkpoint(self, model_path: str):
         """
         Loads the Estimator state (including model and optimizer) from the provided model_path.
         :param model_path: (str) Path to the existing model. Both local and remote path are

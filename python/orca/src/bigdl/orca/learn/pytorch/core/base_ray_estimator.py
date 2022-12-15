@@ -32,6 +32,8 @@ from bigdl.dllib.utils.log4Error import invalidInputError, logging
 
 logger = logging.getLogger(__name__)
 
+from typing import Dict
+
 
 class BaseRayEstimator(BaseEstimator, metaclass=ABCMeta):
     def __init__(self, **kwargs):
@@ -135,7 +137,7 @@ class BaseRayEstimator(BaseEstimator, metaclass=ABCMeta):
                               "values of backend, but got {}".format(backend))
         self.num_workers = len(self.remote_workers)
 
-    def get_state_dict(self):
+    def get_state_dict(self) -> Dict:
         stream_ids = [
             worker.get_state_stream.remote()
             for worker in self.remote_workers
@@ -149,7 +151,7 @@ class BaseRayEstimator(BaseEstimator, metaclass=ABCMeta):
             map_location="cpu")
         return state_dict
 
-    def load_state_dict(self, state_dict, blocking=True):
+    def load_state_dict(self, state_dict: Dict, blocking: bool=True):
         _buffer = io.BytesIO()
         torch.save(state_dict, _buffer)
         state_stream = _buffer.getvalue()
@@ -163,7 +165,7 @@ class BaseRayEstimator(BaseEstimator, metaclass=ABCMeta):
             ray.get(remote_calls)
 
     @enable_multi_fs_save
-    def save(self, model_path):
+    def save(self, model_path: str) -> str:
         """
         Saves the Estimator state (including model and optimizer) to the provided model_path.
 
@@ -175,7 +177,7 @@ class BaseRayEstimator(BaseEstimator, metaclass=ABCMeta):
         return model_path
 
     @enable_multi_fs_load
-    def load(self, model_path):
+    def load(self, model_path: str):
         """
         Loads the Estimator state (including model and optimizer) from the provided model_path.
 
@@ -184,7 +186,7 @@ class BaseRayEstimator(BaseEstimator, metaclass=ABCMeta):
         state_dict = torch.load(model_path)
         self.load_state_dict(state_dict)
 
-    def save_checkpoint(self, model_path):
+    def save_checkpoint(self, model_path: str):
         """
         Manually saves the Estimator state (including model and optimizer) to the provided
         model_path.
@@ -203,7 +205,7 @@ class BaseRayEstimator(BaseEstimator, metaclass=ABCMeta):
             ]
             ray.get(results)
 
-    def load_checkpoint(self, model_path):
+    def load_checkpoint(self, model_path: str):
         """
         Loads the Estimator state (including model and optimizer) from the provided model_path.
 
@@ -221,7 +223,7 @@ class BaseRayEstimator(BaseEstimator, metaclass=ABCMeta):
             ]
             ray.get(results)
 
-    def shutdown(self, force=False):
+    def shutdown(self, force: bool=False):
         """
         Shuts down workers and releases resources.
 
