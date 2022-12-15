@@ -41,6 +41,7 @@ from pyspark.sql.dataframe import DataFrame
 from typing import TYPE_CHECKING, Any, Dict, List, Callable, Union, Optional
 if TYPE_CHECKING:
     import numpy as np
+    from pyspark.sql.dataframe import DataFrame as SparkDataFrame
     from tensorflow.python.saved_model.save_options import SaveOptions
     from tensorflow.python.keras.callbacks import Callback
     from tensorflow.python.keras.engine.training import Model
@@ -57,7 +58,7 @@ def parse_model_dir(model_dir: str) -> str:
 class SparkTFEstimator():
     def __init__(self,
                  model_creator: Optional[Callable]=None,
-                 config: Optional[Dict[str, Any]]=None,
+                 config: Optional[Dict]=None,
                  compile_args_creator: Optional[Callable]=None,
                  verbose: bool=False,
                  workers_per_node: int=1,
@@ -91,7 +92,7 @@ class SparkTFEstimator():
             invalidInputError(False,
                               "Please do not specify batch_size in config. Input batch_size in the"
                               " fit/evaluate function of the estimator instead.")
-        self.model_dir = parse_model_dir(model_dir)
+        self.model_dir = parse_model_dir(model_dir)  # type:ignore
         master = sc.getConf().get("spark.master")
         if not master.startswith("local"):
             logger.info("For cluster mode, make sure to use shared filesystem path "
@@ -110,12 +111,12 @@ class SparkTFEstimator():
         return cluster_info
 
     def fit(self,
-            data: Union["SparkXShards", "Dataframe", Callable],
+            data: Union["SparkXShards", "SparkDataFrame", Callable],
             epochs: int=1,
             batch_size: int=32,
             verbose: Union[str, int]=1,
             callbacks: Optional[str]=None,
-            validation_data: Optional[Union["SparkXShards", "Dataframe", Callable]]=None,
+            validation_data: Union["SparkXShards", "SparkDataFrame", Callable, None]=None,
             class_weight: Optional[Dict[int, float]]=None,
             initial_epoch: int=0,
             steps_per_epoch: Optional[int]=None,
@@ -170,8 +171,8 @@ class SparkTFEstimator():
         if isinstance(data, DataFrame) or isinstance(data, SparkXShards):
             if data.rdd.getNumPartitions() != self.num_workers:
                 data = data.repartition(self.num_workers)
-            if validation_data and validation_data.rdd.getNumPartitions() != self.num_workers:
-                validation_data = validation_data.repartition(self.num_workers)
+            if validation_data and validation_data.rdd.getNumPartitions() != self.num_workers:  # type:ignore
+                validation_data = validation_data.repartition(self.num_workers)  # type:ignore
         data, validation_data = maybe_dataframe_to_xshards(data, validation_data,
                                                            feature_cols, label_cols,
                                                            mode="fit",
@@ -617,8 +618,8 @@ class SparkTFEstimator():
         model = load_model(**self.load_params)
         self.model_weights = model.get_weights()
         if self.model_creator is None:
-            self.load_path = filepath
-            if is_file(self.load_path):
+            self.load_path = filepath  # type:ignore
+            if is_file(self.load_path):  # type:ignore
                 sc.addFile(self.load_path, recursive=False)
             else:
                 sc.addFile(self.load_path, recursive=True)

@@ -33,7 +33,7 @@ class Estimator(object):
     @staticmethod
     def from_keras(*,
                    model_creator: Optional[Callable]=None,
-                   config: Dict[str, Any]=None,
+                   config: Optional[Dict]=None,
                    verbose: bool=False,
                    workers_per_node: int=1,
                    compile_args_creator: Optional[Callable]=None,
@@ -89,6 +89,7 @@ class Estimator(object):
             invalidInputError(False,
                               "Only horovod, ray and spark backends are supported"
                               f" for now, got backend: {backend}")
+            return None
 
     @staticmethod
     def latest_checkpoint(checkpoint_dir: str) -> str:
