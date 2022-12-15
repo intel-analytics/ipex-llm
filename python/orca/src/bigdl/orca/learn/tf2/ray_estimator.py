@@ -82,7 +82,8 @@ class TensorFlow2Estimator(OrcaRayEstimator):
             self.config["inter_op_parallelism"] = 1
 
         if "intra_op_parallelism" not in self.config:
-            self.config["intra_op_parallelism"] = ray_ctx.ray_node_cpu_cores // workers_per_node  # type:ignore
+            ray_node_cpu_cores = ray_ctx.ray_node_cpu_cores  # type:ignore
+            self.config["intra_op_parallelism"] = ray_node_cpu_cores // workers_per_node
 
         if backend == "horovod":
             invalidInputError(compile_args_creator is not None,
@@ -256,7 +257,8 @@ class TensorFlow2Estimator(OrcaRayEstimator):
                 invalidInputError(isinstance(validation_data, Dataset),
                                   "Validation data type should be the same as train data,"
                                   " but got type: {}".format(type(validation_data)))
-                val_ray_xshards = TF2Dataset(validation_data).get_ray_xshards(self.num_workers) # type:ignore
+                val_ray_xshards = TF2Dataset(
+                    validation_data).get_ray_xshards(self.num_workers)  # type:ignore
 
             worker_stats = self._fit_ray_xshards(ray_xshards, val_ray_xshards, params)
         elif isinstance(data, ray.data.Dataset):
@@ -280,13 +282,16 @@ class TensorFlow2Estimator(OrcaRayEstimator):
                                                    locality_hints=self.remote_workers)
 
                 for i in range(self.num_workers):
-                    params["data_creator"] = self.process_ray_dataset(shards[i],
-                                                                      label_cols, feature_cols,
-                                                                      data_config)
-                    params["validation_data_creator"] = self.process_ray_dataset(val_shards[i],  # type:ignore
-                                                                                 label_cols,
-                                                                                 feature_cols,
-                                                                                 data_config)
+                    params["data_creator"] = self.process_ray_dataset(
+                        shards[i],
+                        label_cols,
+                        feature_cols,
+                        data_config)
+                    params["validation_data_creator"] = self.process_ray_dataset(
+                        val_shards[i],  # type:ignore
+                        label_cols,
+                        feature_cols,
+                        data_config)
                     remote_worker_stats.append(self.remote_workers[i].step.remote(**params))
                 worker_stats = ray.get(remote_worker_stats)
                 worker_stats = list(itertools.chain.from_iterable(worker_stats))
@@ -322,7 +327,10 @@ class TensorFlow2Estimator(OrcaRayEstimator):
         return worker_stats
 
     def evaluate(self,
-                 data: Union["SparkXShards", "Dataset", "ray.data.Dataset", Callable[[Dict, int], 'tf.data.Dataset']],
+                 data: Union["SparkXShards",
+                             "Dataset",
+                             "ray.data.Dataset",
+                              Callable],
                  batch_size: int=32,
                  num_steps: Optional[int]=None,
                  verbose: Union[str, int]=1,
