@@ -128,6 +128,7 @@ class InferenceUtils:
             y=y,
             precision=precision,
             accelerator=accelerator,
+            input_spec=input_spec,
             metric=metric,
             accuracy_criterion=accuracy_criterion,
             approach=approach,
