@@ -691,7 +691,6 @@ class TorchRunner(BaseRunner):
         """Returns the state of the runner."""
         state = {
             "epoch": self.epochs,
-            "operator": self.state_dict(),
             "models": [model.state_dict() for model in self.models]
         }
         if self.optimizers is not None:
@@ -730,8 +729,6 @@ class TorchRunner(BaseRunner):
                 scheduler.load_state_dict(state_dict)
         if "epoch" in state:
             self.epochs = state["epoch"]
-        if "operator" in state:
-            self.load_state_dict(state["operator"])
 
     def save_checkpoint(self, filepath, save_weights_only=False):
         if self.rank == 0:
@@ -763,20 +760,6 @@ class TorchRunner(BaseRunner):
         del self.criterion
         del self.optimizers
         del self.models
-
-    def state_dict(self):
-        """Override this to return a representation of the TorchRunner state.
-
-        Returns:
-            dict: The state dict of the TorchRunner."""
-        pass
-
-    def load_state_dict(self, state_dict):
-        """Override this to load the representation of the TorchRunner state.
-
-        Args:
-            state_dict (dict): State dict as returned by the TorchRunner. """
-        pass
 
     @property
     def given_models(self):
