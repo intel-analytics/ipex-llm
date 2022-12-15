@@ -278,7 +278,7 @@ class InferenceOptimizer(BaseInferenceOptimizer):
         if self._calculate_accuracy:
             # only show this line when there is accuracy data
             self._optimize_result += "* means we assume the accuracy of the traced model does "\
-                                    "not change, so we don't recompute accuracy to save time.\n"
+                "not change, so we don't recompute accuracy to save time.\n"
         # save time cost to self._optimize_result
         time_cost = time.perf_counter() - start_time
         time_cost_str = f"Optimization cost {time_cost:.1f}s in total."
