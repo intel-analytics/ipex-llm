@@ -28,7 +28,7 @@ from sklearn.preprocessing import MinMaxScaler
 
 
 class NCFData(data.Dataset):
-    def __init__(self, data,
+    def __init__(self, data, columns=None,
                  num_item=0, train_mat=None, num_ng=0):
         super(NCFData, self).__init__()
         self.data = data
@@ -36,14 +36,17 @@ class NCFData(data.Dataset):
         self.train_mat = train_mat
         self.num_ng = num_ng
         self.is_sampling = False
+        self.columns = columns
 
-        if 'label' not in data.columns:
+        if 'label' not in columns:
             self.data['label'] = [1.0 for _ in range(len(self.data))]
+            self.columns = list(self.data)
+            self.data = tuple(map(tuple, self.data.itertuples(index=False)))
 
     def ng_sample(self):
         self.is_sampling = True
 
-        features_ps = self.data.values[:, :-1].tolist()
+        features_ps = list(self.data)
         features_ng = []
         for x in features_ps:
             u = x[0]
@@ -56,26 +59,26 @@ class NCFData(data.Dataset):
         labels_ng = [0.0 for _ in range(len(features_ng))]
         features_fill = features_ps + features_ng
         labels_fill = labels_ps + labels_ng
-        self.data = pd.DataFrame(features_fill,
-                                 columns=["user", "item"], dtype=np.int32)
-        self.data['label'] = labels_fill
+        df = pd.DataFrame(features_fill, columns=self.columns, dtype=np.int32)
+        df['label'] = labels_fill
+        self.data = tuple(map(tuple, df.itertuples(index=False)))
+
+    def merge_features(self, users, items, total_cols=None):
+        df = pd.DataFrame(self.data, columns=self.columns)
+        df = users.merge(df, on='user')
+        df = df.merge(items, on='item')
+        df['user'] = df['user'].astype(np.int32)
+        df['item'] = df['item'].astype(np.int32)
+
+        # To make the order of data columns as expected.
+        df = df.loc[:, total_cols]
+        self.data = tuple(map(tuple, df.itertuples(index=False)))
+        self.columns = total_cols
 
     def train_test_split(self, test_size=0.2):
         train_dataset, test_dataset = train_test_split(self.data, test_size=test_size,
                                                        random_state=100)
-        train_dataset.reset_index(drop=True, inplace=True)
-        test_dataset.reset_index(drop=True, inplace=True)
-        return NCFData(train_dataset), NCFData(test_dataset)
-
-    def merge_features(self, users, items, total_cols=None):
-        self.data = users.merge(self.data, on='user')
-        self.data = self.data.merge(items, on='item')
-        # To make the order of data columns as expected.
-        if total_cols is not None:
-            self.data = self.data.loc[:, total_cols]
-
-    def pandasDF_tolist(self):
-        self.data = tuple(map(tuple, self.data.itertuples(index=False)))
+        return NCFData(train_dataset, self.columns), NCFData(test_dataset, self.columns)
 
     def __len__(self):
         return len(self.data)
@@ -157,7 +160,7 @@ def load_dataset(dataset_dir, num_ng=4):
     ratings, train_mat = process_ratings(dataset_dir, user_num, item_num)
 
     # sample negative items
-    dataset = NCFData(ratings, item_num, train_mat, num_ng)
+    dataset = NCFData(ratings, list(ratings), item_num, train_mat, num_ng)
     dataset.ng_sample()
 
     # merge features
@@ -165,8 +168,6 @@ def load_dataset(dataset_dir, num_ng=4):
 
     # train test split
     train_dataset, test_dataset = dataset.train_test_split()
-    train_dataset.pandasDF_tolist()
-    test_dataset.pandasDF_tolist()
     return train_dataset, test_dataset
 
 
