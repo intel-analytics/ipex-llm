@@ -59,9 +59,9 @@ class NCFData(data.Dataset):
         labels_ng = [0.0 for _ in range(len(features_ng))]
         features_fill = features_ps + features_ng
         labels_fill = labels_ps + labels_ng
-        df = pd.DataFrame(features_fill, columns=self.columns, dtype=np.int32)
-        df['label'] = labels_fill
-        self.data = tuple(map(tuple, df.itertuples(index=False)))
+        self.data = pd.DataFrame(features_fill, columns=self.columns, dtype=np.int32)
+        self.data['label'] = labels_fill
+        self.data = tuple(map(tuple, self.data.itertuples(index=False)))
 
     def train_test_split(self, test_size=0.2):
         train_dataset, test_dataset = train_test_split(self.data, test_size=test_size,
