@@ -76,6 +76,7 @@ def setup_package():
                                 'prophet==1.1.0',
                                 'tsfresh==0.17.0',
                                 'pyarrow==6.0.1',
+                                'matplotlib',
                                 'bigdl-nano[inference]==' + VERSION]},
         dependency_links=['https://d3kbcqa49mib13.cloudfront.net/spark-2.0.0-bin-hadoop2.7.tgz'],
         include_package_data=True,
