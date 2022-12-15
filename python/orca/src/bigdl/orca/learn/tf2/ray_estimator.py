@@ -330,7 +330,7 @@ class TensorFlow2Estimator(OrcaRayEstimator):
                  data: Union["SparkXShards",
                              "Dataset",
                              "ray.data.Dataset",
-                              Callable],
+                             Callable],
                  batch_size: int=32,
                  num_steps: Optional[int]=None,
                  verbose: Union[str, int]=1,
