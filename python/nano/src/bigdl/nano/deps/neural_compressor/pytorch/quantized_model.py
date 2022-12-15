@@ -28,9 +28,9 @@ class PytorchQuantizedModel(AcceleratedLightningModule):
         super().__init__(model.model)
         self.quantized = model
         self.thread_num = thread_num
-        self.context_manager = generate_context_manager(accelerator=None,
-                                                        precision="int8",
-                                                        thread_num=thread_num)
+        self._nano_context_manager = generate_context_manager(accelerator=None,
+                                                              precision="int8",
+                                                              thread_num=thread_num)
 
     @property
     def _nargs(self):
@@ -57,9 +57,11 @@ class PytorchQuantizedModel(AcceleratedLightningModule):
             with open(tune_cfg_file, 'r') as f:
                 tune_cfg = yaml.safe_load(f)
                 qmodel.tune_cfg = tune_cfg
-        thread_num = None
-        if status["thread_num"] is not None and status['thread_num'] != {}:
-            thread_num = int(status["thread_num"])
+        thread_num = status.get('thread_num', None)
+        if thread_num == {}:
+            thread_num = None
+        if thread_num is not None:
+            thread_num = int(status['thread_num'])
         return PytorchQuantizedModel(qmodel, thread_num=thread_num)
 
     def _save_model(self, path):

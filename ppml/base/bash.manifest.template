@@ -65,9 +65,9 @@ fs.mounts = [
   { path = "/root/.zinc", uri = "file:/root/.zinc" },
   { path = "/root/.cache", uri = "file:/root/.cache" },
   { path = "/usr/lib/gcc", uri = "file:/usr/lib/gcc" },
-  #{ path = "/ppml/trusted-big-data-ml", uri = "file:/ppml/trusted-big-data-ml" },
   { path = "/ppml", uri = "file:/ppml" },
-  { type = "encrypted", path = "/ppml/encrypted", uri = "file:/ppml/encrypted", key_name = "_sgx_mrsigner" },
+  { type = "encrypted", path = "/ppml/encrypted-fs", uri = "file:/ppml/encrypted-fs", key_name = "_sgx_mrsigner" },
+  { type = "encrypted", path = "/ppml/encrypted-fsd", uri = "file:/ppml/encrypted-fsd", key_name = "sgx_data_key" },
 ]
 #  { path = "{{ gramine.runtimedir() }}/etc/localtime", uri = "file:/etc" },
 

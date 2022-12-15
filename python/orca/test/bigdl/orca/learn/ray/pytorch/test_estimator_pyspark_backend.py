@@ -14,6 +14,7 @@
 # limitations under the License.
 #
 import os
+import math
 from unittest import TestCase
 
 import numpy as np
@@ -202,6 +203,10 @@ class TestPyTorchEstimator(TestCase):
         train_stats = estimator.fit(train_data_loader, epochs=4, batch_size=128,
                                     validation_data=val_data_loader)
         print(train_stats)
+        # 1000 // 2 is the data size for each worker
+        # batch_count is the average batches of all workers.
+        # In this unit test, two workers have the same data size.
+        assert train_stats[0]["batch_count"] == math.ceil(1000 // 2 / (128 // 2))
         end_val_stats = estimator.evaluate(val_data_loader, batch_size=64)
         print(end_val_stats)
         assert 0 < end_val_stats["Accuracy"] < 1
@@ -380,8 +385,11 @@ class TestPyTorchEstimator(TestCase):
                                   model_fn=lambda config: IdentityNet())
         result = estimator.predict(df, batch_size=4,
                                    feature_cols=["feature"])
+        assert "prediction" in result.columns
         expr = "sum(cast(feature <> to_array(prediction) as int)) as error"
         assert result.selectExpr(expr).first()["error"] == 0
+        predictions = result.collect()
+        assert len(predictions) == 20
 
     def test_xshards_predict_save_load(self):
 
@@ -646,6 +654,60 @@ class TestPyTorchEstimator(TestCase):
             shutil.rmtree(temp_dir)
 
         estimator.shutdown()
+    
+    def test_optional_optimizer(self):
+        sc = init_nncontext()
+        rdd = sc.range(0, 110).map(lambda x: np.array([x] * 50))
+        shards = rdd.mapPartitions(lambda iter: chunks(iter, 5)).map(lambda x: {"x": np.stack(x)})
+        shards = SparkXShards(shards)
+
+        estimator = Estimator.from_torch(model=lambda config: IdentityNet(),
+                                         loss=nn.BCELoss(),
+                                         metrics=Accuracy(),
+                                         config={"lr": 1e-2},
+                                         workers_per_node=2,
+                                         backend="spark",
+                                         sync_stats=False,
+                                         log_level=logging.DEBUG)
+
+        result_shards = estimator.predict(shards, batch_size=4)
+        result_before = np.concatenate([shard["prediction"] for shard in result_shards.collect()])
+        expected_result = np.concatenate([shard["x"] for shard in result_shards.collect()])
+        assert np.array_equal(result_before, expected_result)
+
+    def test_optional_model_creator(self):
+        sc = OrcaContext.get_spark_context()
+        rdd = sc.range(0, 110).map(lambda x: np.array([x] * 50))
+        shards = rdd.mapPartitions(lambda iter: chunks(iter, 5)).map(lambda x: {"x": np.stack(x)})
+        shards = SparkXShards(shards)
+
+        try:
+            estimator = get_estimator(model_fn=lambda config: IdentityNet())
+
+            result_shards = estimator.predict(shards, batch_size=4)
+            result_before = np.concatenate([shard["prediction"] for shard in result_shards.collect()])
+            expected_result = np.concatenate([shard["x"] for shard in result_shards.collect()])
+            assert np.array_equal(result_before, expected_result)
+
+            path = "/tmp/entire_model.pth"
+            estimator.save(path, entire=True)
+            estimator.shutdown()
+
+            trainer = Estimator.from_torch(optimizer=get_optimizer,
+                                           loss=nn.BCELoss(),
+                                           metrics=Accuracy(),
+                                           config={"lr": 1e-2},
+                                           workers_per_node=2,
+                                           backend="spark")
+            trainer.load(path)
+
+            result_shards = trainer.predict(shards, batch_size=4)
+            result_after = np.concatenate([shard["prediction"]
+                                           for shard in result_shards.collect()])
+        finally:
+            os.remove(path)
+
+        assert np.array_equal(expected_result, result_after)
 
 if __name__ == "__main__":
     pytest.main([__file__])

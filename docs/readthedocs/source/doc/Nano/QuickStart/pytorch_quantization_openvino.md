@@ -76,8 +76,9 @@ y_hat.argmax(dim=1)
 ### Step 3: Quantization using Post-training Optimization Tools
 Accelerator='openvino' means using OpenVINO POT to do quantization. The quantization can be added as below:
 ```python
+from bigdl.nano.pytorch import InferenceOptimizer
 from torchmetrics import Accuracy
-ov_q_model = trainer.quantize(model, accelerator="openvino", calib_dataloader=data_loader)
+ov_q_model = InferenceOptimizer.quantize(model, accelerator="openvino", calib_data=data_loader)
 
 # run simple prediction
 batch = torch.stack([data_set[0][0], data_set[1][0]])

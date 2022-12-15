@@ -187,6 +187,13 @@ class TestTFEstimator(TestCase):
             res = trainer.evaluate(data=xshards, num_steps=25, batch_size=4,
                                    feature_cols=["user", "item"], label_cols=["label"])
             print("validation result: ", res)
+            predictions = trainer.predict(data=xshards, batch_size=4,
+                                          feature_cols=["user", "item"])
+            assert predictions._get_class_name() == "pandas.core.frame.DataFrame"
+            prediction_df = predictions.collect()[0]
+            import pandas as pd
+            assert isinstance(prediction_df, pd.DataFrame)
+            assert "prediction" in prediction_df
         finally:
             shutil.rmtree(temp_dir)
 

@@ -25,7 +25,8 @@ import copy
 import yaml
 from logging import warning
 from bigdl.nano.deps.openvino.openvino_api import load_openvino_model
-from bigdl.nano.deps.ipex.ipex_api import load_ipexjit_model, load_ipexjitbf16_model
+from bigdl.nano.deps.ipex.ipex_api import load_ipexjit_model, load_ipexjitbf16_model,\
+    load_ipex_quantization_model
 from bigdl.nano.deps.onnxruntime.onnxruntime_api import load_onnxruntime_model
 from bigdl.nano.deps.neural_compressor.inc_api import load_inc_model
 from bigdl.nano.pytorch.amp.amp_api import load_bf16_model
@@ -152,6 +153,8 @@ def load_model(path, model: pl.LightningModule = None, inplace=False):
         return load_ipexjit_model(path, model, inplace=inplace)
     if model_type == 'PytorchIPEXJITBF16Model':
         return load_ipexjitbf16_model(path, model, inplace=inplace)
+    if model_type == 'PytorchIPEXQuantizationModel':
+        return load_ipex_quantization_model(path, model, inplace=inplace)
     if model_type == 'BF16Model':
         return load_bf16_model(path, model)
     if isinstance(model, nn.Module):
@@ -166,8 +169,10 @@ def load_model(path, model: pl.LightningModule = None, inplace=False):
             state_dict = torch.load(checkpoint_path, map_location='cpu')
             model.load_state_dict(state_dict)
             # patch ContextMagager to original model to keep behaviour consitent
-            model.context_manager = generate_context_manager(accelerator=None, precision="fp32",
-                                                             thread_num=thread_num)  # type: ignore
+            model._nano_context_manager = \
+                generate_context_manager(accelerator=None,
+                                         precision="fp32",
+                                         thread_num=thread_num)  # type: ignore
             return model
         else:
             invalidInputError(False, "Key 'checkpoint' must be specified.")
@@ -175,3 +180,16 @@ def load_model(path, model: pl.LightningModule = None, inplace=False):
         invalidInputError(False,
                           "ModelType {} or argument 'model={}' is not acceptable for pytorch"
                           " loading.".format(model_type, type(model)))
+
+
+def patch_attrs_from_model_to_object(model: nn.Module, instance):
+    """
+    Patch non nn.Module public attributes of original nn.Module to a new instance.
+
+    :param model: a torch.nn.Module
+    :param instance: a instance of any object
+    """
+    for attr in dir(model):
+        if attr not in dir(instance) and not attr.startswith('_') and not\
+                isinstance(getattr(model, attr), torch.nn.Module):
+            setattr(instance, attr, getattr(model, attr))

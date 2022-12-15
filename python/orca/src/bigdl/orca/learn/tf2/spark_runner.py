@@ -49,39 +49,42 @@ class DatasetHandler:
         config, local_batch_size = self._handle_batch_size(config)
         config['rank'] = self.rank
         config['size'] = self.size
+        # Use global batch size here for data_creator since TensorFlow
+        # will shard the dataset.
+        # batch_size won't be used in data_creator for SparkXShards.
         train_dataset = data_creator(config, config["batch_size"])
-        if isinstance(train_dataset, collections.Iterable):
-            invalidInputError(steps_per_epoch is not None,
-                                  "steps_per_epoch must be provided for xshard")
-            train_dataset = self._handle_xshards(train_dataset,
-                                                 steps=steps_per_epoch * epochs,
-                                                 local_batch_size=local_batch_size,
-                                                 shuffle=True,
-                                                 mode='fit')
-        # if isinstance(train_dataset, list) and \
-        #    all([isinstance(x, dict) for x in train_dataset]):
+        # if isinstance(train_dataset, collections.Iterable):
         #     invalidInputError(steps_per_epoch is not None,
-        #                       "steps_per_epoch must be provided for xshard")
+        #                           "steps_per_epoch must be provided for xshard")
         #     train_dataset = self._handle_xshards(train_dataset,
         #                                          steps=steps_per_epoch * epochs,
         #                                          local_batch_size=local_batch_size,
-        #                                          shuffle=True)
+        #                                          shuffle=True,
+        #                                          mode='fit')
+        if isinstance(train_dataset, list) and \
+           all([isinstance(x, dict) for x in train_dataset]):
+            invalidInputError(steps_per_epoch is not None,
+                              "steps_per_epoch must be provided for xshard")
+            train_dataset = self._handle_xshards(train_dataset,
+                                                 steps=steps_per_epoch * epochs,
+                                                 local_batch_size=local_batch_size,
+                                                 shuffle=True)
         else:
             train_dataset = self._handle_sharding(train_dataset)
 
         if validation_data_creator is not None:
             test_dataset = validation_data_creator(config, config["batch_size"])
-            # if isinstance(test_dataset, list) and \
-            #         all([isinstance(x, dict) for x in test_dataset]):
-            if isinstance(test_dataset, collections.Iterable):
+            if isinstance(test_dataset, list) and \
+                    all([isinstance(x, dict) for x in test_dataset]):
+            # if isinstance(test_dataset, collections.Iterable):
                 invalidInputError(validation_steps is not None,
                                   "validation_steps must be provided"
                                   " when use xshards for evaluate")
                 test_dataset = self._handle_xshards(test_dataset,
                                                     steps=validation_steps,
                                                     local_batch_size=local_batch_size,
-                                                    shuffle=False,
-                                                    mode='fit')
+                                                    shuffle=False
+                                                    )
             else:
                 test_dataset = self._handle_sharding(test_dataset)
         else:
@@ -94,21 +97,20 @@ class DatasetHandler:
         config['rank'] = self.rank
         config['size'] = self.size
         dataset = data_creator(config, config["batch_size"])
-        # if isinstance(dataset, list) and all([isinstance(x, dict) for x in dataset]):
-        if isinstance(dataset, collections.Iterable):
-            invalidInputError(steps is not None,
-                              "steps must be provided for xshard")
+        if isinstance(dataset, list) and all([isinstance(x, dict) for x in dataset]):
+        # if isinstance(dataset, collections.Iterable):
+        #     invalidInputError(steps is not None,
+        #                       "steps must be provided for xshard")
             dataset = self._handle_xshards(dataset,
                                            steps=steps,
                                            local_batch_size=local_batch_size,
-                                           shuffle=False,
-                                           mode='evaluate')
+                                           shuffle=False)
         else:
             dataset = self._handle_sharding(dataset)
 
         return dataset
 
-    def _handle_xshards(self, dataset, steps, local_batch_size, shuffle, mode):
+    def _handle_xshards(self, dataset, steps, local_batch_size, shuffle):
         invalidInputError(False, "not implemented")
 
     def _handle_sharding(self, dataset):
@@ -172,15 +174,12 @@ class TFDistributedDatasetHandler2(DatasetHandler):
 
 class TFDistributedDatasetHandler(DatasetHandler):
 
-    def _handle_xshards(self, dataset, steps, local_batch_size, shuffle, mode):
+    def _handle_xshards(self, dataset, steps, local_batch_size, shuffle):
         import tensorflow as tf
 
         data, label = partition_get_data_label(dataset,
                                                allow_tuple=True,
                                                allow_list=False)
-
-        # generator = data_generator(dataset, local_batch_size, mode)
-
         def dataset_fn(input_context):
             dataset = tf.data.Dataset.from_tensor_slices((data, label))
             # dataset = tf.data.Dataset.from_generator(generator=generator)
@@ -200,14 +199,18 @@ class TFDistributedDatasetHandler(DatasetHandler):
         strategy = ds_context.get_strategy()
         dataset = strategy.experimental_distribute_datasets_from_function(dataset_fn)
         return dataset
-        # return generator
 
     def _handle_sharding(self, dataset):
         return dataset
 
     def _handle_batch_size(self, config):
         invalidInputError("batch_size" in config, "batch_size must be set in config")
-        local_batch_size = config["batch_size"] // self.size
+        if config["batch_size"]:
+            local_batch_size = config["batch_size"] // self.size
+            if local_batch_size <= 0:
+                local_batch_size = 1
+        else:  # batch_size default to be None for predict
+            local_batch_size = None
         return config, local_batch_size
 
 
@@ -240,11 +243,8 @@ class LocalDatasetHandler2(DatasetHandler):
 
 class LocalDatasetHandler(DatasetHandler):
 
-    def _handle_xshards(self, dataset, steps, local_batch_size, shuffle, mode):
+    def _handle_xshards(self, dataset, steps, local_batch_size, shuffle):
         import tensorflow as tf
-
-        # generator = data_generator(dataset, local_batch_size, mode)
-        # dataset = tf.data.Dataset.from_generator(generator)
 
         data, label = partition_get_data_label(dataset,
                                                allow_tuple=True,
@@ -469,13 +469,13 @@ class SparkRunner:
             self.setup_local()
 
 
-
     def setup(self):
         import tensorflow as tf
         tf.config.threading.set_inter_op_parallelism_threads(self.inter_op_parallelism)
         tf.config.threading.set_intra_op_parallelism_threads(self.intra_op_parallelism)
         os.environ["KMP_BLOCKING_TIME"] = self.config.get("KMP_BLOCKING_TIME",
                                                           os.environ.get("KMP_BLOCKING_TIME", "0"))
+
 
     def setup_local(self):
         self.size = 1
@@ -488,6 +488,7 @@ class SparkRunner:
             self.model.set_weights(self.model_weights.value)
         from tensorflow.python.distribute import distribution_strategy_context as ds_context
         self.strategy = ds_context.get_strategy()
+
 
     def setup_distributed(self, cluster):
         """
@@ -517,20 +518,6 @@ class SparkRunner:
         runs a training epoch and updates the model parameters
         """
         with self.strategy.scope():
-            # if self.model_dir is not None and exists(self._model_saved_path):
-            #     # for continous training
-            #     model = load_model(self._model_saved_path)
-            # else:
-            #     if self.model_creator is not None:
-            #         model = self.model_creator(self.config)
-            #     else:
-            #         model = tf.keras.models.load_model(self.model_load)
-            #     if self.model_weights:
-            #         model.set_weights(self.model_weights.value)
-            #
-            # if not model._is_compiled and self.compile_args_creator:
-            #     model.compile(**self.compile_args_creator(config))
-
             dataset_handler = DatasetHandler.get_handler(self.backend, self.rank, self.size)
             train_dataset, test_dataset = dataset_handler \
                 .handle_datasets_train(data_creator=data_creator,
@@ -603,8 +590,6 @@ class SparkRunner:
             else:
                 weights = self.model.get_weights()
             self._stop_log_monitor()
-            # if self.need_to_log_to_driver:
-            #     LogMonitor.stop_log_monitor(self.log_path, self.logger_thread, self.thread_stop)
             if self.model_dir is not None:
                 return [stats]
             else:
@@ -616,8 +601,6 @@ class SparkRunner:
             finally:
                 shutil.rmtree(temp_dir)
                 self._stop_log_monitor()
-            # if self.need_to_log_to_driver:
-            #     LogMonitor.stop_log_monitor(self.log_path, self.logger_thread, self.thread_stop)
             return []
 
     def validate(self, data_creator, batch_size=32, verbose=1, sample_weight=None,
@@ -629,14 +612,6 @@ class SparkRunner:
         if data_config is not None:
             config.update(data_config)
         config["batch_size"] = batch_size
-
-        # with self.strategy.scope():
-        #     if self.model_creator is not None:
-        #         model = self.model_creator(self.config)
-        #     else:
-        #         model = tf.keras.models.load_model(self.model_load)
-        #     if self.model_weights:
-        #         model.set_weights(self.model_weights.value)
 
         with self.strategy.scope():
             dataset_handler = DatasetHandler.get_handler(self.backend,
@@ -681,35 +656,29 @@ class SparkRunner:
 
         if self.rank == 0:
             self._stop_log_monitor()
-            # if self.need_to_log_to_driver:
-            #     LogMonitor.stop_log_monitor(self.log_path, self.logger_thread, self.thread_stop)
             return [stats]
         else:
             self._stop_log_monitor()
-            # if self.need_to_log_to_driver:
-            #     LogMonitor.stop_log_monitor(self.log_path, self.logger_thread, self.thread_stop)
             return []
 
     def predict(self, data_creator, batch_size, verbose, steps, callbacks, data_config):
         config = copy.copy(self.config)
         if data_config is not None:
             config.update(data_config)
+        config["batch_size"] = batch_size
+        dataset_handler = DatasetHandler.get_handler(self.backend,
+                                                     0,  # no rank for predict
+                                                     self.size)
+        config, local_batch_size = dataset_handler._handle_batch_size(config)
 
         dataset = data_creator(config, batch_size)
         # partition = dataset
         params = dict(
-            batch_size=batch_size,
+            batch_size=local_batch_size,
             verbose=verbose,
             steps=steps,
             callbacks=callbacks,
         )
-
-        # if self.model_creator is not None:
-        #     local_model = self.model_creator(self.config)
-        # else:
-        #     local_model = tf.keras.models.load_model(self.model_load)
-        # if self.model_weights:
-        #     local_model.set_weights(self.model_weights.value)
 
         def predict_fn(shard):
             y = self.model.predict(shard["x"], **params)
@@ -719,8 +688,6 @@ class SparkRunner:
             for shard in dataset:
                 yield predict_fn(shard)
         # new_partitions = [predict_fn(shard) for shard in partition]
-        # if self.need_to_log_to_driver:
-        #     LogMonitor.stop_log_monitor(self.log_path, self.logger_thread, self.thread_stop)
         self._stop_log_monitor()
         # return new_partitions
 
