@@ -630,11 +630,9 @@ def callBigDlFunc(bigdl_type, name, *args):
         except Exception as e:
             error = e
             regex = re.compile(r'Method\s' + name + r'.*does not exist')
-            if regex.match(str(e)):
+            # if the invoked method exist but something else went wrong, raise the exception 
+            if not regex.match(str(e)):
                 invalidOperationError(False, str(e), cause=e)
-            else:
-                # if the invoked method exist but something else went wrong, raise the exception 
-                raise e
         else:
             return result
     invalidOperationError(False, "Cannot find function: %s" % name, cause=error)
