@@ -502,6 +502,7 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                  sample_size: int = 100,
                  logging: bool = True,
                  inplace: bool = False,
+                 weights_prepack: Optional[bool] = None,
                  q_config=None,
                  **export_kwargs):
         """
@@ -606,6 +607,11 @@ class InferenceOptimizer(BaseInferenceOptimizer):
         :param logging: whether to log detailed information of model conversion, only valid when
                         accelerator='openvino', otherwise will be ignored. Default: ``True``.
         :param inplace: whether to perform inplace optimization. Default: ``False``.
+        :param weights_prepack: Whether to perform weight prepack for convolution and linear to avoid
+                                oneDNN weights reorder. The default value is None. Explicitly setting
+                                this knob overwrites the configuration set by level knob. Only valid
+                                when ``use_ipex=True``, otherwise will be ignored. You can try to
+                                reduce the occupied memory size by setting this parameter to ``False``.
         :param q_config: describes how to quantize a layer or a part of the network
                          by providing settings (observer classes) for activations and weights
                          respectively. Note that QConfig needs to contain observer classes
@@ -634,7 +640,8 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                                                    channels_last=channels_last,
                                                    thread_num=thread_num, inplace=inplace,
                                                    jit_strict=jit_strict,
-                                                   jit_method=jit_method)
+                                                   jit_method=jit_method,
+                                                   weights_prepack=weights_prepack)
                 else:
                     bf16_model = BF16Model(model, channels_last=channels_last,
                                            thread_num=thread_num)
@@ -796,6 +803,7 @@ class InferenceOptimizer(BaseInferenceOptimizer):
               dynamic_axes: Union[bool, dict] = True,
               logging: bool = True,
               inplace: bool = False,
+              weights_prepack: Optional[bool] = None,
               **export_kwargs):
         """
         Trace a torch.nn.Module and convert it into an accelerated module for inference.
@@ -847,6 +855,11 @@ class InferenceOptimizer(BaseInferenceOptimizer):
         :param logging: Whether to log detailed information of model conversion, only valid when
                         accelerator='openvino', otherwise will be ignored. Default: ``True``.
         :param inplace: whether to perform inplace optimization. Default: ``False``.
+        :param weights_prepack: Whether to perform weight prepack for convolution and linear to avoid
+                                oneDNN weights reorder. The default value is None. Explicitly setting
+                                this knob overwrites the configuration set by level knob. Only valid
+                                when ``use_ipex=True``, otherwise will be ignored. You can try to
+                                reduce the occupied memory size by setting this parameter to ``False``.
         :param **export_kwargs: Other extra advanced settings include those be passed to
                                 torch.onnx.export function, only valid when
                                 accelerator='onnxruntime'/'openvino', otherwise
@@ -891,7 +904,8 @@ class InferenceOptimizer(BaseInferenceOptimizer):
             return PytorchIPEXJITModel(model, input_sample=input_sample, use_ipex=use_ipex,
                                        use_jit=use_jit, channels_last=channels_last,
                                        thread_num=thread_num, inplace=inplace,
-                                       jit_strict=jit_strict, jit_method=jit_method)
+                                       jit_strict=jit_strict, jit_method=jit_method,
+                                       weights_prepack=weights_prepack)
         invalidInputError(False, "Accelerator {} is invalid.".format(accelerator))
 
     @staticmethod

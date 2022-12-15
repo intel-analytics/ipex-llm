@@ -209,6 +209,23 @@ class Pytorch1_11:
                                         input_sample=input_sample,
                                         jit_method='scriptttt')
 
+    def test_ipex_jit_inference_strict(self):
+        # test jit + ipex
+        model = InferenceOptimizer.trace(self.model, precision='bf16',
+                                         accelerator="jit",
+                                         use_ipex=True,
+                                         input_sample=self.data_sample,
+                                         weights_prepack=False)
+        with InferenceOptimizer.get_context(model):
+            model(self.data_sample)
+        with tempfile.TemporaryDirectory() as tmp_dir_name:
+            InferenceOptimizer.save(model, tmp_dir_name)
+            new_model = InferenceOptimizer.load(tmp_dir_name)
+        with InferenceOptimizer.get_context(new_model):
+            new_model(self.data_sample)
+            assert new_model.weights_prepack is False
+
+
 TORCH_VERSION_CLS = Pytorch1_11
 
 

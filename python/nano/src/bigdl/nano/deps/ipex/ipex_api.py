@@ -36,7 +36,8 @@ def ipex_device():
 
 def PytorchIPEXJITModel(model, input_sample=None, use_ipex=False,
                         use_jit=False, channels_last=None, thread_num=None,
-                        inplace=False, jit_strict=True, jit_method=None):
+                        inplace=False, jit_strict=True, jit_method=None,
+                        weights_prepack=None):
     '''
     :param model: the model(nn.module) to be transform.
     :param input_sample: torch tensor indicate the data sample to be used
@@ -49,17 +50,22 @@ def PytorchIPEXJITModel(model, input_sample=None, use_ipex=False,
     :param jit_strict: Whether recording your mutable container types.
     :param jit_method: use ``jit.trace`` or ``jit.script`` to
            convert a model to TorchScript.
+    :param weights_prepack: Whether to perform weight prepack for convolution and linear
+           to avoid oneDNN weights reorder. The default value is None. Explicitly setting
+           this knob overwrites the configuration set by level knob. Only valid when
+           ``use_ipex=True``, otherwise will be ignored.
     '''
     from .ipex_inference_model import PytorchIPEXJITModel
     return PytorchIPEXJITModel(model, input_sample=input_sample, use_ipex=use_ipex,
                                use_jit=use_jit, channels_last=channels_last,
                                thread_num=thread_num, inplace=inplace, jit_strict=jit_strict,
-                               jit_method=jit_method)
+                               jit_method=jit_method, weights_prepack=weights_prepack)
 
 
 def PytorchIPEXJITBF16Model(model, input_sample=None, use_ipex=False,
                             use_jit=False, channels_last=None, thread_num=None,
-                            inplace=False, jit_strict=True, jit_method=None):
+                            inplace=False, jit_strict=True, jit_method=None,
+                            weights_prepack=None):
     '''
     :param model: the model(nn.module) to be transform.
     :param input_sample: torch tensor indicate the data sample to be used
@@ -72,12 +78,16 @@ def PytorchIPEXJITBF16Model(model, input_sample=None, use_ipex=False,
     :param jit_strict: Whether recording your mutable container types.
     :param jit_method: use ``jit.trace`` or ``jit.script`` to
            convert a model to TorchScript.
+    :param weights_prepack: Whether to perform weight prepack for convolution and linear
+           to avoid oneDNN weights reorder. The default value is None. Explicitly setting
+           this knob overwrites the configuration set by level knob. Only valid when
+           ``use_ipex=True``, otherwise will be ignored.
     '''
     from .ipex_inference_bf16_model import PytorchIPEXJITBF16Model
     return PytorchIPEXJITBF16Model(model, input_sample=input_sample, use_ipex=use_ipex,
                                    use_jit=use_jit, channels_last=channels_last,
                                    thread_num=thread_num, inplace=inplace, jit_strict=jit_strict,
-                                   jit_method=jit_method)
+                                   jit_method=jit_method, weights_prepack=weights_prepack)
 
 
 def PytorchIPEXQuantizationModel(model, calib_data, q_config=None,
