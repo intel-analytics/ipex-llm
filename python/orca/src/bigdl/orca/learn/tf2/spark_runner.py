@@ -18,6 +18,7 @@ import os
 import tempfile
 import shutil
 import copy
+import collections
 
 import numpy as np
 import tensorflow as tf
@@ -26,7 +27,7 @@ from bigdl.orca.data.utils import partition_get_data_label
 from bigdl.orca.data.file import exists
 from bigdl.orca.learn.utils import save_pkl, duplicate_stdout_stderr_to_file,\
     get_rank, process_tensorboard_in_callbacks, save_model, load_model, \
-    replace_specific_object_from_callbacks
+    replace_specific_object_from_callbacks, _merge_rows
 from bigdl.orca.learn.log_monitor import LogMonitor
 from bigdl.orca.learn.tf2.callbacks import ModelCheckpoint
 from bigdl.dllib.utils.log4Error import *
@@ -49,28 +50,38 @@ class DatasetHandler:
         config['rank'] = self.rank
         config['size'] = self.size
         train_dataset = data_creator(config, config["batch_size"])
-        if isinstance(train_dataset, list) and \
-           all([isinstance(x, dict) for x in train_dataset]):
+        if isinstance(train_dataset, collections.Iterable):
             invalidInputError(steps_per_epoch is not None,
-                              "steps_per_epoch must be provided for xshard")
+                                  "steps_per_epoch must be provided for xshard")
             train_dataset = self._handle_xshards(train_dataset,
                                                  steps=steps_per_epoch * epochs,
                                                  local_batch_size=local_batch_size,
-                                                 shuffle=True)
+                                                 shuffle=True,
+                                                 mode='fit')
+        # if isinstance(train_dataset, list) and \
+        #    all([isinstance(x, dict) for x in train_dataset]):
+        #     invalidInputError(steps_per_epoch is not None,
+        #                       "steps_per_epoch must be provided for xshard")
+        #     train_dataset = self._handle_xshards(train_dataset,
+        #                                          steps=steps_per_epoch * epochs,
+        #                                          local_batch_size=local_batch_size,
+        #                                          shuffle=True)
         else:
             train_dataset = self._handle_sharding(train_dataset)
 
         if validation_data_creator is not None:
             test_dataset = validation_data_creator(config, config["batch_size"])
-            if isinstance(test_dataset, list) and \
-                    all([isinstance(x, dict) for x in test_dataset]):
+            # if isinstance(test_dataset, list) and \
+            #         all([isinstance(x, dict) for x in test_dataset]):
+            if isinstance(test_dataset, collections.Iterable):
                 invalidInputError(validation_steps is not None,
                                   "validation_steps must be provided"
                                   " when use xshards for evaluate")
                 test_dataset = self._handle_xshards(test_dataset,
                                                     steps=validation_steps,
                                                     local_batch_size=local_batch_size,
-                                                    shuffle=False)
+                                                    shuffle=False,
+                                                    mode='fit')
             else:
                 test_dataset = self._handle_sharding(test_dataset)
         else:
@@ -83,19 +94,21 @@ class DatasetHandler:
         config['rank'] = self.rank
         config['size'] = self.size
         dataset = data_creator(config, config["batch_size"])
-        if isinstance(dataset, list) and all([isinstance(x, dict) for x in dataset]):
+        # if isinstance(dataset, list) and all([isinstance(x, dict) for x in dataset]):
+        if isinstance(dataset, collections.Iterable):
             invalidInputError(steps is not None,
                               "steps must be provided for xshard")
             dataset = self._handle_xshards(dataset,
                                            steps=steps,
                                            local_batch_size=local_batch_size,
-                                           shuffle=False)
+                                           shuffle=False,
+                                           mode='evaluate')
         else:
             dataset = self._handle_sharding(dataset)
 
         return dataset
 
-    def _handle_xshards(self, dataset, steps, local_batch_size, shuffle):
+    def _handle_xshards(self, dataset, steps, local_batch_size, shuffle, mode):
         invalidInputError(False, "not implemented")
 
     def _handle_sharding(self, dataset):
@@ -117,17 +130,60 @@ class DatasetHandler:
                           f"invalid backend: {backend}")
 
 
+class TFDistributedDatasetHandler2(DatasetHandler):
+
+    def _handle_xshards(self, dataset, steps, local_batch_size, shuffle, mode):
+        import tensorflow as tf
+
+        # data, label = partition_get_data_label(dataset,
+        #                                        allow_tuple=True,
+        #                                        allow_list=False)
+
+        generator = data_generator(dataset, local_batch_size, mode)
+
+        # def dataset_fn(input_context):
+        #     # dataset = tf.data.Dataset.from_tensor_slices((data, label))
+        #     dataset = tf.data.Dataset.from_generator(generator=generator)
+        #     options = tf.data.Options()
+        #     options.experimental_distribute.auto_shard_policy = \
+        #         tf.data.experimental.AutoShardPolicy.OFF
+        #     dataset = dataset.with_options(options)
+        #     # dataset = dataset.repeat()
+        #     # dataset = dataset.take(steps * local_batch_size)
+        #     if shuffle:
+        #         dataset = dataset.shuffle(min(steps, 10))
+        #     dataset = dataset.batch(local_batch_size)
+        #     return dataset
+        #
+        #
+        # from tensorflow.python.distribute import distribution_strategy_context as ds_context
+        # strategy = ds_context.get_strategy()
+        # dataset = strategy.experimental_distribute_datasets_from_function(dataset_fn)
+        # return dataset
+        return generator
+
+    def _handle_sharding(self, dataset):
+        return dataset
+
+    def _handle_batch_size(self, config):
+        invalidInputError("batch_size" in config, "batch_size must be set in config")
+        local_batch_size = config["batch_size"] // self.size
+        return config, local_batch_size
+
 class TFDistributedDatasetHandler(DatasetHandler):
 
-    def _handle_xshards(self, dataset, steps, local_batch_size, shuffle):
+    def _handle_xshards(self, dataset, steps, local_batch_size, shuffle, mode):
         import tensorflow as tf
 
         data, label = partition_get_data_label(dataset,
                                                allow_tuple=True,
                                                allow_list=False)
 
+        # generator = data_generator(dataset, local_batch_size, mode)
+
         def dataset_fn(input_context):
             dataset = tf.data.Dataset.from_tensor_slices((data, label))
+            # dataset = tf.data.Dataset.from_generator(generator=generator)
             options = tf.data.Options()
             options.experimental_distribute.auto_shard_policy = \
                 tf.data.experimental.AutoShardPolicy.OFF
@@ -135,14 +191,16 @@ class TFDistributedDatasetHandler(DatasetHandler):
             dataset = dataset.repeat()
             dataset = dataset.take(steps * local_batch_size)
             if shuffle:
-                dataset = dataset.shuffle(local_batch_size * min(steps, 10))
+                dataset = dataset.shuffle(min(steps * local_batch_size, 10))
             dataset = dataset.batch(local_batch_size)
             return dataset
+
 
         from tensorflow.python.distribute import distribution_strategy_context as ds_context
         strategy = ds_context.get_strategy()
         dataset = strategy.experimental_distribute_datasets_from_function(dataset_fn)
         return dataset
+        # return generator
 
     def _handle_sharding(self, dataset):
         return dataset
@@ -153,10 +211,41 @@ class TFDistributedDatasetHandler(DatasetHandler):
         return config, local_batch_size
 
 
+class LocalDatasetHandler2(DatasetHandler):
+
+    def _handle_xshards(self, dataset, steps, local_batch_size, shuffle, mode):
+        import tensorflow as tf
+
+        generator = data_generator(dataset, local_batch_size, mode)
+        dataset = tf.data.Dataset.from_generator(generator)
+
+        # data, label = partition_get_data_label(dataset,
+        #                                        allow_tuple=True,
+        #                                        allow_list=False)
+        # dataset = tf.data.Dataset.from_tensor_slices((data, label))
+        # dataset = dataset.repeat()
+        # dataset = dataset.take(steps * local_batch_size)
+        if shuffle:
+            dataset = dataset.shuffle(min(steps, 10))
+        # dataset = dataset.batch(local_batch_size)
+        return dataset
+
+    def _handle_sharding(self, dataset):
+        return dataset
+
+    def _handle_batch_size(self, config):
+        invalidInputError("batch_size" in config, "batch_size must be set in config")
+        return config, config["batch_size"]
+
+
 class LocalDatasetHandler(DatasetHandler):
 
-    def _handle_xshards(self, dataset, steps, local_batch_size, shuffle):
+    def _handle_xshards(self, dataset, steps, local_batch_size, shuffle, mode):
         import tensorflow as tf
+
+        # generator = data_generator(dataset, local_batch_size, mode)
+        # dataset = tf.data.Dataset.from_generator(generator)
+
         data, label = partition_get_data_label(dataset,
                                                allow_tuple=True,
                                                allow_list=False)
@@ -164,7 +253,7 @@ class LocalDatasetHandler(DatasetHandler):
         dataset = dataset.repeat()
         dataset = dataset.take(steps * local_batch_size)
         if shuffle:
-            dataset = dataset.shuffle(local_batch_size * min(steps, 10))
+            dataset = dataset.shuffle(min(steps * local_batch_size, 10))
         dataset = dataset.batch(local_batch_size)
         return dataset
 
@@ -175,7 +264,7 @@ class LocalDatasetHandler(DatasetHandler):
         invalidInputError("batch_size" in config, "batch_size must be set in config")
         return config, config["batch_size"]
 
-def data_generator(iter, steps, shard_size=None, batch_size=32, mode="fit"):
+def data_generator(iter, batch_size=32, mode="fit"):
     from itertools import tee
     original_iter, current_iter = tee(iter)
     current_shard = next(current_iter, None)
@@ -186,23 +275,44 @@ def data_generator(iter, steps, shard_size=None, batch_size=32, mode="fit"):
         x_list = []
         y_list = []
         remain = batch_size
+        if isinstance(current_shard['x'], tuple):
+            # multiple columns
+            x_type = 'tuple'
+        else:
+            x_type = 'numpy array'
+        if isinstance(current_shard['y'], tuple):
+            # multiple columns
+            y_type = 'tuple'
+        else:
+            y_type = 'numpy array'
+        x_list = _init_list(current_shard['x'])
+        y_list = _init_list(current_shard['y'])
         while current_shard is not None:
-            remain = remain - (len(current_shard['x'][0]) - offset)
-            if remain > 0:
+            expected_remain = remain - (len(current_shard['x'][0]) - offset)
+            if expected_remain > 0:
                 # not enough in this shard, copy rest shard and go to next shard
-                x_list.append(
-                    [col_arr[offset:] for col_arr in current_shard['x']])
+                if x_type == 'tuple':
+                    arrays = [col_arr[offset:] for col_arr in current_shard['x']]
+                    for i, arr in enumerate(arrays):
+                        x_list[i].append(arr)
+                else:
+                    x_list[0].append([current_shard['x'][offset:]])
                 if mode != 'predict':
-                    y_list.append(
-                        [col_arr[offset:] for col_arr in current_shard['y']])
+                    if y_type == 'tuple':
+                        arrays = [col_arr[offset:] for col_arr in current_shard['y']]
+                        for i, arr in enumerate(arrays):
+                            y_list[i].append(arr)
+                    else:
+                        y_list[0].append([current_shard['y'][offset:]])
+                remain = expected_remain
                 current_shard = next(current_iter, None)
                 if current_shard is None:
                     # no more data
                     if mode != 'fit':
                         # yield batch for evaluate and predict
-                        x_np = np.concatenate(x_list)
+                        x_np = _merge_rows(x_list)
                         if mode != 'predict':
-                            y_np = np.concatenate(y_list)
+                            y_np = _merge_rows(y_list)
                             yield x_np, y_np
                         else:
                             yield x_np
@@ -214,31 +324,54 @@ def data_generator(iter, steps, shard_size=None, batch_size=32, mode="fit"):
                         continue
                 else:
                     # continue to get rest batch
-                    current_shard = next(current_iter, None)
                     offset = 0
-                    continue
             else:
                 # this shard has enough data
-                x_list.append(
-                    [col_arr[offset:offset + batch_size] for col_arr in current_shard['x']])
-                x_np = np.concatenate(x_list)
+                if x_type == 'tuple':
+                    arrays = [col_arr[offset:offset+remain] for col_arr in current_shard['x']]
+                    for i, arr in enumerate(arrays):
+                        x_list[i].append(arr)
+                else:
+                    x_list[0].append([current_shard['x'][offset:offset+remain]])
+                x_np = _merge_rows(x_list)
                 if mode != 'predict':
-                    y_list.append(
-                        [col_arr[offset:offset + batch_size] for col_arr in current_shard['y']])
-                    y_np = np.concatenate(y_list)
-                offset += batch_size
-                if remain == 0:
-                    # move to next shard
-                    current_shard = next(current_iter, None)
-                    offset = 0
+                    if y_type == 'tuple':
+                        arrays = [col_arr[offset:offset + remain] for col_arr in current_shard['y']]
+                        for i, arr in enumerate(arrays):
+                            y_list[i].append(arr)
+                    else:
+                        y_list[0].append([current_shard['y'][offset:offset + remain]])
+                    y_np = _merge_rows(y_list)
+                offset += remain
+                remain = batch_size
                 if mode != 'predict':
                     yield x_np, y_np
                 else:
                     yield x_np
-                x_list = []
-                y_list = []
-                continue
+                x_list = _init_list(current_shard['x'])
+                y_list = _init_list(current_shard['y'])
+                if expected_remain == 0:
+                    # move to next shard for next batch
+                    current_shard = next(current_iter, None)
+                    offset = 0
+                    if current_shard is None:
+                        # no more data, train from head of iterator
+                        if mode == 'fit':
+                            # loop to head of iterator for train
+                            current_iter = original_iter
+                            current_shard = next(current_iter, None)
+                            continue
         break
+
+def _init_list(features):
+    if isinstance(features, tuple):
+        # multiple columns
+        feature_cols = len(features)
+        feature_list = [[] for l in range(feature_cols)]
+    else:
+        feature_list = [[]]
+    return feature_list
+
 
 class SparkRunner:
     def __init__(self,
@@ -298,8 +431,13 @@ class SparkRunner:
         self.model_dir = model_dir
         self.application_id = application_id
 
-        if self.backend == "tf-distributed":
-            if mode == "fit" or mode == "evaluate":
+        if self.model_creator is None:
+            from pyspark import SparkFiles
+            self.model_load = self.model_load.split("/")[-1]
+            self.model_load = SparkFiles.get(self.model_load)
+        # create model
+        if mode == "fit" or mode == "evaluate":
+            if self.backend == 'tf-distributed':
                 self.setup_distributed(self.cluster)
                 if mode == 'fit':
                     with self.strategy.scope():
@@ -309,10 +447,10 @@ class SparkRunner:
                         else:
                             if self.model_creator is not None:
                                 self.model = self.model_creator(self.config)
+                                if self.model_weights:
+                                    self.model.set_weights(self.model_weights.value)
                             else:
                                 self.model = tf.keras.models.load_model(self.model_load)
-                            if self.model_weights:
-                                self.model.set_weights(self.model_weights.value)
 
                         if not self.model._is_compiled and self.compile_args_creator:
                             self.model.compile(**self.compile_args_creator(config))
@@ -324,13 +462,12 @@ class SparkRunner:
                             self.model = tf.keras.models.load_model(self.model_load)
                         if self.model_weights:
                             self.model.set_weights(self.model_weights.value)
+            else:
+                self.setup_local()
+        else:
+            # create local model for predict
+            self.setup_local()
 
-        if self.model_creator is None:
-            from pyspark import SparkFiles
-            if self.model_load.startswith("hdfs") or self.model_load.startswith("s3"):
-                self.model_load = self.model_load.split("/")[-1]
-            self.model_load = SparkFiles.get(self.model_load)
-        # create model
 
 
     def setup(self):
@@ -339,6 +476,18 @@ class SparkRunner:
         tf.config.threading.set_intra_op_parallelism_threads(self.intra_op_parallelism)
         os.environ["KMP_BLOCKING_TIME"] = self.config.get("KMP_BLOCKING_TIME",
                                                           os.environ.get("KMP_BLOCKING_TIME", "0"))
+
+    def setup_local(self):
+        self.size = 1
+        self.rank = 0
+        if self.model_creator is not None:
+            self.model = self.model_creator(self.config)
+        else:
+            self.model = tf.keras.models.load_model(self.model_load)
+        if self.model_weights:
+            self.model.set_weights(self.model_weights.value)
+        from tensorflow.python.distribute import distribution_strategy_context as ds_context
+        self.strategy = ds_context.get_strategy()
 
     def setup_distributed(self, cluster):
         """
@@ -358,8 +507,6 @@ class SparkRunner:
 
         self.strategy = tf.distribute.experimental.MultiWorkerMirroredStrategy()
 
-        # For use in model.evaluate()
-        self.local_model = None
 
     def distributed_train_func(self, data_creator, config, epochs=1, verbose=1,
                                callbacks=None, initial_epoch=0, validation_data_creator=None,
@@ -414,7 +561,7 @@ class SparkRunner:
             if replaced_log_dir and os.path.exists(replaced_log_dir):
                 shutil.rmtree(replaced_log_dir)
 
-        return (self.model, history)
+        return history
 
     def step(self, data_creator, epochs=1, batch_size=32, verbose=1,
              callbacks=None, validation_data_creator=None, class_weight=None,
@@ -429,7 +576,7 @@ class SparkRunner:
         config["batch_size"] = batch_size
         val_data_creator = validation_data_creator
 
-        self.model, history = self.distributed_train_func(data_creator,
+        history = self.distributed_train_func(data_creator,
                                                      config,
                                                      epochs=epochs,
                                                      verbose=verbose,
@@ -455,21 +602,22 @@ class SparkRunner:
                 save_pkl(model_state, os.path.join(self.model_dir, "state.pkl"))
             else:
                 weights = self.model.get_weights()
-
-            if self.need_to_log_to_driver:
-                LogMonitor.stop_log_monitor(self.log_path, self.logger_thread, self.thread_stop)
+            self._stop_log_monitor()
+            # if self.need_to_log_to_driver:
+            #     LogMonitor.stop_log_monitor(self.log_path, self.logger_thread, self.thread_stop)
             if self.model_dir is not None:
                 return [stats]
             else:
-                return [stats], weights
+                return [stats, weights]
         else:
             temp_dir = tempfile.mkdtemp()
             try:
                 save_model(self.model, os.path.join(temp_dir, "model.h5"))
             finally:
                 shutil.rmtree(temp_dir)
-            if self.need_to_log_to_driver:
-                LogMonitor.stop_log_monitor(self.log_path, self.logger_thread, self.thread_stop)
+                self._stop_log_monitor()
+            # if self.need_to_log_to_driver:
+            #     LogMonitor.stop_log_monitor(self.log_path, self.logger_thread, self.thread_stop)
             return []
 
     def validate(self, data_creator, batch_size=32, verbose=1, sample_weight=None,
@@ -524,7 +672,7 @@ class SparkRunner:
                 for k, v in zip(self.model.metrics_names, results)
             }
         else:
-            stats = {"results": results}
+            stats = {"validation_" + self.model.metrics_names[0]: results}
 
         # clean temporary dir for tensorboard
         if callbacks:
@@ -532,12 +680,14 @@ class SparkRunner:
                 shutil.rmtree(replaced_log_dir)
 
         if self.rank == 0:
-            if self.need_to_log_to_driver:
-                LogMonitor.stop_log_monitor(self.log_path, self.logger_thread, self.thread_stop)
+            self._stop_log_monitor()
+            # if self.need_to_log_to_driver:
+            #     LogMonitor.stop_log_monitor(self.log_path, self.logger_thread, self.thread_stop)
             return [stats]
         else:
-            if self.need_to_log_to_driver:
-                LogMonitor.stop_log_monitor(self.log_path, self.logger_thread, self.thread_stop)
+            self._stop_log_monitor()
+            # if self.need_to_log_to_driver:
+            #     LogMonitor.stop_log_monitor(self.log_path, self.logger_thread, self.thread_stop)
             return []
 
     def predict(self, data_creator, batch_size, verbose, steps, callbacks, data_config):
@@ -546,7 +696,7 @@ class SparkRunner:
             config.update(data_config)
 
         dataset = data_creator(config, batch_size)
-        partition = dataset
+        # partition = dataset
         params = dict(
             batch_size=batch_size,
             verbose=verbose,
@@ -554,23 +704,31 @@ class SparkRunner:
             callbacks=callbacks,
         )
 
-        if self.model_creator is not None:
-            local_model = self.model_creator(self.config)
-        else:
-            local_model = tf.keras.models.load_model(self.model_load)
-        if self.model_weights:
-            local_model.set_weights(self.model_weights.value)
+        # if self.model_creator is not None:
+        #     local_model = self.model_creator(self.config)
+        # else:
+        #     local_model = tf.keras.models.load_model(self.model_load)
+        # if self.model_weights:
+        #     local_model.set_weights(self.model_weights.value)
 
         def predict_fn(shard):
-            y = local_model.predict(shard["x"], **params)
+            y = self.model.predict(shard["x"], **params)
             return {"prediction": y}
+        import collections
+        if isinstance(dataset, collections.Iterable):
+            for shard in dataset:
+                yield predict_fn(shard)
+        # new_partitions = [predict_fn(shard) for shard in partition]
+        # if self.need_to_log_to_driver:
+        #     LogMonitor.stop_log_monitor(self.log_path, self.logger_thread, self.thread_stop)
+        self._stop_log_monitor()
+        # return new_partitions
 
-        new_part = [predict_fn(shard) for shard in partition]
-
-        if self.need_to_log_to_driver:
-            LogMonitor.stop_log_monitor(self.log_path, self.logger_thread, self.thread_stop)
-        return new_part
 
     @property
     def _model_saved_path(self):
         return os.path.join(self.model_dir, "{}_model.h5".format(self.application_id))
+
+    def _stop_log_monitor(self):
+        if self.need_to_log_to_driver:
+            LogMonitor.stop_log_monitor(self.log_path, self.logger_thread, self.thread_stop)

@@ -46,7 +46,7 @@ def compile_args(config):
     args = {
         "optimizer": tf.keras.optimizers.SGD(lr),
         "loss": "mean_squared_error",
-        "metrics": ["mean_squared_error"]
+        # "metrics": ["mean_squared_error"]
     }
     return args
 
@@ -86,7 +86,8 @@ class TestTFEstimator(TestCase):
                               feature_cols=["feature"],
                               label_cols=["label"],
                               validation_data=df,
-                              validation_steps=1)
+                              validation_steps=1,
+                              split_num=2)
 
             print("start saving")
             trainer.save_weights(os.path.join(temp_dir, "cifar10_keras.h5"))

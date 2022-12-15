@@ -18,6 +18,7 @@ import os
 import logging
 import tempfile
 import shutil
+import math
 
 from pyspark.sql.dataframe import DataFrame
 
@@ -106,7 +107,7 @@ class SparkTFEstimator():
             callbacks=None, validation_data=None, class_weight=None, initial_epoch=0,
             steps_per_epoch=None, validation_steps=None, validation_freq=1,
             data_config=None, feature_cols=None,
-            label_cols=None):
+            label_cols=None, split_num=1):
         """
         Train this tensorflow model with train data.
         :param data: train data. It can be XShards, Spark DataFrame or creator function which
@@ -126,21 +127,6 @@ class SparkTFEstimator():
         :return:
         """
         sc = OrcaContext.get_spark_context()
-
-        # Data partition should be equal to num workers.
-        # Repartition Spark DataFrame before converting to SparkXShards.
-        # Repartition on SparkXShards will result in empty partitions.
-        if isinstance(data, DataFrame) or isinstance(data, SparkXShards):
-            if data.rdd.getNumPartitions() != self.num_workers:
-                data = data.repartition(self.num_workers)
-            if validation_data and validation_data.rdd.getNumPartitions() != self.num_workers:
-                validation_data = validation_data.repartition(self.num_workers)
-        data, validation_data = maybe_dataframe_to_xshards(data, validation_data,
-                                                           feature_cols, label_cols,
-                                                           mode="fit",
-                                                           num_workers=self.num_workers,
-                                                           accept_str_col=True,
-                                                           shard_size=batch_size)
 
         # for continuous training
         if self.model_weights:
@@ -165,6 +151,13 @@ class SparkTFEstimator():
             driver_port=self.port
         )
 
+        if steps_per_epoch is not None:
+            quote = steps_per_epoch // split_num
+            reminder = steps_per_epoch % split_num
+        else:
+            quote = None
+            reminder = None
+
         params = dict(
             epochs=epochs,
             batch_size=batch_size,
@@ -178,35 +171,78 @@ class SparkTFEstimator():
             data_config=data_config
         )
 
-        if isinstance(data, SparkXShards):
-            # set train/validation data
-            if data._get_class_name() == 'pandas.core.frame.DataFrame':
-                data, validation_data = process_xshards_of_pandas_dataframe(data,
-                                                                            feature_cols,
-                                                                            label_cols,
-                                                                            validation_data,
-                                                                            "fit")
-            if validation_data is None:
-                def transform_func(iter, init_param, param):
-                    partition_data = list(iter)
-                    param["data_creator"] = make_data_creator(partition_data)
-                    return SparkRunner(**init_param).step(**param)
+        # Data partition should be equal to num workers.
+        # Repartition Spark DataFrame before converting to SparkXShards.
+        # Repartition on SparkXShards will result in empty partitions.
+        if isinstance(data, DataFrame) or isinstance(data, SparkXShards):
+            for i in range(0, split_num):
+                if steps_per_epoch is not None:
+                    if i < reminder:
+                        params['steps_per_epoch'] = quote + 1
+                    else:
+                        params['steps_per_epoch'] = quote
+                if i > 0:
+                    # from second split to train, renews weights
+                    if self.model_weights:
+                        weights = sc.broadcast(self.model_weights)
+                    else:
+                        weights = None
+                    init_params['model_weights'] = weights
+                    init_params['cluster_info'] = self._get_cluster_info(sc)
+                if isinstance(data, DataFrame):
+                    data_slice = data.sample(withReplacement=False, fraction=1/split_num)
+                else:
+                    if data._get_class_name() == 'pandas.core.frame.DataFrame':
+                        data_slice = data.sample(frac=1/split_num, replace=False)
+                    else:
+                        data_slice = SparkXShards(data.rdd.sample(withReplacement=False, fraction=1/split_num))
 
-                res = data.rdd.barrier().mapPartitions(
-                    lambda iter: transform_func(iter, init_params, params)).collect()
-            else:
-                def transform_func(iter, init_param, param):
-                    data_tuple_list = list(iter)
-                    data_list = [x for data_tuple in data_tuple_list for x in data_tuple[0]]
-                    valid_list = [x for data_tuple in data_tuple_list for x in data_tuple[1]]
-                    param["data_creator"] = make_data_creator(data_list)
-                    param["validation_data_creator"] = make_data_creator(valid_list)
-                    return SparkRunner(**init_param).step(**param)
+                if data_slice.rdd.getNumPartitions() != self.num_workers:
+                    data_slice = data_slice.repartition(self.num_workers)
+                if validation_data and validation_data.rdd.getNumPartitions() != self.num_workers:
+                    validation_data = validation_data.repartition(self.num_workers)
+                data_slice, validation_shards = maybe_dataframe_to_xshards(data_slice, validation_data,
+                                                                   feature_cols, label_cols,
+                                                                   mode="fit",
+                                                                   num_workers=self.num_workers,
+                                                                   accept_str_col=True,
+                                                                   shard_size=batch_size
+                                                                   )
 
-                train_rdd = data.rdd.mapPartitions(lambda iter: [list(iter)])
-                val_rdd = validation_data.rdd.mapPartitions(lambda iter: [list(iter)])
-                res = train_rdd.zip(val_rdd).barrier().mapPartitions(
-                    lambda iter: transform_func(iter, init_params, params)).collect()
+                if isinstance(data_slice, SparkXShards):
+                    # set train/validation data
+                    if data_slice._get_class_name() == 'pandas.core.frame.DataFrame':
+                        data, validation_shards = process_xshards_of_pandas_dataframe(data_slice,
+                                                                                    feature_cols,
+                                                                                    label_cols,
+                                                                                    validation_shards,
+                                                                                    "fit")
+
+                    if validation_shards is None:
+                        def transform_func(iter, init_param, param):
+                            partition_data = list(iter)
+                            param["data_creator"] = make_data_creator(partition_data)
+                            # param["data_creator"] = make_data_creator(iter)
+                            return SparkRunner(**init_param).step(**param)
+
+                        res = data_slice.rdd.barrier().mapPartitions(
+                            lambda iter: transform_func(iter, init_params, params)).collect()
+                        result = self._update_weights(res)
+                    else:
+
+                        def transform_func(iter, init_param, param):
+                            data_tuple_list = list(iter)
+                            data_list = [x for data_tuple in data_tuple_list for x in data_tuple[0]]
+                            valid_list = [x for data_tuple in data_tuple_list for x in data_tuple[1]]
+                            param["data_creator"] = make_data_creator(data_list)
+                            param["validation_data_creator"] = make_data_creator(valid_list)
+                            return SparkRunner(**init_param).step(**param)
+
+                        train_rdd = data_slice.rdd.mapPartitions(lambda iter: [list(iter)])
+                        val_rdd = validation_shards.rdd.mapPartitions(lambda iter: [list(iter)])
+                        res = train_rdd.zip(val_rdd).barrier().mapPartitions(
+                                lambda iter: transform_func(iter, init_params, params)).collect()
+                        result = self._update_weights(res)
         else:
             params["data_creator"] = data
             params["validation_data_creator"] = validation_data
@@ -217,23 +253,24 @@ class SparkTFEstimator():
             res = self.workerRDD.barrier().mapPartitions(
                 lambda iter: transform_func(iter, init_params, params)).collect()
 
-        if self.model_dir is not None:
-            result = res
-            try:
-                temp_dir = tempfile.mkdtemp()
-                get_remote_file_to_local(os.path.join(self.model_dir, "state.pkl"),
-                                         os.path.join(temp_dir, "state.pkl"))
-                import pickle
-                with open(os.path.join(temp_dir, "state.pkl"), 'rb') as f:
-                    state = pickle.load(f)
-                    self.model_weights = state['weights']
-            finally:
-                shutil.rmtree(temp_dir)
-        else:
-            result = res[0]
-            self.model_weights = res[1]
+            result = self._update_weights(res)
 
-        return result[0]
+        # if self.model_dir is not None:
+        #     result = res
+        #     try:
+        #         temp_dir = tempfile.mkdtemp()
+        #         get_remote_file_to_local(os.path.join(self.model_dir, "state.pkl"),
+        #                                  os.path.join(temp_dir, "state.pkl"))
+        #         import pickle
+        #         with open(os.path.join(temp_dir, "state.pkl"), 'rb') as f:
+        #             state = pickle.load(f)
+        #             self.model_weights = state['weights']
+        #     finally:
+        #         shutil.rmtree(temp_dir)
+        # else:
+        #     result = res[0]
+        #     self.model_weights = res[1]
+        return result
 
     def evaluate(self, data, batch_size=32, num_steps=None, verbose=1,
                  sample_weight=None, callbacks=None, data_config=None,
@@ -308,6 +345,7 @@ class SparkTFEstimator():
             def transform_func(iter, init_param, param):
                 partition_data = list(iter)
                 param["data_creator"] = make_data_creator(partition_data)
+                # param["data_creator"] = make_data_creator(iter)
                 return SparkRunner(**init_param).validate(**param)
 
             res = data.rdd.barrier().mapPartitions(
@@ -383,9 +421,16 @@ class SparkTFEstimator():
                                               shard_size=batch_size)
 
             def transform_func(iter, init_param, param):
-                partition_data = list(iter)
+                # partition_data = iter
                 # res = combine_in_partition(partition_data)
-                param["data_creator"] = make_data_creator(partition_data)
+                param["data_creator"] = make_data_creator(iter)
+                # runner = SparkRunner(**init_param)
+                # for shard in iter:
+                #     param["data_creator"] = make_data_creator([shard])
+                #     yield runner.predict(**param)
+                # if runner.need_to_log_to_driver:
+                #     from bigdl.orca.learn.log_monitor import LogMonitor
+                #     LogMonitor.stop_log_monitor(runner.log_path, runner.logger_thread, runner.thread_stop)
                 return SparkRunner(**init_param).predict(**param)
 
             pred_shards = SparkXShards(xshards.rdd.mapPartitions(
@@ -562,3 +607,22 @@ class SparkTFEstimator():
         """
         if self.need_to_log_to_driver:
             stop_log_server(self.log_server_thread, self.ip, self.port)
+
+
+    def _update_weights(self, res):
+        if self.model_dir is not None:
+            result = res
+            try:
+                temp_dir = tempfile.mkdtemp()
+                get_remote_file_to_local(os.path.join(self.model_dir, "state.pkl"),
+                                         os.path.join(temp_dir, "state.pkl"))
+                import pickle
+                with open(os.path.join(temp_dir, "state.pkl"), 'rb') as f:
+                    state = pickle.load(f)
+                    self.model_weights = state['weights']
+            finally:
+                shutil.rmtree(temp_dir)
+        else:
+            result = res[0]
+            self.model_weights = res[1]
+        return result
