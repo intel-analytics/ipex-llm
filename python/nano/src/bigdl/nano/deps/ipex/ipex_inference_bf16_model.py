@@ -26,7 +26,7 @@ import torch
 class PytorchIPEXJITBF16Model(PytorchIPEXJITModel):
     def __init__(self, model, input_sample=None, use_ipex=False,
                  use_jit=False, channels_last=None, thread_num=None, from_load=False,
-                 inplace=False, jit_strict=True, jit_method=None):
+                 inplace=False, jit_strict=True, jit_method=None, weights_prepack=None):
         '''
         This is the accelerated model for pytorch and ipex/jit.
         All the external API is based on InferenceOptimizer, so what we have here is
@@ -47,6 +47,10 @@ class PytorchIPEXJITBF16Model(PytorchIPEXJITModel):
         :param jit_strict: Whether recording your mutable container types.
         :param jit_method: use ``jit.trace`` or ``jit.script`` to
                convert a model to TorchScript.
+        :param weights_prepack: Whether to perform weight prepack for convolution and linear
+               to avoid oneDNN weights reorder. The default value is None. Explicitly setting
+               this knob overwrites the configuration set by level knob. Only valid when
+               ``use_ipex=True``, otherwise will be ignored.
         '''
         if use_ipex:
             invalidInputError(
@@ -59,7 +63,7 @@ class PytorchIPEXJITBF16Model(PytorchIPEXJITModel):
                                      dtype=torch.bfloat16, use_jit=use_jit,
                                      channels_last=channels_last, from_load=from_load,
                                      inplace=inplace, jit_strict=jit_strict,
-                                     jit_method=jit_method)
+                                     jit_method=jit_method, weights_prepack=weights_prepack)
         self._nano_context_manager = generate_context_manager(accelerator=None,
                                                               precision="bf16",
                                                               thread_num=thread_num)
@@ -105,4 +109,5 @@ class PytorchIPEXJITBF16Model(PytorchIPEXJITModel):
                                        thread_num=thread_num,
                                        inplace=inplace,
                                        jit_strict=status.get('jit_strict', True),
-                                       jit_method=status.get('jit_method', None))
+                                       jit_method=status.get('jit_method', None),
+                                       weights_prepack=status.get('weights_prepack', None))
