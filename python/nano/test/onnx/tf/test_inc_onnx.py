@@ -64,7 +64,7 @@ class TestONNX(TestCase):
         onnx_preds = onnx_quantized_model.predict(input_examples)
         np.testing.assert_allclose(preds, onnx_preds, rtol=1e-2)
 
-     def test_model_quantize_onnx_with_only_x(self):
+    def test_model_quantize_onnx_with_only_x(self):
         model = ResNet50(weights=None, input_shape=[224, 224, 3], classes=10)
         model = Model(inputs=model.inputs, outputs=model.outputs)
         input_examples = np.random.random((100, 224, 224, 3))
