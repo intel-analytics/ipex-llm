@@ -19,7 +19,6 @@ import types
 import logging
 import tempfile
 import shutil
-import math
 
 from pyspark.sql.dataframe import DataFrame
 
@@ -333,7 +332,6 @@ class SparkTFEstimator():
             def transform_func(iter, init_param, param):
                 partition_data = list(iter)
                 param["data_creator"] = make_data_creator(partition_data)
-                # param["data_creator"] = make_data_creator(iter)
                 return SparkRunner(**init_param).validate(**param)
 
             res = data.rdd.barrier().mapPartitions(
@@ -424,16 +422,7 @@ class SparkTFEstimator():
                                               shard_size=local_batch_size)
 
             def transform_func(iter, init_param, param):
-                # partition_data = iter
-                # res = combine_in_partition(partition_data)
                 param["data_creator"] = make_data_creator(iter)
-                # runner = SparkRunner(**init_param)
-                # for shard in iter:
-                #     param["data_creator"] = make_data_creator([shard])
-                #     yield runner.predict(**param)
-                # if runner.need_to_log_to_driver:
-                #     from bigdl.orca.learn.log_monitor import LogMonitor
-                #     LogMonitor.stop_log_monitor(runner.log_path, runner.logger_thread, runner.thread_stop)
                 return SparkRunner(**init_param).predict(**param)
 
             pred_shards = SparkXShards.lazy(xshards.rdd.mapPartitions(
@@ -623,7 +612,6 @@ class SparkTFEstimator():
         """
         if self.need_to_log_to_driver:
             stop_log_server(self.log_server_thread, self.ip, self.port)
-
 
     def _update_weights(self, res):
         if self.model_dir is not None:

@@ -18,16 +18,14 @@ import os
 import tempfile
 import shutil
 import copy
-import collections
 
-import numpy as np
 import tensorflow as tf
 
 from bigdl.orca.data.utils import partition_get_data_label
 from bigdl.orca.data.file import exists
 from bigdl.orca.learn.utils import save_pkl, duplicate_stdout_stderr_to_file,\
     get_rank, process_tensorboard_in_callbacks, save_model, load_model, \
-    replace_specific_object_from_callbacks, _merge_rows
+    replace_specific_object_from_callbacks
 from bigdl.orca.learn.log_monitor import LogMonitor
 from bigdl.orca.learn.tf2.callbacks import ModelCheckpoint
 from bigdl.dllib.utils.log4Error import *
@@ -68,7 +66,6 @@ class DatasetHandler:
             test_dataset = validation_data_creator(config, config["batch_size"])
             if isinstance(test_dataset, list) and \
                     all([isinstance(x, dict) for x in test_dataset]):
-            # if isinstance(test_dataset, collections.Iterable):
                 invalidInputError(validation_steps is not None,
                                   "validation_steps must be provided"
                                   " when use xshards for evaluate")
@@ -90,6 +87,9 @@ class DatasetHandler:
         config['size'] = self.size
         dataset = data_creator(config, config["batch_size"])
         if isinstance(dataset, list) and all([isinstance(x, dict) for x in dataset]):
+            invalidInputError(steps is not None,
+                              "steps must be provided for xshard")
+
             dataset = self._handle_xshards(dataset,
                                            steps=steps,
                                            local_batch_size=local_batch_size,
@@ -129,6 +129,7 @@ class TFDistributedDatasetHandler(DatasetHandler):
         data, label = partition_get_data_label(dataset,
                                                allow_tuple=True,
                                                allow_list=False)
+
         def dataset_fn(input_context):
             dataset = tf.data.Dataset.from_tensor_slices((data, label))
             options = tf.data.Options()
@@ -138,7 +139,7 @@ class TFDistributedDatasetHandler(DatasetHandler):
             dataset = dataset.repeat()
             dataset = dataset.take(steps * local_batch_size)
             if shuffle:
-                dataset = dataset.shuffle(min(steps * local_batch_size, 10))
+                dataset = dataset.shuffle(local_batch_size * min(steps, 10))
             dataset = dataset.batch(local_batch_size)
             return dataset
 
@@ -174,7 +175,7 @@ class LocalDatasetHandler(DatasetHandler):
         dataset = dataset.repeat()
         dataset = dataset.take(steps * local_batch_size)
         if shuffle:
-            dataset = dataset.shuffle(min(steps * local_batch_size, 10))
+            dataset = dataset.shuffle(local_batch_size * min(steps, 10))
         dataset = dataset.batch(local_batch_size)
         return dataset
 
@@ -484,8 +485,7 @@ class SparkRunner:
                                                      self.size)
         config, local_batch_size = dataset_handler._handle_batch_size(config)
 
-        dataset = data_creator(config, batch_size)
-        # partition = dataset
+        dataset = data_creator(config, local_batch_size)
         params = dict(
             batch_size=local_batch_size,
             verbose=verbose,
@@ -500,10 +500,7 @@ class SparkRunner:
         if isinstance(dataset, collections.Iterable):
             for shard in dataset:
                 yield predict_fn(shard)
-        # new_partitions = [predict_fn(shard) for shard in partition]
         self._stop_log_monitor()
-        # return new_partitions
-
 
     @property
     def _model_saved_path(self):

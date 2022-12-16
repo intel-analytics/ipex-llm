@@ -46,7 +46,7 @@ def compile_args(config):
     args = {
         "optimizer": tf.keras.optimizers.SGD(lr),
         "loss": "mean_squared_error",
-        # "metrics": ["mean_squared_error"]
+        "metrics": ["mean_squared_error"]
     }
     return args
 
