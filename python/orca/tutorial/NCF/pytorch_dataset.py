@@ -93,7 +93,7 @@ def process_users_items(dataset_dir):
     items = pd.read_csv(
         os.path.join(dataset_dir, 'movies.dat'),
         sep="::", header=None, names=['item', 'category'],
-        usecols=[0, 2], dtype={0: np.int32, 1: str})
+        usecols=[0, 2], dtype={0: np.int32, 1: str}, encoding='latin-1')
 
     user_num = users['user'].max() + 1
     item_num = items['item'].max() + 1
