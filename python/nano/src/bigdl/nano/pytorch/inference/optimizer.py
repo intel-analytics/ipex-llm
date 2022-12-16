@@ -161,7 +161,8 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                  logging: bool = False,
                  latency_sample_num: int = 100,
                  includes: Optional[List[str]] = None,
-                 excludes: Optional[List[str]] = None) -> None:
+                 excludes: Optional[List[str]] = None,
+                 output_filename: Optional[str] = None) -> None:
         '''
         This function will give all available inference acceleration methods a try
         and record the latency, accuracy and model instance inside the Optimizer for
@@ -273,6 +274,8 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                will be automatically add to includes.
         :param excludes: (optional) a list of acceleration methods that will be excluded from the
                search. "original" will be ignored in the excludes.
+        :param output_filename: (optional) a string filename is used to specify the file which the
+               optimized table will be writed. The default is None which means don't write to file.
         '''
 
         # check if model is a nn.Module or inherited from a nn.Module
@@ -466,12 +469,17 @@ class InferenceOptimizer(BaseInferenceOptimizer):
 
         self._optimize_result = format_optimize_result(self.optimized_model_dict,
                                                        self._calculate_accuracy)
-        self._optimize_result += "* means we assume the precision of the traced model does "\
-                                 "not change, so we don't recompute accuracy to save time.\n"
+        if self._calculate_accuracy:
+            # only show this line when there is accuracy data
+            self._optimize_result += "* means we assume the accuracy of the traced model does "\
+                "not change, so we don't recompute accuracy to save time.\n"
         # save time cost to self._optimize_result
         time_cost = time.perf_counter() - start_time
         time_cost_str = f"Optimization cost {time_cost:.1f}s in total."
         self._optimize_result += time_cost_str
+        if output_filename is not None:
+            with open(output_filename, "w") as f:
+                f.write(self._optimize_result)
         print(self._optimize_result)
         print("===========================Stop Optimization===========================")
 
@@ -502,6 +510,7 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                  sample_size: int = 100,
                  logging: bool = True,
                  inplace: bool = False,
+                 weights_prepack: Optional[bool] = None,
                  q_config=None,
                  **export_kwargs):
         """
@@ -606,6 +615,12 @@ class InferenceOptimizer(BaseInferenceOptimizer):
         :param logging: whether to log detailed information of model conversion, only valid when
                         accelerator='openvino', otherwise will be ignored. Default: ``True``.
         :param inplace: whether to perform inplace optimization. Default: ``False``.
+        :param weights_prepack: Whether to perform weight prepack for convolution and linear to
+                                avoid oneDNN weights reorder. The default value is None. Explicitly
+                                setting this knob overwrites the configuration set by level knob.
+                                Only valid when ``use_ipex=True``, otherwise will be ignored.
+                                You can try to reduce the occupied memory size by setting this
+                                parameter to ``False``.
         :param q_config: describes how to quantize a layer or a part of the network
                          by providing settings (observer classes) for activations and weights
                          respectively. Note that QConfig needs to contain observer classes
@@ -634,7 +649,8 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                                                    channels_last=channels_last,
                                                    thread_num=thread_num, inplace=inplace,
                                                    jit_strict=jit_strict,
-                                                   jit_method=jit_method)
+                                                   jit_method=jit_method,
+                                                   weights_prepack=weights_prepack)
                 else:
                     bf16_model = BF16Model(model, channels_last=channels_last,
                                            thread_num=thread_num)
@@ -796,6 +812,7 @@ class InferenceOptimizer(BaseInferenceOptimizer):
               dynamic_axes: Union[bool, dict] = True,
               logging: bool = True,
               inplace: bool = False,
+              weights_prepack: Optional[bool] = None,
               **export_kwargs):
         """
         Trace a torch.nn.Module and convert it into an accelerated module for inference.
@@ -847,6 +864,12 @@ class InferenceOptimizer(BaseInferenceOptimizer):
         :param logging: Whether to log detailed information of model conversion, only valid when
                         accelerator='openvino', otherwise will be ignored. Default: ``True``.
         :param inplace: whether to perform inplace optimization. Default: ``False``.
+        :param weights_prepack: Whether to perform weight prepack for convolution and linear to
+                                avoid oneDNN weights reorder. The default value is None. Explicitly
+                                setting this knob overwrites the configuration set by level knob.
+                                Only valid when ``use_ipex=True``, otherwise will be ignored.
+                                You can try to reduce the occupied memory size by setting this
+                                parameter to ``False``.
         :param **export_kwargs: Other extra advanced settings include those be passed to
                                 torch.onnx.export function, only valid when
                                 accelerator='onnxruntime'/'openvino', otherwise
@@ -891,7 +914,8 @@ class InferenceOptimizer(BaseInferenceOptimizer):
             return PytorchIPEXJITModel(model, input_sample=input_sample, use_ipex=use_ipex,
                                        use_jit=use_jit, channels_last=channels_last,
                                        thread_num=thread_num, inplace=inplace,
-                                       jit_strict=jit_strict, jit_method=jit_method)
+                                       jit_strict=jit_strict, jit_method=jit_method,
+                                       weights_prepack=weights_prepack)
         invalidInputError(False, "Accelerator {} is invalid.".format(accelerator))
 
     @staticmethod
