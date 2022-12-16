@@ -86,19 +86,19 @@ function refresh_cmd(){
                     }else if(release=="stable"){
                         cmd="pip install bigdl-nano[tensorflow]==2.1.0";
                     }
-                }else if(version=="tf_28"){
+                }else if(version=="tf2_28"){
                     if (release=="nightly"){
                         cmd="pip install --pre --upgrade bigdl-nano[tensorflow_28,inference]";
                     }else if(release=="stable"){
                         cmd="pip install bigdl-nano[tensorflow]==2.1.0";
                     }
-                }else if(version=="tf_29"){
+                }else if(version=="tf2_29"){
                     if (release=="nightly"){
                         cmd="pip install --pre --upgrade bigdl-nano[tensorflow,inference]";
                     }else if(release=="stable"){
                         cmd="pip install bigdl-nano[tensorflow]==2.1.0";
                     }
-                }else if(version=="tf_210"){
+                }else if(version=="tf2_210"){
                     if (release=="nightly"){
                         cmd="pip install --pre --upgrade bigdl-nano[tensorflow_210,inference]";
                     }else if(release=="stable"){
