@@ -395,12 +395,12 @@ class SparkRunner:
             stats = {k: v[-1] for k, v in history.history.items()}
         if self.rank == 0:
             if self.model_dir is not None:
-                save_model(self.model, self._model_saved_path, save_format="h5")
                 model_state = {
                     "weights": self.model.get_weights(),
                     "optimizer_weights": self.model.optimizer.get_weights()
                 }
                 save_pkl(model_state, os.path.join(self.model_dir, "state.pkl"))
+                save_model(self.model, self._model_saved_path, save_format="h5")
             else:
                 weights = self.model.get_weights()
             self._stop_log_monitor()
@@ -409,11 +409,14 @@ class SparkRunner:
             else:
                 return [stats, weights]
         else:
-            temp_dir = tempfile.mkdtemp()
-            try:
-                save_model(self.model, os.path.join(temp_dir, "model.h5"))
-            finally:
-                shutil.rmtree(temp_dir)
+            if self.model_dir is not None:
+                temp_dir = tempfile.mkdtemp()
+                try:
+                    save_model(self.model, os.path.join(temp_dir, "model.h5"))
+                finally:
+                    shutil.rmtree(temp_dir)
+                    self._stop_log_monitor()
+            else:
                 self._stop_log_monitor()
             return []
 
