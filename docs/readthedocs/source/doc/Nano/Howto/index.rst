@@ -26,6 +26,7 @@ PyTorch
 .. |convert_pytorch_training_torchnano| replace:: How to convert your PyTorch training loop to use ``TorchNano`` for acceleration
 .. _convert_pytorch_training_torchnano: Training/PyTorch/convert_pytorch_training_torchnano.html
 * `How to accelerate a PyTorch application on training workloads through Intel® Extension for PyTorch* <Training/PyTorch/accelerate_pytorch_training_ipex.html>`_
+* `How to accelerate a PyTorch application on training workloads through multiple instances <Training/PyTorch/accelerate_pytorch_training_multi_instance.html>`_
 
 TensorFlow
 ~~~~~~~~~~~~~~~~~~~~~~~~~
