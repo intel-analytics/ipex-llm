@@ -54,6 +54,7 @@ def _get_patch_map():
 def patch_tensorflow(precision='float32'):
     """
     patch_tensorflow is used to patch optimized tensorflow classes to replace original ones.
+
     Meanwhile, set `precision` as global dtype policy.
 
     Optimized classes include:
@@ -86,6 +87,7 @@ def patch_tensorflow(precision='float32'):
 def unpatch_tensorflow(precision='float32'):
     """
     unpatch_tensorflow is used to unpatch optimized tensorflow classes to original ones.
+
     Meanwhile, set `precision` as global dtype policy.
 
     :param precision: str, specify the compute and variable dtypes, select from 'float32' and
