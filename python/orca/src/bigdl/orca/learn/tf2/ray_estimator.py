@@ -437,14 +437,12 @@ class TensorFlow2Estimator(OrcaRayEstimator):
                                                                   data_config)
                 remote_worker_stats.append(worker.validate.remote(**params))
             worker_stats = ray.get(remote_worker_stats)
-            worker_stats = list(itertools.chain.from_iterable(worker_stats))
         else:  # data_creator functions; should return Iter or DataLoader
             params["data_creator"] = data  # type:ignore
             params_list = [params] * self.num_workers
 
             worker_stats = ray.get([w.validate.remote(**params_list[i])
                                     for i, w in enumerate(self.remote_workers)])
-            worker_stats = list(itertools.chain.from_iterable(worker_stats))
         stats = worker_stats[0].copy()
         return stats
 

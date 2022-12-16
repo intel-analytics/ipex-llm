@@ -19,13 +19,13 @@
 import os
 import numpy as np
 import tensorflow as tf
-from tensorflow.keras import layers
+from tensorflow.keras import layers, Model
 from tensorflow.keras.applications import ResNet50
 import tensorflow_datasets as tfds
 
 # Use `Model` and `Sequential` in `bigdl.nano.tf.keras` instead of tensorflow's
 # Use `InferenceOptimizer` for OpenVINO acceleration
-from bigdl.nano.tf.keras import Model, InferenceOptimizer
+from bigdl.nano.tf.keras import InferenceOptimizer
 
 
 def create_datasets(img_size, batch_size):

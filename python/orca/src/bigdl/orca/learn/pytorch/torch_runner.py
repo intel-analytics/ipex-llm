@@ -762,16 +762,21 @@ class TorchRunner(BaseRunner):
             else:
                 checkpoint = self.get_state_dict()
             byte_obj = TorchRunner._state_dict2stream(checkpoint)
-            with fsspec.open(filepath, "wb") as f:
+            file_name = os.path.basename(filepath)
+            temp_dir = tempfile.mkdtemp()
+            temp_path = os.path.join(temp_dir, file_name)
+            with fsspec.open(temp_path, "wb") as f:
                 f.write(byte_obj)
+            from bigdl.orca.data.file import put_local_file_to_remote
+            put_local_file_to_remote(temp_path, filepath)
             self.logger.debug(f"Saved checkpoint: {filepath}")
         return filepath
 
     def remove_checkpoint(self, filepath):
         if self.rank == 0:
-            fs = get_filesystem(filepath)
-            if fs.exists(filepath):
-                fs.rm(filepath, recursive=True)
+            from bigdl.orca.data.file import exists, rmdir
+            if exists(filepath):
+                rmdir(filepath)
                 self.logger.debug(f"Removed checkpoint: {filepath}")
 
     def apply(self, fn):

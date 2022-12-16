@@ -21,7 +21,6 @@ from unittest import TestCase
 import numpy as np
 import pytest
 import tensorflow as tf
-import ray
 
 import bigdl.orca.data.pandas
 from bigdl.dllib.nncontext import init_nncontext
@@ -342,8 +341,9 @@ class TestTFRayEstimator(TestCase):
         trainer.fit(df, epochs=1, batch_size=4, steps_per_epoch=25,
                     feature_cols=["feature"],
                     label_cols=["label"])
-        trainer.evaluate(df, batch_size=4, num_steps=25, feature_cols=["feature"],
-                         label_cols=["label"])
+        stats = trainer.evaluate(df, batch_size=4, num_steps=25, feature_cols=["feature"],
+                                 label_cols=["label"])
+        assert isinstance(stats, dict)
         trainer.predict(df, feature_cols=["feature"]).collect()
 
     def test_dataframe_decimal_input(self):
