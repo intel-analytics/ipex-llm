@@ -593,7 +593,7 @@
                 <dependency>
                     <groupId>com.intel.analytics.zoo</groupId>
                     <artifactId>zoo-core-dist-all</artifactId>
-                    <version>2.2.0-SNAPSHOT</version>
+                    <version>2.2.0</version>
                     <type>jar</type>
                 </dependency>
             </dependencies>
@@ -609,7 +609,7 @@
                 <dependency>
                     <groupId>com.intel.analytics.zoo</groupId>
                     <artifactId>zoo-core-dist-linux64</artifactId>
-                    <version>2.2.0-SNAPSHOT</version>
+                    <version>2.2.0</version>
                     <type>pom</type>
                     <exclusions>
                         <exclusion>
@@ -632,7 +632,7 @@
                 <dependency>
                     <groupId>com.intel.analytics.zoo</groupId>
                     <artifactId>zoo-core-dist-mac</artifactId>
-                    <version>2.2.0-SNAPSHOT</version>
+                    <version>2.2.0</version>
                     <type>pom</type>
                         <exclusions>
                         <exclusion>
@@ -645,12 +645,12 @@
                 <dependency>
                     <groupId>com.intel.analytics.zoo</groupId>
                     <artifactId>zoo-core-mkl-linux</artifactId>
-                    <version>2.2.0-SNAPSHOT</version>
+                    <version>2.2.0</version>
                 </dependency>
                 <dependency>
                     <groupId>com.intel.analytics.zoo</groupId>
                     <artifactId>zoo-core-pmem-java-linux</artifactId>
-                    <version>2.2.0-SNAPSHOT</version>
+                    <version>2.2.0</version>
                 </dependency>
             </dependencies>
         </profile>
