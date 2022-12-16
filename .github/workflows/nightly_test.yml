@@ -555,7 +555,7 @@ jobs:
     - name: set env
       env:
         DEFAULT_IMAGE: '10.239.45.10/arda/intelanalytics/bigdl-ppml-trusted-big-data-ml-scala-occlum'
-        DEFAULT_TAG: 'latest'
+        DEFAULT_TAG: '2.2.0-SNAPSHOT'
       run: |
         echo "TAG=${{ github.event.inputs.tag || env.DEFAULT_TAG }}" >> $GITHUB_ENV
         echo "IMAGE=${{ github.event.inputs.image || env.DEFAULT_IMAGE }}" >> $GITHUB_ENV
