@@ -149,13 +149,6 @@ class InferenceOptimizer(BaseInferenceOptimizer):
         invalidInputError(isinstance(model, Model), "model should be a Keras Model.")
         invalidInputError(direction in ['min', 'max'],
                           "Only support direction 'min', 'max'.")
-        invalidInputError(y is not None or isinstance(x, tf.data.Dataset),
-                          "y can be omitted only when x is a Dataset which returns \
-                              tuples of (inputs, targets)")
-
-        if not isinstance(model, NanoModel):
-            # turn model into NanoModel to obtain trace and quantize method
-            model = NanoModel(inputs=model.inputs, outputs=model.outputs)
 
         # get the available methods whose dep is met
         available_dict: Dict =\
@@ -443,9 +436,6 @@ class InferenceOptimizer(BaseInferenceOptimizer):
         :return:            A TensorflowBaseModel for INC. If there is no model found, return None.
         """
         invalidInputError(approach == 'static', "Only 'static' approach is supported now.")
-        invalidInputError(y is not None or isinstance(x, tf.data.Dataset),
-                          "y can be omitted only when x is a Dataset which returns \
-                              tuples of (inputs, targets)")
         if accelerator is None:
             if isinstance(x, tf.data.Dataset):
                 calib_dataset = x

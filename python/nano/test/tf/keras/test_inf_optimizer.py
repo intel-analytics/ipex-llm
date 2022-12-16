@@ -93,3 +93,18 @@ class TestInferencePipeline(TestCase):
                      latency_sample_num=10,
                      thread_num=8)
         model = opt.get_best_model()
+
+    def test_optimize_model_with_only_x(self):
+        model = ResNet50(weights=None, input_shape=[40, 40, 3], classes=10)
+        model = NanoModel(inputs=model.inputs, outputs=model.outputs)
+
+        train_examples = np.random.random((100, 40, 40, 3))
+        train_labels = np.random.randint(0, 10, size=(100,))
+
+        opt = InferenceOptimizer()
+        opt.optimize(model=model,
+                     x=train_examples,
+                     y=None,
+                     latency_sample_num=10,
+                     thread_num=8)
+        model = opt.get_best_model()
