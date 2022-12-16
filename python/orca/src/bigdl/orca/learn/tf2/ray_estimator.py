@@ -344,8 +344,7 @@ class TensorFlow2Estimator(OrcaRayEstimator):
                  callbacks: Optional[List["Callback"]]=None,
                  data_config: Optional[Dict]=None,
                  feature_cols: Optional[List[str]]=None,
-                 label_cols: Optional[List[str]]=None) -> Union[List[Dict[str, float]],
-                                                                Dict[str, float]]:
+                 label_cols: Optional[List[str]]=None) -> Dict:
         """
         Evaluates the model on the validation data set.
 
