@@ -153,7 +153,7 @@ def patch_cuda(disable_jit: bool = True):
 
     e.g.
         >>> from bigdl.nano.pytorch.patching import patch_cuda
-        >>> unpatch_cuda()  # be sure it is used at the header of the application
+        >>> patch_cuda()  # be sure it is used at the header of the application
         >>> # all other cuda only codes will be avilable for cpu
 
     :param disable_jit: bool, if to disable jit compile. This is a known issue

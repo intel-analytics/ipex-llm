@@ -113,8 +113,8 @@ class TestDispatcherPytorch(TestCase):
 
     def test_patch_fp64(self):
         from bigdl.nano.pytorch.patching import patch_dtype
-        patch_dtype(original_dtype="fp64",
-                    target_dtype="fp32")
+        patch_dtype(from_dtype="fp64",
+                    to_dtype="fp32")
 
         # default dtype
         assert torch.rand(1, 2).dtype == torch.float32

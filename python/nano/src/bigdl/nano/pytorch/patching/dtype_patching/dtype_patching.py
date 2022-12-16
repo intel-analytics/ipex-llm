@@ -45,11 +45,11 @@ STR_TO_DTYPE = {'fp32': torch.float32,
                 'float16': torch.float16}
 
 
-def create_tensor_func(torch_create_tensor_func, original_dtype, target_dtype):
+def create_tensor_func(torch_create_tensor_func, from_dtype, to_dtype):
     def new_create_tensor_func(*args, **kwargs):
         if 'dtype' in kwargs and kwargs['dtype'] is not None:
-            if kwargs['dtype'] == original_dtype:
-                kwargs['dtype'] = target_dtype
+            if kwargs['dtype'] == from_dtype:
+                kwargs['dtype'] = to_dtype
         return torch_create_tensor_func(*args, **kwargs)
     return new_create_tensor_func
 
@@ -63,47 +63,47 @@ def replace_attr(obj, name: str, value):
     setattr(obj, name, value)
 
 
-def patch_dtype(original_dtype: Union[str, torch.dtype] = "fp64",
-                target_dtype: Union[str, torch.dtype] = "fp32"):
+def patch_dtype(from_dtype: Union[str, torch.dtype] = "fp64",
+                to_dtype: Union[str, torch.dtype] = "fp32"):
 
     '''
     patch_dtype is used to change the tensor's dtype in users' application
-    from `original_dtype` to `target_dtype`.
+    from `from_dtype` to `to_dtype`.
 
     e.g.
         >>> from bigdl.nano.pytorch.patching import patch_dtype
-        >>> patch_dtype(original_dtype="fp64", target_dtype="fp32")
+        >>> patch_dtype(from_dtype="fp64", to_dtype="fp32")
         >>> # will replace all tensors that has fp64 precision to fp32.
 
-    :param original_dtype: the tensors' dtype to be replaced. default to "fp64"
-    :param target_dtype: the tensors' dtype to use. default to "fp32"
+    :param from_dtype: the tensors' dtype to be replaced. default to "fp64"
+    :param to_dtype: the tensors' dtype to use. default to "fp32"
     '''
 
-    if isinstance(original_dtype, str):
-        invalidInputError(original_dtype.lower() in STR_TO_DTYPE.keys(),
-                          f"original_dtype should be one of {STR_TO_DTYPE.keys()}, "
-                          f"while get {original_dtype}.")
-        original_dtype = STR_TO_DTYPE[original_dtype.lower()]
+    if isinstance(from_dtype, str):
+        invalidInputError(from_dtype.lower() in STR_TO_DTYPE.keys(),
+                          f"from_dtype should be one of {STR_TO_DTYPE.keys()}, "
+                          f"while get {from_dtype}.")
+        from_dtype = STR_TO_DTYPE[from_dtype.lower()]
 
-    if isinstance(target_dtype, str):
-        invalidInputError(target_dtype.lower() in STR_TO_DTYPE.keys(),
-                          f"target_dtype should be one of {STR_TO_DTYPE.keys()}, "
-                          f"while get {target_dtype}.")
-        target_dtype = STR_TO_DTYPE[target_dtype.lower()]
+    if isinstance(to_dtype, str):
+        invalidInputError(to_dtype.lower() in STR_TO_DTYPE.keys(),
+                          f"to_dtype should be one of {STR_TO_DTYPE.keys()}, "
+                          f"while get {to_dtype}.")
+        to_dtype = STR_TO_DTYPE[to_dtype.lower()]
 
     # set default dtype
-    torch.set_default_dtype(target_dtype)
+    torch.set_default_dtype(to_dtype)
 
     # patch tensor create functions
     for f in CREATE_TENSOR_FUNC:
         try:
             replace_attr(torch, f, create_tensor_func(getattr(torch, f),
-                                                      original_dtype,
-                                                      target_dtype))
+                                                      from_dtype,
+                                                      to_dtype))
         except AttributeError:
             pass
 
-    # patch Tensor.float64
+    # patch Tensor.double
     # TODO: add others
-    if original_dtype == torch.float64:
+    if from_dtype == torch.float64:
         replace_attr(torch.Tensor, "double", np_op_func)
