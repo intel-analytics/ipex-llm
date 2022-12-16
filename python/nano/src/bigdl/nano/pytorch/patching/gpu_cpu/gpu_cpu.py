@@ -146,7 +146,21 @@ def create_tensor_func(torch_create_tensor_func):
     return new_create_tensor_func
 
 
-def patch_cuda(disable_jit=True):
+def patch_cuda(disable_jit: bool = True):
+    '''
+    patch_cuda is used to make users' application that is written for cuda only
+    runnable on a CPU device by one-line patching.
+
+    e.g.
+        >>> from bigdl.nano.pytorch.patching import patch_cuda
+        >>> patch_cuda()  # be sure it is used at the header of the application
+        >>> # all other cuda only codes will be avilable for cpu
+
+    :param disable_jit: bool, if to disable jit compile. This is a known issue
+           for patch_cuda function. jit compile has not been supported for some
+           of the patching. Users may change it to False to check if their application
+           is affected by this issue.
+    '''
     global is_cuda_patched
     if is_cuda_patched:
         return
@@ -185,6 +199,20 @@ def patch_cuda(disable_jit=True):
 
 
 def unpatch_cuda():
+    '''
+    unpatch_cuda is an reverse function to patch_cuda. It will change the application
+    back to be available on cuda.
+
+    e.g.
+        >>> from bigdl.nano.pytorch.patching import unpatch_cuda
+        >>> unpatch_cuda()  # be sure it is used after patch_cuda
+        >>> # all other codes will be avilable for cuda
+
+    :param disable_jit: bool, if to disable jit compile. This is a known issue
+           for patch_cuda function. jit compile has not been supported for some
+           of the patching. Users may change it to False to check if their application
+           is affected by this issue.
+    '''
     global is_cuda_patched
     if not is_cuda_patched:
         return
