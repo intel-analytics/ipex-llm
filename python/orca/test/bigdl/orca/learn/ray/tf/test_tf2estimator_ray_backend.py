@@ -138,9 +138,9 @@ class TestTF2EstimatorTF2Backend(TestCase):
 
         assert orca_estimator.get_model(sample_input={"item": np.array([[1]], dtype=np.float32)})
 
-        dloss = end_eval_stats[0]["validation_loss"] - start_eval_stats[0]["validation_loss"]
-        dmse = (end_eval_stats[0]["validation_mean_squared_error"] -
-                start_eval_stats[0]["validation_mean_squared_error"])
+        dloss = end_eval_stats["validation_loss"] - start_eval_stats["validation_loss"]
+        dmse = (end_eval_stats["validation_mean_squared_error"] -
+                start_eval_stats["validation_mean_squared_error"])
         print(f"dLoss: {dloss}, dMSE: {dmse}")
         assert dloss < 0 and dmse < 0, "training sanity check failed. loss increased!"
 
