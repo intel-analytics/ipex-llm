@@ -11,13 +11,12 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-# ==============================================================================
+#
 
 import tensorflow as tf
 from tensorflow import keras
 from tensorflow.keras import layers
-from bigdl.nano.tf.keras import Sequential, train_step_generator
-import numpy as np
+from bigdl.nano.tf.keras import Sequential, mixedprecision_train_step_generator
 
 
 def test_train_step_generator():
@@ -42,7 +41,5 @@ def test_train_step_generator():
             return loss_value.numpy()
 
     model = Model()
-    x = np.random.random(1000)
-    y = np.random.random(1000)
-    fit = train_step_generator(model.model, model.loss, model.optimizer)
+    fit = mixedprecision_train_step_generator(model.model, model.loss, model.optimizer)
 

@@ -15,11 +15,26 @@
 #
 
 
-def train_step_generator(model, loss, optimizer):
+def mixedprecision_train_step_generator(model, loss, optimizer):
     '''
     Running a customized training loop with mixed precision requires changes
     over running it in float32, especially need to use loss scaling if
     mixed_float16 is used.
+
+    :param model: The model to train.
+    :param loss: tf.keras loss instance.
+    :param optimizer: tf.keras optimizer instance.
+        
+    :return: A training loop function with mixed precision.
+
+    Example:
+        >>> # to set global dtype policy
+        >>> from bigdl.nano.tf import patch_tensorflow
+        >>> patch_tensorflow(precision='mixed_bfloat16')
+        >>> # to generate a training loop with mixed precision
+        >>> fit = mixedprecision_train_step_generator(model, loss, optimizer)
+        >>> # start training
+        >>> fit(x, y)
     '''
     from tensorflow.keras import mixed_precision
     import tensorflow as tf

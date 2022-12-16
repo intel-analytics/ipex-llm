@@ -22,6 +22,11 @@ bigdl.nano.tf.keras
     :members:
     :undoc-members:
 
+.. automodule:: bigdl.nano.tf.keras.mixedprecision_train_step_generator
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
 bigdl.nano.tf.optimizers
 ---------------------------
 .. autoclass:: bigdl.nano.tf.optimizers.SparseAdam
