@@ -96,10 +96,8 @@ class TestInferencePipeline(TestCase):
 
     def test_optimize_model_with_only_x(self):
         model = ResNet50(weights=None, input_shape=[40, 40, 3], classes=10)
-        model = NanoModel(inputs=model.inputs, outputs=model.outputs)
 
         train_examples = np.random.random((100, 40, 40, 3))
-        train_labels = np.random.randint(0, 10, size=(100,))
 
         opt = InferenceOptimizer()
         opt.optimize(model=model,

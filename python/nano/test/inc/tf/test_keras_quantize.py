@@ -66,3 +66,10 @@ class TestModelQuantize(TestCase):
 
         q_model = InferenceOptimizer.quantize(model, x=train_examples, y=train_labels)
         assert q_model(train_examples[0:10]).shape == (10, 10)
+
+    def test_model_quantize_with_only_x(self):
+        model = MobileNetV2(weights=None, input_shape=[40, 40, 3], classes=10)
+        model = Model(inputs=model.inputs, outputs=model.outputs)
+        train_examples = np.random.random((100, 40, 40, 3))
+        q_model = InferenceOptimizer.quantize(model, x=train_examples)
+        assert q_model(train_examples[0:10]).shape == (10, 10)

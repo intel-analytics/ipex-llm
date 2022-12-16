@@ -18,6 +18,7 @@ import os
 import time
 import numpy as np
 import traceback
+from copy import deepcopy
 import tensorflow as tf
 from typing import Dict, Optional, List, Union
 from bigdl.nano.utils.inference.common.base_optimizer import BaseInferenceOptimizer
@@ -436,6 +437,9 @@ class InferenceOptimizer(BaseInferenceOptimizer):
         :return:            A TensorflowBaseModel for INC. If there is no model found, return None.
         """
         invalidInputError(approach == 'static', "Only 'static' approach is supported now.")
+        if not isinstance(x, tf.data.Dataset) and y is None:
+            # fake label to make quantization work
+            y = deepcopy(x)
         if accelerator is None:
             if isinstance(x, tf.data.Dataset):
                 calib_dataset = x

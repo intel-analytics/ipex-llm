@@ -79,3 +79,17 @@ class TestOpenVINO(TestCase):
         preds = model.predict(train_examples)
         openvino_preds = openvino_quantized_model.predict(train_examples)
         np.testing.assert_allclose(preds, openvino_preds, rtol=1e-2)
+
+    def test_model_quantize_openvino_with_only_x(self):
+        model = MobileNetV2(weights=None, input_shape=[40, 40, 3], classes=10)
+        model = Model(inputs=model.inputs, outputs=model.outputs)
+        train_examples = np.random.random((100, 40, 40, 3))
+
+        openvino_quantized_model = InferenceOptimizer.quantize(model,
+                                                               accelerator='openvino',
+                                                               x=train_examples,
+                                                               y=None)
+
+        preds = model.predict(train_examples)
+        openvino_preds = openvino_quantized_model.predict(train_examples)
+        np.testing.assert_allclose(preds, openvino_preds, rtol=1e-2)
