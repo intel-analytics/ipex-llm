@@ -168,7 +168,7 @@ if [ "$SGX_ENABLED" == "true" ] && [ "$DEPLOY_MODE" != "cluster" ]; then
       echo "[INFO] Distributed encrypted file system is enabled"
       bash encrypted-fsd.sh
       echo $sgx_command >> temp_command_file
-      export sgx_command="bash temp_command_file"
+      export sgx_command="bash temp_command_file && rm temp_command_file"
     fi
     ./init.sh
     gramine-sgx bash 2>&1 | tee $LOG_FILE
