@@ -33,3 +33,11 @@ Patch API
     :members:
     :undoc-members:
     :show-inheritance:
+
+.. automodule:: bigdl.nano.pytorch.patching.gpu_cpu.gpu_cpu
+    :members: patch_cuda, unpatch_cuda
+    :show-inheritance:
+
+.. automodule:: bigdl.nano.pytorch.patching.dtype_patching.dtype_patching
+    :members: patch_dtype
+    :show-inheritance:

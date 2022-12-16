@@ -18,6 +18,7 @@ from unittest import TestCase
 import tempfile
 import os
 import pytest
+import torch
 
 from bigdl.nano.utils.log4Error import invalidOperationError
 from bigdl.nano.pytorch.utils import TORCH_VERSION_LESS_1_10
@@ -109,3 +110,18 @@ class TestDispatcherPytorch(TestCase):
 
         cuda_device = torch.device('cuda:0')
         assert cuda_device.type == 'cuda'
+
+    def test_patch_fp64(self):
+        from bigdl.nano.pytorch.patching import patch_dtype
+        patch_dtype(from_dtype="fp64",
+                    to_dtype="fp32")
+
+        # default dtype
+        assert torch.rand(1, 2).dtype == torch.float32
+
+        # patch fp64
+        assert torch.rand(1, 2, dtype=torch.float64).dtype == torch.float32
+
+        # double
+        tensor = torch.rand(1, 2).double()
+        assert tensor.dtype == torch.float32
