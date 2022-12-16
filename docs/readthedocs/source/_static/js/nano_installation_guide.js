@@ -1,6 +1,6 @@
 var inferences=["inferenceyes", "inferenceno"];
 var frameworks=["pytorch", "tensorflow"];
-var versions=["pytorch_110", "pytorch_111", "pytorch_112", "pytorch_113", "tf2_27", "tf2_28", "tf_29", "tf_210"];
+var versions=["pytorch_110", "pytorch_111", "pytorch_112", "pytorch_113", "tf2_27", "tf2_28", "tf2_29", "tf2_210"];
 var releases=["stable", "nightly"];
 
 var inference="inferenceyes";
@@ -46,13 +46,12 @@ function refresh_cmd(){
         enable(inferences);
     }
 
-    if (framework=="pytorch"){
-        document.getElementById("cmd").style.whiteSpace = "normal";
-    }
-    else{
-        document.getElementById('cmd').style.whiteSpace = "nowrap";
-    }
-
+    // if (framework=="pytorch"){
+    //     document.getElementById("cmd").style.whiteSpace = "normal";
+    // }
+    // else{
+    //     document.getElementById('cmd').style.whiteSpace = "nowrap";
+    // }
         if(framework=="pytorch"){
             if(release=="stable"){
                 cmd="pip install bigdl-nano[pytorch]==2.1.0";
@@ -107,7 +106,7 @@ function refresh_cmd(){
                     }
                 }
             }else if(inference=="inferenceno"){
-                if(version=="tf2_270"){
+                if(version=="tf2_27"){
                     if(release=="nightly"){
                         cmd="pip install --pre --upgrade bigdl-nano[tensorflow_27]";
                     }else if(release=="stable"){
