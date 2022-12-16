@@ -24,7 +24,7 @@ def mixedprecision_train_step_generator(model, loss, optimizer):
     :param model: The model to train.
     :param loss: tf.keras loss instance.
     :param optimizer: tf.keras optimizer instance.
-        
+
     :return: A training loop function with mixed precision.
 
     Example:
