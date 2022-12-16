@@ -1191,3 +1191,58 @@ class TSDataset:
             self.best_cycle_length = int(res.max())
 
         return self.best_cycle_length
+
+    def export_jit(self, drop_dt_col=True):
+        """
+        Exporting data processing pipeline to torchscript so that it can be used without
+        Python environment. For example, when you are deploying a trained model in C++
+        and need to process input data, you can call this method to get a torchscript module
+        containing the data processing pipeline and save it in a .pt file when you finish
+        developing the model, when deploying, you can load the torchscript module from .pt
+        file and run the data processing pipeline in C++ using libtorch APIs, and the output
+        tensor can be fed into the trained model for inference.
+
+        Currently only scale and roll are supported, the pipeline is similar to the following code:
+        >>> tsdata.scale(scaler, fit=False)\
+        >>>       .roll(lookback, horizon, is_predict=True)
+        The output tensor has same shape and value as tsdata.to_numpy().
+
+        Currently there are some limitations:
+        1. Please make sure the value of each column can be converted to Pytorch tensor,
+        for example, id "00" is not allowed because str can not be converted to a tensor,
+        you should use integer (0, 1, ..) as id instead of string.
+        2. Some features in tsdataset.scale and tsdataset.roll are unavailable in this pipeline:
+            a. If self.roll_additional_feature is not None, it can't be processed in scale and roll
+            b. id_sensitive, time_enc and label_len parameter is not supported in roll
+
+        :param drop_dtcol: Whether to delete the datetime column. Since datetime value (like
+               "2022-12-12") can't be converted to Pytorch tensor, you can choose different ways
+               to workaround this. If set to True, the datetime column will be deleted, then you
+               also need to skip the datetime column when reading data from data source (like
+               csv files) in deployment environment to keep the same structure as the data 
+               used in development; if set to False, the datetime column will not be deleted, and
+               you need to make sure the datetime colunm can be successfully converted to Pytorch
+               tenor when reading data in deployment environment, for example, you can set each
+               data in datetime column to an int (or other vaild types) since scale and roll doesn't
+               need datetime column so the value can be arbitrary.
+               The value defaults to True.
+
+        :return: The compiled torchscript module
+
+        """
+        from bigdl.chronos.data.utils.export_torchscript import SCALE_JIT_HELPER_MAP
+        import torch
+
+        if drop_dt_col:
+            self.df.drop(columns=self.dt_col, inplace=True)
+
+        id_index = self.df.columns.tolist().index(self.id_col)
+        target_col = _to_list(self.target_col, "target_col", deploy_mode=True)
+        feature_col = _to_list(self.feature_col, "feature_col", deploy_mode=True)
+
+        # index of target col and feature col, will be used in scale and roll
+        target_feature_index = [self.df.columns.tolist().index(i) for i in target_col + feature_col]
+
+        export_class = SCALE_JIT_HELPER_MAP[type(self.scaler)]
+        return torch.jit.script(export_class(self.scaler, self.lookback,
+                                             id_index, target_feature_index))
