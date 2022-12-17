@@ -410,6 +410,10 @@ class SparkRunner:
                 return [stats, weights]
         else:
             if self.model_dir is not None:
+                model_state = {
+                    "weights": self.model.get_weights(),
+                    "optimizer_weights": self.model.optimizer.get_weights()
+                }
                 temp_dir = tempfile.mkdtemp()
                 try:
                     save_model(self.model, os.path.join(temp_dir, "model.h5"))
@@ -417,6 +421,7 @@ class SparkRunner:
                     shutil.rmtree(temp_dir)
                     self._stop_log_monitor()
             else:
+                weights = self.model.get_weights()
                 self._stop_log_monitor()
             return []
 
