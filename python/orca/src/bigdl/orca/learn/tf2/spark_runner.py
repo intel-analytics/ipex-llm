@@ -393,37 +393,65 @@ class SparkRunner:
             stats = {}
         else:
             stats = {k: v[-1] for k, v in history.history.items()}
-        if self.rank == 0:
-            if self.model_dir is not None:
-                model_state = {
-                    "weights": self.model.get_weights(),
-                    "optimizer_weights": self.model.optimizer.get_weights()
-                }
+
+        if self.model_dir is not None:
+            model_state = {
+                "weights": self.model.get_weights(),
+                "optimizer_weights": self.model.optimizer.get_weights()
+            }
+            if self.rank == 0:
+                # only chef save model to destination location
                 save_pkl(model_state, os.path.join(self.model_dir, "state.pkl"))
                 save_model(self.model, self._model_saved_path, save_format="h5")
+                self._stop_log_monitor()
             else:
-                weights = self.model.get_weights()
-            self._stop_log_monitor()
-            if self.model_dir is not None:
-                return [stats]
-            else:
-                return [stats, weights]
-        else:
-            if self.model_dir is not None:
-                model_state = {
-                    "weights": self.model.get_weights(),
-                    "optimizer_weights": self.model.optimizer.get_weights()
-                }
                 temp_dir = tempfile.mkdtemp()
                 try:
                     save_model(self.model, os.path.join(temp_dir, "model.h5"))
                 finally:
                     shutil.rmtree(temp_dir)
                     self._stop_log_monitor()
+        else:
+            weights = self.model.get_weights()
+            self._stop_log_monitor()
+        if self.rank == 0:
+            if self.model_dir is not None:
+                return [stats]
             else:
-                weights = self.model.get_weights()
-                self._stop_log_monitor()
+                return [stats, weights]
+        else:
             return []
+        # if self.rank == 0:
+        #     if self.model_dir is not None:
+        #         model_state = {
+        #             "weights": self.model.get_weights(),
+        #             "optimizer_weights": self.model.optimizer.get_weights()
+        #         }
+        #         save_pkl(model_state, os.path.join(self.model_dir, "state.pkl"))
+        #         save_model(self.model, self._model_saved_path, save_format="h5")
+        #     else:
+        #         weights = self.model.get_weights()
+        #     self._stop_log_monitor()
+        #     if self.model_dir is not None:
+        #         return [stats]
+        #     else:
+        #         return [stats, weights]
+        # else:
+        #     if self.model_dir is not None:
+        #         model_state = {
+        #             "weights": self.model.get_weights(),
+        #             "optimizer_weights": self.model.optimizer.get_weights()
+        #         }
+        #         temp_dir = tempfile.mkdtemp()
+        #         try:
+        #             save_model(self.model, os.path.join(temp_dir, "model.h5"))
+        #         finally:
+        #             shutil.rmtree(temp_dir)
+        #             self._stop_log_monitor()
+        #     else:
+        #         weights = self.model.get_weights()
+        #         self._stop_log_monitor()
+        #     return []
 
     def validate(self, data_creator, batch_size=32, verbose=1, sample_weight=None,
                  steps=None, callbacks=None, data_config=None):
@@ -516,4 +544,5 @@ class SparkRunner:
 
     def _stop_log_monitor(self):
         if self.need_to_log_to_driver:
+            print("stop log monitor")
             LogMonitor.stop_log_monitor(self.log_path, self.logger_thread, self.thread_stop)
