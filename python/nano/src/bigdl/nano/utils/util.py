@@ -146,11 +146,11 @@ class spawn_new_process(object):
             new_throughput_helper = spawn_new_process(throughput_helper)
 
             # this will run in current process
-            duration = throughput_helper(model, x)
+            duration = new_throughput_helper(model, x)
 
             # this will run in a new process with new env var effective
-            duration = throughput_helper(model, x, env_var={"OMP_NUM_THREADS": "1",
-                                                            "LD_PRELOAD": ...})
+            duration = new_throughput_helper(model, x, env_var={"OMP_NUM_THREADS": "1",
+                                                                "LD_PRELOAD": ...})
             ```
         '''
         self.func = func
