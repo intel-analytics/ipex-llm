@@ -9,7 +9,7 @@ concurrency:
 on:
   # Triggers the workflow on pull request events but only for the main branch
   pull_request:
-    branches: [ main ]
+    branches: [ branch-2.2 ]
     paths:
       - 'python/chronos/src/**'
       - 'python/chronos/test/**'
