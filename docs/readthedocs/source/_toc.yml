@@ -113,6 +113,7 @@ subtrees:
                   - file: doc/Nano/Howto/Training/PyTorch/use_nano_decorator_pytorch_training
                   - file: doc/Nano/Howto/Training/PyTorch/accelerate_pytorch_training_ipex
                   - file: doc/Nano/Howto/Training/PyTorch/accelerate_pytorch_training_multi_instance
+                  - file: doc/Nano/Howto/Training/PyTorch/accelerate_pytorch_training_bf16
                   - file: doc/Nano/Howto/Training/TensorFlow/accelerate_tensorflow_training_multi_instance
                   - file: doc/Nano/Howto/Training/TensorFlow/tensorflow_training_embedding_sparseadam
                   - file: doc/Nano/Howto/Training/General/choose_num_processes_training
