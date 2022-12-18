@@ -130,6 +130,29 @@ class _append_return_to_pipe(object):
 
 class spawn_new_process(object):
     def __init__(self, func):
+        '''
+        This class is to decorate on another function where you want to run in a new process
+        with brand new environment variables (e.g. OMP/KMP, LD_PRELOAD, ...)
+        an example to use this is
+            ```python
+            def throughput_helper(model, x):
+                st = time.time()
+                for _ in range(100):
+                    model(x)
+                return time.time() - st
+
+            # make this wrapper
+            # note: please name the new function a new func name.
+            new_throughput_helper = spawn_new_process(throughput_helper)
+
+            # this will run in current process
+            duration = throughput_helper(model, x)
+
+            # this will run in a new process with new env var effective
+            duration = throughput_helper(model, x, env_var={"OMP_NUM_THREADS": "1",
+                                                            "LD_PRELOAD": ...})
+            ```
+        '''
         self.func = func
 
     def __call__(self, *args, **kwargs):
