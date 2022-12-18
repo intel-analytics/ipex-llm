@@ -5,7 +5,7 @@ on:
   schedule:
     - cron: '30 15 * * *' # GMT time, 15:30 GMT == 23:30 China
   pull_request:
-    branches: [ main ]
+    branches: [ branch-2.2 ]
     paths:
       - '.github/workflows/chronos-nb-python-2.4-py37.yml'
   # Allows you to run this workflow manually from the Actions tab

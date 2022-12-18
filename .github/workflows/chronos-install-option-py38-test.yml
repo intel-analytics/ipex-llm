@@ -9,7 +9,7 @@ concurrency:
 on:
   # Triggers the workflow on pull request events but only for the main branch
   pull_request:
-    branches: [ main ]
+    branches: [ branch-2.2 ]
     paths:
       - '.github/workflows/chronos-install-option-py38-test.yml'
   # Allows you to run this workflow manually from the Actions tab

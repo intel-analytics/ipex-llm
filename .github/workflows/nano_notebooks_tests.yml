@@ -14,7 +14,7 @@ on:
       - 'python/nano/**'
       - '.github/workflows/nano_notebooks_tests.yml'
   pull_request:
-    branches: [ main ]
+    branches: [ branch-2.2 ]
     paths:
       - 'python/nano/**'
       - '.github/workflows/nano_notebooks_tests.yml'
