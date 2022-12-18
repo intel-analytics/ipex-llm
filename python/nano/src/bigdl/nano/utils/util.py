@@ -14,9 +14,14 @@
 # limitations under the License.
 #
 
+import os
 import warnings
 from functools import wraps
 import cpuinfo
+from bigdl.nano.utils.log4Error import invalidInputError
+
+from multiprocessing import Process
+import multiprocessing as mp
 
 
 def deprecated(func_name=None, message=""):
@@ -112,3 +117,55 @@ class CPUInfo():
     @property
     def has_avx512(self):
         return self._avx512
+
+
+class _append_return_to_pipe(object):
+    def __init__(self, func):
+        self.func = func
+
+    def __call__(self, queue, *args, **kwargs):
+        res = self.func(*args, **kwargs)
+        queue.put(res)
+
+
+class spawn_new_process(object):
+    def __init__(self, func):
+        self.func = func
+
+    def __call__(self, *args, **kwargs):
+        if "env_var" in kwargs:
+            # check env_var should be a dict
+            invalidInputError(isinstance(kwargs['env_var'], dict),
+                              "env_var should be a dict")
+
+            # prepare
+            # 1. save the original env vars
+            # 2. set new ones
+            # 3. change the backend of multiprocessing from fork to spawn
+            # 4. delete "env_var" from kwargs
+            old_env_var = {}
+            for key, value in kwargs['env_var'].items():
+                old_env_var[key] = os.environ.get(key, "")
+                os.environ[key] = value
+            try:
+                mp.set_start_method('spawn')
+            except Exception:
+                pass
+            del kwargs["env_var"]
+
+            # new process
+            # block until return
+            q = mp.Queue()
+            new_func = _append_return_to_pipe(self.func)
+            p = Process(target=new_func, args=(q,) + args, kwargs=kwargs)
+            p.start()
+            return_val = q.get()
+            p.join()
+
+            # recover
+            for key, value in old_env_var.items():
+                os.environ[key] = value
+
+            return return_val
+        else:
+            return self.func(*args, **kwargs)
