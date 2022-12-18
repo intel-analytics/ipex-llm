@@ -27,6 +27,7 @@ PyTorch
 .. _convert_pytorch_training_torchnano: Training/PyTorch/convert_pytorch_training_torchnano.html
 * `How to accelerate a PyTorch application on training workloads through Intel® Extension for PyTorch* <Training/PyTorch/accelerate_pytorch_training_ipex.html>`_
 * `How to accelerate a PyTorch application on training workloads through multiple instances <Training/PyTorch/accelerate_pytorch_training_multi_instance.html>`_
+* `How to use the channels last memory format in your PyTorch application for training <Training/PyTorch/pytorch_training_channels_last.html>`_
 * `How to conduct BFloat16 Mixed Precision training in your PyTorch application <Training/PyTorch/accelerate_pytorch_training_bf16.html>`_
 
 TensorFlow
