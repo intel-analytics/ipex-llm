@@ -141,5 +141,6 @@ def test_multi_save():
     checkpoint = load("checkpoint.pt", ehsm_ip, ehsm_port, encrypted_primary_key_path, encrypted_data_key_path)
     assert checkpoint['epoch'] == 5
     assert checkpoint['loss'] == 1.842
-    assert model.state_dict() == checkpoint['model_state_dict']
     assert optimizer.state_dict() == checkpoint['optimizer_state_dict']
+    for param_tensor in model.state_dict():
+        assert model.state_dict()[param_tensor] == checkpoint['optimizer_state_dict'][param_tensor]
