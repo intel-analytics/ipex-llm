@@ -30,6 +30,7 @@ class InferenceUtils:
                  y: Union[tf.Tensor, np.ndarray] = None,
                  precision: str = 'int8',
                  accelerator: Optional[str] = None,
+                 input_spec=None,
                  metric: Optional[Metric] = None,
                  accuracy_criterion: Optional[dict] = None,
                  approach: str = 'static',
@@ -68,6 +69,9 @@ class InferenceUtils:
                                 supported type: 'int8', defaults to 'int8'.
         :param accelerator:     Use accelerator 'None', 'onnxruntime', 'openvino', defaults to None.
                                 None means staying in tensorflow.
+        :param input_spec: A (tuple or list of) tf.TensorSpec or numpy array defining the
+                           shape/dtype of the input when using 'onnxruntime' accelerator.
+                           It will be ignored if accelerator is 'openvino'.
         :param metric:          A tensorflow.keras.metrics.Metric object for evaluation.
         :param accuracy_criterion:  Tolerable accuracy drop.
                                     accuracy_criterion = {'relative': 0.1, 'higher_is_better': True}
@@ -124,6 +128,7 @@ class InferenceUtils:
             y=y,
             precision=precision,
             accelerator=accelerator,
+            input_spec=input_spec,
             metric=metric,
             accuracy_criterion=accuracy_criterion,
             approach=approach,
