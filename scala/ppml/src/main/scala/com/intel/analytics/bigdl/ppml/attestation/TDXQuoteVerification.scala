@@ -36,7 +36,8 @@ object TdxQuoteVerification {
 
         val logger = LogManager.getLogger(getClass)
         case class CmdParams(quotePath: String = "")
-        val cmdParser: OptionParser[CmdParams]  = new OptionParser[CmdParams]("PPML Quote Verification Cmd tool") {
+        val cmdParser: OptionParser[CmdParams] = new 
+            OptionParser[CmdParams]("PPML Quote Verification Cmd tool") {
             opt[String]('q', "quotePath")
               .text("quotePath")
               .action((x, c) => c.copy(quotePath = x))

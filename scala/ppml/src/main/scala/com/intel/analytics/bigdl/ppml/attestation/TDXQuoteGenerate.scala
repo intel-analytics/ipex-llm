@@ -31,7 +31,8 @@ object TdxQuoteGenerate {
 
         val logger = LogManager.getLogger(getClass)
         case class CmdParams(userReport: String = "test")
-        val cmdParser: OptionParser[CmdParams]  = new OptionParser[CmdParams]("PPML Quote Verification Cmd tool") {
+        val cmdParser: OptionParser[CmdParams] = new 
+            OptionParser[CmdParams]("PPML Quote Verification Cmd tool") {
             opt[String]('r', "userReport")
               .text("userReport")
               .action((x, c) => c.copy(userReport = x))
