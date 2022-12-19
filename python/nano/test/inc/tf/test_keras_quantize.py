@@ -80,8 +80,14 @@ class TestModelQuantize(TestCase):
         q_model = InferenceOptimizer.quantize(model, x=train_examples)
         assert q_model(train_examples[0:10]).shape == (10, 10)
 
-        # test dataset with only x
+        # test dataset with only x (from_tensor_slices)
         train_examples = np.random.random((100, 40, 40, 3))
         train_dataset = tf.data.Dataset.from_tensor_slices(train_examples)
         q_model = InferenceOptimizer.quantize(model, x=train_examples)
         assert q_model(train_examples[0:10]).shape == (10, 10)
+
+        # test dataset with only x (from_tensor)
+        train_examples = np.random.random((1, 40, 40, 3))
+        train_dataset = tf.data.Dataset.from_tensors(train_examples)
+        q_model = InferenceOptimizer.quantize(model, x=train_examples)
+        assert q_model(train_examples).shape == (1, 10)

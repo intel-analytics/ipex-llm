@@ -178,8 +178,8 @@ class InferenceOptimizer(BaseInferenceOptimizer):
         if isinstance(x, Dataset):
             batched_training_dataset = x.batch(batch_size)
             input_sample = next(iter(batched_training_dataset))
-            # TODO: how to obtain input from output of training_dataset
-            input_sample = input_sample[:-1]
+            if isinstance(input_sample, (list, tuple)) and len(input_sample) > 1:
+                input_sample = input_sample[:-1]
         else:
             input_sample = tf.convert_to_tensor(x[:batch_size])
 
@@ -439,13 +439,13 @@ class InferenceOptimizer(BaseInferenceOptimizer):
         if not isinstance(x, tf.data.Dataset) and y is None:
             # fake label to make quantization work
             y = range(len(x))
-        # for TensorDataset
-        from tensorflow.python.data.ops.dataset_ops import TensorDataset, TensorSliceDataset
-        if isinstance(x, (TensorDataset, TensorSliceDataset)):
-            if len(x._tensors) == 1:
-                x = x._tensors[0]
+        if isinstance(x, tf.data.Dataset):
+            batch = next(iter(x))
+            if isinstance(batch, tf.Tensor) or isinstance(x, tuple) and len(batch) == 1:
+                # fake label to make quantization work
                 y = range(len(x))
-                x = tf.data.Dataset.from_tensor_slices((x, y))
+                y = tf.data.Dataset.from_tensor_slices(y)
+                x = tf.data.Dataset.zip((x, y))
         if accelerator is None:
             if isinstance(x, tf.data.Dataset):
                 calib_dataset = x
