@@ -15,18 +15,14 @@
 
 from unittest import TestCase
 import tensorflow as tf
-from tensorflow.keras import Model
-from bigdl.nano.tf.keras import Sequential
 from bigdl.nano.tf.keras import InferenceOptimizer
 import numpy as np
-from bigdl.nano.tf.keras import Model as NanoModel
 from tensorflow.keras.applications.resnet import ResNet50
 
 
 class TestInferencePipeline(TestCase):
     def test_optimize_nano_model_without_accuracy(self):
         model = ResNet50(weights=None, input_shape=[40, 40, 3], classes=10)
-        model = NanoModel(inputs=model.inputs, outputs=model.outputs)
         # prepare dataset
         train_examples = np.random.random((100, 40, 40, 3))
         train_labels = np.random.randint(0, 10, size=(100,))
@@ -54,7 +50,6 @@ class TestInferencePipeline(TestCase):
 
     def test_optimize_nano_model_without_accuracy_large_batch(self):
         model = ResNet50(weights=None, input_shape=[40, 40, 3], classes=10)
-        model = NanoModel(inputs=model.inputs, outputs=model.outputs)
         # prepare dataset
         train_examples = np.random.random((100, 40, 40, 3))
         train_labels = np.random.randint(0, 10, size=(100,))
@@ -69,7 +64,6 @@ class TestInferencePipeline(TestCase):
 
     def test_optimize_model_with_accuracy(self):
         model = ResNet50(weights=None, input_shape=[40, 40, 3], classes=10)
-        model = NanoModel(inputs=model.inputs, outputs=model.outputs)
         # prepare dataset
         train_examples = np.random.random((100, 40, 40, 3))
         train_labels = np.random.randint(0, 10, size=(100,))
@@ -88,7 +82,6 @@ class TestInferencePipeline(TestCase):
 
     def test_optimize_model_without_dataset(self):
         model = ResNet50(weights=None, input_shape=[40, 40, 3], classes=10)
-        model = NanoModel(inputs=model.inputs, outputs=model.outputs)
 
         train_examples = np.random.random((100, 40, 40, 3))
         train_labels = np.random.randint(0, 10, size=(100,))

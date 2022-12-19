@@ -17,15 +17,14 @@ from typing import Optional, List, Union
 import numpy as np
 import tensorflow as tf
 from tensorflow.keras.metrics import Metric
-from bigdl.nano.deps.neural_compressor.inc_api import quantize as inc_quantzie
-from bigdl.nano.utils.log4Error import invalidInputError
-from bigdl.nano.deps.openvino.openvino_api import KerasOpenVINOModel
-from bigdl.nano.deps.onnxruntime.onnxruntime_api import KerasONNXRuntimeModel
+from bigdl.nano.utils import deprecated
 
 
 class InferenceUtils:
     """A mixedin class for nano keras Sequential and Model, adding more functions for Inference."""
 
+    @deprecated(func_name="model.quantize",
+                message="Please use `bigdl.nano.tf.keras.InferenceOptimizer.quantize` instead.")
     def quantize(self,
                  x: Union[tf.Tensor, np.ndarray, tf.data.Dataset],
                  y: Union[tf.Tensor, np.ndarray] = None,
@@ -117,87 +116,34 @@ class InferenceUtils:
                         accelerator='openvino', otherwise will be ignored. Default: ``True``.
         :return:            A TensorflowBaseModel for INC. If there is no model found, return None.
         """
-        invalidInputError(approach == 'static', "Only 'static' approach is supported now.")
-        invalidInputError(y is not None or isinstance(x, tf.data.Dataset),
-                          "y can be omitted only when x is a Dataset which returns \
-                              tuples of (inputs, targets)")
-        if accelerator is None:
-            if isinstance(x, tf.data.Dataset):
-                calib_dataset = x
-            else:
-                calib_dataset = tf.data.Dataset.from_tensor_slices((x, y))
-            if batch:
-                calib_dataset = calib_dataset.batch(batch)
-            return inc_quantzie(self, dataloader=calib_dataset,
-                                metric=metric,
-                                framework='tensorflow',
-                                conf=conf,
-                                approach=approach,
-                                tuning_strategy=tuning_strategy,
-                                accuracy_criterion=accuracy_criterion,
-                                timeout=timeout,
-                                max_trials=max_trials,
-                                inputs=inputs,
-                                outputs=outputs)
-        elif accelerator == 'openvino':
-            from bigdl.nano.deps.openvino.tf.model import KerasOpenVINOModel    # type: ignore
-            if isinstance(self, KerasOpenVINOModel):    # type: ignore
-                openvino_model = self
-            else:
-                openvino_model = self.trace(accelerator='openvino',
-                                            thread_num=thread_num,
-                                            logging=logging,
-                                            openvino_config=openvino_config)
-            if metric:
-                if not isinstance(accuracy_criterion, dict):
-                    accuracy_criterion = {'relative': 0.99, 'higher_is_better': True}
-                drop_type = 'relative' if 'relative' in accuracy_criterion else 'absolute'
-                higher_is_better = accuracy_criterion.get('higher_is_better', None)
-                maximal_drop = accuracy_criterion.get(drop_type, None)
-            else:
-                drop_type, higher_is_better, maximal_drop = None, None, None
-            return openvino_model.pot(x=x,  # type: ignore
-                                      y=y,
-                                      metric=metric,
-                                      higher_better=higher_is_better,
-                                      drop_type=drop_type,
-                                      maximal_drop=maximal_drop,
-                                      max_iter_num=max_trials,
-                                      sample_size=sample_size,
-                                      config=openvino_config,
-                                      thread_num=thread_num)
-        elif accelerator == 'onnxruntime':
-            # convert tensorflow model to onnx model
-            from bigdl.nano.deps.onnxruntime.tensorflow.tensorflow_onnxruntime_model \
-                import KerasONNXRuntimeModel
-            if isinstance(self, KerasONNXRuntimeModel):     # type: ignore
-                onnx_model = self
-            else:
-                onnx_model = self.trace(accelerator='onnxruntime', thread_num=thread_num)
+        from bigdl.nano.tf.keras import InferenceOptimizer
 
-            # trace onnx model
-            method_map = {
-                'qlinear': 'onnxrt_qlinearops',
-                'integer': 'onnxrt_integerops',
-                None: 'onnxrt_qlinearops'  # default
-            }
-            framework = method_map.get(method, None)
-            return inc_quantzie(onnx_model, dataloader=(x, y),
-                                metric=metric,
-                                framework=framework,
-                                conf=conf,
-                                approach=approach,
-                                tuning_strategy=tuning_strategy,
-                                accuracy_criterion=accuracy_criterion,
-                                timeout=timeout,
-                                max_trials=max_trials,
-                                inputs=inputs,
-                                outputs=outputs,
-                                onnx_option='tensorflow',
-                                onnxruntime_session_options=onnxruntime_session_options)
-        else:
-            invalidInputError(False, "Accelerator {} is invalid.".format(accelerator))
+        return InferenceOptimizer.quantize(
+            model=self,
+            x=x,
+            y=y,
+            precision=precision,
+            accelerator=accelerator,
+            metric=metric,
+            accuracy_criterion=accuracy_criterion,
+            approach=approach,
+            method=method,
+            conf=conf,
+            tuning_strategy=tuning_strategy,
+            timeout=timeout,
+            max_trials=max_trials,
+            batch=batch,
+            thread_num=thread_num,
+            inputs=inputs,
+            outputs=outputs,
+            sample_size=sample_size,
+            onnxruntime_session_options=onnxruntime_session_options,
+            openvino_config=openvino_config,
+            logging=logging
+        )
 
+    @deprecated(func_name="model.trace",
+                message="Please use `bigdl.nano.tf.keras.InferenceOptimizer.trace` instead.")
     def trace(self,
               accelerator: Optional[str] = None,
               input_spec=None,
@@ -224,20 +170,14 @@ class InferenceUtils:
                         accelerator='openvino', otherwise will be ignored. Default: ``True``.
         :return: Model with different acceleration(OpenVINO/ONNX Runtime).
         """
-        if accelerator == 'openvino':
-            final_openvino_option = {"INFERENCE_PRECISION_HINT": "f32"}
-            if openvino_config is not None:
-                final_openvino_option.update(openvino_config)
-            return KerasOpenVINOModel(self,
-                                      thread_num=thread_num,
-                                      config=final_openvino_option,
-                                      logging=logging)
-        elif accelerator == 'onnxruntime':
-            if onnxruntime_session_options is None:
-                import onnxruntime
-                onnxruntime_session_options = onnxruntime.SessionOptions()
-                if thread_num is not None:
-                    onnxruntime_session_options.intra_op_num_threads = thread_num
-                    onnxruntime_session_options.inter_op_num_threads = thread_num
-            return KerasONNXRuntimeModel(self, input_spec, onnxruntime_session_options)
-        return self
+        from bigdl.nano.tf.keras import InferenceOptimizer
+
+        return InferenceOptimizer.trace(
+            model=self,
+            accelerator=accelerator,
+            input_spec=input_spec,
+            thread_num=thread_num,
+            onnxruntime_session_options=onnxruntime_session_options,
+            openvino_config=openvino_config,
+            logging=logging
+        )

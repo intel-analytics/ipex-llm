@@ -41,7 +41,6 @@ class BF16Model(AcceleratedLightningModule):
         :param channels_last: if set model and data to be channels-last mode.
         :param thread_num: the thread num allocated for this model.
         """
-        model.eval()
         super().__init__(model)
         self._bf16_check()
         self.model = model  # use mixed precision instead of complete precision
@@ -90,6 +89,17 @@ class BF16Model(AcceleratedLightningModule):
         elif 'avx512_core_bf16' in dnnl_log:
             max_bf16_isa = "AVX512"
         return max_bf16_isa
+
+    def __getattr__(self, name: str):
+        # the search order is:
+        # 1. current instance, like channels_last will be found at this place
+        # 2. super class, like model will be found at this place
+        # 3. original model, like additional attributes of original model
+        #    will be found at this place
+        try:
+            return super().__getattr__(name)
+        except AttributeError:
+            return getattr(self.model, name)
 
     def on_forward_start(self, inputs):
         return inputs
@@ -167,8 +177,10 @@ class BF16Model(AcceleratedLightningModule):
         state_dict = torch.load(checkpoint_path)
         model.eval()
         model.load_state_dict(state_dict)
-        thread_num = None
-        if status["thread_num"] is not None and status['thread_num'] != {}:
+        thread_num = status.get('thread_num', None)
+        if thread_num == {}:
+            thread_num = None
+        if thread_num is not None:
             thread_num = int(status['thread_num'])
         return BF16Model(model, channels_last=status['channels_last'],
                          thread_num=thread_num)

@@ -16,3 +16,9 @@
 
 
 from .mmcv_ray_estimator import MMCVRayEstimator
+from .mmcv_ray_runner import HDFSBackend
+from mmcv import FileClient
+
+
+# register hdfs backend to support save ckpt to hdfs for mmcv.
+FileClient.register_backend('hdfs_backend', HDFSBackend, prefixes="hdfs")

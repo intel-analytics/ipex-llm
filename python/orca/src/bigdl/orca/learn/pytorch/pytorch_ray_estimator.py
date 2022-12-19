@@ -14,11 +14,11 @@
 # limitations under the License.
 #
 
-import io
 import types
-import torch
 import copy
+import logging
 
+from bigdl.orca import OrcaContext
 from bigdl.orca.data.ray_xshards import RayXShards
 from bigdl.orca.learn.pytorch.training_operator import TrainingOperator
 from bigdl.orca.learn.pytorch.pytorch_ray_worker import PytorchRayWorker
@@ -26,12 +26,25 @@ from bigdl.orca.learn.utils import maybe_dataframe_to_xshards, dataframe_to_xsha
     convert_predict_xshards_to_dataframe, update_predict_xshards, \
     process_xshards_of_pandas_dataframe, reload_dataloader_creator
 from bigdl.orca.ray import OrcaRayContext
-from bigdl.orca.learn.pytorch.core import BaseRayEstimator
-from bigdl.orca.data.file import enable_multi_fs_save, enable_multi_fs_load
-from bigdl.orca.learn.pytorch.utils import find_free_port, process_stats, check_for_failure
+from bigdl.orca.learn.pytorch.core.base_ray_estimator import BaseRayEstimator
+from bigdl.orca.learn.pytorch.utils import process_stats, check_for_failure
 
 import ray
-from bigdl.dllib.utils.log4Error import *
+from bigdl.dllib.utils.log4Error import invalidInputError
+
+from typing import TYPE_CHECKING, Union, Optional, Callable, Dict, List, Type
+if TYPE_CHECKING:
+    from torch.nn import Module
+    from torch.optim import Optimizer
+    from bigdl.orca.learn.metrics import Metric
+    from torch.nn.modules.loss import _Loss as Loss
+    from torch.optim.lr_scheduler import _LRScheduler as LRScheduler
+    from torch.distributed import TCPStore
+    from torch.utils.data import DataLoader
+    from pyspark.sql.dataframe import DataFrame as SparkDataFrame
+    from ray.data import Dataset as RayDataset
+    from bigdl.orca.learn.pytorch.callbacks import Callback
+    from bigdl.orca.data import SparkXShards
 
 
 def partition_refs_to_creator(partition_refs):
@@ -71,19 +84,20 @@ class PyTorchRayEstimator(BaseRayEstimator):
     def __init__(
             self,
             *,
-            model_creator,
-            optimizer_creator,
-            loss_creator=None,
-            metrics=None,
-            scheduler_creator=None,
-            training_operator_cls=TrainingOperator,
-            config=None,
-            scheduler_step_freq="batch",
-            use_tqdm=False,
-            backend="ray",
-            workers_per_node=1,
-            sync_stats=True,
-            log_level=logging.INFO):
+            model_creator: Union[Callable[[Dict], 'Module'], None],
+            optimizer_creator: Union[Callable[['Module', Dict], 'Optimizer'],
+                                     None]=None,
+            loss_creator: Union['Loss', Callable[[Dict], 'Loss'], None]=None,
+            metrics: Union['Metric', List['Metric'], None]=None,
+            scheduler_creator: Optional[Callable[[Dict], 'LRScheduler']]=None,
+            training_operator_cls: Type[TrainingOperator]=TrainingOperator,
+            config: Dict=None,
+            scheduler_step_freq: str="batch",
+            use_tqdm: bool=False,
+            backend: str="ray",
+            workers_per_node: int=1,
+            sync_stats: bool=True,
+            log_level: int=logging.INFO):
         if config is not None and "batch_size" in config:
             invalidInputError(False,
                               "Please do not specify batch_size in config. Input batch_size in the"
@@ -132,17 +146,23 @@ class PyTorchRayEstimator(BaseRayEstimator):
                    runner_cls=PytorchRayWorker,
                    workers_per_node=workers_per_node)
 
-    def fit(self,
-            data,
-            epochs=1,
-            batch_size=32,
-            profile=False,
-            reduce_results=True,
-            info=None,
-            feature_cols=None,
-            label_cols=None,
-            validation_data=None,
-            callbacks=[]):
+    def fit(self,  # type:ignore[override]
+            data: Union['SparkXShards',
+                        'SparkDataFrame',
+                        'RayDataset',
+                        Callable[[Dict, int], 'DataLoader']],
+            epochs: int=1,
+            batch_size: int=32,
+            profile: bool=False,
+            reduce_results: bool=True,
+            info: Optional[Dict]=None,
+            feature_cols: Optional[List[str]]=None,
+            label_cols: Optional[List[str]]=None,
+            validation_data: Union['SparkXShards',
+                                   'SparkDataFrame',
+                                   Callable[[Dict, int], 'DataLoader'],
+                                   None]=None,
+            callbacks: List['Callback']=[]) -> List:
         """
         Trains a PyTorch model given training data for several epochs.
         Calls `TrainingOperator.train_epoch()` on N parallel workers simultaneously
@@ -152,8 +172,8 @@ class PyTorchRayEstimator(BaseRayEstimator):
                that takes config and batch_size as argument and returns a PyTorch DataLoader for
                training.
         :param epochs: The number of epochs to train the model. Default is 1.
-        :param batch_size: The number of samples per batch for each worker. Default is 32.
-               The total batch size would be workers_per_node*num_nodes.
+        :param batch_size: Total batch size for all workers used for training. Each worker's batch
+               size would be this value divide the total number of workers. Default is 32.
                If your training data is a function, you can set batch_size to be the input
                batch_size of the function for the PyTorch DataLoader.
         :param profile: Boolean. Whether to return time stats for the training procedure.
@@ -176,6 +196,11 @@ class PyTorchRayEstimator(BaseRayEstimator):
                 You can also provide custom metrics by passing in a custom training_operator_cls
                 when creating the Estimator.
         """
+        invalidInputError(isinstance(batch_size, int) and batch_size > 0,
+                          "batch_size should be a positive integer")
+        batch_size = batch_size // self.num_workers  # Local batch size for each worker
+        if batch_size <= 0:
+            batch_size = 1
         params = dict(
             epochs=epochs,
             batch_size=batch_size,
@@ -203,7 +228,7 @@ class PyTorchRayEstimator(BaseRayEstimator):
                                                                             label_cols,
                                                                             validation_data, "fit")
             from bigdl.orca.data.utils import process_spark_xshards
-            ray_xshards = process_spark_xshards(data, self.num_workers)
+            ray_xshards = process_spark_xshards(data, self.num_workers)  # type:ignore
 
             if validation_data is None:
                 def transform_func(worker, partition_refs):
@@ -218,7 +243,8 @@ class PyTorchRayEstimator(BaseRayEstimator):
                     invalidInputError(False,
                                       "Currently, we don't support input validation_data"
                                       " for horovod backend")
-                val_ray_xshards = process_spark_xshards(validation_data, self.num_workers)
+                val_ray_xshards = process_spark_xshards(validation_data,  # type:ignore
+                                                        self.num_workers)
 
                 def zip_func(worker, this_partition_refs, that_partition_refs):
                     params["data_creator"] = partition_refs_to_creator(this_partition_refs)
@@ -258,9 +284,11 @@ class PyTorchRayEstimator(BaseRayEstimator):
                                       "Validation data type should be the same as train data,"
                                       " but got type: {}".format(type(validation_data)))
 
-                val_shards = validation_data.split(n=self.num_workers,
+                val_shards = validation_data.split(n=self.num_workers,  # type:ignore
                                                    locality_hints=self.remote_workers)
-                for shard, val_shard, worker in zip(shards, val_shards, self.num_workers):
+                for shard, val_shard, worker in zip(shards,
+                                                    val_shards,  # type:ignore
+                                                    self.num_workers):
                     params["data_creator"] = make_data_creator(shard, feature_cols, label_cols)
 
                     params["validation_data_creator"] = make_data_creator(val_shard,
@@ -284,7 +312,7 @@ class PyTorchRayEstimator(BaseRayEstimator):
             params["validation_data_creator"] = reload_dataloader_creator(validation_data)
             success, worker_stats = self._train_epochs(**params)
 
-        epoch_stats = list(map(list, zip(*worker_stats)))
+        epoch_stats = list(map(list, zip(*worker_stats)))  # type:ignore
         if reduce_results:
             for i in range(len(epoch_stats)):
                 epoch_stats[i] = process_stats(epoch_stats[i])
@@ -292,22 +320,28 @@ class PyTorchRayEstimator(BaseRayEstimator):
         else:
             return epoch_stats
 
-    def predict(self,
-                data,
-                batch_size=32,
-                feature_cols=None,
-                profile=False):
+    def predict(self,  # type:ignore[override]
+                data: Union['SparkXShards', 'SparkDataFrame'],
+                batch_size: int=32,
+                feature_cols: Optional[List[str]]=None,
+                profile: bool=False) -> Union['SparkXShards', 'SparkDataFrame']:
         """
         Using this PyTorch model to make predictions on the data.
 
         :param data: An instance of SparkXShards, a Ray Dataset or a Spark DataFrame
-        :param batch_size: The number of samples per batch for each worker. Default is 32.
+        :param batch_size: Total batch size for all workers used for inference. Each worker's batch
+               size would be this value divide the total number of workers. Default is 32.
         :param profile: Boolean. Whether to return time stats for the training procedure.
                Default is False.
         :param feature_cols: feature column names if data is a Spark DataFrame or Ray Dataset.
         :return: A SparkXShards or a list that contains the predictions with key "prediction"
                in each shard
         """
+        invalidInputError(isinstance(batch_size, int) and batch_size > 0,
+                          "batch_size should be a positive integer")
+        batch_size = batch_size // self.num_workers  # Local batch size for each worker
+        if batch_size <= 0:
+            batch_size = 1
         from bigdl.orca.data import SparkXShards
         param = dict(
             batch_size=batch_size,
@@ -349,15 +383,18 @@ class PyTorchRayEstimator(BaseRayEstimator):
 
         return result
 
-    def evaluate(self,
-                 data,
-                 batch_size=32,
-                 num_steps=None,
-                 profile=False,
-                 reduce_results=True,
-                 info=None,
-                 feature_cols=None,
-                 label_cols=None):
+    def evaluate(self,  # type:ignore[override]
+                 data: Union['SparkXShards',
+                             'SparkDataFrame',
+                             'RayDataset',
+                             Callable[[Dict, int], 'DataLoader']],
+                 batch_size: int=32,
+                 num_steps: int=None,
+                 profile: bool=False,
+                 reduce_results: bool=True,
+                 info: Dict=None,
+                 feature_cols: Optional[List[str]]=None,
+                 label_cols:  Optional[List[str]]=None) -> Union[List[Dict], Dict]:
         """
         Evaluates a PyTorch model given validation data.
         Note that only accuracy for classification with zero-based label is supported by
@@ -368,8 +405,8 @@ class PyTorchRayEstimator(BaseRayEstimator):
         :param data: An instance of SparkXShards, a Spark DataFrame, a Ray Dataset or a function
                that takes config and batch_size as argument and returns a PyTorch DataLoader for
                validation.
-        :param batch_size: The number of samples per batch for each worker. Default is 32.
-               The total batch size would be workers_per_node*num_nodes.
+        :param batch_size: Total batch size for all workers used for evaluation. Each worker's batch
+               size would be this value divide the total number of workers. Default: 32.
                If your validation data is a function, you can set batch_size to be the input
                batch_size of the function for the PyTorch DataLoader.
         :param num_steps: The number of batches to compute the validation results on. This
@@ -389,6 +426,11 @@ class PyTorchRayEstimator(BaseRayEstimator):
                 You can also provide custom metrics by passing in a custom training_operator_cls
                 when creating the Estimator.
         """
+        invalidInputError(isinstance(batch_size, int) and batch_size > 0,
+                          "batch_size should be a positive integer")
+        batch_size = batch_size // self.num_workers  # Local batch size for each worker
+        if batch_size <= 0:
+            batch_size = 1
         from bigdl.orca.data import SparkXShards
         data, _ = maybe_dataframe_to_xshards(data,
                                              validation_data=None,
@@ -401,7 +443,7 @@ class PyTorchRayEstimator(BaseRayEstimator):
             if data._get_class_name() == 'pandas.core.frame.DataFrame':
                 data = process_xshards_of_pandas_dataframe(data, feature_cols, label_cols)
             from bigdl.orca.data.utils import process_spark_xshards
-            ray_xshards = process_spark_xshards(data, self.num_workers)
+            ray_xshards = process_spark_xshards(data, self.num_workers)  # type:ignore
 
             def transform_func(worker, partition_refs):
                 data_creator = partition_refs_to_creator(partition_refs)
@@ -441,17 +483,17 @@ class PyTorchRayEstimator(BaseRayEstimator):
         else:
             return worker_stats
 
-    def get_model(self):
+    def get_model(self) -> 'Module':
         """
         Returns the learned PyTorch model.
 
         :return: The learned PyTorch model.
         """
         state = self.get_state_dict()
-        model = self.model_creator(self.config)
+        model = self.model_creator(self.config)  # type:ignore
         model_state = state["models"][0]
         model.load_state_dict(model_state)
-        return model.module if hasattr(model, "module") else model
+        return model.module if hasattr(model, "module") else model  # type:ignore
 
     def _predict_spark_xshards(self, xshards, param):
         ray_xshards = RayXShards.from_spark_xshards(xshards)

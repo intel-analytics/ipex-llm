@@ -16,9 +16,14 @@
 
 import types
 import copy
+import ray
+from collections import OrderedDict
+
+import torch
+
 from bigdl.dllib.utils.log4Error import invalidInputError
 
-from typing import (Any, Dict, List, Optional, Tuple, Callable, overload)
+from typing import (Any, Dict, List, Optional, Tuple, Callable, overload, Union)
 
 from bigdl.orca.learn.pytorch.experimential.core.base_ray_estimator import BaseRayEstimator
 from bigdl.orca.learn.pytorch.experimential.mmcv.mmcv_ray_runner import MMCVRayEpochRunner
@@ -97,3 +102,42 @@ class MMCVRayEstimator(BaseRayEstimator):
 
     def get_model(self):
         pass
+
+    def load_checkpoint(
+            self,
+            filename: str,
+            map_location: Union[str, Callable]='cpu',
+            strict: bool = False,
+            revise_keys: List = [(r'^module.', '')],
+    ) -> None:
+        """Load checkpoint from a file or URI. The filename should either be a
+        local path on driver or a HDFS path
+
+        Args:
+            filename (str): Local path on Driver or HDFS path.
+            map_location (str): Same as :func:`torch.load`.
+            strict (bool): Whether to allow different params for the model and
+                checkpoint.
+            revise_keys (list): A list of customized keywords to modify the
+                state_dict in checkpoint. Each item is a (pattern, replacement)
+                pair of the regular expression operations. Default: strip
+                the prefix 'module.' by [(r'^module\\.', '')].
+
+        Returns:
+            None
+        """
+        from bigdl.dllib.utils.file_utils import is_local_path
+        if is_local_path(filename):
+            self.load(filename)
+        else:
+            params = dict(
+                filename=filename,
+                map_location=map_location,
+                strict=strict,
+                revise_keys=revise_keys
+            )
+            results = [
+                worker.load_checkpoint.remote(**params)
+                for worker in self.remote_workers
+            ]
+            ray.get(results)

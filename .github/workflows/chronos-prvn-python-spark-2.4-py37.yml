@@ -55,7 +55,7 @@ jobs:
           bash python/dev/release_default_linux_spark246.sh default false false
           bash python/nano/dev/build_and_install.sh linux default false pytorch --force-reinstall --no-deps -U
           whl_name=`ls python/nano/dist/`
-          pip install -i https://pypi.python.org/simple python/nano/dist/${whl_name}[tensorflow,pytorch,inference]
+          pip install -i https://pypi.python.org/simple python/nano/dist/${whl_name}[tensorflow_27,pytorch,inference]
           pip install -i https://pypi.python.org/simple python/dllib/src/dist/bigdl_dllib-*-py3-none-manylinux1_x86_64.whl
           pip install -i https://pypi.python.org/simple python/orca/src/dist/bigdl_orca-*-py3-none-manylinux1_x86_64.whl
           pip install -i https://pypi.python.org/simple python/chronos/src/dist/bigdl_chronos-*-py3-none-manylinux1_x86_64.whl
@@ -101,7 +101,7 @@ jobs:
           bash python/dev/release_default_linux_spark246.sh default false false
           bash python/nano/dev/build_and_install.sh linux default false pytorch --force-reinstall --no-deps -U
           whl_name=`ls python/nano/dist/`
-          pip install -i https://pypi.python.org/simple python/nano/dist/${whl_name}[tensorflow,pytorch,inference]
+          pip install -i https://pypi.python.org/simple python/nano/dist/${whl_name}[tensorflow_27,pytorch,inference]
           pip install -i https://pypi.python.org/simple python/dllib/src/dist/bigdl_dllib-*-py3-none-manylinux1_x86_64.whl
           pip install -i https://pypi.python.org/simple python/orca/src/dist/bigdl_orca-*-py3-none-manylinux1_x86_64.whl
           pip install -i https://pypi.python.org/simple python/chronos/src/dist/bigdl_chronos-*-py3-none-manylinux1_x86_64.whl
@@ -147,7 +147,7 @@ jobs:
           bash python/dev/release_default_linux_spark246.sh default false false
           bash python/nano/dev/build_and_install.sh linux default false pytorch --force-reinstall --no-deps -U
           whl_name=`ls python/nano/dist/`
-          pip install -i https://pypi.python.org/simple python/nano/dist/${whl_name}[tensorflow,pytorch,inference]
+          pip install -i https://pypi.python.org/simple python/nano/dist/${whl_name}[tensorflow_27,pytorch,inference]
           pip install -i https://pypi.python.org/simple python/dllib/src/dist/bigdl_dllib-*-py3-none-manylinux1_x86_64.whl
           pip install -i https://pypi.python.org/simple python/orca/src/dist/bigdl_orca-*-py3-none-manylinux1_x86_64.whl
           pip install -i https://pypi.python.org/simple python/chronos/src/dist/bigdl_chronos-*-py3-none-manylinux1_x86_64.whl
@@ -193,7 +193,7 @@ jobs:
           bash python/dev/release_default_linux_spark246.sh default false false
           bash python/nano/dev/build_and_install.sh linux default false pytorch --force-reinstall --no-deps -U
           whl_name=`ls python/nano/dist/`
-          pip install -i https://pypi.python.org/simple python/nano/dist/${whl_name}[tensorflow,pytorch,inference]
+          pip install -i https://pypi.python.org/simple python/nano/dist/${whl_name}[tensorflow_27,pytorch,inference]
           pip install -i https://pypi.python.org/simple python/dllib/src/dist/bigdl_dllib-*-py3-none-manylinux1_x86_64.whl
           pip install -i https://pypi.python.org/simple python/orca/src/dist/bigdl_orca-*-py3-none-manylinux1_x86_64.whl
           pip install -i https://pypi.python.org/simple python/chronos/src/dist/bigdl_chronos-*-py3-none-manylinux1_x86_64.whl

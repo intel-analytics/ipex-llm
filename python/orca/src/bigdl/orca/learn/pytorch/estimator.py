@@ -17,26 +17,42 @@
 import logging
 from bigdl.orca.learn.pytorch.training_operator import TrainingOperator
 
+from typing import TYPE_CHECKING, Union, Optional, Callable, Dict, List, Type
+if TYPE_CHECKING:
+    from torch.nn import Module
+    from torch.optim import Optimizer
+    from torch.nn.modules.loss import _Loss as Loss
+    from torch.optim.lr_scheduler import _LRScheduler as LRScheduler
+    from bigdl.orca.learn.metrics import Metric
+    from bigdl.orca.learn.pytorch.pytorch_ray_estimator import PyTorchRayEstimator
+    from bigdl.orca.learn.pytorch.pytorch_spark_estimator import PyTorchSparkEstimator
+    from bigdl.orca.learn.pytorch.pytorch_pyspark_estimator import PyTorchPySparkEstimator
+
 
 class Estimator(object):
     @staticmethod
     def from_torch(*,
-                   model,
-                   optimizer,
-                   loss=None,
-                   metrics=None,
-                   backend="spark",
-                   config=None,
-                   workers_per_node=1,
-                   scheduler_creator=None,
-                   scheduler_step_freq="batch",
-                   use_tqdm=False,
-                   model_dir=None,
-                   sync_stats=False,
-                   log_level=logging.INFO,
-                   log_to_driver=True,
-                   training_operator_cls=TrainingOperator,
-                   ):
+                   model: Union['Module', Callable[[Dict], 'Module'], None]=None,
+                   optimizer: Optional[Union['Optimizer',
+                                       Callable[['Module', Dict], 'Optimizer'],
+                                       None]]=None,
+                   loss: Union['Loss', Callable[[Dict], 'Loss'], None]=None,
+                   metrics: Union['Metric', List['Metric'], None]=None,
+                   backend: str="spark",
+                   config: Optional[Dict]=None,
+                   workers_per_node: int=1,
+                   scheduler_creator: Optional[Callable[[Dict], 'LRScheduler']]=None,
+                   scheduler_step_freq: str="batch",
+                   use_tqdm: bool=False,
+                   model_dir: Optional[str]=None,
+                   sync_stats: bool=False,
+                   log_level: int=logging.INFO,
+                   log_to_driver: bool=True,
+                   training_operator_cls: Type[TrainingOperator]=TrainingOperator,
+                   ) -> Union['PyTorchRayEstimator',
+                              'PyTorchSparkEstimator',
+                              'PyTorchPySparkEstimator',
+                              None]:
         """
         Create an Estimator for PyTorch.
 
@@ -84,7 +100,7 @@ class Estimator(object):
         if backend in {"horovod", "ray"}:
             from bigdl.orca.learn.pytorch.pytorch_ray_estimator import PyTorchRayEstimator
             return PyTorchRayEstimator(model_creator=model,
-                                       optimizer_creator=optimizer,
+                                       optimizer_creator=optimizer,  # type:ignore
                                        loss_creator=loss,
                                        metrics=metrics,
                                        scheduler_creator=scheduler_creator,
@@ -108,7 +124,7 @@ class Estimator(object):
         elif backend == "spark":
             from bigdl.orca.learn.pytorch.pytorch_pyspark_estimator import PyTorchPySparkEstimator
             return PyTorchPySparkEstimator(model_creator=model,
-                                           optimizer_creator=optimizer,
+                                           optimizer_creator=optimizer,  # type:ignore
                                            loss_creator=loss,
                                            metrics=metrics,
                                            scheduler_creator=scheduler_creator,
@@ -127,9 +143,10 @@ class Estimator(object):
             invalidInputError(False,
                               "Only horovod, ray, bigdl and spark backends are "
                               f"supported for now, got backend: {backend}")
+            return None
 
     @staticmethod
-    def latest_checkpoint(checkpoint_dir):
+    def latest_checkpoint(checkpoint_dir: str) -> str:
         from .callbacks.model_checkpoint import ModelCheckpoint
         checkpoint_path = ModelCheckpoint.get_latest_checkpoint(checkpoint_dir)
         return checkpoint_path
