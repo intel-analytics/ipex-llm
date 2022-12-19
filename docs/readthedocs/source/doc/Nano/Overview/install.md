@@ -49,15 +49,6 @@ You can select bigdl-nano along with some dependencies specific to PyTorch or Te
     <script src="../../../_static/js/nano_installation_guide.js"></script>
 ```
 
-We also partially support M-series chip users with no guarantee of acceleration with same API. Currently only tensorflow is experimentally supported.
-
-```bash
-conda create -n env python=3.8
-conda activate env
-conda install -c apple tensorflow-deps
-pip install --pre --upgrade bigdl-nano[tensorflow]
-```
-
 ```eval_rst
 .. note::
     Since bigdl-nano is still in the process of rapid iteration, we highly recommend that you install nightly build version through the above command to facilitate your use of the latest features.
