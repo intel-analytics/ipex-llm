@@ -439,7 +439,14 @@ class InferenceOptimizer(BaseInferenceOptimizer):
         invalidInputError(approach == 'static', "Only 'static' approach is supported now.")
         if not isinstance(x, tf.data.Dataset) and y is None:
             # fake label to make quantization work
-            y = deepcopy(x)
+            y = range(len(x))
+        # for TensorDataset
+        from tensorflow.python.data.ops.dataset_ops import TensorDataset, TensorSliceDataset
+        if isinstance(x, (TensorDataset, TensorSliceDataset)):
+            if len(x._tensors) == 1:
+                x = x._tensors[0]
+                y = range(len(x))
+                x = tf.data.Dataset.from_tensor_slices((x, y))
         if accelerator is None:
             if isinstance(x, tf.data.Dataset):
                 calib_dataset = x

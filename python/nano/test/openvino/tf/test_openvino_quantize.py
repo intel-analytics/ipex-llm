@@ -83,11 +83,34 @@ class TestOpenVINO(TestCase):
     def test_model_quantize_openvino_with_only_x(self):
         model = MobileNetV2(weights=None, input_shape=[40, 40, 3], classes=10)
         model = Model(inputs=model.inputs, outputs=model.outputs)
+        # test numpy array
         train_examples = np.random.random((100, 40, 40, 3))
-
         openvino_quantized_model = InferenceOptimizer.quantize(model,
                                                                accelerator='openvino',
                                                                x=train_examples,
+                                                               y=None)
+
+        preds = model.predict(train_examples)
+        openvino_preds = openvino_quantized_model.predict(train_examples)
+        np.testing.assert_allclose(preds, openvino_preds, rtol=1e-2)
+        
+        # test tf tensor
+        train_examples = tf.convert_to_tensor(train_examples)
+        openvino_quantized_model = InferenceOptimizer.quantize(model,
+                                                               accelerator='openvino',
+                                                               x=train_examples,
+                                                               y=None)
+
+        preds = model.predict(train_examples)
+        openvino_preds = openvino_quantized_model.predict(train_examples)
+        np.testing.assert_allclose(preds, openvino_preds, rtol=1e-2)
+        
+        # test dataset
+        train_examples = np.random.random((100, 40, 40, 3))
+        train_dataset = tf.data.Dataset.from_tensor_slices(train_examples)
+        openvino_quantized_model = InferenceOptimizer.quantize(model,
+                                                               accelerator='openvino',
+                                                               x=train_dataset,
                                                                y=None)
 
         preds = model.predict(train_examples)
