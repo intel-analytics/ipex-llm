@@ -36,18 +36,16 @@ object TdxQuoteVerification {
 
         val logger = LogManager.getLogger(getClass)
         case class CmdParams(quotePath: String = "")
-        val cmdParser = new OptionParser[CmdParams]("PPML Quote Verification Cmd tool") {
+        val cmdParser: OptionParser[CmdParams]  = new OptionParser[CmdParams]("PPML Quote Verification Cmd tool") {
             opt[String]('q', "quotePath")
               .text("quotePath")
-              .action((x, c) => c.copy(quotquotePathe = x))
+              .action((x, c) => c.copy(quotePath = x))
         }
         val params = cmdParser.parse(args, CmdParams()).get
         val quotePath = params.quotePath
-        if (quotePath == ""){
-            if (quote.length == 0) {
-                logger.error("Invalid quote path.")
-                throw new AttestationRuntimeException("Invalid quote path!")
-            }
+        if (quotePath.length == 0) {
+            logger.error("Invalid quote path.")
+            throw new AttestationRuntimeException("Invalid quote path!")
         }
         var quote = Array[Byte]()
         try {
