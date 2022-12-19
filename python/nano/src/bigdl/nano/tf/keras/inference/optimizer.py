@@ -453,17 +453,17 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                 calib_dataset = tf.data.Dataset.from_tensor_slices((x, y))
             if batch:
                 calib_dataset = calib_dataset.batch(batch)
-            result = inc_quantzie(model, dataloader=calib_dataset,
-                                  metric=metric,
-                                  framework='tensorflow',
-                                  conf=conf,
-                                  approach=approach,
-                                  tuning_strategy=tuning_strategy,
-                                  accuracy_criterion=accuracy_criterion,
-                                  timeout=timeout,
-                                  max_trials=max_trials,
-                                  inputs=inputs,
-                                  outputs=outputs)
+            return inc_quantzie(model, dataloader=calib_dataset,
+                                metric=metric,    # type: ignore
+                                framework='tensorflow',
+                                conf=conf,
+                                approach=approach,
+                                tuning_strategy=tuning_strategy,
+                                accuracy_criterion=accuracy_criterion,
+                                timeout=timeout,
+                                max_trials=max_trials,
+                                inputs=inputs,
+                                outputs=outputs)
         elif accelerator == 'openvino':
             from bigdl.nano.deps.openvino.tf.model import KerasOpenVINOModel    # type: ignore
             if isinstance(model, KerasOpenVINOModel):    # type: ignore
