@@ -143,4 +143,5 @@ def test_multi_save():
     assert checkpoint['loss'] == 1.842
     assert optimizer.state_dict() == checkpoint['optimizer_state_dict']
     for param_tensor in model.state_dict():
-        assert model.state_dict()[param_tensor] == checkpoint['optimizer_state_dict'][param_tensor]
+        assert torch.equal(model.state_dict()[
+                           param_tensor], checkpoint['model_state_dict'][param_tensor])
