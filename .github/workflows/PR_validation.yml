@@ -108,6 +108,7 @@ jobs:
               - '.github/actions/ppml/**'
               
             orca:
+              - 'C:\Users\shaojunl\code\liu-shaojun\BigDL\python\dllib\src\bigdl\dllib\utils\common.py'
               - 'scala/serving/pom.xml'
               - 'scala/ppml/pom.xml'
               - 'scala/orca/pom.xml'
@@ -115,7 +116,6 @@ jobs:
               - 'scala/dllib/pom.xml'
               - 'scala/pom.xml'
               - 'python/orca/**'
-              - 'python/dllib/**'
               - '.github/actions/orca/**'
                     
   Friesian-Scala-UT:
