@@ -115,6 +115,11 @@ class InferenceUtils:
         :param logging: whether to log detailed information of model conversion, only valid when
                         accelerator='openvino', otherwise will be ignored. Default: ``True``.
         :return:            A TensorflowBaseModel for INC. If there is no model found, return None.
+
+        .. warning::
+           This function will be deprecated in future release.
+
+           Please use ``bigdl.nano.tf.keras.InferenceOptimizer.quantize`` instead.
         """
         from bigdl.nano.tf.keras import InferenceOptimizer
 
@@ -169,6 +174,11 @@ class InferenceUtils:
         :param logging: whether to log detailed information of model conversion, only valid when
                         accelerator='openvino', otherwise will be ignored. Default: ``True``.
         :return: Model with different acceleration(OpenVINO/ONNX Runtime).
+
+        .. warning::
+           This function will be deprecated in future release.
+
+           Please use ``bigdl.nano.tf.keras.InferenceOptimizer.trace`` instead.
         """
         from bigdl.nano.tf.keras import InferenceOptimizer
 
