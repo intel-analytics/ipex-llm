@@ -63,7 +63,10 @@ spec:
       - name: keywhiz-server
         image: $keywhizServerImage
         imagePullPolicy: IfNotPresent
-        args: ["server"]
+        command:
+        - sh
+        - -c
+        - "bash /usr/src/app/entry.sh server"
         lifecycle:
           postStart:
             exec:
@@ -122,4 +125,7 @@ spec:
       - name: bigdl-kms-frontend
         image: $bigdlKmsFrontendImage
         imagePullPolicy: IfNotPresent
-        command: ['sh' , '-c' , 'alias keywhiz.cli="/usr/src/app/cli/target/keywhiz-cli-*-SNAPSHOT-shaded.jar --devTrustStore"; alias key.provider="java -jar server/target/keywhiz-server-*-SNAPSHOT-shaded.jar"; while true; do sleep 30s; done;']
+        command:
+        - sh
+        - -c
+        - "bash /opt/start-https-frontend.sh"
