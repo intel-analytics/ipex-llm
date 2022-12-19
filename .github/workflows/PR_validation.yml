@@ -108,7 +108,6 @@ jobs:
               - '.github/actions/ppml/**'
               
             orca:
-              - 'C:\Users\shaojunl\code\liu-shaojun\BigDL\python\dllib\src\bigdl\dllib\utils\common.py'
               - 'scala/serving/pom.xml'
               - 'scala/ppml/pom.xml'
               - 'scala/orca/pom.xml'
