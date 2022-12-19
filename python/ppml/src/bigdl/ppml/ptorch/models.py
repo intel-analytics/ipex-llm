@@ -51,6 +51,7 @@ def save(obj, f, kms_ip, kms_port, kms_encrypted_primary_key, kms_encrypted_data
     return
 
 
+# TODO: do we need to move these variables to other places?
 def load(f, kms_ip, kms_port, kms_encrypted_primary_key, kms_encrypted_data_key, map_location=None):
     # TODO: check seekable
     decrypted_buf = io.BytesIO()
@@ -63,5 +64,4 @@ def load(f, kms_ip, kms_port, kms_encrypted_primary_key, kms_encrypted_data_key,
     # After writing to the buffer, need to set it back to its original position
     decrypted_buf.seek(0)
     # now its in the decrypted_buf
-    # TODO: close decrypted_buf
     return torch.load(decrypted_buf, map_location=map_location)

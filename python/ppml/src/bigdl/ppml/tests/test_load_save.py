@@ -14,15 +14,17 @@
 # limitations under the License.
 #
 
+import torch.nn.functional as F
 import torch, os, io
+import torch.nn as nn
 import pytest
 from ptorch.models import save, load
 from kms.client import decrypt_buf_with_key, generate_primary_key, generate_data_key
 
-class linearModel(torch.nn.Module):
+class linearModel(nn.Module):
     def __init__(self):
         super(linearModel, self).__init__()
-        self.linear = torch.nn.Linear(1, 1)
+        self.linear = nn.Linear(1, 1)
         # Let's fill in the weight by ourselves so that we can later change it.
         self.linear.weight.data.fill_(1.245)
     
@@ -52,7 +54,7 @@ def prepare_test_env():
     global encrypted_data_key_path
     encrypted_data_key_path = "./encrypted_data_key"
 
-def test_save_method():
+def test_save_file_method():
     model = linearModel()
     encrypted_buf = io.BytesIO()
     # Reference expected value
@@ -94,3 +96,50 @@ def test_save_load():
     # now we try to load it back, and check the weight is the same
     model.load_state_dict(load("testsave.pt", ehsm_ip, ehsm_port, encrypted_primary_key_path, encrypted_data_key_path))
     assert model.linear.weight.data[0] == 1.245
+
+def test_save_load_buf():
+    # Initialize the model
+    model = linearModel()
+    buf = io.BytesIO()
+    save(model.state_dict(), buf, ehsm_ip, ehsm_port, encrypted_primary_key_path, encrypted_data_key_path)
+    model.linear.weight.data.fill_(1.110)
+    # now we try to load it back, and check the weight is the same
+    model.load_state_dict(load(buf, ehsm_ip, ehsm_port, encrypted_primary_key_path, encrypted_data_key_path))
+    assert model.linear.weight.data[0] == 1.245
+
+
+import torch.optim as optim
+# The example from pytorch tutorial
+class TheModelClass(nn.Module):
+    def __init__(self):
+        super(TheModelClass, self).__init__()
+        self.conv1 = nn.Conv2d(3, 6, 5)
+        self.pool = nn.MaxPool2d(2, 2)
+        self.conv2 = nn.Conv2d(6, 16, 5)
+        self.fc1 = nn.Linear(16 * 5 * 5, 120)
+        self.fc2 = nn.Linear(120, 84)
+        self.fc3 = nn.Linear(84, 10)
+
+    def forward(self, x):
+        x = self.pool(F.relu(self.conv1(x)))
+        x = self.pool(F.relu(self.conv2(x)))
+        x = x.view(-1, 16 * 5 * 5)
+        x = F.relu(self.fc1(x))
+        x = F.relu(self.fc2(x))
+        x = self.fc3(x)
+        return x
+
+def test_multi_save():
+    model = TheModelClass()
+    optimizer = optim.SGD(model.parameters(), lr=0.001, momentum=0.9)
+    save({
+        'epoch': 5,
+        'model_state_dict': model.state_dict(),
+        'optimizer_state_dict': optimizer.state_dict(),
+        'loss': 1.842,
+    }, "checkpoint.pt", ehsm_ip, ehsm_port, encrypted_primary_key_path, encrypted_data_key_path)
+    checkpoint = load("checkpoint.pt", ehsm_ip, ehsm_port, encrypted_primary_key_path, encrypted_data_key_path)
+    assert checkpoint['epoch'] == 5
+    assert checkpoint['loss'] == 1.842
+    assert model.state_dict() == checkpoint['model_state_dict']
+    assert optimizer.state_dict() == checkpoint['optimizer_state_dict']
