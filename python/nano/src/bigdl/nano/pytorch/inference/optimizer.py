@@ -42,6 +42,7 @@ from bigdl.nano.pytorch.utils import TORCH_VERSION_LESS_1_10, save_model, load_m
 from bigdl.nano.common.cpu_schedule import schedule_processors
 from bigdl.nano.pytorch.context_manager import generate_context_manager,\
     BaseContextManager, AutocastContextManager
+from nano.utils.util import spawn_new_process
 from .multi_instance import _MultiInstanceModel, _multi_instance_helper
 import traceback
 import warnings
@@ -373,6 +374,20 @@ class InferenceOptimizer(BaseInferenceOptimizer):
 
         print("==========================Start Optimization==========================")
         start_time = time.perf_counter()
+
+        def func_test(model, input_sample):
+            if isinstance(input_sample, (Dict, torch.Tensor)):
+                model(input_sample)
+            else:
+                model(*input_sample)
+
+        throughput_calculate_helper_with_env = spawn_new_process(throughput_calculate_helper)
+        env_result_map = {}
+        for idx, (method, env) in enumerate(available_env_dict.items()):
+            env_result_map[method], _ = throughput_calculate_helper_with_env(
+                latency_sample_num, baseline_time, func_test, model, input_sample, env_var=env)
+        best_env = available_env_dict[min(env_result_map, key=env_result_map.get)]
+
         for idx, (method, available) in enumerate(available_dict.items()):
             result_map[method] = {}
             if available is False:
@@ -397,17 +412,11 @@ class InferenceOptimizer(BaseInferenceOptimizer):
 
                 result_map[method]["status"] = "successful"
 
-                def func_test(model, input_sample):
-                    if isinstance(input_sample, (Dict, torch.Tensor)):
-                        model(input_sample)
-                    else:
-                        model(*input_sample)
-
                 with InferenceOptimizer.get_context(acce_model):
                     try:
-                        result_map[method]["latency"], status =\
-                            throughput_calculate_helper(latency_sample_num, baseline_time,
-                                                        func_test, acce_model, input_sample)
+                        result_map[method]["latency"], status = \
+                            throughput_calculate_helper_with_env(latency_sample_num, baseline_time,func_test,
+                                                                 acce_model, input_sample, env_var=best_env)
                         if status is False and method != "original":
                             result_map[method]["status"] = "early stopped"
                             # save model even early stop
