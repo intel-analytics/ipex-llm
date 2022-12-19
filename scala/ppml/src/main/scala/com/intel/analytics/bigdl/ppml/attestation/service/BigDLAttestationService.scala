@@ -85,7 +85,7 @@ class BigDLAttestationService(attestationServerIP: String, attestationServerPort
     val action: String = ACTION_VERIFY_QUOTE
 
     val postResult: JSONObject = timing("BigDLAttestationService request for VerifyQuote") {
-      val postString: String = "{\"quote\": \"" + quote + "\"}" 
+      val postString: String = "{\"quote\": \"" + quote + "\"}"
       System.out.println(postString)
       System.out.println(constructUrl(action))
       var response: String = retrieveResponse(constructUrl(action), postString)

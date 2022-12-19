@@ -1,3 +1,18 @@
+/*
+ * Copyright 2016 The BigDL Authors.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package com.intel.analytics.bigdl.ppml.service
 
 import java.util.concurrent.{LinkedBlockingQueue, TimeUnit}
@@ -41,7 +56,7 @@ object BigDLRemoteAttestationService {
   implicit val resultFormat = jsonFormat1(Result)
 
   val quoteVerifier = new SGXDCAPQuoteVerifierImpl()
-        
+
   def main(args: Array[String]): Unit = {
 
     val logger = LogManager.getLogger(getClass)
@@ -52,7 +67,8 @@ object BigDLRemoteAttestationService {
                           httpsEnabled: Boolean = false
                           )
 
-    val cmdParser : OptionParser[CmdParams] = new OptionParser[CmdParams]("BigDL Remote Attestation Service") {
+    val cmdParser : OptionParser[CmdParams] = 
+      new OptionParser[CmdParams]("BigDL Remote Attestation Service") {
         opt[String]('u', "serviceURL")
           .text("Attestation Service URL")
           .action((x, c) => c.copy(serviceURL = x))
@@ -61,7 +77,7 @@ object BigDLRemoteAttestationService {
           .action((x, c) => c.copy(servicePort = x))
         opt[Boolean]('s', "httpsEnabled")
           .text("httpsEnabled")
-          .action((x, c) => c.copy(httpsEnabled = x))        
+          .action((x, c) => c.copy(httpsEnabled = x))       
         opt[String]('t', "httpsKeyStoreToken")
           .text("httpsKeyStoreToken")
           .action((x, c) => c.copy(httpsKeyStoreToken = x))
@@ -83,26 +99,29 @@ object BigDLRemoteAttestationService {
             }
           }
         }
-      
+
     val serviceURL = params.serviceURL
     val servicePort = params.servicePort
     val servicePortInt = servicePort.toInt
     if (params.httpsEnabled) {
       val serverContext = defineServerContext(params.httpsKeyStoreToken,
         params.httpsKeyStorePath)
-      val bindingFuture = Http().bindAndHandle(route, serviceURL, servicePortInt, connectionContext=serverContext)
-      println("Server online at https://%s:%s/\nPress RETURN to stop...".format(serviceURL, servicePort))
+      val bindingFuture = Http().bindAndHandle(route,
+       serviceURL, servicePortInt, connectionContext=serverContext)
+      println("Server online at https://%s:%s/\n
+        Press RETURN to stop...".format(serviceURL, servicePort))
       StdIn.readLine()
       bindingFuture
         .flatMap(_.unbind())
-        .onComplete(_ => system.terminate()) 
+        .onComplete(_ => system.terminate())
     } else {
       val bindingFuture = Http().bindAndHandle(route, serviceURL, servicePortInt)
-      println("Server online at http://%s:%s/\nPress RETURN to stop...".format(serviceURL, servicePort))
-      StdIn.readLine() 
+      println("Server online at http://%s:%s/\n
+        Press RETURN to stop...".format(serviceURL, servicePort))
+      StdIn.readLine()
       bindingFuture
-        .flatMap(_.unbind()) 
-        .onComplete(_ => system.terminate()) 
+        .flatMap(_.unbind())
+        .onComplete(_ => system.terminate())
     }
   }
 
