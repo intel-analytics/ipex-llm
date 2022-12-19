@@ -436,14 +436,16 @@ class InferenceOptimizer(BaseInferenceOptimizer):
         :return:            A TensorflowBaseModel for INC. If there is no model found, return None.
         """
         invalidInputError(approach == 'static', "Only 'static' approach is supported now.")
+
         if not isinstance(x, tf.data.Dataset) and y is None:
             # fake label to make quantization work
             y = range(len(x))
         if isinstance(x, tf.data.Dataset):
-            batch = next(iter(x))
-            if isinstance(batch, tf.Tensor) or isinstance(x, tuple) and len(batch) == 1:
+            batch_data = next(iter(x))
+            if isinstance(batch_data, tf.Tensor) or \
+                    isinstance(batch_data, tuple) and len(batch_data) == 1:
                 # fake label to make quantization work
-                y = range(len(x))
+                y = range(len(x))    # type: ignore
                 y = tf.data.Dataset.from_tensor_slices(y)
                 x = tf.data.Dataset.zip((x, y))
         if accelerator is None:
@@ -454,7 +456,7 @@ class InferenceOptimizer(BaseInferenceOptimizer):
             if batch:
                 calib_dataset = calib_dataset.batch(batch)
             return inc_quantzie(model, dataloader=calib_dataset,
-                                metric=metric,    # type: ignore
+                                metric=metric,
                                 framework='tensorflow',
                                 conf=conf,
                                 approach=approach,
