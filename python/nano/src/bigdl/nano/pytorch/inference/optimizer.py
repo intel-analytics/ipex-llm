@@ -223,8 +223,11 @@ class InferenceOptimizer(BaseInferenceOptimizer):
         :param direction: (optional) A string that indicates the higher/lower
                better for the metric, "min" for the lower the better and "max" for the
                higher the better. Default value is "max".
-        :param thread_num: (optional) a int represents how many threads(cores) is needed for
-               inference.
+        :param thread_num: (optional) An int represents how many threads(cores) is needed for
+               inference. This parameter only controls the usage of thread number in the process
+               of latency calculation as well as later inference process of your obtained
+               accelerated model. In other words, the process of model conversion and optional
+               accuracy calculation won't be restricted by this parameter.
         :param accelerator: (optional) A string tuple that specifys the accelerators to search.
                The optional accelerators are: None, 'openvino', 'onnxruntime', 'jit'.
                Defaults to None which represents there is no restriction on accelerators.
@@ -575,9 +578,11 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                               classic/contiguous NCHW order, only valid when precision='bf16',
                               otherwise will be ignored. This setting only works for 4-dim Tensor.
                               Default: ``False``.
-        :param thread_num: (optional) a int represents how many threads(cores) is needed for
-                           inference, only valid for accelerator='onnxruntime'
-                           or accelerator='openvino'.
+        :param thread_num: (optional) An int represents how many threads(cores) is needed for
+                           inference. This parameter only controls the usage of thread number in
+                           later inference process of your obtained accelerated model. In other
+                           words, the process of model conversion won't be restricted by this
+                           parameter.
         :param onnxruntime_session_options: The session option for onnxruntime, only valid when
                                             accelerator='onnxruntime', otherwise will be ignored.
         :param openvino_config: The config to be inputted in core.compile_model. Only valid when
@@ -824,14 +829,16 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                              model is a LightningModule with any dataloader attached.
         :param accelerator: The accelerator to use, defaults to None meaning staying in Pytorch
                             backend. 'openvino', 'onnxruntime' and 'jit' are supported for now.
-        :param use_ipex: Whether we use ipex as accelerator for inferencing. default: False.
+        :param use_ipex: Whether we use ipex as accelerator for inferencing. Default: False.
         :param channels_last: Whether use channels last memory format, i.e. NHWC (batch size,
                               height, width, channels), as an alternative way to store tensors in
                               classic/contiguous NCHW order. This setting only works for 4-dim
                               Tensor. Default: ``False``.
-        :param thread_num: (optional) A int represents how many threads(cores) is needed for
-                           inference, only valid for accelerator='onnxruntime'
-                           or accelerator='openvino'.
+        :param thread_num: (optional) An int represents how many threads(cores) is needed for
+                           inference. This parameter only controls the usage of thread number in
+                           later inference process of your obtained accelerated model. In other
+                           words, the process of model conversion won't be restricted by this
+                           parameter.
         :param onnxruntime_session_options: The session option for onnxruntime, only valid when
                                             accelerator='onnxruntime', otherwise will be ignored.
         :param openvino_config: The config to be inputted in core.compile_model. Only valid when
