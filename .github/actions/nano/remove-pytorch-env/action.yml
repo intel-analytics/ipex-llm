@@ -1,0 +1,10 @@
+name: 'Remove Nano PyTorch Env'
+description: 'remove nano pytorch env'
+
+runs:
+  using: "composite"
+  steps:
+    - name: Remove Conda Env
+      shell: bash
+      run: |
+        $CONDA/bin/conda remove -n nano-pytorch -y --all
