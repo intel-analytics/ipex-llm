@@ -35,14 +35,20 @@ object TdxQuoteVerification {
     def main(args: Array[String]): Unit = {
 
         val logger = LogManager.getLogger(getClass)
-        case class CmdParams(quote: String = "test")
+        case class CmdParams(quotePath: String = "")
         val cmdParser = new OptionParser[CmdParams]("PPML Quote Verification Cmd tool") {
-            opt[String]('i', "quote")
-              .text("quote")
-              .action((x, c) => c.copy(quote = x))
+            opt[String]('q', "quotePath")
+              .text("quotePath")
+              .action((x, c) => c.copy(quotquotePathe = x))
         }
         val params = cmdParser.parse(args, CmdParams()).get
-        val quotePath = params.quote
+        val quotePath = params.quotePath
+        if (quotePath == ""){
+            if (quote.length == 0) {
+                logger.error("Invalid quote path.")
+                throw new AttestationRuntimeException("Invalid quote path!")
+            }
+        }
         var quote = Array[Byte]()
         try {
             // read quote
@@ -54,7 +60,7 @@ object TdxQuoteVerification {
             in.close()
             if (quote.length == 0) {
                 logger.error("Invalid quote file length.")
-                throw new AttestationRuntimeException("Retrieving Gramine quote " +
+                throw new AttestationRuntimeException("Retrieving quote " +
                 "returned Invalid file length!")
             }
         } catch {
