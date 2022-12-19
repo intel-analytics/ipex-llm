@@ -20,7 +20,7 @@ from typing import List
 from sklearn.preprocessing import StandardScaler, MaxAbsScaler, MinMaxScaler, RobustScaler
 
 
-class ExportJITBase(nn.Module):
+class JITPreprocessingBase(nn.Module):
     def __init__(self, lookback: int, id_index: int, target_feature_index: List[int]) -> None:
         super().__init__()
         self.lookback = lookback
@@ -86,7 +86,7 @@ class ExportJITBase(nn.Module):
         return data_roll
 
 
-class ExportWithStandardScaler(ExportJITBase):
+class ExportPreprocessingWithStandardScaler(JITPreprocessingBase):
     def __init__(self, scaler: StandardScaler, lookback: int,
                  id_index: int, target_feature_index: List[int]) -> None:
         super().__init__(lookback, id_index, target_feature_index)
@@ -107,7 +107,7 @@ class ExportWithStandardScaler(ExportJITBase):
         return data_scale
 
 
-class ExportWithMaxAbsScaler(ExportJITBase):
+class ExporPreprocessingtWithMaxAbsScaler(JITPreprocessingBase):
     def __init__(self, scaler: MaxAbsScaler, lookback: int,
                  id_index: int, target_feature_index: List[int]) -> None:
         super().__init__(lookback, id_index, target_feature_index)
@@ -124,7 +124,7 @@ class ExportWithMaxAbsScaler(ExportJITBase):
         return data_scale
 
 
-class ExportWithMinMaxScaler(ExportJITBase):
+class ExportPreprocessingWithMinMaxScaler(JITPreprocessingBase):
     def __init__(self, scaler: MinMaxScaler, lookback: int,
                  id_index: int, target_feature_index: List[int]) -> None:
         super().__init__(lookback, id_index, target_feature_index)
@@ -143,7 +143,7 @@ class ExportWithMinMaxScaler(ExportJITBase):
         return data_scale
 
 
-class ExportWithRobustScaler(ExportJITBase):
+class ExportPreprocessingWithRobustScaler(JITPreprocessingBase):
     def __init__(self, scaler: RobustScaler, lookback: int,
                  id_index: int, target_feature_index: List[int]) -> None:
         super().__init__(lookback, id_index, target_feature_index)
@@ -164,7 +164,7 @@ class ExportWithRobustScaler(ExportJITBase):
         return data_scale
 
 
-SCALE_JIT_HELPER_MAP = {StandardScaler: ExportWithStandardScaler,
-                        MaxAbsScaler: ExportWithMaxAbsScaler,
-                        MinMaxScaler: ExportWithMinMaxScaler,
-                        RobustScaler: ExportWithRobustScaler}
+SCALE_JIT_HELPER_MAP = {StandardScaler: ExportPreprocessingWithStandardScaler,
+                        MaxAbsScaler: ExporPreprocessingtWithMaxAbsScaler,
+                        MinMaxScaler: ExportPreprocessingWithMinMaxScaler,
+                        RobustScaler: ExportPreprocessingWithRobustScaler}
