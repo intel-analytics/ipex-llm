@@ -550,10 +550,6 @@ class RayOnSparkContext(object):
                     os.environ.update(self.env)
                 import ray
                 kwargs = self._update_extra_params(self.extra_params)
-                if self.extra_params is not None:
-                    for k, v in self.extra_params.items():
-                        kw = k.replace("-", "_")
-                        kwargs[kw] = v
                 init_params = dict(
                     num_cpus=self.ray_node_cpu_cores,
                     object_store_memory=self.object_store_memory,
