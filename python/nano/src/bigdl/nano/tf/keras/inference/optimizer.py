@@ -36,7 +36,7 @@ from bigdl.nano.deps.onnxruntime.onnxruntime_api import KerasONNXRuntimeModel
 
 
 class TFAccelerationOption(AccelerationOption):
-    def optimize(self, model, x=None, y=None,
+    def optimize(self, model, x=None, y=None, input_spec=None,
                  thread_num=None, logging=False, sample_size_for_pot=100):
         accelerator = self.get_accelerator()
         if self.get_precision() == "fp32":
@@ -46,6 +46,7 @@ class TFAccelerationOption(AccelerationOption):
             else:
                 acce_model = InferenceOptimizer.trace(model=model,
                                                       accelerator=accelerator,
+                                                      input_spec=input_spec,
                                                       thread_num=thread_num,
                                                       # remove output of openvino
                                                       logging=logging)
@@ -55,6 +56,7 @@ class TFAccelerationOption(AccelerationOption):
             acce_model = InferenceOptimizer.quantize(model=model,
                                                      precision=self.get_precision(),
                                                      accelerator=accelerator,
+                                                     input_spec=input_spec,
                                                      x=x,
                                                      y=y,
                                                      method=ort_method,
@@ -86,6 +88,7 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                  x: Union[tf.Tensor, np.ndarray, tf.data.Dataset],
                  y: Union[tf.Tensor, np.ndarray] = None,
                  validation_data: Optional[Dataset] = None,
+                 input_spec=None,
                  batch_size: int = 1,
                  metric: Optional[Metric] = None,
                  direction: str = "max",
@@ -120,6 +123,9 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                   If x is a dataset, y will be ignored (since targets will be obtained from x).
         :param validation_data: (optional) An unbatched tf.data.Dataset object for accuracy
                evaluation. This is only needed when users care about the possible accuracy drop.
+        :param input_spec: A (tuple or list of) tf.TensorSpec or numpy array defining the
+                           shape/dtype of the input when using 'onnxruntime' accelerator.
+                           It will be ignored if accelerator is 'openvino'.
         :param metric: (optional) A tensorflow.keras.metrics.Metric object which is used for
                calculating accuracy.
         :param direction: (optional) A string that indicates the higher/lower
@@ -217,6 +223,7 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                     acce_model = option.optimize(model=model,
                                                  x=x,
                                                  y=y,
+                                                 input_spec=input_spec,
                                                  thread_num=thread_num,
                                                  logging=logging,
                                                  sample_size_for_pot=sample_size_for_pot)
