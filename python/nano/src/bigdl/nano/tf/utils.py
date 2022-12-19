@@ -41,7 +41,7 @@ def _create_wrapper_type(parent_type, target_obj, source_obj):
         return self.target_obj(*args, **kwargs)
 
     return type(
-        f"wraped_{parent_type.__class__.__name__}", (parent_type,),
+        f"wrapped_{parent_type.__class__.__name__}", (parent_type,),
         {
             'target_obj': target_obj,
             'source_obj': source_obj,
