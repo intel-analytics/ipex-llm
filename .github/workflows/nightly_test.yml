@@ -419,7 +419,7 @@ jobs:
         runner-hosted-on: 'Shanghai' 
 
   Orca-Python-Ray-Ctx:
-    if: ${{ github.event.schedule || github.event.inputs.artifact == 'Orca-Python-Ray-Ctx' || github.event.inputs.artifact == 'all' }} 
+    #if: ${{ github.event.schedule || github.event.inputs.artifact == 'Orca-Python-Ray-Ctx' || github.event.inputs.artifact == 'all' }} 
     runs-on: [self-hosted, Gondolin-Ctx, ubuntu-20.04-lts]
 
     steps:
@@ -437,7 +437,6 @@ jobs:
         type: job
         job-name: Orca-Python-Ray-Ctx
         runner-hosted-on: 'Shanghai'
-
 
   Dllib-Scala-UT:
     if: ${{ github.event.schedule || github.event.inputs.artifact == 'Dllib-Scala-UT' || github.event.inputs.artifact == 'all' }} 
