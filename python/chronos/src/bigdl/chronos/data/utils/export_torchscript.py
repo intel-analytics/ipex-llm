@@ -19,6 +19,7 @@ import torch.nn as nn
 from typing import List
 from sklearn.preprocessing import StandardScaler, MaxAbsScaler, MinMaxScaler, RobustScaler
 
+
 class ExportJITBase(nn.Module):
     def __init__(self, lookback: int, id_index: int, target_feature_index: List[int]) -> None:
         super().__init__()
@@ -46,8 +47,8 @@ class ExportJITBase(nn.Module):
         if len(non_zero) == 0:
             return [data]
 
-        cutpoints = non_zero[0]
-        cutpoints: List[int] = cutpoints.add(1).tolist()
+        cutpoints: List[int] = non_zero[0]
+        cutpoints = cutpoints.add(1).tolist()
         res: List[torch.Tensor] = []
         for start, end in zip([0] + cutpoints, cutpoints + [len(colunm)]):
             index, _ = order[start:end].sort(0)
@@ -58,7 +59,8 @@ class ExportJITBase(nn.Module):
     def _roll_tensor(self, data, lookback: int, target_feature_index: List[int]):
         data = data[:, target_feature_index]
         data = torch.unsqueeze(data, 1)
-        roll_data = torch.concatenate([self._shift(data, i) for i in range(0, -lookback, -1)], dim=1)
+        roll_data = torch.concatenate([self._shift(data, i) for i in range(0, -lookback, -1)],
+                                      dim=1)
         window_idx = torch.arange(lookback)
         if data.size()[0] >= lookback:
             roll_data = roll_data[:data.size()[0]-lookback+1, window_idx, :]
@@ -88,7 +90,7 @@ class ExportWithStandardScaler(ExportJITBase):
     def __init__(self, scaler: StandardScaler, lookback: int,
                  id_index: int, target_feature_index: List[int]) -> None:
         super().__init__(lookback, id_index, target_feature_index)
-        self.scale_ : List[float] = scaler.scale_.tolist()
+        self.scale_: List[float] = scaler.scale_.tolist()
         self.mean_: List[float] = scaler.mean_.tolist()
         self.with_mean: bool = bool(scaler.with_mean)
         self.with_std: bool = bool(scaler.with_std)
@@ -109,7 +111,7 @@ class ExportWithMaxAbsScaler(ExportJITBase):
     def __init__(self, scaler: MaxAbsScaler, lookback: int,
                  id_index: int, target_feature_index: List[int]) -> None:
         super().__init__(lookback, id_index, target_feature_index)
-        self.scale_ : List[float] = scaler.scale_.tolist()
+        self.scale_: List[float] = scaler.scale_.tolist()
         self.lookback: int = lookback
         self.id_index = id_index
         self.target_feature_index = target_feature_index
@@ -126,7 +128,7 @@ class ExportWithMinMaxScaler(ExportJITBase):
     def __init__(self, scaler: MinMaxScaler, lookback: int,
                  id_index: int, target_feature_index: List[int]) -> None:
         super().__init__(lookback, id_index, target_feature_index)
-        self.scale_ : List[float] = scaler.scale_.tolist()
+        self.scale_: List[float] = scaler.scale_.tolist()
         self.min_: List[float] = scaler.min_.tolist()
         self.lookback: int = lookback
         self.id_index: int = id_index
@@ -145,7 +147,7 @@ class ExportWithRobustScaler(ExportJITBase):
     def __init__(self, scaler: RobustScaler, lookback: int,
                  id_index: int, target_feature_index: List[int]) -> None:
         super().__init__(lookback, id_index, target_feature_index)
-        self.scale_ : List[float] = scaler.scale_.tolist()
+        self.scale_: List[float] = scaler.scale_.tolist()
         self.center_: List[float] = scaler.center_.tolist()
         self.with_centering: bool = bool(scaler.with_centering)
         self.with_scaling: bool = bool(scaler.with_scaling)

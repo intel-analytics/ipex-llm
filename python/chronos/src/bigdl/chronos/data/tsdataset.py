@@ -1219,7 +1219,7 @@ class TSDataset:
                "2022-12-12") can't be converted to Pytorch tensor, you can choose different ways
                to workaround this. If set to True, the datetime column will be deleted, then you
                also need to skip the datetime column when reading data from data source (like
-               csv files) in deployment environment to keep the same structure as the data 
+               csv files) in deployment environment to keep the same structure as the data
                used in development; if set to False, the datetime column will not be deleted, and
                you need to make sure the datetime colunm can be successfully converted to Pytorch
                tenor when reading data in deployment environment, for example, you can set each
