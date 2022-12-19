@@ -399,6 +399,8 @@ jobs:
 
     steps:
     - uses: actions/checkout@v3
+      with:
+        ref: 'e31229f701b60de64638b1234d4652b4032e440d'
     - name: Set up JDK8
       uses: ./.github/actions/jdk-setup-action
     - name: Set up maven
