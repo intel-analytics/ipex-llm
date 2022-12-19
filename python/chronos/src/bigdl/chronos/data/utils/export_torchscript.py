@@ -47,8 +47,8 @@ class ExportJITBase(nn.Module):
         if len(non_zero) == 0:
             return [data]
 
-        cutpoints: List[int] = non_zero[0]
-        cutpoints = cutpoints.add(1).tolist()
+        cutpoints = non_zero[0]
+        cutpoints: List[int] = cutpoints.add(1).tolist()
         res: List[torch.Tensor] = []
         for start, end in zip([0] + cutpoints, cutpoints + [len(colunm)]):
             index, _ = order[start:end].sort(0)
