@@ -94,7 +94,7 @@ We recommend using Windows Subsystem for Linux 2 (WSL2) to run BigDL-Nano. Pleas
 #### MacOS with Intel Chip
 Same usage as Linux, while some of the funcions now rely on lower version dependencies.
 
-### MacOS with M-series chip
+#### MacOS with M-series chip
 Currently, only tensorflow is supported for M-series chip Mac.
 ```bash
 # any way to install tensorflow on macos
