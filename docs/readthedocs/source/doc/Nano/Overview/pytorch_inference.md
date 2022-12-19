@@ -2,7 +2,7 @@
 
 BigDL-Nano provides several APIs which can help users easily apply optimizations on inference pipelines to improve latency and throughput. Currently, performance accelerations are achieved by integrating extra runtimes as inference backend engines or using quantization methods on full-precision trained models to reduce computation during inference. InferenceOptimizer (`bigdl.nano.pytorch.InferenceOptimizer`) provides the APIs for all optimizations that you need for inference.
 
-For runtime acceleration, BigDL-Nano has enabled three kinds of runtime for users in `InferenceOptimizer.trace()`, ONNXRuntime, OpenVINO and TorchScript.
+For runtime acceleration, BigDL-Nano has enabled three kinds of graph mode format and corresponding runtime in `InferenceOptimizer.trace()`: ONNXRuntime, OpenVINO and TorchScript.
 
 ```eval_rst
 .. warning::
@@ -11,7 +11,7 @@ For runtime acceleration, BigDL-Nano has enabled three kinds of runtime for user
     Please use ``bigdl.nano.pytorch.InferenceOptimizer.trace`` instead.
 ```
 
-For quantization, BigDL-Nano provides only post-training quantization in `InferenceOptimizer.quantize()` for users to infer with models of 8-bit precision or 16-bit precision. Quantization-aware training is not available for now. Model conversion to 16-bit like BF16 is supported now.
+For quantization, BigDL-Nano provides only post-training quantization in `InferenceOptimizer.quantize()` for users to infer with models of 8-bit precision or 16-bit precision. Quantization-aware training is not available for now.
 
 ```eval_rst
 .. warning::
@@ -43,7 +43,7 @@ Before you go ahead with these APIs, you have to make sure BigDL-Nano is correct
     We recommand installing all dependencies by ``pip install --pre --upgrade bigdl-nano[pytorch,inference]``, because you may run into version issues if you install dependencies manually.
 ```
 
-##  Runtime Acceleration
+## Graph Mode Acceleration
 All available runtime accelerations are integrated in `InferenceOptimizer.trace(accelerator='onnxruntime'/'openvino'/'jit')` with different accelerator values. Let's take mobilenetv3 as an example model and here is a short script that you might have before applying any BigDL-Nano's optimizations:
 ```python
 from torchvision.models.mobilenetv3 import mobilenet_v3_small
