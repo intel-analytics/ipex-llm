@@ -18,15 +18,28 @@
 # python3 -m pktest test_kms.py
 
 import io, os
-from kms.client import encrypt_buf_with_key, decrypt_buf_with_key
+import pytest
+from kms.client import encrypt_buf_with_key, decrypt_buf_with_key, generate_primary_key, generate_data_key
 
 # Only for test purpose, never use it in production
 os.environ['APPID'] = "63a88858-29f6-426f-b9b7-15702bf056ac"
 os.environ['APIKEY'] = "PxiX0hduXAG76cw1JMYPJWyGBMGc0muB"
-encrypted_primary_key_path = "/ppml/encrypted_primary_key"
-encrypted_data_key_path= "/ppml/encrypted_data_key"
+
+encrypted_primary_key_path = ""
+encrypted_data_key_path= ""
+
 ehsm_ip = "172.168.0.226"
 ehsm_port = "9000"
+
+@pytest.fixture(scope="session", autouse=True)
+def prepare_test_env():
+    # Prepare the keys
+    generate_primary_key(ehsm_ip, ehsm_port)
+    global encrypted_primary_key_path
+    encrypted_primary_key_path = "./encrypted_primary_key"
+    generate_data_key(ehsm_ip, ehsm_port, encrypted_primary_key_path, 32)
+    global encrypted_data_key_path
+    encrypted_data_key_path = "./encrypted_data_key"
 
 def test_encrypt_buf():
     buf = io.BytesIO()

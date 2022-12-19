@@ -15,8 +15,9 @@
 #
 
 import torch, os, io
+import pytest
 from ptorch.models import save, load
-from kms.client import decrypt_buf_with_key
+from kms.client import decrypt_buf_with_key, generate_primary_key, generate_data_key
 
 class linearModel(torch.nn.Module):
     def __init__(self):
@@ -32,15 +33,29 @@ class linearModel(torch.nn.Module):
 
 os.environ['APPID'] = "63a88858-29f6-426f-b9b7-15702bf056ac"
 os.environ['APIKEY'] = "PxiX0hduXAG76cw1JMYPJWyGBMGc0muB"
-encrypted_primary_key_path = "/ppml/encrypted_primary_key"
-encrypted_data_key_path = "/ppml/encrypted_data_key"
+
+
+encrypted_primary_key_path = ""
+encrypted_data_key_path = ""
+
 ehsm_ip = "172.168.0.226"
 ehsm_port = "9000"
+
+
+@pytest.fixture(scope="session", autouse=True)
+def prepare_test_env():
+    # Prepare the keys
+    generate_primary_key(ehsm_ip, ehsm_port)
+    global encrypted_primary_key_path
+    encrypted_primary_key_path = "./encrypted_primary_key"
+    generate_data_key(ehsm_ip, ehsm_port, encrypted_primary_key_path, 32)
+    global encrypted_data_key_path
+    encrypted_data_key_path = "./encrypted_data_key"
 
 def test_save_method():
     model = linearModel()
     encrypted_buf = io.BytesIO()
-    # Create the expected buffer
+    # Reference expected value
     expected_buf = io.BytesIO()
     torch.save(model.state_dict(), expected_buf)
 
@@ -71,21 +86,11 @@ def test_save_method():
     decrypt_buf_with_key(read_buf, our_buf, ehsm_ip, ehsm_port, encrypted_primary_key_path, encrypted_data_key_path)
     assert our_buf.getvalue() == expected_buf.getvalue()
 
-
-def original_save_load():
-    model = linearModel()
-    model.linear.weight.data.fill_(1.110)
-    buf = io.BytesIO()
-    torch.save(model.state_dict(), buf)
-    # now we try to load it back, and check the weight is the same
-    model.load_state_dict(torch.load(buf))
-    buf.close()
-    print(model.linear.weight.data)
-
-def save_load():
+def test_save_load():
     # Initialize the model
     model = linearModel()
     save(model.state_dict(), "testsave.pt", ehsm_ip, ehsm_port, encrypted_primary_key_path, encrypted_data_key_path)
+    model.linear.weight.data.fill_(1.110)
     # now we try to load it back, and check the weight is the same
     model.load_state_dict(load("testsave.pt", ehsm_ip, ehsm_port, encrypted_primary_key_path, encrypted_data_key_path))
-    print(model.linear.weight.data)
+    assert model.linear.weight.data[0] == 1.245
