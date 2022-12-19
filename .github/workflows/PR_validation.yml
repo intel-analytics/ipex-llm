@@ -115,6 +115,7 @@ jobs:
               - 'scala/dllib/pom.xml'
               - 'scala/pom.xml'
               - 'python/orca/**'
+              - 'python/dllib/**'
               - '.github/actions/orca/**'
                     
   Friesian-Scala-UT:
