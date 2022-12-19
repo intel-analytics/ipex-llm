@@ -18,7 +18,6 @@ import os
 import time
 import numpy as np
 import traceback
-from copy import deepcopy
 import tensorflow as tf
 from typing import Dict, Optional, List, Union
 from bigdl.nano.utils.inference.common.base_optimizer import BaseInferenceOptimizer

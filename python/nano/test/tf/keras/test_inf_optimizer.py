@@ -98,7 +98,6 @@ class TestInferencePipeline(TestCase):
         model = ResNet50(weights=None, input_shape=[40, 40, 3], classes=10)
         # test numpy array
         train_examples = np.random.random((100, 40, 40, 3))
-
         opt = InferenceOptimizer()
         opt.optimize(model=model,
                      x=train_examples,
@@ -109,7 +108,17 @@ class TestInferencePipeline(TestCase):
 
         # test tf tensor
         train_examples = tf.convert_to_tensor(train_examples)
-
+        opt = InferenceOptimizer()
+        opt.optimize(model=model,
+                     x=train_examples,
+                     y=None,
+                     latency_sample_num=10,
+                     thread_num=8)
+        model = opt.get_best_model()
+        
+        # test dataset with only x
+        train_examples = np.random.random((100, 40, 40, 3))
+        train_dataset = tf.data.Dataset.from_tensor_slices(train_examples)
         opt = InferenceOptimizer()
         opt.optimize(model=model,
                      x=train_examples,
