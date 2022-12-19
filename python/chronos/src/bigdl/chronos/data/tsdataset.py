@@ -1203,19 +1203,23 @@ class TSDataset:
         tensor can be fed into the trained model for inference.
 
         Currently only scale and roll are supported, the pipeline is similar to the following code:
-        >>> tsdata.scale(scaler, fit=False)\
+
+        >>> tsdata.scale(scaler, fit=False) \\
         >>>       .roll(lookback, horizon, is_predict=True)
+
         The output tensor has same shape and value as tsdata.to_numpy().
 
         Currently there are some limitations:
-        1. Please make sure the value of each column can be converted to Pytorch tensor,
-        for example, id "00" is not allowed because str can not be converted to a tensor,
-        you should use integer (0, 1, ..) as id instead of string.
-        2. Some features in tsdataset.scale and tsdataset.roll are unavailable in this pipeline:
-            a. If self.roll_additional_feature is not None, it can't be processed in scale and roll
-            b. id_sensitive, time_enc and label_len parameter is not supported in roll
-        3. Users are expected to call .scale(scaler, fit=True) before calling export_jit.
-           Single roll operation is not supported for converting now.
+            1. Please make sure the value of each column can be converted to Pytorch tensor,
+               for example, id "00" is not allowed because str can not be converted to a tensor,
+               you should use integer (0, 1, ..) as id instead of string.
+            2. Some features in tsdataset.scale and tsdataset.roll are unavailable in this
+               pipeline:
+                    a. If self.roll_additional_feature is not None, it can't be processed in scale
+                       and roll
+                    b. id_sensitive, time_enc and label_len parameter is not supported in roll
+            3. Users are expected to call .scale(scaler, fit=True) before calling export_jit.
+               Single roll operation is not supported for converting now.
 
         :param path_dir: The path to save the compiled torchscript module, default to None.
                If set to None, you should call torch.jit.save() in your code to save the returned
@@ -1233,7 +1237,7 @@ class TSDataset:
                doesn't need datetime column so the value can be arbitrary.
                The value defaults to True.
 
-        :return: The compiled torchscript module
+        :return: The compiled torchscript module.
 
         """
         from bigdl.chronos.data.utils.export_torchscript import SCALE_JIT_HELPER_MAP
@@ -1253,7 +1257,7 @@ class TSDataset:
         export_class = SCALE_JIT_HELPER_MAP[type(self.scaler)]
 
         compiled_module = torch.jit.script(export_class(self.scaler, self.lookback,
-                                             id_index, target_feature_index))
+                                           id_index, target_feature_index))
 
         if path_dir:
             saved_path = os.path.join(path_dir, "tsdata_preprocessing.pt")
