@@ -69,7 +69,7 @@ pip install --pre --upgrade bigdl-nano[tensorflow]
 conda create -n env
 conda activate env
 # select your preference in above panel to find the proper command to replace the below command, e.g.
-pip install --pre --upgrade bigdl-chronos[pytorch]
+pip install --pre --upgrade bigdl-nano[pytorch]
 # after installing bigdl-nano, you can run the following command to setup a few environment variables.
 source bigdl-nano-init
 ```
