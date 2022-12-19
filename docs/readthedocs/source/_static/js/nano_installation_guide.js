@@ -58,7 +58,7 @@ function refresh_cmd(){
             }else if(release=="nightly"){
                 if(inference=="inferenceyes"){
                     if(version=="pytorch_110"){
-                        cmd="pip install --pre --upgrade bigdl-nano[pytorch_110,inference] pip install neural_compressor==1.10.1 -f https://software.intel.com/ipex-whl-stable";
+                        cmd="pip install --pre --upgrade bigdl-nano[pytorch_110,inference] pip install intel_extension_for_pytorch==1.10.100 -f https://software.intel.com/ipex-whl-stable";
                     }else if(version=="pytorch_111"){
                         cmd="pip install --pre --upgrade bigdl-nano[pytorch_111,inference]";
                     }else if(version=="pytorch_112"){
