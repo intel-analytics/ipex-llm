@@ -1506,7 +1506,6 @@ class TestTSDataset(TestCase):
 
         temp_dir = tempfile.mkdtemp()
         csv_path = os.path.join(temp_dir, "inference_data.csv")
-        pt_path = os.path.join(temp_dir, "jit_module.pt")
         df_single_id = get_ts_df()
         sample_num = len(df_single_id)
         df_single_id["id"] = np.array([0] * sample_num)
@@ -1521,18 +1520,17 @@ class TestTSDataset(TestCase):
             # drop_dt_col=True
             for scaler in [StandardScaler(), MaxAbsScaler(), MinMaxScaler(), RobustScaler()]:
                 tsdata = TSDataset.from_pandas(df,
-                                           dt_col="datetime",
-                                           target_col="value",
-                                           id_col="id",
-                                           extra_feature_col="extra feature",
-                                           repair=False,
-                                           deploy_mode=False)
+                                               dt_col="datetime",
+                                               target_col="value",
+                                               id_col="id",
+                                               extra_feature_col="extra feature",
+                                               repair=False,
+                                               deploy_mode=False)
 
                 tsdata.scale(scaler, fit=True)\
                       .roll(lookback=lookback, horizon=horizon)
 
-                jit_module = tsdata.export_jit(drop_dt_col=True)
-                torch.jit.save(jit_module, pt_path)
+                tsdata.export_jit(path_dir=temp_dir, drop_dt_col=True)
 
                 # deployment
                 deployment_df = pd.read_csv(csv_path, parse_dates=["datetime"])
@@ -1546,7 +1544,8 @@ class TestTSDataset(TestCase):
                 # drop datetime col since it can't be converted to Pytorch tensor
                 tsdata.df.drop(columns=tsdata.dt_col, inplace=True)
                 input_tensor = torch.from_numpy(tsdata.df.values).type(torch.float32)
-                module = torch.jit.load(pt_path)
+                module_path = os.path.join(temp_dir, "tsdata_preprocessing.pt")
+                module = torch.jit.load(module_path)
                 output_tensor = module.forward(input_tensor)
 
                 tsdata.scale(scaler=scaler, fit=False)\
@@ -1557,19 +1556,19 @@ class TestTSDataset(TestCase):
             # drop_dt_col=False
             for scaler in [StandardScaler(), MaxAbsScaler(), MinMaxScaler(), RobustScaler()]:
                 tsdata = TSDataset.from_pandas(df,
-                                           dt_col="datetime",
-                                           target_col="value",
-                                           id_col="id",
-                                           extra_feature_col="extra feature",
-                                           repair=False,
-                                           deploy_mode=False)
+                                               dt_col="datetime",
+                                               target_col="value",
+                                               id_col="id",
+                                               extra_feature_col="extra feature",
+                                               repair=False,
+                                               deploy_mode=False)
 
                 tsdata.scale(scaler, fit=True)\
                       .roll(lookback=lookback, horizon=horizon)
 
                 jit_module = tsdata.export_jit(drop_dt_col=False)
-                
-                torch.jit.save(jit_module, pt_path)
+                module_path = os.path.join(temp_dir, "jit_module.pt")
+                torch.jit.save(jit_module, module_path)
 
                 # deployment
                 deployment_df = pd.read_csv(csv_path, parse_dates=["datetime"])
@@ -1585,7 +1584,7 @@ class TestTSDataset(TestCase):
                 # a meaningless value
                 tsdata.df["datetime"] = np.array([1000]*len(tsdata.df))
                 input_tensor = torch.from_numpy(tsdata.df.values).type(torch.float32)
-                module = torch.jit.load(pt_path)
+                module = torch.jit.load(module_path)
                 output_tensor = module.forward(input_tensor)
 
                 tsdata.scale(scaler=scaler, fit=False)\

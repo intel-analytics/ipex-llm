@@ -1192,7 +1192,7 @@ class TSDataset:
 
         return self.best_cycle_length
 
-    def export_jit(self, drop_dt_col=True):
+    def export_jit(self, path_dir=None, drop_dt_col=True):
         """
         Exporting data processing pipeline to torchscript so that it can be used without
         Python environment. For example, when you are deploying a trained model in C++
@@ -1214,7 +1214,13 @@ class TSDataset:
         2. Some features in tsdataset.scale and tsdataset.roll are unavailable in this pipeline:
             a. If self.roll_additional_feature is not None, it can't be processed in scale and roll
             b. id_sensitive, time_enc and label_len parameter is not supported in roll
+        3. Users are expected to call .scale(scaler, fit=True) before calling export_jit.
+           Single roll operation is not supported for converting now.
 
+        :param path_dir: The path to save the compiled torchscript module, default to None.
+               If set to None, you should call torch.jit.save() in your code to save the returned
+               module; if not None, the path should be a directory, and the module will be saved at
+               "path_dir/tsdata_preprocessing.pt".
         :param drop_dtcol: Whether to delete the datetime column. Since datetime value (like
                "2022-12-12") can't be converted to Pytorch tensor, you can choose different ways
                to workaround this. If set to True, the datetime column will be deleted, then you
@@ -1223,8 +1229,8 @@ class TSDataset:
                used in development; if set to False, the datetime column will not be deleted, and
                you need to make sure the datetime colunm can be successfully converted to Pytorch
                tenor when reading data in deployment environment, for example, you can set each
-               data in datetime column to an int (or other vaild types) since scale and roll doesn't
-               need datetime column so the value can be arbitrary.
+               data in datetime column to an int (or other vaild types) since scale and roll
+               doesn't need datetime column so the value can be arbitrary.
                The value defaults to True.
 
         :return: The compiled torchscript module
@@ -1232,6 +1238,7 @@ class TSDataset:
         """
         from bigdl.chronos.data.utils.export_torchscript import SCALE_JIT_HELPER_MAP
         import torch
+        import os
 
         if drop_dt_col:
             self.df.drop(columns=self.dt_col, inplace=True)
@@ -1244,5 +1251,12 @@ class TSDataset:
         target_feature_index = [self.df.columns.tolist().index(i) for i in target_col + feature_col]
 
         export_class = SCALE_JIT_HELPER_MAP[type(self.scaler)]
-        return torch.jit.script(export_class(self.scaler, self.lookback,
+
+        compiled_module = torch.jit.script(export_class(self.scaler, self.lookback,
                                              id_index, target_feature_index))
+
+        if path_dir:
+            saved_path = os.path.join(path_dir, "tsdata_preprocessing.pt")
+            torch.jit.save(compiled_module, saved_path)
+
+        return compiled_module
