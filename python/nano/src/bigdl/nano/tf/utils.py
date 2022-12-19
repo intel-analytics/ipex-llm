@@ -67,7 +67,7 @@ def patch_attrs(target_obj: object, source_obj: object) -> object:
         return wrapper_obj
     else:
         # `target_obj` has no custom `__setattr__`
-        for name in set(dir(target_obj)) - set(dir(target_obj)):
+        for name in set(dir(source_obj)) - set(dir(target_obj)):
             attr = getattr(source_obj, name)
             if inspect.isfunction(attr):            # static method
                 setattr(target_obj, name, attr)
