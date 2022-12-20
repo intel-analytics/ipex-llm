@@ -149,13 +149,6 @@ class InferenceOptimizer(BaseInferenceOptimizer):
         invalidInputError(isinstance(model, Model), "model should be a Keras Model.")
         invalidInputError(direction in ['min', 'max'],
                           "Only support direction 'min', 'max'.")
-        invalidInputError(y is not None or isinstance(x, tf.data.Dataset),
-                          "y can be omitted only when x is a Dataset which returns \
-                              tuples of (inputs, targets)")
-
-        if not isinstance(model, NanoModel):
-            # turn model into NanoModel to obtain trace and quantize method
-            model = NanoModel(inputs=model.inputs, outputs=model.outputs)
 
         # get the available methods whose dep is met
         available_dict: Dict =\
@@ -185,8 +178,8 @@ class InferenceOptimizer(BaseInferenceOptimizer):
         if isinstance(x, Dataset):
             batched_training_dataset = x.batch(batch_size)
             input_sample = next(iter(batched_training_dataset))
-            # TODO: how to obtain input from output of training_dataset
-            input_sample = input_sample[:-1]
+            if isinstance(input_sample, (list, tuple)) and len(input_sample) > 1:
+                input_sample = input_sample[:-1]
         else:
             input_sample = tf.convert_to_tensor(x[:batch_size])
 
@@ -443,9 +436,18 @@ class InferenceOptimizer(BaseInferenceOptimizer):
         :return:            A TensorflowBaseModel for INC. If there is no model found, return None.
         """
         invalidInputError(approach == 'static', "Only 'static' approach is supported now.")
-        invalidInputError(y is not None or isinstance(x, tf.data.Dataset),
-                          "y can be omitted only when x is a Dataset which returns \
-                              tuples of (inputs, targets)")
+
+        if not isinstance(x, tf.data.Dataset) and y is None:
+            # fake label to make quantization work
+            y = range(len(x))
+        if isinstance(x, tf.data.Dataset):
+            batch_data = next(iter(x))
+            if isinstance(batch_data, tf.Tensor) or \
+                    isinstance(batch_data, tuple) and len(batch_data) == 1:
+                # fake label to make quantization work
+                y = range(len(x))    # type: ignore
+                y = tf.data.Dataset.from_tensor_slices(y)
+                x = tf.data.Dataset.zip((x, y))
         if accelerator is None:
             if isinstance(x, tf.data.Dataset):
                 calib_dataset = x
