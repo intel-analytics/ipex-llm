@@ -526,7 +526,7 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                                   outputs=outputs,
                                   onnx_option='tensorflow',
                                   onnxruntime_session_options=onnxruntime_session_options)
-            result.default_kwargs = onnx_model.default_kwargs
+            result._default_kwargs = onnx_model._default_kwargs
             result._call_fn_args_backup = onnx_model._call_fn_args_backup
         else:
             invalidInputError(False, "Accelerator {} is invalid.".format(accelerator))

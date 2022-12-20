@@ -16,6 +16,7 @@
 
 
 import os
+import pickle
 from pathlib import Path
 from tempfile import TemporaryDirectory
 import tensorflow as tf
@@ -57,7 +58,7 @@ class KerasONNXRuntimeModel(ONNXRuntimeModel, AcceleratedKerasModel):
                     input_spec = (input_spec, )
                 tf2onnx.convert.from_keras(model, input_signature=input_spec,
                                            output_path=onnx_path, **export_kwargs)
-                self.default_kwargs = get_default_args(model.call)
+                self._default_kwargs = get_default_args(model.call)
                 self._call_fn_args_backup = model._call_fn_args
             else:
                 onnx_path = model
@@ -66,7 +67,7 @@ class KerasONNXRuntimeModel(ONNXRuntimeModel, AcceleratedKerasModel):
     def call(self, *args, **kwargs):
         inputs = list(args)
         # add arguments' default values into `kwargs`
-        for name, value in self.default_kwargs.items():
+        for name, value in self._default_kwargs.items():
             if name not in kwargs:
                 kwargs[name] = value
         for param in self._call_fn_args_backup[len(inputs):len(self._forward_args)]:
@@ -90,6 +91,7 @@ class KerasONNXRuntimeModel(ONNXRuntimeModel, AcceleratedKerasModel):
     def status(self):
         status = super().status
         status.update({"onnx_path": 'onnx_saved_model.onnx',
+                       "attr_path": "onnx_saved_model_attr.pkl",
                        "intra_op_num_threads": self.session_options.intra_op_num_threads,
                        "inter_op_num_threads": self.session_options.inter_op_num_threads})
         return status
@@ -114,10 +116,19 @@ class KerasONNXRuntimeModel(ONNXRuntimeModel, AcceleratedKerasModel):
         onnxruntime_session_options = onnxruntime.SessionOptions()
         onnxruntime_session_options.intra_op_num_threads = status['intra_op_num_threads']
         onnxruntime_session_options.inter_op_num_threads = status['inter_op_num_threads']
-        return KerasONNXRuntimeModel(model=str(onnx_path),
-                                     input_sample=None,
-                                     onnxruntime_session_options=onnxruntime_session_options)
+        model = KerasONNXRuntimeModel(model=str(onnx_path),
+                                      input_sample=None,
+                                      onnxruntime_session_options=onnxruntime_session_options)
+        with open(Path(path) / status['attr_path'], "rb") as f:
+            attrs = pickle.load(f)
+        for attr_name, attr_value in attrs.items():
+            setattr(model, attr_name, attr_value)
+        return model
 
     def _save_model(self, path):
         onnx_path = Path(path) / self.status['onnx_path']
         super()._save_model(onnx_path)
+        attrs = {"_default_kwargs": self._default_kwargs,
+                 "_call_fn_args_backup": self._call_fn_args_backup}
+        with open(Path(path) / self.status['attr_path'], "wb") as f:
+            pickle.dump(attrs, f)
