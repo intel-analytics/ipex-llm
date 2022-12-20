@@ -26,7 +26,7 @@ from collections import OrderedDict
 from mmcv.runner import EpochBasedRunner
 from mmcv.runner.utils import get_host_info
 from mmcv.parallel.distributed import MMDistributedDataParallel
-from mmcv import BaseStorageBackend
+from mmcv.fileio.file_client import BaseStorageBackend
 from mmcv.runner.checkpoint import CheckpointLoader
 from bigdl.orca.learn.pytorch.utils import get_batchsize
 from bigdl.dllib.utils.log4Error import invalidInputError
