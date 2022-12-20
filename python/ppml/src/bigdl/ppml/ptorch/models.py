@@ -14,7 +14,7 @@
 # limitations under the License.
 #
 
-from bigdl.ppml.kms.client import encrypt_buf_with_key, decrypt_buf_with_key
+from bigdl.ppml.kms.client import encrypt_buffer_with_key, decrypt_buffer_with_key
 import torch
 import io, os
 import pathlib
@@ -71,7 +71,7 @@ def save(obj, f: Union[str, os.PathLike, BinaryIO, IO[bytes]], kms_ip, kms_port,
     encrypted_buf = io.BytesIO()
     torch.save(obj, buffer)
     # Encrypt the buffer
-    encrypt_buf_with_key(buffer, encrypted_buf, kms_ip, kms_port, kms_encrypted_primary_key, kms_encrypted_data_key)
+    encrypt_buffer_with_key(buffer, encrypted_buf, kms_ip, kms_port, kms_encrypted_primary_key, kms_encrypted_data_key)
     with _open_file_or_buffer(f, 'wb') as opened_file:
         opened_file.write(encrypted_buf.getvalue())
     buffer.close()
@@ -87,9 +87,9 @@ def load(f, kms_ip, kms_port, kms_encrypted_primary_key, kms_encrypted_data_key,
     with _open_file_or_buffer(f, 'rb') as opened_file:
         if _is_path(f):
             buf = io.BytesIO(opened_file.read())
-            decrypt_buf_with_key(buf, decrypted_buf, kms_ip, kms_port, kms_encrypted_primary_key, kms_encrypted_data_key)
+            decrypt_buffer_with_key(buf, decrypted_buf, kms_ip, kms_port, kms_encrypted_primary_key, kms_encrypted_data_key)
         else:
-            decrypt_buf_with_key(f, decrypted_buf, kms_ip, kms_port, kms_encrypted_primary_key, kms_encrypted_data_key)
+            decrypt_buffer_with_key(f, decrypted_buf, kms_ip, kms_port, kms_encrypted_primary_key, kms_encrypted_data_key)
     # After writing to the buffer, need to set it back to its original position
     decrypted_buf.seek(0)
     buf.close()
