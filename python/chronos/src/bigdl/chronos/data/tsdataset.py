@@ -1271,10 +1271,19 @@ class TSDataset:
 
         preprocessing_module = export_processing_to_jit(self.scaler, self.lookback,
                                                         id_index,
-                                                        target_feature_index)
+                                                        target_feature_index,
+                                                        self.scaler_index,
+                                                        "preprocessing")
+        postprocessing_module = export_processing_to_jit(self.scaler, self.lookback,
+                                                         id_index,
+                                                         target_feature_index,
+                                                         self.scaler_index,
+                                                         "postprocessing")
 
         if path_dir:
             preprocess_path = os.path.join(path_dir, "tsdata_preprocessing.pt")
+            postprocess_path = os.path.join(path_dir, "tsdata_postprocessing.pt")
             torch.jit.save(preprocessing_module, preprocess_path)
+            torch.jit.save(postprocessing_module, postprocess_path)
 
-        return preprocessing_module
+        return preprocessing_module, postprocessing_module
