@@ -17,17 +17,13 @@
 import types
 import copy
 import ray
-from collections import OrderedDict
-
-import torch
 
 from bigdl.dllib.utils.log4Error import invalidInputError
-
-from typing import (Dict, List, Optional, Tuple, Callable, Union)
-
 from bigdl.orca.learn.pytorch.core.base_ray_estimator import BaseRayEstimator
 from bigdl.orca.learn.pytorch.experimential.mmcv.mmcv_ray_runner import MMCVRayEpochRunner
 from bigdl.orca.learn.pytorch.utils import process_stats
+
+from typing import (Dict, List, Optional, Tuple, Callable, Union)
 
 
 class MMCVRayEstimator(BaseRayEstimator):
@@ -55,7 +51,7 @@ class MMCVRayEstimator(BaseRayEstimator):
             data_loaders_creators: List[Callable],
             workflow: List[Tuple[str, int]],
             max_epochs: Optional[int] = None,  # deprecated
-            reduce_results=True,
+            reduce_results: bool = True,
             **kwargs) -> List:
         """Trains a MMCV model given training and val data for several epochs.
 
@@ -65,6 +61,10 @@ class MMCVRayEstimator(BaseRayEstimator):
                running 2 epochs for training and 1 epoch for validation,
                iteratively.
         :param max_epochs: Set max_epochs for MMCV runner is deprecated
+        :param reduce_results: Whether to average all metrics across all workers into
+               one dict. If a metric is a non-numerical value, the one value will be randomly
+               selected among the workers. If False, returns a list of dicts for
+               all workers. Default is True.
         """
         for creator in data_loaders_creators:
             if not (isinstance(creator, types.FunctionType)):
@@ -88,7 +88,7 @@ class MMCVRayEstimator(BaseRayEstimator):
             data_loaders_creators: List[Callable],
             workflow: List[Tuple[str, int]],
             max_epochs: Optional[int] = None,  # deprecated
-            reduce_results=True,
+            reduce_results: bool = True,
             **kwargs) -> List:
         """
         Same as fit method, the parameters are consistent with MMCV runner.run()

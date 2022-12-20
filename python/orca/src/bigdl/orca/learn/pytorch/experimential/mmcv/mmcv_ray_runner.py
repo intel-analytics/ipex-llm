@@ -14,7 +14,6 @@
 # limitations under the License.
 #
 
-import io
 import os
 import re
 import tempfile
@@ -27,7 +26,6 @@ from collections import OrderedDict
 from mmcv.runner import EpochBasedRunner
 from mmcv.runner.utils import get_host_info
 from mmcv.parallel.distributed import MMDistributedDataParallel
-from mmcv.parallel.utils import is_module_wrapper
 from mmcv import BaseStorageBackend
 from mmcv.runner.checkpoint import CheckpointLoader
 from bigdl.orca.learn.pytorch.utils import get_batchsize
