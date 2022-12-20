@@ -20,8 +20,9 @@ from typing import List
 from sklearn.preprocessing import StandardScaler, MaxAbsScaler, MinMaxScaler, RobustScaler
 
 
-class JITPreprocessingBase(nn.Module):
-    def __init__(self, lookback: int, id_index: int, target_feature_index: List[int]) -> None:
+class ExportJIT(nn.Module):
+    def __init__(self, lookback: int, id_index: int,
+                 target_feature_index: List[int]) -> None:
         super().__init__()
         self.lookback = lookback
         self.target_feature_index = target_feature_index
@@ -80,13 +81,16 @@ class JITPreprocessingBase(nn.Module):
     def scale(self, data):
         return data
 
-    def forward(self, data):
+    def export_preprocessing(self, data):
         data[:, self.target_feature_index] = self.scale(data[:, self.target_feature_index])
         data_roll = self.roll(data, self.lookback, self.id_index, self.target_feature_index)
         return data_roll
 
+    def forward(self, data):
+        return self.export_preprocessing(data)
 
-class ExportPreprocessingWithStandardScaler(JITPreprocessingBase):
+
+class ExportWithStandardScaler(ExportJIT):
     def __init__(self, scaler: StandardScaler, lookback: int,
                  id_index: int, target_feature_index: List[int]) -> None:
         super().__init__(lookback, id_index, target_feature_index)
@@ -107,8 +111,8 @@ class ExportPreprocessingWithStandardScaler(JITPreprocessingBase):
         return data_scale
 
 
-class ExporPreprocessingtWithMaxAbsScaler(JITPreprocessingBase):
-    def __init__(self, scaler: MaxAbsScaler, lookback: int,
+class ExporWithMaxAbsScaler(ExportJIT):
+    def __init__(self, scaler: StandardScaler, lookback: int,
                  id_index: int, target_feature_index: List[int]) -> None:
         super().__init__(lookback, id_index, target_feature_index)
         self.scale_: List[float] = scaler.scale_.tolist()
@@ -124,8 +128,8 @@ class ExporPreprocessingtWithMaxAbsScaler(JITPreprocessingBase):
         return data_scale
 
 
-class ExportPreprocessingWithMinMaxScaler(JITPreprocessingBase):
-    def __init__(self, scaler: MinMaxScaler, lookback: int,
+class ExportWithMinMaxScaler(ExportJIT):
+    def __init__(self, scaler: StandardScaler, lookback: int,
                  id_index: int, target_feature_index: List[int]) -> None:
         super().__init__(lookback, id_index, target_feature_index)
         self.scale_: List[float] = scaler.scale_.tolist()
@@ -143,8 +147,8 @@ class ExportPreprocessingWithMinMaxScaler(JITPreprocessingBase):
         return data_scale
 
 
-class ExportPreprocessingWithRobustScaler(JITPreprocessingBase):
-    def __init__(self, scaler: RobustScaler, lookback: int,
+class ExportWithRobustScaler(ExportJIT):
+    def __init__(self, scaler: StandardScaler, lookback: int,
                  id_index: int, target_feature_index: List[int]) -> None:
         super().__init__(lookback, id_index, target_feature_index)
         self.scale_: List[float] = scaler.scale_.tolist()
@@ -164,7 +168,13 @@ class ExportPreprocessingWithRobustScaler(JITPreprocessingBase):
         return data_scale
 
 
-SCALE_JIT_HELPER_MAP = {StandardScaler: ExportPreprocessingWithStandardScaler,
-                        MaxAbsScaler: ExporPreprocessingtWithMaxAbsScaler,
-                        MinMaxScaler: ExportPreprocessingWithMinMaxScaler,
-                        RobustScaler: ExportPreprocessingWithRobustScaler}
+SCALE_JIT_HELPER_MAP = {StandardScaler: ExportWithStandardScaler,
+                        MaxAbsScaler: ExporWithMaxAbsScaler,
+                        MinMaxScaler: ExportWithMinMaxScaler,
+                        RobustScaler: ExportWithRobustScaler}
+
+
+def export_processing_to_jit(scaler, lookback, id_index, target_feature_index):
+    export_class = SCALE_JIT_HELPER_MAP[type(scaler)]
+    return torch.jit.script(export_class(scaler, lookback,
+                                         id_index, target_feature_index))

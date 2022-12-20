@@ -1544,14 +1544,14 @@ class TestTSDataset(TestCase):
                 # drop datetime col since it can't be converted to Pytorch tensor
                 tsdata.df.drop(columns=tsdata.dt_col, inplace=True)
                 input_tensor = torch.from_numpy(tsdata.df.values).type(torch.float32)
-                module_path = os.path.join(temp_dir, "tsdata_preprocessing.pt")
-                module = torch.jit.load(module_path)
-                output_tensor = module.forward(input_tensor)
+                preprocess_path = os.path.join(temp_dir, "tsdata_preprocessing.pt")
+                preprocess_module = torch.jit.load(preprocess_path)
+                preprocess_output = preprocess_module.forward(input_tensor)
 
                 tsdata.scale(scaler=scaler, fit=False)\
                       .roll(lookback=lookback, horizon=horizon)
 
-                assert_array_almost_equal(tsdata.to_numpy(), output_tensor.numpy())
+                assert_array_almost_equal(tsdata.to_numpy(), preprocess_output.numpy())
 
             # drop_dt_col=False
             for scaler in [StandardScaler(), MaxAbsScaler(), MinMaxScaler(), RobustScaler()]:
@@ -1566,9 +1566,9 @@ class TestTSDataset(TestCase):
                 tsdata.scale(scaler, fit=True)\
                       .roll(lookback=lookback, horizon=horizon)
 
-                jit_module = tsdata.export_jit(drop_dt_col=False)
-                module_path = os.path.join(temp_dir, "jit_module.pt")
-                torch.jit.save(jit_module, module_path)
+                preprocess_module = tsdata.export_jit(drop_dt_col=False)
+                preprocess_path = os.path.join(temp_dir, "preprocess_module.pt")
+                torch.jit.save(preprocess_module, preprocess_path)
 
                 # deployment
                 deployment_df = pd.read_csv(csv_path, parse_dates=["datetime"])
@@ -1584,13 +1584,13 @@ class TestTSDataset(TestCase):
                 # a meaningless value
                 tsdata.df["datetime"] = np.array([1000]*len(tsdata.df))
                 input_tensor = torch.from_numpy(tsdata.df.values).type(torch.float32)
-                module = torch.jit.load(module_path)
-                output_tensor = module.forward(input_tensor)
+                preprocess = torch.jit.load(preprocess_path)
+                preprocess_output = preprocess.forward(input_tensor)
 
                 tsdata.scale(scaler=scaler, fit=False)\
                       .roll(lookback=lookback, horizon=horizon)
 
-                assert_array_almost_equal(tsdata.to_numpy(), output_tensor.numpy())
+                assert_array_almost_equal(tsdata.to_numpy(), preprocess_output.numpy())
 
         if os.path.exists(temp_dir):
             shutil.rmtree(temp_dir)

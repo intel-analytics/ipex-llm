@@ -1240,7 +1240,7 @@ class TSDataset:
         :return: The compiled torchscript module.
 
         """
-        from bigdl.chronos.data.utils.export_torchscript import SCALE_JIT_HELPER_MAP
+        from bigdl.chronos.data.utils.export_torchscript import export_processing_to_jit
         import torch
         import os
 
@@ -1254,13 +1254,12 @@ class TSDataset:
         # index of target col and feature col, will be used in scale and roll
         target_feature_index = [self.df.columns.tolist().index(i) for i in target_col + feature_col]
 
-        export_class = SCALE_JIT_HELPER_MAP[type(self.scaler)]
-
-        compiled_module = torch.jit.script(export_class(self.scaler, self.lookback,
-                                           id_index, target_feature_index))
+        preprocessing_module = export_processing_to_jit(self.scaler, self.lookback,
+                                                        id_index,
+                                                        target_feature_index)
 
         if path_dir:
-            saved_path = os.path.join(path_dir, "tsdata_preprocessing.pt")
-            torch.jit.save(compiled_module, saved_path)
+            preprocess_path = os.path.join(path_dir, "tsdata_preprocessing.pt")
+            torch.jit.save(preprocessing_module, preprocess_path)
 
-        return compiled_module
+        return preprocessing_module
