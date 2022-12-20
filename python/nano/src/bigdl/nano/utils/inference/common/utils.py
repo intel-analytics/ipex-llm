@@ -121,7 +121,7 @@ def format_optimize_result(optimize_result_dict: dict,
             .format("-" * 32, "-" * 22, "-" * 14, "-" * 22)
         repr_str = horizontal_line
         repr_str += "| {0:^30} | {1:^20} | {2:^12} | {3:^20} |\n" \
-            .format("method", "status", "latency(ms)", "accuracy")
+            .format("method", "status", "latency(ms)", "metric value")
         repr_str += horizontal_line
         for method, result in optimize_result_dict.items():
             status = result["status"]
