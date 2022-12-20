@@ -27,7 +27,7 @@ runs:
           echo "example.1 spark pi"
           bash run_spark_pi.sh
           if [ "`kubectl get pods | grep spark-pi-test | awk '{print $1}'`" != "" ]; then
-            pi_driver=`kubectl get pods | grep spark-pi-test | awk '{print $1}'`
+            pi_driver=`kubectl get pods | grep spark-pi-test | awk '{print $1}' | grep driver`
           fi
           kubectl logs $pi_driver | egrep 'Pi is roughly 3'
           status_1_spark_pi=$(echo $?)
@@ -41,7 +41,7 @@ runs:
           echo "example.2 spark lr"
           bash run_spark_lr.sh
           if [ "`kubectl get pods | grep spark-lr-test | awk '{print $1}'`" != "" ]; then
-            lr_driver=`kubectl get pods | grep spark-lr-test | awk '{print $1}'`
+            lr_driver=`kubectl get pods | grep spark-lr-test | awk '{print $1}' | grep driver`
           fi
           kubectl logs $lr_driver | egrep 'Training data results'
           status_2_spark_lr=$(echo $?)
@@ -55,7 +55,7 @@ runs:
           echo "example.3 spark sql"
           bash run_spark_sql.sh
           if [ "`kubectl get pods | grep spark-sql-test | awk '{print $1}'`" != "" ]; then
-            sql_driver=`kubectl get pods | grep spark-sql-test | awk '{print $1}'`
+            sql_driver=`kubectl get pods | grep spark-sql-test | awk '{print $1}' | grep driver`
           fi
           kubectl logs $sql_driver | egrep 'Name: Michael'
           status_3_spark_sql=$(echo $?)
@@ -69,7 +69,7 @@ runs:
           echo "example.4 spark gbt"
           bash run_spark_gbt.sh
           if [ "`kubectl get pods | grep spark-gbt-example-test | awk '{print $1}'`" != "" ]; then
-            gbt_example_driver=`kubectl get pods | grep spark-gbt-example-test | awk '{print $1}'`
+            gbt_example_driver=`kubectl get pods | grep spark-gbt-example-test | awk '{print $1}' | grep driver`
           fi
           kubectl logs $gbt_example_driver | egrep 'Training data results'
           status_4_spark_gbt=$(echo $?)
@@ -97,7 +97,7 @@ runs:
           echo "example.6 spark tpch"
           bash run_spark_tpch.sh
           if [ "`kubectl get pods | grep spark-tpch-test | awk '{print $1}'`" != "" ]; then
-            tpch_driver=`kubectl get pods | grep spark-tpch-test | awk '{print $1}'`
+            tpch_driver=`kubectl get pods | grep spark-tpch-test | awk '{print $1}' | grep driver`
           fi
           kubectl logs $tpch_driver | egrep '22 finished-'
           status_6_spark_tpch=$(echo $?)
@@ -111,12 +111,12 @@ runs:
           echo "example.7 pyspark sklearn"
           bash run_pyspark_sklearn_example.sh
           if [ "`kubectl get pods | grep pyspark-sklearn-test | awk '{print $1}'`" != "" ]; then
-            sklearn_driver=`kubectl get pods | grep pyspark-sklearn-test | awk '{print $1}'`
+            sklearn_driver=`kubectl get pods | grep pyspark-sklearn-test | awk '{print $1}' | grep driver`
           fi
           kubectl logs $sklearn_driver | egrep 'mean_squared_error'
           status_7_pyspark_sklearn=$(echo $?)
           if [ "`kubectl get pods | grep pyspark-sklearn-test | awk '{print $1}'`" != "" ]; then
-            kubectl delete pods `kubectl get pods | grep pyspark-sklearn-test | awk '{print $1}'`
+            kubectl delete pods `kubectl get pods | grep pyspark-sklearn-test | awk '{print $1}' | grep driver`
           fi
         fi
         
@@ -124,13 +124,13 @@ runs:
           echo "################## start pyspark SQL example"
           echo "example.8 pyspark sql"
           bash run_pyspark_sql_example.sh
-          if [ "`kubectl get pods | grep pyspark-sql-test | awk '{print $1}'`" != "" ]; then
-            sql_driver=`kubectl get pods | grep pyspark-sql-test | awk '{print $1}'`
+          if [ "`kubectl get pods | grep pyspark-pysql-test | awk '{print $1}'`" != "" ]; then
+            sql_driver=`kubectl get pods | grep pyspark-pysql-test | awk '{print $1}' | grep driver`
           fi
           kubectl logs $sql_driver | egrep 'Example API finished'
           status_8_pyspark_sql=$(echo $?)
-          if [ "`kubectl get pods | grep pyspark-sql-test | awk '{print $1}'`" != "" ]; then
-            kubectl delete pods `kubectl get pods | grep pyspark-sql-test | awk '{print $1}'`
+          if [ "`kubectl get pods | grep pyspark-pysql-test | awk '{print $1}'`" != "" ]; then
+            kubectl delete pods `kubectl get pods | grep pyspark-pysql-test | awk '{print $1}'`
           fi
         fi
 
