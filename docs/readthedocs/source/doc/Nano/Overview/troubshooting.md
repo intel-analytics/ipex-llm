@@ -45,9 +45,9 @@ You can first check whether your machine supports the bf16 instruction set first
 
 ### ``INVALID_ARGUMENT : Got invalid dimensions for input`` or ``[ PARAMETER_MISMATCH ] Can not clone with new dims.`` when do inference with OpenVINO / ONNXRuntime accelerated model
 
-This error usually occurs when the input of ``forward`` varies during inference, and such case needs you to manually set ``dynamic_axes`` parameter and pass ``dynamic_axes`` to ``trace/quantize``. 
+This error usually occurs when your dataset produces data with dynamic shape, and such case needs you to manually set ``dynamic_axes`` parameter and pass ``dynamic_axes`` to ``trace/quantize``. 
 
-For examples, if your forward function looks like ``def forward(x: torch.Tensor):``, and it recieves 4d Tensor as input, however, your input data's shape will vary during inference, it will be (1, 3, 224, 224) or (1, 3, 256, 256), then in such case, you should:
+For examples, if your forward function looks like ``def forward(x: torch.Tensor):``, and it recieves 4d Tensor as input. However, your input data's shape will vary during inference, it will be (1, 3, 224, 224) or (1, 3, 256, 256), then in such case, you should:
 ```
 dynamic_axes['x'] = {0: 'batch_size', 2: 'width', 3: 'height'}  # this means the 0/2/3 dim of your input data may vary during inference
 input_sample = torch.randn(1, 3, 224, 224)
@@ -55,3 +55,11 @@ acce_model = trace(model=model, input_sample=x, dynamic_axes=dynamic_axes)
 ```
 
 You can refer to [API usage of torch.onnx.export](https://pytorch.org/docs/stable/onnx.html#functions) for more details.
+
+### Why jit didn't work on my model?
+
+Please check first if you use `patch_cuda(disable_jit=True)` command of Nano, if you have used it to disable cuda operation, it will disable jit at the same time by `torch.jit._state.disable()`, so jit has no effect now.
+
+### How to cope with out-of-memory during workload with Intel® Extension for PyTorch*
+
+If you found the workload runs with Intel® Extension for PyTorch* occupies a remarkably large amount of memory, you can try to reduce the occupied memory size by setting `weights_prepack=False` when calling `InferenceOptimizer.trace` \ `InferenceOptimizer.quantize`.
