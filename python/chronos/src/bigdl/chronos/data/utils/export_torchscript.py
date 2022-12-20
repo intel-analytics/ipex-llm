@@ -59,7 +59,7 @@ class JITPreprocessingBase(nn.Module):
     def _roll_tensor(self, data, lookback: int, target_feature_index: List[int]):
         data = data[:, target_feature_index]
         data = torch.unsqueeze(data, 1)
-        roll_data = torch.concatenate([self._shift(data, i) for i in range(0, -lookback, -1)],
+        roll_data = torch.cat([self._shift(data, i) for i in range(0, -lookback, -1)],
                                       dim=1)
         window_idx = torch.arange(lookback)
         if data.size()[0] >= lookback:
@@ -75,7 +75,7 @@ class JITPreprocessingBase(nn.Module):
         for group in res:
             roll_result.append(self._roll_tensor(group, lookback, target_feature_index))
 
-        return torch.concatenate(roll_result, dim=0)
+        return torch.cat(roll_result, dim=0)
 
     def scale(self, data):
         return data
