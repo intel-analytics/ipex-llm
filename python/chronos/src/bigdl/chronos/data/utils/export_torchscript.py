@@ -60,7 +60,7 @@ class JITPreprocessingBase(nn.Module):
         data = data[:, target_feature_index]
         data = torch.unsqueeze(data, 1)
         roll_data = torch.cat([self._shift(data, i) for i in range(0, -lookback, -1)],
-                                      dim=1)
+                              dim=1)
         window_idx = torch.arange(lookback)
         if data.size()[0] >= lookback:
             roll_data = roll_data[:data.size()[0]-lookback+1, window_idx, :]
