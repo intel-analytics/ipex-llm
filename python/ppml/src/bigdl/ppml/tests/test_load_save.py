@@ -108,6 +108,19 @@ def test_save_load_buf():
     assert model.linear.weight.data[0] == 1.245
 
 
+def test_save_load_with_no_encryption():
+    # Initialize the model
+    model = linearModel()
+    buf = io.BytesIO()
+    save(model.state_dict(), buf, ehsm_ip, ehsm_port,
+         encrypted_primary_key_path, encrypted_data_key_path, encrypted=False)
+    model.linear.weight.data.fill_(1.110)
+    # now we try to load it back, and check the weight is the same
+    model.load_state_dict(load(buf, ehsm_ip, ehsm_port,
+                          encrypted_primary_key_path, encrypted_data_key_path, encrypted=False))
+    assert model.linear.weight.data[0] == 1.245
+
+
 import torch.optim as optim
 # The example from pytorch tutorial
 class TheModelClass(nn.Module):
