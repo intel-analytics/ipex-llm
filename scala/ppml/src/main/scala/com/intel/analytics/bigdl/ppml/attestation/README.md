@@ -161,7 +161,11 @@ apt-get install -y libsgx-enclave-common-dev libsgx-ae-qe3 libsgx-ae-qve libsgx-
 
 * PCCS
   
-You can deploy a PCCS service container with [this guide](https://github.com/intel-analytics/BigDL/tree/main/ppml/services/pccs/docker). 
+You can deploy a PCCS service container with [this](https://github.com/intel-analytics/BigDL/tree/main/ppml/services/pccs/docker). Modify `uri` and `api_key` in `default.json`.
+```
+    "uri": "https://sbx.api.trustedservices.intel.com/sgx/certification/v4/",
+    "ApiKey": "your_subscription_key",
+```
 
 ## Usage
 ```bash
@@ -196,10 +200,21 @@ wget -qO - https://download.01.org/intel-sgx/sgx_repo/ubuntu/intel-sgx-deb.key |
 apt-get update && \
 apt-get install -y libsgx-enclave-common-dev libsgx-ae-qe3 libsgx-ae-qve libsgx-urts libsgx-dcap-ql libsgx-dcap-default-qpl libsgx-dcap-quote-verify-dev libsgx-dcap-ql-dev libsgx-dcap-default-qpl-dev libsgx-quote-ex-dev libsgx-uae-service libsgx-ra-network libsgx-ra-uefi
 ```
+* TDX quote verification lib
+
+Replace libsgx_dcap_quoteverify.so, use minor version accordingly. (`1.12.100.3` for example)
+```
+chmod +x libsgx_dcap_quoteverify.so
+sudo cp libsgx_dcap_quoteverify.so /usr/lib/x86_64-linux-gnu/libsgx_dcap_quoteverify.so.1.12.100.3
+```
 
 * PCCS
   
-You can deploy a PCCS service container with [this guide](https://github.com/intel-analytics/BigDL/tree/main/ppml/services/pccs/docker). 
+You can deploy a PCCS service container with [this](https://github.com/intel-analytics/BigDL/tree/main/ppml/services/pccs/docker). Modify `uri` and `api_key` in `default.json`.
+```
+    "uri": "https://sbx.api.trustedservices.intel.com/sgx/certification/v4/",
+    "ApiKey": "your_subscription_key",
+```
 
 ## Usage
 ```bash
