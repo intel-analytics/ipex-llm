@@ -50,21 +50,22 @@ class AcceleratedKerasModel(AcceleratedModel, tf.keras.Model):
 
     @staticmethod
     def tensors_to_numpy(tensors, dtype=None):
+        if isinstance(dtype, tf.DType):
+            dtype = dtype.as_numpy_dtype
         if isinstance(tensors, (list, tuple)):
             return type(tensors)(AcceleratedKerasModel.tensors_to_numpy(tensor, dtype)
                                  for tensor in tensors)
         elif isinstance(tensors, dict):
             return {key: AcceleratedKerasModel.tensors_to_numpy(value, dtype)
                     for key, value in tensors.items()}
-        elif isinstance(tensors, tf.Tensor):
+        elif isinstance(tensors, tf.Tensor) or is_torch_available and isinstance(tensors,
+                                                                                 torch.Tensor):
             if dtype is None:
                 return tensors.numpy()
             else:
                 return tensors.numpy().astype(dtype)
         elif isinstance(tensors, np.ndarray) and dtype is not None:
             return tensors.astype(dtype)
-        elif is_torch_available and isinstance(tensors, torch.Tensor):
-            return tensors.numpy()
         else:
             return tensors
 

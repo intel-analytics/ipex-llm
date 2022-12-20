@@ -63,20 +63,15 @@ class KerasONNXRuntimeModel(ONNXRuntimeModel, AcceleratedKerasModel):
                 onnx_path = model
             ONNXRuntimeModel.__init__(self, onnx_path, session_options=onnxruntime_session_options)
 
-    def __call__(self, *args, **kwargs):
-        invalidInputError(
-            not kwargs.get('training', False),
-            "Model of KerasONNXRuntimeModel is not trainable. Please set `training=False`."
-        )
+    def call(self, *args, **kwargs):
         inputs = list(args)
         # add arguments' default values into `kwargs`
         for name, value in self.default_kwargs.items():
             if name not in kwargs:
                 kwargs[name] = value
-
-        for param in self._call_fn_args_backup[len(inputs):]:
+        for param in self._call_fn_args_backup[len(inputs):len(self._forward_args)]:
             inputs.append(kwargs[param])
-        return self.forward(*inputs)
+        return super().call(*inputs)
 
     def on_forward_start(self, inputs):
         if self.ortsess is None:
@@ -86,6 +81,8 @@ class KerasONNXRuntimeModel(ONNXRuntimeModel, AcceleratedKerasModel):
         return inputs
 
     def on_forward_end(self, outputs):
+        if isinstance(outputs, list) and len(outputs) == 1:
+            outputs = outputs[0]
         outputs = self.numpy_to_tensors(outputs)
         return outputs
 
