@@ -82,10 +82,10 @@ def test_save_load_buf2():
     # Initialize the model
     model = linearModel()
     buf = io.BytesIO()
-    save(model.state_dict(), buf, ehsm_ip, ehsm_port, encrypted_primary_key_path, encrypted_data_key_path)
+    save(model.state_dict(), buf, encryption_key)
     model.linear.weight.data.fill_(1.110)
     # now we try to load it back, and check the weight is the same
-    model.load_state_dict(load(buf, ehsm_ip, ehsm_port, encrypted_primary_key_path, encrypted_data_key_path))
+    model.load_state_dict(load(buf, encryption_key))
     assert model.linear.weight.data[0] == 1.245
 
 
