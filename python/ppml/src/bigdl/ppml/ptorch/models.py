@@ -92,4 +92,5 @@ def load(f, kms_ip, kms_port, kms_encrypted_primary_key, kms_encrypted_data_key,
             decrypt_buf_with_key(f, decrypted_buf, kms_ip, kms_port, kms_encrypted_primary_key, kms_encrypted_data_key)
     # After writing to the buffer, need to set it back to its original position
     decrypted_buf.seek(0)
+    buf.close()
     return torch.load(decrypted_buf, map_location=map_location, **pickle_load_args)

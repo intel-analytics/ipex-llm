@@ -69,8 +69,6 @@ def encrypt_directory_automation(ip, port, input_dir, encrypted_primary_key_path
         print('[INFO] Encrypt Successfully! Encrypted Output Is ' + save_path)
     print('[INFO] Encrypted Files.')
 
-# TODO: do we release buf here or leave it to upper caller?
-# TODO: consider remove the io.BytesIO here
 def encrypt_buf_automation(ip, port, buf: io.BytesIO, encrypted_buf: io.BytesIO, encrypted_primary_key_path, encrypted_data_key_path):
     data_key = retrieve_data_key_plaintext(ip, port, encrypted_primary_key_path, encrypted_data_key_path)
     fernet = Fernet(data_key)
