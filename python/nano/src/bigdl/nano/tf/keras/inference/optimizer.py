@@ -476,6 +476,7 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                                                           thread_num=thread_num,
                                                           logging=logging,
                                                           openvino_config=openvino_config)
+            openvino_model = openvino_model.target_obj
             if metric:
                 if not isinstance(accuracy_criterion, dict):
                     accuracy_criterion = {'relative': 0.99, 'higher_is_better': True}
@@ -503,6 +504,7 @@ class InferenceOptimizer(BaseInferenceOptimizer):
             else:
                 onnx_model = InferenceOptimizer.trace(model=model, accelerator='onnxruntime',
                                                       input_spec=input_spec, thread_num=thread_num)
+            onnx_model = onnx_model.target_obj
 
             # trace onnx model
             method_map = {
@@ -524,6 +526,8 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                                   outputs=outputs,
                                   onnx_option='tensorflow',
                                   onnxruntime_session_options=onnxruntime_session_options)
+            result.default_kwargs = onnx_model.default_kwargs
+            result._call_fn_args_backup = onnx_model._call_fn_args_backup
         else:
             invalidInputError(False, "Accelerator {} is invalid.".format(accelerator))
         patch_compiled(result, model)

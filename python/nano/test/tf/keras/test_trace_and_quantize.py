@@ -51,6 +51,8 @@ class TestTraceAndQuantize(TestCase):
         # try to access some custom attributes
         traced_model.do_nothing()
         assert traced_model.get_x() == traced_model.x == x
+        traced_model(np.random.random((1, 4)).astype(np.float32))
+        traced_model(inputs=np.random.random((1, 4)).astype(np.float32))
 
     def test_attribute_access_after_quantize(self):
         x = 100
@@ -65,6 +67,8 @@ class TestTraceAndQuantize(TestCase):
         # try to access some custom attributes
         quantized_model.do_nothing()
         assert quantized_model.get_x() == quantized_model.x == x
+        quantized_model(np.random.random((1, 4)).astype(np.float32))
+        quantized_model(inputs=np.random.random((1, 4)).astype(np.float32))
 
     def test_evaluate_after_trace(self):
         model = MyModel(100)

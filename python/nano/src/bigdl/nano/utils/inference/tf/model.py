@@ -18,6 +18,12 @@ import tensorflow as tf
 from bigdl.nano.utils.log4Error import invalidInputError
 from ..model import AcceleratedModel
 
+try:
+    import torch
+    is_torch_available = True
+except ImportError:
+    is_torch_available = False
+
 
 class AcceleratedKerasModel(AcceleratedModel, tf.keras.Model):
     """A wrapper class for tf.keras.Model with accelerators."""
@@ -57,10 +63,20 @@ class AcceleratedKerasModel(AcceleratedModel, tf.keras.Model):
                 return tensors.numpy().astype(dtype)
         elif isinstance(tensors, np.ndarray) and dtype is not None:
             return tensors.astype(dtype)
+        elif is_torch_available and isinstance(tensors, torch.Tensor):
+            return tensors.numpy()
         else:
             return tensors
 
     @staticmethod
     def numpy_to_tensors(np_arrays):
-        tensors = tuple(map(lambda x: tf.convert_to_tensor(x), np_arrays))
-        return tensors[0] if len(tensors) == 1 else tensors
+        if isinstance(np_arrays, (list, tuple)):
+            return type(np_arrays)(AcceleratedKerasModel.numpy_to_tensors(array)
+                                   for array in np_arrays)
+        elif isinstance(np_arrays, dict):
+            return {key: AcceleratedKerasModel.numpy_to_tensors(value)
+                    for key, value in np_arrays.items()}
+        elif isinstance(np_arrays, np.ndarray):
+            return tf.convert_to_tensor(np_arrays)
+        else:
+            return np_arrays

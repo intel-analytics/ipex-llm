@@ -19,6 +19,7 @@ import os
 from pathlib import Path
 from tempfile import TemporaryDirectory
 import tensorflow as tf
+from bigdl.nano.utils.util import get_default_args
 from bigdl.nano.utils.inference.tf.model import AcceleratedKerasModel
 from bigdl.nano.utils.log4Error import invalidInputError
 
@@ -46,6 +47,7 @@ class KerasONNXRuntimeModel(ONNXRuntimeModel, AcceleratedKerasModel):
                            the shape/dtype of the input
         :param onnxruntime_session_options: will be passed to tf2onnx.convert.from_keras function
         """
+        AcceleratedKerasModel.__init__(self, None)
         with TemporaryDirectory() as tmpdir:
             if isinstance(model, tf.keras.Model):
                 onnx_path = os.path.join(tmpdir, "tmp.onnx")
@@ -55,10 +57,26 @@ class KerasONNXRuntimeModel(ONNXRuntimeModel, AcceleratedKerasModel):
                     input_spec = (input_spec, )
                 tf2onnx.convert.from_keras(model, input_signature=input_spec,
                                            output_path=onnx_path, **export_kwargs)
+                self.default_kwargs = get_default_args(model.call)
+                self._call_fn_args_backup = model._call_fn_args
             else:
                 onnx_path = model
-            AcceleratedKerasModel.__init__(self, None)
             ONNXRuntimeModel.__init__(self, onnx_path, session_options=onnxruntime_session_options)
+
+    def __call__(self, *args, **kwargs):
+        invalidInputError(
+            not kwargs.get('training', False),
+            "Model of KerasONNXRuntimeModel is not trainable. Please set `training=False`."
+        )
+        inputs = list(args)
+        # add arguments' default values into `kwargs`
+        for name, value in self.default_kwargs.items():
+            if name not in kwargs:
+                kwargs[name] = value
+
+        for param in self._call_fn_args_backup[len(inputs):]:
+            inputs.append(kwargs[param])
+        return self.forward(*inputs)
 
     def on_forward_start(self, inputs):
         if self.ortsess is None:
