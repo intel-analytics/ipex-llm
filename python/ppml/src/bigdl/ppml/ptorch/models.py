@@ -47,7 +47,7 @@ class _open_buffer_reader(_opener):
         super(_open_buffer_reader, self).__init__(buffer)
         # TODO: do we need to check seekable here?
 
-class _open_buffer_writer(object):
+class _open_buffer_writer(_opener):
     def __exit__(self, *args):
         self.file_like.flush()
 
