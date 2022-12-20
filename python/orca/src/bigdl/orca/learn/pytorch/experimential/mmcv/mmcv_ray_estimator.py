@@ -25,8 +25,9 @@ from bigdl.dllib.utils.log4Error import invalidInputError
 
 from typing import (Dict, List, Optional, Tuple, Callable, Union)
 
-from bigdl.orca.learn.pytorch.experimential.core.base_ray_estimator import BaseRayEstimator
+from bigdl.orca.learn.pytorch.core.base_ray_estimator import BaseRayEstimator
 from bigdl.orca.learn.pytorch.experimential.mmcv.mmcv_ray_runner import MMCVRayEpochRunner
+from bigdl.orca.learn.pytorch.utils import process_stats
 
 
 class MMCVRayEstimator(BaseRayEstimator):
@@ -78,7 +79,7 @@ class MMCVRayEstimator(BaseRayEstimator):
         epoch_stats = list(map(list, zip(*worker_stats)))
         if reduce_results:
             for i in range(len(epoch_stats)):
-                epoch_stats[i] = self._process_stats(epoch_stats[i])
+                epoch_stats[i] = process_stats(epoch_stats[i])
             return epoch_stats
         else:
             return epoch_stats
