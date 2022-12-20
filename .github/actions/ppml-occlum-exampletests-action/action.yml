@@ -30,6 +30,7 @@ runs:
         export IMAGE=${{ env.DEFAULT_IMAGE }}
 
         docker pull $IMAGE
+        docker pull intelanalytics/bigdl-ppml-trusted-big-data-ml-scala-occlum:2.2.0-SNAPSHOT
 
         docker rm -f $CONTAINER_NAME
 
