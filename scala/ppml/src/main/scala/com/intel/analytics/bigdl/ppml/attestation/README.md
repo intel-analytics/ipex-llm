@@ -173,7 +173,7 @@ java -cp [dependent-jars] com.intel.analytics.bigdl.ppml.attestation.TdxQuoteGen
 ```
 
 ## Parameters
-`-r` **userReport** User Report Data which will be passed to quote.
+`-r` **userReport** User report data which will be passed to quote.
 
 # TDX Quote Verification Interface
 
