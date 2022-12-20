@@ -16,9 +16,9 @@
 
 from kms.client import encrypt_buf_with_key, decrypt_buf_with_key
 import torch
-import io
+import io, os
 import pathlib
-
+from typing import BinaryIO, Union, IO
 
 def _is_path(name_or_buf):
     return isinstance(name_or_buf, str) or \
@@ -63,7 +63,7 @@ def _open_file_or_buffer(file_like, mode):
 
 
 # TODO: these arguments, should we move it to somewhere else?
-def save(obj, f, kms_ip, kms_port, kms_encrypted_primary_key, kms_encrypted_data_key, encrypted=True):
+def save(obj, f: Union[str, os.PathLike, BinaryIO, IO[bytes]], kms_ip, kms_port, kms_encrypted_primary_key, kms_encrypted_data_key, encrypted=True) -> None:
     if encrypted==False:
         torch.save(obj, f)
         return
@@ -80,7 +80,7 @@ def save(obj, f, kms_ip, kms_port, kms_encrypted_primary_key, kms_encrypted_data
 
 
 # TODO: do we need to move these variables to other places?
-def load(f, kms_ip, kms_port, kms_encrypted_primary_key, kms_encrypted_data_key, map_location=None):
+def load(f, kms_ip, kms_port, kms_encrypted_primary_key, kms_encrypted_data_key, map_location=None, **pickle_load_args):
     decrypted_buf = io.BytesIO()
     with _open_file_or_buffer(f, 'rb') as opened_file:
         if _is_path(f):
@@ -90,4 +90,4 @@ def load(f, kms_ip, kms_port, kms_encrypted_primary_key, kms_encrypted_data_key,
             decrypt_buf_with_key(f, decrypted_buf, kms_ip, kms_port, kms_encrypted_primary_key, kms_encrypted_data_key)
     # After writing to the buffer, need to set it back to its original position
     decrypted_buf.seek(0)
-    return torch.load(decrypted_buf, map_location=map_location)
+    return torch.load(decrypted_buf, map_location=map_location, **pickle_load_args)
