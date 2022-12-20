@@ -14,7 +14,7 @@
 # limitations under the License.
 #
 
-from kms.client import encrypt_buf_with_key, decrypt_buf_with_key
+from bigdl.ppml.kms.client import encrypt_buf_with_key, decrypt_buf_with_key
 import torch
 import io, os
 import pathlib
