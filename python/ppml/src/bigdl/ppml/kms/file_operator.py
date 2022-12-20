@@ -14,9 +14,9 @@
 # limitations under the License.
 #
 
-from . keymanager import retrieve_data_key_plaintext
+from . key_manager import retrieve_data_key_plaintext
 from cryptography.fernet import Fernet
-import os, sqlite3, csv, io
+import os, csv, io
 
 def read_data_file(data_file_path):
     with open(data_file_path, 'rb') as file:
@@ -101,4 +101,4 @@ def decrypt_csv_columns_automation(ip, port, encrypted_primary_key_path, encrypt
         print('[INFO] Decryption Finished. The Output Is ' + csv_file + '.col_decrypted')
 
     end = time.time()
-    print('[INFO] Total Elapsed Time For Columns Decrytion: ' + str(end - start) + ' s')
+    print('[INFO] Total Elapsed Time For Columns Decryption: ' + str(end - start) + ' s')
