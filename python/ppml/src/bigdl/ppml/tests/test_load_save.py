@@ -16,6 +16,7 @@
 
 import torch.nn.functional as F
 import torch, os, io
+import base64
 import torch.nn as nn
 import pytest
 import random
@@ -27,7 +28,10 @@ def _create_random(length) -> str:
     chars = []
     for i in range(length):
         chars.append(random.choice(ALPHABET))
-    return "".join(chars)
+    key = "".join(chars)
+    base64_str = base64.b64encode(key)
+    print(len(base64_str), flush=True)
+    return base64_str
 
 
 
