@@ -80,7 +80,9 @@ def save(obj, f: Union[str, os.PathLike, BinaryIO, IO[bytes]], kms_ip, kms_port,
 
 
 # TODO: do we need to move these variables to other places?
-def load(f, kms_ip, kms_port, kms_encrypted_primary_key, kms_encrypted_data_key, map_location=None, **pickle_load_args):
+def load(f, kms_ip, kms_port, kms_encrypted_primary_key, kms_encrypted_data_key, encrypted=True, map_location=None, **pickle_load_args):
+    if encrypted == False:
+        return torch.load(f, map_location=map_location, **pickle_load_args)
     decrypted_buf = io.BytesIO()
     with _open_file_or_buffer(f, 'rb') as opened_file:
         if _is_path(f):
