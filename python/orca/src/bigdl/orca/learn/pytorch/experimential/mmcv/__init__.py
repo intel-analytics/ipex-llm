@@ -17,7 +17,7 @@
 
 from .mmcv_ray_estimator import MMCVRayEstimator
 from .mmcv_ray_runner import HDFSBackend
-from mmcv import FileClient
+from mmcv.fileio.file_client import FileClient
 
 
 # register hdfs backend to support save ckpt to hdfs for mmcv.

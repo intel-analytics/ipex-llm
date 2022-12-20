@@ -27,6 +27,7 @@ from mmcv.runner import EpochBasedRunner
 from mmcv.runner.utils import get_host_info
 from mmcv.parallel.distributed import MMDistributedDataParallel
 from mmcv.fileio.file_client import BaseStorageBackend
+from mmcv.utils.misc import is_list_of
 from mmcv.runner.checkpoint import CheckpointLoader
 from bigdl.orca.learn.pytorch.utils import get_batchsize
 from bigdl.dllib.utils.log4Error import invalidInputError
@@ -156,7 +157,7 @@ class MMCVRayEpochRunner(BaseRunner, EpochBasedRunner):
             max_epochs: Optional[int] = None,
             **kwargs) -> List[Dict]:
         invalidInputError(isinstance(data_loaders, list), "data_loaders should be a list")
-        invalidInputError(mmcv.is_list_of(workflow, tuple), "workflow shoud be a list of tuple")
+        invalidInputError(is_list_of(workflow, tuple), "workflow shoud be a list of tuple")
         invalidInputError(len(data_loaders) == len(workflow),
                           "data_loaders and workflow should have the same length")
 
