@@ -37,11 +37,11 @@ https_secure_password=$HTTPS_SECURE_PASSWORD # k8s secret
     -Dakka.actor.default-dispatcher.fork-join-executor.parallelism-min=100 \
     -Dakka.actor.default-dispatcher.fork-join-executor.parallelism-max=120 \
     -Dakka.actor.default-dispatcher.fork-join-executor.parallelism-factor=1 \
-    -jar /opt/bigdl-serving-http.jar \
+    -jar /opt/bigdl-kms-frontend.jar \
+    --class com.intel.analytics.bigdl.kms.frontend.App \
     --keywhizHost "keywhiz-service" \
     --tokensPerSecond 30 \
     --tokenBucketEnabled true \
     --parallelism 30 \
-    --httpsEnabled true \
     --httpsKeyStorePath "${https_key_store_path}" \
     --httpsKeyStoreToken "${https_secure_password}" | tee ./https-frontend.log
