@@ -102,8 +102,8 @@ RUN env DEBIAN_FRONTEND=noninteractive apt-get update && \
     sed -i '/module = importlib.import_module/i\ \ \ \ \ \ \ \ sys.path.append(model_dir)' /usr/local/lib/python3.7/dist-packages/ts/torch_handler/base_handler.py && \
     sed -i 's/SOCKET_ACCEPT_TIMEOUT = 30.0/SOCKET_ACCEPT_TIMEOUT = 3000.0/' /usr/local/lib/python3.7/dist-packages/ts/model_service_worker.py && \
     cp /usr/local/lib/python3.7/dist-packages/ts/configs/metrics.yaml /ppml && \
-    chmod +x /ppml/work/start-scripts/start-backend-sgx.sh && \
-    chmod +x /ppml/work/start-scripts/start-frontend-sgx.sh && \
-    chmod +x /ppml/work/start-scripts/start-torchserve-sgx.sh && \
+    chmod +x /ppml/examples/start-backend-sgx.sh && \
+    chmod +x /ppml/examples/start-frontend-sgx.sh && \
+    chmod +x /ppml/examples/start-torchserve-sgx.sh
 
 ENTRYPOINT [ "/opt/entrypoint.sh" ]
