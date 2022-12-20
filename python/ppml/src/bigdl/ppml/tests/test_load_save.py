@@ -18,7 +18,7 @@ import torch.nn.functional as F
 import torch, os, io
 import torch.nn as nn
 import pytest
-from bigdl.ppml.ptorch.models import save, load
+from bigdl.ppml.encryption.torch.models import save, load
 from bigdl.ppml.kms.client import decrypt_buffer_with_key, generate_primary_key, generate_data_key
 
 class linearModel(nn.Module):
