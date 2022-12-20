@@ -14,15 +14,32 @@
 # limitations under the License.
 #
 
-from bigdl.ppml.kms.client import encrypt_buffer_with_key, decrypt_buffer_with_key
 import torch
 import io, os
 import pathlib
+from cryptography.fernet import Fernet
 from typing import BinaryIO, Union, IO
+import pickle
+
+DEFAULT_PROTOCOL = 2
 
 def _is_path(name_or_buf):
     return isinstance(name_or_buf, str) or \
         isinstance(name_or_buf, pathlib.Path)
+
+# Attention, the use of encrypt method and decrypt method here will change the file location
+class _buf_operator(object):
+    def __init__(self, key):
+        self.secret_key = Fernet(key) 
+
+    def encrypt_buffer(self, buffer, encrypted_buffer):
+        content = buffer.getvalue()
+        encrypted_content= self.secret_key.encrypt(content)
+        encrypted_buffer.write(encrypted_content)
+
+    def decrypt_buffer(self, buffer, decrypted_buffer):
+        decrypted_content = self.secret_key.decrypt(buffer.getvalue())
+        decrypted_buffer.write(decrypted_content)
 
 class _opener(object):
     def __init__(self, file_like):
@@ -61,36 +78,29 @@ def _open_file_or_buffer(file_like, mode):
         else:
             raise RuntimeError(f"Expected 'r' or 'w' in mode but got {mode}")
 
-
-# TODO: these arguments, should we move it to somewhere else?
-def save(obj, f: Union[str, os.PathLike, BinaryIO, IO[bytes]], kms_ip, kms_port, kms_encrypted_primary_key, kms_encrypted_data_key, encrypted=True) -> None:
-    if encrypted==False:
-        torch.save(obj, f)
-        return
+def save(obj, f: Union[str, os.PathLike, BinaryIO, IO[bytes]], encryption_key: str, pickle_module = pickle, pickle_protocol=DEFAULT_PROTOCOL, _use_new_zipfile_serialization=True) -> None:
     buffer = io.BytesIO()
-    encrypted_buf = io.BytesIO()
-    torch.save(obj, buffer)
-    # Encrypt the buffer
-    encrypt_buffer_with_key(buffer, encrypted_buf, kms_ip, kms_port, kms_encrypted_primary_key, kms_encrypted_data_key)
+    encrypted_buffer = io.BytesIO()
+    torch.save(obj, buffer, pickle_module=pickle_module, pickle_protocol=pickle_protocol, _use_new_zipfile_serialization=_use_new_zipfile_serialization)
+    encryptor = _buf_operator(encryption_key)
+    encryptor.encrypt_buffer(buffer, encrypted_buffer)
     with _open_file_or_buffer(f, 'wb') as opened_file:
-        opened_file.write(encrypted_buf.getvalue())
+        opened_file.write(encrypted_buffer.getvalue())
     buffer.close()
-    encrypted_buf.close()
+    encrypted_buffer.close()
     return
 
 
-# TODO: do we need to move these variables to other places?
-def load(f, kms_ip, kms_port, kms_encrypted_primary_key, kms_encrypted_data_key, encrypted=True, map_location=None, **pickle_load_args):
-    if encrypted == False:
-        return torch.load(f, map_location=map_location, **pickle_load_args)
+def load(f, decryption_key, map_location=None, pickle_module=pickle, **pickle_load_args):
     decrypted_buf = io.BytesIO()
+    decryptor = _buf_operator(decryption_key)
     with _open_file_or_buffer(f, 'rb') as opened_file:
         if _is_path(f):
             buf = io.BytesIO(opened_file.read())
-            decrypt_buffer_with_key(buf, decrypted_buf, kms_ip, kms_port, kms_encrypted_primary_key, kms_encrypted_data_key)
+            decryptor.decrypt_buffer(buf, decrypted_buf)
             buf.close()
         else:
-            decrypt_buffer_with_key(f, decrypted_buf, kms_ip, kms_port, kms_encrypted_primary_key, kms_encrypted_data_key)
+            decryptor.decrypt_buffer(f, decrypted_buf)
     # After writing to the buffer, need to set it back to its original position
     decrypted_buf.seek(0)
     return torch.load(decrypted_buf, map_location=map_location, **pickle_load_args)

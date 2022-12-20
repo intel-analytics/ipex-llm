@@ -18,8 +18,18 @@ import torch.nn.functional as F
 import torch, os, io
 import torch.nn as nn
 import pytest
+import random
 from bigdl.ppml.encryption.torch.models import save, load
 from bigdl.ppml.kms.client import decrypt_buffer_with_key, generate_primary_key, generate_data_key
+
+def _create_random(length) -> str:
+    ALPHABET = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
+    chars = []
+    for i in range(length):
+        chars.append(random.choice(ALPHABET))
+    return "".join(chars)
+
+
 
 class linearModel(nn.Module):
     def __init__(self):
@@ -32,72 +42,38 @@ class linearModel(nn.Module):
         out = self.linear(x)
         return out
 
-
-os.environ['APPID'] = "63a88858-29f6-426f-b9b7-15702bf056ac"
-os.environ['APIKEY'] = "PxiX0hduXAG76cw1JMYPJWyGBMGc0muB"
-
-
-encrypted_primary_key_path = ""
-encrypted_data_key_path = ""
-
-ehsm_ip = "172.168.0.226"
-ehsm_port = "9000"
-
+encryption_key = ""
 
 @pytest.fixture(scope="session", autouse=True)
 def prepare_test_env():
-    # Prepare the keys
-    generate_primary_key(ehsm_ip, ehsm_port)
-    global encrypted_primary_key_path
-    encrypted_primary_key_path = "./encrypted_primary_key"
-    generate_data_key(ehsm_ip, ehsm_port, encrypted_primary_key_path, 32)
-    global encrypted_data_key_path
-    encrypted_data_key_path = "./encrypted_data_key"
+    global encryption_key
+    encryption_key = _create_random(32)
 
-def test_save_file_method():
+def test_save_load_to_buf():
     model = linearModel()
     encrypted_buf = io.BytesIO()
     # Reference expected value
     expected_buf = io.BytesIO()
     torch.save(model.state_dict(), expected_buf)
+    expected_state = torch.load(expected_buf)
 
-    save(model.state_dict(), encrypted_buf, ehsm_ip, ehsm_port, encrypted_primary_key_path, encrypted_data_key_path)
-    our_buf = io.BytesIO()
-    decrypt_buffer_with_key(encrypted_buf, our_buf, ehsm_ip, ehsm_port, encrypted_primary_key_path, encrypted_data_key_path)
-    assert our_buf.getvalue() == expected_buf.getvalue()
-    # Test write it to a file and load it back, should get same value
-    with open("testmodel.pt", 'wb') as opened_file:
-        opened_file.write(our_buf.getvalue())
-        opened_file.flush()
-        opened_file.close()
+    save(model.state_dict(), encrypted_buf, encryption_key)
+    # load it back and compare the stat_dict is the same
+    our_state_dict = load(encrypted_buf, encryption_key)
 
-    read_buf = io.BytesIO()
-    with open("testmodel.pt", 'rb') as opened_file:
-        read_buf.write(opened_file.read())
-    assert read_buf.getvalue() == expected_buf.getvalue()
+    assert our_state_dict == expected_state
 
-    with open("testmodel.pt", 'wb') as opened_file:
-        opened_file.write(encrypted_buf.getvalue())
-        opened_file.flush()
-        opened_file.close()
-
-    read_buf = io.BytesIO()
-    with open("testmodel.pt", 'rb') as opened_file:
-        read_buf.write(opened_file.read())
-    our_buf = io.BytesIO() 
-    decrypt_buffer_with_key(read_buf, our_buf, ehsm_ip, ehsm_port, encrypted_primary_key_path, encrypted_data_key_path)
-    assert our_buf.getvalue() == expected_buf.getvalue()
-
-def test_save_load():
+def test_save_load_to_file():
     # Initialize the model
     model = linearModel()
-    save(model.state_dict(), "testsave.pt", ehsm_ip, ehsm_port, encrypted_primary_key_path, encrypted_data_key_path)
+    save(model.state_dict(), "testsave.pt", encryption_key)
+    # change its default value
     model.linear.weight.data.fill_(1.110)
     # now we try to load it back, and check the weight is the same
-    model.load_state_dict(load("testsave.pt", ehsm_ip, ehsm_port, encrypted_primary_key_path, encrypted_data_key_path))
+    model.load_state_dict(load("testsave.pt", encryption_key))
     assert model.linear.weight.data[0] == 1.245
 
-def test_save_load_buf():
+def test_save_load_buf2():
     # Initialize the model
     model = linearModel()
     buf = io.BytesIO()
@@ -105,19 +81,6 @@ def test_save_load_buf():
     model.linear.weight.data.fill_(1.110)
     # now we try to load it back, and check the weight is the same
     model.load_state_dict(load(buf, ehsm_ip, ehsm_port, encrypted_primary_key_path, encrypted_data_key_path))
-    assert model.linear.weight.data[0] == 1.245
-
-
-def test_save_load_with_no_encryption():
-    # Initialize the model
-    model = linearModel()
-    buf = io.BytesIO()
-    save(model.state_dict(), buf, ehsm_ip, ehsm_port,
-         encrypted_primary_key_path, encrypted_data_key_path, encrypted=False)
-    model.linear.weight.data.fill_(1.110)
-    # now we try to load it back, and check the weight is the same
-    model.load_state_dict(load(buf, ehsm_ip, ehsm_port,
-                          encrypted_primary_key_path, encrypted_data_key_path, encrypted=False))
     assert model.linear.weight.data[0] == 1.245
 
 
@@ -150,8 +113,8 @@ def test_multi_save():
         'model_state_dict': model.state_dict(),
         'optimizer_state_dict': optimizer.state_dict(),
         'loss': 1.842,
-    }, "checkpoint.pt", ehsm_ip, ehsm_port, encrypted_primary_key_path, encrypted_data_key_path)
-    checkpoint = load("checkpoint.pt", ehsm_ip, ehsm_port, encrypted_primary_key_path, encrypted_data_key_path)
+    }, "checkpoint.pt", encryption_key)
+    checkpoint = load("checkpoint.pt", encryption_key)
     assert checkpoint['epoch'] == 5
     assert checkpoint['loss'] == 1.842
     assert optimizer.state_dict() == checkpoint['optimizer_state_dict']
