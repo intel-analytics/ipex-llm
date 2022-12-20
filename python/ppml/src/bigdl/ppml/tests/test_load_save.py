@@ -29,7 +29,8 @@ def _create_random(length) -> str:
     for i in range(length):
         chars.append(random.choice(ALPHABET))
     key = "".join(chars)
-    base64_str = base64.b64encode(key)
+    key_bytes = key.encode("ascii")
+    base64_str = base64.b64encode(key_bytes)
     print(len(base64_str), flush=True)
     return base64_str
 
