@@ -151,7 +151,7 @@ runs:
         docker exec -i $CONTAINER_NAME bash -c "cd /opt && \
              bash run_spark_on_occlum_glibc.sh pysql | tee test-pyspark-sql-sgx.log && \
              cat test-pyspark-sql-sgx.log | egrep 'Example API finished'"
-        status_8_pyspark_sql=$(echo $?)
+        status_9_pyspark_sql=$(echo $?)
         fi
 
         echo "status_1_spark_pi $status_1_spark_pi"
