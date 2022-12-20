@@ -130,7 +130,6 @@ def format_optimize_result(optimize_result_dict: dict,
             if latency != "None":
                 latency = round(latency, 3)
             accuracy = result.get("accuracy", "None")
-            print(method, accuracy)
             if accuracy != "None" and isinstance(accuracy, float):
                 accuracy = round(accuracy, 3)
             elif isinstance(accuracy, numbers.Real):
