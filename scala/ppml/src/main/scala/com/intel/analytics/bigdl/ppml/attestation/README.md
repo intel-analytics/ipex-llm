@@ -127,3 +127,84 @@ bash verify-attestation-service.sh
 `-t` **asType** Type of attestation service. Currently support `EHSMAttestationService`.
 
 `-c` **challenge** Challenge to get quote of attestation service which will be verified by local SGX SDK. Should be a BASE64 string.
+
+# TDX Quote Generation Interface
+
+You can generate TDX quote in TDVM with `TDXQuoteGenerate`.
+
+## Requirements
+* TDVM
+
+Check whether the device `/dev/tdx-attest` exists.
+
+* Intel SGX SDK
+* Intel SGX DCAP Development Packages
+  
+Install with commands:
+```bash ubuntu 20.04
+# install sgxsdk
+cd /opt/intel && \
+wget https://download.01.org/intel-sgx/sgx-dcap/1.14/linux/distro/ubuntu20.04-server/sgx_linux_x64_sdk_2.17.100.3.bin && \
+chmod a+x ./sgx_linux_x64_sdk_2.17.100.3.bin && \
+printf "no\n/opt/intel\n"|./sgx_linux_x64_sdk_2.17.100.3.bin && \
+. /opt/intel/sgxsdk/environment && \
+# install dcap
+cd /opt/intel && \
+wget https://download.01.org/intel-sgx/sgx-dcap/1.14/linux/distro/ubuntu20.04-server/sgx_debian_local_repo.tgz && \
+tar xzf sgx_debian_local_repo.tgz && \
+echo 'deb [trusted=yes arch=amd64] file:///opt/intel/sgx_debian_local_repo focal main' | tee /etc/apt/sources.list.d/intel-sgx.list && \
+wget -qO - https://download.01.org/intel-sgx/sgx_repo/ubuntu/intel-sgx-deb.key | apt-key add - && \
+apt-get update && \
+# TODO: minimize lib dependency
+apt-get install -y libsgx-enclave-common-dev libsgx-ae-qe3 libsgx-ae-qve libsgx-urts libsgx-dcap-ql libsgx-dcap-default-qpl libsgx-dcap-quote-verify-dev libsgx-dcap-ql-dev libsgx-dcap-default-qpl-dev libsgx-quote-ex-dev libsgx-uae-service libsgx-ra-network libsgx-ra-uefi libtdx-attest libtdx-attest-dev
+```
+
+* PCCS
+  
+You can deploy a PCCS service container with [this guide](https://github.com/intel-analytics/BigDL/tree/main/ppml/services/pccs/docker). 
+
+## Usage
+```bash
+java -cp [dependent-jars] com.intel.analytics.bigdl.ppml.attestation.TdxQuoteGenerate -r <userReport>
+```
+
+## Parameters
+`-r` **userReport** User Report Data which will be passed to quote.
+
+# TDX Quote Verification Interface
+
+You can verify TDX quote with `TDXQuoteVerification`.
+
+## Requirements
+* Intel SGX SDK
+* Intel SGX DCAP Development Packages
+  
+Install with commands:
+```bash ubuntu 20.04
+# install sgxsdk
+cd /opt/intel && \
+wget https://download.01.org/intel-sgx/sgx-dcap/1.14/linux/distro/ubuntu20.04-server/sgx_linux_x64_sdk_2.17.100.3.bin && \
+chmod a+x ./sgx_linux_x64_sdk_2.17.100.3.bin && \
+printf "no\n/opt/intel\n"|./sgx_linux_x64_sdk_2.17.100.3.bin && \
+. /opt/intel/sgxsdk/environment && \
+# install dcap
+cd /opt/intel && \
+wget https://download.01.org/intel-sgx/sgx-dcap/1.14/linux/distro/ubuntu20.04-server/sgx_debian_local_repo.tgz && \
+tar xzf sgx_debian_local_repo.tgz && \
+echo 'deb [trusted=yes arch=amd64] file:///opt/intel/sgx_debian_local_repo focal main' | tee /etc/apt/sources.list.d/intel-sgx.list && \
+wget -qO - https://download.01.org/intel-sgx/sgx_repo/ubuntu/intel-sgx-deb.key | apt-key add - && \
+apt-get update && \
+apt-get install -y libsgx-enclave-common-dev libsgx-ae-qe3 libsgx-ae-qve libsgx-urts libsgx-dcap-ql libsgx-dcap-default-qpl libsgx-dcap-quote-verify-dev libsgx-dcap-ql-dev libsgx-dcap-default-qpl-dev libsgx-quote-ex-dev libsgx-uae-service libsgx-ra-network libsgx-ra-uefi
+```
+
+* PCCS
+  
+You can deploy a PCCS service container with [this guide](https://github.com/intel-analytics/BigDL/tree/main/ppml/services/pccs/docker). 
+
+## Usage
+```bash
+java -cp [dependent-jars] com.intel.analytics.bigdl.ppml.attestation.TdxQuoteVerification -q <quotePath>
+```
+
+## Parameters
+`-q` **quotePath** Path of quote to be verified.

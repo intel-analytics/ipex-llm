@@ -27,7 +27,6 @@ import com.intel.analytics.bigdl.ppml.attestation._
 class TDXQuoteGeneratorImpl extends QuoteGenerator {
 
   val logger = LogManager.getLogger(getClass)
-  val QUOTE_PATH = "./quote.dat"
 
   @throws(classOf[AttestationRuntimeException])
   override def getQuote(userReportData: Array[Byte]): Array[Byte] = {
@@ -45,18 +44,6 @@ class TDXQuoteGeneratorImpl extends QuoteGenerator {
         logger.error("Failed to get quote.")
         throw new AttestationRuntimeException("Failed to obtain quote " +
           "!", e)
-    }
-
-    try {
-      // write quote
-      val out = new BufferedOutputStream(new FileOutputStream(QUOTE_PATH))
-      out.write(quote)
-      out.close()
-    } catch {
-      case e: Exception =>
-        logger.error(s"Failed to write quote, ${e}")
-        throw new AttestationRuntimeException("Failed " +
-        "to persist TDX quote!", e)
     }
 
     return quote

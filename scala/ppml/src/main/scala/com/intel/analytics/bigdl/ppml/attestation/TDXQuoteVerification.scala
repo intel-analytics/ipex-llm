@@ -72,10 +72,10 @@ object TdxQuoteVerification {
         val quoteVerifier = new SGXDCAPQuoteVerifierImpl()
         val verifyQuoteResult = quoteVerifier.verifyQuote(quote)
         if (verifyQuoteResult == 0) {
-            System.out.println("Quote Verification Success!")
+            System.out.println("TDX Quote Verification Success!")
             System.exit(0)
         } else {
-            System.out.println("Quote Verification Fail! Application killed")
+            System.out.println("TDX Quote Verification Fail! Application killed")
             System.exit(1)
         }
 
