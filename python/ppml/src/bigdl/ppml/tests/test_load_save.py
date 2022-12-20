@@ -18,8 +18,8 @@ import torch.nn.functional as F
 import torch, os, io
 import torch.nn as nn
 import pytest
-from ptorch.models import save, load
-from kms.client import decrypt_buf_with_key, generate_primary_key, generate_data_key
+from bigdl.ppml.ptorch.models import save, load
+from kms.client import decrypt_buffer_with_key, generate_primary_key, generate_data_key
 
 class linearModel(nn.Module):
     def __init__(self):
@@ -63,7 +63,7 @@ def test_save_file_method():
 
     save(model.state_dict(), encrypted_buf, ehsm_ip, ehsm_port, encrypted_primary_key_path, encrypted_data_key_path)
     our_buf = io.BytesIO()
-    decrypt_buf_with_key(encrypted_buf, our_buf, ehsm_ip, ehsm_port, encrypted_primary_key_path, encrypted_data_key_path)
+    decrypt_buffer_with_key(encrypted_buf, our_buf, ehsm_ip, ehsm_port, encrypted_primary_key_path, encrypted_data_key_path)
     assert our_buf.getvalue() == expected_buf.getvalue()
     # Test write it to a file and load it back, should get same value
     with open("testmodel.pt", 'wb') as opened_file:
@@ -85,7 +85,7 @@ def test_save_file_method():
     with open("testmodel.pt", 'rb') as opened_file:
         read_buf.write(opened_file.read())
     our_buf = io.BytesIO() 
-    decrypt_buf_with_key(read_buf, our_buf, ehsm_ip, ehsm_port, encrypted_primary_key_path, encrypted_data_key_path)
+    decrypt_buffer_with_key(read_buf, our_buf, ehsm_ip, ehsm_port, encrypted_primary_key_path, encrypted_data_key_path)
     assert our_buf.getvalue() == expected_buf.getvalue()
 
 def test_save_load():
@@ -156,5 +156,4 @@ def test_multi_save():
     assert checkpoint['loss'] == 1.842
     assert optimizer.state_dict() == checkpoint['optimizer_state_dict']
     for param_tensor in model.state_dict():
-        assert torch.equal(model.state_dict()[
-                           param_tensor], checkpoint['model_state_dict'][param_tensor])
+        assert torch.equal(model.state_dict()[param_tensor], checkpoint['model_state_dict'][param_tensor])

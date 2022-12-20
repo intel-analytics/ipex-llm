@@ -19,7 +19,7 @@
 
 import io, os
 import pytest
-from kms.client import encrypt_buf_with_key, decrypt_buf_with_key, generate_primary_key, generate_data_key
+from bigdl.ppml.kms.client import encrypt_buffer_with_key, decrypt_buffer_with_key, generate_primary_key, generate_data_key
 
 # Only for test purpose, never use it in production
 os.environ['APPID'] = "63a88858-29f6-426f-b9b7-15702bf056ac"
@@ -48,9 +48,9 @@ def test_encrypt_buf():
     original_content = buf.getvalue()
     # Now try to encrypt the buffer
     encrypted_buf = io.BytesIO()
-    encrypt_buf_with_key(buf, encrypted_buf, ehsm_ip, ehsm_port, encrypted_primary_key_path, encrypted_data_key_path)
+    encrypt_buffer_with_key(buf, encrypted_buf, ehsm_ip, ehsm_port, encrypted_primary_key_path, encrypted_data_key_path)
     decrypted_buf = io.BytesIO()
-    decrypt_buf_with_key(encrypted_buf, decrypted_buf, ehsm_ip, ehsm_port, encrypted_primary_key_path, encrypted_data_key_path)
+    decrypt_buffer_with_key(encrypted_buf, decrypted_buf, ehsm_ip, ehsm_port, encrypted_primary_key_path, encrypted_data_key_path)
     decrypted_content = decrypted_buf.getvalue()
     assert decrypted_content == original_content
     # close all the buffer to release memory
