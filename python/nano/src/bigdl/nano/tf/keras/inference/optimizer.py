@@ -495,7 +495,7 @@ class InferenceOptimizer(BaseInferenceOptimizer):
 
         if not isinstance(x, tf.data.Dataset) and y is None:
             # fake label to make quantization work
-            y = range(len(x))
+            y = range(len(x))    # type: ignore
         if isinstance(x, tf.data.Dataset):
             batch_data = next(iter(x))
             if isinstance(batch_data, tf.Tensor) or \
