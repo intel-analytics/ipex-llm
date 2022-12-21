@@ -81,7 +81,7 @@ object AttestationCLI {
         // Generate quote
         val userReportData = params.userReport
         val quotePath = params.quotePath
-        if (quotePath == ""){
+        if (quotePath == "") {
           if (params.OSType == "gramine") {
             val quoteGenerator = new GramineQuoteGeneratorImpl()
             quote = quoteGenerator.getQuote(userReportData.getBytes)

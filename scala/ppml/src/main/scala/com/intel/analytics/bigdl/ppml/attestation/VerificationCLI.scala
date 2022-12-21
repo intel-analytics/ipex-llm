@@ -66,7 +66,7 @@ object VerificationCLI {
         val params = cmdParser.parse(args, CmdParams()).get
         var quote = Array[Byte]()
         val quotePath = params.quotePath
-        if (quotePath == ""){
+        if (quotePath == "") {
           // Attestation Client
           val as = params.attestationType match {
               case ATTESTATION_CONVENTION.MODE_EHSM_KMS =>
