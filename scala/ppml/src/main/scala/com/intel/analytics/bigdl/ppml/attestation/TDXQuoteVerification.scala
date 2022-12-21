@@ -72,10 +72,14 @@ object TdxQuoteVerification {
         val quoteVerifier = new SGXDCAPQuoteVerifierImpl()
         val verifyQuoteResult = quoteVerifier.verifyQuote(quote)
         if (verifyQuoteResult == 0) {
-            System.out.println("TDX Quote Verification Success!")
+            System.out.println("INFO: TDX Quote Verification Success!")
+            System.exit(0)
+        } else if (verifyQuoteResult == 1) {
+            System.out.println("Warning: TDX Quote Verification pass but BIOS or the software" +
+                "is out of date. ")
             System.exit(0)
         } else {
-            System.out.println("TDX Quote Verification Fail! Application killed")
+            System.out.println("ERROR: TDX Quote Verification Fail! Application killed")
             System.exit(1)
         }
 

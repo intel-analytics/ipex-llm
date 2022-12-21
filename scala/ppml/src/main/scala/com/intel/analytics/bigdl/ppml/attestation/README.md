@@ -159,7 +159,7 @@ apt-get update && \
 apt-get install -y libsgx-enclave-common-dev libsgx-ae-qe3 libsgx-ae-qve libsgx-urts libsgx-dcap-ql libsgx-dcap-default-qpl libsgx-dcap-quote-verify-dev libsgx-dcap-ql-dev libsgx-dcap-default-qpl-dev libsgx-quote-ex-dev libsgx-uae-service libsgx-ra-network libsgx-ra-uefi libtdx-attest libtdx-attest-dev
 ```
 
-* PCCS
+* TDX PCCS
   
 You can deploy a PCCS service container with [this](https://github.com/intel-analytics/BigDL/tree/main/ppml/services/pccs/docker). Modify `uri` and `api_key` in `default.json`.
 ```
@@ -202,13 +202,13 @@ apt-get install -y libsgx-enclave-common-dev libsgx-ae-qe3 libsgx-ae-qve libsgx-
 ```
 * TDX quote verification lib
 
-Replace libsgx_dcap_quoteverify.so, use minor version accordingly. (`1.12.100.3` for example)
+Apply `libsgx_dcap_quoteverify.so` from Intel S3 team, use minor version accordingly. (`1.12.100.3` for example)
 ```
 chmod +x libsgx_dcap_quoteverify.so
 sudo cp libsgx_dcap_quoteverify.so /usr/lib/x86_64-linux-gnu/libsgx_dcap_quoteverify.so.1.12.100.3
 ```
 
-* PCCS
+* TDX PCCS
   
 You can deploy a PCCS service container with [this](https://github.com/intel-analytics/BigDL/tree/main/ppml/services/pccs/docker). Modify `uri` and `api_key` in `default.json`.
 ```
