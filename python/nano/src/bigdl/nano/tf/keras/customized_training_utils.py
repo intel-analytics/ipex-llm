@@ -19,6 +19,7 @@ import tensorflow as tf
 import numpy as np
 from functools import wraps
 
+
 def tf_bf16_nano(func):
     """A decorator to realize mixed precision on customized training loop."""
 
