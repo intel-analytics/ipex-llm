@@ -65,7 +65,7 @@ class KerasONNXRuntimeModel(ONNXRuntimeModel, AcceleratedKerasModel):
                     self._call_fn_args_backup = model._call_fn_args
                 else:
                     from keras.utils import tf_inspect
-                    self._call_fn_args_backup = tf_inspect.getargspec(model.call).args
+                    self._call_fn_args_backup = tf_inspect.getargspec(model.call).args[1:]
             else:
                 onnx_path = model
             ONNXRuntimeModel.__init__(self, onnx_path, session_options=onnxruntime_session_options)
@@ -137,6 +137,6 @@ class KerasONNXRuntimeModel(ONNXRuntimeModel, AcceleratedKerasModel):
         super()._save_model(onnx_path)
         attrs = {"_default_kwargs": self._default_kwargs,
                  "_call_fn_args_backup": self._call_fn_args_backup,
-                 "_inputs_dtypes": self._inputs_dtypes,}
+                 "_inputs_dtypes": self._inputs_dtypes}
         with open(Path(path) / self.status['attr_path'], "wb") as f:
             pickle.dump(attrs, f)
