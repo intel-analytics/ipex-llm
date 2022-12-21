@@ -93,6 +93,6 @@ object VerificationCLI {
           in.close()
         }
         val quoteVerifier = new SGXDCAPQuoteVerifierImpl()
-        quoteVerifier.verifyQuoteWithResultCheck(quote)
+        quoteVerifier.verifyQuote(quote)
     }
 }
