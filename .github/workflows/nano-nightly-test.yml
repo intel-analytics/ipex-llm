@@ -3,7 +3,7 @@ name: Nano Nightly Test
 # Controls when the action will run.
 on:
   schedule:
-    - cron: '00 17 * * *' # GMT time, 17:00 GMT == 01:00 China
+    - cron: '00 01 * * *' # GMT time, 01:00 GMT == 09:00 China
   pull_request:
     branches: [ main ]
     paths:
