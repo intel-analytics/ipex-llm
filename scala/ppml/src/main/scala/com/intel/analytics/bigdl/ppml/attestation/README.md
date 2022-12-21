@@ -105,12 +105,11 @@ java -cp [dependent-jars] com.intel.analytics.bigdl.ppml.attestation.Attestation
 You can verify Attestation Service (eHSM for example) with VerificationCLI. It will first get quote from Attestation Service and then verify the quote with SGX SDK.
 
 ## Environment 
-You can follow [this guide](#bi-attestation) to install SGX SDK and related DCAP libraries.
-
+To verify SGX quote, you can follow [this guide](#bi-attestation) to install SGX SDK and related DCAP libraries. For TDX quote, you can refer [this part](#tdx-quote-verification-interface) to install dependent components.
 ## Usage
 You can attest the attestation service with VerificationCLI by command like:
 ```bash
-java -cp [dependent-jars] com.intel.analytics.bigdl.ppml.attestation.VerificationCLI -i <appID> -k <apiKey> -u <asURL> -t <asType> -c <challenge>
+java -cp [dependent-jars] com.intel.analytics.bigdl.ppml.attestation.VerificationCLI -i <appID> -k <apiKey> -u <asURL> -t <asType> -c <challenge> -q <quotePath>
 ```
 Or you can use `verify-attestation-service.sh` to verify the attestation service quote.
 ```bash
@@ -127,6 +126,8 @@ bash verify-attestation-service.sh
 `-t` **asType** Type of attestation service. Currently support `EHSMAttestationService`.
 
 `-c` **challenge** Challenge to get quote of attestation service which will be verified by local SGX SDK. Should be a BASE64 string.
+
+`-q` **quotePath** Only set to verify local quote. Will **disable** getting quote from attestation service.
 
 # TDX Quote Generation Interface
 
@@ -177,7 +178,7 @@ java -cp [dependent-jars] com.intel.analytics.bigdl.ppml.attestation.TdxQuoteGen
 
 # TDX Quote Verification Interface
 
-You can verify TDX quote with `TDXQuoteVerification`.
+You can verify TDX quote with `VerificationCLI`.
 
 ## Requirements
 * Intel SGX SDK
@@ -218,7 +219,7 @@ You can deploy a PCCS service container with [this](https://github.com/intel-ana
 
 ## Usage
 ```bash
-java -cp [dependent-jars] com.intel.analytics.bigdl.ppml.attestation.TdxQuoteVerification -q <quotePath>
+java -cp [dependent-jars] com.intel.analytics.bigdl.ppml.attestation.VerificationCLI -q <quotePath>
 ```
 
 ## Parameters
