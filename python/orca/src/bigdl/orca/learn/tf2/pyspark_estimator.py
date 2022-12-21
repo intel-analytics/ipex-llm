@@ -163,7 +163,7 @@ class SparkTFEstimator():
 
         if isinstance(data, SparkXShards):
             data = data.to_lazy()
-            if validation_data and isinstance(validation_data, SparkXShards):
+            if validation_data is not None and isinstance(validation_data, SparkXShards):
                 validation_data = validation_data.to_lazy()
         # Data partition should be equal to num workers.
         # Repartition Spark DataFrame before converting to SparkXShards.
@@ -171,7 +171,7 @@ class SparkTFEstimator():
         if isinstance(data, DataFrame) or isinstance(data, SparkXShards):
             if data.rdd.getNumPartitions() != self.num_workers:
                 data = data.repartition(self.num_workers)
-            if validation_data:
+            if validation_data is not None:
                 invalidInputError(
                     isinstance(validation_data, DataFrame) or
                     isinstance(validation_data, SparkXShards),
