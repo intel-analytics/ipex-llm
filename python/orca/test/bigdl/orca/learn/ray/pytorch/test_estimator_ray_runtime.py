@@ -20,7 +20,9 @@ from unittest import TestCase
 import torch
 import torch.nn as nn
 
-from bigdl.orca.learn.metrics import Accuracy
+from bigdl.orca.learn.metrics import Accuracy, Metric
+from bigdl.orca.learn.pytorch.pytorch_metrics import PytorchMetric
+from bigdl.orca.learn.pytorch.pytorch_metrics import Accuracy as AccuracyMetric
 from bigdl.orca import init_orca_context, stop_orca_context
 from bigdl.orca.learn.pytorch import Estimator
 
@@ -70,6 +72,28 @@ class SingleListDataset(torch.utils.data.Dataset):
     def __len__(self):
         return self.size
 
+class MultiTargetDataset(torch.utils.data.Dataset):
+    def __init__(self, size=1000, nested_input=True) -> None:
+        super().__init__()
+        self.size = size
+        self.nested_input = nested_input
+        X1 = torch.randn(size // 2, 50)
+        X2 = torch.randn(size // 2, 50) + 1.5
+        self.X = torch.cat([X1, X2], dim=0)
+        
+        # 0.5-0.5=0
+        # 0.5+0.5=1
+        self.Y1 = torch.full((size, 1), 0.5)
+        Y2_1 = torch.full((size // 2, 1), -0.5)
+        Y2_2 = torch.full((size // 2, 1), 0.5)
+        self.Y2 = torch.cat([Y2_1, Y2_2], dim=0)
+
+    def __getitem__(self, index):
+        return self.X[index], [self.Y1[index], self.Y2[index]]
+    
+    def __len__(self):
+        return self.size
+
 class ComplicatedInputDataset(torch.utils.data.Dataset):
     def __init__(self, size=1000, nested_input=True) -> None:
         super().__init__()
@@ -102,7 +126,8 @@ class ComplicatedInputDataset(torch.utils.data.Dataset):
 
 DataSetMap = {"LinearDataset": LinearDataset,
               "SingleListDataset": SingleListDataset,
-              "ComplicatedInputDataset": ComplicatedInputDataset}
+              "ComplicatedInputDataset": ComplicatedInputDataset,
+              "MultiTargetDataset": MultiTargetDataset}
 
 def train_data_loader(config, batch_size):
     train_dataset = DataSetMap[config.get("dataset", "LinearDataset")](size=config.get("data_size", 1000),
@@ -189,6 +214,17 @@ class MultiInputModel(nn.Module):
         x = self.out_act(x)
         return x
 
+class MultiOutputModel(nn.Module):
+    def __init__(self):
+        super().__init__()
+        self.fc = nn.Linear(50, 1)
+        self.out_act = nn.Sigmoid()
+
+    def forward(self, x):
+        x = self.fc(x)
+        x = self.out_act(x)
+        return x[:-3], x[-3:]
+
 class ComplicatedInputModel(nn.Module):
     def __init__(self) -> None:
         super().__init__()
@@ -201,12 +237,34 @@ class ComplicatedInputModel(nn.Module):
         x = self.out_act(x)
         return x
 
+class MultiInputLoss:
+    def __init__(self) -> None:
+        self.rootLoss = nn.BCELoss()
+    
+    def __call__(self, x1, x2, y1, y2):
+        x = torch.cat((x1, x2), dim=0)
+        y = y1+y2
+        return self.rootLoss(x, y)
+
+class CustomAccuracy(Metric):
+    def get_pytorch_metric(self):
+        class CustomAccuracyMetric(AccuracyMetric):
+            def __call__(self, preds, targets):
+                preds = torch.cat(preds, dim=0)
+                target = sum(targets)
+                super().__call__(preds, target)
+
+        return CustomAccuracyMetric()
+
+    def get_name(self) -> str:
+        return "Accuracy"
 
 ModelMap = {"Net": Net,
             "SingleListInputModel": SingleListInputModel,
             "MultiInputModel": MultiInputModel,
             "DictInputNet": DictInputNet,
-            "ComplicatedInputModel": ComplicatedInputModel}
+            "ComplicatedInputModel": ComplicatedInputModel,
+            "MultiOutputModel": MultiOutputModel}
 
 def get_model(config):
     torch.manual_seed(0)
@@ -370,6 +428,35 @@ class TestPytorchEstimator(TestCase):
         print(f"dLoss: {dloss}, dAcc: {dacc}")
         assert dloss < 0 < dacc, "training sanity check failed. loss increased!"
 
+    def test_complicated_output(self):
+        estimator = Estimator.from_torch(model=get_model,
+                                        optimizer=get_optimizer,
+                                        loss=lambda _: MultiInputLoss(),
+                                        metrics=CustomAccuracy(),
+                                        config={"lr": 1e-2,
+                                                "model": "MultiOutputModel",
+                                                "dataset": "MultiTargetDataset",
+                                                "nested_input": False},
+                                        workers_per_node=2,
+                                        backend="ray",
+                                        sync_stats=True)
+        start_val_stats = estimator.evaluate(val_data_loader, batch_size=32)
+        print(start_val_stats)
+        
+        train_stats = estimator.fit(train_data_loader, epochs=1, batch_size=32)
+        print(train_stats)
+
+        end_val_stats = estimator.evaluate(val_data_loader, batch_size=32)
+        print(end_val_stats)
+
+        assert 0 < end_val_stats["Accuracy"] < 1
+        assert estimator.get_model()
+
+        # sanity check that training worked
+        dloss = end_val_stats["val_loss"] - start_val_stats["val_loss"]
+        dacc = (end_val_stats["Accuracy"] - start_val_stats["Accuracy"])
+        print(f"dLoss: {dloss}, dAcc: {dacc}")
+        assert dloss < 0 < dacc, "training sanity check failed. loss increased!"
 
 if __name__ == "__main__":
     pytest.main([__file__])

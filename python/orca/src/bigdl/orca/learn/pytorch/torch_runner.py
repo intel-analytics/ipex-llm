@@ -497,11 +497,10 @@ class TorchRunner(BaseRunner):
                                   "Features should be tensor, list/tuple or dict, "
                                   "but got {}".format(type(features)))
 
-            if isinstance(output, tuple) or isinstance(output, list):
-                # Then target is also assumed to be a tuple or list.
-                loss = self.criterion(*output, *target)
-            else:
-                loss = self.criterion(output, target)
+            # Ensure `target` and `output` are always in a list format.
+            targetL = [target] if not isinstance(target, (list, tuple)) else target
+            outputL = [output] if not isinstance(output, (list, tuple)) else output
+            loss = self.criterion(*outputL, *targetL)
 
         # Compute gradients in a backward pass.
         with self.timers.record("grad"):
@@ -628,11 +627,10 @@ class TorchRunner(BaseRunner):
                                   "Features should be tensor, list/tuple or dict, "
                                   "but got {}".format(type(features)))
 
-            if isinstance(output, tuple) or isinstance(output, list):
-                # Then target is also assumed to be a tuple or list.
-                loss = self.criterion(*output, *target)
-            else:
-                loss = self.criterion(output, target)
+            # Ensure `target` and `output` are always in a list format.
+            targetL = [target] if not isinstance(target, (list, tuple)) else target
+            outputL = [output] if not isinstance(output, (list, tuple)) else output
+            loss = self.criterion(*outputL, *targetL)
 
         return output, target, loss
 
