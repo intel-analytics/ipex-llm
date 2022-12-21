@@ -321,8 +321,10 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                         accelerator='openvino', otherwise will be ignored. Default: ``True``.
         :return: Model with different acceleration(OpenVINO/ONNX Runtime).
         """
+        invalidInputError(device != 'CPU' and accelerator != 'openvino',
+                          "Now we only support {} device when accelerator is openvino.".format(device))
         if accelerator == 'openvino':
-            final_openvino_option = {"INFERENCE_PRECISION_HINT": "f32"}
+            final_openvino_option = {"INFERENCE_PRECISION_HINT": "f32"} if device is 'CPU' else {}
             if openvino_config is not None:
                 final_openvino_option.update(openvino_config)
             result = KerasOpenVINOModel(model,
@@ -387,7 +389,7 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                   TensorFlow tensor(s). Its length should be consistent with x.
                   If x is a dataset, y will be ignored (since targets will be obtained from x).
         :param precision:       Global precision of quantized model,
-                                supported type: 'int8', 'fp16', defaults to 'int8'.
+                                supported type: 'int8', 'bf16', 'fp16', defaults to 'int8'.
         :param accelerator:     Use accelerator 'None', 'onnxruntime', 'openvino', defaults to None.
                                 None means staying in tensorflow.
         :param input_spec: A (tuple or list of) tf.TensorSpec or numpy array defining the
@@ -444,13 +446,33 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                         accelerator='openvino', otherwise will be ignored. Default: ``True``.
         :return:            A TensorflowBaseModel for INC. If there is no model found, return None.
         """
+        invalidInputError(precision not in ['int8', 'fp16', 'bf16'],
+                          "Only support 'int8', 'bf16', 'fp16' now, "
+                          "no support for {}.".format(precision))
+        invalidInputError(device != 'CPU' and accelerator != 'openvino',
+                          "Now we only support {} device when accelerator is openvino.".format(device))
         if precision == 'fp16':
             invalidInputError(accelerator != 'openvino' or device not in ('GPU', 'VPUX'),
-                              "fp16 is now only valid for OpenVINO GPU/VPUX plugin")
+                              "fp16 is not supported on {} device.".format(device))
             if openvino_config is not None:
                 final_openvino_option = openvino_config
             result = KerasOpenVINOModel(model,
                                         precision=precision,
+                                        thread_num=thread_num,
+                                        device=device,
+                                        config=final_openvino_option,
+                                        logging=logging)
+            return patch_attrs(result, model)
+        
+        elif precision == 'bf16':
+            invalidInputError(accelerator != 'openvino',
+                              "Accelerator {} is invalid for BF16.".format(accelerator))
+            invalidInputError(device != 'CPU',
+                              "Device {} don't support bfloat16.".format(device))
+            final_openvino_option = {"INFERENCE_PRECISION_HINT": "bf16"}
+            if openvino_config is not None:
+                final_openvino_option.update(openvino_config)
+            result = KerasOpenVINOModel(model,
                                         thread_num=thread_num,
                                         device=device,
                                         config=final_openvino_option,
