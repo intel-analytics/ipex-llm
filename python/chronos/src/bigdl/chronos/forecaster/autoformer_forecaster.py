@@ -548,9 +548,9 @@ class AutoformerForecaster(Forecaster):
                                             torch.from_numpy(data[3]),),
                               batch_size=batch_size,
                               shuffle=False)
-        self.jit_fp32  # compile the model using getattr.
-        with torch.jit.optimized_execution(should_optimize=False):
-            return self.trainer.predict(self.jit_fp32, data)
+        if self._jit_fp32 is None:
+            self.build_jit()
+        return self.trainer.predict(self._jit_fp32, data)
 
     def evaluate(self, data, batch_size=32):
         """
@@ -752,38 +752,28 @@ class AutoformerForecaster(Forecaster):
             self.trainer.model = self.trainer.model.model
         self.trainer.save_checkpoint(checkpoint_file)
 
-    @property
-    def jit_fp32(self):
+    def build_jit(self, thread_num=1):
         """
         Build jit model to speed up inference and reduce latency.
+
+        :param thread_num: int, the num of thread limit. The value is set to 1 by
+               default where no limit is set.Besides, the environment variable
+              `OMP_NUM_THREADS` is6 suggested to be same as `thread_num`.
         """
 
-        if self._jit_fp32 is None:
-            freq = _freq_str2int(self.model_config["freq"])
-            label_len = self.model_config["label_len"]
-            pred_len = self.model_config["pred_len"]
-            seq_len = self.model_config["seq_len"]
-            dummy_inputs = (torch.rand(1, seq_len, self.data_config["input_feature_num"]),
-                            torch.rand(1, label_len+pred_len,
-                                       self.data_config["output_feature_num"]),
-                            torch.rand(1, seq_len, freq),
-                            torch.rand(1, label_len+pred_len, freq))
-            from bigdl.nano.pytorch.inference import InferenceOptimizer
-            self._jit_fp32 = InferenceOptimizer.trace(self.internal, input_sample=dummy_inputs,
-                                                      accelerator="jit", use_ipex=self.use_ipex)
-        return self._jit_fp32
-
-    @jit_fp32.setter
-    def jit_fp32(self, data):
-        """
-        :param data: The data support following formats:
-               numpy ndarrays: generate from `TSDataset.roll`,
-               be sure to set label_len > 0 and time_enc = True.
-               Doing so will recompile the inference model.
-        """
+        freq = _freq_str2int(self.model_config["freq"])
+        label_len = self.model_config["label_len"]
+        pred_len = self.model_config["pred_len"]
+        seq_len = self.model_config["seq_len"]
+        dummy_inputs = (torch.rand(1, seq_len, self.data_config["input_feature_num"]),
+                        torch.rand(1, label_len+pred_len,
+                                   self.data_config["output_feature_num"]),
+                        torch.rand(1, seq_len, freq),
+                        torch.rand(1, label_len+pred_len, freq))
         from bigdl.nano.pytorch.inference import InferenceOptimizer
-        self._jit_fp32 = InferenceOptimizer.trace(self.internal, input_sample=data,
-                                                  accelerator="jit", use_ipex=self.use_ipex)
+        self._jit_fp32 = InferenceOptimizer.trace(self.internal, input_sample=dummy_inputs,
+                                                  accelerator="jit", use_ipex=self.use_ipex,
+                                                  thread_num=thread_num)
 
     def export_torchscript_file(self, dirname='fp32_torchscript'):
         """
@@ -792,7 +782,9 @@ class AutoformerForecaster(Forecaster):
         :param dirname: The dir location you want to save the torchscript file.
         """
         from bigdl.nano.pytorch.inference import InferenceOptimizer
-        if dirname and self.jit_fp32:
+        if dirname:
+            if self._jit_fp32 is None:
+                self.built_jit()
             InferenceOptimizer.save(self._jit_fp32, dirname)
 
     @classmethod
