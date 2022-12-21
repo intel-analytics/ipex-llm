@@ -20,6 +20,9 @@ package com.intel.analytics.bigdl.ppml.attestation
 import org.apache.logging.log4j.LogManager
 import scopt.OptionParser
 
+import java.io.{BufferedOutputStream, BufferedInputStream};
+import java.io.File;
+import java.io.{FileInputStream, FileOutputStream};
 import java.util.Base64
 
 import com.intel.analytics.bigdl.ppml.attestation.service._
@@ -36,9 +39,10 @@ object VerificationCLI {
                              apiKey: String = "test",
                              attestationType: String = ATTESTATION_CONVENTION.MODE_EHSM_KMS,
                              attestationURL: String = "127.0.0.1:9000",
-                             challenge: String = "test")
+                             challenge: String = "test",
+                             quotePath: String = "")
 
-        val cmdParser = new OptionParser[CmdParams]("PPML Quote Verification Cmd tool") {
+        val cmdParser: OptionParser[CmdParams] = new OptionParser[CmdParams]("PPML Quote Verification Cmd tool") {
             opt[String]('i', "appID")
               .text("app id for this app")
               .action((x, c) => c.copy(appID = x))
@@ -54,44 +58,40 @@ object VerificationCLI {
             opt[String]('c', "challenge")
               .text("challenge to attestation service, default is '' which skip bi-attestation")
               .action((x, c) => c.copy(challenge = x))
+            opt[String]('q', "quotePath")
+              .text("quotePath, set to verify given quote instead of getting from service")
+              .action((x, c) => c.copy(quotePath = x))
         }
         val params = cmdParser.parse(args, CmdParams()).get
-
-        // Attestation Client
-        val as = params.attestationType match {
-            case ATTESTATION_CONVENTION.MODE_EHSM_KMS =>
-                new EHSMAttestationService(params.attestationURL.split(":")(0),
-                    params.attestationURL.split(":")(1), params.appID, params.apiKey)
-            case ATTESTATION_CONVENTION.MODE_DUMMY =>
-                new DummyAttestationService()
-            case _ => throw new AttestationRuntimeException("Wrong Attestation service type")
-        }
-
-        val challengeString = params.challenge
-        if (params.attestationType != ATTESTATION_CONVENTION.MODE_DUMMY) {
-            val asQuote = params.attestationType match {
+        var quote = Array[Byte]()
+        val quotePath = params.quotePath
+        if (quotePath == ""){
+          // Attestation Client
+          val as = params.attestationType match {
               case ATTESTATION_CONVENTION.MODE_EHSM_KMS =>
-                Base64.getDecoder().decode(as.getQuoteFromServer(challengeString))
+                  new EHSMAttestationService(params.attestationURL.split(":")(0),
+                      params.attestationURL.split(":")(1), params.appID, params.apiKey)
+              case ATTESTATION_CONVENTION.MODE_DUMMY =>
+                  new DummyAttestationService()
               case _ => throw new AttestationRuntimeException("Wrong Attestation service type")
-            }
-            val quoteVerifier = new SGXDCAPQuoteVerifierImpl()
-            val verifyQuoteResult = quoteVerifier.verifyQuote(asQuote)
-            val debug = System.getenv("ATTESTATION_DEBUG")
-            if (verifyQuoteResult == 0) {
-                System.out.println("Quote Verification Success!")
-            } else if (verifyQuoteResult == 1) {
-                System.out.println("WARNING:Quote verification passed but BIOS or the software"
-                  + " is not up to date.")
-            } else if (debug == "true") {
-                System.out.println("ERROR:Quote Verification Fail! In debug mode, continue.")
-            }
-            else {
-                System.out.println("ERROR:Quote Verification Fail! Application killed.")
-                System.exit(1)
-            }
+          }
+
+          val challengeString = params.challenge
+          quote = params.attestationType match {
+            case ATTESTATION_CONVENTION.MODE_EHSM_KMS =>
+              Base64.getDecoder().decode(as.getQuoteFromServer(challengeString))
+            case _ => throw new AttestationRuntimeException("Wrong Attestation service type")
+          }
+
         } else {
-            System.out.println("Dummy attestation service cannot be verified!")
-            System.exit(1)
+          val quoteFile = new File(quotePath)
+          val in = new FileInputStream(quoteFile)
+          val bufIn = new BufferedInputStream(in)
+          quote = Iterator.continually(bufIn.read()).takeWhile(_ != -1).map(_.toByte).toArray
+          bufIn.close()
+          in.close()
         }
+        val quoteVerifier = new SGXDCAPQuoteVerifierImpl()
+        quoteVerifier.verifyQuoteWithResultCheck(quote)
     }
 }

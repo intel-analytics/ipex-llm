@@ -42,4 +42,22 @@ class SGXDCAPQuoteVerifierImpl extends QuoteVerifier with Serializable {
 
     throw new AttestationRuntimeException("Unexpected workflow when verifying Quote!")
   }
+
+  @throws(classOf[AttestationRuntimeException])
+  def verifyQuoteWithResultCheck(quote: Array[Byte], debug: String = "false"): Unit = {
+    val verifyQuoteResult = verifyQuote(quote)
+
+    if (verifyQuoteResult == 0) {
+      System.out.println("INFO: Quote Verification Success!")
+    } else if (verifyQuoteResult == 1) {
+      System.out.println("WARNING: Quote verification passed but BIOS or the software" +
+        " is not up to date.")
+    } else if (debug == "true") {
+      System.out.println("ERROR: Quote Verification Fail! In debug mode, continue.")
+    }
+    else {
+      System.out.println("ERROR: Quote Verification Fail! Application killed.")
+      throw new AttestationRuntimeException("Quote Verification Fail!")
+    }
+  }
 }

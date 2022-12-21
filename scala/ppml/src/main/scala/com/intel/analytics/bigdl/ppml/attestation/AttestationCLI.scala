@@ -20,6 +20,9 @@ package com.intel.analytics.bigdl.ppml.attestation
 import org.apache.logging.log4j.LogManager
 import scopt.OptionParser
 
+import java.io.{BufferedOutputStream, BufferedInputStream};
+import java.io.File;
+import java.io.{FileInputStream, FileOutputStream};
 import java.util.Base64
 
 import com.intel.analytics.bigdl.ppml.attestation.generator._
@@ -40,6 +43,7 @@ object AttestationCLI {
                              challenge: String = "",
                              policyID: String = "",
                              OSType: String = "gramine",
+                             quotePath: String = "",
                              userReport: String = "ppml")
 
         val cmdParser: OptionParser[CmdParams] = new OptionParser[CmdParams](
@@ -68,18 +72,30 @@ object AttestationCLI {
             opt[String]('O', "OSType")
               .text("OSType, default is gramine, occlum can be chose")
               .action((x, c) => c.copy(OSType = x))
+            opt[String]('q', "quotePath")
+              .text("quotePath, used to test attestation service with given quote")
+              .action((x, c) => c.copy(quotePath = x))
         }
         val params = cmdParser.parse(args, CmdParams()).get
 
         // Generate quote
         val userReportData = params.userReport
-
-        if (params.OSType == "gramine") {
-          val quoteGenerator = new GramineQuoteGeneratorImpl()
-          quote = quoteGenerator.getQuote(userReportData.getBytes)
-        } else if (params.OSType == "occlum") {
-          val quoteGenerator = new OcclumQuoteGeneratorImpl()
-          quote = quoteGenerator.getQuote(userReportData.getBytes)
+        val quotePath = params.quotePath
+        if (quotePath == ""){
+          if (params.OSType == "gramine") {
+            val quoteGenerator = new GramineQuoteGeneratorImpl()
+            quote = quoteGenerator.getQuote(userReportData.getBytes)
+          } else if (params.OSType == "occlum") {
+            val quoteGenerator = new OcclumQuoteGeneratorImpl()
+            quote = quoteGenerator.getQuote(userReportData.getBytes)
+          }
+        } else {
+          val quoteFile = new File(quotePath)
+          val in = new FileInputStream(quoteFile)
+          val bufIn = new BufferedInputStream(in)
+          quote = Iterator.continually(bufIn.read()).takeWhile(_ != -1).map(_.toByte).toArray
+          bufIn.close()
+          in.close()
         }
 
         // Attestation Client
@@ -101,19 +117,7 @@ object AttestationCLI {
               case _ => throw new AttestationRuntimeException("Wrong Attestation service type")
             }
             val quoteVerifier = new SGXDCAPQuoteVerifierImpl()
-            val verifyQuoteResult = quoteVerifier.verifyQuote(asQuote)
-            if (verifyQuoteResult == 0) {
-              System.out.println("Quote Verification Success!")
-            } else if (verifyQuoteResult == 1) {
-              System.out.println("WARNING:Quote verification passed but BIOS or the software" +
-                " is not up to date.")
-            } else if (debug == "true") {
-              System.out.println("ERROR:Quote Verification Fail! In debug mode, continue.")
-            }
-            else {
-              System.out.println("ERROR:Quote Verification Fail! Application killed.")
-              System.exit(1)
-            }
+            quoteVerifier.verifyQuoteWithResultCheck(asQuote, debug)
         }
 
         val attResult = params.policyID match {
