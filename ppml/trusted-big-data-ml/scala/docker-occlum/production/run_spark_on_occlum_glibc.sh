@@ -200,7 +200,6 @@ attestation_init() {
 }
 
 run_pyspark_pi() {
-    export RUNTIME_ENV="native"
     attestation_init
     cd /opt/occlum_spark
     echo -e "${BLUE}occlum run pyspark Pi${NC}"
@@ -216,7 +215,6 @@ run_pyspark_pi() {
 }
 
 run_pyspark_sql_example() {
-    export RUNTIME_ENV="native"
     attestation_init
     cd /opt/occlum_spark
     echo -e "${BLUE}occlum run pyspark SQL example${NC}"
@@ -232,7 +230,6 @@ run_pyspark_sql_example() {
 }
 
 run_pyspark_sklearn_example() {
-    export RUNTIME_ENV="native"
     attestation_init
     cd /opt/occlum_spark
     echo -e "${BLUE}occlum run pyspark sklearn example${NC}"
@@ -248,7 +245,6 @@ run_pyspark_sklearn_example() {
 }
 
 run_spark_pi() {
-    export RUNTIME_ENV="native"
     attestation_init
     echo -e "${BLUE}occlum run spark Pi${NC}"
     occlum run /usr/lib/jvm/java-8-openjdk-amd64/bin/java \
@@ -263,7 +259,6 @@ run_spark_pi() {
 }
 
 run_spark_unittest() {
-    export RUNTIME_ENV="native"
     attestation_init
     echo -e "${BLUE}occlum run spark unit test ${NC}"
     run_spark_unittest_only
@@ -296,7 +291,6 @@ run_spark_unittest_only() {
 }
 
 run_spark_lenet_mnist(){
-    export RUNTIME_ENV="native"
     attestation_init
     echo -e "${BLUE}occlum run BigDL lenet mnist{NC}"
     echo -e "${BLUE}logfile=$log${NC}"
@@ -325,7 +319,6 @@ run_spark_lenet_mnist(){
 }
 
 run_spark_resnet_cifar(){
-    export RUNTIME_ENV="native"
     attestation_init
     echo -e "${BLUE}occlum run BigDL Resnet Cifar10${NC}"
     occlum run /usr/lib/jvm/java-8-openjdk-amd64/bin/java \
@@ -353,7 +346,6 @@ run_spark_resnet_cifar(){
 }
 
 run_spark_tpch(){
-    export RUNTIME_ENV="native"
     attestation_init
     echo -e "${BLUE}occlum run BigDL spark tpch${NC}"
     occlum run /usr/lib/jvm/java-8-openjdk-amd64/bin/java \
@@ -392,7 +384,6 @@ run_spark_tpch(){
 }
 
 run_spark_xgboost() {
-    export RUNTIME_ENV="native"
     attestation_init
     echo -e "${BLUE}occlum run BigDL Spark XGBoost${NC}"
     occlum run /usr/lib/jvm/java-8-openjdk-amd64/bin/java \
@@ -414,7 +405,6 @@ run_spark_xgboost() {
 }
 
 run_spark_gbt() {
-    export RUNTIME_ENV="native"
     attestation_init
     echo -e "${BLUE}occlum run BigDL Spark GBT${NC}"
     occlum run /usr/lib/jvm/java-8-openjdk-amd64/bin/java \
@@ -436,7 +426,6 @@ run_spark_gbt() {
 }
 
 run_spark_gbt_e2e() {
-    export RUNTIME_ENV="native"
     attestation_init
     cd /opt/occlum_spark
     echo -e "${BLUE}occlum run BigDL Spark GBT e2e${NC}"
@@ -473,7 +462,6 @@ run_spark_gbt_e2e() {
 }
 
 run_spark_sql_e2e() {
-    export RUNTIME_ENV="native"
     attestation_init
     cd /opt/occlum_spark
     echo -e "${BLUE}occlum run BigDL Spark SQL e2e${NC}"
@@ -525,18 +513,15 @@ id=$([ -f "$pid" ] && echo $(wc -l < "$pid") || echo "0")
 arg=$1
 case "$arg" in
     init)
-       export RUNTIME_ENV="native"
         init_instance
         build_spark
         ;;
     initDriver)
-        export RUNTIME_ENV="driver"
         attestation_init
         ;;
     initExecutor)
         # to do
         # now executor have to register again
-        export RUNTIME_ENV="native"
         attestation_init
         ;;
     pypi)
