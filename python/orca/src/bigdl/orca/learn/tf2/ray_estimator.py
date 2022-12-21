@@ -490,7 +490,7 @@ class TensorFlow2Estimator(OrcaRayEstimator):
 
     def predict(self,
                 data: Union["SparkXShards", "SparkDataFrame", "TFDataset"],
-                batch_size: Optional[int]=None,
+                batch_size: Optional[int]=32,
                 verbose: Union[str, int]=1,
                 steps: Optional[int]=None,
                 callbacks: Optional[List["Callback"]]=None,
