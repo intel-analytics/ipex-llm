@@ -35,7 +35,7 @@ For example,
 from bigdl.nano.pytorch import Trainer
 
 lightning_module = Trainer.compile(pytorch_module, loss, optimizer)
-trainer = Trainer(max_epoch=10)
+trainer = Trainer(max_epochs=10)
 trainer.fit(lightning_module, train_loader)
 ```
 
@@ -69,7 +69,7 @@ class MyModule(LightningModule):
     #  LightningModule definition
 
 lightning_module = MyModule()
-trainer = Trainer(max_epoch=10)
+trainer = Trainer(max_epochs=10)
 trainer.fit(lightning_module, train_loader)
 ```
 
@@ -90,7 +90,7 @@ BigDL-Nano integrates IPEX in `Trainer` and `TorchNano`. Users can turn on IPEX 
 
             from bigdl.nano.pytorch import Trainer
 
-            trainer = Trainer(max_epoch=10, use_ipex=True)
+            trainer = Trainer(max_epochs=10, use_ipex=True)
             trainer.fit(...)
 
     .. tab:: TorchNano
@@ -123,7 +123,7 @@ You can just set the `num_processes` parameter in the `Trainer` or `TorchNano` c
 
             from bigdl.nano.pytorch import Trainer
 
-            trainer = Trainer(max_epoch=10, num_processes=4)
+            trainer = Trainer(max_epochs=10, num_processes=4)
             trainer.fit(...)
 
     .. tab:: TorchNano
