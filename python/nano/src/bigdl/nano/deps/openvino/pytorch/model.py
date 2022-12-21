@@ -30,9 +30,9 @@ from bigdl.nano.pytorch.utils import patch_attrs_from_model_to_object
 
 
 class PytorchOpenVINOModel(AcceleratedLightningModule):
-    def __init__(self, model, input_sample=None, thread_num=None,
-                 device='CPU', dynamic_axes=True, logging=True,
-                 config=None, **export_kwargs):
+    def __init__(self, model, input_sample=None, precision='fp32',
+                 thread_num=None, device='CPU', dynamic_axes=True,
+                 logging=True, config=None, **export_kwargs):
         """
         Create a OpenVINO model from pytorch.
 
@@ -41,6 +41,8 @@ class PytorchOpenVINOModel(AcceleratedLightningModule):
         :param input_sample: A set of inputs for trace, defaults to None if you have trace before or
                              model is a LightningModule with any dataloader attached,
                              defaults to None.
+        :param precision: Global precision of model, supported type: 'fp32', 'fp16',
+                          defaults to 'fp32'.
         :param thread_num: a int represents how many threads(cores) is needed for
                            inference. default: None.
         :param device: A string represents the device of the inference. Default to 'CPU'.
@@ -67,6 +69,9 @@ class PytorchOpenVINOModel(AcceleratedLightningModule):
         with TemporaryDirectory() as tmpdir:
             tmpdir = Path(tmpdir)
             if isinstance(model, torch.nn.Module):
+                if device != 'CPU':
+                    # workaround for dynamic shape issue on GPU/VPU plugin
+                    dynamic_axes = False
                 export(model, input_sample, str(tmpdir / 'tmp.xml'),
                        dynamic_axes=dynamic_axes, logging=logging,
                        **export_kwargs)

@@ -71,7 +71,8 @@ class OpenVINOModel:
             config = {"CPU_THREADS_NUM": str(self.thread_num)}
         else:
             config = {}
-        if self.additional_config is not None:
+        if self.additional_config is not None and self._device == 'CPU':
+            # TODO: check addition config based on device
             config.update(self.additional_config)
         self._compiled_model = self._ie.compile_model(model=self.ie_network,
                                                       device_name=self._device,

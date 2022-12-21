@@ -312,7 +312,7 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                            or accelerator='openvino'.
         :param device: (optional) A string represents the device of the inference. Default to 'CPU',
                         only valid when accelerator='openvino', otherwise will be ignored.
-                        'CPU', 'GPU' and 'VPU' are supported for now.
+                        'CPU', 'GPU' and 'VPUX' are supported for now.
         :param onnxruntime_session_options: The session option for onnxruntime, only valid when
                                             accelerator='onnxruntime', otherwise will be ignored.
         :param openvino_config: The config to be inputted in core.compile_model. Only valid when
@@ -387,7 +387,7 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                   TensorFlow tensor(s). Its length should be consistent with x.
                   If x is a dataset, y will be ignored (since targets will be obtained from x).
         :param precision:       Global precision of quantized model,
-                                supported type: 'int8', defaults to 'int8'.
+                                supported type: 'int8', 'fp16', defaults to 'int8'.
         :param accelerator:     Use accelerator 'None', 'onnxruntime', 'openvino', defaults to None.
                                 None means staying in tensorflow.
         :param input_spec: A (tuple or list of) tf.TensorSpec or numpy array defining the
@@ -426,7 +426,7 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                             or accelerator='openvino'.
         :param device: (optional) A string represents the device of the inference. Default to 'CPU',
                         only valid when accelerator='openvino', otherwise will be ignored.
-                        'CPU', 'GPU' and 'VPU' are supported for now.
+                        'CPU', 'GPU' and 'VPUX' are supported for now.
         :param inputs:      A list of input names.
                             Default: None, automatically get names from graph.
         :param outputs:     A list of output names.
@@ -444,6 +444,19 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                         accelerator='openvino', otherwise will be ignored. Default: ``True``.
         :return:            A TensorflowBaseModel for INC. If there is no model found, return None.
         """
+        if precision == 'fp16':
+            invalidInputError(accelerator != 'openvino' or device not in ('GPU', 'VPUX'),
+                              "fp16 is now only valid for OpenVINO GPU/VPUX plugin")
+            if openvino_config is not None:
+                final_openvino_option = openvino_config
+            result = KerasOpenVINOModel(model,
+                                        precision=precision,
+                                        thread_num=thread_num,
+                                        device=device,
+                                        config=final_openvino_option,
+                                        logging=logging)
+            return patch_attrs(result, model)
+
         invalidInputError(approach == 'static', "Only 'static' approach is supported now.")
 
         if not isinstance(x, tf.data.Dataset) and y is None:

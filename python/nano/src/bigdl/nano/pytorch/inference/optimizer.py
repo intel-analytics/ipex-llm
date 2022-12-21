@@ -805,6 +805,20 @@ class InferenceOptimizer(BaseInferenceOptimizer):
             else:
                 invalidInputError(False,
                                   "Accelerator {} is invalid.".format(accelerator))
+        if precision == 'fp16':
+            invalidInputError(accelerator != 'openvino' or device not in ('GPU', 'VPUX'),
+                              "fp16 is now only valid for OpenVINO GPU/VPUX plugin")
+            if openvino_config is not None:
+                final_openvino_option = openvino_config
+            return PytorchOpenVINOModel(model, input_sample,
+                                        precision=precision,
+                                        thread_num=thread_num,
+                                        device=device,
+                                        dynamic_axes=dynamic_axes,
+                                        logging=logging,
+                                        config=final_openvino_option,
+                                        **export_kwargs)
+
         invalidInputError(False,
                           "Precision {} is invalid.".format(precision))
 

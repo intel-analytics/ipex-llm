@@ -26,13 +26,15 @@ from ..core.utils import save
 
 
 class KerasOpenVINOModel(AcceleratedKerasModel):
-    def __init__(self, model, thread_num=None, device='CPU',
-                 config=None, logging=True):
+    def __init__(self, model, precision='fp32', thread_num=None,
+                 device='CPU', config=None, logging=True):
         """
         Create a OpenVINO model from Keras.
 
         :param model: Keras model to be converted to OpenVINO for inference or
                       path to Openvino saved model.
+        :param precision: Global precision of model, supported type: 'fp32', 'fp16',
+                          defaults to 'fp32'.
         :param thread_num: a int represents how many threads(cores) is needed for
                     inference. default: None.
         :param device: A string represents the device of the inference. Default to 'CPU'.
@@ -46,7 +48,9 @@ class KerasOpenVINOModel(AcceleratedKerasModel):
         with TemporaryDirectory() as dir:
             dir = Path(dir)
             if isinstance(model, tf.keras.Model):
-                export(model, str(dir / 'tmp.xml'), logging=logging)
+                export(model, str(dir / 'tmp.xml'),
+                       precision=precision,
+                       logging=logging)
                 ov_model_path = dir / 'tmp.xml'
             self.ov_model = OpenVINOModel(ov_model_path,
                                           device=device,
