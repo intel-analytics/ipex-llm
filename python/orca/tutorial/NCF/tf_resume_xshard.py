@@ -18,8 +18,7 @@
 import math
 import tensorflow as tf
 
-from tf_model import ncf_model
-from process_spark_dataframe import prepare_data
+from process_xshards import prepare_data
 
 from bigdl.orca import init_orca_context, stop_orca_context
 from bigdl.orca.learn.tf2 import Estimator
@@ -28,24 +27,22 @@ from bigdl.orca.learn.tf2 import Estimator
 init_orca_context(memory='4g')
 
 # Step 2: Read and process data using Spark DataFrame
-data_dir = './ml-1m'  # path to ml-1m
-
-train_df, test_df, user_num, item_num, sparse_feats_input_dims, num_dense_feats, \
-    feature_cols, label_cols = prepare_data(data_dir, neg_scale=4)
+dataset_dir = "./ml-1m"
+train_data, test_data, user_num, item_num, sparse_feats_input_dims, num_dense_feats, \
+    feature_cols, label_cols = prepare_data(dataset_dir, num_ng=4)
 
 # Step 3: Distributed training with Orca keras Estimator and load the model weight
 backend = 'ray'  # 'ray' or 'spark'
-
 est = Estimator.from_keras()
 est.load('NCF_model')
 
 batch_size = 10240
-train_steps = math.ceil(train_df.count() / batch_size)
-val_steps = math.ceil(test_df.count() / batch_size)
+train_steps = math.ceil(len(train_data) / batch_size)
+val_steps = math.ceil(len(test_data) / batch_size)
 tf_callback = tf.keras.callbacks.TensorBoard(log_dir="./log")
 
-est.fit(train_df,
-        epochs=5,
+est.fit(train_data,
+        epochs=2,
         batch_size=batch_size,
         feature_cols=feature_cols,
         label_cols=label_cols,
@@ -53,12 +50,11 @@ est.fit(train_df,
         callbacks=[tf_callback])
 
 # Step 4: Distributed evaluation of the trained model
-result = est.evaluate(test_df,
+result = est.evaluate(test_data,
                       feature_cols=feature_cols,
                       label_cols=label_cols,
                       batch_size=batch_size,
-                      num_steps=val_steps,
-                      )
+                      num_steps=val_steps)
 print('Evaluation results:')
 for r in result:
     print(r, ":", result[r])
