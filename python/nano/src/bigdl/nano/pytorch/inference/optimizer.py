@@ -644,14 +644,15 @@ class InferenceOptimizer(BaseInferenceOptimizer):
         :param **export_kwargs: will be passed to torch.onnx.export function.
         :return:            A accelerated torch.nn.Module if quantization is sucessful.
         """
-        invalidInputError(precision not in ['int8', 'fp16', 'bf16'],
+        invalidInputError(precision in ['int8', 'fp16', 'bf16'],
                           "Only support 'int8', 'bf16', 'fp16' now, "
                           "no support for {}.".format(precision))
         invalidInputError(device == 'CPU' or 'GPU' in device or device == 'VPUX',
                           "Now we only support CPU, GPU and VPUX, not {}".format(device))
         if device != 'CPU' and accelerator != 'openvino':
             invalidInputError(False,
-                              "Now we only support {} device when accelerator is openvino.".format(device))
+                              "Now we only support {} device when accelerator"
+                              "is openvino.".format(device))
         if precision == 'bf16':
             if accelerator is None or accelerator == "jit":
                 if use_ipex or accelerator == "jit":
@@ -937,7 +938,8 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                           "Now we only support fp32 for CPU and GPU, not {}".format(device))
         if device != 'CPU' and accelerator != 'openvino':
             invalidInputError(False,
-                              "Now we only support {} device when accelerator is openvino.".format(device))
+                              "Now we only support {} device when accelerator "
+                              "is openvino.".format(device))
         if accelerator == 'openvino':  # openvino backend will not care about ipex usage
             final_openvino_option = {"INFERENCE_PRECISION_HINT": "f32"}
             if openvino_config is not None:

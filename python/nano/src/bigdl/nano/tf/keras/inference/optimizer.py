@@ -325,7 +325,8 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                           "Now we only support fp32 for CPU and GPU, not {}".format(device))
         if device != 'CPU' and accelerator != 'openvino':
             invalidInputError(False,
-                              "Now we only support {} device when accelerator is openvino.".format(device))
+                              "Now we only support {} device when accelerator "
+                              "is openvino.".format(device))
         if accelerator == 'openvino':
             final_openvino_option = {"INFERENCE_PRECISION_HINT": "f32"} if device is 'CPU' else {}
             if openvino_config is not None:
@@ -449,14 +450,15 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                         accelerator='openvino', otherwise will be ignored. Default: ``True``.
         :return:            A TensorflowBaseModel for INC. If there is no model found, return None.
         """
-        invalidInputError(precision not in ['int8', 'fp16', 'bf16'],
+        invalidInputError(precision in ['int8', 'fp16', 'bf16'],
                           "Only support 'int8', 'bf16', 'fp16' now, "
                           "no support for {}.".format(precision))
         invalidInputError(device == 'CPU' or 'GPU' in device or device == 'VPUX',
                           "Now we only support CPU, GPU and VPUX, not {}".format(device))
         if device != 'CPU' and accelerator != 'openvino':
             invalidInputError(False,
-                              "Now we only support {} device when accelerator is openvino.".format(device))
+                              "Now we only support {} device when accelerator "
+                              "is openvino.".format(device))
         if precision == 'fp16':
             invalidInputError(accelerator != 'openvino' or device not in ('GPU', 'VPUX'),
                               "fp16 is not supported on {} device.".format(device))
@@ -469,7 +471,7 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                                         config=final_openvino_option,
                                         logging=logging)
             return patch_attrs(result, model)
-        
+
         elif precision == 'bf16':
             invalidInputError(accelerator != 'openvino',
                               "Accelerator {} is invalid for BF16.".format(accelerator))
