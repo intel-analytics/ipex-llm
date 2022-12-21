@@ -22,7 +22,6 @@ from functools import wraps
 
 def tf_bf16_nano(func):
     """A decorator to realize mixed precision on customized training loop."""
-
     # todo check the func signature
     @wraps(func)
     def wrapper(*inner_args):
