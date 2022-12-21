@@ -33,64 +33,33 @@ data_dir = './ml-1m'  # path to ml-1m
 train_df, test_df, user_num, item_num, sparse_feats_input_dims, num_dense_feats, \
     feature_cols, label_cols = prepare_data(data_dir, neg_scale=4)
 
-
-# Step 3: Define the NCF model
-config = dict(
-    factor_num=16,
-    lr=1e-2,
-    item_num=item_num,
-    user_num=user_num,
-    dropout=0.5,
-    sparse_feats_input_dims=sparse_feats_input_dims,
-    num_dense_feats=num_dense_feats,
-    sparse_feats_embed_dims=8,
-    num_layers=3
-)
-
-
-def model_creator(config):
-    model = ncf_model(user_num=config['user_num'],
-                      item_num=config['item_num'],
-                      num_layers=config['num_layers'],
-                      factor_num=config['factor_num'],
-                      dropout=config['dropout'],
-                      lr=config['lr'],
-                      sparse_feats_input_dims=config['sparse_feats_input_dims'],
-                      sparse_feats_embed_dims=config['sparse_feats_embed_dims'],
-                      num_dense_feats=config['num_dense_feats'])
-    return model
-
-
-# Step 4: Distributed training with Orca keras Estimator
+# Step 3: Distributed training with Orca keras Estimator and load the model weight
 backend = 'ray'  # 'ray' or 'spark'
 
-est = Estimator.from_keras(model_creator=model_creator,
-                           config=config,
-                           backend=backend)
-
+est = Estimator.from_keras()
 est.load('NCF_model')
 
 batch_size = 10240
 train_steps = math.ceil(train_df.count() / batch_size)
 val_steps = math.ceil(test_df.count() / batch_size)
 tf_callback = tf.keras.callbacks.TensorBoard(log_dir="./log")
-lr_callback = tf.keras.callbacks.LearningRateScheduler(
-            lambda step: ((0.01 - 1e-5) * 0.5 ** step + 1e-5), verbose=1)
 
 est.fit(train_df,
-        epochs=2,
+        epochs=5,
         batch_size=batch_size,
         feature_cols=feature_cols,
         label_cols=label_cols,
         steps_per_epoch=train_steps,
-        callbacks=[tf_callback, lr_callback])
+        callbacks=[tf_callback],
+        )
 
 # Step 5: Distributed evaluation of the trained model
 result = est.evaluate(test_df,
                       feature_cols=feature_cols,
                       label_cols=label_cols,
                       batch_size=batch_size,
-                      num_steps=val_steps)
+                      num_steps=val_steps,
+                      )
 print('Evaluation results:')
 for r in result:
     print(r, ":", result[r])
