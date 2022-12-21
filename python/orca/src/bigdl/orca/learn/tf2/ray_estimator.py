@@ -416,10 +416,6 @@ class TensorFlow2Estimator(OrcaRayEstimator):
         if isinstance(data, SparkXShards):
             if data._get_class_name() == 'pandas.core.frame.DataFrame':
                 data = process_xshards_of_pandas_dataframe(data, feature_cols, label_cols)
-
-            if data.num_partitions() != self.num_workers:  # type:ignore
-                data = data.repartition(self.num_workers)  # type:ignore
-
             ray_xshards = RayXShards.from_spark_xshards(data)  # type:ignore
             worker_stats = self._evaluate_ray_xshards(ray_xshards, params)
         elif isinstance(data, Dataset):
