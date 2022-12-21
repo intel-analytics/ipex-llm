@@ -19,4 +19,4 @@ import tensorflow as tf
 from .Sequential import Sequential
 from .Model import Model
 from .inference.optimizer import InferenceOptimizer
-from .customized_training_utils import mixedprecision_train_step_generator
+from .customized_training_utils import tf_bf16_nano

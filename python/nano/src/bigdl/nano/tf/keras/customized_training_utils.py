@@ -15,43 +15,20 @@
 #
 
 
-def mixedprecision_train_step_generator(model, loss, optimizer):
-    """
-    To generate a training loop function with mixed precision.
+import tensorflow as tf
+import numpy as np
+from functools import wraps
 
-    Running a customized training loop with mixed precision requires changes over
-    running it in float32, especially need to use loss scaling if mixed_float16 is used.
+def tf_bf16_nano(func):
+    """A decorator to realize mixed precision on customized training loop."""
 
-    :param model: The model to train.
-    :param loss: tf.keras loss instance.
-    :param optimizer: tf.keras optimizer instance.
-
-    :return: A training loop function with mixed precision.
-
-    ..Example::
-        >>> # to set global dtype policy
-        >>> from bigdl.nano.tf import patch_tensorflow
-        >>> patch_tensorflow(precision='mixed_bfloat16')
-        >>> # to generate a training loop with mixed precision
-        >>> from bigdl.nano.tf.keras import mixedprecision_train_step_generator
-        >>> fit = mixedprecision_train_step_generator(model, loss, optimizer)
-        >>> # start training
-        >>> fit(x, y)
-    """
-    from tensorflow.keras import mixed_precision
-    import tensorflow as tf
-    optimizer = mixed_precision.LossScaleOptimizer(optimizer)
-
-    @tf.function
-    def train_step(x, y):
-        x = tf.cast(x, tf.bfloat16)
-        y = tf.cast(y, tf.bfloat16)
-        with tf.GradientTape() as tape:
-            pred = model(x)
-            loss_value = loss(y, pred)
-            scaled_loss = optimizer.get_scaled_loss(loss_value)
-        scaled_grads = tape.gradient(scaled_loss, model.trainable_variables)
-        grads = optimizer.get_unscaled_gradients(scaled_grads)
-        optimizer.apply_gradients(zip(grads, model.trainable_variables))
-        return loss_value
-    return train_step
+    # todo check the func signature
+    @wraps(func)
+    def wrapper(*inner_args):
+        new_args = []
+        for arg in inner_args:
+            if isinstance(arg, (tf.Tensor, np.ndarray)):
+                arg = tf.cast(arg, tf.bfloat16)
+            new_args.append(arg)
+        return func(*new_args)
+    return wrapper

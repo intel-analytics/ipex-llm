@@ -16,10 +16,10 @@
 import tensorflow as tf
 from tensorflow import keras
 from tensorflow.keras import layers
-from bigdl.nano.tf.keras import Sequential, mixedprecision_train_step_generator
+from bigdl.nano.tf.keras import Sequential, tf_bf16_nano
 
 
-def test_train_step_generator():
+def test_tf_nano_bf16_decorator():
 
     from bigdl.nano.tf import patch_tensorflow
     patch_tensorflow(precision='mixed_bfloat16')
@@ -31,15 +31,18 @@ def test_train_step_generator():
         def loss(self, y, pred):
             return tf.losses.mean_squared_error(y, pred)
 
+        @tf_bf16_nano
         @tf.function
-        def train(x, y):
+        def train(self, x, y):
             with tf.GradientTape() as tape:
                 pred = self.model(x, training=True)
                 loss_value = self.loss(y, pred)
             grads = tape.gradient(loss_value, self.model.trainable_variables)
-            optimizer.apply_gradients(zip(grads, self.model.trainable_variables))
-            return loss_value.numpy()
+            self.optimizer.apply_gradients(zip(grads, self.model.trainable_variables))
+            return loss_value
 
     model = Model()
-    fit = mixedprecision_train_step_generator(model.model, model.loss, model.optimizer)
-
+    # If call model.train() on devices without BF16 instruction set, core dumped
+    # x = np.random.random(1000)
+    # y = np.random.random(1000)
+    # model.train(x, y)
