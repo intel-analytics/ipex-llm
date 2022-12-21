@@ -1202,27 +1202,19 @@ class TSDataset:
         file and run the data processing pipeline in C++ using libtorch APIs, and the output
         tensor can be fed into the trained model for inference.
 
-        Currently only scale and roll are supported, the pipeline is similar to the following code:
+        Currently we support exporting preprocessing (scale and roll) and postprocessing (unscale)
+        to torchscript, they can do the same thing as the following code:
 
+        >>> # preprocess
         >>> tsdata.scale(scaler, fit=False) \\
         >>>       .roll(lookback, horizon, is_predict=True)
+        >>> preprocess_output = tsdata.to_numpy()
+        >>> # postprocess
+        >>> # "data" can be the output of model inference
+        >>> postprocess_output = tsdata.unscale_numpy(data)
 
-        When deploying, the compiled torchscript module can be used by:
-
-        >>> // deployment in C++
-        >>> #include <torch/torch.h>
-        >>> #include <torch/script.h>
-        >>> // create input tensor from your data
-        >>> // the data to create input tensor should have the same format as the
-        >>> // data used in developing
-        >>> torch::Tensor input = create_input_tensor(data);
-        >>> // load the module
-        >>> torch::jit::script::Module preprocessing;
-        >>> preprocessing = torch::jit::load(path);
-        >>> // run data preprocessing
-        >>> torch::Tensor output = preprocessing.forward(input_tensor).toTensor();
-
-        The output tensor has same shape and value as tsdata.to_numpy().
+        Preprocessing and postprocessing will be converted to separate torchscript modules, so two
+        modules will be returned and saved.
 
         Currently there are some limitations:
             1. Please make sure the value of each column can be converted to Pytorch tensor,
@@ -1236,10 +1228,10 @@ class TSDataset:
             3. Users are expected to call .scale(scaler, fit=True) before calling export_jit.
                Single roll operation is not supported for converting now.
 
-        :param path_dir: The path to save the compiled torchscript module, default to None.
+        :param path_dir: The path to save the compiled torchscript modules, default to None.
                If set to None, you should call torch.jit.save() in your code to save the returned
-               module; if not None, the path should be a directory, and the module will be saved at
-               "path_dir/tsdata_preprocessing.pt".
+               modules; if not None, the path should be a directory, and the modules will be saved
+               at "path_dir/tsdata_preprocessing.pt" and "path_dir/tsdata_postprocessing.pt".
         :param drop_dtcol: Whether to delete the datetime column. Since datetime value (like
                "2022-12-12") can't be converted to Pytorch tensor, you can choose different ways
                to workaround this. If set to True, the datetime column will be deleted, then you
@@ -1252,7 +1244,8 @@ class TSDataset:
                doesn't need datetime column so the value can be arbitrary.
                The value defaults to True.
 
-        :return: The compiled torchscript module.
+        :return: A tuple (preprocessing_module, postprocessing_module) containing the compiled
+                 torchscript modules.
 
         """
         from bigdl.chronos.data.utils.export_torchscript import export_processing_to_jit
