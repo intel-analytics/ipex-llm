@@ -59,6 +59,7 @@ class KerasONNXRuntimeModel(ONNXRuntimeModel, AcceleratedKerasModel):
                     input_spec = (input_spec, )
                 tf2onnx.convert.from_keras(model, input_signature=input_spec,
                                            output_path=onnx_path, **export_kwargs)
+                self._inputs_dtypes = [inp.dtype for inp in input_spec]
                 self._default_kwargs = get_default_args(model.call)
                 if KERAS_VERSION_LESS_2_10:
                     self._call_fn_args_backup = model._call_fn_args
@@ -83,7 +84,8 @@ class KerasONNXRuntimeModel(ONNXRuntimeModel, AcceleratedKerasModel):
         if self.ortsess is None:
             invalidInputError(False,
                               "Please create an instance by KerasONNXRuntimeModel()")
-        inputs = self.tensors_to_numpy(inputs)
+        inputs = [self.tensors_to_numpy(inp, input_dtype)
+                  for inp, input_dtype in zip(inputs, self._inputs_dtypes)]
         return inputs
 
     def on_forward_end(self, outputs):
@@ -134,6 +136,7 @@ class KerasONNXRuntimeModel(ONNXRuntimeModel, AcceleratedKerasModel):
         onnx_path = Path(path) / self.status['onnx_path']
         super()._save_model(onnx_path)
         attrs = {"_default_kwargs": self._default_kwargs,
-                 "_call_fn_args_backup": self._call_fn_args_backup}
+                 "_call_fn_args_backup": self._call_fn_args_backup,
+                 "_inputs_dtypes": self._inputs_dtypes,}
         with open(Path(path) / self.status['attr_path'], "wb") as f:
             pickle.dump(attrs, f)
