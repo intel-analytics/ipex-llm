@@ -629,7 +629,7 @@ def callBigDlFunc(bigdl_type, name, *args):
             result = callJavaFunc(api, *args)
         except Exception as e:
             error = e
-            print("Debugging" + jinvoker + ":" + name + ":" + str(e))
+            print("Debugging" + ":" + name + ":" + str(e))
             regex = re.compile(r'.*Method\s.*does not exist')
             # if the invoked method exist but something else went wrong, throw the exception
             if not regex.match(str(e)):
