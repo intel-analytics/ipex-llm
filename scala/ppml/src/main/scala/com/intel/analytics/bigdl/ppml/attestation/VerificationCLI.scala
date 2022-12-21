@@ -42,7 +42,8 @@ object VerificationCLI {
                              challenge: String = "test",
                              quotePath: String = "")
 
-        val cmdParser: OptionParser[CmdParams] = new OptionParser[CmdParams]("PPML Quote Verification Cmd tool") {
+        val cmdParser: OptionParser[CmdParams] = new OptionParser[CmdParams](
+          "PPML Quote Verification Cmd tool") {
             opt[String]('i', "appID")
               .text("app id for this app")
               .action((x, c) => c.copy(appID = x))
