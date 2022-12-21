@@ -23,11 +23,11 @@ def convert_onnx_to_xml(onnx_file_path, xml_path, precision,
                         logging=True, batch_size=1):
     xml_path = Path(xml_path)
     model_name, output_dir = str(xml_path.stem), str(xml_path.parent)
-    logging_cmd = "--silent " if logging is True else ""
-    precision_cmd = "--data_type FP16 " if precision == 'fp16' else ""
+    logging_str = "--silent " if logging is False else ""
+    precision_str = "--data_type FP16 " if precision == 'fp16' else ""
     mo_cmd = "mo -m {} {}{}-n {} -o {}".format(str(onnx_file_path),
-                                               logging_cmd,
-                                               precision_cmd,
+                                               logging_str,
+                                               precision_str,
                                                model_name,
                                                output_dir)
 
@@ -41,14 +41,14 @@ def convert_pb_to_xml(pb_file_path, xml_path, precision,
                       logging=True, batch_size=1):
     xml_path = Path(xml_path)
     model_name, output_dir = str(xml_path.stem), str(xml_path.parent)
-    logging_cmd = "--silent " if logging is True else ""
-    precision_cmd = "--data_type FP16 " if precision == 'fp16' else ""
+    logging_str = "--silent " if logging is False else ""
+    precision_str = "--data_type FP16 " if precision == 'fp16' else ""
     mo_cmd = "mo --saved_model_dir {} {}{}-n {} -o {}".format(str(pb_file_path),
-                                                              logging_cmd,
-                                                              precision_cmd,
+                                                              logging_str,
+                                                              precision_str,
                                                               model_name,
                                                               output_dir)
-
+    print(mo_cmd)
     p = subprocess.Popen(mo_cmd.split())
     p.communicate()
     invalidInputError(not p.returncode,

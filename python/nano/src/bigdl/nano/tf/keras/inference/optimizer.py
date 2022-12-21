@@ -332,6 +332,7 @@ class InferenceOptimizer(BaseInferenceOptimizer):
             if openvino_config is not None:
                 final_openvino_option.update(openvino_config)
             result = KerasOpenVINOModel(model,
+                                        precision='fp32',
                                         thread_num=thread_num,
                                         device=device,
                                         config=final_openvino_option,
@@ -481,6 +482,7 @@ class InferenceOptimizer(BaseInferenceOptimizer):
             if openvino_config is not None:
                 final_openvino_option.update(openvino_config)
             result = KerasOpenVINOModel(model,
+                                        precision=precision,
                                         thread_num=thread_num,
                                         device=device,
                                         config=final_openvino_option,
