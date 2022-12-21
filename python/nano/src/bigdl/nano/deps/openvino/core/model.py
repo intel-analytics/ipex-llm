@@ -67,7 +67,7 @@ class OpenVINOModel:
             self._ie_network = self._ie.read_model(model=str(model))
         else:
             self._ie_network = model
-        if self.thread_num is not None:
+        if self.thread_num is not None and self._device == 'CPU':
             config = {"CPU_THREADS_NUM": str(self.thread_num)}
         else:
             config = {}

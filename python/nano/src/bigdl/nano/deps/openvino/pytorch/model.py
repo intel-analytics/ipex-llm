@@ -31,8 +31,8 @@ from bigdl.nano.pytorch.utils import patch_attrs_from_model_to_object
 
 class PytorchOpenVINOModel(AcceleratedLightningModule):
     def __init__(self, model, input_sample=None, thread_num=None,
-                 dynamic_axes=True, logging=True, config=None,
-                 **export_kwargs):
+                 device='CPU', dynamic_axes=True, logging=True,
+                 config=None, **export_kwargs):
         """
         Create a OpenVINO model from pytorch.
 
@@ -43,6 +43,8 @@ class PytorchOpenVINOModel(AcceleratedLightningModule):
                              defaults to None.
         :param thread_num: a int represents how many threads(cores) is needed for
                            inference. default: None.
+        :param device: A string represents the device of the inference. Default to 'CPU'.
+                       'CPU', 'GPU' and 'VPU' are supported for now.
         :param dynamic_axes: dict or boolean, default to True. By default the exported onnx model
                              will have the first dim of each Tensor input as a dynamic batch_size.
                              If dynamic_axes=False, the exported model will have the shapes of all
@@ -70,7 +72,10 @@ class PytorchOpenVINOModel(AcceleratedLightningModule):
                        **export_kwargs)
                 ov_model_path = tmpdir / 'tmp.xml'
 
-            self.ov_model = OpenVINOModel(ov_model_path, thread_num=thread_num, config=config)
+            self.ov_model = OpenVINOModel(ov_model_path,
+                                          device=device,
+                                          thread_num=thread_num,
+                                          config=config)
             super().__init__(None)
         self._nano_context_manager = generate_context_manager(accelerator="openvino",
                                                               precision="fp32",

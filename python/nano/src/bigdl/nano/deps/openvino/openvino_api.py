@@ -17,7 +17,7 @@ from functools import partial
 
 
 def PytorchOpenVINOModel(model, input_sample=None, thread_num=None,
-                         dynamic_axes=True, logging=True,
+                         device='CPU', dynamic_axes=True, logging=True,
                          config=None, **export_kwargs):
     """
     Create a OpenVINO model from pytorch.
@@ -28,6 +28,8 @@ def PytorchOpenVINOModel(model, input_sample=None, thread_num=None,
                          model is a LightningModule with any dataloader attached, defaults to None.
     :param thread_num: a int represents how many threads(cores) is needed for
                        inference. default: None.
+    :param device: (optional) A string represents the device of the inference. Default to 'CPU'.
+                   'CPU', 'GPU' and 'VPU' are supported for now.
     :param dynamic_axes: dict or boolean, default to True. By default the exported onnx model
                          will have the first dim of each Tensor input as a dynamic batch_size.
                          If dynamic_axes=False, the exported model will have the shapes of all
@@ -51,6 +53,7 @@ def PytorchOpenVINOModel(model, input_sample=None, thread_num=None,
     return PytorchOpenVINOModel(model=model,
                                 input_sample=input_sample,
                                 thread_num=thread_num,
+                                device=device,
                                 dynamic_axes=dynamic_axes,
                                 logging=logging,
                                 config=config,
@@ -62,7 +65,8 @@ def load_openvino_model(path):
     return PytorchOpenVINOModel._load(path)
 
 
-def KerasOpenVINOModel(model, thread_num=None, config=None, logging=True):
+def KerasOpenVINOModel(model, thread_num=None, device='CPU',
+                       config=None, logging=True):
     """
     Create a OpenVINO model from Keras.
 
@@ -70,12 +74,18 @@ def KerasOpenVINOModel(model, thread_num=None, config=None, logging=True):
                   path to Openvino saved model.
     :param thread_num: a int represents how many threads(cores) is needed for
                        inference. default: None.
+    :param device: (optional) A string represents the device of the inference. Default to 'CPU'.
+                   'CPU', 'GPU' and 'VPU' are supported for now.
     :param config: The config to be inputted in core.compile_model.
     :param logging: whether to log detailed information of model conversion. default: True.
     :return: KerasOpenVINOModel model for OpenVINO inference.
     """
     from .tf.model import KerasOpenVINOModel
-    return KerasOpenVINOModel(model, thread_num=thread_num, config=config, logging=logging)
+    return KerasOpenVINOModel(model=model,
+                              thread_num=thread_num,
+                              device=device,
+                              config=config,
+                              logging=logging)
 
 
 def OpenVINOModel(model, device='CPU'):

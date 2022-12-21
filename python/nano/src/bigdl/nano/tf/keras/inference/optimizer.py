@@ -294,6 +294,7 @@ class InferenceOptimizer(BaseInferenceOptimizer):
               accelerator: Optional[str] = None,
               input_spec=None,
               thread_num: Optional[int] = None,
+              device: Optional[str] = 'CPU',
               onnxruntime_session_options=None,
               openvino_config=None,
               logging=True):
@@ -309,6 +310,9 @@ class InferenceOptimizer(BaseInferenceOptimizer):
         :param thread_num: (optional) a int represents how many threads(cores) is needed for
                            inference, only valid for accelerator='onnxruntime'
                            or accelerator='openvino'.
+        :param device: (optional) A string represents the device of the inference. Default to 'CPU',
+                        only valid when accelerator='openvino', otherwise will be ignored.
+                        'CPU', 'GPU' and 'VPU' are supported for now.
         :param onnxruntime_session_options: The session option for onnxruntime, only valid when
                                             accelerator='onnxruntime', otherwise will be ignored.
         :param openvino_config: The config to be inputted in core.compile_model. Only valid when
@@ -323,6 +327,7 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                 final_openvino_option.update(openvino_config)
             result = KerasOpenVINOModel(model,
                                         thread_num=thread_num,
+                                        device=device,
                                         config=final_openvino_option,
                                         logging=logging)
         elif accelerator == 'onnxruntime':
@@ -355,6 +360,7 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                  max_trials: Optional[int] = None,
                  batch: Optional[int] = None,
                  thread_num: Optional[int] = None,
+                 device: Optional[str] = 'CPU',
                  inputs: List[str] = None,
                  outputs: List[str] = None,
                  sample_size: int = 100,
@@ -418,6 +424,9 @@ class InferenceOptimizer(BaseInferenceOptimizer):
         :param thread_num:  (optional) a int represents how many threads(cores) is needed for
                             inference, only valid for accelerator='onnxruntime'
                             or accelerator='openvino'.
+        :param device: (optional) A string represents the device of the inference. Default to 'CPU',
+                        only valid when accelerator='openvino', otherwise will be ignored.
+                        'CPU', 'GPU' and 'VPU' are supported for now.
         :param inputs:      A list of input names.
                             Default: None, automatically get names from graph.
         :param outputs:     A list of output names.
@@ -474,6 +483,7 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                 openvino_model = InferenceOptimizer.trace(model=model,
                                                           accelerator='openvino',
                                                           thread_num=thread_num,
+                                                          device=device,
                                                           logging=logging,
                                                           openvino_config=openvino_config)
             openvino_model = openvino_model.target_obj

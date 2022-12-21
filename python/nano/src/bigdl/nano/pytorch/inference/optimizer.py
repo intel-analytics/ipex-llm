@@ -505,6 +505,7 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                  input_sample=None,
                  channels_last: bool = False,
                  thread_num: Optional[int] = None,
+                 device: Optional[str] = 'CPU',
                  onnxruntime_session_options=None,
                  openvino_config=None,
                  simplification: bool = True,
@@ -584,6 +585,9 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                            later inference process of your obtained accelerated model. In other
                            words, the process of model conversion won't be restricted by this
                            parameter.
+        :param device: (optional) A string represents the device of the inference. Default to 'CPU',
+                        only valid when accelerator='openvino', otherwise will be ignored.
+                        'CPU', 'GPU' and 'VPU' are supported for now.
         :param onnxruntime_session_options: The session option for onnxruntime, only valid when
                                             accelerator='onnxruntime', otherwise will be ignored.
         :param openvino_config: The config to be inputted in core.compile_model. Only valid when
@@ -768,6 +772,7 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                                                      input_sample=input_sample,
                                                      accelerator='openvino',
                                                      thread_num=thread_num,
+                                                     device=device,
                                                      dynamic_axes=dynamic_axes,
                                                      logging=logging,
                                                      **export_kwargs)
@@ -810,6 +815,7 @@ class InferenceOptimizer(BaseInferenceOptimizer):
               use_ipex: bool = False,
               channels_last: bool = False,
               thread_num: Optional[int] = None,
+              device: Optional[str] = 'CPU',
               onnxruntime_session_options=None,
               openvino_config=None,
               simplification: bool = True,
@@ -840,6 +846,9 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                            later inference process of your obtained accelerated model. In other
                            words, the process of model conversion won't be restricted by this
                            parameter.
+        :param device: (optional) A string represents the device of the inference. Default to 'CPU',
+                                  only valid when accelerator='openvino', otherwise will be ignored.
+                                  'CPU', 'GPU' and 'VPU' are supported for now.
         :param onnxruntime_session_options: The session option for onnxruntime, only valid when
                                             accelerator='onnxruntime', otherwise will be ignored.
         :param openvino_config: The config to be inputted in core.compile_model. Only valid when
@@ -895,6 +904,7 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                 final_openvino_option.update(openvino_config)
             return PytorchOpenVINOModel(model, input_sample,
                                         thread_num=thread_num,
+                                        device=device,
                                         dynamic_axes=dynamic_axes,
                                         logging=logging,
                                         config=final_openvino_option,
