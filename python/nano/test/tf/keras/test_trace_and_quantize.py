@@ -17,6 +17,7 @@ from unittest import TestCase
 
 import numpy as np
 import tensorflow as tf
+from tensorflow.keras.metrics import MeanSquaredError
 
 from bigdl.nano.tf.keras import InferenceOptimizer
 
@@ -65,3 +66,12 @@ class TestTraceAndQuantize(TestCase):
         quantized_model.do_nothing()
         assert quantized_model.get_x() == quantized_model.x == x
 
+    def test_evaluate_after_trace(self):
+        model = MyModel(100)
+        model.compile(loss='mse', metrics=MeanSquaredError())
+        x = np.random.random((100, 4))
+        y = np.random.random((100, 5))
+
+        traced_model = InferenceOptimizer.trace(model, accelerator="onnxruntime",
+                                                input_spec=tf.TensorSpec(shape=(None, 4), dtype=tf.float32))
+        traced_model.evaluate(x=x, y=y)
