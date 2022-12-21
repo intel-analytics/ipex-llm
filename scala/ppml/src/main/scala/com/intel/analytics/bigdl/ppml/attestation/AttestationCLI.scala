@@ -43,7 +43,6 @@ object AttestationCLI {
                              challenge: String = "",
                              policyID: String = "",
                              OSType: String = "gramine",
-                             quotePath: String = "",
                              userReport: String = "ppml")
 
         val cmdParser: OptionParser[CmdParams] = new OptionParser[CmdParams](
