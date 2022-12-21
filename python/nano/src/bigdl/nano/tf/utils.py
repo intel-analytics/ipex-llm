@@ -15,7 +15,7 @@
 #
 import inspect
 import operator
-from tensorflow.keras.layers import Layer
+from tensorflow.keras import Model
 from functools import partial
 from bigdl.nano.common.compare_version import _compare_version
 
@@ -80,3 +80,18 @@ def patch_attrs(target_obj: object, source_obj: object) -> object:
             else:
                 setattr(target_obj, name, attr)
         return target_obj
+
+
+def patch_compiled(target_model: Model, source_model: Model):
+    """Patch the compiled loss and metric of `source_model` to `target_model`."""
+    if source_model._is_compiled:
+        kwargs = {"run_eagerly": source_model._run_eagerly,
+                  "steps_per_execution": int(source_model._steps_per_execution)}
+        if source_model.compiled_loss is not None:
+            kwargs["loss"] = source_model.compiled_loss._user_losses
+            kwargs["loss_weights"] = source_model.compiled_loss._user_loss_weights
+        if source_model.compiled_metrics is not None:
+            kwargs["metrics"] = source_model.compiled_metrics._user_metrics
+            kwargs["weighted_metrics"] = source_model.compiled_metrics._user_weighted_metrics
+        target_model.compile(**kwargs)
+    return target_model
