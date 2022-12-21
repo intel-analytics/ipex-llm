@@ -352,7 +352,7 @@ class InferenceOptimizer(BaseInferenceOptimizer):
 
     @staticmethod
     def quantize(model: Model,
-                 x: Union[tf.Tensor, np.ndarray, tf.data.Dataset],
+                 x: Union[tf.Tensor, np.ndarray, tf.data.Dataset] = None,
                  y: Union[tf.Tensor, np.ndarray] = None,
                  precision: str = 'int8',
                  accelerator: Optional[str] = None,
@@ -387,9 +387,9 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                   |
                   | 3. an unbatched tf.data.Dataset. Should return a tuple of (inputs, targets).
 
-                  X will be used as calibration dataset for Post-Training Static Quantization (PTQ),
-                  as well as be used for generating input_sample to calculate latency.
+                  X will be used as calibration dataset for Post-Training Static Quantization (PTQ).
                   To avoid data leak during calibration, please use training dataset.
+                  only valid when precision='int8', otherwise will be ignored.
         :param y: Target data. Like the input data x, it could be either Numpy array(s) or
                   TensorFlow tensor(s). Its length should be consistent with x.
                   If x is a dataset, y will be ignored (since targets will be obtained from x).
@@ -465,6 +465,7 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                               "fp16 is not supported on {} device.".format(device))
             if openvino_config is not None:
                 final_openvino_option = openvino_config
+            from bigdl.nano.deps.openvino.tf.model import KerasOpenVINOModel    # type: ignore
             result = KerasOpenVINOModel(model,
                                         precision=precision,
                                         thread_num=thread_num,
@@ -474,13 +475,14 @@ class InferenceOptimizer(BaseInferenceOptimizer):
             return patch_attrs(result, model)
 
         elif precision == 'bf16':
-            invalidInputError(accelerator != 'openvino',
+            invalidInputError(accelerator == 'openvino',
                               "Accelerator {} is invalid for BF16.".format(accelerator))
-            invalidInputError(device != 'CPU',
+            invalidInputError(device == 'CPU',
                               "Device {} don't support bfloat16.".format(device))
             final_openvino_option = {"INFERENCE_PRECISION_HINT": "bf16"}
             if openvino_config is not None:
                 final_openvino_option.update(openvino_config)
+            from bigdl.nano.deps.openvino.tf.model import KerasOpenVINOModel    # type: ignore
             result = KerasOpenVINOModel(model,
                                         precision=precision,
                                         thread_num=thread_num,

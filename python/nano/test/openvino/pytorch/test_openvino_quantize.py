@@ -195,3 +195,19 @@ class TestOpenVINO(TestCase):
         accmodel(x1)
         accmodel(x2)
         accmodel(x3)
+
+    def test_quantize_openvino_bf16(self):
+        model = mobilenet_v3_small(num_classes=10)
+
+        x = torch.rand((10, 3, 256, 256))
+
+        optimized_model = InferenceOptimizer.quantize(model,
+                                                      accelerator='openvino',
+                                                      input_sample=x,
+                                                      precision='bf16')
+
+        with InferenceOptimizer.get_context(optimized_model):
+            y_hat = optimized_model(x[0:3])
+            assert y_hat.shape == (3, 10)
+            y_hat = optimized_model(x)
+            assert y_hat.shape == (10, 10)

@@ -675,7 +675,7 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                                            thread_num=thread_num)
                     return bf16_model
             elif accelerator == "openvino":
-                invalidInputError(device != 'CPU',
+                invalidInputError(device == 'CPU',
                                   "Device {} don't support bfloat16.".format(device))
                 final_openvino_option = {"INFERENCE_PRECISION_HINT": "bf16"}
                 if openvino_config is not None:

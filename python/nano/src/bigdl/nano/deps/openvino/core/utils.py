@@ -48,7 +48,7 @@ def convert_pb_to_xml(pb_file_path, xml_path, precision,
                                                               precision_str,
                                                               model_name,
                                                               output_dir)
-    print(mo_cmd)
+
     p = subprocess.Popen(mo_cmd.split())
     p.communicate()
     invalidInputError(not p.returncode,
