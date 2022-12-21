@@ -587,7 +587,7 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                            parameter.
         :param device: (optional) A string represents the device of the inference. Default to 'CPU',
                         only valid when accelerator='openvino', otherwise will be ignored.
-                        'CPU', 'GPU' and 'VPU' are supported for now.
+                        'CPU', 'GPU' and 'VPUX' are supported for now.
         :param onnxruntime_session_options: The session option for onnxruntime, only valid when
                                             accelerator='onnxruntime', otherwise will be ignored.
         :param openvino_config: The config to be inputted in core.compile_model. Only valid when
@@ -647,8 +647,11 @@ class InferenceOptimizer(BaseInferenceOptimizer):
         invalidInputError(precision not in ['int8', 'fp16', 'bf16'],
                           "Only support 'int8', 'bf16', 'fp16' now, "
                           "no support for {}.".format(precision))
-        invalidInputError(device != 'CPU' and accelerator != 'openvino',
-                          "Now we only support {} device when accelerator is openvino.".format(device))
+        invalidInputError(device == 'CPU' or 'GPU' in device or device == 'VPUX',
+                          "Now we only support CPU, GPU and VPUX, not {}".format(device))
+        if device != 'CPU' and accelerator != 'openvino':
+            invalidInputError(False,
+                              "Now we only support {} device when accelerator is openvino.".format(device))
         if precision == 'bf16':
             if accelerator is None or accelerator == "jit":
                 if use_ipex or accelerator == "jit":
@@ -880,7 +883,7 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                            parameter.
         :param device: (optional) A string represents the device of the inference. Default to 'CPU',
                                   only valid when accelerator='openvino', otherwise will be ignored.
-                                  'CPU', 'GPU' and 'VPU' are supported for now.
+                                  'CPU', 'GPU' are supported for now.
         :param onnxruntime_session_options: The session option for onnxruntime, only valid when
                                             accelerator='onnxruntime', otherwise will be ignored.
         :param openvino_config: The config to be inputted in core.compile_model. Only valid when
@@ -930,8 +933,11 @@ class InferenceOptimizer(BaseInferenceOptimizer):
             "Expect a nn.Module instance that is not traced or quantized"
             "but got type {}".format(type(model))
         )
-        invalidInputError(device != 'CPU' and accelerator != 'openvino',
-                          "Now we only support {} device when accelerator is openvino.".format(device))
+        invalidInputError(device == 'CPU' or 'GPU' in device,
+                          "Now we only support fp32 for CPU and GPU, not {}".format(device))
+        if device != 'CPU' and accelerator != 'openvino':
+            invalidInputError(False,
+                              "Now we only support {} device when accelerator is openvino.".format(device))
         if accelerator == 'openvino':  # openvino backend will not care about ipex usage
             final_openvino_option = {"INFERENCE_PRECISION_HINT": "f32"}
             if openvino_config is not None:
