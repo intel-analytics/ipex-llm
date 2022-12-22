@@ -21,7 +21,7 @@ from bigdl.nano.tf.keras import Sequential, tf_bf16_nano
 
 def test_tf_nano_bf16_decorator():
 
-    from bigdl.nano.tf import patch_tensorflow
+    from bigdl.nano.tf import patch_tensorflow, unpatch_tensorflow
     patch_tensorflow(precision='mixed_bfloat16')
 
     class Model():
@@ -46,3 +46,4 @@ def test_tf_nano_bf16_decorator():
     # x = np.random.random(1000)
     # y = np.random.random(1000)
     # model.train(x, y)
+    unpatch_tensorflow()
