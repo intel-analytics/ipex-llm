@@ -211,11 +211,12 @@ class PyTorchRayEstimator(BaseRayEstimator):
             callbacks=callbacks,
         )
 
-        self.setup(params=self.setup_params,
-                   backend=self.backend,
-                   runner_cls=PytorchRayWorker,
-                   workers_per_node=self.workers_per_node,
-                   mode="fit")
+        if self.backend == "ray":
+            self.setup(params=self.setup_params,
+                       backend=self.backend,
+                       runner_cls=PytorchRayWorker,
+                       workers_per_node=self.workers_per_node,
+                       mode="fit")
 
         from bigdl.orca.data import SparkXShards
         from ray.data import Dataset
