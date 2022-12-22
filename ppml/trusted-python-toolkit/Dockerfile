@@ -66,7 +66,8 @@ RUN apt-get update && \
     /opt/conda/bin/conda clean -afy && \
     git clone https://github.com/triton-inference-server/server.git && \
     cd server && \
-    ./build.py -v --no-container-build --build-dir=/workspace/server/build --backend=pytorch --repoagent=checksum --filesystem=gcs --filesystem=s3 --filesystem=azure_storage --endpoint=http --endpoint=grpc --endpoint=sagemaker --endpoint=vertex-ai --enable-logging --enable-stats --enable-metrics --enable-cpu-metrics --enable-tracing --dryrun && \
+    cp -r * /workspace && \
+    ./build.py -v --backend=pytorch --repoagent=checksum --filesystem=gcs --filesystem=s3 --filesystem=azure_storage --endpoint=http --endpoint=grpc --endpoint=sagemaker --endpoint=vertex-ai --enable-logging --enable-stats --enable-metrics --enable-cpu-metrics --enable-tracing --dryrun && \
     cd build && \
     ./cmake_build
 
@@ -115,7 +116,7 @@ COPY --from=min_container /usr/lib/x86_64-linux-gnu/libcudnn.so.8 /usr/lib/x86_6
 COPY --from=min_container /usr/lib/x86_64-linux-gnu/libnccl.so.2 /usr/lib/x86_64-linux-gnu/libnccl.so.2
 COPY --from=tritonserver /workspace/server/docker/entrypoint.d/ /opt/nvidia/entrypoint.d/
 COPY --from=tritonserver /workspace/server/docker/cpu_only/ /opt/nvidia/
-COPY --from=tritonserver /workspace/server/build/opt/ /
+COPY --from=tritonserver /tmp/tritonbuild/install /opt/tritonserver
 COPY --from=tritonserver /workspace/server/NVIDIA_Deep_Learning_Container_License.pdf /opt/tritonserver
 COPY --from=tritonserver /workspace/server/docker/sagemaker/serve /usr/bin/.
 
