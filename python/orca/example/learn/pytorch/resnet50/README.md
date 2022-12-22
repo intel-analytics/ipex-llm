@@ -1,5 +1,4 @@
 # PyTorch ResNet50 inference example
-## Warning: we have deprecated `Training_Operator ` after Bigdl-2.2.0, and this example will fall down temporarily. We will fix this as soon as possible, please subscribe our follow-up work trends.
 
 ## Prepare the dataset
 You can download the imagenet dataset from [here](https://www.image-net.org/download.php). Only 50000 validation images are needed for this example.
