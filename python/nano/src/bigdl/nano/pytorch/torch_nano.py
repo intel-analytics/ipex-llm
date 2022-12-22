@@ -35,7 +35,7 @@ from bigdl.nano.common import check_avx512
 from bigdl.nano.utils.log4Error import invalidInputError
 from bigdl.nano.pytorch.utils import  TORCH_VERSION_LESS_1_11
 from bigdl.nano.deps.ipex.ipex_api import ipex_optimize
-from bigdl.nano.pytorch.strategies import create_IPEXStrategy, DDPSpawnStrategy, \
+from bigdl.nano.pytorch.strategies import IPEXStrategy, DDPSpawnStrategy, \
     DDPSubprocessStrategy, create_ray_strategy, DDPK8sStrategy
 
 
@@ -197,7 +197,7 @@ class TorchNano(LightningLite):
 
         if self.num_processes == 1:
             if self.use_ipex:
-                strategy = create_IPEXStrategy(dtype=self.dtype)
+                strategy = IPEXStrategy(dtype=self.dtype)
             else:
                 strategy = None     # type: ignore
         elif distributed_backend in backends_class_map:
