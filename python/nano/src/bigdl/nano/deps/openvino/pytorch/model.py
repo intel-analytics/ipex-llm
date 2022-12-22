@@ -73,8 +73,8 @@ class PytorchOpenVINOModel(AcceleratedLightningModule):
                     # workaround for dynamic shape issue on GPU/VPU plugin
                     dynamic_axes = False
                 export(model, input_sample, str(tmpdir / 'tmp.xml'),
-                       dynamic_axes=dynamic_axes, logging=logging,
-                       **export_kwargs)
+                       precision=precision, dynamic_axes=dynamic_axes,
+                       logging=logging, **export_kwargs)
                 ov_model_path = tmpdir / 'tmp.xml'
 
             self.ov_model = OpenVINOModel(ov_model_path,

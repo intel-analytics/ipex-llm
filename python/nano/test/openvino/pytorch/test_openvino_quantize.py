@@ -201,13 +201,56 @@ class TestOpenVINO(TestCase):
 
         x = torch.rand((10, 3, 256, 256))
 
-        optimized_model = InferenceOptimizer.quantize(model,
-                                                      accelerator='openvino',
-                                                      input_sample=x,
-                                                      precision='bf16')
+        try:
+            optimized_model = InferenceOptimizer.quantize(model,
+                                                        accelerator='openvino',
+                                                        input_sample=x,
+                                                        precision='bf16')
+        except RuntimeError as e:
+            assert e.message == "Platform doesn't support BF16 format"
+            return
 
         with InferenceOptimizer.get_context(optimized_model):
             y_hat = optimized_model(x[0:3])
             assert y_hat.shape == (3, 10)
             y_hat = optimized_model(x)
             assert y_hat.shape == (10, 10)
+
+    def test_openvino_gpu_quatize(self):
+        # test whether contains GPU
+        from openvino.runtime import Core
+        core = Core()
+        devices = core.available_devices
+        gpu_avaliable = any('GPU' in x for x in devices)
+        
+        if gpu_avaliable is False:
+            return
+
+        model = mobilenet_v3_small(num_classes=10)
+
+        x = torch.rand((1, 3, 256, 256))
+        x2 = torch.rand((10, 3, 256, 256))
+
+        # test GPU fp16
+        openvino_model = InferenceOptimizer.quanize(model,
+                                                    input_sample=x,
+                                                    accelerator='openvino',
+                                                    device='GPU',
+                                                    precision='fp16')
+        result = openvino_model(x)
+        # GPU don't support dynamic shape
+        with pytest.raises(RuntimeError):
+            openvino_model(x2)
+
+
+        # test GPU int8
+        openvino_model = InferenceOptimizer.quanize(model,
+                                                    input_sample=x,
+                                                    accelerator='openvino',
+                                                    device='GPU',
+                                                    precision='int8',
+                                                    calib_data=x)
+        result = openvino_model(x)
+        # GPU don't support dynamic shape
+        with pytest.raises(RuntimeError):
+            openvino_model(x2)

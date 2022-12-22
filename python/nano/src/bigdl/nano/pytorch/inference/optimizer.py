@@ -790,14 +790,16 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                     if input_sample is None:
                         # input_sample can be a dataloader
                         input_sample = calib_dataloader
-                    model = InferenceOptimizer.trace(model,
-                                                     input_sample=input_sample,
-                                                     accelerator='openvino',
-                                                     thread_num=thread_num,
-                                                     device=device,
-                                                     dynamic_axes=dynamic_axes,
-                                                     logging=logging,
-                                                     **export_kwargs)
+                    # For CPU: fp32 -> int8, for GPU: fp16 -> int8
+                    _precision = 'fp16' if device != 'CPU' else 'fp32'
+                    model = PytorchOpenVINOModel(model, input_sample,
+                                                 precision=_precision,
+                                                 thread_num=thread_num,
+                                                 device=device,
+                                                 dynamic_axes=dynamic_axes,
+                                                 logging=logging,
+                                                 config=openvino_config,
+                                                 **export_kwargs)
                 invalidInputError(type(model).__name__ == 'PytorchOpenVINOModel',
                                   "Invalid model to quantize. Please use a nn.Module or a model "
                                   "from trainer.trance(accelerator=='openvino')")

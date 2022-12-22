@@ -122,10 +122,14 @@ class TestOpenVINO(TestCase):
         model = Model(inputs=model.inputs, outputs=model.outputs)
         train_examples = np.random.random((100, 40, 40, 3))
 
-        openvino_quantized_model = InferenceOptimizer.quantize(model,
-                                                               accelerator='openvino',
-                                                               precision='bf16')
-        
+        try:
+            openvino_quantized_model = InferenceOptimizer.quantize(model,
+                                                                accelerator='openvino',
+                                                                precision='bf16')
+        except RuntimeError as e:
+            assert e.message == "Platform doesn't support BF16 format"
+            return
+
         y_hat = openvino_quantized_model(train_examples[:10])
         assert y_hat.shape == (10, 10)
 

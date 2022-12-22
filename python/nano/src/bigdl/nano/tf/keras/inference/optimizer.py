@@ -526,14 +526,16 @@ class InferenceOptimizer(BaseInferenceOptimizer):
             from bigdl.nano.deps.openvino.tf.model import KerasOpenVINOModel    # type: ignore
             if isinstance(model, KerasOpenVINOModel):    # type: ignore
                 openvino_model = model
+                openvino_model = openvino_model.target_obj
             else:
-                openvino_model = InferenceOptimizer.trace(model=model,
-                                                          accelerator='openvino',
-                                                          thread_num=thread_num,
-                                                          device=device,
-                                                          logging=logging,
-                                                          openvino_config=openvino_config)
-            openvino_model = openvino_model.target_obj
+                # For CPU: fp32 -> int8, for GPU: fp16 -> int8
+                _precision = 'fp16' if device != 'CPU' else 'fp32'
+                openvino_model = KerasOpenVINOModel(model,
+                                                    precision=_precision,
+                                                    thread_num=thread_num,
+                                                    device=device,
+                                                    config=final_openvino_option,
+                                                    logging=logging)
             if metric:
                 if not isinstance(accuracy_criterion, dict):
                     accuracy_criterion = {'relative': 0.99, 'higher_is_better': True}
