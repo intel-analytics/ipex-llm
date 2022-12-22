@@ -1207,6 +1207,19 @@ class TSDataset:
         >>> tsdata.scale(scaler, fit=False) \\
         >>>       .roll(lookback, horizon, is_predict=True)
 
+        When deploying, the compiled torchscript module can be used by:
+
+        >>> // deployment in C++
+        >>> #include <torch/torch.h>
+        >>> #include <torch/script.h>
+        >>> // create input tensor
+        >>> torch::Tensor input = create_input_tensor();
+        >>> // load the module
+        >>> torch::jit::script::Module preprocessing;
+        >>> preprocessing = torch::jit::load(path);
+        >>> // run data preprocessing
+        >>> torch::Tensor output = preprocessing.forward(input_tensor).toTensor();
+
         The output tensor has same shape and value as tsdata.to_numpy().
 
         Currently there are some limitations:
