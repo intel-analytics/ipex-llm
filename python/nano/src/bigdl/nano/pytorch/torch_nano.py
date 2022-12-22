@@ -250,7 +250,7 @@ class TorchNano(LightningLite):
         if self.use_ipex:
             ret = ipex_optimize(model, optimizers=optimizers, inplace=False, dtype=self.dtype)
             if isinstance(ret, tuple):
-                model, optimizers = ret
+                model, optimizers = ret[0], [ret[1]]
             else:
                 model = ret
 
