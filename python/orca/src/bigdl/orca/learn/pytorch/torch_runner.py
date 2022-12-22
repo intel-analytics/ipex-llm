@@ -45,7 +45,6 @@ from torch.utils.data.distributed import DistributedSampler
 from bigdl.orca import OrcaContext
 from bigdl.orca.learn.pytorch.constants import (SCHEDULER_STEP, SCHEDULER_STEP_EPOCH,
                                                 SCHEDULER_STEP_BATCH)
-from bigdl.orca.learn.pytorch.training_operator import TrainingOperator
 from bigdl.orca.learn.pytorch import utils
 from bigdl.orca.learn.pytorch.utils import (get_filesystem, AverageMeterCollection,
                                             NUM_SAMPLES, get_batchsize)
@@ -57,7 +56,6 @@ try:
 except ImportError:
     from collections import Iterable
 
-# TrainingOperator Import
 tqdm = None
 try:
     from tqdm import tqdm
@@ -116,7 +114,6 @@ class TorchRunner(BaseRunner):
                  loss_creator=None,
                  metrics=None,
                  scheduler_creator=None,
-                 training_operator_cls=None,
                  config=None,
                  use_tqdm=False,
                  scheduler_step_freq=None,
@@ -131,7 +128,6 @@ class TorchRunner(BaseRunner):
         self.optimizer_creator = optimizer_creator
         self.loss_creator = loss_creator
         self.scheduler_creator = scheduler_creator
-        self.training_operator_cls = training_operator_cls or TrainingOperator
         self.config = {} if config is None else config
 
         self.timers = utils.TimerCollection()
@@ -144,7 +140,6 @@ class TorchRunner(BaseRunner):
         self.schedulers = None
         self.train_loader = None
         self.validation_loader = None
-        self.training_operator = None
         self.use_tqdm = use_tqdm
         self.scheduler_step_freq = scheduler_step_freq
         self.sync_stats = sync_stats
@@ -208,18 +203,6 @@ class TorchRunner(BaseRunner):
             self.dist_backend = HorovodDistBackend()
         else:
             self.dist_backend = TorchDistBackend()
-
-        self.training_operator = \
-            self.training_operator_cls(
-                self.config,
-                models=training_models,
-                optimizers=self.optimizers,
-                criterion=self.criterion,
-                world_rank=self.rank,
-                schedulers=self.schedulers,
-                use_tqdm=self.use_tqdm,
-                sync_stats=self.sync_stats,
-                dist_backend=self.dist_backend)
 
     def train_epochs(self, data_creator, epochs=1, batch_size=32, profile=False,
                      info=None, wrap_dataloader=None, callbacks=None,
@@ -703,13 +686,11 @@ class TorchRunner(BaseRunner):
             self.timers.reset()
         else:
             self.timers.disable()
-        self.training_operator._set_timers(self.timers)
 
     def get_state_dict(self):
         """Returns the state of the runner."""
         state = {
             "epoch": self.epochs,
-            "operator": self.training_operator.state_dict(),
             "models": [model.state_dict() for model in self.models]
         }
         if self.optimizers is not None:
@@ -748,8 +729,6 @@ class TorchRunner(BaseRunner):
                 scheduler.load_state_dict(state_dict)
         if "epoch" in state:
             self.epochs = state["epoch"]
-        if "operator" in state:
-            self.training_operator.load_state_dict(state["operator"])
 
     def save_checkpoint(self, filepath, save_weights_only=False):
         if self.rank == 0:
@@ -779,15 +758,8 @@ class TorchRunner(BaseRunner):
                 rmdir(filepath)
                 self.logger.debug(f"Removed checkpoint: {filepath}")
 
-    def apply(self, fn):
-        return fn()
-
-    def apply_operator(self, fn):
-        return fn(self.training_operator)
-
     def shutdown(self):
         """Attempts to shut down the worker."""
-        del self.training_operator
         del self.validation_loader
         del self.train_loader
         del self.criterion
