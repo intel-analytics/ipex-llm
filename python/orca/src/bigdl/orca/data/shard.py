@@ -166,7 +166,7 @@ class SparkXShards(XShards):
                  transient: bool = False,
                  class_name: Optional[str] = None) -> None:
         self.rdd = rdd
-        self.user_caching = False
+        self.user_caching = self.rdd.is_cached
         if transient:
             self.eager = False
         else:
@@ -821,7 +821,7 @@ class SparkXShards(XShards):
         return self
 
     def __del__(self):
-        self.uncache()
+        self._uncache()
 
     def __getitem__(self, key: str) -> "SparkXShards":
         def get_data(data):
