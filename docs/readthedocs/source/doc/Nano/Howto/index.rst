@@ -18,13 +18,13 @@ PyTorch Lightning
 
 PyTorch
 ~~~~~~~~~~~~~~~~~~~~~~~~~
-* |use_nano_decorator_pytorch_training|_
 * |convert_pytorch_training_torchnano|_
+* |use_nano_decorator_pytorch_training|_
 
-.. |convert_pytorch_training_torchnano| replace:: How to convert your PyTorch training loop to use ``TorchNano`` for acceleration
-.. _convert_pytorch_training_torchnano: Training/PyTorch/convert_pytorch_training_torchnano.html
 .. |use_nano_decorator_pytorch_training| replace:: How to accelerate your PyTorch training loop with ``@nano`` decorator
 .. _use_nano_decorator_pytorch_training: Training/PyTorch/use_nano_decorator_pytorch_training.html
+.. |convert_pytorch_training_torchnano| replace:: How to convert your PyTorch training loop to use ``TorchNano`` for acceleration
+.. _convert_pytorch_training_torchnano: Training/PyTorch/convert_pytorch_training_torchnano.html
 
 TensorFlow
 ~~~~~~~~~~~~~~~~~~~~~~~~~
