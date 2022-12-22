@@ -35,7 +35,10 @@ import org.slf4j.LoggerFactory
 import scala.collection.mutable
 import scala.concurrent.Await
 import com.intel.analytics.bigdl.dllib.utils.Log4Error
-import keywhiz.client.KeywhizClient
+import sys.process._
+import java.util.Base64
+import javax.crypto.spec.SecretKeySpec
+import javax.crypto.Cipher
 
 object App extends Supportive {
   override val logger = LoggerFactory.getLogger(getClass)
@@ -55,7 +58,6 @@ object App extends Supportive {
         }
       }
       logger.info("Servable Manager Load Success!")
-      var keywhizClient : KeywhizClient = null
       val route = timing("initialize http route")() {
         path("") {
           timing("welcome")(overallRequestTimer) {
@@ -70,18 +72,9 @@ object App extends Supportive {
                 val primaryKeyName = params(0).split("=")(1)
                 val user = params(1).split("=")(1)
                 val password = params(2).split("=")(1)
-                val base64AES256Key:String = "generate an AES 256 key here" //todo
-                if (keywhizClient == null) {
-                    keywhizClient = timing(s"keywhizClient initialized.")() {
-                        val client = new KeywhizClient(
-                            arguments.keywhizHost,
-                            arguments.keywhizPort,
-                            arguments.keywhizTrustStorePath,
-                            arguments.keywhizTrustStoreToken)
-                    }
-                }
-                //todo: login(user, password) before request keywhiz
-                //todo: send key and name to keywhiz through keywhizClient
+                val base64AES256Key:String = generateAESKey(256)
+                login(user, password)
+                addKeyToKeywhiz(user, primaryKeyName, base64AES256Key)
                 complete(s"primaryKey [$primaryKeyName] is generated successfully!")
             } catch {
               case e: Exception =>
@@ -101,20 +94,11 @@ object App extends Supportive {
                 val dataKeyName = params(1).split("=")(1)
                 val user = params(2).split("=")(1)
                 val password = params(3).split("=")(1)
-                if (keywhizClient == null) {
-                    keywhizClient = timing(s"keywhizClient initialized.")() {
-                        val client = new KeywhizClient(
-                            arguments.keywhizHost,
-                            arguments.keywhizPort,
-                            arguments.keywhizTrustStorePath,
-                            arguments.keywhizTrustStoreToken)
-                    }
-                }
-                //todo: login(user, password) before request keywhiz
-                //todo: retrieve primary key from keywhiz according to name
-                val base64AES128Key:String = "generate an AES 128 key here" //todo
-                //todo: encrypt 128 key with primary key
-                //todo: send key and name to keywhiz through keywhizClient
+                login(user, password)
+                val primaryKey:String = getKeyFromKeywhiz(user, primaryKeyName)
+                val base64AES128Key:String = generateAESKey(128)
+                val encryptedDataKey:String = encryptDataKey(primaryKey, base64AES128Key)
+                addKeyToKeywhiz(user, dataKeyName, encryptedDataKey)
                 complete(s"dataKey [$dataKeyName] is generated successfully!")
             } catch {
               case e: Exception =>
@@ -154,19 +138,10 @@ object App extends Supportive {
                 val dataKeyName = params(1).split("=")(1)
                 val user = params(2).split("=")(1)
                 val password = params(3).split("=")(1)
-                if (keywhizClient == null) {
-                    keywhizClient = timing(s"keywhizClient initialized.")() {
-                        val client = new KeywhizClient(
-                            arguments.keywhizHost,
-                            arguments.keywhizPort,
-                            arguments.keywhizTrustStorePath,
-                            arguments.keywhizTrustStoreToken)
-                    }
-                }
-                //todo: login(user, password) before request keywhiz
-                //todo: retrieve primary key from keywhiz according to name
-                //todo: retrieve data key from keywhiz according to name
-                val base64DataKeyPlaintext = "decrypt data key ciphertext with primary key plaintext"//todo
+                login(user, password)
+                val primaryKey = getKeyFromKeywhiz(user, primaryKeyName)
+                val base64DataKeyCiphertext = getKeyFromKeywhiz(user, dataKeyName)
+                val base64DataKeyPlaintext = decryptedDataKey(primaryKey, dataKeyCiphertext)
                 complete(base64DataKeyPlaintext)
             }
             catch {
@@ -179,12 +154,58 @@ object App extends Supportive {
            }
           }
         }
-      } 
+      }
       val serverContext = defineServerContext(arguments.httpsKeyStoreToken,
           arguments.httpsKeyStorePath)
       Http().bindAndHandle(route, arguments.interface, port = arguments.port,
           connectionContext = serverContext)
       logger.info(s"https started at https://${arguments.interface}:${arguments.port}")
+  }
+
+  def login(user:String, password:String): Unit = {
+    s"keywhiz.cli --user $user --password $password login" !!
+  }
+
+  def generateAESKey(keysize:Int): String = {
+    s"key.provider gen-aes --keysize $keysize" !!
+  }
+
+  def addKeyToKeywhiz(user:String, keyName:String, keyContent:String): Unit = {
+    val command:String = s"keywhiz.cli  --user $user " +
+                         s"add secret --name $keyName" +
+                         s"--json {\"_key\":\"$keyContent\"}  < salt"
+    command !!
+  }
+
+  def getKeyFromKeywhiz(user:String, keyName:String): String = {
+    s"keywhiz.cli --user $user get --name $keyName" !!
+  }
+
+  def dataKeyCryptoCodec(base64PrimaryKeyPlaintext:String,
+                     base64DataKey:String,
+                     om: Int): String = {
+      bytePrimaryKeyPlaintext = base64PrimaryKeyPlaintext.getBytes
+      encryptionKeySpec = new SecretKeySpec(bytePrimaryKeyPlaintext, "AES")
+      cipher = Cipher.getInstance("AES")
+      cipher.init(om, encryptionKeySpec)
+      val byteDataKey = Base64.getDecoder().decode(base64DataKey.getBytes)
+      val byteDataKeyOperated = cipher.doFinal(byteDataKey)
+      val base64DataKeyOperated = Base64.getEncoder.encodeToString(byteDataKeyOperated)
+      base64DataKeyOperated
+  }
+
+  def encryptDataKey(base64PrimaryKeyPlaintext:String,
+                     base64DataKeyPlaintext:String): String = {
+      dataKeyCryptoCodec(base64PrimaryKeyPlaintext,
+                         base64DataKeyPlaintext,
+                         Cipher.ENCRYPT_MODE)
+  }
+
+  def decryptDataKey(base64PrimaryKeyPlaintext:String,
+                     base64DataKeyCiphertext:String): String = {
+      dataKeyCryptoCodec(base64PrimaryKeyPlaintext,
+                         base64DataKeyCiphertext,
+                         Cipher.DECRYPT_MODE)
   }
 
   val metrics = new MetricRegistry
@@ -266,3 +287,4 @@ case class KMSFrontendArguments(
                                  keywhizTrustStorePath: String = null,
                                  keywhizTrustStoreToken: String = null
                                )
+
