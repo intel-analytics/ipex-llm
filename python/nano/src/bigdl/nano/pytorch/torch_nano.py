@@ -152,18 +152,18 @@ class TorchNano(LightningLite):
         """
         Create a TorchNano with nano acceleration.
 
-        :param num_processes: number of processes in distributed training, defaults to 1
-        :param use_ipex: whether use ipex acceleration, defaults to False
-        :param distributed_backend: use which backend in distributed mode, defaults to \
-            "subprocess", now avaiable backends are 'spawn', 'subprocess' and 'ray'
-        :param precision: Double precision (64), full precision (32), half precision (16)
-            or bfloat16 precision (bf16), defaults to 32.
-            Enable ipex bfloat16 weight prepack when `use_ipex=True` and `precision='bf16'`
+        :param num_processes: number of processes in distributed training, defaults to ``1``
+        :param use_ipex: whether use ipex acceleration, defaults to ``False``
+        :param distributed_backend: use which backend in distributed mode, defaults to
+            ``'subprocess'``, now avaiable backends are ``'spawn'``, ``'subprocess'`` and ``'ray'``
+        :param precision: Double precision (``64``), full precision (``32``), half precision (``16``)
+            or bfloat16 precision (``'bf16'``), defaults to ``32``.
+            Enable ipex bfloat16 weight prepack when ``use_ipex=True`` and ``precision='bf16'``
         :param cpu_for_each_process: specify the cpu cores which will be used by each process,
-            if `None`, cpu cores will be distributed evenly by all processes,
-            only take effect when `num_processes` > 1
-        :param channels_last: whether convert input to channels last memory formats, \
-            defaults to False.
+            if ``None``, cpu cores will be distributed evenly by all processes,
+            only take effect when ``num_processes`` > 1
+        :param channels_last: whether convert input to channels last memory formats,
+            defaults to ``False``.
         """
         self.num_processes = num_processes
         self.use_ipex = use_ipex
@@ -281,10 +281,10 @@ class TorchNano(LightningLite):
 
         :param model: A model to setup
         :param optimizer: The optimizer(s) to setup
-        :param *dataloaders: The dataloader(s) to setup
-        :param move_to_device: If set ``True`` (default), moves the model to the correct device. \
+        :param \*dataloaders: The dataloader(s) to setup
+        :param move_to_device: If set ``True`` (default), moves the model to the correct device.
             Set this to ``False`` and alternatively use :meth:`to_device` manually.
-        :return: The tuple of the wrapped model, optimizer, loss_func and dataloaders, \
+        :return: The tuple of the wrapped model, optimizer, loss_func and dataloaders, 
             in the same order they were passed in.
         """
         # convert single optimizer to a optimizer list
@@ -383,7 +383,22 @@ def nano(num_processes: Optional[int] = None,
          channels_last: bool = False,
          auto_lr: bool = True,
          *args, **kwargs):
-    """Run TorchNano.train through a convenient decorator function."""
+    """Run ``TorchNano.train`` through a convenient decorator function.
+    
+    :param num_processes: number of processes in distributed training, defaults to ``1``
+    :param use_ipex: whether use ipex acceleration, defaults to ``False``
+    :param distributed_backend: use which backend in distributed mode, defaults to
+        ``'subprocess'``, now avaiable backends for ``bigdl.nano.pytorch.nano`` decorator
+        are ``'subprocess'`` and ``'ray'``
+    :param precision: Double precision (``64``), full precision (``32``), half precision (``16``)
+        or bfloat16 precision (``'bf16'``), defaults to ``32``.
+        Enable ipex bfloat16 weight prepack when ``use_ipex=True`` and ``precision='bf16'``
+    :param cpu_for_each_process: specify the cpu cores which will be used by each process,
+        if ``None``, cpu cores will be distributed evenly by all processes,
+        only take effect when ``num_processes`` > 1
+    :param channels_last: whether convert input to channels last memory formats,
+        defaults to ``False``.
+    """
     if "strategy" in kwargs:
         strategy = kwargs["strategy"]
         if strategy == "deepspeed" or isinstance(strategy, DeepSpeedStrategy):
