@@ -44,7 +44,7 @@ ENV NVIDIA_TRITON_SERVER_VERSION ${TRITON_CONTAINER_VERSION}
 ENV DEBIAN_FRONTEND=noninteractive
 
 RUN apt-get update && \
-    apt-get install -y --no-install-recommends ca-certificates autoconf automake build-essential docker.io git libre2-dev libssl-dev libtool libboost-dev libcurl4-openssl-dev libb64-dev patchelf python3-dev python3-pip python3-setuptools rapidjson-dev software-properties-common unzip wget zlib1g-dev libarchive-dev pkg-config uuid-dev libnuma-dev && \
+    apt-get install -y --no-install-recommends ca-certificates autoconf automake build-essential docker.io git libre2-dev libssl-dev libtool libboost-dev libcurl4-openssl-dev libb64-dev patchelf python3-dev python3-pip python3-setuptools rapidjson-dev scons software-properties-common unzip wget zlib1g-dev libarchive-dev pkg-config uuid-dev libnuma-dev && \
     rm -rf /var/lib/apt/lists/* && \
     pip3 install --upgrade pip && \
     pip3 install --upgrade wheel setuptools docker && \
@@ -65,6 +65,7 @@ RUN apt-get update && \
     find /opt/conda/ -follow -type f -name '*.js.map' -delete && \
     /opt/conda/bin/conda clean -afy && \
     git clone https://github.com/triton-inference-server/server.git && \
+    cd server && \
     ./build.py -v --backend=pytorch --repoagent=checksum --filesystem=gcs --filesystem=s3 --filesystem=azure_storage --endpoint=http --endpoint=grpc --endpoint=sagemaker --endpoint=vertex-ai --enable-logging --enable-stats --enable-metrics --enable-cpu-metrics --enable-tracing --dryrun && \
     cd build && \
     ./cmake_build
