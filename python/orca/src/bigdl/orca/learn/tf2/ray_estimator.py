@@ -245,6 +245,9 @@ class TensorFlow2Estimator(OrcaRayEstimator):
                                                            shard_size=local_batch_size)
 
         if isinstance(data, SparkXShards):
+            # Make sure each worker can get at least one data partition
+            if data.num_partitions() < self.num_workers:
+                data = data.repartition(self.num_workers)
             if data._get_class_name() == 'pandas.core.frame.DataFrame':
                 data, validation_data = process_xshards_of_pandas_dataframe(data, feature_cols,
                                                                             label_cols,
@@ -414,6 +417,9 @@ class TensorFlow2Estimator(OrcaRayEstimator):
                                              shard_size=local_batch_size)
 
         if isinstance(data, SparkXShards):
+            # Make sure each worker can get at least one data partition
+            if data.num_partitions() < self.num_workers:
+                data = data.repartition(self.num_workers)
             if data._get_class_name() == 'pandas.core.frame.DataFrame':
                 data = process_xshards_of_pandas_dataframe(data, feature_cols, label_cols)
             ray_xshards = RayXShards.from_spark_xshards(data)  # type:ignore
