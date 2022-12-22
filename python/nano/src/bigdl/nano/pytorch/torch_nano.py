@@ -383,13 +383,14 @@ def nano(num_processes: Optional[int] = None,
          channels_last: bool = False,
          auto_lr: bool = True,
          *args, **kwargs):
-    """Run ``TorchNano.train`` through a convenient decorator function.
+    """
+    Run ``TorchNano.train`` through a convenient decorator function.
 
     :param num_processes: number of processes in distributed training, defaults to ``1``
     :param use_ipex: whether use ipex acceleration, defaults to ``False``
     :param distributed_backend: use which backend in distributed mode, defaults to
-        ``'subprocess'``, now avaiable backends for ``bigdl.nano.pytorch.nano`` decorator
-        are ``'subprocess'`` and ``'ray'``
+        ``'subprocess'``, now avaiable backends are ``'subprocess'`` and ``'ray'``.
+        ``bigdl.nano.pytorch.nano`` decorator does not support ``'spawn'``.
     :param precision: Double precision (``64``), full precision (``32``), half precision (``16``)
         or bfloat16 precision (``'bf16'``), defaults to ``32``.
         Enable ipex bfloat16 weight prepack when ``use_ipex=True`` and ``precision='bf16'``
