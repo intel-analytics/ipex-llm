@@ -56,6 +56,7 @@ Please make sure current workdir is `kubernetes`.
 
 Then modify parameters in `install-bigdl-ehsm-kms.sh` as following. \
 The `pccsIP` should be the IP address you have used in step 1. The `dkeyserverIP` and `kmsIP` should be the IP addresses you have determined in step 2.1. 
+The `dkeyserverNodeName` is the fixed node which you want to assign `dkeyserver` pod to. You can run `kubectl get nodes`, and choose one. Then, run `mkdir -p /var/run/ehsm` on the host of node which you chose, this will create a hostPath volume for `dkeyserver` to store logs persistently.
 
 ```shell
 # reset of other parameters in values.yaml is optional, please check according to your environment
