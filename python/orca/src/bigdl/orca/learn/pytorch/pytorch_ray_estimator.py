@@ -120,6 +120,7 @@ class PyTorchRayEstimator(BaseRayEstimator):
         self.use_tqdm = use_tqdm
         self.sync_stats = sync_stats
         self.backend = backend
+        self.workers_per_node = workers_per_node
 
         if not training_operator_cls and not loss_creator:
             invalidInputError(False,
@@ -128,7 +129,7 @@ class PyTorchRayEstimator(BaseRayEstimator):
 
         self.config = {} if config is None else config
         worker_config = copy.copy(self.config)
-        params = dict(
+        self.setup_params = dict(
             model_creator=self.model_creator,
             optimizer_creator=self.optimizer_creator,
             loss_creator=self.loss_creator,
@@ -141,10 +142,11 @@ class PyTorchRayEstimator(BaseRayEstimator):
             sync_stats=sync_stats,
             log_level=log_level
         )
-        self.setup(params=params,
+        self.setup(params=self.setup_params,
                    backend=self.backend,
                    runner_cls=PytorchRayWorker,
-                   workers_per_node=workers_per_node)
+                   workers_per_node=self.workers_per_node,
+                   mode="predict")
 
     def fit(self,  # type:ignore[override]
             data: Union['SparkXShards',
@@ -208,6 +210,12 @@ class PyTorchRayEstimator(BaseRayEstimator):
             info=info,
             callbacks=callbacks,
         )
+
+        self.setup(params=self.setup_params,
+                   backend=self.backend,
+                   runner_cls=PytorchRayWorker,
+                   workers_per_node=self.workers_per_node,
+                   mode="fit")
 
         from bigdl.orca.data import SparkXShards
         from ray.data import Dataset

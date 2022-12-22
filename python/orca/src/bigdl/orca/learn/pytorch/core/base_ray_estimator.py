@@ -87,10 +87,9 @@ class BaseRayEstimator(BaseEstimator, metaclass=ABCMeta):
         # Need to preprocess params as pytorch_ray_estimator does.
         pass
 
-    def setup(self, params, backend='ray', runner_cls=None, workers_per_node=1):
+    def setup(self, params, backend='ray', runner_cls=None, workers_per_node=1, mode="fit"):
         ray_ctx = OrcaRayContext.get()
         if backend == "ray":
-            import torch.distributed as dist
             cores_per_node = ray_ctx.ray_node_cpu_cores // workers_per_node
             num_nodes = ray_ctx.num_ray_nodes * workers_per_node
             RemoteRunner = ray.remote(num_cpus=cores_per_node)(runner_cls)
@@ -102,17 +101,24 @@ class BaseRayEstimator(BaseEstimator, metaclass=ABCMeta):
                 for i, worker in enumerate(self.remote_workers)
             ])
 
-            driver_ip = get_driver_node_ip()
-            driver_tcp_store_port = find_free_port()
+            if mode == "fit":
+                import torch.distributed as dist
+                driver_ip = get_driver_node_ip()
+                driver_tcp_store_port = find_free_port()
 
-            _ = dist.TCPStore(driver_ip, driver_tcp_store_port, -1, True,
-                              dist.constants.default_pg_timeout)
+                _ = dist.TCPStore(driver_ip, driver_tcp_store_port, -1, True,
+                                  dist.constants.default_pg_timeout)
 
-            ray.get([
-                worker.setup_torch_distribute.remote(
-                    driver_ip, driver_tcp_store_port, i, num_nodes)
-                for i, worker in enumerate(self.remote_workers)
-            ])
+                ray.get([
+                    worker.setup_torch_distribute.remote(
+                        driver_ip, driver_tcp_store_port, i, num_nodes)
+                    for i, worker in enumerate(self.remote_workers)
+                ])
+            else:
+                ray.get([
+                    worker.setup_predict_distribute.remote(i, num_nodes)
+                    for i, worker in enumerate(self.remote_workers)
+                ])
 
         elif backend == "horovod":
             from bigdl.orca.learn.horovod.horovod_ray_runner import HorovodRayRunner

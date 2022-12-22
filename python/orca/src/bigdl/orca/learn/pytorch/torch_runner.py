@@ -200,7 +200,10 @@ class TorchRunner(BaseRunner):
             DistributedDataParallel(model)
             for model in self.models
         ]
-        self.setup_operator(self.training_models)
+        self.setup_operator(self.training_models) 
+
+    def setup_predict_components(self):
+        self.setup_operator(self.models)
 
     def setup_operator(self, training_models):
         """Create the training operator."""
