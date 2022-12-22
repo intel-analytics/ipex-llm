@@ -453,17 +453,10 @@ class RayXShards(XShards):
                     .options(name=name).remote()
             partition_stores[name] = store
 
-        # actor creation is aync, this is to make sure they all have been started
+        # actor creation is async, this is to make sure they all have been started
         ray.get([v.get_partitions_refs.remote() for v in partition_stores.values()])
         partition_store_names = list(partition_stores.keys())
         result_rdd = spark_xshards.rdd.mapPartitionsWithIndex(lambda idx, part: write_to_ray(
-            idx, part, address, password, partition_store_names)).cache()
-        result = result_rdd.collect()
-
-        id2ip = {}
-        id2store_name = {}
-        for idx, ip, local_store_name in result:
-            id2ip[idx] = ip
-            id2store_name[idx] = local_store_name
+            idx, part, address, password, partition_store_names))
 
         return RayXShards(uuid_str, result_rdd, partition_stores)
