@@ -57,7 +57,7 @@ MyNano().train(...)
 ```
 
 ```eval_rst
-.. seealso::
+.. important::
    
    Please refer to `here <../Howto/Training/PyTorch/convert_pytorch_training_torchnano.html#Convert-to-TorchNano>`_ for a detailed guide about how to make changes to your custom PyTorch training loop so that you could use ``TorchNano``.
 
@@ -230,7 +230,7 @@ You could instantiate a BigDL-Nano `Trainer` or `TorchNano` with `precision='bf1
 
             from bigdl.nano.pytorch import nano
 
-            @nano(num_processes=4)
+            @nano(precision='bf16')
             def train(model, optimizer, train_loader, ...):
                 ...
 
