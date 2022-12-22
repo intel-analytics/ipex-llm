@@ -1,6 +1,5 @@
 # PyTorch Training
 
-## Overview
 BigDL-Nano can be used to accelerate **PyTorch** or **PyTorch-Lightning** applications on training workloads. These optimizations are either enabled by default or can be easily turned on by setting a parameter or calling a method.
 
 The optimizations in BigDL-Nano are delivered through
