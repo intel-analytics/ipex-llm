@@ -30,7 +30,6 @@ from pytorch_lightning.plugins.precision import PrecisionPlugin
 
 from bigdl.nano.utils.log4Error import invalidInputError
 from bigdl.nano.deps.ipex.ipex_api import ipex_optimize
-from intel_extension_for_pytorch.optim._optimizer_utils import IPEX_FUSED_OPTIMIZER_LIST
 
 
 class IPEXStrategy(SingleDeviceStrategy):
@@ -86,6 +85,7 @@ class IPEXBF16Precision(PrecisionPlugin):
                        optimizer_idx: int,
                        closure: Callable[[], Any],
                        **kwargs: Any) -> Any:
+        from intel_extension_for_pytorch.optim._optimizer_utils import IPEX_FUSED_OPTIMIZER_LIST
         """Hook to run the optimizer step."""
         if type(optimizer) in IPEX_FUSED_OPTIMIZER_LIST:
             return super().optimizer_step(model, optimizer, optimizer_idx, closure, **kwargs)

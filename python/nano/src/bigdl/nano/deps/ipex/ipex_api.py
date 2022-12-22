@@ -19,8 +19,8 @@ from typing import Any
 from bigdl.nano.utils.log4Error import invalidInputError
 
 
-def ipex_optimize(model: Any, optimizers: Any | None = None, dtype: Any | None = None,
-                  inplace: bool = False, weights_prepack: Any | None = None):
+def ipex_optimize(model: Any, optimizers: Any = None, dtype: Any = None,
+                  inplace: bool = False, weights_prepack: Any = None):
     import intel_extension_for_pytorch as ipex
     training = model.training
     if optimizers is not None and not isinstance(optimizers, (list, tuple)):
