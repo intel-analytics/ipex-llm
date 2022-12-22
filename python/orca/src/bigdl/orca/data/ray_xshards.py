@@ -107,12 +107,11 @@ def init_ray_if_not(redis_address, redis_password):
     if not ray.is_initialized():
         init_params = dict(
             address=redis_address,
-            ignore_reinit_error=True
+            ignore_reinit_error=True,
+            namespace="az"
         )
         if redis_password:
             init_params["_redis_password"] = redis_password
-        if version.parse(ray.__version__) >= version.parse("1.4.0"):
-            init_params["namespace"] = "az"
         ray.init(**init_params)
 
 
