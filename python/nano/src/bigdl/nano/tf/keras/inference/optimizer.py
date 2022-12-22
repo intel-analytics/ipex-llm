@@ -534,7 +534,7 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                                                     precision=_precision,
                                                     thread_num=thread_num,
                                                     device=device,
-                                                    config=final_openvino_option,
+                                                    config=openvino_config,
                                                     logging=logging)
             if metric:
                 if not isinstance(accuracy_criterion, dict):
