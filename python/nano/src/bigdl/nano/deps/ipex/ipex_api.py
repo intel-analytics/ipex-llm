@@ -14,24 +14,34 @@
 # limitations under the License.
 #
 
-def create_IPEXAccelerator(*args, **kwargs):
-    from bigdl.nano.deps.ipex.ipex_accelerator import IPEXAccelerator
-    return IPEXAccelerator(*args, **kwargs)
+
+from typing import Any
+from bigdl.nano.utils.log4Error import invalidInputError
 
 
-def create_IPEXAccelerator_1_9(*args, **kwargs):
-    from bigdl.nano.deps.ipex.version_1_9.ipex_accelerator_1_9 import IPEXAccelerator
-    return IPEXAccelerator(*args, **kwargs)
-
-
-def ipex_optimize(*args, **kwargs):
+def ipex_optimize(model: Any, optimizers: Any | None = None, dtype: Any | None = None,
+                  inplace: bool = False, weights_prepack: Any | None = None):
     import intel_extension_for_pytorch as ipex
-    ipex.optimize(*args, **kwargs)
+    training = model.training
+    if optimizers is not None and not isinstance(optimizers, (list, tuple)):
+        model.train()
+        optimizer = optimizers
+    elif optimizers is None or len(optimizers) == 0:
+        model.eval()
+        optimizer = None
+    elif len(optimizers) == 1:
+        model.train()
+        optimizer = optimizers[0]
+    else:
+        invalidInputError(False, "Ipex does not support more than one optimizers.")
+    ret = ipex.optimize(model=model,
+                        dtype=dtype,
+                        optimizer=optimizer,
+                        inplace=inplace,
+                        weights_prepack=weights_prepack)
+    model.train(training)
 
-
-def ipex_device():
-    from bigdl.nano.deps.ipex.version_1_9 import DEVICE
-    return DEVICE
+    return ret
 
 
 def PytorchIPEXJITModel(model, input_sample=None, use_ipex=False,

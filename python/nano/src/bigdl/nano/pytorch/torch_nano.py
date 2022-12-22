@@ -33,8 +33,8 @@ from pytorch_lightning.strategies import DeepSpeedStrategy
 
 from bigdl.nano.common import check_avx512
 from bigdl.nano.utils.log4Error import invalidInputError
-from bigdl.nano.pytorch.utils import TORCH_VERSION_LESS_1_10, TORCH_VERSION_LESS_1_11
-from bigdl.nano.pytorch.strategies.ipex.ipex_api import ipex_optimize
+from bigdl.nano.pytorch.utils import  TORCH_VERSION_LESS_1_11
+from bigdl.nano.deps.ipex.ipex_api import ipex_optimize
 from bigdl.nano.pytorch.strategies import create_IPEXStrategy, DDPSpawnStrategy, \
     DDPSubprocessStrategy, create_ray_strategy, DDPK8sStrategy
 
@@ -247,19 +247,12 @@ class TorchNano(LightningLite):
         # IPEX bfloat16 optimization will cast model parameters to `torch.bfloat16`
         # which is not supported by ddp currently,
         # so add IPEX 1.11's optimization after `_setup_model`
-        if self.use_ipex and not TORCH_VERSION_LESS_1_10:
-            training = model.training
-            if len(optimizers) == 0:
-                model.eval()
-                model = ipex_optimize(model, inplace=False, dtype=self.dtype)
-            elif len(optimizers) == 1:
-                model.train()
-                model, optimizer = ipex_optimize(model, optimizer=optimizers[0],
-                                                 inplace=False, dtype=self.dtype)
-                optimizers = [optimizer]
+        if self.use_ipex:
+            ret = ipex_optimize(model, optimizers=optimizers, inplace=False, dtype=self.dtype)
+            if isinstance(ret, tuple):
+                model, optimizers = ret
             else:
-                invalidInputError(False, "Ipex does not support more than one optimizers.")
-            model.train(training)
+                model = ret
 
         if move_to_device:
             model = self._move_model_to_device(model=model, optimizers=optimizers)

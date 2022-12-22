@@ -24,11 +24,12 @@ from torch.utils.data import DataLoader
 from torchmetrics.metric import Metric
 from torch.optim.lr_scheduler import _LRScheduler
 from bigdl.nano.pytorch import InferenceOptimizer
-from bigdl.nano.pytorch.utils import TORCH_VERSION_LESS_1_10, TORCH_VERSION_LESS_1_11
+from bigdl.nano.pytorch.utils import TORCH_VERSION_LESS_1_11
 from bigdl.nano.pytorch.utils import ChannelsLastCallback, save_model, load_model
 from bigdl.nano.pytorch.algorithms import SelectiveBackprop
 from bigdl.nano.pytorch.lightning import LightningModule
-from bigdl.nano.pytorch.strategies import DDPSpawnStrategy, DDPSubprocessStrategy, DDPK8sStrategy
+from bigdl.nano.pytorch.strategies import IPEXStrategy, DDPSpawnStrategy, \
+    DDPSubprocessStrategy, DDPK8sStrategy
 from bigdl.nano.deps.automl.hpo_api import create_hpo_searcher, check_hpo_status
 from bigdl.nano.deps.ray.ray_api import create_ray_strategy
 from bigdl.nano.utils.log4Error import invalidInputError
@@ -96,8 +97,6 @@ class Trainer(pl.Trainer):
                                   f"{len(cpu_for_each_process)}) is not equal to the number of"
                                   f" processes {num_processes}.")
 
-        accelerator = None
-
         if "algorithms" in kwargs:
             kwargs = self._add_algorithms(kwargs)
 
@@ -134,12 +133,9 @@ class Trainer(pl.Trainer):
             num_processes = 1
 
         if num_processes == 1:
-            from bigdl.nano.pytorch.strategies import create_IPEXStrategy
-            strategy = create_IPEXStrategy(dtype=dtype) if self.use_ipex else None
-            kwargs["strategy"] = strategy
+            kwargs["strategy"] = IPEXStrategy(dtype=dtype) if self.use_ipex else None
             super().__init__(*args, **kwargs)
         else:
-            plugin = None
             invalidInputError(distributed_backend in distributed_backends,
                               f"Distributed backends supported now are {distributed_backends},"
                               f" but get {distributed_backend}.")
@@ -434,18 +430,3 @@ class Trainer(pl.Trainer):
                  precision(FP32/FP16/BF16/INT8).
         """
         return load_model(path, model)
-
-    def save_checkpoint(    # type: ignore[override]
-        self, filepath, weights_only: bool = False, storage_options: Optional[Any] = None
-    ) -> None:
-        """Save checkpoint after one train epoch."""
-        # When using ipex==1.9 and custom lr_schedulers for training, if set `weights_only` to
-        # False,`save_checkpoint` method will report an error of 'Unsupport storage type'
-        # because the model is in 'xpu', so we temporarily move it to 'cpu',
-        # then move it back after `save_checkpoint`.
-        if self.use_ipex and TORCH_VERSION_LESS_1_10 and not weights_only:
-            self.model.to('cpu')
-
-        super().save_checkpoint(filepath, weights_only, storage_options)    # type: ignore
-        if self.use_ipex and TORCH_VERSION_LESS_1_10 and not weights_only:
-            self.model.to(self.strategy.root_device)    # type: ignore

@@ -14,7 +14,7 @@
 # limitations under the License.
 #
 
-from .ipex.ipex_api import create_IPEXStrategy
+from .ipex_strategy import IPEXStrategy, IPEXBF16Precision
 from .ddp_spawn import DDPSpawnStrategy
 from .ddp_subprocess import DDPSubprocessStrategy
 from bigdl.nano.deps.ray.ray_api import create_ray_strategy
