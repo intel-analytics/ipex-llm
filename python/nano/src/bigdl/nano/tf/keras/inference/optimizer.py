@@ -321,6 +321,7 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                         accelerator='openvino', otherwise will be ignored. Default: ``True``.
         :return: Model with different acceleration(OpenVINO/ONNX Runtime).
         """
+        # device name might be: CPU, GPU, GPU.0, VPUX ...
         invalidInputError(device == 'CPU' or 'GPU' in device,
                           "Now we only support fp32 for CPU and GPU, not {}".format(device))
         if device != 'CPU' and accelerator != 'openvino':
@@ -454,6 +455,7 @@ class InferenceOptimizer(BaseInferenceOptimizer):
         invalidInputError(precision in ['int8', 'fp16', 'bf16'],
                           "Only support 'int8', 'bf16', 'fp16' now, "
                           "no support for {}.".format(precision))
+        # device name might be: CPU, GPU, GPU.0, VPUX ...
         invalidInputError(device == 'CPU' or 'GPU' in device or device == 'VPUX',
                           "Now we only support CPU, GPU and VPUX, not {}".format(device))
         if device != 'CPU' and accelerator != 'openvino':
@@ -461,7 +463,7 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                               "Now we only support {} device when accelerator "
                               "is openvino.".format(device))
         if precision == 'fp16':
-            invalidInputError(device in ('GPU', 'VPUX'),
+            invalidInputError(device == 'VPUX' or 'GPU' in device,
                               "fp16 is not supported on {} device.".format(device))
             invalidInputError(accelerator == 'openvino',
                               "fp16 is not supported on {} accelerator.".format(accelerator))

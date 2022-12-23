@@ -647,6 +647,7 @@ class InferenceOptimizer(BaseInferenceOptimizer):
         invalidInputError(precision in ['int8', 'fp16', 'bf16'],
                           "Only support 'int8', 'bf16', 'fp16' now, "
                           "no support for {}.".format(precision))
+        # device name might be: CPU, GPU, GPU.0, VPUX ...
         invalidInputError(device == 'CPU' or 'GPU' in device or device == 'VPUX',
                           "Now we only support CPU, GPU and VPUX, not {}".format(device))
         if device != 'CPU' and accelerator != 'openvino':
@@ -830,7 +831,7 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                 invalidInputError(False,
                                   "Accelerator {} is invalid.".format(accelerator))
         if precision == 'fp16':
-            invalidInputError(device in ('GPU', 'VPUX'),
+            invalidInputError(device == 'VPUX' or 'GPU' in device,
                               "fp16 is not supported on {} device.".format(device))
             invalidInputError(accelerator == 'openvino',
                               "fp16 is not supported on {} accelerator.".format(accelerator))
@@ -938,6 +939,7 @@ class InferenceOptimizer(BaseInferenceOptimizer):
             "Expect a nn.Module instance that is not traced or quantized"
             "but got type {}".format(type(model))
         )
+        # device name might be: CPU, GPU, GPU.0 ...
         invalidInputError(device == 'CPU' or 'GPU' in device,
                           "Now we only support fp32 for CPU and GPU, not {}".format(device))
         if device != 'CPU' and accelerator != 'openvino':
