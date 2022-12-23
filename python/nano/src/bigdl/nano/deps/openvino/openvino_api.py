@@ -64,9 +64,16 @@ def PytorchOpenVINOModel(model, input_sample=None, precision='fp32',
                                 **export_kwargs)
 
 
-def load_openvino_model(path):
+def load_openvino_model(path, device=None):
+    """
+    Load an OpenVINO model for inference from directory.
+
+    :param path: Path to model to be loaded.
+    :param device: A string represents the device of the inference.
+    :return: PytorchOpenVINOModel model for OpenVINO inference.
+    """
     from .pytorch.model import PytorchOpenVINOModel
-    return PytorchOpenVINOModel._load(path)
+    return PytorchOpenVINOModel._load(path, device=device)
 
 
 def KerasOpenVINOModel(model, precision='fp32', thread_num=None,
