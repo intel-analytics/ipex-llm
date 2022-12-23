@@ -67,7 +67,7 @@ object BigDLRemoteAttestationService {
                           httpsEnabled: Boolean = false
                           )
 
-    val cmdParser : OptionParser[CmdParams] = 
+    val cmdParser : OptionParser[CmdParams] =
       new OptionParser[CmdParams]("BigDL Remote Attestation Service") {
         opt[String]('u', "serviceURL")
           .text("Attestation Service URL")
@@ -77,7 +77,7 @@ object BigDLRemoteAttestationService {
           .action((x, c) => c.copy(servicePort = x))
         opt[Boolean]('s', "httpsEnabled")
           .text("httpsEnabled")
-          .action((x, c) => c.copy(httpsEnabled = x))       
+          .action((x, c) => c.copy(httpsEnabled = x))
         opt[String]('t', "httpsKeyStoreToken")
           .text("httpsKeyStoreToken")
           .action((x, c) => c.copy(httpsKeyStoreToken = x))
@@ -107,7 +107,7 @@ object BigDLRemoteAttestationService {
       val serverContext = defineServerContext(params.httpsKeyStoreToken,
         params.httpsKeyStorePath)
       val bindingFuture = Http().bindAndHandle(route,
-       serviceURL, servicePortInt, connectionContext=serverContext)
+       serviceURL, servicePortInt, connectionContext = serverContext)
       println("Server online at https://%s:%s/\n".format(serviceURL, servicePort) +
         "Press RETURN to stop...")
       StdIn.readLine()
