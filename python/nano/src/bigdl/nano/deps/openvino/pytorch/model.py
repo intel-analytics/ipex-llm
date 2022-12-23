@@ -106,7 +106,8 @@ class PytorchOpenVINOModel(AcceleratedLightningModule):
         status = super().status
         status.update({"xml_path": 'ov_saved_model.xml',
                        "weight_path": 'ov_saved_model.bin',
-                       "config": self.ov_model.final_config})
+                       "config": self.ov_model.final_config,
+                       "device": self.ov_model._device})
         return status
 
     @property  # type: ignore
@@ -114,11 +115,12 @@ class PytorchOpenVINOModel(AcceleratedLightningModule):
         return self.ov_model.forward_args
 
     @staticmethod
-    def _load(path):
+    def _load(path, device=None):
         """
         Load an OpenVINO model for inference from directory.
 
         :param path: Path to model to be loaded.
+        :param device: A string represents the device of the inference.
         :return: PytorchOpenVINOModel model for OpenVINO inference.
         """
         status = PytorchOpenVINOModel._load_status(path)
@@ -133,7 +135,12 @@ class PytorchOpenVINOModel(AcceleratedLightningModule):
         config = status.get('config', {})
         if "CPU_THREADS_NUM" in config:
             thread_num = int(config["CPU_THREADS_NUM"])
-        return PytorchOpenVINOModel(xml_path, config=config, thread_num=thread_num)
+        if device is None:
+            device = status.get('device', 'CPU')
+        return PytorchOpenVINOModel(xml_path,
+                                    config=config,
+                                    thread_num=thread_num,
+                                    device=device)
 
     def pot(self,
             dataloader,

@@ -27,6 +27,8 @@ import numpy as np
 class OpenVINOModel:
     def __init__(self, ie_network: str, device='CPU', thread_num=None, config=None):
         self._ie = Core()
+        # check device
+        self._check_device(self._ie, device)
         self._device = device
         self.thread_num = thread_num
         self.additional_config = config
@@ -52,6 +54,12 @@ class OpenVINOModel:
 
     def __call__(self, *inputs):
         return self.forward(*inputs)
+
+    def _check_device(self, ie, device):
+        devices = ie.available_devices
+        invalidInputError(device in devices,
+                          "Your machine don't have {} device, please modify the incoming "
+                          "device value.".format(device))
 
     @property
     def forward_args(self):

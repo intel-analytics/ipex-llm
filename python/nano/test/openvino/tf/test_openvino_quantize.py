@@ -127,7 +127,7 @@ class TestOpenVINO(TestCase):
                                                                 accelerator='openvino',
                                                                 precision='bf16')
         except RuntimeError as e:
-            assert e.message == "Platform doesn't support BF16 format"
+            assert e.__str__() == "Platform doesn't support BF16 format"
             return
 
         y_hat = openvino_quantized_model(train_examples[:10])

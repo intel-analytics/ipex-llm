@@ -207,7 +207,7 @@ class TestOpenVINO(TestCase):
                                                         input_sample=x,
                                                         precision='bf16')
         except RuntimeError as e:
-            assert e.message == "Platform doesn't support BF16 format"
+            assert e.__str__() == "Platform doesn't support BF16 format"
             return
 
         with InferenceOptimizer.get_context(optimized_model):
@@ -241,7 +241,6 @@ class TestOpenVINO(TestCase):
         # GPU don't support dynamic shape
         with pytest.raises(RuntimeError):
             openvino_model(x2)
-
 
         # test GPU int8
         openvino_model = InferenceOptimizer.quanize(model,

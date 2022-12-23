@@ -118,7 +118,7 @@ def save_model(model: pl.LightningModule, path):
         torch.save(model.state_dict(), checkpoint_path)
 
 
-def load_model(path, model: pl.LightningModule = None, inplace=False):
+def load_model(path, model: pl.LightningModule = None, inplace=False, device=None):
     """
     Load a model from local.
 
@@ -127,6 +127,8 @@ def load_model(path, model: pl.LightningModule = None, inplace=False):
             the model with accelerator=None by Trainer.trace/Trainer.quantize. model
             should be set to None if you choose accelerator="onnxruntime"/"openvino"/"jit".
     :param inplace: whether to perform inplace optimization. Default: ``False``.
+    :param device: A string represents the device of the inference. Default to None.
+                   Only valid for openvino model, otherwise will be ignored.
     :return: Model with different acceleration(None/OpenVINO/ONNX Runtime/JIT) or
                 precision(FP32/FP16/BF16/INT8).
     """
@@ -142,7 +144,7 @@ def load_model(path, model: pl.LightningModule = None, inplace=False):
     if model_type == 'PytorchOpenVINOModel':
         invalidInputError(model is None,
                           "Argument 'model' must be None for OpenVINO loading.")
-        return load_openvino_model(path)
+        return load_openvino_model(path, device=device)
     if model_type == 'PytorchONNXRuntimeModel':
         invalidInputError(model is None,
                           "Argument 'model' must be None for ONNX Runtime loading.")

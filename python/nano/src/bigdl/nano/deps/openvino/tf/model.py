@@ -77,7 +77,8 @@ class KerasOpenVINOModel(AcceleratedKerasModel):
         status = super().status
         status.update({"xml_path": 'ov_saved_model.xml',
                        "weight_path": 'ov_saved_model.bin',
-                       "config": self.ov_model.final_config})
+                       "config": self.ov_model.final_config,
+                       "device": self.ov_model._device})
         return status
 
     def pot(self,
@@ -101,11 +102,12 @@ class KerasOpenVINOModel(AcceleratedKerasModel):
         return KerasOpenVINOModel(model, config=config, thread_num=thread_num)
 
     @staticmethod
-    def _load(path):
+    def _load(path, device=None):
         """
         Load an OpenVINO model for inference from directory.
 
         :param path: Path to model to be loaded.
+        :param device: A string represents the device of the inference.
         :return: KerasOpenVINOModel model for OpenVINO inference.
         """
         status = KerasOpenVINOModel._load_status(path)
@@ -116,7 +118,16 @@ class KerasOpenVINOModel(AcceleratedKerasModel):
         else:
             invalidInputError(False, "nano_model_meta.yml must specify 'xml_path' for loading.")
         xml_path = Path(path) / status['xml_path']
-        return KerasOpenVINOModel(xml_path, config=status['config'])
+        thread_num = None
+        config = status.get('config', {})
+        if "CPU_THREADS_NUM" in config:
+            thread_num = int(config["CPU_THREADS_NUM"])
+        if device is None:
+            device = status.get('device', 'CPU')
+        return KerasOpenVINOModel(xml_path,
+                                  config=status['config'],
+                                  thread_num=thread_num,
+                                  device=device)
 
     def _save_model(self, path):
         """
