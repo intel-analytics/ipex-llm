@@ -15,6 +15,7 @@
 #
 
 import torch
+import torch.nn as nn
 import warnings
 import random
 import numpy
@@ -179,3 +180,40 @@ def delete_folder(path):
 
 def is_main_process():
     return mp.current_process().name == "MainProcess"
+
+
+class ExportTorchscriptModule(nn.Module):
+    def __init__(self, preprocess: nn.Module, inference: torch.jit.ScriptModule, postprocess: nn.Module) -> None:
+        super().__init__()
+        self.preprocess = preprocess
+        self.inference = inference
+        self.postprocess = postprocess
+
+    def forward(self, data):
+        preprocess_output = self.preprocess.forward(data)
+        inference_output = self.inference.forward(preprocess_output)
+        postprocess_output = self.postprocess(inference_output)
+        return postprocess_output
+
+
+def get_exported_module(tsdata, model_path, drop_dtcol):
+    from bigdl.chronos.data.utils.export_torchscript import get_processing_module_instance, \
+                                                            get_index
+
+    if drop_dtcol:
+        tsdata.df.drop(columns=tsdata.dt_col, inplace=True)
+
+    id_index, target_feature_index = get_index(tsdata.df, tsdata.id_col,
+                                               tsdata.target_col, tsdata.feature_col)
+
+    preprocess = get_processing_module_instance(tsdata.scaler, tsdata.lookback,
+                                                id_index, target_feature_index,
+                                                tsdata.scaler_index, "preprocessing")
+
+    postprocess = get_processing_module_instance(tsdata.scaler, tsdata.lookback,
+                                                 id_index, target_feature_index,
+                                                 tsdata.scaler_index, "postprocessing")
+
+    inference = torch.jit.load(model_path)
+
+    return torch.jit.script(ExportTorchscriptModule(preprocess, inference, postprocess))

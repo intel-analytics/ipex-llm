@@ -18,7 +18,7 @@ import torch
 import torch.nn as nn
 from typing import List
 from sklearn.preprocessing import StandardScaler, MaxAbsScaler, MinMaxScaler, RobustScaler
-
+from .utils import _to_list
 
 class ExportJIT(nn.Module):
     def __init__(self, lookback: int, id_index: int,
@@ -246,3 +246,21 @@ def export_processing_to_jit(scaler, lookback, id_index, target_feature_index,
     return torch.jit.script(export_class(scaler, lookback,
                                          id_index, target_feature_index,
                                          scaler_index, operation))
+
+
+def get_index(df, id_col, target_col, feature_col):
+    id_index = df.columns.tolist().index(id_col)
+    target_col = _to_list(target_col, "target_col", deploy_mode=True)
+    feature_col = _to_list(feature_col, "feature_col", deploy_mode=True)
+
+    # index of target col and feature col, will be used in scale and roll
+    target_feature_index = [df.columns.tolist().index(i) for i in target_col + feature_col]
+    return id_index, target_feature_index
+
+
+def get_processing_module_instance(scaler, lookback, id_index, target_feature_index,
+                                   scaler_index, operation):
+    export_class = SCALE_JIT_HELPER_MAP[type(scaler)]
+    return export_class(scaler, lookback,
+                        id_index, target_feature_index,
+                        scaler_index, operation) 

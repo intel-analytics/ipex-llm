@@ -1658,6 +1658,26 @@ class BasePytorchForecaster(Forecaster):
                 self.build_jit()
             InferenceOptimizer.save(self.accelerated_model, dirname)
 
+    def export_torchscript_module(self, tsdata, path_dir=None, drop_dtcol=True):
+        import tempfile
+        import shutil
+        from .utils import get_exported_module
+
+        temp_dir = tempfile.mkdtemp()
+        self.export_torchscript_file(dirname=temp_dir)
+        forecaster_path = os.path.join(temp_dir, "ckpt.pth")
+        exported_module = get_exported_module(tsdata, forecaster_path, drop_dtcol)
+
+        if path_dir:
+            saved_path = os.path.join(path_dir, "forecaster_pipeline.pt")
+            torch.jit.save(exported_module, saved_path)
+        
+        if os.path.exists(temp_dir):
+            shutil.rmtree(temp_dir)
+
+        return exported_module
+
+
     def quantize(self, calib_data=None,
                  val_data=None,
                  metric=None,
