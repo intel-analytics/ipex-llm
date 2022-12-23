@@ -43,6 +43,7 @@ object AttestationCLI {
                              challenge: String = "",
                              policyID: String = "",
                              quoteType: String = "gramine",
+                             httpsEnabled: Boolean = false,
                              userReport: String = "ppml")
 
         val cmdParser: OptionParser[CmdParams] = new OptionParser[CmdParams](
@@ -68,6 +69,9 @@ object AttestationCLI {
             opt[String]('p', "userReport")
               .text("userReportDataPath, default is test")
               .action((x, c) => c.copy(userReport = x))
+            opt[Boolean]('s', "httpsEnabled")
+              .text("httpsEnabled")
+              .action((x, c) => c.copy(httpsEnabled = x))      
             opt[String]('O', "quoteType")
               .text("quoteType, default is gramine, occlum can be chose")
               .action((x, c) => c.copy(quoteType = x))

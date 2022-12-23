@@ -19,7 +19,8 @@ package com.intel.analytics.bigdl.ppml.attestation.service
 
 import com.intel.analytics.bigdl.dllib.utils.Log4Error
 import com.intel.analytics.bigdl.ppml.utils.EHSMParams
-import com.intel.analytics.bigdl.ppml.utils.HTTPUtil._
+import com.intel.analytics.bigdl.ppml.utils.HTTPUtil
+import com.intel.analytics.bigdl.ppml.utils.HTTPSUtil
 import org.apache.logging.log4j.LogManager
 import org.json.JSONObject
 import javax.net.ssl.SSLContext
@@ -42,8 +43,8 @@ import com.intel.analytics.bigdl.ppml.attestation._
  * @param attestationServerIP ehsm IP
  * @param attestationServerPort ehsm port
  */
-class BigDLAttestationService(attestationServerIP: String, attestationServerPort: String)
-  extends AttestationService {
+class BigDLAttestationService(attestationServerIP: String, attestationServerPort: String,
+  httpsEnabled: Boolean = false) extends AttestationService {
 
   val logger = LogManager.getLogger(getClass)
 
@@ -88,7 +89,13 @@ class BigDLAttestationService(attestationServerIP: String, attestationServerPort
       val postString: String = "{\"quote\": \"" + quote + "\"}"
       System.out.println(postString)
       System.out.println(constructUrl(action))
-      var response: String = retrieveResponse(constructUrl(action), postString)
+      var response: String = null
+      if (httpsEnabled) {
+        response = HTTPSUtil.retrieveResponse(constructUrl(action), sslConSocFactory, postString)
+      } else {
+        response = HTTPUtil.retrieveResponse(constructUrl(action), postString)
+      }
+
       if (response != null && response.startsWith("\ufeff")) {
         response = response.substring(1)
       }
@@ -102,7 +109,11 @@ class BigDLAttestationService(attestationServerIP: String, attestationServerPort
     attestWithServer(quote)
   }
 
-  private def constructUrl(action: String): String = {
-    s"http://$attestationServerIP:$attestationServerPort/$action"
+  private def constructUrl(action: String, httpsEnabled: Boolean = false): String = {
+    if (httpsEnabled) {
+      return s"https://$attestationServerIP:$attestationServerPort/$action"
+    } else {
+      return s"http://$attestationServerIP:$attestationServerPort/$action"
+    }
   }
 }
