@@ -86,7 +86,7 @@ result = est.evaluate(test_data,
                       num_steps=val_steps)
 print('Evaluation results:')
 for r in result:
-    print(r, ":", result[r])
+    print("{}: {}".format(r, result[r]))
 
 # Step 6: Save the trained Tensorflow model
 est.save("NCF_model")

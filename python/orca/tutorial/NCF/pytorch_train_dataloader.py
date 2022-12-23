@@ -100,7 +100,7 @@ est.fit(data=train_loader_func, epochs=2, batch_size=10240, callbacks=callbacks)
 result = est.evaluate(data=test_loader_func, batch_size=10240)
 print('Evaluation results:')
 for r in result:
-    print(r, ":", result[r])
+    print("{}: {}".format(r, result[r]))
 
 
 # Step 6: Save the trained PyTorch model
