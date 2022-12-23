@@ -47,7 +47,7 @@ class MMCVRayEstimator(BaseRayEstimator):
         )
         self.setup(params, self.backend, self.runner_cls, workers_per_node)
 
-    def fit(self,  # type:ignore[override]
+    def fit(self,
             data_loaders_creators: List[Callable],
             workflow: List[Tuple[str, int]],
             max_epochs: Optional[int] = None,  # deprecated
