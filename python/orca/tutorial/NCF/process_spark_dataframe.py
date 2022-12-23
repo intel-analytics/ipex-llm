@@ -91,7 +91,7 @@ def string_index(df, col):
     return df, embed_dim
 
 
-def num_scale(df, col):
+def min_max_scale(df, col):
     assembler = VectorAssembler(inputCols=[col], outputCol=col + '_vec')
     scaler = MinMaxScaler(inputCol=col + '_vec', outputCol=col + '_scaled')
     pipeline = Pipeline(stages=[assembler, scaler])
@@ -111,9 +111,9 @@ def merge_features(df, df_user, df_item, sparse_features, dense_features):
         sparse_feats_input_dims.append(embed_dim)
     for i in dense_features:
         if i in df_user.columns:
-            df_user = num_scale(df_user, i)
+            df_user = min_max_scale(df_user, i)
         else:
-            df_item = num_scale(df_item, i)
+            df_item = min_max_scale(df_item, i)
     df_feat = df.join(df_user, 'user', "inner")
     df_feat = df_feat.join(df_item, 'item', "inner")
     return df_feat, sparse_feats_input_dims
