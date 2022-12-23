@@ -1543,7 +1543,7 @@ class TestTSDataset(TestCase):
                                                deploy_mode=True)
                 # drop datetime col since it can't be converted to Pytorch tensor
                 tsdata.df.drop(columns=tsdata.dt_col, inplace=True)
-                input_tensor = torch.from_numpy(tsdata.df.values).type(torch.float32)
+                input_tensor = torch.from_numpy(tsdata.df.values).type(torch.float64)
                 preprocess_path = os.path.join(temp_dir, "tsdata_preprocessing.pt")
                 preprocess_module = torch.jit.load(preprocess_path)
                 preprocess_output = preprocess_module.forward(input_tensor)
@@ -1583,7 +1583,7 @@ class TestTSDataset(TestCase):
                 # since datetime col will not be used in scale and roll, so we can give it
                 # a meaningless value
                 tsdata.df["datetime"] = np.array([1000]*len(tsdata.df))
-                input_tensor = torch.from_numpy(tsdata.df.values).type(torch.float32)
+                input_tensor = torch.from_numpy(tsdata.df.values).type(torch.float64)
                 preprocess = torch.jit.load(preprocess_path)
                 preprocess_output = preprocess.forward(input_tensor)
 
