@@ -20,6 +20,7 @@ from typing import List
 from sklearn.preprocessing import StandardScaler, MaxAbsScaler, MinMaxScaler, RobustScaler
 from .utils import _to_list
 
+
 class ExportJIT(nn.Module):
     def __init__(self, lookback: int, id_index: int,
                  target_feature_index: List[int],
@@ -124,12 +125,14 @@ class ExportWithStandardScaler(ExportJIT):
                 else torch.ones(self.scale_.size(), dtype=torch.float64)
             data_scale[:, i] = (data[:, i] - value_mean) / value_scale
         return data_scale
-    
+
     def unscale(self, data):
         data_unscale = torch.zeros(data.size(), dtype=torch.float64)
         for i in self.scaler_index:
-            value_mean = self.mean_[i] if self.with_mean else torch.zeros(self.mean_.size(), dtype=torch.float64)
-            value_scale = self.scale_[i] if self.with_std else torch.ones(self.scale_.size(), dtype=torch.float64)
+            value_mean = self.mean_[i] if self.with_mean \
+                else torch.zeros(self.mean_.size(), dtype=torch.float64)
+            value_scale = self.scale_[i] if self.with_std \
+                else torch.ones(self.scale_.size(), dtype=torch.float64)
             data_unscale[:, :, i] = data[:, :, i] * value_scale + value_mean
         return data_unscale
 
@@ -263,4 +266,4 @@ def get_processing_module_instance(scaler, lookback, id_index, target_feature_in
     export_class = SCALE_JIT_HELPER_MAP[type(scaler)]
     return export_class(scaler, lookback,
                         id_index, target_feature_index,
-                        scaler_index, operation) 
+                        scaler_index, operation)
