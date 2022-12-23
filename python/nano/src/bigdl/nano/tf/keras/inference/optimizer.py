@@ -15,7 +15,9 @@
 #
 
 import os
+import yaml
 import time
+from pathlib import Path
 import numpy as np
 import traceback
 import tensorflow as tf
@@ -596,6 +598,48 @@ class InferenceOptimizer(BaseInferenceOptimizer):
             invalidInputError(False, "Accelerator {} is invalid.".format(accelerator))
         patch_compiled(result, model)
         return patch_attrs(result, model)
+
+    @staticmethod
+    def save(model: Model, path):
+        """
+        Save the model to local file.
+
+        :param model: Any model of keras.Model, including all models accelareted by
+               InferenceOptimizer.trace/InferenceOptimizer.quantize.
+        :param path: Path to saved model. Path should be a directory.
+        """
+        path = Path(path)
+        path.mkdir(parents=path.parent, exist_ok=True)
+        if hasattr(model, '_save'):
+            print("has _save")
+            model._save(path)
+        else:
+            print("don't have _save")
+            # typically for models of nn.Module, pl.LightningModule type
+            meta_path = Path(path) / "nano_model_meta.yml"
+            with open(meta_path, 'w+') as f:
+                metadata = {
+                    'ModelType': 'KerasModel',
+                    'checkpoint': 'saved_weight.ckpt'
+                }
+                yaml.safe_dump(metadata, f)
+            checkpoint_path = path / metadata['checkpoint']
+            model.save_weights(checkpoint_path)
+
+    @staticmethod
+    def load(path, model: Optional[Model] = None):
+        """
+        Load a model from local.
+
+        :param path: Path to model to be loaded. Path should be a directory.
+        :param model: Required FP32 model to load tensorflow model, it is needed if you
+               accelerated the model with accelerator=None by InferenceOptimizer.trace/
+               InferenceOptimizer.quantize. model should be set to None if you choose
+               accelerator="onnxruntime"/"openvino".
+        :return: Model with different acceleration(None/OpenVINO/ONNX Runtime) or
+                 precision(FP32/FP16/BF16/INT8).
+        """
+        pass
 
 
 def _accuracy_calculate_helper(model, metric, data):

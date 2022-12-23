@@ -13,7 +13,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+from pathlib import Path
+import yaml
+from ..core import version as inc_version
 from bigdl.nano.utils.inference.tf.model import AcceleratedKerasModel
+from bigdl.nano.utils.log4Error import invalidInputError
 
 
 class KerasQuantizedModel(AcceleratedKerasModel):
@@ -37,9 +41,28 @@ class KerasQuantizedModel(AcceleratedKerasModel):
             outputs = outputs[0]
         return outputs
 
+    @property
+    def status(self):
+        status = super().status
+        status.update({"ModelType": type(self).__name__})
+        return status
+
     def _save_model(self, path):
-        return super()._save_model(path)
+        self.model.save(path)
 
     @staticmethod
     def _load(path, model=None):
-        return super()._load(path)
+        status = KerasQuantizedModel._load_status(path)
+        invalidInputError(
+            model is not None,
+            errMsg="FP32 model is required to create a quantized model."
+        )
+        qmodel = model.load(path)
+        from packaging import version
+        if version.parse(inc_version) < version.parse("1.11"):
+            path = Path(path)
+            tune_cfg_file = path / 'best_configure.yaml'
+            with open(tune_cfg_file, 'r') as f:
+                tune_cfg = yaml.safe_load(f)
+                qmodel.tune_cfg = tune_cfg
+        return KerasQuantizedModel(qmodel)

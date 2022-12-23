@@ -15,6 +15,8 @@
 
 from unittest import TestCase
 import tensorflow as tf
+import tempfile
+import os
 from bigdl.nano.tf.keras import InferenceOptimizer
 import numpy as np
 from tensorflow.keras.applications.resnet import ResNet50
@@ -128,3 +130,27 @@ class TestInferencePipeline(TestCase):
                      latency_sample_num=10,
                      thread_num=8)
         model = opt.get_best_model()
+
+    def test_optimize_save_load(self):
+        model = ResNet50(weights=None, input_shape=[40, 40, 3], classes=10)
+        # prepare dataset
+        train_examples = np.random.random((100, 40, 40, 3))
+        train_labels = np.random.randint(0, 10, size=(100,))
+        train_dataset = tf.data.Dataset.from_tensor_slices((train_examples, train_labels))
+        # prepare optimizer
+        opt = InferenceOptimizer()
+        opt.optimize(model=model,
+                     x=train_dataset,
+                     batch_size=4,
+                     latency_sample_num=10)
+        optimize_result = opt.optimized_model_dict
+        with tempfile.TemporaryDirectory() as tmp_dir_name:
+            for method, option in optimize_result.items():
+                if 'model' in option:
+                    acc_model = option['model']
+                    dir_name = os.path.join(tmp_dir_name, method)
+                    InferenceOptimizer.save(acc_model, dir_name)
+                    try:
+                        acc_model = InferenceOptimizer.load(dir_name)
+                    except:
+                        acc_model = InferenceOptimizer.load(dir_name, model)

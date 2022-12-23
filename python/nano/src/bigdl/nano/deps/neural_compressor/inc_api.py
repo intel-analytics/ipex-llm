@@ -21,7 +21,8 @@ def load_inc_model(path, model, framework):
         from .pytorch.quantized_model import PytorchQuantizedModel
         return PytorchQuantizedModel._load(path, model)
     elif framework == 'tensorflow':
-        invalidInputError(False, "QuantizedTensorflowModel loading is not implemented yet.")
+        from .tensorflow.model import KerasQuantizedModel
+        return KerasQuantizedModel._load(path, model)
     else:
         invalidInputError(False,
                           "The value {} for framework is not supported."

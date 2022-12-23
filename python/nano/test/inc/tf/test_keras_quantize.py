@@ -16,6 +16,7 @@
 
 
 import pytest
+import tempfile
 from unittest import TestCase
 import tensorflow as tf
 from tensorflow.keras.applications.mobilenet_v2 import MobileNetV2
@@ -91,3 +92,23 @@ class TestModelQuantize(TestCase):
         train_dataset = tf.data.Dataset.from_tensors(train_examples)
         q_model = InferenceOptimizer.quantize(model, x=train_examples)
         assert q_model(train_examples).shape == (1, 10)
+
+    def test_model_quantize_ptq_save_load(self):
+        model = MobileNetV2(weights=None, input_shape=[40, 40, 3], classes=10)
+        model = Model(inputs=model.inputs, outputs=model.outputs)
+        model.compile(optimizer=tf.keras.optimizers.Adam(learning_rate=1e-3),
+                      loss=tf.keras.losses.BinaryCrossentropy(),
+                      metrics=[tf.keras.metrics.CategoricalAccuracy()],)
+        train_examples = np.random.random((100, 40, 40, 3))
+        train_labels = np.random.randint(0, 10, size=(100,))
+        train_labels = to_categorical(train_labels, num_classes=10)
+        train_dataset = tf.data.Dataset.from_tensor_slices((train_examples, train_labels))
+        q_model = InferenceOptimizer.quantize(model, x=train_dataset)
+        assert q_model
+        output = q_model(train_examples[0:10])
+        assert output.shape == (10, 10)
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            InferenceOptimizer.save(q_model, tmp_dir)
+            load_model = InferenceOptimizer.load(tmp_dir, model)
+            output = load_model(train_examples[0:10])
+            assert output.shape == (10, 10)
