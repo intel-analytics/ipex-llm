@@ -106,9 +106,9 @@ class ExportWithStandardScaler(ExportJIT):
         data_scale = torch.zeros(data.size(), dtype=torch.float64)
         for i in range(data.size()[1]):
             value_mean = self.mean_[i] if self.with_mean \
-                                       else torch.zeros(self.mean_.size(), dtype=torch.float64)
+                else torch.zeros(self.mean_.size(), dtype=torch.float64)
             value_scale = self.scale_[i] if self.with_std \
-                                         else torch.ones(self.scale_.size(), dtype=torch.float64)
+                else torch.ones(self.scale_.size(), dtype=torch.float64)
             data_scale[:, i] = (data[:, i] - value_mean) / value_scale
         return data_scale
 
@@ -117,7 +117,7 @@ class ExporWithMaxAbsScaler(ExportJIT):
     def __init__(self, scaler: MaxAbsScaler, lookback: int,
                  id_index: int, target_feature_index: List[int]) -> None:
         super().__init__(lookback, id_index, target_feature_index)
-        self.scale_= torch.from_numpy(scaler.scale_).type(torch.float64)
+        self.scale_ = torch.from_numpy(scaler.scale_).type(torch.float64)
         self.lookback: int = lookback
         self.id_index = id_index
         self.target_feature_index = target_feature_index
@@ -165,11 +165,9 @@ class ExportWithRobustScaler(ExportJIT):
         data_scale = torch.zeros(data.size(), dtype=torch.float64)
         for i in range(data.size()[1]):
             value_center = self.center_[i] if self.with_centering \
-                                           else torch.zeros(self.center_.size(),
-                                                            dtype=torch.float64)
+                else torch.zeros(self.center_.size(), dtype=torch.float64)
             value_scale = self.scale_[i] if self.with_scaling \
-                                         else torch.ones(self.scale_.size(),
-                                                         dtype=torch.float64)
+                else torch.ones(self.scale_.size(), dtype=torch.float64)
             data_scale[:, i] = (data[:, i] - value_center) / value_scale
         return data_scale
 
