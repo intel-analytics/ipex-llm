@@ -89,7 +89,7 @@ def prepare_data(dataset_dir, num_ng=4):
     print("Processing features...")
     # Categorical encoding
     for col in sparse_features:
-        indexer = StringIndexer(col)
+        indexer = StringIndexer(inputCol=col)
         if col in users.get_schema()['columns']:
             users = indexer.fit_transform(users)
         else:
@@ -101,7 +101,7 @@ def prepare_data(dataset_dir, num_ng=4):
     for col in sparse_features:
         data = users if col in users.get_schema()['columns'] else items
         sparse_feat_set = set(data[col].unique())
-        sparse_feats_input_dims.append(max(sparse_feat_set)+1)
+        sparse_feats_input_dims.append(max(sparse_feat_set) + 1)
 
     # scale dense features
     def rename(shard, col):
