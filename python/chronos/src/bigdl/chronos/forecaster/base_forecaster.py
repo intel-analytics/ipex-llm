@@ -1671,12 +1671,11 @@ class BasePytorchForecaster(Forecaster):
         if path_dir:
             saved_path = os.path.join(path_dir, "forecaster_pipeline.pt")
             torch.jit.save(exported_module, saved_path)
-        
+
         if os.path.exists(temp_dir):
             shutil.rmtree(temp_dir)
 
         return exported_module
-
 
     def quantize(self, calib_data=None,
                  val_data=None,

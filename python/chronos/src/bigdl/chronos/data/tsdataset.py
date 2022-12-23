@@ -1270,8 +1270,8 @@ class TSDataset:
                  torchscript modules.
 
         """
-        from bigdl.chronos.data.utils.export_torchscript import export_processing_to_jit, \
-                                                                get_index
+        from bigdl.chronos.data.utils.export_torchscript \
+            import export_processing_to_jit, get_index
         import torch
         import os
 
@@ -1280,7 +1280,7 @@ class TSDataset:
 
         # target_feature_index: index of target col and feature col, will be used in scale and roll
         id_index, target_feature_index = get_index(self.df, self.id_col,
-                                                   self.target_col,self.feature_col)
+                                                   self.target_col, self.feature_col)
 
         preprocessing_module = export_processing_to_jit(self.scaler, self.lookback,
                                                         id_index,

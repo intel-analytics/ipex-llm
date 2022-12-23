@@ -183,7 +183,8 @@ def is_main_process():
 
 
 class ExportTorchscriptModule(nn.Module):
-    def __init__(self, preprocess: nn.Module, inference: torch.jit.ScriptModule, postprocess: nn.Module) -> None:
+    def __init__(self, preprocess: nn.Module,
+                 inference: torch.jit.ScriptModule, postprocess: nn.Module) -> None:
         super().__init__()
         self.preprocess = preprocess
         self.inference = inference
@@ -197,8 +198,8 @@ class ExportTorchscriptModule(nn.Module):
 
 
 def get_exported_module(tsdata, model_path, drop_dtcol):
-    from bigdl.chronos.data.utils.export_torchscript import get_processing_module_instance, \
-                                                            get_index
+    from bigdl.chronos.data.utils.export_torchscript \
+        import get_processing_module_instance, get_index
 
     if drop_dtcol:
         tsdata.df.drop(columns=tsdata.dt_col, inplace=True)
