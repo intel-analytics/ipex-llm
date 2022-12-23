@@ -167,6 +167,10 @@
                 <exclusion>
                     <groupId>org.codehaus.jettison</groupId>
                     <artifactId>jettison</artifactId>
+	        </exclusion>
+                <exclusion>
+                    <groupId>com.jcraft</groupId>
+                    <artifactId>jsch</artifactId>
                 </exclusion>
             </exclusions>
         </dependency>
