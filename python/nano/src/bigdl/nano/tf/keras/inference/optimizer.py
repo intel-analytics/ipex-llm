@@ -34,6 +34,9 @@ from tensorflow.keras.metrics import Metric
 from bigdl.nano.deps.neural_compressor.inc_api import quantize as inc_quantzie
 from bigdl.nano.deps.openvino.openvino_api import KerasOpenVINOModel
 from bigdl.nano.deps.onnxruntime.onnxruntime_api import KerasONNXRuntimeModel
+from bigdl.nano.deps.openvino.openvino_api import load_openvino_model
+from bigdl.nano.deps.onnxruntime.onnxruntime_api import load_onnxruntime_model
+from bigdl.nano.deps.neural_compressor.inc_api import load_inc_model
 
 
 class TFAccelerationOption(AccelerationOption):
@@ -611,10 +614,8 @@ class InferenceOptimizer(BaseInferenceOptimizer):
         path = Path(path)
         path.mkdir(parents=path.parent, exist_ok=True)
         if hasattr(model, '_save'):
-            print("has _save")
             model._save(path)
         else:
-            print("don't have _save")
             # typically for models of nn.Module, pl.LightningModule type
             meta_path = Path(path) / "nano_model_meta.yml"
             with open(meta_path, 'w+') as f:
@@ -639,7 +640,25 @@ class InferenceOptimizer(BaseInferenceOptimizer):
         :return: Model with different acceleration(None/OpenVINO/ONNX Runtime) or
                  precision(FP32/FP16/BF16/INT8).
         """
-        pass
+        path = Path(path)
+        if not path.exists():
+            invalidInputError(False, "{} doesn't exist.".format(path))
+        meta_path = path / "nano_model_meta.yml"
+        if not meta_path.exists():
+            invalidInputError(False, "File {} is required to load model.".format(str(meta_path)))
+        with open(meta_path, 'r') as f:
+            metadata = yaml.safe_load(f)
+        model_type = metadata.get('ModelType', None)
+        if model_type == 'KerasOpenVINOModel':
+            invalidInputError(model is None,
+                            "Argument 'model' must be None for OpenVINO loading.")
+            return load_openvino_model(path, framework='tensorflow')
+        if model_type == 'KerasONNXRuntimeModel':
+            invalidInputError(model is None,
+                            "Argument 'model' must be None for ONNX Runtime loading.")
+            return load_onnxruntime_model(path, framework='tensorflow')
+        if model_type == 'KerasQuantizedModel':
+            return load_inc_model(path, model, framework='tensorflow')
 
 
 def _accuracy_calculate_helper(model, metric, data):

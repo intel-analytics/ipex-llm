@@ -44,7 +44,7 @@ class KerasQuantizedModel(AcceleratedKerasModel):
     @property
     def status(self):
         status = super().status
-        status.update({"ModelType": type(self).__name__})
+        status.update({"ModelType": type(self.target_obj).__name__})
         return status
 
     def _save_model(self, path):

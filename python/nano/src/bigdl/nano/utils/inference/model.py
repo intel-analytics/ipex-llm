@@ -43,11 +43,7 @@ class AcceleratedModel(ABC):
         invalidInputError(False, "Method 'numpy_to_tensors' is not implemented.")
 
     def _dump_status(self, path):
-        print("!!!!!!")
-        print("dump status")
         meta_path = Path(path) / "nano_model_meta.yml"
-        print(meta_path)
-        print(self.status)
         with open(meta_path, 'w') as f:
             yaml.safe_dump(self.status, f)
 
