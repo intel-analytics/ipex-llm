@@ -24,13 +24,16 @@ from process_xshards import prepare_data
 from bigdl.orca import init_orca_context, stop_orca_context
 from bigdl.orca.learn.tf2 import Estimator
 
+
 # Step 1: Init Orca Context
 init_orca_context(memory='4g')
+
 
 # Step 2: Read and process data using Spark DataFrame
 dataset_dir = "./ml-1m"
 train_data, test_data, user_num, item_num, sparse_feats_input_dims, num_dense_feats, \
     feature_cols, label_cols = prepare_data(dataset_dir, num_ng=4)
+
 
 # Step 3: Define the NCF model
 config = dict(
@@ -59,7 +62,7 @@ def model_creator(config):
     return model
 
 
-# Step 4: Distributed training with Orca keras Estimator
+# Step 4: Distributed training with Orca TF2 Estimator
 backend = 'ray'  # 'ray' or 'spark'
 est = Estimator.from_keras(model_creator=model_creator,
                            config=config,
@@ -78,6 +81,7 @@ est.fit(train_data,
         steps_per_epoch=train_steps,
         callbacks=[tf_callback])
 
+
 # Step 5: Distributed evaluation of the trained model
 result = est.evaluate(test_data,
                       feature_cols=feature_cols,
@@ -88,8 +92,10 @@ print('Evaluation results:')
 for r in result:
     print("{}: {}".format(r, result[r]))
 
-# Step 6: Save the trained Tensorflow model
+
+# Step 6: Save the trained TensorFlow model
 est.save("NCF_model")
+
 
 # Step 7: Stop Orca Context when program finishes
 stop_orca_context()
