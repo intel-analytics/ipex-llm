@@ -43,6 +43,7 @@ def read_data(data_dir):
             StructField('category', StringType(), False)
         ]
     )
+    print("Loading data...")
     # Need spark3 to support delimiter with more than one character.
     df_rating = spark.read.csv(os.path.join(data_dir, 'ratings.dat'),
                                sep="::", schema=schema, header=False)
@@ -129,7 +130,7 @@ def prepare_data(data_dir, neg_scale=4):
     df_rating = generate_neg_sample(df_rating, item_num, neg_scale=neg_scale)
     df, sparse_feats_input_dims = \
         add_feature(df_rating, df_user, df_item, sparse_features, dense_features)
-    # Occupation is already indexed.
+    # occupation is already indexed.
     sparse_features.append('occupation')
     occupation_num = df.agg({'occupation': 'max'}).collect()[0]['max(occupation)'] + 1
     sparse_feats_input_dims.append(occupation_num)

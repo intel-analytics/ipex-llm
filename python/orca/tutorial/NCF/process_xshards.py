@@ -67,6 +67,7 @@ def prepare_data(dataset_dir, num_ng=4):
     dense_features = ['age']
 
     print("Loading data...")
+    # Need spark3 to support delimiter with more than one character.
     users = read_csv(
         os.path.join(dataset_dir, 'users.dat'),
         sep="::", header=None, names=['user', 'gender', 'age', 'occupation', 'zipcode'],
