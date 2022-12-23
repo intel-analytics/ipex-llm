@@ -42,7 +42,7 @@ object AttestationCLI {
                              asURL: String = "127.0.0.1:9000",
                              challenge: String = "",
                              policyID: String = "",
-                             OSType: String = "gramine",
+                             quoteType: String = "gramine",
                              userReport: String = "ppml")
 
         val cmdParser: OptionParser[CmdParams] = new OptionParser[CmdParams](
@@ -68,27 +68,32 @@ object AttestationCLI {
             opt[String]('p', "userReport")
               .text("userReportDataPath, default is test")
               .action((x, c) => c.copy(userReport = x))
-            opt[String]('O', "OSType")
-              .text("OSType, default is gramine, occlum can be chose")
-              .action((x, c) => c.copy(OSType = x))
+            opt[String]('O', "quoteType")
+              .text("quoteType, default is gramine, occlum can be chose")
+              .action((x, c) => c.copy(quoteType = x))
         }
         val params = cmdParser.parse(args, CmdParams()).get
 
         // Generate quote
         val userReportData = params.userReport
-        if (params.OSType == "gramine") {
-          val quoteGenerator = new GramineQuoteGeneratorImpl()
-          quote = quoteGenerator.getQuote(userReportData.getBytes)
-        } else if (params.OSType == "occlum") {
-          val quoteGenerator = new OcclumQuoteGeneratorImpl()
-          quote = quoteGenerator.getQuote(userReportData.getBytes)
+        val quoteGenerator = params.quoteType match {
+          case "gramine" =>
+            new GramineQuoteGeneratorImpl()
+          case "occlum" =>
+            new OcclumQuoteGeneratorImpl()
+          case "TDX" =>
+            new TDXQuoteGeneratorImpl()
         }
+        quote = quoteGenerator.getQuote(userReportData.getBytes)
 
         // Attestation Client
         val as = params.asType match {
             case ATTESTATION_CONVENTION.MODE_EHSM_KMS =>
                 new EHSMAttestationService(params.asURL.split(":")(0),
                     params.asURL.split(":")(1), params.appID, params.apiKey)
+            case ATTESTATION_CONVENTION.MODE_BIGDL =>
+                new BigDLAttestationService(params.asURL.split(":")(0),
+                    params.asURL.split(":")(1))
             case ATTESTATION_CONVENTION.MODE_DUMMY =>
                 new DummyAttestationService()
             case _ => throw new AttestationRuntimeException("Wrong Attestation service type")
