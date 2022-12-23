@@ -129,6 +129,7 @@ class NCF(nn.Module):
             self.predict_layer.bias.data.copy_(0.5 * precit_bias)
 
     def forward(self, user, item, *args):
+        # args should be in the order of sparse feats and dense feats
         if not self.model == 'MLP':
             embed_user_GMF = self.embed_user_GMF(user)
             embed_item_GMF = self.embed_item_GMF(item)

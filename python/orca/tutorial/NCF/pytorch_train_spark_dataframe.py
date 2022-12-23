@@ -93,7 +93,7 @@ result = est.evaluate(data=test_data,
                       batch_size=10240)
 print('Evaluation results:')
 for r in result:
-    print(r, ":", result[r])
+    print("{}: {}".format(r, result[r]))
 
 
 # Step 6: Save the trained PyTorch model

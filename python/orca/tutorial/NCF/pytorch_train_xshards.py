@@ -68,8 +68,7 @@ est = Estimator.from_torch(model=model_creator,
                            metrics=[Accuracy(), Precision(), Recall()],
                            backend=backend,
                            use_tqdm=True,
-                           config={'dataset_dir': dataset_dir,
-                                   'user_num': user_num,
+                           config={'user_num': user_num,
                                    'item_num': item_num,
                                    'factor_num': 16,
                                    'num_layers': 3,
@@ -93,7 +92,7 @@ result = est.evaluate(data=test_data,
                       batch_size=10240)
 print('Evaluation results:')
 for r in result:
-    print(r, ":", result[r])
+    print("{}: {}".format(r, result[r]))
 
 
 # Step 6: Save the trained PyTorch model
