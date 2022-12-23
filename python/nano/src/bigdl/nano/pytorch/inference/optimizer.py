@@ -802,7 +802,7 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                                                  **export_kwargs)
                 invalidInputError(type(model).__name__ == 'PytorchOpenVINOModel',
                                   "Invalid model to quantize. Please use a nn.Module or a model "
-                                  "from trainer.trance(accelerator=='openvino')")
+                                  "from InferenceOptimizer.trace(accelerator=='openvino')")
                 drop_type = None
                 higher_is_better = None
                 maximal_drop = None
@@ -830,8 +830,10 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                 invalidInputError(False,
                                   "Accelerator {} is invalid.".format(accelerator))
         if precision == 'fp16':
-            invalidInputError(accelerator != 'openvino' or device not in ('GPU', 'VPUX'),
+            invalidInputError(device in ('GPU', 'VPUX'),
                               "fp16 is not supported on {} device.".format(device))
+            invalidInputError(accelerator == 'openvino',
+                              "fp16 is not supported on {} accelerator.".format(accelerator))
             if openvino_config is not None:
                 final_openvino_option = openvino_config
             return PytorchOpenVINOModel(model, input_sample,

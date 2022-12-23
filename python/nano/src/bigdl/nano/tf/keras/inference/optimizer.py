@@ -461,8 +461,10 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                               "Now we only support {} device when accelerator "
                               "is openvino.".format(device))
         if precision == 'fp16':
-            invalidInputError(accelerator != 'openvino' or device not in ('GPU', 'VPUX'),
+            invalidInputError(device in ('GPU', 'VPUX'),
                               "fp16 is not supported on {} device.".format(device))
+            invalidInputError(accelerator == 'openvino',
+                              "fp16 is not supported on {} accelerator.".format(accelerator))
             if openvino_config is not None:
                 final_openvino_option = openvino_config
             from bigdl.nano.deps.openvino.tf.model import KerasOpenVINOModel    # type: ignore
