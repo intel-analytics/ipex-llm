@@ -365,8 +365,11 @@ def transform_to_shard_dict(data, feature_cols, label_cols=None):
                            for feature_col in feature_cols]
 
         if label_cols:
-            result["y"] = [single_col_to_numpy(df[label_col], col_types[label_col])
-                           for label_col in label_cols]
+            y = [single_col_to_numpy(df[label_col], col_types[label_col])
+                 for label_col in label_cols]
+            if len(label_cols) == 1:
+                y = y[0]
+            result["y"] = y
 
         return result
 
