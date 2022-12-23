@@ -210,7 +210,7 @@ class TorchNano(LightningLite):
             warning(f"BigDL-Nano doesn't support '{distributed_backend}' backend now, "
                     f"'{distributed_backend}' strategy of pytorch_lightning will be used. "
                     f"Supported backends are 'spawn', 'subprocess' and 'ray'.")
-            strategy = distributed_backend
+            strategy = distributed_backend  # type: ignore
 
         kwargs["strategy"] = strategy
         super().__init__(*args, **kwargs)
@@ -236,11 +236,10 @@ class TorchNano(LightningLite):
         # so we have to add optimizations in this method, which will be called in
         # user defined `train()` method.
 
-        # the following codes are copied from pl's LightningLite's `setup` method,
-        # ipex 1.9 requires `_move_model_to_device` after `_setup_model_and_optimizers`, but
-        # pl's `setup` method calls `_move_model_to_device` before `_setup_model_and_optimizers`,
-        # so we copy the codes and swap their order.
         self._validate_setup(model, optimizers)
+
+        if move_to_device:
+            model = self._move_model_to_device(model=model, optimizers=optimizers)
 
         model, optimizers = self._strategy._setup_model_and_optimizers(model, optimizers)
 
@@ -254,17 +253,12 @@ class TorchNano(LightningLite):
             else:
                 model = ret
 
-        if move_to_device:
-            model = self._move_model_to_device(model=model, optimizers=optimizers)
         model = _TorchNanoModule(model, self._precision_plugin, self.channels_last)
         optimizers = [_TorchNanoOptimizer(optimizer, self._strategy,    # type: ignore
                                           self.auto_lr, self.num_processes)
                       for optimizer in optimizers]
         self._models_setup += 1
-        if optimizers is not None:
-            # join both types in a list for API convenience
-            return model, optimizers  # type: ignore
-        return model
+        return model, optimizers
 
     def setup(self, model: nn.Module,    # type: ignore[override]
               optimizer: Union[Optimizer, List[Optimizer]],
