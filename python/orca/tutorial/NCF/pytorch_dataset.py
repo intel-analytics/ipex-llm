@@ -58,11 +58,6 @@ class NCFData(data.Dataset):
         self.features = features_ps + features_ng
         self.labels = labels_ps + labels_ng
 
-    def train_test_split(self, test_size=0.2):
-        X_train, X_test, y_train, y_test = train_test_split(self.features, self.labels,
-                                                            test_size=test_size, random_state=100)
-        return NCFData(X_train, y_train), NCFData(X_test, y_test)
-
     def merge_features(self, users, items, feature_cols=None):
         df = pd.DataFrame(self.features, columns=['user', 'item'], dtype=np.int32)
         df['labels'] = self.labels
@@ -70,9 +65,15 @@ class NCFData(data.Dataset):
         df = df.merge(items, on='item')
 
         # To make the order of data columns as expected.
-        self.features = df.loc[:, feature_cols]
+        if feature_cols:
+            self.features = df.loc[:, feature_cols]
         self.features = tuple(map(list, self.features.itertuples(index=False)))
         self.labels = df['labels'].values.tolist()
+
+    def train_test_split(self, test_size=0.2):
+        X_train, X_test, y_train, y_test = train_test_split(self.features, self.labels,
+                                                            test_size=test_size, random_state=100)
+        return NCFData(X_train, y_train), NCFData(X_test, y_test)
 
     def __len__(self):
         return len(self.features)
@@ -154,7 +155,8 @@ def load_dataset(dataset_dir, num_ng=4):
     ratings, train_mat = process_ratings(dataset_dir, user_num, item_num)
 
     # sample negative items
-    dataset = NCFData(ratings.values.tolist(), None, item_num, train_mat, num_ng)
+    dataset = NCFData(ratings.values.tolist(),
+                      num_item=item_num, train_mat=train_mat, num_ng=num_ng)
     dataset.ng_sample()
 
     # merge features
