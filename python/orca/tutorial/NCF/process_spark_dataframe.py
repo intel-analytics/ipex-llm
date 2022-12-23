@@ -101,7 +101,7 @@ def num_scale(df, col):
     return df
 
 
-def add_feature(df, df_user, df_item, sparse_features, dense_features):
+def merge_features(df, df_user, df_item, sparse_features, dense_features):
     sparse_feats_input_dims = []
     for i in sparse_features:
         if i in df_user.columns:
@@ -129,7 +129,7 @@ def prepare_data(data_dir, neg_scale=4):
 
     df_rating = generate_neg_sample(df_rating, item_num, neg_scale=neg_scale)
     df, sparse_feats_input_dims = \
-        add_feature(df_rating, df_user, df_item, sparse_features, dense_features)
+        merge_features(df_rating, df_user, df_item, sparse_features, dense_features)
     # occupation is already indexed.
     sparse_features.append('occupation')
     occupation_num = df.agg({'occupation': 'max'}).collect()[0]['max(occupation)'] + 1
@@ -147,7 +147,6 @@ if __name__ == "__main__":
     from bigdl.orca import init_orca_context, stop_orca_context
 
     sc = init_orca_context()
-
     train_data, test_data, user_num, item_num, sparse_feats_input_dims, num_dense_feats, \
         feature_cols, label_cols = prepare_data("./ml-1m")
     train_data.write.parquet('./train_dataframe', mode='overwrite')
