@@ -76,7 +76,7 @@ class PytorchIPEXJITModel(AcceleratedLightningModule):
             self.model = self.model.to(memory_format=torch.channels_last)
         if self.use_ipex:
             self.model = ipex_optimize(self.model, dtype=dtype, inplace=inplace,
-                          weights_prepack=weights_prepack)
+                                       weights_prepack=weights_prepack)
 
         if self.use_jit:
             if dtype == torch.bfloat16:

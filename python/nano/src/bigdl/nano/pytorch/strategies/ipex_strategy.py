@@ -85,6 +85,7 @@ class IPEXBF16Precision(PrecisionPlugin):
                        optimizer_idx: int,
                        closure: Callable[[], Any],
                        **kwargs: Any) -> Any:
+        """Bf16 optimizer step."""
         from intel_extension_for_pytorch.optim._optimizer_utils import IPEX_FUSED_OPTIMIZER_LIST
         """Hook to run the optimizer step."""
         if type(optimizer) in IPEX_FUSED_OPTIMIZER_LIST:

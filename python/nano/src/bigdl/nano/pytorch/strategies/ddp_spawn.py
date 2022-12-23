@@ -198,20 +198,7 @@ class DDPSpawnStrategy(_DDPSpawnStrategy):
             # so we reuse the original trainer
             self.model.trainer = trainer    # type: ignore
 
-        self.accelerator.setup(trainer)
-
-        trainer_fn = trainer.state.fn
-        if trainer_fn == TrainerFn.FITTING:
-            if self._layer_sync:
-                self.model = self._layer_sync.apply(self.model)
-
-        self.setup_precision_plugin()
-
-        # `configure_ddp` will create a `DistributedDataParallel`, which has no
-        # `test_step` method in pytorch_lightning 1.6, which causes error when
-        # calling `trainer.test()`, so we call `configure_ddp` only when fitting
-        if trainer_fn == TrainerFn.FITTING:
-            self.configure_ddp()
+        super().setup(trainer)
 
         if trainer.training and self.auto_lr:
 
@@ -236,10 +223,6 @@ class DDPSpawnStrategy(_DDPSpawnStrategy):
         if self.use_ipex:
             ipex_optimize(self.model, optimizers=self.optimizers,
                           inplace=True, dtype=self.dtype)
-
-        # some operations in `configure_ddp` do not support XPU,
-        # which is used by ipex==1.9, so we move this line here
-        self.model_to_device()
 
     def on_train_start(self):
         """Setup warmup lr_schedulers after resetting the train dataloaders."""
