@@ -124,6 +124,14 @@ class ExportWithStandardScaler(ExportJIT):
                 else torch.ones(self.scale_.size(), dtype=torch.float64)
             data_scale[:, i] = (data[:, i] - value_mean) / value_scale
         return data_scale
+    
+    def unscale(self, data):
+        data_unscale = torch.zeros(data.size(), dtype=torch.float64)
+        for i in self.scaler_index:
+            value_mean = self.mean_[i] if self.with_mean else torch.zeros(self.mean_.size(), dtype=torch.float64)
+            value_scale = self.scale_[i] if self.with_std else torch.ones(self.scale_.size(), dtype=torch.float64)
+            data_unscale[:, :, i] = data[:, :, i] * value_scale + value_mean
+        return data_unscale
 
     def unscale(self, data):
         data_unscale = torch.zeros(data.size(), dtype=torch.float64)
