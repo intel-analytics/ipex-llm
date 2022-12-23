@@ -340,16 +340,33 @@ arrays2pandas = partial(arrays2others, generate_func=_generate_output_pandas_df)
 
 
 def transform_to_shard_dict(data, feature_cols, label_cols=None):
+    def single_col_to_numpy(col_series, dtype):
+        if dtype == np.int32:
+            return col_series.to_numpy(dtype=np.int32)
+        elif dtype == np.int64:
+            return col_series.to_numpy(dtype=np.int64)
+        elif dtype == np.float32:
+            return col_series.to_numpy(dtype=np.float32)
+        elif dtype == np.float64:
+            return col_series.to_numpy(dtype=np.float64)
+        elif dtype == np.str:
+            return col_series.to_numpy(dtype=np.str)
+        else:  # e.g. np.object
+            return col_series.to_numpy(dtype=np.float32)
+
     def to_shard_dict(df):
         result = dict()
+        col_types = df.dtypes
         if len(feature_cols) == 1:
             featureLists = df[feature_cols[0]].tolist()
             result["x"] = np.stack(featureLists, axis=0)
         else:
-            result["x"] = [df[feature_col].to_numpy() for feature_col in feature_cols]
+            result["x"] = [single_col_to_numpy(df[feature_col], col_types[feature_col])
+                           for feature_col in feature_cols]
 
         if label_cols:
-            result["y"] = df[label_cols[0]].to_numpy()
+            result["y"] = [single_col_to_numpy(df[label_col], col_types[label_col])
+                           for label_col in label_cols]
 
         return result
 
