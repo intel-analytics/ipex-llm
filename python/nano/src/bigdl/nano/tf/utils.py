@@ -20,6 +20,7 @@ from functools import partial
 from bigdl.nano.common.compare_version import _compare_version
 
 KERAS_VERSION_LESS_2_9 = _compare_version("keras", operator.lt, "2.9")
+KERAS_VERSION_LESS_2_10 = _compare_version("keras", operator.lt, "2.10")
 
 
 class _NanoPartial(partial):
