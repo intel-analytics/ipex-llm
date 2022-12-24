@@ -121,7 +121,7 @@ class TestONNX(TestCase):
         onnx_model = InferenceOptimizer.quantize(model,
                                                  accelerator='onnxruntime',
                                                  x=train_dataset,
-                                                 thread_num=8)
+                                                 thread_num=1)
 
         with tempfile.TemporaryDirectory() as tmp_dir_name:
             onnx_model._save(tmp_dir_name)

@@ -86,6 +86,7 @@ jobs:
           source bigdl-nano-init
           pip install pytest nbmake
           pip install ipykernel==5.5.6
+          pip install torch==1.12.0 torchvision --extra-index-url https://download.pytorch.org/whl/cpu 
           bash python/nano/tutorial/notebook/inference/pytorch/run-nano-howto-guides-inference-pytorch-tests.sh inferenceoptimizer
           source $CONDA/bin/deactivate
           $CONDA/bin/conda remove -n howto-guides-inference-pytorch-openvino --all
