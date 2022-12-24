@@ -739,16 +739,11 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                         if input_sample is None:
                             # input_sample can be a dataloader
                             input_sample = calib_dataloader
-                        if onnxruntime_session_options is None:
-                            import onnxruntime
-                            onnxruntime_session_options = onnxruntime.SessionOptions()
-                            if thread_num is not None:
-                                onnxruntime_session_options.intra_op_num_threads = thread_num
-                                onnxruntime_session_options.inter_op_num_threads = thread_num
                         model = InferenceOptimizer.trace(
                             model,
                             input_sample=input_sample,
                             accelerator='onnxruntime',
+                            thread_num=thread_num,
                             onnxruntime_session_options=onnxruntime_session_options,
                             simplification=simplification,
                             dynamic_axes=dynamic_axes,
@@ -961,9 +956,9 @@ class InferenceOptimizer(BaseInferenceOptimizer):
             if onnxruntime_session_options is None:
                 import onnxruntime
                 onnxruntime_session_options = onnxruntime.SessionOptions()
-                if thread_num is not None:
-                    onnxruntime_session_options.intra_op_num_threads = thread_num
-                    onnxruntime_session_options.inter_op_num_threads = thread_num
+            if thread_num is not None:
+                onnxruntime_session_options.intra_op_num_threads = thread_num
+                onnxruntime_session_options.inter_op_num_threads = thread_num
             return PytorchONNXRuntimeModel(model, input_sample,
                                            onnxruntime_session_options,
                                            simplification=simplification,

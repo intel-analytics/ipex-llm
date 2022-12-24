@@ -15,6 +15,7 @@
 #
 
 import os
+import copy
 import yaml
 import time
 from pathlib import Path
@@ -347,9 +348,9 @@ class InferenceOptimizer(BaseInferenceOptimizer):
             if onnxruntime_session_options is None:
                 import onnxruntime
                 onnxruntime_session_options = onnxruntime.SessionOptions()
-                if thread_num is not None:
-                    onnxruntime_session_options.intra_op_num_threads = thread_num
-                    onnxruntime_session_options.inter_op_num_threads = thread_num
+            if thread_num is not None:
+                onnxruntime_session_options.intra_op_num_threads = thread_num
+                onnxruntime_session_options.inter_op_num_threads = thread_num
             result = KerasONNXRuntimeModel(model, input_spec, onnxruntime_session_options)
         else:
             invalidInputError(False, "Accelerator {} is invalid.".format(accelerator))
@@ -584,6 +585,7 @@ class InferenceOptimizer(BaseInferenceOptimizer):
             result = inc_quantzie(onnx_model, dataloader=(x, y),
                                   metric=metric,
                                   framework=framework,
+                                  thread_num=thread_num,
                                   conf=conf,
                                   approach=approach,
                                   tuning_strategy=tuning_strategy,
@@ -659,7 +661,20 @@ class InferenceOptimizer(BaseInferenceOptimizer):
             return load_onnxruntime_model(path, framework='tensorflow')
         if model_type == 'KerasQuantizedModel':
             return load_inc_model(path, model, framework='tensorflow')
-
+        if isinstance(model, Model):
+            # typically for keras Model
+            model = copy.deepcopy(model)
+            checkpoint_path = metadata.get('checkpoint', None)
+            if checkpoint_path:
+                checkpoint_path = path / metadata['checkpoint']
+                model.load_weights(checkpoint_path)
+                return model
+            else:
+                invalidInputError(False, "Key 'checkpoint' must be specified.")
+        else:
+            invalidInputError(False,
+                              "ModelType {} or argument 'model={}' is not acceptable for tensorflow"
+                              " loading.".format(model_type, type(model)))
 
 def _accuracy_calculate_helper(model, metric, data):
     '''

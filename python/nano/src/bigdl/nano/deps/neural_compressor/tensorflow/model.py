@@ -18,6 +18,7 @@ import yaml
 from ..core import version as inc_version
 from bigdl.nano.utils.inference.tf.model import AcceleratedKerasModel
 from bigdl.nano.utils.log4Error import invalidInputError
+from neural_compressor.model.model import TensorflowModel
 
 
 class KerasQuantizedModel(AcceleratedKerasModel):
@@ -57,7 +58,7 @@ class KerasQuantizedModel(AcceleratedKerasModel):
             model is not None,
             errMsg="FP32 model is required to create a quantized model."
         )
-        qmodel = model.load(path)
+        qmodel = TensorflowModel("saved_model", str(path))
         from packaging import version
         if version.parse(inc_version) < version.parse("1.11"):
             path = Path(path)

@@ -137,6 +137,13 @@ class TestInferencePipeline(TestCase):
         train_examples = np.random.random((100, 40, 40, 3))
         train_labels = np.random.randint(0, 10, size=(100,))
         train_dataset = tf.data.Dataset.from_tensor_slices((train_examples, train_labels))
+        # save load for original model
+        output1 = model(train_examples)
+        with tempfile.TemporaryDirectory() as tmp_dir_name:
+            InferenceOptimizer.save(model, tmp_dir_name)
+            load_model = InferenceOptimizer.load(tmp_dir_name, model)
+            output2 = load_model(train_examples)
+            np.testing.assert_almost_equal(output1.numpy(), output2.numpy(), decimal=5)
         # prepare optimizer
         opt = InferenceOptimizer()
         opt.optimize(model=model,

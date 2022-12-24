@@ -105,10 +105,11 @@ class TestModelQuantize(TestCase):
         train_dataset = tf.data.Dataset.from_tensor_slices((train_examples, train_labels))
         q_model = InferenceOptimizer.quantize(model, x=train_dataset)
         assert q_model
-        output = q_model(train_examples[0:10])
-        assert output.shape == (10, 10)
+        output1 = q_model(train_examples[0:10])
+        assert output1.shape == (10, 10)
         with tempfile.TemporaryDirectory() as tmp_dir:
             InferenceOptimizer.save(q_model, tmp_dir)
             load_model = InferenceOptimizer.load(tmp_dir, model)
-            output = load_model(train_examples[0:10])
-            assert output.shape == (10, 10)
+            output2 = load_model(train_examples[0:10])
+            assert output2.shape == (10, 10)
+            np.testing.assert_almost_equal(output1.numpy(), output2.numpy(), decimal=5)

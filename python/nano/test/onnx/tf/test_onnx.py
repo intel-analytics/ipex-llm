@@ -67,3 +67,15 @@ class TestONNX(TestCase):
         preds2 = new_onnx_model(input_examples).numpy()
 
         np.testing.assert_almost_equal(preds1, preds2, decimal=5)
+        
+        with tempfile.TemporaryDirectory() as tmp_dir_name:
+            InferenceOptimizer.save(onnx_model, tmp_dir_name)
+            new_onnx_model = InferenceOptimizer.load(tmp_dir_name)
+
+        assert new_onnx_model.session_options.intra_op_num_threads == 1
+        assert new_onnx_model.session_options.inter_op_num_threads == 1
+
+        preds1 = onnx_model(input_examples).numpy()
+        preds2 = new_onnx_model(input_examples).numpy()
+
+        np.testing.assert_almost_equal(preds1, preds2, decimal=5)
