@@ -16,7 +16,6 @@
 
 import os
 import copy
-import yaml
 import time
 from pathlib import Path
 import numpy as np
@@ -613,6 +612,7 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                InferenceOptimizer.trace/InferenceOptimizer.quantize.
         :param path: Path to saved model. Path should be a directory.
         """
+        import yaml
         path = Path(path)
         path.mkdir(parents=path.parent, exist_ok=True)
         if hasattr(model, '_save'):
@@ -642,6 +642,7 @@ class InferenceOptimizer(BaseInferenceOptimizer):
         :return: Model with different acceleration(None/OpenVINO/ONNX Runtime) or
                  precision(FP32/FP16/BF16/INT8).
         """
+        import yaml
         path = Path(path)
         if not path.exists():
             invalidInputError(False, "{} doesn't exist.".format(path))
