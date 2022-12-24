@@ -653,11 +653,11 @@ class InferenceOptimizer(BaseInferenceOptimizer):
         model_type = metadata.get('ModelType', None)
         if model_type == 'KerasOpenVINOModel':
             invalidInputError(model is None,
-                            "Argument 'model' must be None for OpenVINO loading.")
+                              "Argument 'model' must be None for OpenVINO loading.")
             return load_openvino_model(path, framework='tensorflow')
         if model_type == 'KerasONNXRuntimeModel':
             invalidInputError(model is None,
-                            "Argument 'model' must be None for ONNX Runtime loading.")
+                              "Argument 'model' must be None for ONNX Runtime loading.")
             return load_onnxruntime_model(path, framework='tensorflow')
         if model_type == 'KerasQuantizedModel':
             return load_inc_model(path, model, framework='tensorflow')
@@ -675,6 +675,7 @@ class InferenceOptimizer(BaseInferenceOptimizer):
             invalidInputError(False,
                               "ModelType {} or argument 'model={}' is not acceptable for tensorflow"
                               " loading.".format(model_type, type(model)))
+
 
 def _accuracy_calculate_helper(model, metric, data):
     '''
