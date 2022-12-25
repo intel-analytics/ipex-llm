@@ -62,8 +62,8 @@ fi
 filename=diabetes
 ${BIGDL_ROOT}/python/orca/dev/colab-notebook/ipynb2py.sh ${filename}
 	sed -i "s/get_ipython()/#/g"  ${filename}.py
-	sed -i 's/batch_size = 16/batch_size = 320/g' ${filename}.py
-	sed -i 's/epochs = 150/epochs = 1/g' ${filename}.py
+	sed -i 's/batch_size=16/batch_size=320/g' ${filename}.py
+	sed -i 's/epochs= 150/epochs=1/g' ${filename}.py
 
 python ${filename}.py
 echo "finished notebook diabetes.ipynb"
