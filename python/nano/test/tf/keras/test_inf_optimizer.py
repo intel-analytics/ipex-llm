@@ -148,16 +148,19 @@ class TestInferencePipeline(TestCase):
         opt = InferenceOptimizer()
         opt.optimize(model=model,
                      x=train_dataset,
+                     y=None,
                      batch_size=4,
                      latency_sample_num=10)
-        optimize_result = opt.optimized_model_dict
-        with tempfile.TemporaryDirectory() as tmp_dir_name:
-            for method, option in optimize_result.items():
-                if 'model' in option:
-                    acc_model = option['model']
+        methods = opt.ALL_INFERENCE_ACCELERATION_METHOD
+        for method in methods.keys():
+            option = opt.optimized_model_dict[method]
+            if 'model' in option:
+                acc_model = option['model']
+                with tempfile.TemporaryDirectory() as tmp_dir_name:
                     dir_name = os.path.join(tmp_dir_name, method)
                     InferenceOptimizer.save(acc_model, dir_name)
                     try:
                         acc_model = InferenceOptimizer.load(dir_name)
                     except:
                         acc_model = InferenceOptimizer.load(dir_name, model)
+                del acc_model
