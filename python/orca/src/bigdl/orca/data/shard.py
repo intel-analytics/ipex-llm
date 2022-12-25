@@ -1098,7 +1098,7 @@ class SparkXShards(XShards):
         """
         if self._get_class_name() != 'pandas.core.frame.DataFrame':
             invalidInputError(False,
-                              "Currently only support select() on"
+                              "Currently only support sample_to_pdf() on"
                               " XShards of Pandas DataFrame")
         sampled = self.sample(
             frac=frac, replace=replace, weights=weights, random_state=random_state)
