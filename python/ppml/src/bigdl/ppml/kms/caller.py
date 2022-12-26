@@ -63,8 +63,8 @@ def request_primary_key_cipher_text(ip, port):
         "keyspec":"AES_GCM_128",
         "origin":"EH_INTERNAL_KEY"
     }
-    primary_key_ciphertext = post_request(ip, port, action, payload)['keyid']
-    return primary_key_ciphertext
+    primary_key_cipher_text = post_request(ip, port, action, payload)['keyid']
+    return primary_key_cipher_text
 
 def request_data_key_cipher_text(ip, port, encrypted_primary_key, data_key_length):
     action = "GenerateDataKeyWithoutPlaintext"
@@ -73,8 +73,8 @@ def request_data_key_cipher_text(ip, port, encrypted_primary_key, data_key_lengt
         "keylen": data_key_length,
         "aad": "test",
     }
-    data_key_ciphertext = post_request(ip, port, action, payload)['ciphertext']
-    return data_key_ciphertext
+    data_key_cipher_text = post_request(ip, port, action, payload)['ciphertext']
+    return data_key_cipher_text
 
 def request_data_key_plaintext(ip, port, encrypted_primary_key, encrypted_data_key):
     action = "Decrypt"

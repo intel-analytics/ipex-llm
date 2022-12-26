@@ -33,13 +33,13 @@ def retrieve_data_key_plaintext(ip, port, encrypted_primary_key_path, encrypted_
 
 
 def generate_primary_key_cipher_text(ip, port):
-    primary_key_ciphertext = request_primary_key_cipher_text(ip, port)
-    write_encrypted_key_file('./encrypted_primary_key', primary_key_ciphertext)
+    primary_key_cipher_text = request_primary_key_cipher_text(ip, port)
+    write_encrypted_key_file('./encrypted_primary_key', primary_key_cipher_text)
     print('[INFO] Primary Key Generated Successfully at ./encrypted_primary_key')
 
 
 def generate_data_key_cipher_text(ip, port, encrypted_primary_key_path, data_key_length = 32):
     encrypted_primary_key=read_encrypted_key_file(encrypted_primary_key_path)
-    data_key_ciphertext = request_data_key_cipher_text(ip, port, encrypted_primary_key, data_key_length)
-    write_encrypted_key_file('./encrypted_data_key', data_key_ciphertext)
+    data_key_cipher_text = request_data_key_cipher_text(ip, port, encrypted_primary_key, data_key_length)
+    write_encrypted_key_file('./encrypted_data_key', data_key_cipher_text)
     print('[INFO] Data Key Generated Successfully at ./encrypted_data_key')
