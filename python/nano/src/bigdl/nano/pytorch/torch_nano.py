@@ -33,9 +33,9 @@ from pytorch_lightning.strategies import DeepSpeedStrategy
 
 from bigdl.nano.common import check_avx512
 from bigdl.nano.utils.log4Error import invalidInputError
-from bigdl.nano.pytorch.utils import TORCH_VERSION_LESS_1_10, TORCH_VERSION_LESS_1_11
-from bigdl.nano.pytorch.strategies.ipex.ipex_api import ipex_optimize
-from bigdl.nano.pytorch.strategies import create_IPEXStrategy, DDPSpawnStrategy, \
+from bigdl.nano.pytorch.utils import TORCH_VERSION_LESS_1_11
+from bigdl.nano.deps.ipex.ipex_api import ipex_optimize
+from bigdl.nano.pytorch.strategies import IPEXStrategy, DDPSpawnStrategy, \
     DDPSubprocessStrategy, create_ray_strategy, DDPK8sStrategy
 
 
@@ -197,7 +197,7 @@ class TorchNano(LightningLite):
 
         if self.num_processes == 1:
             if self.use_ipex:
-                strategy = create_IPEXStrategy(dtype=self.dtype)
+                strategy = IPEXStrategy(dtype=self.dtype)
             else:
                 strategy = None     # type: ignore
         elif distributed_backend in backends_class_map:
@@ -210,7 +210,7 @@ class TorchNano(LightningLite):
             warning(f"BigDL-Nano doesn't support '{distributed_backend}' backend now, "
                     f"'{distributed_backend}' strategy of pytorch_lightning will be used. "
                     f"Supported backends are 'spawn', 'subprocess' and 'ray'.")
-            strategy = distributed_backend
+            strategy = distributed_backend  # type: ignore
 
         kwargs["strategy"] = strategy
         super().__init__(*args, **kwargs)
@@ -236,42 +236,29 @@ class TorchNano(LightningLite):
         # so we have to add optimizations in this method, which will be called in
         # user defined `train()` method.
 
-        # the following codes are copied from pl's LightningLite's `setup` method,
-        # ipex 1.9 requires `_move_model_to_device` after `_setup_model_and_optimizers`, but
-        # pl's `setup` method calls `_move_model_to_device` before `_setup_model_and_optimizers`,
-        # so we copy the codes and swap their order.
         self._validate_setup(model, optimizers)
+
+        if move_to_device:
+            model = self._move_model_to_device(model=model, optimizers=optimizers)
 
         model, optimizers = self._strategy._setup_model_and_optimizers(model, optimizers)
 
         # IPEX bfloat16 optimization will cast model parameters to `torch.bfloat16`
         # which is not supported by ddp currently,
         # so add IPEX 1.11's optimization after `_setup_model`
-        if self.use_ipex and not TORCH_VERSION_LESS_1_10:
-            training = model.training
-            if len(optimizers) == 0:
-                model.eval()
-                model = ipex_optimize(model, inplace=False, dtype=self.dtype)
-            elif len(optimizers) == 1:
-                model.train()
-                model, optimizer = ipex_optimize(model, optimizer=optimizers[0],
-                                                 inplace=False, dtype=self.dtype)
-                optimizers = [optimizer]
+        if self.use_ipex:
+            ret = ipex_optimize(model, optimizers=optimizers, inplace=False, dtype=self.dtype)
+            if isinstance(ret, tuple):
+                model, optimizers = ret[0], [ret[1]]
             else:
-                invalidInputError(False, "Ipex does not support more than one optimizers.")
-            model.train(training)
+                model = ret
 
-        if move_to_device:
-            model = self._move_model_to_device(model=model, optimizers=optimizers)
         model = _TorchNanoModule(model, self._precision_plugin, self.channels_last)
         optimizers = [_TorchNanoOptimizer(optimizer, self._strategy,    # type: ignore
                                           self.auto_lr, self.num_processes)
                       for optimizer in optimizers]
         self._models_setup += 1
-        if optimizers is not None:
-            # join both types in a list for API convenience
-            return model, optimizers  # type: ignore
-        return model
+        return model, optimizers
 
     def setup(self, model: nn.Module,    # type: ignore[override]
               optimizer: Union[Optimizer, List[Optimizer]],
