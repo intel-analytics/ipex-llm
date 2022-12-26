@@ -1213,6 +1213,8 @@ class TSDataset:
         >>> #include <torch/torch.h>
         >>> #include <torch/script.h>
         >>> // create input tensor
+        >>> // the data to create input tensor should have the same format as the
+        >>> // data used in developing
         >>> torch::Tensor input = create_input_tensor();
         >>> // load the module
         >>> torch::jit::script::Module preprocessing;
