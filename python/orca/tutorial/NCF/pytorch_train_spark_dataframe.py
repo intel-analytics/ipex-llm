@@ -28,7 +28,7 @@ from bigdl.orca.learn.metrics import Accuracy, Precision, Recall
 
 
 # Step 1: Init Orca Context
-sc = init_orca_context()
+sc = init_orca_context(cluster_mode="local")
 
 
 # Step 2: Read and process data using Orca XShards
@@ -93,7 +93,7 @@ result = est.evaluate(data=test_data,
                       batch_size=10240)
 print('Evaluation results:')
 for r in result:
-    print(r, ":", result[r])
+    print("{}: {}".format(r, result[r]))
 
 
 # Step 6: Save the trained PyTorch model

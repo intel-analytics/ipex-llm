@@ -63,3 +63,44 @@ class TestONNX(TestCase):
         preds = model.predict(input_examples)
         onnx_preds = onnx_quantized_model.predict(input_examples)
         np.testing.assert_allclose(preds, onnx_preds, rtol=1e-2)
+
+    def test_model_quantize_onnx_with_only_x(self):
+        model = ResNet50(weights=None, input_shape=[224, 224, 3], classes=10)
+        model = Model(inputs=model.inputs, outputs=model.outputs)
+        input_examples = np.random.random((100, 224, 224, 3))
+        # quantize a Keras model based on numpy array
+        onnx_quantized_model = InferenceOptimizer.quantize(model,
+                                                           accelerator='onnxruntime',
+                                                           x=input_examples,
+                                                           y=None,
+                                                           thread_num=8)
+
+        preds = model.predict(input_examples)
+        onnx_preds = onnx_quantized_model.predict(input_examples)
+        np.testing.assert_allclose(preds, onnx_preds, rtol=1e-2)
+
+        # quantize a Keras model based on dataset
+        input_examples = np.random.random((100, 224, 224, 3))
+        train_dataset = tf.data.Dataset.from_tensor_slices(input_examples)
+        onnx_quantized_model = InferenceOptimizer.quantize(model,
+                                                           accelerator='onnxruntime',
+                                                           x=train_dataset,
+                                                           y=None,
+                                                           thread_num=8)
+
+        preds = model.predict(input_examples)
+        onnx_preds = onnx_quantized_model.predict(input_examples)
+        np.testing.assert_allclose(preds, onnx_preds, rtol=1e-2)
+        
+        # quantize a Keras model based on tf tensor
+        input_examples = np.random.random((100, 224, 224, 3))
+        input_examples = tf.convert_to_tensor(input_examples)
+        onnx_quantized_model = InferenceOptimizer.quantize(model,
+                                                           accelerator='onnxruntime',
+                                                           x=input_examples,
+                                                           y=None,
+                                                           thread_num=8)
+
+        preds = model.predict(input_examples)
+        onnx_preds = onnx_quantized_model.predict(input_examples)
+        np.testing.assert_allclose(preds, onnx_preds, rtol=1e-2)

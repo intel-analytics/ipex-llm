@@ -25,7 +25,6 @@ import scala.concurrent.duration.Duration
 import scala.concurrent.{Await, Future}
 import scala.reflect.ClassTag
 import com.intel.analytics.bigdl.dllib.utils.{Engine, Log4Error}
-import org.apache.hadoop.mapreduce.v2.app.speculate.TaskRuntimeEstimator
 
 /**
  * The negative log likelihood criterion. It is useful to train a classification problem with n

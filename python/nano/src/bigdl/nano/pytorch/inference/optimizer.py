@@ -161,7 +161,8 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                  logging: bool = False,
                  latency_sample_num: int = 100,
                  includes: Optional[List[str]] = None,
-                 excludes: Optional[List[str]] = None) -> None:
+                 excludes: Optional[List[str]] = None,
+                 output_filename: Optional[str] = None) -> None:
         '''
         This function will give all available inference acceleration methods a try
         and record the latency, accuracy and model instance inside the Optimizer for
@@ -222,8 +223,11 @@ class InferenceOptimizer(BaseInferenceOptimizer):
         :param direction: (optional) A string that indicates the higher/lower
                better for the metric, "min" for the lower the better and "max" for the
                higher the better. Default value is "max".
-        :param thread_num: (optional) a int represents how many threads(cores) is needed for
-               inference.
+        :param thread_num: (optional) An int represents how many threads(cores) is needed for
+               inference. This parameter only controls the usage of thread number in the process
+               of latency calculation as well as later inference process of your obtained
+               accelerated model. In other words, the process of model conversion and optional
+               accuracy calculation won't be restricted by this parameter.
         :param accelerator: (optional) A string tuple that specifys the accelerators to search.
                The optional accelerators are: None, 'openvino', 'onnxruntime', 'jit'.
                Defaults to None which represents there is no restriction on accelerators.
@@ -273,6 +277,8 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                will be automatically add to includes.
         :param excludes: (optional) a list of acceleration methods that will be excluded from the
                search. "original" will be ignored in the excludes.
+        :param output_filename: (optional) a string filename is used to specify the file which the
+               optimized table will be writed. The default is None which means don't write to file.
         '''
 
         # check if model is a nn.Module or inherited from a nn.Module
@@ -466,12 +472,18 @@ class InferenceOptimizer(BaseInferenceOptimizer):
 
         self._optimize_result = format_optimize_result(self.optimized_model_dict,
                                                        self._calculate_accuracy)
-        self._optimize_result += "* means we assume the precision of the traced model does "\
-                                 "not change, so we don't recompute accuracy to save time.\n"
+        if self._calculate_accuracy:
+            if precision is None or 'fp32' in precision:
+                # only show this line when there is traced model and metric value
+                self._optimize_result += "* means we assume the metric value of the traced "\
+                    "model does not change, so we don't recompute metric value to save time.\n"
         # save time cost to self._optimize_result
         time_cost = time.perf_counter() - start_time
         time_cost_str = f"Optimization cost {time_cost:.1f}s in total."
         self._optimize_result += time_cost_str
+        if output_filename is not None:
+            with open(output_filename, "w") as f:
+                f.write(self._optimize_result)
         print(self._optimize_result)
         print("===========================Stop Optimization===========================")
 
@@ -502,6 +514,7 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                  sample_size: int = 100,
                  logging: bool = True,
                  inplace: bool = False,
+                 weights_prepack: Optional[bool] = None,
                  q_config=None,
                  **export_kwargs):
         """
@@ -566,9 +579,11 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                               classic/contiguous NCHW order, only valid when precision='bf16',
                               otherwise will be ignored. This setting only works for 4-dim Tensor.
                               Default: ``False``.
-        :param thread_num: (optional) a int represents how many threads(cores) is needed for
-                           inference, only valid for accelerator='onnxruntime'
-                           or accelerator='openvino'.
+        :param thread_num: (optional) An int represents how many threads(cores) is needed for
+                           inference. This parameter only controls the usage of thread number in
+                           later inference process of your obtained accelerated model. In other
+                           words, the process of model conversion won't be restricted by this
+                           parameter.
         :param onnxruntime_session_options: The session option for onnxruntime, only valid when
                                             accelerator='onnxruntime', otherwise will be ignored.
         :param openvino_config: The config to be inputted in core.compile_model. Only valid when
@@ -606,6 +621,12 @@ class InferenceOptimizer(BaseInferenceOptimizer):
         :param logging: whether to log detailed information of model conversion, only valid when
                         accelerator='openvino', otherwise will be ignored. Default: ``True``.
         :param inplace: whether to perform inplace optimization. Default: ``False``.
+        :param weights_prepack: Whether to perform weight prepack for convolution and linear to
+                                avoid oneDNN weights reorder. The default value is None. Explicitly
+                                setting this knob overwrites the configuration set by level knob.
+                                Only valid when ``use_ipex=True``, otherwise will be ignored.
+                                You can try to reduce the occupied memory size by setting this
+                                parameter to ``False``.
         :param q_config: describes how to quantize a layer or a part of the network
                          by providing settings (observer classes) for activations and weights
                          respectively. Note that QConfig needs to contain observer classes
@@ -634,7 +655,8 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                                                    channels_last=channels_last,
                                                    thread_num=thread_num, inplace=inplace,
                                                    jit_strict=jit_strict,
-                                                   jit_method=jit_method)
+                                                   jit_method=jit_method,
+                                                   weights_prepack=weights_prepack)
                 else:
                     bf16_model = BF16Model(model, channels_last=channels_last,
                                            thread_num=thread_num)
@@ -796,6 +818,7 @@ class InferenceOptimizer(BaseInferenceOptimizer):
               dynamic_axes: Union[bool, dict] = True,
               logging: bool = True,
               inplace: bool = False,
+              weights_prepack: Optional[bool] = None,
               **export_kwargs):
         """
         Trace a torch.nn.Module and convert it into an accelerated module for inference.
@@ -807,14 +830,16 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                              model is a LightningModule with any dataloader attached.
         :param accelerator: The accelerator to use, defaults to None meaning staying in Pytorch
                             backend. 'openvino', 'onnxruntime' and 'jit' are supported for now.
-        :param use_ipex: Whether we use ipex as accelerator for inferencing. default: False.
+        :param use_ipex: Whether we use ipex as accelerator for inferencing. Default: False.
         :param channels_last: Whether use channels last memory format, i.e. NHWC (batch size,
                               height, width, channels), as an alternative way to store tensors in
                               classic/contiguous NCHW order. This setting only works for 4-dim
                               Tensor. Default: ``False``.
-        :param thread_num: (optional) A int represents how many threads(cores) is needed for
-                           inference, only valid for accelerator='onnxruntime'
-                           or accelerator='openvino'.
+        :param thread_num: (optional) An int represents how many threads(cores) is needed for
+                           inference. This parameter only controls the usage of thread number in
+                           later inference process of your obtained accelerated model. In other
+                           words, the process of model conversion won't be restricted by this
+                           parameter.
         :param onnxruntime_session_options: The session option for onnxruntime, only valid when
                                             accelerator='onnxruntime', otherwise will be ignored.
         :param openvino_config: The config to be inputted in core.compile_model. Only valid when
@@ -847,6 +872,12 @@ class InferenceOptimizer(BaseInferenceOptimizer):
         :param logging: Whether to log detailed information of model conversion, only valid when
                         accelerator='openvino', otherwise will be ignored. Default: ``True``.
         :param inplace: whether to perform inplace optimization. Default: ``False``.
+        :param weights_prepack: Whether to perform weight prepack for convolution and linear to
+                                avoid oneDNN weights reorder. The default value is None. Explicitly
+                                setting this knob overwrites the configuration set by level knob.
+                                Only valid when ``use_ipex=True``, otherwise will be ignored.
+                                You can try to reduce the occupied memory size by setting this
+                                parameter to ``False``.
         :param **export_kwargs: Other extra advanced settings include those be passed to
                                 torch.onnx.export function, only valid when
                                 accelerator='onnxruntime'/'openvino', otherwise
@@ -891,7 +922,8 @@ class InferenceOptimizer(BaseInferenceOptimizer):
             return PytorchIPEXJITModel(model, input_sample=input_sample, use_ipex=use_ipex,
                                        use_jit=use_jit, channels_last=channels_last,
                                        thread_num=thread_num, inplace=inplace,
-                                       jit_strict=jit_strict, jit_method=jit_method)
+                                       jit_strict=jit_strict, jit_method=jit_method,
+                                       weights_prepack=weights_prepack)
         invalidInputError(False, "Accelerator {} is invalid.".format(accelerator))
 
     @staticmethod

@@ -17,13 +17,14 @@
 import os
 import time
 import numpy as np
+import traceback
 import tensorflow as tf
 from typing import Dict, Optional, List, Union
 from bigdl.nano.utils.inference.common.base_optimizer import BaseInferenceOptimizer
 from bigdl.nano.utils.inference.common.checker import available_acceleration_combination
 from bigdl.nano.utils.inference.common.utils import AccelerationOption,\
     throughput_calculate_helper, format_optimize_result
-from bigdl.nano.tf.keras import Model as NanoModel
+from bigdl.nano.tf.utils import patch_compiled, patch_attrs
 from bigdl.nano.utils.log4Error import invalidInputError
 from tensorflow.keras import Model as Model
 from tensorflow.data import Dataset
@@ -34,7 +35,7 @@ from bigdl.nano.deps.onnxruntime.onnxruntime_api import KerasONNXRuntimeModel
 
 
 class TFAccelerationOption(AccelerationOption):
-    def optimize(self, model, x=None, y=None,
+    def optimize(self, model, x=None, y=None, input_spec=None,
                  thread_num=None, logging=False, sample_size_for_pot=100):
         accelerator = self.get_accelerator()
         if self.get_precision() == "fp32":
@@ -44,6 +45,7 @@ class TFAccelerationOption(AccelerationOption):
             else:
                 acce_model = InferenceOptimizer.trace(model=model,
                                                       accelerator=accelerator,
+                                                      input_spec=input_spec,
                                                       thread_num=thread_num,
                                                       # remove output of openvino
                                                       logging=logging)
@@ -53,6 +55,7 @@ class TFAccelerationOption(AccelerationOption):
             acce_model = InferenceOptimizer.quantize(model=model,
                                                      precision=self.get_precision(),
                                                      accelerator=accelerator,
+                                                     input_spec=input_spec,
                                                      x=x,
                                                      y=y,
                                                      method=ort_method,
@@ -84,6 +87,7 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                  x: Union[tf.Tensor, np.ndarray, tf.data.Dataset],
                  y: Union[tf.Tensor, np.ndarray] = None,
                  validation_data: Optional[Dataset] = None,
+                 input_spec=None,
                  batch_size: int = 1,
                  metric: Optional[Metric] = None,
                  direction: str = "max",
@@ -91,7 +95,8 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                  logging: bool = False,
                  latency_sample_num: int = 100,
                  includes: Optional[List[str]] = None,
-                 excludes: Optional[List[str]] = None) -> None:
+                 excludes: Optional[List[str]] = None,
+                 output_filename: Optional[str] = None) -> None:
         '''
         This function will give all available inference acceleration methods a try
         and record the latency, accuracy and model instance inside the Optimizer for
@@ -117,6 +122,9 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                   If x is a dataset, y will be ignored (since targets will be obtained from x).
         :param validation_data: (optional) An unbatched tf.data.Dataset object for accuracy
                evaluation. This is only needed when users care about the possible accuracy drop.
+        :param input_spec: A (tuple or list of) tf.TensorSpec or numpy array defining the
+                           shape/dtype of the input when using 'onnxruntime' accelerator.
+                           It will be ignored if accelerator is 'openvino'.
         :param metric: (optional) A tensorflow.keras.metrics.Metric object which is used for
                calculating accuracy.
         :param direction: (optional) A string that indicates the higher/lower
@@ -133,18 +141,13 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                will be automatically add to includes.
         :param excludes: (optional) a list of acceleration methods that will be excluded from the
                search. "original" will be ignored in the excludes.
+        :param output_filename: (optional) a string filename is used to specify the file which the
+               optimized table will be writed. The default is None which means don't write to file.
         '''
         # check if model is a nn.Module or inherited from a nn.Module
         invalidInputError(isinstance(model, Model), "model should be a Keras Model.")
         invalidInputError(direction in ['min', 'max'],
                           "Only support direction 'min', 'max'.")
-        invalidInputError(y is not None or isinstance(x, tf.data.Dataset),
-                          "y can be omitted only when x is a Dataset which returns \
-                              tuples of (inputs, targets)")
-
-        if not isinstance(model, NanoModel):
-            # turn model into NanoModel to obtain trace and quantize method
-            model = NanoModel(inputs=model.inputs, outputs=model.outputs)
 
         # get the available methods whose dep is met
         available_dict: Dict =\
@@ -174,8 +177,8 @@ class InferenceOptimizer(BaseInferenceOptimizer):
         if isinstance(x, Dataset):
             batched_training_dataset = x.batch(batch_size)
             input_sample = next(iter(batched_training_dataset))
-            # TODO: how to obtain input from output of training_dataset
-            input_sample = input_sample[:-1]
+            if isinstance(input_sample, (list, tuple)) and len(input_sample) > 1:
+                input_sample = input_sample[:-1]
         else:
             input_sample = tf.convert_to_tensor(x[:batch_size])
 
@@ -212,11 +215,12 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                     acce_model = option.optimize(model=model,
                                                  x=x,
                                                  y=y,
+                                                 input_spec=input_spec,
                                                  thread_num=thread_num,
                                                  logging=logging,
                                                  sample_size_for_pot=sample_size_for_pot)
-                except Exception as e:
-                    print(e)
+                except Exception:
+                    traceback.print_exc()
                     result_map[method]["status"] = "fail to convert"
                     print(f"----------Failed to convert to {method}----------")
                     continue
@@ -232,8 +236,8 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                     if status is False and method != "original":
                         result_map[method]["status"] = "early stopped"
                         continue
-                except Exception as e:
-                    print(e)
+                except Exception:
+                    traceback.print_exc()
                     result_map[method]["status"] = "fail to forward"
                     print(f"----------{method} failed to forward----------")
                     continue
@@ -242,7 +246,9 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                     # here we suppose trace don't change accuracy,
                     # so we jump it to reduce time cost of optimize
                     if precision == "fp32" and method != "original":
-                        result_map[method]["accuracy"] = "not recomputed"
+                        _accuracy = result_map["original"]["accuracy"]
+                        _accuracy = round(_accuracy, 3)
+                        result_map[method]["accuracy"] = str(_accuracy) + '*'
                     else:
                         if method == "original":
                             # test whether metric works
@@ -250,8 +256,8 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                                 result_map[method]["accuracy"] =\
                                     _accuracy_calculate_helper(acce_model, metric,
                                                                batched_validation_data)
-                            except Exception as e:
-                                print(e)
+                            except Exception:
+                                traceback.print_exc()
                                 self._calculate_accuracy = False
                         else:
                             result_map[method]["accuracy"] =\
@@ -269,10 +275,17 @@ class InferenceOptimizer(BaseInferenceOptimizer):
 
         self._optimize_result = format_optimize_result(self.optimized_model_dict,
                                                        self._calculate_accuracy)
+        if self._calculate_accuracy:
+            # only show this line when there is accuracy data
+            self._optimize_result += "* means we assume the metric value of the traced "\
+                "model does not change, so we don't recompute metric value to save time.\n"
         # save time cost to self._optimize_result
         time_cost = time.perf_counter() - start_time
         time_cost_str = f"Optimization cost {time_cost:.1f}s in total."
         self._optimize_result += time_cost_str
+        if output_filename is not None:
+            with open(output_filename, "w") as f:
+                f.write(self._optimize_result)
         print(self._optimize_result)
         print("===========================Stop Optimization===========================")
 
@@ -308,10 +321,10 @@ class InferenceOptimizer(BaseInferenceOptimizer):
             final_openvino_option = {"INFERENCE_PRECISION_HINT": "f32"}
             if openvino_config is not None:
                 final_openvino_option.update(openvino_config)
-            return KerasOpenVINOModel(model,
-                                      thread_num=thread_num,
-                                      config=final_openvino_option,
-                                      logging=logging)
+            result = KerasOpenVINOModel(model,
+                                        thread_num=thread_num,
+                                        config=final_openvino_option,
+                                        logging=logging)
         elif accelerator == 'onnxruntime':
             if onnxruntime_session_options is None:
                 import onnxruntime
@@ -319,9 +332,11 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                 if thread_num is not None:
                     onnxruntime_session_options.intra_op_num_threads = thread_num
                     onnxruntime_session_options.inter_op_num_threads = thread_num
-            return KerasONNXRuntimeModel(model, input_spec, onnxruntime_session_options)
+            result = KerasONNXRuntimeModel(model, input_spec, onnxruntime_session_options)
         else:
             invalidInputError(False, "Accelerator {} is invalid.".format(accelerator))
+        patch_compiled(result, model)
+        return patch_attrs(result, model)
 
     @staticmethod
     def quantize(model: Model,
@@ -329,6 +344,7 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                  y: Union[tf.Tensor, np.ndarray] = None,
                  precision: str = 'int8',
                  accelerator: Optional[str] = None,
+                 input_spec=None,
                  metric: Optional[Metric] = None,
                  accuracy_criterion: Optional[dict] = None,
                  approach: str = 'static',
@@ -368,6 +384,9 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                                 supported type: 'int8', defaults to 'int8'.
         :param accelerator:     Use accelerator 'None', 'onnxruntime', 'openvino', defaults to None.
                                 None means staying in tensorflow.
+        :param input_spec: A (tuple or list of) tf.TensorSpec or numpy array defining the
+                           shape/dtype of the input when using 'onnxruntime' accelerator.
+                           It will be ignored if accelerator is 'openvino'.
         :param metric:          A tensorflow.keras.metrics.Metric object for evaluation.
         :param accuracy_criterion:  Tolerable accuracy drop.
                                     accuracy_criterion = {'relative': 0.1, 'higher_is_better': True}
@@ -417,9 +436,18 @@ class InferenceOptimizer(BaseInferenceOptimizer):
         :return:            A TensorflowBaseModel for INC. If there is no model found, return None.
         """
         invalidInputError(approach == 'static', "Only 'static' approach is supported now.")
-        invalidInputError(y is not None or isinstance(x, tf.data.Dataset),
-                          "y can be omitted only when x is a Dataset which returns \
-                              tuples of (inputs, targets)")
+
+        if not isinstance(x, tf.data.Dataset) and y is None:
+            # fake label to make quantization work
+            y = range(len(x))
+        if isinstance(x, tf.data.Dataset):
+            batch_data = next(iter(x))
+            if isinstance(batch_data, tf.Tensor) or \
+                    isinstance(batch_data, tuple) and len(batch_data) == 1:
+                # fake label to make quantization work
+                y = range(len(x))    # type: ignore
+                y = tf.data.Dataset.from_tensor_slices(y)
+                x = tf.data.Dataset.zip((x, y))
         if accelerator is None:
             if isinstance(x, tf.data.Dataset):
                 calib_dataset = x
@@ -427,17 +455,17 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                 calib_dataset = tf.data.Dataset.from_tensor_slices((x, y))
             if batch:
                 calib_dataset = calib_dataset.batch(batch)
-            return inc_quantzie(model, dataloader=calib_dataset,
-                                metric=metric,
-                                framework='tensorflow',
-                                conf=conf,
-                                approach=approach,
-                                tuning_strategy=tuning_strategy,
-                                accuracy_criterion=accuracy_criterion,
-                                timeout=timeout,
-                                max_trials=max_trials,
-                                inputs=inputs,
-                                outputs=outputs)
+            result = inc_quantzie(model, dataloader=calib_dataset,
+                                  metric=metric,
+                                  framework='tensorflow',
+                                  conf=conf,
+                                  approach=approach,
+                                  tuning_strategy=tuning_strategy,
+                                  accuracy_criterion=accuracy_criterion,
+                                  timeout=timeout,
+                                  max_trials=max_trials,
+                                  inputs=inputs,
+                                  outputs=outputs)
         elif accelerator == 'openvino':
             from bigdl.nano.deps.openvino.tf.model import KerasOpenVINOModel    # type: ignore
             if isinstance(model, KerasOpenVINOModel):    # type: ignore
@@ -448,6 +476,7 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                                                           thread_num=thread_num,
                                                           logging=logging,
                                                           openvino_config=openvino_config)
+            openvino_model = openvino_model.target_obj
             if metric:
                 if not isinstance(accuracy_criterion, dict):
                     accuracy_criterion = {'relative': 0.99, 'higher_is_better': True}
@@ -456,16 +485,16 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                 maximal_drop = accuracy_criterion.get(drop_type, None)
             else:
                 drop_type, higher_is_better, maximal_drop = None, None, None
-            return openvino_model.pot(x=x,  # type: ignore
-                                      y=y,
-                                      metric=metric,
-                                      higher_better=higher_is_better,
-                                      drop_type=drop_type,
-                                      maximal_drop=maximal_drop,
-                                      max_iter_num=max_trials,
-                                      sample_size=sample_size,
-                                      config=openvino_config,
-                                      thread_num=thread_num)
+            result = openvino_model.pot(x=x,  # type: ignore
+                                        y=y,
+                                        metric=metric,
+                                        higher_better=higher_is_better,
+                                        drop_type=drop_type,
+                                        maximal_drop=maximal_drop,
+                                        max_iter_num=max_trials,
+                                        sample_size=sample_size,
+                                        config=openvino_config,
+                                        thread_num=thread_num)
         elif accelerator == 'onnxruntime':
             # convert tensorflow model to onnx model
             from bigdl.nano.deps.onnxruntime.tensorflow.tensorflow_onnxruntime_model \
@@ -474,7 +503,8 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                 onnx_model = model
             else:
                 onnx_model = InferenceOptimizer.trace(model=model, accelerator='onnxruntime',
-                                                      thread_num=thread_num)
+                                                      input_spec=input_spec, thread_num=thread_num)
+            onnx_model = onnx_model.target_obj
 
             # trace onnx model
             method_map = {
@@ -483,21 +513,26 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                 None: 'onnxrt_qlinearops'  # default
             }
             framework = method_map.get(method, None)
-            return inc_quantzie(onnx_model, dataloader=(x, y),
-                                metric=metric,
-                                framework=framework,
-                                conf=conf,
-                                approach=approach,
-                                tuning_strategy=tuning_strategy,
-                                accuracy_criterion=accuracy_criterion,
-                                timeout=timeout,
-                                max_trials=max_trials,
-                                inputs=inputs,
-                                outputs=outputs,
-                                onnx_option='tensorflow',
-                                onnxruntime_session_options=onnxruntime_session_options)
+            result = inc_quantzie(onnx_model, dataloader=(x, y),
+                                  metric=metric,
+                                  framework=framework,
+                                  conf=conf,
+                                  approach=approach,
+                                  tuning_strategy=tuning_strategy,
+                                  accuracy_criterion=accuracy_criterion,
+                                  timeout=timeout,
+                                  max_trials=max_trials,
+                                  inputs=inputs,
+                                  outputs=outputs,
+                                  onnx_option='tensorflow',
+                                  onnxruntime_session_options=onnxruntime_session_options)
+            result._inputs_dtypes = onnx_model._inputs_dtypes
+            result._default_kwargs = onnx_model._default_kwargs
+            result._call_fn_args_backup = onnx_model._call_fn_args_backup
         else:
             invalidInputError(False, "Accelerator {} is invalid.".format(accelerator))
+        patch_compiled(result, model)
+        return patch_attrs(result, model)
 
 
 def _accuracy_calculate_helper(model, metric, data):

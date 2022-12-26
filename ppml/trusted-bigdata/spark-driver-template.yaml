@@ -50,7 +50,7 @@ spec:
       #   subPath: encrypted-fsd
       # - name: nfs-storage
       #   mountPath: /ppml/encrypted_keys
-      #   subPath: test_key
+      #   subPath: test_keys
     resources:
       requests:
         cpu: 8

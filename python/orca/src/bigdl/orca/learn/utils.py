@@ -362,7 +362,7 @@ def process_xshards_of_pandas_dataframe(data, feature_cols, label_cols=None, val
                                         mode=None):
     data = transform_to_shard_dict(data, feature_cols, label_cols)
     if mode == "fit":
-        if validation_data:
+        if validation_data is not None:
             invalidInputError(validation_data._get_class_name() == 'pandas.core.frame.DataFrame',
                               "train data and validation data should be both XShards of Pandas"
                               " DataFrame")
@@ -374,7 +374,6 @@ def process_xshards_of_pandas_dataframe(data, feature_cols, label_cols=None, val
 
 def _dataframe_to_xshards(data, feature_cols, label_cols=None,
                           accept_str_col=False, shard_size=None):
-    from bigdl.orca import OrcaContext
     schema = data.schema
     numpy_rdd = data.rdd.map(lambda row: convert_row_to_numpy(row,
                                                               schema,

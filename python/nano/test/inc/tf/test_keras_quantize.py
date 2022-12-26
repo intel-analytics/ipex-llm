@@ -66,3 +66,28 @@ class TestModelQuantize(TestCase):
 
         q_model = InferenceOptimizer.quantize(model, x=train_examples, y=train_labels)
         assert q_model(train_examples[0:10]).shape == (10, 10)
+
+    def test_model_quantize_with_only_x(self):
+        model = MobileNetV2(weights=None, input_shape=[40, 40, 3], classes=10)
+        model = Model(inputs=model.inputs, outputs=model.outputs)
+        # test numpy array
+        train_examples = np.random.random((100, 40, 40, 3))
+        q_model = InferenceOptimizer.quantize(model, x=train_examples)
+        assert q_model(train_examples[0:10]).shape == (10, 10)
+
+        # test tf tensor
+        train_examples = tf.convert_to_tensor(train_examples)
+        q_model = InferenceOptimizer.quantize(model, x=train_examples)
+        assert q_model(train_examples[0:10]).shape == (10, 10)
+
+        # test dataset with only x (from_tensor_slices)
+        train_examples = np.random.random((100, 40, 40, 3))
+        train_dataset = tf.data.Dataset.from_tensor_slices(train_examples)
+        q_model = InferenceOptimizer.quantize(model, x=train_examples)
+        assert q_model(train_examples[0:10]).shape == (10, 10)
+
+        # test dataset with only x (from_tensor)
+        train_examples = np.random.random((1, 40, 40, 3))
+        train_dataset = tf.data.Dataset.from_tensors(train_examples)
+        q_model = InferenceOptimizer.quantize(model, x=train_examples)
+        assert q_model(train_examples).shape == (1, 10)

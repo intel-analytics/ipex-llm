@@ -476,7 +476,7 @@ class TFRunner:
             if replaced_log_dir and os.path.exists(replaced_log_dir):
                 shutil.rmtree(replaced_log_dir)
 
-        return [stats]
+        return stats
 
     def predict(self, data_creator, batch_size, verbose, steps, callbacks, data_config):
         config = copy.copy(self.config)

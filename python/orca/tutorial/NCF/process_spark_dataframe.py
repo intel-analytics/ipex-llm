@@ -43,6 +43,7 @@ def read_data(data_dir):
             StructField('category', StringType(), False)
         ]
     )
+    print("Loading data...")
     # Need spark3 to support delimiter with more than one character.
     df_rating = spark.read.csv(os.path.join(data_dir, 'ratings.dat'),
                                sep="::", schema=schema, header=False)
@@ -90,7 +91,7 @@ def string_index(df, col):
     return df, embed_dim
 
 
-def num_scale(df, col):
+def min_max_scale(df, col):
     assembler = VectorAssembler(inputCols=[col], outputCol=col + '_vec')
     scaler = MinMaxScaler(inputCol=col + '_vec', outputCol=col + '_scaled')
     pipeline = Pipeline(stages=[assembler, scaler])
@@ -100,7 +101,7 @@ def num_scale(df, col):
     return df
 
 
-def add_feature(df, df_user, df_item, sparse_features, dense_features):
+def merge_features(df, df_user, df_item, sparse_features, dense_features):
     sparse_feats_input_dims = []
     for i in sparse_features:
         if i in df_user.columns:
@@ -110,9 +111,9 @@ def add_feature(df, df_user, df_item, sparse_features, dense_features):
         sparse_feats_input_dims.append(embed_dim)
     for i in dense_features:
         if i in df_user.columns:
-            df_user = num_scale(df_user, i)
+            df_user = min_max_scale(df_user, i)
         else:
-            df_item = num_scale(df_item, i)
+            df_item = min_max_scale(df_item, i)
     df_feat = df.join(df_user, 'user', "inner")
     df_feat = df_feat.join(df_item, 'item', "inner")
     return df_feat, sparse_feats_input_dims
@@ -128,8 +129,8 @@ def prepare_data(data_dir, neg_scale=4):
 
     df_rating = generate_neg_sample(df_rating, item_num, neg_scale=neg_scale)
     df, sparse_feats_input_dims = \
-        add_feature(df_rating, df_user, df_item, sparse_features, dense_features)
-    # Occupation is already indexed.
+        merge_features(df_rating, df_user, df_item, sparse_features, dense_features)
+    # occupation is already indexed.
     sparse_features.append('occupation')
     occupation_num = df.agg({'occupation': 'max'}).collect()[0]['max(occupation)'] + 1
     sparse_feats_input_dims.append(occupation_num)
@@ -146,7 +147,6 @@ if __name__ == "__main__":
     from bigdl.orca import init_orca_context, stop_orca_context
 
     sc = init_orca_context()
-
     train_data, test_data, user_num, item_num, sparse_feats_input_dims, num_dense_feats, \
         feature_cols, label_cols = prepare_data("./ml-1m")
     train_data.write.parquet('./train_dataframe', mode='overwrite')

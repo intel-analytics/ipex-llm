@@ -1,0 +1,58 @@
+name: Nano Nightly Test
+
+# Controls when the action will run.
+on:
+  schedule:
+    - cron: '00 01 * * *' # GMT time, 01:00 GMT == 09:00 China
+  pull_request:
+    branches: [ main ]
+    paths:
+      - '.github/actions/nano/setup-pytorch-env/action.yml'
+      - '.github/actions/nano/pytorch-test/action.yml'
+      - '.github/actions/nano/remove-pytorch-env/action.yml'
+      - '.github/actions/nano/setup-tensorflow-env/action.yml'
+      - '.github/actions/nano/tensorflow-test/action.yml'
+      - '.github/actions/nano/remove-tensorflow-env/action.yml'
+      - '.github/workflows/nano-nightly-test.yml'
+  # Allows you to run this workflow manually from the Actions tab
+  workflow_dispatch:
+
+# A workflow run is made up of one or more jobs that can run sequentially or in parallel
+jobs:
+  Nano-PyTorch-UT-Test:
+    runs-on: [ "ubuntu-20.04" ]
+
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.7.10", "3.8", "3.9"]
+
+    steps:
+    - uses: actions/checkout@v3
+    - name: Set up Nano PyTorch Env
+      uses: ./.github/actions/nano/setup-pytorch-env
+      with:
+        python-version: ${{ matrix.python-version }}
+    - name: Run Nano PyTorch Test
+      uses: ./.github/actions/nano/pytorch-test
+    - name: Remove Nano PyTorch Env
+      uses: ./.github/actions/nano/remove-pytorch-env
+
+  Nano-Tensorflow-UT-Test:
+    runs-on: [ "ubuntu-20.04" ]
+
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.7.10", "3.8", "3.9"]
+
+    steps:
+    - uses: actions/checkout@v3
+    - name: Set up Nano Tensorflow Env
+      uses: ./.github/actions/nano/setup-tensorflow-env
+      with:
+        python-version: ${{ matrix.python-version }}
+    - name: Run Nano Tensorflow Test
+      uses: ./.github/actions/nano/tensorflow-test
+    - name: Remove Nano Tensorflow Env
+      uses: ./.github/actions/nano/remove-tensorflow-env
