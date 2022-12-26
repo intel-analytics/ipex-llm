@@ -790,6 +790,9 @@ class TorchRunner(BaseRunner):
             fn_name (str): The function name in each hook to be called, such as
                 "on_iter_begin".
         """
+        if not call_backs:
+            return
+
         for hook in call_backs:
             getattr(hook, fn_name)(self)
 
