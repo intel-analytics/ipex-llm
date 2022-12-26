@@ -57,7 +57,6 @@ object App extends Supportive {
           case None => argumentsParser.failure("miss args, please see the usage info"); null
         }
       }
-      logger.info("Servable Manager Load Success!")
       val route = timing("initialize http route")() {
         path("") {
           timing("welcome")(overallRequestTimer) {
