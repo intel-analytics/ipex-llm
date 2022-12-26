@@ -22,19 +22,14 @@ from typing import Any, Union, Callable
 import torch
 from torch.nn import Module
 from torch.optim import Optimizer, LBFGS
-from bigdl.nano.pytorch.utils import TORCH_VERSION_LESS_1_12
 
 import pytorch_lightning as pl
 from pytorch_lightning.strategies import SingleDeviceStrategy
 from pytorch_lightning.accelerators.accelerator import Accelerator
 from pytorch_lightning.plugins.precision import PrecisionPlugin
-from pytorch_lightning.utilities import AMPType
 
 from bigdl.nano.utils.log4Error import invalidInputError
-import intel_extension_for_pytorch as ipex
-from intel_extension_for_pytorch.optim._optimizer_utils import IPEX_FUSED_OPTIMIZER_LIST
-
-from .ipex_accelerator import IPEXAccelerator
+from bigdl.nano.deps.ipex.ipex_api import ipex_optimize
 
 
 class IPEXStrategy(SingleDeviceStrategy):
@@ -44,7 +39,7 @@ class IPEXStrategy(SingleDeviceStrategy):
 
     def __init__(
         self,
-        accelerator: Accelerator = IPEXAccelerator(),
+        accelerator: Accelerator = None,
         precision_plugin: PrecisionPlugin = PrecisionPlugin(),
         dtype=None,
     ) -> None:
@@ -70,12 +65,7 @@ class IPEXStrategy(SingleDeviceStrategy):
         """
         super().setup(trainer)
 
-        if len(self.optimizers) == 0:
-            ipex.optimize(self.model, inplace=True, dtype=self.dtype)
-        elif len(self.optimizers) == 1:
-            ipex.optimize(self.model, optimizer=self.optimizers[0], inplace=True, dtype=self.dtype)
-        else:
-            invalidInputError(False, "Ipex does not support more than one optimizers.")
+        ipex_optimize(self.model, optimizers=self.optimizers, inplace=True, dtype=self.dtype)
 
 
 class IPEXBF16Precision(PrecisionPlugin):
@@ -95,6 +85,8 @@ class IPEXBF16Precision(PrecisionPlugin):
                        optimizer_idx: int,
                        closure: Callable[[], Any],
                        **kwargs: Any) -> Any:
+        """Bf16 optimizer step."""
+        from intel_extension_for_pytorch.optim._optimizer_utils import IPEX_FUSED_OPTIMIZER_LIST
         """Hook to run the optimizer step."""
         if type(optimizer) in IPEX_FUSED_OPTIMIZER_LIST:
             return super().optimizer_step(model, optimizer, optimizer_idx, closure, **kwargs)

@@ -26,7 +26,7 @@ from bigdl.orca.learn.tf2 import Estimator
 
 
 # Step 1: Init Orca Context
-init_orca_context(memory='4g')
+init_orca_context(cluster_mode="local")
 
 
 # Step 2: Read and process data using Spark DataFrame
@@ -71,7 +71,7 @@ est = Estimator.from_keras(model_creator=model_creator,
 batch_size = 10240
 train_steps = math.ceil(len(train_data) / batch_size)
 val_steps = math.ceil(len(test_data) / batch_size)
-tf_callback = tf.keras.callbacks.TensorBoard(log_dir="./log")
+callbacks = [tf.keras.callbacks.TensorBoard(log_dir="./log")]
 
 est.fit(train_data,
         epochs=2,
@@ -79,7 +79,7 @@ est.fit(train_data,
         feature_cols=feature_cols,
         label_cols=label_cols,
         steps_per_epoch=train_steps,
-        callbacks=[tf_callback])
+        callbacks=callbacks)
 
 
 # Step 5: Distributed evaluation of the trained model

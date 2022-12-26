@@ -28,7 +28,7 @@ from bigdl.orca.learn.metrics import Accuracy, Precision, Recall
 
 
 # Step 1: Init Orca Context
-sc = init_orca_context()
+sc = init_orca_context(cluster_mode="local")
 
 
 # Step 2: Read and process data using Orca XShards
