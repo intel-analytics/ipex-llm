@@ -20,7 +20,7 @@ import numpy as np
 from functools import wraps
 
 
-def tf_bf16_nano(func):
+def nano_bf16(func):
     """A decorator to realize mixed precision on customized training loop."""
     # todo check the func signature
     @wraps(func)

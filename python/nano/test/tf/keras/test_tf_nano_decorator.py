@@ -16,7 +16,7 @@
 import tensorflow as tf
 from tensorflow import keras
 from tensorflow.keras import layers
-from bigdl.nano.tf.keras import Sequential, tf_bf16_nano
+from bigdl.nano.tf.keras import Sequential, nano_bf16
 
 
 def test_tf_nano_bf16_decorator():
@@ -31,7 +31,7 @@ def test_tf_nano_bf16_decorator():
         def loss(self, y, pred):
             return tf.losses.mean_squared_error(y, pred)
 
-        @tf_bf16_nano
+        @nano_bf16
         @tf.function
         def train(self, x, y):
             with tf.GradientTape() as tape:
