@@ -71,7 +71,7 @@ object AttestationCLI {
               .action((x, c) => c.copy(userReport = x))
             opt[Boolean]('s', "httpsEnabled")
               .text("httpsEnabled")
-              .action((x, c) => c.copy(httpsEnabled = x))      
+              .action((x, c) => c.copy(httpsEnabled = x))
             opt[String]('O', "quoteType")
               .text("quoteType, default is gramine, occlum can be chose")
               .action((x, c) => c.copy(quoteType = x))
