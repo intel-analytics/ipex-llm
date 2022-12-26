@@ -116,54 +116,52 @@ imshow()
 
 
 # Step 3: Define the model, optimizer and loss
-
 # Here, ConvNet is as a fixed feature extractor. We will freeze the weights for all of the network except that of
 # the final fully connected layer. This last fully connected layer is
 # replaced with a new one with random weights and only this layer is trained.
-class FixedConvNetModel:
-    def __init__(self):
-        return
 
-    # Create the model
-    @staticmethod
-    def model_creator(config):
-        model = torchvision.models.resnet18(pretrained=True)
-        # Freeze all the network except the final layer.
-        for param in model.parameters():
-            param.requires_grad = False
-        # Parameters of newly constructed modules have requires_grad=True by default
-        num_ftrs = model.fc.in_features
-        model.fc = nn.Linear(num_ftrs, 2)
-        model = model.to(config['device'])
-        return model
 
-    # Create the optimizer
-    # Observe that only parameters of final layer are being optimized as
-    # opposed to before.
-    @staticmethod
-    def optimizer_creator(model, config):
-        return optim.SGD(model.fc.parameters(), lr=0.001, momentum=0.9)
+# Create the model
+def model_creator(config):
+    model = torchvision.models.resnet18(pretrained=True)
+    # Freeze all the network except the final layer.
+    for param in model.parameters():
+        param.requires_grad = False
+    # Parameters of newly constructed modules have requires_grad=True by default
+    num_ftrs = model.fc.in_features
+    model.fc = nn.Linear(num_ftrs, 2)
+    return model
 
-    # Decay LR by a factor of 0.1 every 7 epochs
-    @staticmethod
-    def scheduler_creator(optimizer, config):
-        return lr_scheduler.StepLR(optimizer, step_size=7, gamma=0.1)
+
+# Create the optimizer
+# Observe that only parameters of final layer are being optimized as
+# opposed to before.
+def optimizer_creator(model, config):
+    return optim.SGD(model.fc.parameters(), lr=config['lr'], momentum=config['momentum'])
+
+
+# Decay LR by a factor of gamma every step_size epochs
+def scheduler_creator(optimizer, config):
+    return lr_scheduler.StepLR(optimizer, step_size=config['step_size'], gamma=config['gamma'])
 
 
 # Step 4: Finetune with Orca PyTorch Estimator
 backend = "ray"
-device = torch.device("cpu")
 
-est = Estimator.from_torch(model=FixedConvNetModel.model_creator,
-                           optimizer=FixedConvNetModel.optimizer_creator,
+est = Estimator.from_torch(model=model_creator,
+                           optimizer=optimizer_creator,
                            loss=nn.CrossEntropyLoss(),
                            metrics=[Accuracy()],
-                           scheduler_creator=FixedConvNetModel.scheduler_creator,
+                           scheduler_creator=scheduler_creator,
                            scheduler_step_freq="epoch",
                            use_tqdm=True,
                            backend=backend,
                            config={'data_dir': data_dir,
-                                   'device': device})
+                                   'lr': 0.001,
+                                   'momentum': 0.9,
+                                   'step_size': 7,
+                                   'gamma': 0.1
+                                   })
 est.fit(data=train_loader_func, epochs=5,
         batch_size=4, validation_data=test_loader_func)
 
@@ -172,7 +170,7 @@ est.fit(data=train_loader_func, epochs=5,
 result = est.evaluate(data=test_loader_func, batch_size=4)
 print('Evaluation results:')
 for r in result:
-    print(r, ":", result[r])
+    print("{}: {}".format(r, result[r]))
 
 
 # Step 6: Save the trained PyTorch model
@@ -189,9 +187,6 @@ def visualize_model(model, num_images=6):
 
     with torch.no_grad():
         for i, (inputs, labels) in enumerate(test_loader):
-            inputs = inputs.to(device)
-            labels = labels.to(device)
-
             outputs = model(inputs)
             _, preds = torch.max(outputs, 1)
 
