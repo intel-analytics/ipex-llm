@@ -63,15 +63,15 @@ RUN env DEBIAN_FRONTEND=noninteractive apt-get update && \
     patch /usr/local/lib/python3.7/dist-packages/datasets/utils/filelock.py /filelock.patch && \
     pip3 install --no-cache markupsafe==2.0.1 pyarrow==6.0.1 && \
     patch /ppml/bash.manifest.template /bash.manifest.template.patch && \
-# Install bigdl-ppml lib, TODO: change this before merge
+# Install bigdl-ppml lib
     cd /ppml/ && \
-    git clone https://github.com/gc-fu/BigDL.git && \
+    git clone https://github.com/intel-analytics/BigDL.git && \
     cd BigDL && \
-    git checkout add-ppml-pytorch-encryption && \
     mkdir -p /ppml/bigdl-ppml/ && \
     cp -r /ppml/BigDL/python/ppml/src/ /ppml/bigdl-ppml && \
-    rm -rf /ppml/BigDL
+    rm -rf /ppml/BigDL && \
+    cd /ppml
 
-ENV PYTHONPATH        ${PYTHONPATH}:/ppml/bigdl-ppml
+ENV PYTHONPATH        ${PYTHONPATH}:/ppml/bigdl-ppml/src
 
 ENTRYPOINT [ "/opt/entrypoint.sh" ]
