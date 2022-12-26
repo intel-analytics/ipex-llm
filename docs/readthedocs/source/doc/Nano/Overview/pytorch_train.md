@@ -189,8 +189,15 @@ You can just set the `num_processes` parameter in the `Trainer` or `TorchNano` c
             train(model, optimizer, train_loader, ...)
 
 ```
+```eval_rst
+.. note::
+   
+   The effective batch size in multi-instance training is the ``batch_size`` in your ``dataloader`` times ``num_processes``. So, the number of iterations of each epoch will be reduced ``num_processes`` fold. To achieve the same effect as single instance training, a common practice to compensate is to gradually increase the learning rate to ``num_processes`` times. 
 
-Note that the effective batch size in multi-instance training is the `batch_size` in your `dataloader` times `num_processes` so the number of iterations of each epoch will be reduced `num_processes` fold. A common practice to compensate for that is to gradually increase the learning rate to `num_processes` times. You can find more details of this trick in this [paper](https://arxiv.org/abs/1706.02677) published by Facebook.
+   BigDL-Nano supports this practice by default through ``auto_lr=Ture``, which will scale the learning rate linearly by ``num_processes`` times.
+
+   To get more details about this 'learning rate warmup' trick, you could refer to `this paper <https://arxiv.org/abs/1706.02677>`_ published by Facebook.
+```
 
 ### BFloat16 Mixed Precision
 BFloat16 Mixed Precison combines BFloat16 and FP32 during training, which could lead to increased performance and reduced memory usage. Compared to FP16 mixed precison, BFloat16 mixed precision has better numerical stability.
