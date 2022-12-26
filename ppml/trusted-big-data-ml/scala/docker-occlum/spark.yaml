@@ -1,0 +1,48 @@
+includes:
+  - base.yaml
+targets:
+  - target: /
+    copy:
+      - dirs:
+          # python examples
+          - /opt/py-examples
+          # scala files
+          - /opt/spark/examples
+  # JVM and class file
+  - target: /usr/lib/jvm
+    copy:
+      - dirs:
+          - /usr/lib/jvm/java-8-openjdk-amd64
+  # K8s secret
+  # - target: /var/run
+  #   copy:
+  #     - dirs:
+  #       - /var/run/secrets
+  # extra libs
+  - target: /opt/occlum/glibc/lib
+    copy:
+      - files:
+          - /opt/libhadoop.so
+          - /lib/x86_64-linux-gnu/libnss_dns.so.2
+          - /lib/x86_64-linux-gnu/libnss_files.so.2
+  # Prepare BigDL
+  - target: /bin
+    copy:
+      - dirs:
+          - $BIGDL_HOME/jars
+  # prepare spark
+  - target: /opt
+    copy:
+      - dirs:
+          - $SPARK_HOME
+          - /opt/spark-source
+  # etc files
+  - target: /etc
+    copy:
+      - dirs:
+          - /etc/java-8-openjdk
+          - /etc/ssl
+      - files:
+          - /etc/nsswitch.conf
+          - /etc/passwd
+          - /etc/group

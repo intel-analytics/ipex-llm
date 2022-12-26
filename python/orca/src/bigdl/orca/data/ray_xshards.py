@@ -110,7 +110,7 @@ def init_ray_if_not(redis_address, redis_password):
             ignore_reinit_error=True
         )
         if redis_password:
-            init_params["_redis_password"] = self.redis_password
+            init_params["_redis_password"] = redis_password
         if version.parse(ray.__version__) >= version.parse("1.4.0"):
             init_params["namespace"] = "az"
         ray.init(**init_params)
@@ -204,17 +204,14 @@ class RayXShards(XShards):
     def to_spark_xshards(self) -> "SparkXShards":
         from bigdl.orca.data import SparkXShards
         ray_ctx = OrcaRayContext.get()
-        sc = ray_ctx.sc
-        address = ray_ctx.redis_address
-        password = ray_ctx.redis_password
-        num_parts = self.num_partitions()
+        address = ray_ctx.redis_address  # type: ignore
+        password = ray_ctx.redis_password  # type: ignore
         partition2store = self.partition2store_name
         rdd = self.rdd.mapPartitionsWithIndex(
             lambda idx, _: get_from_ray(idx, address, password, partition2store))
 
         # the reason why we trigger computation here is to ensure we get the data
         # from ray before the RayXShards goes out of scope and the data get garbage collected
-        from pyspark.storagelevel import StorageLevel
         rdd = rdd.cache()
         result_rdd = rdd.map(lambda x: x)  # sparkxshards will uncache the rdd when gc
         spark_xshards = SparkXShards(result_rdd)
@@ -276,9 +273,8 @@ class RayXShards(XShards):
         list of ray object refs, otherwise return a list of ray objects. Defaults to be False,
         """
         invalidInputError(self.num_partitions() >= len(actors),
-                          f"Get number of partitions ({self.num_partitions()}) smaller than "
-                          f"number of actors ({len(actors)}). Please submit an issue to"
-                          f" BigDL.")
+                          f"Get the number of partitions ({self.num_partitions()}) smaller than "
+                          f"the number of workers ({len(actors)}).")
         assigned_partitions, _, _ = self.assign_partitions_to_actors(actors)
         result_refs = []
         for actor, part_ids in zip(actors, assigned_partitions):

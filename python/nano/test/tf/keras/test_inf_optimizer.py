@@ -15,18 +15,14 @@
 
 from unittest import TestCase
 import tensorflow as tf
-from tensorflow.keras import Model
-from bigdl.nano.tf.keras import Sequential
 from bigdl.nano.tf.keras import InferenceOptimizer
 import numpy as np
-from bigdl.nano.tf.keras import Model as NanoModel
 from tensorflow.keras.applications.resnet import ResNet50
 
 
 class TestInferencePipeline(TestCase):
     def test_optimize_nano_model_without_accuracy(self):
         model = ResNet50(weights=None, input_shape=[40, 40, 3], classes=10)
-        model = NanoModel(inputs=model.inputs, outputs=model.outputs)
         # prepare dataset
         train_examples = np.random.random((100, 40, 40, 3))
         train_labels = np.random.randint(0, 10, size=(100,))
@@ -34,7 +30,7 @@ class TestInferencePipeline(TestCase):
         # prepare optimizer
         opt = InferenceOptimizer()
         opt.optimize(model=model,
-                     training_data=train_dataset,
+                     x=train_dataset,
                      latency_sample_num=10,
                      thread_num=8)
         model = opt.get_best_model()
@@ -48,13 +44,12 @@ class TestInferencePipeline(TestCase):
         # prepare optimizer
         opt = InferenceOptimizer()
         opt.optimize(model=model,
-                     training_data=train_dataset,
+                     x=train_dataset,
                      latency_sample_num=10)
         model = opt.get_best_model()
 
     def test_optimize_nano_model_without_accuracy_large_batch(self):
         model = ResNet50(weights=None, input_shape=[40, 40, 3], classes=10)
-        model = NanoModel(inputs=model.inputs, outputs=model.outputs)
         # prepare dataset
         train_examples = np.random.random((100, 40, 40, 3))
         train_labels = np.random.randint(0, 10, size=(100,))
@@ -62,14 +57,13 @@ class TestInferencePipeline(TestCase):
         # prepare optimizer
         opt = InferenceOptimizer()
         opt.optimize(model=model,
-                     training_data=train_dataset,
+                     x=train_dataset,
                      batch_size=32,
                      latency_sample_num=10)
         model = opt.get_best_model()
 
     def test_optimize_model_with_accuracy(self):
         model = ResNet50(weights=None, input_shape=[40, 40, 3], classes=10)
-        model = NanoModel(inputs=model.inputs, outputs=model.outputs)
         # prepare dataset
         train_examples = np.random.random((100, 40, 40, 3))
         train_labels = np.random.randint(0, 10, size=(100,))
@@ -78,10 +72,59 @@ class TestInferencePipeline(TestCase):
         opt = InferenceOptimizer()
         from tensorflow.keras.metrics import CategoricalAccuracy
         opt.optimize(model=model,
-                     training_data=train_dataset,
+                     x=train_dataset,
                      validation_data=train_dataset, # for test
                      batch_size=32,
                      metric=CategoricalAccuracy(),
                      latency_sample_num=10)
         opt.summary()
+        model = opt.get_best_model()
+
+    def test_optimize_model_without_dataset(self):
+        model = ResNet50(weights=None, input_shape=[40, 40, 3], classes=10)
+
+        train_examples = np.random.random((100, 40, 40, 3))
+        train_labels = np.random.randint(0, 10, size=(100,))
+
+        opt = InferenceOptimizer()
+        opt.optimize(model=model,
+                     x=train_examples,
+                     y=train_labels,
+                     latency_sample_num=10,
+                     thread_num=8)
+        model = opt.get_best_model()
+
+    def test_optimize_model_with_only_x(self):
+        model = ResNet50(weights=None, input_shape=[40, 40, 3], classes=10)
+        # test numpy array
+        train_examples = np.random.random((100, 40, 40, 3))
+        opt = InferenceOptimizer()
+        opt.optimize(model=model,
+                     x=train_examples,
+                     y=None,
+                     latency_sample_num=10,
+                     thread_num=8)
+        model = opt.get_best_model()
+
+        # test tf tensor
+        model = ResNet50(weights=None, input_shape=[40, 40, 3], classes=10)
+        train_examples = tf.convert_to_tensor(train_examples)
+        opt = InferenceOptimizer()
+        opt.optimize(model=model,
+                     x=train_examples,
+                     y=None,
+                     latency_sample_num=10,
+                     thread_num=8)
+        model = opt.get_best_model()
+        
+        # test dataset with only x
+        model = ResNet50(weights=None, input_shape=[40, 40, 3], classes=10)
+        train_examples = np.random.random((100, 40, 40, 3))
+        train_dataset = tf.data.Dataset.from_tensor_slices(train_examples)
+        opt = InferenceOptimizer()
+        opt.optimize(model=model,
+                     x=train_examples,
+                     y=None,
+                     latency_sample_num=10,
+                     thread_num=8)
         model = opt.get_best_model()

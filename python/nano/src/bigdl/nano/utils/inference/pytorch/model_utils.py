@@ -24,12 +24,141 @@ from bigdl.nano.utils.inference.pytorch.model import AcceleratedLightningModule
 
 
 def get_forward_args(model):
+    '''
+    This function is to get all the arguments(excepts *args and **kwargs)
+    It will return a list of arg name
+    E.g.
+    def forward(self, a, b=1, c: int = 3, *args, **kwargs):
+        pass
+    it will return ['a', 'b', 'c']
+    '''
     forward_args = inspect.getfullargspec(model.forward).args[1:]
     if isinstance(model, LightningModule):
         if not isinstance(model, AcceleratedLightningModule):
             # forward param list for compiled model
             forward_args = get_forward_args(model.model)
     return forward_args
+
+
+def get_forward_defaults(model):
+    '''
+    This function is to get all the defaults
+    It will return a list of default values
+    E.g.
+    def forward(self, a, b=1, c: int = 3, *args, **kwargs):
+        pass
+    it will return (1, 3)
+    '''
+    forward_defaults = inspect.getfullargspec(model.forward).defaults
+    if isinstance(model, LightningModule):
+        if not isinstance(model, AcceleratedLightningModule):
+            # forward param list for compiled model
+            forward_defaults = get_forward_defaults(model.model)
+    return forward_defaults
+
+
+def get_forward_annotations(model):
+    '''
+    This function is to get all the annotations
+    It will return a dict of {args: annotations}
+    E.g.
+    def forward(self, a, b=1, c: int = 3, *args, **kwargs):
+        pass
+    it will return {'c': <class 'int'>}
+    '''
+    forward_annotations = inspect.getfullargspec(model.forward).annotations
+    if isinstance(model, LightningModule):
+        if not isinstance(model, AcceleratedLightningModule):
+            # forward param list for compiled model
+            forward_annotations = get_forward_annotations(model.model)
+    return forward_annotations
+
+
+def get_conditional_args(model, include=(torch.Tensor,), exclude=()):
+    '''
+    This function will return all the parameters that (might) in `condition`
+    It will return a list or tensor args name
+    E.g.
+    def forward(self, a, b=1, c: int = 3, *args, **kwargs):
+        pass
+    it will return ['a'] if include=(torch.Tensor)
+
+    :param include: tuple of type or "all".
+    :param exclude: tuple of type or "all".
+
+    Note: "all" means all the types are allowed or disallowed, except those
+          stated in the opposite parameter.
+    Note: exclude has higher priority if conflict instruction is provided
+    '''
+    include_all = True if include == "all" else False
+    exclude_all = True if exclude == "all" else False
+
+    forward_args = get_forward_args(model)
+    forward_defaults = get_forward_defaults(model)
+    forward_annotations = get_forward_annotations(model)
+    fitted_args = []
+    if forward_defaults is None:
+        defaults_length = 0
+    else:
+        defaults_length = len(forward_defaults)
+    args_length = len(forward_args)
+    for i, arg in enumerate(forward_args):
+        # check if type hint is provided
+        flag = False
+        if arg in forward_annotations:
+            if include_all or forward_annotations[arg] in include:
+                flag = True
+            if exclude_all or forward_annotations[arg] in exclude:
+                flag = False
+            if flag:
+                fitted_args.append(arg)
+            continue
+        # check if defaults is meets requirement
+        default_args_start_from = args_length - defaults_length
+        if i >= default_args_start_from:
+            flag = False
+            if include_all or type(forward_defaults[i - default_args_start_from]) in include:
+                flag = True
+            if exclude_all or type(forward_defaults[i - default_args_start_from]) in exclude:
+                flag = False
+            if flag:
+                fitted_args.append(arg)
+            continue
+        # nothing is provided, we assume it meets requirement
+        fitted_args.append(arg)
+    return fitted_args
+
+
+def complement_input_sample(model, input_sample):
+    '''
+    This function will give a complemented input sample
+    Mainly using default value to complete.
+    '''
+    forward_args = get_forward_args(model)
+    forward_defaults = get_forward_defaults(model)
+    input_sample_length = 1
+    if isinstance(input_sample, Sequence):
+        input_sample_length = len(input_sample)
+
+    # check if need complement
+    if len(forward_args) == input_sample_length:
+        return input_sample
+
+    # check if more input sample should be provided
+    if len(forward_args) > len(forward_defaults) + input_sample_length:
+        invalidInputError(False, "not enough input_sample provided!")
+
+    # complement the input sample by defaults
+    if isinstance(input_sample, Sequence):
+        input_sample_complement = input_sample
+        input_sample_complement += forward_defaults[-(len(forward_args) - input_sample_length):]
+    else:
+        input_sample_complement = []
+        input_sample_complement.append(input_sample)
+        input_sample_complement +=\
+            list(forward_defaults[-(len(forward_args) - input_sample_length):])
+
+    return tuple(input_sample_complement)
 
 
 def get_input_example(model, input_sample, forward_args):
@@ -87,7 +216,10 @@ def export_to_onnx(model, input_sample=None, onnx_path="model.onnx", dynamic_axe
     :param **kwargs: will be passed to torch.onnx.export function.
     '''
     forward_args = get_forward_args(model)
+    tensor_args = get_conditional_args(model)
     input_sample = get_input_example(model, input_sample, forward_args)
+    input_sample = complement_input_sample(model, input_sample)
+
     invalidInputError(input_sample is not None,
                       'You should implement at least one of model.test_dataloader, '
                       'model.train_dataloader, model.val_dataloader and '
@@ -97,7 +229,7 @@ def export_to_onnx(model, input_sample=None, onnx_path="model.onnx", dynamic_axe
         pass
     elif dynamic_axes is True:
         dynamic_axes = {}
-        for arg in forward_args:
+        for arg in tensor_args:
             dynamic_axes[arg] = {0: 'batch_size'}  # set all dim0 to be dynamic
     else:
         dynamic_axes = {}

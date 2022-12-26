@@ -4,10 +4,10 @@ export nfsPath=a_nfs_shared_folder_path_on_the_server
 export couchdbRootUsername=YWRtaW4= # Reset is optional
 export couchdbRootPassword=cGFzc3dvcmQ= # Reset is optional
 # Set the versions according to your images
-export dkeyserverImageName=intelccc/ehsm_dkeyserver:0.3.0
+export dkeyserverImageName=intelccc/ehsm_dkeyserver-dev:0.3.2
 export couchdbImageName=couchdb:3.2
-export dkeycacheImageName=intelccc/ehsm_dkeycache:0.3.0
-export ehsmKmsImageName=intelccc/ehsm_kms:0.3.0
+export dkeycacheImageName=intelccc/ehsm_dkeycache-dev:0.3.2
+export ehsmKmsImageName=intelccc/ehsm_kms_service-dev:0.3.2
 export pccsIP=your_pccs_IP
 export kmsIP=your_kms_ip_to_use_as
 export dkeyserverNodeName=the_fixed_node_you_want_to_assign_dkeyserver_to #kubectl get nodes, and choose one

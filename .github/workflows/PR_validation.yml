@@ -19,6 +19,7 @@ on:
       - 'scala/friesian/**'
       - '.github/actions/friesian-scala-ut-action/action.yml'
       - 'scala/dllib/**'
+      - 'python/dllib/**'
       - '.github/actions/dllib-scala-ut-action/action.yml'
       - 'scala/ppml/**'
       - '.github/actions/ppml-scala-ut-action/action.yml'
@@ -30,7 +31,29 @@ on:
       - '.github/actions/friesian/**'
       - '.github/workflows/PR_validation.yml'
       
-
+  push:
+    branches: [ main ]
+    paths:
+      - 'scala/serving/pom.xml'
+      - 'scala/ppml/pom.xml'
+      - 'scala/orca/pom.xml'
+      - 'scala/friesian/pom.xml'
+      - 'scala/dllib/pom.xml'
+      - 'scala/pom.xml'
+      - 'scala/friesian/**'
+      - '.github/actions/friesian-scala-ut-action/action.yml'
+      - 'scala/dllib/**'
+      - 'python/dllib/**'
+      - '.github/actions/dllib-scala-ut-action/action.yml'
+      - 'scala/ppml/**'
+      - '.github/actions/ppml-scala-ut-action/action.yml'
+      - 'python/orca/**'
+      - '.github/actions/orca/**'
+      - 'python/ppml/**'
+      - '.github/actions/ppml/**'
+      - 'python/friesian/**'
+      - '.github/actions/friesian/**'
+      - '.github/workflows/PR_validation.yml'
 
 permissions:
   contents: read
@@ -72,6 +95,7 @@ jobs:
               - 'scala/dllib/pom.xml'
               - 'scala/pom.xml'
               - 'scala/dllib/**'
+              - 'python/dllib/**'
               - '.github/actions/dllib-scala-ut-action/action.yml'
               
             ppml:
@@ -84,6 +108,7 @@ jobs:
               - 'scala/ppml/**'
               - '.github/actions/ppml-scala-ut-action/action.yml'
               - 'python/ppml/**'
+              - 'python/dllib/**'
               - '.github/actions/ppml/**'
               
             orca:
@@ -94,9 +119,9 @@ jobs:
               - 'scala/dllib/pom.xml'
               - 'scala/pom.xml'
               - 'python/orca/**'
+              - 'python/dllib/**'
               - '.github/actions/orca/**'
-              
-           
+                    
   Friesian-Scala-UT:
     needs: changes
     if: ${{ needs.changes.outputs.friesian == 'true' }}
@@ -138,7 +163,26 @@ jobs:
         uses: ./.github/actions/maven-setup-action
       - name: Run test
         uses: ./.github/actions/ppml-scala-ut-action
-  
+
+  Orca-Notebook-Test:
+    needs: changes
+    if: ${{ needs.changes.outputs.orca == 'true' }}
+    runs-on: [ self-hosted, Gondolin, ubuntu-20.04-lts ]
+
+    steps:
+      - uses: actions/checkout@v3
+      - name: Set up JDK8
+        uses: ./.github/actions/jdk-setup-action
+      - name: Set up maven
+        uses: ./.github/actions/maven-setup-action
+      - name: Setup env
+        uses: ./.github/actions/orca/setup-env/setup-orca-python-py37-spark3
+      - name: Run test
+        uses: ./.github/actions/orca/orca-notebook-xshards-action
+      - name: Remove Env
+        if: ${{ always() }}
+        uses: ./.github/actions/remove-env
+
   Orca-Python-Py37-Spark3:
     needs: changes
     if: ${{ needs.changes.outputs.orca == 'true' }}
@@ -252,6 +296,20 @@ jobs:
     - name: Remove Env
       if: ${{ always() }}
       uses: ./.github/actions/remove-env
+
+  Orca-Tutorial-Xshards:
+    needs: changes
+    if: ${{ needs.changes.outputs.orca == 'true' }}
+    runs-on: [self-hosted, Gondolin, ubuntu-20.04-lts]
+
+    steps:
+    - uses: actions/checkout@v3
+    - name: Set up JDK8
+      uses: ./.github/actions/jdk-setup-action
+    - name: Set up maven
+      uses: ./.github/actions/maven-setup-action 
+    - name: Run Test
+      uses: ./.github/actions/orca/orca-tutorial-xshards
 
   PPML-Python-UT-Spark3:
     needs: changes

@@ -23,7 +23,7 @@ import glob
 from distutils.dir_util import copy_tree
 from bigdl.dllib.utils.log4Error import invalidOperationError
 
-from typing import TYPE_CHECKING, List, Callable, Union
+from typing import TYPE_CHECKING, List, Callable, Union, Optional
 if TYPE_CHECKING:
     from PIL.JpegImagePlugin import JpegImageFile
     from numpy import ndarray
@@ -175,6 +175,31 @@ def exists(path: str) -> bool:
         return os.path.exists(path)
 
 
+def listdir(path: str) -> List[str]:
+    """
+
+    List file and directory names in a directory.
+    It supports local, hdfs. S3 file systems is not implemented.
+
+    :param path: directory path string.
+    """
+    if path.startswith("s3"):  # s3://bucket/file_path
+        invalidOperationError(False, "not implement")
+        return []
+    elif path.startswith("hdfs://"):
+        cmd = 'hdfs dfs -ls -C {}'.format(path)
+        result = subprocess.getstatusoutput(cmd)
+        if result[0] == 0:
+            return result[1].split('\n')[:-1]
+        else:
+            invalidOperationError(False, result[1])
+        return []
+    else:
+        if path.startswith("file://"):
+            path = path[len("file://"):]
+        return os.listdir(path)
+
+
 def makedirs(path: str) -> None:
     """
 
@@ -195,20 +220,35 @@ def makedirs(path: str) -> None:
         key = "/".join(path_parts)
         return s3_client.put_object(Bucket=bucket, Key=key, Body='')
     elif path.startswith("hdfs://"):
-        import pyarrow as pa
-        host_port = path.split("://")[1].split("/")[0].split(":")
-        classpath = subprocess.Popen(["hadoop", "classpath", "--glob"],
-                                     stdout=subprocess.PIPE).communicate()[0]
-        os.environ["CLASSPATH"] = classpath.decode("utf-8")
-        if len(host_port) > 1:
-            fs = pa.hdfs.connect(host=host_port[0], port=int(host_port[1]))
-        else:
-            fs = pa.hdfs.connect(host=host_port[0])
-        return fs.mkdir(path)
+        cmd = 'hdfs dfs -mkdir {}'.format(path)
+        result = subprocess.getstatusoutput(cmd)
+        if result[0] != 0:
+            invalidOperationError(False, result[1])
     else:
         if path.startswith("file://"):
             path = path[len("file://"):]
-        return os.makedirs(path)
+        os.makedirs(path)
+
+
+def rmdir(path: str) -> None:
+    """
+
+    Remove a directory.
+    It supports local, hdfs. S3 file systems is not implemented.
+
+    :param path: directory path string to be removed.
+    """
+    if path.startswith("s3"):  # s3://bucket/file_path
+        invalidOperationError(False, "not implement")
+    elif path.startswith("hdfs://"):
+        cmd = 'hdfs dfs -rm -r {}'.format(path)
+        result = subprocess.getstatusoutput(cmd)
+        if result[0] != 0:
+            invalidOperationError(False, result[1])
+    else:
+        if path.startswith("file://"):
+            path = path[len("file://"):]
+        os.rmdir(path)
 
 
 def write_text(path: str, text: str) -> int:
@@ -381,7 +421,8 @@ def put_local_dir_tree_to_remote(local_dir: str, remote_dir: str):
         return 0
 
 
-def put_local_file_to_remote(local_path: str, remote_path: str, filemode: int=None) -> int:
+def put_local_file_to_remote(local_path: str, remote_path: str,
+                             filemode: Optional[int] = None) -> int:
     if remote_path.startswith("hdfs"):  # hdfs://url:port/file_path
         try:
             cmd = 'hdfs dfs -put -f {} {}'.format(local_path, remote_path)

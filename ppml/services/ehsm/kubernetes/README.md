@@ -35,7 +35,7 @@ If you already have a BigDL-PCCS service on Kubernetes, please skip this step.
 If not, please **[deploy BigDL-PCCS on Kubernetes](https://github.com/intel-analytics/BigDL/tree/main/ppml/services/pccs/kubernetes)**.
 ## 2. Start BigDL-eHSM-KMS on Kubernetes 
 ### 2.1 Determine IP addresses for dkeyserver and KMS
-First of all , **two different IP addresses that unused in your subnetwork** are needed to be used as dkeyserver IP and KMS IP, and they should be different from PCCS IP that you have set in step 1. \
+First of all , **IP address that unused in your subnetwork** is needed as KMS external service IP, and it should be different from PCCS IP that you have set in step 1. \
 **Especially,** the IP addresses chosen for dkeyserver and KMS **SHOULD NOT** be real machine IP address. \
 You could check if the IP adresses are available for dkeyserver and KMS like this
 ```bash
@@ -56,6 +56,7 @@ Please make sure current workdir is `kubernetes`.
 
 Then modify parameters in `install-bigdl-ehsm-kms.sh` as following. \
 The `pccsIP` should be the IP address you have used in step 1. The `dkeyserverIP` and `kmsIP` should be the IP addresses you have determined in step 2.1. 
+The `dkeyserverNodeName` is the fixed node which you want to assign `dkeyserver` pod to. You can run `kubectl get nodes`, and choose one. Then, run `mkdir -p /var/run/ehsm` on the host of node which you chose, this will create a hostPath volume for `dkeyserver` to store logs persistently.
 
 ```shell
 # reset of other parameters in values.yaml is optional, please check according to your environment

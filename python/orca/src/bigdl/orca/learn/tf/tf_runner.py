@@ -28,15 +28,20 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import logging
+from contextlib import closing
 import json
+import logging
 import os
+import socket
 
 import ray
-from contextlib import closing
-import logging
-import socket
-from bigdl.dllib.utils.log4Error import *
+
+from bigdl.dllib.utils.log4Error import invalidInputError
+
+from typing import TYPE_CHECKING, Any
+if TYPE_CHECKING:
+    from typing import Dict, List, Optional, Callable
+    from tensorflow.compat.v1.estimator import TrainSpec, EvalSpec
 
 logger = logging.getLogger(__name__)
 
@@ -57,11 +62,14 @@ def _try_import_strategy():
 class TFRunner:
     """Manages a TensorFlow estimator for training."""
 
-    def __init__(self, model_fn,
-                 model_dir=None,
-                 config=None,
-                 params=None,
-                 warm_start_from=None):
+    def __init__(
+        self,
+        model_fn: Callable,
+        model_dir: Optional[str]=None,
+        config: Optional[Dict[str, Any]]=None,
+        params: Optional[Dict[str, Any]]=None,
+        warm_start_from: Optional[str]=None
+    ) -> None:
         """Initializes the runner.
         Args:
             model_creator (dict -> Model): see tf_trainer.py.
@@ -81,14 +89,14 @@ class TFRunner:
         self.params = params
         self.warm_start_from = warm_start_from
 
-    def setup(self):
+    def setup(self) -> None:
         import tensorflow.compat.v1 as tf
         tf.config.threading.set_inter_op_parallelism_threads(self.inter_op_parallelism)
         tf.config.threading.set_intra_op_parallelism_threads(self.intra_op_parallelism)
         os.environ["KMP_BLOCKING_TIME"] = self.config.get("KMP_BLOCKING_TIME",
                                                           os.environ.get("KMP_BLOCKING_TIME", "0"))
 
-    def setup_local(self):
+    def setup_local(self) -> None:
         """Initializes the model."""
         self.backend = "tf-local"
         self.size = 1
@@ -96,7 +104,12 @@ class TFRunner:
         from tensorflow.python.distribute import distribution_strategy_context as ds_context
         self.strategy = ds_context.get_strategy()
 
-    def setup_distributed(self, urls, world_rank, world_size):
+    def setup_distributed(
+        self,
+        urls: List[str],
+        world_rank: int,
+        world_size: int
+    ) -> None:
         """Sets up TensorFLow distributed environment and initializes the model.
         Args:
             urls (str): the URLs that each node uses to connect.
@@ -104,7 +117,7 @@ class TFRunner:
             world_size (int): the total number of runners.
         """
         import tensorflow.compat.v1 as tf
-        invalidInputError(len(urls) == world_size, "expect len(urls) == word_size")
+        invalidInputError(len(urls) == world_size, "expect len(urls) == world_size")
         tf_config = {
             "cluster": {
                 "worker": urls
@@ -154,17 +167,17 @@ class TFRunner:
         self.rank = world_rank
 
     def train_and_evaluate(self,
-                           train_spec,
-                           eval_spec):
+                           train_spec: "TrainSpec",
+                           eval_spec: "EvalSpec") -> Any:
         import tensorflow.compat.v1 as tf
         result = tf.estimator.train_and_evaluate(self.estimator, train_spec, eval_spec)
         return result
 
-    def shutdown(self):
+    def shutdown(self) -> None:
         """Attempts to shut down the worker."""
         del self.estimator
 
-    def get_node_ip(self):
+    def get_node_ip(self) -> str:
         """Returns the IP address of the current node."""
         return ray._private.services.get_node_ip_address()
 

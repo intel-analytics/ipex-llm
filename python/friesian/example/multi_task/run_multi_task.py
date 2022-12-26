@@ -147,7 +147,7 @@ def test_multi_task(valid_tbl_data, save_path, model, cat_cols, continuous_cols,
                                       batch_size=batch_size,
                                       feature_cols=feature_cols(column_info),
                                       label_cols=label_cols(column_info))
-    for k, v in eval_results[0].items():
+    for k, v in eval_results.items():
         print(k, v)
 
 

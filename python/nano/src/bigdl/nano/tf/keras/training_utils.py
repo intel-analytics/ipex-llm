@@ -53,6 +53,7 @@ class TrainingUtils:
         tf.keras.Model.fit.
 
         Additional parameters:
+
         :param num_processes: when num_processes is not None, it specifies how many sub-processes
                        to launch to run pseudo-distributed training; when num_processes is None,
                        training will run in the current process.

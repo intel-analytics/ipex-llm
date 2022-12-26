@@ -16,7 +16,7 @@
 
 import os
 from importlib.util import find_spec
-from bigdl.nano.pytorch.gpu_cpu import patch_cuda, unpatch_cuda, get_cuda_status
+from bigdl.nano.pytorch.patching.gpu_cpu import patch_cuda, unpatch_cuda, get_cuda_status
 
 
 _mapping_torch = None

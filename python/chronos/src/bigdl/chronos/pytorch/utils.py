@@ -17,6 +17,7 @@ import math
 import torch
 import numpy as np
 from torch.utils.data.dataloader import DataLoader
+from bigdl.chronos.pytorch import TSInferenceOptimizer as InferenceOptimizer
 
 
 def _inference(model, input_sample_list, batch_size):
@@ -47,7 +48,7 @@ def _pytorch_fashion_inference(model, input_data, batch_size=None):
 
     :return: numpy ndarray
     '''
-    with torch.no_grad():
+    with InferenceOptimizer.get_context(model):
         if isinstance(input_data, list):
             input_sample_list = list(map(lambda x: torch.from_numpy(x), input_data))
         elif isinstance(input_data, DataLoader):

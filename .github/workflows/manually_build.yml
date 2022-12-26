@@ -67,58 +67,6 @@ jobs:
         sudo docker push ${base_image}:${TAG}
         sudo docker tag ${base_image}:${TAG} 10.239.45.10/arda/${base_image}:${TAG}
         sudo docker push 10.239.45.10/arda/${base_image}:${TAG}
-        echo "########################################################"
-        echo "######### bigdl-ppml-trusted-bigdata-gramine ###########"
-        echo "########################################################"
-        cd ../trusted-bigdata
-        export bigdata_base_image=intelanalytics/bigdl-ppml-trusted-bigdata-gramine-base
-        sudo docker build \
-          --build-arg http_proxy=${HTTP_PROXY} \
-          --build-arg https_proxy=${HTTPS_PROXY} \
-          --build-arg HTTP_PROXY_HOST=${HTTP_PROXY_HOST_2} \
-          --build-arg HTTP_PROXY_PORT=${HTTP_PROXY_PORT_2} \
-          --build-arg HTTPS_PROXY_HOST=${HTTP_PROXY_HOST_2} \
-          --build-arg HTTPS_PROXY_PORT=${HTTP_PROXY_PORT_3} \
-          --build-arg JDK_VERSION=8u192 \
-          --build-arg JDK_URL=${JDK_URL} \
-          --build-arg SPARK_JAR_REPO_URL=${SPARK_JAR_REPO_URL} \
-          --build-arg no_proxy=${LOCAL_IP} \
-          --build-arg BASE_IMAGE_NAME=${base_image} \
-          --build-arg BASE_IMAGE_TAG=${TAG} \
-          -t ${bigdata_base_image}:${TAG} -f ./Dockerfile .
-        sudo docker push ${bigdata_base_image}:${TAG}
-        sudo docker tag ${bigdata_base_image}:${TAG} 10.239.45.10/arda/${bigdata_base_image}:${TAG}
-        sudo docker push 10.239.45.10/arda/${bigdata_base_image}:${TAG}
-        cd custom-image
-        openssl genrsa -3 -out enclave-key.pem 3072
-        export bigdata_custom_image=intelanalytics/bigdl-ppml-trusted-bigdata-gramine-reference-32g
-        sudo docker build \
-          --build-arg BASE_IMAGE_NAME=${bigdata_base_image} \
-          --build-arg BASE_IMAGE_TAG=${TAG} \
-          --build-arg SGX_MEM_SIZE=32G \
-          --build-arg SGX_LOG_LEVEL=error \
-          -t ${bigdata_custom_image}:${TAG} \
-          -f ./Dockerfile .
-        sudo docker push ${bigdata_custom_image}:${TAG}
-        sudo docker tag ${bigdata_custom_image}:${TAG} 10.239.45.10/arda/${bigdata_custom_image}:${TAG}
-        sudo docker push 10.239.45.10/arda/${bigdata_custom_image}:${TAG}
-        sudo docker tag ${bigdata_custom_image}:${TAG} intelanalytics/bigdl-ppml-trusted-bigdata-gramine-reference:${TAG}
-        sudo docker push intelanalytics/bigdl-ppml-trusted-bigdata-gramine-reference:${TAG}
-        sudo docker rmi -f ${bigdata_custom_image}:${TAG}
-        export bigdata_custom_image=intelanalytics/bigdl-ppml-trusted-bigdata-gramine-reference-64g
-        sudo docker build \
-          --build-arg BASE_IMAGE_NAME=${bigdata_base_image} \
-          --build-arg BASE_IMAGE_TAG=${TAG} \
-          --build-arg SGX_MEM_SIZE=64G \
-          --build-arg SGX_LOG_LEVEL=error \
-          -t ${bigdata_custom_image}:${TAG} \
-          -f ./Dockerfile .
-        sudo docker push ${bigdata_custom_image}:${TAG}
-        sudo docker tag ${bigdata_custom_image}:${TAG} 10.239.45.10/arda/${bigdata_custom_image}:${TAG}
-        sudo docker push 10.239.45.10/arda/${bigdata_custom_image}:${TAG}
-        sudo docker rmi -f ${base_image}:${TAG}
-        sudo docker rmi -f ${bigdata_base_image}:${TAG}
-        sudo docker rmi -f ${bigdata_custom_image}:${TAG}
 
   bigdl-ppml-trusted-deep-learning-gramine-base:
     if: ${{ github.event.inputs.artifact == 'bigdl-ppml-trusted-deep-learning-gramine-base' || github.event.inputs.artifact == 'all' }}
@@ -147,7 +95,7 @@ jobs:
         sudo docker push ${image}:${TAG}
         sudo docker tag ${image}:${TAG} 10.239.45.10/arda/${image}:${TAG}
         sudo docker push 10.239.45.10/arda/${image}:${TAG}
-        sudo docker rmi -f ${image}:${TAG}
+        sudo docker rmi -f ${image}:${TAG} 10.239.45.10/arda/${image}:${TAG}
 
 
   bigdl-ppml-trusted-deep-learning-gramine-ref:
@@ -180,7 +128,7 @@ jobs:
         sudo docker push ${image}:${TAG}
         sudo docker tag ${image}:${TAG} 10.239.45.10/arda/${image}:${TAG}
         sudo docker push 10.239.45.10/arda/${image}:${TAG}
-        sudo docker rmi -f ${image}:${TAG}
+        sudo docker rmi -f ${image}:${TAG} 10.239.45.10/arda/${image}:${TAG}
 
   bigdl-ppml-trusted-big-data-ml-python-gramine:
     if: ${{ github.event.inputs.artifact == 'bigdl-ppml-trusted-big-data-ml-python-gramine' || github.event.inputs.artifact == 'all' }}
@@ -217,6 +165,17 @@ jobs:
         cd ../bigdl-gramine
         openssl genrsa -3 -out enclave-key.pem 3072
         ### debug log image
+        export image=intelanalytics/bigdl-ppml-trusted-big-data-ml-python-gramine-reference-16g-debug
+        sudo docker build \
+         --build-arg BASE_IMAGE_NAME=${base_image} \
+         --build-arg BASE_IMAGE_TAG=${TAG} \
+         --build-arg SGX_MEM_SIZE=16G \
+         --build-arg SGX_LOG_LEVEL=debug \
+         -t ${image}:${TAG} -f ./Dockerfile .
+        sudo docker push ${image}:${TAG}
+        sudo docker tag ${image}:${TAG} 10.239.45.10/arda/${image}:${TAG}
+        sudo docker push 10.239.45.10/arda/${image}:${TAG}
+        sudo docker rmi -f ${image}:${TAG} 10.239.45.10/arda/${image}:${TAG}
         export image=intelanalytics/bigdl-ppml-trusted-big-data-ml-python-gramine-reference-32g-debug
         sudo docker build \
          --build-arg BASE_IMAGE_NAME=${base_image} \
@@ -227,7 +186,7 @@ jobs:
         sudo docker push ${image}:${TAG}
         sudo docker tag ${image}:${TAG} 10.239.45.10/arda/${image}:${TAG}
         sudo docker push 10.239.45.10/arda/${image}:${TAG}
-        sudo docker rmi -f ${image}:${TAG}
+        sudo docker rmi -f ${image}:${TAG} 10.239.45.10/arda/${image}:${TAG}
         export image=intelanalytics/bigdl-ppml-trusted-big-data-ml-python-gramine-reference-64g-debug
         sudo docker build \
          --build-arg BASE_IMAGE_NAME=${base_image} \
@@ -238,8 +197,19 @@ jobs:
         sudo docker push ${image}:${TAG}
         sudo docker tag ${image}:${TAG} 10.239.45.10/arda/${image}:${TAG}
         sudo docker push 10.239.45.10/arda/${image}:${TAG}
-        sudo docker rmi -f ${image}:${TAG}
+        sudo docker rmi -f ${image}:${TAG} 10.239.45.10/arda/${image}:${TAG}
         ##### error log image
+        export image=intelanalytics/bigdl-ppml-trusted-big-data-ml-python-gramine-reference-16g
+        sudo docker build \
+         --build-arg BASE_IMAGE_NAME=${base_image} \
+         --build-arg BASE_IMAGE_TAG=${TAG} \
+         --build-arg SGX_MEM_SIZE=16G \
+         --build-arg SGX_LOG_LEVEL=error \
+         -t ${image}:${TAG} -f ./Dockerfile .
+        sudo docker push ${image}:${TAG}
+        sudo docker tag ${image}:${TAG} 10.239.45.10/arda/${image}:${TAG}
+        sudo docker push 10.239.45.10/arda/${image}:${TAG}
+        sudo docker rmi -f ${image}:${TAG} 10.239.45.10/arda/${image}:${TAG}
         export image=intelanalytics/bigdl-ppml-trusted-big-data-ml-python-gramine-reference-32g
         sudo docker build \
          --build-arg BASE_IMAGE_NAME=${base_image} \
@@ -252,7 +222,7 @@ jobs:
         sudo docker push 10.239.45.10/arda/${image}:${TAG}
         sudo docker tag ${image}:${TAG} 10.239.45.10/arda/intelanalytics/bigdl-ppml-trusted-big-data-ml-python-gramine-reference:latest
         sudo docker push 10.239.45.10/arda/intelanalytics/bigdl-ppml-trusted-big-data-ml-python-gramine-reference:latest
-        sudo docker rmi -f ${image}:${TAG}
+        sudo docker rmi -f ${image}:${TAG} 10.239.45.10/arda/${image}:${TAG}
         export image=intelanalytics/bigdl-ppml-trusted-big-data-ml-python-gramine-reference-64g
         sudo docker build \
          --build-arg BASE_IMAGE_NAME=${base_image} \
@@ -263,8 +233,19 @@ jobs:
         sudo docker push ${image}:${TAG}
         sudo docker tag ${image}:${TAG} 10.239.45.10/arda/${image}:${TAG}
         sudo docker push 10.239.45.10/arda/${image}:${TAG}
-        sudo docker rmi -f ${image}:${TAG}
+        sudo docker rmi -f ${image}:${TAG} 10.239.45.10/arda/${image}:${TAG}
         #### all log image
+        export image=intelanalytics/bigdl-ppml-trusted-big-data-ml-python-gramine-reference-16g-all
+        sudo docker build \
+         --build-arg BASE_IMAGE_NAME=${base_image} \
+         --build-arg BASE_IMAGE_TAG=${TAG} \
+         --build-arg SGX_MEM_SIZE=16G \
+         --build-arg SGX_LOG_LEVEL=all \
+         -t ${image}:${TAG} -f ./Dockerfile .
+        sudo docker push ${image}:${TAG}
+        sudo docker tag ${image}:${TAG} 10.239.45.10/arda/${image}:${TAG}
+        sudo docker push 10.239.45.10/arda/${image}:${TAG}
+        sudo docker rmi -f ${image}:${TAG} 10.239.45.10/arda/${image}:${TAG}
         export image=intelanalytics/bigdl-ppml-trusted-big-data-ml-python-gramine-reference-32g-all
         sudo docker build \
          --build-arg BASE_IMAGE_NAME=${base_image} \
@@ -275,7 +256,7 @@ jobs:
         sudo docker push ${image}:${TAG}
         sudo docker tag ${image}:${TAG} 10.239.45.10/arda/${image}:${TAG}
         sudo docker push 10.239.45.10/arda/${image}:${TAG}
-        sudo docker rmi -f ${image}:${TAG}
+        sudo docker rmi -f ${image}:${TAG} 10.239.45.10/arda/${image}:${TAG}
         export image=intelanalytics/bigdl-ppml-trusted-big-data-ml-python-gramine-reference-64g-all
         sudo docker build \
          --build-arg BASE_IMAGE_NAME=${base_image} \
@@ -286,7 +267,8 @@ jobs:
         sudo docker push ${image}:${TAG}
         sudo docker tag ${image}:${TAG} 10.239.45.10/arda/${image}:${TAG}
         sudo docker push 10.239.45.10/arda/${image}:${TAG}
-        sudo docker rmi -f ${image}:${TAG}
+        sudo docker rmi -f ${image}:${TAG} 10.239.45.10/arda/${image}:${TAG}
+        sudo docker rmi -f ${base_image}:${TAG} 10.239.45.10/arda/${base_image}:${TAG}
         rm enclave-key.pem
         
   bigdl-ppml-trusted-big-data-ml-python-gramine-noattest:
@@ -318,7 +300,7 @@ jobs:
         sudo docker push ${image}:${TAG}
         sudo docker tag ${image}:${TAG} 10.239.45.10/arda/${image}:${TAG}
         sudo docker push 10.239.45.10/arda/${image}:${TAG}
-        sudo docker rmi -f ${image}:${TAG}
+        sudo docker rmi -f ${image}:${TAG} 10.239.45.10/arda/${image}:${TAG}
         ###
         export image=intelanalytics/bigdl-ppml-trusted-big-data-ml-python-gramine-noattest-16g-debug
         sudo docker build \
@@ -331,7 +313,7 @@ jobs:
         sudo docker push ${image}:${TAG}
         sudo docker tag ${image}:${TAG} 10.239.45.10/arda/${image}:${TAG}
         sudo docker push 10.239.45.10/arda/${image}:${TAG}
-        sudo docker rmi -f ${image}:${TAG}
+        sudo docker rmi -f ${image}:${TAG} 10.239.45.10/arda/${image}:${TAG}
         ### debug log level
         export image=intelanalytics/bigdl-ppml-trusted-big-data-ml-python-gramine-noattest-32g-debug
         sudo docker build \
@@ -344,7 +326,7 @@ jobs:
         sudo docker push ${image}:${TAG}
         sudo docker tag ${image}:${TAG} 10.239.45.10/arda/${image}:${TAG}
         sudo docker push 10.239.45.10/arda/${image}:${TAG}
-        sudo docker rmi -f ${image}:${TAG}
+        sudo docker rmi -f ${image}:${TAG} 10.239.45.10/arda/${image}:${TAG}
         export image=intelanalytics/bigdl-ppml-trusted-big-data-ml-python-gramine-noattest-64g-debug
         sudo docker build \
          --build-arg BASE_IMAGE_NAME=${base_image} \
@@ -356,8 +338,8 @@ jobs:
         sudo docker push ${image}:${TAG}
         sudo docker tag ${image}:${TAG} 10.239.45.10/arda/${image}:${TAG}
         sudo docker push 10.239.45.10/arda/${image}:${TAG}
-        sudo docker rmi -f ${image}:${TAG}
-        
+        sudo docker rmi -f ${image}:${TAG} 10.239.45.10/arda/${image}:${TAG}
+
         ### error log level
         export image=intelanalytics/bigdl-ppml-trusted-big-data-ml-python-gramine-noattest-32g
         sudo docker build \
@@ -370,7 +352,7 @@ jobs:
         sudo docker push ${image}:${TAG}
         sudo docker tag ${image}:${TAG} 10.239.45.10/arda/${image}:${TAG}
         sudo docker push 10.239.45.10/arda/${image}:${TAG}
-        sudo docker rmi -f ${image}:${TAG}
+        sudo docker rmi -f ${image}:${TAG} 10.239.45.10/arda/${image}:${TAG}
         export image=intelanalytics/bigdl-ppml-trusted-big-data-ml-python-gramine-noattest-64g
         sudo docker build \
          --build-arg BASE_IMAGE_NAME=${base_image} \
@@ -382,7 +364,7 @@ jobs:
         sudo docker push ${image}:${TAG}
         sudo docker tag ${image}:${TAG} 10.239.45.10/arda/${image}:${TAG}
         sudo docker push 10.239.45.10/arda/${image}:${TAG}
-        sudo docker rmi -f ${image}:${TAG}
+        sudo docker rmi -f ${image}:${TAG} 10.239.45.10/arda/${image}:${TAG}
         
         ## all log level
         export image=intelanalytics/bigdl-ppml-trusted-big-data-ml-python-gramine-noattest-32g-all
@@ -396,7 +378,7 @@ jobs:
         sudo docker push ${image}:${TAG}
         sudo docker tag ${image}:${TAG} 10.239.45.10/arda/${image}:${TAG}
         sudo docker push 10.239.45.10/arda/${image}:${TAG}
-        sudo docker rmi -f ${image}:${TAG}
+        sudo docker rmi -f ${image}:${TAG} 10.239.45.10/arda/${image}:${TAG}
         export image=intelanalytics/bigdl-ppml-trusted-big-data-ml-python-gramine-noattest-64g-all
         sudo docker build \
          --build-arg BASE_IMAGE_NAME=${base_image} \
@@ -408,7 +390,7 @@ jobs:
         sudo docker push ${image}:${TAG}
         sudo docker tag ${image}:${TAG} 10.239.45.10/arda/${image}:${TAG}
         sudo docker push 10.239.45.10/arda/${image}:${TAG}
-        sudo docker rmi -f ${image}:${TAG}
+        sudo docker rmi -f ${image}:${TAG} 10.239.45.10/arda/${image}:${TAG}
         rm enclave-key.pem
 
 
@@ -444,7 +426,7 @@ jobs:
         sudo docker push ${image}:${TAG}
         sudo docker tag ${image}:${TAG} 10.239.45.10/arda/${image}:${TAG}
         sudo docker push 10.239.45.10/arda/${image}:${TAG}
-        sudo docker rmi -f ${image}:${TAG}
+        sudo docker rmi -f ${image}:${TAG} 10.239.45.10/arda/${image}:${TAG}
 
     
   bigdl-ppml-trusted-big-data-ml-scala-occlum:
@@ -480,7 +462,7 @@ jobs:
         sudo docker push ${image}:${TAG}
         docker tag ${image}:${TAG} 10.239.45.10/arda/${image}:${TAG}
         docker push 10.239.45.10/arda/${image}:${TAG}
-        docker rmi -f ${image}:${TAG}
+        docker rmi -f ${image}:${TAG} 10.239.45.10/arda/${image}:${TAG}
 
   bigdl-ppml-trusted-big-data-ml-scala-occlum-production:
     if: ${{ github.event.inputs.artifact == 'bigdl-ppml-trusted-big-data-ml-scala-occlum-production' || github.event.inputs.artifact == 'all' }}
@@ -517,11 +499,15 @@ jobs:
           export image_name=${image}:${TAG}
           export final_name=${image_name}-build
           export container_name=${TAG}-container
+          sudo docker push ${image_name}
+          docker tag ${image_name} 10.239.45.10/arda/${image_name}
+          docker push 10.239.45.10/arda/${image_name}
           bash ./production/occlum-build.sh -c $container_name -i $image_name -f $final_name
           sudo docker push ${final_name}
           docker tag ${final_name} 10.239.45.10/arda/${final_name}
           docker push 10.239.45.10/arda/${final_name}
-          docker rmi -f ${final_name}
+          docker rmi -f ${image_name} 10.239.45.10/arda/${image_name}
+          docker rmi -f ${final_name} 10.239.45.10/arda/${final_name}
 
   bigdl-ppml-trusted-big-data-ml-scala-occlum-production-customer:
     if: ${{ github.event.inputs.artifact == 'bigdl-ppml-trusted-big-data-ml-scala-occlum-production-customer' || github.event.inputs.artifact == 'all' }}
@@ -559,7 +545,7 @@ jobs:
           sudo docker push ${image_customer}:${TAG}
           docker tag ${image_customer}:${TAG} 10.239.45.10/arda/${image_customer}:${TAG}
           docker push 10.239.45.10/arda/${image_customer}:${TAG}
-          docker rmi -f ${image_customer}:${TAG}
+          docker rmi -f ${image_customer}:${TAG} 10.239.45.10/arda/${image_customer}:${TAG}
 
 
   bigdl-ppml-trusted-realtime-ml-scala-graphene:
@@ -595,7 +581,7 @@ jobs:
         docker push ${image}:${TAG}
         docker tag ${image}:${TAG} 10.239.45.10/arda/${image}:${TAG}
         docker push 10.239.45.10/arda/${image}:${TAG}
-        docker rmi -f ${image}:${TAG}
+        docker rmi -f ${image}:${TAG} 10.239.45.10/arda/${image}:${TAG}
 
 
   bigdl-ppml-trusted-realtime-ml-scala-occlum:
@@ -631,8 +617,7 @@ jobs:
         sudo docker push ${image}:${TAG}
         docker tag ${image}:${TAG} 10.239.45.10/arda/${image}:${TAG}
         docker push 10.239.45.10/arda/${image}:${TAG}
-        docker rmi -f ${image}:${TAG}
-
+        docker rmi -f ${image}:${TAG} 10.239.45.10/arda/${image}:${TAG}
 
   bigdl-ppml-kmsutil:
     if: ${{ github.event.inputs.artifact == 'bigdl-ppml-kmsutil' || github.event.inputs.artifact == 'all' }}
@@ -708,7 +693,7 @@ jobs:
         sudo docker push ${image}:${TAG}
         sudo docker tag ${image}:${TAG} 10.239.45.10/arda/${image}:${TAG}
         sudo docker push 10.239.45.10/arda/${image}:${TAG}
-        sudo docker rmi -f ${image}:${TAG}
+        sudo docker rmi -f ${image}:${TAG} 10.239.45.10/arda/${image}:${TAG}
 
   bigdl-ppml-trusted-python-toolkit-ref:
     if: ${{ github.event.inputs.artifact == 'bigdl-ppml-trusted-python-toolkit-ref' || github.event.inputs.artifact == 'all' }}
@@ -741,7 +726,7 @@ jobs:
         sudo docker push ${image}:${TAG}
         sudo docker tag ${image}:${TAG} 10.239.45.10/arda/${image}:${TAG}
         sudo docker push 10.239.45.10/arda/${image}:${TAG}
-        sudo docker rmi -f ${image}:${TAG}
+        sudo docker rmi -f ${image}:${TAG} 10.239.45.10/arda/${image}:${TAG}
 
   bigdl-ppml-trusted-bigdata-gramine:
     if: ${{ github.event.inputs.artifact == 'bigdl-ppml-trusted-bigdata-gramine' || github.event.inputs.artifact == 'all' }}
@@ -779,6 +764,20 @@ jobs:
         sudo docker push 10.239.45.10/arda/${bigdata_base_image}:${TAG}
         cd custom-image
         openssl genrsa -3 -out enclave-key.pem 3072
+
+        export bigdata_custom_image=intelanalytics/bigdl-ppml-trusted-bigdata-gramine-reference-16g
+        sudo docker build \
+          --build-arg BASE_IMAGE_NAME=${bigdata_base_image} \
+          --build-arg BASE_IMAGE_TAG=${TAG} \
+          --build-arg SGX_MEM_SIZE=16G \
+          --build-arg SGX_LOG_LEVEL=error \
+          -t ${bigdata_custom_image}:${TAG} \
+          -f ./Dockerfile .
+        sudo docker push ${bigdata_custom_image}:${TAG}
+        sudo docker tag ${bigdata_custom_image}:${TAG} 10.239.45.10/arda/${bigdata_custom_image}:${TAG}
+        sudo docker push 10.239.45.10/arda/${bigdata_custom_image}:${TAG}
+        sudo docker rmi -f ${bigdata_custom_image}:${TAG} 10.239.45.10/arda/${bigdata_custom_image}:${TAG}
+
         export bigdata_custom_image=intelanalytics/bigdl-ppml-trusted-bigdata-gramine-reference-32g
         sudo docker build \
           --build-arg BASE_IMAGE_NAME=${bigdata_base_image} \
@@ -790,9 +789,10 @@ jobs:
         sudo docker push ${bigdata_custom_image}:${TAG}
         sudo docker tag ${bigdata_custom_image}:${TAG} 10.239.45.10/arda/${bigdata_custom_image}:${TAG}
         sudo docker push 10.239.45.10/arda/${bigdata_custom_image}:${TAG}
-        sudo docker tag ${bigdata_custom_image}:${TAG} intelanalytics/bigdl-ppml-trusted-bigdata-gramine-reference:${TAG}
-        sudo docker push intelanalytics/bigdl-ppml-trusted-bigdata-gramine-reference:${TAG}
-        sudo docker rmi -f ${bigdata_custom_image}:${TAG}
+        sudo docker tag ${bigdata_custom_image}:${TAG} intelanalytics/bigdl-ppml-trusted-bigdata-gramine-reference:latest
+        sudo docker push intelanalytics/bigdl-ppml-trusted-bigdata-gramine-reference:latest
+        sudo docker rmi -f ${bigdata_custom_image}:${TAG} 10.239.45.10/arda/${bigdata_custom_image}:${TAG}
+
         export bigdata_custom_image=intelanalytics/bigdl-ppml-trusted-bigdata-gramine-reference-64g
         sudo docker build \
           --build-arg BASE_IMAGE_NAME=${bigdata_base_image} \
@@ -804,6 +804,46 @@ jobs:
         sudo docker push ${bigdata_custom_image}:${TAG}
         sudo docker tag ${bigdata_custom_image}:${TAG} 10.239.45.10/arda/${bigdata_custom_image}:${TAG}
         sudo docker push 10.239.45.10/arda/${bigdata_custom_image}:${TAG}
+        sudo docker rmi -f ${bigdata_custom_image}:${TAG} 10.239.45.10/arda/${bigdata_custom_image}:${TAG}
+
+        export bigdata_custom_image=intelanalytics/bigdl-ppml-trusted-bigdata-gramine-reference-16g-all
+        sudo docker build \
+          --build-arg BASE_IMAGE_NAME=${bigdata_base_image} \
+          --build-arg BASE_IMAGE_TAG=${TAG} \
+          --build-arg SGX_MEM_SIZE=16G \
+          --build-arg SGX_LOG_LEVEL=all \
+          -t ${bigdata_custom_image}:${TAG} \
+          -f ./Dockerfile .
+        sudo docker push ${bigdata_custom_image}:${TAG}
+        sudo docker tag ${bigdata_custom_image}:${TAG} 10.239.45.10/arda/${bigdata_custom_image}:${TAG}
+        sudo docker push 10.239.45.10/arda/${bigdata_custom_image}:${TAG}
+        sudo docker rmi -f ${bigdata_custom_image}:${TAG} 10.239.45.10/arda/${bigdata_custom_image}:${TAG}
+
+        export bigdata_custom_image=intelanalytics/bigdl-ppml-trusted-bigdata-gramine-reference-32g-all
+        sudo docker build \
+          --build-arg BASE_IMAGE_NAME=${bigdata_base_image} \
+          --build-arg BASE_IMAGE_TAG=${TAG} \
+          --build-arg SGX_MEM_SIZE=32G \
+          --build-arg SGX_LOG_LEVEL=all \
+          -t ${bigdata_custom_image}:${TAG} \
+          -f ./Dockerfile .
+        sudo docker push ${bigdata_custom_image}:${TAG}
+        sudo docker tag ${bigdata_custom_image}:${TAG} 10.239.45.10/arda/${bigdata_custom_image}:${TAG}
+        sudo docker push 10.239.45.10/arda/${bigdata_custom_image}:${TAG}
+        sudo docker rmi -f ${bigdata_custom_image}:${TAG} 10.239.45.10/arda/${bigdata_custom_image}:${TAG}
+
+        export bigdata_custom_image=intelanalytics/bigdl-ppml-trusted-bigdata-gramine-reference-64g-all
+        sudo docker build \
+          --build-arg BASE_IMAGE_NAME=${bigdata_base_image} \
+          --build-arg BASE_IMAGE_TAG=${TAG} \
+          --build-arg SGX_MEM_SIZE=64G \
+          --build-arg SGX_LOG_LEVEL=all \
+          -t ${bigdata_custom_image}:${TAG} \
+          -f ./Dockerfile .
+        sudo docker push ${bigdata_custom_image}:${TAG}
+        sudo docker tag ${bigdata_custom_image}:${TAG} 10.239.45.10/arda/${bigdata_custom_image}:${TAG}
+        sudo docker push 10.239.45.10/arda/${bigdata_custom_image}:${TAG}
+        sudo docker rmi -f ${bigdata_custom_image}:${TAG} 10.239.45.10/arda/${bigdata_custom_image}:${TAG}
+
         sudo docker rmi -f ${base_image}:${TAG}
-        sudo docker rmi -f ${bigdata_base_image}:${TAG}
-        sudo docker rmi -f ${bigdata_custom_image}:${TAG}
+        sudo docker rmi -f ${bigdata_base_image}:${TAG} 10.239.45.10/arda/${bigdata_base_image}:${TAG}

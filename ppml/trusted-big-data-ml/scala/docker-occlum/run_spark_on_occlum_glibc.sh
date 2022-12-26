@@ -46,12 +46,12 @@ init_instance() {
         .metadata.debuggable = "ENABLE_SGX_DEBUG" |
         .resource_limits.kernel_space_heap_size="SGX_KERNEL_HEAP" |
         .entry_points = [ "/usr/lib/jvm/java-8-openjdk-amd64/bin", "/bin" ] |
-        .env.untrusted = [ "DMLC_TRACKER_URI", "SPARK_DRIVER_URL", "SPARK_TESTING" , "_SPARK_AUTH_SECRET" ] |
-        .env.default = [ "PYTHONHOME=/opt/python-occlum","LD_LIBRARY_PATH=/usr/lib/jvm/java-8-openjdk-amd64/lib/server:/usr/lib/jvm/java-8-openjdk-amd64/lib:/usr/lib/jvm/java-8-openjdk-amd64/../lib:/lib","SPARK_CONF_DIR=/opt/spark/conf","SPARK_ENV_LOADED=1","PYTHONHASHSEED=0","SPARK_HOME=/opt/spark","SPARK_SCALA_VERSION=2.12","SPARK_JARS_DIR=/opt/spark/jars","LAUNCH_CLASSPATH=/bin/jars/*",""]' Occlum.json)" && \
+        .env.untrusted = [ "ATTESTATION_DEBUG", "DMLC_TRACKER_URI", "SPARK_DRIVER_URL", "SPARK_TESTING" , "_SPARK_AUTH_SECRET" ] |
+        .env.default = [ "OCCLUM=yes","PYTHONHOME=/opt/python-occlum","LD_LIBRARY_PATH=/usr/lib/jvm/java-8-openjdk-amd64/lib/server:/usr/lib/jvm/java-8-openjdk-amd64/lib:/usr/lib/jvm/java-8-openjdk-amd64/../lib:/lib","SPARK_CONF_DIR=/opt/spark/conf","SPARK_ENV_LOADED=1","PYTHONHASHSEED=0","SPARK_HOME=/opt/spark","SPARK_SCALA_VERSION=2.12","SPARK_JARS_DIR=/opt/spark/jars","LAUNCH_CLASSPATH=/bin/jars/*",""]' Occlum.json)" && \
     echo "${new_json}" > Occlum.json
     echo "SGX_MEM_SIZE ${SGX_MEM_SIZE}"
 
-    #copy python lib
+    #copy python lib and attestation lib
     copy_bom -f /opt/python-glibc.yaml --root image --include-dir /opt/occlum/etc/template
     # enable tmp hostfs
     # --conf spark.executorEnv.USING_TMP_HOSTFS=true \
@@ -106,6 +106,7 @@ init_instance() {
         else
            echo 'PCCS_URL='${PCCS_URL}'/sgx/certification/v3/' > /etc/sgx_default_qcnl.conf
            echo 'USE_SECURE_CERT=FALSE' >> /etc/sgx_default_qcnl.conf
+           cp /etc/sgx_default_qcnl.conf /opt/occlum_spark/image/etc/
            cd /root/demos/remote_attestation/dcap/
            #build .c file
            bash ./get_quote_on_ppml.sh
@@ -138,51 +139,20 @@ init_instance() {
 }
 
 build_spark() {
-    # Copy python examples and unzip python lib
-    mkdir -p image/py-examples
-    cp -rf /opt/py-examples/* image/py-examples
-    # Copy scala files for absolute path examples
-    mkdir -p image/examples/
-    cp -rf /opt/spark/examples/* image/examples/
-    # Copy JVM and class file into Occlum instance and build
-    cd /opt/occlum_spark
-    mkdir -p image/usr/lib/jvm
-    cp -r /usr/lib/jvm/java-8-openjdk-amd64 image/usr/lib/jvm
-    cp -rf /etc/java-8-openjdk image/etc/
     # Copy K8s secret
     mkdir -p image/var/run/secrets/
     cp -r /var/run/secrets/* image/var/run/secrets/
-    ls image/var/run/secrets/kubernetes.io/serviceaccount/
-    # Copy libs
-    cp /lib/x86_64-linux-gnu/libz.so.1 image/lib
-    cp /lib/x86_64-linux-gnu/libz.so.1 image/$occlum_glibc
-    cp /lib/x86_64-linux-gnu/libtinfo.so.5 image/$occlum_glibc
-    cp /lib/x86_64-linux-gnu/libnss*.so.2 image/$occlum_glibc
-    cp /lib/x86_64-linux-gnu/libresolv.so.2 image/$occlum_glibc
-    cp $occlum_glibc/libdl.so.2 image/$occlum_glibc
-    cp $occlum_glibc/librt.so.1 image/$occlum_glibc
-    cp $occlum_glibc/libm.so.6 image/$occlum_glibc
-    # Copy libhadoop
-    cp /opt/libhadoop.so image/lib
-    # Prepare Spark
-    mkdir -p image/opt/spark
-    cp -rf $SPARK_HOME/* image/opt/spark/
-    # Copy etc files
-    cp -rf /etc/hosts image/etc/
-    echo "$HOST_IP occlum-node" >> image/etc/hosts
-    # cat image/etc/hosts
 
-    cp -rf /etc/hostname image/etc/
-    cp -rf /etc/ssl image/etc/
-    cp -rf /etc/passwd image/etc/
-    cp -rf /etc/group image/etc/
-    cp -rf /etc/nsswitch.conf image/etc/
+    #copy libs for attest quote in occlum
+    cp -f /opt/occlum_spark/image/lib/libgomp.so.1 /opt/occlum_spark/image/opt/occlum/glibc/lib --remove-destination
+    cp -f /opt/occlum_spark/image/lib/libc.so /opt/occlum_spark/image/opt/occlum/glibc/lib --remove-destination
+    rm image/lib/*
+    cp -f /usr/lib/x86_64-linux-gnu/*sgx* /opt/occlum_spark/image/opt/occlum/glibc/lib --remove-destination
+    cp -f /usr/lib/x86_64-linux-gnu/*dcap* /opt/occlum_spark/image/opt/occlum/glibc/lib --remove-destination
+    cp -f /usr/lib/x86_64-linux-gnu/libcrypt.so.1 /opt/occlum_spark/image/opt/occlum/glibc/lib --remove-destination
 
-    # Prepare BigDL
-    mkdir -p image/bin/jars
-    cp -f $BIGDL_HOME/jars/* image/bin/jars
-    cp -rf /opt/spark-source image/opt/
-
+    # copy spark and bigdl and others dependencies
+    copy_bom -f /opt/spark.yaml --root image --include-dir /opt/occlum/etc/template
     # Build
     occlum build
 
@@ -192,25 +162,23 @@ build_spark() {
             echo "[ERROR] Attestation set to true but NO PCCS"
             exit 1
         else
-            if [[ $RUNTIME_ENV == "driver" || $RUNTIME_ENV == "native" ]]; then
-                #verify ehsm service
-                cd /opt/
-                bash verify-attestation-service.sh
-                #register application
+            #verify ehsm service
+            cd /opt/
+            bash verify-attestation-service.sh
+            #register application
 
-                #get mrenclave mrsigner
-                MR_ENCLAVE_temp=$(bash print_enclave_signer.sh | grep mr_enclave)
-                MR_ENCLAVE_temp_arr=(${MR_ENCLAVE_temp})
-                export MR_ENCLAVE=${MR_ENCLAVE_temp_arr[1]}
-                MR_SIGNER_temp=$(bash print_enclave_signer.sh | grep mr_signer)
-                MR_SIGNER_temp_arr=(${MR_SIGNER_temp})
-                export MR_SIGNER=${MR_SIGNER_temp_arr[1]}
+            #get mrenclave mrsigner
+            MR_ENCLAVE_temp=$(bash print_enclave_signer.sh | grep mr_enclave)
+            MR_ENCLAVE_temp_arr=(${MR_ENCLAVE_temp})
+            export MR_ENCLAVE=${MR_ENCLAVE_temp_arr[1]}
+            MR_SIGNER_temp=$(bash print_enclave_signer.sh | grep mr_signer)
+            MR_SIGNER_temp_arr=(${MR_SIGNER_temp})
+            export MR_SIGNER=${MR_SIGNER_temp_arr[1]}
 
-                #register and get policy_Id
-                policy_Id_temp=$(bash register.sh | grep policy_Id)
-                policy_Id_temp_arr=(${policy_Id_temp})
-                export policy_Id=${policy_Id_temp_arr[1]}
-            fi
+            #register and get policy_Id
+            policy_Id_temp=$(bash register.sh | grep policy_Id)
+            policy_Id_temp_arr=(${policy_Id_temp})
+            export policy_Id=${policy_Id_temp_arr[1]}
         fi
         #register error
         if [[ $? -gt 0 || -z "$policy_Id" ]]; then
@@ -240,6 +208,7 @@ build_spark() {
                             -u $ATTESTATION_URL \
                             -i $APP_ID \
                             -k $API_KEY \
+                            -c $CHALLENGE \
                             -O occlum \
                             -o $policy_Id
                 if [ $? -gt 0 ]; then
@@ -281,6 +250,22 @@ run_pyspark_sql_example() {
                 -cp "$SPARK_HOME/conf/:$SPARK_HOME/jars/*" \
                 -Xmx3g org.apache.spark.deploy.SparkSubmit \
                 /py-examples/sql_example.py
+}
+
+run_pyspark_sklearn_example() {
+    init_instance spark
+    build_spark
+    cd /opt/occlum_spark
+    echo -e "${BLUE}occlum run pyspark sklearn example${NC}"
+    occlum run /usr/lib/jvm/java-8-openjdk-amd64/bin/java \
+                -XX:-UseCompressedOops -XX:MaxMetaspaceSize=$META_SPACE \
+                -XX:ActiveProcessorCount=4 \
+                -Divy.home="/tmp/.ivy" \
+                -Dos.name="Linux" \
+                -Djdk.lang.Process.launchMechanism=vfork \
+                -cp "$SPARK_HOME/conf/:$SPARK_HOME/jars/*" \
+                -Xmx3g org.apache.spark.deploy.SparkSubmit \
+                /py-examples/sklearn_example.py
 }
 
 run_spark_pi() {
@@ -551,19 +536,16 @@ id=$([ -f "$pid" ] && echo $(wc -l < "$pid") || echo "0")
 arg=$1
 case "$arg" in
     init)
-       export RUNTIME_ENV="native"
         init_instance
         build_spark
         ;;
     initDriver)
-        export RUNTIME_ENV="driver"
         init_instance
         build_spark
         ;;
     initExecutor)
         # to do
         # now executor have to register again
-        export RUNTIME_ENV="native"
         init_instance
         build_spark
         ;;
@@ -573,6 +555,10 @@ case "$arg" in
         ;;
     pysql)
         run_pyspark_sql_example
+        cd ../
+        ;;
+    pysklearn)
+        run_pyspark_sklearn_example
         cd ../
         ;;
     pi)

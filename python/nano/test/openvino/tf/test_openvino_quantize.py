@@ -17,7 +17,7 @@ from unittest import TestCase
 import tensorflow as tf
 from tensorflow.keras.applications.mobilenet_v2 import MobileNetV2
 import numpy as np
-from bigdl.nano.tf.keras import Model
+from bigdl.nano.tf.keras import Model, InferenceOptimizer
 
 
 class TestOpenVINO(TestCase):
@@ -30,9 +30,10 @@ class TestOpenVINO(TestCase):
 
         # Case1: Trace and quantize
         openvino_model = model.trace(accelerator='openvino')
-        openvino_quantized_model = openvino_model.quantize(accelerator='openvino',
-                                                           calib_dataset=train_dataset,
-                                                           thread_num=8)
+        openvino_quantized_model = InferenceOptimizer.quantize(openvino_model,
+                                                               accelerator='openvino',
+                                                               x=train_dataset,
+                                                               thread_num=8)
 
         y_hat = openvino_quantized_model(train_examples[:10])
         assert y_hat.shape == (10, 10)
@@ -41,8 +42,9 @@ class TestOpenVINO(TestCase):
         assert y_hat.shape == (100, 10)
 
         # Case2: Quantize directly from tensorflow
-        openvino_quantized_model = model.quantize(accelerator='openvino',
-                                                  calib_dataset=train_dataset)
+        openvino_quantized_model = InferenceOptimizer.quantize(model,
+                                                               accelerator='openvino',
+                                                               x=train_dataset)
         
         y_hat = openvino_quantized_model(train_examples[:10])
         assert y_hat.shape == (10, 10)
@@ -55,9 +57,62 @@ class TestOpenVINO(TestCase):
         np.testing.assert_allclose(preds, openvino_preds, rtol=1e-2)
 
         # Case 3: with config
-        openvino_quantized_model = model.quantize(accelerator='openvino',
-                                                  calib_dataset=train_dataset,
-                                                  openvino_config={"PERFORMANCE_HINT": "LATENCY"})
+        openvino_quantized_model = InferenceOptimizer.quantize(model,
+                                                               accelerator='openvino',
+                                                               x=train_dataset,
+                                                               openvino_config={"PERFORMANCE_HINT": "LATENCY"})
 
         y_hat = openvino_quantized_model(train_examples[:10])
         assert y_hat.shape == (10, 10)
+
+    def test_model_quantize_openvino_without_dataset(self):
+        model = MobileNetV2(weights=None, input_shape=[40, 40, 3], classes=10)
+        model = Model(inputs=model.inputs, outputs=model.outputs)
+        train_examples = np.random.random((100, 40, 40, 3))
+        train_labels = np.random.randint(0, 10, size=(100,))
+
+        openvino_quantized_model = InferenceOptimizer.quantize(model,
+                                                               accelerator='openvino',
+                                                               x=train_examples,
+                                                               y=train_labels)
+
+        preds = model.predict(train_examples)
+        openvino_preds = openvino_quantized_model.predict(train_examples)
+        np.testing.assert_allclose(preds, openvino_preds, rtol=1e-2)
+
+    def test_model_quantize_openvino_with_only_x(self):
+        model = MobileNetV2(weights=None, input_shape=[40, 40, 3], classes=10)
+        model = Model(inputs=model.inputs, outputs=model.outputs)
+        # test numpy array
+        train_examples = np.random.random((100, 40, 40, 3))
+        openvino_quantized_model = InferenceOptimizer.quantize(model,
+                                                               accelerator='openvino',
+                                                               x=train_examples,
+                                                               y=None)
+
+        preds = model.predict(train_examples)
+        openvino_preds = openvino_quantized_model.predict(train_examples)
+        np.testing.assert_allclose(preds, openvino_preds, rtol=1e-2)
+        
+        # test tf tensor
+        train_examples = tf.convert_to_tensor(train_examples)
+        openvino_quantized_model = InferenceOptimizer.quantize(model,
+                                                               accelerator='openvino',
+                                                               x=train_examples,
+                                                               y=None)
+
+        preds = model.predict(train_examples)
+        openvino_preds = openvino_quantized_model.predict(train_examples)
+        np.testing.assert_allclose(preds, openvino_preds, rtol=1e-2)
+        
+        # test dataset
+        train_examples = np.random.random((100, 40, 40, 3))
+        train_dataset = tf.data.Dataset.from_tensor_slices(train_examples)
+        openvino_quantized_model = InferenceOptimizer.quantize(model,
+                                                               accelerator='openvino',
+                                                               x=train_dataset,
+                                                               y=None)
+
+        preds = model.predict(train_examples)
+        openvino_preds = openvino_quantized_model.predict(train_examples)
+        np.testing.assert_allclose(preds, openvino_preds, rtol=1e-2)

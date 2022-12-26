@@ -83,7 +83,6 @@ def find_latest_checkpoint(model_dir, model_type="bigdl"):
 
 def convert_predict_rdd_to_xshard(data, prediction_rdd):
     import numpy as np
-    from bigdl.orca.data import SparkXShards
 
     def group_index(iter):
         for data in iter:
@@ -127,13 +126,26 @@ def convert_predict_rdd_to_xshard(data, prediction_rdd):
     return SparkXShards(result_rdd)
 
 
-def update_predict_xshards(xshard, pred_xshards):
-    def updates(d1_d2):
+def update_predict_xshards(xshards, pred_xshards):
+    def update_dict(d1_d2):
         d1, d2 = d1_d2
         d1.update(d2)
         return d1
 
-    result = SparkXShards(xshard.rdd.zip(pred_xshards.rdd).map(updates))
+    result = SparkXShards(xshards.rdd.zip(pred_xshards.rdd).map(update_dict),
+                          class_name="builtins.dict")
+    return result
+
+
+def add_predict_to_pd_xshards(xshards, pred_xshards):
+    def add_prediction(df_preds):
+        df, preds = df_preds
+        preds = preds["prediction"]
+        df["prediction"] = [pred for pred in preds]
+        return df
+
+    result = SparkXShards(xshards.rdd.zip(pred_xshards.rdd).map(add_prediction),
+                          class_name="pandas.core.frame.DataFrame")
     return result
 
 
@@ -193,6 +205,8 @@ def convert_predict_rdd_to_dataframe(df, prediction_rdd):
 
     combined_rdd = df.rdd.zip(prediction_rdd).map(combine)
     columns = df.columns + ["prediction"]
+    # Converting to DataFrame will trigger the computation
+    # to infer the schema of the prediction column.
     result_df = combined_rdd.toDF(columns)
     return result_df
 
@@ -311,7 +325,7 @@ def arrays2others(iter, feature_cols, label_cols, shard_size=None, generate_func
 
     if feature_lists is not None:
         if shard_size:
-            # remove empty array in last shard
+            # remove empty part of the ndarray in the last shard
             rest_size = counter % shard_size
             feature_lists = [feature[0:rest_size] for feature in feature_lists]
             if label_cols is not None:
@@ -326,20 +340,37 @@ arrays2pandas = partial(arrays2others, generate_func=_generate_output_pandas_df)
 
 
 def transform_to_shard_dict(data, feature_cols, label_cols=None):
+    def single_col_to_numpy(col_series, dtype):
+        if dtype == np.ndarray:
+            # In this case, directly calling to_numpy will make the result
+            # ndarray have type np.object.
+            # Need to explicitly specify the dtype.
+            dtype = col_series.iloc[0].dtype
+            return col_series.to_numpy(dtype=dtype)
+        else:
+            return col_series.to_numpy()
+
     def to_shard_dict(df):
         result = dict()
+        col_types = df.dtypes
         if len(feature_cols) == 1:
             featureLists = df[feature_cols[0]].tolist()
             result["x"] = np.stack(featureLists, axis=0)
         else:
-            result["x"] = [df[feature_col].to_numpy() for feature_col in feature_cols]
+            result["x"] = [single_col_to_numpy(df[feature_col], col_types[feature_col])
+                           for feature_col in feature_cols]
 
         if label_cols:
-            result["y"] = df[label_cols[0]].to_numpy()
+            y = [single_col_to_numpy(df[label_col], col_types[label_col])
+                 for label_col in label_cols]
+            if len(label_cols) == 1:
+                y = y[0]
+            result["y"] = y
 
         return result
 
     data = data.transform_shard(to_shard_dict)
+    data._set_class_name("builtins.dict")
     return data
 
 
@@ -347,7 +378,7 @@ def process_xshards_of_pandas_dataframe(data, feature_cols, label_cols=None, val
                                         mode=None):
     data = transform_to_shard_dict(data, feature_cols, label_cols)
     if mode == "fit":
-        if validation_data:
+        if validation_data is not None:
             invalidInputError(validation_data._get_class_name() == 'pandas.core.frame.DataFrame',
                               "train data and validation data should be both XShards of Pandas"
                               " DataFrame")
@@ -357,10 +388,9 @@ def process_xshards_of_pandas_dataframe(data, feature_cols, label_cols=None, val
         return data
 
 
-def _dataframe_to_xshards(data, feature_cols, label_cols=None, accept_str_col=False):
-    from bigdl.orca import OrcaContext
+def _dataframe_to_xshards(data, feature_cols, label_cols=None,
+                          accept_str_col=False, shard_size=None):
     schema = data.schema
-    shard_size = OrcaContext._shard_size
     numpy_rdd = data.rdd.map(lambda row: convert_row_to_numpy(row,
                                                               schema,
                                                               feature_cols,
@@ -370,7 +400,7 @@ def _dataframe_to_xshards(data, feature_cols, label_cols=None, accept_str_col=Fa
                                                               feature_cols,
                                                               label_cols,
                                                               shard_size))
-    return SparkXShards(shard_rdd)
+    return SparkXShards.lazy(shard_rdd, class_name="builtins.dict")
 
 
 def dataframe_to_xshards_of_feature_dict(data, feature_cols, label_cols=None,
@@ -430,7 +460,7 @@ def dataframe_to_xshards_of_pandas_df(data, feature_cols, label_cols=None, accep
 
 
 def dataframe_to_xshards(data, validation_data, feature_cols, label_cols, mode="fit",
-                         num_workers=None, accept_str_col=False):
+                         num_workers=None, accept_str_col=False, shard_size=None):
     from pyspark.sql import DataFrame
     valid_mode = {"fit", "evaluate", "predict"}
     invalidInputError(mode in valid_mode,
@@ -451,16 +481,16 @@ def dataframe_to_xshards(data, validation_data, feature_cols, label_cols, mode="
             num_data_part = data.rdd.getNumPartitions()
             validation_data = validation_data.repartition(num_data_part)
 
-    data = _dataframe_to_xshards(data, feature_cols, label_cols, accept_str_col)
+    data = _dataframe_to_xshards(data, feature_cols, label_cols, accept_str_col, shard_size)
     if validation_data is not None:
         validation_data = _dataframe_to_xshards(validation_data, feature_cols, label_cols,
-                                                accept_str_col)
+                                                accept_str_col, shard_size)
 
     return data, validation_data
 
 
 def maybe_dataframe_to_xshards(data, validation_data, feature_cols, label_cols, mode="fit",
-                               num_workers=None, accept_str_col=False):
+                               num_workers=None, accept_str_col=False, shard_size=None):
     from pyspark.sql import DataFrame
     if isinstance(data, DataFrame):
         data, validation_data = dataframe_to_xshards(data, validation_data,
@@ -468,7 +498,8 @@ def maybe_dataframe_to_xshards(data, validation_data, feature_cols, label_cols, 
                                                      label_cols=label_cols,
                                                      mode=mode,
                                                      num_workers=num_workers,
-                                                     accept_str_col=accept_str_col)
+                                                     accept_str_col=accept_str_col,
+                                                     shard_size=shard_size)
     return data, validation_data
 
 
@@ -757,3 +788,13 @@ def save_model(model, filepath, overwrite=True, include_optimizer=True, save_for
                 put_local_dir_tree_to_remote(temp_path, filepath)
         finally:
             shutil.rmtree(temp_dir)
+
+
+def get_driver_node_ip():
+    """
+    Returns the IP address of the current node.
+
+    :return: the IP address of the current node.
+    """
+    import ray
+    return ray._private.services.get_node_ip_address()
