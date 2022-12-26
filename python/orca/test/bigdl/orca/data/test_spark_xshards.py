@@ -307,6 +307,9 @@ class TestSparkXShards(TestCase):
         data_shard = bigdl.orca.data.pandas.read_csv(file_path)
         scale = MinMaxScaler(inputCol=["sale_price"], outputCol="sale_price_scaled")
         transformed_data_shard = scale.fit_transform(data_shard)
+        columns = list(transformed_data_shard.get_schema()['columns'])
+        assert len(columns) == 4
+        assert "sale_price_scaled" in columns
 
     def test_standardscale_shards(self):
         file_path = os.path.join(self.resource_path, "orca/data/csv")
@@ -314,6 +317,9 @@ class TestSparkXShards(TestCase):
         data_shard = bigdl.orca.data.pandas.read_csv(file_path)
         scale = StandardScaler(inputCol="sale_price", outputCol="sale_price_scaled")
         transformed_data_shard = scale.fit_transform(data_shard)
+        columns = list(transformed_data_shard.get_schema()['columns'])
+        assert len(columns) == 4
+        assert "sale_price_scaled" in columns
 
     def test_max_values(self):
         file_path = os.path.join(self.resource_path, "orca/data/csv/morgage1.csv")
