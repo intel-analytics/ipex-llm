@@ -23,6 +23,7 @@ import numpy as np
 import torch
 import warnings
 from collections import OrderedDict
+from torch.optim import Optimizer
 from mmcv.runner import EpochBasedRunner
 from mmcv.runner.utils import get_host_info
 from mmcv.parallel import is_module_wrapper
