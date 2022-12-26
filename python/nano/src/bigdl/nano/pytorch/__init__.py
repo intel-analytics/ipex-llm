@@ -21,6 +21,17 @@ __all__ = ["Trainer", "TorchNano", "InferenceOptimizer"]
 import os
 if 'KMP_INIT_AT_FORK' in os.environ:
     del os.environ['KMP_INIT_AT_FORK']
+
+# reset the num of threads
+import platform
+if platform.system() == "Linux":
+    # only UNIX-like system applied
+    import torch
+    affinity_core_num = len(os.sched_getaffinity(0))
+    preset_thread_nums = torch.get_num_threads()
+    if preset_thread_nums > affinity_core_num:
+        torch.set_num_threads(preset_thread_nums)
+
 from .dispatcher import patch_torch, unpatch_torch
 from bigdl.nano.pytorch.inference import InferenceOptimizer
 from bigdl.nano.pytorch.trainer import Trainer
