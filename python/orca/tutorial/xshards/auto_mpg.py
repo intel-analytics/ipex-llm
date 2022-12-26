@@ -30,7 +30,9 @@ init_orca_context(memory="4g")
 path = 'auto-mpg.csv'
 column_names = ['MPG', 'Cylinders', 'Displacement', 'Horsepower', 'Weight',
                 'Acceleration', 'Model Year', 'Origin']
-data_shard = bigdl.orca.data.pandas.read_csv(path, names=column_names, header=0)
+data_shard = bigdl.orca.data.pandas.read_csv(file_path=path, names=column_names,
+                                             na_values="?", comment='\t',
+                                             sep=" ", skipinitialspace=True)
 
 
 def drop_na(df):
