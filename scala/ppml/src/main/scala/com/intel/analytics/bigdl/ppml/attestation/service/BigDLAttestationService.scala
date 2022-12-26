@@ -88,12 +88,13 @@ class BigDLAttestationService(attestationServerIP: String, attestationServerPort
     val postResult: JSONObject = timing("BigDLAttestationService request for VerifyQuote") {
       val postString: String = "{\"quote\": \"" + quote + "\"}"
       System.out.println(postString)
-      System.out.println(constructUrl(action))
+      val postUrl = constructUrl(action, httpsEnabled)
+      System.out.println(postUrl)
       var response: String = null
       if (httpsEnabled) {
-        response = HTTPSUtil.retrieveResponse(constructUrl(action), sslConSocFactory, postString)
+        response = HTTPSUtil.retrieveResponse(postUrl, sslConSocFactory, postString)
       } else {
-        response = HTTPUtil.retrieveResponse(constructUrl(action), postString)
+        response = HTTPUtil.retrieveResponse(postUrl, postString)
       }
 
       if (response != null && response.startsWith("\ufeff")) {
