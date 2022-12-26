@@ -60,7 +60,7 @@ def post_request(ip, port, action, payload):
 def request_primary_key_cipher_text(ip, port):
     action = "CreateKey"
     payload = {
-        "keyspec":"AES_GCM_128",
+        "keyspec":"EH_AES_GCM_128",
         "origin":"EH_INTERNAL_KEY"
     }
     primary_key_cipher_text = post_request(ip, port, action, payload)['keyid']
