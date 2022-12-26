@@ -892,6 +892,7 @@ class SparkXShards(XShards):
         import pyspark
         spark_version = pyspark.version.__version__
         major_version = spark_version.split(".")[0]
+        print("version:", major_version)
 
         def func(pdf):
             pdf_schema = None
@@ -912,7 +913,9 @@ class SparkXShards(XShards):
                         import pyarrow as pa
                         arrow_schema = pa.Schema.from_pandas(pdf, preserve_index=False)
                         struct = StructType()
+                        print("*************")
                         for name, field in zip(schema, arrow_schema):
+                            print(name, field.type)
                             struct.add(
                                 name, from_arrow_type(field.type), nullable=field.nullable
                             )
