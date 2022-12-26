@@ -87,6 +87,7 @@ object AttestationCLI {
             new OcclumQuoteGeneratorImpl()
           case "TDX" =>
             new TDXQuoteGeneratorImpl()
+          case _ => throw new AttestationRuntimeException("Wrong quote type")
         }
         quote = quoteGenerator.getQuote(userReportData.getBytes)
 
