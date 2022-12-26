@@ -32,7 +32,7 @@ def ng_sampling(data, user_num, item_num, num_ng):
     data_X = data.values.tolist()
 
     # calculate a dok matrix
-    train_mat = sp.dok_matrix((user_num, item_num), dtype=np.int64)
+    train_mat = sp.dok_matrix((user_num, item_num), dtype=np.int32)
     for row in data_X:
         train_mat[row[0], row[1]] = 1
 
