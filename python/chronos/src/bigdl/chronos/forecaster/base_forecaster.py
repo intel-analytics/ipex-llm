@@ -1659,6 +1659,57 @@ class BasePytorchForecaster(Forecaster):
             InferenceOptimizer.save(self.accelerated_model, dirname)
 
     def export_torchscript_module(self, tsdata, path_dir=None, drop_dtcol=True):
+        """
+        Export Chronos forecasting pipeline to torchscript module, so that it can be used
+        without Python environment. For example, when you finish developing a forecaster, you
+        can call this method to save the whole pipeline (data preprocessing, infernce, data
+        postprocessing) to a torchscript module, then you could deploy the pipeline in C++ using
+        libtorch APIs.
+
+        Currently the pipeline is similar to the following code:
+
+        >>> # preprocess
+        >>> tsdata.scale(scaler, fit=False) \\
+        >>>       .roll(lookback, horizon, is_predict=True)
+        >>> preprocess_output = tsdata.to_numpy()
+        >>> # inference using trained forecaster
+        >>> # forecaster_module is obtained by forecaster.export_torchscript_file()
+        >>> inference_output = forecaster_module.forward(preprocess_output)
+        >>> # postprocess
+        >>> postprocess_output = tsdata.unscale_numpy(inference_output)
+
+        The limitations of this API is same as TSDataset.export_jit():
+            1. Please make sure the value of each column can be converted to Pytorch tensor,
+               for example, id "00" is not allowed because str can not be converted to a tensor,
+               you should use integer (0, 1, ..) as id instead of string.
+            2. Some features in tsdataset.scale and tsdataset.roll are unavailable in this
+               pipeline:
+                    a. If self.roll_additional_feature is not None, it can't be processed in scale
+                       and roll
+                    b. id_sensitive, time_enc and label_len parameter is not supported in roll
+            3. Users are expected to call .scale(scaler, fit=True) before calling export_jit.
+               Single roll operation is not supported for converting now.
+
+        :param tsdata: The TSDataset instance used when developing the forecaster.
+        :param path_dir: The path to save the compiled torchscript module, default to None.
+               If set to None, you should call torch.jit.save() in your code to save the returned
+               module; if not None, the path should be a directory, and the module will be saved
+               at "path_dir/chronos_forecasting_pipeline.pt".
+        :param drop_dtcol: Same as drop_dtcol in TSDataset.export_jit().
+               Whether to delete the datetime column. Since datetime value (like
+               "2022-12-12") can't be converted to Pytorch tensor, you can choose different ways
+               to workaround this. If set to True, the datetime column will be deleted, then you
+               also need to skip the datetime column when reading data from data source (like
+               csv files) in deployment environment to keep the same structure as the data
+               used in development; if set to False, the datetime column will not be deleted, and
+               you need to make sure the datetime colunm can be successfully converted to Pytorch
+               tenor when reading data in deployment environment, for example, you can set each
+               data in datetime column to an int (or other vaild types) since scale and roll
+               doesn't need datetime column so the value can be arbitrary.
+               The value defaults to True.
+
+        :return: The compiled torchscript module containing the whole forecasting pipeline.
+        """
         import tempfile
         import shutil
         from .utils import get_exported_module
@@ -1669,7 +1720,7 @@ class BasePytorchForecaster(Forecaster):
         exported_module = get_exported_module(tsdata, forecaster_path, drop_dtcol)
 
         if path_dir:
-            saved_path = os.path.join(path_dir, "forecaster_pipeline.pt")
+            saved_path = os.path.join(path_dir, "chronos_forecasting_pipeline.pt")
             torch.jit.save(exported_module, saved_path)
 
         if os.path.exists(temp_dir):
