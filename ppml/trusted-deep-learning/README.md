@@ -332,3 +332,13 @@ PyTorch also recommends to utilize NUMA when do PyTorch training, more details c
 In native mode (with SGX disabled), the use of hyper-threading may increase the training time because two logical cores reside in the same physical core may not be able to execute fully in parallel.
 
 In SGX mode, there is a problem when using Hyper-threading combined with Gramine, which leads to the result that only one of the hyper-threads in the physical core can be fully utilized.  We are currently investigating this issue.  In this case, the use of hyper-threads may bring additional overheads to the distributed training.
+
+
+
+### Encryption / Decryption
+
+#### torch.load / torch.save
+
+We provide a customized `torch.save` and `torch.load` method.  The `torch.save` method will now automatically encrypt the object before saving it on disk or in memory.  In the opposite, the `torch.load` method will automatically decrypt the object before loading it back to memory so that the user do not need to worry about encryption/decryption.
+
+We provide an example in the image, which can be found in the path `/ppml/examples/load_save_ex.py`.
