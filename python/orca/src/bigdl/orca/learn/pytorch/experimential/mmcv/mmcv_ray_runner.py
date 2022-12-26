@@ -142,7 +142,7 @@ class MMCVRayEpochRunner(BaseRunner, EpochBasedRunner):
         # 2. It implement two APIs ``train_step()`` and ``val_step()``.
         self.model = MMDistributedDataParallel(self.model)  # type:ignore
 
-    def train_epochs(self,  # type:ignore[override]
+    def train_epochs(self,
                      data_loaders_creators: List[Callable],
                      workflow: List[Tuple[str, int]],
                      max_epochs: Optional[int] = None,  # deprecated
