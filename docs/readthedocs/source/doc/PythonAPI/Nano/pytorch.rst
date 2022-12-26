@@ -15,13 +15,13 @@ bigdl.nano.pytorch.InferenceOptimizer
 .. autoclass:: bigdl.nano.pytorch.InferenceOptimizer
     :members:
     :undoc-members:
-    :exclude-members: ALL_INFERENCE_ACCELERATION_METHOD, DEFAULT_INFERENCE_ACCELERATION_METHOD
+    :exclude-members: ALL_INFERENCE_ACCELERATION_METHOD, DEFAULT_INFERENCE_ACCELERATION_METHOD, method
     :inherited-members:
 
-bigdl.nano.pytorch.TorchNano
+TorchNano API
 ---------------------------
 
-.. autoclass:: bigdl.nano.pytorch.TorchNano
+.. automodule:: bigdl.nano.pytorch.torch_nano
     :members:
     :undoc-members:
     :exclude-members: run
