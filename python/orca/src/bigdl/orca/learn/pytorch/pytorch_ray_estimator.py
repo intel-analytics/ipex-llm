@@ -141,7 +141,7 @@ class PyTorchRayEstimator(BaseRayEstimator):
                    runner_cls=PytorchRayWorker,
                    workers_per_node=workers_per_node)
 
-    def fit(self,  # type:ignore[override]
+    def fit(self,
             data: Union['SparkXShards',
                         'SparkDataFrame',
                         'RayDataset',
@@ -315,7 +315,7 @@ class PyTorchRayEstimator(BaseRayEstimator):
         else:
             return epoch_stats
 
-    def predict(self,  # type:ignore[override]
+    def predict(self,
                 data: Union['SparkXShards', 'SparkDataFrame'],
                 batch_size: int=32,
                 feature_cols: Optional[List[str]]=None,
@@ -378,7 +378,7 @@ class PyTorchRayEstimator(BaseRayEstimator):
 
         return result
 
-    def evaluate(self,  # type:ignore[override]
+    def evaluate(self,
                  data: Union['SparkXShards',
                              'SparkDataFrame',
                              'RayDataset',
