@@ -66,8 +66,8 @@ class Trainer(pl.Trainer):
         """
         A pytorch lightning trainer that uses bigdl-nano optimization.
 
-        :param num_processes: number of processes in distributed training. default: 1.
-        :param use_ipex: whether we use ipex as accelerator for trainer. default: False.
+        :param num_processes: number of processes in distributed training. default: ``1``.
+        :param use_ipex: whether we use ipex as accelerator for trainer. default: ``False``.
         :param distributed_backend: use which backend in distributed mode, defaults to
             ``'subprocess'``, now avaiable backends are ``'spawn'``, ``'subprocess'`` and ``'ray'``
         :param cpu_for_each_process: A list of length ``num_processes``, each containing a list of
@@ -77,7 +77,7 @@ class Trainer(pl.Trainer):
             defaults to ``False``.
         :param auto_lr: whether to scale the learning rate linearly by ``num_processes`` times.
             Defaults to ``True``.
-            A dict with ``warmup_epochs`` as key is also accepted to control the number of epochs 
+            A dict with ``warmup_epochs`` as key is also accepted to control the number of epochs
             needed for the learning rate to be scaled by ``num_processes`` times.
             If ``auto_lr=Ture``, ``warmup_epochs`` will by default be ``max_epochs // 10``.
             If ``num_processes=1`` or other ``lr_scheduler`` is set, ``auto_lr`` will be ignored.
