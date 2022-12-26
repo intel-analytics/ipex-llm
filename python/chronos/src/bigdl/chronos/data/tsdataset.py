@@ -1216,6 +1216,28 @@ class TSDataset:
         Preprocessing and postprocessing will be converted to separate torchscript modules, so two
         modules will be returned and saved.
 
+        When deploying, the compiled torchscript module can be used by:
+
+        >>> // deployment in C++
+        >>> #include <torch/torch.h>
+        >>> #include <torch/script.h>
+        >>> // create input tensor
+        >>> // the data to create input tensor should have the same format as the
+        >>> // data used in developing
+        >>> torch::Tensor input = create_input_tensor();
+        >>> // load the module
+        >>> torch::jit::script::Module preprocessing;
+        >>> preprocessing = torch::jit::load(preprocessing_path);
+        >>> // run data preprocessing
+        >>> torch::Tensor preprocessing_output = preprocessing.forward(input_tensor).toTensor();
+        >>> // inference using your trained model
+        >>> inference_output = trained_model(preprocessing_output)
+        >>> // load the postprocessing module
+        >>> torch::jit::script::Module postprocessing;
+        >>> postprocessing = torch::jit::load(postprocessing_path);
+        >>> // run postprocessing
+        >>> torch::Tensor output = postprocessing.forward(inference_output).toTensor()
+
         Currently there are some limitations:
             1. Please make sure the value of each column can be converted to Pytorch tensor,
                for example, id "00" is not allowed because str can not be converted to a tensor,
