@@ -46,6 +46,7 @@ jobs:
           python python/benchmark/run.py chronos tsdataset_processing
           python python/benchmark/run.py chronos forecaster_training
           python python/benchmark/run.py chronos forecaster_inference
+          python python/benchmark/run.py nano torch_inference_optimizer
           python python/benchmark/run.py nano resnet_inference
           python python/benchmark/run.py nano resnet50
         env:

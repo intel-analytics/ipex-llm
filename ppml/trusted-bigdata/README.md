@@ -5,13 +5,13 @@ This image contains Gramine and some popular Big Data frameworks including Hadoo
 ## Before Running Code
 ### 1. Build Docker Images
 
-**Tip:** if you want to skip building the custom image, you can use our public image `intelanalytics/bigdl-ppml-trusted-bigdata-gramine-reference:2.2.0-SNAPSHOT` for a quick start, which is provided for a demo purpose. Do not use it in production.
+**Tip:** if you want to skip building the custom image, you can use our public image `intelanalytics/bigdl-ppml-trusted-bigdata-gramine-reference:latest` for a quick start, which is provided for a demo purpose. Do not use it in production.
 
 #### 1.1 Build Bigdata Base Image
 
 The bigdata base image is a public one that does not contain any secrets. You will use the base image to get your own custom image in the following.
 
-You can use out pulic bigdata base image `intelanalytics/bigdl-ppml-trusted-bigdata-gramine-base:2.2.0-SNAPSHOT`, which is recommended. Or you can build your own base image, which is expected to be exactly same with our one.
+You can use out pulic bigdata base image `intelanalytics/bigdl-ppml-trusted-bigdata-gramine-base:latest`, which is recommended. Or you can build your own base image, which is expected to be exactly same with our one.
 
 Before building your own base image, please modify the paths in `ppml/trusted-bigdata/build-base-image.sh`. Then build the docker image with the following command.
 

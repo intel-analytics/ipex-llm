@@ -1,0 +1,45 @@
+name: 'Setup Nano TensorFlow Env'
+description: 'setup nano tensorflow env'
+
+inputs:
+  python-version: 
+    description: 'python version'
+    required: true
+
+runs:
+  using: "composite"
+  steps:
+    - name: Install dependencies
+      shell: bash
+      run: |
+        apt-get update && apt-get install -y wget libgl1
+
+        $CONDA/bin/conda remove -n nano-tensorflow -y --all
+        $CONDA/bin/conda create -n nano-tensorflow -y python==${PYTHON_VERSION} setuptools==58.0.4
+        source $CONDA/bin/activate nano-tensorflow
+
+        pip install pytest
+        if [ $IS_PR = "true" ]; then
+          bash python/nano/dev/build_and_install.sh linux default false tensorflow,inference
+        else
+          pip install --pre --upgrade bigdl-nano[tensorflow,inference]
+        fi
+
+        # fail to install horovod
+        # # required by Horovod test
+        # HOROVOD_WITH_MPI=1 HOROVOD_WITH_TENSORFLOW=1 HOROVOD_WITHOUT_PYTORCH=1 pip install --no-cache-dir horovod==0.25.0
+
+        # required by Ray test
+        pip install google-api-core==2.8.2
+        pip install ray[default]==1.11.0 prometheus_client==0.13.0
+
+        # required by Automl test
+        pip install ConfigSpace optuna
+
+        # required by NoteBook and Tutorial test
+        pip install tensorflow-datasets jinja2 jupyter nbconvert nbmake
+
+        source $CONDA/bin/deactivate
+      env:
+        PYTHON_VERSION: ${{ inputs.python-version }}
+        IS_PR: ${{ github.event.pull_request != null }}

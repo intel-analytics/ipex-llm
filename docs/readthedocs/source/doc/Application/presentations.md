@@ -13,13 +13,19 @@
 - Building Deep Learning Applications on Big Data Platforms, [CVPR 2018](https://cvpr2018.thecvf.com/) [tutorial](https://jason-dai.github.io/cvpr2018/), June 2018 ([slides](https://jason-dai.github.io/cvpr2018/slides/BigData_DL_Jason-CVPR.pdf))
 
 **Talks:**
+- BigDL 2.0: Seamlessly scaling end-to-end AI pipelines, [Ray Summit 2022](https://www.anyscale.com/ray-summit-2022/agenda/sessions/174), August 2022 ([slides](https://github.com/analytics-zoo/analytics-zoo.github.io/blob/master/presentations/BigDL-2.0-Seamlessly-scaling-end-to-end-AI-pipelines.pdf))
+
+- Exploration on Confidential Computing for Big Data & AI, [oneAPI DevSummit for AI 2022](https://www.oneapi.io/event-sessions/exploration-on-confidential-computing-for-big-data-ai-ai-2022/), July 2022 ([slides](https://simplecore.intel.com/oneapi-io/wp-content/uploads/sites/98/Qiyuan-Gong-and-Chunyang-Hui-Exploration-on-Confidential-Computing-for-Big-Data-AI.pdf))
+
+- Privacy Preserving Machine Learning and Big Data Analytics Using Apache Spark, [Data + AI Summit 2022](https://www.databricks.com/dataaisummit/session/privacy-preserving-machine-learning-and-big-data-analytics-using-apache-spark), June 2022 ([slides](https://microsites.databricks.com/sites/default/files/2022-07/Privacy-Preserving-Machine-Learning-and-Big-Data-Analytics-Using-Apache-Spark.pdf))
+
 - E2E Smart Transportation CV application in Inspur (using Insight Data-Intelligence platform), [CVPR 2021](https://jason-dai.github.io/cvpr2021/), July 2021 ([slides](https://jason-dai.github.io/cvpr2021/slides/Inspur%20E2E%20Smart%20Transportation%20CV%20application%20-CVPR21.pdf))
 
 - Mobile Order Click-Through Rate (CTR) Recommendation with Ray on Apache Spark at Burger King, [Ray Summit 2021](https://www.anyscale.com/events/2021/06/22/mobile-order-click-through-rate-ctr-recommendation-with-ray-on-apache-spark-at-burger-king), June 2021 ([slides](https://files.speakerdeck.com/presentations/1870110b5adf4bfc8f0c76255a417f09/Kai_Huang_and_Luyang_Wang.pdf))
 
-- Deep Reinforcement Learning Recommenders using RayOnSpark, **Data + AI Summit 2021**, May 2021 ([slides](https://github.com/analytics-zoo/analytics-zoo.github.io/blob/master/presentations/210527DeepReinforcementLearningRecommendersUsingRayOnSpark2.pdf))
+- Deep Reinforcement Learning Recommenders using RayOnSpark, *Data + AI Summit 2021*, May 2021 ([slides](https://github.com/analytics-zoo/analytics-zoo.github.io/blob/master/presentations/210527DeepReinforcementLearningRecommendersUsingRayOnSpark2.pdf))
 
-- Cluster Serving: Deep Learning Model Serving for Big Data, **Data + AI Summit 2021**, May 2021 ([slides](https://github.com/analytics-zoo/analytics-zoo.github.io/blob/master/presentations/210526Cluster-Serving.pdf))
+- Cluster Serving: Deep Learning Model Serving for Big Data, *Data + AI Summit 2021*, May 2021 ([slides](https://github.com/analytics-zoo/analytics-zoo.github.io/blob/master/presentations/210526Cluster-Serving.pdf))
 
 - Offer Recommendation System with Apache Spark at Burger King, [Data + AI Summit 2021](https://databricks.com/session_na21/offer-recommendation-system-with-apache-spark-at-burger-king), May 2021 ([slides](https://github.com/analytics-zoo/analytics-zoo.github.io/blob/master/presentations/20210526Offer%20Recommendation.pdf))
 

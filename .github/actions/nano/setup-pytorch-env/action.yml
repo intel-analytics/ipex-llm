@@ -1,0 +1,41 @@
+name: 'Setup Nano PyTorch Env'
+description: 'setup nano pytorch env'
+
+inputs:
+  python-version: 
+    description: 'python version'
+    required: true
+
+runs:
+  using: "composite"
+  steps:
+    - name: Install dependencies
+      shell: bash
+      run: |
+        apt-get update && apt-get install -y wget libgl1
+
+        $CONDA/bin/conda remove -n nano-pytorch -y --all
+        $CONDA/bin/conda create -n nano-pytorch -y python==${PYTHON_VERSION} setuptools==58.0.4
+        source $CONDA/bin/activate nano-pytorch
+
+        pip install pytest
+        if [ $IS_PR = "true" ]; then
+          bash python/nano/dev/build_and_install.sh linux default false pytorch,inference
+        else
+          pip install --pre --upgrade bigdl-nano[pytorch,inference]
+        fi
+
+        # required by Ray test
+        pip install google-api-core==2.8.2
+        pip install ray[default]==1.11.0 prometheus_client==0.13.0
+
+        # required by Automl test
+        pip install ConfigSpace optuna
+
+        # required by NoteBook and Tutorial test
+        pip install nbmake==1.3.0 lightning-bolts==0.5.0 ipykernel==5.5.6 matplotlib
+
+        source $CONDA/bin/deactivate
+      env:
+        PYTHON_VERSION: ${{ inputs.python-version }}
+        IS_PR: ${{ github.event.pull_request != null }}

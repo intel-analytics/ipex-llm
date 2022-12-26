@@ -52,16 +52,28 @@ COPY --from=final /opt/spark /opt/spark
 COPY --from=final /var/run/secrets /var/run/secrets
 COPY --from=final /opt/intel /opt/intel
 COPY --from=tini /usr/local/bin/tini /sbin/tini
+#COPY --from=final /etc /etc
 
 # Add jdk and attestation ppml jars
-#COPY --from=final /usr/lib/jvm/java-8-openjdk-amd64 /usr/lib/jvm/java-8-openjdk-amd64
-#COPY --from=final ${BIGDL_HOME}/jars/bigdl* ${BIGDL_HOME}/jars/
-#COPY --from=final ${BIGDL_HOME}/jars/all-* ${BIGDL_HOME}/jars/
+COPY --from=final /usr/lib/jvm/java-8-openjdk-amd64 /usr/lib/jvm/java-8-openjdk-amd64
+COPY --from=final ${BIGDL_HOME}/jars/bigdl* ${BIGDL_HOME}/jars/
+COPY --from=final ${BIGDL_HOME}/jars/all-* ${BIGDL_HOME}/jars/
 
 #Add quote attest lib
 COPY --from=final /usr/lib/x86_64-linux-gnu/ /usr/lib/x86_64-linux-gnu/
+RUN mkdir -p /etc/occlum_attestation/
 
-#ENV PATH="/opt/occlum/build/bin:/usr/lib/jvm/java-8-openjdk-amd64/bin:/usr/local/occlum/bin:$PATH"
-ENV PATH="/opt/occlum/build/bin:/usr/local/occlum/bin:$PATH"
+# useful etc
+COPY --from=final  /etc/java-8-openjdk  /etc/java-8-openjdk
+COPY --from=final  /etc/hosts /etc/hosts
+COPY --from=final  /etc/hostname  /etc/hostname
+COPY --from=final  /etc/ssl /etc/ssl
+COPY --from=final  /etc/passwd /etc/passwd
+COPY --from=final  /etc/group /etc/group
+COPY --from=final  /etc/nsswitch.conf /etc/nsswitch.conf
+
+
+ENV PATH="/opt/occlum/build/bin:/usr/lib/jvm/java-8-openjdk-amd64/bin:/usr/local/occlum/bin:$PATH"
+#ENV PATH="/opt/occlum/build/bin:/usr/local/occlum/bin:$PATH"
 
 ENTRYPOINT [ "/opt/entrypoint.sh" ]

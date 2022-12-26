@@ -75,7 +75,7 @@ if __name__ == "__main__":
     for i in range(x_test.shape[0]):
         x = x_test[i:i+1]
         st = time.time()
-        y_pred = forecaster.predict(x)
+        y_pred = forecaster.predict(x, acceleration=False)
         fp32_pytorch_latency.append(time.time()-st)
 
     int8_onnx_latency = []

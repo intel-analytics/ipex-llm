@@ -126,6 +126,16 @@ def get_missing_df():
     return df
 
 
+def get_abnormal_df():
+    data = np.random.random_sample((50, 5))
+    # two abnormal data
+    data[ data == data.max()] = 5
+    data[ data == data.min()] = -5
+    df = pd.DataFrame(data, columns=['a', 'b', 'c', 'd', 'e'])
+    df["datetime"] = pd.date_range('1/1/2019', periods=50)
+    return df
+
+
 def get_multi_interval_df():
     data = np.random.random_sample((50, 5))
     df = pd.DataFrame(data, columns=['a', 'b', 'c', 'd', 'e'])
@@ -1190,8 +1200,8 @@ class TestTSDataset(TestCase):
         tsdata = TSDataset.from_pandas(df,
                                        target_col='value',
                                        dt_col='datetime')
-        with pytest.raises(RuntimeError):
-            tsdata.get_cycle_length(aggregate='min', top_k=3)
+        # not meaningful, but no error should be raised.
+        tsdata.get_cycle_length(aggregate='min', top_k=3)
 
     @op_torch
     def test_lookback_equal_to_one(self):
@@ -1392,3 +1402,99 @@ class TestTSDataset(TestCase):
                                         lookback=lookback,
                                         horizon=horizon,
                                         target_col=['value', 'extra feature'])
+
+
+    @op_torch
+    def test_tsdataset_abnormal_check_and_repair(self):
+        from bigdl.chronos.data.utils.quality_inspection import _abnormal_value_check
+        for val in ['absolute', 'relative']:
+            df = get_abnormal_df()
+            tsdata = TSDataset.from_pandas(df, dt_col="datetime",
+                                           target_col=['a', 'b', 'c', 'd', 'e'],
+                                           extra_feature_col=None,
+                                           repair=False)
+            flag = _abnormal_value_check(tsdata.df, tsdata.dt_col, threshold=3)
+            assert flag == False
+
+            if val is 'relative':
+                tsdata = tsdata.repair_abnormal_data()
+                flag = _abnormal_value_check(tsdata.df, tsdata.dt_col, threshold=3)
+                assert flag == True
+            else:
+                tsdata = tsdata.repair_abnormal_data(mode=val, threshold=(-1, 2))
+                flag = _abnormal_value_check(tsdata.df, tsdata.dt_col, threshold=3)
+                assert flag == True
+
+    @op_torch
+    def test_from_prometheus(self):
+        '''
+        The selected query str is just for getting data from Prometheus server.
+        '''
+        import time
+        endtime = time.time()
+        starttime = endtime - 1000
+        prometheus_url = os.getenv("PROMETHEUS_URL")
+        tsdata = TSDataset.from_prometheus(prometheus_url=prometheus_url,
+                                           query='prometheus_ready',
+                                           starttime=starttime,
+                                           endtime=endtime,
+                                           step="1s")
+        assert tsdata.to_pandas().shape[0] == 1001
+        assert tsdata.to_pandas().shape[1] == 3
+        assert tsdata._id_list == ['0']
+        assert tsdata.target_col == ['prometheus_ready'+
+                                     '{instance="localhost:9090",job="prometheus"}']
+        assert tsdata.dt_col == "datetime"
+
+        tsdata = TSDataset.from_prometheus(prometheus_url=prometheus_url,
+                                           query=['prometheus_ready',
+                                                  'process_cpu_seconds_total',
+                                                  'process_virtual_memory_bytes',
+                                                  'process_virtual_memory_max_bytes'],
+                                           starttime=starttime,
+                                           endtime=endtime,
+                                           step="1s",
+                                           target_col=['process_cpu_seconds_total{instance'+
+                                                       '="localhost:9090",job="prometheus"}',
+                                                       'process_virtual_memory_bytes{instance'+
+                                                       '="localhost:9090",job="prometheus"}'],
+                                           id_col='prometheus_ready{instance'+
+                                                  '="localhost:9090",job="prometheus"}',
+                                           extra_feature_col='process_virtual_memory_max_bytes'+
+                                                             '{instance="localhost:9090",'+
+                                                             'job="prometheus"}')
+        assert tsdata.to_pandas().shape[0] == 1001
+        assert tsdata.to_pandas().shape[1] == 5
+        assert tsdata._id_list == [1.0]
+        assert tsdata.target_col == ['process_cpu_seconds_total{instance'+
+                                     '="localhost:9090",job="prometheus"}',
+                                     'process_virtual_memory_bytes{instance'+
+                                     '="localhost:9090",job="prometheus"}']
+        assert tsdata.feature_col == ['process_virtual_memory_max_bytes'+
+                                      '{instance="localhost:9090",job="prometheus"}']
+        assert tsdata.dt_col == "datetime"
+
+        # Check the validity of `target_col/id_col/extra_feature_col`
+        with pytest.raises(RuntimeError):
+            tsdata = TSDataset.from_prometheus(prometheus_url=prometheus_url,
+                                               query='prometheus_ready',
+                                               starttime=starttime,
+                                               endtime=endtime,
+                                               step="1s",
+                                               target_col='process_cpu_seconds_total')
+
+        with pytest.raises(RuntimeError):
+            tsdata = TSDataset.from_prometheus(prometheus_url=prometheus_url,
+                                               query='prometheus_ready',
+                                               starttime=starttime,
+                                               endtime=endtime,
+                                               step="1s",
+                                               id_col='process_cpu_seconds_total')
+
+        with pytest.raises(RuntimeError):
+            tsdata = TSDataset.from_prometheus(prometheus_url=prometheus_url,
+                                               query='prometheus_ready',
+                                               starttime=starttime,
+                                               endtime=endtime,
+                                               step="1s",
+                                               extra_feature_col='process_cpu_seconds_total')

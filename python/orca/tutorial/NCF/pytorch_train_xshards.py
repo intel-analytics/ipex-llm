@@ -23,16 +23,17 @@ from pytorch_model import NCF
 
 from bigdl.orca import init_orca_context, stop_orca_context
 from bigdl.orca.learn.pytorch import Estimator
+from bigdl.orca.learn.pytorch.callbacks.tensorboard import TensorBoardCallback
 from bigdl.orca.learn.metrics import Accuracy, Precision, Recall
 
 
 # Step 1: Init Orca Context
-sc = init_orca_context()
+sc = init_orca_context(cluster_mode="local")
 
 
 # Step 2: Read and process data using Orca XShards
 dataset_dir = "./ml-1m"
-train_data, test_data, user_num, item_num, sparse_feats_input_dims, \
+train_data, test_data, user_num, item_num, sparse_feats_input_dims, num_dense_feats, \
     feature_cols, label_cols = prepare_data(dataset_dir, num_ng=4)
 
 
@@ -59,37 +60,39 @@ loss = nn.BCEWithLogitsLoss()
 
 # Step 4: Distributed training with Orca PyTorch Estimator
 backend = "spark"  # "ray" or "spark"
+callbacks = [TensorBoardCallback(log_dir="runs", freq=1000)]
 
 est = Estimator.from_torch(model=model_creator,
                            optimizer=optimizer_creator,
                            loss=loss,
                            metrics=[Accuracy(), Precision(), Recall()],
                            backend=backend,
-                           config={'dataset_dir': dataset_dir,
-                                   'user_num': user_num,
+                           use_tqdm=True,
+                           config={'user_num': user_num,
                                    'item_num': item_num,
                                    'factor_num': 16,
                                    'num_layers': 3,
                                    'dropout': 0.5,
-                                   'lr': 0.001,
+                                   'lr': 0.01,
                                    'model': "NeuMF-end",
                                    'sparse_feats_input_dims': sparse_feats_input_dims,
                                    'sparse_feats_embed_dims': 8,
-                                   'num_dense_feats': 1})
-est.fit(data=train_data, epochs=10,
+                                   'num_dense_feats': num_dense_feats})
+est.fit(data=train_data, epochs=2,
         feature_cols=feature_cols,
         label_cols=label_cols,
-        batch_size=256)
+        batch_size=10240,
+        callbacks=callbacks)
 
 
 # Step 5: Distributed evaluation of the trained model
 result = est.evaluate(data=test_data,
                       feature_cols=feature_cols,
                       label_cols=label_cols,
-                      batch_size=256)
+                      batch_size=10240)
 print('Evaluation results:')
 for r in result:
-    print(r, ":", result[r])
+    print("{}: {}".format(r, result[r]))
 
 
 # Step 6: Save the trained PyTorch model

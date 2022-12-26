@@ -13,9 +13,16 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+import numpy as np
 import tensorflow as tf
 from bigdl.nano.utils.log4Error import invalidInputError
 from ..model import AcceleratedModel
+
+try:
+    import torch
+    is_torch_available = True
+except ImportError:
+    is_torch_available = False
 
 
 class AcceleratedKerasModel(AcceleratedModel, tf.keras.Model):
@@ -42,10 +49,35 @@ class AcceleratedKerasModel(AcceleratedModel, tf.keras.Model):
         return self.on_forward_end(outputs)
 
     @staticmethod
-    def tensors_to_numpy(tensors):
-        return tuple(map(lambda x: x.numpy(), tensors))
+    def tensors_to_numpy(tensors, dtype=None):
+        if isinstance(dtype, tf.DType):
+            dtype = dtype.as_numpy_dtype
+        if isinstance(tensors, (list, tuple)):
+            return type(tensors)(AcceleratedKerasModel.tensors_to_numpy(tensor, dtype)
+                                 for tensor in tensors)
+        elif isinstance(tensors, dict):
+            return {key: AcceleratedKerasModel.tensors_to_numpy(value, dtype)
+                    for key, value in tensors.items()}
+        elif isinstance(tensors, tf.Tensor) or is_torch_available and isinstance(tensors,
+                                                                                 torch.Tensor):
+            if dtype is None:
+                return tensors.numpy()
+            else:
+                return tensors.numpy().astype(dtype)
+        elif isinstance(tensors, np.ndarray) and dtype is not None:
+            return tensors.astype(dtype)
+        else:
+            return tensors
 
     @staticmethod
     def numpy_to_tensors(np_arrays):
-        tensors = tuple(map(lambda x: tf.convert_to_tensor(x), np_arrays))
-        return tensors[0] if len(tensors) == 1 else tensors
+        if isinstance(np_arrays, (list, tuple)):
+            return type(np_arrays)(AcceleratedKerasModel.numpy_to_tensors(array)
+                                   for array in np_arrays)
+        elif isinstance(np_arrays, dict):
+            return {key: AcceleratedKerasModel.numpy_to_tensors(value)
+                    for key, value in np_arrays.items()}
+        elif isinstance(np_arrays, np.ndarray):
+            return tf.convert_to_tensor(np_arrays)
+        else:
+            return np_arrays

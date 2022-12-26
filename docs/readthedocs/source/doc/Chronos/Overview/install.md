@@ -19,7 +19,9 @@
 .. note::
     **Supported Python Version**:
 
-     Chronos only supports Python 3.7.2 ~ latest 3.7.x. We are validating more Python versions.
+     Chronos supports all installation options on Python 3.7.2 ~ latest 3.7.x. For details about different installation options, refer to `here <#install-using-conda>`_.
+
+     Moreover, ``bigdl-chronos[pytorch]``, ``bigdl-chronos[tensorflow]``, ``bigdl-chronos[automl]`` and ``bigdl-chronos[inference]`` are supported on Python 3.8.
 ```
 
 
@@ -73,6 +75,11 @@ Select your preferences in the panel below to find the proper install command. T
                             id="automlyes">Yes</button></td>
                 </tr>
 
+                <tr>
+                    <td colspan="1">Inference Optimization</td>
+                    <td colspan="2" title="No need for low-latency inference models"><button id="inferenceno">No</button></td>
+                    <td colspan="2" title="Get low-latency inference models with onnx\openvino\inc"><button id="inferenceyes">Yes</button></td>
+                </tr>
 
                 <tr>
                     <td colspan="1">Hardware</td>

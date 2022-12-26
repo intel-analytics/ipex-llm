@@ -15,12 +15,12 @@
 #
 
 
-# from .lifecycle import LifeCycle
+from .lifecycle import LifeCycle
 from .trainable import Trainable
 from .modelIO import ModelIO
 
 from abc import ABCMeta
 
 
-class BaseRunner(Trainable, ModelIO, metaclass=ABCMeta):
+class BaseRunner(Trainable, ModelIO, LifeCycle, metaclass=ABCMeta):
     pass

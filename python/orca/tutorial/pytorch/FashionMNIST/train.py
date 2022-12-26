@@ -59,12 +59,12 @@ def train_data_creator(config, batch_size):
 def main():
     if args.cluster_mode.startswith("yarn"):
         if args.cluster_mode == "yarn-client":
-            init_orca_context(cluster_mode="yarn-client", cores=4, memory="10g", num_nodes=2,
-                              driver_cores=2, driver_memory="4g",
+            init_orca_context(cluster_mode="yarn-client", cores=4, memory="2g", num_nodes=2,
+                              driver_cores=2, driver_memory="2g",
                               extra_python_lib="model.py")
         elif args.cluster_mode == "yarn-cluster":
-            init_orca_context(cluster_mode="yarn-cluster", cores=4, memory="10g", num_nodes=2,
-                              driver_cores=2, driver_memory="4g",
+            init_orca_context(cluster_mode="yarn-cluster", cores=4, memory="2g", num_nodes=2,
+                              driver_cores=2, driver_memory="2g",
                               extra_python_lib="model.py")
     elif args.cluster_mode.startswith("k8s"):
         if args.cluster_mode == "k8s-client":
@@ -74,9 +74,10 @@ def main():
                 "spark.kubernetes.executor.volumes.persistentVolumeClaim.nfsvolumeclaim"
                 ".mount.path": "/bigdl/nfsdata"
             }
-            init_orca_context(cluster_mode="k8s-client", num_nodes=2, cores=2, memory="2g",
+            init_orca_context(cluster_mode="k8s-client", num_nodes=2, cores=4, memory="2g",
+                              driver_cores=2, driver_memory="2g",
                               master=os.environ.get("RUNTIME_SPARK_MASTER"),
-                              container_image="intelanalytics/bigdl-k8s:2.1.0",
+                              container_image=os.environ.get("RUNTIME_K8S_SPARK_IMAGE"),
                               extra_python_lib="model.py", conf=conf)
         elif args.cluster_mode == "k8s-cluster":
             conf = {
@@ -91,9 +92,10 @@ def main():
                 "spark.kubernetes.authenticate.driver.serviceAccountName": "spark",
                 "spark.kubernetes.file.upload.path": "/bigdl/nfsdata/"
             }
-            init_orca_context(cluster_mode="k8s-cluster", num_nodes=2, cores=2, memory="2g",
+            init_orca_context(cluster_mode="k8s-cluster", num_nodes=2, cores=4, memory="2g",
+                              driver_cores=2, driver_memory="2g",
                               master=os.environ.get("RUNTIME_SPARK_MASTER"),
-                              container_image="intelanalytics/bigdl-k8s:2.1.0",
+                              container_image=os.environ.get("RUNTIME_K8S_SPARK_IMAGE"),
                               penv_archive="file:///bigdl/nfsdata/environment.tar.gz",
                               extra_python_lib="/bigdl/nfsdata/model.py", conf=conf)
     elif args.cluster_mode == "bigdl-submit":

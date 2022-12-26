@@ -13,23 +13,24 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-from typing import List
-from bigdl.nano.deps.neural_compressor.inc_api import quantize as inc_quantzie
+from typing import Optional, List, Union
+import numpy as np
 import tensorflow as tf
 from tensorflow.keras.metrics import Metric
-from bigdl.nano.utils.log4Error import invalidInputError
-from bigdl.nano.deps.openvino.openvino_api import KerasOpenVINOModel
-from bigdl.nano.deps.onnxruntime.onnxruntime_api import KerasONNXRuntimeModel
-from typing import Optional, List
+from bigdl.nano.utils import deprecated
 
 
 class InferenceUtils:
     """A mixedin class for nano keras Sequential and Model, adding more functions for Inference."""
 
+    @deprecated(func_name="model.quantize",
+                message="Please use `bigdl.nano.tf.keras.InferenceOptimizer.quantize` instead.")
     def quantize(self,
-                 calib_dataset: tf.data.Dataset,
+                 x: Union[tf.Tensor, np.ndarray, tf.data.Dataset],
+                 y: Union[tf.Tensor, np.ndarray] = None,
                  precision: str = 'int8',
                  accelerator: Optional[str] = None,
+                 input_spec=None,
                  metric: Optional[Metric] = None,
                  accuracy_criterion: Optional[dict] = None,
                  approach: str = 'static',
@@ -49,13 +50,28 @@ class InferenceUtils:
         """
         Post-training quantization on a keras model.
 
-        :param calib_dataset:   An unbatched tf.data.Dataset object for calibration.
-                                Required for static quantization.
-                                It's also used as validation dataloader.
+        :param x: Input data which is used for training. It could be:
+                  | 1. a Numpy array (or array-like), or a list of arrays (in case the model
+                  | has multiple inputs).
+                  |
+                  | 2. a TensorFlow tensor, or a list of tensors (in case the model has
+                  | multiple inputs).
+                  |
+                  | 3. an unbatched tf.data.Dataset. Should return a tuple of (inputs, targets).
+
+                  X will be used as calibration dataset for Post-Training Static Quantization (PTQ),
+                  as well as be used for generating input_sample to calculate latency.
+                  To avoid data leak during calibration, please use training dataset.
+        :param y: Target data. Like the input data x, it could be either Numpy array(s) or
+                  TensorFlow tensor(s). Its length should be consistent with x.
+                  If x is a dataset, y will be ignored (since targets will be obtained from x).
         :param precision:       Global precision of quantized model,
                                 supported type: 'int8', defaults to 'int8'.
         :param accelerator:     Use accelerator 'None', 'onnxruntime', 'openvino', defaults to None.
                                 None means staying in tensorflow.
+        :param input_spec: A (tuple or list of) tf.TensorSpec or numpy array defining the
+                           shape/dtype of the input when using 'onnxruntime' accelerator.
+                           It will be ignored if accelerator is 'openvino'.
         :param metric:          A tensorflow.keras.metrics.Metric object for evaluation.
         :param accuracy_criterion:  Tolerable accuracy drop.
                                     accuracy_criterion = {'relative': 0.1, 'higher_is_better': True}
@@ -103,86 +119,44 @@ class InferenceUtils:
         :param logging: whether to log detailed information of model conversion, only valid when
                         accelerator='openvino', otherwise will be ignored. Default: ``True``.
         :return:            A TensorflowBaseModel for INC. If there is no model found, return None.
+
+        .. warning::
+           This function will be deprecated in future release.
+
+           Please use ``bigdl.nano.tf.keras.InferenceOptimizer.quantize`` instead.
         """
-        invalidInputError(approach == 'static', "Only 'static' approach is supported now.")
-        if accelerator is None:
-            if batch:
-                calib_dataset = calib_dataset.batch(batch)
-            return inc_quantzie(self, dataloader=calib_dataset,
-                                metric=metric,
-                                framework='tensorflow',
-                                conf=conf,
-                                approach=approach,
-                                tuning_strategy=tuning_strategy,
-                                accuracy_criterion=accuracy_criterion,
-                                timeout=timeout,
-                                max_trials=max_trials,
-                                inputs=inputs,
-                                outputs=outputs)
-        elif accelerator == 'openvino':
-            from bigdl.nano.deps.openvino.tf.model import KerasOpenVINOModel    # type: ignore
-            if isinstance(self, KerasOpenVINOModel):    # type: ignore
-                openvino_model = self
-            else:
-                openvino_model = self.trace(accelerator='openvino',
-                                            thread_num=thread_num,
-                                            logging=logging,
-                                            openvino_config=openvino_config)
-            if metric:
-                if not isinstance(accuracy_criterion, dict):
-                    accuracy_criterion = {'relative': 0.99, 'higher_is_better': True}
-                drop_type = 'relative' if 'relative' in accuracy_criterion else 'absolute'
-                higher_is_better = accuracy_criterion.get('higher_is_better', None)
-                maximal_drop = accuracy_criterion.get(drop_type, None)
-            else:
-                drop_type, higher_is_better, maximal_drop = None, None, None
-            return openvino_model.pot(dataset=calib_dataset.batch(1),    # type: ignore
-                                      metric=metric,
-                                      higher_better=higher_is_better,
-                                      drop_type=drop_type,
-                                      maximal_drop=maximal_drop,
-                                      max_iter_num=max_trials,
-                                      sample_size=sample_size,
-                                      config=openvino_config,
-                                      thread_num=thread_num)
-        elif accelerator == 'onnxruntime':
-            # convert tensorflow model to onnx model
-            from bigdl.nano.deps.onnxruntime.tensorflow.tensorflow_onnxruntime_model \
-                import KerasONNXRuntimeModel
-            if isinstance(self, KerasONNXRuntimeModel):     # type: ignore
-                onnx_model = self
-            else:
-                spec = tf.TensorSpec((self.input_shape), self.dtype)    # type: ignore
-                onnx_model = self.trace(accelerator='onnxruntime',
-                                        input_sample=spec,
-                                        thread_num=thread_num)
+        from bigdl.nano.tf.keras import InferenceOptimizer
 
-            # trace onnx model
-            method_map = {
-                'qlinear': 'onnxrt_qlinearops',
-                'integer': 'onnxrt_integerops',
-                None: 'onnxrt_qlinearops'  # default
-            }
-            framework = method_map.get(method, None)
-            return inc_quantzie(onnx_model, dataloader=calib_dataset.batch(1),
-                                metric=metric,
-                                framework=framework,
-                                conf=conf,
-                                approach=approach,
-                                tuning_strategy=tuning_strategy,
-                                accuracy_criterion=accuracy_criterion,
-                                timeout=timeout,
-                                max_trials=max_trials,
-                                inputs=inputs,
-                                outputs=outputs,
-                                onnx_option='tensorflow',
-                                onnxruntime_session_options=onnxruntime_session_options)
-        else:
-            invalidInputError(False, "Accelerator {} is invalid.".format(accelerator))
+        return InferenceOptimizer.quantize(
+            model=self,
+            x=x,
+            y=y,
+            precision=precision,
+            accelerator=accelerator,
+            input_spec=input_spec,
+            metric=metric,
+            accuracy_criterion=accuracy_criterion,
+            approach=approach,
+            method=method,
+            conf=conf,
+            tuning_strategy=tuning_strategy,
+            timeout=timeout,
+            max_trials=max_trials,
+            batch=batch,
+            thread_num=thread_num,
+            inputs=inputs,
+            outputs=outputs,
+            sample_size=sample_size,
+            onnxruntime_session_options=onnxruntime_session_options,
+            openvino_config=openvino_config,
+            logging=logging
+        )
 
+    @deprecated(func_name="model.trace",
+                message="Please use `bigdl.nano.tf.keras.InferenceOptimizer.trace` instead.")
     def trace(self,
               accelerator: Optional[str] = None,
-              input_sample=None,
+              input_spec=None,
               thread_num: Optional[int] = None,
               onnxruntime_session_options=None,
               openvino_config=None,
@@ -190,12 +164,11 @@ class InferenceUtils:
         """
         Trace a Keras model and convert it into an accelerated module for inference.
 
-        :param input_sample: A set of inputs for trace, defaults to None. It should be a
-            (tuple or list of) tf.TensorSpec or numpy array defining the shape/dtype of the input
-            when using 'onnxruntime' accelerator. The parameter will be ignored if accelerator
-            is 'openvino'.
         :param accelerator: The accelerator to use, defaults to None meaning staying in Keras
                             backend. 'openvino' and 'onnxruntime' are supported for now.
+        :param input_spec: A (tuple or list of) tf.TensorSpec or numpy array defining the
+                           shape/dtype of the input when using 'onnxruntime' accelerator.
+                           It will be ignored if accelerator is 'openvino'.
         :param thread_num: (optional) a int represents how many threads(cores) is needed for
                            inference, only valid for accelerator='onnxruntime'
                            or accelerator='openvino'.
@@ -206,21 +179,20 @@ class InferenceUtils:
         :param logging: whether to log detailed information of model conversion, only valid when
                         accelerator='openvino', otherwise will be ignored. Default: ``True``.
         :return: Model with different acceleration(OpenVINO/ONNX Runtime).
+
+        .. warning::
+           This function will be deprecated in future release.
+
+           Please use ``bigdl.nano.tf.keras.InferenceOptimizer.trace`` instead.
         """
-        if accelerator == 'openvino':
-            final_openvino_option = {"INFERENCE_PRECISION_HINT": "f32"}
-            if openvino_config is not None:
-                final_openvino_option.update(openvino_config)
-            return KerasOpenVINOModel(self,
-                                      thread_num=thread_num,
-                                      config=final_openvino_option,
-                                      logging=logging)
-        elif accelerator == 'onnxruntime':
-            if onnxruntime_session_options is None:
-                import onnxruntime
-                onnxruntime_session_options = onnxruntime.SessionOptions()
-                if thread_num is not None:
-                    onnxruntime_session_options.intra_op_num_threads = thread_num
-                    onnxruntime_session_options.inter_op_num_threads = thread_num
-            return KerasONNXRuntimeModel(self, input_sample, onnxruntime_session_options)
-        return self
+        from bigdl.nano.tf.keras import InferenceOptimizer
+
+        return InferenceOptimizer.trace(
+            model=self,
+            accelerator=accelerator,
+            input_spec=input_spec,
+            thread_num=thread_num,
+            onnxruntime_session_options=onnxruntime_session_options,
+            openvino_config=openvino_config,
+            logging=logging
+        )

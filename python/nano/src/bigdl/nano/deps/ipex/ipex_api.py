@@ -14,28 +14,40 @@
 # limitations under the License.
 #
 
-def create_IPEXAccelerator(*args, **kwargs):
-    from bigdl.nano.deps.ipex.ipex_accelerator import IPEXAccelerator
-    return IPEXAccelerator(*args, **kwargs)
+
+from typing import Any
+from bigdl.nano.utils.log4Error import invalidInputError
 
 
-def create_IPEXAccelerator_1_9(*args, **kwargs):
-    from bigdl.nano.deps.ipex.version_1_9.ipex_accelerator_1_9 import IPEXAccelerator
-    return IPEXAccelerator(*args, **kwargs)
-
-
-def ipex_optimize(*args, **kwargs):
+def ipex_optimize(model: Any, optimizers: Any = None, dtype: Any = None,
+                  inplace: bool = False, weights_prepack: Any = None):
     import intel_extension_for_pytorch as ipex
-    ipex.optimize(*args, **kwargs)
+    training = model.training
+    if optimizers is not None and not isinstance(optimizers, (list, tuple)):
+        model.train()
+        optimizer = optimizers
+    elif optimizers is None or len(optimizers) == 0:
+        model.eval()
+        optimizer = None
+    elif len(optimizers) == 1:
+        model.train()
+        optimizer = optimizers[0]
+    else:
+        invalidInputError(False, "Ipex does not support more than one optimizers.")
+    ret = ipex.optimize(model=model,
+                        dtype=dtype,
+                        optimizer=optimizer,
+                        inplace=inplace,
+                        weights_prepack=weights_prepack)
+    model.train(training)
 
-
-def ipex_device():
-    from bigdl.nano.deps.ipex.version_1_9 import DEVICE
-    return DEVICE
+    return ret
 
 
 def PytorchIPEXJITModel(model, input_sample=None, use_ipex=False,
-                        use_jit=False, channels_last=None):
+                        use_jit=False, channels_last=None, thread_num=None,
+                        inplace=False, jit_strict=True, jit_method=None,
+                        weights_prepack=None):
     '''
     :param model: the model(nn.module) to be transform.
     :param input_sample: torch tensor indicate the data sample to be used
@@ -43,15 +55,27 @@ def PytorchIPEXJITModel(model, input_sample=None, use_ipex=False,
     :param use_ipex: if use ipex to optimize the model
     :param use_jit: if use jit to accelerate the model
     :param channels_last: if set model and data to be channels-last mode.
-            the parameter will be ignored if use_ipex is False.
+    :param thread_num: the thread num allocated for this model.
+    :param inplace: whether to perform inplace optimization. Default: ``False``.
+    :param jit_strict: Whether recording your mutable container types.
+    :param jit_method: use ``jit.trace`` or ``jit.script`` to
+           convert a model to TorchScript.
+    :param weights_prepack: Whether to perform weight prepack for convolution and linear
+           to avoid oneDNN weights reorder. The default value is None. Explicitly setting
+           this knob overwrites the configuration set by level knob. Only valid when
+           ``use_ipex=True``, otherwise will be ignored.
     '''
     from .ipex_inference_model import PytorchIPEXJITModel
     return PytorchIPEXJITModel(model, input_sample=input_sample, use_ipex=use_ipex,
-                               use_jit=use_jit, channels_last=channels_last)
+                               use_jit=use_jit, channels_last=channels_last,
+                               thread_num=thread_num, inplace=inplace, jit_strict=jit_strict,
+                               jit_method=jit_method, weights_prepack=weights_prepack)
 
 
 def PytorchIPEXJITBF16Model(model, input_sample=None, use_ipex=False,
-                            use_jit=False, channels_last=None):
+                            use_jit=False, channels_last=None, thread_num=None,
+                            inplace=False, jit_strict=True, jit_method=None,
+                            weights_prepack=None):
     '''
     :param model: the model(nn.module) to be transform.
     :param input_sample: torch tensor indicate the data sample to be used
@@ -59,13 +83,57 @@ def PytorchIPEXJITBF16Model(model, input_sample=None, use_ipex=False,
     :param use_ipex: if use ipex to optimize the model
     :param use_jit: if use jit to accelerate the model
     :param channels_last: if set model and data to be channels-last mode.
-            the parameter will be ignored if use_ipex is False.
+    :param thread_num: the thread num allocated for this model.
+    :param inplace: whether to perform inplace optimization. Default: ``False``.
+    :param jit_strict: Whether recording your mutable container types.
+    :param jit_method: use ``jit.trace`` or ``jit.script`` to
+           convert a model to TorchScript.
+    :param weights_prepack: Whether to perform weight prepack for convolution and linear
+           to avoid oneDNN weights reorder. The default value is None. Explicitly setting
+           this knob overwrites the configuration set by level knob. Only valid when
+           ``use_ipex=True``, otherwise will be ignored.
     '''
     from .ipex_inference_bf16_model import PytorchIPEXJITBF16Model
     return PytorchIPEXJITBF16Model(model, input_sample=input_sample, use_ipex=use_ipex,
-                                   use_jit=use_jit, channels_last=channels_last)
+                                   use_jit=use_jit, channels_last=channels_last,
+                                   thread_num=thread_num, inplace=inplace, jit_strict=jit_strict,
+                                   jit_method=jit_method, weights_prepack=weights_prepack)
 
 
-def load_ipexjit_model(path, model):
+def PytorchIPEXQuantizationModel(model, calib_data, q_config=None,
+                                 input_sample=None, channels_last=None,
+                                 thread_num=None, inplace=False,
+                                 jit_strict=True):
+    '''
+    :param model: the model(nn.module) to be transform.
+    :param calib_data: calibration data is required for static quantization.
+    :param q_config: describes how to quantize a layer or a part of the network
+            by providing settings (observer classes) for activations and weights
+            respectively.
+    :param input_sample: torch tensor indicate the data sample to be used
+            for tracing.
+    :param channels_last: if set model and data to be channels-last mode.
+    :param thread_num: the thread num allocated for this model.
+    :param inplace: whether to perform inplace optimization. Default: ``False``.
+    :param jit_strict: Whether recording your mutable container types.
+    '''
+    from .ipex_quantization_model import PytorchIPEXQuantizationModel
+    return PytorchIPEXQuantizationModel(model, calib_data, q_config=q_config,
+                                        input_sample=input_sample, channels_last=channels_last,
+                                        thread_num=thread_num, inplace=inplace,
+                                        jit_strict=jit_strict)
+
+
+def load_ipexjit_model(path, model, inplace=False):
     from .ipex_inference_model import PytorchIPEXJITModel
-    return PytorchIPEXJITModel._load(path, model)
+    return PytorchIPEXJITModel._load(path, model, inplace=inplace)
+
+
+def load_ipexjitbf16_model(path, model, inplace=False):
+    from .ipex_inference_bf16_model import PytorchIPEXJITBF16Model
+    return PytorchIPEXJITBF16Model._load(path, model, inplace=inplace)
+
+
+def load_ipex_quantization_model(path, model, inplace=False):
+    from .ipex_quantization_model import PytorchIPEXQuantizationModel
+    return PytorchIPEXQuantizationModel._load(path, model, inplace=inplace)

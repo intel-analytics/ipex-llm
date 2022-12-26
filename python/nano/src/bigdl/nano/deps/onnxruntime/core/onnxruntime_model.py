@@ -24,6 +24,7 @@ class ONNXRuntimeModel:
         self.onnx_filepath = onnx_filepath  # onnx filepath
         self.onnx_model = None  # onnx model
         self.ortsess = None  # onnxruntime session
+        self.session_options = session_options
         self._build_ortsess(session_options)
 
     def forward_step(self, *inputs):

@@ -16,72 +16,86 @@
 
 # Step 0: Import necessary libraries
 import math
+import tensorflow as tf
 
 from tf_model import ncf_model
-from process_spark_dataframe import read_data, generate_neg_sample
+from process_spark_dataframe import prepare_data
 
 from bigdl.orca import init_orca_context, stop_orca_context
 from bigdl.orca.learn.tf2 import Estimator
 
+
 # Step 1: Init Orca Context
-init_orca_context(memory='4g')
+init_orca_context(cluster_mode="local")
+
 
 # Step 2: Read and process data using Spark DataFrame
 data_dir = './ml-1m'  # path to ml-1m
-df = read_data(data_dir)
-user_num = df.agg({'user': "max"}).collect()[0]["max(user)"] + 1
-item_num = df.agg({'item': "max"}).collect()[0]["max(item)"] + 1
-df = generate_neg_sample(df, item_num)
-train_df, val_df = df.randomSplit([0.8, 0.2], seed=100)
+train_df, test_df, user_num, item_num, sparse_feats_input_dims, num_dense_feats, \
+    feature_cols, label_cols = prepare_data(data_dir, neg_scale=4)
+
 
 # Step 3: Define the NCF model
 config = dict(
-    embedding_size=16,
-    lr=1e-3,
+    factor_num=16,
+    lr=1e-2,
     item_num=item_num,
     user_num=user_num,
     dropout=0.5,
+    sparse_feats_input_dims=sparse_feats_input_dims,
+    num_dense_feats=num_dense_feats,
+    sparse_feats_embed_dims=8,
+    num_layers=3
 )
 
 
 def model_creator(config):
-    model = ncf_model(embedding_size=config['embedding_size'],
-                      user_num=config['user_num'],
+    model = ncf_model(user_num=config['user_num'],
                       item_num=config['item_num'],
+                      num_layers=config['num_layers'],
+                      factor_num=config['factor_num'],
                       dropout=config['dropout'],
-                      lr=config['lr'])
+                      lr=config['lr'],
+                      sparse_feats_input_dims=config['sparse_feats_input_dims'],
+                      sparse_feats_embed_dims=config['sparse_feats_embed_dims'],
+                      num_dense_feats=config['num_dense_feats'])
     return model
 
 
-# Step 4: Distributed training with Orca keras Estimator
-backend = 'spark'  # 'ray' of 'spark'
+# Step 4: Distributed training with Orca TF2 Estimator
+backend = 'spark'  # 'ray' or 'spark'
 est = Estimator.from_keras(model_creator=model_creator,
                            config=config,
                            backend=backend)
 
-batch_size = 256
+batch_size = 10240
 train_steps = math.ceil(train_df.count() / batch_size)
-val_steps = math.ceil(val_df.count() / batch_size)
+val_steps = math.ceil(test_df.count() / batch_size)
+tf_callback = tf.keras.callbacks.TensorBoard(log_dir="./log")
 
 est.fit(train_df,
-        epochs=10,
+        epochs=2,
         batch_size=batch_size,
-        feature_cols=['user', 'item'],
-        label_cols=['label'],
+        feature_cols=feature_cols,
+        label_cols=label_cols,
         steps_per_epoch=train_steps,
-        validation_data=val_df,
-        validation_steps=val_steps)
+        callbacks=[tf_callback])
+
 
 # Step 5: Distributed evaluation of the trained model
-stats = est.evaluate(val_df,
-                     feature_cols=['user', 'item'],
-                     label_cols=['label'],
-                     batch_size=batch_size,
-                     num_steps=val_steps)
-print("Evaluation results:", stats)
+result = est.evaluate(test_df,
+                      feature_cols=feature_cols,
+                      label_cols=label_cols,
+                      batch_size=batch_size,
+                      num_steps=val_steps)
+print('Evaluation results:')
+for r in result:
+    print("{}: {}".format(r, result[r]))
 
-# Step 6: Save the trained Tensorflow model
+
+# Step 6: Save the trained TensorFlow model
 est.save("NCF_model")
+
 
 # Step 7: Stop Orca Context when program finishes
 stop_orca_context()

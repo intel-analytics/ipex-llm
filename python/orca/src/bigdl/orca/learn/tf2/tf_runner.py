@@ -27,22 +27,19 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-import copy
-import logging
+
 import json
 import os
 import socket
 import shutil
 import tempfile
-import subprocess
 import copy
 
 import ray
-import numpy as np
 from contextlib import closing
 
 from bigdl.dllib.utils import log4Error
-from bigdl.orca.data.utils import ray_partitions_get_data_label, ray_partitions_get_tf_dataset
+from bigdl.orca.data.utils import partitions_get_data_label, partitions_get_tf_dataset
 from bigdl.orca.data.file import is_file, get_remote_file_to_local, get_remote_dir_to_local, \
     get_remote_files_with_prefix_to_local, put_local_file_to_remote, \
     put_local_dir_tree_to_remote, put_local_files_with_prefix_to_remote
@@ -60,7 +57,7 @@ def find_free_port():
 
 
 def _try_import_strategy():
-    """Late import for Tesnorflow"""
+    """Late import for TensorFlow"""
     import tensorflow as tf
     return tf.distribute.experimental.MultiWorkerMirroredStrategy
 
@@ -79,6 +76,9 @@ class DatasetHandler:
         config, local_batch_size = self._handle_batch_size(config)
         config['rank'] = self.rank
         config['size'] = self.size
+        # Use global batch size here for data_creator since TensorFlow
+        # will shard the dataset.
+        # batch_size won't be used in data_creator for RayXShards.
         train_dataset = data_creator(config, config["batch_size"])
         if isinstance(train_dataset, list) and \
                 all([isinstance(x, ray.ObjectID) for x in train_dataset]):
@@ -153,9 +153,9 @@ class HorovodDatasetHanlder(DatasetHandler):
 
     def _handle_xshards(self, dataset, steps, local_batch_size, shuffle):
         import tensorflow as tf
-        data, label = ray_partitions_get_data_label(ray.get(dataset),
-                                                    allow_tuple=True,
-                                                    allow_list=False)
+        data, label = partitions_get_data_label(ray.get(dataset),
+                                                allow_tuple=True,
+                                                allow_list=False)
         dataset = tf.data.Dataset.from_tensor_slices((data, label))
         options = tf.data.Options()
         options.experimental_distribute.auto_shard_policy = tf.data.experimental.AutoShardPolicy.OFF
@@ -174,15 +174,20 @@ class HorovodDatasetHanlder(DatasetHandler):
 
     def _handle_batch_size(self, config):
         invalidInputError("batch_size" in config, "batch_size must be set in config")
-        config["batch_size"] = config["batch_size"] // self.size
-        return config, config["batch_size"]
+        if config["batch_size"]:
+            local_batch_size = config["batch_size"] // self.size
+            if local_batch_size <= 0:
+                local_batch_size = 1
+        else:  # batch_size default to be None for predict
+            local_batch_size = config["batch_size"]
+        return config, local_batch_size
 
 
 class TFDistributedDatasetHandler(DatasetHandler):
 
     def _handle_xshards(self, dataset, steps, local_batch_size, shuffle):
         import tensorflow as tf
-        tf_dataset = ray_partitions_get_tf_dataset(ray.get(dataset))
+        tf_dataset = partitions_get_tf_dataset(ray.get(dataset))
 
         def dataset_fn(input_context):
             options = tf.data.Options()
@@ -206,7 +211,12 @@ class TFDistributedDatasetHandler(DatasetHandler):
 
     def _handle_batch_size(self, config):
         invalidInputError("batch_size" in config, "batch_size must be set in config")
-        local_batch_size = config["batch_size"] // self.size
+        if config["batch_size"]:
+            local_batch_size = config["batch_size"] // self.size
+            if local_batch_size <= 0:
+                local_batch_size = 1
+        else:  # batch_size default to be None for predict
+            local_batch_size = None
         return config, local_batch_size
 
 
@@ -214,9 +224,9 @@ class LocalDatasetHandler(DatasetHandler):
 
     def _handle_xshards(self, dataset, steps, local_batch_size, shuffle):
         import tensorflow as tf
-        data, label = ray_partitions_get_data_label(ray.get(dataset),
-                                                    allow_tuple=True,
-                                                    allow_list=False)
+        data, label = partitions_get_data_label(ray.get(dataset),
+                                                allow_tuple=True,
+                                                allow_list=False)
         dataset = tf.data.Dataset.from_tensor_slices((data, label))
         dataset = dataset.repeat()
         dataset = dataset.take(steps * local_batch_size)
@@ -466,14 +476,19 @@ class TFRunner:
             if replaced_log_dir and os.path.exists(replaced_log_dir):
                 shutil.rmtree(replaced_log_dir)
 
-        return [stats]
+        return stats
 
     def predict(self, data_creator, batch_size, verbose, steps, callbacks, data_config):
         config = copy.copy(self.config)
         if data_config is not None:
             config.update(data_config)
+        config["batch_size"] = batch_size
+        dataset_handler = DatasetHandler.get_handler(self.backend,
+                                                     0,  # no rank for predict
+                                                     self.size)
+        config, local_batch_size = dataset_handler._handle_batch_size(config)
 
-        dataset = data_creator(config, batch_size)
+        dataset = data_creator(config, local_batch_size)
         if not isinstance(dataset, ray.ObjectID):
             invalidInputError(False, "Only xshards is supported for predict")
 
@@ -481,7 +496,7 @@ class TFRunner:
         if len(partition) == 0:
             return []
         params = dict(
-            batch_size=batch_size,
+            batch_size=local_batch_size,
             verbose=verbose,
             steps=steps,
             callbacks=callbacks,

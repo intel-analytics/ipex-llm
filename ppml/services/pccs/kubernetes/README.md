@@ -132,8 +132,10 @@ curl -v -k -G "https://<your_pccs_ip>:<your_pccs_port>/sgx/certification/v3/root
 < Keep-Alive: timeout=5
 <
 * Connection #0 to host 1.2.3.4 left intact
-308201213081c80********************************************************************************************************************************************************************************************************************************
+**308201213081c80......**
 ```
+
+The service is ready once you receive the root CA.
 
 ## 4. Delete BigDL-PCCS from Kuberbets
 Run the uninstall script as below

@@ -1,11 +1,21 @@
 name: 'Run PPML Occlum ExampleTests'
 description: 'Run PPML Occlum ExampleTests'
-
+inputs:
+  image:
+    description: 'image'
+    required: true
+    default: '10.239.45.10/arda/intelanalytics/bigdl-ppml-trusted-big-data-ml-scala-occlum'
+  image-tag:
+    description: 'image tag'
+    required: true
+    default: '2.2.0-SNAPSHOT'
 runs:
   using: "composite"
   steps:
     - name: Run tests
       shell: bash
+      env:
+        DEFAULT_IMAGE: ${{ inputs.image }}:${{ inputs.image-tag }}
       run: |
         whoami
 
@@ -17,9 +27,10 @@ runs:
         export KEYS_PATH=/home/icx/glorysdj/keys
         export SECURE_PASSWORD_PATH=/home/icx/glorysdj/password
         export SGX_MEM_SIZE=60GB
-        export IMAGE=10.239.45.10/arda/intelanalytics/bigdl-ppml-trusted-big-data-ml-scala-occlum:2.2.0-SNAPSHOT
+        export IMAGE=${{ env.DEFAULT_IMAGE }}
 
         docker pull $IMAGE
+        docker pull intelanalytics/bigdl-ppml-trusted-big-data-ml-scala-occlum:2.2.0-SNAPSHOT
 
         docker rm -f $CONTAINER_NAME
 
@@ -45,6 +56,8 @@ runs:
         status_5_spark_ut=0
         status_6_spark_xgboost=1
         status_7_spark_gbt=1
+        status_8_pyspark_sklearn=1
+        status_9_pyspark_sql=1
 
         if [ $status_1_spark_pi -ne 0 ]; then
         echo "################## start spark pi"
@@ -122,6 +135,24 @@ runs:
           cat spark-gbt.log | egrep 'end time is'"
         status_7_spark_gbt=$(echo $?)
         fi
+        
+        if [ $status_8_pyspark_sklearn -ne 0 ]; then
+        echo "################## start pyspark sklearn Linear Regression"
+        echo "example.8 pyspark sklearn"
+        docker exec -i $CONTAINER_NAME bash -c "cd /opt && \
+             bash run_spark_on_occlum_glibc.sh pysklearn | tee test-pyspark-sklearn-sgx.log && \
+             cat test-pyspark-sklearn-sgx.log | egrep 'mean_squared_error'"
+        status_8_pyspark_sklearn=$(echo $?)
+        fi
+        
+        if [ $status_9_pyspark_sql -ne 0 ]; then
+        echo "################## start pyspark SQL example"
+        echo "example.9 pyspark sql"
+        docker exec -i $CONTAINER_NAME bash -c "cd /opt && \
+             bash run_spark_on_occlum_glibc.sh pysql | tee test-pyspark-sql-sgx.log && \
+             cat test-pyspark-sql-sgx.log | egrep 'Example API finished'"
+        status_9_pyspark_sql=$(echo $?)
+        fi
 
         echo "status_1_spark_pi $status_1_spark_pi"
         echo "status_2_bigdl_lenet_mnist $status_2_bigdl_lenet_mnist"
@@ -130,3 +161,5 @@ runs:
         #echo "status_5_spark_ut $status_5_spark_ut"
         echo "status_6_spark_xgboost $status_6_spark_xgboost"
         echo "status_7_spark_gbt $status_7_spark_gbt"
+        echo "status_8_pyspark_sklearn $status_8_pyspark_sklearn"
+        echo "status_9_pyspark_sql $status_9_pyspark_sql"

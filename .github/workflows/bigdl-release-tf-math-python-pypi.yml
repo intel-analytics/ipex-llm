@@ -1,0 +1,107 @@
+name: BigDL Release TF Math Python Pypi
+
+on:
+  #pull_request:
+  
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'pypi version (e.g. 2.1.0, 2.2.0b20220927)'
+        required: true
+        default: '2.2.0b20221205'
+        type: string
+      branch:
+        description: 'bigdl core branch (e.g. main, branch-2.1)'
+        required: true
+        default: 'main'
+        type: string
+
+env:
+  PYPI_VERSION: ${{ github.event.inputs.version }}
+  Branch: ${{ github.event.inputs.branch }}
+  
+permissions:
+  contents: read
+  packages: write
+
+jobs:
+  bigdl-release-tf-math-python-pypi:
+    runs-on: [self-hosted, ubuntu-20.04-lts, Bree-core]
+    
+    steps:
+    - uses: actions/checkout@v3
+    - name: Set up JDK8
+      uses: ./.github/actions/jdk-setup-action
+
+    - name: Set up maven
+      uses: ./.github/actions/maven-setup-action
+
+    - name: Set up Python 
+      uses: actions/setup-python@v2
+      with:
+        python-version: '3.7'
+    - name: Install dependencies
+      run: |
+        apt-get update
+        apt-get install wget -y
+        apt-get install zip -y
+        apt-get install patchelf -y
+        python -m pip install --upgrade pip
+        pip install build
+        pip install wheel
+        pip install twine
+        
+    
+    - name: Build package
+      run: |
+        set -x
+        export TIMESTAMP=`date '+%Y%m%d'`
+        echo ${{ env.PYPI_VERSION }}
+        export ORIGINAL_PATH=$PATH
+        echo ${{ env.JAR_URL }}
+
+        export RELEASE_URL_PREFIX=${RELEASE_URL_PREFIX}
+        export TF_VERSION=1.15.0up3
+        cd ./python/mathlibs/
+        if [[ ! -d src/bigdl/share/tflibs/linux-x86_64 ]]; then
+          mkdir src/bigdl/share/tflibs/linux-x86_64 -p
+        fi
+        mkdir src/bigdl/share/tflibs/linux-x86_64 -p
+        curl -v --noproxy ${NOPROXY} -l "${RELEASE_URL_PREFIX}/v${TF_VERSION}/linux/manylinux2010/libtensorflow_jni-cpu-linux-x86_64.tar.gz" | tar -xvz -C src/bigdl/share/tflibs/linux-x86_64
+        cd -
+
+        cd ./python/tflibs/
+        if [[ ! -d src/bigdl/share/tflibs/linux-x86_64 ]]; then
+          mkdir src/bigdl/share/tflibs/linux-x86_64 -p
+        fi
+        echo "makdir"
+        mkdir src/bigdl/share/tflibs/linux-x86_64 -p
+        ls src/bigdl/share/tflibs/linux-x86_64
+        curl -v --noproxy ${NOPROXY} -l "${RELEASE_URL_PREFIX}/v${TF_VERSION}/linux/manylinux2010/libtensorflow_jni-cpu-linux-x86_64.tar.gz" | tar -xvz -C src/bigdl/share/tflibs/linux-x86_64
+        cd -
+
+        export TF_VERSION=1.15.0
+        cd ./python/mathlibs/
+        if [[ ! -d src/bigdl/share/tflibs/darwin-x86_64 ]]; then
+          mkdir src/bigdl/share/tflibs/darwin-x86_64 -p
+        fi
+        mkdir src/bigdl/share/tflibs/darwin-x86_64 -p
+        curl -v --noproxy ${NOPROXY} -l "${RELEASE_URL_PREFIX}/v${TF_VERSION}/osx/libtensorflow_jni-cpu-darwin-x86_64.tar.gz" | tar -xvz -C src/bigdl/share/tflibs/darwin-x86_64
+        cd -
+
+        cd ./python/tflibs/
+        if [[ ! -d src/bigdl/share/tflibs/darwin-x86_64 ]]; then
+          mkdir src/bigdl/share/tflibs/darwin-x86_64 -p
+        fi
+        mkdir src/bigdl/share/tflibs/darwin-x86_64 -p
+        curl -v --noproxy ${NOPROXY} -l "${RELEASE_URL_PREFIX}/v${TF_VERSION}/osx/libtensorflow_jni-cpu-darwin-x86_64.tar.gz" | tar -xvz -C src/bigdl/share/tflibs/darwin-x86_64
+        cd -
+        
+        cd python/dev/
+        ## linux ##
+        bash release_orca_dependencies_default_linux.sh ${{ env.PYPI_VERSION }} true
+
+        ## mac ##
+        bash release_orca_dependencies_default_mac.sh ${{ env.PYPI_VERSION }} true
+
+        

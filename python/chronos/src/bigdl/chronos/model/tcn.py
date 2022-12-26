@@ -57,6 +57,14 @@ class Chomp1d(nn.Module):
         return x[:, :, :-self.chomp_size].contiguous()
 
 
+class DummyEncoder(nn.Module):
+    def __init__(self):
+        super().__init__()
+
+    def forward(self, x):
+        return x
+
+
 class TemporalBlock(nn.Module):
     def __init__(self, n_inputs, n_outputs, kernel_size, stride, dilation, padding, dropout=0.2,
                  repo_initialization=True):
@@ -101,6 +109,7 @@ class TemporalConvNet(nn.Module):
                  future_seq_len,
                  output_feature_num,
                  num_channels,
+                 dummy_encoder=False,
                  kernel_size=3,
                  dropout=0.1,
                  repo_initialization=True,
@@ -110,7 +119,7 @@ class TemporalConvNet(nn.Module):
         num_channels.append(output_feature_num)
 
         layers = []
-        num_levels = len(num_channels)
+        num_levels = 0 if dummy_encoder else len(num_channels)
         for i in range(num_levels):
             dilation_size = 2 ** i
             in_channels = input_feature_num if i == 0 else num_channels[i - 1]
@@ -120,7 +129,7 @@ class TemporalConvNet(nn.Module):
                                      padding=(kernel_size-1) * dilation_size,
                                      dropout=dropout, repo_initialization=repo_initialization)]
 
-        self.tcn = nn.Sequential(*layers)
+        self.tcn = DummyEncoder() if dummy_encoder else nn.Sequential(*layers)
         self.linear = nn.Linear(past_seq_len, future_seq_len)
         if repo_initialization:
             self.init_weights()
@@ -152,6 +161,7 @@ def model_creator(config):
                             future_seq_len=config["future_seq_len"],
                             output_feature_num=config["output_feature_num"],
                             num_channels=num_channels.copy(),
+                            dummy_encoder=config.get("dummy_encoder", False),
                             kernel_size=config.get("kernel_size", 7),
                             dropout=config.get("dropout", 0.2),
                             repo_initialization=config.get("repo_initialization", True),
@@ -166,6 +176,7 @@ def model_creator(config):
                                      future_seq_len=config["future_seq_len"],
                                      output_feature_num=config["output_feature_num"],
                                      num_channels=num_channels.copy(),
+                                     dummy_encoder=config.get("dummy_encoder", False),
                                      kernel_size=config.get("kernel_size", 7),
                                      dropout=config.get("dropout", 0.2),
                                      repo_initialization=config.get("repo_initialization", True),

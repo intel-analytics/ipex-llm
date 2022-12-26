@@ -7,6 +7,8 @@ There're three ways to do forecasting:
 - Use [**auto forecasting models**](#use-auto-forecasting-model) with auto hyperparameter optimization.
 - Use [**standalone forecasters**](#use-standalone-forecaster-pipeline).
 
+Besides, _Chronos_ also provides **benchmark tool** to benchmark forecasting performance. For more information, please refer to [Use Chronos benchmark tool](https://bigdl.readthedocs.io/en/latest/doc/Chronos/Howto/how_to_use_benchmark_tool.html).
+
 #### 0. Supported Time Series Forecasting Model
 
 - `Model`: Model name.

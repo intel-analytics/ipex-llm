@@ -14,22 +14,95 @@
 # limitations under the License.
 #
 
+import os
+import re
+import tempfile
 import time
 import mmcv
 import numpy as np
 import torch
 import warnings
+from collections import OrderedDict
 from mmcv.runner import EpochBasedRunner
 from mmcv.runner.utils import get_host_info
 from mmcv.parallel.distributed import MMDistributedDataParallel
+from mmcv.fileio.file_client import BaseStorageBackend
+from mmcv.utils.misc import is_list_of
+from mmcv.runner.checkpoint import CheckpointLoader
 from bigdl.orca.learn.pytorch.utils import get_batchsize
 from bigdl.dllib.utils.log4Error import invalidInputError
-from bigdl.orca.learn.pytorch.experimential.core.base_ray_runner import BaseRayRunner
+from bigdl.orca.learn.pytorch.core.base_runner import BaseRunner
 
-from typing import (Any, Dict, List, Optional, Tuple, Callable, overload)
+from typing import (TYPE_CHECKING, Union, Any, Dict, List, Optional, Tuple, Callable)
+
+if TYPE_CHECKING:
+    from torch.utils.data import DataLoader
 
 
-class MMCVRayEpochRunner(BaseRayRunner, EpochBasedRunner):
+class HDFSBackend(BaseStorageBackend):
+    """
+    HDFS storage backend for saving ckpt
+
+    This backend will be used when runner contains a CheckpointHook and
+    CheckpointHook's out_dir starts with hdfs://
+    """
+
+    def get(self, filepath: str) -> bytes:  # type:ignore
+        pass
+
+    def get_text(self, filepath: str, encoding: str = 'utf-8') -> str:  # type:ignore
+        pass
+
+    def put(self, obj: bytes, filepath: str) -> None:
+        filename = os.path.basename(filepath)
+        temp_dir = tempfile.mkdtemp()
+        temp_path = os.path.join(temp_dir, filename)
+        with open(temp_path, "wb") as f:
+            f.write(obj)
+
+        from bigdl.orca.data.file import exists, makedirs, put_local_file_to_remote
+        work_dir = os.path.dirname(filepath)
+        if not exists(work_dir):
+            makedirs(work_dir)
+        put_local_file_to_remote(temp_path, filepath)
+
+    def put_text(self, obj: str, filepath: str, encoding: str = 'utf-8') -> None:
+        pass
+
+    def join_path(self, filepath: str,
+                  *filepaths: str) -> str:
+        return os.path.join(filepath, *filepaths)
+
+
+@CheckpointLoader.register_scheme(prefixes='hdfs://')
+def load_from_hdfs(filename: str,
+                   map_location: Union[str, Callable, None]=None) -> Union[dict, OrderedDict]:
+    """
+    load checkpoint by HDFS file path
+
+    Args:
+        filename (str): HDFS checkpoint file path
+        map_location (str, optional): Same as :func:`torch.load`.
+
+    Returns:
+        dict or OrderedDict: The loaded checkpoint.
+    """
+
+    import uuid
+    from bigdl.dllib.utils.file_utils import append_suffix
+    from bigdl.orca.data.file import exists, get_remote_file_to_local
+    if not exists(filename):
+        invalidInputError(False, f"checkpoint at {filename} not found.")
+
+    temp_file_name = append_suffix(str(uuid.uuid1()), filename)
+    temp_path = os.path.join(tempfile.gettempdir(), temp_file_name)
+    get_remote_file_to_local(filename, temp_path)
+
+    checkpoint = torch.load(temp_path)
+    return checkpoint
+
+
+class MMCVRayEpochRunner(BaseRunner, EpochBasedRunner):
     EBR_slots = (
         "model",
         "batch_processor",
@@ -51,36 +124,40 @@ class MMCVRayEpochRunner(BaseRayRunner, EpochBasedRunner):
         "log_buffer",
     )
 
-    def __init__(self, mmcv_runner_creator=None, config=None):
+    def __init__(self,
+                 mmcv_runner_creator: Callable,
+                 config: Optional[Dict]=None) -> None:
         self.mmcv_runner_creator = mmcv_runner_creator
         self.config = config
         self._backend = "torch-local"
 
-    def setup_components(self):
+    def setup_components(self) -> None:
         runner = self.mmcv_runner_creator(self.config)
         self._wrap_from_ebr(runner)
+
+    def setup_ddp_components(self) -> None:
         # MMDDP is implemented by MMCV, it has two main differences with PyTorch DDP:
         # 1. It supports a custom type :class:`DataContainer` which allows more
         #    flexible control of input data.
         # 2. It implement two APIs ``train_step()`` and ``val_step()``.
-        self.model = MMDistributedDataParallel(self.model)
+        self.model = MMDistributedDataParallel(self.model)  # type:ignore
 
     def train_epochs(self,
                      data_loaders_creators: List[Callable],
                      workflow: List[Tuple[str, int]],
                      max_epochs: Optional[int] = None,  # deprecated
-                     **kwargs):
+                     **kwargs) -> List[Dict]:
         data_loaders = [self.with_sampler(creator(self.config)) for
                         creator in data_loaders_creators]
         return self.run(data_loaders, workflow, max_epochs, **kwargs)
 
     def run(self,
-            data_loaders: List[Callable],
+            data_loaders: List['DataLoader'],
             workflow: List[Tuple[str, int]],
             max_epochs: Optional[int] = None,
-            **kwargs) -> List:
+            **kwargs) -> List[Dict]:
         invalidInputError(isinstance(data_loaders, list), "data_loaders should be a list")
-        invalidInputError(mmcv.is_list_of(workflow, tuple), "workflow shoud be a list of tuple")
+        invalidInputError(is_list_of(workflow, tuple), "workflow shoud be a list of tuple")
         invalidInputError(len(data_loaders) == len(workflow),
                           "data_loaders and workflow should have the same length")
 
@@ -133,7 +210,7 @@ class MMCVRayEpochRunner(BaseRayRunner, EpochBasedRunner):
         self.call_hook('after_run')
         return stats_list
 
-    def train(self, data_loader, **kwargs):
+    def train(self, data_loader: 'DataLoader', **kwargs) -> Dict:
         self.model.train()
         self.mode = 'train'
         self.data_loader = data_loader
@@ -196,19 +273,86 @@ class MMCVRayEpochRunner(BaseRayRunner, EpochBasedRunner):
     def validate(self, **kwargs):
         pass
 
-    def get_state_dict(self):
+    def save_checkpoint(self,
+                        out_dir: str,
+                        filename_tmpl: str = 'epoch_{}.pth',
+                        save_optimizer: bool = True,
+                        meta: Optional[Dict] = None,
+                        create_symlink: bool = True) -> None:
+        """Save the checkpoint.
+
+        Args:
+            out_dir (str): The directory that checkpoints are saved.
+            filename_tmpl (str, optional): The checkpoint filename template,
+                which contains a placeholder for the epoch number.
+                Defaults to 'epoch_{}.pth'.
+            save_optimizer (bool, optional): Whether to save the optimizer to
+                the checkpoint. Defaults to True.
+            meta (dict, optional): The meta information to be saved in the
+                checkpoint. Defaults to None.
+            create_symlink (bool, optional): Whether to create a symlink
+                "latest.pth" to point to the latest checkpoint.
+                Defaults to True.
+        """
+        EpochBasedRunner.save_checkpoint(self, out_dir, filename_tmpl,
+                                         save_optimizer, meta, create_symlink)
+
+    def load_checkpoint(
+            self,
+            filename: str,
+            map_location: Union[str, Callable]='cpu',
+            strict: bool = False,
+            revise_keys: List = [(r'^module.', '')],
+    ) -> Union[Dict, OrderedDict]:
+        """Load checkpoint from a file or URI.
+
+        Args:
+            filename (str): HDFS file path, ``hdfs://xxx``.
+            map_location (str): Same as :func:`torch.load`.
+            strict (bool): Whether to allow different params for the model and
+                checkpoint.
+            revise_keys (list): A list of customized keywords to modify the
+                state_dict in checkpoint. Each item is a (pattern, replacement)
+                pair of the regular expression operations. Default: strip
+                the prefix 'module.' by [(r'^module\\.', '')].
+
+        Returns:
+            dict or OrderedDict: The loaded checkpoint.
+        """
+
+        checkpoint = CheckpointLoader.load_checkpoint(filename, map_location, self.logger)
+        self.load_state_dict(checkpoint, strict, revise_keys)
+        return checkpoint
+
+    def remove_checkpoint(self, filepath: str) -> None:
+        pass
+
+    def get_state_dict(self) -> None:
         """Returns the state of the runner."""
         pass
 
-    def load_state_dict(self, state):
+    def load_state_dict(self, checkpoint: Dict, strict: bool = False,
+                        revise_keys: list = [(r'^module.', '')]) -> None:
         """Sets the state of the model."""
-        pass
 
-    def _save_checkpoint(self, filepath, save_weights_only=False):
-        """Save checkpoint."""
-        pass
+        if 'state_dict' in checkpoint:
+            state_dict = checkpoint['state_dict']
+        else:
+            state_dict = checkpoint
 
-    def shutdown(self):
+            # strip prefix of state_dict
+            metadata = getattr(state_dict, '_metadata', OrderedDict())
+            for p, r in revise_keys:
+                state_dict = OrderedDict(
+                    {re.sub(p, r, k): v
+                     for k, v in state_dict.items()})
+            # Keep metadata in state_dict
+            state_dict._metadata = metadata
+
+        from mmcv.runner.checkpoint import load_state_dict
+        load_state_dict(self.model, state_dict, strict, self.logger)
+
+    def shutdown(self) -> None:
         pass
 
     def _wrap_from_ebr(self, epoch_based_runner):
