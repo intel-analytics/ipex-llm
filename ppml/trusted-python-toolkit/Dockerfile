@@ -9,49 +9,7 @@ ARG TRITON_VERSION=2.27.0
 ARG TRITON_CONTAINER_VERSION=22.10
 
 #Stage.2 Triton Server
-FROM nvcr.io/nvidia/tritonserver:22.10-py3-min as min_container
-
-
-From ubuntu:20.04 as tritonserver
-ARG http_proxy
-ARG https_proxy
-ARG TRITON_VERSION
-ARG TRITON_CONTAINER_VERSION
-ENV PATH /opt/conda/bin:${PATH}
-
-ENV TRITON_SERVER_VERSION ${TRITON_VERSION}
-ENV NVIDIA_TRITON_SERVER_VERSION ${TRITON_CONTAINER_VERSION}
-
-# Ensure apt-get won't prompt for selecting options
-ENV DEBIAN_FRONTEND=noninteractive
-
-RUN apt-get update && \
-    apt-get install -y --no-install-recommends ca-certificates autoconf automake build-essential docker.io git libre2-dev libssl-dev libtool libboost-dev libcurl4-openssl-dev libb64-dev patchelf python3-dev python3-pip python3-setuptools rapidjson-dev scons software-properties-common unzip wget zlib1g-dev libarchive-dev pkg-config uuid-dev libnuma-dev && \
-    rm -rf /var/lib/apt/lists/* && \
-    pip3 install --upgrade pip && \
-    pip3 install --upgrade wheel setuptools docker && \
-
-# Server build requires recent version of CMake (FetchContent required)
-    wget -O - https://apt.kitware.com/keys/kitware-archive-latest.asc 2>/dev/null | gpg --dearmor - | tee /etc/apt/trusted.gpg.d/kitware.gpg >/dev/null && \
-    apt-add-repository 'deb https://apt.kitware.com/ubuntu/ focal main' && \
-    apt-get update && \
-    apt-get install -y --no-install-recommends cmake-data=3.21.1-0kitware1ubuntu20.04.1 cmake=3.21.1-0kitware1ubuntu20.04.1 && \
-
-    mkdir -p /workspace/ && \
-    wget "https://repo.anaconda.com/miniconda/Miniconda3-py38_4.12.0-Linux-x86_64.sh" -O miniconda.sh -q && \
-    echo "3190da6626f86eee8abf1b2fd7a5af492994eb2667357ee4243975cdbb175d7a" "miniconda.sh" > shasum && \
-    sha256sum -c ./shasum && \
-    sh miniconda.sh -b -p /opt/conda && \
-    rm miniconda.sh shasum && \
-    find /opt/conda/ -follow -type f -name '*.a' -delete && \
-    find /opt/conda/ -follow -type f -name '*.js.map' -delete && \
-    /opt/conda/bin/conda clean -afy && \
-    git clone https://github.com/triton-inference-server/server.git && \
-    cd server && \
-    cp -r * /workspace && \
-    ./build.py -v --backend=pytorch --repoagent=checksum --filesystem=gcs --filesystem=s3 --filesystem=azure_storage --endpoint=http --endpoint=grpc --endpoint=sagemaker --endpoint=vertex-ai --enable-logging --enable-stats --enable-metrics --enable-cpu-metrics --enable-tracing --dryrun && \
-    cd build && \
-    ./cmake_build
+FROM nvcr.io/nvidia/tritonserver:22.10-py3 as tritonserver
 
 #Stage.3 Flask & Numpy & Pandas & Torchserve & Triton Server
 FROM $BASE_IMAGE_NAME:$BASE_IMAGE_TAG
@@ -84,22 +42,20 @@ ADD ./examples/ /ppml/examples
 ADD ./entrypoint.sh /opt/entrypoint.sh
 ADD ./start-scripts/ /ppml/work/start-scripts
 ADD https://github.com/krallin/tini/releases/download/${TINI_VERSION}/tini /sbin/tini
-COPY --from=min_container /usr/local/cuda/lib64/stubs/libcusparse.so /usr/local/cuda/lib64/stubs/libcusparse.so.11
-COPY --from=min_container /usr/local/cuda/lib64/stubs/libcusolver.so /usr/local/cuda/lib64/stubs/libcusolver.so.11
-COPY --from=min_container /usr/local/cuda/lib64/stubs/libcurand.so /usr/local/cuda/lib64/stubs/libcurand.so.10
-COPY --from=min_container /usr/local/cuda/lib64/stubs/libcufft.so /usr/local/cuda/lib64/stubs/libcufft.so.10
-COPY --from=min_container /usr/local/cuda/lib64/stubs/libcublas.so /usr/local/cuda/lib64/stubs/libcublas.so.11
-COPY --from=min_container /usr/local/cuda/lib64/stubs/libcublasLt.so /usr/local/cuda/lib64/stubs/libcublasLt.so.11
-COPY --from=min_container /usr/local/cuda-11.8/targets/x86_64-linux/lib/libcudart.so.11.0 /usr/local/cuda/targets/x86_64-linux/lib/.
-COPY --from=min_container /usr/local/cuda-11.8/targets/x86_64-linux/lib/libcupti.so.11.8 /usr/local/cuda/targets/x86_64-linux/lib/.
-COPY --from=min_container /usr/local/cuda-11.8/targets/x86_64-linux/lib/libnvToolsExt.so.1 /usr/local/cuda/targets/x86_64-linux/lib/.
-COPY --from=min_container /usr/lib/x86_64-linux-gnu/libcudnn.so.8 /usr/lib/x86_64-linux-gnu/libcudnn.so.8
-COPY --from=min_container /usr/lib/x86_64-linux-gnu/libnccl.so.2 /usr/lib/x86_64-linux-gnu/libnccl.so.2
-COPY --from=tritonserver /workspace/server/docker/entrypoint.d/ /opt/nvidia/entrypoint.d/
-COPY --from=tritonserver /workspace/server/docker/cpu_only/ /opt/nvidia/
-COPY --from=tritonserver /tmp/tritonbuild/install /opt/tritonserver
-COPY --from=tritonserver /workspace/server/NVIDIA_Deep_Learning_Container_License.pdf /opt/tritonserver
-COPY --from=tritonserver /workspace/server/docker/sagemaker/serve /usr/bin/.
+COPY --from=tritonserver /usr/local/cuda/lib64/stubs/libcusparse.so /usr/local/cuda/lib64/stubs/libcusparse.so.11
+COPY --from=tritonserver /usr/local/cuda/lib64/stubs/libcusolver.so /usr/local/cuda/lib64/stubs/libcusolver.so.11
+COPY --from=tritonserver /usr/local/cuda/lib64/stubs/libcurand.so /usr/local/cuda/lib64/stubs/libcurand.so.10
+COPY --from=tritonserver /usr/local/cuda/lib64/stubs/libcufft.so /usr/local/cuda/lib64/stubs/libcufft.so.10
+COPY --from=tritonserver /usr/local/cuda/lib64/stubs/libcublas.so /usr/local/cuda/lib64/stubs/libcublas.so.11
+COPY --from=tritonserver /usr/local/cuda/lib64/stubs/libcublasLt.so /usr/local/cuda/lib64/stubs/libcublasLt.so.11
+COPY --from=tritonserver /usr/local/cuda-11.8/targets/x86_64-linux/lib/libcudart.so.11.0 /usr/local/cuda/targets/x86_64-linux/lib/.
+COPY --from=tritonserver /usr/local/cuda-11.8/targets/x86_64-linux/lib/libcupti.so.11.8 /usr/local/cuda/targets/x86_64-linux/lib/.
+COPY --from=tritonserver /usr/local/cuda-11.8/targets/x86_64-linux/lib/libnvToolsExt.so.1 /usr/local/cuda/targets/x86_64-linux/lib/.
+COPY --from=tritonserver /usr/lib/x86_64-linux-gnu/libcudnn.so.8 /usr/lib/x86_64-linux-gnu/libcudnn.so.8
+COPY --from=tritonserver /usr/lib/x86_64-linux-gnu/libnccl.so.2 /usr/lib/x86_64-linux-gnu/libnccl.so.2
+COPY --from=tritonserver /opt/nvidia/ /opt/nvidia/
+COPY --from=tritonserver /opt/tritonserver /opt/tritonserver
+COPY --from=tritonserver /usr/bin/ /usr/bin/
 
 # Ensure apt-get won't prompt for selecting options
 
@@ -129,5 +85,3 @@ RUN apt-get update && \
 WORKDIR /ppml
 
 ENTRYPOINT [ "/opt/entrypoint.sh" ]
-
-
