@@ -54,7 +54,7 @@ COPY --from=tritonserver /usr/local/cuda-11.8/targets/x86_64-linux/lib/libnvTool
 COPY --from=tritonserver /usr/lib/x86_64-linux-gnu/libcudnn.so.8 /usr/lib/x86_64-linux-gnu/libcudnn.so.8
 COPY --from=tritonserver /usr/lib/x86_64-linux-gnu/libnccl.so.2 /usr/lib/x86_64-linux-gnu/libnccl.so.2
 COPY --from=tritonserver /opt/nvidia/ /opt/nvidia/
-COPY --from=tritonserver /opt/tritonserver /opt/tritonserver
+COPY --from=tritonserver /opt/tritonserver/ /opt/tritonserver/
 COPY --from=tritonserver /usr/bin/ /usr/bin/
 
 # Ensure apt-get won't prompt for selecting options
