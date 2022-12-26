@@ -339,6 +339,6 @@ In SGX mode, there is a problem when using Hyper-threading combined with Gramine
 
 #### torch.load / torch.save
 
-We provide a customized `torch.save` and `torch.load` method.  The `torch.save` method will now automatically encrypt the object before saving it on disk or in memory.  In the opposite, the `torch.load` method will automatically decrypt the object before loading it back to memory so that the user do not need to worry about encryption/decryption.
+We provide a customized `torch.save` and `torch.load` method.  The `torch.save` method will automatically encrypt the object before saving it on disk or to memory.  In the opposite, the `torch.load` method will automatically decrypt the object before loading it back to memory so that the user do not need to worry about encryption/decryption.
 
-We provide an example in the image, which can be found in the path `/ppml/examples/load_save_ex.py`.
+An example is included in the image, you can find it at path `/ppml/examples/load_save_ex.py`.
