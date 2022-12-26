@@ -87,9 +87,7 @@ class BigDLAttestationService(attestationServerIP: String, attestationServerPort
 
     val postResult: JSONObject = timing("BigDLAttestationService request for VerifyQuote") {
       val postString: String = "{\"quote\": \"" + quote + "\"}"
-      System.out.println(postString)
       val postUrl = constructUrl(action, httpsEnabled)
-      System.out.println(postUrl)
       var response: String = null
       if (httpsEnabled) {
         response = HTTPSUtil.retrieveResponse(postUrl, sslConSocFactory, postString)
@@ -100,10 +98,19 @@ class BigDLAttestationService(attestationServerIP: String, attestationServerPort
       if (response != null && response.startsWith("\ufeff")) {
         response = response.substring(1)
       }
-      System.out.println(response)
+      // System.out.println(response)
       new JSONObject(response)
     }
-    (true, postResult.getString(RES_RESULT))
+    val result = postResult.getInt(RES_RESULT)
+    if (result == 0) {
+      return (true, postResult.toString)
+    } else if (result == 1) {
+      println("WARNING: Attestation pass but BIOS or the software" +
+        " is out of date.")
+      return (true, postResult.toString)
+    } else {
+      return (false, postResult.toString)
+    }
   }
 
   override def attestWithServer(quote: String, policyID: String): (Boolean, String) = {
