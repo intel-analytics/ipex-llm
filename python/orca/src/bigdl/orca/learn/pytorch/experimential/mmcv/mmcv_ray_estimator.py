@@ -102,7 +102,9 @@ class MMCVRayEstimator(BaseRayEstimator):
         pass
 
     def get_model(self):
-        pass
+        state = self.get_state_dict()
+        model_state = state["state_dict"]
+        return model_state
 
     def load_checkpoint(
             self,

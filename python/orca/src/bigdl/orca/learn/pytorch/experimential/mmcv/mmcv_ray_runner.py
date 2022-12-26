@@ -25,6 +25,7 @@ import warnings
 from collections import OrderedDict
 from mmcv.runner import EpochBasedRunner
 from mmcv.runner.utils import get_host_info
+from mmcv.parallel import is_module_wrapper
 from mmcv.parallel.distributed import MMDistributedDataParallel
 from mmcv.fileio.file_client import BaseStorageBackend
 from mmcv.utils.misc import is_list_of
@@ -327,9 +328,33 @@ class MMCVRayEpochRunner(BaseRunner, EpochBasedRunner):
     def remove_checkpoint(self, filepath: str) -> None:
         pass
 
-    def get_state_dict(self) -> None:
+    def get_state_dict(self) -> Dict:
         """Returns the state of the runner."""
-        pass
+        meta = {}
+        if self.meta is not None:
+            meta.update(self.meta)
+        meta.update(epoch=self.epoch, iter=self.iter)
+        model = self.model
+        if is_module_wrapper(model):
+            model = model.module
+
+        if hasattr(model, 'CLASSES') and model.CLASSES is not None:
+            meta.update(CLASSES=model.CLASSES)
+
+        from mmcv.runner.checkpoint import weights_to_cpu, get_state_dict
+        state = {
+            'meta': meta,
+            'state_dict': weights_to_cpu(get_state_dict(model))
+        }
+
+        if isinstance(self.optimizer, Optimizer):
+            state['optimizer'] = self.optimizer.state_dict()
+        elif isinstance(self.optimizer, dict):
+            state['optimizer'] = {}
+            for name, optim in self.optimizer.items():
+                state['optimizer'][name] = optim.state_dict()
+
+        return state
 
     def load_state_dict(self, checkpoint: Dict, strict: bool = False,
                         revise_keys: list = [(r'^module.', '')]) -> None:
