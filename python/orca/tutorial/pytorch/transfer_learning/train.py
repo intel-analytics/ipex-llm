@@ -116,8 +116,8 @@ imshow()
 
 
 # Step 3: Define the model, optimizer and loss
-# Here, ConvNet is as a fixed feature extractor. We will freeze the weights for all of the network except that of
-# the final fully connected layer. This last fully connected layer is
+# Here, ConvNet is as a fixed feature extractor. We will freeze the weights for all of the
+# network except that of the final fully connected layer. This last fully connected layer is
 # replaced with a new one with random weights and only this layer is trained.
 
 
