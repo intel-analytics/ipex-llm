@@ -342,10 +342,10 @@ class MMCVRayEpochRunner(BaseRunner, EpochBasedRunner):
         if hasattr(model, 'CLASSES') and model.CLASSES is not None:
             meta.update(CLASSES=model.CLASSES)
 
-        from mmcv.runner.checkpoint import weights_to_cpu, get_state_dict
+        from mmcv.runner.checkpoint import get_state_dict as model_state_dict
         state = {
             'meta': meta,
-            'state_dict': weights_to_cpu(get_state_dict(model))
+            'state_dict': model_state_dict(model)
         }
 
         if isinstance(self.optimizer, Optimizer):
