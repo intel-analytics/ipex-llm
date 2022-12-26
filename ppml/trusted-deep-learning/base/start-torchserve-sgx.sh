@@ -21,13 +21,13 @@ do
                 for ((i=0;i<num;i++,port++))
                 do
                 (
-                        bash /ppml/work/start-scripts/start-backend-sgx.sh -p $port
+                        bash /ppml/torchserve/start-backend-sgx.sh -p $port
                 )&
                 done
         done
 done
 (
-        bash /ppml/work/start-scripts/start-frontend-sgx.sh -c $configFile
+        bash /ppml/torchserve/start-frontend-sgx.sh -c $configFile
 )&
 wait
 

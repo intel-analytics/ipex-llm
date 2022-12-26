@@ -34,7 +34,8 @@ ENV JAVA_HOME                           /opt/jdk${JDK_VERSION}
 ARG USE_CUDA=0 USE_CUDNN=0 USE_MKLDNN=1 USE_DISTRIBUTED=1 USE_GLOO=1 USE_GLOO_WITH_OPENSSL=1 USE_MKL=1 BUILD_TEST=0 BLAS=MKL
 ARG CMAKE_PREFIX_PATH="/usr/local/lib/python3.7/dist-packages/:/usr/local/lib/"
 
-RUN mkdir /ppml/examples
+RUN mkdir /ppml/examples && \
+    mkdir /ppml/torchserve
 
 ADD https://github.com/krallin/tini/releases/download/${TINI_VERSION}/tini /sbin/tini
 ADD ./entrypoint.sh /opt/entrypoint.sh
@@ -49,10 +50,10 @@ ADD ./bash.manifest.template.patch /bash.manifest.template.patch
 
 # COPY frontend.jar
 COPY --from=temp /ppml/torchserve/frontend.jar /ppml/torchserve/frontend.jar
-# Examples for Torchserve
-ADD ./start-backend-sgx.sh      /ppml/examples/start-backend-sgx.sh
-ADD ./start-frontend-sgx.sh     /ppml/examples/start-frontend-sgx.sh
-ADD ./start-torchserve-sgx.sh   /ppml/examples/start-torchserve-sgx.sh
+# Start Script for Torchserve
+ADD ./start-backend-sgx.sh      /ppml/torchserve/start-backend-sgx.sh
+ADD ./start-frontend-sgx.sh     /ppml/torchserve/start-frontend-sgx.sh
+ADD ./start-torchserve-sgx.sh   /ppml/torchserve/start-torchserve-sgx.sh
 
 
 # PyTorch Dependencies
@@ -101,11 +102,9 @@ RUN env DEBIAN_FRONTEND=noninteractive apt-get update && \
     sed -i '/import abc/iimport sys' /usr/local/lib/python3.7/dist-packages/ts/torch_handler/base_handler.py && \
     sed -i '/module = importlib.import_module/i\ \ \ \ \ \ \ \ sys.path.append(model_dir)' /usr/local/lib/python3.7/dist-packages/ts/torch_handler/base_handler.py && \
     sed -i 's/SOCKET_ACCEPT_TIMEOUT = 30.0/SOCKET_ACCEPT_TIMEOUT = 3000.0/' /usr/local/lib/python3.7/dist-packages/ts/model_service_worker.py && \
-    sed -i '/os.path.join/i\ \ \ \ \ \ \ \ sys.path.append(model_dir)' /usr/local/lib/python3.7/dist-packages/ts/model_loader.py && \
-    sed -i '/json/iimport sys' /usr/local/lib/python3.7/dist-packages/ts/model_loader.py && \
     cp /usr/local/lib/python3.7/dist-packages/ts/configs/metrics.yaml /ppml && \
-    chmod +x /ppml/examples/start-backend-sgx.sh && \
-    chmod +x /ppml/examples/start-frontend-sgx.sh && \
-    chmod +x /ppml/examples/start-torchserve-sgx.sh
+    chmod +x /ppml/torchserve/start-backend-sgx.sh && \
+    chmod +x /ppml/torchserve/start-frontend-sgx.sh && \
+    chmod +x /ppml/torchserve/start-torchserve-sgx.sh
 
 ENTRYPOINT [ "/opt/entrypoint.sh" ]
