@@ -925,8 +925,7 @@ class SparkXShards(XShards):
     def merge(self,
               right: "SparkXShards",
               how: str = "inner",
-              on: Optional[str] = None,
-              **kwargs) -> "SparkXShards":
+              on: Optional[str] = None) -> "SparkXShards":
         """
         Merge two SparkXShards into a single SparkXShards with a database-style join.
 
