@@ -258,13 +258,18 @@ class TorchRunner(BaseRunner):
                 if hasattr(callback, "set_trainer"):
                     callback.set_trainer(self)
                 callback.on_train_begin()
+
+        self.call_hook(call_backs=callbacks, fn_name="before_run")
+
         stats_list = list()
         for i in range(epochs):
             if callbacks is not None:
                 for callback in callbacks:
                     callback.on_epoch_begin(epoch=self.epochs)
+            self.call_hook(call_backs=callbacks, fn_name="before_train_epoch")
             stats = self.train_epoch(loader, profile=profile, info=info, callbacks=callbacks,
                                      val_loader=val_loader, val_steps=val_steps)
+            self.call_hook(call_backs=callbacks, fn_name="after_train_epoch")
             if self.rank == 0:
                 if self.sync_stats:
                     self.logger.info(f"Finished training epoch {i + 1}, " +
@@ -280,6 +285,9 @@ class TorchRunner(BaseRunner):
         if callbacks is not None:
             for callback in callbacks:
                 callback.on_train_end(logs=self.epochs_stats)
+
+        self.call_hook(call_backs=callbacks, fn_name="after_run")
+
         return stats_list
 
     def train_epoch(self,
@@ -311,7 +319,8 @@ class TorchRunner(BaseRunner):
                 validation_results = self._validate(val_loader,
                                                     info=info,
                                                     metrics=self.metrics,
-                                                    num_steps=val_steps)
+                                                    num_steps=val_steps,
+                                                    callbacks=callbacks)
                 # add prefix of "val_" for validation_stats
                 validation_stats = {}
                 for name, value in validation_results.items():
@@ -433,7 +442,7 @@ class TorchRunner(BaseRunner):
                 for callback in callbacks:
                     callback.on_batch_end(batch_idx, logs=metrics)
 
-    def _train_batch(self, batch, batch_info=None):
+    def _train_batch(self, batch, batch_info=None, callbacks=None):
         """Computes loss and updates the model over one batch.
 
         This method is responsible for computing the loss and gradient and
@@ -466,6 +475,8 @@ class TorchRunner(BaseRunner):
                 calculate averages.
 
         """
+        # TODO: restore batch to what it should be.
+        self.call_hook(call_backs=callbacks, fn_name="before_train_iter")
         # unpack features into list to support multiple inputs model
         features, target = batch
 
@@ -493,6 +504,8 @@ class TorchRunner(BaseRunner):
         # Call step of optimizer to update model params.
         with self.timers.record("apply"):
             self.optimizer.step()
+
+        self.call_hook(call_backs=callbacks, fn_name="after_train_iter")
 
         return {"train_loss": loss.item(), NUM_SAMPLES: get_batchsize(features)}
 
@@ -525,7 +538,7 @@ class TorchRunner(BaseRunner):
             validation_stats.update(profile=self.timers.stats())
         return validation_stats
 
-    def _validate(self, val_iterator, info, metrics, num_steps=None):
+    def _validate(self, val_iterator, info, metrics, num_steps=None, callbacks=None):
         """Runs one standard validation pass over the val_iterator.
 
         This will call ``model.eval()`` and ``torch.no_grad`` when iterating
@@ -553,19 +566,21 @@ class TorchRunner(BaseRunner):
         metrics = Metric.convert_metrics_dict(metrics, backend="pytorch")
         losses = []
         total_samples = 0
+        self.call_hook(call_backs=callbacks, fn_name="before_val_epoch")
         with torch.no_grad():
             for batch_idx, batch in enumerate(val_iterator):
                 if num_steps and batch_idx == num_steps:
                     break
                 batch_info = {"batch_idx": batch_idx}
                 batch_info.update(info)
-                output, target, loss = self.forward_batch(batch, batch_info)
+                output, target, loss = self.forward_batch(batch, batch_info, callbacks)
                 num_samples = get_batchsize(target)
                 total_samples += num_samples
                 losses.append(loss.item() * num_samples)
                 for metric in metrics.values():
                     metric(output, target)
 
+        self.call_hook(call_backs=callbacks, fn_name="after_val_epoch")
         result = {name: metric.compute() for name, metric in metrics.items()}
 
         result["val_loss"] = sum(losses) / total_samples
@@ -574,7 +589,7 @@ class TorchRunner(BaseRunner):
 
         return result
 
-    def forward_batch(self, batch, batch_info):
+    def forward_batch(self, batch, batch_info, callbacks=None):
         """Calculates the loss and accuracy over a given batch.
 
         You can override this method to provide arbitrary metrics.
@@ -596,6 +611,8 @@ class TorchRunner(BaseRunner):
                 by default, ``validate`` uses "num_samples" to
                 calculate averages.
         """
+        # TODO: restore batch to what it should be.
+        self.call_hook(call_backs=callbacks, fn_name="before_val_iter")
         # unpack features into list to support multiple inputs model
         features, target = batch
 
@@ -614,6 +631,8 @@ class TorchRunner(BaseRunner):
             targetL = [target] if not isinstance(target, (list, tuple)) else target
             outputL = [output] if not isinstance(output, (list, tuple)) else output
             loss = self.criterion(*outputL, *targetL)
+
+        self.call_hook(call_backs=callbacks, fn_name="after_val_iter")
 
         return output, target, loss
 
@@ -763,6 +782,16 @@ class TorchRunner(BaseRunner):
         del self.criterion
         del self.optimizers
         del self.models
+
+    def call_hook(self, call_backs, fn_name: str) -> None:
+        """Call all hooks.
+
+        Args:
+            fn_name (str): The function name in each hook to be called, such as
+                "on_iter_begin".
+        """
+        for hook in call_backs:
+            getattr(hook, fn_name)(self)
 
     @property
     def given_models(self):
