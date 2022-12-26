@@ -358,7 +358,6 @@ class MinMaxScaler:
         self.outputCol = outputCol
         self.scaler = None  # type: Optional[SparkPipeline]
         self.scalerModel = None
-        self.vecOutputCol = None
         if inputCol:
             self.__createScaler__()
 
@@ -370,7 +369,8 @@ class MinMaxScaler:
         assembler = SparkVectorAssembler(inputCols=self.inputCol,  # type:ignore
                                          outputCol=self.vecOutputCol)
         scaler = SparkMinMaxScaler(min=self.min, max=self.max,
-                                   inputCol=self.vecOutputCol, outputCol=self.outputCol)  # type:ignore
+                                   inputCol=self.vecOutputCol,
+                                   outputCol=self.outputCol)  # type:ignore
         self.scaler = SparkPipeline(stages=[assembler, scaler])
 
     def setInputOutputCol(self,
@@ -411,7 +411,6 @@ class StandardScaler:
         self.outputCol = outputCol
         self.scaler = None
         self.scalerModel = None
-        self.vecOutputCol = None
         if inputCol:
             self.__createScaler__()
 
