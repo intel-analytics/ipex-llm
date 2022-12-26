@@ -97,12 +97,12 @@ echo "#5 Running auto_mpg"
 #timer
 start=$(date "+%s")
 
-#if [ -f ${BIGDL_ROOT}/python/orca/tutorial/xshards/auto-mpg.csv ]
-#then
-#    echo "auto-mpg.csv already exists"
-#else
+if [ -f ${BIGDL_ROOT}/python/orca/tutorial/xshards/auto-mpg.csv ]
+then
+    echo "auto-mpg.csv already exists"
+else
     wget -nv $FTP_URI/analytics-zoo-data/xshards/auto-mpg.csv -P ${BIGDL_ROOT}/python/orca/tutorial/xshards
-#fi
+fi
 
 filename=auto_mpg
 ${BIGDL_ROOT}/python/orca/dev/colab-notebook/ipynb2py.sh ${filename}

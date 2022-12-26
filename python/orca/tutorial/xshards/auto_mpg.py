@@ -26,6 +26,7 @@ from tensorflow.keras.models import Sequential
 from tensorflow.keras.layers import Dense
 
 init_orca_context(memory="4g")
+OrcaContext.pandas_read_backend = "pandas"
 
 path = 'auto-mpg.csv'
 column_names = ['MPG', 'Cylinders', 'Displacement', 'Horsepower', 'Weight',

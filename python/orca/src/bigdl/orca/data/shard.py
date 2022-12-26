@@ -913,9 +913,7 @@ class SparkXShards(XShards):
                         import pyarrow as pa
                         arrow_schema = pa.Schema.from_pandas(pdf, preserve_index=False)
                         struct = StructType()
-                        print("*************")
                         for name, field in zip(schema, arrow_schema):
-                            print(name, field.type)
                             struct.add(
                                 name, from_arrow_type(field.type), nullable=field.nullable
                             )
