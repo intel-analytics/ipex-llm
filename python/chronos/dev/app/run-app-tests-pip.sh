@@ -30,7 +30,7 @@ execute_test(){
 ${BIGDL_ROOT}/python/chronos/dev/app/ipynb2py.sh ${BIGDL_ROOT}/python/chronos/use-case/AIOps/AIOps_anomaly_detect_unsupervised_forecast_based
 FILENAME="${BIGDL_ROOT}/python/chronos/use-case/AIOps/m_1932.csv"
 if [ ! -f "$FILENAME" ];then
-   wget $FTP_URI/analytics-zoo-data/chronos-aiops/m_1932.csv -P ${BIGDL_ROOT}/python/chronos/use-case/AIOps
+   wget $FTP_URI/analytics-zoo-data/chronos-aiops/m_1932.csv -O ${BIGDL_ROOT}/python/chronos/use-case/AIOps/m_1932.csv
 fi
 
 sed -i '/get_ipython()/d; /plot[.]/d; /plt[.]/d; /axs[.]/d' ${BIGDL_ROOT}/python/chronos/use-case/AIOps/AIOps_anomaly_detect_unsupervised_forecast_based.py
