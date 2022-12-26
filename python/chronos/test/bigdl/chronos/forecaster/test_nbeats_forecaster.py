@@ -702,7 +702,9 @@ class TestChronosNBeatsForecaster(TestCase):
         # export the pipelien to torchscript
         pipeline_module_dir = os.path.join(temp_dir, "pipeline")
         os.mkdir(pipeline_module_dir)
-        forecaster.export_torchscript_module(train_data, path_dir=pipeline_module_dir, drop_dtcol=True)
+        forecaster.export_torchscript_module(train_data,
+                                             path_dir=pipeline_module_dir,
+                                             drop_dtcol=True)
         # save the test data for deployment
         test_data_path = os.path.join(temp_dir, "inference_data.csv")
         test_data.df.to_csv(test_data_path, index=False)
