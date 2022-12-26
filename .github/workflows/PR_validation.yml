@@ -19,6 +19,7 @@ on:
       - 'scala/friesian/**'
       - '.github/actions/friesian-scala-ut-action/action.yml'
       - 'scala/dllib/**'
+      - 'python/dllib/**'
       - '.github/actions/dllib-scala-ut-action/action.yml'
       - 'scala/ppml/**'
       - '.github/actions/ppml-scala-ut-action/action.yml'
@@ -42,6 +43,7 @@ on:
       - 'scala/friesian/**'
       - '.github/actions/friesian-scala-ut-action/action.yml'
       - 'scala/dllib/**'
+      - 'python/dllib/**'
       - '.github/actions/dllib-scala-ut-action/action.yml'
       - 'scala/ppml/**'
       - '.github/actions/ppml-scala-ut-action/action.yml'
@@ -93,6 +95,7 @@ jobs:
               - 'scala/dllib/pom.xml'
               - 'scala/pom.xml'
               - 'scala/dllib/**'
+              - 'python/dllib/**'
               - '.github/actions/dllib-scala-ut-action/action.yml'
               
             ppml:
@@ -105,6 +108,7 @@ jobs:
               - 'scala/ppml/**'
               - '.github/actions/ppml-scala-ut-action/action.yml'
               - 'python/ppml/**'
+              - 'python/dllib/**'
               - '.github/actions/ppml/**'
               
             orca:
@@ -115,6 +119,7 @@ jobs:
               - 'scala/dllib/pom.xml'
               - 'scala/pom.xml'
               - 'python/orca/**'
+              - 'python/dllib/**'
               - '.github/actions/orca/**'
                     
   Friesian-Scala-UT:
