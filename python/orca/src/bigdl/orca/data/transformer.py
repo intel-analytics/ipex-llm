@@ -358,6 +358,7 @@ class MinMaxScaler:
         self.outputCol = outputCol
         self.scaler = None  # type: Optional[SparkPipeline]
         self.scalerModel = None
+        self.vecOutputCol = None
         if inputCol:
             self.__createScaler__()
 
@@ -365,11 +366,11 @@ class MinMaxScaler:
         invalidInputError(self.inputCol, "inputColumn cannot be empty")
         invalidInputError(self.outputCol, "outputColumn cannot be empty")
 
-        vecOutputCol = str(uuid.uuid1()) + "x_vec"
+        self.vecOutputCol = str(uuid.uuid1()) + "x_vec"
         assembler = SparkVectorAssembler(inputCols=self.inputCol,  # type:ignore
-                                         outputCol=vecOutputCol)
+                                         outputCol=self.vecOutputCol)
         scaler = SparkMinMaxScaler(min=self.min, max=self.max,
-                                   inputCol=vecOutputCol, outputCol=self.outputCol)  # type:ignore
+                                   inputCol=self.vecOutputCol, outputCol=self.outputCol)  # type:ignore
         self.scaler = SparkPipeline(stages=[assembler, scaler])
 
     def setInputOutputCol(self,
@@ -390,6 +391,10 @@ class MinMaxScaler:
         invalidInputError(self.scalerModel, "Please call fit_transform first")
         df = shard.to_spark_df()
         scaledData = self.scalerModel.transform(df)  # type: ignore
+        if isinstance(self.vecOutputCol, str):
+            scaledData = scaledData.drop(self.vecOutputCol)
+        else:
+            scaledData = scaledData.drop(*(self.vecOutputCol))
         data_shards = spark_df_to_pd_sparkxshards(scaledData)
         return data_shards
 
@@ -406,6 +411,7 @@ class StandardScaler:
         self.outputCol = outputCol
         self.scaler = None
         self.scalerModel = None
+        self.vecOutputCol = None
         if inputCol:
             self.__createScaler__()
 
@@ -413,10 +419,10 @@ class StandardScaler:
         invalidInputError(self.inputCol, "inputColumn cannot be empty")
         invalidInputError(self.outputCol, "outputColumn cannot be empty")
 
-        vecOutputCol = str(uuid.uuid1()) + "x_vec"
-        assembler = SparkVectorAssembler(inputCols=[self.inputCol], outputCol=vecOutputCol)
+        self.vecOutputCol = str(uuid.uuid1()) + "x_vec"
+        assembler = SparkVectorAssembler(inputCols=[self.inputCol], outputCol=self.vecOutputCol)
         scaler = SparkStandardScaler(withMean=self.withMean, withStd=self.withStd,
-                                     inputCol=vecOutputCol, outputCol=self.outputCol)
+                                     inputCol=self.vecOutputCol, outputCol=self.outputCol)
         self.scaler = SparkPipeline(stages=[assembler, scaler])
 
     def setInputOutputCol(self, inputCol: str, outputCol: str):
@@ -435,5 +441,6 @@ class StandardScaler:
         invalidInputError(self.scalerModel, "Please call fit_transform first")
         df = shard.to_spark_df()
         scaledData = self.scalerModel.transform(df)  # type: ignore
+        scaledData = scaledData.drop(self.vecOutputCol)
         data_shards = spark_df_to_pd_sparkxshards(scaledData)
         return data_shards
