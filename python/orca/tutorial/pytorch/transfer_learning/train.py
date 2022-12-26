@@ -38,10 +38,13 @@ plt.ion()  # interactive mode
 
 
 # Step 1: Init Orca Context
-sc = init_orca_context()
+sc = init_orca_context(cluster_mode="local")
 
 
 # Step 2: Define train and test datasets as PyTorch DataLoader
+data_dir = 'hymenoptera_data'
+
+
 def load_dataset(dataset_dir, batch_size=4):
     # Data augmentation and normalization for training
     # Just normalization for validation
@@ -74,11 +77,31 @@ def load_dataset(dataset_dir, batch_size=4):
     return train_loader, test_loader, class_names
 
 
-def imshow(inp, title=None):
+def train_loader_func(config, batch_size):
+    train_loader, test_loader, class_names = load_dataset(config['data_dir'], batch_size)
+
+    inputs, classes = next(iter(train_loader))  # Get a batch of training data
+    out = torchvision.utils.make_grid(inputs)  # Make a grid from batch
+    return train_loader
+
+
+def test_loader_func(config, batch_size):
+    train_loader, test_loader, class_names = load_dataset(config['data_dir'], batch_size)
+    return test_loader
+
+
+def imshow(inp=None, title=None):
     """
     Visualize a few training images
     so as to understand the data augmentations.
     """
+    if inp is None:
+        train_loader, test_loader, class_names = load_dataset(data_dir, batch_size=4)
+
+        inputs, classes = next(iter(train_loader))  # Get a batch of training data
+        inp = torchvision.utils.make_grid(inputs)  # Make a grid from batch
+        title = [class_names[x] for x in classes]
+
     inp = inp.numpy().transpose((1, 2, 0))
     mean = np.array([0.485, 0.456, 0.406])
     std = np.array([0.229, 0.224, 0.225])
@@ -89,127 +112,14 @@ def imshow(inp, title=None):
         plt.title(title)
     plt.pause(0.001)  # pause a bit so that plots are updated
 
-
-def train_loader_func(config, batch_size):
-    train_loader, test_loader, class_names = load_dataset(config['data_dir'], batch_size)
-
-    inputs, classes = next(iter(train_loader))  # Get a batch of training data
-    out = torchvision.utils.make_grid(inputs)  # Make a grid from batch
-    imshow(out, title=[class_names[x] for x in classes])
-    return train_loader
+imshow()
 
 
-def test_loader_func(config, batch_size):
-    train_loader, test_loader, class_names = load_dataset(config['data_dir'], batch_size)
-    return test_loader
+# Step 3: Define the model, optimizer and loss
 
-
-# Step 3: Finetuning the Convnet
-
-# Instead of random initialization, we initialize the network with a pretrained network,
-# like the one that is trained on imagenet 1000 dataset. Rest of the training looks as usual.
-
-
-# Step 3.1: Define the model, optimizer and loss
-class ConvNetModel:
-    def __init__(self):
-        return
-
-    # Create the model
-    @staticmethod
-    def model_creator(config):
-        model = models.resnet18(pretrained=True)
-        num_ftrs = model.fc.in_features
-        # Here the size of each output sample is set to 2.
-        # Alternatively, it can be generalized to nn.Linear(num_ftrs, len(class_names)).
-        model.fc = nn.Linear(num_ftrs, 2)
-        model = model.to(config['device'])
-        return model
-
-    # Create the optimizer
-    @staticmethod
-    def optimizer_creator(model, config):
-        return optim.SGD(model.parameters(), lr=0.001, momentum=0.9)
-
-    # Decay LR by a factor of 0.1 every 7 epochs
-    @staticmethod
-    def scheduler_creator(optimizer, config):
-        return lr_scheduler.StepLR(optimizer, step_size=7, gamma=0.1)
-
-
-# Step 3.2: Finetune with Orca PyTorch Estimator
-data_dir = 'hymenoptera_data'
-backend = "ray"
-device = torch.device("cpu")
-
-est = Estimator.from_torch(model=ConvNetModel.model_creator,
-                           optimizer=ConvNetModel.optimizer_creator,
-                           loss=nn.CrossEntropyLoss(),
-                           metrics=[Accuracy()],
-                           scheduler_creator=ConvNetModel.scheduler_creator,
-                           scheduler_step_freq="epoch",
-                           use_tqdm=True,
-                           backend=backend,
-                           config={'data_dir': data_dir,
-                                   'device': device})
-est.fit(data=train_loader_func, epochs=5,
-        batch_size=4, validation_data=test_loader_func)
-
-
-# Step 3.3: Distributed evaluation of the trained model
-result = est.evaluate(data=test_loader_func, batch_size=4)
-print('Evaluation results:')
-for r in result:
-    print(r, ":", result[r])
-
-
-# Step 3.4: Save the trained PyTorch model
-est.save("finetuned_convnet_model")
-
-
-# Step 3.5: Visualize the model predictions
-def visualize_model(model, num_images=6):
-    was_training = model.training
-    model.eval()
-    images_so_far = 0
-    fig = plt.figure()
-    train_loader, test_loader, class_names = load_dataset(data_dir)
-
-    with torch.no_grad():
-        for i, (inputs, labels) in enumerate(test_loader):
-            inputs = inputs.to(device)
-            labels = labels.to(device)
-
-            outputs = model(inputs)
-            _, preds = torch.max(outputs, 1)
-
-            for j in range(inputs.size()[0]):
-                images_so_far += 1
-                ax = plt.subplot(num_images//2, 2, images_so_far)
-                ax.axis('off')
-                ax.set_title(f'predicted: {class_names[preds[j]]}')
-                imshow(inputs.cpu().data[j])
-
-                if images_so_far == num_images:
-                    model.train(mode=was_training)
-                    return
-        model.train(mode=was_training)
-
-visualize_model(est.get_model())
-
-
-# Step 3.6: Shut down workers and releases resources
-est.shutdown()
-
-
-# Step 4: ConvNet as fixed feature extractor
-
-# Here, we will freeze the weights for all of the network except that of
+# Here, ConvNet is as a fixed feature extractor. We will freeze the weights for all of the network except that of
 # the final fully connected layer. This last fully connected layer is
 # replaced with a new one with random weights and only this layer is trained.
-
-
-# Step 4.1: Define the model, optimizer and loss
 class FixedConvNetModel:
     def __init__(self):
         return
@@ -240,39 +150,69 @@ class FixedConvNetModel:
         return lr_scheduler.StepLR(optimizer, step_size=7, gamma=0.1)
 
 
-# Step 4.2: Finetune with Orca PyTorch Estimator
-est_fixed = Estimator.from_torch(model=FixedConvNetModel.model_creator,
-                                 optimizer=FixedConvNetModel.optimizer_creator,
-                                 loss=nn.CrossEntropyLoss(),
-                                 metrics=[Accuracy()],
-                                 scheduler_creator=FixedConvNetModel.scheduler_creator,
-                                 scheduler_step_freq="epoch",
-                                 use_tqdm=True,
-                                 backend=backend,
-                                 config={'data_dir': data_dir,
-                                         'device': device})
-est_fixed.fit(data=train_loader_func, epochs=5,
-              batch_size=4, validation_data=test_loader_func)
+# Step 4: Finetune with Orca PyTorch Estimator
+backend = "ray"
+device = torch.device("cpu")
+
+est = Estimator.from_torch(model=FixedConvNetModel.model_creator,
+                           optimizer=FixedConvNetModel.optimizer_creator,
+                           loss=nn.CrossEntropyLoss(),
+                           metrics=[Accuracy()],
+                           scheduler_creator=FixedConvNetModel.scheduler_creator,
+                           scheduler_step_freq="epoch",
+                           use_tqdm=True,
+                           backend=backend,
+                           config={'data_dir': data_dir,
+                                   'device': device})
+est.fit(data=train_loader_func, epochs=5,
+        batch_size=4, validation_data=test_loader_func)
 
 
-# Step 4.3: Distributed evaluation of the trained model
-result = est_fixed.evaluate(data=test_loader_func, batch_size=4)
+# Step 5: Distributed evaluation of the trained model
+result = est.evaluate(data=test_loader_func, batch_size=4)
 print('Evaluation results:')
 for r in result:
     print(r, ":", result[r])
 
 
-# Step 4.4: Save the trained PyTorch model
-est_fixed.save("finetuned_fixed_convnet_model")
+# Step 6: Save the trained PyTorch model
+est.save("finetuned_fixed_convnet_model")
 
 
-# Step 4.5: Visualize the model predictions
-visualize_model(est_fixed.get_model())
+# Step 7: Visualize the model predictions
+def visualize_model(model, num_images=6):
+    was_training = model.training
+    model.eval()
+    images_so_far = 0
+    fig = plt.figure()
+    train_loader, test_loader, class_names = load_dataset(data_dir)
+
+    with torch.no_grad():
+        for i, (inputs, labels) in enumerate(test_loader):
+            inputs = inputs.to(device)
+            labels = labels.to(device)
+
+            outputs = model(inputs)
+            _, preds = torch.max(outputs, 1)
+
+            for j in range(inputs.size()[0]):
+                images_so_far += 1
+                ax = plt.subplot(num_images//2, 2, images_so_far)
+                ax.axis('off')
+                ax.set_title(f'predicted: {class_names[preds[j]]}')
+                imshow(inputs.cpu().data[j])
+
+                if images_so_far == num_images:
+                    model.train(mode=was_training)
+                    return
+        model.train(mode=was_training)
+
+visualize_model(est.get_model())
 
 
-# Step 4.6: Shut down workers and releases resources
-est_fixed.shutdown()
+# Step 8: Shut down workers and releases resources
+est.shutdown()
 
 
-# Step 5: Stop orca context
+# Step 9: Stop orca context
 stop_orca_context()
