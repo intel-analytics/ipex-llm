@@ -1678,6 +1678,21 @@ class BasePytorchForecaster(Forecaster):
         >>> # postprocess
         >>> postprocess_output = tsdata.unscale_numpy(inference_output)
 
+        When deploying, the compiled torchscript module can be used by:
+
+        >>> // deployment in C++
+        >>> #include <torch/torch.h>
+        >>> #include <torch/script.h>
+        >>> // create input tensor
+        >>> // The data to create the input tensor should have the same format as the
+        >>> // data used in developing
+        >>> torch::Tensor input = create_input_tensor();
+        >>> // load the module
+        >>> torch::jit::script::Module forecasting_pipeline;
+        >>> forecasting_pipeline = torch::jit::load(path)
+        >>> // run pipeline
+        >>> torch::Tensor output = forecasting_pipeline.forward(input_tensor).toTensor()
+
         The limitations of this API is same as TSDataset.export_jit():
             1. Please make sure the value of each column can be converted to Pytorch tensor,
                for example, id "00" is not allowed because str can not be converted to a tensor,
