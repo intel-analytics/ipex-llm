@@ -63,8 +63,6 @@ COPY --from=tritonserver /usr/bin/ /usr/bin/
 RUN apt-get update && \
     apt-get install -y --no-install-recommends software-properties-common libb64-0d libcurl4-openssl-dev libre2-5 git dirmngr libnuma-dev curl libgomp1 && \
     rm -rf /var/lib/apt/lists/* && \
-    mkdir -p /usr/local/cuda/lib64/stubs && \
-    mkdir -p /usr/local/cuda/targets/x86_64-linux/lib && \
 
 # patchelf is needed to add deps of libcublasLt.so.11 to libtorch_cuda.so
     apt-get update && \
@@ -85,3 +83,5 @@ RUN apt-get update && \
 WORKDIR /ppml
 
 ENTRYPOINT [ "/opt/entrypoint.sh" ]
+
+
