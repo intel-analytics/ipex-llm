@@ -341,18 +341,14 @@ arrays2pandas = partial(arrays2others, generate_func=_generate_output_pandas_df)
 
 def transform_to_shard_dict(data, feature_cols, label_cols=None):
     def single_col_to_numpy(col_series, dtype):
-        if dtype == np.int32:
-            return col_series.to_numpy(dtype=np.int32)
-        elif dtype == np.int64:
-            return col_series.to_numpy(dtype=np.int64)
-        elif dtype == np.float32:
-            return col_series.to_numpy(dtype=np.float32)
-        elif dtype == np.float64:
-            return col_series.to_numpy(dtype=np.float64)
-        elif dtype == np.str:
-            return col_series.to_numpy(dtype=np.str)
-        else:  # e.g. np.object
-            return col_series.to_numpy(dtype=np.float32)
+        if dtype == np.ndarray:
+            # In this case, directly calling to_numpy will make the result
+            # ndarray have type np.object.
+            # Need to explicitly specify the dtype.
+            dtype = col_series[0].dtype
+            return col_series.to_numpy(dtype=dtype)
+        else:
+            return col_series.to_numpy()
 
     def to_shard_dict(df):
         result = dict()
