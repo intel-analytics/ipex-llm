@@ -67,7 +67,7 @@ RUN apt-get update && \
 # patchelf is needed to add deps of libcublasLt.so.11 to libtorch_cuda.so
     apt-get update && \
     apt-get install -y --no-install-recommends openmpi-bin patchelf && \
-    patchelf --add-needed /usr/local/cuda/lib64/stubs/libcublasLt.so.11 backends/pytorch/libtorch_cuda.so && \
+    patchelf --add-needed /usr/local/cuda/lib64/stubs/libcublasLt.so.11 /opt/tritonserver/backends/pytorch/libtorch_cuda.so && \
 
     pip3 install --upgrade pip && \
     pip install --no-cache-dir numpy && \
