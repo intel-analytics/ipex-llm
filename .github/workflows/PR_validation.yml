@@ -309,7 +309,7 @@ jobs:
   Orca-Python-Ray-Ctx:
     needs: changes
     if: ${{ needs.changes.outputs.orca == 'true' }}
-    runs-on: [self-hosted, Gondolin-Ctx, ubuntu-20.04-lts]
+    runs-on: [self-hosted, Gondolin-Ctx]
 
     steps:
     - uses: actions/checkout@v3
