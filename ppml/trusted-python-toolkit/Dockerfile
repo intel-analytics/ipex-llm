@@ -8,24 +8,6 @@ ARG JDK_VERSION=11
 ARG TRITON_VERSION=2.27.0
 ARG TRITON_CONTAINER_VERSION=22.10
 
-#Stage.1 Torchserve Frontend
-FROM $BASE_IMAGE_NAME:$BASE_IMAGE_TAG as torchserve
-ARG http_proxy
-ARG https_proxy
-ARG JDK_VERSION
-ENV JDK_HOME				/opt/jdk${JDK_VERSION}
-ENV JAVA_HOME                           /opt/jdk${JDK_VERSION}
-
-#build frontend.jar
-RUN apt-get install -y openjdk-${JDK_VERSION}-jdk && \
-    mkdir -p ${JAVA_HOME} && \
-    cp -r /usr/lib/jvm/java-${JDK_VERSION}-openjdk-amd64/* ${JAVA_HOME} && \
-    git clone https://github.com/analytics-zoo/pytorch-serve.git && \
-    cd pytorch-serve/frontend && \
-    ./gradlew clean assemble && \
-    mkdir -p /ppml/torchserve && \
-    mv server/build/libs/server-1.0.jar /ppml/torchserve/frontend.jar
-
 #Stage.2 Triton Server
 FROM nvcr.io/nvidia/tritonserver:22.10-py3-min as min_container
 
@@ -102,7 +84,6 @@ ADD ./examples/ /ppml/examples
 ADD ./entrypoint.sh /opt/entrypoint.sh
 ADD ./start-scripts/ /ppml/work/start-scripts
 ADD https://github.com/krallin/tini/releases/download/${TINI_VERSION}/tini /sbin/tini
-COPY --from=torchserve /ppml/torchserve/frontend.jar /ppml/torchserve/frontend.jar
 COPY --from=min_container /usr/local/cuda/lib64/stubs/libcusparse.so /usr/local/cuda/lib64/stubs/libcusparse.so.11
 COPY --from=min_container /usr/local/cuda/lib64/stubs/libcusolver.so /usr/local/cuda/lib64/stubs/libcusolver.so.11
 COPY --from=min_container /usr/local/cuda/lib64/stubs/libcurand.so /usr/local/cuda/lib64/stubs/libcurand.so.10
@@ -135,35 +116,12 @@ RUN apt-get update && \
     patchelf --add-needed /usr/local/cuda/lib64/stubs/libcublasLt.so.11 backends/pytorch/libtorch_cuda.so && \
 
     pip3 install --upgrade pip && \
-    pip install --no-cache-dir flask && \
     pip install --no-cache-dir numpy && \
-    pip install --no-cache-dir pandas && \
-    pip install --no-cache-dir torch torchvision torchaudio --extra-index-url https://download.pytorch.org/whl/cpu && \
-    pip install --no-cache-dir future cython requests pillow==9.0.1 captum packaging numpy nvgpu pyyaml && \
-    pip install --no-cache-dir torchserve==0.6.1 torch-model-archiver==0.6.1 torch-workflow-archiver==0.2.5 && \
-    apt-get install -y openjdk-${JDK_VERSION}-jdk && \
     cp -r /usr/local/lib/python3.7/dist-packages/* /usr/local/lib/python3.8/dist-packages/ && \
     rm /usr/bin/python3 && \
     ln -s /usr/bin/python3.8 /usr/bin/python3 && \
-    mkdir -p ${JAVA_HOME} && \
-    cp -r /usr/lib/jvm/java-${JDK_VERSION}-openjdk-amd64/* ${JAVA_HOME} && \
-    sed -i '/MAX_FAILURE_THRESHOLD = 5/ios.environ\[\"MPLCONFIGDIR\"\]=\"\/tmp\/matplotlib\"' /usr/local/lib/python3.7/dist-packages/ts/model_service_worker.py && \
-    sed -i '/import abc/iimport sys' /usr/local/lib/python3.7/dist-packages/ts/torch_handler/base_handler.py && \
-    sed -i '/module = importlib.import_module/i\ \ \ \ \ \ \ \ sys.path.append(model_dir)' /usr/local/lib/python3.7/dist-packages/ts/torch_handler/base_handler.py && \
-    sed -i 's/SOCKET_ACCEPT_TIMEOUT = 30.0/SOCKET_ACCEPT_TIMEOUT = 3000.0/' /usr/local/lib/python3.7/dist-packages/ts/model_service_worker.py && \
-    mkdir -p /ppml/tests/numpy && \
-    mkdir -p /ppml/tests/pandas && \
-    cp /usr/local/lib/python3.7/dist-packages/ts/configs/metrics.yaml /ppml && \
     chmod +x /opt/entrypoint.sh && \
     chmod +x /sbin/tini && \
-    chmod +x /ppml/work/start-scripts/start-python-flask-sgx.sh && \
-    chmod +x /ppml/work/start-scripts/start-python-numpy-example-sgx.sh && \
-    chmod +x /ppml/work/start-scripts/start-python-numpy-performance-sgx.sh && \
-    chmod +x /ppml/work/start-scripts/start-python-pandas-example-sgx.sh && \
-    chmod +x /ppml/work/start-scripts/start-python-pandas-performance-sgx.sh && \
-    chmod +x /ppml/work/start-scripts/start-torchserve-sgx.sh && \
-    chmod +x /ppml/work/start-scripts/start-frontend-sgx.sh && \
-    chmod +x /ppml/work/start-scripts/start-backend-sgx.sh && \
     cp /sbin/tini /usr/bin/tini && \
     gramine-argv-serializer bash -c 'export TF_MKL_ALLOC_MAX_BYTES=10737418240 && export _SPARK_AUTH_SECRET=$_SPARK_AUTH_SECRET && $sgx_command' > /ppml/secured_argvs
 
