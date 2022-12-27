@@ -63,7 +63,7 @@ def _open_encrypt_file_with_key(file, mode, key):
 
 def decrypt_file_to_pa_buffer(filename, key):
     decryptor = Fernet(key)
-    opened_file = open(filename, 'r')
+    opened_file = open(filename, 'rb')
     decrypted_content = decryptor.decrypt(opened_file.read())
     opened_file.close()
     buf = pa.py_buffer(decrypted_content)
