@@ -50,16 +50,16 @@ cd -
 
 
 # temporarily skip electricity examples
-if [ ! -f ~/.chronos/dataset/electricity.csv ];then
-    wget -nv $FTP_URI/analytics-zoo-data/apps/electricity.csv -P ~/.chronos/dataset/
-fi
-sed -i "s/epochs=30/epochs=1/g" ${BIGDL_ROOT}/python/chronos/use-case/electricity/tcn.py
-execute_test electricity-tcn "${BIGDL_ROOT}/python/chronos/use-case/electricity/tcn.py"
-time3=$?
+# if [ ! -f ~/.chronos/dataset/electricity.csv ];then
+#     wget -nv $FTP_URI/analytics-zoo-data/apps/electricity.csv -P ~/.chronos/dataset/
+# fi
+# sed -i "s/epochs=30/epochs=1/g" ${BIGDL_ROOT}/python/chronos/use-case/electricity/tcn.py
+# execute_test electricity-tcn "${BIGDL_ROOT}/python/chronos/use-case/electricity/tcn.py"
+# time3=$?
 
-sed -i "s/epochs=3/epochs=1/g" ${BIGDL_ROOT}/python/chronos/use-case/electricity/autoformer.py
-execute_test electricity-autoformer "${BIGDL_ROOT}/python/chronos/use-case/electricity/autoformer.py"
-time4=$?
+# sed -i "s/epochs=3/epochs=1/g" ${BIGDL_ROOT}/python/chronos/use-case/electricity/autoformer.py
+# execute_test electricity-autoformer "${BIGDL_ROOT}/python/chronos/use-case/electricity/autoformer.py"
+# time4=$?
 
 
 ${BIGDL_ROOT}/python/chronos/dev/app/ipynb2py.sh ${BIGDL_ROOT}/python/chronos/use-case/fsi/stock_prediction
@@ -132,8 +132,8 @@ time10=$?
 
 echo "#1 anomaly-detect-unsupervised-forecast-based time used:$time1 seconds"
 echo "#2 anomaly-detect-unsupervised time used:$time2 seconds"
-echo "#3 electricity-tcn time used:$time3 seconds"
-echo "#4 electricity-autoformer time used:$time4 seconds"
+#echo "#3 electricity-tcn time used:$time3 seconds"
+#echo "#4 electricity-autoformer time used:$time4 seconds"
 echo "#5 stock-prediction time used:$time5 seconds"
 echo "#6 stock-prediction-prophet time used:$time6 seconds"
 echo "#7 network-traffic-model-forecasting time used:$time7 seconds"
