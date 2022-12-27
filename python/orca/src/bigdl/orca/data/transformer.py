@@ -354,7 +354,7 @@ class MinMaxScaler:
                  outputCol: Optional[Union[str, List[str]]]=None):
         self.min = min
         self.max = max
-        self.inputCol = inputCol
+        self.inputCol = [inputCol] if isinstance(inputCol, str) else inputCol
         self.outputCol = outputCol
         self.scaler = None  # type: Optional[SparkPipeline]
         self.scalerModel = None
@@ -376,7 +376,7 @@ class MinMaxScaler:
     def setInputOutputCol(self,
                           inputCol: Union[str, List[str]],
                           outputCol: Union[str, List[str]]) -> None:
-        self.inputCol = inputCol
+        self.inputCol = [inputCol] if isinstance(inputCol, str) else inputCol
         self.outputCol = outputCol
         self.__createScaler__()
 
@@ -401,11 +401,11 @@ class StandardScaler:
     def __init__(self,
                  withMean: bool = False,
                  withStd: bool = True,
-                 inputCol: Optional[str] = None,
-                 outputCol: Optional[str] = None):
+                 inputCol: Optional[Union[str, List[str]]] = None,
+                 outputCol: Optional[Union[str, List[str]]] = None):
         self.withMean = withMean
         self.withStd = withStd
-        self.inputCol = inputCol
+        self.inputCol = [inputCol] if isinstance(inputCol, str) else inputCol
         self.outputCol = outputCol
         self.scaler = None
         self.scalerModel = None
@@ -417,13 +417,15 @@ class StandardScaler:
         invalidInputError(self.outputCol, "outputColumn cannot be empty")
 
         self.vecOutputCol = str(uuid.uuid1()) + "x_vec"
-        assembler = SparkVectorAssembler(inputCols=[self.inputCol], outputCol=self.vecOutputCol)
+        assembler = SparkVectorAssembler(inputCols=self.inputCol, outputCol=self.vecOutputCol)
         scaler = SparkStandardScaler(withMean=self.withMean, withStd=self.withStd,
                                      inputCol=self.vecOutputCol, outputCol=self.outputCol)
         self.scaler = SparkPipeline(stages=[assembler, scaler])
 
-    def setInputOutputCol(self, inputCol: str, outputCol: str):
-        self.inputCol = inputCol
+    def setInputOutputCol(self,
+                          inputCol: Union[str, List[str]],
+                          outputCol: Union[str, List[str]]) -> None:
+        self.inputCol = [inputCol] if isinstance(inputCol, str) else inputCol
         self.outputCol = outputCol
         self.__createScaler__()
 
