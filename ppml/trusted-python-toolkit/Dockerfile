@@ -42,17 +42,7 @@ ADD ./examples/ /ppml/examples
 ADD ./entrypoint.sh /opt/entrypoint.sh
 ADD ./start-scripts/ /ppml/work/start-scripts
 ADD https://github.com/krallin/tini/releases/download/${TINI_VERSION}/tini /sbin/tini
-COPY --from=tritonserver /usr/local/cuda/lib64/stubs/libcusparse.so /usr/local/cuda/lib64/stubs/libcusparse.so.11
-COPY --from=tritonserver /usr/local/cuda/lib64/stubs/libcusolver.so /usr/local/cuda/lib64/stubs/libcusolver.so.11
-COPY --from=tritonserver /usr/local/cuda/lib64/stubs/libcurand.so /usr/local/cuda/lib64/stubs/libcurand.so.10
-COPY --from=tritonserver /usr/local/cuda/lib64/stubs/libcufft.so /usr/local/cuda/lib64/stubs/libcufft.so.10
-COPY --from=tritonserver /usr/local/cuda/lib64/stubs/libcublas.so /usr/local/cuda/lib64/stubs/libcublas.so.11
-COPY --from=tritonserver /usr/local/cuda/lib64/stubs/libcublasLt.so /usr/local/cuda/lib64/stubs/libcublasLt.so.11
-COPY --from=tritonserver /usr/local/cuda-11.8/targets/x86_64-linux/lib/libcudart.so.11.0 /usr/local/cuda/targets/x86_64-linux/lib/libcudart.so.11.0
-COPY --from=tritonserver /usr/local/cuda-11.8/targets/x86_64-linux/lib/libcupti.so.11.8 /usr/local/cuda/targets/x86_64-linux/lib/libcupti.so.11.8
-COPY --from=tritonserver /usr/local/cuda-11.8/targets/x86_64-linux/lib/libnvToolsExt.so.1 /usr/local/cuda/targets/x86_64-linux/lib/libnvToolsExt.so.1
-COPY --from=tritonserver /usr/lib/x86_64-linux-gnu/libcudnn.so.8 /usr/lib/x86_64-linux-gnu/libcudnn.so.8
-COPY --from=tritonserver /usr/lib/x86_64-linux-gnu/libnccl.so.2 /usr/lib/x86_64-linux-gnu/libnccl.so.2
+COPY --from=tritonserver /usr/ /usr/
 COPY --from=tritonserver /opt/nvidia/ /opt/nvidia/
 COPY --from=tritonserver /opt/tritonserver/ /opt/tritonserver/
 COPY --from=tritonserver /usr/bin/ /usr/bin/
