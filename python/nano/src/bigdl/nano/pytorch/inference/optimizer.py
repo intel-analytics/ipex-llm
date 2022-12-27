@@ -505,6 +505,7 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                  input_sample=None,
                  channels_last: bool = False,
                  thread_num: Optional[int] = None,
+                 device: Optional[str] = 'CPU',
                  onnxruntime_session_options=None,
                  openvino_config=None,
                  simplification: bool = True,
@@ -584,6 +585,9 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                            later inference process of your obtained accelerated model. In other
                            words, the process of model conversion won't be restricted by this
                            parameter.
+        :param device: (optional) A string represents the device of the inference. Default to 'CPU',
+                        only valid when accelerator='openvino', otherwise will be ignored.
+                        'CPU', 'GPU' and 'VPUX' are supported for now.
         :param onnxruntime_session_options: The session option for onnxruntime, only valid when
                                             accelerator='onnxruntime', otherwise will be ignored.
         :param openvino_config: The config to be inputted in core.compile_model. Only valid when
@@ -640,6 +644,16 @@ class InferenceOptimizer(BaseInferenceOptimizer):
         :param **export_kwargs: will be passed to torch.onnx.export function.
         :return:            A accelerated torch.nn.Module if quantization is sucessful.
         """
+        invalidInputError(precision in ['int8', 'fp16', 'bf16'],
+                          "Only support 'int8', 'bf16', 'fp16' now, "
+                          "no support for {}.".format(precision))
+        # device name might be: CPU, GPU, GPU.0, VPUX ...
+        invalidInputError(device == 'CPU' or 'GPU' in device or device == 'VPUX',
+                          "Now we only support CPU, GPU and VPUX, not {}".format(device))
+        if device != 'CPU' and accelerator != 'openvino':
+            invalidInputError(False,
+                              "Now we only support {} device when accelerator"
+                              "is openvino.".format(device))
         if precision == 'bf16':
             if accelerator is None or accelerator == "jit":
                 if use_ipex or accelerator == "jit":
@@ -661,6 +675,19 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                     bf16_model = BF16Model(model, channels_last=channels_last,
                                            thread_num=thread_num)
                     return bf16_model
+            elif accelerator == "openvino":
+                invalidInputError(device == 'CPU',
+                                  "Device {} don't support bfloat16.".format(device))
+                final_openvino_option = {"INFERENCE_PRECISION_HINT": "bf16"}
+                if openvino_config is not None:
+                    final_openvino_option.update(openvino_config)
+                return PytorchOpenVINOModel(model, input_sample,
+                                            thread_num=thread_num,
+                                            device=device,
+                                            dynamic_axes=dynamic_axes,
+                                            logging=logging,
+                                            config=final_openvino_option,
+                                            **export_kwargs)
             else:
                 invalidInputError(False,
                                   "Accelerator {} is invalid for BF16.".format(accelerator))
@@ -764,16 +791,19 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                     if input_sample is None:
                         # input_sample can be a dataloader
                         input_sample = calib_dataloader
-                    model = InferenceOptimizer.trace(model,
-                                                     input_sample=input_sample,
-                                                     accelerator='openvino',
-                                                     thread_num=thread_num,
-                                                     dynamic_axes=dynamic_axes,
-                                                     logging=logging,
-                                                     **export_kwargs)
+                    # For CPU: fp32 -> int8, for GPU: fp16 -> int8
+                    _precision = 'fp16' if device != 'CPU' else 'fp32'
+                    model = PytorchOpenVINOModel(model, input_sample,
+                                                 precision=_precision,
+                                                 thread_num=thread_num,
+                                                 device=device,
+                                                 dynamic_axes=dynamic_axes,
+                                                 logging=logging,
+                                                 config=openvino_config,
+                                                 **export_kwargs)
                 invalidInputError(type(model).__name__ == 'PytorchOpenVINOModel',
                                   "Invalid model to quantize. Please use a nn.Module or a model "
-                                  "from trainer.trance(accelerator=='openvino')")
+                                  "from InferenceOptimizer.trace(accelerator=='openvino')")
                 drop_type = None
                 higher_is_better = None
                 maximal_drop = None
@@ -800,6 +830,22 @@ class InferenceOptimizer(BaseInferenceOptimizer):
             else:
                 invalidInputError(False,
                                   "Accelerator {} is invalid.".format(accelerator))
+        if precision == 'fp16':
+            invalidInputError(device == 'VPUX' or 'GPU' in device,
+                              "fp16 is not supported on {} device.".format(device))
+            invalidInputError(accelerator == 'openvino',
+                              "fp16 is not supported on {} accelerator.".format(accelerator))
+            if openvino_config is not None:
+                final_openvino_option = openvino_config
+            return PytorchOpenVINOModel(model, input_sample,
+                                        precision=precision,
+                                        thread_num=thread_num,
+                                        device=device,
+                                        dynamic_axes=dynamic_axes,
+                                        logging=logging,
+                                        config=final_openvino_option,
+                                        **export_kwargs)
+
         invalidInputError(False,
                           "Precision {} is invalid.".format(precision))
 
@@ -810,6 +856,7 @@ class InferenceOptimizer(BaseInferenceOptimizer):
               use_ipex: bool = False,
               channels_last: bool = False,
               thread_num: Optional[int] = None,
+              device: Optional[str] = 'CPU',
               onnxruntime_session_options=None,
               openvino_config=None,
               simplification: bool = True,
@@ -840,6 +887,9 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                            later inference process of your obtained accelerated model. In other
                            words, the process of model conversion won't be restricted by this
                            parameter.
+        :param device: (optional) A string represents the device of the inference. Default to 'CPU',
+                                  only valid when accelerator='openvino', otherwise will be ignored.
+                                  'CPU', 'GPU' are supported for now.
         :param onnxruntime_session_options: The session option for onnxruntime, only valid when
                                             accelerator='onnxruntime', otherwise will be ignored.
         :param openvino_config: The config to be inputted in core.compile_model. Only valid when
@@ -889,12 +939,20 @@ class InferenceOptimizer(BaseInferenceOptimizer):
             "Expect a nn.Module instance that is not traced or quantized"
             "but got type {}".format(type(model))
         )
+        # device name might be: CPU, GPU, GPU.0 ...
+        invalidInputError(device == 'CPU' or 'GPU' in device,
+                          "Now we only support fp32 for CPU and GPU, not {}".format(device))
+        if device != 'CPU' and accelerator != 'openvino':
+            invalidInputError(False,
+                              "Now we only support {} device when accelerator "
+                              "is openvino.".format(device))
         if accelerator == 'openvino':  # openvino backend will not care about ipex usage
             final_openvino_option = {"INFERENCE_PRECISION_HINT": "f32"}
             if openvino_config is not None:
                 final_openvino_option.update(openvino_config)
             return PytorchOpenVINOModel(model, input_sample,
                                         thread_num=thread_num,
+                                        device=device,
                                         dynamic_axes=dynamic_axes,
                                         logging=logging,
                                         config=final_openvino_option,

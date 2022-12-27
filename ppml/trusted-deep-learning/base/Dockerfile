@@ -70,6 +70,23 @@ RUN env DEBIAN_FRONTEND=noninteractive apt-get update && \
     pip3 install --no-cache datasets==2.6.1 transformers intel_extension_for_pytorch && \
 # Optimization related
     pip3 install --pre --no-cache --upgrade bigdl-nano[pytorch] && \
+# Torchserve
+    pip install --no-cache-dir torch torchvision torchaudio --extra-index-url https://download.pytorch.org/whl/cpu && \
+    pip install --no-cache-dir cython pillow==9.0.1 captum packaging nvgpu && \
+    pip install --no-cache-dir torchserve==0.6.1 torch-model-archiver==0.6.1 torch-workflow-archiver==0.2.5 && \
+    apt-get install -y openjdk-${JDK_VERSION}-jdk && \
+    mkdir -p ${JAVA_HOME} && \
+    cp -r /usr/lib/jvm/java-${JDK_VERSION}-openjdk-amd64/* ${JAVA_HOME} && \
+    sed -i '/MAX_FAILURE_THRESHOLD = 5/ios.environ\[\"MPLCONFIGDIR\"\]=\"\/tmp\/matplotlib\"' /usr/local/lib/python3.7/dist-packages/ts/model_service_worker.py && \
+    sed -i '/import abc/iimport sys' /usr/local/lib/python3.7/dist-packages/ts/torch_handler/base_handler.py && \
+    sed -i '/module = importlib.import_module/i\ \ \ \ \ \ \ \ sys.path.append(model_dir)' /usr/local/lib/python3.7/dist-packages/ts/torch_handler/base_handler.py && \
+    sed -i 's/SOCKET_ACCEPT_TIMEOUT = 30.0/SOCKET_ACCEPT_TIMEOUT = 3000.0/' /usr/local/lib/python3.7/dist-packages/ts/model_service_worker.py && \
+    sed -i '/os.path.join/i\ \ \ \ \ \ \ \ sys.path.append(model_dir)' /usr/local/lib/python3.7/dist-packages/ts/model_loader.py && \
+    sed -i '/json/iimport sys' /usr/local/lib/python3.7/dist-packages/ts/model_loader.py && \
+    cp /usr/local/lib/python3.7/dist-packages/ts/configs/metrics.yaml /ppml && \
+    chmod +x /ppml/torchserve/start-backend-sgx.sh && \
+    chmod +x /ppml/torchserve/start-frontend-sgx.sh && \
+    chmod +x /ppml/torchserve/start-torchserve-sgx.sh && \
 # PyTorch
     rm -rf /usr/local/lib/python3.7/dist-packages/torch && \
     git clone https://github.com/analytics-zoo/pytorch /pytorch && \
@@ -91,24 +108,6 @@ RUN env DEBIAN_FRONTEND=noninteractive apt-get update && \
 # which is then required by our third-layer gramine make command
     patch /usr/local/lib/python3.7/dist-packages/datasets/utils/filelock.py /filelock.patch && \
     pip3 install --no-cache markupsafe==2.0.1 pyarrow==6.0.1 && \
-    patch /ppml/bash.manifest.template /bash.manifest.template.patch && \
-# Torchserve
-    pip install --no-cache-dir torch torchvision torchaudio --extra-index-url https://download.pytorch.org/whl/cpu && \
-    pip install --no-cache-dir cython pillow==9.0.1 captum packaging nvgpu && \
-    pip install --no-cache-dir torchserve==0.6.1 torch-model-archiver==0.6.1 torch-workflow-archiver==0.2.5 && \
-    apt-get install -y openjdk-${JDK_VERSION}-jdk && \
-    mkdir -p ${JAVA_HOME} && \
-    cp -r /usr/lib/jvm/java-${JDK_VERSION}-openjdk-amd64/* ${JAVA_HOME} && \
-    sed -i '/MAX_FAILURE_THRESHOLD = 5/ios.environ\[\"MPLCONFIGDIR\"\]=\"\/tmp\/matplotlib\"' /usr/local/lib/python3.7/dist-packages/ts/model_service_worker.py && \
-    sed -i '/import abc/iimport sys' /usr/local/lib/python3.7/dist-packages/ts/torch_handler/base_handler.py && \
-    sed -i '/module = importlib.import_module/i\ \ \ \ \ \ \ \ sys.path.append(model_dir)' /usr/local/lib/python3.7/dist-packages/ts/torch_handler/base_handler.py && \
-    sed -i 's/SOCKET_ACCEPT_TIMEOUT = 30.0/SOCKET_ACCEPT_TIMEOUT = 3000.0/' /usr/local/lib/python3.7/dist-packages/ts/model_service_worker.py && \
-    sed -i '/os.path.join/i\ \ \ \ \ \ \ \ sys.path.append(model_dir)' /usr/local/lib/python3.7/dist-packages/ts/model_loader.py && \
-    sed -i '/json/iimport sys' /usr/local/lib/python3.7/dist-packages/ts/model_loader.py && \
-    cp /usr/local/lib/python3.7/dist-packages/ts/configs/metrics.yaml /ppml && \
-    chmod +x /ppml/torchserve/start-backend-sgx.sh && \
-    chmod +x /ppml/torchserve/start-frontend-sgx.sh && \
-    chmod +x /ppml/torchserve/start-torchserve-sgx.sh && \
 # Install bigdl-ppml lib
     cd /ppml/ && \
     git clone https://github.com/intel-analytics/BigDL.git && \
@@ -116,7 +115,8 @@ RUN env DEBIAN_FRONTEND=noninteractive apt-get update && \
     mkdir -p /ppml/bigdl-ppml/ && \
     cp -r /ppml/BigDL/python/ppml/src/ /ppml/bigdl-ppml && \
     rm -rf /ppml/BigDL && \
-    cd /ppml
+    cd /ppml && \
+    patch /ppml/bash.manifest.template /bash.manifest.template.patch
 
 ENV PYTHONPATH        ${PYTHONPATH}:/ppml/bigdl-ppml/src
 

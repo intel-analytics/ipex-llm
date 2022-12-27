@@ -39,3 +39,33 @@ class TestDispatcherKeras(TestCase):
         assert not issubclass(keras.layers.Embedding, bigdl.nano.tf.keras.layers.Embedding)
         assert not issubclass(tensorflow.keras.layers.Embedding, bigdl.nano.tf.keras.layers.Embedding)
         assert not issubclass(tensorflow.optimizers.Adam, bigdl.nano.tf.optimizers.SparseAdam)
+
+    def test_dispatch_precision_keras(self):
+        import tensorflow as tf
+        import numpy as np
+        from bigdl.nano.tf import patch_tensorflow, unpatch_tensorflow
+        from bigdl.nano.tf.keras import Sequential
+        from bigdl.nano.tf.keras.layers import Embedding
+
+        patch_tensorflow(precision='mixed_bfloat16')
+        model = Sequential()
+        model.add(Embedding(1000, 64, input_length=10, embeddings_regularizer=tf.keras.regularizers.L2(),
+                            name='Layer'))
+        model.compile('rmsprop', 'mse')
+        output = model.get_layer('Layer').output
+        assert output.dtype.name == 'bfloat16'
+        input_array = np.random.randint(1000, size=(32, 10))
+        pred = model(input_array)
+        assert output.dtype.name == 'bfloat16'
+
+        unpatch_tensorflow()
+        model = Sequential()
+        model.add(Embedding(1000, 64, input_length=10, embeddings_regularizer=tf.keras.regularizers.L2(),
+                            name='Layer'))
+        model.compile('rmsprop', 'mse')
+
+        output = model.get_layer('Layer').output
+        assert output.dtype.name == 'float32'
+        input_array = np.random.randint(1000, size=(32, 10))
+        pred = model(input_array)
+        assert output.dtype.name == 'float32'
