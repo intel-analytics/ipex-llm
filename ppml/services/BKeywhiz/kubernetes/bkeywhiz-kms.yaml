@@ -14,12 +14,12 @@ spec:
     path: $nfsPath
     server: $nfsServerIp
 ---
-# keywhiz Service exposed to bigdl kms frontend
+# keywhiz Service exposed to bkeywhiz frontend
 apiVersion: v1
 kind: Service
 metadata:
   name: keywhiz-service
-  namespace: bigdl-kms
+  namespace: bkeywhiz
   labels:
     app: keywhiz
 spec:
@@ -36,7 +36,7 @@ apiVersion: apps/v1
 kind: StatefulSet
 metadata:
   name: keywhiz
-  namespace: bigdl-kms
+  namespace: bkeywhiz
 spec:
   selector:
     matchLabels:
@@ -84,46 +84,46 @@ spec:
             requests:
               storage: 10Gi
 ---
-# bigdl kms frontend Service exposed to bigdl kms client
+# bkeywhiz frontend Service exposed to bkeywhiz client
 apiVersion: v1
 kind: Service
 metadata:
-  name: bigdl-kms-frontend-service
-  namespace: bigdl-kms
+  name: bkeywhiz-frontend-service
+  namespace: bkeywhiz
   labels:
-    app: bigdl-kms-frontend
+    app: bkeywhiz-frontend
 spec:
   type: LoadBalancer
   ports:
-    - name: bigdl-kms-frontend-port
+    - name: bkeywhiz-frontend-port
       port: 9876
       targetPort: 9876
       # nodeport:xxxx if internal port is not targetport
   selector:
-    app: bigdl-kms-frontend
+    app: bkeywhiz-frontend
   sessionAffinity: ClientIP
   externalIPs:
   - $kmsIP
 ---
-# bigdl kms frontend Deployment
+# bkeywhiz frontend Deployment
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: bigdl-kms-frontend
-  namespace: bigdl-kms
+  name: bkeywhiz-frontend
+  namespace: bkeywhiz
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: bigdl-kms-frontend
+      app: bkeywhiz-frontend
   template:
     metadata:
       labels:
-        app: bigdl-kms-frontend
+        app: bkeywhiz-frontend
     spec:
       containers:
-      - name: bigdl-kms-frontend
-        image: $bigdlKmsFrontendImage
+      - name: bkeywhiz-frontend
+        image: $bkeywhizFrontendImage
         imagePullPolicy: IfNotPresent
         command:
         - sh

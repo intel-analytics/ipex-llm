@@ -1,14 +1,11 @@
 ARG BIGDL_VERSION=2.1.0-SNAPSHOT
 ARG SPARK_VERSION=3.1.2
 
-# jdk & scala
 FROM ubuntu:20.04 as scala
 ARG SCALA_VERSION=2.12
 ARG SCALA_SUB_VERSION_NUM=10
 ARG JDK_VERSION=8u192
-ARG JDK_URL=your_jdk_url
-ENV SCALA_VERSION ${SCALA_VERSION}
-ENV SCALA_SUB_VERSION_NUM ${SCALA_SUB_VERSION_NUM}
+ARG JDK_URL
 
 RUN apt-get update --fix-missing && \
     env DEBIAN_FRONTEND=noninteractive TZ=Etc/UTC apt-get install -y tzdata apt-utils wget unzip
@@ -19,11 +16,6 @@ RUN wget $JDK_URL && \
     rm jdk-$JDK_VERSION-linux-x64.tar && \
     mv /opt/jdk* /opt/jdk$JDK_VERSION && \
     ln -s /opt/jdk$JDK_VERSION /opt/jdk
-# scala
-RUN cd / && wget -c https://downloads.lightbend.com/scala/${SCALA_VERSION}.${SCALA_SUB_VERSION_NUM}/scala-${SCALA_VERSION}.${SCALA_SUB_VERSION_NUM}.tgz && \
-    (cd / && gunzip < scala-${SCALA_VERSION}.${SCALA_SUB_VERSION_NUM}.tgz)|(cd /opt && tar -xvf -) && \
-    rm /scala-${SCALA_VERSION}.${SCALA_SUB_VERSION_NUM}.tgz
-RUN ls -al /opt
 
 # bigdl
 FROM ubuntu:20.04 as bigdl
@@ -32,8 +24,6 @@ ARG SPARK_VERSION
 ENV SPARK_VERSION		${SPARK_VERSION}
 ENV BIGDL_VERSION		${BIGDL_VERSION}
 ENV BIGDL_HOME		        /bigdl-${BIGDL_VERSION}
-ADD ./download-bigdl-serving.sh /opt/download-bigdl-serving.sh
-ADD ./download-bigdl-keywhiz.sh /opt/download-bigdl-keywhiz.sh
 RUN apt-get update --fix-missing && \
     apt-get install -y apt-utils curl wget unzip git
 RUN wget https://raw.githubusercontent.com/intel-analytics/analytics-zoo/bigdl-2.0/docker/hyperzoo/download-bigdl.sh && \
@@ -41,9 +31,7 @@ RUN wget https://raw.githubusercontent.com/intel-analytics/analytics-zoo/bigdl-2
     chmod a+x /opt/download-bigdl-serving.sh
 RUN ./download-bigdl.sh && \
     rm bigdl*.zip && \
-    cd /opt && \
-    ./download-bigdl-serving.sh && \
-    ./download-bigdl-keywhiz.sh
+    mkdir -p /usr/app # todo: package keywhiz here
 
 # ppml
 FROM ubuntu:20.04
@@ -54,10 +42,6 @@ ARG SCALA_SUB_VERSION_NUM=10
 ENV SPARK_VERSION			${SPARK_VERSION}
 ENV BIGDL_VERSION			${BIGDL_VERSION}
 ENV JAVA_HOME				/opt/jdk8
-ENV CORE_NUM                            2
-ENV XMX_SIZE                            10g 
-ENV SCALA_VERSION                       ${SCALA_VERSION}
-ENV SCALA_SUB_VERSION_NUM               ${SCALA_SUB_VERSION_NUM}
 
 COPY --from=scala /opt/jdk  /opt/jdk8
 COPY --from=scala /opt/scala-${SCALA_VERSION}.${SCALA_SUB_VERSION_NUM}  /opt/scala-${SCALA_VERSION}.${SCALA_SUB_VERSION_NUM}

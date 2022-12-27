@@ -13,4 +13,4 @@ sudo docker build \
     --build-arg HTTPS_PROXY_PORT=$HTTPS_PROXY_PORT \
     --build-arg JDK_VERSION=8u192 \
     --build-arg JDK_URL=$JDK_URL \
-    -t intelanalytics/bigdl-keywhiz:2.2.0-SNAPSHOT -f ./Dockerfile .
+    -t intelanalytics/bkeywhiz:2.2.0-SNAPSHOT -f ./Dockerfile .

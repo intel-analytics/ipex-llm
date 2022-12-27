@@ -40,10 +40,10 @@ import java.util.Base64
 import javax.crypto.spec.SecretKeySpec
 import javax.crypto.Cipher
 
-object App extends Supportive {
+object BKeywhizKMSFrontend extends Supportive {
   override val logger = LoggerFactory.getLogger(getClass)
 
-  val name = "BigDL KMS Frontend"
+  val name = "BigDL Keywhiz KMS Frontend"
 
   implicit val system = ActorSystem("bigdl-kms-frontend-system")
   implicit val materializer = ActorMaterializer()
@@ -62,38 +62,33 @@ object App extends Supportive {
           timing("welcome")(overallRequestTimer) {
             complete("welcome to " + name)
           }
-        } ~ (get & path("generatePrimaryKey") &
-          extract(_.request.entity.contentType) & entity(as[String])) {
-          (contentType, content) => {
-           timing("generatePrimaryKey")(overallRequestTimer) {
+        } 
+        ~ (path("primaryKey" / Segment) { primaryKeyName =>
+          post {
+            parameters("user", "password") {
+            (user, password) => {
+            timing("generate primary key")(overallRequestTimer) {
             try{
-                val params = content.split("&")
-                val primaryKeyName = params(0).split("=")(1)
-                val user = params(1).split("=")(1)
-                val password = params(2).split("=")(1)
                 val base64AES256Key:String = generateAESKey(256)
-                login(user, password)
+                loginKeywhiz(user, password)
                 addKeyToKeywhiz(user, primaryKeyName, base64AES256Key)
                 complete(s"primaryKey [$primaryKeyName] is generated successfully!")
             } catch {
               case e: Exception =>
                 e.printStackTrace()
                 complete(500, e.getMessage + "\n please get a primary key like: " +
-                  "primaryKeyName=a_primary_key_name&user=your_username&password=your_password")
+                  "POST /primaryKey/{primaryKeyName}/user=your_username&password=your_password")
             }
            }
           }
-        }  ~ (get & path("generateDataKey") &
-          extract(_.request.entity.contentType) & entity(as[String])) {
-          (contentType, content) => {
-           timing("generateDataKey")(overallRequestTimer) {
+        }
+        ~ (path("dataKey" / Segment) { dataKeyName =>
+          post {
+            parameters("primaryKeyName", "user", "password") {
+            (primaryKeyName, user, password) => {
+            timing("generate data key")(overallRequestTimer) {
             try{
-                val params = content.split("&")
-                val primaryKeyName = params(0).split("=")(1)
-                val dataKeyName = params(1).split("=")(1)
-                val user = params(2).split("=")(1)
-                val password = params(3).split("=")(1)
-                login(user, password)
+                loginKeywhiz(user, password)
                 val primaryKey:String = getKeyFromKeywhiz(user, primaryKeyName)
                 val base64AES128Key:String = generateAESKey(128)
                 val encryptedDataKey:String = encryptDataKey(primaryKey, base64AES128Key)
@@ -103,41 +98,36 @@ object App extends Supportive {
               case e: Exception =>
                 e.printStackTrace()
                 complete(500, e.getMessage + "\n please get a data key like: " +
-                  "primaryKeyName=the_primary_key_name&dataKeyName=a_data_key_name_to_use" +
+                  "POST /dataKey/{dataKeyName}/primaryKeyName=the_primary_key_name" +
                   "&user=your_username&password=your_password")
+             }
+            }
+           }
+          } 
+          ~ (path("user" / Segment) { userName =>
+            post {
+                parameters("password") {
+                password =>
+                timing("enroll")(overallRequestTimer) {
+                try {
+                   //todo: send the enroll request to a keywhiz exposed k8s restAPI
+                   complete(s"user [$userName] is created successfully!")
+                } catch {
+                  case e: Exception =>
+                  e.printStackTrace()
+                  complete(500, e.getMessage + "\n please create a user like: " +
+                  "POST /user/{userName}/password=a_password_for_the_user")
             }
            }
           }
-        } ~ (get & path("enroll") &
-          extract(_.request.entity.contentType) & entity(as[String])) {
-          (contentType, content) => {
-           timing("enroll")(overallRequestTimer) {
+        }
+        ~ (path("dataKey" / Segment) { dataKeyName =>
+          get {
+            parameters("primaryKeyName", "user", "password") {
+            (primaryKeyName, user, password) => {
+            timing("get data key")(overallRequestTimer) {
             try {
-              val params = content.split("&")
-              val user = params(0).split("=")(1)
-              val password = params(1).split("=")(1)
-              //todo: send the enroll request to a keywhiz exposed k8s restAPI
-              complete(s"user [$user] is enrolled successfully!")
-            }
-            catch {
-              case e: Exception =>
-                e.printStackTrace()
-                complete(500, e.getMessage + "\n please enroll a user like: " +
-                  "user=a_username_to_use&password=a_password_to_user")
-            }
-           }
-          }
-        } ~ (get & path("getDataKey") &
-          extract(_.request.entity.contentType) & entity(as[String])) {
-          (contentType, content) => {
-           timing("getDataKey")(overallRequestTimer) {
-            try {
-                val params = content.split("&")
-                val primaryKeyName = params(0).split("=")(1)
-                val dataKeyName = params(1).split("=")(1)
-                val user = params(2).split("=")(1)
-                val password = params(3).split("=")(1)
-                login(user, password)
+                loginKeywhiz(user, password)
                 val primaryKey = getKeyFromKeywhiz(user, primaryKeyName)
                 val base64DataKeyCiphertext = getKeyFromKeywhiz(user, dataKeyName)
                 val base64DataKeyPlaintext = decryptedDataKey(primaryKey, dataKeyCiphertext)
@@ -147,7 +137,7 @@ object App extends Supportive {
               case e: Exception =>
                 e.printStackTrace()
                 complete(500, e.getMessage + "\n please get the data key like: " +
-                  "primaryKeyName=the_primary_key_name&dataKeyName=the_data_key_name" +
+                  "GET /dataKey/{dataKeyName}/primaryKeyName=the_primary_key_name" +
                   "&user=your_username&password=your_password")
             }
            }
@@ -161,7 +151,7 @@ object App extends Supportive {
       logger.info(s"https started at https://${arguments.interface}:${arguments.port}")
   }
 
-  def login(user:String, password:String): Unit = {
+  def loginKeywhiz(user:String, password:String): Unit = {
     s"keywhiz.cli --user $user --password $password login" !!
   }
 
@@ -209,11 +199,12 @@ object App extends Supportive {
 
   val metrics = new MetricRegistry
   val overallRequestTimer = metrics.timer("bigdl.kms.frontend.request.overall")
-  val argumentsParser = new scopt.OptionParser[FrontEndAppArguments]("BigDL KMS Frontend") {
-    head("BigDL KMS Frontend")
+  val argumentsParser = new scopt.OptionParser[BKeywhizFrontendArguments]("BigDL Keywhiz KMS Frontend") {
+    head("BigDL Keywhiz KMS Frontend")
     opt[String]('i', "interface")
       .action((x, c) => c.copy(interface = x))
-      .text("network interface of frontend")
+      .text("network interface
+        of frontend")
     opt[Int]('p', "port")
       .action((x, c) => c.copy(port = x))
       .text("https port of frontend")
@@ -223,18 +214,6 @@ object App extends Supportive {
     opt[Int]('r', "keywhizPort")
       .action((x, c) => c.copy(keywhizPort = x))
       .text("port of keywhiz")
-    opt[Int]('l', "parallelism")
-      .action((x, c) => c.copy(parallelism = x))
-      .text("parallelism of frontend")
-    opt[Boolean]('e', "tokenBucketEnabled")
-      .action((x, c) => c.copy(tokenBucketEnabled = x))
-      .text("Token Bucket Enabled or not")
-    opt[Int]('k', "tokensPerSecond")
-      .action((x, c) => c.copy(tokensPerSecond = x))
-      .text("tokens per second")
-    opt[Int]('a', "tokenAcquireTimeout")
-      .action((x, c) => c.copy(tokenAcquireTimeout = x))
-      .text("token acquire timeout")
     opt[String]('p', "httpsKeyStorePath")
       .action((x, c) => c.copy(httpsKeyStorePath = x))
       .text("https keyStore path")
@@ -272,15 +251,11 @@ object App extends Supportive {
   }
 }
 
-case class KMSFrontendArguments(
+case class BKeywhizKMSFrontendArguments(
                                  interface: String = "0.0.0.0",
                                  port: Int = 9876,
                                  keywhizHost: String = "keywhiz-service",
                                  keywhizPort: Int = 4444,
-                                 parallelism: Int = 1000,
-                                 tokenBucketEnabled: Boolean = false,
-                                 tokensPerSecond: Int = 100,
-                                 tokenAcquireTimeout: Int = 100,
                                  httpsKeyStorePath: String = null,
                                  httpsKeyStoreToken: String = null,
                                  keywhizTrustStorePath: String = null,

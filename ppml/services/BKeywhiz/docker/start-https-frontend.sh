@@ -19,18 +19,16 @@
 
 set -x
 
-echo "### Launching BigDL KMS HTTPS Frontend ###"
+echo "### Launching BKeywhiz HTTPS Frontend ###"
 
 keywhiz_port=$KEYWHIZ_PORT
-xmx_size=$XMX_SIZE
-core_num=$CORE_NUM
 https_key_store_path=/usr/app/server/src/main/resources/dev_and_test_keystore.p12
 https_secure_password=$HTTPS_SECURE_PASSWORD # k8s secret
 
 /opt/jdk8/bin/java \
     -Xms2g \
-    -Xmx${xmx_size} \
-    -XX:ActiveProcessorCount=${core_num} \
+    -Xmx10g \
+    -XX:ActiveProcessorCount=2 \
     -Dcom.intel.analytics.zoo.shaded.io.netty.tryReflectionSetAccessible=true \
     -Dakka.http.host-connection-pool.max-connections=100 \
     -Dakka.http.host-connection-pool.max-open-requests=128 \
@@ -38,10 +36,7 @@ https_secure_password=$HTTPS_SECURE_PASSWORD # k8s secret
     -Dakka.actor.default-dispatcher.fork-join-executor.parallelism-max=120 \
     -Dakka.actor.default-dispatcher.fork-join-executor.parallelism-factor=1 \
     -jar /opt/bigdl-kms-frontend.jar \
-    --class com.intel.analytics.bigdl.kms.frontend.App \
+    --class com.intel.analytics.bigdl.kms.frontend.BKeywhizKMSFrontend \
     --keywhizHost "keywhiz-service" \
-    --tokensPerSecond 30 \
-    --tokenBucketEnabled true \
-    --parallelism 30 \
     --httpsKeyStorePath "${https_key_store_path}" \
-    --httpsKeyStoreToken "${https_secure_password}" | tee ./https-frontend.log
+    --httpsKeyStoreToken "${https_secure_password}" | tee ./bkeywhiz-https-frontend.log
