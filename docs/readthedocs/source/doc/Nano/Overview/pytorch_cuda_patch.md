@@ -1,4 +1,4 @@
-# CUDA Patch
+# PyTorch CUDA Patch
 
 BigDL-Nano also provides CUDA patch to help you run CUDA code without GPU. This patch will replace CUDA operations with equivalent CPU operations, so after applying it, you can run CUDA code on your CPU without changing any code.
 
