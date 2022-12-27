@@ -18,7 +18,6 @@
 import numpy as np
 import torch.nn as nn
 import torch.optim as optim
-from torch.optim.lr_scheduler import StepLR
 
 from process_xshards import prepare_data
 from pytorch_model import NCF
@@ -100,14 +99,14 @@ for r in result:
     print("{}: {}".format(r, result[r]))
 
 
-'''
+#'''
 # Step 8: Distributed predicting with Orca PyTorch Estimator
 predict_results = est.predict(data=test_data,
                               feature_cols=feature_cols,
                               batch_size=10240)
 print('Predicted results (first n rows):')
 print(predict_results.head(n=5))
-'''
+#'''
 
 # Step 6: Save the trained PyTorch model
 est.save("NCF_model")
