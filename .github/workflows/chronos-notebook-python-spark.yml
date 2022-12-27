@@ -61,7 +61,7 @@ jobs:
           #pip install -i https://pypi.python.org/simple python/chronos/src/dist/bigdl_chronos-*-py3-none-manylinux1_x86_64.whl
           #export SPARK_LOCAL_HOSTNAME=localhost
           #export KERAS_BACKEND=tensorflow
-          pip install -i https://pypi.python.org/simple --pre --upgrade bigdl-chronos[tensorflow,pytorch,inference]
+          pip install -i https://pypi.python.org/simple --pre --upgrade bigdl-chronos[all]
           bash python/chronos/dev/app/run-app-tests-pip.sh
           source deactivate
           conda remove -n chronos-prvn-env -y --all
