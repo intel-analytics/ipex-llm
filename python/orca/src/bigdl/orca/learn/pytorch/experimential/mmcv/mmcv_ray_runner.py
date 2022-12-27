@@ -54,6 +54,7 @@ class HDFSBackend(BaseStorageBackend):
 
         with open(temp_file, 'rb') as f:
             value_buf = f.read()
+        os.remove(temp_file)
         return value_buf
 
     def get_text(self, filepath: str, encoding: str = 'utf-8') -> str:
@@ -61,6 +62,7 @@ class HDFSBackend(BaseStorageBackend):
 
         with open(temp_file, encoding=encoding) as f:
             value_buf = f.read()
+        os.remove(temp_file)
         return value_buf
 
     def put(self, obj: bytes, filepath: str) -> None:
@@ -71,6 +73,7 @@ class HDFSBackend(BaseStorageBackend):
             f.write(obj)
 
         self._local_to_hdfs(temp_path, filepath)
+        os.remove(temp_path)
 
     def put_text(self, obj: str, filepath: str, encoding: str = 'utf-8') -> None:
         filename = os.path.basename(filepath)
@@ -80,6 +83,7 @@ class HDFSBackend(BaseStorageBackend):
             f.write(obj)
 
         self._local_to_hdfs(temp_path, filepath)
+        os.remove(temp_path)
 
     def join_path(self, filepath: str,
                   *filepaths: str) -> str:
