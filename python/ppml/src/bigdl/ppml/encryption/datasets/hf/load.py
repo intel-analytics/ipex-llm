@@ -132,12 +132,12 @@ def customized_load(dataset_path: str, key:str, fs=None, keep_in_memory: Optiona
 Dataset.load_from_disk = customized_load
 
 # TODO: add fs argument if needed
-def load_from_disk(dataset_path: str, fs=None, keep_in_memory: Optional[bool] = None) -> Union[Dataset, DatasetDict]:
+def load_from_disk(dataset_path: str, key: str, fs=None, keep_in_memory: Optional[bool] = None) -> Union[Dataset, DatasetDict]:
     fs = fsspec.filesystem("file")
     if not fs.exists(dataset_path):
         raise FileNotFoundError(f"Directory {dataset_path} not found")
     if fs.isfile(Path(dataset_path, config.DATASET_INFO_FILENAME).as_posix()):
-        return Dataset.load_from_disk(dataset_path, fs, keep_in_memory=keep_in_memory)
+        return Dataset.load_from_disk(dataset_path, key, fs, keep_in_memory=keep_in_memory)
     elif fs.isfile(Path(dataset_path, config.DATASETDICT_JSON_FILENAME).as_posix()):
         return DatasetDict.load_from_disk(dataset_path, fs, keep_in_memory=keep_in_memory)
     else:

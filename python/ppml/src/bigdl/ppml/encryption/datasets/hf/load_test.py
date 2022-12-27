@@ -51,7 +51,7 @@ def encrypt():
 
 
 def main():
-    temp = load_from_disk("/ppml/save-datasets/train")
+    temp = load_from_disk("/ppml/save-datasets-encrypted/test", _create_random(32))
 
 
 
