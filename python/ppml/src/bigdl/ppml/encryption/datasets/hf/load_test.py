@@ -45,7 +45,9 @@ def encrypt_directory_automation(input_dir, save_dir):
 
 
 def encrypt():
-    encrypt_directory_automation("/ppml/save-datasets/", "/ppml/save-datasets-encrypted/")
+    encrypt_directory_automation("/ppml/save-datasets/train/", "/ppml/save-datasets-encrypted/train/")
+    encrypt_directory_automation("/ppml/save-datasets/test/", "/ppml/save-datasets-encrypted/test/")
+    encrypt_directory_automation("/ppml/save-datasets/valid/", "/ppml/save-datasets-encrypted/valid/")
 
 
 def main():

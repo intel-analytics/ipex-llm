@@ -71,7 +71,7 @@ def decrypt_file_to_pa_buffer(filename, key):
 
 
 @staticmethod
-def customized_load(dataset_path: str, fs=None, keep_in_memory: Optional[bool] = None, key) -> "Dataset":
+def customized_load(dataset_path: str, key:str, fs=None, keep_in_memory: Optional[bool] = None) -> "Dataset":
     print("customized load") # TODO: delete later
     # TODO: delete fs later
     fs = fsspec.filesystem("file") if fs is None else fs
