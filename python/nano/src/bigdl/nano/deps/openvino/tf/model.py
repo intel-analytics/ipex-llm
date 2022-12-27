@@ -54,6 +54,7 @@ class KerasOpenVINOModel(AcceleratedKerasModel):
                 ov_model_path = dir / 'tmp.xml'
             self.ov_model = OpenVINOModel(ov_model_path,
                                           device=device,
+                                          precision=precision,
                                           thread_num=thread_num,
                                           config=config)
             super().__init__(None)
@@ -99,7 +100,8 @@ class KerasOpenVINOModel(AcceleratedKerasModel):
         model = self.ov_model.pot(dataloader, metric=metric, drop_type=drop_type,
                                   maximal_drop=maximal_drop, max_iter_num=max_iter_num,
                                   n_requests=n_requests, sample_size=sample_size)
-        return KerasOpenVINOModel(model, config=config, thread_num=thread_num)
+        return KerasOpenVINOModel(model, precision='int8',
+                                  config=config, thread_num=thread_num)
 
     @staticmethod
     def _load(path, device=None):

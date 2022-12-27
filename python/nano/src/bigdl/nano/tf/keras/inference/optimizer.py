@@ -463,7 +463,7 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                               "Now we only support {} device when accelerator "
                               "is openvino.".format(device))
         if precision == 'fp16':
-            invalidInputError(device == 'VPUX' or 'GPU' in device,
+            invalidInputError('GPU' in device,
                               "fp16 is not supported on {} device.".format(device))
             invalidInputError(accelerator == 'openvino',
                               "fp16 is not supported on {} accelerator.".format(accelerator))
