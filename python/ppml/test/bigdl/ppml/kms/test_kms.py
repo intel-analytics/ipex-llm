@@ -44,6 +44,14 @@ class TestKMS(unittest.TestCase):
         generate_data_key(ehsm_ip, ehsm_port, encrypted_primary_key_path, 32)
         global encrypted_data_key_path
         encrypted_data_key_path = "./encrypted_data_key"
+
+    @classmethod
+    def tearDownClass(cls) -> None:
+        if os.path.exists(encrypted_primary_key_path):
+            os.remove(encrypted_primary_key_path)
+
+        if os.path.exists(encrypted_data_key_path):
+            os.remove(encrypted_data_key_path)
     
     def test_encrypt_buf(self):
         buf = io.BytesIO()
