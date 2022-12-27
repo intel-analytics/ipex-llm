@@ -106,7 +106,7 @@ def customized_load(dataset_path: str, key:str, fs=None, keep_in_memory: Optiona
     table_cls = InMemoryTable
     arrow_table = concat_tables(
         table_cls.from_buffer(decrypt_file_to_pa_buffer(
-            Path(dataset_path, data_file["filename"]).as_posix()), key)
+            Path(dataset_path, data_file["filename"]).as_posix(), key))
         for data_file in state["_data_files"]
     )
 
