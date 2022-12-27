@@ -20,6 +20,9 @@ package com.intel.analytics.bigdl.ppml.attestation
 import org.apache.logging.log4j.LogManager
 import scopt.OptionParser
 
+import java.io.{BufferedOutputStream, BufferedInputStream};
+import java.io.File;
+import java.io.{FileInputStream, FileOutputStream};
 import java.util.Base64
 
 import com.intel.analytics.bigdl.ppml.attestation.generator._
@@ -73,7 +76,6 @@ object AttestationCLI {
 
         // Generate quote
         val userReportData = params.userReport
-
         if (params.OSType == "gramine") {
           val quoteGenerator = new GramineQuoteGeneratorImpl()
           quote = quoteGenerator.getQuote(userReportData.getBytes)
@@ -101,19 +103,7 @@ object AttestationCLI {
               case _ => throw new AttestationRuntimeException("Wrong Attestation service type")
             }
             val quoteVerifier = new SGXDCAPQuoteVerifierImpl()
-            val verifyQuoteResult = quoteVerifier.verifyQuote(asQuote)
-            if (verifyQuoteResult == 0) {
-              System.out.println("Quote Verification Success!")
-            } else if (verifyQuoteResult == 1) {
-              System.out.println("WARNING:Quote verification passed but BIOS or the software" +
-                " is not up to date.")
-            } else if (debug == "true") {
-              System.out.println("ERROR:Quote Verification Fail! In debug mode, continue.")
-            }
-            else {
-              System.out.println("ERROR:Quote Verification Fail! Application killed.")
-              System.exit(1)
-            }
+            quoteVerifier.verifyQuote(asQuote)
         }
 
         val attResult = params.policyID match {

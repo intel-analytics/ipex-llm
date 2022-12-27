@@ -14,7 +14,6 @@
 # limitations under the License.
 #
 
-import io
 import os
 import re
 import tempfile
@@ -24,17 +23,22 @@ import numpy as np
 import torch
 import warnings
 from collections import OrderedDict
+from torch.optim import Optimizer
 from mmcv.runner import EpochBasedRunner
 from mmcv.runner.utils import get_host_info
+from mmcv.parallel import is_module_wrapper
 from mmcv.parallel.distributed import MMDistributedDataParallel
-from mmcv.parallel.utils import is_module_wrapper
-from mmcv import BaseStorageBackend
+from mmcv.fileio.file_client import BaseStorageBackend
+from mmcv.utils.misc import is_list_of
 from mmcv.runner.checkpoint import CheckpointLoader
 from bigdl.orca.learn.pytorch.utils import get_batchsize
 from bigdl.dllib.utils.log4Error import invalidInputError
-from bigdl.orca.learn.pytorch.experimential.core.base_ray_runner import BaseRayRunner
+from bigdl.orca.learn.pytorch.core.base_runner import BaseRunner
 
-from typing import (Union, Any, Dict, List, Optional, Tuple, Callable, overload)
+from typing import (TYPE_CHECKING, Union, Any, Dict, List, Optional, Tuple, Callable)
+
+if TYPE_CHECKING:
+    from torch.utils.data import DataLoader
 
 
 class HDFSBackend(BaseStorageBackend):
@@ -45,10 +49,10 @@ class HDFSBackend(BaseStorageBackend):
     CheckpointHook's out_dir starts with hdfs://
     """
 
-    def get(self, filepath: str) -> bytes:
+    def get(self, filepath: str) -> bytes:  # type:ignore
         pass
 
-    def get_text(self, filepath: str, encoding: str = 'utf-8') -> str:
+    def get_text(self, filepath: str, encoding: str = 'utf-8') -> str:  # type:ignore
         pass
 
     def put(self, obj: bytes, filepath: str) -> None:
@@ -100,7 +104,7 @@ def load_from_hdfs(filename: str,
     return checkpoint
 
 
-class MMCVRayEpochRunner(BaseRayRunner, EpochBasedRunner):
+class MMCVRayEpochRunner(BaseRunner, EpochBasedRunner):
     EBR_slots = (
         "model",
         "batch_processor",
@@ -122,36 +126,40 @@ class MMCVRayEpochRunner(BaseRayRunner, EpochBasedRunner):
         "log_buffer",
     )
 
-    def __init__(self, mmcv_runner_creator=None, config=None):
+    def __init__(self,
+                 mmcv_runner_creator: Callable,
+                 config: Optional[Dict]=None) -> None:
         self.mmcv_runner_creator = mmcv_runner_creator
         self.config = config
         self._backend = "torch-local"
 
-    def setup_components(self):
+    def setup_components(self) -> None:
         runner = self.mmcv_runner_creator(self.config)
         self._wrap_from_ebr(runner)
+
+    def setup_ddp_components(self) -> None:
         # MMDDP is implemented by MMCV, it has two main differences with PyTorch DDP:
         # 1. It supports a custom type :class:`DataContainer` which allows more
         #    flexible control of input data.
         # 2. It implement two APIs ``train_step()`` and ``val_step()``.
-        self.model = MMDistributedDataParallel(self.model)
+        self.model = MMDistributedDataParallel(self.model)  # type:ignore
 
     def train_epochs(self,
                      data_loaders_creators: List[Callable],
                      workflow: List[Tuple[str, int]],
                      max_epochs: Optional[int] = None,  # deprecated
-                     **kwargs):
+                     **kwargs) -> List[Dict]:
         data_loaders = [self.with_sampler(creator(self.config)) for
                         creator in data_loaders_creators]
         return self.run(data_loaders, workflow, max_epochs, **kwargs)
 
     def run(self,
-            data_loaders: List[Callable],
+            data_loaders: List['DataLoader'],
             workflow: List[Tuple[str, int]],
             max_epochs: Optional[int] = None,
-            **kwargs) -> List:
+            **kwargs) -> List[Dict]:
         invalidInputError(isinstance(data_loaders, list), "data_loaders should be a list")
-        invalidInputError(mmcv.is_list_of(workflow, tuple), "workflow shoud be a list of tuple")
+        invalidInputError(is_list_of(workflow, tuple), "workflow shoud be a list of tuple")
         invalidInputError(len(data_loaders) == len(workflow),
                           "data_loaders and workflow should have the same length")
 
@@ -204,7 +212,7 @@ class MMCVRayEpochRunner(BaseRayRunner, EpochBasedRunner):
         self.call_hook('after_run')
         return stats_list
 
-    def train(self, data_loader, **kwargs):
+    def train(self, data_loader: 'DataLoader', **kwargs) -> Dict:
         self.model.train()
         self.mode = 'train'
         self.data_loader = data_loader
@@ -318,14 +326,39 @@ class MMCVRayEpochRunner(BaseRayRunner, EpochBasedRunner):
         self.load_state_dict(checkpoint, strict, revise_keys)
         return checkpoint
 
-    def remove_checkpoint(self, filepath):
+    def remove_checkpoint(self, filepath: str) -> None:
         pass
 
-    def get_state_dict(self):
+    def get_state_dict(self) -> Dict:
         """Returns the state of the runner."""
-        pass
+        meta = {}
+        if self.meta is not None:
+            meta.update(self.meta)
+        meta.update(epoch=self.epoch, iter=self.iter)
+        model = self.model
+        if is_module_wrapper(model):
+            model = model.module
 
-    def load_state_dict(self, checkpoint, strict=False, revise_keys=[(r'^module.', '')]):
+        if hasattr(model, 'CLASSES') and model.CLASSES is not None:
+            meta.update(CLASSES=model.CLASSES)
+
+        from mmcv.runner.checkpoint import get_state_dict as model_state_dict
+        state = {
+            'meta': meta,
+            'state_dict': model_state_dict(model)
+        }
+
+        if isinstance(self.optimizer, Optimizer):
+            state['optimizer'] = self.optimizer.state_dict()
+        elif isinstance(self.optimizer, dict):
+            state['optimizer'] = {}
+            for name, optim in self.optimizer.items():
+                state['optimizer'][name] = optim.state_dict()
+
+        return state
+
+    def load_state_dict(self, checkpoint: Dict, strict: bool = False,
+                        revise_keys: list = [(r'^module.', '')]) -> None:
         """Sets the state of the model."""
 
         if 'state_dict' in checkpoint:
@@ -345,7 +378,7 @@ class MMCVRayEpochRunner(BaseRayRunner, EpochBasedRunner):
         from mmcv.runner.checkpoint import load_state_dict
         load_state_dict(self.model, state_dict, strict, self.logger)
 
-    def shutdown(self):
+    def shutdown(self) -> None:
         pass
 
     def _wrap_from_ebr(self, epoch_based_runner):

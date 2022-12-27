@@ -16,8 +16,8 @@
 
 from bigdl.nano.utils.inference.pytorch.model import AcceleratedLightningModule
 from bigdl.nano.pytorch.context_manager import generate_context_manager
+from bigdl.nano.deps.ipex.ipex_api import ipex_optimize
 import torch
-from bigdl.nano.pytorch.utils import patch_attrs_from_model_to_object
 
 
 class PytorchIPEXJITModel(AcceleratedLightningModule):
@@ -75,9 +75,9 @@ class PytorchIPEXJITModel(AcceleratedLightningModule):
         if self.channels_last:
             self.model = self.model.to(memory_format=torch.channels_last)
         if self.use_ipex:
-            import intel_extension_for_pytorch as ipex
-            self.model = ipex.optimize(self.model, dtype=dtype, inplace=inplace,
+            self.model = ipex_optimize(self.model, dtype=dtype, inplace=inplace,
                                        weights_prepack=weights_prepack)
+
         if self.use_jit:
             if dtype == torch.bfloat16:
                 with torch.no_grad():

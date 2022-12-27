@@ -1,0 +1,150 @@
+name: 'Nano PyTorch Test'
+description: 'run nano pytorch test'
+
+runs:
+  using: "composite"
+  steps:
+    - name: Run Nano PyTorch Test (PyTorch)
+      shell: bash
+      run: |
+        source $CONDA/bin/activate nano-pytorch
+        source bigdl-nano-init
+
+        bash python/nano/test/run-nano-pytorch-tests.sh
+
+        source $CONDA/bin/deactivate
+      env:
+        ANALYTICS_ZOO_ROOT: ${{ github.workspace }}
+
+    - name: Run Nano PyTorch Test (Ray)
+      shell: bash
+      run: |
+        source $CONDA/bin/activate nano-pytorch
+        source bigdl-nano-init
+
+        bash python/nano/test/run-nano-pytorch-ray-tests.sh
+        
+        source $CONDA/bin/deactivate
+      env:
+        ANALYTICS_ZOO_ROOT: ${{ github.workspace }}
+
+    - name: Run Nano PyTorch Test (Automl)
+      shell: bash
+      run: |
+        source $CONDA/bin/activate nano-pytorch
+        source bigdl-nano-init
+
+        bash python/nano/test/run-nano-automl-pytorch-tests.sh
+        
+        source $CONDA/bin/deactivate
+      env:
+        ANALYTICS_ZOO_ROOT: ${{ github.workspace }}
+
+    - name: Run Nano PyTorch Test (INC)
+      shell: bash
+      run: |
+        source $CONDA/bin/activate nano-pytorch
+        source bigdl-nano-init
+
+        bash python/nano/test/run-nano-pytorch-inc-tests.sh
+        
+        source $CONDA/bin/deactivate
+      env:
+        ANALYTICS_ZOO_ROOT: ${{ github.workspace }}
+
+    - name: Run Nano PyTorch Test (OpenVINO)
+      shell: bash
+      run: |
+        source $CONDA/bin/activate nano-pytorch
+        source bigdl-nano-init
+
+        bash python/nano/test/run-nano-basic-openvino-tests.sh
+        bash python/nano/test/run-nano-pytorch-openvino-tests.sh
+        
+        source $CONDA/bin/deactivate
+      env:
+        ANALYTICS_ZOO_ROOT: ${{ github.workspace }}
+
+    - name: Run Nano PyTorch Test (ONNXRuntime)
+      shell: bash
+      run: |
+        source $CONDA/bin/activate nano-pytorch
+        source bigdl-nano-init
+
+        bash python/nano/test/run-nano-pytorch-onnx-tests.sh
+        
+        source $CONDA/bin/deactivate
+      env:
+        ANALYTICS_ZOO_ROOT: ${{ github.workspace }}
+
+    - name: Run Nano PyTorch Test (IPEX)
+      shell: bash
+      run: |
+        source $CONDA/bin/activate nano-pytorch
+        source bigdl-nano-init
+
+        bash python/nano/test/run-nano-pytorch-tests-ipex.sh
+        
+        source $CONDA/bin/deactivate
+      env:
+        ANALYTICS_ZOO_ROOT: ${{ github.workspace }}
+
+    - name: Run Nano PyTorch Test (Optimizer)
+      shell: bash
+      run: |
+        source $CONDA/bin/activate nano-pytorch
+        source bigdl-nano-init
+
+        # This test may fail due to segmentation fault, we haven't fix it
+        # bash python/nano/test/run-nano-pytorch-tests-optimizer.sh
+        
+        source $CONDA/bin/deactivate
+      env:
+        ANALYTICS_ZOO_ROOT: ${{ github.workspace }}
+
+    - name: Run Nano PyTorch Test (NoteBook)
+      shell: bash
+      run: |
+        source $CONDA/bin/activate nano-pytorch
+        source bigdl-nano-init
+
+        bash python/nano/notebooks/pytorch/cifar10/run-nano-notebooks-pytorch-cifar10-tests.sh
+        bash python/nano/notebooks/pytorch/openvino/run-nano-notebooks-pytorch-openvino-tests.sh
+        bash python/nano/notebooks/pytorch/tutorial/run-nano-notebooks-pytorch-tutorial-tests.sh false
+        bash python/nano/notebooks/pytorch/tutorial/run-nano-notebooks-pytorch-tutorial-tests.sh true
+        
+        source $CONDA/bin/deactivate
+      env:
+        ANALYTICS_ZOO_ROOT: ${{ github.workspace }}
+
+    - name: Run Nano PyTorch Test (Tutorial)
+      shell: bash
+      run: |
+        source $CONDA/bin/activate nano-pytorch
+        source bigdl-nano-init
+
+        bash python/nano/tutorial/training/pytorch/run_nano_pytorch_test.sh
+        bash python/nano/tutorial/training/pytorch-lightning/run_nano_pytorch_lightning_test.sh
+        bash python/nano/tutorial/inference/pytorch/run_nano_pytorch_inference_tests_onnx.sh
+        bash python/nano/tutorial/inference/pytorch/run_nano_pytorch_inference_tests_openvino.sh
+        bash python/nano/tutorial/inference/pytorch/run_nano_pytorch_inference_tests_jit_ipex.sh
+        bash python/nano/tutorial/inference/openvino/run_nano_openvino_inference_tests.sh
+        
+        source $CONDA/bin/deactivate
+      env:
+        ANALYTICS_ZOO_ROOT: ${{ github.workspace }}
+
+    - name: Run Nano PyTorch Test (How To Guide)
+      shell: bash
+      run: |
+        source $CONDA/bin/activate nano-pytorch
+        source bigdl-nano-init
+
+        bash python/nano/tutorial/notebook/inference/pytorch/run-nano-howto-guides-inference-pytorch-tests.sh onnx
+        bash python/nano/tutorial/notebook/inference/pytorch/run-nano-howto-guides-inference-pytorch-tests.sh openvino
+        bash python/nano/tutorial/notebook/inference/pytorch/run-nano-howto-guides-inference-pytorch-tests.sh inferenceoptimizer
+        bash python/nano/tutorial/notebook/training/pytorch-lightning/run-nano-howto-guides-training-pytorch-lightning-tests.sh
+        
+        source $CONDA/bin/deactivate
+      env:
+        ANALYTICS_ZOO_ROOT: ${{ github.workspace }}

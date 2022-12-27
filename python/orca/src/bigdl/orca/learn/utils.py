@@ -340,16 +340,32 @@ arrays2pandas = partial(arrays2others, generate_func=_generate_output_pandas_df)
 
 
 def transform_to_shard_dict(data, feature_cols, label_cols=None):
+    def single_col_to_numpy(col_series, dtype):
+        if dtype == np.ndarray:
+            # In this case, directly calling to_numpy will make the result
+            # ndarray have type np.object.
+            # Need to explicitly specify the dtype.
+            dtype = col_series.iloc[0].dtype
+            return col_series.to_numpy(dtype=dtype)
+        else:
+            return col_series.to_numpy()
+
     def to_shard_dict(df):
         result = dict()
+        col_types = df.dtypes
         if len(feature_cols) == 1:
             featureLists = df[feature_cols[0]].tolist()
             result["x"] = np.stack(featureLists, axis=0)
         else:
-            result["x"] = [df[feature_col].to_numpy() for feature_col in feature_cols]
+            result["x"] = [single_col_to_numpy(df[feature_col], col_types[feature_col])
+                           for feature_col in feature_cols]
 
         if label_cols:
-            result["y"] = df[label_cols[0]].to_numpy()
+            y = [single_col_to_numpy(df[label_col], col_types[label_col])
+                 for label_col in label_cols]
+            if len(label_cols) == 1:
+                y = y[0]
+            result["y"] = y
 
         return result
 
@@ -362,7 +378,7 @@ def process_xshards_of_pandas_dataframe(data, feature_cols, label_cols=None, val
                                         mode=None):
     data = transform_to_shard_dict(data, feature_cols, label_cols)
     if mode == "fit":
-        if validation_data:
+        if validation_data is not None:
             invalidInputError(validation_data._get_class_name() == 'pandas.core.frame.DataFrame',
                               "train data and validation data should be both XShards of Pandas"
                               " DataFrame")
@@ -374,7 +390,6 @@ def process_xshards_of_pandas_dataframe(data, feature_cols, label_cols=None, val
 
 def _dataframe_to_xshards(data, feature_cols, label_cols=None,
                           accept_str_col=False, shard_size=None):
-    from bigdl.orca import OrcaContext
     schema = data.schema
     numpy_rdd = data.rdd.map(lambda row: convert_row_to_numpy(row,
                                                               schema,
