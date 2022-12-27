@@ -87,6 +87,7 @@ def customized_load(dataset_path: str, key:str, fs=None, keep_in_memory: Optiona
     #     state = json.load(state_file)
     with _open_encrypt_file_with_key(Path(dataset_path, config.DATASET_STATE_JSON_FILENAME).as_posix(), 'rb', key) as state_file:
         state = json.load(state_file)
+    print(state, flush=True)
     # with open(Path(dataset_path, config.DATASET_INFO_FILENAME).as_posix(), encoding="utf-8") as dataset_info_file:
     #     dataset_info = DatasetInfo.from_dict(json.load(dataset_info_file))
     with _open_encrypt_file_with_key(Path(dataset_path, config.DATASET_INFO_FILENAME).as_posix(), 'rb', key) as dataset_info_file:
