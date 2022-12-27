@@ -71,9 +71,9 @@ class Accuracy(PytorchMetric):
         self.total = torch.tensor(0)
 
     def __call__(self, preds, targets):
-        preds, target = _unify_input_formats(preds, targets)
+        preds, targets = _unify_input_formats(preds, targets)
         self.correct += torch.sum(torch.eq(preds, targets))
-        self.total += target.numel()
+        self.total += targets.numel()
 
     def compute(self):
         return self.correct.float() / self.total

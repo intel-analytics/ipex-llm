@@ -26,14 +26,19 @@ from ..core.utils import save
 
 
 class KerasOpenVINOModel(AcceleratedKerasModel):
-    def __init__(self, model, thread_num=None, config=None, logging=True):
+    def __init__(self, model, precision='fp32', thread_num=None,
+                 device='CPU', config=None, logging=True):
         """
         Create a OpenVINO model from Keras.
 
         :param model: Keras model to be converted to OpenVINO for inference or
                       path to Openvino saved model.
+        :param precision: Global precision of model, supported type: 'fp32', 'fp16',
+                          defaults to 'fp32'.
         :param thread_num: a int represents how many threads(cores) is needed for
                     inference. default: None.
+        :param device: A string represents the device of the inference. Default to 'CPU'.
+                       'CPU', 'GPU' and 'VPU' are supported for now.
         :param config: The config to be inputted in core.compile_model.
                        inference. default: None.
         :param logging: whether to log detailed information of model conversion.
@@ -43,9 +48,12 @@ class KerasOpenVINOModel(AcceleratedKerasModel):
         with TemporaryDirectory() as dir:
             dir = Path(dir)
             if isinstance(model, tf.keras.Model):
-                export(model, str(dir / 'tmp.xml'), logging=logging)
+                export(model, str(dir / 'tmp.xml'),
+                       precision=precision,
+                       logging=logging)
                 ov_model_path = dir / 'tmp.xml'
             self.ov_model = OpenVINOModel(ov_model_path,
+                                          device=device,
                                           thread_num=thread_num,
                                           config=config)
             super().__init__(None)
@@ -69,11 +77,13 @@ class KerasOpenVINOModel(AcceleratedKerasModel):
         status = super().status
         status.update({"xml_path": 'ov_saved_model.xml',
                        "weight_path": 'ov_saved_model.bin',
-                       "config": self.ov_model.final_config})
+                       "config": self.ov_model.final_config,
+                       "device": self.ov_model._device})
         return status
 
     def pot(self,
-            dataset,
+            x,
+            y,
             metric=None,
             higher_better=True,
             drop_type="relative",
@@ -85,18 +95,19 @@ class KerasOpenVINOModel(AcceleratedKerasModel):
             thread_num=None):
         if metric:
             metric = KerasOpenVINOMetric(metric=metric, higher_better=higher_better)
-        dataloader = KerasOpenVINODataLoader(dataset, collate_fn=self.tensors_to_numpy)
+        dataloader = KerasOpenVINODataLoader(x, y, collate_fn=self.tensors_to_numpy)
         model = self.ov_model.pot(dataloader, metric=metric, drop_type=drop_type,
                                   maximal_drop=maximal_drop, max_iter_num=max_iter_num,
                                   n_requests=n_requests, sample_size=sample_size)
         return KerasOpenVINOModel(model, config=config, thread_num=thread_num)
 
     @staticmethod
-    def _load(path):
+    def _load(path, device=None):
         """
         Load an OpenVINO model for inference from directory.
 
         :param path: Path to model to be loaded.
+        :param device: A string represents the device of the inference.
         :return: KerasOpenVINOModel model for OpenVINO inference.
         """
         status = KerasOpenVINOModel._load_status(path)
@@ -107,7 +118,16 @@ class KerasOpenVINOModel(AcceleratedKerasModel):
         else:
             invalidInputError(False, "nano_model_meta.yml must specify 'xml_path' for loading.")
         xml_path = Path(path) / status['xml_path']
-        return KerasOpenVINOModel(xml_path, config=status['config'])
+        thread_num = None
+        config = status.get('config', {})
+        if "CPU_THREADS_NUM" in config:
+            thread_num = int(config["CPU_THREADS_NUM"])
+        if device is None:
+            device = status.get('device', 'CPU')
+        return KerasOpenVINOModel(xml_path,
+                                  config=status['config'],
+                                  thread_num=thread_num,
+                                  device=device)
 
     def _save_model(self, path):
         """

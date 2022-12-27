@@ -74,25 +74,29 @@ def train_data_creator(config, batch_size):
 
 ---
 ## 2. Prepare Environment
-Before running BigDL Orca programs on YARN, you need to properly setup the environment following the steps below.
+Before running BigDL Orca programs on YARN, you need to properly setup the environment following the steps in this section.
+
+__Note__:
+* When using [`python` command](#use-python-command) or [`bigdl-submit`](#use-bigdl-submit), we would directly use the corresponding `pyspark` (which is a dependency of BigDL Orca) for the Spark environment. Thus to avoid possible conflicts, you *DON'T* need to download Spark by yourself or set the environment variable `SPARK_HOME` unless you use [`spark-submit`](#use-spark-submit). 
+
 
 ### 2.1 Setup JAVA & Hadoop Environment
 - See [here](../Overview/install.md#install-java) to prepare Java in your cluster.
 
 - Check the Hadoop setup and configurations of your cluster. Make sure you correctly set the environment variable `HADOOP_CONF_DIR`, which is needed to initialize Spark on YARN:
-```bash
-export HADOOP_CONF_DIR=/path/to/hadoop/conf
-```
+    ```bash
+    export HADOOP_CONF_DIR=/path/to/hadoop/conf
+    ```
 
 ### 2.2 Install Python Libraries
 - See [here](../Overview/install.md#install-anaconda) to install conda and prepare the Python environment on the __Client Node__.
 
-- See [here](../Overview/install.md#install-bigdl-orca) to install BigDL Orca in the created conda environment.
+- See [here](../Overview/install.md#install-bigdl-orca) to install BigDL Orca in the created conda environment. Note that if you use [`spark-submit`](#use-spark-submit), please skip this step and __DO NOT__ install BigDL Orca.
 
 - You should install all the other Python libraries that you need in your program in the conda environment as well. `torch` and `torchvision` are needed to run the Fashion-MNIST example:
-```bash
-pip install torch torchvision
-```
+    ```bash
+    pip install torch torchvision
+    ```
 
 - For more details, please see [Python User Guide](https://bigdl.readthedocs.io/en/latest/doc/UserGuide/python.html).
 
@@ -100,10 +104,10 @@ pip install torch torchvision
 * For [CDH](https://www.cloudera.com/products/open-source/apache-hadoop/key-cdh-components.html) users, the environment variable `HADOOP_CONF_DIR` should be `/etc/hadoop/conf` by default.
 
 * The __Client Node__ may have already installed a different version of Spark than the one installed with BigDL. To avoid conflicts, unset all Spark-related environment variables (you may use use `env | grep SPARK` to find all of them):
-```bash
-unset SPARK_HOME
-unset ...
-```
+    ```bash
+    unset SPARK_HOME
+    unset ...
+    ```
 
 ---
 ## 3. Prepare Dataset 
@@ -115,7 +119,7 @@ First, download the Fashion-MNIST dataset manually on your __Client Node__. Note
 git clone https://github.com/zalandoresearch/fashion-mnist.git
 
 # Move the dataset under the folder FashionMNIST/raw
-mv /path/to/fashion-mnist/data/fashion /path/to/local/data/FashionMNIST/raw
+mv /path/to/fashion-mnist/data/fashion/* /path/to/local/data/FashionMNIST/raw
 
 # Extract FashionMNIST archives
 gzip -dk /bigdl/nfsdata/dataset/FashionMNIST/raw/*
@@ -124,7 +128,7 @@ Then upload it to a distributed storage. Sample command to upload data to HDFS i
 ```bash
 hdfs dfs -put /path/to/local/data/FashionMNIST hdfs://path/to/remote/data
 ```
-In the given example, you can specify the argument `--remote_dir` to be the directory on a distributed storage for the Fashion-MNIST dataset.
+In the given example, you can specify the argument `--remote_dir` to be the directory on a distributed storage for the Fashion-MNIST dataset. The directory should contain `FashionMNIST/raw/train-images-idx3-ubyte` and `FashionMNIST/raw/t10k-images-idx3`.
 
 ---
 ## 4. Prepare Custom Modules
@@ -132,41 +136,41 @@ Spark allows to upload Python files (`.py`), and zipped Python packages (`.zip`)
 
 The FasionMNIST example needs to import modules from [`model.py`](https://github.com/intel-analytics/BigDL/blob/main/python/orca/tutorial/pytorch/FashionMNIST/model.py).
 * When using [`python` command](#use-python-command), please specify `extra_python_lib` in `init_orca_context`.
-```python
-init_orca_context(..., extra_python_lib="model.py")
-```
+    ```python
+    init_orca_context(..., extra_python_lib="model.py")
+    ```
 
 For more details, please see [BigDL Python Dependencies](https://bigdl.readthedocs.io/en/latest/doc/Orca/Overview/orca-context.html#python-dependencies).
 
 * When using [`bigdl-submit`](#use-bigdl-submit) or [`spark-submit`](#use-spark-submit), please specify `--py-files` option in the submit command.
-```bash
-bigdl-submit # or spark-submit
-    ...
-    --py-files model.py
-    ...
-```
+    ```bash
+    bigdl-submit # or spark-submit
+        ...
+        --py-files model.py
+        ...
+    ```
 
 For more details, please see [Spark Python Dependencies](https://spark.apache.org/docs/latest/submitting-applications.html). 
 
 * After uploading `model.py` to YARN, you can import this custom module as follows:
-```python
-from model import model_creator, optimizer_creator
-```
+    ```python
+    from model import model_creator, optimizer_creator
+    ```
 
 __Note__:
 
 If your program depends on a nested directory of Python files, you are recommended to follow the steps below to use a zipped package instead.
 
 1. Compress the directory into a zipped package.
-```bash
-zip -q -r FashionMNIST_zipped.zip FashionMNIST
-```
+    ```bash
+    zip -q -r FashionMNIST_zipped.zip FashionMNIST
+    ```
 2. Upload the zipped package (`FashionMNIST_zipped.zip`) to YARN by setting `--py-files` or specifying `extra_python_lib` as discussed above.
 
 3. You can then import the custom modules from the unzipped file in your program as follows:
-```python
-from FashionMNIST.model import model_creator, optimizer_creator
-```
+    ```python
+    from FashionMNIST.model import model_creator, optimizer_creator
+    ```
 
 ---
 ## 5. Run Jobs on YARN
@@ -284,36 +288,34 @@ In the `bigdl-submit` script:
 
 
 ### 5.3 Use `spark-submit`
-When you are not able to install BigDL using conda on the __Client Node__ , please use the `spark-submit` script instead. 
+If you prefer to use `spark-submit` instead of `bigdl-submit`, please follow the steps below to prepare the environment on the __Client Node__. 
 
-Set the cluster_mode to "spark-submit" in `init_orca_context`.
-```python
-sc = init_orca_context(cluster_mode="spark-submit")
-```
+1. Set the cluster_mode to "spark-submit" in `init_orca_context`.
+    ```python
+    sc = init_orca_context(cluster_mode="spark-submit")
+    ```
 
-Before submitting the application on the __Client Node__, you need to:
+2. Download requirement file [here](https://github.com/intel-analytics/BigDL/tree/main/python/requirements/orca) and install required Python libraries of BigDL Orca according to your needs.
+    ```bash
+    pip install -r /path/to/requirements.txt
+    ```
 
-1. Prepare the conda environment on a __Development Node__ where conda is available and pack the conda environment to an archive:
-```bash
-conda pack -o environment.tar.gz
-```
-2. Send the Conda archive to the __Client Node__;
-```bash
-scp /path/to/environment.tar.gz username@client_ip:/path/to/
-```
+3. Pack the current activate conda environment to an archive before submitting the example:
+    ```bash
+    conda pack -o environment.tar.gz
+    ```
 
-On the __Client Node__:
+4. Download and extract [Spark](https://archive.apache.org/dist/spark/). Then setup the environment variables `${SPARK_HOME}` and `${SPARK_VERSION}`.
+    ```bash
+    export SPARK_HOME=/path/to/spark # the folder path where you extract the Spark package
+    export SPARK_VERSION="downloaded spark version"
+    ```
 
-1. Download Spark and setup the environment variables `${SPARK_HOME}` and `${SPARK_VERSION}`.
-```bash
-export SPARK_HOME=/path/to/spark # the folder path where you extract the Spark package
-export SPARK_VERSION="downloaded spark version"
-```
-2. Refer to [here](../Overview/install.html#download-bigdl-orca) to download and unzip a BigDL assembly package. Make sure the Spark version of your downloaded BigDL matches your downloaded Spark. Then setup the environment variables `${BIGDL_HOME}` and `${BIGDL_VERSION}`.
-```bash
-export BIGDL_HOME=/path/to/unzipped_BigDL
-export BIGDL_VERSION="downloaded BigDL version"
-```
+5. Refer to [here](../Overview/install.html#download-bigdl-orca) to download and unzip a BigDL assembly package. Make sure the Spark version of your downloaded BigDL matches your downloaded Spark. Then setup the environment variables `${BIGDL_HOME}` and `${BIGDL_VERSION}`.
+    ```bash
+    export BIGDL_HOME=/path/to/unzipped_BigDL
+    export BIGDL_VERSION="downloaded BigDL version"
+    ```
 
 Some runtime configurations for Spark are as follows:
 
@@ -326,32 +328,7 @@ Some runtime configurations for Spark are as follows:
 * `--properties-file`: the BigDL configuration properties to be uploaded to YARN.
 * `--jars`: upload and register BigDL jars to YARN.
 
-#### 5.3.1 Yarn Cluster
-Submit and run the program for `yarn-cluster` mode following the `spark-submit` script below:
-```bash
-${SPARK_HOME}/bin/spark-submit \
-    --master yarn \
-    --deploy-mode cluster \
-    --executor-memory 2g \
-    --driver-memory 2g \
-    --executor-cores 4 \
-    --num-executors 2 \
-    --archives /path/to/environment.tar.gz#environment \
-    --properties-file ${BIGDL_HOME}/conf/spark-bigdl.conf \
-    --conf spark.yarn.appMasterEnv.PYSPARK_PYTHON=environment/bin/python \
-    --conf spark.executorEnv.PYSPARK_PYTHON=environment/bin/python \
-    --py-files ${BIGDL_HOME}/python/bigdl-spark_${SPARK_VERSION}-${BIGDL_VERSION}-python-api.zip,model.py \
-    --jars ${BIGDL_HOME}/jars/bigdl-assembly-spark_${SPARK_VERSION}-${BIGDL_VERSION}-jar-with-dependencies.jar \
-    train.py --cluster_mode spark-submit --remote_dir hdfs://path/to/remote/data
-```
-In the `spark-submit` script:
-* `--master`: the spark master, set it to "yarn".
-* `--deploy-mode`: set it to `cluster` when running programs on yarn-cluster mode.
-* `--conf spark.yarn.appMasterEnv.PYSPARK_PYTHON`: set the Python location in conda archive as the Python environment of the Application Master.
-* `--conf spark.executorEnv.PYSPARK_PYTHON`: also set the Python location in conda archive as each executor's Python environment. The Application Master and the executors will all use the archive for the Python environment.
-
-
-#### 5.3.2 Yarn Client
+#### 5.3.1 Yarn Client
 Submit and run the program for `yarn-client` mode following the `spark-submit` script below: 
 ```bash
 ${SPARK_HOME}/bin/spark-submit \
@@ -374,3 +351,27 @@ In the `spark-submit` script:
 * `--deploy-mode`: set it to `client` when running programs on yarn-client mode.
 * `--conf spark.pyspark.driver.python`: set the activate Python location on __Client Node__ as the driver's Python environment. You can find the location by running `which python`.
 * `--conf spark.pyspark.python`: set the Python location in conda archive as each executor's Python environment.
+
+#### 5.3.2 Yarn Cluster
+Submit and run the program for `yarn-cluster` mode following the `spark-submit` script below:
+```bash
+${SPARK_HOME}/bin/spark-submit \
+    --master yarn \
+    --deploy-mode cluster \
+    --executor-memory 2g \
+    --driver-memory 2g \
+    --executor-cores 4 \
+    --num-executors 2 \
+    --archives /path/to/environment.tar.gz#environment \
+    --properties-file ${BIGDL_HOME}/conf/spark-bigdl.conf \
+    --conf spark.yarn.appMasterEnv.PYSPARK_PYTHON=environment/bin/python \
+    --conf spark.executorEnv.PYSPARK_PYTHON=environment/bin/python \
+    --py-files ${BIGDL_HOME}/python/bigdl-spark_${SPARK_VERSION}-${BIGDL_VERSION}-python-api.zip,model.py \
+    --jars ${BIGDL_HOME}/jars/bigdl-assembly-spark_${SPARK_VERSION}-${BIGDL_VERSION}-jar-with-dependencies.jar \
+    train.py --cluster_mode spark-submit --remote_dir hdfs://path/to/remote/data
+```
+In the `spark-submit` script:
+* `--master`: the spark master, set it to "yarn".
+* `--deploy-mode`: set it to `cluster` when running programs on yarn-cluster mode.
+* `--conf spark.yarn.appMasterEnv.PYSPARK_PYTHON`: set the Python location in conda archive as the Python environment of the Application Master.
+* `--conf spark.executorEnv.PYSPARK_PYTHON`: also set the Python location in conda archive as each executor's Python environment. The Application Master and the executors will all use the archive for the Python environment.

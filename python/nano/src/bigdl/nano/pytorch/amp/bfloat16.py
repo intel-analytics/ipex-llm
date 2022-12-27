@@ -14,19 +14,15 @@
 # limitations under the License.
 #
 
-import contextlib
-import io
-from logging import warning
-import sys
-import fcntl
 
+from logging import warning
 import torch
 import os
 from bigdl.nano.utils.inference.pytorch.model import AcceleratedLightningModule
 from bigdl.nano.utils.log4Error import invalidInputError
 from bigdl.nano.pytorch.utils import TORCH_VERSION_LESS_1_10, TORCH_VERSION_LESS_1_12
 from bigdl.nano.utils import CPUInfo
-from bigdl.nano.pytorch.context_manager import AutocastContextManager
+from bigdl.nano.pytorch.context_manager import generate_context_manager
 
 invalidInputError(
     not TORCH_VERSION_LESS_1_10,
@@ -37,15 +33,24 @@ invalidInputError(
 class BF16Model(AcceleratedLightningModule):
     """Model of BFloat16 with auto mixed precision."""
 
-    def __init__(self, model, channels_last=None):  # noqa
-        model.eval()
+    def __init__(self, model, channels_last=None, thread_num=None):  # noqa
+        """
+        This is the accelerated model for BFloat16 with auto mixed precision.
+
+        :param model: the model(nn.module) to be transform.
+        :param channels_last: if set model and data to be channels-last mode.
+        :param thread_num: the thread num allocated for this model.
+        """
         super().__init__(model)
         self._bf16_check()
         self.model = model  # use mixed precision instead of complete precision
         self.channels_last = channels_last
+        self.thread_num = thread_num
         if self.channels_last is True:
             self.model = self.model.to(memory_format=torch.channels_last)
-        self.context_manager = AutocastContextManager()
+        self._nano_context_manager = generate_context_manager(accelerator=None,
+                                                              precision="bf16",
+                                                              thread_num=thread_num)
 
     @property
     def _has_bf16_isa(self):
@@ -84,6 +89,17 @@ class BF16Model(AcceleratedLightningModule):
         elif 'avx512_core_bf16' in dnnl_log:
             max_bf16_isa = "AVX512"
         return max_bf16_isa
+
+    def __getattr__(self, name: str):
+        # the search order is:
+        # 1. current instance, like channels_last will be found at this place
+        # 2. super class, like model will be found at this place
+        # 3. original model, like additional attributes of original model
+        #    will be found at this place
+        try:
+            return super().__getattr__(name)
+        except AttributeError:
+            return getattr(self.model, name)
 
     def on_forward_start(self, inputs):
         return inputs
@@ -150,7 +166,8 @@ class BF16Model(AcceleratedLightningModule):
     def status(self):
         status = super().status
         status.update({"channels_last": self.channels_last,
-                       "checkpoint": "ckpt.pth"})
+                       "checkpoint": "ckpt.pth",
+                       "thread_num": self.thread_num})
         return status
 
     @staticmethod
@@ -160,7 +177,13 @@ class BF16Model(AcceleratedLightningModule):
         state_dict = torch.load(checkpoint_path)
         model.eval()
         model.load_state_dict(state_dict)
-        return BF16Model(model, channels_last=status['channels_last'])
+        thread_num = status.get('thread_num', None)
+        if thread_num == {}:
+            thread_num = None
+        if thread_num is not None:
+            thread_num = int(status['thread_num'])
+        return BF16Model(model, channels_last=status['channels_last'],
+                         thread_num=thread_num)
 
     def _save_model(self, path):
         torch.save(self.model.state_dict(), path / "ckpt.pth")

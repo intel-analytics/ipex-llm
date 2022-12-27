@@ -505,6 +505,29 @@ class TestSparkXShards(TestCase):
         assert (description is not None)
         assert (description1 is not None)
 
+    def test_lazy_xshards(self):
+        file_path = os.path.join(self.resource_path, "orca/data/csv")
+        data_shard = bigdl.orca.data.pandas.read_csv(file_path)
+        assert data_shard.is_cached()
+
+        def increment(df):
+            df["ID"] = df["ID"] + 1
+            return df
+
+        data_shard1 = data_shard.transform_shard(increment)
+        assert not data_shard.is_cached()
+        assert data_shard1.is_cached()
+        data_shard2 = data_shard1.repartition(data_shard1.num_partitions()*2)
+        assert not data_shard1.is_cached()
+        assert data_shard2.is_cached()
+
+        lazy_shard = data_shard2.to_lazy()
+        lazy_shard1 = lazy_shard.transform_shard(increment)
+        assert lazy_shard.is_cached()  # Same as data_shard2
+        assert not lazy_shard1.is_cached()
+        lazy_shard2 = lazy_shard1.repartition(lazy_shard1.num_partitions()//2)
+        assert not lazy_shard2.is_cached()
+        assert data_shard2.is_cached()
 
 if __name__ == "__main__":
     pytest.main([__file__])

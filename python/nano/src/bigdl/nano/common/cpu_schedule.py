@@ -87,9 +87,12 @@ def get_cpu_info():
 def schedule_workers(num_workers: int,
                      cores_per_worker: Optional[int] = None):
 
-    cpuset = get_cgroup_cpuset()
-    cpuset = sorted(cpuset)
     l_core_to_p_core, l_core_to_socket = get_cpu_info()
+    try:
+        cpuset = get_cgroup_cpuset()
+    except Exception as _e:     # failed to query cgroup info
+        cpuset = list(l_core_to_p_core.keys())
+    cpuset = sorted(cpuset)
 
     p2l = {}
     p_cores_set = set()

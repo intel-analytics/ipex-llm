@@ -1,0 +1,42 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: bigdl-tdx-ehsm
+spec:
+  containers:
+  - name: bigdl-tdx-ehsm
+    image: intelanalytics/kms-utils:0.3.0-SNAPSHOT
+    securityContext:
+       privileged: true
+    command: ["/bin/sleep", "3650d"]
+    volumeMounts:
+    - name: kubeconfig
+      mountPath: /root/.kube/config
+    - name: enclave
+      mountPath: /dev/sgx/enclave
+    - name: provision
+      mountPath: /dev/sgx/provision
+    - name: nfs-pvc
+      mountPath: /ppml/trusted-big-data-ml/work/data
+    env:
+    - name: EHSM_KMS_IP
+      value: "x.x.x.x"
+    - name: EHSM_KMS_PORT
+      value: "x"
+    - name: KMS_TYPE
+      value: "ehsm"
+    - name: PCCS_URL
+      value: "https://x.x.x.x:xxxx/sgx/certification/v3/"
+  volumes:
+  - name: kubeconfig
+    hostPath:
+      path: /root/.kube/config
+  - name: enclave
+    hostPath:
+      path: /dev/sgx/enclave
+  - name: provision
+    hostPath:
+      path: /dev/sgx/provision
+  - name: nfs-pvc
+    persistentVolumeClaim:
+        claimName: nfsvolumeclaim

@@ -41,7 +41,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 import torchvision
 from pytorch_lightning import LightningModule, seed_everything
-from bigdl.nano.pytorch import Trainer
+from bigdl.nano.pytorch import Trainer, InferenceOptimizer
 from pytorch_lightning.callbacks import LearningRateMonitor
 from pytorch_lightning.loggers import TensorBoardLogger
 from torch.optim.lr_scheduler import OneCycleLR
@@ -168,14 +168,15 @@ fp32_infer_time = time() - start
 fp32_acc = outputs[0]['test_acc'] * 100
 
 # Run post-training quantization
-i8_model = trainer.quantize(model,
-                            calib_dataloader=cifar10_dm.train_dataloader())
+i8_model = InferenceOptimizer.quantize(model,
+                                       calib_dataloader=cifar10_dm.train_dataloader())
 
 # Testing on quantized INT8 model
-start = time()
-outputs = trainer.test(i8_model, cifar10_dm)
-i8_infer_time = time() - start
-i8_acc = outputs[0]['test_acc'] * 100
+with InferenceOptimizer.get_context(i8_model):
+    start = time()
+    outputs = trainer.test(i8_model, cifar10_dm)
+    i8_infer_time = time() - start
+    i8_acc = outputs[0]['test_acc'] * 100
 
 summary = """
 |    Precision   | Inference Time(s) | Model Size(MB) | Accuracy(%) |

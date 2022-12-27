@@ -19,13 +19,17 @@ from bigdl.nano.utils.log4Error import invalidInputError
 from openvino.runtime.passes import Manager
 
 
-def convert_onnx_to_xml(onnx_file_path, xml_path, logging=True, batch_size=1):
+def convert_onnx_to_xml(onnx_file_path, xml_path, precision,
+                        logging=True, batch_size=1):
     xml_path = Path(xml_path)
     model_name, output_dir = str(xml_path.stem), str(xml_path.parent)
-    if logging:
-        mo_cmd = "mo -m {} -n {} -o {}".format(str(onnx_file_path), model_name, output_dir)
-    else:
-        mo_cmd = "mo -m {} --silent -n {} -o {}".format(str(onnx_file_path), model_name, output_dir)
+    logging_str = "--silent " if logging is False else ""
+    precision_str = "--data_type FP16 " if precision == 'fp16' else ""
+    mo_cmd = "mo -m {} {}{}-n {} -o {}".format(str(onnx_file_path),
+                                               logging_str,
+                                               precision_str,
+                                               model_name,
+                                               output_dir)
 
     p = subprocess.Popen(mo_cmd.split())
     p.communicate()
@@ -33,17 +37,17 @@ def convert_onnx_to_xml(onnx_file_path, xml_path, logging=True, batch_size=1):
                       "ModelOptimizer fails to convert {}.".format(str(onnx_file_path)))
 
 
-def convert_pb_to_xml(pb_file_path, xml_path, logging=True, batch_size=1):
+def convert_pb_to_xml(pb_file_path, xml_path, precision,
+                      logging=True, batch_size=1):
     xml_path = Path(xml_path)
     model_name, output_dir = str(xml_path.stem), str(xml_path.parent)
-    if logging:
-        mo_cmd = "mo --saved_model_dir {} -n {} -o {}".format(str(pb_file_path),
+    logging_str = "--silent " if logging is False else ""
+    precision_str = "--data_type FP16 " if precision == 'fp16' else ""
+    mo_cmd = "mo --saved_model_dir {} {}{}-n {} -o {}".format(str(pb_file_path),
+                                                              logging_str,
+                                                              precision_str,
                                                               model_name,
                                                               output_dir)
-    else:
-        mo_cmd = "mo --saved_model_dir {} --silent -n {} -o {}".format(str(pb_file_path),
-                                                                       model_name,
-                                                                       output_dir)
 
     p = subprocess.Popen(mo_cmd.split())
     p.communicate()

@@ -20,6 +20,9 @@ package com.intel.analytics.bigdl.ppml.attestation
 import org.apache.logging.log4j.LogManager
 import scopt.OptionParser
 
+import java.io.{BufferedOutputStream, BufferedInputStream};
+import java.io.File;
+import java.io.{FileInputStream, FileOutputStream};
 import java.util.Base64
 
 import com.intel.analytics.bigdl.ppml.attestation.generator._
@@ -73,7 +76,6 @@ object AttestationCLI {
 
         // Generate quote
         val userReportData = params.userReport
-
         if (params.OSType == "gramine") {
           val quoteGenerator = new GramineQuoteGeneratorImpl()
           quote = quoteGenerator.getQuote(userReportData.getBytes)
@@ -93,6 +95,7 @@ object AttestationCLI {
         }
 
         val challengeString = params.challenge
+        val debug = System.getenv("ATTESTATION_DEBUG")
         if (challengeString.length() > 0 && params.asType != ATTESTATION_CONVENTION.MODE_DUMMY) {
             val asQuote = params.asType match {
               case ATTESTATION_CONVENTION.MODE_EHSM_KMS =>
@@ -100,25 +103,21 @@ object AttestationCLI {
               case _ => throw new AttestationRuntimeException("Wrong Attestation service type")
             }
             val quoteVerifier = new SGXDCAPQuoteVerifierImpl()
-            val verifyQuoteResult = quoteVerifier.verifyQuote(asQuote)
-            if (verifyQuoteResult == 0) {
-              System.out.println("Quote Verification Success!")
-            } else {
-              System.out.println("Quote Verification Fail! Application killed")
-              System.exit(1)
-            }
+            quoteVerifier.verifyQuote(asQuote)
         }
 
         val attResult = params.policyID match {
           case "" => as.attestWithServer(Base64.getEncoder.encodeToString(quote))
           case _ => as.attestWithServer(Base64.getEncoder.encodeToString(quote), params.policyID)
         }
-
         if (attResult._1) {
             System.out.println("Attestation Success!")
             // Bash success
             System.exit(0)
-        } else {
+        } else if (debug == "true") {
+          System.out.println("ERROR:Attestation Fail! In debug mode, continue.")
+        }
+        else {
             System.out.println("Attestation Fail! Application killed!")
             // bash fail
             System.exit(1)

@@ -162,9 +162,17 @@ spark_submit_command="${spark_submit_command} ${input_args} ${application_args}"
 echo "[INFO] spark_submit_command: ${spark_submit_command}"
 if [ "$SGX_ENABLED" == "true" ] && [ "$DEPLOY_MODE" != "cluster" ]; then
     echo "[INFO] sgx enabled and convert spark submit command to sgx command"
-    ./init.sh
     export sgx_command=${spark_submit_command}
+    if [ "$ENCRYPTED_FSD" == "true" ]; then
+      rm /ppml/temp_command_file || true
+      echo "[INFO] Distributed encrypted file system is enabled"
+      bash encrypted-fsd.sh
+      echo $sgx_command >> temp_command_file
+      export sgx_command="bash temp_command_file && rm temp_command_file"
+    fi
+    ./init.sh
     gramine-sgx bash 2>&1 | tee $LOG_FILE
+    rm /ppml/temp_command_file || true
 else
     $spark_submit_command 2>&1 | tee $LOG_FILE
 fi

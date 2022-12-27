@@ -960,11 +960,11 @@ class RayWorker:
         return self.task_type
 
     def step(self, data_refs, validation_data_refs=None):
-        from bigdl.orca.data.utils import ray_partition_get_data_label
+        from bigdl.orca.data.utils import partition_get_data_label
 
         partition_list = ray.get(data_refs)
         partition_data = [item for partition in partition_list for item in partition]
-        data, label = ray_partition_get_data_label(
+        data, label = partition_get_data_label(
             partition_data, allow_tuple=True, allow_list=False)
         data_size = len(label)
         steps = data_size // self.config["batch_size"] + 1
@@ -977,7 +977,7 @@ class RayWorker:
             validation_partition_list = ray.get(validation_data_refs)
             validation_partition_data = \
                 [item for partition in validation_partition_list for item in partition]
-            validation_data, validation_label = ray_partition_get_data_label(
+            validation_data, validation_label = partition_get_data_label(
                 validation_partition_data, allow_tuple=True, allow_list=False)
             test_data_size = len(validation_label)
             test_steps = test_data_size // self.config["batch_size"] + 1

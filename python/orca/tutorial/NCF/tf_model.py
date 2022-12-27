@@ -44,7 +44,7 @@ def ncf_model(user_num, item_num, factor_num, dropout, lr, num_layers,
 
         num_feature_input_layers = []
         num_feature_layers = []
-        for i, in_dim in enumerate(num_dense_feats):
+        for i in range(num_dense_feats):
             num_feature_input_layers.append(tf.keras.layers.Input(shape=1))
             num_feature_layers.append(num_feature_input_layers[i])
 

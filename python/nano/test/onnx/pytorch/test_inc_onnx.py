@@ -24,7 +24,6 @@ import torch
 from torch import nn
 from torch.utils.data import TensorDataset, DataLoader
 import torchmetrics
-
 import numpy as np
 
 from bigdl.nano.pytorch import Trainer
@@ -129,7 +128,7 @@ class TestOnnx(TestCase):
 
         for x, y in train_loader:
             forward_res = loaded_onnx_model(x)
-    
+
     def test_trainer_compile_with_onnx_quantize_customized_collate_fn(self):
         model = ResNet18(10, pretrained=False, include_top=False, freeze=True)
         loss = nn.CrossEntropyLoss()
@@ -173,7 +172,7 @@ class TestOnnx(TestCase):
         for x, y in train_loader:
             forward_res = loaded_onnx_model(x)
 
-    def text_onnx_quantize_context_manager(self):
+    def test_trainer_compile_with_onnx_quantize_context_manager(self):
         model = ResNet18(10, pretrained=False, include_top=False, freeze=True)
         loss = nn.CrossEntropyLoss()
         optimizer = torch.optim.Adam(model.parameters(), lr=0.01)
@@ -190,16 +189,154 @@ class TestOnnx(TestCase):
         onnx_model = InferenceOptimizer.quantize(pl_model,
                                                  accelerator='onnxruntime',
                                                  method='qlinear',
-                                                 calib_data=train_loader)
-        with onnx_model.context_manager:
+                                                 calib_data=train_loader,
+                                                 thread_num=2)
+        with InferenceOptimizer.get_context(onnx_model):
+            assert torch.get_num_threads() == 2
+            x = torch.rand((2, 3, 256, 256))
             output = onnx_model(x)
-        
+            assert output.shape == (2, 10)
+
         with tempfile.TemporaryDirectory() as tmp_dir_name:
             InferenceOptimizer.save(onnx_model, tmp_dir_name)
             model = InferenceOptimizer.load(tmp_dir_name)
 
-        with model.context_manager:
+        with InferenceOptimizer.get_context(model):
+            assert torch.get_num_threads() == 2
             output = model(x)
+
+    def test_trainer_compile_with_onnx_quantize_additional_attributes(self):
+        model = ResNet18(10, pretrained=False, include_top=False, freeze=True)
+        loss = nn.CrossEntropyLoss()
+        optimizer = torch.optim.Adam(model.parameters(), lr=0.01)
+        trainer = Trainer(max_epochs=1)
+
+        pl_model = Trainer.compile(model, loss, optimizer)
+        x = torch.rand((10, 256, 256, 3))
+        y = torch.ones((10, ), dtype=torch.long)
+        ds = TensorDataset(x, y)
+        train_loader = DataLoader(ds, batch_size=2, collate_fn=customized_collate_fn)
+        trainer.fit(pl_model, train_loader)
+        # patch a attribute
+        pl_model.channels = 3
+        def hello():
+            print("hello world!")
+        # patch a function
+        pl_model.hello = hello
+
+        # normal usage without tunning
+        onnx_model = InferenceOptimizer.quantize(pl_model,
+                                                 accelerator='onnxruntime',
+                                                 method='qlinear',
+                                                 calib_data=train_loader,
+                                                 thread_num=2)
+        with InferenceOptimizer.get_context(onnx_model):
+            assert torch.get_num_threads() == 2
+            x = torch.rand((2, 3, 256, 256))
+            output = onnx_model(x)
+            assert output.shape == (2, 10)
+
+        assert onnx_model.channels == 3
+        onnx_model.hello()
+        with pytest.raises(AttributeError):
+            onnx_model.width
+
+    def test_onnx_quantize_dynamic_axes(self):
+        class CustomModel(nn.Module):
+            def __init__(self):
+                super().__init__()
+                self.pool = nn.AvgPool2d(kernel_size=3, stride=3)
+
+            def forward(self, x):
+                return self.pool(x)
+
+        model = CustomModel()
+        x1 = torch.rand(1, 3, 14, 14)
+        x2 = torch.rand(4, 3, 14, 14)
+        x3 = torch.rand(1, 3, 12, 12)
+
+        accmodel = InferenceOptimizer.quantize(model,
+                                               accelerator="onnxruntime",
+                                               method='qlinear',
+                                               calib_data=torch.rand(1, 3, 14, 14))
+        accmodel(x1)
+        accmodel(x2)
+        try:
+            accmodel(x3)
+        except Exception as e:
+            assert e
+
+        accmodel = InferenceOptimizer.quantize(model,
+                                               accelerator="onnxruntime",
+                                               calib_data=torch.rand(1, 3, 14, 14),
+                                               dynamic_axes={"x": [0, 2, 3]})
+        accmodel(x1)
+        accmodel(x2)
+        accmodel(x3)
+
+    def test_onnx_inc_default_values(self):
+        # default bool values
+        class Net(nn.Module):
+            def __init__(self):
+                super().__init__()
+            def forward(self, x, a=True, b=False):
+                if a:
+                    return x+1
+                if b:
+                    return x-1
+                return x
+
+        model = Net()
+
+        data = torch.rand(1,3,1,1)
+        result_true = model(data)
+        # sample with only required parameters (in a tuple)
+        accmodel = InferenceOptimizer.quantize(model,
+                                               accelerator="onnxruntime",
+                                               calib_data=torch.rand(2,3,1,1))
+        result_m = accmodel(data)
+
+        # sample with only required parameters (in a tuple)
+        accmodel = InferenceOptimizer.quantize(model,
+                                               accelerator="onnxruntime",
+                                               calib_data=torch.rand(2,3,1,1),
+                                               input_sample=(torch.rand(2,3,1,1), False, True))
+        result_m = accmodel(data)
+
+        # default bool values
+        class Net(nn.Module):
+            def __init__(self):
+                super().__init__()
+            def forward(self, x, a=3):
+                return x + a
+        model = Net()
+
+        data = torch.rand(1,3,1,1)
+
+        # sample with only required parameters (in a tuple)
+        accmodel = InferenceOptimizer.quantize(model,
+                                               accelerator="onnxruntime",
+                                               calib_data=(torch.rand(2,3,1,1), 5))
+        result_m = accmodel(data, np.array([5]))  # TODO: make this 5
+
+        # default None values
+        class Net(nn.Module):
+            def __init__(self):
+                super().__init__()
+            def forward(self, x, a=None):
+                if a is None:
+                    return x
+                else:
+                    return x + 1
+        model = Net()
+
+        data = torch.rand(1,3,1,1)
+
+        # sample with only required parameters (in a tuple)
+        accmodel = InferenceOptimizer.quantize(model,
+                                               accelerator="onnxruntime",
+                                               calib_data=torch.rand(2,3,1,1))
+        result_m = accmodel(data)
 
 
 if __name__ == '__main__':

@@ -25,12 +25,13 @@ import copy
 import yaml
 from logging import warning
 from bigdl.nano.deps.openvino.openvino_api import load_openvino_model
-from bigdl.nano.deps.ipex.ipex_api import load_ipexjit_model, load_ipexjitbf16_model
+from bigdl.nano.deps.ipex.ipex_api import load_ipexjit_model, load_ipexjitbf16_model,\
+    load_ipex_quantization_model
 from bigdl.nano.deps.onnxruntime.onnxruntime_api import load_onnxruntime_model
 from bigdl.nano.deps.neural_compressor.inc_api import load_inc_model
 from bigdl.nano.pytorch.amp.amp_api import load_bf16_model
 from bigdl.nano.utils.log4Error import invalidInputError
-from bigdl.nano.pytorch.context_manager import BaseContextManager
+from bigdl.nano.pytorch.context_manager import generate_context_manager
 from pathlib import Path
 
 TORCH_VERSION_LESS_1_10 = _compare_version("torch", operator.lt, "1.10")
@@ -117,7 +118,7 @@ def save_model(model: pl.LightningModule, path):
         torch.save(model.state_dict(), checkpoint_path)
 
 
-def load_model(path, model: pl.LightningModule = None):
+def load_model(path, model: pl.LightningModule = None, inplace=False, device=None):
     """
     Load a model from local.
 
@@ -125,6 +126,9 @@ def load_model(path, model: pl.LightningModule = None):
     :param model: Required FP32 model to load pytorch model, it is needed if you accelerated
             the model with accelerator=None by Trainer.trace/Trainer.quantize. model
             should be set to None if you choose accelerator="onnxruntime"/"openvino"/"jit".
+    :param inplace: whether to perform inplace optimization. Default: ``False``.
+    :param device: A string represents the device of the inference. Default to None.
+                   Only valid for openvino model, otherwise will be ignored.
     :return: Model with different acceleration(None/OpenVINO/ONNX Runtime/JIT) or
                 precision(FP32/FP16/BF16/INT8).
     """
@@ -140,7 +144,7 @@ def load_model(path, model: pl.LightningModule = None):
     if model_type == 'PytorchOpenVINOModel':
         invalidInputError(model is None,
                           "Argument 'model' must be None for OpenVINO loading.")
-        return load_openvino_model(path)
+        return load_openvino_model(path, device=device)
     if model_type == 'PytorchONNXRuntimeModel':
         invalidInputError(model is None,
                           "Argument 'model' must be None for ONNX Runtime loading.")
@@ -148,21 +152,29 @@ def load_model(path, model: pl.LightningModule = None):
     if model_type == 'PytorchQuantizedModel':
         return load_inc_model(path, model, 'pytorch')
     if model_type == 'PytorchIPEXJITModel':
-        return load_ipexjit_model(path, model)
+        return load_ipexjit_model(path, model, inplace=inplace)
     if model_type == 'PytorchIPEXJITBF16Model':
-        return load_ipexjitbf16_model(path, model)
+        return load_ipexjitbf16_model(path, model, inplace=inplace)
+    if model_type == 'PytorchIPEXQuantizationModel':
+        return load_ipex_quantization_model(path, model, inplace=inplace)
     if model_type == 'BF16Model':
         return load_bf16_model(path, model)
     if isinstance(model, nn.Module):
         # typically for models of nn.Module, pl.LightningModule type
         model = copy.deepcopy(model)
         checkpoint_path = metadata.get('checkpoint', None)
+        thread_num = None
+        if "thread_num" in metadata and metadata["thread_num"] is not None:
+            thread_num = int(metadata["thread_num"])
         if checkpoint_path:
             checkpoint_path = path / metadata['checkpoint']
             state_dict = torch.load(checkpoint_path, map_location='cpu')
             model.load_state_dict(state_dict)
-            # patch BaseContextMagager to original model to keep behaviour consitent
-            model.context_manager = BaseContextManager()  # type: ignore
+            # patch ContextMagager to original model to keep behaviour consitent
+            model._nano_context_manager = \
+                generate_context_manager(accelerator=None,
+                                         precision="fp32",
+                                         thread_num=thread_num)  # type: ignore
             return model
         else:
             invalidInputError(False, "Key 'checkpoint' must be specified.")
@@ -170,3 +182,16 @@ def load_model(path, model: pl.LightningModule = None):
         invalidInputError(False,
                           "ModelType {} or argument 'model={}' is not acceptable for pytorch"
                           " loading.".format(model_type, type(model)))
+
+
+def patch_attrs_from_model_to_object(model: nn.Module, instance):
+    """
+    Patch non nn.Module public attributes of original nn.Module to a new instance.
+
+    :param model: a torch.nn.Module
+    :param instance: a instance of any object
+    """
+    for attr in dir(model):
+        if attr not in dir(instance) and not attr.startswith('_') and not\
+                isinstance(getattr(model, attr), torch.nn.Module):
+            setattr(instance, attr, getattr(model, attr))

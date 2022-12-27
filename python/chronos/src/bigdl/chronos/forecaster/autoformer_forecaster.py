@@ -33,6 +33,8 @@ from bigdl.chronos.forecaster.utils_hpo import GenericTSTransformerLightningModu
 
 from .utils_hpo import _format_metric_str
 import warnings
+from tempfile import TemporaryDirectory
+import os
 
 
 class AutoformerForecaster(Forecaster):
@@ -397,68 +399,74 @@ class AutoformerForecaster(Forecaster):
                 trial = self.trainer.hposearcher.study.trials[use_trial_id]
                 self.internal = self.tune_internal._model_build(trial)
 
-        from pytorch_lightning.loggers import CSVLogger
-        logger = False if validation_data is None else CSVLogger(".",
-                                                                 flush_logs_every_n_steps=10,
-                                                                 name="forecaster_tmp_log")
-        from pytorch_lightning.callbacks import EarlyStopping
-        early_stopping = EarlyStopping('val_loss', patience=earlystop_patience)
-        from pytorch_lightning.callbacks import ModelCheckpoint
-        checkpoint_callback = ModelCheckpoint(monitor="val_loss", dirpath='validation',
-                                              filename='best', save_on_train_epoch_end=True)
-        if validation_mode == 'earlystop':
-            callbacks = [early_stopping]
-        elif validation_mode == 'best_epoch':
-            callbacks = [checkpoint_callback]
-        else:
-            callbacks = None
+        with TemporaryDirectory() as forecaster_log_dir:
+            with TemporaryDirectory() as validation_ckpt_dir:
+                from pytorch_lightning.loggers import CSVLogger
+                logger = False if validation_data is None else CSVLogger(
+                    save_dir=forecaster_log_dir,
+                    flush_logs_every_n_steps=10,
+                    name="forecaster_tmp_log")
+                from pytorch_lightning.callbacks import EarlyStopping
+                early_stopping = EarlyStopping('val_loss', patience=earlystop_patience)
+                from pytorch_lightning.callbacks import ModelCheckpoint
+                checkpoint_callback = ModelCheckpoint(monitor="val_loss",
+                                                      dirpath=validation_ckpt_dir,
+                                                      filename='best',
+                                                      save_on_train_epoch_end=True)
+                if validation_mode == 'earlystop':
+                    callbacks = [early_stopping]
+                elif validation_mode == 'best_epoch':
+                    callbacks = [checkpoint_callback]
+                else:
+                    callbacks = None
 
-        # Trainer init
-        self.trainer = Trainer(logger=logger, max_epochs=epochs, callbacks=callbacks,
-                               enable_checkpointing=self.checkpoint_callback,
-                               num_processes=self.num_processes, use_ipex=self.use_ipex,
-                               log_every_n_steps=10)
+                # Trainer init
+                self.trainer = Trainer(logger=logger, max_epochs=epochs, callbacks=callbacks,
+                                       enable_checkpointing=self.checkpoint_callback,
+                                       num_processes=self.num_processes, use_ipex=self.use_ipex,
+                                       log_every_n_steps=10)
 
-        # fitting
-        if validation_data is None:
-            self.trainer.fit(self.internal, data)
-            self.fitted = True
-        else:
-            if isinstance(validation_data, tuple):
-                validation_data = DataLoader(
-                    TensorDataset(torch.from_numpy(validation_data[0]),
-                                  torch.from_numpy(validation_data[1]),
-                                  torch.from_numpy(validation_data[2]),
-                                  torch.from_numpy(validation_data[3])),
-                    batch_size=batch_size,
-                    shuffle=False)
-            # transform a TSDataset instance to dataloader
-            if isinstance(validation_data, TSDataset):
-                _rolled = validation_data.numpy_x is None
-                validation_data = validation_data.to_torch_data_loader(
-                    batch_size=batch_size,
-                    roll=_rolled,
-                    lookback=self.data_config['past_seq_len'],
-                    horizon=self.data_config['future_seq_len'],
-                    label_len=self.data_config['label_len'],
-                    time_enc=True,
-                    feature_col=validation_data.roll_feature,
-                    target_col=validation_data.roll_target,
-                    shuffle=False)
-
-            self.trainer.fit(self.internal, data, validation_data)
-            self.fitted = True
-            fit_out = read_csv('./forecaster_tmp_log/version_0/metrics.csv', loss_name='val_loss')
-            delete_folder("./forecaster_tmp_log")
-            if validation_mode == 'best_epoch':
-                self.load('validation/best.ckpt')
-                delete_folder("./validation")
-            # modify logger attr in trainer, otherwise predict will report error
-            self.trainer._logger_connector.on_trainer_init(False,
-                                                           self.trainer.flush_logs_every_n_steps,
-                                                           self.trainer.log_every_n_steps,
-                                                           self.trainer.move_metrics_to_cpu)
-            return fit_out
+                # fitting
+                if validation_data is None:
+                    self.trainer.fit(self.internal, data)
+                    self.fitted = True
+                else:
+                    if isinstance(validation_data, tuple):
+                        validation_data = DataLoader(
+                            TensorDataset(torch.from_numpy(validation_data[0]),
+                                          torch.from_numpy(validation_data[1]),
+                                          torch.from_numpy(validation_data[2]),
+                                          torch.from_numpy(validation_data[3])),
+                            batch_size=batch_size,
+                            shuffle=False)
+                    # transform a TSDataset instance to dataloader
+                    if isinstance(validation_data, TSDataset):
+                        _rolled = validation_data.numpy_x is None
+                        validation_data = validation_data.to_torch_data_loader(
+                            batch_size=batch_size,
+                            roll=_rolled,
+                            lookback=self.data_config['past_seq_len'],
+                            horizon=self.data_config['future_seq_len'],
+                            label_len=self.data_config['label_len'],
+                            time_enc=True,
+                            feature_col=validation_data.roll_feature,
+                            target_col=validation_data.roll_target,
+                            shuffle=False)
+                    self.trainer.fit(self.internal, data, validation_data)
+                    self.fitted = True
+                    fit_csv = os.path.join(forecaster_log_dir,
+                                           "forecaster_tmp_log/version_0/metrics.csv")
+                    best_path = os.path.join(validation_ckpt_dir, "best.ckpt")
+                    fit_out = read_csv(fit_csv, loss_name='val_loss')
+                    if validation_mode == 'best_epoch':
+                        self.load(best_path)
+                    # modify logger attr in trainer, otherwise predict will report error
+                    self.trainer._logger_connector.on_trainer_init(
+                        False,
+                        self.trainer.flush_logs_every_n_steps,
+                        self.trainer.log_every_n_steps,
+                        self.trainer.move_metrics_to_cpu)
+                    return fit_out
 
     def predict(self, data, batch_size=32):
         """

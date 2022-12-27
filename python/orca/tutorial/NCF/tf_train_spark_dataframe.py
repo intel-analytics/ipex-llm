@@ -16,6 +16,7 @@
 
 # Step 0: Import necessary libraries
 import math
+import tensorflow as tf
 
 from tf_model import ncf_model
 from process_spark_dataframe import prepare_data
@@ -23,24 +24,26 @@ from process_spark_dataframe import prepare_data
 from bigdl.orca import init_orca_context, stop_orca_context
 from bigdl.orca.learn.tf2 import Estimator
 
+
 # Step 1: Init Orca Context
-init_orca_context(memory='4g')
+init_orca_context(cluster_mode="local")
+
 
 # Step 2: Read and process data using Spark DataFrame
 data_dir = './ml-1m'  # path to ml-1m
+train_df, test_df, user_num, item_num, sparse_feats_input_dims, num_dense_feats, \
+    feature_cols, label_cols = prepare_data(data_dir, neg_scale=4)
 
-train_df, val_df, sparse_feats_input_dims, user_num, item_num, feature_cols, label_cols = \
-    prepare_data(data_dir, neg_scale=4)
 
 # Step 3: Define the NCF model
 config = dict(
     factor_num=16,
-    lr=1e-3,
+    lr=1e-2,
     item_num=item_num,
     user_num=user_num,
     dropout=0.5,
     sparse_feats_input_dims=sparse_feats_input_dims,
-    num_dense_feats=['age'],
+    num_dense_feats=num_dense_feats,
     sparse_feats_embed_dims=8,
     num_layers=3
 )
@@ -59,35 +62,40 @@ def model_creator(config):
     return model
 
 
-# Step 4: Distributed training with Orca keras Estimator
+# Step 4: Distributed training with Orca TF2 Estimator
 backend = 'spark'  # 'ray' or 'spark'
 est = Estimator.from_keras(model_creator=model_creator,
                            config=config,
                            backend=backend)
 
-batch_size = 256
+batch_size = 10240
 train_steps = math.ceil(train_df.count() / batch_size)
-val_steps = math.ceil(val_df.count() / batch_size)
+val_steps = math.ceil(test_df.count() / batch_size)
+callbacks = [tf.keras.callbacks.TensorBoard(log_dir="./log")]
 
 est.fit(train_df,
-        epochs=10,
+        epochs=2,
         batch_size=batch_size,
         feature_cols=feature_cols,
         label_cols=label_cols,
-        steps_per_epoch=train_steps)
+        steps_per_epoch=train_steps,
+        callbacks=callbacks)
+
 
 # Step 5: Distributed evaluation of the trained model
-result = est.evaluate(val_df,
+result = est.evaluate(test_df,
                       feature_cols=feature_cols,
                       label_cols=label_cols,
                       batch_size=batch_size,
                       num_steps=val_steps)
 print('Evaluation results:')
 for r in result:
-    print(r, ":", result[r])
+    print("{}: {}".format(r, result[r]))
 
-# Step 6: Save the trained Tensorflow model
+
+# Step 6: Save the trained TensorFlow model
 est.save("NCF_model")
+
 
 # Step 7: Stop Orca Context when program finishes
 stop_orca_context()

@@ -46,8 +46,8 @@ init_instance() {
         .metadata.debuggable = "ENABLE_SGX_DEBUG" |
         .resource_limits.kernel_space_heap_size="SGX_KERNEL_HEAP" |
         .entry_points = [ "/usr/lib/jvm/java-8-openjdk-amd64/bin", "/bin" ] |
-        .env.untrusted = [ "DMLC_TRACKER_URI", "SPARK_DRIVER_URL", "SPARK_TESTING" , "_SPARK_AUTH_SECRET" ] |
-        .env.default = [ "PYTHONHOME=/opt/python-occlum","LD_LIBRARY_PATH=/usr/lib/jvm/java-8-openjdk-amd64/lib/server:/usr/lib/jvm/java-8-openjdk-amd64/lib:/usr/lib/jvm/java-8-openjdk-amd64/../lib:/lib","SPARK_CONF_DIR=/opt/spark/conf","SPARK_ENV_LOADED=1","PYTHONHASHSEED=0","SPARK_HOME=/opt/spark","SPARK_SCALA_VERSION=2.12","SPARK_JARS_DIR=/opt/spark/jars","LAUNCH_CLASSPATH=/bin/jars/*",""]' Occlum.json)" && \
+        .env.untrusted = [ "ATTESTATION_DEBUG", "DMLC_TRACKER_URI", "SPARK_DRIVER_URL", "SPARK_TESTING" , "_SPARK_AUTH_SECRET" ] |
+        .env.default = [ "OCCLUM=yes","PYTHONHOME=/opt/python-occlum","LD_LIBRARY_PATH=/usr/lib/jvm/java-8-openjdk-amd64/lib/server:/usr/lib/jvm/java-8-openjdk-amd64/lib:/usr/lib/jvm/java-8-openjdk-amd64/../lib:/lib","SPARK_CONF_DIR=/opt/spark/conf","SPARK_ENV_LOADED=1","PYTHONHASHSEED=0","SPARK_HOME=/opt/spark","SPARK_SCALA_VERSION=2.12","SPARK_JARS_DIR=/opt/spark/jars","LAUNCH_CLASSPATH=/bin/jars/*",""]' Occlum.json)" && \
     echo "${new_json}" > Occlum.json
     echo "SGX_MEM_SIZE ${SGX_MEM_SIZE}"
 
@@ -162,25 +162,23 @@ build_spark() {
             echo "[ERROR] Attestation set to true but NO PCCS"
             exit 1
         else
-            if [[ $RUNTIME_ENV == "driver" || $RUNTIME_ENV == "native" ]]; then
-                #verify ehsm service
-                cd /opt/
-                bash verify-attestation-service.sh
-                #register application
+            #verify ehsm service
+            cd /opt/
+            bash verify-attestation-service.sh
+            #register application
 
-                #get mrenclave mrsigner
-                MR_ENCLAVE_temp=$(bash print_enclave_signer.sh | grep mr_enclave)
-                MR_ENCLAVE_temp_arr=(${MR_ENCLAVE_temp})
-                export MR_ENCLAVE=${MR_ENCLAVE_temp_arr[1]}
-                MR_SIGNER_temp=$(bash print_enclave_signer.sh | grep mr_signer)
-                MR_SIGNER_temp_arr=(${MR_SIGNER_temp})
-                export MR_SIGNER=${MR_SIGNER_temp_arr[1]}
+            #get mrenclave mrsigner
+            MR_ENCLAVE_temp=$(bash print_enclave_signer.sh | grep mr_enclave)
+            MR_ENCLAVE_temp_arr=(${MR_ENCLAVE_temp})
+            export MR_ENCLAVE=${MR_ENCLAVE_temp_arr[1]}
+            MR_SIGNER_temp=$(bash print_enclave_signer.sh | grep mr_signer)
+            MR_SIGNER_temp_arr=(${MR_SIGNER_temp})
+            export MR_SIGNER=${MR_SIGNER_temp_arr[1]}
 
-                #register and get policy_Id
-                policy_Id_temp=$(bash register.sh | grep policy_Id)
-                policy_Id_temp_arr=(${policy_Id_temp})
-                export policy_Id=${policy_Id_temp_arr[1]}
-            fi
+            #register and get policy_Id
+            policy_Id_temp=$(bash register.sh | grep policy_Id)
+            policy_Id_temp_arr=(${policy_Id_temp})
+            export policy_Id=${policy_Id_temp_arr[1]}
         fi
         #register error
         if [[ $? -gt 0 || -z "$policy_Id" ]]; then
@@ -538,19 +536,16 @@ id=$([ -f "$pid" ] && echo $(wc -l < "$pid") || echo "0")
 arg=$1
 case "$arg" in
     init)
-       export RUNTIME_ENV="native"
         init_instance
         build_spark
         ;;
     initDriver)
-        export RUNTIME_ENV="driver"
         init_instance
         build_spark
         ;;
     initExecutor)
         # to do
         # now executor have to register again
-        export RUNTIME_ENV="native"
         init_instance
         build_spark
         ;;

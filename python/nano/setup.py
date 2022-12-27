@@ -73,27 +73,60 @@ def download_libs(url: str):
 
 def setup_package():
 
-    tensorflow_requires = ["intel-tensorflow==2.7.0",
-                           "keras==2.7.0",
-                           "tensorflow-estimator==2.7.0",
-                           "tf2onnx==1.12.1"]
+    # all intel-tensorflow is only avaliable for linux now
+    tensorflow_27_requires = ["intel-tensorflow==2.7.0; platform_machine=='x86_64' and \
+                              platform_system!='Darwin'",
+                              "tensorflow==2.7.0; platform_machine=='x86_64' and \
+                              platform_system=='Darwin'",
+                              "keras==2.7.0; platform_machine=='x86_64'",
+                              "tensorflow-estimator==2.7.0; platform_machine=='x86_64'"]
+    
+    tensorflow_28_requires = ["intel-tensorflow==2.8.0; platform_machine=='x86_64' and \
+                              platform_system!='Darwin'",
+                              "tensorflow==2.8.0; platform_machine=='x86_64' and \
+                              platform_system=='Darwin'",
+                              "keras==2.8.0; platform_machine=='x86_64'",
+                              "tensorflow-estimator==2.8.0; platform_machine=='x86_64'"]
+    
+    tensorflow_29_requires = ["intel-tensorflow==2.9.1; platform_machine=='x86_64' and \
+                              platform_system!='Darwin'",
+                              "tensorflow==2.9.0; platform_machine=='x86_64' and \
+                              platform_system=='Darwin'",
+                              "keras==2.9.0; platform_machine=='x86_64'",
+                              "tensorflow-estimator==2.9.0; platform_machine=='x86_64'"]
+    
+    tensorflow_210_requires = ["intel-tensorflow==2.10.0; platform_machine=='x86_64' and \
+                               platform_system!='Darwin'",
+                               "tensorflow==2.10.0; platform_machine=='x86_64' and \
+                               platform_system=='Darwin'",
+                               "keras==2.10.0; platform_machine=='x86_64'",
+                               "tensorflow-estimator==2.10.0; platform_machine=='x86_64'"]
+    
+    tensorflow_common_requires = ["tf2onnx==1.13.0; platform_machine=='x86_64'"]
+
+    # default pytorch_dep
+    tensorflow_requires = tensorflow_29_requires + tensorflow_common_requires
+    tensorflow_210_requires += tensorflow_common_requires
+    tensorflow_29_requires += tensorflow_common_requires
+    tensorflow_28_requires += tensorflow_common_requires
+    tensorflow_27_requires += tensorflow_common_requires
 
     # ipex is only avaliable for linux now
     pytorch_113_requires = ["torch==1.13.0",
                             "torchvision==0.14.0",
-                            "intel_extension_for_pytorch==1.13.0;platform_system!='Windows'"]
+                            "intel_extension_for_pytorch==1.13.0;platform_system=='Linux'"]
 
     pytorch_112_requires = ["torch==1.12.1",
                             "torchvision==0.13.1",
-                            "intel_extension_for_pytorch==1.12.100;platform_system!='Windows'"]
+                            "intel_extension_for_pytorch==1.12.300;platform_system=='Linux'"]
 
     pytorch_111_requires = ["torch==1.11.0",
                             "torchvision==0.12.0",
-                            "intel_extension_for_pytorch==1.11.0;platform_system!='Windows'"]
+                            "intel_extension_for_pytorch==1.11.0;platform_system=='Linux'"]
 
     pytorch_110_requires = ["torch==1.10.1",
                             "torchvision==0.11.2",
-                            "intel_extension_for_pytorch==1.10.100;platform_system!='Windows'"]
+                            "intel_extension_for_pytorch==1.10.100;platform_system=='Linux'"]
 
     # this require install option --extra-index-url https://download.pytorch.org/whl/nightly/
     pytorch_nightly_requires = ["torch~=1.14.0.dev",
@@ -115,12 +148,19 @@ def setup_package():
 
     inference_requires = ["onnx==1.12.0",
                           "onnxruntime==1.12.1",
-                          "onnxruntime-extensions==0.4.2",
+                          "onnxruntime-extensions==0.4.2; platform_system!='Darwin'",
+                          "onnxruntime-extensions==0.3.1; platform_machine=='x86_64' and \
+                          platform_system=='Darwin'",
                           "openvino-dev==2022.2.0",
                           "neural-compressor==1.13.1",
-                          "onnxsim==0.4.8"]
+                          "onnxsim==0.4.8; platform_system!='Darwin'",
+                          "onnxsim==0.4.1; platform_machine=='x86_64' and \
+                          platform_system=='Darwin'"]
 
-    install_requires = ["intel-openmp", "cloudpickle", "protobuf==3.19.5", "py-cpuinfo"]
+    install_requires = ["intel-openmp; platform_machine=='x86_64'",
+                        "cloudpickle",
+                        "protobuf==3.19.5",
+                        "py-cpuinfo"]
 
     package_data = [
         "libs/libjemalloc.so",
@@ -147,6 +187,10 @@ def setup_package():
         url='https://github.com/intel-analytics/BigDL',
         install_requires=install_requires,
         extras_require={"tensorflow": tensorflow_requires,
+                        "tensorflow_27": tensorflow_27_requires,
+                        "tensorflow_28": tensorflow_28_requires,
+                        "tensorflow_29": tensorflow_29_requires,
+                        "tensorflow_210": tensorflow_210_requires,
                         "pytorch": pytorch_requires,
                         "pytorch_113": pytorch_113_requires,
                         "pytorch_112": pytorch_112_requires,

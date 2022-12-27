@@ -68,15 +68,20 @@ class HPOSearcher:
         self.run_kwargs = None
         self.fit_kwargs = None
 
-    def _create_objective(self, model, target_metric, create_kwargs, acceleration,
-                          input_sample, fit_kwargs):
+    def _create_objective(self, model, target_metric, mode, create_kwargs,
+                          acceleration, input_sample, fit_kwargs):
         # target_metric = self._fix_target_metric(target_metric, search_kwargs)
         isprune = True if create_kwargs.get('pruner', None) else False
+        direction = create_kwargs.get('direction', None)
+        directions = create_kwargs.get('directions', None)
         self.objective = Objective(
             searcher=self,
             model=model._model_build,
             target_metric=target_metric,
+            mode=mode,
             pruning=isprune,
+            direction=direction,
+            directions=directions,
             acceleration=acceleration,
             input_sample=input_sample,
             **fit_kwargs,
@@ -114,6 +119,7 @@ class HPOSearcher:
                model,
                resume=False,
                target_metric=None,
+               mode='best',
                n_parallels=1,
                acceleration=False,
                input_sample=None,
@@ -126,6 +132,8 @@ class HPOSearcher:
             defaults to False.
         :param target_metric: the object metric to optimize,
             defaults to None.
+        :param mode: use last epoch's result as trial's score or use best epoch's.
+            defaults to 'best', you can change it to 'last'.
         :param acceleration: Whether to automatically consider the model after
             inference acceleration in the search process. It will only take
             effect if target_metric contains "latency". Default value is False.
@@ -161,7 +169,8 @@ class HPOSearcher:
             self.study = _create_study(resume, self.create_kwargs, self.backend)
 
         if self.objective is None:
-            self._create_objective(model, self.target_metric, self.create_kwargs, acceleration,
+            self._create_objective(model, self.target_metric, mode,
+                                   self.create_kwargs, acceleration,
                                    input_sample, self.fit_kwargs)
 
         if n_parallels and n_parallels > 1:
@@ -216,8 +225,8 @@ class HPOSearcher:
         # last `_run` call might have set it to `FINISHED`
         self.trainer.state.status = TrainerStatus.RUNNING
         self.trainer.training = True
+        self.trainer.state.fn = TrainerFn.FITTING
         if self.num_process > 1:
-            self.trainer.state.fn = TrainerFn.FITTING  # add in lightning 1.6
             self.trainer.fit(*args, **kwargs)
         else:
             self.trainer._run(*args, **kwargs)
