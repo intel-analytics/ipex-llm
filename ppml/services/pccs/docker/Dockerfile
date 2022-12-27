@@ -1,7 +1,7 @@
 FROM ubuntu:20.04 AS builder
 
 # DCAP version (github repo branch, tag or commit hash)
-ARG DCAP_VERSION=DCAP_1.13
+ARG DCAP_VERSION=DCAP_1.14
 ARG http_proxy
 ARG https_proxy
 
@@ -10,25 +10,25 @@ ENV DEBIAN_FRONTEND noninteractive
 RUN apt-get update -yq && \
     apt-get upgrade -yq && \
     apt-get install -yq --no-install-recommends \
-            build-essential \
-            ca-certificates \
-            curl \
-            git \
-            zip  \
-            tzdata \
-            debhelper \
-            libcurl4-openssl-dev \
-            libcurl4 \
-            vim \
-            wget \
-            python \
-            systemctl
+    build-essential \
+    ca-certificates \
+    curl \
+    git \
+    zip  \
+    tzdata \
+    debhelper \
+    libcurl4-openssl-dev \
+    libcurl4 \
+    vim \
+    wget \
+    python \
+    systemctl
 # install sgxsdk
 RUN mkdir /opt/intel && \
     cd /opt/intel && \
-    wget https://download.01.org/intel-sgx/sgx-dcap/1.13/linux/distro/ubuntu20.04-server/sgx_linux_x64_sdk_2.16.100.4.bin && \
-    chmod a+x ./sgx_linux_x64_sdk_2.16.100.4.bin && \
-    printf "no\n/opt/intel\n"|./sgx_linux_x64_sdk_2.16.100.4.bin && \
+    wget https://download.01.org/intel-sgx/sgx-dcap/1.14/linux/distro/ubuntu20.04-server/sgx_linux_x64_sdk_2.17.100.3.bin && \
+    chmod a+x ./sgx_linux_x64_sdk_2.17.100.3.bin && \
+    printf "no\n/opt/intel\n"|./sgx_linux_x64_sdk_2.17.100.3.bin && \
     . /opt/intel/sgxsdk/environment
 
 # install node.js
@@ -38,7 +38,7 @@ RUN DEBIAN_FRONTEND=noninteractive apt-get install -yq --no-install-recommends n
 RUN apt-get clean && rm -rf /var/lib/apt/lists/*
 
 # clone DCAP repo
-RUN git clone https://github.com/Uxito-Ada/SGXDataCenterAttestationPrimitives.git -b ${DCAP_VERSION} --depth 1
+RUN git clone https://github.com/intel/SGXDataCenterAttestationPrimitives.git -b ${DCAP_VERSION} --depth 1
 
 # install MPA
 RUN mkdir /etc/init && cd /SGXDataCenterAttestationPrimitives/tools/SGXPlatformRegistration && \

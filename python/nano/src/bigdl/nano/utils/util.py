@@ -16,6 +16,7 @@
 
 import os
 import warnings
+import inspect
 from functools import wraps
 import cpuinfo
 from bigdl.nano.utils.log4Error import invalidInputError
@@ -192,3 +193,18 @@ class spawn_new_process(object):
             return return_val
         else:
             return self.func(*args, **kwargs)
+
+
+def get_default_args(func):
+    """
+    Check function `func` and get its arguments which has default value.
+
+    :param func: Function to check.
+    :return: A dict, contains arguments and their default values.
+    """
+    default_args = {}
+    signature = inspect.signature(func)
+    for param in signature.parameters.values():
+        if param.default is not param.empty:
+            default_args[param.name] = param.default
+    return default_args

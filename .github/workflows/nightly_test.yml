@@ -30,6 +30,7 @@ on:
         - Orca-Python-ExampleTest-Horovod-Tf-Py37-Spark3
         - Orca-Python-Rayonspark-Tf2-Py37
         - Orca-Tutorial-Xshards
+        - Orca-Python-Ray-Ctx
         - Dllib-Scala-UT
         - Friesian-Scala-UT
         - Friesian-Python-Py37-Spark3
@@ -415,7 +416,27 @@ jobs:
         file-name: Orca-Tutorial-Xshards.json
         type: job
         job-name: Orca-Tutorial-Xshards
-        runner-hosted-on: 'Shanghai'  
+        runner-hosted-on: 'Shanghai' 
+
+  Orca-Python-Ray-Ctx:
+    if: ${{ github.event.schedule || github.event.inputs.artifact == 'Orca-Python-Ray-Ctx' || github.event.inputs.artifact == 'all' }} 
+    runs-on: [self-hosted, Gondolin-Ctx]
+
+    steps:
+    - uses: actions/checkout@v3
+    - name: Run Test
+      uses: ./.github/actions/orca/orca-python-ray-ctx-action
+    - name: Create Job Badge
+      uses: ./.github/actions/create-job-status-badge
+      if: ${{ always() }}
+      with:
+        secret: ${{ secrets.GIST_SECRET}}
+        gist-id: ${{env.GIST_ID}}
+        is-self-hosted-runner: true
+        file-name: Orca-Python-Ray-Ctx.json
+        type: job
+        job-name: Orca-Python-Ray-Ctx
+        runner-hosted-on: 'Shanghai'
 
   Dllib-Scala-UT:
     if: ${{ github.event.schedule || github.event.inputs.artifact == 'Dllib-Scala-UT' || github.event.inputs.artifact == 'all' }} 

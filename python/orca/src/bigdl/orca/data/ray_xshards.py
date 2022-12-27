@@ -110,7 +110,7 @@ def init_ray_if_not(redis_address, redis_password):
             ignore_reinit_error=True
         )
         if redis_password:
-            init_params["_redis_password"] = self.redis_password
+            init_params["_redis_password"] = redis_password
         if version.parse(ray.__version__) >= version.parse("1.4.0"):
             init_params["namespace"] = "az"
         ray.init(**init_params)
@@ -273,9 +273,8 @@ class RayXShards(XShards):
         list of ray object refs, otherwise return a list of ray objects. Defaults to be False,
         """
         invalidInputError(self.num_partitions() >= len(actors),
-                          f"Get number of partitions ({self.num_partitions()}) smaller than "
-                          f"number of actors ({len(actors)}). Please submit an issue to"
-                          f" BigDL.")
+                          f"Get the number of partitions ({self.num_partitions()}) smaller than "
+                          f"the number of workers ({len(actors)}).")
         assigned_partitions, _, _ = self.assign_partitions_to_actors(actors)
         result_refs = []
         for actor, part_ids in zip(actors, assigned_partitions):

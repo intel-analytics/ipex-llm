@@ -256,3 +256,29 @@ class TestOpenVINO(TestCase):
         accmodel(x1)
         accmodel(x2)
         accmodel(x3)
+
+    def test_openvino_gpu_trace(self):
+        # test whether contains GPU
+        from openvino.runtime import Core
+        core = Core()
+        devices = core.available_devices
+        gpu_avaliable = any('GPU' in x for x in devices)
+        
+        if gpu_avaliable is False:
+            return
+
+        model = mobilenet_v3_small(num_classes=10)
+
+        x = torch.rand((1, 3, 256, 256))
+        x2 = torch.rand((10, 3, 256, 256))
+
+        # test GPU fp32
+        openvino_model = InferenceOptimizer.trace(model,
+                                                  input_sample=x,
+                                                  accelerator='openvino',
+                                                  device='GPU')
+        result = openvino_model(x)
+        assert result.shape == (1, 10)
+        # GPU don't support dynamic shape
+        with pytest.raises(RuntimeError):
+            openvino_model(x2)

@@ -1,15 +1,14 @@
 # PyTorch Training
 
-## Overview
 BigDL-Nano can be used to accelerate **PyTorch** or **PyTorch-Lightning** applications on training workloads. These optimizations are either enabled by default or can be easily turned on by setting a parameter or calling a method.
 
 The optimizations in BigDL-Nano are delivered through
 
-1) An extended version of PyTorch-Lightning `Trainer` for LightingModule and easy nn.Module.
+1) An extended version of PyTorch-Lightning `Trainer` (`bigdl.nano.pytorch.Trainer`) for `LightningModule` and easy `nn.Module`.
 
-2) An abstract `TorchNano` to accelerate raw or complex nn.Module.
+2) An abstract `TorchNano` (`bigdl.nano.pytorch.TorchNano`) or a decorator `@nano` (`bigdl.nano.pytorch.nano`) to accelerate raw or complex `nn.Module`.
 
-We will briefly describe here the major features in BigDL-Nano for PyTorch training. You can find complete how to guides for acceleration of [pytorch-lightning](https://bigdl.readthedocs.io/en/latest/doc/Nano/Howto/index.html#pytorch-lightning) and [pytorch]().
+We will briefly describe here the major features in BigDL-Nano for PyTorch training. You can find complete how to guides for acceleration of [PyTorch-Lightning](../Howto/index.html#pytorch-lightning) and [PyTorch](../Howto/index.html#pytorch).
 
 ## Best Known Environment Variables
 When you successfully installed `bigdl-nano` (please refer to [installation guide](./install.html)) in a conda environment. You are **highly recommeneded** to run following command **once**.
@@ -35,7 +34,7 @@ For example,
 from bigdl.nano.pytorch import Trainer
 
 lightning_module = Trainer.compile(pytorch_module, loss, optimizer)
-trainer = Trainer(max_epoch=10)
+trainer = Trainer(max_epochs=10)
 trainer.fit(lightning_module, train_loader)
 ```
 
@@ -43,7 +42,7 @@ trainer.fit(lightning_module, train_loader)
 
 ### `nn.Module` with customized training loop
 
-The `TorchNano` (`bigdl.nano.pytorch.TorchNano`) class is what we use to accelerate raw pytorch code. By using it, we only need to make very few changes to accelerate custom training loop. For example,
+The `TorchNano` class is what we use to accelerate raw PyTorch code. By using it, we only need to make very few changes to accelerate custom training loop. For example,
 
 ```python
 from bigdl.nano.pytorch import TorchNano
@@ -51,13 +50,40 @@ from bigdl.nano.pytorch import TorchNano
 class MyNano(TorchNano) :
     def train(self, ...):
         # copy your train loop here and make a few changes
+        ...
 
 MyNano().train(...)
 ```
 
+```eval_rst
+.. important::
+   
+   Please refer to `here <../Howto/Training/PyTorch/convert_pytorch_training_torchnano.html#Convert-to-TorchNano>`_ for a detailed guide about how to make changes to your custom PyTorch training loop so that you could use ``TorchNano``.
+
+   Note that the most important change is to use ``self.setup`` method to set up model, optimizer(s), and dataloader(s) for acceleration inside the training loop.
+```
+
+If you have already defined a PyTorch training loop function with a model, optimizers, and dataloaders as parameters, you could use `@nano` decorator to gain acceleration in a simpler way. For example:
+
+```python
+from bigdl.nano.pytorch import nano
+
+@nano()
+def train(model, optimizer, train_loader, ...):
+    ...
+
+train(model, optimizer, train_loader, ...)
+```
+
+```eval_rst
+.. seealso::
+   
+   Please refer to `here <../Howto/Training/PyTorch/use_nano_decorator_pytorch_training.html>`_ for a detailed usage of ``@nano`` decorator.
+```
+
 ## Accelerate `LightningModule`'s training
 
-The PyTorch Trainer (`bigdl.nano.pytorch.Trainer`) extends PyTorch Lightning's Trainer and has a few more parameters and methods specific to BigDL-Nano. The Trainer can be directly used to train a `LightningModule`.
+The PyTorch `Trainer` extends PyTorch Lightning's `Trainer` and has a few more parameters and methods specific to BigDL-Nano. The Trainer can be directly used to train a `LightningModule`.
 
 For example,
 
@@ -69,16 +95,16 @@ class MyModule(LightningModule):
     #  LightningModule definition
 
 lightning_module = MyModule()
-trainer = Trainer(max_epoch=10)
+trainer = Trainer(max_epochs=10)
 trainer.fit(lightning_module, train_loader)
 ```
 
 ## Optional Acceleration Methods
-### Intel® Extension for PyTorch
+### Intel® Extension for PyTorch*
 
-[Intel Extension for PyTorch](https://github.com/intel/intel-extension-for-pytorch) (a.k.a. IPEX) extends PyTorch with optimizations for an extra performance boost on Intel hardware.
+[Intel Extension for PyTorch*](https://github.com/intel/intel-extension-for-pytorch) (a.k.a. IPEX) extends PyTorch with optimizations for an extra performance boost on Intel hardware.
 
-BigDL-Nano integrates IPEX in `Trainer` and `TorchNano`. Users can turn on IPEX by setting `use_ipex=True`.
+BigDL-Nano integrates IPEX in `Trainer`, `TorchNano` and `@nano` decorator. Users can turn on IPEX by setting `use_ipex=True`.
 
 ```eval_rst
 
@@ -90,7 +116,7 @@ BigDL-Nano integrates IPEX in `Trainer` and `TorchNano`. Users can turn on IPEX 
 
             from bigdl.nano.pytorch import Trainer
 
-            trainer = Trainer(max_epoch=10, use_ipex=True)
+            trainer = Trainer(max_epochs=10, use_ipex=True)
             trainer.fit(...)
 
     .. tab:: TorchNano
@@ -105,13 +131,25 @@ BigDL-Nano integrates IPEX in `Trainer` and `TorchNano`. Users can turn on IPEX 
 
             MyNano(use_ipex=True).train(...)
 
+    .. tab:: @nano
+
+        .. code-block:: python
+
+            from bigdl.nano.pytorch import nano
+
+            @nano(use_ipex=True)
+            def train(model, optimizer, train_loader, ...):
+                ...
+
+            train(model, optimizer, train_loader, ...)
+
 ```
 
 ### Multi-instance Training
 
 When training on a server with dozens of CPU cores, it is often beneficial to use multiple training instances in a data-parallel fashion to make full use of the CPU cores. However, using PyTorch's DDP API is a little cumbersome and error-prone, and if not configured correctly, it will make the training even slow.
 
-You can just set the `num_processes` parameter in the `Trainer` or `TorchNano` constructor and BigDL-Nano will launch the specific number of processes to perform data-parallel training. Each process will be automatically pinned to a different subset of CPU cores to avoid conflict and maximize training throughput.
+You can just set the `num_processes` parameter in the `Trainer` or `TorchNano` constructor, or the `@nano` decorator, so that BigDL-Nano will launch the specific number of processes to perform data-parallel training. Each process will be automatically pinned to a different subset of CPU cores to avoid conflict and maximize training throughput.
 
 ```eval_rst
 
@@ -123,7 +161,7 @@ You can just set the `num_processes` parameter in the `Trainer` or `TorchNano` c
 
             from bigdl.nano.pytorch import Trainer
 
-            trainer = Trainer(max_epoch=10, num_processes=4)
+            trainer = Trainer(max_epochs=10, num_processes=4)
             trainer.fit(...)
 
     .. tab:: TorchNano
@@ -138,14 +176,33 @@ You can just set the `num_processes` parameter in the `Trainer` or `TorchNano` c
 
             MyNano(num_processes=4).train(...)
 
-```
+    .. tab:: @nano
 
-Note that the effective batch size in multi-instance training is the `batch_size` in your `dataloader` times `num_processes` so the number of iterations of each epoch will be reduced `num_processes` fold. A common practice to compensate for that is to gradually increase the learning rate to `num_processes` times. You can find more details of this trick in this [paper](https://arxiv.org/abs/1706.02677) published by Facebook.
+        .. code-block:: python
+
+            from bigdl.nano.pytorch import nano
+
+            @nano(num_processes=4)
+            def train(model, optimizer, train_loader, ...):
+                ...
+
+            train(model, optimizer, train_loader, ...)
+
+```
+```eval_rst
+.. note::
+   
+   The effective batch size in multi-instance training is the ``batch_size`` in your ``dataloader`` times ``num_processes``. So, the number of iterations of each epoch will be reduced ``num_processes`` fold. To achieve the same effect as single instance training, a common practice to compensate is to gradually increase the learning rate to ``num_processes`` times. 
+
+   BigDL-Nano supports this practice by default through ``auto_lr=Ture``, which will scale the learning rate linearly by ``num_processes`` times.
+
+   To get more details about this 'learning rate warmup' trick, you could refer to `this paper <https://arxiv.org/abs/1706.02677>`_ published by Facebook.
+```
 
 ### BFloat16 Mixed Precision
 BFloat16 Mixed Precison combines BFloat16 and FP32 during training, which could lead to increased performance and reduced memory usage. Compared to FP16 mixed precison, BFloat16 mixed precision has better numerical stability.
 
- You could instantiate a BigDL-Nano `Trainer` or `TorchNano` with `precision='bf16'` to use BFloat16 mixed precision for training.
+You could instantiate a BigDL-Nano `Trainer` or `TorchNano` with `precision='bf16'`, or set `precision='bf16'` in the `@nano` decorator to use BFloat16 mixed precision for training.
 
 
 ```eval_rst
@@ -173,10 +230,22 @@ BFloat16 Mixed Precison combines BFloat16 and FP32 during training, which could 
 
             MyNano(precision='bf16').train(...)
 
+    .. tab:: @nano
+
+        .. code-block:: python
+
+            from bigdl.nano.pytorch import nano
+
+            @nano(precision='bf16')
+            def train(model, optimizer, train_loader, ...):
+                ...
+
+            train(model, optimizer, train_loader, ...)
+
 ```
 
 ### Channels Last Memory Format
- You could instantiate a BigDL-Nano `Trainer` or `TorchNano` with `channels_last=True` to use the channels last memory format, i.e. NHWC (batch size, height, width, channels), as an alternative way to store tensors in classic/contiguous NCHW order.
+You could instantiate a BigDL-Nano `Trainer` or `TorchNano` with `channels_last=True`, or set `channels_last=True` in the `@nano` decorator to use the channels last memory format, i.e. NHWC (batch size, height, width, channels), as an alternative way to store tensors in classic/contiguous NCHW order.
 
 ```eval_rst
 
@@ -202,6 +271,18 @@ BFloat16 Mixed Precison combines BFloat16 and FP32 during training, which could 
                     # copy your train loop here and make a few changes
 
             MyNano(channels_last=True).train(...)
+
+    .. tab:: @nano
+
+        .. code-block:: python
+
+            from bigdl.nano.pytorch import nano
+
+            @nano(channels_last=True)
+            def train(model, optimizer, train_loader, ...):
+                ...
+
+            train(model, optimizer, train_loader, ...)
 
 ```
 

@@ -20,7 +20,6 @@ import logging
 
 from bigdl.orca import OrcaContext
 from bigdl.orca.data.ray_xshards import RayXShards
-from bigdl.orca.learn.pytorch.training_operator import TrainingOperator
 from bigdl.orca.learn.pytorch.pytorch_ray_worker import PytorchRayWorker
 from bigdl.orca.learn.utils import maybe_dataframe_to_xshards, dataframe_to_xshards, \
     convert_predict_xshards_to_dataframe, update_predict_xshards, \
@@ -90,7 +89,6 @@ class PyTorchRayEstimator(BaseRayEstimator):
             loss_creator: Union['Loss', Callable[[Dict], 'Loss'], None]=None,
             metrics: Union['Metric', List['Metric'], None]=None,
             scheduler_creator: Optional[Callable[[Dict], 'LRScheduler']]=None,
-            training_operator_cls: Type[TrainingOperator]=TrainingOperator,
             config: Dict=None,
             scheduler_step_freq: str="batch",
             use_tqdm: bool=False,
@@ -115,17 +113,15 @@ class PyTorchRayEstimator(BaseRayEstimator):
         self.optimizer_creator = optimizer_creator
         self.loss_creator = loss_creator
         self.scheduler_creator = scheduler_creator
-        self.training_operator_cls = training_operator_cls
         self.scheduler_step_freq = scheduler_step_freq
         self.use_tqdm = use_tqdm
         self.sync_stats = sync_stats
         self.backend = backend
         self.workers_per_node = workers_per_node
 
-        if not training_operator_cls and not loss_creator:
+        if not loss_creator:
             invalidInputError(False,
-                              "If a loss_creator is not provided, you must "
-                              "provide a custom training operator.")
+                              "You must provide a loss_creator.")
 
         self.config = {} if config is None else config
         worker_config = copy.copy(self.config)
@@ -134,7 +130,6 @@ class PyTorchRayEstimator(BaseRayEstimator):
             optimizer_creator=self.optimizer_creator,
             loss_creator=self.loss_creator,
             scheduler_creator=self.scheduler_creator,
-            training_operator_cls=self.training_operator_cls,
             scheduler_step_freq=self.scheduler_step_freq,
             use_tqdm=self.use_tqdm,
             config=worker_config,
@@ -147,7 +142,7 @@ class PyTorchRayEstimator(BaseRayEstimator):
                    runner_cls=PytorchRayWorker,
                    workers_per_node=self.workers_per_node)
 
-    def fit(self,  # type:ignore[override]
+    def fit(self,
             data: Union['SparkXShards',
                         'SparkDataFrame',
                         'RayDataset',
@@ -166,7 +161,7 @@ class PyTorchRayEstimator(BaseRayEstimator):
             callbacks: List['Callback']=[]) -> List:
         """
         Trains a PyTorch model given training data for several epochs.
-        Calls `TrainingOperator.train_epoch()` on N parallel workers simultaneously
+        Calls `TorchRunner.train_epoch()` on N parallel workers simultaneously
         underneath the hood.
 
         :param data: An instance of SparkXShards, a Ray Dataset, a Spark DataFrame or a function
@@ -183,7 +178,7 @@ class PyTorchRayEstimator(BaseRayEstimator):
                one dict. If a metric is a non-numerical value, the one value will be randomly
                selected among the workers. If False, returns a list of dicts for
                all workers. Default is True.
-        :param info: An optional dictionary that can be passed to the TrainingOperator for
+        :param info: An optional dictionary that can be passed to the TorchRunner for
                train_epoch and train_batch.
         :param feature_cols: feature column names if data is Spark DataFrame or Ray Dataset.
         :param label_cols: label column names if data is Spark DataFrame or Ray Dataset.
@@ -194,7 +189,7 @@ class PyTorchRayEstimator(BaseRayEstimator):
         :return: A list of dictionary of metrics for every training epoch. If reduce_results is
                 False, this will return a nested list of metric dictionaries whose length will be
                 equal to the total number of workers.
-                You can also provide custom metrics by passing in a custom training_operator_cls
+                You can also provide custom metrics by passing in a custom HookClass(after 2.2.0)
                 when creating the Estimator.
         """
         invalidInputError(isinstance(batch_size, int) and batch_size > 0,
@@ -324,7 +319,7 @@ class PyTorchRayEstimator(BaseRayEstimator):
         else:
             return epoch_stats
 
-    def predict(self,  # type:ignore[override]
+    def predict(self,
                 data: Union['SparkXShards', 'SparkDataFrame'],
                 batch_size: int=32,
                 feature_cols: Optional[List[str]]=None,
@@ -387,7 +382,7 @@ class PyTorchRayEstimator(BaseRayEstimator):
 
         return result
 
-    def evaluate(self,  # type:ignore[override]
+    def evaluate(self,
                  data: Union['SparkXShards',
                              'SparkDataFrame',
                              'RayDataset',
@@ -402,8 +397,8 @@ class PyTorchRayEstimator(BaseRayEstimator):
         """
         Evaluates a PyTorch model given validation data.
         Note that only accuracy for classification with zero-based label is supported by
-        default. You can override validate_batch in TrainingOperator for other metrics.
-        Calls `TrainingOperator.validate()` on N parallel workers simultaneously
+        default. You can override validate_batch in TorchRunner for other metrics.
+        Calls `TorchRunner.validate()` on N parallel workers simultaneously
         underneath the hood.
 
         :param data: An instance of SparkXShards, a Spark DataFrame, a Ray Dataset or a function
@@ -414,20 +409,20 @@ class PyTorchRayEstimator(BaseRayEstimator):
                If your validation data is a function, you can set batch_size to be the input
                batch_size of the function for the PyTorch DataLoader.
         :param num_steps: The number of batches to compute the validation results on. This
-               corresponds to the number of times `TrainingOperator.validate_batch` is called.
+               corresponds to the number of times `TorchRunner.validate_batch` is called.
         :param profile: Boolean. Whether to return time stats for the training procedure.
                Default is False.
         :param reduce_results: Boolean. Whether to average all metrics across all workers into
                one dict. If a metric is a non-numerical value, the one value will be randomly
                selected among the workers. If False, returns a list of dicts for
                all workers. Default is True.
-        :param info: An optional dictionary that can be passed to the TrainingOperator
+        :param info: An optional dictionary that can be passed to the TorchRunner
                for validate.
         :param feature_cols: feature column names if train data is Spark DataFrame or Ray Dataset.
         :param label_cols: label column names if train data is Spark DataFrame or Ray Dataset.
 
         :return: A dictionary of metrics for the given data, including validation accuracy and loss.
-                You can also provide custom metrics by passing in a custom training_operator_cls
+                You can also provide custom metrics by passing in a custom HookClass(after 2.2.0)
                 when creating the Estimator.
         """
         invalidInputError(isinstance(batch_size, int) and batch_size > 0,

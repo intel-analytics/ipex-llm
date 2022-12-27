@@ -16,6 +16,16 @@ PyTorch Lightning
 * `How to conduct BFloat16 Mixed Precision training in your PyTorch Lightning application <Training/PyTorchLightning/pytorch_lightning_training_bf16.html>`_
 * `How to accelerate a computer vision data processing pipeline <Training/PyTorchLightning/pytorch_lightning_cv_data_pipeline.html>`_
 
+PyTorch
+~~~~~~~~~~~~~~~~~~~~~~~~~
+* |convert_pytorch_training_torchnano|_
+* |use_nano_decorator_pytorch_training|_
+
+.. |use_nano_decorator_pytorch_training| replace:: How to accelerate your PyTorch training loop with ``@nano`` decorator
+.. _use_nano_decorator_pytorch_training: Training/PyTorch/use_nano_decorator_pytorch_training.html
+.. |convert_pytorch_training_torchnano| replace:: How to convert your PyTorch training loop to use ``TorchNano`` for acceleration
+.. _convert_pytorch_training_torchnano: Training/PyTorch/convert_pytorch_training_torchnano.html
+
 TensorFlow
 ~~~~~~~~~~~~~~~~~~~~~~~~~
 * `How to accelerate a TensorFlow Keras application on training workloads through multiple instances <Training/TensorFlow/accelerate_tensorflow_training_multi_instance.html>`_
@@ -36,13 +46,6 @@ OpenVINO
 
 * `How to run inference on OpenVINO model <Inference/OpenVINO/openvino_inference.html>`_
 * `How to run asynchronous inference on OpenVINO model <Inference/OpenVINO/openvino_inference_async.html>`_
-
-.. toctree::
-    :maxdepth: 1
-    :hidden:
-
-    Inference/OpenVINO/openvino_inference
-    Inference/OpenVINO/openvino_inference_async
 
 PyTorch
 ~~~~~~~~~~~~~~~~~~~~~~~~~
