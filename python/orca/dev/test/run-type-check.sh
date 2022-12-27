@@ -2,6 +2,7 @@
 
 set -ex
 
+export BIGDL_HOME=~/intern-dep/qipeng/BigDL
 export ORCA_HOME=${BIGDL_HOME}/python/orca
 export ORCA_DEVTEST_DIR=${BIGDL_HOME}/python/orca/dev/test
 export PYTHONPATH=${ORCA_HOME}/src:${PYTHONPATH}
@@ -24,3 +25,4 @@ mypy --install-types --non-interactive --config-file ${ORCA_DEVTEST_DIR}/mypy.in
                                                      $ORCA_HOME/src/bigdl/orca/learn/pytorch/estimator.py \
                                                      $ORCA_HOME/src/bigdl/orca/learn/pytorch/core/base_ray_estimator.py \
                                                      $ORCA_HOME/src/bigdl/orca/learn/pytorch/experimential/mmcv
+                                                     $ORCA_HOME/src/bigdl/orca/automl/hp.py \
