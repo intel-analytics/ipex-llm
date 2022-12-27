@@ -30,7 +30,7 @@ if platform.system() == "Linux":
     affinity_core_num = len(os.sched_getaffinity(0))
     preset_thread_nums = torch.get_num_threads()
     if preset_thread_nums > affinity_core_num:
-        torch.set_num_threads(preset_thread_nums)
+        torch.set_num_threads(affinity_core_num)
 
 from .dispatcher import patch_torch, unpatch_torch
 from bigdl.nano.pytorch.inference import InferenceOptimizer
