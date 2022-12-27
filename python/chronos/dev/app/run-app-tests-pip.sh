@@ -35,13 +35,17 @@ fi
 
 sed -i '/get_ipython()/d; /plot[.]/d; /plt[.]/d; /axs[.]/d' ${BIGDL_ROOT}/python/chronos/use-case/AIOps/AIOps_anomaly_detect_unsupervised_forecast_based.py
 sed -i "s/epochs=20/epochs=2/g" ${BIGDL_ROOT}/python/chronos/use-case/AIOps/AIOps_anomaly_detect_unsupervised_forecast_based.py
+cd ${BIGDL_ROOT}/python/chronos/use-case/AIOps/
 execute_test anomaly-detect-unsupervised-forecast-based "${BIGDL_ROOT}/python/chronos/use-case/AIOps/AIOps_anomaly_detect_unsupervised_forecast_based.py"
 time1=$?
+cd -
 
 ${BIGDL_ROOT}/python/chronos/dev/app/ipynb2py.sh ${BIGDL_ROOT}/python/chronos/use-case/AIOps/AIOps_anomaly_detect_unsupervised
 sed -i '/get_ipython()/d; /plot[.]/d; /plt[.]/d; /axs[.]/d' ${BIGDL_ROOT}/python/chronos/use-case/AIOps/AIOps_anomaly_detect_unsupervised.py
+cd ${BIGDL_ROOT}/python/chronos/use-case/AIOps/
 execute_test anomaly-detect-unsupervised "${BIGDL_ROOT}/python/chronos/use-case/AIOps/AIOps_anomaly_detect_unsupervised.py"
 time2=$?
+cd -
 
 echo "#1 anomaly-detect-unsupervised-forecast-based time used:$time1 seconds"
 echo "#2 anomaly-detect-unsupervised time used:$time2 seconds"
