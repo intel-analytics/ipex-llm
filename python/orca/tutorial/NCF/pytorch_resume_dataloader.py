@@ -21,7 +21,6 @@ import pandas as pd
 import torch.nn as nn
 import torch.optim as optim
 import torch.utils.data as data
-from torch.optim.lr_scheduler import StepLR
 
 from pytorch_dataset import load_dataset, process_users_items, get_input_dims
 from pytorch_model import NCF
