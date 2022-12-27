@@ -311,6 +311,16 @@ jobs:
     - name: Run Test
       uses: ./.github/actions/orca/orca-tutorial-xshards
 
+  Orca-Python-Ray-Ctx:
+    needs: changes
+    if: ${{ needs.changes.outputs.orca == 'true' }}
+    runs-on: [self-hosted, Gondolin-Ctx]
+
+    steps:
+    - uses: actions/checkout@v3
+    - name: Run Test
+      uses: ./.github/actions/orca/orca-python-ray-ctx-action
+
   PPML-Python-UT-Spark3:
     needs: changes
     if: ${{ needs.changes.outputs.ppml == 'true' }}
