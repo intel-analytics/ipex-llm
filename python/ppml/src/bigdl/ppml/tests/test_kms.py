@@ -54,7 +54,7 @@ def test_encrypt_buf():
     decrypted_buf = io.BytesIO()
     decrypt_buffer_with_key(encrypted_buf, decrypted_buf, ehsm_ip, ehsm_port, encrypted_primary_key_path, encrypted_data_key_path)
     decrypted_content = decrypted_buf.getvalue()
-    assert decrypted_content == original_content
+    assert decrypted_content == original_content # noqa
     # close all the buffer to release memory
     buf.close()
     encrypted_buf.close()

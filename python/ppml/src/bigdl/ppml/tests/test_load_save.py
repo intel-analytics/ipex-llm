@@ -66,7 +66,7 @@ def test_save_load_to_buf():
     # load it back and compare the stat_dict is the same
     our_state_dict = load(encrypted_buf, encryption_key)
 
-    assert our_state_dict == expected_state
+    assert our_state_dict == expected_state # noqa
 
 def test_save_load_to_file():
     # Initialize the model
@@ -76,7 +76,7 @@ def test_save_load_to_file():
     model.linear.weight.data.fill_(1.110)
     # now we try to load it back, and check the weight is the same
     model.load_state_dict(load("testsave.pt", encryption_key))
-    assert model.linear.weight.data[0] == 1.245
+    assert model.linear.weight.data[0] == 1.245 # noqa
 
 def test_save_load_buf2():
     # Initialize the model
@@ -86,7 +86,7 @@ def test_save_load_buf2():
     model.linear.weight.data.fill_(1.110)
     # now we try to load it back, and check the weight is the same
     model.load_state_dict(load(buf, encryption_key))
-    assert model.linear.weight.data[0] == 1.245
+    assert model.linear.weight.data[0] == 1.245 # noqa
 
 
 import torch.optim as optim
@@ -120,8 +120,8 @@ def test_multi_save():
         'loss': 1.842,
     }, "checkpoint.pt", encryption_key)
     checkpoint = load("checkpoint.pt", encryption_key)
-    assert checkpoint['epoch'] == 5
-    assert checkpoint['loss'] == 1.842
-    assert optimizer.state_dict() == checkpoint['optimizer_state_dict']
+    assert checkpoint['epoch'] == 5 # noqa
+    assert checkpoint['loss'] == 1.842 # noqa
+    assert optimizer.state_dict() == checkpoint['optimizer_state_dict'] # noqa
     for param_tensor in model.state_dict():
-        assert torch.equal(model.state_dict()[param_tensor], checkpoint['model_state_dict'][param_tensor])
+        assert torch.equal(model.state_dict()[param_tensor], checkpoint['model_state_dict'][param_tensor]) # noqa
