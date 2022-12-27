@@ -128,7 +128,7 @@ class BaseRayEstimator(BaseEstimator, metaclass=ABCMeta):
                               "values of backend, but got {}".format(backend))
         self.num_workers = len(self.remote_workers)
 
-    def setup_ddp(self):
+    def setup_torch_ddp(self):
         import torch.distributed as dist
         driver_ip = get_driver_node_ip()
         driver_tcp_store_port = find_free_port()
