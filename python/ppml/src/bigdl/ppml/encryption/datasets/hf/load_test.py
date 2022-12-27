@@ -38,7 +38,7 @@ def encrypt_directory_automation(input_dir, save_dir):
     for file_name in os.listdir(input_dir):
         input_path = os.path.join(input_dir, file_name)
         encrypted = fernet.encrypt(read_data_file(input_path))
-        save_path = os.path.join(save_dir, file_name + '.encrypted')
+        save_path = os.path.join(save_dir, file_name)
         write_data_file(save_path, encrypted)
         print('[INFO] Encrypt Successfully! Encrypted Output Is ' + save_path)
     print('[INFO] Encrypted Files.')
