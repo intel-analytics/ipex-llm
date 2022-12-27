@@ -24,29 +24,30 @@ execute_test(){
         exit $exit_status
     fi
     now=$(date "+%s")
+    echo "$1 finished."
     return $((now-start))
 }
 
 
-${BIGDL_ROOT}/python/chronos/dev/app/ipynb2py.sh ${BIGDL_ROOT}/python/chronos/use-case/AIOps/AIOps_anomaly_detect_unsupervised_forecast_based
-FILENAME="${BIGDL_ROOT}/python/chronos/use-case/AIOps/m_1932.csv"
-if [ ! -f "$FILENAME" ];then
-   wget $FTP_URI/analytics-zoo-data/chronos-aiops/m_1932.csv -O ${BIGDL_ROOT}/python/chronos/use-case/AIOps/m_1932.csv
-fi
+# ${BIGDL_ROOT}/python/chronos/dev/app/ipynb2py.sh ${BIGDL_ROOT}/python/chronos/use-case/AIOps/AIOps_anomaly_detect_unsupervised_forecast_based
+# FILENAME="${BIGDL_ROOT}/python/chronos/use-case/AIOps/m_1932.csv"
+# if [ ! -f "$FILENAME" ];then
+#    wget $FTP_URI/analytics-zoo-data/chronos-aiops/m_1932.csv -O ${BIGDL_ROOT}/python/chronos/use-case/AIOps/m_1932.csv
+# fi
 
-sed -i '/get_ipython()/d; /plot[.]/d; /plt[.]/d; /axs[.]/d' ${BIGDL_ROOT}/python/chronos/use-case/AIOps/AIOps_anomaly_detect_unsupervised_forecast_based.py
-sed -i "s/epochs=20/epochs=1/g" ${BIGDL_ROOT}/python/chronos/use-case/AIOps/AIOps_anomaly_detect_unsupervised_forecast_based.py
-cd ${BIGDL_ROOT}/python/chronos/use-case/AIOps/
-execute_test anomaly-detect-unsupervised-forecast-based "${BIGDL_ROOT}/python/chronos/use-case/AIOps/AIOps_anomaly_detect_unsupervised_forecast_based.py"
-time1=$?
-cd -
+# sed -i '/get_ipython()/d; /plot[.]/d; /plt[.]/d; /axs[.]/d' ${BIGDL_ROOT}/python/chronos/use-case/AIOps/AIOps_anomaly_detect_unsupervised_forecast_based.py
+# sed -i "s/epochs=20/epochs=1/g" ${BIGDL_ROOT}/python/chronos/use-case/AIOps/AIOps_anomaly_detect_unsupervised_forecast_based.py
+# cd ${BIGDL_ROOT}/python/chronos/use-case/AIOps/
+# execute_test anomaly-detect-unsupervised-forecast-based "${BIGDL_ROOT}/python/chronos/use-case/AIOps/AIOps_anomaly_detect_unsupervised_forecast_based.py"
+# time1=$?
+# cd -
 
-${BIGDL_ROOT}/python/chronos/dev/app/ipynb2py.sh ${BIGDL_ROOT}/python/chronos/use-case/AIOps/AIOps_anomaly_detect_unsupervised
-sed -i '/get_ipython()/d; /plot[.]/d; /plt[.]/d; /axs[.]/d' ${BIGDL_ROOT}/python/chronos/use-case/AIOps/AIOps_anomaly_detect_unsupervised.py
-cd ${BIGDL_ROOT}/python/chronos/use-case/AIOps/
-execute_test anomaly-detect-unsupervised "${BIGDL_ROOT}/python/chronos/use-case/AIOps/AIOps_anomaly_detect_unsupervised.py"
-time2=$?
-cd -
+# ${BIGDL_ROOT}/python/chronos/dev/app/ipynb2py.sh ${BIGDL_ROOT}/python/chronos/use-case/AIOps/AIOps_anomaly_detect_unsupervised
+# sed -i '/get_ipython()/d; /plot[.]/d; /plt[.]/d; /axs[.]/d' ${BIGDL_ROOT}/python/chronos/use-case/AIOps/AIOps_anomaly_detect_unsupervised.py
+# cd ${BIGDL_ROOT}/python/chronos/use-case/AIOps/
+# execute_test anomaly-detect-unsupervised "${BIGDL_ROOT}/python/chronos/use-case/AIOps/AIOps_anomaly_detect_unsupervised.py"
+# time2=$?
+# cd -
 
 
 # temporarily skip electricity examples
@@ -90,56 +91,56 @@ time6=$?
 cd -
 
 
-${BIGDL_ROOT}/python/chronos/dev/app/ipynb2py.sh ${BIGDL_ROOT}/python/chronos/use-case/network_traffic/network_traffic_model_forecasting
-FILENAME="${BIGDL_ROOT}/python/chronos/use-case/network_traffic/data/data.csv"
-if [ ! -f "$FILENAME" ];then
-   wget $FTP_URI/analytics-zoo-data/network-traffic/data/data.csv -P ${BIGDL_ROOT}/python/chronos/use-case/network_traffic/data
-fi
+# ${BIGDL_ROOT}/python/chronos/dev/app/ipynb2py.sh ${BIGDL_ROOT}/python/chronos/use-case/network_traffic/network_traffic_model_forecasting
+# FILENAME="${BIGDL_ROOT}/python/chronos/use-case/network_traffic/data/data.csv"
+# if [ ! -f "$FILENAME" ];then
+#    wget $FTP_URI/analytics-zoo-data/network-traffic/data/data.csv -P ${BIGDL_ROOT}/python/chronos/use-case/network_traffic/data
+# fi
 
-sed -i '/get_ipython()/d; /plot[.]/d; /plt[.]/d; /axs[.]/d' ${BIGDL_ROOT}/python/chronos/use-case/network_traffic/network_traffic_model_forecasting.py
-sed -i "s/epochs=50/epochs=1/g; s/epochs=20/epochs=1/g" ${BIGDL_ROOT}/python/chronos/use-case/network_traffic/network_traffic_model_forecasting.py
-cd ${BIGDL_ROOT}/python/chronos/use-case/network_traffic/
-execute_test network-traffic-model-forecasting "${BIGDL_ROOT}/python/chronos/use-case/network_traffic/network_traffic_model_forecasting.py"
-time7=$?
-cd -
+# sed -i '/get_ipython()/d; /plot[.]/d; /plt[.]/d; /axs[.]/d' ${BIGDL_ROOT}/python/chronos/use-case/network_traffic/network_traffic_model_forecasting.py
+# sed -i "s/epochs=50/epochs=1/g; s/epochs=20/epochs=1/g" ${BIGDL_ROOT}/python/chronos/use-case/network_traffic/network_traffic_model_forecasting.py
+# cd ${BIGDL_ROOT}/python/chronos/use-case/network_traffic/
+# execute_test network-traffic-model-forecasting "${BIGDL_ROOT}/python/chronos/use-case/network_traffic/network_traffic_model_forecasting.py"
+# time7=$?
+# cd -
 
-${BIGDL_ROOT}/python/chronos/dev/app/ipynb2py.sh ${BIGDL_ROOT}/python/chronos/use-case/network_traffic/network_traffic_multivariate_multistep_tcnforecaster
-sed -i '/get_ipython()/d; /plot[.]/d; /plt[.]/d; /axs[.]/d' ${BIGDL_ROOT}/python/chronos/use-case/network_traffic/network_traffic_multivariate_multistep_tcnforecaster.py
-sed -i "s/epochs=20/epochs=1/g" ${BIGDL_ROOT}/python/chronos/use-case/network_traffic/network_traffic_multivariate_multistep_tcnforecaster.py
-cd ${BIGDL_ROOT}/python/chronos/use-case/network_traffic/
-execute_test network-traffic-multivariate-multistep-tcnforecaster "${BIGDL_ROOT}/python/chronos/use-case/network_traffic/network_traffic_multivariate_multistep_tcnforecaster.py"
-time8=$?
-cd -
+# ${BIGDL_ROOT}/python/chronos/dev/app/ipynb2py.sh ${BIGDL_ROOT}/python/chronos/use-case/network_traffic/network_traffic_multivariate_multistep_tcnforecaster
+# sed -i '/get_ipython()/d; /plot[.]/d; /plt[.]/d; /axs[.]/d' ${BIGDL_ROOT}/python/chronos/use-case/network_traffic/network_traffic_multivariate_multistep_tcnforecaster.py
+# sed -i "s/epochs=20/epochs=1/g" ${BIGDL_ROOT}/python/chronos/use-case/network_traffic/network_traffic_multivariate_multistep_tcnforecaster.py
+# cd ${BIGDL_ROOT}/python/chronos/use-case/network_traffic/
+# execute_test network-traffic-multivariate-multistep-tcnforecaster "${BIGDL_ROOT}/python/chronos/use-case/network_traffic/network_traffic_multivariate_multistep_tcnforecaster.py"
+# time8=$?
+# cd -
 
-${BIGDL_ROOT}/python/chronos/dev/app/ipynb2py.sh ${BIGDL_ROOT}/python/chronos/use-case/network_traffic/network_traffic_autots_forecasting
-sed -i '/get_ipython()/d; /plot[.]/d; /plt[.]/d; /axs[.]/d' ${BIGDL_ROOT}/python/chronos/use-case/network_traffic/network_traffic_autots_forecasting.py
-sed -i "s/cores=10/cores=4/g; s/epochs=20/epochs=1/g; s/n_sampling=24/n_sampling=6/g" ${BIGDL_ROOT}/python/chronos/use-case/network_traffic/network_traffic_autots_forecasting.py
-cd ${BIGDL_ROOT}/python/chronos/use-case/network_traffic/
-execute_test network-traffic-autots-forecasting "${BIGDL_ROOT}/python/chronos/use-case/network_traffic/network_traffic_autots_forecasting.py"
-time9=$?
-cd -
+# ${BIGDL_ROOT}/python/chronos/dev/app/ipynb2py.sh ${BIGDL_ROOT}/python/chronos/use-case/network_traffic/network_traffic_autots_forecasting
+# sed -i '/get_ipython()/d; /plot[.]/d; /plt[.]/d; /axs[.]/d' ${BIGDL_ROOT}/python/chronos/use-case/network_traffic/network_traffic_autots_forecasting.py
+# sed -i "s/cores=10/cores=4/g; s/epochs=20/epochs=1/g; s/n_sampling=24/n_sampling=6/g" ${BIGDL_ROOT}/python/chronos/use-case/network_traffic/network_traffic_autots_forecasting.py
+# cd ${BIGDL_ROOT}/python/chronos/use-case/network_traffic/
+# execute_test network-traffic-autots-forecasting "${BIGDL_ROOT}/python/chronos/use-case/network_traffic/network_traffic_autots_forecasting.py"
+# time9=$?
+# cd -
 
-${BIGDL_ROOT}/python/chronos/dev/app/ipynb2py.sh ${BIGDL_ROOT}/python/chronos/use-case/network_traffic/network_traffic_autots_customized_model
-sed -i '/get_ipython()/d; /plot[.]/d; /plt[.]/d; /axs[.]/d' ${BIGDL_ROOT}/python/chronos/use-case/network_traffic/network_traffic_autots_customized_model.py
-sed -i 's/epochs=5/epochs=1/g;s/choice([32,64])/choice([32])/g;s/grid_search([32, 64])/grid_search([2, 4])/g' ${BIGDL_ROOT}/python/chronos/use-case/network_traffic/network_traffic_autots_customized_model.py
-if [ ! -f ~/.chronos/dataset/network_traffic/network_traffic_data.csv ];then
-    wget -nv $FTP_URI/analytics-zoo-data/network-traffic/data/data.csv -P ~/.chronos/dataset/network_traffic/
-    mv ~/.chronos/dataset/network_traffic/data.csv ~/.chronos/dataset/network_traffic/network_traffic_data.csv
-fi
-execute_test network-traffic-autots-customized-model "${BIGDL_ROOT}/python/chronos/use-case/network_traffic/network_traffic_autots_customized_model.py"
-time10=$?
+# ${BIGDL_ROOT}/python/chronos/dev/app/ipynb2py.sh ${BIGDL_ROOT}/python/chronos/use-case/network_traffic/network_traffic_autots_customized_model
+# sed -i '/get_ipython()/d; /plot[.]/d; /plt[.]/d; /axs[.]/d' ${BIGDL_ROOT}/python/chronos/use-case/network_traffic/network_traffic_autots_customized_model.py
+# sed -i 's/epochs=5/epochs=1/g;s/choice([32,64])/choice([32])/g;s/grid_search([32, 64])/grid_search([2, 4])/g' ${BIGDL_ROOT}/python/chronos/use-case/network_traffic/network_traffic_autots_customized_model.py
+# if [ ! -f ~/.chronos/dataset/network_traffic/network_traffic_data.csv ];then
+#     wget -nv $FTP_URI/analytics-zoo-data/network-traffic/data/data.csv -P ~/.chronos/dataset/network_traffic/
+#     mv ~/.chronos/dataset/network_traffic/data.csv ~/.chronos/dataset/network_traffic/network_traffic_data.csv
+# fi
+# execute_test network-traffic-autots-customized-model "${BIGDL_ROOT}/python/chronos/use-case/network_traffic/network_traffic_autots_customized_model.py"
+# time10=$?
 
 
-echo "#1 anomaly-detect-unsupervised-forecast-based time used:$time1 seconds"
-echo "#2 anomaly-detect-unsupervised time used:$time2 seconds"
+# echo "#1 anomaly-detect-unsupervised-forecast-based time used:$time1 seconds"
+# echo "#2 anomaly-detect-unsupervised time used:$time2 seconds"
 #echo "#3 electricity-tcn time used:$time3 seconds"
 #echo "#4 electricity-autoformer time used:$time4 seconds"
 echo "#5 stock-prediction time used:$time5 seconds"
 echo "#6 stock-prediction-prophet time used:$time6 seconds"
-echo "#7 network-traffic-model-forecasting time used:$time7 seconds"
-echo "#8 network-traffic-multivarite-multistep-tcnforecaster time used:$time8 seconds"
-echo "#9 network-traffic-autots-forecasting time used:$time9 seconds"
-echo "#10 network-traffic-autots-customized-model time used:$time10 seconds"
+# echo "#7 network-traffic-model-forecasting time used:$time7 seconds"
+# echo "#8 network-traffic-multivarite-multistep-tcnforecaster time used:$time8 seconds"
+# echo "#9 network-traffic-autots-forecasting time used:$time9 seconds"
+# echo "#10 network-traffic-autots-customized-model time used:$time10 seconds"
 
 # This should be done at the very end after all tests finish.
 clear_up
