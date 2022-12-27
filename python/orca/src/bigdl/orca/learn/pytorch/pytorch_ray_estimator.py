@@ -145,8 +145,7 @@ class PyTorchRayEstimator(BaseRayEstimator):
         self.setup(params=self.setup_params,
                    backend=self.backend,
                    runner_cls=PytorchRayWorker,
-                   workers_per_node=self.workers_per_node,
-                   mode="predict")
+                   workers_per_node=self.workers_per_node)
 
     def fit(self,  # type:ignore[override]
             data: Union['SparkXShards',
@@ -211,12 +210,8 @@ class PyTorchRayEstimator(BaseRayEstimator):
             callbacks=callbacks,
         )
 
-        if self.backend == "ray":
-            self.setup(params=self.setup_params,
-                       backend=self.backend,
-                       runner_cls=PytorchRayWorker,
-                       workers_per_node=self.workers_per_node,
-                       mode="fit")
+        if self.backend == "ray" and self.init_ddp_process is False:
+            self.setup_ddp()
 
         from bigdl.orca.data import SparkXShards
         from ray.data import Dataset

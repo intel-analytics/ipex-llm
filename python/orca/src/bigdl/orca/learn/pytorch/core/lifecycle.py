@@ -32,11 +32,11 @@ class LifeCycle(metaclass=ABCMeta):
         self.setup_components()
         self.setup_ddp_components()
 
-    def setup_predict_distribute(self, world_rank, world_size):
+    def setup_torch_estimator(self, world_rank, world_size):
         self.rank = world_rank
         self.size = world_size
         self.setup_components()
-        self.setup_predict_components()
+        self.setup_torch_components()
 
     @abstractmethod
     def setup_components(self):
@@ -63,7 +63,7 @@ class LifeCycle(metaclass=ABCMeta):
         pass
 
     @abstractmethod
-    def setup_predict_components(self):
+    def setup_torch_components(self):
         """Runs the creator functions without any distributed coordination."""
         pass
 
