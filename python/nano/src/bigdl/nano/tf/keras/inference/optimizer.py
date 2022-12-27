@@ -630,7 +630,7 @@ class InferenceOptimizer(BaseInferenceOptimizer):
             model.save_weights(checkpoint_path)
 
     @staticmethod
-    def load(path, model: Optional[Model] = None):
+    def load(path, model: Optional[Model] = None, device=None):
         """
         Load a model from local.
 
@@ -639,6 +639,8 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                accelerated the model with accelerator=None by InferenceOptimizer.trace/
                InferenceOptimizer.quantize. model should be set to None if you choose
                accelerator="onnxruntime"/"openvino".
+        :param device: A string represents the device of the inference. Default to None.
+               Only valid for openvino model, otherwise will be ignored.
         :return: Model with different acceleration(None/OpenVINO/ONNX Runtime) or
                  precision(FP32/FP16/BF16/INT8).
         """
@@ -655,7 +657,7 @@ class InferenceOptimizer(BaseInferenceOptimizer):
         if model_type == 'KerasOpenVINOModel':
             invalidInputError(model is None,
                               "Argument 'model' must be None for OpenVINO loading.")
-            return load_openvino_model(path, framework='tensorflow')
+            return load_openvino_model(path, framework='tensorflow', device=device)
         if model_type == 'KerasONNXRuntimeModel':
             invalidInputError(model is None,
                               "Argument 'model' must be None for ONNX Runtime loading.")

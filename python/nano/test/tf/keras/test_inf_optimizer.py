@@ -118,7 +118,7 @@ class TestInferencePipeline(TestCase):
                      latency_sample_num=10,
                      thread_num=8)
         model = opt.get_best_model()
-        
+
         # test dataset with only x
         model = ResNet50(weights=None, input_shape=[40, 40, 3], classes=10)
         train_examples = np.random.random((100, 40, 40, 3))
@@ -131,12 +131,10 @@ class TestInferencePipeline(TestCase):
                      thread_num=8)
         model = opt.get_best_model()
 
-    def test_optimize_save_load(self):
+    def test_optimizer_save_load(self):
         model = ResNet50(weights=None, input_shape=[40, 40, 3], classes=10)
         # prepare dataset
         train_examples = np.random.random((100, 40, 40, 3))
-        train_labels = np.random.randint(0, 10, size=(100,))
-        train_dataset = tf.data.Dataset.from_tensor_slices((train_examples, train_labels))
         # save load for original model
         output1 = model(train_examples)
         with tempfile.TemporaryDirectory() as tmp_dir_name:
@@ -144,23 +142,3 @@ class TestInferencePipeline(TestCase):
             load_model = InferenceOptimizer.load(tmp_dir_name, model)
             output2 = load_model(train_examples)
             np.testing.assert_almost_equal(output1.numpy(), output2.numpy(), decimal=5)
-        # prepare optimizer
-        opt = InferenceOptimizer()
-        opt.optimize(model=model,
-                     x=train_dataset,
-                     y=None,
-                     batch_size=4,
-                     latency_sample_num=10)
-        methods = opt.ALL_INFERENCE_ACCELERATION_METHOD
-        for method in methods.keys():
-            option = opt.optimized_model_dict[method]
-            if 'model' in option:
-                acc_model = option['model']
-                with tempfile.TemporaryDirectory() as tmp_dir_name:
-                    dir_name = os.path.join(tmp_dir_name, method)
-                    InferenceOptimizer.save(acc_model, dir_name)
-                    try:
-                        acc_model = InferenceOptimizer.load(dir_name)
-                    except:
-                        acc_model = InferenceOptimizer.load(dir_name, model)
-                del acc_model

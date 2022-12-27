@@ -79,3 +79,30 @@ class TestOpenVINO(TestCase):
         preds1 = openvino_model(train_examples).numpy()
         preds2 = new_ov_model(train_examples).numpy()
         np.testing.assert_almost_equal(preds1, preds2, decimal=5)
+
+    def test_model_trace_openvino_save_load(self):
+        # test whether contains GPU
+        from openvino.runtime import Core
+        core = Core()
+        devices = core.available_devices
+        gpu_avaliable = any('GPU' in x for x in devices)
+        
+        if gpu_avaliable is False:
+            return
+
+        model = MobileNetV2(weights=None, input_shape=[40, 40, 3], classes=10)
+        model = Model(inputs=model.inputs, outputs=model.outputs)
+        train_examples = np.random.random((100, 40, 40, 3))
+
+        # trace a Keras model
+        openvino_model = InferenceOptimizer.trace(model,
+                                                  accelerator='openvino',
+                                                  thread_num=4,
+                                                  device='GPU')
+        y_hat = openvino_model(train_examples[:10])
+        assert y_hat.shape == (10, 10)
+
+        with tempfile.TemporaryDirectory() as tmp_dir_name:
+            InferenceOptimizer.save(openvino_model, tmp_dir_name)
+            model = InferenceOptimizer.load(tmp_dir_name)  # GPU model
+            model = InferenceOptimizer.load(tmp_dir_name, device='CPU')  # CPU model
