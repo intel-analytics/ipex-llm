@@ -41,9 +41,10 @@ ADD https://github.com/krallin/tini/releases/download/${TINI_VERSION}/tini /sbin
 ADD ./entrypoint.sh /opt/entrypoint.sh
 
 # Small examples for PyTorch
-ADD ./mnist.py       /ppml/examples/mnist.py
-ADD ./pert.py        /ppml/examples/pert.py
-ADD ./pert_ipex.py   /ppml/examples/pert_ipex.py
+ADD ./mnist.py        /ppml/examples/mnist.py
+ADD ./pert.py         /ppml/examples/pert.py
+ADD ./pert_ipex.py    /ppml/examples/pert_ipex.py
+ADD ./load_save_ex.py /ppml/examples/load_save_ex.py
 # Patch for datasets
 ADD ./filelock.patch /filelock.patch
 ADD ./bash.manifest.template.patch /bash.manifest.template.patch
@@ -107,6 +108,16 @@ RUN env DEBIAN_FRONTEND=noninteractive apt-get update && \
 # which is then required by our third-layer gramine make command
     patch /usr/local/lib/python3.7/dist-packages/datasets/utils/filelock.py /filelock.patch && \
     pip3 install --no-cache markupsafe==2.0.1 pyarrow==6.0.1 && \
+# Install bigdl-ppml lib
+    cd /ppml/ && \
+    git clone https://github.com/intel-analytics/BigDL.git && \
+    cd BigDL && \
+    mkdir -p /ppml/bigdl-ppml/ && \
+    cp -r /ppml/BigDL/python/ppml/src/ /ppml/bigdl-ppml && \
+    rm -rf /ppml/BigDL && \
+    cd /ppml && \
     patch /ppml/bash.manifest.template /bash.manifest.template.patch
+
+ENV PYTHONPATH        ${PYTHONPATH}:/ppml/bigdl-ppml/src
 
 ENTRYPOINT [ "/opt/entrypoint.sh" ]
