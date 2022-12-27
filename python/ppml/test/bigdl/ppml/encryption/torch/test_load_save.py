@@ -70,7 +70,6 @@ encryption_key = _create_random(32)
 
 class TestModelSaveLoad(unittest.TestCase):
 
-    @classmethod
     def test_save_load_to_buf(self):
         model = linearModel()
         encrypted_buf = io.BytesIO()
@@ -78,14 +77,11 @@ class TestModelSaveLoad(unittest.TestCase):
         expected_buf = io.BytesIO()
         torch.save(model.state_dict(), expected_buf)
         expected_state = torch.load(expected_buf)
-
         save(model.state_dict(), encrypted_buf, encryption_key)
         # load it back and compare the stat_dict is the same
         our_state_dict = load(encrypted_buf, encryption_key)
-
         self.assertEqual(our_state_dict, expected_state)
 
-    @classmethod
     def test_save_load_to_file(self):
         # Initialize the model
         model = linearModel()
@@ -96,7 +92,6 @@ class TestModelSaveLoad(unittest.TestCase):
         model.load_state_dict(load("testsave.pt", encryption_key))
         self.assertEqual(model.linear.weight.data[0], 1.245)
 
-    @classmethod
     def test_save_load_buf2(self):
         # Initialize the model
         model = linearModel()
@@ -107,7 +102,6 @@ class TestModelSaveLoad(unittest.TestCase):
         model.load_state_dict(load(buf, encryption_key))
         self.assertEqual(model.linear.weight.data[0], 1.245)
 
-    @classmethod
     def test_multi_save(self):
         model = TheModelClass()
         optimizer = optim.SGD(model.parameters(), lr=0.001, momentum=0.9)
