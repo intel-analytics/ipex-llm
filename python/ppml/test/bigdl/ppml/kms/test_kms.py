@@ -52,7 +52,8 @@ class TestKMS(unittest.TestCase):
 
         if os.path.exists(encrypted_data_key_path):
             os.remove(encrypted_data_key_path)
-    
+
+    @unittest.skip("This test needs to be run manually, need to set APPID, APIKEY etc before running.")
     def test_encrypt_buf(self):
         buf = io.BytesIO()
         buf.write(b"HELLO WORLD")
