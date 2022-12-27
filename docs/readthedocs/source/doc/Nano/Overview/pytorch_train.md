@@ -4,11 +4,11 @@ BigDL-Nano can be used to accelerate **PyTorch** or **PyTorch-Lightning** applic
 
 The optimizations in BigDL-Nano are delivered through
 
-1) An extended version of PyTorch-Lightning `Trainer` (`bigdl.nano.pytorch.Trainer`) for LightingModule and easy ``nn.Module``.
+1) An extended version of PyTorch-Lightning `Trainer` (`bigdl.nano.pytorch.Trainer`) for `LightningModule` and easy `nn.Module`.
 
-2) An abstract `TorchNano` (`bigdl.nano.pytorch.TorchNano`) or a decorator `@nano` (`bigdl.nano.pytorch.nano`) to accelerate raw or complex ``nn.Module``.
+2) An abstract `TorchNano` (`bigdl.nano.pytorch.TorchNano`) or a decorator `@nano` (`bigdl.nano.pytorch.nano`) to accelerate raw or complex `nn.Module`.
 
-We will briefly describe here the major features in BigDL-Nano for PyTorch training. You can find complete how to guides for acceleration of [pytorch-lightning](../Howto/index.html#pytorch-lightning) and [pytorch](../Howto/index.html#pytorch).
+We will briefly describe here the major features in BigDL-Nano for PyTorch training. You can find complete how to guides for acceleration of [PyTorch-Lightning](../Howto/index.html#pytorch-lightning) and [PyTorch](../Howto/index.html#pytorch).
 
 ## Best Known Environment Variables
 When you successfully installed `bigdl-nano` (please refer to [installation guide](./install.html)) in a conda environment. You are **highly recommeneded** to run following command **once**.
@@ -42,7 +42,7 @@ trainer.fit(lightning_module, train_loader)
 
 ### `nn.Module` with customized training loop
 
-The `TorchNano` class is what we use to accelerate raw pytorch code. By using it, we only need to make very few changes to accelerate custom training loop. For example,
+The `TorchNano` class is what we use to accelerate raw PyTorch code. By using it, we only need to make very few changes to accelerate custom training loop. For example,
 
 ```python
 from bigdl.nano.pytorch import TorchNano
@@ -83,7 +83,7 @@ train(model, optimizer, train_loader, ...)
 
 ## Accelerate `LightningModule`'s training
 
-The PyTorch Trainer extends PyTorch Lightning's Trainer and has a few more parameters and methods specific to BigDL-Nano. The Trainer can be directly used to train a `LightningModule`.
+The PyTorch `Trainer` extends PyTorch Lightning's `Trainer` and has a few more parameters and methods specific to BigDL-Nano. The Trainer can be directly used to train a `LightningModule`.
 
 For example,
 
