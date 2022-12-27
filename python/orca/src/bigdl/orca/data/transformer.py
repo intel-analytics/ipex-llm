@@ -384,6 +384,7 @@ class MinMaxScaler:
         df = shard.to_spark_df()
         self.scalerModel = self.scaler.fit(df)  # type: ignore
         scaledData = self.scalerModel.transform(df)  # type: ignore
+        scaledData = scaledData.drop(self.vecOutputCol)
         data_shards = spark_df_to_pd_sparkxshards(scaledData)
         return data_shards
 
@@ -391,10 +392,7 @@ class MinMaxScaler:
         invalidInputError(self.scalerModel, "Please call fit_transform first")
         df = shard.to_spark_df()
         scaledData = self.scalerModel.transform(df)  # type: ignore
-        if isinstance(self.vecOutputCol, str):
-            scaledData = scaledData.drop(self.vecOutputCol)
-        else:
-            scaledData = scaledData.drop(*(self.vecOutputCol))
+        scaledData = scaledData.drop(self.vecOutputCol)
         data_shards = spark_df_to_pd_sparkxshards(scaledData)
         return data_shards
 
@@ -433,6 +431,7 @@ class StandardScaler:
         df = shard.to_spark_df()
         self.scalerModel = self.scaler.fit(df)  # type: ignore
         scaledData = self.scalerModel.transform(df)  # type: ignore
+        scaledData = scaledData.drop(self.vecOutputCol)
         data_shards = spark_df_to_pd_sparkxshards(scaledData)
         return data_shards
 
