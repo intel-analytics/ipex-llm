@@ -42,7 +42,7 @@ class _buf_operator(object):
         decrypted_content = self.secret_key.decrypt(buffer.getvalue())
         decrypted_buffer.write(decrypted_content)
 
-class _opener(object):
+class opener(object):
     def __init__(self, file_like):
         self.file_like = file_like
 
@@ -52,7 +52,7 @@ class _opener(object):
     def __exit__(self, *args):
         pass
 
-class _open_file(_opener):
+class _open_file(opener):
     def __init__(self, name, mode):
         super(_open_file, self).__init__(open(name, mode))
     
@@ -60,11 +60,11 @@ class _open_file(_opener):
         # Flush is automatically done when closing the file
         self.file_like.close()
 
-class _open_buffer_reader(_opener):
+class _open_buffer_reader(opener):
     def __init__(self, buffer):
         super(_open_buffer_reader, self).__init__(buffer)
 
-class _open_buffer_writer(_opener):
+class _open_buffer_writer(opener):
     def __exit__(self, *args):
         self.file_like.flush()
 

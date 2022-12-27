@@ -16,19 +16,123 @@
 
 from datasets.arrow_dataset import Dataset
 from datasets.dataset_dict import DatasetDict
+from bigdl.ppml.encryption.torch.models import opener
 from datasets import config
+from cryptography.fernet import Fernet
 from pathlib import Path
 import fsspec
+import json
+from io import BytesIO
+import pyarrow as pa
+from datasets.info import DatasetInfo
+from datasets.utils.info_utils import is_small_dataset
+from datasets.splits import Split
+# TODO: This may incur error, the encrypted filesize is larger
+from datasets.utils.file_utils import estimate_dataset_size
+# TODO: clean
+from datasets.table import (
+    InMemoryTable,
+    MemoryMappedTable,
+    Table,
+    concat_tables,
+    embed_table_storage,
+    list_table_cache_files,
+    table_cast,
+    table_iter,
+    table_visitor,
+)
 from typing import Dict, List, Mapping, Optional, Sequence, Tuple, Type, Union
 
-@staticmethod
-def test():
-    print("test")
+class encrypt_reader_opener(object):
+    def __init__(self, name, mode, key):
+        self.key = Fernet(key)
+        opened_file = open(name, mode)
+        decrypted_content = self.key.decrypt(opened_file.read())
+        opened_file.close()
+        buf = BytesIO()
+        buf.write(decrypted_content)
+        buf.seek(0)
+        super(encrypt_reader_opener, self).__init__(buf)
 
-Dataset.load_from_disk = test
+# TODO: delete comment
+# We knew that file is a path
+# Review later
+def _open_encrypt_file_with_key(file, mode, key):
+    return encrypt_reader_opener(file, mode, key)
+
+
+def decrypt_file_to_pa_buffer(filename, key):
+    decryptor = Fernet(key)
+    opened_file = open(filename, 'r')
+    decrypted_content = decryptor.decrypt(opened_file.read())
+    opened_file.close()
+    buf = pa.py_buffer(decrypted_content)
+    return buf
+
+
+@staticmethod
+def customized_load(dataset_path: str, fs=None, keep_in_memory: Optional[bool] = None, key) -> "Dataset":
+    print("customized load") # TODO: delete later
+    # TODO: delete fs later
+    fs = fsspec.filesystem("file") if fs is None else fs
+    dataset_dict_json_path = Path(dataset_path, config.DATASETDICT_JSON_FILENAME).as_posix()
+    dataset_info_path = Path(dataset_path, config.DATASET_INFO_FILENAME).as_posix()
+    if not fs.isfile(dataset_info_path) and fs.isfile(dataset_dict_json_path):
+        raise FileNotFoundError(
+           f"No such file or directory: '{dataset_info_path}'. Expected to load a Dataset object, but got a DatasetDict. Please use datasets.load_from_disk instead."
+        )
+
+    # TODO: use own own opener later here
+    # with open(Path(dataset_path, config.DATASET_STATE_JSON_FILENAME).as_posix(), encoding="utf-8") as state_file:
+    #     state = json.load(state_file)
+    with _open_encrypt_file_with_key(Path(dataset_path, config.DATASET_STATE_JSON_FILENAME).as_posix(), 'rb', key) as state_file:
+        state = json.load(state_file)
+    # with open(Path(dataset_path, config.DATASET_INFO_FILENAME).as_posix(), encoding="utf-8") as dataset_info_file:
+    #     dataset_info = DatasetInfo.from_dict(json.load(dataset_info_file))
+    with _open_encrypt_file_with_key(Path(dataset_path, config.DATASET_INFO_FILENAME).as_posix(), 'rb') as dataset_info_file:
+        dataset_info = DatasetInfo.from_dict(json.load(dataset_info_file))
+
+    dataset_size = estimate_dataset_size(
+        Path(dataset_path, data_file["filename"]) for data_file in state["_data_files"]
+    )
+    keep_in_memory = keep_in_memory if keep_in_memory is not None else is_small_dataset(dataset_size)
+    # TODO: change others later
+    table_cls = InMemoryTable if keep_in_memory else MemoryMappedTable
+    # arrow_table = concat_tables(
+    #     table_cls.from_file(Path(dataset_path, data_file["filename"]).as_posix())
+    #     for data_file in state["_data_files"]
+    # )
+    arrow_table = concat_tables(
+        table_cls.from_buffer(decrypt_file_to_pa_buffer(
+            Path(dataset_path, data_file["filename"]).as_posix()))
+        for data_file in state["_data_files"]
+    )
+
+    split = state["_split"]
+    split = Split(split) if split is not None else split
+
+    dataset = Dataset(
+        arrow_table=arrow_table,
+        info=dataset_info,
+        split=split,
+        fingerprint=state["_fingerprint"],
+    )
+
+    format = {
+        "type": state["_format_type"],
+        "format_kwargs": state["_format_kwargs"],
+        "columns": state["_format_columns"],
+        "output_all_columns": state["_output_all_columns"],
+    }
+    dataset = dataset.with_format(**format)
+
+    return dataset
+
+
+Dataset.load_from_disk = customized_load
 
 # TODO: add fs argument if needed
-def load_from_disk(dataset_path: str, fs: None, keep_in_memory: Optional[bool] = None) -> Union[Dataset, DatasetDict]:
+def load_from_disk(dataset_path: str, fs=None, keep_in_memory: Optional[bool] = None) -> Union[Dataset, DatasetDict]:
     fs = fsspec.filesystem("file")
     if not fs.exists(dataset_path):
         raise FileNotFoundError(f"Directory {dataset_path} not found")
