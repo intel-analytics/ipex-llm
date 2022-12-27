@@ -197,9 +197,6 @@ class TorchRunner(BaseRunner):
         ]
         self.setup_operator(self.training_models)
 
-    def setup_torch_components(self):
-        self.setup_operator(self.models)
-
     def setup_operator(self, training_models):
         """Create the training operator."""
         if self.backend == "horovod":

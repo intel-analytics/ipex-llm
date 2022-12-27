@@ -36,7 +36,6 @@ class LifeCycle(metaclass=ABCMeta):
         self.rank = world_rank
         self.size = world_size
         self.setup_components()
-        self.setup_torch_components()
 
     @abstractmethod
     def setup_components(self):
@@ -60,11 +59,6 @@ class LifeCycle(metaclass=ABCMeta):
         #     for model in self.models
         # ]
         # self.setup_operator(training_models)
-        pass
-
-    @abstractmethod
-    def setup_torch_components(self):
-        """Runs the creator functions without any distributed coordination."""
         pass
 
     @abstractmethod
