@@ -43,7 +43,7 @@ from datasets.table import (
 )
 from typing import Dict, List, Mapping, Optional, Sequence, Tuple, Type, Union
 
-class encrypt_reader_opener(object):
+class encrypt_reader_opener(opener):
     def __init__(self, name, mode, key):
         self.key = Fernet(key)
         opened_file = open(name, mode)
