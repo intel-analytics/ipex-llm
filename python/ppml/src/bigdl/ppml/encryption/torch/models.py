@@ -76,7 +76,7 @@ def _open_file_or_buffer(file_like, mode):
         elif 'r' in mode:
             return _open_buffer_reader(file_like)
         else:
-            raise RuntimeError(f"Expected 'r' or 'w' in mode but got {mode}")
+            raise RuntimeError(f"Expected 'r' or 'w' in mode but got {mode}")   # noqa
 
 def save(obj, f: Union[str, os.PathLike, BinaryIO, IO[bytes]], encryption_key: str, pickle_module = pickle, pickle_protocol=DEFAULT_PROTOCOL, _use_new_zipfile_serialization=True) -> None:
     buffer = io.BytesIO()
