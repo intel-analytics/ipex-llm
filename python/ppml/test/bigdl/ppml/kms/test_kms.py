@@ -18,7 +18,6 @@
 # python3 -m pktest test_kms.py
 
 import io, os
-import pytest
 import unittest
 from bigdl.ppml.kms.client import encrypt_buffer_with_key, decrypt_buffer_with_key, generate_primary_key, generate_data_key
 
@@ -33,7 +32,6 @@ ehsm_port = "9000"
 
 
 class TestKMS(unittest.TestCase):
-
 
     @classmethod
     def setUpClass(cls) -> None:
