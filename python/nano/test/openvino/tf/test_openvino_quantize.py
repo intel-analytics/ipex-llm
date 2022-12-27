@@ -116,3 +116,26 @@ class TestOpenVINO(TestCase):
         preds = model.predict(train_examples)
         openvino_preds = openvino_quantized_model.predict(train_examples)
         np.testing.assert_allclose(preds, openvino_preds, rtol=1e-2)
+
+    def test_model_quantize_openvino_bf16(self):
+        model = MobileNetV2(weights=None, input_shape=[40, 40, 3], classes=10)
+        model = Model(inputs=model.inputs, outputs=model.outputs)
+        train_examples = np.random.random((100, 40, 40, 3))
+
+        try:
+            openvino_quantized_model = InferenceOptimizer.quantize(model,
+                                                                accelerator='openvino',
+                                                                precision='bf16')
+        except RuntimeError as e:
+            assert e.__str__() == "Platform doesn't support BF16 format"
+            return
+
+        y_hat = openvino_quantized_model(train_examples[:10])
+        assert y_hat.shape == (10, 10)
+
+        y_hat = openvino_quantized_model.predict(train_examples, batch_size=5)
+        assert y_hat.shape == (100, 10)
+
+        preds = model.predict(train_examples)
+        openvino_preds = openvino_quantized_model.predict(train_examples)
+        np.testing.assert_allclose(preds, openvino_preds, rtol=1e-2)
