@@ -699,7 +699,7 @@ class TestChronosNBeatsForecaster(TestCase):
         forecaster = NBeatsForecaster.from_tsdataset(train_data)
         forecaster.fit(train_data)
 
-        # export the pipelien to torchscript
+        # export the pipeline to torchscript
         pipeline_module_dir = os.path.join(temp_dir, "pipeline")
         os.mkdir(pipeline_module_dir)
         forecaster.export_torchscript_module(train_data,
