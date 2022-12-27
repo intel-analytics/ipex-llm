@@ -28,22 +28,22 @@ init_orca_context(memory='4g')
 # Step 2: Load the model and data
 est = Estimator.from_keras()
 est.load('NCF_model')
-data = XShards.load_pickle('val_data_xshards')
+data = XShards.load_pickle('test_xshards')
 
 # Step 3: Define the input feature columns
 feature_cols = ['user', 'item',
-                'gender', 'occupation', 'zipcode', 'category',  # sparse features
+                'gender', 'zipcode', 'category', 'occupation',  # sparse features
                 'age']  # dense features
 
 # Step 4: Predict the result
 res = est.predict(
     data,
-    batch_size=256,
-    steps=math.ceil(len(data) / 256),
+    batch_size=10240,
+    steps=math.ceil(len(data) / 10240),
     feature_cols=feature_cols
 )
 # Step 5: Save the prediction result
-res.write.parquet('predict_xshards_result')
-res.to_spark_df().show()
-# Step 7: Stop Orca Context when program finishes
+res.save_pickle('predict_xshards_result')
+
+# Step 6: Stop Orca Context when program finishes
 stop_orca_context()
