@@ -1212,10 +1212,10 @@ class TSDataset:
         >>> // deployment in C++
         >>> #include <torch/torch.h>
         >>> #include <torch/script.h>
-        >>> // create input tensor
+        >>> // create input tensor from your data
         >>> // the data to create input tensor should have the same format as the
         >>> // data used in developing
-        >>> torch::Tensor input = create_input_tensor();
+        >>> torch::Tensor input = create_input_tensor(data);
         >>> // load the module
         >>> torch::jit::script::Module preprocessing;
         >>> preprocessing = torch::jit::load(path);
