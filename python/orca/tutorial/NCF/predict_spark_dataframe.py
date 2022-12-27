@@ -39,8 +39,8 @@ feature_cols = ['user', 'item'] + sparse_features + dense_features
 # Step 4: Predict the result
 res = est.predict(
     data,
-    batch_size=256,
-    steps=math.ceil(data.count() / 256),
+    batch_size=10240,
+    steps=math.ceil(data.count() / 10240),
     feature_cols=feature_cols
 )
 
