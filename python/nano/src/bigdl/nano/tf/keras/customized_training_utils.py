@@ -13,10 +13,22 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+
+
 import tensorflow as tf
+import numpy as np
+from functools import wraps
 
 
-from .Sequential import Sequential
-from .Model import Model
-from .inference.optimizer import InferenceOptimizer
-from .customized_training_utils import nano_bf16
+def nano_bf16(func):
+    """A decorator to realize mixed precision on customized training loop."""
+    # todo check the func signature
+    @wraps(func)
+    def wrapper(*inner_args):
+        new_args = []
+        for arg in inner_args:
+            if isinstance(arg, (tf.Tensor, np.ndarray)):
+                arg = tf.cast(arg, tf.bfloat16)
+            new_args.append(arg)
+        return func(*new_args)
+    return wrapper
