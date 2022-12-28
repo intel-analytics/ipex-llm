@@ -255,7 +255,7 @@ class TestOpenVINO(TestCase):
             openvino_model(x2)
 
     def test_openvino_vpu_quatize(self):
-        # test whether contains GPU
+        # test whether contains VPU
         from openvino.runtime import Core
         core = Core()
         devices = core.available_devices
