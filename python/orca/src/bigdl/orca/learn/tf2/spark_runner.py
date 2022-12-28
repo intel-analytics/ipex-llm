@@ -89,7 +89,6 @@ class DatasetHandler:
         if isinstance(dataset, list) and all([isinstance(x, dict) for x in dataset]):
             invalidInputError(steps is not None,
                               "steps must be provided for xshard")
-
             dataset = self._handle_xshards(dataset,
                                            steps=steps,
                                            local_batch_size=local_batch_size,
@@ -143,7 +142,6 @@ class TFDistributedDatasetHandler(DatasetHandler):
             dataset = dataset.batch(local_batch_size)
             return dataset
 
-
         from tensorflow.python.distribute import distribution_strategy_context as ds_context
         strategy = ds_context.get_strategy()
         dataset = strategy.experimental_distribute_datasets_from_function(dataset_fn)
@@ -167,7 +165,6 @@ class LocalDatasetHandler(DatasetHandler):
 
     def _handle_xshards(self, dataset, steps, local_batch_size, shuffle):
         import tensorflow as tf
-
         data, label = partition_get_data_label(dataset,
                                                allow_tuple=True,
                                                allow_list=False)
@@ -421,37 +418,6 @@ class SparkRunner:
                 return [stats, weights]
         else:
             return []
-        # if self.rank == 0:
-        #     if self.model_dir is not None:
-        #         model_state = {
-        #             "weights": self.model.get_weights(),
-        #             "optimizer_weights": self.model.optimizer.get_weights()
-        #         }
-        #         save_pkl(model_state, os.path.join(self.model_dir, "state.pkl"))
-        #         save_model(self.model, self._model_saved_path, save_format="h5")
-        #     else:
-        #         weights = self.model.get_weights()
-        #     self._stop_log_monitor()
-        #     if self.model_dir is not None:
-        #         return [stats]
-        #     else:
-        #         return [stats, weights]
-        # else:
-        #     if self.model_dir is not None:
-        #         model_state = {
-        #             "weights": self.model.get_weights(),
-        #             "optimizer_weights": self.model.optimizer.get_weights()
-        #         }
-        #         temp_dir = tempfile.mkdtemp()
-        #         try:
-        #             save_model(self.model, os.path.join(temp_dir, "model.h5"))
-        #         finally:
-        #             shutil.rmtree(temp_dir)
-        #             self._stop_log_monitor()
-        #     else:
-        #         weights = self.model.get_weights()
-        #         self._stop_log_monitor()
-        #     return []
 
     def validate(self, data_creator, batch_size=32, verbose=1, sample_weight=None,
                  steps=None, callbacks=None, data_config=None):
