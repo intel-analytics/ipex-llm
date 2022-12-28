@@ -791,7 +791,7 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                     if input_sample is None:
                         # input_sample can be a dataloader
                         input_sample = calib_dataloader
-                    # For CPU: fp32 -> int8, for GPU: fp16 -> int8
+                    # For CPU: fp32 -> int8, for GPU/VPUX: fp16 -> int8
                     _precision = 'fp16' if device != 'CPU' else 'fp32'
                     model = PytorchOpenVINOModel(model, input_sample,
                                                  precision=_precision,
@@ -831,19 +831,17 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                 invalidInputError(False,
                                   "Accelerator {} is invalid.".format(accelerator))
         if precision == 'fp16':
-            invalidInputError(device == 'VPUX' or 'GPU' in device,
+            invalidInputError('GPU' in device,
                               "fp16 is not supported on {} device.".format(device))
             invalidInputError(accelerator == 'openvino',
                               "fp16 is not supported on {} accelerator.".format(accelerator))
-            if openvino_config is not None:
-                final_openvino_option = openvino_config
             return PytorchOpenVINOModel(model, input_sample,
                                         precision=precision,
                                         thread_num=thread_num,
                                         device=device,
                                         dynamic_axes=dynamic_axes,
                                         logging=logging,
-                                        config=final_openvino_option,
+                                        config=openvino_config,
                                         **export_kwargs)
 
         invalidInputError(False,

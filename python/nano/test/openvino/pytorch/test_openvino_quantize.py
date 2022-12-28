@@ -253,3 +253,30 @@ class TestOpenVINO(TestCase):
         # GPU don't support dynamic shape
         with pytest.raises(RuntimeError):
             openvino_model(x2)
+
+    def test_openvino_vpu_quatize(self):
+        # test whether contains VPU
+        from openvino.runtime import Core
+        core = Core()
+        devices = core.available_devices
+        vpu_avaliable = any('VPUX' in x for x in devices)
+        
+        if vpu_avaliable is False:
+            return
+
+        model = mobilenet_v3_small(num_classes=10)
+
+        x = torch.rand((1, 3, 256, 256))
+        x2 = torch.rand((10, 3, 256, 256))
+
+        # test VPU int8
+        openvino_model = InferenceOptimizer.quanize(model,
+                                                    input_sample=x,
+                                                    accelerator='openvino',
+                                                    device='VPUX',
+                                                    precision='int8',
+                                                    calib_data=x)
+        result = openvino_model(x)
+        # VPU don't support dynamic shape
+        with pytest.raises(RuntimeError):
+            openvino_model(x2)

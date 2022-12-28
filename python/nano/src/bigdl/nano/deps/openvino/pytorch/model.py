@@ -46,7 +46,7 @@ class PytorchOpenVINOModel(AcceleratedLightningModule):
         :param thread_num: a int represents how many threads(cores) is needed for
                            inference. default: None.
         :param device: A string represents the device of the inference. Default to 'CPU'.
-                       'CPU', 'GPU' and 'VPU' are supported for now.
+                       'CPU', 'GPU' and 'VPUX' are supported for now.
         :param dynamic_axes: dict or boolean, default to True. By default the exported onnx model
                              will have the first dim of each Tensor input as a dynamic batch_size.
                              If dynamic_axes=False, the exported model will have the shapes of all
@@ -79,6 +79,7 @@ class PytorchOpenVINOModel(AcceleratedLightningModule):
 
             self.ov_model = OpenVINOModel(ov_model_path,
                                           device=device,
+                                          precision=precision,
                                           thread_num=thread_num,
                                           config=config)
             super().__init__(None)
@@ -163,7 +164,10 @@ class PytorchOpenVINOModel(AcceleratedLightningModule):
                                   n_requests=n_requests, sample_size=sample_size)
         # below code will re-define a new object, and original attrs will be lost.
         # return PytorchOpenVINOModel(model, thread_num=thread_num, config=config)
-        self.__init__(model, thread_num=thread_num, config=config)
+        self.__init__(model,
+                      thread_num=thread_num,
+                      precision='int8',
+                      config=config)
         return self
 
     def _save_model(self, path):
