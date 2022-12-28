@@ -484,8 +484,8 @@ class TorchRunner(BaseRunner):
             self.batch = *features, target
         else:
             invalidInputError(False,
-                                "Features should be tensor, list/tuple, "
-                                "but got {}".format(type(features)))
+                              "Features should be tensor, list/tuple, "
+                              "but got {}".format(type(features)))
         self.call_hook(call_backs=callbacks, fn_name="before_train_iter")
 
         # Compute output.
@@ -631,8 +631,8 @@ class TorchRunner(BaseRunner):
             self.batch = *features, target
         else:
             invalidInputError(False,
-                                "Features should be tensor, list/tuple, "
-                                "but got {}".format(type(features)))
+                              "Features should be tensor, list/tuple, "
+                              "but got {}".format(type(features)))
         self.call_hook(call_backs=callbacks, fn_name="before_val_iter")
 
         # compute output
