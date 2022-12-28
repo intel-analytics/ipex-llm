@@ -142,7 +142,7 @@ https://bigdl.readthedocs.io/en/latest/doc/PPML/QuickStart/tpc-ds_with_sparksql_
 
 
 ### Run Trusted SimpleQuery
-<details><summary>Trusted SimpleQuery</summary>
+<details><summary>Trusted SimpleQuery With Single KMS/DataSource</summary>
 
 spark native mode
 <p align="left">
@@ -290,6 +290,53 @@ bash bigdl-ppml-submit.sh \
         --kmsServerPort kms_server_port \
         --ehsmAPPID appid \
         --ehsmAPIKEY apikey
+```
+</details>
+
+<details><summary>Trusted SimpleQuery With Multiple KMS/Datasource</summary>
+
+If you have multiple data sources that use different keys, you can also use the `initPPMLContextMultiKMS` method to initialize PPML Context with support for multiple Key Management Systems and data sources.   
+
+You just need to submit the parameters for the KMS and data sources in a manner similar to the following example.
+
+```bash 
+/opt/jdk8/bin/java \
+    -cp ':/ppml/trusted-big-data-ml/work/spark-3.1.2/conf/:/ppml/trusted-big-data-ml/work/spark-3.1.2/jars/*:/ppml/trusted-big-data-ml/work/spark-3.1.2/examples/jars/*:/ppml/trusted-big-data-ml/bigdl-ppml-spark_3.1.3-2.2.0-SNAPSHOT-jar-with-dependencies.jar' -Xmx16g \
+    org.apache.spark.deploy.SparkSubmit \
+    --master local[4] \
+    --executor-memory 8g \
+    --driver-memory 8g \
+    --class com.intel.analytics.bigdl.ppml.examples.MultiKMSExample \
+    --conf spark.network.timeout=10000000 \
+    --conf spark.executor.heartbeatInterval=10000000 \
+    --conf spark.bigdl.kms.multikms.instance=2 \
+    --conf spark.bigdl.kms.multikms.type1=SimpleKeyManagementService \
+    --conf spark.bigdl.kms.multikms.name1=simpleKMS \
+    --conf spark.bigdl.kms.multikms.simple.id1=465227134889 \
+    --conf spark.bigdl.kms.multikms.simple.key1=088347530263 \
+    --conf spark.bigdl.kms.multikms.type2=EHSMKeyManagementService \
+    --conf spark.bigdl.kms.multikms.ip2=172.168.0.226 \
+    --conf spark.bigdl.kms.multikms.port2=9000 \
+    --conf spark.bigdl.kms.multikms.ehs.id2=8cfaeef5-c382-4eb7-bbdb-6702dffabc3f \
+    --conf spark.bigdl.kms.multikms.ehs.key2=6zY8NZpNk6rF1Q5jw5b6JG6mRXKdX6nB \
+    --conf spark.bigdl.kms.datasource.instance=2 \
+    --conf spark.bigdl.kms.datasource1.kms=simpleKMS\
+    --conf spark.bigdl.kms.datasource1.inputpath=/ppml/trusted-big-data-ml/work/data/liyao/data1/input/people.csv \
+    --conf spark.bigdl.kms.datasource1.outputpath=/ppml/trusted-big-data-ml/work/data/liyao/data1/myoutput/people_output.crc \
+    --conf spark.bigdl.kms.datasource1.primary=/ppml/trusted-big-data-ml/work/data/liyao/data1/keys/simple/primaryKey \
+    --conf spark.bigdl.kms.datasource1.data=/ppml/trusted-big-data-ml/work/data/liyao/data1/keys/simple/dataKey \
+    --conf spark.bigdl.kms.datasource1.inputEncryptMode=AES/CBC/PKCS5Padding \
+    --conf spark.bigdl.kms.datasource1.outputEncryptMode=AES/CBC/PKCS5Padding \
+    --conf spark.bigdl.kms.datasource2.kms=simpleKMS\
+    --conf spark.bigdl.kms.datasource2.inputpath=/ppml/trusted-big-data-ml/work/data/liyao/data2/input/people.csv \
+    --conf spark.bigdl.kms.datasource2.outputpath=/ppml/trusted-big-data-ml/work/data/liyao/data2/myoutput/people_encrypted.crc \
+    --conf spark.bigdl.kms.datasource2.primary=/ppml/trusted-big-data-ml/work/data/liyao/data2/keys/ehsm/encrypted_primary_key \
+    --conf spark.bigdl.kms.datasource2.data=/ppml/trusted-big-data-ml/work/data/liyao/data2/keys/ehsm/encrypted_data_key \
+    --conf spark.bigdl.kms.datasource2.inputEncryptMode=AES/CBC/PKCS5Padding \
+    --conf spark.bigdl.kms.datasource2.outputEncryptMode=AES/CBC/PKCS5Padding \
+    --verbose \
+    --jars  /ppml/trusted-big-data-ml/bigdl-ppml-spark_3.1.3-2.2.0-SNAPSHOT-jar-with-dependencies.jar,local:///ppml/trusted-big-data-ml/bigdl-ppml-spark_3.1.3-2.2.0-SNAPSHOT-jar-with-dependencies.jar \
+    /ppml/trusted-big-data-ml/bigdl-ppml-spark_3.1.3-2.2.0-SNAPSHOT-jar-with-dependencies.jar \
 ```
 </details>
 
