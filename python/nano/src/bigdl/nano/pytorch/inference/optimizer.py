@@ -791,7 +791,7 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                     if input_sample is None:
                         # input_sample can be a dataloader
                         input_sample = calib_dataloader
-                    # For CPU: fp32 -> int8, for GPU: fp16 -> int8
+                    # For CPU: fp32 -> int8, for GPU/VPUX: fp16 -> int8
                     _precision = 'fp16' if device != 'CPU' else 'fp32'
                     model = PytorchOpenVINOModel(model, input_sample,
                                                  precision=_precision,

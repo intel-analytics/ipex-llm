@@ -38,7 +38,7 @@ class KerasOpenVINOModel(AcceleratedKerasModel):
         :param thread_num: a int represents how many threads(cores) is needed for
                     inference. default: None.
         :param device: A string represents the device of the inference. Default to 'CPU'.
-                       'CPU', 'GPU' and 'VPU' are supported for now.
+                       'CPU', 'GPU' and 'VPUX' are supported for now.
         :param config: The config to be inputted in core.compile_model.
                        inference. default: None.
         :param logging: whether to log detailed information of model conversion.

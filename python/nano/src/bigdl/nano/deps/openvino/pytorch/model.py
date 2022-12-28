@@ -46,7 +46,7 @@ class PytorchOpenVINOModel(AcceleratedLightningModule):
         :param thread_num: a int represents how many threads(cores) is needed for
                            inference. default: None.
         :param device: A string represents the device of the inference. Default to 'CPU'.
-                       'CPU', 'GPU' and 'VPU' are supported for now.
+                       'CPU', 'GPU' and 'VPUX' are supported for now.
         :param dynamic_axes: dict or boolean, default to True. By default the exported onnx model
                              will have the first dim of each Tensor input as a dynamic batch_size.
                              If dynamic_axes=False, the exported model will have the shapes of all
