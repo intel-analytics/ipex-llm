@@ -299,7 +299,7 @@ If you have multiple data sources that use different keys, you can also use the 
 
 You just need to submit the configurations for the KMS and data sources in a manner similar to the following example.
 
-For KMS, you should first submit the number of kms 'spark.bigdl.kms.multikms.instance', and then submit the configurations for each KMS in turn:
+For KMS, you should first submit the number of kms `spark.bigdl.kms.multikms.instance`, and then submit the configurations for each KMS in turn:
 ```
 spark.bigdl.kms.multikms.instance=num of your kms
 // for each KMS
@@ -308,8 +308,8 @@ spark.bigdl.kms.multikms.type{i} = KMS type of this KMS
 spark.bigdl.kms.multikms.name{i} = name of this KMS
 
 // for a simple KMS
-spark.bigdl.kms.multikms.simple.id{i} = APPIP of this KMS
-spark.bigdl.kms.multikms.simple.key{i} = APIKEY of this KMS
+spark.bigdl.kms.multikms.simple.id{i} = simple KMS APPIP 
+spark.bigdl.kms.multikms.simple.key{i} = simple KMS APIKEY
 
 // for a EHSM KMS
 spark.bigdl.kms.multikms.ehs.ip{i} = ehsm ip
@@ -318,10 +318,10 @@ spark.bigdl.kms.multikms.ehs.id{i} = ehsm APPID
 spark.bigdl.kms.multikms.ehs.key{i} = ehsm APIKEY
 
 // for a Azure KMS
-spark.bigdl.kms.multikms.azure.vault{i} = azure kms KeyVault
-spark.bigdl.kms.multikms.azure.clientId{i} = azure kms clientId
+spark.bigdl.kms.multikms.azure.vault{i} = azure KMS KeyVault
+spark.bigdl.kms.multikms.azure.clientId{i} = azure KMS clientId
 ```
-For data sources, you should first submit the number of kms 'spark.bigdl.kms.datasource.instance', and then submit the configurations for each data source in turn:
+For data sources, you should first submit the number of data sources `spark.bigdl.kms.datasource.instance`, and then submit the configurations for each data source in turn:
 ```
 spark.bigdl.kms.datasource.instance = num of your data sources
 // for each data source
@@ -333,6 +333,10 @@ spark.bigdl.kms.datasource{i}.outputpath = output path of this data source
 spark.bigdl.kms.datasource{i}.primary = primary key path of this data source 
 spark.bigdl.kms.datasource{i}.data = data key path of this data source 
 ```
+local mode
+<p align="left">
+  <img src="https://user-images.githubusercontent.com/61072813/174703141-63209559-05e1-4c4d-b096-6b862a9bed8a.png" alt="data lifecycle" width='250px' />
+</p>
 
 ```bash 
 /opt/jdk8/bin/java \
