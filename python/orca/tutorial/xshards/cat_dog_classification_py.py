@@ -33,8 +33,7 @@ sc = init_orca_context(cluster_mode="local", cores=4, memory="4g")
 
 path = '/Users/guoqiong/intelWork/data/dogs-vs-cats/small/'
 
-data_shard = bigdl.orca.data.image_shard.read_images(path)
-
+data_shard = bigdl.orca.data.image.preprocessing.read_images(path)
 
 def get_label(im):
     filename = im['filename']
@@ -52,11 +51,9 @@ def train_transform(im):
     out = features.numpy()
     return {'x': np.array([out]).astype(np.float32), 'y': np.array([im['y']]).astype(np.float32)}
 
-
 data_shard = data_shard.transform_shard(get_label)
 
 data_shard = data_shard.transform_shard(train_transform)
-
 
 class Cnn(nn.Module):
     def __init__(self):
