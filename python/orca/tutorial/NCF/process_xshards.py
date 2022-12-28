@@ -112,7 +112,6 @@ def prepare_data(dataset_dir, num_ng=4):
     # scale dense features
     def rename(shard, col):
         shard = shard.drop(columns=[col]).rename(columns={col+"_scaled": col})
-        shard[col] = shard[col].astype(np.float32)
         return shard
 
     for col in dense_features:
