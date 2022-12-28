@@ -16,18 +16,11 @@
 import platform
 import os
 import warnings
-if platform.system() != "Darwin":
-    # get socket number and phy core per socket
-    from bigdl.nano.common.cpu_schedule import get_cpu_info
-    l_core_to_p_core, l_core_to_socket = get_cpu_info()
-    physical_core = int(max(l_core_to_p_core.values()) + 1)
-    socket_num = int(max(l_core_to_socket.values()) + 1)
-    physical_core_per_socket = int(physical_core // socket_num)
 
+
+if platform.system() != "Darwin":
     # set tf settings
     import tensorflow as tf
-    tf.config.threading.set_inter_op_parallelism_threads(socket_num)
-    tf.config.threading.set_intra_op_parallelism_threads(physical_core_per_socket)
     tf.config.set_soft_device_placement(enabled=True)
 
 from .dispatcher import patch_tensorflow, unpatch_tensorflow
