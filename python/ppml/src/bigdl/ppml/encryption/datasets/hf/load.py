@@ -61,6 +61,7 @@ def _open_encrypt_file_with_key(file, mode, key):
     return encrypt_reader_opener(file, mode, key)
 
 
+# TODO: do we need to close the buffer afterwards?
 def decrypt_file_to_pa_buffer(filename, key):
     decryptor = Fernet(key)
     opened_file = open(filename, 'rb')
@@ -73,7 +74,7 @@ def decrypt_file_to_pa_buffer(filename, key):
 @staticmethod
 def customized_load(dataset_path: str, key:str, fs=None, keep_in_memory: Optional[bool] = None) -> "Dataset":
     print("customized load") # TODO: delete later
-    # TODO: delete fs later
+    # TODO: delete fs later, or add invalidInputError
     fs = fsspec.filesystem("file") if fs is None else fs
     dataset_dict_json_path = Path(dataset_path, config.DATASETDICT_JSON_FILENAME).as_posix()
     dataset_info_path = Path(dataset_path, config.DATASET_INFO_FILENAME).as_posix()
@@ -144,6 +145,7 @@ def load_from_disk(dataset_path: str, key: str, fs=None, keep_in_memory: Optiona
     if fs.isfile(Path(dataset_path, config.DATASET_INFO_FILENAME).as_posix()):
         return Dataset.load_from_disk(dataset_path, key, fs, keep_in_memory=keep_in_memory)
     elif fs.isfile(Path(dataset_path, config.DATASETDICT_JSON_FILENAME).as_posix()):
+        # TODO: decide if we need to change this
         return DatasetDict.load_from_disk(dataset_path, fs, keep_in_memory=keep_in_memory)
     else:
         raise FileNotFoundError(
