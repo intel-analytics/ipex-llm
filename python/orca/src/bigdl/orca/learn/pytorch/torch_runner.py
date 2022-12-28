@@ -514,6 +514,10 @@ class TorchRunner(BaseRunner):
 
         self.call_hook(call_backs=callbacks, fn_name="after_train_iter")
 
+        # User should not see batch from last iteration
+        if hasattr(self, "batch"):
+            del self.batch
+
         return {"train_loss": loss.item(), NUM_SAMPLES: get_batchsize(features)}
 
     def validate(self, data_creator, batch_size=32, num_steps=None, profile=False,
@@ -647,6 +651,10 @@ class TorchRunner(BaseRunner):
             loss = self.criterion(*outputL, *targetL)
 
         self.call_hook(call_backs=callbacks, fn_name="after_val_iter")
+
+        # User should not see batch from last iteration
+        if hasattr(self, "batch"):
+            del self.batch
 
         return output, target, loss
 
