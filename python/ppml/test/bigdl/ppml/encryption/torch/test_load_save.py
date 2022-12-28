@@ -76,6 +76,7 @@ class TestModelSaveLoad(unittest.TestCase):
         # Reference expected value
         expected_buf = io.BytesIO()
         torch.save(model.state_dict(), expected_buf)
+        expected_buf.seek(0)
         expected_state = torch.load(expected_buf)
         save(model.state_dict(), encrypted_buf, encryption_key)
         # load it back and compare the stat_dict is the same
