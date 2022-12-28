@@ -475,20 +475,27 @@ class TorchRunner(BaseRunner):
                 calculate averages.
 
         """
-        # TODO: restore batch to what it should be.
-        self.call_hook(call_backs=callbacks, fn_name="before_train_iter")
         # unpack features into list to support multiple inputs model
+        # and restore batch to what it should be.
         features, target = batch
+        if torch.is_tensor(features):
+            self.batch = features, target
+        elif isinstance(features, (tuple, list)):
+            self.batch = *features, target
+        else:
+            invalidInputError(False,
+                                "Features should be tensor, list/tuple, "
+                                "but got {}".format(type(features)))
+        self.call_hook(call_backs=callbacks, fn_name="before_train_iter")
 
         # Compute output.
         with self.timers.record("fwd"):
-            if torch.is_tensor(features):
-                output = self.training_model(features)
-            elif isinstance(features, (tuple, list)):
+            *features, target = self.batch
+            if torch.is_tensor(features) or isinstance(features, (tuple, list)):
                 output = self.training_model(*features)
             else:
                 invalidInputError(False,
-                                  "Features should be tensor, list/tuple or dict, "
+                                  "Features should be tensor or list/tuple, "
                                   "but got {}".format(type(features)))
 
             # Ensure `target` and `output` are always in a list format.
@@ -611,20 +618,27 @@ class TorchRunner(BaseRunner):
                 by default, ``validate`` uses "num_samples" to
                 calculate averages.
         """
-        # TODO: restore batch to what it should be.
-        self.call_hook(call_backs=callbacks, fn_name="before_val_iter")
         # unpack features into list to support multiple inputs model
+        # and restore batch to what it should be.
         features, target = batch
+        if torch.is_tensor(features):
+            self.batch = features, target
+        elif isinstance(features, (tuple, list)):
+            self.batch = *features, target
+        else:
+            invalidInputError(False,
+                                "Features should be tensor, list/tuple, "
+                                "but got {}".format(type(features)))
+        self.call_hook(call_backs=callbacks, fn_name="before_val_iter")
 
         # compute output
         with self.timers.record("eval_fwd"):
-            if torch.is_tensor(features):
-                output = self.model(features)
-            elif isinstance(features, (tuple, list)):
+            *features, target = self.batch
+            if torch.is_tensor(features) or isinstance(features, (tuple, list)):
                 output = self.model(*features)
             else:
                 invalidInputError(False,
-                                  "Features should be tensor, list/tuple or dict, "
+                                  "Features should be tensor, list/tuple, "
                                   "but got {}".format(type(features)))
 
             # Ensure `target` and `output` are always in a list format.
