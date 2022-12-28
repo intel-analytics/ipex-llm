@@ -41,11 +41,7 @@ object MultiKMSExample extends Supportive {
         Log4Error.invalidInputError(conf.contains("spark.bigdl.kms.datasource1.inputEncryptMode"),"input encrypt mode not found, "+conf)
         sc.read(cryptoMode = CryptoMode.parse(conf.get("spark.bigdl.kms.datasource1.inputEncryptMode"))).option("header", "true")
           .csv(conf.get("spark.bigdl.kms.datasource1.inputpath"))
-        
-        
       }
-
-
 
       val developers = timing("2/3 doSQLOperations") {
         // Select only the "name" column
@@ -60,10 +56,6 @@ object MultiKMSExample extends Supportive {
 
         developers
       }
-
-      // Map[String, DataFrame]({
-      //  "developers" -> developers
-      // })
 
       timing("3/3 encryptAndSaveOutputs") {
         // save data frame using spark kms context
