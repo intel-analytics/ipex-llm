@@ -66,14 +66,7 @@ spec:
         command:
         - sh
         - -c
-        - "bash /usr/src/app/entry.sh server"
-        lifecycle:
-          postStart:
-            exec:
-              command:
-              - sh
-              - -c
-              - "bash /usr/src/app/entry.sh migrate"
+        - "bash /usr/src/app/entry.sh migrate; bash /usr/src/app/entry.sh server"
   volumeClaimTemplates:
       - metadata:
           name: mysql-persitent-storage

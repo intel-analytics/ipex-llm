@@ -45,14 +45,14 @@ object BKeywhizKMSFrontend extends Supportive {
 
   val name = "BigDL Keywhiz KMS Frontend"
 
-  implicit val system = ActorSystem("bigdl-kms-frontend-system")
+  implicit val system = ActorSystem("bigdl-keywhiz-kms-frontend-system")
   implicit val materializer = ActorMaterializer()
   implicit val executionContext = system.dispatcher
   implicit val timeout: Timeout = Timeout(100, TimeUnit.SECONDS)
 
   def main(args: Array[String]): Unit = {
       val arguments = timing("parse arguments")() {
-        argumentsParser.parse(args, KMSFrontendArguments()) match {
+        argumentsParser.parse(args, BKeywhizKMSFrontendArguments()) match {
           case Some(arguments) => logger.info(s"starting with $arguments"); arguments
           case None => argumentsParser.failure("miss args, please see the usage info"); null
         }
@@ -110,7 +110,7 @@ object BKeywhizKMSFrontend extends Supportive {
                 password =>
                 timing("enroll")(overallRequestTimer) {
                 try {
-                   //todo: send the enroll request to a keywhiz exposed k8s restAPI
+                   createUserToKeywhiz(userName, password)
                    complete(s"user [$userName] is created successfully!")
                 } catch {
                   case e: Exception =>
@@ -149,6 +149,10 @@ object BKeywhizKMSFrontend extends Supportive {
       Http().bindAndHandle(route, arguments.interface, port = arguments.port,
           connectionContext = serverContext)
       logger.info(s"https started at https://${arguments.interface}:${arguments.port}")
+  }
+
+  def createUserToKeywhiz(user:String, password:String): Unit = {
+    s"key.provider add-user ${arguments.frontendKeywhizConf} --user $user --password $password" !!
   }
 
   def loginKeywhiz(user:String, password:String): Unit = {
@@ -203,8 +207,7 @@ object BKeywhizKMSFrontend extends Supportive {
     head("BigDL Keywhiz KMS Frontend")
     opt[String]('i', "interface")
       .action((x, c) => c.copy(interface = x))
-      .text("network interface
-        of frontend")
+      .text("network interface of frontend")
     opt[Int]('p', "port")
       .action((x, c) => c.copy(port = x))
       .text("https port of frontend")
@@ -225,7 +228,10 @@ object BKeywhizKMSFrontend extends Supportive {
       .text("keywhiz trustStore path")
     opt[String]('w', "keywhizTrustStoreToken")
       .action((x, c) => c.copy(keywhizTrustStoreToken = x))
-      .text("rediss trustStore password")
+      .text("keywhiz trustStore password")
+    opt[String]('f', "frontendKeywhizConf")
+      .action((x, c) => c.copy(frontendKeywhizConf = x))
+      .text("keywhiz configuration file path used by frontend")
   }
 
   def defineServerContext(httpsKeyStoreToken: String,
@@ -259,6 +265,7 @@ case class BKeywhizKMSFrontendArguments(
                                  httpsKeyStorePath: String = null,
                                  httpsKeyStoreToken: String = null,
                                  keywhizTrustStorePath: String = null,
-                                 keywhizTrustStoreToken: String = null
+                                 keywhizTrustStoreToken: String = null,
+                                 frontendKeywhizConf: String = "/usr/src/app/frontend-keywhiz-conf.yaml"
                                )
 
