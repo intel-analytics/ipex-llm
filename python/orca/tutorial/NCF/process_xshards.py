@@ -57,9 +57,14 @@ def ng_sampling(data, user_num, item_num, num_ng):
     return data_XY
 
 
-def split_dataset(data):
-    train_data, test_data = train_test_split(data, test_size=0.2, random_state=100)
-    return train_data, test_data
+def split_train_dataset(data):
+    train_data, _ = train_test_split(data, test_size=0.2, random_state=100)
+    return train_data
+
+
+def split_test_dataset(data):
+    _, test_data = train_test_split(data, test_size=0.2, random_state=100)
+    return test_data
 
 
 def prepare_data(dataset_dir, num_ng=4):
@@ -107,6 +112,7 @@ def prepare_data(dataset_dir, num_ng=4):
     # scale dense features
     def rename(shard, col):
         shard = shard.drop(columns=[col]).rename(columns={col+"_scaled": col})
+        shard[col] = shard[col].astype(np.float32)
         return shard
 
     for col in dense_features:
@@ -130,7 +136,8 @@ def prepare_data(dataset_dir, num_ng=4):
 
     # Split dataset
     print("Split data...")
-    train_data, test_data = data.transform_shard(split_dataset).split()
+    train_data = data.transform_shard(split_train_dataset)
+    test_data = data.transform_shard(split_test_dataset)
 
     feature_cols = ['user', 'item'] + sparse_features + dense_features
     label_cols = ["label"]
