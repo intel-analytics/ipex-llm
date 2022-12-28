@@ -124,7 +124,7 @@ def check_nano_env(use_malloc: str = "tc", use_openmp: bool = True) -> None:
             output_list.append("tcmalloc library (libtcmalloc.so) is not found.")
 
     # Check TF_support
-    for var in ["TF_ENABLE_ONEDNN_OPTS", "ENABLE_TF_OPTS", "NANO_TF_INTER_OP"]:
+    for var in ["TF_ENABLE_ONEDNN_OPTS"]:
         if not _env_variable_is_set(var, env_copy) or env_copy[var] != correct_env[var]:
             flag["TF"] = 0
             name["TF"] = name["TF"] + var + " "
