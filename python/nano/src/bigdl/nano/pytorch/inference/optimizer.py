@@ -835,15 +835,13 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                               "fp16 is not supported on {} device.".format(device))
             invalidInputError(accelerator == 'openvino',
                               "fp16 is not supported on {} accelerator.".format(accelerator))
-            if openvino_config is not None:
-                final_openvino_option = openvino_config
             return PytorchOpenVINOModel(model, input_sample,
                                         precision=precision,
                                         thread_num=thread_num,
                                         device=device,
                                         dynamic_axes=dynamic_axes,
                                         logging=logging,
-                                        config=final_openvino_option,
+                                        config=openvino_config,
                                         **export_kwargs)
 
         invalidInputError(False,

@@ -467,14 +467,12 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                               "fp16 is not supported on {} device.".format(device))
             invalidInputError(accelerator == 'openvino',
                               "fp16 is not supported on {} accelerator.".format(accelerator))
-            if openvino_config is not None:
-                final_openvino_option = openvino_config
             from bigdl.nano.deps.openvino.tf.model import KerasOpenVINOModel    # type: ignore
             result = KerasOpenVINOModel(model,
                                         precision=precision,
                                         thread_num=thread_num,
                                         device=device,
-                                        config=final_openvino_option,
+                                        config=openvino_config,
                                         logging=logging)
             return patch_attrs(result, model)
 
