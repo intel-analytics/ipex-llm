@@ -14,6 +14,7 @@
 # limitations under the License.
 #
 
+from bigdl.nano.utils.inference.pytorch.model_utils import generate_channels_last_available
 from bigdl.nano.utils.inference.pytorch.model import AcceleratedLightningModule
 from bigdl.nano.pytorch.context_manager import generate_context_manager
 from bigdl.nano.deps.ipex.ipex_api import ipex_optimize
@@ -22,7 +23,7 @@ import torch
 
 class PytorchIPEXJITModel(AcceleratedLightningModule):
     def __init__(self, model: torch.nn.Module, input_sample=None, use_ipex=False, dtype=None,
-                 use_jit=False, channels_last=None, thread_num=None, from_load=False,
+                 use_jit=False, channels_last=None, channels_last_available=[], thread_num=None, from_load=False,
                  inplace=False, jit_strict=True, jit_method=None, weights_prepack=None):
         """
         This is the accelerated model for pytorch and ipex/jit.
@@ -41,6 +42,7 @@ class PytorchIPEXJITModel(AcceleratedLightningModule):
                                     meaning do nothing.
         :param use_jit: if use jit to accelerate the model
         :param channels_last: if set model and data to be channels-last mode.
+        :param channels_last_available: only passed by _load method, to decide which input can be converted to channels-last mode.
         :param thread_num: the thread num allocated for this model.
         :param from_load: this will only be set by _load method.
         :param inplace: whether to perform inplace optimization. Default: ``False``.
@@ -57,6 +59,7 @@ class PytorchIPEXJITModel(AcceleratedLightningModule):
             self.use_ipex = use_ipex
             self.use_jit = use_jit
             self.channels_last = channels_last
+            self.channels_last_available = channels_last_available
             self.jit_strict = jit_strict
             self.jit_method = jit_method
             self.weights_prepack = weights_prepack
@@ -74,6 +77,7 @@ class PytorchIPEXJITModel(AcceleratedLightningModule):
         self.original_model = model
         if self.channels_last:
             self.model = self.model.to(memory_format=torch.channels_last)
+            self.channels_last_available = generate_channels_last_available(input_sample)
         if self.use_ipex:
             self.model = ipex_optimize(self.model, dtype=dtype, inplace=inplace,
                                        weights_prepack=weights_prepack)
@@ -127,8 +131,17 @@ class PytorchIPEXJITModel(AcceleratedLightningModule):
         return inputs
 
     def forward_step(self, *inputs):
+
         if self.channels_last is True:
-            inputs = tuple(map(lambda x: x.to(memory_format=torch.channels_last), inputs))
+            if self.channels_last_available:
+                for idx, input in enumerate(inputs):
+                    if self.channels_last_available[idx]:
+                        input.to(memory_format=torch.channels_last)
+            else:
+                self.channels_last_available = generate_channels_last_available(inputs)
+                for idx, input in enumerate(inputs):
+                    if self.channels_last_available[idx]:
+                        input.to(memory_format=torch.channels_last)
         return self.model(*inputs)
 
     def on_forward_end(self, outputs):
@@ -151,6 +164,7 @@ class PytorchIPEXJITModel(AcceleratedLightningModule):
         status.update({"use_ipex": self.use_ipex,
                        "use_jit": self.use_jit,
                        "channels_last": self.channels_last,
+                       "channels_last_available": self.channels_last_available,
                        "checkpoint": "ckpt.pth",
                        "thread_num": self.thread_num,
                        "jit_strict": self.jit_strict,
@@ -182,6 +196,7 @@ class PytorchIPEXJITModel(AcceleratedLightningModule):
         return PytorchIPEXJITModel(model, use_ipex=status['use_ipex'],
                                    use_jit=status['use_jit'],
                                    channels_last=status['channels_last'],
+                                   channels_last_available=status['channels_last_available'],
                                    from_load=from_load,
                                    thread_num=thread_num,
                                    inplace=inplace,

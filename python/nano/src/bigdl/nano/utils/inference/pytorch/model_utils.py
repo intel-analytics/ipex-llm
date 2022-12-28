@@ -198,6 +198,22 @@ def get_input_example(model, input_sample, forward_args):
     return input_sample
 
 
+def generate_channels_last_available(inputs):
+    '''
+    This function will generate a list of true and false to decide if the 
+    elements of input can be converted to channels_last
+    '''
+    # try channels_last available
+    channels_last_available = [True]*len(inputs)
+    for idx, input in enumerate(inputs):
+        try:
+            input.to(memory_format=torch.channels_last)
+        except:
+            channels_last_available[idx] = False
+        else:
+            channels_last_available[idx] = True
+    return channels_last_available
+
 def export_to_onnx(model, input_sample=None, onnx_path="model.onnx", dynamic_axes=True, **kwargs):
     '''
     Internal function to export pytorch model as onnx.
