@@ -111,6 +111,8 @@ def customized_load(dataset_path: str, key:str, fs=None, keep_in_memory: Optiona
         for data_file in state["_data_files"]
     )
 
+    # TODO: close the pa.buffer opened above
+    # TODO: check MemoryMappedTable
     split = state["_split"]
     split = Split(split) if split is not None else split
 
