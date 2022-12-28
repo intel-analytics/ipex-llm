@@ -28,12 +28,25 @@ import torch.optim as optim
 from bigdl.orca import init_orca_context, stop_orca_context
 import numpy as np
 device = 'cuda' if torch.cuda.is_available() else 'cpu'
+import bigdl.orca.data.image
 
 sc = init_orca_context(cluster_mode="local", cores=4, memory="4g")
-
 path = '/Users/guoqiong/intelWork/data/dogs-vs-cats/small/'
 
-data_shard = bigdl.orca.data.image.preprocessing.read_images(path)
+# executor_memory='40g'
+# executor_cores=20
+# driver_memory='10g'
+# driver_cores=20
+# num_executor=3
+#
+# sc = init_orca_context("yarn-client", cores=executor_cores,
+#                   num_nodes=num_executor, memory=executor_memory,
+#                   driver_cores=driver_cores, driver_memory=driver_memory)
+#
+# path = 'hdfs://172.16.0.105:8020/dogs-vs-cats/small/'
+
+data_shard = bigdl.orca.data.image.read_images(path)
+
 
 def get_label(im):
     filename = im['filename']

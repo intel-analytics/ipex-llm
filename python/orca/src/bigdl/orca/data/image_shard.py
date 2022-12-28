@@ -132,7 +132,6 @@ def read_images1(file_path):
     imfilerdd1= get_subdire(file_path + "/PNGImages/")
     imfilerdd2= get_subdire(file_path + "/PedMasks/")
 
-
     def loadImage1(f):
         image = read_im_file(f).convert("RGB")
         return image
