@@ -90,8 +90,8 @@ class OpenVINOModel:
             self._compiled_model = self._ie.compile_model(model=self.ie_network,
                                                           device_name=self._device,
                                                           config=config)
+            self._infer_request = self._compiled_model.create_infer_request()
         self.final_config = config
-        self._infer_request = self._compiled_model.create_infer_request()
         input_names = [t.any_name for t in self._ie_network.inputs]
         self._forward_args = input_names
 
