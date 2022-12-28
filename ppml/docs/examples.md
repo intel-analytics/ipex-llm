@@ -297,7 +297,39 @@ bash bigdl-ppml-submit.sh \
 
 If you have multiple data sources that use different keys, you can also use the `initPPMLContextMultiKMS` method to initialize PPML Context with support for multiple Key Management Systems and data sources.   
 
-You just need to submit the parameters for the KMS and data sources in a manner similar to the following example.
+You just need to submit the configurations for the KMS and data sources in a manner similar to the following example.
+
+For KMS, you should first submit the number of kms 'spark.bigdl.kms.multikms.instance', and then submit the configurations for each KMS in turn:
+```
+spark.bigdl.kms.multikms.instance=num of your kms
+// for each KMS
+//{i} means it is a configuration for ith KMS
+spark.bigdl.kms.multikms.type{i}=KMS typr of this KMS
+spark.bigdl.kms.multikms.name{i}=name of this KMS
+// for a simple KMS
+spark.bigdl.kms.multikms.simple.id{i}=APPIP of this KMS
+spark.bigdl.kms.multikms.simple.key{i}=APIKEY of this KMS
+// for a EHSM KMS
+spark.bigdl.kms.multikms.ehs.ip{i}=ehsm ip of this KMS
+spark.bigdl.kms.multikms.ehs.port{i}=ehsm port of this KMS
+spark.bigdl.kms.multikms.ehs.id{i}=ehsm APPID of this KMS
+spark.bigdl.kms.multikms.ehs.key{i}=ehsm APIKEY of this KMS
+// for a Azure KMS
+spark.bigdl.kms.multikms.azure.vault{i}=azure kms KeyVault of this KMS
+spark.bigdl.kms.multikms.azure.clientId{i}=azure kms clientId of this KMS
+```
+For data sources, you should first submit the number of kms 'spark.bigdl.kms.datasource.instance', and then submit the configurations for each data source in turn:
+```
+spark.bigdl.kms.datasource.instance=num of your data sources
+// for each data source
+// {i} means it is a configuration for ith data source 
+spark.bigdl.kms.datasource{i}.name=name of this kms 
+spark.bigdl.kms.datasource{i}.kms=KMS to be used
+spark.bigdl.kms.datasource{i}.inputpath=input path of this data source 
+spark.bigdl.kms.datasource{i}.outputpath=output path of this data source 
+spark.bigdl.kms.datasource{i}.primary=primary key path of this data source 
+spark.bigdl.kms.datasource{i}.data=data key path of this data source 
+```
 
 ```bash 
 /opt/jdk8/bin/java \
@@ -315,6 +347,7 @@ You just need to submit the parameters for the KMS and data sources in a manner 
     --conf spark.bigdl.kms.multikms.simple.id1=465227134889 \
     --conf spark.bigdl.kms.multikms.simple.key1=088347530263 \
     --conf spark.bigdl.kms.multikms.type2=EHSMKeyManagementService \
+    --conf spark.bigdl.kms.multikms.name2=EHSM \
     --conf spark.bigdl.kms.multikms.ip2=172.168.0.226 \
     --conf spark.bigdl.kms.multikms.port2=9000 \
     --conf spark.bigdl.kms.multikms.ehs.id2=8cfaeef5-c382-4eb7-bbdb-6702dffabc3f \
@@ -327,7 +360,7 @@ You just need to submit the parameters for the KMS and data sources in a manner 
     --conf spark.bigdl.kms.datasource1.data=/ppml/trusted-big-data-ml/work/data/liyao/data1/keys/simple/dataKey \
     --conf spark.bigdl.kms.datasource1.inputEncryptMode=AES/CBC/PKCS5Padding \
     --conf spark.bigdl.kms.datasource1.outputEncryptMode=AES/CBC/PKCS5Padding \
-    --conf spark.bigdl.kms.datasource2.kms=simpleKMS\
+    --conf spark.bigdl.kms.datasource2.kms=EHSM \
     --conf spark.bigdl.kms.datasource2.inputpath=/ppml/trusted-big-data-ml/work/data/liyao/data2/input/people.csv \
     --conf spark.bigdl.kms.datasource2.outputpath=/ppml/trusted-big-data-ml/work/data/liyao/data2/myoutput/people_encrypted.crc \
     --conf spark.bigdl.kms.datasource2.primary=/ppml/trusted-big-data-ml/work/data/liyao/data2/keys/ehsm/encrypted_primary_key \
