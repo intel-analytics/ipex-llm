@@ -304,7 +304,7 @@ For KMS, you should first submit the number of kms 'spark.bigdl.kms.multikms.ins
 spark.bigdl.kms.multikms.instance=num of your kms
 // for each KMS
 //{i} means it is a configuration for ith KMS
-spark.bigdl.kms.multikms.type{i} = KMS typr of this KMS
+spark.bigdl.kms.multikms.type{i} = KMS type of this KMS
 spark.bigdl.kms.multikms.name{i} = name of this KMS
 
 // for a simple KMS
@@ -312,21 +312,21 @@ spark.bigdl.kms.multikms.simple.id{i} = APPIP of this KMS
 spark.bigdl.kms.multikms.simple.key{i} = APIKEY of this KMS
 
 // for a EHSM KMS
-spark.bigdl.kms.multikms.ehs.ip{i} = ehsm ip of this KMS
-spark.bigdl.kms.multikms.ehs.port{i} = ehsm port of this KMS
-spark.bigdl.kms.multikms.ehs.id{i} = ehsm APPID of this KMS
-spark.bigdl.kms.multikms.ehs.key{i} = ehsm APIKEY of this KMS
+spark.bigdl.kms.multikms.ehs.ip{i} = ehsm ip
+spark.bigdl.kms.multikms.ehs.port{i} = ehsm port
+spark.bigdl.kms.multikms.ehs.id{i} = ehsm APPID
+spark.bigdl.kms.multikms.ehs.key{i} = ehsm APIKEY
 
 // for a Azure KMS
-spark.bigdl.kms.multikms.azure.vault{i} = azure kms KeyVault of this KMS
-spark.bigdl.kms.multikms.azure.clientId{i} = azure kms clientId of this KMS
+spark.bigdl.kms.multikms.azure.vault{i} = azure kms KeyVault
+spark.bigdl.kms.multikms.azure.clientId{i} = azure kms clientId
 ```
 For data sources, you should first submit the number of kms 'spark.bigdl.kms.datasource.instance', and then submit the configurations for each data source in turn:
 ```
 spark.bigdl.kms.datasource.instance = num of your data sources
 // for each data source
 // {i} means it is a configuration for ith data source 
-spark.bigdl.kms.datasource{i}.name = name of this kms 
+spark.bigdl.kms.datasource{i}.name = name of this data source
 spark.bigdl.kms.datasource{i}.kms = KMS to be used
 spark.bigdl.kms.datasource{i}.inputpath = input path of this data source 
 spark.bigdl.kms.datasource{i}.outputpath = output path of this data source 
