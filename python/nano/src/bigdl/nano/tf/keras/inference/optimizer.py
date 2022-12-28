@@ -618,7 +618,7 @@ class InferenceOptimizer(BaseInferenceOptimizer):
         if hasattr(model, '_save'):
             model._save(path)
         else:
-            # typically for models of nn.Module, pl.LightningModule type
+            # typically for keras Model
             meta_path = Path(path) / "nano_model_meta.yml"
             with open(meta_path, 'w+') as f:
                 metadata = {
@@ -630,15 +630,12 @@ class InferenceOptimizer(BaseInferenceOptimizer):
             model.save_weights(checkpoint_path)
 
     @staticmethod
-    def load(path, model: Optional[Model] = None, device=None):
+    def load(path, model: Model = None, device=None):
         """
         Load a model from local.
 
         :param path: Path to model to be loaded. Path should be a directory.
-        :param model: Required FP32 model to load tensorflow model, it is needed if you
-               accelerated the model with accelerator=None by InferenceOptimizer.trace/
-               InferenceOptimizer.quantize. model should be set to None if you choose
-               accelerator="onnxruntime"/"openvino".
+        :param model: Required FP32 model to load tensorflow model.
         :param device: A string represents the device of the inference. Default to None.
                Only valid for openvino model, otherwise will be ignored.
         :return: Model with different acceleration(None/OpenVINO/ONNX Runtime) or
@@ -646,24 +643,22 @@ class InferenceOptimizer(BaseInferenceOptimizer):
         """
         import yaml
         path = Path(path)
-        if not path.exists():
-            invalidInputError(False, "{} doesn't exist.".format(path))
+        invalidInputError(path.exists(), "{} doesn't exist.".format(path))
         meta_path = path / "nano_model_meta.yml"
-        if not meta_path.exists():
-            invalidInputError(False, "File {} is required to load model.".format(str(meta_path)))
+        invalidInputError(meta_path.exists(),
+                          "File {} is required to load model.".format(str(meta_path)))
         with open(meta_path, 'r') as f:
             metadata = yaml.safe_load(f)
         model_type = metadata.get('ModelType', None)
         if model_type == 'KerasOpenVINOModel':
-            invalidInputError(model is None,
-                              "Argument 'model' must be None for OpenVINO loading.")
-            return load_openvino_model(path, framework='tensorflow', device=device)
+            result = load_openvino_model(path, framework='tensorflow', device=device)
+            return patch_attrs(result, model)
         if model_type == 'KerasONNXRuntimeModel':
-            invalidInputError(model is None,
-                              "Argument 'model' must be None for ONNX Runtime loading.")
-            return load_onnxruntime_model(path, framework='tensorflow')
+            result = load_onnxruntime_model(path, framework='tensorflow')
+            return patch_attrs(result, model)
         if model_type == 'KerasQuantizedModel':
-            return load_inc_model(path, model, framework='tensorflow')
+            result = load_inc_model(path, model, framework='tensorflow')
+            return patch_attrs(result, model)
         if isinstance(model, Model):
             # typically for keras Model
             model = copy.deepcopy(model)
