@@ -34,7 +34,7 @@ invalidInputError(
 class BF16Model(AcceleratedLightningModule):
     """Model of BFloat16 with auto mixed precision."""
 
-    def __init__(self, model, input_sample=None, channels_last=None, channles_last_available=[], thread_num=None):  # noqa
+    def __init__(self, model, input_sample=None, channels_last=None, channels_last_available=[], thread_num=None):  # noqa
         """
         This is the accelerated model for BFloat16 with auto mixed precision.
 
@@ -50,10 +50,13 @@ class BF16Model(AcceleratedLightningModule):
         self.thread_num = thread_num
         if self.channels_last is True:
             self.model = self.model.to(memory_format=torch.channels_last)
-            if channles_last_available: # init from load
-                self.channels_last_available = channles_last_available
+            if channels_last_available: # init from load
+                self.channels_last_available = channels_last_available
             else: # init without channels_last_available loaded
                 self.channels_last_available = generate_channels_last_available(input_sample)
+        else:
+            self.channels_last_available = []
+
         self._nano_context_manager = generate_context_manager(accelerator=None,
                                                               precision="bf16",
                                                               thread_num=thread_num)
@@ -198,7 +201,7 @@ class BF16Model(AcceleratedLightningModule):
         if thread_num is not None:
             thread_num = int(status['thread_num'])
         return BF16Model(model, channels_last=status['channels_last'],
-                         channles_last_available=status['channles_last_available'],
+                         channels_last_available=status['channels_last_available'],
                          thread_num=thread_num)
 
     def _save_model(self, path):

@@ -59,7 +59,6 @@ class PytorchIPEXJITModel(AcceleratedLightningModule):
             self.use_ipex = use_ipex
             self.use_jit = use_jit
             self.channels_last = channels_last
-            self.channels_last_available = channels_last_available
             self.jit_strict = jit_strict
             self.jit_method = jit_method
             self.weights_prepack = weights_prepack
@@ -77,7 +76,12 @@ class PytorchIPEXJITModel(AcceleratedLightningModule):
         self.original_model = model
         if self.channels_last:
             self.model = self.model.to(memory_format=torch.channels_last)
-            self.channels_last_available = generate_channels_last_available(input_sample)
+            if channels_last_available: # init from _load, the channels_last_available is not none
+                self.channels_last_available = channels_last_available
+            else:
+                self.channels_last_available = generate_channels_last_available(input_sample)
+        else:
+            self.channels_last_available = []
         if self.use_ipex:
             self.model = ipex_optimize(self.model, dtype=dtype, inplace=inplace,
                                        weights_prepack=weights_prepack)
