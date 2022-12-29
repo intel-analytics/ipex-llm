@@ -401,8 +401,8 @@ class StandardScaler:
     def __init__(self,
                  withMean: bool = False,
                  withStd: bool = True,
-                 inputCol: Optional[Union[str, List[str]]] = None,
-                 outputCol: Optional[str] = None):
+                 inputCol: Optional[Union[str, List[str]]]=None,
+                 outputCol: Optional[str]=None):
         self.withMean = withMean
         self.withStd = withStd
         self.inputCol = [inputCol] if isinstance(inputCol, str) else inputCol
