@@ -26,7 +26,7 @@ jobs:
         id: cpr
         uses: peter-evans/create-pull-request@v4
         with:
-          token: ${{ secrets.AUTO_UPDATE_URL }}
+          token: ${{ secrets.AUTOMERGE_TEST }}
           commit-message: update url
           title: Update download URL
           body: Update download URL
@@ -39,5 +39,5 @@ jobs:
         if: ${{ steps.cpr.outputs.pull-request-number && steps.cpr.outputs.pull-request-operation == 'created'}}
         uses: peter-evans/enable-pull-request-automerge@v2
         with:
-          token: ${{ secrets.AUTO_UPDATE_URL }}
+          token: ${{ secrets.AUTOMERGE_TEST }}
           pull-request-number: ${{ steps.cpr.outputs.pull-request-number }}
