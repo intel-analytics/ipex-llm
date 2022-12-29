@@ -299,52 +299,65 @@ If you have multiple data sources that use different keys, you can also use the 
 
 You just need to submit the configurations for the KMS and data sources in a manner similar to the following example.
 
-For KMS, you should first submit the number of kms `spark.bigdl.kms.multikms.instance`, and then submit the configurations for each KMS in turn:
-```
-spark.bigdl.kms.multikms.instance=num of your kms
-// for each KMS
-//{i} means it is a configuration for ith KMS
-spark.bigdl.kms.multikms.type{i} = KMS type of this KMS
-spark.bigdl.kms.multikms.name{i} = name of this KMS
+For ***KMS***, you should first submit the number of kms `spark.bigdl.kms.multikms.instance`, then submit parameters for every KMS.
+ - Firstly, submit `spark.bigdl.kms.multikms.instance` \
+ **spark.bigdl.kms.multikms.instance**  num of your kms
 
-// for a simple KMS
-spark.bigdl.kms.multikms.simple.id{i} = simple KMS APPIP 
-spark.bigdl.kms.multikms.simple.key{i} = simple KMS APIKEY
+ - Then, submit configurations for each individual kms, `type` and `name` should be specified for every kms. \
+ **{i}** means it is a configuration for ith KMS \
+ **spark.bigdl.kms.multikms.type{i}:**  KMS type of this KMS \
+ **spark.bigdl.kms.multikms.name{i}:**  name of this KMS
 
-// for a EHSM KMS
-spark.bigdl.kms.multikms.ehs.ip{i} = ehsm ip
-spark.bigdl.kms.multikms.ehs.port{i} = ehsm port
-spark.bigdl.kms.multikms.ehs.id{i} = ehsm APPID
-spark.bigdl.kms.multikms.ehs.key{i} = ehsm APIKEY
+There are also their own unique parameters to be specified for different kinds of KMS. 
 
-// for a Azure KMS
-spark.bigdl.kms.multikms.azure.vault{i} = azure KMS KeyVault
-spark.bigdl.kms.multikms.azure.clientId{i} = azure KMS clientId
-```
-For data sources, you should first submit the number of data sources `spark.bigdl.kms.datasource.instance`, and then submit the configurations for each data source in turn:
-```
-spark.bigdl.kms.datasource.instance = num of your data sources
-// for each data source
-// {i} means it is a configuration for ith data source 
-spark.bigdl.kms.datasource{i}.name = name of this data source
-spark.bigdl.kms.datasource{i}.kms = KMS to be used
-spark.bigdl.kms.datasource{i}.inputpath = input path of this data source 
-spark.bigdl.kms.datasource{i}.outputpath = output path of this data source 
-spark.bigdl.kms.datasource{i}.primary = primary key path of this data source 
-spark.bigdl.kms.datasource{i}.data = data key path of this data source 
-```
+ - For a simple KMS \
+ **spark.bigdl.kms.multikms.simple.id{i}:**  simple KMS APPIP  \
+ **spark.bigdl.kms.multikms.simple.key{i}:**  simple KMS APIKEY
+
+ - for a EHSM KMS \
+ **spark.bigdl.kms.multikms.ehs.ip{i}:**  ehsm ip \
+ **spark.bigdl.kms.multikms.ehs.port{i}:**  ehsm port \
+ **spark.bigdl.kms.multikms.ehs.id{i}:**  ehsm APPID \
+ **spark.bigdl.kms.multikms.ehs.key{i}:**  ehsm APIKEY 
+
+ - for a Azure KMS \
+ **spark.bigdl.kms.multikms.azure.vault{i}:** azure KMS KeyVault \
+ **spark.bigdl.kms.multikms.azure.clientId{i}:** azure KMS clientId
+
+
+For ***data sources***, you should first submit the number of data sources `spark.bigdl.kms.datasource.instance`
+
+ - Firstly, submit the number of data sources \
+ **spark.bigdl.kms.datasource.instance** = num of your data sources
+
+ - Then submit the configurations for each data source in turn.\
+ **{i}** means it is a configuration for ith data source \
+ **spark.bigdl.kms.datasource{i}.name:** name of this data source \
+ **spark.bigdl.kms.datasource{i}.kms:**  KMS to be used. Should match a KMS name registered previously  \
+ **spark.bigdl.kms.datasource{i}.inputpath:** input path of this data source \
+ **spark.bigdl.kms.datasource{i}.outputpath:** output path of this data source \
+ **spark.bigdl.kms.datasource{i}.primary:** primary key path of this data source \
+ **spark.bigdl.kms.datasource{i}.data:** data key path of this data source 
+
+
 local mode
 <p align="left">
   <img src="https://user-images.githubusercontent.com/61072813/174703141-63209559-05e1-4c4d-b096-6b862a9bed8a.png" alt="data lifecycle" width='250px' />
 </p>
 
 ```bash 
-/opt/jdk8/bin/java \
-    -cp ':/ppml/trusted-big-data-ml/work/spark-3.1.2/conf/:/ppml/trusted-big-data-ml/work/spark-3.1.2/jars/*:/ppml/trusted-big-data-ml/work/spark-3.1.2/examples/jars/*:/ppml/trusted-big-data-ml/bigdl-ppml-spark_3.1.3-2.2.0-SNAPSHOT-jar-with-dependencies.jar' -Xmx16g \
-    org.apache.spark.deploy.SparkSubmit \
-    --master local[4] \
-    --executor-memory 8g \
-    --driver-memory 8g \
+bash bigdl-ppml-submit.sh \
+    --master local[2] \
+    --sgx-enabled false \
+    --driver-memory 32g \
+    --driver-cores 4 \
+    --executor-memory 32g \
+    --executor-cores 4 \
+    --conf spark.kubernetes.container.image=liyao-gramine \
+    --num-executors 2 \
+    --conf spark.cores.max=8 \
+    --name simplequeryWithMultiKMS \
+    --verbose \
     --class com.intel.analytics.bigdl.ppml.examples.MultiKMSExample \
     --conf spark.network.timeout=10000000 \
     --conf spark.executor.heartbeatInterval=10000000 \
@@ -355,28 +368,21 @@ local mode
     --conf spark.bigdl.kms.multikms.simple.key1=088347530263 \
     --conf spark.bigdl.kms.multikms.type2=EHSMKeyManagementService \
     --conf spark.bigdl.kms.multikms.name2=EHSM \
-    --conf spark.bigdl.kms.multikms.ip2=172.168.0.226 \
-    --conf spark.bigdl.kms.multikms.port2=9000 \
+    --conf spark.bigdl.kms.multikms.ehs.ip2=172.168.0.226 \
+    --conf spark.bigdl.kms.multikms.ehs.port2=9000 \
     --conf spark.bigdl.kms.multikms.ehs.id2=8cfaeef5-c382-4eb7-bbdb-6702dffabc3f \
     --conf spark.bigdl.kms.multikms.ehs.key2=6zY8NZpNk6rF1Q5jw5b6JG6mRXKdX6nB \
-    --conf spark.bigdl.kms.datasource.instance=2 \
-    --conf spark.bigdl.kms.datasource1.kms=simpleKMS\
-    --conf spark.bigdl.kms.datasource1.inputpath=/ppml/trusted-big-data-ml/work/data/liyao/data1/input/people.csv \
-    --conf spark.bigdl.kms.datasource1.outputpath=/ppml/trusted-big-data-ml/work/data/liyao/data1/myoutput/people_output.crc \
-    --conf spark.bigdl.kms.datasource1.primary=/ppml/trusted-big-data-ml/work/data/liyao/data1/keys/simple/primaryKey \
-    --conf spark.bigdl.kms.datasource1.data=/ppml/trusted-big-data-ml/work/data/liyao/data1/keys/simple/dataKey \
+    --conf spark.bigdl.kms.datasource.instance=1 \
+    --conf spark.bigdl.kms.datasource1.kms=EHSM\
+    --conf spark.bigdl.kms.datasource1.inputpath=/ppml/trusted-big-data-ml/work/data/SimpleQueryWithSimpleKMS/input/people.csv \
+    --conf spark.bigdl.kms.datasource1.outputpath=/ppml/trusted-big-data-ml/work/data/SimpleQueryWithSimpleKMS/myoutput/k8s_ehsm_people_output.crc \
+    --conf spark.bigdl.kms.datasource1.primary=/ppml/trusted-big-data-ml/work/data/liyao/data2/keys/ehsm/encrypted_primary_key \
+    --conf spark.bigdl.kms.datasource1.data=/ppml/trusted-big-data-ml/work/data/liyao/data2/keys/ehsm/encrypted_data_key \
     --conf spark.bigdl.kms.datasource1.inputEncryptMode=AES/CBC/PKCS5Padding \
     --conf spark.bigdl.kms.datasource1.outputEncryptMode=AES/CBC/PKCS5Padding \
-    --conf spark.bigdl.kms.datasource2.kms=EHSM \
-    --conf spark.bigdl.kms.datasource2.inputpath=/ppml/trusted-big-data-ml/work/data/liyao/data2/input/people.csv \
-    --conf spark.bigdl.kms.datasource2.outputpath=/ppml/trusted-big-data-ml/work/data/liyao/data2/myoutput/people_encrypted.crc \
-    --conf spark.bigdl.kms.datasource2.primary=/ppml/trusted-big-data-ml/work/data/liyao/data2/keys/ehsm/encrypted_primary_key \
-    --conf spark.bigdl.kms.datasource2.data=/ppml/trusted-big-data-ml/work/data/liyao/data2/keys/ehsm/encrypted_data_key \
-    --conf spark.bigdl.kms.datasource2.inputEncryptMode=AES/CBC/PKCS5Padding \
-    --conf spark.bigdl.kms.datasource2.outputEncryptMode=AES/CBC/PKCS5Padding \
     --verbose \
     --jars  /ppml/trusted-big-data-ml/bigdl-ppml-spark_3.1.3-2.2.0-SNAPSHOT-jar-with-dependencies.jar,local:///ppml/trusted-big-data-ml/bigdl-ppml-spark_3.1.3-2.2.0-SNAPSHOT-jar-with-dependencies.jar \
-    /ppml/trusted-big-data-ml/bigdl-ppml-spark_3.1.3-2.2.0-SNAPSHOT-jar-with-dependencies.jar \
+    /ppml/trusted-big-data-ml/bigdl-ppml-spark_3.1.3-2.2.0-SNAPSHOT-jar-with-dependencies.jar 
 ```
 </details>
 
