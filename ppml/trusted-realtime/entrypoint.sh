@@ -204,13 +204,6 @@ else
         log_setting=("-Dlog.file=${log}" "-Dlog4j.configuration=file:${FLINK_CONF_DIR}/log4j-console.properties" "-Dlog4j.configurationFile=file:${FLINK_CONF_DIR}/log4j-console.properties" "-Dlogback.configurationFile=file:${FLINK_CONF_DIR}/logback-console.xml")
 
         classpaths=$(echo ${FLINK_HOME}/lib/* | tr ' ' ':')
-        #exec $JAVA_RUN $JVM_ARGS ${FLINK_ENV_JAVA_OPTS} "${log_setting[@]}"  -classpath  ${classpaths} ${CLASS_TO_RUN} "${ARGS[@]}"
-        echo "-----java args-------"
-        echo "$JVM_ARGS"
-        echo "---------------------"
-        echo "----flink env java opts---"
-        echo "${FLINK_ENV_JAVA_OPTS}"
-        echo "--------------------------"
 
         runtime_command=($JAVA_RUN $JVM_ARGS ${FLINK_ENV_JAVA_OPTS} "${log_setting[@]}"  -classpath  ${classpaths} ${CLASS_TO_RUN} "${ARGS[@]}")
         export sgx_command="${runtime_command[@]}"
@@ -275,14 +268,7 @@ else
         log_setting=("-Dlog.file=${log}" "-Dlog4j.configuration=file:${FLINK_CONF_DIR}/log4j-console.properties" "-Dlog4j.configurationFile=file:${FLINK_CONF_DIR}/log4j-console.properties" "-Dlogback.configurationFile=file:${FLINK_CONF_DIR}/logback-console.xml")
 
         classpaths=$(echo ${FLINK_HOME}/lib/* | tr ' ' ':')
-        #exec $JAVA_RUN $JVM_ARGS ${FLINK_ENV_JAVA_OPTS} "${log_setting[@]}" -classpath ${classpaths} ${CLASS_TO_RUN} "${ARGS[@]}"
 
-        echo "-----java args-------"
-        echo "$JVM_ARGS"
-        echo "---------------------"
-        echo "----flink env java opts---"
-        echo "${FLINK_ENV_JAVA_OPTS}"
-        echo "--------------------------"
         runtime_command=($JAVA_RUN "-Xmx4g" ${FLINK_ENV_JAVA_OPTS} "${log_setting[@]}" -classpath ${classpaths} ${CLASS_TO_RUN} "${ARGS[@]}")
         export sgx_command="${runtime_command[@]}"
         ./init.sh && \
