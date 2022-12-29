@@ -33,8 +33,6 @@ OMP_NUM_THREADS=112
 KMP_AFFINITY=granularity=fine
 KMP_BLOCKTIME=1
 TF_ENABLE_ONEDNN_OPTS=1
-ENABLE_TF_OPTS=1
-NANO_TF_INTER_OP=1
 +++++++++++++++++++++++++
 Complete.
 ```
