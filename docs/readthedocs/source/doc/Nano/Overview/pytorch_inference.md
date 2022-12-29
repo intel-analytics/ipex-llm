@@ -284,7 +284,6 @@ The output table of `optimize()` looks like:
 |        onnxruntime_fp32        |      successful      |    3.801     |
 |    onnxruntime_int8_qlinear    |      successful      |    4.727     |
  -------------------------------- ---------------------- --------------
-* means we assume the accuracy of the traced model does not change, so we don't recompute accuracy to save time.
 Optimization cost 58.3s in total.
 ```
 

@@ -53,7 +53,7 @@ Then you may find the result for inference as follows. The actual number may var
 ```
 ==========================Optimization Results==========================
  -------------------------------- ---------------------- -------------- ----------------------
-|             method             |        status        | latency(ms)  |       accuracy       |
+|             method             |        status        | latency(ms)  |     metric value     |
  -------------------------------- ---------------------- -------------- ----------------------
 |            original            |      successful      |    45.145    |        0.975         |
 |              bf16              |      successful      |    27.549    |        0.975         |
@@ -67,7 +67,7 @@ Then you may find the result for inference as follows. The actual number may var
 |        onnxruntime_fp32        |      successful      |    20.838    |        0.975*        |
 |    onnxruntime_int8_qlinear    |      successful      |    7.123     |        0.981         |
  -------------------------------- ---------------------- -------------- ----------------------
-* means we assume the accuracy of the traced model does not change, so we don't recompute accuracy to save time.
+* means we assume the metric value of the traced model does not change, so we don't recompute metric value to save time.
 Optimization cost 60.8s in total.
 ===========================Stop Optimization===========================
 When accuracy drop less than 5%, the model with minimal latency is:  openvino + int8

@@ -384,7 +384,7 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                 print(f"----------Start test {method} model "
                       f"({idx+1}/{len(available_dict)})----------")
                 option: AccelerationOption = self.ALL_INFERENCE_ACCELERATION_METHOD[method]
-                precision = option.get_precision()
+                _precision = option.get_precision()
                 try:
                     acce_model = option.optimize(model, training_data=training_data,
                                                  input_sample=input_sample,
@@ -428,7 +428,7 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                     if self._calculate_accuracy:
                         # here we suppose trace don't change accuracy,
                         # so we jump it to reduce time cost of optimize
-                        if precision == "fp32" and method != "original":
+                        if _precision == "fp32" and method != "original":
                             _accuracy = result_map["original"]["accuracy"]
                             if isinstance(_accuracy, torch.Tensor):
                                 _accuracy = _accuracy.item()
