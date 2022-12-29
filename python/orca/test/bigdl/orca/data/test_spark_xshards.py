@@ -313,7 +313,7 @@ class TestSparkXShards(TestCase):
 
         scale = MinMaxScaler(inputCol=["ID", "sale_price", "location"],
                              outputCol="multi_column_scaled")
-        transformed_data_shard = scale.fit_transform(data_shard)
+        transformed_data_shard = scale.fit_transform(transformed_data_shard)
         columns = list(transformed_data_shard.get_schema()['columns'])
         assert len(columns) == 5
         assert "multi_column_scaled" in columns
@@ -330,7 +330,7 @@ class TestSparkXShards(TestCase):
 
         scale = StandardScaler(inputCol=["ID", "sale_price", "location"],
                                outputCol="multi_column_scaled")
-        transformed_data_shard = scale.fit_transform(data_shard)
+        transformed_data_shard = scale.fit_transform(transformed_data_shard)
         columns = list(transformed_data_shard.get_schema()['columns'])
         assert len(columns) == 5
         assert "multi_column_scaled" in columns
