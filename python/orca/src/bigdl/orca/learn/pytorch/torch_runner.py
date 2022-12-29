@@ -259,17 +259,17 @@ class TorchRunner(BaseRunner):
                     callback.set_trainer(self)
                 callback.on_train_begin()
 
-        self.call_hook(call_backs=callbacks, fn_name="before_run")
+        self.call_hook(callbacks=callbacks, fn_name="before_run")
 
         stats_list = list()
         for i in range(epochs):
             if callbacks is not None:
                 for callback in callbacks:
                     callback.on_epoch_begin(epoch=self.epochs)
-            self.call_hook(call_backs=callbacks, fn_name="before_train_epoch")
+            self.call_hook(callbacks=callbacks, fn_name="before_train_epoch")
             stats = self.train_epoch(loader, profile=profile, info=info, callbacks=callbacks,
                                      val_loader=val_loader, val_steps=val_steps)
-            self.call_hook(call_backs=callbacks, fn_name="after_train_epoch")
+            self.call_hook(callbacks=callbacks, fn_name="after_train_epoch")
             if self.rank == 0:
                 if self.sync_stats:
                     self.logger.info(f"Finished training epoch {i + 1}, " +
@@ -286,7 +286,7 @@ class TorchRunner(BaseRunner):
             for callback in callbacks:
                 callback.on_train_end(logs=self.epochs_stats)
 
-        self.call_hook(call_backs=callbacks, fn_name="after_run")
+        self.call_hook(callbacks=callbacks, fn_name="after_run")
 
         return stats_list
 
@@ -484,9 +484,9 @@ class TorchRunner(BaseRunner):
             self.batch = *features, target
         else:
             invalidInputError(False,
-                              "Features should be tensor, list/tuple, "
+                              "Features should be tensor or list/tuple, "
                               "but got {}".format(type(features)))
-        self.call_hook(call_backs=callbacks, fn_name="before_train_iter")
+        self.call_hook(callbacks=callbacks, fn_name="before_train_iter")
 
         # Compute output.
         with self.timers.record("fwd"):
@@ -512,7 +512,7 @@ class TorchRunner(BaseRunner):
         with self.timers.record("apply"):
             self.optimizer.step()
 
-        self.call_hook(call_backs=callbacks, fn_name="after_train_iter")
+        self.call_hook(callbacks=callbacks, fn_name="after_train_iter")
 
         # User should not see batch from last iteration
         if hasattr(self, "batch"):
@@ -577,7 +577,7 @@ class TorchRunner(BaseRunner):
         metrics = Metric.convert_metrics_dict(metrics, backend="pytorch")
         losses = []
         total_samples = 0
-        self.call_hook(call_backs=callbacks, fn_name="before_val_epoch")
+        self.call_hook(callbacks=callbacks, fn_name="before_val_epoch")
         with torch.no_grad():
             for batch_idx, batch in enumerate(val_iterator):
                 if num_steps and batch_idx == num_steps:
@@ -591,7 +591,7 @@ class TorchRunner(BaseRunner):
                 for metric in metrics.values():
                     metric(output, target)
 
-        self.call_hook(call_backs=callbacks, fn_name="after_val_epoch")
+        self.call_hook(callbacks=callbacks, fn_name="after_val_epoch")
         result = {name: metric.compute() for name, metric in metrics.items()}
 
         result["val_loss"] = sum(losses) / total_samples
@@ -633,7 +633,7 @@ class TorchRunner(BaseRunner):
             invalidInputError(False,
                               "Features should be tensor, list/tuple, "
                               "but got {}".format(type(features)))
-        self.call_hook(call_backs=callbacks, fn_name="before_val_iter")
+        self.call_hook(callbacks=callbacks, fn_name="before_val_iter")
 
         # compute output
         with self.timers.record("eval_fwd"):
@@ -650,7 +650,7 @@ class TorchRunner(BaseRunner):
             outputL = [output] if not isinstance(output, (list, tuple)) else output
             loss = self.criterion(*outputL, *targetL)
 
-        self.call_hook(call_backs=callbacks, fn_name="after_val_iter")
+        self.call_hook(callbacks=callbacks, fn_name="after_val_iter")
 
         # User should not see batch from last iteration
         if hasattr(self, "batch"):
@@ -805,17 +805,17 @@ class TorchRunner(BaseRunner):
         del self.optimizers
         del self.models
 
-    def call_hook(self, call_backs, fn_name: str) -> None:
+    def call_hook(self, callbacks, fn_name: str) -> None:
         """Call all hooks.
 
         Args:
             fn_name (str): The function name in each hook to be called, such as
                 "on_iter_begin".
         """
-        if not call_backs:
+        if not callbacks:
             return
 
-        for hook in call_backs:
+        for hook in callbacks:
             getattr(hook, fn_name)(self)
 
     @property
