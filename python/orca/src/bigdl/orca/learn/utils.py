@@ -366,6 +366,7 @@ def transform_to_shard_dict(data, feature_cols, label_cols=None):
             if len(label_cols) == 1:
                 y = y[0]
             result["y"] = y
+
         return result
 
     data = data.transform_shard(to_shard_dict)
