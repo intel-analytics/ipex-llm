@@ -346,7 +346,7 @@ def transform_to_shard_dict(data, feature_cols, label_cols=None):
             # ndarray have type np.object.
             # Need to explicitly specify the dtype.
             dtype = col_series.iloc[0].dtype
-            return col_series.to_numpy(dtype=dtype)
+            return np.array([i.tolist() for i in col_series], dtype=dtype)
         else:
             return col_series.to_numpy()
 
