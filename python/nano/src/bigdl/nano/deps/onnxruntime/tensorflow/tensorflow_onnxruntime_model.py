@@ -153,10 +153,16 @@ class KerasONNXRuntimeModel(ONNXRuntimeModel, AcceleratedKerasModel):
                 kwargs["loss_weights"] = self.compiled_loss._user_loss_weights
             if self.compiled_metrics is not None:
                 user_metric = self.compiled_metrics._user_metrics
-                kwargs["metrics"] = user_metric._name
+                if isinstance(user_metric, (list, tuple)):
+                    kwargs["metrics"] = [m._name for m in user_metric]
+                else:
+                    kwargs["metrics"] = user_metric._name
                 weighted_metrics = self.compiled_metrics._user_weighted_metrics
                 if weighted_metrics is not None:
-                    kwargs["weighted_metrics"] = weighted_metrics._name
+                    if isinstance(weighted_metrics, (list, str)):
+                        kwargs["weighted_metrics"] = [m._name for m in weighted_metrics]
+                    else:
+                        kwargs["weighted_metrics"] = weighted_metrics._name
         attrs.update(kwargs)
         with open(Path(path) / self.status['attr_path'], "wb") as f:
             pickle.dump(attrs, f)

@@ -46,7 +46,8 @@ class KerasQuantizedModel(AcceleratedKerasModel):
     @property
     def status(self):
         status = super().status
-        status.update({"ModelType": type(self.target_obj).__name__})
+        status.update({"ModelType": type(self.target_obj).__name__,
+                       "attr_path": "inc_saved_model_attr.pkl"})
         return status
 
     def _save_model(self, path):
@@ -61,10 +62,16 @@ class KerasQuantizedModel(AcceleratedKerasModel):
                 kwargs["loss_weights"] = self.compiled_loss._user_loss_weights
             if self.compiled_metrics is not None:
                 user_metric = self.compiled_metrics._user_metrics
-                kwargs["metrics"] = user_metric._name
+                if isinstance(user_metric, (list, tuple)):
+                    kwargs["metrics"] = [m._name for m in user_metric]
+                else:
+                    kwargs["metrics"] = user_metric._name
                 weighted_metrics = self.compiled_metrics._user_weighted_metrics
                 if weighted_metrics is not None:
-                    kwargs["weighted_metrics"] = weighted_metrics._name
+                    if isinstance(weighted_metrics, (list, str)):
+                        kwargs["weighted_metrics"] = [m._name for m in weighted_metrics]
+                    else:
+                        kwargs["weighted_metrics"] = weighted_metrics._name
         with open(Path(path) / self.status['attr_path'], "wb") as f:
             pickle.dump(kwargs, f)
 
