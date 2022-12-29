@@ -59,7 +59,8 @@ class TestPlugin(TestCase):
     def test_trainer_subprocess_plugin(self):
         pl_model = LightningModule(
             self.model, self.loss, self.optimizer,
-            metrics=[torchmetrics.F1(num_classes), torchmetrics.Accuracy(num_classes=10)]
+            metrics=[torchmetrics.F1Score('multiclass', num_classes=num_classes),
+                     torchmetrics.Accuracy('multiclass', num_classes=num_classes)]
         )
         trainer = Trainer(num_processes=2, distributed_backend="subprocess",
                           max_epochs=4, use_ipex=True,
@@ -74,18 +75,14 @@ class TestPlugin(TestCase):
         optimizer = torch.optim.Adam(model.parameters(), lr=0.01)
         pl_model = LightningModule(
             model, loss, optimizer,
-            metrics=[torchmetrics.F1(num_classes), torchmetrics.Accuracy(num_classes=10)]
+            metrics=[torchmetrics.F1Score('multiclass', num_classes=num_classes),
+                     torchmetrics.Accuracy('multiclass', num_classes=num_classes)]
         )
         trainer = Trainer(num_processes=2, distributed_backend="spawn",
                           max_epochs=4, use_ipex=True, precision="bf16",
                           callbacks=[CheckIPEXCallback(), CheckIPEXFusedStepCallback()])
         trainer.fit(pl_model, self.data_loader, self.test_data_loader)
         trainer.test(pl_model, self.test_data_loader)
-        if trainer.use_ipex and TORCH_VERSION_LESS_1_10:
-            import intel_pytorch_extension as ipex
-            # Diable IPEX AMP
-            # Avoid affecting other tests
-            ipex.enable_auto_mixed_precision(None)
 
 
 if __name__ == '__main__':

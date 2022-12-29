@@ -55,7 +55,7 @@ import torch.optim as optim
 from torchvision import datasets, transforms
 from torch.optim.lr_scheduler import StepLR
 from bigdl.nano.pytorch import Trainer
-from torchmetrics import Accuracy
+from torchmetrics.classification import MulticlassAccuracy
 
 class Net(nn.Module):
     def __init__(self):
@@ -139,7 +139,7 @@ def main():
     scheduler = StepLR(optimizer, step_size=1, gamma=args.gamma)
     trainer = Trainer(max_epochs=args.epochs + 1)
     pl_model = trainer.compile(model, loss=loss, optimizer=optimizer,
-                               scheduler=scheduler, metrics=[Accuracy()])
+                               scheduler=scheduler, metrics=[MulticlassAccuracy(num_classes=10)])
     trainer.fit(pl_model, train_loader)
     test_out = trainer.validate(pl_model, test_loader)  # only validate logs loss
     print('\nTest set: Average loss: {:.4f}, Accuracy: {:.2f}%\n'.format(

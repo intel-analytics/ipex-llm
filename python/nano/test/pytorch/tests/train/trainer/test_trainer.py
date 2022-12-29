@@ -26,7 +26,6 @@ from pytorch_lightning import LightningModule
 from test.pytorch.utils._train_torch_lightning import create_data_loader, data_transform
 from test.pytorch.utils._train_torch_lightning import train_with_linear_top_layer
 from torch import nn
-import torchmetrics
 
 from bigdl.nano.pytorch import Trainer
 from bigdl.nano.pytorch.vision.models import vision
