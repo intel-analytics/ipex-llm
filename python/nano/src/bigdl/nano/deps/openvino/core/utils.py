@@ -37,7 +37,7 @@ def convert_onnx_to_xml(onnx_file_path, xml_path, precision,
                                                      output_dir)
     else:
         mo_cmd = "mo -m {} --silent {} {} -n {} -o {}".format(str(onnx_file_path),
-                                                              logging,
+                                                              not logging,
                                                               precision_str,
                                                               model_name,
                                                               output_dir)
@@ -62,7 +62,7 @@ def convert_pb_to_xml(pb_file_path, xml_path, precision,
                                                                     output_dir)
     else:
         mo_cmd = "mo --saved_model_dir {} --silent {} {} -n {} -o {}".format(str(pb_file_path),
-                                                                             logging,
+                                                                             not logging,
                                                                              precision_str,
                                                                              model_name,
                                                                              output_dir)
