@@ -29,8 +29,14 @@ from bigdl.orca import init_orca_context, stop_orca_context
 import numpy as np
 device = 'cuda' if torch.cuda.is_available() else 'cpu'
 import bigdl.orca.data.image
+from pyspark import SparkConf, SparkContext
 
-sc = init_orca_context(cluster_mode="local", cores=4, memory="4g")
+conf = {
+    "spark.app.name": "myapp",
+    "spark.local.dir": "/tmp",
+    'spark.executorEnv.ARROW_LIBHDFS_DIR':'/opt/cloudera/parcels/CDH/lib64'}
+
+sc = init_orca_context(cluster_mode="local", cores=4, memory="4g", conf=conf)
 path = '/Users/guoqiong/intelWork/data/dogs-vs-cats/small/'
 
 # executor_memory='40g'
@@ -45,13 +51,13 @@ path = '/Users/guoqiong/intelWork/data/dogs-vs-cats/small/'
 #
 # path = 'hdfs://172.16.0.105:8020/dogs-vs-cats/small/'
 
-data_shard = bigdl.orca.data.image.read_images(path)
+data_shard = bigdl.orca.data.image.read_images_spark(path)
 
 
 def get_label(im):
-    filename = im['filename']
+    filename = im['origin']
     label = [1] if 'dog' in filename.split('/')[-1] else [0]
-    return {'x': im['x'], 'y': label}
+    return {'x': im['pilimage'], 'y': label}
 
 
 def train_transform(im):

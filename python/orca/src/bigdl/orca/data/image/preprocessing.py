@@ -13,13 +13,15 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-
+from PIL import Image, ImageDraw
+import numpy as np
 from bigdl.orca import OrcaContext
 from bigdl.dllib.utils.common import (get_node_and_core_number,
                                       get_spark_sql_context,
                                       get_spark_context)
 from bigdl.dllib.utils.log4Error import invalidInputError
-
+from pyspark.ml.linalg import Vectors, VectorUDT
+from pyspark.sql.functions import col, udf
 
 from typing import (Union, List, Dict)
 
@@ -34,7 +36,7 @@ from bigdl.orca.data.utils import *
 from bigdl.orca.data import SparkXShards
 
 
-def read_images(file_path):
+def read_images_pil(file_path):
     sc = OrcaContext.get_spark_context()
     node_num, core_num = get_node_and_core_number()
 
@@ -52,10 +54,7 @@ def read_images(file_path):
                           "The file path is invalid or empty, please check your data")
 
     num_files = len(file_paths)
-    print(file_paths)
-    if prefix == "hdfs" or prefix == "s3":
-        file_paths = [prefix + "://" + f for f in file_paths]
-    print(file_paths)
+    # print(file_paths)
 
     total_cores = node_num * core_num
     num_partitions = num_files if num_files < total_cores else total_cores
@@ -63,12 +62,32 @@ def read_images(file_path):
 
     def load_image(iterator):
         for f in iterator:
-            print(f)
             image = open_image(f)
-            yield {'filename': f, 'x': image}
+            yield {'origin': f, 'pilimage': image}
 
     im_rdd = rdd.mapPartitions(load_image)
 
     return SparkXShards(im_rdd)
 
+
+def read_images_spark(file_path):
+    spark = OrcaContext.get_spark_session()
+    image_df = spark.read.format("image").load(file_path)
+
+    def convert_bgr_array_to_rgb_array(img_array):
+        B, G, R = img_array.T
+        return np.array((R, G, B)).T
+
+    def to_pil(image_spark):
+        mode = 'RGBA' if (image_spark.image.nChannels == 4) else 'RGB'
+        img = Image.frombytes(mode=mode, data=bytes(image_spark.image.data),
+                          size=[image_spark.image.width, image_spark.image.height])
+
+        converted_img_array = convert_bgr_array_to_rgb_array(np.asarray(img))
+        image = Image.fromarray(converted_img_array)
+        return {"origin": image_spark.image.origin, "pilimage": image}
+
+    image_rdd = image_df.rdd.map(lambda x: to_pil(x))
+
+    return SparkXShards(image_rdd)
 

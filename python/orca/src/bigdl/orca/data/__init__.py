@@ -16,4 +16,3 @@
 
 from .shard import SparkXShards, SharedValue, XShards, spark_df_to_ray_dataset
 from .elastic_search import elastic_search
-from .image_shard import ImageShards

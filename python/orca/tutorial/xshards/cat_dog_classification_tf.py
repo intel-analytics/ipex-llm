@@ -20,7 +20,7 @@ from tensorflow.keras.models import Sequential
 from tensorflow.keras.layers import Dense, Flatten, Dropout, Activation, Conv2D, MaxPooling2D
 from bigdl.orca.data.shard import SparkXShards
 
-import bigdl.orca.data.pandas
+import bigdl.orca.data.image
 from bigdl.orca import init_orca_context, stop_orca_context
 from bigdl.orca.learn.tf2.estimator import Estimator
 import numpy as np
@@ -29,13 +29,12 @@ sc = init_orca_context(cluster_mode="local", cores=4, memory="4g")
 
 path = '/Users/guoqiong/intelWork/data/dogs-vs-cats/small/'
 
-data_shard = bigdl.orca.data.image_shard.read_images(path)
-
+data_shard = bigdl.orca.data.image.read_images_spark(path)
 
 def get_label(im):
-    filename = im['filename']
+    filename = im['origin']
     label = [1] if 'dog' in filename.split('/')[-1] else [0]
-    return {'x': im['x'], 'y': [label]}
+    return {'x': im['pilimage'], 'y': [label]}
 
 
 def crop(data):
