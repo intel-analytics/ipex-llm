@@ -582,6 +582,7 @@ class TorchRunner(BaseRunner):
                 ``num_samples`` from all calls to ``self.validate_batch``.
         """
         # switch to evaluate mode
+        self._mode = RunnerMode.val
         self.model.eval()
         metrics = Metric.convert_metrics_dict(metrics, backend="pytorch")
         losses = []
@@ -672,7 +673,6 @@ class TorchRunner(BaseRunner):
         """Evaluates the model on the validation data set."""
         config = copy.copy(self.config)
         self._toggle_profiling(profile=profile)
-        self._mode = RunnerMode.predict
 
         params = {"batch_size": batch_size, "shuffle": False}
         for arg in ["shuffle", "sampler", "batch_sampler", "num_workers", "collate_fn",
@@ -703,6 +703,7 @@ class TorchRunner(BaseRunner):
 
     def _predict(self, pred_iterator):
         # switch to evaluate mode
+        self._mode = RunnerMode.predict
         self.model.eval()
         result = []
         with torch.no_grad():
