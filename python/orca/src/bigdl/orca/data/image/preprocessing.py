@@ -14,32 +14,18 @@
 # limitations under the License.
 #
 from PIL import Image, ImageDraw
-import numpy as np
 from bigdl.orca import OrcaContext
-from bigdl.dllib.utils.common import (get_node_and_core_number,
-                                      get_spark_sql_context,
-                                      get_spark_context)
-from bigdl.dllib.utils.log4Error import invalidInputError
-from pyspark.ml.linalg import Vectors, VectorUDT
-from pyspark.sql.functions import col, udf
-
-from typing import (Union, List, Dict)
-
 from typing import TYPE_CHECKING, Any
 
 if TYPE_CHECKING:
     from numpy import ndarray
-    from pyspark.rdd import PipelinedRDD, RDD
 
 from bigdl.orca.data.file import *
 from bigdl.orca.data.utils import *
 from bigdl.orca.data import SparkXShards
 
 
-def read_images_pil(file_path):
-    sc = OrcaContext.get_spark_context()
-    node_num, core_num = get_node_and_core_number()
-
+def get_file_paths(file_path):
     file_url_splits = file_path.split("://")
     prefix = file_url_splits[0]
 
@@ -53,11 +39,18 @@ def read_images_pil(file_path):
         invalidInputError(False,
                           "The file path is invalid or empty, please check your data")
 
-    num_files = len(file_paths)
-    # print(file_paths)
+    return file_paths
 
+
+def read_images_pil(file_path):
+    sc = OrcaContext.get_spark_context()
+
+    file_paths = get_file_paths(file_path)
+    num_files = len(file_paths)
+    node_num, core_num = get_node_and_core_number()
     total_cores = node_num * core_num
     num_partitions = num_files if num_files < total_cores else total_cores
+
     rdd = sc.parallelize(file_paths, num_partitions)
 
     def load_image(iterator):
@@ -72,6 +65,13 @@ def read_images_pil(file_path):
 
 def read_images_spark(file_path):
     spark = OrcaContext.get_spark_session()
+
+    file_paths = get_file_paths(file_path)
+    num_files = len(file_paths)
+    node_num, core_num = get_node_and_core_number()
+    total_cores = node_num * core_num
+    num_partitions = num_files if num_files < total_cores else total_cores
+
     image_df = spark.read.format("image").load(file_path)
 
     def convert_bgr_array_to_rgb_array(img_array):
@@ -81,13 +81,12 @@ def read_images_spark(file_path):
     def to_pil(image_spark):
         mode = 'RGBA' if (image_spark.image.nChannels == 4) else 'RGB'
         img = Image.frombytes(mode=mode, data=bytes(image_spark.image.data),
-                          size=[image_spark.image.width, image_spark.image.height])
+                              size=[image_spark.image.width, image_spark.image.height])
 
         converted_img_array = convert_bgr_array_to_rgb_array(np.asarray(img))
         image = Image.fromarray(converted_img_array)
         return {"origin": image_spark.image.origin, "pilimage": image}
 
-    image_rdd = image_df.rdd.map(lambda x: to_pil(x))
+    image_rdd = image_df.rdd.map(lambda x: to_pil(x)).repartition(num_partitions)
 
     return SparkXShards(image_rdd)
-

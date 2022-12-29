@@ -60,6 +60,8 @@ data_shard = data_shard.transform_shard(get_label)
 data_shard = data_shard.transform_shard(crop)
 data_shard = data_shard.transform_shard(resize)
 data_shard = data_shard.transform_shard(to_nparray)
+collected = data_shard.collect()
+print(collected[0])
 
 
 def model_creator(config):

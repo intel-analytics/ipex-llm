@@ -54,25 +54,29 @@ path = '/Users/guoqiong/intelWork/data/dogs-vs-cats/small/'
 data_shard = bigdl.orca.data.image.read_images_spark(path)
 
 
+def train_transform(im):
+    features = im['pilimage']
+    features = transforms.Resize((80, 80))(features)
+    features = transforms.RandomResizedCrop(80)(features)
+    features = transforms.RandomHorizontalFlip()(features)
+    features = transforms.ToTensor()(features)
+    im.update({'x': features})
+    return im
+
+
 def get_label(im):
     filename = im['origin']
     label = [1] if 'dog' in filename.split('/')[-1] else [0]
-    return {'x': im['pilimage'], 'y': label}
+    im.update({'y': label})
+    return im
 
-
-def train_transform(im):
-    features = im['x']
-    features = transforms.Resize((224, 224))(features)
-    features = transforms.RandomResizedCrop(224)(features)
-    features = transforms.RandomHorizontalFlip()(features)
-    features = transforms.ToTensor()(features)
-
-    out = features.numpy()
-    return {'x': np.array([out]).astype(np.float32), 'y': np.array([im['y']]).astype(np.float32)}
-
-data_shard = data_shard.transform_shard(get_label)
 
 data_shard = data_shard.transform_shard(train_transform)
+data_shard = data_shard.transform_shard(get_label)
+data_shard = data_shard.stack_feature_labels()
+
+print(len(data_shard))
+
 
 class Cnn(nn.Module):
     def __init__(self):

@@ -1105,6 +1105,30 @@ class SparkXShards(XShards):
         pdf = sampled.concat_to_pdf(axis=axis)
         return pdf
 
+    def stack_feature_labels(self) -> "SparkXShards":
+        if self._get_class_name() != "builtins.dict":
+            invalidInputError(False,
+                              "Currently only support stack_feature_labels() on"
+                              " XShards of dictionary")
+        keys = self.rdd.first().keys()
+        if not (all(x in ['x', 'y'] for x in keys)):
+            invalidInputError(False,
+                              "features of x or labels of y do not exit")
+
+        def per_partition(iterator):
+            features = []
+            labels = []
+            for it in iterator:
+                feature = it['x']
+                label = it['y']
+                features.append(np.asarray(feature))
+                labels.append(label)
+            out = {'x': np.array(features).astype(np.float32),
+                   'y': np.array(labels).astype(np.float32)}
+            return out
+        rdd = self.rdd.mapPartitions(lambda x: per_partition(x))
+        return SparkXShards(rdd)
+
 
 class SharedValue(object):
     def __init__(self, data) -> None:
