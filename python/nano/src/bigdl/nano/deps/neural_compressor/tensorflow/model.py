@@ -19,6 +19,7 @@ from ..core import version as inc_version
 from bigdl.nano.utils.inference.tf.model import AcceleratedKerasModel
 from bigdl.nano.utils.log4Error import invalidInputError
 from neural_compressor.model.model import TensorflowModel
+import pickle
 
 
 class KerasQuantizedModel(AcceleratedKerasModel):
@@ -50,6 +51,22 @@ class KerasQuantizedModel(AcceleratedKerasModel):
 
     def _save_model(self, path):
         self.model.save(path)
+        # save compile attr
+        kwargs = {}
+        if self._is_compiled:
+            kwargs = {"run_eagerly": self._run_eagerly,
+                      "steps_per_execution": int(self._steps_per_execution)}
+            if self.compiled_loss is not None:
+                kwargs["loss"] = self.compiled_loss._user_losses
+                kwargs["loss_weights"] = self.compiled_loss._user_loss_weights
+            if self.compiled_metrics is not None:
+                user_metric = self.compiled_metrics._user_metrics
+                kwargs["metrics"] = user_metric._name
+                weighted_metrics = self.compiled_metrics._user_weighted_metrics
+                if weighted_metrics is not None:
+                    kwargs["weighted_metrics"] = weighted_metrics._name
+        with open(Path(path) / self.status['attr_path'], "wb") as f:
+            pickle.dump(kwargs, f)
 
     @staticmethod
     def _load(path, model=None):
@@ -66,4 +83,8 @@ class KerasQuantizedModel(AcceleratedKerasModel):
             with open(tune_cfg_file, 'r') as f:
                 tune_cfg = yaml.safe_load(f)
                 qmodel.tune_cfg = tune_cfg
-        return KerasQuantizedModel(qmodel)
+        model = KerasQuantizedModel(qmodel)
+        with open(Path(path) / status['attr_path'], "rb") as f:
+            kwargs = pickle.load(f)
+        model.compile(**kwargs)
+        return model

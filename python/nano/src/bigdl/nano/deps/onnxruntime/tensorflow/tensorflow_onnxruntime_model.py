@@ -129,8 +129,13 @@ class KerasONNXRuntimeModel(ONNXRuntimeModel, AcceleratedKerasModel):
                                       onnxruntime_session_options=onnxruntime_session_options)
         with open(Path(path) / status['attr_path'], "rb") as f:
             attrs = pickle.load(f)
+        kwargs = {}
         for attr_name, attr_value in attrs.items():
-            setattr(model, attr_name, attr_value)
+            if attr_name.startswith("_"):
+                setattr(model, attr_name, attr_value)
+            else:
+                kwargs.update({attr_name: attr_value})
+        model.compile(**kwargs)
         return model
 
     def _save_model(self, path):
@@ -139,5 +144,19 @@ class KerasONNXRuntimeModel(ONNXRuntimeModel, AcceleratedKerasModel):
         attrs = {"_default_kwargs": self._default_kwargs,
                  "_call_fn_args_backup": self._call_fn_args_backup,
                  "_inputs_dtypes": self._inputs_dtypes}
+        kwargs = {}
+        if self._is_compiled:
+            kwargs = {"run_eagerly": self._run_eagerly,
+                      "steps_per_execution": int(self._steps_per_execution)}
+            if self.compiled_loss is not None:
+                kwargs["loss"] = self.compiled_loss._user_losses
+                kwargs["loss_weights"] = self.compiled_loss._user_loss_weights
+            if self.compiled_metrics is not None:
+                user_metric = self.compiled_metrics._user_metrics
+                kwargs["metrics"] = user_metric._name
+                weighted_metrics = self.compiled_metrics._user_weighted_metrics
+                if weighted_metrics is not None:
+                    kwargs["weighted_metrics"] = weighted_metrics._name
+        attrs.update(kwargs)
         with open(Path(path) / self.status['attr_path'], "wb") as f:
             pickle.dump(attrs, f)

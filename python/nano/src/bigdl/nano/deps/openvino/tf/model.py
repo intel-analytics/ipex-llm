@@ -23,6 +23,7 @@ from .metric import KerasOpenVINOMetric
 import tensorflow as tf
 from bigdl.nano.utils.log4Error import invalidInputError
 from ..core.utils import save
+import pickle
 
 
 class KerasOpenVINOModel(AcceleratedKerasModel):
@@ -125,10 +126,14 @@ class KerasOpenVINOModel(AcceleratedKerasModel):
             thread_num = int(config["CPU_THREADS_NUM"])
         if device is None:
             device = status.get('device', 'CPU')
-        return KerasOpenVINOModel(xml_path,
-                                  config=status['config'],
-                                  thread_num=thread_num,
-                                  device=device)
+        model = KerasOpenVINOModel(xml_path,
+                                   config=status['config'],
+                                   thread_num=thread_num,
+                                   device=device)
+        with open(Path(path) / status['attr_path'], "rb") as f:
+            kwargs = pickle.load(f)
+        model.compile(**kwargs)
+        return model
 
     def _save_model(self, path):
         """
@@ -141,3 +146,19 @@ class KerasOpenVINOModel(AcceleratedKerasModel):
         path.mkdir(exist_ok=True)
         xml_path = path / self.status['xml_path']
         save(self.ov_model.ie_network, xml_path)
+        # save compile attr
+        kwargs = {}
+        if self._is_compiled:
+            kwargs = {"run_eagerly": self._run_eagerly,
+                      "steps_per_execution": int(self._steps_per_execution)}
+            if self.compiled_loss is not None:
+                kwargs["loss"] = self.compiled_loss._user_losses
+                kwargs["loss_weights"] = self.compiled_loss._user_loss_weights
+            if self.compiled_metrics is not None:
+                user_metric = self.compiled_metrics._user_metrics
+                kwargs["metrics"] = user_metric._name
+                weighted_metrics = self.compiled_metrics._user_weighted_metrics
+                if weighted_metrics is not None:
+                    kwargs["weighted_metrics"] = weighted_metrics._name
+        with open(Path(path) / self.status['attr_path'], "wb") as f:
+            pickle.dump(kwargs, f)
