@@ -70,7 +70,7 @@ class TestONNX(TestCase):
         
         with tempfile.TemporaryDirectory() as tmp_dir_name:
             InferenceOptimizer.save(onnx_model, tmp_dir_name)
-            new_onnx_model = InferenceOptimizer.load(tmp_dir_name)
+            new_onnx_model = InferenceOptimizer.load(tmp_dir_name, model)
 
         assert new_onnx_model.session_options.intra_op_num_threads == 1
         assert new_onnx_model.session_options.inter_op_num_threads == 1

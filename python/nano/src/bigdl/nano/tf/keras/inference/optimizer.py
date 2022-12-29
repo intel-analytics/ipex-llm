@@ -630,7 +630,7 @@ class InferenceOptimizer(BaseInferenceOptimizer):
             model.save_weights(checkpoint_path)
 
     @staticmethod
-    def load(path, model: Model = None, device=None):
+    def load(path, model: Model, device=None):
         """
         Load a model from local.
 

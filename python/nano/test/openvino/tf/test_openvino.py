@@ -74,13 +74,13 @@ class TestOpenVINO(TestCase):
         # test InferencOptimizer save / load
         with tempfile.TemporaryDirectory() as tmp_dir_name:
             InferenceOptimizer.save(openvino_model, tmp_dir_name)
-            new_ov_model = InferenceOptimizer.load(tmp_dir_name)
+            new_ov_model = InferenceOptimizer.load(tmp_dir_name, model)
 
         preds1 = openvino_model(train_examples).numpy()
         preds2 = new_ov_model(train_examples).numpy()
         np.testing.assert_almost_equal(preds1, preds2, decimal=5)
 
-    def test_model_trace_openvino_save_load(self):
+    def test_model_trace_openvino_gpu_save_load(self):
         # test whether contains GPU
         from openvino.runtime import Core
         core = Core()
@@ -104,5 +104,5 @@ class TestOpenVINO(TestCase):
 
         with tempfile.TemporaryDirectory() as tmp_dir_name:
             InferenceOptimizer.save(openvino_model, tmp_dir_name)
-            model = InferenceOptimizer.load(tmp_dir_name)  # GPU model
-            model = InferenceOptimizer.load(tmp_dir_name, device='CPU')  # CPU model
+            load_model = InferenceOptimizer.load(tmp_dir_name, model)  # GPU model
+            load_model = InferenceOptimizer.load(tmp_dir_name, model, device='CPU')  # CPU model
