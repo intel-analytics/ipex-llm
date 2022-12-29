@@ -76,9 +76,14 @@ model.fit(train_ds, epochs=1)
 ```python
 from tensorflow.keras.metrics import CategoricalAccuracy
 q_model = InferenceOptimizer.quantize(model,
-                                      calib_dataset=dataset,
+                                      x=dataset,
+                                      precision='bf16',
+                                      accelerator='openvino',
                                       metric=CategoricalAccuracy(),
-                                      tuning_strategy='basic'
+                                      accuracy_criterion={'relative': 0.01, 'higher_is_better': True},
+                                      tuning_strategy='basic',
+                                      timeout=0,
+                                      max_trials=10,
                                       )
 ```
 The quantized model can be called to do inference as normal keras model.

@@ -58,7 +58,7 @@ of INC.
 ### Quantization with Accuracy Control
 A set of arguments that helps to tune the results for both INC and POT quantization:
 
-- `calib_dataset`: A `tf.data.Dataset` object for calibration. Required for static quantization. It's also used as a validation dataloader.
+- `x`: A `tf.data.Dataset` object for calibration. Required for static quantization. It's also used as a validation dataloader.
 - `metric`:  A `tensorflow.keras.metrics.Metric` object for evaluation.
 
 - `accuracy_criterion`: A dictionary to specify the acceptable accuracy drop, e.g. `{'relative': 0.01, 'higher_is_better': True}`
@@ -80,7 +80,7 @@ from torchmetrics.classification import MulticlassAccuracy
 
 q_model = model.quantize(precision='int8',
                          accelerator=None,
-                         calib_dataset= train_dataset,
+                         x= train_dataset,
                          metric=MulticlassAccuracy(num_classes=10),
                          accuracy_criterion={'relative': 0.01, 'higher_is_better': True},
                          approach='static',
