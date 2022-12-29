@@ -99,18 +99,17 @@ for r in result:
     print("{}: {}".format(r, result[r]))
 
 
-#'''
-# Step 8: Distributed predicting with Orca PyTorch Estimator
+# Step 6: Distributed predicting with Orca PyTorch Estimator
 predict_results = est.predict(data=test_data,
                               feature_cols=feature_cols,
                               batch_size=10240)
 print('Predicted results (first n rows):')
 print(predict_results.head(n=5))
-#'''
 
-# Step 6: Save the trained PyTorch model
+
+# Step 7: Save the trained PyTorch model
 est.save("NCF_model")
 
 
-# Step 7: Stop Orca Context when program finishes
+# Step 8: Stop Orca Context when program finishes
 stop_orca_context()
