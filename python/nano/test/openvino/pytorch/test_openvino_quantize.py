@@ -14,7 +14,7 @@
 # limitations under the License.
 #
 from unittest import TestCase
-from torchmetrics import F1
+from torchmetrics import F1Score
 from bigdl.nano.pytorch import Trainer
 from bigdl.nano.pytorch import InferenceOptimizer
 from torchvision.models.mobilenetv3 import mobilenet_v3_small
@@ -71,7 +71,7 @@ class TestOpenVINO(TestCase):
 
         optimized_model = InferenceOptimizer.quantize(model, accelerator='openvino',
                                                       calib_data=dataloader,
-                                                      metric=F1(10))
+                                                      metric=F1Score('multiclass', num_classes=10))
 
         y_hat = optimized_model(x[0:3])
         assert y_hat.shape == (3, 10)
@@ -120,7 +120,7 @@ class TestOpenVINO(TestCase):
         openvino_model = InferenceOptimizer.quantize(model,
                                                      accelerator='openvino',
                                                      calib_data=dataloader,
-                                                     metric=F1(10),
+                                                     metric=F1Score('multiclass', num_classes=10),
                                                      thread_num=2)
 
         with InferenceOptimizer.get_context(openvino_model):
@@ -153,7 +153,7 @@ class TestOpenVINO(TestCase):
         openvino_model = InferenceOptimizer.quantize(model,
                                                      accelerator='openvino',
                                                      calib_data=dataloader,
-                                                     metric=F1(10),
+                                                     metric=F1Score('multiclass', num_classes=10),
                                                      thread_num=2)
         assert openvino_model.channels == 3
         openvino_model.hello()

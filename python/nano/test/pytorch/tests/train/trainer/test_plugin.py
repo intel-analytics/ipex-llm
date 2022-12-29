@@ -70,7 +70,8 @@ class TestPlugin(TestCase):
     def test_trainer_subprocess_plugin(self):
         pl_model = LightningModule(
             self.model, self.loss, self.optimizer,
-            metrics=[torchmetrics.F1(num_classes), torchmetrics.Accuracy(num_classes=10)]
+            metrics=[torchmetrics.F1Score('multiclass', num_classes=num_classes),
+                     torchmetrics.Accuracy('multiclass', num_classes=num_classes)]
         )
         trainer = Trainer(num_processes=2, distributed_backend="subprocess",
                           max_epochs=4)
@@ -88,7 +89,8 @@ class TestPlugin(TestCase):
         model = ResNet18(pretrained=False, include_top=False, freeze=True)
         pl_model = LightningModule(
             model, self.loss, self.optimizer,
-            metrics=[torchmetrics.F1(num_classes), torchmetrics.Accuracy(num_classes=10)]
+            metrics=[torchmetrics.F1Score('multiclass', num_classes=num_classes),
+                     torchmetrics.Accuracy('multiclass', num_classes=num_classes)]
         )
         trainer = Trainer(num_processes=2, distributed_backend="subprocess",
                           max_epochs=4)

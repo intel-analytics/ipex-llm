@@ -160,12 +160,12 @@ There are a few arguments required only by INC, and you should not specify or mo
 
 Here is an example to use INC with accuracy control as below. It will search for a model within 1% accuracy drop with 10 trials.
 ```python
-from torchmetrics.classification import Accuracy
+from torchmetrics.classification import MulticlassAccuracy
 InferenceOptimizer.quantize(model,
                             precision='int8',
                             accelerator=None,
                             calib_data=dataloader,
-                            metric=Accuracy()
+                            metric=MulticlassAccuracy(num_classes=10)
                             accuracy_criterion={'relative': 0.01, 'higher_is_better': True},
                             approach='static',
                             method='fx',
@@ -182,7 +182,7 @@ InferenceOptimizer.quantize(model,
                             precision='int8',
                             accelerator='openvino',
                             calib_data=dataloader,
-                            metric=Accuracy()
+                            metric=MulticlassAccuracy(num_classes=10)
                             accuracy_criterion={'relative': 0.01, 'higher_is_better': True},
                             approach='static',
                             max_trials=10,

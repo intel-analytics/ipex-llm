@@ -109,7 +109,7 @@ class TestOnnx(TestCase):
                                                  accelerator='onnxruntime',
                                                  method='qlinear',
                                                  calib_data=train_loader,
-                                                 metric=torchmetrics.F1(10),
+                                                 metric=torchmetrics.F1Score('multiclass', num_classes=10),
                                                  accuracy_criterion={'relative': 0.99,
                                                                     'higher_is_better': True})
         for x, y in train_loader:
@@ -157,7 +157,7 @@ class TestOnnx(TestCase):
                                                  accelerator='onnxruntime',
                                                  method='qlinear',
                                                  calib_data=train_loader,
-                                                 metric=torchmetrics.F1(10),
+                                                 metric=torchmetrics.F1Score('multiclass', num_classes=10),
                                                  accuracy_criterion={'relative': 0.99,
                                                                      'higher_is_better': True})
         for x, y in train_loader:

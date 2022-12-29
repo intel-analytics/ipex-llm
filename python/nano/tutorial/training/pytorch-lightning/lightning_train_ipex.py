@@ -20,7 +20,6 @@ from torch.utils.data.dataloader import DataLoader
 import torch
 from torchvision.models import resnet18
 from bigdl.nano.pytorch import Trainer
-from torchmetrics import Accuracy
 import pytorch_lightning as pl
 
 

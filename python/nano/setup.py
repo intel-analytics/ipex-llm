@@ -133,7 +133,7 @@ def setup_package():
                                 "torchvision~=0.15.0.dev"]
 
     pytorch_common_requires = ["pytorch_lightning==1.6.4",
-                               "torchmetrics==0.9.0",
+                               "torchmetrics==0.11.0",
                                "opencv-python-headless",
                                "PyTurboJPEG",
                                "opencv-transforms"]

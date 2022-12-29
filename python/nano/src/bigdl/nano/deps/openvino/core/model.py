@@ -42,7 +42,7 @@ class OpenVINOModel:
         return self._infer_request.infer(list(inputs))
 
     def on_forward_end(self, outputs):
-        arrays = tuple(map(lambda x: x, outputs.values()))
+        arrays = tuple(outputs.values())
         if len(arrays) == 1:
             arrays = arrays[0]
         return arrays
