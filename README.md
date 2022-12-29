@@ -6,9 +6,11 @@ _**Fast, Distributed, Secure AI for Big Data**_
 
 </div>
 
+
 ---
 
 BigDL seamlessly scales your data analytics & AI applications from laptop to cloud, with the following libraries:
+
 
 - [Orca](#orca): Distributed Big Data & AI (TF & PyTorch) Pipeline on Spark and Ray
 
