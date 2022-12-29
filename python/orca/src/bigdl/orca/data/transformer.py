@@ -351,7 +351,7 @@ class MinMaxScaler:
                  min: float=0.0,
                  max: float=1.0,
                  inputCol: Optional[Union[str, List[str]]]=None,
-                 outputCol: Optional[Union[str, List[str]]]=None):
+                 outputCol: Optional[str]=None):
         self.min = min
         self.max = max
         self.inputCol = [inputCol] if isinstance(inputCol, str) else inputCol
@@ -375,7 +375,7 @@ class MinMaxScaler:
 
     def setInputOutputCol(self,
                           inputCol: Union[str, List[str]],
-                          outputCol: Union[str, List[str]]) -> None:
+                          outputCol: str) -> None:
         self.inputCol = [inputCol] if isinstance(inputCol, str) else inputCol
         self.outputCol = outputCol
         self.__createScaler__()
@@ -402,7 +402,7 @@ class StandardScaler:
                  withMean: bool = False,
                  withStd: bool = True,
                  inputCol: Optional[Union[str, List[str]]] = None,
-                 outputCol: Optional[Union[str, List[str]]] = None):
+                 outputCol: Optional[str] = None):
         self.withMean = withMean
         self.withStd = withStd
         self.inputCol = [inputCol] if isinstance(inputCol, str) else inputCol
@@ -424,7 +424,7 @@ class StandardScaler:
 
     def setInputOutputCol(self,
                           inputCol: Union[str, List[str]],
-                          outputCol: Union[str, List[str]]) -> None:
+                          outputCol: str) -> None:
         self.inputCol = [inputCol] if isinstance(inputCol, str) else inputCol
         self.outputCol = outputCol
         self.__createScaler__()
