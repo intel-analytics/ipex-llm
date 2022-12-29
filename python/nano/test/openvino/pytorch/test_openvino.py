@@ -154,7 +154,7 @@ class TestOpenVINO(TestCase):
 
         with tempfile.TemporaryDirectory() as tmp_dir_name:
             InferenceOptimizer.save(openvino_model, tmp_dir_name)
-            model = InferenceOptimizer.load(tmp_dir_name)
+            model = InferenceOptimizer.load(tmp_dir_name, device='CPU')
 
         with InferenceOptimizer.get_context(model):
             assert torch.get_num_threads() == 2
@@ -282,3 +282,8 @@ class TestOpenVINO(TestCase):
         # GPU don't support dynamic shape
         with pytest.raises(RuntimeError):
             openvino_model(x2)
+
+        with tempfile.TemporaryDirectory() as tmp_dir_name:
+            InferenceOptimizer.save(openvino_model, tmp_dir_name)
+            model = InferenceOptimizer.load(tmp_dir_name)  # GPU model
+            model = InferenceOptimizer.load(tmp_dir_name, device='CPU')  # CPU model

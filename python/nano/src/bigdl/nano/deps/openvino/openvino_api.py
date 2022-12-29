@@ -13,7 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-from functools import partial
+from bigdl.nano.utils.log4Error import invalidInputError
 
 
 def PytorchOpenVINOModel(model, input_sample=None, precision='fp32',
@@ -64,16 +64,25 @@ def PytorchOpenVINOModel(model, input_sample=None, precision='fp32',
                                 **export_kwargs)
 
 
-def load_openvino_model(path, device=None):
+def load_openvino_model(path, framework='pytorch', device=None):
     """
     Load an OpenVINO model for inference from directory.
 
     :param path: Path to model to be loaded.
+    :param framework: Only support pytorch and tensorflow now
     :param device: A string represents the device of the inference.
     :return: PytorchOpenVINOModel model for OpenVINO inference.
     """
-    from .pytorch.model import PytorchOpenVINOModel
-    return PytorchOpenVINOModel._load(path, device=device)
+    if framework == 'pytorch':
+        from .pytorch.model import PytorchOpenVINOModel
+        return PytorchOpenVINOModel._load(path, device=device)
+    elif framework == 'tensorflow':
+        from .tf.model import KerasOpenVINOModel
+        return KerasOpenVINOModel._load(path, device=device)
+    else:
+        invalidInputError(False,
+                          "The value {} for framework is not supported."
+                          " Please choose from 'pytorch'/'tensorflow'.")
 
 
 def KerasOpenVINOModel(model, precision='fp32', thread_num=None,

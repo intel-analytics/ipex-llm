@@ -14,7 +14,7 @@
 # ==============================================================================
 
 from unittest import TestCase
-
+import tempfile
 import numpy as np
 import tensorflow as tf
 from tensorflow.keras.metrics import MeanSquaredError
@@ -54,6 +54,13 @@ class TestTraceAndQuantize(TestCase):
         traced_model(np.random.random((1, 4)).astype(np.float32))
         traced_model(inputs=np.random.random((1, 4)).astype(np.float32))
 
+        # test save/load
+        with tempfile.TemporaryDirectory() as tmp_dir_name:
+            InferenceOptimizer.save(traced_model, tmp_dir_name)
+            new_model = InferenceOptimizer.load(tmp_dir_name, model)
+        new_model.do_nothing()
+        assert new_model.get_x() == traced_model.x == x
+
     def test_attribute_access_after_quantize(self):
         x = 100
         model = MyModel(x)
@@ -69,6 +76,13 @@ class TestTraceAndQuantize(TestCase):
         assert quantized_model.get_x() == quantized_model.x == x
         quantized_model(np.random.random((1, 4)).astype(np.float32))
         quantized_model(inputs=np.random.random((1, 4)).astype(np.float32))
+        
+        # test save/load
+        with tempfile.TemporaryDirectory() as tmp_dir_name:
+            InferenceOptimizer.save(quantized_model, tmp_dir_name)
+            new_model = InferenceOptimizer.load(tmp_dir_name, model)
+        new_model.do_nothing()
+        assert new_model.get_x() == quantized_model.x == x
 
     def test_evaluate_after_trace(self):
         model = MyModel(100)
@@ -79,3 +93,9 @@ class TestTraceAndQuantize(TestCase):
         traced_model = InferenceOptimizer.trace(model, accelerator="onnxruntime",
                                                 input_spec=tf.TensorSpec(shape=(None, 4), dtype=tf.float32))
         traced_model.evaluate(x=x, y=y)
+
+        # test save/load
+        with tempfile.TemporaryDirectory() as tmp_dir_name:
+            InferenceOptimizer.save(traced_model, tmp_dir_name)
+            new_model = InferenceOptimizer.load(tmp_dir_name, model)
+        new_model.evaluate(x=x, y=y)

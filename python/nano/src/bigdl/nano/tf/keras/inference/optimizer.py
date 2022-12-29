@@ -15,7 +15,9 @@
 #
 
 import os
+import copy
 import time
+from pathlib import Path
 import numpy as np
 import traceback
 import tensorflow as tf
@@ -32,6 +34,9 @@ from tensorflow.keras.metrics import Metric
 from bigdl.nano.deps.neural_compressor.inc_api import quantize as inc_quantzie
 from bigdl.nano.deps.openvino.openvino_api import KerasOpenVINOModel
 from bigdl.nano.deps.onnxruntime.onnxruntime_api import KerasONNXRuntimeModel
+from bigdl.nano.deps.openvino.openvino_api import load_openvino_model
+from bigdl.nano.deps.onnxruntime.onnxruntime_api import load_onnxruntime_model
+from bigdl.nano.deps.neural_compressor.inc_api import load_inc_model
 
 
 class TFAccelerationOption(AccelerationOption):
@@ -342,9 +347,9 @@ class InferenceOptimizer(BaseInferenceOptimizer):
             if onnxruntime_session_options is None:
                 import onnxruntime
                 onnxruntime_session_options = onnxruntime.SessionOptions()
-                if thread_num is not None:
-                    onnxruntime_session_options.intra_op_num_threads = thread_num
-                    onnxruntime_session_options.inter_op_num_threads = thread_num
+            if thread_num is not None:
+                onnxruntime_session_options.intra_op_num_threads = thread_num
+                onnxruntime_session_options.inter_op_num_threads = thread_num
             result = KerasONNXRuntimeModel(model, input_spec, onnxruntime_session_options)
         else:
             invalidInputError(False, "Accelerator {} is invalid.".format(accelerator))
@@ -577,6 +582,7 @@ class InferenceOptimizer(BaseInferenceOptimizer):
             result = inc_quantzie(onnx_model, dataloader=(x, y),
                                   metric=metric,
                                   framework=framework,
+                                  thread_num=thread_num,
                                   conf=conf,
                                   approach=approach,
                                   tuning_strategy=tuning_strategy,
@@ -594,6 +600,77 @@ class InferenceOptimizer(BaseInferenceOptimizer):
             invalidInputError(False, "Accelerator {} is invalid.".format(accelerator))
         patch_compiled(result, model)
         return patch_attrs(result, model)
+
+    @staticmethod
+    def save(model: Model, path):
+        """
+        Save the model to local file.
+
+        :param model: Any model of keras.Model, including all models accelareted by
+               InferenceOptimizer.trace/InferenceOptimizer.quantize.
+        :param path: Path to saved model. Path should be a directory.
+        """
+        import yaml
+        path = Path(path)
+        path.mkdir(parents=path.parent, exist_ok=True)
+        if hasattr(model, '_save'):
+            model._save(path)
+        else:
+            # typically for keras Model
+            meta_path = Path(path) / "nano_model_meta.yml"
+            with open(meta_path, 'w+') as f:
+                metadata = {
+                    'ModelType': 'KerasModel',
+                    'checkpoint': 'saved_weight.ckpt'
+                }
+                yaml.safe_dump(metadata, f)
+            checkpoint_path = path / metadata['checkpoint']
+            model.save_weights(checkpoint_path)
+
+    @staticmethod
+    def load(path, model: Model, device=None):
+        """
+        Load a model from local.
+
+        :param path: Path to model to be loaded. Path should be a directory.
+        :param model: Required FP32 model to load tensorflow model.
+        :param device: A string represents the device of the inference. Default to None.
+               Only valid for openvino model, otherwise will be ignored.
+        :return: Model with different acceleration(None/OpenVINO/ONNX Runtime) or
+                 precision(FP32/FP16/BF16/INT8).
+        """
+        import yaml
+        path = Path(path)
+        invalidInputError(path.exists(), "{} doesn't exist.".format(path))
+        meta_path = path / "nano_model_meta.yml"
+        invalidInputError(meta_path.exists(),
+                          "File {} is required to load model.".format(str(meta_path)))
+        with open(meta_path, 'r') as f:
+            metadata = yaml.safe_load(f)
+        model_type = metadata.get('ModelType', None)
+        if model_type == 'KerasOpenVINOModel':
+            result = load_openvino_model(path, framework='tensorflow', device=device)
+            return patch_attrs(result, model)
+        if model_type == 'KerasONNXRuntimeModel':
+            result = load_onnxruntime_model(path, framework='tensorflow')
+            return patch_attrs(result, model)
+        if model_type == 'KerasQuantizedModel':
+            result = load_inc_model(path, model, framework='tensorflow')
+            return patch_attrs(result, model)
+        if isinstance(model, Model):
+            # typically for keras Model
+            model = copy.deepcopy(model)
+            checkpoint_path = metadata.get('checkpoint', None)
+            if checkpoint_path:
+                checkpoint_path = path / metadata['checkpoint']
+                model.load_weights(checkpoint_path)
+                return model
+            else:
+                invalidInputError(False, "Key 'checkpoint' must be specified.")
+        else:
+            invalidInputError(False,
+                              "ModelType {} or argument 'model={}' is not acceptable for tensorflow"
+                              " loading.".format(model_type, type(model)))
 
 
 def _accuracy_calculate_helper(model, metric, data):

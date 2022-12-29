@@ -739,16 +739,11 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                         if input_sample is None:
                             # input_sample can be a dataloader
                             input_sample = calib_dataloader
-                        if onnxruntime_session_options is None:
-                            import onnxruntime
-                            onnxruntime_session_options = onnxruntime.SessionOptions()
-                            if thread_num is not None:
-                                onnxruntime_session_options.intra_op_num_threads = thread_num
-                                onnxruntime_session_options.inter_op_num_threads = thread_num
                         model = InferenceOptimizer.trace(
                             model,
                             input_sample=input_sample,
                             accelerator='onnxruntime',
+                            thread_num=thread_num,
                             onnxruntime_session_options=onnxruntime_session_options,
                             simplification=simplification,
                             dynamic_axes=dynamic_axes,
@@ -959,9 +954,9 @@ class InferenceOptimizer(BaseInferenceOptimizer):
             if onnxruntime_session_options is None:
                 import onnxruntime
                 onnxruntime_session_options = onnxruntime.SessionOptions()
-                if thread_num is not None:
-                    onnxruntime_session_options.intra_op_num_threads = thread_num
-                    onnxruntime_session_options.inter_op_num_threads = thread_num
+            if thread_num is not None:
+                onnxruntime_session_options.intra_op_num_threads = thread_num
+                onnxruntime_session_options.inter_op_num_threads = thread_num
             return PytorchONNXRuntimeModel(model, input_sample,
                                            onnxruntime_session_options,
                                            simplification=simplification,
@@ -1054,7 +1049,7 @@ class InferenceOptimizer(BaseInferenceOptimizer):
         save_model(model, path)
 
     @staticmethod
-    def load(path, model: Optional[nn.Module] = None, inplace=False):
+    def load(path, model: Optional[nn.Module] = None, inplace=False, device=None):
         """
         Load a model from local.
 
@@ -1064,10 +1059,12 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                InferenceOptimizer.quantize. model should be set to None if you choose
                accelerator="onnxruntime"/"openvino"/"jit".
         :param inplace: whether to perform inplace optimization. Default: ``False``.
+        :param device: A string represents the device of the inference. Default to None.
+               Only valid for openvino model, otherwise will be ignored.
         :return: Model with different acceleration(None/OpenVINO/ONNX Runtime/JIT) or
                  precision(FP32/FP16/BF16/INT8).
         """
-        return load_model(path, model, inplace=inplace)
+        return load_model(path, model, inplace=inplace, device=device)
 
     @staticmethod
     def to_multi_instance(model: nn.Module, num_processes: int = 4,
