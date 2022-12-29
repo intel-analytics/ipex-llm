@@ -101,11 +101,11 @@ subtrees:
               title: "How-to Guides"
               subtrees:
                 - entries:
+                  - file: doc/Nano/Howto/Preprocessing/PyTorch/accelerate_pytorch_cv_data_pipeline
                   - file: doc/Nano/Howto/Training/PyTorchLightning/accelerate_pytorch_lightning_training_ipex
                   - file: doc/Nano/Howto/Training/PyTorchLightning/accelerate_pytorch_lightning_training_multi_instance
                   - file: doc/Nano/Howto/Training/PyTorchLightning/pytorch_lightning_training_channels_last
                   - file: doc/Nano/Howto/Training/PyTorchLightning/pytorch_lightning_training_bf16
-                  - file: doc/Nano/Howto/Training/PyTorchLightning/pytorch_lightning_cv_data_pipeline
                   - file: doc/Nano/Howto/Training/PyTorch/convert_pytorch_training_torchnano
                   - file: doc/Nano/Howto/Training/PyTorch/use_nano_decorator_pytorch_training
                   - file: doc/Nano/Howto/Training/TensorFlow/accelerate_tensorflow_training_multi_instance
