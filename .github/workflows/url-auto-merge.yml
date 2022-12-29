@@ -1,0 +1,43 @@
+name: Update AUTHORS
+on:
+  push:
+    branches:
+      - wip/yingzhe/test
+
+jobs:
+  updateURL:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+      - name: Update time
+        run: |
+          BIGDL_VERSION="2.2.0-SNAPSHOT"
+          SPARK_VERSION="3.1.3"
+          NIGHTLY_VERSION=$(echo $(echo `wget -qO - https://oss.sonatype.org/content/repositories/snapshots/com/intel/analytics/bigdl/bigdl-assembly-spark_$SPARK_VERSION/$BIGDL_VERSION/maven-metadata.xml | sed -n '/<value>[0-9]*\.[0-9]*\.[0-9]*-[0-9][0-9]*\.[0-9][0-9]*-[0-9][0-9]*.*value>/p' | head -n1 | awk -F'>' '{print $2}' | tr '</value' ' '`))
+          echo $SPARK_VERSION-$BIGDL_VERSION
+          sed -i "s:\(spark_$SPARK_VERSION/$BIGDL_VERSION/bigdl-assembly-spark_$SPARK_VERSION-\)[0-9]*.[0-9]*.[0-9]*-[0-9]*\.[0-9]*-[0-9]*\(.zip\):\1$NIGHTLY_VERSION\2:g" README.md
+          SPARK_VERSION="2.4.6"
+          NIGHTLY_VERSION=$(echo $(echo `wget -qO - https://oss.sonatype.org/content/repositories/snapshots/com/intel/analytics/bigdl/bigdl-assembly-spark_$SPARK_VERSION/$BIGDL_VERSION/maven-metadata.xml | sed -n '/<value>[0-9]*\.[0-9]*\.[0-9]*-[0-9][0-9]*\.[0-9][0-9]*-[0-9][0-9]*.*value>/p' | head -n1 | awk -F'>' '{print $2}' | tr '</value' ' '`))
+          echo $SPARK_VERSION-$BIGDL_VERSION
+          sed -i "s:\(spark_$SPARK_VERSION/$BIGDL_VERSION/bigdl-assembly-spark_$SPARK_VERSION-\)[0-9]*.[0-9]*.[0-9]*-[0-9]*\.[0-9]*-[0-9]*\(.zip\):\1$NIGHTLY_VERSION\2:g" README.md
+      - name: Create Pull Request
+        id: cpr
+        uses: peter-evans/create-pull-request@v4
+        with:
+          token: ${{ secrets.AUTO_UPDATE_URL }}
+          commit-message: update url
+          title: Update download URL
+          body: Update download URL
+          branch: update-orca-download-url
+      - run: |
+          echo ${{ steps.cpr.outputs.pull-request-number }}
+          echo ${{ steps.cpr.outputs.pull-request-operation }}
+
+      - name: Auto Merge
+        if: ${{ steps.cpr.outputs.pull-request-number && steps.cpr.outputs.pull-request-operation == 'created'}}
+        uses: peter-evans/enable-pull-request-automerge@v2
+        with:
+          token: ${{ secrets.AUTO_UPDATE_URL }}
+          pull-request-number: ${{ steps.cpr.outputs.pull-request-number }}
