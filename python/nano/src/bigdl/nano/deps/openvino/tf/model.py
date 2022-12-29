@@ -24,6 +24,7 @@ import tensorflow as tf
 from bigdl.nano.utils.log4Error import invalidInputError
 from ..core.utils import save
 import pickle
+import os
 
 
 class KerasOpenVINOModel(AcceleratedKerasModel):
@@ -78,7 +79,7 @@ class KerasOpenVINOModel(AcceleratedKerasModel):
         status = super().status
         status.update({"ModelType": type(self.target_obj).__name__,
                        "xml_path": 'ov_saved_model.xml',
-                       "attr_path": "ov_saved_model_attr.pkl",
+                       "compile_path": "ov_saved_model_compile.pkl",
                        "weight_path": 'ov_saved_model.bin',
                        "config": self.ov_model.final_config,
                        "device": self.ov_model._device})
@@ -131,9 +132,10 @@ class KerasOpenVINOModel(AcceleratedKerasModel):
                                    config=status['config'],
                                    thread_num=thread_num,
                                    device=device)
-        with open(Path(path) / status['attr_path'], "rb") as f:
-            kwargs = pickle.load(f)
-        model.compile(**kwargs)
+        if os.path.exists(Path(path) / status['compile_path']):
+            with open(Path(path) / status['compile_path'], "rb") as f:
+                kwargs = pickle.load(f)
+                model.compile(**kwargs)
         return model
 
     def _save_model(self, path):
@@ -148,7 +150,6 @@ class KerasOpenVINOModel(AcceleratedKerasModel):
         xml_path = path / self.status['xml_path']
         save(self.ov_model.ie_network, xml_path)
         # save compile attr
-        kwargs = {}
         if self._is_compiled:
             kwargs = {"run_eagerly": self._run_eagerly,
                       "steps_per_execution": int(self._steps_per_execution)}
@@ -167,5 +168,5 @@ class KerasOpenVINOModel(AcceleratedKerasModel):
                         kwargs["weighted_metrics"] = [m._name for m in weighted_metrics]
                     else:
                         kwargs["weighted_metrics"] = weighted_metrics._name
-        with open(Path(path) / self.status['attr_path'], "wb") as f:
-            pickle.dump(kwargs, f)
+            with open(Path(path) / self.status['compile_path'], "wb") as f:
+                pickle.dump(kwargs, f)

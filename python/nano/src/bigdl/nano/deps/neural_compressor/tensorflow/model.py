@@ -20,6 +20,7 @@ from bigdl.nano.utils.inference.tf.model import AcceleratedKerasModel
 from bigdl.nano.utils.log4Error import invalidInputError
 from neural_compressor.model.model import TensorflowModel
 import pickle
+import os
 
 
 class KerasQuantizedModel(AcceleratedKerasModel):
@@ -47,13 +48,12 @@ class KerasQuantizedModel(AcceleratedKerasModel):
     def status(self):
         status = super().status
         status.update({"ModelType": type(self.target_obj).__name__,
-                       "attr_path": "inc_saved_model_attr.pkl"})
+                       "compile_path": "inc_saved_model_compile.pkl"})
         return status
 
     def _save_model(self, path):
         self.model.save(path)
         # save compile attr
-        kwargs = {}
         if self._is_compiled:
             kwargs = {"run_eagerly": self._run_eagerly,
                       "steps_per_execution": int(self._steps_per_execution)}
@@ -72,8 +72,8 @@ class KerasQuantizedModel(AcceleratedKerasModel):
                         kwargs["weighted_metrics"] = [m._name for m in weighted_metrics]
                     else:
                         kwargs["weighted_metrics"] = weighted_metrics._name
-        with open(Path(path) / self.status['attr_path'], "wb") as f:
-            pickle.dump(kwargs, f)
+            with open(Path(path) / self.status['compile_path'], "wb") as f:
+                pickle.dump(kwargs, f)
 
     @staticmethod
     def _load(path, model=None):
@@ -91,7 +91,8 @@ class KerasQuantizedModel(AcceleratedKerasModel):
                 tune_cfg = yaml.safe_load(f)
                 qmodel.tune_cfg = tune_cfg
         model = KerasQuantizedModel(qmodel)
-        with open(Path(path) / status['attr_path'], "rb") as f:
-            kwargs = pickle.load(f)
-        model.compile(**kwargs)
+        if os.path.exists(Path(path) / status['compile_path']):
+            with open(Path(path) / status['compile_path'], "rb") as f:
+                kwargs = pickle.load(f)
+                model.compile(**kwargs)
         return model

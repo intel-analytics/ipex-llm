@@ -100,6 +100,7 @@ class KerasONNXRuntimeModel(ONNXRuntimeModel, AcceleratedKerasModel):
         status.update({"ModelType": type(self.target_obj).__name__,
                        "onnx_path": 'onnx_saved_model.onnx',
                        "attr_path": "onnx_saved_model_attr.pkl",
+                       "compile_path": "onnx_saved_model_compile.pkl",
                        "intra_op_num_threads": self.session_options.intra_op_num_threads,
                        "inter_op_num_threads": self.session_options.inter_op_num_threads})
         return status
@@ -129,13 +130,12 @@ class KerasONNXRuntimeModel(ONNXRuntimeModel, AcceleratedKerasModel):
                                       onnxruntime_session_options=onnxruntime_session_options)
         with open(Path(path) / status['attr_path'], "rb") as f:
             attrs = pickle.load(f)
-        kwargs = {}
         for attr_name, attr_value in attrs.items():
-            if attr_name.startswith("_"):
-                setattr(model, attr_name, attr_value)
-            else:
-                kwargs.update({attr_name: attr_value})
-        model.compile(**kwargs)
+            setattr(model, attr_name, attr_value)
+        if os.path.exists(Path(path) / status['compile_path']):
+            with open(Path(path) / status['compile_path'], "rb") as f:
+                kwargs = pickle.load(f)
+                model.compile(**kwargs)
         return model
 
     def _save_model(self, path):
@@ -144,7 +144,8 @@ class KerasONNXRuntimeModel(ONNXRuntimeModel, AcceleratedKerasModel):
         attrs = {"_default_kwargs": self._default_kwargs,
                  "_call_fn_args_backup": self._call_fn_args_backup,
                  "_inputs_dtypes": self._inputs_dtypes}
-        kwargs = {}
+        with open(Path(path) / self.status['attr_path'], "wb") as f:
+            pickle.dump(attrs, f)
         if self._is_compiled:
             kwargs = {"run_eagerly": self._run_eagerly,
                       "steps_per_execution": int(self._steps_per_execution)}
@@ -163,6 +164,5 @@ class KerasONNXRuntimeModel(ONNXRuntimeModel, AcceleratedKerasModel):
                         kwargs["weighted_metrics"] = [m._name for m in weighted_metrics]
                     else:
                         kwargs["weighted_metrics"] = weighted_metrics._name
-        attrs.update(kwargs)
-        with open(Path(path) / self.status['attr_path'], "wb") as f:
-            pickle.dump(attrs, f)
+            with open(Path(path) / self.status['compile_path'], "wb") as f:
+                pickle.dump(kwargs, f)
