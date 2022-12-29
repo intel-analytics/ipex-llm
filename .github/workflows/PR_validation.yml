@@ -29,6 +29,7 @@ on:
       - '.github/actions/ppml/**'
       - 'python/friesian/**'
       - '.github/actions/friesian/**'
+      - '.github/actions/dllib/**'
       - '.github/workflows/PR_validation.yml'
       
   push:
@@ -53,6 +54,7 @@ on:
       - '.github/actions/ppml/**'
       - 'python/friesian/**'
       - '.github/actions/friesian/**'
+      - '.github/actions/dllib/**'
       - '.github/workflows/PR_validation.yml'
 
 permissions:
@@ -97,6 +99,7 @@ jobs:
               - 'scala/dllib/**'
               - 'python/dllib/**'
               - '.github/actions/dllib-scala-ut-action/action.yml'
+              - '.github/actions/dllib/**'
               
             ppml:
               - 'scala/serving/pom.xml'
@@ -149,6 +152,17 @@ jobs:
         uses: ./.github/actions/maven-setup-action
       - name: Run test
         uses: ./.github/actions/dllib-scala-ut-action
+
+  Dllib-Python-Integration-ExampleTest-4:
+    needs: changes
+    if: ${{ needs.changes.outputs.dllib == 'true' }}
+    runs-on: [ self-hosted, dllib-integration ]
+
+    steps:
+      - uses: actions/checkout@v3
+      - name: Run test
+        uses: ./.github/actions/dllib/dllib-python-integration-examples-4
+
 
   PPML-Scala-UT:
     needs: changes
