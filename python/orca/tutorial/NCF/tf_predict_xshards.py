@@ -19,7 +19,7 @@ from bigdl.orca.data import XShards
 from bigdl.orca.learn.tf2 import Estimator
 from bigdl.orca import init_orca_context, stop_orca_context
 
-from process_xshards import get_feature_col
+from process_xshards import get_feature_cols
 
 # Step 1: Init Orca Context
 init_orca_context(cluster_mode='local')
@@ -28,7 +28,7 @@ init_orca_context(cluster_mode='local')
 est = Estimator.from_keras()
 est.load('NCF_model')
 data = XShards.load_pickle('test_xshards')
-feature_cols = get_feature_col()
+feature_cols = get_feature_cols()
 
 # Step 3: Predict the result
 res = est.predict(

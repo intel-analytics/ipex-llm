@@ -129,12 +129,13 @@ def prepare_data(data_dir, neg_scale=4):
     item_num = df_rating.agg({'item': "max"}).collect()[0]["max(item)"] + 1
 
     df_rating = generate_neg_sample(df_rating, item_num, neg_scale=neg_scale)
+    # occupation is already indexed.
     df, sparse_feats_input_dims = \
         merge_features(df_rating, df_user, df_item, sparse_features[:-1], dense_features)
-    # occupation is already indexed.
+
     occupation_num = df.agg({'occupation': 'max'}).collect()[0]['max(occupation)'] + 1
     sparse_feats_input_dims.append(occupation_num)
-    feature_cols = get_feature_col()
+    feature_cols = get_feature_cols()
     label_cols = ['label']
 
     train_df, val_df = df.randomSplit([0.8, 0.2], seed=100)
@@ -143,7 +144,7 @@ def prepare_data(data_dir, neg_scale=4):
         sparse_feats_input_dims, len(dense_features), feature_cols, label_cols
 
 
-def get_feature_col():
+def get_feature_cols():
     feature_cols = ['user', 'item'] + sparse_features + dense_features
     return feature_cols
 

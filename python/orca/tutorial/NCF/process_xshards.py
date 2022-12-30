@@ -131,13 +131,13 @@ def prepare_data(dataset_dir, num_ng=4):
     print("Split data...")
     train_data, test_data = data.transform_shard(split_dataset).split()
 
-    feature_cols = get_feature_col()
+    feature_cols = get_feature_cols()
     label_cols = ["label"]
     return train_data, test_data, user_num, item_num, \
         sparse_feats_input_dims, len(dense_features), feature_cols, label_cols
 
 
-def get_feature_col():
+def get_feature_cols():
     feature_cols = ['user', 'item'] + sparse_features + num_dense_feats
     return feature_cols
 
