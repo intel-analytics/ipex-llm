@@ -31,7 +31,6 @@ object MultiKMSExample extends Supportive {
     //get spark session and make ppml context
     val sparkSession= SparkSession.builder().getOrCreate
     val conf = sparkSession.sparkContext.getConf
-
     val sc = PPMLContext.initPPMLContextMultiKMS(sparkSession)
 
     //
@@ -42,6 +41,12 @@ object MultiKMSExample extends Supportive {
         sc.read(cryptoMode = CryptoMode.parse(conf.get("spark.bigdl.kms.datasource1.inputEncryptMode"))).option("header", "true")
           .csv(conf.get("spark.bigdl.kms.datasource1.inputpath"))
       }
+
+      val df2= timing("1/3 read data source 2"){
+        sc.read(cryptoMode = CryptoMode.parse(conf.get("spark.bigdl.kms.datasource2.inputEncryptMode"))).option("header", "true")
+          .csv(conf.get("spark.bigdl.kms.datasource2.inputpath"))
+      }
+
 
       val developers = timing("2/3 doSQLOperations") {
         // Select only the "name" column
@@ -57,14 +62,29 @@ object MultiKMSExample extends Supportive {
         developers
       }
 
+      val developers2 = timing("2/3 datasource2 do SQL"){
+        df2.select("name").count
+
+        df2.select(df2("name"), df2("age") ).show()
+
+        val developers2 = df2.filter(df2("job") === "Developer" and df2("age").between(20, 40)).toDF()
+        developers2.count()
+
+        developers2
+      }
+
+
       timing("3/3 encryptAndSaveOutputs") {
         // save data frame using spark kms context
         Log4Error.invalidInputError(conf.contains("spark.bigdl.kms.datasource1.outputEncryptMode"),"output encryput mode not found")
-        conf.set("spark.bigdl.kms.activeKey","spark.bigdl.kms.datasource1.data")
-        
-        // passed 
+
+        // write encrypted data 
         sc.write(developers, cryptoMode = CryptoMode.parse(conf.get("spark.bigdl.kms.datasource1.outputEncryptMode"))).mode("overwrite")
           .option("header", true).csv(conf.get("spark.bigdl.kms.datasource1.outputpath"),conf.get("spark.bigdl.kms.datasource1.data"))
+
+        //conf.set("spark.bigdl.kms.activeKey","spark.bigdl.kms.datasource2.data")
+        sc.write(developers, cryptoMode = CryptoMode.parse(conf.get("spark.bigdl.kms.datasource2.outputEncryptMode"))).mode("overwrite")
+          .option("header", true).csv(conf.get("spark.bigdl.kms.datasource2.outputpath"),conf.get("spark.bigdl.kms.datasource2.data"))
       }
     }
   }
