@@ -353,7 +353,6 @@ bash bigdl-ppml-submit.sh \
     --driver-cores 4 \
     --executor-memory 32g \
     --executor-cores 4 \
-    --conf spark.kubernetes.container.image=liyao-gramine \
     --num-executors 2 \
     --conf spark.cores.max=8 \
     --name simplequeryWithMultiKMS \
@@ -376,8 +375,8 @@ bash bigdl-ppml-submit.sh \
     --conf spark.bigdl.kms.datasource1.kms=EHSM\
     --conf spark.bigdl.kms.datasource1.inputpath=/ppml/trusted-big-data-ml/work/data/SimpleQueryWithSimpleKMS/input/people.csv \
     --conf spark.bigdl.kms.datasource1.outputpath=/ppml/trusted-big-data-ml/work/data/SimpleQueryWithSimpleKMS/myoutput/k8s_ehsm_people_output.crc \
-    --conf spark.bigdl.kms.datasource1.primary=/ppml/trusted-big-data-ml/work/data/liyao/data2/keys/ehsm/encrypted_primary_key \
-    --conf spark.bigdl.kms.datasource1.data=/ppml/trusted-big-data-ml/work/data/liyao/data2/keys/ehsm/encrypted_data_key \
+    --conf spark.bigdl.kms.datasource1.primary=/ppml/trusted-big-data-ml/work/data/data2/keys/ehsm/encrypted_primary_key \
+    --conf spark.bigdl.kms.datasource1.data=/ppml/trusted-big-data-ml/work/data/data2/keys/ehsm/encrypted_data_key \
     --conf spark.bigdl.kms.datasource1.inputEncryptMode=AES/CBC/PKCS5Padding \
     --conf spark.bigdl.kms.datasource1.outputEncryptMode=AES/CBC/PKCS5Padding \
     --verbose \
