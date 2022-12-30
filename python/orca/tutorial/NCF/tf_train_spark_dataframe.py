@@ -99,5 +99,6 @@ est.save("NCF_model")
 train_df.write.parquet('./train_processed.parquet', mode='overwrite')
 test_df.write.parquet('./test_processed.parquet', mode='overwrite')
 
+
 # Step 7: Stop Orca Context when program finishes
 stop_orca_context()
