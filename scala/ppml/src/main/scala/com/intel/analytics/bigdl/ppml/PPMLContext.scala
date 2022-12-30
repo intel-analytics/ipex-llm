@@ -306,10 +306,6 @@ object PPMLContext{
   def initPPMLContextMultiKMS(sparkSession: SparkSession): PPMLContext = {
     // get sparkconf and init ppml context
     val conf = sparkSession.sparkContext.getConf
-    // conf.set("spark.hadoop.io.compression.codecs",
-    //     "com.intel.analytics.bigdl.ppml.crypto.CryptoCodec")
-    // val sc = initNNContext(conf, appName)
-    // val sparkSession: SparkSession = SparkSession.builder().getOrCreate()
     val ppmlSc=new PPMLContext(sparkSession=sparkSession)
 
     //init kms
