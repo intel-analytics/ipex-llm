@@ -34,6 +34,7 @@ dataset_dir = "./ml-1m"
 train_data, test_data, user_num, item_num, sparse_feats_input_dims, num_dense_feats, \
     feature_cols, label_cols = prepare_data(dataset_dir, num_ng=4)
 
+
 # Step 3: Define the NCF model
 config = dict(
     factor_num=16,
