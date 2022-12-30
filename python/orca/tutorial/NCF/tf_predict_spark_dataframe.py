@@ -20,15 +20,18 @@ from bigdl.orca.learn.tf2 import Estimator
 
 from process_spark_dataframe import get_feature_cols
 
+
 # Step 1: Init Orca Context
 init_orca_context(cluster_mode='local')
 spark = OrcaContext.get_spark_session()
+
 
 # Step 2: Load the model and data
 est = Estimator.from_keras()
 est.load('NCF_model')
 df = spark.read.parquet('test_dataframe')
 feature_cols = get_feature_cols()
+
 
 # Step 3: Predict the result
 predict_df = est.predict(
@@ -37,8 +40,10 @@ predict_df = est.predict(
     feature_cols=feature_cols
 )
 
+
 # Step 4: Save the prediction result
 predict_df.write.parquet('predictions.parquet', mode='overwrite')
+
 
 # Step 5: Stop Orca Context when program finishes
 stop_orca_context()
