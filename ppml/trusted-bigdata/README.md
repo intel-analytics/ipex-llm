@@ -464,11 +464,100 @@ export secure_password=`openssl rsautl -inkey /ppml/password/key.txt -decrypt </
 --conf spark.kubernetes.executor.podTemplateFile=/ppml/spark-executor-template.yaml \
 --conf spark.kubernetes.executor.deleteOnTermination=false \
 ```
+## Thrift Server
 
+Spark SQL Thrift server is a port of Apache Hive’s HiverServer2 which allows the clients of JDBC or ODBC to execute queries of SQL over their respective protocols on Spark.
 
-### Configuration Explainations
+### 1. Start thrift server
 
-#### 1. Bigdl ppml SGX related configurations
+#### 1.1 Prepare the configuration file
+
+Create the file `spark-defaults.conf` at `$SPARK_HOME/conf` with the following content:
+
+```conf
+spark.sql.warehouse.dir         hdfs://host:ip/path #location of data
+```
+
+#### 1.2 Three ways to start
+
+##### 1.2.1 Start with spark official script
+
+```bash
+cd $SPARK_HOME
+sbin/start-thriftserver.sh
+```
+**Tip:** The startup of the thrift server will create the metastore_db file at the startup location of the command, which means that every startup command needs to be run at the same location, in the example it is SPARK_HOME.
+
+##### 1.2.2 Start with JAVA scripts
+
+```bash
+/opt/jdk8/bin/java \
+  -cp /ppml/spark-3.1.3/conf/:/ppml/spark-3.1.3/jars/* \
+  -Xmx10g org.apache.spark.deploy.SparkSubmit \
+  --class org.apache.spark.sql.hive.thriftserver.HiveThriftServer2 \
+  --name 'Thrift JDBC/ODBC Server' \
+  --master $RUNTIME_SPARK_MASTER \
+  --deploy-mode client \
+  local://$SPARK_HOME/jars/spark-hive-thriftserver_2.12-$SPARK_VERSION.jar
+```
+
+#### 1.2.3 Start with bigdl-ppml-submit.sh
+
+```bash
+export secure_password=`openssl rsautl -inkey /ppml/password/key.txt -decrypt </ppml/password/output.bin`
+bash bigdl-ppml-submit.sh \
+        --master $RUNTIME_SPARK_MASTER \
+        --deploy-mode client \
+        --sgx-enabled true \
+        --sgx-driver-jvm-memory 20g\
+        --sgx-executor-jvm-memory 20g\
+        --num-executors 2 \
+        --driver-memory 20g \
+        --driver-cores 8 \
+        --executor-memory 20g \
+        --executor-cores 8\
+        --conf spark.cores.max=24 \
+        --conf spark.kubernetes.container.image.pullPolicy=Always \
+        --conf spark.kubernetes.node.selector.label=dev \
+        --conf spark.kubernetes.container.image=$RUNTIME_K8S_SPARK_IMAGE \
+        --class org.apache.spark.sql.hive.thriftserver.HiveThriftServer2 \
+        --name thrift-server \
+        --verbose \
+        --log-file sgx-thrift.log \
+        local://$SPARK_HOME/jars/spark-hive-thriftserver_2.12-$SPARK_VERSION.jar
+```
+sgx is started in this script, and the thrift server runs in a trusted environment.
+
+#### 1.3 Use beeline to connect Thrift Server
+
+##### 1.3.1 Start beeline
+```bash
+cd $SPARK_HOME
+./bin/beeline
+```
+
+##### 1.3.2 Test thrift server
+
+```bash
+!connect jdbc:hive2://localhost:10000 #connect thrift server
+create database test_db;
+use test_db;
+create table person(name string, age int, job string) row format delimited fields terminated by '\t';
+insert into person values("Bob",1,"Engineer");
+select * from person;
+```
+If you get the following results, then the thrift server is functioning normally.
+```
++----------+----------+----------+
+| name     | age      | job      |
++----------+----------+----------+
+|      Bob |        1 | Engineer |
++----------+----------+----------+
+```
+
+## Configuration Explainations
+
+### 1. Bigdl ppml SGX related configurations
 
 <img title="" src="../../docs/readthedocs/image/ppml_memory_config.png" alt="ppml_memory_config.png" data-align="center">
 
@@ -500,10 +589,10 @@ When SGX is not used, the configuration is the same as spark native.
     --conf spark.driver.memory=10g
     --conf spark.executor.memory=12g
 ```
-#### 2. Spark security configurations
+### 2. Spark security configurations
 Below is an explanation of these security configurations, Please refer to [Spark Security](https://spark.apache.org/docs/3.1.2/security.html) for detail.
-##### 2.1 Spark RPC
-###### 2.1.1 Authentication
+#### 2.1 Spark RPC
+##### 2.1.1 Authentication
 `spark.authenticate`: true -> Spark authenticates its internal connections, default is false.
 `spark.authenticate.secret`: The secret key used authentication.
 `spark.kubernetes.executor.secretKeyRef.SPARK_AUTHENTICATE_SECRET` and `spark.kubernetes.driver.secretKeyRef.SPARK_AUTHENTICATE_SECRET`: mount `SPARK_AUTHENTICATE_SECRET` environment variable from a secret for both the Driver and Executors.
@@ -516,7 +605,7 @@ Below is an explanation of these security configurations, Please refer to [Spark
     --conf spark.authenticate.enableSaslEncryption=true
 ```
 
-###### 2.1.2 Encryption
+##### 2.1.2 Encryption
 `spark.network.crypto.enabled`: true -> enable AES-based RPC encryption, default is false.
 `spark.network.crypto.keyLength`: The length in bits of the encryption key to generate.
 `spark.network.crypto.keyFactoryAlgorithm`: The key factory algorithm to use when generating encryption keys.
@@ -525,7 +614,7 @@ Below is an explanation of these security configurations, Please refer to [Spark
     --conf spark.network.crypto.keyLength=128
     --conf spark.network.crypto.keyFactoryAlgorithm=PBKDF2WithHmacSHA1
 ```
-###### 2.1.3. Local Storage Encryption
+##### 2.1.3. Local Storage Encryption
 `spark.io.encryption.enabled`: true -> enable local disk I/O encryption, default is false.
 `spark.io.encryption.keySizeBits`: IO encryption key size in bits.
 `spark.io.encryption.keygen.algorithm`: The algorithm to use when generating the IO encryption key.
@@ -534,7 +623,7 @@ Below is an explanation of these security configurations, Please refer to [Spark
     --conf spark.io.encryption.keySizeBits=128
     --conf spark.io.encryption.keygen.algorithm=HmacSHA1
 ```
-###### 2.1.4 SSL Configuration
+##### 2.1.4 SSL Configuration
 `spark.ssl.enabled`: true -> enable SSL.
 `spark.ssl.port`: the port where the SSL service will listen on.
 `spark.ssl.keyPassword`: the password to the private key in the key store.
@@ -556,3 +645,4 @@ Below is an explanation of these security configurations, Please refer to [Spark
       --conf spark.ssl.trustStoreType=JKS
 ```
 [helmGuide]: https://github.com/intel-analytics/BigDL/blob/main/ppml/python/docker-gramine/kubernetes/README.md
+[kmsGuide]:https://github.com/intel-analytics/BigDL/blob/main/ppml/services/kms-utils/docker/README.md
