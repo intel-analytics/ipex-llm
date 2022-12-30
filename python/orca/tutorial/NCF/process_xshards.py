@@ -27,6 +27,9 @@ from sklearn.model_selection import train_test_split
 from bigdl.orca.data.pandas import read_csv
 from bigdl.orca.data.transformer import StringIndexer, MinMaxScaler
 
+sparse_features = ['zipcode', 'gender', 'category', 'occupation']
+dense_features = ['age']
+
 
 def ng_sampling(data, user_num, item_num, num_ng):
     data_X = data.values.tolist()
@@ -63,9 +66,6 @@ def split_dataset(data):
 
 
 def prepare_data(dataset_dir, num_ng=4):
-    sparse_features = ['gender', 'zipcode', 'category']
-    dense_features = ['age']
-
     print("Loading data...")
     # Need spark3 to support delimiter with more than one character.
     users = read_csv(
@@ -89,13 +89,12 @@ def prepare_data(dataset_dir, num_ng=4):
 
     print("Processing features...")
     # Categorical encoding
-    for col in sparse_features:
+    for col in sparse_features[:-1]:  # occupation is already indexed.
         indexer = StringIndexer(inputCol=col)
         if col in users.get_schema()['columns']:
             users = indexer.fit_transform(users)
         else:
             items = indexer.fit_transform(items)
-    sparse_features.append('occupation')  # occupation is already indexed.
 
     # Calculate input_dims for each sparse features
     sparse_feats_input_dims = []
@@ -139,9 +138,7 @@ def prepare_data(dataset_dir, num_ng=4):
 
 
 def get_feature_col():
-    feature_cols = ['user', 'item',
-                    'gender', 'zipcode', 'category', 'occupation',  # sparse features
-                    'age']  # dense features
+    feature_cols = ['user', 'item'] + sparse_features + num_dense_feats
     return feature_cols
 
 

@@ -22,6 +22,9 @@ from pyspark.sql.functions import udf, lit, collect_list, explode
 
 from bigdl.orca import OrcaContext
 
+sparse_features = ['zipcode', 'gender', 'category', 'occupation']
+dense_features = ['age']
+
 
 def read_data(data_dir):
     spark = OrcaContext.get_spark_session()
@@ -120,8 +123,6 @@ def merge_features(df, df_user, df_item, sparse_features, dense_features):
 
 
 def prepare_data(data_dir, neg_scale=4):
-    sparse_features = ['zipcode', 'gender', 'category']
-    dense_features = ['age']
     df_rating, df_user, df_item = read_data(data_dir)
 
     user_num = df_rating.agg({'user': "max"}).collect()[0]["max(user)"] + 1
@@ -129,9 +130,8 @@ def prepare_data(data_dir, neg_scale=4):
 
     df_rating = generate_neg_sample(df_rating, item_num, neg_scale=neg_scale)
     df, sparse_feats_input_dims = \
-        merge_features(df_rating, df_user, df_item, sparse_features, dense_features)
+        merge_features(df_rating, df_user, df_item, sparse_features[:-1], dense_features)
     # occupation is already indexed.
-    sparse_features.append('occupation')
     occupation_num = df.agg({'occupation': 'max'}).collect()[0]['max(occupation)'] + 1
     sparse_feats_input_dims.append(occupation_num)
     feature_cols = get_feature_col()
@@ -144,8 +144,6 @@ def prepare_data(data_dir, neg_scale=4):
 
 
 def get_feature_col():
-    sparse_features = ['zipcode', 'gender', 'category', 'occupation']
-    dense_features = ['age']
     feature_cols = ['user', 'item'] + sparse_features + dense_features
     return feature_cols
 
