@@ -6,7 +6,7 @@
 
 ---
 
-**In this guide we will describe how to scale out _TensorFlow 1.15_ programs using Orca in 4 simple steps.** (_[Keras 2.3](./orca-keras-quickstart.md) and [TensorFlow 2](./orca-tf2keras-quickstart.md) guides are also available._)
+**In this guide we will describe how to scale out _TensorFlow 1.15_ programs using Orca in 4 simple steps.** (_[Keras 2.3](./orca-keras-quickstart.md) and [TensorFlow 2](../Howto/tf2keras-quickstart.md) guides are also available._)
 
 ### Step 0: Prepare Environment
 

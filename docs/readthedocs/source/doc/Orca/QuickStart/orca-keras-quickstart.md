@@ -6,7 +6,7 @@
 
 ---
 
-**In this guide we will describe how to scale out _Keras 2.3_ programs using Orca in 4 simple steps.** (_[TensorFlow 1.5](./orca-tf-quickstart.md) and [TensorFlow 2](./orca-tf2keras-quickstart.md) guides are also available._)
+**In this guide we will describe how to scale out _Keras 2.3_ programs using Orca in 4 simple steps.** (_[TensorFlow 1.5](./orca-tf-quickstart.md) and [TensorFlow 2](../Howto/tf2keras-quickstart.md) guides are also available._)
 
 
 ### Step 0: Prepare Environment
