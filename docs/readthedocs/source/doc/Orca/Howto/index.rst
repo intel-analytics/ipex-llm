@@ -11,7 +11,7 @@ Orca How-to Guides
 
 * `Scale PyTorch Applications <pytorch-quickstart.html>`__
 
-*Ray:*
+**Ray:**
 
 * `Run Ray programs on Big Data clusters <ray-quickstart.html>`__
 
