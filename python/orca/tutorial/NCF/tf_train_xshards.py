@@ -33,9 +33,6 @@ init_orca_context(cluster_mode="local")
 dataset_dir = "./ml-1m"
 train_data, test_data, user_num, item_num, sparse_feats_input_dims, num_dense_feats, \
     feature_cols, label_cols = prepare_data(dataset_dir, num_ng=4)
-train_data.save_pickle("train_xshards")
-test_data.save_pickle("test_xshards")
-
 
 # Step 3: Define the NCF model
 config = dict(
