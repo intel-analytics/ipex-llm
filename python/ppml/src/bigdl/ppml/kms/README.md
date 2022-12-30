@@ -27,7 +27,7 @@ As they are the user certificates for KMS, please export them only in trusted an
 - Request a data key with prepared primary key and save it locally in ciphertext:
 
   ```bash
-  python client.py -api generate_primary_key -ip <KMS_IP> [-port <KMS_PORT>] -pkp <PRIMARYED_KEY_PATH>
+  python client.py -api generate_data_key -ip <KMS_IP> [-port <KMS_PORT>] -pkp <PRIMARYED_KEY_PATH> [-dkl <DATA_KEY_LENGTH_16_OR_32>]
   ```
 
 - Encrypt a file without holding keys (keys will be generated automatically):
