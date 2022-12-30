@@ -49,7 +49,7 @@ if platform.system() == "Linux":
                     core_list.append(int(n))
                 else:
                     start, end = n.split('-')
-                    core_list.extend(range(start, end + 1))
+                    core_list.extend(range(int(start), int(end) + 1))
             affinity_core_num = len(core_list)
         except Exception as _e:
             warnings.warn(f"Failed to parse KMP_AFFINITY: '{KMP_AFFINITY}'."
