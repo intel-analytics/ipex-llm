@@ -38,24 +38,19 @@ subtrees:
                 - file: doc/Orca/Overview/distributed-training-inference
                 - file: doc/Orca/Overview/distributed-tuning
                 - file: doc/Orca/Overview/ray
-          - file: doc/Orca/QuickStart/index
-            title: "Quickstarts"
-            subtrees:
-              - entries:
-                - file: doc/Orca/QuickStart/orca-tf2keras-quickstart
-                - file: doc/Orca/QuickStart/orca-pytorch-quickstart
-                - file: doc/Orca/QuickStart/ray-quickstart
-                - file: doc/Orca/QuickStart/orca-tf-quickstart
-                - file: doc/Orca/QuickStart/orca-keras-quickstart
           - file: doc/Orca/Howto/index
             title: "How-to Guides"
             subtrees:
               - entries:
                 - file: doc/Orca/Howto/tf2keras-quickstart
+                - file: doc/Orca/Howto/pytorch-quickstart
+                - file: doc/Orca/Howto/ray-quickstart
                 - file: doc/Orca/Howto/spark-dataframe
                 - file: doc/Orca/Howto/xshards-pandas
-                - file: doc/Orca/Howto/orca-autoestimator-pytorch-quickstart
-                - file: doc/Orca/Howto/orca-autoxgboost-quickstart
+                - file: doc/Orca/Howto/autoestimator-pytorch-quickstart
+                - file: doc/Orca/Howto/autoxgboost-quickstart
+                - file: doc/Orca/Howto/tf1-quickstart
+                - file: doc/Orca/Howto/tf1keras-quickstart
           - file: doc/Orca/Tutorial/index
             title: "Tutorials"
             subtrees:

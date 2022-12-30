@@ -165,10 +165,10 @@ pages:
   - Overview: Orca/overview.md
 #- OrcaContext: Orca/Overview/orca-context.md
   - Data: Orca/data.md
-  - TensorFlow Quickstart: Orca/orca-tf-quickstart.md
-  - TensorFlow Keras Quickstart: Orca/orca-keras-quickstart.md
+  - TensorFlow Quickstart: Orca/tf1-quickstart.md
+  - TensorFlow Keras Quickstart: Orca/tf1keras-quickstart.md
   - TensorFlow Estimator: Orca/orca-tf-estimator.md
-  - PyTorch Quickstart: Orca/orca-pytorch-quickstart.md
+  - PyTorch Quickstart: Orca/pytorch-quickstart.md
   - PyTorch Estimator: Orca/orca-pytorch-estimator.md
   - OpenVINO Estimator: Orca/orca-openvino-estimator.md
   - BigDL Estimator: Orca/orca-bigdl-estimator.md
