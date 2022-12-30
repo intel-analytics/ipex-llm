@@ -17,6 +17,8 @@ RUN apt-get update --fix-missing && \
 
 # bigdl
 FROM ubuntu:20.04 as bigdl
+ARG BIGDL_VERSION
+ARG SPARK_VERSION
 ENV SPARK_VERSION               ${SPARK_VERSION}
 ENV BIGDL_VERSION               ${BIGDL_VERSION}
 ENV BIGDL_HOME                  /bigdl-${BIGDL_VERSION}
@@ -42,6 +44,15 @@ WORKDIR /usr/src/app
 # caching trick to speed up build, this should allow non-dynamic dependencies to be cached
 RUN git clone https://github.com/analytics-zoo/keywhiz.git -b BigDL-Keywhiz && \
     cd keywhiz && \
+    mkdir -p /usr/src/app/api \
+             /usr/src/app/cli \
+             /usr/src/app/client \
+             /usr/src/app/hkdf \
+             /usr/src/app/model \
+             /usr/src/app/server \
+             /usr/src/app/testing \
+             /usr/src/app/log
+RUN cd keywhiz &&\
     cp *.xml /usr/src/app/ && \
     cp api/pom.xml /usr/src/app/api/ && \
     cp cli/pom.xml /usr/src/app/cli/ && \
@@ -57,14 +68,14 @@ RUN rm /usr/share/maven/conf/settings.xml && \
 
 # copy source required for build and install
 RUN cd keywhiz && \
-    cp -r api /usr/src/app/api/ && \
-    cp -r cli /usr/src/app/cli/ && \
-    cp -r client /usr/src/app/client/ && \
-    cp -r hkdf /usr/src/app/hkdf/ && \
-    cp -r model /usr/src/app/model/ && \
-    cp -r server /usr/src/app/server/ && \
-    cp -r testing /usr/src/app/testing/ && \
-    cp -r log /usr/src/app/log/
+    cp -r api/* /usr/src/app/api/ && \
+    cp -r cli/* /usr/src/app/cli/ && \
+    cp -r client/* /usr/src/app/client/ && \
+    cp -r hkdf/* /usr/src/app/hkdf/ && \
+    cp -r model/* /usr/src/app/model/ && \
+    cp -r server/* /usr/src/app/server/ && \
+    cp -r testing/* /usr/src/app/testing/ && \
+    cp -r log/* /usr/src/app/log/
 RUN service mysql start && mvn -DskipTests=true package
 
 # Drop privs inside container
@@ -87,11 +98,13 @@ RUN cd keywhiz && \
     cp docker/keywhiz-config.tpl /usr/src/app && \
     cp frontend-keywhiz-conf.yaml /usr/src/app && \
     chmod a+x /usr/src/app/entry.sh
-ADD ./start-https-frontend.sh /opt/start-http-frontend.sh
+ADD ./start-https-frontend.sh /opt/start-https-frontend.sh
 RUN chmod a+x /opt/start-https-frontend.sh
 
 ENV LC_ALL	C.UTF-8
 ENV LANG	C.UTF-8
+ARG BIGDL_VERSION
+ARG SPARK_VERSION
 ENV SPARK_VERSION               ${SPARK_VERSION}
 ENV BIGDL_VERSION               ${BIGDL_VERSION}
 ENV BIGDL_HOME                  /bigdl-${BIGDL_VERSION}
