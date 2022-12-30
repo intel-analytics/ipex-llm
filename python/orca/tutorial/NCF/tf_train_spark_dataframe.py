@@ -33,6 +33,7 @@ data_dir = './ml-1m'  # path to ml-1m
 train_df, test_df, user_num, item_num, sparse_feats_input_dims, num_dense_feats, \
     feature_cols, label_cols = prepare_data(data_dir, neg_scale=4)
 
+
 # Step 3: Define the NCF model
 config = dict(
     factor_num=16,
@@ -87,7 +88,7 @@ result = est.evaluate(test_df,
                       num_steps=val_steps)
 print('Evaluation results:')
 for r in result:
-    print(r, ":", result[r])
+    print("{}: {}".format(r, result[r]))
 
 # Step 6: Save the trained TensorFlow model and data for resuming training or prediction
 est.save("NCF_model")
