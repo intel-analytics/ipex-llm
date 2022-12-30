@@ -22,5 +22,5 @@ Orca How-to Guides
 
 **AutoML:**
 
-* `Enable AutoML for PyTorch <orca-autoestimator-pytorch-quickstart.html>`__
-* `Use AutoXGBoost to auto-tune XGBoost parameters <orca-autoxgboost-quickstart.html>`__
+* `Enable AutoML for PyTorch <autoestimator-pytorch-quickstart.html>`__
+* `Use AutoXGBoost to auto-tune XGBoost parameters <autoxgboost-quickstart.html>`__
