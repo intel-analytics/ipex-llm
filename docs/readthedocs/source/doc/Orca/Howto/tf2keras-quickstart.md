@@ -34,7 +34,7 @@ elif cluster_mode == "yarn":  # For Hadoop/YARN cluster
 
 This is the only place where you need to specify local or distributed mode. View [Orca Context](../Overview/orca-context.md) for more details.
 
-Please check the tutorials if you want to run on [Kubernetes](../Tutorial/k8s.md) or [Hadoop/YARN]((../Tutorial/yarn.md)) clusters.
+Please check the tutorials if you want to run on [Kubernetes](../Tutorial/k8s.md) or [Hadoop/YARN](../Tutorial/yarn.md) clusters.
 
 ### Step 2: Define the Model
 
@@ -146,6 +146,6 @@ est.save("lenet_model.h5", save_format='h5')
 est.load("lenet_model.h5")
 ```
 
-That's it, the same code can run seamlessly on your local laptop and scale to K8s or Hadoop/YARN clusters.
+That's it, the same code can run seamlessly on your local laptop and scale to [Kubernetes](../Tutorial/k8s.md) or [Hadoop/YARN](../Tutorial/yarn.md) clusters.
 
 **Note:** You should call `stop_orca_context()` when your program finishes.
