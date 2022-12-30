@@ -15,6 +15,7 @@
 #
 import inspect
 import operator
+import tensorflow as tf
 from tensorflow.keras import Model
 from functools import partial
 from bigdl.nano.common.compare_version import _compare_version
@@ -96,3 +97,14 @@ def patch_compiled(target_model: Model, source_model: Model):
             kwargs["weighted_metrics"] = source_model.compiled_metrics._user_weighted_metrics
         target_model.compile(**kwargs)
     return target_model
+
+
+def fake_tensor_from_spec(tensor_spec: tf.TensorSpec):
+    """Fake a `Tensor` from `TensorSpec`."""
+    shape = tensor_spec.shape
+    dtype = tensor_spec.dtype
+    shape = tuple(dim if dim is not None else 1 for dim in shape)
+    if shape == () and dtype == tf.bool:
+        # This may be the `training` parameter, we should assume it is False
+        return False
+    return tf.ones(shape=shape, dtype=dtype)

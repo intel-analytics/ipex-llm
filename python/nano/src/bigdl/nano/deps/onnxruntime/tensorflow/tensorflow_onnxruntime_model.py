@@ -21,7 +21,7 @@ from pathlib import Path
 from tempfile import TemporaryDirectory
 import tensorflow as tf
 from bigdl.nano.utils.util import get_default_args
-from bigdl.nano.tf.utils import KERAS_VERSION_LESS_2_10
+from bigdl.nano.tf.utils import KERAS_VERSION_LESS_2_10, fake_tensor_from_spec
 from bigdl.nano.utils.inference.tf.model import AcceleratedKerasModel
 from bigdl.nano.utils.log4Error import invalidInputError
 
@@ -59,6 +59,14 @@ class KerasONNXRuntimeModel(ONNXRuntimeModel, AcceleratedKerasModel):
                     input_spec = (input_spec, )
                 tf2onnx.convert.from_keras(model, input_signature=input_spec,
                                            output_path=onnx_path, **export_kwargs)
+                # save the nesting level of inference output
+                fake_inputs = [fake_tensor_from_spec(spec) for spec in input_spec]
+                fake_outputs = model(*fake_inputs)
+                self._nesting_level = 0
+                while isinstance(fake_outputs, (tuple, list)) and len(fake_outputs) == 1:
+                    self._nesting_level += 1
+                    fake_outputs = fake_outputs[0]
+
                 self._inputs_dtypes = [inp.dtype for inp in input_spec]
                 self._default_kwargs = get_default_args(model.call)
                 if KERAS_VERSION_LESS_2_10:
@@ -78,7 +86,10 @@ class KerasONNXRuntimeModel(ONNXRuntimeModel, AcceleratedKerasModel):
                 kwargs[name] = value
         for param in self._call_fn_args_backup[len(inputs):len(self._forward_args)]:
             inputs.append(kwargs[param])
-        return self.call(*inputs)
+        outputs = self.call(*inputs)
+        for _i in range(self._nesting_level):
+            outputs = [outputs]
+        return outputs
 
     def on_forward_start(self, inputs):
         if self.ortsess is None:
@@ -89,8 +100,6 @@ class KerasONNXRuntimeModel(ONNXRuntimeModel, AcceleratedKerasModel):
         return inputs
 
     def on_forward_end(self, outputs):
-        if isinstance(outputs, list) and len(outputs) == 1:
-            outputs = outputs[0]
         outputs = self.numpy_to_tensors(outputs)
         return outputs
 
@@ -143,7 +152,8 @@ class KerasONNXRuntimeModel(ONNXRuntimeModel, AcceleratedKerasModel):
         super()._save_model(onnx_path)
         attrs = {"_default_kwargs": self._default_kwargs,
                  "_call_fn_args_backup": self._call_fn_args_backup,
-                 "_inputs_dtypes": self._inputs_dtypes}
+                 "_inputs_dtypes": self._inputs_dtypes,
+                 "_nesting_level": self._nesting_level}
         with open(Path(path) / self.status['attr_path'], "wb") as f:
             pickle.dump(attrs, f)
         if self._is_compiled:
