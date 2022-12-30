@@ -27,12 +27,12 @@ spark = OrcaContext.get_spark_session()
 # Step 2: Load the model and data
 est = Estimator.from_keras()
 est.load('NCF_model')
-data = spark.read.parquet('test_dataframe')
+df = spark.read.parquet('test_dataframe')
 feature_cols = get_feature_col()
 
 # Step 3: Predict the result
 res = est.predict(
-    data,
+    df,
     batch_size=10240,
     feature_cols=feature_cols
 )
