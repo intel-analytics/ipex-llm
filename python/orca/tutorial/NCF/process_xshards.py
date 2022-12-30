@@ -106,11 +106,11 @@ def prepare_data(dataset_dir, num_ng=4):
 
     # scale dense features
     def rename(shard, col):
-        shard = shard.drop(columns=[col]).rename(columns={col+"_scaled": col})
+        shard = shard.drop(columns=[col]).rename(columns={col + "_scaled": col})
         return shard
 
     for col in dense_features:
-        scaler = MinMaxScaler(inputCol=[col], outputCol=col+'_scaled')
+        scaler = MinMaxScaler(inputCol=[col], outputCol=col + '_scaled')
         if col in users.get_schema()['columns']:
             users = scaler.fit_transform(users)
             users = users.transform_shard(lambda shard: rename(shard, col))
@@ -132,10 +132,17 @@ def prepare_data(dataset_dir, num_ng=4):
     print("Split data...")
     train_data, test_data = data.transform_shard(split_dataset).split()
 
-    feature_cols = ['user', 'item'] + sparse_features + dense_features
+    feature_cols = get_feature_col()
     label_cols = ["label"]
     return train_data, test_data, user_num, item_num, \
         sparse_feats_input_dims, len(dense_features), feature_cols, label_cols
+
+
+def get_feature_col():
+    feature_cols = ['user', 'item',
+                    'gender', 'zipcode', 'category', 'occupation',  # sparse features
+                    'age']  # dense features
+    return feature_cols
 
 
 if __name__ == "__main__":

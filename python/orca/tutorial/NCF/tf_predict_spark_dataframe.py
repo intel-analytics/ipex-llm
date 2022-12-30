@@ -15,12 +15,10 @@
 #
 
 # Step 0: Import necessary libraries
-import math
-
 from bigdl.orca import init_orca_context, stop_orca_context, OrcaContext
 from bigdl.orca.learn.tf2 import Estimator
 
-from tf_model import ncf_model
+from process_spark_dataframe import get_feature_col
 
 # Step 1: Init Orca Context
 init_orca_context(memory='4g')
@@ -30,22 +28,17 @@ spark = OrcaContext.get_spark_session()
 est = Estimator.from_keras()
 est.load('NCF_model')
 data = spark.read.parquet('test_dataframe')
+feature_cols = get_feature_col()
 
-# Step 3: Define the input feature columns
-sparse_features = ['zipcode', 'gender', 'category', 'occupation']
-dense_features = ['age']
-feature_cols = ['user', 'item'] + sparse_features + dense_features
-
-# Step 4: Predict the result
+# Step 3: Predict the result
 res = est.predict(
     data,
     batch_size=10240,
-    steps=math.ceil(data.count() / 10240),
     feature_cols=feature_cols
 )
 
-# Step 5: Save the prediction result
+# Step 4: Save the prediction result
 res.write.parquet('predict_result', mode='overwrite')
 
-# Step 6: Stop Orca Context when program finishes
+# Step 5: Stop Orca Context when program finishes
 stop_orca_context()

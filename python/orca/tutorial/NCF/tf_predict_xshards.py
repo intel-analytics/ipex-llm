@@ -15,35 +15,29 @@
 #
 
 # Step 0: Import necessary libraries
-import math
-
 from bigdl.orca.data import XShards
 from bigdl.orca.learn.tf2 import Estimator
 from bigdl.orca import init_orca_context, stop_orca_context
 
-from tf_model import ncf_model
+from process_xshards import get_feature_col
+
 # Step 1: Init Orca Context
-init_orca_context(memory='4g')
+init_orca_context(cluster_mode='local')
 
 # Step 2: Load the model and data
 est = Estimator.from_keras()
 est.load('NCF_model')
 data = XShards.load_pickle('test_xshards')
+feature_cols = get_feature_col()
 
-# Step 3: Define the input feature columns
-feature_cols = ['user', 'item',
-                'gender', 'zipcode', 'category', 'occupation',  # sparse features
-                'age']  # dense features
-
-# Step 4: Predict the result
+# Step 3: Predict the result
 res = est.predict(
     data,
     batch_size=10240,
-    steps=math.ceil(len(data) / 10240),
     feature_cols=feature_cols
 )
-# Step 5: Save the prediction result
+# Step 4: Save the prediction result
 res.save_pickle('predict_xshards_result')
 
-# Step 6: Stop Orca Context when program finishes
+# Step 5: Stop Orca Context when program finishes
 stop_orca_context()

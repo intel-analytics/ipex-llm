@@ -96,8 +96,8 @@ for r in result:
 # Step 6: Save the trained TensorFlow model and processed data for resuming training or prediction
 est.save("NCF_model")
 
-train_data.save_pickle("train_xshards")
-test_data.save_pickle("test_xshards")
+train_data.save_pickle("train_processed_xshards")
+test_data.save_pickle("test_processed_xshards")
 
 
 # Step 7: Stop Orca Context when program finishes

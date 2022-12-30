@@ -134,13 +134,20 @@ def prepare_data(data_dir, neg_scale=4):
     sparse_features.append('occupation')
     occupation_num = df.agg({'occupation': 'max'}).collect()[0]['max(occupation)'] + 1
     sparse_feats_input_dims.append(occupation_num)
-    feature_cols = ['user', 'item'] + sparse_features + dense_features
+    feature_cols = get_feature_col()
     label_cols = ['label']
 
     train_df, val_df = df.randomSplit([0.8, 0.2], seed=100)
 
     return train_df, val_df, user_num, item_num, \
         sparse_feats_input_dims, len(dense_features), feature_cols, label_cols
+
+
+def get_feature_col():
+    sparse_features = ['zipcode', 'gender', 'category', 'occupation']
+    dense_features = ['age']
+    feature_cols = ['user', 'item'] + sparse_features + dense_features
+    return feature_cols
 
 
 if __name__ == "__main__":
