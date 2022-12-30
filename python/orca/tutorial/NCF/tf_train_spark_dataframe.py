@@ -89,8 +89,10 @@ print('Evaluation results:')
 for r in result:
     print(r, ":", result[r])
 
-# Step 6: Save the trained Tensorflow model
+# Step 6: Save the trained Tensorflow model and data for resuming training or prediction
 est.save("NCF_model")
+train_df.write.parquet('./train_dataframe', mode='overwrite')
+test_df.write.parquet('./test_dataframe', mode='overwrite')
 
 # Step 7: Stop Orca Context when program finishes
 stop_orca_context()
