@@ -259,17 +259,17 @@ class TorchRunner(BaseRunner):
                     callback.set_trainer(self)
                 callback.on_train_begin()
 
-        self.call_hook(call_backs=callbacks, fn_name="before_run")
+        self.call_hook(callbacks=callbacks, fn_name="before_run")
 
         stats_list = list()
         for i in range(epochs):
             if callbacks is not None:
                 for callback in callbacks:
                     callback.on_epoch_begin(epoch=self.epochs)
-            self.call_hook(call_backs=callbacks, fn_name="before_train_epoch")
+            self.call_hook(callbacks=callbacks, fn_name="before_train_epoch")
             stats = self.train_epoch(loader, profile=profile, info=info, callbacks=callbacks,
                                      val_loader=val_loader, val_steps=val_steps)
-            self.call_hook(call_backs=callbacks, fn_name="after_train_epoch")
+            self.call_hook(callbacks=callbacks, fn_name="after_train_epoch")
             if self.rank == 0:
                 if self.sync_stats:
                     self.logger.info(f"Finished training epoch {i + 1}, " +
@@ -286,7 +286,7 @@ class TorchRunner(BaseRunner):
             for callback in callbacks:
                 callback.on_train_end(logs=self.epochs_stats)
 
-        self.call_hook(call_backs=callbacks, fn_name="after_run")
+        self.call_hook(callbacks=callbacks, fn_name="after_run")
 
         return stats_list
 
@@ -475,20 +475,27 @@ class TorchRunner(BaseRunner):
                 calculate averages.
 
         """
-        # TODO: restore batch to what it should be.
-        self.call_hook(call_backs=callbacks, fn_name="before_train_iter")
         # unpack features into list to support multiple inputs model
+        # and restore batch to what it should be.
         features, target = batch
+        if torch.is_tensor(features):
+            self.batch = features, target
+        elif isinstance(features, (tuple, list)):
+            self.batch = *features, target
+        else:
+            invalidInputError(False,
+                              "Features should be tensor or list/tuple, "
+                              "but got {}".format(type(features)))
+        self.call_hook(callbacks=callbacks, fn_name="before_train_iter")
 
         # Compute output.
         with self.timers.record("fwd"):
-            if torch.is_tensor(features):
-                output = self.training_model(features)
-            elif isinstance(features, (tuple, list)):
+            *features, target = self.batch
+            if torch.is_tensor(features) or isinstance(features, (tuple, list)):
                 output = self.training_model(*features)
             else:
                 invalidInputError(False,
-                                  "Features should be tensor, list/tuple or dict, "
+                                  "Features should be tensor or list/tuple, "
                                   "but got {}".format(type(features)))
 
             # Ensure `target` and `output` are always in a list format.
@@ -505,7 +512,11 @@ class TorchRunner(BaseRunner):
         with self.timers.record("apply"):
             self.optimizer.step()
 
-        self.call_hook(call_backs=callbacks, fn_name="after_train_iter")
+        self.call_hook(callbacks=callbacks, fn_name="after_train_iter")
+
+        # User should not see batch from last iteration
+        if hasattr(self, "batch"):
+            del self.batch
 
         return {"train_loss": loss.item(), NUM_SAMPLES: get_batchsize(features)}
 
@@ -566,7 +577,7 @@ class TorchRunner(BaseRunner):
         metrics = Metric.convert_metrics_dict(metrics, backend="pytorch")
         losses = []
         total_samples = 0
-        self.call_hook(call_backs=callbacks, fn_name="before_val_epoch")
+        self.call_hook(callbacks=callbacks, fn_name="before_val_epoch")
         with torch.no_grad():
             for batch_idx, batch in enumerate(val_iterator):
                 if num_steps and batch_idx == num_steps:
@@ -580,7 +591,7 @@ class TorchRunner(BaseRunner):
                 for metric in metrics.values():
                     metric(output, target)
 
-        self.call_hook(call_backs=callbacks, fn_name="after_val_epoch")
+        self.call_hook(callbacks=callbacks, fn_name="after_val_epoch")
         result = {name: metric.compute() for name, metric in metrics.items()}
 
         result["val_loss"] = sum(losses) / total_samples
@@ -611,20 +622,27 @@ class TorchRunner(BaseRunner):
                 by default, ``validate`` uses "num_samples" to
                 calculate averages.
         """
-        # TODO: restore batch to what it should be.
-        self.call_hook(call_backs=callbacks, fn_name="before_val_iter")
         # unpack features into list to support multiple inputs model
+        # and restore batch to what it should be.
         features, target = batch
+        if torch.is_tensor(features):
+            self.batch = features, target
+        elif isinstance(features, (tuple, list)):
+            self.batch = *features, target
+        else:
+            invalidInputError(False,
+                              "Features should be tensor, list/tuple, "
+                              "but got {}".format(type(features)))
+        self.call_hook(callbacks=callbacks, fn_name="before_val_iter")
 
         # compute output
         with self.timers.record("eval_fwd"):
-            if torch.is_tensor(features):
-                output = self.model(features)
-            elif isinstance(features, (tuple, list)):
+            *features, target = self.batch
+            if torch.is_tensor(features) or isinstance(features, (tuple, list)):
                 output = self.model(*features)
             else:
                 invalidInputError(False,
-                                  "Features should be tensor, list/tuple or dict, "
+                                  "Features should be tensor, list/tuple, "
                                   "but got {}".format(type(features)))
 
             # Ensure `target` and `output` are always in a list format.
@@ -632,7 +650,11 @@ class TorchRunner(BaseRunner):
             outputL = [output] if not isinstance(output, (list, tuple)) else output
             loss = self.criterion(*outputL, *targetL)
 
-        self.call_hook(call_backs=callbacks, fn_name="after_val_iter")
+        self.call_hook(callbacks=callbacks, fn_name="after_val_iter")
+
+        # User should not see batch from last iteration
+        if hasattr(self, "batch"):
+            del self.batch
 
         return output, target, loss
 
@@ -783,17 +805,17 @@ class TorchRunner(BaseRunner):
         del self.optimizers
         del self.models
 
-    def call_hook(self, call_backs, fn_name: str) -> None:
+    def call_hook(self, callbacks, fn_name: str) -> None:
         """Call all hooks.
 
         Args:
             fn_name (str): The function name in each hook to be called, such as
                 "on_iter_begin".
         """
-        if not call_backs:
+        if not callbacks:
             return
 
-        for hook in call_backs:
+        for hook in callbacks:
             getattr(hook, fn_name)(self)
 
     @property

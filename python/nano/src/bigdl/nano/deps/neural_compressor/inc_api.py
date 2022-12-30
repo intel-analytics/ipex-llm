@@ -21,7 +21,8 @@ def load_inc_model(path, model, framework):
         from .pytorch.quantized_model import PytorchQuantizedModel
         return PytorchQuantizedModel._load(path, model)
     elif framework == 'tensorflow':
-        invalidInputError(False, "QuantizedTensorflowModel loading is not implemented yet.")
+        from .tensorflow.model import KerasQuantizedModel
+        return KerasQuantizedModel._load(path, model)
     else:
         invalidInputError(False,
                           "The value {} for framework is not supported."
@@ -50,6 +51,12 @@ def quantize(model, dataloader=None, metric=None, thread_num=None, **kwargs):
         quantizer = PytorchQuantization(thread_num=thread_num, **not_none_kwargs)
     if 'onnx' in not_none_kwargs['framework']:
         onnx_option = not_none_kwargs.pop('onnx_option', None)
+        if onnxruntime_session_options is None:
+            import onnxruntime
+            onnxruntime_session_options = onnxruntime.SessionOptions()
+        if thread_num is not None:
+            onnxruntime_session_options.intra_op_num_threads = thread_num
+            onnxruntime_session_options.inter_op_num_threads = thread_num
         if onnx_option == 'tensorflow':
             from .onnx.tensorflow.quantization import KerasONNXRuntimeQuantization
             quantizer = KerasONNXRuntimeQuantization(

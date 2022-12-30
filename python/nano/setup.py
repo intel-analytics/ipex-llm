@@ -133,7 +133,7 @@ def setup_package():
                                 "torchvision~=0.15.0.dev"]
 
     pytorch_common_requires = ["pytorch_lightning==1.6.4",
-                               "torchmetrics==0.7.2",
+                               "torchmetrics==0.11.0",
                                "opencv-python-headless",
                                "PyTurboJPEG",
                                "opencv-transforms"]
@@ -151,7 +151,7 @@ def setup_package():
                           "onnxruntime-extensions==0.4.2; platform_system!='Darwin'",
                           "onnxruntime-extensions==0.3.1; platform_machine=='x86_64' and \
                           platform_system=='Darwin'",
-                          "openvino-dev==2022.2.0",
+                          "openvino-dev==2022.3.0",
                           "neural-compressor==1.13.1",
                           "onnxsim==0.4.8; platform_system!='Darwin'",
                           "onnxsim==0.4.1; platform_machine=='x86_64' and \

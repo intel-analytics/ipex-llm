@@ -23,6 +23,8 @@ from .metric import KerasOpenVINOMetric
 import tensorflow as tf
 from bigdl.nano.utils.log4Error import invalidInputError
 from ..core.utils import save
+import pickle
+import os
 
 
 class KerasOpenVINOModel(AcceleratedKerasModel):
@@ -76,7 +78,9 @@ class KerasOpenVINOModel(AcceleratedKerasModel):
     @property
     def status(self):
         status = super().status
-        status.update({"xml_path": 'ov_saved_model.xml',
+        status.update({"ModelType": type(self.target_obj).__name__,
+                       "xml_path": 'ov_saved_model.xml',
+                       "compile_path": "ov_saved_model_compile.pkl",
                        "weight_path": 'ov_saved_model.bin',
                        "config": self.ov_model.final_config,
                        "device": self.ov_model._device})
@@ -126,10 +130,15 @@ class KerasOpenVINOModel(AcceleratedKerasModel):
             thread_num = int(config["CPU_THREADS_NUM"])
         if device is None:
             device = status.get('device', 'CPU')
-        return KerasOpenVINOModel(xml_path,
-                                  config=status['config'],
-                                  thread_num=thread_num,
-                                  device=device)
+        model = KerasOpenVINOModel(xml_path,
+                                   config=status['config'],
+                                   thread_num=thread_num,
+                                   device=device)
+        if os.path.exists(Path(path) / status['compile_path']):
+            with open(Path(path) / status['compile_path'], "rb") as f:
+                kwargs = pickle.load(f)
+                model.compile(**kwargs)
+        return model
 
     def _save_model(self, path):
         """
@@ -142,3 +151,24 @@ class KerasOpenVINOModel(AcceleratedKerasModel):
         path.mkdir(exist_ok=True)
         xml_path = path / self.status['xml_path']
         save(self.ov_model.ie_network, xml_path)
+        # save compile attr
+        if self._is_compiled:
+            kwargs = {"run_eagerly": self._run_eagerly,
+                      "steps_per_execution": int(self._steps_per_execution)}
+            if self.compiled_loss is not None:
+                kwargs["loss"] = self.compiled_loss._user_losses
+                kwargs["loss_weights"] = self.compiled_loss._user_loss_weights
+            if self.compiled_metrics is not None:
+                user_metric = self.compiled_metrics._user_metrics
+                if isinstance(user_metric, (list, tuple)):
+                    kwargs["metrics"] = [m._name for m in user_metric]
+                else:
+                    kwargs["metrics"] = user_metric._name
+                weighted_metrics = self.compiled_metrics._user_weighted_metrics
+                if weighted_metrics is not None:
+                    if isinstance(weighted_metrics, (list, str)):
+                        kwargs["weighted_metrics"] = [m._name for m in weighted_metrics]
+                    else:
+                        kwargs["weighted_metrics"] = weighted_metrics._name
+            with open(Path(path) / self.status['compile_path'], "wb") as f:
+                pickle.dump(kwargs, f)

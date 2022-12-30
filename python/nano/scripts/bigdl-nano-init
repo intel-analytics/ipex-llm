@@ -23,11 +23,6 @@ function disable-tcmalloc-var {
 	export DISABLE_TCMALLOC_VAR=1
 }
 
-function enable-tensorflow-var {
-	echo "Option: Enable tensorflow optimaztion"
-	export ENABLE_TF_OPTS=1
-}
-
 function display-error {
 	echo "Invalid Option: -$1" 1>&2
         echo "Try to run 'bigdl-nano-run -h' for detailed usage." 1>&2
@@ -45,7 +40,6 @@ function display-help {
         echo "    -o, --disable-openmp      Disable openMP and unset related variables"
         echo "    -j, --enable-jemalloc     Enable jemalloc and unset related variables"
         echo "    -c, --disable-tcmalloc    Disable tcmalloc and unset related variables"
-        echo "    -f, --enable-tensorflow   Enable tensorflow specific OMP_NUM_THREADS setting"
 }
 
 # Init
@@ -70,9 +64,6 @@ while getopts ":ojhc-:" opt; do
 				disable-tcmalloc)
 					disable-tcmalloc-var
 					;;
-				enable-tensorflow)
-					enable-tensorflow-var
-					;;
 				help)
 					display-help
 					exit 0
@@ -91,9 +82,6 @@ while getopts ":ojhc-:" opt; do
 			;;
 		c )
 			disable-tcmalloc-var
-			;;
-		f )
-			enable-tensorflow-var
 			;;
 		h )
 			display-help
@@ -142,16 +130,7 @@ if [ -f "${LIB_DIR}/libiomp5.so" ]; then
 
 	# set env variables
 	echo "Setting OMP_NUM_THREADS..."
-
-	if [ -z "${ENABLE_TF_OPTS:-}" ]; then
-		echo "Setting OMP_NUM_THREADS specified for pytorch..."
-		export OMP_NUM_THREADS=$((cores_per_socket*sockets_))
-		export NANO_TF_INTER_OP=1
-	else
-		echo "Setting OMP_NUM_THREADS specified for tensorflow..."
-		export OMP_NUM_THREADS=${cores_per_socket}
-		export NANO_TF_INTER_OP=$sockets_
-	fi
+	export OMP_NUM_THREADS=$core_
 
 	echo "Setting KMP_AFFINITY..."
 	export KMP_AFFINITY=granularity=fine,none
@@ -257,7 +236,5 @@ echo "OMP_NUM_THREADS=${OMP_NUM_THREADS}"
 echo "KMP_AFFINITY=${KMP_AFFINITY}"
 echo "KMP_BLOCKTIME=${KMP_BLOCKTIME}"
 echo "TF_ENABLE_ONEDNN_OPTS=${TF_ENABLE_ONEDNN_OPTS}"
-echo "ENABLE_TF_OPTS=${ENABLE_TF_OPTS}"
-echo "NANO_TF_INTER_OP"=${NANO_TF_INTER_OP}
 echo "+++++++++++++++++++++++++"
 echo "Complete."

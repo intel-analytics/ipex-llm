@@ -14,22 +14,33 @@
 # limitations under the License.
 #
 import subprocess
+import operator
 from pathlib import Path
 from bigdl.nano.utils.log4Error import invalidInputError
+from bigdl.nano.utils.util import compare_version
 from openvino.runtime.passes import Manager
+
+OpenVINO_LESS_2022_3 = compare_version("openvino", operator.lt, "2022.3")
 
 
 def convert_onnx_to_xml(onnx_file_path, xml_path, precision,
                         logging=True, batch_size=1):
     xml_path = Path(xml_path)
     model_name, output_dir = str(xml_path.stem), str(xml_path.parent)
-    logging_str = "--silent " if logging is False else ""
-    precision_str = "--data_type FP16 " if precision == 'fp16' else ""
-    mo_cmd = "mo -m {} {}{}-n {} -o {}".format(str(onnx_file_path),
-                                               logging_str,
-                                               precision_str,
-                                               model_name,
-                                               output_dir)
+    precision_str = "--data_type FP16" if precision == 'fp16' else ""
+    if OpenVINO_LESS_2022_3:
+        logging_str = "--silent" if logging is False else ""
+        mo_cmd = "mo -m {} {} {} -n {} -o {}".format(str(onnx_file_path),
+                                                     logging_str,
+                                                     precision_str,
+                                                     model_name,
+                                                     output_dir)
+    else:
+        mo_cmd = "mo -m {} --silent {} {} -n {} -o {}".format(str(onnx_file_path),
+                                                              not logging,
+                                                              precision_str,
+                                                              model_name,
+                                                              output_dir)
 
     p = subprocess.Popen(mo_cmd.split())
     p.communicate()
@@ -41,13 +52,20 @@ def convert_pb_to_xml(pb_file_path, xml_path, precision,
                       logging=True, batch_size=1):
     xml_path = Path(xml_path)
     model_name, output_dir = str(xml_path.stem), str(xml_path.parent)
-    logging_str = "--silent " if logging is False else ""
-    precision_str = "--data_type FP16 " if precision == 'fp16' else ""
-    mo_cmd = "mo --saved_model_dir {} {}{}-n {} -o {}".format(str(pb_file_path),
-                                                              logging_str,
-                                                              precision_str,
-                                                              model_name,
-                                                              output_dir)
+    precision_str = "--data_type FP16" if precision == 'fp16' else ""
+    if OpenVINO_LESS_2022_3:
+        logging_str = "--silent" if logging is False else ""
+        mo_cmd = "mo --saved_model_dir {} {} {} -n {} -o {}".format(str(pb_file_path),
+                                                                    logging_str,
+                                                                    precision_str,
+                                                                    model_name,
+                                                                    output_dir)
+    else:
+        mo_cmd = "mo --saved_model_dir {} --silent {} {} -n {} -o {}".format(str(pb_file_path),
+                                                                             not logging,
+                                                                             precision_str,
+                                                                             model_name,
+                                                                             output_dir)
 
     p = subprocess.Popen(mo_cmd.split())
     p.communicate()

@@ -76,12 +76,12 @@ There are a few arguments required only by INC.
 - `outputs`:     A list of output names. Default: None, automatically get names from the graph.
 Here is an example to use INC with accuracy control as below. It will search for a model within 1% accuracy drop with 10 trials.
 ```python
-from torchmetrics.classification import Accuracy
+from torchmetrics.classification import MulticlassAccuracy
 
 q_model = model.quantize(precision='int8',
                          accelerator=None,
                          calib_dataset= train_dataset,
-                         metric=Accuracy(),
+                         metric=MulticlassAccuracy(num_classes=10),
                          accuracy_criterion={'relative': 0.01, 'higher_is_better': True},
                          approach='static',
                          tuning_strategy='bayesian',
