@@ -50,20 +50,20 @@ config = dict(
 
 
 def model_creator(config):
-    model = ncf_model(user_num=config['user_num'],
-                      item_num=config['item_num'],
-                      num_layers=config['num_layers'],
-                      factor_num=config['factor_num'],
-                      dropout=config['dropout'],
-                      lr=config['lr'],
-                      sparse_feats_input_dims=config['sparse_feats_input_dims'],
-                      sparse_feats_embed_dims=config['sparse_feats_embed_dims'],
-                      num_dense_feats=config['num_dense_feats'])
+    model = ncf_model(user_num=config["user_num"],
+                      item_num=config["item_num"],
+                      num_layers=config["num_layers"],
+                      factor_num=config["factor_num"],
+                      dropout=config["dropout"],
+                      lr=config["lr"],
+                      sparse_feats_input_dims=config["sparse_feats_input_dims"],
+                      sparse_feats_embed_dims=config["sparse_feats_embed_dims"],
+                      num_dense_feats=config["num_dense_feats"])
     return model
 
 
 # Step 4: Distributed training with Orca TF2 Estimator
-backend = 'ray'  # 'ray' or 'spark'
+backend = "ray"  # "ray" or "spark"
 est = Estimator.from_keras(model_creator=model_creator,
                            config=config,
                            backend=backend)
@@ -88,7 +88,7 @@ result = est.evaluate(test_data,
                       label_cols=label_cols,
                       batch_size=batch_size,
                       num_steps=val_steps)
-print('Evaluation results:')
+print("Evaluation results:")
 for r in result:
     print("{}: {}".format(r, result[r]))
 
@@ -96,8 +96,8 @@ for r in result:
 # Step 6: Save the trained TensorFlow model and processed data for resuming training or prediction
 est.save("NCF_model")
 
-train_data.save_pickle("train_processed_xshards")
-test_data.save_pickle("test_processed_xshards")
+train_data.save_pickle("./train_processed_xshards")
+test_data.save_pickle("./test_processed_xshards")
 
 
 # Step 7: Stop Orca Context when program finishes

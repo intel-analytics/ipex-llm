@@ -22,37 +22,37 @@ from pyspark.sql.functions import udf, lit, collect_list, explode
 
 from bigdl.orca import OrcaContext
 
-sparse_features = ['zipcode', 'gender', 'category', 'occupation']
-dense_features = ['age']
+sparse_features = ["zipcode", "gender", "category", "occupation"]
+dense_features = ["age"]
 
 
 def read_data(data_dir):
     spark = OrcaContext.get_spark_session()
-    schema = StructType([StructField('user', IntegerType(), False),
-                         StructField('item', IntegerType(), False)])
+    schema = StructType([StructField("user", IntegerType(), False),
+                         StructField("item", IntegerType(), False)])
     schema_user = StructType(
         [
-            StructField('user', IntegerType(), False),
-            StructField('gender', StringType(), False),
-            StructField('age', IntegerType(), False),
-            StructField('occupation', IntegerType(), False),
-            StructField('zipcode', StringType(), False)
+            StructField("user", IntegerType(), False),
+            StructField("gender", StringType(), False),
+            StructField("age", IntegerType(), False),
+            StructField("occupation", IntegerType(), False),
+            StructField("zipcode", StringType(), False)
         ]
     )
     schema_item = StructType(
         [
-            StructField('item', IntegerType(), False),
-            StructField('title', StringType(), False),
-            StructField('category', StringType(), False)
+            StructField("item", IntegerType(), False),
+            StructField("title", StringType(), False),
+            StructField("category", StringType(), False)
         ]
     )
     print("Loading data...")
     # Need spark3 to support delimiter with more than one character.
-    df_rating = spark.read.csv(os.path.join(data_dir, 'ratings.dat'),
+    df_rating = spark.read.csv(os.path.join(data_dir, "ratings.dat"),
                                sep="::", schema=schema, header=False)
-    df_user = spark.read.csv(os.path.join(data_dir, 'users.dat'),
+    df_user = spark.read.csv(os.path.join(data_dir, "users.dat"),
                              sep="::", schema=schema_user, header=False)
-    df_item = spark.read.csv(os.path.join(data_dir, 'movies.dat'),
+    df_item = spark.read.csv(os.path.join(data_dir, "movies.dat"),
                              sep="::", schema=schema_item, header=False)
     return df_rating, df_user, df_item
 
@@ -69,13 +69,13 @@ def generate_neg_sample(df, item_num, neg_scale):
                 neg_res.append(neg_item_index)
         return neg_res
 
-    df = df.withColumn('label', lit(1.0))
+    df = df.withColumn("label", lit(1.0))
 
     neg_sample_udf = udf(neg_sample, ArrayType(IntegerType(), False))
-    df_neg = df.groupBy('user').agg(neg_sample_udf(collect_list('item')).alias('item_list'))
+    df_neg = df.groupBy("user").agg(neg_sample_udf(collect_list("item")).alias("item_list"))
     df_neg = df_neg.select(df_neg.user, explode(df_neg.item_list))
-    df_neg = df_neg.withColumn('label', lit(0.0))
-    df_neg = df_neg.withColumnRenamed('col', 'item')
+    df_neg = df_neg.withColumn("label", lit(0.0))
+    df_neg = df_neg.withColumnRenamed("col", "item")
 
     df = df.unionByName(df_neg)
     df = df.repartition(df.rdd.getNumPartitions())
@@ -84,23 +84,23 @@ def generate_neg_sample(df, item_num, neg_scale):
 
 
 def string_index(df, col):
-    indexer = StringIndexer(inputCol=col, outputCol=col + '_index').fit(df)
+    indexer = StringIndexer(inputCol=col, outputCol=col + "_index").fit(df)
     df = indexer.transform(df)
-    df = df.drop(col).withColumnRenamed(col + '_index', col)
+    df = df.drop(col).withColumnRenamed(col + "_index", col)
     # The StringIndexer output is float type.
     # Change to 1-based index with 0 reversed for unknown features.
-    df = df.withColumn(col, df[col].cast('int') + 1)
+    df = df.withColumn(col, df[col].cast("int") + 1)
     embed_dim = df.agg({col: "max"}).collect()[0][f"max({col})"] + 1
     return df, embed_dim
 
 
 def min_max_scale(df, col):
-    assembler = VectorAssembler(inputCols=[col], outputCol=col + '_vec')
-    scaler = MinMaxScaler(inputCol=col + '_vec', outputCol=col + '_scaled')
+    assembler = VectorAssembler(inputCols=[col], outputCol=col + "_vec")
+    scaler = MinMaxScaler(inputCol=col + "_vec", outputCol=col + "_scaled")
     pipeline = Pipeline(stages=[assembler, scaler])
     scalerModel = pipeline.fit(df)
     df = scalerModel.transform(df)
-    df = df.drop(col, col + '_vec').withColumnRenamed(col + '_scaled', col)
+    df = df.drop(col, col + "_vec").withColumnRenamed(col + "_scaled", col)
     return df
 
 
@@ -117,26 +117,26 @@ def merge_features(df, df_user, df_item, sparse_features, dense_features):
             df_user = min_max_scale(df_user, i)
         else:
             df_item = min_max_scale(df_item, i)
-    df_feat = df.join(df_user, 'user', "inner")
-    df_feat = df_feat.join(df_item, 'item', "inner")
+    df_feat = df.join(df_user, "user", "inner")
+    df_feat = df_feat.join(df_item, "item", "inner")
     return df_feat, sparse_feats_input_dims
 
 
 def prepare_data(data_dir, neg_scale=4):
     df_rating, df_user, df_item = read_data(data_dir)
 
-    user_num = df_rating.agg({'user': "max"}).collect()[0]["max(user)"] + 1
-    item_num = df_rating.agg({'item': "max"}).collect()[0]["max(item)"] + 1
+    user_num = df_rating.agg({"user": "max"}).collect()[0]["max(user)"] + 1
+    item_num = df_rating.agg({"item": "max"}).collect()[0]["max(item)"] + 1
 
     df_rating = generate_neg_sample(df_rating, item_num, neg_scale=neg_scale)
     # occupation is already indexed.
     df, sparse_feats_input_dims = \
         merge_features(df_rating, df_user, df_item, sparse_features[:-1], dense_features)
 
-    occupation_num = df.agg({'occupation': 'max'}).collect()[0]['max(occupation)'] + 1
+    occupation_num = df.agg({"occupation": "max"}).collect()[0]["max(occupation)"] + 1
     sparse_feats_input_dims.append(occupation_num)
     feature_cols = get_feature_cols()
-    label_cols = ['label']
+    label_cols = ["label"]
 
     train_df, val_df = df.randomSplit([0.8, 0.2], seed=100)
 
@@ -145,7 +145,7 @@ def prepare_data(data_dir, neg_scale=4):
 
 
 def get_feature_cols():
-    feature_cols = ['user', 'item'] + sparse_features + dense_features
+    feature_cols = ["user", "item"] + sparse_features + dense_features
     return feature_cols
 
 
@@ -153,8 +153,8 @@ if __name__ == "__main__":
     from bigdl.orca import init_orca_context, stop_orca_context
 
     sc = init_orca_context()
-    train_data, test_data, user_num, item_num, sparse_feats_input_dims, num_dense_feats, \
+    train_df, test_df, user_num, item_num, sparse_feats_input_dims, num_dense_feats, \
         feature_cols, label_cols = prepare_data("./ml-1m")
-    train_data.write.parquet('./train_dataframe', mode='overwrite')
-    test_data.write.parquet('./test_dataframe', mode='overwrite')
+    train_df.write.parquet("./train_processed.parquet", mode="overwrite")
+    test_df.write.parquet("./test_processed.parquet", mode="overwrite")
     stop_orca_context()

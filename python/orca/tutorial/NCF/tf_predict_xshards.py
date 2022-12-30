@@ -21,27 +21,24 @@ from bigdl.orca import init_orca_context, stop_orca_context
 
 from process_xshards import get_feature_cols
 
+
 # Step 1: Init Orca Context
-init_orca_context(cluster_mode='local')
+init_orca_context(cluster_mode="local")
 
 
 # Step 2: Load the model and data
 est = Estimator.from_keras()
-est.load('NCF_model')
-data = XShards.load_pickle('test_xshards')
+est.load("NCF_model")
+data = XShards.load_pickle("./train_processed_xshards")
 feature_cols = get_feature_cols()
 
 
-# Step 3: Predict the result
-res = est.predict(
-    data,
-    batch_size=10240,
-    feature_cols=feature_cols
-)
+# Step 3: Distributed inference of the loaded model
+predictions = est.predict(data, batch_size=10240, feature_cols=feature_cols)
 
 
-# Step 4: Save the prediction result
-res.save_pickle('predict_xshards_result')
+# Step 4: Save the prediction results
+predictions.save_pickle("predictions_xshards")
 
 
 # Step 5: Stop Orca Context when program finishes
