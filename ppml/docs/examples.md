@@ -379,6 +379,13 @@ bash bigdl-ppml-submit.sh \
     --conf spark.bigdl.kms.datasource1.data=/ppml/trusted-big-data-ml/work/data/data2/keys/ehsm/encrypted_data_key \
     --conf spark.bigdl.kms.datasource1.inputEncryptMode=AES/CBC/PKCS5Padding \
     --conf spark.bigdl.kms.datasource1.outputEncryptMode=AES/CBC/PKCS5Padding \
+    --conf spark.bigdl.kms.datasource2.kms=simpleKMS \
+    --conf spark.bigdl.kms.datasource2.inputpath=/ppml/trusted-big-data-ml/work/data/SimpleQueryWithSimpleKMS/input/people.csv \
+    --conf spark.bigdl.kms.datasource2.outputpath=/ppml/trusted-big-data-ml/work/data/SimpleQueryWithSimpleKMS/myoutput/simple_people_output.crc \
+    --conf spark.bigdl.kms.datasource2.primary=/ppml/trusted-big-data-ml/work/data/liyao/data1/keys/primaryKey \
+    --conf spark.bigdl.kms.datasource2.data=/ppml/trusted-big-data-ml/work/data/liyao/data1/keys/dataKey \
+    --conf spark.bigdl.kms.datasource2.inputEncryptMode=AES/CBC/PKCS5Padding \
+    --conf spark.bigdl.kms.datasource2.outputEncryptMode=AES/CBC/PKCS5Padding \
     --verbose \
     --jars  /ppml/trusted-big-data-ml/bigdl-ppml-spark_3.1.3-2.2.0-SNAPSHOT-jar-with-dependencies.jar,local:///ppml/trusted-big-data-ml/bigdl-ppml-spark_3.1.3-2.2.0-SNAPSHOT-jar-with-dependencies.jar \
     /ppml/trusted-big-data-ml/bigdl-ppml-spark_3.1.3-2.2.0-SNAPSHOT-jar-with-dependencies.jar 
