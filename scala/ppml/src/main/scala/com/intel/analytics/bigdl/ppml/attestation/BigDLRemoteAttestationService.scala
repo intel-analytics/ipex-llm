@@ -95,7 +95,7 @@ object BigDLRemoteAttestationService {
               val verifyQuoteResult = quoteVerifier.verifyQuote(
                 Base64.getDecoder().decode(quoteMsg.quote.getBytes))
               val res = new Result(verifyQuoteResult)
-              if (verifyQuoteResult > 0) {
+              if (verifyQuoteResult >= 0) {
                 complete(200, res)
               } else {
                 complete(400, res)
