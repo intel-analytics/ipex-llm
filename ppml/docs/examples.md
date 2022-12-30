@@ -341,9 +341,10 @@ For ***data sources***, you should first submit the number of data sources `spar
 
 
 local mode
-<p align="left">
-  <img src="https://user-images.githubusercontent.com/61072813/174703141-63209559-05e1-4c4d-b096-6b862a9bed8a.png" alt="data lifecycle" width='250px' />
-</p>
+
+![MultiKMS1](https://user-images.githubusercontent.com/108786898/210043386-34ec9aba-ed13-4c2e-95e8-3f91ea076647.png)
+
+
 
 ```bash 
 bash bigdl-ppml-submit.sh \
