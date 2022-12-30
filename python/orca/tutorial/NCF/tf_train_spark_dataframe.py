@@ -93,8 +93,9 @@ for r in result:
     print("{}: {}".format(r, result[r]))
 
 
-# Step 6: Save the trained TensorFlow model and data for resuming training or prediction
+# Step 6: Save the trained TensorFlow model and processed data for resuming training or prediction
 est.save("NCF_model")
+
 train_df.write.parquet('./train_dataframe', mode='overwrite')
 test_df.write.parquet('./test_dataframe', mode='overwrite')
 

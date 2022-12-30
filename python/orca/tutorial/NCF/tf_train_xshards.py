@@ -93,8 +93,9 @@ for r in result:
     print("{}: {}".format(r, result[r]))
 
 
-# Step 6: Save the trained TensorFlow model and data for resuming training or prediction
+# Step 6: Save the trained TensorFlow model and processed data for resuming training or prediction
 est.save("NCF_model")
+
 train_data.save_pickle("train_xshards")
 test_data.save_pickle("test_xshards")
 
