@@ -51,6 +51,7 @@ subtrees:
             title: "How-to Guides"
             subtrees:
               - entries:
+                - file: doc/Orca/Howto/tf2keras-quickstart
                 - file: doc/Orca/Howto/spark-dataframe
                 - file: doc/Orca/Howto/xshards-pandas
                 - file: doc/Orca/Howto/orca-autoestimator-pytorch-quickstart

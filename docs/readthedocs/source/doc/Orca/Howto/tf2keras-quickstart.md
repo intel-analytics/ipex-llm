@@ -1,4 +1,4 @@
-# TensorFlow 2 Quickstart
+# Scale TensorFlow2 Applications
 
 ---
 
@@ -6,7 +6,7 @@
 
 ---
 
-**In this guide we will describe how to to scale out _TensorFlow 2_ programs using Orca in 4 simple steps.** (_[TensorFlow 1.5](./orca-tf-quickstart.md) and [Keras 2.3](./orca-keras-quickstart.md) guides are also available._)
+**In this guide we will describe how to to scale out _TensorFlow 2_ programs using Orca in 4 simple steps.
 
 ### Step 0: Prepare Environment
 
@@ -31,9 +31,9 @@ elif cluster_mode == "yarn":  # For Hadoop/YARN cluster
     init_orca_context(cluster_mode="yarn", num_nodes=2, cores=2, memory="10g", driver_memory="10g", driver_cores=1)
 ```
 
-This is the only place where you need to specify local or distributed mode. View [Orca Context](./../Overview/orca-context.md) for more details.
+This is the only place where you need to specify local or distributed mode. View [Orca Context](../Overview/orca-context.md) for more details.
 
-**Note:** You should `export HADOOP_CONF_DIR=/path/to/hadoop/conf/dir` when running on Hadoop YARN cluster. View [Hadoop User Guide](./../../UserGuide/hadoop.md) for more details.
+**Note:** You should `export HADOOP_CONF_DIR=/path/to/hadoop/conf/dir` when running on Hadoop YARN cluster. View [Hadoop User Guide](../../UserGuide/hadoop.md) for more details.
 
 ### Step 2: Define the Model
 
