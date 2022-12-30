@@ -1,4 +1,4 @@
-# Scale TensorFlow2 Applications
+# Scale TensorFlow 2 Applications
 
 ---
 
