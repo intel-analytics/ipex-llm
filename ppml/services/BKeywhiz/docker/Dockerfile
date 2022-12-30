@@ -40,7 +40,8 @@ RUN apt-get update && \
 WORKDIR /usr/src/app
 
 # caching trick to speed up build, this should allow non-dynamic dependencies to be cached
-RUN git clone https://github.com/analytics-zoo/keywhiz.git && cd keywhiz && \
+RUN git clone https://github.com/analytics-zoo/keywhiz.git -b BigDL-Keywhiz && \
+    cd keywhiz && \
     cp *.xml /usr/src/app/ && \
     cp api/pom.xml /usr/src/app/api/ && \
     cp cli/pom.xml /usr/src/app/cli/ && \
@@ -51,7 +52,7 @@ RUN git clone https://github.com/analytics-zoo/keywhiz.git && cd keywhiz && \
     cp testing/pom.xml /usr/src/app/testing/ && \
     cp log/pom.xml /usr/src/app/log/
 RUN rm /usr/share/maven/conf/settings.xml && \
-    cp /usr/src/app/keywhiz/setting.xml /usr/share/maven/conf/settings.xml && \
+    cp /usr/src/app/keywhiz/settings.xml /usr/share/maven/conf/settings.xml && \
     mvn dependency:copy-dependencies --fail-never
 
 # copy source required for build and install
