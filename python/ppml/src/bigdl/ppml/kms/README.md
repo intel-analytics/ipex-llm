@@ -2,6 +2,12 @@
 
 BigDL uses [eHSM](https://github.com/intel/ehsm/) (SGX Enclave Based Hardware Security Module) as one type of Key Management. The python EHSM KMS client APIs here enable users to communicate with a key management service, which allow them to generate and apply keys safely to encrypt/decrypt data files end-to-end.
 
+## Requirement
+```
+requests
+argparse
+cryptography==3.3.2
+```
 
 ## EHSM KMS Client API Examples
 
