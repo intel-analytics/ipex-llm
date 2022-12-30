@@ -25,16 +25,13 @@ from bigdl.orca import init_orca_context, stop_orca_context
 from bigdl.orca.learn.tf2 import Estimator
 
 # Step 1: Init Orca Context
-init_orca_context(memory='4g')
+init_orca_context(cluster_mode="local")
 
 # Step 2: Read and process data using Spark DataFrame
 data_dir = './ml-1m'  # path to ml-1m
 
 train_df, test_df, user_num, item_num, sparse_feats_input_dims, num_dense_feats, \
     feature_cols, label_cols = prepare_data(data_dir, neg_scale=4)
-
-train_df.write.parquet('./train_dataframe', mode='overwrite')
-test_df.write.parquet('./test_dataframe', mode='overwrite')
 
 # Step 3: Define the NCF model
 config = dict(
@@ -63,7 +60,7 @@ def model_creator(config):
     return model
 
 
-# Step 4: Distributed training with Orca keras Estimator
+# Step 4: Distributed training with Orca TF2 Estimator
 backend = 'spark'  # 'ray' or 'spark'
 est = Estimator.from_keras(model_creator=model_creator,
                            config=config,
@@ -72,7 +69,7 @@ est = Estimator.from_keras(model_creator=model_creator,
 batch_size = 10240
 train_steps = math.ceil(train_df.count() / batch_size)
 val_steps = math.ceil(test_df.count() / batch_size)
-tf_callback = tf.keras.callbacks.TensorBoard(log_dir="./log")
+callbacks = [tf.keras.callbacks.TensorBoard(log_dir="./log")]
 
 est.fit(train_df,
         epochs=2,
@@ -80,7 +77,7 @@ est.fit(train_df,
         feature_cols=feature_cols,
         label_cols=label_cols,
         steps_per_epoch=train_steps,
-        callbacks=[tf_callback])
+        callbacks=callbacks)
 
 # Step 5: Distributed evaluation of the trained model
 result = est.evaluate(test_df,
@@ -92,7 +89,7 @@ print('Evaluation results:')
 for r in result:
     print(r, ":", result[r])
 
-# Step 6: Save the trained Tensorflow model and data for resuming training or prediction
+# Step 6: Save the trained TensorFlow model and data for resuming training or prediction
 est.save("NCF_model")
 train_df.write.parquet('./train_dataframe', mode='overwrite')
 test_df.write.parquet('./test_dataframe', mode='overwrite')
