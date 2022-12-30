@@ -110,7 +110,7 @@ flowchart TD;
 
   </details> 
 
-  *See Orca [user guide](https://bigdl.readthedocs.io/en/latest/doc/Orca/Overview/orca.html), as well as [TensorFlow](https://bigdl.readthedocs.io/en/latest/doc/Orca/QuickStart/orca-tf-quickstart.html) and [PyTorch](https://bigdl.readthedocs.io/en/latest/doc/Orca/QuickStart/orca-pytorch-quickstart.html) quickstart, for more details.*
+  *See Orca [user guide](https://bigdl.readthedocs.io/en/latest/doc/Orca/Overview/orca.html), as well as [TensorFlow](https://bigdl.readthedocs.io/en/latest/doc/Orca/Howto/tf2keras-quickstart.html) and [PyTorch](https://bigdl.readthedocs.io/en/latest/doc/Orca/Howto/pytorch-quickstart.html) QuickStarts, for more details.*
 
 - In addition, you can also run standard **Ray** programs on Spark cluster using _**RayOnSpark**_ in Orca.
 
