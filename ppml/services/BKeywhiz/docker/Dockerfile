@@ -1,16 +1,14 @@
-ARG BIGDL_VERSION=2.1.0-SNAPSHOT
-ARG SPARK_VERSION=3.1.2
+ARG BIGDL_VERSION=2.2.0-SNAPSHOT
+ARG SPARK_VERSION=3.1.3
 
-FROM ubuntu:20.04 as scala
-ARG SCALA_VERSION=2.12
-ARG SCALA_SUB_VERSION_NUM=10
+# java
+FROM ubuntu:20.04 as java
 ARG JDK_VERSION=8u192
 ARG JDK_URL
 
 RUN apt-get update --fix-missing && \
-    env DEBIAN_FRONTEND=noninteractive TZ=Etc/UTC apt-get install -y tzdata apt-utils wget unzip
-# java
-RUN wget $JDK_URL && \
+    env DEBIAN_FRONTEND=noninteractive TZ=Etc/UTC apt-get install -y tzdata apt-utils wget unzip && \
+    wget $JDK_URL && \
     gunzip jdk-$JDK_VERSION-linux-x64.tar.gz && \
     tar -xf jdk-$JDK_VERSION-linux-x64.tar -C /opt && \
     rm jdk-$JDK_VERSION-linux-x64.tar && \
@@ -19,54 +17,84 @@ RUN wget $JDK_URL && \
 
 # bigdl
 FROM ubuntu:20.04 as bigdl
-ARG BIGDL_VERSION
-ARG SPARK_VERSION
-ENV SPARK_VERSION		${SPARK_VERSION}
-ENV BIGDL_VERSION		${BIGDL_VERSION}
-ENV BIGDL_HOME		        /bigdl-${BIGDL_VERSION}
+ENV SPARK_VERSION               ${SPARK_VERSION}
+ENV BIGDL_VERSION               ${BIGDL_VERSION}
+ENV BIGDL_HOME                  /bigdl-${BIGDL_VERSION}
 RUN apt-get update --fix-missing && \
     apt-get install -y apt-utils curl wget unzip git
 RUN wget https://raw.githubusercontent.com/intel-analytics/analytics-zoo/bigdl-2.0/docker/hyperzoo/download-bigdl.sh && \
-    chmod a+x ./download-bigdl.sh && \
-    chmod a+x /opt/download-bigdl-serving.sh
+    chmod a+x ./download-bigdl.sh
 RUN ./download-bigdl.sh && \
-    rm bigdl*.zip && \
-    mkdir -p /usr/app # todo: package keywhiz here
+    rm bigdl*.zip
 
-# ppml
-FROM ubuntu:20.04
-ARG BIGDL_VERSION
-ARG SPARK_VERSION
-ARG SCALA_VERSION=2.12
-ARG SCALA_SUB_VERSION_NUM=10
-ENV SPARK_VERSION			${SPARK_VERSION}
-ENV BIGDL_VERSION			${BIGDL_VERSION}
-ENV JAVA_HOME				/opt/jdk8
+# bigdl keywhiz
+FROM maven:3.6-jdk-11
+ARG http_proxy
+ARG https_proxy
 
-COPY --from=scala /opt/jdk  /opt/jdk8
-COPY --from=scala /opt/scala-${SCALA_VERSION}.${SCALA_SUB_VERSION_NUM}  /opt/scala-${SCALA_VERSION}.${SCALA_SUB_VERSION_NUM}
-COPY --from=bigdl /opt/bigdl-serving*-jar-with-dependencies.jar /opt/bigdl-serving-jar-with-dependencies.jar
-COPY --from=bigdl /opt/bigdl-serving*-http.jar /opt/bigdl-serving-http.jar
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends --no-upgrade \
+    gettext vim-common default-mysql-server && \
+    echo validate_password.policy=LOW >> /etc/mysql/conf.d/mysql.cnf && \
+    mkdir -p /usr/src/app
+WORKDIR /usr/src/app
 
-RUN apt-get update --fix-missing && \
-    env DEBIAN_FRONTEND=noninteractive TZ=Etc/UTC apt-get install -y tzdata && \
-    apt-get install -y apt-utils vim curl nano wget unzip git tree && \
-    apt-get install -y libsm6 make build-essential && \
-    apt-get install -y autoconf gawk bison libcurl4-openssl-dev python3-protobuf libprotobuf-c-dev protobuf-c-compiler && \
-    apt-get install -y openssl libssl-dev pkg-config && \
-    apt-get install -y netcat net-tools && \
-    apt-get install -y python3-minimal && \
-    apt-get install -y build-essential python3 python3-setuptools python3-dev python3-pip && \
-    pip3 install --upgrade pip && \
-    pip install --upgrade setuptools && \
-    ln -s /usr/bin/python3 /usr/bin/python && \
-    pip install --no-cache-dir ninja meson && \
-    python3 -m pip install toml==0.10.2 click jinja2
+# caching trick to speed up build, this should allow non-dynamic dependencies to be cached
+RUN git clone https://github.com/analytics-zoo/keywhiz.git && cd keywhiz && \
+    cp *.xml /usr/src/app/ && \
+    cp api/pom.xml /usr/src/app/api/ && \
+    cp cli/pom.xml /usr/src/app/cli/ && \
+    cp client/pom.xml /usr/src/app/client/ && \
+    cp hkdf/pom.xml /usr/src/app/hkdf/ && \
+    cp model/pom.xml /usr/src/app/model/ && \
+    cp server/pom.xml /usr/src/app/server/ && \
+    cp testing/pom.xml /usr/src/app/testing/ && \
+    cp log/pom.xml /usr/src/app/log/
+RUN rm /usr/share/maven/conf/settings.xml && \
+    cp /usr/src/app/keywhiz/setting.xml /usr/share/maven/conf/settings.xml && \
+    mvn dependency:copy-dependencies --fail-never
 
+# copy source required for build and install
+RUN cd keywhiz && \
+    cp -r api /usr/src/app/api/ && \
+    cp -r cli /usr/src/app/cli/ && \
+    cp -r client /usr/src/app/client/ && \
+    cp -r hkdf /usr/src/app/hkdf/ && \
+    cp -r model /usr/src/app/model/ && \
+    cp -r server /usr/src/app/server/ && \
+    cp -r testing /usr/src/app/testing/ && \
+    cp -r log /usr/src/app/log/
+RUN service mysql start && mvn -DskipTests=true package
 
+# Drop privs inside container
+RUN useradd -ms /bin/false keywhiz && \
+    mkdir /data && \
+    chown keywhiz:keywhiz /data && \
+    mkdir /secrets && \
+    chown keywhiz:keywhiz /secrets && \
+    echo 'alias keywhiz.cli="/usr/src/app/cli/target/keywhiz-cli-*-SNAPSHOT-shaded.jar --devTrustStore --url https://keywhiz-service:4444"' >> ~/.bashrc && \
+    echo 'alias key.provider="java -jar server/target/keywhiz-server-*-SNAPSHOT-shaded.jar"' >> ~/.bashrc && \
+    echo salt > /usr/src/app/salt
+
+EXPOSE 4444
+
+VOLUME ["/data", "/secrets"]
+
+RUN cd keywhiz && \
+    cp docker/entry.sh /usr/src/app && \
+    cp docker/wizard.sh /usr/src/app && \
+    cp docker/keywhiz-config.tpl /usr/src/app && \
+    cp frontend-keywhiz-conf.yaml /usr/src/app && \
+    chmod a+x /usr/src/app/entry.sh
 ADD ./start-https-frontend.sh /opt/start-http-frontend.sh
-
 RUN chmod a+x /opt/start-https-frontend.sh
 
 ENV LC_ALL	C.UTF-8
 ENV LANG	C.UTF-8
+ENV SPARK_VERSION               ${SPARK_VERSION}
+ENV BIGDL_VERSION               ${BIGDL_VERSION}
+ENV BIGDL_HOME                  /bigdl-${BIGDL_VERSION}
+COPY --from=java /opt/jdk  /opt/jdk8
+COPY --from=bigdl /bigdl-${BIGDL_VERSION} ${BIGDL_HOME}
+
+ENTRYPOINT ["/usr/src/app/entry.sh"]
