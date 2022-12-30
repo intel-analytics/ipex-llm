@@ -24,8 +24,10 @@ from process_spark_dataframe import prepare_data
 from bigdl.orca import init_orca_context, stop_orca_context
 from bigdl.orca.learn.tf2 import Estimator
 
+
 # Step 1: Init Orca Context
 init_orca_context(cluster_mode="local")
+
 
 # Step 2: Read and process data using Spark DataFrame
 data_dir = './ml-1m'  # path to ml-1m
@@ -79,6 +81,7 @@ est.fit(train_df,
         steps_per_epoch=train_steps,
         callbacks=callbacks)
 
+
 # Step 5: Distributed evaluation of the trained model
 result = est.evaluate(test_df,
                       feature_cols=feature_cols,
@@ -88,6 +91,7 @@ result = est.evaluate(test_df,
 print('Evaluation results:')
 for r in result:
     print("{}: {}".format(r, result[r]))
+
 
 # Step 6: Save the trained TensorFlow model and data for resuming training or prediction
 est.save("NCF_model")
