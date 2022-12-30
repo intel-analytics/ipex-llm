@@ -31,14 +31,14 @@ df = spark.read.parquet('test_dataframe')
 feature_cols = get_feature_col()
 
 # Step 3: Predict the result
-res = est.predict(
+predict_df = est.predict(
     df,
     batch_size=10240,
     feature_cols=feature_cols
 )
 
 # Step 4: Save the prediction result
-res.write.parquet('predict_result', mode='overwrite')
+predict_df.write.parquet('predictions.parquet', mode='overwrite')
 
 # Step 5: Stop Orca Context when program finishes
 stop_orca_context()
