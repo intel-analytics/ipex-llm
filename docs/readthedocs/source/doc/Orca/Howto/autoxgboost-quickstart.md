@@ -1,4 +1,4 @@
-# Use AutoXGBoost to auto-tune XGBoost parameters
+# Enable AutoML for XGBoost
 
 ---
 
