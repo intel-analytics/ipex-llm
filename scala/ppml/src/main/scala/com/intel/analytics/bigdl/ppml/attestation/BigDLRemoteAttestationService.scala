@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.intel.analytics.bigdl.ppml.service
+package com.intel.analytics.bigdl.ppml.attestation
 
 import java.util.concurrent.{LinkedBlockingQueue, TimeUnit}
 import java.io.{File, InputStream}
@@ -60,8 +60,8 @@ object BigDLRemoteAttestationService {
   def main(args: Array[String]): Unit = {
 
     val logger = LogManager.getLogger(getClass)
-    case class CmdParams(serviceURL: String = "localhost",
-                          servicePort: String = "8184",
+    case class CmdParams(serviceURL: String = "0.0.0.0",
+                          servicePort: String = "9875",
                           httpsKeyStoreToken: String = "token",
                           httpsKeyStorePath: String = "./key",
                           httpsEnabled: Boolean = false
