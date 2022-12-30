@@ -33,6 +33,9 @@ data_dir = './ml-1m'  # path to ml-1m
 train_df, test_df, user_num, item_num, sparse_feats_input_dims, num_dense_feats, \
     feature_cols, label_cols = prepare_data(data_dir, neg_scale=4)
 
+train_df.write.parquet('./train_dataframe', mode='overwrite')
+test_df.write.parquet('./test_dataframe', mode='overwrite')
+
 # Step 3: Define the NCF model
 config = dict(
     factor_num=16,
