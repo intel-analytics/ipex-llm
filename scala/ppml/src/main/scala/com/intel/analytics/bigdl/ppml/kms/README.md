@@ -1,8 +1,8 @@
 ```mermaid
 classDiagram
-    KeyManagementService <.. SimpleKeyManagementService
-    KeyManagementService <.. EHSMKeyManagementService
-    KeyManagementService <.. AzureKeyManagementService
+    KeyManagementService <|.. SimpleKeyManagementService
+    KeyManagementService <|.. EHSMKeyManagementService
+    KeyManagementService <|.. AzureKeyManagementService
     KeyManagementService: +retrievePrimaryKey()
     KeyManagementService: +retrieveDataKey()
     KeyManagementService: +retrieveDataKeyPlainText()
