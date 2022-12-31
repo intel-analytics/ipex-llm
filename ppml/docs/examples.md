@@ -314,13 +314,13 @@ There are also their own unique parameters to be specified for different kinds o
  **spark.bigdl.kms.multikms.simple.id{i}:**  simple KMS APPIP  \
  **spark.bigdl.kms.multikms.simple.key{i}:**  simple KMS APIKEY
 
- - for a EHSM KMS \
+ - for an EHSM KMS \
  **spark.bigdl.kms.multikms.ehs.ip{i}:**  ehsm ip \
  **spark.bigdl.kms.multikms.ehs.port{i}:**  ehsm port \
  **spark.bigdl.kms.multikms.ehs.id{i}:**  ehsm APPID \
  **spark.bigdl.kms.multikms.ehs.key{i}:**  ehsm APIKEY 
 
- - for a Azure KMS \
+ - for an Azure KMS \
  **spark.bigdl.kms.multikms.azure.vault{i}:** azure KMS KeyVault \
  **spark.bigdl.kms.multikms.azure.clientId{i}:** azure KMS clientId
 
