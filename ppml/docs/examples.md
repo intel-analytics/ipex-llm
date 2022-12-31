@@ -345,8 +345,14 @@ local mode
 ![MultiKMS1](https://user-images.githubusercontent.com/108786898/210043386-34ec9aba-ed13-4c2e-95e8-3f91ea076647.png)
 
 
-
 ```bash 
+export SimpleAPPID=YOUR_SIMPLE_APPID
+export SimpleAPIKEY=YOUR_SIMPLE_APIKEY
+export EHSMIP=YOUR_EHSM_IP
+export EHSMPORT=YOUR_EHSM_PORT
+export EHSMAPPID=YOUR_EHSM_APPID
+export EHSMAPIKEY=YOUR_EHSM_APIKEY
+
 bash bigdl-ppml-submit.sh \
     --master local[2] \
     --sgx-enabled false \
@@ -364,14 +370,14 @@ bash bigdl-ppml-submit.sh \
     --conf spark.bigdl.kms.multikms.instance=2 \
     --conf spark.bigdl.kms.multikms.type1=SimpleKeyManagementService \
     --conf spark.bigdl.kms.multikms.name1=simpleKMS \
-    --conf spark.bigdl.kms.multikms.simple.id1=465227134889 \
-    --conf spark.bigdl.kms.multikms.simple.key1=088347530263 \
+    --conf spark.bigdl.kms.multikms.simple.id1=${SimpleAPPID} \
+    --conf spark.bigdl.kms.multikms.simple.key1=${SimpleAPIKEY} \
     --conf spark.bigdl.kms.multikms.type2=EHSMKeyManagementService \
     --conf spark.bigdl.kms.multikms.name2=EHSM \
-    --conf spark.bigdl.kms.multikms.ehs.ip2=172.168.0.226 \
-    --conf spark.bigdl.kms.multikms.ehs.port2=9000 \
-    --conf spark.bigdl.kms.multikms.ehs.id2=8cfaeef5-c382-4eb7-bbdb-6702dffabc3f \
-    --conf spark.bigdl.kms.multikms.ehs.key2=6zY8NZpNk6rF1Q5jw5b6JG6mRXKdX6nB \
+    --conf spark.bigdl.kms.multikms.ehs.ip2=${EHSMIP} \
+    --conf spark.bigdl.kms.multikms.ehs.port2=${EHSMPORT} \
+    --conf spark.bigdl.kms.multikms.ehs.id2=${EHSMAPPID} \
+    --conf spark.bigdl.kms.multikms.ehs.key2=${EHSMAPIKEY} \
     --conf spark.bigdl.kms.datasource.instance=1 \
     --conf spark.bigdl.kms.datasource1.kms=simpleKMS \
     --conf spark.bigdl.kms.datasource1.inputpath=/ppml/trusted-big-data-ml/work/data/multiKMSTest/data1/input/people.csv \
