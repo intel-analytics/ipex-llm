@@ -6,6 +6,7 @@ The flowchart below is designed to guide our users which forecasting model to tr
 
 ```eval_rst
 .. mermaid::
+
     flowchart TD
         StartPoint[I want to build a forecasting model]
         StartPoint-- always start from --> TCN[TCNForecaster]
