@@ -29,7 +29,8 @@ Besides, _Chronos_ also provides **benchmark tool** to benchmark forecasting per
 | ----------------- | ----- | ------------- | ---------- | ------- | ----------- | ----------- | ----------- | ----------- | ----------- | ----------- |
 | LSTM    | RR    | ✅             | ❌      | ✅    | ✅   | ✅           | ✅        | ✅          | ✅         | pytorch/tf2  |
 | Seq2Seq     | RR    | ✅             | ✅     | ✅     | ✅     | ✅           | ❌      | ✅          | ✅         | pytorch/tf2  |
-| TCN | RR    | ✅             | ✅     | ✅     | ✅     | ✅           | ✅      | ✅          | ✅         | pytorch  |
+| TCN | RR    | ✅             | ✅     | ✅     | ✅     | ✅           | ✅      | ✅          | ✅         | pytorch/tf2  |
+| Autoformer | RR    | ✅             | ✅     | ✅     | ❌     | ❌           | ❌      | ❌          | ❌         | pytorch  |
 | NBeats | RR    | ❌             | ✅     | ❌     | ✅     | ✅           | ✅      | ❌          | ❌         | pytorch  |
 | MTNet   | RR    | ✅             | ❌    | ✅     | ❌     | ❌          | ❌         | ❌          | ✳️\*\*        | tf2 |
 | TCMF    | TS    | ✅             | ✅    | ✅      | ✳️\*     | ❌          | ❌         | ❌          | ❌         | pytorch  |
@@ -257,6 +258,15 @@ View Stock Prediction [notebook][stock_prediction_prophet] and [ProphetForecaste
 ##### 3.8 NBeatsForecaster
 
 Neural basis expansion analysis for interpretable time series forecasting ([N-BEATS](https://arxiv.org/abs/1905.10437)) is a deep neural architecture based on backward and forward residual links and a very deep stack of fully-connected layers. Nbeats can solve univariate time series point forecasting problems, being interpretable, and fast to train.
+
+[NBeatsForecaster API Doc](../../PythonAPI/Chronos/forecasters.html#nbeatsforecaster) for more details.
+
+<span id="AutoformerForecaster"></span>
+##### 3.9 AutoformerForecaster
+
+Autoformer: Decomposition Transformers with Auto-Correlation for Long-Term Series Forecasting ([Autoformer](https://arxiv.org/abs/2106.13008)) is a Transformer based neural network that could reach SOTA results on many datasets.
+
+[AutoformerForecaster API Doc](../../PythonAPI/Chronos/forecasters.html#autoformerforecaster) for more details.
 
 #### 4. Use Auto forecasting model
 Auto forecasting models are designed to be used exactly the same as Forecasters. The only difference is that you can set hp search function to the hyperparameters and the `.fit()` method will search the best hyperparameter setting.

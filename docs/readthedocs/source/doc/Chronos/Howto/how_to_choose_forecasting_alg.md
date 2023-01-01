@@ -5,6 +5,13 @@ How to choose a forecasting model among so many built-in models (or build one by
 The flowchart below is designed to guide our users which forecasting model to try on your own data. Click on the blocks in the chart below to see its documentation/examples.
 
 ```eval_rst
+.. note::
+
+    Following flowchart may need some time to load.
+```
+
+
+```eval_rst
 .. mermaid::
 
     flowchart TD
@@ -29,12 +36,11 @@ The flowchart below is designed to guide our users which forecasting model to tr
         click LSTMForecaster2 "https://bigdl.readthedocs.io/en/latest/doc/Chronos/Overview/forecasting.html#lstmforecaster"
         click NBeatsForecaster "https://bigdl.readthedocs.io/en/latest/doc/Chronos/Overview/forecasting.html#nbeatsforecaster"
         click Seq2SeqForecaster "https://bigdl.readthedocs.io/en/latest/doc/Chronos/Overview/forecasting.html#seq2seqforecaster"
-        click AutoformerForecaster "."
+        click AutoformerForecaster "https://bigdl.readthedocs.io/en/latest/doc/Chronos/Overview/forecasting.html#AutoformerForecaster"
 
-        click StartPoint "https://bigdl.readthedocs.io/en/latest/doc/Chronos/Overview/forecasting.html#seq2seqforecaster"
         click TCN_OPT "https://bigdl.readthedocs.io/en/latest/doc/Chronos/Overview/speed_up.html"
         click SER "https://github.com/intel-analytics/BigDL/blob/main/python/chronos/example/hpo/muti_objective_hpo_with_builtin_latency_tutorial.ipynb"
-        click Tune "https://bigdl.readthedocs.io/en/latest/doc/Chronos/QuickStart/chronos-autotsest-quickstart.html"
+        click Tune "https://bigdl.readthedocs.io/en/latest/doc/Chronos/Howto/how_to_tune_forecaster_model.html"
         click CUS "https://bigdl.readthedocs.io/en/latest/doc/Chronos/Overview/speed_up.html"
 
         classDef Model fill:#FFF,stroke:#0f29ba,stroke-width:1px;
