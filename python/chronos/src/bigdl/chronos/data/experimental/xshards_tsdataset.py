@@ -23,6 +23,7 @@ from bigdl.chronos.data.utils.impute import impute_timeseries_dataframe
 from bigdl.chronos.data.utils.split import split_timeseries_dataframe
 from bigdl.chronos.data.experimental.utils import add_row, transform_to_dict
 from bigdl.chronos.data.utils.scale import unscale_timeseries_numpy
+from bigdl.chronos.data.utils.feature import generate_dt_features
 import pandas as pd
 
 
