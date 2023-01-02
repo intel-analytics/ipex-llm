@@ -1,4 +1,4 @@
-# TensorFlow 2 Quickstart
+# Scale TensorFlow 2 Applications
 
 ---
 
@@ -6,15 +6,16 @@
 
 ---
 
-**In this guide we will describe how to to scale out _TensorFlow 2_ programs using Orca in 4 simple steps.** (_[TensorFlow 1.5](./orca-tf-quickstart.md) and [Keras 2.3](./orca-keras-quickstart.md) guides are also available._)
+**In this guide we will describe how to to scale out _TensorFlow 2_ programs using Orca in 4 simple steps.**
 
 ### Step 0: Prepare Environment
 
-We recommend using [conda](https://docs.conda.io/projects/conda/en/latest/user-guide/install/) to prepare the environment. Please refer to the [install guide](../../UserGuide/python.md) for more details.
+We recommend using [conda](https://docs.conda.io/projects/conda/en/latest/user-guide/install/) to prepare the environment. Please refer to the [install guide](../Overview/install.md) for more details.
 
 ```bash
 conda create -n py37 python=3.7  # "py37" is conda environment name, you can use any name you like.
 conda activate py37
+
 pip install bigdl-orca[ray]
 pip install tensorflow
 ```
@@ -24,20 +25,20 @@ pip install tensorflow
 from bigdl.orca import init_orca_context, stop_orca_context
 
 if cluster_mode == "local":  # For local machine
-    init_orca_context(cluster_mode="local", cores=4, memory="10g")
+    init_orca_context(cluster_mode="local", cores=4, memory="4g")
 elif cluster_mode == "k8s":  # For K8s cluster
-    init_orca_context(cluster_mode="k8s", num_nodes=2, cores=2, memory="10g", driver_memory="10g", driver_cores=1)
+    init_orca_context(cluster_mode="k8s", num_nodes=2, cores=2, memory="4g")
 elif cluster_mode == "yarn":  # For Hadoop/YARN cluster
-    init_orca_context(cluster_mode="yarn", num_nodes=2, cores=2, memory="10g", driver_memory="10g", driver_cores=1)
+    init_orca_context(cluster_mode="yarn", num_nodes=2, cores=2, memory="4g")
 ```
 
-This is the only place where you need to specify local or distributed mode. View [Orca Context](./../Overview/orca-context.md) for more details.
+This is the only place where you need to specify local or distributed mode. View [Orca Context](../Overview/orca-context.md) for more details.
 
-**Note:** You should `export HADOOP_CONF_DIR=/path/to/hadoop/conf/dir` when running on Hadoop YARN cluster. View [Hadoop User Guide](./../../UserGuide/hadoop.md) for more details.
+Please check the tutorials if you want to run on [Kubernetes](../Tutorial/k8s.md) or [Hadoop/YARN](../Tutorial/yarn.md) clusters.
 
 ### Step 2: Define the Model
 
-You can then define the Keras model in the _Creator Function_ using the standard TensroFlow 2 APIs.
+You can then define the Keras model in the _Creator Function_ using the standard TensorFlow 2 Keras APIs.
 
 ```python
 import tensorflow as tf
@@ -61,9 +62,9 @@ def model_creator(config):
                   metrics=['accuracy'])
     return model
 ```
-### Step 3: Define Train Dataset
+### Step 3: Define the Dataset
 
-You can define the dataset in the _Creator Function_ using standard [tf.data.Dataset](https://www.tensorflow.org/api_docs/python/tf/data/Dataset) APIs. Orca also supports [Spark DataFrame](https://spark.apache.org/docs/latest/sql-programming-guide.html) and [Orca XShards](../Overview/data-parallel-processing.md).
+You can define the dataset in the _Creator Function_ using standard [tf.data.Dataset](https://www.tensorflow.org/api_docs/python/tf/data/Dataset) APIs. Orca also supports [Spark DataFrame](./spark-dataframe.md) and [Orca XShards](./xshards-pandas.md).
 
 
 ```python
@@ -93,7 +94,7 @@ def val_data_creator(config, batch_size):
 
 ### Step 4: Fit with Orca Estimator
 
-First, create an Estimator.
+First, create an Orca Estimator for TensorFlow 2.
 
 ```python
 from bigdl.orca.learn.tf2 import Estimator
@@ -110,17 +111,16 @@ stats = est.fit(train_data_creator,
                 steps_per_epoch=60000 // batch_size,
                 validation_data=val_data_creator,
                 validation_steps=10000 // batch_size)
-                
-est.save("/tmp/mnist_keras.ckpt")
 
 stats = est.evaluate(val_data_creator, num_steps=10000 // batch_size)
-est.shutdown()
 print(stats)
+
+est.shutdown()
 ```
 
 ### Step 5: Save and Load the Model
 
-Orca TF2 Estimator supports two formats to save and load the entire model (**TensorFlow SavedModel and Keras H5 Format**). The recommended format is SavedModel, which is the default format when you use `estimator.save()`.
+Orca TensorFlow 2 Estimator supports two formats to save and load the entire model (**TensorFlow SavedModel and Keras H5 Format**). The recommended format is SavedModel, which is the default format when you use `estimator.save()`.
 
 You could also save the model to Keras H5 format by passing `save_format='h5'` or a filename that ends in `.h5` or `.keras` to `estimator.save()`.
 
@@ -130,22 +130,22 @@ You could also save the model to Keras H5 format by passing `save_format='h5'` 
 
 ```python
 # save model in SavedModel format
-est.save("/tmp/cifar10_model")
+est.save("lenet_model")
 
 # load model
-est.load("/tmp/cifar10_model")
+est.load("lenet_model")
 ```
 
 **2. HDF5 format**
 
 ```python
 # save model in H5 format
-est.save("/tmp/cifar10_model.h5", save_format='h5')
+est.save("lenet_model.h5", save_format='h5')
 
 # load model
-est.load("/tmp/cifar10_model.h5")
+est.load("lenet_model.h5")
 ```
 
-That's it, the same code can run seamlessly in your local laptop and to distribute K8s or Hadoop cluster.
+That's it, the same code can run seamlessly on your local laptop and scale to [Kubernetes](../Tutorial/k8s.md) or [Hadoop/YARN](../Tutorial/yarn.md) clusters.
 
 **Note:** You should call `stop_orca_context()` when your program finishes.

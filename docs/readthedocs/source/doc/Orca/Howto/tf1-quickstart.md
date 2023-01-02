@@ -1,4 +1,4 @@
-# TensorFlow 1.15 Quickstart
+# Scale TensorFlow 1.15 Applications
 
 ---
 
@@ -6,7 +6,7 @@
 
 ---
 
-**In this guide we will describe how to scale out _TensorFlow 1.15_ programs using Orca in 4 simple steps.** (_[Keras 2.3](./orca-keras-quickstart.md) and [TensorFlow 2](./orca-tf2keras-quickstart.md) guides are also available._)
+**In this guide we will describe how to scale out _TensorFlow 1.15_ programs using Orca in 4 simple steps.**
 
 ### Step 0: Prepare Environment
 
@@ -35,9 +35,9 @@ elif cluster_mode == "yarn":  # For Hadoop/YARN cluster
     dataset_dir = "hdfs:///tensorflow_datasets"
 ```
 
-This is the only place where you need to specify local or distributed mode. View [Orca Context](./../Overview/orca-context.md) for more details.
+This is the only place where you need to specify local or distributed mode. View [Orca Context](../Overview/orca-context.md) for more details.
 
-**Note:** You should `export HADOOP_CONF_DIR=/path/to/hadoop/conf/dir` when running on Hadoop YARN cluster. View [Hadoop User Guide](./../../UserGuide/hadoop.md) for more details. To use tensorflow_datasets on HDFS, you should correctly set HADOOP_HOME, HADOOP_HDFS_HOME, LD_LIBRARY_PATH, etc. For more details, please refer to TensorFlow documentation [link](https://github.com/tensorflow/docs/blob/r1.11/site/en/deploy/hadoop.md).
+**Note:** You should `export HADOOP_CONF_DIR=/path/to/hadoop/conf/dir` when running on Hadoop YARN cluster. View [Hadoop User Guide](../../UserGuide/hadoop.md) for more details. To use tensorflow_datasets on HDFS, you should correctly set HADOOP_HOME, HADOOP_HDFS_HOME, LD_LIBRARY_PATH, etc. For more details, please refer to TensorFlow documentation [link](https://github.com/tensorflow/docs/blob/r1.11/site/en/deploy/hadoop.md).
 
 ### Step 2: Define the Model
 
