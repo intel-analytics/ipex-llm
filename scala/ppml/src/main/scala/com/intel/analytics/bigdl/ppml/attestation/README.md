@@ -238,7 +238,7 @@ BigDL
 
 ## Usage
 ```bash
-java -cp $BIGDL_HOME/jars/*:$SPARK_HOME/jars/*:$SPARK_HOME/examples/jars/*: com.intel.analytics.bigdl.ppml.service.BigDLRemoteAttestationService -u <serviceURL> -p <servicePort> -s <httpsKeyStoreToken> -t <httpsKeyStorePath> -h <httpsEnabled>
+java -cp [dependent-jars] -u <serviceURL> -p <servicePort> -s <httpsKeyStoreToken> -t <httpsKeyStorePath> -h <httpsEnabled>
 ```
 
 ## How to deploy a BigDL Remote Attestation Service
@@ -247,14 +247,14 @@ You can install all the required libs (Intel SGX SDK, DCAP, PCCS, BigDL, ... ) b
 ### http service
 After installation, start your server with command:
 ```bash
-java -cp $BIGDL_HOME/jars/*:$SPARK_HOME/jars/*:$SPARK_HOME/examples/jars/*: com.intel.analytics.bigdl.ppml.service.BigDLRemoteAttestationService -u <serviceURL> -p <servicePort>
+java -cp [dependent-jars] -u <serviceURL> -p <servicePort>
 ```
 You will find ths console output like:
 ```bash
-Server online at http://localhost:8184/
+Server online at http://0.0.0.0:9875/
 Press RETURN to stop...
 ```
-which indicates the service is listening on `http://localhost:8184/` (default settings for example), and you can post a verify quote request to the URL.
+which indicates the service is listening on `http://0.0.0.0:9875/` (default settings for example), and you can post a verify quote request to the URL.
 
 ### https service
 For https, you need to generate a PKCS12 certificate.
@@ -278,6 +278,5 @@ openssl pkcs12 -export -clcerts -in server.crt -inkey server.key -out server.p12
 
 Then you can start your server with command:
 ```bash
-java -cp $BIGDL_HOME/jars/*:$SPARK_HOME/jars/*:$SPARK_HOME/examples/jars/*: com.intel.analytics.bigdl.ppml.service.BigDLRemoteAttestationService -u <serviceURL> -p <servicePort>
--s true -h key/server.p12 -t <your_token_of_server.key>
+java -cp $BIGDL_HOME/jars/*:$SPARK_HOME/jars/*:$SPARK_HOME/examples/jars/*: com.intel.analytics.bigdl.ppml.service.BigDLRemoteAttestationService -u <serviceURL> -p <servicePort> -s true -h key/server.p12 -t <your_token_of_server_key>
 ```

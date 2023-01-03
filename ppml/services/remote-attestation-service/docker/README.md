@@ -45,4 +45,4 @@ bash ./init_sgx.sh
 
 java -cp $BIGDL_HOME/jars/*:$SPARK_HOME/jars/*:$SPARK_HOME/examples/jars/*: com.intel.analytics.bigdl.ppml.attestation.BigDLRemoteAttestationService -u <serviceURL> -p <servicePort> -s <httpsKeyStoreToken> -t <httpsKeyStorePath> -h <httpsEnabled>
 ```
-Detailed usages can refer to [this]()
+Detailed usages can refer to [this](https://github.com/intel-analytics/BigDL/tree/main/scala/ppml/src/main/scala/com/intel/analytics/bigdl/ppml/attestation)
