@@ -68,8 +68,8 @@ PyTorch
 
 TensorFlow
 ~~~~~~~~~~~~~~~~~~~~~~~~~
-* `How to accelerate a TensorFlow inference pipeline through ONNXRuntime <Inference/TensorFlow/accelerate_pytorch_inference_onnx.html>`_
-* `How to accelerate a TensorFlow inference pipeline through OpenVINO <Inference/TensorFlow/accelerate_pytorch_inference_openvino.html>`_
+* `How to accelerate a TensorFlow inference pipeline through ONNXRuntime <Inference/TensorFlow/accelerate_tensorflow_inference_onnx.html>`_
+* `How to accelerate a TensorFlow inference pipeline through OpenVINO <Inference/TensorFlow/accelerate_tensorflow_inference_openvino.html>`_
 
 Install
 -------------------------
