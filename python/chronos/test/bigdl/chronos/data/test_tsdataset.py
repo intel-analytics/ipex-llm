@@ -1498,3 +1498,99 @@ class TestTSDataset(TestCase):
                                                endtime=endtime,
                                                step="1s",
                                                extra_feature_col='process_cpu_seconds_total')
+
+    @op_torch
+    def test_export_jit(self):
+        from sklearn.preprocessing import StandardScaler, MaxAbsScaler, MinMaxScaler, RobustScaler
+        import torch
+
+        temp_dir = tempfile.mkdtemp()
+        csv_path = os.path.join(temp_dir, "inference_data.csv")
+        df_single_id = get_ts_df()
+        sample_num = len(df_single_id)
+        df_single_id["id"] = np.array([0] * sample_num)
+        df_multi_id = get_multi_id_ts_df()
+        df_multi_id["id"] = np.array([0]*50 + [1]*50)
+
+        lookback = random.randint(1, 20)
+        horizon = random.randint(1, 10)
+
+        for df in [df_single_id, df_multi_id]:
+            df.to_csv(csv_path, index=False)
+            # drop_dt_col=True
+            for scaler in [StandardScaler(), MaxAbsScaler(), MinMaxScaler(), RobustScaler()]:
+                tsdata = TSDataset.from_pandas(df,
+                                               dt_col="datetime",
+                                               target_col="value",
+                                               id_col="id",
+                                               extra_feature_col="extra feature",
+                                               repair=False,
+                                               deploy_mode=False)
+
+                tsdata.scale(scaler, fit=True)\
+                      .roll(lookback=lookback, horizon=horizon)
+
+                tsdata.export_jit(path_dir=temp_dir, drop_dt_col=True)
+
+                # deployment
+                deployment_df = pd.read_csv(csv_path, parse_dates=["datetime"])
+                tsdata = TSDataset.from_pandas(deployment_df,
+                                               dt_col="datetime",
+                                               target_col="value",
+                                               id_col="id",
+                                               extra_feature_col="extra feature",
+                                               repair=False,
+                                               deploy_mode=True)
+                # drop datetime col since it can't be converted to Pytorch tensor
+                tsdata.df.drop(columns=tsdata.dt_col, inplace=True)
+                input_tensor = torch.from_numpy(tsdata.df.values).type(torch.float64)
+                preprocess_path = os.path.join(temp_dir, "tsdata_preprocessing.pt")
+                preprocess_module = torch.jit.load(preprocess_path)
+                preprocess_output = preprocess_module.forward(input_tensor)
+
+                tsdata.scale(scaler=scaler, fit=False)\
+                      .roll(lookback=lookback, horizon=horizon)
+
+                assert_array_almost_equal(tsdata.to_numpy(), preprocess_output.numpy())
+
+            # drop_dt_col=False
+            for scaler in [StandardScaler(), MaxAbsScaler(), MinMaxScaler(), RobustScaler()]:
+                tsdata = TSDataset.from_pandas(df,
+                                               dt_col="datetime",
+                                               target_col="value",
+                                               id_col="id",
+                                               extra_feature_col="extra feature",
+                                               repair=False,
+                                               deploy_mode=False)
+
+                tsdata.scale(scaler, fit=True)\
+                      .roll(lookback=lookback, horizon=horizon)
+
+                preprocess_module = tsdata.export_jit(drop_dt_col=False)
+                preprocess_path = os.path.join(temp_dir, "preprocess_module.pt")
+                torch.jit.save(preprocess_module, preprocess_path)
+
+                # deployment
+                deployment_df = pd.read_csv(csv_path, parse_dates=["datetime"])
+                tsdata = TSDataset.from_pandas(deployment_df,
+                                               dt_col="datetime",
+                                               target_col="value",
+                                               id_col="id",
+                                               extra_feature_col="extra feature",
+                                               repair=False,
+                                               deploy_mode=True)
+                # give datetime an integer value to convert the dataframe to Pytorch tensor
+                # since datetime col will not be used in scale and roll, so we can give it
+                # a meaningless value
+                tsdata.df["datetime"] = np.array([1000]*len(tsdata.df))
+                input_tensor = torch.from_numpy(tsdata.df.values).type(torch.float64)
+                preprocess = torch.jit.load(preprocess_path)
+                preprocess_output = preprocess.forward(input_tensor)
+
+                tsdata.scale(scaler=scaler, fit=False)\
+                      .roll(lookback=lookback, horizon=horizon)
+
+                assert_array_almost_equal(tsdata.to_numpy(), preprocess_output.numpy())
+
+        if os.path.exists(temp_dir):
+            shutil.rmtree(temp_dir)
