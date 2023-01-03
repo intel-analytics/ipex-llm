@@ -28,8 +28,6 @@ class LifeCycle(metaclass=ABCMeta):
                                world_size):
         self._init_torch_ddp(tcp_store_host, tcp_store_port, world_rank,
                              world_size)
-
-        self.setup_components()
         self.setup_ddp_components()
 
     def setup_torch_estimator(self, world_rank, world_size):

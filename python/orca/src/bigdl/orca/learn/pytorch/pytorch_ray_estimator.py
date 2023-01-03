@@ -205,7 +205,7 @@ class PyTorchRayEstimator(BaseRayEstimator):
             callbacks=callbacks,
         )
 
-        if self.backend == "ray" and self.init_ddp_process is False:
+        if self.backend == "ray" and not self.init_ddp_process:
             self.setup_torch_ddp()
 
         from bigdl.orca.data import SparkXShards
