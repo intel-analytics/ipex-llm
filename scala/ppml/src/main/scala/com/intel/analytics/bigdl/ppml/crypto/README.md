@@ -10,6 +10,13 @@ classDiagram
     Crypto: doFinal()
 
     BigDLEncrypt --* BigDLEncryptCompressor
+    BigDLEncrypt: #cipher
+    BigDLEncrypt: #mac
+    BigDLEncrypt: #encryptionKeySpec
+    BigDLEncrypt: #ivParameterSpec
+    BigDLEncrypt: #opMode
+    BigDLEncrypt: #initializationVector
+    BigDLEncrypt: #outOfsize
     BigDLEncrypt: +decryptBigContent(inputStream)
     BigDLEncrypt: +genHeader()
     BigDLEncrypt: +verifyHeader(header)
@@ -22,6 +29,7 @@ classDiagram
 
 
     CryptoCodec ..> BigDLEncryptCompressor
+    CryptoCodec: -conf
     CryptoCodec: +setConf(conf)
     CryptoCodec: +getConf()
     CryptoCodec: +createOutputStream(outputStream)
