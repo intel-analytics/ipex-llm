@@ -73,6 +73,7 @@ and the inference latency is shown like this:
 Inference latency is: 0.0007678081938332728
 Inference latency with onnx is: 0.0009106415060963754
 ```
+*Note: After using `dummy_encoder` to turn TCNForecaster to a Linear Model, predicting with ONNXRuntime suffers overhead on electricity dataset.*
 
 ### AutoformerForecaster
 
