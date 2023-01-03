@@ -10,8 +10,6 @@ clear_up () {
 
 chmod +x ${BIGDL_ROOT}/python/chronos/dev/app/ipynb2py.sh
 
-set -e
-
 execute_test(){
     echo "start example $1"
     start=$(date "+%s")
