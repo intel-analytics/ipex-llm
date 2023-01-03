@@ -110,8 +110,7 @@ subtrees:
                   - file: doc/Nano/Howto/Training/PyTorch/use_nano_decorator_pytorch_training
                   - file: doc/Nano/Howto/Training/TensorFlow/accelerate_tensorflow_training_multi_instance
                   - file: doc/Nano/Howto/Training/TensorFlow/tensorflow_training_embedding_sparseadam
-                  - file: doc/Nano/Howto/Inference/TensorFlow/accelerate_tensorflow_inference_onnx
-                  - file: doc/Nano/Howto/Inference/TensorFlow/accelerate_tensorflow_inference_openvino
+                  - file: doc/Nano/Howto/Training/TensorFlow/tensorflow_training_bf16
                   - file: doc/Nano/Howto/Training/General/choose_num_processes_training
                   - file: doc/Nano/Howto/Inference/OpenVINO/openvino_inference
                   - file: doc/Nano/Howto/Inference/OpenVINO/openvino_inference_async
@@ -127,6 +126,8 @@ subtrees:
                   - file: doc/Nano/Howto/Inference/PyTorch/pytorch_save_and_load_onnx
                   - file: doc/Nano/Howto/Inference/PyTorch/pytorch_save_and_load_openvino
                   - file: doc/Nano/Howto/Inference/PyTorch/inference_optimizer_optimize
+                  - file: doc/Nano/Howto/Inference/TensorFlow/accelerate_tensorflow_inference_onnx
+                  - file: doc/Nano/Howto/Inference/TensorFlow/accelerate_tensorflow_inference_openvino
                   - file: doc/Nano/Howto/install_in_colab
                   - file: doc/Nano/Howto/windows_guide
             - file: doc/Nano/Overview/known_issues
