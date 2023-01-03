@@ -22,7 +22,7 @@ if [ ${dependency} == 'openvino' ]; then
 elif [ ${dependency} == 'onnx' ]; then
     python -m pytest -s --nbmake --nbmake-timeout=600 --nbmake-kernel=python3 ${NANO_HOWTO_GUIDES_TEST_DIR}/accelerate_pytorch_inference_onnx.ipynb ${NANO_HOWTO_GUIDES_TEST_DIR}/quantize_pytorch_inference_inc.ipynb
 else
-    python -m pytest -s --nbmake --nbmake-timeout=600 --nbmake-kernel=python3 ${NANO_HOWTO_GUIDES_TEST_DIR}/inference_optimizer_optimize.ipynb
+    python -m pytest -s --nbmake --nbmake-kernel=python3 ${NANO_HOWTO_GUIDES_TEST_DIR}/inference_optimizer_optimize.ipynb
 fi 
 
 now=$(date "+%s")
