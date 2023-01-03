@@ -39,7 +39,6 @@ import tempfile
 import torch
 import torch.nn as nn
 import numpy as np
-from enum import Enum
 from torch.utils.data import DataLoader, IterableDataset
 from bigdl.orca.learn.metrics import Metric
 from torch.utils.data.distributed import DistributedSampler
