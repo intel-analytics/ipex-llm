@@ -2,18 +2,18 @@
 classDiagram
 
     Crypto <|.. BigDLEncrypt
-    Crypto: +decryptBigContent(in: InputStream)
+    Crypto: +decryptBigContent(inputStream)
     Crypto: +genHeader()
     Crypto: +verifyHeader(header: Array[Byte])
-    Crypto: +verifyHeader(in: InputStream)
+    Crypto: +verifyHeader(inputStream)
     Crypto：+update()
     Crypto：+doFinal()
 
     BigDLEncrypt: --* BigDLEncryptCompressor
-    BigDLEncrypt: +decryptBigContent(in: InputStream)
+    BigDLEncrypt: +decryptBigContent(inputStream)
     BigDLEncrypt: +genHeader()
-    BigDLEncrypt: +verifyHeader(header: Array[Byte])
-    BigDLEncrypt: +verifyHeader(in: InputStream)
+    BigDLEncrypt: +verifyHeader(header)
+    BigDLEncrypt: +verifyHeader(inputStream)
     BigDLEncrypt：+update(content)
     BigDLEncrypt：+update(content, offset, len)
     BigDLEncrypt：+doFinal(content)
