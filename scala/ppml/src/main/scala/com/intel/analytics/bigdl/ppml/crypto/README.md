@@ -21,6 +21,21 @@ classDiagram
     BigDLEncrypt: +doFinal(inputStream, outputStream)
 
 
+    CryptoCodec ..> BigDLEncryptCompressor
+    CryptoCodec: +setConf(conf)
+    CryptoCodec: +getConf()
+    CryptoCodec: +createOutputStream(outputStream)
+    CryptoCodec: +createOutputStream(outputStream, compressor)
+    CryptoCodec: +getCompressor()
+    CryptoCodec: +getCompressorTypr()
+    CryptoCodec: +createInputStream(inputStream)
+    CryptoCodec: +createInputStream(inputStream, decompressor)
+    CryptoCodec: +createDecompressor()
+    CryptoCodec: +getDecompressor()
+    CryptoCodec: +getDecompressorType()
+    CryptoCodec: +createDirectDecompressor()
+    CryptoCodec: +getDefaultExtension()
+
 
 
 
