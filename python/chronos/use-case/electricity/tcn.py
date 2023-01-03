@@ -46,15 +46,16 @@ if __name__ == '__main__':
     train_loader, test_loader = generate_data()
    
     forecaster = TCNForecaster(past_seq_len = look_back,
-                            future_seq_len = horizon,
-                            input_feature_num = 321,
-                            output_feature_num = 321,
-                            num_channels = [30] * 7,
-                            repo_initialization = False,
-                            kernel_size = 3, 
-                            dropout = 0.1, 
-                            lr = 0.001,
-                            seed = 1)
+                               future_seq_len = horizon,
+                               input_feature_num = 321,
+                               output_feature_num = 321,
+                               dummy_encoder=True,
+                               num_channels = [30] * 7,
+                               repo_initialization = False,
+                               kernel_size = 3, 
+                               dropout = 0.1, 
+                               lr = 0.001,
+                               seed = 1)
     forecaster.num_processes = 1
     forecaster.fit(train_loader, epochs=30, batch_size=32) 
     

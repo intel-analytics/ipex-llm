@@ -60,18 +60,18 @@ python autoformer.py # for autoformer forecaster
 ### TCNForecaster
 After you run the code, the training process is shown like this:
 ```bash
-Epoch 0:  28%|██████████████████████████                                                                  | 156/550 [00:09<00:25, 15.62it/s, loss=1.13]
+Epoch 0:  22%|█████████████████████████████████▎                                                                                                                   | 123/550 [00:04<00:15, 28.05it/s, loss=0.355]
 ```
 
 After training 30 epochs, MSE is shown like this,
 ```bash
-MSE is: 0.5876001
+MSE is: 0.25367737
 ```
 
 and the inference latency is shown like this:
 ```bash
-Inference latency is: 0.00480920190349875
-Inference latency with onnx is: 0.002660592173564555
+Inference latency is: 0.0007678081938332728
+Inference latency with onnx is: 0.0009106415060963754
 ```
 
 ### AutoformerForecaster
