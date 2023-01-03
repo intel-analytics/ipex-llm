@@ -601,7 +601,7 @@ class BasePytorchForecaster(Forecaster):
                 metric = None
             else:
                 try:
-                    metric = _str2metric(metric)
+                    metric = _str2optimizer_metrc(metric)
                 except Exception:
                     invalidInputError(False,
                                       "Unable to recognize the metric string you passed in.")
@@ -1930,5 +1930,20 @@ def _str2metric(metric):
             y_label = y_label.numpy()
             y_predict = y_predict.numpy()
             return metric_func(y_label, y_predict)
+        metric.__name__ = metric_name
+    return metric
+
+
+def _str2optimizer_metrc(metric):
+    # map metric str to function for InferenceOptimizer
+    if isinstance(metric, str):
+        metric_name = metric
+        from bigdl.chronos.metric.forecast_metrics import REGRESSION_MAP
+        metric_func = REGRESSION_MAP[metric_name]
+
+        def metric(pred, target):
+            pred = pred.numpy()
+            target = target.numpy()
+            return metric_func(target, pred)
         metric.__name__ = metric_name
     return metric
