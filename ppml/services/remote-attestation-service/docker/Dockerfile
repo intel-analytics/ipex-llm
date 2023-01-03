@@ -73,7 +73,7 @@ RUN apt-get update --fix-missing && \
     echo 'deb [trusted=yes arch=amd64] file:///opt/intel/sgx_debian_local_repo focal main' | tee /etc/apt/sources.list.d/intel-sgx.list && \
     wget -qO - https://download.01.org/intel-sgx/sgx_repo/ubuntu/intel-sgx-deb.key | apt-key add - && \
     apt-get update --fix-missing && \
-    apt-get install -y libsgx-enclave-common-dev libsgx-ae-qe3 libsgx-ae-qve libsgx-urts libsgx-dcap-ql libsgx-dcap-default-qpl libsgx-dcap-quote-verify-dev libsgx-dcap-default-qpl-dev libsgx-quote-ex-dev libsgx-uae-service libsgx-ra-network libsgx-ra-uefi libsgx-dcap-ql-dev libtdx-attest libtdx-attest-devel
+    apt-get install -y libsgx-enclave-common-dev libsgx-ae-qe3 libsgx-ae-qve libsgx-urts libsgx-dcap-ql libsgx-dcap-default-qpl libsgx-dcap-quote-verify-dev libsgx-dcap-default-qpl-dev libsgx-quote-ex-dev libsgx-uae-service libsgx-ra-network libsgx-ra-uefi libsgx-dcap-ql-dev libtdx-attest libtdx-attest-dev
 
 COPY --from=builder /opt/jdk /opt/jdk8
 COPY --from=builder /opt/spark-${SPARK_VERSION} /opt/spark-${SPARK_VERSION}
