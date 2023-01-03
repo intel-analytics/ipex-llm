@@ -27,18 +27,21 @@ class MainCallback(Callback):
     there will propagate forward and backward twice.
     """
     def on_iter_forward(self, runner):
-        *features, target = self.batch
-        self.output = self.model(*features)
-        # Ensure `target` and `output` are always in a list format.
+        # Forward features
+        *features, target = runner.batch
+        runner.output = runner.model(*features)
+        # Ensure `targetL` and `outputL` are always in a list format.
         targetL = [target] if not isinstance(target, (list, tuple)) else target
-        outputL = [self.output] if not isinstance(self.output, (list, tuple)) else self.output
-        self.loss = self.criterion(*outputL, *targetL)
+        outputL = [runner.output] if not isinstance(runner.output, (list, tuple)) else runner.output
+        # Compute loss
+        runner.loss = runner.criterion(*outputL, *targetL)
 
     def on_iter_backward(self, runner):
         runner.optimizer.zero_grad()
         runner.loss.backward()
         runner.optimizer.step()
     
+    # TODO: Refactor scheduler update logic in TorchRunner
     def on_lr_adjust(self, runner):
         if runner.lr_scheduler is not None:
            runner.lr_scheduler.step()
@@ -48,9 +51,3 @@ class MainCallback(Callback):
 
     def on_val_forward(self, runner):
         self.on_iter_forward(runner)
-
-    def on_train_backward(self, runner):
-        self.on_iter_backward(runner)
-
-    def on_val_backward(self, runner):
-        self.on_iter_backward(runner)
