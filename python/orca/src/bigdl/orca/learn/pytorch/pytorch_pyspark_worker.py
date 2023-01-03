@@ -120,6 +120,7 @@ class PytorchPysparkWorker(TorchRunner):
         if mode == "fit":
             self.rank = get_rank(cluster_info)
             logger.info(f"cluster is: {cluster_info}")
+            self.setup_components()
             self.setup_torch_distribute(tcp_store_host=driver_ip,
                                         tcp_store_port=driver_tcp_store_port,
                                         world_rank=self.rank,
