@@ -23,11 +23,12 @@ from process_xshards import prepare_data
 from bigdl.orca import init_orca_context, stop_orca_context
 from bigdl.orca.learn.tf2 import Estimator
 
+
 # Step 1: Init Orca Context
 init_orca_context(cluster_mode="local")
 
 
-# Step 2: Read and process data using Spark DataFrame
+# Step 2: Read and process data using Xshards
 dataset_dir = "./ml-1m"
 train_data, test_data, user_num, item_num, sparse_feats_input_dims, num_dense_feats, \
     feature_cols, label_cols = prepare_data(dataset_dir, num_ng=4)
@@ -64,7 +65,7 @@ for r in result:
 
 
 # Step 5: Save the trained TensorFlow model
-est.save("NCF_model")
+est.save("NCF_resume_model")
 
 
 # Step 6: Stop Orca Context when program finishes
