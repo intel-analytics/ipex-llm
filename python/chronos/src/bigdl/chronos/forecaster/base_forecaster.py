@@ -601,17 +601,21 @@ class BasePytorchForecaster(Forecaster):
                 metric = None
             else:
                 try:
-                    metric = _str2optimizer_metrc(metric)
+                    metric = _str2metric(metric)
                 except Exception:
                     invalidInputError(False,
                                       "Unable to recognize the metric string you passed in.")
 
         dummy_input = torch.rand(1, self.data_config["past_seq_len"],
                                  self.data_config["input_feature_num"])
-        excludes = None
+
+        excludes = ["fp32_channels_last", "fp32_ipex_channels_last", "bf16_channels_last",
+                    "bf16_ipex_channels_last", "jit_fp32_channels_last", "jit_bf16_channels_last",
+                    "jit_fp32_ipex_channels_last", "jit_bf16_ipex_channels_last"]
         if not self.quantize_available:
-            excludes = ["static_int8", "openvino_int8", "onnxruntime_int8_qlinear",
-                        "bf16", "jit_bf16_ipex", "jit_bf16_ipex_channels_last"]
+            excludes = excludes + ["static_int8", "openvino_int8", "onnxruntime_int8_qlinear",
+                                   "bf16", "jit_bf16_ipex"]
+
         from bigdl.chronos.pytorch import TSInferenceOptimizer as InferenceOptimizer
         opt = InferenceOptimizer()
         opt.optimize(model=self.internal,
@@ -622,6 +626,7 @@ class BasePytorchForecaster(Forecaster):
                      thread_num=thread_num,
                      excludes=excludes,
                      input_sample=dummy_input)
+
         try:
             optim_model, option = opt.get_best_model(
                 accelerator=accelerator,
@@ -1928,17 +1933,3 @@ def _str2metric(metric):
         metric.__name__ = metric_name
     return metric
 
-
-def _str2optimizer_metrc(metric):
-    # map metric str to function for InferenceOptimizer
-    if isinstance(metric, str):
-        metric_name = metric
-        from bigdl.chronos.metric.forecast_metrics import REGRESSION_MAP
-        metric_func = REGRESSION_MAP[metric_name]
-
-        def metric(pred, target):
-            pred = pred.numpy()
-            target = target.numpy()
-            return metric_func(target, pred)
-        metric.__name__ = metric_name
-    return metric
