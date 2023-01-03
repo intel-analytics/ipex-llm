@@ -103,6 +103,7 @@ def load_with_decryption(dataset_path: str, key:str, fs=None, keep_in_memory: Op
         dataset_info = DatasetInfo.from_dict(json.load(dataset_info_file))
 
     # We always expect keep_in_memory is true
+    # TODO:Modify this
     keep_in_memory = keep_in_memory if keep_in_memory is not None else is_small_dataset(dataset_size)
     table_cls = InMemoryTable if keep_in_memory else MemoryMappedTable
     arrow_table = concat_tables(
