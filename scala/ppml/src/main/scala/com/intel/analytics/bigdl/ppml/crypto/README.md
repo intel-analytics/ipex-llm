@@ -10,6 +10,16 @@ classDiagram
     Crypto: doFinal()
 
     BigDLEncrypt: --* BigDLEncryptCompressor
+    BigDLEncrypt: +decryptBigContent(inputStream)
+    BigDLEncrypt: +genHeader()
+    BigDLEncrypt: +verifyHeader(header)
+    BigDLEncrypt: +verifyHeader(inputStream)
+    BigDLEncrypt: +update(content)
+    BigDLEncrypt: +update(content, offset, len)
+    BigDLEncrypt: +doFinal(content)
+    BigDLEncrypt: +doFinal(content, offset, len)
+    BigDLEncrypt: +doFinal(inputStream, outputStream)
+
 
 
 
