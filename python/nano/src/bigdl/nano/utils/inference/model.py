@@ -63,8 +63,8 @@ class AcceleratedModel(ABC):
         """
         path = Path(path)
         Path.mkdir(path, exist_ok=True)
-        self._dump_status(path)
         self._save_model(path)
+        self._dump_status(path)
 
     @property
     def status(self):

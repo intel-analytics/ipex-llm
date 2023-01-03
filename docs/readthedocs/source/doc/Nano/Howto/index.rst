@@ -16,6 +16,16 @@ PyTorch Lightning
 * `How to conduct BFloat16 Mixed Precision training in your PyTorch Lightning application <Training/PyTorchLightning/pytorch_lightning_training_bf16.html>`_
 * `How to accelerate a computer vision data processing pipeline <Training/PyTorchLightning/pytorch_lightning_cv_data_pipeline.html>`_
 
+PyTorch
+~~~~~~~~~~~~~~~~~~~~~~~~~
+* |convert_pytorch_training_torchnano|_
+* |use_nano_decorator_pytorch_training|_
+
+.. |use_nano_decorator_pytorch_training| replace:: How to accelerate your PyTorch training loop with ``@nano`` decorator
+.. _use_nano_decorator_pytorch_training: Training/PyTorch/use_nano_decorator_pytorch_training.html
+.. |convert_pytorch_training_torchnano| replace:: How to convert your PyTorch training loop to use ``TorchNano`` for acceleration
+.. _convert_pytorch_training_torchnano: Training/PyTorch/convert_pytorch_training_torchnano.html
+
 TensorFlow
 ~~~~~~~~~~~~~~~~~~~~~~~~~
 * `How to accelerate a TensorFlow Keras application on training workloads through multiple instances <Training/TensorFlow/accelerate_tensorflow_training_multi_instance.html>`_
@@ -37,13 +47,6 @@ OpenVINO
 * `How to run inference on OpenVINO model <Inference/OpenVINO/openvino_inference.html>`_
 * `How to run asynchronous inference on OpenVINO model <Inference/OpenVINO/openvino_inference_async.html>`_
 
-.. toctree::
-    :maxdepth: 1
-    :hidden:
-
-    Inference/OpenVINO/openvino_inference
-    Inference/OpenVINO/openvino_inference_async
-
 PyTorch
 ~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -51,13 +54,18 @@ PyTorch
 * `How to accelerate a PyTorch inference pipeline through OpenVINO <Inference/PyTorch/accelerate_pytorch_inference_openvino.html>`_
 * `How to accelerate a PyTorch inference pipeline through JIT/IPEX <Inference/PyTorch/accelerate_pytorch_inference_jit_ipex.html>`_
 * `How to accelerate a PyTorch inference pipeline through bfloat16 precision <Inference/PyTorch/accelerate_pytorch_inference_bf16.html>`_
+* `How to accelerate a PyTorch inference pipeline through multiple instances <Inference/PyTorch/multi_instance_pytorch_inference.html>`_
 * `How to quantize your PyTorch model for inference using Intel Neural Compressor <Inference/PyTorch/quantize_pytorch_inference_inc.html>`_
 * `How to quantize your PyTorch model for inference using OpenVINO Post-training Optimization Tools <Inference/PyTorch/quantize_pytorch_inference_pot.html>`_
+* |pytorch_inference_context_manager_link|_
 * `How to save and load optimized IPEX model <Inference/PyTorch/pytorch_save_and_load_ipex.html>`_
 * `How to save and load optimized JIT model <Inference/PyTorch/pytorch_save_and_load_jit.html>`_
 * `How to save and load optimized ONNXRuntime model <Inference/PyTorch/pytorch_save_and_load_onnx.html>`_
 * `How to save and load optimized OpenVINO model <Inference/PyTorch/pytorch_save_and_load_openvino.html>`_
 * `How to find accelerated method with minimal latency using InferenceOptimizer <Inference/PyTorch/inference_optimizer_optimize.html>`_
+
+.. |pytorch_inference_context_manager_link| replace:: How to use context manager through ``get_context``
+.. _pytorch_inference_context_manager_link: Inference/PyTorch/pytorch_context_manager.html
 
 Install
 -------------------------

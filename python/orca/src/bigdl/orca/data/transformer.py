@@ -351,10 +351,10 @@ class MinMaxScaler:
                  min: float=0.0,
                  max: float=1.0,
                  inputCol: Optional[Union[str, List[str]]]=None,
-                 outputCol: Optional[Union[str, List[str]]]=None):
+                 outputCol: Optional[str]=None):
         self.min = min
         self.max = max
-        self.inputCol = inputCol
+        self.inputCol = [inputCol] if isinstance(inputCol, str) else inputCol
         self.outputCol = outputCol
         self.scaler = None  # type: Optional[SparkPipeline]
         self.scalerModel = None
@@ -365,17 +365,18 @@ class MinMaxScaler:
         invalidInputError(self.inputCol, "inputColumn cannot be empty")
         invalidInputError(self.outputCol, "outputColumn cannot be empty")
 
-        vecOutputCol = str(uuid.uuid1()) + "x_vec"
+        self.vecOutputCol = str(uuid.uuid1()) + "x_vec"
         assembler = SparkVectorAssembler(inputCols=self.inputCol,  # type:ignore
-                                         outputCol=vecOutputCol)
+                                         outputCol=self.vecOutputCol)
         scaler = SparkMinMaxScaler(min=self.min, max=self.max,
-                                   inputCol=vecOutputCol, outputCol=self.outputCol)  # type:ignore
+                                   inputCol=self.vecOutputCol,
+                                   outputCol=self.outputCol)  # type:ignore
         self.scaler = SparkPipeline(stages=[assembler, scaler])
 
     def setInputOutputCol(self,
                           inputCol: Union[str, List[str]],
-                          outputCol: Union[str, List[str]]) -> None:
-        self.inputCol = inputCol
+                          outputCol: str) -> None:
+        self.inputCol = [inputCol] if isinstance(inputCol, str) else inputCol
         self.outputCol = outputCol
         self.__createScaler__()
 
@@ -383,6 +384,7 @@ class MinMaxScaler:
         df = shard.to_spark_df()
         self.scalerModel = self.scaler.fit(df)  # type: ignore
         scaledData = self.scalerModel.transform(df)  # type: ignore
+        scaledData = scaledData.drop(self.vecOutputCol)
         data_shards = spark_df_to_pd_sparkxshards(scaledData)
         return data_shards
 
@@ -390,6 +392,7 @@ class MinMaxScaler:
         invalidInputError(self.scalerModel, "Please call fit_transform first")
         df = shard.to_spark_df()
         scaledData = self.scalerModel.transform(df)  # type: ignore
+        scaledData = scaledData.drop(self.vecOutputCol)
         data_shards = spark_df_to_pd_sparkxshards(scaledData)
         return data_shards
 
@@ -398,11 +401,11 @@ class StandardScaler:
     def __init__(self,
                  withMean: bool = False,
                  withStd: bool = True,
-                 inputCol: Optional[str] = None,
-                 outputCol: Optional[str] = None):
+                 inputCol: Optional[Union[str, List[str]]]=None,
+                 outputCol: Optional[str]=None):
         self.withMean = withMean
         self.withStd = withStd
-        self.inputCol = inputCol
+        self.inputCol = [inputCol] if isinstance(inputCol, str) else inputCol
         self.outputCol = outputCol
         self.scaler = None
         self.scalerModel = None
@@ -413,14 +416,16 @@ class StandardScaler:
         invalidInputError(self.inputCol, "inputColumn cannot be empty")
         invalidInputError(self.outputCol, "outputColumn cannot be empty")
 
-        vecOutputCol = str(uuid.uuid1()) + "x_vec"
-        assembler = SparkVectorAssembler(inputCols=[self.inputCol], outputCol=vecOutputCol)
+        self.vecOutputCol = str(uuid.uuid1()) + "x_vec"
+        assembler = SparkVectorAssembler(inputCols=self.inputCol, outputCol=self.vecOutputCol)
         scaler = SparkStandardScaler(withMean=self.withMean, withStd=self.withStd,
-                                     inputCol=vecOutputCol, outputCol=self.outputCol)
+                                     inputCol=self.vecOutputCol, outputCol=self.outputCol)
         self.scaler = SparkPipeline(stages=[assembler, scaler])
 
-    def setInputOutputCol(self, inputCol: str, outputCol: str):
-        self.inputCol = inputCol
+    def setInputOutputCol(self,
+                          inputCol: Union[str, List[str]],
+                          outputCol: str) -> None:
+        self.inputCol = [inputCol] if isinstance(inputCol, str) else inputCol
         self.outputCol = outputCol
         self.__createScaler__()
 
@@ -428,6 +433,7 @@ class StandardScaler:
         df = shard.to_spark_df()
         self.scalerModel = self.scaler.fit(df)  # type: ignore
         scaledData = self.scalerModel.transform(df)  # type: ignore
+        scaledData = scaledData.drop(self.vecOutputCol)
         data_shards = spark_df_to_pd_sparkxshards(scaledData)
         return data_shards
 
@@ -435,5 +441,6 @@ class StandardScaler:
         invalidInputError(self.scalerModel, "Please call fit_transform first")
         df = shard.to_spark_df()
         scaledData = self.scalerModel.transform(df)  # type: ignore
+        scaledData = scaledData.drop(self.vecOutputCol)
         data_shards = spark_df_to_pd_sparkxshards(scaledData)
         return data_shards

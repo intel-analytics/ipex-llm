@@ -25,7 +25,8 @@ import copy
 import yaml
 from logging import warning
 from bigdl.nano.deps.openvino.openvino_api import load_openvino_model
-from bigdl.nano.deps.ipex.ipex_api import load_ipexjit_model, load_ipexjitbf16_model
+from bigdl.nano.deps.ipex.ipex_api import load_ipexjit_model, load_ipexjitbf16_model,\
+    load_ipex_quantization_model
 from bigdl.nano.deps.onnxruntime.onnxruntime_api import load_onnxruntime_model
 from bigdl.nano.deps.neural_compressor.inc_api import load_inc_model
 from bigdl.nano.pytorch.amp.amp_api import load_bf16_model
@@ -117,7 +118,7 @@ def save_model(model: pl.LightningModule, path):
         torch.save(model.state_dict(), checkpoint_path)
 
 
-def load_model(path, model: pl.LightningModule = None, inplace=False):
+def load_model(path, model: pl.LightningModule = None, inplace=False, device=None):
     """
     Load a model from local.
 
@@ -126,6 +127,8 @@ def load_model(path, model: pl.LightningModule = None, inplace=False):
             the model with accelerator=None by Trainer.trace/Trainer.quantize. model
             should be set to None if you choose accelerator="onnxruntime"/"openvino"/"jit".
     :param inplace: whether to perform inplace optimization. Default: ``False``.
+    :param device: A string represents the device of the inference. Default to None.
+                   Only valid for openvino model, otherwise will be ignored.
     :return: Model with different acceleration(None/OpenVINO/ONNX Runtime/JIT) or
                 precision(FP32/FP16/BF16/INT8).
     """
@@ -141,7 +144,7 @@ def load_model(path, model: pl.LightningModule = None, inplace=False):
     if model_type == 'PytorchOpenVINOModel':
         invalidInputError(model is None,
                           "Argument 'model' must be None for OpenVINO loading.")
-        return load_openvino_model(path)
+        return load_openvino_model(path, device=device)
     if model_type == 'PytorchONNXRuntimeModel':
         invalidInputError(model is None,
                           "Argument 'model' must be None for ONNX Runtime loading.")
@@ -152,6 +155,8 @@ def load_model(path, model: pl.LightningModule = None, inplace=False):
         return load_ipexjit_model(path, model, inplace=inplace)
     if model_type == 'PytorchIPEXJITBF16Model':
         return load_ipexjitbf16_model(path, model, inplace=inplace)
+    if model_type == 'PytorchIPEXQuantizationModel':
+        return load_ipex_quantization_model(path, model, inplace=inplace)
     if model_type == 'BF16Model':
         return load_bf16_model(path, model)
     if isinstance(model, nn.Module):

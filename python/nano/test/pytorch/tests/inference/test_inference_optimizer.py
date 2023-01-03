@@ -81,7 +81,7 @@ class MultipleInputWithKwargsNet(nn.Module):
 class TestInferencePipeline(TestCase):
     num_workers = 0
     data_dir = "/tmp/data"
-    metric = torchmetrics.Accuracy(num_classes=10, top_k=1)
+    metric = torchmetrics.Accuracy('multiclass', num_classes=10, top_k=1)
     max_epochs = 5
 
     model = Net()
@@ -194,16 +194,6 @@ class TestInferencePipeline(TestCase):
         def metric(pred, target):
             return self.metric(pred, target)
 
-        inference_opt.optimize(model=self.model,
-                               training_data=self.train_loader,
-                               validation_data=self.test_loader,
-                               metric=metric,
-                               direction="max",
-                               thread_num=1)
-    
-    def test_pipeline_with_torchmetrics_functional_metric(self):
-        inference_opt = InferenceOptimizer()
-        metric = torchmetrics.functional.accuracy
         inference_opt.optimize(model=self.model,
                                training_data=self.train_loader,
                                validation_data=self.test_loader,

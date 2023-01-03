@@ -21,7 +21,6 @@ from unittest import TestCase
 import numpy as np
 import pytest
 import tensorflow as tf
-import ray
 
 import bigdl.orca.data.pandas
 from bigdl.dllib.nncontext import init_nncontext
@@ -308,7 +307,7 @@ class TestTFRayEstimator(TestCase):
     def test_sparkxshards(self):
 
         train_data_shard = XShards.partition({"x": np.random.randn(100, 1),
-                                              "y": np.random.randint(0, 1, size=(100))})
+                                              "y": np.random.randint(0, 1, size=(100))}).repartition(8)
 
         config = {
             "lr": 0.8
@@ -322,10 +321,48 @@ class TestTFRayEstimator(TestCase):
         trainer.fit(train_data_shard, epochs=1, batch_size=4, steps_per_epoch=25)
         trainer.evaluate(train_data_shard, batch_size=4, num_steps=25)
 
+    def test_less_partitition_than_workers(self):
+
+        train_data_shard = XShards.partition({"x": np.random.randn(100, 1),
+                                              "y": np.random.randint(0, 1, size=(100))}).repartition(1)
+
+        config = {
+            "lr": 0.8
+        }
+        trainer = Estimator.from_keras(
+            model_creator=model_creator,
+            verbose=True,
+            config=config,
+            workers_per_node=4)
+
+        trainer.fit(train_data_shard, epochs=1, batch_size=4, steps_per_epoch=25)
+        trainer.evaluate(train_data_shard, batch_size=4, num_steps=25)
+        trainer.predict(train_data_shard, batch_size=4).rdd.collect()
+        trainer.shutdown()
+
+        sc = init_nncontext()
+        rdd = sc.range(0, 100).repartition(1)
+        from pyspark.ml.linalg import DenseVector
+        df = rdd.map(lambda x: (DenseVector(np.random.randn(1, ).astype(np.float)),
+                                int(np.random.randint(0, 1, size=())))).toDF(["feature", "label"])
+        trainer = Estimator.from_keras(
+            model_creator=model_creator,
+            verbose=True,
+            config=config,
+            workers_per_node=2)
+
+        trainer.fit(df, epochs=1, batch_size=4, steps_per_epoch=25,
+                    feature_cols=["feature"],
+                    label_cols=["label"])
+        trainer.evaluate(df, batch_size=4, num_steps=25, feature_cols=["feature"],
+                         label_cols=["label"])
+        trainer.predict(df, feature_cols=["feature"]).collect()
+        trainer.shutdown()
+
     def test_dataframe(self):
 
         sc = init_nncontext()
-        rdd = sc.range(0, 10)
+        rdd = sc.range(0, 100).repartition(9)
         from pyspark.ml.linalg import DenseVector
         df = rdd.map(lambda x: (DenseVector(np.random.randn(1,).astype(np.float)),
                                 int(np.random.randint(0, 1, size=())))).toDF(["feature", "label"])
@@ -342,8 +379,9 @@ class TestTFRayEstimator(TestCase):
         trainer.fit(df, epochs=1, batch_size=4, steps_per_epoch=25,
                     feature_cols=["feature"],
                     label_cols=["label"])
-        trainer.evaluate(df, batch_size=4, num_steps=25, feature_cols=["feature"],
-                         label_cols=["label"])
+        stats = trainer.evaluate(df, batch_size=4, num_steps=25, feature_cols=["feature"],
+                                 label_cols=["label"])
+        assert isinstance(stats, dict)
         trainer.predict(df, feature_cols=["feature"]).collect()
 
     def test_dataframe_decimal_input(self):

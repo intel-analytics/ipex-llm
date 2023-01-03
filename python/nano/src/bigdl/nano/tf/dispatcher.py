@@ -15,6 +15,7 @@
 #
 
 from importlib.util import find_spec
+from bigdl.nano.utils.log4Error import invalidInputError
 
 
 _mapping_tf = None
@@ -50,9 +51,11 @@ def _get_patch_map():
     return _mapping_tf
 
 
-def patch_tensorflow():
+def patch_tensorflow(precision='float32'):
     """
     patch_tensorflow is used to patch optimized tensorflow classes to replace original ones.
+
+    Meanwhile, set `precision` as global dtype policy.
 
     Optimized classes include:
 
@@ -60,6 +63,11 @@ def patch_tensorflow():
     | 2. tf.keras.Sequential/keras.Sequential -> bigdl.nano.tf.keras.Sequential
     | 3. tf.keras.layers.Embedding/keras.layers.Embedding -> bigdl.nano.tf.keras.layers.Embedding
     | 4. tf.optimizers.Adam -> bigdl.nano.tf.optimizers.SparseAdam
+
+    :param precision: str, specify the compute and variable dtypes, select from 'float32' and
+                      'mixed_bfloat16'. Once set 'float32', both compute and variable dtypes
+                      will be float32. When 'mixed_bfloat16' is set, the compute dtype is bfloat16
+                      and the variable dtype is float32. Default to be 'float32'.
     """
     mapping_tf = _get_patch_map()
 
@@ -68,10 +76,33 @@ def patch_tensorflow():
             mapping_iter[3] = getattr(mapping_iter[0], mapping_iter[1], None)
         setattr(mapping_iter[0], mapping_iter[1], mapping_iter[2])
 
+    # Set the global dtype policy
+    invalidInputError(precision in ['float32', 'mixed_bfloat16'],
+                      "The parameter should be one of ['float32', 'mixed_bfloat16'] ",
+                      f"but got {precision}.")
+    from tensorflow.keras import mixed_precision
+    mixed_precision.set_global_policy(precision)
 
-def unpatch_tensorflow():
-    """unpatch_tensorflow is used to unpatch optimized tensorflow classes to original ones."""
+
+def unpatch_tensorflow(precision='float32'):
+    """
+    unpatch_tensorflow is used to unpatch optimized tensorflow classes to original ones.
+
+    Meanwhile, set `precision` as global dtype policy.
+
+    :param precision: str, specify the compute and variable dtypes, select from 'float32' and
+                      'mixed_bfloat16'. Once set 'float32', both compute and variable dtypes
+                      will be float32. When 'mixed_bfloat16' is set, the compute dtype is bfloat16
+                      and the variable dtype is float32. Default to be 'float32'.
+    """
     mapping_tf = _get_patch_map()
 
     for mapping_iter in mapping_tf:
         setattr(mapping_iter[0], mapping_iter[1], mapping_iter[3])
+
+    # Set the global dtype policy
+    invalidInputError(precision in ['float32', 'mixed_bfloat16'],
+                      "The parameter should be one of ['float32', 'mixed_bfloat16'] ",
+                      f"but got {precision}.")
+    from tensorflow.keras import mixed_precision
+    mixed_precision.set_global_policy(precision)

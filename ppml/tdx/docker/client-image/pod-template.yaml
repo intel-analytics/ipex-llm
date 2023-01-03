@@ -2,16 +2,56 @@
 apiVersion: v1
 kind: Pod
 spec:
-  # runtimeClassName: default is kata-cc
-  runtimeClassName: kata-cc
+  # runtimeClassName: default is kata-qemu-tdx-eaa-kbc
+  runtimeClassName: kata-qemu-tdx-eaa-kbc
+  resources:
+    requests:
+      cpu: "16"
+      memory: "20Gi"
+    limits:
+      cpu: "16"
+      memory: "20Gi"
   containers:
-  - name: spark-executor
+  - name: spark-driver
     securityContext:
       privileged: true
     volumeMounts:
     - name: kubeconf
       mountPath: /root/.kube/config
     command: ["/opt/entrypoint.sh"]
+    env:
+    - name: RUNTIME_SPARK_MASTER
+      value: "k8s://https://x.x.x.x:xxxx"
+    - name: RUNTIME_K8S_SERVICE_ACCOUNT
+      value: "spark"
+    - name: RUNTIME_K8S_SPARK_IMAGE
+      value: "clxgateway.sh.intel.com/bigdl-k8s-verdictd-encrypted:latest"
+    - name: RUNTIME_DRIVER_HOST
+      value: "x.x.x.x"
+    - name: RUNTIME_DRIVER_PORT
+      value: "54321"
+    - name: RUNTIME_EXECUTOR_INSTANCES
+      value: "3"
+    - name: RUNTIME_EXECUTOR_CORES
+      value: "16"
+    - name: RUNTIME_EXECUTOR_MEMORY
+      value: "10g"
+    - name: RUNTIME_TOTAL_EXECUTOR_CORES
+      value: "48"
+    - name: RUNTIME_DRIVER_CORES
+      value: "16"
+    - name: RUNTIME_DRIVER_MEMORY
+      value: "10g"
+    - name: LOCAL_IP
+      value: "x.x.x.x"
+    - name: http_proxy
+      value: http://x.x.x.x:xxx
+    - name: https_proxy
+      value: http://x.x.x.x:xxx
+    - name: JAVA_HOME
+      value: /opt/jdk
+    - name: SPARK_HOME
+      value: /opt/spark
   volumes:
   - name: kubeconf
     hostPath:

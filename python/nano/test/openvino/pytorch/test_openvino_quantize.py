@@ -14,11 +14,12 @@
 # limitations under the License.
 #
 from unittest import TestCase
-from torchmetrics import F1
+from torchmetrics import F1Score
 from bigdl.nano.pytorch import Trainer
 from bigdl.nano.pytorch import InferenceOptimizer
 from torchvision.models.mobilenetv3 import mobilenet_v3_small
 import torch
+from torch import nn
 from torch.utils.data.dataset import TensorDataset
 from torch.utils.data.dataloader import DataLoader
 import tempfile
@@ -70,7 +71,7 @@ class TestOpenVINO(TestCase):
 
         optimized_model = InferenceOptimizer.quantize(model, accelerator='openvino',
                                                       calib_data=dataloader,
-                                                      metric=F1(10))
+                                                      metric=F1Score('multiclass', num_classes=10))
 
         y_hat = optimized_model(x[0:3])
         assert y_hat.shape == (3, 10)
@@ -119,7 +120,7 @@ class TestOpenVINO(TestCase):
         openvino_model = InferenceOptimizer.quantize(model,
                                                      accelerator='openvino',
                                                      calib_data=dataloader,
-                                                     metric=F1(10),
+                                                     metric=F1Score('multiclass', num_classes=10),
                                                      thread_num=2)
 
         with InferenceOptimizer.get_context(openvino_model):
@@ -152,7 +153,7 @@ class TestOpenVINO(TestCase):
         openvino_model = InferenceOptimizer.quantize(model,
                                                      accelerator='openvino',
                                                      calib_data=dataloader,
-                                                     metric=F1(10),
+                                                     metric=F1Score('multiclass', num_classes=10),
                                                      thread_num=2)
         assert openvino_model.channels == 3
         openvino_model.hello()
@@ -162,3 +163,120 @@ class TestOpenVINO(TestCase):
         with InferenceOptimizer.get_context(openvino_model):
             assert torch.get_num_threads() == 2
             y1 = openvino_model(x[0:1])
+
+    def test_openvino_quantize_dynamic_axes(self):
+        class CustomModel(nn.Module):
+            def __init__(self):
+                super().__init__()
+                self.pool = nn.AvgPool2d(kernel_size=3, stride=3)
+
+            def forward(self, x):
+                return self.pool(x)
+
+        model = CustomModel()
+        x1 = torch.rand(1, 3, 14, 14)
+        x2 = torch.rand(4, 3, 14, 14)
+        x3 = torch.rand(1, 3, 12, 12)
+
+        accmodel = InferenceOptimizer.quantize(model,
+                                               accelerator="openvino",
+                                               calib_data=torch.rand(1, 3, 14, 14))
+        accmodel(x1)
+        accmodel(x2)
+        try:
+            accmodel(x3)
+        except Exception as e:
+            assert e
+
+        accmodel = InferenceOptimizer.quantize(model,
+                                               accelerator="openvino",
+                                               calib_data=torch.rand(1, 3, 14, 14),
+                                               dynamic_axes={"x": [0, 2, 3]})
+        accmodel(x1)
+        accmodel(x2)
+        accmodel(x3)
+
+    def test_quantize_openvino_bf16(self):
+        model = mobilenet_v3_small(num_classes=10)
+
+        x = torch.rand((10, 3, 256, 256))
+
+        try:
+            optimized_model = InferenceOptimizer.quantize(model,
+                                                        accelerator='openvino',
+                                                        input_sample=x,
+                                                        precision='bf16')
+        except RuntimeError as e:
+            assert e.__str__() == "Platform doesn't support BF16 format"
+            return
+
+        with InferenceOptimizer.get_context(optimized_model):
+            y_hat = optimized_model(x[0:3])
+            assert y_hat.shape == (3, 10)
+            y_hat = optimized_model(x)
+            assert y_hat.shape == (10, 10)
+
+    def test_openvino_gpu_quatize(self):
+        # test whether contains GPU
+        from openvino.runtime import Core
+        core = Core()
+        devices = core.available_devices
+        gpu_avaliable = any('GPU' in x for x in devices)
+        
+        if gpu_avaliable is False:
+            return
+
+        model = mobilenet_v3_small(num_classes=10)
+
+        x = torch.rand((1, 3, 256, 256))
+        x2 = torch.rand((10, 3, 256, 256))
+
+        # test GPU fp16
+        openvino_model = InferenceOptimizer.quanize(model,
+                                                    input_sample=x,
+                                                    accelerator='openvino',
+                                                    device='GPU',
+                                                    precision='fp16')
+        result = openvino_model(x)
+        # GPU don't support dynamic shape
+        with pytest.raises(RuntimeError):
+            openvino_model(x2)
+
+        # test GPU int8
+        openvino_model = InferenceOptimizer.quanize(model,
+                                                    input_sample=x,
+                                                    accelerator='openvino',
+                                                    device='GPU',
+                                                    precision='int8',
+                                                    calib_data=x)
+        result = openvino_model(x)
+        # GPU don't support dynamic shape
+        with pytest.raises(RuntimeError):
+            openvino_model(x2)
+
+    def test_openvino_vpu_quatize(self):
+        # test whether contains VPU
+        from openvino.runtime import Core
+        core = Core()
+        devices = core.available_devices
+        vpu_avaliable = any('VPUX' in x for x in devices)
+        
+        if vpu_avaliable is False:
+            return
+
+        model = mobilenet_v3_small(num_classes=10)
+
+        x = torch.rand((1, 3, 256, 256))
+        x2 = torch.rand((10, 3, 256, 256))
+
+        # test VPU int8
+        openvino_model = InferenceOptimizer.quanize(model,
+                                                    input_sample=x,
+                                                    accelerator='openvino',
+                                                    device='VPUX',
+                                                    precision='int8',
+                                                    calib_data=x)
+        result = openvino_model(x)
+        # VPU don't support dynamic shape
+        with pytest.raises(RuntimeError):
+            openvino_model(x2)

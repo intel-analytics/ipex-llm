@@ -38,13 +38,13 @@ import copy
 import tempfile
 import torch
 import torch.nn as nn
+import numpy as np
 from torch.utils.data import DataLoader, IterableDataset
 from bigdl.orca.learn.metrics import Metric
 from torch.utils.data.distributed import DistributedSampler
 from bigdl.orca import OrcaContext
 from bigdl.orca.learn.pytorch.constants import (SCHEDULER_STEP, SCHEDULER_STEP_EPOCH,
                                                 SCHEDULER_STEP_BATCH)
-from bigdl.orca.learn.pytorch.training_operator import TrainingOperator
 from bigdl.orca.learn.pytorch import utils
 from bigdl.orca.learn.pytorch.utils import (get_filesystem, AverageMeterCollection,
                                             NUM_SAMPLES, get_batchsize)
@@ -56,7 +56,6 @@ try:
 except ImportError:
     from collections import Iterable
 
-# TrainingOperator Import
 tqdm = None
 try:
     from tqdm import tqdm
@@ -115,7 +114,6 @@ class TorchRunner(BaseRunner):
                  loss_creator=None,
                  metrics=None,
                  scheduler_creator=None,
-                 training_operator_cls=None,
                  config=None,
                  use_tqdm=False,
                  scheduler_step_freq=None,
@@ -130,7 +128,6 @@ class TorchRunner(BaseRunner):
         self.optimizer_creator = optimizer_creator
         self.loss_creator = loss_creator
         self.scheduler_creator = scheduler_creator
-        self.training_operator_cls = training_operator_cls or TrainingOperator
         self.config = {} if config is None else config
 
         self.timers = utils.TimerCollection()
@@ -143,7 +140,6 @@ class TorchRunner(BaseRunner):
         self.schedulers = None
         self.train_loader = None
         self.validation_loader = None
-        self.training_operator = None
         self.use_tqdm = use_tqdm
         self.scheduler_step_freq = scheduler_step_freq
         self.sync_stats = sync_stats
@@ -175,18 +171,20 @@ class TorchRunner(BaseRunner):
         """Runs the creator functions without any distributed coordination."""
 
         self.logger.debug("Creating model")
-        self.models = self.model_creator(self.config)
-        if isinstance(self.models, nn.Sequential) or not isinstance(self.models, Iterable):
-            self.models = [self.models]
-        invalidInputError(all(isinstance(model, nn.Module) for model in self.models),
-                          ("All models must be PyTorch models: {}.".format(self.models)))
+        if self.model_creator:
+            self.models = self.model_creator(self.config)
 
-        if self.optimizer_creator is not None:
-            self.logger.debug("Creating optimizer.")
-            self.optimizers = self.optimizer_creator(self.given_models,
-                                                     self.config)
-            if self.optimizers is not None and not isinstance(self.optimizers, Iterable):
-                self.optimizers = [self.optimizers]
+            if isinstance(self.models, nn.Sequential) or not isinstance(self.models, Iterable):
+                self.models = [self.models]
+            invalidInputError(all(isinstance(model, nn.Module) for model in self.models),
+                                 ("All models must be PyTorch models: {}.".format(self.models)))
+
+            if self.optimizer_creator:
+                self.logger.debug("Creating optimizer.")
+                self.optimizers = self.optimizer_creator(self.given_models,
+                                                         self.config)
+                if self.optimizers and not isinstance(self.optimizers, Iterable):
+                    self.optimizers = [self.optimizers]
 
         self._create_schedulers_if_available()
         self._create_loss()
@@ -205,18 +203,6 @@ class TorchRunner(BaseRunner):
             self.dist_backend = HorovodDistBackend()
         else:
             self.dist_backend = TorchDistBackend()
-
-        self.training_operator = \
-            self.training_operator_cls(
-                self.config,
-                models=training_models,
-                optimizers=self.optimizers,
-                criterion=self.criterion,
-                world_rank=self.rank,
-                schedulers=self.schedulers,
-                use_tqdm=self.use_tqdm,
-                sync_stats=self.sync_stats,
-                dist_backend=self.dist_backend)
 
     def train_epochs(self, data_creator, epochs=1, batch_size=32, profile=False,
                      info=None, wrap_dataloader=None, callbacks=None,
@@ -272,13 +258,18 @@ class TorchRunner(BaseRunner):
                 if hasattr(callback, "set_trainer"):
                     callback.set_trainer(self)
                 callback.on_train_begin()
+
+        self.call_hook(callbacks=callbacks, fn_name="before_run")
+
         stats_list = list()
         for i in range(epochs):
             if callbacks is not None:
                 for callback in callbacks:
                     callback.on_epoch_begin(epoch=self.epochs)
+            self.call_hook(callbacks=callbacks, fn_name="before_train_epoch")
             stats = self.train_epoch(loader, profile=profile, info=info, callbacks=callbacks,
                                      val_loader=val_loader, val_steps=val_steps)
+            self.call_hook(callbacks=callbacks, fn_name="after_train_epoch")
             if self.rank == 0:
                 if self.sync_stats:
                     self.logger.info(f"Finished training epoch {i + 1}, " +
@@ -294,6 +285,9 @@ class TorchRunner(BaseRunner):
         if callbacks is not None:
             for callback in callbacks:
                 callback.on_train_end(logs=self.epochs_stats)
+
+        self.call_hook(callbacks=callbacks, fn_name="after_run")
+
         return stats_list
 
     def train_epoch(self,
@@ -325,7 +319,8 @@ class TorchRunner(BaseRunner):
                 validation_results = self._validate(val_loader,
                                                     info=info,
                                                     metrics=self.metrics,
-                                                    num_steps=val_steps)
+                                                    num_steps=val_steps,
+                                                    callbacks=callbacks)
                 # add prefix of "val_" for validation_stats
                 validation_stats = {}
                 for name, value in validation_results.items():
@@ -447,7 +442,7 @@ class TorchRunner(BaseRunner):
                 for callback in callbacks:
                     callback.on_batch_end(batch_idx, logs=metrics)
 
-    def _train_batch(self, batch, batch_info=None):
+    def _train_batch(self, batch, batch_info=None, callbacks=None):
         """Computes loss and updates the model over one batch.
 
         This method is responsible for computing the loss and gradient and
@@ -481,24 +476,32 @@ class TorchRunner(BaseRunner):
 
         """
         # unpack features into list to support multiple inputs model
+        # and restore batch to what it should be.
         features, target = batch
+        if torch.is_tensor(features):
+            self.batch = features, target
+        elif isinstance(features, (tuple, list)):
+            self.batch = *features, target
+        else:
+            invalidInputError(False,
+                              "Features should be tensor or list/tuple, "
+                              "but got {}".format(type(features)))
+        self.call_hook(callbacks=callbacks, fn_name="before_train_iter")
 
         # Compute output.
         with self.timers.record("fwd"):
-            if torch.is_tensor(features):
-                output = self.training_model(features)
-            elif isinstance(features, (tuple, list)):
+            *features, target = self.batch
+            if torch.is_tensor(features) or isinstance(features, (tuple, list)):
                 output = self.training_model(*features)
             else:
                 invalidInputError(False,
-                                  "Features should be tensor, list/tuple or dict, "
+                                  "Features should be tensor or list/tuple, "
                                   "but got {}".format(type(features)))
 
-            if isinstance(output, tuple) or isinstance(output, list):
-                # Then target is also assumed to be a tuple or list.
-                loss = self.criterion(*output, *target)
-            else:
-                loss = self.criterion(output, target)
+            # Ensure `target` and `output` are always in a list format.
+            targetL = [target] if not isinstance(target, (list, tuple)) else target
+            outputL = [output] if not isinstance(output, (list, tuple)) else output
+            loss = self.criterion(*outputL, *targetL)
 
         # Compute gradients in a backward pass.
         with self.timers.record("grad"):
@@ -508,6 +511,12 @@ class TorchRunner(BaseRunner):
         # Call step of optimizer to update model params.
         with self.timers.record("apply"):
             self.optimizer.step()
+
+        self.call_hook(callbacks=callbacks, fn_name="after_train_iter")
+
+        # User should not see batch from last iteration
+        if hasattr(self, "batch"):
+            del self.batch
 
         return {"train_loss": loss.item(), NUM_SAMPLES: get_batchsize(features)}
 
@@ -540,7 +549,7 @@ class TorchRunner(BaseRunner):
             validation_stats.update(profile=self.timers.stats())
         return validation_stats
 
-    def _validate(self, val_iterator, info, metrics, num_steps=None):
+    def _validate(self, val_iterator, info, metrics, num_steps=None, callbacks=None):
         """Runs one standard validation pass over the val_iterator.
 
         This will call ``model.eval()`` and ``torch.no_grad`` when iterating
@@ -568,19 +577,21 @@ class TorchRunner(BaseRunner):
         metrics = Metric.convert_metrics_dict(metrics, backend="pytorch")
         losses = []
         total_samples = 0
+        self.call_hook(callbacks=callbacks, fn_name="before_val_epoch")
         with torch.no_grad():
             for batch_idx, batch in enumerate(val_iterator):
                 if num_steps and batch_idx == num_steps:
                     break
                 batch_info = {"batch_idx": batch_idx}
                 batch_info.update(info)
-                output, target, loss = self.forward_batch(batch, batch_info)
+                output, target, loss = self.forward_batch(batch, batch_info, callbacks)
                 num_samples = get_batchsize(target)
                 total_samples += num_samples
                 losses.append(loss.item() * num_samples)
                 for metric in metrics.values():
                     metric(output, target)
 
+        self.call_hook(callbacks=callbacks, fn_name="after_val_epoch")
         result = {name: metric.compute() for name, metric in metrics.items()}
 
         result["val_loss"] = sum(losses) / total_samples
@@ -589,7 +600,7 @@ class TorchRunner(BaseRunner):
 
         return result
 
-    def forward_batch(self, batch, batch_info):
+    def forward_batch(self, batch, batch_info, callbacks=None):
         """Calculates the loss and accuracy over a given batch.
 
         You can override this method to provide arbitrary metrics.
@@ -612,24 +623,38 @@ class TorchRunner(BaseRunner):
                 calculate averages.
         """
         # unpack features into list to support multiple inputs model
+        # and restore batch to what it should be.
         features, target = batch
+        if torch.is_tensor(features):
+            self.batch = features, target
+        elif isinstance(features, (tuple, list)):
+            self.batch = *features, target
+        else:
+            invalidInputError(False,
+                              "Features should be tensor, list/tuple, "
+                              "but got {}".format(type(features)))
+        self.call_hook(callbacks=callbacks, fn_name="before_val_iter")
 
         # compute output
         with self.timers.record("eval_fwd"):
-            if torch.is_tensor(features):
-                output = self.model(features)
-            elif isinstance(features, (tuple, list)):
+            *features, target = self.batch
+            if torch.is_tensor(features) or isinstance(features, (tuple, list)):
                 output = self.model(*features)
             else:
                 invalidInputError(False,
-                                  "Features should be tensor, list/tuple or dict, "
+                                  "Features should be tensor, list/tuple, "
                                   "but got {}".format(type(features)))
 
-            if isinstance(output, tuple) or isinstance(output, list):
-                # Then target is also assumed to be a tuple or list.
-                loss = self.criterion(*output, *target)
-            else:
-                loss = self.criterion(output, target)
+            # Ensure `target` and `output` are always in a list format.
+            targetL = [target] if not isinstance(target, (list, tuple)) else target
+            outputL = [output] if not isinstance(output, (list, tuple)) else output
+            loss = self.criterion(*outputL, *targetL)
+
+        self.call_hook(callbacks=callbacks, fn_name="after_val_iter")
+
+        # User should not see batch from last iteration
+        if hasattr(self, "batch"):
+            del self.batch
 
         return output, target, loss
 
@@ -647,7 +672,7 @@ class TorchRunner(BaseRunner):
 
         def predict_fn(shard):
             if isinstance(partition, IterableDataset):
-                y = self.training_operator.predict(shard)
+                y = self._predict(shard)
             else:
                 if isinstance(shard["x"], tuple) or isinstance(shard["x"], list):
                     tensors = [torch.from_numpy(arr) for arr in shard["x"]]
@@ -655,7 +680,7 @@ class TorchRunner(BaseRunner):
                     tensors = [torch.from_numpy(shard["x"])]
                 dataset = torch.utils.data.TensorDataset(*tensors)
                 data_loader = DataLoader(dataset, **params)
-                y = self.training_operator.predict(iter(data_loader))
+                y = self._predict(iter(data_loader))
             return {"prediction": y}
 
         with self.timers.record("predict"):
@@ -665,6 +690,34 @@ class TorchRunner(BaseRunner):
                 new_part = [predict_fn(shard) for shard in partition]
         return new_part
 
+    def _predict(self, pred_iterator):
+        # switch to evaluate mode
+        self.model.eval()
+        result = []
+        with torch.no_grad():
+            for batch in pred_iterator:
+                result.append(self.predict_batch(batch))
+
+        return np.concatenate(result, axis=0)
+
+    def predict_batch(self, batch):
+
+        if isinstance(batch, torch.Tensor):
+            batch = [batch]
+
+        # compute output
+        with self.timers.record("pred_fwd"):
+            output = self.model(*batch)
+
+            if len(output.size()) > 1:
+                # In case there is extra trailing dimensions.
+                for i in reversed(range(1, len(output.size()))):
+                    output = torch.squeeze(output, i)
+
+        # todo support multi-output model
+        np_output = output.detach().numpy()
+        return np_output
+
     def _toggle_profiling(self, profile=False):
         """Enables/Disables and resets timing profiles."""
         if profile:
@@ -672,13 +725,11 @@ class TorchRunner(BaseRunner):
             self.timers.reset()
         else:
             self.timers.disable()
-        self.training_operator._set_timers(self.timers)
 
     def get_state_dict(self):
         """Returns the state of the runner."""
         state = {
             "epoch": self.epochs,
-            "operator": self.training_operator.state_dict(),
             "models": [model.state_dict() for model in self.models]
         }
         if self.optimizers is not None:
@@ -717,8 +768,6 @@ class TorchRunner(BaseRunner):
                 scheduler.load_state_dict(state_dict)
         if "epoch" in state:
             self.epochs = state["epoch"]
-        if "operator" in state:
-            self.training_operator.load_state_dict(state["operator"])
 
     def save_checkpoint(self, filepath, save_weights_only=False):
         if self.rank == 0:
@@ -731,32 +780,43 @@ class TorchRunner(BaseRunner):
             else:
                 checkpoint = self.get_state_dict()
             byte_obj = TorchRunner._state_dict2stream(checkpoint)
-            with fsspec.open(filepath, "wb") as f:
+            file_name = os.path.basename(filepath)
+            temp_dir = tempfile.mkdtemp()
+            temp_path = os.path.join(temp_dir, file_name)
+            with fsspec.open(temp_path, "wb") as f:
                 f.write(byte_obj)
+            from bigdl.orca.data.file import put_local_file_to_remote
+            put_local_file_to_remote(temp_path, filepath)
             self.logger.debug(f"Saved checkpoint: {filepath}")
         return filepath
 
     def remove_checkpoint(self, filepath):
         if self.rank == 0:
-            fs = get_filesystem(filepath)
-            if fs.exists(filepath):
-                fs.rm(filepath, recursive=True)
+            from bigdl.orca.data.file import exists, rmdir
+            if exists(filepath):
+                rmdir(filepath)
                 self.logger.debug(f"Removed checkpoint: {filepath}")
-
-    def apply(self, fn):
-        return fn()
-
-    def apply_operator(self, fn):
-        return fn(self.training_operator)
 
     def shutdown(self):
         """Attempts to shut down the worker."""
-        del self.training_operator
         del self.validation_loader
         del self.train_loader
         del self.criterion
         del self.optimizers
         del self.models
+
+    def call_hook(self, callbacks, fn_name: str) -> None:
+        """Call all hooks.
+
+        Args:
+            fn_name (str): The function name in each hook to be called, such as
+                "on_iter_begin".
+        """
+        if not callbacks:
+            return
+
+        for hook in callbacks:
+            getattr(hook, fn_name)(self)
 
     @property
     def given_models(self):

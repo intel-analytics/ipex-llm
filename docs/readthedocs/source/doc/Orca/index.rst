@@ -30,7 +30,6 @@ Most AI projects start with a Python notebook running on a single laptop; howeve
 
         +++
 
-        :bdg-link:`Quickstarts <./QuickStart/index.html>` |
         :bdg-link:`How-to Guides <./Howto/index.html>` |
         :bdg-link:`Tutorials <./Tutorial/index.html>`
 

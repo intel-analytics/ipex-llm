@@ -154,7 +154,7 @@ class TestOpenVINO(TestCase):
 
         with tempfile.TemporaryDirectory() as tmp_dir_name:
             InferenceOptimizer.save(openvino_model, tmp_dir_name)
-            model = InferenceOptimizer.load(tmp_dir_name)
+            model = InferenceOptimizer.load(tmp_dir_name, device='CPU')
 
         with InferenceOptimizer.get_context(model):
             assert torch.get_num_threads() == 2
@@ -224,3 +224,66 @@ class TestOpenVINO(TestCase):
                                             input_sample=(torch.rand(2,3,1,1), 3))
         result_m = accmodel(x, y)
         assert torch.equal(result_true, result_m)
+
+    def test_openvino_dynamic_axes(self):
+        class CustomModel(nn.Module):
+            def __init__(self):
+                super().__init__()
+                self.pool = nn.AvgPool2d(kernel_size=3, stride=3)
+
+            def forward(self, x):
+                return self.pool(x)
+
+        model = CustomModel()
+        x1 = torch.rand(1, 3, 14, 14)
+        x2 = torch.rand(4, 3, 14, 14)
+        x3 = torch.rand(1, 3, 12, 12)
+
+        accmodel = InferenceOptimizer.trace(model,
+                                            accelerator="openvino",
+                                            input_sample=torch.rand(1, 3, 14, 14))
+        accmodel(x1)
+        accmodel(x2)
+        try:
+            accmodel(x3)
+        except Exception as e:
+            assert e
+
+        accmodel = InferenceOptimizer.trace(model,
+                                            accelerator="openvino",
+                                            input_sample=torch.rand(1, 3, 14, 14),
+                                            dynamic_axes={"x": [0, 2, 3]})
+        accmodel(x1)
+        accmodel(x2)
+        accmodel(x3)
+
+    def test_openvino_gpu_trace(self):
+        # test whether contains GPU
+        from openvino.runtime import Core
+        core = Core()
+        devices = core.available_devices
+        gpu_avaliable = any('GPU' in x for x in devices)
+        
+        if gpu_avaliable is False:
+            return
+
+        model = mobilenet_v3_small(num_classes=10)
+
+        x = torch.rand((1, 3, 256, 256))
+        x2 = torch.rand((10, 3, 256, 256))
+
+        # test GPU fp32
+        openvino_model = InferenceOptimizer.trace(model,
+                                                  input_sample=x,
+                                                  accelerator='openvino',
+                                                  device='GPU')
+        result = openvino_model(x)
+        assert result.shape == (1, 10)
+        # GPU don't support dynamic shape
+        with pytest.raises(RuntimeError):
+            openvino_model(x2)
+
+        with tempfile.TemporaryDirectory() as tmp_dir_name:
+            InferenceOptimizer.save(openvino_model, tmp_dir_name)
+            model = InferenceOptimizer.load(tmp_dir_name)  # GPU model
+            model = InferenceOptimizer.load(tmp_dir_name, device='CPU')  # CPU model

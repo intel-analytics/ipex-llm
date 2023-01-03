@@ -16,3 +16,5 @@ pip install --pre --upgrade bigdl-orca[ray]
 - For ionosphere.py, the dataset can be downloaded from [here](https://raw.githubusercontent.com/jbrownlee/Datasets/master/ionosphere.csv).
 - For tabular_playground_series.py, the dataset can be downloaded from [here](https://www.kaggle.com/code/remekkinas/tps-5-pytorch-nn-for-tabular-step-by-step/data?select=train.csv).
 - For titanic.py, the dataset can be downloaded from [here](https://www.kaggle.com/code/chuanguy/titanic-data-processing-with-python-0-813/data?select=train.csv).
+- For answer_correctness_analysis.py, the dataset can be downloaded from [here](https://www.kaggle.com/competitions/riiid-test-answer-prediction/data?select=train.csv)
+- For house_price_analysis.py, the dataset can be downloaded from [here](https://www.kaggle.com/code/pmarcelino/comprehensive-data-exploration-with-python/data?select=train.csv)

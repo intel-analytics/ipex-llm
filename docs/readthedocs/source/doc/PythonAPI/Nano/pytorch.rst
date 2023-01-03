@@ -15,13 +15,13 @@ bigdl.nano.pytorch.InferenceOptimizer
 .. autoclass:: bigdl.nano.pytorch.InferenceOptimizer
     :members:
     :undoc-members:
-    :exclude-members: ALL_INFERENCE_ACCELERATION_METHOD, DEFAULT_INFERENCE_ACCELERATION_METHOD
+    :exclude-members: ALL_INFERENCE_ACCELERATION_METHOD, DEFAULT_INFERENCE_ACCELERATION_METHOD, method
     :inherited-members:
 
-bigdl.nano.pytorch.TorchNano
+TorchNano API
 ---------------------------
 
-.. autoclass:: bigdl.nano.pytorch.TorchNano
+.. automodule:: bigdl.nano.pytorch.torch_nano
     :members:
     :undoc-members:
     :exclude-members: run
@@ -32,4 +32,12 @@ Patch API
 .. automodule:: bigdl.nano.pytorch.dispatcher
     :members:
     :undoc-members:
+    :show-inheritance:
+
+.. automodule:: bigdl.nano.pytorch.patching.gpu_cpu.gpu_cpu
+    :members: patch_cuda, unpatch_cuda
+    :show-inheritance:
+
+.. automodule:: bigdl.nano.pytorch.patching.dtype_patching.dtype_patching
+    :members: patch_dtype
     :show-inheritance:

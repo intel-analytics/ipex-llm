@@ -26,7 +26,7 @@ import tensorflow as tf
 import tensorflow_datasets as tfds
 from tensorflow.keras.applications import ResNet50
 
-from bigdl.nano.tf.keras import Model, InferenceOptimizer
+from bigdl.nano.tf.keras import InferenceOptimizer
 
 
 def create_dataset(img_size, batch_size):
@@ -61,7 +61,6 @@ if __name__ == '__main__':
     # then you can use the returned model for inference, all inference will be 
     # accelerated automatically after that.
     #
-    model = Model(inputs=model.inputs, outputs=model.outputs)
     spec = tf.TensorSpec((None, 224, 224, 3), tf.float32)
     onnx_model = InferenceOptimizer.trace(model, accelerator='onnxruntime', input_spec=spec)
     onnx_preds = onnx_model.predict(dataset)

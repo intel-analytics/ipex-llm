@@ -110,7 +110,7 @@ flowchart TD;
 
   </details> 
 
-  *See Orca [user guide](https://bigdl.readthedocs.io/en/latest/doc/Orca/Overview/orca.html), as well as [TensorFlow](https://bigdl.readthedocs.io/en/latest/doc/Orca/QuickStart/orca-tf-quickstart.html) and [PyTorch](https://bigdl.readthedocs.io/en/latest/doc/Orca/QuickStart/orca-pytorch-quickstart.html) quickstart, for more details.*
+  *See Orca [user guide](https://bigdl.readthedocs.io/en/latest/doc/Orca/Overview/orca.html), as well as [TensorFlow](https://bigdl.readthedocs.io/en/latest/doc/Orca/Howto/tf2keras-quickstart.html) and [PyTorch](https://bigdl.readthedocs.io/en/latest/doc/Orca/Howto/pytorch-quickstart.html) quickstarts, for more details.*
 
 - In addition, you can also run standard **Ray** programs on Spark cluster using _**RayOnSpark**_ in Orca.
 
@@ -147,7 +147,7 @@ flowchart TD;
 
   </details>  
   
-  *See RayOnSpark [user guide](https://bigdl.readthedocs.io/en/latest/doc/Orca/Overview/ray.html) and [quickstart](https://bigdl.readthedocs.io/en/latest/doc/Orca/QuickStart/ray-quickstart.html) for more details.*
+  *See RayOnSpark [user guide](https://bigdl.readthedocs.io/en/latest/doc/Orca/Overview/ray.html) and [quickstart](https://bigdl.readthedocs.io/en/latest/doc/Orca/Howto/ray-quickstart.html) for more details.*
 ### Nano
 You can transparently accelerate your TensorFlow or PyTorch programs on your laptop or server using *Nano*. With minimum code changes, *Nano* automatically applies modern CPU optimizations (e.g., SIMD,  multiprocessing, low precision, etc.) to standard TensorFlow and PyTorch code, with up-to 10x speedup.
 

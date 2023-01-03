@@ -21,7 +21,7 @@ from keras import layers
 from keras import losses, metrics
 
 # Use `InferenceOptimizer` for quantization
-from bigdl.nano.tf.keras import Model, InferenceOptimizer
+from bigdl.nano.tf.keras import InferenceOptimizer
 
 # Model / data parameters
 num_classes = 10

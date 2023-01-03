@@ -23,7 +23,6 @@ import tempfile
 import torch
 from torch import nn
 from torch.utils.data import TensorDataset, DataLoader
-import torchmetrics
 
 import numpy as np
 
@@ -274,6 +273,38 @@ class TestOnnx(TestCase):
                                             input_sample=(torch.rand(2,3,1,1),3))
         result_m = accmodel(x, np.array([y]))  # TODO: make y work here
         assert torch.equal(result_true, result_m)
+    
+    def test_onnx_dynamic_axes(self):
+        class CustomModel(nn.Module):
+            def __init__(self):
+                super().__init__()
+                self.pool = nn.AvgPool2d(kernel_size=3, stride=3)
+
+            def forward(self, x):
+                return self.pool(x)
+
+        model = CustomModel()
+        x1 = torch.rand(1, 3, 14, 14)
+        x2 = torch.rand(4, 3, 14, 14)
+        x3 = torch.rand(1, 3, 12, 12)
+
+        accmodel = InferenceOptimizer.trace(model,
+                                            accelerator="onnxruntime",
+                                            input_sample=torch.rand(1, 3, 14, 14))
+        accmodel(x1)
+        accmodel(x2)
+        try:
+            accmodel(x3)
+        except Exception as e:
+            assert e
+
+        accmodel = InferenceOptimizer.trace(model,
+                                            accelerator="onnxruntime",
+                                            input_sample=torch.rand(1, 3, 14, 14),
+                                            dynamic_axes={"x": [0, 2, 3]})
+        accmodel(x1)
+        accmodel(x2)
+        accmodel(x3)
 
 
 if __name__ == '__main__':

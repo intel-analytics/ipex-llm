@@ -54,14 +54,20 @@ class PytorchRayWorker(TorchRunner):
                  loss_creator=None,
                  metrics=None,
                  scheduler_creator=None,
-                 training_operator_cls=None,
                  config=None,
                  use_tqdm=False,
                  scheduler_step_freq=None,
                  sync_stats=True,
                  log_level=logging.INFO):
-        super().__init__(model_creator, optimizer_creator, loss_creator, metrics, scheduler_creator,
-                         training_operator_cls, config, use_tqdm, scheduler_step_freq, sync_stats,
+        super().__init__(model_creator=model_creator,
+                         optimizer_creator=optimizer_creator,
+                         loss_creator=loss_creator,
+                         metrics=metrics,
+                         scheduler_creator=scheduler_creator,
+                         config=config,
+                         use_tqdm=use_tqdm,
+                         scheduler_step_freq=scheduler_step_freq,
+                         sync_stats=sync_stats,
                          log_level=log_level)
 
         self.backend = "torch-local"

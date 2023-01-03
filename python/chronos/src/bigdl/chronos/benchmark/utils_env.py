@@ -140,8 +140,6 @@ def get_nano_env_var(use_malloc: str = "tc", use_openmp: bool = True,
 
     # TF support
     nano_env["TF_ENABLE_ONEDNN_OPTS"] = "1"
-    nano_env["ENABLE_TF_OPTS"] = "1"
-    nano_env["NANO_TF_INTER_OP"] = "1"
 
     if print_environment:
         print(nano_env)

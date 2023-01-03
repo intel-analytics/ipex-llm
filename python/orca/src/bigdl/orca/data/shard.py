@@ -330,7 +330,7 @@ class SparkXShards(XShards):
                 rdd = self.rdd.coalesce(num_partitions)
                 from functools import reduce
                 repartitioned_shard = self._create(rdd.mapPartitions(
-                    lambda iter: [reduce(lambda l1, l2: l1 + l2, iter)]),
+                    lambda iter: [reduce(lambda l1, l2: l1 + l2, iter)]),  # type:ignore
                     class_name=class_name)  # type:ignore
         elif class_name == 'numpy.ndarray':
             elem = self.rdd.first()
@@ -892,6 +892,7 @@ class SparkXShards(XShards):
         import pyspark
         spark_version = pyspark.version.__version__
         major_version = spark_version.split(".")[0]
+        print("version:", major_version)
 
         def func(pdf):
             pdf_schema = None
@@ -925,8 +926,7 @@ class SparkXShards(XShards):
     def merge(self,
               right: "SparkXShards",
               how: str = "inner",
-              on: Optional[str] = None,
-              **kwargs) -> "SparkXShards":
+              on: Optional[str] = None) -> "SparkXShards":
         """
         Merge two SparkXShards into a single SparkXShards with a database-style join.
 
@@ -1098,7 +1098,7 @@ class SparkXShards(XShards):
         """
         if self._get_class_name() != 'pandas.core.frame.DataFrame':
             invalidInputError(False,
-                              "Currently only support select() on"
+                              "Currently only support sample_to_pdf() on"
                               " XShards of Pandas DataFrame")
         sampled = self.sample(
             frac=frac, replace=replace, weights=weights, random_state=random_state)

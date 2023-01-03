@@ -16,6 +16,7 @@
 
 
 import pytest
+import tempfile
 from unittest import TestCase
 import tensorflow as tf
 from tensorflow.keras.applications.mobilenet_v2 import MobileNetV2
@@ -66,3 +67,49 @@ class TestModelQuantize(TestCase):
 
         q_model = InferenceOptimizer.quantize(model, x=train_examples, y=train_labels)
         assert q_model(train_examples[0:10]).shape == (10, 10)
+
+    def test_model_quantize_with_only_x(self):
+        model = MobileNetV2(weights=None, input_shape=[40, 40, 3], classes=10)
+        model = Model(inputs=model.inputs, outputs=model.outputs)
+        # test numpy array
+        train_examples = np.random.random((100, 40, 40, 3))
+        q_model = InferenceOptimizer.quantize(model, x=train_examples)
+        assert q_model(train_examples[0:10]).shape == (10, 10)
+
+        # test tf tensor
+        train_examples = tf.convert_to_tensor(train_examples)
+        q_model = InferenceOptimizer.quantize(model, x=train_examples)
+        assert q_model(train_examples[0:10]).shape == (10, 10)
+
+        # test dataset with only x (from_tensor_slices)
+        train_examples = np.random.random((100, 40, 40, 3))
+        train_dataset = tf.data.Dataset.from_tensor_slices(train_examples)
+        q_model = InferenceOptimizer.quantize(model, x=train_examples)
+        assert q_model(train_examples[0:10]).shape == (10, 10)
+
+        # test dataset with only x (from_tensor)
+        train_examples = np.random.random((1, 40, 40, 3))
+        train_dataset = tf.data.Dataset.from_tensors(train_examples)
+        q_model = InferenceOptimizer.quantize(model, x=train_examples)
+        assert q_model(train_examples).shape == (1, 10)
+
+    def test_model_quantize_ptq_save_load(self):
+        model = MobileNetV2(weights=None, input_shape=[40, 40, 3], classes=10)
+        model = Model(inputs=model.inputs, outputs=model.outputs)
+        model.compile(optimizer=tf.keras.optimizers.Adam(learning_rate=1e-3),
+                      loss=tf.keras.losses.BinaryCrossentropy(),
+                      metrics=[tf.keras.metrics.CategoricalAccuracy()],)
+        train_examples = np.random.random((100, 40, 40, 3))
+        train_labels = np.random.randint(0, 10, size=(100,))
+        train_labels = to_categorical(train_labels, num_classes=10)
+        train_dataset = tf.data.Dataset.from_tensor_slices((train_examples, train_labels))
+        q_model = InferenceOptimizer.quantize(model, x=train_dataset)
+        assert q_model
+        output1 = q_model(train_examples[0:10])
+        assert output1.shape == (10, 10)
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            InferenceOptimizer.save(q_model, tmp_dir)
+            load_model = InferenceOptimizer.load(tmp_dir, model)
+            output2 = load_model(train_examples[0:10])
+            assert output2.shape == (10, 10)
+            np.testing.assert_almost_equal(output1.numpy(), output2.numpy(), decimal=5)
