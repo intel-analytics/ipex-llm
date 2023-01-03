@@ -28,8 +28,6 @@ import akka.pattern.ask
 import akka.stream.ActorMaterializer
 import akka.util.Timeout
 import com.codahale.metrics.{MetricRegistry, Timer}
-import com.intel.analytics.bigdl.orca.inference.EncryptSupportive
-import com.intel.analytics.bigdl.serving.utils.Conventions
 import org.slf4j.LoggerFactory
 
 import scala.collection.mutable
@@ -39,6 +37,8 @@ import sys.process._
 import java.util.Base64
 import javax.crypto.spec.SecretKeySpec
 import javax.crypto.Cipher
+
+import com.intel.analytics.bigdl.ppml.utils.Supportive
 
 object BKeywhizKMSFrontend extends Supportive {
   override val logger = LoggerFactory.getLogger(getClass)
@@ -62,8 +62,7 @@ object BKeywhizKMSFrontend extends Supportive {
           timing("welcome")(overallRequestTimer) {
             complete("welcome to " + name)
           }
-        } 
-        ~ (path("primaryKey" / Segment) { primaryKeyName =>
+        } ~ path("primaryKey" / Segment) { primaryKeyName =>
           post {
             parameters("user", "password") {
             (user, password) => {
@@ -79,10 +78,11 @@ object BKeywhizKMSFrontend extends Supportive {
                 complete(500, e.getMessage + "\n please get a primary key like: " +
                   "POST /primaryKey/{primaryKeyName}/user=your_username&password=your_password")
             }
-           }
+            }
+            }
+            }
           }
-        }
-        ~ (path("dataKey" / Segment) { dataKeyName =>
+        } ~ path("dataKey" / Segment) { dataKeyName =>
           post {
             parameters("primaryKeyName", "user", "password") {
             (primaryKeyName, user, password) => {
@@ -100,28 +100,30 @@ object BKeywhizKMSFrontend extends Supportive {
                 complete(500, e.getMessage + "\n please get a data key like: " +
                   "POST /dataKey/{dataKeyName}/primaryKeyName=the_primary_key_name" +
                   "&user=your_username&password=your_password")
-             }
             }
-           }
-          } 
-          ~ (path("user" / Segment) { userName =>
+            }
+            }
+            } 
+          }
+        } ~ path("user" / Segment) { userName =>
             post {
                 parameters("password") {
-                password =>
+                (password) => {
                 timing("enroll")(overallRequestTimer) {
                 try {
-                   createUserToKeywhiz(userName, password)
+                   createUserToKeywhiz(userName, password, arguments.frontendKeywhizConf)
                    complete(s"user [$userName] is created successfully!")
                 } catch {
                   case e: Exception =>
-                  e.printStackTrace()
-                  complete(500, e.getMessage + "\n please create a user like: " +
-                  "POST /user/{userName}/password=a_password_for_the_user")
+                    e.printStackTrace()
+                    complete(500, e.getMessage + "\n please create a user like: " +
+                      "POST /user/{userName}/password=a_password_for_the_user")
+                }
+                }
+                }
+                }
             }
-           }
-          }
-        }
-        ~ (path("dataKey" / Segment) { dataKeyName =>
+          } ~ path("dataKey" / Segment) { dataKeyName =>
           get {
             parameters("primaryKeyName", "user", "password") {
             (primaryKeyName, user, password) => {
@@ -130,17 +132,18 @@ object BKeywhizKMSFrontend extends Supportive {
                 loginKeywhiz(user, password)
                 val primaryKey = getKeyFromKeywhiz(user, primaryKeyName)
                 val base64DataKeyCiphertext = getKeyFromKeywhiz(user, dataKeyName)
-                val base64DataKeyPlaintext = decryptedDataKey(primaryKey, dataKeyCiphertext)
+                val base64DataKeyPlaintext = decryptDataKey(primaryKey, base64DataKeyCiphertext)
                 complete(base64DataKeyPlaintext)
-            }
-            catch {
+            } catch {
               case e: Exception =>
                 e.printStackTrace()
                 complete(500, e.getMessage + "\n please get the data key like: " +
                   "GET /dataKey/{dataKeyName}/primaryKeyName=the_primary_key_name" +
                   "&user=your_username&password=your_password")
             }
-           }
+            }
+            }
+            }
           }
         }
       }
@@ -151,8 +154,8 @@ object BKeywhizKMSFrontend extends Supportive {
       logger.info(s"https started at https://${arguments.interface}:${arguments.port}")
   }
 
-  def createUserToKeywhiz(user:String, password:String): Unit = {
-    s"key.provider add-user ${arguments.frontendKeywhizConf} --user $user --password $password" !!
+  def createUserToKeywhiz(user:String, password:String, frontendKeywhizConf:String): Unit = {
+    s"key.provider add-user $frontendKeywhizConf --user $user --password $password" !!
   }
 
   def loginKeywhiz(user:String, password:String): Unit = {
@@ -166,7 +169,7 @@ object BKeywhizKMSFrontend extends Supportive {
   def addKeyToKeywhiz(user:String, keyName:String, keyContent:String): Unit = {
     val command:String = s"keywhiz.cli  --user $user " +
                          s"add secret --name $keyName" +
-                         s"--json {\"_key\":\"$keyContent\"}  < salt"
+                         s"""--json {"_key":"$keyContent"} < salt"""
     command !!
   }
 
@@ -177,9 +180,9 @@ object BKeywhizKMSFrontend extends Supportive {
   def dataKeyCryptoCodec(base64PrimaryKeyPlaintext:String,
                      base64DataKey:String,
                      om: Int): String = {
-      bytePrimaryKeyPlaintext = base64PrimaryKeyPlaintext.getBytes
-      encryptionKeySpec = new SecretKeySpec(bytePrimaryKeyPlaintext, "AES")
-      cipher = Cipher.getInstance("AES")
+      val bytePrimaryKeyPlaintext = base64PrimaryKeyPlaintext.getBytes
+      val encryptionKeySpec = new SecretKeySpec(bytePrimaryKeyPlaintext, "AES")
+      val cipher = Cipher.getInstance("AES")
       cipher.init(om, encryptionKeySpec)
       val byteDataKey = Base64.getDecoder().decode(base64DataKey.getBytes)
       val byteDataKeyOperated = cipher.doFinal(byteDataKey)
@@ -203,7 +206,7 @@ object BKeywhizKMSFrontend extends Supportive {
 
   val metrics = new MetricRegistry
   val overallRequestTimer = metrics.timer("bigdl.kms.frontend.request.overall")
-  val argumentsParser = new scopt.OptionParser[BKeywhizFrontendArguments]("BigDL Keywhiz KMS Frontend") {
+  val argumentsParser = new scopt.OptionParser[BKeywhizKMSFrontendArguments]("BigDL Keywhiz KMS Frontend") {
     head("BigDL Keywhiz KMS Frontend")
     opt[String]('i', "interface")
       .action((x, c) => c.copy(interface = x))
