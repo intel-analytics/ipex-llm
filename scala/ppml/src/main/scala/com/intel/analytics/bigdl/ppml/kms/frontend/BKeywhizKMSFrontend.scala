@@ -27,7 +27,6 @@ import akka.http.scaladsl.server.Directives.{complete, path, _}
 import akka.pattern.ask
 import akka.stream.ActorMaterializer
 import akka.util.Timeout
-import com.codahale.metrics.{MetricRegistry, Timer}
 import org.slf4j.LoggerFactory
 
 import scala.collection.mutable
@@ -41,7 +40,7 @@ import javax.crypto.Cipher
 import com.intel.analytics.bigdl.ppml.utils.Supportive
 
 object BKeywhizKMSFrontend extends Supportive {
-  override val logger = LoggerFactory.getLogger(getClass)
+  val logger = LoggerFactory.getLogger(getClass)
 
   val name = "BigDL Keywhiz KMS Frontend"
 
@@ -51,22 +50,22 @@ object BKeywhizKMSFrontend extends Supportive {
   implicit val timeout: Timeout = Timeout(100, TimeUnit.SECONDS)
 
   def main(args: Array[String]): Unit = {
-      val arguments = timing("parse arguments")() {
+      val arguments = timing("parse arguments") {
         argumentsParser.parse(args, BKeywhizKMSFrontendArguments()) match {
           case Some(arguments) => logger.info(s"starting with $arguments"); arguments
           case None => argumentsParser.failure("miss args, please see the usage info"); null
         }
       }
-      val route = timing("initialize http route")() {
+      val route = timing("initialize http route") {
         path("") {
-          timing("welcome")(overallRequestTimer) {
+          timing("welcome") {
             complete("welcome to " + name)
           }
         } ~ path("primaryKey" / Segment) { primaryKeyName =>
           post {
             parameters("user", "password") {
             (user, password) => {
-            timing("generate primary key")(overallRequestTimer) {
+            timing("generate primary key") {
             try{
                 val base64AES256Key:String = generateAESKey(256)
                 loginKeywhiz(user, password)
@@ -86,7 +85,7 @@ object BKeywhizKMSFrontend extends Supportive {
           post {
             parameters("primaryKeyName", "user", "password") {
             (primaryKeyName, user, password) => {
-            timing("generate data key")(overallRequestTimer) {
+            timing("generate data key") {
             try{
                 loginKeywhiz(user, password)
                 val primaryKey:String = getKeyFromKeywhiz(user, primaryKeyName)
@@ -109,7 +108,7 @@ object BKeywhizKMSFrontend extends Supportive {
             post {
                 parameters("password") {
                 (password) => {
-                timing("enroll")(overallRequestTimer) {
+                timing("enroll") {
                 try {
                    createUserToKeywhiz(userName, password, arguments.frontendKeywhizConf)
                    complete(s"user [$userName] is created successfully!")
@@ -127,7 +126,7 @@ object BKeywhizKMSFrontend extends Supportive {
           get {
             parameters("primaryKeyName", "user", "password") {
             (primaryKeyName, user, password) => {
-            timing("get data key")(overallRequestTimer) {
+            timing("get data key") {
             try {
                 loginKeywhiz(user, password)
                 val primaryKey = getKeyFromKeywhiz(user, primaryKeyName)
@@ -204,8 +203,6 @@ object BKeywhizKMSFrontend extends Supportive {
                          Cipher.DECRYPT_MODE)
   }
 
-  val metrics = new MetricRegistry
-  val overallRequestTimer = metrics.timer("bigdl.kms.frontend.request.overall")
   val argumentsParser = new scopt.OptionParser[BKeywhizKMSFrontendArguments]("BigDL Keywhiz KMS Frontend") {
     head("BigDL Keywhiz KMS Frontend")
     opt[String]('i', "interface")

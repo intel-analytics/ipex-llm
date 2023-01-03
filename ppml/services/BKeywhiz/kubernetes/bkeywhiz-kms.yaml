@@ -116,9 +116,14 @@ spec:
     spec:
       containers:
       - name: bkeywhiz-frontend
-        image: $bkeywhizFrontendImage
+        image: $bkeywhizKMSFrontendImage
         imagePullPolicy: IfNotPresent
+        env:
+        - name: KEYWHIZ_PORT
+          value: "4444"
+        - name: HTTPS_SECURE_PASSWORD
+          value: "ponies"
         command:
         - sh
         - -c
-        - "bash /opt/start-https-frontend.sh"
+        - "bash /usr/src/app/start-https-frontend.sh"

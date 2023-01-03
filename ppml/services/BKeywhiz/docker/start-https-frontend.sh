@@ -22,10 +22,10 @@ set -x
 echo "### Launching BKeywhiz HTTPS Frontend ###"
 
 keywhiz_port=$KEYWHIZ_PORT
-https_key_store_path=/usr/app/server/src/main/resources/dev_and_test_keystore.p12
+https_key_store_path=/usr/src/app/server/src/main/resources/dev_and_test_keystore.p12
 https_secure_password=$HTTPS_SECURE_PASSWORD # k8s secret
 
-/opt/jdk8/bin/java \
+java \
     -Xms2g \
     -Xmx10g \
     -XX:ActiveProcessorCount=2 \
@@ -35,8 +35,8 @@ https_secure_password=$HTTPS_SECURE_PASSWORD # k8s secret
     -Dakka.actor.default-dispatcher.fork-join-executor.parallelism-min=100 \
     -Dakka.actor.default-dispatcher.fork-join-executor.parallelism-max=120 \
     -Dakka.actor.default-dispatcher.fork-join-executor.parallelism-factor=1 \
-    -jar /opt/bigdl-kms-frontend.jar \
-    --class com.intel.analytics.bigdl.kms.frontend.BKeywhizKMSFrontend \
+    -cp "$BIGDL_HOME/jars/*" \
+    com.intel.analytics.bigdl.ppml.kms.frontend.BKeywhizKMSFrontend \
     --keywhizHost "keywhiz-service" \
     --httpsKeyStorePath "${https_key_store_path}" \
     --httpsKeyStoreToken "${https_secure_password}" | tee ./bkeywhiz-https-frontend.log
