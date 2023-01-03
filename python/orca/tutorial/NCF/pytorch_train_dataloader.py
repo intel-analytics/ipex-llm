@@ -15,6 +15,9 @@
 #
 
 # Step 0: Import necessary libraries
+import numpy as np
+import pandas as pd
+
 import torch.nn as nn
 import torch.optim as optim
 import torch.utils.data as data
@@ -34,14 +37,14 @@ sc = init_orca_context(cluster_mode="local")
 
 # Step 2: Define train and test datasets as PyTorch DataLoader
 def train_loader_func(config, batch_size):
-    train_dataset, _ = load_dataset(config['dataset_dir'], config['num_ng'])
+    train_dataset, _ = load_dataset(config["dataset_dir"], config["num_ng"])
     train_loader = data.DataLoader(train_dataset, batch_size=batch_size,
                                    shuffle=True, num_workers=0)
     return train_loader
 
 
 def test_loader_func(config, batch_size):
-    _, test_dataset = load_dataset(config['dataset_dir'], config['num_ng'])
+    _, test_dataset = load_dataset(config["dataset_dir"], config["num_ng"])
     test_loader = data.DataLoader(test_dataset, batch_size=batch_size,
                                   shuffle=False, num_workers=0)
     return test_loader
@@ -50,24 +53,24 @@ def test_loader_func(config, batch_size):
 # Step 3: Define the model, optimizer and loss
 def model_creator(config):
     users, items, user_num, item_num, sparse_features, dense_features, \
-        total_cols = process_users_items(config['dataset_dir'])
+        total_cols = process_users_items(config["dataset_dir"])
     sparse_feats_input_dims, num_dense_feats = get_input_dims(users, items,
                                                               sparse_features, dense_features)
     model = NCF(user_num=user_num,
                 item_num=item_num,
-                factor_num=config['factor_num'],
-                num_layers=config['num_layers'],
-                dropout=config['dropout'],
-                model=config['model'],
+                factor_num=config["factor_num"],
+                num_layers=config["num_layers"],
+                dropout=config["dropout"],
+                model=config["model"],
                 sparse_feats_input_dims=sparse_feats_input_dims,
-                sparse_feats_embed_dims=config['sparse_feats_embed_dims'],
+                sparse_feats_embed_dims=config["sparse_feats_embed_dims"],
                 num_dense_feats=num_dense_feats)
     model.train()
     return model
 
 
 def optimizer_creator(model, config):
-    return optim.Adam(model.parameters(), lr=config['lr'])
+    return optim.Adam(model.parameters(), lr=config["lr"])
 
 loss = nn.BCEWithLogitsLoss()
 
@@ -82,20 +85,20 @@ est = Estimator.from_torch(model=model_creator, optimizer=optimizer_creator,
                            metrics=[Accuracy(), Precision(), Recall()],
                            backend=backend,
                            use_tqdm=True,
-                           config={'dataset_dir': dataset_dir,
-                                   'num_ng': 4,
-                                   'factor_num': 16,
-                                   'num_layers': 3,
-                                   'dropout': 0.5,
-                                   'lr': 0.01,
-                                   'model': "NeuMF-end",
-                                   'sparse_feats_embed_dims': 8})
+                           config={"dataset_dir": dataset_dir,
+                                   "num_ng": 4,
+                                   "factor_num": 16,
+                                   "num_layers": 3,
+                                   "dropout": 0.5,
+                                   "lr": 0.01,
+                                   "model": "NeuMF-end",
+                                   "sparse_feats_embed_dims": 8})
 est.fit(data=train_loader_func, epochs=2, batch_size=10240, callbacks=callbacks)
 
 
 # Step 5: Distributed evaluation of the trained model
 result = est.evaluate(data=test_loader_func, batch_size=10240)
-print('Evaluation results:')
+print("Evaluation results:")
 for r in result:
     print("{}: {}".format(r, result[r]))
 
