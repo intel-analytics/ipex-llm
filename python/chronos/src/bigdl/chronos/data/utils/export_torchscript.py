@@ -97,7 +97,7 @@ class ExportJIT(nn.Module):
     def forward(self, data):
         if self.operation == "preprocessing":
             return self.export_preprocessing(data)
-        else:
+        elif self.operation == "postprocessing":
             return self.export_postprocessing(data)
 
 
