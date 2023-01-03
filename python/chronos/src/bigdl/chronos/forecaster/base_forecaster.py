@@ -1932,4 +1932,3 @@ def _str2metric(metric):
             return metric_func(y_label, y_predict)
         metric.__name__ = metric_name
     return metric
-
