@@ -4,7 +4,7 @@ classDiagram
     Crypto <|.. BigDLEncrypt
     Crypto: +decryptBigContent(inputStream)
     Crypto: +genHeader()
-    Crypto: +verifyHeader(header: Array[Byte])
+    Crypto: +verifyHeader(Array[Byte])
     Crypto: +verifyHeader(inputStream)
     Crypto：+update()
     Crypto：+doFinal()
