@@ -6,8 +6,8 @@ classDiagram
     Crypto: +genHeader()
     Crypto: +verifyHeader(Array[Byte])
     Crypto: +verifyHeader(inputStream)
-    Crypto：+update()
-    Crypto：+doFinal()
+    Crypto：update()
+    Crypto：doFinal()
 
     BigDLEncrypt: --* BigDLEncryptCompressor
     BigDLEncrypt: +decryptBigContent(inputStream)
@@ -52,11 +52,7 @@ classDiagram
     BigDLEncryptCompressor: +reset()
     BigDLEncryptCompressor: +end()
     BigDLEncryptCompressor: +reinit()
-    BigDLEncryptCompressor: +
-    BigDLEncryptCompressor: +
-    BigDLEncryptCompressor: +
-    BigDLEncryptCompressor: +
-    BigDLEncryptCompressor: +
+
 
 
 ```
