@@ -25,10 +25,6 @@
 - Please make sure you have an usable PCCS ApiKey for your platform. The PCCS uses this API key to request collaterals from Intel's Provisioning Certificate Service. User needs to subscribe first to obtain an API key. For how to subscribe to Intel Provisioning Certificate Service and receive an API key, goto https://api.portal.trustedservices.intel.com/provisioning-certification and click on 'Subscribe'.
 
 
-
-Now you have already had a PCCS image.
-
-
 ## 1. Deploy BigDL-PCCS on Kubernetes
 If you already have a BigDL-PCCS service on Kubernetes, please skip this step.
 
