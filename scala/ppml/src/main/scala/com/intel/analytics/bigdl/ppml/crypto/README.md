@@ -36,6 +36,23 @@ classDiagram
     CryptoCodec: +createDirectDecompressor()
     CryptoCodec: +getDefaultExtension()
 
+    BigDLEncryptCompressor: +BigDLEncrypt
+    BigDLEncryptCompressor: +b
+    BigDLEncryptCompressor: +off
+    BigDLEncryptCompressor: +len
+    BigDLEncryptCompressor: -bytesRead
+    BigDLEncryptCompressor: -bytesWritten
+    BigDLEncryptCompressor: +setInput(b, off, len)
+    BigDLEncryptCompressor: +needsInput()
+    BigDLEncryptCompressor: +setDictionary(b, off, len)
+    BigDLEncryptCompressor: +getBytesRead()
+    BigDLEncryptCompressor: +getByteWritten()
+    BigDLEncryptCompressor: +finish()
+    BigDLEncryptCompressor: +finished()
+    BigDLEncryptCompressor: +compress()
+    BigDLEncryptCompressor: +reset()
+    BigDLEncryptCompressor: +end()
+    BigDLEncryptCompressor: +reinit()
 
 
 
