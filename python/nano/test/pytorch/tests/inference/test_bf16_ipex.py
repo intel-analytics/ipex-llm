@@ -32,6 +32,15 @@ class CaseWithoutAVX512:
                            match="Applying IPEX BF16 optimization needs the cpu support avx512."):
             bf16_model = InferenceOptimizer.quantize(model, precision='bf16', use_ipex=True)
 
+class DummyMultiInputModel(nn.Module):
+    """
+    A simple model for test various inputs of channels last format
+    """
+    def __init__(self):
+        super(DummyMultiInputModel, self).__init__()
+
+    def forward(self, x1, x2, x3):
+        return x1, x2, x3
 
 class Pytorch1_11:
     @patch('bigdl.nano.deps.ipex.ipex_inference_bf16_model.PytorchIPEXJITBF16Model._check_cpu_isa', new_callable=PropertyMock)
@@ -227,6 +236,59 @@ class Pytorch1_11:
             new_model(x)
             assert new_model.weights_prepack is False
 
+    def test_bf16_ipex_channels_last_various_input_sample(self):
+
+        model = DummyMultiInputModel()
+        x1 = torch.rand(10, 256, 256) # 3-dim input test
+        x2 = torch.rand(10, 3, 256, 256) # 4-dim input test
+        x3 = x2.tolist() # input without .to() method
+
+        bf16_ipex_channels_last_model = InferenceOptimizer.quantize(model, precision='bf16',
+                                                                   use_ipex=True)
+
+        with InferenceOptimizer.get_context(bf16_ipex_channels_last_model):
+            bf16_ipex_channels_last_model(x1, x2, x3)
+
+        with tempfile.TemporaryDirectory() as tmp_dir_name:
+            InferenceOptimizer.save(bf16_ipex_channels_last_model, tmp_dir_name)
+            load_model = InferenceOptimizer.load(tmp_dir_name, model)
+            load_model()
+
+    def test_bf16_jit_channels_last_various_input_sample(self):
+
+        model = DummyMultiInputModel()
+        x1 = torch.rand(10, 256, 256) # 3-dim input test
+        x2 = torch.rand(10, 3, 256, 256) # 4-dim input test
+        x3 = x2.tolist() # input without .to() method
+
+        bf16_jit_channels_last_model = InferenceOptimizer.quantize(model, precision='bf16',
+                                                                   accelerator="jit")
+
+        with InferenceOptimizer.get_context(bf16_jit_channels_last_model):
+            bf16_jit_channels_last_model(x1, x2, x3)
+
+        with tempfile.TemporaryDirectory() as tmp_dir_name:
+            InferenceOptimizer.save(bf16_jit_channels_last_model, tmp_dir_name)
+            load_model = InferenceOptimizer.load(tmp_dir_name, model)
+            load_model()
+
+    def test_bf16_ipex_jit_channels_last_various_input_sample(self):
+
+        model = DummyMultiInputModel()
+        x1 = torch.rand(10, 256, 256) # 3-dim input test
+        x2 = torch.rand(10, 3, 256, 256) # 4-dim input test
+        x3 = x2.tolist() # input without .to() method
+
+        bf16_ipex_jit_channels_last_model = InferenceOptimizer.quantize(model, precision='bf16',
+                                                                        use_ipex=True, accelerator="jit")
+
+        with InferenceOptimizer.get_context(bf16_ipex_jit_channels_last_model):
+            bf16_ipex_jit_channels_last_model(x1, x2, x3)
+
+        with tempfile.TemporaryDirectory() as tmp_dir_name:
+            InferenceOptimizer.save(bf16_ipex_jit_channels_last_model, tmp_dir_name)
+            load_model = InferenceOptimizer.load(tmp_dir_name, model)
+            load_model()
 
 TORCH_VERSION_CLS = Pytorch1_11
 

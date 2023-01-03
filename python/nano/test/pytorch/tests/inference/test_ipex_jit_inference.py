@@ -55,6 +55,15 @@ class MultipleInputNet(nn.Module):
     def forward(self, x1, x2):
         return self.dense1(x1) + self.dense2(x2)
 
+class DummyMultiInputModel(nn.Module):
+    """
+    A simple model for test various inputs of channels last format
+    """
+    def __init__(self):
+        super(DummyMultiInputModel, self).__init__()
+
+    def forward(self, x1, x2, x3):
+        return x1, x2, x3
 
 class MultipleInputWithKwargsNet(nn.Module):
     def __init__(self):
@@ -103,6 +112,48 @@ class IPEXJITInference_gt_1_10:
         with InferenceOptimizer.get_context(new_model):
             new_model(self.data_sample)
     
+    def test_ipex_channels_last_inference(self):
+        model = DummyMultiInputModel()
+        x1 = torch.rand(10, 256, 256) # 3-dim input test
+        x2 = torch.rand(10, 3, 256, 256) # 4-dim input test
+        x3 = x2.tolist() # input without .to() method
+        ipex_channels_last_model = InferenceOptimizer.quantize(model, accelerator=None, 
+                                                                   use_ipex=True)
+        with InferenceOptimizer.get_context(ipex_channels_last_model):
+            ipex_channels_last_model(x1, x2, x3)
+        with tempfile.TemporaryDirectory() as tmp_dir_name:
+            InferenceOptimizer.save(ipex_channels_last_model, tmp_dir_name)
+            load_model = InferenceOptimizer.load(tmp_dir_name, model)
+            load_model()
+
+    def test_jit_channels_last_inference(self):
+        model = DummyMultiInputModel()
+        x1 = torch.rand(10, 256, 256) # 3-dim input test
+        x2 = torch.rand(10, 3, 256, 256) # 4-dim input test
+        x3 = x2.tolist() # input without .to() method
+        jit_channels_last_model = InferenceOptimizer.quantize(model, accelerator="jit", 
+                                                                   use_ipex=False)
+        with InferenceOptimizer.get_context(jit_channels_last_model):
+            jit_channels_last_model(x1, x2, x3)
+        with tempfile.TemporaryDirectory() as tmp_dir_name:
+            InferenceOptimizer.save(jit_channels_last_model, tmp_dir_name)
+            load_model = InferenceOptimizer.load(tmp_dir_name, model)
+            load_model()
+    
+    def test_ipex_jit_channels_last_inference(self):
+        model = DummyMultiInputModel()
+        x1 = torch.rand(10, 256, 256) # 3-dim input test
+        x2 = torch.rand(10, 3, 256, 256) # 4-dim input test
+        x3 = x2.tolist() # input without .to() method
+        ipex_jit_channels_last_model = InferenceOptimizer.quantize(model, accelerator="jit", 
+                                                                   use_ipex=True)
+        with InferenceOptimizer.get_context(ipex_jit_channels_last_model):
+            ipex_jit_channels_last_model(x1, x2, x3)
+        with tempfile.TemporaryDirectory() as tmp_dir_name:
+            InferenceOptimizer.save(ipex_jit_channels_last_model, tmp_dir_name)
+            load_model = InferenceOptimizer.load(tmp_dir_name, model)
+            load_model()
+
     def test_ipex_jit_inference_additional_attrs(self):
         model = ResNet18(10, pretrained=False, include_top=False, freeze=True)
         #  patch a attr

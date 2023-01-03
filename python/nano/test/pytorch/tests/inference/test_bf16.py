@@ -181,6 +181,35 @@ class Pytorch1_12:
         with pytest.raises(AttributeError):
             bf16_model.width
 
+    def test_bf16_channels_last_various_input_sample(self):
+
+        class DummyModel(torch.nn.Module):
+            """
+            A simple model for test various inputs of channels last format
+            """
+            def __init__(self):
+                super(DummyModel, self).__init__()
+
+            def forward(self, x1, x2, x3):
+                return x1, x2, x3
+
+        model = DummyModel()
+        x1 = torch.rand(10, 256, 256) # 3-dim input test
+        x2 = torch.rand(10, 3, 256, 256) # 4-dim input test
+        x3 = x2.tolist() # input without .to() method
+
+        bf16_channels_last_model = InferenceOptimizer.quantize(model, precision='bf16',
+                                                               channels_last=True)
+
+        with InferenceOptimizer.get_context(bf16_channels_last_model):
+            bf16_channels_last_model(x1, x2, x3)
+
+        with tempfile.TemporaryDirectory() as tmp_dir_name:
+            InferenceOptimizer.save(bf16_channels_last_model, tmp_dir_name)
+            load_model = InferenceOptimizer.load(tmp_dir_name, model)
+            load_model()
+
+
 
 TORCH_VERSION_CLS = Pytorch1_12
 if TORCH_VERSION_LESS_1_12:
