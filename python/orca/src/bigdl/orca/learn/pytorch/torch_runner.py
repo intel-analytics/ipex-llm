@@ -105,10 +105,6 @@ class TorchDistBackend(DistBackend):
         return dist.all_reduce(tensor, *args,
                                **all_reduce_min_kwargs)
 
-class RunnerMode(Enum):
-    train = 0
-    val = 1
-    predict = 2
 
 class TorchRunner(BaseRunner):
     """Manages a PyTorch model for training."""
@@ -149,7 +145,7 @@ class TorchRunner(BaseRunner):
         self.scheduler_step_freq = scheduler_step_freq
         self.sync_stats = sync_stats
         self.epochs_stats = None  # The state saved in every epoch
-        self._mode = RunnerMode.val # By default we don't use ddp model
+        self._mode = 'val'  # By default we don't use ddp model
 
     def _create_loss(self):
         if not self.loss_creator:
@@ -385,7 +381,7 @@ class TorchRunner(BaseRunner):
         Returns:
             A dict of metrics from training.
         """
-        self._mode = RunnerMode.train
+        self._mode = 'train'
         if self.use_tqdm and self.rank == 0:
             desc = ""
             if info is not None and "epoch_idx" in info:
@@ -582,7 +578,7 @@ class TorchRunner(BaseRunner):
                 ``num_samples`` from all calls to ``self.validate_batch``.
         """
         # switch to evaluate mode
-        self._mode = RunnerMode.val
+        self._mode = 'val'
         self.model.eval()
         metrics = Metric.convert_metrics_dict(metrics, backend="pytorch")
         losses = []
@@ -703,7 +699,7 @@ class TorchRunner(BaseRunner):
 
     def _predict(self, pred_iterator):
         # switch to evaluate mode
-        self._mode = RunnerMode.predict
+        self._mode = 'predict'
         self.model.eval()
         result = []
         with torch.no_grad():
@@ -850,7 +846,7 @@ class TorchRunner(BaseRunner):
         First or only model(s) created by the ``model_creator``.
         Discuss whether to return ddp model depending on the mode.
         """
-        if self._mode == RunnerMode.train:
+        if self._mode == 'train':
             if self.training_models:
                 return self.training_models[0]
         else:
