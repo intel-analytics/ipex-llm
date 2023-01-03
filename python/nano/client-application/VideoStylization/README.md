@@ -147,7 +147,6 @@ If you want to test the performance of original model, just replace `model` with
 
 
 ```python
-import multiprocessing
 from pathlib import Path
 import time
 

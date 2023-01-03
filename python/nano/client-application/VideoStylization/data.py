@@ -13,7 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-# This file is adopted from https://github.com/rnwzd/FSPBT-Image-Translation/blob/master/data.py
+# This file is adapted from https://github.com/rnwzd/FSPBT-Image-Translation/blob/master/data.py
 
 # MIT License
 
