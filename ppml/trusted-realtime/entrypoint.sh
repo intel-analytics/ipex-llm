@@ -1,5 +1,4 @@
 #!/usr/bin/env bash
-set -x
 ###############################################################################
 #  Licensed to the Apache Software Foundation (ASF) under one
 #  or more contributor license agreements.  See the NOTICE file
@@ -203,9 +202,9 @@ else
         log="${FLINK_HOME}/log/${JOB_MANAGER_RPC_ADDRESS}.log"
         log_setting=("-Dlog.file=${log}" "-Dlog4j.configuration=file:${FLINK_CONF_DIR}/log4j-console.properties" "-Dlog4j.configurationFile=file:${FLINK_CONF_DIR}/log4j-console.properties" "-Dlogback.configurationFile=file:${FLINK_CONF_DIR}/logback-console.xml")
 
-        classpaths=$(echo ${FLINK_HOME}/lib/* | tr ' ' ':')
+        classpath=$(echo ${FLINK_HOME}/lib/* | tr ' ' ':')
 
-        runtime_command=($JAVA_RUN $JVM_ARGS ${FLINK_ENV_JAVA_OPTS} "${log_setting[@]}"  -classpath  ${classpaths} ${CLASS_TO_RUN} "${ARGS[@]}")
+        runtime_command=($JAVA_RUN $JVM_ARGS ${FLINK_ENV_JAVA_OPTS} "${log_setting[@]}" -classpath ${classpath} ${CLASS_TO_RUN} "${ARGS[@]}")
         export sgx_command="${runtime_command[@]}"
         ./init.sh && \
         gramine-sgx bash 1>&2
@@ -267,9 +266,9 @@ else
         log="${FLINK_HOME}/log/${TASK_MANAGER_RPC_ADDRESS}.log"
         log_setting=("-Dlog.file=${log}" "-Dlog4j.configuration=file:${FLINK_CONF_DIR}/log4j-console.properties" "-Dlog4j.configurationFile=file:${FLINK_CONF_DIR}/log4j-console.properties" "-Dlogback.configurationFile=file:${FLINK_CONF_DIR}/logback-console.xml")
 
-        classpaths=$(echo ${FLINK_HOME}/lib/* | tr ' ' ':')
+        classpath=$(echo ${FLINK_HOME}/lib/* | tr ' ' ':')
 
-        runtime_command=($JAVA_RUN "-Xmx4g" ${FLINK_ENV_JAVA_OPTS} "${log_setting[@]}" -classpath ${classpaths} ${CLASS_TO_RUN} "${ARGS[@]}")
+        runtime_command=($JAVA_RUN $JVM_ARGS "-XX:CompressedClassSpaceSize=64m" ${FLINK_ENV_JAVA_OPTS} "${log_setting[@]}" -classpath ${classpath} ${CLASS_TO_RUN} "${ARGS[@]}")
         export sgx_command="${runtime_command[@]}"
         ./init.sh && \
         gramine-sgx bash 1>&2
