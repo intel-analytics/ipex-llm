@@ -22,11 +22,13 @@ from sklearn.preprocessing import StandardScaler, MaxAbsScaler, MinMaxScaler, Ro
 
 class ExportJIT(nn.Module):
     def __init__(self, lookback: int, id_index: int,
-                 target_feature_index: List[int]) -> None:
+                 target_feature_index: List[int],
+                 operation: str) -> None:
         super().__init__()
         self.lookback = lookback
         self.target_feature_index = target_feature_index
         self.id_index = id_index
+        self.operation = operation
 
     def _shift(self, data, i: int):
         res = torch.empty_like(data, dtype=torch.float32)
@@ -81,19 +83,29 @@ class ExportJIT(nn.Module):
     def scale(self, data):
         return data
 
+    def unscale(self, data):
+        return data
+
     def export_preprocessing(self, data):
         data[:, self.target_feature_index] = self.scale(data[:, self.target_feature_index])
         data_roll = self.roll(data, self.lookback, self.id_index, self.target_feature_index)
         return data_roll
 
+    def export_postprocessing(self, data):
+        return self.unscale(data)
+
     def forward(self, data):
-        return self.export_preprocessing(data)
+        if self.operation == "preprocessing":
+            return self.export_preprocessing(data)
+        elif self.operation == "postprocessing":
+            return self.export_postprocessing(data)
 
 
 class ExportWithStandardScaler(ExportJIT):
     def __init__(self, scaler: StandardScaler, lookback: int,
-                 id_index: int, target_feature_index: List[int]) -> None:
-        super().__init__(lookback, id_index, target_feature_index)
+                 id_index: int, target_feature_index: List[int],
+                 scaler_index: List[int], operation: str) -> None:
+        super().__init__(lookback, id_index, target_feature_index, operation)
         self.scale_ = torch.from_numpy(scaler.scale_).type(torch.float64)
         self.mean_ = torch.from_numpy(scaler.mean_).type(torch.float64)
         self.with_mean: bool = bool(scaler.with_mean)
@@ -101,6 +113,7 @@ class ExportWithStandardScaler(ExportJIT):
         self.lookback: int = lookback
         self.id_index: int = id_index
         self.target_feature_index = target_feature_index
+        self.scaler_index = scaler_index
 
     def scale(self, data):
         data_scale = torch.zeros(data.size(), dtype=torch.float64)
@@ -112,15 +125,27 @@ class ExportWithStandardScaler(ExportJIT):
             data_scale[:, i] = (data[:, i] - value_mean) / value_scale
         return data_scale
 
+    def unscale(self, data):
+        data_unscale = torch.zeros(data.size(), dtype=torch.float64)
+        for i in self.scaler_index:
+            value_mean = self.mean_[i] if self.with_mean \
+                else torch.zeros(self.mean_.size(), dtype=torch.float64)
+            value_scale = self.scale_[i] if self.with_std \
+                else torch.ones(self.scale_.size(), dtype=torch.float64)
+            data_unscale[:, :, i] = data[:, :, i] * value_scale + value_mean
+        return data_unscale
+
 
 class ExporWithMaxAbsScaler(ExportJIT):
     def __init__(self, scaler: MaxAbsScaler, lookback: int,
-                 id_index: int, target_feature_index: List[int]) -> None:
-        super().__init__(lookback, id_index, target_feature_index)
+                 id_index: int, target_feature_index: List[int],
+                 scaler_index: List[int], operation: str) -> None:
+        super().__init__(lookback, id_index, target_feature_index, operation)
         self.scale_ = torch.from_numpy(scaler.scale_).type(torch.float64)
         self.lookback: int = lookback
         self.id_index = id_index
         self.target_feature_index = target_feature_index
+        self.scaler_index = scaler_index
 
     def scale(self, data):
         data_scale = torch.zeros(data.size(), dtype=torch.float64)
@@ -129,16 +154,25 @@ class ExporWithMaxAbsScaler(ExportJIT):
             data_scale[:, i] = data[:, i] / value_max_abs
         return data_scale
 
+    def unscale(self, data):
+        data_unscale = torch.zeros(data.size(), dtype=torch.float64)
+        for i in self.scaler_index:
+            value_max_abs = self.scale_[i]
+            data_unscale[:, :, i] = data[:, :, i] * value_max_abs
+        return data_unscale
+
 
 class ExportWithMinMaxScaler(ExportJIT):
     def __init__(self, scaler: MinMaxScaler, lookback: int,
-                 id_index: int, target_feature_index: List[int]) -> None:
-        super().__init__(lookback, id_index, target_feature_index)
+                 id_index: int, target_feature_index: List[int],
+                 scaler_index: List[int], operation: str) -> None:
+        super().__init__(lookback, id_index, target_feature_index, operation)
         self.scale_ = torch.from_numpy(scaler.scale_).type(torch.float64)
         self.min_ = torch.from_numpy(scaler.min_).type(torch.float64)
         self.lookback: int = lookback
         self.id_index: int = id_index
         self.target_feature_index = target_feature_index
+        self.scaler_index = scaler_index
 
     def scale(self, data):
         data_scale = torch.zeros(data.size(), dtype=torch.float64)
@@ -148,11 +182,20 @@ class ExportWithMinMaxScaler(ExportJIT):
             data_scale[:, i] = data[:, i] * value_scale + value_min
         return data_scale
 
+    def unscale(self, data):
+        data_unscale = torch.zeros(data.size(), dtype=torch.float64)
+        for i in self.scaler_index:
+            value_min = self.min_[i]
+            value_scale = self.scale_[i]
+            data_unscale[:, :, i] = (data[:, :, i] - value_min) / value_scale
+        return data_unscale
+
 
 class ExportWithRobustScaler(ExportJIT):
     def __init__(self, scaler: RobustScaler, lookback: int,
-                 id_index: int, target_feature_index: List[int]) -> None:
-        super().__init__(lookback, id_index, target_feature_index)
+                 id_index: int, target_feature_index: List[int],
+                 scaler_index: List[int], operation: str) -> None:
+        super().__init__(lookback, id_index, target_feature_index, operation)
         self.scale_ = torch.from_numpy(scaler.scale_).type(torch.float64)
         self.center_ = torch.from_numpy(scaler.center_).type(torch.float64)
         self.with_centering: bool = bool(scaler.with_centering)
@@ -160,6 +203,7 @@ class ExportWithRobustScaler(ExportJIT):
         self.lookback: int = lookback
         self.id_index: int = id_index
         self.target_feature_index = target_feature_index
+        self.scaler_index = scaler_index
 
     def scale(self, data):
         data_scale = torch.zeros(data.size(), dtype=torch.float64)
@@ -171,6 +215,16 @@ class ExportWithRobustScaler(ExportJIT):
             data_scale[:, i] = (data[:, i] - value_center) / value_scale
         return data_scale
 
+    def unscale(self, data):
+        data_unscale = torch.zeros(data.size(), dtype=torch.float64)
+        for i in self.scaler_index:
+            value_center = self.center_[i] if self.with_centering \
+                else torch.zeros(self.center_.size(), dtype=torch.float64)
+            value_scale = self.scale_[i] if self.with_scaling \
+                else torch.ones(self.scale_.size(), dtype=torch.float64)
+            data_unscale[:, :, i] = data[:, :, i] * value_scale + value_center
+        return data_unscale
+
 
 SCALE_JIT_HELPER_MAP = {StandardScaler: ExportWithStandardScaler,
                         MaxAbsScaler: ExporWithMaxAbsScaler,
@@ -178,7 +232,9 @@ SCALE_JIT_HELPER_MAP = {StandardScaler: ExportWithStandardScaler,
                         RobustScaler: ExportWithRobustScaler}
 
 
-def export_processing_to_jit(scaler, lookback, id_index, target_feature_index):
+def export_processing_to_jit(scaler, lookback, id_index, target_feature_index,
+                             scaler_index, operation):
     export_class = SCALE_JIT_HELPER_MAP[type(scaler)]
     return torch.jit.script(export_class(scaler, lookback,
-                                         id_index, target_feature_index))
+                                         id_index, target_feature_index,
+                                         scaler_index, operation))
