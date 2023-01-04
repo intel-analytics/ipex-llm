@@ -13,57 +13,92 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+
+# Step 0: Import necessary libraries
+import math
 import tensorflow as tf
 
+from tf_model import ncf_model
+from process_spark_dataframe import prepare_data
 
-def ncf_model(user_num, item_num, factor_num, dropout, lr, num_layers,
-              sparse_feats_input_dims, sparse_feats_embed_dims, num_dense_feats):
-    user = tf.keras.layers.Input(dtype=tf.int32, shape=())
-    item = tf.keras.layers.Input(dtype=tf.int32, shape=())
+from bigdl.orca import init_orca_context, stop_orca_context
+from bigdl.orca.learn.tf2 import Estimator
 
-    if not isinstance(sparse_feats_embed_dims, list):
-        sparse_feats_embed_dims = [sparse_feats_embed_dims] * len(sparse_feats_input_dims)
 
-    with tf.name_scope("GMF"):
-        user_embed_GMF = tf.keras.layers.Embedding(user_num, factor_num, name="gmf_user")(user)
-        item_embed_GMF = tf.keras.layers.Embedding(item_num, factor_num, name="gmf_item")(item)
-        GMF = tf.keras.layers.Multiply()([user_embed_GMF, item_embed_GMF])
+# Step 1: Init Orca Context
+init_orca_context(cluster_mode="local")
 
-    with tf.name_scope("MLP"):
-        user_embed_MLP = tf.keras.layers.Embedding(
-            user_num, factor_num * (2 ** (num_layers - 1)), name="mlp_user")(user)
-        item_embed_MLP = tf.keras.layers.Embedding(
-            item_num, factor_num * (2 ** (num_layers - 1)), name="mlp_item")(item)
 
-        cat_feature_input_layers = []
-        cat_feature_layers = []
-        for in_dim, out_dim in zip(sparse_feats_input_dims, sparse_feats_embed_dims):
-            input_layer = tf.keras.layers.Input(shape=(), dtype=tf.int32)
-            cat_feature_input_layers.append(input_layer)
-            cat_feature_layers.append(tf.keras.layers.Embedding(in_dim, out_dim)(input_layer))
+# Step 2: Read and process data using Spark DataFrame
+data_dir = "./ml-1m"  # path to ml-1m
+train_df, test_df, user_num, item_num, sparse_feats_input_dims, num_dense_feats, \
+    feature_cols, label_cols = prepare_data(data_dir, neg_scale=4)
 
-        num_feature_input_layers = []
-        num_feature_layers = []
-        for i in range(num_dense_feats):
-            num_feature_input_layers.append(tf.keras.layers.Input(shape=1))
-            num_feature_layers.append(num_feature_input_layers[i])
 
-        all_feature_input_layers = cat_feature_input_layers + num_feature_input_layers
-        all_feature_layers = cat_feature_layers + num_feature_layers
+# Step 3: Define the NCF model
+config = dict(
+    factor_num=16,
+    lr=1e-2,
+    item_num=item_num,
+    user_num=user_num,
+    dropout=0.5,
+    sparse_feats_input_dims=sparse_feats_input_dims,
+    num_dense_feats=num_dense_feats,
+    sparse_feats_embed_dims=8,
+    num_layers=3
+)
 
-        interaction = tf.concat([user_embed_MLP, item_embed_MLP] + all_feature_layers, axis=-1)
-        output_size = factor_num * (2 ** (num_layers - 1))
-        for i in range(num_layers):
-            layer_MLP = tf.keras.layers.Dense(units=output_size, activation="relu")(interaction)
-            interaction = tf.keras.layers.Dropout(rate=dropout)(layer_MLP)
-            output_size //= 2
 
-    with tf.name_scope("concatenation"):
-        concatenation = tf.concat([GMF, interaction], axis=-1)
-        outputs = tf.keras.layers.Dense(1, activation="sigmoid")(concatenation)
-
-    model = tf.keras.Model(inputs=[user, item] + all_feature_input_layers, outputs=outputs)
-    model.compile(optimizer=tf.keras.optimizers.Adam(lr),
-                  loss=tf.keras.losses.BinaryCrossentropy(),
-                  metrics=["accuracy", "AUC", "Precision", "Recall"])
+def model_creator(config):
+    model = ncf_model(user_num=config["user_num"],
+                      item_num=config["item_num"],
+                      num_layers=config["num_layers"],
+                      factor_num=config["factor_num"],
+                      dropout=config["dropout"],
+                      lr=config["lr"],
+                      sparse_feats_input_dims=config["sparse_feats_input_dims"],
+                      sparse_feats_embed_dims=config["sparse_feats_embed_dims"],
+                      num_dense_feats=config["num_dense_feats"])
     return model
+
+
+# Step 4: Distributed training with Orca TF2 Estimator
+backend = "spark"  # "ray" or "spark"
+est = Estimator.from_keras(model_creator=model_creator,
+                           config=config,
+                           backend=backend)
+
+batch_size = 10240
+train_steps = math.ceil(train_df.count() / batch_size)
+val_steps = math.ceil(test_df.count() / batch_size)
+callbacks = [tf.keras.callbacks.TensorBoard(log_dir="./log")]
+
+est.fit(train_df,
+        epochs=2,
+        batch_size=batch_size,
+        feature_cols=feature_cols,
+        label_cols=label_cols,
+        steps_per_epoch=train_steps,
+        callbacks=callbacks)
+
+
+# Step 5: Distributed evaluation of the trained model
+result = est.evaluate(test_df,
+                      feature_cols=feature_cols,
+                      label_cols=label_cols,
+                      batch_size=batch_size,
+                      num_steps=val_steps)
+print("Evaluation results:")
+for r in result:
+    print("{}: {}".format(r, result[r]))
+
+
+# Step 6: Save the trained TensorFlow model and processed data for resuming training or prediction
+est.save("NCF_model")
+
+train_df.write.parquet("./train_processed.parquet", mode="overwrite")
+test_df.write.parquet("./test_processed.parquet", mode="overwrite")
+
+
+# Step 7: Stop Orca Context when program finishes
+stop_orca_context()
