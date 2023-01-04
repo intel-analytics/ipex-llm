@@ -493,12 +493,7 @@ class TorchRunner(BaseRunner):
         # Compute output.
         with self.timers.record("fwd"):
             *features, target = self.batch
-            if torch.is_tensor(features) or isinstance(features, (tuple, list)):
-                self.output = self.model(*features)
-            else:
-                invalidInputError(False,
-                                  "Features should be tensor or list/tuple, "
-                                  "but got {}".format(type(features)))
+            self.output = self.model(*features)
 
             # Ensure `target` and `output` are always in a list format.
             targetL = [target] if not isinstance(target, (list, tuple)) else target
@@ -643,12 +638,7 @@ class TorchRunner(BaseRunner):
         # compute output
         with self.timers.record("eval_fwd"):
             *features, target = self.batch
-            if torch.is_tensor(features) or isinstance(features, (tuple, list)):
-                self.output = self.model(*features)
-            else:
-                invalidInputError(False,
-                                  "Features should be tensor, list/tuple, "
-                                  "but got {}".format(type(features)))
+            self.output = self.model(*features)
 
             # Ensure `target` and `output` are always in a list format.
             targetL = [target] if not isinstance(target, (list, tuple)) else target
