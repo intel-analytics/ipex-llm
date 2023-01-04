@@ -66,6 +66,11 @@ PyTorch
 .. |pytorch_inference_context_manager_link| replace:: How to use context manager through ``get_context``
 .. _pytorch_inference_context_manager_link: Inference/PyTorch/pytorch_context_manager.html
 
+TensorFlow
+~~~~~~~~~~~~~~~~~~~~~~~~~
+* `How to accelerate a TensorFlow inference pipeline through ONNXRuntime <Inference/TensorFlow/accelerate_tensorflow_inference_onnx.html>`_
+* `How to accelerate a TensorFlow inference pipeline through OpenVINO <Inference/TensorFlow/accelerate_tensorflow_inference_openvino.html>`_
+
 Install
 -------------------------
 * `How to install BigDL-Nano in Google Colab <install_in_colab.html>`_
