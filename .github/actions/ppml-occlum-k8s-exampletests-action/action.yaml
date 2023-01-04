@@ -1,12 +1,24 @@
 name: 'Run PPML Occlum k8s ExampleTests'
 description: 'Run PPML Occlum k8s ExampleTests'
-
+inputs:
+  image:
+    description: 'image'
+    required: true
+    default: '10.239.45.10/arda/intelanalytics/bigdl-ppml-trusted-big-data-ml-scala-occlum'
+  image-tag:
+    description: 'image tag'
+    required: true
+    default: '2.2.0-SNAPSHOT'
 runs:
   using: "composite"
   steps:
     - name: Run tests
       shell: bash
+      env:
+        DEFAULT_IMAGE: ${{ inputs.image }}:${{ inputs.image-tag }}
       run: |
+        export IMAGE=${{ env.DEFAULT_IMAGE }}
+        docker pull $IMAGE
         docker pull intelanalytics/bigdl-ppml-trusted-big-data-ml-scala-occlum:2.2.0-SNAPSHOT
         export NO_PROXY=10.239.45.10:8081,10.112.231.51,10.239.45.10,172.168.0.205
         export kubernetes_master_url=172.168.0.205
