@@ -244,7 +244,8 @@ def load_from_disk(dataset_path: str, fs=None, keep_in_memory: Optional[bool] = 
         invalidInputError(False, f"Directory {dataset_path} not found")
     # TODO: change calling interface
     if fs.isfile(Path(dest_dataset_path, config.DATASET_INFO_FILENAME).as_posix()):
-        return Dataset.load_from_disk(dataset_path, key, fs, keep_in_memory=keep_in_memory)
+        return Dataset.load_from_disk(dataset_path, fs, key=key, keep_in_memory=keep_in_memory)
+    # TODO: test this
     elif fs.isfile(Path(dest_dataset_path, config.DATASETDICT_JSON_FILENAME).as_posix()):
         return DatasetDict.load_from_disk(dataset_path, fs, keep_in_memory=keep_in_memory)
     else:
