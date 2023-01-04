@@ -956,11 +956,10 @@ class SparkXShards(XShards):
         # repartition evenly according to the index
         node_num, core_num = get_node_and_core_number()
         num_partitions = min(nonEmptyPart.value, node_num * core_num)
-        if nonEmptyPart.value == num_partitions:
-            schema = merged.printSchema()
+        if nonEmptyPart.value != num_partitions:
             merged_withIndex_rdd = merged.rdd.zipWithIndex().map(lambda p: (p[1], p[0]))
             merged = merged_withIndex_rdd.partitionBy(num_partitions) \
-                .map(lambda p: p[1]).toDF(schema)
+                .map(lambda p: p[1]).toDF(merged.schema)
 
         mergedXShards = spark_df_to_pd_sparkxshards(merged)
         return mergedXShards
