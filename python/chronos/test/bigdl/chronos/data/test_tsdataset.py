@@ -1553,6 +1553,13 @@ class TestTSDataset(TestCase):
 
                 assert_array_almost_equal(tsdata.to_numpy(), preprocess_output.numpy())
 
+                postprocess_path = os.path.join(temp_dir, "tsdata_postprocessing.pt")
+                postprocess_module = torch.jit.load(postprocess_path)
+                postprocess_output = postprocess_module.forward(preprocess_output)
+
+                unscale_data = tsdata.unscale_numpy(tsdata.to_numpy())
+                assert_array_almost_equal(unscale_data, postprocess_output.numpy())
+
             # drop_dt_col=False
             for scaler in [StandardScaler(), MaxAbsScaler(), MinMaxScaler(), RobustScaler()]:
                 tsdata = TSDataset.from_pandas(df,
@@ -1566,9 +1573,11 @@ class TestTSDataset(TestCase):
                 tsdata.scale(scaler, fit=True)\
                       .roll(lookback=lookback, horizon=horizon)
 
-                preprocess_module = tsdata.export_jit(drop_dt_col=False)
+                preprocess_module, postprocess_module = tsdata.export_jit(drop_dt_col=False)
                 preprocess_path = os.path.join(temp_dir, "preprocess_module.pt")
                 torch.jit.save(preprocess_module, preprocess_path)
+                postprocess_path = os.path.join(temp_dir, "postprocess_module.pt")
+                torch.jit.save(postprocess_module, postprocess_path)
 
                 # deployment
                 deployment_df = pd.read_csv(csv_path, parse_dates=["datetime"])
@@ -1591,6 +1600,12 @@ class TestTSDataset(TestCase):
                       .roll(lookback=lookback, horizon=horizon)
 
                 assert_array_almost_equal(tsdata.to_numpy(), preprocess_output.numpy())
+
+                postprocess_module = torch.jit.load(postprocess_path)
+                postprocess_output = postprocess_module.forward(preprocess_output)
+
+                unscale_data = tsdata.unscale_numpy(tsdata.to_numpy())
+                assert_array_almost_equal(unscale_data, postprocess_output.numpy())
 
         if os.path.exists(temp_dir):
             shutil.rmtree(temp_dir)

@@ -311,7 +311,6 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                             backend. 'openvino' and 'onnxruntime' are supported for now.
         :param input_spec: A (tuple or list of) tf.TensorSpec or numpy array defining the
                            shape/dtype of the input when using 'onnxruntime' accelerator.
-                           It will be ignored if accelerator is 'openvino'.
         :param thread_num: (optional) a int represents how many threads(cores) is needed for
                            inference, only valid for accelerator='onnxruntime'
                            or accelerator='openvino'.
@@ -338,6 +337,7 @@ class InferenceOptimizer(BaseInferenceOptimizer):
             if openvino_config is not None:
                 final_openvino_option.update(openvino_config)
             result = KerasOpenVINOModel(model,
+                                        input_spec=input_spec,
                                         precision='fp32',
                                         thread_num=thread_num,
                                         device=device,
@@ -405,7 +405,6 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                                 None means staying in tensorflow.
         :param input_spec: A (tuple or list of) tf.TensorSpec or numpy array defining the
                            shape/dtype of the input when using 'onnxruntime' accelerator.
-                           It will be ignored if accelerator is 'openvino'.
         :param metric:          A tensorflow.keras.metrics.Metric object for evaluation.
         :param accuracy_criterion:  Tolerable accuracy drop.
                                     accuracy_criterion = {'relative': 0.1, 'higher_is_better': True}
@@ -474,6 +473,7 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                               "fp16 is not supported on {} accelerator.".format(accelerator))
             from bigdl.nano.deps.openvino.tf.model import KerasOpenVINOModel    # type: ignore
             result = KerasOpenVINOModel(model,
+                                        input_spec=input_spec,
                                         precision=precision,
                                         thread_num=thread_num,
                                         device=device,
@@ -491,6 +491,7 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                 final_openvino_option.update(openvino_config)
             from bigdl.nano.deps.openvino.tf.model import KerasOpenVINOModel    # type: ignore
             result = KerasOpenVINOModel(model,
+                                        input_spec=input_spec,
                                         precision=precision,
                                         thread_num=thread_num,
                                         device=device,
@@ -538,6 +539,7 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                 # For CPU: fp32 -> int8, for GPU: fp16 -> int8
                 _precision = 'fp16' if device != 'CPU' else 'fp32'
                 openvino_model = KerasOpenVINOModel(model,
+                                                    input_spec=input_spec,
                                                     precision=_precision,
                                                     thread_num=thread_num,
                                                     device=device,
@@ -593,6 +595,7 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                                   outputs=outputs,
                                   onnx_option='tensorflow',
                                   onnxruntime_session_options=onnxruntime_session_options)
+            result._nesting_level = onnx_model._nesting_level
             result._inputs_dtypes = onnx_model._inputs_dtypes
             result._default_kwargs = onnx_model._default_kwargs
             result._call_fn_args_backup = onnx_model._call_fn_args_backup
