@@ -21,6 +21,7 @@ from .utils import Dataloader
 from bigdl.nano.utils.util import compare_version
 import operator
 
+
 class TensorflowQuantization(BaseQuantization):
     def __init__(self, framework='tensorflow', **kwargs):
         """
