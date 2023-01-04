@@ -136,7 +136,7 @@ if [ -f "${LIB_DIR}/libiomp5.so" ]; then
 	echo "Setting KMP_AFFINITY..."
 	export KMP_AFFINITY=granularity=fine,none
 
-        if [ -n PERFORMANCE ]; then
+        if [[ -n $PERFORMANCE ]]; then
             # experiment variable to speed up performance.
 	    export OPENMP=0
 	    export KMP_AFFINITY=granularity=fine,compact,1,0
