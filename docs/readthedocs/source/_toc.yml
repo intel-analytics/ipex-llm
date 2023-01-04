@@ -208,6 +208,7 @@ subtrees:
                 - file: doc/Chronos/Howto/how_to_speedup_inference_of_forecaster_through_OpenVINO
                 - file: doc/Chronos/Howto/how_to_evaluate_a_forecaster
                 - file: doc/Chronos/Howto/how_to_use_forecaster_to_predict_future_data
+                - file: doc/Chronos/Howto/how_to_optimize_a_forecaster
                 - file: doc/Chronos/Howto/how_to_generate_confidence_interval_for_prediction
                 - file: doc/Chronos/Howto/how_to_export_onnx_files
                 - file: doc/Chronos/Howto/how_to_export_openvino_files
