@@ -57,7 +57,8 @@ def _open_encrypt_file_with_key(file, mode, key: Optional[str] = None):
     if key is not None:
         return encrypt_reader_opener(file, mode, key)
     else:
-        return open(file, mode, encoding="utf-8")
+        # TODO:This is right or not?
+        return open(file, encoding="utf-8")
 
 def decrypt_file_to_pa_buffer(filename, key):
     decryptor = Fernet(key)
