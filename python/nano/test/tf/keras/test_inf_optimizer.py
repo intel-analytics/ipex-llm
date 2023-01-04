@@ -15,18 +15,16 @@
 
 from unittest import TestCase
 import tensorflow as tf
-from tensorflow.keras import Model
-from bigdl.nano.tf.keras import Sequential
+import tempfile
+import os
 from bigdl.nano.tf.keras import InferenceOptimizer
 import numpy as np
-from bigdl.nano.tf.keras import Model as NanoModel
 from tensorflow.keras.applications.resnet import ResNet50
 
 
 class TestInferencePipeline(TestCase):
     def test_optimize_nano_model_without_accuracy(self):
         model = ResNet50(weights=None, input_shape=[40, 40, 3], classes=10)
-        model = NanoModel(inputs=model.inputs, outputs=model.outputs)
         # prepare dataset
         train_examples = np.random.random((100, 40, 40, 3))
         train_labels = np.random.randint(0, 10, size=(100,))
@@ -54,7 +52,6 @@ class TestInferencePipeline(TestCase):
 
     def test_optimize_nano_model_without_accuracy_large_batch(self):
         model = ResNet50(weights=None, input_shape=[40, 40, 3], classes=10)
-        model = NanoModel(inputs=model.inputs, outputs=model.outputs)
         # prepare dataset
         train_examples = np.random.random((100, 40, 40, 3))
         train_labels = np.random.randint(0, 10, size=(100,))
@@ -69,7 +66,6 @@ class TestInferencePipeline(TestCase):
 
     def test_optimize_model_with_accuracy(self):
         model = ResNet50(weights=None, input_shape=[40, 40, 3], classes=10)
-        model = NanoModel(inputs=model.inputs, outputs=model.outputs)
         # prepare dataset
         train_examples = np.random.random((100, 40, 40, 3))
         train_labels = np.random.randint(0, 10, size=(100,))
@@ -88,7 +84,6 @@ class TestInferencePipeline(TestCase):
 
     def test_optimize_model_without_dataset(self):
         model = ResNet50(weights=None, input_shape=[40, 40, 3], classes=10)
-        model = NanoModel(inputs=model.inputs, outputs=model.outputs)
 
         train_examples = np.random.random((100, 40, 40, 3))
         train_labels = np.random.randint(0, 10, size=(100,))
@@ -100,3 +95,50 @@ class TestInferencePipeline(TestCase):
                      latency_sample_num=10,
                      thread_num=8)
         model = opt.get_best_model()
+
+    def test_optimize_model_with_only_x(self):
+        model = ResNet50(weights=None, input_shape=[40, 40, 3], classes=10)
+        # test numpy array
+        train_examples = np.random.random((100, 40, 40, 3))
+        opt = InferenceOptimizer()
+        opt.optimize(model=model,
+                     x=train_examples,
+                     y=None,
+                     latency_sample_num=10,
+                     thread_num=8)
+        model = opt.get_best_model()
+
+        # test tf tensor
+        model = ResNet50(weights=None, input_shape=[40, 40, 3], classes=10)
+        train_examples = tf.convert_to_tensor(train_examples)
+        opt = InferenceOptimizer()
+        opt.optimize(model=model,
+                     x=train_examples,
+                     y=None,
+                     latency_sample_num=10,
+                     thread_num=8)
+        model = opt.get_best_model()
+
+        # test dataset with only x
+        model = ResNet50(weights=None, input_shape=[40, 40, 3], classes=10)
+        train_examples = np.random.random((100, 40, 40, 3))
+        train_dataset = tf.data.Dataset.from_tensor_slices(train_examples)
+        opt = InferenceOptimizer()
+        opt.optimize(model=model,
+                     x=train_examples,
+                     y=None,
+                     latency_sample_num=10,
+                     thread_num=8)
+        model = opt.get_best_model()
+
+    def test_optimizer_save_load(self):
+        model = ResNet50(weights=None, input_shape=[40, 40, 3], classes=10)
+        # prepare dataset
+        train_examples = np.random.random((100, 40, 40, 3))
+        # save load for original model
+        output1 = model(train_examples)
+        with tempfile.TemporaryDirectory() as tmp_dir_name:
+            InferenceOptimizer.save(model, tmp_dir_name)
+            load_model = InferenceOptimizer.load(tmp_dir_name, model)
+            output2 = load_model(train_examples)
+            np.testing.assert_almost_equal(output1.numpy(), output2.numpy(), decimal=5)

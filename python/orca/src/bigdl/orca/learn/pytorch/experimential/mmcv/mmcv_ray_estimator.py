@@ -17,25 +17,22 @@
 import types
 import copy
 import ray
-from collections import OrderedDict
-
-import torch
 
 from bigdl.dllib.utils.log4Error import invalidInputError
-
-from typing import (Any, Dict, List, Optional, Tuple, Callable, overload, Union)
-
-from bigdl.orca.learn.pytorch.experimential.core.base_ray_estimator import BaseRayEstimator
+from bigdl.orca.learn.pytorch.core.base_ray_estimator import BaseRayEstimator
 from bigdl.orca.learn.pytorch.experimential.mmcv.mmcv_ray_runner import MMCVRayEpochRunner
+from bigdl.orca.learn.pytorch.utils import process_stats
+
+from typing import (Dict, List, Optional, Tuple, Callable, Union)
 
 
 class MMCVRayEstimator(BaseRayEstimator):
     def __init__(self,
                  *,
-                 mmcv_runner_creator=None,
-                 backend="ray",
-                 workers_per_node=1,
-                 config=None):
+                 mmcv_runner_creator: Callable,
+                 backend: str = "ray",
+                 workers_per_node: int = 1,
+                 config: Optional[Dict]=None) -> None:
         if not (isinstance(mmcv_runner_creator, types.FunctionType)):
             invalidInputError(False, "Must provide a function for mmcv_runner_creator")
 
@@ -54,8 +51,8 @@ class MMCVRayEstimator(BaseRayEstimator):
             data_loaders_creators: List[Callable],
             workflow: List[Tuple[str, int]],
             max_epochs: Optional[int] = None,  # deprecated
-            reduce_results=True,
-            **kwargs):
+            reduce_results: bool = True,
+            **kwargs) -> List:
         """Trains a MMCV model given training and val data for several epochs.
 
         :param data_loaders_creators: Dataloader creators for training and validation.
@@ -64,6 +61,10 @@ class MMCVRayEstimator(BaseRayEstimator):
                running 2 epochs for training and 1 epoch for validation,
                iteratively.
         :param max_epochs: Set max_epochs for MMCV runner is deprecated
+        :param reduce_results: Whether to average all metrics across all workers into
+               one dict. If a metric is a non-numerical value, the one value will be randomly
+               selected among the workers. If False, returns a list of dicts for
+               all workers. Default is True.
         """
         for creator in data_loaders_creators:
             if not (isinstance(creator, types.FunctionType)):
@@ -78,7 +79,7 @@ class MMCVRayEstimator(BaseRayEstimator):
         epoch_stats = list(map(list, zip(*worker_stats)))
         if reduce_results:
             for i in range(len(epoch_stats)):
-                epoch_stats[i] = self._process_stats(epoch_stats[i])
+                epoch_stats[i] = process_stats(epoch_stats[i])
             return epoch_stats
         else:
             return epoch_stats
@@ -87,8 +88,8 @@ class MMCVRayEstimator(BaseRayEstimator):
             data_loaders_creators: List[Callable],
             workflow: List[Tuple[str, int]],
             max_epochs: Optional[int] = None,  # deprecated
-            reduce_results=True,
-            **kwargs):
+            reduce_results: bool = True,
+            **kwargs) -> List:
         """
         Same as fit method, the parameters are consistent with MMCV runner.run()
         """
@@ -100,8 +101,10 @@ class MMCVRayEstimator(BaseRayEstimator):
     def evaluate(self, **kwargs):
         pass
 
-    def get_model(self):
-        pass
+    def get_model(self) -> Dict:
+        state = self.get_state_dict()
+        model_state = state["state_dict"]
+        return model_state
 
     def load_checkpoint(
             self,

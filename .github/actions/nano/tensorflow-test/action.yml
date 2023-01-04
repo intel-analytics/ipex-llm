@@ -1,0 +1,139 @@
+name: 'Nano TensorFlow Test'
+description: 'run nano tensorflow test'
+
+runs:
+  using: "composite"
+  steps:
+    - name: Run Nano TensorFlow Test (TensorFlow)
+      shell: bash
+      run: |
+        source $CONDA/bin/activate nano-tensorflow
+        source bigdl-nano-init
+
+        bash python/nano/test/run-nano-tf-tests.sh
+
+        source bigdl-nano-unset-env
+        source $CONDA/bin/deactivate
+      env:
+        ANALYTICS_ZOO_ROOT: ${{ github.workspace }}
+
+    - name: Run Nano TensorFlow Test (Horovod)
+      shell: bash
+      run: |
+        source $CONDA/bin/activate nano-tensorflow
+        source bigdl-nano-init
+
+        # bash python/nano/test/run-nano-tf-horovod-tests.sh
+
+        source bigdl-nano-unset-env
+        source $CONDA/bin/deactivate
+      env:
+        ANALYTICS_ZOO_ROOT: ${{ github.workspace }}
+
+    - name: Run Nano TensorFlow Test (Ray)
+      shell: bash
+      run: |
+        source $CONDA/bin/activate nano-tensorflow
+        source bigdl-nano-init
+
+        bash python/nano/test/run-nano-tf-ray-tests.sh
+
+        source bigdl-nano-unset-env
+        source $CONDA/bin/deactivate
+      env:
+        ANALYTICS_ZOO_ROOT: ${{ github.workspace }}
+
+    - name: Run Nano TensorFlow Test (Automl)
+      shell: bash
+      run: |
+        source $CONDA/bin/activate nano-tensorflow
+        source bigdl-nano-init
+
+        bash python/nano/test/run-nano-automl-common-tests.sh
+        bash python/nano/test/run-nano-automl-tf-tests.sh
+
+        source bigdl-nano-unset-env
+        source $CONDA/bin/deactivate
+      env:
+        ANALYTICS_ZOO_ROOT: ${{ github.workspace }}
+
+    - name: Run Nano TensorFlow Test (INC)
+      shell: bash
+      run: |
+        source $CONDA/bin/activate nano-tensorflow
+        source bigdl-nano-init
+
+        bash python/nano/test/run-nano-tf-inc-tests.sh
+
+        source bigdl-nano-unset-env
+        source $CONDA/bin/deactivate
+      env:
+        ANALYTICS_ZOO_ROOT: ${{ github.workspace }}
+
+    - name: Run Nano TensorFlow Test (OpenVINO)
+      shell: bash
+      run: |
+        source $CONDA/bin/activate nano-tensorflow
+        source bigdl-nano-init
+
+        bash python/nano/test/run-nano-tf-openvino-tests.sh
+
+        source bigdl-nano-unset-env
+        source $CONDA/bin/deactivate
+      env:
+        ANALYTICS_ZOO_ROOT: ${{ github.workspace }}
+
+    - name: Run Nano TensorFlow Test (ONNXRuntime)
+      shell: bash
+      run: |
+        source $CONDA/bin/activate nano-tensorflow
+        source bigdl-nano-init
+
+        bash python/nano/test/run-nano-tf-onnx-tests.sh
+
+        source bigdl-nano-unset-env
+        source $CONDA/bin/deactivate
+      env:
+        ANALYTICS_ZOO_ROOT: ${{ github.workspace }}
+
+    - name: Run Nano TensorFlow Test (NoteBook)
+      shell: bash
+      run: |
+        source $CONDA/bin/activate nano-tensorflow
+        source bigdl-nano-init
+
+        bash python/nano/notebooks/tensorflow/tutorial/run-nano-notebooks-tensorflow-tutorial-tests.sh
+
+        source bigdl-nano-unset-env
+        source $CONDA/bin/deactivate
+      env:
+        ANALYTICS_ZOO_ROOT: ${{ github.workspace }}
+
+    - name: Run Nano TensorFlow Test (Tutorial)
+      shell: bash
+      run: |
+        source $CONDA/bin/activate nano-tensorflow
+        source bigdl-nano-init
+
+        bash python/nano/tutorial/training/tensorflow/run-nano-tensorflow-test.sh
+        bash python/nano/tutorial/inference/tensorflow/run_nano_tf_quantization_inference_tests.sh
+        bash python/nano/tutorial/inference/tensorflow/run_nano_tf_inference_tests_onnx.sh
+        bash python/nano/tutorial/inference/tensorflow/run_nano_tf_inference_tests_openvino.sh
+
+        source bigdl-nano-unset-env
+        source $CONDA/bin/deactivate
+      env:
+        ANALYTICS_ZOO_ROOT: ${{ github.workspace }}
+
+    - name: Run Nano TensorFlow Test (How To Guide)
+      shell: bash
+      run: |
+        source $CONDA/bin/activate nano-tensorflow
+        source bigdl-nano-init
+
+        bash python/nano/tutorial/notebook/training/tensorflow/run-nano-howto-guides-training-tensorflow-tests.sh
+
+        source bigdl-nano-unset-env
+        source $CONDA/bin/deactivate
+      env:
+        ANALYTICS_ZOO_ROOT: ${{ github.workspace }}

@@ -20,7 +20,6 @@ from intel_extension_for_pytorch.quantization import prepare, convert
 from bigdl.nano.utils.inference.pytorch.model import AcceleratedLightningModule
 from bigdl.nano.pytorch.context_manager import generate_context_manager
 import torch
-from bigdl.nano.pytorch.utils import patch_attrs_from_model_to_object
 
 
 class PytorchIPEXQuantizationModel(AcceleratedLightningModule):
@@ -66,8 +65,6 @@ class PytorchIPEXQuantizationModel(AcceleratedLightningModule):
         self.jit_strict = jit_strict
         self.original_model = model
         if self.channels_last:
-            print("channels last is true")
-            print("change model")
             self.model = self.model.to(memory_format=torch.channels_last)
         self._nano_context_manager = generate_context_manager(accelerator="jit",
                                                               precision="int8",

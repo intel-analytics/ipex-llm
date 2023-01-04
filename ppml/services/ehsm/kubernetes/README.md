@@ -25,10 +25,6 @@
 - Please make sure you have an usable PCCS ApiKey for your platform. The PCCS uses this API key to request collaterals from Intel's Provisioning Certificate Service. User needs to subscribe first to obtain an API key. For how to subscribe to Intel Provisioning Certificate Service and receive an API key, goto https://api.portal.trustedservices.intel.com/provisioning-certification and click on 'Subscribe'.
 
 
-
-Now you have already had a PCCS image.
-
-
 ## 1. Deploy BigDL-PCCS on Kubernetes
 If you already have a BigDL-PCCS service on Kubernetes, please skip this step.
 
@@ -56,6 +52,7 @@ Please make sure current workdir is `kubernetes`.
 
 Then modify parameters in `install-bigdl-ehsm-kms.sh` as following. \
 The `pccsIP` should be the IP address you have used in step 1. The `dkeyserverIP` and `kmsIP` should be the IP addresses you have determined in step 2.1. 
+The `dkeyserverNodeName` is the fixed node which you want to assign `dkeyserver` pod to. You can run `kubectl get nodes`, and choose one. Then, run `mkdir -p /var/run/ehsm` on the host of node which you chose, this will create a hostPath volume for `dkeyserver` to store logs persistently.
 
 ```shell
 # reset of other parameters in values.yaml is optional, please check according to your environment

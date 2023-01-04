@@ -24,13 +24,16 @@ from process_xshards import prepare_data
 from bigdl.orca import init_orca_context, stop_orca_context
 from bigdl.orca.learn.tf2 import Estimator
 
+
 # Step 1: Init Orca Context
-init_orca_context(memory='4g')
+init_orca_context(cluster_mode="local")
+
 
 # Step 2: Read and process data using Spark DataFrame
 dataset_dir = "./ml-1m"
 train_data, test_data, user_num, item_num, sparse_feats_input_dims, num_dense_feats, \
     feature_cols, label_cols = prepare_data(dataset_dir, num_ng=4)
+
 
 # Step 3: Define the NCF model
 config = dict(
@@ -47,20 +50,20 @@ config = dict(
 
 
 def model_creator(config):
-    model = ncf_model(user_num=config['user_num'],
-                      item_num=config['item_num'],
-                      num_layers=config['num_layers'],
-                      factor_num=config['factor_num'],
-                      dropout=config['dropout'],
-                      lr=config['lr'],
-                      sparse_feats_input_dims=config['sparse_feats_input_dims'],
-                      sparse_feats_embed_dims=config['sparse_feats_embed_dims'],
-                      num_dense_feats=config['num_dense_feats'])
+    model = ncf_model(user_num=config["user_num"],
+                      item_num=config["item_num"],
+                      num_layers=config["num_layers"],
+                      factor_num=config["factor_num"],
+                      dropout=config["dropout"],
+                      lr=config["lr"],
+                      sparse_feats_input_dims=config["sparse_feats_input_dims"],
+                      sparse_feats_embed_dims=config["sparse_feats_embed_dims"],
+                      num_dense_feats=config["num_dense_feats"])
     return model
 
 
-# Step 4: Distributed training with Orca keras Estimator
-backend = 'ray'  # 'ray' or 'spark'
+# Step 4: Distributed training with Orca TF2 Estimator
+backend = "ray"  # "ray" or "spark"
 est = Estimator.from_keras(model_creator=model_creator,
                            config=config,
                            backend=backend)
@@ -68,7 +71,7 @@ est = Estimator.from_keras(model_creator=model_creator,
 batch_size = 10240
 train_steps = math.ceil(len(train_data) / batch_size)
 val_steps = math.ceil(len(test_data) / batch_size)
-tf_callback = tf.keras.callbacks.TensorBoard(log_dir="./log")
+callbacks = [tf.keras.callbacks.TensorBoard(log_dir="./log")]
 
 est.fit(train_data,
         epochs=2,
@@ -76,7 +79,8 @@ est.fit(train_data,
         feature_cols=feature_cols,
         label_cols=label_cols,
         steps_per_epoch=train_steps,
-        callbacks=[tf_callback])
+        callbacks=callbacks)
+
 
 # Step 5: Distributed evaluation of the trained model
 result = est.evaluate(test_data,
@@ -84,12 +88,17 @@ result = est.evaluate(test_data,
                       label_cols=label_cols,
                       batch_size=batch_size,
                       num_steps=val_steps)
-print('Evaluation results:')
+print("Evaluation results:")
 for r in result:
-    print(r, ":", result[r])
+    print("{}: {}".format(r, result[r]))
 
-# Step 6: Save the trained Tensorflow model
+
+# Step 6: Save the trained TensorFlow model and processed data for resuming training or prediction
 est.save("NCF_model")
+
+train_data.save_pickle("./train_processed_xshards")
+test_data.save_pickle("./test_processed_xshards")
+
 
 # Step 7: Stop Orca Context when program finishes
 stop_orca_context()

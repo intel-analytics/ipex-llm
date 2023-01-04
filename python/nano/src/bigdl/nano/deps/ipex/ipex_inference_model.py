@@ -16,14 +16,14 @@
 
 from bigdl.nano.utils.inference.pytorch.model import AcceleratedLightningModule
 from bigdl.nano.pytorch.context_manager import generate_context_manager
+from bigdl.nano.deps.ipex.ipex_api import ipex_optimize
 import torch
-from bigdl.nano.pytorch.utils import patch_attrs_from_model_to_object
 
 
 class PytorchIPEXJITModel(AcceleratedLightningModule):
     def __init__(self, model: torch.nn.Module, input_sample=None, use_ipex=False, dtype=None,
                  use_jit=False, channels_last=None, thread_num=None, from_load=False,
-                 inplace=False, jit_strict=True, jit_method=None):
+                 inplace=False, jit_strict=True, jit_method=None, weights_prepack=None):
         """
         This is the accelerated model for pytorch and ipex/jit.
         All the external API is based on InferenceOptimizer, so what we have here is
@@ -47,6 +47,10 @@ class PytorchIPEXJITModel(AcceleratedLightningModule):
         :param jit_strict: Whether recording your mutable container types.
         :param jit_method: use ``jit.trace`` or ``jit.script`` to
                convert a model to TorchScript.
+        :param weights_prepack: Whether to perform weight prepack for convolution and linear
+               to avoid oneDNN weights reorder. The default value is None. Explicitly setting
+               this knob overwrites the configuration set by level knob. Only valid when
+               ``use_ipex=True``, otherwise will be ignored.
         """
         super().__init__(model)
         if from_load:
@@ -55,6 +59,7 @@ class PytorchIPEXJITModel(AcceleratedLightningModule):
             self.channels_last = channels_last
             self.jit_strict = jit_strict
             self.jit_method = jit_method
+            self.weights_prepack = weights_prepack
             self._nano_context_manager = generate_context_manager(accelerator=None,
                                                                   precision="fp32",
                                                                   thread_num=thread_num)
@@ -65,12 +70,14 @@ class PytorchIPEXJITModel(AcceleratedLightningModule):
         self.use_jit = use_jit
         self.jit_strict = jit_strict
         self.jit_method = jit_method
+        self.weights_prepack = weights_prepack
         self.original_model = model
         if self.channels_last:
             self.model = self.model.to(memory_format=torch.channels_last)
         if self.use_ipex:
-            import intel_extension_for_pytorch as ipex
-            self.model = ipex.optimize(self.model, dtype=dtype, inplace=inplace)
+            self.model = ipex_optimize(self.model, dtype=dtype, inplace=inplace,
+                                       weights_prepack=weights_prepack)
+
         if self.use_jit:
             if dtype == torch.bfloat16:
                 with torch.no_grad():
@@ -147,7 +154,8 @@ class PytorchIPEXJITModel(AcceleratedLightningModule):
                        "checkpoint": "ckpt.pth",
                        "thread_num": self.thread_num,
                        "jit_strict": self.jit_strict,
-                       'jit_method': self.jit_method})
+                       'jit_method': self.jit_method,
+                       'weights_prepack': self.weights_prepack})
         return status
 
     @staticmethod
@@ -178,7 +186,8 @@ class PytorchIPEXJITModel(AcceleratedLightningModule):
                                    thread_num=thread_num,
                                    inplace=inplace,
                                    jit_strict=status.get('jit_strict', True),
-                                   jit_method=status.get('jit_method', None))
+                                   jit_method=status.get('jit_method', None),
+                                   weights_prepack=status.get('weights_prepack', None))
 
     def _save_model(self, path):
         if self.use_jit:

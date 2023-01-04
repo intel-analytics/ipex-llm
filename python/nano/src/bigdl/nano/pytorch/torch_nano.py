@@ -33,9 +33,9 @@ from pytorch_lightning.strategies import DeepSpeedStrategy
 
 from bigdl.nano.common import check_avx512
 from bigdl.nano.utils.log4Error import invalidInputError
-from bigdl.nano.pytorch.utils import TORCH_VERSION_LESS_1_10, TORCH_VERSION_LESS_1_11
-from bigdl.nano.pytorch.strategies.ipex.ipex_api import ipex_optimize
-from bigdl.nano.pytorch.strategies import create_IPEXStrategy, DDPSpawnStrategy, \
+from bigdl.nano.pytorch.utils import TORCH_VERSION_LESS_1_11
+from bigdl.nano.deps.ipex.ipex_api import ipex_optimize
+from bigdl.nano.pytorch.strategies import IPEXStrategy, DDPSpawnStrategy, \
     DDPSubprocessStrategy, create_ray_strategy, DDPK8sStrategy
 
 
@@ -152,18 +152,21 @@ class TorchNano(LightningLite):
         """
         Create a TorchNano with nano acceleration.
 
-        :param num_processes: number of processes in distributed training, defaults to 1
-        :param use_ipex: whether use ipex acceleration, defaults to False
-        :param distributed_backend: use which backend in distributed mode, defaults to \
-            "subprocess", now avaiable backends are 'spawn', 'subprocess' and 'ray'
-        :param precision: Double precision (64), full precision (32), half precision (16)
-            or bfloat16 precision (bf16), defaults to 32.
-            Enable ipex bfloat16 weight prepack when `use_ipex=True` and `precision='bf16'`
+        :param num_processes: number of processes in distributed training, defaults to ``1``
+        :param use_ipex: whether use ipex acceleration, defaults to ``False``
+        :param distributed_backend: use which backend in distributed mode, defaults to
+            ``'subprocess'``, now avaiable backends are ``'spawn'``, ``'subprocess'`` and ``'ray'``
+        :param precision: Double precision (``64``), full precision (``32``),
+            half precision (``16``) or bfloat16 precision (``'bf16'``), defaults to ``32``.
+            Enable ipex bfloat16 weight prepack when ``use_ipex=True`` and ``precision='bf16'``
         :param cpu_for_each_process: specify the cpu cores which will be used by each process,
-            if `None`, cpu cores will be distributed evenly by all processes,
-            only take effect when `num_processes` > 1
-        :param channels_last: whether convert input to channels last memory formats, \
-            defaults to False.
+            if ``None``, cpu cores will be distributed evenly by all processes,
+            only take effect when ``num_processes`` > 1
+        :param channels_last: whether convert input to channels last memory formats,
+            defaults to ``False``.
+        :param auto_lr: whether to scale the learning rate linearly by ``num_processes`` times.
+            Defaults to ``True``.
+            If ``num_processes=1`` or other ``lr_scheduler`` is set, ``auto_lr`` will be ignored.
         """
         self.num_processes = num_processes
         self.use_ipex = use_ipex
@@ -197,7 +200,7 @@ class TorchNano(LightningLite):
 
         if self.num_processes == 1:
             if self.use_ipex:
-                strategy = create_IPEXStrategy(dtype=self.dtype)
+                strategy = IPEXStrategy(dtype=self.dtype)
             else:
                 strategy = None     # type: ignore
         elif distributed_backend in backends_class_map:
@@ -210,7 +213,7 @@ class TorchNano(LightningLite):
             warning(f"BigDL-Nano doesn't support '{distributed_backend}' backend now, "
                     f"'{distributed_backend}' strategy of pytorch_lightning will be used. "
                     f"Supported backends are 'spawn', 'subprocess' and 'ray'.")
-            strategy = distributed_backend
+            strategy = distributed_backend  # type: ignore
 
         kwargs["strategy"] = strategy
         super().__init__(*args, **kwargs)
@@ -236,42 +239,29 @@ class TorchNano(LightningLite):
         # so we have to add optimizations in this method, which will be called in
         # user defined `train()` method.
 
-        # the following codes are copied from pl's LightningLite's `setup` method,
-        # ipex 1.9 requires `_move_model_to_device` after `_setup_model_and_optimizers`, but
-        # pl's `setup` method calls `_move_model_to_device` before `_setup_model_and_optimizers`,
-        # so we copy the codes and swap their order.
         self._validate_setup(model, optimizers)
+
+        if move_to_device:
+            model = self._move_model_to_device(model=model, optimizers=optimizers)
 
         model, optimizers = self._strategy._setup_model_and_optimizers(model, optimizers)
 
         # IPEX bfloat16 optimization will cast model parameters to `torch.bfloat16`
         # which is not supported by ddp currently,
         # so add IPEX 1.11's optimization after `_setup_model`
-        if self.use_ipex and not TORCH_VERSION_LESS_1_10:
-            training = model.training
-            if len(optimizers) == 0:
-                model.eval()
-                model = ipex_optimize(model, inplace=False, dtype=self.dtype)
-            elif len(optimizers) == 1:
-                model.train()
-                model, optimizer = ipex_optimize(model, optimizer=optimizers[0],
-                                                 inplace=False, dtype=self.dtype)
-                optimizers = [optimizer]
+        if self.use_ipex:
+            ret = ipex_optimize(model, optimizers=optimizers, inplace=False, dtype=self.dtype)
+            if isinstance(ret, tuple):
+                model, optimizers = ret[0], [ret[1]]
             else:
-                invalidInputError(False, "Ipex does not support more than one optimizers.")
-            model.train(training)
+                model = ret
 
-        if move_to_device:
-            model = self._move_model_to_device(model=model, optimizers=optimizers)
         model = _TorchNanoModule(model, self._precision_plugin, self.channels_last)
         optimizers = [_TorchNanoOptimizer(optimizer, self._strategy,    # type: ignore
                                           self.auto_lr, self.num_processes)
                       for optimizer in optimizers]
         self._models_setup += 1
-        if optimizers is not None:
-            # join both types in a list for API convenience
-            return model, optimizers  # type: ignore
-        return model
+        return model, optimizers
 
     def setup(self, model: nn.Module,    # type: ignore[override]
               optimizer: Union[Optimizer, List[Optimizer]],
@@ -282,9 +272,9 @@ class TorchNano(LightningLite):
         :param model: A model to setup
         :param optimizer: The optimizer(s) to setup
         :param *dataloaders: The dataloader(s) to setup
-        :param move_to_device: If set ``True`` (default), moves the model to the correct device. \
+        :param move_to_device: If set ``True`` (default), moves the model to the correct device.
             Set this to ``False`` and alternatively use :meth:`to_device` manually.
-        :return: The tuple of the wrapped model, optimizer, loss_func and dataloaders, \
+        :return: The tuple of the wrapped model, optimizer, loss_func and dataloaders,
             in the same order they were passed in.
         """
         # convert single optimizer to a optimizer list
@@ -383,7 +373,26 @@ def nano(num_processes: Optional[int] = None,
          channels_last: bool = False,
          auto_lr: bool = True,
          *args, **kwargs):
-    """Run TorchNano.train through a convenient decorator function."""
+    """
+    Run ``TorchNano.train`` through a convenient decorator function.
+
+    :param num_processes: number of processes in distributed training, defaults to ``1``
+    :param use_ipex: whether use ipex acceleration, defaults to ``False``
+    :param distributed_backend: use which backend in distributed mode, defaults to
+        ``'subprocess'``, now avaiable backends are ``'subprocess'`` and ``'ray'``.
+        ``bigdl.nano.pytorch.nano`` decorator does not support ``'spawn'``.
+    :param precision: Double precision (``64``), full precision (``32``), half precision (``16``)
+        or bfloat16 precision (``'bf16'``), defaults to ``32``.
+        Enable ipex bfloat16 weight prepack when ``use_ipex=True`` and ``precision='bf16'``
+    :param cpu_for_each_process: specify the cpu cores which will be used by each process,
+        if ``None``, cpu cores will be distributed evenly by all processes,
+        only take effect when ``num_processes`` > 1
+    :param channels_last: whether convert input to channels last memory formats,
+        defaults to ``False``.
+    :param auto_lr: whether to scale the learning rate linearly by ``num_processes`` times.
+        Defaults to ``True``.
+        If ``num_processes=1`` or other ``lr_scheduler`` is set, ``auto_lr`` will be ignored.
+    """
     if "strategy" in kwargs:
         strategy = kwargs["strategy"]
         if strategy == "deepspeed" or isinstance(strategy, DeepSpeedStrategy):

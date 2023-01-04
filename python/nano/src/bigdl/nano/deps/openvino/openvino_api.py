@@ -13,10 +13,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-from functools import partial
+from bigdl.nano.utils.log4Error import invalidInputError
 
 
-def PytorchOpenVINOModel(model, input_sample=None, thread_num=None,
+def PytorchOpenVINOModel(model, input_sample=None, precision='fp32',
+                         thread_num=None, device='CPU',
                          dynamic_axes=True, logging=True,
                          config=None, **export_kwargs):
     """
@@ -26,8 +27,12 @@ def PytorchOpenVINOModel(model, input_sample=None, thread_num=None,
                   path to Openvino saved model.
     :param input_sample: A set of inputs for trace, defaults to None if you have trace before or
                          model is a LightningModule with any dataloader attached, defaults to None.
+    :param precision: Global precision of model, supported type: 'fp32', 'fp16',
+                      defaults to 'fp32'.
     :param thread_num: a int represents how many threads(cores) is needed for
                        inference. default: None.
+    :param device: (optional) A string represents the device of the inference. Default to 'CPU'.
+                   'CPU', 'GPU' and 'VPUX' are supported for now.
     :param dynamic_axes: dict or boolean, default to True. By default the exported onnx model
                          will have the first dim of each Tensor input as a dynamic batch_size.
                          If dynamic_axes=False, the exported model will have the shapes of all
@@ -50,32 +55,60 @@ def PytorchOpenVINOModel(model, input_sample=None, thread_num=None,
     from .pytorch.model import PytorchOpenVINOModel
     return PytorchOpenVINOModel(model=model,
                                 input_sample=input_sample,
+                                precision=precision,
                                 thread_num=thread_num,
+                                device=device,
                                 dynamic_axes=dynamic_axes,
                                 logging=logging,
                                 config=config,
                                 **export_kwargs)
 
 
-def load_openvino_model(path):
-    from .pytorch.model import PytorchOpenVINOModel
-    return PytorchOpenVINOModel._load(path)
+def load_openvino_model(path, framework='pytorch', device=None):
+    """
+    Load an OpenVINO model for inference from directory.
+
+    :param path: Path to model to be loaded.
+    :param framework: Only support pytorch and tensorflow now
+    :param device: A string represents the device of the inference.
+    :return: PytorchOpenVINOModel model for OpenVINO inference.
+    """
+    if framework == 'pytorch':
+        from .pytorch.model import PytorchOpenVINOModel
+        return PytorchOpenVINOModel._load(path, device=device)
+    elif framework == 'tensorflow':
+        from .tf.model import KerasOpenVINOModel
+        return KerasOpenVINOModel._load(path, device=device)
+    else:
+        invalidInputError(False,
+                          "The value {} for framework is not supported."
+                          " Please choose from 'pytorch'/'tensorflow'.")
 
 
-def KerasOpenVINOModel(model, thread_num=None, config=None, logging=True):
+def KerasOpenVINOModel(model, precision='fp32', thread_num=None,
+                       device='CPU', config=None, logging=True):
     """
     Create a OpenVINO model from Keras.
 
     :param model: Keras model to be converted to OpenVINO for inference or
                   path to Openvino saved model.
+    :param precision: Global precision of model, supported type: 'fp32', 'fp16',
+                      defaults to 'fp32'.
     :param thread_num: a int represents how many threads(cores) is needed for
                        inference. default: None.
+    :param device: (optional) A string represents the device of the inference. Default to 'CPU'.
+                   'CPU', 'GPU' and 'VPUX' are supported for now.
     :param config: The config to be inputted in core.compile_model.
     :param logging: whether to log detailed information of model conversion. default: True.
     :return: KerasOpenVINOModel model for OpenVINO inference.
     """
     from .tf.model import KerasOpenVINOModel
-    return KerasOpenVINOModel(model, thread_num=thread_num, config=config, logging=logging)
+    return KerasOpenVINOModel(model=model,
+                              precision=precision,
+                              thread_num=thread_num,
+                              device=device,
+                              config=config,
+                              logging=logging)
 
 
 def OpenVINOModel(model, device='CPU'):

@@ -60,7 +60,7 @@ Start the client pod
 export KEYS_PATH=YOUR_LOCAL_KEYS_PATH
 export DOCKER_IMAGE=intelanalytics/bigdl-tdx-client:latest
 
-# modift tdx-client.yaml
+# modify tdx-client.yaml
 kubectl apply -f tdx-client.yaml
 ```
 Run `kubectl exec -it YOUR_CLIENT_POD -- /bin/bash` to entry the client pod.

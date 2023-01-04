@@ -26,7 +26,7 @@ from torchvision.datasets import OxfordIIITPet
 from torch.utils.data.dataloader import DataLoader
 from torchvision.models import resnet18
 from bigdl.nano.pytorch import Trainer
-from torchmetrics import Accuracy
+from torchmetrics.classification import MulticlassAccuracy
 
 
 def finetune_pet_dataset(model_ft):
@@ -69,7 +69,8 @@ def finetune_pet_dataset(model_ft):
     optimizer_ft = torch.optim.SGD(model_ft.parameters(), lr=0.01, momentum=0.9, weight_decay=5e-4)
 
     # Compile our model with loss function, optimizer.
-    model = Trainer.compile(model_ft, loss_ft, optimizer_ft, metrics=[Accuracy()])
+    model = Trainer.compile(model_ft, loss_ft, optimizer_ft,
+                            metrics=[MulticlassAccuracy(37)])
     trainer = Trainer(max_epochs=1)
     trainer.fit(model, train_dataloaders=train_dataloader, val_dataloaders=val_dataloader)
 

@@ -28,22 +28,23 @@ from sklearn.preprocessing import MinMaxScaler
 
 
 class NCFData(data.Dataset):
-    def __init__(self, data,
+    def __init__(self, features, labels=None,
                  num_item=0, train_mat=None, num_ng=0):
         super(NCFData, self).__init__()
-        self.data = data
+        self.features = features
+        self.labels = labels
         self.num_item = num_item
         self.train_mat = train_mat
         self.num_ng = num_ng
         self.is_sampling = False
 
-        if 'label' not in data.columns:
-            self.data['label'] = [1.0 for _ in range(len(self.data))]
+        if labels is None:
+            self.labels = [1.0 for _ in range(len(self.features))]
 
     def ng_sample(self):
         self.is_sampling = True
 
-        features_ps = self.data.values[:, :-1].tolist()
+        features_ps = self.features
         features_ng = []
         for x in features_ps:
             u = x[0]
@@ -54,55 +55,55 @@ class NCFData(data.Dataset):
                 features_ng.append([u, j])
         labels_ps = [1.0 for _ in range(len(features_ps))]
         labels_ng = [0.0 for _ in range(len(features_ng))]
-        features_fill = features_ps + features_ng
-        labels_fill = labels_ps + labels_ng
-        self.data = pd.DataFrame(features_fill,
-                                 columns=["user", "item"], dtype=np.int32)
-        self.data['label'] = labels_fill
+        self.features = features_ps + features_ng
+        self.labels = labels_ps + labels_ng
+
+    def merge_features(self, users, items, feature_cols=None):
+        df = pd.DataFrame(self.features, columns=["user", "item"], dtype=np.int32)
+        df["labels"] = self.labels
+        df = users.merge(df, on="user")
+        df = df.merge(items, on="item")
+
+        # To make the order of data columns as expected.
+        if feature_cols:
+            self.features = df.loc[:, feature_cols]
+        self.features = tuple(map(list, self.features.itertuples(index=False)))
+        self.labels = df["labels"].values.tolist()
 
     def train_test_split(self, test_size=0.2):
-        train_dataset, test_dataset = train_test_split(self.data, test_size=test_size,
-                                                       random_state=100)
-        train_dataset.reset_index(drop=True, inplace=True)
-        test_dataset.reset_index(drop=True, inplace=True)
-        return NCFData(train_dataset), NCFData(test_dataset)
-
-    def merge_features(self, users, items, total_cols=None):
-        self.data = users.merge(self.data, on='user')
-        self.data = self.data.merge(items, on='item')
-        # To make the order of data columns as expected.
-        if total_cols is not None:
-            self.data = self.data.loc[:, total_cols]
+        X_train, X_test, y_train, y_test = train_test_split(self.features, self.labels,
+                                                            test_size=test_size, random_state=100)
+        return NCFData(X_train, y_train), NCFData(X_test, y_test)
 
     def __len__(self):
-        return len(self.data)
+        return len(self.features)
 
     def __getitem__(self, idx):
-        return tuple(self.data.at[idx, i] for i in self.data.columns)
+        return self.features[idx] + [self.labels[idx]]
 
 
 def process_users_items(dataset_dir):
-    sparse_features = ['gender', 'zipcode', 'category']
-    dense_features = ['age']
+    sparse_features = ["gender", "zipcode", "category"]
+    dense_features = ["age"]
 
     users = pd.read_csv(
-        os.path.join(dataset_dir, 'users.dat'),
-        sep="::", header=None, names=['user', 'gender', 'age', 'occupation', 'zipcode'],
+        os.path.join(dataset_dir, "users.dat"),
+        sep="::", header=None, names=["user", "gender", "age", "occupation", "zipcode"],
         usecols=[0, 1, 2, 3, 4],
         dtype={0: np.int32, 1: str, 2: np.int32, 3: np.int32, 4: str})
     items = pd.read_csv(
-        os.path.join(dataset_dir, 'movies.dat'),
-        sep="::", header=None, names=['item', 'category'],
-        usecols=[0, 2], dtype={0: np.int32, 1: str})
+        os.path.join(dataset_dir, "movies.dat"),
+        sep="::", header=None, names=["item", "category"],
+        usecols=[0, 2], dtype={0: np.int32, 1: str}, encoding="latin-1")
 
-    user_num = users['user'].max() + 1
-    item_num = items['item'].max() + 1
+    user_num = users["user"].max() + 1
+    item_num = items["item"].max() + 1
 
     # categorical encoding
     for i in sparse_features:
         df = users if i in users.columns else items
         df[i], _ = pd.Series(df[i]).factorize()
-    sparse_features.append('occupation')  # occupation is already indexed.
+    sparse_features.append("occupation")  # occupation is already indexed.
 
     # scale dense features
     for i in dense_features:
@@ -114,7 +115,7 @@ def process_users_items(dataset_dir):
         values = [np.array(v, dtype=np.float32) for v in values]
         df[i] = values
 
-    feature_cols = ['user', 'item'] + sparse_features + dense_features
+    feature_cols = ["user", "item"] + sparse_features + dense_features
     label_cols = ["label"]
     return users, items, user_num, item_num, \
         sparse_features, dense_features, feature_cols+label_cols
@@ -133,8 +134,8 @@ def get_input_dims(users, items, sparse_features, dense_features):
 
 def process_ratings(dataset_dir, user_num, item_num):
     ratings = pd.read_csv(
-        os.path.join(dataset_dir, 'ratings.dat'),
-        sep="::", header=None, names=['user', 'item'],
+        os.path.join(dataset_dir, "ratings.dat"),
+        sep="::", header=None, names=["user", "item"],
         usecols=[0, 1], dtype={0: np.int32, 1: np.int32})
 
     # load ratings as a dok matrix
@@ -154,11 +155,12 @@ def load_dataset(dataset_dir, num_ng=4):
     ratings, train_mat = process_ratings(dataset_dir, user_num, item_num)
 
     # sample negative items
-    dataset = NCFData(ratings, item_num, train_mat, num_ng)
+    dataset = NCFData(ratings.values.tolist(),
+                      num_item=item_num, train_mat=train_mat, num_ng=num_ng)
     dataset.ng_sample()
 
     # merge features
-    dataset.merge_features(users, items, total_cols)
+    dataset.merge_features(users, items, total_cols[: -1])
 
     # train test split
     train_dataset, test_dataset = dataset.train_test_split()

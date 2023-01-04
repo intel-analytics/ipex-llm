@@ -1,6 +1,6 @@
 var inferences=["inferenceyes", "inferenceno"];
 var frameworks=["pytorch", "tensorflow"];
-var versions=["pytorch_110", "pytorch_111", "pytorch_112", "pytorch_113", "tf2_270"];
+var versions=["pytorch_110", "pytorch_111", "pytorch_112", "pytorch_113", "tf2_27", "tf2_28", "tf2_29", "tf2_210"];
 var releases=["stable", "nightly"];
 
 var inference="inferenceyes";
@@ -29,7 +29,10 @@ function refresh_cmd(){
     }
     else if(framework=="tensorflow"){
         $("#version").append("<td colspan='1'>Tensorflow Version</td>\
-        <td colspan='4'><button id='tf2_270'>2.7</button></td>");
+        <td colspan='1'><button id='tf2_210'>2.10</button></td>\
+        <td colspan='1'><button id='tf2_29'>2.9</button></td>\
+        <td colspan='1'><button id='tf2_28'>2.8</button></td>\
+        <td colspan='1'><button id='tf2_27'>2.7</button></td>");
     }
     reset_color(versions);
     set_color(version);
@@ -43,20 +46,19 @@ function refresh_cmd(){
         enable(inferences);
     }
 
-    if (framework=="pytorch"){
-        document.getElementById("cmd").style.whiteSpace = "normal";
-    }
-    else{
-        document.getElementById('cmd').style.whiteSpace = "nowrap";
-    }
-
+    // if (framework=="pytorch"){
+    //     document.getElementById("cmd").style.whiteSpace = "normal";
+    // }
+    // else{
+    //     document.getElementById('cmd').style.whiteSpace = "nowrap";
+    // }
         if(framework=="pytorch"){
             if(release=="stable"){
                 cmd="pip install bigdl-nano[pytorch]==2.1.0";
             }else if(release=="nightly"){
                 if(inference=="inferenceyes"){
                     if(version=="pytorch_110"){
-                        cmd="pip install --pre --upgrade bigdl-nano[pytorch_110,inference]";
+                        cmd="pip install --pre --upgrade bigdl-nano[pytorch_110,inference] -f https://software.intel.com/ipex-whl-stable";
                     }else if(version=="pytorch_111"){
                         cmd="pip install --pre --upgrade bigdl-nano[pytorch_111,inference]";
                     }else if(version=="pytorch_112"){
@@ -66,7 +68,7 @@ function refresh_cmd(){
                     }
                 }else if(inference="inferenceno"){
                     if(version=="pytorch_110"){
-                        cmd="pip install --pre --upgrade bigdl-nano[pytorch_110]";
+                        cmd="pip install --pre --upgrade bigdl-nano[pytorch_110] -f https://software.intel.com/ipex-whl-stable";
                     }else if(version=="pytorch_111"){
                         cmd="pip install --pre --upgrade bigdl-nano[pytorch_111]";
                     }else if(version=="pytorch_112"){
@@ -78,17 +80,53 @@ function refresh_cmd(){
             }
         }else if(framework="tensorflow"){
             if(inference=="inferenceyes"){
-                if (version=="tf2_270"){
+                if (version=="tf2_27"){
+                    if (release=="nightly"){
+                        cmd="pip install --pre --upgrade bigdl-nano[tensorflow_27,inference]";
+                    }else if(release=="stable"){
+                        cmd="pip install bigdl-nano[tensorflow]==2.1.0";
+                    }
+                }else if(version=="tf2_28"){
+                    if (release=="nightly"){
+                        cmd="pip install --pre --upgrade bigdl-nano[tensorflow_28,inference]";
+                    }else if(release=="stable"){
+                        cmd="pip install bigdl-nano[tensorflow]==2.1.0";
+                    }
+                }else if(version=="tf2_29"){
                     if (release=="nightly"){
                         cmd="pip install --pre --upgrade bigdl-nano[tensorflow,inference]";
                     }else if(release=="stable"){
                         cmd="pip install bigdl-nano[tensorflow]==2.1.0";
                     }
+                }else if(version=="tf2_210"){
+                    if (release=="nightly"){
+                        cmd="pip install --pre --upgrade bigdl-nano[tensorflow_210,inference]";
+                    }else if(release=="stable"){
+                        cmd="pip install bigdl-nano[tensorflow]==2.1.0";
+                    }
                 }
             }else if(inference=="inferenceno"){
-                if(version=="tf2_270"){
+                if(version=="tf2_27"){
+                    if(release=="nightly"){
+                        cmd="pip install --pre --upgrade bigdl-nano[tensorflow_27]";
+                    }else if(release=="stable"){
+                        cmd="pip install bigdl-nano[tensorflow]==2.1.0";
+                    }
+                }else if(version=="tf2_28"){
+                    if(release=="nightly"){
+                        cmd="pip install --pre --upgrade bigdl-nano[tensorflow_28]";
+                    }else if(release=="stable"){
+                        cmd="pip install bigdl-nano[tensorflow]==2.1.0";
+                    }
+                }else if(version=="tf2_29"){
                     if(release=="nightly"){
                         cmd="pip install --pre --upgrade bigdl-nano[tensorflow]";
+                    }else if(release=="stable"){
+                        cmd="pip install bigdl-nano[tensorflow]==2.1.0";
+                    }
+                }else if(version=="tf2_210"){
+                    if(release=="nightly"){
+                        cmd="pip install --pre --upgrade bigdl-nano[tensorflow_210]";
                     }else if(release=="stable"){
                         cmd="pip install bigdl-nano[tensorflow]==2.1.0";
                     }
@@ -140,7 +178,7 @@ $(document).on('click',"button",function(){
     if (frameworks.indexOf(id)>=0){
         framework=id;
         if (framework=="tensorflow"){
-            version="tf2_270";
+            version="tf2_29";
         }else{
             version="pytorch_112";
         }

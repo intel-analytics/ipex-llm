@@ -61,7 +61,7 @@ from torch import nn, optim
 from torch.optim.lr_scheduler import MultiStepLR
 from torch.optim.optimizer import Optimizer
 from torch.utils.data import DataLoader
-from torchmetrics import Accuracy
+from torchmetrics.classification import MulticlassAccuracy
 from torchvision import models
 from bigdl.nano.pytorch.vision.datasets import ImageFolder
 from bigdl.nano.pytorch.vision.transforms import transforms
@@ -211,8 +211,8 @@ class TransferLearningModel(pl.LightningModule):
 
         self.__build_model()
 
-        self.train_acc = Accuracy()
-        self.valid_acc = Accuracy()
+        self.train_acc = MulticlassAccuracy(num_classes=2)
+        self.valid_acc = MulticlassAccuracy(num_classes=2)
         self.save_hyperparameters()
 
     def __build_model(self):
