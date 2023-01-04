@@ -25,7 +25,7 @@ function disable-tcmalloc-var {
 
 function enable-perf-var {
 	echo "Option: Enable perf mode"
-	export PERF_VAR=1
+	PERF_VAR=1
 }
 
 function display-error {
@@ -52,7 +52,6 @@ function display-help {
 OPENMP=0
 JEMALLOC=1
 TCMALLOC=1
-PERF_VAR=0
 # Set TF_ENABLE_ONEDNN_OPTS
 export TF_ENABLE_ONEDNN_OPTS=1
 
@@ -193,6 +192,11 @@ if [ -z "${LD_PRELOAD:-}" ]; then
 		# the same as above
 		export LD_PRELOAD=$(echo ${LD_PRELOAD} ${TCMALLOC_PATH})
 	fi
+fi
+
+# Clean up perf var
+if [[ "${PERF_VAR}" == "1" ]]; then
+    unset PERF_VAR
 fi
 
 # Disable openmp or jemalloc according to options
