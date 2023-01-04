@@ -941,23 +941,27 @@ class SparkXShards(XShards):
         left_df = self.to_spark_df()
         right_df = right.to_spark_df()
         merged = left_df.join(right_df, on=on, how=how)
+
         # count non-empty partitions
         nonEmptyPart = get_spark_context().accumulator(0)
 
         def f(iterator):
             isEmpty = 1
             for x in iterator:
-                if(isEmpty == 0):
-                    break
-                else:
-                    isEmpty = 0
+                isEmpty = 0
+                break
             nonEmptyPart.add(isEmpty == 0)
         merged.rdd.foreachPartition(f)
+
         # repartition evenly according to the index
-        if nonEmptyPart.value != merged.rdd.getNumPartitions():
+        node_num, core_num = get_node_and_core_number()
+        num_partitions = min(nonEmptyPart.value, node_num * core_num)
+        if nonEmptyPart.value == num_partitions:
+            schema = merged.printSchema()
             merged_withIndex_rdd = merged.rdd.zipWithIndex().map(lambda p: (p[1], p[0]))
-            merged = merged_withIndex_rdd.partitionBy(nonEmptyPart.value) \
-                .map(lambda p: p[1]).toDF()
+            merged = merged_withIndex_rdd.partitionBy(num_partitions) \
+                .map(lambda p: p[1]).toDF(schema)
+
         mergedXShards = spark_df_to_pd_sparkxshards(merged)
         return mergedXShards
 
