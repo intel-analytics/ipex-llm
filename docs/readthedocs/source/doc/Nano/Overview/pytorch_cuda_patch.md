@@ -9,16 +9,16 @@ BigDL-Nano also provides CUDA patch (`bigdl.nano.pytorch.patching.patch_cuda`) t
 
 You can use it as following:
 ```python
-    from bigdl.nano.pytorch.patching import patch_cuda, unpatch_cuda
-    patch_cuda()
+from bigdl.nano.pytorch.patching import patch_cuda, unpatch_cuda
+patch_cuda()
 
-    # Then you can run CUDA code directly even without GPU
-    model = torchvision.models.resnet50(pretrained=True).cuda()
-    inputs = torch.rand((1, 3, 128, 128)).cuda()
-    with torch.no_grad():
-        outputs = model(inputs)
+# Then you can run CUDA code directly even without GPU
+model = torchvision.models.resnet50(pretrained=True).cuda()
+inputs = torch.rand((1, 3, 128, 128)).cuda()
+with torch.no_grad():
+    outputs = model(inputs)
 
-    unpatch_cuda()
+unpatch_cuda()
 ```
 
 ```eval_rst
