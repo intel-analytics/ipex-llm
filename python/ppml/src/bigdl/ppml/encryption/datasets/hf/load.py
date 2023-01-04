@@ -37,6 +37,16 @@ from datasets.table import (
 )
 from typing import Optional, Union
 
+
+class _opened_file(opener):
+    def __init__(self, file_like):
+        super(_opened_file, self).__init__(file_like)
+
+    def __exit__(self, *args):
+        # Flush is automatically done when closing the file
+        self.file_like.close()
+
+
 class encrypt_reader_opener(opener):
     def __init__(self, name, mode, key):
         self.key = Fernet(key)
@@ -73,7 +83,7 @@ def _open_encrypted_file_like_with_key(path, fs, mode, key: Optional[str] = None
     if key is not None:
         return encrypt_file_opener(file_like, key)
     else:
-        return file_like
+        return _opened_file(file_like)
 
 
 def _open_encrypt_file_with_key(file, mode, key: Optional[str] = None):
@@ -129,7 +139,8 @@ def load_dict_with_decryption(dataset_dict_path: str, fs=None, key: Optional[str
         invalidInputError(False,
             f"No such file or directory: '{dataset_dict_json_path}'. Expected to load a DatasetDict object, but got a Dataset. Please use datasets.load_from_disk instead."
         )
-    with _open_encrypted_file_like_with_key(fs.open(dataset_dict_json_path, "r", key=key)) as config:
+    #with _open_encrypted_file_like_with_key(fs.open(dataset_dict_json_path, "r", key=key)) as config:
+    with _open_encrypted_file_like_with_key(dataset_dict_json_path, fs, "r", key=key) as config:
         for k in json.load(config)["splits"]:
             dataset_dict_split_path = (
                 dataset_dict_path.split("://")[0] + "://" + Path(dest_dataset_dict_path, k).as_posix()
