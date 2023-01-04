@@ -8,7 +8,7 @@ on:
     paths: 'docs/readthedocs/source/doc/Orca/Overview/install.md'
 
 jobs:
-  check:
+  checkDownloadURL:
     runs-on: [self-hosted, Gondolin, ubuntu-20.04-lts]
     steps:
       - uses: actions/checkout@v3

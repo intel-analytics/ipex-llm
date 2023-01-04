@@ -7,7 +7,7 @@ on:
 
 
 jobs:
-  updateURL:
+  createPRandAutoMerge:
     runs-on: [self-hosted, Gondolin, ubuntu-20.04-lts]
     steps:
       - uses: actions/checkout@v3
