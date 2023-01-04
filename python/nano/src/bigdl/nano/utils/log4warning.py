@@ -29,6 +29,6 @@ def output_suggestions():
         logger.warning(f"\n*****************Nano performance Suggestions*****************")
 
 
-def regist_suggestion(warning_message):
+def register_suggestion(warning_message):
     global warning_messages
     warning_messages.append(warning_message)
