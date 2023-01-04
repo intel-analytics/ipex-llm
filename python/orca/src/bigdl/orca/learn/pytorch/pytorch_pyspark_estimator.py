@@ -141,10 +141,6 @@ class PyTorchPySparkEstimator(BaseEstimator):
         self.model_creator = model_creator
         self.optimizer_creator = optimizer_creator
 
-        if not loss_creator:
-            invalidInputError(False,
-                              "You must provide a loss_creator.")
-
         num_nodes, cores_per_node = get_node_and_core_number()
         self.num_workers = num_nodes * workers_per_node
         self.total_cores = num_nodes * cores_per_node

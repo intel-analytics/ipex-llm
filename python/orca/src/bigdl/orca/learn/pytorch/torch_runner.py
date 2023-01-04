@@ -304,6 +304,10 @@ class TorchRunner(BaseRunner):
             self.train_loader.sampler.set_epoch(self.epochs)
         self.logger.debug("Begin Training Step {}".format(self.epochs + 1))
 
+        if not self.criterion:
+            invalidInputError(False,
+                              "You must provide a loss_creator.")
+
         info = info or {}
         self._toggle_profiling(profile=profile)
 
@@ -527,6 +531,10 @@ class TorchRunner(BaseRunner):
     def validate(self, data_creator, batch_size=32, num_steps=None, profile=False,
                  info=None, wrap_dataloader=None):
         """Evaluates the model on the validation data set."""
+        if not self.criterion:
+            invalidInputError(False,
+                              "You must provide a loss_creator.")
+
         config = copy.copy(self.config)
         info = info or {}
         self._toggle_profiling(profile=profile)
