@@ -23,6 +23,11 @@ function disable-tcmalloc-var {
 	export DISABLE_TCMALLOC_VAR=1
 }
 
+function enable-perf-var {
+	echo "Option: Enable perf mode"
+	export PERF_VAR=1
+}
+
 function display-error {
 	echo "Invalid Option: -$1" 1>&2
         echo "Try to run 'bigdl-nano-run -h' for detailed usage." 1>&2
@@ -40,19 +45,20 @@ function display-help {
         echo "    -o, --disable-openmp      Disable openMP and unset related variables"
         echo "    -j, --enable-jemalloc     Enable jemalloc and unset related variables"
         echo "    -c, --disable-tcmalloc    Disable tcmalloc and unset related variables"
+	echo "    -p, --perf                Use performance mode"
 }
 
 # Init
 OPENMP=0
 JEMALLOC=1
 TCMALLOC=1
-PERFORMANCE=$1
+PERF_VAR=0
 # Set TF_ENABLE_ONEDNN_OPTS
 export TF_ENABLE_ONEDNN_OPTS=1
 
 OPTIND=1
 
-while getopts ":ojhc-:" opt; do
+while getopts ":ojhcp-:" opt; do
 	case ${opt} in
 		- )
 			case "${OPTARG}" in
@@ -64,6 +70,9 @@ while getopts ":ojhc-:" opt; do
 					;;
 				disable-tcmalloc)
 					disable-tcmalloc-var
+					;;
+				perf)
+				        enable-perf-var
 					;;
 				help)
 					display-help
@@ -83,6 +92,9 @@ while getopts ":ojhc-:" opt; do
 			;;
 		c )
 			disable-tcmalloc-var
+			;;
+		p )
+			enable-perf-var
 			;;
 		h )
 			display-help
@@ -136,10 +148,10 @@ if [ -f "${LIB_DIR}/libiomp5.so" ]; then
 	echo "Setting KMP_AFFINITY..."
 	export KMP_AFFINITY=granularity=fine,none
 
-        if [[ -n $PERFORMANCE ]]; then
+        if [[ "${PERF_VAR}" == "1" ]]; then
             # experiment variable to speed up performance.
-	    export OPENMP=0
-	    export KMP_AFFINITY=granularity=fine,compact,1,0
+            export OPENMP=0
+            export KMP_AFFINITY=granularity=fine,compact,1,0
         fi
 
 	echo "Setting KMP_BLOCKTIME..."
