@@ -971,8 +971,8 @@ class BasePytorchForecaster(Forecaster):
                                                      self.thread_num)
             with torch.jit.optimized_execution(False):  # warmup too slow
                 return _pytorch_fashion_inference(model=self.accelerated_model,
-                                                    input_data=data,
-                                                    batch_size=batch_size)
+                                                  input_data=data,
+                                                  batch_size=batch_size)
 
     def evaluate(self, data, batch_size=32, multioutput="raw_values", quantize=False,
                  acceleration: bool = True):
