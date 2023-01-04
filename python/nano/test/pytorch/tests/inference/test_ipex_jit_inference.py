@@ -153,7 +153,7 @@ class IPEXJITInference_gt_1_10:
         with tempfile.TemporaryDirectory() as tmp_dir_name:
             InferenceOptimizer.save(ipex_jit_channels_last_model, tmp_dir_name)
             load_model = InferenceOptimizer.load(tmp_dir_name, model)
-            load_model()
+            load_model(x1, x2, x3)
 
     def test_ipex_jit_inference_additional_attrs(self):
         model = ResNet18(10, pretrained=False, include_top=False, freeze=True)
