@@ -114,10 +114,10 @@ class TestTraceAndQuantize(TestCase):
         x = np.random.random((100, 4))
         traced_model = InferenceOptimizer.trace(model, accelerator="onnxruntime",
                                                 input_spec=tf.TensorSpec(shape=(None, 4), dtype=tf.float32))
-        outputs = traced_model(x, tf.convert_to_tensor(True))
+        outputs = traced_model(x)
         assert isinstance(outputs, list) and isinstance(outputs[0], tf.Tensor)
 
         quantized_model = InferenceOptimizer.quantize(model, accelerator="onnxruntime", 
                                                       input_spec=tf.TensorSpec(shape=(None, 4)), x=x)
-        outputs = quantized_model(x, tf.convert_to_tensor(True))
+        outputs = quantized_model(x)
         assert isinstance(outputs, list) and isinstance(outputs[0], tf.Tensor)
