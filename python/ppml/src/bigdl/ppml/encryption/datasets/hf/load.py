@@ -137,7 +137,35 @@ Dataset.load_from_disk = load_with_decryption
 
 DatasetDict.load_from_disk = load_dict_with_decryption
 
-def load_from_disk(dataset_path: str, key: str, fs=None, keep_in_memory: Optional[bool] = None) -> Union[Dataset, DatasetDict]:
+# TODO: later apply patch here
+def load_from_disk(dataset_path: str, fs=None, keep_in_memory: Optional[bool] = None, key: Optional[str] = None) -> Union[Dataset, DatasetDict]:
+    """
+    Loads a dataset that was previously saved using :meth:`Dataset.save_to_disk` from a dataset directory, or
+    from a filesystem using either :class:`datasets.filesystems.S3FileSystem` or any implementation of
+    ``fsspec.spec.AbstractFileSystem``.
+
+    If key is not None, then dataset stored at dataset_path must be previously encrypted using the key provided
+    here.  At the same time, the keep_in_memory must be set to True.
+
+    If key is None, then this method should perform the same as the previous method.
+
+    Args:
+        dataset_path (:obj:`str`): Path (e.g. `"dataset/train"`) or remote URI (e.g.
+            `"s3://my-bucket/dataset/train"`) of the Dataset or DatasetDict directory where the dataset will be
+            loaded from.
+        fs (:class:`~filesystems.S3FileSystem` or ``fsspec.spec.AbstractFileSystem``, optional, default ``None``):
+            Instance of the remote filesystem used to download the files from.
+        keep_in_memory (:obj:`bool`, default ``None``): Whether to copy the dataset in-memory. If `None`, the dataset
+            will not be copied in-memory unless explicitly enabled by setting `datasets.config.IN_MEMORY_MAX_SIZE` to
+            nonzero. See more details in the :ref:`load_dataset_enhancing_performance` section.
+        key (:obj:`str`, default ``None``): If not None, then the dataset is considered to be encrypted previously using
+            this key.
+
+    Returns:
+        :class:`Dataset` or :class:`DatasetDict`:
+        - If `dataset_path` is a path of a dataset directory: the dataset requested.
+        - If `dataset_path` is a path of a dataset dict directory: a ``datasets.DatasetDict`` with each split.
+    """
     if is_remote_filesystem(fs):
         invalidInputError(False, "Please only use filesystem with protocol file, or leave the fs argument to None")
     invalidInputError(keep_in_memory, "Currently only support keep_in_memory set to True")
