@@ -207,7 +207,7 @@ class Pytorch1_12:
         with tempfile.TemporaryDirectory() as tmp_dir_name:
             InferenceOptimizer.save(bf16_channels_last_model, tmp_dir_name)
             load_model = InferenceOptimizer.load(tmp_dir_name, model)
-            load_model()
+            load_model(x1, x2, x3)
 
 
 

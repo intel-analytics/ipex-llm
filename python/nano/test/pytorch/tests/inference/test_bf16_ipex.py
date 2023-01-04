@@ -248,7 +248,7 @@ class Pytorch1_11:
         with tempfile.TemporaryDirectory() as tmp_dir_name:
             InferenceOptimizer.save(bf16_ipex_channels_last_model, tmp_dir_name)
             load_model = InferenceOptimizer.load(tmp_dir_name, model)
-            load_model()
+            load_model(x1, x2, x3)
 
     def test_bf16_jit_channels_last_various_input_sample(self):
         model = DummyMultiInputModel()
@@ -262,7 +262,7 @@ class Pytorch1_11:
         with tempfile.TemporaryDirectory() as tmp_dir_name:
             InferenceOptimizer.save(bf16_jit_channels_last_model, tmp_dir_name)
             load_model = InferenceOptimizer.load(tmp_dir_name, model)
-            load_model()
+            load_model(x1, x2, x3)
 
     def test_bf16_ipex_jit_channels_last_various_input_sample(self):
         model = DummyMultiInputModel()
@@ -277,7 +277,7 @@ class Pytorch1_11:
         with tempfile.TemporaryDirectory() as tmp_dir_name:
             InferenceOptimizer.save(bf16_ipex_jit_channels_last_model, tmp_dir_name)
             load_model = InferenceOptimizer.load(tmp_dir_name, model)
-            load_model()
+            load_model(x1, x2, x3)
 
 TORCH_VERSION_CLS = Pytorch1_11
 

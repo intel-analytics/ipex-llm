@@ -204,14 +204,17 @@ def generate_channels_last_available(inputs):
     elements of input can be converted to channels_last
     '''
     # try channels_last available
-    channels_last_available = [True]*len(inputs)
-    for idx, input in enumerate(inputs):
-        try:
-            input.to(memory_format=torch.channels_last)
-        except:
-            channels_last_available[idx] = False
-        else:
-            channels_last_available[idx] = True
+    if inputs: # to avoid the situation of inputs == None
+        channels_last_available = [True]*len(inputs)
+        for idx, input in enumerate(inputs):
+            try:
+                input.to(memory_format=torch.channels_last)
+            except:
+                channels_last_available[idx] = False
+            else:
+                channels_last_available[idx] = True
+    else:
+        channels_last_available = []
     return channels_last_available
 
 def export_to_onnx(model, input_sample=None, onnx_path="model.onnx", dynamic_axes=True, **kwargs):
