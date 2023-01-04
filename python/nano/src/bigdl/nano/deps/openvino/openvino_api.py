@@ -85,7 +85,7 @@ def load_openvino_model(path, framework='pytorch', device=None):
                           " Please choose from 'pytorch'/'tensorflow'.")
 
 
-def KerasOpenVINOModel(model, input_spec=None, precision='fp32', 
+def KerasOpenVINOModel(model, input_spec=None, precision='fp32',
                        thread_num=None, device='CPU', config=None,
                        logging=True):
     """
