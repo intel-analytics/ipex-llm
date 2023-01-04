@@ -130,7 +130,7 @@ class TestTraceAndQuantize(TestCase):
         
         # for inc
         from bigdl.nano.utils.util import compare_version
-        INC_LESS_14 = compare_version("neural-compressor", operator.lt, "1.14")
+        INC_LESS_14 = compare_version("neural_compressor", operator.lt, "1.14")
         if INC_LESS_14:
             return
         model = MyModel(x)
