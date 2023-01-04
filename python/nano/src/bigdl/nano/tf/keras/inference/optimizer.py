@@ -585,7 +585,7 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                     if inputs is None:
                         inputs = input_names
                     if outputs is None:
-                        outputs = "outputs"
+                        outputs = "outputs"    # type: ignore
 
             result = inc_quantzie(model, dataloader=calib_dataset,
                                   metric=metric,
