@@ -33,6 +33,7 @@ jobs:
           "pytorch_111 neural-compressor==1.13.1",
           "pytorch_112 neural-compressor==1.13.1",
           "pytorch_113 neural-compressor==1.14.2",
+          "pytorch_113 neural-compressor==2.0",
           ]
     steps:
       - uses: actions/checkout@v2
@@ -211,6 +212,7 @@ jobs:
           # seems will cause strange behaior of context manager, which will make some tests of nano fail.
           "pytorch_112 neural-compressor==1.13.1",
           "pytorch_113 neural-compressor==1.14.2",
+          "pytorch_113 neural-compressor==2.0",
           ]
 
     # Steps represent a sequence of tasks that will be executed as part of the job
@@ -261,6 +263,7 @@ jobs:
           "pytorch_111 neural-compressor==1.13.1",
           "pytorch_112 neural-compressor==1.13.1",
           "pytorch_113 neural-compressor==1.14.2",
+          "pytorch_113 neural-compressor==2.0",
           ]
 
     # Steps represent a sequence of tasks that will be executed as part of the job
