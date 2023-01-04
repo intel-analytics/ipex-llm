@@ -1,4 +1,4 @@
-name: status check
+name: Check download URL in docs/readthedocs/source/doc/Orca/Overview/install.md
 
 on:
   push:
@@ -9,7 +9,7 @@ on:
 
 jobs:
   check:
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, Gondolin, ubuntu-20.04-lts]
     steps:
       - uses: actions/checkout@v3
       - name: Run a url check script

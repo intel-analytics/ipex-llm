@@ -1,4 +1,4 @@
-name: Update AUTHORS
+name: Create PR to update nightly build download URL in docs/readthedocs/source/doc/Orca/Overview/install.md and auto merge
 on:
   schedule:
     - cron: '0 13 * * 0' # GMT time, 13:00 GMT == 21:00 China
@@ -8,7 +8,7 @@ on:
 
 jobs:
   updateURL:
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, Gondolin, ubuntu-20.04-lts]
     steps:
       - uses: actions/checkout@v3
         with:
@@ -30,7 +30,7 @@ jobs:
         with:
           token: ${{ secrets.AUTOMERGE_TOKEN }}
           commit-message: update url
-          title: Update download URL
+          title: Update nightly build download URL in docs/readthedocs/source/doc/Orca/Overview/install.md
           body: Update download URL
           branch: update-orca-download-url
       - run: |
