@@ -15,6 +15,7 @@
 
 from unittest import TestCase
 import tempfile
+import operator
 import numpy as np
 import tensorflow as tf
 from tensorflow.keras.metrics import MeanSquaredError
