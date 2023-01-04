@@ -182,17 +182,17 @@ def is_main_process():
     return mp.current_process().name == "MainProcess"
 
 
-class ExportTorchscriptModule(nn.Module):
+class ExportForecastingPipeline(nn.Module):
     def __init__(self, preprocess: nn.Module,
-                 inference: torch.jit.ScriptModule, postprocess: nn.Module) -> None:
+                 inference: nn.Module, postprocess: nn.Module) -> None:
         super().__init__()
         self.preprocess = preprocess
         self.inference = inference
         self.postprocess = postprocess
 
     def forward(self, data):
-        preprocess_output = self.preprocess.forward(data)
-        inference_output = self.inference.forward(preprocess_output)
+        preprocess_output = self.preprocess(data)
+        inference_output = self.inference(preprocess_output)
         postprocess_output = self.postprocess(inference_output)
         return postprocess_output
 
@@ -217,4 +217,4 @@ def get_exported_module(tsdata, model_path, drop_dtcol):
 
     inference = torch.jit.load(model_path)
 
-    return torch.jit.script(ExportTorchscriptModule(preprocess, inference, postprocess))
+    return torch.jit.script(ExportForecastingPipeline(preprocess, inference, postprocess))
