@@ -46,6 +46,7 @@ function display-help {
 OPENMP=0
 JEMALLOC=1
 TCMALLOC=1
+PERFORMANCE=$1
 # Set TF_ENABLE_ONEDNN_OPTS
 export TF_ENABLE_ONEDNN_OPTS=1
 
@@ -134,6 +135,12 @@ if [ -f "${LIB_DIR}/libiomp5.so" ]; then
 
 	echo "Setting KMP_AFFINITY..."
 	export KMP_AFFINITY=granularity=fine,none
+
+        if [ -n PERFORMANCE ]; then
+            # experiment variable to speed up performance.
+	    export OPENMP=0
+	    export KMP_AFFINITY=granularity=fine,compact,1,0
+        fi
 
 	echo "Setting KMP_BLOCKTIME..."
 	export KMP_BLOCKTIME=1
