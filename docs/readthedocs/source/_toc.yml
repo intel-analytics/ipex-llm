@@ -81,9 +81,9 @@ subtrees:
               title: "Key Features"
               subtrees:
                 - entries:
-                  - file: doc/Nano/Overview/cuda_patch
                   - file: doc/Nano/Overview/pytorch_train
                   - file: doc/Nano/Overview/pytorch_inference
+                  - file: doc/Nano/Overview/pytorch_cuda_patch
                   - file: doc/Nano/Overview/tensorflow_train
                   - file: doc/Nano/Overview/tensorflow_inference
                   - file: doc/Nano/Overview/hpo
