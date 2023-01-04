@@ -408,6 +408,7 @@ export EHSMIP=YOUR_EHSM_IP
 export EHSMPORT=YOUR_EHSM_PORT
 export EHSMAPPID=YOUR_EHSM_APPID
 export EHSMAPIKEY=YOUR_EHSM_APIKEY
+export CONTAINER=YOUR_CONTAINER
 
 bash bigdl-ppml-submit.sh \
     --master $RUNTIME_SPARK_MASTER \
@@ -416,7 +417,7 @@ bash bigdl-ppml-submit.sh \
     --driver-cores 4 \
     --executor-memory 32g \
     --executor-cores 4 \
-    --conf spark.kubernetes.container.image=10.239.45.10/arda/intelanalytics/liyao-gramine \
+    --conf spark.kubernetes.container.image=${CONTAINER} \
     --sgx-enabled false \
     --num-executors 2 \
     --conf spark.cores.max=8 \
