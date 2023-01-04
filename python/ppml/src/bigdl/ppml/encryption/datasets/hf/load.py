@@ -134,7 +134,7 @@ def load_with_decryption(dataset_path: str, fs=None, keep_in_memory: Optional[bo
     #     )
     # TODO: test this when keep_in_memory is None
     if key is not None:
-        invalidInputError(keep_in_memory==False, "Currently only support InMemoryTable which requires keep_in_memory set to True")
+        invalidInputError(keep_in_memory==True, "Currently only support InMemoryTable which requires keep_in_memory set to True")
     fs = fsspec.filesystem("file") if fs is None else fs
     dataset_dict_json_path = Path(dataset_path, config.DATASETDICT_JSON_FILENAME).as_posix()
     dataset_info_path = Path(dataset_path, config.DATASET_INFO_FILENAME).as_posix()
@@ -231,7 +231,7 @@ def load_from_disk(dataset_path: str, fs=None, keep_in_memory: Optional[bool] = 
     #     invalidInputError(False, "Please only use filesystem with protocol file, or leave the fs argument to None")
     # invalidInputError(keep_in_memory, "Currently only support keep_in_memory set to True")
     if key is not None:
-        invalidInputError(keep_in_memory==False, "Currently only support InMemoryTable which requires keep_in_memory set to True")
+        invalidInputError(keep_in_memory==True, "Currently only support InMemoryTable which requires keep_in_memory set to True")
     if is_remote_filesystem(fs):
         dest_dataset_path = extract_path_from_uri(dataset_path)
     else:
