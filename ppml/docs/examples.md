@@ -408,7 +408,7 @@ export EHSMPORT=YOUR_EHSM_PORT
 export EHSMAPPID=YOUR_EHSM_APPID
 export EHSMAPIKEY=YOUR_EHSM_APIKEY
 export CONTAINER=YOUR_CONTAINER
-
+export UPLOADPATH=YOUR_IPLOAD_PATH
 bash bigdl-ppml-submit.sh \
     --master $RUNTIME_SPARK_MASTER \
     --deploy-mode cluster \
@@ -422,7 +422,7 @@ bash bigdl-ppml-submit.sh \
     --conf spark.cores.max=8 \
     --name simplequeryWithMultiKMS \
     --verbose \
-    --conf spark.kubernetes.file.upload.path=/ppml/trusted-big-data-ml/work/data/liyao \
+    --conf spark.kubernetes.file.upload.path=${UPLOADPATH} \
     --class com.intel.analytics.bigdl.ppml.examples.MultiKMSExample \
     --conf spark.network.timeout=10000000 \
     --conf spark.executor.heartbeatInterval=10000000 \
