@@ -144,6 +144,7 @@ class TorchRunner(BaseRunner):
         self.scheduler_step_freq = scheduler_step_freq
         self.sync_stats = sync_stats
         self.epochs_stats = None  # The state saved in every epoch
+        self._mode = 'val'  # By default we don't use ddp model
 
     def _create_loss(self):
         if not self.loss_creator:
@@ -379,6 +380,7 @@ class TorchRunner(BaseRunner):
         Returns:
             A dict of metrics from training.
         """
+        self._mode = 'train'
         if self.use_tqdm and self.rank == 0:
             desc = ""
             if info is not None and "epoch_idx" in info:
@@ -399,11 +401,11 @@ class TorchRunner(BaseRunner):
 
         # TODO: Discuss the situation when there are multiple components,
         #       It is best for the user to write this part of the logic in a hook func.
-        self.training_model.train()
+        self.model.train()
         # self.training_models may not be DDP if horovod.
         from torch.nn.parallel import DistributedDataParallel as DDP
-        if isinstance(self.training_model, DDP):
-            with self.training_model.join():
+        if isinstance(self.model, DDP):
+            with self.model.join():
                 self._train_loop(iterator, info, _progress_bar, metric_meters, callbacks)
         else:
             self._train_loop(iterator, info, _progress_bar, metric_meters, callbacks)
@@ -491,22 +493,17 @@ class TorchRunner(BaseRunner):
         # Compute output.
         with self.timers.record("fwd"):
             *features, target = self.batch
-            if torch.is_tensor(features) or isinstance(features, (tuple, list)):
-                output = self.training_model(*features)
-            else:
-                invalidInputError(False,
-                                  "Features should be tensor or list/tuple, "
-                                  "but got {}".format(type(features)))
+            self.output = self.model(*features)
 
             # Ensure `target` and `output` are always in a list format.
             targetL = [target] if not isinstance(target, (list, tuple)) else target
-            outputL = [output] if not isinstance(output, (list, tuple)) else output
-            loss = self.criterion(*outputL, *targetL)
+            outputL = [self.output] if not isinstance(self.output, (list, tuple)) else self.output
+            self.loss = self.criterion(*outputL, *targetL)
 
         # Compute gradients in a backward pass.
         with self.timers.record("grad"):
             self.optimizer.zero_grad()
-            loss.backward()
+            self.loss.backward()
 
         # Call step of optimizer to update model params.
         with self.timers.record("apply"):
@@ -514,11 +511,13 @@ class TorchRunner(BaseRunner):
 
         self.call_hook(callbacks=callbacks, fn_name="after_train_iter")
 
-        # User should not see batch from last iteration
-        if hasattr(self, "batch"):
-            del self.batch
+        # User should not see batch/loss from last iteration
+        loss_item = self.loss.item()
+        del self.batch
+        del self.output
+        del self.loss
 
-        return {"train_loss": loss.item(), NUM_SAMPLES: get_batchsize(features)}
+        return {"train_loss": loss_item, NUM_SAMPLES: get_batchsize(features)}
 
     def validate(self, data_creator, batch_size=32, num_steps=None, profile=False,
                  info=None, wrap_dataloader=None):
@@ -573,6 +572,7 @@ class TorchRunner(BaseRunner):
                 ``num_samples`` from all calls to ``self.validate_batch``.
         """
         # switch to evaluate mode
+        self._mode = 'val'
         self.model.eval()
         metrics = Metric.convert_metrics_dict(metrics, backend="pytorch")
         losses = []
@@ -638,23 +638,19 @@ class TorchRunner(BaseRunner):
         # compute output
         with self.timers.record("eval_fwd"):
             *features, target = self.batch
-            if torch.is_tensor(features) or isinstance(features, (tuple, list)):
-                output = self.model(*features)
-            else:
-                invalidInputError(False,
-                                  "Features should be tensor, list/tuple, "
-                                  "but got {}".format(type(features)))
+            self.output = self.model(*features)
 
             # Ensure `target` and `output` are always in a list format.
             targetL = [target] if not isinstance(target, (list, tuple)) else target
-            outputL = [output] if not isinstance(output, (list, tuple)) else output
+            outputL = [self.output] if not isinstance(self.output, (list, tuple)) else self.output
             loss = self.criterion(*outputL, *targetL)
 
         self.call_hook(callbacks=callbacks, fn_name="after_val_iter")
 
         # User should not see batch from last iteration
-        if hasattr(self, "batch"):
-            del self.batch
+        output = self.output
+        del self.batch
+        del self.output
 
         return output, target, loss
 
@@ -692,6 +688,7 @@ class TorchRunner(BaseRunner):
 
     def _predict(self, pred_iterator):
         # switch to evaluate mode
+        self._mode = 'predict'
         self.model.eval()
         result = []
         with torch.no_grad():
@@ -834,9 +831,16 @@ class TorchRunner(BaseRunner):
 
     @property
     def model(self):
-        """First or only model(s) created by the ``model_creator``."""
-        if self.models:
-            return self.models[0]
+        """
+        First or only model(s) created by the ``model_creator``.
+        Discuss whether to return ddp model depending on the mode.
+        """
+        if self._mode == 'train':
+            if self.training_models:
+                return self.training_models[0]
+        else:
+            if self.models:
+                return self.models[0]
 
     @property
     def optimizer(self):
@@ -848,9 +852,3 @@ class TorchRunner(BaseRunner):
         """First or only scheduler(s) created by the ``scheduler_creator``."""
         if self.schedulers:
             return self.schedulers[0]
-
-    @property
-    def training_model(self):
-        """First or only training_model(s) wrapped by the torchDDP."""
-        if self.training_models:
-            return self.training_models[0]

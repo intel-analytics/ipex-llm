@@ -68,7 +68,7 @@ You can simply append the following part to enable your [ONNXRuntime](https://on
 ```python
 # step 4: trace your model as an ONNXRuntime model
 # if you have run `trainer.fit` before trace, then argument `input_sample` is not required.
-ort_model = InferenceOptimizer.trace(model, accelerator='onnruntime', input_sample=x)
+ort_model = InferenceOptimizer.trace(model, accelerator='onnxruntime', input_sample=x)
 
 # step 5: use returned model for transparent acceleration
 # The usage is almost the same with any PyTorch module
@@ -284,7 +284,6 @@ The output table of `optimize()` looks like:
 |        onnxruntime_fp32        |      successful      |    3.801     |
 |    onnxruntime_int8_qlinear    |      successful      |    4.727     |
  -------------------------------- ---------------------- --------------
-* means we assume the accuracy of the traced model does not change, so we don't recompute accuracy to save time.
 Optimization cost 58.3s in total.
 ```
 

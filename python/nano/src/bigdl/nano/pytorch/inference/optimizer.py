@@ -384,7 +384,7 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                 print(f"----------Start test {method} model "
                       f"({idx+1}/{len(available_dict)})----------")
                 option: AccelerationOption = self.ALL_INFERENCE_ACCELERATION_METHOD[method]
-                precision = option.get_precision()
+                _precision = option.get_precision()
                 try:
                     acce_model = option.optimize(model, training_data=training_data,
                                                  input_sample=input_sample,
@@ -428,7 +428,7 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                     if self._calculate_accuracy:
                         # here we suppose trace don't change accuracy,
                         # so we jump it to reduce time cost of optimize
-                        if precision == "fp32" and method != "original":
+                        if _precision == "fp32" and method != "original":
                             _accuracy = result_map["original"]["accuracy"]
                             if isinstance(_accuracy, torch.Tensor):
                                 _accuracy = _accuracy.item()
@@ -1083,9 +1083,18 @@ class InferenceOptimizer(BaseInferenceOptimizer):
         """
         invalidInputError(isinstance(num_processes, int) and num_processes > 0,
                           "num_processes must be a positive integer")
+        # if num_processes == 1 and no core specification, we will use current process directly
+        if num_processes == 1 and cpu_for_each_process is None and cores_per_process is None:
+            warnings.warn("Will run inference in current process directly "
+                          "because the `num_processes` is 1")
+            return _MultiInstanceModel(model, None, None, None, None)
+
         p_num = num_processes if cpu_for_each_process is None else len(cpu_for_each_process)
+
+        # else we will start multiple sub-processes
         send_queue = mp.Queue()
         recv_queue = mp.Queue()
+        next_idx = mp.Value('i', 0, lock=True)
 
         KMP_AFFINITY = os.environ.get("KMP_AFFINITY", "")
         OMP_NUM_THREADS = os.environ.get("OMP_NUM_THREADS", "")
@@ -1112,13 +1121,13 @@ class InferenceOptimizer(BaseInferenceOptimizer):
             os.environ["OMP_NUM_THREADS"] = envs[i]['OMP_NUM_THREADS']
 
             p = mp.Process(target=_multi_instance_helper,
-                           args=(model, send_queue, recv_queue), daemon=True)
+                           args=(model, send_queue, recv_queue, next_idx), daemon=True)
             p.start()
             ps.append(p)
         os.environ["KMP_AFFINITY"] = KMP_AFFINITY
         os.environ["OMP_NUM_THREADS"] = OMP_NUM_THREADS
 
-        return _MultiInstanceModel(model, ps, send_queue, recv_queue)
+        return _MultiInstanceModel(model, ps, send_queue, recv_queue, next_idx)
 
 
 def _signature_check(function):

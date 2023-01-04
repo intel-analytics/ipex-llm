@@ -85,13 +85,16 @@ def load_openvino_model(path, framework='pytorch', device=None):
                           " Please choose from 'pytorch'/'tensorflow'.")
 
 
-def KerasOpenVINOModel(model, precision='fp32', thread_num=None,
-                       device='CPU', config=None, logging=True):
+def KerasOpenVINOModel(model, input_spec=None, precision='fp32',
+                       thread_num=None, device='CPU', config=None,
+                       logging=True):
     """
     Create a OpenVINO model from Keras.
 
     :param model: Keras model to be converted to OpenVINO for inference or
                   path to Openvino saved model.
+    :param input_spec: A (tuple or list of) tf.TensorSpec or numpy array defining
+                       the shape/dtype of the input
     :param precision: Global precision of model, supported type: 'fp32', 'fp16',
                       defaults to 'fp32'.
     :param thread_num: a int represents how many threads(cores) is needed for
@@ -104,6 +107,7 @@ def KerasOpenVINOModel(model, precision='fp32', thread_num=None,
     """
     from .tf.model import KerasOpenVINOModel
     return KerasOpenVINOModel(model=model,
+                              input_spec=input_spec,
                               precision=precision,
                               thread_num=thread_num,
                               device=device,

@@ -28,13 +28,15 @@ import os
 
 
 class KerasOpenVINOModel(AcceleratedKerasModel):
-    def __init__(self, model, precision='fp32', thread_num=None,
-                 device='CPU', config=None, logging=True):
+    def __init__(self, model, input_spec=None, precision='fp32',
+                 thread_num=None, device='CPU', config=None, logging=True):
         """
         Create a OpenVINO model from Keras.
 
         :param model: Keras model to be converted to OpenVINO for inference or
                       path to Openvino saved model.
+        :param input_spec: A (tuple or list of) tf.TensorSpec or numpy array defining
+                           the shape/dtype of the input
         :param precision: Global precision of model, supported type: 'fp32', 'fp16',
                           defaults to 'fp32'.
         :param thread_num: a int represents how many threads(cores) is needed for
@@ -50,6 +52,15 @@ class KerasOpenVINOModel(AcceleratedKerasModel):
         with TemporaryDirectory() as dir:
             dir = Path(dir)
             if isinstance(model, tf.keras.Model):
+                saved_model_input_spec_set = model._saved_model_inputs_spec is not None
+                if not model.built and not saved_model_input_spec_set:
+                    # model cannot be saved either because the input shape is not available
+                    # or because the forward pass of the model is not defined
+                    if isinstance(input_spec, (tuple, list)):
+                        input_shape = (i.shape for i in input_spec)
+                    else:
+                        input_shape = input_spec.shape
+                    model.compute_output_shape(input_shape)
                 export(model, str(dir / 'tmp.xml'),
                        precision=precision,
                        logging=logging)

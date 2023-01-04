@@ -79,6 +79,7 @@ subtrees:
                 - entries:
                   - file: doc/Nano/Overview/pytorch_train
                   - file: doc/Nano/Overview/pytorch_inference
+                  - file: doc/Nano/Overview/pytorch_cuda_patch
                   - file: doc/Nano/Overview/tensorflow_train
                   - file: doc/Nano/Overview/tensorflow_inference
                   - file: doc/Nano/Overview/hpo
@@ -203,6 +204,7 @@ subtrees:
                 - file: doc/Chronos/Howto/how_to_export_torchscript_files
                 - file: doc/Chronos/Howto/how_to_preprocess_my_data
                 - file: doc/Chronos/Howto/how_to_process_data_in_production_environment
+                - file: doc/Chronos/Howto/how_to_choose_forecasting_alg
           - file: doc/Chronos/QuickStart/index
             title: "Tutorials"
             subtrees:

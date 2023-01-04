@@ -42,9 +42,19 @@ class MyModel(tf.keras.Model):
         pass
 
 
+class MyModelReturnList(tf.keras.Model):
+    def __init__(self):
+        super().__init__()
+        self.dense1 = tf.keras.layers.Dense(4, activation=tf.nn.relu)
+
+    def call(self, inputs: tf.Tensor):
+        return [self.dense1(inputs)]
+
+
 class TestTraceAndQuantize(TestCase):
     def test_attribute_access_after_trace(self):
         x = 100
+        # for onnxruntime
         model = MyModel(x)
         traced_model = InferenceOptimizer.trace(model, accelerator="onnxruntime",
                                                 input_spec=tf.TensorSpec(shape=(None, 4), dtype=tf.float32))
@@ -60,9 +70,26 @@ class TestTraceAndQuantize(TestCase):
             new_model = InferenceOptimizer.load(tmp_dir_name, model)
         new_model.do_nothing()
         assert new_model.get_x() == traced_model.x == x
+        
+        # for openvino
+        model = MyModel(x)
+        traced_model = InferenceOptimizer.trace(model, accelerator="openvino",
+                                                input_spec=tf.TensorSpec(shape=(None, 4), dtype=tf.float32))
+        # try to access some custom attributes
+        traced_model.do_nothing()
+        assert traced_model.get_x() == traced_model.x == x
+        traced_model(np.random.random((1, 4)).astype(np.float32))
+
+        # test save/load
+        with tempfile.TemporaryDirectory() as tmp_dir_name:
+            InferenceOptimizer.save(traced_model, tmp_dir_name)
+            new_model = InferenceOptimizer.load(tmp_dir_name, model)
+        new_model.do_nothing()
+        assert new_model.get_x() == traced_model.x == x
 
     def test_attribute_access_after_quantize(self):
         x = 100
+        # for onnxruntime
         model = MyModel(x)
         quantized_model = InferenceOptimizer.quantize(model,
                                                       accelerator="onnxruntime",
@@ -84,7 +111,29 @@ class TestTraceAndQuantize(TestCase):
         new_model.do_nothing()
         assert new_model.get_x() == quantized_model.x == x
 
+        # for openvino
+        model = MyModel(x)
+        quantized_model = InferenceOptimizer.quantize(model,
+                                                      accelerator="openvino",
+                                                      input_spec=tf.TensorSpec(shape=(None, 4), dtype=tf.float32),
+                                                      x=np.random.random((100, 4)),
+                                                      y=np.random.random((100, 5)),
+                                                      accuracy_criterion = {'relative': 0,
+                                                                            'higher_is_better': True})
+        # try to access some custom attributes
+        quantized_model.do_nothing()
+        assert quantized_model.get_x() == quantized_model.x == x
+        quantized_model(np.random.random((1, 4)).astype(np.float32))
+
+        # test save/load
+        with tempfile.TemporaryDirectory() as tmp_dir_name:
+            InferenceOptimizer.save(quantized_model, tmp_dir_name)
+            new_model = InferenceOptimizer.load(tmp_dir_name, model)
+        new_model.do_nothing()
+        assert new_model.get_x() == quantized_model.x == x
+
     def test_evaluate_after_trace(self):
+        # test onnxxruntime
         model = MyModel(100)
         model.compile(loss='mse', metrics=MeanSquaredError())
         x = np.random.random((100, 4))
@@ -99,3 +148,32 @@ class TestTraceAndQuantize(TestCase):
             InferenceOptimizer.save(traced_model, tmp_dir_name)
             new_model = InferenceOptimizer.load(tmp_dir_name, model)
         new_model.evaluate(x=x, y=y)
+
+        # test openvino
+        model = MyModel(100)
+        model.compile(loss='mse', metrics=MeanSquaredError())
+        x = np.random.random((100, 4))
+        y = np.random.random((100, 5))
+
+        traced_model = InferenceOptimizer.trace(model, accelerator="openvino",
+                                                input_spec=tf.TensorSpec(shape=(None, 4), dtype=tf.float32))
+        traced_model.evaluate(x=x, y=y)
+
+        # test save/load
+        with tempfile.TemporaryDirectory() as tmp_dir_name:
+            InferenceOptimizer.save(traced_model, tmp_dir_name)
+            new_model = InferenceOptimizer.load(tmp_dir_name, model)
+        new_model.evaluate(x=x, y=y)
+
+    def test_inference_output_shape(self):
+        model = MyModelReturnList()
+        x = np.random.random((100, 4))
+        traced_model = InferenceOptimizer.trace(model, accelerator="onnxruntime",
+                                                input_spec=tf.TensorSpec(shape=(None, 4), dtype=tf.float32))
+        outputs = traced_model(x)
+        assert isinstance(outputs, list) and isinstance(outputs[0], tf.Tensor)
+
+        quantized_model = InferenceOptimizer.quantize(model, accelerator="onnxruntime", 
+                                                      input_spec=tf.TensorSpec(shape=(None, 4)), x=x)
+        outputs = quantized_model(x)
+        assert isinstance(outputs, list) and isinstance(outputs[0], tf.Tensor)
