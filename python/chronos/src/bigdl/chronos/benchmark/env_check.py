@@ -24,6 +24,7 @@ import warnings
 
 from .utils_env import get_bytesize, _find_path, get_nano_env_var
 from bigdl.nano.common.common import _env_variable_is_set, _find_library
+from psutil import cpu_count
 
 
 def get_CPU_info():
@@ -38,18 +39,18 @@ def get_CPU_info():
     model_name = model_name.partition(":")[2]
 
     print(">"*20, "Hardware Information", ">"*20)
-    print('CPU architecture:', platform.processor())
-    print('CPU model name:', model_name.lstrip())
-    print('Logical Core(s):', psutil.cpu_count())
-    print('Physical Core(s):', psutil.cpu_count(logical=False))
-    print('Physical Core(s) per socket:', int(psutil.cpu_count(logical=False)/socket_num))
-    print('Socket(s):', socket_num)
-    print('CPU usage:', str(psutil.cpu_percent()) + '%')
-    print('CPU MHz:', format(psutil.cpu_freq().current, '.2f'))
-    print('CPU max MHz:', format(psutil.cpu_freq().max, '.2f'))
-    print('CPU min MHz:', format(psutil.cpu_freq().min, '.2f'))
-    print('Total memory:', get_bytesize(psutil.virtual_memory().total))
-    print('Available memory:', get_bytesize(psutil.virtual_memory().available))
+    print('\033[1m\tCPU architecture\033[0m:', platform.processor())
+    print('\033[1m\tCPU model name\033[0m:', model_name.lstrip())
+    print('\033[1m\tLogical Core(s)\033[0m:', cpu_count())
+    print('\033[1m\tPhysical Core(s)\033[0m:', cpu_count(logical=False))
+    print('\033[1m\tPhysical Core(s) per socket\033[0m:', int(cpu_count(logical=False)/socket_num))
+    print('\033[1m\tSocket(s)\033[0m:', socket_num)
+    print('\033[1m\tCPU usage\033[0m:', str(psutil.cpu_percent()) + '%')
+    print('\033[1m\tCPU MHz\033[0m:', format(psutil.cpu_freq().current, '.2f'))
+    print('\033[1m\tCPU max MHz\033[0m:', format(psutil.cpu_freq().max, '.2f'))
+    print('\033[1m\tCPU min MHz\033[0m:', format(psutil.cpu_freq().min, '.2f'))
+    print('\033[1m\tTotal memory\033[0m:', get_bytesize(psutil.virtual_memory().total))
+    print('\033[1m\tAvailable memory\033[0m:', get_bytesize(psutil.virtual_memory().available))
 
     # support instruction set or not
     disabled_logo = "\033[0;31m\u2718\033[0m"
@@ -58,9 +59,9 @@ def get_CPU_info():
     for flag in ["avx512f", "avx512_bf16", "avx512_vnni"]:
         flag_enabled = int(subprocess.getoutput(f'lscpu | grep -c {flag} '))
         if flag_enabled:
-            print("Support", flag, ":", abled_logo)
+            print("\033[1m\tSupport\033[0m", flag, ":", abled_logo)
         else:
-            print("Support", flag, ":", disabled_logo)
+            print("\033[1m\tSupport\033[0m", flag, ":", disabled_logo)
 
     print("<"*20, "Hardware Information", "<"*20, "\n")
 
@@ -141,9 +142,9 @@ def check_nano_env(use_malloc: str = "tc", use_openmp: bool = True) -> None:
     abled_logo = "\033[0;32m enabled \033[0m" + "\033[0;32m\u2714\033[0m"
     for category in ["LD_PRELOAD", "tcmalloc", "Intel OpenMp", "TF"]:
         if flag[category] == 0:
-            print(category, name[category], disabled_logo)
+            print(f"\033[1m\t{category}\033[0m", name[category], disabled_logo)
         else:
-            print(category, abled_logo)
+            print(f"\033[1m\t{category}\033[0m", abled_logo)
 
     # Output suggestions
     if output_list != []:
