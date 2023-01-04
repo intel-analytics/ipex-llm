@@ -9,5 +9,5 @@ py4j
 pyarrow
 tensorflow
 torch
-torchmetrics
+torchmetrics==0.10.0
 tqdm

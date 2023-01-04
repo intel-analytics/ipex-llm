@@ -892,7 +892,6 @@ class SparkXShards(XShards):
         import pyspark
         spark_version = pyspark.version.__version__
         major_version = spark_version.split(".")[0]
-        print("version:", major_version)
 
         def func(pdf):
             pdf_schema = None
