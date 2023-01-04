@@ -399,6 +399,65 @@ bash bigdl-ppml-submit.sh \
 ```
 </details>
 
+k8s cluster mode
+
+```
+export SimpleAPPID=YOUR_SIMPLE_APPID
+export SimpleAPIKEY=YOUR_SIMPLE_APIKEY
+export EHSMIP=YOUR_EHSM_IP
+export EHSMPORT=YOUR_EHSM_PORT
+export EHSMAPPID=YOUR_EHSM_APPID
+export EHSMAPIKEY=YOUR_EHSM_APIKEY
+
+bash bigdl-ppml-submit.sh \
+    --master $RUNTIME_SPARK_MASTER \
+    --deploy-mode cluster \
+    --driver-memory 32g \
+    --driver-cores 4 \
+    --executor-memory 32g \
+    --executor-cores 4 \
+    --conf spark.kubernetes.container.image=10.239.45.10/arda/intelanalytics/liyao-gramine \
+    --sgx-enabled false \
+    --num-executors 2 \
+    --conf spark.cores.max=8 \
+    --name simplequeryWithMultiKMS \
+    --verbose \
+    --conf spark.kubernetes.file.upload.path=/ppml/trusted-big-data-ml/work/data/liyao \
+    --class com.intel.analytics.bigdl.ppml.examples.MultiKMSExample \
+    --conf spark.network.timeout=10000000 \
+    --conf spark.executor.heartbeatInterval=10000000 \
+    --conf spark.bigdl.kms.multikms.instance=2 \
+    --conf spark.bigdl.kms.multikms.type1=SimpleKeyManagementService \
+    --conf spark.bigdl.kms.multikms.name1=simpleKMS \
+    --conf spark.bigdl.kms.multikms.simple.id1=${SimpleAPPID} \
+    --conf spark.bigdl.kms.multikms.simple.key1=${SimpleAPIKEY} \
+    --conf spark.bigdl.kms.multikms.type2=EHSMKeyManagementService \
+    --conf spark.bigdl.kms.multikms.name2=EHSM \
+    --conf spark.bigdl.kms.multikms.ehs.ip2=${EHSMIP} \
+    --conf spark.bigdl.kms.multikms.ehs.port2=${EHSMPORT} \
+    --conf spark.bigdl.kms.multikms.ehs.id2=${EHSMAPPID} \
+    --conf spark.bigdl.kms.multikms.ehs.key2=${EHSMAPIKEY} \
+    --conf spark.bigdl.kms.datasource.instance=1 \
+    --conf spark.bigdl.kms.datasource1.kms=simpleKMS \
+    --conf spark.bigdl.kms.datasource1.inputpath=/ppml/trusted-big-data-ml/work/data/multiKMSTest/data1/input/people.csv \
+    --conf spark.bigdl.kms.datasource1.outputpath=/ppml/trusted-big-data-ml/work/data/multiKMSTest/data1/output/simple_people_output.crc \
+    --conf spark.bigdl.kms.datasource1.primary=/ppml/trusted-big-data-ml/work/data/multiKMSTest/data1/keys/primaryKey \
+    --conf spark.bigdl.kms.datasource1.data=/ppml/trusted-big-data-ml/work/data/multiKMSTest/data1/keys/dataKey \
+    --conf spark.bigdl.kms.datasource1.inputEncryptMode=AES/CBC/PKCS5Padding \
+    --conf spark.bigdl.kms.datasource1.outputEncryptMode=AES/CBC/PKCS5Padding \
+    --conf spark.bigdl.kms.datasource2.kms=EHSM \
+    --conf spark.bigdl.kms.datasource2.inputpath=/ppml/trusted-big-data-ml/work/data/multiKMSTest/data2/input/people.csv \
+    --conf spark.bigdl.kms.datasource2.outputpath=/ppml/trusted-big-data-ml/work/data/multiKMSTest/data2/output/ehsm_people_output.crc \
+    --conf spark.bigdl.kms.datasource2.primary=/ppml/trusted-big-data-ml/work/data/multiKMSTest/data2/keys/ehsm/encrypted_primary_key \
+    --conf spark.bigdl.kms.datasource2.data=/ppml/trusted-big-data-ml/work/data/multiKMSTest/data2/keys/ehsm/encrypted_data_key \
+    --conf spark.bigdl.kms.datasource2.inputEncryptMode=AES/CBC/PKCS5Padding \
+    --conf spark.bigdl.kms.datasource2.outputEncryptMode=AES/CBC/PKCS5Padding \
+    --verbose \
+    --jars  /ppml/trusted-big-data-ml/bigdl-ppml-spark_3.1.3-2.2.0-SNAPSHOT-jar-with-dependencies.jar,local:///ppml/trusted-big-data-ml/bigdl-ppml-spark_3.1.3-2.2.0-SNAPSHOT-jar-with-dependencies.jar \
+    /ppml/trusted-big-data-ml/bigdl-ppml-spark_3.1.3-2.2.0-SNAPSHOT-jar-with-dependencies.jar \
+    com.intel.analytics.bigdl.ppml.examples.MultiKMSExample
+```
+
 ## Trusted ML 
 
 Please be noted that the xgboost examples listed here are **deprecated** due to the fact that Rabit's network (contains gradient, split and env) is not protected.
