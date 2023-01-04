@@ -227,9 +227,7 @@ def compare_version(package: str, op: Callable, version: str,
     """
     try:
         pkg = importlib.import_module(package)
-        print(pkg)
     except (ImportError, DistributionNotFound):
-        print("cant import")
         return False
     try:
         if hasattr(pkg, "__version__"):
