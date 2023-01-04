@@ -53,14 +53,25 @@ NAME                       READY   AGE
 statefulset.apps/keywhiz   1/1     4m56s
 ```
 
+You can communicate with BKeywhiz KMS using client [BKeywhizKeyManagementService](https://github.com/intel-analytics/BigDL/blob/main/scala/ppml/src/main/scala/com/intel/analytics/bigdl/ppml/kms/BKeywhizManagementService.scala), or simply verify through requesting REST API like below:
+
 ```
-curl -k -v "https://<kmsIP>:9876/"
+curl -k -v "https://<kmsIP>:9876/" # default port of BKeywhiz is 9876 and can be configured in bkeywhiz-kms.yaml
 
 # you will get similar to below
 welcome to BigDL Keywhiz KMS Frontend
 
-create a user like: POST /user/{userName}/password=a_password_for_the_user
-get a primary key like: POST /primaryKey/{primaryKeyName}/user=your_username&password=your_password
-get a data key like: POST /dataKey/{dataKeyName}/primaryKeyName=the_primary_key_name&user=your_username&password=your_password
-get the data key like: GET /dataKey/{dataKeyName}/primaryKeyName=the_primary_key_name&user=your_username&password=your_password
+create a user like: POST /user/{userName}?password=a_password_for_the_user
+get a primary key like: POST /primaryKey/{primaryKeyName}?user=your_username&password=your_password
+get a data key like: POST /dataKey/{dataKeyName}?primaryKeyName=the_primary_key_name&user=your_username&password=your_password
+get the data key like: GET /dataKey/{dataKeyName}?primaryKeyName=the_primary_key_name&user=your_username&password=your_password
+
+curl -X POST -k -v "https://<kmsIP>:9876/user/<userName>?password=<userPassword>"
+user [<userName>] is created successfully!
+
+curl -X POST -k -v "https://<kmsIP>:9876/primaryKey/<primaryKeyName>?user=<userName>&&password=<userPassword>"
+primaryKey [<primaryKeyName>] is generated successfully!
+
+......
+
 ```

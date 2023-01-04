@@ -48,6 +48,10 @@ object BKeywhizKMSFrontend extends Supportive {
   implicit val materializer = ActorMaterializer()
   implicit val executionContext = system.dispatcher
   implicit val timeout: Timeout = Timeout(100, TimeUnit.SECONDS)
+  final val keywhizCli = "/usr/src/app/cli/target/keywhiz-cli-0.10.2-SNAPSHOT-shaded.jar" +
+                         " --devTrustStore --url https://keywhiz-service:4444"
+  final val keyProvider = "java -jar " +
+                          "/usr/src/app/server/target/keywhiz-server-0.10.2-SNAPSHOT-shaded.jar"
 
   def main(args: Array[String]): Unit = {
       val arguments = timing("parse arguments") {
@@ -61,14 +65,14 @@ object BKeywhizKMSFrontend extends Supportive {
           timing("welcome") {
             val response = s"welcome to $name \n \n" +
             "create a user like: " +
-            "POST /user/{userName}/password=a_password_for_the_user \n" +
+            "POST /user/{userName}?password=a_password_for_the_user \n" +
             "create a primary key like: " +
-            "POST /primaryKey/{primaryKeyName}/user=your_username&password=your_password \n" +
+            "POST /primaryKey/{primaryKeyName}?user=your_username&password=your_password \n" +
             "create a data key like: " +
-            "POST /dataKey/{dataKeyName}/" +
+            "POST /dataKey/{dataKeyName}?" +
             "primaryKeyName=the_primary_key_name&user=your_username&password=your_password \n" +
             "get the data key like: " +
-            "GET /dataKey/{dataKeyName}/" +
+            "GET /dataKey/{dataKeyName}?" +
             "primaryKeyName=the_primary_key_name&user=your_username&password=your_password"
             complete(response)
           }
@@ -86,7 +90,7 @@ object BKeywhizKMSFrontend extends Supportive {
               case e: Exception =>
                 e.printStackTrace()
                 complete(500, e.getMessage + "\n please get a primary key like: " +
-                  "POST /primaryKey/{primaryKeyName}/user=your_username&password=your_password")
+                  "POST /primaryKey/{primaryKeyName}?user=your_username&password=your_password")
             }
             }
             }
@@ -108,7 +112,7 @@ object BKeywhizKMSFrontend extends Supportive {
               case e: Exception =>
                 e.printStackTrace()
                 complete(500, e.getMessage + "\n please get a data key like: " +
-                  "POST /dataKey/{dataKeyName}/primaryKeyName=the_primary_key_name" +
+                  "POST /dataKey/{dataKeyName}?primaryKeyName=the_primary_key_name" +
                   "&user=your_username&password=your_password")
             }
             }
@@ -127,7 +131,7 @@ object BKeywhizKMSFrontend extends Supportive {
                   case e: Exception =>
                     e.printStackTrace()
                     complete(500, e.getMessage + "\n please create a user like: " +
-                      "POST /user/{userName}/password=a_password_for_the_user")
+                      "POST /user/{userName}?password=a_password_for_the_user")
                 }
                 }
                 }
@@ -148,7 +152,7 @@ object BKeywhizKMSFrontend extends Supportive {
               case e: Exception =>
                 e.printStackTrace()
                 complete(500, e.getMessage + "\n please get the data key like: " +
-                  "GET /dataKey/{dataKeyName}/primaryKeyName=the_primary_key_name" +
+                  "GET /dataKey/{dataKeyName}?primaryKeyName=the_primary_key_name" +
                   "&user=your_username&password=your_password")
             }
             }
@@ -165,26 +169,27 @@ object BKeywhizKMSFrontend extends Supportive {
   }
 
   def createUserToKeywhiz(user:String, password:String, frontendKeywhizConf:String): Unit = {
-    s"key.provider add-user $frontendKeywhizConf --user $user --password $password" !!
+    s"$keyProvider add-user $frontendKeywhizConf --user $user --password $password" !!
   }
 
   def loginKeywhiz(user:String, password:String): Unit = {
-    s"keywhiz.cli --user $user --password $password login" !!
+    s"$keywhizCli --user $user --password $password login" !!
   }
 
   def generateAESKey(keysize:Int): String = {
-    s"key.provider gen-aes --keysize $keysize" !!
+    val rawKey:String = s"$keyProvider gen-aes --keysize $keysize".!!
+    rawKey.dropRight(1)
   }
 
   def addKeyToKeywhiz(user:String, keyName:String, keyContent:String): Unit = {
-    val command:String = s"keywhiz.cli  --user $user " +
-                         s"add secret --name $keyName" +
-                         s"""--json {"_key":"$keyContent"} < salt"""
-    command !!
+    val command:String = s"$keywhizCli  --user $user " +
+                         s"add secret --name $keyName " +
+                         s"""--json {"_key":"$keyContent"}"""
+    (Process(command) #< new File("/usr/src/app/salt")).!!
   }
 
   def getKeyFromKeywhiz(user:String, keyName:String): String = {
-    s"keywhiz.cli --user $user get --name $keyName" !!
+    s"$keywhizCli --user $user get --name $keyName" !!
   }
 
   def dataKeyCryptoCodec(base64PrimaryKeyPlaintext:String,

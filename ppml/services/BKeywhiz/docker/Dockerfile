@@ -99,7 +99,8 @@ RUN cd keywhiz && \
     cp frontend-keywhiz-conf.yaml /usr/src/app && \
     chmod a+x /usr/src/app/entry.sh
 ADD ./start-https-frontend.sh /opt/start-https-frontend.sh
-RUN chmod a+x /usr/src/app/start-https-frontend.sh
+RUN chmod a+x /usr/src/app/start-https-frontend.sh && \
+    chmod a+x /usr/src/app/server/target/keywhiz-server-0.10.2-SNAPSHOT-shaded.jar
 
 ENV LC_ALL	C.UTF-8
 ENV LANG	C.UTF-8

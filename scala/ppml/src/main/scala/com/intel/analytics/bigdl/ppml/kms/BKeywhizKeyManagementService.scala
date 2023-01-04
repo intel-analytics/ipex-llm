@@ -39,7 +39,7 @@ import org.apache.http.client.methods.HttpGet
 import org.apache.http.impl.client.HttpClients
 
 object BKEYWHIZ_ACTION extends Enumeration {
-  type BKEYWHIZ_ACTION = Value
+  type TYPE = Value
   val CREATE_USER, CREATE_PRIMARY_KEY, CREATE_DATA_KEY, GET_DATA_KEY = Value
   val POST_REQUEST, GET_REQUEST = Value
 }
@@ -71,7 +71,7 @@ class BKeywhizKeyManagementService(
     val action = BKEYWHIZ_ACTION.CREATE_USER
     val url = constructBaseUrl(action, userName)
     val response = timing("BKeyManagementService request for creating user") {
-      sendRequest(url, BKEYWHIZ_ACTION.POST_REQUEST)
+      sendRequest(BKEYWHIZ_ACTION.POST_REQUEST, url)
     }
     logger.info(response)
   }
@@ -84,7 +84,7 @@ class BKeywhizKeyManagementService(
     val action = BKEYWHIZ_ACTION.CREATE_PRIMARY_KEY
     val url = constructBaseUrl(action, primaryKeyName) + s"&user=$userName" 
     val response = timing("BKeyManagementService request for creating primaryKey") {
-      sendRequest(url, BKEYWHIZ_ACTION.POST_REQUEST)
+      sendRequest(BKEYWHIZ_ACTION.POST_REQUEST, url)
     }
     logger.info(response)
   }
@@ -101,7 +101,7 @@ class BKeywhizKeyManagementService(
     val url = constructBaseUrl(action, dataKeyName) +
               s"&user=$userName&primaryKeyName=$primaryKeyName"
     val response = timing("BKeyManagementService request for creating dataKey") {
-      sendRequest(url, BKEYWHIZ_ACTION.POST_REQUEST)
+      sendRequest(BKEYWHIZ_ACTION.POST_REQUEST, url)
     }
     logger.info(response)
   }
@@ -114,33 +114,33 @@ class BKeywhizKeyManagementService(
     Log4Error.invalidInputError(dataKeyName != null && dataKeyName != "",
       "dataKeyName should be specified")
     logger.info("BKeywhiz retrieveDataKeyPlaintext API get the specific data key from KMS server")
-    val action: String = BKEYWHIZ_ACTION.GET_DATA_KEY
+    val action = BKEYWHIZ_ACTION.GET_DATA_KEY
     val url = constructBaseUrl(action, dataKeyName) +
               s"&user=$userName&primaryKeyName=$primaryKeyName"
     val response = timing("BKeyManagementService request for getting dataKey") {
-      sendRequest(url, BKEYWHIZ_ACTION.GET_REQUEST)
+      sendRequest(BKEYWHIZ_ACTION.GET_REQUEST, url)
     }
     response
   }
 
 
-  private def constructBaseUrl(action: String, customParamName: String): String = {
+  private def constructBaseUrl(action: BKEYWHIZ_ACTION.TYPE, customParamName: String): String = {
     val path = action match {
-        BKEYWHIZ_ACTION.CREATE_USER => "/user/"
-        BKEYWHIZ_ACTION.CREATE_PRIMARY_KEY => "/primaryKey/"
-        BKEYWHIZ_ACTION.CREATE_DATA_KEY => "/dataKey/"
-        BKEYWHIZ_ACTION.GET_DATA_KEY => "/dataKey/"
+        case BKEYWHIZ_ACTION.CREATE_USER => "/user/"
+        case BKEYWHIZ_ACTION.CREATE_PRIMARY_KEY => "/primaryKey/"
+        case BKEYWHIZ_ACTION.CREATE_DATA_KEY => "/dataKey/"
+        case BKEYWHIZ_ACTION.GET_DATA_KEY => "/dataKey/"
     }
     val baseUrl = s"https://$kmsServerIP:$kmsServerPort/" + 
                   path + customParamName +
-                  s"/password=$userPassword"
+                  s"?password=$userPassword"
     baseUrl
   }
 
-  private def sendRequest(url: String, requestType: Value): String = {
+  private def sendRequest(requestType: BKEYWHIZ_ACTION.TYPE, url: String): String = {
     val clientbuilder = HttpClients.custom().setSSLSocketFactory(sslConSocFactory)
     val httpsClient: CloseableHttpClient = clientbuilder.build()
-    val request = requetType match{
+    val request = requestType match{
         case BKEYWHIZ_ACTION.POST_REQUEST => new HttpPost(url)
         case BKEYWHIZ_ACTION.GET_REQUEST => new HttpGet(url)
     }
