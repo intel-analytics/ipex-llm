@@ -712,7 +712,7 @@ class TorchRunner(BaseRunner):
             "operator": self.training_operator.state_dict(),
             "models": [model.state_dict() for model in self.models]
         }
-        if self.optimizers is not None:
+        if self.optimizers:
             state.update({
                 "optimizers": [
                     opt.state_dict() for opt in self.optimizers
@@ -739,7 +739,7 @@ class TorchRunner(BaseRunner):
             else:
                 for model, state_dict in zip(self.models, state):
                     model.load_state_dict(state_dict)
-        if "optimizers" in state:
+        if self.optimizers and "optimizers" in state:
             for optimizer, state_dict in zip(self.optimizers, state["optimizers"]):
                 optimizer.load_state_dict(state_dict)
         if self.schedulers and "schedulers" in state:
