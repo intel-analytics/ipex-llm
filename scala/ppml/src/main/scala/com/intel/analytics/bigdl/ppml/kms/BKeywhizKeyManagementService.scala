@@ -144,7 +144,7 @@ class BKeywhizKeyManagementService(
         case BKEYWHIZ_ACTION.POST_REQUEST => new HttpPost(url)
         case BKEYWHIZ_ACTION.GET_REQUEST => new HttpGet(url)
     }
-    val response = httpsClient.execute(post)
+    val response = httpsClient.execute(request)
     EntityUtils.toString(response.getEntity, "UTF-8")
   }
 
