@@ -101,7 +101,8 @@ class ExportJIT(nn.Module):
         elif self.operation == "postprocessing":
             return self.export_postprocessing(data)
         else:
-            raise RuntimeError(f"Operation {self.operation} is not supported!")
+            # never reached here
+            return data
 
 
 class ExportWithStandardScaler(ExportJIT):
