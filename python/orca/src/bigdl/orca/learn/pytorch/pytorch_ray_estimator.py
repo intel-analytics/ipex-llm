@@ -90,7 +90,7 @@ class PyTorchRayEstimator(BaseRayEstimator):
             metrics: Union['Metric', List['Metric'], None]=None,
             scheduler_creator: Optional[Callable[[Dict], 'LRScheduler']]=None,
             config: Dict=None,
-            scheduler_step_freq: str="batch",
+            scheduler_step_freq: str="epoch",
             use_tqdm: bool=False,
             backend: str="ray",
             workers_per_node: int=1,
