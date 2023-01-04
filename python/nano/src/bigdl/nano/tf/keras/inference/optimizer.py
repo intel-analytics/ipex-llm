@@ -17,6 +17,7 @@
 import os
 import copy
 import time
+import operator
 from pathlib import Path
 import numpy as np
 import traceback
@@ -39,6 +40,7 @@ from bigdl.nano.deps.openvino.openvino_api import load_openvino_model
 from bigdl.nano.deps.onnxruntime.onnxruntime_api import load_onnxruntime_model
 from bigdl.nano.deps.neural_compressor.inc_api import load_inc_model
 from bigdl.nano.tf.keras.amp import BF16Model, load_bf16_model
+from bigdl.nano.utils.util import compare_version
 
 
 class TFAccelerationOption(AccelerationOption):
@@ -572,15 +574,18 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                         input_shape = input_spec.shape
                     model.compute_output_shape(input_shape)
             if model.inputs is None or model.outputs is None:
-                # try to fake input and output for model
-                signature = inspect.signature(model.call)
-                input_names = []
-                for param in signature.parameters.values():
-                    input_names.append(param.name)
-                if inputs is None:
-                    inputs = input_names
-                if outputs is None:
-                    outputs = "outputs"
+                INC_LESS_14 = compare_version("neural_compressor", operator.lt, "1.14")
+                # oly works for inc version >= 1.14
+                if not INC_LESS_14:
+                    # try to fake input and output for model
+                    signature = inspect.signature(model.call)
+                    input_names = []
+                    for param in signature.parameters.values():
+                        input_names.append(param.name)
+                    if inputs is None:
+                        inputs = input_names
+                    if outputs is None:
+                        outputs = "outputs"
 
             result = inc_quantzie(model, dataloader=calib_dataset,
                                   metric=metric,
