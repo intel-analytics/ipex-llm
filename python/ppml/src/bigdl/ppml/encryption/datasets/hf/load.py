@@ -52,12 +52,34 @@ class encrypt_reader_opener(opener):
         # Close the buffer
         self.file_like.close()
 
-# TODO: need testing when key is None
+class encrypt_file_opener(opener):
+    def __init__(self, file_like, key):
+        self.key = Fernet(key)
+        decrypted_content = self.key.decrypt(file_like.read())
+        file_like.close()
+        buf = BytesIO()
+        buf.write(decrypted_content)
+        buf.seek(0)
+        super(encrypt_file_opener, self).__init__(buf)
+    
+    def __exit__(self, *args):
+        self.file_like.close()
+
+
+def _open_encrypted_file_like_with_key(path, fs, mode, key: Optional[str] = None):
+    if key is not None:
+        mode += 'b'
+    file_like = fs.open(path, mode)
+    if key is not None:
+        return encrypt_file_opener(file_like, key)
+    else:
+        return file_like
+
+
 def _open_encrypt_file_with_key(file, mode, key: Optional[str] = None):
     if key is not None:
         return encrypt_reader_opener(file, mode, key)
     else:
-        # TODO:This is right or not?
         return open(file, encoding="utf-8")
 
 def decrypt_file_to_pa_buffer(filename, key):
@@ -70,23 +92,52 @@ def decrypt_file_to_pa_buffer(filename, key):
 
 
 @staticmethod
-def load_dict_with_decryption(dataset_dict_path: str, key: str, fs=None, keep_in_memory: Optional[bool] = None) -> "DatasetDict":
+def load_dict_with_decryption(dataset_dict_path: str, fs=None, key: Optional[str] = None, keep_in_memory: Optional[bool] = None) -> "DatasetDict":
+    """
+    Load a dataset that was previously saved using :meth:`save_to_disk` from a filesystem using either
+    :class:`~filesystems.S3FileSystem` or ``fsspec.spec.AbstractFileSystem``.
+
+    If key is not None, then dataset stored at dataset_path must be previously encrypted using the key provided
+    here.  At the same time, the keep_in_memory must be set to True.
+
+    Args:
+        dataset_dict_path (:obj:`str`): Path (e.g. ``"dataset/train"``) or remote URI (e.g.
+            ``"s3//my-bucket/dataset/train"``) of the dataset dict directory where the dataset dict will be loaded
+            from.
+        fs (:class:`~filesystems.S3FileSystem` or ``fsspec.spec.AbstractFileSystem``, optional, default ``None``):
+            Instance of the remote filesystem used to download the files from.
+        keep_in_memory (:obj:`bool`, default ``None``): Whether to copy the dataset in-memory. If `None`, the
+            dataset will not be copied in-memory unless explicitly enabled by setting
+            `datasets.config.IN_MEMORY_MAX_SIZE` to nonzero. See more details in the
+            :ref:`load_dataset_enhancing_performance` section.
+        key (:obj:`str`, default ``None``): If not None, then the dataset is considered to be encrypted previously using
+            this key.
+
+    Returns:
+        :class:`DatasetDict`
+    """
+    _check_key_compatible_with_in_mem(key, keep_in_memory)
     dataset_dict = DatasetDict()
     if is_remote_filesystem(fs):
-        invalidInputError(False, "Please do not specify files in remote filesystem")
+        dest_dataset_dict_path = extract_path_from_uri(dataset_dict_path)
     else:
         fs = fsspec.filesystem("file")
         dest_dataset_dict_path = dataset_dict_path
-    # Construct path
     dataset_dict_json_path = Path(dest_dataset_dict_path, config.DATASETDICT_JSON_FILENAME).as_posix()
     dataset_info_path = Path(dest_dataset_dict_path, config.DATASET_INFO_FILENAME).as_posix()
     if fs.isfile(dataset_info_path) and not fs.isfile(dataset_dict_json_path):
         invalidInputError(False,
             f"No such file or directory: '{dataset_dict_json_path}'. Expected to load a DatasetDict object, but got a Dataset. Please use datasets.load_from_disk instead."
         )
-    for k in json.load(_open_encrypt_file_with_key(dataset_dict_json_path, "rb", key))["splits"]:
-        dataset_dict_split_path = Path(dest_dataset_dict_path, k).as_posix()
-        dataset_dict[k] = Dataset.load_from_disk(dataset_dict_split_path, key, fs, keep_in_memory=True)
+    with _open_encrypted_file_like_with_key(fs.open(dataset_dict_json_path, "r", key=key)) as config:
+        for k in json.load(config)["splits"]:
+            dataset_dict_split_path = (
+                dataset_dict_path.split("://")[0] + "://" + Path(dest_dataset_dict_path, k).as_posix()
+                if is_remote_filesystem(fs)
+                else Path(dest_dataset_dict_path, k).as_posix()
+            )
+            dataset_dict[k] = Dataset.load_from_disk(dataset_dict_split_path, fs, keep_in_memory=keep_in_memory)
+
     return dataset_dict
 
 
@@ -124,31 +175,17 @@ def load_with_decryption(dataset_path: str, fs=None, keep_in_memory: Optional[bo
     >>> ds = load_from_disk("path/to/dataset/directory", keep_in_memory=True, key=my_key)
     ```
     """
-    # if is_remote_filesystem(fs):
-    #     invalidInputError(False, "Please only use filesystem with protocol file, or leave the fs argument to None")
-    # fs = fsspec.filesystem("file")
-    # dataset_dict_json_path = Path(dataset_path, config.DATASETDICT_JSON_FILENAME).as_posix()
-    # dataset_info_path = Path(dataset_path, config.DATASET_INFO_FILENAME).as_posix()
-    # if not fs.isfile(dataset_info_path) and fs.isfile(dataset_dict_json_path):
-    #     invalidInputError(False,
-    #        f"No such file or directory: '{dataset_info_path}'. Expected to load a Dataset object, but got a DatasetDict. Please use datasets.load_from_disk instead."
-    #     )
-    # TODO: test this when keep_in_memory is None
-    if key is not None:
-        invalidInputError(keep_in_memory==True, "Currently only support InMemoryTable which requires keep_in_memory set to True")
+    _check_key_compatible_with_in_mem(key, keep_in_memory)
     fs = fsspec.filesystem("file") if fs is None else fs
     dataset_dict_json_path = Path(dataset_path, config.DATASETDICT_JSON_FILENAME).as_posix()
     dataset_info_path = Path(dataset_path, config.DATASET_INFO_FILENAME).as_posix()
     if not fs.isfile(dataset_info_path) and fs.isfile(dataset_dict_json_path):
         invalidInputError(False, f"No such file or directory: '{dataset_info_path}'. Expected to load a Dataset object, but got a DatasetDict. Please use datasets.load_from_disk instead.")
 
-    # Download the files if on remote filesystem
     if is_remote_filesystem(fs):
         src_dataset_path = extract_path_from_uri(dataset_path)
         dataset_path = Dataset._build_local_temp_path(src_dataset_path)
         fs.download(src_dataset_path, dataset_path.as_posix(), recursive=True)
-
-    # Based on whether key is provided, do different things
 
     with _open_encrypt_file_with_key(Path(dataset_path, config.DATASET_STATE_JSON_FILENAME).as_posix(), 'rb', key=key) as state_file:
         state = json.load(state_file)
@@ -161,7 +198,6 @@ def load_with_decryption(dataset_path: str, fs=None, keep_in_memory: Optional[bo
  
     keep_in_memory = keep_in_memory if keep_in_memory is not None else is_small_dataset(dataset_size)
     table_cls = InMemoryTable if keep_in_memory else MemoryMappedTable
-    # Consider different cases
     if key is not None:
         arrow_table = concat_tables(
             table_cls.from_buffer(decrypt_file_to_pa_buffer(
@@ -198,10 +234,16 @@ def load_with_decryption(dataset_path: str, fs=None, keep_in_memory: Optional[bo
 
 
 Dataset.load_from_disk = load_with_decryption
-
 DatasetDict.load_from_disk = load_dict_with_decryption
 
-# TODO: later apply patch here
+
+def _check_key_compatible_with_in_mem(key: Union[str, None], keep_in_memory: Union[bool, None]):
+    if key is not None:
+        invalidInputError(keep_in_memory==True, 
+                          "Currently only support InMemoryTable which \
+                          requires keep_in_memory set to True")
+
+
 def load_from_disk(dataset_path: str, fs=None, keep_in_memory: Optional[bool] = None, key: Optional[str] = None) -> Union[Dataset, DatasetDict]:
     """
     Loads a dataset that was previously saved using :meth:`Dataset.save_to_disk` from a dataset directory, or
@@ -228,25 +270,18 @@ def load_from_disk(dataset_path: str, fs=None, keep_in_memory: Optional[bool] = 
         - If `dataset_path` is a path of a dataset directory: the dataset requested.
         - If `dataset_path` is a path of a dataset dict directory: a ``datasets.DatasetDict`` with each split.
     """
-    # if is_remote_filesystem(fs):
-    #     invalidInputError(False, "Please only use filesystem with protocol file, or leave the fs argument to None")
-    # invalidInputError(keep_in_memory, "Currently only support keep_in_memory set to True")
-    if key is not None:
-        invalidInputError(keep_in_memory==True, "Currently only support InMemoryTable which requires keep_in_memory set to True")
+    _check_key_compatible_with_in_mem(key, keep_in_memory)
     if is_remote_filesystem(fs):
         dest_dataset_path = extract_path_from_uri(dataset_path)
     else:
         fs = fsspec.filesystem("file")
         dest_dataset_path = dataset_path
 
-
-    #fs = fsspec.filesystem("file")
     if not fs.exists(dest_dataset_path):
         invalidInputError(False, f"Directory {dataset_path} not found")
-    # TODO: change calling interface
     if fs.isfile(Path(dest_dataset_path, config.DATASET_INFO_FILENAME).as_posix()):
         return Dataset.load_from_disk(dataset_path, fs, key=key, keep_in_memory=keep_in_memory)
-    # TODO: test this later
+    # TODO: test this later, check this later
     elif fs.isfile(Path(dest_dataset_path, config.DATASETDICT_JSON_FILENAME).as_posix()):
         return DatasetDict.load_from_disk(dataset_path, fs, keep_in_memory=keep_in_memory)
     else:
