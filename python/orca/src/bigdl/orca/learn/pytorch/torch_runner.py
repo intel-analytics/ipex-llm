@@ -206,7 +206,7 @@ class TorchRunner(BaseRunner):
             self.dist_backend = TorchDistBackend()
 
     def train_epochs(self, data_creator, epochs=1, batch_size=32, profile=False,
-                     info=None, wrap_dataloader=None, callbacks=None,
+                     info=None, wrap_dataloader=None, callbacks=[],
                      validation_data_creator=None):
         config = copy.copy(self.config)
         if OrcaContext.serialize_data_creator:
@@ -252,6 +252,8 @@ class TorchRunner(BaseRunner):
         else:
             val_loader = None
             val_steps = None
+
+        # Check uniqueness of the MainCallback
 
         if callbacks is not None:
             for callback in callbacks:
@@ -520,7 +522,7 @@ class TorchRunner(BaseRunner):
         return {"train_loss": loss_item, NUM_SAMPLES: get_batchsize(features)}
 
     def validate(self, data_creator, batch_size=32, num_steps=None, profile=False,
-                 info=None, wrap_dataloader=None):
+                 info=None, wrap_dataloader=None, callbacks=[]):
         """Evaluates the model on the validation data set."""
         config = copy.copy(self.config)
         info = info or {}
@@ -543,7 +545,8 @@ class TorchRunner(BaseRunner):
             validation_stats = self._validate(loader,
                                               info=info,
                                               metrics=self.metrics,
-                                              num_steps=num_steps)
+                                              num_steps=num_steps,
+                                              callbacks=callbacks)
         if profile:
             validation_stats.update(profile=self.timers.stats())
         return validation_stats
