@@ -408,7 +408,8 @@ export EHSMPORT=YOUR_EHSM_PORT
 export EHSMAPPID=YOUR_EHSM_APPID
 export EHSMAPIKEY=YOUR_EHSM_APIKEY
 export CONTAINER=YOUR_CONTAINER
-export UPLOADPATH=YOUR_IPLOAD_PATH
+export UPLOADPATH=YOUR_UPLOAD_PATH
+  
 bash bigdl-ppml-submit.sh \
     --master $RUNTIME_SPARK_MASTER \
     --deploy-mode cluster \
