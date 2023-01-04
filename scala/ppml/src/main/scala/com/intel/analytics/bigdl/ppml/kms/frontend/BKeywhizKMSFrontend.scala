@@ -59,7 +59,18 @@ object BKeywhizKMSFrontend extends Supportive {
       val route = timing("initialize http route") {
         path("") {
           timing("welcome") {
-            complete("welcome to " + name)
+            val response = s"welcome to $name \n \n" +
+            "create a user like: " +
+            "POST /user/{userName}/password=a_password_for_the_user \n" +
+            "create a primary key like: " +
+            "POST /primaryKey/{primaryKeyName}/user=your_username&password=your_password \n" +
+            "create a data key like: " +
+            "POST /dataKey/{dataKeyName}/" +
+            "primaryKeyName=the_primary_key_name&user=your_username&password=your_password \n" +
+            "get the data key like: " +
+            "GET /dataKey/{dataKeyName}/" +
+            "primaryKeyName=the_primary_key_name&user=your_username&password=your_password"
+            complete(response)
           }
         } ~ path("primaryKey" / Segment) { primaryKeyName =>
           post {

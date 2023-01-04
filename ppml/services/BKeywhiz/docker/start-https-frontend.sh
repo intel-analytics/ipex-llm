@@ -28,7 +28,6 @@ https_secure_password=$HTTPS_SECURE_PASSWORD # k8s secret
 java \
     -Xms2g \
     -Xmx10g \
-    -XX:ActiveProcessorCount=2 \
     -Dcom.intel.analytics.zoo.shaded.io.netty.tryReflectionSetAccessible=true \
     -Dakka.http.host-connection-pool.max-connections=100 \
     -Dakka.http.host-connection-pool.max-open-requests=128 \

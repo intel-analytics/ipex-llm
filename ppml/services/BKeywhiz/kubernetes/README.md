@@ -59,8 +59,8 @@ curl -k -v "https://<kmsIP>:9876/"
 # you will get similar to below
 welcome to BigDL Keywhiz KMS Frontend
 
-please create a user like: POST /user/{userName}/password=a_password_for_the_user
-please get a primary key like: POST /primaryKey/{primaryKeyName}/user=your_username&password=your_password
-please get a data key like: POST /dataKey/{dataKeyName}/primaryKeyName=the_primary_key_name&user=your_username&password=your_password
-please get the data key like: GET /dataKey/{dataKeyName}/primaryKeyName=the_primary_key_name&user=your_username&password=your_password
+create a user like: POST /user/{userName}/password=a_password_for_the_user
+get a primary key like: POST /primaryKey/{primaryKeyName}/user=your_username&password=your_password
+get a data key like: POST /dataKey/{dataKeyName}/primaryKeyName=the_primary_key_name&user=your_username&password=your_password
+get the data key like: GET /dataKey/{dataKeyName}/primaryKeyName=the_primary_key_name&user=your_username&password=your_password
 ```

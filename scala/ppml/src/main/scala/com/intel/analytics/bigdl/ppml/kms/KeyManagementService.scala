@@ -23,6 +23,7 @@ object KMS_CONVENTION {
   val MODE_SIMPLE_KMS = "SimpleKeyManagementService"
   val MODE_EHSM_KMS = "EHSMKeyManagementService"
   val MODE_AZURE_KMS = "AzureKeyManagementService"
+  val MODE_BKEYWHIZ_KMS = "BKeywhizKeyManagementService"
 }
 
 trait KeyManagementService extends Supportive {
