@@ -397,7 +397,6 @@ bash bigdl-ppml-submit.sh \
     --jars  /ppml/trusted-big-data-ml/bigdl-ppml-spark_3.1.3-2.2.0-SNAPSHOT-jar-with-dependencies.jar,local:///ppml/trusted-big-data-ml/bigdl-ppml-spark_3.1.3-2.2.0-SNAPSHOT-jar-with-dependencies.jar \
     /ppml/trusted-big-data-ml/bigdl-ppml-spark_3.1.3-2.2.0-SNAPSHOT-jar-with-dependencies.jar 
 ```
-</details>
 
 k8s cluster mode
 
@@ -458,6 +457,9 @@ bash bigdl-ppml-submit.sh \
     /ppml/trusted-big-data-ml/bigdl-ppml-spark_3.1.3-2.2.0-SNAPSHOT-jar-with-dependencies.jar \
     com.intel.analytics.bigdl.ppml.examples.MultiKMSExample
 ```
+</details>
+
+
 
 ## Trusted ML 
 
