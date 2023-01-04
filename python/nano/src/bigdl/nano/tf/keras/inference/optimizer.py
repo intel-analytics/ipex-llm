@@ -20,6 +20,7 @@ import time
 from pathlib import Path
 import numpy as np
 import traceback
+import inspect
 import tensorflow as tf
 from typing import Dict, Optional, List, Union
 from bigdl.nano.utils.inference.common.base_optimizer import BaseInferenceOptimizer
@@ -412,7 +413,7 @@ class InferenceOptimizer(BaseInferenceOptimizer):
         :param accelerator:     Use accelerator 'None', 'onnxruntime', 'openvino', defaults to None.
                                 None means staying in tensorflow.
         :param input_spec: A (tuple or list of) tf.TensorSpec or numpy array defining the
-                           shape/dtype of the input when using 'onnxruntime' accelerator.
+                           shape/dtype of the input.
         :param metric:          A tensorflow.keras.metrics.Metric object for evaluation.
         :param accuracy_criterion:  Tolerable accuracy drop.
                                     accuracy_criterion = {'relative': 0.1, 'higher_is_better': True}
@@ -559,6 +560,28 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                 calib_dataset = tf.data.Dataset.from_tensor_slices((x, y))
             if batch:
                 calib_dataset = calib_dataset.batch(batch)
+
+            saved_model_input_spec_set = model._saved_model_inputs_spec is not None
+            if not model.built and not saved_model_input_spec_set:
+                # model cannot be saved either because the input shape is not available
+                # or because the forward pass of the model is not defined
+                if input_spec is not None:
+                    if isinstance(input_spec, (tuple, list)):
+                        input_shape = (i.shape for i in input_spec)
+                    else:
+                        input_shape = input_spec.shape
+                    model.compute_output_shape(input_shape)
+            if model.inputs is None or model.outputs is None:
+                # try to fake input and output for model
+                signature = inspect.signature(model.call)
+                input_names = []
+                for param in signature.parameters.values():
+                    input_names.append(param.name)
+                if inputs is None:
+                    inputs = input_names
+                if outputs is None:
+                    outputs = "outputs"
+
             result = inc_quantzie(model, dataloader=calib_dataset,
                                   metric=metric,
                                   framework='tensorflow',
