@@ -1710,18 +1710,17 @@ class BasePytorchForecaster(Forecaster):
                If set to None, you should call torch.jit.save() in your code to save the returned
                module; if not None, the path should be a directory, and the module will be saved
                at "path_dir/chronos_forecasting_pipeline.pt".
-        :param drop_dtcol: Same as drop_dtcol in TSDataset.export_jit().
-               Whether to delete the datetime column. Since datetime value (like
-               "2022-12-12") can't be converted to Pytorch tensor, you can choose different ways
-               to workaround this. If set to True, the datetime column will be deleted, then you
-               also need to skip the datetime column when reading data from data source (like
-               csv files) in deployment environment to keep the same structure as the data
-               used in development; if set to False, the datetime column will not be deleted, and
-               you need to make sure the datetime colunm can be successfully converted to Pytorch
-               tenor when reading data in deployment environment, for example, you can set each
-               data in datetime column to an int (or other vaild types) since scale and roll
-               doesn't need datetime column so the value can be arbitrary.
-               The value defaults to True.
+        :param drop_dtcol: Whether to delete the datetime column, defaults to True. Since datetime
+               value (like "2022-12-12") can't be converted to Pytorch tensor, you can choose
+               different ways to workaround this. If set to True, the datetime column will be
+               deleted, then you also need to skip the datetime column when reading data from data
+               source (like csv files) in deployment environment to keep the same structure as the
+               data used in development; if set to False, the datetime column will not be deleted,
+               and you need to make sure the datetime colunm can be successfully converted to
+               Pytorch tensor when reading data in deployment environment. For example, you can set
+               each data in datetime column to an int (or other vaild types) value, since datetime
+               column is not necessary in preprocessing and postprocessing, the value can be
+               arbitrary.
 
         :return: The compiled torchscript module containing the whole forecasting pipeline.
         """
