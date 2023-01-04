@@ -966,11 +966,13 @@ class BasePytorchForecaster(Forecaster):
         else:
             if self.accelerate_method != "jit_fp32":
                 self.build_jit()
+
                 self.thread_num = set_pytorch_thread(self.optimized_model_thread_num,
                                                      self.thread_num)
-            return _pytorch_fashion_inference(model=self.accelerated_model,
-                                              input_data=data,
-                                              batch_size=batch_size)
+            with torch.jit.optimized_execution(False):  # warmup too slow
+                return _pytorch_fashion_inference(model=self.accelerated_model,
+                                                    input_data=data,
+                                                    batch_size=batch_size)
 
     def evaluate(self, data, batch_size=32, multioutput="raw_values", quantize=False,
                  acceleration: bool = True):
