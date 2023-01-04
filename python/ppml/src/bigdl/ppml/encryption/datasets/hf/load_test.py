@@ -68,9 +68,14 @@ def encrypt():
 
 def main():
     temp = load_from_disk("/ppml/save-datasets-encrypted/test", keep_in_memory=True, key=_create_random(32))
+    print(temp[0])
+
+def main2():
+    temp = load_from_disk("/ppml/save-datasets/test")
+    print(temp[0])
 
 
 
 
 if __name__ == "__main__":
-    main()
+    main2()
