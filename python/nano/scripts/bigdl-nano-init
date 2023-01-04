@@ -14,7 +14,7 @@ function disable-openmp-var {
 }
 
 function enable-jemalloc-var {
-	echo "Option: Enable jemalloc and unset related variables"
+	echo "Option: Enable jemalloc and set related variables"
 	export ENABLE_JEMALLOC_VAR=1
 }
 
@@ -65,6 +65,7 @@ while getopts ":ojhcp-:" opt; do
 					disable-openmp-var
 					;;
 				enable-jemalloc)
+				    disable-tcmalloc-var
 					enable-jemalloc-var
 					;;
 				disable-tcmalloc)
@@ -87,6 +88,7 @@ while getopts ":ojhcp-:" opt; do
 			disable-openmp-var
 			;;
 		j )
+			disable-tcmalloc-var
 			enable-jemalloc-var
 			;;
 		c )
@@ -165,33 +167,33 @@ echo "Setting MALLOC_CONF..."
 export MALLOC_CONF="oversize_threshold:1,background_thread:false,metadata_thp:always,dirty_decay_ms:-1,muzzy_decay_ms:-1"
 
 # Set LD_PRELOAD
-if [ -z "${LD_PRELOAD:-}" ]; then
-	echo "Setting LD_PRELOAD..."
-	if [[ $OPENMP -eq 1 && -z "${DISABLE_OPENMP_VAR:-}" ]]; then
-		export LD_PRELOAD="${LIB_DIR}/libiomp5.so"
-	fi
-	if [[ $JEMALLOC -eq 1 && ! -z "${ENABLE_JEMALLOC_VAR:-}" ]]; then
-	    DISABLE_TCMALLOC_VAR=1
-		if [ -f "${NANO_DIR}/libs/libjemalloc.so" ]; then
-			JEMALLOC_PATH="${NANO_DIR}/libs/libjemalloc.so"
-		elif [ -f "${LIB_DIR}/libjemalloc.so" ]; then
-			JEMALLOC_PATH="${LIB_DIR}/libjemalloc.so"
-		fi
-		# if `LD_PRELOAD` or `JEMLLOC_PATH` is empty, there will be
-		# extra space on the left or right sides, use echo to remove them
-		export LD_PRELOAD=$(echo ${LD_PRELOAD} ${JEMALLOC_PATH})
-	fi
+echo "Setting LD_PRELOAD..."
+if [[ $OPENMP -eq 1 && -z "${DISABLE_OPENMP_VAR:-}" ]]; then
+	export LD_PRELOAD="${LIB_DIR}/libiomp5.so"
+fi
 
-	# Set TCMALLOC lib path
-	if [[ $TCMALLOC -eq 1 && -z "${DISABLE_TCMALLOC_VAR:-}" ]]; then
-		if [ -f "${NANO_DIR}/libs/libtcmalloc.so" ]; then
-			TCMALLOC_PATH="${NANO_DIR}/libs/libtcmalloc.so"
-		elif [ -f "${LIB_DIR}/libtcmalloc.so" ]; then
-			TCMALLOC_PATH="${LIB_DIR}/libtcmalloc.so"
-		fi
-		# the same as above
-		export LD_PRELOAD=$(echo ${LD_PRELOAD} ${TCMALLOC_PATH})
+# Set JEMALLOC lib path
+if [[ $JEMALLOC -eq 1 && ! -z "${ENABLE_JEMALLOC_VAR:-}" ]]; then
+	DISABLE_TCMALLOC_VAR=1
+	if [ -f "${NANO_DIR}/libs/libjemalloc.so" ]; then
+		JEMALLOC_PATH="${NANO_DIR}/libs/libjemalloc.so"
+	elif [ -f "${LIB_DIR}/libjemalloc.so" ]; then
+		JEMALLOC_PATH="${LIB_DIR}/libjemalloc.so"
 	fi
+	# if `LD_PRELOAD` or `JEMLLOC_PATH` is empty, there will be
+	# extra space on the left or right sides, use echo to remove them
+	export LD_PRELOAD=$(echo ${LD_PRELOAD} ${JEMALLOC_PATH})
+fi
+
+# Set TCMALLOC lib path
+if [[ $TCMALLOC -eq 1 && -z "${DISABLE_TCMALLOC_VAR:-}" ]]; then
+	if [ -f "${NANO_DIR}/libs/libtcmalloc.so" ]; then
+		TCMALLOC_PATH="${NANO_DIR}/libs/libtcmalloc.so"
+	elif [ -f "${LIB_DIR}/libtcmalloc.so" ]; then
+		TCMALLOC_PATH="${LIB_DIR}/libtcmalloc.so"
+	fi
+	# the same as above
+	export LD_PRELOAD=$(echo ${LD_PRELOAD} ${TCMALLOC_PATH})
 fi
 
 # Clean up perf var
