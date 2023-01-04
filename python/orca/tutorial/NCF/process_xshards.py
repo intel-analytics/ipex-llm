@@ -138,7 +138,7 @@ def prepare_data(dataset_dir, num_ng=4):
 
 
 def get_feature_cols():
-    feature_cols = ["user", "item"] + sparse_features + num_dense_feats
+    feature_cols = ["user", "item"] + sparse_features + dense_features
     return feature_cols
 
 
